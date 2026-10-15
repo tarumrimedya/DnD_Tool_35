@@ -47,19 +47,40 @@ const RuleMaster = {
     }
   ],
 
-  // Splatbooks catalog
+  // Comprehensive D&D 3.5e Splatbooks and Sourcebooks Catalog
   splatbooks: [
-    { code: "PHB", name: "Player's Handbook 3.5", cat: "Core", note: "Temel sınıflar, ırklar, hünerler ve büyüler" },
-    { code: "DMG", name: "Dungeon Master's Guide 3.5", cat: "Core", note: "Büyülü eşyalar, prestij sınıfları, hazine" },
-    { code: "MM", name: "Monster Manual 3.5", cat: "Core", note: "Yaratıklar, ırksal özellikler ve şablonlar" },
-    { code: "MIC", name: "Magic Item Compendium", cat: "Equipment", note: "Genişletilmiş büyülü eşyalar, vücut yuvaları" },
-    { code: "SpC", name: "Spell Compendium", cat: "Spells", note: "Tüm ek kitapların birleşik büyü arşivi" },
-    { code: "ToB", name: "Tome of Battle (Book of 9 Swords)", cat: "Combat", note: "Savaş manevraları, duruşlar (stances), Martial Adept" },
-    { code: "CW", name: "Complete Warrior", cat: "Splatbook", note: "Savaşçı sınıfları, dövüş hünerleri, prestij" },
-    { code: "CD", name: "Complete Divine", cat: "Splatbook", note: "İlahi sınıflar, domainler, ilahi hünerler" },
-    { code: "CA", name: "Complete Arcane", cat: "Splatbook", note: "Warlock, Warmage, metamagic hünerleri" },
-    { code: "CAd", name: "Complete Adventurer", cat: "Splatbook", note: "Rogue/Bard, Skill Tricks, gizlilik hünerleri" },
-    { code: "PHB2", name: "Player's Handbook II", cat: "Core Expansion", note: "Yeni featler, Knight, Beguiler, Duskblade" }
+    { code: "PHB", name: "Player's Handbook 3.5", cat: "Core", note: "Temel sınıflar, ırklar, hünerler ve büyüler", url: "https://www.d20srd.org" },
+    { code: "DMG", name: "Dungeon Master's Guide 3.5", cat: "Core", note: "Büyülü eşyalar, prestij sınıfları, hazine", url: "https://www.d20srd.org" },
+    { code: "MM", name: "Monster Manual 3.5", cat: "Core", note: "Yaratıklar, ırksal özellikler ve şablonlar", url: "https://www.d20srd.org" },
+    { code: "MIC", name: "Magic Item Compendium", cat: "Equipment", note: "Genişletilmiş büyülü eşyalar, vücut yuvaları ve kristaller", url: "https://srd.dndtools.org" },
+    { code: "SpC", name: "Spell Compendium", cat: "Spells", note: "Tüm ek kitapların birleşik devasa büyü arşivi", url: "https://srd.dndtools.org" },
+    { code: "ToB", name: "Tome of Battle (Book of 9 Swords)", cat: "Combat", note: "Savaş manevraları, duruşlar (stances), Martial Adept sınıfları", url: "https://srd.dndtools.org" },
+    { code: "CW", name: "Complete Warrior", cat: "Splatbook", note: "Savaşçı sınıfları, dövüş hünerleri, prestij sınıfları", url: "https://srd.dndtools.org" },
+    { code: "CD", name: "Complete Divine", cat: "Splatbook", note: "İlahi sınıflar, domainler, ilahi featler", url: "https://srd.dndtools.org" },
+    { code: "CA", name: "Complete Arcane", cat: "Splatbook", note: "Warlock, Warmage, metamagic hünerleri", url: "https://srd.dndtools.org" },
+    { code: "CAd", name: "Complete Adventurer", cat: "Splatbook", note: "Rogue/Bard, Skill Tricks, gizlilik ve hareket hünerleri", url: "https://srd.dndtools.org" },
+    { code: "CM", name: "Complete Mage", cat: "Splatbook", note: "Büyücü arşivi, yedek büyü featleri (Reserve Feats)", url: "https://srd.dndtools.org" },
+    { code: "CS", name: "Complete Scoundrel", cat: "Splatbook", note: "Taktiksel hileler, Skill Tricks, Luck Feats", url: "https://srd.dndtools.org" },
+    { code: "CC", name: "Complete Champion", cat: "Splatbook", note: "Tanrı bağları, Holy Devotion featleri", url: "https://srd.dndtools.org" },
+    { code: "PHB2", name: "Player's Handbook II", cat: "Core Expansion", note: "Yeni featler, Knight, Beguiler, Duskblade", url: "https://srd.dndtools.org" },
+    { code: "FB", name: "Frostburn", cat: "Environment", note: "Buz ve soğuk iklim mekanikleri, soğuk büyüler ve ekipman", url: "https://srd.dndtools.org" },
+    { code: "Sand", name: "Sandstorm", cat: "Environment", note: "Çöl ve kuraklık mekanikleri, ateş ve kum büyüleri", url: "https://srd.dndtools.org" },
+    { code: "Storm", name: "Stormwrack", cat: "Environment", note: "Deniz, gemi ve sualtı savaş kuralları", url: "https://srd.dndtools.org" },
+    { code: "LM", name: "Libris Mortis", cat: "Undead", note: "Ölümsüz yaratıklar, nekromansi kuralları ve featler", url: "https://srd.dndtools.org" },
+    { code: "LoM", name: "Lords of Madness", cat: "Aberrations", note: "Mind Flayer, Beholder ve Aberration arşivleri", url: "https://srd.dndtools.org" },
+    { code: "BoED", name: "Book of Exalted Deeds", cat: "Alignment", note: "Kutsal güçler, Exalted Featler ve Melekler", url: "https://srd.dndtools.org" },
+    { code: "BoVD", name: "Book of Vile Darkness", cat: "Alignment", note: "Karanlık güçler, Vile Damage ve İblisler", url: "https://srd.dndtools.org" },
+    { code: "XPH", name: "Expanded Psionics Handbook", cat: "Psionics", note: "Zihin güçleri, psiyonik sınıflar ve psionics combat", url: "https://www.d20srd.org" },
+    { code: "RoS", name: "Races of Stone", cat: "Races", note: "Cüce ve Gnome mekanikleri, Goliath ırkı", url: "https://srd.dndtools.org" },
+    { code: "RoD", name: "Races of Destiny", cat: "Races", note: "İnsan, Yarım-elf ve Illumian ırkı", url: "https://srd.dndtools.org" },
+    { code: "RotW", name: "Races of the Wild", cat: "Races", note: "Elf ve Halfling mekanikleri, Raptorans", url: "https://srd.dndtools.org" },
+    { code: "RotD", name: "Races of the Dragon", cat: "Races", note: "Ejderhalar, Dragonborn of Bahamut, Koboldlar", url: "https://srd.dndtools.org" },
+    { code: "HoB", name: "Heroes of Battle", cat: "Campaign", note: "Büyük meydan savaşları ve ordu komutanlığı", url: "https://srd.dndtools.org" },
+    { code: "HoH", name: "Heroes of Horror", cat: "Campaign", note: "Korku, delilik kuralları, Dread Necromancer", url: "https://srd.dndtools.org" },
+    { code: "Dscape", name: "Dungeonscape", cat: "Exploration", note: "Zindan tuzakları, Factotum sınıfı", url: "https://srd.dndtools.org" },
+    { code: "Cscape", name: "Cityscape", cat: "Exploration", note: "Şehir içi maceralar ve Urban Ranger", url: "https://srd.dndtools.org" },
+    { code: "RC", name: "Rules Compendium", cat: "Rules Summary", note: "D&D 3.5e'nin tüm nihai resmi kural açıklamaları", url: "https://srd.dndtools.org" },
+    { code: "PlH", name: "Planar Handbook", cat: "Planar", note: "Düzlemler arası seyahat, Jovar ve egzotik silahlar", url: "https://srd.dndtools.org" }
   ],
 
   // Default Item Schema (29 fields)
@@ -624,7 +645,7 @@ const RuleMaster = {
     }
   },
 
-  // Switch Sub-Tabs inside Tab 6
+  // Switch Sub-Tabs inside Tab 6 (All 9 Master DB Views)
   switchSubTab(subTabId) {
     document.querySelectorAll('.mdb-subtab-content').forEach(el => el.classList.add('hidden'));
     const target = document.getElementById(subTabId);
@@ -640,10 +661,24 @@ const RuleMaster = {
       activeBtn.classList.remove('text-slate-400');
     }
 
-    if (subTabId === 'subtab-mdb-sources') {
-      this.renderSourcesCatalog();
+    if (subTabId === 'subtab-mdb-list') {
+      this.renderTable();
+    } else if (subTabId === 'subtab-mdb-weapons') {
+      this.renderWeaponsArmors();
+    } else if (subTabId === 'subtab-mdb-magic') {
+      this.renderSpellsManeuvers();
+    } else if (subTabId === 'subtab-mdb-feats') {
+      this.renderFeats();
+    } else if (subTabId === 'subtab-mdb-items') {
+      this.renderMagicItems();
+    } else if (subTabId === 'subtab-mdb-tree') {
+      this.renderHierarchyTree();
     } else if (subTabId === 'subtab-mdb-importer') {
       this.updateApiKeyUi();
+    } else if (subTabId === 'subtab-mdb-sources') {
+      this.renderSourcesCatalog();
+    } else if (subTabId === 'subtab-mdb-backup') {
+      this.renderBackupTools();
     }
   },
 
@@ -654,9 +689,65 @@ const RuleMaster = {
   },
 
   // ====================================================
-  // GEMINI AI RULE IMPORTER (AI KURAL EKLEYİCİ)
+  // GEMINI AI RULE IMPORTER (DYNAMIC MODEL AUTO-DISCOVERY)
   // ====================================================
   lastAiResults: [],
+  _cachedModels: null,
+
+  async getAvailableGeminiModels(apiKey) {
+    if (this._cachedModels && this._cachedModels.length > 0) {
+      return this._cachedModels;
+    }
+    try {
+      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`);
+      if (resp.ok) {
+        const data = await resp.json();
+        const available = (data.models || [])
+          .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'))
+          .map(m => m.name.replace(/^models\//, ''));
+
+        // Preferred order of modern non-deprecated flash models:
+        const candidatePreferences = [
+          'gemini-3.5-flash-lite',
+          'gemini-2.5-flash',
+          'gemini-2.0-flash',
+          'gemini-1.5-flash',
+          'gemini-flash-latest',
+          'gemini-flash-lite-latest',
+          'gemini-1.5-flash-8b',
+          'gemini-2.5-pro',
+          'gemini-1.5-pro'
+        ];
+
+        const selected = [];
+        for (const pref of candidatePreferences) {
+          if (available.includes(pref)) selected.push(pref);
+        }
+        for (const m of available) {
+          if (!selected.includes(m) && m.includes('flash')) selected.push(m);
+        }
+        for (const m of available) {
+          if (!selected.includes(m)) selected.push(m);
+        }
+
+        if (selected.length > 0) {
+          this._cachedModels = selected;
+          return selected;
+        }
+      }
+    } catch (e) {
+      console.warn('Could not query dynamic Gemini models list:', e);
+    }
+
+    // Default safe fallback if list request fails
+    return [
+      'gemini-3.5-flash-lite',
+      'gemini-2.5-flash',
+      'gemini-2.0-flash',
+      'gemini-1.5-flash',
+      'gemini-flash-latest'
+    ];
+  },
 
   getApiKey() {
     return localStorage.getItem('gemini_api_key') || '';
@@ -665,8 +756,10 @@ const RuleMaster = {
   setApiKey(key) {
     if (!key || !key.trim()) {
       localStorage.removeItem('gemini_api_key');
+      this._cachedModels = null;
     } else {
       localStorage.setItem('gemini_api_key', key.trim());
+      this._cachedModels = null;
     }
     this.updateApiKeyUi();
   },
@@ -728,42 +821,14 @@ const RuleMaster = {
     this.queryAiRule();
   },
 
-  async queryAiRule() {
-    const apiKey = this.getApiKey();
-    if (!apiKey) {
-      alert('⚠️ Lütfen önce bir Google Gemini API Anahtarı girin (Google AI Studio ücretsiz anahtar).');
-      this.promptChangeApiKey();
-      return;
-    }
-
-    const queryInput = document.getElementById('ai-rule-query');
-    const query = queryInput?.value?.trim() || '';
-    if (!query) {
-      alert('⚠️ Lütfen aranacak kural, hüner, büyü veya eşya adını yazın.');
-      queryInput?.focus();
-      return;
-    }
-
-    const catSelect = document.getElementById('ai-rule-category');
-    const categoryHint = catSelect?.value || 'ALL';
-
-    const btn = document.getElementById('btn-ai-search');
-    const loadingBox = document.getElementById('ai-loading-indicator');
-    const resultsBox = document.getElementById('ai-results-container');
-    const statusText = document.getElementById('ai-loading-status-text');
-
-    if (btn) btn.disabled = true;
-    if (loadingBox) loadingBox.classList.remove('hidden');
-    if (resultsBox) resultsBox.innerHTML = '';
-    if (statusText) statusText.textContent = `"${query}" aranıyor... (Core SRD, Splatbooks ve Foundry DB)`;
-
+  async fetchSingleAiRuleRows(query, categoryHint, apiKey, statusTextEl = null) {
     const promptText = `You are a master D&D 3.5e Rule Arbiter and Database Architect.
 User query: "${query}" (Category Hint: "${categoryHint}").
 
 PRIORITIZED KNOWLEDGE BASES (Cascading Search Order):
 1. Priority 1 (Core SRD): https://www.d20srd.org & http://dndsrd.net (PHB, DMG, MM Core 3.5e rules)
 2. Priority 2 (Foundry JSON): D&D 3.5e structured JSON compendiums (spells, feats, items, maneuvers)
-3. Priority 3 (Extended Splatbooks): Complete Warrior, Complete Arcane, Complete Divine, Complete Adventurer, Magic Item Compendium (MIC), Spell Compendium (SC), Tome of Battle (ToB), Frostburn, Sandstorm, etc.
+3. Priority 3 (Extended Splatbooks): Complete series, Magic Item Compendium (MIC), Spell Compendium (SC), Tome of Battle (ToB), Frostburn, Sandstorm, etc.
 
 TASK:
 Resolve the target D&D 3.5e game element into an array of rows adhering strictly to the Master_DB 29-column schema.
@@ -804,18 +869,12 @@ OUTPUT REQUIREMENT:
 Return valid JSON only matching this schema:
 { "rows": [ [col0, col1, ... col28], ... ] }`;
 
-    const fallbackModels = [
-      'gemini-2.5-flash',
-      'gemini-1.5-flash',
-      'gemini-2.0-flash',
-      'gemini-2.5-flash-lite'
-    ];
-
+    const availableModels = await this.getAvailableGeminiModels(apiKey);
     let successResponse = null;
     let lastError = null;
 
-    for (const model of fallbackModels) {
-      if (statusText) statusText.textContent = `Model sorgulanıyor: ${model}...`;
+    for (const model of availableModels) {
+      if (statusTextEl) statusTextEl.textContent = `"${query}" ➔ ${model} sorgulanıyor...`;
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
       try {
         const resp = await fetch(url, {
@@ -850,19 +909,99 @@ Return valid JSON only matching this schema:
       }
     }
 
-    if (btn) btn.disabled = false;
-    if (loadingBox) loadingBox.classList.add('hidden');
+    if (successResponse && Array.isArray(successResponse.rows)) {
+      return successResponse.rows;
+    }
+    throw new Error(lastError || 'Bilinmeyen API yanıtı');
+  },
 
-    if (!successResponse || !successResponse.rows || !Array.isArray(successResponse.rows)) {
-      alert(`⚠️ Kural getirilemedi: ${lastError || 'Bilinmeyen yanıt'}\nLütfen API anahtarınızı ve internet bağlantınızı kontrol edin.`);
+  async queryAiRule() {
+    const apiKey = this.getApiKey();
+    if (!apiKey) {
+      alert('⚠️ Lütfen önce bir Google Gemini API Anahtarı girin (Google AI Studio ücretsiz anahtar).');
+      this.promptChangeApiKey();
       return;
     }
 
-    this.processAiRows(successResponse.rows);
+    const queryInput = document.getElementById('ai-rule-query');
+    const query = queryInput?.value?.trim() || '';
+    if (!query) {
+      alert('⚠️ Lütfen aranacak kural, hüner, büyü veya eşya adını yazın.');
+      queryInput?.focus();
+      return;
+    }
+
+    const catSelect = document.getElementById('ai-rule-category');
+    const categoryHint = catSelect?.value || 'ALL';
+
+    const btn = document.getElementById('btn-ai-search');
+    const loadingBox = document.getElementById('ai-loading-indicator');
+    const resultsBox = document.getElementById('ai-results-container');
+    const statusText = document.getElementById('ai-loading-status-text');
+
+    if (btn) btn.disabled = true;
+    if (loadingBox) loadingBox.classList.remove('hidden');
+    if (resultsBox) resultsBox.innerHTML = '';
+
+    try {
+      const rows = await this.fetchSingleAiRuleRows(query, categoryHint, apiKey, statusText);
+      this.processAiRows(rows);
+    } catch (err) {
+      alert(`⚠️ Kural getirilemedi: ${err.message}\nLütfen internet bağlantınızı ve API anahtarınızı kontrol edin.`);
+    } finally {
+      if (btn) btn.disabled = false;
+      if (loadingBox) loadingBox.classList.add('hidden');
+    }
   },
 
-  processAiRows(rows) {
-    this.lastAiResults = [];
+  async queryAiBatch() {
+    const apiKey = this.getApiKey();
+    if (!apiKey) {
+      alert('⚠️ Lütfen önce bir Google Gemini API Anahtarı girin.');
+      this.promptChangeApiKey();
+      return;
+    }
+    const text = document.getElementById('ai-batch-query')?.value || '';
+    const items = text.split('\n').map(l => l.trim()).filter(Boolean);
+    if (!items.length) {
+      alert('⚠️ Lütfen her satıra bir kural adı yazın (Örn: Shock Trooper, Boots of Speed, Haste...).');
+      return;
+    }
+
+    const btn = document.getElementById('btn-ai-batch-search');
+    const statusBox = document.getElementById('ai-batch-status');
+    const statusText = document.getElementById('ai-batch-status-text');
+
+    if (btn) btn.disabled = true;
+    if (statusBox) statusBox.classList.remove('hidden');
+
+    let totalImported = 0;
+    for (let i = 0; i < items.length; i++) {
+      const itemQuery = items[i];
+      if (statusText) statusText.textContent = `[${i + 1}/${items.length}] "${itemQuery}" taranıyor...`;
+      try {
+        const rows = await this.fetchSingleAiRuleRows(itemQuery, 'ALL', apiKey, statusText);
+        if (rows && rows.length) {
+          const parsed = this.convertRowsToEntries(rows);
+          parsed.forEach(entry => {
+            masterDb.push(entry);
+            totalImported++;
+          });
+        }
+      } catch (e) {
+        console.warn(`Error importing ${itemQuery}:`, e);
+      }
+    }
+
+    if (btn) btn.disabled = false;
+    if (statusBox) statusBox.classList.add('hidden');
+    if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+    this.renderTable();
+    alert(`🎉 Toplu İçe Aktarma Tamamlandı!\n${totalImported} adet kural ve alt güç başarıyla Master_DB'ye eklendi.`);
+  },
+
+  convertRowsToEntries(rows) {
+    const list = [];
     rows.forEach(row => {
       const rawName = String(row[0] || '').trim();
       const isChild = rawName.startsWith('↳');
@@ -921,10 +1060,13 @@ Return valid JSON only matching this schema:
         level: '',
         isChild: isChild
       };
-
-      this.lastAiResults.push(entry);
+      list.push(entry);
     });
+    return list;
+  },
 
+  processAiRows(rows) {
+    this.lastAiResults = this.convertRowsToEntries(rows);
     this.renderAiResults();
   },
 
@@ -1157,6 +1299,456 @@ Return valid JSON only matching this schema:
 
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
     if (typeof renderAll === 'function') renderAll();
+  },
+
+  equipWeaponSlot(name, slot) {
+    const item = masterDb.find(i => i.name === name);
+    if (!item || !character) return;
+    if (!character.weapons) character.weapons = [];
+    let existing = character.weapons.find(w => w.name === item.name);
+    if (!existing) {
+      existing = {
+        name: item.name,
+        grip: slot === 'Main Hand' ? '1-Hand' : '2-Hand',
+        dice: item.dice || item.extraDmg || '1d8',
+        critMin: item.critMin || 20,
+        critMult: item.critMult || 2,
+        attBonus: Number(item.attBonus) || 0,
+        dmgBonus: Number(item.dmgBonus) || 0,
+        dmgType: item.dmgType || 'Slashing',
+        bonusType: item.bonusType || 'Enhancement',
+        tags: item.tags || []
+      };
+      character.weapons.push(existing);
+    }
+    character.activeWeapon = item.name;
+    if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+    if (typeof renderAll === 'function') renderAll();
+    alert(`⚔️ "${item.name}" başarıyla ${slot} olarak kuşandı ve aktif saldırı rotatörüne atandı!`);
+  },
+
+  // ====================================================
+  // 2. WEAPONS, ARMORS & SHIELDS VIEW
+  // ====================================================
+  renderWeaponsArmors() {
+    const container = document.getElementById('weapons-armors-grid');
+    if (!container) return;
+    const subFilter = document.getElementById('wa-subfilter')?.value || 'ALL';
+    const query = (document.getElementById('wa-search-input')?.value || '').toLowerCase();
+
+    const items = masterDb.filter(i => {
+      const isWA = i.type === 'Weapon' || i.type === 'Armor' || i.type === 'Shield';
+      if (!isWA) return false;
+      if (subFilter === 'Weapon' && i.type !== 'Weapon') return false;
+      if (subFilter === 'Armor' && i.type !== 'Armor') return false;
+      if (subFilter === 'Shield' && i.type !== 'Shield') return false;
+      if (query && !i.name.toLowerCase().includes(query) && !(i.benefit || '').toLowerCase().includes(query)) return false;
+      return true;
+    });
+
+    const countBadge = document.getElementById('wa-count-badge');
+    if (countBadge) countBadge.textContent = `${items.length} Ekipman`;
+
+    if (!items.length) {
+      container.innerHTML = '<div class="col-span-full p-8 text-center text-slate-500 bg-slate-950/40 rounded-xl border border-slate-800">Eşleşen silah veya zırh bulunamadı.</div>';
+      return;
+    }
+
+    let html = '';
+    items.forEach(item => {
+      const idx = masterDb.indexOf(item);
+      const isWeapon = item.type === 'Weapon';
+
+      html += `
+        <div class="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl p-4 space-y-2.5 transition shadow">
+          <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-sm font-extrabold text-white">${item.name}</span>
+                <span class="badge ${isWeapon ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-sky-950 text-sky-300 border border-sky-800'}">${item.type}</span>
+              </div>
+              <div class="text-[10px] text-slate-400 mt-0.5">📚 ${item.source || 'PHB'} • Yuva: <b>${item.slot || 'Main Hand'}</b></div>
+            </div>
+            <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Düzenle">✏️</button>
+          </div>
+
+          <!-- Combat Stats Pills -->
+          <div class="flex flex-wrap gap-1.5 text-xs font-mono">
+            ${isWeapon ? `
+              <span class="badge bg-slate-800 text-amber-300 font-bold">🎲 ${item.dice || item.extraDmg || '1d8'}</span>
+              <span class="badge bg-slate-800 text-rose-300 font-bold">🎯 ${item.critMin || 20}-20/x${item.critMult || 2}</span>
+              ${item.attBonus ? `<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-800">Atk +${item.attBonus}</span>` : ''}
+              ${item.dmgBonus ? `<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-800">Dmg +${item.dmgBonus}</span>` : ''}
+              <span class="badge bg-slate-800 text-slate-300">${item.dmgType || 'Slashing'}</span>
+            ` : `
+              <span class="badge bg-sky-950 text-sky-300 border border-sky-800 font-bold">🛡️ +${item.acBonus || 0} AC</span>
+              <span class="badge bg-slate-800 text-slate-300">Tür: ${item.bonusType || 'Armor'}</span>
+            `}
+          </div>
+
+          <p class="text-[11px] text-slate-300 line-clamp-2 leading-relaxed">${item.benefit || item.description || '-'}</p>
+
+          <div class="flex items-center justify-between pt-2 border-t border-slate-800 text-[11px]">
+            <span class="text-amber-400 font-bold">${item.cost || 0} gp • ${item.weight || 0} lbs</span>
+            <div class="flex gap-1.5">
+              ${isWeapon ? `
+                <button onclick="RuleMaster.equipWeaponSlot('${item.name}', 'Main Hand')" class="bg-rose-950 hover:bg-rose-900 border border-rose-700 text-rose-200 text-[10px] font-bold px-2 py-1 rounded transition">⚡ Ana El</button>
+                <button onclick="RuleMaster.equipWeaponSlot('${item.name}', 'Off-Hand')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold px-2 py-1 rounded transition">⚡ İkinci El</button>
+              ` : `
+                <button onclick="RuleMaster.equipToCharacter(${idx})" class="bg-sky-950 hover:bg-sky-900 border border-sky-700 text-sky-200 text-[10px] font-bold px-2 py-1 rounded transition">🛡️ Kuşan</button>
+              `}
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  },
+
+  // ====================================================
+  // 3. SPELLS, MANEUVERS & STANCES VIEW
+  // ====================================================
+  renderSpellsManeuvers() {
+    const container = document.getElementById('spells-maneuvers-grid');
+    if (!container) return;
+    const typeFilter = document.getElementById('sm-type-filter')?.value || 'ALL';
+    const levelFilter = document.getElementById('sm-level-filter')?.value || 'ALL';
+    const query = (document.getElementById('sm-search-input')?.value || '').toLowerCase();
+
+    const items = masterDb.filter(i => {
+      const isSM = i.type === 'Spell' || i.type === 'Maneuver' || i.type === 'Stance';
+      if (!isSM) return false;
+      if (typeFilter !== 'ALL' && i.type !== typeFilter) return false;
+      if (levelFilter !== 'ALL' && String(i.level) !== String(levelFilter)) return false;
+      if (query && !i.name.toLowerCase().includes(query) && !(i.benefit || '').toLowerCase().includes(query) && !(i.discipline || '').toLowerCase().includes(query)) return false;
+      return true;
+    });
+
+    const countBadge = document.getElementById('sm-count-badge');
+    if (countBadge) countBadge.textContent = `${items.length} Büyü / Manevra`;
+
+    if (!items.length) {
+      container.innerHTML = '<div class="col-span-full p-8 text-center text-slate-500 bg-slate-950/40 rounded-xl border border-slate-800">Eşleşen büyü veya manevra bulunamadı.</div>';
+      return;
+    }
+
+    let html = '';
+    items.forEach(item => {
+      const idx = masterDb.indexOf(item);
+      const isSpell = item.type === 'Spell';
+      const isManeuver = item.type === 'Maneuver';
+
+      html += `
+        <div class="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl p-4 space-y-2.5 transition shadow">
+          <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-sm font-extrabold text-white">${item.name}</span>
+                <span class="badge ${isSpell ? 'bg-purple-950 text-purple-300 border border-purple-800' : 'bg-rose-950 text-rose-300 border border-rose-800'}">${item.type}</span>
+                ${item.level !== undefined && item.level !== '' ? `<span class="badge bg-amber-950 text-amber-300 border border-amber-800 text-[10px] font-bold">${item.level}. Seviye</span>` : ''}
+              </div>
+              <div class="text-[10px] text-slate-400 mt-0.5">
+                ${isSpell ? `Okul: <b class="text-purple-300">${item.school || 'Universal'}</b>` : `Disiplin: <b class="text-rose-300">${item.discipline || 'Tome of Battle'}</b>`}
+                • 📚 ${item.source || 'PHB/ToB'}
+              </div>
+            </div>
+            <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Düzenle">✏️</button>
+          </div>
+
+          <div class="flex flex-wrap gap-2 text-[10px] text-slate-400">
+            <span>Aksiyon: <b class="text-amber-300">${item.action || 'Standard Action'}</b></span>
+            <span>Süre: <b class="text-slate-300">${item.duration || 'Instantaneous'}</b></span>
+            ${item.dice || item.extraDmg ? `<span>Zar: <b class="text-rose-400 font-mono">${item.dice || item.extraDmg}</b></span>` : ''}
+          </div>
+
+          <p class="text-[11px] text-slate-300 line-clamp-3 leading-relaxed bg-slate-950/40 p-2 rounded border border-slate-800/80">${item.benefit || item.description || '-'}</p>
+
+          <div class="flex items-center justify-end pt-2 border-t border-slate-800">
+            ${isSpell ? `
+              <button onclick="RuleMaster.equipToCharacter(${idx})" class="bg-purple-900/60 hover:bg-purple-600 text-purple-200 text-xs font-bold px-3 py-1 rounded border border-purple-700 transition">✨ Bilinen Büyülere Ekle</button>
+            ` : (isManeuver ? `
+              <button onclick="RuleMaster.equipToCharacter(${idx})" class="bg-rose-950 hover:bg-rose-900 border border-rose-700 text-rose-200 text-xs font-bold px-3 py-1 rounded transition">⚔️ Hazırla (Readied)</button>
+            ` : `
+              <button onclick="RuleMaster.equipToCharacter(${idx})" class="bg-indigo-950 hover:bg-indigo-900 border border-indigo-700 text-indigo-200 text-xs font-bold px-3 py-1 rounded transition">🥋 Aktif Duruş Yap</button>
+            `)}
+          </div>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  },
+
+  // ====================================================
+  // 4. FEATS & SPECIAL ABILITIES VIEW
+  // ====================================================
+  renderFeats() {
+    const container = document.getElementById('feats-grid');
+    if (!container) return;
+    const query = (document.getElementById('feats-search-input')?.value || '').toLowerCase();
+
+    const items = masterDb.filter(i => {
+      const isFeat = i.type === 'Feat' || i.type === 'Special Ability';
+      if (!isFeat) return false;
+      if (query && !i.name.toLowerCase().includes(query) && !(i.benefit || '').toLowerCase().includes(query) && !(i.prereq || '').toLowerCase().includes(query)) return false;
+      return true;
+    });
+
+    const countBadge = document.getElementById('feats-count-badge');
+    if (countBadge) countBadge.textContent = `${items.length} Hüner`;
+
+    if (!items.length) {
+      container.innerHTML = '<div class="col-span-full p-8 text-center text-slate-500 bg-slate-950/40 rounded-xl border border-slate-800">Eşleşen hüner (feat) bulunamadı.</div>';
+      return;
+    }
+
+    let html = '';
+    items.forEach(item => {
+      const idx = masterDb.indexOf(item);
+      html += `
+        <div class="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl p-4 space-y-2.5 transition shadow">
+          <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-sm font-extrabold text-white">${item.name}</span>
+                <span class="badge bg-amber-950 text-amber-300 border border-amber-800">${item.type}</span>
+              </div>
+              <div class="text-[10px] text-slate-400 mt-0.5">📚 ${item.source || 'PHB'} • Tür: <b>${item.bonusType || 'Untyped'}</b></div>
+            </div>
+            <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Düzenle">✏️</button>
+          </div>
+
+          ${item.prereq && item.prereq !== '-' ? `
+            <div class="bg-slate-950/60 border border-slate-800 px-2.5 py-1.5 rounded text-[10px] text-amber-300">
+              <span class="font-bold text-slate-400 uppercase">Önkoşullar:</span> ${item.prereq}
+            </div>
+          ` : ''}
+
+          <p class="text-[11px] text-slate-300 leading-relaxed bg-slate-950/40 p-2.5 rounded border border-slate-800/80">${item.benefit || item.description || '-'}</p>
+
+          <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+            <span class="text-[10px] text-slate-500">Kapsam: ${item.scope || 'General'}</span>
+            <button onclick="RuleMaster.equipToCharacter(${idx})" class="bg-amber-950 hover:bg-amber-900 border border-amber-700 text-amber-200 text-xs font-bold px-3 py-1 rounded transition">✨ Hüneri Karaktere Ekle</button>
+          </div>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  },
+
+  // ====================================================
+  // 5. MAGIC ITEMS & CONSUMABLES VIEW
+  // ====================================================
+  renderMagicItems() {
+    const container = document.getElementById('magic-items-grid');
+    if (!container) return;
+    const slotFilter = document.getElementById('mi-slot-filter')?.value || 'ALL';
+    const query = (document.getElementById('mi-search-input')?.value || '').toLowerCase();
+
+    const items = masterDb.filter(i => {
+      const isItem = i.type === 'Wondrous Item' || i.type === 'Ring' || i.type === 'Potion' || i.type === 'Slotless Item' || i.type === 'Active Power';
+      if (!isItem) return false;
+      if (slotFilter !== 'ALL' && i.slot !== slotFilter) return false;
+      if (query && !i.name.toLowerCase().includes(query) && !(i.benefit || '').toLowerCase().includes(query)) return false;
+      return true;
+    });
+
+    const countBadge = document.getElementById('mi-count-badge');
+    if (countBadge) countBadge.textContent = `${items.length} Büyülü Eşya / İksir`;
+
+    if (!items.length) {
+      container.innerHTML = '<div class="col-span-full p-8 text-center text-slate-500 bg-slate-950/40 rounded-xl border border-slate-800">Eşleşen büyülü eşya bulunamadı.</div>';
+      return;
+    }
+
+    let html = '';
+    items.forEach(item => {
+      const idx = masterDb.indexOf(item);
+      const isPotion = item.type === 'Potion';
+
+      html += `
+        <div class="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl p-4 space-y-2.5 transition shadow">
+          <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-sm font-extrabold text-white">${item.name}</span>
+                <span class="badge ${isPotion ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-teal-950 text-teal-300 border border-teal-800'}">${item.type}</span>
+                <span class="badge bg-slate-800 text-slate-300 text-[10px]">${item.slot || 'Slotless'}</span>
+              </div>
+              <div class="text-[10px] text-slate-400 mt-0.5">📚 ${item.source || 'MIC'} • Bonus: <b>${item.bonusType || 'Untyped'}</b></div>
+            </div>
+            <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Düzenle">✏️</button>
+          </div>
+
+          <p class="text-[11px] text-slate-300 leading-relaxed bg-slate-950/40 p-2.5 rounded border border-slate-800/80">${item.benefit || item.description || '-'}</p>
+
+          <div class="flex items-center justify-between pt-2 border-t border-slate-800 text-[11px]">
+            <span class="text-amber-400 font-bold">${item.cost || 0} gp • ${item.weight || 0} lbs</span>
+            <button onclick="RuleMaster.equipToCharacter(${idx})" class="bg-teal-950 hover:bg-teal-900 border border-teal-700 text-teal-200 text-xs font-bold px-3 py-1 rounded transition">
+              ${isPotion ? '🧪 Çantaya İksir Olarak Ekle' : '🎒 Envantere Kuşan / Ekle'}
+            </button>
+          </div>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  },
+
+  // ====================================================
+  // 6. PARENT-CHILD HIERARCHY TREE VIEW
+  // ====================================================
+  renderHierarchyTree() {
+    const container = document.getElementById('hierarchy-tree-container');
+    if (!container) return;
+
+    const parentMap = new Map();
+    const childrenList = [];
+
+    masterDb.forEach(item => {
+      const isChild = (item.parent && item.parent !== '-' && item.parent !== '') || item.name.startsWith('↳');
+      if (isChild) {
+        childrenList.push(item);
+      } else {
+        parentMap.set(item.name, { parent: item, children: [] });
+      }
+    });
+
+    childrenList.forEach(child => {
+      let pName = child.parent;
+      if (!pName || pName === '-') {
+        const clean = child.name.replace('↳', '').trim();
+        const split = clean.split(':');
+        pName = split[0].trim();
+      }
+      if (parentMap.has(pName)) {
+        parentMap.get(pName).children.push(child);
+      } else {
+        parentMap.set(pName, { parent: { name: pName, type: 'Composite Item', source: child.source, benefit: 'Birden fazla alt güce sahip ana eşya' }, children: [child] });
+      }
+    });
+
+    let treeHtml = '';
+    let countComposite = 0;
+
+    parentMap.forEach(({ parent, children }) => {
+      if (children.length > 0) {
+        countComposite++;
+        const pIdx = masterDb.indexOf(parent);
+        treeHtml += `
+          <div class="bg-slate-900 border border-purple-500/40 rounded-xl p-4 space-y-3 shadow-lg">
+            <div class="flex items-center justify-between border-b border-purple-500/30 pb-2">
+              <div class="flex items-center gap-2">
+                <span class="text-xl">👑</span>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm font-extrabold text-white">${parent.name}</span>
+                    <span class="badge ${this.getTypeBadgeClass(parent.type)}">${parent.type}</span>
+                    <span class="badge bg-purple-950 text-purple-300 border border-purple-800 text-[10px] font-bold">${children.length} Alt Güç</span>
+                  </div>
+                  <div class="text-[10px] text-slate-400">📚 ${parent.source || 'Core 3.5e'} • Yuva: <b>${parent.slot || 'None'}</b></div>
+                </div>
+              </div>
+              <div class="flex gap-1.5">
+                <button onclick="RuleMaster.addChildPower(${pIdx >= 0 ? pIdx : 0})" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-2.5 py-1 rounded shadow transition flex items-center gap-1">
+                  <span>➕</span>
+                  <span>Alt Güç Bağla</span>
+                </button>
+                ${pIdx >= 0 ? `<button onclick="RuleMaster.openModalWithData(masterDb[${pIdx}], ${pIdx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition">✏️</button>` : ''}
+              </div>
+            </div>
+
+            <div class="space-y-2 pl-4 border-l-2 border-purple-500/50">
+              ${children.map(child => {
+                const cIdx = masterDb.indexOf(child);
+                return `
+                  <div class="bg-slate-950/60 border border-slate-800 rounded-lg p-3 space-y-1.5 hover:border-purple-500/40 transition">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-1.5">
+                        <span class="text-purple-400 font-bold">↳</span>
+                        <span class="text-xs font-bold text-purple-200">${child.name}</span>
+                        <span class="badge bg-slate-800 text-slate-400 text-[10px]">${child.action || 'Passive'}</span>
+                        <span class="badge bg-purple-950 text-purple-300 border border-purple-800 text-[10px]">${child.bonusType || 'Untyped'}</span>
+                      </div>
+                      ${cIdx >= 0 ? `<button onclick="RuleMaster.openModalWithData(masterDb[${cIdx}], ${cIdx})" class="text-[11px] text-sky-400 hover:underline">Düzenle ✏️</button>` : ''}
+                    </div>
+                    <div class="text-[11px] text-slate-300">${child.benefit || child.description || '-'}</div>
+                    ${child.extraDmg || child.dice ? `<div class="text-[10px] font-mono text-emerald-400">🎲 Ek Zar/Hasar: ${child.extraDmg || child.dice}</div>` : ''}
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }
+    });
+
+    const badge = document.getElementById('tree-count-badge');
+    if (badge) badge.textContent = `${countComposite} Çoklu Güçlü Eşya`;
+
+    if (!treeHtml) {
+      container.innerHTML = `
+        <div class="p-8 text-center text-slate-500 bg-slate-950/40 rounded-xl border border-slate-800 space-y-2">
+          <div class="text-base font-bold text-slate-400">Henüz çoklu alt güce bağlı eşya bulunmuyor.</div>
+          <div class="text-xs">Tablodaki herhangi bir eşyanın yanındaki <b>🔗 Alt Yetenek Ekle</b> butonuna tıklayarak ilk kompozit eşyanızı oluşturabilirsiniz.</div>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = treeHtml;
+  },
+
+  // ====================================================
+  // 9. BACKUP, EXPORT & CLOUD SYNC VIEW
+  // ====================================================
+  renderBackupTools() {
+    const statsContainer = document.getElementById('backup-stats-container');
+    if (statsContainer) {
+      const weaponsCount = masterDb.filter(i => i.type === 'Weapon').length;
+      const armorsCount = masterDb.filter(i => i.type === 'Armor' || i.type === 'Shield').length;
+      const spellsCount = masterDb.filter(i => i.type === 'Spell').length;
+      const maneuversCount = masterDb.filter(i => i.type === 'Maneuver' || i.type === 'Stance').length;
+      const featsCount = masterDb.filter(i => i.type === 'Feat').length;
+      const itemsCount = masterDb.filter(i => i.type === 'Wondrous Item' || i.type === 'Ring' || i.type === 'Potion').length;
+
+      statsContainer.innerHTML = `
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 text-center">
+            <div class="text-[10px] text-slate-400 font-bold uppercase">Toplam Kayıt</div>
+            <div class="text-lg font-black text-purple-400">${masterDb.length}</div>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 text-center">
+            <div class="text-[10px] text-slate-400 font-bold uppercase">Silah & Zırh</div>
+            <div class="text-lg font-black text-rose-400">${weaponsCount + armorsCount}</div>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 text-center">
+            <div class="text-[10px] text-slate-400 font-bold uppercase">Büyü & Manevra</div>
+            <div class="text-lg font-black text-indigo-400">${spellsCount + maneuversCount}</div>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 text-center">
+            <div class="text-[10px] text-slate-400 font-bold uppercase">Hüner & Eşya</div>
+            <div class="text-lg font-black text-amber-400">${featsCount + itemsCount}</div>
+          </div>
+        </div>
+      `;
+    }
+  },
+
+  async resetMasterDbToDefault() {
+    if (confirm('⚠️ Master DB veritabanını Core 3.5e varsayılan başlangıç kütüphanesine sıfırlamak istediğinize emin misiniz?')) {
+      try {
+        const resp = await fetch('master_db.json');
+        if (resp.ok) {
+          masterDb = await resp.json();
+          if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+          this.renderTable();
+          alert(`✅ Master DB başarıyla varsayılana sıfırlandı (${masterDb.length} kayıt)!`);
+        } else {
+          alert('❌ master_db.json dosyası yüklenemedi.');
+        }
+      } catch (e) {
+        alert('❌ Sıfırlama hatası: ' + e.message);
+      }
+    }
   },
 
   // Render Knowledge Bases and Splatbooks

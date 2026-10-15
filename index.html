@@ -586,16 +586,34 @@
               <p class="text-[11px] text-slate-400">D&D 3.5e Kural Kütüphanesi, 29 Sütunlu DB Editörü ve Kademeli Kaynaklar</p>
             </div>
           </div>
-          <!-- Sub-Tab Buttons -->
-          <div class="flex items-center gap-1.5 bg-slate-900 p-1 rounded-lg border border-slate-800">
-            <button onclick="RuleMaster.switchSubTab('subtab-mdb-list')" id="btn-subtab-mdb-list" class="mdb-subtab-btn px-3 py-1.5 rounded-md text-xs font-bold bg-purple-700 text-white shadow transition">
-              📑 Master DB Kütüphanesi
+          <!-- Sub-Tab Buttons (All 9 Master DB Views) -->
+          <div class="flex items-center gap-1 bg-slate-900 p-1 rounded-lg border border-slate-800 flex-wrap">
+            <button onclick="RuleMaster.switchSubTab('subtab-mdb-list')" id="btn-subtab-mdb-list" class="mdb-subtab-btn px-2.5 py-1.5 rounded-md text-xs font-bold bg-purple-700 text-white shadow transition">
+              📑 Tüm Kütüphane
             </button>
-            <button onclick="RuleMaster.switchSubTab('subtab-mdb-importer')" id="btn-subtab-mdb-importer" class="mdb-subtab-btn px-3 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-white transition">
-              🤖 AI Kural Ekleyici (Gemini)
+            <button onclick="RuleMaster.switchSubTab('subtab-mdb-weapons')" id="btn-subtab-mdb-weapons" class="mdb-subtab-btn px-2.5 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-white transition">
+              ⚔️ Silah & Zırh
             </button>
-            <button onclick="RuleMaster.switchSubTab('subtab-mdb-sources')" id="btn-subtab-mdb-sources" class="mdb-subtab-btn px-3 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-white transition">
-              📖 Kural Kaynakları (Rule Library)
+            <button onclick="RuleMaster.switchSubTab('subtab-mdb-magic')" id="btn-subtab-mdb-magic" class="mdb-subtab-btn px-2.5 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-white transition">
+              🔮 Büyü & Manevra
+            </button>
+            <button onclick="RuleMaster.switchSubTab('subtab-mdb-feats')" id="btn-subtab-mdb-feats" class="mdb-subtab-btn px-2.5 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-white transition">
+              🎖️ Featler
+            </button>
+            <button onclick="RuleMaster.switchSubTab('subtab-mdb-items')" id="btn-subtab-mdb-items" class="mdb-subtab-btn px-2.5 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-white transition">
+              💍 Eşya & İksir
+            </button>
+            <button onclick="RuleMaster.switchSubTab('subtab-mdb-tree')" id="btn-subtab-mdb-tree" class="mdb-subtab-btn px-2.5 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-white transition">
+              🔗 Alt Güç Ağacı
+            </button>
+            <button onclick="RuleMaster.switchSubTab('subtab-mdb-importer')" id="btn-subtab-mdb-importer" class="mdb-subtab-btn px-2.5 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-white transition">
+              🤖 AI Kural Ekleyici
+            </button>
+            <button onclick="RuleMaster.switchSubTab('subtab-mdb-sources')" id="btn-subtab-mdb-sources" class="mdb-subtab-btn px-2.5 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-white transition">
+              📖 Kural Kaynakları
+            </button>
+            <button onclick="RuleMaster.switchSubTab('subtab-mdb-backup')" id="btn-subtab-mdb-backup" class="mdb-subtab-btn px-2.5 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-white transition">
+              💾 Yedek & Eşitleme
             </button>
           </div>
         </div>
@@ -699,10 +717,158 @@
         </div>
 
         <!-- ========================================== -->
-        <!-- SUB-TAB 2: QUICK / AI RULE IMPORTER -->
+        <!-- SUB-TAB: SILAHLAR, ZIRHLAR & KALKANLAR -->
         <!-- ========================================== -->
+        <div id="subtab-mdb-weapons" class="mdb-subtab-content hidden space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">⚔️</span>
+              <h3 class="text-xs md:text-sm font-bold text-white">Silahlar, Zırhlar ve Kalkanlar</h3>
+              <span id="wa-count-badge" class="badge bg-slate-800 text-slate-300 font-mono text-[10px]">0 Ekipman</span>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <select id="wa-subfilter" onchange="RuleMaster.renderWeaponsArmors()" class="bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white focus:outline-none">
+                <option value="ALL">Tümü (Silah + Zırh + Kalkan)</option>
+                <option value="Weapon">Sadece Silahlar</option>
+                <option value="Armor">Sadece Zırhlar</option>
+                <option value="Shield">Sadece Kalkanlar</option>
+              </select>
+              <input type="text" id="wa-search-input" onkeyup="RuleMaster.renderWeaponsArmors()" placeholder="Silah veya zırh ara..." class="bg-slate-950 border border-slate-700 rounded px-3 py-1 text-xs text-white focus:outline-none focus:border-purple-500">
+              <button onclick="RuleMaster.openModalWithData(RuleMaster.createEmptyEntry('Weapon'), -1)" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 py-1 rounded transition flex items-center gap-1">
+                <span>➕</span>
+                <span>Yeni Ekle</span>
+              </button>
+            </div>
+          </div>
+          <div id="weapons-armors-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <!-- Dynamically populated by RuleMaster.renderWeaponsArmors() -->
+          </div>
+        </div>
+
         <!-- ========================================== -->
-        <!-- SUB-TAB 2: AI KURAL EKLEYİCİ (GEMINI RAW 3.5e) -->
+        <!-- SUB-TAB: BÜYÜLER & MANEVRALAR (TOME OF BATTLE) -->
+        <!-- ========================================== -->
+        <div id="subtab-mdb-magic" class="mdb-subtab-content hidden space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">🔮</span>
+              <h3 class="text-xs md:text-sm font-bold text-white">Büyüler, Manevralar & Duruşlar</h3>
+              <span id="sm-count-badge" class="badge bg-slate-800 text-slate-300 font-mono text-[10px]">0 Büyü/Manevra</span>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <select id="sm-type-filter" onchange="RuleMaster.renderSpellsManeuvers()" class="bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white focus:outline-none">
+                <option value="ALL">Tümü (Büyü + Manevra + Duruş)</option>
+                <option value="Spell">Sadece Büyüler (Spells)</option>
+                <option value="Maneuver">Sadece Manevralar (Maneuvers)</option>
+                <option value="Stance">Sadece Duruşlar (Stances)</option>
+              </select>
+              <select id="sm-level-filter" onchange="RuleMaster.renderSpellsManeuvers()" class="bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white focus:outline-none">
+                <option value="ALL">Tüm Seviyeler</option>
+                <option value="0">0. Seviye (Cantrip)</option>
+                <option value="1">1. Seviye</option>
+                <option value="2">2. Seviye</option>
+                <option value="3">3. Seviye</option>
+                <option value="4">4. Seviye</option>
+                <option value="5">5. Seviye</option>
+                <option value="6">6. Seviye</option>
+                <option value="7">7. Seviye</option>
+                <option value="8">8. Seviye</option>
+                <option value="9">9. Seviye</option>
+              </select>
+              <input type="text" id="sm-search-input" onkeyup="RuleMaster.renderSpellsManeuvers()" placeholder="Büyü veya manevra ara..." class="bg-slate-950 border border-slate-700 rounded px-3 py-1 text-xs text-white focus:outline-none focus:border-purple-500">
+              <button onclick="RuleMaster.openModalWithData(RuleMaster.createEmptyEntry('Spell'), -1)" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 py-1 rounded transition flex items-center gap-1">
+                <span>➕</span>
+                <span>Yeni Ekle</span>
+              </button>
+            </div>
+          </div>
+          <div id="spells-maneuvers-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <!-- Dynamically populated by RuleMaster.renderSpellsManeuvers() -->
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SUB-TAB: HÜNERLER & ÖZEL YETENEKLER -->
+        <!-- ========================================== -->
+        <div id="subtab-mdb-feats" class="mdb-subtab-content hidden space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">🎖️</span>
+              <h3 class="text-xs md:text-sm font-bold text-white">Hünerler (Feats) & Özel Yetenekler</h3>
+              <span id="feats-count-badge" class="badge bg-slate-800 text-slate-300 font-mono text-[10px]">0 Hüner</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="text" id="feats-search-input" onkeyup="RuleMaster.renderFeats()" placeholder="Hüner adı, önkoşul veya etki ara..." class="bg-slate-950 border border-slate-700 rounded px-3 py-1 text-xs text-white focus:outline-none focus:border-purple-500">
+              <button onclick="RuleMaster.openModalWithData(RuleMaster.createEmptyEntry('Feat'), -1)" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 py-1 rounded transition flex items-center gap-1">
+                <span>➕</span>
+                <span>Yeni Feat Ekle</span>
+              </button>
+            </div>
+          </div>
+          <div id="feats-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <!-- Dynamically populated by RuleMaster.renderFeats() -->
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SUB-TAB: BÜYÜLÜ EŞYALAR & İKSİRLER -->
+        <!-- ========================================== -->
+        <div id="subtab-mdb-items" class="mdb-subtab-content hidden space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">💍</span>
+              <h3 class="text-xs md:text-sm font-bold text-white">Büyülü Eşyalar & İksirler</h3>
+              <span id="mi-count-badge" class="badge bg-slate-800 text-slate-300 font-mono text-[10px]">0 Eşya</span>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <select id="mi-slot-filter" onchange="RuleMaster.renderMagicItems()" class="bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white focus:outline-none">
+                <option value="ALL">Tüm Vücut Yuvaları</option>
+                <option value="Head">Baş (Head)</option>
+                <option value="Eyes">Göz (Eyes)</option>
+                <option value="Neck">Boyun (Neck)</option>
+                <option value="Torso">Gövde (Torso)</option>
+                <option value="Body">Beden/Cübbe (Body)</option>
+                <option value="Waist">Bel (Waist)</option>
+                <option value="Shoulders">Omuz (Shoulders)</option>
+                <option value="Arms">Kol (Arms)</option>
+                <option value="Hands">El (Hands)</option>
+                <option value="Ring">Yüzük (Ring)</option>
+                <option value="Feet">Ayak (Feet)</option>
+                <option value="Slotless">Yuvasız (Slotless)</option>
+              </select>
+              <input type="text" id="mi-search-input" onkeyup="RuleMaster.renderMagicItems()" placeholder="Eşya veya iksir ara..." class="bg-slate-950 border border-slate-700 rounded px-3 py-1 text-xs text-white focus:outline-none focus:border-purple-500">
+              <button onclick="RuleMaster.openModalWithData(RuleMaster.createEmptyEntry('Wondrous Item'), -1)" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 py-1 rounded transition flex items-center gap-1">
+                <span>➕</span>
+                <span>Yeni Eşya</span>
+              </button>
+            </div>
+          </div>
+          <div id="magic-items-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <!-- Dynamically populated by RuleMaster.renderMagicItems() -->
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SUB-TAB: ALT GÜÇLER & EŞYA HİYERARŞİSİ (PARENT-CHILD TREE) -->
+        <!-- ========================================== -->
+        <div id="subtab-mdb-tree" class="mdb-subtab-content hidden space-y-3">
+          <div class="flex items-center justify-between bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">🔗</span>
+              <div>
+                <h3 class="text-xs md:text-sm font-bold text-white">Çoklu Güçlü Kompozit Eşyalar (Parent-Child Ağacı)</h3>
+                <p class="text-[11px] text-slate-400">D&D 3.5e'de birden fazla etkiye sahip eşyaların (Örn: Flametongue, Belt of Battle) hiyerarşik bağı</p>
+              </div>
+            </div>
+            <span id="tree-count-badge" class="badge bg-purple-950 text-purple-300 border border-purple-800 font-mono text-[10px]">0 Kompozit Eşya</span>
+          </div>
+          <div id="hierarchy-tree-container" class="space-y-3">
+            <!-- Dynamically populated by RuleMaster.renderHierarchyTree() -->
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SUB-TAB 7: AI KURAL EKLEYİCİ (GEMINI RAW 3.5e) -->
         <!-- ========================================== -->
         <div id="subtab-mdb-importer" class="mdb-subtab-content hidden space-y-4">
 
@@ -803,6 +969,28 @@
               <button onclick="RuleMaster.setQueryAndSearch('Shadow Blade', 'Feat')" class="text-[10px] bg-slate-800 hover:bg-indigo-900/60 text-indigo-300 px-2 py-0.5 rounded border border-slate-700 transition">Shadow Blade (Feat)</button>
               <button onclick="RuleMaster.setQueryAndSearch('Haste', 'Spell')" class="text-[10px] bg-slate-800 hover:bg-blue-900/60 text-blue-300 px-2 py-0.5 rounded border border-slate-700 transition">Haste (Büyü)</button>
             </div>
+
+            <!-- Batch Importer Section -->
+            <div class="mt-3 pt-3 border-t border-slate-800 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-amber-300 flex items-center gap-1">
+                  <span>🚀</span>
+                  <span>Toplu AI Kural Ekleyici (Batch Import)</span>
+                </span>
+                <span class="text-[10px] text-slate-400">Birden fazla kuralı alt alta yazıp tek seferde çekin</span>
+              </div>
+              <textarea id="ai-batch-query" rows="3" placeholder="Her satıra bir kural adı yazın. Örnek:&#10;Shock Trooper&#10;Leap Attack&#10;Lion's Charge&#10;Boots of Speed" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-white font-mono focus:outline-none focus:border-purple-500"></textarea>
+              <div class="flex items-center justify-between">
+                <div id="ai-batch-status" class="hidden text-xs text-purple-300 flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-purple-400 animate-ping"></span>
+                  <span id="ai-batch-status-text">Toplu içe aktarma sürüyor...</span>
+                </div>
+                <button id="btn-ai-batch-search" onclick="RuleMaster.queryAiBatch()" class="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-xs px-4 py-2 rounded-lg shadow transition flex items-center gap-1.5 ml-auto">
+                  <span>🚀</span>
+                  <span>Listeyi Toplu Getir & DB'ye Ekle</span>
+                </button>
+              </div>
+            </div>
           </div>
 
           <!-- 3. LOADING SPINNER -->
@@ -859,6 +1047,38 @@
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-2.5" id="splatbooks-grid-container">
               <!-- Dynamically populated by RuleMaster.renderSourcesCatalog() -->
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SUB-TAB 9: YEDEKLEME, DIŞA/İÇE AKTAR & SIFIRLA -->
+        <!-- ========================================== -->
+        <div id="subtab-mdb-backup" class="mdb-subtab-content hidden space-y-4">
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
+            <h3 class="text-xs md:text-sm font-bold text-white flex items-center gap-1.5">
+              <span>💾</span>
+              <span>Master DB Veritabanı Yönetimi & İstatistikler</span>
+            </h3>
+            <div id="backup-stats-container">
+              <!-- Dynamically populated by RuleMaster.renderBackupTools() -->
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-3 border-t border-slate-800">
+              <button onclick="exportMasterDbJson()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs p-3 rounded-xl border border-slate-700 transition flex flex-col items-center justify-center gap-1">
+                <span class="text-xl">💾</span>
+                <span>JSON Olarak İndir (Yedek Al)</span>
+                <span class="text-[10px] text-slate-400">dnd35_master_db.json</span>
+              </button>
+              <button onclick="document.getElementById('json-file-input').click()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs p-3 rounded-xl border border-slate-700 transition flex flex-col items-center justify-center gap-1">
+                <span class="text-xl">📂</span>
+                <span>JSON Dosyası Yükle (Geri Yükle)</span>
+                <span class="text-[10px] text-slate-400">Kendi veritabanınızı içe aktarın</span>
+              </button>
+              <button onclick="RuleMaster.resetMasterDbToDefault()" class="bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300 font-bold text-xs p-3 rounded-xl transition flex flex-col items-center justify-center gap-1">
+                <span class="text-xl">🔄</span>
+                <span>Core 3.5e Varsayılanına Sıfırla</span>
+                <span class="text-[10px] text-rose-400">Standart kütüphaneyi yeniden yükler</span>
+              </button>
             </div>
           </div>
         </div>
