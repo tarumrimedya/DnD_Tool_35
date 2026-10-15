@@ -2930,7 +2930,7 @@
     function renderKnownSpells() {
       const tbody = document.getElementById('known-spells-tbody');
       tbody.innerHTML = '';
-      (character.spellcasting?.knownSpells || []).forEach(s => {
+      (character.spellcasting?.knownSpells || []).forEach((s, idx) => {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-900/60 transition';
         tr.innerHTML = `
@@ -2941,7 +2941,7 @@
           <td class="py-2 px-3 text-slate-400">${s.range}</td>
           <td class="py-2 px-3 text-slate-300 text-[11px]">${s.benefit}</td>
           <td class="py-2 px-3 text-center">
-            <button onclick="castSpellDirectly('${s.name}', ${s.level})" class="bg-purple-900/60 hover:bg-purple-600 text-purple-200 text-xs font-semibold px-2 py-0.5 rounded border border-purple-700 transition">
+            <button onclick="castSpellDirectly(${idx})" class="bg-purple-900/60 hover:bg-purple-600 text-purple-200 text-xs font-semibold px-2 py-0.5 rounded border border-purple-700 transition">
               At
             </button>
           </td>
@@ -2950,8 +2950,13 @@
       });
     }
 
-    function castSpellDirectly(name, lvl) {
-      const slot = character.spellcasting?.slots?.find(s => s.level === lvl);
+    function castSpellDirectly(spellIdx) {
+      const s = character.spellcasting?.knownSpells?.[spellIdx];
+      if (!s) return;
+      const name = s.name;
+      const lvl = Number(s.level) || 0;
+
+      const slot = character.spellcasting?.slots?.find(sl => sl.level === lvl);
       if (slot && slot.used < slot.daily) {
         slot.used++;
 
@@ -4662,7 +4667,7 @@
             </div>
             <div class="text-[10px] text-amber-400">${item.effect} • Adet: <strong class="text-white">${item.qty}</strong></div>
           </div>
-          <button onclick="consumeItem3D('${item.name}', ${item.fromPool}, ${item.fromPool ? item.poolId : item.idx})" ${item.qty <= 0 ? 'disabled' : ''} class="bg-amber-600/30 hover:bg-amber-600 disabled:opacity-30 text-amber-300 hover:text-white border border-amber-500/40 text-xs font-bold px-3 py-1.5 rounded transition">
+          <button onclick="consumeItem3D(${item.fromPool}, ${item.fromPool ? item.poolId : item.idx})" ${item.qty <= 0 ? 'disabled' : ''} class="bg-amber-600/30 hover:bg-amber-600 disabled:opacity-30 text-amber-300 hover:text-white border border-amber-500/40 text-xs font-bold px-3 py-1.5 rounded transition">
             🧪 1 Tane İç
           </button>
         `;
@@ -4670,7 +4675,7 @@
       });
     }
 
-    function consumeItem3D(name, fromPool, idOrIdx) {
+    function consumeItem3D(fromPool, idOrIdx) {
       let item = null;
       if (fromPool) {
         item = (character.gearPool || []).find(p => p.id === idOrIdx);
@@ -4678,35 +4683,56 @@
         item = character.consumables?.[idOrIdx];
       }
 
-      if (!item || item.qty <= 0) return;
+      if (!item || (Number(item.qty) || 0) <= 0) {
+        alert('⚠️ Bu eşyadan elinizde kalmadı!');
+        return;
+      }
 
-      item.qty--;
+      const name = item.name || 'İksir';
+      item.qty = Math.max(0, (Number(item.qty) || 1) - 1);
 
-      if (name.includes('Cure') || name.includes('Heal')) {
-        // Roll 3d8 in 3D!
-        const r1 = Math.floor(Math.random() * 8) + 1;
-        const r2 = Math.floor(Math.random() * 8) + 1;
-        const r3 = Math.floor(Math.random() * 8) + 1;
-        const heal = r1 + r2 + r3 + 5;
+      if (/cure|heal|iyileş/i.test(name)) {
+        let diceCount = 1;
+        let flatBonus = 1;
+        if (/serious/i.test(name)) { diceCount = 3; flatBonus = 5; }
+        else if (/moderate/i.test(name)) { diceCount = 2; flatBonus = 3; }
+        else if (/critical/i.test(name)) { diceCount = 4; flatBonus = 7; }
 
-        Dice3D.roll([
-          { type: 'd8', value: r1 },
-          { type: 'd8', value: r2 },
-          { type: 'd8', value: r3 }
-        ], () => {
-          character.hp.current = Math.min(character.hp.max, character.hp.current + heal);
-          renderHUD();
-          renderInventory();
-          renderConsumables();
-          saveStateToStorage();
-          alert(`💖 ${name} içildi! 3d8 [${r1}+${r2}+${r3}] + 5 = +${heal} HP kazanıldı.`);
-        });
+        const rolls = [];
+        let sum = 0;
+        for (let i = 0; i < diceCount; i++) {
+          const val = Math.floor(Math.random() * 8) + 1;
+          rolls.push({ type: 'd8', value: val });
+          sum += val;
+        }
+        const healTotal = sum + flatBonus;
+
+        const applyHealing = () => {
+          const prevHp = character.hp.current;
+          character.hp.current = Math.min(character.hp.max, character.hp.current + healTotal);
+          saveStateToStorage(true);
+          renderAll();
+          alert(`💖 "${name}" içildi!\n\n${diceCount}d8 [${rolls.map(r => r.value).join(' + ')}] + ${flatBonus} = +${healTotal} HP!\n(Canınız: ${prevHp} -> ${character.hp.current} / ${character.hp.max})`);
+        };
+
+        if (window.Dice3D && typeof Dice3D.roll === 'function') {
+          try {
+            Dice3D.roll(rolls, applyHealing);
+          } catch (err) {
+            applyHealing();
+          }
+        } else {
+          applyHealing();
+        }
       } else {
         // Check if consumable activates a buff!
         const cleanName = (name || '').toLowerCase();
         let activatedBuff = null;
         if (Array.isArray(character.buffs)) {
-          const match = character.buffs.find(b => cleanName.includes(b.name.toLowerCase()) || b.name.toLowerCase().includes(cleanName.replace(/potion of /i, '').replace(/iksir/i, '').trim()));
+          const match = character.buffs.find(b => {
+            const bClean = (b.name || '').toLowerCase();
+            return cleanName.includes(bClean) || bClean.includes(cleanName.replace(/potion of /i, '').replace(/iksir[iı]?/i, '').replace(/'s/g, '').trim());
+          });
           if (match) {
             match.active = true;
             match.rounds = 30; // 30 rounds for potion
@@ -4716,9 +4742,9 @@
         saveStateToStorage(true);
         renderAll();
         if (activatedBuff) {
-          alert(`🧪 "${name}" içildi! "${activatedBuff}" buffı aktif edildi ve statlarınız güncellendi!`);
+          alert(`🧪 "${name}" içildi!\n\n"${activatedBuff}" buffı aktif edildi (+4 Stat, 30 tur) ve karakterinizin tüm savunma ve saldırı değerleri anında güncellendi!`);
         } else {
-          alert(`🧪 ${name} içildi / tüketildi.`);
+          alert(`🧪 "${name}" içildi / tüketildi (Kalan: ${item.qty}).`);
         }
       }
     }
