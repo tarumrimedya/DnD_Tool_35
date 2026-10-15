@@ -2098,16 +2098,12 @@ Return valid JSON only matching this schema:
     if (menu) menu.classList.add('hidden');
   },
 
-  openInlineAiAdder() {
+  openInlineAiAdder(mode = 'search') {
     this.closeAddMenu();
     const panel = document.getElementById('inline-ai-adder-panel');
     if (panel) {
       panel.classList.remove('hidden');
-      const input = document.getElementById('inline-ai-rule-query');
-      if (input) {
-        input.focus();
-        input.select();
-      }
+      this.switchInlineMode(mode);
     }
   },
 
@@ -2287,6 +2283,265 @@ Return valid JSON only matching this schema:
     if (!this._inlineEntries || !this._inlineEntries[idx]) return;
     const item = this._inlineEntries[idx];
     this.equipEntry(item);
+  },
+
+  // ====================================================
+  // SERBEST METİN (FREE-TEXT) AI AYRIŞTIRICI ENGINE
+  // ====================================================
+  switchInlineMode(mode) {
+    const searchPanel = document.getElementById('inline-mode-search');
+    const freetextPanel = document.getElementById('inline-mode-freetext');
+    const btnSearch = document.getElementById('btn-inline-mode-search');
+    const btnFreetext = document.getElementById('btn-inline-mode-freetext');
+    const headerTitle = document.getElementById('inline-panel-header-title');
+
+    if (mode === 'freetext') {
+      if (searchPanel) searchPanel.classList.add('hidden');
+      if (freetextPanel) freetextPanel.classList.remove('hidden');
+      if (btnSearch) {
+        btnSearch.className = 'px-2.5 py-1 rounded font-bold transition text-slate-400 hover:text-white';
+      }
+      if (btnFreetext) {
+        btnFreetext.className = 'px-2.5 py-1 rounded font-bold transition bg-purple-600 text-white shadow';
+      }
+      if (headerTitle) headerTitle.textContent = 'Serbest Metin AI Kural Ayrıştırıcı';
+      const ta = document.getElementById('inline-ai-freetext-input');
+      if (ta) ta.focus();
+    } else {
+      if (searchPanel) searchPanel.classList.remove('hidden');
+      if (freetextPanel) freetextPanel.classList.add('hidden');
+      if (btnSearch) {
+        btnSearch.className = 'px-2.5 py-1 rounded font-bold transition bg-purple-600 text-white shadow';
+      }
+      if (btnFreetext) {
+        btnFreetext.className = 'px-2.5 py-1 rounded font-bold transition text-slate-400 hover:text-white';
+      }
+      if (headerTitle) headerTitle.textContent = 'Hızlı AI Kural Ekleyici (WotC 3.5e)';
+      const q = document.getElementById('inline-ai-rule-query');
+      if (q) q.focus();
+    }
+  },
+
+  fillFreeTextSample(type) {
+    const ta = document.getElementById('inline-ai-freetext-input');
+    if (!ta) return;
+    ta.value = this.getSampleText(type);
+  },
+
+  fillFreeTextSampleFull(type) {
+    const ta = document.getElementById('raw-rule-input');
+    if (!ta) return;
+    ta.value = this.getSampleText(type);
+  },
+
+  getSampleText(type) {
+    if (type === 'feat') {
+      return `Cleave [General]\nPrerequisites: Str 13, Power Attack.\nBenefit: If you deal a creature enough damage to make it drop (typically by dropping it to below 0 hit points or killing it), you get an immediate, extra melee attack against another creature in the immediate vicinity.\nYou cannot take more than one 5-foot step between attacks when using this feat. You can use this ability once per round.`;
+    } else if (type === 'item') {
+      return `Flametongue\nPrice: 20,715 gp\nBody Slot: Main Hand\nCaster Level: 12th\nAura: Strong (DC 21) evocation\nWeight: 4 lb.\nThis +1 flaming burst longsword deals +1d6 points of fire damage on a normal hit. On a successful critical hit, it deals an additional +1d10 points of fire damage (or +2d10 if x3, +3d10 if x4). Once per day, the wielder can shoot a 4d6 ray of fire as a ranged touch attack (Close range).`;
+    } else if (type === 'spell') {
+      return `Haste\nTransmutation\nLevel: Sor/Wiz 3\nComponents: V, S, M\nCasting Time: 1 standard action\nRange: Close (25 ft. + 5 ft./2 levels)\nTargets: One creature/level, no two of which can be more than 30 ft. apart\nDuration: 1 round/level\nThe transmuted creatures move and act more quickly than normal. When making a full attack action, a hasted creature may make one extra attack with any weapon he is holding. The attack bonus is +1, with a +1 dodge bonus to AC and Reflex saves, and an enhancement bonus to speed of +30 feet.`;
+    }
+    return '';
+  },
+
+  parseRawTextFromInline() {
+    const ta = document.getElementById('inline-ai-freetext-input');
+    const val = ta?.value || '';
+    if (!val.trim()) {
+      alert('⚠️ Lütfen önce serbest metin kutusuna kural metni yapıştırın.');
+      return;
+    }
+    const fullTa = document.getElementById('raw-rule-input');
+    if (fullTa) fullTa.value = val;
+    this.parseRawText();
+  },
+
+  async queryAiFreeTextRows(rawText, apiKey, statusTextEl = null) {
+    const promptText = `You are a master D&D 3.5e Rule Arbiter and Database Architect.
+The user has provided a raw, free-form text block copied from a D&D 3.5e sourcebook, PDF, SRD, or adventure:
+
+RAW TEXT:
+"""
+${rawText}
+"""
+
+TASK:
+Analyze and parse this free-form text completely. Extract and map every mechanic strictly adhering to the Master_DB 29-column schema.
+CRITICAL RULES:
+1. STRICT REAL RAW 3.5E RULES ONLY:
+Do not hallucinate fake rules. Extract accurate numbers, bonuses, slots, actions, durations, and sources based on official WotC D&D 3.5e rules.
+2. PARENT-CHILD DECOMPOSITION:
+If the item or rule has multiple distinct powers (e.g. passive weapon stats + on-hit energy damage + 1/day command spell; or stat enhancement + saving throw resistance), produce:
+- 1 Parent row for the primary element (Col 3 = '-')
+- 1 or more Child rows starting with '↳ ' in Col 0, setting Col 3 to the exact parent name.
+
+MASTER_DB 29-COLUMN SCHEMA (Every row MUST contain exactly 29 elements):
+0: Entry Name (string, child begins with '↳ ')
+1: Category ('Feat', 'Weapon', 'Armor / Shield', 'Ring', 'Wondrous Item', 'Slotless Item', 'Spell', 'Special Ability', 'Potion', 'Maneuver', 'Stance')
+2: Slot ('Armor', 'Shield', 'Main Hand', 'Off Hand', 'Both Hands', 'Head', 'Eyes', 'Neck', 'Torso', 'Body', 'Waist', 'Shoulders', 'Arms', 'Hands', 'Ring', 'Feet', 'Slotless', 'None')
+3: Parent Entry (string; '-' if none, or exact parent name if child)
+4: Source (e.g. 'PHB p.92', 'MIC p.128', 'DMG p.224', 'CW p.112', 'ToB p.84')
+5: Description / Rules Mechanics (string, full prerequisite and mechanical benefit)
+6: Bonus Type ('Untyped', 'Enhancement', 'Deflection', 'Dodge', 'Resistance', 'Morale', 'Competence', 'Insight', 'Luck', 'Natural Armor', 'Shield', 'Armor', 'Alchemical', 'Inherent')
+7: Applies To / Scope ('All Attacks', 'Melee Only', 'Ranged Only', 'Thrown Only', 'Spells', 'None / General')
+8: Str (number or '')
+9: Dex (number or '')
+10: Con (number or '')
+11: Int (number or '')
+12: Wis (number or '')
+13: Cha (number or '')
+14: AC (number or '')
+15: HP (number or '')
+16: Att (number or '')
+17: Dmg (number or '')
+18: Fort (number or '')
+19: Ref (number or '')
+20: Will (number or '')
+21: Skill (number or '')
+22: Init (number or '')
+23: Speed (number or '')
+24: On-Hit Dmg / Dice Expression (string, e.g. '+1d6 Fire', '1d8', or '')
+25: Action ('Passive', 'Free Action', 'Swift Action', 'Immediate Action', 'Move Action', 'Standard Action', 'Full-Round Action')
+26: Duration / Uses (string, e.g. 'Continuous', '1 round/lvl', '10 rounds/day', '1/day', 'At Will')
+27: Weight (lbs) (number or 0)
+28: Cost (gp) (number or 0)
+
+OUTPUT REQUIREMENT:
+Return valid JSON only matching this schema:
+{ "rows": [ [col0, col1, ... col28], ... ] }`;
+
+    const modelsToTry = await this.getAvailableGeminiModels(apiKey);
+    let successData = null;
+    let lastError = null;
+
+    for (const model of modelsToTry) {
+      if (statusTextEl) {
+        statusTextEl.textContent = `Serbest metin analiz ediliyor (Model: ${model})...`;
+      }
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: promptText }] }],
+            generationConfig: {
+              response_mime_type: 'application/json',
+              temperature: 0.0
+            }
+          })
+        });
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error?.message || `HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) {
+          successData = JSON.parse(text);
+          break;
+        }
+      } catch (err) {
+        console.warn(`Model ${model} free-text parse failed:`, err.message);
+        lastError = err;
+      }
+    }
+
+    if (!successData) {
+      throw new Error(lastError?.message || 'Tüm Gemini modelleri yanıt vermedi.');
+    }
+
+    let rows = successData.rows || successData;
+    if (!Array.isArray(rows)) {
+      throw new Error('Model beklenen satır dizisini üretemedi.');
+    }
+
+    // Sanitize to 29 columns
+    rows = rows.map(r => {
+      while (r.length < 29) r.push('');
+      return r.slice(0, 29);
+    });
+
+    return rows;
+  },
+
+  async queryInlineAiFreeText() {
+    const ta = document.getElementById('inline-ai-freetext-input');
+    const text = ta?.value?.trim() || '';
+    if (!text) {
+      alert('⚠️ Lütfen analiz edilecek serbest kural metnini yapıştırın.');
+      ta?.focus();
+      return;
+    }
+
+    const apiKey = this.getApiKey();
+    if (!apiKey) {
+      alert('⚠️ Lütfen önce bir Google Gemini API Anahtarı girin (Google AI Studio ücretsiz anahtar).\nAI Kural Ekleyici sekmesinden anahtarınızı tanımlayabilirsiniz.');
+      this.switchSubTab('subtab-mdb-importer');
+      this.promptChangeApiKey();
+      return;
+    }
+
+    const btn = document.getElementById('btn-inline-freetext-ai');
+    const loadingBox = document.getElementById('inline-ai-loading-box');
+    const statusText = document.getElementById('inline-ai-status-text');
+    const resultsBox = document.getElementById('inline-ai-results-box');
+
+    if (btn) btn.disabled = true;
+    if (loadingBox) loadingBox.classList.remove('hidden');
+    if (resultsBox) resultsBox.innerHTML = '';
+
+    try {
+      const rows = await this.queryAiFreeTextRows(text, apiKey, statusText);
+      this.renderInlineAiResults(rows);
+    } catch (err) {
+      alert(`⚠️ Serbest metin ayrıştırılamadı: ${err.message}\nLütfen internet bağlantınızı ve API anahtarınızı kontrol edin.`);
+    } finally {
+      if (btn) btn.disabled = false;
+      if (loadingBox) loadingBox.classList.add('hidden');
+    }
+  },
+
+  async queryFullAiFreeText() {
+    const ta = document.getElementById('raw-rule-input');
+    const text = ta?.value?.trim() || '';
+    if (!text) {
+      alert('⚠️ Lütfen analiz edilecek serbest kural metnini yapıştırın.');
+      ta?.focus();
+      return;
+    }
+
+    const apiKey = this.getApiKey();
+    if (!apiKey) {
+      alert('⚠️ Lütfen önce bir Google Gemini API Anahtarı tanımlayın.');
+      this.promptChangeApiKey();
+      return;
+    }
+
+    const btn = document.getElementById('btn-full-freetext-ai');
+    const loadingIndicator = document.getElementById('ai-loading-indicator');
+    const statusText = document.getElementById('ai-loading-status-text');
+
+    if (btn) btn.disabled = true;
+    if (loadingIndicator) loadingIndicator.classList.remove('hidden');
+
+    try {
+      const rows = await this.queryAiFreeTextRows(text, apiKey, statusText);
+      this.processAiRows(rows);
+      // Scroll to results
+      const resultsContainer = document.getElementById('ai-results-container');
+      if (resultsContainer) {
+        resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    } catch (err) {
+      alert(`⚠️ Serbest metin ayrıştırılamadı: ${err.message}`);
+    } finally {
+      if (btn) btn.disabled = false;
+      if (loadingIndicator) loadingIndicator.classList.add('hidden');
+    }
   }
 };
 
@@ -2303,4 +2558,5 @@ if (typeof document !== 'undefined') {
 }
 
 window.RuleMaster = RuleMaster;
+
 
