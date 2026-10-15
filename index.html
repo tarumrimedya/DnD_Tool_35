@@ -2561,15 +2561,42 @@
       document.getElementById('char-init-display').textContent = (initMod >= 0 ? '+' : '') + initMod;
       document.getElementById('char-speed-display').textContent = (character.effectiveSpeed || character.baseSpeed || 30) + ' ft';
 
-      document.getElementById('hp-current-display').textContent = character.hp.current;
-      document.getElementById('hp-max-display').textContent = character.hp.max;
+      const curHp = Number(character.hp?.current) || 0;
+      const maxHp = Number(character.hp?.max) || 1;
+      document.getElementById('hp-current-display').textContent = curHp;
+      document.getElementById('hp-max-display').textContent = maxHp;
 
-      const pct = Math.max(0, Math.min(100, Math.round((character.hp.current / character.hp.max) * 100)));
+      const pct = Math.max(0, Math.min(100, Math.round((curHp / maxHp) * 100)));
       const bar = document.getElementById('hp-progress-bar');
-      bar.style.width = pct + '%';
-      if (pct > 50) bar.className = 'bg-emerald-500 h-full rounded-full transition-all';
-      else if (pct > 25) bar.className = 'bg-amber-500 h-full rounded-full transition-all';
-      else bar.className = 'bg-rose-500 h-full rounded-full transition-all';
+      if (bar) {
+        bar.style.width = pct + '%';
+        if (pct > 50) bar.className = 'bg-emerald-500 h-full rounded-full transition-all';
+        else if (pct > 25) bar.className = 'bg-amber-500 h-full rounded-full transition-all';
+        else bar.className = 'bg-rose-500 h-full rounded-full transition-all';
+      }
+
+      const condBadge = document.getElementById('hp-condition-badge');
+      if (condBadge) {
+        if (curHp >= maxHp) {
+          condBadge.textContent = 'Healthy';
+          condBadge.className = 'badge bg-emerald-900/60 text-emerald-300 border border-emerald-600';
+        } else if (curHp > maxHp / 2) {
+          condBadge.textContent = 'Scratched';
+          condBadge.className = 'badge bg-emerald-900/40 text-emerald-200 border border-emerald-700';
+        } else if (curHp > 0) {
+          condBadge.textContent = 'Bloodied';
+          condBadge.className = 'badge bg-amber-900/60 text-amber-300 border border-amber-600';
+        } else if (curHp === 0) {
+          condBadge.textContent = 'Disabled';
+          condBadge.className = 'badge bg-orange-950 text-orange-400 border border-orange-700';
+        } else if (curHp > -10) {
+          condBadge.textContent = 'Dying';
+          condBadge.className = 'badge bg-rose-950 text-rose-400 border border-rose-700 animate-pulse';
+        } else {
+          condBadge.textContent = 'Dead';
+          condBadge.className = 'badge bg-slate-950 text-rose-500 border border-slate-800';
+        }
+      }
 
       // AC
       const acCalc = RuleEngine.evaluateAC(character, {
@@ -2587,6 +2614,26 @@
       document.getElementById('save-fort-display').textContent = '+' + saves.fort;
       document.getElementById('save-ref-display').textContent = '+' + saves.ref;
       document.getElementById('save-will-display').textContent = '+' + saves.will;
+    }
+
+    function applyDamage() {
+      if (!character || !character.hp) return;
+      const input = document.getElementById('hp-adjust-input');
+      const amount = parseInt(input?.value) || 0;
+      if (amount <= 0) return;
+      character.hp.current = Math.max(-10, (Number(character.hp.current) || 0) - amount);
+      saveStateToStorage(true);
+      renderAll();
+    }
+
+    function applyHeal() {
+      if (!character || !character.hp) return;
+      const input = document.getElementById('hp-adjust-input');
+      const amount = parseInt(input?.value) || 0;
+      if (amount <= 0) return;
+      character.hp.current = Math.min(Number(character.hp.max) || 0, (Number(character.hp.current) || 0) + amount);
+      saveStateToStorage(true);
+      renderAll();
     }
 
     function renderWeapons() {
@@ -2742,19 +2789,29 @@
       });
 
       // Roll 3D Animated Dice Canvas!
-      Dice3D.roll(diceToRoll3D.slice(0, 6), () => {
-        // Render results after 3D animation settles
+      const onRollComplete = () => {
         renderAttackResults(attackPlans, evalResult, activeMods, maneuverCrit);
-      });
+      };
+
+      if (window.Dice3D && typeof Dice3D.roll === 'function') {
+        try {
+          Dice3D.roll(diceToRoll3D.slice(0, 6), onRollComplete);
+        } catch (err) {
+          onRollComplete();
+        }
+      } else {
+        onRollComplete();
+      }
     }
 
     function renderAttackResults(attackPlans, evalResult, activeMods, maneuverCrit) {
       const card = document.getElementById('attack-results-card');
+      if (!card) return;
       card.classList.remove('hidden');
 
       let grandTotalDmg = 0;
       const summaryGrid = document.getElementById('result-summary-grid');
-      summaryGrid.innerHTML = '';
+      if (summaryGrid) summaryGrid.innerHTML = '';
 
       attackPlans.forEach(atk => {
         let extraDiceSum = 0;
@@ -2781,28 +2838,32 @@
         const totalAttackDmg = atk.weaponRollSum + atk.flatDmg + extraDiceSum;
         grandTotalDmg += totalAttackDmg;
 
-        const div = document.createElement('div');
-        div.className = `p-3 rounded-lg border ${atk.isCrit ? 'bg-rose-950/40 border-rose-500' : 'bg-slate-900 border-slate-700'}`;
-        div.innerHTML = `
-          <div class="flex justify-between items-center mb-1">
-            <span class="font-bold text-white">${atk.idx}. Vuruş</span>
-            ${atk.isCrit ? '<span class="badge bg-rose-600 text-white animate-pulse">🎯 KRİTİK</span>' : (atk.d20 === 20 ? '<span class="badge bg-amber-500 text-black">NAT 20</span>' : '')}
-          </div>
-          <div class="flex justify-between items-baseline font-mono border-t border-slate-800 pt-1.5 mt-1">
-            <span class="text-xs text-slate-400">Atk: <strong class="text-emerald-400 text-base">${atk.totalAtk}</strong> (d20:${atk.d20})</span>
-            <span class="text-xs text-slate-400">DMG: <strong class="text-rose-400 text-base">${totalAttackDmg}</strong></span>
-          </div>
-          <div class="text-[10px] text-amber-300 truncate mt-1">Silah: ${atk.weaponRollSum + atk.flatDmg} ${extraDetails.length ? '• ' + extraDetails.join(', ') : ''}</div>
-        `;
-        summaryGrid.appendChild(div);
+        if (summaryGrid) {
+          const div = document.createElement('div');
+          div.className = `p-3 rounded-lg border ${atk.isCrit ? 'bg-rose-950/40 border-rose-500' : 'bg-slate-900 border-slate-700'}`;
+          div.innerHTML = `
+            <div class="flex justify-between items-center mb-1">
+              <span class="font-bold text-white">${atk.idx}. Vuruş</span>
+              ${atk.isCrit ? '<span class="badge bg-rose-600 text-white animate-pulse">🎯 KRİTİK</span>' : (atk.d20 === 20 ? '<span class="badge bg-amber-500 text-black">NAT 20</span>' : '')}
+            </div>
+            <div class="flex justify-between items-baseline font-mono border-t border-slate-800 pt-1.5 mt-1">
+              <span class="text-xs text-slate-400">Atk: <strong class="text-emerald-400 text-base">${atk.totalAtk}</strong> (d20:${atk.d20})</span>
+              <span class="text-xs text-slate-400">DMG: <strong class="text-rose-400 text-base">${totalAttackDmg}</strong></span>
+            </div>
+            <div class="text-[10px] text-amber-300 truncate mt-1">Silah: ${atk.weaponRollSum + atk.flatDmg} ${extraDetails.length ? '• ' + extraDetails.join(', ') : ''}</div>
+          `;
+          summaryGrid.appendChild(div);
+        }
       });
 
-      document.getElementById('result-grand-total-damage').textContent = grandTotalDmg + ' HP';
+      const grandTotalEl = document.getElementById('result-grand-total-damage');
+      if (grandTotalEl) grandTotalEl.textContent = grandTotalDmg + ' HP';
       card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
     function dismissAttackResult() {
-      document.getElementById('attack-results-card').classList.add('hidden');
+      const card = document.getElementById('attack-results-card');
+      if (card) card.classList.add('hidden');
     }
 
     // 3D Skill & Save Roll
@@ -2812,18 +2873,38 @@
       const d20 = Math.floor(Math.random() * 20) + 1;
       const total = d20 + mod;
 
-      Dice3D.roll([{ type: 'd20', value: d20 }], () => {
+      const showResult = () => {
         alert(`⚡ ${saveName} Kayıt Zarı:\n1d20 [${d20}] + ${mod} = ${total}`);
-      });
+      };
+
+      if (window.Dice3D && typeof Dice3D.roll === 'function') {
+        try {
+          Dice3D.roll([{ type: 'd20', value: d20 }], showResult);
+        } catch (err) {
+          showResult();
+        }
+      } else {
+        showResult();
+      }
     }
 
     function rollSkill3D(skillName, totalMod) {
       const d20 = Math.floor(Math.random() * 20) + 1;
       const total = d20 + totalMod;
 
-      Dice3D.roll([{ type: 'd20', value: d20 }], () => {
+      const showResult = () => {
         alert(`🎯 ${skillName} Beceri Zarı:\n1d20 [${d20}] + ${totalMod} = ${total}`);
-      });
+      };
+
+      if (window.Dice3D && typeof Dice3D.roll === 'function') {
+        try {
+          Dice3D.roll([{ type: 'd20', value: d20 }], showResult);
+        } catch (err) {
+          showResult();
+        }
+      } else {
+        showResult();
+      }
     }
 
     // Spells HUD Rendering (Sorcerer 0: 6/6, 1st: 4/8, 2nd: 2/6)
@@ -3237,6 +3318,14 @@
     }
 
     function recalculateDefense() {
+      if (typeof RuleEngine !== 'undefined' && RuleEngine.recalculateCharacter) {
+        RuleEngine.recalculateCharacter(character, (typeof masterDb !== 'undefined' ? masterDb : []), {
+          combatExpertise: parseInt(document.getElementById('combat-expertise-val')?.value) || 0,
+          fightingDefensively: document.getElementById('mod-defensive-fighting')?.checked || false,
+          totalDefense: document.getElementById('mod-total-defense')?.checked || false,
+          charge: document.getElementById('mod-charge')?.checked || false
+        });
+      }
       renderHUD();
       renderDefenseBreakdown();
     }
@@ -4635,9 +4724,21 @@
         isEquipped: false
       });
 
+      if (category === 'Consumable' || isBelt) {
+        if (!character.consumables) character.consumables = [];
+        const cleanName = name.toLowerCase().trim();
+        const hasCons = character.consumables.some(c => (c.name || '').toLowerCase().trim() === cleanName);
+        if (!hasCons) {
+          character.consumables.push({
+            name: name,
+            qty: qty,
+            effect: desc || 'Sarf malzemesi etkisi'
+          });
+        }
+      }
+
       saveStateToStorage(true);
-      renderInventory();
-      renderConsumables();
+      renderAll();
       closeAddPoolItemModal();
       alert(`✅ "${name}" çantaya / envanter havuzuna eklendi!`);
     }
