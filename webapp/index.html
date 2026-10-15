@@ -1607,75 +1607,136 @@
   <!-- ==================================================== -->
   <!-- MODAL: ADD ITEM TO GEAR POOL -->
   <!-- ==================================================== -->
-  <div id="add-pool-item-modal" class="hidden fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
-    <div class="bg-dndCard border border-amber-500/70 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden my-auto">
-      <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <span class="text-xl">🎒</span>
+  <div id="add-pool-item-modal" class="hidden fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
+    <div class="bg-dndCard border border-amber-500/80 rounded-2xl max-w-xl w-full shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
+      <!-- Modal Header -->
+      <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-amber-950/80 border border-amber-600/50 flex items-center justify-center text-lg shadow-inner">
+            🎒
+          </div>
           <div>
-            <h3 class="text-sm md:text-base font-extrabold text-white">Envanter Havuzuna Eşya Ekle</h3>
-            <p class="text-[10px] text-slate-400">Çantanıza veya kemerinize yeni ekipman tanımlayın</p>
+            <h3 class="text-sm md:text-base font-extrabold text-white flex items-center gap-2">
+              <span>Envantere Eşya Ekle</span>
+              <span class="text-[10px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-full">Master DB + AI</span>
+            </h3>
+            <p class="text-[10px] text-slate-400">Master DB'den seçin veya Rule Master AI ile 3.5e kitaplarından getirin</p>
           </div>
         </div>
         <button onclick="closeAddPoolItemModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg text-xs font-bold transition">✕ Kapat</button>
       </div>
-      <div class="p-4 space-y-3 text-xs">
-        <div>
-          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Eşya Adı *</label>
-          <input type="text" id="api-name" placeholder="Örn: Longsword +1, Potion of Fly" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold focus:border-amber-500">
-        </div>
-        <div class="grid grid-cols-2 gap-2.5">
-          <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kategori * (Madde 8)</label>
-            <select id="api-category" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
-              <option value="Weapon">Weapon (Silah)</option>
-              <option value="Shield">Shield (Kalkan)</option>
-              <option value="Armor">Armor (Zırh)</option>
-              <option value="Head">Head (Baş)</option>
-              <option value="Eyes">Eyes (Göz)</option>
-              <option value="Neck">Neck (Boyun)</option>
-              <option value="Shoulders">Shoulders (Omuz)</option>
-              <option value="Torso">Torso (Gövde)</option>
-              <option value="Belt">Belt (Kemer)</option>
-              <option value="Bracers">Bracers (Bileklik)</option>
-              <option value="Gloves">Gloves (Eldiven)</option>
-              <option value="Ring">Ring (Yüzük)</option>
-              <option value="Boots">Boots (Çizme)</option>
-              <option value="Consumable">Consumable (Sarf)</option>
-              <option value="Other">Other (Diğer)</option>
-            </select>
+
+      <!-- Modal Scrollable Content -->
+      <div class="p-4 space-y-3.5 text-xs overflow-y-auto flex-1 custom-scrollbar">
+        <!-- 1. Search Box (Master DB + AI Integrated) -->
+        <div class="bg-slate-900/90 p-3 rounded-xl border border-amber-500/40 space-y-2 shadow-inner">
+          <div class="flex items-center justify-between">
+            <label class="text-[11px] font-bold text-amber-300 flex items-center gap-1.5">
+              <span>🔍</span>
+              <span>Master DB & Kütüphane Araması</span>
+            </label>
+            <span class="text-[10px] text-slate-400">Bulunamazsa Rule Master devreye girer</span>
           </div>
-          <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Yuva (Slot)</label>
-            <input type="text" id="api-slot" placeholder="Örn: Main Hand, Belt..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+          <div class="relative">
+            <input 
+              type="text" 
+              id="pool-modal-search" 
+              oninput="onPoolModalSearchInput(this.value)" 
+              onkeydown="if(event.key==='Enter') triggerPoolAiSearchIfNoMatches()"
+              placeholder="Eşya adı yazın (örn: Cloak of Resistance, Potion, Longsword, Boots of Speed)..." 
+              class="w-full bg-slate-950 border border-slate-700 rounded-lg pl-9 pr-8 py-2 text-xs text-white font-bold focus:border-amber-500 focus:outline-none placeholder-slate-500 shadow-sm"
+            >
+            <span class="absolute left-3 top-2.5 text-slate-400 text-xs">🔎</span>
+            <button id="pool-modal-clear-search" onclick="clearPoolModalSearch()" class="hidden absolute right-2.5 top-2 text-slate-400 hover:text-white text-xs font-bold p-0.5">✕</button>
           </div>
-        </div>
-        <div class="grid grid-cols-3 gap-2.5">
-          <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Adet</label>
-            <input type="number" id="api-qty" value="1" min="1" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white text-center font-mono">
-          </div>
-          <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Ağırlık (lbs)</label>
-            <input type="number" id="api-weight" value="1" step="0.1" min="0" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white text-center font-mono">
-          </div>
-          <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Değer (GP)</label>
-            <input type="number" id="api-cost" value="10" step="1" min="0" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white text-center font-mono">
+
+          <!-- Quick Suggestion Chips (when search is empty) -->
+          <div id="pool-quick-chips" class="flex flex-wrap items-center gap-1.5 pt-1">
+            <span class="text-[10px] text-slate-500 font-semibold">Hızlı Seçim:</span>
+            <button type="button" onclick="setPoolSearchAndFilter('Cloak of Resistance')" class="text-[10px] bg-slate-800 hover:bg-amber-950 text-slate-300 hover:text-amber-200 border border-slate-700 hover:border-amber-600 px-2 py-0.5 rounded-full transition">Cloak of Resistance</button>
+            <button type="button" onclick="setPoolSearchAndFilter('Boots of Speed')" class="text-[10px] bg-slate-800 hover:bg-amber-950 text-slate-300 hover:text-amber-200 border border-slate-700 hover:border-amber-600 px-2 py-0.5 rounded-full transition">Boots of Speed</button>
+            <button type="button" onclick="setPoolSearchAndFilter('Potion of Cure Serious Wounds')" class="text-[10px] bg-slate-800 hover:bg-amber-950 text-slate-300 hover:text-amber-200 border border-slate-700 hover:border-amber-600 px-2 py-0.5 rounded-full transition">Potion</button>
+            <button type="button" onclick="setPoolSearchAndFilter('Ring of Protection')" class="text-[10px] bg-slate-800 hover:bg-amber-950 text-slate-300 hover:text-amber-200 border border-slate-700 hover:border-amber-600 px-2 py-0.5 rounded-full transition">Ring of Protection</button>
+            <button type="button" onclick="setPoolSearchAndFilter('Bag of Holding')" class="text-[10px] bg-slate-800 hover:bg-amber-950 text-slate-300 hover:text-amber-200 border border-slate-700 hover:border-amber-600 px-2 py-0.5 rounded-full transition">Bag of Holding</button>
           </div>
         </div>
-        <div>
-          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Açıklama & Özellikler</label>
-          <textarea id="api-desc" rows="2" placeholder="Eşyanın kuralları, sihirli bonusları veya notları..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-amber-500"></textarea>
-        </div>
-        <label class="flex items-center gap-2 cursor-pointer bg-slate-900 border border-slate-700 p-2 rounded-lg">
-          <input type="checkbox" id="api-belt" class="rounded text-amber-500 border-slate-700 focus:ring-0">
-          <span class="text-xs text-amber-300 font-bold">Kemerde Taşı (Belt Checkbox - Hızlı Erişim)</span>
-        </label>
+
+        <!-- 2. Search Results Container (Matches from Master DB or AI Prompt) -->
+        <div id="pool-search-results-box" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+
+        <!-- 3. Manual Entry & Fine-Tuning Section (Collapsible Accordion) -->
+        <details id="pool-manual-form-details" class="group border border-slate-800 rounded-xl bg-slate-900/60 overflow-hidden transition">
+          <summary class="p-3 cursor-pointer text-xs font-bold text-slate-300 flex items-center justify-between select-none hover:text-white bg-slate-950/60">
+            <span class="flex items-center gap-2">
+              <span>✏️</span>
+              <span>Manuel Tanımlama & İnce Ayar (GSheet Madde 8)</span>
+            </span>
+            <span class="text-[11px] text-slate-400 group-open:rotate-180 transition transform">▼</span>
+          </summary>
+          <div class="p-3.5 space-y-3 border-t border-slate-800 bg-slate-950/40">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Eşya Adı *</label>
+              <input type="text" id="api-name" placeholder="Örn: Longsword +1, Cloak of Resistance +2" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold focus:border-amber-500">
+            </div>
+            <div class="grid grid-cols-2 gap-2.5">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kategori * (Madde 8)</label>
+                <select id="api-category" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                  <option value="Weapon">Weapon (Silah)</option>
+                  <option value="Shield">Shield (Kalkan)</option>
+                  <option value="Armor">Armor (Zırh)</option>
+                  <option value="Head">Head (Baş)</option>
+                  <option value="Eyes">Eyes (Göz)</option>
+                  <option value="Neck">Neck (Boyun)</option>
+                  <option value="Shoulders">Shoulders (Omuz)</option>
+                  <option value="Torso">Torso (Gövde)</option>
+                  <option value="Belt">Belt (Kemer)</option>
+                  <option value="Bracers">Bracers (Bileklik)</option>
+                  <option value="Gloves">Gloves (Eldiven)</option>
+                  <option value="Ring">Ring (Yüzük)</option>
+                  <option value="Boots">Boots (Çizme)</option>
+                  <option value="Consumable">Consumable (Sarf)</option>
+                  <option value="Other">Other (Diğer)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Yuva (Slot)</label>
+                <input type="text" id="api-slot" placeholder="Örn: Main Hand, Shoulders, Belt..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-2.5">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Adet</label>
+                <input type="number" id="api-qty" value="1" min="1" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white text-center font-mono">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Ağırlık (lbs)</label>
+                <input type="number" id="api-weight" value="1" step="0.1" min="0" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white text-center font-mono">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Değer (GP)</label>
+                <input type="number" id="api-cost" value="10" step="1" min="0" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white text-center font-mono">
+              </div>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Açıklama & Özellikler</label>
+              <textarea id="api-desc" rows="2" placeholder="Eşyanın kuralları, sihirli bonusları veya notları..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-amber-500"></textarea>
+            </div>
+            <label class="flex items-center gap-2 cursor-pointer bg-slate-900 border border-slate-700 p-2 rounded-lg">
+              <input type="checkbox" id="api-belt" class="rounded text-amber-500 border-slate-700 focus:ring-0">
+              <span class="text-xs text-amber-300 font-bold">Kemerde Taşı (Belt Checkbox - Hızlı Erişim)</span>
+            </label>
+          </div>
+        </details>
       </div>
-      <div class="bg-slate-950 px-4 py-2.5 border-t border-slate-800 flex justify-end gap-2">
-        <button onclick="closeAddPoolItemModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs px-3 py-1.5 rounded-lg transition">İptal</button>
-        <button onclick="saveNewPoolItem()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition shadow">Havuzuna Ekle</button>
+
+      <!-- Modal Footer -->
+      <div class="bg-slate-950 px-4 py-2.5 border-t border-slate-800 flex justify-between items-center shrink-0">
+        <span class="text-[10px] text-slate-500">D&D 3.5e Universal Equipment Engine</span>
+        <div class="flex gap-2">
+          <button onclick="closeAddPoolItemModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs px-3 py-1.5 rounded-lg transition">İptal</button>
+          <button onclick="saveNewPoolItem()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition shadow">💾 Havuzuna Ekle</button>
+        </div>
       </div>
     </div>
   </div>
@@ -3225,10 +3286,73 @@
       alert(`⚔️ ${item.name} kuşanıldı (${targetSlotKey} yuvasına yerleştirildi)!`);
     }
 
+    // Helper: Map Master DB / Rule Master entry to 14 official Body Slots & Gear Categories (Madde 8)
+    function mapEntryToGearCategory(entry) {
+      if (!entry) return 'Other';
+      const type = (entry.type || '').toLowerCase();
+      const slot = (entry.slot || '').toLowerCase();
+      const name = (entry.name || '').toLowerCase();
+
+      if (type.includes('weapon') || slot.includes('main hand') || slot.includes('two hand')) return 'Weapon';
+      if (type.includes('shield') || slot.includes('shield') || name.includes('shield')) return 'Shield';
+      if (type.includes('armor') || slot === 'armor' || slot === 'body') return 'Armor';
+      if (type.includes('potion') || type.includes('scroll') || type.includes('wand') || type.includes('consumable')) return 'Consumable';
+      if (slot.includes('head') || slot.includes('helm') || type.includes('head')) return 'Head';
+      if (slot.includes('eyes') || slot.includes('face') || slot.includes('goggles')) return 'Eyes';
+      if (slot.includes('neck') || slot.includes('throat') || slot.includes('amulet') || slot.includes('periapt')) return 'Neck';
+      if (slot.includes('shoulder') || slot.includes('cloak') || slot.includes('cape')) return 'Shoulders';
+      if (slot.includes('torso') || slot.includes('vest') || slot.includes('shirt')) return 'Torso';
+      if (slot.includes('belt') || slot.includes('waist')) return 'Belt';
+      if (slot.includes('arm') || slot.includes('bracer')) return 'Bracers';
+      if (slot.includes('hand') || slot.includes('glove') || slot.includes('gauntlet')) return 'Gloves';
+      if (slot.includes('ring') || type.includes('ring')) return 'Ring';
+      if (slot.includes('feet') || slot.includes('boot')) return 'Boots';
+      return 'Other';
+    }
+
+    function getGearCategoryIcon(cat) {
+      switch (cat) {
+        case 'Weapon': return '⚔️';
+        case 'Shield': return '🛡️';
+        case 'Armor': return '🥋';
+        case 'Head': return '👑';
+        case 'Eyes': return '👓';
+        case 'Neck': return '📿';
+        case 'Shoulders': return '🧥';
+        case 'Torso': return '🦺';
+        case 'Belt': return '🎗️';
+        case 'Bracers': return '🦾';
+        case 'Gloves': return '🧤';
+        case 'Ring': return '💍';
+        case 'Boots': return '👢';
+        case 'Consumable': return '🧪';
+        default: return '📦';
+      }
+    }
+
+    // Temporary storage for search matches in modal
+    window._poolCurrentMatches = [];
+    window._poolCurrentAiEntries = [];
+    let _poolSearchDebounceTimer = null;
+
     // Add Pool Item Modal handlers
     function openAddPoolItemModal() {
       const modal = document.getElementById('add-pool-item-modal');
       if (!modal) return;
+
+      // Reset Search & AI states
+      const searchInput = document.getElementById('pool-modal-search');
+      if (searchInput) searchInput.value = '';
+      const clearBtn = document.getElementById('pool-modal-clear-search');
+      if (clearBtn) clearBtn.classList.add('hidden');
+      const quickChips = document.getElementById('pool-quick-chips');
+      if (quickChips) quickChips.classList.remove('hidden');
+      const resultsBox = document.getElementById('pool-search-results-box');
+      if (resultsBox) resultsBox.innerHTML = '';
+      window._poolCurrentMatches = [];
+      window._poolCurrentAiEntries = [];
+
+      // Reset manual form inputs
       if (document.getElementById('api-name')) document.getElementById('api-name').value = '';
       if (document.getElementById('api-category')) document.getElementById('api-category').value = 'Weapon';
       if (document.getElementById('api-slot')) document.getElementById('api-slot').value = '';
@@ -3237,16 +3361,442 @@
       if (document.getElementById('api-cost')) document.getElementById('api-cost').value = '10';
       if (document.getElementById('api-desc')) document.getElementById('api-desc').value = '';
       if (document.getElementById('api-belt')) document.getElementById('api-belt').checked = false;
+
+      // Close details by default so search is clean and primary
+      const formDetails = document.getElementById('pool-manual-form-details');
+      if (formDetails) formDetails.open = false;
+
       modal.classList.remove('hidden');
       setTimeout(() => {
-        const inp = document.getElementById('api-name');
-        if (inp) inp.focus();
+        if (searchInput) searchInput.focus();
       }, 50);
     }
 
     function closeAddPoolItemModal() {
       const modal = document.getElementById('add-pool-item-modal');
       if (modal) modal.classList.add('hidden');
+    }
+
+    function setPoolSearchAndFilter(term) {
+      const inp = document.getElementById('pool-modal-search');
+      if (inp) {
+        inp.value = term;
+        onPoolModalSearchInput(term);
+        inp.focus();
+      }
+    }
+
+    function clearPoolModalSearch() {
+      const inp = document.getElementById('pool-modal-search');
+      if (inp) inp.value = '';
+      const clearBtn = document.getElementById('pool-modal-clear-search');
+      if (clearBtn) clearBtn.classList.add('hidden');
+      const quickChips = document.getElementById('pool-quick-chips');
+      if (quickChips) quickChips.classList.remove('hidden');
+      const resultsBox = document.getElementById('pool-search-results-box');
+      if (resultsBox) resultsBox.innerHTML = '';
+      window._poolCurrentMatches = [];
+      window._poolCurrentAiEntries = [];
+    }
+
+    function onPoolModalSearchInput(val) {
+      const query = (val || '').trim();
+      const clearBtn = document.getElementById('pool-modal-clear-search');
+      const quickChips = document.getElementById('pool-quick-chips');
+
+      if (!query) {
+        clearPoolModalSearch();
+        return;
+      }
+
+      if (clearBtn) clearBtn.classList.remove('hidden');
+      if (quickChips) quickChips.classList.add('hidden');
+
+      if (_poolSearchDebounceTimer) clearTimeout(_poolSearchDebounceTimer);
+      _poolSearchDebounceTimer = setTimeout(() => {
+        executePoolMasterDbSearch(query);
+      }, 150);
+    }
+
+    function executePoolMasterDbSearch(query) {
+      const resultsBox = document.getElementById('pool-search-results-box');
+      if (!resultsBox) return;
+
+      const q = query.toLowerCase().trim();
+      const allDb = Array.isArray(masterDb) ? masterDb : [];
+
+      // Filter Master DB items
+      const matches = allDb.filter(item => {
+        if (!item || !item.name) return false;
+        const name = (item.name || '').toLowerCase();
+        const type = (item.type || '').toLowerCase();
+        const slot = (item.slot || '').toLowerCase();
+        const benefit = (item.benefit || item.description || '').toLowerCase();
+        return name.includes(q) || type.includes(q) || slot.includes(q) || benefit.includes(q);
+      });
+
+      window._poolCurrentMatches = matches;
+      renderPoolSearchResults(matches, query);
+    }
+
+    function renderPoolSearchResults(matches, query) {
+      const resultsBox = document.getElementById('pool-search-results-box');
+      if (!resultsBox) return;
+
+      const escapedQ = query.replace(/"/g, '&quot;');
+
+      if (!matches || matches.length === 0) {
+        // NO MATCHES FOUND IN LOCAL MASTER DB -> PROMINENT AI LOOKUP CALLOUT
+        resultsBox.innerHTML = `
+          <div class="p-4 bg-slate-900/90 border border-amber-500/50 rounded-xl space-y-3 shadow-lg">
+            <div class="flex items-start gap-3">
+              <span class="text-2xl">🔍</span>
+              <div>
+                <h4 class="text-xs font-bold text-amber-300">Master DB'de "${escapedQ}" Bulunamadı</h4>
+                <p class="text-[11px] text-slate-300 mt-0.5">
+                  Aradığınız eşya yerel veritabanında kayıtlı değil. 
+                  Rule Master yapay zekası ile resmi D&D 3.5e kitaplarını (PHB, DMG, MIC, Complete) tarayıp otomatik getirebilirsiniz.
+                </p>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-2 pt-1 border-t border-slate-800">
+              <button type="button" onclick="searchAiForPoolItem('${escapedQ}')" class="flex-1 bg-gradient-to-r from-purple-700 via-indigo-600 to-teal-600 hover:from-purple-600 hover:to-teal-500 text-white font-extrabold text-xs py-2 px-3 rounded-lg shadow-md transition flex items-center justify-center gap-2">
+                <span>🤖</span>
+                <span>Rule Master (AI) ile 3.5e Kütüphanelerinde Ara</span>
+              </button>
+              <button type="button" onclick="fillPoolFormWithQueryName('${escapedQ}')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs py-2 px-3 rounded-lg transition">
+                ✏️ Manuel Tanımla
+              </button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // MATCHES FOUND IN LOCAL MASTER DB
+      let html = `
+        <div class="flex items-center justify-between text-[11px] text-slate-400 font-bold px-1">
+          <span>Master DB Sonuçları (${matches.length} eşya bulundu):</span>
+          <button type="button" onclick="searchAiForPoolItem('${escapedQ}')" class="text-purple-400 hover:text-purple-300 underline flex items-center gap-1 font-semibold">
+            <span>🤖 AI ile Kitaplarda Ara</span>
+          </button>
+        </div>
+        <div class="space-y-2">
+      `;
+
+      // Render up to 8 matched cards
+      matches.slice(0, 8).forEach((item, idx) => {
+        const cat = mapEntryToGearCategory(item);
+        const icon = getGearCategoryIcon(cat);
+        const source = item.source || 'Core 3.5e';
+        const weight = Number(item.weight) || 0;
+        const cost = Number(item.cost) || 0;
+        const desc = item.benefit || item.description || '';
+
+        html += `
+          <div class="bg-slate-900 border border-slate-700 hover:border-amber-500/60 p-2.5 rounded-xl transition space-y-1.5 shadow-sm">
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="text-base">${icon}</span>
+                <div>
+                  <h4 class="text-xs font-bold text-white truncate">${item.name}</h4>
+                  <div class="flex flex-wrap items-center gap-1.5 text-[10px] mt-0.5">
+                    <span class="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded font-semibold">${cat}</span>
+                    <span class="bg-slate-800 text-slate-300 px-1.5 py-0.2 rounded">${item.slot || 'Yuvasız'}</span>
+                    <span class="text-slate-400 font-mono">${weight} lbs</span>
+                    <span class="text-amber-400 font-mono">${cost} gp</span>
+                    <span class="text-slate-500 font-serif italic">${source}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button type="button" onclick="fillPoolItemFormFromDb(${idx})" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white p-1.5 rounded-lg text-xs font-bold transition" title="Bilgileri Forma Doldur">
+                  ✏️
+                </button>
+                <button type="button" onclick="addMasterDbItemDirectlyToPool(${idx})" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs py-1.5 px-3 rounded-lg shadow transition flex items-center gap-1">
+                  <span>📥</span>
+                  <span>Çantaya Ekle</span>
+                </button>
+              </div>
+            </div>
+            ${desc ? `<p class="text-[11px] text-slate-300 line-clamp-2 leading-relaxed bg-slate-950/60 p-1.5 rounded border border-slate-800/80">${desc}</p>` : ''}
+          </div>
+        `;
+      });
+
+      html += `
+        </div>
+        <div class="text-center pt-1">
+          <button type="button" onclick="searchAiForPoolItem('${escapedQ}')" class="text-xs text-purple-300 hover:text-purple-200 bg-purple-950/60 hover:bg-purple-900 border border-purple-800/70 rounded-lg px-3 py-1.5 transition inline-flex items-center gap-1.5 shadow">
+            <span>🤖</span>
+            <span>Aradığınız listede yok mu? <strong>Rule Master AI</strong> ile 3.5e Kütüphanelerinde Ara ("${escapedQ}")</span>
+          </button>
+        </div>
+      `;
+
+      resultsBox.innerHTML = html;
+    }
+
+    function triggerPoolAiSearchIfNoMatches() {
+      const inp = document.getElementById('pool-modal-search');
+      const val = inp?.value?.trim() || '';
+      if (!val) return;
+      if (!window._poolCurrentMatches || window._poolCurrentMatches.length === 0) {
+        searchAiForPoolItem(val);
+      }
+    }
+
+    async function searchAiForPoolItem(query) {
+      const q = (query || '').trim();
+      if (!q) {
+        alert('⚠️ Lütfen aranacak eşya adını girin.');
+        return;
+      }
+
+      const resultsBox = document.getElementById('pool-search-results-box');
+      if (!resultsBox) return;
+
+      const apiKey = typeof RuleMaster !== 'undefined' ? RuleMaster.getApiKey() : (localStorage.getItem('gemini_api_key') || '');
+      if (!apiKey) {
+        alert('⚠️ Rule Master AI ile arama yapabilmek için lütfen geçerli bir Google Gemini API anahtarı kaydedin.\nSağ üstteki Ayarlar ⚙️ menüsünden anahtarınızı girebilirsiniz.');
+        if (typeof openSettingsModal === 'function') openSettingsModal();
+        return;
+      }
+
+      // Render loading state with spinner and active status text
+      resultsBox.innerHTML = `
+        <div class="p-5 bg-slate-950/90 border border-purple-500/50 rounded-xl text-center space-y-2.5 shadow-2xl">
+          <div class="inline-block w-7 h-7 border-2 border-purple-400 border-t-transparent rounded-full animate-spin"></div>
+          <div class="text-xs font-bold text-purple-200">Rule Master 3.5e Kütüphanelerinde Arıyor...</div>
+          <div id="pool-ai-status-text" class="text-[11px] text-slate-400 font-mono">
+            "${q}" ➔ Resmi Wizards 3.5e kaynakları taranıyor...
+          </div>
+          <p class="text-[10px] text-slate-500">PHB, DMG, Magic Item Compendium ve ek kitaplar taranarak kurallar ve istatistikler çekiliyor.</p>
+        </div>
+      `;
+
+      const statusEl = document.getElementById('pool-ai-status-text');
+
+      try {
+        let rows = null;
+        if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.fetchSingleAiRuleRows === 'function') {
+          rows = await RuleMaster.fetchSingleAiRuleRows(q, 'Equipment', apiKey, statusEl);
+        } else {
+          throw new Error('RuleMaster arama motoru hazır değil.');
+        }
+
+        if (!rows || !rows.length) {
+          throw new Error(`"${q}" için kural kaydı bulunamadı.`);
+        }
+
+        const entries = RuleMaster.convertRowsToEntries(rows);
+        window._poolCurrentAiEntries = entries;
+
+        // Automatically store new entries in masterDb if not already present
+        let newEntriesAdded = 0;
+        entries.forEach(entry => {
+          const exists = masterDb.some(m => (m.name || '').toLowerCase() === (entry.name || '').toLowerCase());
+          if (!exists) {
+            masterDb.push(entry);
+            newEntriesAdded++;
+          }
+        });
+
+        if (newEntriesAdded > 0) {
+          localStorage.setItem('dnd35_master_db', JSON.stringify(masterDb));
+          if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.renderTable === 'function') {
+            RuleMaster.renderTable();
+          }
+        }
+
+        renderAiPoolResultCards(entries, q);
+      } catch (err) {
+        resultsBox.innerHTML = `
+          <div class="p-4 bg-rose-950/50 border border-rose-800 rounded-xl space-y-2 text-rose-300">
+            <div class="text-xs font-bold flex items-center gap-1.5">
+              <span>⚠️</span>
+              <span>Rule Master Arama Hatası</span>
+            </div>
+            <p class="text-[11px] text-rose-400">${err.message || 'API yanıt vermedi.'}</p>
+            <div class="pt-2 border-t border-rose-900/50 flex flex-wrap gap-2 text-xs">
+              <button type="button" onclick="searchAiForPoolItem('${q.replace(/'/g, "\\'")}')" class="bg-rose-900 hover:bg-rose-800 text-white font-bold py-1.5 px-3 rounded-lg transition">
+                🔄 Tekrar Dene
+              </button>
+              <button type="button" onclick="fillPoolFormWithQueryName('${q.replace(/'/g, "\\'")}')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-1.5 px-3 rounded-lg transition">
+                ✏️ Bilgileri Manuel Doldur
+              </button>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function renderAiPoolResultCards(entries, query) {
+      const resultsBox = document.getElementById('pool-search-results-box');
+      if (!resultsBox) return;
+
+      let html = `
+        <div class="p-2.5 bg-gradient-to-r from-purple-950/80 to-slate-900 border border-purple-500/60 rounded-xl space-y-2.5 shadow-lg">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-extrabold text-purple-200 flex items-center gap-1.5">
+              <span>✨</span>
+              <span>Rule Master 3.5e Kütüphanesinden Bulundu (${entries.length} kayıt)</span>
+            </span>
+            <span class="text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full">Master DB'ye Eklendi</span>
+          </div>
+          <div class="space-y-2">
+      `;
+
+      entries.forEach((item, idx) => {
+        const cat = mapEntryToGearCategory(item);
+        const icon = getGearCategoryIcon(cat);
+        const source = item.source || 'Official 3.5e';
+        const weight = Number(item.weight) || 0;
+        const cost = Number(item.cost) || 0;
+        const desc = item.benefit || item.description || '';
+
+        html += `
+          <div class="bg-slate-950/90 border border-purple-800/80 p-2.5 rounded-xl space-y-1.5">
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="text-base">${icon}</span>
+                <div>
+                  <h4 class="text-xs font-bold text-white truncate">${item.name}</h4>
+                  <div class="flex flex-wrap items-center gap-1.5 text-[10px] mt-0.5">
+                    <span class="bg-purple-500/20 text-purple-300 border border-purple-500/40 px-1.5 py-0.2 rounded font-semibold">${cat}</span>
+                    <span class="bg-slate-800 text-slate-300 px-1.5 py-0.2 rounded">${item.slot || 'Yuvasız'}</span>
+                    <span class="text-slate-400 font-mono">${weight} lbs</span>
+                    <span class="text-amber-400 font-mono">${cost} gp</span>
+                    <span class="text-purple-300 font-serif italic">📚 ${source}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button type="button" onclick="fillPoolItemFormFromAi(${idx})" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white p-1.5 rounded-lg text-xs font-bold transition" title="Forma Aktar">
+                  ✏️
+                </button>
+                <button type="button" onclick="addAiItemToPoolAndDb(${idx})" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs py-1.5 px-3 rounded-lg shadow-md transition flex items-center gap-1">
+                  <span>📥</span>
+                  <span>Çantaya Ekle</span>
+                </button>
+              </div>
+            </div>
+            ${desc ? `<p class="text-[11px] text-slate-300 leading-relaxed bg-slate-900/80 p-2 rounded border border-slate-800">${desc}</p>` : ''}
+          </div>
+        `;
+      });
+
+      html += `
+          </div>
+        </div>
+      `;
+
+      resultsBox.innerHTML = html;
+    }
+
+    function addMasterDbItemDirectlyToPool(idx) {
+      const item = window._poolCurrentMatches?.[idx];
+      if (!item) return;
+
+      if (!character.gearPool) character.gearPool = [];
+      const cat = mapEntryToGearCategory(item);
+      const isBeltItem = (item.slot || '').toLowerCase().includes('belt') || cat === 'Consumable';
+
+      const newId = Date.now();
+      character.gearPool.push({
+        id: newId,
+        name: item.name,
+        category: cat,
+        slot: item.slot && item.slot !== 'None' ? item.slot : cat,
+        qty: 1,
+        weight: Number(item.weight) || 0,
+        cost: Number(item.cost) || 0,
+        desc: item.benefit || item.description || '',
+        isBelt: isBeltItem,
+        isEquipped: false
+      });
+
+      saveStateToStorage(true);
+      renderInventory();
+      renderConsumables();
+      closeAddPoolItemModal();
+      alert(`✅ "${item.name}" envanter havuzunuza / çantanıza eklendi!`);
+    }
+
+    function addAiItemToPoolAndDb(idx) {
+      const item = window._poolCurrentAiEntries?.[idx];
+      if (!item) return;
+
+      // Ensure item is also stored in masterDb
+      const exists = masterDb.some(m => (m.name || '').toLowerCase() === (item.name || '').toLowerCase());
+      if (!exists) {
+        masterDb.push(item);
+        localStorage.setItem('dnd35_master_db', JSON.stringify(masterDb));
+        if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.renderTable === 'function') {
+          RuleMaster.renderTable();
+        }
+      }
+
+      if (!character.gearPool) character.gearPool = [];
+      const cat = mapEntryToGearCategory(item);
+      const isBeltItem = (item.slot || '').toLowerCase().includes('belt') || cat === 'Consumable';
+
+      const newId = Date.now();
+      character.gearPool.push({
+        id: newId,
+        name: item.name,
+        category: cat,
+        slot: item.slot && item.slot !== 'None' ? item.slot : cat,
+        qty: 1,
+        weight: Number(item.weight) || 0,
+        cost: Number(item.cost) || 0,
+        desc: item.benefit || item.description || '',
+        isBelt: isBeltItem,
+        isEquipped: false
+      });
+
+      saveStateToStorage(true);
+      renderInventory();
+      renderConsumables();
+      closeAddPoolItemModal();
+      alert(`✅ "${item.name}" Master DB'ye kaydedildi ve çantanıza eklendi!`);
+    }
+
+    function fillPoolItemFormFromDb(idx) {
+      const item = window._poolCurrentMatches?.[idx];
+      if (item) fillPoolItemForm(item);
+    }
+
+    function fillPoolItemFormFromAi(idx) {
+      const item = window._poolCurrentAiEntries?.[idx];
+      if (item) fillPoolItemForm(item);
+    }
+
+    function fillPoolFormWithQueryName(name) {
+      fillPoolItemForm({ name: name, category: 'Other', weight: 1, cost: 10, benefit: '' });
+    }
+
+    function fillPoolItemForm(item) {
+      if (!item) return;
+      const cat = mapEntryToGearCategory(item);
+
+      if (document.getElementById('api-name')) document.getElementById('api-name').value = item.name || '';
+      if (document.getElementById('api-category')) document.getElementById('api-category').value = cat;
+      if (document.getElementById('api-slot')) document.getElementById('api-slot').value = item.slot || cat;
+      if (document.getElementById('api-qty')) document.getElementById('api-qty').value = item.qty || 1;
+      if (document.getElementById('api-weight')) document.getElementById('api-weight').value = item.weight || 0;
+      if (document.getElementById('api-cost')) document.getElementById('api-cost').value = item.cost || 0;
+      if (document.getElementById('api-desc')) document.getElementById('api-desc').value = item.benefit || item.description || '';
+      if (document.getElementById('api-belt')) {
+        document.getElementById('api-belt').checked = (item.slot || '').toLowerCase().includes('belt') || cat === 'Consumable';
+      }
+
+      // Expand details
+      const formDetails = document.getElementById('pool-manual-form-details');
+      if (formDetails) {
+        formDetails.open = true;
+        formDetails.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
     }
 
     function saveNewPoolItem() {
@@ -3280,8 +3830,9 @@
         isEquipped: false
       });
 
-      saveStateToStorage();
+      saveStateToStorage(true);
       renderInventory();
+      renderConsumables();
       closeAddPoolItemModal();
       alert(`✅ "${name}" çantaya / envanter havuzuna eklendi!`);
     }
