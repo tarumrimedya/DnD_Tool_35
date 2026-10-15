@@ -646,13 +646,32 @@
         </div>
 
         <!-- Active Buffs with Round Countdown -->
-        <div class="border border-slate-800 rounded-xl overflow-hidden">
-          <div class="bg-slate-900 px-3 py-2 text-xs font-bold text-slate-300 flex justify-between items-center">
-            <span>✨ AKTİF BUFFLAR VE TUR SAYAÇLARI</span>
-            <button onclick="advanceNextRound()" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3 py-1 rounded transition">⏭️ Tur İlerlet (-1 Rd)</button>
+        <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-950/40">
+          <div class="bg-slate-900/90 px-3 py-2.5 border-b border-slate-800 flex flex-wrap justify-between items-center gap-2">
+            <div class="flex items-center gap-2">
+              <span class="text-amber-400 font-bold text-xs flex items-center gap-1.5">
+                <span>✨</span>
+                <span>AKTİF BUFFLAR VE TUR SAYAÇLARI</span>
+              </span>
+              <span class="text-[10px] text-slate-400 font-mono bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700">D&D 3.5e RAW Stacking</span>
+            </div>
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <button onclick="openAddBuffModal()" class="text-xs bg-emerald-700 hover:bg-emerald-600 text-white font-bold px-2.5 py-1 rounded transition flex items-center gap-1 shadow">
+                <span>➕</span><span>Buff Ekle</span>
+              </button>
+              <button onclick="advanceNextRound()" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-2.5 py-1 rounded transition flex items-center gap-1 shadow">
+                <span>⏭️</span><span>Tur İlerlet (-1 Rd)</span>
+              </button>
+              <button onclick="performEncounterReset()" class="text-xs bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 font-medium px-2 py-1 rounded transition flex items-center gap-1">
+                <span>🔄</span><span>Enc. Sıfırla</span>
+              </button>
+              <button onclick="performLongRest()" class="text-xs bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 font-medium px-2 py-1 rounded transition flex items-center gap-1">
+                <span>☀️</span><span>Long Rest</span>
+              </button>
+            </div>
           </div>
-          <div class="p-3 grid grid-cols-1 md:grid-cols-2 gap-2" id="buffs-list-container">
-            <!-- Buffs cards -->
+          <div class="p-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5" id="buffs-list-container">
+            <!-- Buffs cards dynamically populated -->
           </div>
         </div>
       </div>
@@ -1605,6 +1624,125 @@
   </div>
 
   <!-- ==================================================== -->
+  <!-- MODAL: ADD / CREATE ACTIVE BUFF -->
+  <!-- ==================================================== -->
+  <div id="add-buff-modal" class="hidden fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
+    <div class="bg-dndCard border border-indigo-500/80 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
+      <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-indigo-950/80 border border-indigo-600/50 flex items-center justify-center text-lg shadow-inner">
+            ✨
+          </div>
+          <div>
+            <h3 class="text-sm md:text-base font-extrabold text-white flex items-center gap-2">
+              <span>Yeni Buff / Büyü Etkisi Ekle</span>
+              <span class="text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 px-2 py-0.5 rounded-full">D&D 3.5e RAW</span>
+            </h3>
+            <p class="text-[10px] text-slate-400">Hazır D&D 3.5e şablonu seçin veya özel buff tanımlayın</p>
+          </div>
+        </div>
+        <button onclick="closeAddBuffModal()" class="text-slate-400 hover:text-white p-1 rounded-lg text-lg font-bold">&times;</button>
+      </div>
+
+      <div class="p-4 space-y-3 overflow-y-auto">
+        <!-- Preset Selector -->
+        <div>
+          <label class="block text-[11px] font-bold text-amber-400 uppercase mb-1">⚡ Hazır D&D 3.5e Şablonu Seç</label>
+          <select id="buff-preset-select" onchange="onBuffPresetChange()" class="w-full bg-slate-900 border border-indigo-500/60 rounded-lg px-3 py-2 text-xs font-semibold text-white focus:ring-1 focus:ring-indigo-400">
+            <option value="custom">-- Özel Buff Tanımla --</option>
+            <option value="mage_armor">🛡️ Mage Armor (+4 Armor AC, 50 Tur / 5 Saat)</option>
+            <option value="shield">🛡️ Shield (+4 Shield AC, 10 Tur)</option>
+            <option value="shield_of_faith">🛡️ Shield of Faith (+2 Deflection AC, 10 Tur)</option>
+            <option value="barkskin">🛡️ Barkskin (+2 Natural Armor AC, 50 Tur)</option>
+            <option value="bulls_str">🐂 Bull's Strength (+4 Enhancement STR, 10 Tur)</option>
+            <option value="cats_grace">🐆 Cat's Grace (+4 Enhancement DEX, 10 Tur)</option>
+            <option value="bears_endurance">🐻 Bear's Endurance (+4 Enhancement CON, 10 Tur)</option>
+            <option value="foxs_cunning">🦊 Fox's Cunning (+4 Enhancement INT, 10 Tur)</option>
+            <option value="owls_wisdom">🦉 Owl's Wisdom (+4 Enhancement WIS, 10 Tur)</option>
+            <option value="eagles_splendor">🦅 Eagle's Splendor (+4 Enhancement CHA, 10 Tur)</option>
+            <option value="haste">⚡ Haste (+1 Att, +1 Dodge AC, +1 Refl, +30 ft Hız, 6 Tur)</option>
+            <option value="bless">✨ Bless (+1 Morale Att & Saves vs Fear, 10 Tur)</option>
+            <option value="prayer">✨ Prayer (+1 Luck Att/Dmg/Saves/Skills, 6 Tur)</option>
+            <option value="divine_favor">⚔️ Divine Favor (+2 Luck Att & Dmg, 10 Tur)</option>
+            <option value="blade_of_blood">🩸 Blade of Blood (+1d6 Hasar, 1 Vuruş)</option>
+            <option value="punishing_stance">🗡️ Punishing Stance (+1d6 Hasar, -2 AC, Sürekli)</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Buff Adı *</label>
+            <input type="text" id="buff-input-name" placeholder="Örn: Haste" class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kaynak</label>
+            <input type="text" id="buff-input-source" placeholder="Spell, Potion, Feat..." class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Bonus Türü</label>
+            <select id="buff-input-type" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-white">
+              <option value="Enhancement">Enhancement</option>
+              <option value="Morale">Morale</option>
+              <option value="Luck">Luck</option>
+              <option value="Armor">Armor</option>
+              <option value="Shield">Shield</option>
+              <option value="Deflection">Deflection</option>
+              <option value="Natural">Natural</option>
+              <option value="Dodge">Dodge</option>
+              <option value="Untyped">Untyped</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tur Süresi</label>
+            <input type="number" id="buff-input-rounds" placeholder="Örn: 10 (Boşsa Sürekli)" class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Süre Açıklaması</label>
+            <input type="text" id="buff-input-duration" placeholder="Örn: 1 dk / CL" class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+          <div>
+            <label class="block text-[10px] font-bold text-sky-400 mb-0.5">AC Bonusu</label>
+            <input type="number" id="buff-input-ac" placeholder="0" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white text-center">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-emerald-400 mb-0.5">Saldırı Bonusu</label>
+            <input type="number" id="buff-input-att" placeholder="0" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white text-center">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-amber-400 mb-0.5">Hasar Bonusu</label>
+            <input type="number" id="buff-input-dmg" placeholder="0" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white text-center">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-6 gap-1.5 bg-slate-900/60 p-2 rounded-lg border border-slate-800">
+          <div class="text-center"><label class="block text-[9px] font-bold text-slate-400">STR</label><input type="number" id="buff-input-str" class="w-full bg-slate-950 border border-slate-700 rounded px-1 py-0.5 text-xs text-center text-white"></div>
+          <div class="text-center"><label class="block text-[9px] font-bold text-slate-400">DEX</label><input type="number" id="buff-input-dex" class="w-full bg-slate-950 border border-slate-700 rounded px-1 py-0.5 text-xs text-center text-white"></div>
+          <div class="text-center"><label class="block text-[9px] font-bold text-slate-400">CON</label><input type="number" id="buff-input-con" class="w-full bg-slate-950 border border-slate-700 rounded px-1 py-0.5 text-xs text-center text-white"></div>
+          <div class="text-center"><label class="block text-[9px] font-bold text-slate-400">INT</label><input type="number" id="buff-input-int" class="w-full bg-slate-950 border border-slate-700 rounded px-1 py-0.5 text-xs text-center text-white"></div>
+          <div class="text-center"><label class="block text-[9px] font-bold text-slate-400">WIS</label><input type="number" id="buff-input-wis" class="w-full bg-slate-950 border border-slate-700 rounded px-1 py-0.5 text-xs text-center text-white"></div>
+          <div class="text-center"><label class="block text-[9px] font-bold text-slate-400">CHA</label><input type="number" id="buff-input-cha" class="w-full bg-slate-950 border border-slate-700 rounded px-1 py-0.5 text-xs text-center text-white"></div>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Açıklama / Notlar</label>
+          <input type="text" id="buff-input-notes" placeholder="Etki açıklaması..." class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white">
+        </div>
+      </div>
+
+      <div class="bg-slate-950 px-4 py-3 border-t border-slate-800 flex justify-end gap-2 shrink-0">
+        <button onclick="closeAddBuffModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs px-3.5 py-1.5 rounded-lg transition">İptal</button>
+        <button onclick="saveNewBuffFromModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition shadow">✨ Buffı Ekle ve Etkinleştir</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================== -->
   <!-- MODAL: ADD ITEM TO GEAR POOL -->
   <!-- ==================================================== -->
   <div id="add-pool-item-modal" class="hidden fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
@@ -2392,9 +2530,21 @@
 
     function renderAll() {
       if (!character) return;
+
+      // Recalculate RAW D&D 3.5e character state, equipment bonuses, and active buffs
+      if (typeof RuleEngine !== 'undefined' && RuleEngine.recalculateCharacter) {
+        RuleEngine.recalculateCharacter(character, (typeof masterDb !== 'undefined' ? masterDb : []), {
+          combatExpertise: parseInt(document.getElementById('combat-expertise-val')?.value) || 0,
+          fightingDefensively: document.getElementById('mod-defensive-fighting')?.checked || false,
+          totalDefense: document.getElementById('mod-total-defense')?.checked || false,
+          charge: document.getElementById('mod-charge')?.checked || false
+        });
+      }
+
       renderHUD();
       renderWeapons();
       renderActiveModifiers();
+      renderActiveBuffs();
       renderSpellSlots();
       renderManeuvers();
       renderKnownSpells();
@@ -2414,7 +2564,7 @@
       
       const initMod = RuleEngine.getAbilityMod(character.abilities?.dex || 10);
       document.getElementById('char-init-display').textContent = (initMod >= 0 ? '+' : '') + initMod;
-      document.getElementById('char-speed-display').textContent = (character.baseSpeed || 30) + ' ft';
+      document.getElementById('char-speed-display').textContent = (character.effectiveSpeed || character.baseSpeed || 30) + ' ft';
 
       document.getElementById('hp-current-display').textContent = character.hp.current;
       document.getElementById('hp-max-display').textContent = character.hp.max;
@@ -2804,9 +2954,29 @@
       const slot = character.spellcasting?.slots?.find(s => s.level === lvl);
       if (slot && slot.used < slot.daily) {
         slot.used++;
-        renderSpellSlots();
-        saveStateToStorage();
-        alert(`🔮 ${name} büyüsü yapıldı! (${lvl}. seviye slottan harcandı).`);
+
+        // Auto-activate corresponding buff if available
+        let buffApplied = null;
+        const cleanName = (name || '').toLowerCase().trim();
+        if (Array.isArray(character.buffs)) {
+          const match = character.buffs.find(b => {
+            const bClean = (b.name || '').toLowerCase().trim();
+            return bClean === cleanName || cleanName.includes(bClean) || bClean.includes(cleanName);
+          });
+          if (match) {
+            match.active = true;
+            buffApplied = match.name;
+          }
+        }
+
+        saveStateToStorage(true);
+        renderAll();
+
+        if (buffApplied) {
+          alert(`🔮 "${name}" büyüsü yapıldı (${lvl}. seviye slottan harcandı) ve "${buffApplied}" buffı aktif edildi!\n\nSavunma ve Stat değerleriniz anında güncellendi.`);
+        } else {
+          alert(`🔮 ${name} büyüsü yapıldı! (${lvl}. seviye slottan harcandı).`);
+        }
       } else {
         alert(`⚠️ ${lvl}. seviye büyü slotunuz kalmadı!`);
       }
@@ -2855,13 +3025,21 @@
 
         stats.forEach(s => {
           const score = character.abilities?.[s.key] || 10;
+          const base = character.baseAbilities?.[s.key] || score;
+          const bonusDiff = score - base;
           const mod = RuleEngine.getAbilityMod(score);
           const div = document.createElement('div');
-          div.className = 'bg-slate-900 border border-slate-700 rounded-xl p-2.5';
+          div.className = 'bg-slate-900 border border-slate-700 rounded-xl p-2.5 flex flex-col justify-between';
           div.innerHTML = `
-            <div class="text-[10px] font-bold text-slate-400 uppercase">${s.label}</div>
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-bold text-slate-400 uppercase">${s.label}</span>
+              ${bonusDiff !== 0 ? `<span class="text-[9px] font-mono px-1 rounded ${bonusDiff > 0 ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-rose-950 text-rose-400 border border-rose-800'}">${bonusDiff > 0 ? '+' + bonusDiff : bonusDiff}</span>` : ''}
+            </div>
             <div class="text-xl font-black text-amber-400 font-mono my-0.5">${score}</div>
-            <div class="text-xs font-bold ${mod >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-mono">${mod >= 0 ? '+' : ''}${mod}</div>
+            <div class="flex items-center justify-between text-xs font-mono">
+              <span class="${mod >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold">${mod >= 0 ? '+' : ''}${mod}</span>
+              ${bonusDiff !== 0 ? `<span class="text-[9px] text-slate-500 font-sans">Taban: ${base}</span>` : ''}
+            </div>
           `;
           container.appendChild(div);
         });
@@ -3012,21 +3190,32 @@
         charge: document.getElementById('mod-charge')?.checked || false
       });
 
+      const bd = character.acBreakdown || {};
       const totalBadge = document.getElementById('defense-ac-total-badge');
-      if (totalBadge) totalBadge.textContent = `Total: ${acCalc.total} • Touch: ${acCalc.touch} • Flat: ${acCalc.flat}`;
+      if (totalBadge) totalBadge.textContent = `Total: ${bd.total ?? acCalc.total} • Touch: ${bd.touch ?? acCalc.touch} • Flat: ${bd.flat ?? acCalc.flat}`;
+
+      const maxDexInfo = bd.maxDex !== null && bd.maxDex !== undefined ? ` (Max Dex: +${bd.maxDex})` : '';
+      const penaltyInfo = bd.penalty > 0 ? `<div class="flex justify-between py-1 border-b border-slate-800 text-rose-400 font-bold"><span class="text-rose-300">Savunma Cezaları (Charge/Stance):</span><span>-${bd.penalty}</span></div>` : '';
 
       acList.innerHTML = `
         <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">10 Taban (Base):</span><span class="text-white font-bold">10</span></div>
-        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Zırh Bonusu (Armor):</span><span class="text-sky-400 font-bold">+${character.acBreakdown?.armor || 0}</span></div>
-        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Kalkan Bonusu (Shield):</span><span class="text-sky-400 font-bold">+${character.acBreakdown?.shield || 0}</span></div>
-        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">DEX Modifiyeri:</span><span class="text-emerald-400 font-bold">+${acCalc.effectiveDex}</span></div>
-        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Deflection (Saptırma):</span><span class="text-indigo-400 font-bold">+${character.acBreakdown?.deflection || 0}</span></div>
-        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Doğal Zırh (Natural):</span><span class="text-teal-400 font-bold">+${character.acBreakdown?.natural || 0}</span></div>
-        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Dodge (Kaçınma - Stacks):</span><span class="text-amber-400 font-bold">+${acCalc.dodgeBonus}</span></div>
-        <div class="flex justify-between py-1 text-slate-300 font-bold"><span class="text-emerald-300">NİHAİ ZIRH SINIFI:</span><span class="text-emerald-400 text-sm font-black">${acCalc.total} AC</span></div>
+        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Zırh Bonusu (Armor):</span><span class="text-sky-400 font-bold">+${bd.armor || 0}</span></div>
+        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Kalkan Bonusu (Shield):</span><span class="text-sky-400 font-bold">+${bd.shield || 0}</span></div>
+        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">DEX Modifiyeri${maxDexInfo}:</span><span class="text-emerald-400 font-bold">+${bd.effectiveDex ?? dexMod}</span></div>
+        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Deflection (Saptırma):</span><span class="text-indigo-400 font-bold">+${bd.deflection || 0}</span></div>
+        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Doğal Zırh (Natural):</span><span class="text-teal-400 font-bold">+${bd.natural || 0}</span></div>
+        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Dodge (Kaçınma - Stacks):</span><span class="text-amber-400 font-bold">+${bd.dodge || 0}</span></div>
+        ${penaltyInfo}
+        <div class="flex justify-between py-1.5 text-slate-300 font-bold border-t border-slate-700 mt-1"><span class="text-emerald-300 text-xs">NİHAİ ZIRH SINIFI:</span><span class="text-emerald-400 text-sm font-black">${bd.total || acCalc.total} AC</span></div>
+        <div class="flex justify-between text-[11px] text-slate-400 pt-0.5">
+          <span>Touch: <strong class="text-sky-300">${bd.touch || acCalc.touch}</strong></span>
+          <span>Flat-Footed: <strong class="text-amber-300">${bd.flat || acCalc.flat}</strong></span>
+          <span>Zırh Cezası (ACP): <strong class="text-rose-400">${bd.acp ? '-' + Math.abs(bd.acp) : '0'}</strong></span>
+        </div>
       `;
 
       const saves = RuleEngine.evaluateSaves(character);
+      const battleClarityInt = Math.min(1, Math.max(0, intMod));
       savesList.innerHTML = `
         <div class="flex justify-between py-1 border-b border-slate-800">
           <span class="text-slate-400">🛡️ Fortitude:</span>
@@ -3040,8 +3229,9 @@
           <span class="text-slate-400">🧠 Will:</span>
           <span class="text-white font-bold">${character.baseSaves?.will || 0} (Base) + ${wisMod} (Wis) + ${character.saveBonuses?.resistance || 0} (Resist) = <strong class="text-purple-400">+${saves.will}</strong></span>
         </div>
-        <div class="text-[10px] text-indigo-300 pt-1">
-          ✨ Battle Clarity: Düztaban değilken Reflex zarlarına +${Math.min(1, intMod)} INT bonusu eklenir.
+        <div class="text-[10px] text-indigo-300 pt-1 flex items-center justify-between">
+          <span>✨ Battle Clarity (Warblade 1): Düztaban değilken Reflex zarlarına +${battleClarityInt} INT bonusu eklenir.</span>
+          <span class="text-emerald-400 font-bold">Nihai Refl: +${saves.ref + battleClarityInt}</span>
         </div>
       `;
     }
@@ -3049,6 +3239,309 @@
     function recalculateDefense() {
       renderHUD();
       renderDefenseBreakdown();
+    }
+
+    // ✨ ACTIVE BUFFS & ROUND COUNTDOWN ENGINE
+    function renderActiveBuffs() {
+      const container = document.getElementById('buffs-list-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      if (!Array.isArray(character.buffs) || character.buffs.length === 0) {
+        if (RuleEngine && RuleEngine.getDefaultBuffs) {
+          character.buffs = RuleEngine.getDefaultBuffs();
+        } else {
+          character.buffs = [];
+        }
+      }
+
+      // Detect active body slot armor & shield to inform user of suppressed stackings
+      const activeArmor = Object.values(character.bodySlots || {}).find(s => s && s.active && s.name && s.name !== '-' && (s.category === 'Armor' || (s.slot && s.slot.toLowerCase().includes('armor'))));
+      const activeShield = Object.values(character.bodySlots || {}).find(s => s && s.active && s.name && s.name !== '-' && (s.category === 'Shield' || (s.slot && s.slot.toLowerCase().includes('shield'))));
+
+      let activeArmorVal = 0;
+      if (activeArmor && RuleEngine) {
+        const m = RuleEngine.parseItemModifiers(activeArmor, masterDb);
+        if (m) activeArmorVal = m.armor;
+      }
+      let activeShieldVal = 0;
+      if (activeShield && RuleEngine) {
+        const m = RuleEngine.parseItemModifiers(activeShield, masterDb);
+        if (m) activeShieldVal = m.shield;
+      }
+
+      character.buffs.forEach(buff => {
+        const isAct = buff.active;
+        const card = document.createElement('div');
+        card.className = `border rounded-xl p-3 transition flex flex-col justify-between ${isAct ? 'bg-slate-900/90 border-indigo-500/70 shadow-lg ring-1 ring-indigo-500/20' : 'bg-slate-950/40 border-slate-800/80 opacity-60'}`;
+
+        // Stacking check
+        let suppressionWarning = '';
+        if (isAct) {
+          if (buff.bonusType === 'Armor' && activeArmor && buff.acBonus && activeArmorVal >= buff.acBonus) {
+            suppressionWarning = `⚠️ ${activeArmor.name} (+${activeArmorVal}) daha yüksek olduğu için bu +${buff.acBonus} Armor AC baskılanıyor (D&D 3.5e Stacking).`;
+          } else if (buff.bonusType === 'Shield' && activeShield && buff.acBonus && activeShieldVal >= buff.acBonus) {
+            suppressionWarning = `⚠️ ${activeShield.name} (+${activeShieldVal}) daha yüksek olduğu için bu +${buff.acBonus} Shield AC baskılanıyor.`;
+          }
+        }
+
+        // Summary badges
+        const badges = [];
+        if (buff.acBonus) badges.push(`<span class="bg-sky-950 text-sky-300 border border-sky-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.acBonus} AC (${buff.bonusType || 'Armor'})</span>`);
+        if (buff.naturalBonus) badges.push(`<span class="bg-teal-950 text-teal-300 border border-teal-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.naturalBonus} Doğal AC</span>`);
+        if (buff.deflectionBonus) badges.push(`<span class="bg-indigo-950 text-indigo-300 border border-indigo-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.deflectionBonus} Saptırma AC</span>`);
+        if (buff.dodgeBonus) badges.push(`<span class="bg-amber-950 text-amber-300 border border-amber-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.dodgeBonus} Dodge AC</span>`);
+        if (buff.acPenalty) badges.push(`<span class="bg-rose-950 text-rose-300 border border-rose-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">-${buff.acPenalty} AC</span>`);
+        if (buff.strBonus) badges.push(`<span class="bg-emerald-950 text-emerald-300 border border-emerald-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.strBonus} STR</span>`);
+        if (buff.dexBonus) badges.push(`<span class="bg-emerald-950 text-emerald-300 border border-emerald-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.dexBonus} DEX</span>`);
+        if (buff.conBonus) badges.push(`<span class="bg-emerald-950 text-emerald-300 border border-emerald-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.conBonus} CON</span>`);
+        if (buff.intBonus) badges.push(`<span class="bg-emerald-950 text-emerald-300 border border-emerald-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.intBonus} INT</span>`);
+        if (buff.wisBonus) badges.push(`<span class="bg-emerald-950 text-emerald-300 border border-emerald-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.wisBonus} WIS</span>`);
+        if (buff.chaBonus) badges.push(`<span class="bg-emerald-950 text-emerald-300 border border-emerald-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.chaBonus} CHA</span>`);
+        if (buff.attBonus) badges.push(`<span class="bg-purple-950 text-purple-300 border border-purple-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.attBonus} Saldırı</span>`);
+        if (buff.dmgBonus) badges.push(`<span class="bg-purple-950 text-purple-300 border border-purple-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.dmgBonus} Hasar</span>`);
+        if (buff.dmgDice) badges.push(`<span class="bg-purple-950 text-purple-300 border border-purple-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.dmgDice} Hasar</span>`);
+        if (buff.speedBonus) badges.push(`<span class="bg-sky-950 text-sky-300 border border-sky-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.speedBonus} ft Hız</span>`);
+
+        card.innerHTML = `
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between gap-1.5">
+              <label class="flex items-center gap-2 cursor-pointer select-none">
+                <input type="checkbox" ${isAct ? 'checked' : ''} onchange="toggleBuffActive('${buff.id}')" class="w-4 h-4 rounded text-indigo-600 focus:ring-0">
+                <span class="font-bold text-xs ${isAct ? 'text-white' : 'text-slate-400'}">${buff.name}</span>
+              </label>
+              <div class="flex items-center gap-1">
+                <span class="text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-slate-800 text-purple-300 border border-slate-700">${buff.source || 'Buff'}</span>
+                <button onclick="deleteBuff('${buff.id}')" class="text-slate-500 hover:text-rose-400 p-0.5 text-xs transition" title="Buffı Sil">🗑️</button>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-1 my-1">
+              ${badges.join(' ')}
+            </div>
+
+            <div class="text-[11px] text-slate-300 font-sans">
+              ${buff.notes || ''}
+            </div>
+
+            ${suppressionWarning ? `<div class="text-[10px] text-amber-400 bg-amber-950/30 border border-amber-800/40 rounded px-1.5 py-0.5">${suppressionWarning}</div>` : ''}
+          </div>
+
+          <div class="flex items-center justify-between pt-2 border-t border-slate-800/80 mt-2 text-xs">
+            <div class="text-[10px] font-mono text-slate-400">
+              ${buff.durationText || (buff.rounds ? `${buff.rounds} Tur` : 'Sürekli')}
+            </div>
+            <div class="flex items-center gap-1">
+              ${buff.rounds !== null && buff.rounds !== undefined ? `
+                <button onclick="adjustBuffRounds('${buff.id}', -1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center">-</button>
+                <span class="font-mono font-bold px-1.5 ${buff.rounds <= 3 ? 'text-rose-400 animate-pulse' : 'text-amber-400'}">${buff.rounds} Rd</span>
+                <button onclick="adjustBuffRounds('${buff.id}', 1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center">+</button>
+              ` : `<span class="text-[10px] text-slate-500 italic">Sürekli</span>`}
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function toggleBuffActive(buffId) {
+      const buff = (character.buffs || []).find(b => b.id === buffId);
+      if (buff) {
+        buff.active = !buff.active;
+        saveStateToStorage(true);
+        renderAll();
+      }
+    }
+
+    function adjustBuffRounds(buffId, delta) {
+      const buff = (character.buffs || []).find(b => b.id === buffId);
+      if (buff && buff.rounds !== null && buff.rounds !== undefined) {
+        buff.rounds = Math.max(0, buff.rounds + delta);
+        if (buff.rounds === 0) buff.active = false;
+        saveStateToStorage(true);
+        renderAll();
+      }
+    }
+
+    function deleteBuff(buffId) {
+      if (confirm('Bu buff kaydını silmek istediğinize emin misiniz?')) {
+        character.buffs = (character.buffs || []).filter(b => b.id !== buffId);
+        saveStateToStorage(true);
+        renderAll();
+      }
+    }
+
+    function advanceNextRound() {
+      if (!character || !Array.isArray(character.buffs)) return;
+      const expired = [];
+      character.buffs.forEach(buff => {
+        if (buff.active && buff.rounds !== null && buff.rounds !== undefined && buff.rounds > 0) {
+          buff.rounds--;
+          if (buff.rounds <= 0) {
+            buff.active = false;
+            expired.push(buff.name);
+          }
+        }
+      });
+
+      saveStateToStorage(true);
+      renderAll();
+
+      if (expired.length > 0) {
+        alert(`⏳ Tur ilerletildi (-1 Rd)!\n\nSüresi dolan bufflar sona erdi:\n• ${expired.join('\n• ')}`);
+      }
+    }
+
+    function performLongRest() {
+      if (!character) return;
+      character.hp.current = character.hp.max;
+      character.hp.temp = 0;
+      character.hp.nonlethal = 0;
+
+      if (character.spellcasting && Array.isArray(character.spellcasting.slots)) {
+        character.spellcasting.slots.forEach(s => s.used = 0);
+      }
+
+      if (character.tomeOfBattle && Array.isArray(character.tomeOfBattle.readiedManeuvers)) {
+        character.tomeOfBattle.readiedManeuvers.forEach(m => m.expended = false);
+      }
+
+      if (Array.isArray(character.buffs)) {
+        character.buffs.forEach(b => {
+          if (b.rounds !== null && b.rounds !== undefined) {
+            b.active = false;
+          }
+        });
+      }
+
+      saveStateToStorage(true);
+      renderAll();
+      alert('☀️ UZUN DİNLENME TAMAMLANDI!\n\n• Can puanı (HP) maksimuma getirildi.\n• Tüm büyü slotları tazelendi.\n• Bütün manevralar yeniden hazırlandı.\n• Geçici buff süreleri sıfırlandı.');
+    }
+
+    function performEncounterReset() {
+      if (!character) return;
+
+      if (character.tomeOfBattle && Array.isArray(character.tomeOfBattle.readiedManeuvers)) {
+        character.tomeOfBattle.readiedManeuvers.forEach(m => m.expended = false);
+      }
+
+      if (Array.isArray(character.buffs)) {
+        character.buffs.forEach(b => {
+          if (b.rounds !== null && b.rounds <= 10) {
+            b.active = false;
+          }
+        });
+      }
+
+      saveStateToStorage(true);
+      renderAll();
+      alert('🔄 KARŞILAŞMA SIFIRLANDI!\n\n• Tüm manevralar (Readied Maneuvers) hazır hale getirildi.\n• Karşılaşma süreli kısa bufflar (<= 10 tur) kapatıldı.');
+    }
+
+    function openAddBuffModal() {
+      const modal = document.getElementById('add-buff-modal');
+      if (!modal) return;
+      document.getElementById('buff-preset-select').value = 'custom';
+      document.getElementById('buff-input-name').value = '';
+      document.getElementById('buff-input-source').value = 'Spell';
+      document.getElementById('buff-input-type').value = 'Enhancement';
+      document.getElementById('buff-input-rounds').value = '10';
+      document.getElementById('buff-input-duration').value = '1 dk / CL';
+      document.getElementById('buff-input-ac').value = '';
+      document.getElementById('buff-input-att').value = '';
+      document.getElementById('buff-input-dmg').value = '';
+      document.getElementById('buff-input-str').value = '';
+      document.getElementById('buff-input-dex').value = '';
+      document.getElementById('buff-input-con').value = '';
+      document.getElementById('buff-input-int').value = '';
+      document.getElementById('buff-input-wis').value = '';
+      document.getElementById('buff-input-cha').value = '';
+      document.getElementById('buff-input-notes').value = '';
+      modal.classList.remove('hidden');
+    }
+
+    function closeAddBuffModal() {
+      const modal = document.getElementById('add-buff-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function onBuffPresetChange() {
+      const presetKey = document.getElementById('buff-preset-select').value;
+      if (presetKey === 'custom') return;
+
+      const defaults = RuleEngine.getDefaultBuffs();
+      const match = defaults.find(d => d.id === 'buff_' + presetKey || d.name.toLowerCase().includes(presetKey.replace('_', ' ')));
+      if (!match) return;
+
+      document.getElementById('buff-input-name').value = match.name;
+      document.getElementById('buff-input-source').value = match.source || 'Spell';
+      document.getElementById('buff-input-type').value = match.bonusType || 'Untyped';
+      document.getElementById('buff-input-rounds').value = match.rounds !== null ? match.rounds : '';
+      document.getElementById('buff-input-duration').value = match.durationText || '';
+      document.getElementById('buff-input-ac').value = match.acBonus || match.naturalBonus || match.deflectionBonus || match.dodgeBonus || '';
+      document.getElementById('buff-input-att').value = match.attBonus || '';
+      document.getElementById('buff-input-dmg').value = match.dmgBonus || '';
+      document.getElementById('buff-input-str').value = match.strBonus || '';
+      document.getElementById('buff-input-dex').value = match.dexBonus || '';
+      document.getElementById('buff-input-con').value = match.conBonus || '';
+      document.getElementById('buff-input-int').value = match.intBonus || '';
+      document.getElementById('buff-input-wis').value = match.wisBonus || '';
+      document.getElementById('buff-input-cha').value = match.chaBonus || '';
+      document.getElementById('buff-input-notes').value = match.notes || '';
+    }
+
+    function saveNewBuffFromModal() {
+      const name = document.getElementById('buff-input-name').value.trim();
+      if (!name) {
+        alert('Lütfen geçerli bir Buff Adı giriniz.');
+        return;
+      }
+
+      const source = document.getElementById('buff-input-source').value.trim() || 'Buff';
+      const bonusType = document.getElementById('buff-input-type').value;
+      const roundsVal = document.getElementById('buff-input-rounds').value.trim();
+      const rounds = roundsVal !== '' ? parseInt(roundsVal) : null;
+      const durationText = document.getElementById('buff-input-duration').value.trim();
+      const acBonus = parseInt(document.getElementById('buff-input-ac').value) || 0;
+      const attBonus = parseInt(document.getElementById('buff-input-att').value) || 0;
+      const dmgBonus = parseInt(document.getElementById('buff-input-dmg').value) || 0;
+      const strBonus = parseInt(document.getElementById('buff-input-str').value) || 0;
+      const dexBonus = parseInt(document.getElementById('buff-input-dex').value) || 0;
+      const conBonus = parseInt(document.getElementById('buff-input-con').value) || 0;
+      const intBonus = parseInt(document.getElementById('buff-input-int').value) || 0;
+      const wisBonus = parseInt(document.getElementById('buff-input-wis').value) || 0;
+      const chaBonus = parseInt(document.getElementById('buff-input-cha').value) || 0;
+      const notes = document.getElementById('buff-input-notes').value.trim();
+
+      const newBuff = {
+        id: 'buff_' + Date.now(),
+        name,
+        source,
+        bonusType,
+        category: acBonus ? 'AC' : (strBonus || dexBonus || conBonus ? 'Stat' : 'Combat'),
+        active: true,
+        rounds,
+        durationText: durationText || (rounds ? `${rounds} Tur` : 'Sürekli'),
+        acBonus,
+        attBonus,
+        dmgBonus,
+        strBonus,
+        dexBonus,
+        conBonus,
+        intBonus,
+        wisBonus,
+        chaBonus,
+        notes
+      };
+
+      if (!Array.isArray(character.buffs)) character.buffs = [];
+      character.buffs.push(newBuff);
+
+      closeAddBuffModal();
+      saveStateToStorage(true);
+      renderAll();
+      alert(`✨ "${name}" buffı başarıyla eklendi ve etkinleştirildi!`);
     }
 
     // 🎒 INVENTORY, 14 BODY SLOTS & GEAR POOL (Madde 6 & 8)
@@ -3150,13 +3643,18 @@
       if (!slot || slot.name === '-') return;
 
       // Find in pool and set isEquipped = false
-      const poolItem = (character.gearPool || []).find(p => p.name === slot.name);
+      const cleanSlotName = (slot.name || '').toLowerCase().trim();
+      const cleanRefName = (slot.masterDbName || '').toLowerCase().trim();
+      const poolItem = (character.gearPool || []).find(p => {
+        const pClean = (p.name || '').toLowerCase().trim();
+        return pClean === cleanSlotName || (cleanRefName && pClean === cleanRefName);
+      });
       if (poolItem) {
         poolItem.isEquipped = false;
       }
 
       character.bodySlots[slotKey] = { name: '-', active: false, weight: 0, cost: 0, desc: '' };
-      saveStateToStorage();
+      saveStateToStorage(true);
       renderAll();
     }
 
@@ -3257,6 +3755,13 @@
         }
       } else if (item.category === 'Shield') {
         targetSlotKey = 'offHand';
+      } else if (item.category === 'Ring') {
+        const r1 = character.bodySlots?.ring1;
+        if (!r1 || !r1.name || r1.name === '-') {
+          targetSlotKey = 'ring1';
+        } else {
+          targetSlotKey = 'ring2';
+        }
       } else {
         const match = BODY_SLOT_DEFS.find(def => def.name.toLowerCase() === item.category.toLowerCase() || def.allowed.includes(item.category));
         if (match) targetSlotKey = match.key;
@@ -3267,24 +3772,36 @@
       // Unequip currently equipped item in that slot if any
       const existing = character.bodySlots?.[targetSlotKey];
       if (existing && existing.name && existing.name !== '-') {
-        const poolExisting = (character.gearPool || []).find(p => p.name === existing.name);
+        const cleanExisting = existing.name.toLowerCase().trim();
+        const poolExisting = (character.gearPool || []).find(p => p.name.toLowerCase().trim() === cleanExisting);
         if (poolExisting) poolExisting.isEquipped = false;
       }
 
-      // Equip new item
+      // Equip new item with full properties
       character.bodySlots[targetSlotKey] = {
         name: item.name,
+        masterDbName: item.masterDbName || item.name,
         category: item.category,
         active: true,
         weight: item.weight || 0,
         cost: item.cost || 0,
-        desc: item.desc || ''
+        desc: item.desc || '',
+        acBonus: item.acBonus,
+        bonusType: item.bonusType,
+        strBonus: item.strBonus,
+        dexBonus: item.dexBonus,
+        conBonus: item.conBonus,
+        intBonus: item.intBonus,
+        wisBonus: item.wisBonus,
+        chaBonus: item.chaBonus,
+        maxDex: item.maxDex,
+        checkPenalty: item.checkPenalty
       };
       item.isEquipped = true;
 
-      saveStateToStorage();
+      saveStateToStorage(true);
       renderAll();
-      alert(`⚔️ ${item.name} kuşanıldı (${targetSlotKey} yuvasına yerleştirildi)!`);
+      alert(`⚔️ "${item.name}" kuşanıldı (${targetSlotKey} yuvasına yerleştirildi)! Savunma ve Stat değerleriniz güncellendi.`);
     }
 
     // Helper: Map Master DB / Rule Master entry to 14 official Body Slots & Gear Categories (Madde 8)
@@ -4185,10 +4702,24 @@
           alert(`💖 ${name} içildi! 3d8 [${r1}+${r2}+${r3}] + 5 = +${heal} HP kazanıldı.`);
         });
       } else {
-        renderInventory();
-        renderConsumables();
-        saveStateToStorage();
-        alert(`🧪 ${name} içildi / tüketildi.`);
+        // Check if consumable activates a buff!
+        const cleanName = (name || '').toLowerCase();
+        let activatedBuff = null;
+        if (Array.isArray(character.buffs)) {
+          const match = character.buffs.find(b => cleanName.includes(b.name.toLowerCase()) || b.name.toLowerCase().includes(cleanName.replace(/potion of /i, '').replace(/iksir/i, '').trim()));
+          if (match) {
+            match.active = true;
+            match.rounds = 30; // 30 rounds for potion
+            activatedBuff = match.name;
+          }
+        }
+        saveStateToStorage(true);
+        renderAll();
+        if (activatedBuff) {
+          alert(`🧪 "${name}" içildi! "${activatedBuff}" buffı aktif edildi ve statlarınız güncellendi!`);
+        } else {
+          alert(`🧪 ${name} içildi / tüketildi.`);
+        }
       }
     }
 
