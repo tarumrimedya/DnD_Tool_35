@@ -572,45 +572,193 @@
     </div>
 
     <!-- ==================================================== -->
-    <!-- TAB 6: 📚 MASTER DB COMPENDIUM -->
+    <!-- TAB 6: 📚 MASTER DB & RULE MASTER YÖNETİM MERKEZİ -->
     <!-- ==================================================== -->
     <div id="tab-database" class="tab-content hidden space-y-4">
       <div class="bg-dndCard border border-dndBorder rounded-xl p-4 shadow-lg space-y-4">
-        <h2 class="text-sm font-bold text-purple-400 border-b border-dndBorder pb-2">📚 MASTER VERİTABANI & KÜTÜPHANE</h2>
-
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
-          <div class="md:col-span-8">
-            <input type="text" id="mdb-search-input" onkeyup="filterMasterDb()" placeholder="Kütüphanede ara (ör. Rapier, Shadow Blade, Mountain Hammer, Haste)..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500">
+        
+        <!-- Header & Sub-Navigation -->
+        <div class="flex flex-wrap items-center justify-between border-b border-dndBorder pb-3 gap-2">
+          <div class="flex items-center gap-2">
+            <span class="text-2xl">📚</span>
+            <div>
+              <h2 class="text-sm md:text-base font-extrabold text-purple-400">MASTER VERİTABANI & RULE MASTER</h2>
+              <p class="text-[11px] text-slate-400">D&D 3.5e Kural Kütüphanesi, 29 Sütunlu DB Editörü ve Kademeli Kaynaklar</p>
+            </div>
           </div>
-          <div class="md:col-span-4">
-            <select id="mdb-category-filter" onchange="filterMasterDb()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-slate-300 focus:outline-none">
-              <option value="ALL">Tüm Kategoriler</option>
-              <option value="Weapon">Silahlar (Weapons)</option>
-              <option value="Feat">Featler</option>
-              <option value="Maneuver">Manevralar</option>
-              <option value="Stance">Duruşlar (Stances)</option>
-              <option value="Spell">Büyüler</option>
-              <option value="Potion">İksirler</option>
-            </select>
+          <!-- Sub-Tab Buttons -->
+          <div class="flex items-center gap-1.5 bg-slate-900 p-1 rounded-lg border border-slate-800">
+            <button onclick="RuleMaster.switchSubTab('subtab-mdb-list')" id="btn-subtab-mdb-list" class="mdb-subtab-btn px-3 py-1.5 rounded-md text-xs font-bold bg-purple-700 text-white shadow transition">
+              📑 Master DB Kütüphanesi
+            </button>
+            <button onclick="RuleMaster.switchSubTab('subtab-mdb-importer')" id="btn-subtab-mdb-importer" class="mdb-subtab-btn px-3 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-white transition">
+              🤖 Hızlı / AI Kural Ayrıştırıcı
+            </button>
+            <button onclick="RuleMaster.switchSubTab('subtab-mdb-sources')" id="btn-subtab-mdb-sources" class="mdb-subtab-btn px-3 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-white transition">
+              📖 Kural Kaynakları (Rule Library)
+            </button>
           </div>
         </div>
 
-        <div class="border border-slate-800 rounded-xl overflow-hidden max-h-[500px] overflow-y-auto">
-          <table class="w-full text-left text-xs">
-            <thead class="bg-slate-950 text-slate-400 text-[10px] uppercase font-bold sticky top-0">
-              <tr>
-                <th class="py-2.5 px-3">Ad</th>
-                <th class="py-2.5 px-3">Tür</th>
-                <th class="py-2.5 px-3">Slot / Seviye</th>
-                <th class="py-2.5 px-3">Bonus / Hasar</th>
-                <th class="py-2.5 px-3">Açıklama / Kural Notları</th>
-              </tr>
-            </thead>
-            <tbody id="master-db-tbody" class="divide-y divide-slate-800">
-              <!-- Dynamically populated -->
-            </tbody>
-          </table>
+        <!-- ========================================== -->
+        <!-- SUB-TAB 1: MASTER DB TABLE & CRUD MANAGER -->
+        <!-- ========================================== -->
+        <div id="subtab-mdb-list" class="mdb-subtab-content space-y-3">
+          <!-- Filters & Action Bar -->
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-2.5 items-center">
+            <div class="md:col-span-4">
+              <input type="text" id="mdb-search-input" onkeyup="RuleMaster.renderTable()" placeholder="Kütüphanede ara (ad, açıklama, kaynak, disiplin)..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500">
+            </div>
+            <div class="md:col-span-2">
+              <select id="mdb-category-filter" onchange="RuleMaster.renderTable()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-slate-300 focus:outline-none">
+                <option value="ALL">Tüm Kategoriler</option>
+                <option value="Weapon">Silahlar (Weapons)</option>
+                <option value="Shield">Kalkanlar (Shields)</option>
+                <option value="Armor">Zırhlar (Armors)</option>
+                <option value="Feat">Featler (Hünerler)</option>
+                <option value="Spell">Büyüler (Spells)</option>
+                <option value="Maneuver">Manevralar (Maneuvers)</option>
+                <option value="Stance">Duruşlar (Stances)</option>
+                <option value="Wondrous Item">Sihirli Eşyalar (Wondrous)</option>
+                <option value="Ring">Yüzükler (Rings)</option>
+                <option value="Potion">İksirler (Potions)</option>
+                <option value="Slotless Item">Yuvasız Eşyalar (Slotless)</option>
+                <option value="Special Ability">Özel Yetenekler (Class/Ex)</option>
+                <option value="DM Grant">DM Ödülleri (Grants)</option>
+              </select>
+            </div>
+            <div class="md:col-span-2">
+              <select id="mdb-bonus-filter" onchange="RuleMaster.renderTable()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-slate-300 focus:outline-none">
+                <option value="ALL">Tüm Bonus Türleri</option>
+                <option value="Enhancement">Enhancement</option>
+                <option value="Morale">Morale</option>
+                <option value="Luck">Luck</option>
+                <option value="Insight">Insight</option>
+                <option value="Competence">Competence</option>
+                <option value="Resistance">Resistance</option>
+                <option value="Deflection">Deflection</option>
+                <option value="Armor">Armor</option>
+                <option value="Shield">Shield</option>
+                <option value="Natural Armor">Natural Armor</option>
+                <option value="Dodge">Dodge</option>
+                <option value="Untyped">Untyped</option>
+              </select>
+            </div>
+            <div class="md:col-span-2">
+              <select id="mdb-scope-filter" onchange="RuleMaster.renderTable()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-slate-300 focus:outline-none">
+                <option value="ALL">Tüm Kapsamlar</option>
+                <option value="None / General">Genel / Tümü</option>
+                <option value="Melee Only">Yalnızca Melee</option>
+                <option value="Ranged Only">Yalnızca Ranged</option>
+                <option value="Thrown Only">Yalnızca Thrown</option>
+                <option value="Specific Weapon">Özel Silah</option>
+                <option value="Spells">Büyüler</option>
+              </select>
+            </div>
+            <!-- Add Button -->
+            <div class="md:col-span-2 flex items-center justify-end gap-1.5">
+              <button onclick="RuleMaster.openModalWithData(RuleMaster.createEmptyEntry('Weapon'), -1)" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs py-2 px-3 rounded-lg shadow transition flex items-center justify-center gap-1.5">
+                <span>➕</span>
+                <span>Yeni Kural / Eşya</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Total count & actions header -->
+          <div class="flex items-center justify-between text-xs text-slate-400 px-1">
+            <div class="flex items-center gap-2">
+              <span id="mdb-total-count-badge" class="badge bg-purple-950 text-purple-300 border border-purple-800 font-mono">0 Kayıt</span>
+              <span>•</span>
+              <span class="text-[11px]">Tablodaki işlemleri kullanarak anında düzenleyebilir, alt güç bağlayabilir veya karaktere kuşandırabilirsiniz.</span>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="exportMasterDbJson()" class="text-[11px] text-slate-300 hover:text-white bg-slate-800 px-2 py-0.5 rounded border border-slate-700 transition">💾 DB İndir (.json)</button>
+              <button onclick="document.getElementById('json-file-input').click()" class="text-[11px] text-slate-300 hover:text-white bg-slate-800 px-2 py-0.5 rounded border border-slate-700 transition">📂 DB Yükle</button>
+            </div>
+          </div>
+
+          <!-- Master Table -->
+          <div class="border border-slate-800 rounded-xl overflow-hidden max-h-[600px] overflow-y-auto shadow-inner">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950 text-slate-400 text-[10px] uppercase font-bold sticky top-0 z-10 border-b border-slate-800">
+                <tr>
+                  <th class="py-2.5 px-3">Ad & Kaynak</th>
+                  <th class="py-2.5 px-3">Tür / Disiplin</th>
+                  <th class="py-2.5 px-3">Slot / Lvl</th>
+                  <th class="py-2.5 px-3">Bonus & Kapsam</th>
+                  <th class="py-2.5 px-3">Stat & Dövüş Etkisi</th>
+                  <th class="py-2.5 px-3">Açıklama / RAW Notları</th>
+                  <th class="py-2.5 px-3 text-center w-28">İşlemler</th>
+                </tr>
+              </thead>
+              <tbody id="master-db-tbody" class="divide-y divide-slate-800 font-medium">
+                <!-- Dynamically populated by RuleMaster.renderTable() -->
+              </tbody>
+            </table>
+          </div>
         </div>
+
+        <!-- ========================================== -->
+        <!-- SUB-TAB 2: QUICK / AI RULE IMPORTER -->
+        <!-- ========================================== -->
+        <div id="subtab-mdb-importer" class="mdb-subtab-content hidden space-y-4">
+          <div class="bg-slate-900 border border-purple-600/40 rounded-xl p-4 space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+              <div>
+                <h3 class="text-xs md:text-sm font-bold text-white flex items-center gap-1.5">
+                  <span>🤖</span>
+                  <span>Hızlı Kural Ayrıştırıcı & İçe Aktarma Sihirbazı</span>
+                </h3>
+                <p class="text-[11px] text-slate-400">Kitaplardan, d20srd veya dndtools'dan kural metnini yapıştırın; otomatik 29 sütuna dönüştürsün.</p>
+              </div>
+              <!-- Example Presets -->
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-[10px] text-slate-400">Hızlı Örnekler:</span>
+                <button onclick="document.getElementById('raw-rule-input').value = 'Shadow Blade\n[General]\nYou have mastered the style of the Shadow Hand discipline.\nPrerequisites: One Shadow Hand stance.\nBenefit: While in a Shadow Hand stance, add Dexterity modifier to damage rolls with Shadow Hand discipline weapons.\nSpecial: Fighter bonus feat.';" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-purple-300 px-2 py-0.5 rounded border border-slate-700">Feat</button>
+                <button onclick="document.getElementById('raw-rule-input').value = 'Mountain Hammer\nStone Dragon (Strike)\nLevel: Crusader 2, Swordsage 2, Warblade 2\nInitiation Action: 1 standard action\nRange: Melee attack\nTarget: One creature or object\nBenefit: Deal weapon damage + 2d6 damage. Overcomes Damage Reduction and Hardness.';" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-rose-300 px-2 py-0.5 rounded border border-slate-700">Manevra</button>
+                <button onclick="document.getElementById('raw-rule-input').value = 'Haste\nTransmutation\nLevel: Brd 3, Sor/Wiz 3\nComponents: V, S, M\nCasting Time: 1 standard action\nRange: Close (25 ft. + 5 ft./2 levels)\nTargets: One creature/level, no two of which can be more than 30 ft. apart\nDuration: 1 round/level\nBenefit: Grants +1 attack, +1 dodge AC, +1 Reflex save, +30 ft speed, and 1 extra attack on full attack.';" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-sky-300 px-2 py-0.5 rounded border border-slate-700">Büyü</button>
+              </div>
+            </div>
+
+            <textarea id="raw-rule-input" rows="6" placeholder="Kural metnini buraya yapıştırın... (Örn: Feat adı, Prerequisites, Benefit; veya Manevra/Büyü stat block'u)" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-xs text-white font-mono focus:outline-none focus:border-purple-500"></textarea>
+
+            <div class="flex items-center justify-between pt-1">
+              <span class="text-[11px] text-slate-400">Ayrıştırıcı otomatik olarak Ad, Tür, Önkoşullar, Hasar Zarı ve Kural Açıklamasını tespit eder.</span>
+              <button onclick="RuleMaster.parseRawText()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs px-4 py-2 rounded-lg shadow transition flex items-center gap-1.5">
+                <span>⚡</span>
+                <span>Metni Ayrıştır ve DB Editöründe Aç</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SUB-TAB 3: PRIORITIZED KNOWLEDGE BASES -->
+        <!-- ========================================== -->
+        <div id="subtab-mdb-sources" class="mdb-subtab-content hidden space-y-4">
+          <!-- Prioritized Sources -->
+          <div>
+            <h3 class="text-xs font-bold text-indigo-300 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+              <span>⚡</span>
+              <span>1. KADEMELİ ARAMA KAYNAKLARI (PRIORITIZED KNOWLEDGE BASES)</span>
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3" id="sources-list-container">
+              <!-- Dynamically populated by RuleMaster.renderSourcesCatalog() -->
+            </div>
+          </div>
+
+          <!-- Splatbooks Catalog -->
+          <div class="pt-3 border-t border-slate-800">
+            <h3 class="text-xs font-bold text-amber-300 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+              <span>📖</span>
+              <span>2. KAMPANYA KİTAPLARI & SPLATBOOK KATALOĞU</span>
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-2.5" id="splatbooks-grid-container">
+              <!-- Dynamically populated by RuleMaster.renderSourcesCatalog() -->
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -715,8 +863,270 @@
     </button>
   </nav>
 
+  <!-- ==================================================== -->
+  <!-- MODAL: 29-COLUMN RULE & ITEM CRUD EDITOR -->
+  <!-- ==================================================== -->
+  <div id="rule-crud-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
+    <div class="bg-dndCard border border-purple-500/60 rounded-2xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden my-auto">
+      
+      <!-- Modal Header -->
+      <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🛠️</span>
+          <div>
+            <h3 id="rule-modal-title" class="text-sm md:text-base font-extrabold text-white">Yeni Kural / Eşya Ekle</h3>
+            <p class="text-[10px] text-slate-400">29 Sütunlu D&D 3.5e Evrensel Kural & Veritabanı Mimarisi</p>
+          </div>
+        </div>
+        <button onclick="RuleMaster.closeModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg text-xs font-bold transition">✕ Kapat</button>
+      </div>
+
+      <!-- Quick Template Presets Bar -->
+      <div class="bg-slate-900/90 px-4 py-2 border-b border-slate-800 flex items-center gap-1.5 overflow-x-auto text-xs">
+        <span class="text-[11px] text-slate-400 font-bold shrink-0">Hızlı Şablonlar:</span>
+        <button onclick="RuleMaster.applyPreset('weapon')" class="px-2.5 py-1 rounded bg-rose-950/70 text-rose-300 border border-rose-800 hover:bg-rose-900 font-semibold text-[11px] shrink-0">🗡️ Silah</button>
+        <button onclick="RuleMaster.applyPreset('shield')" class="px-2.5 py-1 rounded bg-sky-950/70 text-sky-300 border border-sky-800 hover:bg-sky-900 font-semibold text-[11px] shrink-0">🛡️ Kalkan</button>
+        <button onclick="RuleMaster.applyPreset('armor')" class="px-2.5 py-1 rounded bg-blue-950/70 text-blue-300 border border-blue-800 hover:bg-blue-900 font-semibold text-[11px] shrink-0">🥋 Zırh</button>
+        <button onclick="RuleMaster.applyPreset('feat')" class="px-2.5 py-1 rounded bg-amber-950/70 text-amber-300 border border-amber-800 hover:bg-amber-900 font-semibold text-[11px] shrink-0">✨ Feat</button>
+        <button onclick="RuleMaster.applyPreset('spell')" class="px-2.5 py-1 rounded bg-purple-950/70 text-purple-300 border border-purple-800 hover:bg-purple-900 font-semibold text-[11px] shrink-0">🔮 Büyü</button>
+        <button onclick="RuleMaster.applyPreset('maneuver')" class="px-2.5 py-1 rounded bg-rose-950/70 text-rose-300 border border-rose-800 hover:bg-rose-900 font-semibold text-[11px] shrink-0">⚔️ Manevra</button>
+        <button onclick="RuleMaster.applyPreset('stance')" class="px-2.5 py-1 rounded bg-indigo-950/70 text-indigo-300 border border-indigo-800 hover:bg-indigo-900 font-semibold text-[11px] shrink-0">⚡ Duruş</button>
+        <button onclick="RuleMaster.applyPreset('wondrous')" class="px-2.5 py-1 rounded bg-teal-950/70 text-teal-300 border border-teal-800 hover:bg-teal-900 font-semibold text-[11px] shrink-0">👑 Eşya</button>
+        <button onclick="RuleMaster.applyPreset('potion')" class="px-2.5 py-1 rounded bg-emerald-950/70 text-emerald-300 border border-emerald-800 hover:bg-emerald-900 font-semibold text-[11px] shrink-0">🧪 İksir</button>
+      </div>
+
+      <!-- Modal Body (Form Fields) -->
+      <div class="p-4 overflow-y-auto space-y-4 flex-1 text-xs">
+        
+        <!-- SECTION 1: TEMEL BİLGİLER -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 space-y-2.5">
+          <div class="text-[11px] font-bold text-purple-400 uppercase tracking-wide">1. Temel Tanımlamalar</div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kural / Eşya Adı *</label>
+              <input type="text" id="rf-name" placeholder="Örn: Rapier +2, Power Attack, Haste" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold focus:border-purple-500">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Türü (Category) *</label>
+              <select id="rf-type" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                <option value="Weapon">Weapon (Silah)</option>
+                <option value="Shield">Shield (Kalkan)</option>
+                <option value="Armor">Armor (Zırh)</option>
+                <option value="Feat">Feat (Hüner)</option>
+                <option value="Spell">Spell (Büyü)</option>
+                <option value="Maneuver">Maneuver (Manevra)</option>
+                <option value="Stance">Stance (Duruş)</option>
+                <option value="Wondrous Item">Wondrous Item (Sihirli Eşya)</option>
+                <option value="Ring">Ring (Yüzük)</option>
+                <option value="Potion">Potion (İksir)</option>
+                <option value="Slotless Item">Slotless Item (Yuvasız Eşya)</option>
+                <option value="Special Ability">Special Ability (Sınıf Özelliği)</option>
+                <option value="Active Power">Active Power (Bağlı Alt Güç)</option>
+                <option value="DM Grant">DM Grant (DM Ödülü)</option>
+                <option value="Flaw">Flaw (Kusur)</option>
+                <option value="Race">Race (Irk)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kuşanma Slotu (Body Slot)</label>
+              <select id="rf-slot" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                <option value="None">None (Yuvasız / Feat / Büyü)</option>
+                <option value="Main Hand">Main Hand (Ana El)</option>
+                <option value="Off-Hand/Shield">Off-Hand / Shield (İkinci El / Kalkan)</option>
+                <option value="Two-Hand">Two-Hand (İki El)</option>
+                <option value="Armor">Armor (Zırh Yuvası)</option>
+                <option value="Head">Head (Baş / Miğfer)</option>
+                <option value="Eyes">Eyes (Göz / Gözlük)</option>
+                <option value="Neck">Neck (Boyun / Kolye)</option>
+                <option value="Torso">Torso (Gövde / Yelek)</option>
+                <option value="Shoulders">Shoulders (Omuz / Pelerin)</option>
+                <option value="Arms">Arms (Kollar / Bileklik)</option>
+                <option value="Hands">Hands (Eller / Eldiven)</option>
+                <option value="Ring">Ring (Yüzük)</option>
+                <option value="Waist">Waist (Bel / Kemer)</option>
+                <option value="Feet">Feet (Ayaklar / Çizme)</option>
+                <option value="Slotless">Slotless (Çanta İçi / Pasif)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-2.5">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Üst Öğe (Parent Entry)</label>
+              <input type="text" id="rf-parent" value="-" placeholder="Ana eşya adı veya '-'" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-purple-300 font-mono">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Önkoşul (Prereq)</label>
+              <input type="text" id="rf-prereq" value="-" placeholder="Örn: Str 13, BAB +1 veya '-'" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kaynak Kitap & Sayfa</label>
+              <input type="text" id="rf-source" value="PHB p." placeholder="Örn: PHB p.98, ToB p.69" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Savaş Rolü (Combat Role)</label>
+              <select id="rf-role" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                <option value="Offense / Attack">Offense / Attack</option>
+                <option value="Defense / Counter">Defense / Counter</option>
+                <option value="Buff / Support">Buff / Support</option>
+                <option value="Tactical / Control">Tactical / Control</option>
+                <option value="Utility / Out-of-Combat">Utility / Out-of-Combat</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: KURAL AÇIKLAMASI -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 space-y-1.5">
+          <label class="block text-[11px] font-bold text-purple-400 uppercase tracking-wide">2. Açıklama & RAW Kural Notları (Benefit)</label>
+          <textarea id="rf-benefit" rows="3" placeholder="Kuralın tam RAW metni, mekanik açıklaması ve özel istisnaları..." class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-white focus:border-purple-500"></textarea>
+        </div>
+
+        <!-- SECTION 3: BONUS TÜRÜ & SAVAŞ KAPSAMI -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 space-y-2">
+          <div class="text-[11px] font-bold text-amber-400 uppercase tracking-wide">3. Bonus İstifleme Türü & Savaş Kapsamı</div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Bonus Türü (Bonus Type) *</label>
+              <select id="rf-bonus-type" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-amber-300 font-bold">
+                <option value="Untyped">Untyped (İstiflenir / Genel)</option>
+                <option value="Enhancement">Enhancement (En yüksek geçerli)</option>
+                <option value="Morale">Morale (En yüksek geçerli)</option>
+                <option value="Luck">Luck (En yüksek geçerli)</option>
+                <option value="Insight">Insight (En yüksek geçerli)</option>
+                <option value="Competence">Competence (En yüksek geçerli)</option>
+                <option value="Resistance">Resistance (Saves için - En yüksek geçerli)</option>
+                <option value="Deflection">Deflection (AC için - En yüksek geçerli)</option>
+                <option value="Armor">Armor (Zırh - En yüksek geçerli)</option>
+                <option value="Shield">Shield (Kalkan - En yüksek geçerli)</option>
+                <option value="Natural Armor">Natural Armor (En yüksek geçerli)</option>
+                <option value="Dodge">Dodge (İstiflenir)</option>
+                <option value="Circumstance">Circumstance (Farklı kaynaklar istiflenir)</option>
+                <option value="Alchemical">Alchemical</option>
+                <option value="Racial">Racial</option>
+                <option value="Divine">Divine / Sacred</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Savaş Kapsamı (Combat Scope)</label>
+              <select id="rf-scope" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                <option value="None / General">None / General (Tüm durumlar)</option>
+                <option value="All Attacks">All Attacks (Tüm saldırılar)</option>
+                <option value="Melee Only">Melee Only (Yalnızca Yakın Dövüş)</option>
+                <option value="Ranged Only">Ranged Only (Yalnızca Menzilli)</option>
+                <option value="Thrown Only">Thrown Only (Yalnızca Fırlatmalı)</option>
+                <option value="Specific Weapon">Specific Weapon (Yalnızca Bu Silah)</option>
+                <option value="Spells">Spells (Büyüler)</option>
+                <option value="Vs Traps">Vs Traps (Tuzaklara Karşı)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 4: 16 STAT BUFF SÜTUNLARI -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 space-y-2">
+          <div class="text-[11px] font-bold text-emerald-400 uppercase tracking-wide">4. Stat Buffları & Modifiyeler (Varsa Rakam Giriniz)</div>
+          <div class="grid grid-cols-4 md:grid-cols-8 gap-2">
+            <div><label class="block text-[9px] text-slate-400 uppercase font-bold">STR</label><input type="number" id="rf-str" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+            <div><label class="block text-[9px] text-slate-400 uppercase font-bold">DEX</label><input type="number" id="rf-dex" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+            <div><label class="block text-[9px] text-slate-400 uppercase font-bold">CON</label><input type="number" id="rf-con" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+            <div><label class="block text-[9px] text-slate-400 uppercase font-bold">INT</label><input type="number" id="rf-int" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+            <div><label class="block text-[9px] text-slate-400 uppercase font-bold">WIS</label><input type="number" id="rf-wis" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+            <div><label class="block text-[9px] text-slate-400 uppercase font-bold">CHA</label><input type="number" id="rf-cha" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+            <div><label class="block text-[9px] text-sky-400 uppercase font-bold">AC</label><input type="number" id="rf-ac" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+            <div><label class="block text-[9px] text-emerald-400 uppercase font-bold">HP</label><input type="number" id="rf-hp" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+          </div>
+          <div class="grid grid-cols-4 md:grid-cols-8 gap-2 pt-1">
+            <div><label class="block text-[9px] text-rose-400 uppercase font-bold">Atk</label><input type="number" id="rf-atk" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+            <div><label class="block text-[9px] text-rose-400 uppercase font-bold">Dmg</label><input type="number" id="rf-dmg" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+            <div><label class="block text-[9px] text-emerald-400 uppercase font-bold">Fort</label><input type="number" id="rf-fort" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+            <div><label class="block text-[9px] text-sky-400 uppercase font-bold">Ref</label><input type="number" id="rf-ref" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+            <div><label class="block text-[9px] text-purple-400 uppercase font-bold">Will</label><input type="number" id="rf-will" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+            <div><label class="block text-[9px] text-amber-400 uppercase font-bold">Skill</label><input type="number" id="rf-skill" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+            <div><label class="block text-[9px] text-indigo-400 uppercase font-bold">CL</label><input type="number" id="rf-cl" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+            <div><label class="block text-[9px] text-amber-400 uppercase font-bold">Speed</label><input type="number" id="rf-speed" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+          </div>
+        </div>
+
+        <!-- SECTION 5: DÖVÜŞ, EYLEM & PARAMETRELER -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 space-y-2">
+          <div class="text-[11px] font-bold text-rose-400 uppercase tracking-wide">5. Dövüş Mekaniği, Eylem & Masraf</div>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Hasar Zarı (Dice)</label>
+              <input type="text" id="rf-dice" placeholder="Örn: 2d6, 1d8, 1d10" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-amber-400 font-mono">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kritik Aralığı / Çarpanı</label>
+              <div class="flex items-center gap-1">
+                <input type="number" id="rf-crit-min" value="20" min="15" max="20" class="w-16 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-center text-xs text-white font-mono">
+                <span class="text-slate-400">/ x</span>
+                <input type="number" id="rf-crit-mult" value="2" min="2" max="4" class="w-14 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-center text-xs text-white font-mono">
+              </div>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Hasar Türü (Type)</label>
+              <input type="text" id="rf-dmg-type" placeholder="Örn: Slashing, Piercing, Acid" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Eylem Türü (Action)</label>
+              <select id="rf-action" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
+                <option value="Passive">Passive (Sürekli)</option>
+                <option value="Standard Action">Standard Action</option>
+                <option value="Full-Round Action">Full-Round Action</option>
+                <option value="Swift Action">Swift Action</option>
+                <option value="Immediate Action">Immediate Action</option>
+                <option value="Free Action">Free Action</option>
+                <option value="Move Action">Move Action</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 pt-1">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Süre / Kullanım (Duration)</label>
+              <input type="text" id="rf-duration" value="Continuous" placeholder="Continuous, 1 Round, 1/day" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Ağırlık (Weight lbs)</label>
+              <input type="number" id="rf-weight" value="1" step="0.1" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white font-mono">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Değer / Fiyat (Cost gp)</label>
+              <input type="number" id="rf-cost" value="10" step="1" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-amber-400 font-mono">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Disiplin / Büyü Okulu</label>
+              <input type="text" id="rf-discipline" placeholder="Iron Heart, Evocation vb." class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-purple-300">
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-2.5 pt-1">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Büyü Okulu</label>
+              <input type="text" id="rf-school" placeholder="Transmutation, Evocation" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Büyü / Manevra Seviyesi (Level)</label>
+              <input type="number" id="rf-level" min="0" max="9" placeholder="0-9" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white font-mono">
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="bg-slate-950 px-4 py-3 border-t border-slate-800 flex items-center justify-between">
+        <button onclick="RuleMaster.closeModal()" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition">Vazgeç</button>
+        <button onclick="RuleMaster.submitModal()" class="px-6 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg transition">💾 Master DB'ye Kaydet</button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- SCRIPT LOGIC -->
   <script src="rule_engine.js"></script>
+  <script src="rule_master.js"></script>
   <script src="dice3d.js"></script>
   <script src="gdrive_sync.js"></script>
 
@@ -1318,49 +1728,17 @@
       }
     }
 
-    // Master DB Table & Filter
+    // Master DB Table & Filter (Delegated to RuleMaster)
     function renderMasterDbTable() {
-      const tbody = document.getElementById('master-db-tbody');
-      if (!tbody) return;
-      tbody.innerHTML = '';
-      masterDb.slice(0, 60).forEach(item => {
-        const tr = document.createElement('tr');
-        tr.className = 'hover:bg-slate-800/40 transition';
-        tr.innerHTML = `
-          <td class="py-2 px-3 font-bold text-white">${item.name}</td>
-          <td class="py-2 px-3 text-purple-400 font-semibold">${item.type}</td>
-          <td class="py-2 px-3 text-slate-400">${item.level !== undefined ? item.level + '. Lvl' : (item.slot || '-')}</td>
-          <td class="py-2 px-3 text-amber-400 font-mono">${item.extraDmg || item.attBonus ? '+' + item.attBonus : '-'}</td>
-          <td class="py-2 px-3 text-slate-300 text-[11px]">${item.benefit || ''}</td>
-        `;
-        tbody.appendChild(tr);
-      });
+      if (window.RuleMaster && typeof RuleMaster.renderTable === 'function') {
+        RuleMaster.renderTable();
+      }
     }
 
     function filterMasterDb() {
-      const q = document.getElementById('mdb-search-input').value.toLowerCase();
-      const cat = document.getElementById('mdb-category-filter').value;
-      const tbody = document.getElementById('master-db-tbody');
-      tbody.innerHTML = '';
-
-      const filtered = masterDb.filter(i => {
-        const matchesQ = !q || i.name.toLowerCase().includes(q) || (i.benefit && i.benefit.toLowerCase().includes(q));
-        const matchesCat = cat === 'ALL' || i.type === cat;
-        return matchesQ && matchesCat;
-      });
-
-      filtered.slice(0, 60).forEach(item => {
-        const tr = document.createElement('tr');
-        tr.className = 'hover:bg-slate-800/40 transition';
-        tr.innerHTML = `
-          <td class="py-2 px-3 font-bold text-white">${item.name}</td>
-          <td class="py-2 px-3 text-purple-400 font-semibold">${item.type}</td>
-          <td class="py-2 px-3 text-slate-400">${item.level !== undefined ? item.level + '. Lvl' : (item.slot || '-')}</td>
-          <td class="py-2 px-3 text-amber-400 font-mono">${item.extraDmg || (item.attBonus ? '+' + item.attBonus : '-')}</td>
-          <td class="py-2 px-3 text-slate-300 text-[11px]">${item.benefit || ''}</td>
-        `;
-        tbody.appendChild(tr);
-      });
+      if (window.RuleMaster && typeof RuleMaster.renderTable === 'function') {
+        RuleMaster.renderTable();
+      }
     }
 
     // HP Adjustments

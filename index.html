@@ -2,11 +2,1863 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=webapp/index.html">
-  <title>D&D 3.5e Tactical Cockpit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>D&D 3.5e Tactical Cockpit & Character Hub</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            dndDark: '#080e1e',
+            dndCard: '#0f172a',
+            dndCardLight: '#1e293b',
+            dndBorder: '#334155',
+            dndRed: '#f43f5e',
+            dndGold: '#fbbf24',
+            dndSky: '#38bdf8',
+            dndGreen: '#10b981',
+            dndPurple: '#c084fc',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Three.js CDN for 3D Animated Physics Dice -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- Google Identity Services for Google Drive Cloud Sync -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <style>
+    body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #080e1e; color: #f8fafc; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    .badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+    input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  </style>
 </head>
-<body style="background-color: #080e1e; color: #fff; font-family: sans-serif; text-align: center; padding-top: 50px;">
-  <p>Yönlendiriliyor... <a href="webapp/index.html" style="color: #38bdf8;">Buraya tıklayın</a></p>
-  <script>window.location.href = "webapp/index.html";</script>
+<body class="min-h-screen flex flex-col pb-20 md:pb-6">
+
+  <!-- TOP HEADER & CLOUD SYNC STATUS BAR -->
+  <header class="bg-dndCard border-b border-dndBorder sticky top-0 z-40 px-4 py-2 flex flex-wrap items-center justify-between gap-2 shadow-lg">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-red-600/20 border border-red-500 flex items-center justify-center text-lg">⚔️</div>
+      <div>
+        <h1 class="font-bold text-sm md:text-base text-white flex items-center gap-2">
+          <span id="char-name-display">Kazmil'in Çırağı</span>
+          <span class="text-xs font-normal text-slate-400" id="char-classes-display">Sorcerer 5 / Warblade 1</span>
+        </h1>
+        <div class="text-[10px] text-slate-400 flex items-center gap-2">
+          <span>BAB: <strong class="text-emerald-400" id="char-bab-display">+3</strong></span>
+          <span>•</span>
+          <span>Initiative: <strong class="text-sky-400" id="char-init-display">+3</strong></span>
+          <span>•</span>
+          <span>Speed: <strong class="text-amber-400" id="char-speed-display">30 ft</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Action / Cloud Sync Pill -->
+    <div class="flex items-center gap-2">
+      <div id="sync-status-pill" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-slate-800 text-slate-300 border border-slate-700">
+        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+        <span id="sync-status-text">🟡 Yerel Kayıtlı (Çevrimdışı)</span>
+      </div>
+      <button onclick="switchTab('tab-sync')" class="px-3 py-1.5 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-500/40 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+        <span>🔄</span>
+        <span>Google Drive & Eşitle</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- VITALS & STATUS HUD (Visible across all tabs) -->
+  <section class="max-w-7xl w-full mx-auto p-3 md:p-4 grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
+    <!-- Card 1: Hit Points -->
+    <div class="bg-dndCard border border-dndBorder rounded-xl p-3 flex flex-col justify-between shadow">
+      <div class="flex justify-between items-center text-xs font-bold text-slate-400 mb-1">
+        <span class="text-emerald-400 flex items-center gap-1">🩸 CAN (HP)</span>
+        <span id="hp-condition-badge" class="badge bg-emerald-900/60 text-emerald-300 border border-emerald-600">Healthy</span>
+      </div>
+      <div class="flex items-baseline justify-center gap-1 my-1">
+        <span id="hp-current-display" class="text-3xl font-extrabold text-emerald-400 font-mono">38</span>
+        <span class="text-slate-400 text-sm">/ <span id="hp-max-display">38</span></span>
+      </div>
+      <!-- Mini HP Progress Bar -->
+      <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mb-2">
+        <div id="hp-progress-bar" class="bg-emerald-500 h-full rounded-full transition-all duration-300" style="width: 100%;"></div>
+      </div>
+      <!-- Quick Adjust Controls -->
+      <div class="flex items-center gap-1">
+        <input id="hp-adjust-input" type="number" value="5" min="1" class="w-12 bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-center text-xs font-mono text-white">
+        <button onclick="applyDamage()" class="flex-1 bg-rose-600/30 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/40 rounded py-0.5 text-xs font-bold transition">💥 Hasar</button>
+        <button onclick="applyHeal()" class="flex-1 bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/40 rounded py-0.5 text-xs font-bold transition">💖 İyileş</button>
+      </div>
+    </div>
+
+    <!-- Card 2: Armor Class -->
+    <div class="bg-dndCard border border-dndBorder rounded-xl p-3 flex flex-col justify-between shadow">
+      <div class="text-xs font-bold text-sky-400 flex items-center gap-1 mb-1">🛡️ ZIRH SINIFI (AC)</div>
+      <div class="grid grid-cols-3 gap-1 text-center my-1">
+        <div class="bg-slate-900/70 p-1.5 rounded border border-slate-800">
+          <div id="ac-total-display" class="text-xl font-extrabold text-sky-400 font-mono">18</div>
+          <div class="text-[9px] text-slate-400 font-semibold uppercase">Total</div>
+        </div>
+        <div class="bg-slate-900/70 p-1.5 rounded border border-slate-800">
+          <div id="ac-touch-display" class="text-lg font-bold text-slate-300 font-mono">14</div>
+          <div class="text-[9px] text-slate-400 font-semibold uppercase">Touch</div>
+        </div>
+        <div class="bg-slate-900/70 p-1.5 rounded border border-slate-800">
+          <div id="ac-flat-display" class="text-lg font-bold text-slate-400 font-mono">15</div>
+          <div class="text-[9px] text-slate-400 font-semibold uppercase">Flat-F.</div>
+        </div>
+      </div>
+      <div id="ac-notes-display" class="text-[10px] text-indigo-300 text-center truncate">Mage Armor +4 • Dex +3 • Ring +1</div>
+    </div>
+
+    <!-- Card 3: Saves -->
+    <div class="bg-dndCard border border-dndBorder rounded-xl p-3 flex flex-col justify-between shadow">
+      <div class="text-xs font-bold text-purple-400 flex items-center gap-1 mb-1">⚡ SAVES (KAYIT ZARLARI)</div>
+      <div class="grid grid-cols-3 gap-1 text-center my-1">
+        <button onclick="rollSave3D('Fortitude')" class="bg-slate-900/70 hover:bg-slate-800 p-1.5 rounded border border-slate-800 transition">
+          <div id="save-fort-display" class="text-lg font-bold text-emerald-400 font-mono">+6</div>
+          <div class="text-[9px] text-slate-400 font-semibold uppercase">🛡️ Fort</div>
+        </button>
+        <button onclick="rollSave3D('Reflex')" class="bg-slate-900/70 hover:bg-slate-800 p-1.5 rounded border border-slate-800 transition">
+          <div id="save-ref-display" class="text-lg font-bold text-sky-400 font-mono">+7</div>
+          <div class="text-[9px] text-slate-400 font-semibold uppercase">⚡ Ref</div>
+        </button>
+        <button onclick="rollSave3D('Will')" class="bg-slate-900/70 hover:bg-slate-800 p-1.5 rounded border border-slate-800 transition">
+          <div id="save-will-display" class="text-lg font-bold text-purple-400 font-mono">+5</div>
+          <div class="text-[9px] text-slate-400 font-semibold uppercase">🧠 Will</div>
+        </button>
+      </div>
+      <div class="text-[10px] text-amber-300 text-center truncate">Zar atmak için tıklayın</div>
+    </div>
+
+    <!-- Card 4: Quick Actions & Rest -->
+    <div class="bg-dndCard border border-dndBorder rounded-xl p-3 flex flex-col justify-between shadow">
+      <div class="text-xs font-bold text-amber-400 flex items-center gap-1 mb-1">☀️ EYLEMLER & DİNLENME</div>
+      <div class="grid grid-cols-2 gap-1.5 my-1">
+        <button onclick="performLongRest()" class="bg-slate-800 hover:bg-slate-700 text-white rounded p-1.5 text-xs font-medium border border-slate-700 flex items-center justify-center gap-1 transition">
+          <span>☀️</span>
+          <span>Long Rest</span>
+        </button>
+        <button onclick="performEncounterReset()" class="bg-slate-800 hover:bg-slate-700 text-white rounded p-1.5 text-xs font-medium border border-slate-700 flex items-center justify-center gap-1 transition">
+          <span>🔄</span>
+          <span>Reset Enc.</span>
+        </button>
+      </div>
+      <button onclick="advanceNextRound()" class="w-full bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-500/40 rounded p-1 text-xs font-bold flex items-center justify-center gap-1 transition">
+        <span>⏭️</span>
+        <span>Sonraki Tur (-1 Rd)</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- NAVIGATION TABS -->
+  <nav class="max-w-7xl w-full mx-auto px-3 md:px-4 mb-3">
+    <div class="flex items-center gap-1 bg-dndCard border border-dndBorder rounded-xl p-1 overflow-x-auto">
+      <button onclick="switchTab('tab-combat')" id="tab-btn-combat" class="tab-btn flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-red-600 text-white shadow">
+        <span>⚔️</span>
+        <span>Savaş Kokpiti</span>
+      </button>
+      <button onclick="switchTab('tab-spells')" id="tab-btn-spells" class="tab-btn flex-1 py-1.5 px-3 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
+        <span>🔮</span>
+        <span>Büyü & Manevra</span>
+      </button>
+      <button onclick="switchTab('tab-core')" id="tab-btn-core" class="tab-btn flex-1 py-1.5 px-3 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
+        <span>👤</span>
+        <span>Karakter & Beceriler</span>
+      </button>
+      <button onclick="switchTab('tab-defense')" id="tab-btn-defense" class="tab-btn flex-1 py-1.5 px-3 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
+        <span>🛡️</span>
+        <span>Savunma & Bufflar</span>
+      </button>
+      <button onclick="switchTab('tab-inventory')" id="tab-btn-inventory" class="tab-btn flex-1 py-1.5 px-3 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
+        <span>🎒</span>
+        <span>Çanta & İksirler</span>
+      </button>
+      <button onclick="switchTab('tab-database')" id="tab-btn-database" class="tab-btn flex-1 py-1.5 px-3 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
+        <span>📚</span>
+        <span>Master DB</span>
+      </button>
+      <button onclick="switchTab('tab-sync')" id="tab-btn-sync" class="tab-btn flex-1 py-1.5 px-3 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
+        <span>🔄</span>
+        <span>Eşitle & Yedekle</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- MAIN TAB CONTENTS -->
+  <main class="max-w-7xl w-full mx-auto px-3 md:px-4 flex-1">
+
+    <!-- ==================================================== -->
+    <!-- TAB 1: ⚔️ TACTICAL COMBAT COCKPIT -->
+    <!-- ==================================================== -->
+    <div id="tab-combat" class="tab-content space-y-4">
+      
+      <!-- Offense & Weapon Panel -->
+      <div class="bg-dndCard border border-dndBorder rounded-xl p-4 shadow-lg">
+        <div class="flex flex-wrap items-center justify-between border-b border-dndBorder pb-3 mb-4 gap-2">
+          <div class="flex items-center gap-2">
+            <span class="text-rose-500 font-extrabold text-sm md:text-base">⚔️ AKTİF SİLAH VE SALDIRI ROTASYONU</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <label class="flex items-center gap-1.5 cursor-pointer bg-slate-900 border border-amber-500/40 px-2.5 py-1 rounded-lg text-xs">
+              <input type="checkbox" id="house-no-crit-confirm" checked class="rounded border-slate-700 text-amber-500 focus:ring-0">
+              <span class="font-bold text-amber-400">🚫 No Crit Confirm (Otomatik)</span>
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer bg-slate-900 border border-indigo-500/40 px-2.5 py-1 rounded-lg text-xs">
+              <input type="checkbox" id="house-maneuver-crit" class="rounded border-slate-700 text-indigo-500 focus:ring-0">
+              <span class="font-bold text-indigo-300">⚡ Manevraları Katla</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Weapon Selection & Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center mb-4">
+          <!-- Weapon Selector (Col 1-4) -->
+          <div class="md:col-span-4 bg-slate-900/80 border border-slate-700 rounded-lg p-2.5">
+            <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Aktif Silah</label>
+            <select id="active-weapon-select" onchange="onWeaponChange()" class="w-full bg-slate-800 text-white font-bold text-sm rounded border border-slate-700 px-2 py-1.5 focus:outline-none focus:border-rose-500">
+              <!-- Dynamically populated -->
+            </select>
+            <div id="weapon-stat-override-badge" class="text-[10px] font-semibold text-emerald-400 mt-1">
+              ✨ Weapon Finesse: DEX (+3) devrede
+            </div>
+          </div>
+
+          <!-- Grip Selector (Col 5-6) -->
+          <div class="md:col-span-2 bg-slate-900/80 border border-slate-700 rounded-lg p-2.5">
+            <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Tutuş (Grip)</label>
+            <select id="active-grip-select" onchange="recalculateOffense()" class="w-full bg-slate-800 text-amber-300 font-bold text-xs rounded border border-slate-700 px-2 py-1.5 focus:outline-none">
+              <option value="1-Hand">1-Hand (x1 Str / x1 PA)</option>
+              <option value="2-Hand">2-Hand (x1.5 Str / x2 PA)</option>
+              <option value="Off-Hand">Off-Hand (x0.5 Str / x0 PA)</option>
+            </select>
+          </div>
+
+          <!-- Base Damage Formula & Threat (Col 7-9) -->
+          <div class="md:col-span-3 bg-slate-900/80 border border-slate-700 rounded-lg p-2.5 flex justify-around text-center">
+            <div>
+              <div class="text-[10px] uppercase font-bold text-slate-400">Temel Hasar</div>
+              <div id="weapon-damage-formula-display" class="text-sm font-extrabold text-white font-mono mt-0.5">1d6+4</div>
+            </div>
+            <div>
+              <div class="text-[10px] uppercase font-bold text-slate-400">Kritik Aralığı</div>
+              <div id="weapon-crit-display" class="text-sm font-extrabold text-amber-400 font-mono mt-0.5">18-20 / x2</div>
+            </div>
+            <div>
+              <div class="text-[10px] uppercase font-bold text-slate-400">Hasar Türü</div>
+              <div id="weapon-type-display" class="text-xs font-bold text-sky-400 mt-1">Piercing</div>
+            </div>
+          </div>
+
+          <!-- Iteratives Display (Col 10-12) -->
+          <div class="md:col-span-3 bg-slate-900/80 border border-slate-700 rounded-lg p-2.5 text-center">
+            <div class="text-[10px] uppercase font-bold text-slate-400">Saldırı Zinciri (Iteratives)</div>
+            <div id="iteratives-display" class="text-sm font-black text-emerald-400 font-mono mt-0.5">+8</div>
+          </div>
+        </div>
+
+        <!-- TACTICAL MODIFIERS BAR -->
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-3 mb-4">
+          <div class="text-[11px] font-bold text-sky-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+            <span>⚡ TAKTİK MODİFİYERLER & POZİSYONEL AVANTAJLAR</span>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            <!-- Power Attack Slider -->
+            <div class="bg-slate-900/80 border border-rose-500/40 rounded-lg p-2 flex items-center justify-between">
+              <div>
+                <div class="text-xs font-bold text-rose-400">⚔️ Power Attack</div>
+                <div class="text-[10px] text-slate-400" id="pa-explanation">(-BAB Att / +1x Dmg)</div>
+              </div>
+              <div class="flex items-center gap-1">
+                <input type="number" id="power-attack-val" value="0" min="0" max="3" onchange="recalculateOffense()" class="w-12 bg-slate-950 border border-rose-500 rounded px-1.5 py-1 text-center font-mono font-bold text-sm text-white">
+              </div>
+            </div>
+
+            <!-- Flanking -->
+            <label class="bg-slate-900/80 border border-slate-700 rounded-lg p-2 flex items-center justify-between cursor-pointer hover:border-sky-500/50 transition">
+              <div>
+                <div class="text-xs font-bold text-sky-400">Flanking</div>
+                <div class="text-[10px] text-slate-400">+2 Melee Attack</div>
+              </div>
+              <input type="checkbox" id="mod-flanking" onchange="recalculateOffense()" class="w-4 h-4 rounded border-slate-700 text-sky-500 focus:ring-0">
+            </label>
+
+            <!-- Charge -->
+            <label class="bg-slate-900/80 border border-slate-700 rounded-lg p-2 flex items-center justify-between cursor-pointer hover:border-red-500/50 transition">
+              <div>
+                <div class="text-xs font-bold text-rose-400">Charge</div>
+                <div class="text-[10px] text-slate-400">+2 Att / -2 AC</div>
+              </div>
+              <input type="checkbox" id="mod-charge" onchange="recalculateOffense()" class="w-4 h-4 rounded border-slate-700 text-rose-500 focus:ring-0">
+            </label>
+
+            <!-- Higher Ground -->
+            <label class="bg-slate-900/80 border border-slate-700 rounded-lg p-2 flex items-center justify-between cursor-pointer hover:border-amber-500/50 transition">
+              <div>
+                <div class="text-xs font-bold text-amber-400">Higher Ground</div>
+                <div class="text-[10px] text-slate-400">+1 Melee Attack</div>
+              </div>
+              <input type="checkbox" id="mod-higher-ground" onchange="recalculateOffense()" class="w-4 h-4 rounded border-slate-700 text-amber-500 focus:ring-0">
+            </label>
+          </div>
+        </div>
+
+        <!-- ACTIVE DAMAGE ADD-ONS SUB-TABLE -->
+        <div class="border border-slate-800 rounded-xl overflow-hidden mb-4">
+          <div class="bg-slate-900 px-3 py-2 text-xs font-bold text-slate-300 flex justify-between items-center">
+            <span>✨ SALDIRIYI ETKİLEYEN STANCE, MANEVRA, BÜYÜ VE EŞYALAR</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950 text-slate-400 text-[10px] uppercase font-bold border-b border-slate-800">
+                <tr>
+                  <th class="py-2 px-3 text-center w-12">Aktif</th>
+                  <th class="py-2 px-3">Yetenek / Büyü Adı</th>
+                  <th class="py-2 px-3 text-center">Kaynak</th>
+                  <th class="py-2 px-3 text-center">Bonus Atk</th>
+                  <th class="py-2 px-3 text-center">Hasar Zarı</th>
+                  <th class="py-2 px-3 text-center">Hasar Türü</th>
+                  <th class="py-2 px-3">Kural Notları</th>
+                </tr>
+              </thead>
+              <tbody id="active-modifiers-tbody" class="divide-y divide-slate-800 font-medium">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 3D ANIMATED ROLL ATTACK BUTTON -->
+        <button onclick="rollFullAttackWith3D()" class="w-full py-4 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-600 text-white font-black text-base md:text-lg rounded-xl shadow-xl border border-red-400/40 flex items-center justify-center gap-3 transition transform active:scale-[0.99]">
+          <span class="text-2xl animate-bounce">🎲</span>
+          <span>3D ANİMASYONLU SALDIRI ZARLARINI AT (ROLL FULL ATTACK)</span>
+        </button>
+      </div>
+
+      <!-- LIVE ATTACK RESULTS CARD -->
+      <div id="attack-results-card" class="hidden bg-dndCard border border-indigo-500/50 rounded-xl p-4 shadow-2xl space-y-3">
+        <div class="flex items-center justify-between border-b border-slate-700 pb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">⚔️</span>
+            <div>
+              <h2 id="result-card-title" class="font-bold text-sm md:text-base text-white">Saldırı Sonucu</h2>
+              <p class="text-[10px] text-slate-400">Sonuç kartı siz kapatana kadar açık kalır.</p>
+            </div>
+          </div>
+          <button onclick="dismissAttackResult()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg text-xs font-bold transition">✕ Kapat</button>
+        </div>
+
+        <!-- 1. Attack Summaries (Iteratives Cards) -->
+        <div id="result-summary-grid" class="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+          <!-- Dynamically populated -->
+        </div>
+
+        <!-- Total Potential Damage Banner -->
+        <div class="bg-indigo-950/80 border border-indigo-700/60 rounded-xl p-3 flex items-center justify-between">
+          <span class="font-bold text-sm text-indigo-200">Toplam Potansiyel Hasar:</span>
+          <span id="result-grand-total-damage" class="font-black text-2xl text-emerald-400 font-mono">0 HP</span>
+        </div>
+
+        <!-- 2. Detailed Rolls & Damage Type Breakdown -->
+        <div class="space-y-2">
+          <div class="text-[11px] font-bold text-amber-400 uppercase tracking-wide">Zar Dökümü ve Hasar Türü Ayrımı</div>
+          <div id="result-breakdown-container" class="space-y-2">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ==================================================== -->
+    <!-- TAB 2: 🔮 SPELLS & MANEUVERS -->
+    <!-- ==================================================== -->
+    <div id="tab-spells" class="tab-content hidden space-y-4">
+      <div class="bg-dndCard border border-dndBorder rounded-xl p-4 shadow-lg space-y-4">
+        
+        <!-- Caster Header & Slots HUD (User requested format 1st 4/8) -->
+        <div class="bg-gradient-to-r from-purple-950/70 to-slate-900 border border-purple-600/40 rounded-xl p-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-purple-800/40 pb-3 mb-3">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">🔮</span>
+              <div>
+                <h3 class="font-extrabold text-white text-sm md:text-base">Sorcerer Büyü Havuzu & Slotları</h3>
+                <p class="text-[11px] text-purple-300">CL: 5 • Stat Mod: +6 (CHA: 22) • Base + 24H Ekipman Bonusu Dahil</p>
+              </div>
+            </div>
+            <button onclick="restoreAllSpellSlots()" class="bg-purple-800 hover:bg-purple-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-purple-500/50 transition">
+              ✨ Tüm Slotları Yenile
+            </button>
+          </div>
+
+          <!-- Dynamic Slots Grid (0: 6/6, 1st: 4/8, 2nd: 2/6) -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3" id="spell-slots-grid">
+            <!-- Dynamically rendered -->
+          </div>
+        </div>
+
+        <!-- Tome of Battle Maneuvers Section -->
+        <div class="bg-slate-900 border border-rose-500/40 rounded-xl p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
+            <div>
+              <h3 class="text-xs font-extrabold text-rose-400 uppercase tracking-wide">⚔️ TOME OF BATTLE: KUŞANILAN MANEVRALAR (READIED)</h3>
+              <p class="text-[11px] text-slate-400">Harcanan manevraları işaretleyin veya savaşta Swift Action ile yenileyin.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <select id="active-stance-select" onchange="onStanceChange()" class="bg-slate-800 text-teal-300 font-bold text-xs rounded border border-slate-700 px-3 py-1.5">
+                <option value="Punishing Stance">Punishing Stance (+1d6 Hasar, -2 AC)</option>
+                <option value="Island of Blades">Island of Blades (Otomatik Flanking)</option>
+                <option value="None">None (Duruşsuz)</option>
+              </select>
+              <button onclick="recoverAllManeuvers()" class="bg-rose-700 hover:bg-rose-600 text-white text-xs font-bold px-3 py-1.5 rounded border border-rose-500/50 transition">
+                🔄 Tümünü Yenile (Recover All)
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5" id="maneuvers-container">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Known Spells Compendium -->
+        <div class="border border-slate-800 rounded-xl overflow-hidden">
+          <div class="bg-slate-900 px-3 py-2 text-xs font-bold text-purple-300 flex justify-between items-center">
+            <span>📜 BİLİNEN BÜYÜLER LİSTESİ (SPELLS KNOWN)</span>
+            <span class="text-[10px] text-slate-400">Büyüyü kullanmak için slota tıklayın</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950 text-slate-400 text-[10px] uppercase font-bold border-b border-slate-800">
+                <tr>
+                  <th class="py-2 px-3">Lvl</th>
+                  <th class="py-2 px-3">Büyü Adı</th>
+                  <th class="py-2 px-3">Okul</th>
+                  <th class="py-2 px-3">Eylem</th>
+                  <th class="py-2 px-3">Menzil</th>
+                  <th class="py-2 px-3">Açıklama & Etki</th>
+                  <th class="py-2 px-3 text-center">İşlem</th>
+                </tr>
+              </thead>
+              <tbody id="known-spells-tbody" class="divide-y divide-slate-800 font-medium">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ==================================================== -->
+    <!-- TAB 3: 👤 CORE & SKILLS -->
+    <!-- ==================================================== -->
+    <div id="tab-core" class="tab-content hidden space-y-4">
+      <div class="bg-dndCard border border-dndBorder rounded-xl p-4 shadow-lg space-y-4">
+        
+        <!-- Ability Scores Grid -->
+        <div>
+          <h2 class="text-xs font-bold text-amber-400 uppercase tracking-wide mb-3">🎲 TEMEL STATLAR (ABILITY SCORES)</h2>
+          <div class="grid grid-cols-2 md:grid-cols-6 gap-2 text-center" id="abilities-grid">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Skills Table with 3D Roll -->
+        <div class="border border-slate-800 rounded-xl overflow-hidden">
+          <div class="bg-slate-900 px-3 py-2 text-xs font-bold text-sky-400 flex justify-between items-center">
+            <span>🎯 BECERİLER (SKILLS) & 3D ZAR ATICI</span>
+            <span class="text-[10px] text-slate-400">Zar atmak için satırdaki zarı tıklayın</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950 text-slate-400 text-[10px] uppercase font-bold border-b border-slate-800">
+                <tr>
+                  <th class="py-2 px-3">Beceri Adı</th>
+                  <th class="py-2 px-3 text-center">Stat</th>
+                  <th class="py-2 px-3 text-center">Rank</th>
+                  <th class="py-2 px-3 text-center">Mod</th>
+                  <th class="py-2 px-3 text-center">Toplam</th>
+                  <th class="py-2 px-3 text-center">3D Zar</th>
+                </tr>
+              </thead>
+              <tbody id="skills-tbody" class="divide-y divide-slate-800 font-medium">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Feats and Special Abilities -->
+        <div>
+          <h2 class="text-xs font-bold text-purple-400 uppercase tracking-wide mb-2">✨ FEATLER VE ÖZEL YETENEKLER</h2>
+          <div class="flex flex-wrap gap-2" id="feats-badges-container">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ==================================================== -->
+    <!-- TAB 4: 🛡️ DEFENSE & ACTIVE BUFFS -->
+    <!-- ==================================================== -->
+    <div id="tab-defense" class="tab-content hidden space-y-4">
+      <div class="bg-dndCard border border-dndBorder rounded-xl p-4 shadow-lg space-y-4">
+        <h2 class="text-sm font-bold text-sky-400 border-b border-dndBorder pb-2">🛡️ TAKTİK SAVUNMA VE AKTİF BUFFLAR</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div class="bg-slate-900 border border-slate-700 p-3 rounded-lg flex items-center justify-between">
+            <div>
+              <div class="text-xs font-bold text-sky-400">Combat Expertise</div>
+              <div class="text-[10px] text-slate-400">-Att / +Dodge AC (Max 3)</div>
+            </div>
+            <input type="number" id="combat-expertise-val" value="0" min="0" max="3" onchange="recalculateDefense()" class="w-12 bg-slate-950 border border-sky-500 rounded px-1.5 py-1 text-center font-mono font-bold text-sm text-white">
+          </div>
+          <label class="bg-slate-900 border border-slate-700 p-3 rounded-lg flex items-center justify-between cursor-pointer">
+            <div>
+              <div class="text-xs font-bold text-sky-400">Fighting Defensively</div>
+              <div class="text-[10px] text-slate-400">+2 Dodge AC / -4 Attack</div>
+            </div>
+            <input type="checkbox" id="mod-defensive-fighting" onchange="recalculateDefense()" class="w-4 h-4 rounded text-sky-500">
+          </label>
+          <label class="bg-slate-900 border border-slate-700 p-3 rounded-lg flex items-center justify-between cursor-pointer">
+            <div>
+              <div class="text-xs font-bold text-amber-400">Total Defense</div>
+              <div class="text-[10px] text-slate-400">+4 Dodge AC / Saldırı Yapamaz</div>
+            </div>
+            <input type="checkbox" id="mod-total-defense" onchange="recalculateDefense()" class="w-4 h-4 rounded text-amber-500">
+          </label>
+        </div>
+
+        <!-- Active Buffs with Round Countdown -->
+        <div class="border border-slate-800 rounded-xl overflow-hidden">
+          <div class="bg-slate-900 px-3 py-2 text-xs font-bold text-slate-300 flex justify-between items-center">
+            <span>✨ AKTİF BUFFLAR VE TUR SAYAÇLARI</span>
+            <button onclick="advanceNextRound()" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3 py-1 rounded transition">⏭️ Tur İlerlet (-1 Rd)</button>
+          </div>
+          <div class="p-3 grid grid-cols-1 md:grid-cols-2 gap-2" id="buffs-list-container">
+            <!-- Buffs cards -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================================================== -->
+    <!-- TAB 5: 🎒 INVENTORY & CONSUMABLES -->
+    <!-- ==================================================== -->
+    <div id="tab-inventory" class="tab-content hidden space-y-4">
+      <div class="bg-dndCard border border-dndBorder rounded-xl p-4 shadow-lg space-y-4">
+        <h2 class="text-sm font-bold text-amber-400 border-b border-dndBorder pb-2">🎒 ÇANTA, İKSİRLER VE EKİPMAN</h2>
+        
+        <!-- Consumables Quick Drink with 3D Dice -->
+        <div>
+          <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wide mb-2">🧪 HIZLI İKSİR TÜKETİMİ (3D İYİLEŞME ZARI)</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5" id="consumables-container">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================================================== -->
+    <!-- TAB 6: 📚 MASTER DB & RULE MASTER YÖNETİM MERKEZİ -->
+    <!-- ==================================================== -->
+    <div id="tab-database" class="tab-content hidden space-y-4">
+      <div class="bg-dndCard border border-dndBorder rounded-xl p-4 shadow-lg space-y-4">
+        
+        <!-- Header & Sub-Navigation -->
+        <div class="flex flex-wrap items-center justify-between border-b border-dndBorder pb-3 gap-2">
+          <div class="flex items-center gap-2">
+            <span class="text-2xl">📚</span>
+            <div>
+              <h2 class="text-sm md:text-base font-extrabold text-purple-400">MASTER VERİTABANI & RULE MASTER</h2>
+              <p class="text-[11px] text-slate-400">D&D 3.5e Kural Kütüphanesi, 29 Sütunlu DB Editörü ve Kademeli Kaynaklar</p>
+            </div>
+          </div>
+          <!-- Sub-Tab Buttons -->
+          <div class="flex items-center gap-1.5 bg-slate-900 p-1 rounded-lg border border-slate-800">
+            <button onclick="RuleMaster.switchSubTab('subtab-mdb-list')" id="btn-subtab-mdb-list" class="mdb-subtab-btn px-3 py-1.5 rounded-md text-xs font-bold bg-purple-700 text-white shadow transition">
+              📑 Master DB Kütüphanesi
+            </button>
+            <button onclick="RuleMaster.switchSubTab('subtab-mdb-importer')" id="btn-subtab-mdb-importer" class="mdb-subtab-btn px-3 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-white transition">
+              🤖 Hızlı / AI Kural Ayrıştırıcı
+            </button>
+            <button onclick="RuleMaster.switchSubTab('subtab-mdb-sources')" id="btn-subtab-mdb-sources" class="mdb-subtab-btn px-3 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-white transition">
+              📖 Kural Kaynakları (Rule Library)
+            </button>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SUB-TAB 1: MASTER DB TABLE & CRUD MANAGER -->
+        <!-- ========================================== -->
+        <div id="subtab-mdb-list" class="mdb-subtab-content space-y-3">
+          <!-- Filters & Action Bar -->
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-2.5 items-center">
+            <div class="md:col-span-4">
+              <input type="text" id="mdb-search-input" onkeyup="RuleMaster.renderTable()" placeholder="Kütüphanede ara (ad, açıklama, kaynak, disiplin)..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500">
+            </div>
+            <div class="md:col-span-2">
+              <select id="mdb-category-filter" onchange="RuleMaster.renderTable()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-slate-300 focus:outline-none">
+                <option value="ALL">Tüm Kategoriler</option>
+                <option value="Weapon">Silahlar (Weapons)</option>
+                <option value="Shield">Kalkanlar (Shields)</option>
+                <option value="Armor">Zırhlar (Armors)</option>
+                <option value="Feat">Featler (Hünerler)</option>
+                <option value="Spell">Büyüler (Spells)</option>
+                <option value="Maneuver">Manevralar (Maneuvers)</option>
+                <option value="Stance">Duruşlar (Stances)</option>
+                <option value="Wondrous Item">Sihirli Eşyalar (Wondrous)</option>
+                <option value="Ring">Yüzükler (Rings)</option>
+                <option value="Potion">İksirler (Potions)</option>
+                <option value="Slotless Item">Yuvasız Eşyalar (Slotless)</option>
+                <option value="Special Ability">Özel Yetenekler (Class/Ex)</option>
+                <option value="DM Grant">DM Ödülleri (Grants)</option>
+              </select>
+            </div>
+            <div class="md:col-span-2">
+              <select id="mdb-bonus-filter" onchange="RuleMaster.renderTable()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-slate-300 focus:outline-none">
+                <option value="ALL">Tüm Bonus Türleri</option>
+                <option value="Enhancement">Enhancement</option>
+                <option value="Morale">Morale</option>
+                <option value="Luck">Luck</option>
+                <option value="Insight">Insight</option>
+                <option value="Competence">Competence</option>
+                <option value="Resistance">Resistance</option>
+                <option value="Deflection">Deflection</option>
+                <option value="Armor">Armor</option>
+                <option value="Shield">Shield</option>
+                <option value="Natural Armor">Natural Armor</option>
+                <option value="Dodge">Dodge</option>
+                <option value="Untyped">Untyped</option>
+              </select>
+            </div>
+            <div class="md:col-span-2">
+              <select id="mdb-scope-filter" onchange="RuleMaster.renderTable()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-slate-300 focus:outline-none">
+                <option value="ALL">Tüm Kapsamlar</option>
+                <option value="None / General">Genel / Tümü</option>
+                <option value="Melee Only">Yalnızca Melee</option>
+                <option value="Ranged Only">Yalnızca Ranged</option>
+                <option value="Thrown Only">Yalnızca Thrown</option>
+                <option value="Specific Weapon">Özel Silah</option>
+                <option value="Spells">Büyüler</option>
+              </select>
+            </div>
+            <!-- Add Button -->
+            <div class="md:col-span-2 flex items-center justify-end gap-1.5">
+              <button onclick="RuleMaster.openModalWithData(RuleMaster.createEmptyEntry('Weapon'), -1)" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs py-2 px-3 rounded-lg shadow transition flex items-center justify-center gap-1.5">
+                <span>➕</span>
+                <span>Yeni Kural / Eşya</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Total count & actions header -->
+          <div class="flex items-center justify-between text-xs text-slate-400 px-1">
+            <div class="flex items-center gap-2">
+              <span id="mdb-total-count-badge" class="badge bg-purple-950 text-purple-300 border border-purple-800 font-mono">0 Kayıt</span>
+              <span>•</span>
+              <span class="text-[11px]">Tablodaki işlemleri kullanarak anında düzenleyebilir, alt güç bağlayabilir veya karaktere kuşandırabilirsiniz.</span>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="exportMasterDbJson()" class="text-[11px] text-slate-300 hover:text-white bg-slate-800 px-2 py-0.5 rounded border border-slate-700 transition">💾 DB İndir (.json)</button>
+              <button onclick="document.getElementById('json-file-input').click()" class="text-[11px] text-slate-300 hover:text-white bg-slate-800 px-2 py-0.5 rounded border border-slate-700 transition">📂 DB Yükle</button>
+            </div>
+          </div>
+
+          <!-- Master Table -->
+          <div class="border border-slate-800 rounded-xl overflow-hidden max-h-[600px] overflow-y-auto shadow-inner">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950 text-slate-400 text-[10px] uppercase font-bold sticky top-0 z-10 border-b border-slate-800">
+                <tr>
+                  <th class="py-2.5 px-3">Ad & Kaynak</th>
+                  <th class="py-2.5 px-3">Tür / Disiplin</th>
+                  <th class="py-2.5 px-3">Slot / Lvl</th>
+                  <th class="py-2.5 px-3">Bonus & Kapsam</th>
+                  <th class="py-2.5 px-3">Stat & Dövüş Etkisi</th>
+                  <th class="py-2.5 px-3">Açıklama / RAW Notları</th>
+                  <th class="py-2.5 px-3 text-center w-28">İşlemler</th>
+                </tr>
+              </thead>
+              <tbody id="master-db-tbody" class="divide-y divide-slate-800 font-medium">
+                <!-- Dynamically populated by RuleMaster.renderTable() -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SUB-TAB 2: QUICK / AI RULE IMPORTER -->
+        <!-- ========================================== -->
+        <div id="subtab-mdb-importer" class="mdb-subtab-content hidden space-y-4">
+          <div class="bg-slate-900 border border-purple-600/40 rounded-xl p-4 space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+              <div>
+                <h3 class="text-xs md:text-sm font-bold text-white flex items-center gap-1.5">
+                  <span>🤖</span>
+                  <span>Hızlı Kural Ayrıştırıcı & İçe Aktarma Sihirbazı</span>
+                </h3>
+                <p class="text-[11px] text-slate-400">Kitaplardan, d20srd veya dndtools'dan kural metnini yapıştırın; otomatik 29 sütuna dönüştürsün.</p>
+              </div>
+              <!-- Example Presets -->
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-[10px] text-slate-400">Hızlı Örnekler:</span>
+                <button onclick="document.getElementById('raw-rule-input').value = 'Shadow Blade\n[General]\nYou have mastered the style of the Shadow Hand discipline.\nPrerequisites: One Shadow Hand stance.\nBenefit: While in a Shadow Hand stance, add Dexterity modifier to damage rolls with Shadow Hand discipline weapons.\nSpecial: Fighter bonus feat.';" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-purple-300 px-2 py-0.5 rounded border border-slate-700">Feat</button>
+                <button onclick="document.getElementById('raw-rule-input').value = 'Mountain Hammer\nStone Dragon (Strike)\nLevel: Crusader 2, Swordsage 2, Warblade 2\nInitiation Action: 1 standard action\nRange: Melee attack\nTarget: One creature or object\nBenefit: Deal weapon damage + 2d6 damage. Overcomes Damage Reduction and Hardness.';" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-rose-300 px-2 py-0.5 rounded border border-slate-700">Manevra</button>
+                <button onclick="document.getElementById('raw-rule-input').value = 'Haste\nTransmutation\nLevel: Brd 3, Sor/Wiz 3\nComponents: V, S, M\nCasting Time: 1 standard action\nRange: Close (25 ft. + 5 ft./2 levels)\nTargets: One creature/level, no two of which can be more than 30 ft. apart\nDuration: 1 round/level\nBenefit: Grants +1 attack, +1 dodge AC, +1 Reflex save, +30 ft speed, and 1 extra attack on full attack.';" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-sky-300 px-2 py-0.5 rounded border border-slate-700">Büyü</button>
+              </div>
+            </div>
+
+            <textarea id="raw-rule-input" rows="6" placeholder="Kural metnini buraya yapıştırın... (Örn: Feat adı, Prerequisites, Benefit; veya Manevra/Büyü stat block'u)" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-xs text-white font-mono focus:outline-none focus:border-purple-500"></textarea>
+
+            <div class="flex items-center justify-between pt-1">
+              <span class="text-[11px] text-slate-400">Ayrıştırıcı otomatik olarak Ad, Tür, Önkoşullar, Hasar Zarı ve Kural Açıklamasını tespit eder.</span>
+              <button onclick="RuleMaster.parseRawText()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs px-4 py-2 rounded-lg shadow transition flex items-center gap-1.5">
+                <span>⚡</span>
+                <span>Metni Ayrıştır ve DB Editöründe Aç</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SUB-TAB 3: PRIORITIZED KNOWLEDGE BASES -->
+        <!-- ========================================== -->
+        <div id="subtab-mdb-sources" class="mdb-subtab-content hidden space-y-4">
+          <!-- Prioritized Sources -->
+          <div>
+            <h3 class="text-xs font-bold text-indigo-300 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+              <span>⚡</span>
+              <span>1. KADEMELİ ARAMA KAYNAKLARI (PRIORITIZED KNOWLEDGE BASES)</span>
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3" id="sources-list-container">
+              <!-- Dynamically populated by RuleMaster.renderSourcesCatalog() -->
+            </div>
+          </div>
+
+          <!-- Splatbooks Catalog -->
+          <div class="pt-3 border-t border-slate-800">
+            <h3 class="text-xs font-bold text-amber-300 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+              <span>📖</span>
+              <span>2. KAMPANYA KİTAPLARI & SPLATBOOK KATALOĞU</span>
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-2.5" id="splatbooks-grid-container">
+              <!-- Dynamically populated by RuleMaster.renderSourcesCatalog() -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ==================================================== -->
+    <!-- TAB 7: 🔄 SYNC & VERSION MANAGEMENT -->
+    <!-- ==================================================== -->
+    <div id="tab-sync" class="tab-content hidden space-y-4">
+      <div class="bg-dndCard border border-dndBorder rounded-xl p-4 shadow-lg space-y-4">
+        <h2 class="text-sm font-bold text-indigo-400 border-b border-dndBorder pb-2">🔄 GOOGLE DRIVE & SÜRÜM EŞİTLEME MERKEZİ</h2>
+
+        <!-- Google Drive Cloud Sync Card -->
+        <div class="bg-slate-900 border border-indigo-500/40 rounded-xl p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl">☁️</span>
+              <div>
+                <h3 class="text-xs font-bold text-white">Google Drive ile Platformlar Arası Canlı Senkronizasyon</h3>
+                <p class="text-[11px] text-slate-400">PC, tablet veya telefonunuzda aynı dnd35_character.json dosyasını açıp kaydedin.</p>
+              </div>
+            </div>
+            <button onclick="GDriveSync.connect()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-2 rounded-lg transition shadow">
+              🔑 Google Drive'a Bağlan
+            </button>
+          </div>
+
+          <div class="flex flex-wrap gap-2 pt-2 border-t border-slate-800">
+            <button onclick="GDriveSync.pushToDrive()" class="flex-1 bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs font-semibold py-2 rounded-lg border border-emerald-500/40 transition">
+              ⬆️ Google Drive'a Şimdi Kaydet (Push)
+            </button>
+            <button onclick="GDriveSync.pullFromDrive()" class="flex-1 bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300 hover:text-white text-xs font-semibold py-2 rounded-lg border border-indigo-500/40 transition">
+              ⬇️ Google Drive'dan Yenile (Pull)
+            </button>
+          </div>
+        </div>
+
+        <!-- Local JSON Backup / Restore -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div class="bg-slate-900 border border-slate-700 rounded-xl p-3.5 space-y-2">
+            <div class="text-xs font-bold text-white flex items-center gap-1.5">
+              <span>💾</span>
+              <span>YEREL DOSYA YEDEKLEME (.JSON İNDİR)</span>
+            </div>
+            <p class="text-[11px] text-slate-400">İnternet olmasa bile karakterinizi tek tıkla bilgisayarınıza indirin.</p>
+            <div class="flex gap-2 pt-2">
+              <button onclick="exportCharacterJson()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2 rounded-lg border border-slate-700 transition">💾 Karakteri İndir</button>
+              <button onclick="exportMasterDbJson()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2 rounded-lg border border-slate-700 transition">📚 Master DB İndir</button>
+            </div>
+          </div>
+
+          <div class="bg-slate-900 border border-slate-700 rounded-xl p-3.5 space-y-2">
+            <div class="text-xs font-bold text-white flex items-center gap-1.5">
+              <span>📂</span>
+              <span>JSON DOSYASINDAN YÜKLE</span>
+            </div>
+            <p class="text-[11px] text-slate-400">Daha önce indirdiğiniz .json karakter dosyasını seçin.</p>
+            <input type="file" id="json-file-input" accept=".json" onchange="handleJsonFileUpload(event)" class="hidden">
+            <button onclick="document.getElementById('json-file-input').click()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2 rounded-lg border border-slate-700 transition">Dosya Seç (.json)</button>
+          </div>
+        </div>
+
+        <!-- User Requested Reset Button -->
+        <div class="bg-rose-950/30 border border-rose-600/40 rounded-xl p-3.5 flex items-center justify-between">
+          <div>
+            <h4 class="text-xs font-bold text-rose-400">⚠️ Test Sonrası Verileri Sıfırla / Yeni Boş Karakter Aç</h4>
+            <p class="text-[11px] text-slate-400">Mevcut test karakterini sıfırlayıp temiz bir sayfa açar.</p>
+          </div>
+          <button onclick="resetToCleanCharacter()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition">
+            🗑️ Sıfırla & Temizle
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MOBILE BOTTOM NAVIGATION -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-dndCard/95 backdrop-blur border-t border-dndBorder z-50 flex items-center justify-around py-2 px-1">
+    <button onclick="switchTab('tab-combat')" class="mobile-tab-btn flex flex-col items-center text-[10px] font-bold text-rose-500">
+      <span class="text-base">⚔️</span>
+      <span>Savaş</span>
+    </button>
+    <button onclick="switchTab('tab-spells')" class="mobile-tab-btn flex flex-col items-center text-[10px] font-bold text-slate-400">
+      <span class="text-base">🔮</span>
+      <span>Büyü</span>
+    </button>
+    <button onclick="switchTab('tab-core')" class="mobile-tab-btn flex flex-col items-center text-[10px] font-bold text-slate-400">
+      <span class="text-base">👤</span>
+      <span>Statlar</span>
+    </button>
+    <button onclick="switchTab('tab-inventory')" class="mobile-tab-btn flex flex-col items-center text-[10px] font-bold text-slate-400">
+      <span class="text-base">🎒</span>
+      <span>Çanta</span>
+    </button>
+    <button onclick="switchTab('tab-database')" class="mobile-tab-btn flex flex-col items-center text-[10px] font-bold text-slate-400">
+      <span class="text-base">📚</span>
+      <span>DB</span>
+    </button>
+    <button onclick="switchTab('tab-sync')" class="mobile-tab-btn flex flex-col items-center text-[10px] font-bold text-slate-400">
+      <span class="text-base">🔄</span>
+      <span>Eşitle</span>
+    </button>
+  </nav>
+
+  <!-- ==================================================== -->
+  <!-- MODAL: 29-COLUMN RULE & ITEM CRUD EDITOR -->
+  <!-- ==================================================== -->
+  <div id="rule-crud-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
+    <div class="bg-dndCard border border-purple-500/60 rounded-2xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden my-auto">
+      
+      <!-- Modal Header -->
+      <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🛠️</span>
+          <div>
+            <h3 id="rule-modal-title" class="text-sm md:text-base font-extrabold text-white">Yeni Kural / Eşya Ekle</h3>
+            <p class="text-[10px] text-slate-400">29 Sütunlu D&D 3.5e Evrensel Kural & Veritabanı Mimarisi</p>
+          </div>
+        </div>
+        <button onclick="RuleMaster.closeModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg text-xs font-bold transition">✕ Kapat</button>
+      </div>
+
+      <!-- Quick Template Presets Bar -->
+      <div class="bg-slate-900/90 px-4 py-2 border-b border-slate-800 flex items-center gap-1.5 overflow-x-auto text-xs">
+        <span class="text-[11px] text-slate-400 font-bold shrink-0">Hızlı Şablonlar:</span>
+        <button onclick="RuleMaster.applyPreset('weapon')" class="px-2.5 py-1 rounded bg-rose-950/70 text-rose-300 border border-rose-800 hover:bg-rose-900 font-semibold text-[11px] shrink-0">🗡️ Silah</button>
+        <button onclick="RuleMaster.applyPreset('shield')" class="px-2.5 py-1 rounded bg-sky-950/70 text-sky-300 border border-sky-800 hover:bg-sky-900 font-semibold text-[11px] shrink-0">🛡️ Kalkan</button>
+        <button onclick="RuleMaster.applyPreset('armor')" class="px-2.5 py-1 rounded bg-blue-950/70 text-blue-300 border border-blue-800 hover:bg-blue-900 font-semibold text-[11px] shrink-0">🥋 Zırh</button>
+        <button onclick="RuleMaster.applyPreset('feat')" class="px-2.5 py-1 rounded bg-amber-950/70 text-amber-300 border border-amber-800 hover:bg-amber-900 font-semibold text-[11px] shrink-0">✨ Feat</button>
+        <button onclick="RuleMaster.applyPreset('spell')" class="px-2.5 py-1 rounded bg-purple-950/70 text-purple-300 border border-purple-800 hover:bg-purple-900 font-semibold text-[11px] shrink-0">🔮 Büyü</button>
+        <button onclick="RuleMaster.applyPreset('maneuver')" class="px-2.5 py-1 rounded bg-rose-950/70 text-rose-300 border border-rose-800 hover:bg-rose-900 font-semibold text-[11px] shrink-0">⚔️ Manevra</button>
+        <button onclick="RuleMaster.applyPreset('stance')" class="px-2.5 py-1 rounded bg-indigo-950/70 text-indigo-300 border border-indigo-800 hover:bg-indigo-900 font-semibold text-[11px] shrink-0">⚡ Duruş</button>
+        <button onclick="RuleMaster.applyPreset('wondrous')" class="px-2.5 py-1 rounded bg-teal-950/70 text-teal-300 border border-teal-800 hover:bg-teal-900 font-semibold text-[11px] shrink-0">👑 Eşya</button>
+        <button onclick="RuleMaster.applyPreset('potion')" class="px-2.5 py-1 rounded bg-emerald-950/70 text-emerald-300 border border-emerald-800 hover:bg-emerald-900 font-semibold text-[11px] shrink-0">🧪 İksir</button>
+      </div>
+
+      <!-- Modal Body (Form Fields) -->
+      <div class="p-4 overflow-y-auto space-y-4 flex-1 text-xs">
+        
+        <!-- SECTION 1: TEMEL BİLGİLER -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 space-y-2.5">
+          <div class="text-[11px] font-bold text-purple-400 uppercase tracking-wide">1. Temel Tanımlamalar</div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kural / Eşya Adı *</label>
+              <input type="text" id="rf-name" placeholder="Örn: Rapier +2, Power Attack, Haste" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold focus:border-purple-500">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Türü (Category) *</label>
+              <select id="rf-type" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                <option value="Weapon">Weapon (Silah)</option>
+                <option value="Shield">Shield (Kalkan)</option>
+                <option value="Armor">Armor (Zırh)</option>
+                <option value="Feat">Feat (Hüner)</option>
+                <option value="Spell">Spell (Büyü)</option>
+                <option value="Maneuver">Maneuver (Manevra)</option>
+                <option value="Stance">Stance (Duruş)</option>
+                <option value="Wondrous Item">Wondrous Item (Sihirli Eşya)</option>
+                <option value="Ring">Ring (Yüzük)</option>
+                <option value="Potion">Potion (İksir)</option>
+                <option value="Slotless Item">Slotless Item (Yuvasız Eşya)</option>
+                <option value="Special Ability">Special Ability (Sınıf Özelliği)</option>
+                <option value="Active Power">Active Power (Bağlı Alt Güç)</option>
+                <option value="DM Grant">DM Grant (DM Ödülü)</option>
+                <option value="Flaw">Flaw (Kusur)</option>
+                <option value="Race">Race (Irk)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kuşanma Slotu (Body Slot)</label>
+              <select id="rf-slot" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                <option value="None">None (Yuvasız / Feat / Büyü)</option>
+                <option value="Main Hand">Main Hand (Ana El)</option>
+                <option value="Off-Hand/Shield">Off-Hand / Shield (İkinci El / Kalkan)</option>
+                <option value="Two-Hand">Two-Hand (İki El)</option>
+                <option value="Armor">Armor (Zırh Yuvası)</option>
+                <option value="Head">Head (Baş / Miğfer)</option>
+                <option value="Eyes">Eyes (Göz / Gözlük)</option>
+                <option value="Neck">Neck (Boyun / Kolye)</option>
+                <option value="Torso">Torso (Gövde / Yelek)</option>
+                <option value="Shoulders">Shoulders (Omuz / Pelerin)</option>
+                <option value="Arms">Arms (Kollar / Bileklik)</option>
+                <option value="Hands">Hands (Eller / Eldiven)</option>
+                <option value="Ring">Ring (Yüzük)</option>
+                <option value="Waist">Waist (Bel / Kemer)</option>
+                <option value="Feet">Feet (Ayaklar / Çizme)</option>
+                <option value="Slotless">Slotless (Çanta İçi / Pasif)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-2.5">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Üst Öğe (Parent Entry)</label>
+              <input type="text" id="rf-parent" value="-" placeholder="Ana eşya adı veya '-'" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-purple-300 font-mono">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Önkoşul (Prereq)</label>
+              <input type="text" id="rf-prereq" value="-" placeholder="Örn: Str 13, BAB +1 veya '-'" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kaynak Kitap & Sayfa</label>
+              <input type="text" id="rf-source" value="PHB p." placeholder="Örn: PHB p.98, ToB p.69" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Savaş Rolü (Combat Role)</label>
+              <select id="rf-role" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                <option value="Offense / Attack">Offense / Attack</option>
+                <option value="Defense / Counter">Defense / Counter</option>
+                <option value="Buff / Support">Buff / Support</option>
+                <option value="Tactical / Control">Tactical / Control</option>
+                <option value="Utility / Out-of-Combat">Utility / Out-of-Combat</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: KURAL AÇIKLAMASI -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 space-y-1.5">
+          <label class="block text-[11px] font-bold text-purple-400 uppercase tracking-wide">2. Açıklama & RAW Kural Notları (Benefit)</label>
+          <textarea id="rf-benefit" rows="3" placeholder="Kuralın tam RAW metni, mekanik açıklaması ve özel istisnaları..." class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-white focus:border-purple-500"></textarea>
+        </div>
+
+        <!-- SECTION 3: BONUS TÜRÜ & SAVAŞ KAPSAMI -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 space-y-2">
+          <div class="text-[11px] font-bold text-amber-400 uppercase tracking-wide">3. Bonus İstifleme Türü & Savaş Kapsamı</div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Bonus Türü (Bonus Type) *</label>
+              <select id="rf-bonus-type" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-amber-300 font-bold">
+                <option value="Untyped">Untyped (İstiflenir / Genel)</option>
+                <option value="Enhancement">Enhancement (En yüksek geçerli)</option>
+                <option value="Morale">Morale (En yüksek geçerli)</option>
+                <option value="Luck">Luck (En yüksek geçerli)</option>
+                <option value="Insight">Insight (En yüksek geçerli)</option>
+                <option value="Competence">Competence (En yüksek geçerli)</option>
+                <option value="Resistance">Resistance (Saves için - En yüksek geçerli)</option>
+                <option value="Deflection">Deflection (AC için - En yüksek geçerli)</option>
+                <option value="Armor">Armor (Zırh - En yüksek geçerli)</option>
+                <option value="Shield">Shield (Kalkan - En yüksek geçerli)</option>
+                <option value="Natural Armor">Natural Armor (En yüksek geçerli)</option>
+                <option value="Dodge">Dodge (İstiflenir)</option>
+                <option value="Circumstance">Circumstance (Farklı kaynaklar istiflenir)</option>
+                <option value="Alchemical">Alchemical</option>
+                <option value="Racial">Racial</option>
+                <option value="Divine">Divine / Sacred</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Savaş Kapsamı (Combat Scope)</label>
+              <select id="rf-scope" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                <option value="None / General">None / General (Tüm durumlar)</option>
+                <option value="All Attacks">All Attacks (Tüm saldırılar)</option>
+                <option value="Melee Only">Melee Only (Yalnızca Yakın Dövüş)</option>
+                <option value="Ranged Only">Ranged Only (Yalnızca Menzilli)</option>
+                <option value="Thrown Only">Thrown Only (Yalnızca Fırlatmalı)</option>
+                <option value="Specific Weapon">Specific Weapon (Yalnızca Bu Silah)</option>
+                <option value="Spells">Spells (Büyüler)</option>
+                <option value="Vs Traps">Vs Traps (Tuzaklara Karşı)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 4: 16 STAT BUFF SÜTUNLARI -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 space-y-2">
+          <div class="text-[11px] font-bold text-emerald-400 uppercase tracking-wide">4. Stat Buffları & Modifiyeler (Varsa Rakam Giriniz)</div>
+          <div class="grid grid-cols-4 md:grid-cols-8 gap-2">
+            <div><label class="block text-[9px] text-slate-400 uppercase font-bold">STR</label><input type="number" id="rf-str" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+            <div><label class="block text-[9px] text-slate-400 uppercase font-bold">DEX</label><input type="number" id="rf-dex" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+            <div><label class="block text-[9px] text-slate-400 uppercase font-bold">CON</label><input type="number" id="rf-con" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+            <div><label class="block text-[9px] text-slate-400 uppercase font-bold">INT</label><input type="number" id="rf-int" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+            <div><label class="block text-[9px] text-slate-400 uppercase font-bold">WIS</label><input type="number" id="rf-wis" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+            <div><label class="block text-[9px] text-slate-400 uppercase font-bold">CHA</label><input type="number" id="rf-cha" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+            <div><label class="block text-[9px] text-sky-400 uppercase font-bold">AC</label><input type="number" id="rf-ac" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+            <div><label class="block text-[9px] text-emerald-400 uppercase font-bold">HP</label><input type="number" id="rf-hp" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+          </div>
+          <div class="grid grid-cols-4 md:grid-cols-8 gap-2 pt-1">
+            <div><label class="block text-[9px] text-rose-400 uppercase font-bold">Atk</label><input type="number" id="rf-atk" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+            <div><label class="block text-[9px] text-rose-400 uppercase font-bold">Dmg</label><input type="number" id="rf-dmg" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+            <div><label class="block text-[9px] text-emerald-400 uppercase font-bold">Fort</label><input type="number" id="rf-fort" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+            <div><label class="block text-[9px] text-sky-400 uppercase font-bold">Ref</label><input type="number" id="rf-ref" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+            <div><label class="block text-[9px] text-purple-400 uppercase font-bold">Will</label><input type="number" id="rf-will" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+            <div><label class="block text-[9px] text-amber-400 uppercase font-bold">Skill</label><input type="number" id="rf-skill" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+            <div><label class="block text-[9px] text-indigo-400 uppercase font-bold">CL</label><input type="number" id="rf-cl" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+            <div><label class="block text-[9px] text-amber-400 uppercase font-bold">Speed</label><input type="number" id="rf-speed" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
+          </div>
+        </div>
+
+        <!-- SECTION 5: DÖVÜŞ, EYLEM & PARAMETRELER -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 space-y-2">
+          <div class="text-[11px] font-bold text-rose-400 uppercase tracking-wide">5. Dövüş Mekaniği, Eylem & Masraf</div>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Hasar Zarı (Dice)</label>
+              <input type="text" id="rf-dice" placeholder="Örn: 2d6, 1d8, 1d10" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-amber-400 font-mono">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kritik Aralığı / Çarpanı</label>
+              <div class="flex items-center gap-1">
+                <input type="number" id="rf-crit-min" value="20" min="15" max="20" class="w-16 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-center text-xs text-white font-mono">
+                <span class="text-slate-400">/ x</span>
+                <input type="number" id="rf-crit-mult" value="2" min="2" max="4" class="w-14 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-center text-xs text-white font-mono">
+              </div>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Hasar Türü (Type)</label>
+              <input type="text" id="rf-dmg-type" placeholder="Örn: Slashing, Piercing, Acid" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Eylem Türü (Action)</label>
+              <select id="rf-action" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
+                <option value="Passive">Passive (Sürekli)</option>
+                <option value="Standard Action">Standard Action</option>
+                <option value="Full-Round Action">Full-Round Action</option>
+                <option value="Swift Action">Swift Action</option>
+                <option value="Immediate Action">Immediate Action</option>
+                <option value="Free Action">Free Action</option>
+                <option value="Move Action">Move Action</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 pt-1">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Süre / Kullanım (Duration)</label>
+              <input type="text" id="rf-duration" value="Continuous" placeholder="Continuous, 1 Round, 1/day" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Ağırlık (Weight lbs)</label>
+              <input type="number" id="rf-weight" value="1" step="0.1" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white font-mono">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Değer / Fiyat (Cost gp)</label>
+              <input type="number" id="rf-cost" value="10" step="1" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-amber-400 font-mono">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Disiplin / Büyü Okulu</label>
+              <input type="text" id="rf-discipline" placeholder="Iron Heart, Evocation vb." class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-purple-300">
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-2.5 pt-1">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Büyü Okulu</label>
+              <input type="text" id="rf-school" placeholder="Transmutation, Evocation" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Büyü / Manevra Seviyesi (Level)</label>
+              <input type="number" id="rf-level" min="0" max="9" placeholder="0-9" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white font-mono">
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="bg-slate-950 px-4 py-3 border-t border-slate-800 flex items-center justify-between">
+        <button onclick="RuleMaster.closeModal()" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition">Vazgeç</button>
+        <button onclick="RuleMaster.submitModal()" class="px-6 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg transition">💾 Master DB'ye Kaydet</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SCRIPT LOGIC -->
+  <script src="rule_engine.js"></script>
+  <script src="rule_master.js"></script>
+  <script src="dice3d.js"></script>
+  <script src="gdrive_sync.js"></script>
+
+  <script>
+    let character = null;
+    let masterDb = [];
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      await loadInitialData();
+      renderAll();
+      GDriveSync.init();
+    });
+
+    async function loadInitialData() {
+      // 1. Try LocalStorage
+      const savedChar = localStorage.getItem('dnd35_character');
+      if (savedChar) {
+        try { character = JSON.parse(savedChar); } catch (e) {}
+      }
+
+      // If no local char, fetch bundled character_data.json
+      if (!character) {
+        try {
+          const res = await fetch('character_data.json');
+          character = await res.json();
+          saveStateToStorage(false);
+        } catch (e) {
+          console.error('Error fetching character_data.json:', e);
+        }
+      }
+
+      // 2. Load Master DB
+      const savedDb = localStorage.getItem('dnd35_master_db');
+      if (savedDb) {
+        try { masterDb = JSON.parse(savedDb); } catch (e) {}
+      } else {
+        try {
+          const res = await fetch('master_db.json');
+          masterDb = await res.json();
+          localStorage.setItem('dnd35_master_db', JSON.stringify(masterDb));
+        } catch (e) {
+          console.error('Error fetching master_db.json:', e);
+        }
+      }
+    }
+
+    function saveStateToStorage(triggerCloudSync = true) {
+      if (!character) return;
+      character.lastModified = new Date().toISOString();
+      localStorage.setItem('dnd35_character', JSON.stringify(character));
+      localStorage.setItem('dnd35_master_db', JSON.stringify(masterDb));
+      if (triggerCloudSync && window.GDriveSync) {
+        window.GDriveSync.scheduleAutoSave();
+      }
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      const target = document.getElementById(tabId);
+      if (target) target.classList.remove('hidden');
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-red-600', 'text-white', 'shadow');
+        btn.classList.add('text-slate-400');
+      });
+      const activeBtn = document.getElementById(tabId.replace('tab-', 'tab-btn-'));
+      if (activeBtn) {
+        activeBtn.classList.add('bg-red-600', 'text-white', 'shadow');
+        activeBtn.classList.remove('text-slate-400');
+      }
+    }
+
+    function renderAll() {
+      if (!character) return;
+      renderHUD();
+      renderWeapons();
+      renderActiveModifiers();
+      renderSpellSlots();
+      renderManeuvers();
+      renderKnownSpells();
+      renderAbilities();
+      renderSkills();
+      renderConsumables();
+      renderMasterDbTable();
+    }
+
+    function renderHUD() {
+      document.getElementById('char-name-display').textContent = character.name;
+      document.getElementById('char-classes-display').textContent = character.classes;
+      document.getElementById('char-bab-display').textContent = '+' + (character.bab || 0);
+      
+      const initMod = RuleEngine.getAbilityMod(character.abilities?.dex || 10);
+      document.getElementById('char-init-display').textContent = (initMod >= 0 ? '+' : '') + initMod;
+      document.getElementById('char-speed-display').textContent = (character.baseSpeed || 30) + ' ft';
+
+      document.getElementById('hp-current-display').textContent = character.hp.current;
+      document.getElementById('hp-max-display').textContent = character.hp.max;
+
+      const pct = Math.max(0, Math.min(100, Math.round((character.hp.current / character.hp.max) * 100)));
+      const bar = document.getElementById('hp-progress-bar');
+      bar.style.width = pct + '%';
+      if (pct > 50) bar.className = 'bg-emerald-500 h-full rounded-full transition-all';
+      else if (pct > 25) bar.className = 'bg-amber-500 h-full rounded-full transition-all';
+      else bar.className = 'bg-rose-500 h-full rounded-full transition-all';
+
+      // AC
+      const acCalc = RuleEngine.evaluateAC(character, {
+        combatExpertise: parseInt(document.getElementById('combat-expertise-val')?.value) || 0,
+        fightingDefensively: document.getElementById('mod-defensive-fighting')?.checked || false,
+        totalDefense: document.getElementById('mod-total-defense')?.checked || false,
+        charge: document.getElementById('mod-charge')?.checked || false
+      });
+      document.getElementById('ac-total-display').textContent = acCalc.total;
+      document.getElementById('ac-touch-display').textContent = acCalc.touch;
+      document.getElementById('ac-flat-display').textContent = acCalc.flat;
+
+      // Saves
+      const saves = RuleEngine.evaluateSaves(character);
+      document.getElementById('save-fort-display').textContent = '+' + saves.fort;
+      document.getElementById('save-ref-display').textContent = '+' + saves.ref;
+      document.getElementById('save-will-display').textContent = '+' + saves.will;
+    }
+
+    function renderWeapons() {
+      const select = document.getElementById('active-weapon-select');
+      select.innerHTML = '';
+      (character.weapons || []).forEach(w => {
+        const opt = document.createElement('option');
+        opt.value = w.name;
+        opt.textContent = w.name;
+        if (w.name === character.activeWeapon) opt.selected = true;
+        select.appendChild(opt);
+      });
+      recalculateOffense();
+    }
+
+    function onWeaponChange() {
+      character.activeWeapon = document.getElementById('active-weapon-select').value;
+      const wep = character.weapons.find(w => w.name === character.activeWeapon);
+      if (wep && wep.grip) {
+        document.getElementById('active-grip-select').value = wep.grip;
+      }
+      recalculateOffense();
+      saveStateToStorage();
+    }
+
+    function recalculateOffense() {
+      const wep = (character.weapons || []).find(w => w.name === character.activeWeapon) || character.weapons[0];
+      if (!wep) return;
+
+      const grip = document.getElementById('active-grip-select').value;
+      const paVal = parseInt(document.getElementById('power-attack-val').value) || 0;
+      const flanking = document.getElementById('mod-flanking').checked;
+      const charge = document.getElementById('mod-charge').checked;
+      const hg = document.getElementById('mod-higher-ground').checked;
+
+      const evalResult = RuleEngine.evaluateWeaponAttack(character, wep, {
+        grip,
+        powerAttack: paVal,
+        flanking,
+        charge,
+        higherGround: hg,
+        activeStance: character.activeStance || 'None',
+        customModifiers: (character.activeModifiers || []).filter(m => m.active)
+      });
+
+      document.getElementById('weapon-damage-formula-display').textContent = evalResult.baseDice + (evalResult.netFlatDamage >= 0 ? '+' : '') + evalResult.netFlatDamage;
+      document.getElementById('weapon-crit-display').textContent = (evalResult.critMin === 20 ? '20' : evalResult.critMin + '-20') + ' / x' + evalResult.critMult;
+      document.getElementById('weapon-type-display').textContent = evalResult.damageType;
+
+      document.getElementById('iteratives-display').textContent = evalResult.iteratives.map(b => (b >= 0 ? '+' : '') + b).join(' / ');
+
+      // Weapon Finesse indicator
+      const badge = document.getElementById('weapon-stat-override-badge');
+      if (evalResult.attackStatName.includes('Weapon Finesse')) {
+        badge.textContent = `✨ Weapon Finesse: DEX (+${evalResult.attackStatMod}) devrede`;
+        badge.className = 'text-[10px] font-semibold text-emerald-400 mt-1';
+      } else {
+        badge.textContent = `⚔️ ${evalResult.attackStatName} (+${evalResult.attackStatMod}) kullanılıyor`;
+        badge.className = 'text-[10px] font-semibold text-slate-400 mt-1';
+      }
+
+      // PA explanation
+      const paExplanation = document.getElementById('pa-explanation');
+      if (grip === '2-Hand') paExplanation.textContent = '(-BAB Att / +2x Dmg)';
+      else if (grip === 'Off-Hand') paExplanation.textContent = '(-BAB Att / +0x Dmg)';
+      else paExplanation.textContent = '(-BAB Att / +1x Dmg)';
+    }
+
+    function renderActiveModifiers() {
+      const tbody = document.getElementById('active-modifiers-tbody');
+      tbody.innerHTML = '';
+      (character.activeModifiers || []).forEach((mod, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = idx % 2 === 0 ? 'bg-slate-900/50' : 'bg-slate-900/20';
+        tr.innerHTML = `
+          <td class="py-2 px-3 text-center">
+            <input type="checkbox" ${mod.active ? 'checked' : ''} onchange="toggleModifier(${idx})" class="w-4 h-4 rounded text-rose-500 border-slate-700 focus:ring-0">
+          </td>
+          <td class="py-2 px-3 font-bold text-white">${mod.name}</td>
+          <td class="py-2 px-3 text-center text-purple-400 font-semibold">${mod.source}</td>
+          <td class="py-2 px-3 text-center text-emerald-400 font-mono font-bold">${mod.bonusAtk ? '+' + mod.bonusAtk : '0'}</td>
+          <td class="py-2 px-3 text-center text-amber-400 font-mono font-bold">${mod.dice || '-'}</td>
+          <td class="py-2 px-3 text-center text-sky-400">${mod.type || 'Weapon'}</td>
+          <td class="py-2 px-3 text-slate-400 text-[11px]">${mod.notes || ''}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function toggleModifier(idx) {
+      character.activeModifiers[idx].active = !character.activeModifiers[idx].active;
+      recalculateOffense();
+      saveStateToStorage();
+    }
+
+    // 🎲 3D TACTICAL ROLL ATTACK
+    function rollFullAttackWith3D() {
+      const wep = (character.weapons || []).find(w => w.name === character.activeWeapon) || character.weapons[0];
+      const grip = document.getElementById('active-grip-select').value;
+      const paVal = parseInt(document.getElementById('power-attack-val').value) || 0;
+      const flanking = document.getElementById('mod-flanking').checked;
+      const charge = document.getElementById('mod-charge').checked;
+      const hg = document.getElementById('mod-higher-ground').checked;
+      const noCritConfirm = document.getElementById('house-no-crit-confirm').checked;
+      const maneuverCrit = document.getElementById('house-maneuver-crit').checked;
+
+      const evalResult = RuleEngine.evaluateWeaponAttack(character, wep, {
+        grip, powerAttack: paVal, flanking, charge, higherGround: hg,
+        activeStance: character.activeStance || 'None',
+        customModifiers: (character.activeModifiers || []).filter(m => m.active)
+      });
+
+      const activeMods = (character.activeModifiers || []).filter(m => m.active);
+      const diceToRoll3D = [];
+      const attackPlans = [];
+
+      // For each iterative attack
+      evalResult.iteratives.forEach((bonus, idx) => {
+        const d20 = Math.floor(Math.random() * 20) + 1;
+        diceToRoll3D.push({ type: 'd20', value: d20 });
+
+        const isThreat = (d20 >= evalResult.critMin);
+        const isCrit = isThreat && noCritConfirm;
+        const mult = isCrit ? evalResult.critMult : 1;
+
+        // Roll weapon damage dice (e.g. 1d6 or 2d6)
+        let diceSides = 6;
+        let diceCount = 1;
+        const match = evalResult.baseDice.match(/(\d+)d(\d+)/i);
+        if (match) {
+          diceCount = parseInt(match[1]) || 1;
+          diceSides = parseInt(match[2]) || 6;
+        }
+
+        const weaponRolls = [];
+        let weaponRollSum = 0;
+        for (let b = 0; b < diceCount * mult; b++) {
+          const r = Math.floor(Math.random() * diceSides) + 1;
+          weaponRolls.push(r);
+          weaponRollSum += r;
+          diceToRoll3D.push({ type: 'd' + diceSides, value: r });
+        }
+
+        attackPlans.push({
+          idx: idx + 1,
+          d20, bonus,
+          totalAtk: d20 + bonus,
+          isThreat, isCrit, mult,
+          weaponRollSum,
+          flatDmg: evalResult.netFlatDamage * mult,
+          breakdown: []
+        });
+      });
+
+      // Roll 3D Animated Dice Canvas!
+      Dice3D.roll(diceToRoll3D.slice(0, 6), () => {
+        // Render results after 3D animation settles
+        renderAttackResults(attackPlans, evalResult, activeMods, maneuverCrit);
+      });
+    }
+
+    function renderAttackResults(attackPlans, evalResult, activeMods, maneuverCrit) {
+      const card = document.getElementById('attack-results-card');
+      card.classList.remove('hidden');
+
+      let grandTotalDmg = 0;
+      const summaryGrid = document.getElementById('result-summary-grid');
+      summaryGrid.innerHTML = '';
+
+      attackPlans.forEach(atk => {
+        let extraDiceSum = 0;
+        const extraDetails = [];
+
+        activeMods.forEach(mod => {
+          if (mod.dice) {
+            const mMatch = mod.dice.match(/(\d+)d(\d+)/i);
+            if (mMatch) {
+              let mCount = parseInt(mMatch[1]) || 1;
+              const mSides = parseInt(mMatch[2]) || 6;
+              if (mod.source === 'Maneuver' && maneuverCrit && atk.isCrit) mCount *= atk.mult;
+
+              let mSum = 0;
+              for (let c = 0; c < mCount; c++) {
+                mSum += Math.floor(Math.random() * mSides) + 1;
+              }
+              extraDiceSum += mSum;
+              extraDetails.push(`${mod.name}: +${mSum} ${mod.type}`);
+            }
+          }
+        });
+
+        const totalAttackDmg = atk.weaponRollSum + atk.flatDmg + extraDiceSum;
+        grandTotalDmg += totalAttackDmg;
+
+        const div = document.createElement('div');
+        div.className = `p-3 rounded-lg border ${atk.isCrit ? 'bg-rose-950/40 border-rose-500' : 'bg-slate-900 border-slate-700'}`;
+        div.innerHTML = `
+          <div class="flex justify-between items-center mb-1">
+            <span class="font-bold text-white">${atk.idx}. Vuruş</span>
+            ${atk.isCrit ? '<span class="badge bg-rose-600 text-white animate-pulse">🎯 KRİTİK</span>' : (atk.d20 === 20 ? '<span class="badge bg-amber-500 text-black">NAT 20</span>' : '')}
+          </div>
+          <div class="flex justify-between items-baseline font-mono border-t border-slate-800 pt-1.5 mt-1">
+            <span class="text-xs text-slate-400">Atk: <strong class="text-emerald-400 text-base">${atk.totalAtk}</strong> (d20:${atk.d20})</span>
+            <span class="text-xs text-slate-400">DMG: <strong class="text-rose-400 text-base">${totalAttackDmg}</strong></span>
+          </div>
+          <div class="text-[10px] text-amber-300 truncate mt-1">Silah: ${atk.weaponRollSum + atk.flatDmg} ${extraDetails.length ? '• ' + extraDetails.join(', ') : ''}</div>
+        `;
+        summaryGrid.appendChild(div);
+      });
+
+      document.getElementById('result-grand-total-damage').textContent = grandTotalDmg + ' HP';
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function dismissAttackResult() {
+      document.getElementById('attack-results-card').classList.add('hidden');
+    }
+
+    // 3D Skill & Save Roll
+    function rollSave3D(saveName) {
+      const saves = RuleEngine.evaluateSaves(character);
+      const mod = saveName === 'Fortitude' ? saves.fort : (saveName === 'Reflex' ? saves.ref : saves.will);
+      const d20 = Math.floor(Math.random() * 20) + 1;
+      const total = d20 + mod;
+
+      Dice3D.roll([{ type: 'd20', value: d20 }], () => {
+        alert(`⚡ ${saveName} Kayıt Zarı:\n1d20 [${d20}] + ${mod} = ${total}`);
+      });
+    }
+
+    function rollSkill3D(skillName, totalMod) {
+      const d20 = Math.floor(Math.random() * 20) + 1;
+      const total = d20 + totalMod;
+
+      Dice3D.roll([{ type: 'd20', value: d20 }], () => {
+        alert(`🎯 ${skillName} Beceri Zarı:\n1d20 [${d20}] + ${totalMod} = ${total}`);
+      });
+    }
+
+    // Spells HUD Rendering (Sorcerer 0: 6/6, 1st: 4/8, 2nd: 2/6)
+    function renderSpellSlots() {
+      const container = document.getElementById('spell-slots-grid');
+      container.innerHTML = '';
+
+      const slots = character.spellcasting?.slots || [];
+      slots.forEach((s, idx) => {
+        const remaining = s.daily - s.used;
+        const div = document.createElement('div');
+        div.className = 'bg-slate-900/90 border border-purple-800/60 rounded-xl p-3 flex flex-col justify-between';
+        div.innerHTML = `
+          <div class="flex justify-between items-center text-xs font-bold mb-1">
+            <span class="text-purple-300 font-mono">${s.name} (${s.level === 0 ? 'Cantrip' : s.level + '. Seviye'})</span>
+            <span class="badge bg-purple-950 text-purple-200 border border-purple-700 font-mono">${s.level === 0 ? s.daily + '/' + s.daily : s.known + '/' + s.daily}</span>
+          </div>
+          <div class="flex items-baseline justify-between my-2">
+            <div class="text-[11px] text-slate-400">Kalan Slot:</div>
+            <div class="text-2xl font-black font-mono ${remaining > 0 ? 'text-emerald-400' : 'text-rose-500'}">${remaining} / ${s.daily}</div>
+          </div>
+          <div class="flex gap-1.5 pt-1 border-t border-slate-800">
+            <button onclick="useSpellSlot(${idx})" ${remaining <= 0 ? 'disabled' : ''} class="flex-1 bg-purple-600/40 hover:bg-purple-600 disabled:opacity-30 text-purple-200 hover:text-white py-1 rounded text-xs font-bold transition">
+              ✨ Harca (-1)
+            </button>
+            <button onclick="restoreSpellSlot(${idx})" ${s.used <= 0 ? 'disabled' : ''} class="bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-slate-300 px-2 py-1 rounded text-xs transition">
+              +1
+            </button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function useSpellSlot(idx) {
+      if (character.spellcasting.slots[idx].used < character.spellcasting.slots[idx].daily) {
+        character.spellcasting.slots[idx].used++;
+        renderSpellSlots();
+        saveStateToStorage();
+      }
+    }
+
+    function restoreSpellSlot(idx) {
+      if (character.spellcasting.slots[idx].used > 0) {
+        character.spellcasting.slots[idx].used--;
+        renderSpellSlots();
+        saveStateToStorage();
+      }
+    }
+
+    function restoreAllSpellSlots() {
+      (character.spellcasting?.slots || []).forEach(s => s.used = 0);
+      renderSpellSlots();
+      saveStateToStorage();
+      alert('✨ Tüm günlük büyü slotları yenilendi!');
+    }
+
+    // Maneuvers
+    function renderManeuvers() {
+      const container = document.getElementById('maneuvers-container');
+      container.innerHTML = '';
+
+      (character.tomeOfBattle?.readiedManeuvers || []).forEach((m, idx) => {
+        const div = document.createElement('div');
+        div.className = `p-2.5 rounded-lg border flex items-center justify-between transition ${m.expended ? 'bg-slate-950/60 border-slate-800 opacity-50' : 'bg-slate-900 border-rose-600/40'}`;
+        div.innerHTML = `
+          <div>
+            <div class="text-xs font-bold ${m.expended ? 'line-through text-slate-500' : 'text-white'}">${m.name}</div>
+            <div class="text-[10px] text-rose-300">${m.discipline} ${m.level} • ${m.action}</div>
+          </div>
+          <button onclick="toggleManeuverExpended(${idx})" class="text-xs font-bold px-2.5 py-1 rounded border transition ${m.expended ? 'bg-emerald-950 text-emerald-300 border-emerald-700' : 'bg-rose-950 text-rose-300 border-rose-700'}">
+            ${m.expended ? '🔄 Yenile' : '⚡ Harca'}
+          </button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function toggleManeuverExpended(idx) {
+      character.tomeOfBattle.readiedManeuvers[idx].expended = !character.tomeOfBattle.readiedManeuvers[idx].expended;
+      renderManeuvers();
+      saveStateToStorage();
+    }
+
+    function recoverAllManeuvers() {
+      (character.tomeOfBattle?.readiedManeuvers || []).forEach(m => m.expended = false);
+      renderManeuvers();
+      saveStateToStorage();
+      alert('🔄 Tüm Tome of Battle manevraları yenilendi (Recovered)!');
+    }
+
+    function onStanceChange() {
+      character.activeStance = document.getElementById('active-stance-select').value;
+      recalculateOffense();
+      saveStateToStorage();
+    }
+
+    // Known Spells
+    function renderKnownSpells() {
+      const tbody = document.getElementById('known-spells-tbody');
+      tbody.innerHTML = '';
+      (character.spellcasting?.knownSpells || []).forEach(s => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-900/60 transition';
+        tr.innerHTML = `
+          <td class="py-2 px-3 text-purple-400 font-bold font-mono">${s.level === 0 ? '0' : s.level}</td>
+          <td class="py-2 px-3 font-bold text-white">${s.name}</td>
+          <td class="py-2 px-3 text-slate-400">${s.school}</td>
+          <td class="py-2 px-3 text-amber-300">${s.action}</td>
+          <td class="py-2 px-3 text-slate-400">${s.range}</td>
+          <td class="py-2 px-3 text-slate-300 text-[11px]">${s.benefit}</td>
+          <td class="py-2 px-3 text-center">
+            <button onclick="castSpellDirectly('${s.name}', ${s.level})" class="bg-purple-900/60 hover:bg-purple-600 text-purple-200 text-xs font-semibold px-2 py-0.5 rounded border border-purple-700 transition">
+              At
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function castSpellDirectly(name, lvl) {
+      const slot = character.spellcasting?.slots?.find(s => s.level === lvl);
+      if (slot && slot.used < slot.daily) {
+        slot.used++;
+        renderSpellSlots();
+        saveStateToStorage();
+        alert(`🔮 ${name} büyüsü yapıldı! (${lvl}. seviye slottan harcandı).`);
+      } else {
+        alert(`⚠️ ${lvl}. seviye büyü slotunuz kalmadı!`);
+      }
+    }
+
+    // Abilities Grid
+    function renderAbilities() {
+      const container = document.getElementById('abilities-grid');
+      container.innerHTML = '';
+      const stats = [
+        { key: 'str', label: 'STR' },
+        { key: 'dex', label: 'DEX' },
+        { key: 'con', label: 'CON' },
+        { key: 'int', label: 'INT' },
+        { key: 'wis', label: 'WIS' },
+        { key: 'cha', label: 'CHA' }
+      ];
+
+      stats.forEach(s => {
+        const score = character.abilities?.[s.key] || 10;
+        const mod = RuleEngine.getAbilityMod(score);
+        const div = document.createElement('div');
+        div.className = 'bg-slate-900 border border-slate-700 rounded-xl p-2.5';
+        div.innerHTML = `
+          <div class="text-[10px] font-bold text-slate-400 uppercase">${s.label}</div>
+          <div class="text-xl font-black text-amber-400 font-mono my-0.5">${score}</div>
+          <div class="text-xs font-bold ${mod >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-mono">${mod >= 0 ? '+' : ''}${mod}</div>
+        `;
+        container.appendChild(div);
+      });
+
+      // Feats badges
+      const badgesContainer = document.getElementById('feats-badges-container');
+      badgesContainer.innerHTML = '';
+      (character.feats || []).forEach(f => {
+        const span = document.createElement('span');
+        span.className = 'px-3 py-1 rounded-lg bg-indigo-950/60 border border-indigo-700/60 text-indigo-300 text-xs font-semibold';
+        span.textContent = typeof f === 'string' ? f : f.name;
+        badgesContainer.appendChild(span);
+      });
+    }
+
+    // Skills Table
+    function renderSkills() {
+      const tbody = document.getElementById('skills-tbody');
+      tbody.innerHTML = '';
+      (character.skills || []).forEach(sk => {
+        const statMod = RuleEngine.getAbilityMod(character.abilities?.[sk.stat] || 10);
+        const total = sk.ranks + statMod + (sk.misc || 0);
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-900/60 transition';
+        tr.innerHTML = `
+          <td class="py-2 px-3 font-bold text-white">${sk.name}</td>
+          <td class="py-2 px-3 text-center text-slate-400 uppercase font-mono">${sk.stat}</td>
+          <td class="py-2 px-3 text-center text-sky-400 font-mono">${sk.ranks}</td>
+          <td class="py-2 px-3 text-center text-slate-400 font-mono">${statMod >= 0 ? '+' : ''}${statMod}</td>
+          <td class="py-2 px-3 text-center font-black font-mono text-emerald-400 text-sm">${total >= 0 ? '+' : ''}${total}</td>
+          <td class="py-2 px-3 text-center">
+            <button onclick="rollSkill3D('${sk.name}', ${total})" class="bg-slate-800 hover:bg-slate-700 text-amber-400 px-2.5 py-0.5 rounded border border-slate-700 text-xs font-mono transition">
+              🎲 Zar
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Consumables
+    function renderConsumables() {
+      const container = document.getElementById('consumables-container');
+      container.innerHTML = '';
+      (character.consumables || []).forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = 'bg-slate-900 border border-slate-700 p-3 rounded-lg flex items-center justify-between';
+        div.innerHTML = `
+          <div>
+            <div class="text-xs font-bold text-white">${item.name}</div>
+            <div class="text-[10px] text-amber-400">${item.effect} • Adet: <strong class="text-white">${item.qty}</strong></div>
+          </div>
+          <button onclick="usePotion3D(${idx})" ${item.qty <= 0 ? 'disabled' : ''} class="bg-amber-600/30 hover:bg-amber-600 disabled:opacity-30 text-amber-300 hover:text-white border border-amber-500/40 text-xs font-bold px-3 py-1.5 rounded transition">
+            🧪 1 Tane İç
+          </button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function usePotion3D(idx) {
+      if (character.consumables[idx].qty > 0) {
+        character.consumables[idx].qty--;
+        if (character.consumables[idx].name.includes('Cure')) {
+          // Roll 3d8 in 3D!
+          const r1 = Math.floor(Math.random() * 8) + 1;
+          const r2 = Math.floor(Math.random() * 8) + 1;
+          const r3 = Math.floor(Math.random() * 8) + 1;
+          const heal = r1 + r2 + r3 + 5;
+
+          Dice3D.roll([
+            { type: 'd8', value: r1 },
+            { type: 'd8', value: r2 },
+            { type: 'd8', value: r3 }
+          ], () => {
+            character.hp.current = Math.min(character.hp.max, character.hp.current + heal);
+            renderHUD();
+            renderConsumables();
+            saveStateToStorage();
+            alert(`💖 İksir içildi! 3d8 [${r1}+${r2}+${r3}] + 5 = +${heal} HP kazanıldı.`);
+          });
+        } else {
+          renderConsumables();
+          saveStateToStorage();
+        }
+      }
+    }
+
+    // Master DB Table & Filter (Delegated to RuleMaster)
+    function renderMasterDbTable() {
+      if (window.RuleMaster && typeof RuleMaster.renderTable === 'function') {
+        RuleMaster.renderTable();
+      }
+    }
+
+    function filterMasterDb() {
+      if (window.RuleMaster && typeof RuleMaster.renderTable === 'function') {
+        RuleMaster.renderTable();
+      }
+    }
+
+    // HP Adjustments
+    function applyDamage() {
+      const amt = parseInt(document.getElementById('hp-adjust-input').value) || 0;
+      character.hp.current = Math.max(-10, character.hp.current - amt);
+      renderHUD();
+      saveStateToStorage();
+    }
+
+    function applyHeal() {
+      const amt = parseInt(document.getElementById('hp-adjust-input').value) || 0;
+      character.hp.current = Math.min(character.hp.max, character.hp.current + amt);
+      renderHUD();
+      saveStateToStorage();
+    }
+
+    function performLongRest() {
+      character.hp.current = character.hp.max;
+      character.hp.nonlethal = 0;
+      restoreAllSpellSlots();
+      recoverAllManeuvers();
+      renderHUD();
+      saveStateToStorage();
+      alert('☀️ 8 Saat Tam Dinlenme yapıldı. Can, büyüler ve manevralar tamamen yenilendi!');
+    }
+
+    function performEncounterReset() {
+      document.getElementById('power-attack-val').value = 0;
+      document.getElementById('mod-flanking').checked = false;
+      document.getElementById('mod-charge').checked = false;
+      document.getElementById('mod-higher-ground').checked = false;
+      recalculateOffense();
+      renderHUD();
+      saveStateToStorage();
+      alert('🔄 Karşılaşma sıfırlandı: Taktik modlar temizlendi.');
+    }
+
+    function advanceNextRound() {
+      alert('⏭️ Tur ilerletildi (-1 round timer).');
+    }
+
+    function recalculateDefense() {
+      renderHUD();
+    }
+
+    // Export & Import
+    function exportCharacterJson() {
+      const blob = new Blob([JSON.stringify(character, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `dnd35_character_${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+    }
+
+    function exportMasterDbJson() {
+      const blob = new Blob([JSON.stringify(masterDb, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `dnd35_master_db_${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+    }
+
+    function handleJsonFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (Array.isArray(parsed)) {
+            masterDb = parsed;
+            alert(`✅ Master DB başarıyla yüklendi (${parsed.length} kayıt)!`);
+          } else if (parsed.name || parsed.characterName || parsed.abilities) {
+            character = parsed;
+            alert('✅ Karakter verisi başarıyla yüklendi!');
+          }
+          saveStateToStorage();
+          renderAll();
+        } catch (err) {
+          alert('❌ JSON dosyası çözümlenemedi: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // User Requested Reset Feature
+    function resetToCleanCharacter() {
+      if (confirm('⚠️ Test karakterini sıfırlayıp temiz bir boş karakter başlatmak istediğinize emin misiniz?')) {
+        character = {
+          schemaVersion: "2.0",
+          name: "Yeni Karakter",
+          classes: "Fighter 1",
+          race: "Human",
+          level: 1,
+          bab: 1,
+          baseSpeed: 30,
+          abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+          hp: { current: 10, max: 10, temp: 0, nonlethal: 0 },
+          acBreakdown: { armor: 0, shield: 0, natural: 0, deflection: 0, size: 0 },
+          baseSaves: { fort: 2, ref: 0, will: 0 },
+          saveBonuses: { resistance: 0 },
+          activeStance: "None",
+          activeWeapon: "Longsword",
+          activeGrip: "1-Hand",
+          tactical: { powerAttack: 0, flanking: false, charge: false, higherGround: false },
+          weapons: [{ name: "Longsword", grip: "1-Hand", dice: "1d8", critMin: 19, critMult: 2, attBonus: 0, dmgBonus: 0, dmgType: "Slashing" }],
+          activeModifiers: [],
+          spellcasting: { slots: [], knownSpells: [] },
+          tomeOfBattle: { readiedManeuvers: [], stancesKnown: [] },
+          skills: [],
+          consumables: []
+        };
+        saveStateToStorage();
+        renderAll();
+        alert('✅ Karakter sıfırlandı. Yeni karakteriniz hazır!');
+      }
+    }
+  </script>
 </body>
 </html>
