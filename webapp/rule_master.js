@@ -330,7 +330,25 @@ const RuleMaster = {
       };
       character.weapons.push(newWep);
       character.activeWeapon = item.name;
-      alert(`⚔️ "${item.name}" silahı karakterinizin aktif silahlarına eklendi ve kuşandı!`);
+
+      // Also ensure item is added to gearPool
+      if (!character.gearPool) character.gearPool = [];
+      const inPool = character.gearPool.some(p => (p.name || '').toLowerCase() === item.name.toLowerCase());
+      if (!inPool) {
+        character.gearPool.push({
+          id: Date.now(),
+          name: item.name,
+          category: 'Weapon',
+          slot: item.slot || 'Main Hand',
+          qty: 1,
+          weight: Number(item.weight) || 1,
+          cost: Number(item.cost) || 10,
+          desc: item.benefit || item.description || '',
+          isBelt: false,
+          isEquipped: true
+        });
+      }
+      alert(`⚔️ "${item.name}" silahı aktif silahlarınıza ve çantanıza eklendi!`);
     } else if (type === 'spell') {
       if (!character.spellcasting) character.spellcasting = { slots: [], knownSpells: [] };
       if (!character.spellcasting.knownSpells) character.spellcasting.knownSpells = [];
@@ -377,19 +395,38 @@ const RuleMaster = {
         qty: 1,
         effect: item.benefit || 'Potion effect'
       });
-      alert(`🧪 "${item.name}" iksir çantanıza 1 adet olarak eklendi!`);
+      // Also ensure in gearPool
+      if (!character.gearPool) character.gearPool = [];
+      const inPool = character.gearPool.some(p => (p.name || '').toLowerCase() === item.name.toLowerCase());
+      if (!inPool) {
+        character.gearPool.push({
+          id: Date.now(),
+          name: item.name,
+          category: 'Consumable',
+          slot: 'Belt',
+          qty: 1,
+          weight: Number(item.weight) || 0.1,
+          cost: Number(item.cost) || 50,
+          desc: item.benefit || item.description || '',
+          isBelt: true,
+          isEquipped: false
+        });
+      }
+      alert(`🧪 "${item.name}" iksiri çantanıza ve kemerinize eklendi!`);
     } else {
       if (!character.gearPool) character.gearPool = [];
+      const cat = typeof mapEntryToGearCategory === 'function' ? mapEntryToGearCategory(item) : (item.type || 'Other');
+      const isBelt = (item.slot || '').toLowerCase().includes('belt') || cat === 'Consumable';
       const newPoolItem = {
         id: Date.now(),
         name: item.name,
-        category: item.type || 'Other',
-        slot: item.slot || item.type || 'Other',
+        category: cat,
+        slot: item.slot || cat,
         qty: 1,
         weight: Number(item.weight) || 1,
         cost: Number(item.cost) || 10,
         desc: item.benefit || item.description || '',
-        isBelt: false,
+        isBelt: isBelt,
         isEquipped: false
       };
       character.gearPool.push(newPoolItem);
@@ -398,6 +435,45 @@ const RuleMaster = {
 
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
     if (typeof renderAll === 'function') renderAll();
+  },
+
+  // Direct 1-click addition from Master DB to Inventory
+  addToInventory(index) {
+    if (index < 0 || index >= masterDb.length || typeof character === 'undefined' || !character) return;
+    const item = masterDb[index];
+    if (!character.gearPool) character.gearPool = [];
+
+    const inPool = character.gearPool.some(p => (p.name || '').toLowerCase() === item.name.toLowerCase());
+    if (inPool) {
+      alert(`ℹ️ "${item.name}" zaten çantanızda mevcut!`);
+      return;
+    }
+
+    const cat = typeof mapEntryToGearCategory === 'function' ? mapEntryToGearCategory(item) : (item.type || 'Other');
+    const isBelt = (item.slot || '').toLowerCase().includes('belt') || cat === 'Consumable';
+
+    character.gearPool.push({
+      id: Date.now(),
+      name: item.name,
+      category: cat,
+      slot: item.slot && item.slot !== 'None' ? item.slot : cat,
+      qty: 1,
+      weight: Number(item.weight) || 0,
+      cost: Number(item.cost) || 0,
+      desc: item.benefit || item.description || '',
+      isBelt: isBelt,
+      isEquipped: false
+    });
+
+    if (cat === 'Consumable') {
+      if (!character.consumables) character.consumables = [];
+      character.consumables.push({ name: item.name, qty: 1, effect: item.benefit || '' });
+    }
+
+    if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+    if (typeof renderInventory === 'function') renderInventory();
+    if (typeof renderConsumables === 'function') renderConsumables();
+    alert(`🎒 "${item.name}" çantanıza / envanter havuzunuza eklendi!`);
   },
 
   // Open Edit / Add Modal
@@ -629,6 +705,9 @@ const RuleMaster = {
             </button>
             <button onclick="RuleMaster.equipToCharacter(${idx})" class="p-1 rounded bg-emerald-950 hover:bg-emerald-900 border border-emerald-700 text-emerald-300 text-xs transition" title="Karaktere Ekle / Kuşan">
               ⚡
+            </button>
+            <button onclick="RuleMaster.addToInventory(${idx})" class="p-1 rounded bg-amber-950 hover:bg-amber-900 border border-amber-700 text-amber-300 text-xs transition" title="Çantaya / Envantere Ekle">
+              🎒
             </button>
             <button onclick="RuleMaster.duplicateEntry(${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs transition" title="Kopyala">
               📑
