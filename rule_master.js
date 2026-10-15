@@ -813,6 +813,220 @@ const RuleMaster = {
     }
   },
 
+  // ====================================================
+  // CANONICAL D&D 3.5E LOCAL COMPENDIUM & TYPO RESOLVER
+  // Prevents LLM hallucinations for misspelled or iconic rules
+  // ====================================================
+  canonicalDictionary: {
+    // Aliases & Typo mappings
+    'clave': 'cleave',
+    'cleav': 'cleave',
+    'cleve': 'cleave',
+    'gret cleve': 'great cleave',
+    'great cleve': 'great cleave',
+    'power atac': 'power attack',
+    'power atack': 'power attack',
+    'finesse': 'weapon finesse',
+    'weapon fines': 'weapon finesse',
+    'shok trooper': 'shock trooper',
+    'shock troper': 'shock trooper',
+    'leap atac': 'leap attack',
+    'shadow blad': 'shadow blade',
+    'flometong': 'flametongue',
+    'flametong': 'flametongue',
+    'belt of batle': 'belt of battle',
+    'boots of sped': 'boots of speed',
+    'hast': 'haste',
+    'moutain hamer': 'mountain hammer',
+
+    // Verified Canonical Entries
+    'cleave': {
+      name: 'Cleave',
+      type: 'Feat',
+      slot: 'None',
+      parent: '-',
+      source: 'PHB p.92',
+      prereq: 'Str 13, Power Attack.',
+      benefit: 'Prerequisites: Str 13, Power Attack. Benefit: If you deal a creature enough damage to make it drop (typically by dropping it to below 0 hit points or killing it), you get an immediate, extra melee attack against another creature in the immediate vicinity. The extra attack is with the same weapon and at the same bonus as the attack that dropped the previous creature. You can use this ability once per round.',
+      bonusType: 'Untyped',
+      scope: 'Melee Only',
+      action: 'Free Action',
+      duration: 'Passive',
+      role: 'Offense / Cleave',
+      weight: 0,
+      cost: 0
+    },
+    'great cleave': {
+      name: 'Great Cleave',
+      type: 'Feat',
+      slot: 'None',
+      parent: '-',
+      source: 'PHB p.94',
+      prereq: 'Str 13, Cleave, Power Attack, base attack bonus +4.',
+      benefit: 'Prerequisites: Str 13, Cleave, Power Attack, BAB +4. Benefit: This feat works like Cleave, except that there is no limit in the number of times you can use it per round.',
+      bonusType: 'Untyped',
+      scope: 'Melee Only',
+      action: 'Free Action',
+      duration: 'Passive',
+      role: 'Offense / Cleave',
+      weight: 0,
+      cost: 0
+    },
+    'power attack': {
+      name: 'Power Attack',
+      type: 'Feat',
+      slot: 'None',
+      parent: '-',
+      source: 'PHB p.98',
+      prereq: 'Str 13.',
+      benefit: 'Prerequisites: Str 13. Benefit: On your action, before making attack rolls for a round, you may choose to subtract a number from all melee attack rolls and add the same number to all melee damage rolls. This number may not exceed your base attack bonus. The penalty on attacks and bonus on damage apply until your next turn. If you attack with a two-handed weapon, add twice the number subtracted.',
+      bonusType: 'Untyped',
+      scope: 'Melee Only',
+      action: 'Free Action',
+      duration: '1 round',
+      role: 'Offense / Power Attack',
+      weight: 0,
+      cost: 0
+    },
+    'weapon finesse': {
+      name: 'Weapon Finesse',
+      type: 'Feat',
+      slot: 'None',
+      parent: '-',
+      source: 'PHB p.102',
+      prereq: 'Base attack bonus +1.',
+      benefit: 'Prerequisites: BAB +1. Benefit: With a light weapon, rapier, whip, or spiked chain made for a creature of your size category, you may use your Dexterity modifier instead of your Strength modifier on attack rolls. If you carry a shield, its armor check penalty applies to your attack rolls.',
+      bonusType: 'Untyped',
+      scope: 'Melee Only',
+      action: 'Passive',
+      duration: 'Continuous',
+      role: 'Offense / Attack',
+      weight: 0,
+      cost: 0
+    },
+    'shock trooper': {
+      name: 'Shock Trooper',
+      type: 'Feat',
+      slot: 'None',
+      parent: '-',
+      source: 'Complete Warrior p.112',
+      prereq: 'Base attack bonus +6, Improved Bull Rush, Power Attack.',
+      benefit: 'Prerequisites: BAB +6, Improved Bull Rush, Power Attack. Tactical Feat enabling Directed Bull Rush, Domino Rush (free trip on bull rush collision), and Heedless Charge (divert Power Attack attack penalty to Armor Class instead of attack rolls during a charge with a two-handed weapon).',
+      bonusType: 'Untyped',
+      scope: 'Melee Only',
+      action: 'Passive / Tactical',
+      duration: 'Continuous',
+      role: 'Offense / Tactical',
+      weight: 0,
+      cost: 0
+    },
+    'shadow blade': {
+      name: 'Shadow Blade',
+      type: 'Feat',
+      slot: 'None',
+      parent: '-',
+      source: 'ToB p.32',
+      prereq: 'One Shadow Hand stance.',
+      benefit: 'Prerequisites: One Shadow Hand stance. Benefit: While you are in a Shadow Hand stance and attack with one of the discipline\'s preferred weapons (dagger, short sword, sai, siangham, unarmed strike, spiked chain), you can add your Dexterity modifier as a bonus on damage rolls.',
+      bonusType: 'Untyped',
+      scope: 'Melee Only',
+      action: 'Passive',
+      duration: 'Continuous',
+      role: 'Offense / Damage',
+      weight: 0,
+      cost: 0
+    },
+    'leap attack': {
+      name: 'Leap Attack',
+      type: 'Feat',
+      slot: 'None',
+      parent: '-',
+      source: 'Complete Adventurer p.110',
+      prereq: 'Jump 8 ranks, Power Attack.',
+      benefit: 'Prerequisites: Jump 8 ranks, Power Attack. Benefit: If you cover at least 10 feet of horizontal distance with your jump, and you end your jump in an adjacent square to your target and attack as part of a charge, you deal double the normal extra damage from Power Attack (triple if using a two-handed weapon).',
+      bonusType: 'Untyped',
+      scope: 'Melee Only',
+      action: 'Full-Round Action (Charge)',
+      duration: 'Instantaneous',
+      role: 'Offense / Charge',
+      weight: 0,
+      cost: 0
+    },
+    'haste': {
+      name: 'Haste',
+      type: 'Spell',
+      slot: 'None',
+      parent: '-',
+      source: 'PHB p.239',
+      level: 3,
+      school: 'Transmutation',
+      action: '1 standard action',
+      duration: '1 round/level',
+      range: 'Close (25 ft. + 5 ft./2 levels)',
+      benefit: 'Targets receive +1 attack bonus, +1 dodge AC, +1 Reflex save, +30 ft enhancement bonus to base speed, and 1 extra attack when making a full attack.',
+      bonusType: 'Dodge',
+      scope: 'All Attacks',
+      attBonus: 1,
+      acBonus: 1,
+      refBonus: 1,
+      speedBonus: 30,
+      weight: 0,
+      cost: 0
+    },
+    'mountain hammer': {
+      name: 'Mountain Hammer',
+      type: 'Maneuver',
+      slot: 'None',
+      parent: '-',
+      source: 'ToB p.84',
+      level: 2,
+      discipline: 'Stone Dragon',
+      action: '1 standard action',
+      duration: 'Instantaneous',
+      extraDmg: '+2d6',
+      dice: '+2d6',
+      benefit: 'Stone Dragon (Strike). As part of this maneuver, you make a single melee attack. If your attack hits, you deal an extra 2d6 points of damage and your attack automatically overcomes damage reduction and hardness.',
+      bonusType: 'Untyped',
+      scope: 'Melee Only',
+      weight: 0,
+      cost: 0
+    }
+  },
+
+  entryToRow(entry) {
+    return [
+      entry.name || '',
+      entry.type || 'Feat',
+      entry.slot || 'None',
+      entry.parent || '-',
+      entry.source || 'PHB',
+      entry.benefit || entry.description || '',
+      entry.bonusType || 'Untyped',
+      entry.scope || 'None / General',
+      entry.strBonus || 0,
+      entry.dexBonus || 0,
+      entry.conBonus || 0,
+      entry.intBonus || 0,
+      entry.wisBonus || 0,
+      entry.chaBonus || 0,
+      entry.acBonus || 0,
+      entry.hpBonus || 0,
+      entry.attBonus || 0,
+      entry.dmgBonus || 0,
+      entry.fortBonus || 0,
+      entry.refBonus || 0,
+      entry.willBonus || 0,
+      entry.skillBonus || 0,
+      entry.initBonus || 0,
+      entry.speedBonus || 0,
+      entry.extraDmg || entry.dice || '',
+      entry.action || 'Passive',
+      entry.duration || 'Continuous',
+      entry.weight || 0,
+      entry.cost || 0
+    ];
+  },
+
   setQueryAndSearch(term, categoryHint = 'ALL') {
     const queryInput = document.getElementById('ai-rule-query');
     const catSelect = document.getElementById('ai-rule-category');
@@ -824,6 +1038,18 @@ const RuleMaster = {
   async fetchSingleAiRuleRows(query, categoryHint, apiKey, statusTextEl = null) {
     const promptText = `You are a master D&D 3.5e Rule Arbiter and Database Architect.
 User query: "${query}" (Category Hint: "${categoryHint}").
+
+CRITICAL D&D 3.5E ANTI-HALLUCINATION & CANONICAL VERIFICATION RULES:
+1. STRICT REAL RAW 3.5E RULES ONLY:
+NEVER fabricate, invent, or hallucinate a rule, feat, spell, magic item, or book source. Every result MUST exist in official Wizards of the Coast D&D 3.5e publications.
+2. MANDATORY TYPO / FUZZY SPELLING CORRECTION:
+User input frequently contains typos or phonetic misspellings (e.g. "clave" -> "Cleave", "gret cleve" -> "Great Cleave", "power atac" -> "Power Attack", "shok trooper" -> "Shock Trooper", "flometong" -> "Flametongue", "hast" -> "Haste", "moutain hamer" -> "Mountain Hammer").
+You MUST recognize the intended canonical element and output the real, correct official D&D 3.5e element!
+For example:
+- Query "clave" -> Entry Name MUST BE "Cleave", Source: "PHB p.92", Prerequisites: "Str 13, Power Attack.", Benefit: "If you deal a creature enough damage to make it drop (below 0 hp or killed), you get an immediate extra melee attack against another creature in immediate vicinity. Once per round."
+DO NOT INVENT A FAKE FEAT CALLED "CLAVE" FROM "COMPLETE DIVINE"!
+3. SOURCE INTEGRITY:
+In Col 4, cite the exact real book and page (e.g. 'PHB p.92', 'MIC p.128', 'DMG p.224', 'CW p.112', 'ToB p.84'). Never cite a book that doesn't contain that rule.
 
 PRIORITIZED KNOWLEDGE BASES (Cascading Search Order):
 1. Priority 1 (Core SRD): https://www.d20srd.org & http://dndsrd.net (PHB, DMG, MM Core 3.5e rules)
@@ -884,7 +1110,7 @@ Return valid JSON only matching this schema:
             contents: [{ parts: [{ text: promptText }] }],
             generationConfig: {
               response_mime_type: 'application/json',
-              temperature: 0.1
+              temperature: 0.0
             }
           })
         });
@@ -916,18 +1142,31 @@ Return valid JSON only matching this schema:
   },
 
   async queryAiRule() {
+    const queryInput = document.getElementById('ai-rule-query');
+    let query = queryInput?.value?.trim() || '';
+    if (!query) {
+      alert('⚠️ Lütfen aranacak kural, hüner, büyü veya eşya adını yazın.');
+      queryInput?.focus();
+      return;
+    }
+
+    // Check Local Canonical Compendium & Typo Resolver First!
+    let cleanKey = query.toLowerCase().trim();
+    if (typeof this.canonicalDictionary[cleanKey] === 'string') {
+      cleanKey = this.canonicalDictionary[cleanKey];
+    }
+    const matchedCanonical = this.canonicalDictionary[cleanKey];
+    if (matchedCanonical && typeof matchedCanonical === 'object') {
+      if (queryInput) queryInput.value = matchedCanonical.name;
+      const row = this.entryToRow(matchedCanonical);
+      this.processAiRows([row]);
+      return;
+    }
+
     const apiKey = this.getApiKey();
     if (!apiKey) {
       alert('⚠️ Lütfen önce bir Google Gemini API Anahtarı girin (Google AI Studio ücretsiz anahtar).');
       this.promptChangeApiKey();
-      return;
-    }
-
-    const queryInput = document.getElementById('ai-rule-query');
-    const query = queryInput?.value?.trim() || '';
-    if (!query) {
-      alert('⚠️ Lütfen aranacak kural, hüner, büyü veya eşya adını yazın.');
-      queryInput?.focus();
       return;
     }
 
