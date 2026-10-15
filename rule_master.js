@@ -251,10 +251,20 @@ const RuleMaster = {
       return false;
     }
 
+    let oldName = null;
+    let oldEntry = null;
     if (editIndex >= 0 && editIndex < masterDb.length) {
+      oldEntry = JSON.parse(JSON.stringify(masterDb[editIndex]));
+      oldName = oldEntry.name;
       masterDb[editIndex] = entryData;
     } else {
       masterDb.push(entryData);
+    }
+
+    // Cascade changes into character state (inventory, body slots, weapons, consumables)
+    let syncCount = 0;
+    if (oldName) {
+      syncCount = this.syncMasterDbEditToCharacter(oldName, entryData);
     }
 
     // Persist and sync
@@ -262,7 +272,157 @@ const RuleMaster = {
       saveStateToStorage(true);
     }
     this.renderTable();
+    if (typeof renderAll === 'function') {
+      renderAll();
+    }
+
+    if (oldName && syncCount > 0) {
+      alert(`✅ "${entryData.name}" Master DB'de güncellendi ve çantanızdaki / karakterinizdeki ${syncCount} kayda anında yansıtıldı!`);
+    }
+
     return true;
+  },
+
+  // Synchronize Master DB edits into character inventory and equipped items
+  syncMasterDbEditToCharacter(oldName, updatedEntry) {
+    if (!oldName || !updatedEntry || typeof character === 'undefined' || !character) return 0;
+    let changesCount = 0;
+    const cleanOld = oldName.toLowerCase().trim();
+    const cleanNew = (updatedEntry.name || '').toLowerCase().trim();
+
+    // 1. Sync character.gearPool
+    if (Array.isArray(character.gearPool)) {
+      character.gearPool.forEach(item => {
+        const itemClean = (item.name || '').toLowerCase().trim();
+        const masterDbRef = (item.masterDbName || '').toLowerCase().trim();
+        if (itemClean === cleanOld || masterDbRef === cleanOld || itemClean === cleanNew) {
+          item.name = updatedEntry.name;
+          item.masterDbName = updatedEntry.name;
+          if (typeof mapEntryToGearCategory === 'function') {
+            item.category = mapEntryToGearCategory(updatedEntry);
+          } else if (updatedEntry.type) {
+            item.category = updatedEntry.type;
+          }
+          if (updatedEntry.slot && updatedEntry.slot !== 'None' && updatedEntry.slot !== '-') {
+            item.slot = updatedEntry.slot;
+          }
+          item.weight = Number(updatedEntry.weight) || 0;
+          item.cost = Number(updatedEntry.cost) || 0;
+          item.desc = updatedEntry.benefit || updatedEntry.description || '';
+          changesCount++;
+        }
+      });
+    }
+
+    // 2. Sync character.bodySlots (Equipped 14 body slots)
+    if (character.bodySlots && typeof character.bodySlots === 'object') {
+      Object.keys(character.bodySlots).forEach(slotKey => {
+        const slotObj = character.bodySlots[slotKey];
+        if (slotObj && slotObj.name) {
+          const slotClean = slotObj.name.toLowerCase().trim();
+          if (slotClean === cleanOld || slotClean === cleanNew) {
+            slotObj.name = updatedEntry.name;
+            slotObj.weight = Number(updatedEntry.weight) || 0;
+            slotObj.cost = Number(updatedEntry.cost) || 0;
+            slotObj.desc = updatedEntry.benefit || updatedEntry.description || '';
+            changesCount++;
+          }
+        }
+      });
+    }
+
+    // 3. Sync character.weapons
+    if (Array.isArray(character.weapons)) {
+      character.weapons.forEach(w => {
+        const wepClean = (w.name || '').toLowerCase().trim();
+        if (wepClean === cleanOld || wepClean === cleanNew) {
+          w.name = updatedEntry.name;
+          if (updatedEntry.dice || updatedEntry.extraDmg) w.dice = updatedEntry.dice || updatedEntry.extraDmg;
+          if (updatedEntry.critMin) w.critMin = Number(updatedEntry.critMin);
+          if (updatedEntry.critMult) w.critMult = Number(updatedEntry.critMult);
+          if (updatedEntry.attBonus !== undefined && updatedEntry.attBonus !== '') w.attBonus = Number(updatedEntry.attBonus);
+          if (updatedEntry.dmgBonus !== undefined && updatedEntry.dmgBonus !== '') w.dmgBonus = Number(updatedEntry.dmgBonus);
+          if (updatedEntry.dmgType) w.dmgType = updatedEntry.dmgType;
+          if (updatedEntry.bonusType) w.bonusType = updatedEntry.bonusType;
+          changesCount++;
+        }
+      });
+      if (character.activeWeapon && (character.activeWeapon.toLowerCase().trim() === cleanOld || character.activeWeapon.toLowerCase().trim() === cleanNew)) {
+        character.activeWeapon = updatedEntry.name;
+      }
+    }
+
+    // 4. Sync character.consumables
+    if (Array.isArray(character.consumables)) {
+      character.consumables.forEach(c => {
+        const cClean = (c.name || '').toLowerCase().trim();
+        if (cClean === cleanOld || cClean === cleanNew) {
+          c.name = updatedEntry.name;
+          c.effect = updatedEntry.benefit || updatedEntry.description || c.effect;
+          changesCount++;
+        }
+      });
+    }
+
+    // 5. Sync character.feats
+    if (Array.isArray(character.feats)) {
+      character.feats = character.feats.map(f => {
+        if (typeof f === 'string') {
+          if (f.toLowerCase().trim() === cleanOld) {
+            changesCount++;
+            return updatedEntry.name;
+          }
+          return f;
+        } else if (f && f.name) {
+          if (f.name.toLowerCase().trim() === cleanOld) {
+            f.name = updatedEntry.name;
+            f.benefit = updatedEntry.benefit || f.benefit;
+            changesCount++;
+          }
+          return f;
+        }
+        return f;
+      });
+    }
+
+    // 6. Sync character.spellcasting.knownSpells
+    if (character.spellcasting && Array.isArray(character.spellcasting.knownSpells)) {
+      character.spellcasting.knownSpells.forEach(s => {
+        if ((s.name || '').toLowerCase().trim() === cleanOld || (s.name || '').toLowerCase().trim() === cleanNew) {
+          s.name = updatedEntry.name;
+          s.benefit = updatedEntry.benefit || s.benefit;
+          if (updatedEntry.school) s.school = updatedEntry.school;
+          changesCount++;
+        }
+      });
+    }
+
+    // 7. Sync character.tomeOfBattle
+    if (character.tomeOfBattle) {
+      if (Array.isArray(character.tomeOfBattle.readiedManeuvers)) {
+        character.tomeOfBattle.readiedManeuvers.forEach(m => {
+          if ((m.name || '').toLowerCase().trim() === cleanOld || (m.name || '').toLowerCase().trim() === cleanNew) {
+            m.name = updatedEntry.name;
+            m.notes = updatedEntry.benefit || m.notes;
+            changesCount++;
+          }
+        });
+      }
+      if (Array.isArray(character.tomeOfBattle.stancesKnown)) {
+        character.tomeOfBattle.stancesKnown.forEach(st => {
+          if ((st.name || '').toLowerCase().trim() === cleanOld || (st.name || '').toLowerCase().trim() === cleanNew) {
+            st.name = updatedEntry.name;
+            st.benefit = updatedEntry.benefit || st.benefit;
+            changesCount++;
+          }
+        });
+      }
+      if (character.activeStance && (character.activeStance.toLowerCase().trim() === cleanOld || character.activeStance.toLowerCase().trim() === cleanNew)) {
+        character.activeStance = updatedEntry.name;
+      }
+    }
+
+    return changesCount;
   },
 
   // Delete entry
@@ -338,6 +498,7 @@ const RuleMaster = {
         character.gearPool.push({
           id: Date.now(),
           name: item.name,
+          masterDbName: item.name,
           category: 'Weapon',
           slot: item.slot || 'Main Hand',
           qty: 1,
@@ -402,6 +563,7 @@ const RuleMaster = {
         character.gearPool.push({
           id: Date.now(),
           name: item.name,
+          masterDbName: item.name,
           category: 'Consumable',
           slot: 'Belt',
           qty: 1,
@@ -420,6 +582,7 @@ const RuleMaster = {
       const newPoolItem = {
         id: Date.now(),
         name: item.name,
+        masterDbName: item.name,
         category: cat,
         slot: item.slot || cat,
         qty: 1,
@@ -455,6 +618,7 @@ const RuleMaster = {
     character.gearPool.push({
       id: Date.now(),
       name: item.name,
+      masterDbName: item.name,
       category: cat,
       slot: item.slot && item.slot !== 'None' ? item.slot : cat,
       qty: 1,
@@ -462,7 +626,6 @@ const RuleMaster = {
       cost: Number(item.cost) || 0,
       desc: item.benefit || item.description || '',
       isBelt: isBelt,
-      isEquipped: false
     });
 
     if (cat === 'Consumable') {
