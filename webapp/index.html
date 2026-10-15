@@ -4581,12 +4581,53 @@
         }
       }
 
+      // Check and attach linked child powers from Master DB
+      let attachedChildCount = 0;
+      const linkedChildren = (typeof RuleMaster !== 'undefined' && typeof RuleMaster.getChildrenForEntry === 'function')
+        ? RuleMaster.getChildrenForEntry(item, masterDb)
+        : [];
+      if (linkedChildren.length > 0) {
+        linkedChildren.forEach(child => {
+          const childClean = (child.name || '').replace(/^↳\s*/, '').trim();
+          if (child.action?.toLowerCase().includes('action') || (child.duration && child.duration !== 'Continuous')) {
+            if (!character.specialAbilities) character.specialAbilities = [];
+            if (!character.specialAbilities.some(a => (a.name || '').toLowerCase() === childClean.toLowerCase())) {
+              character.specialAbilities.push({
+                name: childClean,
+                source: item.name,
+                action: child.action || 'Standard Action',
+                duration: child.duration || 'Special',
+                benefit: child.benefit || child.description || '',
+                dice: child.extraDmg || child.dice || '',
+                active: false
+              });
+              attachedChildCount++;
+            }
+          }
+          if (child.extraDmg) {
+            if (!character.activeModifiers) character.activeModifiers = [];
+            if (!character.activeModifiers.some(m => (m.name || '').toLowerCase() === childClean.toLowerCase())) {
+              character.activeModifiers.push({
+                name: childClean,
+                source: item.name,
+                bonusAtk: Number(child.attBonus) || 0,
+                dice: child.extraDmg || child.dice || '',
+                type: child.dmgType || 'Energy',
+                active: true,
+                notes: child.benefit || child.description || ''
+              });
+              attachedChildCount++;
+            }
+          }
+        });
+      }
+
       saveStateToStorage(true);
       renderInventory();
       renderConsumables();
 
       if (btnEl) {
-        btnEl.innerHTML = '<span>✅</span> <span>Eklendi</span>';
+        btnEl.innerHTML = attachedChildCount > 0 ? `<span>✅</span> <span>Eklendi (+${attachedChildCount} Güç)</span>` : '<span>✅</span> <span>Eklendi</span>';
         btnEl.classList.remove('bg-emerald-700', 'hover:bg-emerald-600');
         btnEl.classList.add('bg-slate-700', 'text-emerald-300', 'cursor-default');
         btnEl.disabled = true;
@@ -4601,7 +4642,11 @@
         }, 500);
       } else {
         closeAddPoolItemModal();
-        alert(`✅ "${item.name}" çantanıza / envanter havuzunuza eklendi!`);
+        if (attachedChildCount > 0) {
+          alert(`✅ "${item.name}" ve ${attachedChildCount} bağlı alt yeteneği çantanıza eklendi!`);
+        } else {
+          alert(`✅ "${item.name}" çantanıza / envanter havuzunuza eklendi!`);
+        }
       }
     }
 
@@ -4609,10 +4654,23 @@
       const item = window._poolCurrentAiEntries?.[idx];
       if (!item) return;
 
-      // Ensure item is also stored in masterDb
-      const exists = masterDb.some(m => (m.name || '').toLowerCase() === (item.name || '').toLowerCase());
-      if (!exists) {
-        masterDb.push(item);
+      // Ensure item AND its children are stored in masterDb
+      const itemsToStore = [item];
+      const children = (typeof RuleMaster !== 'undefined' && typeof RuleMaster.getChildrenForEntry === 'function')
+        ? RuleMaster.getChildrenForEntry(item, window._poolCurrentAiEntries)
+        : [];
+      children.forEach(c => itemsToStore.push(c));
+
+      let dbAdded = 0;
+      itemsToStore.forEach(it => {
+        const exists = masterDb.some(m => (m.name || '').toLowerCase().trim() === (it.name || '').toLowerCase().trim());
+        if (!exists) {
+          masterDb.push(it);
+          dbAdded++;
+        }
+      });
+
+      if (dbAdded > 0) {
         localStorage.setItem('dnd35_master_db', JSON.stringify(masterDb));
         if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.renderTable === 'function') {
           RuleMaster.renderTable();
@@ -4669,18 +4727,60 @@
         }
       }
 
+      // Also attach child powers to character
+      let attachedChildCount = 0;
+      if (children.length > 0) {
+        children.forEach(child => {
+          const childClean = (child.name || '').replace(/^↳\s*/, '').trim();
+          if (child.action?.toLowerCase().includes('action') || (child.duration && child.duration !== 'Continuous')) {
+            if (!character.specialAbilities) character.specialAbilities = [];
+            if (!character.specialAbilities.some(a => (a.name || '').toLowerCase() === childClean.toLowerCase())) {
+              character.specialAbilities.push({
+                name: childClean,
+                source: item.name,
+                action: child.action || 'Standard Action',
+                duration: child.duration || 'Special',
+                benefit: child.benefit || child.description || '',
+                dice: child.extraDmg || child.dice || '',
+                active: false
+              });
+              attachedChildCount++;
+            }
+          }
+          if (child.extraDmg) {
+            if (!character.activeModifiers) character.activeModifiers = [];
+            if (!character.activeModifiers.some(m => (m.name || '').toLowerCase() === childClean.toLowerCase())) {
+              character.activeModifiers.push({
+                name: childClean,
+                source: item.name,
+                bonusAtk: Number(child.attBonus) || 0,
+                dice: child.extraDmg || child.dice || '',
+                type: child.dmgType || 'Energy',
+                active: true,
+                notes: child.benefit || child.description || ''
+              });
+              attachedChildCount++;
+            }
+          }
+        });
+      }
+
       saveStateToStorage(true);
       renderInventory();
       renderConsumables();
 
       if (btnEl) {
-        btnEl.innerHTML = '<span>✅</span> <span>Eklendi</span>';
+        btnEl.innerHTML = attachedChildCount > 0 ? `<span>✅</span> <span>Eklendi (+${attachedChildCount} Güç)</span>` : '<span>✅</span> <span>Eklendi</span>';
         btnEl.classList.remove('bg-emerald-600', 'hover:bg-emerald-500');
         btnEl.classList.add('bg-slate-700', 'text-emerald-300', 'cursor-default');
         btnEl.disabled = true;
       } else {
         closeAddPoolItemModal();
-        alert(`✅ "${item.name}" Master DB'ye kaydedildi ve çantanıza eklendi!`);
+        if (attachedChildCount > 0) {
+          alert(`✅ "${item.name}" ve ${attachedChildCount} alt gücü Master DB'ye kaydedildi ve çantanıza eklendi!`);
+        } else {
+          alert(`✅ "${item.name}" Master DB'ye kaydedildi ve çantanıza eklendi!`);
+        }
       }
     }
 

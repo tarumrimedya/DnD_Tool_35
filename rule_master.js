@@ -1498,8 +1498,12 @@ Return valid JSON only matching this schema:
   convertRowsToEntries(rows) {
     const list = [];
     rows.forEach(row => {
-      const rawName = String(row[0] || '').trim();
-      const isChild = rawName.startsWith('↳');
+      let rawName = String(row[0] || '').trim();
+      const parentVal = String(row[3] || '').trim();
+      const isChild = rawName.startsWith('↳') || (parentVal !== '' && parentVal !== '-');
+      if (isChild && !rawName.startsWith('↳') && parentVal && parentVal !== '-') {
+        rawName = `↳ ${rawName}`;
+      }
 
       const cat = String(row[1] || 'Feat').trim();
       let normType = 'Feat';
@@ -1565,6 +1569,29 @@ Return valid JSON only matching this schema:
     this.renderAiResults();
   },
 
+  getChildrenForEntry(item, sourceList = null) {
+    if (!item || !item.name) return [];
+    const list = Array.isArray(sourceList) ? sourceList : (Array.isArray(masterDb) ? masterDb : []);
+    const pName = (item.name || '').toLowerCase().trim();
+    const cleanPName = pName.replace(/^↳\s*/, '').trim();
+
+    return list.filter(other => {
+      if (!other || other === item) return false;
+      const otherParent = (other.parent || '').toLowerCase().trim();
+      if (otherParent && otherParent !== '-' && (otherParent === pName || otherParent === cleanPName)) {
+        return true;
+      }
+      const otherName = (other.name || '').toLowerCase().trim();
+      if (otherName.startsWith('↳')) {
+        const afterArrow = otherName.replace(/^↳\s*/, '').trim();
+        if (afterArrow.startsWith(cleanPName) || afterArrow.startsWith(pName)) {
+          return true;
+        }
+      }
+      return false;
+    });
+  },
+
   renderAiResults() {
     const container = document.getElementById('ai-results-container');
     if (!container) return;
@@ -1579,13 +1606,13 @@ Return valid JSON only matching this schema:
     }
 
     let html = `
-      <div class="flex items-center justify-between bg-slate-900 border border-purple-500/40 p-3 rounded-xl mb-3">
+      <div class="flex items-center justify-between bg-slate-900 border border-purple-500/40 p-3 rounded-xl mb-3 shadow-lg">
         <div class="flex items-center gap-2">
           <span class="text-base">✨</span>
           <span class="text-xs font-bold text-white">${this.lastAiResults.length} Kural / Alt Güç Üretildi</span>
           <span class="text-[11px] text-slate-400">Master_DB 29 sütunlu şemasıyla tam uyumlu</span>
         </div>
-        <button onclick="RuleMaster.addAllAiResultsToDb()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg shadow transition flex items-center gap-1.5">
+        <button onclick="RuleMaster.addAllAiResultsToDb()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-3.5 py-1.5 rounded-lg shadow transition flex items-center gap-1.5">
           <span>📥</span>
           <span>Tümünü DB'ye Ekle</span>
         </button>
@@ -1595,6 +1622,8 @@ Return valid JSON only matching this schema:
 
     this.lastAiResults.forEach((item, idx) => {
       const isChild = item.isChild || (item.parent && item.parent !== '-');
+      const children = this.getChildrenForEntry(item, this.lastAiResults);
+      const isParent = !isChild && children.length > 0;
       const badgeClass = this.getTypeBadgeClass(item.type);
 
       // Stat badges
@@ -1612,13 +1641,14 @@ Return valid JSON only matching this schema:
       if (item.extraDmg) statPills.push(`${item.extraDmg}`);
 
       html += `
-        <div class="${isChild ? 'ml-6 border-l-4 border-l-purple-500 bg-slate-900/60' : 'bg-slate-900'} border border-slate-800 rounded-xl p-4 space-y-3 shadow-md">
+        <div class="${isChild ? 'ml-6 border-l-4 border-l-purple-500 bg-slate-900/60' : (isParent ? 'bg-slate-900 border-purple-500/50 shadow-purple-950/20' : 'bg-slate-900')} border border-slate-800 rounded-xl p-4 space-y-3 shadow-md transition">
           <div class="flex flex-wrap items-start justify-between gap-2 border-b border-slate-800 pb-2">
             <div>
               <div class="flex items-center gap-2">
                 ${isChild ? '<span class="text-purple-400 font-bold">↳</span>' : ''}
                 <span class="text-sm font-extrabold text-white">${item.name}</span>
                 <span class="badge ${badgeClass}">${item.type}</span>
+                ${isParent ? `<span class="badge bg-purple-950 text-purple-200 border border-purple-600 text-[10px] font-bold">👑 Ana Eşya (${children.length} Alt Güç)</span>` : ''}
                 ${isChild ? `<span class="badge bg-purple-950 text-purple-300 border border-purple-800 font-mono text-[10px]">Bağlı: ${item.parent}</span>` : ''}
               </div>
               <div class="flex items-center gap-2 text-[11px] text-slate-400 mt-1">
@@ -1633,15 +1663,25 @@ Return valid JSON only matching this schema:
             </div>
 
             <div class="flex items-center gap-1.5">
-              <button onclick="RuleMaster.addAiResultToDb(${idx})" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1">
-                <span>📥</span>
-                <span>DB'ye Ekle</span>
-              </button>
+              ${isParent ? `
+                <button onclick="RuleMaster.addAiResultToDb(${idx}, true)" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1" title="Ana eşyayı ve tüm ${children.length} alt gücünü tek seferde Master DB'ye ekler">
+                  <span>📥</span>
+                  <span>Tümünü DB'ye Ekle</span>
+                </button>
+                <button onclick="RuleMaster.equipAiResultToCharacter(${idx})" class="bg-purple-900 hover:bg-purple-800 border border-purple-600 text-purple-200 text-xs px-2.5 py-1.5 rounded-lg transition font-bold" title="Ana eşyayı ve alt güçlerini tek seferde kuşanır">
+                  ⚡ Hepsini Kuşan
+                </button>
+              ` : `
+                <button onclick="RuleMaster.addAiResultToDb(${idx}, false)" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1">
+                  <span>📥</span>
+                  <span>${isChild ? 'Yalnızca Bunu Ekle' : 'DB\'ye Ekle'}</span>
+                </button>
+                <button onclick="RuleMaster.equipAiResultToCharacter(${idx})" class="bg-emerald-950 hover:bg-emerald-900 border border-emerald-700 text-emerald-300 text-xs px-2.5 py-1.5 rounded-lg transition" title="Karaktere Kuşan / Ekle">
+                  ⚡ Kuşan
+                </button>
+              `}
               <button onclick="RuleMaster.editAiResultInModal(${idx})" class="bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition" title="29 Sütunlu Formda Aç">
                 ✏️ Düzenle
-              </button>
-              <button onclick="RuleMaster.equipAiResultToCharacter(${idx})" class="bg-emerald-950 hover:bg-emerald-900 border border-emerald-700 text-emerald-300 text-xs px-2.5 py-1.5 rounded-lg transition" title="Karaktere Kuşan / Ekle">
-                ⚡ Kuşan
               </button>
             </div>
           </div>
@@ -1678,24 +1718,49 @@ Return valid JSON only matching this schema:
     container.innerHTML = html;
   },
 
-  addAiResultToDb(index) {
+  addAiResultToDb(index, includeChildren = true) {
     if (index >= 0 && index < this.lastAiResults.length) {
-      const item = JSON.parse(JSON.stringify(this.lastAiResults[index]));
-      masterDb.push(item);
+      const item = this.lastAiResults[index];
+      const itemsToAdd = [item];
+      if (includeChildren && (!item.parent || item.parent === '-')) {
+        const children = this.getChildrenForEntry(item, this.lastAiResults);
+        children.forEach(c => itemsToAdd.push(c));
+      }
+
+      itemsToAdd.forEach(it => {
+        const copy = JSON.parse(JSON.stringify(it));
+        const existsIdx = masterDb.findIndex(m => (m.name || '').toLowerCase().trim() === (copy.name || '').toLowerCase().trim());
+        if (existsIdx >= 0) {
+          masterDb[existsIdx] = copy;
+        } else {
+          masterDb.push(copy);
+        }
+      });
+
       if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
       this.renderTable();
-      alert(`✅ "${item.name}" başarıyla Master_DB kütüphanesine eklendi!`);
+      if (itemsToAdd.length > 1) {
+        alert(`✅ "${item.name}" ve ${itemsToAdd.length - 1} alt gücü tek seferde başarıyla Master_DB kütüphanesine eklendi!`);
+      } else {
+        alert(`✅ "${item.name}" başarıyla Master_DB kütüphanesine eklendi!`);
+      }
     }
   },
 
   addAllAiResultsToDb() {
     if (!this.lastAiResults.length) return;
     this.lastAiResults.forEach(item => {
-      masterDb.push(JSON.parse(JSON.stringify(item)));
+      const copy = JSON.parse(JSON.stringify(item));
+      const existsIdx = masterDb.findIndex(m => (m.name || '').toLowerCase().trim() === (copy.name || '').toLowerCase().trim());
+      if (existsIdx >= 0) {
+        masterDb[existsIdx] = copy;
+      } else {
+        masterDb.push(copy);
+      }
     });
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
     this.renderTable();
-    alert(`✅ ${this.lastAiResults.length} kural başarıyla Master_DB kütüphanesine eklendi!`);
+    alert(`✅ ${this.lastAiResults.length} kural ve alt güç tek seferde Master_DB kütüphanesine eklendi!`);
   },
 
   editAiResultInModal(index) {
@@ -1708,13 +1773,34 @@ Return valid JSON only matching this schema:
   equipAiResultToCharacter(index) {
     if (index >= 0 && index < this.lastAiResults.length) {
       const item = JSON.parse(JSON.stringify(this.lastAiResults[index]));
-      this.equipItem(item);
+      this.equipItemWithChildren(item, this.lastAiResults);
     }
   },
 
   equipItem(item) {
     if (typeof character === 'undefined' || !character) return;
     const type = (item.type || '').toLowerCase();
+    const cat = item.category || item.type || 'Other';
+
+    // 1. Ensure item is placed in character.gearPool
+    if (!character.gearPool) character.gearPool = [];
+    let poolExisting = character.gearPool.find(p => (p.name || '').toLowerCase().trim() === (item.name || '').toLowerCase().trim());
+    if (!poolExisting) {
+      poolExisting = {
+        id: Date.now(),
+        name: item.name,
+        masterDbName: item.name,
+        category: cat,
+        slot: item.slot && item.slot !== 'None' ? item.slot : cat,
+        qty: 1,
+        weight: Number(item.weight) || 0,
+        cost: Number(item.cost) || 0,
+        desc: item.benefit || item.description || '',
+        isBelt: (item.slot || '').toLowerCase().includes('belt') || cat.toLowerCase().includes('consumable'),
+        isEquipped: false
+      };
+      character.gearPool.push(poolExisting);
+    }
 
     if (type === 'weapon') {
       if (!character.weapons) character.weapons = [];
@@ -1722,17 +1808,35 @@ Return valid JSON only matching this schema:
         name: item.name,
         grip: item.slot === 'Main Hand' ? '1-Hand' : '2-Hand',
         dice: item.dice || item.extraDmg || '1d8',
-        critMin: item.critMin || 20,
-        critMult: item.critMult || 2,
+        critMin: Number(item.critMin) || 20,
+        critMult: Number(item.critMult) || 2,
         attBonus: Number(item.attBonus) || 0,
         dmgBonus: Number(item.dmgBonus) || 0,
         dmgType: item.dmgType || 'Slashing',
         bonusType: item.bonusType || 'Enhancement',
+        extraDmg: item.extraDmg || '',
         tags: item.tags || []
       };
-      character.weapons.push(newWep);
+      const existingWepIdx = character.weapons.findIndex(w => (w.name || '').toLowerCase() === item.name.toLowerCase());
+      if (existingWepIdx >= 0) character.weapons[existingWepIdx] = newWep;
+      else character.weapons.push(newWep);
+
       character.activeWeapon = item.name;
-      alert(`⚔️ "${item.name}" silahı karakterin aktif silahlarına eklendi ve kuşandı!`);
+      if (poolExisting) poolExisting.isEquipped = true;
+
+      // Also equip to mainHand slot if available
+      if (character.bodySlots) {
+        character.bodySlots.mainHand = {
+          name: item.name,
+          masterDbName: item.name,
+          active: true,
+          category: 'Weapon',
+          weight: Number(item.weight) || 0,
+          cost: Number(item.cost) || 0,
+          desc: item.benefit || item.description || ''
+        };
+      }
+      alert(`⚔️ "${item.name}" silahı kuşanıldı ve çantaya eklendi!`);
     } else if (type === 'spell') {
       if (!character.spellcasting) character.spellcasting = { slots: [], knownSpells: [] };
       if (!character.spellcasting.knownSpells) character.spellcasting.knownSpells = [];
@@ -1781,19 +1885,143 @@ Return valid JSON only matching this schema:
       });
       alert(`🧪 "${item.name}" iksir çantanıza 1 adet olarak eklendi!`);
     } else {
-      if (!character.inventory) character.inventory = [];
-      character.inventory.push({
-        name: item.name,
-        slot: item.slot || 'Slotless',
-        benefit: item.benefit || item.description || '',
-        weight: item.weight || 0,
-        cost: item.cost || 0
-      });
-      alert(`🎒 "${item.name}" (${item.type}) envantere eklendi!`);
+      // Body Slot Equipment (Armor, Shield, Wondrous Item, Ring, etc.)
+      const slotLower = (item.slot || item.category || '').toLowerCase();
+      let slotKey = null;
+      if (slotLower.includes('armor') || slotLower.includes('zırh')) slotKey = 'armor';
+      else if (slotLower.includes('shield') || slotLower.includes('kalkan')) slotKey = 'offHand';
+      else if (slotLower.includes('belt') || slotLower.includes('kemer') || slotLower.includes('waist')) slotKey = 'belt';
+      else if (slotLower.includes('head') || slotLower.includes('baş')) slotKey = 'head';
+      else if (slotLower.includes('eyes') || slotLower.includes('göz')) slotKey = 'eyes';
+      else if (slotLower.includes('neck') || slotLower.includes('boyun')) slotKey = 'neck';
+      else if (slotLower.includes('shoulders') || slotLower.includes('omuz')) slotKey = 'shoulders';
+      else if (slotLower.includes('torso') || slotLower.includes('gövde')) slotKey = 'torso';
+      else if (slotLower.includes('bracers') || slotLower.includes('bileklik') || slotLower.includes('arms')) slotKey = 'bracers';
+      else if (slotLower.includes('gloves') || slotLower.includes('eldiven') || slotLower.includes('hands')) slotKey = 'gloves';
+      else if (slotLower.includes('boots') || slotLower.includes('ayak') || slotLower.includes('feet')) slotKey = 'boots';
+      else if (slotLower.includes('ring') || slotLower.includes('yüzük')) {
+        slotKey = (!character.bodySlots?.ring1 || character.bodySlots.ring1.name === '-') ? 'ring1' : 'ring2';
+      }
+
+      if (slotKey && character.bodySlots) {
+        character.bodySlots[slotKey] = {
+          name: item.name,
+          masterDbName: item.name,
+          active: true,
+          category: item.category || 'Wondrous Item',
+          weight: Number(item.weight) || 0,
+          cost: Number(item.cost) || 0,
+          desc: item.benefit || item.description || '',
+          acBonus: item.acBonus,
+          bonusType: item.bonusType,
+          strBonus: item.strBonus,
+          dexBonus: item.dexBonus,
+          conBonus: item.conBonus,
+          intBonus: item.intBonus,
+          wisBonus: item.wisBonus,
+          chaBonus: item.chaBonus
+        };
+        if (poolExisting) poolExisting.isEquipped = true;
+        alert(`🛡️ "${item.name}" kuşanıldı (${slotKey} yuvasına yerleştirildi) ve çantaya eklendi!`);
+      } else {
+        alert(`🎒 "${item.name}" (${item.type}) çantanıza / envanter havuzunuza eklendi!`);
+      }
     }
 
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
     if (typeof renderAll === 'function') renderAll();
+  },
+
+  equipItemWithChildren(parentItem, sourceList = null) {
+    if (typeof character === 'undefined' || !character) return;
+    if (!parentItem) return;
+
+    // 1. Equip Primary/Parent Item
+    this.equipItem(parentItem);
+
+    // 2. Discover and attach all child powers
+    const children = this.getChildrenForEntry(parentItem, sourceList);
+    if (!children.length) return;
+
+    let attachedCount = 0;
+    children.forEach(child => {
+      const childName = (child.name || '').replace(/^↳\s*/, '').trim();
+      const cat = (child.type || child.category || '').toLowerCase();
+
+      // A. Special Active Power / Spell / Command (e.g. 1/day Ray of Fire)
+      if (cat.includes('spell') || child.action?.toLowerCase().includes('action') || (child.duration && child.duration !== 'Continuous')) {
+        if (!character.specialAbilities) character.specialAbilities = [];
+        const existsIdx = character.specialAbilities.findIndex(a => (a.name || '').toLowerCase() === childName.toLowerCase());
+        const abilityObj = {
+          name: childName,
+          source: `${parentItem.name}`,
+          action: child.action || 'Standard Action',
+          duration: child.duration || 'Special',
+          benefit: child.benefit || child.description || '',
+          dice: child.extraDmg || child.dice || '',
+          active: false
+        };
+        if (existsIdx >= 0) character.specialAbilities[existsIdx] = abilityObj;
+        else character.specialAbilities.push(abilityObj);
+        attachedCount++;
+      }
+
+      // B. Weapon Extra Damage / On-Hit Energy (e.g. Flaming Burst +1d6 Fire)
+      if (child.extraDmg || (child.attBonus && Number(child.attBonus) > 0) || (child.dmgBonus && Number(child.dmgBonus) > 0)) {
+        if (!character.activeModifiers) character.activeModifiers = [];
+        const modIdx = character.activeModifiers.findIndex(m => (m.name || '').toLowerCase() === childName.toLowerCase());
+        const modObj = {
+          name: childName,
+          source: parentItem.name,
+          bonusAtk: Number(child.attBonus) || 0,
+          dice: child.extraDmg || child.dice || '',
+          type: child.dmgType || 'Energy',
+          active: true,
+          notes: child.benefit || child.description || ''
+        };
+        if (modIdx >= 0) character.activeModifiers[modIdx] = modObj;
+        else character.activeModifiers.push(modObj);
+        attachedCount++;
+
+        if (Array.isArray(character.weapons)) {
+          const wep = character.weapons.find(w => (w.name || '').toLowerCase() === (parentItem.name || '').toLowerCase());
+          if (wep && child.extraDmg) {
+            if (!wep.extraDmg || wep.extraDmg === '-') wep.extraDmg = child.extraDmg;
+            else if (!wep.extraDmg.includes(child.extraDmg)) wep.extraDmg += `, ${child.extraDmg}`;
+          }
+        }
+      }
+
+      // C. Tome of Battle (Maneuver / Stance)
+      if (cat.includes('maneuver')) {
+        if (!character.tomeOfBattle) character.tomeOfBattle = { initiatorLevel: 1, readiedManeuvers: [], stancesKnown: [] };
+        if (!character.tomeOfBattle.readiedManeuvers) character.tomeOfBattle.readiedManeuvers = [];
+        character.tomeOfBattle.readiedManeuvers.push({
+          name: childName,
+          level: Number(child.level) || 1,
+          discipline: child.discipline || 'Stone Dragon',
+          action: child.action || 'Standard Action',
+          expended: false,
+          notes: child.benefit || child.description || ''
+        });
+        attachedCount++;
+      } else if (cat.includes('stance')) {
+        if (!character.tomeOfBattle) character.tomeOfBattle = { initiatorLevel: 1, readiedManeuvers: [], stancesKnown: [] };
+        if (!character.tomeOfBattle.stancesKnown) character.tomeOfBattle.stancesKnown = [];
+        character.tomeOfBattle.stancesKnown.push({
+          name: childName,
+          discipline: child.discipline || 'Iron Heart',
+          level: Number(child.level) || 1,
+          benefit: child.benefit || child.description || ''
+        });
+        attachedCount++;
+      }
+    });
+
+    if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+    if (typeof renderAll === 'function') renderAll();
+
+    alert(`⚡ "${parentItem.name}" ve ${children.length} alt gücü (${attachedCount} özel yetenek/saldırı modifiyesi) karaktere tek seferde eklendi ve kuşandı!`);
   },
 
   equipWeaponSlot(name, slot) {
@@ -2445,11 +2673,26 @@ Return valid JSON only matching this schema:
     this._inlineEntries = entries;
 
     let html = `
+      <div class="flex items-center justify-between bg-slate-900 border border-purple-500/40 p-2.5 rounded-xl mb-2 shadow-md">
+        <div class="flex items-center gap-2">
+          <span class="text-base">✨</span>
+          <div>
+            <div class="text-xs font-bold text-white">${entries.length} Kural / Alt Güç Ayrıştırıldı</div>
+            <div class="text-[10px] text-slate-400">Ana eşya ve bağlı tüm alt yetenekler tek seferde eklenebilir</div>
+          </div>
+        </div>
+        <button onclick="RuleMaster.addAllInlineResultsToDb()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1.5">
+          <span>📥</span>
+          <span>Tümünü DB'ye Ekle</span>
+        </button>
+      </div>
       <div class="space-y-2 mt-2">
     `;
 
     entries.forEach((item, idx) => {
       const isChild = item.isChild || (item.parent && item.parent !== '-');
+      const children = this.getChildrenForEntry(item, entries);
+      const isParent = !isChild && children.length > 0;
       const badgeClass = this.getTypeBadgeClass(item.type);
 
       const statPills = [];
@@ -2465,27 +2708,39 @@ Return valid JSON only matching this schema:
       if (item.extraDmg) statPills.push(`${item.extraDmg}`);
 
       html += `
-        <div class="bg-slate-950 border border-purple-500/40 rounded-xl p-3 shadow-md space-y-2">
+        <div class="${isChild ? 'ml-5 border-l-4 border-l-purple-500 bg-slate-950/70' : (isParent ? 'bg-slate-950 border-2 border-purple-500/60 shadow-purple-950/30' : 'bg-slate-950 border border-purple-500/40')} rounded-xl p-3 shadow-md space-y-2">
           <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
             <div>
               <div class="flex items-center gap-2">
                 ${isChild ? '<span class="text-purple-400 font-bold">↳</span>' : ''}
                 <span class="text-xs md:text-sm font-extrabold text-white">${item.name}</span>
                 <span class="badge ${badgeClass} text-[10px]">${item.type}</span>
+                ${isParent ? `<span class="badge bg-purple-950 text-purple-200 border border-purple-600 text-[10px] font-bold">👑 Ana Eşya (${children.length} Alt Güç)</span>` : ''}
+                ${isChild ? `<span class="badge bg-purple-950 text-purple-300 border border-purple-800 font-mono text-[9px]">Bağlı: ${item.parent}</span>` : ''}
                 <span class="text-[10px] text-slate-400">📚 <b>${item.source || 'PHB'}</b></span>
                 <span class="text-[10px] text-slate-400">• Slot: <b>${item.slot || 'None'}</b></span>
               </div>
             </div>
             <div class="flex items-center gap-1.5">
-              <button onclick="RuleMaster.addInlineResultToDb(${idx})" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-3 py-1 rounded-lg shadow transition flex items-center gap-1">
-                <span>📥</span>
-                <span>DB'ye Ekle</span>
-              </button>
+              ${isParent ? `
+                <button onclick="RuleMaster.addInlineResultToDb(${idx}, true)" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-3 py-1 rounded-lg shadow transition flex items-center gap-1" title="Ana eşya ve tüm ${children.length} alt gücünü tek seferde Master DB'ye ekler">
+                  <span>📥</span>
+                  <span>Tümünü DB'ye Ekle</span>
+                </button>
+                <button onclick="RuleMaster.equipInlineResultToCharacter(${idx})" class="bg-purple-900 hover:bg-purple-800 border border-purple-600 text-purple-200 text-xs px-2.5 py-1 rounded-lg transition font-bold" title="Ana eşya ve tüm alt güçlerini tek seferde kuşanır">
+                  ⚡ Hepsini Kuşan
+                </button>
+              ` : `
+                <button onclick="RuleMaster.addInlineResultToDb(${idx}, false)" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-2.5 py-1 rounded-lg shadow transition flex items-center gap-1">
+                  <span>📥</span>
+                  <span>${isChild ? 'Yalnızca Bunu Ekle' : 'DB\'ye Ekle'}</span>
+                </button>
+                <button onclick="RuleMaster.equipInlineResultToCharacter(${idx})" class="bg-purple-950 hover:bg-purple-900 border border-purple-700 text-purple-300 text-xs px-2 py-1 rounded-lg transition" title="Karaktere Kuşan">
+                  ⚡ Kuşan
+                </button>
+              `}
               <button onclick="RuleMaster.editInlineResultInModal(${idx})" class="bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs px-2 py-1 rounded-lg border border-slate-700 transition" title="29 Sütunlu Formda İncele/Düzenle">
                 ✏️ Düzenle
-              </button>
-              <button onclick="RuleMaster.equipInlineResultToCharacter(${idx})" class="bg-purple-950 hover:bg-purple-900 border border-purple-700 text-purple-300 text-xs px-2 py-1 rounded-lg transition" title="Karaktere Kuşan">
-                ⚡ Kuşan
               </button>
             </div>
           </div>
@@ -2519,13 +2774,50 @@ Return valid JSON only matching this schema:
     resultsBox.innerHTML = html;
   },
 
-  addInlineResultToDb(idx) {
+  addInlineResultToDb(idx, includeChildren = true) {
     if (!this._inlineEntries || !this._inlineEntries[idx]) return;
     const item = this._inlineEntries[idx];
-    masterDb.unshift(item);
+    const itemsToAdd = [item];
+
+    if (includeChildren && (!item.parent || item.parent === '-')) {
+      const children = this.getChildrenForEntry(item, this._inlineEntries);
+      children.forEach(c => itemsToAdd.push(c));
+    }
+
+    itemsToAdd.forEach(it => {
+      const copy = JSON.parse(JSON.stringify(it));
+      const existsIdx = masterDb.findIndex(m => (m.name || '').toLowerCase().trim() === (copy.name || '').toLowerCase().trim());
+      if (existsIdx >= 0) {
+        masterDb[existsIdx] = copy;
+      } else {
+        masterDb.unshift(copy);
+      }
+    });
+
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
     this.renderTable();
-    alert(`✅ "${item.name}" başarıyla Master_DB'ye eklendi ve kütüphane tablosu güncellendi!`);
+
+    if (itemsToAdd.length > 1) {
+      alert(`✅ "${item.name}" ve ${itemsToAdd.length - 1} alt gücü başarıyla Master_DB'ye eklendi ve kütüphane güncellendi!`);
+    } else {
+      alert(`✅ "${item.name}" başarıyla Master_DB'ye eklendi ve kütüphane güncellendi!`);
+    }
+  },
+
+  addAllInlineResultsToDb() {
+    if (!this._inlineEntries || !this._inlineEntries.length) return;
+    this._inlineEntries.forEach(it => {
+      const copy = JSON.parse(JSON.stringify(it));
+      const existsIdx = masterDb.findIndex(m => (m.name || '').toLowerCase().trim() === (copy.name || '').toLowerCase().trim());
+      if (existsIdx >= 0) {
+        masterDb[existsIdx] = copy;
+      } else {
+        masterDb.unshift(copy);
+      }
+    });
+    if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+    this.renderTable();
+    alert(`✅ Toplam ${this._inlineEntries.length} kural ve alt güç tek seferde Master_DB'ye eklendi!`);
   },
 
   editInlineResultInModal(idx) {
@@ -2537,7 +2829,7 @@ Return valid JSON only matching this schema:
   equipInlineResultToCharacter(idx) {
     if (!this._inlineEntries || !this._inlineEntries[idx]) return;
     const item = this._inlineEntries[idx];
-    this.equipEntry(item);
+    this.equipItemWithChildren(item, this._inlineEntries);
   },
 
   // ====================================================
