@@ -77,8 +77,42 @@
     </div>
   </header>
 
+  <!-- CHARACTER PROFILE & ABILITY SCORES (Moved above Vitals HUD) -->
+  <section class="max-w-7xl w-full mx-auto px-3 md:px-4 pt-3 pb-1 space-y-2.5">
+    <!-- Character Bio & Header Summary -->
+    <div class="bg-gradient-to-r from-slate-900 to-slate-950 border border-slate-800 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 shadow">
+      <div class="flex items-center gap-3">
+        <span class="text-3xl">👤</span>
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 id="core-name" class="text-base font-extrabold text-white">Kazmil'in Çırağı</h2>
+            <span id="core-race" class="badge bg-slate-800 text-slate-300 border border-slate-700 text-xs">Human</span>
+          </div>
+          <div class="text-xs text-amber-400 font-semibold" id="core-classes">Sorcerer 5 / Warblade 1 • Seviye 6</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-4 text-xs font-mono">
+        <div class="text-center">
+          <div class="text-[10px] text-slate-400 font-bold uppercase">Hız</div>
+          <div id="core-speed" class="text-sky-400 font-black text-sm">30 ft</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ability Scores Grid with 24H Modifiers -->
+    <div class="bg-dndCard border border-dndBorder rounded-xl p-3 shadow">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wide">🎲 TEMEL STATLAR (ABILITY SCORES)</h3>
+        <span class="text-[10px] text-slate-400">24H Eşya ve Geçici Modifiyeler Dahil</span>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-6 gap-2 text-center" id="abilities-grid">
+        <!-- Dynamically populated -->
+      </div>
+    </div>
+  </section>
+
   <!-- VITALS & STATUS HUD (Visible across all tabs) -->
-  <section class="max-w-7xl w-full mx-auto p-3 md:p-4 grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
+  <section class="max-w-7xl w-full mx-auto px-3 md:px-4 py-2 grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
     <!-- Card 1: Hit Points -->
     <div class="bg-dndCard border border-dndBorder rounded-xl p-3 flex flex-col justify-between shadow">
       <div class="flex justify-between items-center text-xs font-bold text-slate-400 mb-1">
@@ -466,45 +500,6 @@
     <div id="tab-core" class="tab-content hidden space-y-4">
       <div class="bg-dndCard border border-dndBorder rounded-xl p-4 shadow-lg space-y-4">
         
-        <!-- Character Bio & Header Summary -->
-        <div class="bg-gradient-to-r from-slate-900 to-slate-950 border border-slate-800 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3">
-          <div class="flex items-center gap-3">
-            <span class="text-3xl">👤</span>
-            <div>
-              <div class="flex items-center gap-2">
-                <h2 id="core-name" class="text-base font-extrabold text-white">Kazmil'in Çırağı</h2>
-                <span id="core-race" class="badge bg-slate-800 text-slate-300 border border-slate-700 text-xs">Human</span>
-              </div>
-              <div class="text-xs text-amber-400 font-semibold" id="core-classes">Sorcerer 5 / Warblade 1 • Seviye 6</div>
-            </div>
-          </div>
-          <div class="flex items-center gap-4 text-xs font-mono">
-            <div class="text-center">
-              <div class="text-[10px] text-slate-400 font-bold uppercase">Temel BAB</div>
-              <div id="core-bab" class="text-emerald-400 font-black text-sm">+3</div>
-            </div>
-            <div class="text-center">
-              <div class="text-[10px] text-slate-400 font-bold uppercase">Hız</div>
-              <div id="core-speed" class="text-sky-400 font-black text-sm">30 ft</div>
-            </div>
-            <div class="text-center">
-              <div class="text-[10px] text-slate-400 font-bold uppercase">Can Zarı (HD)</div>
-              <div id="core-hd" class="text-purple-400 font-black text-sm">5d4 + 1d12</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Ability Scores Grid with 24H Modifiers -->
-        <div>
-          <div class="flex items-center justify-between mb-2">
-            <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wide">🎲 TEMEL STATLAR (ABILITY SCORES)</h3>
-            <span class="text-[10px] text-slate-400">24H Eşya ve Geçici Modifiyeler Dahil</span>
-          </div>
-          <div class="grid grid-cols-2 md:grid-cols-6 gap-2 text-center" id="abilities-grid">
-            <!-- Dynamically populated -->
-          </div>
-        </div>
-
         <!-- Skills Table with 3D Roll -->
         <div class="border border-slate-800 rounded-xl overflow-hidden">
           <div class="bg-slate-900 px-3 py-2 text-xs font-bold text-sky-400 flex justify-between items-center">
