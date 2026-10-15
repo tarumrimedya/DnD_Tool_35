@@ -1568,10 +1568,12 @@
       <span class="text-base">⚙️</span>
       <span>Ayarlar</span>
     </button>
+  </nav>
+
   <!-- ==================================================== -->
   <!-- MODAL: FEAT & SPECIAL ABILITY DETAIL VIEWER (Madde 17) -->
   <!-- ==================================================== -->
-  <div id="feat-detail-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
+  <div id="feat-detail-modal" class="hidden fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
     <div class="bg-dndCard border border-indigo-500/70 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden my-auto">
       <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
         <div class="flex items-center gap-2">
@@ -1605,7 +1607,7 @@
   <!-- ==================================================== -->
   <!-- MODAL: ADD ITEM TO GEAR POOL -->
   <!-- ==================================================== -->
-  <div id="add-pool-item-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
+  <div id="add-pool-item-modal" class="hidden fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
     <div class="bg-dndCard border border-amber-500/70 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden my-auto">
       <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
         <div class="flex items-center gap-2">
@@ -1681,7 +1683,7 @@
   <!-- ==================================================== -->
   <!-- MODAL: 29-COLUMN RULE & ITEM CRUD EDITOR -->
   <!-- ==================================================== -->
-  <div id="rule-crud-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
+  <div id="rule-crud-modal" class="hidden fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
     <div class="bg-dndCard border border-purple-500/60 rounded-2xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden my-auto">
       
       <!-- Modal Header -->
@@ -3226,7 +3228,20 @@
     // Add Pool Item Modal handlers
     function openAddPoolItemModal() {
       const modal = document.getElementById('add-pool-item-modal');
-      if (modal) modal.classList.remove('hidden');
+      if (!modal) return;
+      if (document.getElementById('api-name')) document.getElementById('api-name').value = '';
+      if (document.getElementById('api-category')) document.getElementById('api-category').value = 'Weapon';
+      if (document.getElementById('api-slot')) document.getElementById('api-slot').value = '';
+      if (document.getElementById('api-qty')) document.getElementById('api-qty').value = '1';
+      if (document.getElementById('api-weight')) document.getElementById('api-weight').value = '1';
+      if (document.getElementById('api-cost')) document.getElementById('api-cost').value = '10';
+      if (document.getElementById('api-desc')) document.getElementById('api-desc').value = '';
+      if (document.getElementById('api-belt')) document.getElementById('api-belt').checked = false;
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        const inp = document.getElementById('api-name');
+        if (inp) inp.focus();
+      }, 50);
     }
 
     function closeAddPoolItemModal() {
@@ -3235,9 +3250,11 @@
     }
 
     function saveNewPoolItem() {
-      const name = document.getElementById('api-name')?.value?.trim();
+      const nameInput = document.getElementById('api-name');
+      const name = nameInput?.value?.trim();
       if (!name) {
         alert('Lütfen eşya adını girin.');
+        if (nameInput) nameInput.focus();
         return;
       }
       const category = document.getElementById('api-category')?.value || 'Other';
@@ -3266,7 +3283,7 @@
       saveStateToStorage();
       renderInventory();
       closeAddPoolItemModal();
-      alert(`✅ ${name} envanter havuzunuza eklendi!`);
+      alert(`✅ "${name}" çantaya / envanter havuzuna eklendi!`);
     }
 
     // Consumables Quick Drink with 3D Dice

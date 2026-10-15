@@ -379,7 +379,21 @@ const RuleMaster = {
       });
       alert(`🧪 "${item.name}" iksir çantanıza 1 adet olarak eklendi!`);
     } else {
-      alert(`🎒 "${item.name}" eşyası karakterinizin kütüphanesine kaydedildi.`);
+      if (!character.gearPool) character.gearPool = [];
+      const newPoolItem = {
+        id: Date.now(),
+        name: item.name,
+        category: item.type || 'Other',
+        slot: item.slot || item.type || 'Other',
+        qty: 1,
+        weight: Number(item.weight) || 1,
+        cost: Number(item.cost) || 10,
+        desc: item.benefit || item.description || '',
+        isBelt: false,
+        isEquipped: false
+      };
+      character.gearPool.push(newPoolItem);
+      alert(`🎒 "${item.name}" eşyası çantanıza / envanter havuzunuza eklendi!`);
     }
 
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
