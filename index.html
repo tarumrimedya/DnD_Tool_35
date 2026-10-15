@@ -2391,16 +2391,34 @@
       }
 
       // 2. Load Master DB
+      let defaultDb = [];
+      try {
+        const res = await fetch('master_db.json');
+        defaultDb = await res.json();
+      } catch (e) {
+        console.error('Error fetching master_db.json:', e);
+      }
+
       const savedDb = localStorage.getItem('dnd35_master_db');
       if (savedDb) {
         try { masterDb = JSON.parse(savedDb); } catch (e) {}
       } else {
-        try {
-          const res = await fetch('master_db.json');
-          masterDb = await res.json();
+        masterDb = defaultDb;
+      }
+
+      // Merge new default items from master_db.json into masterDb if not already present
+      if (Array.isArray(defaultDb) && defaultDb.length > 0) {
+        if (!Array.isArray(masterDb)) masterDb = [];
+        let addedCount = 0;
+        defaultDb.forEach(defItem => {
+          const exists = masterDb.some(m => (m.name || '').toLowerCase().trim() === (defItem.name || '').toLowerCase().trim());
+          if (!exists) {
+            masterDb.push(defItem);
+            addedCount++;
+          }
+        });
+        if (addedCount > 0) {
           localStorage.setItem('dnd35_master_db', JSON.stringify(masterDb));
-        } catch (e) {
-          console.error('Error fetching master_db.json:', e);
         }
       }
     }
@@ -3371,6 +3389,16 @@
             suppressionWarning = `⚠️ ${activeArmor.name} (+${activeArmorVal}) daha yüksek olduğu için bu +${buff.acBonus} Armor AC baskılanıyor (D&D 3.5e Stacking).`;
           } else if (buff.bonusType === 'Shield' && activeShield && buff.acBonus && activeShieldVal >= buff.acBonus) {
             suppressionWarning = `⚠️ ${activeShield.name} (+${activeShieldVal}) daha yüksek olduğu için bu +${buff.acBonus} Shield AC baskılanıyor.`;
+          } else if (buff.strBonus && buff.bonusType === 'Enhancement') {
+            const belt = character.bodySlots?.belt;
+            if (belt && belt.active && (belt.name || '').toLowerCase().includes('giant strength')) {
+              suppressionWarning = `ℹ️ ${belt.name} (+2 Enhancement) kuşanılı. D&D 3.5e Kuralı: Aynı tür Enhancement bonusları stackleşmez, yüksek olan (+4) uygulanır (Net artış: +2 STR).`;
+            }
+          } else if (buff.dexBonus && buff.bonusType === 'Enhancement') {
+            const gloves = character.bodySlots?.gloves;
+            if (gloves && gloves.active && (gloves.name || '').toLowerCase().includes('dexterity')) {
+              suppressionWarning = `ℹ️ ${gloves.name} (+2 Enhancement) kuşanılı. D&D 3.5e Kuralı: Aynı tür Enhancement bonusları stackleşmez, yüksek olan (+4) uygulanır (Net artış: +2 DEX).`;
+            }
           }
         }
 

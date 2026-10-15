@@ -155,12 +155,12 @@ const RuleEngine = {
       }
       if (dbEntry.maxDex !== undefined && dbEntry.maxDex !== '') res.maxDex = Number(dbEntry.maxDex);
       if (dbEntry.checkPenalty !== undefined && dbEntry.checkPenalty !== '') res.acp = Number(dbEntry.checkPenalty);
-      if (dbEntry.strBonus) res.str = Number(dbEntry.strBonus) || 0;
-      if (dbEntry.dexBonus) res.dex = Number(dbEntry.dexBonus) || 0;
-      if (dbEntry.conBonus) res.con = Number(dbEntry.conBonus) || 0;
-      if (dbEntry.intBonus) res.int = Number(dbEntry.intBonus) || 0;
-      if (dbEntry.wisBonus) res.wis = Number(dbEntry.wisBonus) || 0;
-      if (dbEntry.chaBonus) res.cha = Number(dbEntry.chaBonus) || 0;
+      if (dbEntry.strBonus) { res.str = Number(dbEntry.strBonus) || 0; res.bonusType = dbEntry.bonusType || 'Enhancement'; }
+      if (dbEntry.dexBonus) { res.dex = Number(dbEntry.dexBonus) || 0; res.bonusType = dbEntry.bonusType || 'Enhancement'; }
+      if (dbEntry.conBonus) { res.con = Number(dbEntry.conBonus) || 0; res.bonusType = dbEntry.bonusType || 'Enhancement'; }
+      if (dbEntry.intBonus) { res.int = Number(dbEntry.intBonus) || 0; res.bonusType = dbEntry.bonusType || 'Enhancement'; }
+      if (dbEntry.wisBonus) { res.wis = Number(dbEntry.wisBonus) || 0; res.bonusType = dbEntry.bonusType || 'Enhancement'; }
+      if (dbEntry.chaBonus) { res.cha = Number(dbEntry.chaBonus) || 0; res.bonusType = dbEntry.bonusType || 'Enhancement'; }
       if (dbEntry.attBonus) res.attBonus = Number(dbEntry.attBonus) || 0;
       if (dbEntry.dmgBonus) res.dmgBonus = Number(dbEntry.dmgBonus) || 0;
       if (dbEntry.fortBonus) res.fort = Number(dbEntry.fortBonus) || 0;
@@ -181,12 +181,12 @@ const RuleEngine = {
     }
     if (item.maxDex !== undefined && item.maxDex !== null) res.maxDex = Number(item.maxDex);
     if (item.checkPenalty !== undefined && item.checkPenalty !== null) res.acp = Number(item.checkPenalty);
-    if (item.strBonus) res.str = Number(item.strBonus) || 0;
-    if (item.dexBonus) res.dex = Number(item.dexBonus) || 0;
-    if (item.conBonus) res.con = Number(item.conBonus) || 0;
-    if (item.intBonus) res.int = Number(item.intBonus) || 0;
-    if (item.wisBonus) res.wis = Number(item.wisBonus) || 0;
-    if (item.chaBonus) res.cha = Number(item.chaBonus) || 0;
+    if (item.strBonus) { res.str = Number(item.strBonus) || 0; res.bonusType = item.bonusType || 'Enhancement'; }
+    if (item.dexBonus) { res.dex = Number(item.dexBonus) || 0; res.bonusType = item.bonusType || 'Enhancement'; }
+    if (item.conBonus) { res.con = Number(item.conBonus) || 0; res.bonusType = item.bonusType || 'Enhancement'; }
+    if (item.intBonus) { res.int = Number(item.intBonus) || 0; res.bonusType = item.bonusType || 'Enhancement'; }
+    if (item.wisBonus) { res.wis = Number(item.wisBonus) || 0; res.bonusType = item.bonusType || 'Enhancement'; }
+    if (item.chaBonus) { res.cha = Number(item.chaBonus) || 0; res.bonusType = item.bonusType || 'Enhancement'; }
 
     // 3. Fallback to SRD Catalogs & Intelligent Heuristics if AC/stat is still 0
     const fullText = `${item.name} ${item.desc || ''} ${dbEntry?.benefit || ''}`.toLowerCase();
@@ -284,27 +284,27 @@ const RuleEngine = {
     // Ability Enhancements (Belt of Giant Strength, Gloves of Dexterity, etc.)
     if (res.str === 0 && (cleanName.includes('giant strength') || cleanName.includes('ogre power') || fullText.includes('strength'))) {
       const match = fullText.match(/\+(\d+)\s*(?:enhancement\s*)?(?:bonus to\s*)?(?:strength|str|kuvvet)/i) || cleanName.match(/\+(\d+)/);
-      if (match) res.str = Number(match[1]);
+      if (match) { res.str = Number(match[1]); res.bonusType = 'Enhancement'; }
     }
     if (res.dex === 0 && (cleanName.includes('dexterity') || fullText.includes('dexterity'))) {
       const match = fullText.match(/\+(\d+)\s*(?:enhancement\s*)?(?:bonus to\s*)?(?:dexterity|dex|çeviklik)/i) || cleanName.match(/\+(\d+)/);
-      if (match) res.dex = Number(match[1]);
+      if (match) { res.dex = Number(match[1]); res.bonusType = 'Enhancement'; }
     }
     if (res.con === 0 && (cleanName.includes('health') || fullText.includes('constitution'))) {
       const match = fullText.match(/\+(\d+)\s*(?:enhancement\s*)?(?:bonus to\s*)?(?:constitution|con|dayanıklılık)/i) || cleanName.match(/\+(\d+)/);
-      if (match) res.con = Number(match[1]);
+      if (match) { res.con = Number(match[1]); res.bonusType = 'Enhancement'; }
     }
     if (res.int === 0 && (cleanName.includes('intellect') || fullText.includes('intelligence'))) {
       const match = fullText.match(/\+(\d+)\s*(?:enhancement\s*)?(?:bonus to\s*)?(?:intelligence|int|zeka)/i) || cleanName.match(/\+(\d+)/);
-      if (match) res.int = Number(match[1]);
+      if (match) { res.int = Number(match[1]); res.bonusType = 'Enhancement'; }
     }
     if (res.wis === 0 && (cleanName.includes('wisdom') || cleanName.includes('periapt') || fullText.includes('wisdom'))) {
       const match = fullText.match(/\+(\d+)\s*(?:enhancement\s*)?(?:bonus to\s*)?(?:wisdom|wis|bilgelik)/i) || cleanName.match(/\+(\d+)/);
-      if (match) res.wis = Number(match[1]);
+      if (match) { res.wis = Number(match[1]); res.bonusType = 'Enhancement'; }
     }
     if (res.cha === 0 && (cleanName.includes('charisma') || fullText.includes('charisma'))) {
       const match = fullText.match(/\+(\d+)\s*(?:enhancement\s*)?(?:bonus to\s*)?(?:charisma|cha|karizma)/i) || cleanName.match(/\+(\d+)/);
-      if (match) res.cha = Number(match[1]);
+      if (match) { res.cha = Number(match[1]); res.bonusType = 'Enhancement'; }
     }
 
     // Speed bonus (Boots of Striding and Springing)
@@ -507,6 +507,14 @@ const RuleEngine = {
       if (character.bodySlots?.gloves?.active && character.bodySlots.gloves.name?.toLowerCase().includes('+2')) {
         character.baseAbilities.dex = Math.max(8, character.baseAbilities.dex - 2);
       }
+    } else {
+      // Re-calibrate if baseAbilities was saved uncalibrated in localStorage
+      if (character.bodySlots?.belt?.active && (character.bodySlots.belt.name || '').toLowerCase().includes('+2') && character.baseAbilities.str === 14) {
+        character.baseAbilities.str = 12;
+      }
+      if (character.bodySlots?.gloves?.active && (character.bodySlots.gloves.name || '').toLowerCase().includes('+2') && character.baseAbilities.dex === 16) {
+        character.baseAbilities.dex = 14;
+      }
     }
 
     // Ensure buffs array
@@ -555,13 +563,14 @@ const RuleEngine = {
         if (mods.resistance > 0 && mods.resistance > resistBonus) resistBonus = mods.resistance;
         if (mods.speed > 0 && mods.speed > itemSpeedBonus) itemSpeedBonus = mods.speed;
 
-        // Ability mods
-        if (mods.str > 0) abilityBuckets.str.push({ val: mods.str, type: mods.bonusType || 'Enhancement', source: slotData.name });
-        if (mods.dex > 0) abilityBuckets.dex.push({ val: mods.dex, type: mods.bonusType || 'Enhancement', source: slotData.name });
-        if (mods.con > 0) abilityBuckets.con.push({ val: mods.con, type: mods.bonusType || 'Enhancement', source: slotData.name });
-        if (mods.int > 0) abilityBuckets.int.push({ val: mods.int, type: mods.bonusType || 'Enhancement', source: slotData.name });
-        if (mods.wis > 0) abilityBuckets.wis.push({ val: mods.wis, type: mods.bonusType || 'Enhancement', source: slotData.name });
-        if (mods.cha > 0) abilityBuckets.cha.push({ val: mods.cha, type: mods.bonusType || 'Enhancement', source: slotData.name });
+        // Ability mods - RAW D&D 3.5e: standard item bonuses to ability scores are Enhancement
+        const abilityBonusType = (mods.bonusType && mods.bonusType.toLowerCase() !== 'untyped') ? mods.bonusType : 'Enhancement';
+        if (mods.str > 0) abilityBuckets.str.push({ val: mods.str, type: abilityBonusType, source: slotData.name });
+        if (mods.dex > 0) abilityBuckets.dex.push({ val: mods.dex, type: abilityBonusType, source: slotData.name });
+        if (mods.con > 0) abilityBuckets.con.push({ val: mods.con, type: abilityBonusType, source: slotData.name });
+        if (mods.int > 0) abilityBuckets.int.push({ val: mods.int, type: abilityBonusType, source: slotData.name });
+        if (mods.wis > 0) abilityBuckets.wis.push({ val: mods.wis, type: abilityBonusType, source: slotData.name });
+        if (mods.cha > 0) abilityBuckets.cha.push({ val: mods.cha, type: abilityBonusType, source: slotData.name });
       });
     }
 
