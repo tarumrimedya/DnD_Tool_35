@@ -1,0 +1,187 @@
+{
+  "schemaVersion": "2.0",
+  "name": "Kazmil'in Çırağı (Sorcerer 5 / Warblade 1)",
+  "classes": "Sorcerer 5 / Warblade 1",
+  "race": "Human",
+  "level": 5,
+  "bab": 3,
+  "baseSpeed": 30,
+  "abilities": {
+    "str": 14,
+    "dex": 16,
+    "con": 14,
+    "int": 14,
+    "wis": 10,
+    "cha": 22
+  },
+  "hp": {
+    "current": 38,
+    "max": 38,
+    "temp": 0,
+    "nonlethal": 0
+  },
+  "acBreakdown": {
+    "armor": 4,
+    "shield": 0,
+    "natural": 0,
+    "deflection": 1,
+    "size": 0
+  },
+  "baseSaves": {
+    "fort": 3,
+    "ref": 3,
+    "will": 4
+  },
+  "saveBonuses": {
+    "resistance": 1
+  },
+  "activeStance": "Punishing Stance",
+  "activeWeapon": "Rapier +2",
+  "activeGrip": "1-Hand",
+  "tactical": {
+    "powerAttack": 0,
+    "flanking": false,
+    "charge": false,
+    "higherGround": false,
+    "combatExpertise": 0,
+    "fightingDefensively": false,
+    "totalDefense": false
+  },
+  "houseRules": {
+    "noCritConfirm": true,
+    "maneuverCrit": false
+  },
+  "feats": [
+    "Weapon Finesse",
+    "Power Attack",
+    "Shadow Blade",
+    "Weapon Focus (Rapier)"
+  ],
+  "specialAbilities": [
+    "Battle Clarity (Int to Ref saves)",
+    "Weapon Aptitude",
+    "Summon Familiar"
+  ],
+  "weapons": [
+    {
+      "name": "Rapier +2",
+      "grip": "1-Hand",
+      "dice": "1d6",
+      "critMin": 18,
+      "critMult": 2,
+      "attBonus": 2,
+      "dmgBonus": 2,
+      "dmgType": "Piercing",
+      "bonusType": "Enhancement",
+      "isLight": false,
+      "tags": ["finessable", "piercing"]
+    },
+    {
+      "name": "Spiked Chain +2",
+      "grip": "2-Hand",
+      "dice": "2d4",
+      "critMin": 20,
+      "critMult": 2,
+      "attBonus": 2,
+      "dmgBonus": 2,
+      "dmgType": "Piercing",
+      "bonusType": "Enhancement",
+      "discipline": "Shadow Hand",
+      "tags": ["finessable", "shadow hand", "reach", "trip"]
+    },
+    {
+      "name": "Jovar +4",
+      "grip": "2-Hand",
+      "dice": "2d6",
+      "critMin": 18,
+      "critMult": 2,
+      "attBonus": 4,
+      "dmgBonus": 4,
+      "dmgType": "Slashing",
+      "bonusType": "Enhancement",
+      "tags": ["slashing", "heavy"]
+    }
+  ],
+  "activeModifiers": [
+    {
+      "name": "Punishing Stance",
+      "source": "Stance",
+      "bonusAtk": 0,
+      "dice": "1d6",
+      "type": "Slashing",
+      "active": true,
+      "notes": "+1d6 Hasar, -2 AC"
+    },
+    {
+      "name": "Mountain Hammer",
+      "source": "Maneuver",
+      "bonusAtk": 0,
+      "dice": "2d6",
+      "type": "Slashing",
+      "active": false,
+      "notes": "DR ve Sertliği aşar"
+    },
+    {
+      "name": "Blade of Blood",
+      "source": "Spell",
+      "bonusAtk": 0,
+      "dice": "3d6",
+      "type": "Negative Energy",
+      "active": false,
+      "notes": "5 Can feda et, +3d6 hasar vur"
+    }
+  ],
+  "spellcasting": {
+    "primaryClass": "Sorcerer",
+    "cl": 5,
+    "statName": "CHA",
+    "statMod": 6,
+    "slots": [
+      { "level": 0, "name": "Cantrip", "known": 6, "daily": 6, "used": 1 },
+      { "level": 1, "name": "1st Level", "known": 4, "daily": 8, "used": 2 },
+      { "level": 2, "name": "2nd Level", "known": 2, "daily": 6, "used": 1 }
+    ],
+    "knownSpells": [
+      { "level": 0, "name": "Detect Magic", "school": "Divination", "action": "Standard Action", "range": "60 ft", "benefit": "Detects magical auras within 60 ft." },
+      { "level": 0, "name": "Read Magic", "school": "Divination", "action": "Standard Action", "range": "Personal", "benefit": "Read magical inscriptions and scrolls." },
+      { "level": 0, "name": "Light", "school": "Evocation", "action": "Standard Action", "range": "Touch", "benefit": "Object shines like a torch for 10 min/level." },
+      { "level": 0, "name": "Mage Hand", "school": "Transmutation", "action": "Standard Action", "range": "Close (25 ft)", "benefit": "5-pound telekinesis." },
+      { "level": 0, "name": "Prestidigitation", "school": "Universal", "action": "Standard Action", "range": "10 ft", "benefit": "Minor magic tricks and cleaning." },
+      { "level": 0, "name": "Ghost Sound", "school": "Illusion", "action": "Standard Action", "range": "Close (25 ft)", "benefit": "Creates phantom auditory sounds." },
+      { "level": 1, "name": "Magic Missile", "school": "Evocation", "action": "Standard Action", "range": "Medium (150 ft)", "benefit": "Fires 3 force missiles dealing 1d4+1 each (unerring hit)." },
+      { "level": 1, "name": "Shield", "school": "Abjuration", "action": "Standard Action", "range": "Personal", "benefit": "+4 shield bonus to AC and negates Magic Missile." },
+      { "level": 1, "name": "Mage Armor", "school": "Conjuration", "action": "Standard Action", "range": "Touch", "benefit": "+4 armor bonus to AC for 5 hours." },
+      { "level": 1, "name": "Blade of Blood", "school": "Necromancy", "action": "Swift Action", "range": "Touch", "benefit": "Deal extra 1d6 (or 3d6 for 5 HP) on next strike." },
+      { "level": 2, "name": "Bull's Strength", "school": "Transmutation", "action": "Standard Action", "range": "Touch", "benefit": "+4 enhancement bonus to Strength for 5 minutes." },
+      { "level": 2, "name": "Scorching Ray", "school": "Evocation", "action": "Standard Action", "range": "Close (35 ft)", "benefit": "Ranged touch ray dealing 4d6 fire damage." }
+    ]
+  },
+  "tomeOfBattle": {
+    "initiatorLevel": 3,
+    "readiedManeuvers": [
+      { "name": "Mountain Hammer", "level": 2, "discipline": "Stone Dragon", "action": "Standard Action", "expended": false, "notes": "Weapon + 2d6, overcomes DR" },
+      { "name": "Steel Wind", "level": 1, "discipline": "Iron Heart", "action": "Standard Action", "expended": false, "notes": "Attack two adjacent foes" },
+      { "name": "Shadow Garrote", "level": 3, "discipline": "Shadow Hand", "action": "Standard Action", "expended": false, "notes": "5d6 ranged touch attack" }
+    ],
+    "stancesKnown": [
+      { "name": "Punishing Stance", "discipline": "Iron Heart", "level": 1, "benefit": "+1d6 melee damage, -2 AC" },
+      { "name": "Island of Blades", "discipline": "Shadow Hand", "level": 1, "benefit": "Adjacent allies automatically flank" }
+    ]
+  },
+  "skills": [
+    { "name": "Concentration", "stat": "con", "ranks": 8, "misc": 0, "acp": false },
+    { "name": "Spellcraft", "stat": "int", "ranks": 8, "misc": 2, "acp": false },
+    { "name": "Knowledge (Arcana)", "stat": "int", "ranks": 6, "misc": 0, "acp": false },
+    { "name": "Martial Lore", "stat": "int", "ranks": 4, "misc": 0, "acp": false },
+    { "name": "Tumble", "stat": "dex", "ranks": 4, "misc": 0, "acp": true },
+    { "name": "Balance", "stat": "dex", "ranks": 2, "misc": 0, "acp": true },
+    { "name": "Jump", "stat": "str", "ranks": 4, "misc": 0, "acp": true },
+    { "name": "Spot", "stat": "wis", "ranks": 0, "misc": 0, "acp": false },
+    { "name": "Listen", "stat": "wis", "ranks": 0, "misc": 0, "acp": false }
+  ],
+  "consumables": [
+    { "name": "Potion of Cure Serious Wounds", "qty": 3, "effect": "Heals 3d8+5 HP" },
+    { "name": "Potion of Bull's Strength", "qty": 2, "effect": "+4 Str for 30 rounds" }
+  ],
+  "lastModified": "2026-10-15T10:00:00.000Z"
+}
