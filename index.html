@@ -3722,25 +3722,46 @@
       const item = (character.gearPool || []).find(p => p.id === itemId);
       if (item) {
         item.isBelt = !item.isBelt;
-        saveStateToStorage();
-        renderInventory();
+        saveStateToStorage(true);
+        renderAll();
       }
     }
 
     function adjustPoolQty(itemId, delta) {
       const item = (character.gearPool || []).find(p => p.id === itemId);
       if (item) {
-        item.qty = Math.max(1, (Number(item.qty) || 1) + delta);
-        saveStateToStorage();
-        renderInventory();
+        item.qty = Math.max(0, (Number(item.qty) || 0) + delta);
+        const cleanName = (item.name || '').toLowerCase().trim();
+        if (item.category === 'Consumable' || item.isBelt) {
+          if (!Array.isArray(character.consumables)) character.consumables = [];
+          const match = character.consumables.find(c => (c.name || '').toLowerCase().trim() === cleanName);
+          if (match) {
+            match.qty = item.qty;
+          } else {
+            character.consumables.push({
+              name: item.name,
+              qty: item.qty,
+              effect: item.desc || 'Sarf malzemesi etkisi'
+            });
+          }
+        }
+        saveStateToStorage(true);
+        renderAll();
       }
     }
 
     function deletePoolItem(itemId) {
       if (confirm('Bu eşyayı envanter havuzundan silmek istediğinize emin misiniz?')) {
+        const item = (character.gearPool || []).find(p => p.id === itemId);
+        if (item) {
+          const cleanName = (item.name || '').toLowerCase().trim();
+          if (Array.isArray(character.consumables)) {
+            character.consumables = character.consumables.filter(c => (c.name || '').toLowerCase().trim() !== cleanName);
+          }
+        }
         character.gearPool = (character.gearPool || []).filter(p => p.id !== itemId);
-        saveStateToStorage();
-        renderInventory();
+        saveStateToStorage(true);
+        renderAll();
       }
     }
 
@@ -4632,24 +4653,69 @@
       if (!container) return;
       container.innerHTML = '';
 
-      // Get consumables from both character.consumables and belt items in gearPool
-      const poolBeltConsumables = (character.gearPool || [])
-        .filter(p => p.isBelt && p.category === 'Consumable' && !p.isEquipped)
-        .map((p, pIdx) => ({
-          name: p.name,
-          qty: p.qty,
-          effect: p.desc || 'Sarf malzemesi etkisi',
-          fromPool: true,
-          poolId: p.id
-        }));
+      // 1. Sync character.gearPool consumables with character.consumables
+      if (Array.isArray(character.gearPool)) {
+        if (!Array.isArray(character.consumables)) character.consumables = [];
+        character.gearPool.forEach(p => {
+          if (p.category === 'Consumable' || p.isBelt) {
+            const cleanName = (p.name || '').toLowerCase().trim();
+            const existing = character.consumables.find(c => (c.name || '').toLowerCase().trim() === cleanName);
+            if (existing) {
+              existing.qty = Number(p.qty) || 0;
+              if (!existing.effect && p.desc) existing.effect = p.desc;
+            } else if (p.category === 'Consumable') {
+              character.consumables.push({
+                name: p.name,
+                qty: Number(p.qty) || 0,
+                effect: p.desc || 'Sarf malzemesi etkisi'
+              });
+            }
+          }
+        });
+      }
 
-      const regularConsumables = (character.consumables || []).map((c, cIdx) => ({
-        ...c,
-        fromPool: false,
-        idx: cIdx
-      }));
+      // 2. Build unified list of consumables to display, deduplicating by normalized name
+      const displayMap = new Map();
 
-      const allConsumables = [...regularConsumables, ...poolBeltConsumables];
+      // First priority: GearPool items (Consumable or isBelt) that are not equipped
+      (character.gearPool || []).forEach(p => {
+        if ((p.category === 'Consumable' || p.isBelt) && !p.isEquipped) {
+          const key = (p.name || '').toLowerCase().trim();
+          if (!key) return;
+          displayMap.set(key, {
+            name: p.name,
+            qty: Number(p.qty) || 0,
+            effect: p.desc || 'Sarf malzemesi etkisi',
+            fromPool: true,
+            poolId: p.id,
+            isBelt: !!p.isBelt
+          });
+        }
+      });
+
+      // Second priority: Any regular consumable in character.consumables not already in displayMap
+      (character.consumables || []).forEach((c, cIdx) => {
+        const key = (c.name || '').toLowerCase().trim();
+        if (!key) return;
+        if (!displayMap.has(key)) {
+          displayMap.set(key, {
+            name: c.name,
+            qty: Number(c.qty) || 0,
+            effect: c.effect || 'Sarf malzemesi etkisi',
+            fromPool: false,
+            idx: cIdx,
+            isBelt: false
+          });
+        } else {
+          // If gearPool had generic desc, but consumables has a specific effect, prefer specific effect
+          const existing = displayMap.get(key);
+          if (c.effect && (!existing.effect || existing.effect === 'Sarf malzemesi etkisi')) {
+            existing.effect = c.effect;
+          }
+        }
+      });
+
+      const allConsumables = Array.from(displayMap.values());
 
       if (allConsumables.length === 0) {
         container.innerHTML = `<div class="col-span-2 text-center text-slate-500 italic py-2">Kemerde veya hızlı tüketimde iksir bulunmuyor.</div>`;
@@ -4663,7 +4729,7 @@
           <div>
             <div class="text-xs font-bold text-white flex items-center gap-1.5">
               <span>${item.name}</span>
-              ${item.fromPool ? '<span class="badge bg-amber-950 text-amber-300 border border-amber-700 text-[9px]">Kemerde</span>' : ''}
+              ${item.isBelt ? '<span class="badge bg-amber-950 text-amber-300 border border-amber-700 text-[9px]">Kemerde</span>' : ''}
             </div>
             <div class="text-[10px] text-amber-400">${item.effect} • Adet: <strong class="text-white">${item.qty}</strong></div>
           </div>
@@ -4690,6 +4756,20 @@
 
       const name = item.name || 'İksir';
       item.qty = Math.max(0, (Number(item.qty) || 1) - 1);
+
+      // Bidirectional sync between gearPool and consumables
+      const cleanName = (name || '').toLowerCase().trim();
+      if (fromPool) {
+        if (Array.isArray(character.consumables)) {
+          const match = character.consumables.find(c => (c.name || '').toLowerCase().trim() === cleanName);
+          if (match) match.qty = item.qty;
+        }
+      } else {
+        if (Array.isArray(character.gearPool)) {
+          const match = character.gearPool.find(p => (p.name || '').toLowerCase().trim() === cleanName);
+          if (match) match.qty = item.qty;
+        }
+      }
 
       if (/cure|heal|iyileş/i.test(name)) {
         let diceCount = 1;
