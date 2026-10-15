@@ -592,7 +592,7 @@
               📑 Master DB Kütüphanesi
             </button>
             <button onclick="RuleMaster.switchSubTab('subtab-mdb-importer')" id="btn-subtab-mdb-importer" class="mdb-subtab-btn px-3 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-white transition">
-              🤖 Hızlı / AI Kural Ayrıştırıcı
+              🤖 AI Kural Ekleyici (Gemini)
             </button>
             <button onclick="RuleMaster.switchSubTab('subtab-mdb-sources')" id="btn-subtab-mdb-sources" class="mdb-subtab-btn px-3 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-white transition">
               📖 Kural Kaynakları (Rule Library)
@@ -701,35 +701,139 @@
         <!-- ========================================== -->
         <!-- SUB-TAB 2: QUICK / AI RULE IMPORTER -->
         <!-- ========================================== -->
+        <!-- ========================================== -->
+        <!-- SUB-TAB 2: AI KURAL EKLEYİCİ (GEMINI RAW 3.5e) -->
+        <!-- ========================================== -->
         <div id="subtab-mdb-importer" class="mdb-subtab-content hidden space-y-4">
-          <div class="bg-slate-900 border border-purple-600/40 rounded-xl p-4 space-y-3">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-              <div>
-                <h3 class="text-xs md:text-sm font-bold text-white flex items-center gap-1.5">
-                  <span>🤖</span>
-                  <span>Hızlı Kural Ayrıştırıcı & İçe Aktarma Sihirbazı</span>
-                </h3>
-                <p class="text-[11px] text-slate-400">Kitaplardan, d20srd veya dndtools'dan kural metnini yapıştırın; otomatik 29 sütuna dönüştürsün.</p>
+
+          <!-- 1. GEMINI API KEY STATUS / SETUP CARD -->
+          <div class="bg-slate-900 border border-purple-500/40 rounded-xl p-4 space-y-2.5 shadow-md">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2.5">
+                <span class="text-2xl">✨</span>
+                <div>
+                  <h3 class="text-xs md:text-sm font-bold text-white flex items-center gap-1.5">
+                    <span>Google Gemini AI Kural Asistanı</span>
+                    <span class="badge bg-purple-950 text-purple-300 border border-purple-800 text-[10px]">RAW 3.5e</span>
+                  </h3>
+                  <p class="text-[11px] text-slate-400">D&D 3.5e Core SRD, Splatbook'lar ve Foundry JSON arşivlerini tarayıp 29 sütunlu şemaya çevirir.</p>
+                </div>
               </div>
-              <!-- Example Presets -->
-              <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="text-[10px] text-slate-400">Hızlı Örnekler:</span>
-                <button onclick="document.getElementById('raw-rule-input').value = 'Shadow Blade\n[General]\nYou have mastered the style of the Shadow Hand discipline.\nPrerequisites: One Shadow Hand stance.\nBenefit: While in a Shadow Hand stance, add Dexterity modifier to damage rolls with Shadow Hand discipline weapons.\nSpecial: Fighter bonus feat.';" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-purple-300 px-2 py-0.5 rounded border border-slate-700">Feat</button>
-                <button onclick="document.getElementById('raw-rule-input').value = 'Mountain Hammer\nStone Dragon (Strike)\nLevel: Crusader 2, Swordsage 2, Warblade 2\nInitiation Action: 1 standard action\nRange: Melee attack\nTarget: One creature or object\nBenefit: Deal weapon damage + 2d6 damage. Overcomes Damage Reduction and Hardness.';" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-rose-300 px-2 py-0.5 rounded border border-slate-700">Manevra</button>
-                <button onclick="document.getElementById('raw-rule-input').value = 'Haste\nTransmutation\nLevel: Brd 3, Sor/Wiz 3\nComponents: V, S, M\nCasting Time: 1 standard action\nRange: Close (25 ft. + 5 ft./2 levels)\nTargets: One creature/level, no two of which can be more than 30 ft. apart\nDuration: 1 round/level\nBenefit: Grants +1 attack, +1 dodge AC, +1 Reflex save, +30 ft speed, and 1 extra attack on full attack.';" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-sky-300 px-2 py-0.5 rounded border border-slate-700">Büyü</button>
+
+              <!-- API Key Connected Badge -->
+              <div id="ai-api-key-status" class="hidden flex items-center gap-2">
+                <span class="inline-flex items-center gap-1.5 bg-emerald-950 text-emerald-300 border border-emerald-700 px-2.5 py-1 rounded text-xs font-medium">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>Gemini API Bağlı:</span>
+                  <span id="ai-api-key-display" class="font-mono text-[11px] text-emerald-200">AIzaSy...</span>
+                </span>
+                <button onclick="RuleMaster.promptChangeApiKey()" class="text-xs bg-slate-800 hover:bg-slate-700 text-purple-300 px-2.5 py-1 rounded border border-slate-700 transition">
+                  🔑 Değiştir
+                </button>
+                <button onclick="RuleMaster.clearApiKey()" class="text-xs bg-slate-800 hover:bg-rose-900/60 text-rose-300 px-2 py-1 rounded border border-slate-700 transition" title="Anahtarı Temizle">
+                  🗑️
+                </button>
               </div>
             </div>
 
-            <textarea id="raw-rule-input" rows="6" placeholder="Kural metnini buraya yapıştırın... (Örn: Feat adı, Prerequisites, Benefit; veya Manevra/Büyü stat block'u)" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-xs text-white font-mono focus:outline-none focus:border-purple-500"></textarea>
-
-            <div class="flex items-center justify-between pt-1">
-              <span class="text-[11px] text-slate-400">Ayrıştırıcı otomatik olarak Ad, Tür, Önkoşullar, Hasar Zarı ve Kural Açıklamasını tespit eder.</span>
-              <button onclick="RuleMaster.parseRawText()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs px-4 py-2 rounded-lg shadow transition flex items-center gap-1.5">
-                <span>⚡</span>
-                <span>Metni Ayrıştır ve DB Editöründe Aç</span>
-              </button>
+            <!-- API Key Input (if not set or changing) -->
+            <div id="ai-api-key-input-container" class="space-y-2 pt-2 border-t border-slate-800">
+              <div class="flex flex-col md:flex-row gap-2">
+                <div class="relative flex-1">
+                  <input type="password" id="ai-api-key-input" placeholder="Google AI Studio Gemini API Anahtarınızı yapıştırın (AIzaSy...)" class="w-full bg-slate-950 border border-purple-500/50 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-400">
+                </div>
+                <button onclick="RuleMaster.saveApiKeyFromInput()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-4 py-2 rounded-lg shadow transition flex items-center justify-center gap-1.5 shrink-0">
+                  <span>💾</span>
+                  <span>Anahtarı Kaydet</span>
+                </button>
+              </div>
+              <div class="flex flex-wrap items-center justify-between text-[11px] text-slate-400 gap-2">
+                <span>🔒 Anahtarınız yalnızca tarayıcınızın yerel hafızasında (localStorage) saklanır, hiçbir harici sunucuya iletilmez.</span>
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-sky-400 hover:underline flex items-center gap-1">
+                  <span>Ücretsiz Gemini API Anahtarı Al (Google AI Studio)</span>
+                  <span>↗</span>
+                </a>
+              </div>
             </div>
           </div>
+
+          <!-- 2. AI KURAL ARAMA & ÜRETİM FORMU -->
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3 shadow-md">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h3 class="text-xs md:text-sm font-bold text-purple-300 flex items-center gap-1.5">
+                <span>🤖</span>
+                <span>AI ile Kural, Büyü, Hüner veya Eşya Ara</span>
+              </h3>
+              <!-- Category Filter Hint -->
+              <div class="flex items-center gap-2">
+                <label class="text-[11px] text-slate-400">Kategori İpucu:</label>
+                <select id="ai-rule-category" class="bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white focus:outline-none">
+                  <option value="ALL">⚡ Otomatik Algıla</option>
+                  <option value="Feat">🎖️ Feat (Hüner)</option>
+                  <option value="Weapon">⚔️ Silah (Weapon)</option>
+                  <option value="Armor / Shield">🛡️ Zırh / Kalkan</option>
+                  <option value="Spell">🔮 Büyü (Spell)</option>
+                  <option value="Maneuver">💥 Manevra (Strike/Boost/Counter)</option>
+                  <option value="Stance">🥋 Duruş (Stance)</option>
+                  <option value="Wondrous Item">💍 Harika Eşya (Wondrous Item)</option>
+                  <option value="Ring">💍 Yüzük (Ring)</option>
+                  <option value="Potion">🧪 İksir (Potion)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="flex flex-col md:flex-row gap-2">
+              <input type="text" id="ai-rule-query" onkeydown="if(event.key==='Enter') RuleMaster.queryAiRule()" placeholder="Örn: Shock Trooper, Flametongue, Belt of Battle, Boots of Speed, Ring of Protection +2, Mountain Hammer..." class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500">
+              <button id="btn-ai-search" onclick="RuleMaster.queryAiRule()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs px-5 py-2.5 rounded-lg shadow-lg transition flex items-center justify-center gap-2 shrink-0">
+                <span>✨</span>
+                <span>AI ile Kuralı Getir (RAW 3.5e)</span>
+              </button>
+            </div>
+
+            <!-- Quick Suggestions -->
+            <div class="flex items-center gap-1.5 flex-wrap pt-1">
+              <span class="text-[10px] text-slate-500">Hızlı Örnekler:</span>
+              <button onclick="RuleMaster.setQueryAndSearch('Shock Trooper', 'Feat')" class="text-[10px] bg-slate-800 hover:bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded border border-slate-700 transition">Shock Trooper (Feat)</button>
+              <button onclick="RuleMaster.setQueryAndSearch('Flametongue', 'Weapon')" class="text-[10px] bg-slate-800 hover:bg-rose-900/60 text-rose-300 px-2 py-0.5 rounded border border-slate-700 transition">Flametongue (Silah + Ateş)</button>
+              <button onclick="RuleMaster.setQueryAndSearch('Belt of Battle', 'Wondrous Item')" class="text-[10px] bg-slate-800 hover:bg-amber-900/60 text-amber-300 px-2 py-0.5 rounded border border-slate-700 transition">Belt of Battle (Bel/MIC)</button>
+              <button onclick="RuleMaster.setQueryAndSearch('Boots of Speed', 'Wondrous Item')" class="text-[10px] bg-slate-800 hover:bg-sky-900/60 text-sky-300 px-2 py-0.5 rounded border border-slate-700 transition">Boots of Speed (Ayak)</button>
+              <button onclick="RuleMaster.setQueryAndSearch('Ring of Protection +2', 'Ring')" class="text-[10px] bg-slate-800 hover:bg-emerald-900/60 text-emerald-300 px-2 py-0.5 rounded border border-slate-700 transition">Ring of Protection +2</button>
+              <button onclick="RuleMaster.setQueryAndSearch('Mountain Hammer', 'Maneuver')" class="text-[10px] bg-slate-800 hover:bg-rose-900/60 text-rose-300 px-2 py-0.5 rounded border border-slate-700 transition">Mountain Hammer (Manevra)</button>
+              <button onclick="RuleMaster.setQueryAndSearch('Shadow Blade', 'Feat')" class="text-[10px] bg-slate-800 hover:bg-indigo-900/60 text-indigo-300 px-2 py-0.5 rounded border border-slate-700 transition">Shadow Blade (Feat)</button>
+              <button onclick="RuleMaster.setQueryAndSearch('Haste', 'Spell')" class="text-[10px] bg-slate-800 hover:bg-blue-900/60 text-blue-300 px-2 py-0.5 rounded border border-slate-700 transition">Haste (Büyü)</button>
+            </div>
+          </div>
+
+          <!-- 3. LOADING SPINNER -->
+          <div id="ai-loading-indicator" class="hidden bg-slate-900/80 border border-purple-500/40 rounded-xl p-6 text-center space-y-3">
+            <div class="inline-block w-8 h-8 border-3 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+            <div class="text-xs font-bold text-purple-300" id="ai-loading-status-text">Kural kütüphaneleri taranıyor... Core SRD -> Foundry JSON -> Splatbooks...</div>
+            <div class="text-[11px] text-slate-400">Gemini AI kuralı RAW 3.5e standartlarına ve 29 sütunlu Master_DB şemasına dönüştürüyor...</div>
+          </div>
+
+          <!-- 4. AI RESULTS CONTAINER -->
+          <div id="ai-results-container" class="space-y-3">
+            <!-- Dynamically populated with preview cards -->
+          </div>
+
+          <!-- 5. OFFLINE MANUAL REGEX PARSER (FALLBACK ACCORDION) -->
+          <details class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 text-xs">
+            <summary class="cursor-pointer font-bold text-slate-400 hover:text-white flex items-center justify-between">
+              <span>📝 İnternetsiz / Manuel Kural Metni Ayrıştırıcı (Regex Fallback)</span>
+              <span class="text-[10px] text-slate-500">Kitaptan veya d20srd'den metin kopyala-yapıştır ▾</span>
+            </summary>
+            <div class="mt-3 space-y-2.5 pt-2 border-t border-slate-800">
+              <textarea id="raw-rule-input" rows="4" placeholder="Kural metnini buraya yapıştırın... (Örn: Feat adı, Prerequisites, Benefit; veya Manevra/Büyü stat block'u)" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-white font-mono focus:outline-none focus:border-purple-500"></textarea>
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] text-slate-400">Offline regex ayrıştırıcı başlık, tür ve önkoşulları otomatik çeker.</span>
+                <button onclick="RuleMaster.parseRawText()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs px-3 py-1.5 rounded-lg border border-slate-600 transition flex items-center gap-1.5">
+                  <span>⚡</span>
+                  <span>Metni Ayrıştır ve Editörde Aç</span>
+                </button>
+              </div>
+            </div>
+          </details>
         </div>
 
         <!-- ========================================== -->
@@ -1196,6 +1300,10 @@
       if (activeBtn) {
         activeBtn.classList.add('bg-red-600', 'text-white', 'shadow');
         activeBtn.classList.remove('text-slate-400');
+      }
+
+      if (tabId === 'tab-database' && window.RuleMaster) {
+        RuleMaster.init();
       }
     }
 

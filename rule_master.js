@@ -642,7 +642,521 @@ const RuleMaster = {
 
     if (subTabId === 'subtab-mdb-sources') {
       this.renderSourcesCatalog();
+    } else if (subTabId === 'subtab-mdb-importer') {
+      this.updateApiKeyUi();
     }
+  },
+
+  // Initialize RuleMaster
+  init() {
+    this.renderTable();
+    this.updateApiKeyUi();
+  },
+
+  // ====================================================
+  // GEMINI AI RULE IMPORTER (AI KURAL EKLEYİCİ)
+  // ====================================================
+  lastAiResults: [],
+
+  getApiKey() {
+    return localStorage.getItem('gemini_api_key') || '';
+  },
+
+  setApiKey(key) {
+    if (!key || !key.trim()) {
+      localStorage.removeItem('gemini_api_key');
+    } else {
+      localStorage.setItem('gemini_api_key', key.trim());
+    }
+    this.updateApiKeyUi();
+  },
+
+  updateApiKeyUi() {
+    const key = this.getApiKey();
+    const statusContainer = document.getElementById('ai-api-key-status');
+    const inputContainer = document.getElementById('ai-api-key-input-container');
+    const keyDisplay = document.getElementById('ai-api-key-display');
+    const keyInput = document.getElementById('ai-api-key-input');
+
+    if (key) {
+      if (statusContainer) statusContainer.classList.remove('hidden');
+      if (inputContainer) inputContainer.classList.add('hidden');
+      if (keyDisplay) {
+        keyDisplay.textContent = key.substring(0, 6) + '...' + key.substring(key.length - 4);
+      }
+    } else {
+      if (statusContainer) statusContainer.classList.add('hidden');
+      if (inputContainer) inputContainer.classList.remove('hidden');
+      if (keyInput) keyInput.value = '';
+    }
+  },
+
+  promptChangeApiKey() {
+    const inputContainer = document.getElementById('ai-api-key-input-container');
+    const statusContainer = document.getElementById('ai-api-key-status');
+    if (inputContainer) inputContainer.classList.remove('hidden');
+    if (statusContainer) statusContainer.classList.add('hidden');
+    const keyInput = document.getElementById('ai-api-key-input');
+    if (keyInput) {
+      keyInput.value = this.getApiKey();
+      keyInput.focus();
+    }
+  },
+
+  saveApiKeyFromInput() {
+    const keyInput = document.getElementById('ai-api-key-input');
+    const val = keyInput?.value?.trim() || '';
+    if (!val) {
+      alert('⚠️ Lütfen geçerli bir Gemini API anahtarı girin.');
+      return;
+    }
+    this.setApiKey(val);
+    alert('✅ Gemini API anahtarı başarıyla kaydedildi!');
+  },
+
+  clearApiKey() {
+    if (confirm('Gemini API anahtarını yerel hafızadan silmek istediğinize emin misiniz?')) {
+      this.setApiKey('');
+    }
+  },
+
+  setQueryAndSearch(term, categoryHint = 'ALL') {
+    const queryInput = document.getElementById('ai-rule-query');
+    const catSelect = document.getElementById('ai-rule-category');
+    if (queryInput) queryInput.value = term;
+    if (catSelect) catSelect.value = categoryHint;
+    this.queryAiRule();
+  },
+
+  async queryAiRule() {
+    const apiKey = this.getApiKey();
+    if (!apiKey) {
+      alert('⚠️ Lütfen önce bir Google Gemini API Anahtarı girin (Google AI Studio ücretsiz anahtar).');
+      this.promptChangeApiKey();
+      return;
+    }
+
+    const queryInput = document.getElementById('ai-rule-query');
+    const query = queryInput?.value?.trim() || '';
+    if (!query) {
+      alert('⚠️ Lütfen aranacak kural, hüner, büyü veya eşya adını yazın.');
+      queryInput?.focus();
+      return;
+    }
+
+    const catSelect = document.getElementById('ai-rule-category');
+    const categoryHint = catSelect?.value || 'ALL';
+
+    const btn = document.getElementById('btn-ai-search');
+    const loadingBox = document.getElementById('ai-loading-indicator');
+    const resultsBox = document.getElementById('ai-results-container');
+    const statusText = document.getElementById('ai-loading-status-text');
+
+    if (btn) btn.disabled = true;
+    if (loadingBox) loadingBox.classList.remove('hidden');
+    if (resultsBox) resultsBox.innerHTML = '';
+    if (statusText) statusText.textContent = `"${query}" aranıyor... (Core SRD, Splatbooks ve Foundry DB)`;
+
+    const promptText = `You are a master D&D 3.5e Rule Arbiter and Database Architect.
+User query: "${query}" (Category Hint: "${categoryHint}").
+
+PRIORITIZED KNOWLEDGE BASES (Cascading Search Order):
+1. Priority 1 (Core SRD): https://www.d20srd.org & http://dndsrd.net (PHB, DMG, MM Core 3.5e rules)
+2. Priority 2 (Foundry JSON): D&D 3.5e structured JSON compendiums (spells, feats, items, maneuvers)
+3. Priority 3 (Extended Splatbooks): Complete Warrior, Complete Arcane, Complete Divine, Complete Adventurer, Magic Item Compendium (MIC), Spell Compendium (SC), Tome of Battle (ToB), Frostburn, Sandstorm, etc.
+
+TASK:
+Resolve the target D&D 3.5e game element into an array of rows adhering strictly to the Master_DB 29-column schema.
+If the item has multiple distinct powers (e.g. passive weapon/item stats + on-hit damage + 1/day active spell power), produce 1 Parent row and 1 or more Child rows starting with '↳ ' and setting Col 3 (Parent Entry) to the exact parent entry name.
+
+MASTER_DB 29-COLUMN SCHEMA (Every row MUST contain exactly 29 elements in this order):
+0: Entry Name (string, child begins with '↳ ')
+1: Category ('Feat', 'Weapon', 'Armor / Shield', 'Ring', 'Wondrous Item', 'Slotless Item', 'Spell', 'Maneuver', 'Stance', 'Potion', 'Special Ability')
+2: Slot ('Armor', 'Shield', 'Main Hand', 'Off Hand', 'Both Hands', 'Head', 'Eyes', 'Neck', 'Torso', 'Body', 'Waist', 'Shoulders', 'Arms', 'Hands', 'Ring', 'Feet', 'Slotless', 'None')
+3: Parent Entry (string; '-' if none, or exact parent name if child)
+4: Source (e.g. 'PHB p.98', 'MIC p.128', 'DMG p.224', 'ToB p.68')
+5: Description / Rules Mechanics (string, concise mechanics text)
+6: Bonus Type ('Alchemical', 'Armor', 'Circumstance', 'Competence', 'Deflection', 'Dodge', 'Enhancement', 'Inherent', 'Insight', 'Luck', 'Morale', 'Natural Armor', 'Resistance', 'Sacred', 'Shield', 'Size', 'Untyped')
+7: Applies To / Scope ('All Attacks', 'Melee Only', 'Ranged Only', 'Thrown Only', 'Slashing', 'Piercing', 'Bludgeoning', 'Spells', 'None / General')
+8: Str (number or 0)
+9: Dex (number or 0)
+10: Con (number or 0)
+11: Int (number or 0)
+12: Wis (number or 0)
+13: Cha (number or 0)
+14: AC (number or 0)
+15: HP (number or 0)
+16: Att (number or 0)
+17: Dmg (number or 0)
+18: Fort (number or 0)
+19: Ref (number or 0)
+20: Will (number or 0)
+21: Skill (number or 0)
+22: Init (number or 0)
+23: Speed (number or 0)
+24: On-Hit Dmg / Dice Expression (string, e.g. '+1d6 Fire', '3d8', or '')
+25: Action ('-', 'Passive', 'Free Action', 'Swift Action', 'Immediate Action', 'Move Action', 'Standard Action', 'Full-Round Action')
+26: Duration / Uses (string, e.g. 'Passive', 'Continuous', '1 round/lvl', '1/day', 'At Will', 'Instantaneous')
+27: Weight (lbs) (number or 0)
+28: Cost (gp) (number or 0)
+
+OUTPUT REQUIREMENT:
+Return valid JSON only matching this schema:
+{ "rows": [ [col0, col1, ... col28], ... ] }`;
+
+    const fallbackModels = [
+      'gemini-2.5-flash',
+      'gemini-1.5-flash',
+      'gemini-2.0-flash',
+      'gemini-2.5-flash-lite'
+    ];
+
+    let successResponse = null;
+    let lastError = null;
+
+    for (const model of fallbackModels) {
+      if (statusText) statusText.textContent = `Model sorgulanıyor: ${model}...`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+      try {
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: promptText }] }],
+            generationConfig: {
+              response_mime_type: 'application/json',
+              temperature: 0.1
+            }
+          })
+        });
+
+        if (resp.ok) {
+          const json = await resp.json();
+          const rawText = json.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (rawText) {
+            try {
+              successResponse = JSON.parse(rawText);
+              break;
+            } catch (pErr) {
+              lastError = 'JSON Çözümleme hatası: ' + pErr.message;
+            }
+          }
+        } else {
+          const errData = await resp.json().catch(() => ({}));
+          lastError = errData.error?.message || `HTTP ${resp.status}`;
+        }
+      } catch (netErr) {
+        lastError = netErr.message;
+      }
+    }
+
+    if (btn) btn.disabled = false;
+    if (loadingBox) loadingBox.classList.add('hidden');
+
+    if (!successResponse || !successResponse.rows || !Array.isArray(successResponse.rows)) {
+      alert(`⚠️ Kural getirilemedi: ${lastError || 'Bilinmeyen yanıt'}\nLütfen API anahtarınızı ve internet bağlantınızı kontrol edin.`);
+      return;
+    }
+
+    this.processAiRows(successResponse.rows);
+  },
+
+  processAiRows(rows) {
+    this.lastAiResults = [];
+    rows.forEach(row => {
+      const rawName = String(row[0] || '').trim();
+      const isChild = rawName.startsWith('↳');
+
+      const cat = String(row[1] || 'Feat').trim();
+      let normType = 'Feat';
+      if (cat.toLowerCase().includes('weapon')) normType = 'Weapon';
+      else if (cat.toLowerCase().includes('shield')) normType = 'Shield';
+      else if (cat.toLowerCase().includes('armor')) normType = 'Armor';
+      else if (cat.toLowerCase().includes('spell')) normType = 'Spell';
+      else if (cat.toLowerCase().includes('maneuver')) normType = 'Maneuver';
+      else if (cat.toLowerCase().includes('stance')) normType = 'Stance';
+      else if (cat.toLowerCase().includes('potion')) normType = 'Potion';
+      else if (cat.toLowerCase().includes('wondrous')) normType = 'Wondrous Item';
+      else if (cat.toLowerCase().includes('ring')) normType = 'Ring';
+      else normType = cat;
+
+      const entry = {
+        name: rawName,
+        type: normType,
+        slot: String(row[2] || 'None').trim(),
+        parent: String(row[3] || '-').trim(),
+        source: String(row[4] || 'Core 3.5e').trim(),
+        benefit: String(row[5] || '').trim(),
+        description: String(row[5] || '').trim(),
+        bonusType: String(row[6] || 'Untyped').trim(),
+        scope: String(row[7] || 'None / General').trim(),
+        strBonus: Number(row[8]) || '',
+        dexBonus: Number(row[9]) || '',
+        conBonus: Number(row[10]) || '',
+        intBonus: Number(row[11]) || '',
+        wisBonus: Number(row[12]) || '',
+        chaBonus: Number(row[13]) || '',
+        acBonus: Number(row[14]) || '',
+        hpBonus: Number(row[15]) || '',
+        attBonus: Number(row[16]) || '',
+        dmgBonus: Number(row[17]) || '',
+        fortBonus: Number(row[18]) || '',
+        refBonus: Number(row[19]) || '',
+        willBonus: Number(row[20]) || '',
+        skillBonus: Number(row[21]) || '',
+        clBonus: '',
+        speedBonus: Number(row[23]) || '',
+        extraDmg: String(row[24] || '').trim(),
+        dice: String(row[24] || (normType === 'Weapon' ? '1d8' : '')).trim(),
+        critMin: 20,
+        critMult: 2,
+        dmgType: '',
+        action: String(row[25] || 'Passive').trim(),
+        duration: String(row[26] || 'Continuous').trim(),
+        weight: Number(row[27]) || 0,
+        cost: Number(row[28]) || 0,
+        role: isChild ? 'Secondary Power' : 'General',
+        prereq: '',
+        discipline: '',
+        level: '',
+        isChild: isChild
+      };
+
+      this.lastAiResults.push(entry);
+    });
+
+    this.renderAiResults();
+  },
+
+  renderAiResults() {
+    const container = document.getElementById('ai-results-container');
+    if (!container) return;
+
+    if (!this.lastAiResults.length) {
+      container.innerHTML = `
+        <div class="p-6 text-center text-slate-500 bg-slate-950/40 rounded-xl border border-slate-800">
+          Sonuç bulunamadı. Lütfen kural adını kontrol edip tekrar arayın.
+        </div>
+      `;
+      return;
+    }
+
+    let html = `
+      <div class="flex items-center justify-between bg-slate-900 border border-purple-500/40 p-3 rounded-xl mb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-base">✨</span>
+          <span class="text-xs font-bold text-white">${this.lastAiResults.length} Kural / Alt Güç Üretildi</span>
+          <span class="text-[11px] text-slate-400">Master_DB 29 sütunlu şemasıyla tam uyumlu</span>
+        </div>
+        <button onclick="RuleMaster.addAllAiResultsToDb()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg shadow transition flex items-center gap-1.5">
+          <span>📥</span>
+          <span>Tümünü DB'ye Ekle</span>
+        </button>
+      </div>
+      <div class="space-y-3">
+    `;
+
+    this.lastAiResults.forEach((item, idx) => {
+      const isChild = item.isChild || (item.parent && item.parent !== '-');
+      const badgeClass = this.getTypeBadgeClass(item.type);
+
+      // Stat badges
+      const statPills = [];
+      if (item.strBonus) statPills.push(`+${item.strBonus} STR`);
+      if (item.dexBonus) statPills.push(`+${item.dexBonus} DEX`);
+      if (item.conBonus) statPills.push(`+${item.conBonus} CON`);
+      if (item.intBonus) statPills.push(`+${item.intBonus} INT`);
+      if (item.wisBonus) statPills.push(`+${item.wisBonus} WIS`);
+      if (item.chaBonus) statPills.push(`+${item.chaBonus} CHA`);
+      if (item.acBonus) statPills.push(`+${item.acBonus} AC`);
+      if (item.attBonus) statPills.push(`+${item.attBonus} Atk`);
+      if (item.dmgBonus) statPills.push(`+${item.dmgBonus} Dmg`);
+      if (item.speedBonus) statPills.push(`+${item.speedBonus} ft Hız`);
+      if (item.extraDmg) statPills.push(`${item.extraDmg}`);
+
+      html += `
+        <div class="${isChild ? 'ml-6 border-l-4 border-l-purple-500 bg-slate-900/60' : 'bg-slate-900'} border border-slate-800 rounded-xl p-4 space-y-3 shadow-md">
+          <div class="flex flex-wrap items-start justify-between gap-2 border-b border-slate-800 pb-2">
+            <div>
+              <div class="flex items-center gap-2">
+                ${isChild ? '<span class="text-purple-400 font-bold">↳</span>' : ''}
+                <span class="text-sm font-extrabold text-white">${item.name}</span>
+                <span class="badge ${badgeClass}">${item.type}</span>
+                ${isChild ? `<span class="badge bg-purple-950 text-purple-300 border border-purple-800 font-mono text-[10px]">Bağlı: ${item.parent}</span>` : ''}
+              </div>
+              <div class="flex items-center gap-2 text-[11px] text-slate-400 mt-1">
+                <span>📚 <b>${item.source || 'Core 3.5e'}</b></span>
+                <span>•</span>
+                <span>Yuva: <b>${item.slot || 'None'}</b></span>
+                <span>•</span>
+                <span>Tür: <b>${item.bonusType || 'Untyped'}</b></span>
+                <span>•</span>
+                <span>Kapsam: <b>${item.scope || 'None / General'}</b></span>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+              <button onclick="RuleMaster.addAiResultToDb(${idx})" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1">
+                <span>📥</span>
+                <span>DB'ye Ekle</span>
+              </button>
+              <button onclick="RuleMaster.editAiResultInModal(${idx})" class="bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition" title="29 Sütunlu Formda Aç">
+                ✏️ Düzenle
+              </button>
+              <button onclick="RuleMaster.equipAiResultToCharacter(${idx})" class="bg-emerald-950 hover:bg-emerald-900 border border-emerald-700 text-emerald-300 text-xs px-2.5 py-1.5 rounded-lg transition" title="Karaktere Kuşan / Ekle">
+                ⚡ Kuşan
+              </button>
+            </div>
+          </div>
+
+          <!-- Modifiers Row -->
+          ${statPills.length > 0 ? `
+            <div class="flex flex-wrap items-center gap-1.5">
+              <span class="text-[10px] uppercase font-bold text-slate-400">Bonuslar:</span>
+              ${statPills.map(p => `<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 font-mono font-bold">${p}</span>`).join('')}
+            </div>
+          ` : ''}
+
+          <!-- Mechanics & Benefit Description -->
+          <div class="text-xs text-slate-200 leading-relaxed bg-slate-950/60 p-3 rounded-lg border border-slate-800">
+            ${item.benefit || item.description || '-'}
+          </div>
+
+          <!-- Extra details: Action, Duration, Cost, Weight -->
+          <div class="flex flex-wrap items-center justify-between text-[11px] text-slate-400 pt-1">
+            <div class="flex items-center gap-3">
+              <span>Aksiyon: <b class="text-amber-400">${item.action || 'Passive'}</b></span>
+              <span>Süre/Kullanım: <b class="text-purple-300">${item.duration || 'Continuous'}</b></span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span>Ağırlık: <b class="text-slate-300">${item.weight || 0} lbs</b></span>
+              <span>Fiyat: <b class="text-amber-300">${item.cost || 0} gp</b></span>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    html += `</div>`;
+    container.innerHTML = html;
+  },
+
+  addAiResultToDb(index) {
+    if (index >= 0 && index < this.lastAiResults.length) {
+      const item = JSON.parse(JSON.stringify(this.lastAiResults[index]));
+      masterDb.push(item);
+      if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+      this.renderTable();
+      alert(`✅ "${item.name}" başarıyla Master_DB kütüphanesine eklendi!`);
+    }
+  },
+
+  addAllAiResultsToDb() {
+    if (!this.lastAiResults.length) return;
+    this.lastAiResults.forEach(item => {
+      masterDb.push(JSON.parse(JSON.stringify(item)));
+    });
+    if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+    this.renderTable();
+    alert(`✅ ${this.lastAiResults.length} kural başarıyla Master_DB kütüphanesine eklendi!`);
+  },
+
+  editAiResultInModal(index) {
+    if (index >= 0 && index < this.lastAiResults.length) {
+      const item = JSON.parse(JSON.stringify(this.lastAiResults[index]));
+      this.openModalWithData(item, -1);
+    }
+  },
+
+  equipAiResultToCharacter(index) {
+    if (index >= 0 && index < this.lastAiResults.length) {
+      const item = JSON.parse(JSON.stringify(this.lastAiResults[index]));
+      this.equipItem(item);
+    }
+  },
+
+  equipItem(item) {
+    if (typeof character === 'undefined' || !character) return;
+    const type = (item.type || '').toLowerCase();
+
+    if (type === 'weapon') {
+      if (!character.weapons) character.weapons = [];
+      const newWep = {
+        name: item.name,
+        grip: item.slot === 'Main Hand' ? '1-Hand' : '2-Hand',
+        dice: item.dice || item.extraDmg || '1d8',
+        critMin: item.critMin || 20,
+        critMult: item.critMult || 2,
+        attBonus: Number(item.attBonus) || 0,
+        dmgBonus: Number(item.dmgBonus) || 0,
+        dmgType: item.dmgType || 'Slashing',
+        bonusType: item.bonusType || 'Enhancement',
+        tags: item.tags || []
+      };
+      character.weapons.push(newWep);
+      character.activeWeapon = item.name;
+      alert(`⚔️ "${item.name}" silahı karakterin aktif silahlarına eklendi ve kuşandı!`);
+    } else if (type === 'spell') {
+      if (!character.spellcasting) character.spellcasting = { slots: [], knownSpells: [] };
+      if (!character.spellcasting.knownSpells) character.spellcasting.knownSpells = [];
+      character.spellcasting.knownSpells.push({
+        level: Number(item.level) || 1,
+        name: item.name,
+        school: item.school || 'Universal',
+        action: item.action || 'Standard Action',
+        range: item.range || 'Close',
+        benefit: item.benefit || item.description || ''
+      });
+      alert(`🔮 "${item.name}" büyüsü bilinen büyülere (Spells Known) eklendi!`);
+    } else if (type === 'maneuver') {
+      if (!character.tomeOfBattle) character.tomeOfBattle = { initiatorLevel: 1, readiedManeuvers: [], stancesKnown: [] };
+      if (!character.tomeOfBattle.readiedManeuvers) character.tomeOfBattle.readiedManeuvers = [];
+      character.tomeOfBattle.readiedManeuvers.push({
+        name: item.name,
+        level: Number(item.level) || 1,
+        discipline: item.discipline || 'Iron Heart',
+        action: item.action || 'Standard Action',
+        expended: false,
+        notes: item.benefit || item.description || ''
+      });
+      alert(`⚔️ "${item.name}" manevrası kuşanılan manevralara eklendi!`);
+    } else if (type === 'stance') {
+      if (!character.tomeOfBattle) character.tomeOfBattle = { initiatorLevel: 1, readiedManeuvers: [], stancesKnown: [] };
+      if (!character.tomeOfBattle.stancesKnown) character.tomeOfBattle.stancesKnown = [];
+      character.tomeOfBattle.stancesKnown.push({
+        name: item.name,
+        discipline: item.discipline || 'Shadow Hand',
+        level: Number(item.level) || 1,
+        benefit: item.benefit || item.description || ''
+      });
+      character.activeStance = item.name;
+      alert(`⚡ "${item.name}" duruşu aktif duruş olarak seçildi!`);
+    } else if (type === 'feat') {
+      if (!character.feats) character.feats = [];
+      character.feats.push(item.name);
+      alert(`✨ "${item.name}" hüneri (Feat) karaktere eklendi!`);
+    } else if (type === 'potion') {
+      if (!character.consumables) character.consumables = [];
+      character.consumables.push({
+        name: item.name,
+        qty: 1,
+        effect: item.benefit || item.description || 'Potion effect'
+      });
+      alert(`🧪 "${item.name}" iksir çantanıza 1 adet olarak eklendi!`);
+    } else {
+      if (!character.inventory) character.inventory = [];
+      character.inventory.push({
+        name: item.name,
+        slot: item.slot || 'Slotless',
+        benefit: item.benefit || item.description || '',
+        weight: item.weight || 0,
+        cost: item.cost || 0
+      });
+      alert(`🎒 "${item.name}" (${item.type}) envantere eklendi!`);
+    }
+
+    if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+    if (typeof renderAll === 'function') renderAll();
   },
 
   // Render Knowledge Bases and Splatbooks
