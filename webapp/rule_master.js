@@ -2144,9 +2144,8 @@ Return valid JSON only matching this schema:
 
     const apiKey = this.getApiKey();
     if (!apiKey) {
-      alert('⚠️ Lütfen önce bir Google Gemini API Anahtarı girin (Google AI Studio ücretsiz anahtar).\nAI Kural Ekleyici sekmesinden anahtarınızı tanımlayabilirsiniz.');
-      this.switchSubTab('subtab-mdb-importer');
-      this.promptChangeApiKey();
+      alert('⚠️ Lütfen önce bir Google Gemini API Anahtarı girin (Google AI Studio ücretsiz anahtar).\nAyarlar penceresinden anahtarınızı kolayca kaydedebilirsiniz.');
+      if (typeof openSettingsModal === 'function') openSettingsModal();
       return;
     }
 
@@ -2479,9 +2478,8 @@ Return valid JSON only matching this schema:
 
     const apiKey = this.getApiKey();
     if (!apiKey) {
-      alert('⚠️ Lütfen önce bir Google Gemini API Anahtarı girin (Google AI Studio ücretsiz anahtar).\nAI Kural Ekleyici sekmesinden anahtarınızı tanımlayabilirsiniz.');
-      this.switchSubTab('subtab-mdb-importer');
-      this.promptChangeApiKey();
+      alert('⚠️ Lütfen önce bir Google Gemini API Anahtarı girin (Google AI Studio ücretsiz anahtar).\nAyarlar penceresinden anahtarınızı kolayca kaydedebilirsiniz.');
+      if (typeof openSettingsModal === 'function') openSettingsModal();
       return;
     }
 

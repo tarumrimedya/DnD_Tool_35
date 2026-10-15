@@ -64,15 +64,15 @@
       </div>
     </div>
 
-    <!-- Quick Action / Cloud Sync Pill -->
+    <!-- Quick Action / Cloud Sync Pill & Settings Button -->
     <div class="flex items-center gap-2">
       <div id="sync-status-pill" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-slate-800 text-slate-300 border border-slate-700">
         <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
         <span id="sync-status-text">🟡 Yerel Kayıtlı (Çevrimdışı)</span>
       </div>
-      <button onclick="switchTab('tab-sync')" class="px-3 py-1.5 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-500/40 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
-        <span>🔄</span>
-        <span>Google Drive & Eşitle</span>
+      <button onclick="openSettingsModal()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 hover:border-slate-500 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow transition">
+        <span class="text-sm">⚙️</span>
+        <span>Ayarlar</span>
       </button>
     </div>
   </header>
@@ -188,9 +188,9 @@
         <span>📚</span>
         <span>Master DB</span>
       </button>
-      <button onclick="switchTab('tab-sync')" id="tab-btn-sync" class="tab-btn flex-1 py-1.5 px-3 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
-        <span>🔄</span>
-        <span>Eşitle & Yedekle</span>
+      <button onclick="openSettingsModal()" id="tab-btn-sync" class="tab-btn flex-1 py-1.5 px-3 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
+        <span>⚙️</span>
+        <span>Ayarlar</span>
       </button>
     </div>
   </nav>
@@ -606,14 +606,8 @@
             <button onclick="RuleMaster.switchSubTab('subtab-mdb-tree')" id="btn-subtab-mdb-tree" class="mdb-subtab-btn px-2.5 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-white transition">
               🔗 Alt Güç Ağacı
             </button>
-            <button onclick="RuleMaster.switchSubTab('subtab-mdb-importer')" id="btn-subtab-mdb-importer" class="mdb-subtab-btn px-2.5 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-white transition">
-              🤖 AI Kural Ekleyici
-            </button>
             <button onclick="RuleMaster.switchSubTab('subtab-mdb-sources')" id="btn-subtab-mdb-sources" class="mdb-subtab-btn px-2.5 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-white transition">
               📖 Kural Kaynakları
-            </button>
-            <button onclick="RuleMaster.switchSubTab('subtab-mdb-backup')" id="btn-subtab-mdb-backup" class="mdb-subtab-btn px-2.5 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-white transition">
-              💾 Yedek & Eşitleme
             </button>
           </div>
         </div>
@@ -1334,9 +1328,9 @@
       <span class="text-base">📚</span>
       <span>DB</span>
     </button>
-    <button onclick="switchTab('tab-sync')" class="mobile-tab-btn flex flex-col items-center text-[10px] font-bold text-slate-400">
-      <span class="text-base">🔄</span>
-      <span>Eşitle</span>
+    <button onclick="openSettingsModal()" class="mobile-tab-btn flex flex-col items-center text-[10px] font-bold text-slate-400">
+      <span class="text-base">⚙️</span>
+      <span>Ayarlar</span>
     </button>
   </nav>
 
@@ -1601,6 +1595,175 @@
     </div>
   </div>
 
+  <!-- ==================================================== -->
+  <!-- MODAL: SETTINGS & SYSTEM CONFIGURATION -->
+  <!-- ==================================================== -->
+  <div id="settings-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
+    <div class="bg-dndCard border border-purple-500/60 rounded-2xl max-w-3xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden my-auto">
+      
+      <!-- Modal Header -->
+      <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <span class="text-xl">⚙️</span>
+          <div>
+            <h3 class="text-sm md:text-base font-extrabold text-white flex items-center gap-2">
+              <span>Sistem & Veri Ayarları</span>
+              <span class="badge bg-purple-950 text-purple-300 border border-purple-800 text-[9px]">v3.5 Live</span>
+            </h3>
+            <p class="text-[10px] text-slate-400">Google Drive • Gemini AI • Yedekleme & Geri Yükleme • Masa Kuralları</p>
+          </div>
+        </div>
+        <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1">
+          <span>✕</span> <span>Kapat</span>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-4 overflow-y-auto space-y-4 flex-1 text-xs">
+        
+        <!-- SECTION 1: GOOGLE DRIVE CLOUD SYNC -->
+        <div class="bg-slate-900/90 border border-indigo-500/40 rounded-xl p-3.5 space-y-3 shadow">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">☁️</span>
+              <div>
+                <h4 class="text-xs font-bold text-white">Google Drive Bulut Senkronizasyonu</h4>
+                <p class="text-[10px] text-slate-400">PC, tablet ve telefonunuz arasında karakterinizi otomatik eşitleyin.</p>
+              </div>
+            </div>
+            <button onclick="GDriveSync.connect()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition shadow flex items-center gap-1.5">
+              <span>🔑</span>
+              <span>Drive'a Bağlan</span>
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <button onclick="GDriveSync.pushToDrive()" class="bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs font-semibold py-2 px-3 rounded-lg border border-emerald-500/40 transition flex items-center justify-center gap-1.5">
+              <span>⬆️</span>
+              <span>Google Drive'a Şimdi Kaydet (Push)</span>
+            </button>
+            <button onclick="GDriveSync.pullFromDrive()" class="bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300 hover:text-white text-xs font-semibold py-2 px-3 rounded-lg border border-indigo-500/40 transition flex items-center justify-center gap-1.5">
+              <span>⬇️</span>
+              <span>Google Drive'dan Yenile (Pull)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- SECTION 2: GOOGLE GEMINI AI KEY & DIAGNOSTICS -->
+        <div class="bg-slate-900/90 border border-purple-500/40 rounded-xl p-3.5 space-y-3 shadow">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">🤖</span>
+              <div>
+                <h4 class="text-xs font-bold text-white">Google Gemini AI Kural Asistanı Ayarları</h4>
+                <p class="text-[10px] text-slate-400">Kişisel ücretsiz Google AI Studio API anahtarınız (tarayıcınızda güvenle saklanır).</p>
+              </div>
+            </div>
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[10px] text-purple-300 hover:text-purple-200 underline font-semibold">
+              🔑 Ücretsiz Anahtar Al ↗
+            </a>
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex flex-col sm:flex-row gap-2">
+              <input type="password" id="settings-gemini-api-key" placeholder="AIzaSy... anahtarınızı buraya yapıştırın" class="flex-1 bg-slate-950 border border-purple-500/40 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-purple-400 font-mono">
+              <button onclick="saveSettingsApiKey()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition shadow whitespace-nowrap">
+                💾 Kaydet
+              </button>
+              <button onclick="clearSettingsApiKey()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition whitespace-nowrap">
+                🗑️ Sil
+              </button>
+            </div>
+            <div class="flex flex-wrap items-center justify-between gap-2 text-[10px]">
+              <div id="settings-api-key-status" class="text-slate-400">
+                Durum: <span id="settings-masked-key" class="font-mono text-purple-300">Tanımlı Değil</span>
+              </div>
+              <button onclick="diagnoseSettingsApiKey()" class="text-sky-400 hover:text-sky-300 font-bold flex items-center gap-1 underline">
+                <span>🩺</span>
+                <span>Aktif Modelleri & Bağlantıyı Test Et (Ping)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 3: DATA BACKUP & RESTORE (LOCAL JSON) -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-3 shadow">
+          <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
+            <span class="text-xl">💾</span>
+            <div>
+              <h4 class="text-xs font-bold text-white">Yedekleme & Geri Yükleme (JSON)</h4>
+              <p class="text-[10px] text-slate-400">Tüm karakter ve kural verilerinizi bağımsız yerel dosya olarak yedekleyin veya geri yükleyin.</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 space-y-1.5">
+              <div class="font-bold text-slate-300 flex items-center gap-1">
+                <span>👤</span> <span>Karakter Dosyası</span>
+              </div>
+              <div class="flex gap-1.5">
+                <button onclick="exportCharacterJson()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-1.5 rounded border border-slate-700 transition">💾 İndir</button>
+                <button onclick="document.getElementById('settings-json-file-input').click()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-1.5 rounded border border-slate-700 transition">📂 Yükle</button>
+              </div>
+            </div>
+
+            <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 space-y-1.5">
+              <div class="font-bold text-slate-300 flex items-center gap-1">
+                <span>📚</span> <span>Master DB (Kütüphane)</span>
+              </div>
+              <div class="flex gap-1.5">
+                <button onclick="exportMasterDbJson()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-1.5 rounded border border-slate-700 transition">💾 İndir</button>
+                <button onclick="document.getElementById('settings-json-file-input').click()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-1.5 rounded border border-slate-700 transition">📂 Yükle</button>
+              </div>
+            </div>
+          </div>
+          <input type="file" id="settings-json-file-input" accept=".json" onchange="handleJsonFileUpload(event)" class="hidden">
+        </div>
+
+        <!-- SECTION 4: HOUSE RULES & SYSTEM PREFERENCES -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-3 shadow">
+          <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
+            <span class="text-xl">🎲</span>
+            <div>
+              <h4 class="text-xs font-bold text-white">Masa & Kural Tercihleri (House Rules)</h4>
+              <p class="text-[10px] text-slate-400">Kampanyanıza özel D&D 3.5e mekanik tercihlerini belirleyin.</p>
+            </div>
+          </div>
+
+          <div class="space-y-2 text-xs">
+            <label class="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800 cursor-pointer">
+              <div>
+                <div class="font-bold text-slate-200">🚫 No Crit Confirm (Otomatik Kritik)</div>
+                <div class="text-[10px] text-slate-400">Kritik tehdit atıldığında teyit zarı atmadan doğrudan kritik hasar uygular.</div>
+              </div>
+              <input type="checkbox" id="settings-no-crit-confirm" checked onchange="document.getElementById('house-no-crit-confirm').checked = this.checked" class="rounded border-slate-700 text-amber-500 focus:ring-0">
+            </label>
+
+            <label class="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800 cursor-pointer">
+              <div>
+                <div class="font-bold text-slate-200">⚡ Tome of Battle Manevralarını Katla</div>
+                <div class="text-[10px] text-slate-400">Manevra ile yapılan saldırılarda ekstra zarları kritik vuruşa dahil eder.</div>
+              </div>
+              <input type="checkbox" id="settings-maneuver-crit" onchange="document.getElementById('house-maneuver-crit').checked = this.checked" class="rounded border-slate-700 text-indigo-500 focus:ring-0">
+            </label>
+          </div>
+        </div>
+
+        <!-- SECTION 5: DANGER ZONE / RESET -->
+        <div class="bg-rose-950/20 border border-rose-600/40 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h4 class="text-xs font-bold text-rose-400">⚠️ Karakteri Sıfırla / Temiz Başlangıç</h4>
+            <p class="text-[10px] text-slate-400">Mevcut karakteri sıfırlar ve boş bir karakter kağıdı açar.</p>
+          </div>
+          <button onclick="resetToCleanCharacter(); closeSettingsModal();" class="bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition shadow">
+            🗑️ Karakteri Sıfırla
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   <!-- SCRIPT LOGIC -->
   <script src="rule_engine.js"></script>
   <script src="rule_master.js"></script>
@@ -1657,6 +1820,82 @@
       localStorage.setItem('dnd35_master_db', JSON.stringify(masterDb));
       if (triggerCloudSync && window.GDriveSync) {
         window.GDriveSync.scheduleAutoSave();
+      }
+    }
+
+    function openSettingsModal() {
+      const modal = document.getElementById('settings-modal');
+      if (!modal) return;
+      modal.classList.remove('hidden');
+
+      // Update Gemini API key UI in settings
+      const apiKey = localStorage.getItem('gemini_api_key') || '';
+      const input = document.getElementById('settings-gemini-api-key');
+      const maskedSpan = document.getElementById('settings-masked-key');
+      if (input) input.value = apiKey;
+      if (maskedSpan) {
+        maskedSpan.textContent = apiKey ? (apiKey.substring(0, 6) + '...' + apiKey.substring(apiKey.length - 4)) : 'Tanımlı Değil (Ücretsiz Alın)';
+      }
+
+      // Update House Rules Checkboxes
+      const noCrit = document.getElementById('house-no-crit-confirm');
+      const manCrit = document.getElementById('house-maneuver-crit');
+      const setNoCrit = document.getElementById('settings-no-crit-confirm');
+      const setManCrit = document.getElementById('settings-maneuver-crit');
+      if (noCrit && setNoCrit) setNoCrit.checked = noCrit.checked;
+      if (manCrit && setManCrit) setManCrit.checked = manCrit.checked;
+    }
+
+    function closeSettingsModal() {
+      const modal = document.getElementById('settings-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function saveSettingsApiKey() {
+      const input = document.getElementById('settings-gemini-api-key');
+      const val = input?.value?.trim() || '';
+      if (!val) {
+        alert('Lütfen geçerli bir Gemini API anahtarı girin.');
+        return;
+      }
+      localStorage.setItem('gemini_api_key', val);
+      if (window.RuleMaster) {
+        RuleMaster._cachedModels = null;
+        RuleMaster.updateApiKeyUi();
+      }
+      const maskedSpan = document.getElementById('settings-masked-key');
+      if (maskedSpan) {
+        maskedSpan.textContent = val.substring(0, 6) + '...' + val.substring(val.length - 4);
+      }
+      alert('✅ Google Gemini API Anahtarınız kaydedildi!');
+    }
+
+    function clearSettingsApiKey() {
+      if (confirm('Gemini API anahtarınızı silmek istediğinize emin misiniz?')) {
+        localStorage.removeItem('gemini_api_key');
+        const input = document.getElementById('settings-gemini-api-key');
+        const maskedSpan = document.getElementById('settings-masked-key');
+        if (input) input.value = '';
+        if (maskedSpan) maskedSpan.textContent = 'Tanımlı Değil';
+        if (window.RuleMaster) {
+          RuleMaster._cachedModels = null;
+          RuleMaster.updateApiKeyUi();
+        }
+        alert('🗑️ API Anahtarınız silindi.');
+      }
+    }
+
+    async function diagnoseSettingsApiKey() {
+      const key = localStorage.getItem('gemini_api_key') || '';
+      if (!key) {
+        alert('⚠️ Lütfen önce bir Gemini API Anahtarı girin ve kaydedin.');
+        return;
+      }
+      try {
+        const models = await (window.RuleMaster ? RuleMaster.getAvailableGeminiModels(key) : ['gemini-2.5-flash']);
+        alert(`🩺 GEMINI API TANI RAPORU\n\n✅ Bağlantı Başarılı!\nHesabınızda kullanılabilir aktif modeller:\n${models.map((m, i) => `${i + 1}. ${m}`).join('\n')}\n\nSistem bu modelleri otomatik önceliklendirecektir.`);
+      } catch (err) {
+        alert(`❌ Tanı Hatası: ${err.message}`);
       }
     }
 
