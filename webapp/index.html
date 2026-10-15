@@ -1627,17 +1627,48 @@
             <div class="flex items-center gap-2">
               <span class="text-xl">☁️</span>
               <div>
-                <h4 class="text-xs font-bold text-white">Google Drive Bulut Senkronizasyonu</h4>
+                <h4 class="text-xs font-bold text-white flex items-center gap-2">
+                  <span>Google Drive Bulut Senkronizasyonu</span>
+                  <span id="settings-gdrive-status" class="text-[10px] text-slate-400 font-normal">Bağlı Değil</span>
+                </h4>
                 <p class="text-[10px] text-slate-400">PC, tablet ve telefonunuz arasında karakterinizi otomatik eşitleyin.</p>
               </div>
             </div>
-            <button onclick="GDriveSync.connect()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition shadow flex items-center gap-1.5">
+            <button onclick="GDriveSync.connect()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition shadow flex items-center gap-1.5">
               <span>🔑</span>
-              <span>Drive'a Bağlan</span>
+              <span>Google ile Giriş Yap</span>
             </button>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <!-- Direct Client ID Input -->
+          <div class="space-y-1.5 bg-slate-950/70 p-2.5 rounded-lg border border-slate-800">
+            <label class="block text-[10px] font-bold text-slate-400 uppercase">Google Cloud Client ID (Tek Seferlik Yapılandırma):</label>
+            <div class="flex gap-2">
+              <input type="text" id="settings-gdrive-client-id" placeholder="Örn: 123456789-xxxx.apps.googleusercontent.com" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-indigo-400">
+              <button onclick="GDriveSync.saveClientId(document.getElementById('settings-gdrive-client-id').value)" class="bg-indigo-600/80 hover:bg-indigo-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-indigo-500/40 transition">
+                💾 Kaydet
+              </button>
+            </div>
+            
+            <!-- Quick Help Accordion -->
+            <details class="text-[10px] text-slate-400 pt-1">
+              <summary class="cursor-pointer text-indigo-300 hover:text-indigo-200 font-semibold flex items-center gap-1">
+                <span>❓</span> <span>Nasıl Client ID Alınır? (30 Saniyelik Adım Adım Rehber)</span>
+              </summary>
+              <div class="mt-2 space-y-1.5 pl-3 border-l-2 border-indigo-500/40 text-slate-300">
+                <p>1. <a href="https://console.cloud.google.com/apis/credentials" target="_blank" class="text-indigo-400 underline font-bold">Google Cloud Console Kimlik Bilgileri ↗</a> sayfasına gidin.</p>
+                <p>2. <b>Kimlik Bilgisi Oluştur ➔ OAuth İstemci Kimliği ➔ Web Uygulaması</b> seçin.</p>
+                <p>3. <b>Yetkili JavaScript Kaynakları</b> alanına aşağıdaki site adresinizi ekleyin:</p>
+                <div class="flex items-center gap-1 bg-slate-900 p-1.5 rounded border border-slate-700 font-mono text-amber-300 text-[10px] select-all">
+                  <span id="settings-current-origin">https://dndtool35r2.vercel.app</span>
+                  <button onclick="navigator.clipboard.writeText(document.getElementById('settings-current-origin').textContent); alert('📋 Adres panoya kopyalandı!');" class="ml-auto text-slate-400 hover:text-white px-1.5 py-0.5 bg-slate-800 rounded text-[9px]">Kopyala</button>
+                </div>
+                <p>4. Oluşan <b>İstemci Kimliği (Client ID)</b>'yi yukarıdaki kutuya yapıştırıp <b>Kaydet</b>'e tıklayın!</p>
+              </div>
+            </details>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
             <button onclick="GDriveSync.pushToDrive()" class="bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs font-semibold py-2 px-3 rounded-lg border border-emerald-500/40 transition flex items-center justify-center gap-1.5">
               <span>⬆️</span>
               <span>Google Drive'a Şimdi Kaydet (Push)</span>
@@ -1835,6 +1866,18 @@
       if (input) input.value = apiKey;
       if (maskedSpan) {
         maskedSpan.textContent = apiKey ? (apiKey.substring(0, 6) + '...' + apiKey.substring(apiKey.length - 4)) : 'Tanımlı Değil (Ücretsiz Alın)';
+      }
+
+      // Update Google Drive UI in settings
+      const gdriveId = localStorage.getItem('gdrive_client_id') || '';
+      const gdriveInput = document.getElementById('settings-gdrive-client-id');
+      if (gdriveInput) gdriveInput.value = gdriveId;
+      const originSpan = document.getElementById('settings-current-origin');
+      if (originSpan && window.location.origin) {
+        originSpan.textContent = window.location.origin;
+      }
+      if (window.GDriveSync && typeof GDriveSync.updateStatusUI === 'function') {
+        GDriveSync.updateStatusUI(GDriveSync.accessToken ? 'connected' : (gdriveId ? 'ready' : 'unconfigured'));
       }
 
       // Update House Rules Checkboxes

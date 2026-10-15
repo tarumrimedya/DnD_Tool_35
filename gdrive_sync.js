@@ -210,24 +210,52 @@ const GDriveSync = {
     }, 4000); // 4-second debounce
   },
 
+  // Save Client ID from settings
+  saveClientId(clientId) {
+    if (!clientId || !clientId.trim()) {
+      localStorage.removeItem('gdrive_client_id');
+      this.CLIENT_ID = '';
+      this.updateStatusUI('unconfigured');
+      alert('🗑️ Client ID silindi.');
+      return;
+    }
+    this.CLIENT_ID = clientId.trim();
+    localStorage.setItem('gdrive_client_id', this.CLIENT_ID);
+    this.init(this.CLIENT_ID);
+    alert('✅ Google Cloud Client ID kaydedildi!\nŞimdi "Google ile Giriş Yap" butonuna basarak Drive senkronizasyonunu başlatabilirsiniz.');
+  },
+
   // Update UI indicators
   updateStatusUI(status) {
     const pill = document.getElementById('sync-status-pill');
     const text = document.getElementById('sync-status-text');
-    if (!pill || !text) return;
+    if (pill && text) {
+      if (status === 'connected' || status === 'synced') {
+        pill.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-emerald-950/80 text-emerald-300 border border-emerald-600';
+        text.textContent = '🟢 Google Drive ile Senkron';
+      } else if (status === 'syncing') {
+        pill.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-indigo-950/80 text-indigo-300 border border-indigo-600';
+        text.textContent = '🔄 Eşitleniyor...';
+      } else if (status === 'ready' || status === 'disconnected') {
+        pill.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-slate-800 text-slate-300 border border-slate-700';
+        text.textContent = '🟡 Yerel Kayıtlı (Çevrimdışı)';
+      } else {
+        pill.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-slate-900 text-slate-400 border border-slate-800';
+        text.textContent = '💾 Çevrimdışı Bellek';
+      }
+    }
 
-    if (status === 'connected' || status === 'synced') {
-      pill.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-emerald-950/80 text-emerald-300 border border-emerald-600';
-      text.textContent = '🟢 Google Drive ile Senkron';
-    } else if (status === 'syncing') {
-      pill.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-indigo-950/80 text-indigo-300 border border-indigo-600';
-      text.textContent = '🔄 Eşitleniyor...';
-    } else if (status === 'ready' || status === 'disconnected') {
-      pill.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-slate-800 text-slate-300 border border-slate-700';
-      text.textContent = '🟡 Yerel Kayıtlı (Çevrimdışı)';
-    } else {
-      pill.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-slate-900 text-slate-400 border border-slate-800';
-      text.textContent = '💾 Çevrimdışı Bellek';
+    const settingsStatus = document.getElementById('settings-gdrive-status');
+    if (settingsStatus) {
+      if (status === 'connected' || status === 'synced') {
+        settingsStatus.innerHTML = '<span class="text-emerald-400 font-bold">🟢 Bağlandı & Senkron</span>';
+      } else if (status === 'syncing') {
+        settingsStatus.innerHTML = '<span class="text-indigo-400 font-bold">🔄 Eşitleniyor...</span>';
+      } else if (status === 'ready') {
+        settingsStatus.innerHTML = '<span class="text-amber-400 font-bold">🟡 İstemci Hazır (Giriş Yapın)</span>';
+      } else {
+        settingsStatus.innerHTML = '<span class="text-slate-500">Bağlı Değil (Client ID Gerekli)</span>';
+      }
     }
   }
 };
