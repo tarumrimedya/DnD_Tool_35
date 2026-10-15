@@ -1,0 +1,18 @@
+# Large binary and rulebook files
+Rule Books/
+*.pdf
+*.zip
+*.xlsx
+
+# Unpacked xlsx directories
+orig_unpacked/
+test_unpacked/
+xlsx_unpacked/
+scratch/
+example char/
+
+# OS and Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
