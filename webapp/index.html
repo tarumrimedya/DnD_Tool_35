@@ -461,14 +461,45 @@
     </div>
 
     <!-- ==================================================== -->
-    <!-- TAB 3: 👤 CORE & SKILLS -->
+    <!-- TAB 3: 👤 CORE & SKILLS & LEVEL PROGRESSION -->
     <!-- ==================================================== -->
     <div id="tab-core" class="tab-content hidden space-y-4">
       <div class="bg-dndCard border border-dndBorder rounded-xl p-4 shadow-lg space-y-4">
         
-        <!-- Ability Scores Grid -->
+        <!-- Character Bio & Header Summary -->
+        <div class="bg-gradient-to-r from-slate-900 to-slate-950 border border-slate-800 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span class="text-3xl">👤</span>
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 id="core-name" class="text-base font-extrabold text-white">Kazmil'in Çırağı</h2>
+                <span id="core-race" class="badge bg-slate-800 text-slate-300 border border-slate-700 text-xs">Human</span>
+              </div>
+              <div class="text-xs text-amber-400 font-semibold" id="core-classes">Sorcerer 5 / Warblade 1 • Seviye 6</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-4 text-xs font-mono">
+            <div class="text-center">
+              <div class="text-[10px] text-slate-400 font-bold uppercase">Temel BAB</div>
+              <div id="core-bab" class="text-emerald-400 font-black text-sm">+3</div>
+            </div>
+            <div class="text-center">
+              <div class="text-[10px] text-slate-400 font-bold uppercase">Hız</div>
+              <div id="core-speed" class="text-sky-400 font-black text-sm">30 ft</div>
+            </div>
+            <div class="text-center">
+              <div class="text-[10px] text-slate-400 font-bold uppercase">Can Zarı (HD)</div>
+              <div id="core-hd" class="text-purple-400 font-black text-sm">5d4 + 1d12</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ability Scores Grid with 24H Modifiers -->
         <div>
-          <h2 class="text-xs font-bold text-amber-400 uppercase tracking-wide mb-3">🎲 TEMEL STATLAR (ABILITY SCORES)</h2>
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wide">🎲 TEMEL STATLAR (ABILITY SCORES)</h3>
+            <span class="text-[10px] text-slate-400">24H Eşya ve Geçici Modifiyeler Dahil</span>
+          </div>
           <div class="grid grid-cols-2 md:grid-cols-6 gap-2 text-center" id="abilities-grid">
             <!-- Dynamically populated -->
           </div>
@@ -488,6 +519,7 @@
                   <th class="py-2 px-3 text-center">Stat</th>
                   <th class="py-2 px-3 text-center">Rank</th>
                   <th class="py-2 px-3 text-center">Mod</th>
+                  <th class="py-2 px-3 text-center">ACP</th>
                   <th class="py-2 px-3 text-center">Toplam</th>
                   <th class="py-2 px-3 text-center">3D Zar</th>
                 </tr>
@@ -499,11 +531,53 @@
           </div>
         </div>
 
-        <!-- Feats and Special Abilities -->
+        <!-- Feats and Special Abilities (Madde 16 & 17) -->
         <div>
-          <h2 class="text-xs font-bold text-purple-400 uppercase tracking-wide mb-2">✨ FEATLER VE ÖZEL YETENEKLER</h2>
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-xs font-bold text-purple-400 uppercase tracking-wide">✨ FEATLER VE ÖZEL YETENEKLER (TIKLA & İNCELE)</h3>
+            <span class="text-[10px] text-indigo-300">💡 Detay ve kural açıklaması için hünerin üzerine tıklayın</span>
+          </div>
           <div class="flex flex-wrap gap-2" id="feats-badges-container">
             <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- LEVEL PROGRESSION & EVOLUTION (lvl_up - Madde 1, 2, 3, 12) -->
+        <div class="border border-slate-800 rounded-xl overflow-hidden mt-4">
+          <div class="bg-slate-900 px-3 py-2.5 text-xs font-bold text-emerald-400 flex flex-wrap justify-between items-center gap-2">
+            <div class="flex items-center gap-2">
+              <span>📈</span>
+              <span>SEVİYE GELİŞİMİ VE İLERLEME TABLOSU (LEVEL UP)</span>
+            </div>
+            <div class="flex items-center gap-3 text-[11px] font-normal text-slate-300">
+              <span>Feats: <strong class="text-amber-400">Standard 3.5e</strong></span>
+              <span>•</span>
+              <span>BAB/Saves: <strong class="text-sky-400">Fractional</strong></span>
+              <span>•</span>
+              <span>L1 Max HP: <strong class="text-emerald-400">Yes</strong></span>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950 text-slate-400 text-[10px] uppercase font-bold border-b border-slate-800">
+                <tr>
+                  <th class="py-2 px-2.5 text-center w-12">Lvl</th>
+                  <th class="py-2 px-3">Sınıf</th>
+                  <th class="py-2 px-2.5 text-center">HD</th>
+                  <th class="py-2 px-2.5 text-center">HP Artışı</th>
+                  <th class="py-2 px-2.5 text-center">BAB</th>
+                  <th class="py-2 px-2.5 text-center">Fort</th>
+                  <th class="py-2 px-2.5 text-center">Ref</th>
+                  <th class="py-2 px-2.5 text-center">Will</th>
+                  <th class="py-2 px-2.5 text-center">Skill Pts</th>
+                  <th class="py-2 px-3">Kazanılan Feat / Yetenekler</th>
+                  <th class="py-2 px-3">Notlar</th>
+                </tr>
+              </thead>
+              <tbody id="level-progression-tbody" class="divide-y divide-slate-800 font-mono text-[11px]">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -515,8 +589,13 @@
     <!-- ==================================================== -->
     <div id="tab-defense" class="tab-content hidden space-y-4">
       <div class="bg-dndCard border border-dndBorder rounded-xl p-4 shadow-lg space-y-4">
-        <h2 class="text-sm font-bold text-sky-400 border-b border-dndBorder pb-2">🛡️ TAKTİK SAVUNMA VE AKTİF BUFFLAR</h2>
         
+        <div class="flex flex-wrap items-center justify-between border-b border-dndBorder pb-2 gap-2">
+          <h2 class="text-sm font-bold text-sky-400">🛡️ TAKTİK SAVUNMA VE AKTİF BUFFLAR</h2>
+          <div class="text-[11px] text-slate-400">D&D 3.5e RAW Bonus Stacking Kuralı Devrede (En yüksek MAX alınır)</div>
+        </div>
+        
+        <!-- Tactical Stances & Modes -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div class="bg-slate-900 border border-slate-700 p-3 rounded-lg flex items-center justify-between">
             <div>
@@ -541,6 +620,31 @@
           </label>
         </div>
 
+        <!-- AC & Saves Detailed RAW Breakdown (Madde 9 & 10) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- AC Detailed Breakdown -->
+          <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 space-y-2.5">
+            <div class="text-xs font-bold text-sky-400 uppercase tracking-wide flex justify-between">
+              <span>🛡️ ZIRH SINIFI (AC) DÖKÜMÜ</span>
+              <span id="defense-ac-total-badge" class="font-mono text-sky-300 font-bold">Total: 22</span>
+            </div>
+            <div class="space-y-1.5 text-xs font-mono" id="defense-ac-breakdown-list">
+              <!-- Dynamically populated: Base 10 + Armor + Shield + Dex + Deflection + Natural + Dodge -->
+            </div>
+          </div>
+
+          <!-- Saves Detailed Breakdown -->
+          <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 space-y-2.5">
+            <div class="text-xs font-bold text-purple-400 uppercase tracking-wide flex justify-between">
+              <span>⚡ SAVES (KAYIT ZARLARI) DÖKÜMÜ</span>
+              <span class="text-[10px] text-slate-400 font-normal">Base + Stat + Resist</span>
+            </div>
+            <div class="space-y-1.5 text-xs font-mono" id="defense-saves-breakdown-list">
+              <!-- Dynamically populated: Fort, Ref, Will breakdown -->
+            </div>
+          </div>
+        </div>
+
         <!-- Active Buffs with Round Countdown -->
         <div class="border border-slate-800 rounded-xl overflow-hidden">
           <div class="bg-slate-900 px-3 py-2 text-xs font-bold text-slate-300 flex justify-between items-center">
@@ -555,19 +659,151 @@
     </div>
 
     <!-- ==================================================== -->
-    <!-- TAB 5: 🎒 INVENTORY & CONSUMABLES -->
+    <!-- TAB 5: 🎒 INVENTORY, BODY SLOTS & GEAR POOL -->
     <!-- ==================================================== -->
     <div id="tab-inventory" class="tab-content hidden space-y-4">
       <div class="bg-dndCard border border-dndBorder rounded-xl p-4 shadow-lg space-y-4">
-        <h2 class="text-sm font-bold text-amber-400 border-b border-dndBorder pb-2">🎒 ÇANTA, İKSİRLER VE EKİPMAN</h2>
         
-        <!-- Consumables Quick Drink with 3D Dice -->
+        <!-- Header & Carrying Capacity HUD (GSheet Madde 6 & 8) -->
+        <div class="bg-gradient-to-r from-slate-900 to-slate-950 border border-amber-500/40 rounded-xl p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2.5">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl">🎒</span>
+              <div>
+                <h2 class="text-sm md:text-base font-extrabold text-amber-400">EKİPMAN, VÜCUT YUVALARI VE TAŞIMA KAPASİTESİ</h2>
+                <p class="text-[11px] text-slate-400">D&D 3.5e RAW Taşıma Kuralları • Ortalanmış Dikey Hizalama</p>
+              </div>
+            </div>
+            <div id="carrying-status-badge" class="badge bg-emerald-950 text-emerald-300 border border-emerald-600 font-bold px-3 py-1 text-xs">
+              Hafif Yük (Light Load)
+            </div>
+          </div>
+
+          <!-- Carrying Capacity 4-Card Grid -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 text-center text-xs font-mono">
+            <div class="bg-slate-900/90 border border-slate-700 rounded-lg p-2">
+              <div class="text-[10px] text-slate-400 uppercase font-sans font-bold">Toplam Ağırlık</div>
+              <div id="inv-total-weight" class="text-lg font-black text-amber-400 my-0.5">38.2 lbs</div>
+              <div class="text-[9px] text-slate-500">Kuşanılan + Çanta</div>
+            </div>
+            <div class="bg-slate-900/90 border border-slate-700 rounded-lg p-2">
+              <div class="text-[10px] text-slate-400 uppercase font-sans font-bold">Hafif Yük Sınırı</div>
+              <div id="inv-light-limit" class="text-lg font-bold text-emerald-400 my-0.5">58 lbs</div>
+              <div class="text-[9px] text-slate-500">Hız & ACP cezası yok</div>
+            </div>
+            <div class="bg-slate-900/90 border border-slate-700 rounded-lg p-2">
+              <div class="text-[10px] text-slate-400 uppercase font-sans font-bold">Orta / Ağır Yük</div>
+              <div id="inv-heavy-limit" class="text-lg font-bold text-orange-400 my-0.5">116 / 175 lbs</div>
+              <div class="text-[9px] text-slate-500">Max Dex & Hız düşüşü</div>
+            </div>
+            <div class="bg-slate-900/90 border border-slate-700 rounded-lg p-2">
+              <div class="text-[10px] text-slate-400 uppercase font-sans font-bold">Kaldır / İt</div>
+              <div id="inv-lift-limit" class="text-lg font-bold text-sky-400 my-0.5">350 / 875 lbs</div>
+              <div class="text-[9px] text-slate-500">2x Kaldır / 5x Sürükle</div>
+            </div>
+          </div>
+
+          <!-- Capacity Bar -->
+          <div class="space-y-1">
+            <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+              <div id="inv-weight-bar" class="bg-emerald-500 h-full rounded-full transition-all duration-300" style="width: 25%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ⚔️ 14 OFFICIAL BODY SLOTS (GSheet Madde 6 & 8) -->
+        <div class="border border-slate-800 rounded-xl overflow-hidden">
+          <div class="bg-slate-900 px-3 py-2.5 text-xs font-bold text-white flex justify-between items-center border-b border-slate-800">
+            <span class="flex items-center gap-1.5 text-sky-400">
+              <span>⚔️</span>
+              <span>VÜCUT YUVALARI (BODY SLOT EQUIPMENT - 14 RESMİ YUVA)</span>
+            </span>
+            <span class="text-[10px] text-slate-400">Dikey Hizalama: Ortada • Değişiklikler anında AC/Statlara yansır</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950 text-slate-400 text-[10px] uppercase font-bold border-b border-slate-800">
+                <tr>
+                  <th class="py-2.5 px-3 text-center w-12">Aktif</th>
+                  <th class="py-2.5 px-3 w-10 text-center">İkon</th>
+                  <th class="py-2.5 px-3 w-28">Yuva (Slot)</th>
+                  <th class="py-2.5 px-3 font-bold text-white">Kuşanılan Eşya Adı</th>
+                  <th class="py-2.5 px-3">Açıklama & Sihirli Özellikler (Parent-Child)</th>
+                  <th class="py-2.5 px-3 text-center w-20">Ağırlık</th>
+                  <th class="py-2.5 px-3 text-center w-24">Değer (GP)</th>
+                  <th class="py-2.5 px-3 text-center w-20">İşlem</th>
+                </tr>
+              </thead>
+              <tbody id="body-slots-tbody" class="divide-y divide-slate-800 font-medium">
+                <!-- Dynamically populated with 14 rows, middle vertical align -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 🎒 INVENTORY & GEAR POOL (GSheet Madde 6 & 8) -->
+        <div class="border border-slate-800 rounded-xl overflow-hidden space-y-0">
+          <div class="bg-slate-900 px-3 py-2.5 text-xs font-bold text-white flex flex-wrap justify-between items-center gap-2 border-b border-slate-800">
+            <div class="flex items-center gap-2">
+              <span class="text-amber-400">🎒</span>
+              <span class="text-amber-300 font-bold">ENVANTER VE EKİPMAN HAVUZU (GEAR POOL)</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <!-- Search -->
+              <input type="text" id="pool-search-input" oninput="renderGearPoolTable()" placeholder="Havuzda ara..." class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white placeholder-slate-500 focus:border-amber-500">
+              <!-- Category Filter (Madde 8: Weapon & Shield separated!) -->
+              <select id="pool-category-filter" onchange="renderGearPoolTable()" class="bg-slate-950 text-slate-300 border border-slate-700 rounded-lg px-2.5 py-1 text-xs">
+                <option value="All">Tüm Kategoriler</option>
+                <option value="Weapon">Weapon (Silah)</option>
+                <option value="Shield">Shield (Kalkan)</option>
+                <option value="Armor">Armor (Zırh)</option>
+                <option value="Head">Head (Baş)</option>
+                <option value="Eyes">Eyes (Göz)</option>
+                <option value="Neck">Neck (Boyun)</option>
+                <option value="Shoulders">Shoulders (Omuz)</option>
+                <option value="Torso">Torso (Gövde)</option>
+                <option value="Belt">Belt (Kemer)</option>
+                <option value="Bracers">Bracers (Bileklik)</option>
+                <option value="Gloves">Gloves (Eldiven)</option>
+                <option value="Ring">Ring (Yüzük)</option>
+                <option value="Boots">Boots (Çizme)</option>
+                <option value="Consumable">Consumable (Sarf Malzemesi)</option>
+                <option value="Other">Other (Diğer)</option>
+              </select>
+              <button onclick="openAddPoolItemModal()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-3 py-1 rounded-lg transition shadow">
+                ➕ Yeni Eşya Ekle
+              </button>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950 text-slate-400 text-[10px] uppercase font-bold border-b border-slate-800">
+                <tr>
+                  <th class="py-2.5 px-3 text-center w-12" title="Kemer Onay Kutusu (Belt Checkbox)">Kemer</th>
+                  <th class="py-2.5 px-3 w-28">Kategori</th>
+                  <th class="py-2.5 px-3 font-bold text-white">Eşya Adı</th>
+                  <th class="py-2.5 px-3">Açıklama & Özellikler</th>
+                  <th class="py-2.5 px-3 text-center w-20">Adet</th>
+                  <th class="py-2.5 px-3 text-center w-20">Ağırlık</th>
+                  <th class="py-2.5 px-3 text-center w-24">Değer (GP)</th>
+                  <th class="py-2.5 px-3 text-center w-28">İşlemler</th>
+                </tr>
+              </thead>
+              <tbody id="gear-pool-tbody" class="divide-y divide-slate-800 font-medium">
+                <!-- Dynamically populated with middle vertical align -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 🧪 QUICK CONSUMABLES DRINK -->
         <div>
           <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wide mb-2">🧪 HIZLI İKSİR TÜKETİMİ (3D İYİLEŞME ZARI)</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5" id="consumables-container">
             <!-- Dynamically populated -->
           </div>
         </div>
+
       </div>
     </div>
 
@@ -1332,7 +1568,115 @@
       <span class="text-base">⚙️</span>
       <span>Ayarlar</span>
     </button>
-  </nav>
+  <!-- ==================================================== -->
+  <!-- MODAL: FEAT & SPECIAL ABILITY DETAIL VIEWER (Madde 17) -->
+  <!-- ==================================================== -->
+  <div id="feat-detail-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
+    <div class="bg-dndCard border border-indigo-500/70 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden my-auto">
+      <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">✨</span>
+          <div>
+            <h3 id="feat-modal-title" class="text-sm md:text-base font-extrabold text-white">Feat Detayı</h3>
+            <p id="feat-modal-source" class="text-[10px] text-indigo-300">Kaynak Kitap</p>
+          </div>
+        </div>
+        <button onclick="closeFeatDetailModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg text-xs font-bold transition">✕ Kapat</button>
+      </div>
+      <div class="p-4 space-y-3 text-xs">
+        <div class="flex items-center gap-2 text-[11px]">
+          <span class="text-slate-400 font-bold uppercase">Kategori:</span>
+          <span id="feat-modal-category" class="badge bg-indigo-950 text-indigo-300 border border-indigo-700">General</span>
+        </div>
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 space-y-1">
+          <div class="text-[10px] uppercase font-bold text-amber-400">Kural Açıklaması & Mekanik (RAW Benefit)</div>
+          <p id="feat-modal-benefit" class="text-slate-200 leading-relaxed font-sans text-xs">Açıklama yükleniyor...</p>
+        </div>
+        <div id="feat-modal-notes-container" class="hidden bg-slate-900/50 border border-slate-800/80 rounded-xl p-2.5 text-[11px] text-slate-400">
+          <strong class="text-slate-300">Notlar:</strong> <span id="feat-modal-notes"></span>
+        </div>
+      </div>
+      <div class="bg-slate-950 px-4 py-2.5 border-t border-slate-800 flex justify-end">
+        <button onclick="closeFeatDetailModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition">Tamam</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================== -->
+  <!-- MODAL: ADD ITEM TO GEAR POOL -->
+  <!-- ==================================================== -->
+  <div id="add-pool-item-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
+    <div class="bg-dndCard border border-amber-500/70 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden my-auto">
+      <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🎒</span>
+          <div>
+            <h3 class="text-sm md:text-base font-extrabold text-white">Envanter Havuzuna Eşya Ekle</h3>
+            <p class="text-[10px] text-slate-400">Çantanıza veya kemerinize yeni ekipman tanımlayın</p>
+          </div>
+        </div>
+        <button onclick="closeAddPoolItemModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg text-xs font-bold transition">✕ Kapat</button>
+      </div>
+      <div class="p-4 space-y-3 text-xs">
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Eşya Adı *</label>
+          <input type="text" id="api-name" placeholder="Örn: Longsword +1, Potion of Fly" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold focus:border-amber-500">
+        </div>
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kategori * (Madde 8)</label>
+            <select id="api-category" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+              <option value="Weapon">Weapon (Silah)</option>
+              <option value="Shield">Shield (Kalkan)</option>
+              <option value="Armor">Armor (Zırh)</option>
+              <option value="Head">Head (Baş)</option>
+              <option value="Eyes">Eyes (Göz)</option>
+              <option value="Neck">Neck (Boyun)</option>
+              <option value="Shoulders">Shoulders (Omuz)</option>
+              <option value="Torso">Torso (Gövde)</option>
+              <option value="Belt">Belt (Kemer)</option>
+              <option value="Bracers">Bracers (Bileklik)</option>
+              <option value="Gloves">Gloves (Eldiven)</option>
+              <option value="Ring">Ring (Yüzük)</option>
+              <option value="Boots">Boots (Çizme)</option>
+              <option value="Consumable">Consumable (Sarf)</option>
+              <option value="Other">Other (Diğer)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Yuva (Slot)</label>
+            <input type="text" id="api-slot" placeholder="Örn: Main Hand, Belt..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-2.5">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Adet</label>
+            <input type="number" id="api-qty" value="1" min="1" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white text-center font-mono">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Ağırlık (lbs)</label>
+            <input type="number" id="api-weight" value="1" step="0.1" min="0" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white text-center font-mono">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Değer (GP)</label>
+            <input type="number" id="api-cost" value="10" step="1" min="0" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white text-center font-mono">
+          </div>
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Açıklama & Özellikler</label>
+          <textarea id="api-desc" rows="2" placeholder="Eşyanın kuralları, sihirli bonusları veya notları..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-amber-500"></textarea>
+        </div>
+        <label class="flex items-center gap-2 cursor-pointer bg-slate-900 border border-slate-700 p-2 rounded-lg">
+          <input type="checkbox" id="api-belt" class="rounded text-amber-500 border-slate-700 focus:ring-0">
+          <span class="text-xs text-amber-300 font-bold">Kemerde Taşı (Belt Checkbox - Hızlı Erişim)</span>
+        </label>
+      </div>
+      <div class="bg-slate-950 px-4 py-2.5 border-t border-slate-800 flex justify-end gap-2">
+        <button onclick="closeAddPoolItemModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs px-3 py-1.5 rounded-lg transition">İptal</button>
+        <button onclick="saveNewPoolItem()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition shadow">Havuzuna Ekle</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ==================================================== -->
   <!-- MODAL: 29-COLUMN RULE & ITEM CRUD EDITOR -->
@@ -1818,15 +2162,35 @@
         try { character = JSON.parse(savedChar); } catch (e) {}
       }
 
-      // If no local char, fetch bundled character_data.json
-      if (!character) {
-        try {
-          const res = await fetch('character_data.json');
-          character = await res.json();
+      // Fetch bundled character_data.json for fallback or missing schema keys
+      try {
+        const res = await fetch('character_data.json');
+        const defaultChar = await res.json();
+        if (!character) {
+          character = defaultChar;
           saveStateToStorage(false);
-        } catch (e) {
-          console.error('Error fetching character_data.json:', e);
+        } else {
+          let updated = false;
+          if (!character.bodySlots || Object.keys(character.bodySlots).length === 0) {
+            character.bodySlots = defaultChar.bodySlots;
+            updated = true;
+          }
+          if (!character.gearPool || character.gearPool.length === 0) {
+            character.gearPool = defaultChar.gearPool;
+            updated = true;
+          }
+          if (!character.levelProgression || character.levelProgression.length === 0) {
+            character.levelProgression = defaultChar.levelProgression;
+            updated = true;
+          }
+          if (!character.hitDie) {
+            character.hitDie = defaultChar.hitDie;
+            updated = true;
+          }
+          if (updated) saveStateToStorage(false);
         }
+      } catch (e) {
+        console.error('Error fetching character_data.json:', e);
       }
 
       // 2. Load Master DB
@@ -1972,6 +2336,9 @@
       renderKnownSpells();
       renderAbilities();
       renderSkills();
+      renderLevelProgression();
+      renderDefenseBreakdown();
+      renderInventory();
       renderConsumables();
       renderMasterDbTable();
     }
@@ -2381,40 +2748,158 @@
       }
     }
 
-    // Abilities Grid
+    // 14 Official Body Slot Definitions matching GSheet (Madde 6 & 8)
+    const BODY_SLOT_DEFS = [
+      { key: 'head', name: 'Head', icon: '👑', allowed: ['Head', 'Wondrous Item'] },
+      { key: 'eyes', name: 'Eyes', icon: '👁️', allowed: ['Eyes', 'Wondrous Item'] },
+      { key: 'neck', name: 'Neck', icon: '📿', allowed: ['Neck', 'Wondrous Item'] },
+      { key: 'shoulders', name: 'Shoulders', icon: '🧥', allowed: ['Shoulders', 'Wondrous Item'] },
+      { key: 'torso', name: 'Torso', icon: '🥋', allowed: ['Torso', 'Wondrous Item'] },
+      { key: 'armor', name: 'Armor', icon: '🛡️', allowed: ['Armor'] },
+      { key: 'belt', name: 'Belt', icon: '🪢', allowed: ['Belt', 'Wondrous Item'] },
+      { key: 'bracers', name: 'Bracers', icon: '🦾', allowed: ['Bracers', 'Wondrous Item'] },
+      { key: 'gloves', name: 'Gloves', icon: '🧤', allowed: ['Gloves', 'Wondrous Item'] },
+      { key: 'ring1', name: 'Ring 1', icon: '💍', allowed: ['Ring', 'Wondrous Item'] },
+      { key: 'ring2', name: 'Ring 2', icon: '💍', allowed: ['Ring', 'Wondrous Item'] },
+      { key: 'boots', name: 'Boots', icon: '👢', allowed: ['Boots', 'Wondrous Item'] },
+      { key: 'mainHand', name: 'Main Hand', icon: '⚔️', allowed: ['Weapon'] },
+      { key: 'offHand', name: 'Off-Hand/Shield', icon: '🛡️', allowed: ['Weapon', 'Shield'] }
+    ];
+
+    // Abilities Grid & Bio Summary
     function renderAbilities() {
+      // Bio summary
+      if (document.getElementById('core-name')) document.getElementById('core-name').textContent = character.name || 'İsimsiz Kahraman';
+      if (document.getElementById('core-race')) document.getElementById('core-race').textContent = character.race || 'Human';
+      if (document.getElementById('core-classes')) document.getElementById('core-classes').textContent = (character.classes || 'Fighter 1') + ` • Seviye ${character.level || 1}`;
+      if (document.getElementById('core-bab')) document.getElementById('core-bab').textContent = '+' + (character.bab || 0);
+      if (document.getElementById('core-speed')) document.getElementById('core-speed').textContent = (character.baseSpeed || 30) + ' ft';
+      if (document.getElementById('core-hd')) document.getElementById('core-hd').textContent = character.hitDie || 'd8';
+
+      // Ability scores
       const container = document.getElementById('abilities-grid');
-      container.innerHTML = '';
-      const stats = [
-        { key: 'str', label: 'STR' },
-        { key: 'dex', label: 'DEX' },
-        { key: 'con', label: 'CON' },
-        { key: 'int', label: 'INT' },
-        { key: 'wis', label: 'WIS' },
-        { key: 'cha', label: 'CHA' }
-      ];
+      if (container) {
+        container.innerHTML = '';
+        const stats = [
+          { key: 'str', label: 'STR' },
+          { key: 'dex', label: 'DEX' },
+          { key: 'con', label: 'CON' },
+          { key: 'int', label: 'INT' },
+          { key: 'wis', label: 'WIS' },
+          { key: 'cha', label: 'CHA' }
+        ];
 
-      stats.forEach(s => {
-        const score = character.abilities?.[s.key] || 10;
-        const mod = RuleEngine.getAbilityMod(score);
-        const div = document.createElement('div');
-        div.className = 'bg-slate-900 border border-slate-700 rounded-xl p-2.5';
-        div.innerHTML = `
-          <div class="text-[10px] font-bold text-slate-400 uppercase">${s.label}</div>
-          <div class="text-xl font-black text-amber-400 font-mono my-0.5">${score}</div>
-          <div class="text-xs font-bold ${mod >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-mono">${mod >= 0 ? '+' : ''}${mod}</div>
-        `;
-        container.appendChild(div);
-      });
+        stats.forEach(s => {
+          const score = character.abilities?.[s.key] || 10;
+          const mod = RuleEngine.getAbilityMod(score);
+          const div = document.createElement('div');
+          div.className = 'bg-slate-900 border border-slate-700 rounded-xl p-2.5';
+          div.innerHTML = `
+            <div class="text-[10px] font-bold text-slate-400 uppercase">${s.label}</div>
+            <div class="text-xl font-black text-amber-400 font-mono my-0.5">${score}</div>
+            <div class="text-xs font-bold ${mod >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-mono">${mod >= 0 ? '+' : ''}${mod}</div>
+          `;
+          container.appendChild(div);
+        });
+      }
 
-      // Feats badges
+      // Interactive Feats Badges (Madde 16 & 17)
       const badgesContainer = document.getElementById('feats-badges-container');
-      badgesContainer.innerHTML = '';
-      (character.feats || []).forEach(f => {
-        const span = document.createElement('span');
-        span.className = 'px-3 py-1 rounded-lg bg-indigo-950/60 border border-indigo-700/60 text-indigo-300 text-xs font-semibold';
-        span.textContent = typeof f === 'string' ? f : f.name;
-        badgesContainer.appendChild(span);
+      if (badgesContainer) {
+        badgesContainer.innerHTML = '';
+        const allFeats = [
+          ...(character.feats || []).map(f => typeof f === 'string' ? { name: f, category: 'Feat' } : { ...f, category: 'Feat' }),
+          ...(character.specialAbilities || []).map(a => typeof a === 'string' ? { name: a, category: 'Special Ability' } : { ...a, category: 'Special Ability' })
+        ];
+
+        allFeats.forEach(f => {
+          const btn = document.createElement('button');
+          btn.className = 'px-3 py-1 rounded-lg bg-indigo-950/70 hover:bg-indigo-900 border border-indigo-700/60 hover:border-indigo-500 text-indigo-200 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition transform active:scale-95 shadow-sm';
+          btn.title = 'Kural detayını açmak için tıklayın';
+          btn.innerHTML = `<span>✨</span><span>${f.name}</span>`;
+          btn.onclick = () => showFeatDetail(f.name);
+          badgesContainer.appendChild(btn);
+        });
+      }
+    }
+
+    // Feat Detail Popover Modal (Madde 17 setNote equivalent)
+    function showFeatDetail(featName) {
+      const modal = document.getElementById('feat-detail-modal');
+      if (!modal) return;
+
+      const fFromChar = (character.feats || []).find(f => (typeof f === 'string' ? f : f.name).toLowerCase() === featName.toLowerCase());
+      const aFromChar = (character.specialAbilities || []).find(a => (typeof a === 'string' ? a : a.name).toLowerCase() === featName.toLowerCase());
+      const fFromDb = (masterDb || []).find(m => (m.name || '').toLowerCase() === featName.toLowerCase());
+
+      const title = featName;
+      let source = 'D&D 3.5e Core Rules';
+      let category = 'Feat / Ability';
+      let benefit = 'Bu yetenek veya hüner karakterinizin temel kurallarını modifiye eder.';
+      let notes = '';
+
+      if (fFromChar && typeof fFromChar === 'object') {
+        source = fFromChar.source || source;
+        category = fFromChar.category || category;
+        benefit = fFromChar.benefit || fFromChar.desc || benefit;
+      } else if (aFromChar && typeof aFromChar === 'object') {
+        source = aFromChar.source || source;
+        category = aFromChar.category || 'Special Ability';
+        benefit = aFromChar.benefit || aFromChar.desc || benefit;
+      }
+
+      if (fFromDb) {
+        source = fFromDb.sourceBook ? `${fFromDb.sourceBook} p. ${fFromDb.sourcePage || '-'}` : source;
+        category = fFromDb.type || category;
+        benefit = fFromDb.benefit || fFromDb.description || benefit;
+        notes = fFromDb.notes || '';
+      }
+
+      document.getElementById('feat-modal-title').textContent = title;
+      document.getElementById('feat-modal-source').textContent = '📚 ' + source;
+      document.getElementById('feat-modal-category').textContent = category;
+      document.getElementById('feat-modal-benefit').textContent = benefit;
+      
+      const notesContainer = document.getElementById('feat-modal-notes-container');
+      if (notes) {
+        notesContainer.classList.remove('hidden');
+        document.getElementById('feat-modal-notes').textContent = notes;
+      } else {
+        notesContainer.classList.add('hidden');
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeFeatDetailModal() {
+      const modal = document.getElementById('feat-detail-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    // Level Progression Rendering (lvl_up - Madde 1, 2, 12)
+    function renderLevelProgression() {
+      const tbody = document.getElementById('level-progression-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      const prog = character.levelProgression || [];
+      prog.forEach(lvl => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-900/60 transition';
+        tr.innerHTML = `
+          <td class="py-2 px-2.5 text-center font-bold text-amber-400">${lvl.level}</td>
+          <td class="py-2 px-3 font-sans font-bold text-white">${lvl.className}</td>
+          <td class="py-2 px-2.5 text-center text-slate-400 font-bold">${lvl.hd}</td>
+          <td class="py-2 px-2.5 text-center text-emerald-400 font-bold">+${lvl.hpGain}</td>
+          <td class="py-2 px-2.5 text-center text-sky-400 font-bold">+${lvl.bab}</td>
+          <td class="py-2 px-2.5 text-center text-slate-300 font-bold">+${lvl.fort}</td>
+          <td class="py-2 px-2.5 text-center text-slate-300 font-bold">+${lvl.ref}</td>
+          <td class="py-2 px-2.5 text-center text-slate-300 font-bold">+${lvl.will}</td>
+          <td class="py-2 px-2.5 text-center text-indigo-300 font-bold">${lvl.skillPts || 4}</td>
+          <td class="py-2 px-3 font-sans text-amber-300">${(lvl.feats || []).join(', ') || '-'}</td>
+          <td class="py-2 px-3 font-sans text-slate-400 text-[10px]">${lvl.notes || ''}</td>
+        `;
+        tbody.appendChild(tr);
       });
     }
 
@@ -2424,7 +2909,8 @@
       tbody.innerHTML = '';
       (character.skills || []).forEach(sk => {
         const statMod = RuleEngine.getAbilityMod(character.abilities?.[sk.stat] || 10);
-        const total = sk.ranks + statMod + (sk.misc || 0);
+        const acpVal = sk.acp ? (character.acBreakdown?.acp || 0) : 0;
+        const total = sk.ranks + statMod + (sk.misc || 0) - acpVal;
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-900/60 transition';
         tr.innerHTML = `
@@ -2432,6 +2918,7 @@
           <td class="py-2 px-3 text-center text-slate-400 uppercase font-mono">${sk.stat}</td>
           <td class="py-2 px-3 text-center text-sky-400 font-mono">${sk.ranks}</td>
           <td class="py-2 px-3 text-center text-slate-400 font-mono">${statMod >= 0 ? '+' : ''}${statMod}</td>
+          <td class="py-2 px-3 text-center ${sk.acp ? 'text-amber-400' : 'text-slate-600'} font-mono">${sk.acp ? (acpVal > 0 ? '-' + acpVal : '0') : '-'}</td>
           <td class="py-2 px-3 text-center font-black font-mono text-emerald-400 text-sm">${total >= 0 ? '+' : ''}${total}</td>
           <td class="py-2 px-3 text-center">
             <button onclick="rollSkill3D('${sk.name}', ${total})" class="bg-slate-800 hover:bg-slate-700 text-amber-400 px-2.5 py-0.5 rounded border border-slate-700 text-xs font-mono transition">
@@ -2443,19 +2930,387 @@
       });
     }
 
-    // Consumables
+    // Defense Detailed RAW Breakdown (Madde 9 & 10)
+    function renderDefenseBreakdown() {
+      const acList = document.getElementById('defense-ac-breakdown-list');
+      const savesList = document.getElementById('defense-saves-breakdown-list');
+      if (!acList || !savesList) return;
+
+      const dexMod = RuleEngine.getAbilityMod(character.abilities?.dex || 10);
+      const conMod = RuleEngine.getAbilityMod(character.abilities?.con || 10);
+      const wisMod = RuleEngine.getAbilityMod(character.abilities?.wis || 10);
+      const intMod = RuleEngine.getAbilityMod(character.abilities?.int || 10);
+
+      const acCalc = RuleEngine.evaluateAC(character, {
+        combatExpertise: parseInt(document.getElementById('combat-expertise-val')?.value) || 0,
+        fightingDefensively: document.getElementById('mod-defensive-fighting')?.checked || false,
+        totalDefense: document.getElementById('mod-total-defense')?.checked || false,
+        charge: document.getElementById('mod-charge')?.checked || false
+      });
+
+      const totalBadge = document.getElementById('defense-ac-total-badge');
+      if (totalBadge) totalBadge.textContent = `Total: ${acCalc.total} • Touch: ${acCalc.touch} • Flat: ${acCalc.flat}`;
+
+      acList.innerHTML = `
+        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">10 Taban (Base):</span><span class="text-white font-bold">10</span></div>
+        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Zırh Bonusu (Armor):</span><span class="text-sky-400 font-bold">+${character.acBreakdown?.armor || 0}</span></div>
+        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Kalkan Bonusu (Shield):</span><span class="text-sky-400 font-bold">+${character.acBreakdown?.shield || 0}</span></div>
+        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">DEX Modifiyeri:</span><span class="text-emerald-400 font-bold">+${acCalc.effectiveDex}</span></div>
+        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Deflection (Saptırma):</span><span class="text-indigo-400 font-bold">+${character.acBreakdown?.deflection || 0}</span></div>
+        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Doğal Zırh (Natural):</span><span class="text-teal-400 font-bold">+${character.acBreakdown?.natural || 0}</span></div>
+        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Dodge (Kaçınma - Stacks):</span><span class="text-amber-400 font-bold">+${acCalc.dodgeBonus}</span></div>
+        <div class="flex justify-between py-1 text-slate-300 font-bold"><span class="text-emerald-300">NİHAİ ZIRH SINIFI:</span><span class="text-emerald-400 text-sm font-black">${acCalc.total} AC</span></div>
+      `;
+
+      const saves = RuleEngine.evaluateSaves(character);
+      savesList.innerHTML = `
+        <div class="flex justify-between py-1 border-b border-slate-800">
+          <span class="text-slate-400">🛡️ Fortitude:</span>
+          <span class="text-white font-bold">${character.baseSaves?.fort || 0} (Base) + ${conMod} (Con) + ${character.saveBonuses?.resistance || 0} (Resist) = <strong class="text-emerald-400">+${saves.fort}</strong></span>
+        </div>
+        <div class="flex justify-between py-1 border-b border-slate-800">
+          <span class="text-slate-400">⚡ Reflex:</span>
+          <span class="text-white font-bold">${character.baseSaves?.ref || 0} (Base) + ${dexMod} (Dex) + ${character.saveBonuses?.resistance || 0} (Resist) = <strong class="text-sky-400">+${saves.ref}</strong></span>
+        </div>
+        <div class="flex justify-between py-1 border-b border-slate-800">
+          <span class="text-slate-400">🧠 Will:</span>
+          <span class="text-white font-bold">${character.baseSaves?.will || 0} (Base) + ${wisMod} (Wis) + ${character.saveBonuses?.resistance || 0} (Resist) = <strong class="text-purple-400">+${saves.will}</strong></span>
+        </div>
+        <div class="text-[10px] text-indigo-300 pt-1">
+          ✨ Battle Clarity: Düztaban değilken Reflex zarlarına +${Math.min(1, intMod)} INT bonusu eklenir.
+        </div>
+      `;
+    }
+
+    function recalculateDefense() {
+      renderHUD();
+      renderDefenseBreakdown();
+    }
+
+    // 🎒 INVENTORY, 14 BODY SLOTS & GEAR POOL (Madde 6 & 8)
+    function renderInventory() {
+      if (!character) return;
+      if (!character.bodySlots) character.bodySlots = {};
+      if (!character.gearPool) character.gearPool = [];
+
+      // 1. Calculate Carrying Capacity & Weights
+      const strScore = character.abilities?.str || 10;
+      const caps = RuleEngine.getCarryingCapacity(strScore);
+
+      let equippedWeight = 0;
+      Object.values(character.bodySlots).forEach(slot => {
+        if (slot && slot.active && slot.name && slot.name !== '-') {
+          equippedWeight += Number(slot.weight) || 0;
+        }
+      });
+
+      let poolWeight = 0;
+      character.gearPool.forEach(item => {
+        if (!item.isEquipped) {
+          poolWeight += (Number(item.weight) || 0) * (Number(item.qty) || 1);
+        }
+      });
+
+      const totalWeight = Math.round((equippedWeight + poolWeight) * 10) / 10;
+      const load = RuleEngine.getLoadStatus(totalWeight, strScore);
+
+      const wDisplay = document.getElementById('inv-total-weight');
+      if (wDisplay) wDisplay.textContent = totalWeight + ' lbs';
+      const lLimit = document.getElementById('inv-light-limit');
+      if (lLimit) lLimit.textContent = caps.light + ' lbs';
+      const hLimit = document.getElementById('inv-heavy-limit');
+      if (hLimit) hLimit.textContent = `${caps.medium} / ${caps.heavy} lbs`;
+      const liftLimit = document.getElementById('inv-lift-limit');
+      if (liftLimit) liftLimit.textContent = `${caps.ground} / ${caps.drag} lbs`;
+
+      const bar = document.getElementById('inv-weight-bar');
+      if (bar) {
+        const pct = Math.min(100, Math.round((totalWeight / caps.heavy) * 100));
+        bar.style.width = pct + '%';
+        if (totalWeight <= caps.light) bar.className = 'bg-emerald-500 h-full rounded-full transition-all duration-300';
+        else if (totalWeight <= caps.medium) bar.className = 'bg-amber-500 h-full rounded-full transition-all duration-300';
+        else bar.className = 'bg-rose-500 h-full rounded-full transition-all duration-300';
+      }
+
+      const statusBadge = document.getElementById('carrying-status-badge');
+      if (statusBadge) {
+        statusBadge.textContent = load.status;
+        if (load.color === 'emerald') statusBadge.className = 'badge bg-emerald-950 text-emerald-300 border border-emerald-600 font-bold px-3 py-1 text-xs';
+        else if (load.color === 'amber') statusBadge.className = 'badge bg-amber-950 text-amber-300 border border-amber-600 font-bold px-3 py-1 text-xs';
+        else if (load.color === 'orange') statusBadge.className = 'badge bg-orange-950 text-orange-300 border border-orange-600 font-bold px-3 py-1 text-xs';
+        else statusBadge.className = 'badge bg-rose-950 text-rose-300 border border-rose-600 font-bold px-3 py-1 text-xs';
+      }
+
+      // 2. Render 14 Body Slots with Middle Vertical Alignment (Madde 6)
+      const slotsTbody = document.getElementById('body-slots-tbody');
+      if (slotsTbody) {
+        slotsTbody.innerHTML = '';
+        BODY_SLOT_DEFS.forEach(def => {
+          const slotData = character.bodySlots[def.key] || { name: '-', active: false, weight: 0, cost: 0, desc: '' };
+          const isOccupied = slotData.name && slotData.name !== '-';
+
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-slate-900/50 transition border-b border-slate-800/80';
+          tr.innerHTML = `
+            <td class="py-2.5 px-3 text-center align-middle">
+              <input type="checkbox" ${slotData.active ? 'checked' : ''} ${!isOccupied ? 'disabled' : ''} onchange="toggleSlotActive('${def.key}')" class="w-4 h-4 rounded text-sky-500 border-slate-700 focus:ring-0">
+            </td>
+            <td class="py-2.5 px-3 text-center align-middle text-lg">${def.icon}</td>
+            <td class="py-2.5 px-3 align-middle font-bold text-slate-300">${def.name}</td>
+            <td class="py-2.5 px-3 align-middle font-bold ${isOccupied ? 'text-white' : 'text-slate-500 italic'}">${isOccupied ? slotData.name : '(Boş Yuva)'}</td>
+            <td class="py-2.5 px-3 align-middle text-slate-300 text-xs">${slotData.desc || '-'}</td>
+            <td class="py-2.5 px-3 text-center align-middle font-mono text-slate-400">${isOccupied ? slotData.weight + ' lb' : '-'}</td>
+            <td class="py-2.5 px-3 text-center align-middle font-mono text-amber-400">${isOccupied ? slotData.cost + ' GP' : '-'}</td>
+            <td class="py-2.5 px-3 text-center align-middle">
+              ${isOccupied ? `<button onclick="unequipSlot('${def.key}')" class="bg-rose-950/70 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800 text-[11px] font-semibold px-2 py-0.5 rounded transition">Çıkar</button>` : '-'}
+            </td>
+          `;
+          slotsTbody.appendChild(tr);
+        });
+      }
+
+      // 3. Render Gear Pool
+      renderGearPoolTable();
+    }
+
+    function toggleSlotActive(slotKey) {
+      if (character.bodySlots?.[slotKey]) {
+        character.bodySlots[slotKey].active = !character.bodySlots[slotKey].active;
+        saveStateToStorage();
+        renderAll();
+      }
+    }
+
+    function unequipSlot(slotKey) {
+      const slot = character.bodySlots?.[slotKey];
+      if (!slot || slot.name === '-') return;
+
+      // Find in pool and set isEquipped = false
+      const poolItem = (character.gearPool || []).find(p => p.name === slot.name);
+      if (poolItem) {
+        poolItem.isEquipped = false;
+      }
+
+      character.bodySlots[slotKey] = { name: '-', active: false, weight: 0, cost: 0, desc: '' };
+      saveStateToStorage();
+      renderAll();
+    }
+
+    // Render Gear Pool Table (Madde 6 & 8)
+    function renderGearPoolTable() {
+      const tbody = document.getElementById('gear-pool-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      const query = (document.getElementById('pool-search-input')?.value || '').toLowerCase().trim();
+      const catFilter = document.getElementById('pool-category-filter')?.value || 'All';
+
+      const filtered = (character.gearPool || []).filter(item => {
+        if (item.isEquipped) return false; // Equipped items are shown in body slots
+        const matchesQuery = !query || item.name.toLowerCase().includes(query) || (item.desc || '').toLowerCase().includes(query);
+        const matchesCat = (catFilter === 'All') || (item.category === catFilter);
+        return matchesQuery && matchesCat;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="py-4 text-center text-slate-500 italic">Envanter havuzunda gösterilecek eşya bulunamadı.</td></tr>`;
+        return;
+      }
+
+      filtered.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-900/60 transition border-b border-slate-800/80';
+        tr.innerHTML = `
+          <td class="py-2.5 px-3 text-center align-middle" title="Kemerde Taşı (Belt Checkbox)">
+            <input type="checkbox" ${item.isBelt ? 'checked' : ''} onchange="togglePoolBelt(${item.id})" class="w-4 h-4 rounded text-amber-500 border-slate-700 focus:ring-0">
+          </td>
+          <td class="py-2.5 px-3 align-middle font-semibold text-purple-400">${item.category}</td>
+          <td class="py-2.5 px-3 align-middle font-bold text-white">${item.name}</td>
+          <td class="py-2.5 px-3 align-middle text-slate-300 text-xs">${item.desc || '-'}</td>
+          <td class="py-2.5 px-3 text-center align-middle font-mono">
+            <div class="flex items-center justify-center gap-1">
+              <button onclick="adjustPoolQty(${item.id}, -1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs leading-none">-</button>
+              <span class="w-6 text-center text-white font-bold">${item.qty || 1}</span>
+              <button onclick="adjustPoolQty(${item.id}, 1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs leading-none">+</button>
+            </div>
+          </td>
+          <td class="py-2.5 px-3 text-center align-middle font-mono text-slate-400">${item.weight || 0} lb</td>
+          <td class="py-2.5 px-3 text-center align-middle font-mono text-amber-400">${item.cost || 0} GP</td>
+          <td class="py-2.5 px-3 text-center align-middle">
+            <div class="flex items-center justify-center gap-1.5">
+              <button onclick="equipPoolItem(${item.id})" class="bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 text-[11px] font-bold px-2.5 py-0.5 rounded transition">
+                ⚡ Kuşan
+              </button>
+              <button onclick="deletePoolItem(${item.id})" class="bg-slate-800 hover:bg-rose-900 text-slate-400 hover:text-rose-200 text-[11px] px-1.5 py-0.5 rounded transition">
+                🗑️
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function togglePoolBelt(itemId) {
+      const item = (character.gearPool || []).find(p => p.id === itemId);
+      if (item) {
+        item.isBelt = !item.isBelt;
+        saveStateToStorage();
+        renderInventory();
+      }
+    }
+
+    function adjustPoolQty(itemId, delta) {
+      const item = (character.gearPool || []).find(p => p.id === itemId);
+      if (item) {
+        item.qty = Math.max(1, (Number(item.qty) || 1) + delta);
+        saveStateToStorage();
+        renderInventory();
+      }
+    }
+
+    function deletePoolItem(itemId) {
+      if (confirm('Bu eşyayı envanter havuzundan silmek istediğinize emin misiniz?')) {
+        character.gearPool = (character.gearPool || []).filter(p => p.id !== itemId);
+        saveStateToStorage();
+        renderInventory();
+      }
+    }
+
+    // Equip item from pool into the correct body slot (Madde 8)
+    function equipPoolItem(itemId) {
+      const item = (character.gearPool || []).find(p => p.id === itemId);
+      if (!item) return;
+
+      // Find compatible slot (Madde 8: Weapon can go to Main Hand or Off-Hand; Shield goes to Off-Hand)
+      let targetSlotKey = null;
+      if (item.category === 'Weapon') {
+        const mh = character.bodySlots?.mainHand;
+        if (!mh || !mh.name || mh.name === '-') {
+          targetSlotKey = 'mainHand';
+        } else {
+          targetSlotKey = 'offHand'; // Dual wield
+        }
+      } else if (item.category === 'Shield') {
+        targetSlotKey = 'offHand';
+      } else {
+        const match = BODY_SLOT_DEFS.find(def => def.name.toLowerCase() === item.category.toLowerCase() || def.allowed.includes(item.category));
+        if (match) targetSlotKey = match.key;
+      }
+
+      if (!targetSlotKey) targetSlotKey = 'torso';
+
+      // Unequip currently equipped item in that slot if any
+      const existing = character.bodySlots?.[targetSlotKey];
+      if (existing && existing.name && existing.name !== '-') {
+        const poolExisting = (character.gearPool || []).find(p => p.name === existing.name);
+        if (poolExisting) poolExisting.isEquipped = false;
+      }
+
+      // Equip new item
+      character.bodySlots[targetSlotKey] = {
+        name: item.name,
+        category: item.category,
+        active: true,
+        weight: item.weight || 0,
+        cost: item.cost || 0,
+        desc: item.desc || ''
+      };
+      item.isEquipped = true;
+
+      saveStateToStorage();
+      renderAll();
+      alert(`⚔️ ${item.name} kuşanıldı (${targetSlotKey} yuvasına yerleştirildi)!`);
+    }
+
+    // Add Pool Item Modal handlers
+    function openAddPoolItemModal() {
+      const modal = document.getElementById('add-pool-item-modal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeAddPoolItemModal() {
+      const modal = document.getElementById('add-pool-item-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function saveNewPoolItem() {
+      const name = document.getElementById('api-name')?.value?.trim();
+      if (!name) {
+        alert('Lütfen eşya adını girin.');
+        return;
+      }
+      const category = document.getElementById('api-category')?.value || 'Other';
+      const slot = document.getElementById('api-slot')?.value || category;
+      const qty = parseInt(document.getElementById('api-qty')?.value) || 1;
+      const weight = parseFloat(document.getElementById('api-weight')?.value) || 0;
+      const cost = parseFloat(document.getElementById('api-cost')?.value) || 0;
+      const desc = document.getElementById('api-desc')?.value?.trim() || '';
+      const isBelt = document.getElementById('api-belt')?.checked || false;
+
+      if (!character.gearPool) character.gearPool = [];
+      const newId = Date.now();
+      character.gearPool.push({
+        id: newId,
+        name,
+        category,
+        slot,
+        qty,
+        weight,
+        cost,
+        desc,
+        isBelt,
+        isEquipped: false
+      });
+
+      saveStateToStorage();
+      renderInventory();
+      closeAddPoolItemModal();
+      alert(`✅ ${name} envanter havuzunuza eklendi!`);
+    }
+
+    // Consumables Quick Drink with 3D Dice
     function renderConsumables() {
       const container = document.getElementById('consumables-container');
+      if (!container) return;
       container.innerHTML = '';
-      (character.consumables || []).forEach((item, idx) => {
+
+      // Get consumables from both character.consumables and belt items in gearPool
+      const poolBeltConsumables = (character.gearPool || [])
+        .filter(p => p.isBelt && p.category === 'Consumable' && !p.isEquipped)
+        .map((p, pIdx) => ({
+          name: p.name,
+          qty: p.qty,
+          effect: p.desc || 'Sarf malzemesi etkisi',
+          fromPool: true,
+          poolId: p.id
+        }));
+
+      const regularConsumables = (character.consumables || []).map((c, cIdx) => ({
+        ...c,
+        fromPool: false,
+        idx: cIdx
+      }));
+
+      const allConsumables = [...regularConsumables, ...poolBeltConsumables];
+
+      if (allConsumables.length === 0) {
+        container.innerHTML = `<div class="col-span-2 text-center text-slate-500 italic py-2">Kemerde veya hızlı tüketimde iksir bulunmuyor.</div>`;
+        return;
+      }
+
+      allConsumables.forEach(item => {
         const div = document.createElement('div');
         div.className = 'bg-slate-900 border border-slate-700 p-3 rounded-lg flex items-center justify-between';
         div.innerHTML = `
           <div>
-            <div class="text-xs font-bold text-white">${item.name}</div>
+            <div class="text-xs font-bold text-white flex items-center gap-1.5">
+              <span>${item.name}</span>
+              ${item.fromPool ? '<span class="badge bg-amber-950 text-amber-300 border border-amber-700 text-[9px]">Kemerde</span>' : ''}
+            </div>
             <div class="text-[10px] text-amber-400">${item.effect} • Adet: <strong class="text-white">${item.qty}</strong></div>
           </div>
-          <button onclick="usePotion3D(${idx})" ${item.qty <= 0 ? 'disabled' : ''} class="bg-amber-600/30 hover:bg-amber-600 disabled:opacity-30 text-amber-300 hover:text-white border border-amber-500/40 text-xs font-bold px-3 py-1.5 rounded transition">
+          <button onclick="consumeItem3D('${item.name}', ${item.fromPool}, ${item.fromPool ? item.poolId : item.idx})" ${item.qty <= 0 ? 'disabled' : ''} class="bg-amber-600/30 hover:bg-amber-600 disabled:opacity-30 text-amber-300 hover:text-white border border-amber-500/40 text-xs font-bold px-3 py-1.5 rounded transition">
             🧪 1 Tane İç
           </button>
         `;
@@ -2463,89 +3318,43 @@
       });
     }
 
-    function usePotion3D(idx) {
-      if (character.consumables[idx].qty > 0) {
-        character.consumables[idx].qty--;
-        if (character.consumables[idx].name.includes('Cure')) {
-          // Roll 3d8 in 3D!
-          const r1 = Math.floor(Math.random() * 8) + 1;
-          const r2 = Math.floor(Math.random() * 8) + 1;
-          const r3 = Math.floor(Math.random() * 8) + 1;
-          const heal = r1 + r2 + r3 + 5;
+    function consumeItem3D(name, fromPool, idOrIdx) {
+      let item = null;
+      if (fromPool) {
+        item = (character.gearPool || []).find(p => p.id === idOrIdx);
+      } else {
+        item = character.consumables?.[idOrIdx];
+      }
 
-          Dice3D.roll([
-            { type: 'd8', value: r1 },
-            { type: 'd8', value: r2 },
-            { type: 'd8', value: r3 }
-          ], () => {
-            character.hp.current = Math.min(character.hp.max, character.hp.current + heal);
-            renderHUD();
-            renderConsumables();
-            saveStateToStorage();
-            alert(`💖 İksir içildi! 3d8 [${r1}+${r2}+${r3}] + 5 = +${heal} HP kazanıldı.`);
-          });
-        } else {
+      if (!item || item.qty <= 0) return;
+
+      item.qty--;
+
+      if (name.includes('Cure') || name.includes('Heal')) {
+        // Roll 3d8 in 3D!
+        const r1 = Math.floor(Math.random() * 8) + 1;
+        const r2 = Math.floor(Math.random() * 8) + 1;
+        const r3 = Math.floor(Math.random() * 8) + 1;
+        const heal = r1 + r2 + r3 + 5;
+
+        Dice3D.roll([
+          { type: 'd8', value: r1 },
+          { type: 'd8', value: r2 },
+          { type: 'd8', value: r3 }
+        ], () => {
+          character.hp.current = Math.min(character.hp.max, character.hp.current + heal);
+          renderHUD();
+          renderInventory();
           renderConsumables();
           saveStateToStorage();
-        }
+          alert(`💖 ${name} içildi! 3d8 [${r1}+${r2}+${r3}] + 5 = +${heal} HP kazanıldı.`);
+        });
+      } else {
+        renderInventory();
+        renderConsumables();
+        saveStateToStorage();
+        alert(`🧪 ${name} içildi / tüketildi.`);
       }
-    }
-
-    // Master DB Table & Filter (Delegated to RuleMaster)
-    function renderMasterDbTable() {
-      if (window.RuleMaster && typeof RuleMaster.renderTable === 'function') {
-        RuleMaster.renderTable();
-      }
-    }
-
-    function filterMasterDb() {
-      if (window.RuleMaster && typeof RuleMaster.renderTable === 'function') {
-        RuleMaster.renderTable();
-      }
-    }
-
-    // HP Adjustments
-    function applyDamage() {
-      const amt = parseInt(document.getElementById('hp-adjust-input').value) || 0;
-      character.hp.current = Math.max(-10, character.hp.current - amt);
-      renderHUD();
-      saveStateToStorage();
-    }
-
-    function applyHeal() {
-      const amt = parseInt(document.getElementById('hp-adjust-input').value) || 0;
-      character.hp.current = Math.min(character.hp.max, character.hp.current + amt);
-      renderHUD();
-      saveStateToStorage();
-    }
-
-    function performLongRest() {
-      character.hp.current = character.hp.max;
-      character.hp.nonlethal = 0;
-      restoreAllSpellSlots();
-      recoverAllManeuvers();
-      renderHUD();
-      saveStateToStorage();
-      alert('☀️ 8 Saat Tam Dinlenme yapıldı. Can, büyüler ve manevralar tamamen yenilendi!');
-    }
-
-    function performEncounterReset() {
-      document.getElementById('power-attack-val').value = 0;
-      document.getElementById('mod-flanking').checked = false;
-      document.getElementById('mod-charge').checked = false;
-      document.getElementById('mod-higher-ground').checked = false;
-      recalculateOffense();
-      renderHUD();
-      saveStateToStorage();
-      alert('🔄 Karşılaşma sıfırlandı: Taktik modlar temizlendi.');
-    }
-
-    function advanceNextRound() {
-      alert('⏭️ Tur ilerletildi (-1 round timer).');
-    }
-
-    function recalculateDefense() {
-      renderHUD();
     }
 
     // Export & Import
@@ -2615,7 +3424,10 @@
           spellcasting: { slots: [], knownSpells: [] },
           tomeOfBattle: { readiedManeuvers: [], stancesKnown: [] },
           skills: [],
-          consumables: []
+          consumables: [],
+          bodySlots: {},
+          gearPool: [],
+          levelProgression: []
         };
         saveStateToStorage();
         renderAll();

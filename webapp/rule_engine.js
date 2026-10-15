@@ -245,6 +245,40 @@ const RuleEngine = {
       ref: baseRef + dexMod + resist,
       will: baseWill + wisMod + resist
     };
+  },
+
+  // D&D 3.5e Carrying Capacity table based on STR
+  getCarryingCapacity(strScore) {
+    const s = Math.max(1, Math.min(29, Number(strScore) || 10));
+    const table = {
+      1: [3, 6, 10], 2: [6, 13, 20], 3: [10, 20, 30], 4: [13, 26, 40],
+      5: [16, 33, 50], 6: [20, 40, 60], 7: [23, 46, 70], 8: [26, 53, 80],
+      9: [30, 60, 90], 10: [33, 66, 100], 11: [38, 76, 115], 12: [43, 86, 130],
+      13: [50, 100, 150], 14: [58, 116, 175], 15: [66, 133, 200], 16: [76, 153, 230],
+      17: [86, 173, 260], 18: [100, 200, 300], 19: [116, 233, 350], 20: [133, 266, 400],
+      21: [153, 306, 460], 22: [173, 346, 520], 23: [200, 400, 600], 24: [233, 466, 700],
+      25: [266, 533, 800], 26: [306, 613, 920], 27: [346, 693, 1040], 28: [400, 800, 1200],
+      29: [466, 933, 1400]
+    };
+    const row = table[s] || [33, 66, 100];
+    return {
+      light: row[0],
+      medium: row[1],
+      heavy: row[2],
+      lift: row[2],
+      ground: row[2] * 2,
+      drag: row[2] * 5
+    };
+  },
+
+  // Calculate load status given current weight and STR
+  getLoadStatus(currentWeight, strScore) {
+    const caps = this.getCarryingCapacity(strScore);
+    const wt = Number(currentWeight) || 0;
+    if (wt <= caps.light) return { status: 'Hafif Yük (Light Load)', color: 'emerald', maxDex: null, checkPenalty: 0, speed30: 30, speed20: 20 };
+    if (wt <= caps.medium) return { status: 'Orta Yük (Medium Load)', color: 'amber', maxDex: 3, checkPenalty: -3, speed30: 20, speed20: 15 };
+    if (wt <= caps.heavy) return { status: 'Ağır Yük (Heavy Load)', color: 'orange', maxDex: 1, checkPenalty: -6, speed30: 20, speed20: 15 };
+    return { status: 'Aşırı Yük / Hareketsiz (Overloaded)', color: 'rose', maxDex: 0, checkPenalty: -10, speed30: 5, speed20: 5 };
   }
 };
 
