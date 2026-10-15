@@ -2082,7 +2082,225 @@ Return valid JSON only matching this schema:
 
     // Open Modal with parsed draft
     this.openModalWithData(entry, -1);
+  },
+
+  // ====================================================
+  // ADD BUTTON DROPDOWN & INLINE AI RULE ADDER
+  // ====================================================
+  toggleAddMenu(e) {
+    if (e) e.stopPropagation();
+    const menu = document.getElementById('mdb-add-dropdown-menu');
+    if (menu) menu.classList.toggle('hidden');
+  },
+
+  closeAddMenu() {
+    const menu = document.getElementById('mdb-add-dropdown-menu');
+    if (menu) menu.classList.add('hidden');
+  },
+
+  openInlineAiAdder() {
+    this.closeAddMenu();
+    const panel = document.getElementById('inline-ai-adder-panel');
+    if (panel) {
+      panel.classList.remove('hidden');
+      const input = document.getElementById('inline-ai-rule-query');
+      if (input) {
+        input.focus();
+        input.select();
+      }
+    }
+  },
+
+  closeInlineAiAdder() {
+    const panel = document.getElementById('inline-ai-adder-panel');
+    if (panel) panel.classList.add('hidden');
+  },
+
+  setInlineQueryAndSearch(term, categoryHint = 'ALL') {
+    const queryInput = document.getElementById('inline-ai-rule-query');
+    const catSelect = document.getElementById('inline-ai-rule-category');
+    if (queryInput) queryInput.value = term;
+    if (catSelect) catSelect.value = categoryHint;
+    this.queryInlineAiRule();
+  },
+
+  async queryInlineAiRule() {
+    const queryInput = document.getElementById('inline-ai-rule-query');
+    let query = queryInput?.value?.trim() || '';
+    if (!query) {
+      alert('⚠️ Lütfen aranacak kural, hüner, büyü veya eşya adını yazın.');
+      queryInput?.focus();
+      return;
+    }
+
+    // Check Local Canonical Compendium & Typo Resolver First!
+    let cleanKey = query.toLowerCase().trim();
+    if (typeof this.canonicalDictionary[cleanKey] === 'string') {
+      cleanKey = this.canonicalDictionary[cleanKey];
+    }
+    const matchedCanonical = this.canonicalDictionary[cleanKey];
+    if (matchedCanonical && typeof matchedCanonical === 'object') {
+      if (queryInput) queryInput.value = matchedCanonical.name;
+      const row = this.entryToRow(matchedCanonical);
+      this.renderInlineAiResults([row]);
+      return;
+    }
+
+    const apiKey = this.getApiKey();
+    if (!apiKey) {
+      alert('⚠️ Lütfen önce bir Google Gemini API Anahtarı girin (Google AI Studio ücretsiz anahtar).\nAI Kural Ekleyici sekmesinden anahtarınızı tanımlayabilirsiniz.');
+      this.switchSubTab('subtab-mdb-importer');
+      this.promptChangeApiKey();
+      return;
+    }
+
+    const catSelect = document.getElementById('inline-ai-rule-category');
+    const categoryHint = catSelect?.value || 'ALL';
+
+    const btn = document.getElementById('btn-inline-ai-search');
+    const loadingBox = document.getElementById('inline-ai-loading-box');
+    const statusText = document.getElementById('inline-ai-status-text');
+    const resultsBox = document.getElementById('inline-ai-results-box');
+
+    if (btn) btn.disabled = true;
+    if (loadingBox) loadingBox.classList.remove('hidden');
+    if (resultsBox) resultsBox.innerHTML = '';
+
+    try {
+      const rows = await this.fetchSingleAiRuleRows(query, categoryHint, apiKey, statusText);
+      this.renderInlineAiResults(rows);
+    } catch (err) {
+      alert(`⚠️ Kural getirilemedi: ${err.message}\nLütfen internet bağlantınızı ve API anahtarınızı kontrol edin.`);
+    } finally {
+      if (btn) btn.disabled = false;
+      if (loadingBox) loadingBox.classList.add('hidden');
+    }
+  },
+
+  renderInlineAiResults(rows) {
+    const resultsBox = document.getElementById('inline-ai-results-box');
+    if (!resultsBox) return;
+
+    if (!rows || !rows.length) {
+      resultsBox.innerHTML = `
+        <div class="p-3 text-center text-slate-400 bg-slate-950/80 rounded-lg border border-slate-800 text-xs">
+          Uygun kural kaydı bulunamadı. Lütfen kural adını kontrol edip tekrar arayın.
+        </div>
+      `;
+      return;
+    }
+
+    const entries = this.convertRowsToEntries(rows);
+    this._inlineEntries = entries;
+
+    let html = `
+      <div class="space-y-2 mt-2">
+    `;
+
+    entries.forEach((item, idx) => {
+      const isChild = item.isChild || (item.parent && item.parent !== '-');
+      const badgeClass = this.getTypeBadgeClass(item.type);
+
+      const statPills = [];
+      if (item.strBonus) statPills.push(`+${item.strBonus} STR`);
+      if (item.dexBonus) statPills.push(`+${item.dexBonus} DEX`);
+      if (item.conBonus) statPills.push(`+${item.conBonus} CON`);
+      if (item.intBonus) statPills.push(`+${item.intBonus} INT`);
+      if (item.wisBonus) statPills.push(`+${item.wisBonus} WIS`);
+      if (item.chaBonus) statPills.push(`+${item.chaBonus} CHA`);
+      if (item.acBonus) statPills.push(`+${item.acBonus} AC`);
+      if (item.attBonus) statPills.push(`+${item.attBonus} Atk`);
+      if (item.dmgBonus) statPills.push(`+${item.dmgBonus} Dmg`);
+      if (item.extraDmg) statPills.push(`${item.extraDmg}`);
+
+      html += `
+        <div class="bg-slate-950 border border-purple-500/40 rounded-xl p-3 shadow-md space-y-2">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
+            <div>
+              <div class="flex items-center gap-2">
+                ${isChild ? '<span class="text-purple-400 font-bold">↳</span>' : ''}
+                <span class="text-xs md:text-sm font-extrabold text-white">${item.name}</span>
+                <span class="badge ${badgeClass} text-[10px]">${item.type}</span>
+                <span class="text-[10px] text-slate-400">📚 <b>${item.source || 'PHB'}</b></span>
+                <span class="text-[10px] text-slate-400">• Slot: <b>${item.slot || 'None'}</b></span>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button onclick="RuleMaster.addInlineResultToDb(${idx})" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-3 py-1 rounded-lg shadow transition flex items-center gap-1">
+                <span>📥</span>
+                <span>DB'ye Ekle</span>
+              </button>
+              <button onclick="RuleMaster.editInlineResultInModal(${idx})" class="bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs px-2 py-1 rounded-lg border border-slate-700 transition" title="29 Sütunlu Formda İncele/Düzenle">
+                ✏️ Düzenle
+              </button>
+              <button onclick="RuleMaster.equipInlineResultToCharacter(${idx})" class="bg-purple-950 hover:bg-purple-900 border border-purple-700 text-purple-300 text-xs px-2 py-1 rounded-lg transition" title="Karaktere Kuşan">
+                ⚡ Kuşan
+              </button>
+            </div>
+          </div>
+
+          ${statPills.length > 0 ? `
+            <div class="flex flex-wrap items-center gap-1">
+              <span class="text-[9px] uppercase font-bold text-slate-400">Bonuslar:</span>
+              ${statPills.map(p => `<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 font-mono text-[9px] font-bold">${p}</span>`).join('')}
+            </div>
+          ` : ''}
+
+          <div class="text-xs text-slate-300 leading-relaxed bg-slate-900/80 p-2.5 rounded border border-slate-800">
+            ${item.benefit || item.description || '-'}
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between text-[10px] text-slate-400 pt-0.5">
+            <div>
+              <span>Aksiyon: <b class="text-amber-400">${item.action || 'Passive'}</b></span> • 
+              <span>Süre: <b class="text-purple-300">${item.duration || 'Continuous'}</b></span>
+            </div>
+            <div>
+              <span>Ağırlık: <b>${item.weight || 0} lbs</b></span> • 
+              <span>Fiyat: <b class="text-amber-300">${item.cost || 0} gp</b></span>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    html += `</div>`;
+    resultsBox.innerHTML = html;
+  },
+
+  addInlineResultToDb(idx) {
+    if (!this._inlineEntries || !this._inlineEntries[idx]) return;
+    const item = this._inlineEntries[idx];
+    masterDb.unshift(item);
+    if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+    this.renderTable();
+    alert(`✅ "${item.name}" başarıyla Master_DB'ye eklendi ve kütüphane tablosu güncellendi!`);
+  },
+
+  editInlineResultInModal(idx) {
+    if (!this._inlineEntries || !this._inlineEntries[idx]) return;
+    const item = this._inlineEntries[idx];
+    this.openModalWithData(item, -1);
+  },
+
+  equipInlineResultToCharacter(idx) {
+    if (!this._inlineEntries || !this._inlineEntries[idx]) return;
+    const item = this._inlineEntries[idx];
+    this.equipEntry(item);
   }
 };
 
+if (typeof document !== 'undefined') {
+  document.addEventListener('click', (e) => {
+    const menu = document.getElementById('mdb-add-dropdown-menu');
+    const btn = document.getElementById('btn-add-rule-dropdown');
+    if (menu && !menu.classList.contains('hidden')) {
+      if (btn && !btn.contains(e.target) && !menu.contains(e.target)) {
+        menu.classList.add('hidden');
+      }
+    }
+  });
+}
+
 window.RuleMaster = RuleMaster;
+
