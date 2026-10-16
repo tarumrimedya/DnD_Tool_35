@@ -145,7 +145,24 @@ const RuleMaster = {
         critMin: 19,
         critMult: 2,
         dice: '1d8',
-        dmgType: 'Slashing'
+        dmgType: 'Slashing',
+        tags: 'martial, slashing'
+      },
+      weapon2h: {
+        type: 'Weapon',
+        slot: 'Two-Handed',
+        bonusType: 'Enhancement',
+        scope: 'Specific Weapon',
+        action: 'Standard / Full Attack',
+        duration: 'Continuous',
+        role: 'Offense / Attack',
+        critMin: 18,
+        critMult: 2,
+        dice: '2d6',
+        dmgType: 'Slashing',
+        weight: 12,
+        cost: 350,
+        tags: 'two-handed, exotic, slashing'
       },
       shield: {
         type: 'Shield',
@@ -306,6 +323,9 @@ const RuleMaster = {
           if (updatedEntry.slot && updatedEntry.slot !== 'None' && updatedEntry.slot !== '-') {
             item.slot = updatedEntry.slot;
           }
+          if (updatedEntry.tags) {
+            item.tags = Array.isArray(updatedEntry.tags) ? [...updatedEntry.tags] : updatedEntry.tags;
+          }
           item.weight = Number(updatedEntry.weight) || 0;
           item.cost = Number(updatedEntry.cost) || 0;
           item.desc = updatedEntry.benefit || updatedEntry.description || '';
@@ -337,6 +357,8 @@ const RuleMaster = {
         const wepClean = (w.name || '').toLowerCase().trim();
         if (wepClean === cleanOld || wepClean === cleanNew) {
           w.name = updatedEntry.name;
+          if (updatedEntry.slot) w.slot = updatedEntry.slot;
+          if (updatedEntry.tags) w.tags = Array.isArray(updatedEntry.tags) ? [...updatedEntry.tags] : updatedEntry.tags;
           if (updatedEntry.dice || updatedEntry.extraDmg) w.dice = updatedEntry.dice || updatedEntry.extraDmg;
           if (updatedEntry.critMin) w.critMin = Number(updatedEntry.critMin);
           if (updatedEntry.critMult) w.critMult = Number(updatedEntry.critMult);
@@ -472,132 +494,7 @@ const RuleMaster = {
   equipToCharacter(index) {
     if (index < 0 || index >= masterDb.length || typeof character === 'undefined' || !character) return;
     const item = masterDb[index];
-    const type = (item.type || '').toLowerCase();
-
-    if (type === 'weapon') {
-      if (!character.weapons) character.weapons = [];
-      const newWep = {
-        name: item.name,
-        grip: item.slot === 'Main Hand' ? '1-Hand' : '2-Hand',
-        dice: item.dice || item.extraDmg || '1d8',
-        critMin: item.critMin || 20,
-        critMult: item.critMult || 2,
-        attBonus: Number(item.attBonus) || 0,
-        dmgBonus: Number(item.dmgBonus) || 0,
-        dmgType: item.dmgType || 'Slashing',
-        bonusType: item.bonusType || 'Enhancement',
-        tags: item.tags || []
-      };
-      character.weapons.push(newWep);
-      character.activeWeapon = item.name;
-
-      // Also ensure item is added to gearPool
-      if (!character.gearPool) character.gearPool = [];
-      const inPool = character.gearPool.some(p => (p.name || '').toLowerCase() === item.name.toLowerCase());
-      if (!inPool) {
-        character.gearPool.push({
-          id: Date.now(),
-          name: item.name,
-          masterDbName: item.name,
-          category: 'Weapon',
-          slot: item.slot || 'Main Hand',
-          qty: 1,
-          weight: Number(item.weight) || 1,
-          cost: Number(item.cost) || 10,
-          desc: item.benefit || item.description || '',
-          isBelt: false,
-          isEquipped: true
-        });
-      }
-      alert(`⚔️ "${item.name}" silahı aktif silahlarınıza ve çantanıza eklendi!`);
-    } else if (type === 'spell') {
-      if (!character.spellcasting) character.spellcasting = { slots: [], knownSpells: [] };
-      if (!character.spellcasting.knownSpells) character.spellcasting.knownSpells = [];
-      character.spellcasting.knownSpells.push({
-        level: Number(item.level) || 1,
-        name: item.name,
-        school: item.school || 'Universal',
-        action: item.action || 'Standard Action',
-        range: item.range || 'Close',
-        benefit: item.benefit || ''
-      });
-      alert(`🔮 "${item.name}" büyüsü karakterin bilinen büyülerine (Spells Known) eklendi!`);
-    } else if (type === 'maneuver') {
-      if (!character.tomeOfBattle) character.tomeOfBattle = { initiatorLevel: 1, readiedManeuvers: [], stancesKnown: [] };
-      if (!character.tomeOfBattle.readiedManeuvers) character.tomeOfBattle.readiedManeuvers = [];
-      character.tomeOfBattle.readiedManeuvers.push({
-        name: item.name,
-        level: Number(item.level) || 1,
-        discipline: item.discipline || 'Iron Heart',
-        action: item.action || 'Standard Action',
-        expended: false,
-        notes: item.benefit || ''
-      });
-      alert(`⚔️ "${item.name}" manevrası kuşanılan manevralara (Readied Maneuvers) eklendi!`);
-    } else if (type === 'stance') {
-      if (!character.tomeOfBattle) character.tomeOfBattle = { initiatorLevel: 1, readiedManeuvers: [], stancesKnown: [] };
-      if (!character.tomeOfBattle.stancesKnown) character.tomeOfBattle.stancesKnown = [];
-      character.tomeOfBattle.stancesKnown.push({
-        name: item.name,
-        discipline: item.discipline || 'Shadow Hand',
-        level: Number(item.level) || 1,
-        benefit: item.benefit || ''
-      });
-      character.activeStance = item.name;
-      alert(`⚡ "${item.name}" duruşu (Stance) bilinen duruşlara eklendi ve aktif duruş yapıldı!`);
-    } else if (type === 'feat') {
-      if (!character.feats) character.feats = [];
-      character.feats.push(item.name);
-      alert(`✨ "${item.name}" hüneri (Feat) karaktere eklendi!`);
-    } else if (type === 'potion') {
-      if (!character.consumables) character.consumables = [];
-      character.consumables.push({
-        name: item.name,
-        qty: 1,
-        effect: item.benefit || 'Potion effect'
-      });
-      // Also ensure in gearPool
-      if (!character.gearPool) character.gearPool = [];
-      const inPool = character.gearPool.some(p => (p.name || '').toLowerCase() === item.name.toLowerCase());
-      if (!inPool) {
-        character.gearPool.push({
-          id: Date.now(),
-          name: item.name,
-          masterDbName: item.name,
-          category: 'Consumable',
-          slot: 'Belt',
-          qty: 1,
-          weight: Number(item.weight) || 0.1,
-          cost: Number(item.cost) || 50,
-          desc: item.benefit || item.description || '',
-          isBelt: true,
-          isEquipped: false
-        });
-      }
-      alert(`🧪 "${item.name}" iksiri çantanıza ve kemerinize eklendi!`);
-    } else {
-      if (!character.gearPool) character.gearPool = [];
-      const cat = typeof mapEntryToGearCategory === 'function' ? mapEntryToGearCategory(item) : (item.type || 'Other');
-      const isBelt = (item.slot || '').toLowerCase().includes('belt') || cat === 'Consumable';
-      const newPoolItem = {
-        id: Date.now(),
-        name: item.name,
-        masterDbName: item.name,
-        category: cat,
-        slot: item.slot || cat,
-        qty: 1,
-        weight: Number(item.weight) || 1,
-        cost: Number(item.cost) || 10,
-        desc: item.benefit || item.description || '',
-        isBelt: isBelt,
-        isEquipped: false
-      };
-      character.gearPool.push(newPoolItem);
-      alert(`🎒 "${item.name}" eşyası çantanıza / envanter havuzunuza eklendi!`);
-    }
-
-    if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
-    if (typeof renderAll === 'function') renderAll();
+    this.equipItem(item);
   },
 
   // Direct 1-click addition from Master DB to Inventory
@@ -651,7 +548,17 @@ const RuleMaster = {
     // Populate fields
     document.getElementById('rf-name').value = entry.name || '';
     document.getElementById('rf-type').value = entry.type || 'Weapon';
-    document.getElementById('rf-slot').value = entry.slot || 'None';
+    let slotVal = entry.slot || 'None';
+    if (slotVal === 'Two-Hand' || slotVal === 'Both Hands') slotVal = 'Two-Handed';
+    const slotEl = document.getElementById('rf-slot');
+    if (slotEl) {
+      slotEl.value = slotVal;
+      if (!slotEl.value) slotEl.value = 'None';
+    }
+    const tagsEl = document.getElementById('rf-tags');
+    if (tagsEl) {
+      tagsEl.value = Array.isArray(entry.tags) ? entry.tags.join(', ') : (entry.tags || '');
+    }
     document.getElementById('rf-parent').value = entry.parent || '-';
     document.getElementById('rf-prereq').value = entry.prereq || '-';
     document.getElementById('rf-source').value = entry.source || 'PHB p.';
@@ -702,6 +609,15 @@ const RuleMaster = {
       name: document.getElementById('rf-name').value.trim(),
       type: document.getElementById('rf-type').value,
       slot: document.getElementById('rf-slot').value,
+      tags: (() => {
+        const rawTags = document.getElementById('rf-tags')?.value || '';
+        const tagsArr = rawTags.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+        const sl = document.getElementById('rf-slot')?.value || '';
+        if ((sl === 'Two-Handed' || sl === 'Two-Hand' || sl === 'Both Hands') && !tagsArr.includes('two-handed')) {
+          tagsArr.push('two-handed');
+        }
+        return tagsArr;
+      })(),
       parent: document.getElementById('rf-parent').value.trim() || '-',
       prereq: document.getElementById('rf-prereq').value.trim() || '-',
       source: document.getElementById('rf-source').value.trim() || 'PHB p.',
@@ -763,6 +679,7 @@ const RuleMaster = {
 
     if (p.type) document.getElementById('rf-type').value = p.type;
     if (p.slot) document.getElementById('rf-slot').value = p.slot;
+    if (p.tags && document.getElementById('rf-tags')) document.getElementById('rf-tags').value = p.tags;
     if (p.bonusType) document.getElementById('rf-bonus-type').value = p.bonusType;
     if (p.scope) document.getElementById('rf-scope').value = p.scope;
     if (p.action) document.getElementById('rf-action').value = p.action;
@@ -1551,10 +1468,29 @@ Return valid JSON only matching this schema:
       else if (cat.toLowerCase().includes('ring')) normType = 'Ring';
       else normType = cat;
 
+      let slotVal = String(row[2] || 'None').trim();
+      if (slotVal === 'Two-Hand' || slotVal === 'Both Hands') slotVal = 'Two-Handed';
+
+      const tags = [];
+      const descLower = (String(row[5] || '')).toLowerCase();
+      const rawLower = rawName.toLowerCase();
+      if (slotVal === 'Two-Handed' || slotVal.toLowerCase().includes('two-hand') || descLower.includes('two-handed') || descLower.includes('2-handed') || descLower.includes('two hands') || (typeof RuleEngine !== 'undefined' && RuleEngine.isTwoHandedWeapon({ name: rawName, slot: slotVal }))) {
+        if (normType === 'Weapon') {
+          slotVal = 'Two-Handed';
+          if (!tags.includes('two-handed')) tags.push('two-handed');
+        }
+      }
+      if (descLower.includes('exotic') || rawLower.includes('jovar') || rawLower.includes('bastard sword')) tags.push('exotic');
+      if (descLower.includes('martial')) tags.push('martial');
+      if (descLower.includes('slashing')) tags.push('slashing');
+      if (descLower.includes('piercing')) tags.push('piercing');
+      if (descLower.includes('bludgeoning')) tags.push('bludgeoning');
+
       const entry = {
         name: rawName,
         type: normType,
-        slot: String(row[2] || 'None').trim(),
+        slot: slotVal,
+        tags: tags,
         parent: String(row[3] || '-').trim(),
         source: String(row[4] || 'Core 3.5e').trim(),
         benefit: String(row[5] || '').trim(),
@@ -2616,6 +2552,22 @@ Return valid JSON only matching this schema:
     const discMatch = raw.match(/(Iron Heart|Stone Dragon|Shadow Hand|White Raven|Tiger Claw|Diamond Mind|Setting Sun|Devoted Spirit|Desert Wind)/i);
     if (discMatch) entry.discipline = discMatch[1];
 
+    // Weapon details (Slot, Two-Handed detection, damage type, tags)
+    if (entry.type === 'Weapon') {
+      const isTwoHand = (typeof RuleEngine !== 'undefined' && RuleEngine.isTwoHandedWeapon(entry)) ||
+        fullText.includes('two-handed') || fullText.includes('2-handed') || fullText.includes('two hands') || fullText.includes('requires 2 hands') || fullText.includes('two-hand');
+      entry.slot = isTwoHand ? 'Two-Handed' : 'Main Hand';
+      const tags = [];
+      if (isTwoHand) tags.push('two-handed');
+      if (fullText.includes('exotic')) tags.push('exotic');
+      if (fullText.includes('martial')) tags.push('martial');
+      if (fullText.includes('simple')) tags.push('simple');
+      if (fullText.includes('slashing')) { tags.push('slashing'); entry.dmgType = 'Slashing'; }
+      if (fullText.includes('piercing')) { tags.push('piercing'); entry.dmgType = entry.dmgType ? entry.dmgType + '/Piercing' : 'Piercing'; }
+      if (fullText.includes('bludgeoning')) { tags.push('bludgeoning'); entry.dmgType = 'Bludgeoning'; }
+      entry.tags = tags;
+    }
+
     // Open Modal with parsed draft
     this.openModalWithData(entry, -1);
   },
@@ -2974,11 +2926,13 @@ Do not hallucinate fake rules. Extract accurate numbers, bonuses, slots, actions
 If the item or rule has multiple distinct powers (e.g. passive weapon stats + on-hit energy damage + 1/day command spell; or stat enhancement + saving throw resistance), produce:
 - 1 Parent row for the primary element (Col 3 = '-')
 - 1 or more Child rows starting with '↳ ' in Col 0, setting Col 3 to the exact parent name.
+3. TWO-HANDED WEAPONS:
+Any weapon requiring two hands to wield (e.g. Greatsword, Greataxe, Jovar, Halberd, Polearm, Bow) MUST set Slot (Col 2) to 'Two-Handed'.
 
 MASTER_DB 29-COLUMN SCHEMA (Every row MUST contain exactly 29 elements):
 0: Entry Name (string, child begins with '↳ ')
 1: Category ('Feat', 'Weapon', 'Armor / Shield', 'Ring', 'Wondrous Item', 'Slotless Item', 'Spell', 'Special Ability', 'Potion', 'Maneuver', 'Stance')
-2: Slot ('Armor', 'Shield', 'Main Hand', 'Off Hand', 'Both Hands', 'Head', 'Eyes', 'Neck', 'Torso', 'Body', 'Waist', 'Shoulders', 'Arms', 'Hands', 'Ring', 'Feet', 'Slotless', 'None')
+2: Slot ('Armor', 'Shield', 'Main Hand', 'Off Hand', 'Two-Handed', 'Both Hands', 'Head', 'Eyes', 'Neck', 'Torso', 'Body', 'Waist', 'Shoulders', 'Arms', 'Hands', 'Ring', 'Feet', 'Slotless', 'None')
 3: Parent Entry (string; '-' if none, or exact parent name if child)
 4: Source (e.g. 'PHB p.92', 'MIC p.128', 'DMG p.224', 'CW p.112', 'ToB p.84')
 5: Description / Rules Mechanics (string, full prerequisite and mechanical benefit)

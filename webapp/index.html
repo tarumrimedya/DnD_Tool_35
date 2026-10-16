@@ -2140,7 +2140,8 @@
       <!-- Quick Template Presets Bar -->
       <div class="bg-slate-900/90 px-4 py-2 border-b border-slate-800 flex items-center gap-1.5 overflow-x-auto text-xs">
         <span class="text-[11px] text-slate-400 font-bold shrink-0">Hızlı Şablonlar:</span>
-        <button onclick="RuleMaster.applyPreset('weapon')" class="px-2.5 py-1 rounded bg-rose-950/70 text-rose-300 border border-rose-800 hover:bg-rose-900 font-semibold text-[11px] shrink-0">🗡️ Silah</button>
+        <button onclick="RuleMaster.applyPreset('weapon')" class="px-2.5 py-1 rounded bg-rose-950/70 text-rose-300 border border-rose-800 hover:bg-rose-900 font-semibold text-[11px] shrink-0">🗡️ Silah (1-Hand)</button>
+        <button onclick="RuleMaster.applyPreset('weapon2h')" class="px-2.5 py-1 rounded bg-red-950/70 text-red-300 border border-red-800 hover:bg-red-900 font-semibold text-[11px] shrink-0">⚔️ İki Elli Silah (2-Hand)</button>
         <button onclick="RuleMaster.applyPreset('shield')" class="px-2.5 py-1 rounded bg-sky-950/70 text-sky-300 border border-sky-800 hover:bg-sky-900 font-semibold text-[11px] shrink-0">🛡️ Kalkan</button>
         <button onclick="RuleMaster.applyPreset('armor')" class="px-2.5 py-1 rounded bg-blue-950/70 text-blue-300 border border-blue-800 hover:bg-blue-900 font-semibold text-[11px] shrink-0">🥋 Zırh</button>
         <button onclick="RuleMaster.applyPreset('feat')" class="px-2.5 py-1 rounded bg-amber-950/70 text-amber-300 border border-amber-800 hover:bg-amber-900 font-semibold text-[11px] shrink-0">✨ Feat</button>
@@ -2187,8 +2188,9 @@
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kuşanma Slotu (Body Slot)</label>
               <select id="rf-slot" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
                 <option value="None">None (Yuvasız / Feat / Büyü)</option>
-                <option value="Main Hand">Main Hand (Ana El)</option>
+                <option value="Main Hand">Main Hand (Ana El Silahı)</option>
                 <option value="Off-Hand/Shield">Off-Hand / Shield (İkinci El / Kalkan)</option>
+                <option value="Two-Handed">Two-Handed (İki Elli Silah)</option>
                 <option value="Two-Hand">Two-Hand (İki El)</option>
                 <option value="Armor">Armor (Zırh Yuvası)</option>
                 <option value="Head">Head (Baş / Miğfer)</option>
@@ -2206,9 +2208,9 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-2.5">
+          <div class="grid grid-cols-1 md:grid-cols-5 gap-2.5">
             <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Üst Öğe (Parent Entry)</label>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Üst Öğe (Parent)</label>
               <input type="text" id="rf-parent" value="-" placeholder="Ana eşya adı veya '-'" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-purple-300 font-mono">
             </div>
             <div>
@@ -2220,7 +2222,7 @@
               <input type="text" id="rf-source" value="PHB p." placeholder="Örn: PHB p.98, ToB p.69" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
             </div>
             <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Savaş Rolü (Combat Role)</label>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Savaş Rolü (Role)</label>
               <select id="rf-role" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
                 <option value="Offense / Attack">Offense / Attack</option>
                 <option value="Defense / Counter">Defense / Counter</option>
@@ -2228,6 +2230,10 @@
                 <option value="Tactical / Control">Tactical / Control</option>
                 <option value="Utility / Out-of-Combat">Utility / Out-of-Combat</option>
               </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Etiketler (Tags)</label>
+              <input type="text" id="rf-tags" placeholder="two-handed, exotic, slashing..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
             </div>
           </div>
         </div>
