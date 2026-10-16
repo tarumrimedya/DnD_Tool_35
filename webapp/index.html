@@ -2750,27 +2750,46 @@
       </div>
 
       <div class="p-4 space-y-3 overflow-y-auto">
-        <!-- Preset Selector -->
+        <!-- Rule Master AI & Kütüphane Arama -->
+        <div class="bg-gradient-to-r from-purple-950/70 via-indigo-950/60 to-slate-900 border border-purple-500/40 rounded-xl p-3 space-y-2 shadow-inner">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-purple-300 flex items-center gap-1.5">
+              <span>🤖</span>
+              <span>Rule Master ile Büyü / Buff Getir</span>
+            </span>
+            <span class="text-[10px] text-purple-400 font-mono bg-purple-950/60 px-2 py-0.5 rounded border border-purple-500/30">D&D 3.5e RAW</span>
+          </div>
+          <div class="flex items-stretch gap-2">
+            <div class="relative flex-1">
+              <input 
+                type="text" 
+                id="buff-rule-master-input" 
+                placeholder="Örn: Righteous Might, Death Ward, Stoneskin, Fly..." 
+                onkeydown="if(event.key === 'Enter') { event.preventDefault(); queryRuleMasterForBuff(); }"
+                class="w-full bg-slate-950 border border-purple-500/50 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-purple-400 font-medium">
+              <span class="absolute left-2.5 top-2 text-xs text-purple-400">🔍</span>
+            </div>
+            <button 
+              type="button" 
+              onclick="queryRuleMasterForBuff()" 
+              id="btn-buff-rule-master"
+              class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow flex items-center gap-1.5 transition active:scale-95 cursor-pointer shrink-0">
+              <span>⚡</span>
+              <span>Getir</span>
+            </button>
+          </div>
+          <div id="buff-rule-master-status" class="hidden text-[11px] py-1 px-2.5 rounded-lg"></div>
+        </div>
+
+        <!-- Preset Selector (Birkaç Seçkin Örnek) -->
         <div>
           <label class="block text-[11px] font-bold text-amber-400 uppercase mb-1">⚡ Hazır D&D 3.5e Şablonu Seç</label>
           <select id="buff-preset-select" onchange="onBuffPresetChange()" class="w-full bg-slate-900 border border-indigo-500/60 rounded-lg px-3 py-2 text-xs font-semibold text-white focus:ring-1 focus:ring-indigo-400">
             <option value="custom">-- Özel Buff Tanımla --</option>
             <option value="mage_armor">🛡️ Mage Armor (+4 Armor AC, 50 Tur / 5 Saat)</option>
-            <option value="shield">🛡️ Shield (+4 Shield AC, 10 Tur)</option>
-            <option value="shield_of_faith">🛡️ Shield of Faith (+2 Deflection AC, 10 Tur)</option>
-            <option value="barkskin">🛡️ Barkskin (+2 Natural Armor AC, 50 Tur)</option>
             <option value="bulls_str">🐂 Bull's Strength (+4 Enhancement STR, 10 Tur)</option>
-            <option value="cats_grace">🐆 Cat's Grace (+4 Enhancement DEX, 10 Tur)</option>
-            <option value="bears_endurance">🐻 Bear's Endurance (+4 Enhancement CON, 10 Tur)</option>
-            <option value="foxs_cunning">🦊 Fox's Cunning (+4 Enhancement INT, 10 Tur)</option>
-            <option value="owls_wisdom">🦉 Owl's Wisdom (+4 Enhancement WIS, 10 Tur)</option>
-            <option value="eagles_splendor">🦅 Eagle's Splendor (+4 Enhancement CHA, 10 Tur)</option>
             <option value="haste">⚡ Haste (+1 Att, +1 Dodge AC, +1 Refl, +30 ft Hız, 6 Tur)</option>
-            <option value="bless">✨ Bless (+1 Morale Att & Saves vs Fear, 10 Tur)</option>
             <option value="prayer">✨ Prayer (+1 Luck Att/Dmg/Saves/Skills, 6 Tur)</option>
-            <option value="divine_favor">⚔️ Divine Favor (+2 Luck Att & Dmg, 10 Tur)</option>
-            <option value="blade_of_blood">🩸 Blade of Blood (+1d6 Hasar, 1 Vuruş)</option>
-            <option value="punishing_stance">🗡️ Punishing Stance (+1d6 Hasar, -2 AC, Sürekli)</option>
           </select>
         </div>
 
@@ -2780,8 +2799,18 @@
             <input type="text" id="buff-input-name" placeholder="Örn: Haste" class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white">
           </div>
           <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kaynak</label>
-            <input type="text" id="buff-input-source" placeholder="Spell, Potion, Feat..." class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white">
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kaynak *</label>
+            <select id="buff-input-source" class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white font-medium focus:border-indigo-500 focus:outline-none">
+              <option value="Spell (Büyü)">Büyü (Spell)</option>
+              <option value="Potion (İksir)">İksir (Potion)</option>
+              <option value="Scroll / Wand (Parşömen / Asa)">Parşömen / Asa (Scroll / Wand)</option>
+              <option value="Item / Equipment (Eşya)">Büyülü Eşya (Item)</option>
+              <option value="Stance / Maneuver (Duruş)">Duruş / Manevra (Stance)</option>
+              <option value="Class Feature (Sınıf Yeteneği)">Sınıf Yeteneği (Class Feature)</option>
+              <option value="Feat (Hüner)">Hüner (Feat)</option>
+              <option value="DM Boon (Özel)">DM Boon (Özel)</option>
+              <option value="Diğer (Harici)">Diğer / Harici</option>
+            </select>
           </div>
         </div>
 
@@ -7991,7 +8020,7 @@
       if (!modal) return;
       document.getElementById('buff-preset-select').value = 'custom';
       document.getElementById('buff-input-name').value = '';
-      document.getElementById('buff-input-source').value = 'Spell';
+      document.getElementById('buff-input-source').value = 'Spell (Büyü)';
       document.getElementById('buff-input-type').value = 'Enhancement';
       document.getElementById('buff-input-rounds').value = '10';
       document.getElementById('buff-input-duration').value = '1 dk / CL';
@@ -8005,6 +8034,13 @@
       document.getElementById('buff-input-wis').value = '';
       document.getElementById('buff-input-cha').value = '';
       document.getElementById('buff-input-notes').value = '';
+      const statusEl = document.getElementById('buff-rule-master-status');
+      if (statusEl) {
+        statusEl.className = 'hidden';
+        statusEl.textContent = '';
+      }
+      const rmInput = document.getElementById('buff-rule-master-input');
+      if (rmInput) rmInput.value = '';
       modal.classList.remove('hidden');
     }
 
@@ -8022,7 +8058,21 @@
       if (!match) return;
 
       document.getElementById('buff-input-name').value = match.name;
-      document.getElementById('buff-input-source').value = match.source || 'Spell';
+      
+      const srcEl = document.getElementById('buff-input-source');
+      if (srcEl) {
+        const rawSrc = (match.source || '').toLowerCase();
+        if (rawSrc.includes('potion') || rawSrc.includes('iksir')) {
+          srcEl.value = 'Potion (İksir)';
+        } else if (rawSrc.includes('item') || rawSrc.includes('eşya')) {
+          srcEl.value = 'Item / Equipment (Eşya)';
+        } else if (rawSrc.includes('stance') || rawSrc.includes('maneuver')) {
+          srcEl.value = 'Stance / Maneuver (Duruş)';
+        } else {
+          srcEl.value = 'Spell (Büyü)';
+        }
+      }
+
       document.getElementById('buff-input-type').value = match.bonusType || 'Untyped';
       document.getElementById('buff-input-rounds').value = match.rounds !== null ? match.rounds : '';
       document.getElementById('buff-input-duration').value = match.durationText || '';
@@ -8036,6 +8086,139 @@
       document.getElementById('buff-input-wis').value = match.wisBonus || '';
       document.getElementById('buff-input-cha').value = match.chaBonus || '';
       document.getElementById('buff-input-notes').value = match.notes || '';
+    }
+
+    async function queryRuleMasterForBuff() {
+      const inputEl = document.getElementById('buff-rule-master-input');
+      const statusEl = document.getElementById('buff-rule-master-status');
+      const btn = document.getElementById('btn-buff-rule-master');
+      if (!inputEl) return;
+      const q = inputEl.value.trim();
+      if (!q) {
+        if (statusEl) {
+          statusEl.className = 'text-xs text-amber-300 bg-amber-950/60 border border-amber-800/60 p-2 rounded-lg block';
+          statusEl.textContent = 'Lütfen aramak istediğiniz bir büyü veya buff adı yazın.';
+        }
+        return;
+      }
+
+      if (statusEl) {
+        statusEl.className = 'text-xs text-indigo-300 bg-indigo-950/60 border border-indigo-800/60 p-2 rounded-lg flex items-center gap-2 block';
+        statusEl.innerHTML = '<span class="animate-spin inline-block">⏳</span><span>Rule Master aranıyor...</span>';
+      }
+      if (btn) btn.disabled = true;
+
+      try {
+        // 1. Önce yerel Master DB'de ara
+        const dbMatches = (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) ? masterDb.filter(item => {
+          const name = (item.name || '').toLowerCase();
+          return name === q.toLowerCase() || name.includes(q.toLowerCase());
+        }) : [];
+
+        if (dbMatches.length > 0) {
+          const match = dbMatches[0];
+          fillBuffFormFromEntry({
+            name: match.name,
+            source: match.type === 'Potion' ? 'Potion (İksir)' : (match.type === 'Spell' ? 'Spell (Büyü)' : 'Item / Equipment (Eşya)'),
+            bonusType: match.bonusType || 'Enhancement',
+            rounds: 10,
+            durationText: match.duration || '1 dk / CL',
+            ac: match.acBonus || match.ac || 0,
+            att: match.attBonus || match.att || 0,
+            dmg: match.dmgBonus || match.dmg || 0,
+            str: match.str || 0,
+            dex: match.dex || 0,
+            con: match.con || 0,
+            int: match.int || 0,
+            wis: match.wis || 0,
+            cha: match.cha || 0,
+            notes: match.benefit || match.desc || match.description || ''
+          });
+
+          if (statusEl) {
+            statusEl.className = 'text-xs text-emerald-300 bg-emerald-950/60 border border-emerald-800/60 p-2 rounded-lg block';
+            statusEl.textContent = `✓ Master DB'den "${match.name}" bulundu ve forma aktarıldı!`;
+          }
+          return;
+        }
+
+        // 2. Rule Master AI ile 3.5e kitaplarını tara
+        const apiKey = (typeof RuleMaster !== 'undefined' && typeof RuleMaster.getApiKey === 'function') 
+          ? RuleMaster.getApiKey() 
+          : (localStorage.getItem('gemini_api_key') || '');
+
+        if (!apiKey) {
+          if (statusEl) {
+            statusEl.className = 'text-xs text-amber-300 bg-amber-950/60 border border-amber-800/60 p-2 rounded-lg block';
+            statusEl.innerHTML = `⚠️ Master DB'de bulunamadı. Rule Master AI ile kütüphanelerden getirmek için sağ üstteki Ayarlar ⚙️ menüsünden ücretsiz Gemini API anahtarı ekleyebilirsiniz.`;
+          }
+          return;
+        }
+
+        if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.fetchSingleAiRuleRows === 'function') {
+          const rows = await RuleMaster.fetchSingleAiRuleRows(q, 'Spell', apiKey, statusEl);
+          if (rows && rows.length > 0) {
+            const row = rows[0];
+            fillBuffFormFromEntry({
+              name: row[0] || q,
+              source: 'Spell (Büyü)',
+              bonusType: row[6] || 'Enhancement',
+              rounds: 10,
+              durationText: row[26] || '1 dk / CL',
+              ac: Number(row[14]) || 0,
+              att: Number(row[16]) || 0,
+              dmg: Number(row[17]) || 0,
+              str: Number(row[8]) || 0,
+              dex: Number(row[9]) || 0,
+              con: Number(row[10]) || 0,
+              int: Number(row[11]) || 0,
+              wis: Number(row[12]) || 0,
+              cha: Number(row[13]) || 0,
+              notes: row[5] || ''
+            });
+
+            if (statusEl) {
+              statusEl.className = 'text-xs text-emerald-300 bg-emerald-950/60 border border-emerald-800/60 p-2 rounded-lg block';
+              statusEl.textContent = `✓ Rule Master AI "${row[0] || q}" kuralını D&D 3.5e kütüphanelerinden getirdi ve forma aktardı!`;
+            }
+            return;
+          }
+        }
+
+        if (statusEl) {
+          statusEl.className = 'text-xs text-rose-300 bg-rose-950/60 border border-rose-800/60 p-2 rounded-lg block';
+          statusEl.textContent = `"${q}" kütüphanede bulunamadı. Lütfen manuel olarak tanımlayınız.`;
+        }
+      } catch (err) {
+        if (statusEl) {
+          statusEl.className = 'text-xs text-rose-300 bg-rose-950/60 border border-rose-800/60 p-2 rounded-lg block';
+          statusEl.textContent = `Arama hatası: ${err.message}`;
+        }
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    function fillBuffFormFromEntry(entry) {
+      if (!entry) return;
+      document.getElementById('buff-input-name').value = entry.name || '';
+      const srcEl = document.getElementById('buff-input-source');
+      if (srcEl) {
+        srcEl.value = entry.source || 'Spell (Büyü)';
+      }
+      document.getElementById('buff-input-type').value = entry.bonusType || 'Enhancement';
+      document.getElementById('buff-input-rounds').value = entry.rounds || '';
+      document.getElementById('buff-input-duration').value = entry.durationText || '';
+      document.getElementById('buff-input-ac').value = entry.ac || '';
+      document.getElementById('buff-input-att').value = entry.att || '';
+      document.getElementById('buff-input-dmg').value = entry.dmg || '';
+      document.getElementById('buff-input-str').value = entry.str || '';
+      document.getElementById('buff-input-dex').value = entry.dex || '';
+      document.getElementById('buff-input-con').value = entry.con || '';
+      document.getElementById('buff-input-int').value = entry.int || '';
+      document.getElementById('buff-input-wis').value = entry.wis || '';
+      document.getElementById('buff-input-cha').value = entry.cha || '';
+      document.getElementById('buff-input-notes').value = entry.notes || '';
     }
 
     function saveNewBuffFromModal() {
