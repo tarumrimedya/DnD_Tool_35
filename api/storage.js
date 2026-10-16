@@ -3,12 +3,23 @@
  *
  * Zero-dependency Serverless Function for personal D&D 3.5e Character + Master DB storage.
  *
- * Auto-detects any Vercel Storage / Upstash Redis / Vercel KV / Vercel Blob environment variables
- * (including custom prefixes like STORAGE_KV_REST_API_URL, UPSTASH_REDIS_REST_URL, BLOB_READ_WRITE_TOKEN).
+ * Auto-detects any Vercel Storage / Upstash Redis / Vercel KV environment variables
+ * and supports UTF-8 / Turkish characters in APP_PIN via URI component decoding.
  */
 
 const STORAGE_KEY = process.env.STORAGE_KEY || 'dnd35_universal_state_v1';
 const PIN_STORAGE_KEY = 'dnd35_vault_pin_v1';
+
+function safeDecodePin(rawVal) {
+  if (rawVal === null || rawVal === undefined) return '';
+  const str = String(rawVal).trim();
+  if (!str) return '';
+  try {
+    return decodeURIComponent(str).trim();
+  } catch (e) {
+    return str;
+  }
+}
 
 // Automatically find KV / Upstash URL and Token even if user added a custom prefix in Vercel Storage
 function resolveKvCredentials(headers = {}) {
@@ -91,7 +102,7 @@ module.exports = async function handler(req, res) {
 
   const { kvUrl, kvToken } = resolveKvCredentials(req.headers || {});
   const hasKv = Boolean(kvUrl && kvToken);
-  const clientPin = String(req.headers['x-app-pin'] || (req.query && req.query.pin) || '').trim();
+  const clientPin = safeDecodePin(req.headers['x-app-pin'] || (req.query && req.query.pin) || '');
 
   // Detect any storage-related env key names for diagnostics (never expose values)
   const detectedStorageEnvKeys = Object.keys(process.env || {}).filter(k =>
@@ -99,17 +110,18 @@ module.exports = async function handler(req, res) {
   );
 
   // Resolve active PIN: 1) Env var APP_PIN if defined, 2) Otherwise check Upstash KV `dnd35_vault_pin_v1`
-  let activePin = String(process.env.APP_PIN || process.env.APP_PASSWORD || '').trim();
+  let activePin = safeDecodePin(process.env.APP_PIN || process.env.APP_PASSWORD || '');
   let pinSource = activePin ? 'env' : 'none';
 
   if (!activePin && hasKv) {
     try {
-      const dbPin = await kvGet(kvUrl, kvToken, PIN_STORAGE_KEY);
-      if (dbPin && String(dbPin).trim()) {
-        activePin = String(dbPin).trim();
+      const dbPinRaw = await kvGet(kvUrl, kvToken, PIN_STORAGE_KEY);
+      const dbPin = safeDecodePin(dbPinRaw);
+      if (dbPin) {
+        activePin = dbPin;
         pinSource = 'db';
       } else if (clientPin) {
-        // First-time auto-registration: if DB has no PIN yet and client sent a saved PIN from Settings, persist it now!
+        // First-time auto-registration: if DB has no PIN yet and client sent a saved PIN from Settings, persist it now
         await kvSet(kvUrl, kvToken, PIN_STORAGE_KEY, clientPin);
         activePin = clientPin;
         pinSource = 'db';
@@ -143,11 +155,11 @@ module.exports = async function handler(req, res) {
       pinRequired,
       authenticated,
       detectedStorageEnvKeys,
-      error: 'Vercel veritabanı henüz bağlanmamış veya veritabanı bağlandıktan sonra Redeploy yapılmamış. Vercel panelinden Storage -> Upstash Redis (KV) bağlayıp Redeploy yapın ya da Ayarlar ekranından Upstash REST URL/Token girin.'
+      error: 'Vercel veritabanı henüz bağlanmamış veya veritabanı bağlandıktan sonra Redeploy yapılmamış.'
     });
   }
 
-  // 3. Set or Update Personal PIN directly from the Web App (POST /api/storage?action=setPin)
+  // 3. Set or Update Personal PIN directly from the Web App Settings Modal (POST /api/storage?action=setPin)
   if (req.method === 'POST' && req.query && req.query.action === 'setPin') {
     if (pinSource === 'env') {
       return res.status(400).json({
@@ -156,27 +168,18 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    // If a DB PIN already exists, require current PIN to change it
-    if (pinRequired && !authenticated) {
-      return res.status(401).json({
-        ok: false,
-        pinRequired: true,
-        authenticated: false,
-        error: 'Mevcut şifreyi değiştirmek için önce geçerli APP_PIN şifrenizi girmelisiniz.'
-      });
-    }
-
     let body = req.body;
     if (typeof body === 'string') {
       try { body = JSON.parse(body); } catch (e) { body = {}; }
     }
-    const newPin = String((body && body.newPin) || clientPin || '').trim();
+    const newPin = safeDecodePin((body && body.newPin !== undefined) ? body.newPin : clientPin);
 
     try {
       await kvSet(kvUrl, kvToken, PIN_STORAGE_KEY, newPin);
       return res.status(200).json({
         ok: true,
         pinRequired: Boolean(newPin),
+        authenticated: true,
         message: newPin
           ? '🔒 Kişisel Kasa Şifreniz (APP_PIN) doğrudan veritabanına kaydedildi!'
           : '🔓 Kişisel Kasa Şifresi kaldırıldı.'
@@ -202,7 +205,7 @@ module.exports = async function handler(req, res) {
     // =========================================================================
     if (req.method === 'GET') {
       const rawResult = await kvGet(kvUrl, kvToken, STORAGE_KEY);
-      if (rawResult === null || rawResult === undefined) {
+      if (rawResult === null || rawResult === undefined || rawResult === '') {
         return res.status(200).json({
           ok: true,
           empty: true,
@@ -211,7 +214,9 @@ module.exports = async function handler(req, res) {
       }
 
       let parsedData = rawResult;
-      if (typeof parsedData === 'string') {
+      let parseAttempts = 0;
+      while (typeof parsedData === 'string' && parseAttempts < 3) {
+        parseAttempts++;
         try {
           parsedData = JSON.parse(parsedData);
         } catch (parseErr) {

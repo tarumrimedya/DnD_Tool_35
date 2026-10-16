@@ -2376,6 +2376,9 @@
         <button onclick="CloudSync.unlockVault()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-2.5 rounded-xl transition shadow-lg">
           🔓 Kilidi Aç & Veritabanını Yükle
         </button>
+        <button onclick="CloudSync.hideVaultLockModal(); openSettingsModal();" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-semibold text-[11px] py-2 rounded-xl border border-slate-700 transition">
+          ⚙️ Ayarlar / Şifre Değiştir
+        </button>
       </div>
     </div>
   </div>
@@ -2392,8 +2395,8 @@
 
     window.addEventListener('DOMContentLoaded', async () => {
       await loadInitialData();
-      renderAll();
-      GDriveSync.init();
+      try { renderAll(); } catch (e) { console.error('Initial renderAll error:', e); }
+      await CloudSync.init();
     });
 
     async function loadInitialData() {
@@ -2494,11 +2497,16 @@
       // Update Vercel / Upstash Cloud UI in settings
       if (window.CloudSync) {
         CloudSync.populateSettingsInputs();
-        CloudSync.updateStatusUI(
-          (CloudSync.pinRequired && !CloudSync.authenticated)
-            ? 'locked'
-            : (CloudSync.configured ? 'connected' : 'unconfigured')
-        );
+        if (CloudSync.isSyncing || CloudSync.isInitializing) {
+          CloudSync.updateStatusUI('syncing');
+        } else if (CloudSync.pinRequired && !CloudSync.authenticated) {
+          CloudSync.updateStatusUI('locked');
+        } else if (CloudSync.configured && CloudSync.authenticated) {
+          CloudSync.updateStatusUI('synced');
+        } else {
+          CloudSync.updateStatusUI('unconfigured');
+          CloudSync.init();
+        }
       }
 
       // Update House Rules Checkboxes
