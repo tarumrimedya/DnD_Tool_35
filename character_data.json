@@ -14,6 +14,7 @@
   "age": 24,
   "height": "178 cm",
   "weight": "72 kg",
+  "portrait": "",
   "baseAbilities": {
     "str": 12,
     "dex": 14,
