@@ -83,46 +83,58 @@
   </header>
 
   <!-- CHARACTER PROFILE & ABILITY SCORES (Moved above Vitals HUD) -->
-  <section class="max-w-7xl w-full mx-auto px-3 md:px-4 pt-3 pb-1 space-y-2.5">
-    <!-- Character Bio & Header Summary -->
-    <div class="bg-gradient-to-r from-slate-900 to-slate-950 border border-slate-800 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 shadow">
-      <div class="flex items-center gap-3">
-        <div id="core-top-avatar-box" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-2xl overflow-hidden shrink-0 shadow-inner">
-          <span id="core-top-avatar-icon">👤</span>
-        </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <h2 id="core-name" class="text-base font-extrabold text-white">Kazmil'in Çırağı</h2>
-            <span id="core-race" class="badge bg-slate-800 text-slate-300 border border-slate-700 text-xs">Human</span>
-          </div>
-          <div class="text-xs text-amber-400 font-semibold" id="core-classes">Sorcerer 5 / Warblade 1 • Seviye 6</div>
+  <section class="max-w-7xl w-full mx-auto px-3 md:px-4 pt-3 pb-1">
+    <div class="flex flex-col md:flex-row items-stretch gap-2.5">
+      
+      <!-- SOL: BÜYÜK KARAKTER RESMİ (HERO PORTRAIT CARD - KULLANICI 'R' KUTUSU) -->
+      <div onclick="openProfileEditModal()" title="Karakter portresini veya özelliklerini düzenlemek için tıklayın"
+           class="w-full md:w-44 lg:w-48 shrink-0 bg-gradient-to-b from-slate-900 via-slate-900 to-indigo-950/70 border border-slate-800 hover:border-indigo-500/70 rounded-xl overflow-hidden shadow-lg cursor-pointer group relative flex flex-col items-center justify-center min-h-[170px] md:min-h-[190px] transition-all">
+        <div id="core-top-avatar-box" class="w-full h-full flex items-center justify-center overflow-hidden relative">
+          <span id="core-top-avatar-icon" class="text-5xl md:text-6xl">👤</span>
         </div>
       </div>
-      <div class="flex items-center gap-3 text-xs font-mono">
-        <button onclick="openLevelUpModal()" class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-sans font-bold text-xs shadow flex items-center gap-1.5 transition transform active:scale-95" title="Yeni seviye ekle, HP/BAB/Save ve Feat seç">
-          <span>⬆️</span>
-          <span>Level Up</span>
-        </button>
-        <button onclick="openFeatPickerModal()" class="px-3 py-1.5 rounded-lg bg-indigo-950/90 hover:bg-indigo-800 border border-indigo-600/60 text-indigo-200 hover:text-white font-sans font-bold text-xs shadow flex items-center gap-1.5 transition transform active:scale-95" title="Karaktere Feat veya Özel Yetenek ekle">
-          <span>🎖️</span>
-          <span>Feat Seç</span>
-        </button>
-        <div class="text-center pl-2 border-l border-slate-800">
-          <div class="text-[10px] text-slate-400 font-bold uppercase">Hız</div>
-          <div id="core-speed" class="text-sky-400 font-black text-sm">30 ft</div>
-        </div>
-      </div>
-    </div>
 
-    <!-- Ability Scores Grid with 24H Modifiers -->
-    <div class="bg-dndCard border border-dndBorder rounded-xl p-3 shadow">
-      <div class="flex items-center justify-between mb-2">
-        <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wide">🎲 TEMEL STATLAR (ABILITY SCORES)</h3>
-        <span class="text-[10px] text-slate-400">24H Eşya ve Geçici Modifiyeler Dahil</span>
+      <!-- SAĞ: BİO & TEMEL STATLAR (SAĞA KAYDIRILAN ALAN) -->
+      <div class="flex-1 min-w-0 space-y-2.5 flex flex-col justify-between">
+        
+        <!-- Üst Satır: Karakter Bio & Seviye / Feat / Hız Butonları -->
+        <div class="bg-gradient-to-r from-slate-900 to-slate-950 border border-slate-800 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 shadow">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h2 id="core-name" class="text-base md:text-lg font-black text-white truncate">Kazmil'in Çırağı</h2>
+              <span id="core-race" class="badge bg-slate-800 text-slate-300 border border-slate-700 text-xs">Human</span>
+            </div>
+            <div class="text-xs text-amber-400 font-semibold truncate mt-0.5" id="core-classes">Sorcerer 5 / Warblade 1 • Seviye 6</div>
+          </div>
+          <div class="flex items-center gap-2.5 text-xs font-mono shrink-0">
+            <button onclick="openLevelUpModal()" class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-sans font-bold text-xs shadow flex items-center gap-1.5 transition transform active:scale-95" title="Yeni seviye ekle, HP/BAB/Save ve Feat seç">
+              <span>⬆️</span>
+              <span>Level Up</span>
+            </button>
+            <button onclick="openFeatPickerModal()" class="px-3 py-1.5 rounded-lg bg-indigo-950/90 hover:bg-indigo-800 border border-indigo-600/60 text-indigo-200 hover:text-white font-sans font-bold text-xs shadow flex items-center gap-1.5 transition transform active:scale-95" title="Karaktere Feat veya Özel Yetenek ekle">
+              <span>🎖️</span>
+              <span>Feat Seç</span>
+            </button>
+            <div class="text-center pl-2 border-l border-slate-800">
+              <div class="text-[10px] text-slate-400 font-bold uppercase">Hız</div>
+              <div id="core-speed" class="text-sky-400 font-black text-sm">30 ft</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alt Satır: Ability Scores Grid with 24H Modifiers -->
+        <div class="bg-dndCard border border-dndBorder rounded-xl p-3 shadow flex-1 flex flex-col justify-center">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wide">🎲 TEMEL STATLAR (ABILITY SCORES)</h3>
+            <span class="text-[10px] text-slate-400">24H Eşya ve Geçici Modifiyeler Dahil</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-center" id="abilities-grid">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
       </div>
-      <div class="grid grid-cols-2 md:grid-cols-6 gap-2 text-center" id="abilities-grid">
-        <!-- Dynamically populated -->
-      </div>
+
     </div>
   </section>
 
@@ -4081,13 +4093,25 @@
         }
       }
 
-      // 2. Top Header Avatar
+      // 2. Top Hero Avatar
       const topAvatarBox = document.getElementById('core-top-avatar-box');
       if (topAvatarBox) {
         if (character.portrait) {
-          topAvatarBox.innerHTML = `<img src="${character.portrait}" alt="Portrait" class="w-full h-full object-cover rounded-xl shadow">`;
+          topAvatarBox.innerHTML = `
+            <img src="${character.portrait}" alt="Portrait" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+            <div class="absolute inset-x-0 bottom-0 py-1.5 bg-gradient-to-t from-black/85 via-black/40 to-transparent text-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <span class="text-[10px] text-indigo-200 font-bold flex items-center justify-center gap-1">
+                <span>✏️</span> <span>Profili Düzenle</span>
+              </span>
+            </div>
+          `;
         } else {
-          topAvatarBox.innerHTML = `<span id="core-top-avatar-icon" class="text-2xl">${emoji}</span>`;
+          topAvatarBox.innerHTML = `
+            <div class="flex flex-col items-center justify-center p-3 text-center">
+              <span id="core-top-avatar-icon" class="text-5xl md:text-6xl mb-1">${emoji}</span>
+              <span class="text-[10px] text-slate-400 group-hover:text-indigo-300 transition-colors font-medium">✏️ Portre Ekle</span>
+            </div>
+          `;
         }
       }
 
