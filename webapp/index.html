@@ -1704,7 +1704,7 @@
               </button>
               <!-- d6 -->
               <button onclick="handleDieClick(6)" title="d6 zarı ekle veya at" class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/90 hover:bg-sky-600/30 border border-sky-500/40 hover:border-sky-400 text-sky-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
-                <span class="text-xl group-hover:scale-110 transition">🎲</span>
+                <span class="text-xl group-hover:scale-110 transition">■</span>
                 <span class="text-xs font-black font-mono">d6</span>
                 <span id="die-count-6" class="text-[10px] font-bold text-sky-400 mt-0.5 h-3.5"></span>
               </button>
@@ -1897,8 +1897,8 @@
       <!-- Canlı Son Zar Gösterim Kartı -->
       <div id="dice-last-result-card" class="bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-amber-500/40 rounded-xl p-4 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-3.5 min-w-0 flex-1">
-          <div class="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-400/60 flex items-center justify-center text-2xl shrink-0 shadow-inner">
-            🎲
+          <div id="dice-last-icon" class="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-400/60 flex items-center justify-center text-2xl shrink-0 shadow-inner text-amber-300 font-black">
+            🎯
           </div>
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2 flex-wrap">
@@ -5267,10 +5267,24 @@
       const breakdownEl = document.getElementById('dice-last-breakdown');
       const totalEl = document.getElementById('dice-last-total');
       const critBadge = document.getElementById('dice-last-crit-badge');
+      const iconEl = document.getElementById('dice-last-icon');
 
       if (labelEl) labelEl.textContent = `${record.title} [${record.timestamp}]`;
       if (breakdownEl) breakdownEl.textContent = `${record.formula ? record.formula + ': ' : ''}${record.breakdown} ${record.critInfo || ''}`;
       if (totalEl) totalEl.textContent = record.total;
+
+      if (iconEl) {
+        let iconSymbol = '🎯';
+        const str = ((record.formula || '') + ' ' + (record.title || '') + ' ' + (record.breakdown || '')).toLowerCase();
+        if (str.includes('d4')) iconSymbol = '▲';
+        else if (str.includes('d6')) iconSymbol = '■';
+        else if (str.includes('d8')) iconSymbol = '◆';
+        else if (str.includes('d100')) iconSymbol = '💯';
+        else if (str.includes('d10')) iconSymbol = '⯁';
+        else if (str.includes('d12')) iconSymbol = '⬟';
+        else if (str.includes('d20')) iconSymbol = '🎯';
+        iconEl.textContent = iconSymbol;
+      }
 
       if (critBadge) {
         if (record.isCrit) {
