@@ -961,17 +961,6 @@ const RuleMaster = {
     if (!forceRefresh && this._cachedModels && this._cachedModels.length > 0) {
       return this._cachedModels;
     }
-    // Curated priority queue of optimized, active text/JSON Gemini models
-    const candidatePreferences = [
-      'gemini-3.5-flash-lite',
-      'gemini-3.5-flash',
-      'gemini-3.8-flash',
-      'gemini-2.5-flash-lite',
-      'gemini-2.5-flash',
-      'gemini-flash-lite-latest',
-      'gemini-flash-latest',
-      'gemini-2.5-pro'
-    ];
 
     try {
       const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`);
@@ -981,28 +970,50 @@ const RuleMaster = {
           .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'))
           .map(m => m.name.replace(/^models\//, ''));
 
-        // Strictly keep only verified curated models in priority order
-        const selected = [];
-        for (const pref of candidatePreferences) {
-          if (available.includes(pref)) {
-            selected.push(pref);
+        // 1. Dynamic Future-Proof Version Parser:
+        // Matches ONLY clean production releases: gemini-<ver>-flash-lite, gemini-<ver>-flash, gemini-<ver>-pro (for ver >= 2.5)
+        // Automatically excludes -tts, -image, -vision, -audio, -thinking, -exp, -preview, -001, gemma, etc.
+        const cleanVersionRegex = /^gemini-(\d+(?:\.\d+)?)-(flash-lite|flash|pro)$/;
+        const parsedModels = [];
+
+        for (const name of available) {
+          const match = name.match(cleanVersionRegex);
+          if (match) {
+            const ver = parseFloat(match[1]);
+            const tier = match[2]; // 'flash-lite' | 'flash' | 'pro'
+            if (ver >= 2.5) {
+              parsedModels.push({ name, ver, tier });
+            }
           }
         }
 
-        // Emergency future-proof fallback ONLY if none of the curated names matched
-        if (selected.length === 0) {
-          for (const m of available) {
-            if (
-              m.startsWith('gemini-') &&
-              m.includes('flash') &&
-              !m.includes('tts') &&
-              !m.includes('image') &&
-              !m.includes('vision') &&
-              !m.includes('1.5')
-            ) {
-              selected.push(m);
-            }
+        // Sort:
+        // - Flash / Flash-Lite models Always before Pro (so fast models are primary, Pro is final fallback)
+        // - Newer version Always before older version (e.g., 4.5 > 4.0 > 3.8 > 3.5 > 2.5)
+        // - Within same version: flash-lite -> flash
+        const tierRank = { 'flash-lite': 1, 'flash': 2, 'pro': 3 };
+        const flashModels = parsedModels
+          .filter(m => m.tier !== 'pro')
+          .sort((a, b) => (b.ver !== a.ver ? b.ver - a.ver : tierRank[a.tier] - tierRank[b.tier]))
+          .map(m => m.name);
+
+        const proModels = parsedModels
+          .filter(m => m.tier === 'pro')
+          .sort((a, b) => b.ver - a.ver)
+          .map(m => m.name);
+
+        const selected = [...flashModels];
+
+        // 2. Include Google's official rolling latest aliases (always point to newest generation)
+        for (const alias of ['gemini-flash-lite-latest', 'gemini-flash-latest']) {
+          if (available.includes(alias) && !selected.includes(alias)) {
+            selected.push(alias);
           }
+        }
+
+        // 3. Add highest version Pro model at the end of the queue as deep fallback
+        if (proModels.length > 0 && !selected.includes(proModels[0])) {
+          selected.push(proModels[0]);
         }
 
         if (selected.length > 0) {
@@ -1016,12 +1027,10 @@ const RuleMaster = {
 
     // Default safe fallback if list request fails
     return [
-      'gemini-2.5-flash-lite',
-      'gemini-2.5-flash',
-      'gemini-3.5-flash-lite',
-      'gemini-3.5-flash',
       'gemini-flash-lite-latest',
-      'gemini-flash-latest'
+      'gemini-flash-latest',
+      'gemini-2.5-flash-lite',
+      'gemini-2.5-flash'
     ];
   },
 
