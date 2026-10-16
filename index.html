@@ -230,7 +230,7 @@
   </section>
 
   <!-- NAVIGATION TABS (Kompakt Kart Sekmeler & Genişletilmiş Boşluk) -->
-  <nav class="max-w-7xl w-full mx-auto px-3 md:px-4 mt-3 mb-5 sm:mt-4 sm:mb-6 relative z-10">
+  <nav class="hidden md:block max-w-7xl w-full mx-auto px-3 md:px-4 mt-3 mb-5 sm:mt-4 sm:mb-6 relative z-10">
     <div class="flex items-stretch gap-2 overflow-x-auto pb-1 pt-0.5 scrollbar-thin">
       <button onclick="switchTab('tab-combat')" id="tab-btn-combat" class="tab-btn flex-1 min-w-[105px] sm:min-w-[120px] lg:min-w-0 py-1.5 px-2.5 sm:px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer select-none border whitespace-nowrap bg-gradient-to-r from-red-600 to-rose-600 text-white border-red-400 shadow-md shadow-red-950/60 ring-2 ring-red-400/40">
         <span class="text-sm">⚔️</span>
@@ -264,7 +264,7 @@
   </nav>
 
   <!-- MAIN TAB CONTENTS -->
-  <main class="max-w-7xl w-full mx-auto px-3 md:px-4 flex-1 relative z-10">
+  <main class="max-w-7xl w-full mx-auto px-3 md:px-4 flex-1 relative z-10 pb-20 md:pb-6">
 
     <!-- ==================================================== -->
     <!-- TAB 1: ⚔️ TACTICAL COMBAT COCKPIT -->
@@ -1947,30 +1947,34 @@
   </main>
 
   <!-- MOBILE BOTTOM NAVIGATION -->
-  <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-dndCard/95 backdrop-blur border-t border-dndBorder z-50 flex items-center justify-around py-2 px-1">
-    <button onclick="switchTab('tab-combat')" class="mobile-tab-btn flex flex-col items-center text-[10px] font-bold text-rose-500">
-      <span class="text-base">⚔️</span>
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-dndCard/95 backdrop-blur border-t border-dndBorder z-50 flex items-center justify-around py-1.5 px-0.5 shadow-2xl">
+    <button onclick="switchTab('tab-combat')" id="mobile-tab-btn-combat" class="mobile-tab-btn flex flex-col items-center text-[9px] font-bold text-rose-500 py-0.5 px-1 transition">
+      <span class="text-sm">⚔️</span>
       <span>Savaş</span>
     </button>
-    <button onclick="switchTab('tab-spells')" class="mobile-tab-btn flex flex-col items-center text-[10px] font-bold text-slate-400">
-      <span class="text-base">🔮</span>
+    <button onclick="switchTab('tab-spells')" id="mobile-tab-btn-spells" class="mobile-tab-btn flex flex-col items-center text-[9px] font-bold text-slate-400 py-0.5 px-1 transition">
+      <span class="text-sm">🔮</span>
       <span>Büyü</span>
     </button>
-    <button onclick="switchTab('tab-core')" class="mobile-tab-btn flex flex-col items-center text-[10px] font-bold text-slate-400">
-      <span class="text-base">👤</span>
+    <button onclick="switchTab('tab-core')" id="mobile-tab-btn-core" class="mobile-tab-btn flex flex-col items-center text-[9px] font-bold text-slate-400 py-0.5 px-1 transition">
+      <span class="text-sm">👤</span>
       <span>Statlar</span>
     </button>
-    <button onclick="switchTab('tab-inventory')" class="mobile-tab-btn flex flex-col items-center text-[10px] font-bold text-slate-400">
-      <span class="text-base">🎒</span>
+    <button onclick="switchTab('tab-defense')" id="mobile-tab-btn-defense" class="mobile-tab-btn flex flex-col items-center text-[9px] font-bold text-slate-400 py-0.5 px-1 transition">
+      <span class="text-sm">🛡️</span>
+      <span>Savunma</span>
+    </button>
+    <button onclick="switchTab('tab-inventory')" id="mobile-tab-btn-inventory" class="mobile-tab-btn flex flex-col items-center text-[9px] font-bold text-slate-400 py-0.5 px-1 transition">
+      <span class="text-sm">🎒</span>
       <span>Çanta</span>
     </button>
-    <button onclick="switchTab('tab-database')" class="mobile-tab-btn flex flex-col items-center text-[10px] font-bold text-slate-400">
-      <span class="text-base">📚</span>
+    <button onclick="switchTab('tab-database')" id="mobile-tab-btn-database" class="mobile-tab-btn flex flex-col items-center text-[9px] font-bold text-slate-400 py-0.5 px-1 transition">
+      <span class="text-sm">📚</span>
       <span>DB</span>
     </button>
-    <button onclick="switchTab('tab-dice')" class="mobile-tab-btn flex flex-col items-center text-[10px] font-bold text-slate-400">
-      <span class="text-base">🎲</span>
-      <span>Zar At</span>
+    <button onclick="switchTab('tab-dice')" id="mobile-tab-btn-dice" class="mobile-tab-btn flex flex-col items-center text-[9px] font-bold text-slate-400 py-0.5 px-1 transition">
+      <span class="text-sm">🎲</span>
+      <span>Zar</span>
     </button>
   </nav>
 
@@ -3883,6 +3887,7 @@
       const target = document.getElementById(tabId);
       if (target) target.classList.remove('hidden');
 
+      // Top Desktop Tab Buttons
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove(...TAB_ACTIVE_CLASSES);
         btn.classList.add(...TAB_INACTIVE_CLASSES);
@@ -3891,6 +3896,17 @@
       if (activeBtn) {
         activeBtn.classList.remove(...TAB_INACTIVE_CLASSES);
         activeBtn.classList.add(...TAB_ACTIVE_CLASSES);
+      }
+
+      // Mobile Bottom Navigation Buttons
+      document.querySelectorAll('.mobile-tab-btn').forEach(btn => {
+        btn.classList.remove('text-rose-500');
+        btn.classList.add('text-slate-400');
+      });
+      const activeMobileBtn = document.getElementById(tabId.replace('tab-', 'mobile-tab-btn-'));
+      if (activeMobileBtn) {
+        activeMobileBtn.classList.remove('text-slate-400');
+        activeMobileBtn.classList.add('text-rose-500');
       }
 
       if (tabId === 'tab-database' && window.RuleMaster) {
