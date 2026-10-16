@@ -88,8 +88,16 @@
           <div class="text-xs text-amber-400 font-semibold" id="core-classes">Sorcerer 5 / Warblade 1 • Seviye 6</div>
         </div>
       </div>
-      <div class="flex items-center gap-4 text-xs font-mono">
-        <div class="text-center">
+      <div class="flex items-center gap-3 text-xs font-mono">
+        <button onclick="openLevelUpModal()" class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-sans font-bold text-xs shadow flex items-center gap-1.5 transition transform active:scale-95" title="Yeni seviye ekle, HP/BAB/Save ve Feat seç">
+          <span>⬆️</span>
+          <span>Level Up</span>
+        </button>
+        <button onclick="openFeatPickerModal()" class="px-3 py-1.5 rounded-lg bg-indigo-950/90 hover:bg-indigo-800 border border-indigo-600/60 text-indigo-200 hover:text-white font-sans font-bold text-xs shadow flex items-center gap-1.5 transition transform active:scale-95" title="Karaktere Feat veya Özel Yetenek ekle">
+          <span>🎖️</span>
+          <span>Feat Seç</span>
+        </button>
+        <div class="text-center pl-2 border-l border-slate-800">
           <div class="text-[10px] text-slate-400 font-bold uppercase">Hız</div>
           <div id="core-speed" class="text-sky-400 font-black text-sm">30 ft</div>
         </div>
@@ -524,10 +532,18 @@
         </div>
 
         <!-- Feats and Special Abilities (Madde 16 & 17) -->
-        <div>
-          <div class="flex items-center justify-between mb-2">
-            <h3 class="text-xs font-bold text-purple-400 uppercase tracking-wide">✨ FEATLER VE ÖZEL YETENEKLER (TIKLA & İNCELE)</h3>
-            <span class="text-[10px] text-indigo-300">💡 Detay ve kural açıklaması için hünerin üzerine tıklayın</span>
+        <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-3.5">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+            <div>
+              <h3 class="text-xs font-bold text-purple-400 uppercase tracking-wide">✨ FEATLER VE ÖZEL YETENEKLER (TIKLA & İNCELE)</h3>
+              <span class="text-[10px] text-indigo-300">💡 Detay, kural açıklaması veya kaldırmak için hünerin üzerine tıklayın</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="openFeatPickerModal()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow flex items-center gap-1.5 transition">
+                <span>➕</span>
+                <span>Feat Seç / Öğren</span>
+              </button>
+            </div>
           </div>
           <div class="flex flex-wrap gap-2" id="feats-badges-container">
             <!-- Dynamically populated -->
@@ -541,12 +557,20 @@
               <span>📈</span>
               <span>SEVİYE GELİŞİMİ VE İLERLEME TABLOSU (LEVEL UP)</span>
             </div>
-            <div class="flex items-center gap-3 text-[11px] font-normal text-slate-300">
-              <span>Feats: <strong class="text-amber-400">Standard 3.5e</strong></span>
-              <span>•</span>
-              <span>BAB/Saves: <strong class="text-sky-400">Fractional</strong></span>
-              <span>•</span>
-              <span>L1 Max HP: <strong class="text-emerald-400">Yes</strong></span>
+            <div class="flex flex-wrap items-center gap-2">
+              <div class="hidden md:flex items-center gap-2 text-[11px] font-normal text-slate-300 mr-2">
+                <span>Feats: <strong class="text-amber-400">1, 3, 6, 9, 12, 15, 18</strong></span>
+                <span>•</span>
+                <span>Stat +1: <strong class="text-sky-400">4, 8, 12, 16, 20</strong></span>
+              </div>
+              <button onclick="undoLastLevel()" class="bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 border border-slate-700 hover:border-rose-700 font-semibold text-xs px-2.5 py-1 rounded-lg transition flex items-center gap-1" title="Son eklenen seviyeyi geri al">
+                <span>↩️</span>
+                <span>Son Seviyeyi Geri Al</span>
+              </button>
+              <button onclick="openLevelUpModal()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg shadow flex items-center gap-1.5 transition">
+                <span>⬆️</span>
+                <span>Seviye Atla (Level Up)</span>
+              </button>
             </div>
           </div>
           <div class="overflow-x-auto">
@@ -1615,8 +1639,254 @@
           <strong class="text-slate-300">Notlar:</strong> <span id="feat-modal-notes"></span>
         </div>
       </div>
-      <div class="bg-slate-950 px-4 py-2.5 border-t border-slate-800 flex justify-end">
+      <div class="bg-slate-950 px-4 py-2.5 border-t border-slate-800 flex items-center justify-between">
+        <button id="btn-remove-feat-from-char" onclick="removeCurrentViewedFeat()" class="bg-rose-950 hover:bg-rose-800 text-rose-300 hover:text-white border border-rose-700 font-bold text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+          <span>🗑️</span>
+          <span>Karakterden Kaldır</span>
+        </button>
         <button onclick="closeFeatDetailModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition">Tamam</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================== -->
+  <!-- MODAL: FEAT PICKER & LEARNER (Master DB + 3.5e Catalog) -->
+  <!-- ==================================================== -->
+  <div id="feat-picker-modal" class="hidden fixed inset-0 z-[105] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
+    <div class="bg-dndCard border border-purple-500/80 rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
+      <!-- Header -->
+      <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-purple-950 border border-purple-600/60 flex items-center justify-center text-lg">🎖️</div>
+          <div>
+            <h3 class="text-sm md:text-base font-extrabold text-white flex items-center gap-2">
+              <span id="feat-picker-modal-title">Feat (Hüner) Seç & Öğren</span>
+              <span class="badge bg-purple-950 text-purple-300 border border-purple-700 text-[9px]">D&D 3.5e RAW</span>
+            </h3>
+            <p class="text-[10px] text-slate-400">Master DB + 3.5e Core / Tome of Battle / Complete Arşivinden seçin veya özel ekleyin</p>
+          </div>
+        </div>
+        <button onclick="closeFeatPickerModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-lg text-xs font-bold transition">✕ Kapat</button>
+      </div>
+
+      <!-- Body -->
+      <div class="p-4 space-y-3 text-xs overflow-y-auto flex-1">
+        <!-- Search & Category Filter -->
+        <div class="flex flex-col sm:flex-row gap-2">
+          <input type="text" id="feat-picker-search" oninput="renderFeatPickerList()" placeholder="Feat ara (Örn: Power Attack, Arcane Strike, Adaptive Style, Improved Initiative)..." class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500">
+          <select id="feat-picker-category" onchange="renderFeatPickerList()" class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-slate-200">
+            <option value="All">Tüm Kategoriler</option>
+            <option value="General">General (Genel)</option>
+            <option value="Fighter">Fighter Bonus (Savaşçı)</option>
+            <option value="Martial">Martial / Tome of Battle</option>
+            <option value="Metamagic">Metamagic & Spellcasting</option>
+            <option value="Special Ability">Special Ability (Sınıf Özelliği)</option>
+          </select>
+        </div>
+
+        <!-- Catalog List -->
+        <div id="feat-picker-list" class="space-y-2 max-h-80 overflow-y-auto pr-1">
+          <!-- Populated dynamically -->
+        </div>
+
+        <!-- Custom Feat Quick Adder -->
+        <details class="border border-slate-800 rounded-xl bg-slate-900/60 overflow-hidden">
+          <summary class="p-2.5 cursor-pointer text-xs font-bold text-purple-300 hover:text-white flex items-center justify-between bg-slate-950/60">
+            <span>➕ Listede Olmayan Özel Bir Feat / Yetenek Tanımla</span>
+            <span class="text-[10px] text-slate-400">▼</span>
+          </summary>
+          <div class="p-3 space-y-2.5 border-t border-slate-800">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Feat / Yetenek Adı *</label>
+                <input type="text" id="custom-feat-name" placeholder="Örn: Shock Trooper" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white font-bold">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kategori / Tür</label>
+                <select id="custom-feat-cat" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white">
+                  <option value="General">General Feat</option>
+                  <option value="Fighter">Fighter Bonus Feat</option>
+                  <option value="Martial">Martial / ToB Feat</option>
+                  <option value="Metamagic">Metamagic Feat</option>
+                  <option value="Special Ability">Special Ability (Sınıf Özelliği)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kaynak & Önkoşul</label>
+                <input type="text" id="custom-feat-source" placeholder="Örn: Complete Warrior p.112" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white">
+              </div>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Açıklama & Mekanik Etki (Benefit)</label>
+              <textarea id="custom-feat-benefit" rows="2" placeholder="Bu hünerin sağladığı bonus ve kural açıklaması..." class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white"></textarea>
+            </div>
+            <div class="flex justify-end">
+              <button onclick="addCustomFeatFromPicker()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition shadow">✨ Özel Feati Ekle & Master DB'ye Kaydet</button>
+            </div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Footer -->
+      <div class="bg-slate-950 px-4 py-2.5 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400 shrink-0">
+        <span>💡 İpucu: Master DB sekmesindeki AI Kural Asistanı ile de dilediğiniz kitaptan Feat çekebilirsiniz.</span>
+        <button onclick="closeFeatPickerModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs px-4 py-1.5 rounded-lg transition">Kapat</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================== -->
+  <!-- MODAL: LEVEL UP WIZARD (SEVİYE ATLAMA SİHİRBAZI) -->
+  <!-- ==================================================== -->
+  <div id="level-up-modal" class="hidden fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
+    <div class="bg-dndCard border border-emerald-500/80 rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
+      <!-- Header -->
+      <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-emerald-950 border border-emerald-500/60 flex items-center justify-center text-lg">⬆️</div>
+          <div>
+            <h3 class="text-sm md:text-base font-extrabold text-white flex items-center gap-2">
+              <span>Seviye Atlama Sihirbazı (Level Up)</span>
+              <span id="lvlup-target-badge" class="badge bg-emerald-950 text-emerald-300 border border-emerald-600 text-xs">Seviye 7</span>
+            </h3>
+            <p class="text-[10px] text-slate-400">D&D 3.5e Sınıf, Can Zarı (HD), BAB, Saves, Stat (+1) ve Feat Seçimi</p>
+          </div>
+        </div>
+        <button onclick="closeLevelUpModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-lg text-xs font-bold transition">✕ Kapat</button>
+      </div>
+
+      <!-- Body -->
+      <div class="p-4 space-y-3.5 text-xs overflow-y-auto flex-1">
+        <!-- Step 1: Class & Hit Die -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 space-y-2.5">
+          <div class="text-[11px] font-bold text-emerald-400 uppercase tracking-wide">1. Sınıf Seçimi (Class) & Otomatik İlerleme</div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <div class="sm:col-span-2">
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Alınacak Sınıf (Class) *</label>
+              <select id="lvlup-class-select" onchange="onLevelUpClassChange()" class="w-full bg-slate-950 border border-emerald-500/60 rounded-lg px-3 py-1.5 text-xs font-bold text-white">
+                <option value="Sorcerer">Sorcerer (d4 HD • 1/2 BAB • İyi Will • 2+INT Skill)</option>
+                <option value="Warblade">Warblade (d12 HD • Tam BAB • İyi Fort • 4+INT Skill)</option>
+                <option value="Fighter">Fighter (d10 HD • Tam BAB • İyi Fort • 2+INT Skill + Bonus Feat)</option>
+                <option value="Wizard">Wizard (d4 HD • 1/2 BAB • İyi Will • 2+INT Skill)</option>
+                <option value="Rogue">Rogue (d6 HD • 3/4 BAB • İyi Ref • 8+INT Skill)</option>
+                <option value="Cleric">Cleric (d8 HD • 3/4 BAB • İyi Fort/Will • 2+INT Skill)</option>
+                <option value="Barbarian">Barbarian (d12 HD • Tam BAB • İyi Fort • 4+INT Skill)</option>
+                <option value="Ranger">Ranger (d8 HD • Tam BAB • İyi Fort/Ref • 6+INT Skill)</option>
+                <option value="Paladin">Paladin (d10 HD • Tam BAB • İyi Fort • 2+INT Skill)</option>
+                <option value="Bard">Bard (d6 HD • 3/4 BAB • İyi Ref/Will • 6+INT Skill)</option>
+                <option value="Druid">Druid (d8 HD • 3/4 BAB • İyi Fort/Will • 4+INT Skill)</option>
+                <option value="Monk">Monk (d8 HD • 3/4 BAB • Tüm Saves İyi • 4+INT Skill)</option>
+                <option value="Swordsage">Swordsage (d8 HD • 3/4 BAB • İyi Ref/Will • 6+INT Skill)</option>
+                <option value="Crusader">Crusader (d10 HD • Tam BAB • İyi Fort/Will • 4+INT Skill)</option>
+                <option value="Duskblade">Duskblade (d8 HD • Tam BAB • İyi Fort/Will • 2+INT Skill)</option>
+                <option value="Abjurant Champion">Abjurant Champion (d10 HD • Tam BAB • İyi Will • 2+INT Skill)</option>
+                <option value="Eldritch Knight">Eldritch Knight (d6 HD • Tam BAB • İyi Fort • 2+INT Skill)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Can Zarı (Hit Die)</label>
+              <input type="text" id="lvlup-hd-input" value="d12" readonly class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-center font-mono font-bold text-amber-400">
+            </div>
+          </div>
+
+          <!-- Progression Numbers Row -->
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1">
+            <div>
+              <label class="block text-[9px] font-bold text-sky-400 uppercase mb-0.5">Yeni Toplam BAB</label>
+              <input type="number" id="lvlup-bab-input" value="4" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-center font-mono font-bold text-sky-400">
+            </div>
+            <div>
+              <label class="block text-[9px] font-bold text-emerald-400 uppercase mb-0.5">Yeni Taban Fort</label>
+              <input type="number" id="lvlup-fort-input" value="4" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-center font-mono font-bold text-white">
+            </div>
+            <div>
+              <label class="block text-[9px] font-bold text-sky-300 uppercase mb-0.5">Yeni Taban Ref</label>
+              <input type="number" id="lvlup-ref-input" value="3" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-center font-mono font-bold text-white">
+            </div>
+            <div>
+              <label class="block text-[9px] font-bold text-purple-400 uppercase mb-0.5">Yeni Taban Will</label>
+              <input type="number" id="lvlup-will-input" value="4" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-center font-mono font-bold text-white">
+            </div>
+            <div>
+              <label class="block text-[9px] font-bold text-indigo-300 uppercase mb-0.5">Kazanılan Skill Pts</label>
+              <input type="number" id="lvlup-skill-input" value="6" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-center font-mono font-bold text-indigo-300">
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Hit Points Roll / Average -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 space-y-2">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <div class="text-[11px] font-bold text-emerald-400 uppercase tracking-wide">2. Can Puanı Artışı (HP Gain = HD + CON Mod)</div>
+              <div id="lvlup-hp-formula-hint" class="text-[10px] text-slate-400">CON Modifiyeriniz otomatik olarak eklenir.</div>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="rollLevelUpHp('avg')" class="bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 px-2.5 py-1 rounded text-[11px] font-bold transition">📊 Ortalama (RAW)</button>
+              <button type="button" onclick="rollLevelUpHp('roll')" class="bg-amber-600/30 hover:bg-amber-600 text-amber-300 hover:text-white border border-amber-500/40 px-2.5 py-1 rounded text-[11px] font-bold transition">🎲 Zar At</button>
+              <button type="button" onclick="rollLevelUpHp('max')" class="bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/40 px-2.5 py-1 rounded text-[11px] font-bold transition">💪 Maksimum</button>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-slate-300 font-semibold">Bu Seviyede Kazanılan Toplam HP (CON Dahil):</span>
+            <input type="number" id="lvlup-hp-gain-input" value="9" min="1" class="w-20 bg-slate-950 border border-emerald-500 rounded-lg px-2.5 py-1 text-center font-mono text-base font-black text-emerald-400">
+          </div>
+        </div>
+
+        <!-- Step 3: Ability Score Increase (Every 4 Levels: 4, 8, 12, 16, 20) -->
+        <div id="lvlup-stat-section" class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="text-[11px] font-bold text-amber-400 uppercase tracking-wide">3. Temel Stat Artışı (+1 Ability Score)</div>
+            <span id="lvlup-stat-hint-badge" class="badge bg-slate-800 text-slate-400 border border-slate-700">4, 8, 12, 16, 20. Seviyelerde</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <label class="text-xs text-slate-300">Kalıcı +1 Stat Seçimi:</label>
+            <select id="lvlup-stat-select" class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white font-bold">
+              <option value="">-- Bu Seviyede Stat Artışı Yok --</option>
+              <option value="str">STR (+1 Strength / Güç)</option>
+              <option value="dex">DEX (+1 Dexterity / Çeviklik)</option>
+              <option value="con">CON (+1 Constitution / Dayanıklılık)</option>
+              <option value="int">INT (+1 Intelligence / Zeka)</option>
+              <option value="wis">WIS (+1 Wisdom / Bilgelik)</option>
+              <option value="cha">CHA (+1 Charisma / Karizma)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Step 4: Feat Selection (Levels 1, 3, 6, 9, 12, 15, 18 or Bonus Feat) -->
+        <div class="bg-slate-900/90 border border-purple-500/40 rounded-xl p-3 space-y-2.5">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <div class="text-[11px] font-bold text-purple-400 uppercase tracking-wide">4. Feat (Hüner) Seçimi</div>
+              <div id="lvlup-feat-hint" class="text-[10px] text-slate-400">Standart 3.5e kurallarında 1, 3, 6, 9, 12, 15, 18. seviyelerde (veya Fighter/Warblade bonus seviyelerinde) Feat kazanılır.</div>
+            </div>
+            <button type="button" onclick="openFeatPickerModal(true)" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow flex items-center gap-1.5 transition">
+              <span>🎖️</span>
+              <span>Kütüphaneden Feat Seç</span>
+            </button>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <select id="lvlup-feat-select" onchange="onLevelUpFeatDropdownChange()" class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-amber-300 font-bold">
+              <!-- Populated dynamically with available feats -->
+            </select>
+            <input type="text" id="lvlup-feat-custom" placeholder="Seçilen Feat adı (veya elle yazın)..." class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white font-bold">
+          </div>
+        </div>
+
+        <!-- Step 5: Class Features & Notes -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 space-y-1.5">
+          <label class="block text-[11px] font-bold text-sky-400 uppercase tracking-wide">5. Sınıf Özellikleri & Seviye Notları</label>
+          <input type="text" id="lvlup-notes-input" placeholder="Örn: Battle Ardor (+INT Crit Confirm), Uncanny Dodge, Yeni Büyü Yuvası..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white">
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="bg-slate-950 px-4 py-3 border-t border-slate-800 flex items-center justify-between shrink-0">
+        <button onclick="closeLevelUpModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs px-4 py-2 rounded-lg transition">Vazgeç</button>
+        <button onclick="confirmLevelUp()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-6 py-2 rounded-lg shadow-lg transition flex items-center gap-1.5">
+          <span>✅</span>
+          <span>Seviye Atlamayı Tamamla & Kaydet</span>
+        </button>
       </div>
     </div>
   </div>
@@ -3315,20 +3585,88 @@
       }
     }
 
+    let currentViewedFeatName = null;
+    let isFeatPickerForLevelUp = false;
+
+    // Built-in D&D 3.5e Core, Tome of Battle & Complete Series Feat Catalog
+    const DND35_FEAT_CATALOG = [
+      { name: "Power Attack", category: "Fighter", prereq: "Str 13", source: "PHB p.98", benefit: "Yakın dövüş saldırı zarından BAB değerine kadar ceza alıp, tek el silahlarla +1x, çift el silahlarla +2x hasar ekler." },
+      { name: "Weapon Finesse", category: "Fighter", prereq: "BAB +1", source: "PHB p.102", benefit: "Hafif silahlar, Rapier, Whip ve Spiked Chain ile saldırı zarlarında STR yerine DEX modifiyerini kullanır." },
+      { name: "Shadow Blade", category: "Martial", prereq: "1 Shadow Hand Stance", source: "Tome of Battle p.32", benefit: "Bir Shadow Hand duruşundayken (Stance), Shadow Hand disiplini silahlarıyla yapılan yakın dövüş hasarlarına DEX modifiyerini ekler." },
+      { name: "Weapon Focus (Rapier)", category: "Fighter", prereq: "BAB +1", source: "PHB p.102", benefit: "Seçilen silahla (Rapier) yapılan tüm saldırı zarlarına +1 bonus verir." },
+      { name: "Weapon Focus (Spiked Chain)", category: "Fighter", prereq: "Proficiency, BAB +1", source: "PHB p.102", benefit: "Seçilen silahla (Spiked Chain) yapılan tüm saldırı zarlarına +1 bonus verir." },
+      { name: "Combat Expertise", category: "Fighter", prereq: "Int 13", source: "PHB p.92", benefit: "Yakın dövüş saldırı zarından -5'e kadar (veya BAB kadar) ceza alıp aynı değeri AC'ye Dodge bonusu olarak ekler." },
+      { name: "Adaptive Style", category: "Martial", prereq: "Crusader, Swordsage veya Warblade 1", source: "Tome of Battle p.28", benefit: "1 Full-Round Action harcayarak kuşanılan (Readied) manevralarınızı savaş ortasında değiştirebilir ve harcanmış manevraları yenileyebilirsiniz." },
+      { name: "Arcane Strike", category: "General", prereq: "3. seviye arcane büyü yapabilme, BAB +4", source: "Complete Warrior p.96", benefit: "Free Action olarak bir büyü yuvası feda edip 1 tur boyunca tüm silah saldırılarına +Büyü Seviyesi saldırı bonusu ve +Xd4 ekstra hasar ekler." },
+      { name: "Practiced Spellcaster", category: "General", prereq: "Spellcraft 4 ranks", source: "Complete Arcane p.82", benefit: "Seçilen büyücü sınıfının Caster Level (CL) değerini +4 artırır (toplam karakter seviyesini HD'yi geçemez). Çoklu sınıf (Gish) karakterler için idealdir." },
+      { name: "Improved Initiative", category: "Fighter", prereq: "-", source: "PHB p.96", benefit: "İnisiyatif (Initiative) zarlarına kalıcı +4 bonus sağlar." },
+      { name: "Dodge", category: "Fighter", prereq: "Dex 13", source: "PHB p.93", benefit: "Belirlenen hedefe karşı +1 Dodge AC bonusu verir (Dodge bonusları birbiriyle toplanır)." },
+      { name: "Mobility", category: "Fighter", prereq: "Dex 13, Dodge", source: "PHB p.98", benefit: "Tehdit altındaki karelerden çıkarken tetiklenen fırsat saldırılarına (AoO) karşı +4 Dodge AC bonusu verir." },
+      { name: "Spring Attack", category: "Fighter", prereq: "Dex 13, Dodge, Mobility, BAB +4", source: "PHB p.100", benefit: "Yakın dövüş saldırısından hem önce hem sonra toplam hızınız kadar hareket etmenizi sağlar; hedef fırsat saldırısı yapamaz." },
+      { name: "Exotic Weapon Proficiency (Spiked Chain)", category: "Fighter", prereq: "BAB +1", source: "PHB p.94", benefit: "Spiked Chain egzotik silahını -4 ceza almadan ustalıkla kullanmanızı sağlar." },
+      { name: "Combat Reflexes", category: "Fighter", prereq: "-", source: "PHB p.92", benefit: "Tur başına DEX modifiyeriniz kadar ek Fırsat Saldırısı (AoO) yapabilir ve Flat-Footed iken de AoO kullanabilirsiniz." },
+      { name: "Improved Trip", category: "Fighter", prereq: "Int 13, Combat Expertise", source: "PHB p.96", benefit: "Çelme (Trip) denemelerinde AoO tetiklemez, +4 bonus verir ve rakibi düşürdüğünüzde anında ücretsiz bir yakın dövüş saldırısı hakkı kazandırır." },
+      { name: "Shock Trooper", category: "Fighter", prereq: "Improved Bull Rush, Power Attack, BAB +6", source: "Complete Warrior p.112", benefit: "Heedless Charge: Charge saldırısında Power Attack cezasını saldırı zarı yerine AC'den düşmenizi sağlar." },
+      { name: "Leap Attack", category: "General", prereq: "Jump 8 ranks, Power Attack", source: "Complete Adventurer p.110", benefit: "Charge sırasında en az 10 ft uzun atlama yaparsanız Power Attack ekstra hasarını ikiye/üçe katlar." },
+      { name: "Blind-Fight", category: "Fighter", prereq: "-", source: "PHB p.90", benefit: "Concealment (Gizlenme) ıska şansını (Miss Chance) bir kez yeniden atmanızı sağlar; görünmez rakiplere karşı AC'de DEX kaybetmezsiniz." },
+      { name: "Cleave", category: "Fighter", prereq: "Str 13, Power Attack", source: "PHB p.92", benefit: "Bir yaratığı yakın dövüşte yıktığınızda (0 HP altı), erişim mesafenizdeki başka bir hedefe anında ek saldırı yaparsınız." },
+      { name: "Improved Critical (Rapier)", category: "Fighter", prereq: "Proficiency, BAB +8", source: "PHB p.95", benefit: "Seçilen silahın kritik tehdit aralığını ikiye katlar (örn. Rapier 18-20 -> 15-20)." },
+      { name: "Two-Weapon Fighting", category: "Fighter", prereq: "Dex 15", source: "PHB p.102", benefit: "Çift silahla dövüşürken alınan saldırı cezalarını azaltır (Hafif off-hand silahla -2 / -2)." },
+      { name: "Combat Casting", category: "General", prereq: "-", source: "PHB p.92", benefit: "Savunmada büyü yaparken (Cast Defensively) veya kıskaçtayken Concentration zarlarına +4 bonus verir." },
+      { name: "Extend Spell", category: "Metamagic", prereq: "-", source: "PHB p.94", benefit: "Büyünün süresini iki katına çıkarır (+1 seviye büyü yuvası kullanır)." },
+      { name: "Empower Spell", category: "Metamagic", prereq: "-", source: "PHB p.93", benefit: "Büyünün tüm değişken sayısal etkilerini (hasar zarları vb.) x1.5 katına çıkarır (+2 seviye büyü yuvası)." },
+      { name: "Quicken Spell", category: "Metamagic", prereq: "-", source: "PHB p.98", benefit: "Büyüyü Swift Action olarak anında yapmanızı sağlar (+4 seviye büyü yuvası)." },
+      { name: "Somatic Weaponry", category: "General", prereq: "Concentration 4 ranks, Spellcraft 4 ranks", source: "Complete Mage p.47", benefit: "İki elinizde silah veya kalkan tutarken bile büyülerin somatik (el hareketi) bileşenlerini gerçekleştirebilirsiniz." },
+      { name: "Toughness", category: "General", prereq: "-", source: "PHB p.101", benefit: "Karaktere kalıcı +3 Hit Points (Can Puanı) kazandırır." },
+      { name: "Iron Will", category: "General", prereq: "-", source: "PHB p.97", benefit: "Will (İrade) kurtarma zarlarına +2 bonus verir." },
+      { name: "Lightning Reflexes", category: "General", prereq: "-", source: "PHB p.97", benefit: "Reflex (Refleks) kurtarma zarlarına +2 bonus verir." },
+      { name: "Great Fortitude", category: "General", prereq: "-", source: "PHB p.94", benefit: "Fortitude (Dayanıklılık) kurtarma zarlarına +2 bonus verir." }
+    ];
+
+    // D&D 3.5e Class Progression Reference Table
+    const DND35_CLASS_DEFS = {
+      "Sorcerer": { hd: 4, bab: 0.5, fort: "poor", ref: "poor", will: "good", skills: 2 },
+      "Wizard": { hd: 4, bab: 0.5, fort: "poor", ref: "poor", will: "good", skills: 2 },
+      "Warblade": { hd: 12, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 4 },
+      "Fighter": { hd: 10, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 2 },
+      "Barbarian": { hd: 12, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 4 },
+      "Paladin": { hd: 10, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 2 },
+      "Ranger": { hd: 8, bab: 1.0, fort: "good", ref: "good", will: "poor", skills: 6 },
+      "Rogue": { hd: 6, bab: 0.75, fort: "poor", ref: "good", will: "poor", skills: 8 },
+      "Bard": { hd: 6, bab: 0.75, fort: "poor", ref: "good", will: "good", skills: 6 },
+      "Cleric": { hd: 8, bab: 0.75, fort: "good", ref: "poor", will: "good", skills: 2 },
+      "Druid": { hd: 8, bab: 0.75, fort: "good", ref: "poor", will: "good", skills: 4 },
+      "Monk": { hd: 8, bab: 0.75, fort: "good", ref: "good", will: "good", skills: 4 },
+      "Swordsage": { hd: 8, bab: 0.75, fort: "poor", ref: "good", will: "good", skills: 6 },
+      "Crusader": { hd: 10, bab: 1.0, fort: "good", ref: "poor", will: "good", skills: 4 },
+      "Duskblade": { hd: 8, bab: 1.0, fort: "good", ref: "poor", will: "good", skills: 2 },
+      "Abjurant Champion": { hd: 10, bab: 1.0, fort: "poor", ref: "poor", will: "good", skills: 2 },
+      "Eldritch Knight": { hd: 6, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 2 }
+    };
+
     // Feat Detail Popover Modal (Madde 17 setNote equivalent)
     function showFeatDetail(featName) {
       const modal = document.getElementById('feat-detail-modal');
       if (!modal) return;
+      currentViewedFeatName = featName;
 
       const fFromChar = (character.feats || []).find(f => (typeof f === 'string' ? f : f.name).toLowerCase() === featName.toLowerCase());
       const aFromChar = (character.specialAbilities || []).find(a => (typeof a === 'string' ? a : a.name).toLowerCase() === featName.toLowerCase());
       const fFromDb = (masterDb || []).find(m => (m.name || '').toLowerCase() === featName.toLowerCase());
+      const fFromCat = DND35_FEAT_CATALOG.find(c => c.name.toLowerCase() === featName.toLowerCase());
 
       const title = featName;
       let source = 'D&D 3.5e Core Rules';
       let category = 'Feat / Ability';
       let benefit = 'Bu yetenek veya hüner karakterinizin temel kurallarını modifiye eder.';
       let notes = '';
+
+      if (fFromCat) {
+        source = fFromCat.source || source;
+        category = fFromCat.category || category;
+        benefit = fFromCat.benefit || benefit;
+        if (fFromCat.prereq && fFromCat.prereq !== '-') notes = `Önkoşul: ${fFromCat.prereq}`;
+      }
 
       if (fFromChar && typeof fFromChar === 'object') {
         source = fFromChar.source || source;
@@ -3341,10 +3679,10 @@
       }
 
       if (fFromDb) {
-        source = fFromDb.sourceBook ? `${fFromDb.sourceBook} p. ${fFromDb.sourcePage || '-'}` : source;
+        source = fFromDb.source || (fFromDb.sourceBook ? `${fFromDb.sourceBook} p. ${fFromDb.sourcePage || '-'}` : source);
         category = fFromDb.type || category;
         benefit = fFromDb.benefit || fFromDb.description || benefit;
-        notes = fFromDb.notes || '';
+        notes = fFromDb.notes || (fFromDb.prereq && fFromDb.prereq !== '-' ? `Önkoşul: ${fFromDb.prereq}` : notes);
       }
 
       document.getElementById('feat-modal-title').textContent = title;
@@ -3366,6 +3704,484 @@
     function closeFeatDetailModal() {
       const modal = document.getElementById('feat-detail-modal');
       if (modal) modal.classList.add('hidden');
+      currentViewedFeatName = null;
+    }
+
+    function removeCurrentViewedFeat() {
+      if (!currentViewedFeatName) return;
+      if (!confirm(`"${currentViewedFeatName}" yeteneğini karakterinizden kaldırmak istediğinize emin misiniz?`)) return;
+      const target = currentViewedFeatName.toLowerCase().trim();
+      if (Array.isArray(character.feats)) {
+        character.feats = character.feats.filter(f => (typeof f === 'string' ? f : f.name).toLowerCase().trim() !== target);
+      }
+      if (Array.isArray(character.specialAbilities)) {
+        character.specialAbilities = character.specialAbilities.filter(a => (typeof a === 'string' ? a : a.name).toLowerCase().trim() !== target);
+      }
+      closeFeatDetailModal();
+      saveStateToStorage(true);
+      renderAll();
+    }
+
+    // ====================================================
+    // 🎖️ FEAT PICKER MODAL FUNCTIONS
+    // ====================================================
+    function getCombinedFeatCatalog() {
+      const map = new Map();
+      DND35_FEAT_CATALOG.forEach(f => map.set(f.name.toLowerCase(), { ...f }));
+      (masterDb || []).forEach(m => {
+        const t = (m.type || '').toLowerCase();
+        if (t === 'feat' || t === 'special ability') {
+          const key = (m.name || '').toLowerCase();
+          if (key) {
+            map.set(key, {
+              name: m.name,
+              category: t === 'special ability' ? 'Special Ability' : (m.category || 'General'),
+              prereq: m.prereq || '-',
+              source: m.source || 'Master DB',
+              benefit: m.benefit || m.description || ''
+            });
+          }
+        }
+      });
+      return Array.from(map.values());
+    }
+
+    function openFeatPickerModal(forLevelUp = false) {
+      isFeatPickerForLevelUp = !!forLevelUp;
+      const modal = document.getElementById('feat-picker-modal');
+      if (!modal) return;
+      const titleEl = document.getElementById('feat-picker-modal-title');
+      if (titleEl) {
+        titleEl.textContent = isFeatPickerForLevelUp ? 'Seviye Atlama İçin Feat Seç' : 'Feat (Hüner) Seç & Öğren';
+      }
+      const searchEl = document.getElementById('feat-picker-search');
+      if (searchEl) searchEl.value = '';
+      renderFeatPickerList();
+      modal.classList.remove('hidden');
+    }
+
+    function closeFeatPickerModal() {
+      const modal = document.getElementById('feat-picker-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function renderFeatPickerList() {
+      const listEl = document.getElementById('feat-picker-list');
+      if (!listEl) return;
+      listEl.innerHTML = '';
+
+      const query = (document.getElementById('feat-picker-search')?.value || '').toLowerCase().trim();
+      const cat = document.getElementById('feat-picker-category')?.value || 'All';
+      const catalog = getCombinedFeatCatalog();
+
+      const ownedSet = new Set([
+        ...(character.feats || []).map(f => (typeof f === 'string' ? f : f.name).toLowerCase().trim()),
+        ...(character.specialAbilities || []).map(a => (typeof a === 'string' ? a : a.name).toLowerCase().trim())
+      ]);
+
+      const filtered = catalog.filter(f => {
+        const matchQuery = !query || f.name.toLowerCase().includes(query) || (f.benefit || '').toLowerCase().includes(query) || (f.prereq || '').toLowerCase().includes(query);
+        const matchCat = cat === 'All' || (f.category || '').toLowerCase().includes(cat.toLowerCase());
+        return matchQuery && matchCat;
+      });
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = `<div class="p-4 text-center text-slate-400 italic bg-slate-950/60 rounded-xl border border-slate-800">Aramanızla eşleşen Feat bulunamadı. Aşağıdaki "Özel Bir Feat Tanımla" bölümünden hemen ekleyebilirsiniz.</div>`;
+        return;
+      }
+
+      filtered.forEach(f => {
+        const isOwned = ownedSet.has(f.name.toLowerCase().trim());
+        const itemDiv = document.createElement('div');
+        itemDiv.className = `p-3 rounded-xl border transition flex items-start justify-between gap-3 ${isOwned ? 'bg-slate-900/40 border-emerald-800/50' : 'bg-slate-950/80 border-slate-800 hover:border-purple-500/60'}`;
+        const safeName = f.name.replace(/'/g, "\\'");
+        itemDiv.innerHTML = `
+          <div class="space-y-1 flex-1">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="font-bold text-white text-xs">${f.name}</span>
+              <span class="badge bg-purple-950 text-purple-300 border border-purple-800 text-[9px]">${f.category || 'General'}</span>
+              <span class="text-[10px] text-slate-400 font-mono">📚 ${f.source || 'PHB'}</span>
+              ${f.prereq && f.prereq !== '-' ? `<span class="text-[10px] text-amber-400 font-mono">Önkoşul: ${f.prereq}</span>` : ''}
+            </div>
+            <p class="text-[11px] text-slate-300 leading-relaxed">${f.benefit || ''}</p>
+          </div>
+          <div class="shrink-0">
+            ${isOwned && !isFeatPickerForLevelUp
+              ? `<span class="px-2.5 py-1 rounded-lg bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px] font-bold inline-block">✅ Alındı</span>`
+              : `<button onclick="selectFeatFromPicker('${safeName}')" class="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow transition whitespace-nowrap">
+                  ${isFeatPickerForLevelUp ? '⬆️ Bu Seviye İçin Seç' : '➕ Öğren'}
+                </button>`
+            }
+          </div>
+        `;
+        listEl.appendChild(itemDiv);
+      });
+    }
+
+    function selectFeatFromPicker(featName) {
+      const catalog = getCombinedFeatCatalog();
+      const entry = catalog.find(c => c.name.toLowerCase() === featName.toLowerCase()) || {
+        name: featName,
+        category: 'General',
+        source: 'D&D 3.5e',
+        benefit: ''
+      };
+
+      if (isFeatPickerForLevelUp) {
+        const customInput = document.getElementById('lvlup-feat-custom');
+        if (customInput) customInput.value = entry.name;
+        const sel = document.getElementById('lvlup-feat-select');
+        if (sel) sel.value = entry.name;
+        closeFeatPickerModal();
+        return;
+      }
+
+      learnFeatObject(entry);
+      renderFeatPickerList();
+      saveStateToStorage(true);
+      renderAll();
+    }
+
+    function learnFeatObject(entry) {
+      if (!entry || !entry.name) return;
+      const clean = entry.name.toLowerCase().trim();
+      if ((entry.category || '').toLowerCase() === 'special ability') {
+        if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
+        const exists = character.specialAbilities.some(a => (typeof a === 'string' ? a : a.name).toLowerCase().trim() === clean);
+        if (!exists) {
+          character.specialAbilities.push({
+            name: entry.name,
+            source: entry.source || 'D&D 3.5e',
+            category: 'Special Ability',
+            benefit: entry.benefit || ''
+          });
+        }
+      } else {
+        if (!Array.isArray(character.feats)) character.feats = [];
+        const exists = character.feats.some(f => (typeof f === 'string' ? f : f.name).toLowerCase().trim() === clean);
+        if (!exists) {
+          character.feats.push({
+            name: entry.name,
+            source: entry.source || 'D&D 3.5e',
+            category: entry.category || 'General',
+            benefit: entry.benefit || ''
+          });
+          // Toughness immediate +3 HP support
+          if (clean === 'toughness' && character.hp) {
+            character.hp.max = (Number(character.hp.max) || 0) + 3;
+            character.hp.current = (Number(character.hp.current) || 0) + 3;
+          }
+        }
+      }
+
+      // Also ensure it is present in Master DB for universal reference
+      if (Array.isArray(masterDb)) {
+        const inDb = masterDb.some(m => (m.name || '').toLowerCase().trim() === clean);
+        if (!inDb) {
+          masterDb.push({
+            name: entry.name,
+            type: (entry.category === 'Special Ability') ? 'Special Ability' : 'Feat',
+            slot: 'None',
+            prereq: entry.prereq || '-',
+            source: entry.source || 'D&D 3.5e',
+            benefit: entry.benefit || '',
+            bonusType: 'Untyped',
+            role: 'Offense / Feat'
+          });
+        }
+      }
+    }
+
+    function addCustomFeatFromPicker() {
+      const name = (document.getElementById('custom-feat-name')?.value || '').trim();
+      const category = document.getElementById('custom-feat-cat')?.value || 'General';
+      const source = (document.getElementById('custom-feat-source')?.value || 'D&D 3.5e').trim();
+      const benefit = (document.getElementById('custom-feat-benefit')?.value || '').trim();
+      if (!name) {
+        alert('⚠️ Lütfen Feat veya Yetenek adını girin.');
+        return;
+      }
+      const entry = { name, category, source, benefit, prereq: '-' };
+      if (isFeatPickerForLevelUp) {
+        learnFeatObject(entry);
+        const customInput = document.getElementById('lvlup-feat-custom');
+        if (customInput) customInput.value = name;
+        closeFeatPickerModal();
+        return;
+      }
+      learnFeatObject(entry);
+      document.getElementById('custom-feat-name').value = '';
+      document.getElementById('custom-feat-benefit').value = '';
+      renderFeatPickerList();
+      saveStateToStorage(true);
+      renderAll();
+    }
+
+    // ====================================================
+    // ⬆️ LEVEL UP WIZARD FUNCTIONS
+    // ====================================================
+    function openLevelUpModal() {
+      const modal = document.getElementById('level-up-modal');
+      if (!modal) return;
+
+      const prog = character.levelProgression || [];
+      const nextLvl = prog.length > 0 ? (Number(prog[prog.length - 1].level) || prog.length) + 1 : (Number(character.level) || 1) + 1;
+      const badge = document.getElementById('lvlup-target-badge');
+      if (badge) badge.textContent = `Seviye ${nextLvl}`;
+
+      // Default class to last taken class
+      const lastClass = prog.length > 0 ? prog[prog.length - 1].className : 'Warblade';
+      const classSelect = document.getElementById('lvlup-class-select');
+      if (classSelect && DND35_CLASS_DEFS[lastClass]) {
+        classSelect.value = lastClass;
+      }
+
+      // Populate Feat dropdown
+      const featSelect = document.getElementById('lvlup-feat-select');
+      if (featSelect) {
+        const isGeneralFeatLvl = (nextLvl === 1 || nextLvl % 3 === 0);
+        featSelect.innerHTML = `<option value="">${isGeneralFeatLvl ? '-- 🎖️ Bu Seviye (Lvl ' + nextLvl + ') İçin Bir Feat Seçin --' : '-- Bu Seviyede Feat Seçilmedi (İsteğe Bağlı Bonus Feat) --'}</option>`;
+        getCombinedFeatCatalog().forEach(f => {
+          const opt = document.createElement('option');
+          opt.value = f.name;
+          opt.textContent = `${f.name} (${f.category} • ${f.source})`;
+          featSelect.appendChild(opt);
+        });
+      }
+      const featCustom = document.getElementById('lvlup-feat-custom');
+      if (featCustom) featCustom.value = '';
+
+      // Ability score increase highlight at levels 4, 8, 12, 16, 20
+      const statHint = document.getElementById('lvlup-stat-hint-badge');
+      const statSelect = document.getElementById('lvlup-stat-select');
+      if (statSelect) statSelect.value = '';
+      if (statHint) {
+        if (nextLvl % 4 === 0) {
+          statHint.textContent = `🌟 Seviye ${nextLvl}: +1 Stat Hakkınız Var!`;
+          statHint.className = 'badge bg-amber-950 text-amber-300 border border-amber-500 animate-pulse';
+        } else {
+          statHint.textContent = '4, 8, 12, 16, 20. Seviyelerde';
+          statHint.className = 'badge bg-slate-800 text-slate-400 border border-slate-700';
+        }
+      }
+
+      const notesInput = document.getElementById('lvlup-notes-input');
+      if (notesInput) notesInput.value = '';
+
+      onLevelUpClassChange();
+      modal.classList.remove('hidden');
+    }
+
+    function closeLevelUpModal() {
+      const modal = document.getElementById('level-up-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function onLevelUpClassChange() {
+      const className = document.getElementById('lvlup-class-select')?.value || 'Warblade';
+      const def = DND35_CLASS_DEFS[className] || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
+
+      const hdInput = document.getElementById('lvlup-hd-input');
+      if (hdInput) hdInput.value = `d${def.hd}`;
+
+      // Calculate fractional or standard progression from existing levels + this new class level
+      const prog = character.levelProgression || [];
+      const classCounts = {};
+      prog.forEach(p => {
+        classCounts[p.className] = (classCounts[p.className] || 0) + 1;
+      });
+      classCounts[className] = (classCounts[className] || 0) + 1;
+
+      let totalBab = 0;
+      let totalFort = 0;
+      let totalRef = 0;
+      let totalWill = 0;
+      let goodFortTaken = false;
+      let goodRefTaken = false;
+      let goodWillTaken = false;
+
+      Object.entries(classCounts).forEach(([cName, lvlCount]) => {
+        const cDef = DND35_CLASS_DEFS[cName] || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
+        totalBab += lvlCount * cDef.bab;
+        if (cDef.fort === 'good') {
+          totalFort += (goodFortTaken ? 0 : 2) + lvlCount * 0.5;
+          goodFortTaken = true;
+        } else {
+          totalFort += lvlCount * (1 / 3);
+        }
+        if (cDef.ref === 'good') {
+          totalRef += (goodRefTaken ? 0 : 2) + lvlCount * 0.5;
+          goodRefTaken = true;
+        } else {
+          totalRef += lvlCount * (1 / 3);
+        }
+        if (cDef.will === 'good') {
+          totalWill += (goodWillTaken ? 0 : 2) + lvlCount * 0.5;
+          goodWillTaken = true;
+        } else {
+          totalWill += lvlCount * (1 / 3);
+        }
+      });
+
+      const intMod = RuleEngine.getAbilityMod(character.abilities?.int || 10);
+      const isHuman = (character.race || '').toLowerCase().includes('human');
+      const skillPts = Math.max(1, def.skills + intMod + (isHuman ? 1 : 0));
+
+      document.getElementById('lvlup-bab-input').value = Math.floor(totalBab + 1e-6);
+      document.getElementById('lvlup-fort-input').value = Math.floor(totalFort + 1e-6);
+      document.getElementById('lvlup-ref-input').value = Math.floor(totalRef + 1e-6);
+      document.getElementById('lvlup-will-input').value = Math.floor(totalWill + 1e-6);
+      document.getElementById('lvlup-skill-input').value = skillPts;
+
+      rollLevelUpHp('avg');
+    }
+
+    function rollLevelUpHp(mode = 'avg') {
+      const className = document.getElementById('lvlup-class-select')?.value || 'Warblade';
+      const def = DND35_CLASS_DEFS[className] || { hd: 8 };
+      const conMod = RuleEngine.getAbilityMod(character.abilities?.con || 10);
+      let dieRoll = Math.floor(def.hd / 2) + 1;
+      if (mode === 'roll') {
+        dieRoll = Math.floor(Math.random() * def.hd) + 1;
+      } else if (mode === 'max') {
+        dieRoll = def.hd;
+      }
+      const totalHpGain = Math.max(1, dieRoll + conMod);
+      const hpInput = document.getElementById('lvlup-hp-gain-input');
+      if (hpInput) hpInput.value = totalHpGain;
+      const hint = document.getElementById('lvlup-hp-formula-hint');
+      if (hint) {
+        hint.textContent = `Zar (d${def.hd}): ${dieRoll} + CON Mod (${conMod >= 0 ? '+' + conMod : conMod}) = +${totalHpGain} HP`;
+      }
+    }
+
+    function onLevelUpFeatDropdownChange() {
+      const sel = document.getElementById('lvlup-feat-select');
+      const custom = document.getElementById('lvlup-feat-custom');
+      if (sel && custom && sel.value) {
+        custom.value = sel.value;
+      }
+    }
+
+    function recalculateCharacterClassSummary() {
+      const prog = character.levelProgression || [];
+      if (prog.length === 0) return;
+
+      character.level = prog.length;
+      const classMap = {};
+      const hdMap = {};
+      prog.forEach(p => {
+        classMap[p.className] = (classMap[p.className] || 0) + 1;
+        hdMap[p.hd] = (hdMap[p.hd] || 0) + 1;
+      });
+      character.classes = Object.entries(classMap).map(([c, n]) => `${c} ${n}`).join(' / ');
+      character.hitDie = Object.entries(hdMap).map(([hd, n]) => `${n}${hd}`).join(' + ');
+
+      const lastRow = prog[prog.length - 1];
+      character.bab = Number(lastRow.bab) || character.bab;
+      if (!character.baseSaves) character.baseSaves = { fort: 0, ref: 0, will: 0 };
+      character.baseSaves.fort = Number(lastRow.fort) || 0;
+      character.baseSaves.ref = Number(lastRow.ref) || 0;
+      character.baseSaves.will = Number(lastRow.will) || 0;
+    }
+
+    function confirmLevelUp() {
+      if (!Array.isArray(character.levelProgression)) character.levelProgression = [];
+      const prog = character.levelProgression;
+      const nextLvl = prog.length + 1;
+
+      const className = document.getElementById('lvlup-class-select')?.value || 'Warblade';
+      const hd = document.getElementById('lvlup-hd-input')?.value || 'd8';
+      const hpGain = Math.max(1, parseInt(document.getElementById('lvlup-hp-gain-input')?.value) || 1);
+      const bab = parseInt(document.getElementById('lvlup-bab-input')?.value) || 0;
+      const fort = parseInt(document.getElementById('lvlup-fort-input')?.value) || 0;
+      const ref = parseInt(document.getElementById('lvlup-ref-input')?.value) || 0;
+      const will = parseInt(document.getElementById('lvlup-will-input')?.value) || 0;
+      const skillPts = parseInt(document.getElementById('lvlup-skill-input')?.value) || 4;
+      const statChoice = document.getElementById('lvlup-stat-select')?.value || '';
+      const featName = (document.getElementById('lvlup-feat-custom')?.value || '').trim();
+      const notes = (document.getElementById('lvlup-notes-input')?.value || '').trim();
+
+      const rowFeats = [];
+
+      // 1. Apply Permanent +1 Ability Score if chosen
+      if (statChoice && character.baseAbilities && character.baseAbilities[statChoice] !== undefined) {
+        character.baseAbilities[statChoice] = Number(character.baseAbilities[statChoice]) + 1;
+        rowFeats.push(`+1 Stat: ${statChoice.toUpperCase()}`);
+      }
+
+      // 2. Apply Chosen Feat
+      if (featName) {
+        rowFeats.push(`${featName} (Lvl ${nextLvl})`);
+        const catalog = getCombinedFeatCatalog();
+        const found = catalog.find(c => c.name.toLowerCase() === featName.toLowerCase()) || {
+          name: featName,
+          category: 'General',
+          source: `Level ${nextLvl}`,
+          benefit: notes || 'Seviye atlama ile kazanılan hüner.'
+        };
+        learnFeatObject(found);
+      }
+
+      // 3. Apply HP Gain
+      if (!character.hp) character.hp = { current: 10, max: 10, temp: 0, nonlethal: 0 };
+      character.hp.max = (Number(character.hp.max) || 0) + hpGain;
+      character.hp.current = (Number(character.hp.current) || 0) + hpGain;
+
+      // 4. Push Level Row
+      prog.push({
+        level: nextLvl,
+        className,
+        hd,
+        hpGain,
+        bab,
+        fort,
+        ref,
+        will,
+        skillPts,
+        feats: rowFeats,
+        statIncreased: statChoice || null,
+        addedFeatName: featName || null,
+        notes: notes || `${className} seviyesi eklendi`
+      });
+
+      recalculateCharacterClassSummary();
+      closeLevelUpModal();
+      saveStateToStorage(true);
+      renderAll();
+    }
+
+    function undoLastLevel() {
+      const prog = character.levelProgression || [];
+      if (prog.length <= 1) {
+        alert('⚠️ 1. seviyenin altına düşülemez.');
+        return;
+      }
+      const last = prog[prog.length - 1];
+      if (!confirm(`Seviye ${last.level} (${last.className}) kaydını geri almak istediğinize emin misiniz?`)) return;
+
+      prog.pop();
+
+      // Revert HP
+      if (character.hp && last.hpGain) {
+        character.hp.max = Math.max(1, (Number(character.hp.max) || 1) - Number(last.hpGain));
+        character.hp.current = Math.min(character.hp.max, Math.max(1, (Number(character.hp.current) || 1) - Number(last.hpGain)));
+      }
+
+      // Revert Stat increase if recorded
+      if (last.statIncreased && character.baseAbilities && character.baseAbilities[last.statIncreased] !== undefined) {
+        character.baseAbilities[last.statIncreased] = Number(character.baseAbilities[last.statIncreased]) - 1;
+      }
+
+      // Revert added Feat if recorded
+      if (last.addedFeatName && Array.isArray(character.feats)) {
+        const cleanF = last.addedFeatName.toLowerCase().trim();
+        character.feats = character.feats.filter(f => (typeof f === 'string' ? f : f.name).toLowerCase().trim() !== cleanF);
+      }
+
+      recalculateCharacterClassSummary();
+      saveStateToStorage(true);
+      renderAll();
     }
 
     // Level Progression Rendering (lvl_up - Madde 1, 2, 12)
@@ -3395,7 +4211,15 @@
       });
     }
 
-    // Skills Table
+    // Skills Table with Interactive Rank Adjustment
+    function adjustSkillRank(skillName, delta) {
+      const sk = (character.skills || []).find(s => s.name === skillName);
+      if (!sk) return;
+      sk.ranks = Math.max(0, (Number(sk.ranks) || 0) + delta);
+      saveStateToStorage(true);
+      renderSkills();
+    }
+
     function renderSkills() {
       const tbody = document.getElementById('skills-tbody');
       tbody.innerHTML = '';
@@ -3403,17 +4227,24 @@
         const statMod = RuleEngine.getAbilityMod(character.abilities?.[sk.stat] || 10);
         const acpVal = sk.acp ? (character.acBreakdown?.acp || 0) : 0;
         const total = sk.ranks + statMod + (sk.misc || 0) - acpVal;
+        const safeName = sk.name.replace(/'/g, "\\'");
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-900/60 transition';
         tr.innerHTML = `
           <td class="py-2 px-3 font-bold text-white">${sk.name}</td>
           <td class="py-2 px-3 text-center text-slate-400 uppercase font-mono">${sk.stat}</td>
-          <td class="py-2 px-3 text-center text-sky-400 font-mono">${sk.ranks}</td>
+          <td class="py-2 px-3 text-center text-sky-400 font-mono">
+            <div class="inline-flex items-center gap-1">
+              <button onclick="adjustSkillRank('${safeName}', -1)" class="w-4 h-4 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] leading-none">-</button>
+              <span class="w-5 text-center font-bold">${sk.ranks}</span>
+              <button onclick="adjustSkillRank('${safeName}', 1)" class="w-4 h-4 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] leading-none">+</button>
+            </div>
+          </td>
           <td class="py-2 px-3 text-center text-slate-400 font-mono">${statMod >= 0 ? '+' : ''}${statMod}</td>
           <td class="py-2 px-3 text-center ${sk.acp ? 'text-amber-400' : 'text-slate-600'} font-mono">${sk.acp ? (acpVal > 0 ? '-' + acpVal : '0') : '-'}</td>
           <td class="py-2 px-3 text-center font-black font-mono text-emerald-400 text-sm">${total >= 0 ? '+' : ''}${total}</td>
           <td class="py-2 px-3 text-center">
-            <button onclick="rollSkill3D('${sk.name}', ${total})" class="bg-slate-800 hover:bg-slate-700 text-amber-400 px-2.5 py-0.5 rounded border border-slate-700 text-xs font-mono transition">
+            <button onclick="rollSkill3D('${safeName}', ${total})" class="bg-slate-800 hover:bg-slate-700 text-amber-400 px-2.5 py-0.5 rounded border border-slate-700 text-xs font-mono transition">
               🎲 Zar
             </button>
           </td>

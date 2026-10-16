@@ -675,6 +675,11 @@ const RuleEngine = {
     const totalDefense = tacticalOptions.totalDefense || false;
     const charge = tacticalOptions.charge || false;
 
+    const charFeatNames = (character.feats || []).map(f => (typeof f === 'string' ? f : (f.name || '')).toLowerCase().trim());
+    if (charFeatNames.some(f => f === 'dodge')) {
+      effectiveDodge += 1;
+    }
+
     if (combatExpertise > 0) effectiveDodge += Math.min(5, combatExpertise);
     if (fightingDefensively) effectiveDodge += 2;
     if (totalDefense) effectiveDodge += 4;
@@ -733,9 +738,13 @@ const RuleEngine = {
     if (!character.saveBonuses) character.saveBonuses = {};
     character.saveBonuses.resistance = resistBonus;
 
-    const finalFort = baseFort + conMod + resistBonus + buffSaveFort;
-    const finalRef = baseRef + dexMod + resistBonus + buffSaveRef;
-    const finalWill = baseWill + wisMod + resistBonus + buffSaveWill;
+    const featFortBonus = charFeatNames.some(f => f.includes('great fortitude')) ? 2 : 0;
+    const featRefBonus = charFeatNames.some(f => f.includes('lightning reflexes')) ? 2 : 0;
+    const featWillBonus = charFeatNames.some(f => f.includes('iron will')) ? 2 : 0;
+
+    const finalFort = baseFort + conMod + resistBonus + buffSaveFort + featFortBonus;
+    const finalRef = baseRef + dexMod + resistBonus + buffSaveRef + featRefBonus;
+    const finalWill = baseWill + wisMod + resistBonus + buffSaveWill + featWillBonus;
 
     character.evaluatedSaves = {
       fort: finalFort,
@@ -757,7 +766,7 @@ const RuleEngine = {
 
   // Calculate Armor Class (Normal, Touch, Flat-Footed)
   evaluateAC(character, options = {}) {
-    if (!character) return { total: 10, touch: 10, flat: 10, dodgeBonus: 0, effectiveDex: 0 };
+    if (!character) return { total: 10, touch: 10, flat: 10, dodgeBonus: 0, effectiveDex: 0, breakdown: {} };
     
     // Always trigger dynamic recalculation
     this.recalculateCharacter(character, (typeof masterDb !== 'undefined' ? masterDb : []), options);
@@ -768,7 +777,16 @@ const RuleEngine = {
       touch: bd.touch ?? 10,
       flat: bd.flat ?? 10,
       dodgeBonus: bd.dodge ?? 0,
-      effectiveDex: bd.effectiveDex ?? 0
+      effectiveDex: bd.effectiveDex ?? 0,
+      breakdown: {
+        armor: bd.armor || 0,
+        shield: bd.shield || 0,
+        dex: bd.effectiveDex ?? 0,
+        natural: bd.natural || 0,
+        deflection: bd.deflection || 0,
+        dodge: bd.dodge || 0,
+        penalty: bd.penalty ? -Math.abs(bd.penalty) : 0
+      }
     };
   },
 
@@ -797,12 +815,13 @@ const RuleEngine = {
     const strMod = this.getAbilityMod(character.abilities?.str || 10);
     const dexMod = this.getAbilityMod(character.abilities?.dex || 10);
 
-    // Feat detections
+    // Feat detections (strip "+N" enhancement or "(...)" suffixes from weapon name when matching Weapon Focus)
+    const baseWepName = (weapon.name || '').toLowerCase().replace(/\+\d+/g, '').replace(/\(.*?\)/g, '').trim();
     const feats = (character.feats || []).map(f => (typeof f === 'string' ? f : f.name).toLowerCase());
     const hasWeaponFinesse = feats.some(f => f.includes('weapon finesse'));
     const hasShadowBlade = feats.some(f => f.includes('shadow blade'));
-    const hasWeaponFocus = feats.some(f => f.includes('weapon focus') && (f.includes(weapon.name.toLowerCase()) || f.includes('all')));
-    const hasWeaponSpec = feats.some(f => f.includes('weapon specialization') && (f.includes(weapon.name.toLowerCase()) || f.includes('all')));
+    const hasWeaponFocus = feats.some(f => f.includes('weapon focus') && ((baseWepName && f.includes(baseWepName)) || f.includes(weapon.name.toLowerCase()) || f.includes('all')));
+    const hasWeaponSpec = feats.some(f => f.includes('weapon specialization') && ((baseWepName && f.includes(baseWepName)) || f.includes(weapon.name.toLowerCase()) || f.includes('all')));
 
     // 1. Attack Stat Calculation
     let attackStatMod = strMod;
