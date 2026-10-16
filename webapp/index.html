@@ -6081,17 +6081,17 @@
 
       allConsumables.forEach(item => {
         const div = document.createElement('div');
-        div.className = 'bg-slate-900 border border-slate-700 p-3 rounded-lg flex items-center justify-between';
+        div.className = 'bg-slate-900 border border-slate-700 p-3 rounded-lg flex items-center justify-between gap-3';
         div.innerHTML = `
-          <div>
-            <div class="text-xs font-bold text-white flex items-center gap-1.5">
+          <div class="min-w-0 flex-1">
+            <div class="text-xs font-bold text-white flex items-center gap-1.5 flex-wrap">
               <span>${item.name}</span>
               ${item.isBelt ? '<span class="badge bg-amber-950 text-amber-300 border border-amber-700 text-[9px]">Kemerde</span>' : ''}
             </div>
-            <div class="text-[10px] text-amber-400">${item.effect} • Adet: <strong class="text-white">${item.qty}</strong></div>
+            <div class="text-[10px] text-amber-400 break-words mt-0.5">${item.effect} • Adet: <strong class="text-white">${item.qty}</strong></div>
           </div>
-          <button onclick="consumeItem3D(${item.fromPool}, ${item.fromPool ? item.poolId : item.idx})" ${item.qty <= 0 ? 'disabled' : ''} class="bg-amber-600/30 hover:bg-amber-600 disabled:opacity-30 text-amber-300 hover:text-white border border-amber-500/40 text-xs font-bold px-3 py-1.5 rounded transition">
-            🧪 Kullan
+          <button onclick="consumeItem3D(${item.fromPool}, ${item.fromPool ? item.poolId : item.idx})" ${item.qty <= 0 ? 'disabled' : ''} class="shrink-0 whitespace-nowrap inline-flex items-center justify-center gap-1.5 bg-amber-600/30 hover:bg-amber-600 disabled:opacity-30 text-amber-300 hover:text-white border border-amber-500/40 text-xs font-bold px-3 py-1.5 rounded transition self-center">
+            <span>🧪</span><span>Kullan</span>
           </button>
         `;
         container.appendChild(div);
