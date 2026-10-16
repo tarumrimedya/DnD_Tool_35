@@ -7,6 +7,13 @@
   "bab": 3,
   "baseSpeed": 30,
   "hitDie": "5d4 + 1d12",
+  "size": "Medium",
+  "alignment": "Chaotic Good",
+  "deity": "Boccob",
+  "gender": "Erkek",
+  "age": 24,
+  "height": "178 cm",
+  "weight": "72 kg",
   "baseAbilities": {
     "str": 12,
     "dex": 14,

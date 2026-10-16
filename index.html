@@ -510,6 +510,61 @@
     <div id="tab-core" class="tab-content hidden space-y-4">
       <div class="bg-dndCard border border-dndBorder rounded-xl p-4 shadow-lg space-y-4">
         
+        <!-- Character Identity & Profile Overview Card -->
+        <div class="bg-gradient-to-r from-slate-900 via-slate-900/90 to-indigo-950/60 border border-slate-700/80 rounded-xl p-4 shadow-md space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-800 flex items-center justify-center text-2xl shadow-inner border border-indigo-400/40">
+                🧙‍♂️
+              </div>
+              <div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <h2 id="core-profile-name" class="text-base font-extrabold text-white tracking-wide">Kazmil'in Çırağı</h2>
+                  <span id="core-profile-race-badge" class="badge bg-indigo-950 text-indigo-300 border border-indigo-700/70 text-[10px] font-bold">Human</span>
+                  <span id="core-profile-level-badge" class="badge bg-emerald-950 text-emerald-300 border border-emerald-700/70 text-[10px] font-bold">Seviye 6</span>
+                </div>
+                <div class="text-xs text-slate-300 flex items-center gap-2 mt-0.5">
+                  <span id="core-profile-classes" class="text-purple-300 font-semibold">Sorcerer 5 / Warblade 1</span>
+                  <span>•</span>
+                  <span id="core-profile-hd" class="text-slate-400 font-mono">5d4 + 1d12</span>
+                </div>
+              </div>
+            </div>
+            <button onclick="openProfileEditModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 hover:border-slate-500 font-bold text-xs px-3 py-1.5 rounded-lg transition shadow flex items-center gap-1.5">
+              <span>✏️</span>
+              <span>Profili Düzenle</span>
+            </button>
+          </div>
+
+          <!-- Quick Identity Grid -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2 text-xs">
+            <div class="bg-slate-950/60 p-2 rounded-lg border border-slate-800">
+              <span class="text-[10px] text-slate-400 uppercase font-bold block">Irk (Race)</span>
+              <span id="core-profile-race" class="text-indigo-300 font-bold">Human</span>
+            </div>
+            <div class="bg-slate-950/60 p-2 rounded-lg border border-slate-800">
+              <span class="text-[10px] text-slate-400 uppercase font-bold block">Yönelim (Alignment)</span>
+              <span id="core-profile-alignment" class="text-amber-300 font-semibold">Chaotic Good</span>
+            </div>
+            <div class="bg-slate-950/60 p-2 rounded-lg border border-slate-800">
+              <span class="text-[10px] text-slate-400 uppercase font-bold block">Tanrı (Deity)</span>
+              <span id="core-profile-deity" class="text-sky-300 font-semibold">Boccob</span>
+            </div>
+            <div class="bg-slate-950/60 p-2 rounded-lg border border-slate-800">
+              <span class="text-[10px] text-slate-400 uppercase font-bold block">Boyut (Size)</span>
+              <span id="core-profile-size" class="text-emerald-300 font-semibold">Medium (Orta)</span>
+            </div>
+            <div class="bg-slate-950/60 p-2 rounded-lg border border-slate-800">
+              <span class="text-[10px] text-slate-400 uppercase font-bold block">Cinsiyet & Yaş</span>
+              <span id="core-profile-gender-age" class="text-slate-200 font-semibold">Erkek, 24 Yaş</span>
+            </div>
+            <div class="bg-slate-950/60 p-2 rounded-lg border border-slate-800">
+              <span class="text-[10px] text-slate-400 uppercase font-bold block">Boy & Kilo</span>
+              <span id="core-profile-height-weight" class="text-slate-200 font-semibold">178 cm, 72 kg</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Skills Table with 3D Roll -->
         <div class="border border-slate-800 rounded-xl overflow-hidden">
           <div class="bg-slate-900 px-3 py-2 text-xs font-bold text-sky-400 flex justify-between items-center">
@@ -1736,6 +1791,118 @@
       <div class="bg-slate-950 px-4 py-2.5 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400 shrink-0">
         <span>💡 İpucu: Master DB sekmesindeki AI Kural Asistanı ile de dilediğiniz kitaptan Feat çekebilirsiniz.</span>
         <button onclick="closeFeatPickerModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs px-4 py-1.5 rounded-lg transition">Kapat</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================== -->
+  <!-- MODAL: CHARACTER PROFILE & IDENTITY EDITOR -->
+  <!-- ==================================================== -->
+  <div id="char-profile-modal" class="hidden fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
+    <div class="bg-dndCard border border-indigo-500/80 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
+      <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-indigo-950 border border-indigo-500/60 flex items-center justify-center text-lg">🧙‍♂️</div>
+          <div>
+            <h3 class="font-black text-white text-sm">Karakter Kimliği ve Özelliklerini Düzenle</h3>
+            <p class="text-[10px] text-indigo-300">Temel kimlik, ırk, yönelim ve fiziksel özellikleri güncelleyin</p>
+          </div>
+        </div>
+        <button onclick="closeProfileEditModal()" class="text-slate-400 hover:text-white text-lg p-1">✕</button>
+      </div>
+
+      <div class="p-4 space-y-3 overflow-y-auto text-xs">
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Karakter Adı *</label>
+            <input type="text" id="profile-edit-name" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-bold">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Irk (Race) *</label>
+            <input type="text" id="profile-edit-race" list="race-options" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-bold">
+            <datalist id="race-options">
+              <option value="Human">
+              <option value="Elf">
+              <option value="Dwarf">
+              <option value="Halfling">
+              <option value="Gnome">
+              <option value="Half-Elf">
+              <option value="Half-Orc">
+              <option value="Aasimar">
+              <option value="Tiefling">
+              <option value="Dragonborn">
+            </datalist>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Yönelim (Alignment)</label>
+            <select id="profile-edit-alignment" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white">
+              <option value="Lawful Good">Lawful Good</option>
+              <option value="Neutral Good">Neutral Good</option>
+              <option value="Chaotic Good">Chaotic Good</option>
+              <option value="Lawful Neutral">Lawful Neutral</option>
+              <option value="True Neutral">True Neutral</option>
+              <option value="Chaotic Neutral">Chaotic Neutral</option>
+              <option value="Lawful Evil">Lawful Evil</option>
+              <option value="Neutral Evil">Neutral Evil</option>
+              <option value="Chaotic Evil">Chaotic Evil</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tanrı / İnanç (Deity)</label>
+            <input type="text" id="profile-edit-deity" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Boyut (Size)</label>
+            <select id="profile-edit-size" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white">
+              <option value="Fine">Fine</option>
+              <option value="Diminutive">Diminutive</option>
+              <option value="Tiny">Tiny</option>
+              <option value="Small">Small</option>
+              <option value="Medium">Medium</option>
+              <option value="Large">Large</option>
+              <option value="Huge">Huge</option>
+              <option value="Gargantuan">Gargantuan</option>
+              <option value="Colossal">Colossal</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Cinsiyet</label>
+            <input type="text" id="profile-edit-gender" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Yaş</label>
+            <input type="number" id="profile-edit-age" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white font-mono">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Boy</label>
+            <input type="text" id="profile-edit-height" placeholder="Örn: 178 cm" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white font-mono">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kilo</label>
+            <input type="text" id="profile-edit-weight" placeholder="Örn: 72 kg" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white font-mono">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Taban Hız (ft)</label>
+            <input type="number" id="profile-edit-speed" placeholder="30" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white font-mono">
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-slate-950 px-4 py-3 border-t border-slate-800 flex justify-end gap-2 shrink-0">
+        <button onclick="closeProfileEditModal()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold transition">İptal</button>
+        <button onclick="saveCharacterProfile()" class="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition flex items-center gap-1.5 shadow">
+          <span>💾</span>
+          <span>Profili Kaydet</span>
+        </button>
       </div>
     </div>
   </div>
@@ -3069,6 +3236,7 @@
       }
 
       renderHUD();
+      renderCharacterProfile();
       renderWeapons();
       renderActiveModifiers();
       renderActiveBuffs();
@@ -3181,6 +3349,109 @@
       if (typeof updateRoundDisplays === 'function') {
         updateRoundDisplays();
       }
+    }
+
+    // 👤 CHARACTER IDENTITY & PROFILE (Karakter Özellikleri)
+    function renderCharacterProfile() {
+      if (!character) return;
+      const nameEl = document.getElementById('core-profile-name');
+      if (nameEl) nameEl.textContent = character.name || "İsimsiz Karakter";
+
+      const raceBadge = document.getElementById('core-profile-race-badge');
+      if (raceBadge) raceBadge.textContent = character.race || "Human";
+
+      const lvlBadge = document.getElementById('core-profile-level-badge');
+      if (lvlBadge) lvlBadge.textContent = `Seviye ${character.level || 1}`;
+
+      const classesEl = document.getElementById('core-profile-classes');
+      if (classesEl) classesEl.textContent = character.classes || "Belirtilmemiş";
+
+      const hdEl = document.getElementById('core-profile-hd');
+      if (hdEl) hdEl.textContent = character.hitDie || "d8";
+
+      const raceEl = document.getElementById('core-profile-race');
+      if (raceEl) raceEl.textContent = character.race || "Human";
+
+      const alignEl = document.getElementById('core-profile-alignment');
+      if (alignEl) alignEl.textContent = character.alignment || "Chaotic Good";
+
+      const deityEl = document.getElementById('core-profile-deity');
+      if (deityEl) deityEl.textContent = character.deity || "Boccob";
+
+      const sizeEl = document.getElementById('core-profile-size');
+      if (sizeEl) sizeEl.textContent = character.size || "Medium (Orta)";
+
+      const gaEl = document.getElementById('core-profile-gender-age');
+      if (gaEl) gaEl.textContent = `${character.gender || 'Erkek'}, ${character.age || 24} Yaş`;
+
+      const hwEl = document.getElementById('core-profile-height-weight');
+      if (hwEl) hwEl.textContent = `${character.height || '178 cm'}, ${character.weight || '72 kg'}`;
+    }
+
+    function openProfileEditModal() {
+      if (!character) return;
+      const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val !== undefined && val !== null ? val : '';
+      };
+      setVal('profile-edit-name', character.name || '');
+      setVal('profile-edit-race', character.race || 'Human');
+      setVal('profile-edit-alignment', character.alignment || 'Chaotic Good');
+      setVal('profile-edit-deity', character.deity || 'Boccob');
+      setVal('profile-edit-size', character.size || 'Medium');
+      setVal('profile-edit-gender', character.gender || 'Erkek');
+      setVal('profile-edit-age', character.age || 24);
+      setVal('profile-edit-height', character.height || '178 cm');
+      setVal('profile-edit-weight', character.weight || '72 kg');
+      setVal('profile-edit-speed', character.baseSpeed || 30);
+
+      const modal = document.getElementById('char-profile-modal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeProfileEditModal() {
+      const modal = document.getElementById('char-profile-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function saveCharacterProfile() {
+      if (!character) return;
+      const getVal = id => document.getElementById(id)?.value?.trim();
+      
+      const newName = getVal('profile-edit-name');
+      if (newName) character.name = newName;
+
+      const newRace = getVal('profile-edit-race');
+      if (newRace) character.race = newRace;
+
+      const newAlign = getVal('profile-edit-alignment');
+      if (newAlign) character.alignment = newAlign;
+
+      const newDeity = getVal('profile-edit-deity');
+      if (newDeity !== undefined) character.deity = newDeity;
+
+      const newSize = document.getElementById('profile-edit-size')?.value;
+      if (newSize) character.size = newSize;
+
+      const newGender = getVal('profile-edit-gender');
+      if (newGender !== undefined) character.gender = newGender;
+
+      const newAge = parseInt(document.getElementById('profile-edit-age')?.value);
+      if (!isNaN(newAge)) character.age = newAge;
+
+      const newHeight = getVal('profile-edit-height');
+      if (newHeight !== undefined) character.height = newHeight;
+
+      const newWeight = getVal('profile-edit-weight');
+      if (newWeight !== undefined) character.weight = newWeight;
+
+      const newSpeed = parseInt(document.getElementById('profile-edit-speed')?.value);
+      if (!isNaN(newSpeed) && newSpeed > 0) character.baseSpeed = newSpeed;
+
+      closeProfileEditModal();
+      saveStateToStorage(true);
+      renderAll();
+      alert('✅ Karakter kimliği ve özellikleri başarıyla güncellendi!');
     }
 
     function applyDamage() {
@@ -4092,6 +4363,11 @@
 
       filtered.forEach(f => {
         const isOwned = ownedSet.has(f.name.toLowerCase().trim());
+        const isFlaw = (f.category === 'Flaw' || f.name.toLowerCase().startsWith('flaw:'));
+        const isRacial = (f.category === 'Racial Trait' || (f.type && f.type.toLowerCase().includes('racial')));
+        const lvl1Only = (isFlaw || isRacial || (f.prereq && f.prereq.toLowerCase().includes('1st level')));
+        const charLvl = character ? (character.level || 1) : 1;
+
         const itemDiv = document.createElement('div');
         itemDiv.className = `p-3 rounded-xl border transition flex items-start justify-between gap-3 ${isOwned ? 'bg-slate-900/40 border-emerald-800/50' : 'bg-slate-950/80 border-slate-800 hover:border-purple-500/60'}`;
         const safeName = f.name.replace(/'/g, "\\'");
@@ -4099,8 +4375,9 @@
           <div class="space-y-1 flex-1">
             <div class="flex flex-wrap items-center gap-2">
               <span class="font-bold text-white text-xs">${f.name}</span>
-              <span class="badge bg-purple-950 text-purple-300 border border-purple-800 text-[9px]">${f.category || 'General'}</span>
+              <span class="badge ${isFlaw ? 'bg-rose-950 text-rose-300 border border-rose-800' : (isRacial ? 'bg-teal-950 text-teal-300 border border-teal-800' : 'bg-purple-950 text-purple-300 border border-purple-800')} text-[9px]">${f.category || 'General'}</span>
               <span class="text-[10px] text-slate-400 font-mono">📚 ${f.source || 'PHB'}</span>
+              ${lvl1Only ? `<span class="badge bg-amber-950 text-amber-300 border border-amber-700/80 text-[9px] font-bold">⚠️ Yalnızca 1. Seviye</span>` : ''}
               ${f.prereq && f.prereq !== '-' ? `<span class="text-[10px] text-amber-400 font-mono">Önkoşul: ${f.prereq}</span>` : ''}
             </div>
             <p class="text-[11px] text-slate-300 leading-relaxed">${f.benefit || ''}</p>
@@ -4127,19 +4404,47 @@
         benefit: ''
       };
 
+      const isFlaw = (entry.category === 'Flaw' || entry.name.toLowerCase().startsWith('flaw:'));
+      const isRacial = (entry.category === 'Racial Trait' || (entry.type && entry.type.toLowerCase().includes('racial')));
+
       if (isFeatPickerForLevelUp) {
+        const prog = character.levelProgression || [];
+        const nextLvl = prog.length + 1;
+        if (nextLvl > 1 && (isFlaw || isRacial)) {
+          alert(`⚠️ D&D 3.5e kuralları gereğince Irk ve Flaw (Kusur) özellikleri yalnızca 1. Seviye karakter yaratımında seçilebilir. Şu anda Seviye ${nextLvl} seviye atlama sihirbazındasınız.`);
+          return;
+        }
+
         const customInput = document.getElementById('lvlup-feat-custom');
         if (customInput) customInput.value = entry.name;
         const sel = document.getElementById('lvlup-feat-select');
         if (sel) sel.value = entry.name;
+        const benefitInput = document.getElementById('lvlup-feat-benefit');
+        if (benefitInput) benefitInput.value = entry.benefit || '';
         closeFeatPickerModal();
         return;
+      }
+
+      if (character.level > 1 && isFlaw) {
+        const proceed = confirm(`⚠️ D&D 3.5e Unearthed Arcana kuralına göre Flaw (Kusur) yalnızca 1. Seviyede karakter yaratılırken seçilebilir. Mevcut karakter seviyeniz ${character.level}.\n\nYine de "${entry.name}" kusurunu eklemek istiyor musunuz?`);
+        if (!proceed) return;
+      }
+
+      if (character.level > 1 && isRacial) {
+        const proceed = confirm(`⚠️ Irksal yetenekler normalde yalnızca 1. Seviyede belirlenir. Mevcut seviyeniz ${character.level}.\n\nYine de "${entry.name}" yeteneğini eklemek istiyor musunuz?`);
+        if (!proceed) return;
       }
 
       learnFeatObject(entry);
       renderFeatPickerList();
       saveStateToStorage(true);
       renderAll();
+
+      if (isFlaw) {
+        alert(`⚠️ "${entry.name}" kusuru karaktere eklendi!\n\n🎖️ D&D 3.5e Unearthed Arcana kuralı gereğince bu kusur karşılığında 1 adet EKSTRA BONUS FEAT KAZANDINIZ!\n\nLütfen şimdi listeden kazanılan bonus hünerinizi (Feat) seçin.`);
+      } else if (isRacial && (entry.grantsBonusFeat || entry.name.toLowerCase().includes('bonus feat'))) {
+        alert(`🧬 "${entry.name}" ırksal yeteneği eklendi!\n\n🎖️ Bu yetenek 1 adet ekstra bonus feat kazandırmaktadır. Lütfen listeden bonus hünerinizi seçin.`);
+      }
     }
 
     function learnFeatObject(entry) {
@@ -4228,7 +4533,17 @@
       const label = document.getElementById('lvlup-catalog-label');
       if (!typeSel || !featSel) return;
 
+      const prog = character.levelProgression || [];
+      const nextLvl = prog.length + 1;
       const chosenType = typeSel.value;
+
+      if (nextLvl > 1 && (chosenType === 'Flaw' || chosenType === 'Racial Trait')) {
+        alert(`⚠️ D&D 3.5e kuralları gereğince Irk ve Flaw (Kusur) özellikleri yalnızca 1. Seviye karakter yaratımında seçilebilir. Şu anda Seviye ${nextLvl} seviye atlama sihirbazındasınız.`);
+        typeSel.value = 'Regular Feat';
+        onLevelUpFeatTypeChange();
+        return;
+      }
+
       const combined = getCombinedFeatCatalog();
       let filtered = [];
 
@@ -4337,7 +4652,27 @@
       const qualifies = isLevelQualifiesForFeat(nextLvl, featMode);
       const featBadge = document.getElementById('lvlup-feat-status-badge');
       const featHint = document.getElementById('lvlup-feat-hint');
-      const featTypeSel = document.getElementById('lvlup-feat-type');
+      if (featTypeSel) {
+        if (nextLvl === 1) {
+          featTypeSel.innerHTML = `
+            <option value="Regular Feat">🎖️ Normal Feat (Regular Feat)</option>
+            <option value="Class Bonus Feat">⚔️ Sınıf Bonus Feati (Class Bonus Feat)</option>
+            <option value="Flaw">⚠️ Kusur / Flaw (Bonus Feat Karşılığı - 1. Seviye)</option>
+            <option value="Racial Trait">🧬 Irksal Yetenek (Racial Trait - 1. Seviye)</option>
+            <option value="DM Boon">🌟 DM Lütfu / Ödülü (DM Grant / Boon)</option>
+            <option value="Special Ability">✨ Özel Yetenek (Special Ability)</option>
+          `;
+        } else {
+          featTypeSel.innerHTML = `
+            <option value="Regular Feat">🎖️ Normal Feat (Regular Feat)</option>
+            <option value="Class Bonus Feat">⚔️ Sınıf Bonus Feati (Class Bonus Feat)</option>
+            <option value="DM Boon">🌟 DM Lütfu / Ödülü (DM Grant / Boon)</option>
+            <option value="Special Ability">✨ Özel Yetenek (Special Ability)</option>
+            <option value="Flaw" disabled>⚠️ Kusur / Flaw [Yalnızca 1. Seviyede Seçilebilir]</option>
+            <option value="Racial Trait" disabled>🧬 Irksal Yetenek [Yalnızca 1. Seviyede Seçilebilir]</option>
+          `;
+        }
+      }
 
       if (qualifies) {
         if (featBadge) {
@@ -4351,7 +4686,9 @@
           featBadge.textContent = 'İsteğe Bağlı Bonus / DM Boon';
           featBadge.className = 'badge bg-slate-800 text-slate-300 border border-slate-700 text-[9px] font-bold';
         }
-        if (featHint) featHint.textContent = `Standart feat seviyesi değil. Sınıf bonus feati, kusur (flaw) veya DM Lütfu (Boon) ekleyebilirsiniz.`;
+        if (featHint) featHint.textContent = nextLvl === 1 
+          ? `1. Seviye karakter başlangıcı: Normal Feat, Sınıf Bonusu, Irksal yetenek veya Kusur (Flaw) seçebilirsiniz.`
+          : `Standart feat seviyesi değil. Sınıf bonus feati veya DM Lütfu (Boon) ekleyebilirsiniz. (Irk ve Flaw yalnızca 1. seviyede seçilebilir).`;
         if (featTypeSel) featTypeSel.value = 'Class Bonus Feat';
       }
 
@@ -4674,6 +5011,22 @@
       closeLevelUpModal();
       saveStateToStorage(true);
       renderAll();
+
+      if (featName) {
+        const isFlaw = featType === 'Flaw' || featName.toLowerCase().startsWith('flaw:');
+        const isRacialBonus = (featType === 'Racial Trait' || featName.toLowerCase().includes('human')) && featName.toLowerCase().includes('bonus feat');
+        if (isFlaw) {
+          setTimeout(() => {
+            alert(`⚠️ 1. Seviye için "${featName}" kusuru (Flaw) başarıyla eklendi!\n\n🎖️ D&D 3.5e Unearthed Arcana kuralı gereğince bu kusur karşılığında 1 adet EKSTRA BONUS FEAT kazandınız!\n\nŞimdi bonus hünerinizi (Feat) seçmek için Feat Kataloğu açılıyor.`);
+            openFeatPickerModal(false);
+          }, 300);
+        } else if (isRacialBonus) {
+          setTimeout(() => {
+            alert(`🧬 "${featName}" ırksal yeteneği eklendi!\n\n🎖️ Bu yetenek 1 adet ekstra bonus feat kazandırmaktadır. Şimdi bonus hünerinizi (Feat) seçmek için Feat Kataloğu açılıyor.`);
+            openFeatPickerModal(false);
+          }, 300);
+        }
+      }
     }
 
     function undoLastLevel() {

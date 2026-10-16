@@ -723,10 +723,15 @@ const RuleEngine = {
 
     // 4.5. Resolve Dynamic Hit Points (HP) based on Constitution Changes
     // In D&D 3.5e RAW: An increase or decrease in Constitution modifier alters maximum and current HP by 1 HP per Hit Die / Level
+    const charFeatNames = (character.feats || []).map(f => (typeof f === 'string' ? f : (f.name || '')).toLowerCase().trim());
+    const totalHD = Number(character.level) || (Array.isArray(character.levelProgression) ? character.levelProgression.length : 1);
+    const hasFrail = charFeatNames.some(f => f.includes('flaw: frail') || f === 'frail');
+    const flawHpPenalty = hasFrail ? totalHD : 0;
+
     if (character.hp) {
       if (character.hp.baseMax === undefined || character.hp.baseMax === null) {
         // If baseMax not yet set, initialize it from current max (subtracting any previous conBonusHp)
-        character.hp.baseMax = Math.max(1, (Number(character.hp.max) || 45) - (Number(character.hp.conBonusHp) || 0));
+        character.hp.baseMax = Math.max(1, (Number(character.hp.max) || 45) - (Number(character.hp.conBonusHp) || 0) + flawHpPenalty);
       }
       if (character.hp.conBonusHp === undefined || character.hp.conBonusHp === null) {
         character.hp.conBonusHp = 0;
@@ -735,14 +740,14 @@ const RuleEngine = {
       const baseConMod = this.getAbilityMod(character.baseAbilities?.con || 10);
       const effectiveConMod = this.getAbilityMod(character.abilities?.con || 10);
       const conModDiff = effectiveConMod - baseConMod;
-      const totalHD = Number(character.level) || (Array.isArray(character.levelProgression) ? character.levelProgression.length : 1);
       const newConBonusHp = conModDiff * totalHD;
 
       const prevConBonusHp = Number(character.hp.conBonusHp) || 0;
-      if (newConBonusHp !== prevConBonusHp) {
+      if (newConBonusHp !== prevConBonusHp || character.hp._appliedFrail !== hasFrail) {
         const diff = newConBonusHp - prevConBonusHp;
         character.hp.conBonusHp = newConBonusHp;
-        character.hp.max = Math.max(1, Number(character.hp.baseMax) + newConBonusHp);
+        character.hp._appliedFrail = hasFrail;
+        character.hp.max = Math.max(1, Number(character.hp.baseMax) + newConBonusHp - flawHpPenalty);
         character.hp.current = (Number(character.hp.current) || 0) + diff;
         if (character.hp.current > character.hp.max) {
           character.hp.current = character.hp.max;
@@ -766,7 +771,6 @@ const RuleEngine = {
     const totalDefense = tacticalOptions.totalDefense || false;
     const charge = tacticalOptions.charge || false;
 
-    const charFeatNames = (character.feats || []).map(f => (typeof f === 'string' ? f : (f.name || '')).toLowerCase().trim());
     if (charFeatNames.some(f => f === 'dodge')) {
       effectiveDodge += 1;
     }
@@ -782,6 +786,9 @@ const RuleEngine = {
     // AC Penalties
     let totalPenalty = buffAcPenalty;
     if (charge) totalPenalty += 2;
+    if (charFeatNames.some(f => f.includes('flaw: vulnerable') || f === 'vulnerable')) {
+      totalPenalty += 1;
+    }
 
     const baseAC = 10;
     const sizeBonus = character.acBreakdown?.size || 0;
@@ -832,9 +839,10 @@ const RuleEngine = {
     const featFortBonus = charFeatNames.some(f => f.includes('great fortitude')) ? 2 : 0;
     const featRefBonus = charFeatNames.some(f => f.includes('lightning reflexes')) ? 2 : 0;
     const featWillBonus = charFeatNames.some(f => f.includes('iron will')) ? 2 : 0;
+    const flawRefPenalty = charFeatNames.some(f => f.includes('flaw: poor reflexes') || f === 'poor reflexes') ? 2 : 0;
 
     const finalFort = baseFort + conMod + resistBonus + buffSaveFort + featFortBonus;
-    const finalRef = baseRef + dexMod + resistBonus + buffSaveRef + featRefBonus;
+    const finalRef = baseRef + dexMod + resistBonus + buffSaveRef + featRefBonus - flawRefPenalty;
     const finalWill = baseWill + wisMod + resistBonus + buffSaveWill + featWillBonus;
 
     character.evaluatedSaves = {
@@ -947,6 +955,16 @@ const RuleEngine = {
       attackBonusItems.push({ type: 'untyped', val: -2, source: 'Monkey Grip (-2 Att)' });
     }
 
+    // Flaw: Noncombatant (-2 penalty on all melee attack rolls)
+    const isRangedWep = grip === 'Ranged' || weapon.isRanged || (weapon.tags && weapon.tags.includes('ranged'));
+    if (!isRangedWep && feats.some(f => f.includes('flaw: noncombatant') || f === 'noncombatant')) {
+      attackBonusItems.push({ type: 'untyped', val: -2, source: 'Flaw: Noncombatant (-2 Melee)' });
+    }
+    // Flaw: Shaky (-2 penalty on all ranged attack rolls)
+    if (isRangedWep && feats.some(f => f.includes('flaw: shaky') || f === 'shaky')) {
+      attackBonusItems.push({ type: 'untyped', val: -2, source: 'Flaw: Shaky (-2 Ranged)' });
+    }
+
     if (weapon.attBonus) {
       attackBonusItems.push({ type: weapon.bonusType || 'enhancement', val: weapon.attBonus, source: 'Weapon Enhancement' });
     }
@@ -1054,8 +1072,16 @@ const RuleEngine = {
   },
 
   // D&D 3.5e Carrying Capacity table based on STR
-  getCarryingCapacity(strScore) {
-    const s = Math.max(1, Math.min(29, Number(strScore) || 10));
+  getCarryingCapacity(strScore, charObj = null) {
+    let rawStr = Number(strScore) || 10;
+    const targetChar = charObj || (typeof character !== 'undefined' ? character : null);
+    if (targetChar && Array.isArray(targetChar.feats)) {
+      const feats = targetChar.feats.map(f => (typeof f === 'string' ? f : (f.name || '')).toLowerCase().trim());
+      if (feats.some(f => f.includes('flaw: meager heft') || f.includes('meager heft'))) {
+        rawStr = Math.max(1, rawStr - 3);
+      }
+    }
+    const s = Math.max(1, Math.min(29, rawStr));
     const table = {
       1: [3, 6, 10], 2: [6, 13, 20], 3: [10, 20, 30], 4: [13, 26, 40],
       5: [16, 33, 50], 6: [20, 40, 60], 7: [23, 46, 70], 8: [26, 53, 80],

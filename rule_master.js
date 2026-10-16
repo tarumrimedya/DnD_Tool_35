@@ -1859,7 +1859,48 @@ Return valid JSON only matching this schema:
         benefit: item.benefit || item.description || ''
       });
       character.activeStance = item.name;
-      alert(`⚡ "${item.name}" duruşu aktif duruş olarak seçildi!`);
+    } else if (type === 'flaw' || cat.toLowerCase() === 'flaw' || item.name.toLowerCase().startsWith('flaw:')) {
+      if (character.level > 1) {
+        const proceed = confirm(`⚠️ D&D 3.5e Unearthed Arcana kuralına göre Flaw (Kusur) yalnızca 1. Seviyede karakter yaratılırken seçilebilir. Mevcut karakter seviyeniz ${character.level}.\n\nYine de "${item.name}" kusurunu eklemek istiyor musunuz?`);
+        if (!proceed) return;
+      }
+      if (!character.feats) character.feats = [];
+      const cleanName = item.name.trim();
+      if (!character.feats.some(f => (typeof f === 'string' ? f : f.name).toLowerCase().trim() === cleanName.toLowerCase())) {
+        character.feats.push({
+          name: cleanName,
+          category: 'Flaw',
+          source: item.source || 'Unearthed Arcana',
+          benefit: item.benefit || 'Kusur karşılığında 1 bonus feat kazandırır.'
+        });
+      }
+      alert(`⚠️ "${item.name}" kusuru karaktere eklendi!\n\n🎖️ D&D 3.5e Unearthed Arcana kuralı gereğince bu kusur karşılığında 1 adet EKSTRA BONUS FEAT KAZANDINIZ!\n\nŞimdi bonus hünerinizi (Feat) seçmek için Feat Kütüphanesi açılıyor...`);
+      if (typeof openFeatPickerModal === 'function') {
+        setTimeout(() => openFeatPickerModal(false), 200);
+      }
+    } else if (type === 'racial trait' || cat.toLowerCase() === 'racial trait' || (item.category && item.category.toLowerCase().includes('racial'))) {
+      if (character.level > 1) {
+        const proceed = confirm(`⚠️ Irksal yetenekler normalde yalnızca 1. Seviyede belirlenir. Yine de "${item.name}" yeteneğini eklemek istiyor musunuz?`);
+        if (!proceed) return;
+      }
+      if (!character.specialAbilities) character.specialAbilities = [];
+      const cleanName = item.name.trim();
+      if (!character.specialAbilities.some(a => (typeof a === 'string' ? a : a.name).toLowerCase().trim() === cleanName.toLowerCase())) {
+        character.specialAbilities.push({
+          name: cleanName,
+          category: 'Racial Trait',
+          source: item.source || 'PHB',
+          benefit: item.benefit || ''
+        });
+      }
+      if (item.grantsBonusFeat || cleanName.toLowerCase().includes('bonus feat')) {
+        alert(`🧬 "${item.name}" ırksal yeteneği eklendi!\n\n🎖️ Bu yetenek 1 adet ekstra bonus feat kazandırmaktadır. Şimdi bonus featinizi seçebilirsiniz.`);
+        if (typeof openFeatPickerModal === 'function') {
+          setTimeout(() => openFeatPickerModal(false), 200);
+        }
+      } else {
+        alert(`🧬 "${item.name}" ırksal yeteneği karaktere eklendi!`);
+      }
     } else if (type === 'feat') {
       if (!character.feats) character.feats = [];
       character.feats.push(item.name);
