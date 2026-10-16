@@ -45,13 +45,13 @@
 <body class="min-h-screen flex flex-col pb-20 md:pb-6 relative">
 
   <!-- FULL PAGE DYNAMIC WALLPAPER LAYER -->
-  <div id="app-wallpaper-layer" class="fixed inset-0 pointer-events-none z-0 overflow-hidden transition-all duration-500 ease-out" style="display: none;">
+  <div id="app-wallpaper-layer" class="fixed inset-0 pointer-events-none -z-10 overflow-hidden transition-all duration-500 ease-out" style="display: none;">
     <div id="app-wallpaper-img" class="absolute inset-0 bg-no-repeat transition-all duration-300"></div>
     <div id="app-wallpaper-overlay" class="absolute inset-0 transition-all duration-300"></div>
   </div>
 
   <!-- HERO BAR & CHARACTER PROFILE & ABILITY SCORES -->
-  <section class="max-w-7xl w-full mx-auto px-3 md:px-4 pt-3 pb-1">
+  <section class="max-w-7xl w-full mx-auto px-3 md:px-4 pt-3 pb-1 relative z-10">
     <div class="flex flex-col md:flex-row items-stretch gap-2.5">
       
       <!-- SOL: BÜYÜK KARAKTER RESMİ (HERO PORTRAIT CARD) + YEŞİL LEVEL UP (+) BUTONU -->
@@ -76,7 +76,7 @@
       <div class="flex-1 min-w-0 space-y-2 flex flex-col justify-between">
         
         <!-- Üst Satır: Kazmil'in Çırağı Bilgi Barı & Ayarlar / Bulut Senkron (Image 2 Çizimi) -->
-        <div class="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 flex flex-wrap items-center justify-between gap-2.5 shadow">
+        <div class="bg-dndCard border border-dndBorder rounded-xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-2.5 shadow-lg relative z-10 backdrop-blur-md">
           <!-- Sol: Karakter Başlığı & Stat Özetleri -->
           <div class="flex items-center gap-2.5 min-w-0 flex-1">
             <div class="w-7 h-7 rounded-lg bg-red-600/20 border border-red-500/80 flex items-center justify-center text-sm shrink-0 shadow-inner">⚔️</div>
@@ -134,7 +134,7 @@
   </section>
 
   <!-- VITALS & STATUS HUD (Visible across all tabs) -->
-  <section class="max-w-7xl w-full mx-auto px-3 md:px-4 py-2 grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
+  <section class="max-w-7xl w-full mx-auto px-3 md:px-4 py-2 grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 relative z-10">
     <!-- Card 1: Hit Points -->
     <div class="bg-dndCard border border-dndBorder rounded-xl p-3 flex flex-col justify-between shadow">
       <div class="flex justify-between items-center text-xs font-bold text-slate-400 mb-1">
@@ -220,7 +220,7 @@
   </section>
 
   <!-- NAVIGATION TABS (Büyük & Kart Görünümlü Sekmeler) -->
-  <nav class="max-w-7xl w-full mx-auto px-3 md:px-4 mb-3">
+  <nav class="max-w-7xl w-full mx-auto px-3 md:px-4 mb-3 relative z-10">
     <div class="flex items-stretch gap-2 overflow-x-auto pb-1.5 pt-0.5">
       <button onclick="switchTab('tab-combat')" id="tab-btn-combat" class="tab-btn flex-1 min-w-[130px] sm:min-w-[140px] lg:min-w-0 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer select-none border bg-gradient-to-r from-red-600 to-rose-600 text-white border-red-400 shadow-lg shadow-red-950/60 ring-2 ring-red-400/40">
         <span class="text-base sm:text-lg">⚔️</span>
@@ -254,7 +254,7 @@
   </nav>
 
   <!-- MAIN TAB CONTENTS -->
-  <main class="max-w-7xl w-full mx-auto px-3 md:px-4 flex-1">
+  <main class="max-w-7xl w-full mx-auto px-3 md:px-4 flex-1 relative z-10">
 
     <!-- ==================================================== -->
     <!-- TAB 1: ⚔️ TACTICAL COMBAT COCKPIT -->
