@@ -86,7 +86,7 @@
               <div class="text-[10px] text-slate-400 flex items-center gap-2 flex-wrap mt-0.5">
                 <span>BAB: <strong class="text-emerald-400 font-bold" id="char-bab-display">+3</strong></span>
                 <span>•</span>
-                <span>Initiative: <strong class="text-sky-400 font-bold" id="char-init-display">+3</strong></span>
+                <span>Initiative: <strong class="text-sky-400 font-bold hover:underline cursor-pointer" onclick="rollInitiative3D()" title="İnisiyatif zarı at (1d20)" id="char-init-display">+3</strong></span>
                 <span>•</span>
                 <span>Hız: <strong class="text-amber-400 font-bold" id="char-speed-display">30 ft</strong></span>
                 <span id="core-speed" class="hidden">30 ft</span>
@@ -131,7 +131,7 @@
   </section>
 
   <!-- VITALS & STATUS HUD (Visible across all tabs) -->
-  <section class="max-w-7xl w-full mx-auto px-3 md:px-4 py-2 grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 relative z-10">
+  <section class="max-w-7xl w-full mx-auto px-3 md:px-4 py-2 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-3 relative z-10">
     <!-- Card 1: Hit Points -->
     <div class="bg-dndCard border border-dndBorder rounded-xl p-3 flex flex-col justify-between shadow">
       <div class="flex justify-between items-center text-xs font-bold text-slate-400 mb-1">
@@ -175,7 +175,29 @@
       <div id="ac-notes-display" class="text-[10px] text-indigo-300 text-center truncate">Mage Armor +4 • Dex +3 • Ring +1</div>
     </div>
 
-    <!-- Card 3: Saves -->
+    <!-- Card 3: İnisiyatif (Initiative) -->
+    <div class="bg-dndCard border border-dndBorder rounded-xl p-3 flex flex-col justify-between shadow hover:border-amber-500/60 transition group">
+      <div class="flex justify-between items-center text-xs font-bold text-amber-400 mb-1">
+        <span class="flex items-center gap-1">⚡ İNİSİYATİF</span>
+        <span id="init-roll-last-badge" class="badge bg-amber-950/60 text-amber-300 border border-amber-600/60 text-[9px]">1d20+Dex</span>
+      </div>
+      <div class="grid grid-cols-2 gap-1 text-center my-1">
+        <div class="bg-slate-900/70 p-1.5 rounded border border-slate-800 flex flex-col items-center justify-center">
+          <div id="vitals-init-total" class="text-xl font-extrabold text-amber-400 font-mono">+3</div>
+          <div class="text-[9px] text-slate-400 font-semibold uppercase">Toplam</div>
+        </div>
+        <div class="bg-slate-900/70 p-1.5 rounded border border-slate-800 flex flex-col items-center justify-center">
+          <div id="vitals-init-dex" class="text-lg font-bold text-slate-300 font-mono">+3</div>
+          <div class="text-[9px] text-slate-400 font-semibold uppercase">Dex Mod</div>
+        </div>
+      </div>
+      <button onclick="rollInitiative3D()" class="w-full bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 border border-amber-500/50 rounded py-1 text-xs font-bold font-mono transition flex items-center justify-center gap-1.5 shadow active:scale-95 cursor-pointer" title="1d20 İnisiyatif Zarı At">
+        <span>🎲</span>
+        <span id="vitals-init-btn-text">Zar At (1d20)</span>
+      </button>
+    </div>
+
+    <!-- Card 4: Saves -->
     <div class="bg-dndCard border border-dndBorder rounded-xl p-3 flex flex-col justify-between shadow">
       <div class="text-xs font-bold text-purple-400 flex items-center gap-1 mb-1">⚡ SAVES (KAYIT ZARLARI)</div>
       <div class="grid grid-cols-3 gap-1 text-center my-1">
@@ -195,8 +217,8 @@
       <div class="text-[10px] text-amber-300 text-center truncate">Zar atmak için tıklayın</div>
     </div>
 
-    <!-- Card 4: Quick Actions & Rest -->
-    <div class="bg-dndCard border border-dndBorder rounded-xl p-3 flex flex-col justify-between shadow">
+    <!-- Card 5: Quick Actions & Rest -->
+    <div class="bg-dndCard border border-dndBorder rounded-xl p-3 flex flex-col justify-between shadow col-span-2 md:col-span-1">
       <div class="text-xs font-bold text-amber-400 flex items-center gap-1 mb-1">☀️ EYLEMLER & DİNLENME</div>
       <div class="grid grid-cols-2 gap-1.5 my-1">
         <button onclick="performLongRest()" class="bg-slate-800 hover:bg-slate-700 text-white rounded p-1.5 text-xs font-medium border border-slate-700 flex items-center justify-center gap-1 transition">
@@ -3573,8 +3595,24 @@
       document.getElementById('char-classes-display').textContent = character.classes;
       document.getElementById('char-bab-display').textContent = '+' + (character.bab || 0);
       
-      const initMod = RuleEngine.getAbilityMod(character.abilities?.dex || 10);
-      document.getElementById('char-init-display').textContent = (initMod >= 0 ? '+' : '') + initMod;
+      const initData = getCharacterInitiative();
+      const initStr = (initData.total >= 0 ? '+' : '') + initData.total;
+      const dexStr = (initData.dexMod >= 0 ? '+' : '') + initData.dexMod;
+
+      const charInitEl = document.getElementById('char-init-display');
+      if (charInitEl) charInitEl.textContent = initStr;
+
+      const vitalsInitTotal = document.getElementById('vitals-init-total');
+      if (vitalsInitTotal) vitalsInitTotal.textContent = initStr;
+
+      const vitalsInitDex = document.getElementById('vitals-init-dex');
+      if (vitalsInitDex) {
+        vitalsInitDex.textContent = dexStr;
+        if (initData.featBonus > 0) {
+          vitalsInitDex.title = `Dex: ${dexStr} • Feat (Imp. Init): +${initData.featBonus}`;
+        }
+      }
+
       document.getElementById('char-speed-display').textContent = (character.effectiveSpeed || character.baseSpeed || 30) + ' ft';
 
       const curHp = Number(character.hp?.current) || 0;
@@ -4814,7 +4852,53 @@
       if (card) card.classList.add('hidden');
     }
 
-    // 3D Skill & Save Roll
+    // 3D Skill, Save & Initiative Roll
+    function getCharacterInitiative() {
+      const dexMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
+        ? RuleEngine.getAbilityMod(character?.abilities?.dex || 10)
+        : Math.floor(((character?.abilities?.dex || 10) - 10) / 2);
+      let featBonus = 0;
+      const feats = character?.feats || [];
+      const hasImprovedInit = feats.some(f => {
+        const name = (typeof f === 'string' ? f : f?.name || '').toLowerCase();
+        return name.includes('improved initiative') || name.includes('gelişmiş inisiyatif');
+      });
+      if (hasImprovedInit) featBonus += 4;
+      const miscBonus = Number(character?.initiativeMisc) || 0;
+      const total = dexMod + featBonus + miscBonus;
+      return { total, dexMod, featBonus, miscBonus, hasImprovedInit };
+    }
+
+    function rollInitiative3D() {
+      const init = getCharacterInitiative();
+      const mod = init.total;
+      const d20 = Math.floor(Math.random() * 20) + 1;
+      const total = d20 + mod;
+
+      const showResult = () => {
+        const badge = document.getElementById('init-roll-last-badge');
+        if (badge) {
+          badge.textContent = `Son: ${total} (d20:${d20})`;
+          badge.className = 'badge bg-amber-500 text-slate-950 border border-amber-300 font-black text-[9px] animate-pulse';
+        }
+        const btnText = document.getElementById('vitals-init-btn-text');
+        if (btnText) {
+          btnText.textContent = `Zar: ${d20} + ${mod >= 0 ? '+' : ''}${mod} = ${total}`;
+        }
+        alert(`⚡ İnisiyatif Zarı:\n1d20 [${d20}] + ${mod >= 0 ? '+' : ''}${mod} = ${total}`);
+      };
+
+      if (window.Dice3D && typeof Dice3D.roll === 'function') {
+        try {
+          Dice3D.roll([{ type: 'd20', value: d20 }], showResult);
+        } catch (err) {
+          showResult();
+        }
+      } else {
+        showResult();
+      }
+    }
+
     function rollSave3D(saveName) {
       const saves = RuleEngine.evaluateSaves(character);
       const mod = saveName === 'Fortitude' ? saves.fort : (saveName === 'Reflex' ? saves.ref : saves.will);
