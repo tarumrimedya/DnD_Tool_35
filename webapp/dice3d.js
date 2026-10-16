@@ -211,56 +211,117 @@ class Dice3DController {
     return texture;
   }
 
-  // Custom 10-sided pentagonal trapezohedron geometry for true d10
+  // Custom 10-sided pentagonal trapezohedron geometry for true D&D d10
   createD10Geometry(radius) {
     const geo = new THREE.BufferGeometry();
     const vertices = [];
-    const height = radius * 1.35;
-    const r = radius * 1.05;
-    const yTop = radius * 0.35;
-    const yBot = -radius * 0.35;
+    const customFaces = [];
 
-    // Poles
-    const topPole = [0, height, 0];
-    const botPole = [0, -height, 0];
+    // Canonical proportions for a 10-sided pentagonal trapezohedron
+    const H = radius * 1.35; // Apex height
+    const R = radius * 1.15; // Equator radius
+    const h = radius * 0.28; // Equator zigzag offset
 
-    // Upper ring (5 vertices)
-    const upperRing = [];
-    for (let i = 0; i < 5; i++) {
-      const a = (i * 2 * Math.PI) / 5;
-      upperRing.push([Math.cos(a) * r, yTop, Math.sin(a) * r]);
+    const topPole = new THREE.Vector3(0, H, 0);
+    const botPole = new THREE.Vector3(0, -H, 0);
+
+    // 10 Equator vertices alternating between +h and -h
+    const equator = [];
+    for (let k = 0; k < 10; k++) {
+      const angle = (k * Math.PI) / 5; // 36 degrees per step
+      const y = (k % 2 === 0) ? h : -h;
+      equator.push(new THREE.Vector3(Math.cos(angle) * R, y, Math.sin(angle) * R));
     }
 
-    // Lower ring (5 vertices, offset by 36°)
-    const lowerRing = [];
-    for (let i = 0; i < 5; i++) {
-      const a = ((i + 0.5) * 2 * Math.PI) / 5;
-      lowerRing.push([Math.cos(a) * r, yBot, Math.sin(a) * r]);
-    }
+    // 10 Kite faces:
+    // 5 Upper kites (even i: 0, 2, 4, 6, 8) meeting at topPole
+    // 5 Lower kites (odd i: 1, 3, 5, 7, 9) meeting at botPole
+    for (let i = 0; i < 10; i++) {
+      const prevIdx = (i + 9) % 10;
+      const nextIdx = (i + 1) % 10;
+      const vPrev = equator[prevIdx];
+      const vCurr = equator[i];
+      const vNext = equator[nextIdx];
 
-    // 10 Kite faces (each kite = 2 triangles)
-    for (let i = 0; i < 5; i++) {
-      const u1 = upperRing[i];
-      const u2 = upperRing[(i + 1) % 5];
-      const l1 = lowerRing[i];
+      if (i % 2 === 0) {
+        // Upper kite: topPole -> vNext -> vCurr -> vPrev
+        // Tri 1: topPole, vCurr, vPrev (CCW outward)
+        vertices.push(
+          topPole.x, topPole.y, topPole.z,
+          vCurr.x, vCurr.y, vCurr.z,
+          vPrev.x, vPrev.y, vPrev.z
+        );
+        // Tri 2: topPole, vNext, vCurr (CCW outward)
+        vertices.push(
+          topPole.x, topPole.y, topPole.z,
+          vNext.x, vNext.y, vNext.z,
+          vCurr.x, vCurr.y, vCurr.z
+        );
 
-      // Upper kite face
-      vertices.push(...topPole, ...u1, ...l1);
-      vertices.push(...topPole, ...l1, ...u2);
+        // Kite center
+        const center = new THREE.Vector3()
+          .add(topPole)
+          .add(vPrev)
+          .add(vCurr)
+          .add(vNext)
+          .multiplyScalar(0.25);
 
-      // Lower kite face
-      const l2 = lowerRing[(i + 1) % 5];
-      vertices.push(...botPole, ...l1, ...u2);
-      vertices.push(...botPole, ...u2, ...l2);
+        // Outward unit normal
+        const transVec = new THREE.Vector3().subVectors(vNext, vPrev);
+        const longVec = new THREE.Vector3().subVectors(vCurr, topPole);
+        const normal = new THREE.Vector3().crossVectors(transVec, longVec).normalize();
+        if (normal.dot(center) < 0) {
+          normal.negate();
+        }
+
+        customFaces.push({ center, normal });
+      } else {
+        // Lower kite: botPole -> vPrev -> vCurr -> vNext
+        // Tri 1: botPole, vPrev, vCurr (CCW outward)
+        vertices.push(
+          botPole.x, botPole.y, botPole.z,
+          vPrev.x, vPrev.y, vPrev.z,
+          vCurr.x, vCurr.y, vCurr.z
+        );
+        // Tri 2: botPole, vCurr, vNext (CCW outward)
+        vertices.push(
+          botPole.x, botPole.y, botPole.z,
+          vCurr.x, vCurr.y, vCurr.z,
+          vNext.x, vNext.y, vNext.z
+        );
+
+        // Kite center
+        const center = new THREE.Vector3()
+          .add(botPole)
+          .add(vPrev)
+          .add(vCurr)
+          .add(vNext)
+          .multiplyScalar(0.25);
+
+        // Outward unit normal
+        const transVec = new THREE.Vector3().subVectors(vNext, vPrev);
+        const longVec = new THREE.Vector3().subVectors(vCurr, botPole);
+        const normal = new THREE.Vector3().crossVectors(longVec, transVec).normalize();
+        if (normal.dot(center) < 0) {
+          normal.negate();
+        }
+
+        customFaces.push({ center, normal });
+      }
     }
 
     geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
     geo.computeVertexNormals();
+    geo.userData = { customFaces };
     return geo;
   }
 
   // Extract unique coplanar faces (centers and outward unit normals)
   extractFaces(geo) {
+    if (geo.userData && geo.userData.customFaces && geo.userData.customFaces.length > 0) {
+      return geo.userData.customFaces;
+    }
+
     const nonIndexed = geo.index ? geo.toNonIndexed() : geo.clone();
     const pos = nonIndexed.attributes.position.array;
     const faces = [];
@@ -351,12 +412,29 @@ class Dice3DController {
 
     // Determine target face index (place targetValue on face 0)
     const faceValues = [];
-    for (let i = 1; i <= sides; i++) {
-      if (i !== targetValue) faceValues.push(i);
+    if (type === 'd100') {
+      const tens = ['00', '10', '20', '30', '40', '50', '60', '70', '80', '90'];
+      const targetStr = (targetValue === 100 || targetValue === 0) ? '00' : String(targetValue).padStart(2, '0');
+      tens.forEach(t => {
+        if (t !== targetStr) faceValues.push(t);
+      });
+      faceValues.sort(() => Math.random() - 0.5);
+      faceValues.unshift(targetStr);
+    } else if (type === 'd10') {
+      const digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+      const targetStr = (targetValue === 10) ? '0' : String(targetValue);
+      digits.forEach(d => {
+        if (d !== targetStr) faceValues.push(d);
+      });
+      faceValues.sort(() => Math.random() - 0.5);
+      faceValues.unshift(targetStr);
+    } else {
+      for (let i = 1; i <= sides; i++) {
+        if (i !== targetValue) faceValues.push(i);
+      }
+      faceValues.sort(() => Math.random() - 0.5);
+      faceValues.unshift(targetValue);
     }
-    // Randomize surrounding faces for authentic tabletop look
-    faceValues.sort(() => Math.random() - 0.5);
-    faceValues.unshift(targetValue); // Face 0 always holds the rolled target value
 
     // Pure flat plane geometry - alphaTest completely clips everything outside the engraved number
     const decalGeo = new THREE.PlaneGeometry(radius * decalScale, radius * decalScale);
