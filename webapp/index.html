@@ -32,7 +32,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
   <style>
-    body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #080e1e; color: #f8fafc; }
+    body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #080e1e; color: #f8fafc; transition: background-color 0.3s ease; }
+    body.has-wallpaper { background-color: #050811; }
+    body.has-wallpaper .bg-dndCard { background-color: rgba(15, 23, 42, 0.88); backdrop-filter: blur(8px); }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #0f172a; }
     ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
@@ -40,7 +42,13 @@
     input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
   </style>
 </head>
-<body class="min-h-screen flex flex-col pb-20 md:pb-6">
+<body class="min-h-screen flex flex-col pb-20 md:pb-6 relative">
+
+  <!-- FULL PAGE DYNAMIC WALLPAPER LAYER -->
+  <div id="app-wallpaper-layer" class="fixed inset-0 pointer-events-none z-0 overflow-hidden transition-all duration-500 ease-out" style="display: none;">
+    <div id="app-wallpaper-img" class="absolute inset-0 bg-no-repeat transition-all duration-300"></div>
+    <div id="app-wallpaper-overlay" class="absolute inset-0 transition-all duration-300"></div>
+  </div>
 
   <!-- TOP HEADER & CLOUD SYNC STATUS BAR -->
   <header class="bg-dndCard border-b border-dndBorder sticky top-0 z-40 px-4 py-2 flex flex-wrap items-center justify-between gap-2 shadow-lg">
@@ -1899,22 +1907,136 @@
             <input type="number" id="profile-edit-speed" placeholder="30" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white font-mono">
           </div>
         </div>
+
+        <!-- SECTION: SAYFA ARKA PLANI & DUVAR KAĞIDI (WALLPAPER AYARLARI) -->
+        <div id="profile-wallpaper-panel" class="bg-gradient-to-r from-slate-900/90 via-purple-950/20 to-slate-900/90 border border-purple-500/40 rounded-xl p-3 space-y-2.5">
+          <div class="flex flex-wrap items-center justify-between border-b border-slate-800 pb-2 gap-2">
+            <div class="flex items-center gap-2">
+              <span class="text-base">🌌</span>
+              <div>
+                <h4 class="font-extrabold text-white text-xs flex items-center gap-2">
+                  <span>Sayfa Duvar Kağıdı & Arka Plan</span>
+                  <span id="wallpaper-status-badge" class="badge bg-slate-800 text-slate-400 border border-slate-700 text-[9px]">Varsayılan Tema</span>
+                </h4>
+                <p class="text-[10px] text-purple-300">Tüm sayfa arka planına temayla uyumlu özel görsel uygulayın</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1">
+              <input type="file" id="profile-wallpaper-file-input" accept="image/*" class="hidden" onchange="handleWallpaperFileUpload(event)">
+              <button type="button" onclick="triggerWallpaperUpload()" class="px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold transition flex items-center gap-1 text-[11px] shadow">
+                <span>📁 Dosya Seç</span>
+              </button>
+              <button type="button" onclick="promptWallpaperUrl()" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold transition text-[11px] border border-slate-700" title="İnternet Resim Linki (URL)">
+                <span>🔗 URL</span>
+              </button>
+              <button type="button" id="wallpaper-clear-btn" onclick="clearWallpaper()" class="hidden px-2 py-1 rounded-lg bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-700 font-bold transition text-[11px]" title="Arka planı kaldır">
+                <span>✕ Kaldır</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Sizing & Focal Point (Telefon Duvar Kağıdı Biçiminde Alan Seçimi) & Live Preview -->
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+            <!-- Mini Phone Frame Live Preview -->
+            <div class="sm:col-span-5 flex flex-col items-center">
+              <span class="text-[10px] text-slate-400 font-bold uppercase mb-1.5 flex items-center gap-1">
+                <span>📱</span> <span>Telefon Ekranı Odak Önizleme</span>
+              </span>
+              <div id="wallpaper-mini-phone" class="w-28 h-36 rounded-xl border-2 border-slate-600 bg-slate-950 relative overflow-hidden shadow-inner flex items-center justify-center">
+                <div id="wallpaper-mini-img" class="absolute inset-0 bg-cover bg-no-repeat transition-all duration-200"></div>
+                <div id="wallpaper-mini-overlay" class="absolute inset-0 bg-slate-950/70 transition-all duration-200"></div>
+                <div class="relative z-10 text-center pointer-events-none px-2 py-1 bg-slate-900/80 rounded border border-slate-700/60 backdrop-blur-sm shadow">
+                  <div class="text-[9px] font-bold text-amber-300">D&D 3.5e</div>
+                  <div class="text-[8px] text-slate-300">Kokpit Arayüzü</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3x3 Position Matrix & Sizing Controls -->
+            <div class="sm:col-span-7 space-y-2">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">
+                  🎯 Odak Alanı Seçimi (Telefon Duvar Kağıdı Gibi)
+                </label>
+                <div class="grid grid-cols-3 gap-1 w-full max-w-[210px]">
+                  <button type="button" onclick="setWallpaperPosition('left top')" class="pos-btn p-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-mono transition text-center" data-pos="left top" title="Sol Üst">↖️</button>
+                  <button type="button" onclick="setWallpaperPosition('center top')" class="pos-btn p-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-mono transition text-center" data-pos="center top" title="Üst (Yüz / Baş)">⬆️ Üst</button>
+                  <button type="button" onclick="setWallpaperPosition('right top')" class="pos-btn p-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-mono transition text-center" data-pos="right top" title="Sağ Üst">↗️</button>
+                  <button type="button" onclick="setWallpaperPosition('left center')" class="pos-btn p-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-mono transition text-center" data-pos="left center" title="Sol">⬅️ Sol</button>
+                  <button type="button" onclick="setWallpaperPosition('center center')" class="pos-btn p-1 rounded bg-purple-600 text-white font-bold text-[10px] font-mono transition text-center" data-pos="center center" title="Merkez / Orta">⏺️ Merkez</button>
+                  <button type="button" onclick="setWallpaperPosition('right center')" class="pos-btn p-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-mono transition text-center" data-pos="right center" title="Sağ">➡️ Sağ</button>
+                  <button type="button" onclick="setWallpaperPosition('left bottom')" class="pos-btn p-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-mono transition text-center" data-pos="left bottom" title="Sol Alt">↙️</button>
+                  <button type="button" onclick="setWallpaperPosition('center bottom')" class="pos-btn p-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-mono transition text-center" data-pos="center bottom" title="Alt (Zemin)">⬇️ Alt</button>
+                  <button type="button" onclick="setWallpaperPosition('right bottom')" class="pos-btn p-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-mono transition text-center" data-pos="right bottom" title="Sağ Alt">↘️</button>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2 pt-1">
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">📐 Boyutlandırma</label>
+                  <select id="wallpaper-fit-select" onchange="onWallpaperFitChange()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white">
+                    <option value="cover">Cover (Ekranı Kapla)</option>
+                    <option value="contain">Contain (Ekrana Sığdır)</option>
+                    <option value="120%">Zoom %120 (Büyüt)</option>
+                    <option value="150%">Zoom %150 (Yakın Plan)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">🎨 Tema Renk Uyumu</label>
+                  <select id="wallpaper-theme-select" onchange="onWallpaperThemeChange()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-indigo-300 font-bold">
+                    <option value="dark-blue">🌌 Gece Mavisi (D&D Tema)</option>
+                    <option value="mystic-purple">🔮 Mistik Büyücü Moru</option>
+                    <option value="crimson">⚔️ Kızıl Savaşçı Tonu</option>
+                    <option value="emerald">🌿 Doğa / Zümrüt Yeşili</option>
+                    <option value="monochrome">🌑 Kömür / Karanlık</option>
+                    <option value="natural">🎨 Doğal / Karartılmış</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dimming (Karartma) & Blur (Bulanıklık) Sliders -->
+          <div class="grid grid-cols-2 gap-3 pt-1 border-t border-slate-800/80">
+            <div>
+              <div class="flex justify-between items-center text-[10px] font-bold text-slate-400 mb-1">
+                <span>🌑 KARARTMA SEVİYESİ</span>
+                <span id="wallpaper-opacity-val" class="text-amber-400 font-mono">%75</span>
+              </div>
+              <input type="range" id="wallpaper-opacity-slider" min="40" max="95" value="75" step="5" oninput="onWallpaperOpacityChange()" class="w-full accent-purple-500 h-1.5 bg-slate-950 rounded cursor-pointer">
+            </div>
+            <div>
+              <div class="flex justify-between items-center text-[10px] font-bold text-slate-400 mb-1">
+                <span>🌫️ ATMOSFERİK DERİNLİK (BLUR)</span>
+                <span id="wallpaper-blur-val" class="text-sky-400 font-mono">1px</span>
+              </div>
+              <input type="range" id="wallpaper-blur-slider" min="0" max="8" value="1" step="1" oninput="onWallpaperBlurChange()" class="w-full accent-purple-500 h-1.5 bg-slate-950 rounded cursor-pointer">
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Modal Footer -->
       <div class="bg-slate-950 px-4 py-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2 shrink-0">
-        <!-- Sol Taraf: Karakter Resmi Ekle / Düzenle (Kullanıcı Kutusu 'B') -->
-        <div class="flex items-center gap-1.5">
+        <!-- Sol Taraf: Karakter Resmi & Arka Plan Butonları -->
+        <div class="flex flex-wrap items-center gap-1.5">
           <input type="file" id="profile-portrait-file-input" accept="image/*" class="hidden" onchange="handlePortraitFileUpload(event)">
-          <button type="button" onclick="triggerPortraitUpload()" class="px-3 py-1.5 rounded-lg bg-indigo-950 hover:bg-indigo-900 text-indigo-300 hover:text-white border border-indigo-600/70 font-bold transition flex items-center gap-1.5 text-xs shadow-sm" title="Karakter resmi yükle (PNG, JPG, WEBP)">
+          <button type="button" onclick="triggerPortraitUpload()" class="px-2.5 py-1.5 rounded-lg bg-indigo-950 hover:bg-indigo-900 text-indigo-300 hover:text-white border border-indigo-600/70 font-bold transition flex items-center gap-1 text-xs shadow-sm" title="Karakter resmi yükle (PNG, JPG, WEBP)">
             <span>🖼️</span>
-            <span id="profile-portrait-btn-text">Resim Ekle</span>
+            <span id="profile-portrait-btn-text">Char Resmi</span>
           </button>
-          <button type="button" onclick="promptPortraitUrl()" class="px-2 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 font-bold transition text-xs" title="Web üzerinden resim bağlantısı (URL) gir">
+          <button type="button" onclick="promptPortraitUrl()" class="px-2 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 font-bold transition text-xs" title="Web üzerinden char resim bağlantısı (URL) gir">
             <span>🔗 URL</span>
           </button>
-          <button type="button" id="profile-portrait-remove-btn" onclick="removeCharacterPortrait()" class="hidden px-2 py-1.5 rounded-lg bg-rose-950/80 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-700/60 font-bold transition text-xs" title="Resmi kaldır ve dinamik sembole geri dön">
+          <button type="button" id="profile-portrait-remove-btn" onclick="removeCharacterPortrait()" class="hidden px-2 py-1.5 rounded-lg bg-rose-950/80 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-700/60 font-bold transition text-xs" title="Char resmini kaldır ve dinamik sembole geri dön">
             <span>✕ Sil</span>
+          </button>
+
+          <span class="text-slate-700">|</span>
+
+          <button type="button" onclick="scrollToWallpaperPanel()" id="profile-wallpaper-btn" class="px-2.5 py-1.5 rounded-lg bg-purple-950/80 hover:bg-purple-900 text-purple-300 hover:text-white border border-purple-700/60 font-bold transition flex items-center gap-1 text-xs shadow-sm" title="Tüm sayfa için arka plan resmi seç">
+            <span>🌌</span>
+            <span>Arka Plan</span>
           </button>
         </div>
 
@@ -3531,6 +3653,250 @@
       saveStateToStorage(true);
     }
 
+    // 🌌 FULL PAGE WALLPAPER & ATMOSPHERE SYSTEM
+    const WALLPAPER_THEMES = {
+      'dark-blue': {
+        filter: 'saturate(0.85) contrast(1.1) brightness(0.75)',
+        gradient: (op) => `linear-gradient(180deg, rgba(8, 14, 30, ${op * 0.95}) 0%, rgba(15, 23, 42, ${op * 0.85}) 50%, rgba(8, 14, 30, ${op}) 100%)`
+      },
+      'mystic-purple': {
+        filter: 'hue-rotate(250deg) saturate(0.9) contrast(1.1) brightness(0.7)',
+        gradient: (op) => `linear-gradient(180deg, rgba(20, 10, 35, ${op * 0.95}) 0%, rgba(35, 15, 60, ${op * 0.85}) 50%, rgba(12, 6, 22, ${op}) 100%)`
+      },
+      'crimson': {
+        filter: 'hue-rotate(330deg) saturate(0.95) contrast(1.1) brightness(0.7)',
+        gradient: (op) => `linear-gradient(180deg, rgba(35, 10, 15, ${op * 0.95}) 0%, rgba(60, 15, 25, ${op * 0.85}) 50%, rgba(18, 5, 10, ${op}) 100%)`
+      },
+      'emerald': {
+        filter: 'hue-rotate(85deg) saturate(0.85) contrast(1.05) brightness(0.7)',
+        gradient: (op) => `linear-gradient(180deg, rgba(8, 28, 18, ${op * 0.95}) 0%, rgba(14, 45, 28, ${op * 0.85}) 50%, rgba(6, 18, 12, ${op}) 100%)`
+      },
+      'monochrome': {
+        filter: 'grayscale(0.65) contrast(1.15) brightness(0.65)',
+        gradient: (op) => `linear-gradient(180deg, rgba(10, 12, 16, ${op * 0.95}) 0%, rgba(16, 20, 26, ${op * 0.85}) 50%, rgba(6, 8, 10, ${op}) 100%)`
+      },
+      'natural': {
+        filter: 'contrast(1.05) brightness(0.7)',
+        gradient: (op) => `linear-gradient(180deg, rgba(8, 14, 30, ${op * 0.88}) 0%, rgba(10, 16, 32, ${op * 0.75}) 50%, rgba(8, 14, 30, ${op * 0.92}) 100%)`
+      }
+    };
+
+    function initWallpaperIfEmpty() {
+      if (!character) character = {};
+      if (!character.wallpaper) {
+        character.wallpaper = {
+          image: '',
+          position: 'center center',
+          fit: 'cover',
+          theme: 'dark-blue',
+          opacity: 0.75,
+          blur: 1
+        };
+      }
+    }
+
+    function applyWallpaperSettings() {
+      const wp = character?.wallpaper;
+      const layer = document.getElementById('app-wallpaper-layer');
+      const imgEl = document.getElementById('app-wallpaper-img');
+      const overlayEl = document.getElementById('app-wallpaper-overlay');
+
+      const miniImg = document.getElementById('wallpaper-mini-img');
+      const miniOverlay = document.getElementById('wallpaper-mini-overlay');
+      const statusBadge = document.getElementById('wallpaper-status-badge');
+      const clearBtn = document.getElementById('wallpaper-clear-btn');
+      const fitSel = document.getElementById('wallpaper-fit-select');
+      const themeSel = document.getElementById('wallpaper-theme-select');
+      const opSlider = document.getElementById('wallpaper-opacity-slider');
+      const opVal = document.getElementById('wallpaper-opacity-val');
+      const blurSlider = document.getElementById('wallpaper-blur-slider');
+      const blurVal = document.getElementById('wallpaper-blur-val');
+
+      if (!wp || !wp.image) {
+        document.body.classList.remove('has-wallpaper');
+        if (layer) layer.style.display = 'none';
+        if (statusBadge) {
+          statusBadge.textContent = 'Varsayılan Tema';
+          statusBadge.className = 'badge bg-slate-800 text-slate-400 border border-slate-700 text-[9px]';
+        }
+        if (clearBtn) clearBtn.classList.add('hidden');
+        if (miniImg) miniImg.style.backgroundImage = 'none';
+        if (miniOverlay) miniOverlay.style.background = 'rgba(15, 23, 42, 0.9)';
+        return;
+      }
+
+      document.body.classList.add('has-wallpaper');
+      if (layer) layer.style.display = 'block';
+
+      const position = wp.position || 'center center';
+      const fit = wp.fit || 'cover';
+      const themeKey = wp.theme || 'dark-blue';
+      const opacity = typeof wp.opacity === 'number' ? wp.opacity : 0.75;
+      const blur = typeof wp.blur === 'number' ? wp.blur : 1;
+
+      const themeConf = WALLPAPER_THEMES[themeKey] || WALLPAPER_THEMES['dark-blue'];
+
+      // Apply to full page background
+      if (imgEl) {
+        imgEl.style.backgroundImage = `url("${wp.image}")`;
+        imgEl.style.backgroundPosition = position;
+        imgEl.style.backgroundSize = fit;
+        imgEl.style.filter = `${themeConf.filter} blur(${blur}px)`;
+      }
+      if (overlayEl) {
+        overlayEl.style.background = themeConf.gradient(opacity);
+      }
+
+      // Apply to mini phone preview in modal
+      if (miniImg) {
+        miniImg.style.backgroundImage = `url("${wp.image}")`;
+        miniImg.style.backgroundPosition = position;
+        miniImg.style.backgroundSize = fit;
+        miniImg.style.filter = `${themeConf.filter} blur(${Math.min(blur, 2)}px)`;
+      }
+      if (miniOverlay) {
+        miniOverlay.style.background = themeConf.gradient(opacity);
+      }
+
+      // Update UI controls in modal
+      if (statusBadge) {
+        statusBadge.textContent = 'Özel Görsel Aktif';
+        statusBadge.className = 'badge bg-purple-950 text-purple-300 border border-purple-700 text-[9px] font-bold';
+      }
+      if (clearBtn) clearBtn.classList.remove('hidden');
+      if (fitSel) fitSel.value = fit;
+      if (themeSel) themeSel.value = themeKey;
+      if (opSlider) opSlider.value = Math.round(opacity * 100);
+      if (opVal) opVal.textContent = `%${Math.round(opacity * 100)}`;
+      if (blurSlider) blurSlider.value = blur;
+      if (blurVal) blurVal.textContent = `${blur}px`;
+
+      // Highlight active 3x3 position button
+      document.querySelectorAll('.pos-btn').forEach(btn => {
+        if (btn.getAttribute('data-pos') === position) {
+          btn.className = 'pos-btn p-1 rounded bg-purple-600 text-white font-bold text-[10px] font-mono transition text-center shadow';
+        } else {
+          btn.className = 'pos-btn p-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-mono transition text-center';
+        }
+      });
+    }
+
+    function triggerWallpaperUpload() {
+      const input = document.getElementById('profile-wallpaper-file-input');
+      if (input) {
+        input.value = '';
+        input.click();
+      }
+    }
+
+    async function handleWallpaperFileUpload(event) {
+      const file = event.target?.files?.[0];
+      if (!file) return;
+      try {
+        const compressedUrl = await resizeAndCompressImage(file, 1280, 720, 0.75);
+        initWallpaperIfEmpty();
+        character.wallpaper.image = compressedUrl;
+        applyWallpaperSettings();
+        saveStateToStorage(true);
+      } catch (err) {
+        console.warn('Wallpaper compression error, using FileReader:', err);
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          initWallpaperIfEmpty();
+          character.wallpaper.image = e.target.result;
+          applyWallpaperSettings();
+          saveStateToStorage(true);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function promptWallpaperUrl() {
+      const current = character?.wallpaper?.image && !character.wallpaper.image.startsWith('data:') ? character.wallpaper.image : '';
+      const url = prompt('Sayfa arka planı için web görsel bağlantısı (URL) girin:\n(Örn: https://images.unsplash.com/photo-xxx.jpg)', current);
+      if (url === null) return;
+      const clean = url.trim();
+      if (!clean) {
+        clearWallpaper();
+      } else {
+        initWallpaperIfEmpty();
+        character.wallpaper.image = clean;
+        applyWallpaperSettings();
+        saveStateToStorage(true);
+      }
+    }
+
+    function clearWallpaper() {
+      if (character?.wallpaper?.image) {
+        if (!confirm('Sayfa arka plan resmini kaldırmak istediğinize emin misiniz?')) return;
+      }
+      if (character) {
+        character.wallpaper = null;
+      }
+      const input = document.getElementById('profile-wallpaper-file-input');
+      if (input) input.value = '';
+      applyWallpaperSettings();
+      saveStateToStorage(true);
+    }
+
+    function setWallpaperPosition(pos) {
+      initWallpaperIfEmpty();
+      character.wallpaper.position = pos;
+      applyWallpaperSettings();
+      saveStateToStorage(true);
+    }
+
+    function onWallpaperFitChange() {
+      initWallpaperIfEmpty();
+      const sel = document.getElementById('wallpaper-fit-select');
+      if (sel) character.wallpaper.fit = sel.value;
+      applyWallpaperSettings();
+      saveStateToStorage(true);
+    }
+
+    function onWallpaperThemeChange() {
+      initWallpaperIfEmpty();
+      const sel = document.getElementById('wallpaper-theme-select');
+      if (sel) character.wallpaper.theme = sel.value;
+      applyWallpaperSettings();
+      saveStateToStorage(true);
+    }
+
+    function onWallpaperOpacityChange() {
+      initWallpaperIfEmpty();
+      const slider = document.getElementById('wallpaper-opacity-slider');
+      if (slider) {
+        const val = parseInt(slider.value) || 75;
+        character.wallpaper.opacity = val / 100;
+        const label = document.getElementById('wallpaper-opacity-val');
+        if (label) label.textContent = `%${val}`;
+      }
+      applyWallpaperSettings();
+      saveStateToStorage(true);
+    }
+
+    function onWallpaperBlurChange() {
+      initWallpaperIfEmpty();
+      const slider = document.getElementById('wallpaper-blur-slider');
+      if (slider) {
+        const val = parseInt(slider.value) || 1;
+        character.wallpaper.blur = val;
+        const label = document.getElementById('wallpaper-blur-val');
+        if (label) label.textContent = `${val}px`;
+      }
+      applyWallpaperSettings();
+      saveStateToStorage(true);
+    }
+
+    function scrollToWallpaperPanel() {
+      const panel = document.getElementById('profile-wallpaper-panel');
+      if (panel) {
+        panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        panel.classList.add('ring-2', 'ring-purple-400');
+        setTimeout(() => panel.classList.remove('ring-2', 'ring-purple-400'), 1200);
+      }
+    }
+
     function updateProfileModalAvatar() {
       const avatarBox = document.getElementById('profile-modal-avatar-box');
       const removeBtn = document.getElementById('profile-portrait-remove-btn');
@@ -3543,7 +3909,7 @@
         else removeBtn.classList.add('hidden');
       }
       if (btnText) {
-        btnText.textContent = hasPortrait ? 'Resmi Değiştir' : 'Resim Ekle';
+        btnText.textContent = hasPortrait ? 'Resmi Değiştir' : 'Char Resmi';
       }
 
       if (!avatarBox) return;
@@ -3587,8 +3953,9 @@
         }
       }
 
-      // 3. Modal Avatar
+      // 3. Modal Avatar & Wallpaper Settings
       updateProfileModalAvatar();
+      applyWallpaperSettings();
 
       const nameEl = document.getElementById('core-profile-name');
       if (nameEl) nameEl.textContent = character.name || "İsimsiz Karakter";
@@ -3642,6 +4009,7 @@
       setVal('profile-edit-speed', character.baseSpeed || 30);
 
       updateProfileModalAvatar();
+      applyWallpaperSettings();
 
       const modal = document.getElementById('char-profile-modal');
       if (modal) modal.classList.remove('hidden');
