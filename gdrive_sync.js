@@ -469,6 +469,8 @@ const CloudSync = {
         settingsStatus.innerHTML = '<span class="text-rose-400 font-bold">🔒 PIN Doğrulaması Bekleniyor</span>';
       } else if (status === 'error') {
         settingsStatus.innerHTML = '<span class="text-rose-400 font-bold">❌ Bağlantı Hatası</span>';
+      } else if (this.appPin) {
+        settingsStatus.innerHTML = '<span class="text-amber-400 font-bold">🟡 PIN Kayıtlı (Vercel Storage -> Connect Project Bekleniyor)</span>';
       } else {
         settingsStatus.innerHTML = '<span class="text-amber-400">🟡 Yerel Mod (Bulut Bağlı Değil)</span>';
       }
