@@ -184,15 +184,15 @@ class Dice3DController {
     const fontSize = displayText.length > 2 ? 88 : (displayText.length > 1 ? 108 : 128);
     ctx.font = `900 ${fontSize}px "Segoe UI", Arial, sans-serif`;
 
-    // 1. Dark engraving cavity contour / shadow for 3D depth
-    ctx.lineWidth = 8;
-    ctx.lineJoin = 'round';
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.9)';
-    ctx.strokeText(displayText, 128, 128);
+    // 1. Realistic debossed/engraved drop-shadow into the facet resin
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.65)';
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 1;
+    ctx.shadowOffsetY = 2;
 
     // 2. High-contrast crisp numeral fill
     if (isD20Nat20) {
-      ctx.fillStyle = '#fde047'; // Radiant gold for Nat 20
+      ctx.fillStyle = '#fef08a'; // Radiant gold for Nat 20
       ctx.shadowColor = '#eab308';
       ctx.shadowBlur = 12;
     } else if (isD20Nat1) {
@@ -202,6 +202,13 @@ class Dice3DController {
     }
 
     ctx.fillText(displayText, 128, 128);
+
+    // 3. Ultra-fine crisp edge contour (2.5px) for clear legibility on dark resin
+    ctx.shadowColor = 'transparent';
+    ctx.lineWidth = 2.5;
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.45)';
+    ctx.strokeText(displayText, 128, 128);
     ctx.restore();
 
     const texture = new THREE.CanvasTexture(canvas);
@@ -217,10 +224,12 @@ class Dice3DController {
     const vertices = [];
     const customFaces = [];
 
-    // Authentic D&D d10 pentagonal trapezohedron proportions
-    const H = radius * 1.45;  // Apex height
+    // Authentic D&D d10 pentagonal trapezohedron proportions with 100% planar kites
+    // Collinearity condition for coplanar kite vertices: h = H * (1 - cos 36°) / (1 + cos 36°) ≈ H * 0.1055728
+    const H = radius * 1.55;  // Apex height
     const R = radius * 1.30;  // Equator radius
-    const h = radius * 0.22;  // Equator zigzag offset
+    const cos36 = (1 + Math.sqrt(5)) / 4;
+    const h = H * (1 - cos36) / (1 + cos36);  // Exact coplanar ratio ~0.105573 * H
 
     const topPole = new THREE.Vector3(0, H, 0);
     const botPole = new THREE.Vector3(0, -H, 0);
@@ -378,7 +387,7 @@ class Dice3DController {
       sides = 10;
       radius = 1.5;
       geo = this.createD10Geometry(radius);
-      decalScale = 0.60;
+      decalScale = 0.58;
     } else if (type === 'd12') {
       sides = 12;
       radius = 1.55;
@@ -472,16 +481,41 @@ class Dice3DController {
       dieMesh.add(decalMesh);
     }
 
-    // Target normal on face 0
-    const targetNormal = faces[0] ? faces[0].normal.clone() : new THREE.Vector3(0, 1, 0);
+    // Target face 0 coordinate frame for 100% upright camera alignment
+    const f0 = faces[0];
+    const normal0 = f0 ? f0.normal.clone().normalize() : new THREE.Vector3(0, 1, 0);
+    let up0 = (f0 && f0.topVec) ? f0.topVec.clone().normalize() : new THREE.Vector3(0, 1, 0);
+    if (Math.abs(normal0.dot(up0)) > 0.92) {
+      up0 = new THREE.Vector3(0, 0, 1);
+    }
+    const right0 = new THREE.Vector3().crossVectors(up0, normal0).normalize();
+    const faceUp0 = new THREE.Vector3().crossVectors(normal0, right0).normalize();
 
     return {
       mesh: dieMesh,
       radius,
       sides,
       targetValue,
-      targetNormal
+      targetNormal: normal0,
+      targetFaceUp: faceUp0,
+      targetRight: right0
     };
+  }
+
+  // Calculate dual-axis orientation matrix so target face faces camera AND stands 100% upright in viewport
+  computeTargetQuat(dieData, diePos) {
+    const toCamera = new THREE.Vector3().subVectors(this.camera.position, diePos).normalize();
+    const camScreenUp = new THREE.Vector3(0, 1, 0).applyQuaternion(this.camera.quaternion).normalize();
+
+    const zWorld = toCamera.clone();
+    const xWorld = new THREE.Vector3().crossVectors(camScreenUp, zWorld).normalize();
+    const yWorld = new THREE.Vector3().crossVectors(zWorld, xWorld).normalize();
+
+    const mWorld = new THREE.Matrix4().makeBasis(xWorld, yWorld, zWorld);
+    const mLocal = new THREE.Matrix4().makeBasis(dieData.targetRight, dieData.targetFaceUp, dieData.targetNormal);
+    const mLocalInv = mLocal.clone().transpose();
+    const mTarget = new THREE.Matrix4().multiplyMatrices(mWorld, mLocalInv);
+    return new THREE.Quaternion().setFromRotationMatrix(mTarget);
   }
 
   // Roll dice list with realistic 3D tumbling physics and camera alignment
@@ -535,9 +569,8 @@ class Dice3DController {
 
       this.scene.add(mesh);
 
-      // Target world normal orientation facing directly towards camera (view vector)
-      const cameraDir = new THREE.Vector3(0, 0.84, 0.54).normalize();
-      const targetQuat = new THREE.Quaternion().setFromUnitVectors(dieData.targetNormal, cameraDir);
+      // Target world normal orientation facing directly towards camera with 100% upright viewport alignment
+      const targetQuat = this.computeTargetQuat(dieData, mesh.position);
 
       this.activeDice.push({
         ...dieData,
@@ -593,6 +626,7 @@ class Dice3DController {
             if (die.bounces >= 3 || Math.abs(die.vy) < 0.035) {
               die.settled = true;
               die.mesh.position.y = die.floorY;
+              die.targetQuat = this.computeTargetQuat(die, die.mesh.position);
             }
           }
           allSettled = false;
@@ -616,6 +650,7 @@ class Dice3DController {
         // Ensure final alignment
         this.activeDice.forEach(die => {
           die.mesh.position.y = die.floorY;
+          die.targetQuat = this.computeTargetQuat(die, die.mesh.position);
           die.mesh.quaternion.copy(die.targetQuat);
         });
         this.renderer.render(this.scene, this.camera);
