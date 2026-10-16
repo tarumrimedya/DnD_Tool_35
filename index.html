@@ -2556,8 +2556,9 @@
         return;
       }
       try {
-        const models = await (window.RuleMaster ? RuleMaster.getAvailableGeminiModels(key) : ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-3.5-flash']);
-        alert(`🩺 GEMINI API TANI RAPORU\n\n✅ Bağlantı Başarılı!\nHesabınızda kullanılabilir aktif modeller:\n${models.map((m, i) => `${i + 1}. ${m}`).join('\n')}\n\nSistem bu modelleri otomatik önceliklendirecektir.`);
+        const models = await (window.RuleMaster ? RuleMaster.getAvailableGeminiModels(key, true) : ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-3.5-flash']);
+        const formattedList = models.map((m, i) => i === 0 ? `1. ⭐ ${m} (BİRİNCİL AKTİF MODEL)` : `${i + 1}. 🔄 ${m} (Yedek / Fallback)`).join('\n');
+        alert(`🩺 GEMINI API TANI & MODEL OPTİMİZASYON RAPORU\n\n✅ Bağlantı Başarılı! Gereksiz / eski modeller filtrelendi.\n\nOptimize Edilmiş Model Öncelik Kuyruğu:\n${formattedList}\n\nSistem her sorguda önce 1. sıradaki en hızlı modeli kullanır; kota/yoğunluk durumunda otomatik olarak alt sıradaki yedek modele geçer.`);
       } catch (err) {
         alert(`❌ Tanı Hatası: ${err.message}`);
       }

@@ -957,10 +957,22 @@ const RuleMaster = {
     return cleaned;
   },
 
-  async getAvailableGeminiModels(apiKey) {
-    if (this._cachedModels && this._cachedModels.length > 0) {
+  async getAvailableGeminiModels(apiKey, forceRefresh = false) {
+    if (!forceRefresh && this._cachedModels && this._cachedModels.length > 0) {
       return this._cachedModels;
     }
+    // Curated priority queue of optimized, active text/JSON Gemini models
+    const candidatePreferences = [
+      'gemini-3.5-flash-lite',
+      'gemini-3.5-flash',
+      'gemini-3.8-flash',
+      'gemini-2.5-flash-lite',
+      'gemini-2.5-flash',
+      'gemini-flash-lite-latest',
+      'gemini-flash-latest',
+      'gemini-2.5-pro'
+    ];
+
     try {
       const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`);
       if (resp.ok) {
@@ -969,27 +981,28 @@ const RuleMaster = {
           .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'))
           .map(m => m.name.replace(/^models\//, ''));
 
-        // Preferred order of modern non-deprecated flash & pro models (2025/2026):
-        const candidatePreferences = [
-          'gemini-3.5-flash-lite',
-          'gemini-3.5-flash',
-          'gemini-3.8-flash',
-          'gemini-2.5-flash-lite',
-          'gemini-2.5-flash',
-          'gemini-flash-lite-latest',
-          'gemini-flash-latest',
-          'gemini-2.5-pro'
-        ];
-
+        // Strictly keep only verified curated models in priority order
         const selected = [];
         for (const pref of candidatePreferences) {
-          if (available.includes(pref)) selected.push(pref);
+          if (available.includes(pref)) {
+            selected.push(pref);
+          }
         }
-        for (const m of available) {
-          if (!selected.includes(m) && m.includes('flash')) selected.push(m);
-        }
-        for (const m of available) {
-          if (!selected.includes(m)) selected.push(m);
+
+        // Emergency future-proof fallback ONLY if none of the curated names matched
+        if (selected.length === 0) {
+          for (const m of available) {
+            if (
+              m.startsWith('gemini-') &&
+              m.includes('flash') &&
+              !m.includes('tts') &&
+              !m.includes('image') &&
+              !m.includes('vision') &&
+              !m.includes('1.5')
+            ) {
+              selected.push(m);
+            }
+          }
         }
 
         if (selected.length > 0) {
