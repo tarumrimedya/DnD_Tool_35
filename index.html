@@ -127,6 +127,7 @@
       <div class="flex items-baseline justify-center gap-1 my-1">
         <span id="hp-current-display" class="text-3xl font-extrabold text-emerald-400 font-mono">38</span>
         <span class="text-slate-400 text-sm">/ <span id="hp-max-display">38</span></span>
+        <span id="hp-bonus-tag" class="text-[11px] text-amber-300 font-mono font-bold ml-1"></span>
       </div>
       <!-- Mini HP Progress Bar -->
       <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mb-2">
@@ -3097,6 +3098,21 @@
       document.getElementById('hp-current-display').textContent = curHp;
       document.getElementById('hp-max-display').textContent = maxHp;
 
+      const hpBonusTag = document.getElementById('hp-bonus-tag');
+      if (hpBonusTag) {
+        const conBonus = Number(character.hp?.conBonusHp) || 0;
+        if (conBonus > 0) {
+          hpBonusTag.textContent = `(+${conBonus} CON)`;
+          hpBonusTag.title = `Geçici Dayanıklılık (CON) Bonusu: Seviye ${character.level} × +${conBonus / character.level} = +${conBonus} HP`;
+        } else if (conBonus < 0) {
+          hpBonusTag.textContent = `(${conBonus} CON)`;
+          hpBonusTag.title = `Dayanıklılık (CON) Cezası: ${conBonus} HP`;
+        } else {
+          hpBonusTag.textContent = '';
+          hpBonusTag.title = '';
+        }
+      }
+
       const pct = Math.max(0, Math.min(100, Math.round((curHp / maxHp) * 100)));
       const bar = document.getElementById('hp-progress-bar');
       if (bar) {
@@ -4152,7 +4168,9 @@
           });
           // Toughness immediate +3 HP support
           if (clean === 'toughness' && character.hp) {
-            character.hp.max = (Number(character.hp.max) || 0) + 3;
+            if (character.hp.baseMax === undefined) character.hp.baseMax = (Number(character.hp.max) || 45) - (Number(character.hp.conBonusHp) || 0);
+            character.hp.baseMax = (Number(character.hp.baseMax) || 0) + 3;
+            character.hp.max = (Number(character.hp.baseMax) || 0) + (Number(character.hp.conBonusHp) || 0);
             character.hp.current = (Number(character.hp.current) || 0) + 3;
           }
         }
@@ -4575,7 +4593,9 @@
             }
           } else if (cleanF.includes('draconic toughness')) {
             if (character.hp) {
-              character.hp.max = (Number(character.hp.max) || 0) + nextLvl;
+              if (character.hp.baseMax === undefined) character.hp.baseMax = (Number(character.hp.max) || 45) - (Number(character.hp.conBonusHp) || 0);
+              character.hp.baseMax = (Number(character.hp.baseMax) || 0) + nextLvl;
+              character.hp.max = (Number(character.hp.baseMax) || 0) + (Number(character.hp.conBonusHp) || 0);
               character.hp.current = (Number(character.hp.current) || 0) + nextLvl;
             }
           }
@@ -4626,7 +4646,9 @@
 
       // 4. Apply HP Gain
       if (!character.hp) character.hp = { current: 10, max: 10, temp: 0, nonlethal: 0 };
-      character.hp.max = (Number(character.hp.max) || 0) + hpGain;
+      if (character.hp.baseMax === undefined) character.hp.baseMax = (Number(character.hp.max) || 45) - (Number(character.hp.conBonusHp) || 0);
+      character.hp.baseMax = (Number(character.hp.baseMax) || 0) + hpGain;
+      character.hp.max = (Number(character.hp.baseMax) || 0) + (Number(character.hp.conBonusHp) || 0);
       character.hp.current = (Number(character.hp.current) || 0) + hpGain;
 
       // 5. Push Level Row
@@ -4667,8 +4689,11 @@
 
       // Revert HP
       if (character.hp && last.hpGain) {
-        character.hp.max = Math.max(1, (Number(character.hp.max) || 1) - Number(last.hpGain));
-        character.hp.current = Math.min(character.hp.max, Math.max(1, (Number(character.hp.current) || 1) - Number(last.hpGain)));
+        const gain = Number(last.hpGain) || 0;
+        if (character.hp.baseMax === undefined) character.hp.baseMax = (Number(character.hp.max) || 45) - (Number(character.hp.conBonusHp) || 0);
+        character.hp.baseMax = Math.max(1, (Number(character.hp.baseMax) || 1) - gain);
+        character.hp.max = Math.max(1, (Number(character.hp.baseMax) || 1) + (Number(character.hp.conBonusHp) || 0));
+        character.hp.current = Math.min(character.hp.max, Math.max(1, (Number(character.hp.current) || 1) - gain));
       }
 
       // Revert Stat increase if recorded
@@ -4859,6 +4884,12 @@
         <div class="flex justify-between py-1 border-b border-slate-800">
           <span class="text-slate-400">🧠 Will:</span>
           <span class="text-white font-bold">${character.baseSaves?.will || 0} (Base) + ${wisMod} (Wis) + ${character.saveBonuses?.resistance || 0} (Resist) = <strong class="text-purple-400">+${saves.will}</strong></span>
+        </div>
+        <div class="flex justify-between py-1 border-b border-slate-800">
+          <span class="text-slate-400">🩸 Can Puanı (HP):</span>
+          <span class="text-white font-bold font-mono">
+            ${character.hp?.baseMax || character.hp?.max} Taban${character.hp?.conBonusHp ? ` <span class="text-amber-400">+ ${character.hp.conBonusHp} (CON Buff)</span>` : ''} = <strong class="text-emerald-400">${character.hp?.current} / ${character.hp?.max} HP</strong>
+          </span>
         </div>
         <div class="text-[10px] text-indigo-300 pt-1 flex items-center justify-between">
           <span>✨ Battle Clarity (Warblade 1): Düztaban değilken Reflex zarlarına +${battleClarityInt} INT bonusu eklenir.</span>

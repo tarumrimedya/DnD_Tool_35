@@ -721,6 +721,38 @@ const RuleEngine = {
       character.abilities[stat] = base + netBonus;
     });
 
+    // 4.5. Resolve Dynamic Hit Points (HP) based on Constitution Changes
+    // In D&D 3.5e RAW: An increase or decrease in Constitution modifier alters maximum and current HP by 1 HP per Hit Die / Level
+    if (character.hp) {
+      if (character.hp.baseMax === undefined || character.hp.baseMax === null) {
+        // If baseMax not yet set, initialize it from current max (subtracting any previous conBonusHp)
+        character.hp.baseMax = Math.max(1, (Number(character.hp.max) || 45) - (Number(character.hp.conBonusHp) || 0));
+      }
+      if (character.hp.conBonusHp === undefined || character.hp.conBonusHp === null) {
+        character.hp.conBonusHp = 0;
+      }
+
+      const baseConMod = this.getAbilityMod(character.baseAbilities?.con || 10);
+      const effectiveConMod = this.getAbilityMod(character.abilities?.con || 10);
+      const conModDiff = effectiveConMod - baseConMod;
+      const totalHD = Number(character.level) || (Array.isArray(character.levelProgression) ? character.levelProgression.length : 1);
+      const newConBonusHp = conModDiff * totalHD;
+
+      const prevConBonusHp = Number(character.hp.conBonusHp) || 0;
+      if (newConBonusHp !== prevConBonusHp) {
+        const diff = newConBonusHp - prevConBonusHp;
+        character.hp.conBonusHp = newConBonusHp;
+        character.hp.max = Math.max(1, Number(character.hp.baseMax) + newConBonusHp);
+        character.hp.current = (Number(character.hp.current) || 0) + diff;
+        if (character.hp.current > character.hp.max) {
+          character.hp.current = character.hp.max;
+        }
+        if (character.hp.current < -10) {
+          character.hp.current = -10;
+        }
+      }
+    }
+
     // 5. Resolve AC Stacking
     const effectiveArmor = this.resolveBonusStacking(armorBonuses);
     const effectiveShield = this.resolveBonusStacking(shieldBonuses);

@@ -26,6 +26,8 @@
   "hp": {
     "current": 45,
     "max": 45,
+    "baseMax": 45,
+    "conBonusHp": 0,
     "temp": 0,
     "nonlethal": 0
   },
