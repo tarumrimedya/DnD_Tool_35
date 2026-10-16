@@ -152,9 +152,9 @@
       </div>
       <!-- Quick Adjust Controls -->
       <div class="flex items-center gap-1">
-        <input id="hp-adjust-input" type="number" value="5" min="1" class="w-10 sm:w-11 bg-slate-900 border border-slate-700 rounded px-1 py-0.5 text-center text-xs font-mono text-white" title="HP Değeri">
-        <button onclick="applyDamage()" class="flex-1 bg-rose-600/30 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/40 rounded py-0.5 text-xs font-bold transition cursor-pointer" title="Doğrudan hasar al">💥 Hasar</button>
-        <button onclick="applyHeal()" class="flex-1 bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/40 rounded py-0.5 text-xs font-bold transition cursor-pointer" title="Doğrudan iyileş">💖 İyileş</button>
+        <input id="hp-adjust-input" type="text" value="5" class="w-14 sm:w-16 bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-center text-xs font-mono text-white focus:border-amber-500 focus:outline-none" placeholder="5 / 1d6" title="HP Değeri veya Zar Formülü (örn: 5, 1d6+5, 2d4)">
+        <button onclick="applyDamage()" class="flex-1 bg-rose-600/30 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/40 rounded py-0.5 text-xs font-bold transition cursor-pointer" title="Doğrudan hasar al (zar formülü destekler)">💥 Hasar</button>
+        <button onclick="applyHeal()" class="flex-1 bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/40 rounded py-0.5 text-xs font-bold transition cursor-pointer" title="Doğrudan iyileş (zar formülü destekler)">💖 İyileş</button>
         <button onclick="openPeriodicHpModal()" class="bg-amber-600/30 hover:bg-amber-600 text-amber-300 hover:text-white border border-amber-500/40 rounded px-1.5 sm:px-2 py-0.5 text-xs font-bold transition flex items-center justify-center gap-1 shrink-0 shadow-sm cursor-pointer" title="Süreli Hasar veya İyileşme (DoT / HoT) ekle">
           <span>⏱️</span>
           <span>Süreli</span>
@@ -2995,8 +2995,8 @@
 
           <div class="grid grid-cols-2 gap-2.5">
             <div>
-              <label id="periodic-label-amount" class="block text-[10px] font-bold text-rose-400 uppercase mb-1">Tur Başı Hasar (HP) *</label>
-              <input type="number" id="periodic-input-amount" min="1" value="2" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono font-bold focus:border-amber-500 focus:outline-none">
+              <label id="periodic-label-amount" class="block text-[10px] font-bold text-rose-400 uppercase mb-1">Tur Başı Hasar (HP / 1d6+5) *</label>
+              <input type="text" id="periodic-input-amount" value="2" placeholder="Örn: 2, 1d6+5, 2d4" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono font-bold focus:border-amber-500 focus:outline-none">
             </div>
             <div>
               <label id="periodic-label-rounds" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Süre (Tur Sayısı) *</label>
@@ -5076,44 +5076,91 @@
       alert('✅ Karakter kimliği ve özellikleri başarıyla güncellendi!');
     }
 
+    // ==========================================
+    // HP ADJUSTMENT & DICE EVALUATION HELPER
+    // 1d6+5, 2d4, 1d8-1 gibi zar ifadelerini ve standart sayıları işler
+    // ==========================================
+    function evaluateHpAmount(expr) {
+      if (expr === null || expr === undefined) return { total: 0, text: '0', isDice: false, rollDesc: '0' };
+      const str = String(expr).trim();
+      if (!str) return { total: 0, text: '0', isDice: false, rollDesc: '0' };
+
+      // Zar ifadesi içeriyorsa (örn: 1d6+5, 2d4, 1d8-1)
+      if (/[dD]/.test(str)) {
+        if (typeof parseAndRollDiceFormula === 'function') {
+          const rolled = parseAndRollDiceFormula(str);
+          if (rolled && typeof rolled.grandTotal === 'number') {
+            const groupStrs = (rolled.diceGroups || []).map(g => `${g.notation}: [${g.rolls.join('+')}]`);
+            const modStrs = (rolled.modifiers || []).map(m => (m >= 0 ? `+${m}` : `${m}`));
+            const breakdown = [...groupStrs, ...modStrs].join(' ');
+            const rollDesc = `${str} (${breakdown} = ${rolled.grandTotal})`;
+            return {
+              total: Math.max(0, rolled.grandTotal),
+              text: str,
+              isDice: true,
+              rollDesc: rollDesc,
+              details: rolled
+            };
+          }
+        }
+      }
+
+      // Standart sayısal veya basit aritmetik ifade
+      const parsedNum = parseInt(str);
+      const total = isNaN(parsedNum) ? 0 : Math.max(0, parsedNum);
+      return {
+        total: total,
+        text: String(total),
+        isDice: false,
+        rollDesc: String(total)
+      };
+    }
+
     function applyDamage() {
       if (!character || !character.hp) return;
       const input = document.getElementById('hp-adjust-input');
-      const amount = parseInt(input?.value) || 0;
-      if (amount <= 0) return;
-      character.hp.current = Math.max(-10, (Number(character.hp.current) || 0) - amount);
+      const evaluated = evaluateHpAmount(input?.value || '0');
+      if (evaluated.total <= 0) return;
+      character.hp.current = Math.max(-10, (Number(character.hp.current) || 0) - evaluated.total);
       saveStateToStorage(true);
       renderAll();
+      if (evaluated.isDice) {
+        alert(`💥 Zar Sonucu Hasar Alındı!\n\n• Formül & Zar: ${evaluated.rollDesc}\n• Kalan Can (HP): ${character.hp.current}/${character.hp.max}`);
+      }
     }
 
     function applyHeal() {
       if (!character || !character.hp) return;
       const input = document.getElementById('hp-adjust-input');
-      const amount = parseInt(input?.value) || 0;
-      if (amount <= 0) return;
-      character.hp.current = Math.min(Number(character.hp.max) || 0, (Number(character.hp.current) || 0) + amount);
+      const evaluated = evaluateHpAmount(input?.value || '0');
+      if (evaluated.total <= 0) return;
+      character.hp.current = Math.min(Number(character.hp.max) || 0, (Number(character.hp.current) || 0) + evaluated.total);
       saveStateToStorage(true);
       renderAll();
+      if (evaluated.isDice) {
+        alert(`💖 Zar Sonucu İyileşildi!\n\n• Formül & Zar: ${evaluated.rollDesc}\n• Güncel Can (HP): ${character.hp.current}/${character.hp.max}`);
+      }
     }
 
     // ==========================================
     // PERIODIC HP EFFECTS (DoT / HoT - Tur Başı Can Etkileri)
     // DB'ye kaydedilmeden karakter oturum state'inde çalışır
+    // 1d6+5 gibi zar formüllerini destekler
     // ==========================================
     const PERIODIC_HP_PRESETS = {
       damage: [
-        { name: 'Zehir (Poison)', amount: 2, rounds: 3, infinite: false, icon: '🧪' },
-        { name: 'Kanama (Bleed)', amount: 1, rounds: 5, infinite: false, icon: '🩸' },
-        { name: 'Yanma (Fire/Burn)', amount: 3, rounds: 2, infinite: false, icon: '🔥' },
-        { name: 'Asit (Acid)', amount: 4, rounds: 3, infinite: false, icon: '⚡' },
-        { name: 'Boğulma / Hasar', amount: 5, rounds: 3, infinite: false, icon: '💨' }
+        { name: 'Zehir (Poison)', amount: '1d4', rounds: 3, infinite: false, icon: '🧪' },
+        { name: 'Yanma (Fire/Burn)', amount: '1d6', rounds: 2, infinite: false, icon: '🔥' },
+        { name: 'Kanama (Bleed)', amount: '1', rounds: 5, infinite: false, icon: '🩸' },
+        { name: 'Asit (Acid)', amount: '1d6+2', rounds: 3, infinite: false, icon: '⚡' },
+        { name: 'Kara Büyü / Hasar', amount: '1d6+5', rounds: 3, infinite: false, icon: '💀' }
       ],
       heal: [
-        { name: 'Fast Healing 1', amount: 1, rounds: null, infinite: true, icon: '💖' },
-        { name: 'Fast Healing 2', amount: 2, rounds: null, infinite: true, icon: '💖' },
-        { name: 'Regeneration 1', amount: 1, rounds: null, infinite: true, icon: '✨' },
-        { name: 'Lesser Vigor', amount: 1, rounds: 11, infinite: false, icon: '🌿' },
-        { name: 'Vigor', amount: 2, rounds: 15, infinite: false, icon: '🌿' }
+        { name: 'Fast Healing 1', amount: '1', rounds: null, infinite: true, icon: '💖' },
+        { name: 'Fast Healing 2', amount: '2', rounds: null, infinite: true, icon: '💖' },
+        { name: 'Regeneration 1', amount: '1', rounds: null, infinite: true, icon: '✨' },
+        { name: 'Lesser Vigor', amount: '1', rounds: 11, infinite: false, icon: '🌿' },
+        { name: 'Healing Spirit', amount: '1d8+1', rounds: 5, infinite: false, icon: '🌿' }
       ]
     };
 
@@ -5129,8 +5176,8 @@
       // Pre-fill amount from HUD quick input if available
       const hudInput = document.getElementById('hp-adjust-input');
       const inputAmt = document.getElementById('periodic-input-amount');
-      if (hudInput && inputAmt && parseInt(hudInput.value) > 0) {
-        inputAmt.value = hudInput.value;
+      if (hudInput && inputAmt && hudInput.value.trim()) {
+        inputAmt.value = hudInput.value.trim();
       }
 
       const applyNowCheck = document.getElementById('periodic-input-apply-now');
@@ -5161,7 +5208,7 @@
           btnHeal.className = 'flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition border bg-slate-900 text-slate-400 border-slate-700 hover:text-white cursor-pointer';
         }
         if (lblAmt) {
-          lblAmt.textContent = 'Tur Başı Hasar (HP) *';
+          lblAmt.textContent = 'Tur Başı Hasar (HP / 1d6+5) *';
           lblAmt.className = 'block text-[10px] font-bold text-rose-400 uppercase mb-1';
         }
         if (btnSave) {
@@ -5175,7 +5222,7 @@
           btnDmg.className = 'flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition border bg-slate-900 text-slate-400 border-slate-700 hover:text-white cursor-pointer';
         }
         if (lblAmt) {
-          lblAmt.textContent = 'Tur Başı İyileşme (HP) *';
+          lblAmt.textContent = 'Tur Başı İyileşme (HP / 1d6+5) *';
           lblAmt.className = 'block text-[10px] font-bold text-emerald-400 uppercase mb-1';
         }
         if (btnSave) {
@@ -5196,11 +5243,12 @@
           ? 'bg-rose-950/60 hover:bg-rose-900/80 text-rose-200 border-rose-700/50 hover:border-rose-500' 
           : 'bg-emerald-950/60 hover:bg-emerald-900/80 text-emerald-200 border-emerald-700/50 hover:border-emerald-500';
         const durLabel = p.infinite ? '∞' : `${p.rounds}t`;
+        const sign = isDmg ? '-' : '+';
         return `
           <button type="button" onclick="applyPeriodicPreset(${idx})" class="px-2 py-1 rounded text-[10px] font-bold border transition flex items-center gap-1 ${colorClass} cursor-pointer active:scale-95 shadow-sm">
             <span>${p.icon}</span>
             <span>${p.name}</span>
-            <span class="opacity-75 font-mono">(${isDmg ? '-' : '+'}${p.amount} / ${durLabel})</span>
+            <span class="opacity-75 font-mono">(${sign}${p.amount} / ${durLabel})</span>
           </button>
         `;
       }).join('');
@@ -5251,7 +5299,7 @@
       const applyNowCheck = document.getElementById('periodic-input-apply-now');
 
       const name = (nameInput?.value || '').trim() || (currentPeriodicMode === 'damage' ? 'Hasar (DoT)' : 'İyileşme (HoT)');
-      const amount = Math.max(1, parseInt(amtInput?.value) || 1);
+      const rawAmount = (amtInput?.value || '1').trim();
       const isInfinite = infCheck?.checked || false;
       const rounds = isInfinite ? null : Math.max(1, parseInt(roundsInput?.value) || 1);
       const applyNow = applyNowCheck?.checked || false;
@@ -5264,17 +5312,20 @@
         id: 'pe_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
         name: name,
         type: currentPeriodicMode,
-        amount: amount,
+        amount: rawAmount,
         roundsTotal: rounds,
         roundsLeft: rounds,
         createdAtRound: Number(character.encounterRound) || 1
       };
 
       if (applyNow) {
-        if (currentPeriodicMode === 'damage') {
-          character.hp.current = Math.max(-10, (Number(character.hp.current) || 0) - amount);
-        } else {
-          character.hp.current = Math.min(Number(character.hp.max) || 0, (Number(character.hp.current) || 0) + amount);
+        const evalRes = evaluateHpAmount(rawAmount);
+        if (evalRes.total > 0) {
+          if (currentPeriodicMode === 'damage') {
+            character.hp.current = Math.max(-10, (Number(character.hp.current) || 0) - evalRes.total);
+          } else {
+            character.hp.current = Math.min(Number(character.hp.max) || 0, (Number(character.hp.current) || 0) + evalRes.total);
+          }
         }
         if (eff.roundsLeft !== null) {
           eff.roundsLeft--;
@@ -5328,7 +5379,8 @@
           ? 'bg-rose-950/60 border-rose-800 text-rose-200' 
           : 'bg-emerald-950/60 border-emerald-800 text-emerald-200';
         const icon = isDmg ? '🩸' : '💖';
-        const rate = isDmg ? `-${eff.amount} HP/tur` : `+${eff.amount} HP/tur`;
+        const safeAmount = String(eff.amount || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const rate = isDmg ? `-${safeAmount} HP/tur` : `+${safeAmount} HP/tur`;
         const dur = eff.roundsLeft !== null ? `${eff.roundsLeft} tur kaldı` : 'Süresiz';
         const safeName = String(eff.name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
@@ -5379,12 +5431,12 @@
           ? 'bg-rose-950/70 border-rose-700/60 text-rose-200' 
           : 'bg-emerald-950/70 border-emerald-700/60 text-emerald-200';
         const textClass = isDmg ? 'text-rose-400' : 'text-emerald-400';
-        const icon = isDmg ? '🩸' : '💖';
-        const rateText = isDmg ? `-${eff.amount} HP/tur` : `+${eff.amount} HP/tur`;
+        const safeName = String(eff.name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const safeAmount = String(eff.amount || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const rateText = isDmg ? `-${safeAmount} HP/tur` : `+${safeAmount} HP/tur`;
         const durText = eff.roundsLeft !== null && eff.roundsLeft !== undefined 
           ? `${eff.roundsLeft}t` 
           : '∞';
-        const safeName = String(eff.name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
         return `
           <div class="flex items-center justify-between text-[10px] border rounded px-1.5 py-0.5 ${bgClass} shadow-sm">
@@ -8525,15 +8577,18 @@
       const expiredPeriodic = [];
       if (Array.isArray(character.periodicHpEffects) && character.periodicHpEffects.length > 0) {
         character.periodicHpEffects.forEach(eff => {
-          const amt = Number(eff.amount) || 0;
+          const evalRes = evaluateHpAmount(eff.amount);
+          const amt = evalRes.total;
+          const rollInfo = evalRes.isDice ? ` [Zar: ${evalRes.rollDesc}]` : '';
+
           if (amt > 0) {
             if (eff.type === 'damage') {
               character.hp.current = Math.max(-10, (Number(character.hp.current) || 0) - amt);
-              hpLogs.push(`💥 ${eff.name}: -${amt} HP Hasar`);
+              hpLogs.push(`💥 ${eff.name}: -${amt} HP Hasar${rollInfo}`);
             } else if (eff.type === 'heal') {
               const maxHp = Number(character.hp.max) || 0;
               character.hp.current = Math.min(maxHp, (Number(character.hp.current) || 0) + amt);
-              hpLogs.push(`💖 ${eff.name}: +${amt} HP İyileşme`);
+              hpLogs.push(`💖 ${eff.name}: +${amt} HP İyileşme${rollInfo}`);
             }
           }
 
