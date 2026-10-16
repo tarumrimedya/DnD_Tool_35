@@ -136,7 +136,10 @@
     <div class="bg-dndCard border border-dndBorder rounded-xl p-3 flex flex-col justify-between shadow col-span-1 md:col-span-2 lg:col-span-2">
       <div class="flex justify-between items-center text-xs font-bold text-slate-400 mb-1">
         <span class="text-emerald-400 flex items-center gap-1">🩸 CAN (HP)</span>
-        <span id="hp-condition-badge" class="badge bg-emerald-900/60 text-emerald-300 border border-emerald-600">Healthy</span>
+        <div class="flex items-center gap-1.5">
+          <span id="hp-periodic-badge" class="hidden text-[10px] px-1.5 py-0.5 rounded font-bold font-mono bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse cursor-pointer" onclick="openPeriodicHpModal()" title="Aktif süreli can etkilerini (DoT / HoT) gör / yönet"></span>
+          <span id="hp-condition-badge" class="badge bg-emerald-900/60 text-emerald-300 border border-emerald-600">Healthy</span>
+        </div>
       </div>
       <div class="flex items-baseline justify-center gap-1 my-1">
         <span id="hp-current-display" class="text-3xl font-extrabold text-emerald-400 font-mono">38</span>
@@ -149,9 +152,17 @@
       </div>
       <!-- Quick Adjust Controls -->
       <div class="flex items-center gap-1">
-        <input id="hp-adjust-input" type="number" value="5" min="1" class="w-12 bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-center text-xs font-mono text-white">
-        <button onclick="applyDamage()" class="flex-1 bg-rose-600/30 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/40 rounded py-0.5 text-xs font-bold transition">💥 Hasar</button>
-        <button onclick="applyHeal()" class="flex-1 bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/40 rounded py-0.5 text-xs font-bold transition">💖 İyileş</button>
+        <input id="hp-adjust-input" type="number" value="5" min="1" class="w-10 sm:w-11 bg-slate-900 border border-slate-700 rounded px-1 py-0.5 text-center text-xs font-mono text-white" title="HP Değeri">
+        <button onclick="applyDamage()" class="flex-1 bg-rose-600/30 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/40 rounded py-0.5 text-xs font-bold transition cursor-pointer" title="Doğrudan hasar al">💥 Hasar</button>
+        <button onclick="applyHeal()" class="flex-1 bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/40 rounded py-0.5 text-xs font-bold transition cursor-pointer" title="Doğrudan iyileş">💖 İyileş</button>
+        <button onclick="openPeriodicHpModal()" class="bg-amber-600/30 hover:bg-amber-600 text-amber-300 hover:text-white border border-amber-500/40 rounded px-1.5 sm:px-2 py-0.5 text-xs font-bold transition flex items-center justify-center gap-1 shrink-0 shadow-sm cursor-pointer" title="Süreli Hasar veya İyileşme (DoT / HoT) ekle">
+          <span>⏱️</span>
+          <span>Süreli</span>
+        </button>
+      </div>
+      <!-- Active Periodic Effects List (DoT / HoT) -->
+      <div id="hp-periodic-list" class="mt-2 pt-1.5 border-t border-slate-800/80 space-y-1 hidden">
+        <!-- Rendered dynamically -->
       </div>
     </div>
 
@@ -2921,6 +2932,117 @@
   </div>
 
   <!-- ==================================================== -->
+  <!-- MODAL: SÜRELİ CAN ETKİSİ (DoT / HoT) -->
+  <!-- ==================================================== -->
+  <div id="periodic-hp-modal" class="hidden fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
+    <div class="bg-dndCard border border-amber-500/80 rounded-2xl max-w-md w-full shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col transition-colors">
+      <!-- Modal Header -->
+      <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div id="periodic-modal-icon-badge" class="w-8 h-8 rounded-lg bg-amber-950/80 border border-amber-600/50 flex items-center justify-center text-lg shadow-inner">
+            ⏱️
+          </div>
+          <div>
+            <h3 class="text-sm md:text-base font-extrabold text-white flex items-center gap-2">
+              <span>Süreli Can Etkisi (DoT / HoT)</span>
+              <span class="text-[10px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-full">Tur Başı</span>
+            </h3>
+            <p class="text-[10px] text-slate-400">Tur ilerledikçe otomatik hasar al veya iyileş (DB'ye eklenmez)</p>
+          </div>
+        </div>
+        <button onclick="closePeriodicHpModal()" class="text-slate-400 hover:text-white p-1 rounded-lg text-lg font-bold cursor-pointer">&times;</button>
+      </div>
+
+      <!-- Segmented Mode Toggle: [💥 Hasar (DoT)] / [💖 İyileşme (HoT)] -->
+      <div class="bg-slate-950/90 px-4 py-2 border-b border-slate-800 flex items-center gap-2 shrink-0">
+        <button 
+          type="button" 
+          id="btn-periodic-mode-damage"
+          onclick="setPeriodicMode('damage')"
+          class="flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition border bg-gradient-to-r from-red-600 to-rose-600 text-white border-red-500 shadow-md cursor-pointer">
+          <span>💥</span>
+          <span>Hasar (DoT)</span>
+        </button>
+        <button 
+          type="button" 
+          id="btn-periodic-mode-heal"
+          onclick="setPeriodicMode('heal')"
+          class="flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition border bg-slate-900 text-slate-400 border-slate-700 hover:text-white cursor-pointer">
+          <span>💖</span>
+          <span>İyileşme (HoT)</span>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-4 space-y-3.5 text-xs overflow-y-auto flex-1 custom-scrollbar">
+        <!-- Quick Preset Pills -->
+        <div class="bg-slate-900/70 p-2.5 rounded-xl border border-slate-800 space-y-1.5">
+          <div class="text-[10px] font-bold text-slate-400 flex items-center justify-between">
+            <span>⚡ Hızlı Şablon Seç:</span>
+            <span class="text-[9px] text-slate-500">Otomatik doldurur</span>
+          </div>
+          <div id="periodic-presets-container" class="flex flex-wrap gap-1.5">
+            <!-- Dynamic presets rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Form Inputs -->
+        <div class="space-y-2.5">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Etki Adı / Kaynak *</label>
+            <input type="text" id="periodic-input-name" placeholder="Örn: Zehir, Kanama, Yanma, Fast Healing..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold focus:border-amber-500 focus:outline-none">
+          </div>
+
+          <div class="grid grid-cols-2 gap-2.5">
+            <div>
+              <label id="periodic-label-amount" class="block text-[10px] font-bold text-rose-400 uppercase mb-1">Tur Başı Hasar (HP) *</label>
+              <input type="number" id="periodic-input-amount" min="1" value="2" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono font-bold focus:border-amber-500 focus:outline-none">
+            </div>
+            <div>
+              <label id="periodic-label-rounds" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Süre (Tur Sayısı) *</label>
+              <input type="number" id="periodic-input-rounds" min="1" value="3" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono font-bold focus:border-amber-500 focus:outline-none">
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-0.5">
+            <label class="flex items-center gap-2 cursor-pointer select-none text-[11px] text-slate-300">
+              <input type="checkbox" id="periodic-input-infinite" onchange="togglePeriodicInfinite(this.checked)" class="rounded bg-slate-900 border-slate-700 text-amber-500 focus:ring-0">
+              <span>Süresiz (Manuel iptal edilene kadar)</span>
+            </label>
+          </div>
+
+          <div class="flex items-center justify-between pt-0.5">
+            <label class="flex items-center gap-2 cursor-pointer select-none text-[11px] text-slate-300">
+              <input type="checkbox" id="periodic-input-apply-now" class="rounded bg-slate-900 border-slate-700 text-amber-500 focus:ring-0">
+              <span class="text-amber-300 font-semibold">Şu anki tura HEMEN uygula (İlk HP etkisi)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Active Effects List in Modal -->
+        <div id="periodic-modal-active-box" class="pt-2 border-t border-slate-800 space-y-1.5">
+          <div class="flex items-center justify-between text-[10px] font-bold text-slate-400">
+            <span>Şu An Aktif Süreli Etkiler:</span>
+            <button onclick="clearAllPeriodicHpEffects()" id="btn-clear-all-periodic" class="text-rose-400 hover:text-rose-300 hover:underline cursor-pointer hidden">Tümünü Temizle</button>
+          </div>
+          <div id="periodic-modal-active-list" class="space-y-1 max-h-32 overflow-y-auto pr-0.5 custom-scrollbar text-[11px]">
+            <!-- Rendered list of active periodic effects -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Buttons -->
+      <div class="bg-slate-950 px-4 py-2.5 border-t border-slate-800 flex items-center justify-end gap-2 shrink-0">
+        <button onclick="closePeriodicHpModal()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-xs font-bold transition cursor-pointer">Vazgeç</button>
+        <button onclick="savePeriodicHpEffect()" id="btn-save-periodic" class="px-4 py-1.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1.5 cursor-pointer">
+          <span>➕</span>
+          <span>Etkiyi Başlat</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================== -->
   <!-- MODAL: ADD ITEM TO GEAR POOL -->
   <!-- ==================================================== -->
   <div id="add-pool-item-modal" class="hidden fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
@@ -3734,6 +3856,9 @@
             character.hitDie = defaultChar.hitDie;
             updated = true;
           }
+          if (character && !Array.isArray(character.periodicHpEffects)) {
+            character.periodicHpEffects = [];
+          }
           if (updated) saveStateToStorage(false);
         }
       } catch (e) {
@@ -4026,6 +4151,11 @@
           condBadge.textContent = 'Dead';
           condBadge.className = 'badge bg-slate-950 text-rose-500 border border-slate-800';
         }
+      }
+
+      // Periodic HP Effects (DoT / HoT)
+      if (typeof renderPeriodicHpEffects === 'function') {
+        renderPeriodicHpEffects();
       }
 
       // AC
@@ -4964,6 +5094,312 @@
       character.hp.current = Math.min(Number(character.hp.max) || 0, (Number(character.hp.current) || 0) + amount);
       saveStateToStorage(true);
       renderAll();
+    }
+
+    // ==========================================
+    // PERIODIC HP EFFECTS (DoT / HoT - Tur Başı Can Etkileri)
+    // DB'ye kaydedilmeden karakter oturum state'inde çalışır
+    // ==========================================
+    const PERIODIC_HP_PRESETS = {
+      damage: [
+        { name: 'Zehir (Poison)', amount: 2, rounds: 3, infinite: false, icon: '🧪' },
+        { name: 'Kanama (Bleed)', amount: 1, rounds: 5, infinite: false, icon: '🩸' },
+        { name: 'Yanma (Fire/Burn)', amount: 3, rounds: 2, infinite: false, icon: '🔥' },
+        { name: 'Asit (Acid)', amount: 4, rounds: 3, infinite: false, icon: '⚡' },
+        { name: 'Boğulma / Hasar', amount: 5, rounds: 3, infinite: false, icon: '💨' }
+      ],
+      heal: [
+        { name: 'Fast Healing 1', amount: 1, rounds: null, infinite: true, icon: '💖' },
+        { name: 'Fast Healing 2', amount: 2, rounds: null, infinite: true, icon: '💖' },
+        { name: 'Regeneration 1', amount: 1, rounds: null, infinite: true, icon: '✨' },
+        { name: 'Lesser Vigor', amount: 1, rounds: 11, infinite: false, icon: '🌿' },
+        { name: 'Vigor', amount: 2, rounds: 15, infinite: false, icon: '🌿' }
+      ]
+    };
+
+    let currentPeriodicMode = 'damage';
+
+    function openPeriodicHpModal(defaultMode = null) {
+      if (defaultMode) {
+        setPeriodicMode(defaultMode);
+      } else {
+        setPeriodicMode(currentPeriodicMode || 'damage');
+      }
+
+      // Pre-fill amount from HUD quick input if available
+      const hudInput = document.getElementById('hp-adjust-input');
+      const inputAmt = document.getElementById('periodic-input-amount');
+      if (hudInput && inputAmt && parseInt(hudInput.value) > 0) {
+        inputAmt.value = hudInput.value;
+      }
+
+      const applyNowCheck = document.getElementById('periodic-input-apply-now');
+      if (applyNowCheck) applyNowCheck.checked = false;
+
+      renderPeriodicModalActiveList();
+      const modal = document.getElementById('periodic-hp-modal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closePeriodicHpModal() {
+      const modal = document.getElementById('periodic-hp-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function setPeriodicMode(mode) {
+      currentPeriodicMode = mode;
+      const btnDmg = document.getElementById('btn-periodic-mode-damage');
+      const btnHeal = document.getElementById('btn-periodic-mode-heal');
+      const lblAmt = document.getElementById('periodic-label-amount');
+      const btnSave = document.getElementById('btn-save-periodic');
+
+      if (mode === 'damage') {
+        if (btnDmg) {
+          btnDmg.className = 'flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition border bg-gradient-to-r from-red-600 to-rose-600 text-white border-red-500 shadow-md cursor-pointer';
+        }
+        if (btnHeal) {
+          btnHeal.className = 'flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition border bg-slate-900 text-slate-400 border-slate-700 hover:text-white cursor-pointer';
+        }
+        if (lblAmt) {
+          lblAmt.textContent = 'Tur Başı Hasar (HP) *';
+          lblAmt.className = 'block text-[10px] font-bold text-rose-400 uppercase mb-1';
+        }
+        if (btnSave) {
+          btnSave.className = 'px-4 py-1.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1.5 cursor-pointer';
+        }
+      } else {
+        if (btnHeal) {
+          btnHeal.className = 'flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition border bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-emerald-500 shadow-md cursor-pointer';
+        }
+        if (btnDmg) {
+          btnDmg.className = 'flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition border bg-slate-900 text-slate-400 border-slate-700 hover:text-white cursor-pointer';
+        }
+        if (lblAmt) {
+          lblAmt.textContent = 'Tur Başı İyileşme (HP) *';
+          lblAmt.className = 'block text-[10px] font-bold text-emerald-400 uppercase mb-1';
+        }
+        if (btnSave) {
+          btnSave.className = 'px-4 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1.5 cursor-pointer';
+        }
+      }
+
+      renderPeriodicPresets();
+    }
+
+    function renderPeriodicPresets() {
+      const container = document.getElementById('periodic-presets-container');
+      if (!container) return;
+      const presets = PERIODIC_HP_PRESETS[currentPeriodicMode] || [];
+      container.innerHTML = presets.map((p, idx) => {
+        const isDmg = currentPeriodicMode === 'damage';
+        const colorClass = isDmg 
+          ? 'bg-rose-950/60 hover:bg-rose-900/80 text-rose-200 border-rose-700/50 hover:border-rose-500' 
+          : 'bg-emerald-950/60 hover:bg-emerald-900/80 text-emerald-200 border-emerald-700/50 hover:border-emerald-500';
+        const durLabel = p.infinite ? '∞' : `${p.rounds}t`;
+        return `
+          <button type="button" onclick="applyPeriodicPreset(${idx})" class="px-2 py-1 rounded text-[10px] font-bold border transition flex items-center gap-1 ${colorClass} cursor-pointer active:scale-95 shadow-sm">
+            <span>${p.icon}</span>
+            <span>${p.name}</span>
+            <span class="opacity-75 font-mono">(${isDmg ? '-' : '+'}${p.amount} / ${durLabel})</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function applyPeriodicPreset(index) {
+      const presets = PERIODIC_HP_PRESETS[currentPeriodicMode];
+      if (!presets || !presets[index]) return;
+      const p = presets[index];
+
+      const nameInput = document.getElementById('periodic-input-name');
+      const amtInput = document.getElementById('periodic-input-amount');
+      const roundsInput = document.getElementById('periodic-input-rounds');
+      const infCheck = document.getElementById('periodic-input-infinite');
+
+      if (nameInput) nameInput.value = p.name;
+      if (amtInput) amtInput.value = p.amount;
+
+      if (p.infinite) {
+        if (infCheck) infCheck.checked = true;
+        togglePeriodicInfinite(true);
+      } else {
+        if (infCheck) infCheck.checked = false;
+        togglePeriodicInfinite(false);
+        if (roundsInput) roundsInput.value = p.rounds || 3;
+      }
+    }
+
+    function togglePeriodicInfinite(isInfinite) {
+      const roundsInput = document.getElementById('periodic-input-rounds');
+      if (roundsInput) {
+        roundsInput.disabled = isInfinite;
+        if (isInfinite) {
+          roundsInput.classList.add('opacity-40', 'cursor-not-allowed');
+        } else {
+          roundsInput.classList.remove('opacity-40', 'cursor-not-allowed');
+          if (!roundsInput.value || roundsInput.value === '0') roundsInput.value = 3;
+        }
+      }
+    }
+
+    function savePeriodicHpEffect() {
+      if (!character) return;
+      const nameInput = document.getElementById('periodic-input-name');
+      const amtInput = document.getElementById('periodic-input-amount');
+      const roundsInput = document.getElementById('periodic-input-rounds');
+      const infCheck = document.getElementById('periodic-input-infinite');
+      const applyNowCheck = document.getElementById('periodic-input-apply-now');
+
+      const name = (nameInput?.value || '').trim() || (currentPeriodicMode === 'damage' ? 'Hasar (DoT)' : 'İyileşme (HoT)');
+      const amount = Math.max(1, parseInt(amtInput?.value) || 1);
+      const isInfinite = infCheck?.checked || false;
+      const rounds = isInfinite ? null : Math.max(1, parseInt(roundsInput?.value) || 1);
+      const applyNow = applyNowCheck?.checked || false;
+
+      if (!Array.isArray(character.periodicHpEffects)) {
+        character.periodicHpEffects = [];
+      }
+
+      const eff = {
+        id: 'pe_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+        name: name,
+        type: currentPeriodicMode,
+        amount: amount,
+        roundsTotal: rounds,
+        roundsLeft: rounds,
+        createdAtRound: Number(character.encounterRound) || 1
+      };
+
+      if (applyNow) {
+        if (currentPeriodicMode === 'damage') {
+          character.hp.current = Math.max(-10, (Number(character.hp.current) || 0) - amount);
+        } else {
+          character.hp.current = Math.min(Number(character.hp.max) || 0, (Number(character.hp.current) || 0) + amount);
+        }
+        if (eff.roundsLeft !== null) {
+          eff.roundsLeft--;
+        }
+      }
+
+      if (eff.roundsLeft === null || eff.roundsLeft > 0) {
+        character.periodicHpEffects.push(eff);
+      }
+
+      saveStateToStorage(true);
+      renderAll();
+      closePeriodicHpModal();
+    }
+
+    function removePeriodicHpEffect(effId) {
+      if (!character || !Array.isArray(character.periodicHpEffects)) return;
+      character.periodicHpEffects = character.periodicHpEffects.filter(e => e.id !== effId);
+      saveStateToStorage(true);
+      renderAll();
+      renderPeriodicModalActiveList();
+    }
+
+    function clearAllPeriodicHpEffects() {
+      if (!character || !Array.isArray(character.periodicHpEffects) || character.periodicHpEffects.length === 0) return;
+      if (confirm('Tüm aktif süreli can etkilerini (DoT / HoT) kaldırmak istediğinize emin misiniz?')) {
+        character.periodicHpEffects = [];
+        saveStateToStorage(true);
+        renderAll();
+        renderPeriodicModalActiveList();
+      }
+    }
+
+    function renderPeriodicModalActiveList() {
+      const listEl = document.getElementById('periodic-modal-active-list');
+      const clearBtn = document.getElementById('btn-clear-all-periodic');
+      if (!listEl) return;
+
+      const effects = character?.periodicHpEffects || [];
+      if (effects.length === 0) {
+        listEl.innerHTML = '<div class="text-[10px] text-slate-500 italic p-1.5 text-center">Şu an aktif bir süreli etki yok.</div>';
+        if (clearBtn) clearBtn.classList.add('hidden');
+        return;
+      }
+
+      if (clearBtn) clearBtn.classList.remove('hidden');
+
+      listEl.innerHTML = effects.map(eff => {
+        const isDmg = eff.type === 'damage';
+        const colorClasses = isDmg 
+          ? 'bg-rose-950/60 border-rose-800 text-rose-200' 
+          : 'bg-emerald-950/60 border-emerald-800 text-emerald-200';
+        const icon = isDmg ? '🩸' : '💖';
+        const rate = isDmg ? `-${eff.amount} HP/tur` : `+${eff.amount} HP/tur`;
+        const dur = eff.roundsLeft !== null ? `${eff.roundsLeft} tur kaldı` : 'Süresiz';
+        const safeName = String(eff.name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+        return `
+          <div class="flex items-center justify-between p-1.5 rounded-lg border ${colorClasses}">
+            <div class="flex items-center gap-1.5 truncate">
+              <span>${icon}</span>
+              <strong class="text-white">${safeName}</strong>
+              <span class="font-mono font-bold">${rate}</span>
+            </div>
+            <div class="flex items-center gap-2 shrink-0 ml-1">
+              <span class="text-[9px] px-1.5 py-0.5 rounded bg-slate-900/90 text-slate-300 font-mono font-bold border border-slate-700">${dur}</span>
+              <button onclick="removePeriodicHpEffect('${eff.id}')" class="text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded px-1.5 py-0.5 text-xs font-bold transition cursor-pointer" title="Kaldır">✕</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderPeriodicHpEffects() {
+      const container = document.getElementById('hp-periodic-list');
+      const badge = document.getElementById('hp-periodic-badge');
+      if (!container) return;
+
+      const effects = character?.periodicHpEffects || [];
+      if (effects.length === 0) {
+        container.classList.add('hidden');
+        container.innerHTML = '';
+        if (badge) badge.classList.add('hidden');
+        return;
+      }
+
+      container.classList.remove('hidden');
+      if (badge) {
+        badge.classList.remove('hidden');
+        const dotCount = effects.filter(e => e.type === 'damage').length;
+        const hotCount = effects.filter(e => e.type === 'heal').length;
+        let bText = '';
+        if (dotCount > 0 && hotCount > 0) bText = `⏱️ ${effects.length} Süreli`;
+        else if (dotCount > 0) bText = `🩸 ${dotCount} DoT`;
+        else bText = `💖 ${hotCount} HoT`;
+        badge.textContent = bText;
+      }
+
+      container.innerHTML = effects.map(eff => {
+        const isDmg = eff.type === 'damage';
+        const bgClass = isDmg 
+          ? 'bg-rose-950/70 border-rose-700/60 text-rose-200' 
+          : 'bg-emerald-950/70 border-emerald-700/60 text-emerald-200';
+        const textClass = isDmg ? 'text-rose-400' : 'text-emerald-400';
+        const icon = isDmg ? '🩸' : '💖';
+        const rateText = isDmg ? `-${eff.amount} HP/tur` : `+${eff.amount} HP/tur`;
+        const durText = eff.roundsLeft !== null && eff.roundsLeft !== undefined 
+          ? `${eff.roundsLeft}t` 
+          : '∞';
+        const safeName = String(eff.name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+        return `
+          <div class="flex items-center justify-between text-[10px] border rounded px-1.5 py-0.5 ${bgClass} shadow-sm">
+            <div class="flex items-center gap-1 min-w-0 truncate">
+              <span class="text-[11px]">${icon}</span>
+              <span class="font-bold truncate text-white" title="${safeName}">${safeName}</span>
+              <span class="font-mono font-black ${textClass}">${rateText}</span>
+            </div>
+            <div class="flex items-center gap-1 shrink-0 ml-1">
+              <span class="text-[9px] px-1 py-0.2 rounded bg-slate-900/90 border border-slate-700 text-slate-300 font-mono font-bold">${durText}</span>
+              <button onclick="removePeriodicHpEffect('${eff.id}')" class="text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded px-1 transition text-xs font-bold cursor-pointer" title="Etkiyi Kaldır">✕</button>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
     function renderWeapons() {
@@ -8084,12 +8520,55 @@
         });
       }
 
+      // Process Periodic HP Effects (DoT / HoT - Tur Başı Can Etkileri)
+      const hpLogs = [];
+      const expiredPeriodic = [];
+      if (Array.isArray(character.periodicHpEffects) && character.periodicHpEffects.length > 0) {
+        character.periodicHpEffects.forEach(eff => {
+          const amt = Number(eff.amount) || 0;
+          if (amt > 0) {
+            if (eff.type === 'damage') {
+              character.hp.current = Math.max(-10, (Number(character.hp.current) || 0) - amt);
+              hpLogs.push(`💥 ${eff.name}: -${amt} HP Hasar`);
+            } else if (eff.type === 'heal') {
+              const maxHp = Number(character.hp.max) || 0;
+              character.hp.current = Math.min(maxHp, (Number(character.hp.current) || 0) + amt);
+              hpLogs.push(`💖 ${eff.name}: +${amt} HP İyileşme`);
+            }
+          }
+
+          if (eff.roundsLeft !== null && eff.roundsLeft !== undefined) {
+            eff.roundsLeft--;
+            if (eff.roundsLeft <= 0) {
+              expiredPeriodic.push(eff.name);
+            }
+          }
+        });
+
+        // Filter out expired periodic effects
+        character.periodicHpEffects = character.periodicHpEffects.filter(eff => 
+          eff.roundsLeft === null || eff.roundsLeft === undefined || eff.roundsLeft > 0
+        );
+      }
+
       updateRoundDisplays();
       saveStateToStorage(true);
       renderAll();
 
+      const messages = [];
+      messages.push(`⏳ Tur ${character.encounterRound} Başladı!`);
+      if (hpLogs.length > 0) {
+        messages.push(`\n🩸 Tur Başı Can Değişimleri:\n• ${hpLogs.join('\n• ')}`);
+      }
+      if (expiredPeriodic.length > 0) {
+        messages.push(`\n⌛ Sona Eren Can Etkileri:\n• ${expiredPeriodic.join('\n• ')}`);
+      }
       if (expired.length > 0) {
-        alert(`⏳ Tur ${character.encounterRound} başladı!\n\nSüresi dolan bufflar sona erdi:\n• ${expired.join('\n• ')}`);
+        messages.push(`\n✨ Süresi Dolan Bufflar:\n• ${expired.join('\n• ')}`);
+      }
+
+      if (hpLogs.length > 0 || expiredPeriodic.length > 0 || expired.length > 0) {
+        alert(messages.join(''));
       }
     }
 
@@ -8116,10 +8595,15 @@
         });
       }
 
+      // Reset temporary periodic HP effects
+      if (Array.isArray(character.periodicHpEffects)) {
+        character.periodicHpEffects = [];
+      }
+
       updateRoundDisplays();
       saveStateToStorage(true);
       renderAll();
-      alert('☀️ UZUN DİNLENME TAMAMLANDI!\n\n• Can puanı (HP) maksimuma getirildi.\n• Karşılaşma tur sayacı Tur 1 olarak sıfırlandı.\n• Tüm büyü slotları tazelendi.\n• Bütün manevralar yeniden hazırlandı.\n• Geçici buff süreleri sıfırlandı.');
+      alert('☀️ UZUN DİNLENME TAMAMLANDI!\n\n• Can puanı (HP) maksimuma getirildi.\n• Karşılaşma tur sayacı Tur 1 olarak sıfırlandı.\n• Tüm büyü slotları tazelendi.\n• Bütün manevralar yeniden hazırlandı.\n• Geçici buff süreleri sıfırlandı.\n• Süreli can etkileri (DoT/HoT) temizlendi.');
     }
 
     function performEncounterReset() {
@@ -8138,10 +8622,15 @@
         });
       }
 
+      // Reset temporary periodic HP effects
+      if (Array.isArray(character.periodicHpEffects)) {
+        character.periodicHpEffects = [];
+      }
+
       updateRoundDisplays();
       saveStateToStorage(true);
       renderAll();
-      alert('🔄 KARŞILAŞMA SIFIRLANDI!\n\n• Karşılaşma tur sayacı Tur 1 olarak sıfırlandı.\n• Tüm manevralar (Readied Maneuvers) hazır hale getirildi.\n• Karşılaşma süreli kısa bufflar (<= 10 tur) kapatıldı.');
+      alert('🔄 KARŞILAŞMA SIFIRLANDI!\n\n• Karşılaşma tur sayacı Tur 1 olarak sıfırlandı.\n• Tüm manevralar (Readied Maneuvers) hazır hale getirildi.\n• Karşılaşma süreli kısa bufflar (<= 10 tur) kapatıldı.\n• Süreli can etkileri (DoT/HoT) temizlendi.');
     }
 
     let currentBuffModalMode = 'buff'; // 'buff' | 'debuff'
