@@ -831,9 +831,9 @@
           </div>
         </div>
 
-        <!-- 🧪 QUICK CONSUMABLES DRINK -->
+        <!-- 🧪 QUICK CONSUMABLES -->
         <div>
-          <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wide mb-2">🧪 HIZLI İKSİR TÜKETİMİ (3D İYİLEŞME ZARI)</h3>
+          <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wide mb-2">🧪 HIZLI TÜKETİM (3D İYİLEŞME ZARI)</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5" id="consumables-container">
             <!-- Dynamically populated -->
           </div>
@@ -6069,7 +6069,7 @@
       const allConsumables = Array.from(displayMap.values());
 
       if (allConsumables.length === 0) {
-        container.innerHTML = `<div class="col-span-2 text-center text-slate-500 italic py-2">Kemerde veya hızlı tüketimde iksir bulunmuyor.</div>`;
+        container.innerHTML = `<div class="col-span-2 text-center text-slate-500 italic py-2">Kemerde veya hızlı tüketimde eşya bulunmuyor.</div>`;
         return;
       }
 
@@ -6085,7 +6085,7 @@
             <div class="text-[10px] text-amber-400">${item.effect} • Adet: <strong class="text-white">${item.qty}</strong></div>
           </div>
           <button onclick="consumeItem3D(${item.fromPool}, ${item.fromPool ? item.poolId : item.idx})" ${item.qty <= 0 ? 'disabled' : ''} class="bg-amber-600/30 hover:bg-amber-600 disabled:opacity-30 text-amber-300 hover:text-white border border-amber-500/40 text-xs font-bold px-3 py-1.5 rounded transition">
-            🧪 1 Tane İç
+            🧪 Kullan
           </button>
         `;
         container.appendChild(div);
@@ -6143,7 +6143,7 @@
           character.hp.current = Math.min(character.hp.max, character.hp.current + healTotal);
           saveStateToStorage(true);
           renderAll();
-          alert(`💖 "${name}" içildi!\n\n${diceCount}d8 [${rolls.map(r => r.value).join(' + ')}] + ${flatBonus} = +${healTotal} HP!\n(Canınız: ${prevHp} -> ${character.hp.current} / ${character.hp.max})`);
+          alert(`💖 "${name}" kullanıldı!\n\n${diceCount}d8 [${rolls.map(r => r.value).join(' + ')}] + ${flatBonus} = +${healTotal} HP!\n(Canınız: ${prevHp} -> ${character.hp.current} / ${character.hp.max})`);
         };
 
         if (window.Dice3D && typeof Dice3D.roll === 'function') {
@@ -6173,9 +6173,9 @@
         saveStateToStorage(true);
         renderAll();
         if (activatedBuff) {
-          alert(`🧪 "${name}" içildi!\n\n"${activatedBuff}" buffı aktif edildi (+4 Stat, 30 tur) ve karakterinizin tüm savunma ve saldırı değerleri anında güncellendi!`);
+          alert(`🧪 "${name}" kullanıldı!\n\n"${activatedBuff}" buffı aktif edildi (+4 Stat, 30 tur) ve karakterinizin tüm savunma ve saldırı değerleri anında güncellendi!`);
         } else {
-          alert(`🧪 "${name}" içildi / tüketildi (Kalan: ${item.qty}).`);
+          alert(`🧪 "${name}" kullanıldı (Kalan: ${item.qty}).`);
         }
       }
     }
