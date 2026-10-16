@@ -855,5 +855,148 @@
         "source": "Planar Handbook p.69",
         "benefit": "You understand how to use the jovar (exotic two-handed sword, 2d6 18-20/x2) in combat without the -4 nonproficiency penalty.",
         "tags": ["combat", "proficiency", "jovar"]
+    },
+    {
+        "name": "Boon of Elusiveness Lesser",
+        "type": "DM Grant",
+        "category": "DM Boon",
+        "slot": "None",
+        "prereq": "-",
+        "source": "Campaign Boon",
+        "benefit": "Get 25% less damage from all AoE attacks and spells. Gain +2 Dodge bonus to Armor Class (AC).",
+        "role": "Defense / Dodge",
+        "tags": ["boon", "dodge", "defense", "aoe-resist"]
+    },
+    {
+        "name": "Draconic Core (1h/day)",
+        "type": "DM Grant",
+        "category": "DM Boon",
+        "slot": "None",
+        "prereq": "-",
+        "source": "Campaign Boon",
+        "benefit": "Swift Action (1 hour/day): Total immunity to acid damage, and breath weapon deals x2 damage.",
+        "role": "Buff / Active Power",
+        "tags": ["boon", "acid-immunity", "breath-weapon"]
+    },
+    {
+        "name": "Draconic Shield (1/d)",
+        "type": "DM Grant",
+        "category": "DM Boon",
+        "slot": "None",
+        "prereq": "-",
+        "source": "Campaign Boon",
+        "benefit": "Immediate Action (1/day): Negate and ignore all critical hit damage from one attack.",
+        "role": "Defense / Immediate",
+        "tags": ["boon", "crit-immunity", "defense"]
+    },
+    {
+        "name": "Draconic Shield (DR/- 1min)",
+        "type": "DM Grant",
+        "category": "DM Boon",
+        "slot": "None",
+        "prereq": "-",
+        "source": "Campaign Boon",
+        "benefit": "Swift Action (1 min/day): Gain Damage Reduction equal to Charisma modifier (DR Cha mod/-) for 1 minute.",
+        "role": "Defense / DR",
+        "tags": ["boon", "damage-reduction", "defense"]
+    },
+    {
+        "name": "Draconic Toughness",
+        "type": "DM Grant",
+        "category": "DM Boon",
+        "slot": "None",
+        "prereq": "-",
+        "source": "Campaign Boon",
+        "benefit": "Gain extra maximum hit points equal to your character level.",
+        "role": "Defense / HP",
+        "tags": ["boon", "hit-points", "passive"]
+    },
+    {
+        "name": "Save Magic +1 Draconic",
+        "type": "DM Grant",
+        "category": "DM Boon",
+        "slot": "None",
+        "prereq": "-",
+        "source": "Campaign Boon",
+        "benefit": "+1 draconic bonus on all saving throws against spells and spell-like abilities.",
+        "role": "Defense / Saves",
+        "tags": ["boon", "saves", "magic-resist"]
+    },
+    {
+        "name": "Ability Boost (+2 Con, +2 Cha)",
+        "type": "DM Grant",
+        "category": "DM Boon",
+        "slot": "None",
+        "prereq": "-",
+        "source": "Campaign Boon",
+        "benefit": "Permanent +2 inherent bonus to Constitution and Charisma.",
+        "role": "Stat Boost / Passive",
+        "tags": ["boon", "stat-boost", "con", "cha"]
+    },
+    {
+        "name": "Endurance",
+        "type": "DM Grant",
+        "category": "DM Boon",
+        "slot": "None",
+        "prereq": "-",
+        "source": "Campaign Boon",
+        "benefit": "+4 bonus on checks against exhaustion, forced march, and holding breath. Sleep in light or medium armor without becoming fatigued.",
+        "role": "Defense / Passive",
+        "tags": ["boon", "feat", "endurance"]
+    },
+    {
+        "name": "Steadfast Determination",
+        "type": "DM Grant",
+        "category": "DM Boon",
+        "slot": "None",
+        "prereq": "Endurance",
+        "source": "Campaign Boon",
+        "benefit": "Use Constitution modifier instead of Wisdom modifier for Will saving throws. A natural 1 on a Fortitude save is not an automatic failure.",
+        "role": "Defense / Saves",
+        "tags": ["boon", "saves", "will-con"]
+    },
+    {
+        "name": "Ignore ASF / Boon",
+        "type": "DM Grant",
+        "category": "DM Boon",
+        "slot": "None",
+        "prereq": "-",
+        "source": "Campaign Boon",
+        "benefit": "Arcane Spell Failure percentage (ASF %) from worn armor and shields is completely ignored. Cast spells without spell failure risk.",
+        "role": "Spellcasting / Utility",
+        "tags": ["boon", "asf-ignore", "spellcasting"]
+    },
+    {
+        "name": "Character Level (DM Boon)",
+        "type": "DM Grant",
+        "category": "DM Boon",
+        "slot": "None",
+        "prereq": "-",
+        "source": "Campaign Boon",
+        "benefit": "Primary Caster Level (CL) scales directly with full character level across multiclassing.",
+        "role": "Spellcasting / CL",
+        "tags": ["boon", "caster-level", "multiclass"]
+    },
+    {
+        "name": "Flaw: Shaky",
+        "type": "Flaw",
+        "category": "Flaw",
+        "slot": "None",
+        "prereq": "-",
+        "source": "Unearthed Arcana p.91",
+        "benefit": "-2 penalty on all ranged attack rolls. Grants 1 bonus feat.",
+        "role": "Flaw / Character",
+        "tags": ["flaw", "bonus-feat"]
+    },
+    {
+        "name": "Flaw: Frail",
+        "type": "Flaw",
+        "category": "Flaw",
+        "slot": "None",
+        "prereq": "-",
+        "source": "Unearthed Arcana p.91",
+        "benefit": "-1 Hit Point per Hit Die. Grants 1 bonus feat.",
+        "role": "Flaw / Character",
+        "tags": ["flaw", "bonus-feat"]
     }
 ]

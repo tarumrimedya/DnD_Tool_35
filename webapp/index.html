@@ -433,12 +433,15 @@
               <span class="text-xl">🔮</span>
               <div>
                 <h3 class="font-extrabold text-white text-sm md:text-base">Sorcerer Büyü Havuzu & Slotları</h3>
-                <p class="text-[11px] text-purple-300">CL: 5 • Stat Mod: +6 (CHA: 22) • Base + 24H Ekipman Bonusu Dahil</p>
+                <p id="spells-hud-subtitle" class="text-[11px] text-purple-300">CL: 6 (DM Boon: Karakter Seviyesi) • Stat Mod: +6 (CHA: 22) • Base + 24H Ekipman Bonusu Dahil</p>
               </div>
             </div>
-            <button onclick="restoreAllSpellSlots()" class="bg-purple-800 hover:bg-purple-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-purple-500/50 transition">
-              ✨ Tüm Slotları Yenile
-            </button>
+            <div class="flex items-center gap-2">
+              <span id="spells-hud-asf-badge" class="badge bg-emerald-950 text-emerald-300 border border-emerald-600 text-xs font-bold">🛡️ ASF: %0 (DM Boon)</span>
+              <button onclick="restoreAllSpellSlots()" class="bg-purple-800 hover:bg-purple-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-purple-500/50 transition">
+                ✨ Tüm Slotları Yenile
+              </button>
+            </div>
           </div>
 
           <!-- Dynamic Slots Grid (0: 6/6, 1st: 4/8, 2nd: 2/6) -->
@@ -572,6 +575,34 @@
                 <span>⬆️</span>
                 <span>Seviye Atla (Level Up)</span>
               </button>
+            </div>
+          </div>
+          <!-- Settings Toolbar: Feat Mode, Caster CL Mode, Ignore ASF (create_lvl_up.gs uyumlu) -->
+          <div class="bg-slate-950/80 px-3 py-2 border-t border-b border-slate-800 flex flex-wrap items-center justify-between gap-2.5 text-xs">
+            <div class="flex flex-wrap items-center gap-3">
+              <div class="flex items-center gap-1.5">
+                <label class="text-[10px] font-bold text-amber-400 uppercase">🎖️ Feat Modu:</label>
+                <select id="setting-feat-mode" onchange="onSettingFeatModeChange()" class="bg-slate-900 border border-slate-700 text-amber-300 font-semibold text-[11px] rounded px-2 py-0.5">
+                  <option value="Standard 3.5e (1, 3, 6, 9, 12, 15, 18)">Standard 3.5e (1, 3, 6, 9, 12, 15, 18)</option>
+                  <option value="Every 2 Levels (1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)">Every 2 Levels (1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)</option>
+                  <option value="Every 4 Levels (1, 4, 8, 12, 16, 20)">Every 4 Levels (1, 4, 8, 12, 16, 20)</option>
+                  <option value="All Free / Custom">All Free / Custom (Her Seviye Serbest)</option>
+                </select>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <label class="text-[10px] font-bold text-purple-400 uppercase">🔮 Caster CL Kuralı:</label>
+                <select id="setting-cl-mode" onchange="onSettingClModeChange()" class="bg-slate-900 border border-slate-700 text-purple-300 font-semibold text-[11px] rounded px-2 py-0.5">
+                  <option value="Character Level (DM Boon)">Character Level (DM Boon: CL = Karakter Seviyesi)</option>
+                  <option value="Class Level">Class Level (Yalnızca Sınıf Seviyesi)</option>
+                  <option value="Custom">Custom (Manuel)</option>
+                </select>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <label class="flex items-center gap-1.5 cursor-pointer bg-slate-900 px-2.5 py-0.5 rounded border border-slate-700 text-[11px] hover:border-emerald-500 transition">
+                <input type="checkbox" id="setting-ignore-asf" onchange="onSettingIgnoreAsfChange()" class="w-3.5 h-3.5 rounded text-emerald-500">
+                <span class="text-slate-300 font-semibold">🛡️ Ignore ASF / Boon</span>
+              </label>
             </div>
           </div>
           <div class="overflow-x-auto">
@@ -1826,29 +1857,92 @@
           </div>
         </div>
 
-        <!-- Step 4: Feat Selection (Levels 1, 3, 6, 9, 12, 15, 18 or Bonus Feat) -->
-        <div class="bg-slate-900/90 border border-purple-500/40 rounded-xl p-3 space-y-2.5">
+        <!-- Step 4: Feat, DM Lütfu (Boon) & Kusur (Flaw) Seçimi -->
+        <div class="bg-slate-900/90 border border-purple-500/50 rounded-xl p-3 space-y-2.5">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <div class="text-[11px] font-bold text-purple-400 uppercase tracking-wide">4. Feat (Hüner) Seçimi</div>
-              <div id="lvlup-feat-hint" class="text-[10px] text-slate-400">Standart 3.5e kurallarında 1, 3, 6, 9, 12, 15, 18. seviyelerde (veya Fighter/Warblade bonus seviyelerinde) Feat kazanılır.</div>
+              <div class="text-[11px] font-bold text-purple-400 uppercase tracking-wide flex items-center gap-1.5">
+                <span>4. Feat, DM Lütfu (Boon) & Kusur Seçimi</span>
+                <span id="lvlup-feat-status-badge" class="badge bg-emerald-950 text-emerald-300 border border-emerald-600 text-[9px]">Feat Hakkı Var</span>
+              </div>
+              <div id="lvlup-feat-hint" class="text-[10px] text-slate-400">Standart 3.5e kurallarında 1, 3, 6, 9, 12, 15, 18. seviyelerde Feat kazanılır.</div>
             </div>
             <button type="button" onclick="openFeatPickerModal(true)" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow flex items-center gap-1.5 transition">
               <span>🎖️</span>
               <span>Kütüphaneden Feat Seç</span>
             </button>
           </div>
-          <div class="flex flex-col sm:flex-row gap-2">
-            <select id="lvlup-feat-select" onchange="onLevelUpFeatDropdownChange()" class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-amber-300 font-bold">
-              <!-- Populated dynamically with available feats -->
-            </select>
-            <input type="text" id="lvlup-feat-custom" placeholder="Seçilen Feat adı (veya elle yazın)..." class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white font-bold">
+
+          <!-- Feat Type / Category Dropdown -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div>
+              <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Kategori / Tür *</label>
+              <select id="lvlup-feat-type" onchange="onLevelUpFeatTypeChange()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-amber-300 font-bold">
+                <option value="Regular Feat">🎖️ Normal Feat (Regular Feat)</option>
+                <option value="Class Bonus Feat">⚔️ Sınıf Bonus Feati (Class Bonus Feat)</option>
+                <option value="DM Boon">🌟 DM Lütfu / Ödülü (DM Grant / Boon)</option>
+                <option value="Flaw">⚠️ Kusur / Flaw (Bonus Feat Karşılığı)</option>
+                <option value="Racial Trait">🧬 Irksal Yetenek (Racial Trait)</option>
+                <option value="Special Ability">✨ Özel Yetenek (Special Ability)</option>
+              </select>
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1" id="lvlup-catalog-label">Katalogdan Hızlı Seçim</label>
+              <select id="lvlup-feat-select" onchange="onLevelUpFeatDropdownChange()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold">
+                <!-- Dynamically populated according to selected category -->
+              </select>
+            </div>
+          </div>
+
+          <!-- Custom Name & Benefit Inputs -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[9px] font-bold text-slate-400 uppercase mb-0.5">Feat / Boon / Yetenek Adı</label>
+              <input type="text" id="lvlup-feat-custom" placeholder="Seçilen veya yeni Feat/Boon adı..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold">
+            </div>
+            <div>
+              <label class="block text-[9px] font-bold text-slate-400 uppercase mb-0.5">Fayda / Etki Özeti (Benefit)</label>
+              <input type="text" id="lvlup-feat-benefit" placeholder="Örn: +2 Dodge AC, %25 AoE hasar direnci..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300">
+            </div>
           </div>
         </div>
 
-        <!-- Step 5: Class Features & Notes -->
+        <!-- Step 5: Spellcaster Progression & DM Boons -->
+        <div class="bg-slate-900/90 border border-indigo-500/50 rounded-xl p-3 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <div class="text-[11px] font-bold text-indigo-400 uppercase tracking-wide flex items-center gap-1.5">
+              <span>🔮 5. Büyücü İlerlemesi & Büyü Slotları (Spellcaster Progression)</span>
+              <span id="lvlup-caster-badge" class="badge bg-purple-950 text-purple-300 border border-purple-600 text-[9px]">Sorcerer CL: 5</span>
+            </div>
+            <label class="flex items-center gap-1.5 cursor-pointer text-[10px] text-slate-300">
+              <input type="checkbox" id="lvlup-ignore-asf" class="w-3.5 h-3.5 rounded text-emerald-500">
+              <span class="font-bold text-emerald-300">🛡️ Ignore ASF / Boon</span>
+            </label>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div class="sm:col-span-2">
+              <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Büyü Seviyesi İlerlemesi (Caster Level & Slots)</label>
+              <select id="lvlup-caster-prog" onchange="onLevelUpCasterProgChange()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-purple-300 font-bold">
+                <option value="none">-- Bu Seviyede Büyü İlerlemesi Yok --</option>
+                <option value="primary">🔮 +1 Primary Caster Level (Sorcerer - Yeni Slotlar ve CL Artışı)</option>
+                <option value="secondary">✨ +1 Secondary Caster Level</option>
+                <option value="cl_boon">🌟 DM Boon: Caster Level = Karakter Seviyesi (CL Character Level'a eşitlenir)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Yeni Caster Level (CL)</label>
+              <input type="number" id="lvlup-cl-preview" value="5" min="0" class="w-full bg-slate-950 border border-purple-500/80 rounded-lg px-2.5 py-1.5 text-center font-mono font-bold text-purple-300 text-sm">
+            </div>
+          </div>
+          <div id="lvlup-caster-hint" class="text-[10px] text-purple-300/90 bg-purple-950/40 border border-purple-800/40 rounded p-1.5">
+            Sorcerer seviyesi seçildiğinde Caster Level otomatik artırılır ve yeni günlük büyü slotları hesaplanır.
+          </div>
+        </div>
+
+        <!-- Step 6: Class Features & Notes -->
         <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 space-y-1.5">
-          <label class="block text-[11px] font-bold text-sky-400 uppercase tracking-wide">5. Sınıf Özellikleri & Seviye Notları</label>
+          <label class="block text-[11px] font-bold text-sky-400 uppercase tracking-wide">6. Sınıf Özellikleri & Seviye Notları</label>
           <input type="text" id="lvlup-notes-input" placeholder="Örn: Battle Ardor (+INT Crit Confirm), Uncanny Dodge, Yeni Büyü Yuvası..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white">
         </div>
       </div>
@@ -3383,6 +3477,23 @@
 
     // Spells HUD Rendering (Sorcerer 0: 6/6, 1st: 4/8, 2nd: 2/6)
     function renderSpellSlots() {
+      const subEl = document.getElementById('spells-hud-subtitle');
+      if (subEl) {
+        const cl = character.spellcasting?.caster_level ?? 6;
+        const clMode = character.settings?.clMode || 'Character Level (DM Boon)';
+        const chaVal = character.stats?.CHA?.value ?? 22;
+        const chaMod = character.stats?.CHA?.mod ?? Math.floor((chaVal - 10) / 2);
+        subEl.textContent = `CL: ${cl} (${clMode}) • Stat Mod: +${chaMod} (CHA: ${chaVal}) • Base + 24H Ekipman Bonusu Dahil`;
+      }
+      const asfBadge = document.getElementById('spells-hud-asf-badge');
+      if (asfBadge) {
+        const ignoreAsf = character.settings?.ignoreAsf !== false;
+        asfBadge.textContent = ignoreAsf ? '🛡️ ASF: %0 (DM Boon)' : '🛡️ ASF: Standart';
+        asfBadge.className = ignoreAsf
+          ? 'badge bg-emerald-950 text-emerald-300 border border-emerald-600 text-xs font-bold'
+          : 'badge bg-slate-800 text-slate-400 border border-slate-700 text-xs font-bold';
+      }
+
       const container = document.getElementById('spell-slots-grid');
       container.innerHTML = '';
 
@@ -3665,6 +3776,135 @@
       { name: "Great Fortitude", category: "General", prereq: "-", source: "PHB p.94", benefit: "Fortitude (Dayanıklılık) kurtarma zarlarına +2 bonus verir." }
     ];
 
+    // Built-in D&D 3.5e DM Boons, Grants & Campaign Awards (create_lvl_up.gs & create_master_db.gs uyumlu)
+    const DND35_DM_BOONS_CATALOG = [
+      { name: "Boon of Elusiveness Lesser", category: "DM Boon", source: "Campaign Boon", benefit: "Tüm alan etkili (AoE) büyü ve saldırılardan %25 daha az hasar alır. AC'ye +2 Dodge bonusu kazanır." },
+      { name: "Draconic Core (1h/day)", category: "DM Boon", source: "Campaign Boon", benefit: "Swift Action (1 saat/gün): Asit hasarına karşı tam bağışıklık ve nefes silahı (breath weapon) x2 hasar verir." },
+      { name: "Draconic Shield (1/d)", category: "DM Boon", source: "Campaign Boon", benefit: "Immediate Action (1/gün): Gelen bir saldırının tüm kritik hasarını yoksayar ve normal hasara dönüştürür." },
+      { name: "Draconic Shield (DR/- 1min)", category: "DM Boon", source: "Campaign Boon", benefit: "Swift Action (1 dk/gün): Karizma modifiyeri kadar Hasar İndirgeme (DR Cha mod/-) kazanır." },
+      { name: "Draconic Toughness", category: "DM Boon", source: "Campaign Boon", benefit: "Toplam karakter seviyeniz kadar kalıcı ekstra maksimum can puanı (+Max HP) kazanır." },
+      { name: "Save Magic +1 Draconic", category: "DM Boon", source: "Campaign Boon", benefit: "Büyü ve büyü benzeri yeteneklere karşı tüm kurtarma zarlarına (Saves) +1 draconic bonus." },
+      { name: "Save Magic +4 insight", category: "DM Boon", source: "Campaign Boon", benefit: "Büyü ve büyülü etkilere karşı yapılan tüm kurtarma zarlarına +4 insight bonus." },
+      { name: "Ability Boost (+2 Con, +2 Cha)", category: "DM Boon", source: "Campaign Boon", benefit: "Kalıcı +2 Dayanıklılık (CON) ve +2 Karizma (CHA) inherent stat artışı." },
+      { name: "Ability Boost (+2 Con)", category: "DM Boon", source: "Campaign Boon", benefit: "Kalıcı +2 Dayanıklılık (CON) inherent stat artışı." },
+      { name: "Ability Boost (+2 Dex)", category: "DM Boon", source: "Campaign Boon", benefit: "Kalıcı +2 Çeviklik (DEX) inherent stat artışı." },
+      { name: "Ability Boost (+1 Str, +1 Cha)", category: "DM Boon", source: "Campaign Boon", benefit: "Kalıcı +1 Güç (STR) ve +1 Karizma (CHA) inherent stat artışı." },
+      { name: "Ability Boost (+1 Dex, +1 Cha)", category: "DM Boon", source: "Campaign Boon", benefit: "Kalıcı +1 Çeviklik (DEX) ve +1 Karizma (CHA) inherent stat artışı." },
+      { name: "Nat AC 2+1/4lvl", category: "DM Boon", source: "Campaign Boon", benefit: "Karakter seviyesinin 1/4'ü + 2 kadar kalıcı Doğal Zırh (Natural Armor) bonusu." },
+      { name: "Absorb Magic", category: "DM Boon", source: "Campaign Boon", benefit: "Immediate Action (1/gün): Hedefleyen tekil bir büyüyü absorbe edip geçici can puanına (Temp HP) dönüştürür." },
+      { name: "Breath Weapon 3d8 Acid", category: "DM Boon", source: "Campaign Boon", benefit: "Standard Action: 60 ft hat/koni 3d8 asit hasarı (Reflex DC 10+lvl+Con yarısı). Dolum süresi 1d4+1 tur." },
+      { name: "Cha mod to magic saves 1/d", category: "DM Boon", source: "Campaign Boon", benefit: "Immediate Action (1/gün): Büyülere karşı herhangi bir save zarına anında CHA modifiyerini ekler." },
+      { name: "Endurance", category: "DM Boon", source: "Campaign Boon", benefit: "Yorgunluk, açlık, uzun yürüyüş kontrollerine +4 bonus ve orta zırhla uyuyabilme." },
+      { name: "Steadfast Determination", category: "DM Boon", source: "Campaign Boon", benefit: "Will (İrade) kurtarma zarlarında WIS yerine CON modifiyerini kullanır. Fortitude zarlarında doğal 1 otomatik ıskalamaz." },
+      { name: "Character Level (DM Boon)", category: "DM Boon", source: "Campaign Boon", benefit: "Caster Level (CL) çoklu sınıf cezası almadan doğrudan toplam karakter seviyesine eşitlenir." },
+      { name: "Ignore ASF / Boon", category: "DM Boon", source: "Campaign Boon", benefit: "Zırh büyü bozma yüzdesi (Arcane Spell Failure % - ASF) tamamen yoksayılır. Zırh içinde engelsiz büyü yapılır." }
+    ];
+
+    const DND35_FLAWS_CATALOG = [
+      { name: "Flaw: Shaky", category: "Flaw", source: "Unearthed Arcana p.91", benefit: "Tüm menzilli saldırı zarlarına -2 ceza alır. Karşılığında 1 ekstra bonus feat kazandırır." },
+      { name: "Flaw: Frail", category: "Flaw", source: "Unearthed Arcana p.91", benefit: "Hit Die başına -1 Can Puanı (HP) düşer. Karşılığında 1 ekstra bonus feat kazandırır." },
+      { name: "Flaw: Vulnerable", category: "Flaw", source: "Unearthed Arcana p.91", benefit: "Zırh Sınıfına (AC) -1 kalıcı ceza alır. Karşılığında 1 ekstra bonus feat kazandırır." },
+      { name: "Flaw: Meager Heft", category: "Flaw", source: "Unearthed Arcana p.91", benefit: "Taşıma kapasitesinde STR değerini 3 puan düşük sayar. Karşılığında 1 ekstra bonus feat kazandırır." },
+      { name: "Flaw: Inattentive", category: "Flaw", source: "Unearthed Arcana p.91", benefit: "Listen (Dinleme) ve Spot (Arama) becerilerine -4 ceza alır. Karşılığında 1 ekstra bonus feat kazandırır." }
+    ];
+
+    function isLevelQualifiesForFeat(level, mode) {
+      if (mode === 'Every 2 Levels (1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)') {
+        return level === 1 || (level % 2 === 0);
+      } else if (mode === 'Every 4 Levels (1, 4, 8, 12, 16, 20)') {
+        return level === 1 || (level % 4 === 0);
+      } else if (mode === 'All Free / Custom') {
+        return true;
+      } else {
+        // Standard 3.5e (1, 3, 6, 9, 12, 15, 18)
+        return level === 1 || (level % 3 === 0);
+      }
+    }
+
+    function calculateSorcererSlots(sorcererLvl, chaScore) {
+      const chaMod = Math.floor(((Number(chaScore) || 10) - 10) / 2);
+      const basePerLvl = {
+        1:  [5, 3],
+        2:  [6, 4],
+        3:  [6, 5],
+        4:  [6, 6, 3],
+        5:  [6, 6, 4],
+        6:  [6, 6, 5, 3],
+        7:  [6, 6, 6, 4],
+        8:  [6, 6, 6, 5, 3],
+        9:  [6, 6, 6, 6, 4],
+        10: [6, 6, 6, 6, 5, 3],
+        11: [6, 6, 6, 6, 6, 4],
+        12: [6, 6, 6, 6, 6, 5, 3],
+        13: [6, 6, 6, 6, 6, 6, 4],
+        14: [6, 6, 6, 6, 6, 6, 5, 3],
+        15: [6, 6, 6, 6, 6, 6, 6, 4],
+        16: [6, 6, 6, 6, 6, 6, 6, 5, 3],
+        17: [6, 6, 6, 6, 6, 6, 6, 6, 4],
+        18: [6, 6, 6, 6, 6, 6, 6, 6, 5, 3],
+        19: [6, 6, 6, 6, 6, 6, 6, 6, 6, 4],
+        20: [6, 6, 6, 6, 6, 6, 6, 6, 6, 6]
+      };
+      const base = basePerLvl[Math.min(20, Math.max(1, sorcererLvl))] || [6, 6, 4];
+      const names = ['Cantrip', '1st Level', '2nd Level', '3rd Level', '4th Level', '5th Level', '6th Level', '7th Level', '8th Level', '9th Level'];
+      return base.map((dailyBase, spellLvl) => {
+        let bonus = 0;
+        if (spellLvl > 0 && chaMod >= spellLvl) {
+          bonus = 1 + Math.floor((chaMod - spellLvl) / 4);
+        }
+        return {
+          level: spellLvl,
+          name: names[spellLvl] || `${spellLvl}. Seviye`,
+          known: spellLvl === 0 ? Math.min(9, 4 + Math.floor(sorcererLvl / 2)) : Math.max(1, Math.min(5, Math.floor(sorcererLvl / 2) + (spellLvl === 1 ? 2 : 1))),
+          daily: dailyBase + bonus,
+          used: 0
+        };
+      });
+    }
+
+    function onSettingFeatModeChange() {
+      if (!character) return;
+      if (!character.settings) character.settings = {};
+      const sel = document.getElementById('setting-feat-mode');
+      if (sel) {
+        character.settings.featMode = sel.value;
+        saveStateToStorage(true);
+        renderLevelProgression();
+      }
+    }
+
+    function onSettingClModeChange() {
+      if (!character) return;
+      if (!character.settings) character.settings = {};
+      const sel = document.getElementById('setting-cl-mode');
+      if (sel) {
+        character.settings.clMode = sel.value;
+        if (character.spellcasting) {
+          if (sel.value === 'Character Level (DM Boon)') {
+            character.spellcasting.cl = Number(character.level) || 6;
+          } else {
+            const prog = character.levelProgression || [];
+            const sorcLvls = prog.filter(p => p.className === 'Sorcerer').length || 5;
+            character.spellcasting.cl = sorcLvls;
+          }
+        }
+        saveStateToStorage(true);
+        renderSpellSlots();
+        renderLevelProgression();
+      }
+    }
+
+    function onSettingIgnoreAsfChange() {
+      if (!character) return;
+      if (!character.settings) character.settings = {};
+      const chk = document.getElementById('setting-ignore-asf');
+      if (chk) {
+        character.settings.ignoreAsf = chk.checked;
+        saveStateToStorage(true);
+        renderSpellSlots();
+      }
+    }
+
     // D&D 3.5e Class Progression Reference Table
     const DND35_CLASS_DEFS = {
       "Sorcerer": { hd: 4, bab: 0.5, fort: "poor", ref: "poor", will: "good", skills: 2 },
@@ -3770,14 +4010,16 @@
     function getCombinedFeatCatalog() {
       const map = new Map();
       DND35_FEAT_CATALOG.forEach(f => map.set(f.name.toLowerCase(), { ...f }));
+      DND35_DM_BOONS_CATALOG.forEach(b => map.set(b.name.toLowerCase(), { ...b }));
+      DND35_FLAWS_CATALOG.forEach(fl => map.set(fl.name.toLowerCase(), { ...fl }));
       (masterDb || []).forEach(m => {
         const t = (m.type || '').toLowerCase();
-        if (t === 'feat' || t === 'special ability') {
+        if (t === 'feat' || t === 'special ability' || t === 'dm grant' || t === 'flaw' || t === 'racial trait') {
           const key = (m.name || '').toLowerCase();
           if (key) {
             map.set(key, {
               name: m.name,
-              category: t === 'special ability' ? 'Special Ability' : (m.category || 'General'),
+              category: t === 'special ability' ? 'Special Ability' : (t === 'dm grant' ? 'DM Boon' : (t === 'flaw' ? 'Flaw' : (m.category || 'General'))),
               prereq: m.prereq || '-',
               source: m.source || 'Master DB',
               benefit: m.benefit || m.description || ''
@@ -3962,6 +4204,100 @@
     // ====================================================
     // ⬆️ LEVEL UP WIZARD FUNCTIONS
     // ====================================================
+    function onLevelUpFeatTypeChange() {
+      const typeSel = document.getElementById('lvlup-feat-type');
+      const featSel = document.getElementById('lvlup-feat-select');
+      const label = document.getElementById('lvlup-catalog-label');
+      if (!typeSel || !featSel) return;
+
+      const chosenType = typeSel.value;
+      const combined = getCombinedFeatCatalog();
+      let filtered = [];
+
+      if (chosenType === 'DM Boon') {
+        if (label) label.textContent = '🌟 DM Boon / Lütuf Listesi';
+        filtered = combined.filter(f => f.category === 'DM Boon' || f.category === 'DM Grant' || (f.source && f.source.toLowerCase().includes('campaign')));
+        featSel.innerHTML = `<option value="">-- 🌟 Bir DM Lütfu (Boon) Seçin --</option>`;
+      } else if (chosenType === 'Flaw') {
+        if (label) label.textContent = '⚠️ Kusur (Flaw) Listesi';
+        filtered = combined.filter(f => f.category === 'Flaw' || f.name.toLowerCase().startsWith('flaw:'));
+        featSel.innerHTML = `<option value="">-- ⚠️ Bir Kusur (Flaw) Seçin --</option>`;
+      } else if (chosenType === 'Class Bonus Feat') {
+        if (label) label.textContent = '⚔️ Sınıf Bonus Feat Kataloğu';
+        filtered = combined.filter(f => f.category === 'Fighter' || f.category === 'Martial');
+        featSel.innerHTML = `<option value="">-- ⚔️ Sınıf Bonus Feati Seçin --</option>`;
+      } else if (chosenType === 'Special Ability') {
+        if (label) label.textContent = '✨ Özel Yetenek Kataloğu';
+        filtered = combined.filter(f => f.category === 'Special Ability');
+        featSel.innerHTML = `<option value="">-- ✨ Özel Yetenek Seçin --</option>`;
+      } else if (chosenType === 'Racial Trait') {
+        if (label) label.textContent = '🧬 Irksal Yetenek Listesi';
+        filtered = combined.filter(f => f.category === 'Racial Trait' || f.category === 'General');
+        featSel.innerHTML = `<option value="">-- 🧬 Irksal Yetenek Seçin --</option>`;
+      } else {
+        if (label) label.textContent = '🎖️ Normal Feat Kataloğu';
+        filtered = combined.filter(f => f.category !== 'DM Boon' && f.category !== 'Flaw');
+        featSel.innerHTML = `<option value="">-- 🎖️ Normal Feat Seçin --</option>`;
+      }
+
+      filtered.forEach(f => {
+        const opt = document.createElement('option');
+        opt.value = f.name;
+        opt.textContent = `${f.name} (${f.source || '3.5e'})`;
+        featSel.appendChild(opt);
+      });
+    }
+
+    function onLevelUpFeatDropdownChange() {
+      const sel = document.getElementById('lvlup-feat-select');
+      const custom = document.getElementById('lvlup-feat-custom');
+      const benefit = document.getElementById('lvlup-feat-benefit');
+      if (sel && sel.value) {
+        if (custom) custom.value = sel.value;
+        const catalog = getCombinedFeatCatalog();
+        const found = catalog.find(f => f.name.toLowerCase() === sel.value.toLowerCase());
+        if (found && benefit) {
+          benefit.value = found.benefit || '';
+        }
+      }
+    }
+
+    function onLevelUpCasterProgChange() {
+      const progSel = document.getElementById('lvlup-caster-prog');
+      const clInput = document.getElementById('lvlup-cl-preview');
+      const hint = document.getElementById('lvlup-caster-hint');
+      if (!progSel || !clInput) return;
+
+      const prog = character.levelProgression || [];
+      const nextLvl = prog.length + 1;
+      const currentCl = Number(character.spellcasting?.cl) || 5;
+      const isBoonCl = character.settings?.clMode === 'Character Level (DM Boon)';
+
+      const val = progSel.value;
+      if (val === 'primary') {
+        const newCl = isBoonCl ? nextLvl : currentCl + 1;
+        clInput.value = newCl;
+        if (hint) {
+          hint.innerHTML = `🔮 <b>Primary Caster (Sorcerer) İlerletiliyor:</b> Yeni CL: <b class="text-white">${newCl}</b>. Büyü yuvaları ve seviye başı büyü gücü RAW kurallarına göre artırılır.`;
+        }
+      } else if (val === 'cl_boon') {
+        clInput.value = nextLvl;
+        if (hint) {
+          hint.innerHTML = `🌟 <b>DM Boon Etkin:</b> Caster Level (CL) tüm sınıflarınız dahil toplam karakter seviyesine (<b class="text-white">${nextLvl}</b>) eşitlenir!`;
+        }
+      } else if (val === 'secondary') {
+        clInput.value = currentCl;
+        if (hint) {
+          hint.innerHTML = `✨ <b>İkincil Büyücü İlerletiliyor:</b> +1 Secondary Caster Level artışı uygulanır.`;
+        }
+      } else {
+        clInput.value = isBoonCl ? nextLvl : currentCl;
+        if (hint) {
+          hint.innerHTML = `Bu seviyede büyücü sınıfı seviyesi ilerletilmeyecek.`;
+        }
+      }
+    }
+
     function openLevelUpModal() {
       const modal = document.getElementById('level-up-modal');
       if (!modal) return;
@@ -3978,20 +4314,35 @@
         classSelect.value = lastClass;
       }
 
-      // Populate Feat dropdown
-      const featSelect = document.getElementById('lvlup-feat-select');
-      if (featSelect) {
-        const isGeneralFeatLvl = (nextLvl === 1 || nextLvl % 3 === 0);
-        featSelect.innerHTML = `<option value="">${isGeneralFeatLvl ? '-- 🎖️ Bu Seviye (Lvl ' + nextLvl + ') İçin Bir Feat Seçin --' : '-- Bu Seviyede Feat Seçilmedi (İsteğe Bağlı Bonus Feat) --'}</option>`;
-        getCombinedFeatCatalog().forEach(f => {
-          const opt = document.createElement('option');
-          opt.value = f.name;
-          opt.textContent = `${f.name} (${f.category} • ${f.source})`;
-          featSelect.appendChild(opt);
-        });
+      // Check feat qualification based on featMode
+      const featMode = character.settings?.featMode || 'Standard 3.5e (1, 3, 6, 9, 12, 15, 18)';
+      const qualifies = isLevelQualifiesForFeat(nextLvl, featMode);
+      const featBadge = document.getElementById('lvlup-feat-status-badge');
+      const featHint = document.getElementById('lvlup-feat-hint');
+      const featTypeSel = document.getElementById('lvlup-feat-type');
+
+      if (qualifies) {
+        if (featBadge) {
+          featBadge.textContent = `🎖️ Feat Hakkı Var (Seviye ${nextLvl})`;
+          featBadge.className = 'badge bg-emerald-950 text-emerald-300 border border-emerald-600 text-[9px] font-bold';
+        }
+        if (featHint) featHint.textContent = `${featMode} kuralı uyarınca bu seviyede bir Feat hakkınız bulunmaktadır.`;
+        if (featTypeSel) featTypeSel.value = 'Regular Feat';
+      } else {
+        if (featBadge) {
+          featBadge.textContent = 'İsteğe Bağlı Bonus / DM Boon';
+          featBadge.className = 'badge bg-slate-800 text-slate-300 border border-slate-700 text-[9px] font-bold';
+        }
+        if (featHint) featHint.textContent = `Standart feat seviyesi değil. Sınıf bonus feati, kusur (flaw) veya DM Lütfu (Boon) ekleyebilirsiniz.`;
+        if (featTypeSel) featTypeSel.value = 'Class Bonus Feat';
       }
+
+      onLevelUpFeatTypeChange();
+
       const featCustom = document.getElementById('lvlup-feat-custom');
       if (featCustom) featCustom.value = '';
+      const featBenefit = document.getElementById('lvlup-feat-benefit');
+      if (featBenefit) featBenefit.value = '';
 
       // Ability score increase highlight at levels 4, 8, 12, 16, 20
       const statHint = document.getElementById('lvlup-stat-hint-badge');
@@ -4006,6 +4357,25 @@
           statHint.className = 'badge bg-slate-800 text-slate-400 border border-slate-700';
         }
       }
+
+      // Configure Spellcaster Progression step
+      const casterProgSel = document.getElementById('lvlup-caster-prog');
+      const casterBadge = document.getElementById('lvlup-caster-badge');
+      const ignoreAsfChk = document.getElementById('lvlup-ignore-asf');
+      if (ignoreAsfChk) {
+        ignoreAsfChk.checked = character.settings?.ignoreAsf !== false;
+      }
+      if (casterBadge && character.spellcasting) {
+        casterBadge.textContent = `Sorcerer CL: ${character.spellcasting.cl || 5}`;
+      }
+      if (casterProgSel) {
+        if (lastClass === 'Sorcerer' || lastClass === 'Wizard' || lastClass === 'Cleric' || lastClass === 'Druid') {
+          casterProgSel.value = 'primary';
+        } else {
+          casterProgSel.value = 'none';
+        }
+      }
+      onLevelUpCasterProgChange();
 
       const notesInput = document.getElementById('lvlup-notes-input');
       if (notesInput) notesInput.value = '';
@@ -4075,6 +4445,17 @@
       document.getElementById('lvlup-will-input').value = Math.floor(totalWill + 1e-6);
       document.getElementById('lvlup-skill-input').value = skillPts;
 
+      // Adjust Caster progression recommendation
+      const casterProgSel = document.getElementById('lvlup-caster-prog');
+      if (casterProgSel) {
+        if (className === 'Sorcerer' || className === 'Wizard' || className === 'Cleric' || className === 'Druid') {
+          casterProgSel.value = 'primary';
+        } else if (className === 'Warblade' || className === 'Fighter' || className === 'Rogue') {
+          if (casterProgSel.value === 'primary') casterProgSel.value = 'none';
+        }
+        onLevelUpCasterProgChange();
+      }
+
       rollLevelUpHp('avg');
     }
 
@@ -4094,14 +4475,6 @@
       const hint = document.getElementById('lvlup-hp-formula-hint');
       if (hint) {
         hint.textContent = `Zar (d${def.hd}): ${dieRoll} + CON Mod (${conMod >= 0 ? '+' + conMod : conMod}) = +${totalHpGain} HP`;
-      }
-    }
-
-    function onLevelUpFeatDropdownChange() {
-      const sel = document.getElementById('lvlup-feat-select');
-      const custom = document.getElementById('lvlup-feat-custom');
-      if (sel && custom && sel.value) {
-        custom.value = sel.value;
       }
     }
 
@@ -4125,6 +4498,15 @@
       character.baseSaves.fort = Number(lastRow.fort) || 0;
       character.baseSaves.ref = Number(lastRow.ref) || 0;
       character.baseSaves.will = Number(lastRow.will) || 0;
+
+      // Update CL based on clMode
+      if (character.spellcasting) {
+        if (character.settings?.clMode === 'Character Level (DM Boon)') {
+          character.spellcasting.cl = character.level;
+        } else {
+          character.spellcasting.cl = classMap['Sorcerer'] || 5;
+        }
+      }
     }
 
     function confirmLevelUp() {
@@ -4141,7 +4523,13 @@
       const will = parseInt(document.getElementById('lvlup-will-input')?.value) || 0;
       const skillPts = parseInt(document.getElementById('lvlup-skill-input')?.value) || 4;
       const statChoice = document.getElementById('lvlup-stat-select')?.value || '';
+
+      const featType = document.getElementById('lvlup-feat-type')?.value || 'Regular Feat';
       const featName = (document.getElementById('lvlup-feat-custom')?.value || '').trim();
+      const featBenefit = (document.getElementById('lvlup-feat-benefit')?.value || '').trim();
+
+      const casterProg = document.getElementById('lvlup-caster-prog')?.value || 'none';
+      const ignoreAsfChecked = document.getElementById('lvlup-ignore-asf')?.checked || false;
       const notes = (document.getElementById('lvlup-notes-input')?.value || '').trim();
 
       const rowFeats = [];
@@ -4152,25 +4540,96 @@
         rowFeats.push(`+1 Stat: ${statChoice.toUpperCase()}`);
       }
 
-      // 2. Apply Chosen Feat
+      // 2. Apply Chosen Feat / DM Boon / Flaw
       if (featName) {
-        rowFeats.push(`${featName} (Lvl ${nextLvl})`);
-        const catalog = getCombinedFeatCatalog();
-        const found = catalog.find(c => c.name.toLowerCase() === featName.toLowerCase()) || {
-          name: featName,
-          category: 'General',
-          source: `Level ${nextLvl}`,
-          benefit: notes || 'Seviye atlama ile kazanılan hüner.'
-        };
-        learnFeatObject(found);
+        let prefix = '';
+        if (featType === 'DM Boon') prefix = '🌟 [DM Boon] ';
+        else if (featType === 'Class Bonus Feat') prefix = '⚔️ [Bonus] ';
+        else if (featType === 'Flaw') prefix = '⚠️ [Flaw] ';
+        else if (featType === 'Racial Trait') prefix = '🧬 [Racial] ';
+        else if (featType === 'Special Ability') prefix = '✨ [Special] ';
+        else prefix = '🎖️ [Feat] ';
+
+        rowFeats.push(`${prefix}${featName}`);
+
+        if (featType === 'DM Boon') {
+          if (!Array.isArray(character.feats)) character.feats = [];
+          character.feats.push({
+            name: featName,
+            source: 'Campaign Boon',
+            category: 'DM Grant',
+            benefit: featBenefit || 'DM Lütfu ile kazanılan özel yetenek.'
+          });
+
+          // Passive mechanics support for known boons
+          const cleanF = featName.toLowerCase();
+          if (cleanF.includes('elusiveness')) {
+            if (!character.acBreakdown) character.acBreakdown = {};
+            character.acBreakdown.dodge = (Number(character.acBreakdown.dodge) || 0) + 2;
+          } else if (cleanF.includes('+2 con, +2 cha') || cleanF.includes('+2 con')) {
+            if (character.baseAbilities) {
+              character.baseAbilities.con = (Number(character.baseAbilities.con) || 10) + 2;
+              if (cleanF.includes('+2 cha')) {
+                character.baseAbilities.cha = (Number(character.baseAbilities.cha) || 10) + 2;
+              }
+            }
+          } else if (cleanF.includes('draconic toughness')) {
+            if (character.hp) {
+              character.hp.max = (Number(character.hp.max) || 0) + nextLvl;
+              character.hp.current = (Number(character.hp.current) || 0) + nextLvl;
+            }
+          }
+        } else if (featType === 'Special Ability') {
+          if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
+          character.specialAbilities.push({
+            name: featName,
+            source: `${className} Level ${nextLvl}`,
+            category: 'Special Ability',
+            benefit: featBenefit || 'Sınıf seviyesi ile kazanılan özel yetenek.'
+          });
+        } else {
+          const catalog = getCombinedFeatCatalog();
+          const found = catalog.find(c => c.name.toLowerCase() === featName.toLowerCase()) || {
+            name: featName,
+            category: featType,
+            source: `Level ${nextLvl}`,
+            benefit: featBenefit || notes || 'Seviye atlama ile kazanılan hüner.'
+          };
+          learnFeatObject(found);
+        }
       }
 
-      // 3. Apply HP Gain
+      // 3. Apply Caster Progression
+      if (!character.settings) character.settings = {};
+      character.settings.ignoreAsf = ignoreAsfChecked;
+
+      if (casterProg === 'primary') {
+        const sorcLvls = (prog.filter(p => p.className === 'Sorcerer').length || 0) + (className === 'Sorcerer' ? 1 : 1);
+        if (character.settings.clMode === 'Character Level (DM Boon)') {
+          if (character.spellcasting) character.spellcasting.cl = nextLvl;
+        } else {
+          if (character.spellcasting) character.spellcasting.cl = sorcLvls;
+        }
+        if (character.spellcasting) {
+          character.spellcasting.slots = calculateSorcererSlots(sorcLvls, character.abilities?.cha || 22);
+        }
+        rowFeats.push(`🔮 +1 Caster Lvl (CL: ${character.spellcasting?.cl || nextLvl})`);
+      } else if (casterProg === 'cl_boon') {
+        character.settings.clMode = 'Character Level (DM Boon)';
+        if (character.spellcasting) {
+          character.spellcasting.cl = nextLvl;
+          const sorcLvls = prog.filter(p => p.className === 'Sorcerer').length || 5;
+          character.spellcasting.slots = calculateSorcererSlots(sorcLvls, character.abilities?.cha || 22);
+        }
+        rowFeats.push(`🌟 DM Boon: CL = Seviye ${nextLvl}`);
+      }
+
+      // 4. Apply HP Gain
       if (!character.hp) character.hp = { current: 10, max: 10, temp: 0, nonlethal: 0 };
       character.hp.max = (Number(character.hp.max) || 0) + hpGain;
       character.hp.current = (Number(character.hp.current) || 0) + hpGain;
 
-      // 4. Push Level Row
+      // 5. Push Level Row
       prog.push({
         level: nextLvl,
         className,
@@ -4184,6 +4643,8 @@
         feats: rowFeats,
         statIncreased: statChoice || null,
         addedFeatName: featName || null,
+        featCategory: featType,
+        casterProg: casterProg,
         notes: notes || `${className} seviyesi eklendi`
       });
 
@@ -4221,21 +4682,68 @@
         character.feats = character.feats.filter(f => (typeof f === 'string' ? f : f.name).toLowerCase().trim() !== cleanF);
       }
 
+      // Revert Caster Level
+      if (last.casterProg === 'primary' && character.spellcasting) {
+        const sorcLvls = Math.max(1, (prog.filter(p => p.className === 'Sorcerer').length || 5));
+        if (character.settings?.clMode === 'Character Level (DM Boon)') {
+          character.spellcasting.cl = prog.length;
+        } else {
+          character.spellcasting.cl = sorcLvls;
+        }
+        character.spellcasting.slots = calculateSorcererSlots(sorcLvls, character.abilities?.cha || 22);
+      }
+
       recalculateCharacterClassSummary();
       saveStateToStorage(true);
       renderAll();
     }
 
-    // Level Progression Rendering (lvl_up - Madde 1, 2, 12)
+    // Level Progression Rendering (lvl_up - Madde 1, 2, 12, DM Boons & Caster Tokens)
     function renderLevelProgression() {
       const tbody = document.getElementById('level-progression-tbody');
       if (!tbody) return;
       tbody.innerHTML = '';
 
+      // Sync settings toolbar UI
+      const featModeSel = document.getElementById('setting-feat-mode');
+      if (featModeSel && character.settings?.featMode) {
+        featModeSel.value = character.settings.featMode;
+      }
+      const clModeSel = document.getElementById('setting-cl-mode');
+      if (clModeSel && character.settings?.clMode) {
+        clModeSel.value = character.settings.clMode;
+      }
+      const asfChk = document.getElementById('setting-ignore-asf');
+      if (asfChk) {
+        asfChk.checked = character.settings?.ignoreAsf !== false;
+      }
+
       const prog = character.levelProgression || [];
       prog.forEach(lvl => {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-900/60 transition';
+
+        // Render rich badges for feats & abilities
+        const featBadges = (lvl.feats || []).map(fStr => {
+          const str = String(fStr);
+          const safeF = str.replace(/'/g, "\\'").replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\[\]A-Za-z\s]+:\s*/, '');
+          if (str.includes('[DM Boon]') || str.includes('Boon') || str.includes('DM Grant')) {
+            return `<button onclick="showFeatDetail('${safeF}')" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-950/80 hover:bg-amber-900 text-amber-300 border border-amber-600/70 shadow-sm transition"><span>🌟</span><span>${str}</span></button>`;
+          } else if (str.includes('Caster Lvl') || str.includes('+1 Primary CL') || str.includes('🔮')) {
+            return `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-purple-950/80 text-purple-300 border border-purple-600/70 shadow-sm"><span>🔮</span><span>${str}</span></span>`;
+          } else if (str.includes('+1 Stat') || str.includes('Stat:')) {
+            return `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-sky-950/80 text-sky-300 border border-sky-600/70 shadow-sm"><span>💪</span><span>${str}</span></span>`;
+          } else if (str.includes('[Flaw]') || str.includes('Flaw:')) {
+            return `<button onclick="showFeatDetail('${safeF}')" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-600/70 shadow-sm transition"><span>⚠️</span><span>${str}</span></button>`;
+          } else if (str.includes('[Bonus]') || str.includes('Bonus')) {
+            return `<button onclick="showFeatDetail('${safeF}')" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border border-indigo-600/70 shadow-sm transition"><span>⚔️</span><span>${str}</span></button>`;
+          } else if (str.includes('[Racial]')) {
+            return `<button onclick="showFeatDetail('${safeF}')" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-teal-950/80 hover:bg-teal-900 text-teal-300 border border-teal-600/70 shadow-sm transition"><span>🧬</span><span>${str}</span></button>`;
+          } else {
+            return `<button onclick="showFeatDetail('${safeF}')" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-600/70 shadow-sm transition"><span>🎖️</span><span>${str}</span></button>`;
+          }
+        }).join(' ');
+
         tr.innerHTML = `
           <td class="py-2 px-2.5 text-center font-bold text-amber-400">${lvl.level}</td>
           <td class="py-2 px-3 font-sans font-bold text-white">${lvl.className}</td>
@@ -4246,7 +4754,7 @@
           <td class="py-2 px-2.5 text-center text-slate-300 font-bold">+${lvl.ref}</td>
           <td class="py-2 px-2.5 text-center text-slate-300 font-bold">+${lvl.will}</td>
           <td class="py-2 px-2.5 text-center text-indigo-300 font-bold">${lvl.skillPts || 4}</td>
-          <td class="py-2 px-3 font-sans text-amber-300">${(lvl.feats || []).join(', ') || '-'}</td>
+          <td class="py-2 px-3 font-sans"><div class="flex flex-wrap gap-1">${featBadges || '<span class="text-slate-500 italic">-</span>'}</div></td>
           <td class="py-2 px-3 font-sans text-slate-400 text-[10px]">${lvl.notes || ''}</td>
         `;
         tbody.appendChild(tr);
