@@ -5595,9 +5595,6 @@
     // ====================================================
     const DEFAULT_FORMULA_TEMPLATES = [
       { name: 'Hedef:21 B:+4 (1d6+3 19-20x2)', formula: 'Hedef:21 Bonus:4 Zar:1d6+3 19-20x2' },
-      { name: 'Hedef:18 B:+6 (1d8+4 19-20x2)', formula: 'Hedef:18 Bonus:6 Zar:1d8+4 19-20x2' },
-      { name: 'Hedef:15 B:+8 (2d6+6 20x3)', formula: 'Hedef:15 Bonus:8 Zar:2d6+6 20x3' },
-      { name: 'Hedef:24 B:+11 (1d10+7 18-20x2)', formula: 'Hedef:24 Bonus:11 Zar:1d10+7 18-20x2' },
       { name: 'Ateş Topu (8d6)', formula: '8d6' },
       { name: 'D20 Testi (+8)', formula: '1d20+8' },
       { name: 'Yüzdelik Zar (1d100)', formula: '1d100' }
@@ -5619,7 +5616,12 @@
         if (saved) {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed;
+            // Eski fazla hedef örneklerini temizle
+            const cleaned = parsed.filter(t => !['Hedef:18 B:+6', 'Hedef:15 B:+8', 'Hedef:24 B:+11'].some(prefix => (t.name || '').startsWith(prefix)));
+            if (cleaned.length !== parsed.length) {
+              localStorage.setItem('dnd_custom_dice_templates', JSON.stringify(cleaned));
+            }
+            return cleaned;
           }
         }
       } catch (e) {}
