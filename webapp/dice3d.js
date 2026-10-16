@@ -152,7 +152,7 @@ class Dice3DController {
     } catch (e) {}
   }
 
-  // Generate crisp 256x256 circular decal texture with numbers engraved directly on faces
+  // Generate crisp 256x256 transparent decal texture with numbers engraved directly on faces (NO round discs/circles)
   createFaceTexture(numberText, sides) {
     const key = `${sides}_${numberText}`;
     if (this.textureCache.has(key)) {
@@ -168,24 +168,9 @@ class Dice3DController {
     const isD20Nat20 = (sides === 20 && num === 20);
     const isD20Nat1 = (sides === 20 && num === 1);
 
-    // Clear transparent background
+    // 100% transparent canvas background - NO circular fill, NO discs, pure flat facet
     ctx.clearRect(0, 0, 256, 256);
 
-    // Deep crimson resin circular background matching die color
-    ctx.beginPath();
-    ctx.arc(128, 128, 120, 0, Math.PI * 2);
-    ctx.fillStyle = isD20Nat20 ? '#991b1b' : '#7f1d1d';
-    ctx.fill();
-
-    // Subtle edge shading for faceted depth
-    const grad = ctx.createRadialGradient(128, 128, 40, 128, 128, 120);
-    grad.addColorStop(0, 'rgba(255,255,255,0.08)');
-    grad.addColorStop(0.85, 'rgba(0,0,0,0.1)');
-    grad.addColorStop(1, 'rgba(0,0,0,0.4)');
-    ctx.fillStyle = grad;
-    ctx.fill();
-
-    // Clean bold white font
     ctx.save();
     let displayText = String(numberText);
     // Add dot to distinguish 6. and 9. on d20 / d12 / d10 / d8 / d6
@@ -196,23 +181,27 @@ class Dice3DController {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    // Text color
+    const fontSize = displayText.length > 2 ? 88 : (displayText.length > 1 ? 108 : 128);
+    ctx.font = `900 ${fontSize}px "Segoe UI", Arial, sans-serif`;
+
+    // 1. Dark engraving cavity contour / shadow for 3D depth
+    ctx.lineWidth = 8;
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.9)';
+    ctx.strokeText(displayText, 128, 128);
+
+    // 2. High-contrast crisp numeral fill
     if (isD20Nat20) {
-      ctx.fillStyle = '#fbbf24'; // Radiant gold for Nat 20
-      ctx.shadowColor = '#f59e0b';
+      ctx.fillStyle = '#fde047'; // Radiant gold for Nat 20
+      ctx.shadowColor = '#eab308';
       ctx.shadowBlur = 12;
     } else if (isD20Nat1) {
       ctx.fillStyle = '#fca5a5'; // Soft rose for Nat 1
     } else {
-      ctx.fillStyle = '#ffffff'; // Pure crisp white
-      ctx.shadowColor = 'rgba(0,0,0,0.6)';
-      ctx.shadowBlur = 4;
-      ctx.shadowOffsetY = 2;
+      ctx.fillStyle = '#ffffff'; // Pure crisp white engraved numeral
     }
 
-    const fontSize = displayText.length > 2 ? 86 : (displayText.length > 1 ? 104 : 124);
-    ctx.font = `bold ${fontSize}px ui-sans-serif, system-ui, Arial, sans-serif`;
-    ctx.fillText(displayText, 128, 132);
+    ctx.fillText(displayText, 128, 128);
     ctx.restore();
 
     const texture = new THREE.CanvasTexture(canvas);
@@ -309,46 +298,46 @@ class Dice3DController {
     let geo;
     let sides = 20;
     let radius = 1.65;
-    let decalScale = 0.56;
+    let decalScale = 0.58;
 
     if (type === 'd4') {
       sides = 4;
       radius = 1.55;
       geo = new THREE.TetrahedronGeometry(radius, 0);
-      decalScale = 0.52;
+      decalScale = 0.65;
     } else if (type === 'd6') {
       sides = 6;
       radius = 1.75;
       geo = new THREE.BoxGeometry(radius, radius, radius);
-      decalScale = 0.62;
+      decalScale = 0.75;
     } else if (type === 'd8') {
       sides = 8;
       radius = 1.6;
       geo = new THREE.OctahedronGeometry(radius, 0);
-      decalScale = 0.55;
+      decalScale = 0.68;
     } else if (type === 'd10' || type === 'd100') {
       sides = 10;
       radius = 1.5;
       geo = this.createD10Geometry(radius);
-      decalScale = 0.48;
+      decalScale = 0.60;
     } else if (type === 'd12') {
       sides = 12;
       radius = 1.55;
       geo = new THREE.DodecahedronGeometry(radius, 0);
-      decalScale = 0.5;
+      decalScale = 0.62;
     } else {
       // d20 default
       sides = 20;
       radius = 1.65;
       geo = new THREE.IcosahedronGeometry(radius, 0);
-      decalScale = 0.44;
+      decalScale = 0.56;
     }
 
-    // Deep Crimson Resin Material (matches user reference image)
+    // Deep Crimson Resin Material with sharp crystalline flat facet shading
     const dieMat = new THREE.MeshStandardMaterial({
-      color: 0x881314,
+      color: 0x851316,
       roughness: 0.16,
-      metalness: 0.1,
+      metalness: 0.08,
       flatShading: true
     });
 
@@ -356,7 +345,7 @@ class Dice3DController {
     dieMesh.castShadow = true;
     dieMesh.receiveShadow = false;
 
-    // Extract face planes & attach crisp number decal discs directly onto faces
+    // Extract face planes & attach transparent numeral decals directly onto flat facets
     const faces = this.extractFaces(geo);
     const numFaces = Math.min(faces.length, sides);
 
@@ -369,7 +358,8 @@ class Dice3DController {
     faceValues.sort(() => Math.random() - 0.5);
     faceValues.unshift(targetValue); // Face 0 always holds the rolled target value
 
-    const decalGeo = new THREE.CircleGeometry(radius * decalScale, 20);
+    // Pure flat plane geometry - alphaTest completely clips everything outside the engraved number
+    const decalGeo = new THREE.PlaneGeometry(radius * decalScale, radius * decalScale);
 
     for (let i = 0; i < numFaces; i++) {
       const face = faces[i];
@@ -379,6 +369,7 @@ class Dice3DController {
       const decalMat = new THREE.MeshBasicMaterial({
         map: texture,
         transparent: true,
+        alphaTest: 0.05,
         depthWrite: false,
         polygonOffset: true,
         polygonOffsetFactor: -2,
@@ -386,9 +377,20 @@ class Dice3DController {
       });
 
       const decalMesh = new THREE.Mesh(decalGeo, decalMat);
-      // Offset slightly outward along normal to prevent z-fighting
-      decalMesh.position.copy(face.center).addScaledVector(face.normal, 0.015);
-      decalMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), face.normal);
+      
+      // Calculate clean orientation: decal normal = face.normal, with upright projection
+      const normal = face.normal.clone().normalize();
+      let up = new THREE.Vector3(0, 1, 0);
+      if (Math.abs(normal.dot(up)) > 0.92) {
+        up = new THREE.Vector3(0, 0, 1);
+      }
+      const right = new THREE.Vector3().crossVectors(up, normal).normalize();
+      const faceUp = new THREE.Vector3().crossVectors(normal, right).normalize();
+      const rotMatrix = new THREE.Matrix4().makeBasis(right, faceUp, normal);
+      decalMesh.quaternion.setFromRotationMatrix(rotMatrix);
+
+      // Offset slightly outward along facet normal to prevent z-fighting
+      decalMesh.position.copy(face.center).addScaledVector(face.normal, 0.016);
       dieMesh.add(decalMesh);
     }
 
