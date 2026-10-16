@@ -265,9 +265,9 @@
         <span class="text-sm">📚</span>
         <span>Master DB</span>
       </button>
-      <button onclick="openSettingsModal()" id="tab-btn-sync" class="tab-btn flex-1 min-w-[105px] sm:min-w-[120px] lg:min-w-0 py-1.5 px-2.5 sm:px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer select-none border whitespace-nowrap bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border-slate-700 hover:border-slate-500 shadow-sm">
-        <span class="text-sm">⚙️</span>
-        <span>Ayarlar</span>
+      <button onclick="switchTab('tab-dice')" id="tab-btn-dice" class="tab-btn flex-1 min-w-[105px] sm:min-w-[120px] lg:min-w-0 py-1.5 px-2.5 sm:px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer select-none border whitespace-nowrap bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border-slate-700 hover:border-slate-500 shadow-sm">
+        <span class="text-sm">🎲</span>
+        <span>Zar At</span>
       </button>
     </div>
   </nav>
@@ -1677,6 +1677,210 @@
       </div>
     </div>
 
+    <!-- ==================================================== -->
+    <!-- TAB 7: 🎲 ZAR ATMA MASASI & ZAR GEÇMİŞİ -->
+    <!-- ==================================================== -->
+    <div id="tab-dice" class="tab-content hidden space-y-4">
+      
+      <!-- Üst Grid: Serbest Zar Masası + Formül ile Zar Atma -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        
+        <!-- Sol: Serbest Zar Masası & Havuz (7 Kolon) -->
+        <div class="lg:col-span-7 bg-dndCard border border-dndBorder rounded-xl p-4 shadow-lg space-y-4 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between border-b border-dndBorder pb-2.5 mb-3">
+              <div class="flex items-center gap-2">
+                <span class="text-amber-400 font-extrabold text-base flex items-center gap-1.5">
+                  <span>🎲</span>
+                  <span>SERBEST ZAR MASASI</span>
+                </span>
+                <span class="badge bg-amber-950/80 text-amber-300 border border-amber-500/60 text-[10px]">Hızlı & Havuz</span>
+              </div>
+              <!-- Anında At vs Havuz Toggle -->
+              <label class="flex items-center gap-1.5 cursor-pointer bg-slate-900 border border-slate-700 px-2.5 py-1 rounded-lg text-xs hover:border-amber-500/50 transition">
+                <input type="checkbox" id="dice-instant-mode" class="rounded border-slate-700 text-amber-500 focus:ring-0">
+                <span class="font-bold text-slate-300 select-none text-[11px]">⚡ Tıkla Hemen At</span>
+              </label>
+            </div>
+
+            <!-- Standart D&D Zarları Butonları (d4, d6, d8, d10, d12, d20, d100) -->
+            <div class="grid grid-cols-4 sm:grid-cols-7 gap-2 mb-3">
+              <!-- d4 -->
+              <button onclick="handleDieClick(4)" title="d4 zarı ekle veya at" class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/90 hover:bg-emerald-600/30 border border-emerald-500/40 hover:border-emerald-400 text-emerald-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
+                <span class="text-xl group-hover:scale-110 transition">▲</span>
+                <span class="text-xs font-black font-mono">d4</span>
+                <span id="die-count-4" class="text-[10px] font-bold text-emerald-400 mt-0.5 h-3.5"></span>
+              </button>
+              <!-- d6 -->
+              <button onclick="handleDieClick(6)" title="d6 zarı ekle veya at" class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/90 hover:bg-sky-600/30 border border-sky-500/40 hover:border-sky-400 text-sky-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
+                <span class="text-xl group-hover:scale-110 transition">🎲</span>
+                <span class="text-xs font-black font-mono">d6</span>
+                <span id="die-count-6" class="text-[10px] font-bold text-sky-400 mt-0.5 h-3.5"></span>
+              </button>
+              <!-- d8 -->
+              <button onclick="handleDieClick(8)" title="d8 zarı ekle veya at" class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/90 hover:bg-indigo-600/30 border border-indigo-500/40 hover:border-indigo-400 text-indigo-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
+                <span class="text-xl group-hover:scale-110 transition">◆</span>
+                <span class="text-xs font-black font-mono">d8</span>
+                <span id="die-count-8" class="text-[10px] font-bold text-indigo-400 mt-0.5 h-3.5"></span>
+              </button>
+              <!-- d10 -->
+              <button onclick="handleDieClick(10)" title="d10 zarı ekle veya at" class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/90 hover:bg-purple-600/30 border border-purple-500/40 hover:border-purple-400 text-purple-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
+                <span class="text-xl group-hover:scale-110 transition">⯁</span>
+                <span class="text-xs font-black font-mono">d10</span>
+                <span id="die-count-10" class="text-[10px] font-bold text-purple-400 mt-0.5 h-3.5"></span>
+              </button>
+              <!-- d12 -->
+              <button onclick="handleDieClick(12)" title="d12 zarı ekle veya at" class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/90 hover:bg-rose-600/30 border border-rose-500/40 hover:border-rose-400 text-rose-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
+                <span class="text-xl group-hover:scale-110 transition">⬟</span>
+                <span class="text-xs font-black font-mono">d12</span>
+                <span id="die-count-12" class="text-[10px] font-bold text-rose-400 mt-0.5 h-3.5"></span>
+              </button>
+              <!-- d20 -->
+              <button onclick="handleDieClick(20)" title="d20 zarı ekle veya at" class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/90 hover:bg-amber-600/30 border border-amber-500/50 hover:border-amber-400 text-amber-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group ring-1 ring-amber-500/30">
+                <span class="text-xl group-hover:scale-110 transition">🎯</span>
+                <span class="text-xs font-black font-mono">d20</span>
+                <span id="die-count-20" class="text-[10px] font-bold text-amber-400 mt-0.5 h-3.5"></span>
+              </button>
+              <!-- d100 -->
+              <button onclick="handleDieClick(100)" title="d100 yüzlük zar ekle veya at" class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/90 hover:bg-teal-600/30 border border-teal-500/40 hover:border-teal-400 text-teal-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
+                <span class="text-xl group-hover:scale-110 transition">💯</span>
+                <span class="text-xs font-black font-mono">d100</span>
+                <span id="die-count-100" class="text-[10px] font-bold text-teal-400 mt-0.5 h-3.5"></span>
+              </button>
+            </div>
+
+            <!-- Seçilen Zar Havuzu & Modifiyer Çubuğu -->
+            <div class="bg-slate-950/80 rounded-xl p-3 border border-slate-800 flex flex-wrap items-center justify-between gap-3">
+              <div class="min-w-0 flex-1">
+                <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Seçilen Zar Havuzu</div>
+                <div id="dice-pool-summary" class="text-sm md:text-base font-extrabold text-amber-300 font-mono truncate">
+                  Zar seçilmedi (Butonlara tıklayın)
+                </div>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <label class="text-xs text-slate-300 font-bold flex items-center gap-1.5">
+                  <span>Mod:</span>
+                  <input type="number" id="dice-pool-mod" value="0" class="w-16 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-center font-mono text-xs text-white focus:border-amber-500 focus:outline-none" oninput="updateDicePoolDisplay()">
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Aksiyon Butonları (At & Sıfırla) -->
+          <div class="flex items-center gap-2.5 pt-2">
+            <button onclick="rollDicePool()" class="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-600 via-yellow-600 to-amber-700 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-sm shadow-lg flex items-center justify-center gap-2 transition transform active:scale-95 cursor-pointer">
+              <span class="text-base">🎲</span>
+              <span>ZARLARI AT</span>
+            </button>
+            <button onclick="resetDicePool()" class="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 border border-slate-700 hover:border-rose-600/60 font-bold text-sm shadow flex items-center justify-center gap-1.5 transition cursor-pointer" title="Seçilen zar havuzunu temizle">
+              <span>🔄</span>
+              <span>Sıfırla</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Sağ: Serbest Formül Alanı (12d46+45 18-20x2) (5 Kolon) -->
+        <div class="lg:col-span-5 bg-dndCard border border-dndBorder rounded-xl p-4 shadow-lg space-y-3 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between border-b border-dndBorder pb-2.5 mb-3">
+              <div class="flex items-center gap-2">
+                <span class="text-indigo-400 font-extrabold text-base flex items-center gap-1.5">
+                  <span>📝</span>
+                  <span>SERBEST YAZI & KRİTİK ALANI</span>
+                </span>
+              </div>
+              <span class="badge bg-indigo-950/80 text-indigo-300 border border-indigo-500/60 text-[10px]">Örn: 12d46+45</span>
+            </div>
+
+            <p class="text-xs text-slate-300 mb-2">
+              İstediğiniz zar formülünü ve kritik tehdit aralığını serbestçe yazın:
+            </p>
+
+            <!-- Input & At Butonu -->
+            <div class="flex items-stretch gap-2 mb-2.5">
+              <input type="text" id="dice-custom-formula-input"
+                     placeholder="Örn: 12d46+45 18-20x2 veya 3d6+5"
+                     onkeydown="if(event.key === 'Enter') rollCustomFormula();"
+                     class="flex-1 bg-slate-950 border border-indigo-500/50 rounded-xl px-3 py-2 text-sm font-mono text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+              <button onclick="rollCustomFormula()"
+                      class="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-sm shadow flex items-center gap-1.5 transition transform active:scale-95 cursor-pointer">
+                <span>⚡</span>
+                <span>At</span>
+              </button>
+            </div>
+
+            <!-- Hızlı Şablon Etiketleri -->
+            <div class="text-[11px] text-slate-400 font-bold mb-1.5">Hızlı Şablonlar (Tıkla & Doldur):</div>
+            <div class="flex flex-wrap gap-1.5">
+              <button onclick="applyFormulaTemplate('12d46+45 18-20x2')" class="px-2 py-1 rounded bg-slate-900 hover:bg-indigo-950 text-indigo-300 border border-slate-800 hover:border-indigo-500/50 text-xs font-mono transition">12d46+45 18-20x2</button>
+              <button onclick="applyFormulaTemplate('18-20x2')" class="px-2 py-1 rounded bg-slate-900 hover:bg-indigo-950 text-amber-300 border border-slate-800 hover:border-amber-500/50 text-xs font-mono transition">18-20x2</button>
+              <button onclick="applyFormulaTemplate('1d20+8')" class="px-2 py-1 rounded bg-slate-900 hover:bg-indigo-950 text-sky-300 border border-slate-800 hover:border-sky-500/50 text-xs font-mono transition">1d20+8</button>
+              <button onclick="applyFormulaTemplate('2d6+5 19-20x2')" class="px-2 py-1 rounded bg-slate-900 hover:bg-indigo-950 text-rose-300 border border-slate-800 hover:border-rose-500/50 text-xs font-mono transition">2d6+5 19-20x2</button>
+              <button onclick="applyFormulaTemplate('8d6')" class="px-2 py-1 rounded bg-slate-900 hover:bg-indigo-950 text-emerald-300 border border-slate-800 hover:border-emerald-500/50 text-xs font-mono transition">8d6</button>
+              <button onclick="applyFormulaTemplate('1d100')" class="px-2 py-1 rounded bg-slate-900 hover:bg-indigo-950 text-purple-300 border border-slate-800 hover:border-purple-500/50 text-xs font-mono transition">1d100</button>
+            </div>
+          </div>
+
+          <div class="text-[11px] text-slate-400 bg-slate-950/60 p-2.5 rounded-lg border border-slate-800/80">
+            💡 <strong>18-20x2:</strong> D&D 3.5e kritik tehdit aralığını (18-20) ve x2 hasar çarpanını otomatik algılar ve kritik uyarısı verir.
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Canlı Son Zar Gösterim Kartı -->
+      <div id="dice-last-result-card" class="bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-amber-500/40 rounded-xl p-4 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3.5 min-w-0 flex-1">
+          <div class="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-400/60 flex items-center justify-center text-2xl shrink-0 shadow-inner">
+            🎲
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Son Atılan Zar</span>
+              <span id="dice-last-label" class="badge bg-slate-800 text-amber-300 border border-slate-700 text-xs font-mono">Henüz Zar Atılmadı</span>
+              <span id="dice-last-crit-badge" class="hidden badge bg-rose-600 text-white font-black text-xs animate-pulse">⚡ KRİTİK TEHDİTİ!</span>
+            </div>
+            <div id="dice-last-breakdown" class="text-xs text-slate-300 font-mono mt-1 break-words">
+              Yukarıdaki butonlardan zar seçin veya serbest formül yazarak atın.
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 shrink-0">
+          <div class="text-center px-4 py-1.5 rounded-xl bg-slate-950 border border-slate-800 shadow-inner min-w-[5rem]">
+            <div class="text-[10px] text-slate-400 font-bold uppercase">Toplam Sonuç</div>
+            <div id="dice-last-total" class="text-3xl md:text-4xl font-black text-amber-400 font-mono">-</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Zar Geçmişi (Yeniden Eskiye Doğru) -->
+      <div class="bg-dndCard border border-dndBorder rounded-xl p-4 shadow-lg space-y-3">
+        <div class="flex flex-wrap items-center justify-between border-b border-dndBorder pb-3 gap-2">
+          <div class="flex items-center gap-2">
+            <span class="text-base font-extrabold text-white flex items-center gap-2">
+              <span>📜</span>
+              <span>ZAR GEÇMİŞİ</span>
+            </span>
+            <span id="dice-history-count" class="badge bg-slate-800 text-slate-300 border border-slate-700 text-xs font-mono">0 Kayıt</span>
+            <span class="text-[11px] text-amber-400 font-semibold">(Yeniden Eskiye Doğru Sıralı)</span>
+          </div>
+          <button onclick="clearDiceHistory()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 border border-slate-700 hover:border-rose-600 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+            <span>🗑️</span>
+            <span>Geçmişi Temizle</span>
+          </button>
+        </div>
+
+        <!-- Geçmiş Listesi -->
+        <div id="dice-history-list" class="space-y-2 max-h-[500px] overflow-y-auto pr-1">
+          <!-- Dynamically populated, newest first -->
+          <div class="text-center py-8 text-slate-500 text-xs font-medium">
+            Henüz atılmış bir zar kaydı bulunmuyor.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
   </main>
 
   <!-- MOBILE BOTTOM NAVIGATION -->
@@ -1701,9 +1905,9 @@
       <span class="text-base">📚</span>
       <span>DB</span>
     </button>
-    <button onclick="openSettingsModal()" class="mobile-tab-btn flex flex-col items-center text-[10px] font-bold text-slate-400">
-      <span class="text-base">⚙️</span>
-      <span>Ayarlar</span>
+    <button onclick="switchTab('tab-dice')" class="mobile-tab-btn flex flex-col items-center text-[10px] font-bold text-slate-400">
+      <span class="text-base">🎲</span>
+      <span>Zar At</span>
     </button>
   </nav>
 
@@ -3558,6 +3762,10 @@
       if (tabId === 'tab-database' && window.RuleMaster) {
         RuleMaster.init();
       }
+      if (tabId === 'tab-dice') {
+        renderDiceHistory();
+        updateDicePoolDisplay();
+      }
     }
 
     function renderAll() {
@@ -3588,6 +3796,7 @@
       renderInventory();
       renderConsumables();
       renderMasterDbTable();
+      renderDiceHistory();
     }
 
     function renderHUD() {
@@ -4852,6 +5061,452 @@
       if (card) card.classList.add('hidden');
     }
 
+    // ====================================================
+    // 🎲 DICE HUB: SERBEST ZAR, FORMÜL VE ZAR GEÇMİŞİ MOTORU
+    // ====================================================
+    window.activeDicePool = { 4: 0, 6: 0, 8: 0, 10: 0, 12: 0, 20: 0, 100: 0 };
+    window.diceRollHistory = [];
+
+    function loadDiceHistory() {
+      try {
+        const saved = localStorage.getItem('dnd_dice_history');
+        if (saved) {
+          window.diceRollHistory = JSON.parse(saved);
+        }
+      } catch (e) {
+        window.diceRollHistory = [];
+      }
+    }
+
+    function addDiceHistoryEntry(entry) {
+      if (!Array.isArray(window.diceRollHistory)) {
+        loadDiceHistory();
+      }
+      const record = {
+        id: 'roll_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        timestamp: entry.timestamp || new Date().toLocaleTimeString('tr-TR'),
+        title: entry.title || 'Zar Atışı',
+        formula: entry.formula || '',
+        breakdown: entry.breakdown || '',
+        total: entry.total !== undefined ? entry.total : 0,
+        isCrit: !!entry.isCrit,
+        critDamage: entry.critDamage || null,
+        critInfo: entry.critInfo || ''
+      };
+      window.diceRollHistory.unshift(record);
+      if (window.diceRollHistory.length > 100) {
+        window.diceRollHistory = window.diceRollHistory.slice(0, 100);
+      }
+      try {
+        localStorage.setItem('dnd_dice_history', JSON.stringify(window.diceRollHistory));
+      } catch (e) {}
+
+      updateLastResultCard(record);
+      renderDiceHistory();
+    }
+
+    function clearDiceHistory() {
+      if (!confirm('Tüm zar geçmişini silmek istediğinize emin misiniz?')) return;
+      window.diceRollHistory = [];
+      try {
+        localStorage.removeItem('dnd_dice_history');
+      } catch (e) {}
+      renderDiceHistory();
+    }
+
+    function updateLastResultCard(record) {
+      const labelEl = document.getElementById('dice-last-label');
+      const breakdownEl = document.getElementById('dice-last-breakdown');
+      const totalEl = document.getElementById('dice-last-total');
+      const critBadge = document.getElementById('dice-last-crit-badge');
+
+      if (labelEl) labelEl.textContent = `${record.title} [${record.timestamp}]`;
+      if (breakdownEl) breakdownEl.textContent = `${record.formula ? record.formula + ': ' : ''}${record.breakdown} ${record.critInfo || ''}`;
+      if (totalEl) totalEl.textContent = record.total;
+
+      if (critBadge) {
+        if (record.isCrit) {
+          critBadge.classList.remove('hidden');
+          critBadge.textContent = record.critDamage ? `⚡ KRİTİK! (${record.critDamage} Hasar)` : '⚡ KRİTİK TEHDİTİ!';
+        } else {
+          critBadge.classList.add('hidden');
+        }
+      }
+    }
+
+    function renderDiceHistory() {
+      const listEl = document.getElementById('dice-history-list');
+      const countEl = document.getElementById('dice-history-count');
+      if (!listEl) return;
+
+      if (!Array.isArray(window.diceRollHistory) || window.diceRollHistory.length === 0) {
+        loadDiceHistory();
+      }
+
+      const list = window.diceRollHistory || [];
+      if (countEl) countEl.textContent = `${list.length} Kayıt`;
+
+      if (list.length === 0) {
+        listEl.innerHTML = `
+          <div class="text-center py-8 text-slate-500 text-xs font-medium">
+            Henüz atılmış bir zar kaydı bulunmuyor. Yukarıdan serbest zar atabilirsiniz.
+          </div>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = list.map(item => {
+        const critClass = item.isCrit ? 'border-rose-500/70 bg-rose-950/20' : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900';
+        const critBadge = item.isCrit
+          ? `<span class="badge bg-rose-600 text-white font-black text-[10px] animate-pulse">⚡ KRİTİK ${item.critDamage ? '(' + item.critDamage + ' Hasar)' : ''}</span>`
+          : '';
+        const safeFormula = (item.formula || '').replace(/'/g, "\\'");
+
+        return `
+          <div class="p-2.5 sm:p-3 rounded-xl border ${critClass} flex flex-wrap items-center justify-between gap-2.5 transition">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-xs font-bold text-white">${item.title}</span>
+                <span class="text-[10px] text-slate-400 font-mono">${item.timestamp}</span>
+                ${critBadge}
+              </div>
+              <div class="text-[11px] text-slate-300 font-mono mt-0.5 break-words">
+                ${item.formula ? `<span class="text-amber-400 font-bold">${item.formula}</span> ➔ ` : ''}${item.breakdown}
+              </div>
+            </div>
+            <div class="flex items-center gap-2.5 shrink-0">
+              <div class="text-right">
+                <div class="text-lg md:text-xl font-black ${item.isCrit ? 'text-rose-400' : 'text-amber-400'} font-mono leading-none">
+                  ${item.total}
+                </div>
+              </div>
+              ${item.formula ? `
+                <button onclick="applyFormulaTemplate('${safeFormula}'); rollCustomFormula();"
+                        title="Bu formülü tekrar at"
+                        class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 hover:border-slate-500 text-xs transition active:scale-95 cursor-pointer">
+                  🔄
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function handleDieClick(sides) {
+      const instant = document.getElementById('dice-instant-mode')?.checked;
+      if (instant) {
+        rollSingleDie(sides);
+        return;
+      }
+      window.activeDicePool[sides] = (window.activeDicePool[sides] || 0) + 1;
+      updateDicePoolDisplay();
+    }
+
+    function updateDicePoolDisplay() {
+      const summaryEl = document.getElementById('dice-pool-summary');
+      const mod = parseInt(document.getElementById('dice-pool-mod')?.value) || 0;
+
+      const activeParts = [];
+      [4, 6, 8, 10, 12, 20, 100].forEach(s => {
+        const count = window.activeDicePool[s] || 0;
+        const countBadge = document.getElementById('die-count-' + s);
+        if (countBadge) {
+          countBadge.textContent = count > 0 ? `×${count}` : '';
+        }
+        if (count > 0) {
+          activeParts.push(`${count}d${s}`);
+        }
+      });
+
+      if (summaryEl) {
+        if (activeParts.length === 0) {
+          summaryEl.textContent = 'Zar seçilmedi (Butonlara tıklayın)';
+          summaryEl.className = 'text-xs text-slate-500 font-mono';
+        } else {
+          let formula = activeParts.join(' + ');
+          if (mod !== 0) {
+            formula += ` ${mod >= 0 ? '+' : '-'} ${Math.abs(mod)}`;
+          }
+          summaryEl.textContent = formula;
+          summaryEl.className = 'text-sm md:text-base font-extrabold text-amber-300 font-mono truncate';
+        }
+      }
+    }
+
+    function resetDicePool() {
+      window.activeDicePool = { 4: 0, 6: 0, 8: 0, 10: 0, 12: 0, 20: 0, 100: 0 };
+      const modEl = document.getElementById('dice-pool-mod');
+      if (modEl) modEl.value = 0;
+      updateDicePoolDisplay();
+    }
+
+    function rollSingleDie(sides) {
+      const r = Math.floor(Math.random() * sides) + 1;
+      const isCrit = (sides === 20 && r === 20);
+
+      const onDone = () => {
+        addDiceHistoryEntry({
+          title: `Serbest 1d${sides}`,
+          formula: `1d${sides}`,
+          breakdown: `d${sides}: [${r}]`,
+          total: r,
+          isCrit: isCrit,
+          critInfo: isCrit ? '• Doğal 20!' : ''
+        });
+      };
+
+      if (window.Dice3D && typeof Dice3D.roll === 'function' && [4, 6, 8, 10, 12, 20].includes(sides)) {
+        try {
+          Dice3D.roll([{ type: 'd' + sides, value: r }], onDone);
+        } catch (e) {
+          onDone();
+        }
+      } else {
+        onDone();
+      }
+    }
+
+    function rollDicePool() {
+      const mod = parseInt(document.getElementById('dice-pool-mod')?.value) || 0;
+      const parts = [];
+      const dice3dList = [];
+      const rollBreakdown = [];
+      let sumOfDice = 0;
+      let totalDiceCount = 0;
+      let hasD20Crit = false;
+
+      [4, 6, 8, 10, 12, 20, 100].forEach(s => {
+        const count = window.activeDicePool[s] || 0;
+        if (count > 0) {
+          parts.push(`${count}d${s}`);
+          const rolls = [];
+          for (let i = 0; i < count; i++) {
+            const r = Math.floor(Math.random() * s) + 1;
+            rolls.push(r);
+            sumOfDice += r;
+            totalDiceCount++;
+            if (s === 20 && r === 20) hasD20Crit = true;
+            if ([4, 6, 8, 10, 12, 20].includes(s) && dice3dList.length < 6) {
+              dice3dList.push({ type: 'd' + s, value: r });
+            }
+          }
+          rollBreakdown.push(`${count}d${s} [${rolls.join(', ')}]`);
+        }
+      });
+
+      // If pool was empty, roll 1d20
+      if (parts.length === 0) {
+        rollSingleDie(20);
+        return;
+      }
+
+      let formulaStr = parts.join(' + ');
+      if (mod !== 0) formulaStr += ` ${mod >= 0 ? '+' : '-'} ${Math.abs(mod)}`;
+      const grandTotal = sumOfDice + mod;
+
+      let breakdownStr = rollBreakdown.join(' + ');
+      if (mod !== 0) breakdownStr += ` ${mod >= 0 ? '+' : '-'} ${Math.abs(mod)}`;
+
+      const onDone = () => {
+        addDiceHistoryEntry({
+          title: `Havuz Zarı (${parts.join('+')})`,
+          formula: formulaStr,
+          breakdown: breakdownStr,
+          total: grandTotal,
+          isCrit: hasD20Crit,
+          critInfo: hasD20Crit ? '• Doğal 20!' : ''
+        });
+      };
+
+      if (window.Dice3D && typeof Dice3D.roll === 'function' && dice3dList.length > 0) {
+        try {
+          Dice3D.roll(dice3dList, onDone);
+        } catch (e) {
+          onDone();
+        }
+      } else {
+        onDone();
+      }
+    }
+
+    function applyFormulaTemplate(str) {
+      const input = document.getElementById('dice-custom-formula-input');
+      if (input) {
+        input.value = str;
+        input.focus();
+      }
+    }
+
+    function parseAndRollDiceFormula(inputStr) {
+      const raw = (inputStr || '').trim();
+      if (!raw) return null;
+
+      let critThreatStart = 20;
+      let critThreatEnd = 20;
+      let critMultiplier = 2;
+      let hasCritNotation = false;
+
+      let cleanStr = raw;
+      const critRangeMatch = cleanStr.match(/(\d+)\s*-\s*(\d+)\s*(?:[xX*\/]\s*(\d+))?/);
+      if (critRangeMatch) {
+        hasCritNotation = true;
+        critThreatStart = parseInt(critRangeMatch[1]);
+        critThreatEnd = parseInt(critRangeMatch[2]);
+        if (critRangeMatch[3]) critMultiplier = parseInt(critRangeMatch[3]);
+        cleanStr = cleanStr.replace(critRangeMatch[0], '');
+      } else {
+        const critMultMatch = cleanStr.match(/(?:[xX*\/]\s*(\d+))/);
+        if (critMultMatch) {
+          hasCritNotation = true;
+          critMultiplier = parseInt(critMultMatch[1]);
+          cleanStr = cleanStr.replace(critMultMatch[0], '');
+        }
+      }
+
+      cleanStr = cleanStr.trim();
+      if (!cleanStr) {
+        cleanStr = '1d20';
+      }
+
+      const regex = /([+-]?\s*\d*d\d+|[+-]?\s*\d+)/gi;
+      const matches = cleanStr.match(regex);
+      if (!matches || matches.length === 0) return null;
+
+      let grandTotal = 0;
+      const diceGroups = [];
+      const modifiers = [];
+      let primaryCheckVal = null;
+
+      matches.forEach(token => {
+        const cleanToken = token.replace(/\s+/g, '');
+        const sign = cleanToken.startsWith('-') ? -1 : 1;
+        const unsigned = cleanToken.replace(/^[+-]/, '');
+
+        if (unsigned.includes('d') || unsigned.includes('D')) {
+          const parts = unsigned.toLowerCase().split('d');
+          const count = parts[0] === '' ? 1 : Math.min(100, Math.max(1, parseInt(parts[0]) || 1));
+          const sides = Math.max(1, parseInt(parts[1]) || 6);
+
+          const rolls = [];
+          let groupSum = 0;
+          for (let i = 0; i < count; i++) {
+            const r = Math.floor(Math.random() * sides) + 1;
+            rolls.push(r);
+            groupSum += r;
+            if (sides === 20 && primaryCheckVal === null) {
+              primaryCheckVal = r;
+            }
+          }
+          if (primaryCheckVal === null && rolls.length > 0) {
+            primaryCheckVal = rolls[0];
+          }
+
+          const signedSum = groupSum * sign;
+          grandTotal += signedSum;
+          diceGroups.push({
+            notation: `${sign < 0 ? '-' : ''}${count}d${sides}`,
+            count,
+            sides,
+            rolls,
+            sum: groupSum,
+            sign
+          });
+        } else {
+          const val = parseInt(unsigned) || 0;
+          grandTotal += val * sign;
+          modifiers.push(val * sign);
+        }
+      });
+
+      let isCrit = false;
+      if (hasCritNotation && primaryCheckVal !== null) {
+        if (primaryCheckVal >= critThreatStart && primaryCheckVal <= critThreatEnd) {
+          isCrit = true;
+        }
+      }
+
+      return {
+        rawInput: raw,
+        cleanStr,
+        diceGroups,
+        modifiers,
+        grandTotal,
+        hasCritNotation,
+        critThreatStart,
+        critThreatEnd,
+        critMultiplier,
+        isCrit,
+        critDamage: isCrit ? grandTotal * critMultiplier : null,
+        timestamp: new Date().toLocaleTimeString('tr-TR')
+      };
+    }
+
+    function rollCustomFormula() {
+      const input = document.getElementById('dice-custom-formula-input');
+      const val = (input?.value || '').trim();
+      if (!val) {
+        alert('Lütfen bir zar formülü yazın (Örn: 12d46+45 18-20x2)');
+        return;
+      }
+
+      const parsed = parseAndRollDiceFormula(val);
+      if (!parsed) {
+        alert('Zar formülü anlaşılamadı. Örnek geçerli biçimler:\n• 12d46+45 18-20x2\n• 3d6+5\n• 1d20 19-20x3\n• 18-20x2');
+        return;
+      }
+
+      const breakdownParts = parsed.diceGroups.map(g => `${g.notation}: [${g.rolls.join(', ')}]`);
+      if (parsed.modifiers.length > 0) {
+        const modSum = parsed.modifiers.reduce((a, b) => a + b, 0);
+        if (modSum !== 0) {
+          breakdownParts.push(`${modSum >= 0 ? '+' : ''}${modSum}`);
+        }
+      }
+
+      const dice3dList = [];
+      parsed.diceGroups.forEach(g => {
+        if ([4, 6, 8, 10, 12, 20].includes(g.sides)) {
+          g.rolls.forEach(r => {
+            if (dice3dList.length < 6) {
+              dice3dList.push({ type: 'd' + g.sides, value: r });
+            }
+          });
+        }
+      });
+
+      const onDone = () => {
+        let critInfo = '';
+        if (parsed.hasCritNotation) {
+          if (parsed.isCrit) {
+            critInfo = `• ⚡ Kritik (${parsed.critThreatStart}-${parsed.critThreatEnd}x${parsed.critMultiplier}): ${parsed.critDamage} Hasar!`;
+          } else {
+            critInfo = `• Tehdit (${parsed.critThreatStart}-${parsed.critThreatEnd}) tutmadı`;
+          }
+        }
+
+        addDiceHistoryEntry({
+          title: `Serbest Formül (${val})`,
+          formula: val,
+          breakdown: breakdownParts.join(' • '),
+          total: parsed.grandTotal,
+          isCrit: parsed.isCrit,
+          critDamage: parsed.critDamage,
+          critInfo: critInfo
+        });
+      };
+
+      if (window.Dice3D && typeof Dice3D.roll === 'function' && dice3dList.length > 0) {
+        try {
+          Dice3D.roll(dice3dList, onDone);
+        } catch (e) {
+          onDone();
+        }
+      } else {
+        onDone();
+      }
+    }
+
     // 3D Skill, Save & Initiative Roll
     function getCharacterInitiative() {
       const dexMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
@@ -4885,6 +5540,12 @@
         if (btnText) {
           btnText.textContent = `Zar: ${d20} + ${mod >= 0 ? '+' : ''}${mod} = ${total}`;
         }
+        addDiceHistoryEntry({
+          title: '⚡ İnisiyatif Zarı',
+          formula: `1d20 ${mod >= 0 ? '+' : ''}${mod}`,
+          breakdown: `d20: [${d20}] ${mod >= 0 ? '+' : ''}${mod}`,
+          total: total
+        });
         alert(`⚡ İnisiyatif Zarı:\n1d20 [${d20}] + ${mod >= 0 ? '+' : ''}${mod} = ${total}`);
       };
 
@@ -4906,6 +5567,12 @@
       const total = d20 + mod;
 
       const showResult = () => {
+        addDiceHistoryEntry({
+          title: `⚡ ${saveName} Kayıt Zarı`,
+          formula: `1d20 ${mod >= 0 ? '+' : ''}${mod}`,
+          breakdown: `d20: [${d20}] ${mod >= 0 ? '+' : ''}${mod}`,
+          total: total
+        });
         alert(`⚡ ${saveName} Kayıt Zarı:\n1d20 [${d20}] + ${mod} = ${total}`);
       };
 
@@ -4925,6 +5592,12 @@
       const total = d20 + totalMod;
 
       const showResult = () => {
+        addDiceHistoryEntry({
+          title: `🎯 ${skillName} Beceri Zarı`,
+          formula: `1d20 ${totalMod >= 0 ? '+' : ''}${totalMod}`,
+          breakdown: `d20: [${d20}] ${totalMod >= 0 ? '+' : ''}${totalMod}`,
+          total: total
+        });
         alert(`🎯 ${skillName} Beceri Zarı:\n1d20 [${d20}] + ${totalMod} = ${total}`);
       };
 
