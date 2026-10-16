@@ -1928,17 +1928,44 @@
                   </div>
                 </div>
 
-                <!-- Sığdırma & Zoom (Fit) -->
+                <!-- Sığdırma & Zoom (Fit) - Uzaklaştırma ve Yakınlaştırma -->
                 <div>
-                  <span class="text-[10px] text-slate-400 font-bold block mb-1">Görsel Boyutlandırma & Zoom:</span>
-                  <select id="portrait-fit-select" onchange="onPortraitFitChange()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-indigo-300 font-bold">
-                    <option value="cover">Cover (Kartı Doldur - Önerilen)</option>
-                    <option value="contain">Contain (Tüm Resmi Sığdır)</option>
-                    <option value="120%">Zoom %120 (Hafif Yakın)</option>
-                    <option value="150%">Zoom %150 (Yüz Yakın Plan)</option>
-                    <option value="180%">Zoom %180 (Ekstra Yakın)</option>
-                    <option value="220%">Zoom %220 (Maksimum Odak)</option>
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-[10px] text-slate-400 font-bold">Görsel Boyutlandırma & Uzaklaş/Yakınlaş:</span>
+                    <span class="text-[9px] text-indigo-400 font-mono font-semibold">🔍 Uzaklaş / 🔎 Yakınlaş</span>
+                  </div>
+                  <select id="portrait-fit-select" onchange="onPortraitFitChange()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-xs text-indigo-300 font-bold shadow-inner">
+                    <optgroup label="Standart Boyutlandırma">
+                      <option value="cover">🖼️ Cover (Kartı Doldur - Önerilen)</option>
+                      <option value="contain">📐 Contain (Tüm Resmi Sığdır)</option>
+                      <option value="100%">🔍 Doğal Boyut %100</option>
+                    </optgroup>
+                    <optgroup label="Uzaklaştırma (Geniş Açı - Küçült)">
+                      <option value="40%">🔍 Uzaklaştır %40 (Ultra Geniş)</option>
+                      <option value="50%">🔍 Uzaklaştır %50 (Ekstra Geniş)</option>
+                      <option value="60%">🔍 Uzaklaştır %60 (Geniş Görünüm)</option>
+                      <option value="70%">🔍 Uzaklaştır %70 (Orta Geniş)</option>
+                      <option value="80%">🔍 Uzaklaştır %80 (Hafif Uzak)</option>
+                      <option value="90%">🔍 Uzaklaştır %90 (Hafif Küçült)</option>
+                    </optgroup>
+                    <optgroup label="Yakınlaştırma (Zoom - Büyüt)">
+                      <option value="110%">🔎 Yakınlaştır %110</option>
+                      <option value="125%">🔎 Yakınlaştır %125 (Hafif Yakın)</option>
+                      <option value="150%">🔎 Yakınlaştır %150 (Yüz / Baş Odak)</option>
+                      <option value="180%">🔎 Yakınlaştır %180 (Ekstra Yakın)</option>
+                      <option value="220%">🔎 Yakınlaştır %220 (Maksimum Odak)</option>
+                    </optgroup>
                   </select>
+
+                  <!-- Hızlı Boyutlandırma Presetleri (Uzaklaş & Yakınlaş Kısayolları) -->
+                  <div class="flex items-center gap-1 mt-1.5">
+                    <span class="text-[9px] text-slate-400 font-bold whitespace-nowrap">Hızlı:</span>
+                    <button type="button" onclick="setPortraitFitPreset('50%')" class="flex-1 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 hover:text-white text-[9px] font-bold transition text-center border border-slate-700" title="Uzaklaştır %50 (Geniş Açı)">🔍 %50</button>
+                    <button type="button" onclick="setPortraitFitPreset('70%')" class="flex-1 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 hover:text-white text-[9px] font-bold transition text-center border border-slate-700" title="Uzaklaştır %70">🔍 %70</button>
+                    <button type="button" onclick="setPortraitFitPreset('cover')" class="flex-1 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-white text-[9px] font-bold transition text-center border border-slate-700" title="Standart Cover (Kartı Doldur)">Cover</button>
+                    <button type="button" onclick="setPortraitFitPreset('125%')" class="flex-1 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 hover:text-white text-[9px] font-bold transition text-center border border-slate-700" title="Yakınlaştır %125">🔎 %125</button>
+                    <button type="button" onclick="setPortraitFitPreset('150%')" class="flex-1 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 hover:text-white text-[9px] font-bold transition text-center border border-slate-700" title="Yakınlaştır %150 (Yüz Odak)">🔎 %150</button>
+                  </div>
                 </div>
 
                 <div class="text-[9px] text-slate-400 bg-slate-950/70 p-2 rounded-lg border border-slate-800/80">
@@ -2128,6 +2155,9 @@
                   <select id="wallpaper-fit-select" onchange="onWallpaperFitChange()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white">
                     <option value="cover">Cover (Ekranı Kapla)</option>
                     <option value="contain">Contain (Ekrana Sığdır)</option>
+                    <option value="50%">Uzaklaş %50 (Geniş Açı)</option>
+                    <option value="70%">Uzaklaş %70 (Geniş)</option>
+                    <option value="85%">Uzaklaş %85 (Hafif Uzak)</option>
                     <option value="120%">Zoom %120 (Büyüt)</option>
                     <option value="150%">Zoom %150 (Yakın Plan)</option>
                     <option value="200%">Zoom %200 (Ekstra Yakın)</option>
@@ -3904,6 +3934,14 @@
       if (!sel) return;
       initPortraitSettings();
       character.portraitFit = sel.value;
+      applyPortraitSettings();
+      saveStateToStorage(true);
+      renderCharacterProfile();
+    }
+
+    function setPortraitFitPreset(fit) {
+      initPortraitSettings();
+      character.portraitFit = fit;
       applyPortraitSettings();
       saveStateToStorage(true);
       renderCharacterProfile();
