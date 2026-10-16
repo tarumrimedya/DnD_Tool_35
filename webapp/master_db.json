@@ -1,12 +1,13 @@
-﻿[
+[
     {
         "name":  "Jovar +4",
         "type":  "Weapon",
-        "slot":  "Main Hand",
+        "slot":  "Two-Handed",
         "tags":  [
                      "exotic",
                      "slashing",
-                     "heavy"
+                     "heavy",
+                     "two-handed"
                  ],
         "attBonus":  4,
         "dmgBonus":  4,
@@ -17,7 +18,7 @@
         "dmgType":  "Slashing",
         "bonusType":  "Enhancement",
         "source":  "Planar Handbook p.68",
-        "benefit":  "Massive 2-handed curved falchion with an exceptionally keen cutting edge. 2d6 slashing, 18-20/x2 crit.",
+        "benefit":  "Massive 2-handed curved falchion with an exceptionally keen cutting edge. 2d6 slashing, 18-20/x2 crit. Two-handed weapon (requires both hands; cannot be dual-wielded with off-hand weapons or shields without Oversized Two-Weapon Fighting or Monkey Grip).",
         "role":  "Offense / Attack",
         "weight":  13,
         "cost":  32350
@@ -824,5 +825,35 @@
         "name":  "Ghost Sound",
         "slot":  "None",
         "benefit":  "Creates illusory sounds of up to four humans per caster level."
+    },
+    {
+        "name": "Oversized Two-Weapon Fighting",
+        "type": "Feat",
+        "category": "Fighter",
+        "slot": "None",
+        "prereq": "Dex 13, Two-Weapon Fighting, BAB +1",
+        "source": "Complete Adventurer p.111",
+        "benefit": "You can treat a one-handed weapon that you wield in your off hand as if it were a light weapon, and overcome size/handedness penalties for dual wielding.",
+        "tags": ["combat", "dual-wield", "two-weapon"]
+    },
+    {
+        "name": "Monkey Grip",
+        "type": "Feat",
+        "category": "Fighter",
+        "slot": "None",
+        "prereq": "Base attack bonus +1",
+        "source": "Complete Warrior p.103",
+        "benefit": "You can use one-handed weapons sized for larger creatures in one hand, or wield two-handed weapons with one hand at a -2 penalty on attack rolls.",
+        "tags": ["combat", "weapons", "oversized"]
+    },
+    {
+        "name": "Exotic Weapon Proficiency (Jovar)",
+        "type": "Feat",
+        "category": "Fighter",
+        "slot": "None",
+        "prereq": "Base attack bonus +1",
+        "source": "Planar Handbook p.69",
+        "benefit": "You understand how to use the jovar (exotic two-handed sword, 2d6 18-20/x2) in combat without the -4 nonproficiency penalty.",
+        "tags": ["combat", "proficiency", "jovar"]
     }
 ]

@@ -3095,9 +3095,18 @@
 
     function onWeaponChange() {
       character.activeWeapon = document.getElementById('active-weapon-select').value;
-      const wep = character.weapons.find(w => w.name === character.activeWeapon);
-      if (wep && wep.grip) {
-        document.getElementById('active-grip-select').value = wep.grip;
+      const wep = (character.weapons || []).find(w => w.name === character.activeWeapon);
+      if (wep) {
+        const isTwoHand = RuleEngine.isTwoHandedWeapon(wep);
+        const hasOversized = RuleEngine.hasOversizedWeaponFeat(character);
+        if (isTwoHand && !hasOversized) {
+          wep.grip = '2-Hand';
+          document.getElementById('active-grip-select').value = '2-Hand';
+        } else if (wep.grip) {
+          document.getElementById('active-grip-select').value = wep.grip;
+        } else if (isTwoHand) {
+          document.getElementById('active-grip-select').value = '2-Hand';
+        }
       }
       recalculateOffense();
       saveStateToStorage();
@@ -3107,7 +3116,15 @@
       const wep = (character.weapons || []).find(w => w.name === character.activeWeapon) || character.weapons[0];
       if (!wep) return;
 
-      const grip = document.getElementById('active-grip-select').value;
+      const isTwoHand = RuleEngine.isTwoHandedWeapon(wep);
+      const hasOversized = RuleEngine.hasOversizedWeaponFeat(character);
+      const gripSelect = document.getElementById('active-grip-select');
+
+      if (isTwoHand && !hasOversized && gripSelect.value !== '2-Hand') {
+        gripSelect.value = '2-Hand';
+      }
+
+      const grip = gripSelect.value;
       const paVal = parseInt(document.getElementById('power-attack-val').value) || 0;
       const flanking = document.getElementById('mod-flanking').checked;
       const charge = document.getElementById('mod-charge').checked;
@@ -3621,6 +3638,9 @@
       { name: "Cleave", category: "Fighter", prereq: "Str 13, Power Attack", source: "PHB p.92", benefit: "Bir yaratığı yakın dövüşte yıktığınızda (0 HP altı), erişim mesafenizdeki başka bir hedefe anında ek saldırı yaparsınız." },
       { name: "Improved Critical (Rapier)", category: "Fighter", prereq: "Proficiency, BAB +8", source: "PHB p.95", benefit: "Seçilen silahın kritik tehdit aralığını ikiye katlar (örn. Rapier 18-20 -> 15-20)." },
       { name: "Two-Weapon Fighting", category: "Fighter", prereq: "Dex 15", source: "PHB p.102", benefit: "Çift silahla dövüşürken alınan saldırı cezalarını azaltır (Hafif off-hand silahla -2 / -2)." },
+      { name: "Oversized Two-Weapon Fighting", category: "Fighter", prereq: "Dex 13, Two-Weapon Fighting, BAB +1", source: "Complete Adventurer p.111", benefit: "İkinci elinizde (Off-Hand) tek elli bir silahı hafif (light) bir silah gibi kullanmanızı ve çift silah cezasını azaltmanızı sağlar." },
+      { name: "Monkey Grip", category: "Fighter", prereq: "BAB +1", source: "Complete Warrior p.103", benefit: "Kendi boyutunuzdan bir boy büyük yakın dövüş silahlarını veya iki elli (Two-Handed) silahları tek elinizle -2 saldırı cezasıyla kullanmanızı sağlar." },
+      { name: "Exotic Weapon Proficiency (Jovar)", category: "Fighter", prereq: "BAB +1", source: "Planar Handbook p.69", benefit: "Jovar egzotik iki elli kılıcını (2d6 18-20/x2) -4 saldırı cezası almadan ustalıkla kullanmanızı sağlar." },
       { name: "Combat Casting", category: "General", prereq: "-", source: "PHB p.92", benefit: "Savunmada büyü yaparken (Cast Defensively) veya kıskaçtayken Concentration zarlarına +4 bonus verir." },
       { name: "Extend Spell", category: "Metamagic", prereq: "-", source: "PHB p.94", benefit: "Büyünün süresini iki katına çıkarır (+1 seviye büyü yuvası kullanır)." },
       { name: "Empower Spell", category: "Metamagic", prereq: "-", source: "PHB p.93", benefit: "Büyünün tüm değişken sayısal etkilerini (hasar zarları vb.) x1.5 katına çıkarır (+2 seviye büyü yuvası)." },
@@ -4714,6 +4734,13 @@
           const slotData = character.bodySlots[def.key] || { name: '-', active: false, weight: 0, cost: 0, desc: '' };
           const isOccupied = slotData.name && slotData.name !== '-';
 
+          let conflictNotice = '';
+          if (def.key === 'offHand' && character.twoHandedConflict) {
+            conflictNotice = `<div class="text-[10px] text-amber-400 font-semibold mt-0.5 flex items-center gap-1">
+              <span>⚠️</span> <span>İki elli silah (${character.twoHandedConflict.mainHand}) iki eli de kaplar (Etkisiz)</span>
+            </div>`;
+          }
+
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-slate-900/50 transition border-b border-slate-800/80';
           tr.innerHTML = `
@@ -4721,7 +4748,10 @@
               <input type="checkbox" ${slotData.active ? 'checked' : ''} ${!isOccupied ? 'disabled' : ''} onchange="toggleSlotActive('${def.key}')" class="w-4 h-4 rounded text-sky-500 border-slate-700 focus:ring-0">
             </td>
             <td class="py-2.5 px-3 text-center align-middle text-lg">${def.icon}</td>
-            <td class="py-2.5 px-3 align-middle font-bold text-slate-300">${def.name}</td>
+            <td class="py-2.5 px-3 align-middle font-bold text-slate-300">
+              <div>${def.name}</div>
+              ${conflictNotice}
+            </td>
             <td class="py-2.5 px-3 align-middle font-bold ${isOccupied ? 'text-white' : 'text-slate-500 italic'}">${isOccupied ? slotData.name : '(Boş Yuva)'}</td>
             <td class="py-2.5 px-3 align-middle text-slate-300 text-xs">${slotData.desc || '-'}</td>
             <td class="py-2.5 px-3 text-center align-middle font-mono text-slate-400">${isOccupied ? slotData.weight + ' lb' : '-'}</td>
@@ -4740,6 +4770,13 @@
 
     function toggleSlotActive(slotKey) {
       if (character.bodySlots?.[slotKey]) {
+        if (slotKey === 'offHand' && !character.bodySlots.offHand.active) {
+          const mh = character.bodySlots.mainHand;
+          if (mh && mh.name && mh.name !== '-' && RuleEngine.isTwoHandedWeapon(mh) && !RuleEngine.hasOversizedWeaponFeat(character)) {
+            alert(`⚠️ Ana elinizdeki "${mh.name}" iki elli (Two-Handed) bir silahtır!\n\n'Oversized Two-Weapon Fighting' veya 'Monkey Grip' feat'iniz olmadan aynı anda ikinci elinizi (Off-Hand / Kalkan) aktif edemezsiniz.`);
+            return;
+          }
+        }
         character.bodySlots[slotKey].active = !character.bodySlots[slotKey].active;
         saveStateToStorage();
         renderAll();
@@ -4900,16 +4937,57 @@
       const item = (character.gearPool || []).find(p => p.id === itemId);
       if (!item) return;
 
-      // Find compatible slot (Madde 8: Weapon can go to Main Hand or Off-Hand; Shield goes to Off-Hand)
+      const hasOversized = RuleEngine.hasOversizedWeaponFeat(character);
       let targetSlotKey = null;
+      let twoHandWarningMsg = null;
+
       if (item.category === 'Weapon') {
+        const isTwoHand = RuleEngine.isTwoHandedWeapon(item);
         const mh = character.bodySlots?.mainHand;
-        if (!mh || !mh.name || mh.name === '-') {
+        const oh = character.bodySlots?.offHand;
+
+        if (isTwoHand) {
+          // A Two-Handed weapon ALWAYS occupies Main Hand!
           targetSlotKey = 'mainHand';
+
+          // If off-hand currently has a weapon or shield and character lacks oversized feat:
+          if (oh && oh.name && oh.name !== '-' && !hasOversized) {
+            const prevOhName = oh.name;
+            unequipSlot('offHand');
+            twoHandWarningMsg = `⚠️ "${item.name}" iki elli (Two-Handed) bir silahtır! 'Oversized Two-Weapon Fighting' veya 'Monkey Grip' feat'iniz olmadığı için iki elinizi de kaplar. İkinci elinizdeki "${prevOhName}" otomatik olarak çıkarıldı.`;
+          }
         } else {
-          targetSlotKey = 'offHand'; // Dual wield
+          // One-handed or light weapon (e.g. Rapier)
+          if (!mh || !mh.name || mh.name === '-') {
+            targetSlotKey = 'mainHand';
+          } else {
+            // Check if Main Hand is already wielding a two-handed weapon
+            const mhIsTwoHand = RuleEngine.isTwoHandedWeapon(mh);
+            if (mhIsTwoHand && !hasOversized) {
+              const choose = confirm(`⚠️ Ana elinizde iki elli (Two-Handed) bir silah olan "${mh.name}" kuşanılmış durumda!\n\n'Oversized Two-Weapon Fighting' veya 'Monkey Grip' feat'iniz olmadan aynı anda iki elli silah ile ikinci el silahı ("${item.name}") kullanamazsınız.\n\nİki elli silahı ("${mh.name}") çıkarıp "${item.name}" silahını ana ele kuşanmak istiyor musunuz?`);
+              if (choose) {
+                unequipSlot('mainHand');
+                targetSlotKey = 'mainHand';
+              } else {
+                return; // User canceled
+              }
+            } else {
+              targetSlotKey = 'offHand'; // Dual wield with 1-hand or light weapon
+            }
+          }
         }
       } else if (item.category === 'Shield') {
+        const mh = character.bodySlots?.mainHand;
+        const mhIsTwoHand = mh && mh.name && mh.name !== '-' && RuleEngine.isTwoHandedWeapon(mh);
+
+        if (mhIsTwoHand && !hasOversized) {
+          const choose = confirm(`⚠️ Ana elinizde iki elli (Two-Handed) bir silah olan "${mh.name}" kuşanılmış durumda!\n\nİki elli silah kullanırken kalkan takamazsınız ('Monkey Grip' veya 'Oversized' feat'i gereklidir).\n\nİki elli silahı ("${mh.name}") çıkarıp kalkanı kuşanmak istiyor musunuz?`);
+          if (choose) {
+            unequipSlot('mainHand');
+          } else {
+            return; // User canceled
+          }
+        }
         targetSlotKey = 'offHand';
       } else if (item.category === 'Ring') {
         const r1 = character.bodySlots?.ring1;
@@ -4953,9 +5031,42 @@
       };
       item.isEquipped = true;
 
+      // Sync character.weapons and activeWeapon if equipping a weapon
+      if (item.category === 'Weapon') {
+        if (!Array.isArray(character.weapons)) character.weapons = [];
+        const isTwoHand = RuleEngine.isTwoHandedWeapon(item);
+        const existingWep = character.weapons.find(w => (w.name || '').toLowerCase() === item.name.toLowerCase());
+        const targetGrip = isTwoHand ? '2-Hand' : (targetSlotKey === 'offHand' ? 'Off-Hand' : '1-Hand');
+
+        if (existingWep) {
+          if (isTwoHand && !hasOversized) existingWep.grip = '2-Hand';
+        } else {
+          character.weapons.push({
+            name: item.name,
+            grip: targetGrip,
+            dice: item.dice || (isTwoHand ? '2d6' : '1d6'),
+            critMin: item.critMin || (item.name.toLowerCase().includes('jovar') || item.name.toLowerCase().includes('rapier') ? 18 : 20),
+            critMult: item.critMult || 2,
+            attBonus: item.attBonus || 0,
+            dmgBonus: item.dmgBonus || 0,
+            dmgType: item.dmgType || 'Slashing',
+            bonusType: item.bonusType || 'Enhancement',
+            tags: isTwoHand ? ['two-handed'] : []
+          });
+        }
+        if (targetSlotKey === 'mainHand') {
+          character.activeWeapon = item.name;
+        }
+      }
+
       saveStateToStorage(true);
       renderAll();
-      alert(`⚔️ "${item.name}" kuşanıldı (${targetSlotKey} yuvasına yerleştirildi)! Savunma ve Stat değerleriniz güncellendi.`);
+
+      if (twoHandWarningMsg) {
+        alert(twoHandWarningMsg);
+      } else {
+        alert(`⚔️ "${item.name}" kuşanıldı (${targetSlotKey} yuvasına yerleştirildi)! Savunma ve Stat değerleriniz güncellendi.`);
+      }
     }
 
     // Helper: Map Master DB / Rule Master entry to 14 official Body Slots & Gear Categories (Madde 8)

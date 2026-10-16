@@ -65,6 +65,45 @@ const RuleEngine = {
     return shadowWeapons.some(sw => name.includes(sw));
   },
 
+  // Check if weapon is Two-Handed according to D&D 3.5e RAW rules
+  isTwoHandedWeapon(weapon) {
+    if (!weapon) return false;
+    const name = (weapon.name || '').toLowerCase();
+    const type = (weapon.type || weapon.category || '').toLowerCase();
+    const slot = (weapon.slot || '').toLowerCase();
+    const tags = Array.isArray(weapon.tags) ? weapon.tags.map(t => t.toLowerCase()) : [];
+    const desc = (weapon.desc || weapon.benefit || weapon.description || '').toLowerCase();
+
+    if (weapon.isTwoHanded || weapon.twoHanded || weapon.grip === '2-Hand') return true;
+    if (tags.some(t => t.includes('two-hand') || t.includes('2-hand') || t.includes('two handed'))) return true;
+    if (slot.includes('two-hand') || slot.includes('2-hand') || slot.includes('two handed')) return true;
+    if (desc.includes('2-handed') || desc.includes('two-handed') || desc.includes('two hands') || desc.includes('requires 2 hands') || desc.includes('massive 2-handed')) return true;
+
+    // Standard D&D 3.5e Two-Handed Weapons (including Planar Handbook Jovar)
+    const twoHandedWeapons = [
+      'jovar', 'greatsword', 'greataxe', 'falchion', 'scythe', 'halberd',
+      'heavy flail', 'guisarme', 'glaive', 'ranseur', 'spiked chain',
+      'orc double axe', 'gnome hooked hammer', 'two-bladed sword', 'dire flail',
+      'longspear', 'quarterstaff', 'longbow', 'composite longbow',
+      'shortbow', 'composite shortbow', 'heavy crossbow', 'light crossbow'
+    ];
+
+    return twoHandedWeapons.some(w => name.includes(w));
+  },
+
+  // Check if character possesses feat/trait allowing two-handed weapons or oversized weapons in one hand
+  hasOversizedWeaponFeat(character) {
+    if (!character) return false;
+    const feats = (character.feats || []).map(f => (typeof f === 'string' ? f : f.name || '').toLowerCase());
+    return feats.some(f => 
+      f.includes('oversized two-weapon fighting') || 
+      f.includes('oversized weapon fighting') || 
+      f.includes('oversized weapon') || 
+      f.includes('monkey grip') || 
+      f.includes('powerful build')
+    );
+  },
+
   // Resolve bonus stacking according to D&D 3.5e RAW rules
   resolveBonusStacking(bonusList) {
     const stackingTypes = ['dodge', 'untyped', 'circumstance', 'synergy'];
@@ -576,9 +615,29 @@ const RuleEngine = {
       cha: []
     };
 
+    let twoHandedConflict = null;
+    let offHandSuppressed = false;
+
     if (character.bodySlots && typeof character.bodySlots === 'object') {
+      const mh = character.bodySlots.mainHand;
+      const oh = character.bodySlots.offHand;
+      const isMhTwoHand = mh && mh.name && mh.name !== '-' && this.isTwoHandedWeapon(mh);
+      const isOhOccupied = oh && oh.active !== false && oh.name && oh.name !== '-';
+      const hasOversized = this.hasOversizedWeaponFeat(character);
+
+      if (isMhTwoHand && isOhOccupied && !hasOversized) {
+        offHandSuppressed = true;
+        twoHandedConflict = {
+          mainHand: mh.name,
+          offHand: oh.name,
+          message: `⚠️ "${mh.name}" iki elli (Two-Handed) bir silahtır! 'Oversized Two-Weapon Fighting' veya 'Monkey Grip' feat'i olmadan aynı anda ikinci el eşyası ("${oh.name}") kullanılamaz. İkinci el etkileri devre dışı bırakıldı.`
+        };
+      }
+      character.twoHandedConflict = twoHandedConflict;
+
       Object.entries(character.bodySlots).forEach(([slotKey, slotData]) => {
         if (!slotData || slotData.active === false || !slotData.name || slotData.name === '-') return;
+        if (slotKey === 'offHand' && offHandSuppressed) return;
 
         const mods = this.parseItemModifiers(slotData, masterDb);
         if (!mods) return;
@@ -801,8 +860,17 @@ const RuleEngine = {
 
   // Evaluate Weapon Attack Modifiers & Damage
   evaluateWeaponAttack(character, weapon, options = {}) {
+    const isTwoHand = this.isTwoHandedWeapon(weapon);
+    const hasOversized = this.hasOversizedWeaponFeat(character);
+    let resolvedGrip = options.grip || weapon.grip || (isTwoHand ? '2-Hand' : '1-Hand');
+
+    // Two-handed weapon without oversized feat MUST be wielded with 2-Hand grip
+    if (isTwoHand && !hasOversized && resolvedGrip !== '2-Hand') {
+      resolvedGrip = '2-Hand';
+    }
+
     const {
-      grip = weapon.grip || '1-Hand',
+      grip = resolvedGrip,
       powerAttack = 0,
       flanking = false,
       charge = false,
@@ -841,6 +909,11 @@ const RuleEngine = {
       { type: 'untyped', val: attackStatMod, source: attackStatName },
       { type: 'untyped', val: -effectivePA, source: 'Power Attack Penalty' }
     ];
+
+    // Monkey Grip penalty: -2 on attack rolls when wielding an oversized or 2-handed weapon in 1 hand
+    if (isTwoHand && grip === '1-Hand' && hasOversized) {
+      attackBonusItems.push({ type: 'untyped', val: -2, source: 'Monkey Grip (-2 Att)' });
+    }
 
     if (weapon.attBonus) {
       attackBonusItems.push({ type: weapon.bonusType || 'enhancement', val: weapon.attBonus, source: 'Weapon Enhancement' });

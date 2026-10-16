@@ -1837,9 +1837,12 @@ Return valid JSON only matching this schema:
 
     if (type === 'weapon') {
       if (!character.weapons) character.weapons = [];
+      const isTwoHand = typeof RuleEngine !== 'undefined' && typeof RuleEngine.isTwoHandedWeapon === 'function' ? RuleEngine.isTwoHandedWeapon(item) : false;
+      const hasOversized = typeof RuleEngine !== 'undefined' && typeof RuleEngine.hasOversizedWeaponFeat === 'function' ? RuleEngine.hasOversizedWeaponFeat(character) : false;
+
       const newWep = {
         name: item.name,
-        grip: item.slot === 'Main Hand' ? '1-Hand' : '2-Hand',
+        grip: isTwoHand ? '2-Hand' : (item.slot === 'Off-Hand' ? 'Off-Hand' : '1-Hand'),
         dice: item.dice || item.extraDmg || '1d8',
         critMin: Number(item.critMin) || 20,
         critMult: Number(item.critMult) || 2,
@@ -1848,8 +1851,12 @@ Return valid JSON only matching this schema:
         dmgType: item.dmgType || 'Slashing',
         bonusType: item.bonusType || 'Enhancement',
         extraDmg: item.extraDmg || '',
-        tags: item.tags || []
+        tags: Array.isArray(item.tags) ? [...item.tags] : []
       };
+      if (isTwoHand && !newWep.tags.includes('two-handed')) {
+        newWep.tags.push('two-handed');
+      }
+
       const existingWepIdx = character.weapons.findIndex(w => (w.name || '').toLowerCase() === item.name.toLowerCase());
       if (existingWepIdx >= 0) character.weapons[existingWepIdx] = newWep;
       else character.weapons.push(newWep);
@@ -1857,8 +1864,16 @@ Return valid JSON only matching this schema:
       character.activeWeapon = item.name;
       if (poolExisting) poolExisting.isEquipped = true;
 
+      let unequippedOffHandName = null;
       // Also equip to mainHand slot if available
       if (character.bodySlots) {
+        if (isTwoHand && !hasOversized && character.bodySlots.offHand && character.bodySlots.offHand.name && character.bodySlots.offHand.name !== '-') {
+          unequippedOffHandName = character.bodySlots.offHand.name;
+          const pItem = (character.gearPool || []).find(p => p.name === unequippedOffHandName);
+          if (pItem) pItem.isEquipped = false;
+          character.bodySlots.offHand = { name: '-', active: false, weight: 0, cost: 0, desc: '' };
+        }
+
         character.bodySlots.mainHand = {
           name: item.name,
           masterDbName: item.name,
@@ -1869,7 +1884,11 @@ Return valid JSON only matching this schema:
           desc: item.benefit || item.description || ''
         };
       }
-      alert(`⚔️ "${item.name}" silahı kuşanıldı ve çantaya eklendi!`);
+      if (unequippedOffHandName) {
+        alert(`⚔️ "${item.name}" iki elli (Two-Handed) bir silahtır! 'Oversized Two-Weapon Fighting' veya 'Monkey Grip' feat'iniz olmadığı için iki elinizi de kaplar. İkinci elinizdeki "${unequippedOffHandName}" çıkarıldı.`);
+      } else {
+        alert(`⚔️ "${item.name}" silahı kuşanıldı ve çantaya eklendi!`);
+      }
     } else if (type === 'spell') {
       if (!character.spellcasting) character.spellcasting = { slots: [], knownSpells: [] };
       if (!character.spellcasting.knownSpells) character.spellcasting.knownSpells = [];
