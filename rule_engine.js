@@ -840,15 +840,24 @@ const RuleEngine = {
     const featRefBonus = charFeatNames.some(f => f.includes('lightning reflexes')) ? 2 : 0;
     const featWillBonus = charFeatNames.some(f => f.includes('iron will')) ? 2 : 0;
     const flawRefPenalty = charFeatNames.some(f => f.includes('flaw: poor reflexes') || f === 'poor reflexes') ? 2 : 0;
+    const draconicSaveBonus = charFeatNames.some(f => f.includes('save magic') || f.includes('draconic save')) ? 1 : 0;
+    const miscSaveBonus = (character.saveBonuses?.bonus || 0) + (character.saveBonuses?.misc || 0);
 
-    const finalFort = baseFort + conMod + resistBonus + buffSaveFort + featFortBonus;
-    const finalRef = baseRef + dexMod + resistBonus + buffSaveRef + featRefBonus - flawRefPenalty;
-    const finalWill = baseWill + wisMod + resistBonus + buffSaveWill + featWillBonus;
+    const bonusFort = buffSaveFort + featFortBonus + draconicSaveBonus + miscSaveBonus + (character.saveBonuses?.fortBonus || 0);
+    const bonusRef = buffSaveRef + featRefBonus - flawRefPenalty + draconicSaveBonus + miscSaveBonus + (character.saveBonuses?.refBonus || 0);
+    const bonusWill = buffSaveWill + featWillBonus + draconicSaveBonus + miscSaveBonus + (character.saveBonuses?.willBonus || 0);
+
+    const finalFort = baseFort + conMod + resistBonus + bonusFort;
+    const finalRef = baseRef + dexMod + resistBonus + bonusRef;
+    const finalWill = baseWill + wisMod + resistBonus + bonusWill;
 
     character.evaluatedSaves = {
       fort: finalFort,
       ref: finalRef,
       will: finalWill,
+      bonusFort: bonusFort,
+      bonusRef: bonusRef,
+      bonusWill: bonusWill,
       battleClarityBonus: Math.min(1, Math.max(0, intMod))
     };
 
@@ -891,11 +900,11 @@ const RuleEngine = {
 
   // Calculate Saving Throws
   evaluateSaves(character) {
-    if (!character) return { fort: 0, ref: 0, will: 0 };
+    if (!character) return { fort: 0, ref: 0, will: 0, bonusFort: 0, bonusRef: 0, bonusWill: 0, battleClarityBonus: 0 };
     if (!character.evaluatedSaves) {
       this.recalculateCharacter(character, (typeof masterDb !== 'undefined' ? masterDb : []));
     }
-    return character.evaluatedSaves || { fort: 0, ref: 0, will: 0 };
+    return character.evaluatedSaves || { fort: 0, ref: 0, will: 0, bonusFort: 0, bonusRef: 0, bonusWill: 0, battleClarityBonus: 0 };
   },
 
   // Evaluate Weapon Attack Modifiers & Damage

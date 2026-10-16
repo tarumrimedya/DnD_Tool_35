@@ -767,8 +767,8 @@
           <!-- Saves Detailed Breakdown -->
           <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 space-y-2.5">
             <div class="text-xs font-bold text-purple-400 uppercase tracking-wide flex justify-between">
-              <span>⚡ SAVES (KAYIT ZARLARI) DÖKÜMÜ</span>
-              <span class="text-[10px] text-slate-400 font-normal">Base + Stat + Resist</span>
+              <span>⚡ SAVE (KURTARMA) ZARLARI DÖKÜMÜ</span>
+              <span class="text-[10px] text-slate-400 font-normal">Base + Stat + Resist + Bonus</span>
             </div>
             <div class="space-y-1.5 text-xs font-mono" id="defense-saves-breakdown-list">
               <!-- Dynamically populated: Fort, Ref, Will breakdown -->
@@ -7632,29 +7632,118 @@
       `;
 
       const saves = RuleEngine.evaluateSaves(character);
-      const battleClarityInt = Math.min(1, Math.max(0, intMod));
+      const warbladeLvl = 1;
+      const battleClarityInt = Math.min(warbladeLvl, Math.max(0, intMod));
+
+      const baseFort = character.baseSaves?.fort || 0;
+      const baseRef = character.baseSaves?.ref || 0;
+      const baseWill = character.baseSaves?.will || 0;
+      const resist = character.saveBonuses?.resistance || 0;
+
+      const bonusFort = saves.bonusFort ?? (saves.fort - (baseFort + conMod + resist));
+      const bonusRef = saves.bonusRef ?? (saves.ref - (baseRef + dexMod + resist));
+      const bonusWill = saves.bonusWill ?? (saves.will - (baseWill + wisMod + resist));
+
+      const formatBonusText = (b) => {
+        if (b > 0) return ` <span class="text-amber-300 font-bold">+ ${b} (Bonus)</span>`;
+        if (b < 0) return ` <span class="text-rose-400 font-bold">- ${Math.abs(b)} (Bonus)</span>`;
+        return ` <span class="text-slate-400">+ 0 (Bonus)</span>`;
+      };
+
+      // Bonus Descriptions / Explanations
+      const bonusNotes = [];
+
+      // 1. Battle Clarity
+      const hasBattleClarity = (character.specialAbilities || []).some(a => (typeof a === 'string' ? a : a.name || '').toLowerCase().includes('battle clarity')) || (character.classes || '').toLowerCase().includes('warblade');
+      if (hasBattleClarity) {
+        bonusNotes.push(`
+          <div class="flex items-center justify-between py-0.5">
+            <span>✨ Battle Clarity (Warblade 1): Düztaban değilken Reflex zarlarına +${battleClarityInt} INT bonusu eklenir.</span>
+            <span class="text-emerald-400 font-bold font-mono">Nihai Refl: +${saves.ref + battleClarityInt}</span>
+          </div>
+        `);
+      }
+
+      // 2. Active Buffs contributing to saves
+      (character.buffs || []).forEach(b => {
+        if (!b.active) return;
+        const bNotes = [];
+        if (b.saveBonus) bNotes.push(`Tüm Zarlara +${b.saveBonus}`);
+        if (b.fortBonus) bNotes.push(`Fort +${b.fortBonus}`);
+        if (b.refBonus) bNotes.push(`Ref +${b.refBonus}`);
+        if (b.willBonus) bNotes.push(`Will +${b.willBonus}`);
+        if (bNotes.length > 0) {
+          bonusNotes.push(`
+            <div class="flex items-center justify-between py-0.5 text-amber-300">
+              <span>✨ ${b.name || 'Aktif Buff'}: ${bNotes.join(', ')} (${b.bonusType || 'Buff'}) eklenir.</span>
+            </div>
+          `);
+        }
+      });
+
+      // 3. Feats contributing to saves
+      const charFeats = (character.feats || []).map(f => (typeof f === 'string' ? f : f.name || '').toLowerCase());
+      if (charFeats.some(f => f.includes('great fortitude'))) {
+        bonusNotes.push(`<div class="py-0.5 text-slate-300">✨ Great Fortitude: Fortitude kurtarma zarlarına +2 feat bonusu eklenir.</div>`);
+      }
+      if (charFeats.some(f => f.includes('lightning reflexes'))) {
+        bonusNotes.push(`<div class="py-0.5 text-slate-300">✨ Lightning Reflexes: Reflex kurtarma zarlarına +2 feat bonusu eklenir.</div>`);
+      }
+      if (charFeats.some(f => f.includes('iron will'))) {
+        bonusNotes.push(`<div class="py-0.5 text-slate-300">✨ Iron Will: Will kurtarma zarlarına +2 feat bonusu eklenir.</div>`);
+      }
+      if (charFeats.some(f => f.includes('save magic') || f.includes('draconic save'))) {
+        bonusNotes.push(`<div class="py-0.5 text-slate-300">✨ Save Magic +1 Draconic: Büyülere karşı tüm kurtarma zarlarına +1 draconic bonus eklenir.</div>`);
+      }
+      if (charFeats.some(f => f.includes('steadfast determination'))) {
+        bonusNotes.push(`<div class="py-0.5 text-slate-300">✨ Steadfast Determination: Will zarlarında Wisdom yerine Constitution modifiyeri kullanılır; Fortitude zarlarında doğal 1 otomatik ıskalamaz.</div>`);
+      }
+
       savesList.innerHTML = `
-        <div class="flex justify-between py-1 border-b border-slate-800">
-          <span class="text-slate-400">🛡️ Fortitude:</span>
-          <span class="text-white font-bold">${character.baseSaves?.fort || 0} (Base) + ${conMod} (Con) + ${character.saveBonuses?.resistance || 0} (Resist) = <strong class="text-emerald-400">+${saves.fort}</strong></span>
+        <div class="flex items-center py-1 border-b border-slate-800 text-xs font-mono">
+          <span class="text-slate-400 w-28 shrink-0 flex items-center gap-1.5 font-sans">
+            <span>🛡️</span>
+            <span>Fortitude:</span>
+          </span>
+          <span class="text-emerald-400 font-bold w-9 text-right shrink-0">${saves.fort >= 0 ? '+' : ''}${saves.fort}</span>
+          <span class="text-slate-500 font-bold px-2 shrink-0">:</span>
+          <span class="text-white flex-1 truncate">
+            ${baseFort} (Base) + ${conMod} (Con) + ${resist} (Resist)${formatBonusText(bonusFort)}
+          </span>
         </div>
-        <div class="flex justify-between py-1 border-b border-slate-800">
-          <span class="text-slate-400">⚡ Reflex:</span>
-          <span class="text-white font-bold">${character.baseSaves?.ref || 0} (Base) + ${dexMod} (Dex) + ${character.saveBonuses?.resistance || 0} (Resist) = <strong class="text-sky-400">+${saves.ref}</strong></span>
+        <div class="flex items-center py-1 border-b border-slate-800 text-xs font-mono">
+          <span class="text-slate-400 w-28 shrink-0 flex items-center gap-1.5 font-sans">
+            <span>⚡</span>
+            <span>Reflex:</span>
+          </span>
+          <span class="text-sky-400 font-bold w-9 text-right shrink-0">${saves.ref >= 0 ? '+' : ''}${saves.ref}</span>
+          <span class="text-slate-500 font-bold px-2 shrink-0">:</span>
+          <span class="text-white flex-1 truncate">
+            ${baseRef} (Base) + ${dexMod} (Dex) + ${resist} (Resist)${formatBonusText(bonusRef)}
+          </span>
         </div>
-        <div class="flex justify-between py-1 border-b border-slate-800">
-          <span class="text-slate-400">🧠 Will:</span>
-          <span class="text-white font-bold">${character.baseSaves?.will || 0} (Base) + ${wisMod} (Wis) + ${character.saveBonuses?.resistance || 0} (Resist) = <strong class="text-purple-400">+${saves.will}</strong></span>
+        <div class="flex items-center py-1 border-b border-slate-800 text-xs font-mono">
+          <span class="text-slate-400 w-28 shrink-0 flex items-center gap-1.5 font-sans">
+            <span>🧠</span>
+            <span>Will:</span>
+          </span>
+          <span class="text-purple-400 font-bold w-9 text-right shrink-0">${saves.will >= 0 ? '+' : ''}${saves.will}</span>
+          <span class="text-slate-500 font-bold px-2 shrink-0">:</span>
+          <span class="text-white flex-1 truncate">
+            ${baseWill} (Base) + ${wisMod} (Wis) + ${resist} (Resist)${formatBonusText(bonusWill)}
+          </span>
         </div>
-        <div class="flex justify-between py-1 border-b border-slate-800">
-          <span class="text-slate-400">🩸 Can Puanı (HP):</span>
+        <div class="flex items-center justify-between py-1 border-b border-slate-800 text-xs font-mono">
+          <span class="text-slate-400 flex items-center gap-1.5 font-sans">
+            <span>🩸</span>
+            <span>Can Puanı (HP):</span>
+          </span>
           <span class="text-white font-bold font-mono">
             ${character.hp?.baseMax || character.hp?.max} Taban${character.hp?.conBonusHp ? ` <span class="text-amber-400">+ ${character.hp.conBonusHp} (CON Buff)</span>` : ''} = <strong class="text-emerald-400">${character.hp?.current} / ${character.hp?.max} HP</strong>
           </span>
         </div>
-        <div class="text-[10px] text-indigo-300 pt-1 flex items-center justify-between">
-          <span>✨ Battle Clarity (Warblade 1): Düztaban değilken Reflex zarlarına +${battleClarityInt} INT bonusu eklenir.</span>
-          <span class="text-emerald-400 font-bold">Nihai Refl: +${saves.ref + battleClarityInt}</span>
+        <div class="pt-1.5 space-y-0.5 text-[10px] text-indigo-300 font-sans border-t border-slate-800/60 mt-1">
+          ${bonusNotes.join('')}
         </div>
       `;
     }
