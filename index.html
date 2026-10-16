@@ -1836,6 +1836,124 @@
       </div>
 
       <div class="p-4 space-y-3 overflow-y-auto text-xs">
+        <!-- ==================================================== -->
+        <!-- SECTION: KARAKTER RESMİ (PORTRE SEÇİMİ & KONUMLANDIRMA) -->
+        <!-- ==================================================== -->
+        <div id="profile-portrait-panel" class="bg-gradient-to-r from-slate-900/90 via-indigo-950/25 to-slate-900/90 border border-indigo-500/50 rounded-xl p-3 space-y-2.5 shadow-md">
+          <div class="flex flex-wrap items-center justify-between border-b border-slate-800 pb-2 gap-2">
+            <div class="flex items-center gap-2">
+              <span class="text-base">👤</span>
+              <div>
+                <h4 class="font-extrabold text-white text-xs flex items-center gap-2">
+                  <span>Karakter Resmi</span>
+                  <span id="portrait-status-badge" class="badge bg-slate-800 text-slate-400 border border-slate-700 text-[9px]">Dinamik Sembol</span>
+                </h4>
+                <p class="text-[10px] text-indigo-300">Orijinal renkleriyle kahraman kartına yansıyacak görseli seçin ve odaklayın</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1">
+              <input type="file" id="profile-portrait-file-input" accept="image/*" class="hidden" onchange="handlePortraitFileUpload(event)">
+              <button type="button" onclick="triggerPortraitUpload()" class="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition flex items-center gap-1 text-[11px] shadow">
+                <span>📁 Dosya Seç</span>
+              </button>
+              <button type="button" onclick="promptPortraitUrl()" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold transition text-[11px] border border-slate-700" title="İnternet Resim Linki (URL)">
+                <span>🔗 URL</span>
+              </button>
+              <button type="button" id="profile-portrait-remove-btn" onclick="removeCharacterPortrait()" class="hidden px-2 py-1 rounded-lg bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-700 font-bold transition text-[11px]" title="Karakter resmini kaldır ve dinamik sembole dön">
+                <span>✕ Kaldır</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Sizing & Focal Point (Mouse ile Sürükle-Bırak Konumlandırma) -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] text-slate-400 font-bold uppercase flex items-center gap-1.5">
+                <span>🎯</span> <span>Mouse ile Sürükle & Odaklanacak Alanı Seç</span>
+              </span>
+              <div class="flex items-center gap-1.5">
+                <span id="portrait-pos-coords" class="px-2 py-0.5 rounded-full bg-slate-950 border border-slate-700 text-[10px] font-mono font-bold text-amber-300 shadow-sm">
+                  📍 X: %50, Y: %20
+                </span>
+                <button type="button" onclick="setPortraitPositionPercent(50, 20)" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-[10px] font-bold transition shadow-sm" title="Merkeze / Yüze Sıfırla">
+                  🔄 Sıfırla
+                </button>
+              </div>
+            </div>
+
+            <!-- Draggable Viewport & Controls Side-by-Side -->
+            <div class="flex flex-col sm:flex-row items-center sm:items-stretch gap-3">
+              <!-- Draggable Viewport Card (Matches Top Hero Card proportions) -->
+              <div id="portrait-interactive-viewport" onmousedown="onPortraitDragStart(event)" ontouchstart="onPortraitDragStart(event)"
+                   class="w-36 h-48 sm:w-40 sm:h-52 shrink-0 rounded-xl border-2 border-indigo-500/70 bg-slate-950 relative overflow-hidden shadow-2xl cursor-grab select-none group transition-all hover:shadow-indigo-500/20">
+                <!-- Image element moving with mouse drag - Natural colors, NO color filters! -->
+                <div id="portrait-mini-img" class="absolute inset-0 bg-no-repeat pointer-events-none"></div>
+
+                <!-- Fallback when no image is loaded -->
+                <div id="portrait-mini-fallback" class="absolute inset-0 flex flex-col items-center justify-center p-2 text-center pointer-events-none">
+                  <span id="portrait-fallback-icon" class="text-4xl sm:text-5xl mb-1">🧙‍♂️</span>
+                  <span class="text-[9px] text-slate-400 font-semibold">Resim Yükleyin</span>
+                </div>
+
+                <!-- Viewfinder 3x3 Grid (Rule of Thirds Guide) -->
+                <div id="portrait-grid-guide" class="absolute inset-0 pointer-events-none border border-white/10 grid grid-cols-3 grid-rows-3 opacity-25 group-hover:opacity-60 transition-opacity">
+                  <div class="border-r border-b border-white/20"></div>
+                  <div class="border-r border-b border-white/20"></div>
+                  <div class="border-b border-white/20"></div>
+                  <div class="border-r border-b border-white/20"></div>
+                  <div class="border-r border-b border-white/20 flex items-center justify-center">
+                    <div class="w-3 h-3 rounded-full border-2 border-indigo-400 bg-indigo-500/40"></div>
+                  </div>
+                  <div class="border-b border-white/20"></div>
+                  <div class="border-r border-b border-white/20"></div>
+                  <div class="border-r border-b border-white/20"></div>
+                  <div></div>
+                </div>
+
+                <!-- Drag hint badge at bottom -->
+                <div class="absolute bottom-1.5 inset-x-1.5 text-center pointer-events-none">
+                  <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-slate-950/85 border border-indigo-500/50 text-[8px] sm:text-[9px] text-indigo-200 font-semibold backdrop-blur-sm shadow">
+                    <span>✋</span> <span>Tut & Sürükle</span>
+                  </span>
+                </div>
+              </div>
+
+              <!-- Quick Focus Presets & Framing / Fit Controls -->
+              <div class="flex-1 w-full flex flex-col justify-between space-y-2">
+                <!-- Hızlı Odak Presets -->
+                <div>
+                  <span class="text-[10px] text-slate-400 font-bold block mb-1">Hızlı Odak Seçimi:</span>
+                  <div class="grid grid-cols-3 gap-1">
+                    <button type="button" onclick="setPortraitPositionPercent(50, 10)" class="py-1 px-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold transition text-center border border-slate-700" title="Yüz / Baş Bölgesi">⬆️ Yüz (Baş)</button>
+                    <button type="button" onclick="setPortraitPositionPercent(50, 50)" class="py-1 px-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold transition text-center border border-slate-700" title="Gövde / Orta Bölge">⏺️ Orta</button>
+                    <button type="button" onclick="setPortraitPositionPercent(50, 90)" class="py-1 px-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold transition text-center border border-slate-700" title="Alt / Tam Boy">⬇️ Alt</button>
+                    <button type="button" onclick="setPortraitPositionPercent(20, 30)" class="py-1 px-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold transition text-center border border-slate-700" title="Sol Açı">⬅️ Sol</button>
+                    <button type="button" onclick="setPortraitPositionPercent(50, 30)" class="py-1 px-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold transition text-center border border-slate-700" title="Portre Klasik">👤 Klasik</button>
+                    <button type="button" onclick="setPortraitPositionPercent(80, 30)" class="py-1 px-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold transition text-center border border-slate-700" title="Sağ Açı">➡️ Sağ</button>
+                  </div>
+                </div>
+
+                <!-- Sığdırma & Zoom (Fit) -->
+                <div>
+                  <span class="text-[10px] text-slate-400 font-bold block mb-1">Görsel Boyutlandırma & Zoom:</span>
+                  <select id="portrait-fit-select" onchange="onPortraitFitChange()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-indigo-300 font-bold">
+                    <option value="cover">Cover (Kartı Doldur - Önerilen)</option>
+                    <option value="contain">Contain (Tüm Resmi Sığdır)</option>
+                    <option value="120%">Zoom %120 (Hafif Yakın)</option>
+                    <option value="150%">Zoom %150 (Yüz Yakın Plan)</option>
+                    <option value="180%">Zoom %180 (Ekstra Yakın)</option>
+                    <option value="220%">Zoom %220 (Maksimum Odak)</option>
+                  </select>
+                </div>
+
+                <div class="text-[9px] text-slate-400 bg-slate-950/70 p-2 rounded-lg border border-slate-800/80">
+                  <span class="text-indigo-400 font-bold">💡 Not:</span> Karakter resminiz olduğu gibi orijinal renk ve parlaklığıyla kahraman kartına ve profilinize yansıtılır.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Karakter Adı *</label>
@@ -2056,23 +2174,13 @@
 
       <!-- Modal Footer -->
       <div class="bg-slate-950 px-4 py-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2 shrink-0">
-        <!-- Sol Taraf: Karakter Resmi & Arka Plan Butonları -->
+        <!-- Sol Taraf: Karakter Resmi & Arka Plan Hızlı Atlama Butonları -->
         <div class="flex flex-wrap items-center gap-1.5">
-          <input type="file" id="profile-portrait-file-input" accept="image/*" class="hidden" onchange="handlePortraitFileUpload(event)">
-          <button type="button" onclick="triggerPortraitUpload()" class="px-2.5 py-1.5 rounded-lg bg-indigo-950 hover:bg-indigo-900 text-indigo-300 hover:text-white border border-indigo-600/70 font-bold transition flex items-center gap-1 text-xs shadow-sm" title="Karakter resmi yükle (PNG, JPG, WEBP)">
-            <span>🖼️</span>
-            <span id="profile-portrait-btn-text">Char Resmi</span>
+          <button type="button" onclick="scrollToPortraitPanel()" class="px-2.5 py-1.5 rounded-lg bg-indigo-950 hover:bg-indigo-900 text-indigo-300 hover:text-white border border-indigo-600/70 font-bold transition flex items-center gap-1 text-xs shadow-sm" title="Karakter Resmi ayarlarına git">
+            <span>👤</span>
+            <span>Karakter Resmi</span>
           </button>
-          <button type="button" onclick="promptPortraitUrl()" class="px-2 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 font-bold transition text-xs" title="Web üzerinden char resim bağlantısı (URL) gir">
-            <span>🔗 URL</span>
-          </button>
-          <button type="button" id="profile-portrait-remove-btn" onclick="removeCharacterPortrait()" class="hidden px-2 py-1.5 rounded-lg bg-rose-950/80 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-700/60 font-bold transition text-xs" title="Char resmini kaldır ve dinamik sembole geri dön">
-            <span>✕ Sil</span>
-          </button>
-
-          <span class="text-slate-700">|</span>
-
-          <button type="button" onclick="scrollToWallpaperPanel()" id="profile-wallpaper-btn" class="px-2.5 py-1.5 rounded-lg bg-purple-950/80 hover:bg-purple-900 text-purple-300 hover:text-white border border-purple-700/60 font-bold transition flex items-center gap-1 text-xs shadow-sm" title="Tüm sayfa için arka plan resmi seç">
+          <button type="button" onclick="scrollToWallpaperPanel()" id="profile-wallpaper-btn" class="px-2.5 py-1.5 rounded-lg bg-purple-950/80 hover:bg-purple-900 text-purple-300 hover:text-white border border-purple-700/60 font-bold transition flex items-center gap-1 text-xs shadow-sm" title="Tüm sayfa arka plan ayarlarına git">
             <span>🌌</span>
             <span>Arka Plan</span>
           </button>
@@ -3643,10 +3751,11 @@
       const file = event.target?.files?.[0];
       if (!file) return;
       try {
-        const compressedUrl = await resizeAndCompressImage(file, 400, 400, 0.85);
+        const compressedUrl = await resizeAndCompressImage(file, 800, 1000, 0.88);
         if (!character) character = {};
         character.portrait = compressedUrl;
-        updateProfileModalAvatar();
+        initPortraitSettings();
+        applyPortraitSettings();
         renderCharacterProfile();
         saveStateToStorage(true);
       } catch (err) {
@@ -3655,7 +3764,8 @@
         reader.onload = (e) => {
           if (!character) character = {};
           character.portrait = e.target.result;
-          updateProfileModalAvatar();
+          initPortraitSettings();
+          applyPortraitSettings();
           renderCharacterProfile();
           saveStateToStorage(true);
         };
@@ -3673,7 +3783,8 @@
       } else {
         if (!character) character = {};
         character.portrait = clean;
-        updateProfileModalAvatar();
+        initPortraitSettings();
+        applyPortraitSettings();
         renderCharacterProfile();
         saveStateToStorage(true);
       }
@@ -3683,12 +3794,188 @@
       if (character?.portrait) {
         if (!confirm('Karakter resmini kaldırmak ve dinamik sembole geri dönmek istediğinize emin misiniz?')) return;
         delete character.portrait;
+        delete character.portraitPosition;
+        delete character.portraitFit;
       }
       const input = document.getElementById('profile-portrait-file-input');
       if (input) input.value = '';
-      updateProfileModalAvatar();
+      applyPortraitSettings();
       renderCharacterProfile();
       saveStateToStorage(true);
+    }
+
+    function scrollToPortraitPanel() {
+      const panel = document.getElementById('profile-portrait-panel');
+      if (panel) {
+        panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        panel.classList.add('ring-2', 'ring-indigo-400');
+        setTimeout(() => panel.classList.remove('ring-2', 'ring-indigo-400'), 1200);
+      }
+    }
+
+    // 👤 KARAKTER RESMİ ODAKLAMA & BOYUTLANDIRMA SİSTEMİ
+    let isDraggingPortrait = false;
+    let portraitDragStartX = 0;
+    let portraitDragStartY = 0;
+    let portraitDragStartPosXPct = 50;
+    let portraitDragStartYPct = 20;
+
+    function initPortraitSettings() {
+      if (!character) character = {};
+      if (!character.portraitPosition) character.portraitPosition = '50% 20%';
+      if (!character.portraitFit) character.portraitFit = 'cover';
+    }
+
+    function setPortraitPositionPercent(x, y) {
+      initPortraitSettings();
+      const clampedX = Math.max(0, Math.min(100, Math.round(x)));
+      const clampedY = Math.max(0, Math.min(100, Math.round(y)));
+      character.portraitPosition = `${clampedX}% ${clampedY}%`;
+      applyPortraitSettings();
+      saveStateToStorage(true);
+      renderCharacterProfile();
+    }
+
+    function onPortraitDragStart(e) {
+      if (e.target.tagName === 'BUTTON' || e.target.closest('button') || e.target.tagName === 'SELECT') return;
+      if (!character?.portrait) return;
+      isDraggingPortrait = true;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      portraitDragStartX = clientX;
+      portraitDragStartY = clientY;
+
+      const current = parsePositionPercentages(character?.portraitPosition || '50% 20%');
+      portraitDragStartPosXPct = current.x;
+      portraitDragStartYPct = current.y;
+
+      const vp = document.getElementById('portrait-interactive-viewport');
+      if (vp) {
+        vp.classList.remove('cursor-grab');
+        vp.classList.add('cursor-grabbing');
+      }
+
+      window.addEventListener('mousemove', onPortraitDragMove);
+      window.addEventListener('mouseup', onPortraitDragEnd);
+      window.addEventListener('touchmove', onPortraitDragMove, { passive: false });
+      window.addEventListener('touchend', onPortraitDragEnd);
+    }
+
+    function onPortraitDragMove(e) {
+      if (!isDraggingPortrait) return;
+      if (e.touches) e.preventDefault();
+
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+      const vp = document.getElementById('portrait-interactive-viewport');
+      const rect = vp ? vp.getBoundingClientRect() : { width: 160, height: 200 };
+
+      const deltaX = clientX - portraitDragStartX;
+      const deltaY = clientY - portraitDragStartY;
+
+      let newX = portraitDragStartPosXPct - (deltaX / (rect.width || 160)) * 100;
+      let newY = portraitDragStartYPct - (deltaY / (rect.height || 200)) * 100;
+
+      newX = Math.max(0, Math.min(100, Math.round(newX)));
+      newY = Math.max(0, Math.min(100, Math.round(newY)));
+
+      initPortraitSettings();
+      character.portraitPosition = `${newX}% ${newY}%`;
+      applyPortraitSettings();
+    }
+
+    function onPortraitDragEnd() {
+      if (!isDraggingPortrait) return;
+      isDraggingPortrait = false;
+
+      const vp = document.getElementById('portrait-interactive-viewport');
+      if (vp) {
+        vp.classList.remove('cursor-grabbing');
+        vp.classList.add('cursor-grab');
+      }
+
+      window.removeEventListener('mousemove', onPortraitDragMove);
+      window.removeEventListener('mouseup', onPortraitDragEnd);
+      window.removeEventListener('touchmove', onPortraitDragMove);
+      window.removeEventListener('touchend', onPortraitDragEnd);
+
+      saveStateToStorage(true);
+      renderCharacterProfile();
+    }
+
+    function onPortraitFitChange() {
+      const sel = document.getElementById('portrait-fit-select');
+      if (!sel) return;
+      initPortraitSettings();
+      character.portraitFit = sel.value;
+      applyPortraitSettings();
+      saveStateToStorage(true);
+      renderCharacterProfile();
+    }
+
+    function applyPortraitSettings() {
+      initPortraitSettings();
+      const hasPortrait = Boolean(character && character.portrait);
+      const miniImg = document.getElementById('portrait-mini-img');
+      const miniFallback = document.getElementById('portrait-mini-fallback');
+      const fallbackIcon = document.getElementById('portrait-fallback-icon');
+      const statusBadge = document.getElementById('portrait-status-badge');
+      const removeBtn = document.getElementById('profile-portrait-remove-btn');
+      const fitSel = document.getElementById('portrait-fit-select');
+      const coordsBadge = document.getElementById('portrait-pos-coords');
+      const gridGuide = document.getElementById('portrait-grid-guide');
+
+      const parsedPos = parsePositionPercentages(character?.portraitPosition || '50% 20%');
+      const position = `${parsedPos.x}% ${parsedPos.y}%`;
+      const fit = character?.portraitFit || 'cover';
+
+      if (coordsBadge) {
+        coordsBadge.textContent = `📍 X: %${Math.round(parsedPos.x)}, Y: %${Math.round(parsedPos.y)}`;
+      }
+      if (fitSel) fitSel.value = fit;
+
+      const race = document.getElementById('profile-edit-race')?.value || character?.race || 'Human';
+      const gender = document.getElementById('profile-edit-gender')?.value || character?.gender || 'Erkek';
+      const classes = character?.classes || '';
+      const emoji = getDynamicCharacterEmoji(race, gender, classes);
+
+      if (!hasPortrait) {
+        if (miniImg) {
+          miniImg.style.backgroundImage = 'none';
+          miniImg.classList.add('hidden');
+        }
+        if (miniFallback) miniFallback.classList.remove('hidden');
+        if (fallbackIcon) fallbackIcon.textContent = emoji;
+        if (statusBadge) {
+          statusBadge.textContent = 'Dinamik Sembol';
+          statusBadge.className = 'badge bg-slate-800 text-slate-400 border border-slate-700 text-[9px]';
+        }
+        if (removeBtn) removeBtn.classList.add('hidden');
+        if (gridGuide) gridGuide.classList.add('hidden');
+      } else {
+        if (miniImg) {
+          miniImg.classList.remove('hidden');
+          miniImg.style.backgroundImage = `url("${character.portrait}")`;
+          miniImg.style.backgroundPosition = position;
+          miniImg.style.backgroundSize = fit;
+          miniImg.style.filter = 'none';
+        }
+        if (miniFallback) miniFallback.classList.add('hidden');
+        if (statusBadge) {
+          statusBadge.textContent = 'Özel Görsel Aktif';
+          statusBadge.className = 'badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[9px] font-bold';
+        }
+        if (removeBtn) removeBtn.classList.remove('hidden');
+        if (gridGuide) gridGuide.classList.remove('hidden');
+      }
+
+      // Live update hero card if present in DOM
+      const topAvatarHeroDiv = document.querySelector('#core-top-avatar-box > div:first-child');
+      if (topAvatarHeroDiv && hasPortrait) {
+        topAvatarHeroDiv.style.backgroundPosition = position;
+        topAvatarHeroDiv.style.backgroundSize = fit;
+      }
     }
 
     // 🌌 FULL PAGE WALLPAPER & ATMOSPHERE SYSTEM
@@ -4050,7 +4337,6 @@
     function updateProfileModalAvatar() {
       const avatarBox = document.getElementById('profile-modal-avatar-box');
       const removeBtn = document.getElementById('profile-portrait-remove-btn');
-      const btnText = document.getElementById('profile-portrait-btn-text');
 
       const hasPortrait = Boolean(character && character.portrait);
 
@@ -4058,14 +4344,13 @@
         if (hasPortrait) removeBtn.classList.remove('hidden');
         else removeBtn.classList.add('hidden');
       }
-      if (btnText) {
-        btnText.textContent = hasPortrait ? 'Resmi Değiştir' : 'Char Resmi';
-      }
 
       if (!avatarBox) return;
 
       if (hasPortrait) {
-        avatarBox.innerHTML = `<img src="${character.portrait}" alt="Portrait" class="w-full h-full object-cover">`;
+        const pos = character.portraitPosition || '50% 20%';
+        const fit = character.portraitFit || 'cover';
+        avatarBox.innerHTML = `<div class="w-full h-full bg-no-repeat" style="background-image: url('${character.portrait}'); background-position: ${pos}; background-size: ${fit};"></div>`;
       } else {
         const race = document.getElementById('profile-edit-race')?.value || character?.race || 'Human';
         const gender = document.getElementById('profile-edit-gender')?.value || character?.gender || 'Erkek';
@@ -4087,7 +4372,9 @@
       const coreAvatarBox = document.getElementById('core-profile-avatar-box');
       if (coreAvatarBox) {
         if (character.portrait) {
-          coreAvatarBox.innerHTML = `<img src="${character.portrait}" alt="Portrait" class="w-full h-full object-cover rounded-xl shadow">`;
+          const pos = character.portraitPosition || '50% 20%';
+          const fit = character.portraitFit || 'cover';
+          coreAvatarBox.innerHTML = `<div class="w-full h-full rounded-xl bg-no-repeat shadow" style="background-image: url('${character.portrait}'); background-position: ${pos}; background-size: ${fit};"></div>`;
         } else {
           coreAvatarBox.innerHTML = `<span id="core-profile-avatar-icon" class="text-2xl">${emoji}</span>`;
         }
@@ -4097,9 +4384,12 @@
       const topAvatarBox = document.getElementById('core-top-avatar-box');
       if (topAvatarBox) {
         if (character.portrait) {
+          const pos = character.portraitPosition || '50% 20%';
+          const fit = character.portraitFit || 'cover';
           topAvatarBox.innerHTML = `
-            <img src="${character.portrait}" alt="Portrait" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
-            <div class="absolute inset-x-0 bottom-0 py-1.5 bg-gradient-to-t from-black/85 via-black/40 to-transparent text-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <div class="w-full h-full bg-no-repeat transition-transform duration-300 group-hover:scale-105"
+                 style="background-image: url('${character.portrait}'); background-position: ${pos}; background-size: ${fit};"></div>
+            <div class="absolute inset-x-0 bottom-0 py-1.5 bg-gradient-to-t from-black/85 via-black/40 to-transparent text-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
               <span class="text-[10px] text-indigo-200 font-bold flex items-center justify-center gap-1">
                 <span>✏️</span> <span>Profili Düzenle</span>
               </span>
@@ -4115,8 +4405,9 @@
         }
       }
 
-      // 3. Modal Avatar & Wallpaper Settings
+      // 3. Modal Avatar, Portrait & Wallpaper Settings
       updateProfileModalAvatar();
+      applyPortraitSettings();
       applyWallpaperSettings();
 
       const nameEl = document.getElementById('core-profile-name');
@@ -4171,6 +4462,7 @@
       setVal('profile-edit-speed', character.baseSpeed || 30);
 
       updateProfileModalAvatar();
+      applyPortraitSettings();
       applyWallpaperSettings();
 
       const modal = document.getElementById('char-profile-modal');
