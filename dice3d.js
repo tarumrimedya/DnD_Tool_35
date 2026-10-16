@@ -217,97 +217,95 @@ class Dice3DController {
     const vertices = [];
     const customFaces = [];
 
-    // Canonical proportions for a 10-sided pentagonal trapezohedron
-    const H = radius * 1.35; // Apex height
-    const R = radius * 1.15; // Equator radius
-    const h = radius * 0.28; // Equator zigzag offset
+    // Authentic D&D d10 pentagonal trapezohedron proportions
+    const H = radius * 1.45;  // Apex height
+    const R = radius * 1.30;  // Equator radius
+    const h = radius * 0.22;  // Equator zigzag offset
 
     const topPole = new THREE.Vector3(0, H, 0);
     const botPole = new THREE.Vector3(0, -H, 0);
 
-    // 10 Equator vertices alternating between +h and -h
-    const equator = [];
-    for (let k = 0; k < 10; k++) {
-      const angle = (k * Math.PI) / 5; // 36 degrees per step
-      const y = (k % 2 === 0) ? h : -h;
-      equator.push(new THREE.Vector3(Math.cos(angle) * R, y, Math.sin(angle) * R));
+    // 5 Upper vertices at +h (angles 0°, 72°, 144°, 216°, 288°)
+    const U = [];
+    // 5 Lower vertices at -h (angles 36°, 108°, 180°, 252°, 324°)
+    const L = [];
+
+    for (let i = 0; i < 5; i++) {
+      const aU = (i * 2 * Math.PI) / 5;
+      U.push(new THREE.Vector3(Math.cos(aU) * R, h, Math.sin(aU) * R));
+
+      const aL = ((i + 0.5) * 2 * Math.PI) / 5;
+      L.push(new THREE.Vector3(Math.cos(aL) * R, -h, Math.sin(aL) * R));
     }
 
-    // 10 Kite faces:
-    // 5 Upper kites (even i: 0, 2, 4, 6, 8) meeting at topPole
-    // 5 Lower kites (odd i: 1, 3, 5, 7, 9) meeting at botPole
-    for (let i = 0; i < 10; i++) {
-      const prevIdx = (i + 9) % 10;
-      const nextIdx = (i + 1) % 10;
-      const vPrev = equator[prevIdx];
-      const vCurr = equator[i];
-      const vNext = equator[nextIdx];
+    // Build 5 Upper Kites and 5 Lower Kites (Total 10 Kites = 20 Triangles)
+    for (let i = 0; i < 5; i++) {
+      const uCurr = U[i];
+      const uNext = U[(i + 1) % 5];
+      const lCurr = L[i];
+      const lNext = L[(i + 1) % 5];
 
-      if (i % 2 === 0) {
-        // Upper kite: topPole -> vNext -> vCurr -> vPrev
-        // Tri 1: topPole, vCurr, vPrev (CCW outward)
-        vertices.push(
-          topPole.x, topPole.y, topPole.z,
-          vCurr.x, vCurr.y, vCurr.z,
-          vPrev.x, vPrev.y, vPrev.z
-        );
-        // Tri 2: topPole, vNext, vCurr (CCW outward)
-        vertices.push(
-          topPole.x, topPole.y, topPole.z,
-          vNext.x, vNext.y, vNext.z,
-          vCurr.x, vCurr.y, vCurr.z
-        );
+      // 1. Upper Kite i (meeting at topPole, bounded by uCurr, lCurr, uNext)
+      // Both triangles wound CCW seen from outside:
+      // Tri 1: topPole, lCurr, uCurr
+      vertices.push(
+        topPole.x, topPole.y, topPole.z,
+        lCurr.x, lCurr.y, lCurr.z,
+        uCurr.x, uCurr.y, uCurr.z
+      );
+      // Tri 2: topPole, uNext, lCurr
+      vertices.push(
+        topPole.x, topPole.y, topPole.z,
+        uNext.x, uNext.y, uNext.z,
+        lCurr.x, lCurr.y, lCurr.z
+      );
 
-        // Kite center
-        const center = new THREE.Vector3()
-          .add(topPole)
-          .add(vPrev)
-          .add(vCurr)
-          .add(vNext)
-          .multiplyScalar(0.25);
+      const upperCenter = new THREE.Vector3()
+        .add(topPole).add(uCurr).add(lCurr).add(uNext)
+        .multiplyScalar(0.25);
 
-        // Outward unit normal
-        const transVec = new THREE.Vector3().subVectors(vNext, vPrev);
-        const longVec = new THREE.Vector3().subVectors(vCurr, topPole);
-        const normal = new THREE.Vector3().crossVectors(transVec, longVec).normalize();
-        if (normal.dot(center) < 0) {
-          normal.negate();
-        }
-
-        customFaces.push({ center, normal });
-      } else {
-        // Lower kite: botPole -> vPrev -> vCurr -> vNext
-        // Tri 1: botPole, vPrev, vCurr (CCW outward)
-        vertices.push(
-          botPole.x, botPole.y, botPole.z,
-          vPrev.x, vPrev.y, vPrev.z,
-          vCurr.x, vCurr.y, vCurr.z
-        );
-        // Tri 2: botPole, vCurr, vNext (CCW outward)
-        vertices.push(
-          botPole.x, botPole.y, botPole.z,
-          vCurr.x, vCurr.y, vCurr.z,
-          vNext.x, vNext.y, vNext.z
-        );
-
-        // Kite center
-        const center = new THREE.Vector3()
-          .add(botPole)
-          .add(vPrev)
-          .add(vCurr)
-          .add(vNext)
-          .multiplyScalar(0.25);
-
-        // Outward unit normal
-        const transVec = new THREE.Vector3().subVectors(vNext, vPrev);
-        const longVec = new THREE.Vector3().subVectors(vCurr, botPole);
-        const normal = new THREE.Vector3().crossVectors(longVec, transVec).normalize();
-        if (normal.dot(center) < 0) {
-          normal.negate();
-        }
-
-        customFaces.push({ center, normal });
+      // Transverse (uNext - uCurr) x Longitudinal (lCurr - topPole)
+      const uTrans = new THREE.Vector3().subVectors(uNext, uCurr);
+      const uLong = new THREE.Vector3().subVectors(lCurr, topPole);
+      const upperNormal = new THREE.Vector3().crossVectors(uTrans, uLong).normalize();
+      if (upperNormal.dot(upperCenter) < 0) {
+        upperNormal.negate();
       }
+
+      const uTopVec = new THREE.Vector3().subVectors(topPole, upperCenter).normalize();
+
+      // 2. Lower Kite i (meeting at botPole, bounded by lNext, uNext, lCurr)
+      // Both triangles wound CCW seen from outside:
+      // Tri 1: botPole, uNext, lNext
+      vertices.push(
+        botPole.x, botPole.y, botPole.z,
+        uNext.x, uNext.y, uNext.z,
+        lNext.x, lNext.y, lNext.z
+      );
+      // Tri 2: botPole, lCurr, uNext
+      vertices.push(
+        botPole.x, botPole.y, botPole.z,
+        lCurr.x, lCurr.y, lCurr.z,
+        uNext.x, uNext.y, uNext.z
+      );
+
+      const lowerCenter = new THREE.Vector3()
+        .add(botPole).add(lCurr).add(uNext).add(lNext)
+        .multiplyScalar(0.25);
+
+      // Longitudinal (uNext - botPole) x Transverse (lNext - lCurr)
+      const lLong = new THREE.Vector3().subVectors(uNext, botPole);
+      const lTrans = new THREE.Vector3().subVectors(lNext, lCurr);
+      const lowerNormal = new THREE.Vector3().crossVectors(lLong, lTrans).normalize();
+      if (lowerNormal.dot(lowerCenter) < 0) {
+        lowerNormal.negate();
+      }
+
+      const lTopVec = new THREE.Vector3().subVectors(uNext, lowerCenter).normalize();
+
+      // Add to customFaces (alternating upper and lower)
+      customFaces.push({ center: upperCenter, normal: upperNormal, topVec: uTopVec });
+      customFaces.push({ center: lowerCenter, normal: lowerNormal, topVec: lTopVec });
     }
 
     geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
@@ -399,7 +397,8 @@ class Dice3DController {
       color: 0x851316,
       roughness: 0.16,
       metalness: 0.08,
-      flatShading: true
+      flatShading: true,
+      side: THREE.DoubleSide
     });
 
     const dieMesh = new THREE.Mesh(geo, dieMat);
@@ -449,6 +448,7 @@ class Dice3DController {
         transparent: true,
         alphaTest: 0.05,
         depthWrite: false,
+        side: THREE.FrontSide,
         polygonOffset: true,
         polygonOffsetFactor: -2,
         polygonOffsetUnits: -2
@@ -458,7 +458,7 @@ class Dice3DController {
       
       // Calculate clean orientation: decal normal = face.normal, with upright projection
       const normal = face.normal.clone().normalize();
-      let up = new THREE.Vector3(0, 1, 0);
+      let up = face.topVec ? face.topVec.clone().normalize() : new THREE.Vector3(0, 1, 0);
       if (Math.abs(normal.dot(up)) > 0.92) {
         up = new THREE.Vector3(0, 0, 1);
       }
@@ -467,8 +467,8 @@ class Dice3DController {
       const rotMatrix = new THREE.Matrix4().makeBasis(right, faceUp, normal);
       decalMesh.quaternion.setFromRotationMatrix(rotMatrix);
 
-      // Offset slightly outward along facet normal to prevent z-fighting
-      decalMesh.position.copy(face.center).addScaledVector(face.normal, 0.016);
+      // Offset outward along facet normal to prevent z-fighting
+      decalMesh.position.copy(face.center).addScaledVector(face.normal, 0.020);
       dieMesh.add(decalMesh);
     }
 
