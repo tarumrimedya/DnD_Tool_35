@@ -216,35 +216,35 @@
     </div>
   </section>
 
-  <!-- NAVIGATION TABS (Büyük & Kart Görünümlü Sekmeler) -->
-  <nav class="max-w-7xl w-full mx-auto px-3 md:px-4 mb-3 relative z-10">
-    <div class="flex items-stretch gap-2 overflow-x-auto pb-1.5 pt-0.5">
-      <button onclick="switchTab('tab-combat')" id="tab-btn-combat" class="tab-btn flex-1 min-w-[130px] sm:min-w-[140px] lg:min-w-0 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer select-none border bg-gradient-to-r from-red-600 to-rose-600 text-white border-red-400 shadow-lg shadow-red-950/60 ring-2 ring-red-400/40">
-        <span class="text-base sm:text-lg">⚔️</span>
+  <!-- NAVIGATION TABS (Kompakt Kart Sekmeler & Genişletilmiş Boşluk) -->
+  <nav class="max-w-7xl w-full mx-auto px-3 md:px-4 mt-3 mb-5 sm:mt-4 sm:mb-6 relative z-10">
+    <div class="flex items-stretch gap-2 overflow-x-auto pb-1 pt-0.5 scrollbar-thin">
+      <button onclick="switchTab('tab-combat')" id="tab-btn-combat" class="tab-btn flex-1 min-w-[105px] sm:min-w-[120px] lg:min-w-0 py-1.5 px-2.5 sm:px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer select-none border whitespace-nowrap bg-gradient-to-r from-red-600 to-rose-600 text-white border-red-400 shadow-md shadow-red-950/60 ring-2 ring-red-400/40">
+        <span class="text-sm">⚔️</span>
         <span>Savaş Kokpiti</span>
       </button>
-      <button onclick="switchTab('tab-spells')" id="tab-btn-spells" class="tab-btn flex-1 min-w-[130px] sm:min-w-[140px] lg:min-w-0 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer select-none border bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border-slate-700 hover:border-slate-500 shadow-md">
-        <span class="text-base sm:text-lg">🔮</span>
+      <button onclick="switchTab('tab-spells')" id="tab-btn-spells" class="tab-btn flex-1 min-w-[105px] sm:min-w-[120px] lg:min-w-0 py-1.5 px-2.5 sm:px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer select-none border whitespace-nowrap bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border-slate-700 hover:border-slate-500 shadow-sm">
+        <span class="text-sm">🔮</span>
         <span>Büyü & Manevra</span>
       </button>
-      <button onclick="switchTab('tab-core')" id="tab-btn-core" class="tab-btn flex-1 min-w-[130px] sm:min-w-[140px] lg:min-w-0 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer select-none border bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border-slate-700 hover:border-slate-500 shadow-md">
-        <span class="text-base sm:text-lg">👤</span>
+      <button onclick="switchTab('tab-core')" id="tab-btn-core" class="tab-btn flex-1 min-w-[105px] sm:min-w-[120px] lg:min-w-0 py-1.5 px-2.5 sm:px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer select-none border whitespace-nowrap bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border-slate-700 hover:border-slate-500 shadow-sm">
+        <span class="text-sm">👤</span>
         <span>Karakter & Beceriler</span>
       </button>
-      <button onclick="switchTab('tab-defense')" id="tab-btn-defense" class="tab-btn flex-1 min-w-[130px] sm:min-w-[140px] lg:min-w-0 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer select-none border bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border-slate-700 hover:border-slate-500 shadow-md">
-        <span class="text-base sm:text-lg">🛡️</span>
+      <button onclick="switchTab('tab-defense')" id="tab-btn-defense" class="tab-btn flex-1 min-w-[105px] sm:min-w-[120px] lg:min-w-0 py-1.5 px-2.5 sm:px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer select-none border whitespace-nowrap bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border-slate-700 hover:border-slate-500 shadow-sm">
+        <span class="text-sm">🛡️</span>
         <span>Savunma & Bufflar</span>
       </button>
-      <button onclick="switchTab('tab-inventory')" id="tab-btn-inventory" class="tab-btn flex-1 min-w-[130px] sm:min-w-[140px] lg:min-w-0 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer select-none border bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border-slate-700 hover:border-slate-500 shadow-md">
-        <span class="text-base sm:text-lg">🎒</span>
+      <button onclick="switchTab('tab-inventory')" id="tab-btn-inventory" class="tab-btn flex-1 min-w-[105px] sm:min-w-[120px] lg:min-w-0 py-1.5 px-2.5 sm:px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer select-none border whitespace-nowrap bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border-slate-700 hover:border-slate-500 shadow-sm">
+        <span class="text-sm">🎒</span>
         <span>Çanta & Eşyalar</span>
       </button>
-      <button onclick="switchTab('tab-database')" id="tab-btn-database" class="tab-btn flex-1 min-w-[130px] sm:min-w-[140px] lg:min-w-0 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer select-none border bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border-slate-700 hover:border-slate-500 shadow-md">
-        <span class="text-base sm:text-lg">📚</span>
+      <button onclick="switchTab('tab-database')" id="tab-btn-database" class="tab-btn flex-1 min-w-[105px] sm:min-w-[120px] lg:min-w-0 py-1.5 px-2.5 sm:px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer select-none border whitespace-nowrap bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border-slate-700 hover:border-slate-500 shadow-sm">
+        <span class="text-sm">📚</span>
         <span>Master DB</span>
       </button>
-      <button onclick="openSettingsModal()" id="tab-btn-sync" class="tab-btn flex-1 min-w-[130px] sm:min-w-[140px] lg:min-w-0 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer select-none border bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border-slate-700 hover:border-slate-500 shadow-md">
-        <span class="text-base sm:text-lg">⚙️</span>
+      <button onclick="openSettingsModal()" id="tab-btn-sync" class="tab-btn flex-1 min-w-[105px] sm:min-w-[120px] lg:min-w-0 py-1.5 px-2.5 sm:px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer select-none border whitespace-nowrap bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border-slate-700 hover:border-slate-500 shadow-sm">
+        <span class="text-sm">⚙️</span>
         <span>Ayarlar</span>
       </button>
     </div>
