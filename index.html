@@ -54,7 +54,7 @@
   <section class="max-w-7xl w-full mx-auto px-3 md:px-4 pt-3 pb-1 relative z-10">
     <div class="flex flex-col md:flex-row items-stretch gap-2.5">
       
-      <!-- SOL: BÜYÜK KARAKTER RESMİ (HERO PORTRAIT CARD) + YEŞİL LEVEL UP (+) BUTONU -->
+      <!-- SOL: BÜYÜK KARAKTER RESMİ (HERO PORTRAIT CARD) -->
       <div class="relative w-full md:w-44 lg:w-48 shrink-0 min-h-[170px] md:min-h-[190px] group">
         <!-- Tıklanınca Profili / Görünümü Düzenle Açılır -->
         <div onclick="openProfileEditModal()" title="Karakter portresini veya özelliklerini düzenlemek için tıklayın"
@@ -63,19 +63,12 @@
             <span id="core-top-avatar-icon" class="text-5xl md:text-6xl">👤</span>
           </div>
         </div>
-
-        <!-- SAĞ ÜST KÖŞE: YEŞİL LEVEL UP (+) BUTONU (Image 1 Çizimi) -->
-        <button type="button" onclick="event.stopPropagation(); openLevelUpModal();"
-                title="Seviye Atla (Level Up) - HP, BAB, Save ve Seviye Özellikleri Ekle"
-                class="absolute -top-1.5 -right-1.5 sm:top-1 sm:right-1 z-30 w-8 h-8 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-2xl flex items-center justify-center shadow-xl border-2 border-slate-900 ring-2 ring-emerald-400/90 transition-all transform hover:scale-115 active:scale-95 cursor-pointer">
-          <span class="leading-none select-none pb-0.5">+</span>
-        </button>
       </div>
 
       <!-- SAĞ: KAZMİL'İN ÇIRAĞI... & AYARLAR + TEMEL STATLAR (SAĞA VE ÜSTE HİZALANAN ALAN) -->
       <div class="flex-1 min-w-0 space-y-2 flex flex-col justify-between">
         
-        <!-- Üst Satır: Kazmil'in Çırağı Bilgi Barı & Ayarlar / Bulut Senkron (Image 2 Çizimi) -->
+        <!-- Üst Satır: Kazmil'in Çırağı Bilgi Barı, Level Up & Ayarlar / Bulut Senkron -->
         <div class="bg-dndCard border border-dndBorder rounded-xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-2.5 shadow-lg relative z-10 backdrop-blur-md">
           <!-- Sol: Karakter Başlığı & Stat Özetleri -->
           <div class="flex items-center gap-2.5 min-w-0 flex-1">
@@ -101,13 +94,17 @@
             </div>
           </div>
 
-          <!-- Sağ: Bulut Senkron & Ayarlar Butonu -->
+          <!-- Sağ: Level Up Butonu, Bulut Senkron & Ayarlar Butonu -->
           <div class="flex items-center gap-2 shrink-0">
+            <button onclick="openLevelUpModal()" class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-sans font-bold text-xs shadow flex items-center gap-1.5 transition transform active:scale-95 cursor-pointer" title="Yeni seviye ekle, HP/BAB/Save ve Feat seç">
+              <span>⬆️</span>
+              <span>Level Up</span>
+            </button>
             <div id="sync-status-pill" onclick="CloudSync.connect()" title="Bulut durumunu kontrol et / eşitle" class="cursor-pointer flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-slate-800/90 text-slate-300 border border-slate-700 hover:border-slate-500 transition shadow-sm">
               <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
               <span id="sync-status-text">🟡 Yerel Kayıtlı</span>
             </div>
-            <button onclick="openSettingsModal()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 hover:border-slate-500 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow transition" title="Ayarları Aç">
+            <button onclick="openSettingsModal()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 hover:border-slate-500 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow transition cursor-pointer" title="Ayarları Aç">
               <span class="text-xs">⚙️</span>
               <span>Ayarlar</span>
             </button>
