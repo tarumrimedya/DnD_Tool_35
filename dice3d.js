@@ -19,6 +19,29 @@ class Dice3DController {
     this.textureCache = new Map();
     this.onFinishCallback = null;
     this.animationFrameId = null;
+
+    let savedColor = '#851316';
+    try {
+      if (typeof localStorage !== 'undefined') {
+        savedColor = localStorage.getItem('dnd_dice_color') || '#851316';
+      }
+    } catch (e) {}
+    this.diceColor = savedColor;
+  }
+
+  setDiceColor(color) {
+    if (!color) return;
+    this.diceColor = color;
+    this.textureCache.clear();
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('dnd_dice_color', color);
+      }
+    } catch (e) {}
+  }
+
+  getDiceColor() {
+    return this.diceColor || '#851316';
   }
 
   init() {
@@ -184,30 +207,34 @@ class Dice3DController {
     const fontSize = displayText.length > 2 ? 88 : (displayText.length > 1 ? 108 : 128);
     ctx.font = `900 ${fontSize}px "Segoe UI", Arial, sans-serif`;
 
+    const colorObj = new THREE.Color(this.diceColor || '#851316');
+    const lum = 0.2126 * colorObj.r + 0.7152 * colorObj.g + 0.0722 * colorObj.b;
+    const isLightDie = lum > 0.62;
+
     // 1. Realistic debossed/engraved drop-shadow into the facet resin
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.65)';
+    ctx.shadowColor = isLightDie ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.65)';
     ctx.shadowBlur = 4;
     ctx.shadowOffsetX = 1;
     ctx.shadowOffsetY = 2;
 
     // 2. High-contrast crisp numeral fill
     if (isD20Nat20) {
-      ctx.fillStyle = '#fef08a'; // Radiant gold for Nat 20
+      ctx.fillStyle = isLightDie ? '#b45309' : '#fef08a'; // Radiant gold for Nat 20
       ctx.shadowColor = '#eab308';
       ctx.shadowBlur = 12;
     } else if (isD20Nat1) {
-      ctx.fillStyle = '#fca5a5'; // Soft rose for Nat 1
+      ctx.fillStyle = '#dc2626'; // Bold red for Nat 1
     } else {
-      ctx.fillStyle = '#ffffff'; // Pure crisp white engraved numeral
+      ctx.fillStyle = isLightDie ? '#0f172a' : '#ffffff'; // Dark slate for light dice, pure crisp white for dark dice
     }
 
     ctx.fillText(displayText, 128, 128);
 
-    // 3. Ultra-fine crisp edge contour (2.5px) for clear legibility on dark resin
+    // 3. Ultra-fine crisp edge contour (2.5px) for clear legibility on resin
     ctx.shadowColor = 'transparent';
     ctx.lineWidth = 2.5;
     ctx.lineJoin = 'round';
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.45)';
+    ctx.strokeStyle = isLightDie ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.45)';
     ctx.strokeText(displayText, 128, 128);
     ctx.restore();
 
@@ -401,9 +428,10 @@ class Dice3DController {
       decalScale = 0.56;
     }
 
-    // Deep Crimson Resin Material with sharp crystalline flat facet shading
+    // Authentic Tabletop Resin Material with sharp crystalline flat facet shading
+    const diceColorHex = new THREE.Color(this.diceColor || '#851316');
     const dieMat = new THREE.MeshStandardMaterial({
-      color: 0x851316,
+      color: diceColorHex,
       roughness: 0.16,
       metalness: 0.08,
       flatShading: true,

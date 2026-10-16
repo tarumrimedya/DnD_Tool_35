@@ -1757,15 +1757,84 @@
             </div>
           </div>
 
-          <!-- Aksiyon Butonları (At & Sıfırla) -->
-          <div class="flex items-center gap-2.5 pt-2">
-            <button onclick="rollDicePool()" class="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-600 via-yellow-600 to-amber-700 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-sm shadow-lg flex items-center justify-center gap-2 transition transform active:scale-95 cursor-pointer">
+          <!-- Aksiyon Butonları (At, Zar Rengi & Sıfırla) -->
+          <div class="flex items-center gap-2 pt-2 relative">
+            <button id="dice-roll-pool-btn" onclick="rollDicePool()" class="flex-1 py-2.5 px-4 rounded-xl text-white font-black text-sm shadow-lg flex items-center justify-center gap-2 transition transform active:scale-95 cursor-pointer border border-white/20">
               <span class="text-base">🎲</span>
               <span>ZARLARI AT</span>
             </button>
-            <button onclick="resetDicePool()" class="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 border border-slate-700 hover:border-rose-600/60 font-bold text-sm shadow flex items-center justify-center gap-1.5 transition cursor-pointer" title="Seçilen zar havuzunu temizle">
+
+            <!-- Zar Rengi Seçici Buton & Açılır Menü -->
+            <div class="relative">
+              <button id="dice-color-btn" type="button" onclick="toggleDiceColorPopover(event)" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-sm shadow flex items-center justify-center gap-2 transition cursor-pointer shrink-0" title="Zar Rengini Seç">
+                <span id="dice-color-preview-dot" class="w-4 h-4 rounded-full border border-white/70 shadow-sm inline-block shrink-0 transition-colors" style="background-color: #851316;"></span>
+                <span class="text-xs font-bold text-slate-300 hidden sm:inline">Renk</span>
+                <span class="text-[10px] text-slate-400">▼</span>
+              </button>
+
+              <!-- Zar Rengi Seçim Popover Menüsü -->
+              <div id="dice-color-popover" class="hidden absolute right-0 bottom-full mb-2 w-64 bg-slate-900/98 backdrop-blur-md border border-slate-700 rounded-xl p-3 shadow-2xl z-50 animate-in fade-in zoom-in-95">
+                <div class="flex items-center justify-between border-b border-slate-700/80 pb-2 mb-2.5">
+                  <span class="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                    <span>🎨</span>
+                    <span>Zar Rengi Seç</span>
+                  </span>
+                  <span class="text-[10px] text-slate-400 font-medium">3D Zar & Buton</span>
+                </div>
+
+                <!-- Hazır Zar Renkleri Grid -->
+                <div class="grid grid-cols-4 gap-2 mb-3">
+                  <button type="button" onclick="selectDiceColor('#851316', 'Yakut Kırmızısı')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Yakut Kırmızısı">
+                    <span class="w-7 h-7 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #851316;"></span>
+                    <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Yakut</span>
+                  </button>
+                  <button type="button" onclick="selectDiceColor('#1d4ed8', 'Safir Mavisi')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Safir Mavisi">
+                    <span class="w-7 h-7 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #1d4ed8;"></span>
+                    <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Safir</span>
+                  </button>
+                  <button type="button" onclick="selectDiceColor('#047857', 'Zümrüt Yeşili')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Zümrüt Yeşili">
+                    <span class="w-7 h-7 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #047857;"></span>
+                    <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Zümrüt</span>
+                  </button>
+                  <button type="button" onclick="selectDiceColor('#7e22ce', 'Ametist Moru')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Ametist Moru">
+                    <span class="w-7 h-7 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #7e22ce;"></span>
+                    <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Ametist</span>
+                  </button>
+                  <button type="button" onclick="selectDiceColor('#d97706', 'Kehribar Sarısı')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Kehribar Sarısı">
+                    <span class="w-7 h-7 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #d97706;"></span>
+                    <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Kehribar</span>
+                  </button>
+                  <button type="button" onclick="selectDiceColor('#0891b2', 'Buzul Turkuaz')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Buzul Turkuaz">
+                    <span class="w-7 h-7 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #0891b2;"></span>
+                    <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Buzul</span>
+                  </button>
+                  <button type="button" onclick="selectDiceColor('#18181b', 'Obsidyen Siyahı')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Obsidyen Siyahı">
+                    <span class="w-7 h-7 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #18181b;"></span>
+                    <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Obsidyen</span>
+                  </button>
+                  <button type="button" onclick="selectDiceColor('#f8fafc', 'Fildişi Beyazı')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Fildişi Beyazı">
+                    <span class="w-7 h-7 rounded-full shadow-md border border-slate-400 block group-hover:scale-110 transition-transform" style="background-color: #f8fafc;"></span>
+                    <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Fildişi</span>
+                  </button>
+                </div>
+
+                <!-- Özel Renk Seçici -->
+                <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+                  <span class="text-xs text-slate-300 font-semibold flex items-center gap-1.5">
+                    <span>🌈</span>
+                    <span>Özel Renk:</span>
+                  </span>
+                  <div class="flex items-center gap-2">
+                    <input type="color" id="dice-custom-color-input" onchange="selectDiceColor(this.value, 'Özel Renk')" class="w-7 h-7 rounded-lg cursor-pointer bg-transparent border-0 p-0">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sıfırla Butonu -->
+            <button onclick="resetDicePool()" class="py-2.5 px-3.5 rounded-xl bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 border border-slate-700 hover:border-rose-600/60 font-bold text-sm shadow flex items-center justify-center gap-1.5 transition cursor-pointer shrink-0" title="Seçilen zar havuzunu temizle">
               <span>🔄</span>
-              <span>Sıfırla</span>
+              <span class="hidden sm:inline">Sıfırla</span>
             </button>
           </div>
         </div>
@@ -3475,6 +3544,7 @@
       try { renderAll(); } catch (e) { console.error('Initial renderAll error:', e); }
       verifySettingsGeminiApiKey(false);
       await CloudSync.init();
+      initDiceColor();
     });
 
     let _geminiVerifiedState = null; // null | 'checking' | 'connected' | 'error' | 'empty'
@@ -3756,6 +3826,7 @@
       if (tabId === 'tab-dice') {
         renderDiceHistory();
         updateDicePoolDisplay();
+        initDiceColor();
       }
     }
 
@@ -5309,6 +5380,104 @@
       if (modEl) modEl.value = 0;
       updateDicePoolDisplay();
     }
+
+    // ====================================================
+    // 🎨 ZAR RENGİ VE BUTON KOORDİNASYON SİSTEMİ
+    // ====================================================
+    function toggleDiceColorPopover(event) {
+      if (event) event.stopPropagation();
+      const popover = document.getElementById('dice-color-popover');
+      if (popover) {
+        popover.classList.toggle('hidden');
+      }
+    }
+
+    function selectDiceColor(color, colorName) {
+      if (!color) return;
+      color = color.trim();
+      if (!color.startsWith('#')) color = '#' + color;
+
+      try {
+        localStorage.setItem('dnd_dice_color', color);
+      } catch (e) {}
+
+      if (window.Dice3D && typeof window.Dice3D.setDiceColor === 'function') {
+        window.Dice3D.setDiceColor(color);
+      }
+
+      updateDiceColorUI(color);
+
+      const popover = document.getElementById('dice-color-popover');
+      if (popover) {
+        popover.classList.add('hidden');
+      }
+    }
+
+    function updateDiceColorUI(hexColor) {
+      if (!hexColor) return;
+      if (!hexColor.startsWith('#')) hexColor = '#' + hexColor;
+
+      // 1. Zar rengi önizleme noktası
+      const dot = document.getElementById('dice-color-preview-dot');
+      if (dot) dot.style.backgroundColor = hexColor;
+
+      // 2. Özel renk seçici input
+      const customInput = document.getElementById('dice-custom-color-input');
+      if (customInput) customInput.value = hexColor;
+
+      // 3. Zar At butonunu zar rengiyle uyumlu hale getir
+      const rollBtn = document.getElementById('dice-roll-pool-btn');
+      if (rollBtn) {
+        let r = 133, g = 19, b = 22; // Varsayılan Yakut Reçine #851316
+        if (hexColor.length >= 7) {
+          r = parseInt(hexColor.slice(1, 3), 16) || 0;
+          g = parseInt(hexColor.slice(3, 5), 16) || 0;
+          b = parseInt(hexColor.slice(5, 7), 16) || 0;
+        }
+
+        const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        const isLight = lum > 0.62;
+
+        const lighter = `rgb(${Math.min(255, Math.round(r * 1.35 + 25))}, ${Math.min(255, Math.round(g * 1.35 + 25))}, ${Math.min(255, Math.round(b * 1.35 + 25))})`;
+        const darker = `rgb(${Math.max(0, Math.round(r * 0.7 - 20))}, ${Math.max(0, Math.round(g * 0.7 - 20))}, ${Math.max(0, Math.round(b * 0.7 - 20))})`;
+
+        rollBtn.style.background = `linear-gradient(135deg, ${lighter}, ${hexColor} 50%, ${darker})`;
+        rollBtn.style.borderColor = lighter;
+        rollBtn.style.boxShadow = `0 4px 18px rgba(${r}, ${g}, ${b}, 0.45)`;
+
+        if (isLight) {
+          rollBtn.style.color = '#0f172a';
+          rollBtn.style.textShadow = 'none';
+        } else {
+          rollBtn.style.color = '#ffffff';
+          rollBtn.style.textShadow = '0 1px 2px rgba(0,0,0,0.6)';
+        }
+      }
+    }
+
+    function initDiceColor() {
+      let savedColor = '#851316';
+      try {
+        if (typeof localStorage !== 'undefined') {
+          savedColor = localStorage.getItem('dnd_dice_color') || '#851316';
+        }
+      } catch (e) {}
+      if (window.Dice3D && typeof window.Dice3D.setDiceColor === 'function') {
+        window.Dice3D.setDiceColor(savedColor);
+      }
+      updateDiceColorUI(savedColor);
+    }
+
+    // Popover dışına tıklandığında menüyü kapat
+    document.addEventListener('click', function(e) {
+      const popover = document.getElementById('dice-color-popover');
+      const btn = document.getElementById('dice-color-btn');
+      if (popover && !popover.classList.contains('hidden')) {
+        if (!popover.contains(e.target) && (!btn || !btn.contains(e.target))) {
+          popover.classList.add('hidden');
+        }
+      }
+    });
 
     function rollSingleDie(sides) {
       const r = Math.floor(Math.random() * sides) + 1;
