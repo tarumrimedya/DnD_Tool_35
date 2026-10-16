@@ -5185,12 +5185,18 @@
 
       renderPeriodicModalActiveList();
       const modal = document.getElementById('periodic-hp-modal');
-      if (modal) modal.classList.remove('hidden');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+      }
     }
 
     function closePeriodicHpModal() {
       const modal = document.getElementById('periodic-hp-modal');
-      if (modal) modal.classList.add('hidden');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+      }
     }
 
     function setPeriodicMode(mode) {
@@ -5318,6 +5324,7 @@
         createdAtRound: Number(character.encounterRound) || 1
       };
 
+      let initialRollDesc = '';
       if (applyNow) {
         const evalRes = evaluateHpAmount(rawAmount);
         if (evalRes.total > 0) {
@@ -5326,6 +5333,7 @@
           } else {
             character.hp.current = Math.min(Number(character.hp.max) || 0, (Number(character.hp.current) || 0) + evalRes.total);
           }
+          initialRollDesc = evalRes.isDice ? ` [Zar: ${evalRes.rollDesc}]` : ` (${evalRes.total} HP)`;
         }
         if (eff.roundsLeft !== null) {
           eff.roundsLeft--;
@@ -5336,9 +5344,32 @@
         character.periodicHpEffects.push(eff);
       }
 
+      // Close modal immediately so user sees popup close
+      closePeriodicHpModal();
+
+      // Reset form input for next time
+      if (nameInput) nameInput.value = '';
+
       saveStateToStorage(true);
       renderAll();
-      closePeriodicHpModal();
+
+      // Clear feedback alert
+      const typeText = currentPeriodicMode === 'damage' ? 'Hasar (DoT)' : 'İyileşme (HoT)';
+      const icon = currentPeriodicMode === 'damage' ? '🩸' : '💖';
+      const durInfo = eff.roundsTotal !== null ? `${eff.roundsTotal} Tur` : 'Süresiz';
+      const rateSign = currentPeriodicMode === 'damage' ? '-' : '+';
+
+      let feedback = `✅ ${icon} "${name}" ${typeText} etkisi başarıyla eklendi!\n\n` +
+                     `• Tur Başı Miktar: ${rateSign}${rawAmount} HP\n` +
+                     `• Toplam Süre: ${durInfo}\n` +
+                     `• Kalan Süre: ${eff.roundsLeft !== null ? eff.roundsLeft + ' Tur' : 'Süresiz'}`;
+
+      if (applyNow) {
+        feedback += `\n• İlk Tur Etkisi: Hemen uygulandı${initialRollDesc} ➔ Güncel HP: ${character.hp.current}/${character.hp.max}`;
+      }
+      feedback += `\n\n📌 Tur (Tur ⏭️) ilerledikçe bu etki otomatik olarak çalışacaktır.`;
+
+      alert(feedback);
     }
 
     function removePeriodicHpEffect(effId) {
