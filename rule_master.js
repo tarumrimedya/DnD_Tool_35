@@ -1047,6 +1047,9 @@ const RuleMaster = {
       this._cachedModels = null;
     }
     this.updateApiKeyUi();
+    if (typeof verifySettingsGeminiApiKey === 'function') {
+      verifySettingsGeminiApiKey(true);
+    }
   },
 
   updateApiKeyUi() {

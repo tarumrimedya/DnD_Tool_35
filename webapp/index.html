@@ -2237,11 +2237,14 @@
 
         <!-- SECTION 2: GOOGLE GEMINI AI KEY & DIAGNOSTICS -->
         <div class="bg-slate-900/90 border border-purple-500/40 rounded-xl p-3.5 space-y-3 shadow">
-          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
             <div class="flex items-center gap-2">
               <span class="text-xl">🤖</span>
               <div>
-                <h4 class="text-xs font-bold text-white">Google Gemini AI Kural Asistanı Ayarları</h4>
+                <h4 class="text-xs font-bold text-white flex items-center gap-2 flex-wrap">
+                  <span>Google Gemini AI Kural Asistanı Ayarları</span>
+                  <span id="settings-gemini-live-status" class="text-[10px] text-slate-400 font-normal">Kontrol Ediliyor...</span>
+                </h4>
                 <p class="text-[10px] text-slate-400">Kişisel ücretsiz Google AI Studio API anahtarınız (tarayıcınızda güvenle saklanır).</p>
               </div>
             </div>
@@ -2396,8 +2399,87 @@
     window.addEventListener('DOMContentLoaded', async () => {
       await loadInitialData();
       try { renderAll(); } catch (e) { console.error('Initial renderAll error:', e); }
+      verifySettingsGeminiApiKey(false);
       await CloudSync.init();
     });
+
+    let _geminiVerifiedState = null; // null | 'checking' | 'connected' | 'error' | 'empty'
+    let _geminiVerifiedModel = '';
+
+    async function verifySettingsGeminiApiKey(forceRefresh = false) {
+      const apiKey = (localStorage.getItem('gemini_api_key') || '').trim();
+      const liveBadge = document.getElementById('settings-gemini-live-status');
+      const maskedSpan = document.getElementById('settings-masked-key');
+      const input = document.getElementById('settings-gemini-api-key');
+
+      if (input && document.activeElement !== input) {
+        input.value = apiKey;
+      }
+
+      if (!apiKey) {
+        _geminiVerifiedState = 'empty';
+        _geminiVerifiedModel = '';
+        if (liveBadge) {
+          liveBadge.innerHTML = '<span class="text-amber-400">🟡 Anahtar Girilmedi</span>';
+        }
+        if (maskedSpan) {
+          maskedSpan.innerHTML = '<span class="text-amber-400">Tanımlı Değil (Ücretsiz Alın)</span>';
+        }
+        return false;
+      }
+
+      const masked = apiKey.length > 10
+        ? (apiKey.substring(0, 6) + '...' + apiKey.substring(apiKey.length - 4))
+        : 'AIza...';
+
+      if (!forceRefresh && _geminiVerifiedState === 'connected') {
+        if (liveBadge) {
+          liveBadge.innerHTML = `<span class="text-emerald-400 font-bold">🟢 Gemini AI Aktif & Çalışıyor${_geminiVerifiedModel ? ` (${_geminiVerifiedModel})` : ''}</span>`;
+        }
+        if (maskedSpan) {
+          maskedSpan.innerHTML = `<span class="text-emerald-400 font-bold">🟢 ${masked} (Bağlı & Aktif)</span>`;
+        }
+        return true;
+      }
+
+      _geminiVerifiedState = 'checking';
+      if (liveBadge) {
+        liveBadge.innerHTML = '<span class="text-indigo-400 font-bold">🔄 Bağlantı Kontrol Ediliyor...</span>';
+      }
+      if (maskedSpan) {
+        maskedSpan.innerHTML = `<span class="text-indigo-300">${masked} (Doğrulanıyor...)</span>`;
+      }
+
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`);
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        const models = window.RuleMaster
+          ? await RuleMaster.getAvailableGeminiModels(apiKey, forceRefresh)
+          : ['gemini-2.5-flash-lite'];
+        _geminiVerifiedState = 'connected';
+        _geminiVerifiedModel = models && models[0] ? models[0] : 'gemini-2.5-flash-lite';
+
+        if (liveBadge) {
+          liveBadge.innerHTML = `<span class="text-emerald-400 font-bold">🟢 Gemini AI Aktif & Çalışıyor (${_geminiVerifiedModel})</span>`;
+        }
+        if (maskedSpan) {
+          maskedSpan.innerHTML = `<span class="text-emerald-400 font-bold">🟢 ${masked} (Bağlı • ${models.length} Optimize Model Hazır)</span>`;
+        }
+        return true;
+      } catch (err) {
+        _geminiVerifiedState = 'error';
+        _geminiVerifiedModel = '';
+        if (liveBadge) {
+          liveBadge.innerHTML = '<span class="text-rose-400 font-bold">🔴 Bağlantı Hatası / Geçersiz Anahtar</span>';
+        }
+        if (maskedSpan) {
+          maskedSpan.innerHTML = `<span class="text-rose-400 font-bold">🔴 ${masked} (Doğrulanamadı)</span>`;
+        }
+        return false;
+      }
+    }
 
     async function loadInitialData() {
       // 1. Try LocalStorage
@@ -2485,14 +2567,8 @@
       if (!modal) return;
       modal.classList.remove('hidden');
 
-      // Update Gemini API key UI in settings
-      const apiKey = localStorage.getItem('gemini_api_key') || '';
-      const input = document.getElementById('settings-gemini-api-key');
-      const maskedSpan = document.getElementById('settings-masked-key');
-      if (input) input.value = apiKey;
-      if (maskedSpan) {
-        maskedSpan.textContent = apiKey ? (apiKey.substring(0, 6) + '...' + apiKey.substring(apiKey.length - 4)) : 'Tanımlı Değil (Ücretsiz Alın)';
-      }
+      // Update & verify Gemini API key live status badge in settings
+      verifySettingsGeminiApiKey(false);
 
       // Update Vercel / Upstash Cloud UI in settings
       if (window.CloudSync) {
@@ -2523,7 +2599,7 @@
       if (modal) modal.classList.add('hidden');
     }
 
-    function saveSettingsApiKey() {
+    async function saveSettingsApiKey() {
       const input = document.getElementById('settings-gemini-api-key');
       const val = input?.value?.trim() || '';
       if (!val) {
@@ -2535,24 +2611,24 @@
         RuleMaster._cachedModels = null;
         RuleMaster.updateApiKeyUi();
       }
-      const maskedSpan = document.getElementById('settings-masked-key');
-      if (maskedSpan) {
-        maskedSpan.textContent = val.substring(0, 6) + '...' + val.substring(val.length - 4);
+      const ok = await verifySettingsGeminiApiKey(true);
+      if (ok) {
+        alert('✅ Google Gemini API Anahtarınız kaydedildi ve bağlantı doğrulandı (🟢 Aktif)!');
+      } else {
+        alert('⚠️ Anahtar kaydedildi ancak Google Gemini sunucusu anahtarı doğrulayamadı. Lütfen anahtarınızı kontrol edin.');
       }
-      alert('✅ Google Gemini API Anahtarınız kaydedildi!');
     }
 
     function clearSettingsApiKey() {
       if (confirm('Gemini API anahtarınızı silmek istediğinize emin misiniz?')) {
         localStorage.removeItem('gemini_api_key');
         const input = document.getElementById('settings-gemini-api-key');
-        const maskedSpan = document.getElementById('settings-masked-key');
         if (input) input.value = '';
-        if (maskedSpan) maskedSpan.textContent = 'Tanımlı Değil';
         if (window.RuleMaster) {
           RuleMaster._cachedModels = null;
           RuleMaster.updateApiKeyUi();
         }
+        verifySettingsGeminiApiKey(true);
         alert('🗑️ API Anahtarınız silindi.');
       }
     }
@@ -2564,9 +2640,14 @@
         return;
       }
       try {
+        const ok = await verifySettingsGeminiApiKey(true);
+        if (!ok) {
+          alert('❌ Gemini API bağlantısı kurulamadı. Lütfen API anahtarınızın doğruluğunu kontrol edin.');
+          return;
+        }
         const models = await (window.RuleMaster ? RuleMaster.getAvailableGeminiModels(key, true) : ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-3.5-flash']);
         const formattedList = models.map((m, i) => i === 0 ? `1. ⭐ ${m} (BİRİNCİL AKTİF MODEL)` : `${i + 1}. 🔄 ${m} (Yedek / Fallback)`).join('\n');
-        alert(`🩺 GEMINI API TANI & MODEL OPTİMİZASYON RAPORU\n\n✅ Bağlantı Başarılı! Gereksiz / eski modeller filtrelendi.\n\nOptimize Edilmiş Model Öncelik Kuyruğu:\n${formattedList}\n\nSistem her sorguda önce 1. sıradaki en hızlı modeli kullanır; kota/yoğunluk durumunda otomatik olarak alt sıradaki yedek modele geçer.`);
+        alert(`🩺 GEMINI API TANI & MODEL OPTİMİZASYON RAPORU\n\n🟢 Bağlantı Başarılı ve Aktif! Gereksiz / eski modeller filtrelendi.\n\nOptimize Edilmiş Model Öncelik Kuyruğu:\n${formattedList}\n\nSistem her sorguda önce 1. sıradaki en hızlı modeli kullanır; kota/yoğunluk durumunda otomatik olarak alt sıradaki yedek modele geçer.`);
       } catch (err) {
         alert(`❌ Tanı Hatası: ${err.message}`);
       }
