@@ -193,9 +193,10 @@
           <span>Reset Enc.</span>
         </button>
       </div>
-      <button onclick="advanceNextRound()" class="w-full bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-500/40 rounded p-1 text-xs font-bold flex items-center justify-center gap-1 transition">
+      <button onclick="advanceNextRound()" class="w-full bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-500/40 rounded p-1 text-xs font-bold flex items-center justify-center gap-1.5 transition" title="Sonraki tura geçer, aktif buff sürelerini 1 tur azaltır">
         <span>⏭️</span>
-        <span>Sonraki Tur (-1 Rd)</span>
+        <span>Sonraki Tur</span>
+        <span class="round-counter-badge bg-indigo-950 text-indigo-200 border border-indigo-500/60 px-1.5 py-0.2 rounded text-[10px] font-mono font-extrabold shadow-sm">Tur 1</span>
       </button>
     </div>
   </section>
@@ -675,8 +676,9 @@
               <button onclick="openAddBuffModal()" class="text-xs bg-emerald-700 hover:bg-emerald-600 text-white font-bold px-2.5 py-1 rounded transition flex items-center gap-1 shadow">
                 <span>➕</span><span>Buff Ekle</span>
               </button>
-              <button onclick="advanceNextRound()" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-2.5 py-1 rounded transition flex items-center gap-1 shadow">
-                <span>⏭️</span><span>Tur İlerlet (-1 Rd)</span>
+              <button onclick="advanceNextRound()" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-2.5 py-1 rounded transition flex items-center gap-1.5 shadow" title="Sonraki tura geçer, aktif buff sürelerini 1 tur azaltır">
+                <span>⏭️</span><span>Sonraki Tur</span>
+                <span class="round-counter-badge bg-indigo-950/80 text-indigo-200 border border-indigo-300/40 px-1.5 py-0.2 rounded text-[10px] font-mono font-extrabold shadow-sm">Tur 1</span>
               </button>
               <button onclick="performEncounterReset()" class="text-xs bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 font-medium px-2 py-1 rounded transition flex items-center gap-1">
                 <span>🔄</span><span>Enc. Sıfırla</span>
@@ -3064,6 +3066,11 @@
       document.getElementById('save-fort-display').textContent = '+' + saves.fort;
       document.getElementById('save-ref-display').textContent = '+' + saves.ref;
       document.getElementById('save-will-display').textContent = '+' + saves.will;
+
+      // Encounter Round Displays
+      if (typeof updateRoundDisplays === 'function') {
+        updateRoundDisplays();
+      }
     }
 
     function applyDamage() {
@@ -4505,29 +4512,41 @@
       }
     }
 
-    function advanceNextRound() {
-      if (!character || !Array.isArray(character.buffs)) return;
-      const expired = [];
-      character.buffs.forEach(buff => {
-        if (buff.active && buff.rounds !== null && buff.rounds !== undefined && buff.rounds > 0) {
-          buff.rounds--;
-          if (buff.rounds <= 0) {
-            buff.active = false;
-            expired.push(buff.name);
-          }
-        }
+    function updateRoundDisplays() {
+      const round = (character && character.encounterRound) ? character.encounterRound : 1;
+      document.querySelectorAll('.round-counter-badge').forEach(el => {
+        el.textContent = `Tur ${round}`;
       });
+    }
 
+    function advanceNextRound() {
+      if (!character) return;
+      character.encounterRound = (Number(character.encounterRound) || 1) + 1;
+      const expired = [];
+      if (Array.isArray(character.buffs)) {
+        character.buffs.forEach(buff => {
+          if (buff.active && buff.rounds !== null && buff.rounds !== undefined && buff.rounds > 0) {
+            buff.rounds--;
+            if (buff.rounds <= 0) {
+              buff.active = false;
+              expired.push(buff.name);
+            }
+          }
+        });
+      }
+
+      updateRoundDisplays();
       saveStateToStorage(true);
       renderAll();
 
       if (expired.length > 0) {
-        alert(`⏳ Tur ilerletildi (-1 Rd)!\n\nSüresi dolan bufflar sona erdi:\n• ${expired.join('\n• ')}`);
+        alert(`⏳ Tur ${character.encounterRound} başladı!\n\nSüresi dolan bufflar sona erdi:\n• ${expired.join('\n• ')}`);
       }
     }
 
     function performLongRest() {
       if (!character) return;
+      character.encounterRound = 1;
       character.hp.current = character.hp.max;
       character.hp.temp = 0;
       character.hp.nonlethal = 0;
@@ -4548,13 +4567,15 @@
         });
       }
 
+      updateRoundDisplays();
       saveStateToStorage(true);
       renderAll();
-      alert('☀️ UZUN DİNLENME TAMAMLANDI!\n\n• Can puanı (HP) maksimuma getirildi.\n• Tüm büyü slotları tazelendi.\n• Bütün manevralar yeniden hazırlandı.\n• Geçici buff süreleri sıfırlandı.');
+      alert('☀️ UZUN DİNLENME TAMAMLANDI!\n\n• Can puanı (HP) maksimuma getirildi.\n• Karşılaşma tur sayacı Tur 1 olarak sıfırlandı.\n• Tüm büyü slotları tazelendi.\n• Bütün manevralar yeniden hazırlandı.\n• Geçici buff süreleri sıfırlandı.');
     }
 
     function performEncounterReset() {
       if (!character) return;
+      character.encounterRound = 1;
 
       if (character.tomeOfBattle && Array.isArray(character.tomeOfBattle.readiedManeuvers)) {
         character.tomeOfBattle.readiedManeuvers.forEach(m => m.expended = false);
@@ -4568,9 +4589,10 @@
         });
       }
 
+      updateRoundDisplays();
       saveStateToStorage(true);
       renderAll();
-      alert('🔄 KARŞILAŞMA SIFIRLANDI!\n\n• Tüm manevralar (Readied Maneuvers) hazır hale getirildi.\n• Karşılaşma süreli kısa bufflar (<= 10 tur) kapatıldı.');
+      alert('🔄 KARŞILAŞMA SIFIRLANDI!\n\n• Karşılaşma tur sayacı Tur 1 olarak sıfırlandı.\n• Tüm manevralar (Readied Maneuvers) hazır hale getirildi.\n• Karşılaşma süreli kısa bufflar (<= 10 tur) kapatıldı.');
     }
 
     function openAddBuffModal() {
