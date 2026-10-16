@@ -197,10 +197,7 @@
 
     <!-- Card 4: İnisiyatif (Save ile Dinlenme Arasında, Yarı En: 1 Kolon) -->
     <div class="bg-dndCard border border-dndBorder rounded-xl p-2.5 sm:p-3 flex flex-col justify-between shadow hover:border-amber-500/60 transition group col-span-1 lg:col-span-1">
-      <div class="flex justify-between items-center text-xs font-bold text-amber-400 mb-1">
-        <span class="flex items-center gap-1 text-[11px] truncate">⚡ İNİSİYATİF</span>
-        <span id="init-roll-last-badge" class="badge bg-amber-950/60 text-amber-300 border border-amber-600/60 text-[9px] px-1">1d20+Dex</span>
-      </div>
+      <div class="text-xs font-bold text-amber-400 flex items-center gap-1 mb-1 truncate text-[11px]">⚡ İNİSİYATİF</div>
       <div class="bg-slate-900/70 p-1.5 rounded border border-slate-800 flex flex-col items-center justify-center my-1">
         <div id="vitals-init-total" class="text-xl sm:text-2xl font-extrabold text-amber-400 font-mono leading-tight">+3</div>
         <div id="vitals-init-dex" class="text-[9px] text-slate-400 font-semibold uppercase mt-0.5">Dex Mod +3</div>
@@ -5525,22 +5522,12 @@
       const total = d20 + mod;
 
       const showResult = () => {
-        const badge = document.getElementById('init-roll-last-badge');
-        if (badge) {
-          badge.textContent = `Son: ${total} (d20:${d20})`;
-          badge.className = 'badge bg-amber-500 text-slate-950 border border-amber-300 font-black text-[9px] animate-pulse';
-        }
-        const btnText = document.getElementById('vitals-init-btn-text');
-        if (btnText) {
-          btnText.textContent = `Zar: ${d20} + ${mod >= 0 ? '+' : ''}${mod} = ${total}`;
-        }
         addDiceHistoryEntry({
           title: '⚡ İnisiyatif Zarı',
           formula: `1d20 ${mod >= 0 ? '+' : ''}${mod}`,
           breakdown: `d20: [${d20}] ${mod >= 0 ? '+' : ''}${mod}`,
           total: total
         });
-        alert(`⚡ İnisiyatif Zarı:\n1d20 [${d20}] + ${mod >= 0 ? '+' : ''}${mod} = ${total}`);
       };
 
       if (window.Dice3D && typeof Dice3D.roll === 'function') {
@@ -5567,7 +5554,6 @@
           breakdown: `d20: [${d20}] ${mod >= 0 ? '+' : ''}${mod}`,
           total: total
         });
-        alert(`⚡ ${saveName} Kayıt Zarı:\n1d20 [${d20}] + ${mod} = ${total}`);
       };
 
       if (window.Dice3D && typeof Dice3D.roll === 'function') {
@@ -5592,7 +5578,6 @@
           breakdown: `d20: [${d20}] ${totalMod >= 0 ? '+' : ''}${totalMod}`,
           total: total
         });
-        alert(`🎯 ${skillName} Beceri Zarı:\n1d20 [${d20}] + ${totalMod} = ${total}`);
       };
 
       if (window.Dice3D && typeof Dice3D.roll === 'function') {
