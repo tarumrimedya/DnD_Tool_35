@@ -5069,6 +5069,83 @@
       }
     }
 
+    let _diceToastTimer = null;
+    function showDiceTopToast(entry) {
+      let container = document.getElementById('dice-top-toast-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'dice-top-toast-container';
+        container.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[10000] flex flex-col items-center pointer-events-none transition-all duration-300';
+        document.body.appendChild(container);
+      }
+
+      if (_diceToastTimer) {
+        clearTimeout(_diceToastTimer);
+        _diceToastTimer = null;
+      }
+
+      const existing = document.getElementById('dice-top-toast');
+      if (existing) existing.remove();
+
+      const toast = document.createElement('div');
+      toast.id = 'dice-top-toast';
+      toast.className = 'pointer-events-auto transform -translate-y-12 opacity-0 transition-all duration-300 ease-out bg-slate-900/95 border-2 border-amber-500/80 rounded-2xl shadow-2xl shadow-black/90 px-5 py-3 backdrop-blur-md flex items-center gap-4 text-white max-w-[92vw] select-none cursor-pointer';
+      toast.title = 'Kapatmak için tıklayın';
+
+      const title = entry.title || '🎲 Zar Atışı';
+      const breakdown = entry.breakdown || entry.formula || '';
+      const total = entry.total !== undefined ? entry.total : '';
+      const isCrit = !!entry.isCrit;
+
+      toast.innerHTML = `
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/30 to-amber-600/10 border border-amber-500/50 flex items-center justify-center text-xl shrink-0 shadow-inner">
+          ${isCrit ? '⚡' : '🎲'}
+        </div>
+        <div class="flex flex-col min-w-0 pr-2">
+          <div class="text-sm font-black text-amber-400 truncate flex items-center gap-1.5">
+            <span>${title}</span>
+            ${isCrit ? '<span class="text-[10px] bg-red-600 text-white px-1.5 py-0.5 rounded font-black animate-pulse">KRİTİK!</span>' : ''}
+          </div>
+          <div class="text-xs text-slate-300 font-mono truncate">
+            ${breakdown}
+          </div>
+        </div>
+        <div class="shrink-0 flex items-center pl-3 border-l border-slate-700/80">
+          <div class="text-2xl sm:text-3xl font-extrabold font-mono text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]">
+            = ${total}
+          </div>
+        </div>
+      `;
+
+      // Click to dismiss immediately
+      toast.onclick = () => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('-translate-y-12', 'opacity-0');
+        setTimeout(() => {
+          if (toast.parentNode) toast.remove();
+        }, 300);
+      };
+
+      container.appendChild(toast);
+
+      // Trigger slide down
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          toast.classList.remove('-translate-y-12', 'opacity-0');
+          toast.classList.add('translate-y-0', 'opacity-100');
+        });
+      });
+
+      // Auto dismiss after exactly 3 seconds (no confirmation needed)
+      _diceToastTimer = setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('-translate-y-12', 'opacity-0');
+        setTimeout(() => {
+          if (toast.parentNode) toast.remove();
+        }, 350);
+      }, 3000);
+    }
+
     function addDiceHistoryEntry(entry) {
       if (!Array.isArray(window.diceRollHistory)) {
         loadDiceHistory();
@@ -5094,6 +5171,7 @@
 
       updateLastResultCard(record);
       renderDiceHistory();
+      showDiceTopToast(record);
     }
 
     function clearDiceHistory() {
@@ -5524,9 +5602,10 @@
       const showResult = () => {
         addDiceHistoryEntry({
           title: '⚡ İnisiyatif Zarı',
-          formula: `1d20 ${mod >= 0 ? '+' : ''}${mod}`,
-          breakdown: `d20: [${d20}] ${mod >= 0 ? '+' : ''}${mod}`,
-          total: total
+          formula: `1d20 ${mod >= 0 ? '+' : '-'}${Math.abs(mod)}`,
+          breakdown: `1d20 [${d20}] ${mod >= 0 ? '+' : '-'} ${Math.abs(mod)}`,
+          total: total,
+          isCrit: d20 === 20
         });
       };
 
@@ -5550,9 +5629,10 @@
       const showResult = () => {
         addDiceHistoryEntry({
           title: `⚡ ${saveName} Kayıt Zarı`,
-          formula: `1d20 ${mod >= 0 ? '+' : ''}${mod}`,
-          breakdown: `d20: [${d20}] ${mod >= 0 ? '+' : ''}${mod}`,
-          total: total
+          formula: `1d20 ${mod >= 0 ? '+' : '-'}${Math.abs(mod)}`,
+          breakdown: `1d20 [${d20}] ${mod >= 0 ? '+' : '-'} ${Math.abs(mod)}`,
+          total: total,
+          isCrit: d20 === 20
         });
       };
 
@@ -5574,9 +5654,10 @@
       const showResult = () => {
         addDiceHistoryEntry({
           title: `🎯 ${skillName} Beceri Zarı`,
-          formula: `1d20 ${totalMod >= 0 ? '+' : ''}${totalMod}`,
-          breakdown: `d20: [${d20}] ${totalMod >= 0 ? '+' : ''}${totalMod}`,
-          total: total
+          formula: `1d20 ${totalMod >= 0 ? '+' : '-'}${Math.abs(totalMod)}`,
+          breakdown: `1d20 [${d20}] ${totalMod >= 0 ? '+' : '-'} ${Math.abs(totalMod)}`,
+          total: total,
+          isCrit: d20 === 20
         });
       };
 
