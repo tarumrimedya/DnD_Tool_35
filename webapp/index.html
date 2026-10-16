@@ -877,9 +877,6 @@
             <button onclick="RuleMaster.switchSubTab('subtab-mdb-tree')" id="btn-subtab-mdb-tree" class="mdb-subtab-btn px-2.5 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-white transition">
               🔗 Alt Güç Ağacı
             </button>
-            <button onclick="RuleMaster.switchSubTab('subtab-mdb-sources')" id="btn-subtab-mdb-sources" class="mdb-subtab-btn px-2.5 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-white transition">
-              📖 Kural Kaynakları
-            </button>
           </div>
         </div>
 
@@ -1442,32 +1439,6 @@
           </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- SUB-TAB 3: PRIORITIZED KNOWLEDGE BASES -->
-        <!-- ========================================== -->
-        <div id="subtab-mdb-sources" class="mdb-subtab-content hidden space-y-4">
-          <!-- Prioritized Sources -->
-          <div>
-            <h3 class="text-xs font-bold text-indigo-300 uppercase tracking-wide mb-2 flex items-center gap-1.5">
-              <span>⚡</span>
-              <span>1. KADEMELİ ARAMA KAYNAKLARI (PRIORITIZED KNOWLEDGE BASES)</span>
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3" id="sources-list-container">
-              <!-- Dynamically populated by RuleMaster.renderSourcesCatalog() -->
-            </div>
-          </div>
-
-          <!-- Splatbooks Catalog -->
-          <div class="pt-3 border-t border-slate-800">
-            <h3 class="text-xs font-bold text-amber-300 uppercase tracking-wide mb-2 flex items-center gap-1.5">
-              <span>📖</span>
-              <span>2. KAMPANYA KİTAPLARI & SPLATBOOK KATALOĞU</span>
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-2.5" id="splatbooks-grid-container">
-              <!-- Dynamically populated by RuleMaster.renderSourcesCatalog() -->
-            </div>
-          </div>
-        </div>
 
         <!-- ========================================== -->
         <!-- SUB-TAB 9: YEDEKLEME, DIŞA/İÇE AKTAR & SIFIRLA -->
@@ -2589,7 +2560,40 @@
           <input type="file" id="settings-json-file-input" accept=".json" onchange="handleJsonFileUpload(event)" class="hidden">
         </div>
 
-        <!-- SECTION 4: HOUSE RULES & SYSTEM PREFERENCES -->
+        <!-- SECTION 4: KURAL KAYNAKLARI & KAMPANYA KİTAPLARI -->
+        <div class="bg-slate-900/90 border border-indigo-500/40 rounded-xl p-3.5 space-y-3 shadow">
+          <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
+            <span class="text-xl">📖</span>
+            <div>
+              <h4 class="text-xs font-bold text-white">D&D 3.5e Kural Kaynakları & Kampanya Kitapları</h4>
+              <p class="text-[10px] text-slate-400">Kademeli kural arama kaynakları ve Core / Splatbook kütüphane kataloğu.</p>
+            </div>
+          </div>
+
+          <!-- Prioritized Sources -->
+          <div>
+            <h5 class="text-[11px] font-bold text-indigo-300 uppercase tracking-wide mb-1.5 flex items-center gap-1">
+              <span>⚡</span>
+              <span>1. Kademeli Arama Kaynakları (Prioritized Knowledge Bases)</span>
+            </h5>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5" id="sources-list-container">
+              <!-- Dynamically populated by RuleMaster.renderSourcesCatalog() -->
+            </div>
+          </div>
+
+          <!-- Splatbooks Catalog -->
+          <div class="pt-2 border-t border-slate-800">
+            <h5 class="text-[11px] font-bold text-amber-300 uppercase tracking-wide mb-1.5 flex items-center gap-1">
+              <span>📚</span>
+              <span>2. Kampanya Kitapları & Splatbook Kataloğu</span>
+            </h5>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-64 overflow-y-auto pr-1" id="splatbooks-grid-container">
+              <!-- Dynamically populated by RuleMaster.renderSourcesCatalog() -->
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 5: HOUSE RULES & SYSTEM PREFERENCES -->
         <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-3 shadow">
           <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
             <span class="text-xl">🎲</span>
@@ -2862,6 +2866,11 @@
       const setManCrit = document.getElementById('settings-maneuver-crit');
       if (noCrit && setNoCrit) setNoCrit.checked = noCrit.checked;
       if (manCrit && setManCrit) setManCrit.checked = manCrit.checked;
+
+      // Populate Rule Sources and Splatbooks Catalog
+      if (window.RuleMaster && typeof RuleMaster.renderSourcesCatalog === 'function') {
+        RuleMaster.renderSourcesCatalog();
+      }
     }
 
     function closeSettingsModal() {
