@@ -2187,9 +2187,9 @@
           <!-- Personal APP_PIN Input -->
           <div class="space-y-2 bg-slate-950/70 p-2.5 rounded-lg border border-slate-800">
             <div>
-              <label class="block text-[10px] font-bold text-emerald-400 uppercase mb-1">🔒 Kişisel Uygulama Şifresi (APP_PIN):</label>
-              <input type="password" id="settings-app-pin" placeholder="Vercel Environment Variables içinde belirlediğiniz APP_PIN şifresi" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-emerald-400">
-              <p class="text-[10px] text-slate-400 mt-1">Vercel'de <code class="text-amber-300">APP_PIN</code> tanımladığınızda, bu şifreyi bilmeyen hiç kimse uygulamanıza veya veritabanınıza erişemez.</p>
+              <label class="block text-[10px] font-bold text-emerald-400 uppercase mb-1">🔒 Kişisel Uygulama Şifresi (APP_PIN - Doğrudan Buradan Belirleyin):</label>
+              <input type="password" id="settings-app-pin" placeholder="Belirlemek istediğiniz özel şifreyi buraya yazıp Kaydet'e basın..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-emerald-400">
+              <p class="text-[10px] text-slate-400 mt-1">Vercel Environment Variables içine <code class="text-amber-300">APP_PIN</code> eklemenize <b>gerek yoktur</b>! Şifrenizi doğrudan yukarıdaki kutuya yazıp <b>"Ayarları Kaydet & Bağlan"</b> dediğinizde şifreniz otomatik olarak veritabanınıza kaydedilir ve uygulamanız kilitlenir.</p>
             </div>
 
             <!-- Optional Direct Upstash Credentials (For Local / Offline Testing) -->
@@ -2217,8 +2217,8 @@
               <div class="mt-2 space-y-1.5 pl-3 border-l-2 border-indigo-500/40 text-slate-300 leading-relaxed">
                 <p>1. Bu projeyi kendi GitHub hesabınıza aktarın ve <a href="https://vercel.com/new" target="_blank" class="text-indigo-400 underline font-bold">Vercel Dashboard ↗</a> üzerinden ücretsiz <b>Import</b> edin.</p>
                 <p>2. Vercel proje panelinizde üst menüden <b>Storage ➔ Create Database ➔ Upstash (Serverless Redis / KV)</b> seçip ücretsiz oluşturun ve projenize bağlayın (<i>KV_REST_API_URL</i> ve <i>KV_REST_API_TOKEN</i> otomatik eklenir).</p>
-                <p>3. Uygulamayı <b>tamamen size özel (private)</b> yapmak için Vercel'de <b>Settings ➔ Environment Variables</b> kısmına gidin, <b>Key:</b> <code class="text-amber-300">APP_PIN</code> ve <b>Value:</b> <code class="text-emerald-300">KendiGizliŞifreniz</code> ekleyip <b>Redeploy</b> yapın.</p>
-                <p>4. Artık PC, telefon veya tabletten kendi Vercel linkinize girip yalnızca <code class="text-amber-300">APP_PIN</code> şifrenizi yazarak tüm Karakter ve Master DB verilerinizi otomatik senkronize edebilirsiniz!</p>
+                <p>3. Uygulamayı açıp <b>⚙️ Ayarlar</b> menüsündeki <b>Kişisel Uygulama Şifresi (APP_PIN)</b> kutusuna istediğiniz şifreyi yazıp <b>"Ayarları Kaydet & Bağlan"</b> butonuna tıklayın (veya isterseniz Vercel Environment Variables içine manuel <code class="text-amber-300">APP_PIN</code> satırı ekleyin).</p>
+                <p>4. Artık PC, telefon veya tabletten kendi Vercel linkinize girip yalnızca şifrenizi yazarak tüm Karakter ve Master DB verilerinizi otomatik senkronize edebilirsiniz!</p>
               </div>
             </details>
           </div>

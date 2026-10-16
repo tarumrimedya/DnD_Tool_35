@@ -3,19 +3,45 @@
  *
  * Zero-dependency Serverless Function for personal D&D 3.5e Character + Master DB storage.
  *
- * Supported Vercel Environment Variables:
- * 1. APP_PIN (or APP_PASSWORD):
- *    - Personal password/PIN to make the deployed web app strictly private to the owner.
- * 2. KV_REST_API_URL & KV_REST_API_TOKEN (or UPSTASH_REDIS_REST_URL & UPSTASH_REDIS_REST_TOKEN):
- *    - Automatically added when connecting "Upstash Redis / Vercel KV" from Vercel Marketplace -> Storage.
- * 3. BLOB_READ_WRITE_TOKEN (Optional alternative):
- *    - Automatically added if the user connects "Vercel Blob" storage instead of KV/Redis.
+ * Supports TWO ways to set APP_PIN:
+ * 1. Directly inside the Web App (Ayarlar -> Kişisel Uygulama Şifresi) -> Stored in Upstash KV (`dnd35_vault_pin_v1`).
+ *    No Vercel Environment Variable or Redeploy needed!
+ * 2. Or via Vercel Environment Variable (`APP_PIN` or `APP_PASSWORD`).
  */
 
 const STORAGE_KEY = process.env.STORAGE_KEY || 'dnd35_universal_state_v1';
+const PIN_STORAGE_KEY = 'dnd35_vault_pin_v1';
+
+async function kvGet(kvUrl, kvToken, key) {
+  const res = await fetch(`${kvUrl}/get/${encodeURIComponent(key)}`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${kvToken}` }
+  });
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`KV GET (${res.status}): ${errText}`);
+  }
+  const json = await res.json();
+  return json ? json.result : null;
+}
+
+async function kvSet(kvUrl, kvToken, key, value) {
+  const res = await fetch(kvUrl, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${kvToken}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(['SET', key, typeof value === 'string' ? value : JSON.stringify(value)])
+  });
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`KV SET (${res.status}): ${errText}`);
+  }
+  return true;
+}
 
 module.exports = async function handler(req, res) {
-  // Set CORS headers for same-origin and local testing
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-app-pin, x-upstash-url, x-upstash-token');
@@ -24,10 +50,6 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
-
-  // 1. Resolve Environment & Optional Client-Supplied Credentials
-  const serverPin = String(process.env.APP_PIN || process.env.APP_PASSWORD || '').trim();
-  const clientPin = String(req.headers['x-app-pin'] || (req.query && req.query.pin) || '').trim();
 
   const kvUrl = String(
     process.env.KV_REST_API_URL ||
@@ -44,21 +66,90 @@ module.exports = async function handler(req, res) {
   ).trim();
 
   const hasKv = Boolean(kvUrl && kvToken);
-  const pinRequired = Boolean(serverPin);
-  const authenticated = !pinRequired || (clientPin.length > 0 && clientPin === serverPin);
+  const clientPin = String(req.headers['x-app-pin'] || (req.query && req.query.pin) || '').trim();
 
-  // 2. Status / Handshake Check (GET /api/storage?action=status)
+  // Resolve active PIN: 1) Env var APP_PIN if defined, 2) Otherwise check Upstash KV `dnd35_vault_pin_v1`
+  let activePin = String(process.env.APP_PIN || process.env.APP_PASSWORD || '').trim();
+  let pinSource = activePin ? 'env' : 'none';
+
+  if (!activePin && hasKv) {
+    try {
+      const dbPin = await kvGet(kvUrl, kvToken, PIN_STORAGE_KEY);
+      if (dbPin && String(dbPin).trim()) {
+        activePin = String(dbPin).trim();
+        pinSource = 'db';
+      }
+    } catch (e) {
+      // Ignore PIN read error during status check
+    }
+  }
+
+  const pinRequired = Boolean(activePin);
+  const authenticated = !pinRequired || (clientPin.length > 0 && clientPin === activePin);
+
+  // 1. Status / Handshake Check (GET /api/storage?action=status)
   if (req.method === 'GET' && req.query && req.query.action === 'status') {
     return res.status(200).json({
       ok: true,
       configured: hasKv,
       provider: hasKv ? 'vercel-upstash-kv' : 'unconfigured',
       pinRequired,
+      pinSource,
       authenticated
     });
   }
 
-  // 3. Enforce Personal PIN / Password Protection
+  // 2. Verify Storage Backend Configuration
+  if (!hasKv) {
+    return res.status(503).json({
+      ok: false,
+      configured: false,
+      pinRequired,
+      authenticated,
+      error: 'Vercel veritabanı henüz bağlanmamış. Vercel panelinden Storage -> Upstash Redis (KV) ekleyin.'
+    });
+  }
+
+  // 3. Set or Update Personal PIN directly from the Web App (POST /api/storage?action=setPin)
+  if (req.method === 'POST' && req.query && req.query.action === 'setPin') {
+    if (pinSource === 'env') {
+      return res.status(400).json({
+        ok: false,
+        error: 'Şifreniz Vercel Environment Variables (APP_PIN) üzerinden sabitlenmiş. Değiştirmek için Vercel panelini kullanın.'
+      });
+    }
+
+    // If a DB PIN already exists, require current PIN to change it
+    if (pinRequired && !authenticated) {
+      return res.status(401).json({
+        ok: false,
+        pinRequired: true,
+        authenticated: false,
+        error: 'Mevcut şifreyi değiştirmek için önce geçerli APP_PIN şifrenizi girmelisiniz.'
+      });
+    }
+
+    let body = req.body;
+    if (typeof body === 'string') {
+      try { body = JSON.parse(body); } catch (e) { body = {}; }
+    }
+    const newPin = String((body && body.newPin) || clientPin || '').trim();
+
+    try {
+      await kvSet(kvUrl, kvToken, PIN_STORAGE_KEY, newPin);
+      return res.status(200).json({
+        ok: true,
+        pinRequired: Boolean(newPin),
+        message: newPin
+          ? '🔒 Kişisel Kasa Şifreniz (APP_PIN) doğrudan veritabanına kaydedildi!'
+          : '🔓 Kişisel Kasa Şifresi kaldırıldı.'
+      });
+    } catch (err) {
+      return res.status(500).json({ ok: false, error: err.message });
+    }
+  }
+
+  // 4. Enforce Personal PIN / Password Protection
   if (pinRequired && !authenticated) {
     return res.status(401).json({
       ok: false,
@@ -68,39 +159,13 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  // 4. Verify Storage Backend Configuration
-  if (!hasKv) {
-    return res.status(503).json({
-      ok: false,
-      configured: false,
-      pinRequired,
-      authenticated,
-      error: 'Vercel veritabanı henüz bağlanmamış. Vercel panelinden Storage -> Upstash Redis (KV) ekleyin veya Ayarlar ekranından Upstash URL/Token girin.'
-    });
-  }
-
   try {
     // =========================================================================
     // GET: Pull Character + Master DB from Vercel / Upstash KV
     // =========================================================================
     if (req.method === 'GET') {
-      const response = await fetch(`${kvUrl}/get/${encodeURIComponent(STORAGE_KEY)}`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${kvToken}`
-        }
-      });
-
-      if (!response.ok) {
-        const errText = await response.text();
-        return res.status(response.status).json({
-          ok: false,
-          error: `Veritabanı okuma hatası (${response.status}): ${errText}`
-        });
-      }
-
-      const resultJson = await response.json();
-      if (!resultJson || resultJson.result === null || resultJson.result === undefined) {
+      const rawResult = await kvGet(kvUrl, kvToken, STORAGE_KEY);
+      if (rawResult === null || rawResult === undefined) {
         return res.status(200).json({
           ok: true,
           empty: true,
@@ -108,7 +173,7 @@ module.exports = async function handler(req, res) {
         });
       }
 
-      let parsedData = resultJson.result;
+      let parsedData = rawResult;
       if (typeof parsedData === 'string') {
         try {
           parsedData = JSON.parse(parsedData);
@@ -144,6 +209,13 @@ module.exports = async function handler(req, res) {
         return res.status(400).json({ ok: false, error: 'Kaydedilecek veri bulunamadı.' });
       }
 
+      // If no PIN is set in Env or DB yet, and the user sent an x-app-pin header from Settings, save it automatically!
+      if (!pinRequired && clientPin) {
+        try {
+          await kvSet(kvUrl, kvToken, PIN_STORAGE_KEY, clientPin);
+        } catch (e) {}
+      }
+
       const payloadToStore = {
         version: 2,
         lastModified: body.lastModified || new Date().toISOString(),
@@ -151,23 +223,7 @@ module.exports = async function handler(req, res) {
         masterDb: Array.isArray(body.masterDb) ? body.masterDb : null
       };
 
-      // Upstash REST API standard command array: ["SET", key, serializedValue]
-      const saveResp = await fetch(kvUrl, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${kvToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(['SET', STORAGE_KEY, JSON.stringify(payloadToStore)])
-      });
-
-      if (!saveResp.ok) {
-        const errText = await saveResp.text();
-        return res.status(saveResp.status).json({
-          ok: false,
-          error: `Veritabanı yazma hatası (${saveResp.status}): ${errText}`
-        });
-      }
+      await kvSet(kvUrl, kvToken, STORAGE_KEY, JSON.stringify(payloadToStore));
 
       return res.status(200).json({
         ok: true,

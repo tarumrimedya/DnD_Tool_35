@@ -175,12 +175,10 @@ const CloudSync = {
     const urlEl = document.getElementById('settings-upstash-url');
     const tokenEl = document.getElementById('settings-upstash-token');
 
-    this.appPin = (pinEl ? pinEl.value : '').trim();
+    const prevPin = this.appPin || '';
+    const newPin = (pinEl ? pinEl.value : '').trim();
     this.upstashUrl = (urlEl ? urlEl.value : '').trim().replace(/\/$/, '');
     this.upstashToken = (tokenEl ? tokenEl.value : '').trim();
-
-    if (this.appPin) localStorage.setItem('dnd35_app_pin', this.appPin);
-    else localStorage.removeItem('dnd35_app_pin');
 
     if (this.upstashUrl) localStorage.setItem('dnd35_upstash_url', this.upstashUrl);
     else localStorage.removeItem('dnd35_upstash_url');
@@ -188,14 +186,37 @@ const CloudSync = {
     if (this.upstashToken) localStorage.setItem('dnd35_upstash_token', this.upstashToken);
     else localStorage.removeItem('dnd35_upstash_token');
 
+    // If running on Vercel and the user entered a PIN, also save/update it in Upstash KV if not locked by env
+    if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+      try {
+        const headers = this.getHeaders();
+        if (prevPin) headers['x-app-pin'] = prevPin;
+        else if (newPin) headers['x-app-pin'] = newPin;
+
+        await fetch('/api/storage?action=setPin', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ newPin })
+        });
+      } catch (e) {
+        // Ignore if /api/storage is not reachable
+      }
+    }
+
+    this.appPin = newPin;
+    if (this.appPin) localStorage.setItem('dnd35_app_pin', this.appPin);
+    else localStorage.removeItem('dnd35_app_pin');
+
     await this.init();
 
     if (this.configured && this.authenticated) {
-      alert('✅ Vercel / Upstash Bulut bağlantısı doğrulandı ve aktif edildi!');
+      alert(this.appPin
+        ? '✅ Vercel Bulut bağlantısı ve Kişisel Kasa Şifreniz (APP_PIN) doğrudan veritabanına kaydedildi!'
+        : '✅ Vercel / Upstash Bulut bağlantısı doğrulandı ve aktif edildi!');
     } else if (this.pinRequired && !this.authenticated) {
-      alert('❌ Girdiğiniz APP_PIN şifresi sunucudaki şifre ile eşleşmedi.');
+      alert('❌ Girdiğiniz APP_PIN şifresi sunucudaki mevcut şifre ile eşleşmedi.');
     } else {
-      alert('ℹ️ Ayarlar kaydedildi. Bulut senkronizasyonu için Vercel panelinden Upstash KV bağlayın veya Upstash REST URL/Token bilgilerini girin.');
+      alert('ℹ️ Ayarlar kaydedildi. Bulut senkronizasyonu için Vercel panelinden Storage -> Upstash KV bağlayın veya Upstash REST URL/Token bilgilerini girin.');
     }
   },
 
