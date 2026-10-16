@@ -1,8 +1,9 @@
 /**
- * 3D Physics-Simulated Animated Dice Roller for D&D 3.5e
- * Built with Three.js. Supports d20, d12, d10, d8, d6, d4.
- * Features realistic tumbling, bounce damping, synthesized Web Audio dice sounds,
- * and high-contrast readable face numbers.
+ * Ultra-Realistic 3D Physics-Simulated Animated Dice Roller for D&D 3.5e
+ * Features true polyhedral geometries (d4, d6, d8, d10, d12, d20, d100),
+ * deep crimson red resin materials with glossy specular glints,
+ * numbers painted directly on all die faces (no floating billboards),
+ * soft tabletop contact shadows, dynamic camera alignment, and rich acoustic clatter.
  */
 
 class Dice3DController {
@@ -15,59 +16,84 @@ class Dice3DController {
     this.isRolling = false;
     this.audioCtx = null;
     this.initialized = false;
+    this.textureCache = new Map();
+    this.onFinishCallback = null;
+    this.animationFrameId = null;
   }
 
   init() {
     if (this.initialized) return;
     if (typeof THREE === 'undefined') {
-      console.warn('Three.js is not loaded yet. Retrying on demand.');
+      console.warn('Three.js is not loaded yet.');
       return;
     }
 
-    // Create fullscreen overlay container
+    // Fullscreen transparent overlay
     this.container = document.createElement('div');
     this.container.id = 'dice-3d-overlay';
-    this.container.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9999;transition:opacity 0.3s;opacity:0;';
+    this.container.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9999;transition:opacity 0.25s ease-out;opacity:0;';
+    
+    // Allow clicking anywhere to skip/dismiss immediately
+    this.container.addEventListener('click', () => {
+      this.dismissImmediately();
+    });
+
     document.body.appendChild(this.container);
 
     const width = window.innerWidth;
     const height = window.innerHeight;
 
-    // Scene & Camera
+    // Scene & Perspective Camera (Looking down at ~50° tabletop angle)
     this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    this.camera.position.set(0, 18, 14);
-    this.camera.lookAt(0, 0, 0);
+    this.camera = new THREE.PerspectiveCamera(38, width / height, 0.1, 100);
+    this.camera.position.set(0, 16, 13);
+    this.camera.lookAt(0, 0.4, 0);
 
-    // Renderer
-    this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    // Renderer with soft PCF shadow maps & high pixel ratio
+    this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'high-performance' });
     this.renderer.setSize(width, height);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.1;
     this.container.appendChild(this.renderer.domElement);
 
-    // Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+    // Warm Ambient Light
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
     this.scene.add(ambientLight);
 
-    const dirLight = new THREE.DirectionalLight(0xffeedd, 1.2);
-    dirLight.position.set(10, 25, 15);
-    dirLight.castShadow = true;
-    dirLight.shadow.mapSize.width = 1024;
-    dirLight.shadow.mapSize.height = 1024;
-    this.scene.add(dirLight);
+    // Main Overhead Directional Light (Key Light casting realistic shadows)
+    const keyLight = new THREE.DirectionalLight(0xfff7ee, 1.5);
+    keyLight.position.set(9, 24, 11);
+    keyLight.castShadow = true;
+    keyLight.shadow.mapSize.width = 2048;
+    keyLight.shadow.mapSize.height = 2048;
+    keyLight.shadow.camera.near = 0.5;
+    keyLight.shadow.camera.far = 50;
+    keyLight.shadow.camera.left = -15;
+    keyLight.shadow.camera.right = 15;
+    keyLight.shadow.camera.top = 15;
+    keyLight.shadow.camera.bottom = -15;
+    keyLight.shadow.bias = -0.0008;
+    keyLight.shadow.radius = 3;
+    this.scene.add(keyLight);
 
-    // Floor shadow receiver
-    const floorGeo = new THREE.PlaneGeometry(50, 50);
-    const floorMat = new THREE.ShadowMaterial({ opacity: 0.25 });
+    // Fill Point Light (Produces brilliant glossy specular glints on facets)
+    const fillLight = new THREE.PointLight(0xffe4d6, 0.9, 40);
+    fillLight.position.set(-8, 12, 6);
+    this.scene.add(fillLight);
+
+    // Floor Shadow Receiver (Invisible tabletop plane receiving dark contact shadows)
+    const floorGeo = new THREE.PlaneGeometry(60, 60);
+    const floorMat = new THREE.ShadowMaterial({ opacity: 0.38 });
     const floor = new THREE.Mesh(floorGeo, floorMat);
     floor.rotation.x = -Math.PI / 2;
-    floor.position.y = -0.5;
+    floor.position.y = 0;
     floor.receiveShadow = true;
     this.scene.add(floor);
 
-    // Resize handler
+    // Window Resize Handler
     window.addEventListener('resize', () => {
       if (!this.renderer || !this.camera) return;
       const w = window.innerWidth;
@@ -80,8 +106,8 @@ class Dice3DController {
     this.initialized = true;
   }
 
-  // Synthesize tactile dice clatter with Web Audio API (zero external mp3 needed)
-  playDiceSound() {
+  // Realistic Acoustic Dice Clatter Synthesizer (Zero external audio files required)
+  playDiceSound(volume = 1.0) {
     try {
       if (!this.audioCtx) {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -90,92 +116,295 @@ class Dice3DController {
       if (this.audioCtx.state === 'suspended') {
         this.audioCtx.resume();
       }
+
       const now = this.audioCtx.currentTime;
-      for (let i = 0; i < 3; i++) {
+      const clicks = 2 + Math.floor(Math.random() * 2);
+
+      for (let i = 0; i < clicks; i++) {
+        const t = now + i * 0.045;
+        // High frequency plastic impact click
         const osc = this.audioCtx.createOscillator();
         const gain = this.audioCtx.createGain();
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(140 + Math.random() * 260, now + i * 0.06);
-        gain.gain.setValueAtTime(0.15, now + i * 0.06);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.08);
+        osc.frequency.setValueAtTime(320 + Math.random() * 450, t);
+        osc.frequency.exponentialRampToValueAtTime(120, t + 0.05);
+
+        gain.gain.setValueAtTime(0.18 * volume, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+
         osc.connect(gain);
         gain.connect(this.audioCtx.destination);
-        osc.start(now + i * 0.06);
-        osc.stop(now + i * 0.06 + 0.09);
+        osc.start(t);
+        osc.stop(t + 0.07);
+
+        // Low body thud resonance
+        const thud = this.audioCtx.createOscillator();
+        const thudGain = this.audioCtx.createGain();
+        thud.type = 'sine';
+        thud.frequency.setValueAtTime(140 + Math.random() * 60, t);
+        thudGain.gain.setValueAtTime(0.22 * volume, t);
+        thudGain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+        thud.connect(thudGain);
+        thudGain.connect(this.audioCtx.destination);
+        thud.start(t);
+        thud.stop(t + 0.06);
       }
     } catch (e) {}
   }
 
-  // Create text texture for dice face
-  createNumberTexture(text, bgColor = '#1e1b4b', textColor = '#f8fafc', borderColor = '#6366f1') {
+  // Generate crisp 256x256 circular decal texture with numbers engraved directly on faces
+  createFaceTexture(numberText, sides) {
+    const key = `${sides}_${numberText}`;
+    if (this.textureCache.has(key)) {
+      return this.textureCache.get(key);
+    }
+
     const canvas = document.createElement('canvas');
     canvas.width = 256;
     canvas.height = 256;
     const ctx = canvas.getContext('2d');
 
-    // Background
-    ctx.fillStyle = bgColor;
-    ctx.fillRect(0, 0, 256, 256);
+    const num = parseInt(numberText) || 0;
+    const isD20Nat20 = (sides === 20 && num === 20);
+    const isD20Nat1 = (sides === 20 && num === 1);
 
-    // Golden / Colored Border
-    ctx.strokeStyle = borderColor;
-    ctx.lineWidth = 14;
-    ctx.strokeRect(7, 7, 242, 242);
+    // Clear transparent background
+    ctx.clearRect(0, 0, 256, 256);
 
-    // Number text
-    ctx.fillStyle = textColor;
-    ctx.font = 'bold 110px ui-sans-serif, system-ui, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(text, 128, 128);
+    // Deep crimson resin circular background matching die color
+    ctx.beginPath();
+    ctx.arc(128, 128, 120, 0, Math.PI * 2);
+    ctx.fillStyle = isD20Nat20 ? '#991b1b' : '#7f1d1d';
+    ctx.fill();
 
-    return new THREE.CanvasTexture(canvas);
-  }
+    // Subtle edge shading for faceted depth
+    const grad = ctx.createRadialGradient(128, 128, 40, 128, 128, 120);
+    grad.addColorStop(0, 'rgba(255,255,255,0.08)');
+    grad.addColorStop(0.85, 'rgba(0,0,0,0.1)');
+    grad.addColorStop(1, 'rgba(0,0,0,0.4)');
+    ctx.fillStyle = grad;
+    ctx.fill();
 
-  // Build a 3D Die Mesh
-  createDieMesh(type, targetValue) {
-    let geo;
-    let color = 0x991b1b; // D&D Crimson Red
-    let targetText = String(targetValue);
-
-    if (type === 'd20') {
-      geo = new THREE.IcosahedronGeometry(1.6, 0);
-      color = targetValue === 20 ? 0xf59e0b : (targetValue === 1 ? 0x475569 : 0xb91c1c);
-    } else if (type === 'd6') {
-      geo = new THREE.BoxGeometry(1.9, 1.9, 1.9);
-      color = 0x1e3a8a; // Sapphire blue
-    } else if (type === 'd8') {
-      geo = new THREE.OctahedronGeometry(1.7, 0);
-      color = 0x047857; // Emerald
-    } else if (type === 'd10') {
-      geo = new THREE.ConeGeometry(1.5, 2.2, 5);
-      color = 0x6d28d9; // Amethyst
-    } else {
-      geo = new THREE.BoxGeometry(1.8, 1.8, 1.8);
+    // Clean bold white font
+    ctx.save();
+    let displayText = String(numberText);
+    // Add dot to distinguish 6. and 9. on d20 / d12 / d10 / d8 / d6
+    if ((displayText === '6' || displayText === '9') && sides > 4) {
+      displayText = displayText + '.';
     }
 
-    const mat = new THREE.MeshStandardMaterial({
-      color: color,
-      roughness: 0.25,
-      metalness: 0.4,
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // Text color
+    if (isD20Nat20) {
+      ctx.fillStyle = '#fbbf24'; // Radiant gold for Nat 20
+      ctx.shadowColor = '#f59e0b';
+      ctx.shadowBlur = 12;
+    } else if (isD20Nat1) {
+      ctx.fillStyle = '#fca5a5'; // Soft rose for Nat 1
+    } else {
+      ctx.fillStyle = '#ffffff'; // Pure crisp white
+      ctx.shadowColor = 'rgba(0,0,0,0.6)';
+      ctx.shadowBlur = 4;
+      ctx.shadowOffsetY = 2;
+    }
+
+    const fontSize = displayText.length > 2 ? 86 : (displayText.length > 1 ? 104 : 124);
+    ctx.font = `bold ${fontSize}px ui-sans-serif, system-ui, Arial, sans-serif`;
+    ctx.fillText(displayText, 128, 132);
+    ctx.restore();
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    this.textureCache.set(key, texture);
+    return texture;
+  }
+
+  // Custom 10-sided pentagonal trapezohedron geometry for true d10
+  createD10Geometry(radius) {
+    const geo = new THREE.BufferGeometry();
+    const vertices = [];
+    const height = radius * 1.35;
+    const r = radius * 1.05;
+    const yTop = radius * 0.35;
+    const yBot = -radius * 0.35;
+
+    // Poles
+    const topPole = [0, height, 0];
+    const botPole = [0, -height, 0];
+
+    // Upper ring (5 vertices)
+    const upperRing = [];
+    for (let i = 0; i < 5; i++) {
+      const a = (i * 2 * Math.PI) / 5;
+      upperRing.push([Math.cos(a) * r, yTop, Math.sin(a) * r]);
+    }
+
+    // Lower ring (5 vertices, offset by 36°)
+    const lowerRing = [];
+    for (let i = 0; i < 5; i++) {
+      const a = ((i + 0.5) * 2 * Math.PI) / 5;
+      lowerRing.push([Math.cos(a) * r, yBot, Math.sin(a) * r]);
+    }
+
+    // 10 Kite faces (each kite = 2 triangles)
+    for (let i = 0; i < 5; i++) {
+      const u1 = upperRing[i];
+      const u2 = upperRing[(i + 1) % 5];
+      const l1 = lowerRing[i];
+
+      // Upper kite face
+      vertices.push(...topPole, ...u1, ...l1);
+      vertices.push(...topPole, ...l1, ...u2);
+
+      // Lower kite face
+      const l2 = lowerRing[(i + 1) % 5];
+      vertices.push(...botPole, ...l1, ...u2);
+      vertices.push(...botPole, ...u2, ...l2);
+    }
+
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    geo.computeVertexNormals();
+    return geo;
+  }
+
+  // Extract unique coplanar faces (centers and outward unit normals)
+  extractFaces(geo) {
+    const nonIndexed = geo.index ? geo.toNonIndexed() : geo.clone();
+    const pos = nonIndexed.attributes.position.array;
+    const faces = [];
+    const triCount = pos.length / 9;
+
+    for (let i = 0; i < triCount; i++) {
+      const i9 = i * 9;
+      const v0 = new THREE.Vector3(pos[i9], pos[i9 + 1], pos[i9 + 2]);
+      const v1 = new THREE.Vector3(pos[i9 + 3], pos[i9 + 4], pos[i9 + 5]);
+      const v2 = new THREE.Vector3(pos[i9 + 6], pos[i9 + 7], pos[i9 + 8]);
+
+      const center = new THREE.Vector3().add(v0).add(v1).add(v2).divideScalar(3);
+      const edge1 = new THREE.Vector3().subVectors(v1, v0);
+      const edge2 = new THREE.Vector3().subVectors(v2, v0);
+      const normal = new THREE.Vector3().crossVectors(edge1, edge2).normalize();
+
+      // Check if coplanar to existing face (for Box / Dodecahedron)
+      let found = false;
+      for (const f of faces) {
+        if (f.normal.dot(normal) > 0.92) {
+          f.center.add(center).multiplyScalar(0.5);
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        faces.push({ center, normal });
+      }
+    }
+    return faces;
+  }
+
+  // Build a true 3D polyhedral die with engraved numbers on all faces
+  createDieMesh(type, targetValue) {
+    let geo;
+    let sides = 20;
+    let radius = 1.65;
+    let decalScale = 0.56;
+
+    if (type === 'd4') {
+      sides = 4;
+      radius = 1.55;
+      geo = new THREE.TetrahedronGeometry(radius, 0);
+      decalScale = 0.52;
+    } else if (type === 'd6') {
+      sides = 6;
+      radius = 1.75;
+      geo = new THREE.BoxGeometry(radius, radius, radius);
+      decalScale = 0.62;
+    } else if (type === 'd8') {
+      sides = 8;
+      radius = 1.6;
+      geo = new THREE.OctahedronGeometry(radius, 0);
+      decalScale = 0.55;
+    } else if (type === 'd10' || type === 'd100') {
+      sides = 10;
+      radius = 1.5;
+      geo = this.createD10Geometry(radius);
+      decalScale = 0.48;
+    } else if (type === 'd12') {
+      sides = 12;
+      radius = 1.55;
+      geo = new THREE.DodecahedronGeometry(radius, 0);
+      decalScale = 0.5;
+    } else {
+      // d20 default
+      sides = 20;
+      radius = 1.65;
+      geo = new THREE.IcosahedronGeometry(radius, 0);
+      decalScale = 0.44;
+    }
+
+    // Deep Crimson Resin Material (matches user reference image)
+    const dieMat = new THREE.MeshStandardMaterial({
+      color: 0x881314,
+      roughness: 0.16,
+      metalness: 0.1,
       flatShading: true
     });
 
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.castShadow = true;
+    const dieMesh = new THREE.Mesh(geo, dieMat);
+    dieMesh.castShadow = true;
+    dieMesh.receiveShadow = false;
 
-    // Attach floating 3D text/badge sprite above die for instant clarity
-    const spriteMap = this.createNumberTexture(targetText, color === 0xf59e0b ? '#78350f' : '#0f172a', '#ffffff', '#fbbf24');
-    const spriteMat = new THREE.SpriteMaterial({ map: spriteMap, depthTest: false });
-    const sprite = new THREE.Sprite(spriteMat);
-    sprite.scale.set(1.4, 1.4, 1.4);
-    sprite.position.set(0, 2.0, 0);
-    mesh.add(sprite);
+    // Extract face planes & attach crisp number decal discs directly onto faces
+    const faces = this.extractFaces(geo);
+    const numFaces = Math.min(faces.length, sides);
 
-    return mesh;
+    // Determine target face index (place targetValue on face 0)
+    const faceValues = [];
+    for (let i = 1; i <= sides; i++) {
+      if (i !== targetValue) faceValues.push(i);
+    }
+    // Randomize surrounding faces for authentic tabletop look
+    faceValues.sort(() => Math.random() - 0.5);
+    faceValues.unshift(targetValue); // Face 0 always holds the rolled target value
+
+    const decalGeo = new THREE.CircleGeometry(radius * decalScale, 20);
+
+    for (let i = 0; i < numFaces; i++) {
+      const face = faces[i];
+      const val = faceValues[i] || (i + 1);
+      const texture = this.createFaceTexture(val, sides);
+
+      const decalMat = new THREE.MeshBasicMaterial({
+        map: texture,
+        transparent: true,
+        depthWrite: false,
+        polygonOffset: true,
+        polygonOffsetFactor: -2,
+        polygonOffsetUnits: -2
+      });
+
+      const decalMesh = new THREE.Mesh(decalGeo, decalMat);
+      // Offset slightly outward along normal to prevent z-fighting
+      decalMesh.position.copy(face.center).addScaledVector(face.normal, 0.015);
+      decalMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), face.normal);
+      dieMesh.add(decalMesh);
+    }
+
+    // Target normal on face 0
+    const targetNormal = faces[0] ? faces[0].normal.clone() : new THREE.Vector3(0, 1, 0);
+
+    return {
+      mesh: dieMesh,
+      radius,
+      sides,
+      targetValue,
+      targetNormal
+    };
   }
 
-  // Roll multiple dice with physics simulation
+  // Roll dice list with realistic 3D tumbling physics and camera alignment
   roll(diceList, onComplete) {
     this.init();
     if (!this.initialized) {
@@ -183,46 +412,71 @@ class Dice3DController {
       return;
     }
 
-    // Reveal overlay
-    this.container.style.opacity = '1';
-    this.playDiceSound();
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
 
-    // Clear old dice
+    this.onFinishCallback = onComplete;
+    this.isRolling = true;
+
+    // Show container
+    this.container.style.pointerEvents = 'auto';
+    this.container.style.opacity = '1';
+    this.playDiceSound(1.0);
+
+    // Remove previous dice
     this.activeDice.forEach(d => this.scene.remove(d.mesh));
     this.activeDice = [];
 
-    const spacing = 3.2;
-    const totalW = (diceList.length - 1) * spacing;
+    // Calculate initial spread layout
+    const count = diceList.length;
+    const spacing = Math.min(3.6, 14 / Math.max(1, count));
+    const totalW = (count - 1) * spacing;
     const startX = -totalW / 2;
 
     diceList.forEach((d, idx) => {
-      const mesh = this.createDieMesh(d.type, d.value);
+      const dieData = this.createDieMesh(d.type, d.value);
+      const mesh = dieData.mesh;
+
+      // Spawn height with random stagger
       mesh.position.set(
-        startX + idx * spacing + (Math.random() - 0.5) * 1.5,
-        10 + Math.random() * 4,
-        (Math.random() - 0.5) * 3
+        startX + idx * spacing + (Math.random() - 0.5) * 1.2,
+        9.5 + Math.random() * 3.5,
+        (Math.random() - 0.5) * 2.5
       );
 
-      mesh.rotation.set(Math.random() * Math.PI * 2, Math.random() * Math.PI * 2, Math.random() * Math.PI * 2);
+      // Fast initial random tumble rotation
+      mesh.rotation.set(
+        Math.random() * Math.PI * 2,
+        Math.random() * Math.PI * 2,
+        Math.random() * Math.PI * 2
+      );
+
       this.scene.add(mesh);
 
+      // Target world normal orientation facing directly towards camera (view vector)
+      const cameraDir = new THREE.Vector3(0, 0.84, 0.54).normalize();
+      const targetQuat = new THREE.Quaternion().setFromUnitVectors(dieData.targetNormal, cameraDir);
+
       this.activeDice.push({
-        mesh,
-        val: d.value,
-        type: d.type,
-        vx: (Math.random() - 0.5) * 0.1,
-        vy: -0.25 - Math.random() * 0.15,
-        vz: (Math.random() - 0.5) * 0.1,
-        rx: (Math.random() - 0.5) * 0.35,
-        ry: (Math.random() - 0.5) * 0.35,
-        rz: (Math.random() - 0.5) * 0.35,
+        ...dieData,
+        vx: (Math.random() - 0.5) * 0.12,
+        vy: -0.32 - Math.random() * 0.12,
+        vz: (Math.random() - 0.5) * 0.12,
+        rx: (Math.random() > 0.5 ? 1 : -1) * (0.28 + Math.random() * 0.22),
+        ry: (Math.random() > 0.5 ? 1 : -1) * (0.28 + Math.random() * 0.22),
+        rz: (Math.random() > 0.5 ? 1 : -1) * (0.28 + Math.random() * 0.22),
         bounces: 0,
-        settled: false
+        settled: false,
+        settleProgress: 0,
+        targetQuat,
+        floorY: dieData.radius * 0.95
       });
     });
 
     const startTime = performance.now();
-    const duration = 1600; // ms
+    const maxDuration = 1450; // ms
 
     const animate = (now) => {
       const elapsed = now - startTime;
@@ -230,59 +484,98 @@ class Dice3DController {
 
       this.activeDice.forEach(die => {
         if (!die.settled) {
+          // Physics step
           die.mesh.position.x += die.vx;
           die.mesh.position.y += die.vy;
           die.mesh.position.z += die.vz;
 
+          // Free tumbling rotation
           die.mesh.rotation.x += die.rx;
           die.mesh.rotation.y += die.ry;
           die.mesh.rotation.z += die.rz;
 
           // Gravity
-          die.vy -= 0.015;
+          die.vy -= 0.016;
 
-          // Floor bounce
-          if (die.mesh.position.y <= 0.8) {
-            die.mesh.position.y = 0.8;
-            die.vy = -die.vy * 0.45; // damping
-            die.vx *= 0.7;
-            die.vz *= 0.7;
-            die.rx *= 0.6;
-            die.ry *= 0.6;
-            die.rz *= 0.6;
+          // Floor collision bounce
+          if (die.mesh.position.y <= die.floorY) {
+            die.mesh.position.y = die.floorY;
+            die.vy = -die.vy * 0.42; // Elastic restitution
+            die.vx *= 0.72; // Horizontal friction
+            die.vz *= 0.72;
+            die.rx *= 0.65;
+            die.ry *= 0.65;
+            die.rz *= 0.65;
             die.bounces++;
 
-            if (die.bounces >= 3 || Math.abs(die.vy) < 0.04) {
+            this.playDiceSound(Math.max(0.2, 1.0 - die.bounces * 0.25));
+
+            if (die.bounces >= 3 || Math.abs(die.vy) < 0.035) {
               die.settled = true;
-              die.mesh.position.y = 0.8;
-            } else {
-              this.playDiceSound();
+              die.mesh.position.y = die.floorY;
             }
           }
           allSettled = false;
+        } else {
+          // Smooth Slerp alignment so the target value faces player perfectly
+          if (die.settleProgress < 1.0) {
+            die.settleProgress += 0.08;
+            die.mesh.quaternion.slerp(die.targetQuat, 0.18);
+            if (die.settleProgress >= 1.0) {
+              die.mesh.quaternion.copy(die.targetQuat);
+            }
+          }
         }
       });
 
       this.renderer.render(this.scene, this.camera);
 
-      if (elapsed < duration && !allSettled) {
-        requestAnimationFrame(animate);
+      if (elapsed < maxDuration || (!allSettled && elapsed < 2000)) {
+        this.animationFrameId = requestAnimationFrame(animate);
       } else {
-        // Complete animation & fade out after brief delay
+        // Ensure final alignment
+        this.activeDice.forEach(die => {
+          die.mesh.position.y = die.floorY;
+          die.mesh.quaternion.copy(die.targetQuat);
+        });
+        this.renderer.render(this.scene, this.camera);
+
+        // Hold result on screen briefly then fade out smoothly
         setTimeout(() => {
-          this.container.style.opacity = '0';
-          setTimeout(() => {
-            this.activeDice.forEach(d => this.scene.remove(d.mesh));
-            this.activeDice = [];
-            if (onComplete) onComplete(diceList);
-          }, 350);
-        }, 1200);
+          this.finishRoll(diceList);
+        }, 850);
       }
     };
 
-    requestAnimationFrame(animate);
+    this.animationFrameId = requestAnimationFrame(animate);
+  }
+
+  // Dismiss immediately when user clicks/taps screen
+  dismissImmediately() {
+    if (!this.isRolling) return;
+    this.finishRoll(this.activeDice.map(d => ({ type: d.sides ? 'd' + d.sides : 'd20', value: d.targetValue })));
+  }
+
+  finishRoll(diceList) {
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
+    this.isRolling = false;
+    this.container.style.opacity = '0';
+    this.container.style.pointerEvents = 'none';
+
+    setTimeout(() => {
+      this.activeDice.forEach(d => this.scene.remove(d.mesh));
+      this.activeDice = [];
+      if (this.onFinishCallback) {
+        const cb = this.onFinishCallback;
+        this.onFinishCallback = null;
+        cb(diceList);
+      }
+    }, 250);
   }
 }
 
-// Global Singleton
+// Global Singleton Instance
 window.Dice3D = new Dice3DController();
