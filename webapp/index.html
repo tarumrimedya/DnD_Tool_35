@@ -5613,9 +5613,9 @@
     function loadFormulaTemplates() {
       try {
         const saved = localStorage.getItem('dnd_custom_dice_templates');
-        if (saved) {
+        if (saved !== null) {
           const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) {
+          if (Array.isArray(parsed)) {
             // Eski fazla hedef örneklerini temizle
             const cleaned = parsed.filter(t => !['Hedef:18 B:+6', 'Hedef:15 B:+8', 'Hedef:24 B:+11'].some(prefix => (t.name || '').startsWith(prefix)));
             if (cleaned.length !== parsed.length) {
@@ -5625,7 +5625,11 @@
           }
         }
       } catch (e) {}
-      return [...DEFAULT_FORMULA_TEMPLATES];
+      const initial = [...DEFAULT_FORMULA_TEMPLATES];
+      try {
+        localStorage.setItem('dnd_custom_dice_templates', JSON.stringify(initial));
+      } catch (e) {}
+      return initial;
     }
 
     function saveFormulaTemplates(templates) {
@@ -5635,14 +5639,27 @@
       renderCustomTemplates();
     }
 
+    function resetFormulaTemplates() {
+      saveFormulaTemplates([...DEFAULT_FORMULA_TEMPLATES]);
+    }
+
     function renderCustomTemplates() {
       const container = document.getElementById('dice-custom-templates-container');
       if (!container) return;
 
       const templates = loadFormulaTemplates();
+      if (templates.length === 0) {
+        container.innerHTML = `
+          <div class="text-xs text-slate-500 py-1 flex items-center gap-2">
+            <span>Kayıtlı şablon bulunmuyor.</span>
+            <button type="button" onclick="resetFormulaTemplates()" class="text-indigo-400 hover:text-indigo-200 underline cursor-pointer text-xs font-medium">Varsayılanları Geri Yükle</button>
+          </div>
+        `;
+        return;
+      }
+
       container.innerHTML = templates.map((t, idx) => {
-        const isCustom = Boolean(t.isCustom);
-        const isTarget = t.formula.toLowerCase().includes('hedef');
+        const isTarget = (t.formula || '').toLowerCase().includes('hedef');
         const badgeColor = isTarget
           ? 'border-emerald-500/50 text-emerald-300 hover:bg-emerald-950/60'
           : 'border-indigo-500/50 text-indigo-300 hover:bg-indigo-950/60';
@@ -5652,11 +5669,9 @@
             <button type="button" onclick="applyFormulaTemplate('${escapeFormulaHtml(t.formula)}')" class="px-2 py-1 text-left truncate hover:underline cursor-pointer" title="${escapeFormulaHtml(t.formula)}">
               ${escapeFormulaHtml(t.name || t.formula)}
             </button>
-            ${isCustom ? `
-              <button type="button" onclick="deleteFormulaTemplate(${idx})" class="pr-1.5 pl-0.5 text-slate-500 hover:text-rose-400 opacity-60 group-hover:opacity-100 transition cursor-pointer text-xs font-bold" title="Şablonu Sil">
-                &times;
-              </button>
-            ` : ''}
+            <button type="button" onclick="deleteFormulaTemplate(${idx})" class="pr-1.5 pl-0.5 text-slate-500 hover:text-rose-400 opacity-60 group-hover:opacity-100 transition cursor-pointer text-xs font-bold" title="Şablonu Sil">
+              &times;
+            </button>
           </div>
         `;
       }).join('');
