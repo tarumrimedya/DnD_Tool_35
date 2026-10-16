@@ -131,9 +131,9 @@
   </section>
 
   <!-- VITALS & STATUS HUD (Visible across all tabs) -->
-  <section class="max-w-7xl w-full mx-auto px-3 md:px-4 py-2 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-3 relative z-10">
-    <!-- Card 1: Hit Points -->
-    <div class="bg-dndCard border border-dndBorder rounded-xl p-3 flex flex-col justify-between shadow">
+  <section class="max-w-7xl w-full mx-auto px-3 md:px-4 py-2 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2 md:gap-3 relative z-10">
+    <!-- Card 1: Hit Points (Orantılı Geniş En: 2 Kolon) -->
+    <div class="bg-dndCard border border-dndBorder rounded-xl p-3 flex flex-col justify-between shadow col-span-1 md:col-span-2 lg:col-span-2">
       <div class="flex justify-between items-center text-xs font-bold text-slate-400 mb-1">
         <span class="text-emerald-400 flex items-center gap-1">🩸 CAN (HP)</span>
         <span id="hp-condition-badge" class="badge bg-emerald-900/60 text-emerald-300 border border-emerald-600">Healthy</span>
@@ -155,8 +155,8 @@
       </div>
     </div>
 
-    <!-- Card 2: Armor Class -->
-    <div class="bg-dndCard border border-dndBorder rounded-xl p-3 flex flex-col justify-between shadow">
+    <!-- Card 2: Armor Class (Orantılı Geniş En: 2 Kolon) -->
+    <div class="bg-dndCard border border-dndBorder rounded-xl p-3 flex flex-col justify-between shadow col-span-1 md:col-span-2 lg:col-span-2">
       <div class="text-xs font-bold text-sky-400 flex items-center gap-1 mb-1">🛡️ ZIRH SINIFI (AC)</div>
       <div class="grid grid-cols-3 gap-1 text-center my-1">
         <div class="bg-slate-900/70 p-1.5 rounded border border-slate-800">
@@ -175,41 +175,19 @@
       <div id="ac-notes-display" class="text-[10px] text-indigo-300 text-center truncate">Mage Armor +4 • Dex +3 • Ring +1</div>
     </div>
 
-    <!-- Card 3: İnisiyatif (Initiative) -->
-    <div class="bg-dndCard border border-dndBorder rounded-xl p-3 flex flex-col justify-between shadow hover:border-amber-500/60 transition group">
-      <div class="flex justify-between items-center text-xs font-bold text-amber-400 mb-1">
-        <span class="flex items-center gap-1">⚡ İNİSİYATİF</span>
-        <span id="init-roll-last-badge" class="badge bg-amber-950/60 text-amber-300 border border-amber-600/60 text-[9px]">1d20+Dex</span>
-      </div>
-      <div class="grid grid-cols-2 gap-1 text-center my-1">
-        <div class="bg-slate-900/70 p-1.5 rounded border border-slate-800 flex flex-col items-center justify-center">
-          <div id="vitals-init-total" class="text-xl font-extrabold text-amber-400 font-mono">+3</div>
-          <div class="text-[9px] text-slate-400 font-semibold uppercase">Toplam</div>
-        </div>
-        <div class="bg-slate-900/70 p-1.5 rounded border border-slate-800 flex flex-col items-center justify-center">
-          <div id="vitals-init-dex" class="text-lg font-bold text-slate-300 font-mono">+3</div>
-          <div class="text-[9px] text-slate-400 font-semibold uppercase">Dex Mod</div>
-        </div>
-      </div>
-      <button onclick="rollInitiative3D()" class="w-full bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 border border-amber-500/50 rounded py-1 text-xs font-bold font-mono transition flex items-center justify-center gap-1.5 shadow active:scale-95 cursor-pointer" title="1d20 İnisiyatif Zarı At">
-        <span>🎲</span>
-        <span id="vitals-init-btn-text">Zar At (1d20)</span>
-      </button>
-    </div>
-
-    <!-- Card 4: Saves -->
-    <div class="bg-dndCard border border-dndBorder rounded-xl p-3 flex flex-col justify-between shadow">
+    <!-- Card 3: Saves (Kayıt Zarları - Orantılı Geniş En: 2 Kolon) -->
+    <div class="bg-dndCard border border-dndBorder rounded-xl p-3 flex flex-col justify-between shadow col-span-2 md:col-span-2 lg:col-span-2">
       <div class="text-xs font-bold text-purple-400 flex items-center gap-1 mb-1">⚡ SAVES (KAYIT ZARLARI)</div>
       <div class="grid grid-cols-3 gap-1 text-center my-1">
-        <button onclick="rollSave3D('Fortitude')" class="bg-slate-900/70 hover:bg-slate-800 p-1.5 rounded border border-slate-800 transition">
+        <button onclick="rollSave3D('Fortitude')" class="bg-slate-900/70 hover:bg-slate-800 p-1.5 rounded border border-slate-800 transition cursor-pointer">
           <div id="save-fort-display" class="text-lg font-bold text-emerald-400 font-mono">+6</div>
           <div class="text-[9px] text-slate-400 font-semibold uppercase">🛡️ Fort</div>
         </button>
-        <button onclick="rollSave3D('Reflex')" class="bg-slate-900/70 hover:bg-slate-800 p-1.5 rounded border border-slate-800 transition">
+        <button onclick="rollSave3D('Reflex')" class="bg-slate-900/70 hover:bg-slate-800 p-1.5 rounded border border-slate-800 transition cursor-pointer">
           <div id="save-ref-display" class="text-lg font-bold text-sky-400 font-mono">+7</div>
           <div class="text-[9px] text-slate-400 font-semibold uppercase">⚡ Ref</div>
         </button>
-        <button onclick="rollSave3D('Will')" class="bg-slate-900/70 hover:bg-slate-800 p-1.5 rounded border border-slate-800 transition">
+        <button onclick="rollSave3D('Will')" class="bg-slate-900/70 hover:bg-slate-800 p-1.5 rounded border border-slate-800 transition cursor-pointer">
           <div id="save-will-display" class="text-lg font-bold text-purple-400 font-mono">+5</div>
           <div class="text-[9px] text-slate-400 font-semibold uppercase">🧠 Will</div>
         </button>
@@ -217,23 +195,39 @@
       <div class="text-[10px] text-amber-300 text-center truncate">Zar atmak için tıklayın</div>
     </div>
 
-    <!-- Card 5: Quick Actions & Rest -->
-    <div class="bg-dndCard border border-dndBorder rounded-xl p-3 flex flex-col justify-between shadow col-span-2 md:col-span-1">
-      <div class="text-xs font-bold text-amber-400 flex items-center gap-1 mb-1">☀️ EYLEMLER & DİNLENME</div>
-      <div class="grid grid-cols-2 gap-1.5 my-1">
-        <button onclick="performLongRest()" class="bg-slate-800 hover:bg-slate-700 text-white rounded p-1.5 text-xs font-medium border border-slate-700 flex items-center justify-center gap-1 transition">
+    <!-- Card 4: İnisiyatif (Save ile Dinlenme Arasında, Yarı En: 1 Kolon) -->
+    <div class="bg-dndCard border border-dndBorder rounded-xl p-2.5 sm:p-3 flex flex-col justify-between shadow hover:border-amber-500/60 transition group col-span-1 lg:col-span-1">
+      <div class="flex justify-between items-center text-xs font-bold text-amber-400 mb-1">
+        <span class="flex items-center gap-1 text-[11px] truncate">⚡ İNİSİYATİF</span>
+        <span id="init-roll-last-badge" class="badge bg-amber-950/60 text-amber-300 border border-amber-600/60 text-[9px] px-1">1d20+Dex</span>
+      </div>
+      <div class="bg-slate-900/70 p-1.5 rounded border border-slate-800 flex flex-col items-center justify-center my-1">
+        <div id="vitals-init-total" class="text-xl sm:text-2xl font-extrabold text-amber-400 font-mono leading-tight">+3</div>
+        <div id="vitals-init-dex" class="text-[9px] text-slate-400 font-semibold uppercase mt-0.5">Dex Mod +3</div>
+      </div>
+      <button onclick="rollInitiative3D()" class="w-full bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 border border-amber-500/50 rounded py-1 text-[11px] font-bold font-mono transition flex items-center justify-center gap-1 shadow active:scale-95 cursor-pointer" title="1d20 İnisiyatif Zarı At">
+        <span>🎲</span>
+        <span id="vitals-init-btn-text">Zar At</span>
+      </button>
+    </div>
+
+    <!-- Card 5: Eylemler & Dinlenme (En Sağda, Yarı En: 1 Kolon) -->
+    <div class="bg-dndCard border border-dndBorder rounded-xl p-2.5 sm:p-3 flex flex-col justify-between shadow col-span-1 lg:col-span-1">
+      <div class="text-xs font-bold text-amber-400 flex items-center gap-1 mb-1 truncate text-[11px]">☀️ DİNLENME</div>
+      <div class="grid grid-cols-2 gap-1 my-1">
+        <button onclick="performLongRest()" class="bg-slate-800 hover:bg-slate-700 text-white rounded p-1 text-[10px] font-bold border border-slate-700 flex items-center justify-center gap-0.5 transition truncate cursor-pointer" title="Long Rest (Uzun Dinlenme)">
           <span>☀️</span>
-          <span>Long Rest</span>
+          <span>Rest</span>
         </button>
-        <button onclick="performEncounterReset()" class="bg-slate-800 hover:bg-slate-700 text-white rounded p-1.5 text-xs font-medium border border-slate-700 flex items-center justify-center gap-1 transition">
+        <button onclick="performEncounterReset()" class="bg-slate-800 hover:bg-slate-700 text-white rounded p-1 text-[10px] font-bold border border-slate-700 flex items-center justify-center gap-0.5 transition truncate cursor-pointer" title="Karşılaşmayı Sıfırla">
           <span>🔄</span>
-          <span>Reset Enc.</span>
+          <span>Reset</span>
         </button>
       </div>
-      <button onclick="advanceNextRound()" class="w-full bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-500/40 rounded-lg py-1.5 px-3 text-xs font-bold flex items-center justify-center gap-2 transition shadow-sm" title="Sonraki tura geçer, aktif buff sürelerini 1 tur azaltır">
+      <button onclick="advanceNextRound()" class="w-full bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-500/40 rounded py-1 px-1 text-[10px] font-bold flex items-center justify-center gap-1 transition shadow-sm cursor-pointer" title="Sonraki tura geçer, aktif buff sürelerini 1 tur azaltır">
         <span>⏭️</span>
-        <span class="tracking-wide">Sonraki Tur</span>
-        <span class="round-counter-badge bg-indigo-950 text-indigo-200 border border-indigo-500/60 px-2 py-0.5 rounded-md text-[11px] font-mono font-black shadow-sm min-w-[3.25rem] text-center inline-block">Tur 1</span>
+        <span class="tracking-wide">Tur</span>
+        <span class="round-counter-badge bg-indigo-950 text-indigo-200 border border-indigo-500/60 px-1 py-0.2 rounded text-[10px] font-mono font-black">Tur 1</span>
       </button>
     </div>
   </section>
@@ -3816,7 +3810,7 @@
 
       const vitalsInitDex = document.getElementById('vitals-init-dex');
       if (vitalsInitDex) {
-        vitalsInitDex.textContent = dexStr;
+        vitalsInitDex.textContent = `Dex Mod ${dexStr}`;
         if (initData.featBonus > 0) {
           vitalsInitDex.title = `Dex: ${dexStr} • Feat (Imp. Init): +${initData.featBonus}`;
         }
