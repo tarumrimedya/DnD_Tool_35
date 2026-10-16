@@ -31,9 +31,6 @@
   <!-- Three.js CDN for 3D Animated Physics Dice -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-  <!-- Google Identity Services for Google Drive Cloud Sync -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-
   <style>
     body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #080e1e; color: #f8fafc; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -66,7 +63,7 @@
 
     <!-- Quick Action / Cloud Sync Pill & Settings Button -->
     <div class="flex items-center gap-2">
-      <div id="sync-status-pill" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-slate-800 text-slate-300 border border-slate-700">
+      <div id="sync-status-pill" onclick="CloudSync.connect()" title="Bulut durumunu kontrol et / eşitle" class="cursor-pointer flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-slate-800 text-slate-300 border border-slate-700">
         <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
         <span id="sync-status-text">🟡 Yerel Kayıtlı (Çevrimdışı)</span>
       </div>
@@ -1488,29 +1485,34 @@
     <!-- ==================================================== -->
     <div id="tab-sync" class="tab-content hidden space-y-4">
       <div class="bg-dndCard border border-dndBorder rounded-xl p-4 shadow-lg space-y-4">
-        <h2 class="text-sm font-bold text-indigo-400 border-b border-dndBorder pb-2">🔄 GOOGLE DRIVE & SÜRÜM EŞİTLEME MERKEZİ</h2>
+        <h2 class="text-sm font-bold text-indigo-400 border-b border-dndBorder pb-2">⚡ VERCEL KİŞİSEL BULUT & VERİTABANI MERKEZİ</h2>
 
-        <!-- Google Drive Cloud Sync Card -->
+        <!-- Vercel / Upstash KV Cloud Sync Card -->
         <div class="bg-slate-900 border border-indigo-500/40 rounded-xl p-4 space-y-3">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <span class="text-2xl">☁️</span>
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5">
+              <span class="text-2xl">⚡</span>
               <div>
-                <h3 class="text-xs font-bold text-white">Google Drive ile Platformlar Arası Canlı Senkronizasyon</h3>
-                <p class="text-[11px] text-slate-400">PC, tablet veya telefonunuzda aynı dnd35_character.json dosyasını açıp kaydedin.</p>
+                <h3 class="text-xs font-bold text-white">Vercel Storage (Upstash KV) & Kişisel Kasa Senkronizasyonu</h3>
+                <p class="text-[11px] text-slate-400">Hem <b>Karakterinizi</b> hem de <b>Master DB (29 Sütun Kütüphane)</b> verilerinizi kendi özel Vercel bulutunuzda otomatik eşitler.</p>
               </div>
             </div>
-            <button onclick="GDriveSync.connect()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-2 rounded-lg transition shadow">
-              🔑 Google Drive'a Bağlan
-            </button>
+            <div class="flex items-center gap-2">
+              <button onclick="openSettingsModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs px-3 py-2 rounded-lg border border-slate-700 transition">
+                ⚙️ Kurulum & PIN Ayarları
+              </button>
+              <button onclick="CloudSync.connect()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-2 rounded-lg transition shadow">
+                🔄 Bağlantıyı Kontrol Et
+              </button>
+            </div>
           </div>
 
           <div class="flex flex-wrap gap-2 pt-2 border-t border-slate-800">
-            <button onclick="GDriveSync.pushToDrive()" class="flex-1 bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs font-semibold py-2 rounded-lg border border-emerald-500/40 transition">
-              ⬆️ Google Drive'a Şimdi Kaydet (Push)
+            <button onclick="CloudSync.pushToCloud()" class="flex-1 bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs font-semibold py-2 rounded-lg border border-emerald-500/40 transition">
+              ⬆️ Buluta Şimdi Kaydet (Karakter + Master DB Push)
             </button>
-            <button onclick="GDriveSync.pullFromDrive()" class="flex-1 bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300 hover:text-white text-xs font-semibold py-2 rounded-lg border border-indigo-500/40 transition">
-              ⬇️ Google Drive'dan Yenile (Pull)
+            <button onclick="CloudSync.pullFromCloud()" class="flex-1 bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300 hover:text-white text-xs font-semibold py-2 rounded-lg border border-indigo-500/40 transition">
+              ⬇️ Buluttan Şimdi Çek (Karakter + Master DB Pull)
             </button>
           </div>
         </div>
@@ -1522,10 +1524,11 @@
               <span>💾</span>
               <span>YEREL DOSYA YEDEKLEME (.JSON İNDİR)</span>
             </div>
-            <p class="text-[11px] text-slate-400">İnternet olmasa bile karakterinizi tek tıkla bilgisayarınıza indirin.</p>
-            <div class="flex gap-2 pt-2">
-              <button onclick="exportCharacterJson()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2 rounded-lg border border-slate-700 transition">💾 Karakteri İndir</button>
-              <button onclick="exportMasterDbJson()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2 rounded-lg border border-slate-700 transition">📚 Master DB İndir</button>
+            <p class="text-[11px] text-slate-400">İnternet olmasa bile karakterinizi ve Master DB kütüphanenizi bilgisayarınıza indirin.</p>
+            <div class="flex flex-wrap gap-2 pt-2">
+              <button onclick="exportFullBundleJson()" class="w-full bg-indigo-600/30 hover:bg-indigo-600 text-indigo-200 hover:text-white text-xs font-bold py-2 rounded-lg border border-indigo-500/40 transition">📦 Tam Paket İndir (Karakter + Master DB)</button>
+              <button onclick="exportCharacterJson()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2 rounded-lg border border-slate-700 transition">💾 Sadece Karakter</button>
+              <button onclick="exportMasterDbJson()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2 rounded-lg border border-slate-700 transition">📚 Sadece Master DB</button>
             </div>
           </div>
 
@@ -1534,7 +1537,7 @@
               <span>📂</span>
               <span>JSON DOSYASINDAN YÜKLE</span>
             </div>
-            <p class="text-[11px] text-slate-400">Daha önce indirdiğiniz .json karakter dosyasını seçin.</p>
+            <p class="text-[11px] text-slate-400">Daha önce indirdiğiniz Tam Paket, Karakter veya Master DB (.json) dosyasını seçin.</p>
             <input type="file" id="json-file-input" accept=".json" onchange="handleJsonFileUpload(event)" class="hidden">
             <button onclick="document.getElementById('json-file-input').click()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2 rounded-lg border border-slate-700 transition">Dosya Seç (.json)</button>
           </div>
@@ -2162,61 +2165,72 @@
       <!-- Modal Body -->
       <div class="p-4 overflow-y-auto space-y-4 flex-1 text-xs">
         
-        <!-- SECTION 1: GOOGLE DRIVE CLOUD SYNC -->
+        <!-- SECTION 1: VERCEL STORAGE (UPSTASH KV) & PERSONAL VAULT PIN -->
         <div class="bg-slate-900/90 border border-indigo-500/40 rounded-xl p-3.5 space-y-3 shadow">
-          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
             <div class="flex items-center gap-2">
-              <span class="text-xl">☁️</span>
+              <span class="text-xl">⚡</span>
               <div>
                 <h4 class="text-xs font-bold text-white flex items-center gap-2">
-                  <span>Google Drive Bulut Senkronizasyonu</span>
-                  <span id="settings-gdrive-status" class="text-[10px] text-slate-400 font-normal">Bağlı Değil</span>
+                  <span>Vercel Bulut Veritabanı (Upstash KV) & Özel Kasa</span>
+                  <span id="settings-gdrive-status" class="text-[10px] text-slate-400 font-normal">Kontrol Ediliyor...</span>
                 </h4>
-                <p class="text-[10px] text-slate-400">PC, tablet ve telefonunuz arasında karakterinizi otomatik eşitleyin.</p>
+                <p class="text-[10px] text-slate-400">Kendi Vercel hesabınız üzerinden Karakter + Master DB verilerinizi şifreli ve özel olarak eşitleyin.</p>
               </div>
             </div>
-            <button onclick="GDriveSync.connect()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition shadow flex items-center gap-1.5">
-              <span>🔑</span>
-              <span>Google ile Giriş Yap</span>
+            <button onclick="CloudSync.saveCloudSettings()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition shadow flex items-center gap-1.5">
+              <span>💾</span>
+              <span>Ayarları Kaydet & Bağlan</span>
             </button>
           </div>
 
-          <!-- Direct Client ID Input -->
-          <div class="space-y-1.5 bg-slate-950/70 p-2.5 rounded-lg border border-slate-800">
-            <label class="block text-[10px] font-bold text-slate-400 uppercase">Google Cloud Client ID (Tek Seferlik Yapılandırma):</label>
-            <div class="flex gap-2">
-              <input type="text" id="settings-gdrive-client-id" placeholder="Örn: 123456789-xxxx.apps.googleusercontent.com" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-indigo-400">
-              <button onclick="GDriveSync.saveClientId(document.getElementById('settings-gdrive-client-id').value)" class="bg-indigo-600/80 hover:bg-indigo-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-indigo-500/40 transition">
-                💾 Kaydet
-              </button>
+          <!-- Personal APP_PIN Input -->
+          <div class="space-y-2 bg-slate-950/70 p-2.5 rounded-lg border border-slate-800">
+            <div>
+              <label class="block text-[10px] font-bold text-emerald-400 uppercase mb-1">🔒 Kişisel Uygulama Şifresi (APP_PIN):</label>
+              <input type="password" id="settings-app-pin" placeholder="Vercel Environment Variables içinde belirlediğiniz APP_PIN şifresi" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-emerald-400">
+              <p class="text-[10px] text-slate-400 mt-1">Vercel'de <code class="text-amber-300">APP_PIN</code> tanımladığınızda, bu şifreyi bilmeyen hiç kimse uygulamanıza veya veritabanınıza erişemez.</p>
             </div>
-            
-            <!-- Quick Help Accordion -->
-            <details class="text-[10px] text-slate-400 pt-1">
-              <summary class="cursor-pointer text-indigo-300 hover:text-indigo-200 font-semibold flex items-center gap-1">
-                <span>❓</span> <span>Nasıl Client ID Alınır? (30 Saniyelik Adım Adım Rehber)</span>
+
+            <!-- Optional Direct Upstash Credentials (For Local / Offline Testing) -->
+            <details class="text-[10px] text-slate-400 pt-1 border-t border-slate-800/80">
+              <summary class="cursor-pointer text-slate-300 hover:text-white font-semibold flex items-center gap-1">
+                <span>🔧</span> <span>İsteğe Bağlı: Doğrudan Upstash REST Bağlantısı (Yerel PC / Offline Test İçin)</span>
               </summary>
-              <div class="mt-2 space-y-1.5 pl-3 border-l-2 border-indigo-500/40 text-slate-300">
-                <p>1. <a href="https://console.cloud.google.com/apis/credentials" target="_blank" class="text-indigo-400 underline font-bold">Google Cloud Console Kimlik Bilgileri ↗</a> sayfasına gidin.</p>
-                <p>2. <b>Kimlik Bilgisi Oluştur ➔ OAuth İstemci Kimliği ➔ Web Uygulaması</b> seçin.</p>
-                <p>3. <b>Yetkili JavaScript Kaynakları</b> alanına aşağıdaki site adresinizi ekleyin:</p>
-                <div class="flex items-center gap-1 bg-slate-900 p-1.5 rounded border border-slate-700 font-mono text-amber-300 text-[10px] select-all">
-                  <span id="settings-current-origin">https://dndtool35r2.vercel.app</span>
-                  <button onclick="navigator.clipboard.writeText(document.getElementById('settings-current-origin').textContent); alert('📋 Adres panoya kopyalandı!');" class="ml-auto text-slate-400 hover:text-white px-1.5 py-0.5 bg-slate-800 rounded text-[9px]">Kopyala</button>
+              <div class="mt-2 space-y-2 pl-2 border-l-2 border-slate-700">
+                <div>
+                  <label class="block text-[9px] uppercase font-bold text-slate-400">KV_REST_API_URL (veya UPSTASH_REDIS_REST_URL):</label>
+                  <input type="text" id="settings-upstash-url" placeholder="https://xxxx.upstash.io" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-[11px] text-white font-mono">
                 </div>
-                <p>4. Oluşan <b>İstemci Kimliği (Client ID)</b>'yi yukarıdaki kutuya yapıştırıp <b>Kaydet</b>'e tıklayın!</p>
+                <div>
+                  <label class="block text-[9px] uppercase font-bold text-slate-400">KV_REST_API_TOKEN (veya UPSTASH_REDIS_REST_TOKEN):</label>
+                  <input type="password" id="settings-upstash-token" placeholder="AXxx..." class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-[11px] text-white font-mono">
+                </div>
+              </div>
+            </details>
+
+            <!-- 1-Minute Personal Vercel Setup Guide -->
+            <details class="text-[10px] text-slate-400 pt-1 border-t border-slate-800/80">
+              <summary class="cursor-pointer text-indigo-300 hover:text-indigo-200 font-semibold flex items-center gap-1">
+                <span>❓</span> <span>Kendi Özel Vercel Veritabanınızı Nasıl Kurarsınız? (1 Dakikalık Rehber)</span>
+              </summary>
+              <div class="mt-2 space-y-1.5 pl-3 border-l-2 border-indigo-500/40 text-slate-300 leading-relaxed">
+                <p>1. Bu projeyi kendi GitHub hesabınıza aktarın ve <a href="https://vercel.com/new" target="_blank" class="text-indigo-400 underline font-bold">Vercel Dashboard ↗</a> üzerinden ücretsiz <b>Import</b> edin.</p>
+                <p>2. Vercel proje panelinizde üst menüden <b>Storage ➔ Create Database ➔ Upstash (Serverless Redis / KV)</b> seçip ücretsiz oluşturun ve projenize bağlayın (<i>KV_REST_API_URL</i> ve <i>KV_REST_API_TOKEN</i> otomatik eklenir).</p>
+                <p>3. Uygulamayı <b>tamamen size özel (private)</b> yapmak için Vercel'de <b>Settings ➔ Environment Variables</b> kısmına gidin, <b>Key:</b> <code class="text-amber-300">APP_PIN</code> ve <b>Value:</b> <code class="text-emerald-300">KendiGizliŞifreniz</code> ekleyip <b>Redeploy</b> yapın.</p>
+                <p>4. Artık PC, telefon veya tabletten kendi Vercel linkinize girip yalnızca <code class="text-amber-300">APP_PIN</code> şifrenizi yazarak tüm Karakter ve Master DB verilerinizi otomatik senkronize edebilirsiniz!</p>
               </div>
             </details>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-            <button onclick="GDriveSync.pushToDrive()" class="bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs font-semibold py-2 px-3 rounded-lg border border-emerald-500/40 transition flex items-center justify-center gap-1.5">
+            <button onclick="CloudSync.pushToCloud()" class="bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs font-semibold py-2 px-3 rounded-lg border border-emerald-500/40 transition flex items-center justify-center gap-1.5">
               <span>⬆️</span>
-              <span>Google Drive'a Şimdi Kaydet (Push)</span>
+              <span>Buluta Şimdi Kaydet (Karakter + DB)</span>
             </button>
-            <button onclick="GDriveSync.pullFromDrive()" class="bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300 hover:text-white text-xs font-semibold py-2 px-3 rounded-lg border border-indigo-500/40 transition flex items-center justify-center gap-1.5">
+            <button onclick="CloudSync.pullFromCloud()" class="bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300 hover:text-white text-xs font-semibold py-2 px-3 rounded-lg border border-indigo-500/40 transition flex items-center justify-center gap-1.5">
               <span>⬇️</span>
-              <span>Google Drive'dan Yenile (Pull)</span>
+              <span>Buluttan Şimdi Çek (Karakter + DB)</span>
             </button>
           </div>
         </div>
@@ -2268,7 +2282,17 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div class="bg-slate-950 p-2.5 rounded-lg border border-indigo-500/30 space-y-1.5">
+              <div class="font-bold text-indigo-300 flex items-center gap-1">
+                <span>📦</span> <span>Tam Paket (Tümü)</span>
+              </div>
+              <div class="flex gap-1.5">
+                <button onclick="exportFullBundleJson()" class="flex-1 bg-indigo-600/30 hover:bg-indigo-600 text-indigo-200 hover:text-white text-xs font-semibold py-1.5 rounded border border-indigo-500/40 transition">💾 İndir</button>
+                <button onclick="document.getElementById('settings-json-file-input').click()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-1.5 rounded border border-slate-700 transition">📂 Yükle</button>
+              </div>
+            </div>
+
             <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 space-y-1.5">
               <div class="font-bold text-slate-300 flex items-center gap-1">
                 <span>👤</span> <span>Karakter Dosyası</span>
@@ -2332,6 +2356,26 @@
           </button>
         </div>
 
+      </div>
+    </div>
+  </div>
+
+  <!-- PERSONAL VAULT LOCK MODAL (Shown automatically when APP_PIN is enabled on Vercel) -->
+  <div id="vault-lock-modal" class="hidden fixed inset-0 z-[100] bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-dndCard border-2 border-indigo-500/60 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 text-center">
+      <div class="w-14 h-14 mx-auto rounded-2xl bg-indigo-950 border border-indigo-500/50 flex items-center justify-center text-3xl shadow-inner">
+        🔒
+      </div>
+      <div>
+        <h3 class="text-base font-extrabold text-white tracking-wide">KİŞİSEL KASA KORUMASI</h3>
+        <p class="text-xs text-slate-400 mt-1">Bu D&D 3.5e uygulaması özeldir. Karakter ve Master DB verilerine erişmek için <code class="text-amber-300">APP_PIN</code> şifrenizi girin.</p>
+      </div>
+      <div id="vault-lock-error" class="hidden bg-rose-950/80 border border-rose-500/60 text-rose-200 text-xs px-3 py-2 rounded-lg"></div>
+      <div class="space-y-2">
+        <input type="password" id="vault-lock-pin-input" onkeydown="if(event.key==='Enter') CloudSync.unlockVault()" placeholder="Uygulama PIN / Şifresi..." class="w-full bg-slate-950 border border-indigo-500/50 rounded-xl px-4 py-2.5 text-sm text-center text-white font-mono tracking-widest focus:outline-none focus:border-indigo-400">
+        <button onclick="CloudSync.unlockVault()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-2.5 rounded-xl transition shadow-lg">
+          🔓 Kilidi Aç & Veritabanını Yükle
+        </button>
       </div>
     </div>
   </div>
@@ -2447,16 +2491,14 @@
         maskedSpan.textContent = apiKey ? (apiKey.substring(0, 6) + '...' + apiKey.substring(apiKey.length - 4)) : 'Tanımlı Değil (Ücretsiz Alın)';
       }
 
-      // Update Google Drive UI in settings
-      const gdriveId = localStorage.getItem('gdrive_client_id') || '';
-      const gdriveInput = document.getElementById('settings-gdrive-client-id');
-      if (gdriveInput) gdriveInput.value = gdriveId;
-      const originSpan = document.getElementById('settings-current-origin');
-      if (originSpan && window.location.origin) {
-        originSpan.textContent = window.location.origin;
-      }
-      if (window.GDriveSync && typeof GDriveSync.updateStatusUI === 'function') {
-        GDriveSync.updateStatusUI(GDriveSync.accessToken ? 'connected' : (gdriveId ? 'ready' : 'unconfigured'));
+      // Update Vercel / Upstash Cloud UI in settings
+      if (window.CloudSync) {
+        CloudSync.populateSettingsInputs();
+        CloudSync.updateStatusUI(
+          (CloudSync.pinRequired && !CloudSync.authenticated)
+            ? 'locked'
+            : (CloudSync.configured ? 'connected' : 'unconfigured')
+        );
       }
 
       // Update House Rules Checkboxes
@@ -2514,7 +2556,7 @@
         return;
       }
       try {
-        const models = await (window.RuleMaster ? RuleMaster.getAvailableGeminiModels(key) : ['gemini-2.5-flash']);
+        const models = await (window.RuleMaster ? RuleMaster.getAvailableGeminiModels(key) : ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-3.5-flash']);
         alert(`🩺 GEMINI API TANI RAPORU\n\n✅ Bağlantı Başarılı!\nHesabınızda kullanılabilir aktif modeller:\n${models.map((m, i) => `${i + 1}. ${m}`).join('\n')}\n\nSistem bu modelleri otomatik önceliklendirecektir.`);
       } catch (err) {
         alert(`❌ Tanı Hatası: ${err.message}`);
@@ -5054,6 +5096,21 @@
     }
 
     // Export & Import
+    function exportFullBundleJson() {
+      const bundle = {
+        version: 2,
+        lastModified: new Date().toISOString(),
+        character: character,
+        masterDb: masterDb
+      };
+      const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `dnd35_full_backup_${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+    }
+
     function exportCharacterJson() {
       const blob = new Blob([JSON.stringify(character, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -5079,14 +5136,21 @@
       reader.onload = (e) => {
         try {
           const parsed = JSON.parse(e.target.result);
-          if (Array.isArray(parsed)) {
+          if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && (parsed.character || parsed.masterDb)) {
+            if (parsed.character) character = parsed.character;
+            if (Array.isArray(parsed.masterDb)) masterDb = parsed.masterDb;
+            alert(`✅ Tam Paket başarıyla yüklendi!\n• Karakter: ${character?.name || '-'}\n• Master DB: ${masterDb.length} kayıt`);
+          } else if (Array.isArray(parsed)) {
             masterDb = parsed;
             alert(`✅ Master DB başarıyla yüklendi (${parsed.length} kayıt)!`);
           } else if (parsed.name || parsed.characterName || parsed.abilities) {
             character = parsed;
             alert('✅ Karakter verisi başarıyla yüklendi!');
           }
-          saveStateToStorage();
+          saveStateToStorage(true);
+          if (window.RuleMaster && typeof RuleMaster.renderTable === 'function') {
+            RuleMaster.renderTable();
+          }
           renderAll();
         } catch (err) {
           alert('❌ JSON dosyası çözümlenemedi: ' + err.message);

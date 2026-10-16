@@ -950,6 +950,13 @@ const RuleMaster = {
   lastAiResults: [],
   _cachedModels: null,
 
+  cleanJsonText(raw) {
+    if (!raw) return '';
+    let cleaned = String(raw).trim();
+    cleaned = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+    return cleaned;
+  },
+
   async getAvailableGeminiModels(apiKey) {
     if (this._cachedModels && this._cachedModels.length > 0) {
       return this._cachedModels;
@@ -962,17 +969,16 @@ const RuleMaster = {
           .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'))
           .map(m => m.name.replace(/^models\//, ''));
 
-        // Preferred order of modern non-deprecated flash models:
+        // Preferred order of modern non-deprecated flash & pro models (2025/2026):
         const candidatePreferences = [
           'gemini-3.5-flash-lite',
+          'gemini-3.5-flash',
+          'gemini-3.8-flash',
+          'gemini-2.5-flash-lite',
           'gemini-2.5-flash',
-          'gemini-2.0-flash',
-          'gemini-1.5-flash',
-          'gemini-flash-latest',
           'gemini-flash-lite-latest',
-          'gemini-1.5-flash-8b',
-          'gemini-2.5-pro',
-          'gemini-1.5-pro'
+          'gemini-flash-latest',
+          'gemini-2.5-pro'
         ];
 
         const selected = [];
@@ -997,10 +1003,11 @@ const RuleMaster = {
 
     // Default safe fallback if list request fails
     return [
-      'gemini-3.5-flash-lite',
+      'gemini-2.5-flash-lite',
       'gemini-2.5-flash',
-      'gemini-2.0-flash',
-      'gemini-1.5-flash',
+      'gemini-3.5-flash-lite',
+      'gemini-3.5-flash',
+      'gemini-flash-lite-latest',
       'gemini-flash-latest'
     ];
   },
@@ -1376,7 +1383,8 @@ Return valid JSON only matching this schema:
           const rawText = json.candidates?.[0]?.content?.parts?.[0]?.text;
           if (rawText) {
             try {
-              successResponse = JSON.parse(rawText);
+              const cleanText = this.cleanJsonText(rawText);
+              successResponse = JSON.parse(cleanText);
               break;
             } catch (pErr) {
               lastError = 'JSON Çözümleme hatası: ' + pErr.message;
@@ -2988,7 +2996,8 @@ Return valid JSON only matching this schema:
         const data = await response.json();
         const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
         if (text) {
-          successData = JSON.parse(text);
+          const cleanText = this.cleanJsonText(text);
+          successData = JSON.parse(cleanText);
           break;
         }
       } catch (err) {
