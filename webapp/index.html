@@ -2732,28 +2732,48 @@
   <!-- MODAL: ADD / CREATE ACTIVE BUFF -->
   <!-- ==================================================== -->
   <div id="add-buff-modal" class="hidden fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
-    <div class="bg-dndCard border border-indigo-500/80 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
+    <div id="add-buff-modal-container" class="bg-dndCard border border-indigo-500/80 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col transition-colors">
       <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between shrink-0">
         <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-indigo-950/80 border border-indigo-600/50 flex items-center justify-center text-lg shadow-inner">
+          <div id="buff-modal-icon-badge" class="w-8 h-8 rounded-lg bg-indigo-950/80 border border-indigo-600/50 flex items-center justify-center text-lg shadow-inner">
             ✨
           </div>
           <div>
             <h3 class="text-sm md:text-base font-extrabold text-white flex items-center gap-2">
-              <span>Yeni Buff / Büyü Etkisi Ekle</span>
-              <span class="text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 px-2 py-0.5 rounded-full">D&D 3.5e RAW</span>
+              <span id="buff-modal-title">Yeni Buff / Büyü Etkisi Ekle</span>
+              <span id="buff-modal-badge" class="text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 px-2 py-0.5 rounded-full">D&D 3.5e RAW</span>
             </h3>
-            <p class="text-[10px] text-slate-400">Hazır D&D 3.5e şablonu seçin veya özel buff tanımlayın</p>
+            <p id="buff-modal-subtitle" class="text-[10px] text-slate-400">Hazır D&D 3.5e şablonu seçin veya özel buff tanımlayın</p>
           </div>
         </div>
         <button onclick="closeAddBuffModal()" class="text-slate-400 hover:text-white p-1 rounded-lg text-lg font-bold">&times;</button>
       </div>
 
+      <!-- Segmented Mode Switch: [✨ Buff] / [🩸 Debuff / Durum] -->
+      <div class="bg-slate-950/90 px-4 py-2 border-b border-slate-800 flex items-center gap-2 shrink-0">
+        <button 
+          type="button" 
+          id="btn-mode-buff"
+          onclick="switchBuffModalMode('buff')"
+          class="flex-1 py-1.5 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition border shadow-sm bg-indigo-600 border-indigo-500 text-white shadow-indigo-900/40">
+          <span>✨</span>
+          <span>Buff (Yararlı Etki)</span>
+        </button>
+        <button 
+          type="button" 
+          id="btn-mode-debuff"
+          onclick="switchBuffModalMode('debuff')"
+          class="flex-1 py-1.5 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition border border-slate-700 bg-slate-900 text-slate-400 hover:text-rose-300 hover:border-rose-600/50">
+          <span>🩸</span>
+          <span>Debuff / Durum (Condition)</span>
+        </button>
+      </div>
+
       <div class="p-4 space-y-3 overflow-y-auto">
         <!-- Rule Master AI & Kütüphane Arama -->
-        <div class="bg-gradient-to-r from-purple-950/70 via-indigo-950/60 to-slate-900 border border-purple-500/40 rounded-xl p-3 space-y-2 shadow-inner">
+        <div id="buff-rule-master-box" class="bg-gradient-to-r from-purple-950/70 via-indigo-950/60 to-slate-900 border border-purple-500/40 rounded-xl p-3 space-y-2 shadow-inner">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-purple-300 flex items-center gap-1.5">
+            <span id="buff-rule-master-title" class="text-xs font-bold text-purple-300 flex items-center gap-1.5">
               <span>🤖</span>
               <span>Rule Master ile Büyü / Buff Getir</span>
             </span>
@@ -2781,9 +2801,9 @@
           <div id="buff-rule-master-status" class="hidden text-[11px] py-1 px-2.5 rounded-lg"></div>
         </div>
 
-        <!-- Preset Selector (Birkaç Seçkin Örnek) -->
+        <!-- Preset Selector -->
         <div>
-          <label class="block text-[11px] font-bold text-amber-400 uppercase mb-1">⚡ Hazır D&D 3.5e Şablonu Seç</label>
+          <label id="buff-preset-label" class="block text-[11px] font-bold text-amber-400 uppercase mb-1">⚡ Hazır D&D 3.5e Buff Şablonu Seç</label>
           <select id="buff-preset-select" onchange="onBuffPresetChange()" class="w-full bg-slate-900 border border-indigo-500/60 rounded-lg px-3 py-2 text-xs font-semibold text-white focus:ring-1 focus:ring-indigo-400">
             <option value="custom">-- Özel Buff Tanımla --</option>
             <option value="mage_armor">🛡️ Mage Armor (+4 Armor AC, 50 Tur / 5 Saat)</option>
@@ -2793,9 +2813,26 @@
           </select>
         </div>
 
+        <!-- Parent-Child Alt Etkiler Önizleme Kutusu -->
+        <div id="buff-children-preview-container" class="hidden bg-slate-950/80 p-3 rounded-xl border border-rose-500/40 space-y-2 shadow-inner">
+          <div class="flex items-center justify-between text-xs font-bold text-rose-300">
+            <span class="flex items-center gap-1.5">
+              <span>🌳</span>
+              <span>Parent-Child Alt Etkileri:</span>
+            </span>
+            <span id="buff-children-count-badge" class="badge bg-rose-950 text-rose-200 border border-rose-700 text-[10px] px-2 py-0.5 rounded-full font-mono">0 Alt Etki</span>
+          </div>
+          <div id="buff-children-list" class="space-y-1.5 max-h-40 overflow-y-auto text-xs font-mono pr-1">
+            <!-- Dynamic child items -->
+          </div>
+          <div class="text-[10px] text-slate-400 italic pt-1 border-t border-slate-800">
+            ℹ️ Parent (Ana Etki) açılıp kapandığında, tüm bu alt etkiler birlikte hesaplamaya dahil edilir veya devre dışı bırakılır.
+          </div>
+        </div>
+
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Buff Adı *</label>
+            <label id="buff-label-name" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Buff Adı *</label>
             <input type="text" id="buff-input-name" placeholder="Örn: Haste" class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white">
           </div>
           <div>
@@ -2807,6 +2844,8 @@
               <option value="Item / Equipment (Eşya)">Büyülü Eşya (Item)</option>
               <option value="Stance / Maneuver (Duruş)">Duruş / Manevra (Stance)</option>
               <option value="Class Feature (Sınıf Yeteneği)">Sınıf Yeteneği (Class Feature)</option>
+              <option value="Condition (Durum)">Durum / Condition</option>
+              <option value="Undead / Monster (Yaratık)">Yaratık / Undead Yeteneği</option>
               <option value="Feat (Hüner)">Hüner (Feat)</option>
               <option value="DM Boon (Özel)">DM Boon (Özel)</option>
               <option value="Diğer (Harici)">Diğer / Harici</option>
@@ -2816,7 +2855,7 @@
 
         <div class="grid grid-cols-3 gap-2">
           <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Bonus Türü</label>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Bonus/Ceza Türü</label>
             <select id="buff-input-type" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-white">
               <option value="Enhancement">Enhancement</option>
               <option value="Morale">Morale</option>
@@ -2826,6 +2865,7 @@
               <option value="Deflection">Deflection</option>
               <option value="Natural">Natural</option>
               <option value="Dodge">Dodge</option>
+              <option value="Penalty">Penalty (Ceza)</option>
               <option value="Untyped">Untyped</option>
             </select>
           </div>
@@ -2841,15 +2881,15 @@
 
         <div class="grid grid-cols-3 gap-2 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
           <div>
-            <label class="block text-[10px] font-bold text-sky-400 mb-0.5">AC Bonusu</label>
+            <label class="block text-[10px] font-bold text-sky-400 mb-0.5">AC Değişimi (+/-)</label>
             <input type="number" id="buff-input-ac" placeholder="0" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white text-center">
           </div>
           <div>
-            <label class="block text-[10px] font-bold text-emerald-400 mb-0.5">Saldırı Bonusu</label>
+            <label class="block text-[10px] font-bold text-emerald-400 mb-0.5">Saldırı Değişimi (+/-)</label>
             <input type="number" id="buff-input-att" placeholder="0" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white text-center">
           </div>
           <div>
-            <label class="block text-[10px] font-bold text-amber-400 mb-0.5">Hasar Bonusu</label>
+            <label class="block text-[10px] font-bold text-amber-400 mb-0.5">Hasar Değişimi (+/-)</label>
             <input type="number" id="buff-input-dmg" placeholder="0" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white text-center">
           </div>
         </div>
@@ -2871,7 +2911,7 @@
 
       <div class="bg-slate-950 px-4 py-3 border-t border-slate-800 flex justify-end gap-2 shrink-0">
         <button onclick="closeAddBuffModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs px-3.5 py-1.5 rounded-lg transition">İptal</button>
-        <button onclick="saveNewBuffFromModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition shadow">✨ Buffı Ekle ve Etkinleştir</button>
+        <button id="btn-save-buff" onclick="saveNewBuffFromModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition shadow">✨ Buffı Ekle ve Etkinleştir</button>
       </div>
     </div>
   </div>
@@ -7693,18 +7733,32 @@
         `);
       }
 
-      // 2. Active Buffs contributing to saves
+      // 2. Active Buffs & Debuffs contributing to saves
       (character.buffs || []).forEach(b => {
         if (!b.active) return;
         const bNotes = [];
-        if (b.saveBonus) bNotes.push(`Tüm Zarlara +${b.saveBonus}`);
-        if (b.fortBonus) bNotes.push(`Fort +${b.fortBonus}`);
-        if (b.refBonus) bNotes.push(`Ref +${b.refBonus}`);
-        if (b.willBonus) bNotes.push(`Will +${b.willBonus}`);
+        if (b.saveBonus) bNotes.push(`Tüm Zarlara ${b.saveBonus > 0 ? '+' : ''}${b.saveBonus}`);
+        if (b.fortBonus) bNotes.push(`Fort ${b.fortBonus > 0 ? '+' : ''}${b.fortBonus}`);
+        if (b.refBonus) bNotes.push(`Ref ${b.refBonus > 0 ? '+' : ''}${b.refBonus}`);
+        if (b.willBonus) bNotes.push(`Will ${b.willBonus > 0 ? '+' : ''}${b.willBonus}`);
+        if (b.negativeLevels) bNotes.push(`-${b.negativeLevels} Negatif Seviye (Tüm Kurtarma Zarlarına -${b.negativeLevels})`);
+        if (Array.isArray(b.children)) {
+          b.children.forEach(c => {
+            if (c.saveBonus) bNotes.push(`Tüm Zarlara ${c.saveBonus > 0 ? '+' : ''}${c.saveBonus}`);
+            if (c.fortBonus && c.refBonus && c.willBonus && c.fortBonus === c.refBonus && c.refBonus === c.willBonus) {
+              bNotes.push(`Tüm Kurtarmalara ${c.fortBonus > 0 ? '+' : ''}${c.fortBonus}`);
+            } else {
+              if (c.fortBonus) bNotes.push(`Fort ${c.fortBonus > 0 ? '+' : ''}${c.fortBonus}`);
+              if (c.refBonus) bNotes.push(`Ref ${c.refBonus > 0 ? '+' : ''}${c.refBonus}`);
+              if (c.willBonus) bNotes.push(`Will ${c.willBonus > 0 ? '+' : ''}${c.willBonus}`);
+            }
+          });
+        }
         if (bNotes.length > 0) {
+          const isDebuff = b.isDebuff || b.bonusType === 'Penalty' || b.negativeLevels;
           bonusNotes.push(`
-            <div class="flex items-center justify-between py-0.5 text-amber-300">
-              <span>✨ ${b.name || 'Aktif Buff'}: ${bNotes.join(', ')} (${b.bonusType || 'Buff'}) eklenir.</span>
+            <div class="flex items-center justify-between py-0.5 ${isDebuff ? 'text-rose-300 font-semibold' : 'text-amber-300'}">
+              <span>${isDebuff ? '🩸' : '✨'} ${b.name || 'Aktif Etki'}: ${bNotes.join(', ')} eklenir.</span>
             </div>
           `);
         }
@@ -7770,7 +7824,7 @@
           <span class="text-emerald-400 font-bold shrink-0">${character.hp?.current} / ${character.hp?.max} HP</span>
           <span class="text-slate-500 font-bold px-2 shrink-0">:</span>
           <span class="text-white flex-1 truncate">
-            ${character.hp?.baseMax || character.hp?.max} Taban${character.hp?.conBonusHp ? ` <span class="text-amber-400">+ ${character.hp.conBonusHp} (CON Buff)</span>` : ''}
+            ${character.hp?.baseMax || character.hp?.max} Taban${character.hp?.conBonusHp ? ` <span class="text-amber-400">+ ${character.hp.conBonusHp} (CON Buff)</span>` : ''}${character.hp?.debuffHpPenalty ? ` <span class="text-rose-400 font-bold">- ${character.hp.debuffHpPenalty} (Debuff/Drain)</span>` : ''}
           </span>
         </div>
         <div class="pt-1.5 space-y-0.5 text-[10px] text-indigo-300 font-sans border-t border-slate-800/60 mt-1">
@@ -7823,8 +7877,17 @@
 
       character.buffs.forEach(buff => {
         const isAct = buff.active;
+        const isDebuff = buff.isDebuff || buff.category === 'Debuff';
         const card = document.createElement('div');
-        card.className = `border rounded-xl p-3 transition flex flex-col justify-between ${isAct ? 'bg-slate-900/90 border-indigo-500/70 shadow-lg ring-1 ring-indigo-500/20' : 'bg-slate-950/40 border-slate-800/80 opacity-60'}`;
+
+        const activeBorder = isDebuff 
+          ? 'bg-slate-900/95 border-rose-500/70 shadow-lg ring-1 ring-rose-500/20' 
+          : 'bg-slate-900/90 border-indigo-500/70 shadow-lg ring-1 ring-indigo-500/20';
+        const inactiveBorder = isDebuff 
+          ? 'bg-slate-950/40 border-rose-950/50 opacity-60' 
+          : 'bg-slate-950/40 border-slate-800/80 opacity-60';
+
+        card.className = `border rounded-xl p-3 transition flex flex-col justify-between ${isAct ? activeBorder : inactiveBorder}`;
 
         // Stacking check
         let suppressionWarning = '';
@@ -7848,32 +7911,73 @@
 
         // Summary badges
         const badges = [];
-        if (buff.acBonus) badges.push(`<span class="bg-sky-950 text-sky-300 border border-sky-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.acBonus} AC (${buff.bonusType || 'Armor'})</span>`);
+        if (isDebuff) badges.push(`<span class="bg-rose-950 text-rose-300 border border-rose-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">🩸 DEBUFF</span>`);
+        if (buff.negativeLevels) badges.push(`<span class="bg-rose-950 text-rose-200 border border-rose-700 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">-${buff.negativeLevels} Seviye Drain</span>`);
+        if (buff.acBonus) badges.push(`<span class="${buff.acBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-sky-950 text-sky-300 border-sky-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.acBonus > 0 ? '+' : ''}${buff.acBonus} AC (${buff.bonusType || 'Armor'})</span>`);
         if (buff.naturalBonus) badges.push(`<span class="bg-teal-950 text-teal-300 border border-teal-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.naturalBonus} Doğal AC</span>`);
         if (buff.deflectionBonus) badges.push(`<span class="bg-indigo-950 text-indigo-300 border border-indigo-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.deflectionBonus} Saptırma AC</span>`);
         if (buff.dodgeBonus) badges.push(`<span class="bg-amber-950 text-amber-300 border border-amber-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.dodgeBonus} Dodge AC</span>`);
         if (buff.acPenalty) badges.push(`<span class="bg-rose-950 text-rose-300 border border-rose-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">-${buff.acPenalty} AC</span>`);
-        if (buff.strBonus) badges.push(`<span class="bg-emerald-950 text-emerald-300 border border-emerald-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.strBonus} STR</span>`);
-        if (buff.dexBonus) badges.push(`<span class="bg-emerald-950 text-emerald-300 border border-emerald-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.dexBonus} DEX</span>`);
-        if (buff.conBonus) badges.push(`<span class="bg-emerald-950 text-emerald-300 border border-emerald-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.conBonus} CON</span>`);
-        if (buff.intBonus) badges.push(`<span class="bg-emerald-950 text-emerald-300 border border-emerald-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.intBonus} INT</span>`);
-        if (buff.wisBonus) badges.push(`<span class="bg-emerald-950 text-emerald-300 border border-emerald-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.wisBonus} WIS</span>`);
-        if (buff.chaBonus) badges.push(`<span class="bg-emerald-950 text-emerald-300 border border-emerald-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.chaBonus} CHA</span>`);
-        if (buff.attBonus) badges.push(`<span class="bg-purple-950 text-purple-300 border border-purple-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.attBonus} Saldırı</span>`);
-        if (buff.dmgBonus) badges.push(`<span class="bg-purple-950 text-purple-300 border border-purple-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.dmgBonus} Hasar</span>`);
+        if (buff.strBonus) badges.push(`<span class="${buff.strBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-emerald-950 text-emerald-300 border-emerald-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.strBonus > 0 ? '+' : ''}${buff.strBonus} STR</span>`);
+        if (buff.dexBonus) badges.push(`<span class="${buff.dexBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-emerald-950 text-emerald-300 border-emerald-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.dexBonus > 0 ? '+' : ''}${buff.dexBonus} DEX</span>`);
+        if (buff.conBonus) badges.push(`<span class="${buff.conBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-emerald-950 text-emerald-300 border-emerald-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.conBonus > 0 ? '+' : ''}${buff.conBonus} CON</span>`);
+        if (buff.intBonus) badges.push(`<span class="${buff.intBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-emerald-950 text-emerald-300 border-emerald-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.intBonus > 0 ? '+' : ''}${buff.intBonus} INT</span>`);
+        if (buff.wisBonus) badges.push(`<span class="${buff.wisBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-emerald-950 text-emerald-300 border-emerald-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.wisBonus > 0 ? '+' : ''}${buff.wisBonus} WIS</span>`);
+        if (buff.chaBonus) badges.push(`<span class="${buff.chaBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-emerald-950 text-emerald-300 border-emerald-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.chaBonus > 0 ? '+' : ''}${buff.chaBonus} CHA</span>`);
+        if (buff.attBonus) badges.push(`<span class="${buff.attBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-purple-950 text-purple-300 border-purple-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.attBonus > 0 ? '+' : ''}${buff.attBonus} Saldırı</span>`);
+        if (buff.dmgBonus) badges.push(`<span class="${buff.dmgBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-purple-950 text-purple-300 border-purple-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.dmgBonus > 0 ? '+' : ''}${buff.dmgBonus} Hasar</span>`);
         if (buff.dmgDice) badges.push(`<span class="bg-purple-950 text-purple-300 border border-purple-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.dmgDice} Hasar</span>`);
         if (buff.speedBonus) badges.push(`<span class="bg-sky-950 text-sky-300 border border-sky-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.speedBonus} ft Hız</span>`);
+        if (buff.speedPenalty) badges.push(`<span class="bg-rose-950 text-rose-300 border border-rose-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">-${buff.speedPenalty} ft Hız</span>`);
+        if (buff.hpPenalty) badges.push(`<span class="bg-rose-950 text-rose-300 border border-rose-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">-${buff.hpPenalty} HP</span>`);
+
+        // Parent-Child Accordion for Multi-part Debuffs / Buffs
+        let childrenAccordion = '';
+        if (Array.isArray(buff.children) && buff.children.length > 0) {
+          childrenAccordion = `
+            <details class="mt-2 bg-slate-950/80 border border-rose-500/40 rounded-lg p-2 text-[11px] group">
+              <summary class="cursor-pointer font-bold flex items-center justify-between text-rose-300 hover:text-white select-none">
+                <span class="flex items-center gap-1.5">
+                  <span>🌳</span>
+                  <span>${buff.children.length} Alt Etki (Parent-Child)</span>
+                </span>
+                <span class="text-[10px] text-slate-400 group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <div class="mt-2 pl-2 border-l-2 border-rose-500/40 space-y-1">
+                ${buff.children.map(c => {
+                  const cMods = [];
+                  if (c.attBonus) cMods.push(`${c.attBonus} Atk`);
+                  if (c.dmgBonus) cMods.push(`${c.dmgBonus} Dmg`);
+                  if (c.hpPenalty) cMods.push(`-${c.hpPenalty} HP`);
+                  if (c.fortBonus) cMods.push(`${c.fortBonus} Fort`);
+                  if (c.refBonus) cMods.push(`${c.refBonus} Ref`);
+                  if (c.willBonus) cMods.push(`${c.willBonus} Will`);
+                  if (c.skillBonus) cMods.push(`${c.skillBonus} Beceri`);
+                  if (c.strBonus) cMods.push(`${c.strBonus} Str`);
+                  if (c.dexBonus) cMods.push(`${c.dexBonus} Dex`);
+                  if (c.clPenalty) cMods.push(`-${c.clPenalty} CL`);
+                  return `
+                    <div class="flex items-center justify-between py-0.5 text-[10px] text-slate-300">
+                      <span class="font-sans">${c.name}</span>
+                      <span class="font-mono text-rose-400 font-bold ml-2">${cMods.join(', ')}</span>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </details>
+          `;
+        }
 
         card.innerHTML = `
           <div class="space-y-1.5">
             <div class="flex items-center justify-between gap-1.5">
               <label class="flex items-center gap-2 cursor-pointer select-none">
-                <input type="checkbox" ${isAct ? 'checked' : ''} onchange="toggleBuffActive('${buff.id}')" class="w-4 h-4 rounded text-indigo-600 focus:ring-0">
-                <span class="font-bold text-xs ${isAct ? 'text-white' : 'text-slate-400'}">${buff.name}</span>
+                <input type="checkbox" ${isAct ? 'checked' : ''} onchange="toggleBuffActive('${buff.id}')" class="w-4 h-4 rounded ${isDebuff ? 'text-rose-600 focus:ring-rose-500' : 'text-indigo-600 focus:ring-0'}">
+                <span class="font-bold text-xs ${isAct ? (isDebuff ? 'text-rose-200' : 'text-white') : 'text-slate-400'}">${buff.name}</span>
               </label>
               <div class="flex items-center gap-1">
-                <span class="text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-slate-800 text-purple-300 border border-slate-700">${buff.source || 'Buff'}</span>
-                <button onclick="deleteBuff('${buff.id}')" class="text-slate-500 hover:text-rose-400 p-0.5 text-xs transition" title="Buffı Sil">🗑️</button>
+                <span class="text-[9px] px-1.5 py-0.5 rounded font-mono font-bold ${isDebuff ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-slate-800 text-purple-300 border border-slate-700'}">${buff.source || (isDebuff ? 'Debuff' : 'Buff')}</span>
+                <button onclick="deleteBuff('${buff.id}')" class="text-slate-500 hover:text-rose-400 p-0.5 text-xs transition" title="${isDebuff ? 'Debuffı Sil' : 'Buffı Sil'}">🗑️</button>
               </div>
             </div>
 
@@ -7884,6 +7988,8 @@
             <div class="text-[11px] text-slate-300 font-sans">
               ${buff.notes || ''}
             </div>
+
+            ${childrenAccordion}
 
             ${suppressionWarning ? `<div class="text-[10px] text-amber-400 bg-amber-950/30 border border-amber-800/40 rounded px-1.5 py-0.5">${suppressionWarning}</div>` : ''}
           </div>
@@ -7925,7 +8031,14 @@
     }
 
     function deleteBuff(buffId) {
-      if (confirm('Bu buff kaydını silmek istediğinize emin misiniz?')) {
+      const buff = (character.buffs || []).find(b => b.id === buffId);
+      const isDebuff = buff && (buff.isDebuff || buff.category === 'Debuff');
+      const childCount = (buff && buff.children) ? buff.children.length : 0;
+      const typeLabel = isDebuff ? 'debuff' : 'buff';
+      const confirmMsg = childCount > 0
+        ? `"${buff.name}" (${childCount} alt etkiyle birlikte) silinsin mi?`
+        : `Bu ${typeLabel} kaydını silmek istediğinize emin misiniz?`;
+      if (confirm(confirmMsg)) {
         character.buffs = (character.buffs || []).filter(b => b.id !== buffId);
         saveStateToStorage(true);
         renderAll();
@@ -8015,13 +8128,162 @@
       alert('🔄 KARŞILAŞMA SIFIRLANDI!\n\n• Karşılaşma tur sayacı Tur 1 olarak sıfırlandı.\n• Tüm manevralar (Readied Maneuvers) hazır hale getirildi.\n• Karşılaşma süreli kısa bufflar (<= 10 tur) kapatıldı.');
     }
 
+    let currentBuffModalMode = 'buff'; // 'buff' | 'debuff'
+    let currentBuffModalChildren = [];
+
+    function switchBuffModalMode(mode) {
+      currentBuffModalMode = mode === 'debuff' ? 'debuff' : 'buff';
+      const isDebuff = currentBuffModalMode === 'debuff';
+
+      const btnBuff = document.getElementById('btn-mode-buff');
+      const btnDebuff = document.getElementById('btn-mode-debuff');
+      const container = document.getElementById('add-buff-modal-container');
+      const iconBadge = document.getElementById('buff-modal-icon-badge');
+      const modalTitle = document.getElementById('buff-modal-title');
+      const modalBadge = document.getElementById('buff-modal-badge');
+      const modalSubtitle = document.getElementById('buff-modal-subtitle');
+      const rmTitle = document.getElementById('buff-rule-master-title');
+      const rmInput = document.getElementById('buff-rule-master-input');
+      const presetLabel = document.getElementById('buff-preset-label');
+      const presetSelect = document.getElementById('buff-preset-select');
+      const nameLabel = document.getElementById('buff-label-name');
+      const saveBtn = document.getElementById('btn-save-buff');
+      const sourceSelect = document.getElementById('buff-input-source');
+      const typeSelect = document.getElementById('buff-input-type');
+
+      // Clear children
+      currentBuffModalChildren = [];
+      const childrenPreview = document.getElementById('buff-children-preview-container');
+      if (childrenPreview) childrenPreview.classList.add('hidden');
+
+      if (isDebuff) {
+        if (btnBuff) {
+          btnBuff.className = 'flex-1 py-1.5 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition border border-slate-700 bg-slate-900 text-slate-400 hover:text-indigo-300';
+        }
+        if (btnDebuff) {
+          btnDebuff.className = 'flex-1 py-1.5 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition border shadow-sm bg-rose-600 border-rose-500 text-white shadow-rose-900/40';
+        }
+        if (container) {
+          container.className = 'bg-dndCard border border-rose-500/80 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col transition-colors';
+        }
+        if (iconBadge) {
+          iconBadge.className = 'w-8 h-8 rounded-lg bg-rose-950/80 border border-rose-600/50 flex items-center justify-center text-lg shadow-inner';
+          iconBadge.textContent = '🩸';
+        }
+        if (modalTitle) modalTitle.textContent = 'Yeni Debuff / Durum (Condition) Ekle';
+        if (modalBadge) {
+          modalBadge.className = 'text-[10px] font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/40 px-2 py-0.5 rounded-full';
+          modalBadge.textContent = 'D&D 3.5e RAW (Debuff)';
+        }
+        if (modalSubtitle) modalSubtitle.textContent = 'Hazır D&D 3.5e RAW Debuff şablonu seçin veya Parent-Child etkisi tanımlayın';
+        if (rmTitle) rmTitle.innerHTML = '<span>🤖</span><span>Rule Master ile Debuff / Kural Getir</span>';
+        if (rmInput) rmInput.placeholder = 'Örn: -4 lvl drain, Energy Drain, Sickened, Slow, Ray of Enfeeblement...';
+        if (presetLabel) presetLabel.textContent = '🩸 Hazır D&D 3.5e Debuff / Durum Şablonu Seç';
+        if (nameLabel) nameLabel.textContent = 'Debuff Adı *';
+        if (saveBtn) {
+          saveBtn.className = 'bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition shadow';
+          saveBtn.innerHTML = '<span>🩸 Debuffı Ekle ve Etkinleştir</span>';
+        }
+        if (sourceSelect) sourceSelect.value = 'Condition (Durum)';
+        if (typeSelect) typeSelect.value = 'Penalty';
+
+        // Populate debuff presets
+        if (presetSelect) {
+          presetSelect.innerHTML = `
+            <option value="custom">-- Özel Debuff / Durum Tanımla --</option>
+            <option value="energy_drain_4">🩸 Energy Drain (-4 Lvl) [Parent-Child: 5 Alt Etki]</option>
+            <option value="sickened">🤢 Sickened (-2 Saldırı, Hasar, Kurtarma, Beceri/Yetenek)</option>
+            <option value="shaken">😱 Shaken (-2 Saldırı, Kurtarma, Beceri/Yetenek)</option>
+            <option value="fatigued">😫 Fatigued (-2 STR, -2 DEX, Koşamaz/Şarj Edemez)</option>
+            <option value="entangled">🕸️ Entangled (-2 Saldırı, -4 DEX, Yarı Hız)</option>
+            <option value="slow">⏳ Slow (-1 AC, -1 Saldırı, -1 Refl, Yarı Hız, Tek Eylem)</option>
+          `;
+        }
+      } else {
+        if (btnBuff) {
+          btnBuff.className = 'flex-1 py-1.5 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition border shadow-sm bg-indigo-600 border-indigo-500 text-white shadow-indigo-900/40';
+        }
+        if (btnDebuff) {
+          btnDebuff.className = 'flex-1 py-1.5 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition border border-slate-700 bg-slate-900 text-slate-400 hover:text-rose-300 hover:border-rose-600/50';
+        }
+        if (container) {
+          container.className = 'bg-dndCard border border-indigo-500/80 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col transition-colors';
+        }
+        if (iconBadge) {
+          iconBadge.className = 'w-8 h-8 rounded-lg bg-indigo-950/80 border border-indigo-600/50 flex items-center justify-center text-lg shadow-inner';
+          iconBadge.textContent = '✨';
+        }
+        if (modalTitle) modalTitle.textContent = 'Yeni Buff / Büyü Etkisi Ekle';
+        if (modalBadge) {
+          modalBadge.className = 'text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 px-2 py-0.5 rounded-full';
+          modalBadge.textContent = 'D&D 3.5e RAW (Buff)';
+        }
+        if (modalSubtitle) modalSubtitle.textContent = 'Hazır D&D 3.5e şablonu seçin veya özel buff tanımlayın';
+        if (rmTitle) rmTitle.innerHTML = '<span>🤖</span><span>Rule Master ile Büyü / Buff Getir</span>';
+        if (rmInput) rmInput.placeholder = 'Örn: Righteous Might, Death Ward, Stoneskin, Fly...';
+        if (presetLabel) presetLabel.textContent = '⚡ Hazır D&D 3.5e Buff Şablonu Seç';
+        if (nameLabel) nameLabel.textContent = 'Buff Adı *';
+        if (saveBtn) {
+          saveBtn.className = 'bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition shadow';
+          saveBtn.innerHTML = '<span>✨ Buffı Ekle ve Etkinleştir</span>';
+        }
+        if (sourceSelect) sourceSelect.value = 'Spell (Büyü)';
+        if (typeSelect) typeSelect.value = 'Enhancement';
+
+        // Populate buff presets
+        if (presetSelect) {
+          presetSelect.innerHTML = `
+            <option value="custom">-- Özel Buff Tanımla --</option>
+            <option value="mage_armor">🛡️ Mage Armor (+4 Armor AC, 50 Tur / 5 Saat)</option>
+            <option value="bulls_str">🐂 Bull's Strength (+4 Enhancement STR, 10 Tur)</option>
+            <option value="haste">⚡ Haste (+1 Att, +1 Dodge AC, +1 Refl, +30 ft Hız, 6 Tur)</option>
+            <option value="prayer">✨ Prayer (+1 Luck Att/Dmg/Saves/Skills, 6 Tur)</option>
+          `;
+        }
+      }
+    }
+
+    function renderBuffChildrenPreview(children) {
+      const container = document.getElementById('buff-children-preview-container');
+      const listEl = document.getElementById('buff-children-list');
+      const badgeEl = document.getElementById('buff-children-count-badge');
+      if (!container || !listEl) return;
+
+      if (!Array.isArray(children) || children.length === 0) {
+        container.classList.add('hidden');
+        listEl.innerHTML = '';
+        return;
+      }
+
+      if (badgeEl) badgeEl.textContent = `${children.length} Alt Etki`;
+      listEl.innerHTML = children.map(c => {
+        const cMods = [];
+        if (c.attBonus) cMods.push(`${c.attBonus} Atk`);
+        if (c.dmgBonus) cMods.push(`${c.dmgBonus} Dmg`);
+        if (c.hpPenalty) cMods.push(`-${c.hpPenalty} HP`);
+        if (c.fortBonus) cMods.push(`${c.fortBonus} Fort`);
+        if (c.refBonus) cMods.push(`${c.refBonus} Ref`);
+        if (c.willBonus) cMods.push(`${c.willBonus} Will`);
+        if (c.skillBonus) cMods.push(`${c.skillBonus} Beceri`);
+        if (c.strBonus) cMods.push(`${c.strBonus} Str`);
+        if (c.dexBonus) cMods.push(`${c.dexBonus} Dex`);
+        if (c.clPenalty) cMods.push(`-${c.clPenalty} CL`);
+        return `
+          <div class="flex items-center justify-between p-1.5 rounded bg-slate-900 border border-slate-800 text-[11px]">
+            <span class="text-slate-200 font-sans font-medium">${c.name}</span>
+            <span class="text-rose-400 font-mono font-bold">${cMods.join(', ')}</span>
+          </div>
+        `;
+      }).join('');
+
+      container.classList.remove('hidden');
+    }
+
     function openAddBuffModal() {
       const modal = document.getElementById('add-buff-modal');
       if (!modal) return;
-      document.getElementById('buff-preset-select').value = 'custom';
+      switchBuffModalMode('buff');
       document.getElementById('buff-input-name').value = '';
-      document.getElementById('buff-input-source').value = 'Spell (Büyü)';
-      document.getElementById('buff-input-type').value = 'Enhancement';
       document.getElementById('buff-input-rounds').value = '10';
       document.getElementById('buff-input-duration').value = '1 dk / CL';
       document.getElementById('buff-input-ac').value = '';
@@ -8051,10 +8313,15 @@
 
     function onBuffPresetChange() {
       const presetKey = document.getElementById('buff-preset-select').value;
-      if (presetKey === 'custom') return;
+      if (presetKey === 'custom') {
+        currentBuffModalChildren = [];
+        renderBuffChildrenPreview([]);
+        return;
+      }
 
-      const defaults = RuleEngine.getDefaultBuffs();
-      const match = defaults.find(d => d.id === 'buff_' + presetKey || d.name.toLowerCase().includes(presetKey.replace('_', ' ')));
+      const isDebuff = currentBuffModalMode === 'debuff';
+      const catalog = isDebuff ? (RuleEngine.getDefaultDebuffs ? RuleEngine.getDefaultDebuffs() : []) : (RuleEngine.getDefaultBuffs ? RuleEngine.getDefaultBuffs() : []);
+      const match = catalog.find(d => d.id === (isDebuff ? 'debuff_' : 'buff_') + presetKey || d.name.toLowerCase().includes(presetKey.replace('_', ' ')));
       if (!match) return;
 
       document.getElementById('buff-input-name').value = match.name;
@@ -8062,7 +8329,11 @@
       const srcEl = document.getElementById('buff-input-source');
       if (srcEl) {
         const rawSrc = (match.source || '').toLowerCase();
-        if (rawSrc.includes('potion') || rawSrc.includes('iksir')) {
+        if (rawSrc.includes('condition') || rawSrc.includes('durum')) {
+          srcEl.value = 'Condition (Durum)';
+        } else if (rawSrc.includes('undead') || rawSrc.includes('monster') || rawSrc.includes('yaratık')) {
+          srcEl.value = 'Undead / Monster (Yaratık)';
+        } else if (rawSrc.includes('potion') || rawSrc.includes('iksir')) {
           srcEl.value = 'Potion (İksir)';
         } else if (rawSrc.includes('item') || rawSrc.includes('eşya')) {
           srcEl.value = 'Item / Equipment (Eşya)';
@@ -8073,10 +8344,10 @@
         }
       }
 
-      document.getElementById('buff-input-type').value = match.bonusType || 'Untyped';
-      document.getElementById('buff-input-rounds').value = match.rounds !== null ? match.rounds : '';
+      document.getElementById('buff-input-type').value = match.bonusType || (isDebuff ? 'Penalty' : 'Untyped');
+      document.getElementById('buff-input-rounds').value = match.rounds !== null && match.rounds !== undefined ? match.rounds : '';
       document.getElementById('buff-input-duration').value = match.durationText || '';
-      document.getElementById('buff-input-ac').value = match.acBonus || match.naturalBonus || match.deflectionBonus || match.dodgeBonus || '';
+      document.getElementById('buff-input-ac').value = match.acBonus || match.naturalBonus || match.deflectionBonus || match.dodgeBonus || (match.acPenalty ? -match.acPenalty : '');
       document.getElementById('buff-input-att').value = match.attBonus || '';
       document.getElementById('buff-input-dmg').value = match.dmgBonus || '';
       document.getElementById('buff-input-str').value = match.strBonus || '';
@@ -8086,6 +8357,14 @@
       document.getElementById('buff-input-wis').value = match.wisBonus || '';
       document.getElementById('buff-input-cha').value = match.chaBonus || '';
       document.getElementById('buff-input-notes').value = match.notes || '';
+
+      if (Array.isArray(match.children) && match.children.length > 0) {
+        currentBuffModalChildren = JSON.parse(JSON.stringify(match.children));
+        renderBuffChildrenPreview(currentBuffModalChildren);
+      } else {
+        currentBuffModalChildren = [];
+        renderBuffChildrenPreview([]);
+      }
     }
 
     async function queryRuleMasterForBuff() {
@@ -8097,9 +8376,42 @@
       if (!q) {
         if (statusEl) {
           statusEl.className = 'text-xs text-amber-300 bg-amber-950/60 border border-amber-800/60 p-2 rounded-lg block';
-          statusEl.textContent = 'Lütfen aramak istediğiniz bir büyü veya buff adı yazın.';
+          statusEl.textContent = 'Lütfen aramak istediğiniz bir kural, büyü veya debuff adı yazın.';
         }
         return;
+      }
+
+      // Check if query is a debuff or negative level
+      const qLower = q.toLowerCase();
+      const isDrainQuery = qLower.includes('drain') || qLower.includes('negative level') || qLower.includes('negatif seviye') || qLower.includes('lvl drain');
+      const isDebuffQuery = isDrainQuery || qLower.includes('sick') || qLower.includes('shaken') || qLower.includes('fatigue') || qLower.includes('slow') || qLower.includes('entangle') || qLower.includes('debuff') || qLower.includes('curse');
+
+      if (isDebuffQuery && currentBuffModalMode !== 'debuff') {
+        switchBuffModalMode('debuff');
+      }
+
+      if (isDrainQuery) {
+        const debuffs = RuleEngine.getDefaultDebuffs ? RuleEngine.getDefaultDebuffs() : [];
+        const edMatch = debuffs.find(d => d.id === 'debuff_energy_drain_4');
+        if (edMatch) {
+          const pSelect = document.getElementById('buff-preset-select');
+          if (pSelect) pSelect.value = 'energy_drain_4';
+          fillBuffFormFromEntry({
+            name: edMatch.name,
+            source: edMatch.source,
+            bonusType: edMatch.bonusType,
+            rounds: edMatch.rounds,
+            durationText: edMatch.durationText,
+            notes: edMatch.notes,
+            children: edMatch.children,
+            negativeLevels: 4
+          });
+          if (statusEl) {
+            statusEl.className = 'text-xs text-emerald-300 bg-emerald-950/60 border border-emerald-800/60 p-2 rounded-lg block';
+            statusEl.textContent = `✓ Rule Master: "${edMatch.name}" D&D 3.5e RAW kuralı tespit edildi! Parent (Ana Etki) ve 5 Child (Alt Etki: Saldırı, Kurtarma, Beceri, HP, CL) aktarıldı.`;
+          }
+          return;
+        }
       }
 
       if (statusEl) {
@@ -8120,7 +8432,7 @@
           fillBuffFormFromEntry({
             name: match.name,
             source: match.type === 'Potion' ? 'Potion (İksir)' : (match.type === 'Spell' ? 'Spell (Büyü)' : 'Item / Equipment (Eşya)'),
-            bonusType: match.bonusType || 'Enhancement',
+            bonusType: match.bonusType || (currentBuffModalMode === 'debuff' ? 'Penalty' : 'Enhancement'),
             rounds: 10,
             durationText: match.duration || '1 dk / CL',
             ac: match.acBonus || match.ac || 0,
@@ -8162,7 +8474,7 @@
             fillBuffFormFromEntry({
               name: row[0] || q,
               source: 'Spell (Büyü)',
-              bonusType: row[6] || 'Enhancement',
+              bonusType: row[6] || (currentBuffModalMode === 'debuff' ? 'Penalty' : 'Enhancement'),
               rounds: 10,
               durationText: row[26] || '1 dk / CL',
               ac: Number(row[14]) || 0,
@@ -8204,10 +8516,10 @@
       document.getElementById('buff-input-name').value = entry.name || '';
       const srcEl = document.getElementById('buff-input-source');
       if (srcEl) {
-        srcEl.value = entry.source || 'Spell (Büyü)';
+        srcEl.value = entry.source || (currentBuffModalMode === 'debuff' ? 'Condition (Durum)' : 'Spell (Büyü)');
       }
-      document.getElementById('buff-input-type').value = entry.bonusType || 'Enhancement';
-      document.getElementById('buff-input-rounds').value = entry.rounds || '';
+      document.getElementById('buff-input-type').value = entry.bonusType || (currentBuffModalMode === 'debuff' ? 'Penalty' : 'Enhancement');
+      document.getElementById('buff-input-rounds').value = entry.rounds !== null && entry.rounds !== undefined ? entry.rounds : '';
       document.getElementById('buff-input-duration').value = entry.durationText || '';
       document.getElementById('buff-input-ac').value = entry.ac || '';
       document.getElementById('buff-input-att').value = entry.att || '';
@@ -8219,16 +8531,25 @@
       document.getElementById('buff-input-wis').value = entry.wis || '';
       document.getElementById('buff-input-cha').value = entry.cha || '';
       document.getElementById('buff-input-notes').value = entry.notes || '';
+
+      if (Array.isArray(entry.children) && entry.children.length > 0) {
+        currentBuffModalChildren = JSON.parse(JSON.stringify(entry.children));
+        renderBuffChildrenPreview(currentBuffModalChildren);
+      } else {
+        currentBuffModalChildren = [];
+        renderBuffChildrenPreview([]);
+      }
     }
 
     function saveNewBuffFromModal() {
       const name = document.getElementById('buff-input-name').value.trim();
       if (!name) {
-        alert('Lütfen geçerli bir Buff Adı giriniz.');
+        alert(currentBuffModalMode === 'debuff' ? 'Lütfen geçerli bir Debuff Adı giriniz.' : 'Lütfen geçerli bir Buff Adı giriniz.');
         return;
       }
 
-      const source = document.getElementById('buff-input-source').value.trim() || 'Buff';
+      const isDebuff = currentBuffModalMode === 'debuff';
+      const source = document.getElementById('buff-input-source').value.trim() || (isDebuff ? 'Debuff' : 'Buff');
       const bonusType = document.getElementById('buff-input-type').value;
       const roundsVal = document.getElementById('buff-input-rounds').value.trim();
       const rounds = roundsVal !== '' ? parseInt(roundsVal) : null;
@@ -8245,11 +8566,12 @@
       const notes = document.getElementById('buff-input-notes').value.trim();
 
       const newBuff = {
-        id: 'buff_' + Date.now(),
+        id: (isDebuff ? 'debuff_' : 'buff_') + Date.now(),
         name,
         source,
         bonusType,
-        category: acBonus ? 'AC' : (strBonus || dexBonus || conBonus ? 'Stat' : 'Combat'),
+        isDebuff,
+        category: isDebuff ? 'Debuff' : (acBonus ? 'AC' : (strBonus || dexBonus || conBonus ? 'Stat' : 'Combat')),
         active: true,
         rounds,
         durationText: durationText || (rounds ? `${rounds} Tur` : 'Sürekli'),
@@ -8262,8 +8584,14 @@
         intBonus,
         wisBonus,
         chaBonus,
-        notes
+        notes,
+        children: (currentBuffModalChildren && currentBuffModalChildren.length > 0) ? JSON.parse(JSON.stringify(currentBuffModalChildren)) : []
       };
+
+      if (name.toLowerCase().includes('drain') || name.toLowerCase().includes('negative level')) {
+        const lvlMatch = name.match(/(\d+)/);
+        if (lvlMatch) newBuff.negativeLevels = parseInt(lvlMatch[1]);
+      }
 
       if (!Array.isArray(character.buffs)) character.buffs = [];
       character.buffs.push(newBuff);
@@ -8271,7 +8599,7 @@
       closeAddBuffModal();
       saveStateToStorage(true);
       renderAll();
-      alert(`✨ "${name}" buffı başarıyla eklendi ve etkinleştirildi!`);
+      alert(`${isDebuff ? '🩸' : '✨'} "${name}" ${isDebuff ? 'debuffı' : 'buffı'} başarıyla eklendi ve etkinleştirildi!`);
     }
 
     // 🎒 INVENTORY, 14 BODY SLOTS & GEAR POOL (Madde 6 & 8)

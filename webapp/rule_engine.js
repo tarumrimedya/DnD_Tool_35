@@ -558,6 +558,117 @@ const RuleEngine = {
     ];
   },
 
+  // Standard D&D 3.5e RAW default debuffs catalog with Parent-Child relationships
+  getDefaultDebuffs() {
+    return [
+      {
+        id: "debuff_energy_drain_4",
+        name: "Energy Drain (-4 Lvl)",
+        source: "Spell / Undead",
+        category: "Debuff",
+        isDebuff: true,
+        active: false,
+        rounds: null,
+        durationText: "Kalıcı (Restoration gerektirir)",
+        bonusType: "Penalty",
+        negativeLevels: 4,
+        notes: "D&D 3.5e RAW: 4 Negatif Seviye! -4 Saldırı, -4 Kurtarma Zarları, -4 Beceri/Yetenek, -20 Max/Mevcut HP, -4 Efektif Caster Level.",
+        children: [
+          { id: "child_ed_att", name: "↳ -4 Saldırı Zarları (All Attacks)", attBonus: -4, bonusType: "Penalty" },
+          { id: "child_ed_saves", name: "↳ -4 Kurtarma Zarları (Fort, Ref, Will)", fortBonus: -4, refBonus: -4, willBonus: -4, bonusType: "Penalty" },
+          { id: "child_ed_skills", name: "↳ -4 Beceri & Yetenek Testleri", skillBonus: -4, bonusType: "Penalty" },
+          { id: "child_ed_hp", name: "↳ -20 Can Puanı (-5 HP / Seviye)", hpPenalty: 20, bonusType: "Penalty" },
+          { id: "child_ed_cl", name: "↳ -4 Caster Level (Efektif Seviye)", clPenalty: 4, bonusType: "Penalty" }
+        ]
+      },
+      {
+        id: "debuff_sickened",
+        name: "Sickened (Midesi Bulanmış)",
+        source: "Condition (Durum)",
+        category: "Debuff",
+        isDebuff: true,
+        active: false,
+        rounds: 10,
+        durationText: "10 Tur",
+        bonusType: "Penalty",
+        notes: "D&D 3.5e RAW: -2 saldırı zarları, silah hasar zarları, kurtarma zarları, beceri ve yetenek testleri",
+        children: [
+          { id: "child_sick_att", name: "↳ -2 Saldırı & Hasar Zarları", attBonus: -2, dmgBonus: -2, bonusType: "Penalty" },
+          { id: "child_sick_saves", name: "↳ -2 Tüm Kurtarma Zarları", fortBonus: -2, refBonus: -2, willBonus: -2, bonusType: "Penalty" },
+          { id: "child_sick_skills", name: "↳ -2 Beceri & Yetenek Testleri", skillBonus: -2, bonusType: "Penalty" }
+        ]
+      },
+      {
+        id: "debuff_shaken",
+        name: "Shaken (Korkmuş)",
+        source: "Condition (Durum)",
+        category: "Debuff",
+        isDebuff: true,
+        active: false,
+        rounds: 10,
+        durationText: "10 Tur",
+        bonusType: "Morale Penalty",
+        notes: "D&D 3.5e RAW: Korku durumu. -2 saldırı zarları, kurtarma zarları, beceri ve yetenek testleri",
+        children: [
+          { id: "child_shaken_att", name: "↳ -2 Saldırı Zarları", attBonus: -2, bonusType: "Penalty" },
+          { id: "child_shaken_saves", name: "↳ -2 Kurtarma Zarları", fortBonus: -2, refBonus: -2, willBonus: -2, bonusType: "Penalty" },
+          { id: "child_shaken_skills", name: "↳ -2 Beceri & Yetenek Testleri", skillBonus: -2, bonusType: "Penalty" }
+        ]
+      },
+      {
+        id: "debuff_fatigued",
+        name: "Fatigued (Yorgun)",
+        source: "Condition (Durum)",
+        category: "Debuff",
+        isDebuff: true,
+        active: false,
+        rounds: null,
+        durationText: "8 Saat Dinlenme",
+        bonusType: "Penalty",
+        notes: "D&D 3.5e RAW: Koşamaz veya şarj edemez. -2 STR ve -2 DEX cezası alır.",
+        children: [
+          { id: "child_fatigue_str", name: "↳ -2 STR (-1 Saldırı & Hasar)", strBonus: -2, bonusType: "Penalty" },
+          { id: "child_fatigue_dex", name: "↳ -2 DEX (-1 Refl & AC)", dexBonus: -2, bonusType: "Penalty" }
+        ]
+      },
+      {
+        id: "debuff_entangled",
+        name: "Entangled (Dolaşmış)",
+        source: "Condition (Durum)",
+        category: "Debuff",
+        isDebuff: true,
+        active: false,
+        rounds: 5,
+        durationText: "5 Tur",
+        bonusType: "Penalty",
+        notes: "D&D 3.5e RAW: Yarı hareket hızı, koşamaz/şarj edemez, saldırı zarlarına -2, DEX'e -4 (-2 AC ve -2 Refl)",
+        children: [
+          { id: "child_entangled_att", name: "↳ -2 Saldırı Zarları", attBonus: -2, bonusType: "Penalty" },
+          { id: "child_entangled_dex", name: "↳ -4 DEX (-2 AC & -2 Refl)", dexBonus: -4, bonusType: "Penalty" },
+          { id: "child_entangled_speed", name: "↳ Yarı Hareket Hızı (Max 15 ft)", speedPenalty: 15, bonusType: "Penalty" }
+        ]
+      },
+      {
+        id: "debuff_slow",
+        name: "Slow (Yavaşlatma Büyüsü)",
+        source: "Spell (Büyü)",
+        category: "Debuff",
+        isDebuff: true,
+        active: false,
+        rounds: 6,
+        durationText: "1 tur / CL (6 Tur)",
+        bonusType: "Penalty",
+        notes: "D&D 3.5e RAW: Turda sadece tek bir eylem (Move veya Standard), -1 AC, -1 Saldırı, -1 Refl, Yarı Hız",
+        children: [
+          { id: "child_slow_ac", name: "↳ -1 AC Cezası", acBonus: -1, bonusType: "Penalty" },
+          { id: "child_slow_att", name: "↳ -1 Saldırı Zarları", attBonus: -1, bonusType: "Penalty" },
+          { id: "child_slow_ref", name: "↳ -1 Reflex Kurtarma Zarı", refBonus: -1, bonusType: "Penalty" },
+          { id: "child_slow_speed", name: "↳ Yarı Hareket Hızı (Max 15 ft)", speedPenalty: 15, bonusType: "Penalty" }
+        ]
+      }
+    ];
+  },
+
   // Central Recalculation Engine for Character State (Abilities, AC, Saves, Speed, Buffs)
   recalculateCharacter(character, masterDb = [], tacticalOptions = {}) {
     if (!character) return;
@@ -666,49 +777,84 @@ const RuleEngine = {
       });
     }
 
-    // 3. Collect Active Buff Bonuses
+    // 3. Collect Active Buff Bonuses & Debuffs / Conditions (Parent-Child Aware)
     let buffSpeedBonus = 0;
     let buffAcPenalty = 0;
     let buffSaveFort = 0;
     let buffSaveRef = 0;
     let buffSaveWill = 0;
+    let debuffHpPenalty = 0;
     const suppressedWarnings = [];
 
     character.buffs.forEach(buff => {
       if (!buff || !buff.active) return;
 
-      const bType = (buff.bonusType || 'untyped').toLowerCase();
-
-      // AC Bonuses
-      if (buff.acBonus > 0) {
-        if (bType.includes('shield')) {
-          shieldBonuses.push({ val: buff.acBonus, source: buff.name, type: 'Shield' });
-        } else if (bType.includes('deflection')) {
-          deflectionBonuses.push({ val: buff.acBonus, source: buff.name, type: 'Deflection' });
-        } else if (bType.includes('natural')) {
-          naturalBonuses.push({ val: buff.acBonus, source: buff.name, type: 'Natural' });
-        } else {
-          armorBonuses.push({ val: buff.acBonus, source: buff.name, type: 'Armor' });
-        }
+      const itemsToProcess = [buff];
+      const hasChildren = Array.isArray(buff.children) && buff.children.length > 0;
+      if (hasChildren) {
+        itemsToProcess.push(...buff.children);
       }
-      if (buff.naturalBonus > 0) naturalBonuses.push({ val: buff.naturalBonus, source: buff.name, type: 'Natural' });
-      if (buff.deflectionBonus > 0) deflectionBonuses.push({ val: buff.deflectionBonus, source: buff.name, type: 'Deflection' });
-      if (buff.dodgeBonus > 0) dodgeBonuses.push({ val: buff.dodgeBonus, source: buff.name, type: 'Dodge' });
-      if (buff.acPenalty > 0) buffAcPenalty += buff.acPenalty;
 
-      // Stat Bonuses
-      if (buff.strBonus) abilityBuckets.str.push({ val: buff.strBonus, type: buff.bonusType || 'Enhancement', source: buff.name });
-      if (buff.dexBonus) abilityBuckets.dex.push({ val: buff.dexBonus, type: buff.bonusType || 'Enhancement', source: buff.name });
-      if (buff.conBonus) abilityBuckets.con.push({ val: buff.conBonus, type: buff.bonusType || 'Enhancement', source: buff.name });
-      if (buff.intBonus) abilityBuckets.int.push({ val: buff.intBonus, type: buff.bonusType || 'Enhancement', source: buff.name });
-      if (buff.wisBonus) abilityBuckets.wis.push({ val: buff.wisBonus, type: buff.bonusType || 'Enhancement', source: buff.name });
-      if (buff.chaBonus) abilityBuckets.cha.push({ val: buff.chaBonus, type: buff.bonusType || 'Enhancement', source: buff.name });
+      // If parent has negativeLevels without explicit children handling it
+      if (buff.negativeLevels && !hasChildren) {
+        debuffHpPenalty += buff.negativeLevels * 5;
+        buffSaveFort -= buff.negativeLevels;
+        buffSaveRef -= buff.negativeLevels;
+        buffSaveWill -= buff.negativeLevels;
+      }
 
-      // Saves and Speed
-      if (buff.fortBonus) buffSaveFort += buff.fortBonus;
-      if (buff.refBonus) buffSaveRef += buff.refBonus;
-      if (buff.willBonus) buffSaveWill += buff.willBonus;
-      if (buff.speedBonus) buffSpeedBonus = Math.max(buffSpeedBonus, buff.speedBonus);
+      itemsToProcess.forEach(item => {
+        // When parent has children, skip container-level values that are superseded by children
+        if (item === buff && hasChildren) return;
+
+        const bType = (item.bonusType || (item.isDebuff || (item.attBonus < 0 || item.acBonus < 0 || item.strBonus < 0) ? 'penalty' : 'untyped')).toLowerCase();
+
+        // AC Bonuses & Penalties
+        if (item.acBonus > 0) {
+          if (bType.includes('shield')) {
+            shieldBonuses.push({ val: item.acBonus, source: item.name, type: 'Shield' });
+          } else if (bType.includes('deflection')) {
+            deflectionBonuses.push({ val: item.acBonus, source: item.name, type: 'Deflection' });
+          } else if (bType.includes('natural')) {
+            naturalBonuses.push({ val: item.acBonus, source: item.name, type: 'Natural' });
+          } else {
+            armorBonuses.push({ val: item.acBonus, source: item.name, type: 'Armor' });
+          }
+        }
+        if (item.acBonus < 0) {
+          buffAcPenalty += Math.abs(item.acBonus);
+        }
+        if (item.acPenalty > 0) buffAcPenalty += item.acPenalty;
+
+        if (item.naturalBonus > 0) naturalBonuses.push({ val: item.naturalBonus, source: item.name, type: 'Natural' });
+        if (item.deflectionBonus > 0) deflectionBonuses.push({ val: item.deflectionBonus, source: item.name, type: 'Deflection' });
+        if (item.dodgeBonus > 0) dodgeBonuses.push({ val: item.dodgeBonus, source: item.name, type: 'Dodge' });
+
+        // Stat Bonuses & Penalties
+        if (item.strBonus) abilityBuckets.str.push({ val: item.strBonus, type: item.bonusType || (item.strBonus < 0 ? 'penalty' : 'Enhancement'), source: item.name });
+        if (item.dexBonus) abilityBuckets.dex.push({ val: item.dexBonus, type: item.bonusType || (item.dexBonus < 0 ? 'penalty' : 'Enhancement'), source: item.name });
+        if (item.conBonus) abilityBuckets.con.push({ val: item.conBonus, type: item.bonusType || (item.conBonus < 0 ? 'penalty' : 'Enhancement'), source: item.name });
+        if (item.intBonus) abilityBuckets.int.push({ val: item.intBonus, type: item.bonusType || (item.intBonus < 0 ? 'penalty' : 'Enhancement'), source: item.name });
+        if (item.wisBonus) abilityBuckets.wis.push({ val: item.wisBonus, type: item.bonusType || (item.wisBonus < 0 ? 'penalty' : 'Enhancement'), source: item.name });
+        if (item.chaBonus) abilityBuckets.cha.push({ val: item.chaBonus, type: item.bonusType || (item.chaBonus < 0 ? 'penalty' : 'Enhancement'), source: item.name });
+
+        // Saves
+        if (item.fortBonus) buffSaveFort += item.fortBonus;
+        if (item.refBonus) buffSaveRef += item.refBonus;
+        if (item.willBonus) buffSaveWill += item.willBonus;
+        if (item.saveBonus) {
+          buffSaveFort += item.saveBonus;
+          buffSaveRef += item.saveBonus;
+          buffSaveWill += item.saveBonus;
+        }
+
+        // Speed
+        if (item.speedBonus) buffSpeedBonus = Math.max(buffSpeedBonus, item.speedBonus);
+        if (item.speedPenalty) buffSpeedBonus -= item.speedPenalty;
+
+        // HP Penalty (Energy Drain: 5 HP per level)
+        if (item.hpPenalty) debuffHpPenalty += Number(item.hpPenalty) || 0;
+      });
     });
 
     // 4. Resolve Stacking for Abilities (RAW: Same types take Math.max, untyped/dodge stack)
@@ -721,8 +867,10 @@ const RuleEngine = {
       character.abilities[stat] = base + netBonus;
     });
 
-    // 4.5. Resolve Dynamic Hit Points (HP) based on Constitution Changes
-    // In D&D 3.5e RAW: An increase or decrease in Constitution modifier alters maximum and current HP by 1 HP per Hit Die / Level
+    // 4.5. Resolve Dynamic Hit Points (HP) based on Constitution Changes and Debuff Penalties
+    // In D&D 3.5e RAW:
+    // - Con modifier alters maximum and current HP by 1 HP per Hit Die / Level
+    // - Energy Drain / Negative Levels decrease maximum and current HP by 5 HP per level!
     const charFeatNames = (character.feats || []).map(f => (typeof f === 'string' ? f : (f.name || '')).toLowerCase().trim());
     const totalHD = Number(character.level) || (Array.isArray(character.levelProgression) ? character.levelProgression.length : 1);
     const hasFrail = charFeatNames.some(f => f.includes('flaw: frail') || f === 'frail');
@@ -731,7 +879,7 @@ const RuleEngine = {
     if (character.hp) {
       if (character.hp.baseMax === undefined || character.hp.baseMax === null) {
         // If baseMax not yet set, initialize it from current max (subtracting any previous conBonusHp)
-        character.hp.baseMax = Math.max(1, (Number(character.hp.max) || 45) - (Number(character.hp.conBonusHp) || 0) + flawHpPenalty);
+        character.hp.baseMax = Math.max(1, (Number(character.hp.max) || 45) - (Number(character.hp.conBonusHp) || 0) + flawHpPenalty + (Number(character.hp.debuffHpPenalty) || 0));
       }
       if (character.hp.conBonusHp === undefined || character.hp.conBonusHp === null) {
         character.hp.conBonusHp = 0;
@@ -743,15 +891,16 @@ const RuleEngine = {
       const newConBonusHp = conModDiff * totalHD;
 
       const prevConBonusHp = Number(character.hp.conBonusHp) || 0;
-      if (newConBonusHp !== prevConBonusHp || character.hp._appliedFrail !== hasFrail) {
-        const diff = newConBonusHp - prevConBonusHp;
+      const prevDebuffHp = Number(character.hp.debuffHpPenalty) || 0;
+      const conHpDiff = newConBonusHp - prevConBonusHp;
+      const debuffHpDiff = debuffHpPenalty - prevDebuffHp;
+
+      if (conHpDiff !== 0 || debuffHpDiff !== 0 || character.hp._appliedFrail !== hasFrail) {
         character.hp.conBonusHp = newConBonusHp;
+        character.hp.debuffHpPenalty = debuffHpPenalty;
         character.hp._appliedFrail = hasFrail;
-        character.hp.max = Math.max(1, Number(character.hp.baseMax) + newConBonusHp - flawHpPenalty);
-        character.hp.current = (Number(character.hp.current) || 0) + diff;
-        if (character.hp.current > character.hp.max) {
-          character.hp.current = character.hp.max;
-        }
+        character.hp.max = Math.max(1, Number(character.hp.baseMax) + newConBonusHp - flawHpPenalty - debuffHpPenalty);
+        character.hp.current = Math.min(character.hp.max, (Number(character.hp.current) || character.hp.max) + conHpDiff - debuffHpDiff);
         if (character.hp.current < -10) {
           character.hp.current = -10;
         }
@@ -1004,11 +1153,24 @@ const RuleEngine = {
       }
     });
 
-    // Add bonuses from active buffs (Bless, Haste, Prayer, Divine Favor, etc.)
+    // Add bonuses from active buffs and child debuffs (Bless, Haste, Prayer, Energy Drain, Sickened, etc.)
     if (Array.isArray(character.buffs)) {
       character.buffs.forEach(b => {
-        if (b.active && b.attBonus) {
-          attackBonusItems.push({ type: b.bonusType || 'untyped', val: b.attBonus, source: b.name });
+        if (!b || !b.active) return;
+        const hasChildren = Array.isArray(b.children) && b.children.length > 0;
+        if (!hasChildren) {
+          if (b.attBonus) {
+            attackBonusItems.push({ type: b.bonusType || (b.isDebuff || b.attBonus < 0 ? 'penalty' : 'untyped'), val: b.attBonus, source: b.name });
+          }
+          if (b.negativeLevels) {
+            attackBonusItems.push({ type: 'penalty', val: -b.negativeLevels, source: `${b.name} (-${b.negativeLevels} Lvl)` });
+          }
+        } else {
+          b.children.forEach(c => {
+            if (c.attBonus) {
+              attackBonusItems.push({ type: c.bonusType || 'penalty', val: c.attBonus, source: `${b.name} → ${c.name}` });
+            }
+          });
         }
       });
     }
@@ -1042,11 +1204,21 @@ const RuleEngine = {
       damageBonusItems.push({ type: 'untyped', val: 2, source: 'Weapon Specialization' });
     }
 
-    // Add damage bonuses from active buffs (Prayer, Divine Favor, etc.)
+    // Add damage bonuses from active buffs and child debuffs (Prayer, Divine Favor, Sickened, etc.)
     if (Array.isArray(character.buffs)) {
       character.buffs.forEach(b => {
-        if (b.active && b.dmgBonus) {
-          damageBonusItems.push({ type: b.bonusType || 'untyped', val: b.dmgBonus, source: b.name });
+        if (!b || !b.active) return;
+        const hasChildren = Array.isArray(b.children) && b.children.length > 0;
+        if (!hasChildren) {
+          if (b.dmgBonus) {
+            damageBonusItems.push({ type: b.bonusType || (b.isDebuff || b.dmgBonus < 0 ? 'penalty' : 'untyped'), val: b.dmgBonus, source: b.name });
+          }
+        } else {
+          b.children.forEach(c => {
+            if (c.dmgBonus) {
+              damageBonusItems.push({ type: c.bonusType || 'penalty', val: c.dmgBonus, source: `${b.name} → ${c.name}` });
+            }
+          });
         }
       });
     }
