@@ -843,8 +843,15 @@ const RuleEngine = {
     const draconicSaveBonus = charFeatNames.some(f => f.includes('save magic') || f.includes('draconic save')) ? 1 : 0;
     const miscSaveBonus = (character.saveBonuses?.bonus || 0) + (character.saveBonuses?.misc || 0);
 
+    // Battle Clarity (Warblade 1): Add INT modifier (max Warblade lvl) to Reflex saves
+    const charClassNames = (character.classes || '').toLowerCase();
+    const isWarblade = charClassNames.includes('warblade') || (Array.isArray(character.levelProgression) && character.levelProgression.some(l => (l.className || '').toLowerCase().includes('warblade')));
+    const hasBattleClarity = (character.specialAbilities || []).some(a => (typeof a === 'string' ? a : (a.name || '')).toLowerCase().includes('battle clarity')) || isWarblade;
+    const warbladeLvl = (Array.isArray(character.levelProgression) ? character.levelProgression.filter(l => (l.className || '').toLowerCase().includes('warblade')).length : 0) || (isWarblade ? 1 : 0);
+    const battleClarityBonus = hasBattleClarity ? Math.min(warbladeLvl, Math.max(0, intMod)) : 0;
+
     const bonusFort = buffSaveFort + featFortBonus + draconicSaveBonus + miscSaveBonus + (character.saveBonuses?.fortBonus || 0);
-    const bonusRef = buffSaveRef + featRefBonus - flawRefPenalty + draconicSaveBonus + miscSaveBonus + (character.saveBonuses?.refBonus || 0);
+    const bonusRef = buffSaveRef + featRefBonus - flawRefPenalty + draconicSaveBonus + miscSaveBonus + (character.saveBonuses?.refBonus || 0) + battleClarityBonus;
     const bonusWill = buffSaveWill + featWillBonus + draconicSaveBonus + miscSaveBonus + (character.saveBonuses?.willBonus || 0);
 
     const finalFort = baseFort + conMod + resistBonus + bonusFort;

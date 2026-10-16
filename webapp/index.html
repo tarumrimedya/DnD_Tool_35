@@ -7659,7 +7659,7 @@
         bonusNotes.push(`
           <div class="flex items-center justify-between py-0.5">
             <span>✨ Battle Clarity (Warblade 1): Düztaban değilken Reflex zarlarına +${battleClarityInt} INT bonusu eklenir.</span>
-            <span class="text-emerald-400 font-bold font-mono">Nihai Refl: +${saves.ref + battleClarityInt}</span>
+            <span class="text-emerald-400 font-bold font-mono">Nihai Refl: +${saves.ref}</span>
           </div>
         `);
       }
@@ -7701,7 +7701,7 @@
 
       savesList.innerHTML = `
         <div class="flex items-center py-1 border-b border-slate-800 text-xs font-mono">
-          <span class="text-slate-400 w-28 shrink-0 flex items-center gap-1.5 font-sans">
+          <span class="text-slate-400 w-36 shrink-0 flex items-center gap-1.5 font-sans">
             <span>🛡️</span>
             <span>Fortitude:</span>
           </span>
@@ -7712,7 +7712,7 @@
           </span>
         </div>
         <div class="flex items-center py-1 border-b border-slate-800 text-xs font-mono">
-          <span class="text-slate-400 w-28 shrink-0 flex items-center gap-1.5 font-sans">
+          <span class="text-slate-400 w-36 shrink-0 flex items-center gap-1.5 font-sans">
             <span>⚡</span>
             <span>Reflex:</span>
           </span>
@@ -7723,7 +7723,7 @@
           </span>
         </div>
         <div class="flex items-center py-1 border-b border-slate-800 text-xs font-mono">
-          <span class="text-slate-400 w-28 shrink-0 flex items-center gap-1.5 font-sans">
+          <span class="text-slate-400 w-36 shrink-0 flex items-center gap-1.5 font-sans">
             <span>🧠</span>
             <span>Will:</span>
           </span>
@@ -7733,13 +7733,15 @@
             ${baseWill} (Base) + ${wisMod} (Wis) + ${resist} (Resist)${formatBonusText(bonusWill)}
           </span>
         </div>
-        <div class="flex items-center justify-between py-1 border-b border-slate-800 text-xs font-mono">
-          <span class="text-slate-400 flex items-center gap-1.5 font-sans">
+        <div class="flex items-center py-1 border-b border-slate-800 text-xs font-mono">
+          <span class="text-slate-400 w-36 shrink-0 flex items-center gap-1.5 font-sans">
             <span>🩸</span>
             <span>Can Puanı (HP):</span>
           </span>
-          <span class="text-white font-bold font-mono">
-            ${character.hp?.baseMax || character.hp?.max} Taban${character.hp?.conBonusHp ? ` <span class="text-amber-400">+ ${character.hp.conBonusHp} (CON Buff)</span>` : ''} = <strong class="text-emerald-400">${character.hp?.current} / ${character.hp?.max} HP</strong>
+          <span class="text-emerald-400 font-bold shrink-0">${character.hp?.current} / ${character.hp?.max} HP</span>
+          <span class="text-slate-500 font-bold px-2 shrink-0">:</span>
+          <span class="text-white flex-1 truncate">
+            ${character.hp?.baseMax || character.hp?.max} Taban${character.hp?.conBonusHp ? ` <span class="text-amber-400">+ ${character.hp.conBonusHp} (CON Buff)</span>` : ''}
           </span>
         </div>
         <div class="pt-1.5 space-y-0.5 text-[10px] text-indigo-300 font-sans border-t border-slate-800/60 mt-1">
