@@ -149,10 +149,16 @@ const RuleEngine = {
           res.deflection = acVal;
         } else if (bType.includes('natural') || (dbEntry.slot && dbEntry.slot.toLowerCase().includes('neck'))) {
           res.natural = acVal;
+        } else if (bType.includes('dodge')) {
+          res.dodge = acVal;
         } else {
           res.armor = acVal;
         }
       }
+      if (dbEntry.naturalBonus) res.natural = Math.max(res.natural, Number(dbEntry.naturalBonus) || 0);
+      if (dbEntry.deflection || dbEntry.deflectionBonus) res.deflection = Math.max(res.deflection, Number(dbEntry.deflection || dbEntry.deflectionBonus) || 0);
+      if (dbEntry.dodgeBonus) res.dodge = Math.max(res.dodge, Number(dbEntry.dodgeBonus) || 0);
+      if (dbEntry.resistance) res.resistance = Math.max(res.resistance, Number(dbEntry.resistance) || 0);
       if (dbEntry.maxDex !== undefined && dbEntry.maxDex !== '') res.maxDex = Number(dbEntry.maxDex);
       if (dbEntry.checkPenalty !== undefined && dbEntry.checkPenalty !== '') res.acp = Number(dbEntry.checkPenalty);
       if (dbEntry.strBonus) { res.str = Number(dbEntry.strBonus) || 0; res.bonusType = dbEntry.bonusType || 'Enhancement'; }
@@ -177,8 +183,12 @@ const RuleEngine = {
       if (bType.includes('shield')) res.shield = acVal;
       else if (bType.includes('deflection')) res.deflection = acVal;
       else if (bType.includes('natural')) res.natural = acVal;
+      else if (bType.includes('dodge')) res.dodge = acVal;
       else res.armor = acVal;
     }
+    if (item.naturalBonus) res.natural = Math.max(res.natural, Number(item.naturalBonus) || 0);
+    if (item.deflection || item.deflectionBonus) res.deflection = Math.max(res.deflection, Number(item.deflection || item.deflectionBonus) || 0);
+    if (item.resistance) res.resistance = Math.max(res.resistance, Number(item.resistance) || 0);
     if (item.maxDex !== undefined && item.maxDex !== null) res.maxDex = Number(item.maxDex);
     if (item.checkPenalty !== undefined && item.checkPenalty !== null) res.acp = Number(item.checkPenalty);
     if (item.strBonus) { res.str = Number(item.strBonus) || 0; res.bonusType = item.bonusType || 'Enhancement'; }
@@ -190,6 +200,14 @@ const RuleEngine = {
 
     // 3. Fallback to SRD Catalogs & Intelligent Heuristics if AC/stat is still 0
     const fullText = `${item.name} ${item.desc || ''} ${dbEntry?.benefit || ''}`.toLowerCase();
+    const isWeaponOrShieldOrArmor = (
+      item.category === 'Weapon' ||
+      item.category === 'Armor' ||
+      item.category === 'Shield' ||
+      dbEntry?.type === 'Weapon' ||
+      dbEntry?.type === 'Armor' ||
+      dbEntry?.type === 'Shield'
+    );
 
     // Check SRD Armors
     if (res.armor === 0 && (item.category === 'Armor' || (item.slot && item.slot.toLowerCase().includes('armor')))) {
@@ -245,10 +263,10 @@ const RuleEngine = {
       }
     }
 
-    // Heuristic regex parsers for Wonderous Items & Accessories
+    // Heuristic regex parsers for Wondrous Items & Accessories
     // Deflection
-    if (res.deflection === 0 && (cleanName.includes('protection') || fullText.includes('deflection'))) {
-      const match = fullText.match(/\+(\d+)\s*(?:deflection|saptırma)/i) || cleanName.match(/\+(\d+)/);
+    if (res.deflection === 0 && (cleanName.includes('protection') || fullText.includes('deflection bonus'))) {
+      const match = fullText.match(/\+(\d+)\s*(?:deflection|saptırma)/i) || (cleanName.includes('protection') ? cleanName.match(/\+(\d+)/) : null);
       if (match) {
         res.deflection = Number(match[1]);
         res.bonusType = 'Deflection';
@@ -256,8 +274,8 @@ const RuleEngine = {
     }
 
     // Natural Armor
-    if (res.natural === 0 && (cleanName.includes('natural armor') || fullText.includes('natural armor') || cleanName.includes('amulet of natural armor'))) {
-      const match = fullText.match(/\+(\d+)\s*(?:natural|doğal)/i) || cleanName.match(/\+(\d+)/);
+    if (res.natural === 0 && (cleanName.includes('natural armor') || fullText.includes('natural armor bonus') || cleanName.includes('amulet of natural armor'))) {
+      const match = fullText.match(/\+(\d+)\s*(?:natural|doğal)/i) || (cleanName.includes('natural armor') ? cleanName.match(/\+(\d+)/) : null);
       if (match) {
         res.natural = Number(match[1]);
         res.bonusType = 'Natural';
@@ -275,36 +293,51 @@ const RuleEngine = {
 
     // Resistance bonus to saves (Cloak of Resistance)
     if (res.resistance === 0 && (cleanName.includes('resistance') || fullText.includes('resistance bonus'))) {
-      const match = fullText.match(/\+(\d+)\s*resistance/i) || cleanName.match(/\+(\d+)/);
+      const match = fullText.match(/\+(\d+)\s*resistance/i) || (cleanName.includes('resistance') ? cleanName.match(/\+(\d+)/) : null);
       if (match) {
         res.resistance = Number(match[1]);
       }
     }
 
     // Ability Enhancements (Belt of Giant Strength, Gloves of Dexterity, etc.)
-    if (res.str === 0 && (cleanName.includes('giant strength') || cleanName.includes('ogre power') || fullText.includes('strength'))) {
-      const match = fullText.match(/\+(\d+)\s*(?:enhancement\s*)?(?:bonus to\s*)?(?:strength|str|kuvvet)/i) || cleanName.match(/\+(\d+)/);
-      if (match) { res.str = Number(match[1]); res.bonusType = 'Enhancement'; }
-    }
-    if (res.dex === 0 && (cleanName.includes('dexterity') || fullText.includes('dexterity'))) {
-      const match = fullText.match(/\+(\d+)\s*(?:enhancement\s*)?(?:bonus to\s*)?(?:dexterity|dex|çeviklik)/i) || cleanName.match(/\+(\d+)/);
-      if (match) { res.dex = Number(match[1]); res.bonusType = 'Enhancement'; }
-    }
-    if (res.con === 0 && (cleanName.includes('health') || fullText.includes('constitution'))) {
-      const match = fullText.match(/\+(\d+)\s*(?:enhancement\s*)?(?:bonus to\s*)?(?:constitution|con|dayanıklılık)/i) || cleanName.match(/\+(\d+)/);
-      if (match) { res.con = Number(match[1]); res.bonusType = 'Enhancement'; }
-    }
-    if (res.int === 0 && (cleanName.includes('intellect') || fullText.includes('intelligence'))) {
-      const match = fullText.match(/\+(\d+)\s*(?:enhancement\s*)?(?:bonus to\s*)?(?:intelligence|int|zeka)/i) || cleanName.match(/\+(\d+)/);
-      if (match) { res.int = Number(match[1]); res.bonusType = 'Enhancement'; }
-    }
-    if (res.wis === 0 && (cleanName.includes('wisdom') || cleanName.includes('periapt') || fullText.includes('wisdom'))) {
-      const match = fullText.match(/\+(\d+)\s*(?:enhancement\s*)?(?:bonus to\s*)?(?:wisdom|wis|bilgelik)/i) || cleanName.match(/\+(\d+)/);
-      if (match) { res.wis = Number(match[1]); res.bonusType = 'Enhancement'; }
-    }
-    if (res.cha === 0 && (cleanName.includes('charisma') || fullText.includes('charisma'))) {
-      const match = fullText.match(/\+(\d+)\s*(?:enhancement\s*)?(?:bonus to\s*)?(?:charisma|cha|karizma)/i) || cleanName.match(/\+(\d+)/);
-      if (match) { res.cha = Number(match[1]); res.bonusType = 'Enhancement'; }
+    // Only match explicit "+X [enhancement] bonus to <Stat>" in text, or "+X" in item name if the item name itself is a stat-enhancing item (never on weapons/armors like Rapier +2!)
+    if (!isWeaponOrShieldOrArmor) {
+      if (res.str === 0) {
+        const match = fullText.match(/\+(\d+)\s*(?:enhancement\s*)?bonus\s+to\s+(?:strength|str|kuvvet)\b/i)
+          || fullText.match(/bonus\s+to\s+(?:strength|str)\s+of\s+\+(\d+)/i)
+          || ((cleanName.includes('giant strength') || cleanName.includes('ogre power') || cleanName.includes('strength')) ? cleanName.match(/\+(\d+)/) : null);
+        if (match) { res.str = Number(match[1]); res.bonusType = 'Enhancement'; }
+      }
+      if (res.dex === 0) {
+        const match = fullText.match(/\+(\d+)\s*(?:enhancement\s*)?bonus\s+to\s+(?:dexterity|dex|çeviklik)\b/i)
+          || fullText.match(/bonus\s+to\s+(?:dexterity|dex)\s+of\s+\+(\d+)/i)
+          || (cleanName.includes('dexterity') ? cleanName.match(/\+(\d+)/) : null);
+        if (match) { res.dex = Number(match[1]); res.bonusType = 'Enhancement'; }
+      }
+      if (res.con === 0) {
+        const match = fullText.match(/\+(\d+)\s*(?:enhancement\s*)?bonus\s+to\s+(?:constitution|con|dayanıklılık)\b/i)
+          || fullText.match(/bonus\s+to\s+(?:constitution|con)\s+of\s+\+(\d+)/i)
+          || ((cleanName.includes('health') || cleanName.includes('constitution')) ? cleanName.match(/\+(\d+)/) : null);
+        if (match) { res.con = Number(match[1]); res.bonusType = 'Enhancement'; }
+      }
+      if (res.int === 0) {
+        const match = fullText.match(/\+(\d+)\s*(?:enhancement\s*)?bonus\s+to\s+(?:intelligence|int|zeka)\b/i)
+          || fullText.match(/bonus\s+to\s+(?:intelligence|int)\s+of\s+\+(\d+)/i)
+          || ((cleanName.includes('intellect') || cleanName.includes('intelligence')) ? cleanName.match(/\+(\d+)/) : null);
+        if (match) { res.int = Number(match[1]); res.bonusType = 'Enhancement'; }
+      }
+      if (res.wis === 0) {
+        const match = fullText.match(/\+(\d+)\s*(?:enhancement\s*)?bonus\s+to\s+(?:wisdom|wis|bilgelik)\b/i)
+          || fullText.match(/bonus\s+to\s+(?:wisdom|wis)\s+of\s+\+(\d+)/i)
+          || ((cleanName.includes('wisdom') || cleanName.includes('periapt')) ? cleanName.match(/\+(\d+)/) : null);
+        if (match) { res.wis = Number(match[1]); res.bonusType = 'Enhancement'; }
+      }
+      if (res.cha === 0) {
+        const match = fullText.match(/\+(\d+)\s*(?:enhancement\s*)?bonus\s+to\s+(?:charisma|cha|karizma)\b/i)
+          || fullText.match(/bonus\s+to\s+(?:charisma|cha)\s+of\s+\+(\d+)/i)
+          || (cleanName.includes('charisma') ? cleanName.match(/\+(\d+)/) : null);
+        if (match) { res.cha = Number(match[1]); res.bonusType = 'Enhancement'; }
+      }
     }
 
     // Speed bonus (Boots of Striding and Springing)
@@ -621,6 +654,7 @@ const RuleEngine = {
 
     // 4. Resolve Stacking for Abilities (RAW: Same types take Math.max, untyped/dodge stack)
     if (!character.abilities) character.abilities = {};
+    character.abilitySources = abilityBuckets;
     ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(stat => {
       const base = character.baseAbilities[stat] || 10;
       const bonusItems = abilityBuckets[stat];

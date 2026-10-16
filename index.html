@@ -2758,6 +2758,21 @@
       document.getElementById('ac-total-display').textContent = acCalc.total;
       document.getElementById('ac-touch-display').textContent = acCalc.touch;
       document.getElementById('ac-flat-display').textContent = acCalc.flat;
+      const acNotesEl = document.getElementById('ac-notes-display');
+      if (acNotesEl && acCalc.breakdown) {
+        const parts = [];
+        if (acCalc.breakdown.armor) parts.push(`Zırh +${acCalc.breakdown.armor}`);
+        if (acCalc.breakdown.shield) parts.push(`Kalkan +${acCalc.breakdown.shield}`);
+        if (acCalc.breakdown.dex !== undefined) parts.push(`Dex ${acCalc.breakdown.dex >= 0 ? '+' + acCalc.breakdown.dex : acCalc.breakdown.dex}`);
+        if (acCalc.breakdown.natural) parts.push(`Nat +${acCalc.breakdown.natural}`);
+        if (acCalc.breakdown.deflection) parts.push(`Defl +${acCalc.breakdown.deflection}`);
+        if (acCalc.breakdown.dodge) parts.push(`Dodge +${acCalc.breakdown.dodge}`);
+        if (acCalc.breakdown.sacred) parts.push(`Sacred +${acCalc.breakdown.sacred}`);
+        if (acCalc.breakdown.luck) parts.push(`Luck +${acCalc.breakdown.luck}`);
+        if (acCalc.breakdown.insight) parts.push(`Insight +${acCalc.breakdown.insight}`);
+        if (acCalc.breakdown.penalty) parts.push(`Ceza ${acCalc.breakdown.penalty}`);
+        acNotesEl.textContent = parts.join(' • ') || 'Taban AC 10';
+      }
 
       // Saves
       const saves = RuleEngine.evaluateSaves(character);
@@ -3259,8 +3274,11 @@
           const base = character.baseAbilities?.[s.key] || score;
           const bonusDiff = score - base;
           const mod = RuleEngine.getAbilityMod(score);
+          const sourcesList = character.abilitySources?.[s.key] || [];
+          const sourceText = sourcesList.map(src => `${src.source} (${src.val >= 0 ? '+' + src.val : src.val})`).join(', ');
           const div = document.createElement('div');
           div.className = 'bg-slate-900 border border-slate-700 rounded-xl p-2.5 flex flex-col justify-between';
+          if (sourceText) div.title = `Bonus Kaynakları: ${sourceText}`;
           div.innerHTML = `
             <div class="flex items-center justify-between">
               <span class="text-[10px] font-bold text-slate-400 uppercase">${s.label}</span>
@@ -3271,6 +3289,7 @@
               <span class="${mod >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold">${mod >= 0 ? '+' : ''}${mod}</span>
               ${bonusDiff !== 0 ? `<span class="text-[9px] text-slate-500 font-sans">Taban: ${base}</span>` : ''}
             </div>
+            ${sourceText ? `<div class="text-[9px] text-emerald-400/90 truncate mt-1 pt-1 border-t border-slate-800" title="${sourceText}">✨ ${sourceText}</div>` : ''}
           `;
           container.appendChild(div);
         });
@@ -3891,15 +3910,42 @@
       const slot = character.bodySlots?.[slotKey];
       if (!slot || slot.name === '-') return;
 
-      // Find in pool and set isEquipped = false
+      if (!Array.isArray(character.gearPool)) character.gearPool = [];
+
+      // Find in pool and set isEquipped = false, or add to gearPool if not present
       const cleanSlotName = (slot.name || '').toLowerCase().trim();
       const cleanRefName = (slot.masterDbName || '').toLowerCase().trim();
-      const poolItem = (character.gearPool || []).find(p => {
+      const poolItem = character.gearPool.find(p => {
         const pClean = (p.name || '').toLowerCase().trim();
         return pClean === cleanSlotName || (cleanRefName && pClean === cleanRefName);
       });
       if (poolItem) {
         poolItem.isEquipped = false;
+      } else {
+        const slotDef = BODY_SLOT_DEFS.find(d => d.key === slotKey);
+        const inferredCat = slot.category || (slotDef && slotDef.allowed && slotDef.allowed[0]) || 'Other';
+        character.gearPool.push({
+          id: Date.now() + Math.floor(Math.random() * 1000),
+          name: slot.name,
+          masterDbName: slot.masterDbName || slot.name,
+          category: inferredCat,
+          desc: slot.desc || '',
+          qty: 1,
+          weight: Number(slot.weight) || 0,
+          cost: Number(slot.cost) || 0,
+          isBelt: false,
+          isEquipped: false,
+          acBonus: slot.acBonus,
+          bonusType: slot.bonusType,
+          strBonus: slot.strBonus,
+          dexBonus: slot.dexBonus,
+          conBonus: slot.conBonus,
+          intBonus: slot.intBonus,
+          wisBonus: slot.wisBonus,
+          chaBonus: slot.chaBonus,
+          maxDex: slot.maxDex,
+          checkPenalty: slot.checkPenalty
+        });
       }
 
       character.bodySlots[slotKey] = { name: '-', active: false, weight: 0, cost: 0, desc: '' };
@@ -4042,9 +4088,7 @@
       // Unequip currently equipped item in that slot if any
       const existing = character.bodySlots?.[targetSlotKey];
       if (existing && existing.name && existing.name !== '-') {
-        const cleanExisting = existing.name.toLowerCase().trim();
-        const poolExisting = (character.gearPool || []).find(p => p.name.toLowerCase().trim() === cleanExisting);
-        if (poolExisting) poolExisting.isEquipped = false;
+        unequipSlot(targetSlotKey);
       }
 
       // Equip new item with full properties
