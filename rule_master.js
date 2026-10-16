@@ -887,51 +887,82 @@ const RuleMaster = {
           .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'))
           .map(m => m.name.replace(/^models\//, ''));
 
-        // 1. Dynamic Future-Proof Version Parser:
-        // Matches ONLY clean production releases: gemini-<ver>-flash-lite, gemini-<ver>-flash, gemini-<ver>-pro (for ver >= 2.5)
-        // Automatically excludes -tts, -image, -vision, -audio, -thinking, -exp, -preview, -001, gemma, etc.
-        const cleanVersionRegex = /^gemini-(\d+(?:\.\d+)?)-(flash-lite|flash|pro)$/;
-        const parsedModels = [];
+        // Exclude unsupported modalities (tts, image, audio, embeddings, realtime, bison, gemma)
+        const textModels = available.filter(m => {
+          const lower = m.toLowerCase();
+          return !lower.includes('tts') &&
+                 !lower.includes('image') &&
+                 !lower.includes('audio') &&
+                 !lower.includes('embedding') &&
+                 !lower.includes('realtime') &&
+                 !lower.includes('bison') &&
+                 !lower.includes('gemma');
+        });
 
-        for (const name of available) {
-          const match = name.match(cleanVersionRegex);
-          if (match) {
-            const ver = parseFloat(match[1]);
-            const tier = match[2]; // 'flash-lite' | 'flash' | 'pro'
-            if (ver >= 2.5) {
-              parsedModels.push({ name, ver, tier });
+        // 1. Separate into strict speed tiers:
+        // Tier 1 (Speed Priority #1): Flash-Lite (fastest latency, lightweight token cost)
+        // Tier 2 (Speed Priority #2): Standard Flash (fast, full general model)
+        // Tier 3 (Speed Priority #3): Pro (deep fallback)
+        const flashLiteList = [];
+        const flashList = [];
+        const proList = [];
+
+        textModels.forEach(name => {
+          const lower = name.toLowerCase();
+          const verMatch = lower.match(/(?:gemini-)?(\d+(?:\.\d+)?)/);
+          const ver = verMatch ? parseFloat(verMatch[1]) : 0;
+          const isLatest = lower.includes('latest');
+          const isPreview = lower.includes('preview') || lower.includes('exp');
+
+          const item = { name, ver, isLatest, isPreview };
+
+          if (lower.includes('flash-lite') || lower.includes('flash_lite')) {
+            flashLiteList.push(item);
+          } else if (lower.includes('flash')) {
+            flashList.push(item);
+          } else if (lower.includes('pro')) {
+            proList.push(item);
+          }
+        });
+
+        // Sorter within a tier:
+        // - Rolling 'latest' alias first
+        // - Higher version first (2.5 > 2.0 > 1.5)
+        // - Clean release before preview/exp
+        const sortWithinTier = (a, b) => {
+          if (a.isLatest !== b.isLatest) return a.isLatest ? -1 : 1;
+          if (b.ver !== a.ver) return b.ver - a.ver;
+          if (a.isPreview !== b.isPreview) return a.isPreview ? 1 : -1;
+          return a.name.localeCompare(b.name);
+        };
+
+        flashLiteList.sort(sortWithinTier);
+        flashList.sort(sortWithinTier);
+        proList.sort(sortWithinTier);
+
+        const ordered = [
+          ...flashLiteList.map(m => m.name),
+          ...flashList.map(m => m.name),
+          ...proList.map(m => m.name)
+        ];
+
+        // Ensure rolling official aliases are included if present in available
+        for (const alias of ['gemini-flash-lite-latest', 'gemini-flash-latest']) {
+          if (available.includes(alias) && !ordered.includes(alias)) {
+            if (alias.includes('flash-lite')) {
+              ordered.unshift(alias);
+            } else {
+              const firstFlashIdx = ordered.findIndex(n => n.includes('flash') && !n.includes('flash-lite'));
+              if (firstFlashIdx >= 0) {
+                ordered.splice(firstFlashIdx, 0, alias);
+              } else {
+                ordered.push(alias);
+              }
             }
           }
         }
 
-        // Sort:
-        // - Flash / Flash-Lite models Always before Pro (so fast models are primary, Pro is final fallback)
-        // - Newer version Always before older version (e.g., 4.5 > 4.0 > 3.8 > 3.5 > 2.5)
-        // - Within same version: flash-lite -> flash
-        const tierRank = { 'flash-lite': 1, 'flash': 2, 'pro': 3 };
-        const flashModels = parsedModels
-          .filter(m => m.tier !== 'pro')
-          .sort((a, b) => (b.ver !== a.ver ? b.ver - a.ver : tierRank[a.tier] - tierRank[b.tier]))
-          .map(m => m.name);
-
-        const proModels = parsedModels
-          .filter(m => m.tier === 'pro')
-          .sort((a, b) => b.ver - a.ver)
-          .map(m => m.name);
-
-        const selected = [...flashModels];
-
-        // 2. Include Google's official rolling latest aliases (always point to newest generation)
-        for (const alias of ['gemini-flash-lite-latest', 'gemini-flash-latest']) {
-          if (available.includes(alias) && !selected.includes(alias)) {
-            selected.push(alias);
-          }
-        }
-
-        // 3. Add highest version Pro model at the end of the queue as deep fallback
-        if (proModels.length > 0 && !selected.includes(proModels[0])) {
-          selected.push(proModels[0]);
-        }
+        const selected = Array.from(new Set(ordered));
 
         if (selected.length > 0) {
           this._cachedModels = selected;
@@ -942,12 +973,14 @@ const RuleMaster = {
       console.warn('Could not query dynamic Gemini models list:', e);
     }
 
-    // Default safe fallback if list request fails
+    // Default fast-priority fallback (flash-lite models strictly first)
     return [
       'gemini-flash-lite-latest',
-      'gemini-flash-latest',
       'gemini-2.5-flash-lite',
-      'gemini-2.5-flash'
+      'gemini-2.0-flash-lite',
+      'gemini-flash-latest',
+      'gemini-2.5-flash',
+      'gemini-2.0-flash'
     ];
   },
 
