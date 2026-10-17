@@ -736,24 +736,6 @@
           </div>
         </div>
 
-        <!-- Feats and Special Abilities (Madde 16 & 17) -->
-        <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-3.5">
-          <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
-            <div>
-              <h3 class="text-xs font-bold text-purple-400 uppercase tracking-wide">✨ FEATLER VE ÖZEL YETENEKLER (TIKLA & İNCELE)</h3>
-              <span class="text-[10px] text-indigo-300">💡 Detay, kural açıklaması veya kaldırmak için hünerin üzerine tıklayın</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <button onclick="openFeatPickerModal()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow flex items-center gap-1.5 transition">
-                <span>➕</span>
-                <span>Feat Seç / Öğren</span>
-              </button>
-            </div>
-          </div>
-          <div class="flex flex-wrap gap-2" id="feats-badges-container">
-            <!-- Dynamically populated -->
-          </div>
-        </div>
 
         <!-- LEVEL PROGRESSION & EVOLUTION (lvl_up - Madde 1, 2, 3, 12, Unearthed Arcana Fractional & Level Planning) -->
         <div class="border border-slate-800 rounded-xl overflow-hidden mt-4">
@@ -8567,25 +8549,6 @@
         });
       }
 
-      // Interactive Feats Badges (Madde 16 & 17)
-      const badgesContainer = document.getElementById('feats-badges-container');
-      if (badgesContainer) {
-        badgesContainer.innerHTML = '';
-        const allFeats = [
-          ...(character.feats || []).map(f => typeof f === 'string' ? { name: f, category: 'Feat' } : { ...f, category: 'Feat' }),
-          ...(character.specialAbilities || []).map(a => typeof a === 'string' ? { name: a, category: 'Special Ability' } : { ...a, category: 'Special Ability' })
-        ];
-
-        allFeats.forEach(f => {
-          if (!f || !f.name) return;
-          const btn = document.createElement('button');
-          btn.className = 'px-2.5 sm:px-3 py-1 rounded-lg bg-indigo-950/70 hover:bg-indigo-900 border border-indigo-700/60 hover:border-indigo-500 text-indigo-200 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition transform active:scale-95 shadow-sm';
-          btn.title = 'Kural detayını açmak için tıklayın';
-          btn.innerHTML = `<span>✨</span><span>${f.name}</span>`;
-          btn.onclick = () => showFeatDetail(f.name);
-          badgesContainer.appendChild(btn);
-        });
-      }
     }
 
     let currentViewedFeatName = null;
