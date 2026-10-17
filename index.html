@@ -773,34 +773,6 @@
               </button>
             </div>
           </div>
-          <!-- Settings Toolbar: Feat Mode, Caster CL Mode, Ignore ASF (create_lvl_up.gs uyumlu) -->
-          <div class="bg-slate-950/80 px-3 py-2 border-t border-b border-slate-800 flex flex-wrap items-center justify-between gap-2.5 text-xs">
-            <div class="flex flex-wrap items-center gap-3">
-              <div class="flex items-center gap-1.5">
-                <label class="text-[10px] font-bold text-amber-400 uppercase">🎖️ Feat Modu:</label>
-                <select id="setting-feat-mode" onchange="onSettingFeatModeChange()" class="bg-slate-900 border border-slate-700 text-amber-300 font-semibold text-[11px] rounded px-2 py-0.5">
-                  <option value="Standard 3.5e (1, 3, 6, 9, 12, 15, 18)">Standard 3.5e (1, 3, 6, 9, 12, 15, 18)</option>
-                  <option value="Every 2 Levels (1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)">Every 2 Levels (1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)</option>
-                  <option value="Every 4 Levels (1, 4, 8, 12, 16, 20)">Every 4 Levels (1, 4, 8, 12, 16, 20)</option>
-                  <option value="All Free / Custom">All Free / Custom (Her Seviye Serbest)</option>
-                </select>
-              </div>
-              <div class="flex items-center gap-1.5">
-                <label class="text-[10px] font-bold text-purple-400 uppercase">🔮 Caster CL Kuralı:</label>
-                <select id="setting-cl-mode" onchange="onSettingClModeChange()" class="bg-slate-900 border border-slate-700 text-purple-300 font-semibold text-[11px] rounded px-2 py-0.5">
-                  <option value="Character Level (DM Boon)">Character Level (DM Boon: CL = Karakter Seviyesi)</option>
-                  <option value="Class Level">Class Level (Yalnızca Sınıf Seviyesi)</option>
-                  <option value="Custom">Custom (Manuel)</option>
-                </select>
-              </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <label class="flex items-center gap-1.5 cursor-pointer bg-slate-900 px-2.5 py-0.5 rounded border border-slate-700 text-[11px] hover:border-emerald-500 transition">
-                <input type="checkbox" id="setting-ignore-asf" onchange="onSettingIgnoreAsfChange()" class="w-3.5 h-3.5 rounded text-emerald-500">
-                <span class="text-slate-300 font-semibold">🛡️ Ignore ASF / Boon</span>
-              </label>
-            </div>
-          </div>
           <div class="overflow-x-auto">
             <table class="w-full text-left text-xs">
               <thead class="bg-slate-950 text-slate-400 text-[10px] uppercase font-bold border-b border-slate-800">
@@ -4541,7 +4513,64 @@
               </div>
             </div>
 
-            <!-- 2. NO CRIT CONFIRM -->
+            <!-- 2. FEAT MODU (FEAT PROGRESSION) -->
+            <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5 hover:border-slate-700 transition">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <div class="font-bold text-amber-300 flex items-center gap-1.5 text-xs">
+                    <span>🎖️</span>
+                    <span>Feat Dağıtım Modu (Feat Progression)</span>
+                    <span class="badge bg-amber-950 text-amber-300 border border-amber-700 text-[9px]">Masa Kuralı</span>
+                  </div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Seviye atlarken karakterlerin genel feat kazanma aralığını belirleyin.</div>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <label class="text-[10px] font-bold text-amber-400 uppercase">🎖️ Feat Modu:</label>
+                  <select id="setting-feat-mode" onchange="onSettingFeatModeChange()" class="bg-slate-900 border border-slate-700 text-amber-300 font-semibold text-[11px] rounded px-2 py-1 focus:outline-none focus:border-amber-400">
+                    <option value="Standard 3.5e (1, 3, 6, 9, 12, 15, 18)">Standard 3.5e (1, 3, 6, 9, 12, 15, 18)</option>
+                    <option value="Every 2 Levels (1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)">Every 2 Levels (1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)</option>
+                    <option value="Every 4 Levels (1, 4, 8, 12, 16, 20)">Every 4 Levels (1, 4, 8, 12, 16, 20)</option>
+                    <option value="All Free / Custom">All Free / Custom (Her Seviye Serbest)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. CASTER CL KURALI (CASTER LEVEL RULE) -->
+            <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5 hover:border-slate-700 transition">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <div class="font-bold text-purple-300 flex items-center gap-1.5 text-xs">
+                    <span>🔮</span>
+                    <span>Caster Level (CL) Kuralı</span>
+                    <span class="badge bg-purple-950 text-purple-300 border border-purple-700 text-[9px]">Masa Kuralı</span>
+                  </div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Çoklu sınıflarda Caster Level hesaplama kuralı.</div>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <label class="text-[10px] font-bold text-purple-400 uppercase">🔮 Caster CL Kuralı:</label>
+                  <select id="setting-cl-mode" onchange="onSettingClModeChange()" class="bg-slate-900 border border-slate-700 text-purple-300 font-semibold text-[11px] rounded px-2 py-1 focus:outline-none focus:border-purple-400">
+                    <option value="Character Level (DM Boon)">Character Level (DM Boon: CL = Karakter Seviyesi)</option>
+                    <option value="Class Level">Class Level (Yalnızca Sınıf Seviyesi)</option>
+                    <option value="Custom">Custom (Manuel)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. IGNORE ASF / BOON -->
+            <label class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
+              <div>
+                <div class="font-bold text-slate-200 flex items-center gap-1.5 text-xs">
+                  <span class="text-slate-300 font-semibold">🛡️ Ignore ASF / Boon</span>
+                  <span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[9px]">DM Boon</span>
+                </div>
+                <div class="text-[10px] text-slate-400 mt-0.5">Zırh ve kalkanlardan gelen Arcane Spell Failure (ASF %) büyü bozma cezasını tamamen yoksayar.</div>
+              </div>
+              <input type="checkbox" id="setting-ignore-asf" onchange="onSettingIgnoreAsfChange()" class="w-4 h-4 rounded border-slate-700 text-emerald-500 focus:ring-0">
+            </label>
+
+            <!-- 5. NO CRIT CONFIRM -->
             <label class="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
               <div>
                 <div class="font-bold text-slate-200">🚫 No Crit Confirm (Otomatik Kritik)</div>
@@ -4550,7 +4579,7 @@
               <input type="checkbox" id="settings-no-crit-confirm" checked onchange="document.getElementById('house-no-crit-confirm').checked = this.checked; if(character.houseRules) character.houseRules.noCritConfirm = this.checked; saveStateToStorage(false);" class="rounded border-slate-700 text-amber-500 focus:ring-0">
             </label>
 
-            <!-- 3. TOME OF BATTLE MANEUVER CRIT -->
+            <!-- 6. TOME OF BATTLE MANEUVER CRIT -->
             <label class="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
               <div>
                 <div class="font-bold text-slate-200">⚡ Tome of Battle Manevralarını Katla</div>
@@ -4920,6 +4949,20 @@
       if (noCrit && setNoCrit) setNoCrit.checked = noCrit.checked;
       if (manCrit && setManCrit) setManCrit.checked = manCrit.checked;
       updateHouseRuleSkillConsolidationUI();
+
+      // Sync Feat Mode, Caster CL Mode & Ignore ASF in House Rules
+      const featModeSel = document.getElementById('setting-feat-mode');
+      if (featModeSel && character.settings?.featMode) {
+        featModeSel.value = character.settings.featMode;
+      }
+      const clModeSel = document.getElementById('setting-cl-mode');
+      if (clModeSel && character.settings?.clMode) {
+        clModeSel.value = character.settings.clMode;
+      }
+      const asfChk = document.getElementById('setting-ignore-asf');
+      if (asfChk) {
+        asfChk.checked = character.settings?.ignoreAsf !== false;
+      }
 
       // Populate Rule Sources and Splatbooks Catalog
       if (window.RuleMaster && typeof RuleMaster.renderSourcesCatalog === 'function') {
