@@ -923,27 +923,19 @@
 
           <!-- GÖRÜNÜM 2: SİLÜET / PAPER-DOLL DÜZENİ -->
           <div id="body-slots-silhouette-view" class="p-3 sm:p-5 bg-gradient-to-b from-slate-950 via-[#0a0f1d] to-slate-950 relative hidden">
-            <!-- Sub-Header: Silhouette Model Selector & Character Meta Pill -->
+            <!-- Sub-Header: Magic Item Record Sheet Standard Header -->
             <div class="flex flex-wrap items-center justify-between gap-2.5 pb-3 mb-4 border-b border-slate-800/80">
               <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
-                <span id="sil-char-tag" class="text-xs font-bold text-sky-300">Humanoid • Medium Size</span>
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]"></span>
+                <span class="text-xs font-bold text-amber-300 uppercase tracking-wider">D&D 3.5e Vücut Yuvaları (Magic Item Record Sheet)</span>
                 <span class="text-slate-600">•</span>
-                <span id="sil-active-count" class="text-[11px] text-slate-400">12 Yuva</span>
+                <span id="sil-active-count" class="text-[11px] font-semibold text-sky-300">12 Yuva</span>
               </div>
               <div class="flex items-center gap-2">
-                <label for="silhouette-model-select" class="text-[11px] font-bold text-slate-400 flex items-center gap-1">
-                  <span>👤 Figür Modeli:</span>
-                </label>
-                <select id="silhouette-model-select" onchange="changeSilhouetteModel(this.value)" class="bg-slate-900 border border-slate-700 hover:border-sky-500 rounded-lg px-2.5 py-1 text-xs text-sky-300 font-bold focus:outline-none transition">
-                  <option value="auto">⚡ Otomatik (Irk & Sınıf)</option>
-                  <option value="human">İnsan (Human Adventurer)</option>
-                  <option value="goliath">Goliath / Yarım-Ork (Heybetli)</option>
-                  <option value="dwarf">Cüce (Dwarf Savaşçı)</option>
-                  <option value="elf">Elf (Zarif / Büyücü)</option>
-                  <option value="thrikreen">Thri-Kreen (4 Kollu Böceksi)</option>
-                  <option value="avatar">🖼️ Karakter Portresi (Avatar)</option>
-                </select>
+                <span class="px-2.5 py-1 rounded-lg bg-slate-900/90 border border-slate-700 text-xs font-semibold text-slate-300 flex items-center gap-1.5 shadow-sm">
+                  <span>📜</span>
+                  <span>Standart Fantastik Savaşçı Figürü</span>
+                </span>
               </div>
             </div>
 
@@ -10157,120 +10149,30 @@
     }
 
     function getSilhouetteSvg(modelKey, character) {
-      // Determine effective model (auto detection based on character race & class)
-      let effectiveModel = modelKey || 'auto';
-      if (effectiveModel === 'auto') {
-        const raceStr = (character?.race || '').toLowerCase();
-        const classStr = (character?.classes || '').toLowerCase();
-        if (raceStr.includes('goliath') || raceStr.includes('orc') || raceStr.includes('ork') || raceStr.includes('barbarian') || raceStr.includes('minotaur') || raceStr.includes('half-giant')) {
-          effectiveModel = 'goliath';
-        } else if (raceStr.includes('dwarf') || raceStr.includes('cüce') || raceStr.includes('cuce') || raceStr.includes('duergar') || raceStr.includes('gnome') || raceStr.includes('gnom') || raceStr.includes('halfling') || raceStr.includes('buçukluk')) {
-          effectiveModel = 'dwarf';
-        } else if (raceStr.includes('elf') || raceStr.includes('drow') || raceStr.includes('eladrin') || classStr.includes('wizard') || classStr.includes('büyücü') || classStr.includes('sorcerer') || classStr.includes('druid') || classStr.includes('ranger') || classStr.includes('korucu')) {
-          effectiveModel = 'elf';
-        } else if (raceStr.includes('thri-kreen') || raceStr.includes('thrikreen') || raceStr.includes('insect') || raceStr.includes('böcek') || raceStr.includes('4 kol') || raceStr.includes('four-arm')) {
-          effectiveModel = 'thrikreen';
-        } else {
-          effectiveModel = 'human';
-        }
-      }
-
-      // If user selected avatar and avatar image is present
-      if (effectiveModel === 'avatar' && character?.avatarImg) {
-        return `
-          <div class="relative w-full h-full flex flex-col items-center justify-center p-2">
-            <div class="relative w-64 h-[480px] rounded-2xl overflow-hidden border-2 border-sky-400/80 shadow-[0_0_35px_rgba(56,189,248,0.35)] group bg-slate-950 flex flex-col">
-              <img src="${character.avatarImg}" alt="${character.name || 'Hero'}" class="w-full h-full object-cover object-top filter brightness-95 contrast-105 transition duration-500 group-hover:scale-105">
-              <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-sky-950/20 pointer-events-none"></div>
-              <div class="absolute bottom-2 inset-x-2 bg-slate-950/85 backdrop-blur-md rounded-lg p-2 text-center border border-slate-700">
-                <div class="text-xs font-bold text-white">${character.name || 'Karakter'}</div>
-                <div class="text-[10px] text-sky-400 font-medium">${character.race || 'Human'} • ${character.classes || 'Adventurer'}</div>
-              </div>
-            </div>
-          </div>
-        `;
-      }
-
-      // Resolve race silhouette image from base64 bundle or local jpg
-      const silDict = window.RACE_SILHOUETTES || {};
-      const imgSrc = silDict[effectiveModel] || (`sil_${effectiveModel}.jpg`) || window.HERO_SILHOUETTE_DATA_URI || 'hero_silhouette.jpg';
-
-      // 12 Anatomical Hotspots mapped onto 460 x 520 coordinate canvas per race
-      // Strictly monotonic vertical order on each side guarantees ZERO CROSSING LINES!
-      const RACE_COORDS = {
-        human: {
-          head: { cx: 215, cy: 55, label: 'Baş / Miğfer (Head)' },
-          eyes: { cx: 218, cy: 75, label: 'Göz / Gözlük (Eyes)' },
-          shoulders: { cx: 175, cy: 140, label: 'Omuz / Pelerin (Shoulders)' },
-          torso: { cx: 208, cy: 220, label: 'Göğüs / Yelek (Torso)' },
-          belt: { cx: 210, cy: 275, label: 'Kemer / Bel (Belt)' },
-          ring1: { cx: 120, cy: 320, label: 'Sol Yüzük (Left Ring)' },
-          neck: { cx: 242, cy: 110, label: 'Boyun / Kolye (Neck)' },
-          armor: { cx: 255, cy: 175, label: 'Gövde Zırhı (Armor)' },
-          bracers: { cx: 320, cy: 245, label: 'Kollar / Bileklik (Bracers)' },
-          gloves: { cx: 345, cy: 295, label: 'Eller / Eldiven (Gloves)' },
-          ring2: { cx: 350, cy: 320, label: 'Sağ Yüzük (Right Ring)' },
-          boots: { cx: 270, cy: 470, label: 'Ayaklar / Çizme (Boots)' }
-        },
-        goliath: {
-          head: { cx: 215, cy: 45, label: 'Baş / Miğfer (Head)' },
-          eyes: { cx: 218, cy: 65, label: 'Göz / Gözlük (Eyes)' },
-          shoulders: { cx: 170, cy: 145, label: 'Omuz / Pelerin (Shoulders)' },
-          torso: { cx: 208, cy: 225, label: 'Göğüs / Yelek (Torso)' },
-          belt: { cx: 210, cy: 280, label: 'Kemer / Bel (Belt)' },
-          ring1: { cx: 140, cy: 335, label: 'Sol Yüzük (Left Ring)' },
-          neck: { cx: 242, cy: 105, label: 'Boyun / Kolye (Neck)' },
-          armor: { cx: 255, cy: 175, label: 'Gövde Zırhı (Armor)' },
-          bracers: { cx: 315, cy: 250, label: 'Kollar / Bileklik (Bracers)' },
-          gloves: { cx: 325, cy: 298, label: 'Eller / Eldiven (Gloves)' },
-          ring2: { cx: 325, cy: 335, label: 'Sağ Yüzük (Right Ring)' },
-          boots: { cx: 275, cy: 480, label: 'Ayaklar / Çizme (Boots)' }
-        },
-        dwarf: {
-          head: { cx: 215, cy: 155, label: 'Baş / Miğfer (Head)' },
-          eyes: { cx: 218, cy: 175, label: 'Göz / Gözlük (Eyes)' },
-          shoulders: { cx: 165, cy: 245, label: 'Omuz / Pelerin (Shoulders)' },
-          torso: { cx: 208, cy: 315, label: 'Göğüs / Yelek (Torso)' },
-          belt: { cx: 210, cy: 365, label: 'Kemer / Bel (Belt)' },
-          ring1: { cx: 145, cy: 405, label: 'Sol Yüzük (Left Ring)' },
-          neck: { cx: 242, cy: 210, label: 'Boyun / Kolye (Neck)' },
-          armor: { cx: 255, cy: 275, label: 'Gövde Zırhı (Armor)' },
-          bracers: { cx: 315, cy: 335, label: 'Kollar / Bileklik (Bracers)' },
-          gloves: { cx: 325, cy: 385, label: 'Eller / Eldiven (Gloves)' },
-          ring2: { cx: 325, cy: 405, label: 'Sağ Yüzük (Right Ring)' },
-          boots: { cx: 268, cy: 480, label: 'Ayaklar / Çizme (Boots)' }
-        },
-        elf: {
-          head: { cx: 215, cy: 65, label: 'Baş / Miğfer (Head)' },
-          eyes: { cx: 218, cy: 85, label: 'Göz / Gözlük (Eyes)' },
-          shoulders: { cx: 185, cy: 165, label: 'Omuz / Pelerin (Shoulders)' },
-          torso: { cx: 215, cy: 245, label: 'Göğüs / Yelek (Torso)' },
-          belt: { cx: 216, cy: 305, label: 'Kemer / Bel (Belt)' },
-          ring1: { cx: 160, cy: 355, label: 'Sol Yüzük (Left Ring)' },
-          neck: { cx: 242, cy: 130, label: 'Boyun / Kolye (Neck)' },
-          armor: { cx: 248, cy: 195, label: 'Gövde Zırhı (Armor)' },
-          bracers: { cx: 288, cy: 270, label: 'Kollar / Bileklik (Bracers)' },
-          gloves: { cx: 298, cy: 325, label: 'Eller / Eldiven (Gloves)' },
-          ring2: { cx: 302, cy: 355, label: 'Sağ Yüzük (Right Ring)' },
-          boots: { cx: 265, cy: 480, label: 'Ayaklar / Çizme (Boots)' }
-        },
-        thrikreen: {
-          head: { cx: 215, cy: 65, label: 'Baş / Miğfer (Head)' },
-          eyes: { cx: 218, cy: 85, label: 'Göz / Gözlük (Eyes)' },
-          shoulders: { cx: 180, cy: 160, label: 'Omuz / Pelerin (Shoulders)' },
-          torso: { cx: 210, cy: 240, label: 'Göğüs / Yelek (Torso)' },
-          belt: { cx: 215, cy: 295, label: 'Kemer / Bel (Belt)' },
-          ring1: { cx: 135, cy: 345, label: 'Sol Yüzük (Left Ring)' },
-          neck: { cx: 242, cy: 125, label: 'Boyun / Kolye (Neck)' },
-          armor: { cx: 248, cy: 190, label: 'Gövde Zırhı (Armor)' },
-          bracers: { cx: 325, cy: 250, label: 'Kollar / Üst Kol (Bracers)' },
-          gloves: { cx: 338, cy: 310, label: 'Eller / Alt Kol (Gloves)' },
-          ring2: { cx: 330, cy: 345, label: 'Sağ Yüzük (Right Ring)' },
-          boots: { cx: 265, cy: 475, label: 'Ayaklar / Çizme (Boots)' }
-        }
+      // D&D 3.5e Magic Item Record Sheet Standard Fantasy Warrior Mannequin (460 x 520 Canvas)
+      // Strictly Monotonic Anatomical Anchors:
+      // Left 6 Y-coords: 62 < 88 < 145 < 220 < 275 < 335 (all cx <= 220)
+      // Right 6 Y-coords: 110 < 175 < 240 < 290 < 335 < 470 (all cx >= 242)
+      // Card Slot Y-coords: 40 < 120 < 200 < 280 < 360 < 440
+      // GUARANTEED ZERO INTERSECTING / CROSSING LINES!
+      const nodes = {
+        // SOL (6 Yuva):
+        head: { cx: 218, cy: 62, label: 'Baş / Miğfer (Head)' },
+        eyes: { cx: 220, cy: 88, label: 'Göz / Gözlük (Eyes)' },
+        shoulders: { cx: 175, cy: 145, label: 'Omuz / Pelerin (Shoulders)' },
+        torso: { cx: 212, cy: 220, label: 'Göğüs / Yelek (Torso)' },
+        belt: { cx: 205, cy: 275, label: 'Kemer / Bel (Belt)' },
+        ring1: { cx: 125, cy: 335, label: 'Sol Yüzük (Left Ring)' },
+        // SAĞ (6 Yuva):
+        neck: { cx: 242, cy: 110, label: 'Boyun / Kolye (Neck)' },
+        armor: { cx: 250, cy: 175, label: 'Gövde Zırhı (Armor)' },
+        bracers: { cx: 320, cy: 240, label: 'Kollar / Bileklik (Bracers)' },
+        gloves: { cx: 335, cy: 290, label: 'Eller / Eldiven (Gloves)' },
+        ring2: { cx: 340, cy: 335, label: 'Sağ Yüzük (Right Ring)' },
+        boots: { cx: 280, cy: 470, label: 'Ayaklar / Çizme (Boots)' }
       };
 
-      const nodes = RACE_COORDS[effectiveModel] || RACE_COORDS['human'];
+      const imgSrc = window.HERO_SILHOUETTE_DATA_URI || 'hero_silhouette.jpg';
 
       // 6 Slots Left & 6 Slots Right - Exactly matching D&D 3.5e official Body Slots
       const LEFT_KEYS = ['head', 'eyes', 'shoulders', 'torso', 'belt', 'ring1'];
@@ -10346,7 +10248,7 @@
           <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_35%,rgba(56,189,248,0.18)_0%,rgba(245,158,11,0.06)_45%,transparent_75%)] pointer-events-none"></div>
 
           <!-- Center Silhouette Image -->
-          <img src="${imgSrc}" onerror="if(window.HERO_SILHOUETTE_DATA_URI && this.src !== window.HERO_SILHOUETTE_DATA_URI) this.src = window.HERO_SILHOUETTE_DATA_URI;" alt="${effectiveModel} Silhouette" class="w-auto h-[92%] max-w-[240px] object-contain filter contrast-125 brightness-110 pointer-events-none drop-shadow-[0_0_30px_rgba(56,189,248,0.35)] transition-all duration-300">
+          <img src="${imgSrc}" onerror="if(window.HERO_SILHOUETTE_DATA_URI && this.src !== window.HERO_SILHOUETTE_DATA_URI) this.src = window.HERO_SILHOUETTE_DATA_URI;" alt="D&D Warrior Silhouette" class="w-auto h-[92%] max-w-[240px] object-contain filter contrast-125 brightness-110 pointer-events-none drop-shadow-[0_0_30px_rgba(56,189,248,0.35)] transition-all duration-300">
           
           <!-- Subtle tech horizontal scan vignette -->
           <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/40 pointer-events-none"></div>
@@ -10475,20 +10377,10 @@
       figureContainer.innerHTML = getSilhouetteSvg(selectedSilhouetteModel, character);
 
       // Meta and controls
-      if (modelSelect) modelSelect.value = selectedSilhouetteModel;
+      if (modelSelect) modelSelect.value = 'human';
       if (charTag) charTag.textContent = `${character.race || 'Human'} • ${character.gender || 'Erkek'} • ${character.classes || 'Adventurer'}`;
       if (activeCountEl) activeCountEl.textContent = `${activeOccupiedCount} / 12 Aktif`;
-
-      const labels = {
-        'auto': 'Otomatik Dinamik Form',
-        'human': 'İnsan Savaşçı Duruşu',
-        'goliath': 'Goliath Heybetli Duruş',
-        'dwarf': 'Cüce Savaşçı / Geniş Duruş',
-        'elf': 'Elf Büyücü / Korucu Duruşu',
-        'thrikreen': 'Thri-Kreen 4 Kollu Duruş',
-        'avatar': 'Özel Karakter Portresi'
-      };
-      if (modelLabel) modelLabel.textContent = labels[selectedSilhouetteModel] || 'Özel Duruş';
+      if (modelLabel) modelLabel.textContent = 'D&D 3.5e Magic Item Record Sheet';
 
       // Bottom Dock: Weapons & Carrying Capacity HUD
       if (bottomDock) {
