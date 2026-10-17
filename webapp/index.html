@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="build-version" content="2026.10.17-1855">
+  <meta name="build-version" content="2026.10.17-1945">
   <title>D&D 3.5e Tactical Cockpit & Character Hub</title>
   
   <!-- Tailwind CSS CDN -->
@@ -647,18 +647,56 @@
               </svg>
               <span>BECERİLER (SKILLS) & 3D ZAR ATICI</span>
             </span>
-            <span class="text-[10px] text-slate-400">Zar atmak için satırdaki zarı tıklayın</span>
+            <span id="skills-mode-badge" class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-800 text-slate-300 border border-slate-700">D&D 3.5e RAW</span>
           </div>
+
+          <!-- Action Buttons & Max Rank Info -->
+          <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-950/80 p-2 rounded-lg border border-slate-800 text-xs">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="text-[10px] font-bold text-slate-400 uppercase mr-1">Filtre:</span>
+              <button onclick="setSkillFilter('all')" id="btn-skill-filter-all" class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-600 text-white transition">Tümü</button>
+              <button onclick="setSkillFilter('class')" id="btn-skill-filter-class" class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">⭐ Sınıf (Class)</button>
+              <button onclick="setSkillFilter('trained')" id="btn-skill-filter-trained" class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">🎯 Eğitimli (Rank > 0)</button>
+            </div>
+
+            <div class="flex items-center gap-2 flex-wrap">
+              <span id="skills-max-rank-info" class="text-[10px] text-slate-400 font-mono">
+                Maks: Sınıf <strong class="text-amber-400">9</strong> • Dışı <strong class="text-slate-300">4.5</strong>
+              </span>
+              <button 
+                type="button" 
+                id="btn-toggle-merge-skills"
+                onclick="toggleSkillConsolidation()"
+                class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition flex items-center gap-1.5 border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white"
+                title="Becerileri birleştir veya RAW 46 beceriye dön">
+                <span>🔗</span>
+                <span id="btn-toggle-merge-skills-text">Skilleri Birleştir</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Search Bar -->
+          <div class="relative">
+            <input 
+              type="text" 
+              id="skill-search-input" 
+              placeholder="🔍 Beceri ara (Örn: Stealth, Spot, Dinleme, Tırmanma...)" 
+              oninput="renderSkills()"
+              class="w-full bg-slate-950 border border-slate-700 rounded-lg pl-3 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-medium">
+          </div>
+
           <div class="overflow-x-auto">
             <table class="w-full text-left text-xs">
               <thead class="bg-slate-950 text-slate-400 text-[10px] uppercase font-bold border-b border-slate-800">
                 <tr>
+                  <th class="py-2 px-2 text-center w-12" title="Sınıf Becerisi mi? (Class Skill)">Sınıf</th>
                   <th class="py-2 px-3">Beceri Adı</th>
-                  <th class="py-2 px-3 text-center">Stat</th>
-                  <th class="py-2 px-3 text-center">Rank</th>
-                  <th class="py-2 px-3 text-center">Mod</th>
-                  <th class="py-2 px-3 text-center">ACP</th>
-                  <th class="py-2 px-3 text-center">Toplam</th>
+                  <th class="py-2 px-2 text-center">Stat</th>
+                  <th class="py-2 px-2 text-center">Rank</th>
+                  <th class="py-2 px-2 text-center">Mod</th>
+                  <th class="py-2 px-2 text-center">ACP</th>
+                  <th class="py-2 px-2 text-center">Buff</th>
+                  <th class="py-2 px-2 text-center">Toplam</th>
                   <th class="py-2 px-3 text-center">3D Zar</th>
                 </tr>
               </thead>
@@ -1373,6 +1411,17 @@
                     <div>
                       <div class="font-extrabold text-slate-200 group-hover:text-white">Manuel Kural Ekle</div>
                       <div class="text-[10px] text-slate-400 mt-0.5 leading-snug">29 sütunlu form ile el ile yeni kural tanımla</div>
+                    </div>
+                  </button>
+                  <div class="border-t border-slate-800 my-1"></div>
+                  <button onclick="openSkillConsolidationModal(); RuleMaster.closeAddMenu();" class="w-full text-left p-2 rounded-lg hover:bg-emerald-950/80 hover:border-emerald-600/50 border border-transparent transition flex items-start gap-2.5 text-xs text-white group">
+                    <span class="text-xl">🔗</span>
+                    <div>
+                      <div class="font-extrabold text-emerald-300 group-hover:text-emerald-200 flex items-center gap-1.5">
+                        <span>Skilleri Birleştir</span>
+                        <span class="text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-700 px-1 py-0.2 rounded font-mono">House Rule</span>
+                      </div>
+                      <div class="text-[10px] text-slate-400 mt-0.5 leading-snug">Oyun grubu için becerileri birleştir / konsolide et</div>
                     </div>
                   </button>
                 </div>
@@ -3367,6 +3416,112 @@
   </div>
 
   <!-- ==================================================== -->
+  <!-- MODAL: SKILL CONSOLIDATION (SKİLLERİ BİRLEŞTİR KURALI) -->
+  <!-- ==================================================== -->
+  <div id="skill-consolidation-modal" class="hidden fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
+    <div class="bg-dndCard border border-emerald-500/80 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col transition-colors">
+      <!-- Modal Header -->
+      <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-emerald-950/80 border border-emerald-600/50 flex items-center justify-center text-lg shadow-inner">
+            🔗
+          </div>
+          <div>
+            <h3 class="text-sm md:text-base font-extrabold text-white flex items-center gap-2">
+              <span>Skilleri Birleştir (Skill Consolidation)</span>
+              <span class="text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full">House Rule</span>
+            </h3>
+            <p class="text-[10px] text-slate-400">D&D 3.5e RAW 46 beceriyi modern 7 konsolide grupta toplayın</p>
+          </div>
+        </div>
+        <button onclick="closeSkillConsolidationModal()" class="text-slate-400 hover:text-white p-1 rounded-lg text-lg font-bold">&times;</button>
+      </div>
+
+      <div class="p-4 space-y-4 overflow-y-auto">
+        <!-- Explanation Info Box -->
+        <div class="bg-emerald-950/40 border border-emerald-800/60 rounded-xl p-3 text-xs text-emerald-200/90 space-y-1.5 leading-relaxed">
+          <div class="font-bold flex items-center gap-1.5 text-emerald-300">
+            <span>💡</span> <span>Kural Açıklaması & Faydaları</span>
+          </div>
+          <p>
+            D&D 3.5e RAW sisteminde 46 ayrı beceri bulunur. Unearthed Arcana ve Pathfinder 1e alternatif kurallarında benzer beceriler birleştirilerek beceri puanı dağıtımı ve oyun akışı sadeleştirilir.
+          </p>
+          <div class="text-[11px] text-emerald-300 font-mono bg-slate-950/60 p-2 rounded border border-emerald-900">
+            ✓ <strong>Rank Korunumu:</strong> Birleştirilmiş becerinin rankı, altındaki becerilerin en yükseğini alır. Orijinal ranklar asla silinmez.<br>
+            ✓ <strong>Sınıf Becerisi (Class Skill):</strong> Alt becerilerden biri bile sınıf becerisi ise, birleştirilmiş beceri de Sınıf Becerisi kabul edilir.
+          </div>
+        </div>
+
+        <!-- Mode Toggle Card -->
+        <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-3.5 flex items-center justify-between gap-3">
+          <div>
+            <div class="font-bold text-white text-xs flex items-center gap-1.5">
+              <span>🔗 Becerileri Birleştir Modu</span>
+              <span id="scm-status-badge" class="badge bg-slate-800 text-slate-300 text-[10px]">Kapalı</span>
+            </div>
+            <div class="text-[11px] text-slate-400 mt-0.5">
+              Açıldığında beceri tablonuz birleştirilmiş grupları gösterir.
+            </div>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="scm-toggle-checkbox" onchange="onScmToggleChange()" class="sr-only peer">
+            <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+          </label>
+        </div>
+
+        <!-- Consolidated Bundles Preview -->
+        <div class="space-y-2">
+          <label class="block text-[11px] font-bold text-slate-300 uppercase">📋 Birleştirilen Beceriler Listesi</label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
+              <div class="font-bold text-amber-300 flex items-center gap-1"><span>🏃</span> <span>Athletics (Atletizm) [STR]</span></div>
+              <div class="text-[11px] text-slate-300">Climb + Jump + Swim</div>
+            </div>
+            <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
+              <div class="font-bold text-purple-300 flex items-center gap-1"><span>🥷</span> <span>Stealth (Gizlilik) [DEX]</span></div>
+              <div class="text-[11px] text-slate-300">Hide + Move Silently</div>
+            </div>
+            <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
+              <div class="font-bold text-sky-300 flex items-center gap-1"><span>👁️</span> <span>Perception (Algı) [WIS]</span></div>
+              <div class="text-[11px] text-slate-300">Spot + Listen</div>
+            </div>
+            <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
+              <div class="font-bold text-emerald-300 flex items-center gap-1"><span>🤸</span> <span>Acrobatics (Akrobasi) [DEX]</span></div>
+              <div class="text-[11px] text-slate-300">Tumble + Balance + Escape Artist</div>
+            </div>
+            <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
+              <div class="font-bold text-rose-300 flex items-center gap-1"><span>🗝️</span> <span>Thievery (Mekanizma) [DEX]</span></div>
+              <div class="text-[11px] text-slate-300">Open Lock + Disable Device + Sleight of Hand</div>
+            </div>
+            <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
+              <div class="font-bold text-pink-300 flex items-center gap-1"><span>🗣️</span> <span>Diplomacy (Sosyal) [CHA]</span></div>
+              <div class="text-[11px] text-slate-300">Diplomacy + Gather Information</div>
+            </div>
+            <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1 sm:col-span-2">
+              <div class="font-bold text-indigo-300 flex items-center gap-1"><span>📜</span> <span>Linguistics (Dilbilim) [INT]</span></div>
+              <div class="text-[11px] text-slate-300">Decipher Script + Forgery</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Master DB Sync Checkbox -->
+        <div class="flex items-center gap-2 pt-2 border-t border-slate-800">
+          <input type="checkbox" id="scm-save-master-db" checked class="w-4 h-4 rounded text-emerald-600 bg-slate-900 border-slate-700 focus:ring-0 cursor-pointer">
+          <label for="scm-save-master-db" class="text-[11px] text-emerald-300 font-semibold cursor-pointer select-none">
+            📚 Bu kuralı kalıcı Master DB Kütüphanesine de ekle / güncelle
+          </label>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="bg-slate-950 px-4 py-3 border-t border-slate-800 flex justify-end gap-2 shrink-0">
+        <button onclick="closeSkillConsolidationModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs px-3.5 py-1.5 rounded-lg transition">Kapat</button>
+        <button onclick="saveSkillConsolidationSettings()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition shadow">Kaydet ve Uygula</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================== -->
   <!-- MODAL: SÜRELİ CAN ETKİSİ (DoT / HoT) -->
   <!-- ==================================================== -->
   <div id="periodic-hp-modal" class="hidden fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
@@ -4457,6 +4612,10 @@
           }
           if (character && !Array.isArray(character.periodicHpEffects)) {
             character.periodicHpEffects = [];
+          }
+          if (typeof ensureAllSkills === 'function') {
+            ensureAllSkills(character);
+            updated = true;
           }
           if (updated) saveStateToStorage(false);
         }
@@ -7527,7 +7686,7 @@
       }
     }
 
-    function rollSkill3D(skillName, totalMod) {
+    function rollSkill3D(skillName, totalMod, subtitle = '') {
       const d20 = Math.floor(Math.random() * 20) + 1;
       const total = d20 + totalMod;
 
@@ -7536,7 +7695,7 @@
           icon: getD20IconSvg('w-5 h-5 text-amber-400'),
           title: `${skillName} Beceri Zarı`,
           formula: `1d20 ${totalMod >= 0 ? '+' : '-'}${Math.abs(totalMod)}`,
-          breakdown: `1d20 [${d20}] ${totalMod >= 0 ? '+' : '-'} ${Math.abs(totalMod)}`,
+          breakdown: `1d20 [${d20}] ${totalMod >= 0 ? '+' : '-'} ${Math.abs(totalMod)}${subtitle ? ` (${subtitle})` : ''}`,
           total: total,
           isCrit: d20 === 20
         });
@@ -8969,40 +9128,494 @@
       });
     }
 
-    // Skills Table with Interactive Rank Adjustment
-    function adjustSkillRank(skillName, delta) {
-      const sk = (character.skills || []).find(s => s.name === skillName);
-      if (!sk) return;
-      sk.ranks = Math.max(0, (Number(sk.ranks) || 0) + delta);
+    // D&D 3.5e RAW Core Skills Catalog (46 Official Skills)
+    const DND35_CORE_SKILLS = [
+      { key: "appraise", name: "Appraise (Değer Biçme)", stat: "int", acp: false, untrained: true },
+      { key: "autohypnosis", name: "Autohypnosis (Otohipnoz)", stat: "wis", acp: false, untrained: false },
+      { key: "balance", name: "Balance (Denge)", stat: "dex", acp: true, untrained: true },
+      { key: "bluff", name: "Bluff (Blöf)", stat: "cha", acp: false, untrained: true },
+      { key: "climb", name: "Climb (Tırmanma)", stat: "str", acp: true, untrained: true },
+      { key: "concentration", name: "Concentration (Odaklanma)", stat: "con", acp: false, untrained: true },
+      { key: "craft_alchemy", name: "Craft: Alchemy (Simya)", stat: "int", acp: false, untrained: true },
+      { key: "craft_armor", name: "Craft: Armorsmithing (Zırhçılık)", stat: "int", acp: false, untrained: true },
+      { key: "craft_weapon", name: "Craft: Weaponsmithing (Silahçılık)", stat: "int", acp: false, untrained: true },
+      { key: "decipher_script", name: "Decipher Script (Yazı Çözme)", stat: "int", acp: false, untrained: false },
+      { key: "diplomacy", name: "Diplomacy (Diplomasi)", stat: "cha", acp: false, untrained: true },
+      { key: "disable_device", name: "Disable Device (Tuzak & Mekanizma)", stat: "int", acp: false, untrained: false },
+      { key: "disguise", name: "Disguise (Kılık Değiştirme)", stat: "cha", acp: false, untrained: true },
+      { key: "escape_artist", name: "Escape Artist (Kurtulma Becerisi)", stat: "dex", acp: true, untrained: true },
+      { key: "forgery", name: "Forgery (Sahtecilik)", stat: "int", acp: false, untrained: true },
+      { key: "gather_information", name: "Gather Information (Bilgi Toplama)", stat: "cha", acp: false, untrained: true },
+      { key: "handle_animal", name: "Handle Animal (Hayvan Eğitimi)", stat: "cha", acp: false, untrained: false },
+      { key: "heal", name: "Heal (İlk Yardım & İyileştirme)", stat: "wis", acp: false, untrained: true },
+      { key: "hide", name: "Hide (Gizlenme)", stat: "dex", acp: true, untrained: true },
+      { key: "intimidate", name: "Intimidate (Gözdağı Verme)", stat: "cha", acp: false, untrained: true },
+      { key: "jump", name: "Jump (Zıplama)", stat: "str", acp: true, untrained: true },
+      { key: "k_arcana", name: "Knowledge: Arcana (Büyü Bilgisi)", stat: "int", acp: false, untrained: false },
+      { key: "k_arch", name: "Knowledge: Architecture (Mimarlık)", stat: "int", acp: false, untrained: false },
+      { key: "k_dungeon", name: "Knowledge: Dungeoneering (Zindan)", stat: "int", acp: false, untrained: false },
+      { key: "k_geo", name: "Knowledge: Geography (Coğrafya)", stat: "int", acp: false, untrained: false },
+      { key: "k_history", name: "Knowledge: History (Tarih)", stat: "int", acp: false, untrained: false },
+      { key: "k_local", name: "Knowledge: Local (Yerel Bilgi)", stat: "int", acp: false, untrained: false },
+      { key: "k_nature", name: "Knowledge: Nature (Doğa Bilgisi)", stat: "int", acp: false, untrained: false },
+      { key: "k_nobility", name: "Knowledge: Nobility (Soy & Hanedan)", stat: "int", acp: false, untrained: false },
+      { key: "k_religion", name: "Knowledge: Religion (Din Bilgisi)", stat: "int", acp: false, untrained: false },
+      { key: "k_planes", name: "Knowledge: The Planes (Düzlemler)", stat: "int", acp: false, untrained: false },
+      { key: "listen", name: "Listen (Dinleme)", stat: "wis", acp: false, untrained: true },
+      { key: "martial_lore", name: "Martial Lore (Savaş Doktrini)", stat: "int", acp: false, untrained: false },
+      { key: "move_silently", name: "Move Silently (Sessiz Hareket)", stat: "dex", acp: true, untrained: true },
+      { key: "open_lock", name: "Open Lock (Kilit Açma)", stat: "dex", acp: false, untrained: false },
+      { key: "perform", name: "Perform (Performans)", stat: "cha", acp: false, untrained: true },
+      { key: "profession", name: "Profession (Meslek)", stat: "wis", acp: false, untrained: false },
+      { key: "ride", name: "Ride (Binicilik)", stat: "dex", acp: false, untrained: true },
+      { key: "search", name: "Search (Arama & İnceleme)", stat: "int", acp: false, untrained: true },
+      { key: "sense_motive", name: "Sense Motive (Niyet Sezme)", stat: "wis", acp: false, untrained: true },
+      { key: "sleight_of_hand", name: "Sleight of Hand (El Çabukluğu)", stat: "dex", acp: true, untrained: false },
+      { key: "spellcraft", name: "Spellcraft (Büyücülük)", stat: "int", acp: false, untrained: false },
+      { key: "spot", name: "Spot (Fark Etme / Görme)", stat: "wis", acp: false, untrained: true },
+      { key: "survival", name: "Survival (Hayatta Kalma)", stat: "wis", acp: false, untrained: true },
+      { key: "swim", name: "Swim (Yüzme)", stat: "str", acp: true, untrained: true },
+      { key: "tumble", name: "Tumble (Takla & Akrobasi)", stat: "dex", acp: true, untrained: false },
+      { key: "umd", name: "Use Magic Device (Sihirli Eşya)", stat: "cha", acp: false, untrained: false },
+      { key: "use_rope", name: "Use Rope (Halat Kullanımı)", stat: "dex", acp: false, untrained: true }
+    ];
+
+    // Consolidated Skills House Rule Definition (7 Merged Groups)
+    const DND35_CONSOLIDATED_SKILLS = [
+      {
+        key: "athletics",
+        name: "Athletics (Atletizm)",
+        stat: "str",
+        acp: true,
+        components: ["climb", "jump", "swim"],
+        compLabels: "Tırmanma + Zıplama + Yüzme",
+        desc: "Tırmanma, zıplama ve yüzme eylemlerini tek çatı altında toplar."
+      },
+      {
+        key: "stealth",
+        name: "Stealth (Gizlilik)",
+        stat: "dex",
+        acp: true,
+        components: ["hide", "move_silently"],
+        compLabels: "Gizlenme + Sessiz Hareket",
+        desc: "Görsel gizlenme ve sessizce hareket etmeyi birleştirir."
+      },
+      {
+        key: "perception",
+        name: "Perception (Algı)",
+        stat: "wis",
+        acp: false,
+        components: ["spot", "listen"],
+        compLabels: "Fark Etme + Dinleme",
+        desc: "Çevredeki görsel ve işitsel ipuçlarını algılama becerisi."
+      },
+      {
+        key: "acrobatics",
+        name: "Acrobatics (Akrobasi)",
+        stat: "dex",
+        acp: true,
+        components: ["tumble", "balance", "escape_artist"],
+        compLabels: "Takla + Denge + Kurtulma",
+        desc: "Denge kurma, takla atma ve tutsaklıktan kurtulmayı yönetir."
+      },
+      {
+        key: "thievery",
+        name: "Thievery (Hırsızlık & Mekanizma)",
+        stat: "dex",
+        acp: false,
+        components: ["open_lock", "disable_device", "sleight_of_hand"],
+        compLabels: "Kilit Açma + Tuzak Bozma + El Çabukluğu",
+        desc: "Kilitleri açma, tuzakları etkisizleştirme ve yankesicilik."
+      },
+      {
+        key: "diplomacy_merged",
+        name: "Diplomacy (Diplomasi & Sosyal)",
+        stat: "cha",
+        acp: false,
+        components: ["diplomacy", "gather_information"],
+        compLabels: "Diplomasi + Bilgi Toplama",
+        desc: "Sosyal ikna ve şehirde bilgi/dedikodu toplama."
+      },
+      {
+        key: "linguistics",
+        name: "Linguistics (Dilbilim)",
+        stat: "int",
+        acp: false,
+        components: ["decipher_script", "forgery"],
+        compLabels: "Yazı Çözme + Sahtecilik",
+        desc: "Kadim alfabeleri okuma ve resmi belge düzenleme."
+      }
+    ];
+
+    let activeSkillFilter = 'all'; // 'all' | 'class' | 'trained'
+
+    function setSkillFilter(filterMode) {
+      activeSkillFilter = filterMode;
+      const btnAll = document.getElementById('btn-skill-filter-all');
+      const btnClass = document.getElementById('btn-skill-filter-class');
+      const btnTrained = document.getElementById('btn-skill-filter-trained');
+      if (btnAll) btnAll.className = filterMode === 'all' ? 'px-2 py-0.5 rounded text-[11px] font-bold bg-amber-600 text-white transition' : 'px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition';
+      if (btnClass) btnClass.className = filterMode === 'class' ? 'px-2 py-0.5 rounded text-[11px] font-bold bg-amber-600 text-white transition' : 'px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition';
+      if (btnTrained) btnTrained.className = filterMode === 'trained' ? 'px-2 py-0.5 rounded text-[11px] font-bold bg-amber-600 text-white transition' : 'px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition';
+      renderSkills();
+    }
+
+    function ensureAllSkills(char) {
+      if (!char) return;
+      if (!Array.isArray(char.skills)) char.skills = [];
+
+      DND35_CORE_SKILLS.forEach(core => {
+        let existing = char.skills.find(s => {
+          if (s.key && s.key === core.key) return true;
+          const sName = (s.name || '').toLowerCase().trim();
+          const cName = core.name.toLowerCase().trim();
+          const cRaw = core.key.replace(/_/g, ' ');
+          return sName === cName || sName.includes(cRaw) || cName.includes(sName);
+        });
+
+        if (!existing) {
+          char.skills.push({
+            key: core.key,
+            name: core.name,
+            stat: core.stat,
+            ranks: 0,
+            misc: 0,
+            acp: core.acp,
+            untrained: core.untrained,
+            isClass: false
+          });
+        } else {
+          if (!existing.key) existing.key = core.key;
+          if (existing.stat === undefined) existing.stat = core.stat;
+          if (existing.acp === undefined) existing.acp = core.acp;
+          if (existing.untrained === undefined) existing.untrained = core.untrained;
+          if (existing.isClass === undefined) existing.isClass = false;
+          if (existing.ranks === undefined) existing.ranks = 0;
+        }
+      });
+    }
+
+    // Toggle Class Skill for a given skill key
+    function toggleSkillClass(skillKey) {
+      ensureAllSkills(character);
+      const isMerged = character.settings?.mergeSkills === true;
+      const consolidated = isMerged ? DND35_CONSOLIDATED_SKILLS.find(c => c.key === skillKey) : null;
+
+      if (consolidated) {
+        // Toggle all components
+        const compSkills = (character.skills || []).filter(s => consolidated.components.includes(s.key));
+        const anyClass = compSkills.some(s => s.isClass);
+        const newState = !anyClass;
+        compSkills.forEach(s => { s.isClass = newState; });
+      } else {
+        const sk = (character.skills || []).find(s => s.key === skillKey || s.name === skillKey);
+        if (sk) {
+          sk.isClass = !sk.isClass;
+        }
+      }
       saveStateToStorage(true);
       renderSkills();
     }
 
+    // Interactive Rank Adjustment
+    function adjustSkillRank(skillKey, delta) {
+      ensureAllSkills(character);
+      const isMerged = character.settings?.mergeSkills === true;
+      const consolidated = isMerged ? DND35_CONSOLIDATED_SKILLS.find(c => c.key === skillKey) : null;
+
+      if (consolidated) {
+        const compSkills = (character.skills || []).filter(s => consolidated.components.includes(s.key));
+        const currentRanks = Math.max(0, ...compSkills.map(s => Number(s.ranks) || 0));
+        const newRanks = Math.max(0, currentRanks + delta);
+        compSkills.forEach(s => { s.ranks = newRanks; });
+      } else {
+        const sk = (character.skills || []).find(s => s.key === skillKey || s.name === skillKey);
+        if (sk) {
+          sk.ranks = Math.max(0, (Number(sk.ranks) || 0) + delta);
+        }
+      }
+      saveStateToStorage(true);
+      renderSkills();
+    }
+
+    // Toggle Skill Consolidation mode directly from Skills card
+    function toggleSkillConsolidation() {
+      if (!character.settings) character.settings = {};
+      character.settings.mergeSkills = !character.settings.mergeSkills;
+      saveStateToStorage(true);
+      renderSkills();
+    }
+
+    // Open/Close/Save Skill Consolidation Modal (Master DB linked)
+    function openSkillConsolidationModal() {
+      const modal = document.getElementById('skill-consolidation-modal');
+      if (!modal) return;
+      const isMerged = character?.settings?.mergeSkills === true;
+      const chk = document.getElementById('scm-toggle-checkbox');
+      const badge = document.getElementById('scm-status-badge');
+      if (chk) chk.checked = isMerged;
+      if (badge) {
+        badge.textContent = isMerged ? 'Aktif' : 'Kapalı';
+        badge.className = isMerged ? 'badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[10px]' : 'badge bg-slate-800 text-slate-300 text-[10px]';
+      }
+      modal.classList.remove('hidden');
+    }
+
+    function closeSkillConsolidationModal() {
+      const modal = document.getElementById('skill-consolidation-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function onScmToggleChange() {
+      const chk = document.getElementById('scm-toggle-checkbox');
+      const badge = document.getElementById('scm-status-badge');
+      if (chk && badge) {
+        badge.textContent = chk.checked ? 'Aktif' : 'Kapalı';
+        badge.className = chk.checked ? 'badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[10px]' : 'badge bg-slate-800 text-slate-300 text-[10px]';
+      }
+    }
+
+    function saveSkillConsolidationSettings() {
+      const chk = document.getElementById('scm-toggle-checkbox');
+      const saveDb = document.getElementById('scm-save-master-db')?.checked !== false;
+      const isEnabled = chk ? chk.checked : false;
+
+      if (!character.settings) character.settings = {};
+      character.settings.mergeSkills = isEnabled;
+
+      if (saveDb && typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        const ruleName = "Skilleri Birleştir (Skill Consolidation)";
+        const existingIdx = masterDb.findIndex(m => (m.name || '').toLowerCase() === ruleName.toLowerCase());
+        const ruleData = {
+          name: ruleName,
+          type: "House Rule",
+          slot: "None",
+          parent: "Alternative Rules",
+          prereq: "-",
+          source: "Unearthed Arcana / Pathfinder 1e",
+          benefit: isEnabled ? "Beceriler 7 konsolide grupta (Athletics, Stealth, Perception, Acrobatics, Thievery, Diplomacy, Linguistics) birleştirildi." : "Standart 46 D&D 3.5e RAW becerisi devrede.",
+          bonusType: "Rule",
+          scope: "Skills",
+          action: "Passive",
+          role: "House Rule",
+          tags: ["skills", "consolidation", "houserule"]
+        };
+        if (existingIdx >= 0) {
+          masterDb[existingIdx] = Object.assign({}, masterDb[existingIdx], ruleData);
+        } else {
+          masterDb.push(ruleData);
+        }
+        if (window.RuleMaster && typeof RuleMaster.renderTable === 'function') {
+          RuleMaster.renderTable();
+        }
+      }
+
+      closeSkillConsolidationModal();
+      saveStateToStorage(true);
+      renderSkills();
+      showDiceTopToast({
+        icon: '🔗',
+        title: 'Beceri Modu Güncellendi',
+        breakdown: isEnabled ? 'Skilleri Birleştir (7 Konsolide Grup) etkinleştirildi!' : 'Standart D&D 3.5e RAW (46 Beceri) moduna dönüldü!',
+        total: isEnabled ? 'Konsolide' : 'RAW'
+      });
+    }
+
     function renderSkills() {
+      if (!character) return;
+      ensureAllSkills(character);
+
       const tbody = document.getElementById('skills-tbody');
+      if (!tbody) return;
       tbody.innerHTML = '';
-      (character.skills || []).forEach(sk => {
-        const statMod = RuleEngine.getAbilityMod(character.abilities?.[sk.stat] || 10);
-        const acpVal = sk.acp ? (character.acBreakdown?.acp || 0) : 0;
-        const total = sk.ranks + statMod + (sk.misc || 0) - acpVal;
-        const safeName = sk.name.replace(/'/g, "\\'");
+
+      const isMerged = character.settings?.mergeSkills === true;
+      const charLevel = Number(character.level) || 1;
+      const maxClassRank = charLevel + 3;
+      const maxCrossRank = Math.floor((charLevel + 3) / 2 * 10) / 10;
+
+      // Update Header Badges
+      const modeBadge = document.getElementById('skills-mode-badge');
+      if (modeBadge) {
+        modeBadge.textContent = isMerged ? '🔗 Birleştirilmiş Skiller' : 'D&D 3.5e RAW (46 Beceri)';
+        modeBadge.className = isMerged 
+          ? 'text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-950 text-emerald-300 border border-emerald-700' 
+          : 'text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-800 text-slate-300 border border-slate-700';
+      }
+
+      const toggleBtnText = document.getElementById('btn-toggle-merge-skills-text');
+      if (toggleBtnText) {
+        toggleBtnText.textContent = isMerged ? 'RAW Skilleri Göster (46)' : 'Skilleri Birleştir';
+      }
+
+      const maxRankInfo = document.getElementById('skills-max-rank-info');
+      if (maxRankInfo) {
+        maxRankInfo.innerHTML = `Maks: Sınıf <strong class="text-amber-400">${maxClassRank}</strong> • Dışı <strong class="text-slate-300">${maxCrossRank}</strong>`;
+      }
+
+      const buffSkillMod = Number(character.buffSkillBonus) || 0;
+      const searchVal = (document.getElementById('skill-search-input')?.value || '').toLowerCase().trim();
+
+      // Collect list of items to render
+      let displayItems = [];
+
+      if (isMerged) {
+        // 1. Consolidated Skill Groups
+        const mergedKeysHandled = new Set();
+        DND35_CONSOLIDATED_SKILLS.forEach(conDef => {
+          const compSkills = (character.skills || []).filter(s => conDef.components.includes(s.key));
+          conDef.components.forEach(k => mergedKeysHandled.add(k));
+
+          const ranks = Math.max(0, ...compSkills.map(s => Number(s.ranks) || 0));
+          const isClass = compSkills.some(s => s.isClass);
+          const misc = Math.max(0, ...compSkills.map(s => Number(s.misc) || 0));
+
+          displayItems.push({
+            key: conDef.key,
+            name: conDef.name,
+            subtitle: conDef.compLabels,
+            stat: conDef.stat,
+            ranks: ranks,
+            isClass: isClass,
+            acp: conDef.acp,
+            misc: misc,
+            isConsolidated: true,
+            components: conDef.components
+          });
+        });
+
+        // 2. Non-consolidated remaining skills
+        (character.skills || []).forEach(sk => {
+          if (!mergedKeysHandled.has(sk.key)) {
+            displayItems.push({
+              key: sk.key,
+              name: sk.name,
+              subtitle: '',
+              stat: sk.stat,
+              ranks: Number(sk.ranks) || 0,
+              isClass: !!sk.isClass,
+              acp: !!sk.acp,
+              misc: Number(sk.misc) || 0,
+              isConsolidated: false
+            });
+          }
+        });
+      } else {
+        // Standard RAW 46 skills
+        (character.skills || []).forEach(sk => {
+          displayItems.push({
+            key: sk.key,
+            name: sk.name,
+            subtitle: '',
+            stat: sk.stat,
+            ranks: Number(sk.ranks) || 0,
+            isClass: !!sk.isClass,
+            acp: !!sk.acp,
+            misc: Number(sk.misc) || 0,
+            isConsolidated: false
+          });
+        });
+      }
+
+      // Filter by activeSkillFilter
+      if (activeSkillFilter === 'class') {
+        displayItems = displayItems.filter(item => item.isClass);
+      } else if (activeSkillFilter === 'trained') {
+        displayItems = displayItems.filter(item => item.ranks > 0);
+      }
+
+      // Filter by search query
+      if (searchVal) {
+        displayItems = displayItems.filter(item => {
+          return (item.name || '').toLowerCase().includes(searchVal) ||
+                 (item.subtitle || '').toLowerCase().includes(searchVal) ||
+                 (item.stat || '').toLowerCase().includes(searchVal);
+        });
+      }
+
+      // Sort alphabetically by name
+      displayItems.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+      if (displayItems.length === 0) {
+        const trEmpty = document.createElement('tr');
+        trEmpty.innerHTML = `<td colspan="9" class="py-6 text-center text-slate-500 italic">Eşleşen beceri bulunamadı.</td>`;
+        tbody.appendChild(trEmpty);
+        return;
+      }
+
+      displayItems.forEach(item => {
+        const statMod = RuleEngine.getAbilityMod(character.abilities?.[item.stat] || 10);
+        const acpVal = item.acp ? (character.acBreakdown?.acp || 0) : 0;
+        const total = item.ranks + statMod + item.misc - acpVal + buffSkillMod;
+        const maxRankAllowed = item.isClass ? maxClassRank : maxCrossRank;
+        const isOverRank = item.ranks > maxRankAllowed;
+        const safeName = item.name.replace(/'/g, "\\'");
+        const safeSubtitle = (item.subtitle || '').replace(/'/g, "\\'");
+
         const tr = document.createElement('tr');
-        tr.className = 'hover:bg-slate-900/60 transition';
+        tr.className = `hover:bg-slate-900/60 transition ${item.isConsolidated ? 'bg-emerald-950/15' : ''}`;
         tr.innerHTML = `
-          <td class="py-2 px-3 font-bold text-white">${sk.name}</td>
-          <td class="py-2 px-3 text-center text-slate-400 uppercase font-mono">${sk.stat}</td>
-          <td class="py-2 px-3 text-center text-sky-400 font-mono">
-            <div class="inline-flex items-center gap-1">
-              <button onclick="adjustSkillRank('${safeName}', -1)" class="w-4 h-4 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] leading-none">-</button>
-              <span class="w-5 text-center font-bold">${sk.ranks}</span>
-              <button onclick="adjustSkillRank('${safeName}', 1)" class="w-4 h-4 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] leading-none">+</button>
-            </div>
+          <!-- Sınıf Becerisi (Class Skill) Toggle Checkbox -->
+          <td class="py-2 px-2 text-center align-middle">
+            <button 
+              type="button" 
+              onclick="toggleSkillClass('${item.key}')" 
+              title="${item.isClass ? 'Sınıf Becerisi (Class Skill) • Tıkla ve kaldır' : 'Sınıf Dışı (Cross-Class) • Tıkla ve Sınıf Becerisi yap'}"
+              class="w-6 h-6 rounded flex items-center justify-center transition ${item.isClass ? 'text-amber-400 hover:text-amber-300 font-black' : 'text-slate-600 hover:text-slate-400 font-normal'}">
+              <span>${item.isClass ? '⭐' : '⚪'}</span>
+            </button>
           </td>
-          <td class="py-2 px-3 text-center text-slate-400 font-mono">${statMod >= 0 ? '+' : ''}${statMod}</td>
-          <td class="py-2 px-3 text-center ${sk.acp ? 'text-amber-400' : 'text-slate-600'} font-mono">${sk.acp ? (acpVal > 0 ? '-' + acpVal : '0') : '-'}</td>
-          <td class="py-2 px-3 text-center font-black font-mono text-emerald-400 text-sm">${total >= 0 ? '+' : ''}${total}</td>
-          <td class="py-2 px-3 text-center">
-            <button onclick="rollSkill3D('${safeName}', ${total})" class="bg-slate-800 hover:bg-slate-700 text-amber-400 px-2.5 py-0.5 rounded border border-slate-700 text-xs font-mono transition inline-flex items-center gap-1.5 justify-center">
+
+          <!-- Beceri Adı & Bileşenleri -->
+          <td class="py-2 px-3 align-middle">
+            <div class="font-bold ${item.isClass ? 'text-amber-300' : 'text-white'} flex items-center gap-1.5 flex-wrap">
+              <span>${item.name}</span>
+              ${item.isConsolidated ? '<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[9px]">Konsolide</span>' : ''}
+              ${item.isClass ? '<span class="badge bg-amber-950 text-amber-300 border border-amber-700 text-[8px] font-mono">Sınıf</span>' : ''}
+            </div>
+            ${item.subtitle ? `<div class="text-[10px] text-emerald-400/80 font-mono mt-0.5">↳ ${item.subtitle}</div>` : ''}
+          </td>
+
+          <!-- Stat -->
+          <td class="py-2 px-2 text-center align-middle">
+            <span class="badge bg-slate-950 text-slate-300 border border-slate-700 font-mono text-[10px] uppercase font-bold px-1.5 py-0.5">
+              ${item.stat}
+            </span>
+          </td>
+
+          <!-- Rank & Rank Adjustment Buttons -->
+          <td class="py-2 px-2 text-center align-middle font-mono">
+            <div class="inline-flex items-center gap-1">
+              <button onclick="adjustSkillRank('${item.key}', -1)" class="w-4 h-4 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] leading-none">-</button>
+              <span class="w-6 text-center font-bold ${isOverRank ? 'text-rose-400 animate-pulse' : (item.ranks > 0 ? 'text-sky-300' : 'text-slate-500')}">${item.ranks}</span>
+              <button onclick="adjustSkillRank('${item.key}', 1)" class="w-4 h-4 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] leading-none">+</button>
+            </div>
+            <div class="text-[9px] text-slate-500 font-mono">/ ${maxRankAllowed}</div>
+          </td>
+
+          <!-- Stat Mod -->
+          <td class="py-2 px-2 text-center align-middle text-slate-400 font-mono">
+            ${statMod >= 0 ? '+' : ''}${statMod}
+          </td>
+
+          <!-- ACP -->
+          <td class="py-2 px-2 text-center align-middle font-mono ${item.acp ? (acpVal > 0 ? 'text-amber-400 font-bold' : 'text-slate-500') : 'text-slate-700'}">
+            ${item.acp ? (acpVal > 0 ? '-' + acpVal : '0') : '-'}
+          </td>
+
+          <!-- Buff / Debuff Bonus -->
+          <td class="py-2 px-2 text-center align-middle font-mono ${buffSkillMod !== 0 ? (buffSkillMod > 0 ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold') : 'text-slate-600'}">
+            ${buffSkillMod !== 0 ? (buffSkillMod > 0 ? '+' + buffSkillMod : buffSkillMod) : '-'}
+          </td>
+
+          <!-- Toplam -->
+          <td class="py-2 px-2 text-center align-middle font-black font-mono text-sm ${total >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
+            ${total >= 0 ? '+' : ''}${total}
+          </td>
+
+          <!-- 3D Zar At -->
+          <td class="py-2 px-3 text-center align-middle">
+            <button onclick="rollSkill3D('${safeName}', ${total}, '${safeSubtitle}')" class="bg-slate-800 hover:bg-slate-700 text-amber-400 px-2.5 py-1 rounded-lg border border-slate-700 text-xs font-mono transition inline-flex items-center gap-1.5 justify-center shadow-sm">
               ${getD20IconSvg('w-3.5 h-3.5 text-amber-400')}
               <span>Zar</span>
             </button>

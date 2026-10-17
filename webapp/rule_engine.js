@@ -783,6 +783,7 @@ const RuleEngine = {
     let buffSaveFort = 0;
     let buffSaveRef = 0;
     let buffSaveWill = 0;
+    let buffSkillBonus = 0;
     let debuffHpPenalty = 0;
     const suppressedWarnings = [];
 
@@ -801,6 +802,7 @@ const RuleEngine = {
         buffSaveFort -= buff.negativeLevels;
         buffSaveRef -= buff.negativeLevels;
         buffSaveWill -= buff.negativeLevels;
+        buffSkillBonus -= buff.negativeLevels;
       }
 
       itemsToProcess.forEach(item => {
@@ -855,6 +857,9 @@ const RuleEngine = {
 
         // HP Penalty (Energy Drain: 5 HP per level)
         if (item.hpPenalty) debuffHpPenalty += Number(item.hpPenalty) || 0;
+
+        // Skill Modifiers
+        if (item.skillBonus) buffSkillBonus += Number(item.skillBonus) || 0;
       });
     });
 
@@ -1021,6 +1026,7 @@ const RuleEngine = {
     // 7. Resolve Effective Speed
     const baseSpeed = character.baseSpeed || 30;
     character.effectiveSpeed = baseSpeed + itemSpeedBonus + buffSpeedBonus;
+    character.buffSkillBonus = buffSkillBonus;
 
     return {
       ac: character.acBreakdown,
