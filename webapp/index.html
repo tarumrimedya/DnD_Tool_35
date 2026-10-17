@@ -877,15 +877,31 @@
         </div>
 
         <!-- ⚔️ 14 OFFICIAL BODY SLOTS (GSheet Madde 6 & 8) -->
-        <div class="border border-slate-800 rounded-xl overflow-hidden">
-          <div class="bg-slate-900 px-3 py-2.5 text-xs font-bold text-white flex justify-between items-center border-b border-slate-800">
-            <span class="flex items-center gap-1.5 text-sky-400">
-              <span>⚔️</span>
-              <span>VÜCUT YUVALARI (BODY SLOT EQUIPMENT - 14 RESMİ YUVA)</span>
-            </span>
-            <span class="text-[10px] text-slate-400">Dikey Hizalama: Ortada • Değişiklikler anında AC/Statlara yansır</span>
+        <div class="border border-slate-800 rounded-xl overflow-hidden shadow-xl bg-slate-900/40">
+          <div class="bg-slate-900 px-3.5 py-2.5 text-xs font-bold text-white flex flex-wrap justify-between items-center gap-2 border-b border-slate-800">
+            <div class="flex items-center gap-2">
+              <span class="text-sky-400 text-sm">⚔️</span>
+              <span class="text-sky-300 font-extrabold tracking-wide uppercase">VÜCUT YUVALARI (BODY SLOT EQUIPMENT - 14 RESMİ YUVA)</span>
+              <span class="hidden sm:inline-block text-[10px] font-normal text-slate-400 border-l border-slate-700 pl-2">Anında AC/Stat Güncelleme</span>
+            </div>
+            
+            <!-- View Mode Switcher Toggle (Liste vs Silüet) -->
+            <div class="flex items-center gap-2">
+              <div class="inline-flex p-0.5 bg-slate-950 border border-slate-700/80 rounded-lg text-xs font-bold shadow-inner">
+                <button id="btn-body-view-list" onclick="setBodySlotsView('list')" type="button" class="px-2.5 py-1 rounded-md transition flex items-center gap-1.5 text-slate-400 hover:text-white" title="Geleneksel Liste / Tablo Görünümü">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+                  <span>Liste Düzeni</span>
+                </button>
+                <button id="btn-body-view-silhouette" onclick="setBodySlotsView('silhouette')" type="button" class="px-2.5 py-1 rounded-md transition flex items-center gap-1.5 bg-sky-600 text-white shadow" title="İnteraktif Figür & Silüet Görünümü">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                  <span>Silüet Düzeni</span>
+                </button>
+              </div>
+            </div>
           </div>
-          <div class="overflow-x-auto">
+
+          <!-- GÖRÜNÜM 1: LİSTE / TABLO DÜZENİ -->
+          <div id="body-slots-list-view" class="overflow-x-auto">
             <table class="w-full text-left text-xs">
               <thead class="bg-slate-950 text-slate-400 text-[10px] uppercase font-bold border-b border-slate-800">
                 <tr>
@@ -903,6 +919,75 @@
                 <!-- Dynamically populated with 14 rows, middle vertical align -->
               </tbody>
             </table>
+          </div>
+
+          <!-- GÖRÜNÜM 2: SİLÜET / PAPER-DOLL DÜZENİ -->
+          <div id="body-slots-silhouette-view" class="p-3 sm:p-5 bg-gradient-to-b from-slate-950 via-[#0a0f1d] to-slate-950 relative hidden">
+            <!-- Sub-Header: Silhouette Model Selector & Character Meta Pill -->
+            <div class="flex flex-wrap items-center justify-between gap-2.5 pb-3 mb-4 border-b border-slate-800/80">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-sky-400 animate-pulse"></span>
+                <span id="sil-char-tag" class="text-xs font-bold text-sky-300">Humanoid • Medium Size</span>
+                <span class="text-slate-600">•</span>
+                <span id="sil-active-count" class="text-[11px] text-slate-400">14 Yuva</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <label for="silhouette-model-select" class="text-[11px] font-bold text-slate-400 flex items-center gap-1">
+                  <span>👤 Figür Modeli:</span>
+                </label>
+                <select id="silhouette-model-select" onchange="changeSilhouetteModel(this.value)" class="bg-slate-900 border border-slate-700 hover:border-sky-500 rounded-lg px-2.5 py-1 text-xs text-sky-300 font-bold focus:outline-none transition">
+                  <option value="auto">⚡ Otomatik (Irk & Cinsiyet)</option>
+                  <option value="human_male">İnsan (Erkek Savaşçı)</option>
+                  <option value="human_female">İnsan / Elf (Kadın)</option>
+                  <option value="elf">Elf (Zarif / Büyücü)</option>
+                  <option value="dwarf">Cüce (Dwarf / Geniş)</option>
+                  <option value="halfling">Buçukluk / Gnom (Minyon)</option>
+                  <option value="goliath">Goliath / Yarım-Ork (Heybetli)</option>
+                  <option value="thrikreen">Thri-Kreen (4 Kollu Böceksi)</option>
+                  <option value="warforged">Warforged (Zırhlı Yapay)</option>
+                  <option value="avatar">🖼️ Karakter Portresi (Avatar)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- 3-Column Grid: Left Slots (7) | Silhouette Center | Right Slots (7) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-4 items-center">
+              <!-- SOL KOLON: 7 YUVA (Baş, Göz, Boyun, Omuz, Zırh, Gövde, Kemer) -->
+              <div id="sil-left-slots" class="lg:col-span-4 space-y-2.5">
+                <!-- Injected via renderBodySlotsSilhouette() -->
+              </div>
+
+              <!-- ORTA KOLON: DİNAMİK SİLÜET FİGÜRÜ & ANATOMİK BAĞLANTI NOKTALARI -->
+              <div class="lg:col-span-4 flex flex-col items-center justify-center relative min-h-[480px] lg:min-h-[540px] py-2">
+                <!-- Ambient radial glow backdrop -->
+                <div class="absolute inset-0 bg-radial-gradient from-sky-500/10 via-amber-500/5 to-transparent rounded-2xl pointer-events-none -z-0"></div>
+                
+                <!-- Silhouette Display Container -->
+                <div id="sil-figure-container" class="relative z-10 w-full max-w-[280px] h-[460px] flex items-center justify-center transition-all duration-300">
+                  <!-- SVG or Image will be injected here -->
+                </div>
+
+                <!-- Silhouette Footer Tag -->
+                <div class="mt-2 text-center z-10">
+                  <span id="sil-model-name-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900/90 border border-slate-700/80 text-[11px] font-semibold text-slate-300 shadow">
+                    <span>⚔️</span>
+                    <span id="sil-model-label">Savaşçı Duruşu</span>
+                  </span>
+                </div>
+              </div>
+
+              <!-- SAĞ KOLON: 7 YUVA (Kollar, Eller, Yüzük 1, Yüzük 2, Ayaklar, Ana El, İkinci El) -->
+              <div id="sil-right-slots" class="lg:col-span-4 space-y-2.5">
+                <!-- Injected via renderBodySlotsSilhouette() -->
+              </div>
+
+              <!-- ALT PANEL: SİLAHLAR VE DİĞER KUŞANILANLAR (QUICK DOCK) -->
+              <div class="lg:col-span-12 mt-2 pt-3 border-t border-slate-800/80">
+                <div id="sil-bottom-dock" class="bg-slate-900/70 border border-slate-800 rounded-xl p-3">
+                  <!-- Injected via renderBodySlotsSilhouette() -->
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -3242,6 +3327,50 @@
         <button onclick="savePeriodicHpEffect()" id="btn-save-periodic" class="px-4 py-1.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1.5 cursor-pointer">
           <span>➕</span>
           <span>Etkiyi Başlat</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================== -->
+  <!-- MODAL: QUICK EQUIP FOR SPECIFIC BODY SLOT -->
+  <!-- ==================================================== -->
+  <div id="slot-equip-modal" class="hidden fixed inset-0 z-[105] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
+    <div class="bg-dndCard border border-sky-500/80 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden my-auto max-h-[90vh] flex flex-col">
+      <!-- Modal Header -->
+      <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div id="slot-equip-modal-icon" class="w-8 h-8 rounded-lg bg-sky-950/80 border border-sky-600/50 flex items-center justify-center text-lg shadow-inner">
+            👑
+          </div>
+          <div>
+            <h3 id="slot-equip-modal-title" class="text-sm font-extrabold text-white">Baş / Miğfer Yuvası İçin Eşya Kuşan</h3>
+            <p id="slot-equip-modal-subtitle" class="text-[10px] text-sky-400">Envanter havuzundaki uygun eşyalar</p>
+          </div>
+        </div>
+        <button onclick="closeSlotEquipModal()" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition">✕</button>
+      </div>
+
+      <!-- Filter Controls & Action -->
+      <div class="p-3 bg-slate-900/60 border-b border-slate-800 flex items-center justify-between gap-2 shrink-0">
+        <label class="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer">
+          <input type="checkbox" id="slot-equip-show-all" onchange="renderSlotEquipItems()" class="w-3.5 h-3.5 rounded text-sky-500 bg-slate-950 border-slate-700 focus:ring-0">
+          <span>Tüm havuz eşyalarını listele</span>
+        </label>
+        <button onclick="closeSlotEquipModal(); openAddPoolItemModal();" class="text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1">
+          <span>➕ Yeni Eşya Ekle</span>
+        </button>
+      </div>
+
+      <!-- Item List Container -->
+      <div id="slot-equip-modal-items" class="p-3 overflow-y-auto space-y-2 flex-1 divide-y divide-slate-800/60">
+        <!-- Dynamically populated -->
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="bg-slate-950 px-4 py-2.5 border-t border-slate-800 flex justify-end shrink-0">
+        <button onclick="closeSlotEquipModal()" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition">
+          Kapat
         </button>
       </div>
     </div>
@@ -7478,20 +7607,20 @@
 
     // 14 Official Body Slot Definitions matching GSheet (Madde 6 & 8)
     const BODY_SLOT_DEFS = [
-      { key: 'head', name: 'Head', icon: '👑', allowed: ['Head', 'Wondrous Item'] },
-      { key: 'eyes', name: 'Eyes', icon: '👁️', allowed: ['Eyes', 'Wondrous Item'] },
-      { key: 'neck', name: 'Neck', icon: '📿', allowed: ['Neck', 'Wondrous Item'] },
-      { key: 'shoulders', name: 'Shoulders', icon: '🧥', allowed: ['Shoulders', 'Wondrous Item'] },
-      { key: 'torso', name: 'Torso', icon: '🥋', allowed: ['Torso', 'Wondrous Item'] },
-      { key: 'armor', name: 'Armor', icon: '🛡️', allowed: ['Armor'] },
-      { key: 'belt', name: 'Belt', icon: '🪢', allowed: ['Belt', 'Wondrous Item'] },
-      { key: 'bracers', name: 'Bracers', icon: '🦾', allowed: ['Bracers', 'Wondrous Item'] },
-      { key: 'gloves', name: 'Gloves', icon: '🧤', allowed: ['Gloves', 'Wondrous Item'] },
-      { key: 'ring1', name: 'Ring 1', icon: '💍', allowed: ['Ring', 'Wondrous Item'] },
-      { key: 'ring2', name: 'Ring 2', icon: '💍', allowed: ['Ring', 'Wondrous Item'] },
-      { key: 'boots', name: 'Boots', icon: '👢', allowed: ['Boots', 'Wondrous Item'] },
-      { key: 'mainHand', name: 'Main Hand', icon: '⚔️', allowed: ['Weapon'] },
-      { key: 'offHand', name: 'Off-Hand/Shield', icon: '🛡️', allowed: ['Weapon', 'Shield'] }
+      { key: 'head', name: 'Head', trName: 'Baş / Miğfer', icon: '👑', allowed: ['Head', 'Wondrous Item'] },
+      { key: 'eyes', name: 'Eyes', trName: 'Göz / Gözlük', icon: '👁️', allowed: ['Eyes', 'Wondrous Item'] },
+      { key: 'neck', name: 'Neck', trName: 'Boyun / Kolye', icon: '📿', allowed: ['Neck', 'Wondrous Item'] },
+      { key: 'shoulders', name: 'Shoulders', trName: 'Omuz / Pelerin', icon: '🧥', allowed: ['Shoulders', 'Wondrous Item'] },
+      { key: 'armor', name: 'Armor', trName: 'Gövde Zırhı', icon: '🛡️', allowed: ['Armor'] },
+      { key: 'torso', name: 'Torso', trName: 'Göğüs / Yelek', icon: '🥋', allowed: ['Torso', 'Wondrous Item'] },
+      { key: 'belt', name: 'Belt', trName: 'Kemer / Bel', icon: '🪢', allowed: ['Belt', 'Wondrous Item'] },
+      { key: 'bracers', name: 'Bracers', trName: 'Kollar / Bileklik', icon: '🦾', allowed: ['Bracers', 'Wondrous Item'] },
+      { key: 'gloves', name: 'Gloves', trName: 'Eller / Eldiven', icon: '🧤', allowed: ['Gloves', 'Wondrous Item'] },
+      { key: 'ring1', name: 'Ring 1', trName: 'Sol Yüzük', icon: '💍', allowed: ['Ring', 'Wondrous Item'] },
+      { key: 'ring2', name: 'Ring 2', trName: 'Sağ Yüzük', icon: '💍', allowed: ['Ring', 'Wondrous Item'] },
+      { key: 'boots', name: 'Boots', trName: 'Ayaklar / Çizme', icon: '👢', allowed: ['Boots', 'Wondrous Item'] },
+      { key: 'mainHand', name: 'Main Hand', trName: 'Ana El / Silah', icon: '⚔️', allowed: ['Weapon'] },
+      { key: 'offHand', name: 'Off-Hand/Shield', trName: 'İkinci El / Kalkan', icon: '🛡️', allowed: ['Weapon', 'Shield'] }
     ];
 
     // Abilities Grid & Bio Summary
@@ -9915,8 +10044,582 @@
         });
       }
 
+      // 2b. Render Silhouette View (Paper-Doll Düzeni)
+      renderBodySlotsSilhouette();
+      // Apply active view preference (list vs silhouette)
+      setBodySlotsView(currentBodySlotsView, false);
+
       // 3. Render Gear Pool
       renderGearPoolTable();
+    }
+
+    // ====================================================
+    // 👤 VÜCUT YUVALARI: SİLÜET / PAPER-DOLL ENGINE
+    // ====================================================
+    let currentBodySlotsView = localStorage.getItem('dnd35_body_slots_view') || 'silhouette';
+    let selectedSilhouetteModel = localStorage.getItem('dnd35_silhouette_model') || 'auto';
+    let _currentEquipSlotKey = null;
+
+    function setBodySlotsView(mode, rerender = true) {
+      currentBodySlotsView = mode || 'silhouette';
+      try { localStorage.setItem('dnd35_body_slots_view', currentBodySlotsView); } catch(e){}
+
+      const listView = document.getElementById('body-slots-list-view');
+      const silView = document.getElementById('body-slots-silhouette-view');
+      const btnList = document.getElementById('btn-body-view-list');
+      const btnSil = document.getElementById('btn-body-view-silhouette');
+
+      if (currentBodySlotsView === 'silhouette') {
+        if (listView) listView.classList.add('hidden');
+        if (silView) silView.classList.remove('hidden');
+        if (btnSil) {
+          btnSil.className = 'px-2.5 py-1 rounded-md transition flex items-center gap-1.5 bg-sky-600 text-white shadow font-bold';
+        }
+        if (btnList) {
+          btnList.className = 'px-2.5 py-1 rounded-md transition flex items-center gap-1.5 text-slate-400 hover:text-white';
+        }
+        if (rerender) renderBodySlotsSilhouette();
+      } else {
+        if (silView) silView.classList.add('hidden');
+        if (listView) listView.classList.remove('hidden');
+        if (btnList) {
+          btnList.className = 'px-2.5 py-1 rounded-md transition flex items-center gap-1.5 bg-sky-600 text-white shadow font-bold';
+        }
+        if (btnSil) {
+          btnSil.className = 'px-2.5 py-1 rounded-md transition flex items-center gap-1.5 text-slate-400 hover:text-white';
+        }
+      }
+    }
+
+    function changeSilhouetteModel(modelKey) {
+      selectedSilhouetteModel = modelKey || 'auto';
+      try { localStorage.setItem('dnd35_silhouette_model', selectedSilhouetteModel); } catch(e){}
+      renderBodySlotsSilhouette();
+    }
+
+    function highlightSlotNode(slotKey, isHighlighted) {
+      const nodeEl = document.getElementById(`sil-node-${slotKey}`);
+      if (nodeEl) {
+        if (isHighlighted) {
+          nodeEl.setAttribute('r', '8');
+          nodeEl.setAttribute('fill', '#f59e0b');
+          nodeEl.setAttribute('stroke', '#ffffff');
+          nodeEl.setAttribute('stroke-width', '2.5');
+        } else {
+          nodeEl.setAttribute('r', '5');
+          nodeEl.setAttribute('fill', '#38bdf8');
+          nodeEl.setAttribute('stroke', '#0284c7');
+          nodeEl.setAttribute('stroke-width', '1.5');
+        }
+      }
+    }
+
+    function getSilhouetteSvg(modelKey, character) {
+      const r = ((character?.race) || '').toLowerCase().trim();
+      const g = ((character?.gender) || '').toLowerCase().trim();
+      const isFemale = g.includes('kad') || g.includes('kız') || g.includes('kiz') || g.includes('fem') || g.includes('woman') || g === 'f';
+
+      let effectiveModel = modelKey || 'auto';
+      if (effectiveModel === 'auto') {
+        if (r.includes('thri') || r.includes('kreen')) effectiveModel = 'thrikreen';
+        else if (r.includes('goliath') || r.includes('ork') || r.includes('orc')) effectiveModel = 'goliath';
+        else if (r.includes('dwarf') || r.includes('cüce') || r.includes('cuce')) effectiveModel = 'dwarf';
+        else if (r.includes('elf')) effectiveModel = 'elf';
+        else if (r.includes('halfling') || r.includes('buçuk') || r.includes('bucuk') || r.includes('gnome') || r.includes('gnom')) effectiveModel = 'halfling';
+        else if (r.includes('warforged') || r.includes('yapay') || r.includes('golem')) effectiveModel = 'warforged';
+        else effectiveModel = isFemale ? 'human_female' : 'human_male';
+      }
+
+      // If user selected avatar and avatar image is present
+      if (effectiveModel === 'avatar' && character?.avatarImg) {
+        return `
+          <div class="relative w-full h-full flex flex-col items-center justify-center p-2">
+            <div class="relative w-60 h-[440px] rounded-2xl overflow-hidden border-2 border-sky-400/80 shadow-[0_0_35px_rgba(56,189,248,0.35)] group bg-slate-950 flex flex-col">
+              <img src="${character.avatarImg}" alt="${character.name || 'Hero'}" class="w-full h-full object-cover object-top filter brightness-95 contrast-105 transition duration-500 group-hover:scale-105">
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-sky-950/20 pointer-events-none"></div>
+              <div class="absolute bottom-2 inset-x-2 bg-slate-950/85 backdrop-blur-md rounded-lg p-2 text-center border border-slate-700">
+                <div class="text-xs font-bold text-white">${character.name || 'Karakter'}</div>
+                <div class="text-[10px] text-sky-400 font-medium">${character.race || 'Human'} • ${character.classes || 'Adventurer'}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // Anatomical node anchors on a 320 x 520 SVG coordinate canvas
+      let nodes = {
+        head: { cx: 160, cy: 46, label: 'Baş (Head)' },
+        eyes: { cx: 160, cy: 66, label: 'Göz (Eyes)' },
+        neck: { cx: 160, cy: 94, label: 'Boyun (Neck)' },
+        shoulders: { cx: 110, cy: 118, label: 'Omuz (Shoulders)' },
+        armor: { cx: 160, cy: 150, label: 'Gövde Zırhı (Armor)' },
+        torso: { cx: 160, cy: 184, label: 'Göğüs / Yelek (Torso)' },
+        belt: { cx: 160, cy: 224, label: 'Kemer (Belt)' },
+        bracers: { cx: 95, cy: 210, label: 'Kollar (Bracers)' },
+        gloves: { cx: 78, cy: 265, label: 'Eller (Gloves)' },
+        ring1: { cx: 82, cy: 288, label: 'Sol Yüzük (Ring 1)' },
+        ring2: { cx: 238, cy: 288, label: 'Sağ Yüzük (Ring 2)' },
+        boots: { cx: 135, cy: 465, label: 'Ayaklar (Boots)' },
+        mainHand: { cx: 62, cy: 300, label: 'Ana El Silah (Main Hand)' },
+        offHand: { cx: 258, cy: 270, label: 'İkinci El / Kalkan (Off Hand)' }
+      };
+
+      // Model-specific body silhouette path & variations
+      let bodyPath = '';
+      let accentDetails = '';
+
+      if (effectiveModel === 'dwarf') {
+        // Stout, wide shoulders, braided beard outline, horned helmet
+        nodes.head.cy = 90; nodes.eyes.cy = 110; nodes.neck.cy = 135;
+        nodes.shoulders.cx = 95; nodes.shoulders.cy = 155;
+        nodes.armor.cy = 185; nodes.torso.cy = 215; nodes.belt.cy = 250;
+        nodes.bracers.cx = 75; nodes.bracers.cy = 235;
+        nodes.gloves.cx = 60; nodes.gloves.cy = 285;
+        nodes.ring1.cx = 66; nodes.ring1.cy = 308; nodes.ring2.cx = 254; nodes.ring2.cy = 308;
+        nodes.boots.cx = 125; nodes.boots.cy = 450;
+        nodes.mainHand.cx = 45; nodes.mainHand.cy = 320; nodes.offHand.cx = 275; nodes.offHand.cy = 290;
+
+        bodyPath = `
+          M 140,82 Q 160,70 180,82 L 188,98 Q 192,120 182,145 Q 160,175 138,145 Q 128,120 132,98 Z
+          M 125,135 L 75,155 L 60,240 L 75,295 L 95,280 L 105,210 L 115,255 L 100,455 L 145,455 L 150,330 L 170,330 L 175,455 L 220,455 L 205,255 L 215,210 L 225,280 L 245,295 L 260,240 L 245,155 L 195,135 Z
+        `;
+        accentDetails = `
+          <!-- Horned Helmet & Braided Beard -->
+          <path d="M 135,85 Q 115,70 110,50 Q 120,68 135,78" stroke="#f59e0b" stroke-width="2" fill="none" opacity="0.8"/>
+          <path d="M 185,85 Q 205,70 210,50 Q 200,68 185,78" stroke="#f59e0b" stroke-width="2" fill="none" opacity="0.8"/>
+          <path d="M 148,130 Q 160,165 172,130" stroke="#f59e0b" stroke-width="2.5" fill="none" opacity="0.85"/>
+        `;
+      } else if (effectiveModel === 'thrikreen') {
+        // 4-armed mantis insectoid with antennae
+        nodes.shoulders.cy = 105;
+        nodes.bracers.cx = 85; nodes.bracers.cy = 165;
+        nodes.gloves.cx = 65; nodes.gloves.cy = 225;
+        nodes.mainHand.cx = 40; nodes.mainHand.cy = 245;
+        nodes.offHand.cx = 280; nodes.offHand.cy = 245;
+
+        bodyPath = `
+          M 148,50 Q 160,35 172,50 Q 178,75 160,88 Q 142,75 148,50 Z
+          M 145,95 L 110,110 L 55,140 L 40,215 L 62,215 L 85,160 L 115,135
+          L 100,165 L 45,230 L 58,260 L 105,200 L 125,200
+          L 115,260 L 118,485 L 142,485 L 150,330 L 170,330 L 178,485 L 202,485 L 205,260
+          L 195,200 L 215,200 L 262,260 L 275,230 L 220,165 L 205,135
+          L 235,160 L 258,215 L 280,215 L 265,140 L 210,110 L 175,95 Z
+        `;
+        accentDetails = `
+          <!-- Antennae -->
+          <path d="M 152,42 Q 130,20 120,8" stroke="#38bdf8" stroke-width="2" fill="none" opacity="0.8"/>
+          <path d="M 168,42 Q 190,20 200,8" stroke="#38bdf8" stroke-width="2" fill="none" opacity="0.8"/>
+          <!-- Extra 4-arm glowing weapon claws -->
+          <circle cx="45" cy="220" r="4.5" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5" class="animate-pulse"/>
+          <circle cx="275" cy="220" r="4.5" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5" class="animate-pulse"/>
+        `;
+      } else if (effectiveModel === 'elf') {
+        // Tall, slender waist, pointed ears, elegant mantle
+        bodyPath = `
+          M 148,46 Q 160,30 172,46 Q 178,72 160,82 Q 142,72 148,46 Z
+          M 140,88 L 100,105 L 80,195 L 68,270 L 88,270 L 102,205 L 125,180
+          L 125,245 L 115,485 L 142,485 L 152,320 L 168,320 L 178,485 L 205,485 L 195,245
+          L 195,180 L 218,205 L 232,270 L 252,270 L 240,195 L 220,105 L 180,88 Z
+        `;
+        accentDetails = `
+          <!-- Pointed Ears -->
+          <path d="M 144,52 L 130,42 L 143,60 Z" fill="#38bdf8" opacity="0.7"/>
+          <path d="M 176,52 L 190,42 L 177,60 Z" fill="#38bdf8" opacity="0.7"/>
+          <!-- Arcane Cloak Hem -->
+          <path d="M 98,110 Q 75,250 90,410" stroke="#38bdf8" stroke-width="1.5" fill="none" opacity="0.4" stroke-dasharray="3 3"/>
+          <path d="M 222,110 Q 245,250 230,410" stroke="#38bdf8" stroke-width="1.5" fill="none" opacity="0.4" stroke-dasharray="3 3"/>
+        `;
+      } else if (effectiveModel === 'goliath') {
+        // Towering, broad massive chest and muscular frame
+        nodes.shoulders.cx = 90; nodes.shoulders.cy = 108;
+        nodes.armor.cy = 142; nodes.torso.cy = 175;
+        nodes.bracers.cx = 72; nodes.gloves.cx = 58; nodes.mainHand.cx = 38;
+        nodes.offHand.cx = 282;
+
+        bodyPath = `
+          M 145,36 Q 160,20 175,36 Q 182,65 160,76 Q 138,65 145,36 Z
+          M 136,82 L 80,102 L 62,205 L 48,285 L 72,285 L 90,215 L 120,185
+          L 115,255 L 105,490 L 142,490 L 150,335 L 170,335 L 178,490 L 215,490 L 205,255
+          L 200,185 L 230,215 L 248,285 L 272,285 L 258,205 L 240,102 L 184,82 Z
+        `;
+        accentDetails = `
+          <!-- Tribal Rune Markings -->
+          <path d="M 160,95 L 160,180" stroke="#f59e0b" stroke-width="1.5" opacity="0.5" stroke-dasharray="4 2"/>
+          <circle cx="160" cy="142" r="18" stroke="#f59e0b" stroke-width="1" fill="none" opacity="0.3"/>
+        `;
+      } else if (effectiveModel === 'halfling') {
+        // Small proportion (scaled down towards center)
+        nodes.head.cy = 120; nodes.eyes.cy = 135; nodes.neck.cy = 155;
+        nodes.shoulders.cx = 125; nodes.shoulders.cy = 175;
+        nodes.armor.cy = 205; nodes.torso.cy = 230; nodes.belt.cy = 260;
+        nodes.bracers.cx = 108; nodes.bracers.cy = 245;
+        nodes.gloves.cx = 95; nodes.gloves.cy = 295;
+        nodes.ring1.cx = 100; nodes.ring1.cy = 312; nodes.ring2.cx = 220; nodes.ring2.cy = 312;
+        nodes.boots.cx = 138; nodes.boots.cy = 445;
+        nodes.mainHand.cx = 78; nodes.mainHand.cy = 320; nodes.offHand.cx = 242; nodes.offHand.cy = 300;
+
+        bodyPath = `
+          M 148,110 Q 160,96 172,110 Q 178,135 160,146 Q 142,135 148,110 Z
+          M 142,150 L 115,168 L 102,235 L 92,295 L 108,295 L 120,248 L 132,230
+          L 130,280 L 122,448 L 145,448 L 152,350 L 168,350 L 175,448 L 198,448 L 190,280
+          L 188,230 L 200,248 L 212,295 L 228,295 L 218,235 L 205,168 L 178,150 Z
+        `;
+      } else if (effectiveModel === 'warforged') {
+        // Segmented mechanical plates & glowing core
+        bodyPath = `
+          M 146,44 L 160,30 L 174,44 L 174,70 L 160,82 L 146,70 Z
+          M 138,88 L 92,105 L 75,195 L 60,270 L 82,270 L 98,208 L 122,185
+          L 120,250 L 110,485 L 142,485 L 150,330 L 170,330 L 178,485 L 210,485 L 200,250
+          L 198,185 L 222,208 L 238,270 L 260,270 L 245,195 L 228,105 L 182,88 Z
+        `;
+        accentDetails = `
+          <!-- Chest Power Core Rune -->
+          <polygon points="160,135 170,150 160,165 150,150" fill="#38bdf8" opacity="0.8" class="animate-pulse"/>
+          <line x1="160" y1="88" x2="160" y2="135" stroke="#38bdf8" stroke-width="1.5" opacity="0.6"/>
+          <line x1="160" y1="165" x2="160" y2="225" stroke="#38bdf8" stroke-width="1.5" opacity="0.6"/>
+        `;
+      } else if (effectiveModel === 'human_female') {
+        // Athletic female adventurer silhouette
+        bodyPath = `
+          M 148,46 Q 160,32 172,46 Q 178,70 160,80 Q 142,70 148,46 Z
+          M 140,88 L 105,106 L 85,195 L 72,270 L 92,270 L 105,208 L 125,182
+          L 122,245 L 112,485 L 140,485 L 152,325 L 168,325 L 180,485 L 208,485 L 198,245
+          L 195,182 L 215,208 L 228,270 L 248,270 L 235,195 L 215,106 L 180,88 Z
+        `;
+      } else {
+        // Default: human_male (Heroic Adventurer matching mockup)
+        bodyPath = `
+          M 146,44 Q 160,28 174,44 Q 180,72 160,82 Q 140,72 146,44 Z
+          M 136,88 L 92,106 L 72,198 L 58,275 L 80,275 L 98,210 L 122,185
+          L 118,252 L 108,488 L 140,488 L 150,330 L 170,330 L 180,488 L 212,488 L 202,252
+          L 198,185 L 222,210 L 240,275 L 262,275 L 248,198 L 228,106 L 184,88 Z
+        `;
+      }
+
+      // Generate SVG markup with glowing filters, gradient rim strokes and pulsing interactive nodes
+      let nodesMarkup = '';
+      Object.keys(nodes).forEach(slotKey => {
+        const pt = nodes[slotKey];
+        const isOccupied = character?.bodySlots?.[slotKey]?.name && character?.bodySlots?.[slotKey]?.name !== '-';
+        const isActive = character?.bodySlots?.[slotKey]?.active;
+        const color = isActive ? '#38bdf8' : (isOccupied ? '#f59e0b' : '#64748b');
+
+        nodesMarkup += `
+          <g class="slot-anchor-node cursor-pointer group" onclick="openSlotEquipModal('${slotKey}')">
+            <!-- Pulsing ambient ring -->
+            <circle cx="${pt.cx}" cy="${pt.cy}" r="8" fill="${color}" fill-opacity="0.25" class="animate-ping pointer-events-none"/>
+            <!-- Interactive Node Circle -->
+            <circle id="sil-node-${slotKey}" cx="${pt.cx}" cy="${pt.cy}" r="5" fill="${color}" stroke="#0f172a" stroke-width="1.5" class="transition-all duration-300 hover:scale-150"/>
+            <title>${pt.label}: ${isOccupied ? character.bodySlots[slotKey].name : '(Boş Yuva - Kuşanmak için tıkla)'}</title>
+          </g>
+        `;
+      });
+
+      return `
+        <svg viewBox="0 0 320 520" class="w-full h-full filter drop-shadow-[0_0_20px_rgba(56,189,248,0.2)] select-none">
+          <defs>
+            <linearGradient id="silBodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#0b1329"/>
+              <stop offset="50%" stop-color="#0f172a"/>
+              <stop offset="100%" stop-color="#080e1e"/>
+            </linearGradient>
+            <linearGradient id="silNeonRim" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.9"/>
+              <stop offset="50%" stop-color="#0ea5e9" stop-opacity="0.6"/>
+              <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.8"/>
+            </linearGradient>
+            <filter id="silGlow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="3" result="blur"/>
+              <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+            </filter>
+          </defs>
+
+          <!-- Outer Ambient Rim Glow -->
+          <path d="${bodyPath}" fill="none" stroke="url(#silNeonRim)" stroke-width="4" filter="url(#silGlow)" opacity="0.65"/>
+          
+          <!-- Inner Body Fill -->
+          <path d="${bodyPath}" fill="url(#silBodyGrad)" stroke="#38bdf8" stroke-width="1.2" opacity="0.95"/>
+
+          <!-- Model Specific Accents -->
+          ${accentDetails}
+
+          <!-- Subtle Grid Lines (Cyber/Arcane Tactical Cockpit) -->
+          <circle cx="160" cy="240" r="130" stroke="#38bdf8" stroke-width="0.5" stroke-dasharray="3 6" fill="none" opacity="0.2"/>
+          <line x1="160" y1="20" x2="160" y2="500" stroke="#38bdf8" stroke-width="0.5" stroke-dasharray="2 8" opacity="0.15"/>
+
+          <!-- 14 Interactive Anatomical Nodes -->
+          ${nodesMarkup}
+        </svg>
+      `;
+    }
+
+    function renderBodySlotsSilhouette() {
+      if (!character) return;
+      if (!character.bodySlots) character.bodySlots = {};
+
+      const leftContainer = document.getElementById('sil-left-slots');
+      const rightContainer = document.getElementById('sil-right-slots');
+      const figureContainer = document.getElementById('sil-figure-container');
+      const bottomDock = document.getElementById('sil-bottom-dock');
+      const charTag = document.getElementById('sil-char-tag');
+      const modelLabel = document.getElementById('sil-model-label');
+      const modelSelect = document.getElementById('silhouette-model-select');
+      const activeCountEl = document.getElementById('sil-active-count');
+
+      if (!leftContainer || !rightContainer || !figureContainer) return;
+
+      // 7 Slots Left Column
+      const LEFT_KEYS = ['head', 'eyes', 'neck', 'shoulders', 'armor', 'torso', 'belt'];
+      // 7 Slots Right Column
+      const RIGHT_KEYS = ['bracers', 'gloves', 'ring1', 'ring2', 'boots', 'mainHand', 'offHand'];
+
+      let activeOccupiedCount = 0;
+
+      function buildCardHtml(slotKey, isRight) {
+        const def = BODY_SLOT_DEFS.find(d => d.key === slotKey) || { key: slotKey, name: slotKey, trName: slotKey, icon: '⚔️' };
+        const slotData = character.bodySlots[slotKey] || { name: '-', active: false, weight: 0, cost: 0, desc: '' };
+        const isOccupied = slotData.name && slotData.name !== '-';
+        if (isOccupied && slotData.active) activeOccupiedCount++;
+
+        let conflictNotice = '';
+        if (slotKey === 'offHand' && character.twoHandedConflict) {
+          conflictNotice = `<div class="text-[9px] text-amber-400 font-semibold truncate flex items-center gap-1 mt-0.5" title="İki elli silah iki eli de kaplar">
+            <span>⚠️</span> <span>İki elli silah (Etkisiz)</span>
+          </div>`;
+        }
+
+        if (isOccupied) {
+          return `
+            <div data-slot="${slotKey}"
+                 onmouseenter="highlightSlotNode('${slotKey}', true)"
+                 onmouseleave="highlightSlotNode('${slotKey}', false)"
+                 class="group relative bg-slate-900/90 hover:bg-slate-900 border ${slotData.active ? 'border-sky-500/60 shadow-[0_0_15px_rgba(56,189,248,0.12)]' : 'border-slate-800 opacity-70'} rounded-xl p-2 sm:p-2.5 transition flex items-center justify-between gap-2">
+              
+              <div class="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
+                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg ${slotData.active ? 'bg-sky-950/80 border border-sky-400/50 text-sky-300' : 'bg-slate-800/80 border border-slate-700 text-slate-500'} flex items-center justify-center text-base sm:text-lg shrink-0 shadow-inner group-hover:scale-105 transition">
+                  ${def.icon}
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider text-sky-400">${def.trName || def.name}</span>
+                    ${slotData.active ? '<span class="px-1.5 py-0.2 rounded text-[8px] font-bold bg-sky-950 text-sky-300 border border-sky-600/40">AKTİF</span>' : '<span class="px-1.5 py-0.2 rounded text-[8px] font-bold bg-slate-800 text-slate-400 border border-slate-700">PASİF</span>'}
+                  </div>
+                  <div class="text-xs font-bold text-white truncate group-hover:text-amber-300 transition" title="${slotData.name}">
+                    ${slotData.name}
+                  </div>
+                  <div class="text-[9px] sm:text-[10px] text-slate-400 truncate flex items-center gap-2">
+                    ${slotData.desc ? `<span class="truncate max-w-[120px] sm:max-w-[160px]">${slotData.desc}</span>` : ''}
+                    <span class="font-mono text-slate-500">${slotData.weight ? slotData.weight + ' lb' : ''}</span>
+                    <span class="font-mono text-amber-400/80">${slotData.cost ? slotData.cost + ' GP' : ''}</span>
+                  </div>
+                  ${conflictNotice}
+                </div>
+              </div>
+
+              <div class="flex items-center gap-1 shrink-0">
+                <input type="checkbox" ${slotData.active ? 'checked' : ''} onchange="toggleSlotActive('${slotKey}')" title="Aktif / Pasif yap" class="w-4 h-4 rounded text-sky-500 border-slate-700 bg-slate-950 focus:ring-0 cursor-pointer">
+                <button onclick="openSlotEquipModal('${slotKey}')" title="Eşyayı Değiştir" class="p-1 rounded bg-slate-800 hover:bg-sky-900/60 text-slate-300 hover:text-sky-200 border border-slate-700 hover:border-sky-500 transition text-xs">
+                  🔄
+                </button>
+                <button onclick="unequipSlot('${slotKey}')" title="Çıkar (Envantere Gönder)" class="p-1 rounded bg-rose-950/60 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800 transition text-xs">
+                  ❌
+                </button>
+              </div>
+            </div>
+          `;
+        } else {
+          return `
+            <div data-slot="${slotKey}"
+                 onclick="openSlotEquipModal('${slotKey}')"
+                 onmouseenter="highlightSlotNode('${slotKey}', true)"
+                 onmouseleave="highlightSlotNode('${slotKey}', false)"
+                 class="group relative bg-slate-900/40 hover:bg-slate-900/80 border border-dashed border-slate-800 hover:border-sky-500/60 rounded-xl p-2 sm:p-2.5 transition flex items-center justify-between gap-2 cursor-pointer">
+              
+              <div class="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-slate-950/70 border border-slate-800 text-slate-600 flex items-center justify-center text-base sm:text-lg shrink-0 group-hover:text-sky-400 group-hover:border-sky-500/50 transition">
+                  ${def.icon}
+                </div>
+                <div class="min-w-0">
+                  <div class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500 group-hover:text-slate-400 transition">${def.trName || def.name}</div>
+                  <div class="text-xs text-slate-500 italic group-hover:text-sky-300 transition">(Boş Yuva)</div>
+                </div>
+              </div>
+
+              <button type="button" class="px-2 py-1 rounded bg-sky-950/70 group-hover:bg-sky-600 border border-sky-700/60 text-sky-300 group-hover:text-white text-[10px] sm:text-[11px] font-bold transition flex items-center gap-1 shadow-sm">
+                <span>+ Kuşan</span>
+              </button>
+            </div>
+          `;
+        }
+      }
+
+      // Render Left & Right columns
+      leftContainer.innerHTML = LEFT_KEYS.map(k => buildCardHtml(k, false)).join('');
+      rightContainer.innerHTML = RIGHT_KEYS.map(k => buildCardHtml(k, true)).join('');
+
+      // Render Center Figure SVG or Avatar
+      figureContainer.innerHTML = getSilhouetteSvg(selectedSilhouetteModel, character);
+
+      // Meta and controls
+      if (modelSelect) modelSelect.value = selectedSilhouetteModel;
+      if (charTag) charTag.textContent = `${character.race || 'Human'} • ${character.gender || 'Erkek'} • ${character.classes || 'Adventurer'}`;
+      if (activeCountEl) activeCountEl.textContent = `${activeOccupiedCount} / 14 Aktif`;
+
+      const labels = {
+        'auto': 'Otomatik Dinamik Form',
+        'human_male': 'İnsan Savaşçı Duruşu',
+        'human_female': 'Kadın Kahraman Duruşu',
+        'elf': 'Elf Büyücü / Korucu',
+        'dwarf': 'Cüce Savaşçı / Geniş',
+        'halfling': 'Buçukluk / Minyon',
+        'goliath': 'Goliath Heybetli Duruş',
+        'thrikreen': 'Thri-Kreen 4 Kollu',
+        'warforged': 'Warforged Zırhlı Yapay',
+        'avatar': 'Özel Karakter Portresi'
+      };
+      if (modelLabel) modelLabel.textContent = labels[selectedSilhouetteModel] || 'Özel Duruş';
+
+      // Bottom Dock: Weapons & Carrying Capacity HUD
+      if (bottomDock) {
+        const mh = character.bodySlots?.mainHand || {};
+        const oh = character.bodySlots?.offHand || {};
+        const mhHas = mh.name && mh.name !== '-';
+        const ohHas = oh.name && oh.name !== '-';
+
+        // Un-equipped weapons in pool available to draw
+        const readyWeapons = (character.gearPool || []).filter(item => !item.isEquipped && (item.category === 'Weapon' || item.category === 'Shield'));
+
+        bottomDock.innerHTML = `
+          <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="text-amber-400 text-sm">⚔️</span>
+              <span class="text-xs font-bold text-amber-300 uppercase tracking-wider">Silahlar ve Hızlı Donanım:</span>
+            </div>
+
+            <!-- Weapon Quick Slots -->
+            <div class="flex items-center gap-2 flex-wrap flex-1 min-w-0">
+              <!-- Main Hand Badge -->
+              <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg ${mhHas ? 'bg-slate-950 border border-sky-500/60 text-white' : 'bg-slate-950/60 border border-slate-800 text-slate-500'} text-xs">
+                <span class="text-sky-400 font-bold text-[10px]">ANA EL:</span>
+                <span class="font-bold truncate max-w-[140px]">${mhHas ? mh.name : '(Silahsız)'}</span>
+                ${mhHas ? `<button onclick="unequipSlot('mainHand')" title="Çıkar" class="text-rose-400 hover:text-white text-[10px] ml-1">✕</button>` : ''}
+              </div>
+
+              <!-- Off Hand Badge -->
+              <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg ${ohHas ? 'bg-slate-950 border border-amber-500/60 text-white' : 'bg-slate-950/60 border border-slate-800 text-slate-500'} text-xs">
+                <span class="text-amber-400 font-bold text-[10px]">İKİNCİ EL:</span>
+                <span class="font-bold truncate max-w-[140px]">${ohHas ? oh.name : '(Boş)'}</span>
+                ${ohHas ? `<button onclick="unequipSlot('offHand')" title="Çıkar" class="text-rose-400 hover:text-white text-[10px] ml-1">✕</button>` : ''}
+              </div>
+
+              <!-- Quick Draw Weapons from Pool -->
+              ${readyWeapons.slice(0, 3).map(w => `
+                <button onclick="equipPoolItem(${w.id})" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-500 text-slate-300 hover:text-white text-[11px] font-medium transition flex items-center gap-1.5 shrink-0" title="Hızlıca Kuşan">
+                  <span>⚡</span>
+                  <span class="truncate max-w-[110px]">${w.name}</span>
+                </button>
+              `).join('')}
+            </div>
+
+            <!-- Quick Add Link -->
+            <div class="flex items-center gap-2 shrink-0">
+              <button onclick="openAddPoolItemModal()" class="px-3 py-1 rounded-lg bg-amber-600/90 hover:bg-amber-500 text-white text-xs font-bold transition flex items-center gap-1 shadow">
+                <span>➕</span>
+                <span>Eşya Ekle</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // ====================================================
+    // 👑 BODY SLOT QUICK EQUIP MODAL
+    // ====================================================
+    function openSlotEquipModal(slotKey) {
+      _currentEquipSlotKey = slotKey;
+      const modal = document.getElementById('slot-equip-modal');
+      const def = BODY_SLOT_DEFS.find(d => d.key === slotKey);
+      if (!modal || !def) return;
+
+      const titleEl = document.getElementById('slot-equip-modal-title');
+      const iconEl = document.getElementById('slot-equip-modal-icon');
+      const subEl = document.getElementById('slot-equip-modal-subtitle');
+
+      if (titleEl) titleEl.textContent = `${def.trName || def.name} Yuvası İçin Eşya Kuşan`;
+      if (iconEl) iconEl.textContent = def.icon;
+      if (subEl) subEl.textContent = `İzin verilen kategoriler: ${def.allowed.join(', ')}`;
+
+      renderSlotEquipItems();
+      modal.classList.remove('hidden');
+    }
+
+    function closeSlotEquipModal() {
+      const modal = document.getElementById('slot-equip-modal');
+      if (modal) modal.classList.add('hidden');
+      _currentEquipSlotKey = null;
+    }
+
+    function renderSlotEquipItems() {
+      const container = document.getElementById('slot-equip-modal-items');
+      if (!container || !_currentEquipSlotKey) return;
+
+      const def = BODY_SLOT_DEFS.find(d => d.key === _currentEquipSlotKey);
+      const showAll = document.getElementById('slot-equip-show-all')?.checked || false;
+
+      const pool = character.gearPool || [];
+      const eligible = pool.filter(item => {
+        if (item.isEquipped) return false;
+        if (showAll) return true;
+        if (!def) return true;
+
+        const cat = (item.category || '').toLowerCase().trim();
+        const slotName = (def.name || '').toLowerCase().trim();
+        const allowedLower = (def.allowed || []).map(a => a.toLowerCase().trim());
+
+        if (allowedLower.includes(cat) || cat === slotName) return true;
+        if (_currentEquipSlotKey === 'mainHand' && cat === 'weapon') return true;
+        if (_currentEquipSlotKey === 'offHand' && (cat === 'weapon' || cat === 'shield')) return true;
+        if ((_currentEquipSlotKey === 'ring1' || _currentEquipSlotKey === 'ring2') && cat === 'ring') return true;
+        return false;
+      });
+
+      if (eligible.length === 0) {
+        container.innerHTML = `
+          <div class="py-8 text-center space-y-3">
+            <div class="text-3xl text-slate-600">🎒</div>
+            <p class="text-xs text-slate-400">
+              Envanter havuzunuzda <strong>${def?.trName || def?.name || 'bu yuva'}</strong> için uygun eşya bulunamadı.
+            </p>
+            <div class="pt-2">
+              <button onclick="closeSlotEquipModal(); openAddPoolItemModal();" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold transition shadow">
+                ➕ Envantere Yeni Eşya Ekle
+              </button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = eligible.map(item => `
+        <div class="p-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 hover:border-sky-500/60 transition flex items-center justify-between gap-3">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-white">${item.name}</span>
+              <span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-800/60">${item.category}</span>
+            </div>
+            <div class="text-[10px] text-slate-400 truncate mt-0.5">${item.desc || 'Özellik belirtilmemiş'}</div>
+            <div class="text-[9px] text-slate-500 flex items-center gap-2 mt-0.5">
+              <span>Ağırlık: <strong class="text-slate-300 font-mono">${item.weight || 0} lb</strong></span>
+              <span>•</span>
+              <span>Değer: <strong class="text-amber-400 font-mono">${item.cost || 0} GP</strong></span>
+            </div>
+          </div>
+          <button onclick="equipPoolItem(${item.id}, '${_currentEquipSlotKey}'); closeSlotEquipModal();" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1 shrink-0">
+            <span>⚡ Kuşan</span>
+          </button>
+        </div>
+      `).join('');
     }
 
     function toggleSlotActive(slotKey) {
@@ -10084,12 +10787,12 @@
     }
 
     // Equip item from pool into the correct body slot (Madde 8)
-    function equipPoolItem(itemId) {
+    function equipPoolItem(itemId, targetSlotKeyOverride = null) {
       const item = (character.gearPool || []).find(p => p.id === itemId);
       if (!item) return;
 
       const hasOversized = RuleEngine.hasOversizedWeaponFeat(character);
-      let targetSlotKey = null;
+      let targetSlotKey = targetSlotKeyOverride || null;
       let twoHandWarningMsg = null;
 
       if (item.category === 'Weapon') {
@@ -10107,7 +10810,7 @@
             unequipSlot('offHand');
             twoHandWarningMsg = `⚠️ "${item.name}" iki elli (Two-Handed) bir silahtır! 'Oversized Two-Weapon Fighting' veya 'Monkey Grip' feat'iniz olmadığı için iki elinizi de kaplar. İkinci elinizdeki "${prevOhName}" otomatik olarak çıkarıldı.`;
           }
-        } else {
+        } else if (!targetSlotKey) {
           // One-handed or light weapon (e.g. Rapier)
           if (!mh || !mh.name || mh.name === '-') {
             targetSlotKey = 'mainHand';
@@ -10139,15 +10842,17 @@
             return; // User canceled
           }
         }
-        targetSlotKey = 'offHand';
+        targetSlotKey = targetSlotKeyOverride || 'offHand';
       } else if (item.category === 'Ring') {
-        const r1 = character.bodySlots?.ring1;
-        if (!r1 || !r1.name || r1.name === '-') {
-          targetSlotKey = 'ring1';
-        } else {
-          targetSlotKey = 'ring2';
+        if (!targetSlotKey) {
+          const r1 = character.bodySlots?.ring1;
+          if (!r1 || !r1.name || r1.name === '-') {
+            targetSlotKey = 'ring1';
+          } else {
+            targetSlotKey = 'ring2';
+          }
         }
-      } else {
+      } else if (!targetSlotKey) {
         const match = BODY_SLOT_DEFS.find(def => def.name.toLowerCase() === item.category.toLowerCase() || def.allowed.includes(item.category));
         if (match) targetSlotKey = match.key;
       }
