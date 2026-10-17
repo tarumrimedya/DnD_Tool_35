@@ -952,7 +952,7 @@
                 <div class="absolute inset-0 bg-radial-gradient from-sky-500/10 via-amber-500/5 to-transparent rounded-2xl pointer-events-none -z-0"></div>
                 
                 <!-- Silhouette Display Container -->
-                <div id="sil-figure-container" class="relative z-10 w-full max-w-[420px] h-[520px] flex items-center justify-center transition-all duration-300">
+                <div id="sil-figure-container" class="relative z-10 w-full max-w-[440px] h-[520px] flex items-center justify-center transition-all duration-300">
                   <!-- SVG or Image will be injected here -->
                 </div>
 
@@ -960,7 +960,7 @@
                 <div class="mt-2 text-center z-10">
                   <span id="sil-model-name-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900/90 border border-slate-700/80 text-[11px] font-semibold text-slate-300 shadow">
                     <span>⚔️</span>
-                    <span id="sil-model-label">Savaşçı Duruşu</span>
+                    <span id="sil-model-label">D&D 3.5e Magic Item Record Sheet</span>
                   </span>
                 </div>
               </div>
@@ -10150,26 +10150,26 @@
 
     function getSilhouetteSvg(modelKey, character) {
       // D&D 3.5e Magic Item Record Sheet Standard Fantasy Warrior Mannequin (460 x 520 Canvas)
-      // Strictly Monotonic Anatomical Anchors:
-      // Left 6 Y-coords: 62 < 88 < 145 < 220 < 275 < 335 (all cx <= 220)
-      // Right 6 Y-coords: 110 < 175 < 240 < 290 < 335 < 470 (all cx >= 242)
+      // Strictly Monotonic Anatomical Anchors calibrated to hero_composed.jpg:
+      // Left 6 Y-coords: 48 < 82 < 145 < 205 < 250 < 285 (all cx <= 226)
+      // Right 6 Y-coords: 115 < 170 < 225 < 270 < 300 < 475 (all cx >= 245)
       // Card Slot Y-coords: 40 < 120 < 200 < 280 < 360 < 440
-      // GUARANTEED ZERO INTERSECTING / CROSSING LINES!
+      // GUARANTEED ZERO INTERSECTING / CROSSING LINES & ZERO FLOATING POINTS!
       const nodes = {
         // SOL (6 Yuva):
-        head: { cx: 218, cy: 62, label: 'Baş / Miğfer (Head)' },
-        eyes: { cx: 220, cy: 88, label: 'Göz / Gözlük (Eyes)' },
+        head: { cx: 224, cy: 48, label: 'Baş / Miğfer (Head)' },
+        eyes: { cx: 226, cy: 82, label: 'Göz / Gözlük (Eyes)' },
         shoulders: { cx: 175, cy: 145, label: 'Omuz / Pelerin (Shoulders)' },
-        torso: { cx: 212, cy: 220, label: 'Göğüs / Yelek (Torso)' },
-        belt: { cx: 205, cy: 275, label: 'Kemer / Bel (Belt)' },
-        ring1: { cx: 125, cy: 335, label: 'Sol Yüzük (Left Ring)' },
+        torso: { cx: 210, cy: 205, label: 'Göğüs / Yelek (Torso)' },
+        belt: { cx: 215, cy: 250, label: 'Kemer / Bel (Belt)' },
+        ring1: { cx: 126, cy: 285, label: 'Sol Yüzük (Left Ring)' },
         // SAĞ (6 Yuva):
-        neck: { cx: 242, cy: 110, label: 'Boyun / Kolye (Neck)' },
-        armor: { cx: 250, cy: 175, label: 'Gövde Zırhı (Armor)' },
-        bracers: { cx: 320, cy: 240, label: 'Kollar / Bileklik (Bracers)' },
-        gloves: { cx: 335, cy: 290, label: 'Eller / Eldiven (Gloves)' },
-        ring2: { cx: 340, cy: 335, label: 'Sağ Yüzük (Right Ring)' },
-        boots: { cx: 280, cy: 470, label: 'Ayaklar / Çizme (Boots)' }
+        neck: { cx: 245, cy: 115, label: 'Boyun / Kolye (Neck)' },
+        armor: { cx: 255, cy: 170, label: 'Gövde Zırhı (Armor)' },
+        bracers: { cx: 328, cy: 225, label: 'Kollar / Bileklik (Bracers)' },
+        gloves: { cx: 338, cy: 270, label: 'Eller / Eldiven (Gloves)' },
+        ring2: { cx: 345, cy: 300, label: 'Sağ Yüzük (Right Ring)' },
+        boots: { cx: 285, cy: 475, label: 'Ayaklar / Çizme (Boots)' }
       };
 
       const imgSrc = window.HERO_SILHOUETTE_DATA_URI || 'hero_silhouette.jpg';
@@ -10189,7 +10189,7 @@
         const isOccupied = character?.bodySlots?.[slotKey]?.name && character?.bodySlots?.[slotKey]?.name !== '-';
         const isActive = character?.bodySlots?.[slotKey]?.active;
         const color = isActive ? '#38bdf8' : (isOccupied ? '#f59e0b' : '#64748b');
-        const opacity = isActive ? '0.75' : (isOccupied ? '0.5' : '0.25');
+        const opacity = isActive ? '0.85' : (isOccupied ? '0.6' : '0.35');
         const width = isActive ? '2' : '1.3';
 
         linesMarkup += `
@@ -10209,7 +10209,7 @@
         const isOccupied = character?.bodySlots?.[slotKey]?.name && character?.bodySlots?.[slotKey]?.name !== '-';
         const isActive = character?.bodySlots?.[slotKey]?.active;
         const color = isActive ? '#38bdf8' : (isOccupied ? '#f59e0b' : '#64748b');
-        const opacity = isActive ? '0.75' : (isOccupied ? '0.5' : '0.25');
+        const opacity = isActive ? '0.85' : (isOccupied ? '0.6' : '0.35');
         const width = isActive ? '2' : '1.3';
 
         linesMarkup += `
@@ -10232,7 +10232,7 @@
         nodesMarkup += `
           <g class="slot-anchor-node cursor-pointer group" onclick="openSlotEquipModal('${slotKey}')">
             <!-- Subtle ambient static halo (No pulsing/pinging) -->
-            <circle id="sil-halo-${slotKey}" cx="${pt.cx}" cy="${pt.cy}" r="9" fill="${color}" fill-opacity="0.18" stroke="${color}" stroke-opacity="0.35" stroke-width="1" class="transition-all duration-300 pointer-events-none"/>
+            <circle id="sil-halo-${slotKey}" cx="${pt.cx}" cy="${pt.cy}" r="9" fill="${color}" fill-opacity="0.22" stroke="${color}" stroke-opacity="0.4" stroke-width="1" class="transition-all duration-300 pointer-events-none"/>
             <!-- Interactive Node Circle -->
             <circle id="sil-node-${slotKey}" cx="${pt.cx}" cy="${pt.cy}" r="5" fill="${color}" stroke="#0b1329" stroke-width="1.8" class="transition-all duration-300 group-hover:scale-125"/>
             <!-- Crisp specular center glint -->
@@ -10243,19 +10243,16 @@
       });
 
       return `
-        <div class="relative w-full h-full rounded-2xl overflow-hidden flex items-center justify-center select-none bg-gradient-to-b from-[#060c1d] via-[#091124] to-[#040814] shadow-[0_0_50px_rgba(56,189,248,0.22)] border border-sky-500/40">
-          <!-- Ambient radial spotlight like in the concept taslak -->
+        <div class="relative w-full h-full rounded-2xl overflow-hidden select-none bg-gradient-to-b from-[#060c1d] via-[#091124] to-[#040814] shadow-[0_0_50px_rgba(56,189,248,0.22)] border border-sky-500/40 flex items-center justify-center">
+          <!-- Ambient radial spotlight -->
           <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_35%,rgba(56,189,248,0.18)_0%,rgba(245,158,11,0.06)_45%,transparent_75%)] pointer-events-none"></div>
 
-          <!-- Center Silhouette Image -->
-          <img src="${imgSrc}" onerror="if(window.HERO_SILHOUETTE_DATA_URI && this.src !== window.HERO_SILHOUETTE_DATA_URI) this.src = window.HERO_SILHOUETTE_DATA_URI;" alt="D&D Warrior Silhouette" class="w-auto h-[92%] max-w-[240px] object-contain filter contrast-125 brightness-110 pointer-events-none drop-shadow-[0_0_30px_rgba(56,189,248,0.35)] transition-all duration-300">
-          
-          <!-- Subtle tech horizontal scan vignette -->
-          <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/40 pointer-events-none"></div>
-          <div class="absolute inset-0 bg-gradient-to-r from-slate-950/60 via-transparent to-slate-950/60 pointer-events-none"></div>
+          <!-- Seamless Unified SVG: image + connector lines + anatomical nodes share identical 460 x 520 coordinate space -->
+          <svg viewBox="0 0 460 520" preserveAspectRatio="none" class="w-full h-full pointer-events-none select-none">
+            <!-- High-Res Silhouette Background Image -->
+            <image href="${imgSrc}" xlink:href="${imgSrc}" x="0" y="0" width="460" height="520" preserveAspectRatio="none" class="pointer-events-none filter contrast-110 brightness-105" />
 
-          <!-- Continuous SVG Spline Connections & Interactive Nodes (460 x 520) -->
-          <svg viewBox="0 0 460 520" preserveAspectRatio="none" class="absolute inset-0 w-full h-full pointer-events-none">
+            <!-- Interactive Splines & Hotspot Nodes -->
             <g class="pointer-events-auto">
               ${linesMarkup}
               ${nodesMarkup}
