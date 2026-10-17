@@ -804,6 +804,7 @@ const RuleEngine = {
       }
 
       itemsToProcess.forEach(item => {
+        if (!item) return;
         // When parent has children, skip container-level values that are superseded by children
         if (item === buff && hasChildren) return;
 

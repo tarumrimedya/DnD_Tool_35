@@ -4065,30 +4065,41 @@
 
       // Recalculate RAW D&D 3.5e character state, equipment bonuses, and active buffs
       if (typeof RuleEngine !== 'undefined' && RuleEngine.recalculateCharacter) {
-        RuleEngine.recalculateCharacter(character, (typeof masterDb !== 'undefined' ? masterDb : []), {
-          combatExpertise: parseInt(document.getElementById('combat-expertise-val')?.value) || 0,
-          fightingDefensively: document.getElementById('mod-defensive-fighting')?.checked || false,
-          totalDefense: document.getElementById('mod-total-defense')?.checked || false,
-          charge: document.getElementById('mod-charge')?.checked || false
-        });
+        try {
+          RuleEngine.recalculateCharacter(character, (typeof masterDb !== 'undefined' ? masterDb : []), {
+            combatExpertise: parseInt(document.getElementById('combat-expertise-val')?.value) || 0,
+            fightingDefensively: document.getElementById('mod-defensive-fighting')?.checked || false,
+            totalDefense: document.getElementById('mod-total-defense')?.checked || false,
+            charge: document.getElementById('mod-charge')?.checked || false
+          });
+        } catch (e) {
+          console.error('recalculateCharacter error:', e);
+        }
       }
 
-      renderHUD();
-      renderCharacterProfile();
-      renderWeapons();
-      renderActiveModifiers();
-      renderActiveBuffs();
-      renderSpellSlots();
-      renderManeuvers();
-      renderKnownSpells();
-      renderAbilities();
-      renderSkills();
-      renderLevelProgression();
-      renderDefenseBreakdown();
-      renderInventory();
-      renderConsumables();
-      renderMasterDbTable();
-      renderDiceHistory();
+      // 1. Core Hero HUD & Abilities (Rendered first so top bar and stats never fail)
+      try { renderHUD(); } catch (e) { console.error('renderHUD error:', e); }
+      try { renderAbilities(); } catch (e) { console.error('renderAbilities error:', e); }
+      try { renderCharacterProfile(); } catch (e) { console.error('renderCharacterProfile error:', e); }
+
+      // 2. Combat & Tactical Cockpit
+      try { renderWeapons(); } catch (e) { console.error('renderWeapons error:', e); }
+      try { renderActiveModifiers(); } catch (e) { console.error('renderActiveModifiers error:', e); }
+      try { renderActiveBuffs(); } catch (e) { console.error('renderActiveBuffs error:', e); }
+
+      // 3. Spells & Maneuvers
+      try { renderSpellSlots(); } catch (e) { console.error('renderSpellSlots error:', e); }
+      try { renderManeuvers(); } catch (e) { console.error('renderManeuvers error:', e); }
+      try { renderKnownSpells(); } catch (e) { console.error('renderKnownSpells error:', e); }
+
+      // 4. Skills, Defense, Gear & Library
+      try { renderSkills(); } catch (e) { console.error('renderSkills error:', e); }
+      try { renderLevelProgression(); } catch (e) { console.error('renderLevelProgression error:', e); }
+      try { renderDefenseBreakdown(); } catch (e) { console.error('renderDefenseBreakdown error:', e); }
+      try { renderInventory(); } catch (e) { console.error('renderInventory error:', e); }
+      try { renderConsumables(); } catch (e) { console.error('renderConsumables error:', e); }
+      try { renderMasterDbTable(); } catch (e) { console.error('renderMasterDbTable error:', e); }
+      try { renderDiceHistory(); } catch (e) { console.error('renderDiceHistory error:', e); }
     }
 
     function renderHUD() {
@@ -6982,12 +6993,14 @@
 
     // Abilities Grid & Bio Summary
     function renderAbilities() {
+      if (!character) return;
+
       // Bio summary
       if (document.getElementById('core-name')) document.getElementById('core-name').textContent = character.name || 'İsimsiz Kahraman';
       if (document.getElementById('core-race')) document.getElementById('core-race').textContent = character.race || 'Human';
       if (document.getElementById('core-classes')) document.getElementById('core-classes').textContent = (character.classes || 'Fighter 1') + ` • Seviye ${character.level || 1}`;
       if (document.getElementById('core-bab')) document.getElementById('core-bab').textContent = '+' + (character.bab || 0);
-      if (document.getElementById('core-speed')) document.getElementById('core-speed').textContent = (character.baseSpeed || 30) + ' ft';
+      if (document.getElementById('core-speed')) document.getElementById('core-speed').textContent = (character.effectiveSpeed || character.baseSpeed || 30) + ' ft';
       if (document.getElementById('core-hd')) document.getElementById('core-hd').textContent = character.hitDie || 'd8';
 
       // Ability scores
@@ -7004,21 +7017,32 @@
         ];
 
         stats.forEach(s => {
-          const score = character.abilities?.[s.key] || 10;
-          const base = character.baseAbilities?.[s.key] || score;
+          const score = Number(character.abilities?.[s.key]) || 10;
+          const base = Number(character.baseAbilities?.[s.key]) || score;
           const bonusDiff = score - base;
-          const mod = RuleEngine.getAbilityMod(score);
-          const sourcesList = character.abilitySources?.[s.key] || [];
-          const sourceText = sourcesList.map(src => `${src.source} (${src.val >= 0 ? '+' + src.val : src.val})`).join(', ');
+          const mod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
+            ? RuleEngine.getAbilityMod(score)
+            : Math.floor((score - 10) / 2);
+
+          const sourcesList = Array.isArray(character.abilitySources?.[s.key]) ? character.abilitySources[s.key] : [];
+          const sourceText = sourcesList
+            .filter(src => src && (src.source || src.name))
+            .map(src => {
+              const srcName = src.source || src.name || 'Bonus';
+              const val = src.val !== undefined ? src.val : (src.value !== undefined ? src.value : 0);
+              return `${srcName} (${val >= 0 ? '+' + val : val})`;
+            })
+            .join(', ');
+
           const div = document.createElement('div');
-          div.className = 'bg-slate-900 border border-slate-700 rounded-xl p-2.5 flex flex-col justify-between';
+          div.className = 'bg-slate-900 border border-slate-700 rounded-xl p-2 sm:p-2.5 flex flex-col justify-between shadow-sm';
           if (sourceText) div.title = `Bonus Kaynakları: ${sourceText}`;
           div.innerHTML = `
             <div class="flex items-center justify-between">
               <span class="text-[10px] font-bold text-slate-400 uppercase">${s.label}</span>
               ${bonusDiff !== 0 ? `<span class="text-[9px] font-mono px-1 rounded ${bonusDiff > 0 ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-rose-950 text-rose-400 border border-rose-800'}">${bonusDiff > 0 ? '+' + bonusDiff : bonusDiff}</span>` : ''}
             </div>
-            <div class="text-xl font-black text-amber-400 font-mono my-0.5">${score}</div>
+            <div class="text-xl sm:text-2xl font-black text-amber-400 font-mono my-0.5">${score}</div>
             <div class="flex items-center justify-between text-xs font-mono">
               <span class="${mod >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold">${mod >= 0 ? '+' : ''}${mod}</span>
               ${bonusDiff !== 0 ? `<span class="text-[9px] text-slate-500 font-sans">Taban: ${base}</span>` : ''}
@@ -7039,8 +7063,9 @@
         ];
 
         allFeats.forEach(f => {
+          if (!f || !f.name) return;
           const btn = document.createElement('button');
-          btn.className = 'px-3 py-1 rounded-lg bg-indigo-950/70 hover:bg-indigo-900 border border-indigo-700/60 hover:border-indigo-500 text-indigo-200 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition transform active:scale-95 shadow-sm';
+          btn.className = 'px-2.5 sm:px-3 py-1 rounded-lg bg-indigo-950/70 hover:bg-indigo-900 border border-indigo-700/60 hover:border-indigo-500 text-indigo-200 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition transform active:scale-95 shadow-sm';
           btn.title = 'Kural detayını açmak için tıklayın';
           btn.innerHTML = `<span>✨</span><span>${f.name}</span>`;
           btn.onclick = () => showFeatDetail(f.name);
@@ -8494,7 +8519,7 @@
                 <span class="text-[10px] text-slate-400 group-open:rotate-180 transition-transform">▼</span>
               </summary>
               <div class="mt-2 pl-2 border-l-2 border-rose-500/40 space-y-1">
-                ${buff.children.map(c => {
+                ${buff.children.filter(c => c && c.name).map(c => {
                   const cMods = [];
                   if (c.attBonus) cMods.push(`${c.attBonus} Atk`);
                   if (c.dmgBonus) cMods.push(`${c.dmgBonus} Dmg`);
