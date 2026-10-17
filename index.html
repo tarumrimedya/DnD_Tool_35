@@ -750,12 +750,12 @@
           </div>
         </div>
 
-        <!-- LEVEL PROGRESSION & EVOLUTION (lvl_up - Madde 1, 2, 3, 12) -->
+        <!-- LEVEL PROGRESSION & EVOLUTION (lvl_up - Madde 1, 2, 3, 12, Unearthed Arcana Fractional & Level Planning) -->
         <div class="border border-slate-800 rounded-xl overflow-hidden mt-4">
           <div class="bg-slate-900 px-3 py-2.5 text-xs font-bold text-emerald-400 flex flex-wrap justify-between items-center gap-2">
             <div class="flex items-center gap-2">
               <span>📈</span>
-              <span>SEVİYE GELİŞİMİ VE İLERLEME TABLOSU (LEVEL UP)</span>
+              <span>SEVİYE GELİŞİMİ VE İLERLEME TABLOSU (LEVEL UP & PLANNING 1-30)</span>
             </div>
             <div class="flex flex-wrap items-center gap-2">
               <div class="hidden md:flex items-center gap-2 text-[11px] font-normal text-slate-300 mr-2">
@@ -769,25 +769,33 @@
               </button>
               <button onclick="openLevelUpModal()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg shadow flex items-center gap-1.5 transition">
                 <span>⬆️</span>
-                <span>Seviye Atla (Level Up)</span>
+                <span>Seviye Atla / Planla (Level Up)</span>
               </button>
             </div>
           </div>
+
+          <!-- LEVEL PROGRESSION HUD SUMMARY BAR -->
+          <div id="level-progression-hud" class="bg-slate-950 px-3 py-2 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <!-- Dynamically populated by renderLevelProgression -->
+          </div>
+
           <div class="overflow-x-auto">
             <table class="w-full text-left text-xs">
               <thead class="bg-slate-950 text-slate-400 text-[10px] uppercase font-bold border-b border-slate-800">
                 <tr>
-                  <th class="py-2 px-2.5 text-center w-12">Lvl</th>
-                  <th class="py-2 px-3">Sınıf</th>
-                  <th class="py-2 px-2.5 text-center">HD</th>
-                  <th class="py-2 px-2.5 text-center">HP Artışı</th>
-                  <th class="py-2 px-2.5 text-center">BAB</th>
-                  <th class="py-2 px-2.5 text-center">Fort</th>
-                  <th class="py-2 px-2.5 text-center">Ref</th>
-                  <th class="py-2 px-2.5 text-center">Will</th>
-                  <th class="py-2 px-2.5 text-center">Skill Pts</th>
-                  <th class="py-2 px-3">Kazanılan Feat / Yetenekler</th>
-                  <th class="py-2 px-3">Notlar</th>
+                  <th class="py-2 px-2 text-center w-10">Lvl</th>
+                  <th class="py-2 px-2 text-center w-20">Durum</th>
+                  <th class="py-2 px-3">Sınıf & Seviye</th>
+                  <th class="py-2 px-2 text-center w-12">HD</th>
+                  <th class="py-2 px-2 text-center w-14">HP Artışı</th>
+                  <th class="py-2 px-2 text-center w-12">BAB</th>
+                  <th class="py-2 px-2 text-center w-12">Fort</th>
+                  <th class="py-2 px-2 text-center w-12">Ref</th>
+                  <th class="py-2 px-2 text-center w-12">Will</th>
+                  <th class="py-2 px-2 text-center w-14">Skill Pts</th>
+                  <th class="py-2 px-3">Kazanılan Feat(ler)</th>
+                  <th class="py-2 px-3">Sınıf Özellikleri & Notlar</th>
+                  <th class="py-2 px-2 text-center w-14">İşlem</th>
                 </tr>
               </thead>
               <tbody id="level-progression-tbody" class="divide-y divide-slate-800 font-mono text-[11px]">
@@ -3057,6 +3065,20 @@
               <input type="number" id="lvlup-skill-input" value="6" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-center font-mono font-bold text-indigo-300">
             </div>
           </div>
+
+          <!-- Auto-Populated Class Features Preview Box -->
+          <div id="lvlup-auto-features-box" class="p-2.5 rounded-lg bg-slate-950 border border-emerald-500/40 space-y-1.5 mt-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-bold text-emerald-400 uppercase flex items-center gap-1.5">
+                <span>🎁</span>
+                <span>Bu Sınıf Seviyesinde Otomatik Kazanılan Özellikler</span>
+              </span>
+              <span id="lvlup-auto-features-count" class="badge bg-emerald-950 text-emerald-300 border border-emerald-600 text-[9px] font-bold">0 Özellik</span>
+            </div>
+            <div id="lvlup-auto-features-list" class="flex flex-wrap gap-1.5 text-xs text-slate-300">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
         </div>
 
         <!-- Step 2: Hit Points Roll / Average -->
@@ -3114,53 +3136,27 @@
           </div>
         </div>
 
-        <!-- Step 4: Feat, DM Lütfu (Boon) & Kusur (Flaw) Seçimi -->
+        <!-- Step 4: Feat, DM Lütfu (Boon) & Kusur (Flaw) Seçimi (Çoklu Feat / Roster) -->
         <div class="bg-slate-900/90 border border-purple-500/50 rounded-xl p-3 space-y-2.5">
-          <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-purple-900/50 pb-2">
             <div>
               <div class="text-[11px] font-bold text-purple-400 uppercase tracking-wide flex items-center gap-1.5">
-                <span>4. Feat, DM Lütfu (Boon) & Kusur Seçimi</span>
+                <span>🎖️ 4. Feat, DM Lütfu & Kusur Seçimi (Roster / Çoklu Feat)</span>
                 <span id="lvlup-feat-status-badge" class="badge bg-emerald-950 text-emerald-300 border border-emerald-600 text-[9px]">Feat Hakkı Var</span>
               </div>
-              <div id="lvlup-feat-hint" class="text-[10px] text-slate-400">Standart 3.5e kurallarında 1, 3, 6, 9, 12, 15, 18. seviyelerde Feat kazanılır.</div>
+              <div id="lvlup-feat-hint" class="text-[10px] text-slate-400">Bu seviyede kazanılan tüm hünerleri, sınıf bonuslarını ve lütufları tek adımda tanımlayabilirsiniz.</div>
             </div>
-            <button type="button" onclick="openFeatPickerModal(true)" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow flex items-center gap-1.5 transition">
-              <span>🎖️</span>
-              <span>Kütüphaneden Feat Seç</span>
-            </button>
-          </div>
-
-          <!-- Feat Type / Category Dropdown -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <div>
-              <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Kategori / Tür *</label>
-              <select id="lvlup-feat-type" onchange="onLevelUpFeatTypeChange()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-amber-300 font-bold">
-                <option value="Regular Feat">🎖️ Normal Feat (Regular Feat)</option>
-                <option value="Class Bonus Feat">⚔️ Sınıf Bonus Feati (Class Bonus Feat)</option>
-                <option value="DM Boon">🌟 DM Lütfu / Ödülü (DM Grant / Boon)</option>
-                <option value="Flaw">⚠️ Kusur / Flaw (Bonus Feat Karşılığı)</option>
-                <option value="Racial Trait">🧬 Irksal Yetenek (Racial Trait)</option>
-                <option value="Special Ability">✨ Özel Yetenek (Special Ability)</option>
-              </select>
-            </div>
-            <div class="sm:col-span-2">
-              <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1" id="lvlup-catalog-label">Katalogdan Hızlı Seçim</label>
-              <select id="lvlup-feat-select" onchange="onLevelUpFeatDropdownChange()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold">
-                <!-- Dynamically populated according to selected category -->
-              </select>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="addLevelUpFeatSlot()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[11px] px-2.5 py-1 rounded-lg shadow flex items-center gap-1 transition">
+                <span>➕</span>
+                <span>Ekstra Yuva Ekle</span>
+              </button>
             </div>
           </div>
 
-          <!-- Custom Name & Benefit Inputs -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <div>
-              <label class="block text-[9px] font-bold text-slate-400 uppercase mb-0.5">Feat / Boon / Yetenek Adı</label>
-              <input type="text" id="lvlup-feat-custom" placeholder="Seçilen veya yeni Feat/Boon adı..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold">
-            </div>
-            <div>
-              <label class="block text-[9px] font-bold text-slate-400 uppercase mb-0.5">Fayda / Etki Özeti (Benefit)</label>
-              <input type="text" id="lvlup-feat-benefit" placeholder="Örn: +2 Dodge AC, %25 AoE hasar direnci..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300">
-            </div>
+          <!-- Dynamic Multi-Feat Slots Container -->
+          <div id="lvlup-feat-slots-container" class="space-y-3">
+            <!-- Dynamically populated slot cards -->
           </div>
         </div>
 
@@ -3201,6 +3197,21 @@
         <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 space-y-1.5">
           <label class="block text-[11px] font-bold text-sky-400 uppercase tracking-wide">6. Sınıf Özellikleri & Seviye Notları</label>
           <input type="text" id="lvlup-notes-input" placeholder="Örn: Battle Ardor (+INT Crit Confirm), Uncanny Dodge, Yeni Büyü Yuvası..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white">
+        </div>
+
+        <!-- Step 7: Seviye Durumu (Active vs Planned Level Planning 1-30) -->
+        <div class="bg-slate-900/90 border border-emerald-500/40 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div class="text-[11px] font-bold text-emerald-300 uppercase tracking-wide flex items-center gap-1.5">
+              <span>📋</span>
+              <span>7. Seviye Durumu (Level Planning 1-30)</span>
+            </div>
+            <div class="text-[10px] text-slate-400">Bu seviyeyi hemen karakter statlarına yansıtın veya 30. seviyeye kadar gelecek planı olarak kaydedin.</div>
+          </div>
+          <label class="flex items-center gap-2 cursor-pointer bg-slate-950 px-3 py-1.5 rounded-lg border border-emerald-500/60 shadow-sm hover:border-emerald-400 transition">
+            <input type="checkbox" id="lvlup-is-active" checked class="w-4 h-4 text-emerald-500 rounded cursor-pointer">
+            <span class="text-xs font-bold text-emerald-300">✅ Hemen Aktif Yap (Statlara Yansır)</span>
+          </label>
         </div>
       </div>
 
@@ -4570,6 +4581,27 @@
               <input type="checkbox" id="setting-ignore-asf" onchange="onSettingIgnoreAsfChange()" class="w-4 h-4 rounded border-slate-700 text-emerald-500 focus:ring-0">
             </label>
 
+            <!-- 5. BAB & SAVE PROGRESSION (FRACTIONAL BAB/SAVE - UNEARTHED ARCANA) -->
+            <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5 hover:border-slate-700 transition">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <div class="font-bold text-sky-300 flex items-center gap-1.5 text-xs">
+                    <span>📐</span>
+                    <span>BAB & Save Hesaplama Sistemi</span>
+                    <span class="badge bg-sky-950 text-sky-300 border border-sky-700 text-[9px]">Unearthed Arcana</span>
+                  </div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Çoklu sınıflarda (Multiclass) kesirli BAB/Save ilerlemesi (Good BAB +1.0, Avg +0.75, Poor +0.5).</div>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <label class="text-[10px] font-bold text-sky-400 uppercase">📐 Kural:</label>
+                  <select id="setting-bab-save-system" onchange="onSettingBabSaveSystemChange()" class="bg-slate-900 border border-slate-700 text-sky-300 font-semibold text-[11px] rounded px-2 py-1 focus:outline-none focus:border-sky-400">
+                    <option value="fractional">Fractional (Unearthed Arcana - Kesirli)</option>
+                    <option value="standard">Standard Core 3.5e (Standart RAW)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
             <!-- 5. NO CRIT CONFIRM -->
             <label class="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
               <div>
@@ -4962,6 +4994,10 @@
       const asfChk = document.getElementById('setting-ignore-asf');
       if (asfChk) {
         asfChk.checked = character.settings?.ignoreAsf !== false;
+      }
+      const babSaveSel = document.getElementById('setting-bab-save-system');
+      if (babSaveSel) {
+        babSaveSel.value = character.settings?.babSaveSystem || 'fractional';
       }
 
       // Populate Rule Sources and Splatbooks Catalog
@@ -8501,8 +8537,21 @@
       }
     }
 
+    function onSettingBabSaveSystemChange() {
+      if (!character) return;
+      if (!character.settings) character.settings = {};
+      const sel = document.getElementById('setting-bab-save-system');
+      if (sel) {
+        character.settings.babSaveSystem = sel.value;
+        recalculateCharacterClassSummary();
+        saveStateToStorage(true);
+        renderLevelProgression();
+        renderAll();
+      }
+    }
+
     // D&D 3.5e Class Progression Reference Table
-    const DND35_CLASS_DEFS = {
+    const DND35_CLASS_DEFS = (typeof RuleEngine !== 'undefined' && RuleEngine.DND35_CLASS_DEFS) ? RuleEngine.DND35_CLASS_DEFS : {
       "Sorcerer": { hd: 4, bab: 0.5, fort: "poor", ref: "poor", will: "good", skills: 2 },
       "Wizard": { hd: 4, bab: 0.5, fort: "poor", ref: "poor", will: "good", skills: 2 },
       "Warblade": { hd: 12, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 4 },
@@ -8717,19 +8766,22 @@
       const isRacial = (entry.category === 'Racial Trait' || (entry.type && entry.type.toLowerCase().includes('racial')));
 
       if (isFeatPickerForLevelUp) {
-        const prog = character.levelProgression || [];
-        const nextLvl = prog.length + 1;
-        if (nextLvl > 1 && (isFlaw || isRacial)) {
-          alert(`⚠️ D&D 3.5e kuralları gereğince Irk ve Flaw (Kusur) özellikleri yalnızca 1. Seviye karakter yaratımında seçilebilir. Şu anda Seviye ${nextLvl} seviye atlama sihirbazındasınız.`);
-          return;
+        if (typeof levelUpModalFeatSlots !== 'undefined' && levelUpModalFeatSlots[activeFeatPickerSlotIndex]) {
+          levelUpModalFeatSlots[activeFeatPickerSlotIndex].name = entry.name;
+          levelUpModalFeatSlots[activeFeatPickerSlotIndex].benefit = entry.benefit || '';
+          if (entry.category === 'DM Boon' || entry.category === 'DM Grant') {
+            levelUpModalFeatSlots[activeFeatPickerSlotIndex].category = 'DM Boon';
+          } else if (entry.category === 'Flaw') {
+            levelUpModalFeatSlots[activeFeatPickerSlotIndex].category = 'Flaw';
+          } else if (entry.category === 'Fighter' || entry.category === 'Martial') {
+            levelUpModalFeatSlots[activeFeatPickerSlotIndex].category = 'Class Bonus Feat';
+          } else if (entry.category === 'Special Ability') {
+            levelUpModalFeatSlots[activeFeatPickerSlotIndex].category = 'Special Ability';
+          } else if (entry.category === 'Racial Trait') {
+            levelUpModalFeatSlots[activeFeatPickerSlotIndex].category = 'Racial Trait';
+          }
+          if (typeof renderLevelUpFeatSlots === 'function') renderLevelUpFeatSlots();
         }
-
-        const customInput = document.getElementById('lvlup-feat-custom');
-        if (customInput) customInput.value = entry.name;
-        const sel = document.getElementById('lvlup-feat-select');
-        if (sel) sel.value = entry.name;
-        const benefitInput = document.getElementById('lvlup-feat-benefit');
-        if (benefitInput) benefitInput.value = entry.benefit || '';
         closeFeatPickerModal();
         return;
       }
@@ -8819,9 +8871,11 @@
       }
       const entry = { name, category, source, benefit, prereq: '-' };
       if (isFeatPickerForLevelUp) {
-        learnFeatObject(entry);
-        const customInput = document.getElementById('lvlup-feat-custom');
-        if (customInput) customInput.value = name;
+        if (typeof levelUpModalFeatSlots !== 'undefined' && levelUpModalFeatSlots[activeFeatPickerSlotIndex]) {
+          levelUpModalFeatSlots[activeFeatPickerSlotIndex].name = name;
+          levelUpModalFeatSlots[activeFeatPickerSlotIndex].benefit = benefit;
+          if (typeof renderLevelUpFeatSlots === 'function') renderLevelUpFeatSlots();
+        }
         closeFeatPickerModal();
         return;
       }
@@ -8834,74 +8888,134 @@
     }
 
     // ====================================================
-    // ⬆️ LEVEL UP WIZARD FUNCTIONS
+    // ⬆️ LEVEL UP WIZARD & LEVEL PLANNING (1-30) FUNCTIONS
     // ====================================================
-    function onLevelUpFeatTypeChange() {
-      const typeSel = document.getElementById('lvlup-feat-type');
-      const featSel = document.getElementById('lvlup-feat-select');
-      const label = document.getElementById('lvlup-catalog-label');
-      if (!typeSel || !featSel) return;
+    let levelUpModalFeatSlots = [];
+    let activeFeatPickerSlotIndex = 0;
 
-      const prog = character.levelProgression || [];
-      const nextLvl = prog.length + 1;
-      const chosenType = typeSel.value;
-
-      if (nextLvl > 1 && (chosenType === 'Flaw' || chosenType === 'Racial Trait')) {
-        alert(`⚠️ D&D 3.5e kuralları gereğince Irk ve Flaw (Kusur) özellikleri yalnızca 1. Seviye karakter yaratımında seçilebilir. Şu anda Seviye ${nextLvl} seviye atlama sihirbazındasınız.`);
-        typeSel.value = 'Regular Feat';
-        onLevelUpFeatTypeChange();
-        return;
-      }
+    function renderLevelUpFeatSlots() {
+      const container = document.getElementById('lvlup-feat-slots-container');
+      if (!container) return;
+      container.innerHTML = '';
 
       const combined = getCombinedFeatCatalog();
-      let filtered = [];
 
-      if (chosenType === 'DM Boon') {
-        if (label) label.textContent = '🌟 DM Boon / Lütuf Listesi';
-        filtered = combined.filter(f => f.category === 'DM Boon' || f.category === 'DM Grant' || (f.source && f.source.toLowerCase().includes('campaign')));
-        featSel.innerHTML = `<option value="">-- 🌟 Bir DM Lütfu (Boon) Seçin --</option>`;
-      } else if (chosenType === 'Flaw') {
-        if (label) label.textContent = '⚠️ Kusur (Flaw) Listesi';
-        filtered = combined.filter(f => f.category === 'Flaw' || f.name.toLowerCase().startsWith('flaw:'));
-        featSel.innerHTML = `<option value="">-- ⚠️ Bir Kusur (Flaw) Seçin --</option>`;
-      } else if (chosenType === 'Class Bonus Feat') {
-        if (label) label.textContent = '⚔️ Sınıf Bonus Feat Kataloğu';
-        filtered = combined.filter(f => f.category === 'Fighter' || f.category === 'Martial');
-        featSel.innerHTML = `<option value="">-- ⚔️ Sınıf Bonus Feati Seçin --</option>`;
-      } else if (chosenType === 'Special Ability') {
-        if (label) label.textContent = '✨ Özel Yetenek Kataloğu';
-        filtered = combined.filter(f => f.category === 'Special Ability');
-        featSel.innerHTML = `<option value="">-- ✨ Özel Yetenek Seçin --</option>`;
-      } else if (chosenType === 'Racial Trait') {
-        if (label) label.textContent = '🧬 Irksal Yetenek Listesi';
-        filtered = combined.filter(f => f.category === 'Racial Trait' || f.category === 'General');
-        featSel.innerHTML = `<option value="">-- 🧬 Irksal Yetenek Seçin --</option>`;
-      } else {
-        if (label) label.textContent = '🎖️ Normal Feat Kataloğu';
-        filtered = combined.filter(f => f.category !== 'DM Boon' && f.category !== 'Flaw');
-        featSel.innerHTML = `<option value="">-- 🎖️ Normal Feat Seçin --</option>`;
-      }
+      levelUpModalFeatSlots.forEach((slot, idx) => {
+        const card = document.createElement('div');
+        card.className = 'bg-slate-950 border border-slate-800 hover:border-purple-600/50 rounded-xl p-3 space-y-2.5 transition';
 
-      filtered.forEach(f => {
-        const opt = document.createElement('option');
-        opt.value = f.name;
-        opt.textContent = `${f.name} (${f.source || '3.5e'})`;
-        featSel.appendChild(opt);
+        let filtered = [];
+        if (slot.category === 'DM Boon') {
+          filtered = combined.filter(f => f.category === 'DM Boon' || f.category === 'DM Grant' || (f.source && f.source.toLowerCase().includes('campaign')));
+        } else if (slot.category === 'Flaw') {
+          filtered = combined.filter(f => f.category === 'Flaw' || f.name.toLowerCase().startsWith('flaw:'));
+        } else if (slot.category === 'Class Bonus Feat') {
+          filtered = combined.filter(f => f.category === 'Fighter' || f.category === 'Martial');
+        } else if (slot.category === 'Special Ability') {
+          filtered = combined.filter(f => f.category === 'Special Ability');
+        } else if (slot.category === 'Racial Trait') {
+          filtered = combined.filter(f => f.category === 'Racial Trait' || f.category === 'General');
+        } else {
+          filtered = combined.filter(f => f.category !== 'DM Boon' && f.category !== 'Flaw');
+        }
+
+        const optionsHtml = [`<option value="">-- Katalogdan Hızlı Seçim --</option>`]
+          .concat(filtered.map(f => {
+            const isSel = (f.name || '').toLowerCase() === (slot.name || '').toLowerCase();
+            return `<option value="${f.name.replace(/"/g, '&quot;')}" ${isSel ? 'selected' : ''}>${f.name} (${f.source || '3.5e'})</option>`;
+          }))
+          .join('');
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
+            <span class="text-[11px] font-bold text-amber-300 flex items-center gap-1.5">
+              <span>🎖️</span>
+              <span>${slot.title || `Feat Yuvası #${idx + 1}`}</span>
+            </span>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="openFeatPickerForSlot(${idx})" class="text-[10px] font-semibold text-purple-300 hover:text-white bg-purple-950/70 hover:bg-purple-900 border border-purple-700/60 rounded px-2 py-0.5 transition flex items-center gap-1">
+                <span>📖</span>
+                <span>Kütüphaneden Seç</span>
+              </button>
+              ${levelUpModalFeatSlots.length > 1 ? `
+                <button type="button" onclick="removeLevelUpFeatSlot(${idx})" class="text-slate-400 hover:text-rose-400 p-0.5 text-xs transition" title="Bu yuvayı sil">
+                  ✕
+                </button>
+              ` : ''}
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div>
+              <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Kategori / Tür *</label>
+              <select onchange="onLevelUpSlotCategoryChange(${idx}, this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-amber-300 font-bold">
+                <option value="Regular Feat" ${slot.category === 'Regular Feat' ? 'selected' : ''}>🎖️ Normal Feat</option>
+                <option value="Class Bonus Feat" ${slot.category === 'Class Bonus Feat' ? 'selected' : ''}>⚔️ Sınıf Bonus Feati</option>
+                <option value="DM Boon" ${slot.category === 'DM Boon' ? 'selected' : ''}>🌟 DM Lütfu / Boon</option>
+                <option value="Flaw" ${slot.category === 'Flaw' ? 'selected' : ''}>⚠️ Kusur / Flaw</option>
+                <option value="Racial Trait" ${slot.category === 'Racial Trait' ? 'selected' : ''}>🧬 Irksal Yetenek</option>
+                <option value="Special Ability" ${slot.category === 'Special Ability' ? 'selected' : ''}>✨ Özel Yetenek</option>
+              </select>
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Katalogdan Hızlı Seçim</label>
+              <select onchange="onLevelUpSlotSelectChange(${idx}, this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white font-bold">
+                ${optionsHtml}
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[9px] font-bold text-slate-400 uppercase mb-0.5">Feat / Boon Adı</label>
+              <input type="text" value="${(slot.name || '').replace(/"/g, '&quot;')}" oninput="levelUpModalFeatSlots[${idx}].name = this.value" placeholder="Seçilen veya yeni Feat/Boon adı..." class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white font-bold">
+            </div>
+            <div>
+              <label class="block text-[9px] font-bold text-slate-400 uppercase mb-0.5">Fayda / Etki Özeti (Benefit)</label>
+              <input type="text" value="${(slot.benefit || '').replace(/"/g, '&quot;')}" oninput="levelUpModalFeatSlots[${idx}].benefit = this.value" placeholder="Örn: +2 Dodge AC, +1 attack..." class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-300">
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
       });
     }
 
-    function onLevelUpFeatDropdownChange() {
-      const sel = document.getElementById('lvlup-feat-select');
-      const custom = document.getElementById('lvlup-feat-custom');
-      const benefit = document.getElementById('lvlup-feat-benefit');
-      if (sel && sel.value) {
-        if (custom) custom.value = sel.value;
-        const catalog = getCombinedFeatCatalog();
-        const found = catalog.find(f => f.name.toLowerCase() === sel.value.toLowerCase());
-        if (found && benefit) {
-          benefit.value = found.benefit || '';
-        }
+    function onLevelUpSlotCategoryChange(idx, newCategory) {
+      if (!levelUpModalFeatSlots[idx]) return;
+      levelUpModalFeatSlots[idx].category = newCategory;
+      renderLevelUpFeatSlots();
+    }
+
+    function onLevelUpSlotSelectChange(idx, featName) {
+      if (!levelUpModalFeatSlots[idx]) return;
+      levelUpModalFeatSlots[idx].name = featName;
+      const catalog = getCombinedFeatCatalog();
+      const found = catalog.find(f => f.name.toLowerCase() === featName.toLowerCase());
+      if (found) {
+        levelUpModalFeatSlots[idx].benefit = found.benefit || '';
       }
+      renderLevelUpFeatSlots();
+    }
+
+    function openFeatPickerForSlot(idx) {
+      activeFeatPickerSlotIndex = idx;
+      openFeatPickerModal(true);
+    }
+
+    function addLevelUpFeatSlot(initialData = {}) {
+      levelUpModalFeatSlots.push({
+        title: initialData.title || `Ekstra Feat / Boon Yuvası #${levelUpModalFeatSlots.length + 1}`,
+        category: initialData.category || 'Regular Feat',
+        name: initialData.name || '',
+        benefit: initialData.benefit || ''
+      });
+      renderLevelUpFeatSlots();
+    }
+
+    function removeLevelUpFeatSlot(idx) {
+      if (levelUpModalFeatSlots.length <= 1) return;
+      levelUpModalFeatSlots.splice(idx, 1);
+      renderLevelUpFeatSlots();
     }
 
     function onLevelUpCasterProgChange() {
@@ -8940,12 +9054,126 @@
       }
     }
 
+    function onLevelUpClassChange() {
+      const className = document.getElementById('lvlup-class-select')?.value || 'Warblade';
+      const def = DND35_CLASS_DEFS[className] || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
+
+      const hdInput = document.getElementById('lvlup-hd-input');
+      if (hdInput) hdInput.value = `d${def.hd}`;
+
+      const prog = character.levelProgression || [];
+      const classLvlsSoFar = prog.filter(p => p.className === className).length;
+      const targetClassLvl = classLvlsSoFar + 1;
+
+      // 1. Auto-Populate Class Features from RuleEngine
+      const autoData = (typeof RuleEngine !== 'undefined' && RuleEngine.getClassLevelFeatures)
+        ? RuleEngine.getClassLevelFeatures(className, targetClassLvl)
+        : { features: [], hasBonusFeat: false };
+
+      const countBadge = document.getElementById('lvlup-auto-features-count');
+      const featList = document.getElementById('lvlup-auto-features-list');
+      if (featList) {
+        if (autoData.features && autoData.features.length > 0) {
+          if (countBadge) countBadge.textContent = `${autoData.features.length} Özellik`;
+          featList.innerHTML = autoData.features.map(fName => {
+            const safe = fName.replace(/'/g, "\\'");
+            return `<button type="button" onclick="showFeatDetail('${safe}')" class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-600/80 hover:bg-emerald-900 transition"><span>✨</span><span>${fName}</span></button>`;
+          }).join(' ');
+        } else {
+          if (countBadge) countBadge.textContent = '0 Özellik';
+          featList.innerHTML = `<span class="text-slate-500 italic text-[11px]">Bu sınıf seviyesinde yeni otomatik sınıf özelliği bulunmuyor.</span>`;
+        }
+      }
+
+      // If class level grants a bonus feat, ensure slot exists
+      if (autoData.hasBonusFeat) {
+        const hasBonusSlot = levelUpModalFeatSlots.some(s => s.category === 'Class Bonus Feat');
+        if (!hasBonusSlot) {
+          addLevelUpFeatSlot({
+            title: `${className} Sınıf Bonus Feati (${targetClassLvl}. Seviye)`,
+            category: 'Class Bonus Feat'
+          });
+        }
+      }
+
+      // 2. Calculate BAB, Saves, HD, Skill points using RuleEngine
+      const sys = character.settings?.babSaveSystem || 'fractional';
+      const isHuman = (character.race || '').toLowerCase().includes('human');
+      const intMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
+        ? RuleEngine.getAbilityMod(character.abilities?.int || 10)
+        : Math.floor(((character.abilities?.int || 10) - 10) / 2);
+
+      const prospectiveProg = [...prog, { className, hd: `d${def.hd}`, hpGain: 0, active: true }];
+      const prospectiveSummary = (typeof RuleEngine !== 'undefined' && RuleEngine.calculateProgression)
+        ? RuleEngine.calculateProgression(prospectiveProg, { system: sys, isHuman, intMod })
+        : null;
+
+      if (prospectiveSummary) {
+        document.getElementById('lvlup-bab-input').value = prospectiveSummary.baseBab;
+        document.getElementById('lvlup-fort-input').value = prospectiveSummary.baseSaves.fort;
+        document.getElementById('lvlup-ref-input').value = prospectiveSummary.baseSaves.ref;
+        document.getElementById('lvlup-will-input').value = prospectiveSummary.baseSaves.will;
+      }
+
+      const baseSkill = def.skills || 2;
+      const skillPtsThisLvl = (prospectiveProg.length === 1)
+        ? Math.max(4, (baseSkill + intMod + (isHuman ? 1 : 0)) * 4)
+        : Math.max(1, baseSkill + intMod + (isHuman ? 1 : 0));
+      document.getElementById('lvlup-skill-input').value = skillPtsThisLvl;
+
+      // Adjust Caster progression recommendation
+      const casterProgSel = document.getElementById('lvlup-caster-prog');
+      if (casterProgSel) {
+        if (className === 'Sorcerer' || className === 'Wizard' || className === 'Cleric' || className === 'Druid') {
+          casterProgSel.value = 'primary';
+        } else if (className === 'Warblade' || className === 'Fighter' || className === 'Rogue') {
+          if (casterProgSel.value === 'primary') casterProgSel.value = 'none';
+        }
+        onLevelUpCasterProgChange();
+      }
+
+      rollLevelUpHp('avg');
+    }
+
+    function rollLevelUpHp(mode = 'avg') {
+      const className = document.getElementById('lvlup-class-select')?.value || 'Warblade';
+      const def = DND35_CLASS_DEFS[className] || { hd: 8 };
+      const conMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
+        ? RuleEngine.getAbilityMod(character.abilities?.con || 10)
+        : Math.floor(((character.abilities?.con || 10) - 10) / 2);
+
+      let dieRoll = Math.floor(def.hd / 2) + 1;
+      if (mode === 'roll') {
+        dieRoll = Math.floor(Math.random() * def.hd) + 1;
+      } else if (mode === 'max') {
+        dieRoll = def.hd;
+      }
+      const totalHpGain = Math.max(1, dieRoll + conMod);
+      const hpInput = document.getElementById('lvlup-hp-gain-input');
+      if (hpInput) hpInput.value = totalHpGain;
+      const hint = document.getElementById('lvlup-hp-formula-hint');
+      if (hint) {
+        hint.textContent = `Zar (d${def.hd}): ${dieRoll} + CON Mod (${conMod >= 0 ? '+' + conMod : conMod}) = +${totalHpGain} HP`;
+      }
+    }
+
     function openLevelUpModal() {
       const modal = document.getElementById('level-up-modal');
       if (!modal) return;
 
       const prog = character.levelProgression || [];
-      const nextLvl = prog.length > 0 ? (Number(prog[prog.length - 1].level) || prog.length) + 1 : (Number(character.level) || 1) + 1;
+
+      // Check if there is an inactive/planned level waiting to be activated
+      const firstInactive = prog.find(p => p.active === false);
+      if (firstInactive) {
+        const activateNow = confirm(`📋 Sırada önceden planlanmış Seviye ${firstInactive.level} (${firstInactive.className}) bulunuyor.\n\nBu planlanan seviyeyi şimdi AKTİF yapmak ister misiniz?\n(İptal'e basarak yeni bir seviye tanımlayabilirsiniz)`);
+        if (activateNow) {
+          toggleLevelActive(prog.indexOf(firstInactive));
+          return;
+        }
+      }
+
+      const nextLvl = prog.length + 1;
       const badge = document.getElementById('lvlup-target-badge');
       if (badge) badge.textContent = `Seviye ${nextLvl}`;
 
@@ -8961,27 +9189,6 @@
       const qualifies = isLevelQualifiesForFeat(nextLvl, featMode);
       const featBadge = document.getElementById('lvlup-feat-status-badge');
       const featHint = document.getElementById('lvlup-feat-hint');
-      if (featTypeSel) {
-        if (nextLvl === 1) {
-          featTypeSel.innerHTML = `
-            <option value="Regular Feat">🎖️ Normal Feat (Regular Feat)</option>
-            <option value="Class Bonus Feat">⚔️ Sınıf Bonus Feati (Class Bonus Feat)</option>
-            <option value="Flaw">⚠️ Kusur / Flaw (Bonus Feat Karşılığı - 1. Seviye)</option>
-            <option value="Racial Trait">🧬 Irksal Yetenek (Racial Trait - 1. Seviye)</option>
-            <option value="DM Boon">🌟 DM Lütfu / Ödülü (DM Grant / Boon)</option>
-            <option value="Special Ability">✨ Özel Yetenek (Special Ability)</option>
-          `;
-        } else {
-          featTypeSel.innerHTML = `
-            <option value="Regular Feat">🎖️ Normal Feat (Regular Feat)</option>
-            <option value="Class Bonus Feat">⚔️ Sınıf Bonus Feati (Class Bonus Feat)</option>
-            <option value="DM Boon">🌟 DM Lütfu / Ödülü (DM Grant / Boon)</option>
-            <option value="Special Ability">✨ Özel Yetenek (Special Ability)</option>
-            <option value="Flaw" disabled>⚠️ Kusur / Flaw [Yalnızca 1. Seviyede Seçilebilir]</option>
-            <option value="Racial Trait" disabled>🧬 Irksal Yetenek [Yalnızca 1. Seviyede Seçilebilir]</option>
-          `;
-        }
-      }
 
       if (qualifies) {
         if (featBadge) {
@@ -8989,24 +9196,40 @@
           featBadge.className = 'badge bg-emerald-950 text-emerald-300 border border-emerald-600 text-[9px] font-bold';
         }
         if (featHint) featHint.textContent = `${featMode} kuralı uyarınca bu seviyede bir Feat hakkınız bulunmaktadır.`;
-        if (featTypeSel) featTypeSel.value = 'Regular Feat';
       } else {
         if (featBadge) {
-          featBadge.textContent = 'İsteğe Bağlı Bonus / DM Boon';
+          featBadge.textContent = 'İsteğe Bağlı Feat / DM Boon';
           featBadge.className = 'badge bg-slate-800 text-slate-300 border border-slate-700 text-[9px] font-bold';
         }
-        if (featHint) featHint.textContent = nextLvl === 1 
-          ? `1. Seviye karakter başlangıcı: Normal Feat, Sınıf Bonusu, Irksal yetenek veya Kusur (Flaw) seçebilirsiniz.`
-          : `Standart feat seviyesi değil. Sınıf bonus feati veya DM Lütfu (Boon) ekleyebilirsiniz. (Irk ve Flaw yalnızca 1. seviyede seçilebilir).`;
-        if (featTypeSel) featTypeSel.value = 'Class Bonus Feat';
+        if (featHint) featHint.textContent = 'Standart feat seviyesi değil. Sınıf bonus feati veya DM Lütfu (Boon) ekleyebilirsiniz.';
       }
 
-      onLevelUpFeatTypeChange();
-
-      const featCustom = document.getElementById('lvlup-feat-custom');
-      if (featCustom) featCustom.value = '';
-      const featBenefit = document.getElementById('lvlup-feat-benefit');
-      if (featBenefit) featBenefit.value = '';
+      // Initialize levelUpModalFeatSlots
+      levelUpModalFeatSlots = [];
+      const isHuman = (character.race || '').toLowerCase().includes('human');
+      if (nextLvl === 1) {
+        levelUpModalFeatSlots.push({
+          title: 'Standart Feat (1. Seviye)',
+          category: 'Regular Feat',
+          name: '',
+          benefit: ''
+        });
+        if (isHuman) {
+          levelUpModalFeatSlots.push({
+            title: 'Irk Bonusu Feat (Human Bonus Feat)',
+            category: 'Racial Trait',
+            name: '',
+            benefit: ''
+          });
+        }
+      } else if (qualifies) {
+        levelUpModalFeatSlots.push({
+          title: `Standart Feat (Seviye ${nextLvl})`,
+          category: 'Regular Feat',
+          name: '',
+          benefit: ''
+        });
+      }
 
       // Ability score increase highlight at levels 4, 8, 12, 16, 20
       const statHint = document.getElementById('lvlup-stat-hint-badge');
@@ -9044,133 +9267,23 @@
       const notesInput = document.getElementById('lvlup-notes-input');
       if (notesInput) notesInput.value = '';
 
+      const activeChk = document.getElementById('lvlup-is-active');
+      if (activeChk) activeChk.checked = true;
+
       onLevelUpClassChange();
+
+      if (levelUpModalFeatSlots.length === 0) {
+        addLevelUpFeatSlot({ title: 'İsteğe Bağlı Feat / Boon', category: 'Regular Feat' });
+      } else {
+        renderLevelUpFeatSlots();
+      }
+
       modal.classList.remove('hidden');
     }
 
     function closeLevelUpModal() {
       const modal = document.getElementById('level-up-modal');
       if (modal) modal.classList.add('hidden');
-    }
-
-    function onLevelUpClassChange() {
-      const className = document.getElementById('lvlup-class-select')?.value || 'Warblade';
-      const def = DND35_CLASS_DEFS[className] || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
-
-      const hdInput = document.getElementById('lvlup-hd-input');
-      if (hdInput) hdInput.value = `d${def.hd}`;
-
-      // Calculate fractional or standard progression from existing levels + this new class level
-      const prog = character.levelProgression || [];
-      const classCounts = {};
-      prog.forEach(p => {
-        classCounts[p.className] = (classCounts[p.className] || 0) + 1;
-      });
-      classCounts[className] = (classCounts[className] || 0) + 1;
-
-      let totalBab = 0;
-      let totalFort = 0;
-      let totalRef = 0;
-      let totalWill = 0;
-      let goodFortTaken = false;
-      let goodRefTaken = false;
-      let goodWillTaken = false;
-
-      Object.entries(classCounts).forEach(([cName, lvlCount]) => {
-        const cDef = DND35_CLASS_DEFS[cName] || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
-        totalBab += lvlCount * cDef.bab;
-        if (cDef.fort === 'good') {
-          totalFort += (goodFortTaken ? 0 : 2) + lvlCount * 0.5;
-          goodFortTaken = true;
-        } else {
-          totalFort += lvlCount * (1 / 3);
-        }
-        if (cDef.ref === 'good') {
-          totalRef += (goodRefTaken ? 0 : 2) + lvlCount * 0.5;
-          goodRefTaken = true;
-        } else {
-          totalRef += lvlCount * (1 / 3);
-        }
-        if (cDef.will === 'good') {
-          totalWill += (goodWillTaken ? 0 : 2) + lvlCount * 0.5;
-          goodWillTaken = true;
-        } else {
-          totalWill += lvlCount * (1 / 3);
-        }
-      });
-
-      const intMod = RuleEngine.getAbilityMod(character.abilities?.int || 10);
-      const isHuman = (character.race || '').toLowerCase().includes('human');
-      const skillPts = Math.max(1, def.skills + intMod + (isHuman ? 1 : 0));
-
-      document.getElementById('lvlup-bab-input').value = Math.floor(totalBab + 1e-6);
-      document.getElementById('lvlup-fort-input').value = Math.floor(totalFort + 1e-6);
-      document.getElementById('lvlup-ref-input').value = Math.floor(totalRef + 1e-6);
-      document.getElementById('lvlup-will-input').value = Math.floor(totalWill + 1e-6);
-      document.getElementById('lvlup-skill-input').value = skillPts;
-
-      // Adjust Caster progression recommendation
-      const casterProgSel = document.getElementById('lvlup-caster-prog');
-      if (casterProgSel) {
-        if (className === 'Sorcerer' || className === 'Wizard' || className === 'Cleric' || className === 'Druid') {
-          casterProgSel.value = 'primary';
-        } else if (className === 'Warblade' || className === 'Fighter' || className === 'Rogue') {
-          if (casterProgSel.value === 'primary') casterProgSel.value = 'none';
-        }
-        onLevelUpCasterProgChange();
-      }
-
-      rollLevelUpHp('avg');
-    }
-
-    function rollLevelUpHp(mode = 'avg') {
-      const className = document.getElementById('lvlup-class-select')?.value || 'Warblade';
-      const def = DND35_CLASS_DEFS[className] || { hd: 8 };
-      const conMod = RuleEngine.getAbilityMod(character.abilities?.con || 10);
-      let dieRoll = Math.floor(def.hd / 2) + 1;
-      if (mode === 'roll') {
-        dieRoll = Math.floor(Math.random() * def.hd) + 1;
-      } else if (mode === 'max') {
-        dieRoll = def.hd;
-      }
-      const totalHpGain = Math.max(1, dieRoll + conMod);
-      const hpInput = document.getElementById('lvlup-hp-gain-input');
-      if (hpInput) hpInput.value = totalHpGain;
-      const hint = document.getElementById('lvlup-hp-formula-hint');
-      if (hint) {
-        hint.textContent = `Zar (d${def.hd}): ${dieRoll} + CON Mod (${conMod >= 0 ? '+' + conMod : conMod}) = +${totalHpGain} HP`;
-      }
-    }
-
-    function recalculateCharacterClassSummary() {
-      const prog = character.levelProgression || [];
-      if (prog.length === 0) return;
-
-      character.level = prog.length;
-      const classMap = {};
-      const hdMap = {};
-      prog.forEach(p => {
-        classMap[p.className] = (classMap[p.className] || 0) + 1;
-        hdMap[p.hd] = (hdMap[p.hd] || 0) + 1;
-      });
-      character.classes = Object.entries(classMap).map(([c, n]) => `${c} ${n}`).join(' / ');
-      character.hitDie = Object.entries(hdMap).map(([hd, n]) => `${n}${hd}`).join(' + ');
-
-      const lastRow = prog[prog.length - 1];
-      character.bab = Number(lastRow.bab) || character.bab;
-      if (!character.baseSaves) character.baseSaves = { fort: 0, ref: 0, will: 0 };
-      character.baseSaves.fort = Number(lastRow.fort) || 0;
-      character.baseSaves.ref = Number(lastRow.ref) || 0;
-      character.baseSaves.will = Number(lastRow.will) || 0;
-
-      // Update CL based on clMode
-      if (character.spellcasting) {
-        if (character.settings?.clMode === 'Character Level (DM Boon)') {
-          character.spellcasting.cl = character.level;
-        } else {
-          character.spellcasting.cl = classMap['Sorcerer'] || 5;
-        }
-      }
     }
 
     function confirmLevelUp() {
@@ -9187,119 +9300,126 @@
       const will = parseInt(document.getElementById('lvlup-will-input')?.value) || 0;
       const skillPts = parseInt(document.getElementById('lvlup-skill-input')?.value) || 4;
       const statChoice = document.getElementById('lvlup-stat-select')?.value || '';
-
-      const featType = document.getElementById('lvlup-feat-type')?.value || 'Regular Feat';
-      const featName = (document.getElementById('lvlup-feat-custom')?.value || '').trim();
-      const featBenefit = (document.getElementById('lvlup-feat-benefit')?.value || '').trim();
+      const isActive = document.getElementById('lvlup-is-active')?.checked !== false;
 
       const casterProg = document.getElementById('lvlup-caster-prog')?.value || 'none';
       const ignoreAsfChecked = document.getElementById('lvlup-ignore-asf')?.checked || false;
       const notes = (document.getElementById('lvlup-notes-input')?.value || '').trim();
 
       const rowFeats = [];
+      let flawDetected = false;
 
-      // 1. Apply Permanent +1 Ability Score if chosen
-      if (statChoice && character.baseAbilities && character.baseAbilities[statChoice] !== undefined) {
+      // 1. Permanent +1 Ability Score
+      if (statChoice && character.baseAbilities && character.baseAbilities[statChoice] !== undefined && isActive) {
         character.baseAbilities[statChoice] = Number(character.baseAbilities[statChoice]) + 1;
         rowFeats.push(`+1 Stat: ${statChoice.toUpperCase()}`);
       }
 
-      // 2. Apply Chosen Feat / DM Boon / Flaw
-      if (featName) {
+      // 2. Process all Feat Slots
+      levelUpModalFeatSlots.forEach(slot => {
+        const fName = (slot.name || '').trim();
+        if (!fName) return;
+
         let prefix = '';
-        if (featType === 'DM Boon') prefix = '🌟 [DM Boon] ';
-        else if (featType === 'Class Bonus Feat') prefix = '⚔️ [Bonus] ';
-        else if (featType === 'Flaw') prefix = '⚠️ [Flaw] ';
-        else if (featType === 'Racial Trait') prefix = '🧬 [Racial] ';
-        else if (featType === 'Special Ability') prefix = '✨ [Special] ';
+        if (slot.category === 'DM Boon') prefix = '🌟 [DM Boon] ';
+        else if (slot.category === 'Class Bonus Feat') prefix = '⚔️ [Bonus] ';
+        else if (slot.category === 'Flaw') { prefix = '⚠️ [Flaw] '; flawDetected = true; }
+        else if (slot.category === 'Racial Trait') prefix = '🧬 [Racial] ';
+        else if (slot.category === 'Special Ability') prefix = '✨ [Special] ';
         else prefix = '🎖️ [Feat] ';
 
-        rowFeats.push(`${prefix}${featName}`);
+        rowFeats.push(`${prefix}${fName}`);
 
-        if (featType === 'DM Boon') {
-          if (!Array.isArray(character.feats)) character.feats = [];
-          character.feats.push({
-            name: featName,
-            source: 'Campaign Boon',
-            category: 'DM Grant',
-            benefit: featBenefit || 'DM Lütfu ile kazanılan özel yetenek.'
-          });
-
-          // Passive mechanics support for known boons
-          const cleanF = featName.toLowerCase();
-          if (cleanF.includes('elusiveness')) {
-            if (!character.acBreakdown) character.acBreakdown = {};
-            character.acBreakdown.dodge = (Number(character.acBreakdown.dodge) || 0) + 2;
-          } else if (cleanF.includes('+2 con, +2 cha') || cleanF.includes('+2 con')) {
-            if (character.baseAbilities) {
-              character.baseAbilities.con = (Number(character.baseAbilities.con) || 10) + 2;
-              if (cleanF.includes('+2 cha')) {
-                character.baseAbilities.cha = (Number(character.baseAbilities.cha) || 10) + 2;
-              }
-            }
-          } else if (cleanF.includes('draconic toughness')) {
-            if (character.hp) {
-              if (character.hp.baseMax === undefined) character.hp.baseMax = (Number(character.hp.max) || 45) - (Number(character.hp.conBonusHp) || 0);
-              character.hp.baseMax = (Number(character.hp.baseMax) || 0) + nextLvl;
-              character.hp.max = (Number(character.hp.baseMax) || 0) + (Number(character.hp.conBonusHp) || 0);
-              character.hp.current = (Number(character.hp.current) || 0) + nextLvl;
-            }
+        if (isActive) {
+          if (slot.category === 'DM Boon') {
+            if (!Array.isArray(character.feats)) character.feats = [];
+            character.feats.push({
+              name: fName,
+              source: 'Campaign Boon',
+              category: 'DM Grant',
+              benefit: slot.benefit || 'DM Lütfu ile kazanılan özel yetenek.'
+            });
+          } else if (slot.category === 'Special Ability') {
+            if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
+            character.specialAbilities.push({
+              name: fName,
+              source: `${className} Level ${nextLvl}`,
+              category: 'Special Ability',
+              benefit: slot.benefit || 'Sınıf seviyesi ile kazanılan özel yetenek.'
+            });
+          } else {
+            const catalog = getCombinedFeatCatalog();
+            const found = catalog.find(c => c.name.toLowerCase() === fName.toLowerCase()) || {
+              name: fName,
+              category: slot.category,
+              source: `Level ${nextLvl}`,
+              benefit: slot.benefit || notes || 'Seviye atlama ile kazanılan hüner.'
+            };
+            learnFeatObject(found);
           }
-        } else if (featType === 'Special Ability') {
-          if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
-          character.specialAbilities.push({
-            name: featName,
-            source: `${className} Level ${nextLvl}`,
-            category: 'Special Ability',
-            benefit: featBenefit || 'Sınıf seviyesi ile kazanılan özel yetenek.'
-          });
-        } else {
-          const catalog = getCombinedFeatCatalog();
-          const found = catalog.find(c => c.name.toLowerCase() === featName.toLowerCase()) || {
-            name: featName,
-            category: featType,
-            source: `Level ${nextLvl}`,
-            benefit: featBenefit || notes || 'Seviye atlama ile kazanılan hüner.'
-          };
-          learnFeatObject(found);
         }
+      });
+
+      // 3. Auto Class Features
+      const classLvlsSoFar = prog.filter(p => p.className === className).length;
+      const targetClassLvl = classLvlsSoFar + 1;
+      const autoData = (typeof RuleEngine !== 'undefined' && RuleEngine.getClassLevelFeatures)
+        ? RuleEngine.getClassLevelFeatures(className, targetClassLvl)
+        : { features: [] };
+      const autoFeatures = autoData.features || [];
+
+      if (isActive && autoFeatures.length > 0) {
+        if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
+        autoFeatures.forEach(featName => {
+          if (!character.specialAbilities.some(a => (typeof a === 'string' ? a : a.name).toLowerCase() === featName.toLowerCase())) {
+            character.specialAbilities.push({
+              name: featName,
+              source: `${className} Level ${targetClassLvl}`,
+              category: 'Class Feature',
+              benefit: `${className} sınıfının ${targetClassLvl}. seviyesinde otomatik kazanılan özellik.`
+            });
+          }
+        });
       }
 
-      // 3. Apply Caster Progression
+      // 4. Caster Progression
       if (!character.settings) character.settings = {};
       character.settings.ignoreAsf = ignoreAsfChecked;
 
       if (casterProg === 'primary') {
-        const sorcLvls = (prog.filter(p => p.className === 'Sorcerer').length || 0) + (className === 'Sorcerer' ? 1 : 1);
+        const sorcLvls = (prog.filter(p => p.className === 'Sorcerer' && p.active !== false).length || 0) + (className === 'Sorcerer' ? 1 : 1);
         if (character.settings.clMode === 'Character Level (DM Boon)') {
-          if (character.spellcasting) character.spellcasting.cl = nextLvl;
+          if (character.spellcasting && isActive) character.spellcasting.cl = nextLvl;
         } else {
-          if (character.spellcasting) character.spellcasting.cl = sorcLvls;
+          if (character.spellcasting && isActive) character.spellcasting.cl = sorcLvls;
         }
-        if (character.spellcasting) {
+        if (character.spellcasting && isActive) {
           character.spellcasting.slots = calculateSorcererSlots(sorcLvls, character.abilities?.cha || 22);
         }
         rowFeats.push(`🔮 +1 Caster Lvl (CL: ${character.spellcasting?.cl || nextLvl})`);
       } else if (casterProg === 'cl_boon') {
         character.settings.clMode = 'Character Level (DM Boon)';
-        if (character.spellcasting) {
+        if (character.spellcasting && isActive) {
           character.spellcasting.cl = nextLvl;
-          const sorcLvls = prog.filter(p => p.className === 'Sorcerer').length || 5;
+          const sorcLvls = prog.filter(p => p.className === 'Sorcerer' && p.active !== false).length || 5;
           character.spellcasting.slots = calculateSorcererSlots(sorcLvls, character.abilities?.cha || 22);
         }
         rowFeats.push(`🌟 DM Boon: CL = Seviye ${nextLvl}`);
       }
 
-      // 4. Apply HP Gain
-      if (!character.hp) character.hp = { current: 10, max: 10, temp: 0, nonlethal: 0 };
-      if (character.hp.baseMax === undefined) character.hp.baseMax = (Number(character.hp.max) || 45) - (Number(character.hp.conBonusHp) || 0);
-      character.hp.baseMax = (Number(character.hp.baseMax) || 0) + hpGain;
-      character.hp.max = (Number(character.hp.baseMax) || 0) + (Number(character.hp.conBonusHp) || 0);
-      character.hp.current = (Number(character.hp.current) || 0) + hpGain;
+      // 5. HP Gain
+      if (isActive) {
+        if (!character.hp) character.hp = { current: 10, max: 10, temp: 0, nonlethal: 0 };
+        if (character.hp.baseMax === undefined) character.hp.baseMax = (Number(character.hp.max) || 45) - (Number(character.hp.conBonusHp) || 0);
+        character.hp.baseMax = (Number(character.hp.baseMax) || 0) + hpGain;
+        character.hp.max = (Number(character.hp.baseMax) || 0) + (Number(character.hp.conBonusHp) || 0);
+        character.hp.current = (Number(character.hp.current) || 0) + hpGain;
+      }
 
-      // 5. Push Level Row
+      // 6. Push Row
       prog.push({
         level: nextLvl,
+        active: isActive,
         className,
         hd,
         hpGain,
@@ -9309,11 +9429,10 @@
         will,
         skillPts,
         feats: rowFeats,
+        specialAbilities: autoFeatures,
         statIncreased: statChoice || null,
-        addedFeatName: featName || null,
-        featCategory: featType,
-        casterProg: casterProg,
-        notes: notes || `${className} seviyesi eklendi`
+        casterProg,
+        notes: notes || (autoFeatures.length > 0 ? autoFeatures.join(', ') : `${className} seviyesi eklendi`)
       });
 
       recalculateCharacterClassSummary();
@@ -9321,20 +9440,11 @@
       saveStateToStorage(true);
       renderAll();
 
-      if (featName) {
-        const isFlaw = featType === 'Flaw' || featName.toLowerCase().startsWith('flaw:');
-        const isRacialBonus = (featType === 'Racial Trait' || featName.toLowerCase().includes('human')) && featName.toLowerCase().includes('bonus feat');
-        if (isFlaw) {
-          setTimeout(() => {
-            alert(`⚠️ 1. Seviye için "${featName}" kusuru (Flaw) başarıyla eklendi!\n\n🎖️ D&D 3.5e Unearthed Arcana kuralı gereğince bu kusur karşılığında 1 adet EKSTRA BONUS FEAT kazandınız!\n\nŞimdi bonus hünerinizi (Feat) seçmek için Feat Kataloğu açılıyor.`);
-            openFeatPickerModal(false);
-          }, 300);
-        } else if (isRacialBonus) {
-          setTimeout(() => {
-            alert(`🧬 "${featName}" ırksal yeteneği eklendi!\n\n🎖️ Bu yetenek 1 adet ekstra bonus feat kazandırmaktadır. Şimdi bonus hünerinizi (Feat) seçmek için Feat Kataloğu açılıyor.`);
-            openFeatPickerModal(false);
-          }, 300);
-        }
+      if (flawDetected) {
+        setTimeout(() => {
+          alert(`⚠️ 1. Seviye Kusur (Flaw) başarıyla eklendi!\n\n🎖️ D&D 3.5e Unearthed Arcana kuralı gereğince bu kusur karşılığında 1 adet EKSTRA BONUS FEAT kazandınız!\n\nŞimdi bonus hünerinizi (Feat) seçmek için Feat Kataloğu açılıyor.`);
+          openFeatPickerModal(false);
+        }, 300);
       }
     }
 
@@ -9350,7 +9460,7 @@
       prog.pop();
 
       // Revert HP
-      if (character.hp && last.hpGain) {
+      if (character.hp && last.hpGain && last.active !== false) {
         const gain = Number(last.hpGain) || 0;
         if (character.hp.baseMax === undefined) character.hp.baseMax = (Number(character.hp.max) || 45) - (Number(character.hp.conBonusHp) || 0);
         character.hp.baseMax = Math.max(1, (Number(character.hp.baseMax) || 1) - gain);
@@ -9359,21 +9469,15 @@
       }
 
       // Revert Stat increase if recorded
-      if (last.statIncreased && character.baseAbilities && character.baseAbilities[last.statIncreased] !== undefined) {
+      if (last.statIncreased && last.active !== false && character.baseAbilities && character.baseAbilities[last.statIncreased] !== undefined) {
         character.baseAbilities[last.statIncreased] = Number(character.baseAbilities[last.statIncreased]) - 1;
       }
 
-      // Revert added Feat if recorded
-      if (last.addedFeatName && Array.isArray(character.feats)) {
-        const cleanF = last.addedFeatName.toLowerCase().trim();
-        character.feats = character.feats.filter(f => (typeof f === 'string' ? f : f.name).toLowerCase().trim() !== cleanF);
-      }
-
       // Revert Caster Level
-      if (last.casterProg === 'primary' && character.spellcasting) {
-        const sorcLvls = Math.max(1, (prog.filter(p => p.className === 'Sorcerer').length || 5));
+      if (last.casterProg === 'primary' && last.active !== false && character.spellcasting) {
+        const sorcLvls = Math.max(1, (prog.filter(p => p.className === 'Sorcerer' && p.active !== false).length || 5));
         if (character.settings?.clMode === 'Character Level (DM Boon)') {
-          character.spellcasting.cl = prog.length;
+          character.spellcasting.cl = prog.filter(p => p.active !== false).length;
         } else {
           character.spellcasting.cl = sorcLvls;
         }
@@ -9385,7 +9489,41 @@
       renderAll();
     }
 
-    // Level Progression Rendering (lvl_up - Madde 1, 2, 12, DM Boons & Caster Tokens)
+    function toggleLevelActive(idx) {
+      const prog = character.levelProgression || [];
+      if (idx < 0 || idx >= prog.length) return;
+      if (idx === 0 && prog[idx].active !== false) {
+        alert('⚠️ 1. Seviye karakterin başlangıç seviyesidir ve pasif yapılamaz.');
+        return;
+      }
+      prog[idx].active = prog[idx].active === false ? true : false;
+      recalculateCharacterClassSummary();
+      saveStateToStorage(true);
+      renderLevelProgression();
+      renderAll();
+    }
+
+    function deleteLevelRow(idx) {
+      const prog = character.levelProgression || [];
+      if (idx < 0 || idx >= prog.length) return;
+      if (prog.length <= 1) {
+        alert('⚠️ 1. Seviyenin altına düşülemez.');
+        return;
+      }
+      const row = prog[idx];
+      if (!confirm(`Seviye ${row.level} (${row.className}) kaydını silmek istediğinize emin misiniz?`)) return;
+
+      prog.splice(idx, 1);
+      // Re-number levels
+      prog.forEach((p, i) => { p.level = i + 1; });
+
+      recalculateCharacterClassSummary();
+      saveStateToStorage(true);
+      renderLevelProgression();
+      renderAll();
+    }
+
+    // Level Progression Rendering (lvl_up - Madde 1, 2, 12, Unearthed Arcana Fractional & Level Planning)
     function renderLevelProgression() {
       const tbody = document.getElementById('level-progression-tbody');
       if (!tbody) return;
@@ -9404,13 +9542,61 @@
       if (asfChk) {
         asfChk.checked = character.settings?.ignoreAsf !== false;
       }
+      const babSaveSel = document.getElementById('setting-bab-save-system');
+      if (babSaveSel && character.settings?.babSaveSystem) {
+        babSaveSel.value = character.settings.babSaveSystem;
+      }
 
       const prog = character.levelProgression || [];
-      prog.forEach(lvl => {
-        const tr = document.createElement('tr');
-        tr.className = 'hover:bg-slate-900/60 transition';
+      const sys = character.settings?.babSaveSystem || 'fractional';
+      const isHuman = (character.race || '').toLowerCase().includes('human');
+      const intMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
+        ? RuleEngine.getAbilityMod(character.abilities?.int || 10)
+        : Math.floor(((character.abilities?.int || 10) - 10) / 2);
 
-        // Render rich badges for feats & abilities
+      const summary = (typeof RuleEngine !== 'undefined' && RuleEngine.calculateProgression)
+        ? RuleEngine.calculateProgression(prog, { system: sys, isHuman, intMod })
+        : null;
+
+      // Render Level Progression HUD Summary Bar
+      const hud = document.getElementById('level-progression-hud');
+      if (hud && summary) {
+        const isFrac = (sys === 'fractional');
+        hud.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-950/80 border border-emerald-600/80 text-emerald-300 font-bold">
+              <span>✅ Aktif Seviye:</span>
+              <strong class="text-white text-sm">${summary.activeLevels}</strong>
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-950/80 border border-sky-600/80 text-sky-300 font-bold">
+              <span>📋 Toplam Plan:</span>
+              <strong class="text-white text-sm">${summary.plannedLevels}</strong>
+            </span>
+            <span class="badge ${isFrac ? 'bg-sky-950 text-sky-300 border-sky-600' : 'bg-slate-800 text-slate-300 border-slate-700'} text-[9px] font-bold">
+              ${isFrac ? '📐 Unearthed Arcana Fractional' : '📖 Core 3.5e Standard'}
+            </span>
+          </div>
+          <div class="flex flex-wrap items-center gap-3 font-mono text-[11px]">
+            <span class="text-emerald-400 font-bold">HP: +${summary.baseHp}</span>
+            <span class="text-slate-600">•</span>
+            <span class="text-sky-400 font-bold">BAB: +${summary.baseBab}${isFrac && summary.fractional ? ` (${summary.fractional.bab.toFixed(2)})` : ''}</span>
+            <span class="text-slate-600">•</span>
+            <span class="text-slate-300 font-bold">Saves: Fort +${summary.baseSaves.fort} / Ref +${summary.baseSaves.ref} / Will +${summary.baseSaves.will}</span>
+            <span class="text-slate-600">•</span>
+            <span class="text-indigo-300 font-bold">Beceri Havuzu: ${summary.totalSkillPoints} Puan</span>
+          </div>
+        `;
+      }
+
+      // Render Table Rows
+      prog.forEach((lvl, idx) => {
+        const isActive = lvl.active !== false;
+        const tr = document.createElement('tr');
+        tr.className = isActive 
+          ? 'hover:bg-slate-900/60 transition' 
+          : 'hover:bg-slate-900/40 transition opacity-50 bg-slate-950/50 border-dashed border-b border-slate-800/80 italic';
+
+        // Feat Badges
         const featBadges = (lvl.feats || []).map(fStr => {
           const str = String(fStr);
           const safeF = str.replace(/'/g, "\\'").replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\[\]A-Za-z\s]+:\s*/, '');
@@ -9431,18 +9617,42 @@
           }
         }).join(' ');
 
+        // Special Abilities Badges
+        const abilityBadges = (lvl.specialAbilities || []).map(aStr => {
+          const str = String(aStr);
+          const safeA = str.replace(/'/g, "\\'");
+          return `<button onclick="showFeatDetail('${safeA}')" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-sky-950/80 hover:bg-sky-900 text-sky-300 border border-sky-600/70 shadow-sm transition"><span>✨</span><span>${str}</span></button>`;
+        }).join(' ');
+
+        const notesAndAbilities = [abilityBadges, lvl.notes ? `<span class="text-slate-400 text-[10px]">${lvl.notes}</span>` : ''].filter(Boolean).join(' ');
+
         tr.innerHTML = `
-          <td class="py-2 px-2.5 text-center font-bold text-amber-400">${lvl.level}</td>
+          <td class="py-2 px-2 text-center font-bold text-amber-400">${lvl.level}</td>
+          <td class="py-2 px-2 text-center">
+            <label class="inline-flex items-center gap-1 cursor-pointer" title="${isActive ? 'Aktif Seviye (Statlara yansır)' : 'Planlanan Seviye (Statlara yansımaz)'}">
+              <input type="checkbox" onchange="toggleLevelActive(${idx})" ${isActive ? 'checked' : ''} ${idx === 0 ? 'disabled title="1. Seviye başlangıçtır"' : ''} class="w-3.5 h-3.5 rounded text-emerald-500 cursor-pointer">
+              <span class="badge ${isActive ? 'bg-emerald-950 text-emerald-300 border-emerald-600' : 'bg-slate-800 text-slate-400 border-slate-700'} text-[9px]">
+                ${isActive ? '✅ Aktif' : '📋 Plan'}
+              </span>
+            </label>
+          </td>
           <td class="py-2 px-3 font-sans font-bold text-white">${lvl.className}</td>
-          <td class="py-2 px-2.5 text-center text-slate-400 font-bold">${lvl.hd}</td>
-          <td class="py-2 px-2.5 text-center text-emerald-400 font-bold">+${lvl.hpGain}</td>
-          <td class="py-2 px-2.5 text-center text-sky-400 font-bold">+${lvl.bab}</td>
-          <td class="py-2 px-2.5 text-center text-slate-300 font-bold">+${lvl.fort}</td>
-          <td class="py-2 px-2.5 text-center text-slate-300 font-bold">+${lvl.ref}</td>
-          <td class="py-2 px-2.5 text-center text-slate-300 font-bold">+${lvl.will}</td>
-          <td class="py-2 px-2.5 text-center text-indigo-300 font-bold">${lvl.skillPts || 4}</td>
+          <td class="py-2 px-2 text-center text-slate-400 font-bold">${lvl.hd}</td>
+          <td class="py-2 px-2 text-center text-emerald-400 font-bold">+${lvl.hpGain}</td>
+          <td class="py-2 px-2 text-center text-sky-400 font-bold">+${lvl.bab}</td>
+          <td class="py-2 px-2 text-center text-slate-300 font-bold">+${lvl.fort}</td>
+          <td class="py-2 px-2 text-center text-slate-300 font-bold">+${lvl.ref}</td>
+          <td class="py-2 px-2 text-center text-slate-300 font-bold">+${lvl.will}</td>
+          <td class="py-2 px-2 text-center text-indigo-300 font-bold">${lvl.skillPts || 4}</td>
           <td class="py-2 px-3 font-sans"><div class="flex flex-wrap gap-1">${featBadges || '<span class="text-slate-500 italic">-</span>'}</div></td>
-          <td class="py-2 px-3 font-sans text-slate-400 text-[10px]">${lvl.notes || ''}</td>
+          <td class="py-2 px-3 font-sans"><div class="flex flex-wrap items-center gap-1.5">${notesAndAbilities || '<span class="text-slate-500 italic">-</span>'}</div></td>
+          <td class="py-2 px-2 text-center">
+            ${idx > 0 ? `
+              <button onclick="deleteLevelRow(${idx})" class="text-slate-500 hover:text-rose-400 p-1 text-xs transition" title="Bu seviyeyi sil">
+                🗑️
+              </button>
+            ` : '<span class="text-slate-600">-</span>'}
+          </td>
         `;
         tbody.appendChild(tr);
       });

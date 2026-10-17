@@ -1479,6 +1479,356 @@ const RuleEngine = {
         addBonus('Boots of Elvenkind', 5, 'competence');
       }
     }
+  },
+
+  // D&D 3.5e Class Definitions with Base Stats & Class Features by Level
+  DND35_CLASS_DEFS: {
+    "Warblade": {
+      hd: 12, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 4,
+      bonusFeatLevels: [5, 9, 13, 17],
+      features: {
+        1: [
+          { name: "Battle Clarity (Ex)", category: "Special Ability", type: "Ex", summary: "INT modifier to Reflex saves (max Warblade lvl)" },
+          { name: "Weapon Aptitude (Ex)", category: "Special Ability", type: "Ex", summary: "Adjust weapon feats to different weapons with 1 hour practice" }
+        ],
+        2: [{ name: "Uncanny Dodge (Ex)", category: "Special Ability", type: "Ex", summary: "Retain Dex bonus to AC even if caught flat-footed" }],
+        3: [{ name: "Battle Ardor (Ex)", category: "Special Ability", type: "Ex", summary: "INT modifier on rolls made to confirm critical hits" }],
+        6: [{ name: "Improved Uncanny Dodge (Ex)", category: "Special Ability", type: "Ex", summary: "Can no longer be flanked unless attacker is 4+ levels higher" }],
+        7: [{ name: "Battle Cunning (Ex)", category: "Special Ability", type: "Ex", summary: "INT modifier to damage rolls against flat-footed or flanked foes" }],
+        11: [{ name: "Battle Skill (Ex)", category: "Special Ability", type: "Ex", summary: "INT modifier on checks to resist combat maneuvers" }],
+        15: [{ name: "Battle Mastery (Ex)", category: "Special Ability", type: "Ex", summary: "INT modifier on melee attack rolls and damage rolls on AoO" }],
+        20: [{ name: "Stance Mastery (Ex)", category: "Special Ability", type: "Ex", summary: "Can have two stances active simultaneously" }]
+      }
+    },
+    "Fighter": {
+      hd: 10, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 2,
+      bonusFeatLevels: [1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20],
+      features: {}
+    },
+    "Barbarian": {
+      hd: 12, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 4,
+      bonusFeatLevels: [],
+      features: {
+        1: [
+          { name: "Fast Movement (Ex)", category: "Special Ability", type: "Ex", summary: "+10 ft to base land speed in light or medium armor" },
+          { name: "Rage 1/day (Ex)", category: "Special Ability", type: "Ex", summary: "+4 Str, +4 Con, +2 morale to Will saves, -2 AC for 3+Con rounds" }
+        ],
+        2: [{ name: "Uncanny Dodge (Ex)", category: "Special Ability", type: "Ex", summary: "Retain Dex bonus to AC if flat-footed" }],
+        3: [{ name: "Trap Sense +1 (Ex)", category: "Special Ability", type: "Ex", summary: "+1 on Reflex saves and AC vs traps" }],
+        4: [{ name: "Rage 2/day (Ex)", category: "Special Ability", type: "Ex", summary: "Can rage 2 times per day" }],
+        5: [{ name: "Improved Uncanny Dodge (Ex)", category: "Special Ability", type: "Ex", summary: "Can no longer be flanked unless attacker is 4+ levels higher" }],
+        6: [{ name: "Trap Sense +2 (Ex)", category: "Special Ability", type: "Ex", summary: "+2 on Reflex saves and AC vs traps" }],
+        7: [{ name: "Damage Reduction 1/- (Ex)", category: "Special Ability", type: "Ex", summary: "Ignore 1 point of damage from each melee or ranged attack" }]
+      }
+    },
+    "Rogue": {
+      hd: 6, bab: 0.75, fort: "poor", ref: "good", will: "poor", skills: 8,
+      bonusFeatLevels: [10, 13, 16, 19],
+      features: {
+        1: [
+          { name: "Sneak Attack +1d6", category: "Special Ability", type: "Ex", summary: "+1d6 precision damage vs flanked or flat-footed target" },
+          { name: "Trapfinding (Ex)", category: "Special Ability", type: "Ex", summary: "Can use Search skill to locate traps with DC > 20" }
+        ],
+        2: [{ name: "Evasion (Ex)", category: "Special Ability", type: "Ex", summary: "Take no damage on successful Reflex save against area attacks" }],
+        3: [
+          { name: "Sneak Attack +2d6", category: "Special Ability", type: "Ex", summary: "+2d6 precision damage vs flanked or flat-footed target" },
+          { name: "Trap Sense +1 (Ex)", category: "Special Ability", type: "Ex", summary: "+1 on Reflex saves and AC vs traps" }
+        ],
+        4: [{ name: "Uncanny Dodge (Ex)", category: "Special Ability", type: "Ex", summary: "Retain Dex bonus to AC if flat-footed" }],
+        5: [{ name: "Sneak Attack +3d6", category: "Special Ability", type: "Ex", summary: "+3d6 precision damage vs flanked or flat-footed target" }],
+        6: [{ name: "Trap Sense +2 (Ex)", category: "Special Ability", type: "Ex", summary: "+2 on Reflex saves and AC vs traps" }],
+        7: [{ name: "Sneak Attack +4d6", category: "Special Ability", type: "Ex", summary: "+4d6 precision damage vs flanked or flat-footed target" }],
+        8: [{ name: "Improved Uncanny Dodge (Ex)", category: "Special Ability", type: "Ex", summary: "Cannot be flanked except by rogue 4+ levels higher" }],
+        9: [
+          { name: "Sneak Attack +5d6", category: "Special Ability", type: "Ex", summary: "+5d6 precision damage vs flanked or flat-footed target" },
+          { name: "Trap Sense +3 (Ex)", category: "Special Ability", type: "Ex", summary: "+3 on Reflex saves and AC vs traps" }
+        ]
+      }
+    },
+    "Wizard": {
+      hd: 4, bab: 0.5, fort: "poor", ref: "poor", will: "good", skills: 2,
+      bonusFeatLevels: [1, 5, 10, 15, 20],
+      features: {
+        1: [
+          { name: "Scribe Scroll", category: "Special Ability", type: "Ex", summary: "Create spell scrolls" },
+          { name: "Summon Familiar", category: "Special Ability", type: "Sp", summary: "Summon a magical animal companion" }
+        ]
+      }
+    },
+    "Sorcerer": {
+      hd: 4, bab: 0.5, fort: "poor", ref: "poor", will: "good", skills: 2,
+      bonusFeatLevels: [],
+      features: {
+        1: [{ name: "Summon Familiar", category: "Special Ability", type: "Sp", summary: "Summon a magical animal companion" }]
+      }
+    },
+    "Cleric": {
+      hd: 8, bab: 0.75, fort: "good", ref: "poor", will: "good", skills: 2,
+      bonusFeatLevels: [],
+      features: {
+        1: [{ name: "Turn Undead (Su)", category: "Special Ability", type: "Su", summary: "Channel positive energy to turn or destroy undead 3+Cha times/day" }]
+      }
+    },
+    "Paladin": {
+      hd: 10, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 2,
+      bonusFeatLevels: [],
+      features: {
+        1: [
+          { name: "Aura of Good (Ex)", category: "Special Ability", type: "Ex", summary: "Aura of good equal to paladin level" },
+          { name: "Detect Evil (Sp)", category: "Special Ability", type: "Sp", summary: "At will, detect evil as the spell" },
+          { name: "Smite Evil (Su)", category: "Special Ability", type: "Su", summary: "Add Cha bonus to attack and +1 damage per Paladin level against evil (1/day)" }
+        ],
+        2: [
+          { name: "Divine Grace (Su)", category: "Special Ability", type: "Su", summary: "Gain bonus equal to Charisma bonus on all saving throws" },
+          { name: "Lay on Hands (Su)", category: "Special Ability", type: "Su", summary: "Heal each day hit points equal to Paladin level x Charisma bonus" }
+        ],
+        3: [
+          { name: "Aura of Courage (Su)", category: "Special Ability", type: "Su", summary: "Immune to fear; allies within 10 ft gain +4 on saves vs fear" },
+          { name: "Divine Health (Ex)", category: "Special Ability", type: "Ex", summary: "Immunity to all diseases" }
+        ],
+        4: [{ name: "Turn Undead (Su)", category: "Special Ability", type: "Su", summary: "Turn undead as cleric of level - 3" }],
+        5: [{ name: "Special Mount (Sp)", category: "Special Ability", type: "Sp", summary: "Call an intelligent, loyal war steed" }]
+      }
+    },
+    "Monk": {
+      hd: 8, bab: 0.75, fort: "good", ref: "good", will: "good", skills: 4,
+      bonusFeatLevels: [1, 2, 6],
+      features: {
+        1: [
+          { name: "Flurry of Blows (Ex)", category: "Special Ability", type: "Ex", summary: "One extra attack during full attack (-2 all attacks)" },
+          { name: "Unarmed Strike", category: "Special Ability", type: "Ex", summary: "Lethal or nonlethal unarmed strike damage without penalty" }
+        ],
+        2: [{ name: "Evasion (Ex)", category: "Special Ability", type: "Ex", summary: "Take no damage on successful Reflex save vs area attacks" }],
+        3: [
+          { name: "Fast Movement +10 ft (Ex)", category: "Special Ability", type: "Ex", summary: "+10 ft monk land speed bonus" },
+          { name: "Still Mind (Ex)", category: "Special Ability", type: "Ex", summary: "+2 on saves vs enchantment spells/effects" }
+        ],
+        4: [{ name: "Ki Strike (Magic) (Su)", category: "Special Ability", type: "Su", summary: "Unarmed strikes overcome DR as magic weapons" }],
+        5: [{ name: "Purity of Body (Ex)", category: "Special Ability", type: "Ex", summary: "Immunity to all normal diseases" }]
+      }
+    },
+    "Ranger": {
+      hd: 8, bab: 1.0, fort: "good", ref: "good", will: "poor", skills: 6,
+      bonusFeatLevels: [],
+      features: {
+        1: [
+          { name: "1st Favored Enemy", category: "Special Ability", type: "Ex", summary: "+2 on Bluff, Listen, Sense Motive, Spot, Survival and damage vs chosen type" },
+          { name: "Track", category: "Feat", type: "Ex", summary: "Use Survival to follow tracks" },
+          { name: "Wild Empathy (Ex)", category: "Special Ability", type: "Ex", summary: "Improve the attitude of an animal" }
+        ],
+        2: [{ name: "Combat Style (Ex)", category: "Special Ability", type: "Ex", summary: "Gain Rapid Shot or Two-Weapon Fighting" }],
+        3: [{ name: "Endurance", category: "Feat", type: "Ex", summary: "Gain Endurance as a bonus feat" }],
+        4: [{ name: "Animal Companion (Ex)", category: "Special Ability", type: "Ex", summary: "Gain an animal companion" }]
+      }
+    },
+    "Bard": {
+      hd: 6, bab: 0.75, fort: "poor", ref: "good", will: "good", skills: 6,
+      bonusFeatLevels: [],
+      features: {
+        1: [
+          { name: "Bardic Music (Su)", category: "Special Ability", type: "Su", summary: "Perform magical songs 1/day per bard level" },
+          { name: "Bardic Knowledge (Ex)", category: "Special Ability", type: "Ex", summary: "Ancient lore check (1d20 + Bard level + Int)" },
+          { name: "Countersong (Su)", category: "Special Ability", type: "Su", summary: "Counter sonic magical attacks with perform check" },
+          { name: "Fascinate (Sp)", category: "Special Ability", type: "Sp", summary: "Entrall creatures within 90 ft" },
+          { name: "Inspire Courage +1 (Su)", category: "Special Ability", type: "Su", summary: "+1 morale on saves vs charm/fear and attack/damage" }
+        ]
+      }
+    },
+    "Druid": {
+      hd: 8, bab: 0.75, fort: "good", ref: "poor", will: "good", skills: 4,
+      bonusFeatLevels: [],
+      features: {
+        1: [
+          { name: "Animal Companion (Ex)", category: "Special Ability", type: "Ex", summary: "Gain a loyal animal companion" },
+          { name: "Nature Sense (Ex)", category: "Special Ability", type: "Ex", summary: "+2 on Knowledge (nature) and Survival checks" },
+          { name: "Wild Empathy (Ex)", category: "Special Ability", type: "Ex", summary: "Improve attitude of animals" }
+        ],
+        2: [{ name: "Woodland Stride (Ex)", category: "Special Ability", type: "Ex", summary: "Move through natural thorns/briars at normal speed" }],
+        3: [{ name: "Trackless Step (Ex)", category: "Special Ability", type: "Ex", summary: "Leaves no trail in natural surroundings" }],
+        4: [{ name: "Resist Nature's Lure (Ex)", category: "Special Ability", type: "Ex", summary: "+4 on saves vs spell-like abilities of fey" }],
+        5: [{ name: "Wild Shape (1/day) (Su)", category: "Special Ability", type: "Su", summary: "Assume animal shape for 1 hr/level" }]
+      }
+    },
+    "Crusader": {
+      hd: 10, bab: 1.0, fort: "good", ref: "poor", will: "good", skills: 4,
+      bonusFeatLevels: [],
+      features: {
+        1: [
+          { name: "Steely Resolve 5 (Ex)", category: "Special Ability", type: "Ex", summary: "Delayed damage pool of 5 points" },
+          { name: "Furious Counterstrike (Ex)", category: "Special Ability", type: "Ex", summary: "Gain +1 to +6 morale to attack/damage from delayed damage" }
+        ],
+        2: [{ name: "Indomitable Soul (Ex)", category: "Special Ability", type: "Ex", summary: "Add Cha modifier as an insight bonus to Will saves" }]
+      }
+    },
+    "Swordsage": {
+      hd: 8, bab: 0.75, fort: "poor", ref: "good", will: "good", skills: 6,
+      bonusFeatLevels: [],
+      features: {
+        1: [
+          { name: "Quick to Act +1 (Ex)", category: "Special Ability", type: "Ex", summary: "+1 bonus on initiative checks" },
+          { name: "Discipline Focus (Weapon Focus)", category: "Special Ability", type: "Ex", summary: "Weapon Focus in discipline weapons" }
+        ],
+        2: [{ name: "AC Bonus (Ex)", category: "Special Ability", type: "Ex", summary: "Add Wis modifier to AC in light armor" }]
+      }
+    },
+    "Duskblade": {
+      hd: 8, bab: 1.0, fort: "good", ref: "poor", will: "good", skills: 2,
+      bonusFeatLevels: [],
+      features: {
+        1: [{ name: "Arcane Attunement (Sp)", category: "Special Ability", type: "Sp", summary: "Cast Dancing Lights, Detect Magic, Flare, Ghost Sound, Read Magic 3+Int/day" }],
+        2: [{ name: "Combat Casting", category: "Feat", type: "Ex", summary: "Gain Combat Casting as a bonus feat" }],
+        3: [{ name: "Arcane Channeling (Su)", category: "Special Ability", type: "Su", summary: "Channel touch spells through melee weapon attack" }]
+      }
+    },
+    "Abjurant Champion": {
+      hd: 10, bab: 1.0, fort: "poor", ref: "poor", will: "good", skills: 2,
+      bonusFeatLevels: [],
+      features: {
+        1: [
+          { name: "Abjurant Armor (Su)", category: "Special Ability", type: "Su", summary: "Add Abjurant Champion level to armor/shield bonus of abjuration spells" },
+          { name: "Extended Abjuration (Su)", category: "Special Ability", type: "Su", summary: "Abjuration spells automatically have doubled duration" }
+        ],
+        2: [{ name: "Swift Abjuration (Su)", category: "Special Ability", type: "Su", summary: "Cast abjuration spells as swift actions" }],
+        4: [{ name: "Arcane Boost (Su)", category: "Special Ability", type: "Su", summary: "Burn spell slot for swift attack, damage, AC or save bonus" }],
+        5: [{ name: "Martial Arcanist (Ex)", category: "Special Ability", type: "Ex", summary: "Arcane Caster Level equals Base Attack Bonus (BAB)" }]
+      }
+    },
+    "Eldritch Knight": {
+      hd: 6, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 2,
+      bonusFeatLevels: [1],
+      features: {
+        1: [{ name: "Diverse Training (Ex)", category: "Special Ability", type: "Ex", summary: "Levels stack with fighter and caster levels for prerequisites" }]
+      }
+    }
+  },
+
+  // Get granted class features and bonus feats for a given class and level
+  getClassLevelFeatures(className, classLevel) {
+    const def = this.DND35_CLASS_DEFS[className];
+    if (!def) return { features: [], hasBonusFeat: false };
+    const cl = Number(classLevel) || 1;
+    const features = (def.features && def.features[cl]) ? def.features[cl] : [];
+    const hasBonusFeat = Array.isArray(def.bonusFeatLevels) && def.bonusFeatLevels.includes(cl);
+    return { features, hasBonusFeat };
+  },
+
+  // D&D 3.5e Fractional BAB & Save Progression Calculator (Unearthed Arcana)
+  calculateProgression(levelProgression = [], options = {}) {
+    const system = options.system || 'fractional'; // 'fractional' or 'standard'
+    const isHuman = options.isHuman ?? true;
+    const intMod = Number(options.intMod) || 0;
+
+    let activeLevels = 0;
+    let plannedLevels = levelProgression.length;
+    let baseHp = 0;
+    let totalBabFractional = 0;
+    let totalFortFractional = 0;
+    let totalRefFractional = 0;
+    let totalWillFractional = 0;
+
+    let goodFortGranted = false;
+    let goodRefGranted = false;
+    let goodWillGranted = false;
+
+    const classCounts = {};
+    let totalSkillPts = 0;
+    const activeFeats = [];
+    const activeSpecialAbilities = [];
+
+    levelProgression.forEach((lvl, index) => {
+      const isActive = lvl.active !== false;
+      if (!isActive) return;
+
+      activeLevels++;
+      baseHp += Number(lvl.hpGain) || 0;
+
+      const cName = lvl.className || 'Warblade';
+      const cDef = this.DND35_CLASS_DEFS[cName] || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
+      classCounts[cName] = (classCounts[cName] || 0) + 1;
+
+      // Fractional BAB
+      totalBabFractional += cDef.bab;
+
+      // Fractional Saves
+      if (cDef.fort === 'good') {
+        totalFortFractional += (goodFortGranted ? 0.5 : 2.5);
+        goodFortGranted = true;
+      } else {
+        totalFortFractional += (1 / 3);
+      }
+
+      if (cDef.ref === 'good') {
+        totalRefFractional += (goodRefGranted ? 0.5 : 2.5);
+        goodRefGranted = true;
+      } else {
+        totalRefFractional += (1 / 3);
+      }
+
+      if (cDef.will === 'good') {
+        totalWillFractional += (goodWillGranted ? 0.5 : 2.5);
+        goodWillGranted = true;
+      } else {
+        totalWillFractional += (1 / 3);
+      }
+
+      // Skill Points
+      const baseSkill = cDef.skills || 2;
+      if (activeLevels === 1) {
+        totalSkillPts += Math.max(4, (baseSkill + intMod) * 4) + (isHuman ? 4 : 0);
+      } else {
+        totalSkillPts += Math.max(1, baseSkill + intMod) + (isHuman ? 1 : 0);
+      }
+
+      // Collect active feats & abilities
+      if (Array.isArray(lvl.feats)) {
+        lvl.feats.forEach(f => activeFeats.push(f));
+      }
+      if (Array.isArray(lvl.specialAbilities)) {
+        lvl.specialAbilities.forEach(a => activeSpecialAbilities.push(a));
+      }
+    });
+
+    let finalBab = 0;
+    let finalFort = 0;
+    let finalRef = 0;
+    let finalWill = 0;
+
+    if (system === 'fractional') {
+      finalBab = Math.floor(totalBabFractional + 1e-6);
+      finalFort = Math.floor(totalFortFractional + 1e-6);
+      finalRef = Math.floor(totalRefFractional + 1e-6);
+      finalWill = Math.floor(totalWillFractional + 1e-6);
+    } else {
+      // Standard Core 3.5e: sum table values for each class
+      Object.entries(classCounts).forEach(([cName, count]) => {
+        const cDef = this.DND35_CLASS_DEFS[cName] || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good' };
+        if (cDef.bab === 1.0) finalBab += count;
+        else if (cDef.bab === 0.75) finalBab += Math.floor(count * 0.75);
+        else finalBab += Math.floor(count * 0.5);
+
+        finalFort += (cDef.fort === 'good' ? 2 + Math.floor(count * 0.5) : Math.floor(count / 3));
+        finalRef += (cDef.ref === 'good' ? 2 + Math.floor(count * 0.5) : Math.floor(count / 3));
+        finalWill += (cDef.will === 'good' ? 2 + Math.floor(count * 0.5) : Math.floor(count / 3));
+      });
+    }
+
+    return {
+      activeLevels,
+      plannedLevels,
+      baseHp,
+      baseBab: finalBab,
+      baseSaves: { fort: finalFort, ref: finalRef, will: finalWill },
+      totalSkillPoints: totalSkillPts,
+      fractional: {
+        bab: totalBabFractional,
+        fort: totalFortFractional,
+        ref: totalRefFractional,
+        will: totalWillFractional
+      },
+      classCounts,
+      activeFeats,
+      activeSpecialAbilities
+    };
   }
 };
 

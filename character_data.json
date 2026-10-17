@@ -77,7 +77,8 @@
     "featMode": "Standard 3.5e (1, 3, 6, 9, 12, 15, 18)",
     "clMode": "Character Level (DM Boon)",
     "ignoreAsf": true,
-    "mergeSkills": true
+    "mergeSkills": true,
+    "babSaveSystem": "fractional"
   },
   "feats": [
     { "name": "Weapon Finesse", "source": "Player's Handbook p. 102", "category": "General", "benefit": "Use DEX modifier instead of STR on attack rolls with light weapons, rapier, whip, or spiked chain." },
@@ -126,12 +127,12 @@
     { "id": 11, "name": "Trail Rations (5 Days)", "category": "Other", "slot": "Slotless", "qty": 5, "weight": 5, "cost": 2.5, "isEquipped": false, "isBelt": false, "desc": "Compacted sustenance for travel" }
   ],
   "levelProgression": [
-    { "level": 1, "className": "Sorcerer", "hd": "d4", "hpGain": 4, "bab": 0, "fort": 0, "ref": 0, "will": 2, "skillPts": 8, "feats": ["Weapon Finesse (Lvl 1)", "Shadow Blade (Human Bonus)"], "notes": "Max HP at Lvl 1, Spellcasting starts" },
-    { "level": 2, "className": "Sorcerer", "hd": "d4", "hpGain": 3, "bab": 1, "fort": 0, "ref": 0, "will": 3, "skillPts": 4, "feats": [], "notes": "RAW avg HD rounded" },
-    { "level": 3, "className": "Sorcerer", "hd": "d4", "hpGain": 3, "bab": 1, "fort": 1, "ref": 1, "will": 3, "skillPts": 4, "feats": ["Weapon Focus (Rapier)"], "notes": "3. Seviye Genel Feat hakkı" },
-    { "level": 4, "className": "Sorcerer", "hd": "d4", "hpGain": 3, "bab": 2, "fort": 1, "ref": 1, "will": 4, "skillPts": 4, "feats": ["+1 Stat: Charisma"], "notes": "2. Seviye Büyü Slotları açıldı" },
-    { "level": 5, "className": "Sorcerer", "hd": "d4", "hpGain": 3, "bab": 2, "fort": 1, "ref": 1, "will": 4, "skillPts": 4, "feats": [], "notes": "Caster Level 5 tamamlandı" },
-    { "level": 6, "className": "Warblade", "hd": "d12", "hpGain": 7, "bab": 3, "fort": 4, "ref": 3, "will": 4, "skillPts": 6, "feats": ["Power Attack (Lvl 6)"], "notes": "Battle Clarity, Weapon Aptitude, Maneuvers açıldı" }
+    { "level": 1, "active": true, "className": "Sorcerer", "hd": "d4", "hpGain": 4, "bab": 0, "fort": 0, "ref": 0, "will": 2, "skillPts": 8, "feats": ["Weapon Finesse (Lvl 1)", "Shadow Blade (Human Bonus)"], "specialAbilities": ["Summon Familiar"], "notes": "Max HP at Lvl 1, Spellcasting starts" },
+    { "level": 2, "active": true, "className": "Sorcerer", "hd": "d4", "hpGain": 3, "bab": 1, "fort": 0, "ref": 0, "will": 3, "skillPts": 4, "feats": [], "specialAbilities": [], "notes": "RAW avg HD rounded" },
+    { "level": 3, "active": true, "className": "Sorcerer", "hd": "d4", "hpGain": 3, "bab": 1, "fort": 1, "ref": 1, "will": 3, "skillPts": 4, "feats": ["Weapon Focus (Rapier)"], "specialAbilities": [], "notes": "3. Seviye Genel Feat hakkı" },
+    { "level": 4, "active": true, "className": "Sorcerer", "hd": "d4", "hpGain": 3, "bab": 2, "fort": 1, "ref": 1, "will": 4, "skillPts": 4, "feats": ["+1 Stat: Charisma"], "specialAbilities": [], "notes": "2. Seviye Büyü Slotları açıldı" },
+    { "level": 5, "active": true, "className": "Sorcerer", "hd": "d4", "hpGain": 3, "bab": 2, "fort": 1, "ref": 1, "will": 4, "skillPts": 4, "feats": [], "specialAbilities": [], "notes": "Caster Level 5 tamamlandı" },
+    { "level": 6, "active": true, "className": "Warblade", "hd": "d12", "hpGain": 7, "bab": 3, "fort": 4, "ref": 3, "will": 4, "skillPts": 6, "feats": ["Power Attack (Lvl 6)"], "specialAbilities": ["Battle Clarity (Ex)", "Weapon Aptitude (Ex)"], "notes": "Battle Clarity, Weapon Aptitude, Maneuvers açıldı" }
   ],
   "weapons": [
     {

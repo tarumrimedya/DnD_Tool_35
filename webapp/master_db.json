@@ -1,4 +1,4 @@
-[
+﻿[
     {
         "name":  "Jovar +4",
         "type":  "Weapon",
@@ -827,506 +827,1277 @@
         "benefit":  "Creates illusory sounds of up to four humans per caster level."
     },
     {
-        "name": "Oversized Two-Weapon Fighting",
-        "type": "Feat",
-        "category": "Fighter",
-        "slot": "None",
-        "prereq": "Dex 13, Two-Weapon Fighting, BAB +1",
-        "source": "Complete Adventurer p.111",
-        "benefit": "You can treat a one-handed weapon that you wield in your off hand as if it were a light weapon, and overcome size/handedness penalties for dual wielding.",
-        "tags": ["combat", "dual-wield", "two-weapon"]
+        "name":  "Oversized Two-Weapon Fighting",
+        "type":  "Feat",
+        "category":  "Fighter",
+        "slot":  "None",
+        "prereq":  "Dex 13, Two-Weapon Fighting, BAB +1",
+        "source":  "Complete Adventurer p.111",
+        "benefit":  "You can treat a one-handed weapon that you wield in your off hand as if it were a light weapon, and overcome size/handedness penalties for dual wielding.",
+        "tags":  [
+                     "combat",
+                     "dual-wield",
+                     "two-weapon"
+                 ]
     },
     {
-        "name": "Monkey Grip",
-        "type": "Feat",
-        "category": "Fighter",
-        "slot": "None",
-        "prereq": "Base attack bonus +1",
-        "source": "Complete Warrior p.103",
-        "benefit": "You can use one-handed weapons sized for larger creatures in one hand, or wield two-handed weapons with one hand at a -2 penalty on attack rolls.",
-        "tags": ["combat", "weapons", "oversized"]
+        "name":  "Monkey Grip",
+        "type":  "Feat",
+        "category":  "Fighter",
+        "slot":  "None",
+        "prereq":  "Base attack bonus +1",
+        "source":  "Complete Warrior p.103",
+        "benefit":  "You can use one-handed weapons sized for larger creatures in one hand, or wield two-handed weapons with one hand at a -2 penalty on attack rolls.",
+        "tags":  [
+                     "combat",
+                     "weapons",
+                     "oversized"
+                 ]
     },
     {
-        "name": "Exotic Weapon Proficiency (Jovar)",
-        "type": "Feat",
-        "category": "Fighter",
-        "slot": "None",
-        "prereq": "Base attack bonus +1",
-        "source": "Planar Handbook p.69",
-        "benefit": "You understand how to use the jovar (exotic two-handed sword, 2d6 18-20/x2) in combat without the -4 nonproficiency penalty.",
-        "tags": ["combat", "proficiency", "jovar"]
+        "name":  "Exotic Weapon Proficiency (Jovar)",
+        "type":  "Feat",
+        "category":  "Fighter",
+        "slot":  "None",
+        "prereq":  "Base attack bonus +1",
+        "source":  "Planar Handbook p.69",
+        "benefit":  "You understand how to use the jovar (exotic two-handed sword, 2d6 18-20/x2) in combat without the -4 nonproficiency penalty.",
+        "tags":  [
+                     "combat",
+                     "proficiency",
+                     "jovar"
+                 ]
     },
     {
-        "name": "Boon of Elusiveness Lesser",
-        "type": "DM Grant",
-        "category": "DM Boon",
-        "slot": "None",
-        "prereq": "-",
-        "source": "Campaign Boon",
-        "benefit": "Get 25% less damage from all AoE attacks and spells. Gain +2 Dodge bonus to Armor Class (AC).",
-        "role": "Defense / Dodge",
-        "tags": ["boon", "dodge", "defense", "aoe-resist"]
+        "name":  "Boon of Elusiveness Lesser",
+        "type":  "DM Grant",
+        "category":  "DM Boon",
+        "slot":  "None",
+        "prereq":  "-",
+        "source":  "Campaign Boon",
+        "benefit":  "Get 25% less damage from all AoE attacks and spells. Gain +2 Dodge bonus to Armor Class (AC).",
+        "role":  "Defense / Dodge",
+        "tags":  [
+                     "boon",
+                     "dodge",
+                     "defense",
+                     "aoe-resist"
+                 ]
     },
     {
-        "name": "Draconic Core (1h/day)",
-        "type": "DM Grant",
-        "category": "DM Boon",
-        "slot": "None",
-        "prereq": "-",
-        "source": "Campaign Boon",
-        "benefit": "Swift Action (1 hour/day): Total immunity to acid damage, and breath weapon deals x2 damage.",
-        "role": "Buff / Active Power",
-        "tags": ["boon", "acid-immunity", "breath-weapon"]
+        "name":  "Draconic Core (1h/day)",
+        "type":  "DM Grant",
+        "category":  "DM Boon",
+        "slot":  "None",
+        "prereq":  "-",
+        "source":  "Campaign Boon",
+        "benefit":  "Swift Action (1 hour/day): Total immunity to acid damage, and breath weapon deals x2 damage.",
+        "role":  "Buff / Active Power",
+        "tags":  [
+                     "boon",
+                     "acid-immunity",
+                     "breath-weapon"
+                 ]
     },
     {
-        "name": "Draconic Shield (1/d)",
-        "type": "DM Grant",
-        "category": "DM Boon",
-        "slot": "None",
-        "prereq": "-",
-        "source": "Campaign Boon",
-        "benefit": "Immediate Action (1/day): Negate and ignore all critical hit damage from one attack.",
-        "role": "Defense / Immediate",
-        "tags": ["boon", "crit-immunity", "defense"]
+        "name":  "Draconic Shield (1/d)",
+        "type":  "DM Grant",
+        "category":  "DM Boon",
+        "slot":  "None",
+        "prereq":  "-",
+        "source":  "Campaign Boon",
+        "benefit":  "Immediate Action (1/day): Negate and ignore all critical hit damage from one attack.",
+        "role":  "Defense / Immediate",
+        "tags":  [
+                     "boon",
+                     "crit-immunity",
+                     "defense"
+                 ]
     },
     {
-        "name": "Draconic Shield (DR/- 1min)",
-        "type": "DM Grant",
-        "category": "DM Boon",
-        "slot": "None",
-        "prereq": "-",
-        "source": "Campaign Boon",
-        "benefit": "Swift Action (1 min/day): Gain Damage Reduction equal to Charisma modifier (DR Cha mod/-) for 1 minute.",
-        "role": "Defense / DR",
-        "tags": ["boon", "damage-reduction", "defense"]
+        "name":  "Draconic Shield (DR/- 1min)",
+        "type":  "DM Grant",
+        "category":  "DM Boon",
+        "slot":  "None",
+        "prereq":  "-",
+        "source":  "Campaign Boon",
+        "benefit":  "Swift Action (1 min/day): Gain Damage Reduction equal to Charisma modifier (DR Cha mod/-) for 1 minute.",
+        "role":  "Defense / DR",
+        "tags":  [
+                     "boon",
+                     "damage-reduction",
+                     "defense"
+                 ]
     },
     {
-        "name": "Draconic Toughness",
-        "type": "DM Grant",
-        "category": "DM Boon",
-        "slot": "None",
-        "prereq": "-",
-        "source": "Campaign Boon",
-        "benefit": "Gain extra maximum hit points equal to your character level.",
-        "role": "Defense / HP",
-        "tags": ["boon", "hit-points", "passive"]
+        "name":  "Draconic Toughness",
+        "type":  "DM Grant",
+        "category":  "DM Boon",
+        "slot":  "None",
+        "prereq":  "-",
+        "source":  "Campaign Boon",
+        "benefit":  "Gain extra maximum hit points equal to your character level.",
+        "role":  "Defense / HP",
+        "tags":  [
+                     "boon",
+                     "hit-points",
+                     "passive"
+                 ]
     },
     {
-        "name": "Save Magic +1 Draconic",
-        "type": "DM Grant",
-        "category": "DM Boon",
-        "slot": "None",
-        "prereq": "-",
-        "source": "Campaign Boon",
-        "benefit": "+1 draconic bonus on all saving throws against spells and spell-like abilities.",
-        "role": "Defense / Saves",
-        "tags": ["boon", "saves", "magic-resist"]
+        "name":  "Save Magic +1 Draconic",
+        "type":  "DM Grant",
+        "category":  "DM Boon",
+        "slot":  "None",
+        "prereq":  "-",
+        "source":  "Campaign Boon",
+        "benefit":  "+1 draconic bonus on all saving throws against spells and spell-like abilities.",
+        "role":  "Defense / Saves",
+        "tags":  [
+                     "boon",
+                     "saves",
+                     "magic-resist"
+                 ]
     },
     {
-        "name": "Ability Boost (+2 Con, +2 Cha)",
-        "type": "DM Grant",
-        "category": "DM Boon",
-        "slot": "None",
-        "prereq": "-",
-        "source": "Campaign Boon",
-        "benefit": "Permanent +2 inherent bonus to Constitution and Charisma.",
-        "role": "Stat Boost / Passive",
-        "tags": ["boon", "stat-boost", "con", "cha"]
+        "name":  "Ability Boost (+2 Con, +2 Cha)",
+        "type":  "DM Grant",
+        "category":  "DM Boon",
+        "slot":  "None",
+        "prereq":  "-",
+        "source":  "Campaign Boon",
+        "benefit":  "Permanent +2 inherent bonus to Constitution and Charisma.",
+        "role":  "Stat Boost / Passive",
+        "tags":  [
+                     "boon",
+                     "stat-boost",
+                     "con",
+                     "cha"
+                 ]
     },
     {
-        "name": "Endurance",
-        "type": "DM Grant",
-        "category": "DM Boon",
-        "slot": "None",
-        "prereq": "-",
-        "source": "Campaign Boon",
-        "benefit": "+4 bonus on checks against exhaustion, forced march, and holding breath. Sleep in light or medium armor without becoming fatigued.",
-        "role": "Defense / Passive",
-        "tags": ["boon", "feat", "endurance"]
+        "name":  "Endurance",
+        "type":  "DM Grant",
+        "category":  "DM Boon",
+        "slot":  "None",
+        "prereq":  "-",
+        "source":  "Campaign Boon",
+        "benefit":  "+4 bonus on checks against exhaustion, forced march, and holding breath. Sleep in light or medium armor without becoming fatigued.",
+        "role":  "Defense / Passive",
+        "tags":  [
+                     "boon",
+                     "feat",
+                     "endurance"
+                 ]
     },
     {
-        "name": "Steadfast Determination",
-        "type": "DM Grant",
-        "category": "DM Boon",
-        "slot": "None",
-        "prereq": "Endurance",
-        "source": "Campaign Boon",
-        "benefit": "Use Constitution modifier instead of Wisdom modifier for Will saving throws. A natural 1 on a Fortitude save is not an automatic failure.",
-        "role": "Defense / Saves",
-        "tags": ["boon", "saves", "will-con"]
+        "name":  "Steadfast Determination",
+        "type":  "DM Grant",
+        "category":  "DM Boon",
+        "slot":  "None",
+        "prereq":  "Endurance",
+        "source":  "Campaign Boon",
+        "benefit":  "Use Constitution modifier instead of Wisdom modifier for Will saving throws. A natural 1 on a Fortitude save is not an automatic failure.",
+        "role":  "Defense / Saves",
+        "tags":  [
+                     "boon",
+                     "saves",
+                     "will-con"
+                 ]
     },
     {
-        "name": "Ignore ASF / Boon",
-        "type": "DM Grant",
-        "category": "DM Boon",
-        "slot": "None",
-        "prereq": "-",
-        "source": "Campaign Boon",
-        "benefit": "Arcane Spell Failure percentage (ASF %) from worn armor and shields is completely ignored. Cast spells without spell failure risk.",
-        "role": "Spellcasting / Utility",
-        "tags": ["boon", "asf-ignore", "spellcasting"]
+        "name":  "Ignore ASF / Boon",
+        "type":  "DM Grant",
+        "category":  "DM Boon",
+        "slot":  "None",
+        "prereq":  "-",
+        "source":  "Campaign Boon",
+        "benefit":  "Arcane Spell Failure percentage (ASF %) from worn armor and shields is completely ignored. Cast spells without spell failure risk.",
+        "role":  "Spellcasting / Utility",
+        "tags":  [
+                     "boon",
+                     "asf-ignore",
+                     "spellcasting"
+                 ]
     },
     {
-        "name": "Character Level (DM Boon)",
-        "type": "DM Grant",
-        "category": "DM Boon",
-        "slot": "None",
-        "prereq": "-",
-        "source": "Campaign Boon",
-        "benefit": "Primary Caster Level (CL) scales directly with full character level across multiclassing.",
-        "role": "Spellcasting / CL",
-        "tags": ["boon", "caster-level", "multiclass"]
+        "name":  "Character Level (DM Boon)",
+        "type":  "DM Grant",
+        "category":  "DM Boon",
+        "slot":  "None",
+        "prereq":  "-",
+        "source":  "Campaign Boon",
+        "benefit":  "Primary Caster Level (CL) scales directly with full character level across multiclassing.",
+        "role":  "Spellcasting / CL",
+        "tags":  [
+                     "boon",
+                     "caster-level",
+                     "multiclass"
+                 ]
     },
     {
-        "name": "Flaw: Shaky",
-        "type": "Flaw",
-        "category": "Flaw",
-        "slot": "None",
-        "prereq": "1st level only",
-        "levelRequirement": 1,
-        "grantsBonusFeat": true,
-        "source": "Unearthed Arcana p.91",
-        "benefit": "-2 penalty on all ranged attack rolls. Grants 1 bonus feat at 1st level.",
-        "role": "Flaw / Character",
-        "tags": ["flaw", "bonus-feat", "level-1-only"]
+        "name":  "Flaw: Shaky",
+        "type":  "Flaw",
+        "category":  "Flaw",
+        "slot":  "None",
+        "prereq":  "1st level only",
+        "levelRequirement":  1,
+        "grantsBonusFeat":  true,
+        "source":  "Unearthed Arcana p.91",
+        "benefit":  "-2 penalty on all ranged attack rolls. Grants 1 bonus feat at 1st level.",
+        "role":  "Flaw / Character",
+        "tags":  [
+                     "flaw",
+                     "bonus-feat",
+                     "level-1-only"
+                 ]
     },
     {
-        "name": "Flaw: Frail",
-        "type": "Flaw",
-        "category": "Flaw",
-        "slot": "None",
-        "prereq": "1st level only",
-        "levelRequirement": 1,
-        "grantsBonusFeat": true,
-        "source": "Unearthed Arcana p.91",
-        "benefit": "-1 Hit Point per Hit Die. Grants 1 bonus feat at 1st level.",
-        "role": "Flaw / Character",
-        "tags": ["flaw", "bonus-feat", "level-1-only"]
+        "name":  "Flaw: Frail",
+        "type":  "Flaw",
+        "category":  "Flaw",
+        "slot":  "None",
+        "prereq":  "1st level only",
+        "levelRequirement":  1,
+        "grantsBonusFeat":  true,
+        "source":  "Unearthed Arcana p.91",
+        "benefit":  "-1 Hit Point per Hit Die. Grants 1 bonus feat at 1st level.",
+        "role":  "Flaw / Character",
+        "tags":  [
+                     "flaw",
+                     "bonus-feat",
+                     "level-1-only"
+                 ]
     },
     {
-        "name": "Flaw: Vulnerable",
-        "type": "Flaw",
-        "category": "Flaw",
-        "slot": "None",
-        "prereq": "1st level only",
-        "levelRequirement": 1,
-        "grantsBonusFeat": true,
-        "source": "Unearthed Arcana p.91",
-        "benefit": "-1 penalty to Armor Class (AC). Grants 1 bonus feat at 1st level.",
-        "role": "Flaw / Character",
-        "tags": ["flaw", "bonus-feat", "level-1-only"]
+        "name":  "Flaw: Vulnerable",
+        "type":  "Flaw",
+        "category":  "Flaw",
+        "slot":  "None",
+        "prereq":  "1st level only",
+        "levelRequirement":  1,
+        "grantsBonusFeat":  true,
+        "source":  "Unearthed Arcana p.91",
+        "benefit":  "-1 penalty to Armor Class (AC). Grants 1 bonus feat at 1st level.",
+        "role":  "Flaw / Character",
+        "tags":  [
+                     "flaw",
+                     "bonus-feat",
+                     "level-1-only"
+                 ]
     },
     {
-        "name": "Flaw: Meager Heft",
-        "type": "Flaw",
-        "category": "Flaw",
-        "slot": "None",
-        "prereq": "1st level only",
-        "levelRequirement": 1,
-        "grantsBonusFeat": true,
-        "source": "Unearthed Arcana p.91",
-        "benefit": "-3 effective Strength score for carrying capacity. Grants 1 bonus feat at 1st level.",
-        "role": "Flaw / Character",
-        "tags": ["flaw", "bonus-feat", "level-1-only"]
+        "name":  "Flaw: Meager Heft",
+        "type":  "Flaw",
+        "category":  "Flaw",
+        "slot":  "None",
+        "prereq":  "1st level only",
+        "levelRequirement":  1,
+        "grantsBonusFeat":  true,
+        "source":  "Unearthed Arcana p.91",
+        "benefit":  "-3 effective Strength score for carrying capacity. Grants 1 bonus feat at 1st level.",
+        "role":  "Flaw / Character",
+        "tags":  [
+                     "flaw",
+                     "bonus-feat",
+                     "level-1-only"
+                 ]
     },
     {
-        "name": "Flaw: Poor Reflexes",
-        "type": "Flaw",
-        "category": "Flaw",
-        "slot": "None",
-        "prereq": "1st level only",
-        "levelRequirement": 1,
-        "grantsBonusFeat": true,
-        "source": "Unearthed Arcana p.91",
-        "benefit": "-2 penalty on Reflex saving throws. Grants 1 bonus feat at 1st level.",
-        "role": "Flaw / Character",
-        "tags": ["flaw", "bonus-feat", "level-1-only"]
+        "name":  "Flaw: Poor Reflexes",
+        "type":  "Flaw",
+        "category":  "Flaw",
+        "slot":  "None",
+        "prereq":  "1st level only",
+        "levelRequirement":  1,
+        "grantsBonusFeat":  true,
+        "source":  "Unearthed Arcana p.91",
+        "benefit":  "-2 penalty on Reflex saving throws. Grants 1 bonus feat at 1st level.",
+        "role":  "Flaw / Character",
+        "tags":  [
+                     "flaw",
+                     "bonus-feat",
+                     "level-1-only"
+                 ]
     },
     {
-        "name": "Flaw: Noncombatant",
-        "type": "Flaw",
-        "category": "Flaw",
-        "slot": "None",
-        "prereq": "1st level only",
-        "levelRequirement": 1,
-        "grantsBonusFeat": true,
-        "source": "Unearthed Arcana p.91",
-        "benefit": "-2 penalty on all melee attack rolls. Grants 1 bonus feat at 1st level.",
-        "role": "Flaw / Character",
-        "tags": ["flaw", "bonus-feat", "level-1-only"]
+        "name":  "Flaw: Noncombatant",
+        "type":  "Flaw",
+        "category":  "Flaw",
+        "slot":  "None",
+        "prereq":  "1st level only",
+        "levelRequirement":  1,
+        "grantsBonusFeat":  true,
+        "source":  "Unearthed Arcana p.91",
+        "benefit":  "-2 penalty on all melee attack rolls. Grants 1 bonus feat at 1st level.",
+        "role":  "Flaw / Character",
+        "tags":  [
+                     "flaw",
+                     "bonus-feat",
+                     "level-1-only"
+                 ]
     },
     {
-        "name": "Flaw: Inattentive",
-        "type": "Flaw",
-        "category": "Flaw",
-        "slot": "None",
-        "prereq": "1st level only",
-        "levelRequirement": 1,
-        "grantsBonusFeat": true,
-        "source": "Unearthed Arcana p.91",
-        "benefit": "-4 penalty on Listen and Spot checks. Grants 1 bonus feat at 1st level.",
-        "role": "Flaw / Character",
-        "tags": ["flaw", "bonus-feat", "level-1-only"]
+        "name":  "Flaw: Inattentive",
+        "type":  "Flaw",
+        "category":  "Flaw",
+        "slot":  "None",
+        "prereq":  "1st level only",
+        "levelRequirement":  1,
+        "grantsBonusFeat":  true,
+        "source":  "Unearthed Arcana p.91",
+        "benefit":  "-4 penalty on Listen and Spot checks. Grants 1 bonus feat at 1st level.",
+        "role":  "Flaw / Character",
+        "tags":  [
+                     "flaw",
+                     "bonus-feat",
+                     "level-1-only"
+                 ]
     },
     {
-        "name": "Flaw: Murky-Eyed",
-        "type": "Flaw",
-        "category": "Flaw",
-        "slot": "None",
-        "prereq": "1st level only",
-        "levelRequirement": 1,
-        "grantsBonusFeat": true,
-        "source": "Unearthed Arcana p.91",
-        "benefit": "In combat, roll miss chance twice against concealed targets. Grants 1 bonus feat at 1st level.",
-        "role": "Flaw / Character",
-        "tags": ["flaw", "bonus-feat", "level-1-only"]
+        "name":  "Flaw: Murky-Eyed",
+        "type":  "Flaw",
+        "category":  "Flaw",
+        "slot":  "None",
+        "prereq":  "1st level only",
+        "levelRequirement":  1,
+        "grantsBonusFeat":  true,
+        "source":  "Unearthed Arcana p.91",
+        "benefit":  "In combat, roll miss chance twice against concealed targets. Grants 1 bonus feat at 1st level.",
+        "role":  "Flaw / Character",
+        "tags":  [
+                     "flaw",
+                     "bonus-feat",
+                     "level-1-only"
+                 ]
     },
     {
-        "name": "Human Bonus Feat",
-        "type": "Racial Trait",
-        "category": "Racial Trait",
-        "slot": "None",
-        "prereq": "Human, 1st level only",
-        "levelRequirement": 1,
-        "grantsBonusFeat": true,
-        "source": "PHB p.13",
-        "benefit": "Humans gain 1 extra bonus feat at 1st level character creation.",
-        "role": "Racial / Feat",
-        "tags": ["racial", "human", "bonus-feat", "level-1-only"]
+        "name":  "Human Bonus Feat",
+        "type":  "Racial Trait",
+        "category":  "Racial Trait",
+        "slot":  "None",
+        "prereq":  "Human, 1st level only",
+        "levelRequirement":  1,
+        "grantsBonusFeat":  true,
+        "source":  "PHB p.13",
+        "benefit":  "Humans gain 1 extra bonus feat at 1st level character creation.",
+        "role":  "Racial / Feat",
+        "tags":  [
+                     "racial",
+                     "human",
+                     "bonus-feat",
+                     "level-1-only"
+                 ]
     },
     {
-        "name": "Human Versatility (Extra Skills)",
-        "type": "Racial Trait",
-        "category": "Racial Trait",
-        "slot": "None",
-        "prereq": "Human, 1st level only",
-        "levelRequirement": 1,
-        "source": "PHB p.13",
-        "benefit": "Humans gain 4 extra skill points at 1st level and 1 extra skill point at each additional level.",
-        "role": "Racial / Skill",
-        "tags": ["racial", "human", "skills", "level-1-only"]
+        "name":  "Human Versatility (Extra Skills)",
+        "type":  "Racial Trait",
+        "category":  "Racial Trait",
+        "slot":  "None",
+        "prereq":  "Human, 1st level only",
+        "levelRequirement":  1,
+        "source":  "PHB p.13",
+        "benefit":  "Humans gain 4 extra skill points at 1st level and 1 extra skill point at each additional level.",
+        "role":  "Racial / Skill",
+        "tags":  [
+                     "racial",
+                     "human",
+                     "skills",
+                     "level-1-only"
+                 ]
     },
     {
-        "name": "Elf Weapon Proficiency",
-        "type": "Racial Trait",
-        "category": "Racial Trait",
-        "slot": "None",
-        "prereq": "Elf, 1st level only",
-        "levelRequirement": 1,
-        "source": "PHB p.15",
-        "benefit": "Elves are automatically proficient with longsword, rapier, longbow, and shortbow.",
-        "role": "Racial / Combat",
-        "tags": ["racial", "elf", "weapons", "level-1-only"]
+        "name":  "Elf Weapon Proficiency",
+        "type":  "Racial Trait",
+        "category":  "Racial Trait",
+        "slot":  "None",
+        "prereq":  "Elf, 1st level only",
+        "levelRequirement":  1,
+        "source":  "PHB p.15",
+        "benefit":  "Elves are automatically proficient with longsword, rapier, longbow, and shortbow.",
+        "role":  "Racial / Combat",
+        "tags":  [
+                     "racial",
+                     "elf",
+                     "weapons",
+                     "level-1-only"
+                 ]
     },
     {
-        "name": "Dwarven Stonecunning",
-        "type": "Racial Trait",
-        "category": "Racial Trait",
-        "slot": "None",
-        "prereq": "Dwarf, 1st level only",
-        "levelRequirement": 1,
-        "source": "PHB p.14",
-        "benefit": "+2 racial bonus on Search checks to notice unusual stonework. Free check within 10 ft.",
-        "role": "Racial / Utility",
-        "tags": ["racial", "dwarf", "stonework", "level-1-only"]
+        "name":  "Dwarven Stonecunning",
+        "type":  "Racial Trait",
+        "category":  "Racial Trait",
+        "slot":  "None",
+        "prereq":  "Dwarf, 1st level only",
+        "levelRequirement":  1,
+        "source":  "PHB p.14",
+        "benefit":  "+2 racial bonus on Search checks to notice unusual stonework. Free check within 10 ft.",
+        "role":  "Racial / Utility",
+        "tags":  [
+                     "racial",
+                     "dwarf",
+                     "stonework",
+                     "level-1-only"
+                 ]
     },
     {
-        "name": "Halfling Luck",
-        "type": "Racial Trait",
-        "category": "Racial Trait",
-        "slot": "None",
-        "prereq": "Halfling, 1st level only",
-        "levelRequirement": 1,
-        "source": "PHB p.20",
-        "benefit": "+1 racial bonus on all saving throws.",
-        "role": "Racial / Saves",
-        "tags": ["racial", "halfling", "saves", "level-1-only"]
+        "name":  "Halfling Luck",
+        "type":  "Racial Trait",
+        "category":  "Racial Trait",
+        "slot":  "None",
+        "prereq":  "Halfling, 1st level only",
+        "levelRequirement":  1,
+        "source":  "PHB p.20",
+        "benefit":  "+1 racial bonus on all saving throws.",
+        "role":  "Racial / Saves",
+        "tags":  [
+                     "racial",
+                     "halfling",
+                     "saves",
+                     "level-1-only"
+                 ]
     },
     {
-        "name": "Skilleri Birleştir (Skill Consolidation)",
-        "type": "House Rule",
-        "category": "House Rule",
-        "slot": "None",
-        "parent": "Alternative Rules",
-        "prereq": "-",
-        "source": "Unearthed Arcana / Pathfinder 1e",
-        "benefit": "Beceriler 7 konsolide grupta (Athletics, Stealth, Perception, Acrobatics, Thievery, Diplomacy, Linguistics) birleştirilerek oyun akışı sadeleştirilir. Birleşik becerinin rankı altındaki becerilerin en yükseğidir.",
-        "bonusType": "Rule",
-        "scope": "Skills",
-        "action": "Passive",
-        "role": "House Rule",
-        "tags": ["skills", "consolidation", "houserule", "pathfinder", "unearthed-arcana"]
+        "name":  "Skilleri Birleştir (Skill Consolidation)",
+        "type":  "House Rule",
+        "category":  "House Rule",
+        "slot":  "None",
+        "parent":  "Alternative Rules",
+        "prereq":  "-",
+        "source":  "Unearthed Arcana / Pathfinder 1e",
+        "benefit":  "Beceriler 7 konsolide grupta (Athletics, Stealth, Perception, Acrobatics, Thievery, Diplomacy, Linguistics) birleştirilerek oyun akışı sadeleştirilir. Birleşik becerinin rankı altındaki becerilerin en yükseğidir.",
+        "bonusType":  "Rule",
+        "scope":  "Skills",
+        "action":  "Passive",
+        "role":  "House Rule",
+        "tags":  [
+                     "skills",
+                     "consolidation",
+                     "houserule",
+                     "pathfinder",
+                     "unearthed-arcana"
+                 ]
     },
     {
-        "name": "Tome of Worldly Memory",
-        "type": "Wondrous Item",
-        "category": "Wondrous Item",
-        "slot": "Slotless",
-        "weight": 1,
-        "cost": 1500,
-        "source": "Magic Item Compendium p.190",
-        "benefit": "Günde 3 kez, sayfalarına 1 dakika göz gezdirerek yapılacak herhangi bir Knowledge kontrolüne +5 Competence bonusu verir (eğitimsiz dahi atılabilir).",
-        "bonusType": "Competence",
-        "scope": "Knowledge",
-        "skillBonus": 5,
-        "role": "Skill / Knowledge",
-        "tags": ["item", "knowledge", "skill-bonus", "tome"]
+        "name":  "Tome of Worldly Memory",
+        "type":  "Wondrous Item",
+        "category":  "Wondrous Item",
+        "slot":  "Slotless",
+        "weight":  1,
+        "cost":  1500,
+        "source":  "Magic Item Compendium p.190",
+        "benefit":  "Günde 3 kez, sayfalarına 1 dakika göz gezdirerek yapılacak herhangi bir Knowledge kontrolüne +5 Competence bonusu verir (eğitimsiz dahi atılabilir).",
+        "bonusType":  "Competence",
+        "scope":  "Knowledge",
+        "skillBonus":  5,
+        "role":  "Skill / Knowledge",
+        "tags":  [
+                     "item",
+                     "knowledge",
+                     "skill-bonus",
+                     "tome"
+                 ]
     },
     {
-        "name": "Stone of Good Luck (Luckstone)",
-        "type": "Wondrous Item",
-        "category": "Wondrous Item",
-        "slot": "Slotless",
-        "weight": 0,
-        "cost": 20000,
-        "source": "DMG p.267",
-        "benefit": "Taşıyıcısına tüm Saving Throw, Ability Check ve tüm Beceri kontrollerinde (Knowledge dahil) +1 Luck bonusu sağlar.",
-        "bonusType": "Luck",
-        "scope": "All Skills",
-        "skillBonus": 1,
-        "role": "Utility / Saves / Skills",
-        "tags": ["item", "luck", "skills", "saves", "luckstone"]
+        "name":  "Stone of Good Luck (Luckstone)",
+        "type":  "Wondrous Item",
+        "category":  "Wondrous Item",
+        "slot":  "Slotless",
+        "weight":  0,
+        "cost":  20000,
+        "source":  "DMG p.267",
+        "benefit":  "Taşıyıcısına tüm Saving Throw, Ability Check ve tüm Beceri kontrollerinde (Knowledge dahil) +1 Luck bonusu sağlar.",
+        "bonusType":  "Luck",
+        "scope":  "All Skills",
+        "skillBonus":  1,
+        "role":  "Utility / Saves / Skills",
+        "tags":  [
+                     "item",
+                     "luck",
+                     "skills",
+                     "saves",
+                     "luckstone"
+                 ]
     },
     {
-        "name": "Pale Green Ioun Stone",
-        "type": "Wondrous Item",
-        "category": "Wondrous Item",
-        "slot": "Slotless",
-        "weight": 0,
-        "cost": 30000,
-        "source": "DMG p.260",
-        "benefit": "Başın etrafında dönerek tüm saldırı zarlarına, kurtarma zarlarına ve tüm beceri kontrollerine +1 Competence bonusu verir.",
-        "bonusType": "Competence",
-        "scope": "All Skills",
-        "skillBonus": 1,
-        "role": "Buff / Offense / Skills",
-        "tags": ["item", "ioun-stone", "competence", "skills"]
+        "name":  "Pale Green Ioun Stone",
+        "type":  "Wondrous Item",
+        "category":  "Wondrous Item",
+        "slot":  "Slotless",
+        "weight":  0,
+        "cost":  30000,
+        "source":  "DMG p.260",
+        "benefit":  "Başın etrafında dönerek tüm saldırı zarlarına, kurtarma zarlarına ve tüm beceri kontrollerine +1 Competence bonusu verir.",
+        "bonusType":  "Competence",
+        "scope":  "All Skills",
+        "skillBonus":  1,
+        "role":  "Buff / Offense / Skills",
+        "tags":  [
+                     "item",
+                     "ioun-stone",
+                     "competence",
+                     "skills"
+                 ]
     },
     {
-        "name": "Collector of Stories",
-        "type": "Skill Trick",
-        "category": "Skill Trick",
-        "slot": "None",
-        "prereq": "Knowledge 5 ranks",
-        "source": "Complete Scoundrel p.85",
-        "benefit": "Karşılaşılan canavarları tanımlamak ve zayıflıklarını öğrenmek için yapılan eğitilmiş Knowledge kontrollerine +5 Competence bonusu verir.",
-        "bonusType": "Competence",
-        "scope": "Knowledge",
-        "skillBonus": 5,
-        "role": "Feat / Skill Trick / Combat",
-        "tags": ["skill-trick", "knowledge", "monster-identify"]
+        "name":  "Collector of Stories",
+        "type":  "Skill Trick",
+        "category":  "Skill Trick",
+        "slot":  "None",
+        "prereq":  "Knowledge 5 ranks",
+        "source":  "Complete Scoundrel p.85",
+        "benefit":  "Karşılaşılan canavarları tanımlamak ve zayıflıklarını öğrenmek için yapılan eğitilmiş Knowledge kontrollerine +5 Competence bonusu verir.",
+        "bonusType":  "Competence",
+        "scope":  "Knowledge",
+        "skillBonus":  5,
+        "role":  "Feat / Skill Trick / Combat",
+        "tags":  [
+                     "skill-trick",
+                     "knowledge",
+                     "monster-identify"
+                 ]
     },
     {
-        "name": "Lore of the Gods",
-        "type": "Spell",
-        "category": "Spell Buff",
-        "slot": "None",
-        "level": 2,
-        "school": "Divination",
-        "source": "Complete Divine p.168",
-        "benefit": "İlahi ilhamla zihni açar. Süresi boyunca tüm Knowledge kontrollerine +5 Insight bonusu (Knowledge Domain varsa +10) sağlar.",
-        "bonusType": "Insight",
-        "scope": "Knowledge",
-        "skillBonus": 5,
-        "role": "Spell / Buff / Lore",
-        "tags": ["spell", "divination", "knowledge", "insight"]
+        "name":  "Lore of the Gods",
+        "type":  "Spell",
+        "category":  "Spell Buff",
+        "slot":  "None",
+        "level":  2,
+        "school":  "Divination",
+        "source":  "Complete Divine p.168",
+        "benefit":  "İlahi ilhamla zihni açar. Süresi boyunca tüm Knowledge kontrollerine +5 Insight bonusu (Knowledge Domain varsa +10) sağlar.",
+        "bonusType":  "Insight",
+        "scope":  "Knowledge",
+        "skillBonus":  5,
+        "role":  "Spell / Buff / Lore",
+        "tags":  [
+                     "spell",
+                     "divination",
+                     "knowledge",
+                     "insight"
+                 ]
     },
     {
-        "name": "Knowledge (The Planes)",
-        "type": "Skill",
-        "category": "Knowledge Skill",
-        "slot": "None",
-        "source": "PHB p.78",
-        "benefit": "Düzlemler, Astral/Ethereal seyahat, dış düzlem varlıkları (Fiend, Celestial vb.) hakkında derin bilgi.",
-        "stat": "int",
-        "untrained": false,
-        "acp": false,
-        "scope": "Knowledge",
-        "role": "Skill / Lore",
-        "tags": ["skill", "knowledge", "planes"]
+        "name":  "Knowledge (The Planes)",
+        "type":  "Skill",
+        "category":  "Knowledge Skill",
+        "slot":  "None",
+        "source":  "PHB p.78",
+        "benefit":  "Düzlemler, Astral/Ethereal seyahat, dış düzlem varlıkları (Fiend, Celestial vb.) hakkında derin bilgi.",
+        "stat":  "int",
+        "untrained":  false,
+        "acp":  false,
+        "scope":  "Knowledge",
+        "role":  "Skill / Lore",
+        "tags":  [
+                     "skill",
+                     "knowledge",
+                     "planes"
+                 ]
     },
     {
-        "name": "Knowledge (Geography)",
-        "type": "Skill",
-        "category": "Knowledge Skill",
-        "slot": "None",
-        "source": "PHB p.78",
-        "benefit": "Araziler, haritalar, topoğrafya, iklimler ve yerleşimler.",
-        "stat": "int",
-        "untrained": false,
-        "acp": false,
-        "scope": "Knowledge",
-        "role": "Skill / Lore",
-        "tags": ["skill", "knowledge", "geography"]
+        "name":  "Knowledge (Geography)",
+        "type":  "Skill",
+        "category":  "Knowledge Skill",
+        "slot":  "None",
+        "source":  "PHB p.78",
+        "benefit":  "Araziler, haritalar, topoğrafya, iklimler ve yerleşimler.",
+        "stat":  "int",
+        "untrained":  false,
+        "acp":  false,
+        "scope":  "Knowledge",
+        "role":  "Skill / Lore",
+        "tags":  [
+                     "skill",
+                     "knowledge",
+                     "geography"
+                 ]
     },
     {
-        "name": "Knowledge (Dungeoneering)",
-        "type": "Skill",
-        "category": "Knowledge Skill",
-        "slot": "None",
-        "source": "PHB p.78",
-        "benefit": "Yeraltı dünyası, mağaralar, zindan ekolojisi, Aberration yaratıkları ve yön bulma.",
-        "stat": "int",
-        "untrained": false,
-        "acp": false,
-        "scope": "Knowledge",
-        "role": "Skill / Lore",
-        "tags": ["skill", "knowledge", "dungeoneering"]
+        "name":  "Knowledge (Dungeoneering)",
+        "type":  "Skill",
+        "category":  "Knowledge Skill",
+        "slot":  "None",
+        "source":  "PHB p.78",
+        "benefit":  "Yeraltı dünyası, mağaralar, zindan ekolojisi, Aberration yaratıkları ve yön bulma.",
+        "stat":  "int",
+        "untrained":  false,
+        "acp":  false,
+        "scope":  "Knowledge",
+        "role":  "Skill / Lore",
+        "tags":  [
+                     "skill",
+                     "knowledge",
+                     "dungeoneering"
+                 ]
     },
     {
-        "name": "Knowledge (Warfare & Tactics)",
-        "type": "Skill",
-        "category": "Knowledge Skill",
-        "slot": "None",
-        "source": "Heroes of Battle / Tome of Battle",
-        "benefit": "Savaş taktikleri, ordu konuşlanması, muharebe stratejisi ve kuşatma manevraları.",
-        "stat": "int",
-        "untrained": false,
-        "acp": false,
-        "scope": "Knowledge",
-        "role": "Skill / Lore",
-        "tags": ["skill", "knowledge", "warfare", "tactics"]
+        "name":  "Knowledge (Warfare \u0026 Tactics)",
+        "type":  "Skill",
+        "category":  "Knowledge Skill",
+        "slot":  "None",
+        "source":  "Heroes of Battle / Tome of Battle",
+        "benefit":  "Savaş taktikleri, ordu konuşlanması, muharebe stratejisi ve kuşatma manevraları.",
+        "stat":  "int",
+        "untrained":  false,
+        "acp":  false,
+        "scope":  "Knowledge",
+        "role":  "Skill / Lore",
+        "tags":  [
+                     "skill",
+                     "knowledge",
+                     "warfare",
+                     "tactics"
+                 ]
     },
     {
-        "name": "Knowledge (Architecture and Engineering)",
-        "type": "Skill",
-        "category": "Knowledge Skill",
-        "slot": "None",
-        "source": "PHB p.78",
-        "benefit": "Bina yapıları, kaleler, tüneller, köprüler, yapısal zayıflıklar ve tahkimatlar.",
-        "stat": "int",
-        "untrained": false,
-        "acp": false,
-        "scope": "Knowledge",
-        "role": "Skill / Lore",
-        "tags": ["skill", "knowledge", "engineering"]
+        "name":  "Knowledge (Architecture and Engineering)",
+        "type":  "Skill",
+        "category":  "Knowledge Skill",
+        "slot":  "None",
+        "source":  "PHB p.78",
+        "benefit":  "Bina yapıları, kaleler, tüneller, köprüler, yapısal zayıflıklar ve tahkimatlar.",
+        "stat":  "int",
+        "untrained":  false,
+        "acp":  false,
+        "scope":  "Knowledge",
+        "role":  "Skill / Lore",
+        "tags":  [
+                     "skill",
+                     "knowledge",
+                     "engineering"
+                 ]
     },
     {
-        "name": "Knowledge (Nobility and Royalty)",
-        "type": "Skill",
-        "category": "Knowledge Skill",
-        "slot": "None",
-        "source": "PHB p.78",
-        "benefit": "Soylu hanedanlar, armalar, saray protokolleri, unvanlar ve veraset kanunları.",
-        "stat": "int",
-        "untrained": false,
-        "acp": false,
-        "scope": "Knowledge",
-        "role": "Skill / Lore",
-        "tags": ["skill", "knowledge", "nobility"]
+        "name":  "Knowledge (Nobility and Royalty)",
+        "type":  "Skill",
+        "category":  "Knowledge Skill",
+        "slot":  "None",
+        "source":  "PHB p.78",
+        "benefit":  "Soylu hanedanlar, armalar, saray protokolleri, unvanlar ve veraset kanunları.",
+        "stat":  "int",
+        "untrained":  false,
+        "acp":  false,
+        "scope":  "Knowledge",
+        "role":  "Skill / Lore",
+        "tags":  [
+                     "skill",
+                     "knowledge",
+                     "nobility"
+                 ]
     },
     {
-        "name": "Knowledge (History)",
-        "type": "Skill",
-        "category": "Knowledge Skill",
-        "slot": "None",
-        "source": "PHB p.78",
-        "benefit": "Antik krallıklar, tarihi savaşlar, efsanevi kahramanlar ve geçmiş olaylar.",
-        "stat": "int",
-        "untrained": false,
-        "acp": false,
-        "scope": "Knowledge",
-        "role": "Skill / Lore",
-        "tags": ["skill", "knowledge", "history"]
+        "name":  "Knowledge (History)",
+        "type":  "Skill",
+        "category":  "Knowledge Skill",
+        "slot":  "None",
+        "source":  "PHB p.78",
+        "benefit":  "Antik krallıklar, tarihi savaşlar, efsanevi kahramanlar ve geçmiş olaylar.",
+        "stat":  "int",
+        "untrained":  false,
+        "acp":  false,
+        "scope":  "Knowledge",
+        "role":  "Skill / Lore",
+        "tags":  [
+                     "skill",
+                     "knowledge",
+                     "history"
+                 ]
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "class feature",
+                     "defense",
+                     "ac",
+                     "uncanny dodge"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "PHB p.26 / ToB p.22",
+        "name":  "Uncanny Dodge (Ex)",
+        "role":  "Defense / Class Feature",
+        "benefit":  "Retain Dex bonus to AC even if caught flat-footed or struck by an invisible attacker."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "class feature",
+                     "defense",
+                     "flank",
+                     "uncanny dodge"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "PHB p.26 / ToB p.22",
+        "name":  "Improved Uncanny Dodge (Ex)",
+        "role":  "Defense / Class Feature",
+        "benefit":  "Can no longer be flanked; only a rogue with 4+ more rogue levels than character can sneak attack."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "warblade",
+                     "class feature",
+                     "crit",
+                     "attack"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "Tome of Battle p.22",
+        "name":  "Battle Ardor (Ex)",
+        "role":  "Offense / Class Feature",
+        "benefit":  "Add INT modifier as an insight bonus on rolls made to confirm critical hits."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "warblade",
+                     "class feature",
+                     "damage",
+                     "flank"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "Tome of Battle p.22",
+        "name":  "Battle Cunning (Ex)",
+        "role":  "Offense / Class Feature",
+        "benefit":  "Add INT modifier as an insight bonus on damage rolls against flat-footed or flanked opponents."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "warblade",
+                     "class feature",
+                     "maneuver",
+                     "defense"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "Tome of Battle p.22",
+        "name":  "Battle Skill (Ex)",
+        "role":  "Defense / Class Feature",
+        "benefit":  "Add INT modifier as an insight bonus on checks to resist combat maneuvers (bull rush, trip, disarm, sunder, grapple)."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "warblade",
+                     "class feature",
+                     "aoo",
+                     "attack"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "Tome of Battle p.22",
+        "name":  "Battle Mastery (Ex)",
+        "role":  "Offense / Class Feature",
+        "benefit":  "Add INT modifier as an insight bonus on attack and damage rolls made during attacks of opportunity."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "warblade",
+                     "class feature",
+                     "stance",
+                     "tome of battle"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "Tome of Battle p.22",
+        "name":  "Stance Mastery (Ex)",
+        "role":  "Tactical / Class Feature",
+        "benefit":  "Can have two martial stances active simultaneously and gain the benefits of both."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "barbarian",
+                     "monk",
+                     "class feature",
+                     "speed"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "PHB p.25",
+        "name":  "Fast Movement (Ex)",
+        "role":  "Mobility / Class Feature",
+        "benefit":  "+10 ft enhancement bonus to base land speed when wearing light armor, medium armor, or no armor and carrying less than a heavy load."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "barbarian",
+                     "class feature",
+                     "rage",
+                     "buff"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "PHB p.25",
+        "name":  "Rage (Ex)",
+        "role":  "Combat Buff / Class Feature",
+        "benefit":  "Gain +4 Str, +4 Con, +2 morale bonus to Will saves, -2 penalty to AC for 3+Con modifier rounds."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "barbarian",
+                     "class feature",
+                     "dr",
+                     "defense"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "PHB p.26",
+        "name":  "Damage Reduction 1/- (Ex)",
+        "role":  "Defense / Class Feature",
+        "benefit":  "Ignore 1 point of physical damage from each weapon attack and natural weapon."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "barbarian",
+                     "rogue",
+                     "class feature",
+                     "traps"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "PHB p.26",
+        "name":  "Trap Sense +1 (Ex)",
+        "role":  "Defense / Class Feature",
+        "benefit":  "Gain +1 reflex bonus on Reflex saves made to avoid traps and +1 dodge bonus to AC against attacks made by traps."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "rogue",
+                     "class feature",
+                     "sneak attack",
+                     "damage"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "PHB p.50",
+        "name":  "Sneak Attack +1d6",
+        "role":  "Offense / Class Feature",
+        "benefit":  "Deals +1d6 extra precision damage whenever target is denied Dex bonus to AC or when flanked."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "rogue",
+                     "class feature",
+                     "traps",
+                     "search"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "PHB p.50",
+        "name":  "Trapfinding (Ex)",
+        "role":  "Utility / Class Feature",
+        "benefit":  "Can use Search skill to locate traps with DC \u003e 20 and Disable Device to disarm magic traps."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "rogue",
+                     "monk",
+                     "class feature",
+                     "evasion",
+                     "reflex"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "PHB p.50",
+        "name":  "Evasion (Ex)",
+        "role":  "Defense / Class Feature",
+        "benefit":  "Take no damage on successful Reflex saving throw against attacks that normally deal half damage on a save."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "cleric",
+                     "paladin",
+                     "class feature",
+                     "undead",
+                     "divine"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "PHB p.32",
+        "name":  "Turn Undead (Su)",
+        "role":  "Tactical / Class Feature",
+        "benefit":  "Channel positive divine energy to turn or destroy undead creatures 3 + Cha modifier times per day."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "paladin",
+                     "class feature",
+                     "saves",
+                     "charisma"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "PHB p.44",
+        "name":  "Divine Grace (Su)",
+        "role":  "Defense / Class Feature",
+        "benefit":  "Gain a bonus equal to Charisma modifier (if any) on all saving throws (Fortitude, Reflex, and Will)."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "paladin",
+                     "class feature",
+                     "healing",
+                     "pool"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "PHB p.44",
+        "name":  "Lay on Hands (Su)",
+        "role":  "Healing / Class Feature",
+        "benefit":  "Heal each day a total amount of hit points equal to Paladin level x Charisma modifier by touch."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "paladin",
+                     "class feature",
+                     "smite",
+                     "attack"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "PHB p.44",
+        "name":  "Smite Evil (Su)",
+        "role":  "Offense / Class Feature",
+        "benefit":  "Add Cha modifier to attack roll and +1 damage per Paladin level against an evil foe."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "paladin",
+                     "class feature",
+                     "aura",
+                     "fear"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "PHB p.44",
+        "name":  "Aura of Courage (Su)",
+        "role":  "Buff / Class Feature",
+        "benefit":  "Immune to fear; allies within 10 ft gain +4 morale bonus on saving throws vs fear effects."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "paladin",
+                     "class feature",
+                     "health",
+                     "immunity"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "PHB p.44",
+        "name":  "Divine Health (Ex)",
+        "role":  "Defense / Class Feature",
+        "benefit":  "Immunity to all diseases, including supernatural and magical diseases."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "monk",
+                     "class feature",
+                     "flurry",
+                     "attack"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "PHB p.40",
+        "name":  "Flurry of Blows (Ex)",
+        "role":  "Offense / Class Feature",
+        "benefit":  "One additional attack each round with unarmed strike or special monk weapons with -2 on all attack rolls."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "monk",
+                     "class feature",
+                     "mind",
+                     "enchantment"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "PHB p.41",
+        "name":  "Still Mind (Ex)",
+        "role":  "Defense / Class Feature",
+        "benefit":  "+2 bonus on saving throws against spells and effects from the enchantment school."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "monk",
+                     "class feature",
+                     "ki strike",
+                     "dr"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "PHB p.41",
+        "name":  "Ki Strike (Magic) (Su)",
+        "role":  "Offense / Class Feature",
+        "benefit":  "Unarmed strikes are treated as magic weapons for the purpose of overcoming damage reduction."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "ranger",
+                     "class feature",
+                     "favored enemy"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "PHB p.47",
+        "name":  "1st Favored Enemy",
+        "role":  "Combat Buff / Class Feature",
+        "benefit":  "+2 bonus on Bluff, Listen, Sense Motive, Spot, and Survival checks and weapon damage rolls vs chosen creature type."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "ranger",
+                     "druid",
+                     "class feature",
+                     "animals"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "PHB p.47",
+        "name":  "Wild Empathy (Ex)",
+        "role":  "Social / Class Feature",
+        "benefit":  "Improve the attitude of an animal with 1d20 + class level + Cha modifier check."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "ranger",
+                     "class feature",
+                     "combat style"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "PHB p.47",
+        "name":  "Combat Style (Ex)",
+        "role":  "Feat / Class Feature",
+        "benefit":  "Gain Rapid Shot (Archery) or Two-Weapon Fighting (TWF) as a bonus feat without meeting prerequisites."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "druid",
+                     "ranger",
+                     "class feature",
+                     "animal companion"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "PHB p.35",
+        "name":  "Animal Companion (Ex)",
+        "role":  "Companion / Class Feature",
+        "benefit":  "Gain a loyal animal companion that advances in power alongside the master."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "druid",
+                     "class feature",
+                     "wild shape"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "PHB p.37",
+        "name":  "Wild Shape (Su)",
+        "role":  "Transformation / Class Feature",
+        "benefit":  "Magically assume the shape of any animal of Medium or Small size for 1 hour per Druid level."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "bard",
+                     "class feature",
+                     "music",
+                     "bardic music"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "PHB p.29",
+        "name":  "Bardic Music (Su)",
+        "role":  "Buff / Class Feature",
+        "benefit":  "Use song or poetics to produce magical effects on allies and foes 1 time per day per Bard level."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "bard",
+                     "class feature",
+                     "knowledge",
+                     "lore"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "PHB p.28",
+        "name":  "Bardic Knowledge (Ex)",
+        "role":  "Lore / Class Feature",
+        "benefit":  "Make special bardic knowledge check (1d20 + Bard level + Int mod) for ancient lore and legends."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "bard",
+                     "class feature",
+                     "inspire courage"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "PHB p.29",
+        "name":  "Inspire Courage +1 (Su)",
+        "role":  "Buff / Class Feature",
+        "benefit":  "Allies within 30 ft gain +1 morale bonus on saving throws vs charm/fear and +1 attack/weapon damage."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "crusader",
+                     "class feature",
+                     "steely resolve"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "Tome of Battle p.10",
+        "name":  "Steely Resolve 5 (Ex)",
+        "role":  "Defense / Class Feature",
+        "benefit":  "Delayed damage pool of 5 points; damage taken enters pool and affects you at end of next turn."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "crusader",
+                     "class feature",
+                     "counterstrike"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "Tome of Battle p.10",
+        "name":  "Furious Counterstrike (Ex)",
+        "role":  "Offense / Class Feature",
+        "benefit":  "Gain +1 to +6 morale bonus on melee attack and damage rolls based on amount in delayed damage pool."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "crusader",
+                     "class feature",
+                     "will",
+                     "saves"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "Tome of Battle p.11",
+        "name":  "Indomitable Soul (Ex)",
+        "role":  "Defense / Class Feature",
+        "benefit":  "Add CHA modifier as an insight bonus to Will saves."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "abjurant champion",
+                     "class feature",
+                     "ac",
+                     "shield",
+                     "mage armor"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "Complete Mage p.53",
+        "name":  "Abjurant Armor (Su)",
+        "role":  "Defense / Class Feature",
+        "benefit":  "Whenever you cast an abjuration spell that grants an armor or shield bonus to AC (e.g. Shield, Mage Armor), increase the bonus by your Abjurant Champion level."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "abjurant champion",
+                     "class feature",
+                     "abjuration",
+                     "duration"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "Complete Mage p.53",
+        "name":  "Extended Abjuration (Su)",
+        "role":  "Buff / Class Feature",
+        "benefit":  "All abjuration spells you cast have their duration automatically doubled, as though affected by Extend Spell."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "abjurant champion",
+                     "class feature",
+                     "swift",
+                     "abjuration"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "Complete Mage p.53",
+        "name":  "Swift Abjuration (Su)",
+        "role":  "Utility / Class Feature",
+        "benefit":  "Cast any abjuration spell of up to 2nd level (higher at later levels) as a swift action."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "abjurant champion",
+                     "class feature",
+                     "arcane boost"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "Complete Mage p.53",
+        "name":  "Arcane Boost (Su)",
+        "role":  "Combat Buff / Class Feature",
+        "benefit":  "Burn a spell slot as a swift action to gain insight bonus to attack, damage, AC, saves, or resistance."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "abjurant champion",
+                     "class feature",
+                     "cl",
+                     "bab"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "Complete Mage p.53",
+        "name":  "Martial Arcanist (Ex)",
+        "role":  "Caster / Class Feature",
+        "benefit":  "Your Caster Level in all arcane spellcasting classes becomes equal to your Base Attack Bonus (BAB)."
+    },
+    {
+        "slot":  "None",
+        "tags":  [
+                     "eldritch knight",
+                     "class feature",
+                     "fighter",
+                     "feat"
+                 ],
+        "category":  "Class Feature",
+        "type":  "Special Ability",
+        "source":  "Complete Arcane p.52",
+        "name":  "Diverse Training (Ex)",
+        "role":  "Utility / Class Feature",
+        "benefit":  "Eldritch knight levels stack with fighter levels for feat prerequisites and with caster levels for spell progression."
     }
 ]
