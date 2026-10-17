@@ -2468,9 +2468,12 @@
         <button onclick="closeFeatDetailModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg text-xs font-bold transition">✕ Kapat</button>
       </div>
       <div class="p-4 space-y-3 text-xs">
-        <div class="flex items-center gap-2 text-[11px]">
-          <span class="text-slate-400 font-bold uppercase">Kategori:</span>
-          <span id="feat-modal-category" class="badge bg-indigo-950 text-indigo-300 border border-indigo-700">General</span>
+        <div class="flex flex-wrap items-center justify-between gap-2 text-[11px]">
+          <div class="flex items-center gap-2">
+            <span class="text-slate-400 font-bold uppercase">Kategori:</span>
+            <span id="feat-modal-category" class="badge bg-indigo-950 text-indigo-300 border border-indigo-700">General</span>
+          </div>
+          <span id="feat-modal-level-source" class="badge bg-slate-900 text-amber-300 border border-amber-600/70 hidden font-mono"></span>
         </div>
         <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 space-y-1">
           <div class="text-[10px] uppercase font-bold text-amber-400">Kural Açıklaması & Mekanik (RAW Benefit)</div>
@@ -2481,11 +2484,74 @@
         </div>
       </div>
       <div class="bg-slate-950 px-4 py-2.5 border-t border-slate-800 flex items-center justify-between">
-        <button id="btn-remove-feat-from-char" onclick="removeCurrentViewedFeat()" class="bg-rose-950 hover:bg-rose-800 text-rose-300 hover:text-white border border-rose-700 font-bold text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+        <button id="btn-remove-feat-from-char" onclick="removeCurrentViewedFeat()" class="bg-rose-950 hover:bg-rose-800 text-rose-300 hover:text-white border border-rose-700 font-bold text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1 shadow-sm">
           <span>🗑️</span>
-          <span>Karakterden Kaldır</span>
+          <span id="btn-remove-feat-text">Karakterden Kaldır</span>
         </button>
         <button onclick="closeFeatDetailModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition">Tamam</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================== -->
+  <!-- MODAL: QUICK LEVEL FEAT & ABILITY ADDER (Masaüstü & Tablo Desteği) -->
+  <!-- ==================================================== -->
+  <div id="quick-level-feat-modal" class="hidden fixed inset-0 z-[110] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
+    <div class="bg-dndCard border border-purple-500/80 rounded-2xl max-w-md w-full shadow-2xl overflow-hidden my-auto">
+      <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-purple-950 border border-purple-600/60 flex items-center justify-center text-lg">🎖️</div>
+          <div>
+            <h3 id="quick-feat-modal-title" class="text-sm font-bold text-white">Seviye İçin Feat Ekle</h3>
+            <p id="quick-feat-modal-subtitle" class="text-[10px] text-purple-300">Serbest Feat, DM Lütfu, Kusur veya Özel Yetenek</p>
+          </div>
+        </div>
+        <button onclick="closeQuickLevelFeatModal()" class="text-slate-400 hover:text-white p-1 text-sm font-bold">&times;</button>
+      </div>
+
+      <div class="p-4 space-y-3 text-xs">
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kategori / Tür *</label>
+          <select id="quick-feat-category" onchange="onQuickFeatCategoryChange()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-amber-300 font-bold">
+            <option value="Regular Feat">🎖️ Normal Feat (Regular Feat)</option>
+            <option value="Class Bonus Feat">⚔️ Sınıf Bonus Feati (Class Bonus Feat)</option>
+            <option value="DM Boon">🌟 DM Lütfu / Boon (DM Grant)</option>
+            <option value="Flaw">⚠️ Kusur / Flaw</option>
+            <option value="Racial Trait">🧬 Irksal Yetenek (Racial Trait)</option>
+            <option value="Special Ability">✨ Özel Yetenek / Sınıf Özelliği</option>
+          </select>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-[10px] font-bold text-slate-400 uppercase">Katalogdan Hızlı Seçim</label>
+            <button type="button" onclick="openFeatPickerForQuickModal()" class="text-[10px] font-bold text-purple-400 hover:text-purple-300 flex items-center gap-1 transition">
+              <span>📖</span>
+              <span>Tüm Kütüphaneyi Aç</span>
+            </button>
+          </div>
+          <select id="quick-feat-select" onchange="onQuickFeatSelectChange()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold">
+            <!-- Dynamically populated -->
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Feat / Yetenek Adı *</label>
+          <input type="text" id="quick-feat-name" placeholder="Örn: Weapon Focus (Rapier), Toughness..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold">
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Fayda / Açıklama (Benefit)</label>
+          <textarea id="quick-feat-benefit" rows="3" placeholder="Örn: Seçilen silahla saldırı zarlarına +1 bonus..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300"></textarea>
+        </div>
+      </div>
+
+      <div class="bg-slate-950 px-4 py-3 border-t border-slate-800 flex items-center justify-between">
+        <button onclick="closeQuickLevelFeatModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold px-3 py-1.5 rounded-lg transition">Vazgeç</button>
+        <button onclick="confirmQuickLevelFeat()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg shadow transition flex items-center gap-1.5">
+          <span>✅</span>
+          <span>Bu Seviyeye Ekle</span>
+        </button>
       </div>
     </div>
   </div>
@@ -8550,6 +8616,66 @@
       }
     }
 
+    function recalculateCharacterClassSummary() {
+      if (!character) return;
+      const prog = character.levelProgression || [];
+      const sys = character.settings?.babSaveSystem || 'fractional';
+      const isHuman = (character.race || '').toLowerCase().includes('human');
+      const intMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
+        ? RuleEngine.getAbilityMod(character.abilities?.int || 10)
+        : Math.floor(((character.abilities?.int || 10) - 10) / 2);
+
+      const summary = (typeof RuleEngine !== 'undefined' && RuleEngine.calculateProgression)
+        ? RuleEngine.calculateProgression(prog, { system: sys, isHuman, intMod })
+        : null;
+
+      if (summary) {
+        character.level = summary.activeLevels || 1;
+        const classParts = Object.entries(summary.classCounts || {}).map(([c, count]) => `${c} ${count}`);
+        if (classParts.length > 0) {
+          character.classes = classParts.join(' / ');
+        }
+
+        character.bab = summary.baseBab || 0;
+
+        if (!character.baseSaves) character.baseSaves = {};
+        character.baseSaves.fort = summary.baseSaves.fort || 0;
+        character.baseSaves.ref = summary.baseSaves.ref || 0;
+        character.baseSaves.will = summary.baseSaves.will || 0;
+
+        let toughnessCount = 0;
+        (character.feats || []).forEach(f => {
+          const fn = (typeof f === 'string' ? f : f.name).toLowerCase();
+          if (fn === 'toughness' || fn.includes('toughness')) toughnessCount++;
+        });
+
+        const conMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
+          ? RuleEngine.getAbilityMod(character.abilities?.con || 14)
+          : Math.floor(((character.abilities?.con || 14) - 10) / 2);
+
+        if (character.hp) {
+          const baseProgHp = summary.baseHp || 45;
+          character.hp.baseMax = baseProgHp + (toughnessCount * 3);
+          character.hp.conBonusHp = character.level * conMod;
+          character.hp.max = character.hp.baseMax + character.hp.conBonusHp;
+          if (character.hp.current === undefined || character.hp.current > character.hp.max) {
+            character.hp.current = character.hp.max;
+          }
+        }
+
+        const sorcLvls = summary.classCounts['Sorcerer'] || 0;
+        if (sorcLvls > 0 && typeof calculateSorcererSlots === 'function') {
+          if (!character.spellcasting) character.spellcasting = {};
+          character.spellcasting.slots = calculateSorcererSlots(sorcLvls, character.abilities?.cha || 22);
+          if (character.settings?.clMode === 'Character Level (DM Boon)') {
+            character.spellcasting.cl = character.level;
+          } else {
+            character.spellcasting.cl = sorcLvls;
+          }
+        }
+      }
+    }
+
     // D&D 3.5e Class Progression Reference Table
     const DND35_CLASS_DEFS = (typeof RuleEngine !== 'undefined' && RuleEngine.DND35_CLASS_DEFS) ? RuleEngine.DND35_CLASS_DEFS : {
       "Sorcerer": { hd: 4, bab: 0.5, fort: "poor", ref: "poor", will: "good", skills: 2 },
@@ -8571,20 +8697,40 @@
       "Eldritch Knight": { hd: 6, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 2 }
     };
 
-    // Feat Detail Popover Modal (Madde 17 setNote equivalent)
-    function showFeatDetail(featName) {
+    // Feat Detail Popover Modal (Madde 17 setNote equivalent & Level Source Tracking)
+    let currentFeatSourceLevelIndex = null;
+    let currentFeatSourceType = 'feat'; // 'feat' or 'ability'
+    let activeQuickLevelIndex = null;
+    let isFeatPickerForQuickLevel = false;
+
+    function showFeatDetail(featName, levelIndex = null, sourceCategory = 'feat') {
       const modal = document.getElementById('feat-detail-modal');
       if (!modal) return;
       currentViewedFeatName = featName;
+      currentFeatSourceLevelIndex = (levelIndex !== null && levelIndex !== undefined) ? Number(levelIndex) : null;
+      currentFeatSourceType = sourceCategory || 'feat';
 
-      const fFromChar = (character.feats || []).find(f => (typeof f === 'string' ? f : f.name).toLowerCase() === featName.toLowerCase());
-      const aFromChar = (character.specialAbilities || []).find(a => (typeof a === 'string' ? a : a.name).toLowerCase() === featName.toLowerCase());
-      const fFromDb = (masterDb || []).find(m => (m.name || '').toLowerCase() === featName.toLowerCase());
-      const fFromCat = DND35_FEAT_CATALOG.find(c => c.name.toLowerCase() === featName.toLowerCase());
+      const cleanName = String(featName).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
 
-      const title = featName;
+      const fFromChar = (character.feats || []).find(f => {
+        const n = typeof f === 'string' ? f : f.name;
+        return n.toLowerCase() === featName.toLowerCase() || n.toLowerCase() === cleanName.toLowerCase();
+      });
+      const aFromChar = (character.specialAbilities || []).find(a => {
+        const n = typeof a === 'string' ? a : a.name;
+        return n.toLowerCase() === featName.toLowerCase() || n.toLowerCase() === cleanName.toLowerCase();
+      });
+      const fFromDb = (masterDb || []).find(m => {
+        const n = m.name || '';
+        return n.toLowerCase() === featName.toLowerCase() || n.toLowerCase() === cleanName.toLowerCase();
+      });
+      const fFromCat = DND35_FEAT_CATALOG.find(c => c.name.toLowerCase() === featName.toLowerCase() || c.name.toLowerCase() === cleanName.toLowerCase());
+      const bFromCat = DND35_DM_BOONS_CATALOG.find(b => b.name.toLowerCase() === featName.toLowerCase() || b.name.toLowerCase() === cleanName.toLowerCase());
+      const flFromCat = DND35_FLAWS_CATALOG.find(fl => fl.name.toLowerCase() === featName.toLowerCase() || fl.name.toLowerCase() === cleanName.toLowerCase());
+
+      const title = cleanName || featName;
       let source = 'D&D 3.5e Core Rules';
-      let category = 'Feat / Ability';
+      let category = (sourceCategory === 'ability') ? 'Special Ability' : 'Feat / Ability';
       let benefit = 'Bu yetenek veya hüner karakterinizin temel kurallarını modifiye eder.';
       let notes = '';
 
@@ -8593,6 +8739,14 @@
         category = fFromCat.category || category;
         benefit = fFromCat.benefit || benefit;
         if (fFromCat.prereq && fFromCat.prereq !== '-') notes = `Önkoşul: ${fFromCat.prereq}`;
+      } else if (bFromCat) {
+        source = bFromCat.source || 'Campaign Boon';
+        category = 'DM Boon';
+        benefit = bFromCat.benefit || benefit;
+      } else if (flFromCat) {
+        source = flFromCat.source || 'Unearthed Arcana';
+        category = 'Flaw';
+        benefit = flFromCat.benefit || benefit;
       }
 
       if (fFromChar && typeof fFromChar === 'object') {
@@ -8625,6 +8779,22 @@
         notesContainer.classList.add('hidden');
       }
 
+      const lvlSourceBadge = document.getElementById('feat-modal-level-source');
+      const btnRemoveText = document.getElementById('btn-remove-feat-text');
+      if (currentFeatSourceLevelIndex !== null && character.levelProgression && character.levelProgression[currentFeatSourceLevelIndex]) {
+        const row = character.levelProgression[currentFeatSourceLevelIndex];
+        if (lvlSourceBadge) {
+          lvlSourceBadge.textContent = `Seviye ${row.level || (currentFeatSourceLevelIndex + 1)} (${row.className || 'Sınıf'}) Kaydı`;
+          lvlSourceBadge.classList.remove('hidden');
+        }
+        if (btnRemoveText) {
+          btnRemoveText.textContent = 'Bu Seviyeden Kaldır / Sil';
+        }
+      } else {
+        if (lvlSourceBadge) lvlSourceBadge.classList.add('hidden');
+        if (btnRemoveText) btnRemoveText.textContent = 'Karakterden Kaldır';
+      }
+
       modal.classList.remove('hidden');
     }
 
@@ -8632,20 +8802,77 @@
       const modal = document.getElementById('feat-detail-modal');
       if (modal) modal.classList.add('hidden');
       currentViewedFeatName = null;
+      currentFeatSourceLevelIndex = null;
     }
 
     function removeCurrentViewedFeat() {
       if (!currentViewedFeatName) return;
-      if (!confirm(`"${currentViewedFeatName}" yeteneğini karakterinizden kaldırmak istediğinize emin misiniz?`)) return;
       const target = currentViewedFeatName.toLowerCase().trim();
+      const cleanTarget = target.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
+
+      if (currentFeatSourceLevelIndex !== null && character.levelProgression && character.levelProgression[currentFeatSourceLevelIndex]) {
+        const row = character.levelProgression[currentFeatSourceLevelIndex];
+        if (!confirm(`"${cleanTarget || currentViewedFeatName}" yeteneğini Seviye ${row.level || (currentFeatSourceLevelIndex + 1)} kaydından kaldırmak istediğinize emin misiniz?`)) return;
+
+        if (Array.isArray(row.feats)) {
+          row.feats = row.feats.filter(f => {
+            const s = String(typeof f === 'string' ? f : f.name).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').toLowerCase().trim();
+            return s !== cleanTarget && s !== target;
+          });
+        }
+        if (Array.isArray(row.specialAbilities)) {
+          row.specialAbilities = row.specialAbilities.filter(a => {
+            const s = String(typeof a === 'string' ? a : a.name).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').toLowerCase().trim();
+            return s !== cleanTarget && s !== target;
+          });
+        }
+
+        const stillInAnyLevel = (character.levelProgression || []).some(r => {
+          const inF = (r.feats || []).some(f => String(typeof f === 'string' ? f : f.name).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').toLowerCase().trim() === cleanTarget);
+          const inA = (r.specialAbilities || []).some(a => String(typeof a === 'string' ? a : a.name).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').toLowerCase().trim() === cleanTarget);
+          return inF || inA;
+        });
+
+        if (!stillInAnyLevel) {
+          if (Array.isArray(character.feats)) {
+            character.feats = character.feats.filter(f => {
+              const s = String(typeof f === 'string' ? f : f.name).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').toLowerCase().trim();
+              return s !== cleanTarget && s !== target;
+            });
+          }
+          if (Array.isArray(character.specialAbilities)) {
+            character.specialAbilities = character.specialAbilities.filter(a => {
+              const s = String(typeof a === 'string' ? a : a.name).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').toLowerCase().trim();
+              return s !== cleanTarget && s !== target;
+            });
+          }
+        }
+
+        closeFeatDetailModal();
+        recalculateCharacterClassSummary();
+        saveStateToStorage(true);
+        renderLevelProgression();
+        renderAll();
+        return;
+      }
+
+      if (!confirm(`"${cleanTarget || currentViewedFeatName}" yeteneğini karakterinizden kaldırmak istediğinize emin misiniz?`)) return;
       if (Array.isArray(character.feats)) {
-        character.feats = character.feats.filter(f => (typeof f === 'string' ? f : f.name).toLowerCase().trim() !== target);
+        character.feats = character.feats.filter(f => {
+          const s = String(typeof f === 'string' ? f : f.name).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').toLowerCase().trim();
+          return s !== cleanTarget && s !== target;
+        });
       }
       if (Array.isArray(character.specialAbilities)) {
-        character.specialAbilities = character.specialAbilities.filter(a => (typeof a === 'string' ? a : a.name).toLowerCase().trim() !== target);
+        character.specialAbilities = character.specialAbilities.filter(a => {
+          const s = String(typeof a === 'string' ? a : a.name).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').toLowerCase().trim();
+          return s !== cleanTarget && s !== target;
+        });
       }
       closeFeatDetailModal();
+      recalculateCharacterClassSummary();
       saveStateToStorage(true);
+      renderLevelProgression();
       renderAll();
     }
 
@@ -8765,6 +8992,30 @@
       const isFlaw = (entry.category === 'Flaw' || entry.name.toLowerCase().startsWith('flaw:'));
       const isRacial = (entry.category === 'Racial Trait' || (entry.type && entry.type.toLowerCase().includes('racial')));
 
+      if (isFeatPickerForQuickLevel) {
+        const nameInput = document.getElementById('quick-feat-name');
+        if (nameInput) nameInput.value = entry.name;
+        const benefitInput = document.getElementById('quick-feat-benefit');
+        if (benefitInput) benefitInput.value = entry.benefit || '';
+        const catSel = document.getElementById('quick-feat-category');
+        if (catSel) {
+          if (entry.category === 'DM Boon' || entry.category === 'DM Grant') {
+            catSel.value = 'DM Boon';
+          } else if (entry.category === 'Flaw') {
+            catSel.value = 'Flaw';
+          } else if (entry.category === 'Special Ability') {
+            catSel.value = 'Special Ability';
+          } else if (entry.category === 'Racial Trait') {
+            catSel.value = 'Racial Trait';
+          } else if (entry.category === 'Fighter' || entry.category === 'Martial' || (entry.category || '').toLowerCase().includes('bonus')) {
+            catSel.value = 'Class Bonus Feat';
+          }
+        }
+        isFeatPickerForQuickLevel = false;
+        closeFeatPickerModal();
+        return;
+      }
+
       if (isFeatPickerForLevelUp) {
         if (typeof levelUpModalFeatSlots !== 'undefined' && levelUpModalFeatSlots[activeFeatPickerSlotIndex]) {
           levelUpModalFeatSlots[activeFeatPickerSlotIndex].name = entry.name;
@@ -8870,6 +9121,33 @@
         return;
       }
       const entry = { name, category, source, benefit, prereq: '-' };
+
+      if (isFeatPickerForQuickLevel) {
+        const nameInput = document.getElementById('quick-feat-name');
+        if (nameInput) nameInput.value = name;
+        const benefitInput = document.getElementById('quick-feat-benefit');
+        if (benefitInput) benefitInput.value = benefit;
+        const catSel = document.getElementById('quick-feat-category');
+        if (catSel) {
+          if (category === 'DM Boon' || category === 'DM Grant') {
+            catSel.value = 'DM Boon';
+          } else if (category === 'Flaw') {
+            catSel.value = 'Flaw';
+          } else if (category === 'Special Ability') {
+            catSel.value = 'Special Ability';
+          } else if (category === 'Racial Trait') {
+            catSel.value = 'Racial Trait';
+          } else if (category === 'Fighter' || category === 'Martial' || (category || '').toLowerCase().includes('bonus')) {
+            catSel.value = 'Class Bonus Feat';
+          }
+        }
+        document.getElementById('custom-feat-name').value = '';
+        document.getElementById('custom-feat-benefit').value = '';
+        isFeatPickerForQuickLevel = false;
+        closeFeatPickerModal();
+        return;
+      }
+
       if (isFeatPickerForLevelUp) {
         if (typeof levelUpModalFeatSlots !== 'undefined' && levelUpModalFeatSlots[activeFeatPickerSlotIndex]) {
           levelUpModalFeatSlots[activeFeatPickerSlotIndex].name = name;
@@ -8884,6 +9162,196 @@
       document.getElementById('custom-feat-benefit').value = '';
       renderFeatPickerList();
       saveStateToStorage(true);
+      renderAll();
+    }
+
+    // ====================================================
+    // 🎖️ QUICK LEVEL FEAT & ABILITY ADDER (Masaüstü & Tablo Desteği)
+    // ====================================================
+    function openQuickFeatPickerForLevel(levelIdx, preferredCategory = 'Regular Feat') {
+      activeQuickLevelIndex = Number(levelIdx);
+      const modal = document.getElementById('quick-level-feat-modal');
+      if (!modal) return;
+
+      const lvlObj = character.levelProgression && character.levelProgression[activeQuickLevelIndex];
+      const lvlNum = lvlObj ? lvlObj.level : (activeQuickLevelIndex + 1);
+      const className = lvlObj ? lvlObj.className : 'Sınıf';
+
+      const titleEl = document.getElementById('quick-feat-modal-title');
+      if (titleEl) titleEl.textContent = `Seviye ${lvlNum} (${className}) İçin Feat Ekle`;
+      const subtitleEl = document.getElementById('quick-feat-modal-subtitle');
+      if (subtitleEl) subtitleEl.textContent = `Bu seviyeye kurallı veya serbest hüner, DM lütfu veya kusur ekleyin`;
+
+      const catSel = document.getElementById('quick-feat-category');
+      if (catSel) catSel.value = preferredCategory || 'Regular Feat';
+
+      populateQuickFeatCatalogSelect();
+      const nameInput = document.getElementById('quick-feat-name');
+      if (nameInput) nameInput.value = '';
+      const benefitInput = document.getElementById('quick-feat-benefit');
+      if (benefitInput) benefitInput.value = '';
+
+      modal.classList.remove('hidden');
+    }
+
+    function openQuickAbilityPickerForLevel(levelIdx) {
+      openQuickFeatPickerForLevel(levelIdx, 'Special Ability');
+      const lvlObj = character.levelProgression && character.levelProgression[Number(levelIdx)];
+      const lvlNum = lvlObj ? lvlObj.level : (Number(levelIdx) + 1);
+      const className = lvlObj ? lvlObj.className : 'Sınıf';
+      const titleEl = document.getElementById('quick-feat-modal-title');
+      if (titleEl) titleEl.textContent = `Seviye ${lvlNum} (${className}) İçin Özel Yetenek / Özellik Ekle`;
+      const subtitleEl = document.getElementById('quick-feat-modal-subtitle');
+      if (subtitleEl) subtitleEl.textContent = `Sınıf yeteneği, özel manevra, DM lütfu veya kural notu ekleyin`;
+    }
+
+    function closeQuickLevelFeatModal() {
+      const modal = document.getElementById('quick-level-feat-modal');
+      if (modal) modal.classList.add('hidden');
+      activeQuickLevelIndex = null;
+      isFeatPickerForQuickLevel = false;
+    }
+
+    function populateQuickFeatCatalogSelect() {
+      const sel = document.getElementById('quick-feat-select');
+      if (!sel) return;
+      sel.innerHTML = '<option value="">-- Katalogdan Hızlı Seçim veya Aşağıya Manuel Yazın --</option>';
+
+      const catVal = document.getElementById('quick-feat-category')?.value || 'Regular Feat';
+      const catalog = getCombinedFeatCatalog();
+
+      let filtered = catalog;
+      if (catVal === 'Class Bonus Feat') {
+        filtered = catalog.filter(f => f.category === 'Fighter' || f.category === 'Martial' || (f.category || '').toLowerCase().includes('bonus'));
+        if (filtered.length === 0) filtered = catalog;
+      } else if (catVal === 'DM Boon') {
+        filtered = catalog.filter(f => f.category === 'DM Boon' || f.category === 'DM Grant');
+      } else if (catVal === 'Flaw') {
+        filtered = catalog.filter(f => f.category === 'Flaw' || f.name.toLowerCase().startsWith('flaw:'));
+      } else if (catVal === 'Racial Trait') {
+        filtered = catalog.filter(f => f.category === 'Racial Trait');
+      } else if (catVal === 'Special Ability') {
+        filtered = catalog.filter(f => f.category === 'Special Ability');
+        if (filtered.length === 0) filtered = catalog;
+      }
+
+      filtered.forEach(f => {
+        const opt = document.createElement('option');
+        opt.value = f.name;
+        opt.textContent = `${f.name} [${f.category || 'General'}]`;
+        sel.appendChild(opt);
+      });
+    }
+
+    function onQuickFeatCategoryChange() {
+      populateQuickFeatCatalogSelect();
+    }
+
+    function onQuickFeatSelectChange() {
+      const sel = document.getElementById('quick-feat-select');
+      const chosenName = sel?.value;
+      if (!chosenName) return;
+
+      const catalog = getCombinedFeatCatalog();
+      const entry = catalog.find(f => f.name.toLowerCase() === chosenName.toLowerCase());
+      if (entry) {
+        const nameInput = document.getElementById('quick-feat-name');
+        if (nameInput) nameInput.value = entry.name;
+        const benefitInput = document.getElementById('quick-feat-benefit');
+        if (benefitInput) benefitInput.value = entry.benefit || '';
+      }
+    }
+
+    function openFeatPickerForQuickModal() {
+      isFeatPickerForQuickLevel = true;
+      isFeatPickerForLevelUp = false;
+      const modal = document.getElementById('feat-picker-modal');
+      if (!modal) return;
+      const titleEl = document.getElementById('feat-picker-modal-title');
+      if (titleEl) {
+        titleEl.textContent = 'Seviye Tablosu İçin Feat Seç';
+      }
+      renderFeatPickerList();
+      modal.classList.remove('hidden');
+    }
+
+    function confirmQuickLevelFeat() {
+      if (activeQuickLevelIndex === null || !character.levelProgression || !character.levelProgression[activeQuickLevelIndex]) {
+        alert("Geçerli bir seviye seçilmedi!");
+        return;
+      }
+      const nameInput = document.getElementById('quick-feat-name');
+      const featName = nameInput ? nameInput.value.trim() : '';
+      if (!featName) {
+        alert("Lütfen bir feat veya yetenek adı girin!");
+        return;
+      }
+      const category = document.getElementById('quick-feat-category')?.value || 'Regular Feat';
+      const benefit = document.getElementById('quick-feat-benefit')?.value.trim() || '';
+
+      const row = character.levelProgression[activeQuickLevelIndex];
+      if (!Array.isArray(row.feats)) row.feats = [];
+      if (!Array.isArray(row.specialAbilities)) row.specialAbilities = [];
+
+      let prefix = '';
+      if (category === 'Class Bonus Feat') prefix = '⚔️ [Bonus] ';
+      else if (category === 'DM Boon') prefix = '🌟 [DM Boon] ';
+      else if (category === 'Flaw') prefix = '⚠️ [Flaw] ';
+      else if (category === 'Racial Trait') prefix = '🧬 [Racial] ';
+      else if (category === 'Special Ability') prefix = '✨ ';
+      else prefix = '🎖️ ';
+
+      const formattedName = `${prefix}${featName}`;
+
+      if (category === 'Special Ability') {
+        row.specialAbilities.push(formattedName);
+        if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
+        if (!character.specialAbilities.some(a => (typeof a === 'string' ? a : a.name).toLowerCase().trim() === featName.toLowerCase())) {
+          character.specialAbilities.push({
+            name: featName,
+            category: 'Special Ability',
+            benefit: benefit,
+            source: `Level ${row.level} (${row.className})`
+          });
+        }
+      } else {
+        row.feats.push(formattedName);
+        if (!Array.isArray(character.feats)) character.feats = [];
+        if (!character.feats.some(f => (typeof f === 'string' ? f : f.name).toLowerCase().trim() === featName.toLowerCase())) {
+          character.feats.push({
+            name: featName,
+            category: category,
+            benefit: benefit,
+            source: `Level ${row.level} (${row.className})`
+          });
+          if (featName.toLowerCase() === 'toughness' && character.hp) {
+            if (character.hp.baseMax === undefined) character.hp.baseMax = (Number(character.hp.max) || 45) - (Number(character.hp.conBonusHp) || 0);
+            character.hp.baseMax = (Number(character.hp.baseMax) || 0) + 3;
+            character.hp.max = (Number(character.hp.baseMax) || 0) + (Number(character.hp.conBonusHp) || 0);
+            character.hp.current = (Number(character.hp.current) || 0) + 3;
+          }
+        }
+      }
+
+      if (Array.isArray(masterDb)) {
+        const clean = featName.toLowerCase().trim();
+        if (!masterDb.some(m => (m.name || '').toLowerCase().trim() === clean)) {
+          masterDb.push({
+            name: featName,
+            type: (category === 'Special Ability') ? 'Special Ability' : 'Feat',
+            slot: 'None',
+            prereq: '-',
+            source: `Level ${row.level} (${row.className})`,
+            benefit: benefit,
+            description: benefit
+          });
+        }
+      }
+
+      closeQuickLevelFeatModal();
+      recalculateCharacterClassSummary();
+      saveStateToStorage(true);
+      renderLevelProgression();
       renderAll();
     }
 
@@ -9599,32 +10067,69 @@
         // Feat Badges
         const featBadges = (lvl.feats || []).map(fStr => {
           const str = String(fStr);
-          const safeF = str.replace(/'/g, "\\'").replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\[\]A-Za-z\s]+:\s*/, '');
+          const rawName = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
+          const safeF = rawName.replace(/'/g, "\\'");
           if (str.includes('[DM Boon]') || str.includes('Boon') || str.includes('DM Grant')) {
-            return `<button onclick="showFeatDetail('${safeF}')" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-950/80 hover:bg-amber-900 text-amber-300 border border-amber-600/70 shadow-sm transition"><span>🌟</span><span>${str}</span></button>`;
+            return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-950/80 hover:bg-amber-900 text-amber-300 border border-amber-600/70 shadow-sm transition"><span>🌟</span><span>${str}</span></button>`;
           } else if (str.includes('Caster Lvl') || str.includes('+1 Primary CL') || str.includes('🔮')) {
             return `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-purple-950/80 text-purple-300 border border-purple-600/70 shadow-sm"><span>🔮</span><span>${str}</span></span>`;
           } else if (str.includes('+1 Stat') || str.includes('Stat:')) {
             return `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-sky-950/80 text-sky-300 border border-sky-600/70 shadow-sm"><span>💪</span><span>${str}</span></span>`;
           } else if (str.includes('[Flaw]') || str.includes('Flaw:')) {
-            return `<button onclick="showFeatDetail('${safeF}')" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-600/70 shadow-sm transition"><span>⚠️</span><span>${str}</span></button>`;
+            return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-600/70 shadow-sm transition"><span>⚠️</span><span>${str}</span></button>`;
           } else if (str.includes('[Bonus]') || str.includes('Bonus')) {
-            return `<button onclick="showFeatDetail('${safeF}')" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border border-indigo-600/70 shadow-sm transition"><span>⚔️</span><span>${str}</span></button>`;
+            return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border border-indigo-600/70 shadow-sm transition"><span>⚔️</span><span>${str}</span></button>`;
           } else if (str.includes('[Racial]')) {
-            return `<button onclick="showFeatDetail('${safeF}')" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-teal-950/80 hover:bg-teal-900 text-teal-300 border border-teal-600/70 shadow-sm transition"><span>🧬</span><span>${str}</span></button>`;
+            return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-teal-950/80 hover:bg-teal-900 text-teal-300 border border-teal-600/70 shadow-sm transition"><span>🧬</span><span>${str}</span></button>`;
           } else {
-            return `<button onclick="showFeatDetail('${safeF}')" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-600/70 shadow-sm transition"><span>🎖️</span><span>${str}</span></button>`;
+            return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-600/70 shadow-sm transition"><span>🎖️</span><span>${str}</span></button>`;
           }
         }).join(' ');
+
+        // Check if level qualifies for feat or bonus feat
+        const featMode = character.settings?.featMode || 'Standard 3.5e (1, 3, 6, 9, 12, 15, 18)';
+        const qualifiesForRegularFeat = isLevelQualifiesForFeat(lvl.level, featMode);
+        const qualifiesForHumanBonus = (lvl.level === 1 && isHuman);
+
+        let classLevelSoFar = 0;
+        for (let i = 0; i <= idx; i++) {
+          if (prog[i].className === lvl.className) classLevelSoFar++;
+        }
+        const classFeats = (typeof RuleEngine !== 'undefined' && RuleEngine.getClassLevelFeatures)
+          ? RuleEngine.getClassLevelFeatures(lvl.className, classLevelSoFar)
+          : { hasBonusFeat: false };
+        const qualifiesForClassBonus = classFeats.hasBonusFeat;
+
+        const chosenFeats = (lvl.feats || []).filter(f => {
+          const s = String(f);
+          return !s.includes('+1 Stat') && !s.includes('Stat:') && !s.includes('Caster Lvl') && !s.includes('+1 Primary CL');
+        });
+
+        let pendingBadges = '';
+        if (qualifiesForClassBonus && !chosenFeats.some(f => String(f).includes('[Bonus]') || String(f).toLowerCase().includes('bonus'))) {
+          pendingBadges += `<button onclick="openQuickFeatPickerForLevel(${idx}, 'Class Bonus Feat')" class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950/90 hover:bg-amber-900 text-amber-300 border border-dashed border-amber-500 shadow-sm animate-pulse transition" title="Bu seviye için Sınıf Bonus Feati seçin"><span>⚔️</span><span>+ Bonus Feat Seç</span></button> `;
+        }
+        if (qualifiesForRegularFeat && chosenFeats.length === 0) {
+          pendingBadges += `<button onclick="openQuickFeatPickerForLevel(${idx}, 'Regular Feat')" class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-purple-950/90 hover:bg-purple-900 text-purple-300 border border-dashed border-purple-500 shadow-sm animate-pulse transition" title="Bu seviye için Normal Feat seçin"><span>🎖️</span><span>+ Feat Seç</span></button> `;
+        } else if (qualifiesForHumanBonus && chosenFeats.length <= (qualifiesForRegularFeat ? 1 : 0)) {
+          pendingBadges += `<button onclick="openQuickFeatPickerForLevel(${idx}, 'Regular Feat')" class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-teal-950/90 hover:bg-teal-900 text-teal-300 border border-dashed border-teal-500 shadow-sm animate-pulse transition" title="İnsan ırksal bonus feati seçin"><span>🧬</span><span>+ Irk Feati Seç</span></button> `;
+        }
+
+        const inlineAddFeatBtn = `<button onclick="openQuickFeatPickerForLevel(${idx}, 'Regular Feat')" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700/80 transition" title="Bu seviyeye serbest Feat, DM Lütfu veya Kusur ekle"><span>➕</span><span>Feat</span></button>`;
+
+        const featsCellContent = [featBadges, pendingBadges, inlineAddFeatBtn].filter(Boolean).join(' ');
 
         // Special Abilities Badges
         const abilityBadges = (lvl.specialAbilities || []).map(aStr => {
           const str = String(aStr);
-          const safeA = str.replace(/'/g, "\\'");
-          return `<button onclick="showFeatDetail('${safeA}')" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-sky-950/80 hover:bg-sky-900 text-sky-300 border border-sky-600/70 shadow-sm transition"><span>✨</span><span>${str}</span></button>`;
+          const rawName = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
+          const safeA = rawName.replace(/'/g, "\\'");
+          return `<button onclick="showFeatDetail('${safeA}', ${idx}, 'ability')" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-sky-950/80 hover:bg-sky-900 text-sky-300 border border-sky-600/70 shadow-sm transition"><span>✨</span><span>${str}</span></button>`;
         }).join(' ');
 
-        const notesAndAbilities = [abilityBadges, lvl.notes ? `<span class="text-slate-400 text-[10px]">${lvl.notes}</span>` : ''].filter(Boolean).join(' ');
+        const inlineAddAbilityBtn = `<button onclick="openQuickAbilityPickerForLevel(${idx})" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700/80 transition" title="Bu seviyeye serbest sınıf özelliği veya not ekle"><span>➕</span><span>Yetenek</span></button>`;
+
+        const notesAndAbilities = [abilityBadges, lvl.notes ? `<span class="text-slate-400 text-[10px]">${lvl.notes}</span>` : '', inlineAddAbilityBtn].filter(Boolean).join(' ');
 
         tr.innerHTML = `
           <td class="py-2 px-2 text-center font-bold text-amber-400">${lvl.level}</td>
@@ -9644,8 +10149,8 @@
           <td class="py-2 px-2 text-center text-slate-300 font-bold">+${lvl.ref}</td>
           <td class="py-2 px-2 text-center text-slate-300 font-bold">+${lvl.will}</td>
           <td class="py-2 px-2 text-center text-indigo-300 font-bold">${lvl.skillPts || 4}</td>
-          <td class="py-2 px-3 font-sans"><div class="flex flex-wrap gap-1">${featBadges || '<span class="text-slate-500 italic">-</span>'}</div></td>
-          <td class="py-2 px-3 font-sans"><div class="flex flex-wrap items-center gap-1.5">${notesAndAbilities || '<span class="text-slate-500 italic">-</span>'}</div></td>
+          <td class="py-2 px-3 font-sans"><div class="flex flex-wrap items-center gap-1.5">${featsCellContent}</div></td>
+          <td class="py-2 px-3 font-sans"><div class="flex flex-wrap items-center gap-1.5">${notesAndAbilities}</div></td>
           <td class="py-2 px-2 text-center">
             ${idx > 0 ? `
               <button onclick="deleteLevelRow(${idx})" class="text-slate-500 hover:text-rose-400 p-1 text-xs transition" title="Bu seviyeyi sil">
