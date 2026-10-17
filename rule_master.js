@@ -820,6 +820,9 @@ const RuleMaster = {
 
   // Switch Sub-Tabs inside Tab 6 (All 9 Master DB Views)
   switchSubTab(subTabId) {
+    try {
+      localStorage.setItem('dnd35_active_mdb_subtab', subTabId);
+    } catch (e) {}
     document.querySelectorAll('.mdb-subtab-content').forEach(el => el.classList.add('hidden'));
     const target = document.getElementById(subTabId);
     if (target) target.classList.remove('hidden');
@@ -857,7 +860,15 @@ const RuleMaster = {
 
   // Initialize RuleMaster
   init() {
-    this.renderTable();
+    let savedSubTab = null;
+    try {
+      savedSubTab = localStorage.getItem('dnd35_active_mdb_subtab');
+    } catch (e) {}
+    if (savedSubTab && document.getElementById(savedSubTab)) {
+      this.switchSubTab(savedSubTab);
+    } else {
+      this.renderTable();
+    }
     this.updateApiKeyUi();
   },
 
