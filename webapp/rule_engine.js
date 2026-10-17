@@ -1306,6 +1306,179 @@ const RuleEngine = {
     if (wt <= caps.medium) return { status: 'Orta Yük (Medium Load)', color: 'amber', maxDex: 3, checkPenalty: -3, speed30: 20, speed20: 15 };
     if (wt <= caps.heavy) return { status: 'Ağır Yük (Heavy Load)', color: 'orange', maxDex: 1, checkPenalty: -6, speed30: 20, speed20: 15 };
     return { status: 'Aşırı Yük / Hareketsiz (Overloaded)', color: 'rose', maxDex: 0, checkPenalty: -10, speed30: 5, speed20: 5 };
+  },
+
+  /**
+   * Evaluate specific skill bonus from equipped items, active buffs, feats, and masterwork tools.
+   * Resolves D&D 3.5e stacking rules: same bonus types do not stack (take highest),
+   * while different bonus types (Competence, Insight, Luck, Morale, Circumstance, Untyped) stack.
+   */
+  evaluateSkillBonus(character, skillKey, skillName, statName) {
+    if (!character) return { total: 0, breakdown: [] };
+    const sName = (skillName || '').toLowerCase().trim();
+    const sKey = (skillKey || '').toLowerCase().trim();
+    const isKnowledge = sName.startsWith('knowledge') || sKey.startsWith('knowledge') || sName.includes('bilgi');
+
+    // Buckets for typed bonuses: competence, insight, luck, morale, enhancement, circumstance, untyped, penalty
+    const buckets = {};
+    const addBonus = (sourceName, val, bType = 'untyped') => {
+      const v = Number(val) || 0;
+      if (v === 0) return;
+      const type = (bType || 'untyped').toLowerCase().trim();
+      if (!buckets[type]) buckets[type] = [];
+      buckets[type].push({ name: sourceName, val: v });
+    };
+
+    // 1. General Buffs & Debuffs (character.buffSkillBonus, negative levels)
+    if (character.buffSkillBonus) {
+      addBonus('Genel Buff/Debuff', character.buffSkillBonus, 'untyped');
+    }
+
+    // 2. Active Buffs in character.buffs
+    if (Array.isArray(character.buffs)) {
+      character.buffs.forEach(buff => {
+        if (!buff || !buff.active) return;
+        const items = [buff];
+        if (Array.isArray(buff.children)) items.push(...buff.children);
+
+        items.forEach(b => {
+          const scope = (b.scope || b.target || '').toLowerCase().trim();
+          const targetSkill = (b.targetSkill || b.skill || '').toLowerCase().trim();
+          const bVal = Number(b.skillBonus || b.bonus || b.bonusVal) || 0;
+          const bType = b.bonusType || 'untyped';
+
+          if (bVal !== 0) {
+            let applies = false;
+            if (scope === 'all skills' || scope === 'skills' || scope === 'all') applies = true;
+            else if (isKnowledge && (scope === 'knowledge' || scope === 'all knowledge' || scope.includes('knowledge'))) applies = true;
+            else if (targetSkill && (sKey === targetSkill || sName.includes(targetSkill))) applies = true;
+            else if (scope && (sKey.includes(scope) || sName.includes(scope))) applies = true;
+
+            if (applies) {
+              addBonus(b.name || buff.name, bVal, bType);
+            }
+          }
+        });
+      });
+    }
+
+    // 3. Body Slot Equipped Items (character.bodySlots)
+    if (character.bodySlots && typeof character.bodySlots === 'object') {
+      Object.entries(character.bodySlots).forEach(([slotKey, item]) => {
+        if (!item || !item.active || !item.name || item.name === '-') return;
+        this._checkItemSkillBonus(item, sKey, sName, isKnowledge, addBonus);
+      });
+    }
+
+    // 4. Gear Pool Items (Equipped items or Slotless wonderous items like Luckstone / Tome / Ioun Stone)
+    if (Array.isArray(character.gearPool)) {
+      character.gearPool.forEach(item => {
+        if (!item) return;
+        const isSlotless = (item.slot || '').toLowerCase().includes('slotless') || (item.category || '').toLowerCase() === 'other' || (item.category || '').toLowerCase() === 'wondrous item';
+        if (item.isEquipped || isSlotless) {
+          this._checkItemSkillBonus(item, sKey, sName, isKnowledge, addBonus);
+        }
+      });
+    }
+
+    // 5. Feats & Special Abilities (e.g. Collector of Stories, Draconic Knowledge)
+    const featsList = [...(character.feats || []), ...(character.specialAbilities || [])];
+    featsList.forEach(feat => {
+      if (!feat) return;
+      const fName = (typeof feat === 'string' ? feat : feat.name || '').toLowerCase();
+      const scope = (feat.scope || '').toLowerCase();
+      const bVal = Number(feat.skillBonus || feat.bonus) || 0;
+      const bType = feat.bonusType || 'competence';
+
+      if (bVal !== 0) {
+        if (scope === 'all skills' || (isKnowledge && scope.includes('knowledge'))) {
+          addBonus(feat.name || fName, bVal, bType);
+        }
+      }
+
+      // Built-in recognition for Collector of Stories (+5 Competence to Knowledge monster checks)
+      if (fName.includes('collector of stories') && isKnowledge) {
+        addBonus('Collector of Stories (Canavar Tanıma)', 5, 'competence');
+      }
+    });
+
+    // 6. Resolve Stacking Rules (D&D 3.5e RAW)
+    let total = 0;
+    const breakdown = [];
+
+    Object.entries(buckets).forEach(([type, entries]) => {
+      if (type === 'untyped' || type === 'circumstance' || type === 'penalty') {
+        entries.forEach(e => {
+          total += e.val;
+          breakdown.push(`${e.name}: ${e.val >= 0 ? '+' : ''}${e.val} (${type})`);
+        });
+      } else {
+        let highest = entries[0];
+        entries.forEach(e => {
+          if (e.val > highest.val) highest = e;
+        });
+        total += highest.val;
+        breakdown.push(`${highest.name}: +${highest.val} (${type})`);
+      }
+    });
+
+    return { total, breakdown };
+  },
+
+  _checkItemSkillBonus(item, sKey, sName, isKnowledge, addBonus) {
+    const iName = (item.name || '').toLowerCase();
+    const scope = (item.scope || '').toLowerCase();
+    const targetSkill = (item.targetSkill || item.skill || '').toLowerCase();
+    const bVal = Number(item.skillBonus || item.bonus) || 0;
+    const bType = item.bonusType || 'competence';
+
+    if (bVal !== 0) {
+      let applies = false;
+      if (scope === 'all skills' || scope === 'skills') applies = true;
+      else if (isKnowledge && (scope === 'knowledge' || scope.includes('knowledge'))) applies = true;
+      else if (targetSkill && (sKey === targetSkill || sName.includes(targetSkill))) applies = true;
+      else if (scope && (sKey.includes(scope) || sName.includes(scope))) applies = true;
+
+      if (applies) {
+        addBonus(item.name, bVal, bType);
+        return;
+      }
+    }
+
+    if (iName.includes('tome of worldly memory') && isKnowledge) {
+      addBonus('Tome of Worldly Memory', 5, 'competence');
+    } else if (iName.includes('stone of good luck') || iName.includes('luckstone')) {
+      addBonus('Stone of Good Luck', 1, 'luck');
+    } else if (iName.includes('pale green ioun stone')) {
+      addBonus('Pale Green Ioun Stone', 1, 'competence');
+    } else if (iName.includes('vest of escape')) {
+      if (sKey === 'disable_device' || sName.includes('disable device') || sName.includes('thievery')) {
+        addBonus('Vest of Escape', 2, 'competence');
+      }
+      if (sKey === 'escape_artist' || sName.includes('escape artist') || sName.includes('acrobatics')) {
+        addBonus('Vest of Escape', 10, 'competence');
+      }
+    } else if (iName.includes('striding and springing') || iName.includes('boots of springing')) {
+      if (sKey === 'jump' || sName.includes('jump') || sName.includes('athletics')) {
+        addBonus('Boots of Striding and Springing', 5, 'competence');
+      }
+    } else if (iName.includes('goggles of minute seeing')) {
+      if (sKey === 'search' || sName.includes('search')) {
+        addBonus('Goggles of Minute Seeing', 5, 'competence');
+      }
+    } else if (iName.includes('eyes of the eagle')) {
+      if (sKey === 'spot' || sName.includes('spot') || sName.includes('perception')) {
+        addBonus('Eyes of the Eagle', 5, 'competence');
+      }
+    } else if (iName.includes('cloak of elvenkind')) {
+      if (sKey === 'hide' || sName.includes('hide') || sName.includes('stealth')) {
+        addBonus('Cloak of Elvenkind', 5, 'competence');
+      }
+    } else if (iName.includes('boots of elvenkind')) {
+      if (sKey === 'move_silently' || sName.includes('move silently') || sName.includes('stealth')) {
+        addBonus('Boots of Elvenkind', 5, 'competence');
+      }
+    }
   }
 };
 

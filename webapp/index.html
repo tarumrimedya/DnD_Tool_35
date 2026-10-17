@@ -688,6 +688,14 @@
               <span id="skills-max-rank-info" class="text-[10px] text-slate-400 font-mono">
                 Maks: Sınıf <strong class="text-amber-400">9</strong> • Dışı <strong class="text-slate-300">4.5</strong>
               </span>
+              <button 
+                type="button" 
+                onclick="openCustomSkillModal()" 
+                class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-indigo-950 hover:bg-indigo-900 text-indigo-300 border border-indigo-600/60 hover:border-indigo-400 transition flex items-center gap-1 shadow-sm cursor-pointer"
+                title="Yeni özel beceri veya Knowledge alt dalı ekle">
+                <span>➕</span>
+                <span>Özel Beceri Ekle</span>
+              </button>
             </div>
           </div>
 
@@ -3556,6 +3564,125 @@
       <div class="bg-slate-950 px-4 py-3 border-t border-slate-800 flex justify-end gap-2 shrink-0">
         <button onclick="closeSkillConsolidationModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs px-3.5 py-1.5 rounded-lg transition">Kapat</button>
         <button onclick="saveSkillConsolidationSettings()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition shadow">Kaydet ve Uygula</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================== -->
+  <!-- MODAL: ÖZEL BECERİ EKLE (CUSTOM SKILL / KNOWLEDGE) -->
+  <!-- ==================================================== -->
+  <div id="custom-skill-modal" class="hidden fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
+    <div class="bg-dndCard border border-indigo-500/80 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col transition-colors">
+      <!-- Modal Header -->
+      <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-indigo-950/80 border border-indigo-600/50 flex items-center justify-center text-lg shadow-inner">
+            📜
+          </div>
+          <div>
+            <h3 class="text-sm md:text-base font-extrabold text-white flex items-center gap-2">
+              <span>Yeni Özel Beceri Ekle (Custom Skill)</span>
+              <span class="text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 px-2 py-0.5 rounded-full">D&D 3.5e</span>
+            </h3>
+            <p class="text-[10px] text-slate-400">Knowledge alt dalları (Planes, Warfare vb.), Craft, Profession veya ev yapımı beceriler</p>
+          </div>
+        </div>
+        <button onclick="closeCustomSkillModal()" class="text-slate-400 hover:text-white p-1 rounded-lg text-lg font-bold">&times;</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-4 space-y-3.5 overflow-y-auto text-xs">
+        <!-- Quick Template Selector -->
+        <div>
+          <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">⚡ Hızlı Şablon Seçimi (İsteğe Bağlı):</label>
+          <select id="csk-template-select" onchange="onCustomSkillTemplateChange()" class="w-full bg-slate-950 border border-indigo-500/40 rounded-lg px-3 py-2 text-white font-medium focus:outline-none focus:border-indigo-400">
+            <option value="">-- Bir Knowledge / Zanaat Şablonu Seçin veya Kendiniz Yazın --</option>
+            <option value="Knowledge (The Planes)|int|false|false|Düzlemler, Astral/Ethereal seyahat, dış düzlem varlıkları">Knowledge: The Planes (Düzlemler) [INT]</option>
+            <option value="Knowledge (Geography)|int|true|false|Coğrafya, araziler, iklimler, yerel halklar">Knowledge: Geography (Coğrafya) [INT]</option>
+            <option value="Knowledge (Dungeoneering)|int|false|false|Zindanlar, mağaralar, Aberration yaratıklar, yeraltı tehlikeleri">Knowledge: Dungeoneering (Zindan Bilgisi) [INT]</option>
+            <option value="Knowledge (Architecture and Engineering)|int|false|false|Mimarlık, mühendislik, bina zayıflıkları, tahkimatlar">Knowledge: Architecture & Engineering [INT]</option>
+            <option value="Knowledge (Warfare & Tactics)|int|false|false|Savaş taktikleri, ordu manevraları, kuşatma stratejileri">Knowledge: Warfare & Tactics (Harp Bilgisi) [INT]</option>
+            <option value="Knowledge (Nobility and Royalty)|int|false|false|Soylu aileler, armalar, saray protokolleri, veraset">Knowledge: Nobility & Royalty (Saray/Soy Bilgisi) [INT]</option>
+            <option value="Knowledge (History)|int|false|false|Tarih, antik krallıklar, kadim savaşlar ve efsaneler">Knowledge: History (Tarih) [INT]</option>
+            <option value="Knowledge (Nature)|int|false|false|Doğa, bitkiler, hayvanlar, mevsimler ve hava durumu">Knowledge: Nature (Doğa) [INT]</option>
+            <option value="Knowledge (Religion)|int|false|false|Dinler, tanrılar, kutsal semboller, Undead varlıklar">Knowledge: Religion (Din) [INT]</option>
+            <option value="Knowledge (Local)|int|false|false|Yerel kanunlar, gelenekler, dedikodular ve önemli şahsiyetler">Knowledge: Local (Yerel Bilgi) [INT]</option>
+            <option value="Craft (Alchemy)|int|false|false|Simya maddeleri, iksir hazırlığı ve kimyasal bileşikler">Craft: Alchemy (Simya) [INT]</option>
+            <option value="Craft (Weaponsmithing)|int|false|false|Silah yapımı ve bakımı">Craft: Weaponsmithing (Silah Yapımı) [INT]</option>
+            <option value="Craft (Armorsmithing)|int|false|false|Zırh ve kalkan dövme">Craft: Armorsmithing (Zırh Yapımı) [INT]</option>
+            <option value="Profession (Sailor)|wis|false|false|Gemicilik, denizcilik ve seyir">Profession: Sailor (Denizci) [WIS]</option>
+            <option value="Perform (Oratory)|cha|true|false|Hitabet, konuşma sanatı ve tiyatro">Perform: Oratory (Hitabet) [CHA]</option>
+          </select>
+        </div>
+
+        <!-- Skill Name -->
+        <div>
+          <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">🏷️ Beceri Adı (Skill Name):</label>
+          <input type="text" id="csk-name" placeholder="Örn: Knowledge (The Planes)" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white font-bold focus:outline-none focus:border-indigo-400">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- Ability Stat -->
+          <div>
+            <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">🧠 Bağlı Olduğu Stat (Ability):</label>
+            <select id="csk-stat" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white font-bold focus:outline-none focus:border-indigo-400">
+              <option value="int">INT (Zeka) - Knowledge, Craft</option>
+              <option value="wis">WIS (Bilgelik) - Spot, Listen, Profession</option>
+              <option value="dex">DEX (Çeviklik) - Stealth, Tumble</option>
+              <option value="str">STR (Kuvvet) - Jump, Climb, Swim</option>
+              <option value="cha">CHA (Karizma) - Bluff, Diplomacy, Perform</option>
+              <option value="con">CON (Dayanıklılık) - Concentration</option>
+            </select>
+          </div>
+
+          <!-- Initial Ranks -->
+          <div>
+            <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">🎯 Başlangıç Rankı (Ranks):</label>
+            <input type="number" id="csk-ranks" min="0" max="30" value="0" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white font-bold text-center focus:outline-none focus:border-indigo-400 font-mono">
+            <span class="text-[10px] text-slate-400 block mt-0.5">Sınıf için 1 Puan, Sınıf Dışı için 2 Puan harcar.</span>
+          </div>
+        </div>
+
+        <!-- Checkboxes -->
+        <div class="bg-slate-950/70 p-3 rounded-xl border border-slate-800 space-y-2">
+          <label class="flex items-center gap-2 cursor-pointer select-none">
+            <input type="checkbox" id="csk-is-class" class="w-4 h-4 rounded text-amber-500 bg-slate-900 border-slate-700 focus:ring-0">
+            <div>
+              <span class="font-bold text-amber-300">⭐ Sınıf Becerisi (Class Skill)</span>
+              <span class="text-[10px] text-slate-400 block">Seçilirse rank başına 1 puan harcar ve maksimum rank limiti (Seviye + 3) olur.</span>
+            </div>
+          </label>
+
+          <label class="flex items-center gap-2 cursor-pointer select-none">
+            <input type="checkbox" id="csk-untrained" class="w-4 h-4 rounded text-sky-500 bg-slate-900 border-slate-700 focus:ring-0">
+            <div>
+              <span class="font-bold text-slate-200">Eğitimsiz Atılabilir mi? (Untrained)</span>
+              <span class="text-[10px] text-slate-400 block">0 rank varken bu zarı atabilme izni (Knowledge skilleri genelde DC 10 altı hariç kapalıdır).</span>
+            </div>
+          </label>
+
+          <label class="flex items-center gap-2 cursor-pointer select-none">
+            <input type="checkbox" id="csk-acp" class="w-4 h-4 rounded text-rose-500 bg-slate-900 border-slate-700 focus:ring-0">
+            <div>
+              <span class="font-bold text-slate-200">Zırh Kontrol Cezası Uygulanır mı? (Armor Check Penalty)</span>
+              <span class="text-[10px] text-slate-400 block">Zırh ve kalkandan gelen -ACP cezası bu beceriden düşer mi? (Knowledge için hayır).</span>
+            </div>
+          </label>
+
+          <label class="flex items-center gap-2 cursor-pointer select-none pt-1 border-t border-slate-800">
+            <input type="checkbox" id="csk-save-master-db" checked class="w-4 h-4 rounded text-emerald-500 bg-slate-900 border-slate-700 focus:ring-0">
+            <div>
+              <span class="font-bold text-emerald-300">📚 Master DB Kütüphanesine de Kaydet</span>
+              <span class="text-[10px] text-slate-400 block">Bu beceri kalıcı Master DB listesine de eklenir, diğer karakterler de erişebilir.</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="bg-slate-950 px-4 py-3 border-t border-slate-800 flex justify-end gap-2 shrink-0">
+        <button onclick="closeCustomSkillModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs px-3.5 py-1.5 rounded-lg transition">İptal</button>
+        <button onclick="saveCustomSkill()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition shadow">Kaydet ve Becerilere Ekle</button>
       </div>
     </div>
   </div>
@@ -9732,6 +9859,151 @@
       });
     }
 
+    // ====================================================
+    // CUSTOM SKILL MODAL & TEMPLATE LOGIC
+    // ====================================================
+    function openCustomSkillModal() {
+      const modal = document.getElementById('custom-skill-modal');
+      if (!modal) return;
+      const tSel = document.getElementById('csk-template-select');
+      if (tSel) tSel.value = '';
+      const nameInput = document.getElementById('csk-name');
+      if (nameInput) nameInput.value = '';
+      const statInput = document.getElementById('csk-stat');
+      if (statInput) statInput.value = 'int';
+      const ranksInput = document.getElementById('csk-ranks');
+      if (ranksInput) ranksInput.value = '0';
+      const classInput = document.getElementById('csk-is-class');
+      if (classInput) classInput.checked = false;
+      const untrainedInput = document.getElementById('csk-untrained');
+      if (untrainedInput) untrainedInput.checked = false;
+      const acpInput = document.getElementById('csk-acp');
+      if (acpInput) acpInput.checked = false;
+      const saveDbInput = document.getElementById('csk-save-master-db');
+      if (saveDbInput) saveDbInput.checked = true;
+      modal.classList.remove('hidden');
+    }
+
+    function closeCustomSkillModal() {
+      const modal = document.getElementById('custom-skill-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function onCustomSkillTemplateChange() {
+      const sel = document.getElementById('csk-template-select');
+      if (!sel || !sel.value) return;
+      const parts = sel.value.split('|');
+      const name = parts[0] || '';
+      const stat = parts[1] || 'int';
+      const untrained = parts[2] === 'true';
+      const acp = parts[3] === 'true';
+
+      const nameInput = document.getElementById('csk-name');
+      if (nameInput) nameInput.value = name;
+      const statInput = document.getElementById('csk-stat');
+      if (statInput) statInput.value = stat;
+      const untrainedInput = document.getElementById('csk-untrained');
+      if (untrainedInput) untrainedInput.checked = untrained;
+      const acpInput = document.getElementById('csk-acp');
+      if (acpInput) acpInput.checked = acp;
+    }
+
+    function saveCustomSkill() {
+      const nameInput = document.getElementById('csk-name');
+      const name = (nameInput?.value || '').trim();
+      if (!name) {
+        alert('Lütfen geçerli bir beceri adı girin.');
+        return;
+      }
+
+      ensureAllSkills(character);
+      const key = name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+      const existing = (character.skills || []).find(s => s.key === key || (s.name || '').toLowerCase() === name.toLowerCase());
+
+      const stat = document.getElementById('csk-stat')?.value || 'int';
+      const initialRanks = Math.max(0, parseInt(document.getElementById('csk-ranks')?.value, 10) || 0);
+      const isClass = document.getElementById('csk-is-class')?.checked || false;
+      const untrained = document.getElementById('csk-untrained')?.checked || false;
+      const acp = document.getElementById('csk-acp')?.checked || false;
+      const saveDb = document.getElementById('csk-save-master-db')?.checked !== false;
+
+      // Budget check if starting with ranks > 0
+      if (initialRanks > 0) {
+        const isMerged = character.settings?.mergeSkills !== false;
+        const totalPts = calculateTotalSkillPoints(character);
+        const spentPts = calculateSpentSkillPoints(character, isMerged);
+        const cost = initialRanks * (isClass ? 1 : 2);
+        if (spentPts + cost > totalPts) {
+          alert(`⚠️ Yetersiz beceri puanı! Bu beceri için ${cost} puan gerekiyor, ancak havuzda yalnızca ${Math.max(0, totalPts - spentPts)} puan boşta. Başlangıç rankı 0 olarak ayarlanıyor.`);
+        }
+      }
+
+      if (existing) {
+        existing.name = name;
+        existing.stat = stat;
+        existing.isClass = isClass;
+        existing.untrained = untrained;
+        existing.acp = acp;
+        if (initialRanks > 0) existing.ranks = initialRanks;
+      } else {
+        character.skills.push({
+          key: key,
+          name: name,
+          stat: stat,
+          ranks: initialRanks,
+          misc: 0,
+          acp: acp,
+          untrained: untrained,
+          isClass: isClass,
+          isCustom: true
+        });
+      }
+
+      // Save to Master DB if checked
+      if (saveDb && typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        const isKnowledge = name.toLowerCase().startsWith('knowledge');
+        const dbItem = {
+          name: name,
+          type: "Skill",
+          category: isKnowledge ? "Knowledge Skill" : "Custom Skill",
+          slot: "None",
+          parent: "Skills",
+          prereq: "-",
+          source: "D&D 3.5e Extended",
+          benefit: `${stat.toUpperCase()} tabanlı beceri. ${untrained ? 'Eğitimsiz atılabilir.' : 'Eğitilmeden atılamaz.'} ${acp ? 'Zırh cezası uygulanır.' : 'Zırh cezası uygulanmaz.'}`,
+          bonusType: "Skill",
+          scope: isKnowledge ? "Knowledge" : "Skill",
+          action: "Passive",
+          role: "Skill / Lore",
+          stat: stat,
+          key: key,
+          untrained: untrained,
+          acp: acp,
+          tags: isKnowledge ? ["skill", "knowledge", "lore"] : ["skill", "custom"]
+        };
+
+        const exIdx = masterDb.findIndex(m => (m.name || '').toLowerCase() === name.toLowerCase());
+        if (exIdx >= 0) {
+          masterDb[exIdx] = Object.assign({}, masterDb[exIdx], dbItem);
+        } else {
+          masterDb.push(dbItem);
+        }
+        if (window.RuleMaster && typeof RuleMaster.renderTable === 'function') {
+          RuleMaster.renderTable();
+        }
+      }
+
+      closeCustomSkillModal();
+      saveStateToStorage(true);
+      renderSkills();
+      showDiceTopToast({
+        icon: '📜',
+        title: 'Yeni Beceri Eklendi',
+        breakdown: `"${name}" [${stat.toUpperCase()}] karakter kağıdına başarıyla eklendi!`,
+        total: `${initialRanks} Rank`
+      });
+    }
+
     function renderSkills() {
       if (!character) return;
       ensureAllSkills(character);
@@ -9877,6 +10149,16 @@
       displayItems.forEach(item => {
         const statMod = RuleEngine.getAbilityMod(character.abilities?.[item.stat] || 10);
         const acpVal = item.acp ? (character.acBreakdown?.acp || 0) : 0;
+
+        // Scope & Stacking Aware Item/Buff Bonus Calculation
+        const evalSkillObj = (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateSkillBonus)
+          ? RuleEngine.evaluateSkillBonus(character, item.key, item.name, item.stat)
+          : { total: Number(character.buffSkillBonus) || 0, breakdown: [] };
+        const buffSkillMod = evalSkillObj.total;
+        const buffTooltip = evalSkillObj.breakdown.length > 0 
+          ? evalSkillObj.breakdown.join(' • ') 
+          : (buffSkillMod !== 0 ? `Bonus: ${buffSkillMod}` : 'Aktif eşya veya büyü bonusu yok');
+
         const total = item.ranks + statMod + item.misc - acpVal + buffSkillMod;
         const maxRankAllowed = item.isClass ? maxClassRank : maxCrossRank;
         const isOverRank = item.ranks > maxRankAllowed;
@@ -9935,7 +10217,7 @@
           </td>
 
           <!-- Buff / Debuff Bonus -->
-          <td class="py-2 px-2 text-center align-middle font-mono ${buffSkillMod !== 0 ? (buffSkillMod > 0 ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold') : 'text-slate-600'}">
+          <td class="py-2 px-2 text-center align-middle font-mono ${buffSkillMod !== 0 ? (buffSkillMod > 0 ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold') : 'text-slate-600'}" title="${buffTooltip}">
             ${buffSkillMod !== 0 ? (buffSkillMod > 0 ? '+' + buffSkillMod : buffSkillMod) : '-'}
           </td>
 
