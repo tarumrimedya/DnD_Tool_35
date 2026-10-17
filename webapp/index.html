@@ -923,20 +923,66 @@
 
           <!-- GÖRÜNÜM 2: SİLÜET / PAPER-DOLL DÜZENİ -->
           <div id="body-slots-silhouette-view" class="p-3 sm:p-5 bg-gradient-to-b from-slate-950 via-[#0a0f1d] to-slate-950 relative hidden">
-            <!-- Sub-Header: Magic Item Record Sheet Standard Header -->
-            <div class="flex flex-wrap items-center justify-between gap-2.5 pb-3 mb-4 border-b border-slate-800/80">
+            <!-- Sub-Header: Magic Item Record Sheet Standard Header & Silhouette Customizer Controls -->
+            <div class="flex flex-wrap items-center justify-between gap-2.5 pb-3 mb-3 border-b border-slate-800/80">
               <div class="flex items-center gap-2">
                 <span class="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]"></span>
                 <span class="text-xs font-bold text-amber-300 uppercase tracking-wider">D&D 3.5e Vücut Yuvaları (Magic Item Record Sheet)</span>
                 <span class="text-slate-600">•</span>
                 <span id="sil-active-count" class="text-[11px] font-semibold text-sky-300">12 Yuva</span>
               </div>
-              <div class="flex items-center gap-2">
-                <span class="px-2.5 py-1 rounded-lg bg-slate-900/90 border border-slate-700 text-xs font-semibold text-slate-300 flex items-center gap-1.5 shadow-sm">
-                  <span>📜</span>
-                  <span>Standart Fantastik Savaşçı Figürü</span>
-                </span>
+              
+              <!-- Quick Action Toolbar: Custom Image + Point Calibration Drag-Mode -->
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <!-- Hidden file input for custom silhouette image upload -->
+                <input type="file" id="sil-custom-file-input" accept="image/*" class="hidden" onchange="handleSilhouetteFileUpload(event)">
+                
+                <!-- Upload / Change Figure Button -->
+                <button type="button" onclick="triggerSilhouetteUpload()" title="Kendi resminizi veya özel figürünüzü yükleyin" class="px-2.5 py-1 rounded-lg bg-sky-950/80 hover:bg-sky-900 border border-sky-600/50 hover:border-sky-400 text-sky-300 hover:text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                  <span>🖼️</span>
+                  <span>Resim Yükle</span>
+                </button>
+                
+                <!-- URL Input Button -->
+                <button type="button" onclick="promptSilhouetteUrl()" title="İnternetten Resim Linki (URL) ile ekle" class="px-2 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-slate-500 text-slate-300 hover:text-white text-xs font-bold transition flex items-center gap-1 shadow-sm">
+                  <span>🔗</span>
+                  <span class="hidden sm:inline">URL</span>
+                </button>
+                
+                <!-- Reset Image to Default Button (Shown when custom image is active) -->
+                <button type="button" id="sil-reset-img-btn" onclick="resetSilhouetteImage()" title="Varsayılan D&D savaşçı silüetine geri dön" class="hidden px-2.5 py-1 rounded-lg bg-rose-950/70 hover:bg-rose-900 border border-rose-700/60 text-rose-300 hover:text-white text-xs font-bold transition flex items-center gap-1 shadow-sm">
+                  <span>↺</span>
+                  <span>Resmi Sıfırla</span>
+                </button>
+
+                <div class="w-px h-4 bg-slate-800 mx-0.5"></div>
+
+                <!-- Toggle Point Calibration Drag-Mode Button -->
+                <button type="button" id="sil-edit-points-btn" onclick="toggleSilhouettePointEditMode()" title="Noktaları sürükleyerek vücut üzerindeki yerlerini ayarlayın" class="px-2.5 py-1 rounded-lg bg-amber-950/80 hover:bg-amber-900 border border-amber-600/60 hover:border-amber-400 text-amber-300 hover:text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                  <span id="sil-edit-points-icon">🎯</span>
+                  <span id="sil-edit-points-label">Noktaları Düzenle</span>
+                </button>
+
+                <!-- Reset Points to Default Coordinates (Shown during edit mode) -->
+                <button type="button" id="sil-reset-points-btn" onclick="resetSilhouettePoints()" title="Tüm vücut noktalarını varsayılan yerlerine sıfırla" class="hidden px-2 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-400 hover:text-white text-xs font-bold transition flex items-center gap-1 shadow-sm">
+                  <span>↺</span>
+                  <span>Noktaları Sıfırla</span>
+                </button>
               </div>
+            </div>
+
+            <!-- Edit Mode Helpful Banner (Visible only when Calibration Mode is active) -->
+            <div id="sil-edit-mode-banner" class="hidden mb-3 p-2.5 rounded-xl bg-amber-950/50 border border-amber-500/60 flex items-center justify-between gap-3 text-xs text-amber-200 shadow-md">
+              <div class="flex items-center gap-2">
+                <span class="text-base animate-pulse">📌</span>
+                <div>
+                  <span class="font-bold text-amber-300">Nokta Konumlandırma Modu Aktif:</span>
+                  <span class="text-amber-200/90 text-[11px] ml-1">12 bağlantı noktasını farenizle (veya dokunarak) resmin üzerinde istediğiniz yere sürükleyip bırakabilirsiniz. Çizgiler anlık güncellenir.</span>
+                </div>
+              </div>
+              <button type="button" onclick="toggleSilhouettePointEditMode(false)" class="px-3 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs transition shrink-0 shadow">
+                💾 Kaydet & Kapat
+              </button>
             </div>
 
             <!-- 3-Column Grid: Left Slots (6) | Silhouette Center | Right Slots (6) -->
@@ -10148,80 +10194,277 @@
       }
     }
 
-    function getSilhouetteSvg(modelKey, character) {
-      // D&D 3.5e Magic Item Record Sheet Standard Fantasy Warrior Mannequin (460 x 520 Canvas)
-      // Strictly Monotonic Anatomical Anchors calibrated to hero_composed.jpg:
-      // Left 6 Y-coords: 48 < 82 < 145 < 205 < 250 < 285 (all cx <= 226)
-      // Right 6 Y-coords: 115 < 170 < 225 < 270 < 300 < 475 (all cx >= 245)
-      // Card Slot Y-coords: 40 < 120 < 200 < 280 < 360 < 440
-      // GUARANTEED ZERO INTERSECTING / CROSSING LINES & ZERO FLOATING POINTS!
-      const nodes = {
-        // SOL (6 Yuva):
-        head: { cx: 224, cy: 48, label: 'Baş / Miğfer (Head)' },
-        eyes: { cx: 226, cy: 82, label: 'Göz / Gözlük (Eyes)' },
-        shoulders: { cx: 175, cy: 145, label: 'Omuz / Pelerin (Shoulders)' },
-        torso: { cx: 210, cy: 205, label: 'Göğüs / Yelek (Torso)' },
-        belt: { cx: 180, cy: 245, label: 'Kemer / Bel (Belt)' },
-        ring1: { cx: 126, cy: 285, label: 'Sol Yüzük (Left Ring)' },
-        // SAĞ (6 Yuva):
-        neck: { cx: 245, cy: 115, label: 'Boyun / Kolye (Neck)' },
-        armor: { cx: 255, cy: 170, label: 'Gövde Zırhı (Armor)' },
-        bracers: { cx: 328, cy: 225, label: 'Kollar / Bileklik (Bracers)' },
-        gloves: { cx: 338, cy: 270, label: 'Eller / Eldiven (Gloves)' },
-        ring2: { cx: 345, cy: 300, label: 'Sağ Yüzük (Right Ring)' },
-        boots: { cx: 285, cy: 475, label: 'Ayaklar / Çizme (Boots)' }
+    let isSilhouettePointEditMode = false;
+    let activeDraggedSlot = null;
+    let currentSilhouetteNodes = null;
+
+    const DEFAULT_BODY_SLOT_NODES = {
+      // SOL (6 Yuva):
+      head: { cx: 224, cy: 48, label: 'Baş / Miğfer (Head)' },
+      eyes: { cx: 226, cy: 82, label: 'Göz / Gözlük (Eyes)' },
+      shoulders: { cx: 175, cy: 145, label: 'Omuz / Pelerin (Shoulders)' },
+      torso: { cx: 210, cy: 205, label: 'Göğüs / Yelek (Torso)' },
+      belt: { cx: 180, cy: 245, label: 'Kemer / Bel (Belt)' },
+      ring1: { cx: 126, cy: 285, label: 'Sol Yüzük (Left Ring)' },
+      // SAĞ (6 Yuva):
+      neck: { cx: 245, cy: 115, label: 'Boyun / Kolye (Neck)' },
+      armor: { cx: 255, cy: 170, label: 'Gövde Zırhı (Armor)' },
+      bracers: { cx: 328, cy: 225, label: 'Kollar / Bileklik (Bracers)' },
+      gloves: { cx: 338, cy: 270, label: 'Eller / Eldiven (Gloves)' },
+      ring2: { cx: 345, cy: 300, label: 'Sağ Yüzük (Right Ring)' },
+      boots: { cx: 285, cy: 475, label: 'Ayaklar / Çizme (Boots)' }
+    };
+
+    function getEffectiveBodySlotNodes(charObj) {
+      const saved = charObj?.customSilhouetteCoords || null;
+      let localSaved = null;
+      try {
+        const raw = localStorage.getItem('dnd35_silhouette_custom_coords');
+        if (raw) localSaved = JSON.parse(raw);
+      } catch(e) {}
+
+      const custom = saved || localSaved || {};
+      const result = {};
+      for (const k of Object.keys(DEFAULT_BODY_SLOT_NODES)) {
+        result[k] = {
+          ...DEFAULT_BODY_SLOT_NODES[k],
+          cx: (custom[k]?.cx !== undefined && !isNaN(custom[k].cx)) ? Number(custom[k].cx) : DEFAULT_BODY_SLOT_NODES[k].cx,
+          cy: (custom[k]?.cy !== undefined && !isNaN(custom[k].cy)) ? Number(custom[k].cy) : DEFAULT_BODY_SLOT_NODES[k].cy
+        };
+      }
+      return result;
+    }
+
+    function getSilhouetteImageSrc(charObj) {
+      if (charObj && charObj.customSilhouetteImg) {
+        return charObj.customSilhouetteImg;
+      }
+      try {
+        const localImg = localStorage.getItem('dnd35_silhouette_custom_img');
+        if (localImg) return localImg;
+      } catch(e) {}
+      return window.HERO_SILHOUETTE_DATA_URI || 'hero_silhouette.jpg';
+    }
+
+    function triggerSilhouetteUpload() {
+      const input = document.getElementById('sil-custom-file-input');
+      if (input) input.click();
+    }
+
+    function handleSilhouetteFileUpload(event) {
+      const file = event?.target?.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const dataUrl = e.target.result;
+        if (!character) character = {};
+        character.customSilhouetteImg = dataUrl;
+        try { localStorage.setItem('dnd35_silhouette_custom_img', dataUrl); } catch(err){}
+        renderBodySlotsSilhouette();
+        alert('🖼️ Özel silüet görseliniz başarıyla yüklendi!');
       };
+      reader.readAsDataURL(file);
+    }
 
-      const imgSrc = window.HERO_SILHOUETTE_DATA_URI || 'hero_silhouette.jpg';
+    function promptSilhouetteUrl() {
+      const current = (character && character.customSilhouetteImg) || '';
+      const url = prompt('Silüet figürü için resim linki (URL) girin:\n(Örnek: https://...png veya .jpg)', current);
+      if (url === null) return;
+      const cleanUrl = url.trim();
+      if (!cleanUrl) {
+        resetSilhouetteImage();
+        return;
+      }
+      if (!character) character = {};
+      character.customSilhouetteImg = cleanUrl;
+      try { localStorage.setItem('dnd35_silhouette_custom_img', cleanUrl); } catch(err){}
+      renderBodySlotsSilhouette();
+      alert('🖼️ Özel silüet URL görseli uygulandı!');
+    }
 
-      // 6 Slots Left & 6 Slots Right - Exactly matching D&D 3.5e official Body Slots
+    function resetSilhouetteImage() {
+      if (character && character.customSilhouetteImg) {
+        delete character.customSilhouetteImg;
+      }
+      try { localStorage.removeItem('dnd35_silhouette_custom_img'); } catch(err){}
+      renderBodySlotsSilhouette();
+      alert('↺ Varsayılan D&D savaşçı silüetine dönüldü.');
+    }
+
+    function resetSilhouettePoints() {
+      if (confirm('Tüm 12 vücut noktasını orijinal varsayılan yerlerine sıfırlamak istiyor musunuz?')) {
+        if (character && character.customSilhouetteCoords) {
+          delete character.customSilhouetteCoords;
+        }
+        try { localStorage.removeItem('dnd35_silhouette_custom_coords'); } catch(err){}
+        currentSilhouetteNodes = JSON.parse(JSON.stringify(DEFAULT_BODY_SLOT_NODES));
+        renderBodySlotsSilhouette();
+      }
+    }
+
+    function toggleSilhouettePointEditMode(forceState) {
+      if (typeof forceState === 'boolean') {
+        isSilhouettePointEditMode = forceState;
+      } else {
+        isSilhouettePointEditMode = !isSilhouettePointEditMode;
+      }
+      renderBodySlotsSilhouette();
+    }
+
+    function startDraggingSlotNode(evt, slotKey) {
+      if (!isSilhouettePointEditMode) return;
+      evt.preventDefault();
+      evt.stopPropagation();
+      activeDraggedSlot = slotKey;
+      const groupEl = document.getElementById(`sil-node-group-${slotKey}`);
+      if (groupEl) groupEl.classList.add('is-dragging');
+    }
+
+    function handleSilhouetteSvgMouseMove(evt) {
+      if (!activeDraggedSlot) return;
+      updateDraggedNodePosition(evt);
+    }
+
+    function handleSilhouetteSvgTouchMove(evt) {
+      if (!activeDraggedSlot) return;
+      updateDraggedNodePosition(evt);
+    }
+
+    function updateDraggedNodePosition(evt) {
+      if (!activeDraggedSlot) return;
+      evt.preventDefault();
+      const svgEl = document.getElementById('sil-main-svg');
+      if (!svgEl) return;
+
+      const pt = svgEl.createSVGPoint();
+      const clientX = evt.clientX !== undefined ? evt.clientX : (evt.touches && evt.touches[0] ? evt.touches[0].clientX : 0);
+      const clientY = evt.clientY !== undefined ? evt.clientY : (evt.touches && evt.touches[0] ? evt.touches[0].clientY : 0);
+      pt.x = clientX;
+      pt.y = clientY;
+      const cursorPt = pt.matrixTransform(svgEl.getScreenCTM().inverse());
+
+      const clampedX = Math.max(10, Math.min(450, Math.round(cursorPt.x)));
+      const clampedY = Math.max(10, Math.min(510, Math.round(cursorPt.y)));
+
+      if (!currentSilhouetteNodes) currentSilhouetteNodes = getEffectiveBodySlotNodes(character);
+      currentSilhouetteNodes[activeDraggedSlot].cx = clampedX;
+      currentSilhouetteNodes[activeDraggedSlot].cy = clampedY;
+
+      // Update DOM circles directly for 60fps drag
+      const nodeEl = document.getElementById(`sil-node-${activeDraggedSlot}`);
+      const haloEl = document.getElementById(`sil-halo-${activeDraggedSlot}`);
+      const glintEl = document.getElementById(`sil-glint-${activeDraggedSlot}`);
+      const touchAreaEl = document.getElementById(`sil-touch-${activeDraggedSlot}`);
+      const labelEl = document.getElementById(`sil-coord-label-${activeDraggedSlot}`);
+      if (nodeEl) { nodeEl.setAttribute('cx', clampedX); nodeEl.setAttribute('cy', clampedY); }
+      if (haloEl) { haloEl.setAttribute('cx', clampedX); haloEl.setAttribute('cy', clampedY); }
+      if (glintEl) { glintEl.setAttribute('cx', clampedX); glintEl.setAttribute('cy', clampedY); }
+      if (touchAreaEl) { touchAreaEl.setAttribute('cx', clampedX); touchAreaEl.setAttribute('cy', clampedY); }
+      if (labelEl) {
+        labelEl.setAttribute('x', clampedX);
+        labelEl.setAttribute('y', clampedY - 12);
+        labelEl.textContent = `${DEFAULT_BODY_SLOT_NODES[activeDraggedSlot].label.split(' ')[0]} (${clampedX},${clampedY})`;
+      }
+
+      // Update connector path
+      const lineEl = document.getElementById(`sil-line-${activeDraggedSlot}`);
+      if (lineEl) {
+        const isLeft = ['head', 'eyes', 'shoulders', 'torso', 'belt', 'ring1'].includes(activeDraggedSlot);
+        const CARD_Y_MAP = { head: 40, eyes: 120, shoulders: 200, torso: 280, belt: 360, ring1: 440, neck: 40, armor: 120, bracers: 200, gloves: 280, ring2: 360, boots: 440 };
+        const yCard = CARD_Y_MAP[activeDraggedSlot] || 40;
+
+        let pathD = '';
+        if (isLeft) {
+          let p1x = Math.max(30, Math.min(80, clampedX * 0.4));
+          let p1y = yCard;
+          let p2x = clampedX - 50;
+          let p2y = clampedY;
+          if (activeDraggedSlot === 'belt') {
+            p1x = 50; p1y = 300; p2x = Math.max(80, clampedX - 60); p2y = clampedY;
+          } else if (activeDraggedSlot === 'ring1') {
+            p1x = 50; p1y = 440; p2x = Math.max(60, clampedX - 36); p2y = Math.min(400, clampedY + 55);
+          } else if (activeDraggedSlot === 'torso') {
+            p1x = 60; p1y = 260; p2x = clampedX - 60; p2y = clampedY;
+          }
+          pathD = `M 0,${yCard} C ${p1x},${p1y} ${p2x},${p2y} ${clampedX},${clampedY}`;
+        } else {
+          pathD = `M ${clampedX},${clampedY} C ${clampedX + 50},${clampedY} 390,${yCard} 460,${yCard}`;
+        }
+        lineEl.setAttribute('d', pathD);
+      }
+    }
+
+    function stopDraggingSlotNode() {
+      if (!activeDraggedSlot) return;
+      const groupEl = document.getElementById(`sil-node-group-${activeDraggedSlot}`);
+      if (groupEl) groupEl.classList.remove('is-dragging');
+      activeDraggedSlot = null;
+
+      // Persist to character and localStorage
+      if (!character) character = {};
+      if (!character.customSilhouetteCoords) character.customSilhouetteCoords = {};
+      for (const k of Object.keys(currentSilhouetteNodes)) {
+        character.customSilhouetteCoords[k] = {
+          cx: currentSilhouetteNodes[k].cx,
+          cy: currentSilhouetteNodes[k].cy
+        };
+      }
+      try {
+        localStorage.setItem('dnd35_silhouette_custom_coords', JSON.stringify(character.customSilhouetteCoords));
+      } catch(e) {}
+    }
+
+    window.addEventListener('mouseup', () => { if (activeDraggedSlot) stopDraggingSlotNode(); });
+    window.addEventListener('touchend', () => { if (activeDraggedSlot) stopDraggingSlotNode(); });
+
+    function getSilhouetteSvg(modelKey, character) {
+      currentSilhouetteNodes = getEffectiveBodySlotNodes(character);
+      const nodes = currentSilhouetteNodes;
+      const imgSrc = getSilhouetteImageSrc(character);
+
       const LEFT_KEYS = ['head', 'eyes', 'shoulders', 'torso', 'belt', 'ring1'];
       const RIGHT_KEYS = ['neck', 'armor', 'bracers', 'gloves', 'ring2', 'boots'];
-
-      // Calibrated spline control points guaranteeing ZERO crossing lines
-      const LEFT_CURVES = {
-        head: { p0: { x: 0, y: 40 }, p1: { x: 80, y: 40 }, p2: { x: 170, y: 48 }, p3: { x: 224, y: 48 } },
-        eyes: { p0: { x: 0, y: 120 }, p1: { x: 80, y: 120 }, p2: { x: 170, y: 82 }, p3: { x: 226, y: 82 } },
-        shoulders: { p0: { x: 0, y: 200 }, p1: { x: 70, y: 200 }, p2: { x: 130, y: 145 }, p3: { x: 175, y: 145 } },
-        torso: { p0: { x: 0, y: 280 }, p1: { x: 60, y: 260 }, p2: { x: 150, y: 205 }, p3: { x: 210, y: 205 } },
-        belt: { p0: { x: 0, y: 360 }, p1: { x: 50, y: 300 }, p2: { x: 120, y: 245 }, p3: { x: 180, y: 245 } },
-        ring1: { p0: { x: 0, y: 440 }, p1: { x: 50, y: 440 }, p2: { x: 90, y: 340 }, p3: { x: 126, y: 285 } }
-      };
-
-      const RIGHT_CURVES = {
-        neck: { p0: { x: 245, y: 115 }, p1: { x: 295, y: 115 }, p2: { x: 390, y: 40 }, p3: { x: 460, y: 40 } },
-        armor: { p0: { x: 255, y: 170 }, p1: { x: 305, y: 170 }, p2: { x: 390, y: 120 }, p3: { x: 460, y: 120 } },
-        bracers: { p0: { x: 328, y: 225 }, p1: { x: 378, y: 225 }, p2: { x: 390, y: 200 }, p3: { x: 460, y: 200 } },
-        gloves: { p0: { x: 338, y: 270 }, p1: { x: 388, y: 270 }, p2: { x: 390, y: 280 }, p3: { x: 460, y: 280 } },
-        ring2: { p0: { x: 345, y: 300 }, p1: { x: 395, y: 300 }, p2: { x: 390, y: 360 }, p3: { x: 460, y: 360 } },
-        boots: { p0: { x: 285, y: 475 }, p1: { x: 335, y: 475 }, p2: { x: 390, y: 440 }, p3: { x: 460, y: 440 } }
-      };
+      const CARD_Y_MAP = { head: 40, eyes: 120, shoulders: 200, torso: 280, belt: 360, ring1: 440, neck: 40, armor: 120, bracers: 200, gloves: 280, ring2: 360, boots: 440 };
 
       let linesMarkup = '';
       let nodesMarkup = '';
 
-      // Left column connector lines: card border (x=0) to anatomical anchor
+      // Left column connector lines
       LEFT_KEYS.forEach(slotKey => {
-        const c = LEFT_CURVES[slotKey];
+        const pt = nodes[slotKey];
+        const yCard = CARD_Y_MAP[slotKey];
         const isOccupied = character?.bodySlots?.[slotKey]?.name && character?.bodySlots?.[slotKey]?.name !== '-';
         const isActive = character?.bodySlots?.[slotKey]?.active;
         const color = isActive ? '#38bdf8' : (isOccupied ? '#f59e0b' : '#64748b');
         const opacity = isActive ? '0.85' : (isOccupied ? '0.6' : '0.35');
         const width = isActive ? '2' : '1.3';
 
+        let p1x = Math.max(30, Math.min(80, pt.cx * 0.4));
+        let p1y = yCard;
+        let p2x = pt.cx - 50;
+        let p2y = pt.cy;
+        if (slotKey === 'belt') {
+          p1x = 50; p1y = 300; p2x = Math.max(80, pt.cx - 60); p2y = pt.cy;
+        } else if (slotKey === 'ring1') {
+          p1x = 50; p1y = 440; p2x = Math.max(60, pt.cx - 36); p2y = Math.min(400, pt.cy + 55);
+        } else if (slotKey === 'torso') {
+          p1x = 60; p1y = 260; p2x = pt.cx - 60; p2y = pt.cy;
+        }
+
         linesMarkup += `
           <path id="sil-line-${slotKey}"
-                d="M ${c.p0.x},${c.p0.y} C ${c.p1.x},${c.p1.y} ${c.p2.x},${c.p2.y} ${c.p3.x},${c.p3.y}"
+                d="M 0,${yCard} C ${p1x},${p1y} ${p2x},${p2y} ${pt.cx},${pt.cy}"
                 fill="none" stroke="${color}" stroke-width="${width}" stroke-opacity="${opacity}"
                 stroke-dasharray="${isOccupied ? 'none' : '3,3'}"
                 class="transition-all duration-300"/>
-          <circle id="sil-pin-${slotKey}" cx="${c.p0.x}" cy="${c.p0.y}" r="3" fill="${color}" fill-opacity="${opacity}"/>
+          <circle id="sil-pin-${slotKey}" cx="0" cy="${yCard}" r="3" fill="${color}" fill-opacity="${opacity}"/>
         `;
       });
 
-      // Right column connector lines: anatomical anchor to card border (x=460)
+      // Right column connector lines
       RIGHT_KEYS.forEach(slotKey => {
-        const c = RIGHT_CURVES[slotKey];
+        const pt = nodes[slotKey];
+        const yCard = CARD_Y_MAP[slotKey];
         const isOccupied = character?.bodySlots?.[slotKey]?.name && character?.bodySlots?.[slotKey]?.name !== '-';
         const isActive = character?.bodySlots?.[slotKey]?.active;
         const color = isActive ? '#38bdf8' : (isOccupied ? '#f59e0b' : '#64748b');
@@ -10230,45 +10473,63 @@
 
         linesMarkup += `
           <path id="sil-line-${slotKey}"
-                d="M ${c.p0.x},${c.p0.y} C ${c.p1.x},${c.p1.y} ${c.p2.x},${c.p2.y} ${c.p3.x},${c.p3.y}"
+                d="M ${pt.cx},${pt.cy} C ${pt.cx + 50},${pt.cy} 390,${yCard} 460,${yCard}"
                 fill="none" stroke="${color}" stroke-width="${width}" stroke-opacity="${opacity}"
                 stroke-dasharray="${isOccupied ? 'none' : '3,3'}"
                 class="transition-all duration-300"/>
-          <circle id="sil-pin-${slotKey}" cx="${c.p3.x}" cy="${c.p3.y}" r="3" fill="${color}" fill-opacity="${opacity}"/>
+          <circle id="sil-pin-${slotKey}" cx="460" cy="${yCard}" r="3" fill="${color}" fill-opacity="${opacity}"/>
         `;
       });
 
-      // Static, clean anatomical nodes with white specular glint (NO animate-ping!)
+      // Interactive nodes
       Object.keys(nodes).forEach(slotKey => {
         const pt = nodes[slotKey];
         const isOccupied = character?.bodySlots?.[slotKey]?.name && character?.bodySlots?.[slotKey]?.name !== '-';
         const isActive = character?.bodySlots?.[slotKey]?.active;
         const color = isActive ? '#38bdf8' : (isOccupied ? '#f59e0b' : '#64748b');
 
-        nodesMarkup += `
-          <g class="slot-anchor-node cursor-pointer group" onclick="openSlotEquipModal('${slotKey}')">
-            <!-- Subtle ambient static halo (No pulsing/pinging) -->
-            <circle id="sil-halo-${slotKey}" cx="${pt.cx}" cy="${pt.cy}" r="9" fill="${color}" fill-opacity="0.22" stroke="${color}" stroke-opacity="0.4" stroke-width="1" class="transition-all duration-300 pointer-events-none"/>
-            <!-- Interactive Node Circle -->
-            <circle id="sil-node-${slotKey}" cx="${pt.cx}" cy="${pt.cy}" r="5" fill="${color}" stroke="#0b1329" stroke-width="1.8" class="transition-all duration-300 group-hover:scale-125"/>
-            <!-- Crisp specular center glint -->
-            <circle cx="${pt.cx}" cy="${pt.cy}" r="1.5" fill="#ffffff" class="pointer-events-none"/>
-            <title>${pt.label}: ${isOccupied ? character.bodySlots[slotKey].name : '(Boş Yuva - Kuşanmak için tıkla)'}</title>
-          </g>
-        `;
+        if (isSilhouettePointEditMode) {
+          // Edit Mode: draggable handles with visual coordinate label
+          nodesMarkup += `
+            <g id="sil-node-group-${slotKey}" class="slot-anchor-node is-editing cursor-grab select-none pointer-events-auto"
+               onmousedown="startDraggingSlotNode(event, '${slotKey}')"
+               ontouchstart="startDraggingSlotNode(event, '${slotKey}')">
+              <!-- Draggable Touch Area -->
+              <circle id="sil-touch-${slotKey}" cx="${pt.cx}" cy="${pt.cy}" r="20" fill="transparent" class="cursor-grab"/>
+              <!-- Drag Halo -->
+              <circle id="sil-halo-${slotKey}" cx="${pt.cx}" cy="${pt.cy}" r="13" fill="${color}" fill-opacity="0.3" stroke="#facc15" stroke-dasharray="3,2" stroke-width="1.8" class="pointer-events-none animate-pulse"/>
+              <!-- Main Grab Node -->
+              <circle id="sil-node-${slotKey}" cx="${pt.cx}" cy="${pt.cy}" r="7" fill="#facc15" stroke="#020617" stroke-width="2" class="cursor-grab"/>
+              <!-- Center Specular Pin -->
+              <circle id="sil-glint-${slotKey}" cx="${pt.cx}" cy="${pt.cy}" r="2" fill="#ffffff" class="pointer-events-none"/>
+              <!-- Coordinate Badge -->
+              <text id="sil-coord-label-${slotKey}" x="${pt.cx}" y="${pt.cy - 12}" text-anchor="middle" font-size="9" font-family="sans-serif" font-weight="bold" fill="#facc15" stroke="#020617" stroke-width="2.5" paint-order="stroke" class="pointer-events-none select-none">${pt.label.split(' ')[0]} (${pt.cx},${pt.cy})</text>
+            </g>
+          `;
+        } else {
+          // Normal Mode: clickable to equip
+          nodesMarkup += `
+            <g id="sil-node-group-${slotKey}" class="slot-anchor-node cursor-pointer group pointer-events-auto" onclick="openSlotEquipModal('${slotKey}')">
+              <circle id="sil-halo-${slotKey}" cx="${pt.cx}" cy="${pt.cy}" r="9" fill="${color}" fill-opacity="0.22" stroke="${color}" stroke-opacity="0.4" stroke-width="1" class="transition-all duration-300 pointer-events-none"/>
+              <circle id="sil-node-${slotKey}" cx="${pt.cx}" cy="${pt.cy}" r="5" fill="${color}" stroke="#0b1329" stroke-width="1.8" class="transition-all duration-300 group-hover:scale-125"/>
+              <circle id="sil-glint-${slotKey}" cx="${pt.cx}" cy="${pt.cy}" r="1.5" fill="#ffffff" class="pointer-events-none"/>
+              <title>${pt.label}: ${isOccupied ? character.bodySlots[slotKey].name : '(Boş Yuva - Kuşanmak için tıkla)'}</title>
+            </g>
+          `;
+        }
       });
 
       return `
         <div class="relative w-full h-full rounded-2xl overflow-hidden select-none bg-gradient-to-b from-[#060c1d] via-[#091124] to-[#040814] shadow-[0_0_50px_rgba(56,189,248,0.22)] border border-sky-500/40 flex items-center justify-center">
-          <!-- Ambient radial spotlight -->
           <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_35%,rgba(56,189,248,0.18)_0%,rgba(245,158,11,0.06)_45%,transparent_75%)] pointer-events-none"></div>
 
-          <!-- Seamless Unified SVG: image + connector lines + anatomical nodes share identical 460 x 520 coordinate space -->
-          <svg viewBox="0 0 460 520" preserveAspectRatio="none" class="w-full h-full pointer-events-none select-none">
-            <!-- High-Res Silhouette Background Image -->
+          <svg id="sil-main-svg" viewBox="0 0 460 520" preserveAspectRatio="none" class="w-full h-full select-none"
+               onmousemove="handleSilhouetteSvgMouseMove(event)"
+               onmouseup="stopDraggingSlotNode()"
+               ontouchmove="handleSilhouetteSvgTouchMove(event)"
+               ontouchend="stopDraggingSlotNode()">
             <image href="${imgSrc}" xlink:href="${imgSrc}" x="0" y="0" width="460" height="520" preserveAspectRatio="none" class="pointer-events-none filter contrast-110 brightness-105" />
 
-            <!-- Interactive Splines & Hotspot Nodes -->
             <g class="pointer-events-auto">
               ${linesMarkup}
               ${nodesMarkup}
@@ -10394,6 +10655,35 @@
       if (charTag) charTag.textContent = `${character.race || 'Human'} • ${character.gender || 'Erkek'} • ${character.classes || 'Adventurer'}`;
       if (activeCountEl) activeCountEl.textContent = `${activeOccupiedCount} / 12 Aktif`;
       if (modelLabel) modelLabel.textContent = 'D&D 3.5e Magic Item Record Sheet';
+
+      // Toolbar buttons state
+      const isDefaultImg = (!character?.customSilhouetteImg && !localStorage.getItem('dnd35_silhouette_custom_img'));
+      const resetImgBtn = document.getElementById('sil-reset-img-btn');
+      if (resetImgBtn) resetImgBtn.classList.toggle('hidden', isDefaultImg);
+
+      const editBtn = document.getElementById('sil-edit-points-btn');
+      const editLabel = document.getElementById('sil-edit-points-label');
+      const editIcon = document.getElementById('sil-edit-points-icon');
+      const resetPtsBtn = document.getElementById('sil-reset-points-btn');
+      const banner = document.getElementById('sil-edit-mode-banner');
+
+      if (isSilhouettePointEditMode) {
+        if (editBtn) {
+          editBtn.className = "px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 border border-emerald-400 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-emerald-900/30 animate-pulse";
+        }
+        if (editLabel) editLabel.textContent = "Kaydet & Bitir";
+        if (editIcon) editIcon.textContent = "💾";
+        if (resetPtsBtn) resetPtsBtn.classList.remove('hidden');
+        if (banner) banner.classList.remove('hidden');
+      } else {
+        if (editBtn) {
+          editBtn.className = "px-2.5 py-1 rounded-lg bg-amber-950/80 hover:bg-amber-900 border border-amber-600/60 hover:border-amber-400 text-amber-300 hover:text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm";
+        }
+        if (editLabel) editLabel.textContent = "Noktaları Düzenle";
+        if (editIcon) editIcon.textContent = "🎯";
+        if (resetPtsBtn) resetPtsBtn.classList.add('hidden');
+        if (banner) banner.classList.add('hidden');
+      }
 
       // Bottom Dock: Weapons & Carrying Capacity HUD
       if (bottomDock) {
