@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="build-version" content="2026.10.18-0003">
+  <meta name="build-version" content="2026.10.18-0010">
   <title>D&D 3.5e Tactical Cockpit & Character Hub</title>
   <script>
     if ('scrollRestoration' in history) {
@@ -10496,27 +10496,33 @@
           ? 'hover:bg-slate-900/60 transition' 
           : 'hover:bg-slate-900/40 transition opacity-50 bg-slate-950/50 border-dashed border-b border-slate-800/80 italic';
 
+        // Filtered chosen feats for display
+        const chosenFeats = (lvl.feats || []).filter(f => {
+          const s = String(f);
+          return !s.includes('+1 Stat') && !s.includes('Stat:') && !s.includes('Caster Lvl') && !s.includes('+1 Primary CL');
+        });
+
         // Feat Badges (stacked vertically, with rich RAW tooltips on hover)
-        const featBadgeItems = (lvl.feats || []).map(fStr => {
+        const featBadgeItems = (chosenFeats || []).map(fStr => {
           const str = String(fStr);
           const rawName = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
           const safeF = rawName.replace(/'/g, "\\'");
           const tip = getFeatTooltipText(fStr);
           const safeTip = tip.replace(/"/g, '&quot;');
           if (str.includes('[DM Boon]') || str.includes('Boon') || str.includes('DM Grant')) {
-            return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950/80 hover:bg-amber-900 text-amber-300 border border-amber-600/70 shadow-sm transition text-left"><span>🌟</span><span>${str}</span></button>`;
+            return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-amber-950/80 hover:bg-amber-900 text-amber-300 border border-amber-600/70 shadow-sm transition text-left leading-none shrink-0"><span>🌟</span><span>${str}</span></button>`;
           } else if (str.includes('Caster Lvl') || str.includes('+1 Primary CL') || str.includes('🔮')) {
-            return `<span title="${safeTip}" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold bg-purple-950/80 text-purple-300 border border-purple-600/70 shadow-sm text-left"><span>🔮</span><span>${str}</span></span>`;
+            return `<span title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-purple-950/80 text-purple-300 border border-purple-600/70 shadow-sm text-left leading-none shrink-0"><span>🔮</span><span>${str}</span></span>`;
           } else if (str.includes('+1 Stat') || str.includes('Stat:')) {
-            return `<span title="${safeTip}" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold bg-sky-950/80 text-sky-300 border border-sky-600/70 shadow-sm text-left"><span>💪</span><span>${str}</span></span>`;
+            return `<span title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-sky-950/80 text-sky-300 border border-sky-600/70 shadow-sm text-left leading-none shrink-0"><span>💪</span><span>${str}</span></span>`;
           } else if (str.includes('[Flaw]') || str.includes('Flaw:')) {
-            return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-600/70 shadow-sm transition text-left"><span>⚠️</span><span>${str}</span></button>`;
+            return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-600/70 shadow-sm transition text-left leading-none shrink-0"><span>⚠️</span><span>${str}</span></button>`;
           } else if (str.includes('[Bonus]') || str.includes('Bonus')) {
-            return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border border-indigo-600/70 shadow-sm transition text-left"><span>⚔️</span><span>${str}</span></button>`;
+            return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border border-indigo-600/70 shadow-sm transition text-left leading-none shrink-0"><span>⚔️</span><span>${str}</span></button>`;
           } else if (str.includes('[Racial]')) {
-            return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold bg-teal-950/80 hover:bg-teal-900 text-teal-300 border border-teal-600/70 shadow-sm transition text-left"><span>🧬</span><span>${str}</span></button>`;
+            return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-teal-950/80 hover:bg-teal-900 text-teal-300 border border-teal-600/70 shadow-sm transition text-left leading-none shrink-0"><span>🧬</span><span>${str}</span></button>`;
           } else {
-            return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-600/70 shadow-sm transition text-left"><span>🎖️</span><span>${str}</span></button>`;
+            return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-600/70 shadow-sm transition text-left leading-none shrink-0"><span>🎖️</span><span>${str}</span></button>`;
           }
         });
 
@@ -10534,22 +10540,17 @@
           : { hasBonusFeat: false };
         const qualifiesForClassBonus = classFeats.hasBonusFeat;
 
-        const chosenFeats = (lvl.feats || []).filter(f => {
-          const s = String(f);
-          return !s.includes('+1 Stat') && !s.includes('Stat:') && !s.includes('Caster Lvl') && !s.includes('+1 Primary CL');
-        });
-
         const pendingButtons = [];
         if (qualifiesForClassBonus && !chosenFeats.some(f => String(f).includes('[Bonus]') || String(f).toLowerCase().includes('bonus'))) {
-          pendingButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Class Bonus Feat')" class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950/90 hover:bg-amber-900 text-amber-300 border border-dashed border-amber-500 shadow-sm animate-pulse transition text-left" title="Bu seviye için Sınıf Bonus Feati seçin"><span>⚔️</span><span>+ Bonus Feat Seç</span></button>`);
+          pendingButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Class Bonus Feat')" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-amber-950/90 hover:bg-amber-900 text-amber-300 border border-dashed border-amber-500 shadow-sm animate-pulse transition text-left leading-none shrink-0" title="Bu seviye için Sınıf Bonus Feati seçin"><span>⚔️</span><span>+ Bonus Feat Seç</span></button>`);
         }
         if (qualifiesForRegularFeat && chosenFeats.length === 0) {
-          pendingButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Regular Feat')" class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-purple-950/90 hover:bg-purple-900 text-purple-300 border border-dashed border-purple-500 shadow-sm animate-pulse transition text-left" title="Bu seviye için Normal Feat seçin"><span>🎖️</span><span>+ Feat Seç</span></button>`);
+          pendingButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Regular Feat')" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-purple-950/90 hover:bg-purple-900 text-purple-300 border border-dashed border-purple-500 shadow-sm animate-pulse transition text-left leading-none shrink-0" title="Bu seviye için Normal Feat seçin"><span>🎖️</span><span>+ Feat Seç</span></button>`);
         } else if (qualifiesForHumanBonus && chosenFeats.length <= (qualifiesForRegularFeat ? 1 : 0)) {
-          pendingButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Regular Feat')" class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-teal-950/90 hover:bg-teal-900 text-teal-300 border border-dashed border-teal-500 shadow-sm animate-pulse transition text-left" title="İnsan ırksal bonus feati seçin"><span>🧬</span><span>+ Irk Feati Seç</span></button>`);
+          pendingButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Regular Feat')" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-teal-950/90 hover:bg-teal-900 text-teal-300 border border-dashed border-teal-500 shadow-sm animate-pulse transition text-left leading-none shrink-0" title="İnsan ırksal bonus feati seçin"><span>🧬</span><span>+ Irk Feati Seç</span></button>`);
         }
 
-        const inlineAddFeatBtn = `<button onclick="openQuickFeatPickerForLevel(${idx}, 'Regular Feat')" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700/80 transition" title="Bu seviyeye serbest Feat, DM Lütfu veya Kusur ekle"><span>➕</span><span>Feat</span></button>`;
+        const inlineAddFeatBtn = `<button onclick="openQuickFeatPickerForLevel(${idx}, 'Regular Feat')" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700/80 transition leading-none shrink-0" title="Bu seviyeye serbest Feat, DM Lütfu veya Kusur ekle"><span>➕</span><span>Feat</span></button>`;
 
         // Special Abilities Badges (stacked vertically, with rich RAW tooltips on hover)
         const abilityBadgeItems = (lvl.specialAbilities || []).map(aStr => {
@@ -10558,56 +10559,72 @@
           const safeA = rawName.replace(/'/g, "\\'");
           const tip = getFeatTooltipText(aStr);
           const safeTip = tip.replace(/"/g, '&quot;');
-          return `<button onclick="showFeatDetail('${safeA}', ${idx}, 'ability')" title="${safeTip}" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold bg-sky-950/80 hover:bg-sky-900 text-sky-300 border border-sky-600/70 shadow-sm transition text-left"><span>✨</span><span>${str}</span></button>`;
+          return `<button onclick="showFeatDetail('${safeA}', ${idx}, 'ability')" title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-sky-950/80 hover:bg-sky-900 text-sky-300 border border-sky-600/70 shadow-sm transition text-left leading-none shrink-0"><span>✨</span><span>${str}</span></button>`;
         });
 
-        const inlineAddAbilityBtn = `<button onclick="openQuickAbilityPickerForLevel(${idx})" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700/80 transition" title="Bu seviyeye serbest sınıf özelliği veya not ekle"><span>➕</span><span>Yetenek</span></button>`;
+        const inlineAddAbilityBtn = `<button onclick="openQuickAbilityPickerForLevel(${idx})" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700/80 transition leading-none shrink-0" title="Bu seviyeye serbest sınıf özelliği veya not ekle"><span>➕</span><span>Yetenek</span></button>`;
 
         tr.innerHTML = `
-          <td class="py-2 px-2 text-center font-bold text-amber-400 align-top">${lvl.level}</td>
-          <td class="py-2 px-2 text-center align-top">
-            <label class="inline-flex items-center gap-1 cursor-pointer" title="${isActive ? 'Aktif Seviye (Statlara yansır)' : 'Planlanan Seviye (Statlara yansımaz)'}">
-              <input type="checkbox" onchange="toggleLevelActive(${idx})" ${isActive ? 'checked' : ''} ${idx === 0 ? 'disabled title="1. Seviye başlangıçtır"' : ''} class="w-3.5 h-3.5 rounded text-emerald-500 cursor-pointer">
-              <span class="badge ${isActive ? 'bg-emerald-950 text-emerald-300 border-emerald-600' : 'bg-slate-800 text-slate-400 border-slate-700'} text-[9px]">
-                ${isActive ? '✅ Aktif' : '📋 Plan'}
-              </span>
-            </label>
+          <td class="pt-2.5 pb-2.5 px-2 align-top text-center">
+            <div class="h-6 flex items-center justify-center font-bold text-amber-400 text-xs">${lvl.level}</div>
           </td>
-          <td class="py-2 px-3 font-sans font-bold text-white align-top">${lvl.className}</td>
-          <td class="py-2 px-2 text-center text-slate-400 font-bold align-top">${lvl.hd}</td>
-          <td class="py-2 px-2 text-center text-emerald-400 font-bold align-top">+${lvl.hpGain}</td>
-          <td class="py-2 px-2 text-center text-sky-400 font-bold align-top">+${lvl.bab}</td>
-          <td class="py-2 px-2 text-center text-slate-300 font-bold align-top">+${lvl.fort}</td>
-          <td class="py-2 px-2 text-center text-slate-300 font-bold align-top">+${lvl.ref}</td>
-          <td class="py-2 px-2 text-center text-slate-300 font-bold align-top">+${lvl.will}</td>
-          <td class="py-2 px-2 text-center text-indigo-300 font-bold align-top">${lvl.skillPts || 4}</td>
-          <td class="py-2 px-3 font-sans align-top">
+          <td class="pt-2.5 pb-2.5 px-2 align-top text-center">
+            <div class="h-6 flex items-center justify-center">
+              <label class="inline-flex items-center gap-1.5 cursor-pointer" title="${isActive ? 'Aktif Seviye (Statlara yansır)' : 'Planlanan Seviye (Statlara yansımaz)'}">
+                <input type="checkbox" onchange="toggleLevelActive(${idx})" ${isActive ? 'checked' : ''} ${idx === 0 ? 'disabled title="1. Seviye başlangıçtır"' : ''} class="w-3.5 h-3.5 rounded text-emerald-500 cursor-pointer m-0">
+                <span class="badge ${isActive ? 'bg-emerald-950 text-emerald-300 border-emerald-600' : 'bg-slate-800 text-slate-400 border-slate-700'} text-[9px] px-1.5 py-0.5 leading-none">
+                  ${isActive ? '✅ Aktif' : '📋 Plan'}
+                </span>
+              </label>
+            </div>
+          </td>
+          <td class="pt-2.5 pb-2.5 px-3 align-top">
+            <div class="h-6 flex items-center font-sans font-bold text-white text-xs whitespace-nowrap">${lvl.className}</div>
+          </td>
+          <td class="pt-2.5 pb-2.5 px-2 align-top text-center">
+            <div class="h-6 flex items-center justify-center text-slate-400 font-bold text-xs">${lvl.hd}</div>
+          </td>
+          <td class="pt-2.5 pb-2.5 px-2 align-top text-center">
+            <div class="h-6 flex items-center justify-center text-emerald-400 font-bold text-xs">+${lvl.hpGain}</div>
+          </td>
+          <td class="pt-2.5 pb-2.5 px-2 align-top text-center">
+            <div class="h-6 flex items-center justify-center text-sky-400 font-bold text-xs">+${lvl.bab}</div>
+          </td>
+          <td class="pt-2.5 pb-2.5 px-2 align-top text-center">
+            <div class="h-6 flex items-center justify-center text-slate-300 font-bold text-xs">+${lvl.fort}</div>
+          </td>
+          <td class="pt-2.5 pb-2.5 px-2 align-top text-center">
+            <div class="h-6 flex items-center justify-center text-slate-300 font-bold text-xs">+${lvl.ref}</div>
+          </td>
+          <td class="pt-2.5 pb-2.5 px-2 align-top text-center">
+            <div class="h-6 flex items-center justify-center text-slate-300 font-bold text-xs">+${lvl.will}</div>
+          </td>
+          <td class="pt-2.5 pb-2.5 px-2 align-top text-center">
+            <div class="h-6 flex items-center justify-center text-indigo-300 font-bold text-xs">${lvl.skillPts || 4}</div>
+          </td>
+          <td class="pt-2.5 pb-2.5 px-3 font-sans align-top">
             <div class="flex flex-col gap-1.5 items-start">
               ${featBadgeItems.join('')}
               ${pendingButtons.join('')}
-              <div class="pt-1 flex flex-col gap-1 items-start">
-                ${inlineAddFeatBtn}
-              </div>
+              ${inlineAddFeatBtn}
             </div>
           </td>
-          <td class="py-2 px-3 font-sans align-top">
+          <td class="pt-2.5 pb-2.5 px-3 font-sans align-top">
             <div class="flex flex-col gap-1.5 items-start">
               ${abilityBadgeItems.join('')}
-              <div class="pt-1 flex flex-col gap-1 items-start">
-                ${inlineAddAbilityBtn}
-              </div>
+              ${inlineAddAbilityBtn}
             </div>
           </td>
-          <td class="py-2 px-2 text-center align-top">
-            <div class="flex items-center justify-center gap-1.5">
-              <button onclick="openChangeLevelClassModal(${idx})" class="text-slate-400 hover:text-amber-400 p-1 text-xs transition" title="Bu seviyenin sınıfını değiştir">
+          <td class="pt-2.5 pb-2.5 px-2 align-top text-center">
+            <div class="h-6 flex items-center justify-center gap-1">
+              <button onclick="openChangeLevelClassModal(${idx})" class="text-slate-400 hover:text-amber-400 p-0.5 text-xs transition" title="Bu seviyenin sınıfını değiştir">
                 ✏️
               </button>
               ${idx > 0 ? `
-                <button onclick="deleteLevelRow(${idx})" class="text-slate-500 hover:text-rose-400 p-1 text-xs transition" title="Bu seviyeyi sil">
+                <button onclick="deleteLevelRow(${idx})" class="text-slate-500 hover:text-rose-400 p-0.5 text-xs transition" title="Bu seviyeyi sil">
                   🗑️
                 </button>
-              ` : '<span class="invisible p-1 text-xs select-none pointer-events-none" aria-hidden="true">🗑️</span>'}
+              ` : '<span class="invisible p-0.5 text-xs select-none pointer-events-none" aria-hidden="true">🗑️</span>'}
             </div>
           </td>
         `;
