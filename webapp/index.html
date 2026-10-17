@@ -1746,38 +1746,95 @@
             <div class="grid grid-cols-4 sm:grid-cols-7 gap-2 mb-3">
               <!-- d4 -->
               <button onclick="handleDieClick(4)" title="d4 zarı ekle veya at" class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/90 hover:bg-emerald-600/30 border border-emerald-500/40 hover:border-emerald-400 text-emerald-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
-                <span class="text-xl group-hover:scale-110 transition">▲</span>
+                <span class="w-6 h-6 flex items-center justify-center group-hover:scale-110 transition text-emerald-300">
+                  <svg class="w-5 h-5 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="50,10 90,85 10,85" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+                    <polygon points="50,34 76,76 24,76" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
+                    <line x1="50" y1="34" x2="50" y2="10" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="24" y1="76" x2="10" y2="85" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="76" y1="76" x2="90" y2="85" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <text x="50" y="66" text-anchor="middle" fill="currentColor" font-size="24" font-weight="900" font-family="system-ui, sans-serif">4</text>
+                  </svg>
+                </span>
                 <span class="text-xs font-black font-mono">d4</span>
                 <span id="die-count-4" class="text-[10px] font-bold text-emerald-400 mt-0.5 h-3.5"></span>
               </button>
               <!-- d6 -->
               <button onclick="handleDieClick(6)" title="d6 zarı ekle veya at" class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/90 hover:bg-sky-600/30 border border-sky-500/40 hover:border-sky-400 text-sky-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
-                <span class="text-xl group-hover:scale-110 transition">■</span>
+                <span class="w-6 h-6 flex items-center justify-center group-hover:scale-110 transition text-sky-300">
+                  <svg class="w-5 h-5 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="50,12 85,31 85,69 50,88 15,69 15,31" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+                    <polygon points="50,12 85,31 50,50 15,31" fill="currentColor" fill-opacity="0.25" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+                    <polygon points="15,31 50,50 50,88 15,69" fill="currentColor" fill-opacity="0.35" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+                    <line x1="50" y1="50" x2="85" y2="69" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="50" y1="50" x2="50" y2="88" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="50" y1="50" x2="15" y2="31" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <text x="32" y="66" text-anchor="middle" fill="currentColor" font-size="24" font-weight="900" font-family="system-ui, sans-serif">6</text>
+                  </svg>
+                </span>
                 <span class="text-xs font-black font-mono">d6</span>
                 <span id="die-count-6" class="text-[10px] font-bold text-sky-400 mt-0.5 h-3.5"></span>
               </button>
               <!-- d8 -->
               <button onclick="handleDieClick(8)" title="d8 zarı ekle veya at" class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/90 hover:bg-indigo-600/30 border border-indigo-500/40 hover:border-indigo-400 text-indigo-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
-                <span class="text-xl group-hover:scale-110 transition">◆</span>
+                <span class="w-6 h-6 flex items-center justify-center group-hover:scale-110 transition text-indigo-300">
+                  <svg class="w-5 h-5 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="50,8 86,32 86,68 50,92 14,68 14,32" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+                    <polygon points="50,14 82,65 18,65" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
+                    <line x1="50" y1="14" x2="50" y2="8" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="18" y1="65" x2="14" y2="68" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="82" y1="65" x2="86" y2="68" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="18" y1="65" x2="14" y2="32" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="82" y1="65" x2="86" y2="32" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="18" y1="65" x2="50" y2="92" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="82" y1="65" x2="50" y2="92" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <text x="50" y="54" text-anchor="middle" fill="currentColor" font-size="24" font-weight="900" font-family="system-ui, sans-serif">8</text>
+                  </svg>
+                </span>
                 <span class="text-xs font-black font-mono">d8</span>
                 <span id="die-count-8" class="text-[10px] font-bold text-indigo-400 mt-0.5 h-3.5"></span>
               </button>
               <!-- d10 -->
               <button onclick="handleDieClick(10)" title="d10 zarı ekle veya at" class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/90 hover:bg-purple-600/30 border border-purple-500/40 hover:border-purple-400 text-purple-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
-                <span class="text-xl group-hover:scale-110 transition">⯁</span>
+                <span class="w-6 h-6 flex items-center justify-center group-hover:scale-110 transition text-purple-300">
+                  <svg class="w-5 h-5 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="50,6 86,34 76,76 50,94 24,76 14,34" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+                    <polygon points="50,14 74,44 50,70 26,44" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
+                    <line x1="50" y1="14" x2="50" y2="6" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="26" y1="44" x2="14" y2="34" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="74" y1="44" x2="86" y2="34" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="26" y1="44" x2="24" y2="76" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="74" y1="44" x2="76" y2="76" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="50" y1="70" x2="50" y2="94" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="50" y1="70" x2="24" y2="76" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="50" y1="70" x2="76" y2="76" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <text x="50" y="49" text-anchor="middle" fill="currentColor" font-size="20" font-weight="900" font-family="system-ui, sans-serif" letter-spacing="-0.5">10</text>
+                  </svg>
+                </span>
                 <span class="text-xs font-black font-mono">d10</span>
                 <span id="die-count-10" class="text-[10px] font-bold text-purple-400 mt-0.5 h-3.5"></span>
               </button>
               <!-- d12 -->
               <button onclick="handleDieClick(12)" title="d12 zarı ekle veya at" class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/90 hover:bg-rose-600/30 border border-rose-500/40 hover:border-rose-400 text-rose-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
-                <span class="text-xl group-hover:scale-110 transition">⬟</span>
+                <span class="w-6 h-6 flex items-center justify-center group-hover:scale-110 transition text-rose-300">
+                  <svg class="w-5 h-5 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="50,6 78,16 94,40 90,70 68,92 32,92 10,70 6,40 22,16" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+                    <polygon points="50,28 73,45 64,72 36,72 27,45" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
+                    <line x1="50" y1="28" x2="50" y2="6" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="73" y1="45" x2="94" y2="40" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="64" y1="72" x2="68" y2="92" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="36" y1="72" x2="32" y2="92" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="27" y1="45" x2="6" y2="40" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif" letter-spacing="-0.5">12</text>
+                  </svg>
+                </span>
                 <span class="text-xs font-black font-mono">d12</span>
                 <span id="die-count-12" class="text-[10px] font-bold text-rose-400 mt-0.5 h-3.5"></span>
               </button>
               <!-- d20 -->
-              <button onclick="handleDieClick(20)" title="d20 zarı ekle veya at" class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/90 hover:bg-amber-600/30 border border-amber-500/50 hover:border-amber-400 text-amber-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group ring-1 ring-amber-500/30">
-                <span class="w-6 h-6 flex items-center justify-center group-hover:scale-110 transition">
-                  <svg class="w-5 h-5 inline-block text-amber-300" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <button id="die-btn-20" onclick="handleDieClick(20)" title="d20 zarı ekle veya at" class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/90 hover:bg-amber-600/30 border border-amber-500/50 hover:border-amber-400 text-amber-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group ring-1 ring-amber-500/30">
+                <span id="die-icon-20" class="w-6 h-6 flex items-center justify-center group-hover:scale-110 transition text-amber-300">
+                  <svg class="w-5 h-5 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
                     <polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
                     <line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
@@ -1789,10 +1846,10 @@
                     <line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
                     <line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
                     <line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-                    <text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, -apple-system, sans-serif" letter-spacing="-0.5">20</text>
+                    <text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif" letter-spacing="-0.5">20</text>
                   </svg>
                 </span>
-                <span class="text-xs font-black font-mono">d20</span>
+                <span id="die-label-20" class="text-xs font-black font-mono">d20</span>
                 <span id="die-count-20" class="text-[10px] font-bold text-amber-400 mt-0.5 h-3.5"></span>
               </button>
               <!-- d100 -->
@@ -3873,21 +3930,88 @@
   <script src="gdrive_sync.js"></script>
 
   <script>
+    function getDiceIconSvg(die, cls = "w-4 h-4 inline-block align-middle") {
+      const d = String(die || '20').toLowerCase().replace('d', '').trim();
+      switch (d) {
+        case '4':
+          return `<svg class="${cls}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="50,10 90,85 10,85" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+            <polygon points="50,34 76,76 24,76" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
+            <line x1="50" y1="34" x2="50" y2="10" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <line x1="24" y1="76" x2="10" y2="85" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <line x1="76" y1="76" x2="90" y2="85" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <text x="50" y="66" text-anchor="middle" fill="currentColor" font-size="24" font-weight="900" font-family="system-ui, -apple-system, sans-serif">4</text>
+          </svg>`;
+        case '6':
+          return `<svg class="${cls}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="50,12 85,31 85,69 50,88 15,69 15,31" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+            <polygon points="50,12 85,31 50,50 15,31" fill="currentColor" fill-opacity="0.25" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+            <polygon points="15,31 50,50 50,88 15,69" fill="currentColor" fill-opacity="0.35" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+            <line x1="50" y1="50" x2="85" y2="69" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <line x1="50" y1="50" x2="50" y2="88" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <line x1="50" y1="50" x2="15" y2="31" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <text x="32" y="66" text-anchor="middle" fill="currentColor" font-size="24" font-weight="900" font-family="system-ui, -apple-system, sans-serif">6</text>
+          </svg>`;
+        case '8':
+          return `<svg class="${cls}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="50,8 86,32 86,68 50,92 14,68 14,32" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+            <polygon points="50,14 82,65 18,65" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
+            <line x1="50" y1="14" x2="50" y2="8" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <line x1="18" y1="65" x2="14" y2="68" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <line x1="82" y1="65" x2="86" y2="68" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <line x1="18" y1="65" x2="14" y2="32" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <line x1="82" y1="65" x2="86" y2="32" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <line x1="18" y1="65" x2="50" y2="92" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <line x1="82" y1="65" x2="50" y2="92" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <text x="50" y="54" text-anchor="middle" fill="currentColor" font-size="24" font-weight="900" font-family="system-ui, -apple-system, sans-serif">8</text>
+          </svg>`;
+        case '10':
+          return `<svg class="${cls}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="50,6 86,34 76,76 50,94 24,76 14,34" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+            <polygon points="50,14 74,44 50,70 26,44" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
+            <line x1="50" y1="14" x2="50" y2="6" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <line x1="26" y1="44" x2="14" y2="34" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <line x1="74" y1="44" x2="86" y2="34" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <line x1="26" y1="44" x2="24" y2="76" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <line x1="74" y1="44" x2="76" y2="76" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <line x1="50" y1="70" x2="50" y2="94" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <line x1="50" y1="70" x2="24" y2="76" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <line x1="50" y1="70" x2="76" y2="76" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <text x="50" y="49" text-anchor="middle" fill="currentColor" font-size="20" font-weight="900" font-family="system-ui, -apple-system, sans-serif" letter-spacing="-0.5">10</text>
+          </svg>`;
+        case '12':
+          return `<svg class="${cls}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="50,6 78,16 94,40 90,70 68,92 32,92 10,70 6,40 22,16" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+            <polygon points="50,28 73,45 64,72 36,72 27,45" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
+            <line x1="50" y1="28" x2="50" y2="6" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <line x1="73" y1="45" x2="94" y2="40" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <line x1="64" y1="72" x2="68" y2="92" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <line x1="36" y1="72" x2="32" y2="92" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <line x1="27" y1="45" x2="6" y2="40" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, -apple-system, sans-serif" letter-spacing="-0.5">12</text>
+          </svg>`;
+        case '20':
+        default:
+          return `<svg class="${cls}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+            <polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
+            <line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            <text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, -apple-system, sans-serif" letter-spacing="-0.5">20</text>
+          </svg>`;
+      }
+    }
+    window.getDiceIconSvg = getDiceIconSvg;
+
     function getD20IconSvg(cls = "w-4 h-4 inline-block align-middle") {
-      return `<svg class="${cls}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
-        <polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
-        <line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-        <line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-        <line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-        <line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-        <line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-        <line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-        <line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-        <line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-        <line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-        <text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, -apple-system, sans-serif" letter-spacing="-0.5">20</text>
-      </svg>`;
+      return getDiceIconSvg(20, cls);
     }
     window.getD20IconSvg = getD20IconSvg;
 
@@ -6024,7 +6148,25 @@
       toast.title = 'Kapatmak için tıklayın';
 
       const isCrit = !!entry.isCrit;
-      const icon = entry.icon || (isCrit ? '⚡' : getD20IconSvg('w-6 h-6'));
+      let defaultToastIcon = '⚡';
+      if (!isCrit) {
+        const str = ((entry.formula || '') + ' ' + (entry.title || '') + ' ' + (entry.breakdown || '')).toLowerCase();
+        let dieType = '20';
+        if (str.includes('d4')) dieType = '4';
+        else if (str.includes('d6')) dieType = '6';
+        else if (str.includes('d8')) dieType = '8';
+        else if (str.includes('d100')) dieType = '100';
+        else if (str.includes('d10')) dieType = '10';
+        else if (str.includes('d12')) dieType = '12';
+        else if (str.includes('d20')) dieType = '20';
+
+        if (dieType === '100') {
+          defaultToastIcon = '💯';
+        } else {
+          defaultToastIcon = getDiceIconSvg(dieType, 'w-6 h-6');
+        }
+      }
+      const icon = entry.icon || defaultToastIcon;
       const title = entry.title || 'Zar Atışı';
       const breakdown = entry.breakdown || entry.formula || '';
       const totalRaw = entry.total !== undefined ? String(entry.total).trim() : '';
@@ -6094,6 +6236,31 @@
       if (!Array.isArray(window.diceRollHistory)) {
         loadDiceHistory();
       }
+      let detectedHistoryIcon = '⚡';
+      if (!entry.isCrit) {
+        const str = ((entry.formula || '') + ' ' + (entry.title || '') + ' ' + (entry.breakdown || '')).toLowerCase();
+        let dieType = '20';
+        if (str.includes('d4')) dieType = '4';
+        else if (str.includes('d6')) dieType = '6';
+        else if (str.includes('d8')) dieType = '8';
+        else if (str.includes('d100')) dieType = '100';
+        else if (str.includes('d10')) dieType = '10';
+        else if (str.includes('d12')) dieType = '12';
+        else if (str.includes('d20')) dieType = '20';
+
+        if (dieType === '100') {
+          detectedHistoryIcon = '💯';
+        } else {
+          let colorCls = 'text-amber-400';
+          if (dieType === '4') colorCls = 'text-emerald-400';
+          else if (dieType === '6') colorCls = 'text-sky-400';
+          else if (dieType === '8') colorCls = 'text-indigo-400';
+          else if (dieType === '10') colorCls = 'text-purple-400';
+          else if (dieType === '12') colorCls = 'text-rose-400';
+          detectedHistoryIcon = getDiceIconSvg(dieType, `w-4 h-4 ${colorCls}`);
+        }
+      }
+
       const record = {
         id: 'roll_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
         timestamp: entry.timestamp || new Date().toLocaleTimeString('tr-TR'),
@@ -6104,7 +6271,7 @@
         isCrit: !!entry.isCrit,
         critDamage: entry.critDamage || null,
         critInfo: entry.critInfo || '',
-        icon: entry.icon || (entry.isCrit ? '⚡' : getD20IconSvg('w-4 h-4'))
+        icon: entry.icon || detectedHistoryIcon
       };
       window.diceRollHistory.unshift(record);
       if (window.diceRollHistory.length > 100) {
@@ -6140,21 +6307,32 @@
       if (totalEl) totalEl.textContent = record.total;
 
       if (iconEl) {
-        let isD20 = false;
-        let iconSymbol = '';
         const str = ((record.formula || '') + ' ' + (record.title || '') + ' ' + (record.breakdown || '')).toLowerCase();
-        if (str.includes('d4')) iconSymbol = '▲';
-        else if (str.includes('d6')) iconSymbol = '■';
-        else if (str.includes('d8')) iconSymbol = '◆';
-        else if (str.includes('d100')) iconSymbol = '💯';
-        else if (str.includes('d10')) iconSymbol = '⯁';
-        else if (str.includes('d12')) iconSymbol = '⬟';
-        else isD20 = true;
+        let dieType = '20';
+        if (str.includes('d4')) dieType = '4';
+        else if (str.includes('d6')) dieType = '6';
+        else if (str.includes('d8')) dieType = '8';
+        else if (str.includes('d100')) dieType = '100';
+        else if (str.includes('d10')) dieType = '10';
+        else if (str.includes('d12')) dieType = '12';
+        else if (str.includes('d20')) dieType = '20';
 
-        if (isD20) {
-          iconEl.innerHTML = getD20IconSvg('w-7 h-7 text-amber-300');
+        if (dieType === '100') {
+          iconEl.style.color = '';
+          iconEl.textContent = '💯';
+        } else if (dieType === '20') {
+          const savedColor = (typeof localStorage !== 'undefined' ? localStorage.getItem('dnd_dice_color') : null) || '#f59e0b';
+          iconEl.innerHTML = getDiceIconSvg(20, 'w-7 h-7 inline-block');
+          iconEl.style.color = savedColor;
         } else {
-          iconEl.textContent = iconSymbol;
+          let colorCls = 'text-amber-300';
+          if (dieType === '4') colorCls = 'text-emerald-300';
+          else if (dieType === '6') colorCls = 'text-sky-300';
+          else if (dieType === '8') colorCls = 'text-indigo-300';
+          else if (dieType === '10') colorCls = 'text-purple-300';
+          else if (dieType === '12') colorCls = 'text-rose-300';
+          iconEl.style.color = '';
+          iconEl.innerHTML = getDiceIconSvg(dieType, `w-7 h-7 inline-block ${colorCls}`);
         }
       }
 
@@ -6353,6 +6531,26 @@
           rollBtn.style.color = '#ffffff';
           rollBtn.style.textShadow = '0 1px 2px rgba(0,0,0,0.6)';
         }
+      }
+
+      // 4. Serbest Zar Masasındaki d20 zar butonunu ve ikonunu seçilen zar rengiyle güncelle
+      const d20Btn = document.getElementById('die-btn-20');
+      const d20Icon = document.getElementById('die-icon-20');
+      const d20Label = document.getElementById('die-label-20');
+      const d20Count = document.getElementById('die-count-20');
+      if (d20Btn) {
+        d20Btn.style.borderColor = `${hexColor}aa`;
+        d20Btn.style.boxShadow = `0 0 14px ${hexColor}44`;
+      }
+      if (d20Icon) {
+        d20Icon.style.color = hexColor;
+        d20Icon.style.filter = `drop-shadow(0 0 8px ${hexColor}88)`;
+      }
+      if (d20Label) {
+        d20Label.style.color = hexColor;
+      }
+      if (d20Count) {
+        d20Count.style.color = hexColor;
       }
     }
 
