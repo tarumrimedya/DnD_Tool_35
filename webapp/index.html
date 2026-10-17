@@ -650,6 +650,27 @@
             <span id="skills-mode-badge" class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-800 text-slate-300 border border-slate-700">D&D 3.5e RAW</span>
           </div>
 
+          <!-- Skill Points Budget Bar (Sınıf & Seviye Puan Sınırı) -->
+          <div class="bg-gradient-to-r from-indigo-950/70 via-slate-900 to-slate-950 p-2.5 rounded-lg border border-indigo-500/40 flex flex-wrap items-center justify-between gap-2 text-xs shadow-inner">
+            <div class="flex items-center gap-2">
+              <span class="text-base">📊</span>
+              <div>
+                <span class="font-extrabold text-white text-xs">Beceri Puanı Havuzu:</span>
+                <span id="skills-points-breakdown" class="text-[11px] text-slate-300 ml-1.5 font-mono">
+                  Harcanan: <strong id="skills-pts-spent" class="text-emerald-400 font-bold">0</strong> / Toplam: <strong id="skills-pts-total" class="text-amber-400 font-bold">0</strong>
+                </span>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span id="skills-pts-remaining-badge" class="badge bg-slate-900 text-sky-300 border border-slate-700 text-xs font-mono font-bold px-2 py-0.5">
+                Kalan: 0 Puan
+              </span>
+              <span id="skills-pts-rule-hint" class="text-[10px] text-indigo-300 hidden md:inline">
+                (Sınıf: 1 Puan • Dışı: 2 Puan)
+              </span>
+            </div>
+          </div>
+
           <!-- Action Buttons & Max Rank Info -->
           <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-950/80 p-2 rounded-lg border border-slate-800 text-xs">
             <div class="flex items-center gap-1.5 flex-wrap">
@@ -1418,10 +1439,10 @@
                     <span class="text-xl">🔗</span>
                     <div>
                       <div class="font-extrabold text-emerald-300 group-hover:text-emerald-200 flex items-center gap-1.5">
-                        <span>Skilleri Birleştir</span>
+                        <span>Skilleri Birleştir / Ayır</span>
                         <span class="text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-700 px-1 py-0.2 rounded font-mono">House Rule</span>
                       </div>
-                      <div class="text-[10px] text-slate-400 mt-0.5 leading-snug">Oyun grubu için becerileri birleştir / konsolide et</div>
+                      <div class="text-[10px] text-slate-400 mt-0.5 leading-snug">Becerileri 7 grupta topla veya 46 RAW beceriye ayır</div>
                     </div>
                   </button>
                 </div>
@@ -3428,10 +3449,10 @@
           </div>
           <div>
             <h3 class="text-sm md:text-base font-extrabold text-white flex items-center gap-2">
-              <span>Skilleri Birleştir (Skill Consolidation)</span>
+              <span>Skilleri Birleştir / Ayır (Consolidate / Split)</span>
               <span class="text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full">House Rule</span>
             </h3>
-            <p class="text-[10px] text-slate-400">D&D 3.5e RAW 46 beceriyi modern 7 konsolide grupta toplayın</p>
+            <p class="text-[10px] text-slate-400">Konsolide mod (7 Grup) ile Standart D&D 3.5e RAW (46 Beceri) arasında geçiş yapın</p>
           </div>
         </div>
         <button onclick="closeSkillConsolidationModal()" class="text-slate-400 hover:text-white p-1 rounded-lg text-lg font-bold">&times;</button>
@@ -3452,21 +3473,44 @@
           </div>
         </div>
 
-        <!-- Mode Toggle Card -->
-        <div class="bg-slate-900/90 border border-slate-700 rounded-xl p-3.5 flex items-center justify-between gap-3">
-          <div>
-            <div class="font-bold text-white text-xs flex items-center gap-1.5">
-              <span>🔗 Becerileri Birleştir Modu</span>
-              <span id="scm-status-badge" class="badge bg-slate-800 text-slate-300 text-[10px]">Kapalı</span>
-            </div>
-            <div class="text-[11px] text-slate-400 mt-0.5">
-              Açıldığında beceri tablonuz birleştirilmiş grupları gösterir.
-            </div>
+        <!-- Mode Selector Cards: Birleştir vs Ayır -->
+        <div class="space-y-2">
+          <label class="block text-[11px] font-bold text-slate-300 uppercase">🎯 Tercih Edilen Beceri Modunu Seçin:</label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <!-- Option 1: Skilleri Birleştir (Konsolide - 7 Grup) -->
+            <button 
+              type="button" 
+              id="scm-btn-mode-merge" 
+              onclick="setScmMode(true)" 
+              class="text-left p-3 rounded-xl border-2 transition relative flex flex-col justify-between bg-emerald-950/60 border-emerald-500 shadow-md">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs font-extrabold text-emerald-300 flex items-center gap-1.5">
+                  <span>🔗</span> <span>Skilleri Birleştir</span>
+                </span>
+                <span id="scm-badge-merge" class="text-[9px] bg-emerald-600 text-white font-bold px-1.5 py-0.5 rounded">✓ Aktif</span>
+              </div>
+              <p class="text-[10px] text-slate-300 leading-snug">
+                7 Konsolide grup kullanır (Athletics, Stealth, Perception vb.). Daha akıcı ve modern beceri yönetimi sağlar (Varsayılan).
+              </p>
+            </button>
+
+            <!-- Option 2: Skilleri Ayır (Standart RAW 46 Beceri) -->
+            <button 
+              type="button" 
+              id="scm-btn-mode-split" 
+              onclick="setScmMode(false)" 
+              class="text-left p-3 rounded-xl border-2 transition relative flex flex-col justify-between bg-slate-900 border-slate-700 hover:border-slate-500">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs font-extrabold text-slate-200 flex items-center gap-1.5">
+                  <span>📂</span> <span>Skilleri Ayır (RAW)</span>
+                </span>
+                <span id="scm-badge-split" class="text-[9px] bg-slate-800 text-slate-400 font-bold px-1.5 py-0.5 rounded">46 Beceri</span>
+              </div>
+              <p class="text-[10px] text-slate-400 leading-snug">
+                Tüm 46 resmi D&D 3.5e becerisini tek tek listeler. Klasik kurallarla birebir uyumlu.
+              </p>
+            </button>
           </div>
-          <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" id="scm-toggle-checkbox" onchange="onScmToggleChange()" class="sr-only peer">
-            <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
-          </label>
         </div>
 
         <!-- Consolidated Bundles Preview -->
@@ -9295,10 +9339,93 @@
       });
     }
 
+    // Total Skill Points Calculation from Classes & Levels
+    function calculateTotalSkillPoints(char) {
+      if (!char) return 0;
+      const prog = char.levelProgression;
+      if (Array.isArray(prog) && prog.length > 0) {
+        const totalFromProg = prog.reduce((sum, row) => sum + (Number(row.skillPts) || 0), 0);
+        if (totalFromProg > 0) return totalFromProg;
+      }
+
+      const intMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
+        ? RuleEngine.getAbilityMod(char.abilities?.int || 10)
+        : Math.floor(((char.abilities?.int || 10) - 10) / 2);
+      const isHuman = (char.race || '').toLowerCase().includes('human') ? 1 : 0;
+
+      let totalPts = 0;
+      let currentLevelIndex = 1;
+      const classStr = char.classes || '';
+      const classParts = classStr.split('/').map(s => s.trim()).filter(Boolean);
+
+      if (classParts.length > 0) {
+        classParts.forEach(cp => {
+          const match = cp.match(/^([A-Za-z\s]+?)\s*(\d+)$/);
+          if (match) {
+            const cName = match[1].trim();
+            const cLvl = parseInt(match[2], 10) || 1;
+            const cDef = (typeof DND35_CLASS_DEFS !== 'undefined' && DND35_CLASS_DEFS[cName])
+              ? DND35_CLASS_DEFS[cName]
+              : { skills: 2 };
+            const baseSkill = cDef.skills || 2;
+
+            for (let l = 0; l < cLvl; l++) {
+              if (currentLevelIndex === 1) {
+                totalPts += Math.max(4, (baseSkill + intMod + isHuman) * 4);
+              } else {
+                totalPts += Math.max(1, baseSkill + intMod + isHuman);
+              }
+              currentLevelIndex++;
+            }
+          }
+        });
+      }
+
+      if (totalPts > 0) return totalPts;
+
+      const charLvl = Number(char.level) || 1;
+      totalPts = Math.max(4, (2 + intMod + isHuman) * 4);
+      if (charLvl > 1) {
+        totalPts += (charLvl - 1) * Math.max(1, 2 + intMod + isHuman);
+      }
+      return totalPts;
+    }
+
+    // Spent Skill Points Calculation based on current mode
+    function calculateSpentSkillPoints(char, isMerged) {
+      if (!char || !Array.isArray(char.skills)) return 0;
+      let totalSpent = 0;
+
+      if (isMerged) {
+        const handledKeys = new Set();
+        DND35_CONSOLIDATED_SKILLS.forEach(conDef => {
+          const compSkills = char.skills.filter(s => conDef.components.includes(s.key));
+          conDef.components.forEach(k => handledKeys.add(k));
+          const ranks = Math.max(0, ...compSkills.map(s => Number(s.ranks) || 0));
+          const isClass = compSkills.some(s => s.isClass);
+          totalSpent += ranks * (isClass ? 1 : 2);
+        });
+
+        char.skills.forEach(sk => {
+          if (!handledKeys.has(sk.key)) {
+            const ranks = Number(sk.ranks) || 0;
+            totalSpent += ranks * (sk.isClass ? 1 : 2);
+          }
+        });
+      } else {
+        char.skills.forEach(sk => {
+          const ranks = Number(sk.ranks) || 0;
+          totalSpent += ranks * (sk.isClass ? 1 : 2);
+        });
+      }
+
+      return totalSpent;
+    }
+
     // Toggle Class Skill for a given skill key
     function toggleSkillClass(skillKey) {
       ensureAllSkills(character);
-      const isMerged = character.settings?.mergeSkills === true;
+      const isMerged = character.settings?.mergeSkills !== false;
       const consolidated = isMerged ? DND35_CONSOLIDATED_SKILLS.find(c => c.key === skillKey) : null;
 
       if (consolidated) {
@@ -9317,21 +9444,70 @@
       renderSkills();
     }
 
-    // Interactive Rank Adjustment
+    // Interactive Rank Adjustment with strict Skill Points Pool limit
     function adjustSkillRank(skillKey, delta) {
       ensureAllSkills(character);
-      const isMerged = character.settings?.mergeSkills === true;
+      const isMerged = character.settings?.mergeSkills !== false;
       const consolidated = isMerged ? DND35_CONSOLIDATED_SKILLS.find(c => c.key === skillKey) : null;
+
+      const charLevel = Number(character.level) || 1;
+      const maxClassRank = charLevel + 3;
+      const maxCrossRank = Math.floor((charLevel + 3) / 2 * 10) / 10;
+
+      let currentRanks = 0;
+      let isClass = false;
 
       if (consolidated) {
         const compSkills = (character.skills || []).filter(s => consolidated.components.includes(s.key));
-        const currentRanks = Math.max(0, ...compSkills.map(s => Number(s.ranks) || 0));
-        const newRanks = Math.max(0, currentRanks + delta);
+        currentRanks = Math.max(0, ...compSkills.map(s => Number(s.ranks) || 0));
+        isClass = compSkills.some(s => s.isClass);
+      } else {
+        const sk = (character.skills || []).find(s => s.key === skillKey || s.name === skillKey);
+        if (sk) {
+          currentRanks = Number(sk.ranks) || 0;
+          isClass = !!sk.isClass;
+        }
+      }
+
+      const maxAllowedRank = isClass ? maxClassRank : maxCrossRank;
+
+      if (delta > 0) {
+        // Check max rank cap
+        if (currentRanks + delta > maxAllowedRank) {
+          showDiceTopToast({
+            icon: '⚠️',
+            title: 'Maksimum Rank Sınırı',
+            breakdown: `Bu seviye için izin verilen maksimum rank: ${maxAllowedRank} (${isClass ? 'Sınıf Becerisi' : 'Sınıf Dışı'})`,
+            total: `${currentRanks}/${maxAllowedRank}`
+          });
+          return;
+        }
+
+        // Check skill points budget
+        const totalPts = calculateTotalSkillPoints(character);
+        const spentPts = calculateSpentSkillPoints(character, isMerged);
+        const pointCost = isClass ? 1 : 2;
+
+        if (spentPts + pointCost > totalPts) {
+          showDiceTopToast({
+            icon: '🚫',
+            title: 'Yetersiz Beceri Puanı',
+            breakdown: `Karakterinizin toplam puanı: ${totalPts} (Harcanan: ${spentPts}). ${pointCost} puan daha gerekiyor!`,
+            total: 'Sınır Aşıldı'
+          });
+          return;
+        }
+      }
+
+      const newRanks = Math.max(0, currentRanks + delta);
+
+      if (consolidated) {
+        const compSkills = (character.skills || []).filter(s => consolidated.components.includes(s.key));
         compSkills.forEach(s => { s.ranks = newRanks; });
       } else {
         const sk = (character.skills || []).find(s => s.key === skillKey || s.name === skillKey);
         if (sk) {
-          sk.ranks = Math.max(0, (Number(sk.ranks) || 0) + delta);
+          sk.ranks = newRanks;
         }
       }
       saveStateToStorage(true);
@@ -9341,23 +9517,59 @@
     // Toggle Skill Consolidation mode directly from Skills card
     function toggleSkillConsolidation() {
       if (!character.settings) character.settings = {};
-      character.settings.mergeSkills = !character.settings.mergeSkills;
+      character.settings.mergeSkills = character.settings.mergeSkills === false ? true : false;
       saveStateToStorage(true);
       renderSkills();
+      showDiceTopToast({
+        icon: '🔗',
+        title: 'Beceri Modu Değiştirildi',
+        breakdown: character.settings.mergeSkills ? 'Skilleri Birleştir (7 Konsolide Grup) etkin!' : 'Standart RAW (46 Beceri) etkin!',
+        total: character.settings.mergeSkills ? 'Konsolide' : 'RAW'
+      });
     }
 
     // Open/Close/Save Skill Consolidation Modal (Master DB linked)
+    let _scmSelectedMode = true;
+
+    function setScmMode(isMerged) {
+      _scmSelectedMode = !!isMerged;
+      const btnMerge = document.getElementById('scm-btn-mode-merge');
+      const btnSplit = document.getElementById('scm-btn-mode-split');
+      const badgeMerge = document.getElementById('scm-badge-merge');
+      const badgeSplit = document.getElementById('scm-badge-split');
+
+      if (btnMerge && btnSplit) {
+        if (_scmSelectedMode) {
+          btnMerge.className = 'text-left p-3 rounded-xl border-2 transition relative flex flex-col justify-between bg-emerald-950/60 border-emerald-500 shadow-md';
+          btnSplit.className = 'text-left p-3 rounded-xl border-2 transition relative flex flex-col justify-between bg-slate-900 border-slate-700 hover:border-slate-500';
+          if (badgeMerge) {
+            badgeMerge.textContent = '✓ Aktif';
+            badgeMerge.className = 'text-[9px] bg-emerald-600 text-white font-bold px-1.5 py-0.5 rounded';
+          }
+          if (badgeSplit) {
+            badgeSplit.textContent = '46 Beceri';
+            badgeSplit.className = 'text-[9px] bg-slate-800 text-slate-400 font-bold px-1.5 py-0.5 rounded';
+          }
+        } else {
+          btnMerge.className = 'text-left p-3 rounded-xl border-2 transition relative flex flex-col justify-between bg-slate-900 border-slate-700 hover:border-slate-500';
+          btnSplit.className = 'text-left p-3 rounded-xl border-2 transition relative flex flex-col justify-between bg-sky-950/60 border-sky-500 shadow-md';
+          if (badgeMerge) {
+            badgeMerge.textContent = '7 Grup';
+            badgeMerge.className = 'text-[9px] bg-slate-800 text-slate-400 font-bold px-1.5 py-0.5 rounded';
+          }
+          if (badgeSplit) {
+            badgeSplit.textContent = '✓ Aktif (RAW)';
+            badgeSplit.className = 'text-[9px] bg-sky-600 text-white font-bold px-1.5 py-0.5 rounded';
+          }
+        }
+      }
+    }
+
     function openSkillConsolidationModal() {
       const modal = document.getElementById('skill-consolidation-modal');
       if (!modal) return;
-      const isMerged = character?.settings?.mergeSkills === true;
-      const chk = document.getElementById('scm-toggle-checkbox');
-      const badge = document.getElementById('scm-status-badge');
-      if (chk) chk.checked = isMerged;
-      if (badge) {
-        badge.textContent = isMerged ? 'Aktif' : 'Kapalı';
-        badge.className = isMerged ? 'badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[10px]' : 'badge bg-slate-800 text-slate-300 text-[10px]';
-      }
+      const isMerged = character?.settings?.mergeSkills !== false;
+      setScmMode(isMerged);
       modal.classList.remove('hidden');
     }
 
@@ -9366,19 +9578,9 @@
       if (modal) modal.classList.add('hidden');
     }
 
-    function onScmToggleChange() {
-      const chk = document.getElementById('scm-toggle-checkbox');
-      const badge = document.getElementById('scm-status-badge');
-      if (chk && badge) {
-        badge.textContent = chk.checked ? 'Aktif' : 'Kapalı';
-        badge.className = chk.checked ? 'badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[10px]' : 'badge bg-slate-800 text-slate-300 text-[10px]';
-      }
-    }
-
     function saveSkillConsolidationSettings() {
-      const chk = document.getElementById('scm-toggle-checkbox');
       const saveDb = document.getElementById('scm-save-master-db')?.checked !== false;
-      const isEnabled = chk ? chk.checked : false;
+      const isEnabled = _scmSelectedMode;
 
       if (!character.settings) character.settings = {};
       character.settings.mergeSkills = isEnabled;
@@ -9429,7 +9631,30 @@
       if (!tbody) return;
       tbody.innerHTML = '';
 
-      const isMerged = character.settings?.mergeSkills === true;
+      const isMerged = character.settings?.mergeSkills !== false;
+      const totalPts = calculateTotalSkillPoints(character);
+      const spentPts = calculateSpentSkillPoints(character, isMerged);
+      const remainingPts = totalPts - spentPts;
+
+      const spentEl = document.getElementById('skills-pts-spent');
+      const totalEl = document.getElementById('skills-pts-total');
+      const remBadge = document.getElementById('skills-pts-remaining-badge');
+
+      if (spentEl) spentEl.textContent = spentPts;
+      if (totalEl) totalEl.textContent = totalPts;
+      if (remBadge) {
+        if (remainingPts > 0) {
+          remBadge.textContent = `Kalan: ${remainingPts} Puan`;
+          remBadge.className = 'badge bg-slate-900 text-sky-300 border border-slate-700 text-xs font-mono font-bold px-2 py-0.5';
+        } else if (remainingPts === 0) {
+          remBadge.textContent = 'Tüm Puanlar Harcandı (0)';
+          remBadge.className = 'badge bg-emerald-950 text-emerald-300 border border-emerald-600 text-xs font-mono font-bold px-2 py-0.5';
+        } else {
+          remBadge.textContent = `Fazla Harcama: +${Math.abs(remainingPts)} Puan!`;
+          remBadge.className = 'badge bg-rose-950 text-rose-300 border border-rose-600 text-xs font-mono font-bold px-2 py-0.5 animate-pulse';
+        }
+      }
+
       const charLevel = Number(character.level) || 1;
       const maxClassRank = charLevel + 3;
       const maxCrossRank = Math.floor((charLevel + 3) / 2 * 10) / 10;

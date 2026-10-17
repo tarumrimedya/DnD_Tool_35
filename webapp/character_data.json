@@ -7,6 +7,17 @@
   "bab": 3,
   "baseSpeed": 30,
   "hitDie": "5d4 + 1d12",
+  "size": "Medium",
+  "alignment": "Chaotic Good",
+  "deity": "Boccob",
+  "gender": "Erkek",
+  "age": 24,
+  "height": "178 cm",
+  "weight": "72 kg",
+  "portrait": "",
+  "portraitPosition": "50% 20%",
+  "portraitFit": "cover",
+  "wallpaper": null,
   "baseAbilities": {
     "str": 12,
     "dex": 14,
@@ -26,6 +37,8 @@
   "hp": {
     "current": 45,
     "max": 45,
+    "baseMax": 45,
+    "conBonusHp": 0,
     "temp": 0,
     "nonlethal": 0
   },
@@ -60,16 +73,28 @@
     "noCritConfirm": true,
     "maneuverCrit": false
   },
+  "settings": {
+    "featMode": "Standard 3.5e (1, 3, 6, 9, 12, 15, 18)",
+    "clMode": "Character Level (DM Boon)",
+    "ignoreAsf": true,
+    "mergeSkills": true
+  },
   "feats": [
     { "name": "Weapon Finesse", "source": "Player's Handbook p. 102", "category": "General", "benefit": "Use DEX modifier instead of STR on attack rolls with light weapons, rapier, whip, or spiked chain." },
     { "name": "Power Attack", "source": "Player's Handbook p. 98", "category": "General", "benefit": "Trade attack bonus for damage (1x for 1-hand, 2x for 2-hand, 0x for off-hand)." },
     { "name": "Shadow Blade", "source": "Tome of Battle p. 32", "category": "Martial", "benefit": "Add DEX modifier to damage rolls with Shadow Hand discipline weapons while in a Shadow Hand stance." },
-    { "name": "Weapon Focus (Rapier)", "source": "Player's Handbook p. 102", "category": "General", "benefit": "+1 bonus on all attack rolls made with the chosen weapon." }
+    { "name": "Weapon Focus (Rapier)", "source": "Player's Handbook p. 102", "category": "General", "benefit": "+1 bonus on all attack rolls made with the chosen weapon." },
+    { "name": "Boon of Elusiveness Lesser", "source": "Campaign Boon", "category": "DM Grant", "benefit": "Get 25% less damage from all AoE attacks and spells. Gain +2 Dodge bonus to Armor Class (AC)." },
+    { "name": "Draconic Core (1h/day)", "source": "Campaign Boon", "category": "DM Grant", "benefit": "Swift Action (1 hour/day): Total immunity to acid damage, and breath weapon deals x2 damage." },
+    { "name": "Draconic Shield (1/d)", "source": "Campaign Boon", "category": "DM Grant", "benefit": "Immediate Action (1/day): Negate and ignore all critical hit damage from one attack." },
+    { "name": "Endurance", "source": "Campaign Boon", "category": "DM Grant", "benefit": "+4 bonus on checks against exhaustion, forced march, and holding breath." },
+    { "name": "Steadfast Determination", "source": "Campaign Boon", "category": "DM Grant", "benefit": "Use Constitution modifier instead of Wisdom modifier for Will saving throws." }
   ],
   "specialAbilities": [
     { "name": "Battle Clarity (Ex)", "source": "Tome of Battle p. 22", "benefit": "Add INT bonus (max Warblade level) to Reflex saves when not flat-footed." },
     { "name": "Weapon Aptitude (Ex)", "source": "Tome of Battle p. 22", "benefit": "Change the chosen weapon of weapon-specific feats with 1 hour of practice." },
-    { "name": "Summon Familiar", "source": "Player's Handbook p. 52", "benefit": "Summons a magical companion animal providing empathic link and bonuses." }
+    { "name": "Summon Familiar", "source": "Player's Handbook p. 52", "benefit": "Summons a magical companion animal providing empathic link and bonuses." },
+    { "name": "Ignore ASF (DM Boon)", "source": "Campaign Boon", "benefit": "Arcane Spell Failure percentage (ASF %) from worn armor is completely negated." }
   ],
   "bodySlots": {
     "head": { "name": "Circlet of Mages", "masterDbName": "Circlet of Mages", "active": true, "category": "Head", "weight": 1, "cost": 3000, "desc": "Retain expended spell slots and enhance caster level." },

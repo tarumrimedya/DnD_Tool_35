@@ -76,7 +76,8 @@
   "settings": {
     "featMode": "Standard 3.5e (1, 3, 6, 9, 12, 15, 18)",
     "clMode": "Character Level (DM Boon)",
-    "ignoreAsf": true
+    "ignoreAsf": true,
+    "mergeSkills": true
   },
   "feats": [
     { "name": "Weapon Finesse", "source": "Player's Handbook p. 102", "category": "General", "benefit": "Use DEX modifier instead of STR on attack rolls with light weapons, rapier, whip, or spiked chain." },

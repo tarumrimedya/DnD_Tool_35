@@ -1141,5 +1141,20 @@
         "benefit": "+1 racial bonus on all saving throws.",
         "role": "Racial / Saves",
         "tags": ["racial", "halfling", "saves", "level-1-only"]
+    },
+    {
+        "name": "Skilleri Birleştir (Skill Consolidation)",
+        "type": "House Rule",
+        "category": "House Rule",
+        "slot": "None",
+        "parent": "Alternative Rules",
+        "prereq": "-",
+        "source": "Unearthed Arcana / Pathfinder 1e",
+        "benefit": "Beceriler 7 konsolide grupta (Athletics, Stealth, Perception, Acrobatics, Thievery, Diplomacy, Linguistics) birleştirilerek oyun akışı sadeleştirilir. Birleşik becerinin rankı altındaki becerilerin en yükseğidir.",
+        "bonusType": "Rule",
+        "scope": "Skills",
+        "action": "Passive",
+        "role": "House Rule",
+        "tags": ["skills", "consolidation", "houserule", "pathfinder", "unearthed-arcana"]
     }
 ]
