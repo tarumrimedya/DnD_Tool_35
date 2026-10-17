@@ -4795,6 +4795,7 @@
   <script src="dice3d.js"></script>
   <script src="gdrive_sync.js"></script>
   <script src="hero_silhouette_data.js"></script>
+  <script src="bundled_data.js"></script>
 
   <script>
     function getDiceIconSvg(die, cls = "w-4 h-4 inline-block align-middle") {
@@ -5001,8 +5002,11 @@
 
       // Fetch bundled character_data.json for fallback or missing schema keys
       try {
-        const res = await fetch('character_data.json');
-        const defaultChar = await res.json();
+        let defaultChar = window.BUNDLED_CHARACTER_DATA || null;
+        if (!defaultChar) {
+          const res = await fetch('character_data.json');
+          defaultChar = await res.json();
+        }
         if (!character) {
           character = defaultChar;
           saveStateToStorage(false);
@@ -5038,12 +5042,14 @@
       }
 
       // 2. Load Master DB
-      let defaultDb = [];
-      try {
-        const res = await fetch('master_db.json');
-        defaultDb = await res.json();
-      } catch (e) {
-        console.error('Error fetching master_db.json:', e);
+      let defaultDb = window.BUNDLED_MASTER_DB || [];
+      if (!defaultDb || defaultDb.length === 0) {
+        try {
+          const res = await fetch('master_db.json');
+          defaultDb = await res.json();
+        } catch (e) {
+          console.error('Error fetching master_db.json:', e);
+        }
       }
 
       const savedDb = localStorage.getItem('dnd35_master_db');
