@@ -3180,6 +3180,447 @@ Return valid JSON only matching this schema:
       if (btn) btn.disabled = false;
       if (loadingIndicator) loadingIndicator.classList.add('hidden');
     }
+  },
+
+  // ====================================================
+  // GSHEET RULE MASTER LEVEL UP COPILOT (AI & RAW ENGINE)
+  // ====================================================
+
+  async callAiText(promptText, systemInstruction = '', onStatus = null) {
+    const apiKey = this.getApiKey();
+    if (!apiKey) {
+      throw new Error('Gemini API anahtarı tanımlanmamış. Lütfen Ayarlar veya Rule Master sekmesinden API anahtarı ekleyin.');
+    }
+
+    const availableModels = await this.getAvailableGeminiModels(apiKey);
+    let successText = '';
+    let lastError = '';
+
+    for (const model of availableModels) {
+      if (typeof onStatus === 'function') {
+        onStatus(`${model} ile RAW kuralları taranıyor...`);
+      }
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+      try {
+        const bodyPayload = {
+          contents: [{ parts: [{ text: promptText }] }],
+          generationConfig: {
+            temperature: 0.2
+          }
+        };
+        if (systemInstruction) {
+          bodyPayload.systemInstruction = {
+            parts: [{ text: systemInstruction }]
+          };
+        }
+
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(bodyPayload)
+        });
+
+        if (resp.ok) {
+          const json = await resp.json();
+          const rawText = json.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (rawText) {
+            successText = rawText;
+            break;
+          }
+        } else {
+          const errData = await resp.json().catch(() => ({}));
+          lastError = errData.error?.message || `HTTP ${resp.status}`;
+        }
+      } catch (netErr) {
+        lastError = netErr.message;
+      }
+    }
+
+    if (successText) {
+      return successText;
+    }
+    throw new Error(lastError || 'Gemini API modellerinden yanıt alınamadı.');
+  },
+
+  evaluateHeuristicLevelUp(ctx) {
+    const {
+      characterName = 'Karakter',
+      race = 'Human',
+      currentLevel = 6,
+      targetLevel = 7,
+      targetClass = 'Warblade',
+      classes = [],
+      abilities = { str: 18, dex: 14, con: 14, int: 14, wis: 10, cha: 22 },
+      bab = 4,
+      feats = [],
+      isStatLevel = false,
+      isFeatLevel = false,
+      customQuery = ''
+    } = ctx;
+
+    const lowerFeats = feats.map(f => String(f).toLowerCase().replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim());
+    const hasFeat = (name) => lowerFeats.some(f => f.includes(name.toLowerCase()));
+
+    // 1. Stat recommendation
+    let recommendedStat = null;
+    let statReason = '';
+    if (isStatLevel) {
+      const isMartial = ['warblade', 'fighter', 'barbarian', 'crusader', 'paladin', 'ranger'].includes(targetClass.toLowerCase());
+      const isCaster = ['sorcerer', 'wizard', 'cleric', 'druid', 'bard'].includes(targetClass.toLowerCase());
+      
+      const statPriority = isMartial 
+        ? ['str', 'con', 'dex', 'int', 'wis', 'cha']
+        : isCaster
+          ? (targetClass.toLowerCase() === 'sorcerer' || targetClass.toLowerCase() === 'bard' ? ['cha', 'con', 'dex', 'int', 'wis', 'str'] : ['int', 'con', 'dex', 'cha', 'wis', 'str'])
+          : ['dex', 'str', 'con', 'int', 'wis', 'cha'];
+
+      for (const st of statPriority) {
+        const val = Number(abilities[st]) || 10;
+        if (val % 2 !== 0) {
+          recommendedStat = st;
+          statReason = `${st.toUpperCase()} değeri ${val} (tek sayı). +1 ekleyerek ${val + 1} yapmak modifiyerinizi +${Math.floor(((val + 1) - 10) / 2)} seviyesine yükseltir!`;
+          break;
+        }
+      }
+
+      if (!recommendedStat) {
+        recommendedStat = statPriority[0];
+        const currentVal = Number(abilities[recommendedStat]) || 10;
+        statReason = `${targetClass} için birincil stat olan ${recommendedStat.toUpperCase()} (${currentVal}) artırımı tavsiye edilir.`;
+      }
+    }
+
+    // 2. Feat recommendation
+    let recommendedFeat = '';
+    let featBenefit = '';
+    let featCategory = 'Regular Feat';
+    let featPrereq = '';
+
+    const isWarblade = targetClass.toLowerCase().includes('warblade');
+    const isSorcerer = targetClass.toLowerCase().includes('sorcerer');
+    const isMartial = ['warblade', 'fighter', 'barbarian', 'crusader', 'paladin', 'ranger'].includes(targetClass.toLowerCase());
+    const isGish = (classes.some(c => (c.className || '').toLowerCase().includes('warblade') || (c.className || '').toLowerCase().includes('fighter')) &&
+                    classes.some(c => (c.className || '').toLowerCase().includes('sorcerer') || (c.className || '').toLowerCase().includes('wizard')));
+
+    if (isGish && !hasFeat('practiced spellcaster')) {
+      recommendedFeat = 'Practiced Spellcaster';
+      featBenefit = 'Caster Level\'ınızı +4 artırır (toplam HD\'yi geçemez). Çoklu sınıf (Gish) büyü gücü kaybını telafi eder.';
+      featCategory = 'Regular Feat';
+      featPrereq = 'Spellcraft 4 ranks';
+    } else if (isGish && bab >= 1 && !hasFeat('arcane strike')) {
+      recommendedFeat = 'Arcane Strike';
+      featBenefit = 'Büyü yuvası harcayarak tüm yakın dövüş saldırılarınıza +büyü seviyesi kadar saldırı ve +1d6 ekstra büyü hasarı kazandırır.';
+      featCategory = 'Regular Feat';
+      featPrereq = 'BAB +1, 3. seviye arcane büyü atabilme';
+    } else if (isMartial) {
+      if (!hasFeat('power attack') && (abilities.str || 10) >= 13 && bab >= 1) {
+        recommendedFeat = 'Power Attack';
+        featBenefit = 'BAB kadar saldırı zarından feda edip iki elli silahla x2 hasar elde etmenizi sağlar.';
+        featCategory = 'Regular Feat';
+        featPrereq = 'STR 13, BAB +1';
+      } else if (!hasFeat('cleave') && (abilities.str || 10) >= 13 && hasFeat('power attack')) {
+        recommendedFeat = 'Cleave';
+        featBenefit = 'Bir rakibi düşürdüğünüzde veya öldürdüğünüzde yakındaki başka bir hedefe anında ekstra ücretsiz saldırı yaparsınız.';
+        featCategory = 'Regular Feat';
+        featPrereq = 'Power Attack, STR 13';
+      } else if (!hasFeat('improved bull rush') && hasFeat('power attack') && (abilities.str || 10) >= 13) {
+        recommendedFeat = 'Improved Bull Rush';
+        featBenefit = 'Bull Rush yaparken fırsat saldırısı almazsınız ve +4 karşı koyma bonusu alırsınız. Shock Trooper için zorunlu önkoşuldur.';
+        featCategory = 'Regular Feat';
+        featPrereq = 'Power Attack, STR 13';
+      } else if (bab >= 6 && hasFeat('improved bull rush') && !hasFeat('shock trooper')) {
+        recommendedFeat = 'Shock Trooper';
+        featBenefit = 'Heedless Charge ile Power Attack cezasını saldırı zarına değil Zırh Sınıfına (AC) yansıtarak %100 isabetle devasa hasar verirsiniz.';
+        featCategory = 'Regular Feat';
+        featPrereq = 'BAB +6, Power Attack, Improved Bull Rush';
+      } else if (hasFeat('power attack') && !hasFeat('leap attack')) {
+        recommendedFeat = 'Leap Attack';
+        featBenefit = 'Hücum (Charge) sırasında Jump yaparak Power Attack hasar bonusunu x3 katlarsınız.';
+        featCategory = 'Regular Feat';
+        featPrereq = 'Jump 8 ranks, Power Attack';
+      } else if (!hasFeat('improved initiative')) {
+        recommendedFeat = 'Improved Initiative';
+        featBenefit = 'İnisiyatif kontrollerine kalıcı +4 bonus kazandırır. Savaşta her zaman ilk hamleyi yapmanızı sağlar.';
+        featCategory = 'Regular Feat';
+        featPrereq = 'Yok';
+      } else if (isWarblade && !hasFeat('adaptive style')) {
+        recommendedFeat = 'Adaptive Style';
+        featBenefit = 'Tüm Tome of Battle manevralarınızı 1 tam turda (full-round action) anında yeniden hazırlamanızı sağlar.';
+        featCategory = 'Regular Feat';
+        featPrereq = 'Initiator Level 1+';
+      } else if (!hasFeat('iron will')) {
+        recommendedFeat = 'Iron Will';
+        featBenefit = 'İrade (Will) kurtarma zarlarına kalıcı +2 bonus sağlar. Savaşçıların en zayıf kurtarma zarını korur.';
+        featCategory = 'Regular Feat';
+        featPrereq = 'Yok';
+      } else {
+        recommendedFeat = 'Weapon Focus';
+        featBenefit = 'Seçilen silahta tüm saldırı zarlarına kalıcı +1 bonus sağlar.';
+        featCategory = 'Regular Feat';
+        featPrereq = 'Proficiency with weapon, BAB +1';
+      }
+    } else if (isSorcerer) {
+      if (!hasFeat('improved initiative')) {
+        recommendedFeat = 'Improved Initiative';
+        featBenefit = 'İnisiyatif zarına +4 bonus. Büyücülerin savaşı ilk turda bitirecek büyüleri (Haste, Slow, Fireball) önce atmasını sağlar.';
+        featCategory = 'Regular Feat';
+        featPrereq = 'Yok';
+      } else if (!hasFeat('empower spell')) {
+        recommendedFeat = 'Empower Spell';
+        featBenefit = 'Büyünün tüm değişken sayısal etkilerini %50 artırır (+2 büyü yuvası).';
+        featCategory = 'Regular Feat';
+        featPrereq = 'Metamagic';
+      } else {
+        recommendedFeat = 'Spell Focus';
+        featBenefit = 'Seçilen büyü okulundaki büyülerin Kurtarma DC değerine kalıcı +1 bonus kazandırır.';
+        featCategory = 'Regular Feat';
+        featPrereq = 'Yok';
+      }
+    } else {
+      recommendedFeat = 'Improved Initiative';
+      featBenefit = 'İnisiyatif zarına kalıcı +4 bonus kazandırır.';
+      featCategory = 'Regular Feat';
+      featPrereq = 'Yok';
+    }
+
+    // 3. Synergy notes
+    let notes = '';
+    if (isGish) {
+      notes = `${targetClass} Seviye ${targetLevel}: Warblade yakın dövüş dayanıklılığı ile Sorcerer büyü havuzunu harmanlayan Gish yapısı güçlendirildi.`;
+    } else if (isWarblade) {
+      notes = `Warblade Seviye ${targetLevel}: Yüksek Hit Die ve BAB artışı ile yakın dövüş etkinliği artırıldı.`;
+    } else {
+      notes = `${targetClass} Seviye ${targetLevel} ilerlemesi tamamlandı.`;
+    }
+
+    let adviceHtml = `
+      <div class="space-y-2">
+        <div class="flex items-center justify-between pb-1 border-b border-purple-500/30">
+          <span class="font-bold text-amber-300 flex items-center gap-1.5">
+            <span>📖</span><span>D&D 3.5e RAW Kural Motoru Tavsiyesi (Seviye ${targetLevel})</span>
+          </span>
+          <span class="text-[10px] text-purple-300 font-mono">Heuristic Analysis</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          ${isStatLevel ? `
+            <div class="p-2 rounded-lg bg-amber-950/40 border border-amber-500/40 space-y-1">
+              <div class="text-[11px] font-bold text-amber-300 flex items-center justify-between">
+                <span>💪 Stat Artışı (+1)</span>
+                <span class="badge bg-amber-900 text-amber-200 border border-amber-600 font-mono text-[9px] font-bold">+1 ${recommendedStat.toUpperCase()}</span>
+              </div>
+              <p class="text-[11px] text-amber-100/90 leading-relaxed">${statReason}</p>
+              <button type="button" onclick="applyCopilotStat('${recommendedStat}')" class="w-full mt-1 py-1 rounded bg-amber-600/30 hover:bg-amber-600 text-amber-200 hover:text-white border border-amber-500/50 text-[10px] font-bold transition flex items-center justify-center gap-1 cursor-pointer">
+                <span>⚡</span><span>Bu Statı Seç (+1 ${recommendedStat.toUpperCase()})</span>
+              </button>
+            </div>
+          ` : `
+            <div class="p-2 rounded-lg bg-slate-900/60 border border-slate-800 space-y-1">
+              <div class="text-[11px] font-bold text-slate-400">💪 Stat Artışı</div>
+              <p class="text-[11px] text-slate-400">Bu seviyede (${targetLevel}) temel stat artışı bulunmuyor (4, 8, 12, 16, 20. seviyelerde verilir).</p>
+            </div>
+          `}
+
+          <div class="p-2 rounded-lg bg-purple-950/40 border border-purple-500/40 space-y-1">
+            <div class="text-[11px] font-bold text-purple-300 flex items-center justify-between">
+              <span>🎯 Önerilen Feat</span>
+              <span class="badge bg-purple-900 text-purple-200 border border-purple-600 font-mono text-[9px] font-bold">${recommendedFeat}</span>
+            </div>
+            <p class="text-[11px] text-purple-100/90 leading-relaxed">${featBenefit}</p>
+            <div class="text-[10px] text-purple-400 italic">Önkoşul: ${featPrereq}</div>
+            <button type="button" onclick="applyCopilotFeat('${recommendedFeat}', '${featBenefit.replace(/'/g, "\\'")}', '${featCategory}')" class="w-full mt-1 py-1 rounded bg-purple-600/30 hover:bg-purple-600 text-purple-200 hover:text-white border border-purple-500/50 text-[10px] font-bold transition flex items-center justify-center gap-1 cursor-pointer">
+              <span>⚡</span><span>Bu Feat'i Yuvaya Doldur</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="p-2 rounded-lg bg-indigo-950/30 border border-indigo-500/30 space-y-1">
+          <div class="text-[11px] font-bold text-indigo-300 flex items-center justify-between">
+            <span>⚔️ Taktiksel Sinerji & Sınıf Rehberi</span>
+            <button type="button" onclick="applyCopilotNotes('${notes.replace(/'/g, "\\'")}')" class="text-[10px] text-indigo-300 hover:text-white underline cursor-pointer">Notlara Aktar</button>
+          </div>
+          <p class="text-[11px] text-slate-300 leading-relaxed">${notes}</p>
+        </div>
+
+        <div class="flex items-center justify-between pt-1">
+          <span class="text-[10px] text-slate-500 italic">💡 Gemini API Anahtarı ile sınırsız ek kitap (splatbook) ve derin taktiksel analiz alabilirsiniz.</span>
+          <button type="button" onclick="applyCopilotAll({ recommendedFeat: '${recommendedFeat}', featBenefit: '${featBenefit.replace(/'/g, "\\'")}', featCategory: '${featCategory}', recommendedStat: '${recommendedStat || ''}', notes: '${notes.replace(/'/g, "\\'")}' })" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-[11px] px-3 py-1 rounded-lg shadow flex items-center gap-1 transition cursor-pointer">
+            <span>🚀</span><span>Tüm Önerileri Tek Tıkla Uygula</span>
+          </button>
+        </div>
+      </div>
+    `;
+
+    return {
+      isAi: false,
+      adviceHtml,
+      recommendedFeat,
+      featBenefit,
+      featCategory,
+      recommendedStat,
+      notes
+    };
+  },
+
+  async getLevelUpAdvice(ctx) {
+    const apiKey = this.getApiKey();
+    if (!apiKey) {
+      return this.evaluateHeuristicLevelUp(ctx);
+    }
+
+    const {
+      characterName = 'Karakter',
+      race = 'Human',
+      alignment = 'Neutral',
+      currentLevel = 6,
+      targetLevel = 7,
+      targetClass = 'Warblade',
+      classes = [],
+      abilities = {},
+      bab = 4,
+      saves = {},
+      feats = [],
+      isStatLevel = false,
+      isFeatLevel = false,
+      customQuery = '',
+      onStatus = null
+    } = ctx;
+
+    const classProgStr = classes.map(c => `${c.className} ${c.level || 1}`).join(' / ') || targetClass;
+    const knownFeatsStr = feats.join(', ') || 'Yok';
+    const statsStr = `STR: ${abilities.str || 10}, DEX: ${abilities.dex || 10}, CON: ${abilities.con || 10}, INT: ${abilities.int || 10}, WIS: ${abilities.wis || 10}, CHA: ${abilities.cha || 10}`;
+
+    const systemInstruction = `Sen D&D 3.5e Rule Master ve akıllı Seviye Atlama Danışmanısın (Level Up Copilot).
+Verilen D&D 3.5e karakter bilgilerini ve resmi RAW kaynaklarını (PHB, DMG, Complete Warrior, Complete Arcane, Complete Divine, Complete Adventurer, Complete Mage, Complete Scoundrel, Complete Champion, Tome of Battle, Spell Compendium) temel alarak son derece yetkin, taktiksel ve kural hatasız bir seviye atlama tavsiyesi hazırla.
+Karakterin mevcut sınıfları, BAB değeri, statları, kurtarma zarları ve mevcut featleri arasındaki sinerjiyi derinlemesine değerlendir.
+
+Cevabında:
+1. Feat Önerisi: Karakterin bu seviyede alabileceği en optimal feat, neden seçildiği ve önkoşullarının nasıl karşılandığı.
+2. Stat Artışı: Eğer Seviye 4, 8, 12, 16, 20 ise (+1 Ability Score), hangi statın artırılması gerektiği (özellikle tek sayıdan çift sayıya geçerek modifiyer kazandıran statları belirt).
+3. Sınıf Özellikleri & Büyüler/Manevralar: Bu seviyede kazanılan veya seçilmesi gereken büyü / manevralar.
+4. Taktiksel Sinerji Özeti.
+
+ÖNEMLİ KURAL: Yanıtının en sonunda SİSTEMİN OTOMATİK DOLDURABİLMESİ İÇİN kesinlikle şu JSON bloğunu yerleştir:
+\`\`\`json
+{
+  "recommendedFeat": "Feat Adı",
+  "featBenefit": "Kısa faydası (1 cümle)",
+  "featCategory": "Regular Feat",
+  "recommendedStat": "str",
+  "notes": "Karakter sayfasına eklenecek kısa taktiksel seviye notu"
+}
+\`\`\``;
+
+    const userPrompt = `Karakter Adı: ${characterName}
+Irk: ${race} | Uyum: ${alignment}
+Mevcut Sınıflar: ${classProgStr}
+Hedef İlerleme: Seviye ${targetLevel} (${targetClass} Seviyesi Alınıyor)
+Statlar: ${statsStr}
+Temel Saldırı Bonusu (BAB): +${bab}
+Kurtarma Zarları: Fort +${saves.fort || 0}, Ref +${saves.ref || 0}, Will +${saves.will || 0}
+Mevcut Featler / Yetenekler: ${knownFeatsStr}
+Stat Artışı (+1) Hakkı Var mı?: ${isStatLevel ? 'EVET (+1 Stat seçilmeli)' : 'Hayır'}
+Feat Seçim Hakkı Var mı?: ${isFeatLevel ? 'EVET' : 'İsteğe Bağlı / Bonus Feat'}
+${customQuery ? `Kullanıcının Özel Sorusu: ${customQuery}` : 'Bu seviye atlama için en iyi build optimizasyonunu ve D&D 3.5e RAW kural tavsiyelerini ver.'}`;
+
+    try {
+      const rawAiText = await this.callAiText(userPrompt, systemInstruction, onStatus);
+
+      let parsedJson = null;
+      const jsonMatch = rawAiText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+      if (jsonMatch) {
+        try {
+          parsedJson = JSON.parse(jsonMatch[1]);
+        } catch (e) {
+          console.warn('Could not parse Copilot JSON recommendation:', e);
+        }
+      }
+
+      let cleanText = rawAiText.replace(/```(?:json)?\s*[\s\S]*?\s*```/g, '').trim();
+      let htmlBody = cleanText
+        .replace(/^### (.*$)/gim, '<h4 class="text-xs font-bold text-purple-300 mt-2 mb-1 flex items-center gap-1.5"><span>⚡</span><span>$1</span></h4>')
+        .replace(/^## (.*$)/gim, '<h3 class="text-xs font-black text-amber-300 mt-2.5 mb-1.5 pb-1 border-b border-purple-500/30 flex items-center gap-1.5"><span>🔮</span><span>$1</span></h3>')
+        .replace(/^\* (.*$)/gim, '<li class="ml-4 list-disc text-slate-300 text-[11px]">$1</li>')
+        .replace(/^- (.*$)/gim, '<li class="ml-4 list-disc text-slate-300 text-[11px]">$1</li>')
+        .replace(/\*\*(.*?)\*\*/g, '<b class="text-white font-semibold">$1</b>')
+        .replace(/\n\n/g, '<div class="h-1.5"></div>');
+
+      const recFeat = parsedJson?.recommendedFeat || (ctx.isFeatLevel ? 'Power Attack' : '');
+      const featBenefit = parsedJson?.featBenefit || 'D&D 3.5e RAW tavsiyesi';
+      const featCategory = parsedJson?.featCategory || 'Regular Feat';
+      const recStat = parsedJson?.recommendedStat || (ctx.isStatLevel ? 'str' : null);
+      const notes = parsedJson?.notes || `${targetClass} Seviye ${targetLevel} ilerlemesi yapıldı.`;
+
+      let adviceHtml = `
+        <div class="space-y-2">
+          <div class="flex items-center justify-between pb-1 border-b border-purple-500/30">
+            <span class="font-bold text-purple-300 flex items-center gap-1.5">
+              <span>🤖</span><span>Gemini Rule Master AI Seviye Tavsiyesi (Seviye ${targetLevel})</span>
+            </span>
+            <span class="badge bg-purple-950 text-purple-300 border border-purple-600 font-mono text-[9px] font-bold">Gemini RAW AI</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 my-2">
+            ${recStat ? `
+              <div class="p-2 rounded-lg bg-amber-950/40 border border-amber-500/40 flex items-center justify-between">
+                <div>
+                  <div class="text-[10px] font-bold text-amber-400 uppercase">Önerilen Stat:</div>
+                  <div class="text-xs font-black text-white">+1 ${recStat.toUpperCase()}</div>
+                </div>
+                <button type="button" onclick="applyCopilotStat('${recStat}')" class="px-2.5 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white font-bold text-[10px] shadow transition cursor-pointer">
+                  Uygula
+                </button>
+              </div>
+            ` : ''}
+
+            ${recFeat ? `
+              <div class="p-2 rounded-lg bg-purple-950/40 border border-purple-500/40 flex items-center justify-between">
+                <div class="truncate mr-2">
+                  <div class="text-[10px] font-bold text-purple-300 uppercase">Önerilen Feat:</div>
+                  <div class="text-xs font-black text-white truncate" title="${recFeat}">${recFeat}</div>
+                </div>
+                <button type="button" onclick="applyCopilotFeat('${recFeat}', '${featBenefit.replace(/'/g, "\\'")}', '${featCategory}')" class="px-2.5 py-1 rounded bg-purple-600 hover:bg-purple-500 text-white font-bold text-[10px] shadow transition cursor-pointer shrink-0">
+                  Yuvaya Doldur
+                </button>
+              </div>
+            ` : ''}
+          </div>
+
+          <div class="prose prose-invert text-xs leading-relaxed max-h-72 overflow-y-auto pr-1">
+            ${htmlBody}
+          </div>
+
+          <div class="flex items-center justify-between pt-2 border-t border-purple-900/50">
+            <button type="button" onclick="applyCopilotNotes('${notes.replace(/'/g, "\\'")}')" class="text-[10px] text-indigo-300 hover:text-white underline cursor-pointer">
+              📝 Tavsiye Notunu Ekle
+            </button>
+            <button type="button" onclick="applyCopilotAll({ recommendedFeat: '${recFeat}', featBenefit: '${featBenefit.replace(/'/g, "\\'")}', featCategory: '${featCategory}', recommendedStat: '${recStat || ''}', notes: '${notes.replace(/'/g, "\\'")}' })" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-[11px] px-3.5 py-1.5 rounded-lg shadow-lg flex items-center gap-1.5 transition cursor-pointer active:scale-95">
+              <span>⚡</span><span>Tüm Önerileri Tek Tıkla Uygula</span>
+            </button>
+          </div>
+        </div>
+      `;
+
+      return {
+        isAi: true,
+        adviceHtml,
+        recommendedFeat: recFeat,
+        featBenefit,
+        featCategory,
+        recommendedStat: recStat,
+        notes
+      };
+    } catch (err) {
+      console.warn('AI call failed, falling back to heuristic:', err);
+      const fallback = this.evaluateHeuristicLevelUp(ctx);
+      fallback.adviceHtml = `
+        <div class="p-2 mb-2 rounded bg-amber-950/60 border border-amber-500/40 text-amber-200 text-[11px] flex items-center gap-2">
+          <span>⚠️</span><span>Yapay Zeka API bağlantısı sağlanamadı (${err.message}). D&D 3.5e RAW Kural Motoru tavsiyeleri gösteriliyor.</span>
+        </div>
+        ${fallback.adviceHtml}
+      `;
+      return fallback;
+    }
   }
 };
 

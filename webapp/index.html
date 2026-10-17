@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="build-version" content="2026.10.18-0015">
+  <meta name="build-version" content="2026.10.18-0110">
   <title>D&D 3.5e Tactical Cockpit & Character Hub</title>
   <script>
     if ('scrollRestoration' in history) {
@@ -3218,6 +3218,83 @@
 
       <!-- Body -->
       <div class="p-4 space-y-3.5 text-xs overflow-y-auto flex-1">
+        <!-- ==================================================== -->
+        <!-- 🤖 GSHEET RULE MASTER LEVEL UP COPILOT (AI & RAW ASİSTANI) -->
+        <!-- ==================================================== -->
+        <div id="lvlup-copilot-card" class="bg-gradient-to-r from-purple-950/80 via-indigo-950/70 to-slate-900 border border-purple-500/50 rounded-xl p-3 shadow-lg space-y-2.5 transition">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-lg bg-purple-900/80 border border-purple-400/50 flex items-center justify-center text-base shadow shrink-0">
+                🤖
+              </div>
+              <div>
+                <div class="text-xs font-black text-purple-300 flex items-center gap-1.5 flex-wrap">
+                  <span>GSheet Rule Master Level Up Copilot</span>
+                  <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-purple-900/60 text-purple-200 border border-purple-600/40 font-mono">D&D 3.5e RAW AI</span>
+                  <span id="lvlup-copilot-engine-badge" class="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-600/40">Hazır</span>
+                </div>
+                <div class="text-[10px] text-indigo-300/80">Karakter sınıf sinerjisi, stat optimizasyonu, feat ve büyü tavsiyeleri</div>
+              </div>
+            </div>
+            
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="triggerLevelUpCopilot('advice')" id="btn-lvlup-copilot-advice" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-[11px] px-2.5 py-1 rounded-lg shadow flex items-center gap-1 transition active:scale-95 cursor-pointer">
+                <span>🧠</span>
+                <span>Seviye Tavsiyesi Al</span>
+              </button>
+              <button type="button" onclick="triggerLevelUpCopilot('autofill')" id="btn-lvlup-copilot-autofill" class="bg-indigo-600/40 hover:bg-indigo-600 text-indigo-200 hover:text-white border border-indigo-500/50 font-bold text-[11px] px-2.5 py-1 rounded-lg shadow flex items-center gap-1 transition active:scale-95 cursor-pointer">
+                <span>⚡</span>
+                <span>Akıllı Doldur</span>
+              </button>
+              <button type="button" onclick="toggleLevelUpCopilotDetails()" id="btn-lvlup-copilot-toggle" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[10px] px-2 py-1 rounded-lg border border-slate-700 transition cursor-pointer" title="Copilot panelini daralt / genişlet">
+                <span id="lvlup-copilot-toggle-icon">▲</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Copilot Quick Chips / Prompts & Status Box -->
+          <div id="lvlup-copilot-body" class="space-y-2">
+            <!-- Quick Question Chips -->
+            <div class="flex flex-wrap items-center gap-1.5 pt-0.5">
+              <span class="text-[10px] font-semibold text-slate-400">Hızlı Analiz:</span>
+              <button type="button" onclick="askCopilotQuick('Bu seviyede karakterime en uygun ve güçlü Feat hangisidir? Önkoşulları karşılıyor muyum?')" class="text-[10px] bg-slate-900 hover:bg-purple-900/50 border border-slate-700 hover:border-purple-500/60 text-purple-300 px-2 py-0.5 rounded-full transition cursor-pointer">🎯 Feat Önerisi</button>
+              <button type="button" onclick="askCopilotQuick('Hangi Ability Score (STR, DEX, CON, INT, WIS, CHA) artırılmalı? Tek/çift sayı kırılmalarını analiz et.')" class="text-[10px] bg-slate-900 hover:bg-purple-900/50 border border-slate-700 hover:border-purple-500/60 text-amber-300 px-2 py-0.5 rounded-full transition cursor-pointer">💪 Stat Artışı (+1)</button>
+              <button type="button" onclick="askCopilotQuick('İleride prestij sınıfları (örn: Abjurant Champion, Eldritch Knight) için hangi şartlar ve featler gerekiyor?')" class="text-[10px] bg-slate-900 hover:bg-purple-900/50 border border-slate-700 hover:border-purple-500/60 text-sky-300 px-2 py-0.5 rounded-full transition cursor-pointer">👑 Prestij Şartları</button>
+              <button type="button" onclick="askCopilotQuick('Bu seviyede hangi büyüleri veya savaş manevralarını seçmeliyim?')" class="text-[10px] bg-slate-900 hover:bg-purple-900/50 border border-slate-700 hover:border-purple-500/60 text-emerald-300 px-2 py-0.5 rounded-full transition cursor-pointer">🔮 Büyü & Manevra</button>
+            </div>
+
+            <!-- Free-form Copilot prompt input -->
+            <div class="flex items-center gap-1.5">
+              <div class="relative flex-1">
+                <input 
+                  type="text" 
+                  id="lvlup-copilot-custom-query" 
+                  placeholder="Rule Master Copilot'a sor (örn: Power Attack ve Shock Trooper önkoşulları, Combat Casting gerekli mi?)..."
+                  onkeydown="if(event.key === 'Enter'){ event.preventDefault(); triggerLevelUpCopilot('custom'); }"
+                  class="w-full bg-slate-950 border border-purple-500/40 rounded-lg pl-7 pr-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-purple-400">
+                <span class="absolute left-2.5 top-1.5 text-xs text-purple-400">💬</span>
+              </div>
+              <button type="button" onclick="triggerLevelUpCopilot('custom')" class="px-3 py-1.5 rounded-lg bg-purple-700 hover:bg-purple-600 text-white font-bold text-xs shadow transition active:scale-95 shrink-0 cursor-pointer">
+                Danış
+              </button>
+            </div>
+
+            <!-- Loading indicator -->
+            <div id="lvlup-copilot-loading" class="hidden flex items-center gap-2 p-2 bg-purple-950/40 border border-purple-500/30 rounded-lg text-xs text-purple-300">
+              <svg class="animate-spin h-3.5 w-3.5 text-purple-400 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+              </svg>
+              <span id="lvlup-copilot-status-text" class="text-[11px] font-medium">Karakter verileri analiz ediliyor & Rule Master taranıyor...</span>
+            </div>
+
+            <!-- Copilot Results / Advice Box -->
+            <div id="lvlup-copilot-results" class="hidden bg-slate-950/90 border border-purple-500/40 rounded-lg p-3 space-y-2 text-xs">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+
         <!-- Step 1: Class & Hit Die -->
         <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 space-y-2.5">
           <div class="text-[11px] font-bold text-emerald-400 uppercase tracking-wide">1. Sınıf Seçimi (Class) & Otomatik İlerleme</div>
@@ -10072,6 +10149,207 @@
       }
     }
 
+    // ====================================================
+    // GSHEET RULE MASTER LEVEL UP COPILOT CONTROLLER
+    // ====================================================
+
+    let lastCopilotAdviceData = null;
+
+    function initLevelUpCopilot() {
+      const badge = document.getElementById('lvlup-copilot-engine-badge');
+      const hasKey = typeof RuleMaster !== 'undefined' && RuleMaster.getApiKey && !!RuleMaster.getApiKey();
+      if (badge) {
+        if (hasKey) {
+          badge.textContent = '✨ Gemini AI Aktif';
+          badge.className = 'text-[9px] font-semibold px-1.5 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-500/50';
+        } else {
+          badge.textContent = '📖 RAW Kural Motoru';
+          badge.className = 'text-[9px] font-semibold px-1.5 py-0.5 rounded bg-slate-900 text-slate-300 border border-slate-700';
+        }
+      }
+      const loadingBox = document.getElementById('lvlup-copilot-loading');
+      if (loadingBox) loadingBox.classList.add('hidden');
+    }
+
+    function toggleLevelUpCopilotDetails() {
+      const body = document.getElementById('lvlup-copilot-body');
+      const icon = document.getElementById('lvlup-copilot-toggle-icon');
+      if (!body) return;
+      if (body.classList.contains('hidden')) {
+        body.classList.remove('hidden');
+        if (icon) icon.textContent = '▲';
+      } else {
+        body.classList.add('hidden');
+        if (icon) icon.textContent = '▼';
+      }
+    }
+
+    function askCopilotQuick(queryText) {
+      const input = document.getElementById('lvlup-copilot-custom-query');
+      if (input) input.value = queryText;
+      const body = document.getElementById('lvlup-copilot-body');
+      if (body && body.classList.contains('hidden')) {
+        toggleLevelUpCopilotDetails();
+      }
+      triggerLevelUpCopilot('custom', queryText);
+    }
+
+    async function triggerLevelUpCopilot(mode = 'advice', customPrompt = '') {
+      const body = document.getElementById('lvlup-copilot-body');
+      if (body && body.classList.contains('hidden')) {
+        toggleLevelUpCopilotDetails();
+      }
+
+      const prog = character.levelProgression || [];
+      const nextLvl = prog.length + 1;
+      const targetClass = document.getElementById('lvlup-class-select')?.value || 'Warblade';
+
+      const featMode = character.settings?.featMode || 'Standard 3.5e (1, 3, 6, 9, 12, 15, 18)';
+      const isFeatLevel = isLevelQualifiesForFeat(nextLvl, featMode);
+      const isStatLevel = (nextLvl % 4 === 0);
+
+      const queryInput = document.getElementById('lvlup-copilot-custom-query');
+      const query = customPrompt || (mode === 'custom' ? (queryInput?.value?.trim() || '') : '');
+
+      const loadingBox = document.getElementById('lvlup-copilot-loading');
+      const statusText = document.getElementById('lvlup-copilot-status-text');
+      const resultsBox = document.getElementById('lvlup-copilot-results');
+
+      if (loadingBox) loadingBox.classList.remove('hidden');
+      if (statusText) statusText.textContent = 'Karakter verileri analiz ediliyor & Rule Master taranıyor...';
+      if (resultsBox) resultsBox.classList.add('hidden');
+
+      const knownFeats = [];
+      if (Array.isArray(character.feats)) {
+        character.feats.forEach(f => knownFeats.push(typeof f === 'string' ? f : f.name));
+      }
+      prog.forEach(p => {
+        if (Array.isArray(p.feats)) {
+          p.feats.forEach(f => knownFeats.push(f));
+        }
+      });
+
+      const ctx = {
+        characterName: character.name || 'Hero',
+        race: character.race || 'Human',
+        alignment: character.alignment || 'Neutral',
+        currentLevel: prog.length,
+        targetLevel: nextLvl,
+        targetClass: targetClass,
+        classes: prog.map(p => ({ className: p.className, level: p.level })),
+        abilities: character.abilities || { str: 18, dex: 14, con: 14, int: 14, wis: 10, cha: 22 },
+        bab: parseInt(document.getElementById('lvlup-bab-input')?.value) || 4,
+        saves: {
+          fort: parseInt(document.getElementById('lvlup-fort-input')?.value) || 4,
+          ref: parseInt(document.getElementById('lvlup-ref-input')?.value) || 3,
+          will: parseInt(document.getElementById('lvlup-will-input')?.value) || 4
+        },
+        feats: knownFeats,
+        isStatLevel,
+        isFeatLevel,
+        customQuery: query,
+        onStatus: (msg) => {
+          if (statusText) statusText.textContent = msg;
+        }
+      };
+
+      try {
+        const adviceResult = (typeof RuleMaster !== 'undefined' && RuleMaster.getLevelUpAdvice)
+          ? await RuleMaster.getLevelUpAdvice(ctx)
+          : RuleMaster.evaluateHeuristicLevelUp(ctx);
+
+        lastCopilotAdviceData = adviceResult;
+
+        if (resultsBox) {
+          resultsBox.innerHTML = adviceResult.adviceHtml;
+          resultsBox.classList.remove('hidden');
+        }
+
+        if (mode === 'autofill') {
+          applyCopilotAll(adviceResult);
+        }
+      } catch (err) {
+        console.error('Level Up Copilot error:', err);
+        if (resultsBox) {
+          resultsBox.innerHTML = `
+            <div class="p-2 rounded bg-rose-950/60 border border-rose-500/50 text-rose-200 text-xs">
+              ⚠️ Copilot analizi sırasında bir hata oluştu: ${err.message}
+            </div>
+          `;
+          resultsBox.classList.remove('hidden');
+        }
+      } finally {
+        if (loadingBox) loadingBox.classList.add('hidden');
+      }
+    }
+
+    function applyCopilotFeat(featName, benefit = '', category = 'Regular Feat') {
+      if (!featName) return;
+      if (!Array.isArray(levelUpModalFeatSlots)) levelUpModalFeatSlots = [];
+
+      let targetSlot = levelUpModalFeatSlots.find(s => !s.name || !s.name.trim());
+      if (!targetSlot) {
+        if (levelUpModalFeatSlots.length === 0) {
+          levelUpModalFeatSlots.push({ title: 'Standart Feat', category, name: featName, benefit });
+        } else {
+          targetSlot = levelUpModalFeatSlots[0];
+          targetSlot.name = featName;
+          targetSlot.benefit = benefit;
+          targetSlot.category = category;
+        }
+      } else {
+        targetSlot.name = featName;
+        targetSlot.benefit = benefit;
+        targetSlot.category = category;
+      }
+
+      renderLevelUpFeatSlots();
+
+      const container = document.getElementById('lvlup-feat-slots-container');
+      if (container) {
+        container.classList.add('ring-2', 'ring-purple-400');
+        setTimeout(() => container.classList.remove('ring-2', 'ring-purple-400'), 800);
+      }
+    }
+
+    function applyCopilotStat(statKey) {
+      if (!statKey) return;
+      const sel = document.getElementById('lvlup-stat-select');
+      if (sel) {
+        sel.value = statKey.toLowerCase();
+        sel.classList.add('ring-2', 'ring-amber-400');
+        setTimeout(() => sel.classList.remove('ring-2', 'ring-amber-400'), 800);
+      }
+    }
+
+    function applyCopilotNotes(notesText) {
+      if (!notesText) return;
+      const input = document.getElementById('lvlup-notes-input');
+      if (input) {
+        const cur = input.value.trim();
+        input.value = cur ? `${cur} | ${notesText}` : notesText;
+        input.classList.add('ring-2', 'ring-sky-400');
+        setTimeout(() => input.classList.remove('ring-2', 'ring-sky-400'), 800);
+      }
+    }
+
+    function applyCopilotAll(data = null) {
+      const d = data || lastCopilotAdviceData;
+      if (!d) return;
+
+      if (d.recommendedStat) {
+        applyCopilotStat(d.recommendedStat);
+      }
+      if (d.recommendedFeat) {
+        applyCopilotFeat(d.recommendedFeat, d.featBenefit || '', d.featCategory || 'Regular Feat');
+      }
+      if (d.notes) {
+        applyCopilotNotes(d.notes);
+      }
+
+      alert('✅ GSheet Rule Master Level Up Copilot önerileri seviye atlama formuna başarıyla dolduruldu!');
+    }
+
     function openLevelUpModal() {
       const modal = document.getElementById('level-up-modal');
       if (!modal) return;
@@ -10191,6 +10469,7 @@
         renderLevelUpFeatSlots();
       }
 
+      initLevelUpCopilot();
       modal.classList.remove('hidden');
     }
 
