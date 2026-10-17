@@ -10161,7 +10161,7 @@
         eyes: { cx: 226, cy: 82, label: 'Göz / Gözlük (Eyes)' },
         shoulders: { cx: 175, cy: 145, label: 'Omuz / Pelerin (Shoulders)' },
         torso: { cx: 210, cy: 205, label: 'Göğüs / Yelek (Torso)' },
-        belt: { cx: 215, cy: 250, label: 'Kemer / Bel (Belt)' },
+        belt: { cx: 180, cy: 245, label: 'Kemer / Bel (Belt)' },
         ring1: { cx: 126, cy: 285, label: 'Sol Yüzük (Left Ring)' },
         // SAĞ (6 Yuva):
         neck: { cx: 245, cy: 115, label: 'Boyun / Kolye (Neck)' },
@@ -10177,15 +10177,32 @@
       // 6 Slots Left & 6 Slots Right - Exactly matching D&D 3.5e official Body Slots
       const LEFT_KEYS = ['head', 'eyes', 'shoulders', 'torso', 'belt', 'ring1'];
       const RIGHT_KEYS = ['neck', 'armor', 'bracers', 'gloves', 'ring2', 'boots'];
-      const CARD_Y = [40, 120, 200, 280, 360, 440];
+
+      // Calibrated spline control points guaranteeing ZERO crossing lines
+      const LEFT_CURVES = {
+        head: { p0: { x: 0, y: 40 }, p1: { x: 80, y: 40 }, p2: { x: 170, y: 48 }, p3: { x: 224, y: 48 } },
+        eyes: { p0: { x: 0, y: 120 }, p1: { x: 80, y: 120 }, p2: { x: 170, y: 82 }, p3: { x: 226, y: 82 } },
+        shoulders: { p0: { x: 0, y: 200 }, p1: { x: 70, y: 200 }, p2: { x: 130, y: 145 }, p3: { x: 175, y: 145 } },
+        torso: { p0: { x: 0, y: 280 }, p1: { x: 60, y: 260 }, p2: { x: 150, y: 205 }, p3: { x: 210, y: 205 } },
+        belt: { p0: { x: 0, y: 360 }, p1: { x: 50, y: 300 }, p2: { x: 120, y: 245 }, p3: { x: 180, y: 245 } },
+        ring1: { p0: { x: 0, y: 440 }, p1: { x: 50, y: 440 }, p2: { x: 90, y: 340 }, p3: { x: 126, y: 285 } }
+      };
+
+      const RIGHT_CURVES = {
+        neck: { p0: { x: 245, y: 115 }, p1: { x: 295, y: 115 }, p2: { x: 390, y: 40 }, p3: { x: 460, y: 40 } },
+        armor: { p0: { x: 255, y: 170 }, p1: { x: 305, y: 170 }, p2: { x: 390, y: 120 }, p3: { x: 460, y: 120 } },
+        bracers: { p0: { x: 328, y: 225 }, p1: { x: 378, y: 225 }, p2: { x: 390, y: 200 }, p3: { x: 460, y: 200 } },
+        gloves: { p0: { x: 338, y: 270 }, p1: { x: 388, y: 270 }, p2: { x: 390, y: 280 }, p3: { x: 460, y: 280 } },
+        ring2: { p0: { x: 345, y: 300 }, p1: { x: 395, y: 300 }, p2: { x: 390, y: 360 }, p3: { x: 460, y: 360 } },
+        boots: { p0: { x: 285, y: 475 }, p1: { x: 335, y: 475 }, p2: { x: 390, y: 440 }, p3: { x: 460, y: 440 } }
+      };
 
       let linesMarkup = '';
       let nodesMarkup = '';
 
-      // Left column connector lines: card border (x=0) to anatomical anchor (cx, cy)
-      LEFT_KEYS.forEach((slotKey, idx) => {
-        const yCard = CARD_Y[idx];
-        const pt = nodes[slotKey] || { cx: 210, cy: yCard };
+      // Left column connector lines: card border (x=0) to anatomical anchor
+      LEFT_KEYS.forEach(slotKey => {
+        const c = LEFT_CURVES[slotKey];
         const isOccupied = character?.bodySlots?.[slotKey]?.name && character?.bodySlots?.[slotKey]?.name !== '-';
         const isActive = character?.bodySlots?.[slotKey]?.active;
         const color = isActive ? '#38bdf8' : (isOccupied ? '#f59e0b' : '#64748b');
@@ -10194,18 +10211,17 @@
 
         linesMarkup += `
           <path id="sil-line-${slotKey}"
-                d="M 0,${yCard} C 70,${yCard} ${pt.cx - 50},${pt.cy} ${pt.cx},${pt.cy}"
+                d="M ${c.p0.x},${c.p0.y} C ${c.p1.x},${c.p1.y} ${c.p2.x},${c.p2.y} ${c.p3.x},${c.p3.y}"
                 fill="none" stroke="${color}" stroke-width="${width}" stroke-opacity="${opacity}"
                 stroke-dasharray="${isOccupied ? 'none' : '3,3'}"
                 class="transition-all duration-300"/>
-          <circle id="sil-pin-${slotKey}" cx="0" cy="${yCard}" r="3" fill="${color}" fill-opacity="${opacity}"/>
+          <circle id="sil-pin-${slotKey}" cx="${c.p0.x}" cy="${c.p0.y}" r="3" fill="${color}" fill-opacity="${opacity}"/>
         `;
       });
 
-      // Right column connector lines: anatomical anchor (cx, cy) to card border (x=460)
-      RIGHT_KEYS.forEach((slotKey, idx) => {
-        const yCard = CARD_Y[idx];
-        const pt = nodes[slotKey] || { cx: 250, cy: yCard };
+      // Right column connector lines: anatomical anchor to card border (x=460)
+      RIGHT_KEYS.forEach(slotKey => {
+        const c = RIGHT_CURVES[slotKey];
         const isOccupied = character?.bodySlots?.[slotKey]?.name && character?.bodySlots?.[slotKey]?.name !== '-';
         const isActive = character?.bodySlots?.[slotKey]?.active;
         const color = isActive ? '#38bdf8' : (isOccupied ? '#f59e0b' : '#64748b');
@@ -10214,11 +10230,11 @@
 
         linesMarkup += `
           <path id="sil-line-${slotKey}"
-                d="M ${pt.cx},${pt.cy} C ${pt.cx + 50},${pt.cy} 390,${yCard} 460,${yCard}"
+                d="M ${c.p0.x},${c.p0.y} C ${c.p1.x},${c.p1.y} ${c.p2.x},${c.p2.y} ${c.p3.x},${c.p3.y}"
                 fill="none" stroke="${color}" stroke-width="${width}" stroke-opacity="${opacity}"
                 stroke-dasharray="${isOccupied ? 'none' : '3,3'}"
                 class="transition-all duration-300"/>
-          <circle id="sil-pin-${slotKey}" cx="460" cy="${yCard}" r="3" fill="${color}" fill-opacity="${opacity}"/>
+          <circle id="sil-pin-${slotKey}" cx="${c.p3.x}" cy="${c.p3.y}" r="3" fill="${color}" fill-opacity="${opacity}"/>
         `;
       });
 
