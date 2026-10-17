@@ -10374,17 +10374,40 @@
       }
     }
 
+    let isSilhouetteTransformMode = false;
+
+    function isSilhouetteTransformActive() {
+      const panel = document.getElementById('sil-img-transform-panel');
+      if (panel) return !panel.classList.contains('hidden');
+      return isSilhouetteTransformMode;
+    }
+
+    function updateSilhouetteSvgCursor() {
+      const svgEl = document.getElementById('sil-main-svg');
+      if (!svgEl) return;
+      if (isSilhouetteTransformActive()) {
+        svgEl.classList.add('cursor-grab');
+      } else {
+        svgEl.classList.remove('cursor-grab', 'cursor-grabbing');
+      }
+    }
+
     function toggleSilhouetteTransformPanel(forceState) {
       const panel = document.getElementById('sil-img-transform-panel');
       if (!panel) return;
       const isCurrentlyHidden = panel.classList.contains('hidden');
       const targetState = (typeof forceState === 'boolean') ? forceState : isCurrentlyHidden;
+      isSilhouetteTransformMode = targetState;
       if (targetState) {
+        if (isSilhouettePointEditMode) {
+          isSilhouettePointEditMode = false;
+        }
         panel.classList.remove('hidden');
         applySilhouetteTransformDOM();
       } else {
         panel.classList.add('hidden');
       }
+      updateSilhouetteSvgCursor();
     }
 
     function adjustSilhouetteZoom(delta) {
@@ -10435,13 +10458,16 @@
     }
 
     function handleSilhouetteWheel(evt) {
-      // Zoom with mouse wheel when cursor is over the silhouette figure viewport
+      // Zoom with mouse wheel ONLY when 'Görseli Ayarla' panel is open/active!
+      if (!isSilhouetteTransformActive()) return;
       evt.preventDefault();
       const delta = evt.deltaY < 0 ? 0.05 : -0.05;
       adjustSilhouetteZoom(delta);
     }
 
     function startSilhouettePan(evt) {
+      // Pan with drag ONLY when 'Görseli Ayarla' panel is open/active!
+      if (!isSilhouetteTransformActive()) return;
       // If clicking on an anchor node handle, let node dragging handle it
       if (evt.target && evt.target.closest && evt.target.closest('.slot-anchor-node')) return;
       if (evt.button !== undefined && evt.button !== 0) return; // left click only
@@ -10493,7 +10519,11 @@
       const svgEl = document.getElementById('sil-main-svg');
       if (svgEl) {
         svgEl.classList.remove('cursor-grabbing');
-        svgEl.classList.add('cursor-grab');
+        if (isSilhouetteTransformActive()) {
+          svgEl.classList.add('cursor-grab');
+        } else {
+          svgEl.classList.remove('cursor-grab');
+        }
       }
       const transform = getSilhouetteTransform(character);
       saveSilhouetteTransform(transform, character);
@@ -10651,6 +10681,9 @@
         isSilhouettePointEditMode = forceState;
       } else {
         isSilhouettePointEditMode = !isSilhouettePointEditMode;
+      }
+      if (isSilhouettePointEditMode) {
+        toggleSilhouetteTransformPanel(false);
       }
       renderBodySlotsSilhouette();
     }
@@ -10890,7 +10923,7 @@
           <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_35%,rgba(56,189,248,0.18)_0%,rgba(245,158,11,0.06)_45%,transparent_75%)] pointer-events-none"></div>
 
           <svg id="sil-main-svg" viewBox="0 0 460 520" preserveAspectRatio="none"
-               class="w-full h-full select-none cursor-grab"
+               class="w-full h-full select-none ${isSilhouetteTransformActive() ? 'cursor-grab' : ''}"
                onwheel="handleSilhouetteWheel(event)"
                onmousedown="startSilhouettePan(event)"
                ontouchstart="startSilhouettePan(event)"
