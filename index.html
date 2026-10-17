@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="build-version" content="2026.10.17-1730">
+  <meta name="build-version" content="2026.10.17-1855">
   <title>D&D 3.5e Tactical Cockpit & Character Hub</title>
   
   <!-- Tailwind CSS CDN -->
@@ -13216,17 +13216,30 @@
         else if (/heal/i.test(name) && !/cure/i.test(name)) { isHealSpell = true; }
 
         if (isHealSpell) {
-          // D&D 3.5e Heal Spell: 110 HP or full
+          // D&D 3.5e Heal Spell: 110 HP or full + Cure diseases, blindness, sickness, fatigue
           const healTotal = 110;
           const prevHp = character.hp.current;
           character.hp.current = Math.min(character.hp.max, character.hp.current + healTotal);
+          const healCured = [];
+          if (Array.isArray(character.buffs)) {
+            character.buffs.forEach(b => {
+              if (!b.active) return;
+              const bName = (b.name || '').toLowerCase();
+              if (bName.includes('sick') || bName.includes('nauseat') || bName.includes('blind') || bName.includes('deaf') || bName.includes('disease') || bName.includes('poison') || bName.includes('fatigue')) {
+                b.active = false;
+                b.durationText = 'Tedavi Edildi (Heal)';
+                healCured.push(b.name);
+              }
+            });
+          }
           saveStateToStorage(true);
           renderAll();
+          const curedText = healCured.length > 0 ? ` • Temizlenen Durumlar: ${healCured.join(', ')}` : '';
           addDiceHistoryEntry({
             icon: '💖',
-            title: `${name} (İyileşme)`,
+            title: `${name} (İyileşme & Tedavi)`,
             formula: '110 HP',
-            breakdown: `Tam İyileşme (Heal): +${healTotal} HP • Can: ${prevHp} ➔ ${character.hp.current}/${character.hp.max} • ${remainingInfo}`,
+            breakdown: `Tam İyileşme (Heal): +${healTotal} HP • Can: ${prevHp} ➔ ${character.hp.current}/${character.hp.max}${curedText} • ${remainingInfo}`,
             total: `+${healTotal} HP`
           });
           return;
@@ -13316,8 +13329,128 @@
         return;
       }
 
-      // 3. BUFF İKSİRİ VEYA DURUM KONTROLÜ
+      // 3. D&D 3.5e RAW TEDAVİ / DEBUFF TEMİZLEME MOTORU (Restoration, Remove Curse/Disease/Blindness/Paralysis vb.)
       const cleanLower = (name || '').toLowerCase();
+      const curedDebuffs = [];
+
+      if (/restoration/i.test(cleanLower)) {
+        const isLesser = /lesser\s+restoration/i.test(cleanLower);
+        if (Array.isArray(character.buffs)) {
+          character.buffs.forEach(b => {
+            if (!b.active) return;
+            const bName = (b.name || '').toLowerCase();
+            const bNotes = (b.notes || '').toLowerCase();
+            const isDrain = bName.includes('drain') || bName.includes('negative level') || bNotes.includes('negative level') || bNotes.includes('restoration gerektirir');
+            const isFatigue = bName.includes('fatigue') || bName.includes('exhaust') || bName.includes('yorgun');
+            
+            if (isLesser) {
+              if (isFatigue) {
+                b.active = false;
+                b.durationText = 'Tedavi Edildi (Lesser Restoration)';
+                curedDebuffs.push(b.name);
+              }
+            } else {
+              // Standard or Greater Restoration
+              if (isDrain || isFatigue) {
+                b.active = false;
+                b.durationText = 'Tedavi Edildi (Restoration)';
+                curedDebuffs.push(b.name);
+              }
+            }
+          });
+        }
+      } else if (/remove\s*curse|break\s*enchantment/i.test(cleanLower)) {
+        if (Array.isArray(character.buffs)) {
+          character.buffs.forEach(b => {
+            if (!b.active) return;
+            const bName = (b.name || '').toLowerCase();
+            if (bName.includes('curse') || bName.includes('lanet')) {
+              b.active = false;
+              b.durationText = 'Tedavi Edildi (Remove Curse)';
+              curedDebuffs.push(b.name);
+            }
+          });
+        }
+      } else if (/remove\s*disease/i.test(cleanLower)) {
+        if (Array.isArray(character.buffs)) {
+          character.buffs.forEach(b => {
+            if (!b.active) return;
+            const bName = (b.name || '').toLowerCase();
+            if (bName.includes('disease') || bName.includes('hastalık') || bName.includes('sickened') || bName.includes('nauseated')) {
+              b.active = false;
+              b.durationText = 'Tedavi Edildi (Remove Disease)';
+              curedDebuffs.push(b.name);
+            }
+          });
+        }
+      } else if (/remove\s*blindness|remove\s*deafness/i.test(cleanLower)) {
+        if (Array.isArray(character.buffs)) {
+          character.buffs.forEach(b => {
+            if (!b.active) return;
+            const bName = (b.name || '').toLowerCase();
+            if (bName.includes('blind') || bName.includes('deaf') || bName.includes('kör') || bName.includes('sağır')) {
+              b.active = false;
+              b.durationText = 'Tedavi Edildi (Remove Blindness/Deafness)';
+              curedDebuffs.push(b.name);
+            }
+          });
+        }
+      } else if (/remove\s*paralysis/i.test(cleanLower)) {
+        if (Array.isArray(character.buffs)) {
+          character.buffs.forEach(b => {
+            if (!b.active) return;
+            const bName = (b.name || '').toLowerCase();
+            if (bName.includes('paraly') || bName.includes('felç') || bName.includes('slow')) {
+              b.active = false;
+              b.durationText = 'Tedavi Edildi (Remove Paralysis)';
+              curedDebuffs.push(b.name);
+            }
+          });
+        }
+      } else if (/neutralize\s*poison/i.test(cleanLower)) {
+        if (Array.isArray(character.buffs)) {
+          character.buffs.forEach(b => {
+            if (!b.active) return;
+            const bName = (b.name || '').toLowerCase();
+            if (bName.includes('poison') || bName.includes('zehir')) {
+              b.active = false;
+              b.durationText = 'Tedavi Edildi (Neutralize Poison)';
+              curedDebuffs.push(b.name);
+            }
+          });
+        }
+      }
+
+      if (curedDebuffs.length > 0) {
+        saveStateToStorage(true);
+        renderAll();
+        showDiceTopToast({
+          icon: '✨',
+          title: name,
+          breakdown: `Tedavi Edildi: "${curedDebuffs.join(', ')}" debuffı ve tüm cezaları kaldırıldı! • ${remainingInfo}`,
+          total: 'İyileşti'
+        });
+        addDiceHistoryEntry({
+          icon: '✨',
+          title: `${name} (Tedavi / Kural)`,
+          formula: 'D&D 3.5e RAW',
+          breakdown: `Kullanılan: ${name} • İyileştirilen Debuff: ${curedDebuffs.join(', ')} • ${remainingInfo}`,
+          total: 'Tedavi'
+        });
+        return;
+      } else if (/restoration/i.test(cleanLower)) {
+        saveStateToStorage(true);
+        renderAll();
+        showDiceTopToast({
+          icon: 'ℹ️',
+          title: name,
+          breakdown: `Kullanıldı ancak karakter üzerinde aktif Energy Drain veya Negatif Seviye debuffı bulunamadı. • ${remainingInfo}`,
+          total: 'Etkisiz'
+        });
+        return;
+      }
+
+      // 4. BUFF İKSİRİ VEYA DURUM KONTROLÜ
       let activatedBuff = null;
       if (Array.isArray(character.buffs)) {
         const match = character.buffs.find(b => {
