@@ -932,48 +932,77 @@
                 <span id="sil-active-count" class="text-[11px] font-semibold text-sky-300">12 Yuva</span>
               </div>
               
-              <!-- Quick Action Toolbar: Custom Image + Point Calibration Drag-Mode -->
-              <div class="flex items-center gap-1.5 flex-wrap">
+              <!-- Unified Silhouette Options Dropdown Menu -->
+              <div class="flex items-center gap-2 relative">
                 <!-- Hidden file input for custom silhouette image upload -->
                 <input type="file" id="sil-custom-file-input" accept="image/*" class="hidden" onchange="handleSilhouetteFileUpload(event)">
-                
-                <!-- Upload / Change Figure Button -->
-                <button type="button" onclick="triggerSilhouetteUpload()" title="Kendi resminizi veya özel figürünüzü yükleyin" class="px-2.5 py-1 rounded-lg bg-sky-950/80 hover:bg-sky-900 border border-sky-600/50 hover:border-sky-400 text-sky-300 hover:text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
-                  <span>🖼️</span>
-                  <span>Resim Yükle</span>
-                </button>
-                
-                <!-- URL Input Button -->
-                <button type="button" onclick="promptSilhouetteUrl()" title="İnternetten Resim Linki (URL) ile ekle" class="px-2 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-slate-500 text-slate-300 hover:text-white text-xs font-bold transition flex items-center gap-1 shadow-sm">
-                  <span>🔗</span>
-                  <span class="hidden sm:inline">URL</span>
-                </button>
-                
-                <!-- Reset Image to Default Button (Shown when custom image is active) -->
-                <button type="button" id="sil-reset-img-btn" onclick="resetSilhouetteImage()" title="Varsayılan D&D savaşçı silüetine geri dön" class="hidden px-2.5 py-1 rounded-lg bg-rose-950/70 hover:bg-rose-900 border border-rose-700/60 text-rose-300 hover:text-white text-xs font-bold transition flex items-center gap-1 shadow-sm">
-                  <span>↺</span>
-                  <span>Resmi Sıfırla</span>
+
+                <!-- Quick Done button (only visible when actively editing points) -->
+                <button type="button" id="sil-active-edit-btn" onclick="toggleSilhouettePointEditMode(false)" class="hidden px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 border border-emerald-400 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-emerald-900/40 animate-pulse">
+                  <span>💾</span>
+                  <span>Kaydet & Bitir</span>
                 </button>
 
-                <!-- Image Adjust (Zoom & Pan) Toggle Button -->
-                <button type="button" id="sil-transform-toggle-btn" onclick="toggleSilhouetteTransformPanel()" title="Görseli yakınlaştır, uzaklaştır veya kaydır" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-sky-500 text-slate-300 hover:text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
-                  <span>📐</span>
-                  <span>Görseli Ayarla</span>
-                </button>
+                <!-- Single Dropdown Menu Button & Popover -->
+                <div class="relative inline-block text-left" id="sil-menu-container">
+                  <button type="button" id="sil-menu-btn" onclick="toggleSilhouetteMenu(event)" title="Silüet, görsel yükleme, konumlandırma ve vücut noktası ayarları" class="px-3 py-1 rounded-lg bg-sky-950/80 hover:bg-sky-900 border border-sky-600/60 hover:border-sky-400 text-sky-200 hover:text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                    <span>⚙️</span>
+                    <span>Silüet Ayarları</span>
+                    <span class="text-[9px] text-sky-400 font-mono">▼</span>
+                  </button>
 
-                <div class="w-px h-4 bg-slate-800 mx-0.5"></div>
+                  <!-- Dropdown Popover -->
+                  <div id="sil-dropdown-menu" class="hidden absolute right-0 mt-2 w-72 bg-slate-900/98 backdrop-blur-md border border-sky-500/50 rounded-xl shadow-2xl z-50 p-1.5 space-y-1 divide-y divide-slate-800">
+                    <div class="space-y-0.5">
+                      <!-- 1. Resim Yükle -->
+                      <button type="button" onclick="triggerSilhouetteUpload(); closeSilhouetteMenu();" class="w-full text-left p-2 rounded-lg hover:bg-sky-950/70 hover:border-sky-600/50 border border-transparent transition flex items-center gap-2.5 text-xs text-white group">
+                        <span class="text-xl">🖼️</span>
+                        <div>
+                          <div class="font-bold text-sky-300 group-hover:text-white">Resim Yükle (Dosyadan)</div>
+                          <div class="text-[10px] text-slate-400 leading-tight">Cihazınızdan özel bir silüet veya karakter resmi seçin</div>
+                        </div>
+                      </button>
 
-                <!-- Toggle Point Calibration Drag-Mode Button -->
-                <button type="button" id="sil-edit-points-btn" onclick="toggleSilhouettePointEditMode()" title="Noktaları sürükleyerek vücut üzerindeki yerlerini ayarlayın" class="px-2.5 py-1 rounded-lg bg-amber-950/80 hover:bg-amber-900 border border-amber-600/60 hover:border-amber-400 text-amber-300 hover:text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
-                  <span id="sil-edit-points-icon">🎯</span>
-                  <span id="sil-edit-points-label">Noktaları Düzenle</span>
-                </button>
+                      <!-- 2. Resim URL Gir -->
+                      <button type="button" onclick="promptSilhouetteUrl(); closeSilhouetteMenu();" class="w-full text-left p-2 rounded-lg hover:bg-sky-950/70 hover:border-sky-600/50 border border-transparent transition flex items-center gap-2.5 text-xs text-white group">
+                        <span class="text-xl">🔗</span>
+                        <div>
+                          <div class="font-bold text-sky-300 group-hover:text-white">Resim URL Gir</div>
+                          <div class="text-[10px] text-slate-400 leading-tight">Web üzerinden görsel bağlantısı girin</div>
+                        </div>
+                      </button>
 
-                <!-- Reset Points to Default Coordinates (Shown during edit mode) -->
-                <button type="button" id="sil-reset-points-btn" onclick="resetSilhouettePoints()" title="Tüm vücut noktalarını varsayılan yerlerine sıfırla" class="hidden px-2 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-400 hover:text-white text-xs font-bold transition flex items-center gap-1 shadow-sm">
-                  <span>↺</span>
-                  <span>Noktaları Sıfırla</span>
-                </button>
+                      <!-- 3. Görseli Ayarla (Zoom & Pan Paneli) -->
+                      <button type="button" onclick="toggleSilhouetteTransformPanel(); closeSilhouetteMenu();" class="w-full text-left p-2 rounded-lg hover:bg-sky-950/70 hover:border-sky-600/50 border border-transparent transition flex items-center gap-2.5 text-xs text-white group">
+                        <span class="text-xl">📐</span>
+                        <div>
+                          <div class="font-bold text-sky-300 group-hover:text-white">Görseli Ayarla (Zoom & Kaydır)</div>
+                          <div class="text-[10px] text-slate-400 leading-tight">Ölçeklendirme, ortalama ve yön tuşları paneli</div>
+                        </div>
+                      </button>
+
+                      <!-- 4. Noktaları Düzenle -->
+                      <button type="button" onclick="toggleSilhouettePointEditMode(); closeSilhouetteMenu();" class="w-full text-left p-2 rounded-lg hover:bg-amber-950/70 hover:border-amber-500/50 border border-transparent transition flex items-center gap-2.5 text-xs text-amber-300 group">
+                        <span class="text-xl">🎯</span>
+                        <div>
+                          <div class="font-bold text-amber-300 group-hover:text-amber-200" id="sil-menu-edit-points-label">Noktaları Düzenle</div>
+                          <div class="text-[10px] text-slate-400 leading-tight">12 vücut noktasını fareyle sürükleyip eşleştirin</div>
+                        </div>
+                      </button>
+                    </div>
+
+                    <!-- 5. Reset All (Image + Points) -->
+                    <div class="pt-1">
+                      <button type="button" onclick="resetSilhouetteAll(); closeSilhouetteMenu();" class="w-full text-left p-2 rounded-lg hover:bg-rose-950/80 hover:border-rose-700/50 border border-transparent transition flex items-center gap-2.5 text-xs text-rose-300 group">
+                        <span class="text-xl">↺</span>
+                        <div>
+                          <div class="font-bold text-rose-300 group-hover:text-white">Varsayılana Sıfırla</div>
+                          <div class="text-[10px] text-rose-400/80 leading-tight">Resmi, konumu ve 12 vücut noktasını sıfırlar</div>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -10334,13 +10363,13 @@
         badge.textContent = `Zoom: %${pct} | X: ${Math.round(transform.offsetX)}, Y: ${Math.round(transform.offsetY)}`;
       }
 
-      const toggleBtn = document.getElementById('sil-transform-toggle-btn');
+      const menuBtn = document.getElementById('sil-menu-btn');
       const isCustomized = (transform.scale !== 1.0 || transform.offsetX !== 0 || transform.offsetY !== 0);
-      if (toggleBtn) {
+      if (menuBtn) {
         if (isCustomized) {
-          toggleBtn.className = "px-2.5 py-1 rounded-lg bg-sky-900/90 hover:bg-sky-800 border border-sky-400 text-sky-200 hover:text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-sky-950/40";
+          menuBtn.className = "px-3 py-1 rounded-lg bg-sky-900/90 hover:bg-sky-800 border border-sky-400 text-sky-200 hover:text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-sky-950/40";
         } else {
-          toggleBtn.className = "px-2.5 py-1 rounded-lg bg-sky-950/80 hover:bg-sky-900 border border-sky-600/60 hover:border-sky-400 text-sky-300 hover:text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm";
+          menuBtn.className = "px-3 py-1 rounded-lg bg-sky-950/80 hover:bg-sky-900 border border-sky-600/60 hover:border-sky-400 text-sky-200 hover:text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm";
         }
       }
     }
@@ -10558,14 +10587,52 @@
       alert('🖼️ Özel silüet URL görseli uygulandı!');
     }
 
-    function resetSilhouetteImage() {
+    function toggleSilhouetteMenu(evt) {
+      if (evt) {
+        evt.preventDefault();
+        evt.stopPropagation();
+      }
+      const menu = document.getElementById('sil-dropdown-menu');
+      if (!menu) return;
+      menu.classList.toggle('hidden');
+    }
+
+    function closeSilhouetteMenu() {
+      const menu = document.getElementById('sil-dropdown-menu');
+      if (menu) menu.classList.add('hidden');
+    }
+
+    document.addEventListener('click', (e) => {
+      const container = document.getElementById('sil-menu-container');
+      if (container && !container.contains(e.target)) {
+        closeSilhouetteMenu();
+      }
+    });
+
+    function resetSilhouetteImage(suppressAlert) {
       if (character && character.customSilhouetteImg) {
         delete character.customSilhouetteImg;
       }
       try { localStorage.removeItem('dnd35_silhouette_custom_img'); } catch(err){}
+
+      // Resim sıfırlanınca vücut noktaları ve konumu da sıfırlansın:
+      if (character && character.customSilhouetteCoords) {
+        delete character.customSilhouetteCoords;
+      }
+      try { localStorage.removeItem('dnd35_silhouette_custom_coords'); } catch(err){}
+      currentSilhouetteNodes = JSON.parse(JSON.stringify(DEFAULT_BODY_SLOT_NODES));
+
       resetSilhouetteTransform();
       renderBodySlotsSilhouette();
-      alert('↺ Varsayılan D&D savaşçı silüetine dönüldü.');
+      if (!suppressAlert) {
+        alert('↺ Varsayılan D&D savaşçı silüetine ve orijinal vücut noktalarına sıfırlandı.');
+      }
+    }
+
+    function resetSilhouetteAll() {
+      if (confirm('Silüet görselini, yakınlaştırma/konum ayarlarını ve tüm 12 vücut noktasını orijinal varsayılana sıfırlamak istiyor musunuz?')) {
+        resetSilhouetteImage();
+      }
     }
 
     function resetSilhouettePoints() {
@@ -10959,35 +11026,22 @@
       if (activeCountEl) activeCountEl.textContent = `${activeOccupiedCount} / 12 Aktif`;
       if (modelLabel) modelLabel.textContent = 'D&D 3.5e Magic Item Record Sheet';
 
-      // Toolbar buttons state
+      // Toolbar menu and edit mode state
       applySilhouetteTransformDOM(getSilhouetteTransform(character));
 
-      const isDefaultImg = (!character?.customSilhouetteImg && !localStorage.getItem('dnd35_silhouette_custom_img'));
-      const resetImgBtn = document.getElementById('sil-reset-img-btn');
-      if (resetImgBtn) resetImgBtn.classList.toggle('hidden', isDefaultImg);
+      const activeEditBtn = document.getElementById('sil-active-edit-btn');
+      if (activeEditBtn) {
+        activeEditBtn.classList.toggle('hidden', !isSilhouettePointEditMode);
+      }
 
-      const editBtn = document.getElementById('sil-edit-points-btn');
-      const editLabel = document.getElementById('sil-edit-points-label');
-      const editIcon = document.getElementById('sil-edit-points-icon');
-      const resetPtsBtn = document.getElementById('sil-reset-points-btn');
+      const menuEditLabel = document.getElementById('sil-menu-edit-points-label');
+      if (menuEditLabel) {
+        menuEditLabel.textContent = isSilhouettePointEditMode ? "💾 Kaydet & Bitir (Düzenleme Aktif)" : "Noktaları Düzenle";
+      }
+
       const banner = document.getElementById('sil-edit-mode-banner');
-
-      if (isSilhouettePointEditMode) {
-        if (editBtn) {
-          editBtn.className = "px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 border border-emerald-400 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-emerald-900/30 animate-pulse";
-        }
-        if (editLabel) editLabel.textContent = "Kaydet & Bitir";
-        if (editIcon) editIcon.textContent = "💾";
-        if (resetPtsBtn) resetPtsBtn.classList.remove('hidden');
-        if (banner) banner.classList.remove('hidden');
-      } else {
-        if (editBtn) {
-          editBtn.className = "px-2.5 py-1 rounded-lg bg-amber-950/80 hover:bg-amber-900 border border-amber-600/60 hover:border-amber-400 text-amber-300 hover:text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm";
-        }
-        if (editLabel) editLabel.textContent = "Noktaları Düzenle";
-        if (editIcon) editIcon.textContent = "🎯";
-        if (resetPtsBtn) resetPtsBtn.classList.add('hidden');
-        if (banner) banner.classList.add('hidden');
+      if (banner) {
+        banner.classList.toggle('hidden', !isSilhouettePointEditMode);
       }
 
       // Bottom Dock: Weapons & Carrying Capacity HUD
