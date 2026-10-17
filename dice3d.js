@@ -810,7 +810,30 @@ class Dice3DController {
     return new THREE.Quaternion().setFromRotationMatrix(mTarget);
   }
 
-  // Roll dice list with realistic 3D tumbling physics and camera alignment
+  getInitialSpawnPositions(count) {
+    if (count <= 1) return [{ x: 0, z: 0 }];
+    if (count === 2) return [{ x: -2.8, z: 0 }, { x: 2.8, z: 0 }];
+    if (count === 3) return [{ x: -3.8, z: -0.4 }, { x: 0, z: 0.5 }, { x: 3.8, z: -0.4 }];
+    if (count === 4) {
+      return [
+        { x: -2.8, z: -1.8 }, { x: 2.8, z: -1.8 },
+        { x: -2.8, z: 1.8 },  { x: 2.8, z: 1.8 }
+      ];
+    }
+    if (count === 5) {
+      return [
+        { x: -3.6, z: -1.8 }, { x: 0, z: -1.8 }, { x: 3.6, z: -1.8 },
+        { x: -2.2, z: 1.8 },  { x: 2.2, z: 1.8 }
+      ];
+    }
+    // 6 dice (2 rows of 3)
+    return [
+      { x: -3.8, z: -1.8 }, { x: 0, z: -1.8 }, { x: 3.8, z: -1.8 },
+      { x: -3.8, z: 1.8 },  { x: 0, z: 1.8 },  { x: 3.8, z: 1.8 }
+    ];
+  }
+
+  // Roll dice list with realistic 3D tumbling physics, inter-dice collision, and camera alignment
   roll(diceList, onComplete) {
     this.init();
     if (!this.initialized) {
@@ -835,21 +858,20 @@ class Dice3DController {
     this.activeDice.forEach(d => this.scene.remove(d.mesh));
     this.activeDice = [];
 
-    // Calculate initial spread layout
+    // Calculate well-separated initial spread layout
     const count = diceList.length;
-    const spacing = Math.min(3.6, 14 / Math.max(1, count));
-    const totalW = (count - 1) * spacing;
-    const startX = -totalW / 2;
+    const spawnPositions = this.getInitialSpawnPositions(count);
 
     diceList.forEach((d, idx) => {
       const dieData = this.createDieMesh(d.type, d.value);
       const mesh = dieData.mesh;
+      const sp = spawnPositions[idx] || { x: (idx - (count - 1) / 2) * 3.2, z: 0 };
 
-      // Spawn height with random stagger
+      // Spawn height with random stagger and distinct horizontal offset
       mesh.position.set(
-        startX + idx * spacing + (Math.random() - 0.5) * 1.2,
-        9.5 + Math.random() * 3.5,
-        (Math.random() - 0.5) * 2.5
+        sp.x + (Math.random() - 0.5) * 0.4,
+        9.5 + Math.random() * 3.0,
+        sp.z + (Math.random() - 0.5) * 0.4
       );
 
       // Fast initial random tumble rotation
@@ -865,9 +887,9 @@ class Dice3DController {
 
       this.activeDice.push({
         ...dieData,
-        vx: (Math.random() - 0.5) * 0.12,
+        vx: (Math.random() - 0.5) * 0.08,
         vy: -0.32 - Math.random() * 0.12,
-        vz: (Math.random() - 0.5) * 0.12,
+        vz: (Math.random() - 0.5) * 0.08,
         rx: (Math.random() > 0.5 ? 1 : -1) * (0.28 + Math.random() * 0.22),
         ry: (Math.random() > 0.5 ? 1 : -1) * (0.28 + Math.random() * 0.22),
         rz: (Math.random() > 0.5 ? 1 : -1) * (0.28 + Math.random() * 0.22),
@@ -886,19 +908,17 @@ class Dice3DController {
       const elapsed = now - startTime;
       let allSettled = true;
 
+      // 1. Position & gravity update for unsettled dice
       this.activeDice.forEach(die => {
         if (!die.settled) {
-          // Physics step
           die.mesh.position.x += die.vx;
           die.mesh.position.y += die.vy;
           die.mesh.position.z += die.vz;
 
-          // Free tumbling rotation
           die.mesh.rotation.x += die.rx;
           die.mesh.rotation.y += die.ry;
           die.mesh.rotation.z += die.rz;
 
-          // Gravity
           die.vy -= 0.016;
 
           // Floor collision bounce
@@ -921,8 +941,98 @@ class Dice3DController {
             }
           }
           allSettled = false;
-        } else {
-          // Smooth Slerp alignment so the target value faces player perfectly
+        }
+      });
+
+      // 2. Inter-Dice Elastic Collision & Mutual Repulsion (Prevents clipping/overlapping)
+      const numDice = this.activeDice.length;
+      for (let i = 0; i < numDice; i++) {
+        for (let j = i + 1; j < numDice; j++) {
+          const dieA = this.activeDice[i];
+          const dieB = this.activeDice[j];
+          const posA = dieA.mesh.position;
+          const posB = dieB.mesh.position;
+
+          const dx = posB.x - posA.x;
+          const dy = posB.y - posA.y;
+          const dz = posB.z - posA.z;
+          const distSq = dx * dx + dy * dy + dz * dz;
+          const minDist = (dieA.radius + dieB.radius) * 1.15;
+
+          if (distSq < minDist * minDist && distSq > 0.0001) {
+            const dist = Math.sqrt(distSq);
+            const overlap = minDist - dist;
+            const nx = dx / dist;
+            const ny = dy / dist;
+            const nz = dz / dist;
+
+            // Push apart along collision normal
+            const push = overlap * 0.5;
+            posA.x -= nx * push;
+            posA.y -= ny * push;
+            posA.z -= nz * push;
+            posB.x += nx * push;
+            posB.y += ny * push;
+            posB.z += nz * push;
+
+            if (posA.y < dieA.floorY) posA.y = dieA.floorY;
+            if (posB.y < dieB.floorY) posB.y = dieB.floorY;
+
+            // Velocity impulse exchange (elastic collision)
+            const rvx = dieB.vx - dieA.vx;
+            const rvy = dieB.vy - dieA.vy;
+            const rvz = dieB.vz - dieA.vz;
+            const velAlongNormal = rvx * nx + rvy * ny + rvz * nz;
+
+            if (velAlongNormal < 0) {
+              const restitution = 0.55;
+              const impulse = -(1 + restitution) * velAlongNormal * 0.5;
+              dieA.vx -= impulse * nx;
+              dieA.vy -= impulse * ny;
+              dieA.vz -= impulse * nz;
+              dieB.vx += impulse * nx;
+              dieB.vy += impulse * ny;
+              dieB.vz += impulse * nz;
+
+              dieA.rx += (Math.random() - 0.5) * 0.12;
+              dieA.rz += (Math.random() - 0.5) * 0.12;
+              dieB.rx += (Math.random() - 0.5) * 0.12;
+              dieB.rz += (Math.random() - 0.5) * 0.12;
+
+              this.playDiceSound(0.35);
+            }
+          }
+        }
+      }
+
+      // 3. Ground Plane Separation & Upright Alignment for Settled Dice
+      for (let i = 0; i < numDice; i++) {
+        for (let j = i + 1; j < numDice; j++) {
+          const a = this.activeDice[i];
+          const b = this.activeDice[j];
+          const dx = b.mesh.position.x - a.mesh.position.x;
+          const dz = b.mesh.position.z - a.mesh.position.z;
+          const dSq = dx * dx + dz * dz;
+          const minDist = (a.radius + b.radius) * 1.18;
+          if (dSq < minDist * minDist && dSq > 0.0001) {
+            const dist = Math.sqrt(dSq);
+            const overlap = minDist - dist;
+            const pushX = (dx / dist) * overlap * 0.5;
+            const pushZ = (dz / dist) * overlap * 0.5;
+            a.mesh.position.x -= pushX;
+            a.mesh.position.z -= pushZ;
+            b.mesh.position.x += pushX;
+            b.mesh.position.z += pushZ;
+
+            if (a.settled) a.targetQuat = this.computeTargetQuat(a, a.mesh.position);
+            if (b.settled) b.targetQuat = this.computeTargetQuat(b, b.mesh.position);
+          }
+        }
+      }
+
+      // 4. Smooth Slerp alignment for settled dice
+      this.activeDice.forEach(die => {
+        if (die.settled) {
           if (die.settleProgress < 1.0) {
             die.settleProgress += 0.08;
             die.mesh.quaternion.slerp(die.targetQuat, 0.18);
@@ -938,7 +1048,30 @@ class Dice3DController {
       if (elapsed < maxDuration || (!allSettled && elapsed < 2000)) {
         this.animationFrameId = requestAnimationFrame(animate);
       } else {
-        // Ensure final alignment
+        // Ensure final separation & exact camera alignment
+        for (let pass = 0; pass < 6; pass++) {
+          for (let i = 0; i < numDice; i++) {
+            for (let j = i + 1; j < numDice; j++) {
+              const a = this.activeDice[i];
+              const b = this.activeDice[j];
+              const dx = b.mesh.position.x - a.mesh.position.x;
+              const dz = b.mesh.position.z - a.mesh.position.z;
+              const dSq = dx * dx + dz * dz;
+              const minDist = (a.radius + b.radius) * 1.20;
+              if (dSq < minDist * minDist && dSq > 0.0001) {
+                const dist = Math.sqrt(dSq);
+                const overlap = minDist - dist;
+                const pushX = (dx / dist) * overlap * 0.5;
+                const pushZ = (dz / dist) * overlap * 0.5;
+                a.mesh.position.x -= pushX;
+                a.mesh.position.z -= pushZ;
+                b.mesh.position.x += pushX;
+                b.mesh.position.z += pushZ;
+              }
+            }
+          }
+        }
+
         this.activeDice.forEach(die => {
           die.mesh.position.y = die.floorY;
           die.targetQuat = this.computeTargetQuat(die, die.mesh.position);
