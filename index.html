@@ -5803,6 +5803,60 @@
       }
     }
 
+    // Zar Rengine Göre Toast Renk Paleti Üretici
+    function getDiceColorPalette() {
+      let diceColor = '#851316';
+      try {
+        if (typeof localStorage !== 'undefined') {
+          diceColor = localStorage.getItem('dnd_dice_color') || '#851316';
+        }
+      } catch (e) {}
+
+      let r = 133, g = 19, b = 22; // default Yakut Kırmızısı
+      if (diceColor.startsWith('#') && diceColor.length >= 7) {
+        r = parseInt(diceColor.slice(1, 3), 16) || 0;
+        g = parseInt(diceColor.slice(3, 5), 16) || 0;
+        b = parseInt(diceColor.slice(5, 7), 16) || 0;
+      }
+
+      const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+      let textR, textG, textB;
+      if (r < 40 && g < 40 && b < 40) {
+        // Obsidyen Siyahı / Çok koyu: gümüşi açık gri metin
+        textR = 226; textG = 232; textB = 240;
+      } else if (lum > 0.65) {
+        // Açık renk (fildişi beyazı, kehribar sarısı vb.): parlak tut
+        textR = Math.max(220, r);
+        textG = Math.max(220, g);
+        textB = Math.max(220, b);
+      } else {
+        // Koyu / orta tonlar: koyu arka planda canlı ve net okunması için %60 aç
+        textR = Math.min(255, Math.round(r + (255 - r) * 0.60));
+        textG = Math.min(255, Math.round(g + (255 - g) * 0.60));
+        textB = Math.min(255, Math.round(b + (255 - b) * 0.60));
+      }
+
+      const accent = `rgb(${textR}, ${textG}, ${textB})`;
+      const border = `rgba(${Math.max(50, r)}, ${Math.max(50, g)}, ${Math.max(50, b)}, 0.85)`;
+      const glow = `0 10px 28px -5px rgba(0, 0, 0, 0.85), 0 0 24px rgba(${r}, ${g}, ${b}, 0.5)`;
+      const iconBg = `linear-gradient(135deg, rgba(${r}, ${g}, ${b}, 0.35), rgba(${r}, ${g}, ${b}, 0.12))`;
+      const iconBorder = `rgba(${Math.max(80, r)}, ${Math.max(80, g)}, ${Math.max(80, b)}, 0.65)`;
+      const textShadow = `0 0 10px rgba(${r}, ${g}, ${b}, 0.65)`;
+
+      return {
+        hex: diceColor,
+        r, g, b,
+        lum,
+        accent,
+        border,
+        glow,
+        iconBg,
+        iconBorder,
+        textShadow
+      };
+    }
+
     let _diceToastTimer = null;
     function showDiceTopToast(entry) {
       if (!entry) return;
@@ -5826,9 +5880,13 @@
       const existing = document.getElementById('dice-top-toast');
       if (existing) existing.remove();
 
+      const palette = getDiceColorPalette();
+
       const toast = document.createElement('div');
       toast.id = 'dice-top-toast';
-      toast.className = 'pointer-events-auto transform -translate-y-12 opacity-0 transition-all duration-300 ease-out bg-slate-900/95 border-2 border-amber-500/80 rounded-2xl shadow-2xl shadow-black/90 px-4 py-3 sm:px-5 sm:py-3.5 backdrop-blur-md flex items-center gap-3 sm:gap-4 text-white max-w-[94vw] sm:max-w-md w-full select-none cursor-pointer';
+      toast.className = 'pointer-events-auto transform -translate-y-12 opacity-0 transition-all duration-300 ease-out bg-slate-900/95 rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 backdrop-blur-md flex items-center gap-3 sm:gap-4 text-white max-w-[94vw] sm:max-w-md w-full select-none cursor-pointer';
+      toast.style.border = `2px solid ${palette.border}`;
+      toast.style.boxShadow = palette.glow;
       toast.title = 'Kapatmak için tıklayın';
 
       const isCrit = !!entry.isCrit;
@@ -5847,11 +5905,11 @@
       }
 
       toast.innerHTML = `
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/30 to-amber-600/10 border border-amber-500/50 flex items-center justify-center text-xl shrink-0 shadow-inner">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 shadow-inner" style="background: ${palette.iconBg}; border: 1px solid ${palette.iconBorder};">
           ${icon}
         </div>
         <div class="flex flex-col min-w-0 flex-1 pr-1">
-          <div class="text-sm font-black text-amber-400 truncate flex items-center gap-1.5">
+          <div class="text-sm font-black truncate flex items-center gap-1.5" style="color: ${palette.accent};">
             <span class="truncate">${title}</span>
             ${isCrit ? '<span class="text-[10px] bg-red-600 text-white px-1.5 py-0.5 rounded font-black shrink-0 animate-pulse">KRİTİK!</span>' : ''}
           </div>
@@ -5861,7 +5919,7 @@
         </div>
         ${formattedTotal ? `
         <div class="shrink-0 flex items-center pl-3 border-l border-slate-700/80">
-          <div class="text-xl sm:text-2xl font-extrabold font-mono text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]">
+          <div class="text-xl sm:text-2xl font-extrabold font-mono" style="color: ${palette.accent}; text-shadow: ${palette.textShadow};">
             ${formattedTotal}
           </div>
         </div>
@@ -6107,6 +6165,13 @@
       if (popover) {
         popover.classList.add('hidden');
       }
+
+      showDiceTopToast({
+        icon: '🎨',
+        title: 'Zar Rengi Değiştirildi',
+        breakdown: colorName ? `${colorName} (${color})` : `Seçilen Renk: ${color}`,
+        total: 'Uyumlu'
+      });
     }
 
     function updateDiceColorUI(hexColor) {
