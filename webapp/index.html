@@ -8885,9 +8885,29 @@
       DND35_DM_BOONS_CATALOG.forEach(b => map.set(b.name.toLowerCase(), { ...b }));
       DND35_FLAWS_CATALOG.forEach(fl => map.set(fl.name.toLowerCase(), { ...fl }));
       (masterDb || []).forEach(m => {
+        if (!m || !m.name) return;
+        const nameStr = String(m.name).trim();
+
+        // STRICT FILTER: Exclude equipment child items, attachments, gems, socketed enhancements, and secondary powers
+        const isChildItem = m.isChild === true 
+          || (m.parent && m.parent !== '-' && m.parent !== '')
+          || nameStr.startsWith('↳') 
+          || nameStr.includes('↳')
+          || (m.role && m.role.toLowerCase().includes('secondary power'));
+        if (isChildItem) return;
+
+        // Exclude parent equipment items (items that go into body slots or physical gear)
+        const isEquipSlot = m.slot && m.slot !== 'None' && m.slot !== '-' && m.slot !== '';
+        if (isEquipSlot) return;
+
         const t = (m.type || '').toLowerCase();
+        // Exclude physical equipment types and item-only active powers
+        if (['weapon', 'armor', 'shield', 'ring', 'wondrous item', 'potion', 'scroll', 'wand', 'staff', 'active power'].includes(t)) {
+          return;
+        }
+
         if (t === 'feat' || t === 'special ability' || t === 'dm grant' || t === 'flaw' || t === 'racial trait') {
-          const key = (m.name || '').toLowerCase();
+          const key = nameStr.toLowerCase();
           if (key) {
             map.set(key, {
               name: m.name,
@@ -9220,19 +9240,19 @@
       const catVal = document.getElementById('quick-feat-category')?.value || 'Regular Feat';
       const catalog = getCombinedFeatCatalog();
 
-      let filtered = catalog;
+      let filtered = catalog.filter(f => !f.name.includes('↳'));
       if (catVal === 'Class Bonus Feat') {
-        filtered = catalog.filter(f => f.category === 'Fighter' || f.category === 'Martial' || (f.category || '').toLowerCase().includes('bonus'));
-        if (filtered.length === 0) filtered = catalog;
+        filtered = filtered.filter(f => f.category === 'Fighter' || f.category === 'Martial' || (f.category || '').toLowerCase().includes('bonus'));
+        if (filtered.length === 0) filtered = catalog.filter(f => !f.name.includes('↳'));
       } else if (catVal === 'DM Boon') {
-        filtered = catalog.filter(f => f.category === 'DM Boon' || f.category === 'DM Grant');
+        filtered = filtered.filter(f => f.category === 'DM Boon' || f.category === 'DM Grant');
       } else if (catVal === 'Flaw') {
-        filtered = catalog.filter(f => f.category === 'Flaw' || f.name.toLowerCase().startsWith('flaw:'));
+        filtered = filtered.filter(f => f.category === 'Flaw' || f.name.toLowerCase().startsWith('flaw:'));
       } else if (catVal === 'Racial Trait') {
-        filtered = catalog.filter(f => f.category === 'Racial Trait');
+        filtered = filtered.filter(f => f.category === 'Racial Trait');
       } else if (catVal === 'Special Ability') {
-        filtered = catalog.filter(f => f.category === 'Special Ability');
-        if (filtered.length === 0) filtered = catalog;
+        filtered = filtered.filter(f => f.category === 'Special Ability');
+        if (filtered.length === 0) filtered = catalog.filter(f => !f.name.includes('↳'));
       }
 
       filtered.forEach(f => {

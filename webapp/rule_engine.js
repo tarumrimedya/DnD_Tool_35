@@ -669,6 +669,45 @@ const RuleEngine = {
     ];
   },
 
+  // Evaluate dynamic scaling bonuses based on character level (e.g. "2+1/4lvl", "+1 per 3 levels", "lvl*2")
+  evaluateScalingBonus(formulaOrText, charLvl = 1) {
+    if (!formulaOrText) return 0;
+    const str = String(formulaOrText).toLowerCase().trim();
+    const lvl = Number(charLvl) || 1;
+
+    // 1. "X + 1/Ylvl" or "X + lvl/Y" or "X + 1/Y level" (e.g. "2+1/4lvl", "2 + 1/4 character level")
+    const basePlusFraction = str.match(/(\d+)\s*\+\s*(?:1\/(\d+)|(?:lvl|level)\/(\d+))\s*(?:lvl|level)?/i);
+    if (basePlusFraction) {
+      const base = parseInt(basePlusFraction[1], 10);
+      const divisor = parseInt(basePlusFraction[2] || basePlusFraction[3], 10) || 1;
+      return base + Math.floor(lvl / divisor);
+    }
+
+    // 2. "+N every/per Y levels" or "1/Ylvl" or "1/Y level" (e.g. "1 per 3 levels", "1 every 2 levels", "1/3lvl")
+    const fractionOnly = str.match(/(?:(?:\+?(\d+)\s*(?:every|her|per)\s*(\d+)\s*(?:lvl|level|seviye))|1\/(\d+)\s*(?:lvl|level)?)/i);
+    if (fractionOnly) {
+      const step = parseInt(fractionOnly[1], 10) || 1;
+      const divisor = parseInt(fractionOnly[2] || fractionOnly[3], 10) || 1;
+      return Math.floor(lvl / divisor) * step;
+    }
+
+    // 3. "lvl*X" or "X per level" (e.g. "lvl*2", "1 per level", "equal to character level")
+    const perLvl = str.match(/(?:(?:lvl|level)\s*\*\s*(\d+)|(\d+)\s*per\s*level|equal\s*to\s*(?:character\s*)?level)/i);
+    if (perLvl) {
+      if (str.includes('equal to')) return lvl;
+      const mult = parseInt(perLvl[1] || perLvl[2], 10) || 1;
+      return lvl * mult;
+    }
+
+    // 4. Direct integer "+N" or "N"
+    const directInt = str.match(/^\+?(\d+)$/);
+    if (directInt) {
+      return parseInt(directInt[1], 10);
+    }
+
+    return 0;
+  },
+
   // Central Recalculation Engine for Character State (Abilities, AC, Saves, Speed, Buffs)
   recalculateCharacter(character, masterDb = [], tacticalOptions = {}) {
     if (!character) return;
@@ -863,6 +902,94 @@ const RuleEngine = {
       });
     });
 
+    // 3.5. Evaluate Feats, Special Abilities, DM Grants & Dynamic Scaling Bonuses (e.g. "Nat AC 2+1/4lvl", "Every X levels +Y", Ability Boosts, Saves)
+    const charLvl = Number(character.level) || (Array.isArray(character.levelProgression) ? character.levelProgression.filter(l => l.active !== false).length : 1) || 1;
+    const allAbilitiesAndFeats = [
+      ...(character.feats || []),
+      ...(character.specialAbilities || [])
+    ];
+
+    let draconicToughnessHp = 0;
+
+    allAbilitiesAndFeats.forEach(featItem => {
+      if (!featItem) return;
+      const rawName = String(typeof featItem === 'string' ? featItem : (featItem.name || '')).trim();
+      // Skip equipment child items if any were saved here
+      if (rawName.startsWith('↳') || (featItem.isChild && featItem.isChild !== false)) return;
+
+      const cleanName = rawName.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').toLowerCase().trim();
+      const dbEntry = Array.isArray(masterDb) ? masterDb.find(m => (m.name || '').toLowerCase().trim() === cleanName) : null;
+      const desc = String(featItem.benefit || featItem.desc || featItem.description || (dbEntry ? (dbEntry.benefit || dbEntry.description) : '') || '').toLowerCase();
+      const combinedText = `${cleanName} ${desc}`;
+
+      // 1. Natural Armor & Dynamic Scaling Formulas (e.g. "Nat AC 2+1/4lvl", "1 per 4 levels")
+      if (combinedText.includes('nat ac') || combinedText.includes('natural armor') || combinedText.includes('doğal zırh')) {
+        let natVal = this.evaluateScalingBonus(cleanName, charLvl);
+        if (natVal === 0) {
+          natVal = this.evaluateScalingBonus(desc, charLvl);
+        }
+        if (natVal === 0 && dbEntry && (dbEntry.naturalBonus || dbEntry.acBonus)) {
+          natVal = Number(dbEntry.naturalBonus || dbEntry.acBonus) || 0;
+        }
+        if (natVal === 0) {
+          const direct = combinedText.match(/(?:nat(?:ural)?\s*(?:ac|armor)|doğal\s*zırh)\s*[:\+]?\s*(\d+)/i) || cleanName.match(/\+(\d+)\s*nat/i);
+          if (direct) natVal = parseInt(direct[1], 10);
+        }
+        if (natVal > 0) {
+          naturalBonuses.push({ val: natVal, source: featItem.name || rawName, type: 'Natural' });
+        }
+      }
+
+      // 2. Inherent / DM Boon / Feat Ability Boosts (e.g. "Ability Boost (+2 Con, +2 Cha)", "+2 Dex")
+      if (combinedText.includes('ability boost') || combinedText.includes('inherent bonus') || (featItem.category === 'DM Boon' && combinedText.includes('boost'))) {
+        const bType = featItem.bonusType || (dbEntry ? dbEntry.bonusType : null) || 'Inherent';
+        
+        if (dbEntry && (dbEntry.strBonus || dbEntry.dexBonus || dbEntry.conBonus || dbEntry.intBonus || dbEntry.wisBonus || dbEntry.chaBonus)) {
+          if (dbEntry.strBonus) abilityBuckets.str.push({ val: Number(dbEntry.strBonus), type: bType, source: featItem.name || rawName });
+          if (dbEntry.dexBonus) abilityBuckets.dex.push({ val: Number(dbEntry.dexBonus), type: bType, source: featItem.name || rawName });
+          if (dbEntry.conBonus) abilityBuckets.con.push({ val: Number(dbEntry.conBonus), type: bType, source: featItem.name || rawName });
+          if (dbEntry.intBonus) abilityBuckets.int.push({ val: Number(dbEntry.intBonus), type: bType, source: featItem.name || rawName });
+          if (dbEntry.wisBonus) abilityBuckets.wis.push({ val: Number(dbEntry.wisBonus), type: bType, source: featItem.name || rawName });
+          if (dbEntry.chaBonus) abilityBuckets.cha.push({ val: Number(dbEntry.chaBonus), type: bType, source: featItem.name || rawName });
+        } else {
+          const strMatch = combinedText.match(/\+(\d+)\s*(?:str|güç)/i);
+          const dexMatch = combinedText.match(/\+(\d+)\s*(?:dex|çeviklik)/i);
+          const conMatch = combinedText.match(/\+(\d+)\s*(?:con|dayanıklılık)/i);
+          const intMatch = combinedText.match(/\+(\d+)\s*(?:int|zeka)/i);
+          const wisMatch = combinedText.match(/\+(\d+)\s*(?:wis|akıl|irade)/i);
+          const chaMatch = combinedText.match(/\+(\d+)\s*(?:cha|karizma)/i);
+
+          if (strMatch) abilityBuckets.str.push({ val: parseInt(strMatch[1], 10), type: bType, source: featItem.name || rawName });
+          if (dexMatch) abilityBuckets.dex.push({ val: parseInt(dexMatch[1], 10), type: bType, source: featItem.name || rawName });
+          if (conMatch) abilityBuckets.con.push({ val: parseInt(conMatch[1], 10), type: bType, source: featItem.name || rawName });
+          if (intMatch) abilityBuckets.int.push({ val: parseInt(intMatch[1], 10), type: bType, source: featItem.name || rawName });
+          if (wisMatch) abilityBuckets.wis.push({ val: parseInt(wisMatch[1], 10), type: bType, source: featItem.name || rawName });
+          if (chaMatch) abilityBuckets.cha.push({ val: parseInt(chaMatch[1], 10), type: bType, source: featItem.name || rawName });
+        }
+      }
+
+      // 3. Save Bonuses (e.g. "Save Magic +4 insight", "Save Magic +1 Draconic")
+      if (cleanName.includes('save magic') || combinedText.includes('bonus on saving throws') || combinedText.includes('kurtarma zarlar')) {
+        const insMatch = combinedText.match(/\+(\d+)\s*(?:insight|draconic|luck|morale|resistance)?\s*bonus/i) || cleanName.match(/\+(\d+)/);
+        if (insMatch) {
+          const val = parseInt(insMatch[1], 10);
+          buffSaveFort += val;
+          buffSaveRef += val;
+          buffSaveWill += val;
+        } else if (dbEntry && (dbEntry.fortBonus || dbEntry.saveBonus)) {
+          const val = Number(dbEntry.fortBonus || dbEntry.saveBonus) || 0;
+          buffSaveFort += val;
+          buffSaveRef += val;
+          buffSaveWill += val;
+        }
+      }
+
+      // 4. Draconic Toughness (Gain extra maximum HP equal to character level)
+      if (cleanName.includes('draconic toughness') || combinedText.includes('extra maximum hit points equal to character level')) {
+        draconicToughnessHp = charLvl;
+      }
+    });
+
     // 4. Resolve Stacking for Abilities (RAW: Same types take Math.max, untyped/dodge stack)
     if (!character.abilities) character.abilities = {};
     character.abilitySources = abilityBuckets;
@@ -905,7 +1032,7 @@ const RuleEngine = {
         character.hp.conBonusHp = newConBonusHp;
         character.hp.debuffHpPenalty = debuffHpPenalty;
         character.hp._appliedFrail = hasFrail;
-        character.hp.max = Math.max(1, Number(character.hp.baseMax) + newConBonusHp - flawHpPenalty - debuffHpPenalty);
+        character.hp.max = Math.max(1, Number(character.hp.baseMax) + newConBonusHp + draconicToughnessHp - flawHpPenalty - debuffHpPenalty);
         character.hp.current = Math.min(character.hp.max, (Number(character.hp.current) || character.hp.max) + conHpDiff - debuffHpDiff);
         if (character.hp.current < -10) {
           character.hp.current = -10;
