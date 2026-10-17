@@ -113,6 +113,10 @@
               <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0"></span>
               <span id="sync-status-text">🟡 <span class="hidden sm:inline">Yerel </span>Kayıtlı</span>
             </div>
+            <button onclick="openHouseRulesModal()" class="px-2 sm:px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-amber-200 border border-slate-700 hover:border-amber-500/50 rounded-lg text-xs font-bold flex items-center gap-1 shadow transition cursor-pointer shrink-0" title="Masa & Kural Tercihleri (House Rules)">
+              <span>🎲</span>
+              <span class="hidden md:inline">Masa Kuralları</span>
+            </button>
             <button onclick="openSettingsModal()" class="px-2.5 sm:px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 hover:border-slate-500 rounded-lg text-xs font-bold flex items-center gap-1 sm:gap-1.5 shadow transition cursor-pointer shrink-0" title="Ayarları Aç">
               <span class="text-xs">⚙️</span>
               <span class="hidden sm:inline">Ayarlar</span>
@@ -312,7 +316,7 @@
           <div class="flex items-center gap-2">
             <span class="text-rose-500 font-extrabold text-sm md:text-base">⚔️ AKTİF SİLAH VE SALDIRI ROTASYONU</span>
           </div>
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2 flex-wrap">
             <label class="flex items-center gap-1.5 cursor-pointer bg-slate-900 border border-amber-500/40 px-2.5 py-1 rounded-lg text-xs">
               <input type="checkbox" id="house-no-crit-confirm" checked class="rounded border-slate-700 text-amber-500 focus:ring-0">
               <span class="font-bold text-amber-400">🚫 No Crit Confirm (Otomatik)</span>
@@ -321,6 +325,10 @@
               <input type="checkbox" id="house-maneuver-crit" class="rounded border-slate-700 text-indigo-500 focus:ring-0">
               <span class="font-bold text-indigo-300">⚡ Manevraları Katla</span>
             </label>
+            <button onclick="openHouseRulesModal()" class="flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-lg text-xs text-slate-300 hover:text-white transition" title="Tüm Masa & Kural Tercihlerini Aç (Beceriler, Kritikler vb.)">
+              <span>🎲</span>
+              <span class="hidden sm:inline">Masa Kuralları...</span>
+            </button>
           </div>
         </div>
 
@@ -684,15 +692,6 @@
               <span id="skills-max-rank-info" class="text-[10px] text-slate-400 font-mono">
                 Maks: Sınıf <strong class="text-amber-400">9</strong> • Dışı <strong class="text-slate-300">4.5</strong>
               </span>
-              <button 
-                type="button" 
-                id="btn-toggle-merge-skills"
-                onclick="toggleSkillConsolidation()"
-                class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition flex items-center gap-1.5 border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white"
-                title="Becerileri birleştir veya RAW 46 beceriye dön">
-                <span>🔗</span>
-                <span id="btn-toggle-merge-skills-text">Skilleri Birleştir</span>
-              </button>
             </div>
           </div>
 
@@ -4339,7 +4338,7 @@
         </div>
 
         <!-- SECTION 5: HOUSE RULES & SYSTEM PREFERENCES -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-3 shadow">
+        <div id="section-house-rules" class="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-3 shadow transition">
           <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
             <span class="w-6 h-6 flex items-center justify-center text-amber-400 shrink-0">
               <svg class="w-5 h-5 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -4359,25 +4358,82 @@
             </span>
             <div>
               <h4 class="text-xs font-bold text-white">Masa & Kural Tercihleri (House Rules)</h4>
-              <p class="text-[10px] text-slate-400">Kampanyanıza özel D&D 3.5e mekanik tercihlerini belirleyin.</p>
+              <p class="text-[10px] text-slate-400">Kampanyanıza özel D&D 3.5e mekanik tercihlerini ve beceri sistemini belirleyin.</p>
             </div>
           </div>
 
-          <div class="space-y-2 text-xs">
-            <label class="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800 cursor-pointer">
+          <div class="space-y-3 text-xs">
+            <!-- 1. SKILL CONSOLIDATION (Raw / Birleştirilmiş Skill Seçimi) -->
+            <div class="p-3 rounded-xl bg-slate-950 border border-emerald-500/40 space-y-2.5">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <div class="font-bold text-emerald-300 flex items-center gap-1.5 text-xs">
+                    <span>🔗</span>
+                    <span>Beceri Sistemi: Birleştirilmiş vs. RAW 46 Beceri</span>
+                    <span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[9px]">Masa Kuralı</span>
+                  </div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">
+                    Kampanyanızda becerilerin nasıl ele alınacağını seçin. Birleştirilmiş mod 7 akıcı grup sunar.
+                  </div>
+                </div>
+                <button 
+                  type="button" 
+                  onclick="openSkillConsolidationModal()" 
+                  class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-600/60 transition shadow-sm shrink-0">
+                  ⚙️ Kural Detayları
+                </button>
+              </div>
+
+              <!-- Selection Cards: Birleştirilmiş (Varsayılan) vs Standart RAW -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                <button 
+                  type="button" 
+                  id="hr-skill-mode-merged-btn"
+                  onclick="setHouseRuleSkillConsolidation(true)" 
+                  class="p-2.5 rounded-lg border-2 text-left transition flex items-center justify-between bg-emerald-950/70 border-emerald-500 text-emerald-300 shadow-sm cursor-pointer">
+                  <div class="flex items-center gap-2">
+                    <span class="text-base">🔗</span>
+                    <div>
+                      <div class="text-xs font-black">Skilleri Birleştir (7 Grup)</div>
+                      <div class="text-[10px] text-emerald-400/80">Athletics, Stealth, Perception vb. (Varsayılan)</div>
+                    </div>
+                  </div>
+                  <span id="hr-skill-mode-merged-check" class="text-emerald-400 font-black text-sm">✓</span>
+                </button>
+
+                <button 
+                  type="button" 
+                  id="hr-skill-mode-raw-btn"
+                  onclick="setHouseRuleSkillConsolidation(false)" 
+                  class="p-2.5 rounded-lg border-2 text-left transition flex items-center justify-between bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500 cursor-pointer">
+                  <div class="flex items-center gap-2">
+                    <span class="text-base">📂</span>
+                    <div>
+                      <div class="text-xs font-black">Standart RAW (46 Beceri)</div>
+                      <div class="text-[10px] text-slate-400">Resmi 3.5e kural kitabı becerileri</div>
+                    </div>
+                  </div>
+                  <span id="hr-skill-mode-raw-check" class="text-sky-400 font-black text-sm hidden">✓</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 2. NO CRIT CONFIRM -->
+            <label class="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
               <div>
                 <div class="font-bold text-slate-200">🚫 No Crit Confirm (Otomatik Kritik)</div>
                 <div class="text-[10px] text-slate-400">Kritik tehdit atıldığında teyit zarı atmadan doğrudan kritik hasar uygular.</div>
               </div>
-              <input type="checkbox" id="settings-no-crit-confirm" checked onchange="document.getElementById('house-no-crit-confirm').checked = this.checked" class="rounded border-slate-700 text-amber-500 focus:ring-0">
+              <input type="checkbox" id="settings-no-crit-confirm" checked onchange="document.getElementById('house-no-crit-confirm').checked = this.checked; if(character.houseRules) character.houseRules.noCritConfirm = this.checked; saveStateToStorage(false);" class="rounded border-slate-700 text-amber-500 focus:ring-0">
             </label>
 
-            <label class="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800 cursor-pointer">
+            <!-- 3. TOME OF BATTLE MANEUVER CRIT -->
+            <label class="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
               <div>
                 <div class="font-bold text-slate-200">⚡ Tome of Battle Manevralarını Katla</div>
                 <div class="text-[10px] text-slate-400">Manevra ile yapılan saldırılarda ekstra zarları kritik vuruşa dahil eder.</div>
               </div>
-              <input type="checkbox" id="settings-maneuver-crit" onchange="document.getElementById('house-maneuver-crit').checked = this.checked" class="rounded border-slate-700 text-indigo-500 focus:ring-0">
+              <input type="checkbox" id="settings-maneuver-crit" onchange="document.getElementById('house-maneuver-crit').checked = this.checked; if(character.houseRules) character.houseRules.maneuverCrit = this.checked; saveStateToStorage(false);" class="rounded border-slate-700 text-indigo-500 focus:ring-0">
             </label>
           </div>
         </div>
@@ -4733,13 +4789,14 @@
         }
       }
 
-      // Update House Rules Checkboxes
+      // Update House Rules Checkboxes & Skill Consolidation UI
       const noCrit = document.getElementById('house-no-crit-confirm');
       const manCrit = document.getElementById('house-maneuver-crit');
       const setNoCrit = document.getElementById('settings-no-crit-confirm');
       const setManCrit = document.getElementById('settings-maneuver-crit');
       if (noCrit && setNoCrit) setNoCrit.checked = noCrit.checked;
       if (manCrit && setManCrit) setManCrit.checked = manCrit.checked;
+      updateHouseRuleSkillConsolidationUI();
 
       // Populate Rule Sources and Splatbooks Catalog
       if (window.RuleMaster && typeof RuleMaster.renderSourcesCatalog === 'function') {
@@ -4750,6 +4807,59 @@
     function closeSettingsModal() {
       const modal = document.getElementById('settings-modal');
       if (modal) modal.classList.add('hidden');
+    }
+
+    // Direct shortcut to open Settings directly scrolled and highlighted to Masa & Kural Tercihleri
+    function openHouseRulesModal() {
+      openSettingsModal();
+      setTimeout(() => {
+        const el = document.getElementById('section-house-rules');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          el.classList.add('ring-2', 'ring-amber-500/80');
+          setTimeout(() => {
+            el.classList.remove('ring-2', 'ring-amber-500/80');
+          }, 2000);
+        }
+      }, 50);
+    }
+
+    function setHouseRuleSkillConsolidation(isMerged) {
+      if (!character.settings) character.settings = {};
+      character.settings.mergeSkills = !!isMerged;
+      saveStateToStorage(true);
+      updateHouseRuleSkillConsolidationUI();
+      renderSkills();
+      showDiceTopToast({
+        icon: isMerged ? '🔗' : '📂',
+        title: 'Masa Kuralı Güncellendi',
+        breakdown: isMerged 
+          ? 'Skilleri Birleştir (7 Konsolide Grup) etkinleştirildi.' 
+          : 'Standart D&D 3.5e RAW (46 Beceri) moduna geçildi.',
+        total: isMerged ? 'Konsolide' : 'RAW'
+      });
+    }
+
+    function updateHouseRuleSkillConsolidationUI() {
+      const isMerged = character?.settings?.mergeSkills !== false;
+      const btnMerged = document.getElementById('hr-skill-mode-merged-btn');
+      const btnRaw = document.getElementById('hr-skill-mode-raw-btn');
+      const checkMerged = document.getElementById('hr-skill-mode-merged-check');
+      const checkRaw = document.getElementById('hr-skill-mode-raw-check');
+
+      if (btnMerged && btnRaw) {
+        if (isMerged) {
+          btnMerged.className = 'p-2.5 rounded-lg border-2 text-left transition flex items-center justify-between bg-emerald-950/70 border-emerald-500 text-emerald-300 shadow-sm cursor-pointer';
+          btnRaw.className = 'p-2.5 rounded-lg border-2 text-left transition flex items-center justify-between bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500 cursor-pointer';
+          if (checkMerged) checkMerged.classList.remove('hidden');
+          if (checkRaw) checkRaw.classList.add('hidden');
+        } else {
+          btnMerged.className = 'p-2.5 rounded-lg border-2 text-left transition flex items-center justify-between bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500 cursor-pointer';
+          btnRaw.className = 'p-2.5 rounded-lg border-2 text-left transition flex items-center justify-between bg-sky-950/70 border-sky-500 text-sky-300 shadow-sm cursor-pointer';
+          if (checkMerged) checkMerged.classList.add('hidden');
+          if (checkRaw) checkRaw.classList.remove('hidden');
+        }
+      }
     }
 
     async function saveSettingsApiKey() {
@@ -9614,6 +9724,9 @@
 
       closeSkillConsolidationModal();
       saveStateToStorage(true);
+      if (typeof updateHouseRuleSkillConsolidationUI === 'function') {
+        updateHouseRuleSkillConsolidationUI();
+      }
       renderSkills();
       showDiceTopToast({
         icon: '🔗',
@@ -9664,13 +9777,10 @@
       if (modeBadge) {
         modeBadge.textContent = isMerged ? '🔗 Birleştirilmiş Skiller' : 'D&D 3.5e RAW (46 Beceri)';
         modeBadge.className = isMerged 
-          ? 'text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-950 text-emerald-300 border border-emerald-700' 
-          : 'text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-800 text-slate-300 border border-slate-700';
-      }
-
-      const toggleBtnText = document.getElementById('btn-toggle-merge-skills-text');
-      if (toggleBtnText) {
-        toggleBtnText.textContent = isMerged ? 'RAW Skilleri Göster (46)' : 'Skilleri Birleştir';
+          ? 'text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-950 text-emerald-300 border border-emerald-700 cursor-pointer hover:border-emerald-400 transition' 
+          : 'text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-800 text-slate-300 border border-slate-700 cursor-pointer hover:border-slate-500 transition';
+        modeBadge.title = 'Masa Kural Tercihlerinde Değiştir (Tıkla)';
+        modeBadge.onclick = () => { if (typeof openHouseRulesModal === 'function') openHouseRulesModal(); };
       }
 
       const maxRankInfo = document.getElementById('skills-max-rank-info');
