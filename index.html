@@ -929,7 +929,7 @@
                 <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
                 <span id="sil-char-tag" class="text-xs font-bold text-sky-300">Humanoid • Medium Size</span>
                 <span class="text-slate-600">•</span>
-                <span id="sil-active-count" class="text-[11px] text-slate-400">14 Yuva</span>
+                <span id="sil-active-count" class="text-[11px] text-slate-400">12 Yuva</span>
               </div>
               <div class="flex items-center gap-2">
                 <label for="silhouette-model-select" class="text-[11px] font-bold text-slate-400 flex items-center gap-1">
@@ -947,20 +947,20 @@
               </div>
             </div>
 
-            <!-- 3-Column Grid: Left Slots (7) | Silhouette Center | Right Slots (7) -->
+            <!-- 3-Column Grid: Left Slots (6) | Silhouette Center | Right Slots (6) -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-4 items-center">
-              <!-- SOL KOLON: 7 YUVA (Baş, Göz, Boyun, Omuz, Zırh, Gövde, Kemer) -->
+              <!-- SOL KOLON: 6 YUVA (Baş, Göz, Omuz, Göğüs, Kemer, Sol Yüzük) -->
               <div id="sil-left-slots" class="lg:col-span-4 space-y-2.5">
                 <!-- Injected via renderBodySlotsSilhouette() -->
               </div>
 
               <!-- ORTA KOLON: DİNAMİK SİLÜET FİGÜRÜ & ANATOMİK BAĞLANTI NOKTALARI -->
-              <div class="lg:col-span-4 flex flex-col items-center justify-center relative min-h-[480px] lg:min-h-[550px] py-2">
+              <div class="lg:col-span-4 flex flex-col items-center justify-center relative min-h-[480px] lg:min-h-[520px] py-1">
                 <!-- Ambient radial glow backdrop -->
                 <div class="absolute inset-0 bg-radial-gradient from-sky-500/10 via-amber-500/5 to-transparent rounded-2xl pointer-events-none -z-0"></div>
                 
                 <!-- Silhouette Display Container -->
-                <div id="sil-figure-container" class="relative z-10 w-full max-w-[440px] h-[550px] flex items-center justify-center transition-all duration-300">
+                <div id="sil-figure-container" class="relative z-10 w-full max-w-[420px] h-[520px] flex items-center justify-center transition-all duration-300">
                   <!-- SVG or Image will be injected here -->
                 </div>
 
@@ -973,7 +973,7 @@
                 </div>
               </div>
 
-              <!-- SAĞ KOLON: 7 YUVA (Kollar, Eller, Yüzük 1, Yüzük 2, Ayaklar, Ana El, İkinci El) -->
+              <!-- SAĞ KOLON: 6 YUVA (Boyun, Zırh, Kollar, Eller, Sağ Yüzük, Ayaklar) -->
               <div id="sil-right-slots" class="lg:col-span-4 space-y-2.5">
                 <!-- Injected via renderBodySlotsSilhouette() -->
               </div>
@@ -10195,96 +10195,87 @@
       const silDict = window.RACE_SILHOUETTES || {};
       const imgSrc = silDict[effectiveModel] || (`sil_${effectiveModel}.jpg`) || window.HERO_SILHOUETTE_DATA_URI || 'hero_silhouette.jpg';
 
-      // 14 Anatomical Hotspots mapped onto 460 x 550 coordinate canvas per race
+      // 12 Anatomical Hotspots mapped onto 460 x 520 coordinate canvas per race
+      // Strictly monotonic vertical order on each side guarantees ZERO CROSSING LINES!
       const RACE_COORDS = {
         human: {
-          head: { cx: 230, cy: 55, label: 'Baş / Miğfer (Head)' },
-          eyes: { cx: 230, cy: 75, label: 'Göz / Gözlük (Eyes)' },
-          neck: { cx: 230, cy: 120, label: 'Boyun / Kolye (Neck)' },
-          shoulders: { cx: 195, cy: 155, label: 'Omuz / Pelerin (Shoulders)' },
-          armor: { cx: 230, cy: 185, label: 'Gövde Zırhı (Armor)' },
-          torso: { cx: 230, cy: 250, label: 'Göğüs / Yelek (Torso)' },
-          belt: { cx: 230, cy: 295, label: 'Kemer (Belt)' },
-          bracers: { cx: 295, cy: 260, label: 'Kollar / Bileklik (Bracers)' },
-          gloves: { cx: 310, cy: 295, label: 'Eller / Eldiven (Gloves)' },
-          ring1: { cx: 315, cy: 325, label: 'Sol Yüzük (Ring 1)' },
-          ring2: { cx: 145, cy: 325, label: 'Sağ Yüzük (Ring 2)' },
-          boots: { cx: 265, cy: 475, label: 'Ayaklar / Çizme (Boots)' },
-          mainHand: { cx: 305, cy: 450, label: 'Ana El Silah (Main Hand)' },
-          offHand: { cx: 150, cy: 430, label: 'İkinci El / Kalkan (Off Hand)' }
+          head: { cx: 215, cy: 55, label: 'Baş / Miğfer (Head)' },
+          eyes: { cx: 218, cy: 75, label: 'Göz / Gözlük (Eyes)' },
+          shoulders: { cx: 180, cy: 155, label: 'Omuz / Pelerin (Shoulders)' },
+          torso: { cx: 212, cy: 235, label: 'Göğüs / Yelek (Torso)' },
+          belt: { cx: 214, cy: 290, label: 'Kemer / Bel (Belt)' },
+          ring1: { cx: 152, cy: 340, label: 'Sol Yüzük (Left Ring)' },
+          neck: { cx: 242, cy: 118, label: 'Boyun / Kolye (Neck)' },
+          armor: { cx: 248, cy: 185, label: 'Gövde Zırhı (Armor)' },
+          bracers: { cx: 295, cy: 255, label: 'Kollar / Bileklik (Bracers)' },
+          gloves: { cx: 308, cy: 305, label: 'Eller / Eldiven (Gloves)' },
+          ring2: { cx: 312, cy: 340, label: 'Sağ Yüzük (Right Ring)' },
+          boots: { cx: 268, cy: 475, label: 'Ayaklar / Çizme (Boots)' }
         },
         goliath: {
-          head: { cx: 230, cy: 45, label: 'Baş / Miğfer (Head)' },
-          eyes: { cx: 230, cy: 65, label: 'Göz / Gözlük (Eyes)' },
-          neck: { cx: 230, cy: 110, label: 'Boyun / Kolye (Neck)' },
-          shoulders: { cx: 180, cy: 145, label: 'Omuz / Pelerin (Shoulders)' },
-          armor: { cx: 230, cy: 175, label: 'Gövde Zırhı (Armor)' },
-          torso: { cx: 230, cy: 235, label: 'Göğüs / Yelek (Torso)' },
-          belt: { cx: 230, cy: 285, label: 'Kemer (Belt)' },
+          head: { cx: 215, cy: 45, label: 'Baş / Miğfer (Head)' },
+          eyes: { cx: 218, cy: 65, label: 'Göz / Gözlük (Eyes)' },
+          shoulders: { cx: 170, cy: 145, label: 'Omuz / Pelerin (Shoulders)' },
+          torso: { cx: 208, cy: 225, label: 'Göğüs / Yelek (Torso)' },
+          belt: { cx: 210, cy: 280, label: 'Kemer / Bel (Belt)' },
+          ring1: { cx: 140, cy: 335, label: 'Sol Yüzük (Left Ring)' },
+          neck: { cx: 242, cy: 105, label: 'Boyun / Kolye (Neck)' },
+          armor: { cx: 255, cy: 175, label: 'Gövde Zırhı (Armor)' },
           bracers: { cx: 315, cy: 250, label: 'Kollar / Bileklik (Bracers)' },
-          gloves: { cx: 330, cy: 290, label: 'Eller / Eldiven (Gloves)' },
-          ring1: { cx: 335, cy: 320, label: 'Sol Yüzük (Ring 1)' },
-          ring2: { cx: 125, cy: 320, label: 'Sağ Yüzük (Ring 2)' },
-          boots: { cx: 270, cy: 480, label: 'Ayaklar / Çizme (Boots)' },
-          mainHand: { cx: 330, cy: 450, label: 'Ana El Silah (Main Hand)' },
-          offHand: { cx: 130, cy: 440, label: 'İkinci El / Kalkan (Off Hand)' }
+          gloves: { cx: 325, cy: 298, label: 'Eller / Eldiven (Gloves)' },
+          ring2: { cx: 325, cy: 335, label: 'Sağ Yüzük (Right Ring)' },
+          boots: { cx: 275, cy: 480, label: 'Ayaklar / Çizme (Boots)' }
         },
         dwarf: {
-          head: { cx: 230, cy: 170, label: 'Baş / Miğfer (Head)' },
-          eyes: { cx: 230, cy: 195, label: 'Göz / Gözlük (Eyes)' },
-          neck: { cx: 230, cy: 235, label: 'Boyun / Kolye (Neck)' },
-          shoulders: { cx: 175, cy: 265, label: 'Omuz / Pelerin (Shoulders)' },
-          armor: { cx: 230, cy: 290, label: 'Gövde Zırhı (Armor)' },
-          torso: { cx: 230, cy: 335, label: 'Göğüs / Yelek (Torso)' },
-          belt: { cx: 230, cy: 375, label: 'Kemer (Belt)' },
+          head: { cx: 215, cy: 155, label: 'Baş / Miğfer (Head)' },
+          eyes: { cx: 218, cy: 175, label: 'Göz / Gözlük (Eyes)' },
+          shoulders: { cx: 165, cy: 245, label: 'Omuz / Pelerin (Shoulders)' },
+          torso: { cx: 208, cy: 315, label: 'Göğüs / Yelek (Torso)' },
+          belt: { cx: 210, cy: 365, label: 'Kemer / Bel (Belt)' },
+          ring1: { cx: 145, cy: 405, label: 'Sol Yüzük (Left Ring)' },
+          neck: { cx: 242, cy: 210, label: 'Boyun / Kolye (Neck)' },
+          armor: { cx: 255, cy: 275, label: 'Gövde Zırhı (Armor)' },
           bracers: { cx: 315, cy: 335, label: 'Kollar / Bileklik (Bracers)' },
-          gloves: { cx: 330, cy: 370, label: 'Eller / Eldiven (Gloves)' },
-          ring1: { cx: 335, cy: 395, label: 'Sol Yüzük (Ring 1)' },
-          ring2: { cx: 125, cy: 395, label: 'Sağ Yüzük (Ring 2)' },
-          boots: { cx: 265, cy: 475, label: 'Ayaklar / Çizme (Boots)' },
-          mainHand: { cx: 320, cy: 450, label: 'Ana El Silah (Main Hand)' },
-          offHand: { cx: 140, cy: 445, label: 'İkinci El / Kalkan (Off Hand)' }
+          gloves: { cx: 325, cy: 385, label: 'Eller / Eldiven (Gloves)' },
+          ring2: { cx: 325, cy: 405, label: 'Sağ Yüzük (Right Ring)' },
+          boots: { cx: 268, cy: 480, label: 'Ayaklar / Çizme (Boots)' }
         },
         elf: {
-          head: { cx: 230, cy: 80, label: 'Baş / Miğfer (Head)' },
-          eyes: { cx: 230, cy: 105, label: 'Göz / Gözlük (Eyes)' },
-          neck: { cx: 230, cy: 145, label: 'Boyun / Kolye (Neck)' },
-          shoulders: { cx: 200, cy: 180, label: 'Omuz / Pelerin (Shoulders)' },
-          armor: { cx: 230, cy: 215, label: 'Gövde Zırhı (Armor)' },
-          torso: { cx: 230, cy: 265, label: 'Göğüs / Yelek (Torso)' },
-          belt: { cx: 230, cy: 315, label: 'Kemer (Belt)' },
-          bracers: { cx: 285, cy: 270, label: 'Kollar / Bileklik (Bracers)' },
-          gloves: { cx: 300, cy: 310, label: 'Eller / Eldiven (Gloves)' },
-          ring1: { cx: 305, cy: 340, label: 'Sol Yüzük (Ring 1)' },
-          ring2: { cx: 155, cy: 340, label: 'Sağ Yüzük (Ring 2)' },
-          boots: { cx: 255, cy: 480, label: 'Ayaklar / Çizme (Boots)' },
-          mainHand: { cx: 295, cy: 440, label: 'Ana El Silah (Main Hand)' },
-          offHand: { cx: 165, cy: 425, label: 'İkinci El / Kalkan (Off Hand)' }
+          head: { cx: 215, cy: 65, label: 'Baş / Miğfer (Head)' },
+          eyes: { cx: 218, cy: 85, label: 'Göz / Gözlük (Eyes)' },
+          shoulders: { cx: 185, cy: 165, label: 'Omuz / Pelerin (Shoulders)' },
+          torso: { cx: 215, cy: 245, label: 'Göğüs / Yelek (Torso)' },
+          belt: { cx: 216, cy: 305, label: 'Kemer / Bel (Belt)' },
+          ring1: { cx: 160, cy: 355, label: 'Sol Yüzük (Left Ring)' },
+          neck: { cx: 242, cy: 130, label: 'Boyun / Kolye (Neck)' },
+          armor: { cx: 248, cy: 195, label: 'Gövde Zırhı (Armor)' },
+          bracers: { cx: 288, cy: 270, label: 'Kollar / Bileklik (Bracers)' },
+          gloves: { cx: 298, cy: 325, label: 'Eller / Eldiven (Gloves)' },
+          ring2: { cx: 302, cy: 355, label: 'Sağ Yüzük (Right Ring)' },
+          boots: { cx: 265, cy: 480, label: 'Ayaklar / Çizme (Boots)' }
         },
         thrikreen: {
-          head: { cx: 230, cy: 75, label: 'Baş / Miğfer (Head)' },
-          eyes: { cx: 230, cy: 100, label: 'Göz / Gözlük (Eyes)' },
-          neck: { cx: 230, cy: 140, label: 'Boyun / Kolye (Neck)' },
-          shoulders: { cx: 185, cy: 175, label: 'Omuz / Pelerin (Shoulders)' },
-          armor: { cx: 230, cy: 210, label: 'Gövde Zırhı (Armor)' },
-          torso: { cx: 230, cy: 265, label: 'Göğüs / Yelek (Torso)' },
-          belt: { cx: 230, cy: 310, label: 'Kemer (Belt)' },
-          bracers: { cx: 325, cy: 235, label: 'Kollar / Üst Kol (Bracers)' },
-          gloves: { cx: 340, cy: 280, label: 'Eller / Alt Kol (Gloves)' },
-          ring1: { cx: 335, cy: 320, label: 'Sol Yüzük (Ring 1)' },
-          ring2: { cx: 125, cy: 320, label: 'Sağ Yüzük (Ring 2)' },
-          boots: { cx: 265, cy: 475, label: 'Ayaklar / Çizme (Boots)' },
-          mainHand: { cx: 320, cy: 440, label: 'Ana El Silah (Main Hand)' },
-          offHand: { cx: 140, cy: 430, label: 'İkinci El / Kalkan (Off Hand)' }
+          head: { cx: 215, cy: 65, label: 'Baş / Miğfer (Head)' },
+          eyes: { cx: 218, cy: 85, label: 'Göz / Gözlük (Eyes)' },
+          shoulders: { cx: 180, cy: 160, label: 'Omuz / Pelerin (Shoulders)' },
+          torso: { cx: 210, cy: 240, label: 'Göğüs / Yelek (Torso)' },
+          belt: { cx: 215, cy: 295, label: 'Kemer / Bel (Belt)' },
+          ring1: { cx: 135, cy: 345, label: 'Sol Yüzük (Left Ring)' },
+          neck: { cx: 242, cy: 125, label: 'Boyun / Kolye (Neck)' },
+          armor: { cx: 248, cy: 190, label: 'Gövde Zırhı (Armor)' },
+          bracers: { cx: 325, cy: 250, label: 'Kollar / Üst Kol (Bracers)' },
+          gloves: { cx: 338, cy: 310, label: 'Eller / Alt Kol (Gloves)' },
+          ring2: { cx: 330, cy: 345, label: 'Sağ Yüzük (Right Ring)' },
+          boots: { cx: 265, cy: 475, label: 'Ayaklar / Çizme (Boots)' }
         }
       };
 
       const nodes = RACE_COORDS[effectiveModel] || RACE_COORDS['human'];
 
-      // Fixed vertical alignment for 7 cards on left & 7 cards on right
-      const LEFT_KEYS = ['head', 'eyes', 'neck', 'shoulders', 'armor', 'torso', 'belt'];
-      const RIGHT_KEYS = ['bracers', 'gloves', 'ring1', 'ring2', 'boots', 'mainHand', 'offHand'];
-      const CARD_Y = [38, 116, 194, 272, 350, 428, 506];
+      // 6 Slots Left & 6 Slots Right - Exactly matching D&D 3.5e official Body Slots
+      const LEFT_KEYS = ['head', 'eyes', 'shoulders', 'torso', 'belt', 'ring1'];
+      const RIGHT_KEYS = ['neck', 'armor', 'bracers', 'gloves', 'ring2', 'boots'];
+      const CARD_Y = [40, 120, 200, 280, 360, 440];
 
       let linesMarkup = '';
       let nodesMarkup = '';
@@ -10292,44 +10283,44 @@
       // Left column connector lines: card border (x=0) to anatomical anchor (cx, cy)
       LEFT_KEYS.forEach((slotKey, idx) => {
         const yCard = CARD_Y[idx];
-        const pt = nodes[slotKey] || { cx: 230, cy: yCard };
+        const pt = nodes[slotKey] || { cx: 210, cy: yCard };
         const isOccupied = character?.bodySlots?.[slotKey]?.name && character?.bodySlots?.[slotKey]?.name !== '-';
         const isActive = character?.bodySlots?.[slotKey]?.active;
         const color = isActive ? '#38bdf8' : (isOccupied ? '#f59e0b' : '#64748b');
-        const opacity = isActive ? '0.65' : (isOccupied ? '0.45' : '0.22');
-        const width = isActive ? '1.8' : '1.2';
+        const opacity = isActive ? '0.75' : (isOccupied ? '0.5' : '0.25');
+        const width = isActive ? '2' : '1.3';
 
         linesMarkup += `
           <path id="sil-line-${slotKey}"
-                d="M 0,${yCard} C 75,${yCard} ${pt.cx - 65},${pt.cy} ${pt.cx},${pt.cy}"
+                d="M 0,${yCard} C 70,${yCard} ${pt.cx - 50},${pt.cy} ${pt.cx},${pt.cy}"
                 fill="none" stroke="${color}" stroke-width="${width}" stroke-opacity="${opacity}"
                 stroke-dasharray="${isOccupied ? 'none' : '3,3'}"
                 class="transition-all duration-300"/>
-          <circle id="sil-pin-${slotKey}" cx="0" cy="${yCard}" r="3.5" fill="${color}" fill-opacity="${opacity}"/>
+          <circle id="sil-pin-${slotKey}" cx="0" cy="${yCard}" r="3" fill="${color}" fill-opacity="${opacity}"/>
         `;
       });
 
       // Right column connector lines: anatomical anchor (cx, cy) to card border (x=460)
       RIGHT_KEYS.forEach((slotKey, idx) => {
         const yCard = CARD_Y[idx];
-        const pt = nodes[slotKey] || { cx: 230, cy: yCard };
+        const pt = nodes[slotKey] || { cx: 250, cy: yCard };
         const isOccupied = character?.bodySlots?.[slotKey]?.name && character?.bodySlots?.[slotKey]?.name !== '-';
         const isActive = character?.bodySlots?.[slotKey]?.active;
         const color = isActive ? '#38bdf8' : (isOccupied ? '#f59e0b' : '#64748b');
-        const opacity = isActive ? '0.65' : (isOccupied ? '0.45' : '0.22');
-        const width = isActive ? '1.8' : '1.2';
+        const opacity = isActive ? '0.75' : (isOccupied ? '0.5' : '0.25');
+        const width = isActive ? '2' : '1.3';
 
         linesMarkup += `
           <path id="sil-line-${slotKey}"
-                d="M ${pt.cx},${pt.cy} C ${pt.cx + 65},${pt.cy} 385,${yCard} 460,${yCard}"
+                d="M ${pt.cx},${pt.cy} C ${pt.cx + 50},${pt.cy} 390,${yCard} 460,${yCard}"
                 fill="none" stroke="${color}" stroke-width="${width}" stroke-opacity="${opacity}"
                 stroke-dasharray="${isOccupied ? 'none' : '3,3'}"
                 class="transition-all duration-300"/>
-          <circle id="sil-pin-${slotKey}" cx="460" cy="${yCard}" r="3.5" fill="${color}" fill-opacity="${opacity}"/>
+          <circle id="sil-pin-${slotKey}" cx="460" cy="${yCard}" r="3" fill="${color}" fill-opacity="${opacity}"/>
         `;
       });
 
-      // Static, clean anatomical nodes (NO animate-ping!)
+      // Static, clean anatomical nodes with white specular glint (NO animate-ping!)
       Object.keys(nodes).forEach(slotKey => {
         const pt = nodes[slotKey];
         const isOccupied = character?.bodySlots?.[slotKey]?.name && character?.bodySlots?.[slotKey]?.name !== '-';
@@ -10342,22 +10333,27 @@
             <circle id="sil-halo-${slotKey}" cx="${pt.cx}" cy="${pt.cy}" r="9" fill="${color}" fill-opacity="0.18" stroke="${color}" stroke-opacity="0.35" stroke-width="1" class="transition-all duration-300 pointer-events-none"/>
             <!-- Interactive Node Circle -->
             <circle id="sil-node-${slotKey}" cx="${pt.cx}" cy="${pt.cy}" r="5" fill="${color}" stroke="#0b1329" stroke-width="1.8" class="transition-all duration-300 group-hover:scale-125"/>
+            <!-- Crisp specular center glint -->
+            <circle cx="${pt.cx}" cy="${pt.cy}" r="1.5" fill="#ffffff" class="pointer-events-none"/>
             <title>${pt.label}: ${isOccupied ? character.bodySlots[slotKey].name : '(Boş Yuva - Kuşanmak için tıkla)'}</title>
           </g>
         `;
       });
 
       return `
-        <div class="relative w-full h-full rounded-2xl overflow-hidden flex items-center justify-center select-none bg-slate-950/80 shadow-[0_0_40px_rgba(56,189,248,0.2)] border border-sky-500/30">
-          <!-- Center Silhouette Image -->
-          <img src="${imgSrc}" onerror="if(window.HERO_SILHOUETTE_DATA_URI && this.src !== window.HERO_SILHOUETTE_DATA_URI) this.src = window.HERO_SILHOUETTE_DATA_URI;" alt="${effectiveModel} Silhouette" class="w-auto h-[94%] max-w-[250px] object-contain filter contrast-110 brightness-105 pointer-events-none drop-shadow-[0_0_25px_rgba(56,189,248,0.3)] transition-all duration-300">
-          
-          <!-- Subtle tech vignettes -->
-          <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/40 pointer-events-none"></div>
-          <div class="absolute inset-0 bg-gradient-to-r from-slate-950/50 via-transparent to-slate-950/50 pointer-events-none"></div>
+        <div class="relative w-full h-full rounded-2xl overflow-hidden flex items-center justify-center select-none bg-gradient-to-b from-[#060c1d] via-[#091124] to-[#040814] shadow-[0_0_50px_rgba(56,189,248,0.22)] border border-sky-500/40">
+          <!-- Ambient radial spotlight like in the concept taslak -->
+          <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_35%,rgba(56,189,248,0.18)_0%,rgba(245,158,11,0.06)_45%,transparent_75%)] pointer-events-none"></div>
 
-          <!-- Continuous SVG Spline Connections & Interactive Nodes (460 x 550) -->
-          <svg viewBox="0 0 460 550" preserveAspectRatio="none" class="absolute inset-0 w-full h-full pointer-events-none">
+          <!-- Center Silhouette Image -->
+          <img src="${imgSrc}" onerror="if(window.HERO_SILHOUETTE_DATA_URI && this.src !== window.HERO_SILHOUETTE_DATA_URI) this.src = window.HERO_SILHOUETTE_DATA_URI;" alt="${effectiveModel} Silhouette" class="w-auto h-[92%] max-w-[240px] object-contain filter contrast-125 brightness-110 pointer-events-none drop-shadow-[0_0_30px_rgba(56,189,248,0.35)] transition-all duration-300">
+          
+          <!-- Subtle tech horizontal scan vignette -->
+          <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/40 pointer-events-none"></div>
+          <div class="absolute inset-0 bg-gradient-to-r from-slate-950/60 via-transparent to-slate-950/60 pointer-events-none"></div>
+
+          <!-- Continuous SVG Spline Connections & Interactive Nodes (460 x 520) -->
+          <svg viewBox="0 0 460 520" preserveAspectRatio="none" class="absolute inset-0 w-full h-full pointer-events-none">
             <g class="pointer-events-auto">
               ${linesMarkup}
               ${nodesMarkup}
@@ -10382,14 +10378,14 @@
 
       if (!leftContainer || !rightContainer || !figureContainer) return;
 
-      // 7 Slots Left Column
-      const LEFT_KEYS = ['head', 'eyes', 'neck', 'shoulders', 'armor', 'torso', 'belt'];
-      // 7 Slots Right Column
-      const RIGHT_KEYS = ['bracers', 'gloves', 'ring1', 'ring2', 'boots', 'mainHand', 'offHand'];
+      // 6 Slots Left Column
+      const LEFT_KEYS = ['head', 'eyes', 'shoulders', 'torso', 'belt', 'ring1'];
+      // 6 Slots Right Column
+      const RIGHT_KEYS = ['neck', 'armor', 'bracers', 'gloves', 'ring2', 'boots'];
 
       const TIER_BADGES = {
-        head: 'V', eyes: 'V', neck: 'V', shoulders: 'VI', armor: 'V', torso: 'VI', belt: 'V',
-        bracers: 'III', gloves: 'IV', ring1: 'II', ring2: 'II', boots: 'II', mainHand: 'II', offHand: 'IV'
+        head: 'V', eyes: 'V', shoulders: 'VI', torso: 'VI', belt: 'V', ring1: 'II',
+        neck: 'V', armor: 'V', bracers: 'III', gloves: 'IV', ring2: 'II', boots: 'II'
       };
 
       let activeOccupiedCount = 0;
@@ -10400,13 +10396,6 @@
         const isOccupied = slotData.name && slotData.name !== '-';
         if (isOccupied && slotData.active) activeOccupiedCount++;
         const tier = TIER_BADGES[slotKey] || 'I';
-
-        let conflictNotice = '';
-        if (slotKey === 'offHand' && character.twoHandedConflict) {
-          conflictNotice = `<div class="text-[9px] text-amber-400 font-semibold truncate flex items-center gap-1 mt-0.5" title="İki elli silah iki eli de kaplar">
-            <span>⚠️</span> <span>İki elli silah (Etkisiz)</span>
-          </div>`;
-        }
 
         const tierBadge = `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/50 shadow-sm shrink-0">${tier}</span>`;
 
@@ -10434,7 +10423,6 @@
                     <span class="font-mono text-slate-500">${slotData.weight ? slotData.weight + ' lb' : ''}</span>
                     <span class="font-mono text-amber-400/80">${slotData.cost ? slotData.cost + ' GP' : ''}</span>
                   </div>
-                  ${conflictNotice}
                 </div>
               </div>
 
@@ -10489,7 +10477,7 @@
       // Meta and controls
       if (modelSelect) modelSelect.value = selectedSilhouetteModel;
       if (charTag) charTag.textContent = `${character.race || 'Human'} • ${character.gender || 'Erkek'} • ${character.classes || 'Adventurer'}`;
-      if (activeCountEl) activeCountEl.textContent = `${activeOccupiedCount} / 14 Aktif`;
+      if (activeCountEl) activeCountEl.textContent = `${activeOccupiedCount} / 12 Aktif`;
 
       const labels = {
         'auto': 'Otomatik Dinamik Form',
