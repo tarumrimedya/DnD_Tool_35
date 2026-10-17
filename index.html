@@ -10050,7 +10050,7 @@
       if (item) {
         item.qty = Math.max(0, (Number(item.qty) || 0) + delta);
         const cleanName = (item.name || '').toLowerCase().trim();
-        if (item.category === 'Consumable' || item.isBelt) {
+        if ((item.category === 'Consumable' || item.isBelt) && !isWeaponWithoutMagicOrHealing(item)) {
           if (!Array.isArray(character.consumables)) character.consumables = [];
           const match = character.consumables.find(c => (c.name || '').toLowerCase().trim() === cleanName);
           if (match) {
@@ -11130,7 +11130,7 @@
         isEquipped: false
       });
 
-      if (category === 'Consumable' || isBelt) {
+      if ((category === 'Consumable' || isBelt) && !isWeaponWithoutMagicOrHealing({ name, category, desc })) {
         if (!character.consumables) character.consumables = [];
         const cleanName = name.toLowerCase().trim();
         const hasCons = character.consumables.some(c => (c.name || '').toLowerCase().trim() === cleanName);
@@ -11153,6 +11153,59 @@
     // 🧪 HIZLI TÜKETİM, ASALAR VE SİHİRLİ EŞYA SİSTEMİ
     // (İyileşme, Saldırı/Hasar Asaları ve Günlük Şarj Takibi)
     // ====================================================
+
+    // Kontrol: Silah mı ve büyüsel saldırı/iyileştirme özelliği yok mu?
+    function isWeaponWithoutMagicOrHealing(item) {
+      if (!item) return false;
+      const name = (item.name || '').toLowerCase().trim();
+      const desc = (item.desc || item.effect || '').toLowerCase().trim();
+      const cat = item.category || (typeof mapEntryToGearCategory === 'function' ? mapEntryToGearCategory(item) : '');
+      const combined = name + ' ' + desc;
+
+      // Asalar, iksirler, parşömenler asla silah sayılmaz
+      if (/wand|scroll|potion|asa\b|iksir|parşömen/i.test(name)) return false;
+
+      // 1. Silah kategorisi veya tanınan silah ismi kontrolü
+      const isWeaponCat = (cat === 'Weapon');
+      const isWeaponSlot = (item.slotKey === 'mainHand' || item.slotKey === 'offHand');
+      const knownWeapons = [
+        'dagger', 'rapier', 'hançer', 'longsword', 'shortsword', 'greatsword', 'scimitar',
+        'falchion', 'handaxe', 'battleaxe', 'greataxe', 'halberd', 'spear', 'longspear',
+        'mace', 'heavy mace', 'light mace', 'morningstar', 'warhammer', 'club', 'quarterstaff',
+        'flail', 'heavy flail', 'shortbow', 'longbow', 'composite shortbow', 'composite longbow',
+        'light crossbow', 'heavy crossbow', 'hand crossbow', 'sling', 'dart', 'javelin',
+        'shuriken', 'kama', 'nunchaku', 'siangham', 'sai', 'kukri', 'spiked chain', 'bastard sword',
+        'dwarven waraxe', 'gnome hooked hammer', 'orc double axe', 'dire flail', 'two-bladed sword',
+        'kılıç', 'yay', 'arbalet', 'balta', 'gürz', 'mızrak', 'sapan'
+      ];
+      const isKnownWeapon = knownWeapons.some(w => name === w || name.startsWith(w + ' ') || name.startsWith(w + '+'));
+
+      if (!isWeaponCat && !isWeaponSlot && !isKnownWeapon) {
+        return false;
+      }
+
+      // 2. Büyüsel saldırı veya iyileştirme özelliği var mı?
+      // A) Günlük şarj kontrolü (örn: 3/day, 1/gün vb.)
+      const charges = ensureItemDailyCharges(item);
+      if (charges && typeof charges.max === 'number' && charges.max > 0) {
+        return false; // Günlük büyü/özelliği var, tutulsun
+      }
+
+      // B) İyileştirme özelliği
+      const hasHealing = /cure|heal|iyileş|can iksir|healing/i.test(combined);
+
+      // C) Büyüsel saldırı veya hasar etkisi (örn: Fireball, Magic Missile, Lightning, 1d6 ateş hasarı vb.)
+      const hasSpellAttack = /(?:fireball|magic missile|lightning|scorching|cone of cold|ice storm|flame strike|vampiric touch|shocking grasp|inflict)/i.test(combined) ||
+                             /(?:büyüsel saldırı|spell attack|spell-like|sla\b|günde\s*\d+\s*(?:defa|kez|kullanım)|(?:\d+)\s*\/\s*(?:day|gün))/i.test(combined) ||
+                             /(?:hasar|damage).*(?:ateş|fire|soğuk|cold|asit|acid|elektrik|electric|force)/i.test(desc);
+
+      if (hasHealing || hasSpellAttack) {
+        return false; // Büyüsel saldırı veya iyileştirme özelliği var, tutulsun
+      }
+
+      // Normal silah (büyüsel saldırı veya iyileştirme özelliği yok) -> Hızlı Tüketimden çıkarılsın!
+      return true;
+    }
 
     // Günlük Şarj Takip Edici (Örn: Ring of Sending 3/day, 3/gün)
     function ensureItemDailyCharges(item) {
@@ -11313,11 +11366,21 @@
       if (!container) return;
       container.innerHTML = '';
 
-      // 1. Sync character.gearPool consumables with character.consumables
+      // 0. Auto-clean: Purge non-magical weapons previously synced into character.consumables
+      if (Array.isArray(character.consumables)) {
+        const prevLen = character.consumables.length;
+        character.consumables = character.consumables.filter(c => !isWeaponWithoutMagicOrHealing(c));
+        if (character.consumables.length !== prevLen && typeof saveStateToStorage === 'function') {
+          saveStateToStorage(true);
+        }
+      }
+
+      // 1. Sync character.gearPool consumables with character.consumables (excluding plain weapons)
       if (Array.isArray(character.gearPool)) {
         if (!Array.isArray(character.consumables)) character.consumables = [];
         character.gearPool.forEach(p => {
-          if (p.category === 'Consumable' || p.isBelt || p.category === 'Wand' || (p.name || '').toLowerCase().includes('wand')) {
+          if (isWeaponWithoutMagicOrHealing(p)) return;
+          if (p.category === 'Consumable' || (p.isBelt && p.category !== 'Weapon') || p.category === 'Wand' || (p.name || '').toLowerCase().includes('wand')) {
             const cleanName = (p.name || '').toLowerCase().trim();
             const existing = character.consumables.find(c => (c.name || '').toLowerCase().trim() === cleanName);
             if (existing) {
@@ -11339,11 +11402,12 @@
       // 2. Build unified list of consumables to display
       const displayMap = new Map();
 
-      // GearPool items (Consumable, isBelt, Wand, or has daily charges)
+      // GearPool items (Consumable, isBelt, Wand, or has daily charges) - excluding plain weapons
       (character.gearPool || []).forEach(p => {
+        if (isWeaponWithoutMagicOrHealing(p)) return;
         const isWand = p.category === 'Wand' || (p.name || '').toLowerCase().includes('wand');
         const hasDaily = !!ensureItemDailyCharges(p);
-        if ((p.category === 'Consumable' || p.isBelt || isWand || hasDaily) && !p.isEquipped) {
+        if ((p.category === 'Consumable' || (p.isBelt && p.category !== 'Weapon') || isWand || hasDaily) && !p.isEquipped) {
           const key = (p.name || '').toLowerCase().trim();
           if (!key) return;
           displayMap.set(key, {
@@ -11358,8 +11422,9 @@
         }
       });
 
-      // Regular consumables in character.consumables
+      // Regular consumables in character.consumables - excluding plain weapons
       (character.consumables || []).forEach((c, cIdx) => {
+        if (isWeaponWithoutMagicOrHealing(c)) return;
         const key = (c.name || '').toLowerCase().trim();
         if (!key) return;
         ensureItemDailyCharges(c);
@@ -11384,10 +11449,11 @@
         }
       });
 
-      // Equipped Body Slots items that have daily charges (e.g. Ring of Sending on finger)
+      // Equipped Body Slots items that have daily charges - excluding plain weapons
       if (character.bodySlots) {
         Object.entries(character.bodySlots).forEach(([slotKey, slotItem]) => {
           if (slotItem && slotItem.name && slotItem.name !== '-') {
+            if (isWeaponWithoutMagicOrHealing(slotItem)) return;
             const hasDaily = !!ensureItemDailyCharges(slotItem);
             const isWandOrUse = (slotItem.desc && /(?:cure|fireball|missile|\d+d\d+)/i.test(slotItem.desc)) || (slotItem.name && /wand|asa/i.test(slotItem.name));
             if (hasDaily || isWandOrUse) {
