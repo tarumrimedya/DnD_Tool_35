@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="build-version" content="2026.10.17-1712">
+  <meta name="build-version" content="2026.10.17-1718">
   <title>D&D 3.5e Tactical Cockpit & Character Hub</title>
   
   <!-- Tailwind CSS CDN -->
@@ -10118,7 +10118,8 @@
       let poolWeight = 0;
       character.gearPool.forEach(item => {
         if (!item.isEquipped) {
-          poolWeight += (Number(item.weight) || 0) * (Number(item.qty) || 1);
+          const q = (item.qty !== undefined && item.qty !== null) ? Math.max(0, Number(item.qty)) : 1;
+          poolWeight += (Number(item.weight) || 0) * q;
         }
       });
 
@@ -11508,7 +11509,7 @@
           <td class="py-2.5 px-3 text-center align-middle font-mono">
             <div class="flex items-center justify-center gap-1">
               <button onclick="adjustPoolQty(${item.id}, -1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs leading-none">-</button>
-              <span class="w-6 text-center text-white font-bold">${item.qty || 1}</span>
+              <span class="w-6 text-center ${Number(item.qty) <= 0 ? 'text-rose-400 font-bold' : 'text-white font-bold'}">${(item.qty !== undefined && item.qty !== null) ? Number(item.qty) : 1}</span>
               <button onclick="adjustPoolQty(${item.id}, 1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs leading-none">+</button>
             </div>
           </td>
@@ -12578,7 +12579,7 @@
       if (document.getElementById('api-name')) document.getElementById('api-name').value = item.name || '';
       if (document.getElementById('api-category')) document.getElementById('api-category').value = cat;
       if (document.getElementById('api-slot')) document.getElementById('api-slot').value = item.slot || cat;
-      if (document.getElementById('api-qty')) document.getElementById('api-qty').value = item.qty || 1;
+      if (document.getElementById('api-qty')) document.getElementById('api-qty').value = (item.qty !== undefined && item.qty !== null) ? item.qty : 1;
       if (document.getElementById('api-weight')) document.getElementById('api-weight').value = item.weight || 0;
       if (document.getElementById('api-cost')) document.getElementById('api-cost').value = item.cost || 0;
       if (document.getElementById('api-desc')) document.getElementById('api-desc').value = item.benefit || item.description || '';
@@ -12604,7 +12605,8 @@
       }
       const category = document.getElementById('api-category')?.value || 'Other';
       const slot = document.getElementById('api-slot')?.value || category;
-      const qty = parseInt(document.getElementById('api-qty')?.value) || 1;
+      const rawQty = document.getElementById('api-qty')?.value;
+      const qty = (rawQty !== undefined && rawQty !== '' && !isNaN(parseInt(rawQty))) ? Math.max(0, parseInt(rawQty)) : 1;
       const weight = parseFloat(document.getElementById('api-weight')?.value) || 0;
       const cost = parseFloat(document.getElementById('api-cost')?.value) || 0;
       const desc = document.getElementById('api-desc')?.value?.trim() || '';
@@ -13179,6 +13181,7 @@
 
       // Bidirectional sync between gearPool and consumables
       const cleanName = (name || '').toLowerCase().trim();
+      const targetPoolId = (sourceType === 'pool' ? idOrIdx : (item.id || item.poolId));
       if (Array.isArray(character.consumables)) {
         const cMatch = character.consumables.find(c => (c.name || '').toLowerCase().trim() === cleanName);
         if (cMatch) {
@@ -13187,7 +13190,7 @@
         }
       }
       if (Array.isArray(character.gearPool)) {
-        const pMatch = character.gearPool.find(p => (p.name || '').toLowerCase().trim() === cleanName);
+        const pMatch = character.gearPool.find(p => (targetPoolId && p.id === targetPoolId) || (p.name || '').toLowerCase().trim() === cleanName);
         if (pMatch) {
           if (!isDaily) pMatch.qty = item.qty;
           if (isDaily && item.dailyCharges) pMatch.dailyCharges = item.dailyCharges;
