@@ -2937,6 +2937,14 @@
           <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Açıklama / Notlar</label>
           <input type="text" id="buff-input-notes" placeholder="Etki açıklaması..." class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white">
         </div>
+
+        <!-- Master DB Sync Checkbox -->
+        <div class="flex items-center gap-2 pt-2 border-t border-slate-800/80">
+          <input type="checkbox" id="buff-save-to-master-db" checked class="w-4 h-4 rounded text-indigo-600 bg-slate-900 border-slate-700 focus:ring-0 cursor-pointer">
+          <label for="buff-save-to-master-db" class="text-[11px] text-indigo-300 font-semibold cursor-pointer select-none">
+            📚 Bu etkiyi kalıcı Master DB Kütüphanesine de ekle / güncelle
+          </label>
+        </div>
       </div>
 
       <div class="bg-slate-950 px-4 py-3 border-t border-slate-800 flex justify-end gap-2 shrink-0">
@@ -9227,10 +9235,66 @@
       if (!Array.isArray(character.buffs)) character.buffs = [];
       character.buffs.push(newBuff);
 
+      // Optional Master DB Synchronization (29-column schema)
+      let addedToDb = false;
+      const saveToDb = document.getElementById('buff-save-to-master-db')?.checked !== false;
+      if (saveToDb && typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        const cleanName = name.trim();
+        const existingIdx = masterDb.findIndex(m => (m.name || '').toLowerCase().trim() === cleanName.toLowerCase());
+
+        const entryData = {
+          name: cleanName,
+          type: isDebuff ? 'Debuff' : (source.toLowerCase().includes('spell') ? 'Spell' : (source.toLowerCase().includes('potion') ? 'Potion' : 'Buff')),
+          slot: 'None',
+          parent: (newBuff.children && newBuff.children.length > 0) ? 'Parent' : '-',
+          prereq: '-',
+          source: source || (isDebuff ? 'D&D 3.5e Condition' : 'D&D 3.5e Buff'),
+          benefit: notes || (isDebuff ? `${cleanName} debuff etkisi` : `${cleanName} güçlendirmesi`),
+          bonusType: bonusType || (isDebuff ? 'Penalty' : 'Enhancement'),
+          scope: isDebuff ? 'Debuff / Durum' : 'Buff / Büyü',
+          strBonus: strBonus || '',
+          dexBonus: dexBonus || '',
+          conBonus: conBonus || '',
+          intBonus: intBonus || '',
+          wisBonus: wisBonus || '',
+          chaBonus: chaBonus || '',
+          acBonus: acBonus || '',
+          attBonus: attBonus || '',
+          dmgBonus: dmgBonus || '',
+          hpBonus: (newBuff.negativeLevels ? `-${newBuff.negativeLevels * 5}` : ''),
+          fortBonus: (newBuff.negativeLevels ? `-${newBuff.negativeLevels}` : ''),
+          refBonus: (newBuff.negativeLevels ? `-${newBuff.negativeLevels}` : ''),
+          willBonus: (newBuff.negativeLevels ? `-${newBuff.negativeLevels}` : ''),
+          skillBonus: (newBuff.negativeLevels ? `-${newBuff.negativeLevels}` : ''),
+          clBonus: (newBuff.negativeLevels ? `-${newBuff.negativeLevels}` : ''),
+          speedBonus: '',
+          duration: durationText || (rounds ? `${rounds} Tur` : 'Sürekli'),
+          action: 'Standard Action',
+          role: isDebuff ? 'Condition / Debuff' : 'Buff / Utility',
+          tags: isDebuff ? ['debuff', 'condition'] : ['buff', 'temporary']
+        };
+
+        if (Array.isArray(newBuff.children) && newBuff.children.length > 0) {
+          entryData.children = JSON.parse(JSON.stringify(newBuff.children));
+        }
+
+        if (existingIdx >= 0) {
+          masterDb[existingIdx] = Object.assign({}, masterDb[existingIdx], entryData);
+        } else {
+          masterDb.push(entryData);
+        }
+        addedToDb = true;
+
+        if (window.RuleMaster && typeof RuleMaster.renderTable === 'function') {
+          RuleMaster.renderTable();
+        }
+      }
+
       closeAddBuffModal();
       saveStateToStorage(true);
       renderAll();
-      alert(`${isDebuff ? '🩸' : '✨'} "${name}" ${isDebuff ? 'debuffı' : 'buffı'} başarıyla eklendi ve etkinleştirildi!`);
+      const dbText = addedToDb ? ' ve Master DB kütüphanesine kaydedildi' : '';
+      alert(`${isDebuff ? '🩸' : '✨'} "${name}" ${isDebuff ? 'debuffı' : 'buffı'} başarıyla aktif edildi${dbText}!`);
     }
 
     // 🎒 INVENTORY, 14 BODY SLOTS & GEAR POOL (Madde 6 & 8)
