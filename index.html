@@ -69,12 +69,12 @@
       <div class="flex-1 min-w-0 space-y-2 flex flex-col justify-between">
         
         <!-- Üst Satır: Kazmil'in Çırağı Bilgi Barı, Level Up & Ayarlar / Bulut Senkron -->
-        <div class="bg-dndCard border border-dndBorder rounded-xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-2.5 shadow-lg relative z-10 backdrop-blur-md">
+        <div class="bg-dndCard border border-dndBorder rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 flex flex-wrap items-center justify-between gap-2 sm:gap-2.5 shadow-lg relative z-10 backdrop-blur-md">
           <!-- Sol: Karakter Başlığı & Stat Özetleri -->
-          <div class="flex items-center gap-2.5 min-w-0 flex-1">
+          <div class="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
             <div class="w-7 h-7 rounded-lg bg-red-600/20 border border-red-500/80 flex items-center justify-center text-sm shrink-0 shadow-inner">⚔️</div>
             <div class="min-w-0 flex-1">
-              <div class="flex items-center gap-2 flex-wrap">
+              <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                 <h1 class="text-sm md:text-base font-black text-white flex items-center gap-2 truncate">
                   <span id="char-name-display">Kazmil'in Çırağı</span>
                   <span id="core-name" class="hidden">Kazmil'in Çırağı</span>
@@ -95,18 +95,18 @@
           </div>
 
           <!-- Sağ: Level Up Butonu, Bulut Senkron & Ayarlar Butonu -->
-          <div class="flex items-center gap-2 shrink-0">
-            <button onclick="openLevelUpModal()" class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-sans font-bold text-xs shadow flex items-center gap-1.5 transition transform active:scale-95 cursor-pointer" title="Yeni seviye ekle, HP/BAB/Save ve Feat seç">
+          <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <button onclick="openLevelUpModal()" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-sans font-bold text-xs shadow flex items-center gap-1 sm:gap-1.5 transition transform active:scale-95 cursor-pointer shrink-0" title="Yeni seviye ekle, HP/BAB/Save ve Feat seç">
               <span>⬆️</span>
               <span>Level Up</span>
             </button>
-            <div id="sync-status-pill" onclick="CloudSync.connect()" title="Bulut durumunu kontrol et / eşitle" class="cursor-pointer flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-slate-800/90 text-slate-300 border border-slate-700 hover:border-slate-500 transition shadow-sm">
-              <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-              <span id="sync-status-text">🟡 Yerel Kayıtlı</span>
+            <div id="sync-status-pill" onclick="CloudSync.connect()" title="Bulut durumunu kontrol et / eşitle" class="cursor-pointer flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-medium bg-slate-800/90 text-slate-300 border border-slate-700 hover:border-slate-500 transition shadow-sm shrink-0 whitespace-nowrap">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0"></span>
+              <span id="sync-status-text">🟡 <span class="hidden sm:inline">Yerel </span>Kayıtlı</span>
             </div>
-            <button onclick="openSettingsModal()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 hover:border-slate-500 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow transition cursor-pointer" title="Ayarları Aç">
+            <button onclick="openSettingsModal()" class="px-2.5 sm:px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 hover:border-slate-500 rounded-lg text-xs font-bold flex items-center gap-1 sm:gap-1.5 shadow transition cursor-pointer shrink-0" title="Ayarları Aç">
               <span class="text-xs">⚙️</span>
-              <span>Ayarlar</span>
+              <span class="hidden sm:inline">Ayarlar</span>
             </button>
           </div>
         </div>
