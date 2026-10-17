@@ -621,7 +621,23 @@
         <!-- Skills Table with 3D Roll -->
         <div class="border border-slate-800 rounded-xl overflow-hidden">
           <div class="bg-slate-900 px-3 py-2 text-xs font-bold text-sky-400 flex justify-between items-center">
-            <span>🎯 BECERİLER (SKILLS) & 3D ZAR ATICI</span>
+            <span class="flex items-center gap-1.5">
+              <svg class="w-4 h-4 inline-block text-amber-400 shrink-0" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+                <polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
+                <line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, -apple-system, sans-serif" letter-spacing="-0.5">20</text>
+              </svg>
+              <span>BECERİLER (SKILLS) & 3D ZAR ATICI</span>
+            </span>
             <span class="text-[10px] text-slate-400">Zar atmak için satırdaki zarı tıklayın</span>
           </div>
           <div class="overflow-x-auto">
@@ -1760,7 +1776,22 @@
               </button>
               <!-- d20 -->
               <button onclick="handleDieClick(20)" title="d20 zarı ekle veya at" class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/90 hover:bg-amber-600/30 border border-amber-500/50 hover:border-amber-400 text-amber-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group ring-1 ring-amber-500/30">
-                <span class="text-xl group-hover:scale-110 transition">🎯</span>
+                <span class="w-6 h-6 flex items-center justify-center group-hover:scale-110 transition">
+                  <svg class="w-5 h-5 inline-block text-amber-300" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+                    <polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
+                    <line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    <text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, -apple-system, sans-serif" letter-spacing="-0.5">20</text>
+                  </svg>
+                </span>
                 <span class="text-xs font-black font-mono">d20</span>
                 <span id="die-count-20" class="text-[10px] font-bold text-amber-400 mt-0.5 h-3.5"></span>
               </button>
@@ -1916,7 +1947,26 @@
           </div>
 
           <div class="text-[11px] text-slate-300 bg-slate-950/70 p-2.5 rounded-lg border border-slate-800/80 space-y-1">
-            <div>🎯 <strong>Hedef:21 Bonus:4 Zar:1d6+3 19-20x2:</strong> d20 atıp 4 ekler. Toplam 21+ ise vurur; d20 19-20 gelirse teyit zarı atarak hasarı (1d6+3)x2 yapar.</div>
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="w-4 h-4 inline-flex items-center justify-center text-amber-400 shrink-0">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+                  <polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
+                  <line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, -apple-system, sans-serif" letter-spacing="-0.5">20</text>
+                </svg>
+              </span>
+              <strong>Hedef:21 Bonus:4 Zar:1d6+3 19-20x2:</strong>
+              <span>d20 atıp 4 ekler. Toplam 21+ ise vurur; d20 19-20 gelirse teyit zarı atarak hasarı (1d6+3)x2 yapar.</span>
+            </div>
             <div class="text-[10px] text-slate-400">Dilerseniz <code>8d6</code>, <code>3d6+5</code>, <code>12d46+45 18-20x2</code> gibi serbest formüller de yazabilirsiniz.</div>
           </div>
         </div>
@@ -1926,8 +1976,21 @@
       <!-- Canlı Son Zar Gösterim Kartı -->
       <div id="dice-last-result-card" class="bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-amber-500/40 rounded-xl p-4 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-3.5 min-w-0 flex-1">
-          <div id="dice-last-icon" class="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-400/60 flex items-center justify-center text-2xl shrink-0 shadow-inner text-amber-300 font-black">
-            🎯
+          <div id="dice-last-icon" class="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-400/60 flex items-center justify-center shrink-0 shadow-inner text-amber-300 font-black">
+            <svg class="w-7 h-7 inline-block text-amber-300" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+              <polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
+              <line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              <line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              <line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              <line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              <line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              <line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              <line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              <line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              <line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              <text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, -apple-system, sans-serif" letter-spacing="-0.5">20</text>
+            </svg>
           </div>
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2 flex-wrap">
@@ -2201,7 +2264,8 @@
           <div class="space-y-2">
             <div class="flex items-center justify-between">
               <span class="text-[10px] text-slate-400 font-bold uppercase flex items-center gap-1.5">
-                <span>🎯</span> <span>Mouse ile Sürükle & Odaklanacak Alanı Seç</span>
+                <svg class="w-3.5 h-3.5 inline-block text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>
+                <span>Mouse ile Sürükle & Odaklanacak Alanı Seç</span>
               </span>
               <div class="flex items-center gap-1.5">
                 <span id="portrait-pos-coords" class="px-2 py-0.5 rounded-full bg-slate-950 border border-slate-700 text-[10px] font-mono font-bold text-amber-300 shadow-sm">
@@ -5824,7 +5888,7 @@
           div.innerHTML = `
             <div class="flex justify-between items-center mb-1">
               <span class="font-bold text-white">${atk.idx}. Vuruş</span>
-              ${atk.isCrit ? '<span class="badge bg-rose-600 text-white animate-pulse">🎯 KRİTİK</span>' : (atk.d20 === 20 ? '<span class="badge bg-amber-500 text-black">NAT 20</span>' : '')}
+              ${atk.isCrit ? '<span class="badge bg-rose-600 text-white animate-pulse inline-flex items-center gap-1">' + getD20IconSvg('w-3.5 h-3.5') + '<span>KRİTİK</span></span>' : (atk.d20 === 20 ? '<span class="badge bg-amber-500 text-black">NAT 20</span>' : '')}
             </div>
             <div class="flex justify-between items-baseline font-mono border-t border-slate-800 pt-1.5 mt-1">
               <span class="text-xs text-slate-400">Atk: <strong class="text-emerald-400 text-base">${atk.totalAtk}</strong> (d20:${atk.d20})</span>
@@ -5845,7 +5909,7 @@
         icon: '⚔️',
         title: 'Tam Saldırı Sonucu',
         formula: attackPlans.map(a => `${a.idx}. Atk: ${a.totalAtk}`).join(' | '),
-        breakdown: attackPlans.map(a => `${a.idx}. Atk: ${a.totalAtk} (d20:${a.d20}${a.isCrit ? ' 🎯' : ''})`).join(' • '),
+        breakdown: attackPlans.map(a => `${a.idx}. Atk: ${a.totalAtk} (d20:${a.d20}${a.isCrit ? ' ⚡' : ''})`).join(' • '),
         total: `${grandTotalDmg} Hasar`,
         isCrit: attackPlans.some(a => a.isCrit)
       });
@@ -6076,7 +6140,8 @@
       if (totalEl) totalEl.textContent = record.total;
 
       if (iconEl) {
-        let iconSymbol = '🎯';
+        let isD20 = false;
+        let iconSymbol = '';
         const str = ((record.formula || '') + ' ' + (record.title || '') + ' ' + (record.breakdown || '')).toLowerCase();
         if (str.includes('d4')) iconSymbol = '▲';
         else if (str.includes('d6')) iconSymbol = '■';
@@ -6084,8 +6149,13 @@
         else if (str.includes('d100')) iconSymbol = '💯';
         else if (str.includes('d10')) iconSymbol = '⯁';
         else if (str.includes('d12')) iconSymbol = '⬟';
-        else if (str.includes('d20')) iconSymbol = '🎯';
-        iconEl.textContent = iconSymbol;
+        else isD20 = true;
+
+        if (isD20) {
+          iconEl.innerHTML = getD20IconSvg('w-7 h-7 text-amber-300');
+        } else {
+          iconEl.textContent = iconSymbol;
+        }
       }
 
       if (critBadge) {
@@ -6664,7 +6734,8 @@
       const onDone = () => {
         if (!isHit) {
           addDiceHistoryEntry({
-            title: `🎯 Hedefli Saldırı: Iskaladı (vs Hedef ${hedef})`,
+            icon: getD20IconSvg('w-5 h-5 text-amber-400'),
+            title: `Hedefli Saldırı: Iskaladı (vs Hedef ${hedef})`,
             formula: `d20${bonusStr} vs Hedef ${hedef} (${rawDamageStr})`,
             breakdown: `Saldırı: d20 [${d20}] ${bonusStr} = ${attackTotal} vs Hedef ${hedef} ❌ ISKALADI${isNat1 ? ' (Doğal 1!)' : ''}`,
             total: 0,
@@ -6673,7 +6744,8 @@
           });
         } else if (isHit && !isCritConfirmed) {
           addDiceHistoryEntry({
-            title: `🎯 Hedefli Saldırı: İsabet (${finalDamage} Hasar)`,
+            icon: getD20IconSvg('w-5 h-5 text-amber-400'),
+            title: `Hedefli Saldırı: İsabet (${finalDamage} Hasar)`,
             formula: `d20${bonusStr} vs Hedef ${hedef} (${rawDamageStr})`,
             breakdown: `Saldırı: d20 [${d20}] ${bonusStr} = ${attackTotal} vs Hedef ${hedef} (İsabet)${confirmDetails} • Hasar: ${baseDmgBreakdown} = ${finalDamage} Hasar`,
             total: finalDamage,
@@ -6963,7 +7035,8 @@
 
       const showResult = () => {
         addDiceHistoryEntry({
-          title: `🎯 ${skillName} Beceri Zarı`,
+          icon: getD20IconSvg('w-5 h-5 text-amber-400'),
+          title: `${skillName} Beceri Zarı`,
           formula: `1d20 ${totalMod >= 0 ? '+' : '-'}${Math.abs(totalMod)}`,
           breakdown: `1d20 [${d20}] ${totalMod >= 0 ? '+' : '-'} ${Math.abs(totalMod)}`,
           total: total,
