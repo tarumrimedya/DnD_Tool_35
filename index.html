@@ -716,12 +716,12 @@
                   <th class="py-2 px-2 text-center w-12" title="Sınıf Becerisi mi? (Class Skill)">Sınıf</th>
                   <th class="py-2 px-3">Beceri Adı</th>
                   <th class="py-2 px-2 text-center">Stat</th>
+                  <th class="py-2 px-2 text-center text-emerald-400 font-black">Toplam</th>
+                  <th class="py-2 px-3 text-center text-amber-400">Zar At</th>
                   <th class="py-2 px-2 text-center">Rank</th>
                   <th class="py-2 px-2 text-center">Mod</th>
                   <th class="py-2 px-2 text-center">ACP</th>
                   <th class="py-2 px-2 text-center">Buff</th>
-                  <th class="py-2 px-2 text-center">Toplam</th>
-                  <th class="py-2 px-3 text-center">3D Zar</th>
                 </tr>
               </thead>
               <tbody id="skills-tbody" class="divide-y divide-slate-800 font-medium">
@@ -10239,6 +10239,19 @@
             </span>
           </td>
 
+          <!-- Toplam -->
+          <td class="py-2 px-2 text-center align-middle font-black font-mono text-base ${total >= 0 ? 'text-emerald-400' : 'text-rose-400'}" title="Nihai Beceri Modifiyeri: ${total >= 0 ? '+' : ''}${total}">
+            ${total >= 0 ? '+' : ''}${total}
+          </td>
+
+          <!-- 3D Zar At -->
+          <td class="py-2 px-3 text-center align-middle">
+            <button onclick="rollSkill3D('${safeName}', ${total}, '${safeSubtitle}')" class="bg-slate-800 hover:bg-slate-700 text-amber-400 px-2.5 py-1 rounded-lg border border-slate-700 text-xs font-mono transition inline-flex items-center gap-1.5 justify-center shadow-sm active:scale-95" title="${safeName} için 1d20${total >= 0 ? '+' : ''}${total} zarı at">
+              ${getD20IconSvg('w-3.5 h-3.5 text-amber-400')}
+              <span>Zar</span>
+            </button>
+          </td>
+
           <!-- Rank & Rank Adjustment Buttons -->
           <td class="py-2 px-2 text-center align-middle font-mono">
             <div class="inline-flex items-center gap-1">
@@ -10262,19 +10275,6 @@
           <!-- Buff / Debuff Bonus -->
           <td class="py-2 px-2 text-center align-middle font-mono ${buffSkillMod !== 0 ? (buffSkillMod > 0 ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold') : 'text-slate-600'}" title="${buffTooltip}">
             ${buffSkillMod !== 0 ? (buffSkillMod > 0 ? '+' + buffSkillMod : buffSkillMod) : '-'}
-          </td>
-
-          <!-- Toplam -->
-          <td class="py-2 px-2 text-center align-middle font-black font-mono text-sm ${total >= 0 ? 'text-emerald-400' : 'text-rose-400'}">
-            ${total >= 0 ? '+' : ''}${total}
-          </td>
-
-          <!-- 3D Zar At -->
-          <td class="py-2 px-3 text-center align-middle">
-            <button onclick="rollSkill3D('${safeName}', ${total}, '${safeSubtitle}')" class="bg-slate-800 hover:bg-slate-700 text-amber-400 px-2.5 py-1 rounded-lg border border-slate-700 text-xs font-mono transition inline-flex items-center gap-1.5 justify-center shadow-sm">
-              ${getD20IconSvg('w-3.5 h-3.5 text-amber-400')}
-              <span>Zar</span>
-            </button>
           </td>
         `;
         tbody.appendChild(tr);
