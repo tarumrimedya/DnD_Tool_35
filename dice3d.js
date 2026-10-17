@@ -202,8 +202,8 @@ class Dice3DController {
     const ctx = canvas.getContext('2d');
 
     const num = parseInt(numberText) || 0;
-    const isD20Nat20 = (sides === 20 && num === 20);
-    const isD20Nat1 = (sides === 20 && num === 1);
+    const isD20Nat20 = (sides === 20 && num === 20) || (sides === 100 && num === 100);
+    const isD20Nat1 = (sides === 20 && num === 1) || (sides === 100 && num === 1);
 
     ctx.clearRect(0, 0, 512, 512);
 
@@ -228,7 +228,7 @@ class Dice3DController {
 
     // Font sizing: Serif Roman font (Cinzel / Palatino / Georgia)
     const len = displayText.length;
-    const fontSize = len >= 3 ? 160 : (len === 2 ? 210 : 250);
+    const fontSize = len >= 3 ? 150 : (len === 2 ? 210 : 250);
     ctx.font = `900 ${fontSize}px "Cinzel", "Palatino Linotype", "Book Antiqua", "Georgia", serif`;
 
     // 1. Warm radiant drop shadow / ambient glow
@@ -414,6 +414,126 @@ class Dice3DController {
     return geo;
   }
 
+  // Custom 100-sided geodesic multifaceted sphere geometry (Zocchihedron style)
+  createD100Geometry(radius) {
+    const geo = new THREE.BufferGeometry();
+    const vertices = [];
+    const customFaces = [];
+
+    const spherePoint = (r, theta, phi) => {
+      const sinT = Math.sin(theta);
+      const cosT = Math.cos(theta);
+      return new THREE.Vector3(
+        r * sinT * Math.cos(phi),
+        r * cosT,
+        r * sinT * Math.sin(phi)
+      );
+    };
+
+    // Latitude boundaries for 1 + 10 + 15 + 24 + 24 + 15 + 10 + 1 = 100 facets
+    const thetas = [
+      0.28,                     // θ1 (North Pole cap boundary)
+      0.58,                     // θ2 (Band 1 boundary)
+      0.95,                     // θ3 (Band 2 boundary)
+      Math.PI / 2,              // θ4 (Equator boundary between Band 3 and Band 4)
+      Math.PI - 0.95,           // θ5 (Band 4 boundary)
+      Math.PI - 0.58,           // θ6 (Band 5 boundary)
+      Math.PI - 0.28            // θ7 (South Pole cap boundary)
+    ];
+
+    const bandCounts = [10, 15, 24, 24, 15, 10];
+
+    // 1. North Pole Facet (Face 0 - Prominent Flat Gem Face for Target Value)
+    const C_north = new THREE.Vector3(0, radius, 0);
+    const P = [];
+    for (let k = 0; k < 10; k++) {
+      P.push(spherePoint(radius, thetas[0], (k * 2 * Math.PI) / 10));
+    }
+    for (let k = 0; k < 10; k++) {
+      const pCurr = P[k];
+      const pNext = P[(k + 1) % 10];
+      vertices.push(
+        C_north.x, C_north.y, C_north.z,
+        pCurr.x, pCurr.y, pCurr.z,
+        pNext.x, pNext.y, pNext.z
+      );
+    }
+    customFaces.push({
+      center: C_north,
+      normal: new THREE.Vector3(0, 1, 0),
+      topVec: new THREE.Vector3(0, 0, 1),
+      scale: 0.52
+    });
+
+    // 2. Intermediate Bands 1 to 6
+    for (let b = 0; b < 6; b++) {
+      const thA = thetas[b];
+      const thB = thetas[b + 1];
+      const N = bandCounts[b];
+
+      for (let i = 0; i < N; i++) {
+        const phi0 = (i * 2 * Math.PI) / N;
+        const phi1 = ((i + 1) * 2 * Math.PI) / N;
+
+        const V00 = spherePoint(radius, thA, phi0); // top-left
+        const V10 = spherePoint(radius, thA, phi1); // top-right
+        const V11 = spherePoint(radius, thB, phi1); // bottom-right
+        const V01 = spherePoint(radius, thB, phi0); // bottom-left
+
+        const center = new THREE.Vector3()
+          .add(V00).add(V10).add(V11).add(V01)
+          .multiplyScalar(0.25);
+        const normal = center.clone().normalize();
+
+        // Tri 1: V00, V01, V11 (CCW)
+        vertices.push(
+          V00.x, V00.y, V00.z,
+          V01.x, V01.y, V01.z,
+          V11.x, V11.y, V11.z
+        );
+        // Tri 2: V00, V11, V10 (CCW)
+        vertices.push(
+          V00.x, V00.y, V00.z,
+          V11.x, V11.y, V11.z,
+          V10.x, V10.y, V10.z
+        );
+
+        let topVec = new THREE.Vector3(0, 1, 0).sub(normal.clone().multiplyScalar(normal.y)).normalize();
+        if (topVec.lengthSq() < 0.001) topVec = new THREE.Vector3(0, 0, 1);
+
+        const facetScale = (b === 0) ? 0.32 : (b === 1 ? 0.28 : 0.24);
+        customFaces.push({ center, normal, topVec, scale: facetScale });
+      }
+    }
+
+    // 3. South Pole Facet (Face 99 - Bottom Cap)
+    const C_south = new THREE.Vector3(0, -radius, 0);
+    const Q = [];
+    for (let k = 0; k < 10; k++) {
+      Q.push(spherePoint(radius, thetas[6], (k * 2 * Math.PI) / 10));
+    }
+    for (let k = 0; k < 10; k++) {
+      const qCurr = Q[k];
+      const qNext = Q[(k + 1) % 10];
+      vertices.push(
+        C_south.x, C_south.y, C_south.z,
+        qNext.x, qNext.y, qNext.z,
+        qCurr.x, qCurr.y, qCurr.z
+      );
+    }
+    customFaces.push({
+      center: C_south,
+      normal: new THREE.Vector3(0, -1, 0),
+      topVec: new THREE.Vector3(0, 0, -1),
+      scale: 0.42
+    });
+
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    geo.computeVertexNormals();
+    geo.userData = { customFaces };
+    return geo;
+  }
+
   // Extract unique coplanar faces (centers and outward unit normals)
   extractFaces(geo) {
     if (geo.userData && geo.userData.customFaces && geo.userData.customFaces.length > 0) {
@@ -473,7 +593,12 @@ class Dice3DController {
       radius = 1.6;
       geo = new THREE.OctahedronGeometry(radius, 0);
       decalScale = 0.68;
-    } else if (type === 'd10' || type === 'd100') {
+    } else if (type === 'd100') {
+      sides = 100;
+      radius = 1.85;
+      geo = this.createD100Geometry(radius);
+      decalScale = 0.52;
+    } else if (type === 'd10') {
       sides = 10;
       radius = 1.5;
       geo = this.createD10Geometry(radius);
@@ -513,7 +638,7 @@ class Dice3DController {
     const edgeCount = posAttr ? posAttr.count / 2 : 0;
 
     if (edgeCount > 0 && this.unitCylGeo && this.unitSphereGeo) {
-      const edgeRadius = 0.034;
+      const edgeRadius = (type === 'd100') ? 0.020 : 0.034;
       const glowEdgeMat = new THREE.MeshBasicMaterial({
         color: 0xffa800,
         transparent: true,
@@ -590,13 +715,11 @@ class Dice3DController {
     // Determine target face index (place targetValue on face 0)
     const faceValues = [];
     if (type === 'd100') {
-      const tens = ['00', '10', '20', '30', '40', '50', '60', '70', '80', '90'];
-      const targetStr = (targetValue === 100 || targetValue === 0) ? '00' : String(targetValue).padStart(2, '0');
-      tens.forEach(t => {
-        if (t !== targetStr) faceValues.push(t);
-      });
+      for (let i = 1; i <= 100; i++) {
+        if (i !== targetValue) faceValues.push(i);
+      }
       faceValues.sort(() => Math.random() - 0.5);
-      faceValues.unshift(targetStr);
+      faceValues.unshift(targetValue);
     } else if (type === 'd10') {
       const digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
       const targetStr = (targetValue === 10) ? '0' : String(targetValue);
@@ -613,12 +736,15 @@ class Dice3DController {
       faceValues.unshift(targetValue);
     }
 
-    const decalGeo = new THREE.PlaneGeometry(radius * decalScale, radius * decalScale);
+    const maxDecals = (type === 'd100') ? Math.min(faces.length, 50) : numFaces;
 
-    for (let i = 0; i < numFaces; i++) {
+    for (let i = 0; i < maxDecals; i++) {
       const face = faces[i];
       const val = faceValues[i] || (i + 1);
       const texture = this.createFaceTexture(val, sides);
+
+      const fScale = face.scale || decalScale;
+      const decalGeo = new THREE.PlaneGeometry(radius * fScale, radius * fScale);
 
       const decalMat = new THREE.MeshBasicMaterial({
         map: texture,

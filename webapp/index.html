@@ -6605,7 +6605,7 @@
 
     function rollSingleDie(sides) {
       const r = Math.floor(Math.random() * sides) + 1;
-      const isCrit = (sides === 20 && r === 20);
+      const isCrit = (sides === 20 && r === 20) || (sides === 100 && r === 100);
 
       const onDone = () => {
         addDiceHistoryEntry({
@@ -6614,11 +6614,11 @@
           breakdown: `d${sides}: [${r}]`,
           total: r,
           isCrit: isCrit,
-          critInfo: isCrit ? '• Doğal 20!' : ''
+          critInfo: (sides === 20 && r === 20) ? '• Doğal 20!' : ((sides === 100 && r === 100) ? '• Mükemmel 100!' : '')
         });
       };
 
-      if (window.Dice3D && typeof Dice3D.roll === 'function' && [4, 6, 8, 10, 12, 20].includes(sides)) {
+      if (window.Dice3D && typeof Dice3D.roll === 'function' && [4, 6, 8, 10, 12, 20, 100].includes(sides)) {
         try {
           Dice3D.roll([{ type: 'd' + sides, value: r }], onDone);
         } catch (e) {
@@ -6649,7 +6649,7 @@
             sumOfDice += r;
             totalDiceCount++;
             if (s === 20 && r === 20) hasD20Crit = true;
-            if ([4, 6, 8, 10, 12, 20].includes(s) && dice3dList.length < 6) {
+            if ([4, 6, 8, 10, 12, 20, 100].includes(s) && dice3dList.length < 6) {
               dice3dList.push({ type: 'd' + s, value: r });
             }
           }
@@ -7122,7 +7122,7 @@
 
       const dice3dList = [];
       parsed.diceGroups.forEach(g => {
-        if ([4, 6, 8, 10, 12, 20].includes(g.sides)) {
+        if ([4, 6, 8, 10, 12, 20, 100].includes(g.sides)) {
           g.rolls.forEach(r => {
             if (dice3dList.length < 6) {
               dice3dList.push({ type: 'd' + g.sides, value: r });
@@ -11712,7 +11712,7 @@
           const val = Math.floor(Math.random() * damagePlan.diceSides) + 1;
           rolls.push(val);
           sum += val;
-          if (dice3dList.length < 6 && [4, 6, 8, 10, 12, 20].includes(damagePlan.diceSides)) {
+          if (dice3dList.length < 6 && [4, 6, 8, 10, 12, 20, 100].includes(damagePlan.diceSides)) {
             dice3dList.push({ type: 'd' + damagePlan.diceSides, value: val });
           }
         }
