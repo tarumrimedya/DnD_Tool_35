@@ -1076,9 +1076,12 @@
             </div>
 
             <!-- 3-Column Grid: Left Slots (6) | Silhouette Center | Right Slots (6) -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-4 items-center">
+            <div id="sil-slots-main-grid" class="relative grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-4 items-center">
+              <!-- DYNAMIC CONNECTOR LINES OVERLAY SVG (SPANS FROM ITEM CARDS TO BODY POINTS) -->
+              <svg id="sil-connectors-overlay-svg" class="absolute inset-0 w-full h-full pointer-events-none z-20 overflow-visible"></svg>
+
               <!-- SOL KOLON: 6 YUVA (Baş, Göz, Omuz, Göğüs, Kemer, Sol Yüzük) -->
-              <div id="sil-left-slots" class="lg:col-span-4 space-y-2.5">
+              <div id="sil-left-slots" class="lg:col-span-4 space-y-2.5 relative z-10">
                 <!-- Injected via renderBodySlotsSilhouette() -->
               </div>
 
@@ -1102,7 +1105,7 @@
               </div>
 
               <!-- SAĞ KOLON: 6 YUVA (Boyun, Zırh, Kollar, Eller, Sağ Yüzük, Ayaklar) -->
-              <div id="sil-right-slots" class="lg:col-span-4 space-y-2.5">
+              <div id="sil-right-slots" class="lg:col-span-4 space-y-2.5 relative z-10">
                 <!-- Injected via renderBodySlotsSilhouette() -->
               </div>
 
@@ -10204,7 +10207,11 @@
         if (btnList) {
           btnList.className = 'px-2.5 py-1 rounded-md transition flex items-center gap-1.5 text-slate-400 hover:text-white';
         }
-        if (rerender) renderBodySlotsSilhouette();
+        if (rerender) {
+          renderBodySlotsSilhouette();
+        } else {
+          setTimeout(updateSilhouetteConnectorLines, 50);
+        }
       } else {
         if (silView) silView.classList.add('hidden');
         if (listView) listView.classList.remove('hidden');
@@ -10749,32 +10756,8 @@
         labelEl.textContent = `${DEFAULT_BODY_SLOT_NODES[activeDraggedSlot].label.split(' ')[0]} (${clampedX},${clampedY})`;
       }
 
-      // Update connector path
-      const lineEl = document.getElementById(`sil-line-${activeDraggedSlot}`);
-      if (lineEl) {
-        const isLeft = ['head', 'eyes', 'shoulders', 'torso', 'belt', 'ring1'].includes(activeDraggedSlot);
-        const CARD_Y_MAP = { head: 40, eyes: 120, shoulders: 200, torso: 280, belt: 360, ring1: 440, neck: 40, armor: 120, bracers: 200, gloves: 280, ring2: 360, boots: 440 };
-        const yCard = CARD_Y_MAP[activeDraggedSlot] || 40;
-
-        let pathD = '';
-        if (isLeft) {
-          let p1x = Math.max(30, Math.min(80, clampedX * 0.4));
-          let p1y = yCard;
-          let p2x = clampedX - 50;
-          let p2y = clampedY;
-          if (activeDraggedSlot === 'belt') {
-            p1x = 50; p1y = 300; p2x = Math.max(80, clampedX - 60); p2y = clampedY;
-          } else if (activeDraggedSlot === 'ring1') {
-            p1x = 50; p1y = 440; p2x = Math.max(60, clampedX - 36); p2y = Math.min(400, clampedY + 55);
-          } else if (activeDraggedSlot === 'torso') {
-            p1x = 60; p1y = 260; p2x = clampedX - 60; p2y = clampedY;
-          }
-          pathD = `M 0,${yCard} C ${p1x},${p1y} ${p2x},${p2y} ${clampedX},${clampedY}`;
-        } else {
-          pathD = `M ${clampedX},${clampedY} C ${clampedX + 50},${clampedY} 390,${yCard} 460,${yCard}`;
-        }
-        lineEl.setAttribute('d', pathD);
-      }
+      // Real-time update connector lines spanning from item card centers
+      updateSilhouetteConnectorLines();
     }
 
     function stopDraggingSlotNode() {
@@ -10796,6 +10779,105 @@
         localStorage.setItem('dnd35_silhouette_custom_coords', JSON.stringify(character.customSilhouetteCoords));
       } catch(e) {}
     }
+
+    function updateSilhouetteConnectorLines() {
+      const gridEl = document.getElementById('sil-slots-main-grid');
+      const overlaySvg = document.getElementById('sil-connectors-overlay-svg');
+      const figContainer = document.getElementById('sil-figure-container');
+      if (!gridEl || !overlaySvg || !figContainer) return;
+
+      // Only draw on desktop side-by-side view (>= 1024px)
+      if (window.innerWidth < 1024) {
+        overlaySvg.innerHTML = '';
+        return;
+      }
+
+      const wrapRect = gridEl.getBoundingClientRect();
+      const figRect = figContainer.getBoundingClientRect();
+      if (figRect.width <= 0 || figRect.height <= 0) return;
+
+      const LEFT_KEYS = ['head', 'eyes', 'shoulders', 'torso', 'belt', 'ring1'];
+      const RIGHT_KEYS = ['neck', 'armor', 'bracers', 'gloves', 'ring2', 'boots'];
+      const ALL_KEYS = [...LEFT_KEYS, ...RIGHT_KEYS];
+
+      const nodes = currentSilhouetteNodes || getEffectiveBodySlotNodes(character);
+
+      let pathsMarkup = '';
+
+      ALL_KEYS.forEach(slotKey => {
+        const cardEl = document.querySelector(`[data-slot="${slotKey}"]`);
+        if (!cardEl) return;
+        const cardRect = cardEl.getBoundingClientRect();
+        const isLeft = LEFT_KEYS.includes(slotKey);
+
+        // Start point: inner edge of the item card, at exact vertical middle of the card
+        const cardX = isLeft ? (cardRect.right - wrapRect.left) : (cardRect.left - wrapRect.left);
+        const cardY = cardRect.top + cardRect.height / 2 - wrapRect.top;
+
+        // End point: mapped anatomical spot on the silhouette figure
+        const pt = nodes[slotKey] || DEFAULT_BODY_SLOT_NODES[slotKey];
+        const nodeX = (figRect.left - wrapRect.left) + (pt.cx / 460) * figRect.width;
+        const nodeY = (figRect.top - wrapRect.top) + (pt.cy / 520) * figRect.height;
+
+        const isOccupied = character?.bodySlots?.[slotKey]?.name && character?.bodySlots?.[slotKey]?.name !== '-';
+        const isActive = character?.bodySlots?.[slotKey]?.active;
+        const color = isActive ? '#38bdf8' : (isOccupied ? '#f59e0b' : '#64748b');
+        const opacity = isActive ? '0.85' : (isOccupied ? '0.6' : '0.35');
+        const width = isActive ? '2' : '1.3';
+        const dash = isOccupied ? 'none' : '3,3';
+
+        // Smooth Bezier Curve from Card Center Edge to Silhouette Point
+        let pathD = '';
+        if (isLeft) {
+          const dx = Math.max(30, nodeX - cardX);
+          const cp1x = cardX + dx * 0.45;
+          const cp1y = cardY;
+          const cp2x = nodeX - dx * 0.3;
+          const cp2y = nodeY;
+          pathD = `M ${cardX.toFixed(1)},${cardY.toFixed(1)} C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${nodeX.toFixed(1)},${nodeY.toFixed(1)}`;
+        } else {
+          const dx = Math.max(30, cardX - nodeX);
+          const cp1x = cardX - dx * 0.45;
+          const cp1y = cardY;
+          const cp2x = nodeX + dx * 0.3;
+          const cp2y = nodeY;
+          pathD = `M ${cardX.toFixed(1)},${cardY.toFixed(1)} C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${nodeX.toFixed(1)},${nodeY.toFixed(1)}`;
+        }
+
+        pathsMarkup += `
+          <g id="sil-overlay-connector-${slotKey}">
+            <path id="sil-line-${slotKey}"
+                  d="${pathD}"
+                  fill="none"
+                  stroke="${color}"
+                  stroke-width="${width}"
+                  stroke-opacity="${opacity}"
+                  stroke-dasharray="${dash}"
+                  class="transition-all duration-300"/>
+            <!-- Terminal socket pin right at the item card middle edge -->
+            <circle id="sil-pin-${slotKey}"
+                    cx="${cardX.toFixed(1)}"
+                    cy="${cardY.toFixed(1)}"
+                    r="3.5"
+                    fill="${color}"
+                    fill-opacity="${opacity}"
+                    stroke="#020617"
+                    stroke-width="1.2"
+                    class="transition-all duration-300"/>
+            <circle cx="${cardX.toFixed(1)}"
+                    cy="${cardY.toFixed(1)}"
+                    r="1.5"
+                    fill="#ffffff"
+                    class="pointer-events-none"/>
+          </g>
+        `;
+      });
+
+      overlaySvg.innerHTML = pathsMarkup;
+    }
+
+    window.addEventListener('resize', updateSilhouetteConnectorLines);
+    window.addEventListener('scroll', updateSilhouetteConnectorLines, { passive: true });
 
     window.addEventListener('mouseup', () => {
       if (activeDraggedSlot) stopDraggingSlotNode();
@@ -10821,64 +10903,7 @@
       const transform = getSilhouetteTransform(character);
       const { imgX, imgY, imgW, imgH } = computeSilhouetteImageRect(transform);
 
-      const LEFT_KEYS = ['head', 'eyes', 'shoulders', 'torso', 'belt', 'ring1'];
-      const RIGHT_KEYS = ['neck', 'armor', 'bracers', 'gloves', 'ring2', 'boots'];
-      const CARD_Y_MAP = { head: 40, eyes: 120, shoulders: 200, torso: 280, belt: 360, ring1: 440, neck: 40, armor: 120, bracers: 200, gloves: 280, ring2: 360, boots: 440 };
-
-      let linesMarkup = '';
       let nodesMarkup = '';
-
-      // Left column connector lines
-      LEFT_KEYS.forEach(slotKey => {
-        const pt = nodes[slotKey];
-        const yCard = CARD_Y_MAP[slotKey];
-        const isOccupied = character?.bodySlots?.[slotKey]?.name && character?.bodySlots?.[slotKey]?.name !== '-';
-        const isActive = character?.bodySlots?.[slotKey]?.active;
-        const color = isActive ? '#38bdf8' : (isOccupied ? '#f59e0b' : '#64748b');
-        const opacity = isActive ? '0.85' : (isOccupied ? '0.6' : '0.35');
-        const width = isActive ? '2' : '1.3';
-
-        let p1x = Math.max(30, Math.min(80, pt.cx * 0.4));
-        let p1y = yCard;
-        let p2x = pt.cx - 50;
-        let p2y = pt.cy;
-        if (slotKey === 'belt') {
-          p1x = 50; p1y = 300; p2x = Math.max(80, pt.cx - 60); p2y = pt.cy;
-        } else if (slotKey === 'ring1') {
-          p1x = 50; p1y = 440; p2x = Math.max(60, pt.cx - 36); p2y = Math.min(400, pt.cy + 55);
-        } else if (slotKey === 'torso') {
-          p1x = 60; p1y = 260; p2x = pt.cx - 60; p2y = pt.cy;
-        }
-
-        linesMarkup += `
-          <path id="sil-line-${slotKey}"
-                d="M 0,${yCard} C ${p1x},${p1y} ${p2x},${p2y} ${pt.cx},${pt.cy}"
-                fill="none" stroke="${color}" stroke-width="${width}" stroke-opacity="${opacity}"
-                stroke-dasharray="${isOccupied ? 'none' : '3,3'}"
-                class="transition-all duration-300"/>
-          <circle id="sil-pin-${slotKey}" cx="0" cy="${yCard}" r="3" fill="${color}" fill-opacity="${opacity}"/>
-        `;
-      });
-
-      // Right column connector lines
-      RIGHT_KEYS.forEach(slotKey => {
-        const pt = nodes[slotKey];
-        const yCard = CARD_Y_MAP[slotKey];
-        const isOccupied = character?.bodySlots?.[slotKey]?.name && character?.bodySlots?.[slotKey]?.name !== '-';
-        const isActive = character?.bodySlots?.[slotKey]?.active;
-        const color = isActive ? '#38bdf8' : (isOccupied ? '#f59e0b' : '#64748b');
-        const opacity = isActive ? '0.85' : (isOccupied ? '0.6' : '0.35');
-        const width = isActive ? '2' : '1.3';
-
-        linesMarkup += `
-          <path id="sil-line-${slotKey}"
-                d="M ${pt.cx},${pt.cy} C ${pt.cx + 50},${pt.cy} 390,${yCard} 460,${yCard}"
-                fill="none" stroke="${color}" stroke-width="${width}" stroke-opacity="${opacity}"
-                stroke-dasharray="${isOccupied ? 'none' : '3,3'}"
-                class="transition-all duration-300"/>
-          <circle id="sil-pin-${slotKey}" cx="460" cy="${yCard}" r="3" fill="${color}" fill-opacity="${opacity}"/>
-        `;
-      });
 
       // Interactive nodes
       Object.keys(nodes).forEach(slotKey => {
@@ -10934,7 +10959,6 @@
             <image id="sil-bg-image" href="${imgSrc}" xlink:href="${imgSrc}" x="${imgX}" y="${imgY}" width="${imgW}" height="${imgH}" preserveAspectRatio="none" class="pointer-events-none filter contrast-110 brightness-105" />
 
             <g class="pointer-events-auto">
-              ${linesMarkup}
               ${nodesMarkup}
             </g>
           </svg>
@@ -11129,6 +11153,12 @@
           </div>
         `;
       }
+
+      // Draw dynamic connector lines spanning directly from item card centers to body points
+      requestAnimationFrame(() => {
+        updateSilhouetteConnectorLines();
+      });
+      setTimeout(updateSilhouetteConnectorLines, 60);
     }
 
     // ====================================================
