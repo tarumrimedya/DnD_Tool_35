@@ -1062,17 +1062,30 @@
             </div>
 
             <!-- Edit Mode Helpful Banner (Visible only when Calibration Mode is active) -->
-            <div id="sil-edit-mode-banner" class="hidden mb-3 p-2.5 rounded-xl bg-amber-950/50 border border-amber-500/60 flex items-center justify-between gap-3 text-xs text-amber-200 shadow-md">
-              <div class="flex items-center gap-2">
-                <span class="text-base animate-pulse">📌</span>
+            <div id="sil-edit-mode-banner" class="hidden mb-3 p-3 rounded-xl bg-gradient-to-r from-amber-950/70 via-slate-900 to-sky-950/70 border border-amber-500/60 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-xs text-amber-200 shadow-xl">
+              <div class="flex items-start sm:items-center gap-2.5 min-w-0">
+                <span class="text-xl animate-pulse shrink-0">🎯</span>
                 <div>
-                  <span class="font-bold text-amber-300">Nokta Konumlandırma Modu Aktif:</span>
-                  <span class="text-amber-200/90 text-[11px] ml-1">12 bağlantı noktasını farenizle (veya dokunarak) resmin üzerinde istediğiniz yere sürükleyip bırakabilirsiniz. Çizgiler anlık güncellenir.</span>
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="font-extrabold text-amber-300 uppercase tracking-wide">Çift Uçlu Kalibrasyon Modu Aktif:</span>
+                    <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-yellow-300 bg-yellow-950/60 px-2 py-0.5 rounded border border-yellow-500/40">🟡 Silüet Ucu (Figür)</span>
+                    <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-sky-300 bg-sky-950/60 px-2 py-0.5 rounded border border-sky-500/40">🔵 Kart Ucu (Yuvalar)</span>
+                  </div>
+                  <div class="text-slate-300 text-[11px] mt-0.5">
+                    Hem sarı vücut noktalarını hem de mavi kart bağlantı noktalarını sürükleyip istediğiniz yere hizalayabilirsiniz.
+                  </div>
                 </div>
               </div>
-              <button type="button" onclick="toggleSilhouettePointEditMode(false)" class="px-3 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs transition shrink-0 shadow">
-                💾 Kaydet & Kapat
-              </button>
+              <div class="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                <button type="button" onclick="copySilhouetteCoordinatesToClipboard()" class="px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs transition flex items-center gap-1.5 shadow-md hover:scale-105 active:scale-95" title="Tüm koordinatları kopyala">
+                  <span>📋</span>
+                  <span>Koordinatları Kopyala</span>
+                </button>
+                <button type="button" onclick="toggleSilhouettePointEditMode(false)" class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs transition flex items-center gap-1.5 shadow-md hover:scale-105 active:scale-95">
+                  <span>💾</span>
+                  <span>Kaydet & Kapat</span>
+                </button>
+              </div>
             </div>
 
             <!-- 3-Column Grid: Left Slots (6) | Silhouette Center | Right Slots (6) -->
@@ -10538,6 +10551,7 @@
 
     let isSilhouettePointEditMode = false;
     let activeDraggedSlot = null;
+    let activeDraggedEnd = null; // 'body' | 'card'
     let currentSilhouetteNodes = null;
 
     const DEFAULT_BODY_SLOT_NODES = {
@@ -10573,6 +10587,12 @@
           cx: (custom[k]?.cx !== undefined && !isNaN(custom[k].cx)) ? Number(custom[k].cx) : DEFAULT_BODY_SLOT_NODES[k].cx,
           cy: (custom[k]?.cy !== undefined && !isNaN(custom[k].cy)) ? Number(custom[k].cy) : DEFAULT_BODY_SLOT_NODES[k].cy
         };
+        if (custom[k]?.customCardX !== undefined && !isNaN(custom[k].customCardX)) {
+          result[k].customCardX = Number(custom[k].customCardX);
+        }
+        if (custom[k]?.customCardY !== undefined && !isNaN(custom[k].customCardY)) {
+          result[k].customCardY = Number(custom[k].customCardY);
+        }
       }
       return result;
     }
@@ -10673,7 +10693,7 @@
     }
 
     function resetSilhouettePoints() {
-      if (confirm('Tüm 12 vücut noktasını orijinal varsayılan yerlerine sıfırlamak istiyor musunuz?')) {
+      if (confirm('Tüm 12 bağlantının vücut ve kart uçlarını orijinal varsayılan yerlerine sıfırlamak istiyor musunuz?')) {
         if (character && character.customSilhouetteCoords) {
           delete character.customSilhouetteCoords;
         }
@@ -10693,6 +10713,7 @@
         toggleSilhouetteTransformPanel(false);
       }
       renderBodySlotsSilhouette();
+      setTimeout(updateSilhouetteConnectorLines, 50);
     }
 
     function startDraggingSlotNode(evt, slotKey) {
@@ -10700,13 +10721,28 @@
       evt.preventDefault();
       evt.stopPropagation();
       activeDraggedSlot = slotKey;
+      activeDraggedEnd = 'body';
       const groupEl = document.getElementById(`sil-node-group-${slotKey}`);
+      if (groupEl) groupEl.classList.add('is-dragging');
+    }
+
+    function startDraggingCardNode(evt, slotKey) {
+      if (!isSilhouettePointEditMode) return;
+      evt.preventDefault();
+      evt.stopPropagation();
+      activeDraggedSlot = slotKey;
+      activeDraggedEnd = 'card';
+      const groupEl = document.getElementById(`sil-card-node-group-${slotKey}`);
       if (groupEl) groupEl.classList.add('is-dragging');
     }
 
     function handleSilhouetteSvgMouseMove(evt) {
       if (activeDraggedSlot) {
-        updateDraggedNodePosition(evt);
+        if (activeDraggedEnd === 'card') {
+          updateDraggedCardPosition(evt);
+        } else {
+          updateDraggedNodePosition(evt);
+        }
       } else if (isPanningSilhouette) {
         handleSilhouettePanMove(evt);
       }
@@ -10714,14 +10750,18 @@
 
     function handleSilhouetteSvgTouchMove(evt) {
       if (activeDraggedSlot) {
-        updateDraggedNodePosition(evt);
+        if (activeDraggedEnd === 'card') {
+          updateDraggedCardPosition(evt);
+        } else {
+          updateDraggedNodePosition(evt);
+        }
       } else if (isPanningSilhouette) {
         handleSilhouettePanMove(evt);
       }
     }
 
     function updateDraggedNodePosition(evt) {
-      if (!activeDraggedSlot) return;
+      if (!activeDraggedSlot || activeDraggedEnd !== 'body') return;
       evt.preventDefault();
       const svgEl = document.getElementById('sil-main-svg');
       if (!svgEl) return;
@@ -10760,11 +10800,39 @@
       updateSilhouetteConnectorLines();
     }
 
+    function updateDraggedCardPosition(evt) {
+      if (!activeDraggedSlot || activeDraggedEnd !== 'card') return;
+      evt.preventDefault();
+      const gridEl = document.getElementById('sil-slots-main-grid');
+      if (!gridEl) return;
+      const wrapRect = gridEl.getBoundingClientRect();
+      const clientX = evt.clientX !== undefined ? evt.clientX : (evt.touches && evt.touches[0] ? evt.touches[0].clientX : 0);
+      const clientY = evt.clientY !== undefined ? evt.clientY : (evt.touches && evt.touches[0] ? evt.touches[0].clientY : 0);
+
+      const clampedX = Math.max(0, Math.min(Math.round(wrapRect.width), Math.round(clientX - wrapRect.left)));
+      const clampedY = Math.max(0, Math.min(Math.round(wrapRect.height), Math.round(clientY - wrapRect.top)));
+
+      if (!currentSilhouetteNodes) currentSilhouetteNodes = getEffectiveBodySlotNodes(character);
+      if (!currentSilhouetteNodes[activeDraggedSlot]) return;
+
+      currentSilhouetteNodes[activeDraggedSlot].customCardX = clampedX;
+      currentSilhouetteNodes[activeDraggedSlot].customCardY = clampedY;
+
+      // Real-time update connector lines & card handles
+      updateSilhouetteConnectorLines();
+    }
+
     function stopDraggingSlotNode() {
       if (!activeDraggedSlot) return;
-      const groupEl = document.getElementById(`sil-node-group-${activeDraggedSlot}`);
-      if (groupEl) groupEl.classList.remove('is-dragging');
+      if (activeDraggedEnd === 'card') {
+        const groupEl = document.getElementById(`sil-card-node-group-${activeDraggedSlot}`);
+        if (groupEl) groupEl.classList.remove('is-dragging');
+      } else {
+        const groupEl = document.getElementById(`sil-node-group-${activeDraggedSlot}`);
+        if (groupEl) groupEl.classList.remove('is-dragging');
+      }
       activeDraggedSlot = null;
+      activeDraggedEnd = null;
 
       // Persist to character and localStorage
       if (!character) character = {};
@@ -10774,10 +10842,58 @@
           cx: currentSilhouetteNodes[k].cx,
           cy: currentSilhouetteNodes[k].cy
         };
+        if (currentSilhouetteNodes[k].customCardX !== undefined) {
+          character.customSilhouetteCoords[k].customCardX = currentSilhouetteNodes[k].customCardX;
+        }
+        if (currentSilhouetteNodes[k].customCardY !== undefined) {
+          character.customSilhouetteCoords[k].customCardY = currentSilhouetteNodes[k].customCardY;
+        }
       }
       try {
         localStorage.setItem('dnd35_silhouette_custom_coords', JSON.stringify(character.customSilhouetteCoords));
       } catch(e) {}
+    }
+
+    function copySilhouetteCoordinatesToClipboard() {
+      const nodes = getEffectiveBodySlotNodes(character);
+      const exportData = {};
+      const gridEl = document.getElementById('sil-slots-main-grid');
+      const wrapRect = gridEl ? gridEl.getBoundingClientRect() : null;
+
+      const LEFT_KEYS = ['head', 'eyes', 'shoulders', 'torso', 'belt', 'ring1'];
+      const RIGHT_KEYS = ['neck', 'armor', 'bracers', 'gloves', 'ring2', 'boots'];
+      const ALL_KEYS = [...LEFT_KEYS, ...RIGHT_KEYS];
+
+      ALL_KEYS.forEach(k => {
+        const pt = nodes[k] || DEFAULT_BODY_SLOT_NODES[k];
+        let cX = pt.customCardX;
+        let cY = pt.customCardY;
+        if ((cX === undefined || cY === undefined) && wrapRect) {
+          const cardEl = document.querySelector(`[data-slot="${k}"]`);
+          if (cardEl) {
+            const cardRect = cardEl.getBoundingClientRect();
+            const isLeft = LEFT_KEYS.includes(k);
+            if (cX === undefined) cX = Math.round(isLeft ? (cardRect.right - wrapRect.left) : (cardRect.left - wrapRect.left));
+            if (cY === undefined) cY = Math.round(cardRect.top + cardRect.height / 2 - wrapRect.top);
+          }
+        }
+        exportData[k] = {
+          label: pt.label,
+          body: { cx: Math.round(pt.cx), cy: Math.round(pt.cy) },
+          card: { x: Math.round(cX !== undefined ? cX : 0), y: Math.round(cY !== undefined ? cY : 0) }
+        };
+      });
+
+      const jsonText = JSON.stringify(exportData, null, 2);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(jsonText).then(() => {
+          alert('📋 Tüm 12 yuvanın vücut ve kart uç koordinatları panoya kopyalandı!\n\nSohbete (Ctrl+V) yapıştırıp gönderdiğinizde, kart taraflarını kalıcı olarak sabitleyeceğim.');
+        }).catch(() => {
+          prompt('Koordinatları kopyalayın (Ctrl+C):', jsonText);
+        });
+      } else {
+        prompt('Koordinatları kopyalayın (Ctrl+C):', jsonText);
+      }
     }
 
     function updateSilhouetteConnectorLines() {
@@ -10810,12 +10926,15 @@
         const cardRect = cardEl.getBoundingClientRect();
         const isLeft = LEFT_KEYS.includes(slotKey);
 
-        // Start point: inner edge of the item card, at exact vertical middle of the card
-        const cardX = isLeft ? (cardRect.right - wrapRect.left) : (cardRect.left - wrapRect.left);
-        const cardY = cardRect.top + cardRect.height / 2 - wrapRect.top;
+        const pt = nodes[slotKey] || DEFAULT_BODY_SLOT_NODES[slotKey];
+
+        // Start point: user custom card coords if calibrated, or inner edge vertical middle of the card
+        const defaultCardX = isLeft ? (cardRect.right - wrapRect.left) : (cardRect.left - wrapRect.left);
+        const defaultCardY = cardRect.top + cardRect.height / 2 - wrapRect.top;
+        const cardX = (pt.customCardX !== undefined && !isNaN(pt.customCardX)) ? pt.customCardX : defaultCardX;
+        const cardY = (pt.customCardY !== undefined && !isNaN(pt.customCardY)) ? pt.customCardY : defaultCardY;
 
         // End point: mapped anatomical spot on the silhouette figure
-        const pt = nodes[slotKey] || DEFAULT_BODY_SLOT_NODES[slotKey];
         const nodeX = (figRect.left - wrapRect.left) + (pt.cx / 460) * figRect.width;
         const nodeY = (figRect.top - wrapRect.top) + (pt.cy / 520) * figRect.height;
 
@@ -10826,7 +10945,7 @@
         const width = isActive ? '2' : '1.3';
         const dash = isOccupied ? 'none' : '3,3';
 
-        // Smooth Bezier Curve from Card Center Edge to Silhouette Point
+        // Smooth Bezier Curve from Card End to Silhouette Point
         let pathD = '';
         if (isLeft) {
           const dx = Math.max(30, nodeX - cardX);
@@ -10844,17 +10963,28 @@
           pathD = `M ${cardX.toFixed(1)},${cardY.toFixed(1)} C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${nodeX.toFixed(1)},${nodeY.toFixed(1)}`;
         }
 
-        pathsMarkup += `
-          <g id="sil-overlay-connector-${slotKey}">
-            <path id="sil-line-${slotKey}"
-                  d="${pathD}"
-                  fill="none"
-                  stroke="${color}"
-                  stroke-width="${width}"
-                  stroke-opacity="${opacity}"
-                  stroke-dasharray="${dash}"
-                  class="transition-all duration-300"/>
-            <!-- Terminal socket pin right at the item card middle edge -->
+        let terminalMarkup = '';
+        if (isSilhouettePointEditMode) {
+          // Draggable cyan card pin with pulsing halo and coordinates
+          terminalMarkup = `
+            <g id="sil-card-node-group-${slotKey}" class="cursor-grab select-none pointer-events-auto"
+               onmousedown="startDraggingCardNode(event, '${slotKey}')"
+               ontouchstart="startDraggingCardNode(event, '${slotKey}')"
+               onclick="event.stopPropagation()">
+              <!-- Touch target -->
+              <circle cx="${cardX.toFixed(1)}" cy="${cardY.toFixed(1)}" r="18" fill="transparent" class="cursor-grab"/>
+              <!-- Halo -->
+              <circle cx="${cardX.toFixed(1)}" cy="${cardY.toFixed(1)}" r="12" fill="#0284c7" fill-opacity="0.35" stroke="#38bdf8" stroke-dasharray="3,2" stroke-width="1.8" class="pointer-events-none animate-pulse"/>
+              <!-- Pin -->
+              <circle id="sil-card-pin-${slotKey}" cx="${cardX.toFixed(1)}" cy="${cardY.toFixed(1)}" r="6.5" fill="#0ea5e9" stroke="#ffffff" stroke-width="2" class="cursor-grab"/>
+              <circle cx="${cardX.toFixed(1)}" cy="${cardY.toFixed(1)}" r="2" fill="#ffffff" class="pointer-events-none"/>
+              <!-- Badge label -->
+              <text x="${cardX.toFixed(1)}" y="${(cardY - 11).toFixed(1)}" text-anchor="middle" font-size="9" font-family="sans-serif" font-weight="bold" fill="#38bdf8" stroke="#020617" stroke-width="2.5" paint-order="stroke" class="pointer-events-none select-none">${pt.label.split(' ')[0]} Kart (${Math.round(cardX)},${Math.round(cardY)})</text>
+            </g>
+          `;
+        } else {
+          // Normal mode terminal pin
+          terminalMarkup = `
             <circle id="sil-pin-${slotKey}"
                     cx="${cardX.toFixed(1)}"
                     cy="${cardY.toFixed(1)}"
@@ -10869,6 +10999,20 @@
                     r="1.5"
                     fill="#ffffff"
                     class="pointer-events-none"/>
+          `;
+        }
+
+        pathsMarkup += `
+          <g id="sil-overlay-connector-${slotKey}">
+            <path id="sil-line-${slotKey}"
+                  d="${pathD}"
+                  fill="none"
+                  stroke="${color}"
+                  stroke-width="${width}"
+                  stroke-opacity="${opacity}"
+                  stroke-dasharray="${dash}"
+                  class="transition-all duration-300"/>
+            ${terminalMarkup}
           </g>
         `;
       });
@@ -10888,12 +11032,20 @@
       if (isPanningSilhouette) stopSilhouettePan();
     });
     window.addEventListener('mousemove', (e) => {
-      if (activeDraggedSlot) updateDraggedNodePosition(e);
-      else if (isPanningSilhouette) handleSilhouettePanMove(e);
+      if (activeDraggedSlot) {
+        if (activeDraggedEnd === 'card') updateDraggedCardPosition(e);
+        else updateDraggedNodePosition(e);
+      } else if (isPanningSilhouette) {
+        handleSilhouettePanMove(e);
+      }
     });
     window.addEventListener('touchmove', (e) => {
-      if (activeDraggedSlot) updateDraggedNodePosition(e);
-      else if (isPanningSilhouette) handleSilhouettePanMove(e);
+      if (activeDraggedSlot) {
+        if (activeDraggedEnd === 'card') updateDraggedCardPosition(e);
+        else updateDraggedNodePosition(e);
+      } else if (isPanningSilhouette) {
+        handleSilhouettePanMove(e);
+      }
     }, { passive: false });
 
     function getSilhouetteSvg(modelKey, character) {
