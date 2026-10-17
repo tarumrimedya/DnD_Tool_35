@@ -1832,11 +1832,13 @@ const RuleEngine = {
   // Get granted class features and bonus feats for a given class and level
   getClassLevelFeatures(className, classLevel) {
     const def = this.DND35_CLASS_DEFS[className];
-    if (!def) return { features: [], hasBonusFeat: false };
+    if (!def) return { features: [], featureObjects: [], hasBonusFeat: false };
     const cl = Number(classLevel) || 1;
-    const features = (def.features && def.features[cl]) ? def.features[cl] : [];
+    const rawFeatures = (def.features && def.features[cl]) ? def.features[cl] : [];
+    const features = rawFeatures.map(f => (typeof f === 'string' ? f : f.name));
+    const featureObjects = rawFeatures.map(f => (typeof f === 'string' ? { name: f, benefit: '' } : f));
     const hasBonusFeat = Array.isArray(def.bonusFeatLevels) && def.bonusFeatLevels.includes(cl);
-    return { features, hasBonusFeat };
+    return { features, featureObjects, hasBonusFeat };
   },
 
   // D&D 3.5e Fractional BAB & Save Progression Calculator (Unearthed Arcana)
