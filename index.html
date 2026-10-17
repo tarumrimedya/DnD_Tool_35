@@ -6352,9 +6352,8 @@
           iconEl.style.color = '';
           iconEl.innerHTML = getDiceIconSvg('100', 'w-7 h-7 inline-block text-teal-300');
         } else if (dieType === '20') {
-          const savedColor = (typeof localStorage !== 'undefined' ? localStorage.getItem('dnd_dice_color') : null) || '#f59e0b';
-          iconEl.innerHTML = getDiceIconSvg(20, 'w-7 h-7 inline-block');
-          iconEl.style.color = savedColor;
+          iconEl.style.color = '';
+          iconEl.innerHTML = getDiceIconSvg(20, 'w-7 h-7 inline-block text-amber-300');
         } else {
           let colorCls = 'text-amber-300';
           if (dieType === '4') colorCls = 'text-emerald-300';
@@ -6564,25 +6563,15 @@
         }
       }
 
-      // 4. Serbest Zar Masasındaki d20 zar butonunu ve ikonunu seçilen zar rengiyle güncelle
+      // d20 zar ikonu ve butonu diğer d20 ikonları gibi sabit sarı/kehribar kalır
       const d20Btn = document.getElementById('die-btn-20');
       const d20Icon = document.getElementById('die-icon-20');
       const d20Label = document.getElementById('die-label-20');
       const d20Count = document.getElementById('die-count-20');
-      if (d20Btn) {
-        d20Btn.style.borderColor = `${hexColor}aa`;
-        d20Btn.style.boxShadow = `0 0 14px ${hexColor}44`;
-      }
-      if (d20Icon) {
-        d20Icon.style.color = hexColor;
-        d20Icon.style.filter = `drop-shadow(0 0 8px ${hexColor}88)`;
-      }
-      if (d20Label) {
-        d20Label.style.color = hexColor;
-      }
-      if (d20Count) {
-        d20Count.style.color = hexColor;
-      }
+      if (d20Btn) { d20Btn.style.borderColor = ''; d20Btn.style.boxShadow = ''; }
+      if (d20Icon) { d20Icon.style.color = ''; d20Icon.style.filter = ''; }
+      if (d20Label) { d20Label.style.color = ''; }
+      if (d20Count) { d20Count.style.color = ''; }
     }
 
     function initDiceColor() {
