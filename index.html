@@ -5159,7 +5159,12 @@
       saveStateToStorage(true);
       renderAll();
       if (evaluated.isDice) {
-        alert(`💥 Zar Sonucu Hasar Alındı!\n\n• Formül & Zar: ${evaluated.rollDesc}\n• Kalan Can (HP): ${character.hp.current}/${character.hp.max}`);
+        showDiceTopToast({
+          icon: '💥',
+          title: 'Hasar Zarı',
+          breakdown: `${evaluated.rollDesc} • Kalan Can: ${character.hp.current}/${character.hp.max}`,
+          total: `-${evaluated.total} HP`
+        });
       }
     }
 
@@ -5172,7 +5177,12 @@
       saveStateToStorage(true);
       renderAll();
       if (evaluated.isDice) {
-        alert(`💖 Zar Sonucu İyileşildi!\n\n• Formül & Zar: ${evaluated.rollDesc}\n• Güncel Can (HP): ${character.hp.current}/${character.hp.max}`);
+        showDiceTopToast({
+          icon: '💖',
+          title: 'İyileşme Zarı',
+          breakdown: `${evaluated.rollDesc} • Güncel Can: ${character.hp.current}/${character.hp.max}`,
+          total: `+${evaluated.total} HP`
+        });
       }
     }
 
@@ -5759,6 +5769,16 @@
       const grandTotalEl = document.getElementById('result-grand-total-damage');
       if (grandTotalEl) grandTotalEl.textContent = grandTotalDmg + ' HP';
       card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      // Add to dice history and trigger top toast notification
+      addDiceHistoryEntry({
+        icon: '⚔️',
+        title: 'Tam Saldırı Sonucu',
+        formula: attackPlans.map(a => `${a.idx}. Atk: ${a.totalAtk}`).join(' | '),
+        breakdown: attackPlans.map(a => `${a.idx}. Atk: ${a.totalAtk} (d20:${a.d20}${a.isCrit ? ' 🎯' : ''})`).join(' • '),
+        total: `${grandTotalDmg} Hasar`,
+        isCrit: attackPlans.some(a => a.isCrit)
+      });
     }
 
     function dismissAttackResult() {
@@ -5785,11 +5805,16 @@
 
     let _diceToastTimer = null;
     function showDiceTopToast(entry) {
+      if (!entry) return;
+      if (typeof entry === 'string') {
+        entry = { title: 'Bildirim', breakdown: entry, total: '' };
+      }
+
       let container = document.getElementById('dice-top-toast-container');
       if (!container) {
         container = document.createElement('div');
         container.id = 'dice-top-toast-container';
-        container.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[10000] flex flex-col items-center pointer-events-none transition-all duration-300';
+        container.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[10000] flex flex-col items-center pointer-events-none transition-all duration-300 max-w-[94vw] sm:max-w-md w-max';
         document.body.appendChild(container);
       }
 
@@ -5803,32 +5828,44 @@
 
       const toast = document.createElement('div');
       toast.id = 'dice-top-toast';
-      toast.className = 'pointer-events-auto transform -translate-y-12 opacity-0 transition-all duration-300 ease-out bg-slate-900/95 border-2 border-amber-500/80 rounded-2xl shadow-2xl shadow-black/90 px-5 py-3 backdrop-blur-md flex items-center gap-4 text-white max-w-[92vw] select-none cursor-pointer';
+      toast.className = 'pointer-events-auto transform -translate-y-12 opacity-0 transition-all duration-300 ease-out bg-slate-900/95 border-2 border-amber-500/80 rounded-2xl shadow-2xl shadow-black/90 px-4 py-3 sm:px-5 sm:py-3.5 backdrop-blur-md flex items-center gap-3 sm:gap-4 text-white max-w-[94vw] sm:max-w-md w-full select-none cursor-pointer';
       toast.title = 'Kapatmak için tıklayın';
 
+      const isCrit = !!entry.isCrit;
+      const icon = entry.icon || (isCrit ? '⚡' : '🎲');
       const title = entry.title || '🎲 Zar Atışı';
       const breakdown = entry.breakdown || entry.formula || '';
-      const total = entry.total !== undefined ? entry.total : '';
-      const isCrit = !!entry.isCrit;
+      const totalRaw = entry.total !== undefined ? String(entry.total).trim() : '';
+
+      let formattedTotal = '';
+      if (totalRaw !== '') {
+        if (totalRaw.startsWith('=') || totalRaw.startsWith('+') || totalRaw.startsWith('-') || isNaN(Number(totalRaw))) {
+          formattedTotal = totalRaw;
+        } else {
+          formattedTotal = `= ${totalRaw}`;
+        }
+      }
 
       toast.innerHTML = `
         <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/30 to-amber-600/10 border border-amber-500/50 flex items-center justify-center text-xl shrink-0 shadow-inner">
-          ${isCrit ? '⚡' : '🎲'}
+          ${icon}
         </div>
-        <div class="flex flex-col min-w-0 pr-2">
+        <div class="flex flex-col min-w-0 flex-1 pr-1">
           <div class="text-sm font-black text-amber-400 truncate flex items-center gap-1.5">
-            <span>${title}</span>
-            ${isCrit ? '<span class="text-[10px] bg-red-600 text-white px-1.5 py-0.5 rounded font-black animate-pulse">KRİTİK!</span>' : ''}
+            <span class="truncate">${title}</span>
+            ${isCrit ? '<span class="text-[10px] bg-red-600 text-white px-1.5 py-0.5 rounded font-black shrink-0 animate-pulse">KRİTİK!</span>' : ''}
           </div>
-          <div class="text-xs text-slate-300 font-mono truncate">
+          <div class="text-xs text-slate-300 font-mono truncate" title="${breakdown.replace(/"/g, '&quot;')}">
             ${breakdown}
           </div>
         </div>
+        ${formattedTotal ? `
         <div class="shrink-0 flex items-center pl-3 border-l border-slate-700/80">
-          <div class="text-2xl sm:text-3xl font-extrabold font-mono text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]">
-            = ${total}
+          <div class="text-xl sm:text-2xl font-extrabold font-mono text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]">
+            ${formattedTotal}
           </div>
         </div>
+        ` : ''}
       `;
 
       // Click to dismiss immediately
@@ -5850,7 +5887,7 @@
         });
       });
 
-      // Auto dismiss after exactly 3 seconds (no confirmation needed)
+      // Auto dismiss after exactly 3 seconds
       _diceToastTimer = setTimeout(() => {
         toast.classList.remove('translate-y-0', 'opacity-100');
         toast.classList.add('-translate-y-12', 'opacity-0');
@@ -5859,6 +5896,7 @@
         }, 350);
       }, 3000);
     }
+    window.showDiceTopToast = showDiceTopToast;
 
     function addDiceHistoryEntry(entry) {
       if (!Array.isArray(window.diceRollHistory)) {
@@ -5873,7 +5911,8 @@
         total: entry.total !== undefined ? entry.total : 0,
         isCrit: !!entry.isCrit,
         critDamage: entry.critDamage || null,
-        critInfo: entry.critInfo || ''
+        critInfo: entry.critInfo || '',
+        icon: entry.icon || (entry.isCrit ? '⚡' : '🎲')
       };
       window.diceRollHistory.unshift(record);
       if (window.diceRollHistory.length > 100) {
@@ -6877,7 +6916,12 @@
       (character.spellcasting?.slots || []).forEach(s => s.used = 0);
       renderSpellSlots();
       saveStateToStorage();
-      alert('✨ Tüm günlük büyü slotları yenilendi!');
+      showDiceTopToast({
+        icon: '✨',
+        title: 'Büyü Slotları',
+        breakdown: 'Tüm günlük büyü slotları tazelendi ve yenilendi',
+        total: 'Yenilendi'
+      });
     }
 
     // Maneuvers
@@ -6911,7 +6955,12 @@
       (character.tomeOfBattle?.readiedManeuvers || []).forEach(m => m.expended = false);
       renderManeuvers();
       saveStateToStorage();
-      alert('🔄 Tüm Tome of Battle manevraları yenilendi (Recovered)!');
+      showDiceTopToast({
+        icon: '🔄',
+        title: 'Manevralar Hazırlandı',
+        breakdown: 'Tüm Tome of Battle manevraları yenilendi (Recovered)',
+        total: 'Recovered'
+      });
     }
 
     function onStanceChange() {
@@ -6972,12 +7021,27 @@
         renderAll();
 
         if (buffApplied) {
-          alert(`🔮 "${name}" büyüsü yapıldı (${lvl}. seviye slottan harcandı) ve "${buffApplied}" buffı aktif edildi!\n\nSavunma ve Stat değerleriniz anında güncellendi.`);
+          showDiceTopToast({
+            icon: '🔮',
+            title: name,
+            breakdown: `"${buffApplied}" aktif edildi • ${lvl}. Seviye Slot Harcandı`,
+            total: `-${lvl} Slot`
+          });
         } else {
-          alert(`🔮 ${name} büyüsü yapıldı! (${lvl}. seviye slottan harcandı).`);
+          showDiceTopToast({
+            icon: '🔮',
+            title: name,
+            breakdown: `${lvl}. Seviye Büyü Slotu Harcandı`,
+            total: `-${lvl} Slot`
+          });
         }
       } else {
-        alert(`⚠️ ${lvl}. seviye büyü slotunuz kalmadı!`);
+        showDiceTopToast({
+          icon: '⚠️',
+          title: 'Slot Yetersiz',
+          breakdown: `${lvl}. seviye büyü slotunuz kalmadı!`,
+          total: '0 Slot'
+        });
       }
     }
 
@@ -8689,20 +8753,25 @@
       saveStateToStorage(true);
       renderAll();
 
-      const messages = [];
-      messages.push(`⏳ Tur ${character.encounterRound} Başladı!`);
-      if (hpLogs.length > 0) {
-        messages.push(`\n🩸 Tur Başı Can Değişimleri:\n• ${hpLogs.join('\n• ')}`);
-      }
-      if (expiredPeriodic.length > 0) {
-        messages.push(`\n⌛ Sona Eren Can Etkileri:\n• ${expiredPeriodic.join('\n• ')}`);
-      }
-      if (expired.length > 0) {
-        messages.push(`\n✨ Süresi Dolan Bufflar:\n• ${expired.join('\n• ')}`);
-      }
-
       if (hpLogs.length > 0 || expiredPeriodic.length > 0 || expired.length > 0) {
-        alert(messages.join(''));
+        const details = [
+          ...hpLogs,
+          ...expiredPeriodic.map(e => `${e} bitti`),
+          ...expired.map(e => `${e} bitti`)
+        ].join(' • ');
+        showDiceTopToast({
+          icon: '⏳',
+          title: `Tur ${character.encounterRound} Başladı`,
+          breakdown: details,
+          total: `${character.hp.current}/${character.hp.max} HP`
+        });
+      } else {
+        showDiceTopToast({
+          icon: '⏳',
+          title: `Tur ${character.encounterRound} Başladı`,
+          breakdown: 'Yeni tura geçildi',
+          total: `Tur ${character.encounterRound}`
+        });
       }
     }
 
@@ -10726,7 +10795,12 @@
       }
 
       if (!item || (Number(item.qty) || 0) <= 0) {
-        alert('⚠️ Bu eşyadan elinizde kalmadı!');
+        showDiceTopToast({
+          icon: '⚠️',
+          title: 'Tükendi',
+          breakdown: 'Bu eşyadan elinizde kalmadı!',
+          total: '0 Adet'
+        });
         return;
       }
 
@@ -10768,7 +10842,13 @@
           character.hp.current = Math.min(character.hp.max, character.hp.current + healTotal);
           saveStateToStorage(true);
           renderAll();
-          alert(`💖 "${name}" kullanıldı!\n\n${diceCount}d8 [${rolls.map(r => r.value).join(' + ')}] + ${flatBonus} = +${healTotal} HP!\n(Canınız: ${prevHp} -> ${character.hp.current} / ${character.hp.max})`);
+          addDiceHistoryEntry({
+            icon: '💖',
+            title: `${name}`,
+            formula: `${diceCount}d8+${flatBonus}`,
+            breakdown: `${diceCount}d8 [${rolls.map(r => r.value).join(' + ')}] + ${flatBonus} • Can: ${prevHp} ➔ ${character.hp.current}/${character.hp.max}`,
+            total: `+${healTotal} HP`
+          });
         };
 
         if (window.Dice3D && typeof Dice3D.roll === 'function') {
@@ -10798,9 +10878,19 @@
         saveStateToStorage(true);
         renderAll();
         if (activatedBuff) {
-          alert(`🧪 "${name}" kullanıldı!\n\n"${activatedBuff}" buffı aktif edildi (+4 Stat, 30 tur) ve karakterinizin tüm savunma ve saldırı değerleri anında güncellendi!`);
+          showDiceTopToast({
+            icon: '🧪',
+            title: name,
+            breakdown: `"${activatedBuff}" buffı aktif edildi (+4 Stat, 30 tur)`,
+            total: 'Aktif'
+          });
         } else {
-          alert(`🧪 "${name}" kullanıldı (Kalan: ${item.qty}).`);
+          showDiceTopToast({
+            icon: '🧪',
+            title: name,
+            breakdown: `Kullanıldı (Kalan: ${item.qty})`,
+            total: '✔'
+          });
         }
       }
     }
