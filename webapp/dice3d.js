@@ -1,8 +1,9 @@
 /**
  * Ultra-Realistic 3D Physics-Simulated Animated Dice Roller for D&D 3.5e
  * Features true polyhedral geometries (d4, d6, d8, d10, d12, d20, d100),
- * deep crimson red resin materials with glossy specular glints,
- * numbers painted directly on all die faces (no floating billboards),
+ * dark smoky obsidian / onyx crystal materials with high-gloss specular reflections,
+ * radiant molten gold neon glowing beveled edges & corner vertices,
+ * gold-foil outlined serif Roman numerals (Cinzel style) with dark obsidian cores,
  * soft tabletop contact shadows, dynamic camera alignment, and rich acoustic clatter.
  */
 
@@ -19,6 +20,10 @@ class Dice3DController {
     this.textureCache = new Map();
     this.onFinishCallback = null;
     this.animationFrameId = null;
+
+    // Shared unit geometries for glowing edge rendering
+    this.unitCylGeo = null;
+    this.unitSphereGeo = null;
 
     let savedColor = '#851316';
     try {
@@ -51,6 +56,10 @@ class Dice3DController {
       return;
     }
 
+    // Shared edge geometries
+    this.unitCylGeo = new THREE.CylinderGeometry(1, 1, 1, 8, 1, true);
+    this.unitSphereGeo = new THREE.SphereGeometry(1, 8, 8);
+
     // Fullscreen transparent overlay
     this.container = document.createElement('div');
     this.container.id = 'dice-3d-overlay';
@@ -79,15 +88,15 @@ class Dice3DController {
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.1;
+    this.renderer.toneMappingExposure = 1.18;
     this.container.appendChild(this.renderer.domElement);
 
-    // Warm Ambient Light
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+    // Ambient Light (Dark moody obsidian contrast)
+    const ambientLight = new THREE.AmbientLight(0x28201a, 1.25);
     this.scene.add(ambientLight);
 
-    // Main Overhead Directional Light (Key Light casting realistic shadows)
-    const keyLight = new THREE.DirectionalLight(0xfff7ee, 1.5);
+    // Main Overhead Directional Light (Key Light casting realistic shadows & glints)
+    const keyLight = new THREE.DirectionalLight(0xfff6ea, 1.6);
     keyLight.position.set(9, 24, 11);
     keyLight.castShadow = true;
     keyLight.shadow.mapSize.width = 2048;
@@ -102,14 +111,19 @@ class Dice3DController {
     keyLight.shadow.radius = 3;
     this.scene.add(keyLight);
 
-    // Fill Point Light (Produces brilliant glossy specular glints on facets)
-    const fillLight = new THREE.PointLight(0xffe4d6, 0.9, 40);
+    // Rim Backlight (Casts intense glowing golden rim lighting on bevels)
+    const rimLight = new THREE.DirectionalLight(0xff8c00, 1.8);
+    rimLight.position.set(0, 8, -14);
+    this.scene.add(rimLight);
+
+    // Fill Point Light (Produces subtle specular highlights)
+    const fillLight = new THREE.PointLight(0x7c8ba1, 0.7, 40);
     fillLight.position.set(-8, 12, 6);
     this.scene.add(fillLight);
 
     // Floor Shadow Receiver (Invisible tabletop plane receiving dark contact shadows)
     const floorGeo = new THREE.PlaneGeometry(60, 60);
-    const floorMat = new THREE.ShadowMaterial({ opacity: 0.38 });
+    const floorMat = new THREE.ShadowMaterial({ opacity: 0.52 });
     const floor = new THREE.Mesh(floorGeo, floorMat);
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = 0;
@@ -175,67 +189,131 @@ class Dice3DController {
     } catch (e) {}
   }
 
-  // Generate crisp 256x256 transparent decal texture with numbers engraved directly on faces (NO round discs/circles)
+  // Generate crisp 512x512 decal texture: Gold-foil serif numerals with obsidian core
   createFaceTexture(numberText, sides) {
-    const key = `${sides}_${numberText}`;
+    const key = `${sides}_${numberText}_${this.diceColor}`;
     if (this.textureCache.has(key)) {
       return this.textureCache.get(key);
     }
 
     const canvas = document.createElement('canvas');
-    canvas.width = 256;
-    canvas.height = 256;
+    canvas.width = 512;
+    canvas.height = 512;
     const ctx = canvas.getContext('2d');
 
     const num = parseInt(numberText) || 0;
     const isD20Nat20 = (sides === 20 && num === 20);
     const isD20Nat1 = (sides === 20 && num === 1);
 
-    // 100% transparent canvas background - NO circular fill, NO discs, pure flat facet
-    ctx.clearRect(0, 0, 256, 256);
+    ctx.clearRect(0, 0, 512, 512);
+
+    let displayText = String(numberText);
+    const hasDotUnderline = ((displayText === '6' || displayText === '9') && sides > 4);
 
     ctx.save();
-    let displayText = String(numberText);
-    // Add dot to distinguish 6. and 9. on d20 / d12 / d10 / d8 / d6
-    if ((displayText === '6' || displayText === '9') && sides > 4) {
-      displayText = displayText + '.';
-    }
-
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    const fontSize = displayText.length > 2 ? 88 : (displayText.length > 1 ? 108 : 128);
-    ctx.font = `900 ${fontSize}px "Segoe UI", Arial, sans-serif`;
+    const cx = 256;
+    const cy = 256;
 
-    const colorObj = new THREE.Color(this.diceColor || '#851316');
-    const lum = 0.2126 * colorObj.r + 0.7152 * colorObj.g + 0.0722 * colorObj.b;
-    const isLightDie = lum > 0.62;
+    // Elegant subtle arcane ring / facet frame
+    ctx.beginPath();
+    ctx.arc(cx, cy, 185, 0, Math.PI * 2);
+    ctx.strokeStyle = isD20Nat20 ? 'rgba(254, 240, 138, 0.45)' : 'rgba(245, 158, 11, 0.22)';
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([8, 8]);
+    ctx.stroke();
+    ctx.setLineDash([]);
 
-    // 1. Realistic debossed/engraved drop-shadow into the facet resin
-    ctx.shadowColor = isLightDie ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.65)';
-    ctx.shadowBlur = 4;
-    ctx.shadowOffsetX = 1;
-    ctx.shadowOffsetY = 2;
+    // Font sizing: Serif Roman font (Cinzel / Palatino / Georgia)
+    const len = displayText.length;
+    const fontSize = len >= 3 ? 160 : (len === 2 ? 210 : 250);
+    ctx.font = `900 ${fontSize}px "Cinzel", "Palatino Linotype", "Book Antiqua", "Georgia", serif`;
 
-    // 2. High-contrast crisp numeral fill
+    // 1. Warm radiant drop shadow / ambient glow
     if (isD20Nat20) {
-      ctx.fillStyle = isLightDie ? '#b45309' : '#fef08a'; // Radiant gold for Nat 20
-      ctx.shadowColor = '#eab308';
-      ctx.shadowBlur = 12;
+      ctx.shadowColor = 'rgba(250, 204, 21, 0.95)';
+      ctx.shadowBlur = 32;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
     } else if (isD20Nat1) {
-      ctx.fillStyle = '#dc2626'; // Bold red for Nat 1
+      ctx.shadowColor = 'rgba(239, 68, 68, 0.85)';
+      ctx.shadowBlur = 24;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
     } else {
-      ctx.fillStyle = isLightDie ? '#0f172a' : '#ffffff'; // Dark slate for light dice, pure crisp white for dark dice
+      ctx.shadowColor = 'rgba(245, 158, 11, 0.65)';
+      ctx.shadowBlur = 18;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 4;
     }
 
-    ctx.fillText(displayText, 128, 128);
+    // 2. Outer Bold Golden Foil Bevel Stroke (Dual Gold Gradient)
+    const goldGrad = ctx.createLinearGradient(120, 80, 392, 432);
+    if (isD20Nat20) {
+      goldGrad.addColorStop(0, '#ffffff');
+      goldGrad.addColorStop(0.2, '#fef08a');
+      goldGrad.addColorStop(0.5, '#f59e0b');
+      goldGrad.addColorStop(0.85, '#d97706');
+      goldGrad.addColorStop(1, '#92400e');
+    } else if (isD20Nat1) {
+      goldGrad.addColorStop(0, '#fca5a5');
+      goldGrad.addColorStop(0.4, '#dc2626');
+      goldGrad.addColorStop(1, '#7f1d1d');
+    } else {
+      goldGrad.addColorStop(0, '#fffbeb'); // Specular highlight
+      goldGrad.addColorStop(0.25, '#fef08a'); // Warm bright gold
+      goldGrad.addColorStop(0.55, '#f59e0b'); // Amber gold
+      goldGrad.addColorStop(0.85, '#b45309'); // Burnished bronze
+      goldGrad.addColorStop(1, '#451a03'); // Deep lowlight
+    }
 
-    // 3. Ultra-fine crisp edge contour (2.5px) for clear legibility on resin
+    ctx.lineWidth = Math.max(12, fontSize * 0.085);
+    ctx.lineJoin = 'miter';
+    ctx.miterLimit = 3;
+    ctx.strokeStyle = goldGrad;
+    ctx.strokeText(displayText, cx, cy);
+
+    // 3. Inner Core Fill
     ctx.shadowColor = 'transparent';
-    ctx.lineWidth = 2.5;
-    ctx.lineJoin = 'round';
-    ctx.strokeStyle = isLightDie ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.45)';
-    ctx.strokeText(displayText, 128, 128);
+    ctx.shadowBlur = 0;
+
+    if (isD20Nat20) {
+      // Radiant incandescent gold core
+      const coreGrad = ctx.createRadialGradient(cx, cy - 20, 10, cx, cy, 140);
+      coreGrad.addColorStop(0, '#ffffff');
+      coreGrad.addColorStop(0.35, '#fef08a');
+      coreGrad.addColorStop(0.8, '#f59e0b');
+      coreGrad.addColorStop(1, '#b45309');
+      ctx.fillStyle = coreGrad;
+      ctx.fillText(displayText, cx, cy);
+    } else if (isD20Nat1) {
+      // Crimson obsidian core
+      ctx.fillStyle = '#220808';
+      ctx.fillText(displayText, cx, cy);
+    } else {
+      // Deep obsidian crystal core matching the photo!
+      ctx.fillStyle = '#161311';
+      ctx.fillText(displayText, cx, cy);
+    }
+
+    // 4. Delicate inner metallic hairline glint
+    ctx.lineWidth = 2.2;
+    ctx.strokeStyle = isD20Nat20 ? 'rgba(255, 255, 255, 0.95)' : 'rgba(254, 243, 199, 0.65)';
+    ctx.strokeText(displayText, cx, cy);
+
+    // 5. Elegant dot underline for 6 and 9
+    if (hasDotUnderline) {
+      ctx.beginPath();
+      ctx.arc(cx, cy + fontSize * 0.58, fontSize * 0.075, 0, Math.PI * 2);
+      ctx.fillStyle = goldGrad;
+      ctx.fill();
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = '#ffffff';
+      ctx.stroke();
+    }
+
     ctx.restore();
 
     const texture = new THREE.CanvasTexture(canvas);
@@ -251,8 +329,6 @@ class Dice3DController {
     const vertices = [];
     const customFaces = [];
 
-    // Authentic D&D d10 pentagonal trapezohedron proportions with 100% planar kites
-    // Collinearity condition for coplanar kite vertices: h = H * (1 - cos 36°) / (1 + cos 36°) ≈ H * 0.1055728
     const H = radius * 1.55;  // Apex height
     const R = radius * 1.30;  // Equator radius
     const cos36 = (1 + Math.sqrt(5)) / 4;
@@ -261,9 +337,7 @@ class Dice3DController {
     const topPole = new THREE.Vector3(0, H, 0);
     const botPole = new THREE.Vector3(0, -H, 0);
 
-    // 5 Upper vertices at +h (angles 0°, 72°, 144°, 216°, 288°)
     const U = [];
-    // 5 Lower vertices at -h (angles 36°, 108°, 180°, 252°, 324°)
     const L = [];
 
     for (let i = 0; i < 5; i++) {
@@ -274,22 +348,18 @@ class Dice3DController {
       L.push(new THREE.Vector3(Math.cos(aL) * R, -h, Math.sin(aL) * R));
     }
 
-    // Build 5 Upper Kites and 5 Lower Kites (Total 10 Kites = 20 Triangles)
     for (let i = 0; i < 5; i++) {
       const uCurr = U[i];
       const uNext = U[(i + 1) % 5];
       const lCurr = L[i];
       const lNext = L[(i + 1) % 5];
 
-      // 1. Upper Kite i (meeting at topPole, bounded by uCurr, lCurr, uNext)
-      // Both triangles wound CCW seen from outside:
-      // Tri 1: topPole, lCurr, uCurr
+      // Upper Kite i
       vertices.push(
         topPole.x, topPole.y, topPole.z,
         lCurr.x, lCurr.y, lCurr.z,
         uCurr.x, uCurr.y, uCurr.z
       );
-      // Tri 2: topPole, uNext, lCurr
       vertices.push(
         topPole.x, topPole.y, topPole.z,
         uNext.x, uNext.y, uNext.z,
@@ -300,7 +370,6 @@ class Dice3DController {
         .add(topPole).add(uCurr).add(lCurr).add(uNext)
         .multiplyScalar(0.25);
 
-      // Transverse (uNext - uCurr) x Longitudinal (lCurr - topPole)
       const uTrans = new THREE.Vector3().subVectors(uNext, uCurr);
       const uLong = new THREE.Vector3().subVectors(lCurr, topPole);
       const upperNormal = new THREE.Vector3().crossVectors(uTrans, uLong).normalize();
@@ -310,15 +379,12 @@ class Dice3DController {
 
       const uTopVec = new THREE.Vector3().subVectors(topPole, upperCenter).normalize();
 
-      // 2. Lower Kite i (meeting at botPole, bounded by lNext, uNext, lCurr)
-      // Both triangles wound CCW seen from outside:
-      // Tri 1: botPole, uNext, lNext
+      // Lower Kite i
       vertices.push(
         botPole.x, botPole.y, botPole.z,
         uNext.x, uNext.y, uNext.z,
         lNext.x, lNext.y, lNext.z
       );
-      // Tri 2: botPole, lCurr, uNext
       vertices.push(
         botPole.x, botPole.y, botPole.z,
         lCurr.x, lCurr.y, lCurr.z,
@@ -329,7 +395,6 @@ class Dice3DController {
         .add(botPole).add(lCurr).add(uNext).add(lNext)
         .multiplyScalar(0.25);
 
-      // Longitudinal (uNext - botPole) x Transverse (lNext - lCurr)
       const lLong = new THREE.Vector3().subVectors(uNext, botPole);
       const lTrans = new THREE.Vector3().subVectors(lNext, lCurr);
       const lowerNormal = new THREE.Vector3().crossVectors(lLong, lTrans).normalize();
@@ -339,7 +404,6 @@ class Dice3DController {
 
       const lTopVec = new THREE.Vector3().subVectors(uNext, lowerCenter).normalize();
 
-      // Add to customFaces (alternating upper and lower)
       customFaces.push({ center: upperCenter, normal: upperNormal, topVec: uTopVec });
       customFaces.push({ center: lowerCenter, normal: lowerNormal, topVec: lTopVec });
     }
@@ -372,7 +436,6 @@ class Dice3DController {
       const edge2 = new THREE.Vector3().subVectors(v2, v0);
       const normal = new THREE.Vector3().crossVectors(edge1, edge2).normalize();
 
-      // Check if coplanar to existing face (for Box / Dodecahedron)
       let found = false;
       for (const f of faces) {
         if (f.normal.dot(normal) > 0.92) {
@@ -388,7 +451,7 @@ class Dice3DController {
     return faces;
   }
 
-  // Build a true 3D polyhedral die with engraved numbers on all faces
+  // Build a true 3D polyhedral die with obsidian body, glowing neon gold edges, and gold foil numerals
   createDieMesh(type, targetValue) {
     let geo;
     let sides = 20;
@@ -428,12 +491,14 @@ class Dice3DController {
       decalScale = 0.56;
     }
 
-    // Authentic Tabletop Resin Material with sharp crystalline flat facet shading
-    const diceColorHex = new THREE.Color(this.diceColor || '#851316');
+    // Dark Smoky Obsidian / Polished Onyx Crystal Material
+    const userColor = new THREE.Color(this.diceColor || '#851316');
+    const darkObsidian = new THREE.Color(0x120f0d).lerp(userColor, 0.22);
+
     const dieMat = new THREE.MeshStandardMaterial({
-      color: diceColorHex,
-      roughness: 0.16,
-      metalness: 0.08,
+      color: darkObsidian,
+      roughness: 0.12,
+      metalness: 0.35,
       flatShading: true,
       side: THREE.DoubleSide
     });
@@ -441,6 +506,82 @@ class Dice3DController {
     const dieMesh = new THREE.Mesh(geo, dieMat);
     dieMesh.castShadow = true;
     dieMesh.receiveShadow = false;
+
+    // Glowing Molten Gold Neon Edges & Vertices
+    const edgeGeo = new THREE.EdgesGeometry(geo, 12);
+    const posAttr = edgeGeo.attributes.position;
+    const edgeCount = posAttr ? posAttr.count / 2 : 0;
+
+    if (edgeCount > 0 && this.unitCylGeo && this.unitSphereGeo) {
+      const edgeRadius = 0.034;
+      const glowEdgeMat = new THREE.MeshBasicMaterial({
+        color: 0xffa800,
+        transparent: true,
+        opacity: 0.96
+      });
+      const edgeMesh = new THREE.InstancedMesh(this.unitCylGeo, glowEdgeMat, edgeCount);
+
+      const upVec = new THREE.Vector3(0, 1, 0);
+      const p1 = new THREE.Vector3();
+      const p2 = new THREE.Vector3();
+      const dir = new THREE.Vector3();
+      const mid = new THREE.Vector3();
+      const quat = new THREE.Quaternion();
+      const scale = new THREE.Vector3();
+      const mat4 = new THREE.Matrix4();
+      const uniqueVerts = [];
+      const vertThreshold = 0.05;
+
+      for (let i = 0; i < edgeCount; i++) {
+        p1.set(posAttr.getX(i * 2), posAttr.getY(i * 2), posAttr.getZ(i * 2));
+        p2.set(posAttr.getX(i * 2 + 1), posAttr.getY(i * 2 + 1), posAttr.getZ(i * 2 + 1));
+
+        dir.subVectors(p2, p1);
+        const len = dir.length();
+        mid.addVectors(p1, p2).multiplyScalar(0.5);
+
+        quat.setFromUnitVectors(upVec, dir.clone().normalize());
+        scale.set(edgeRadius, len, edgeRadius);
+        mat4.compose(mid, quat, scale);
+        edgeMesh.setMatrixAt(i, mat4);
+
+        [p1, p2].forEach(p => {
+          if (!uniqueVerts.some(v => v.distanceTo(p) < vertThreshold)) {
+            uniqueVerts.push(p.clone());
+          }
+        });
+      }
+      edgeMesh.instanceMatrix.needsUpdate = true;
+      dieMesh.add(edgeMesh);
+
+      // Glowing corner beads at vertices
+      const cornerMat = new THREE.MeshBasicMaterial({
+        color: 0xffc42e,
+        transparent: true,
+        opacity: 0.98
+      });
+      const cornerMesh = new THREE.InstancedMesh(this.unitSphereGeo, cornerMat, uniqueVerts.length);
+      uniqueVerts.forEach((v, idx) => {
+        scale.set(edgeRadius * 1.18, edgeRadius * 1.18, edgeRadius * 1.18);
+        mat4.compose(v, new THREE.Quaternion(), scale);
+        cornerMesh.setMatrixAt(idx, mat4);
+      });
+      cornerMesh.instanceMatrix.needsUpdate = true;
+      dieMesh.add(cornerMesh);
+
+      // White-hot laser center lines
+      const lineMat = new THREE.LineBasicMaterial({
+        color: 0xfffae0,
+        transparent: true,
+        opacity: 0.88
+      });
+      const lineSegments = new THREE.LineSegments(edgeGeo, lineMat);
+      dieMesh.add(lineSegments);
+    }
+
+    // Inner warm amber point light radiating from within the die
+    const innerGlow = new THREE.PointLight(0xff9d00, 2.2, radius * 3.8);
+    dieMesh.add(innerGlow);
 
     // Extract face planes & attach transparent numeral decals directly onto flat facets
     const faces = this.extractFaces(geo);
@@ -472,7 +613,6 @@ class Dice3DController {
       faceValues.unshift(targetValue);
     }
 
-    // Pure flat plane geometry - alphaTest completely clips everything outside the engraved number
     const decalGeo = new THREE.PlaneGeometry(radius * decalScale, radius * decalScale);
 
     for (let i = 0; i < numFaces; i++) {
@@ -493,7 +633,6 @@ class Dice3DController {
 
       const decalMesh = new THREE.Mesh(decalGeo, decalMat);
       
-      // Calculate clean orientation: decal normal = face.normal, with upright projection
       const normal = face.normal.clone().normalize();
       let up = face.topVec ? face.topVec.clone().normalize() : new THREE.Vector3(0, 1, 0);
       if (Math.abs(normal.dot(up)) > 0.92) {
@@ -504,8 +643,7 @@ class Dice3DController {
       const rotMatrix = new THREE.Matrix4().makeBasis(right, faceUp, normal);
       decalMesh.quaternion.setFromRotationMatrix(rotMatrix);
 
-      // Offset outward along facet normal to prevent z-fighting
-      decalMesh.position.copy(face.center).addScaledVector(face.normal, 0.020);
+      decalMesh.position.copy(face.center).addScaledVector(face.normal, 0.024);
       dieMesh.add(decalMesh);
     }
 
@@ -597,7 +735,6 @@ class Dice3DController {
 
       this.scene.add(mesh);
 
-      // Target world normal orientation facing directly towards camera with 100% upright viewport alignment
       const targetQuat = this.computeTargetQuat(dieData, mesh.position);
 
       this.activeDice.push({
