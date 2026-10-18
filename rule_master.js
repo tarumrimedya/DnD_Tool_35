@@ -2940,7 +2940,7 @@ Return valid JSON only matching this schema:
       if (btnFreetext) {
         btnFreetext.className = 'px-2.5 py-1 rounded font-bold transition bg-purple-600 text-white shadow';
       }
-      if (headerTitle) headerTitle.textContent = 'Serbest Metin AI Kural Ayrıştırıcı';
+      if (headerTitle) headerTitle.textContent = '🧙‍♂️🤖 Rule Master (AI) Serbest Metin Ayrıştırıcı';
       const ta = document.getElementById('inline-ai-freetext-input');
       if (ta) ta.focus();
     } else {
@@ -2952,7 +2952,7 @@ Return valid JSON only matching this schema:
       if (btnFreetext) {
         btnFreetext.className = 'px-2.5 py-1 rounded font-bold transition text-slate-400 hover:text-white';
       }
-      if (headerTitle) headerTitle.textContent = 'Hızlı AI Kural Ekleyici (WotC 3.5e)';
+      if (headerTitle) headerTitle.textContent = 'Hızlı 🧙‍♂️🤖 Rule Master (AI) Kural Ekleyici';
       const q = document.getElementById('inline-ai-rule-query');
       if (q) q.focus();
     }
@@ -3555,7 +3555,7 @@ ${customQuery ? `Kullanıcının Özel Sorusu: ${customQuery}` : 'Bu seviye atla
         <div class="space-y-2">
           <div class="flex items-center justify-between pb-1 border-b border-purple-500/30">
             <span class="font-bold text-purple-300 flex items-center gap-1.5">
-              <span>🤖</span><span>Gemini Rule Master AI Seviye Tavsiyesi (Seviye ${targetLevel})</span>
+              <span>🧙‍♂️🤖</span><span>Rule Master (AI) Seviye Tavsiyesi (Seviye ${targetLevel})</span>
             </span>
             <span class="badge bg-purple-950 text-purple-300 border border-purple-600 font-mono text-[9px] font-bold">Gemini RAW AI</span>
           </div>
