@@ -5722,25 +5722,32 @@
       }
 
       const condBadge = document.getElementById('hp-condition-badge');
+      const hpCurrentDisplay = document.getElementById('hp-current-display');
       if (condBadge) {
         if (curHp >= maxHp) {
           condBadge.textContent = 'Healthy';
           condBadge.className = 'badge bg-emerald-900/60 text-emerald-300 border border-emerald-600';
+          if (hpCurrentDisplay) hpCurrentDisplay.className = 'text-2xl sm:text-3xl font-extrabold text-emerald-400 font-mono transition-colors';
         } else if (curHp > maxHp / 2) {
           condBadge.textContent = 'Scratched';
           condBadge.className = 'badge bg-emerald-900/40 text-emerald-200 border border-emerald-700';
+          if (hpCurrentDisplay) hpCurrentDisplay.className = 'text-2xl sm:text-3xl font-extrabold text-emerald-300 font-mono transition-colors';
         } else if (curHp > 0) {
           condBadge.textContent = 'Bloodied';
           condBadge.className = 'badge bg-amber-900/60 text-amber-300 border border-amber-600';
+          if (hpCurrentDisplay) hpCurrentDisplay.className = 'text-2xl sm:text-3xl font-extrabold text-amber-400 font-mono transition-colors';
         } else if (curHp === 0) {
           condBadge.textContent = 'Disabled';
           condBadge.className = 'badge bg-orange-950 text-orange-400 border border-orange-700';
+          if (hpCurrentDisplay) hpCurrentDisplay.className = 'text-2xl sm:text-3xl font-extrabold text-orange-400 font-mono transition-colors';
         } else if (curHp > -10) {
           condBadge.textContent = 'Dying';
           condBadge.className = 'badge bg-rose-950 text-rose-400 border border-rose-700 animate-pulse';
+          if (hpCurrentDisplay) hpCurrentDisplay.className = 'text-2xl sm:text-3xl font-extrabold text-rose-400 font-mono animate-pulse transition-colors';
         } else {
           condBadge.textContent = 'Dead';
           condBadge.className = 'badge bg-slate-950 text-rose-500 border border-slate-800';
+          if (hpCurrentDisplay) hpCurrentDisplay.className = 'text-2xl sm:text-3xl font-extrabold text-rose-500 font-mono transition-colors';
         }
       }
 
