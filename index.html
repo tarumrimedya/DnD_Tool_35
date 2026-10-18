@@ -2958,9 +2958,14 @@
                 <input type="number" id="pointbuy-custom-budget" oninput="calculatePointBuy()" class="hidden w-16 bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-xs text-center text-white font-mono font-bold" min="10" max="100" value="28">
               </div>
 
-              <!-- Puan Durum Rozeti -->
-              <div id="pointbuy-summary-badge" class="px-2.5 py-1 rounded-lg font-mono font-bold text-xs flex items-center gap-1.5 bg-emerald-950 text-emerald-300 border border-emerald-600">
-                <span>Kalan: <strong id="pointbuy-remaining-pts">0</strong> / <span id="pointbuy-total-pts">28</span> Puan</span>
+              <!-- Puan Durum Rozeti & Sıfırla -->
+              <div class="flex items-center gap-1.5">
+                <div id="pointbuy-summary-badge" class="px-2.5 py-1 rounded-lg font-mono font-bold text-xs flex items-center gap-1.5 bg-emerald-950 text-emerald-300 border border-emerald-600">
+                  <span>Kalan: <strong id="pointbuy-remaining-pts">0</strong> / <span id="pointbuy-total-pts">28</span> Puan</span>
+                </div>
+                <button type="button" onclick="resetStatsToCurrent()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded border border-slate-700 transition cursor-pointer" title="Mevcut taban statlara dön">
+                  ↺ Sıfırla
+                </button>
               </div>
             </div>
             <p class="text-[10px] text-purple-300/80">D&amp;D 3.5e DMG s. 169 kuralları: Statlar taban 8 başlar. 14'e kadar 1'er puan, 15-16 için 2'şer puan, 17-18 için 3'er puan harcanır.</p>
@@ -2983,10 +2988,15 @@
                 </h4>
                 <p class="text-[10px] text-slate-400">Her stat için 4 adet 6'lık zar atılır, en düşük zar elenerek kalan 3 zar toplanır.</p>
               </div>
-              <button type="button" onclick="rollAll4d6Stats()" class="bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-black text-xs px-3.5 py-1.5 rounded-lg shadow-lg flex items-center gap-1.5 transition active:scale-95 cursor-pointer">
-                <span class="inline-flex items-center"><svg class="w-3.5 h-3.5 text-slate-950" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"></polygon><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"></polygon><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"></line><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
-                <span>Zarları Yeniden At</span>
-              </button>
+              <div class="flex items-center gap-1.5">
+                <button type="button" onclick="rollAll4d6Stats()" class="bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-black text-xs px-3.5 py-1.5 rounded-lg shadow-lg flex items-center gap-1.5 transition active:scale-95 cursor-pointer">
+                  <span class="inline-flex items-center"><svg class="w-3.5 h-3.5 text-slate-950" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"></polygon><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"></polygon><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"></line><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
+                  <span>Zarları Yeniden At</span>
+                </button>
+                <button type="button" onclick="resetStatsToCurrent()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded border border-slate-700 transition cursor-pointer" title="Mevcut taban statlara dön">
+                  ↺ Sıfırla
+                </button>
+              </div>
             </div>
 
             <!-- Rolled Dices Display Cards -->
@@ -2999,9 +3009,14 @@
           <div class="space-y-1.5">
             <div class="flex items-center justify-between text-[11px] font-bold text-slate-300 pb-1 border-b border-slate-800">
               <span>Atılan Zarları Statlara Dağıtın:</span>
-              <button type="button" onclick="autoAssignRolledStats()" class="text-[10px] text-indigo-300 hover:text-white underline cursor-pointer">
-                ⚡ Sınıfa Göre Otomatik Dağıt
-              </button>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="autoAssignRolledStats()" class="text-[10px] text-indigo-300 hover:text-white underline cursor-pointer">
+                  ⚡ Sınıfa Göre Otomatik Dağıt
+                </button>
+                <button type="button" onclick="resetStatsToCurrent()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded border border-slate-700 transition cursor-pointer" title="Mevcut taban statlara dön">
+                  ↺ Sıfırla
+                </button>
+              </div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="rolled-assign-container">
               <!-- Rendered by JS -->
@@ -6884,15 +6899,15 @@
     function openStatDistributionModal() {
       if (!character) return;
       
-      // Initialize baseAbilities if missing
-      if (!character.baseAbilities) {
+      // Initialize baseAbilities if missing or not yet customized - default all to 10
+      if (!character.hasCustomBaseAbilities || !character.baseAbilities) {
         character.baseAbilities = {
-          str: Number(character.abilities?.str) || 10,
-          dex: Number(character.abilities?.dex) || 10,
-          con: Number(character.abilities?.con) || 10,
-          int: Number(character.abilities?.int) || 10,
-          wis: Number(character.abilities?.wis) || 10,
-          cha: Number(character.abilities?.cha) || 10
+          str: 10,
+          dex: 10,
+          con: 10,
+          int: 10,
+          wis: 10,
+          cha: 10
         };
       }
 
@@ -7036,19 +7051,32 @@
     }
 
     function resetStatsToCurrent() {
-      if (character && character.baseAbilities) {
-        statDistState.workingAbilities = {
-          str: Number(character.baseAbilities.str) || 10,
-          dex: Number(character.baseAbilities.dex) || 10,
-          con: Number(character.baseAbilities.con) || 10,
-          int: Number(character.baseAbilities.int) || 10,
-          wis: Number(character.baseAbilities.wis) || 10,
-          cha: Number(character.baseAbilities.cha) || 10
-        };
+      statDistState.workingAbilities = {
+        str: 10,
+        dex: 10,
+        con: 10,
+        int: 10,
+        wis: 10,
+        cha: 10
+      };
+      if (statDistState.mode === 'manual') {
+        renderManualStatsPanel();
+      } else if (statDistState.mode === 'pointbuy') {
+        renderPointBuyPanel();
+      } else if (statDistState.mode === 'roll') {
+        if (statDistState.rolledDice) {
+          statDistState.rolledDice.forEach(r => r.assignedTo = null);
+        }
+        renderRolledStatsPanel();
       }
-      if (statDistState.mode === 'manual') renderManualStatsPanel();
-      else if (statDistState.mode === 'pointbuy') renderPointBuyPanel();
       renderStatDistPreviewRow();
+      if (typeof showDiceTopToast === 'function') {
+        showDiceTopToast({
+          icon: typeof getDiceIconSvg === 'function' ? getDiceIconSvg('20', 'w-6 h-6 text-amber-400') : '↺',
+          title: 'Statlar Sıfırlandı',
+          breakdown: 'Tüm taban özellik skorları 10 olarak ayarlandı.'
+        });
+      }
     }
 
     // --- 2. POINT BUY (D&D 3.5e DMG p. 169) ---
@@ -7155,6 +7183,7 @@
 
     // --- 3. 4d6 DROP LOWEST MODE ---
     function rollAll4d6Stats() {
+      const order = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
       const newPool = [];
       for (let i = 0; i < 6; i++) {
         const rolls = [
@@ -7177,11 +7206,13 @@
           rolls,
           droppedIndex: minIdx,
           total,
-          assignedTo: null
+          assignedTo: order[i]
         });
+        statDistState.workingAbilities[order[i]] = total;
       }
       statDistState.rolledDice = newPool;
-      autoAssignRolledStats(true);
+      renderRolledStatsPanel();
+      renderStatDistPreviewRow();
     }
 
     function autoAssignRolledStats(silent = false) {
@@ -7250,7 +7281,17 @@
     function renderRolledStatsPanel() {
       const cardsBox = document.getElementById('rolled-dice-cards-box');
       if (cardsBox && statDistState.rolledDice.length > 0) {
-        cardsBox.innerHTML = statDistState.rolledDice.map(r => {
+        cardsBox.innerHTML = STAT_KEYS.map(s => {
+          const r = statDistState.rolledDice.find(item => item.assignedTo === s.key);
+          if (!r) {
+            return `
+              <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl p-2 flex flex-col items-center justify-between">
+                <span class="text-[9px] font-mono text-purple-300 uppercase px-1.5 py-0.2 rounded bg-purple-950 border border-purple-800">${s.label}</span>
+                <div class="text-lg font-black text-slate-500 font-mono my-1">-</div>
+                <div class="text-[10px] text-slate-500 font-mono">Boşta</div>
+              </div>
+            `;
+          }
           const diceHtml = r.rolls.map((d, idx) => {
             const isDropped = (idx === r.droppedIndex);
             if (isDropped) {
@@ -7259,12 +7300,9 @@
             return `<span class="text-amber-300 font-mono font-bold text-xs bg-slate-900 border border-slate-700 px-1 rounded">${d}</span>`;
           }).join(' ');
 
-          const assignedStatObj = STAT_KEYS.find(s => s.key === r.assignedTo);
-          const badgeText = assignedStatObj ? assignedStatObj.label : 'Boşta';
-
           return `
             <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl p-2 flex flex-col items-center justify-between">
-              <span class="text-[9px] font-mono text-purple-300 uppercase px-1.5 py-0.2 rounded bg-purple-950 border border-purple-800">${badgeText}</span>
+              <span class="text-[9px] font-mono text-purple-300 uppercase px-1.5 py-0.2 rounded bg-purple-950 border border-purple-800">${s.label}</span>
               <div class="text-lg font-black text-amber-400 font-mono my-1">${r.total}</div>
               <div class="flex items-center gap-1 justify-center">${diceHtml}</div>
             </div>
@@ -7357,6 +7395,7 @@
 
       // Taban statları uygula
       if (!character.baseAbilities) character.baseAbilities = {};
+      character.hasCustomBaseAbilities = true;
       STAT_KEYS.forEach(s => {
         character.baseAbilities[s.key] = Number(statDistState.workingAbilities[s.key]) || 10;
       });
