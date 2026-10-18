@@ -3298,7 +3298,14 @@
             <p class="text-[10px] text-slate-400">D&D 3.5e Sınıf, Can Zarı (HD), BAB, Saves, Stat (+1) ve Feat Seçimi</p>
           </div>
         </div>
-        <button onclick="closeLevelUpModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-lg text-xs font-bold transition">✕ Kapat</button>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="toggleLevelUpCopilotDetails()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs px-2.5 py-1 rounded-lg shadow flex items-center gap-1.5 transition cursor-pointer" title="Rule Master Copilot'u aç / kapat">
+            <span>🤖</span>
+            <span>Copilot</span>
+            <span id="lvlup-copilot-header-badge" class="text-[9px] bg-purple-900/80 px-1 rounded text-purple-200">AI</span>
+          </button>
+          <button onclick="closeLevelUpModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-lg text-xs font-bold transition">✕ Kapat</button>
+        </div>
       </div>
 
       <!-- Body -->
@@ -3306,7 +3313,7 @@
         <!-- ==================================================== -->
         <!-- 🤖 GSHEET RULE MASTER LEVEL UP COPILOT (AI & RAW ASİSTANI) -->
         <!-- ==================================================== -->
-        <div id="lvlup-copilot-card" class="bg-gradient-to-r from-purple-950/80 via-indigo-950/70 to-slate-900 border border-purple-500/50 rounded-xl p-3 shadow-lg space-y-2.5 transition">
+        <div id="lvlup-copilot-card" class="hidden bg-gradient-to-r from-purple-950/80 via-indigo-950/70 to-slate-900 border border-purple-500/50 rounded-xl p-3 shadow-lg space-y-2.5 transition">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <div class="flex items-center gap-2">
               <div class="w-8 h-8 rounded-lg bg-purple-900/80 border border-purple-400/50 flex items-center justify-center text-base shadow shrink-0">
@@ -3380,76 +3387,64 @@
           </div>
         </div>
 
-        <!-- Step 1: Class & Hit Die -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 space-y-2.5">
-          <div class="text-[11px] font-bold text-emerald-400 uppercase tracking-wide">1. Sınıf Seçimi (Class) & Otomatik İlerleme</div>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-            <div class="sm:col-span-2">
-              <div class="flex items-center justify-between mb-1">
-                <label class="block text-[10px] font-bold text-slate-400 uppercase">Alınacak Sınıf (Class) *</label>
-                <button type="button" onclick="openCreateCustomClassModal()" class="text-[10px] text-emerald-400 hover:text-emerald-300 font-bold hover:underline flex items-center gap-1 transition">
-                  <span>➕</span><span>Özel / Prestij Sınıfı Ekle</span>
-                </button>
-              </div>
-              <select id="lvlup-class-select" onchange="onLevelUpClassChange()" class="w-full bg-slate-950 border border-emerald-500/60 rounded-lg px-3 py-1.5 text-xs font-bold text-white">
-                <!-- Dynamically populated by populateLevelUpClassSelect() -->
-              </select>
+        <!-- 1. Sınıf Seçimi (Class) & Otomatik İlerleme -->
+        <div class="space-y-2.5">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-[10px] font-bold text-slate-400 uppercase">Alınacak Sınıf (Class) *</label>
+              <button type="button" onclick="openCreateCustomClassModal()" class="text-[10px] text-emerald-400 hover:text-emerald-300 font-bold hover:underline flex items-center gap-1 transition">
+                <span>➕</span><span>Özel / Prestij Sınıfı Ekle</span>
+              </button>
             </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Can Zarı (Hit Die)</label>
-              <input type="text" id="lvlup-hd-input" value="d12" readonly class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-center font-mono font-bold text-amber-400">
-            </div>
+            <select id="lvlup-class-select" onchange="onLevelUpClassChange()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-amber-300 font-bold focus:outline-none focus:ring-1 focus:ring-amber-400">
+              <!-- Dynamically populated by populateLevelUpClassSelect() -->
+            </select>
           </div>
 
-          <!-- Progression Numbers Row -->
-          <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1">
-            <div>
-              <label class="block text-[9px] font-bold text-sky-400 uppercase mb-0.5">Yeni Toplam BAB</label>
-              <input type="number" id="lvlup-bab-input" value="4" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-center font-mono font-bold text-sky-400">
-            </div>
-            <div>
-              <label class="block text-[9px] font-bold text-emerald-400 uppercase mb-0.5">Yeni Taban Fort</label>
-              <input type="number" id="lvlup-fort-input" value="4" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-center font-mono font-bold text-white">
-            </div>
-            <div>
-              <label class="block text-[9px] font-bold text-sky-300 uppercase mb-0.5">Yeni Taban Ref</label>
-              <input type="number" id="lvlup-ref-input" value="3" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-center font-mono font-bold text-white">
-            </div>
-            <div>
-              <label class="block text-[9px] font-bold text-purple-400 uppercase mb-0.5">Yeni Taban Will</label>
-              <input type="number" id="lvlup-will-input" value="4" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-center font-mono font-bold text-white">
-            </div>
-            <div>
-              <label class="block text-[9px] font-bold text-indigo-300 uppercase mb-0.5">Kazanılan Skill Pts</label>
-              <input type="number" id="lvlup-skill-input" value="6" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-center font-mono font-bold text-indigo-300">
-            </div>
+          <!-- Class Stats Preview Card (HD, BAB, Saves, Features) -->
+          <div id="lvlup-class-preview-card" class="bg-slate-950/80 border border-slate-800 rounded-xl p-3 space-y-1.5 font-mono text-[11px]">
+            <!-- Populated dynamically by onLevelUpClassChange() -->
           </div>
 
-          <!-- Auto-Populated Class Features Preview Box -->
-          <div id="lvlup-auto-features-box" class="p-2.5 rounded-lg bg-slate-950 border border-emerald-500/40 space-y-1.5 mt-2">
-            <div class="flex items-center justify-between">
-              <span class="text-[10px] font-bold text-emerald-400 uppercase flex items-center gap-1.5">
-                <span>🎁</span>
-                <span>Bu Sınıf Seviyesinde Otomatik Kazanılan Özellikler</span>
-              </span>
-              <span id="lvlup-auto-features-count" class="badge bg-emerald-950 text-emerald-300 border border-emerald-600 text-[9px] font-bold">0 Özellik</span>
-            </div>
-            <div id="lvlup-auto-features-list" class="flex flex-wrap gap-1.5 text-xs text-slate-300">
-              <!-- Dynamically populated -->
-            </div>
-          </div>
+          <!-- Hidden inputs for BAB, Saves, HD, Skill calculations -->
+          <input type="hidden" id="lvlup-hd-input" value="d12">
+          <input type="hidden" id="lvlup-bab-input" value="4">
+          <input type="hidden" id="lvlup-fort-input" value="4">
+          <input type="hidden" id="lvlup-ref-input" value="3">
+          <input type="hidden" id="lvlup-will-input" value="4">
+          <input type="hidden" id="lvlup-skill-input" value="6">
         </div>
 
-        <!-- Step 2: Hit Points Roll / Average -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 space-y-2">
-          <div class="flex flex-wrap items-center justify-between gap-2">
+        <!-- 2. Can Puanı Artışı (HP Gain = HD + CON Mod) -->
+        <div class="bg-slate-900/90 border border-emerald-500/50 rounded-xl p-3 space-y-2.5 shadow-inner">
+          <div class="flex flex-wrap items-center justify-between gap-1.5">
             <div>
-              <div class="text-[11px] font-bold text-emerald-400 uppercase tracking-wide">2. Can Puanı Artışı (HP Gain = HD + CON Mod)</div>
-              <div id="lvlup-hp-formula-hint" class="text-[10px] text-slate-400">CON Modifiyeriniz otomatik olarak eklenir.</div>
+              <div class="text-[11px] font-bold text-emerald-400 uppercase tracking-wide flex items-center gap-1.5">
+                <span>❤️</span>
+                <span>Can Puanı Artışı (HP Gain = HD + CON Mod)</span>
+              </div>
+              <div id="lvlup-hp-formula-hint" class="text-[10px] text-slate-400 mt-0.5">
+                CON Modifiyeriniz otomatik olarak eklenir.
+              </div>
             </div>
-            <div class="flex items-center gap-1.5">
-              <button type="button" onclick="rollLevelUpHp('avg')" class="bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 px-2.5 py-1 rounded text-[11px] font-bold transition">📊 Ortalama (RAW)</button>
-              <button type="button" onclick="rollLevelUpHp('roll')" class="bg-amber-600/30 hover:bg-amber-600 text-amber-300 hover:text-white border border-amber-500/40 px-2.5 py-1 rounded text-[11px] font-bold transition inline-flex items-center gap-1.5">
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-800">
+            <!-- Quick Roll Buttons -->
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <button 
+                type="button" 
+                onclick="rollLevelUpHp('avg')" 
+                class="bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 px-2.5 py-1 rounded text-[11px] font-bold transition flex items-center gap-1 cursor-pointer"
+                title="RAW Kuralı Ortalaması">
+                <span>📊</span>
+                <span>Ortalama</span>
+              </button>
+              <button 
+                type="button" 
+                onclick="rollLevelUpHp('roll')" 
+                class="bg-amber-600/30 hover:bg-amber-600 text-amber-300 hover:text-white border border-amber-500/40 px-2.5 py-1 rounded text-[11px] font-bold transition flex items-center gap-1.5 cursor-pointer"
+                title="Yeni Can Zarı At">
                 <svg class="w-3.5 h-3.5 inline-block align-middle" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
                   <polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
@@ -3466,16 +3461,30 @@
                 </svg>
                 <span>Zar At</span>
               </button>
-              <button type="button" onclick="rollLevelUpHp('max')" class="bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/40 px-2.5 py-1 rounded text-[11px] font-bold transition">💪 Maksimum</button>
+              <button 
+                type="button" 
+                onclick="rollLevelUpHp('max')" 
+                class="bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/40 px-2.5 py-1 rounded text-[11px] font-bold transition flex items-center gap-1 cursor-pointer"
+                title="Maksimum Hit Die">
+                <span>💪</span>
+                <span>Maksimum</span>
+              </button>
             </div>
-          </div>
-          <div class="flex items-center gap-3">
-            <span class="text-xs text-slate-300 font-semibold">Bu Seviyede Kazanılan Toplam HP (CON Dahil):</span>
-            <input type="number" id="lvlup-hp-gain-input" value="9" min="1" class="w-20 bg-slate-950 border border-emerald-500 rounded-lg px-2.5 py-1 text-center font-mono text-base font-black text-emerald-400">
+
+            <!-- Manual HP Input -->
+            <div class="flex items-center gap-2">
+              <label for="lvlup-hp-gain-input" class="text-[11px] text-slate-300 font-bold whitespace-nowrap">Kazanılan HP:</label>
+              <input 
+                type="number" 
+                id="lvlup-hp-gain-input" 
+                value="9" 
+                min="1" 
+                class="w-16 bg-slate-950 border border-emerald-500 rounded-lg px-2 py-1 text-center font-mono text-sm font-black text-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-400">
+            </div>
           </div>
         </div>
 
-        <!-- Step 3: Ability Score Increase (Every 4 Levels: 4, 8, 12, 16, 20) -->
+        <!-- 3. Temel Stat Artışı (+1 Ability Score) -->
         <div id="lvlup-stat-section" class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 space-y-2">
           <div class="flex items-center justify-between">
             <div class="text-[11px] font-bold text-amber-400 uppercase tracking-wide">3. Temel Stat Artışı (+1 Ability Score)</div>
@@ -3495,7 +3504,7 @@
           </div>
         </div>
 
-        <!-- Step 4: Feat, DM Lütfu (Boon) & Kusur (Flaw) Seçimi (Çoklu Feat / Roster) -->
+        <!-- 4. Feat, DM Lütfu & Kusur Seçimi (Roster / Çoklu Feat) -->
         <div class="bg-slate-900/90 border border-purple-500/50 rounded-xl p-3 space-y-2.5">
           <div class="flex flex-wrap items-center justify-between gap-2 border-b border-purple-900/50 pb-2">
             <div>
@@ -3519,7 +3528,7 @@
           </div>
         </div>
 
-        <!-- Step 5: Spellcaster Progression & DM Boons -->
+        <!-- 5. Büyücü İlerlemesi & Büyü Slotları (Spellcaster Progression) -->
         <div class="bg-slate-900/90 border border-indigo-500/50 rounded-xl p-3 space-y-2.5">
           <div class="flex items-center justify-between">
             <div class="text-[11px] font-bold text-indigo-400 uppercase tracking-wide flex items-center gap-1.5">
@@ -3552,20 +3561,14 @@
           </div>
         </div>
 
-        <!-- Step 6: Class Features & Notes -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 space-y-1.5">
-          <label class="block text-[11px] font-bold text-sky-400 uppercase tracking-wide">6. Sınıf Özellikleri & Seviye Notları</label>
-          <input type="text" id="lvlup-notes-input" placeholder="Örn: Battle Ardor (+INT Crit Confirm), Uncanny Dodge, Yeni Büyü Yuvası..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white">
-        </div>
-
-        <!-- Step 7: Seviye Durumu (Active vs Planned Level Planning 1-30) -->
+        <!-- Seviye Durumu -->
         <div class="bg-slate-900/90 border border-emerald-500/40 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3">
           <div>
             <div class="text-[11px] font-bold text-emerald-300 uppercase tracking-wide flex items-center gap-1.5">
               <span>📋</span>
-              <span>7. Seviye Durumu (Level Planning 1-30)</span>
+              <span>Seviye Durumu</span>
             </div>
-            <div class="text-[10px] text-slate-400">Bu seviyeyi hemen karakter statlarına yansıtın veya 30. seviyeye kadar gelecek planı olarak kaydedin.</div>
+            <div class="text-[10px] text-slate-400">Bu seviyeyi hemen karakter statlarına yansıtın veya gelecek planı olarak kaydedin.</div>
           </div>
           <label class="flex items-center gap-2 cursor-pointer bg-slate-950 px-3 py-1.5 rounded-lg border border-emerald-500/60 shadow-sm hover:border-emerald-400 transition">
             <input type="checkbox" id="lvlup-is-active" checked class="w-4 h-4 text-emerald-500 rounded cursor-pointer">
@@ -10134,7 +10137,8 @@
 
     function onLevelUpClassChange() {
       const className = document.getElementById('lvlup-class-select')?.value || 'Warblade';
-      const def = DND35_CLASS_DEFS[className] || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
+      const allDefs = getAvailableClassDefs();
+      const def = allDefs[className] || DND35_CLASS_DEFS[className] || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
 
       const hdInput = document.getElementById('lvlup-hd-input');
       if (hdInput) hdInput.value = `d${def.hd}`;
@@ -10148,19 +10152,37 @@
         ? RuleEngine.getClassLevelFeatures(className, targetClassLvl)
         : { features: [], hasBonusFeat: false };
 
-      const countBadge = document.getElementById('lvlup-auto-features-count');
-      const featList = document.getElementById('lvlup-auto-features-list');
-      if (featList) {
-        if (autoData.features && autoData.features.length > 0) {
-          if (countBadge) countBadge.textContent = `${autoData.features.length} Özellik`;
-          featList.innerHTML = autoData.features.map(fName => {
-            const safe = fName.replace(/'/g, "\\'");
-            return `<button type="button" onclick="showFeatDetail('${safe}')" class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-600/80 hover:bg-emerald-900 transition"><span>✨</span><span>${fName}</span></button>`;
-          }).join(' ');
-        } else {
-          if (countBadge) countBadge.textContent = '0 Özellik';
-          featList.innerHTML = `<span class="text-slate-500 italic text-[11px]">Bu sınıf seviyesinde yeni otomatik sınıf özelliği bulunmuyor.</span>`;
-        }
+      const featList = autoData.features || [];
+
+      // Render Class Stats Preview Card (matching change-class-preview-card)
+      const preview = document.getElementById('lvlup-class-preview-card');
+      if (preview) {
+        const featBadges = featList.length > 0 
+          ? featList.map(fName => {
+              const safe = fName.replace(/'/g, "\\'");
+              return `<button type="button" onclick="showFeatDetail('${safe}')" class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-600/80 hover:bg-emerald-900 transition" title="Kural detayını incele"><span>✨</span><span>${fName}</span></button>`;
+            }).join(' ')
+          : '<span class="text-slate-500 italic text-[10px]">Özel özellik yok veya bonus feat seçimi.</span>';
+
+        const fortLetter = (def.fort || 'poor')[0].toUpperCase();
+        const refLetter = (def.ref || 'poor')[0].toUpperCase();
+        const willLetter = (def.will || 'poor')[0].toUpperCase();
+        const babLabel = def.bab === 1.0 ? 'Full (+1)' : (def.bab === 0.75 ? '3/4 Medium' : '1/2 Poor');
+
+        preview.innerHTML = `
+          <div class="flex items-center justify-between text-amber-300 font-bold border-b border-slate-800 pb-1">
+            <span>${className} (Seviye ${targetClassLvl})</span>
+            <span class="text-[10px] text-slate-400">HD: d${def.hd} | Beceri: ${def.skills || 2}</span>
+          </div>
+          <div class="grid grid-cols-2 gap-1.5 pt-1 text-[10px] text-slate-300">
+            <div>BAB: <strong class="text-sky-300">${babLabel}</strong></div>
+            <div>Saves: <strong class="text-emerald-300">F:${fortLetter} R:${refLetter} W:${willLetter}</strong></div>
+          </div>
+          <div class="pt-1 text-[10px]">
+            <span class="text-slate-400 font-bold">Kazanılacak Özellikler:</span>
+            <div class="flex flex-wrap gap-1 mt-1">${featBadges}</div>
+          </div>
+        `;
       }
 
       // If class level grants a bonus feat, ensure slot exists
@@ -10187,17 +10209,22 @@
         : null;
 
       if (prospectiveSummary) {
-        document.getElementById('lvlup-bab-input').value = prospectiveSummary.baseBab;
-        document.getElementById('lvlup-fort-input').value = prospectiveSummary.baseSaves.fort;
-        document.getElementById('lvlup-ref-input').value = prospectiveSummary.baseSaves.ref;
-        document.getElementById('lvlup-will-input').value = prospectiveSummary.baseSaves.will;
+        const babIn = document.getElementById('lvlup-bab-input');
+        if (babIn) babIn.value = prospectiveSummary.baseBab;
+        const fortIn = document.getElementById('lvlup-fort-input');
+        if (fortIn) fortIn.value = prospectiveSummary.baseSaves.fort;
+        const refIn = document.getElementById('lvlup-ref-input');
+        if (refIn) refIn.value = prospectiveSummary.baseSaves.ref;
+        const willIn = document.getElementById('lvlup-will-input');
+        if (willIn) willIn.value = prospectiveSummary.baseSaves.will;
       }
 
       const baseSkill = def.skills || 2;
       const skillPtsThisLvl = (prospectiveProg.length === 1)
         ? Math.max(4, (baseSkill + intMod + (isHuman ? 1 : 0)) * 4)
         : Math.max(1, baseSkill + intMod + (isHuman ? 1 : 0));
-      document.getElementById('lvlup-skill-input').value = skillPtsThisLvl;
+      const skillIn = document.getElementById('lvlup-skill-input');
+      if (skillIn) skillIn.value = skillPtsThisLvl;
 
       // Adjust Caster progression recommendation
       const casterProgSel = document.getElementById('lvlup-caster-prog');
@@ -10243,6 +10270,7 @@
 
     function initLevelUpCopilot() {
       const badge = document.getElementById('lvlup-copilot-engine-badge');
+      const headerBadge = document.getElementById('lvlup-copilot-header-badge');
       const hasKey = typeof RuleMaster !== 'undefined' && RuleMaster.getApiKey && !!RuleMaster.getApiKey();
       if (badge) {
         if (hasKey) {
@@ -10253,37 +10281,44 @@
           badge.className = 'text-[9px] font-semibold px-1.5 py-0.5 rounded bg-slate-900 text-slate-300 border border-slate-700';
         }
       }
+      if (headerBadge) {
+        headerBadge.textContent = hasKey ? 'AI' : 'RAW';
+      }
       const loadingBox = document.getElementById('lvlup-copilot-loading');
       if (loadingBox) loadingBox.classList.add('hidden');
     }
 
     function toggleLevelUpCopilotDetails() {
+      const card = document.getElementById('lvlup-copilot-card');
       const body = document.getElementById('lvlup-copilot-body');
       const icon = document.getElementById('lvlup-copilot-toggle-icon');
-      if (!body) return;
-      if (body.classList.contains('hidden')) {
-        body.classList.remove('hidden');
+      if (!card) return;
+      if (card.classList.contains('hidden')) {
+        card.classList.remove('hidden');
+        if (body) body.classList.remove('hidden');
         if (icon) icon.textContent = '▲';
       } else {
-        body.classList.add('hidden');
+        card.classList.add('hidden');
         if (icon) icon.textContent = '▼';
       }
     }
 
     function askCopilotQuick(queryText) {
+      const card = document.getElementById('lvlup-copilot-card');
+      if (card && card.classList.contains('hidden')) card.classList.remove('hidden');
+      const body = document.getElementById('lvlup-copilot-body');
+      if (body && body.classList.contains('hidden')) body.classList.remove('hidden');
       const input = document.getElementById('lvlup-copilot-custom-query');
       if (input) input.value = queryText;
-      const body = document.getElementById('lvlup-copilot-body');
-      if (body && body.classList.contains('hidden')) {
-        toggleLevelUpCopilotDetails();
-      }
       triggerLevelUpCopilot('custom', queryText);
     }
 
     async function triggerLevelUpCopilot(mode = 'advice', customPrompt = '') {
+      const card = document.getElementById('lvlup-copilot-card');
+      if (card && card.classList.contains('hidden')) card.classList.remove('hidden');
       const body = document.getElementById('lvlup-copilot-body');
       if (body && body.classList.contains('hidden')) {
-        toggleLevelUpCopilotDetails();
+        body.classList.remove('hidden');
       }
 
       const prog = character.levelProgression || [];
