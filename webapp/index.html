@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="build-version" content="2026.10.18-1215">
+  <meta name="build-version" content="2026.10.18-2045">
   <title>D&D 3.5e Tactical Cockpit & Character Hub</title>
   <script>
     if ('scrollRestoration' in history) {
@@ -10097,7 +10097,7 @@
 
         let toughnessCount = 0;
         (character.feats || []).forEach(f => {
-          const fn = (typeof f === 'string' ? f : f.name).toLowerCase();
+          const fn = (typeof f === 'string' ? f : (f?.name || '')).toLowerCase();
           if (fn === 'toughness' || fn.includes('toughness')) toughnessCount++;
         });
 
@@ -10115,7 +10115,7 @@
           }
         }
 
-        const sorcLvls = summary.classCounts['Sorcerer'] || 0;
+        const sorcLvls = summary.classCounts ? (summary.classCounts['Sorcerer'] || 0) : 0;
         if (sorcLvls > 0 && typeof calculateSorcererSlots === 'function') {
           if (!character.spellcasting) character.spellcasting = {};
           character.spellcasting.slots = calculateSorcererSlots(sorcLvls, character.abilities?.cha || 22);
@@ -13219,8 +13219,6 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         });
 
         const inlineAddAbilityBtn = `<button onclick="openQuickAbilityPickerForLevel(${idx})" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700/80 transition leading-none shrink-0" title="Bu seviyeye serbest sınıf özelliği veya özel yetenek ekle"><span>➕</span><span>Özel Yetenek</span></button>`;
-
-        const isActive = (lvl.active !== false);
 
         // Sequential progression check for checkbox:
         let canActivate = true;
