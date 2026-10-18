@@ -2616,7 +2616,7 @@
           </div>
         </div>
         <div class="flex items-center gap-2">
-          <button type="button" onclick="triggerRuleMasterForChangeClass()" class="bg-gradient-to-r from-purple-700 to-indigo-600 hover:from-purple-600 hover:to-indigo-500 text-white font-bold text-xs px-2.5 py-1 rounded-lg shadow flex items-center gap-1.5 transition cursor-pointer" title="Rule Master (AI) Danışmanı">
+          <button type="button" onclick="focusChangeClassRuleMasterSearch()" class="bg-gradient-to-r from-purple-700 to-indigo-600 hover:from-purple-600 hover:to-indigo-500 text-white font-bold text-xs px-2.5 py-1 rounded-lg shadow flex items-center gap-1.5 transition cursor-pointer" title="Rule Master Sınıf Ara & Ekle">
             <span>🧙‍♂️🤖</span>
             <span>Rule Master</span>
           </button>
@@ -2625,6 +2625,34 @@
       </div>
 
       <div class="p-4 space-y-3 text-xs">
+        <!-- Rule Master (AI) Sınıf Arama & Otomatik Ekleme (En Üstte) -->
+        <div class="bg-gradient-to-r from-purple-950/80 via-indigo-950/70 to-slate-900 border border-purple-500/60 rounded-xl p-3 space-y-2 shadow-inner">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5 text-[11px] font-bold text-purple-300">
+              <span>🧙‍♂️🤖</span>
+              <span>Rule Master Sınıf Ara / Ekle</span>
+            </div>
+            <span class="text-[9px] text-purple-400 font-medium">D&D 3.5e Kütüphanesi & AI</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <input 
+              type="text" 
+              id="change-class-search-input" 
+              placeholder="Sınıf adı arayın (Örn: Duskblade, Warblade, Beguiler, Assassin...)" 
+              onkeydown="if(event.key==='Enter'){event.preventDefault();searchOrAddClassWithRuleMaster();}" 
+              class="flex-1 bg-slate-950 border border-purple-500/60 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 font-bold focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-400">
+            <button 
+              type="button" 
+              onclick="searchOrAddClassWithRuleMaster()" 
+              class="bg-gradient-to-r from-purple-700 via-indigo-600 to-teal-600 hover:from-purple-600 hover:to-teal-500 active:scale-95 text-white font-extrabold text-[11px] px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1.5 shrink-0 cursor-pointer" 
+              title="Sınıfı bulup seç veya yoksa D&D 3.5e kuralıyla listeye ekle">
+              <span>🧙‍♂️🤖</span>
+              <span>Ara / Ekle</span>
+            </button>
+          </div>
+          <div id="change-class-search-status" class="hidden text-[11px] p-2 rounded-lg font-mono"></div>
+        </div>
+
         <div>
           <div class="flex items-center justify-between mb-1">
             <label class="block text-[10px] font-bold text-slate-400 uppercase">Yeni Sınıf Seçin *</label>
@@ -2734,24 +2762,6 @@
           <div id="change-class-stat-hint" class="text-[10px] text-slate-400">
             D&D 3.5e kuralı: 4, 8, 12, 16, 20... seviyelerde bir yetenek skoruna +1 eklenir.
           </div>
-        </div>
-
-        <!-- Rule Master (AI) Sınıf & Seviye Danışmanı -->
-        <div class="bg-gradient-to-r from-purple-950/70 via-indigo-950/60 to-slate-900 border border-purple-500/50 rounded-xl p-3 space-y-2 shadow-inner">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5 text-[11px] font-bold text-purple-300">
-              <span>🧙‍♂️🤖</span>
-              <span>Rule Master (AI) Sınıf Danışmanı</span>
-            </div>
-            <button type="button" onclick="triggerRuleMasterForChangeClass()" class="bg-gradient-to-r from-purple-700 to-indigo-600 hover:from-purple-600 hover:to-indigo-500 active:scale-95 text-white font-bold text-[10px] px-2.5 py-1 rounded shadow transition flex items-center gap-1 cursor-pointer">
-              <span>💡</span>
-              <span>Tavsiye Al</span>
-            </button>
-          </div>
-          <div id="change-class-ai-hint" class="text-[10px] text-slate-400">
-            Seçtiğiniz sınıfın bu seviyedeki kazanımları ve karakter sinerjisi hakkında analiz alın.
-          </div>
-          <div id="change-class-ai-result" class="hidden text-[11px] text-purple-200 bg-purple-950/80 border border-purple-800/70 rounded-lg p-2.5 space-y-1"></div>
         </div>
 
         <div class="flex items-center gap-2">
@@ -11147,29 +11157,159 @@
       }
     }
 
-    async function triggerRuleMasterForChangeClass() {
-      const resultEl = document.getElementById('change-class-ai-result');
-      const sel = document.getElementById('change-class-select');
-      const prog = character.levelProgression || [];
-      const idx = currentChangeClassLevelIndex;
-      if (idx === null || idx < 0 || idx >= prog.length) return;
+    const DND35_EXTRA_CLASSES = {
+      "Duskblade": { hd: 8, bab: 1.0, fort: 'good', ref: 'poor', will: 'good', skills: 2, source: "Player's Handbook II p.19", features: "Arcane Attunement, Armored Mage (Light/Medium/Shield), Arcane Channeling, Quick Cast" },
+      "Warblade": { hd: 12, bab: 1.0, fort: 'good', ref: 'poor', will: 'poor', skills: 4, source: "Tome of Battle p.20", features: "Battle Clarity, Weapon Aptitude, Uncanny Dodge, Battle Ardor" },
+      "Crusader": { hd: 10, bab: 1.0, fort: 'good', ref: 'poor', will: 'poor', skills: 2, source: "Tome of Battle p.8", features: "Furious Counterstrike, Steely Resolve, Indomitable Soul, Zealous Surge" },
+      "Swordsage": { hd: 8, bab: 0.75, fort: 'poor', ref: 'good', will: 'good', skills: 6, source: "Tome of Battle p.15", features: "Quick to Act, AC Bonus (Wis), Discipline Focus, Sense Magic" },
+      "Beguiler": { hd: 6, bab: 0.5, fort: 'poor', ref: 'poor', will: 'good', skills: 6, source: "Player's Handbook II p.6", features: "Armored Mage, Trapfinding, Cloaked Casting, Surprise Casting" },
+      "Factotum": { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'poor', skills: 6, source: "Dungeonscape p.14", features: "Inspiration, Cunning Insight, Cunning Knowledge, Trapfinding" },
+      "Warlock": { hd: 6, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 2, source: "Complete Arcane p.5", features: "Eldritch Blast, Invocations, Detect Magic, Damage Reduction" },
+      "Scout": { hd: 8, bab: 0.75, fort: 'poor', ref: 'good', will: 'poor', skills: 8, source: "Complete Adventurer p.10", features: "Skirmish, Trapfinding, Battle Fortitude, Uncanny Dodge, Fast Movement" },
+      "Swashbuckler": { hd: 10, bab: 1.0, fort: 'good', ref: 'poor', will: 'poor', skills: 4, source: "Complete Warrior p.11", features: "Weapon Finesse, Grace, Insightful Strike, Dodge Bonus" },
+      "Hexblade": { hd: 10, bab: 1.0, fort: 'poor', ref: 'poor', will: 'good', skills: 2, source: "Complete Warrior p.5", features: "Hexblade's Curse, Arcane Resistance, Mettle, Dark Companion" },
+      "Spellthief": { hd: 6, bab: 0.75, fort: 'poor', ref: 'good', will: 'good', skills: 6, source: "Complete Adventurer p.13", features: "Sneak Attack, Steal Spell, Trapfinding, Steal Spell Effect" },
+      "Warmage": { hd: 6, bab: 0.5, fort: 'poor', ref: 'poor', will: 'good', skills: 2, source: "Complete Arcane p.10", features: "Armored Mage, Warmage Edge, Advanced Learning" },
+      "Favored Soul": { hd: 8, bab: 0.75, fort: 'good', ref: 'good', will: 'good', skills: 2, source: "Complete Divine p.6", features: "Deity's Weapon Focus, Energy Resistance, Wings" },
+      "Dread Necromancer": { hd: 6, bab: 0.5, fort: 'poor', ref: 'poor', will: 'good', skills: 2, source: "Heroes of Horror p.84", features: "Charnel Touch, Rebuke Undead, Lich Body, Advanced Learning" },
+      "Dragon Shaman": { hd: 10, bab: 0.75, fort: 'good', ref: 'poor', will: 'good', skills: 2, source: "Player's Handbook II p.11", features: "Draconic Aura, Totem Dragon, Touch of Vitality, Breath Weapon" },
+      "Knight": { hd: 12, bab: 1.0, fort: 'good', ref: 'poor', will: 'good', skills: 2, source: "Player's Handbook II p.24", features: "Knight's Challenge, Knight's Code, Shield Block, Bulwark of Defense" },
+      "Ninja": { hd: 6, bab: 0.75, fort: 'poor', ref: 'good', will: 'poor', skills: 6, source: "Complete Adventurer p.5", features: "Ki Power, Sudden Strike, Trapfinding, Ghost Step, Poison Use" },
+      "Psion": { hd: 4, bab: 0.5, fort: 'poor', ref: 'poor', will: 'good', skills: 2, source: "XPH p.19", features: "Psicrystal, Psionic Feats, Powers" },
+      "Psychic Warrior": { hd: 8, bab: 0.75, fort: 'good', ref: 'poor', will: 'poor', skills: 2, source: "XPH p.24", features: "Bonus Psionic Feats, Powers" },
+      "Soulknife": { hd: 10, bab: 0.75, fort: 'poor', ref: 'good', will: 'good', skills: 4, source: "XPH p.26", features: "Mind Blade, Weapon Focus (Mind Blade), Wild Talent, Throw Mind Blade" },
+      "Wilder": { hd: 6, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4, source: "XPH p.29", features: "Wild Surge, Psychic Enervation, Elation, Volatile Mind" },
+      "Archmage": { hd: 4, bab: 0.5, fort: 'poor', ref: 'poor', will: 'good', skills: 2, source: "DMG p.178", features: "High Arcana, Arcane Fire, Mastery of Counterspelling, Mastery of Elements" },
+      "Arcane Archer": { hd: 8, bab: 1.0, fort: 'good', ref: 'good', will: 'poor', skills: 4, source: "DMG p.176", features: "Enhance Arrow, Imbue Arrow, Seeker Arrow, Phase Arrow, Arrow of Death" },
+      "Arcane Trickster": { hd: 4, bab: 0.5, fort: 'poor', ref: 'good', will: 'good', skills: 4, source: "DMG p.177", features: "Ranged Legerdemain, Sneak Attack, Impromptu Sneak Attack" },
+      "Assassin": { hd: 6, bab: 0.75, fort: 'poor', ref: 'good', will: 'poor', skills: 4, source: "DMG p.180", features: "Sneak Attack, Death Attack, Poison Use, Uncanny Dodge" },
+      "Blackguard": { hd: 10, bab: 1.0, fort: 'good', ref: 'poor', will: 'poor', skills: 2, source: "DMG p.181", features: "Smite Good, Dark Blessing, Command Undead, Aura of Despair, Sneak Attack" },
+      "Dragon Disciple": { hd: 12, bab: 0.75, fort: 'good', ref: 'poor', will: 'good', skills: 2, source: "DMG p.183", features: "Natural Armor, Breath Weapon, Ability Boosts (Str/Con/Int/Cha), Wings, Dragon Apotheosis" },
+      "Duelist": { hd: 10, bab: 1.0, fort: 'poor', ref: 'good', will: 'poor', skills: 4, source: "DMG p.185", features: "Canny Defense, Improved Reaction, Enhanced Mobility, Precise Strike, Acrobatic Charge" },
+      "Eldritch Knight": { hd: 6, bab: 1.0, fort: 'good', ref: 'poor', will: 'poor', skills: 2, source: "DMG p.187", features: "Bonus Combat Feat, Spellcasting Progression" },
+      "Hierophant": { hd: 8, bab: 0.5, fort: 'good', ref: 'poor', will: 'good', skills: 2, source: "DMG p.188", features: "Special Abilities, Blast Infidel, Divine Reach, Faith Healing, Spell Power" },
+      "Horizon Walker": { hd: 8, bab: 1.0, fort: 'good', ref: 'poor', will: 'poor', skills: 4, source: "DMG p.189", features: "Terrain Mastery, Planar Terrain Mastery (Shifting: Dimension Door)" },
+      "Loremaster": { hd: 4, bab: 0.5, fort: 'poor', ref: 'poor', will: 'good', skills: 4, source: "DMG p.191", features: "Secret, Lore, Greater Lore, True Lore" },
+      "Mystic Theurge": { hd: 4, bab: 0.5, fort: 'poor', ref: 'poor', will: 'good', skills: 2, source: "DMG p.192", features: "Combined Arcane and Divine Spellcasting" },
+      "Shadowdancer": { hd: 8, bab: 0.75, fort: 'poor', ref: 'good', will: 'poor', skills: 6, source: "DMG p.194", features: "Hide in Plain Sight, Evasion, Shadow Illusion, Summon Shadow, Shadow Jump, Defensive Roll" },
+      "Abjurant Champion": { hd: 10, bab: 1.0, fort: 'poor', ref: 'poor', will: 'good', skills: 2, source: "Complete Mage p.50", features: "Abjurant Armor, Extended Abjuration, Swift Abjuration, Arcane Boost, Martial Arcanist" },
+      "Dervish": { hd: 10, bab: 1.0, fort: 'poor', ref: 'good', will: 'poor', skills: 4, source: "Complete Warrior p.25", features: "Dervish Dance, Movement Mastery, Slashing Blades, Fast Movement, Spring Attack" },
+      "Frenzied Berserker": { hd: 12, bab: 1.0, fort: 'good', ref: 'poor', will: 'poor', skills: 2, source: "Complete Warrior p.34", features: "Frenzy, Die Hard, Supreme Cleave, Deathless Frenzy, Greater Frenzy, Inspire Frenzy" },
+      "Invisible Blade": { hd: 6, bab: 1.0, fort: 'poor', ref: 'good', will: 'poor', skills: 4, source: "Complete Warrior p.44", features: "Dagger Sneak Attack, Uncanny Feint, Bleeding Wound, Feint Mastery" },
+      "Ur-Priest": { hd: 8, bab: 0.75, fort: 'good', ref: 'poor', will: 'good', skills: 2, source: "Complete Divine p.70", features: "Fast Divine Spellcasting (up to 9th level in 10 levels), Rebuke Undead, Steal Spell-Like Ability" }
+    };
 
-      const row = prog[idx];
-      const chosenClass = sel ? sel.value : row.className;
-      const levelNum = row.level || (idx + 1);
+    function focusChangeClassRuleMasterSearch() {
+      const input = document.getElementById('change-class-search-input');
+      if (input) {
+        input.focus();
+        input.select();
+      }
+    }
 
-      if (resultEl) {
-        resultEl.classList.remove('hidden');
-        resultEl.innerHTML = `<div class="flex items-center gap-2"><span>⏳</span><span>Rule Master (AI) Seviye ${levelNum} (${chosenClass}) için kural ve optimizasyon analizini hazırlıyor...</span></div>`;
+    async function searchOrAddClassWithRuleMaster() {
+      const input = document.getElementById('change-class-search-input');
+      const statusEl = document.getElementById('change-class-search-status');
+      const query = (input?.value || '').trim();
+      if (!query) {
+        if (statusEl) {
+          statusEl.className = 'text-[11px] p-2.5 rounded-lg bg-amber-950/80 border border-amber-600/60 text-amber-200 block';
+          statusEl.innerHTML = '⚠️ Lütfen aramak istediğiniz sınıf adını yazın.';
+        } else {
+          alert('⚠️ Lütfen aramak istediğiniz sınıf adını yazın.');
+        }
+        input?.focus();
+        return;
       }
 
-      const allDefs = (typeof getAvailableClassDefs === 'function') ? getAvailableClassDefs() : (typeof DND35_CLASS_DEFS !== 'undefined' ? DND35_CLASS_DEFS : {});
-      const def = allDefs[chosenClass] || (typeof DND35_CLASS_DEFS !== 'undefined' ? DND35_CLASS_DEFS[chosenClass] : null) || { hd: 8, bab: 0.75 };
+      if (statusEl) {
+        statusEl.className = 'text-[11px] p-2.5 rounded-lg bg-indigo-950/80 border border-indigo-600/60 text-indigo-200 block animate-pulse';
+        statusEl.innerHTML = `<span>⏳</span> <span>"${query}" sınıfı aranıyor...</span>`;
+      }
 
-      const babText = def.bab === 1.0 ? 'Tam (+1/lvl)' : (def.bab === 0.75 ? '3/4 (+0.75/lvl)' : '1/2 (+0.5/lvl)');
-      const hdText = `d${def.hd || 8}`;
-      const isStatLvl = (levelNum % 4 === 0);
+      const qLower = query.toLowerCase();
 
+      // 1. Mevcut tanımlı sınıfları kontrol et (Exact veya Contains)
+      const allDefs = getAvailableClassDefs();
+      const matchedKey = Object.keys(allDefs).find(k => k.toLowerCase() === qLower)
+        || Object.keys(allDefs).find(k => k.toLowerCase().includes(qLower));
+
+      if (matchedKey) {
+        populateChangeClassSelect(matchedKey);
+        onChangeClassSelectChange();
+        if (statusEl) {
+          statusEl.className = 'text-[11px] p-2.5 rounded-lg bg-emerald-950/80 border border-emerald-600/60 text-emerald-200 block';
+          statusEl.innerHTML = `<span>✅</span> <b>${matchedKey}</b> mevcut sınıf listenizde bulundu ve seçildi!`;
+        }
+        return;
+      }
+
+      // 2. Yerleşik resmi D&D 3.5e ek sınıflar ve prestij sınıfları kütüphanesini kontrol et
+      let foundExtra = null;
+      let extraName = null;
+      for (const [eName, eDef] of Object.entries(DND35_EXTRA_CLASSES)) {
+        if (eName.toLowerCase() === qLower || eName.toLowerCase().includes(qLower)) {
+          foundExtra = eDef;
+          extraName = eName;
+          break;
+        }
+      }
+
+      if (foundExtra) {
+        const newClassDef = {
+          name: extraName,
+          hd: foundExtra.hd,
+          bab: foundExtra.bab,
+          fort: foundExtra.fort,
+          ref: foundExtra.ref,
+          will: foundExtra.will,
+          skills: foundExtra.skills,
+          source: foundExtra.source,
+          isCustom: true,
+          features: foundExtra.features ? { 1: [{ name: foundExtra.features, category: 'Special Ability', type: 'Ex', summary: foundExtra.features }] } : {}
+        };
+
+        if (!Array.isArray(character.customClasses)) character.customClasses = [];
+        const exIdx = character.customClasses.findIndex(c => c.name.toLowerCase() === extraName.toLowerCase());
+        if (exIdx >= 0) {
+          character.customClasses[exIdx] = newClassDef;
+        } else {
+          character.customClasses.push(newClassDef);
+        }
+
+        if (Array.isArray(masterDb)) {
+          const inDb = masterDb.find(m => m && (m.name || '').toLowerCase() === extraName.toLowerCase() && (m.type === 'Class' || m.category === 'Class'));
+          if (!inDb) {
+            masterDb.push({
+              name: extraName,
+              type: 'Class',
+              category: 'Class',
+              hd: foundExtra.hd,
+              bab: foundExtra.bab,
+              fort: foundExtra.fort,
+              ref: foundExtra.ref,
+              will: foundExtra.will,
+              skills: foundExtra.skills,
+              source: foundExtra.source,
+              desc: foundExtra.features || `${extraName} (${foundExtra.source})`
+            });
+          }
+        }
+
+        syncCustomClassesToRuleEngine();
+        saveStateToStorage(true);
+        populateChangeClassSelect(extraName);
+        onChangeClassSelectChange();
+
+        const babDisplay = foundExtra.bab === 1.0 ? 'Tam BAB (+1/lvl)' : (foundExtra.bab === 0.75 ? '3/4 BAB (+0.75/lvl)' : '1/2 BAB (+0.5/lvl)');
+        if (statusEl) {
+          statusEl.className = 'text-[11px] p-2.5 rounded-lg bg-emerald-950/80 border border-emerald-600/60 text-emerald-200 block';
+          statusEl.innerHTML = `<span>✨</span> <b>${extraName}</b> D&D 3.5e kütüphanesinden sınıf listesine eklendi ve seçildi! (HD: d${foundExtra.hd} • ${babDisplay} • Kaynak: ${foundExtra.source})`;
+        }
+        return;
+      }
+
+      // 3. Rule Master (AI / Gemini) ile resmi 3.5e kitaplarından getir
       const apiKey = (typeof RuleMaster !== 'undefined' && RuleMaster.getApiKey)
         ? RuleMaster.getApiKey()
         : (localStorage.getItem('gemini_api_key') || '');
@@ -11177,18 +11317,21 @@
       if (apiKey && typeof RuleMaster !== 'undefined' && typeof RuleMaster.getAvailableGeminiModels === 'function') {
         try {
           const availableModels = await RuleMaster.getAvailableGeminiModels(apiKey);
-          const prompt = `You are a D&D 3.5e Rule Arbiter and Character Optimization Master.
-Character Level: ${levelNum} (Total Character Level).
-Class Selected for this level: ${chosenClass}.
-Base HD: ${hdText}, BAB Type: ${babText}.
-Character Stats: STR ${character.abilities?.str || 10}, DEX ${character.abilities?.dex || 10}, CON ${character.abilities?.con || 10}, INT ${character.abilities?.int || 10}, WIS ${character.abilities?.wis || 10}, CHA ${character.abilities?.cha || 10}.
-Is 4th Level Stat Increase available: ${isStatLvl ? 'YES (+1 Ability Score)' : 'NO'}.
-
-In Turkish, provide a concise 3-4 bullet point summary:
-1. RAW key benefits/features of ${chosenClass} at this level.
-2. Hit Die, BAB, and Save impact.
-3. Optimization advice (recommended stat increase or synergy with feats).
-Keep it concise, bulleted, and strictly D&D 3.5e RAW compliant.`;
+          const prompt = `You are a strict D&D 3.5e RAW rules expert and database builder.
+User wants to add this official D&D 3.5e class: "${query}".
+Output ONLY a single valid JSON object strictly matching this schema:
+{
+  "name": "Canonical Class Name",
+  "hd": 8, // integer: 4, 6, 8, 10, or 12
+  "bab": 1.0, // float: 1.0 (Full BAB: +1/lvl), 0.75 (Average: 3/4), or 0.5 (Poor: 1/2)
+  "fort": "good", // "good" or "poor"
+  "ref": "poor", // "good" or "poor"
+  "will": "good", // "good" or "poor"
+  "skills": 2, // integer: 2, 4, 6, or 8 (base skill points per level)
+  "source": "Book Name and page (e.g. Complete Warrior p.10, PHB II p.19)",
+  "featuresSummary": "Key features e.g. Sneak attack, Armored mage"
+}
+Output raw JSON only. Do not wrap in markdown quotes.`;
 
           for (const model of availableModels) {
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
@@ -11197,40 +11340,102 @@ Keep it concise, bulleted, and strictly D&D 3.5e RAW compliant.`;
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: { temperature: 0.2 }
+                generationConfig: {
+                  response_mime_type: 'application/json',
+                  temperature: 0.1
+                }
               })
             });
+
             if (resp.ok) {
               const json = await resp.json();
               const replyText = json.candidates?.[0]?.content?.parts?.[0]?.text;
-              if (replyText && resultEl) {
-                const formatted = replyText
-                  .replace(/\*\*(.*?)\*\*/g, '<b class="text-amber-300">$1</b>')
-                  .replace(/^\* /gm, '• ')
-                  .replace(/\n/g, '<br>');
-                resultEl.innerHTML = `
-                  <div class="font-bold text-amber-300 text-xs mb-1">🧙‍♂️ Rule Master Tavsiyesi (Seviye ${levelNum} ${chosenClass}):</div>
-                  <div class="leading-relaxed text-[11px] text-slate-200">${formatted}</div>
-                `;
+              if (replyText) {
+                const parsed = JSON.parse(replyText);
+                const cName = parsed.name || query;
+                const newClassDef = {
+                  name: cName,
+                  hd: Number(parsed.hd) || 8,
+                  bab: Number(parsed.bab) || 0.75,
+                  fort: parsed.fort === 'good' ? 'good' : 'poor',
+                  ref: parsed.ref === 'good' ? 'good' : 'poor',
+                  will: parsed.will === 'good' ? 'good' : 'poor',
+                  skills: Number(parsed.skills) || 2,
+                  source: parsed.source || 'Rule Master AI',
+                  isCustom: true,
+                  features: parsed.featuresSummary ? { 1: [{ name: parsed.featuresSummary, category: 'Special Ability', type: 'Ex', summary: parsed.featuresSummary }] } : {}
+                };
+
+                if (!Array.isArray(character.customClasses)) character.customClasses = [];
+                const exIdx = character.customClasses.findIndex(c => c.name.toLowerCase() === cName.toLowerCase());
+                if (exIdx >= 0) {
+                  character.customClasses[exIdx] = newClassDef;
+                } else {
+                  character.customClasses.push(newClassDef);
+                }
+
+                if (Array.isArray(masterDb)) {
+                  const inDb = masterDb.find(m => m && (m.name || '').toLowerCase() === cName.toLowerCase() && (m.type === 'Class' || m.category === 'Class'));
+                  if (!inDb) {
+                    masterDb.push({
+                      name: cName,
+                      type: 'Class',
+                      category: 'Class',
+                      hd: newClassDef.hd,
+                      bab: newClassDef.bab,
+                      fort: newClassDef.fort,
+                      ref: newClassDef.ref,
+                      will: newClassDef.will,
+                      skills: newClassDef.skills,
+                      source: newClassDef.source,
+                      desc: parsed.featuresSummary || `${cName} (${newClassDef.source})`
+                    });
+                  }
+                }
+
+                syncCustomClassesToRuleEngine();
+                saveStateToStorage(true);
+                populateChangeClassSelect(cName);
+                onChangeClassSelectChange();
+
+                const babDisplay = newClassDef.bab === 1.0 ? 'Tam BAB (+1/lvl)' : (newClassDef.bab === 0.75 ? '3/4 BAB (+0.75/lvl)' : '1/2 BAB (+0.5/lvl)');
+                if (statusEl) {
+                  statusEl.className = 'text-[11px] p-2.5 rounded-lg bg-emerald-950/80 border border-emerald-600/60 text-emerald-200 block';
+                  statusEl.innerHTML = `<span>✨</span> <b>${cName}</b> Rule Master (AI) tarafından D&D 3.5e RAW kurallarıyla oluşturulup listeye eklendi ve seçildi! (HD: d${newClassDef.hd} • ${babDisplay} • Kaynak: ${newClassDef.source})`;
+                }
                 return;
               }
             }
           }
         } catch (e) {
-          console.warn("Rule master change class AI fetch error:", e);
+          console.warn("Rule Master class AI search error:", e);
         }
       }
 
-      if (resultEl) {
-        resultEl.innerHTML = `
-          <div class="font-bold text-amber-300 text-xs mb-1">📋 Seviye ${levelNum} ${chosenClass} Kural Özeti:</div>
-          <ul class="list-disc pl-4 space-y-1 text-[11px] text-slate-200">
-            <li><b>Can Zarı (HD):</b> ${hdText} (Önerilen artış: Con modifikatorü eklenir)</li>
-            <li><b>Saldırı İlerlemesi (BAB):</b> ${babText}</li>
-            ${isStatLvl ? '<li class="text-amber-300 font-bold">⭐ 4. Seviye Kuralı: Bu seviyede 1 yetenek skorunuza kalıcı +1 artış seçebilirsiniz!</li>' : ''}
-            <li><b>Tavsiye:</b> Sınıf özelliklerini RAW kuralına göre otomatik güncelle kutucuğunu işaretli tutarak seviyeyi kaydedebilirsiniz.</li>
-          </ul>
-        `;
+      // 4. API anahtarı yoksa veya bulunamazsa dengeli temel kurguyla listeye ekle
+      const fallbackDef = {
+        name: query,
+        hd: 8,
+        bab: 0.75,
+        fort: 'poor',
+        ref: 'poor',
+        will: 'good',
+        skills: 4,
+        source: 'Custom / 3.5e',
+        isCustom: true,
+        features: {}
+      };
+
+      if (!Array.isArray(character.customClasses)) character.customClasses = [];
+      character.customClasses.push(fallbackDef);
+      syncCustomClassesToRuleEngine();
+      saveStateToStorage(true);
+      populateChangeClassSelect(query);
+      onChangeClassSelectChange();
+
+      if (statusEl) {
+        statusEl.className = 'text-[11px] p-2.5 rounded-lg bg-amber-950/80 border border-amber-600/60 text-amber-200 block';
+        statusEl.innerHTML = `<span>⚠️</span> "${query}" kütüphanede bulunamadı ve Gemini API anahtarı olmadığından dengeli temel özelliklerle (d8 HD, 3/4 BAB) listeye eklendi. İsterseniz "Özel / Prestij Sınıfı Ekle" butonuyla detaylarını güncelleyebilirsiniz.`;
       }
     }
 
@@ -12297,6 +12502,39 @@ Keep it concise, bulleted, and strictly D&D 3.5e RAW compliant.`;
     // Modal: Change Level Class (Sınıf & Seviye Değiştirme)
     let currentChangeClassLevelIndex = null;
 
+    function populateChangeClassSelect(selectedClassName = null) {
+      const sel = document.getElementById('change-class-select');
+      if (!sel) return;
+      sel.innerHTML = '';
+      const allDefs = getAvailableClassDefs();
+      const officialGroup = document.createElement('optgroup');
+      officialGroup.label = "Resmi D&D 3.5e Sınıfları";
+      const customGroup = document.createElement('optgroup');
+      customGroup.label = "Özel / Prestij Sınıfları";
+
+      const targetSelected = (selectedClassName || '').toLowerCase();
+
+      Object.keys(allDefs).sort((a, b) => a.localeCompare(b)).forEach(cName => {
+        const opt = document.createElement('option');
+        opt.value = cName;
+        const def = allDefs[cName];
+        const hdText = `d${def.hd} HD`;
+        const babText = def.bab === 1.0 ? 'Tam BAB' : (def.bab === 0.75 ? '3/4 BAB' : '1/2 BAB');
+        opt.textContent = `${cName} (${hdText} • ${babText})`;
+        if (cName.toLowerCase() === targetSelected) opt.selected = true;
+        if (def.isCustom) {
+          customGroup.appendChild(opt);
+        } else {
+          officialGroup.appendChild(opt);
+        }
+      });
+
+      sel.appendChild(officialGroup);
+      if (customGroup.children.length > 0) {
+        sel.appendChild(customGroup);
+      }
+    }
+
     function openChangeLevelClassModal(idx) {
       const prog = character.levelProgression || [];
       if (idx < 0 || idx >= prog.length) return;
@@ -12311,35 +12549,7 @@ Keep it concise, bulleted, and strictly D&D 3.5e RAW compliant.`;
       if (titleEl) titleEl.textContent = `Seviye ${row.level} Sınıf ve Stat Düzenle`;
       if (subEl) subEl.textContent = `Şu anki sınıf: ${row.className}`;
 
-      const sel = document.getElementById('change-class-select');
-      if (sel) {
-        sel.innerHTML = '';
-        const allDefs = getAvailableClassDefs();
-        const officialGroup = document.createElement('optgroup');
-        officialGroup.label = "Resmi D&D 3.5e Sınıfları";
-        const customGroup = document.createElement('optgroup');
-        customGroup.label = "Özel / Prestij Sınıfları";
-
-        Object.keys(allDefs).sort((a, b) => a.localeCompare(b)).forEach(cName => {
-          const opt = document.createElement('option');
-          opt.value = cName;
-          const def = allDefs[cName];
-          const hdText = `d${def.hd} HD`;
-          const babText = def.bab === 1.0 ? 'Tam BAB' : (def.bab === 0.75 ? '3/4 BAB' : '1/2 BAB');
-          opt.textContent = `${cName} (${hdText} • ${babText})`;
-          if (cName.toLowerCase() === row.className.toLowerCase()) opt.selected = true;
-          if (def.isCustom) {
-            customGroup.appendChild(opt);
-          } else {
-            officialGroup.appendChild(opt);
-          }
-        });
-
-        sel.appendChild(officialGroup);
-        if (customGroup.children.length > 0) {
-          sel.appendChild(customGroup);
-        }
-      }
+      populateChangeClassSelect(row.className);
 
       // Populate current HP gain from the row
       const hpInput = document.getElementById('change-class-hp-input');
@@ -12375,12 +12585,10 @@ Keep it concise, bulleted, and strictly D&D 3.5e RAW compliant.`;
           : `İsteğe bağlı veya DM lütfu olarak bu seviyeye +1 stat artışı atayabilirsiniz.`;
       }
 
-      const classAiRes = document.getElementById('change-class-ai-result');
-      if (classAiRes) { classAiRes.classList.add('hidden'); classAiRes.innerHTML = ''; }
-      const classAiHint = document.getElementById('change-class-ai-hint');
-      if (classAiHint) {
-        classAiHint.textContent = 'Seçtiğiniz sınıfın bu seviyedeki kazanımları ve karakter sinerjisi hakkında analiz alın.';
-      }
+      const searchInp = document.getElementById('change-class-search-input');
+      if (searchInp) searchInp.value = '';
+      const searchStat = document.getElementById('change-class-search-status');
+      if (searchStat) { searchStat.classList.add('hidden'); searchStat.innerHTML = ''; }
 
       onChangeClassSelectChange();
       modal.classList.remove('hidden');
