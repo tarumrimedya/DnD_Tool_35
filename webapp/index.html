@@ -6896,29 +6896,48 @@
       rolledDice: [] // [ { id: 0, rolls: [d1, d2, d3, d4], droppedIndex: minIdx, total: 15, assignedTo: 'str' } ]
     };
 
+    function getCharacterBaseAbility(statKey) {
+      if (!character) return 10;
+      
+      // If character already has an established baseAbilities for this stat and it's not the accidental all-10s wipe
+      if (character.baseAbilities && typeof character.baseAbilities[statKey] === 'number') {
+        const isAll10s = Object.values(character.baseAbilities).every(v => v === 10);
+        const hasDistinctAbilities = character.abilities && Object.values(character.abilities).some(v => v !== 10);
+        
+        // If not accidentally wiped, return the character's base ability
+        if (!isAll10s || !hasDistinctAbilities) {
+          return character.baseAbilities[statKey];
+        }
+      }
+
+      // Fallback: derive base from character.abilities minus net equipment bonuses
+      let netBonus = 0;
+      if (typeof RuleEngine !== 'undefined' && RuleEngine.resolveBonusStacking && character.abilitySources?.[statKey]) {
+        netBonus = RuleEngine.resolveBonusStacking(character.abilitySources[statKey]);
+      } else {
+        if (statKey === 'str' && character.bodySlots?.belt?.active && (character.bodySlots.belt.name || '').includes('+2')) netBonus = 2;
+        if (statKey === 'dex' && character.bodySlots?.gloves?.active && (character.bodySlots.gloves.name || '').includes('+2')) netBonus = 2;
+      }
+
+      const total = Number(character.abilities?.[statKey]) || 10;
+      return Math.max(1, total - netBonus);
+    }
+
     function openStatDistributionModal() {
       if (!character) return;
       
-      // Initialize baseAbilities if missing or not yet customized - default all to 10
-      if (!character.hasCustomBaseAbilities || !character.baseAbilities) {
-        character.baseAbilities = {
-          str: 10,
-          dex: 10,
-          con: 10,
-          int: 10,
-          wis: 10,
-          cha: 10
-        };
-      }
-
+      // Taban statları karakterin mevcut gerçek taban değerlerinden oku
       statDistState.workingAbilities = {
-        str: Number(character.baseAbilities.str) || 10,
-        dex: Number(character.baseAbilities.dex) || 10,
-        con: Number(character.baseAbilities.con) || 10,
-        int: Number(character.baseAbilities.int) || 10,
-        wis: Number(character.baseAbilities.wis) || 10,
-        cha: Number(character.baseAbilities.cha) || 10
+        str: getCharacterBaseAbility('str'),
+        dex: getCharacterBaseAbility('dex'),
+        con: getCharacterBaseAbility('con'),
+        int: getCharacterBaseAbility('int'),
+        wis: getCharacterBaseAbility('wis'),
+        cha: getCharacterBaseAbility('cha')
       };
+
+      // Taban statlar nesnesini de senkronize tut
+      character.baseAbilities = { ...statDistState.workingAbilities };
 
       const modal = document.getElementById('stat-distribution-modal');
       if (modal) modal.classList.remove('hidden');
@@ -7354,10 +7373,15 @@
         const baseScore = Number(statDistState.workingAbilities[s.key]) || 10;
         
         // Ekipman & Buff bonus farkını hesapla
-        const currentTotal = Number(character.abilities?.[s.key]) || baseScore;
-        const currentBase = Number(character.baseAbilities?.[s.key]) || currentTotal;
-        const bonusDiff = currentTotal - currentBase;
-        const finalScore = baseScore + bonusDiff;
+        let netBonus = 0;
+        if (typeof RuleEngine !== 'undefined' && RuleEngine.resolveBonusStacking && character.abilitySources?.[s.key]) {
+          netBonus = RuleEngine.resolveBonusStacking(character.abilitySources[s.key]);
+        } else {
+          const currentTotal = Number(character.abilities?.[s.key]) || baseScore;
+          const currentBase = Number(character.baseAbilities?.[s.key]) || currentTotal;
+          netBonus = currentTotal - currentBase;
+        }
+        const finalScore = baseScore + netBonus;
         const mod = Math.floor((finalScore - 10) / 2);
         const modStr = (mod >= 0 ? '+' : '') + mod;
         sumMods += mod;
@@ -7367,7 +7391,7 @@
             <span class="text-[9px] text-slate-400 font-bold">${s.label}</span>
             <span class="text-sm font-black text-amber-400">${finalScore}</span>
             <span class="text-[10px] font-bold ${mod >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${modStr}</span>
-            ${bonusDiff !== 0 ? `<span class="text-[8px] text-slate-500">Taban: ${baseScore}</span>` : ''}
+            ${netBonus !== 0 ? `<span class="text-[8px] text-slate-500">Taban: ${baseScore}</span>` : ''}
           </div>
         `;
       }).join('');

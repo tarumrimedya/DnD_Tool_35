@@ -730,12 +730,14 @@ const RuleEngine = {
         character.baseAbilities.dex = Math.max(8, character.baseAbilities.dex - 2);
       }
     } else {
-      // Re-calibrate if baseAbilities was saved uncalibrated in localStorage
-      if (character.bodySlots?.belt?.active && (character.bodySlots.belt.name || '').toLowerCase().includes('+2') && character.baseAbilities.str === 14) {
-        character.baseAbilities.str = 12;
-      }
-      if (character.bodySlots?.gloves?.active && (character.bodySlots.gloves.name || '').toLowerCase().includes('+2') && character.baseAbilities.dex === 16) {
-        character.baseAbilities.dex = 14;
+      if (!character.hasCustomBaseAbilities) {
+        // Re-calibrate if baseAbilities was saved uncalibrated in localStorage
+        if (character.bodySlots?.belt?.active && (character.bodySlots.belt.name || '').toLowerCase().includes('+2') && character.baseAbilities.str === 14) {
+          character.baseAbilities.str = 12;
+        }
+        if (character.bodySlots?.gloves?.active && (character.bodySlots.gloves.name || '').toLowerCase().includes('+2') && character.baseAbilities.dex === 16) {
+          character.baseAbilities.dex = 14;
+        }
       }
     }
 
