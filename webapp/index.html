@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="build-version" content="2026.10.18-0110">
+  <meta name="build-version" content="2026.10.18-1215">
   <title>D&D 3.5e Tactical Cockpit & Character Hub</title>
   <script>
     if ('scrollRestoration' in history) {
@@ -684,9 +684,18 @@
           <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-950/80 p-2 rounded-lg border border-slate-800 text-xs">
             <div class="flex items-center gap-1.5 flex-wrap">
               <span class="text-[10px] font-bold text-slate-400 uppercase mr-1">Filtre:</span>
-              <button onclick="setSkillFilter('all')" id="btn-skill-filter-all" class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-600 text-white transition">Tümü</button>
-              <button onclick="setSkillFilter('class')" id="btn-skill-filter-class" class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">⭐ Sınıf (Class)</button>
-              <button onclick="setSkillFilter('trained')" id="btn-skill-filter-trained" class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">🎯 Eğitimli (Rank > 0)</button>
+              <button onclick="setSkillFilter('all')" id="btn-skill-filter-all" class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-600 text-white transition cursor-pointer">Tümü</button>
+              <button onclick="setSkillFilter('class')" id="btn-skill-filter-class" class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer">⭐ Sınıf (Class)</button>
+              <button onclick="setSkillFilter('trained')" id="btn-skill-filter-trained" class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer">🎯 Eğitimli (Rank > 0)</button>
+              <select id="skill-stat-filter" onchange="setSkillStatFilter(this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-slate-300 font-bold focus:border-amber-400 cursor-pointer" title="Stat / Nitelik Filtresi">
+                <option value="all">Tüm Statlar</option>
+                <option value="str">STR (Güç)</option>
+                <option value="dex">DEX (Çeviklik)</option>
+                <option value="con">CON (Dayanıklılık)</option>
+                <option value="int">INT (Zeka)</option>
+                <option value="wis">WIS (Bilgelik)</option>
+                <option value="cha">CHA (Karizma)</option>
+              </select>
             </div>
 
             <div class="flex items-center gap-2 flex-wrap">
@@ -710,8 +719,14 @@
               type="text" 
               id="skill-search-input" 
               placeholder="🔍 Beceri ara (Örn: Stealth, Spot, Dinleme, Tırmanma...)" 
-              oninput="renderSkills()"
-              class="w-full bg-slate-950 border border-slate-700 rounded-lg pl-3 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-medium">
+              oninput="onSkillSearchInput(this.value)"
+              class="w-full bg-slate-950 border border-slate-700 rounded-lg pl-3 pr-8 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-medium">
+            <button 
+              type="button" 
+              id="btn-clear-skill-search" 
+              onclick="clearSkillSearch()" 
+              class="hidden absolute right-2.5 top-2 text-slate-400 hover:text-white text-xs font-bold transition cursor-pointer"
+              title="Aramayı Temizle">✕</button>
           </div>
 
           <div class="overflow-x-auto">
@@ -2561,13 +2576,13 @@
   <!-- MODAL: CHANGE LEVEL CLASS (Sınıf Değiştirme) -->
   <!-- ==================================================== -->
   <div id="change-level-class-modal" class="hidden fixed inset-0 z-[115] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
-    <div class="bg-dndCard border border-amber-500/80 rounded-2xl max-w-sm w-full shadow-2xl overflow-hidden my-auto">
+    <div class="bg-dndCard border border-amber-500/80 rounded-2xl max-w-md w-full shadow-2xl overflow-hidden my-auto">
       <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <div class="w-8 h-8 rounded-lg bg-amber-950 border border-amber-600/60 flex items-center justify-center text-lg">✏️</div>
           <div>
             <h3 id="change-class-modal-title" class="text-sm font-bold text-white">Seviye Sınıfını Değiştir</h3>
-            <p id="change-class-modal-subtitle" class="text-[10px] text-amber-300">Bu seviyenin sınıfını ve otomatik özelliklerini güncelle</p>
+            <p id="change-class-modal-subtitle" class="text-[10px] text-amber-300">Bu seviyenin sınıfını, Can Puanını (HP) ve özelliklerini güncelle</p>
           </div>
         </div>
         <button onclick="closeChangeLevelClassModal()" class="text-slate-400 hover:text-white p-1 text-sm font-bold">&times;</button>
@@ -2588,6 +2603,76 @@
 
         <div id="change-class-preview-card" class="bg-slate-950/80 border border-slate-800 rounded-xl p-3 space-y-1.5 font-mono text-[11px]">
           <!-- Class stats preview (HD, BAB, Saves, Features) -->
+        </div>
+
+        <!-- HP Gain & Re-roll Section -->
+        <div class="bg-slate-900/90 border border-emerald-500/50 rounded-xl p-3 space-y-2.5 shadow-inner">
+          <div class="flex flex-wrap items-center justify-between gap-1.5">
+            <div>
+              <div class="text-[11px] font-bold text-emerald-400 uppercase tracking-wide flex items-center gap-1.5">
+                <span>❤️</span>
+                <span>Can Puanı Artışı (HP Gain = HD + CON Mod)</span>
+              </div>
+              <div id="change-class-hp-hint" class="text-[10px] text-slate-400 mt-0.5">
+                Mevcut seviye HP artışını koruyun veya yeni sınıf zarıyla yeniden atın.
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-800">
+            <!-- Quick Roll Buttons -->
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <button 
+                type="button" 
+                onclick="rollChangeClassHp('avg')" 
+                class="bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 px-2.5 py-1 rounded text-[11px] font-bold transition flex items-center gap-1 cursor-pointer"
+                title="RAW Kuralı Ortalaması">
+                <span>📊</span>
+                <span>Ortalama</span>
+              </button>
+              <button 
+                type="button" 
+                onclick="rollChangeClassHp('roll')" 
+                class="bg-amber-600/30 hover:bg-amber-600 text-amber-300 hover:text-white border border-amber-500/40 px-2.5 py-1 rounded text-[11px] font-bold transition flex items-center gap-1.5 cursor-pointer"
+                title="Yeni Can Zarı At">
+                <svg class="w-3.5 h-3.5 inline-block align-middle" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+                  <polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
+                  <line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, -apple-system, sans-serif" letter-spacing="-0.5">20</text>
+                </svg>
+                <span>Zar At</span>
+              </button>
+              <button 
+                type="button" 
+                onclick="rollChangeClassHp('max')" 
+                class="bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/40 px-2.5 py-1 rounded text-[11px] font-bold transition flex items-center gap-1 cursor-pointer"
+                title="Maksimum Hit Die">
+                <span>💪</span>
+                <span>Maksimum</span>
+              </button>
+            </div>
+
+            <!-- Manual HP Input -->
+            <div class="flex items-center gap-2">
+              <label for="change-class-hp-input" class="text-[11px] text-slate-300 font-bold whitespace-nowrap">Kazanılan HP:</label>
+              <input 
+                type="number" 
+                id="change-class-hp-input" 
+                value="9" 
+                min="1" 
+                oninput="onChangeClassHpManualInput()"
+                class="w-16 bg-slate-950 border border-emerald-500 rounded-lg px-2 py-1 text-center font-mono text-sm font-black text-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-400">
+            </div>
+          </div>
         </div>
 
         <div class="flex items-center gap-2">
@@ -5052,6 +5137,7 @@
 
     window.addEventListener('DOMContentLoaded', async () => {
       await loadInitialData();
+      initSkillFilters();
       try { renderAll(); } catch (e) { console.error('Initial renderAll error:', e); }
       verifySettingsGeminiApiKey(false);
       await CloudSync.init();
@@ -10815,6 +10901,17 @@
         }
       }
 
+      // Populate current HP gain from the row
+      const hpInput = document.getElementById('change-class-hp-input');
+      const hpHint = document.getElementById('change-class-hp-hint');
+      const currentHpGain = Number(row.hpGain) || 0;
+      if (hpInput) {
+        hpInput.value = currentHpGain > 0 ? currentHpGain : (idx === 0 ? 10 : 8);
+      }
+      if (hpHint) {
+        hpHint.innerHTML = `Seviye ${row.level} mevcut HP artışı: <b class="text-emerald-400">+${currentHpGain} HP</b> (Can Zarı: ${row.hd || 'd8'}). İsterseniz elle değiştirebilir veya yeni zar atabilirsiniz.`;
+      }
+
       onChangeClassSelectChange();
       modal.classList.remove('hidden');
     }
@@ -10825,13 +10922,55 @@
       currentChangeClassLevelIndex = null;
     }
 
+    function rollChangeClassHp(mode = 'avg') {
+      const sel = document.getElementById('change-class-select');
+      const hpInput = document.getElementById('change-class-hp-input');
+      const hint = document.getElementById('change-class-hp-hint');
+      if (!sel || !hpInput || currentChangeClassLevelIndex === null) return;
+
+      const newClass = sel.value;
+      const allDefs = getAvailableClassDefs();
+      const def = allDefs[newClass] || DND35_CLASS_DEFS[newClass] || { hd: 8 };
+
+      const conMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
+        ? RuleEngine.getAbilityMod(character.abilities?.con || 14)
+        : Math.floor(((character.abilities?.con || 14) - 10) / 2);
+
+      const isFirstLvl = (currentChangeClassLevelIndex === 0);
+      let dieRoll = isFirstLvl ? def.hd : (Math.floor(def.hd / 2) + 1);
+
+      if (mode === 'roll') {
+        dieRoll = isFirstLvl ? def.hd : (Math.floor(Math.random() * def.hd) + 1);
+      } else if (mode === 'max') {
+        dieRoll = def.hd;
+      } else if (mode === 'avg') {
+        dieRoll = isFirstLvl ? def.hd : (Math.floor(def.hd / 2) + 1);
+      }
+
+      const totalHpGain = Math.max(1, dieRoll + conMod);
+      hpInput.value = totalHpGain;
+      if (hint) {
+        hint.innerHTML = `Yeni Zar (d${def.hd}): <b>${dieRoll}</b> + CON Mod (<b>${conMod >= 0 ? '+' + conMod : conMod}</b>) = <b class="text-emerald-400">+${totalHpGain} HP</b>`;
+      }
+    }
+
+    function onChangeClassHpManualInput() {
+      const hint = document.getElementById('change-class-hp-hint');
+      const hpInput = document.getElementById('change-class-hp-input');
+      const val = parseInt(hpInput?.value, 10);
+      if (hint && !isNaN(val)) {
+        hint.innerHTML = `Elle girilen Can Puanı artışı: <b class="text-emerald-400">+${val} HP</b>`;
+      }
+    }
+
     function onChangeClassSelectChange() {
       const sel = document.getElementById('change-class-select');
       const preview = document.getElementById('change-class-preview-card');
       if (!sel || !preview || currentChangeClassLevelIndex === null) return;
 
       const newClass = sel.value;
-      const def = DND35_CLASS_DEFS[newClass] || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
+      const allDefs = getAvailableClassDefs();
+      const def = allDefs[newClass] || DND35_CLASS_DEFS[newClass] || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
       const prog = character.levelProgression || [];
 
       // Calculate what class level this would be
@@ -10873,7 +11012,8 @@
       if (!sel) return;
 
       const newClass = sel.value;
-      const def = DND35_CLASS_DEFS[newClass] || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
+      const allDefs = getAvailableClassDefs();
+      const def = allDefs[newClass] || DND35_CLASS_DEFS[newClass] || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
 
       const conMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
         ? RuleEngine.getAbilityMod(character.abilities?.con || 14)
@@ -10885,8 +11025,10 @@
 
       // Calculate old vs new HP difference if active
       const oldHp = Number(prog[idx].hpGain) || 0;
+      const manualHp = parseInt(document.getElementById('change-class-hp-input')?.value, 10);
       const rollHp = (idx === 0) ? def.hd : (Math.floor(def.hd / 2) + 1);
-      const newHp = Math.max(1, rollHp + conMod);
+      const fallbackHp = Math.max(1, rollHp + conMod);
+      const newHp = (!isNaN(manualHp) && manualHp > 0) ? manualHp : fallbackHp;
       const hpDiff = newHp - oldHp;
 
       prog[idx].className = newClass;
@@ -11323,17 +11465,73 @@
       }
     ];
 
-    let activeSkillFilter = 'all'; // 'all' | 'class' | 'trained'
+    let activeSkillFilter = localStorage.getItem('dnd35_skill_filter') || 'all'; // 'all' | 'class' | 'trained'
+    let activeSkillStatFilter = localStorage.getItem('dnd35_skill_stat_filter') || 'all'; // 'all' | 'str' | 'dex' ...
 
     function setSkillFilter(filterMode) {
       activeSkillFilter = filterMode;
+      try {
+        localStorage.setItem('dnd35_skill_filter', filterMode);
+      } catch (e) {}
       const btnAll = document.getElementById('btn-skill-filter-all');
       const btnClass = document.getElementById('btn-skill-filter-class');
       const btnTrained = document.getElementById('btn-skill-filter-trained');
-      if (btnAll) btnAll.className = filterMode === 'all' ? 'px-2 py-0.5 rounded text-[11px] font-bold bg-amber-600 text-white transition' : 'px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition';
-      if (btnClass) btnClass.className = filterMode === 'class' ? 'px-2 py-0.5 rounded text-[11px] font-bold bg-amber-600 text-white transition' : 'px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition';
-      if (btnTrained) btnTrained.className = filterMode === 'trained' ? 'px-2 py-0.5 rounded text-[11px] font-bold bg-amber-600 text-white transition' : 'px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition';
+      if (btnAll) btnAll.className = filterMode === 'all' ? 'px-2 py-0.5 rounded text-[11px] font-bold bg-amber-600 text-white transition cursor-pointer' : 'px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer';
+      if (btnClass) btnClass.className = filterMode === 'class' ? 'px-2 py-0.5 rounded text-[11px] font-bold bg-amber-600 text-white transition cursor-pointer' : 'px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer';
+      if (btnTrained) btnTrained.className = filterMode === 'trained' ? 'px-2 py-0.5 rounded text-[11px] font-bold bg-amber-600 text-white transition cursor-pointer' : 'px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer';
       renderSkills();
+    }
+
+    function setSkillStatFilter(stat) {
+      activeSkillStatFilter = (stat || 'all').toLowerCase();
+      try {
+        localStorage.setItem('dnd35_skill_stat_filter', activeSkillStatFilter);
+      } catch (e) {}
+      renderSkills();
+    }
+
+    function onSkillSearchInput(val) {
+      try {
+        if (val && val.trim()) {
+          localStorage.setItem('dnd35_skill_search', val.trim());
+        } else {
+          localStorage.removeItem('dnd35_skill_search');
+        }
+      } catch (e) {}
+      renderSkills();
+    }
+
+    function clearSkillSearch() {
+      const input = document.getElementById('skill-search-input');
+      if (input) {
+        input.value = '';
+        try { localStorage.removeItem('dnd35_skill_search'); } catch (e) {}
+        renderSkills();
+      }
+    }
+
+    function initSkillFilters() {
+      try {
+        const savedFilter = localStorage.getItem('dnd35_skill_filter') || 'all';
+        activeSkillFilter = savedFilter;
+        const btnAll = document.getElementById('btn-skill-filter-all');
+        const btnClass = document.getElementById('btn-skill-filter-class');
+        const btnTrained = document.getElementById('btn-skill-filter-trained');
+        if (btnAll) btnAll.className = savedFilter === 'all' ? 'px-2 py-0.5 rounded text-[11px] font-bold bg-amber-600 text-white transition cursor-pointer' : 'px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer';
+        if (btnClass) btnClass.className = savedFilter === 'class' ? 'px-2 py-0.5 rounded text-[11px] font-bold bg-amber-600 text-white transition cursor-pointer' : 'px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer';
+        if (btnTrained) btnTrained.className = savedFilter === 'trained' ? 'px-2 py-0.5 rounded text-[11px] font-bold bg-amber-600 text-white transition cursor-pointer' : 'px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer';
+
+        const savedStat = localStorage.getItem('dnd35_skill_stat_filter') || 'all';
+        activeSkillStatFilter = savedStat;
+        const statSel = document.getElementById('skill-stat-filter');
+        if (statSel) statSel.value = savedStat;
+
+        const savedSearch = localStorage.getItem('dnd35_skill_search');
+        const searchInput = document.getElementById('skill-search-input');
+        if (searchInput && savedSearch !== null && savedSearch !== undefined) {
+          searchInput.value = savedSearch;
+        }
+      } catch (e) {}
     }
 
     function ensureAllSkills(char) {
@@ -11855,8 +12053,21 @@
         maxRankInfo.innerHTML = `Maks: Sınıf <strong class="text-amber-400">${maxClassRank}</strong> • Dışı <strong class="text-slate-300">${maxCrossRank}</strong>`;
       }
 
-      const buffSkillMod = Number(character.buffSkillBonus) || 0;
-      const searchVal = (document.getElementById('skill-search-input')?.value || '').toLowerCase().trim();
+      const searchInputEl = document.getElementById('skill-search-input');
+      let searchVal = (searchInputEl?.value || '').toLowerCase().trim();
+      if (!searchVal && searchInputEl) {
+        const savedSearch = (localStorage.getItem('dnd35_skill_search') || '').trim();
+        if (savedSearch) {
+          searchInputEl.value = savedSearch;
+          searchVal = savedSearch.toLowerCase();
+        }
+      }
+
+      const clearBtn = document.getElementById('btn-clear-skill-search');
+      if (clearBtn) {
+        if (searchVal) clearBtn.classList.remove('hidden');
+        else clearBtn.classList.add('hidden');
+      }
 
       // Collect list of items to render
       let displayItems = [];
@@ -11924,6 +12135,11 @@
         displayItems = displayItems.filter(item => item.isClass);
       } else if (activeSkillFilter === 'trained') {
         displayItems = displayItems.filter(item => item.ranks > 0);
+      }
+
+      // Filter by activeSkillStatFilter
+      if (activeSkillStatFilter && activeSkillStatFilter !== 'all') {
+        displayItems = displayItems.filter(item => (item.stat || '').toLowerCase() === activeSkillStatFilter.toLowerCase());
       }
 
       // Filter by search query
