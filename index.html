@@ -132,7 +132,13 @@
               <span class="inline-flex items-center"><svg class="w-4 h-4 text-amber-400" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"/><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"/><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
               <span>TEMEL STATLAR (ABILITY SCORES)</span>
             </h3>
-            <span class="text-[10px] text-slate-400">24H Eşya ve Geçici Modifiyeler Dahil</span>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] text-slate-400 hidden sm:inline">24H Eşya ve Geçici Modifiyeler Dahil</span>
+              <button onclick="openStatDistributionModal()" type="button" class="text-[10px] bg-slate-800 hover:bg-purple-900/60 border border-slate-700 hover:border-purple-500 text-purple-300 font-bold px-2 py-0.5 rounded transition cursor-pointer flex items-center gap-1 active:scale-95" title="Stat dağılımını ayarla">
+                <span>🎲</span>
+                <span>Düzenle</span>
+              </button>
+            </div>
           </div>
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-center" id="abilities-grid">
             <!-- Dynamically populated -->
@@ -601,10 +607,16 @@
                 </div>
               </div>
             </div>
-            <button onclick="openProfileEditModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 hover:border-slate-500 font-bold text-xs px-3 py-1.5 rounded-lg transition shadow flex items-center gap-1.5">
-              <span>✏️</span>
-              <span>Profili Düzenle</span>
-            </button>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="openStatDistributionModal()" class="bg-gradient-to-r from-purple-800/90 to-indigo-800/90 hover:from-purple-700 hover:to-indigo-700 text-purple-100 hover:text-white border border-purple-500/60 font-bold text-xs px-3 py-1.5 rounded-lg transition shadow-md flex items-center gap-1.5 cursor-pointer active:scale-95" title="Karakter temel statlarını (STR, DEX, CON, INT, WIS, CHA) düzenle, Point Buy veya 4d6 zar ile belirle">
+                <span>🎲</span>
+                <span>Statları Düzenle</span>
+              </button>
+              <button onclick="openProfileEditModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 hover:border-slate-500 font-bold text-xs px-3 py-1.5 rounded-lg transition shadow flex items-center gap-1.5 cursor-pointer">
+                <span>✏️</span>
+                <span>Profili Düzenle</span>
+              </button>
+            </div>
           </div>
 
           <!-- Quick Identity Grid -->
@@ -2865,6 +2877,167 @@
       <div class="bg-slate-950 px-4 py-2.5 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400 shrink-0">
         <span>💡 İpucu: Master DB sekmesindeki 🧙‍♂️🤖 Rule Master (AI) Kural Asistanı ile de dilediğiniz kitaptan Feat çekebilirsiniz.</span>
         <button onclick="closeFeatPickerModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs px-4 py-1.5 rounded-lg transition">Kapat</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================== -->
+  <!-- MODAL: STAT DISTRIBUTION & POINT BUY EDITOR -->
+  <!-- ==================================================== -->
+  <div id="stat-distribution-modal" class="hidden fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
+    <div class="bg-dndCard border border-purple-500/80 rounded-2xl max-w-xl w-full shadow-2xl overflow-hidden my-auto max-h-[94vh] flex flex-col">
+      <!-- Modal Header -->
+      <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-900 to-indigo-950 border border-purple-500/60 flex items-center justify-center text-xl overflow-hidden shrink-0 shadow-inner">
+            <span>🎲</span>
+          </div>
+          <div>
+            <h3 class="font-black text-white text-sm flex items-center gap-1.5">
+              <span>Temel Stat Dağılımı</span>
+              <span class="text-[9px] font-mono px-1.5 py-0.2 bg-purple-950 text-purple-300 border border-purple-700/60 rounded">D&amp;D 3.5e RAW</span>
+            </h3>
+            <p class="text-[10px] text-purple-300">Manuel giriş, Point Buy veya 4d6 zar ile karakter taban statlarını belirleyin</p>
+          </div>
+        </div>
+        <button onclick="closeStatDistributionModal()" class="text-slate-400 hover:text-white text-lg p-1 transition cursor-pointer">✕</button>
+      </div>
+
+      <!-- Mode Selector Tabs (Manuel, Point Buy, 4d6) -->
+      <div class="bg-slate-900/80 px-4 pt-2.5 border-b border-slate-800 flex items-center gap-2 shrink-0">
+        <button type="button" id="tab-stat-dist-manual" onclick="setStatDistMode('manual')" class="px-3 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-purple-500 text-purple-200 bg-purple-950/60 flex items-center gap-1.5 cursor-pointer">
+          <span>✏️</span>
+          <span>Manuel (Serbest)</span>
+        </button>
+        <button type="button" id="tab-stat-dist-pointbuy" onclick="setStatDistMode('pointbuy')" class="px-3 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-1.5 cursor-pointer">
+          <span>⚖️</span>
+          <span>Point Buy (3.5e RAW)</span>
+        </button>
+        <button type="button" id="tab-stat-dist-roll" onclick="setStatDistMode('roll')" class="px-3 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-1.5 cursor-pointer">
+          <span>🎲</span>
+          <span>4d6 Drop Lowest (Zar)</span>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-4 space-y-3.5 overflow-y-auto text-xs">
+        
+        <!-- PANEL 1: MANUEL (SERBEST GİRİŞ) -->
+        <div id="panel-stat-dist-manual" class="space-y-3">
+          <div class="flex flex-wrap items-center justify-between text-[11px] text-slate-400 pb-1 border-b border-slate-800 gap-1.5">
+            <span>Taban statları (Base Abilities) doğrudan belirleyin veya kalıp seçin:</span>
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="setEliteArrayStats()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-amber-300 font-semibold px-2 py-0.5 rounded border border-slate-700 transition cursor-pointer" title="15, 14, 13, 12, 10, 8">
+                ⭐ Elite Array
+              </button>
+              <button type="button" onclick="resetStatsToCurrent()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded border border-slate-700 transition cursor-pointer" title="Mevcut taban statlara dön">
+                ↺ Sıfırla
+              </button>
+            </div>
+          </div>
+
+          <!-- 6 Stat Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="manual-stats-container">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- PANEL 2: POINT BUY (D&D 3.5e RAW) -->
+        <div id="panel-stat-dist-pointbuy" class="hidden space-y-3">
+          <div class="bg-purple-950/40 border border-purple-500/40 rounded-xl p-2.5 space-y-2">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-1.5">
+                <span class="text-xs font-bold text-purple-200">Point Buy Bütçesi:</span>
+                <select id="pointbuy-preset-select" onchange="onPointBuyPresetChange()" class="bg-slate-900 border border-purple-500/50 rounded px-2 py-0.5 text-xs text-white font-bold cursor-pointer">
+                  <option value="25">25 Puan (Low Fantasy)</option>
+                  <option value="28" selected>28 Puan (Standard 3.5e RAW)</option>
+                  <option value="32">32 Puan (High Fantasy)</option>
+                  <option value="36">36 Puan (Epic Fantasy)</option>
+                  <option value="custom">Özel Bütçe</option>
+                </select>
+                <input type="number" id="pointbuy-custom-budget" oninput="calculatePointBuy()" class="hidden w-16 bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-xs text-center text-white font-mono font-bold" min="10" max="100" value="28">
+              </div>
+
+              <!-- Puan Durum Rozeti -->
+              <div id="pointbuy-summary-badge" class="px-2.5 py-1 rounded-lg font-mono font-bold text-xs flex items-center gap-1.5 bg-emerald-950 text-emerald-300 border border-emerald-600">
+                <span>Kalan: <strong id="pointbuy-remaining-pts">0</strong> / <span id="pointbuy-total-pts">28</span> Puan</span>
+              </div>
+            </div>
+            <p class="text-[10px] text-purple-300/80">D&amp;D 3.5e DMG s. 169 kuralları: Statlar taban 8 başlar. 14'e kadar 1'er puan, 15-16 için 2'şer puan, 17-18 için 3'er puan harcanır.</p>
+          </div>
+
+          <!-- Point Buy Stat Rows -->
+          <div class="space-y-1.5" id="pointbuy-stats-container">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- PANEL 3: 4d6 DROP LOWEST (ZAR ATMA) -->
+        <div id="panel-stat-dist-roll" class="hidden space-y-3">
+          <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 space-y-2.5">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h4 class="font-bold text-white text-xs flex items-center gap-1.5">
+                  <span>🎲</span>
+                  <span>4d6 Drop Lowest Zar Havuzu</span>
+                </h4>
+                <p class="text-[10px] text-slate-400">Her stat için 4 adet 6'lık zar atılır, en düşük zar elenerek kalan 3 zar toplanır.</p>
+              </div>
+              <button type="button" onclick="rollAll4d6Stats()" class="bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-black text-xs px-3.5 py-1.5 rounded-lg shadow-lg flex items-center gap-1.5 transition active:scale-95 cursor-pointer">
+                <span>🎲</span>
+                <span>Zarları Yeniden At</span>
+              </button>
+            </div>
+
+            <!-- Rolled Dices Display Cards -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-center" id="rolled-dice-cards-box">
+              <div class="p-3 text-center text-slate-500 italic col-span-full">Henüz zar atılmadı. "Zarları Yeniden At" butonuna basın.</div>
+            </div>
+          </div>
+
+          <!-- Atama Tablosu -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between text-[11px] font-bold text-slate-300 pb-1 border-b border-slate-800">
+              <span>Atılan Zarları Statlara Dağıtın:</span>
+              <button type="button" onclick="autoAssignRolledStats()" class="text-[10px] text-indigo-300 hover:text-white underline cursor-pointer">
+                ⚡ Sınıfa Göre Otomatik Dağıt
+              </button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="rolled-assign-container">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- ORTAK BİLGİLENDİRME & ÖZET KARTI -->
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-3 space-y-2 text-xs">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-slate-300 flex items-center gap-1.5">
+              <span>📊</span>
+              <span>Nihai Skor Önizlemesi (Ekipman &amp; Buff Dahil)</span>
+            </span>
+            <span id="stat-dist-preview-total-mod" class="text-[11px] font-mono font-bold text-amber-300"></span>
+          </div>
+          <div class="grid grid-cols-6 gap-1.5 text-center font-mono" id="stat-dist-preview-row">
+            <!-- Rendered by JS -->
+          </div>
+          <div class="text-[10px] text-slate-500 flex items-center gap-1.5 pt-1 border-t border-slate-800/80">
+            <span>ℹ️</span>
+            <span>Kaydettiğinizde Can Puanı (HP), AC, Atak, Beceriler ve Kurtarma Atışları kural motoru tarafından anında baştan hesaplanacaktır.</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="bg-slate-950 px-4 py-3 border-t border-slate-800 flex items-center justify-between shrink-0">
+        <button type="button" onclick="closeStatDistributionModal()" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-lg transition cursor-pointer">
+          Vazgeç
+        </button>
+        <button type="button" onclick="saveStatDistribution()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-4 py-2 rounded-lg shadow-lg flex items-center gap-1.5 transition active:scale-95 cursor-pointer">
+          <span>💾</span>
+          <span>Statları Kaydet &amp; Uygula</span>
+        </button>
       </div>
     </div>
   </div>
@@ -6672,6 +6845,538 @@
       saveStateToStorage(true);
       renderAll();
       alert('✅ Karakter kimliği ve özellikleri başarıyla güncellendi!');
+    }
+
+    // ====================================================
+    // CONTROLLER: STAT DISTRIBUTION & POINT BUY MODAL
+    // Manuel, Point Buy (3.5e RAW DMG p.169), 4d6 Drop Lowest
+    // ====================================================
+    const STAT_KEYS = [
+      { key: 'str', label: 'STR', name: 'Kuvvet' },
+      { key: 'dex', label: 'DEX', name: 'Çeviklik' },
+      { key: 'con', label: 'CON', name: 'Dayanıklılık' },
+      { key: 'int', label: 'INT', name: 'Zeka' },
+      { key: 'wis', label: 'WIS', name: 'Sezgi' },
+      { key: 'cha', label: 'CHA', name: 'Karizma' }
+    ];
+
+    const POINT_BUY_COST_TABLE = {
+      8: 0,
+      9: 1,
+      10: 2,
+      11: 3,
+      12: 4,
+      13: 5,
+      14: 6,
+      15: 8,
+      16: 10,
+      17: 13,
+      18: 16
+    };
+
+    let statDistState = {
+      mode: 'manual', // 'manual' | 'pointbuy' | 'roll'
+      workingAbilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+      pointBuyBudget: 28,
+      rolledDice: [] // [ { id: 0, rolls: [d1, d2, d3, d4], droppedIndex: minIdx, total: 15, assignedTo: 'str' } ]
+    };
+
+    function openStatDistributionModal() {
+      if (!character) return;
+      
+      // Initialize baseAbilities if missing
+      if (!character.baseAbilities) {
+        character.baseAbilities = {
+          str: Number(character.abilities?.str) || 10,
+          dex: Number(character.abilities?.dex) || 10,
+          con: Number(character.abilities?.con) || 10,
+          int: Number(character.abilities?.int) || 10,
+          wis: Number(character.abilities?.wis) || 10,
+          cha: Number(character.abilities?.cha) || 10
+        };
+      }
+
+      statDistState.workingAbilities = {
+        str: Number(character.baseAbilities.str) || 10,
+        dex: Number(character.baseAbilities.dex) || 10,
+        con: Number(character.baseAbilities.con) || 10,
+        int: Number(character.baseAbilities.int) || 10,
+        wis: Number(character.baseAbilities.wis) || 10,
+        cha: Number(character.baseAbilities.cha) || 10
+      };
+
+      const modal = document.getElementById('stat-distribution-modal');
+      if (modal) modal.classList.remove('hidden');
+
+      setStatDistMode(statDistState.mode || 'manual');
+    }
+
+    function closeStatDistributionModal() {
+      const modal = document.getElementById('stat-distribution-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function setStatDistMode(mode) {
+      statDistState.mode = mode;
+
+      const tabs = [
+        { id: 'tab-stat-dist-manual', panel: 'panel-stat-dist-manual', key: 'manual' },
+        { id: 'tab-stat-dist-pointbuy', panel: 'panel-stat-dist-pointbuy', key: 'pointbuy' },
+        { id: 'tab-stat-dist-roll', panel: 'panel-stat-dist-roll', key: 'roll' }
+      ];
+
+      tabs.forEach(t => {
+        const tabEl = document.getElementById(t.id);
+        const panelEl = document.getElementById(t.panel);
+        const isActive = (t.key === mode);
+
+        if (tabEl) {
+          if (isActive) {
+            tabEl.className = 'px-3 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-purple-500 text-purple-200 bg-purple-950/60 flex items-center gap-1.5 cursor-pointer';
+          } else {
+            tabEl.className = 'px-3 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-1.5 cursor-pointer';
+          }
+        }
+
+        if (panelEl) {
+          if (isActive) {
+            panelEl.classList.remove('hidden');
+          } else {
+            panelEl.classList.add('hidden');
+          }
+        }
+      });
+
+      if (mode === 'manual') {
+        renderManualStatsPanel();
+      } else if (mode === 'pointbuy') {
+        // Clamp stats to 8-18 for point buy if needed
+        STAT_KEYS.forEach(s => {
+          let val = Number(statDistState.workingAbilities[s.key]) || 10;
+          if (val < 8) val = 8;
+          if (val > 18) val = 18;
+          statDistState.workingAbilities[s.key] = val;
+        });
+        renderPointBuyPanel();
+      } else if (mode === 'roll') {
+        if (!statDistState.rolledDice || statDistState.rolledDice.length === 0) {
+          rollAll4d6Stats();
+        } else {
+          renderRolledStatsPanel();
+        }
+      }
+
+      renderStatDistPreviewRow();
+    }
+
+    // --- 1. MANUEL MODE ---
+    function renderManualStatsPanel() {
+      const container = document.getElementById('manual-stats-container');
+      if (!container) return;
+
+      container.innerHTML = STAT_KEYS.map(s => {
+        const val = Number(statDistState.workingAbilities[s.key]) || 10;
+        const mod = Math.floor((val - 10) / 2);
+        const modStr = (mod >= 0 ? '+' : '') + mod;
+        return `
+          <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl p-2 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-10 text-center font-black text-xs font-mono px-1.5 py-0.5 rounded bg-purple-950/70 border border-purple-800 text-purple-300">${s.label}</span>
+              <div>
+                <div class="text-[11px] font-bold text-slate-200 leading-tight">${s.name}</div>
+                <div class="text-[10px] text-slate-400 font-mono">Mod: <strong class="${mod >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${modStr}</strong></div>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="adjustManualStat('${s.key}', -1)" class="w-7 h-7 rounded bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-bold text-sm flex items-center justify-center transition cursor-pointer">－</button>
+              <input type="number" min="1" max="50" value="${val}" onchange="setManualStatInput('${s.key}', this.value)" class="w-12 h-7 bg-slate-950 border border-slate-700 rounded text-center text-amber-400 font-mono font-bold text-sm focus:border-purple-500 focus:outline-none">
+              <button type="button" onclick="adjustManualStat('${s.key}', 1)" class="w-7 h-7 rounded bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-bold text-sm flex items-center justify-center transition cursor-pointer">＋</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function adjustManualStat(key, delta) {
+      const current = Number(statDistState.workingAbilities[key]) || 10;
+      const next = Math.max(1, Math.min(50, current + delta));
+      statDistState.workingAbilities[key] = next;
+      renderManualStatsPanel();
+      renderStatDistPreviewRow();
+    }
+
+    function setManualStatInput(key, value) {
+      let val = parseInt(value, 10);
+      if (isNaN(val)) val = 10;
+      val = Math.max(1, Math.min(50, val));
+      statDistState.workingAbilities[key] = val;
+      renderManualStatsPanel();
+      renderStatDistPreviewRow();
+    }
+
+    function setEliteArrayStats() {
+      // D&D 3.5e Elite Array: 15, 14, 13, 12, 10, 8
+      statDistState.workingAbilities = {
+        str: 15,
+        dex: 14,
+        con: 13,
+        int: 12,
+        wis: 10,
+        cha: 8
+      };
+      renderManualStatsPanel();
+      renderStatDistPreviewRow();
+      if (typeof showDiceTopToast === 'function') {
+        showDiceTopToast({
+          icon: '⭐',
+          title: 'Elite Array Uygulandı',
+          breakdown: 'STR: 15, DEX: 14, CON: 13, INT: 12, WIS: 10, CHA: 8'
+        });
+      }
+    }
+
+    function resetStatsToCurrent() {
+      if (character && character.baseAbilities) {
+        statDistState.workingAbilities = {
+          str: Number(character.baseAbilities.str) || 10,
+          dex: Number(character.baseAbilities.dex) || 10,
+          con: Number(character.baseAbilities.con) || 10,
+          int: Number(character.baseAbilities.int) || 10,
+          wis: Number(character.baseAbilities.wis) || 10,
+          cha: Number(character.baseAbilities.cha) || 10
+        };
+      }
+      if (statDistState.mode === 'manual') renderManualStatsPanel();
+      else if (statDistState.mode === 'pointbuy') renderPointBuyPanel();
+      renderStatDistPreviewRow();
+    }
+
+    // --- 2. POINT BUY (D&D 3.5e DMG p. 169) ---
+    function getPointBuyCost(score) {
+      if (score <= 8) return 0;
+      if (score >= 18) return 16;
+      return POINT_BUY_COST_TABLE[score] ?? 0;
+    }
+
+    function onPointBuyPresetChange() {
+      const select = document.getElementById('pointbuy-preset-select');
+      const customInput = document.getElementById('pointbuy-custom-budget');
+      if (!select) return;
+
+      if (select.value === 'custom') {
+        if (customInput) customInput.classList.remove('hidden');
+        statDistState.pointBuyBudget = parseInt(customInput?.value, 10) || 28;
+      } else {
+        if (customInput) customInput.classList.add('hidden');
+        statDistState.pointBuyBudget = parseInt(select.value, 10) || 28;
+      }
+      calculatePointBuy();
+    }
+
+    function calculatePointBuy() {
+      const customInput = document.getElementById('pointbuy-custom-budget');
+      const select = document.getElementById('pointbuy-preset-select');
+      if (select && select.value === 'custom' && customInput) {
+        statDistState.pointBuyBudget = parseInt(customInput.value, 10) || 28;
+      }
+
+      let spent = 0;
+      STAT_KEYS.forEach(s => {
+        const val = Number(statDistState.workingAbilities[s.key]) || 8;
+        spent += getPointBuyCost(val);
+      });
+
+      const budget = statDistState.pointBuyBudget || 28;
+      const remaining = budget - spent;
+
+      const remEl = document.getElementById('pointbuy-remaining-pts');
+      const totEl = document.getElementById('pointbuy-total-pts');
+      const badgeEl = document.getElementById('pointbuy-summary-badge');
+
+      if (remEl) remEl.textContent = remaining;
+      if (totEl) totEl.textContent = budget;
+
+      if (badgeEl) {
+        if (remaining === 0) {
+          badgeEl.className = 'px-2.5 py-1 rounded-lg font-mono font-bold text-xs flex items-center gap-1.5 bg-emerald-950 text-emerald-300 border border-emerald-600';
+          badgeEl.innerHTML = `<span>✅ Tam Dengeli: <strong>0</strong> / ${budget} Puan</span>`;
+        } else if (remaining > 0) {
+          badgeEl.className = 'px-2.5 py-1 rounded-lg font-mono font-bold text-xs flex items-center gap-1.5 bg-amber-950 text-amber-300 border border-amber-600';
+          badgeEl.innerHTML = `<span>⏳ Kalan: <strong>${remaining}</strong> / ${budget} Puan</span>`;
+        } else {
+          badgeEl.className = 'px-2.5 py-1 rounded-lg font-mono font-bold text-xs flex items-center gap-1.5 bg-rose-950 text-rose-300 border border-rose-600 animate-pulse';
+          badgeEl.innerHTML = `<span>⚠️ Bütçe Aşıldı: <strong>${remaining}</strong> / ${budget} Puan!</span>`;
+        }
+      }
+    }
+
+    function renderPointBuyPanel() {
+      const container = document.getElementById('pointbuy-stats-container');
+      if (!container) return;
+
+      container.innerHTML = STAT_KEYS.map(s => {
+        const val = Number(statDistState.workingAbilities[s.key]) || 8;
+        const mod = Math.floor((val - 10) / 2);
+        const modStr = (mod >= 0 ? '+' : '') + mod;
+        const cost = getPointBuyCost(val);
+        const nextCost = val < 18 ? getPointBuyCost(val + 1) - cost : 0;
+
+        return `
+          <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-2 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="w-10 text-center font-black text-xs font-mono px-1.5 py-0.5 rounded bg-purple-950/70 border border-purple-800 text-purple-300">${s.label}</span>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-bold text-slate-200">${s.name}</span>
+                  <span class="text-[10px] text-slate-400 font-mono">Mod: <strong class="${mod >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${modStr}</strong></span>
+                </div>
+                <div class="text-[10px] text-purple-300/80 font-mono">Maliyet: <strong class="text-amber-400">${cost} pt</strong> ${val < 18 ? `(+1 için: ${nextCost} pt)` : '(Maks 18)'}</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="adjustPointBuyStat('${s.key}', -1)" ${val <= 8 ? 'disabled' : ''} class="w-7 h-7 rounded bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 text-slate-200 font-bold text-sm flex items-center justify-center transition cursor-pointer">－</button>
+              <span class="w-10 text-center text-amber-400 font-mono font-black text-base">${val}</span>
+              <button type="button" onclick="adjustPointBuyStat('${s.key}', 1)" ${val >= 18 ? 'disabled' : ''} class="w-7 h-7 rounded bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 text-slate-200 font-bold text-sm flex items-center justify-center transition cursor-pointer">＋</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      calculatePointBuy();
+    }
+
+    function adjustPointBuyStat(key, delta) {
+      const current = Number(statDistState.workingAbilities[key]) || 8;
+      const next = Math.max(8, Math.min(18, current + delta));
+      statDistState.workingAbilities[key] = next;
+      renderPointBuyPanel();
+      renderStatDistPreviewRow();
+    }
+
+    // --- 3. 4d6 DROP LOWEST MODE ---
+    function rollAll4d6Stats() {
+      const newPool = [];
+      for (let i = 0; i < 6; i++) {
+        const rolls = [
+          Math.floor(Math.random() * 6) + 1,
+          Math.floor(Math.random() * 6) + 1,
+          Math.floor(Math.random() * 6) + 1,
+          Math.floor(Math.random() * 6) + 1
+        ];
+        let minVal = 7;
+        let minIdx = -1;
+        rolls.forEach((r, idx) => {
+          if (r < minVal) {
+            minVal = r;
+            minIdx = idx;
+          }
+        });
+        const total = rolls.reduce((acc, cur, idx) => (idx === minIdx ? acc : acc + cur), 0);
+        newPool.push({
+          id: i,
+          rolls,
+          droppedIndex: minIdx,
+          total,
+          assignedTo: null
+        });
+      }
+      statDistState.rolledDice = newPool;
+      autoAssignRolledStats(true);
+    }
+
+    function autoAssignRolledStats(silent = false) {
+      if (!statDistState.rolledDice || statDistState.rolledDice.length < 6) return;
+
+      const sortedPool = [...statDistState.rolledDice].sort((a, b) => b.total - a.total);
+
+      const charClass = ((character && character.class) || (character && character.progression?.[0]?.className) || '').toLowerCase();
+      let priority = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
+
+      if (charClass.includes('wizard')) priority = ['int', 'con', 'dex', 'wis', 'cha', 'str'];
+      else if (charClass.includes('sorcerer')) priority = ['cha', 'con', 'dex', 'wis', 'int', 'str'];
+      else if (charClass.includes('cleric')) priority = ['wis', 'con', 'str', 'cha', 'dex', 'int'];
+      else if (charClass.includes('druid')) priority = ['wis', 'con', 'dex', 'str', 'int', 'cha'];
+      else if (charClass.includes('rogue')) priority = ['dex', 'con', 'int', 'wis', 'str', 'cha'];
+      else if (charClass.includes('fighter') || charClass.includes('barbarian')) priority = ['str', 'con', 'dex', 'wis', 'int', 'cha'];
+      else if (charClass.includes('paladin')) priority = ['str', 'cha', 'con', 'wis', 'dex', 'int'];
+      else if (charClass.includes('monk')) priority = ['wis', 'dex', 'str', 'con', 'int', 'cha'];
+      else if (charClass.includes('bard')) priority = ['cha', 'dex', 'con', 'int', 'wis', 'str'];
+      else if (charClass.includes('ranger')) priority = ['dex', 'wis', 'con', 'str', 'int', 'cha'];
+
+      priority.forEach((statKey, idx) => {
+        const rollObj = sortedPool[idx];
+        if (rollObj) {
+          rollObj.assignedTo = statKey;
+          statDistState.workingAbilities[statKey] = rollObj.total;
+        }
+      });
+
+      renderRolledStatsPanel();
+      renderStatDistPreviewRow();
+
+      if (!silent && typeof showDiceTopToast === 'function') {
+        showDiceTopToast({
+          icon: '⚡',
+          title: 'Zarlar Dağıtıldı',
+          breakdown: `Karakter sınıfına (${character.class || 'Genel'}) uygun olarak en yüksek zarlar temel özelliklere otomatik atandı.`
+        });
+      }
+    }
+
+    function onRolledStatSelect(targetStatKey, rollId) {
+      const targetRollId = parseInt(rollId, 10);
+      const chosenRoll = statDistState.rolledDice.find(r => r.id === targetRollId);
+      if (!chosenRoll) return;
+
+      const prevOwner = statDistState.rolledDice.find(r => r.assignedTo === targetStatKey);
+      const otherStatKey = chosenRoll.assignedTo;
+
+      if (otherStatKey && otherStatKey !== targetStatKey) {
+        if (prevOwner) {
+          prevOwner.assignedTo = otherStatKey;
+          statDistState.workingAbilities[otherStatKey] = prevOwner.total;
+        } else {
+          chosenRoll.assignedTo = null;
+        }
+      }
+
+      chosenRoll.assignedTo = targetStatKey;
+      statDistState.workingAbilities[targetStatKey] = chosenRoll.total;
+
+      renderRolledStatsPanel();
+      renderStatDistPreviewRow();
+    }
+
+    function renderRolledStatsPanel() {
+      const cardsBox = document.getElementById('rolled-dice-cards-box');
+      if (cardsBox && statDistState.rolledDice.length > 0) {
+        cardsBox.innerHTML = statDistState.rolledDice.map(r => {
+          const diceHtml = r.rolls.map((d, idx) => {
+            const isDropped = (idx === r.droppedIndex);
+            if (isDropped) {
+              return `<span class="line-through text-rose-500/70 font-mono text-[10px] bg-rose-950/40 px-1 rounded" title="Elenen en düşük zar: ${d}">${d}</span>`;
+            }
+            return `<span class="text-amber-300 font-mono font-bold text-xs bg-slate-900 border border-slate-700 px-1 rounded">${d}</span>`;
+          }).join(' ');
+
+          const assignedStatObj = STAT_KEYS.find(s => s.key === r.assignedTo);
+          const badgeText = assignedStatObj ? assignedStatObj.label : 'Boşta';
+
+          return `
+            <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl p-2 flex flex-col items-center justify-between">
+              <span class="text-[9px] font-mono text-purple-300 uppercase px-1.5 py-0.2 rounded bg-purple-950 border border-purple-800">${badgeText}</span>
+              <div class="text-lg font-black text-amber-400 font-mono my-1">${r.total}</div>
+              <div class="flex items-center gap-1 justify-center">${diceHtml}</div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      const assignBox = document.getElementById('rolled-assign-container');
+      if (assignBox) {
+        assignBox.innerHTML = STAT_KEYS.map(s => {
+          const assignedRoll = statDistState.rolledDice.find(r => r.assignedTo === s.key);
+          const val = assignedRoll ? assignedRoll.total : (Number(statDistState.workingAbilities[s.key]) || 10);
+          const mod = Math.floor((val - 10) / 2);
+          const modStr = (mod >= 0 ? '+' : '') + mod;
+
+          const optionsHtml = statDistState.rolledDice.map(r => {
+            const isSelected = (r.assignedTo === s.key);
+            const otherOwner = (r.assignedTo && r.assignedTo !== s.key) ? `(${r.assignedTo.toUpperCase()})` : '';
+            return `<option value="${r.id}" ${isSelected ? 'selected' : ''}>Toplam: ${r.total} [${r.rolls.join(',')}] ${otherOwner}</option>`;
+          }).join('');
+
+          return `
+            <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl p-2 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-10 text-center font-black text-xs font-mono px-1.5 py-0.5 rounded bg-purple-950/70 border border-purple-800 text-purple-300">${s.label}</span>
+                <div>
+                  <div class="text-[11px] font-bold text-slate-200 leading-tight">${s.name}</div>
+                  <div class="text-[10px] text-slate-400 font-mono">Nihai: <strong class="text-amber-400 font-bold">${val}</strong> (${modStr})</div>
+                </div>
+              </div>
+              <select onchange="onRolledStatSelect('${s.key}', this.value)" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white font-mono font-bold cursor-pointer max-w-[130px]">
+                ${optionsHtml}
+              </select>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    // --- ORTAK ÖNİZLEME VE KAYIT ---
+    function renderStatDistPreviewRow() {
+      const previewContainer = document.getElementById('stat-dist-preview-row');
+      const totalModEl = document.getElementById('stat-dist-preview-total-mod');
+      if (!previewContainer) return;
+
+      let sumMods = 0;
+
+      previewContainer.innerHTML = STAT_KEYS.map(s => {
+        const baseScore = Number(statDistState.workingAbilities[s.key]) || 10;
+        
+        // Ekipman & Buff bonus farkını hesapla
+        const currentTotal = Number(character.abilities?.[s.key]) || baseScore;
+        const currentBase = Number(character.baseAbilities?.[s.key]) || currentTotal;
+        const bonusDiff = currentTotal - currentBase;
+        const finalScore = baseScore + bonusDiff;
+        const mod = Math.floor((finalScore - 10) / 2);
+        const modStr = (mod >= 0 ? '+' : '') + mod;
+        sumMods += mod;
+
+        return `
+          <div class="bg-slate-900 border border-slate-800 rounded-lg p-1.5 flex flex-col items-center">
+            <span class="text-[9px] text-slate-400 font-bold">${s.label}</span>
+            <span class="text-sm font-black text-amber-400">${finalScore}</span>
+            <span class="text-[10px] font-bold ${mod >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${modStr}</span>
+            ${bonusDiff !== 0 ? `<span class="text-[8px] text-slate-500">Taban: ${baseScore}</span>` : ''}
+          </div>
+        `;
+      }).join('');
+
+      if (totalModEl) {
+        totalModEl.textContent = `Toplam Mod: ${sumMods >= 0 ? '+' : ''}${sumMods}`;
+      }
+    }
+
+    function saveStatDistribution() {
+      if (!character) return;
+
+      // Point Buy kontrolü
+      if (statDistState.mode === 'pointbuy') {
+        const budget = statDistState.pointBuyBudget || 28;
+        let spent = 0;
+        STAT_KEYS.forEach(s => {
+          spent += getPointBuyCost(Number(statDistState.workingAbilities[s.key]) || 8);
+        });
+        if (spent > budget) {
+          const proceed = confirm(`⚠️ Point Buy bütçesi aşıldı! (${spent}/${budget} puan harcandı)\n\nYine de bu statları kaydetmek istiyor musunuz?`);
+          if (!proceed) return;
+        }
+      }
+
+      // Taban statları uygula
+      if (!character.baseAbilities) character.baseAbilities = {};
+      STAT_KEYS.forEach(s => {
+        character.baseAbilities[s.key] = Number(statDistState.workingAbilities[s.key]) || 10;
+      });
+
+      closeStatDistributionModal();
+
+      // Recalculate everything and render
+      saveStateToStorage(true);
+      renderAll();
+
+      if (typeof showDiceTopToast === 'function') {
+        showDiceTopToast({
+          icon: '🎲',
+          title: 'Statlar Kaydedildi',
+          breakdown: 'Taban yetenek skorları güncellendi. HP, AC, Atak, Beceriler ve Kurtarma Atışları kural motoru tarafından baştan hesaplandı.',
+          total: 'TAMAMLANDI'
+        });
+      } else {
+        alert('✅ Taban statlar başarıyla güncellendi ve tüm karakter değerleri baştan hesaplandı!');
+      }
     }
 
     // ==========================================
