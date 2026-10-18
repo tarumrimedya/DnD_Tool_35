@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="build-version" content="2026.10.18-2330">
+  <meta name="build-version" content="2026.10.18-2335">
   <title>D&D 3.5e Tactical Cockpit & Character Hub</title>
   <script>
     if ('scrollRestoration' in history) {
@@ -512,41 +512,41 @@
         <!-- (1. Doğal/Anlık | 2. Kitaplı | 3. İlahi Dua | 4. Savaş Manevraları) -->
         <!-- ==================================================== -->
         <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
-          <div class="flex flex-wrap items-center gap-1.5 p-1 bg-slate-950 border border-slate-800 rounded-xl" id="magic-discipline-tabs">
+          <div class="flex flex-nowrap items-center gap-1.5 p-1 bg-slate-950 border border-slate-800 rounded-xl overflow-x-auto max-w-full" id="magic-discipline-tabs">
             
-            <!-- Tab 1: Doğal / Anlık (Sorcerer, Bard) -->
-            <button id="magic-tab-btn-spontaneous" onclick="switchMagicDisciplineTab('spontaneous')" class="px-3.5 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer bg-gradient-to-r from-purple-800 to-indigo-700 text-white shadow-md border border-purple-500/50">
-              <span class="text-base">🔮</span>
-              <span>1. Doğal / Anlık (Sorcerer, Bard)</span>
+            <!-- Tab 1: Doğal / Anlık -->
+            <button id="magic-tab-btn-spontaneous" onclick="switchMagicDisciplineTab('spontaneous')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap bg-gradient-to-r from-purple-800 to-indigo-700 text-white shadow-md border border-purple-500/50">
+              <span class="text-sm">🔮</span>
+              <span>1. Doğal / Anlık</span>
               <span id="tab-spontaneous-badge" class="bg-purple-950 text-purple-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-purple-600/60">Aktif</span>
             </button>
 
-            <!-- Tab 2: Kitaplı Hazırlık (Wizard) -->
-            <button id="magic-tab-btn-prepared" onclick="switchMagicDisciplineTab('prepared')" class="px-3.5 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 text-slate-500 hover:text-slate-400 bg-slate-900/40 border border-slate-800/60 opacity-60 cursor-pointer">
-              <span class="text-base">📖</span>
-              <span>2. Kitaplı Hazırlık (Wizard)</span>
+            <!-- Tab 2: Kitaplı Hazırlık -->
+            <button id="magic-tab-btn-prepared" onclick="switchMagicDisciplineTab('prepared')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap text-slate-500 hover:text-slate-400 bg-slate-900/40 border border-slate-800/60 opacity-60 cursor-pointer">
+              <span class="text-sm">📖</span>
+              <span>2. Kitaplı Hazırlık</span>
               <span id="tab-prepared-badge" class="bg-slate-900 text-slate-500 text-[10px] px-1.5 py-0.5 rounded-full font-mono border border-slate-800">Sınıf Yok</span>
             </button>
 
-            <!-- Tab 3: İlahi Dua (Cleric, Druid) -->
-            <button id="magic-tab-btn-divine" onclick="switchMagicDisciplineTab('divine')" class="px-3.5 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 text-slate-500 hover:text-slate-400 bg-slate-900/40 border border-slate-800/60 opacity-60 cursor-pointer">
-              <span class="text-base">✨</span>
-              <span>3. İlahi Dua (Cleric, Druid)</span>
+            <!-- Tab 3: İlahi Dua -->
+            <button id="magic-tab-btn-divine" onclick="switchMagicDisciplineTab('divine')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap text-slate-500 hover:text-slate-400 bg-slate-900/40 border border-slate-800/60 opacity-60 cursor-pointer">
+              <span class="text-sm">✨</span>
+              <span>3. İlahi Dua</span>
               <span id="tab-divine-badge" class="bg-slate-900 text-slate-500 text-[10px] px-1.5 py-0.5 rounded-full font-mono border border-slate-800">Sınıf Yok</span>
             </button>
 
-            <!-- Tab 4: Savaş Manevraları (Warblade, Swordsage) -->
-            <button id="magic-tab-btn-martial" onclick="switchMagicDisciplineTab('martial')" class="px-3.5 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent">
-              <span class="text-base">⚔️</span>
-              <span>4. Savaş Manevraları (Warblade)</span>
+            <!-- Tab 4: Savaş Manevraları -->
+            <button id="magic-tab-btn-martial" onclick="switchMagicDisciplineTab('martial')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent">
+              <span class="text-sm">⚔️</span>
+              <span>4. Savaş Manevraları</span>
               <span id="tab-martial-badge" class="bg-rose-950 text-rose-300 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-rose-600/60">3 Kuşanıldı</span>
             </button>
 
           </div>
 
           <!-- Add Ability Button -->
-          <div class="flex items-center gap-2">
-            <button onclick="openSpellManeuverPickerModal()" class="bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-slate-950 font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer">
+          <div class="flex items-center gap-2 shrink-0">
+            <button onclick="openSpellManeuverPickerModal()" class="bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-slate-950 font-extrabold text-xs px-3 py-1.5 rounded-xl shadow-lg transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
               <span class="text-sm">✨</span>
               <span>+ Büyü / Manevra Ekle</span>
             </button>
@@ -9810,37 +9810,37 @@
       // Update button styles
       if (buttons.spontaneous) {
         if (discipline === 'spontaneous') {
-          buttons.spontaneous.className = 'px-3.5 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer bg-gradient-to-r from-purple-800 to-indigo-700 text-white shadow-md border border-purple-500/50';
+          buttons.spontaneous.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap bg-gradient-to-r from-purple-800 to-indigo-700 text-white shadow-md border border-purple-500/50';
         } else {
-          buttons.spontaneous.className = 'px-3.5 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent';
+          buttons.spontaneous.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent';
         }
       }
 
       if (buttons.prepared) {
         if (discipline === 'prepared') {
-          buttons.prepared.className = 'px-3.5 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer bg-gradient-to-r from-sky-800 to-blue-700 text-white shadow-md border border-sky-500/50';
+          buttons.prepared.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap bg-gradient-to-r from-sky-800 to-blue-700 text-white shadow-md border border-sky-500/50';
         } else {
           buttons.prepared.className = classesStatus.hasPrepared
-            ? 'px-3.5 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent'
-            : 'px-3.5 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 text-slate-500 hover:text-slate-400 bg-slate-900/40 border border-slate-800/60 opacity-60 cursor-pointer';
+            ? 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent'
+            : 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap text-slate-500 hover:text-slate-400 bg-slate-900/40 border border-slate-800/60 opacity-60 cursor-pointer';
         }
       }
 
       if (buttons.divine) {
         if (discipline === 'divine') {
-          buttons.divine.className = 'px-3.5 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer bg-gradient-to-r from-amber-800 to-yellow-700 text-white shadow-md border border-amber-500/50';
+          buttons.divine.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap bg-gradient-to-r from-amber-800 to-yellow-700 text-white shadow-md border border-amber-500/50';
         } else {
           buttons.divine.className = classesStatus.hasDivine
-            ? 'px-3.5 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent'
-            : 'px-3.5 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 text-slate-500 hover:text-slate-400 bg-slate-900/40 border border-slate-800/60 opacity-60 cursor-pointer';
+            ? 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent'
+            : 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap text-slate-500 hover:text-slate-400 bg-slate-900/40 border border-slate-800/60 opacity-60 cursor-pointer';
         }
       }
 
       if (buttons.martial) {
         if (discipline === 'martial') {
-          buttons.martial.className = 'px-3.5 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer bg-gradient-to-r from-rose-800 to-amber-700 text-white shadow-md border border-rose-500/50';
+          buttons.martial.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap bg-gradient-to-r from-rose-800 to-amber-700 text-white shadow-md border border-rose-500/50';
         } else {
-          buttons.martial.className = 'px-3.5 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 cursor-pointer text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent';
+          buttons.martial.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent';
         }
       }
 
