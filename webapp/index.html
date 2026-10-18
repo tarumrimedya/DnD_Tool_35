@@ -3579,6 +3579,56 @@
   </div>
 
   <!-- ==================================================== -->
+  <!-- MODAL: PLANNED LEVEL CHOICE (Seviye Atlat vs Seviye Planla) -->
+  <!-- ==================================================== -->
+  <div id="planned-level-choice-modal" class="hidden fixed inset-0 z-[120] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
+    <div class="bg-dndCard border border-amber-500/80 rounded-2xl max-w-md w-full shadow-2xl overflow-hidden my-auto animate-fadeIn">
+      <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-amber-950 border border-amber-600/60 flex items-center justify-center text-lg">📋</div>
+          <div>
+            <h3 class="text-sm font-bold text-white">Planlanmış Seviye Bulundu</h3>
+            <p class="text-[10px] text-amber-300">Sırada bekleyen planlanmış bir seviye mevcut</p>
+          </div>
+        </div>
+        <button onclick="closePlannedLevelChoiceModal()" class="text-slate-400 hover:text-white p-1 text-sm font-bold">&times;</button>
+      </div>
+
+      <div class="p-4 space-y-3.5 text-xs">
+        <div id="planned-level-choice-info" class="bg-slate-950/80 border border-slate-800 rounded-xl p-3.5 space-y-2">
+          <!-- Populated dynamically: Seviye X (Sınıf), Can Zarı, Özellikler -->
+        </div>
+
+        <div class="text-[11px] text-slate-300 leading-relaxed">
+          Bu seviye için ne yapmak istersiniz? Sırada bekleyen seviyeyi hemen <b>aktif seviyeniz</b> yapabilir veya ilerisi için <b>yeni bir seviye planı</b> ekleyebilirsiniz:
+        </div>
+
+        <div class="flex flex-col gap-2 pt-1">
+          <button 
+            type="button" 
+            onclick="confirmActivatePlannedLevel()" 
+            class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-95 text-white font-extrabold text-xs py-2.5 px-4 rounded-xl shadow-lg transition flex items-center justify-center gap-2 cursor-pointer">
+            <span>⭐</span>
+            <span>Seviye Atlat (Planlanan Seviyeyi Aktif Yap)</span>
+          </button>
+
+          <button 
+            type="button" 
+            onclick="openLevelUpModalForPlanningOnly()" 
+            class="w-full bg-gradient-to-r from-purple-700 via-indigo-600 to-slate-800 hover:from-purple-600 hover:to-indigo-500 active:scale-95 text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow transition flex items-center justify-center gap-2 border border-purple-500/40 cursor-pointer">
+            <span>📝</span>
+            <span>Seviye Planla (Gelecek Seviye Planı Ekle)</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-slate-950 px-4 py-2.5 border-t border-slate-800 flex justify-end">
+        <button onclick="closePlannedLevelChoiceModal()" class="text-slate-400 hover:text-slate-200 text-xs px-3 py-1 font-medium transition cursor-pointer">Vazgeç</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================== -->
   <!-- MODAL: LEVEL UP WIZARD (SEVİYE ATLAMA SİHİRBAZI) -->
   <!-- ==================================================== -->
   <div id="level-up-modal" class="hidden fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
@@ -3877,7 +3927,7 @@
       <!-- Footer -->
       <div class="bg-slate-950 px-4 py-3 border-t border-slate-800 flex items-center justify-between shrink-0">
         <button onclick="closeLevelUpModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs px-4 py-2 rounded-lg transition">Vazgeç</button>
-        <button onclick="confirmLevelUp()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-6 py-2 rounded-lg shadow-lg transition flex items-center gap-1.5">
+        <button id="lvlup-submit-btn" onclick="confirmLevelUp()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-6 py-2 rounded-lg shadow-lg transition flex items-center gap-1.5 cursor-pointer">
           <span>✅</span>
           <span>Seviye Atlamayı Tamamla & Kaydet</span>
         </button>
@@ -10000,8 +10050,26 @@
       }
     }
 
+    function sanitizeLevelProgressionActiveGaps() {
+      if (!character || !Array.isArray(character.levelProgression)) return;
+      const prog = character.levelProgression;
+      let foundInactive = false;
+      prog.forEach((p, idx) => {
+        if (idx === 0) {
+          p.active = true;
+          return;
+        }
+        if (p.active === false) {
+          foundInactive = true;
+        } else if (foundInactive) {
+          p.active = false;
+        }
+      });
+    }
+
     function recalculateCharacterClassSummary() {
       if (!character) return;
+      sanitizeLevelProgressionActiveGaps();
       const prog = character.levelProgression || [];
       const sys = character.settings?.babSaveSystem || 'fractional';
       const isHuman = (character.race || '').toLowerCase().includes('human');
@@ -11936,7 +12004,101 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       alert('✅ 🧙‍♂️🤖 Rule Master (AI) önerileri seviye atlama formuna başarıyla dolduruldu!');
     }
 
-    function openLevelUpModal() {
+    let currentPendingPlannedLevel = null;
+
+    function showPlannedLevelChoiceModal(lvlObj) {
+      currentPendingPlannedLevel = lvlObj;
+      const modal = document.getElementById('planned-level-choice-modal');
+      const infoBox = document.getElementById('planned-level-choice-info');
+      if (!modal) return;
+
+      if (infoBox && lvlObj) {
+        const featsText = (lvlObj.feats && lvlObj.feats.length > 0) 
+          ? lvlObj.feats.map(f => typeof f === 'string' ? f : f.name).join(', ')
+          : 'Belirtilmemiş';
+
+        const statText = getLevelStatIncrease(lvlObj) ? `+1 ${getLevelStatIncrease(lvlObj).toUpperCase()}` : 'Yok';
+
+        infoBox.innerHTML = `
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <div>
+              <span class="font-extrabold text-amber-400 text-sm">Seviye ${lvlObj.level} • ${lvlObj.className}</span>
+              <div class="text-[10px] text-slate-400 mt-0.5">Sırada bekleyen sonraki seviyeniz</div>
+            </div>
+            <span class="badge bg-amber-950/80 text-amber-300 border border-amber-600/70 text-[10px] px-2 py-0.5 font-bold">📋 Planlanan Seviye</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-[11px] pt-1.5 text-slate-300 font-mono">
+            <div><span class="text-slate-400 font-sans">Can Puanı (HP):</span> <b class="text-emerald-400">+${lvlObj.hpGain}</b> (${lvlObj.hd || 'd8'})</div>
+            <div><span class="text-slate-400 font-sans">BAB Artışı:</span> <b class="text-sky-400">+${lvlObj.bab}</b></div>
+            <div><span class="text-slate-400 font-sans">Kurtarmalar:</span> F+${lvlObj.fort} R+${lvlObj.ref} W+${lvlObj.will}</div>
+            <div><span class="text-slate-400 font-sans">Stat Artışı:</span> <b class="text-amber-300">${statText}</b></div>
+          </div>
+          <div class="mt-2 text-[11px] bg-slate-900/90 p-2 rounded-lg border border-slate-800 text-purple-200">
+            <span class="font-bold text-purple-300">Feat / Özellikler:</span> ${featsText}
+          </div>
+        `;
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function closePlannedLevelChoiceModal() {
+      const modal = document.getElementById('planned-level-choice-modal');
+      if (modal) modal.classList.add('hidden');
+      currentPendingPlannedLevel = null;
+    }
+
+    function confirmActivatePlannedLevel() {
+      const prog = character.levelProgression || [];
+      const firstInactive = currentPendingPlannedLevel || prog.find(p => p.active === false);
+      if (!firstInactive) {
+        closePlannedLevelChoiceModal();
+        return;
+      }
+
+      const idx = prog.indexOf(firstInactive);
+      if (idx !== -1) {
+        // Enforce sequential progression: all previous levels must be active
+        for (let i = 0; i < idx; i++) {
+          if (prog[i].active === false) {
+            alert(`⚠️ Sıralı İlerleme Kuralı: Seviye ${idx + 1} aktif yapılmadan önce Seviye ${i + 1} aktif edilmelidir.\nSeviye atlayarak (örn: 1, 2, 3, 6) ilerlenemez!`);
+            closePlannedLevelChoiceModal();
+            return;
+          }
+        }
+
+        firstInactive.active = true;
+
+        // Apply stat increase if specified
+        const statKey = getLevelStatIncrease(firstInactive);
+        if (statKey && character.baseAbilities && character.baseAbilities[statKey] !== undefined) {
+          character.baseAbilities[statKey] = Number(character.baseAbilities[statKey]) + 1;
+        }
+
+        sanitizeLevelProgressionActiveGaps();
+        recalculateCharacterClassSummary();
+        saveStateToStorage(true);
+        renderLevelProgression();
+        renderAll();
+
+        closePlannedLevelChoiceModal();
+
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            icon: '⭐',
+            title: 'Seviye Atlatıldı',
+            breakdown: `Seviye ${firstInactive.level} (${firstInactive.className}) başarıyla aktif seviyeniz olarak uygulandı.`
+          });
+        }
+      }
+    }
+
+    function openLevelUpModalForPlanningOnly() {
+      closePlannedLevelChoiceModal();
+      openLevelUpModal(true);
+    }
+
+    function openLevelUpModal(forPlanningOnly = false) {
       const modal = document.getElementById('level-up-modal');
       if (!modal) return;
 
@@ -11944,17 +12106,22 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
       // Check if there is an inactive/planned level waiting to be activated
       const firstInactive = prog.find(p => p.active === false);
-      if (firstInactive) {
-        const activateNow = confirm(`📋 Sırada önceden planlanmış Seviye ${firstInactive.level} (${firstInactive.className}) bulunuyor.\n\nBu planlanan seviyeyi şimdi AKTİF yapmak ister misiniz?\n(İptal'e basarak yeni bir seviye tanımlayabilirsiniz)`);
-        if (activateNow) {
-          toggleLevelActive(prog.indexOf(firstInactive));
-          return;
-        }
+      if (firstInactive && !forPlanningOnly) {
+        showPlannedLevelChoiceModal(firstInactive);
+        return;
       }
 
       const nextLvl = prog.length + 1;
       const badge = document.getElementById('lvlup-target-badge');
-      if (badge) badge.textContent = `Seviye ${nextLvl}`;
+      if (badge) {
+        if (forPlanningOnly || firstInactive) {
+          badge.textContent = `Seviye ${nextLvl} (Gelecek Planı)`;
+          badge.className = 'badge bg-purple-950 text-purple-300 border border-purple-600 text-xs font-bold';
+        } else {
+          badge.textContent = `Seviye ${nextLvl}`;
+          badge.className = 'badge bg-emerald-950 text-emerald-300 border border-emerald-600 text-xs font-bold';
+        }
+      }
 
       // Default class to last taken class
       const lastClass = prog.length > 0 ? prog[prog.length - 1].className : (character.classes?.split(' ')[0] || 'Warblade');
@@ -12045,7 +12212,31 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       if (notesInput) notesInput.value = '';
 
       const activeChk = document.getElementById('lvlup-is-active');
-      if (activeChk) activeChk.checked = true;
+      const submitBtn = document.getElementById('lvlup-submit-btn');
+
+      if (forPlanningOnly || firstInactive) {
+        if (activeChk) {
+          activeChk.checked = false;
+          activeChk.disabled = true;
+          if (activeChk.parentElement) {
+            activeChk.parentElement.title = "Önceki seviyeler aktif edilmeden bu seviye aktif yapılamaz (Gelecek Seviye Planı).";
+          }
+        }
+        if (submitBtn) {
+          submitBtn.innerHTML = '<span>📝</span><span>Seviye Planını Kaydet</span>';
+        }
+      } else {
+        if (activeChk) {
+          activeChk.checked = true;
+          activeChk.disabled = false;
+          if (activeChk.parentElement) {
+            activeChk.parentElement.title = "Bu seviyeyi hemen karakter statlarına yansıtın veya gelecek planı olarak kaydedin.";
+          }
+        }
+        if (submitBtn) {
+          submitBtn.innerHTML = '<span>✅</span><span>Seviye Atlamayı Tamamla & Kaydet</span>';
+        }
+      }
 
       onLevelUpClassChange();
 
@@ -12078,7 +12269,14 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       const will = parseInt(document.getElementById('lvlup-will-input')?.value) || 0;
       const skillPts = parseInt(document.getElementById('lvlup-skill-input')?.value) || 4;
       const statChoice = document.getElementById('lvlup-stat-select')?.value || '';
-      const isActive = document.getElementById('lvlup-is-active')?.checked !== false;
+      let isActive = document.getElementById('lvlup-is-active')?.checked !== false;
+
+      // Sequential progression rule: Cannot activate a level if any previous level is inactive
+      const hasInactiveBefore = prog.some(p => p.active === false);
+      if (isActive && hasInactiveBefore) {
+        alert('⚠️ Sıralı İlerleme Kuralı: Öncesinde henüz aktif edilmemiş planlanan seviyeler bulunmaktadır.\nSeviye atlayarak (örn: 1, 2, 3, 6) aktif seviye alınamaz.\nBu seviye gelecek planı olarak kaydedilecektir.');
+        isActive = false;
+      }
 
       const casterProg = document.getElementById('lvlup-caster-prog')?.value || 'none';
       const ignoreAsfChecked = document.getElementById('lvlup-ignore-asf')?.checked || false;
@@ -12275,7 +12473,42 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         alert('⚠️ 1. Seviye karakterin başlangıç seviyesidir ve pasif yapılamaz.');
         return;
       }
-      prog[idx].active = prog[idx].active === false ? true : false;
+
+      if (prog[idx].active === false) {
+        // Enforce sequential progression: all previous levels must be active
+        for (let i = 0; i < idx; i++) {
+          if (prog[i].active === false) {
+            alert(`⚠️ Sıralı İlerleme Kuralı: Seviye ${idx + 1} aktif yapılmadan önce Seviye ${i + 1} aktif edilmelidir.\nSeviye atlayarak (örn: 1, 2, 3, 6) ilerlenemez!`);
+            renderLevelProgression();
+            return;
+          }
+        }
+        prog[idx].active = true;
+
+        // Apply stat increase if recorded
+        const statKey = getLevelStatIncrease(prog[idx]);
+        if (statKey && character.baseAbilities && character.baseAbilities[statKey] !== undefined) {
+          character.baseAbilities[statKey] = Number(character.baseAbilities[statKey]) + 1;
+        }
+      } else {
+        // Enforce sequential deactivation: all subsequent levels must be inactive
+        for (let i = idx + 1; i < prog.length; i++) {
+          if (prog[i].active !== false) {
+            alert(`⚠️ Sıralı İlerleme Kuralı: Seviye ${idx + 1} pasif yapılmadan önce daha sonraki aktif seviyeler (Seviye ${i + 1} vb.) pasif yapılmalıdır.`);
+            renderLevelProgression();
+            return;
+          }
+        }
+        prog[idx].active = false;
+
+        // Revert stat increase if recorded
+        const statKey = getLevelStatIncrease(prog[idx]);
+        if (statKey && character.baseAbilities && character.baseAbilities[statKey] !== undefined) {
+          character.baseAbilities[statKey] = Math.max(1, Number(character.baseAbilities[statKey]) - 1);
+        }
+      }
+
+      sanitizeLevelProgressionActiveGaps();
       recalculateCharacterClassSummary();
       saveStateToStorage(true);
       renderLevelProgression();
@@ -12987,14 +13220,50 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
         const inlineAddAbilityBtn = `<button onclick="openQuickAbilityPickerForLevel(${idx})" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700/80 transition leading-none shrink-0" title="Bu seviyeye serbest sınıf özelliği veya özel yetenek ekle"><span>➕</span><span>Özel Yetenek</span></button>`;
 
+        const isActive = (lvl.active !== false);
+
+        // Sequential progression check for checkbox:
+        let canActivate = true;
+        for (let i = 0; i < idx; i++) {
+          if (prog[i].active === false) {
+            canActivate = false;
+            break;
+          }
+        }
+
+        let canDeactivate = (idx > 0);
+        if (canDeactivate) {
+          for (let i = idx + 1; i < prog.length; i++) {
+            if (prog[i].active !== false) {
+              canDeactivate = false;
+              break;
+            }
+          }
+        }
+
+        const isToggleDisabled = (idx === 0) || (isActive ? !canDeactivate : !canActivate);
+
+        let toggleTitle = "";
+        if (idx === 0) {
+          toggleTitle = "1. Seviye karakterin başlangıç seviyesidir ve pasif yapılamaz.";
+        } else if (isActive) {
+          toggleTitle = canDeactivate 
+            ? "Aktif Seviye (Karakter statlarına yansır). Tıklayarak pasif/plan yapabilirsiniz."
+            : "Bu seviyeyi pasif yapmak için önce sonraki aktif seviyeleri pasif yapmalısınız.";
+        } else {
+          toggleTitle = canActivate
+            ? "Planlanan Seviye (Statlara yansımaz). Tıklayarak şimdi aktif seviye yapabilirsiniz."
+            : "Sıralı İlerleme Kuralı: Bu seviyeyi aktif yapabilmek için önce önceki planlanan seviyeler aktif edilmelidir.";
+        }
+
         tr.innerHTML = `
           <td class="pt-2.5 pb-2.5 px-2 align-top text-center">
             <div class="h-6 flex items-center justify-center font-bold text-amber-400 text-xs">${lvl.level}</div>
           </td>
           <td class="pt-2.5 pb-2.5 px-2 align-top text-center">
             <div class="h-6 flex items-center justify-center">
-              <label class="inline-flex items-center gap-1.5 cursor-pointer" title="${isActive ? 'Aktif Seviye (Statlara yansır)' : 'Planlanan Seviye (Statlara yansımaz)'}">
-                <input type="checkbox" onchange="toggleLevelActive(${idx})" ${isActive ? 'checked' : ''} ${idx === 0 ? 'disabled title="1. Seviye başlangıçtır"' : ''} class="w-3.5 h-3.5 rounded text-emerald-500 cursor-pointer m-0">
+              <label class="inline-flex items-center gap-1.5 ${isToggleDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}" title="${toggleTitle}">
+                <input type="checkbox" onchange="toggleLevelActive(${idx})" ${isActive ? 'checked' : ''} ${isToggleDisabled ? 'disabled' : ''} class="w-3.5 h-3.5 rounded text-emerald-500 m-0 ${isToggleDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}">
                 <span class="badge ${isActive ? 'bg-emerald-950 text-emerald-300 border-emerald-600' : 'bg-slate-800 text-slate-400 border-slate-700'} text-[9px] px-1.5 py-0.5 leading-none">
                   ${isActive ? '✅ Aktif' : '📋 Plan'}
                 </span>
