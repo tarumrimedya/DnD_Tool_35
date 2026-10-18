@@ -1311,8 +1311,9 @@ If the item has multiple distinct powers (e.g. passive weapon/item stats + on-hi
 
 MASTER_DB 29-COLUMN SCHEMA (Every row MUST contain exactly 29 elements in this order):
 0: Entry Name (string, child begins with '↳ ')
-1: Category ('Feat', 'Weapon', 'Armor / Shield', 'Ring', 'Wondrous Item', 'Slotless Item', 'Spell', 'Maneuver', 'Stance', 'Potion', 'Special Ability')
+1: Category ('Feat', 'Weapon', 'Armor / Shield', 'Ring', 'Wondrous Item', 'Scroll', 'Potion', 'Wand', 'Staff', 'Slotless Item', 'Spell', 'Maneuver', 'Stance', 'Consumable', 'Special Ability')
 2: Slot ('Armor', 'Shield', 'Main Hand', 'Off Hand', 'Both Hands', 'Head', 'Eyes', 'Neck', 'Torso', 'Body', 'Waist', 'Shoulders', 'Arms', 'Hands', 'Ring', 'Feet', 'Slotless', 'None')
+NOTE ON SLOTS: Consumables (scrolls, potions, wands, elixirs) and ordinary gear (rope, rations, backpack) MUST have Slot set to 'None'. Wondrous items that do not occupy a worn body slot (like Ioun Stones, Bag of Holding, Pearl of Power, Stone of Good Luck) MUST have Slot set to 'Slotless'. ONLY wearable items occupying one of the 14 body slots may specify that slot.
 3: Parent Entry (string; '-' if none, or exact parent name if child)
 4: Source (e.g. 'PHB p.98', 'MIC p.128', 'DMG p.224', 'ToB p.68')
 5: Description / Rules Mechanics (string, concise mechanics text)
@@ -1508,12 +1509,23 @@ Return valid JSON only matching this schema:
       else if (cat.toLowerCase().includes('maneuver')) normType = 'Maneuver';
       else if (cat.toLowerCase().includes('stance')) normType = 'Stance';
       else if (cat.toLowerCase().includes('potion')) normType = 'Potion';
+      else if (cat.toLowerCase().includes('scroll')) normType = 'Scroll';
+      else if (cat.toLowerCase().includes('wand')) normType = 'Wand';
+      else if (cat.toLowerCase().includes('consumable')) normType = 'Consumable';
       else if (cat.toLowerCase().includes('wondrous')) normType = 'Wondrous Item';
       else if (cat.toLowerCase().includes('ring')) normType = 'Ring';
       else normType = cat;
 
       let slotVal = String(row[2] || 'None').trim();
       if (slotVal === 'Two-Hand' || slotVal === 'Both Hands') slotVal = 'Two-Handed';
+
+      // Enforce 3.5e RAW: Consumables (Scrolls, Potions, Wands) never have a worn body slot!
+      const normLower = normType.toLowerCase();
+      const rawNameLower = rawName.toLowerCase();
+      if (normLower === 'scroll' || normLower === 'potion' || normLower === 'wand' || normLower === 'consumable' ||
+          rawNameLower.startsWith('scroll of') || rawNameLower.startsWith('potion of') || rawNameLower.startsWith('wand of')) {
+        slotVal = 'None';
+      }
 
       const tags = [];
       const descLower = (String(row[5] || '')).toLowerCase();
@@ -1949,19 +1961,22 @@ Return valid JSON only matching this schema:
       if (!character.feats) character.feats = [];
       character.feats.push(item.name);
       alert(`✨ "${item.name}" hüneri (Feat) karaktere eklendi!`);
-    } else if (type === 'potion') {
+    } else if (type === 'potion' || type === 'scroll' || type === 'wand' || type === 'consumable' || (item.category && item.category.toLowerCase() === 'consumable')) {
       if (!character.consumables) character.consumables = [];
       character.consumables.push({
         name: item.name,
         qty: 1,
-        effect: item.benefit || item.description || 'Potion effect'
+        effect: item.benefit || item.description || `${item.type || 'Consumable'} effect`
       });
-      alert(`🧪 "${item.name}" iksir çantanıza 1 adet olarak eklendi!`);
+      alert(`🧪 "${item.name}" (${item.type || 'Sarf Malzemesi'}) çantanıza eklendi!`);
     } else {
       // Body Slot Equipment (Armor, Shield, Wondrous Item, Ring, etc.)
+      const rawSlot = (item.slot || '').toLowerCase().trim();
       const slotLower = (item.slot || item.category || '').toLowerCase();
       let slotKey = null;
-      if (slotLower.includes('armor') || slotLower.includes('zırh')) slotKey = 'armor';
+      if (rawSlot === 'none' || rawSlot === 'slotless') {
+        slotKey = null;
+      } else if (slotLower.includes('armor') || slotLower.includes('zırh')) slotKey = 'armor';
       else if (slotLower.includes('shield') || slotLower.includes('kalkan')) slotKey = 'offHand';
       else if (slotLower.includes('belt') || slotLower.includes('kemer') || slotLower.includes('waist')) slotKey = 'belt';
       else if (slotLower.includes('head') || slotLower.includes('baş')) slotKey = 'head';

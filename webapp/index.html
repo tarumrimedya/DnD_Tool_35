@@ -5312,6 +5312,13 @@
       if (typeof syncCustomClassesToRuleEngine === 'function') {
         syncCustomClassesToRuleEngine();
       }
+
+      // Enforce D&D 3.5e RAW slot integrity on loaded character
+      if (typeof sanitizeBodySlots === 'function' && character) {
+        if (sanitizeBodySlots(character)) {
+          saveStateToStorage(false);
+        }
+      }
     }
 
     function saveStateToStorage(triggerCloudSync = true) {
@@ -8732,16 +8739,135 @@
       { key: 'neck', name: 'Neck', trName: 'Boyun / Kolye', icon: '📿', allowed: ['Neck', 'Wondrous Item'] },
       { key: 'shoulders', name: 'Shoulders', trName: 'Omuz / Pelerin', icon: '🧥', allowed: ['Shoulders', 'Wondrous Item'] },
       { key: 'armor', name: 'Armor', trName: 'Gövde Zırhı', icon: '🛡️', allowed: ['Armor'] },
-      { key: 'torso', name: 'Torso', trName: 'Göğüs / Yelek', icon: '🥋', allowed: ['Torso', 'Wondrous Item'] },
+      { key: 'torso', name: 'Torso', trName: 'Göğüs / Yelek', icon: '🦺', allowed: ['Torso'] },
       { key: 'belt', name: 'Belt', trName: 'Kemer / Bel', icon: '🪢', allowed: ['Belt', 'Wondrous Item'] },
       { key: 'bracers', name: 'Bracers', trName: 'Kollar / Bileklik', icon: '🦾', allowed: ['Bracers', 'Wondrous Item'] },
       { key: 'gloves', name: 'Gloves', trName: 'Eller / Eldiven', icon: '🧤', allowed: ['Gloves', 'Wondrous Item'] },
-      { key: 'ring1', name: 'Ring 1', trName: 'Sol Yüzük', icon: '💍', allowed: ['Ring', 'Wondrous Item'] },
-      { key: 'ring2', name: 'Ring 2', trName: 'Sağ Yüzük', icon: '💍', allowed: ['Ring', 'Wondrous Item'] },
+      { key: 'ring1', name: 'Ring 1', trName: 'Sol Yüzük', icon: '💍', allowed: ['Ring'] },
+      { key: 'ring2', name: 'Ring 2', trName: 'Sağ Yüzük', icon: '💍', allowed: ['Ring'] },
       { key: 'boots', name: 'Boots', trName: 'Ayaklar / Çizme', icon: '👢', allowed: ['Boots', 'Wondrous Item'] },
       { key: 'mainHand', name: 'Main Hand', trName: 'Ana El / Silah', icon: '⚔️', allowed: ['Weapon'] },
       { key: 'offHand', name: 'Off-Hand/Shield', trName: 'İkinci El / Kalkan', icon: '🛡️', allowed: ['Weapon', 'Shield'] }
     ];
+
+    // D&D 3.5e RAW Inventory & Slot Validators (Master DB as Single Source of Truth)
+    function isConsumableOrSlotless(item) {
+      if (!item) return false;
+      const cat = (item.category || '').toLowerCase().trim();
+      const slot = (item.slot || '').toLowerCase().trim();
+      const name = (item.name || '').toLowerCase().trim();
+
+      // Check Master DB if available
+      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        const cleanName = (item.masterDbName || item.name || '').toLowerCase().trim();
+        const m = masterDb.find(e => (e.name || '').toLowerCase().trim() === cleanName);
+        if (m) {
+          const mSlot = (m.slot || '').toLowerCase().trim();
+          const mType = (m.type || '').toLowerCase().trim();
+          if (mSlot === 'none' || mSlot === 'slotless' || mSlot === 'consumable' || mSlot === '-') return true;
+          if (mType.includes('potion') || mType.includes('scroll') || mType.includes('wand') || mType.includes('consumable')) return true;
+        }
+      }
+
+      if (cat === 'consumable' || cat === 'scroll' || cat === 'potion' || cat === 'wand') return true;
+      if (slot === 'none' || slot === 'slotless' || slot === 'consumable' || slot === '-') return true;
+      if (name.startsWith('scroll of') || name.startsWith('potion of') || name.startsWith('wand of') || name.startsWith('elixir of')) return true;
+      if (name.includes('parşömen') || name.includes('iksir') || name.includes('asa ')) return true;
+      return false;
+    }
+
+    function getValidSlotForItem(item) {
+      if (!item || isConsumableOrSlotless(item)) return null;
+
+      let rawSlot = (item.slot || '').toLowerCase().trim();
+      let rawType = (item.category || '').toLowerCase().trim();
+
+      // 1. Consult Master DB first
+      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        const cleanName = (item.masterDbName || item.name || '').toLowerCase().trim();
+        const m = masterDb.find(e => (e.name || '').toLowerCase().trim() === cleanName);
+        if (m) {
+          if (m.slot && m.slot !== 'None' && m.slot !== 'Slotless' && m.slot !== '-') {
+            rawSlot = m.slot.toLowerCase().trim();
+          }
+          if (m.type) {
+            rawType = m.type.toLowerCase().trim();
+          }
+        }
+      }
+
+      // 2. Weapons & Shields
+      if (rawType.includes('weapon') || rawSlot.includes('main hand') || rawSlot.includes('two-hand') || rawSlot.includes('both hands')) {
+        return 'mainHand';
+      }
+      if (rawType.includes('shield') || rawSlot.includes('shield') || rawSlot.includes('off-hand')) {
+        return 'offHand';
+      }
+
+      // 3. Official 12 Worn Slots
+      if (rawSlot.includes('head') || rawSlot.includes('helm') || rawType === 'head') return 'head';
+      if (rawSlot.includes('eyes') || rawSlot.includes('face') || rawSlot.includes('goggles') || rawType === 'eyes') return 'eyes';
+      if (rawSlot.includes('neck') || rawSlot.includes('throat') || rawSlot.includes('amulet') || rawSlot.includes('periapt') || rawType === 'neck') return 'neck';
+      if (rawSlot.includes('shoulder') || rawSlot.includes('cloak') || rawSlot.includes('cape') || rawType === 'shoulders') return 'shoulders';
+      if (rawSlot === 'armor' || rawSlot.includes('body armor') || rawType === 'armor') return 'armor';
+      if (rawSlot === 'torso' || rawSlot.includes('vest') || rawSlot.includes('shirt') || rawType === 'torso') return 'torso';
+      if (rawSlot.includes('belt') || rawSlot.includes('waist') || rawType === 'belt') return 'belt';
+      if (rawSlot.includes('bracer') || rawSlot.includes('arm') || rawType === 'bracers') return 'bracers';
+      if (rawSlot.includes('glove') || rawSlot.includes('gauntlet') || rawSlot.includes('hand') || rawType === 'gloves') return 'gloves';
+      if (rawSlot.includes('ring') || rawType.includes('ring')) return 'ring1';
+      if (rawSlot.includes('boot') || rawSlot.includes('feet') || rawType === 'boots') return 'boots';
+
+      // 4. Fallback based on specific item names (e.g. if categorized generically as 'Wondrous Item')
+      const nameLower = (item.name || '').toLowerCase();
+      if (nameLower.includes('cloak') || nameLower.includes('cape') || nameLower.includes('mantle')) return 'shoulders';
+      if (nameLower.includes('boot') || nameLower.includes('shoes') || nameLower.includes('slippers')) return 'boots';
+      if (nameLower.includes('helm') || nameLower.includes('circlet') || nameLower.includes('hat') || nameLower.includes('crown') || nameLower.includes('headband')) return 'head';
+      if (nameLower.includes('goggles') || nameLower.includes('lenses') || nameLower.includes('glasses') || nameLower.includes('mask')) return 'eyes';
+      if (nameLower.includes('amulet') || nameLower.includes('necklace') || nameLower.includes('periapt') || nameLower.includes('medallion') || nameLower.includes('collar')) return 'neck';
+      if (nameLower.includes('belt') || nameLower.includes('girdle') || nameLower.includes('sash')) return 'belt';
+      if (nameLower.includes('bracers') || nameLower.includes('armbands')) return 'bracers';
+      if (nameLower.includes('gauntlets') || nameLower.includes('gloves')) return 'gloves';
+      if (nameLower.includes('vest') || nameLower.includes('shirt') || nameLower.includes('vestment') || nameLower.includes('tunic')) return 'torso';
+      if (nameLower.includes('ring')) return 'ring1';
+
+      return null;
+    }
+
+    function sanitizeBodySlots(charObj) {
+      if (!charObj || !charObj.bodySlots) return false;
+      let fixed = false;
+      Object.keys(charObj.bodySlots).forEach(slotKey => {
+        const slot = charObj.bodySlots[slotKey];
+        if (slot && slot.name && slot.name !== '-') {
+          if (isConsumableOrSlotless(slot)) {
+            console.warn(`[3.5e Rule Audit] Geçersiz giyilen eşya '${slot.name}' (${slotKey}) yuvadan çıkarılıp çantaya aktarılıyor.`);
+            if (!Array.isArray(charObj.gearPool)) charObj.gearPool = [];
+            const existsInPool = charObj.gearPool.some(p => (p.name || '').toLowerCase().trim() === (slot.name || '').toLowerCase().trim());
+            if (!existsInPool) {
+              charObj.gearPool.push({
+                id: Date.now() + Math.floor(Math.random() * 1000),
+                name: slot.name,
+                masterDbName: slot.masterDbName || slot.name,
+                category: 'Consumable',
+                slot: 'Consumable',
+                qty: 1,
+                weight: Number(slot.weight) || 0,
+                cost: Number(slot.cost) || 0,
+                desc: slot.desc || '',
+                isBelt: true,
+                isEquipped: false
+              });
+            } else {
+              const pItem = charObj.gearPool.find(p => (p.name || '').toLowerCase().trim() === (slot.name || '').toLowerCase().trim());
+              if (pItem) pItem.isEquipped = false;
+            }
+            charObj.bodySlots[slotKey] = { name: '-', active: false, weight: 0, cost: 0, desc: '' };
+            fixed = true;
+          }
+        }
+      });
+      return fixed;
+    }
 
     // Abilities Grid & Bio Summary
     function renderAbilities() {
@@ -14640,8 +14766,14 @@
       const pool = character.gearPool || [];
       const eligible = pool.filter(item => {
         if (item.isEquipped) return false;
+        if (isConsumableOrSlotless(item)) return false; // D&D 3.5e RAW: Sarf malzemeleri ve parşömenler vücut yuvalarına giyilemez
         if (showAll) return true;
         if (!def) return true;
+
+        const validSlot = getValidSlotForItem(item);
+        if (validSlot === _currentEquipSlotKey) return true;
+        if ((_currentEquipSlotKey === 'ring1' || _currentEquipSlotKey === 'ring2') && validSlot === 'ring1') return true;
+        if (_currentEquipSlotKey === 'offHand' && (validSlot === 'mainHand' || (item.category || '').toLowerCase() === 'shield')) return true;
 
         const cat = (item.category || '').toLowerCase().trim();
         const slotName = (def.name || '').toLowerCase().trim();
@@ -14796,10 +14928,16 @@
           <td class="py-2.5 px-3 text-center align-middle font-mono text-amber-400">${item.cost || 0} GP</td>
           <td class="py-2.5 px-3 text-center align-middle">
             <div class="flex items-center justify-center gap-1.5">
-              <button onclick="equipPoolItem(${item.id})" class="bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 text-[11px] font-bold px-2.5 py-0.5 rounded transition">
-                ⚡ Kuşan
-              </button>
-              <button onclick="deletePoolItem(${item.id})" class="bg-slate-800 hover:bg-rose-900 text-slate-400 hover:text-rose-200 text-[11px] px-1.5 py-0.5 rounded transition">
+              ${isConsumableOrSlotless(item) ? `
+                <button onclick="consumeItem3D('pool', ${item.id})" class="bg-indigo-950 hover:bg-indigo-900 text-indigo-300 border border-indigo-700 text-[11px] font-bold px-2 py-0.5 rounded transition cursor-pointer" title="Tüket / Oku / Kullan">
+                  🧪 Kullan
+                </button>
+              ` : `
+                <button onclick="equipPoolItem(${item.id})" class="bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 text-[11px] font-bold px-2.5 py-0.5 rounded transition cursor-pointer" title="Vücut Yuvasına Kuşan">
+                  ⚡ Kuşan
+                </button>
+              `}
+              <button onclick="deletePoolItem(${item.id})" class="bg-slate-800 hover:bg-rose-900 text-slate-400 hover:text-rose-200 text-[11px] px-1.5 py-0.5 rounded transition cursor-pointer" title="Sil">
                 🗑️
               </button>
             </div>
@@ -14862,6 +15000,11 @@
       const item = (character.gearPool || []).find(p => p.id === itemId);
       if (!item) return;
 
+      if (isConsumableOrSlotless(item)) {
+        alert(`⚠️ "${item.name}" (Sarf Malzemesi / Parşömen / Yuvasız Eşya) giyilebilir bir vücut yuvasına sahip değildir!\n\nBu eşya sırt çantanızda veya kemerinizde taşınır; doğrudan kullanılabilir veya tüketilebilir.`);
+        return;
+      }
+
       const hasOversized = RuleEngine.hasOversizedWeaponFeat(character);
       let targetSlotKey = targetSlotKeyOverride || null;
       let twoHandWarningMsg = null;
@@ -14914,7 +15057,7 @@
           }
         }
         targetSlotKey = targetSlotKeyOverride || 'offHand';
-      } else if (item.category === 'Ring') {
+      } else if (item.category === 'Ring' || (item.slot || '').toLowerCase().includes('ring')) {
         if (!targetSlotKey) {
           const r1 = character.bodySlots?.ring1;
           if (!r1 || !r1.name || r1.name === '-') {
@@ -14924,11 +15067,26 @@
           }
         }
       } else if (!targetSlotKey) {
-        const match = BODY_SLOT_DEFS.find(def => def.name.toLowerCase() === item.category.toLowerCase() || def.allowed.includes(item.category));
-        if (match) targetSlotKey = match.key;
+        targetSlotKey = getValidSlotForItem(item);
       }
 
-      if (!targetSlotKey) targetSlotKey = 'torso';
+      if (!targetSlotKey) {
+        alert(`⚠️ "${item.name}" için geçerli bir D&D 3.5e vücut yuvası belirlenemedi.\n\nEşyanın Master DB tanımındaki "Slot" alanının (Head, Torso, Boots vb.) doğruluğunu kontrol edin.`);
+        return;
+      }
+
+      if (targetSlotKeyOverride) {
+        const validSlot = getValidSlotForItem(item);
+        const isCompatible = targetSlotKeyOverride === validSlot ||
+          (validSlot === 'ring1' && targetSlotKeyOverride === 'ring2') ||
+          (validSlot === 'mainHand' && (targetSlotKeyOverride === 'offHand' || targetSlotKeyOverride === 'mainHand')) ||
+          (targetSlotKeyOverride === 'offHand' && (item.category === 'Shield' || item.category === 'Weapon'));
+        if (!isCompatible) {
+          const def = BODY_SLOT_DEFS.find(d => d.key === targetSlotKeyOverride);
+          alert(`⚠️ "${item.name}" eşyası ${def?.trName || targetSlotKeyOverride} yuvasına kuşanılamaz!\n\nD&D 3.5e RAW Kuralı: Bu eşya için uygun yuva '${validSlot || 'Yok'}' olarak tanımlanmıştır.`);
+          return;
+        }
+      }
 
       // Unequip currently equipped item in that slot if any
       const existing = character.bodySlots?.[targetSlotKey];
@@ -15006,7 +15164,7 @@
       if (type.includes('weapon') || slot.includes('main hand') || slot.includes('two hand')) return 'Weapon';
       if (type.includes('shield') || slot.includes('shield') || name.includes('shield')) return 'Shield';
       if (type.includes('armor') || slot === 'armor' || slot === 'body') return 'Armor';
-      if (type.includes('potion') || type.includes('scroll') || type.includes('wand') || type.includes('consumable')) return 'Consumable';
+      if (type.includes('potion') || type.includes('scroll') || type.includes('wand') || type.includes('consumable') || name.startsWith('scroll of') || name.startsWith('potion of') || name.startsWith('wand of') || name.startsWith('elixir of')) return 'Consumable';
       if (slot.includes('head') || slot.includes('helm') || type.includes('head')) return 'Head';
       if (slot.includes('eyes') || slot.includes('face') || slot.includes('goggles')) return 'Eyes';
       if (slot.includes('neck') || slot.includes('throat') || slot.includes('amulet') || slot.includes('periapt')) return 'Neck';
