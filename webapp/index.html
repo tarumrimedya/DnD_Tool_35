@@ -769,7 +769,7 @@
           <div class="bg-slate-900 px-3 py-2.5 text-xs font-bold text-emerald-400 flex flex-wrap justify-between items-center gap-2">
             <div class="flex items-center gap-2">
               <span>📈</span>
-              <span>SEVİYE GELİŞİMİ VE İLERLEME TABLOSU (LEVEL UP & PLANNING 1-30)</span>
+              <span>SEVİYE GELİŞİMİ VE İLERLEME TABLOSU (LEVEL UP & PLANNING)</span>
             </div>
             <div class="flex flex-wrap items-center gap-2">
               <div class="hidden md:flex items-center gap-2 text-[11px] font-normal text-slate-300 mr-2">
@@ -777,7 +777,7 @@
                 <span>•</span>
                 <span>Stat +1: <strong class="text-sky-400">4, 8, 12, 16, 20</strong></span>
               </div>
-              <button onclick="undoLastLevel()" class="bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 border border-slate-700 hover:border-rose-700 font-semibold text-xs px-2.5 py-1 rounded-lg transition flex items-center gap-1" title="Son eklenen seviyeyi geri al">
+              <button onclick="undoLastLevel()" class="bg-slate-800 hover:bg-rose-950 text-slate-300 hover:rose-300 border border-slate-700 hover:border-rose-700 font-semibold text-xs px-2.5 py-1 rounded-lg transition flex items-center gap-1" title="Son eklenen seviyeyi geri al">
                 <span>↩️</span>
                 <span>Son Seviyeyi Geri Al</span>
               </button>
@@ -807,8 +807,8 @@
                   <th class="py-2 px-2 text-center w-12">Ref</th>
                   <th class="py-2 px-2 text-center w-12">Will</th>
                   <th class="py-2 px-2 text-center w-14">Skill Pts</th>
-                  <th class="py-2 px-3">Kazanılan Feat(ler)</th>
                   <th class="py-2 px-3">Sınıf Özellikleri</th>
+                  <th class="py-2 px-3">Kazanılan Feat(ler)</th>
                   <th class="py-2 px-2 text-center w-16">İşlem</th>
                 </tr>
               </thead>
@@ -2687,6 +2687,31 @@
           </div>
         </div>
 
+        <!-- Ability Score Increase (+1 Stat) Section -->
+        <div class="bg-slate-900/90 border border-sky-500/50 rounded-xl p-3 space-y-2 shadow-inner">
+          <div class="flex items-center justify-between">
+            <div class="text-[11px] font-bold text-sky-400 uppercase tracking-wide flex items-center gap-1.5">
+              <span>💪</span>
+              <span>Yetenek Skoru Artışı (+1 Stat)</span>
+            </div>
+            <span id="change-class-stat-badge" class="badge text-[9px] px-2 py-0.5 font-bold bg-sky-950 text-sky-300 border border-sky-600">Her 4 Seviyede Bir</span>
+          </div>
+          <div>
+            <select id="change-class-stat-select" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-sky-300 font-bold focus:border-sky-500">
+              <option value="">-- Stat Artışı Yok --</option>
+              <option value="str">STR (+1 Strength / Güç)</option>
+              <option value="dex">DEX (+1 Dexterity / Çeviklik)</option>
+              <option value="con">CON (+1 Constitution / Dayanıklılık)</option>
+              <option value="int">INT (+1 Intelligence / Zeka)</option>
+              <option value="wis">WIS (+1 Wisdom / İrade)</option>
+              <option value="cha">CHA (+1 Charisma / Karizma)</option>
+            </select>
+          </div>
+          <div id="change-class-stat-hint" class="text-[10px] text-slate-400">
+            D&D 3.5e kuralı: 4, 8, 12, 16, 20... seviyelerde bir yetenek skoruna +1 eklenir.
+          </div>
+        </div>
+
         <div class="flex items-center gap-2">
           <input type="checkbox" id="change-class-auto-features" checked class="w-3.5 h-3.5 rounded text-amber-500 cursor-pointer">
           <label for="change-class-auto-features" class="text-[11px] text-slate-300 cursor-pointer">Sınıf özelliklerini (features) RAW kuralına göre otomatik güncelle</label>
@@ -2697,8 +2722,46 @@
         <button onclick="closeChangeLevelClassModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold px-3 py-1.5 rounded-lg transition cursor-pointer">Vazgeç</button>
         <button onclick="confirmChangeLevelClass()" class="bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg shadow transition flex items-center gap-1.5 cursor-pointer">
           <span>✅</span>
-          <span>Sınıfı Güncelle</span>
+          <span>Seviyeyi Güncelle</span>
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================== -->
+  <!-- MODAL: LEVEL STAT PICKER (Seviye Stat Artışı Seçimi) -->
+  <!-- ==================================================== -->
+  <div id="level-stat-picker-modal" class="hidden fixed inset-0 z-[125] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
+    <div class="bg-dndCard border border-sky-500/80 rounded-2xl max-w-md w-full shadow-2xl overflow-hidden my-auto animate-fadeIn">
+      <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-sky-950 border border-sky-600/60 flex items-center justify-center text-lg">💪</div>
+          <div>
+            <h3 id="stat-picker-modal-title" class="text-sm font-bold text-white">Seviye Stat Artışı (+1 Ability)</h3>
+            <p id="stat-picker-modal-subtitle" class="text-[10px] text-sky-300">D&D 3.5e kuralları: Her 4 seviyede bir kalıcı +1 yetenek skoru</p>
+          </div>
+        </div>
+        <button onclick="closeStatPickerModal()" class="text-slate-400 hover:text-white p-1 text-sm font-bold">&times;</button>
+      </div>
+
+      <div class="p-4 space-y-3 text-xs">
+        <div class="bg-sky-950/40 border border-sky-900/60 rounded-xl p-2.5 text-[11px] text-sky-200">
+          Bu seviyede artırmak istediğiniz yetenek skorunu seçin. Seçtiğiniz stat karakterin taban değerine otomatik eklenir ve türetilmiş tüm istatistikler güncellenir.
+        </div>
+
+        <div id="stat-picker-options-grid" class="grid grid-cols-2 gap-2">
+          <!-- Populated dynamically: STR, DEX, CON, INT, WIS, CHA cards -->
+        </div>
+
+        <div class="pt-2 border-t border-slate-800 flex items-center justify-between">
+          <button type="button" onclick="clearStatForActivePickerLevel()" class="text-xs text-rose-400 hover:text-rose-300 font-bold hover:underline flex items-center gap-1 cursor-pointer">
+            <span>🗑️</span>
+            <span>Stat Artışını Kaldır</span>
+          </button>
+          <button type="button" onclick="closeStatPickerModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold px-3 py-1.5 rounded-lg transition cursor-pointer">
+            Vazgeç
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -11683,8 +11746,9 @@
       }
 
       // Revert Stat increase if recorded
-      if (last.statIncreased && last.active !== false && character.baseAbilities && character.baseAbilities[last.statIncreased] !== undefined) {
-        character.baseAbilities[last.statIncreased] = Number(character.baseAbilities[last.statIncreased]) - 1;
+      const statToRevert = getLevelStatIncrease(last);
+      if (statToRevert && last.active !== false && character.baseAbilities && character.baseAbilities[statToRevert] !== undefined) {
+        character.baseAbilities[statToRevert] = Number(character.baseAbilities[statToRevert]) - 1;
       }
 
       // Revert Caster Level
@@ -11790,7 +11854,145 @@
       return clean;
     }
 
-    // Modal: Change Level Class (Sınıf Değiştirme)
+    // Stat Increase Helper & Level Stat Picker Modal
+    let activeStatPickerLevelIndex = null;
+
+    function getLevelStatIncrease(lvl) {
+      if (!lvl) return null;
+      if (lvl.statIncreased) {
+        const s = String(lvl.statIncreased).toLowerCase().trim();
+        if (STAT_KEYS.some(k => k.key === s)) return s;
+        if (s.startsWith('str')) return 'str';
+        if (s.startsWith('dex')) return 'dex';
+        if (s.startsWith('con')) return 'con';
+        if (s.startsWith('int')) return 'int';
+        if (s.startsWith('wis')) return 'wis';
+        if (s.startsWith('cha')) return 'cha';
+      }
+      // Check in feats array
+      if (Array.isArray(lvl.feats)) {
+        for (const f of lvl.feats) {
+          const str = String(f).toLowerCase();
+          if (str.includes('+1 stat') || str.includes('stat:')) {
+            if (str.includes('str') || str.includes('strength') || str.includes('güç')) return 'str';
+            if (str.includes('dex') || str.includes('dexterity') || str.includes('çevik')) return 'dex';
+            if (str.includes('con') || str.includes('constitution') || str.includes('dayan')) return 'con';
+            if (str.includes('int') || str.includes('intelligence') || str.includes('zeka')) return 'int';
+            if (str.includes('wis') || str.includes('wisdom') || str.includes('irade')) return 'wis';
+            if (str.includes('cha') || str.includes('charisma') || str.includes('karizma')) return 'cha';
+          }
+        }
+      }
+      return null;
+    }
+
+    function openStatPickerForLevel(idx) {
+      const prog = character.levelProgression || [];
+      if (idx < 0 || idx >= prog.length) return;
+      activeStatPickerLevelIndex = idx;
+      const row = prog[idx];
+
+      const modal = document.getElementById('level-stat-picker-modal');
+      const title = document.getElementById('stat-picker-modal-title');
+      const subtitle = document.getElementById('stat-picker-modal-subtitle');
+      const grid = document.getElementById('stat-picker-options-grid');
+      if (!modal || !grid) return;
+
+      if (title) title.textContent = `Seviye ${row.level} Stat Artışı (+1 Ability)`;
+      if (subtitle) subtitle.textContent = `${row.className} (Seviye ${row.level}) • Kalıcı +1 Yetenek Skoru`;
+
+      const currentStat = getLevelStatIncrease(row);
+
+      grid.innerHTML = STAT_KEYS.map(s => {
+        const isSelected = (currentStat === s.key);
+        const baseScore = Number(character.baseAbilities?.[s.key]) || 10;
+        const totalScore = Number(character.abilities?.[s.key]) || baseScore;
+        const nextBase = isSelected ? baseScore : (baseScore + 1);
+        const nextTotal = isSelected ? totalScore : (totalScore + 1);
+
+        return `
+          <button type="button" onclick="selectStatForLevel(${idx}, '${s.key}')" class="p-2.5 rounded-xl border text-left transition flex flex-col justify-between cursor-pointer active:scale-95 ${
+            isSelected 
+              ? 'bg-sky-950/80 border-sky-400 text-white shadow-lg ring-1 ring-sky-400' 
+              : 'bg-slate-900/90 border-slate-700/80 text-slate-300 hover:border-sky-500 hover:bg-slate-800/80'
+          }">
+            <div class="flex items-center justify-between w-full">
+              <span class="font-mono font-black text-xs px-1.5 py-0.5 rounded ${isSelected ? 'bg-sky-500 text-slate-950' : 'bg-slate-800 text-sky-300'}">${s.label}</span>
+              ${isSelected ? '<span class="text-[9px] font-bold text-sky-300 bg-sky-900/60 px-1 rounded border border-sky-500/60">SEÇİLİ</span>' : ''}
+            </div>
+            <div class="mt-1 font-bold text-[11px] text-white">${s.name}</div>
+            <div class="mt-1 text-[10px] text-slate-400 font-mono">
+              Şu an: <strong class="text-white">${totalScore}</strong> 
+              ➔ <strong class="text-emerald-400 font-black">+1 (${isSelected ? totalScore : nextTotal})</strong>
+            </div>
+          </button>
+        `;
+      }).join('');
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeStatPickerModal() {
+      const modal = document.getElementById('level-stat-picker-modal');
+      if (modal) modal.classList.add('hidden');
+      activeStatPickerLevelIndex = null;
+    }
+
+    function clearStatForActivePickerLevel() {
+      if (activeStatPickerLevelIndex === null) return;
+      selectStatForLevel(activeStatPickerLevelIndex, null);
+    }
+
+    function selectStatForLevel(idx, newStatKey) {
+      const prog = character.levelProgression || [];
+      if (idx < 0 || idx >= prog.length) return;
+      const row = prog[idx];
+      const oldStat = getLevelStatIncrease(row);
+
+      if (oldStat !== newStatKey) {
+        if (row.active !== false && character.baseAbilities) {
+          if (oldStat && typeof character.baseAbilities[oldStat] === 'number') {
+            character.baseAbilities[oldStat] = Math.max(1, character.baseAbilities[oldStat] - 1);
+          }
+          if (newStatKey && typeof character.baseAbilities[newStatKey] === 'number') {
+            character.baseAbilities[newStatKey] = character.baseAbilities[newStatKey] + 1;
+          }
+        }
+
+        row.statIncreased = newStatKey || null;
+
+        if (!Array.isArray(row.feats)) row.feats = [];
+        row.feats = row.feats.filter(f => {
+          const str = String(f).toLowerCase();
+          return !str.includes('+1 stat') && !str.includes('stat:');
+        });
+
+        if (newStatKey) {
+          const statDef = STAT_KEYS.find(k => k.key === newStatKey);
+          row.feats.push(`+1 Stat: ${statDef ? statDef.label : newStatKey.toUpperCase()}`);
+        }
+
+        recalculateCharacterClassSummary();
+        saveStateToStorage(true);
+        renderLevelProgression();
+        renderAll();
+      }
+
+      closeStatPickerModal();
+
+      if (typeof showDiceTopToast === 'function') {
+        const statDef = newStatKey ? STAT_KEYS.find(k => k.key === newStatKey) : null;
+        showDiceTopToast({
+          icon: '💪',
+          title: newStatKey ? 'Stat Artışı Belirlendi' : 'Stat Artışı Kaldırıldı',
+          breakdown: newStatKey 
+            ? `Seviye ${row.level}: +1 ${statDef ? statDef.name : newStatKey.toUpperCase()} uygulandı.`
+            : `Seviye ${row.level} stat artışı temizlendi.`
+        });
+      }
+    }
+
+    // Modal: Change Level Class (Sınıf & Seviye Değiştirme)
     let currentChangeClassLevelIndex = null;
 
     function openChangeLevelClassModal(idx) {
@@ -11804,7 +12006,7 @@
 
       const titleEl = document.getElementById('change-class-modal-title');
       const subEl = document.getElementById('change-class-modal-subtitle');
-      if (titleEl) titleEl.textContent = `Seviye ${row.level} Sınıfını Değiştir`;
+      if (titleEl) titleEl.textContent = `Seviye ${row.level} Sınıf ve Stat Düzenle`;
       if (subEl) subEl.textContent = `Şu anki sınıf: ${row.className}`;
 
       const sel = document.getElementById('change-class-select');
@@ -11846,6 +12048,29 @@
       }
       if (hpHint) {
         hpHint.innerHTML = `Seviye ${row.level} mevcut HP artışı: <b class="text-emerald-400">+${currentHpGain} HP</b> (Can Zarı: ${row.hd || 'd8'}). İsterseniz elle değiştirebilir veya yeni zar atabilirsiniz.`;
+      }
+
+      // Populate current stat increase
+      const statSel = document.getElementById('change-class-stat-select');
+      const statBadge = document.getElementById('change-class-stat-badge');
+      const statHint = document.getElementById('change-class-stat-hint');
+      const currentStat = getLevelStatIncrease(row);
+      if (statSel) {
+        statSel.value = currentStat || '';
+      }
+      if (statBadge) {
+        if (row.level % 4 === 0) {
+          statBadge.className = 'badge text-[9px] px-2 py-0.5 font-bold bg-amber-950 text-amber-300 border border-amber-600 animate-pulse';
+          statBadge.textContent = '4. Seviye Kuralı (+1 Stat)';
+        } else {
+          statBadge.className = 'badge text-[9px] px-2 py-0.5 font-bold bg-slate-800 text-slate-400 border border-slate-700';
+          statBadge.textContent = 'İsteğe Bağlı / DM';
+        }
+      }
+      if (statHint) {
+        statHint.textContent = (row.level % 4 === 0)
+          ? `Bu seviye (${row.level}. seviye) resmi D&D 3.5e 4-seviye kuralına göre kalıcı +1 stat artışı hakkı içerir.`
+          : `İsteğe bağlı veya DM lütfu olarak bu seviyeye +1 stat artışı atayabilirsiniz.`;
       }
 
       onChangeClassSelectChange();
@@ -12000,6 +12225,32 @@
         prog[idx].notes = autoFeatures.length > 0 ? autoFeatures.join(', ') : `${newClass} seviyesi olarak güncellendi`;
       }
 
+      // Handle Stat increase change
+      const statSel = document.getElementById('change-class-stat-select');
+      const newStatChoice = (statSel?.value || '').trim() || null;
+      const oldStatChoice = getLevelStatIncrease(prog[idx]);
+
+      if (newStatChoice !== oldStatChoice) {
+        if (prog[idx].active !== false && character.baseAbilities) {
+          if (oldStatChoice && typeof character.baseAbilities[oldStatChoice] === 'number') {
+            character.baseAbilities[oldStatChoice] = Math.max(1, character.baseAbilities[oldStatChoice] - 1);
+          }
+          if (newStatChoice && typeof character.baseAbilities[newStatChoice] === 'number') {
+            character.baseAbilities[newStatChoice] = character.baseAbilities[newStatChoice] + 1;
+          }
+        }
+        prog[idx].statIncreased = newStatChoice;
+        if (!Array.isArray(prog[idx].feats)) prog[idx].feats = [];
+        prog[idx].feats = prog[idx].feats.filter(f => {
+          const str = String(f).toLowerCase();
+          return !str.includes('+1 stat') && !str.includes('stat:');
+        });
+        if (newStatChoice) {
+          const statDef = STAT_KEYS.find(k => k.key === newStatChoice);
+          prog[idx].feats.push(`+1 Stat: ${statDef ? statDef.label : newStatChoice.toUpperCase()}`);
+        }
+      }
+
       closeChangeLevelClassModal();
       recalculateCharacterClassSummary();
       saveStateToStorage(true);
@@ -12047,9 +12298,7 @@
       const autoFeatures = autoData.features || [];
 
       const rowFeats = [];
-      if (nextLvl % 4 === 0) {
-        rowFeats.push('💪 +1 Stat');
-      }
+      let statIncreased = null;
 
       prog.push({
         level: nextLvl,
@@ -12064,6 +12313,7 @@
         skillPts,
         feats: rowFeats,
         specialAbilities: [...autoFeatures],
+        statIncreased: statIncreased,
         notes: autoFeatures.length > 0 ? autoFeatures.join(', ') : `${targetClass} seviyesi planlandı`
       });
 
@@ -12145,6 +12395,18 @@
         tr.className = isActive 
           ? 'hover:bg-slate-900/60 transition' 
           : 'hover:bg-slate-900/40 transition opacity-50 bg-slate-950/50 border-dashed border-b border-slate-800/80 italic';
+
+        // Stat Bonus Badge (Every 4 levels or if level has a stat increase)
+        const currentStatKey = getLevelStatIncrease(lvl);
+        const isStatInterval = (lvl.level % 4 === 0);
+
+        let statBadgeItem = '';
+        if (currentStatKey) {
+          const sDef = STAT_KEYS.find(k => k.key === currentStatKey) || { key: currentStatKey, label: currentStatKey.toUpperCase(), name: currentStatKey.toUpperCase() };
+          statBadgeItem = `<button type="button" onclick="openStatPickerForLevel(${idx})" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-sky-950/80 hover:bg-sky-900 active:scale-95 text-sky-300 hover:text-white border border-sky-600/70 shadow-sm transition text-left leading-none shrink-0 cursor-pointer" title="Seviye ${lvl.level} Stat Artışı: +1 ${sDef.name}. Değiştirmek veya kaldırmak için tıklayın."><span>💪</span><span>+1 Stat: ${sDef.label}</span></button>`;
+        } else if (isStatInterval) {
+          statBadgeItem = `<button type="button" onclick="openStatPickerForLevel(${idx})" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-sky-950/90 hover:bg-sky-900 active:scale-95 text-sky-300 hover:text-white border border-dashed border-sky-500 shadow-sm animate-pulse transition text-left leading-none shrink-0 cursor-pointer" title="Seviye ${lvl.level} için +1 Yetenek Skoru (Stat) seçin"><span>💪</span><span>+ Stat Seç (+1)</span></button>`;
+        }
 
         // Filtered chosen feats for display
         const chosenFeats = (lvl.feats || []).filter(f => {
@@ -12254,20 +12516,21 @@
           </td>
           <td class="pt-2.5 pb-2.5 px-3 font-sans align-top">
             <div class="flex flex-col gap-1.5 items-start">
+              ${abilityBadgeItems.join('')}
+              ${inlineAddAbilityBtn}
+            </div>
+          </td>
+          <td class="pt-2.5 pb-2.5 px-3 font-sans align-top">
+            <div class="flex flex-col gap-1.5 items-start">
+              ${statBadgeItem ? statBadgeItem : ''}
               ${featBadgeItems.join('')}
               ${pendingButtons.join('')}
               ${inlineAddFeatBtn}
             </div>
           </td>
-          <td class="pt-2.5 pb-2.5 px-3 font-sans align-top">
-            <div class="flex flex-col gap-1.5 items-start">
-              ${abilityBadgeItems.join('')}
-              ${inlineAddAbilityBtn}
-            </div>
-          </td>
           <td class="pt-2.5 pb-2.5 px-2 align-top text-center">
             <div class="h-6 flex items-center justify-center gap-1">
-              <button onclick="openChangeLevelClassModal(${idx})" class="text-slate-400 hover:text-amber-400 p-0.5 text-xs transition" title="Bu seviyenin sınıfını değiştir">
+              <button onclick="openChangeLevelClassModal(${idx})" class="text-slate-400 hover:text-amber-400 p-0.5 text-xs transition" title="Bu seviyenin sınıf ve statını düzenle">
                 ✏️
               </button>
               ${idx > 0 ? `
