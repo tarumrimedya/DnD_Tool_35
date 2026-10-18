@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="build-version" content="2026.10.18-2340">
+  <meta name="build-version" content="2026.10.18-2345">
   <title>D&D 3.5e Tactical Cockpit & Character Hub</title>
   <script>
     if ('scrollRestoration' in history) {
@@ -520,7 +520,7 @@
                 <span class="text-sm">🔮</span>
                 <span>1. Doğal / Anlık</span>
               </span>
-              <span id="tab-spontaneous-badge" class="bg-purple-950/80 text-purple-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-purple-600/60">Aktif</span>
+              <span id="tab-spontaneous-badge" class="bg-purple-950/80 text-purple-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-purple-600/60">20 / 20</span>
             </button>
 
             <!-- Tab 2: Kitaplı Hazırlık -->
@@ -547,7 +547,7 @@
                 <span class="text-sm">⚔️</span>
                 <span>4. Savaş Manevraları</span>
               </span>
-              <span id="tab-martial-badge" class="bg-rose-950/80 text-rose-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-rose-600/60">3 Kuşanıldı</span>
+              <span id="tab-martial-badge" class="bg-rose-950/80 text-rose-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-rose-600/60">3 / 3</span>
             </button>
 
           </div>
@@ -10032,17 +10032,21 @@
       const { primaryClass, statKey, statVal, statMod, cl, clMode } = getCasterInfo();
       const classesStatus = checkCharacterMagicClasses();
 
-      // Top archetype badges
+      // Top archetype badges (Sadeleştirilmiş Kalan / Toplam Sayaçları)
       const spontBadge = document.getElementById('tab-spontaneous-badge');
       if (spontBadge) {
-        const knownCount = (character?.spellcasting?.knownSpells || []).length;
-        spontBadge.textContent = `${knownCount} Bilinen`;
+        const slots = character?.spellcasting?.slots || [];
+        const totalDaily = slots.reduce((sum, s) => sum + (Number(s.daily) || 0), 0);
+        const totalUsed = slots.reduce((sum, s) => sum + (Number(s.used) || 0), 0);
+        const totalRemaining = Math.max(0, totalDaily - totalUsed);
+        spontBadge.textContent = `${totalRemaining} / ${totalDaily}`;
         spontBadge.className = 'bg-purple-950/80 text-purple-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-purple-600/60';
+        spontBadge.title = `Günlük Kalan Slot: ${totalRemaining} / ${totalDaily}`;
       }
 
       const prepBadge = document.getElementById('tab-prepared-badge');
       if (prepBadge) {
-        prepBadge.textContent = classesStatus.hasPrepared ? 'Aktif' : 'Sınıf Yok';
+        prepBadge.textContent = classesStatus.hasPrepared ? '0 / 0' : 'Sınıf Yok';
         prepBadge.className = classesStatus.hasPrepared
           ? 'bg-sky-950 text-sky-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-sky-600/60'
           : 'bg-sky-950/60 text-sky-300/80 text-[10px] px-1.5 py-0.5 rounded-full font-mono border border-sky-800/50';
@@ -10050,17 +10054,21 @@
 
       const divineBadge = document.getElementById('tab-divine-badge');
       if (divineBadge) {
-        divineBadge.textContent = classesStatus.hasDivine ? 'Aktif' : 'Sınıf Yok';
+        divineBadge.textContent = classesStatus.hasDivine ? '0 / 0' : 'Sınıf Yok';
         divineBadge.className = classesStatus.hasDivine
           ? 'bg-amber-950 text-amber-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-amber-600/60'
           : 'bg-amber-950/60 text-amber-300/80 text-[10px] px-1.5 py-0.5 rounded-full font-mono border border-amber-800/50';
       }
 
       const initInfo = getInitiatorInfo();
+      const readiedList = character?.tomeOfBattle?.readiedManeuvers || [];
+      const readyManeuvers = readiedList.filter(m => !m.expended).length;
+      const totalReadied = readiedList.length || initInfo.maxReadied || 3;
       const martialBadge = document.getElementById('tab-martial-badge');
       if (martialBadge) {
-        martialBadge.textContent = `${initInfo.readiedCount} / ${initInfo.maxReadied} Kuşanıldı`;
+        martialBadge.textContent = `${readyManeuvers} / ${totalReadied}`;
         martialBadge.className = 'bg-rose-950/80 text-rose-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-rose-600/60';
+        martialBadge.title = `Savaşta Hazır Manevra: ${readyManeuvers} / ${totalReadied}`;
       }
 
       renderPreparedDisciplineView(classesStatus.hasPrepared);
@@ -10096,11 +10104,11 @@
       }
       const quotaBadge = document.getElementById('readied-quota-badge');
       if (quotaBadge) {
-        quotaBadge.textContent = `${initInfo.readiedCount} / ${initInfo.maxReadied} Kuşanıldı`;
+        quotaBadge.textContent = `${readyManeuvers} / ${initInfo.maxReadied} Hazır`;
       }
       const readiedCounter = document.getElementById('readied-maneuvers-counter');
       if (readiedCounter) {
-        readiedCounter.textContent = `${initInfo.readiedCount} / ${initInfo.maxReadied} Kuşanıldı`;
+        readiedCounter.textContent = `${readyManeuvers} / ${totalReadied} Hazır`;
       }
 
       // Populate Active Stance Select Box
