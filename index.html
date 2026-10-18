@@ -2534,7 +2534,13 @@
             <p id="quick-feat-modal-subtitle" class="text-[10px] text-purple-300">Serbest Feat, DM Lütfu, Kusur veya Özel Yetenek</p>
           </div>
         </div>
-        <button onclick="closeQuickLevelFeatModal()" class="text-slate-400 hover:text-white p-1 text-sm font-bold">&times;</button>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="triggerRuleMasterForQuickFeat()" class="bg-gradient-to-r from-purple-700 via-indigo-600 to-teal-600 hover:from-purple-600 hover:to-teal-500 text-white font-bold text-[11px] px-2.5 py-1 rounded-lg shadow flex items-center gap-1.5 transition cursor-pointer" title="Rule Master (AI) ile D&D 3.5e Kütüphanelerinde Ara">
+            <span>🧙‍♂️🤖</span>
+            <span>Rule Master</span>
+          </button>
+          <button onclick="closeQuickLevelFeatModal()" class="text-slate-400 hover:text-white p-1 text-sm font-bold">&times;</button>
+        </div>
       </div>
 
       <div class="p-4 space-y-3 text-xs">
@@ -2564,8 +2570,20 @@
         </div>
 
         <div>
-          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Feat / Yetenek Adı *</label>
-          <input type="text" id="quick-feat-name" placeholder="Örn: Weapon Focus (Rapier), Toughness..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold">
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-[10px] font-bold text-slate-400 uppercase">Feat / Yetenek Adı *</label>
+            <span class="text-[10px] text-purple-300 font-semibold flex items-center gap-1">
+              <span>🧙‍♂️🤖</span><span>Rule Master (AI) Destekli</span>
+            </span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <input type="text" id="quick-feat-name" placeholder="Örn: Weapon Focus, Battle Cunning, Toughness..." onkeydown="if(event.key==='Enter'){event.preventDefault();triggerRuleMasterForQuickFeat();}" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold focus:border-purple-500 focus:outline-none">
+            <button type="button" onclick="triggerRuleMasterForQuickFeat()" class="bg-gradient-to-r from-purple-700 via-indigo-600 to-teal-600 hover:from-purple-600 hover:to-teal-500 active:scale-95 text-white font-extrabold text-[11px] px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1.5 shrink-0 cursor-pointer" title="3.5e Kitaplarında Ara ve Kuralı Otomatik Getir">
+              <span>🧙‍♂️🤖</span>
+              <span>Ara & Getir</span>
+            </button>
+          </div>
+          <div id="quick-feat-ai-status" class="hidden mt-1.5 text-[11px] p-2 rounded-lg font-mono"></div>
         </div>
 
         <div>
@@ -2585,7 +2603,7 @@
   </div>
 
   <!-- ==================================================== -->
-  <!-- MODAL: CHANGE LEVEL CLASS (Sınıf Değiştirme) -->
+  <!-- MODAL: CHANGE LEVEL CLASS (Sınıf & Seviye Değiştirme) -->
   <!-- ==================================================== -->
   <div id="change-level-class-modal" class="hidden fixed inset-0 z-[115] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
     <div class="bg-dndCard border border-amber-500/80 rounded-2xl max-w-md w-full shadow-2xl overflow-hidden my-auto">
@@ -2593,11 +2611,17 @@
         <div class="flex items-center gap-2">
           <div class="w-8 h-8 rounded-lg bg-amber-950 border border-amber-600/60 flex items-center justify-center text-lg">✏️</div>
           <div>
-            <h3 id="change-class-modal-title" class="text-sm font-bold text-white">Seviye Sınıfını Değiştir</h3>
-            <p id="change-class-modal-subtitle" class="text-[10px] text-amber-300">Bu seviyenin sınıfını, Can Puanını (HP) ve özelliklerini güncelle</p>
+            <h3 id="change-class-modal-title" class="text-sm font-bold text-white">Seviye Sınıf ve Stat Düzenle</h3>
+            <p id="change-class-modal-subtitle" class="text-[10px] text-amber-300">Bu seviyenin sınıfını, Can Puanını (HP), statını ve özelliklerini güncelle</p>
           </div>
         </div>
-        <button onclick="closeChangeLevelClassModal()" class="text-slate-400 hover:text-white p-1 text-sm font-bold">&times;</button>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="triggerRuleMasterForChangeClass()" class="bg-gradient-to-r from-purple-700 to-indigo-600 hover:from-purple-600 hover:to-indigo-500 text-white font-bold text-xs px-2.5 py-1 rounded-lg shadow flex items-center gap-1.5 transition cursor-pointer" title="Rule Master (AI) Danışmanı">
+            <span>🧙‍♂️🤖</span>
+            <span>Rule Master</span>
+          </button>
+          <button onclick="closeChangeLevelClassModal()" class="text-slate-400 hover:text-white p-1 text-sm font-bold">&times;</button>
+        </div>
       </div>
 
       <div class="p-4 space-y-3 text-xs">
@@ -2710,6 +2734,24 @@
           <div id="change-class-stat-hint" class="text-[10px] text-slate-400">
             D&D 3.5e kuralı: 4, 8, 12, 16, 20... seviyelerde bir yetenek skoruna +1 eklenir.
           </div>
+        </div>
+
+        <!-- Rule Master (AI) Sınıf & Seviye Danışmanı -->
+        <div class="bg-gradient-to-r from-purple-950/70 via-indigo-950/60 to-slate-900 border border-purple-500/50 rounded-xl p-3 space-y-2 shadow-inner">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5 text-[11px] font-bold text-purple-300">
+              <span>🧙‍♂️🤖</span>
+              <span>Rule Master (AI) Sınıf Danışmanı</span>
+            </div>
+            <button type="button" onclick="triggerRuleMasterForChangeClass()" class="bg-gradient-to-r from-purple-700 to-indigo-600 hover:from-purple-600 hover:to-indigo-500 active:scale-95 text-white font-bold text-[10px] px-2.5 py-1 rounded shadow transition flex items-center gap-1 cursor-pointer">
+              <span>💡</span>
+              <span>Tavsiye Al</span>
+            </button>
+          </div>
+          <div id="change-class-ai-hint" class="text-[10px] text-slate-400">
+            Seçtiğiniz sınıfın bu seviyedeki kazanımları ve karakter sinerjisi hakkında analiz alın.
+          </div>
+          <div id="change-class-ai-result" class="hidden text-[11px] text-purple-200 bg-purple-950/80 border border-purple-800/70 rounded-lg p-2.5 space-y-1"></div>
         </div>
 
         <div class="flex items-center gap-2">
@@ -10767,6 +10809,8 @@
       if (nameInput) nameInput.value = '';
       const benefitInput = document.getElementById('quick-feat-benefit');
       if (benefitInput) benefitInput.value = '';
+      const aiStatus = document.getElementById('quick-feat-ai-status');
+      if (aiStatus) { aiStatus.classList.add('hidden'); aiStatus.innerHTML = ''; }
 
       modal.classList.remove('hidden');
     }
@@ -10930,6 +10974,264 @@
       saveStateToStorage(true);
       renderLevelProgression();
       renderAll();
+    }
+
+    function findInLocalCatalogsOrMasterDb(query) {
+      if (!query) return null;
+      const qLower = query.toLowerCase().trim();
+
+      // Check RuleMaster.canonicalDictionary
+      if (typeof RuleMaster !== 'undefined' && RuleMaster.canonicalDictionary) {
+        let cleanKey = qLower;
+        if (typeof RuleMaster.canonicalDictionary[cleanKey] === 'string') {
+          cleanKey = RuleMaster.canonicalDictionary[cleanKey];
+        }
+        const entry = RuleMaster.canonicalDictionary[cleanKey];
+        if (entry && typeof entry === 'object') {
+          return {
+            name: entry.name || cleanKey,
+            category: entry.type || entry.category || 'Feat',
+            benefit: entry.benefit || entry.description || '',
+            source: entry.source || 'PHB'
+          };
+        }
+      }
+
+      // Check masterDb
+      if (Array.isArray(masterDb)) {
+        const m = masterDb.find(item => (item.name || '').toLowerCase().trim() === qLower)
+          || masterDb.find(item => (item.name || '').toLowerCase().includes(qLower));
+        if (m) {
+          return {
+            name: m.name,
+            category: m.type || m.category || 'Feat',
+            benefit: m.benefit || m.description || '',
+            source: m.source || 'Master DB'
+          };
+        }
+      }
+
+      // Check combined feat catalog
+      if (typeof getCombinedFeatCatalog === 'function') {
+        const cat = getCombinedFeatCatalog();
+        const f = cat.find(item => (item.name || '').toLowerCase().trim() === qLower)
+          || cat.find(item => (item.name || '').toLowerCase().includes(qLower));
+        if (f) {
+          return {
+            name: f.name,
+            category: f.category || 'Feat',
+            benefit: f.benefit || '',
+            source: f.source || 'Feat Catalog'
+          };
+        }
+      }
+
+      return null;
+    }
+
+    async function triggerRuleMasterForQuickFeat() {
+      const nameInput = document.getElementById('quick-feat-name');
+      const catSel = document.getElementById('quick-feat-category');
+      const benefitInput = document.getElementById('quick-feat-benefit');
+      const statusEl = document.getElementById('quick-feat-ai-status');
+
+      const query = (nameInput?.value || '').trim();
+      if (!query) {
+        if (statusEl) {
+          statusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-amber-950/80 border border-amber-600/60 text-amber-200 block';
+          statusEl.innerHTML = '⚠️ Lütfen aranacak feat veya yetenek adını yazın.';
+        } else {
+          alert('⚠️ Lütfen aranacak feat veya yetenek adını yazın.');
+        }
+        nameInput?.focus();
+        return;
+      }
+
+      if (statusEl) {
+        statusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-indigo-950/80 border border-indigo-600/60 text-indigo-200 block animate-pulse';
+        statusEl.innerHTML = `<span>⏳</span> <span>"${query}" aranıyor...</span>`;
+      }
+
+      // 1. Önce yerel veritabanları ve katalogları kontrol et
+      const localMatch = findInLocalCatalogsOrMasterDb(query);
+      if (localMatch) {
+        if (nameInput) nameInput.value = localMatch.name;
+        if (benefitInput) benefitInput.value = localMatch.benefit || '';
+        if (catSel && localMatch.category) {
+          const lcat = localMatch.category.toLowerCase();
+          if (lcat.includes('special ability') || localMatch.category === 'Special Ability') {
+            catSel.value = 'Special Ability';
+          } else if (lcat.includes('flaw')) {
+            catSel.value = 'Flaw';
+          } else if (lcat.includes('boon')) {
+            catSel.value = 'DM Boon';
+          } else if (lcat.includes('racial')) {
+            catSel.value = 'Racial Trait';
+          }
+        }
+        if (statusEl) {
+          statusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-emerald-950/80 border border-emerald-600/60 text-emerald-200 block';
+          statusEl.innerHTML = `<span>✅</span> <b>${localMatch.name}</b> (${localMatch.source || 'D&D 3.5e'}) kütüphaneden yüklendi!`;
+        }
+        return;
+      }
+
+      // 2. Rule Master AI sorgusu
+      const apiKey = (typeof RuleMaster !== 'undefined' && RuleMaster.getApiKey)
+        ? RuleMaster.getApiKey()
+        : (localStorage.getItem('gemini_api_key') || '');
+
+      if (!apiKey) {
+        if (statusEl) {
+          statusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-amber-950/80 border border-amber-600/60 text-amber-200 block';
+          statusEl.innerHTML = `<span>⚠️</span> Yerel katalogda bulunamadı. Rule Master (AI) araması için üst menüdeki Rule Master'dan Gemini API Anahtarınızı giriniz.`;
+        }
+        return;
+      }
+
+      try {
+        const categoryHint = (catSel?.value === 'Special Ability') ? 'Special Ability' : 'Feat';
+        const statusProxy = {
+          set textContent(val) {
+            if (statusEl) statusEl.innerHTML = `<span>⏳</span> <span>${val}</span>`;
+          }
+        };
+        const rows = await RuleMaster.fetchSingleAiRuleRows(query, categoryHint, apiKey, statusProxy);
+        if (rows && rows.length > 0) {
+          const topRow = rows[0];
+          const featName = topRow[0] || query;
+          const featType = topRow[1] || 'Feat';
+          const featSource = topRow[4] || 'D&D 3.5e';
+          const featBenefit = topRow[5] || '';
+
+          if (nameInput) nameInput.value = featName;
+          if (benefitInput) benefitInput.value = featBenefit;
+          if (catSel) {
+            if (featType === 'Special Ability' || categoryHint === 'Special Ability') {
+              catSel.value = 'Special Ability';
+            } else if (catSel.value !== 'Class Bonus Feat' && catSel.value !== 'DM Boon' && catSel.value !== 'Flaw') {
+              catSel.value = 'Regular Feat';
+            }
+          }
+
+          if (Array.isArray(masterDb)) {
+            const clean = featName.toLowerCase().trim();
+            if (!masterDb.some(m => (m.name || '').toLowerCase().trim() === clean)) {
+              masterDb.push({
+                name: featName,
+                type: featType,
+                slot: 'None',
+                prereq: topRow[2] || '-',
+                source: featSource,
+                benefit: featBenefit,
+                description: featBenefit
+              });
+            }
+          }
+
+          if (statusEl) {
+            statusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-emerald-950/80 border border-emerald-600/60 text-emerald-200 block';
+            statusEl.innerHTML = `<span>✨</span> <b>${featName}</b> [${featSource}] Rule Master ile başarıyla getirildi!`;
+          }
+        } else {
+          if (statusEl) {
+            statusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-rose-950/80 border border-rose-600/60 text-rose-200 block';
+            statusEl.innerHTML = `<span>❌</span> "${query}" için resmi D&D 3.5e kuralı bulunamadı.`;
+          }
+        }
+      } catch (err) {
+        if (statusEl) {
+          statusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-rose-950/80 border border-rose-600/60 text-rose-200 block';
+          statusEl.innerHTML = `<span>⚠️</span> Hata: ${err.message || err}`;
+        }
+      }
+    }
+
+    async function triggerRuleMasterForChangeClass() {
+      const resultEl = document.getElementById('change-class-ai-result');
+      const sel = document.getElementById('change-class-select');
+      const prog = character.levelProgression || [];
+      const idx = currentChangeClassLevelIndex;
+      if (idx === null || idx < 0 || idx >= prog.length) return;
+
+      const row = prog[idx];
+      const chosenClass = sel ? sel.value : row.className;
+      const levelNum = row.level || (idx + 1);
+
+      if (resultEl) {
+        resultEl.classList.remove('hidden');
+        resultEl.innerHTML = `<div class="flex items-center gap-2"><span>⏳</span><span>Rule Master (AI) Seviye ${levelNum} (${chosenClass}) için kural ve optimizasyon analizini hazırlıyor...</span></div>`;
+      }
+
+      const allDefs = (typeof getAvailableClassDefs === 'function') ? getAvailableClassDefs() : (typeof DND35_CLASS_DEFS !== 'undefined' ? DND35_CLASS_DEFS : {});
+      const def = allDefs[chosenClass] || (typeof DND35_CLASS_DEFS !== 'undefined' ? DND35_CLASS_DEFS[chosenClass] : null) || { hd: 8, bab: 0.75 };
+
+      const babText = def.bab === 1.0 ? 'Tam (+1/lvl)' : (def.bab === 0.75 ? '3/4 (+0.75/lvl)' : '1/2 (+0.5/lvl)');
+      const hdText = `d${def.hd || 8}`;
+      const isStatLvl = (levelNum % 4 === 0);
+
+      const apiKey = (typeof RuleMaster !== 'undefined' && RuleMaster.getApiKey)
+        ? RuleMaster.getApiKey()
+        : (localStorage.getItem('gemini_api_key') || '');
+
+      if (apiKey && typeof RuleMaster !== 'undefined' && typeof RuleMaster.getAvailableGeminiModels === 'function') {
+        try {
+          const availableModels = await RuleMaster.getAvailableGeminiModels(apiKey);
+          const prompt = `You are a D&D 3.5e Rule Arbiter and Character Optimization Master.
+Character Level: ${levelNum} (Total Character Level).
+Class Selected for this level: ${chosenClass}.
+Base HD: ${hdText}, BAB Type: ${babText}.
+Character Stats: STR ${character.abilities?.str || 10}, DEX ${character.abilities?.dex || 10}, CON ${character.abilities?.con || 10}, INT ${character.abilities?.int || 10}, WIS ${character.abilities?.wis || 10}, CHA ${character.abilities?.cha || 10}.
+Is 4th Level Stat Increase available: ${isStatLvl ? 'YES (+1 Ability Score)' : 'NO'}.
+
+In Turkish, provide a concise 3-4 bullet point summary:
+1. RAW key benefits/features of ${chosenClass} at this level.
+2. Hit Die, BAB, and Save impact.
+3. Optimization advice (recommended stat increase or synergy with feats).
+Keep it concise, bulleted, and strictly D&D 3.5e RAW compliant.`;
+
+          for (const model of availableModels) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+            const resp = await fetch(url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: { temperature: 0.2 }
+              })
+            });
+            if (resp.ok) {
+              const json = await resp.json();
+              const replyText = json.candidates?.[0]?.content?.parts?.[0]?.text;
+              if (replyText && resultEl) {
+                const formatted = replyText
+                  .replace(/\*\*(.*?)\*\*/g, '<b class="text-amber-300">$1</b>')
+                  .replace(/^\* /gm, '• ')
+                  .replace(/\n/g, '<br>');
+                resultEl.innerHTML = `
+                  <div class="font-bold text-amber-300 text-xs mb-1">🧙‍♂️ Rule Master Tavsiyesi (Seviye ${levelNum} ${chosenClass}):</div>
+                  <div class="leading-relaxed text-[11px] text-slate-200">${formatted}</div>
+                `;
+                return;
+              }
+            }
+          }
+        } catch (e) {
+          console.warn("Rule master change class AI fetch error:", e);
+        }
+      }
+
+      if (resultEl) {
+        resultEl.innerHTML = `
+          <div class="font-bold text-amber-300 text-xs mb-1">📋 Seviye ${levelNum} ${chosenClass} Kural Özeti:</div>
+          <ul class="list-disc pl-4 space-y-1 text-[11px] text-slate-200">
+            <li><b>Can Zarı (HD):</b> ${hdText} (Önerilen artış: Con modifikatorü eklenir)</li>
+            <li><b>Saldırı İlerlemesi (BAB):</b> ${babText}</li>
+            ${isStatLvl ? '<li class="text-amber-300 font-bold">⭐ 4. Seviye Kuralı: Bu seviyede 1 yetenek skorunuza kalıcı +1 artış seçebilirsiniz!</li>' : ''}
+            <li><b>Tavsiye:</b> Sınıf özelliklerini RAW kuralına göre otomatik güncelle kutucuğunu işaretli tutarak seviyeyi kaydedebilirsiniz.</li>
+          </ul>
+        `;
+      }
     }
 
     // ====================================================
@@ -12073,6 +12375,13 @@
           : `İsteğe bağlı veya DM lütfu olarak bu seviyeye +1 stat artışı atayabilirsiniz.`;
       }
 
+      const classAiRes = document.getElementById('change-class-ai-result');
+      if (classAiRes) { classAiRes.classList.add('hidden'); classAiRes.innerHTML = ''; }
+      const classAiHint = document.getElementById('change-class-ai-hint');
+      if (classAiHint) {
+        classAiHint.textContent = 'Seçtiğiniz sınıfın bu seviyedeki kazanımları ve karakter sinerjisi hakkında analiz alın.';
+      }
+
       onChangeClassSelectChange();
       modal.classList.remove('hidden');
     }
@@ -12462,7 +12771,7 @@
           pendingButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Regular Feat')" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-teal-950/90 hover:bg-teal-900 text-teal-300 border border-dashed border-teal-500 shadow-sm animate-pulse transition text-left leading-none shrink-0" title="İnsan ırksal bonus feati seçin"><span>🧬</span><span>+ Irk Feati Seç</span></button>`);
         }
 
-        const inlineAddFeatBtn = `<button onclick="openQuickFeatPickerForLevel(${idx}, 'Regular Feat')" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700/80 transition leading-none shrink-0" title="Bu seviyeye serbest Feat, DM Lütfu veya Kusur ekle"><span>➕</span><span>Feat</span></button>`;
+        const inlineAddFeatBtn = `<button onclick="openQuickFeatPickerForLevel(${idx}, 'Regular Feat')" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700/80 transition leading-none shrink-0" title="Bu seviyeye serbest Bonus Feat, DM Lütfu veya Kusur ekle"><span>➕</span><span>Bonus Feat</span></button>`;
 
         // Special Abilities Badges (stacked vertically, with rich RAW tooltips on hover)
         const abilityBadgeItems = (lvl.specialAbilities || []).map(aStr => {
@@ -12474,7 +12783,7 @@
           return `<button onclick="showFeatDetail('${safeA}', ${idx}, 'ability')" title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-sky-950/80 hover:bg-sky-900 text-sky-300 border border-sky-600/70 shadow-sm transition text-left leading-none shrink-0"><span>✨</span><span>${str}</span></button>`;
         });
 
-        const inlineAddAbilityBtn = `<button onclick="openQuickAbilityPickerForLevel(${idx})" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700/80 transition leading-none shrink-0" title="Bu seviyeye serbest sınıf özelliği veya not ekle"><span>➕</span><span>Yetenek</span></button>`;
+        const inlineAddAbilityBtn = `<button onclick="openQuickAbilityPickerForLevel(${idx})" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700/80 transition leading-none shrink-0" title="Bu seviyeye serbest sınıf özelliği veya özel yetenek ekle"><span>➕</span><span>Özel Yetenek</span></button>`;
 
         tr.innerHTML = `
           <td class="pt-2.5 pb-2.5 px-2 align-top text-center">
