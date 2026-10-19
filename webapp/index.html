@@ -2760,7 +2760,7 @@
             <option value="Regular Feat">🎖️ Normal Feat (Regular Feat)</option>
             <option value="Class Bonus Feat">⚔️ Sınıf Bonus Feati (Class Bonus Feat)</option>
             <option value="DM Boon">🌟 DM Lütfu / Boon (DM Grant)</option>
-            <option value="Warlock Invocation">🔮 Warlock Yakarışı (Invocation)</option>
+            <option id="quick-feat-opt-warlock" value="Warlock Invocation" disabled title="Bu seçeneği kullanabilmek için CL Kuralından 'Warlock Boon' seçilmeli veya Warlock sınıf seviyesi alınmalıdır.">🔮 Warlock Yakarışı (Kilitli: Warlock Boon veya Seviye Gerekir)</option>
             <option value="Flaw">⚠️ Kusur / Flaw</option>
             <option value="Racial Trait">🧬 Irksal Yetenek (Racial Trait)</option>
             <option value="Special Ability">✨ Özel Yetenek / Sınıf Özelliği</option>
@@ -11361,6 +11361,47 @@
       return 'Least';
     }
 
+    function isWarlockEnabledForLevel(levelIdx = null) {
+      if (!character) return false;
+      // 1. Check if Warlock Boon is active via settings or character boons
+      const clMode = character.settings?.clMode || '';
+      const hasWarlockBoon = character.settings?.warlockBoon === true || 
+        clMode.includes('Warlock Boon') ||
+        (character.boons && character.boons.some(b => String(b.name || b).toLowerCase().includes('warlock')));
+      if (hasWarlockBoon) return true;
+
+      // 2. Check if Warlock class level was taken
+      const prog = character.levelProgression || [];
+      if (levelIdx !== null && levelIdx !== undefined && levelIdx >= 0 && levelIdx < prog.length) {
+        // If checking a specific level row in progression, check if Warlock was taken at or before this level
+        for (let i = 0; i <= levelIdx; i++) {
+          if ((prog[i]?.className || '').toLowerCase() === 'warlock') return true;
+        }
+        return false;
+      }
+
+      // Check if character has taken any Warlock level in progression or classes
+      const hasWarlockProg = prog.some(p => (p.className || '').toLowerCase() === 'warlock');
+      const hasWarlockClass = character.classes && character.classes.some(c => (c.name || '').toLowerCase() === 'warlock');
+      return Boolean(hasWarlockProg || hasWarlockClass);
+    }
+
+    function updateQuickFeatCategoryWarlockState(levelIdx = null) {
+      const opt = document.getElementById('quick-feat-opt-warlock') || document.querySelector('#quick-feat-category option[value="Warlock Invocation"]');
+      if (!opt) return;
+
+      const isAllowed = isWarlockEnabledForLevel(levelIdx);
+      if (isAllowed) {
+        opt.disabled = false;
+        opt.textContent = "🔮 Warlock Yakarışı (Invocation)";
+        opt.title = "Warlock Yakarışları (Invocations)";
+      } else {
+        opt.disabled = true;
+        opt.textContent = "🔮 Warlock Yakarışı (Kilitli: Warlock Boon veya Seviye Gerekir)";
+        opt.title = "Bu seçeneği kullanabilmek için CL Kuralından 'Warlock Boon' seçilmeli veya Warlock sınıf seviyesi alınmalıdır.";
+      }
+    }
+
     function isLevelQualifiesForFeat(level, mode) {
       if (mode === 'Every 2 Levels (1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)') {
         return level === 1 || (level % 2 === 0);
@@ -11448,6 +11489,9 @@
           }
         }
         saveStateToStorage(true);
+        if (typeof updateQuickFeatCategoryWarlockState === 'function') {
+          updateQuickFeatCategoryWarlockState();
+        }
         renderSpellSlots();
         renderLevelProgression();
       }
@@ -12308,8 +12352,22 @@
       const subtitleEl = document.getElementById('quick-feat-modal-subtitle');
       if (subtitleEl) subtitleEl.textContent = `Bu seviyeye kurallı veya serbest hüner, DM lütfu veya kusur ekleyin`;
 
+      // Update Warlock category state for this level (disabled unless Warlock Boon or Warlock level)
+      if (typeof updateQuickFeatCategoryWarlockState === 'function') {
+        updateQuickFeatCategoryWarlockState(activeQuickLevelIndex);
+      }
+      const isWarlockAllowed = (typeof isWarlockEnabledForLevel === 'function')
+        ? isWarlockEnabledForLevel(activeQuickLevelIndex)
+        : false;
+
       const catSel = document.getElementById('quick-feat-category');
-      if (catSel) catSel.value = preferredCategory || 'Regular Feat';
+      if (catSel) {
+        if (preferredCategory === 'Warlock Invocation' && !isWarlockAllowed) {
+          catSel.value = 'Regular Feat';
+        } else {
+          catSel.value = preferredCategory || 'Regular Feat';
+        }
+      }
 
       populateQuickFeatCatalogSelect();
       const nameInput = document.getElementById('quick-feat-name');
@@ -14705,12 +14763,12 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           pendingBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Racial Trait')" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-teal-950/90 hover:bg-teal-900 text-teal-300 border border-dashed border-teal-500 shadow-sm animate-pulse transition text-left leading-none shrink-0" title="İnsan ırksal bonus feati seçin"><span>🧬</span><span>+ Irk Feati Seç</span></button>`);
         }
 
-        // Warlock Boon Invocation Progression Check (Complete Arcane p.7)
-        const isWarlockBoon = character.settings?.warlockBoon || 
-          (character.settings?.clMode && String(character.settings.clMode).includes('Warlock Boon')) ||
-          (character.boons && character.boons.some(b => String(b.name || b).toLowerCase().includes('warlock')));
+        // Warlock Invocation Progression Check (Warlock Boon or Warlock Class Level)
+        const isWarlockActive = (typeof isWarlockEnabledForLevel === 'function')
+          ? isWarlockEnabledForLevel(idx)
+          : Boolean(character.settings?.warlockBoon || (character.settings?.clMode && String(character.settings.clMode).includes('Warlock Boon')));
         
-        if (isWarlockBoon && typeof isWarlockInvocationLevel === 'function' && isWarlockInvocationLevel(lvl.level)) {
+        if (isWarlockActive && typeof isWarlockInvocationLevel === 'function' && isWarlockInvocationLevel(lvl.level)) {
           const hasInvocation = bonusFeats.some(f => String(f).includes('[Invocation]') || String(f).toLowerCase().includes('invocation'));
           if (!hasInvocation) {
             const tier = (typeof getWarlockMaxTierForLevel === 'function') ? getWarlockMaxTierForLevel(lvl.level) : 'Least';
