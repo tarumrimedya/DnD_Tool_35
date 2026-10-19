@@ -1017,8 +1017,9 @@
                   <th class="py-2 px-2 text-center w-12">Will</th>
                   <th class="py-2 px-2 text-center w-14">Skill Pts</th>
                   <th class="py-2 px-3">Sınıf Özellikleri</th>
-                  <th class="py-2 px-3">Kazanılan Feat(ler)</th>
-                  <th class="py-2 px-2 text-center w-16">İşlem</th>
+                  <th class="py-2 px-3">Beceriler</th>
+                  <th class="py-2 px-3">Bonus</th>
+                  <th class="py-2 px-2 text-center w-20">İşlem</th>
                 </tr>
               </thead>
               <tbody id="level-progression-tbody" class="divide-y divide-slate-800 font-mono text-[11px]">
@@ -2759,6 +2760,7 @@
             <option value="Regular Feat">🎖️ Normal Feat (Regular Feat)</option>
             <option value="Class Bonus Feat">⚔️ Sınıf Bonus Feati (Class Bonus Feat)</option>
             <option value="DM Boon">🌟 DM Lütfu / Boon (DM Grant)</option>
+            <option value="Warlock Invocation">🔮 Warlock Yakarışı (Invocation)</option>
             <option value="Flaw">⚠️ Kusur / Flaw</option>
             <option value="Racial Trait">🧬 Irksal Yetenek (Racial Trait)</option>
             <option value="Special Ability">✨ Özel Yetenek / Sınıf Özelliği</option>
@@ -5563,6 +5565,7 @@
                   <label class="text-[10px] font-bold text-purple-400 uppercase">🔮 Caster CL Kuralı:</label>
                   <select id="setting-cl-mode" onchange="onSettingClModeChange()" class="bg-slate-900 border border-slate-700 text-purple-300 font-semibold text-[11px] rounded px-2 py-1 focus:outline-none focus:border-purple-400">
                     <option value="Character Level (DM Boon)">Character Level (DM Boon: CL = Karakter Seviyesi)</option>
+                    <option value="Warlock Boon (Invocations & Eldritch Blast)">Warlock Boon (CL = Karakter Seviyesi + Invocations)</option>
                     <option value="Class Level">Class Level (Yalnızca Sınıf Seviyesi)</option>
                     <option value="Custom">Custom (Manuel)</option>
                   </select>
@@ -11302,6 +11305,62 @@
       { name: "Flaw: Inattentive", category: "Flaw", source: "Unearthed Arcana p.91", benefit: "Listen (Dinleme) ve Spot (Arama) becerilerine -4 ceza alır. Karşılığında 1 ekstra bonus feat kazandırır." }
     ];
 
+    // Built-in D&D 3.5e Warlock Invocations (Complete Arcane & Complete Mage)
+    const DND35_WARLOCK_INVOCATIONS = [
+      // Least (Level 1+)
+      { name: "Eldritch Spear", tier: "Least", category: "Warlock Invocation", minLevel: 1, source: "Complete Arcane p.133", benefit: "Eldritch Blast menzili 60 ft'den 250 ft'ye çıkar (Blast Shape)." },
+      { name: "Hideous Blow", tier: "Least", category: "Warlock Invocation", minLevel: 1, source: "Complete Arcane p.134", benefit: "Standart eylemle yakın dövüş saldırısı yapıp silah hasarına Eldritch Blast hasarını ekler." },
+      { name: "See the Unseen", tier: "Least", category: "Warlock Invocation", minLevel: 1, source: "Complete Arcane p.135", benefit: "24 saat boyunca 60 ft Darkvision ve See Invisibility (Görünmezleri Görme) kazanır." },
+      { name: "Beguiling Influence", tier: "Least", category: "Warlock Invocation", minLevel: 1, source: "Complete Arcane p.133", benefit: "24 saat boyunca Bluff, Diplomacy ve Intimidate becerilerine +6 bonus kazanır." },
+      { name: "Darkness", tier: "Least", category: "Warlock Invocation", minLevel: 1, source: "Complete Arcane p.133", benefit: "İstediği an (At-Will) Darkness büyüsü gibi 20 ft yarıçaplı karanlık yaratır." },
+      { name: "Devil's Sight", tier: "Least", category: "Warlock Invocation", minLevel: 1, source: "Complete Arcane p.133", benefit: "30 ft mesafeye kadar hem normal hem de büyüsel karanlığı net bir şekilde görür." },
+      { name: "Baleful Utterance", tier: "Least", category: "Warlock Invocation", minLevel: 1, source: "Complete Arcane p.133", benefit: "Shatter büyüsü gibi ses dalgasıyla nesneleri patlatır; hedef dazing kurtarma zarı atar." },
+      { name: "All-Seeing Eyes", tier: "Least", category: "Warlock Invocation", minLevel: 1, source: "Complete Mage p.123", benefit: "24 saat boyunca Comprehend Languages ve Search/Spot testlerine +6 bonus." },
+      { name: "Spiderwalk", tier: "Least", category: "Warlock Invocation", minLevel: 1, source: "Complete Arcane p.135", benefit: "24 saat boyunca Spider Climb (Duvarlarda tırmanma) kazanır, ağlardan etkilenmez." },
+      { name: "Earthen Grasp", tier: "Least", category: "Warlock Invocation", minLevel: 1, source: "Complete Arcane p.134", benefit: "Topraktan devasa bir el çıkarıp düşmanı yakalar ve tutar (Grapple)." },
+      { name: "Frightful Presence", tier: "Least", category: "Warlock Invocation", minLevel: 1, source: "Dragon Magic p.80", benefit: "30 ft içindeki HD'si düşük düşmanları korkutur (Shaken)." },
+
+      // Lesser (Level 6+)
+      { name: "Fell Flight", tier: "Lesser", category: "Warlock Invocation", minLevel: 6, source: "Complete Arcane p.134", benefit: "24 saat boyunca kendi yürüme hızında Good manevra kabiliyetiyle uçar (Fly)." },
+      { name: "Eldritch Chain", tier: "Lesser", category: "Warlock Invocation", minLevel: 6, source: "Complete Arcane p.134", benefit: "Eldritch Blast ilk hedefe vurduktan sonra 30 ft içindeki ikincil hedeflere sıçrar (Blast Shape)." },
+      { name: "Brimstone Blast", tier: "Lesser", category: "Warlock Invocation", minLevel: 6, source: "Complete Arcane p.133", benefit: "Eldritch Blast ateş hasarına dönüşür ve hedefi yakar (Eldritch Essence)." },
+      { name: "Hellrime Blast", tier: "Lesser", category: "Warlock Invocation", minLevel: 6, source: "Complete Arcane p.134", benefit: "Eldritch Blast soğuk hasarına dönüşür ve hedefe -4 DEX penaltısı verir (Eldritch Essence)." },
+      { name: "Flee the Scene", tier: "Lesser", category: "Warlock Invocation", minLevel: 6, source: "Complete Arcane p.134", benefit: "Kısa menzilli Dimension Door ışınlanması yapar ve geride 1 turluk illüzyon kuklası bırakır." },
+      { name: "Walk Unseen", tier: "Lesser", category: "Warlock Invocation", minLevel: 6, source: "Complete Arcane p.135", benefit: "24 saat boyunca Invisibility (Görünmezlik) kazanır; saldırana kadar sürer." },
+      { name: "Voracious Dispelling", tier: "Lesser", category: "Warlock Invocation", minLevel: 6, source: "Complete Arcane p.135", benefit: "Dispel Magic atar; bozduğu her büyü seviyesi başına hedefe 1 hasar verir." },
+      { name: "Charm", tier: "Lesser", category: "Warlock Invocation", minLevel: 6, source: "Complete Arcane p.133", benefit: "Charm Monster büyüsü gibi tek bir hedefi büyüler (Will Save DC CHA mod)." },
+      { name: "Curse of Despair", tier: "Lesser", category: "Warlock Invocation", minLevel: 6, source: "Complete Arcane p.133", benefit: "Bestow Curse gibi dokunmayla lanetler veya menzilli saldırıyla -3 saldırı penaltısı verir." },
+
+      // Greater (Level 11+)
+      { name: "Vitriolic Blast", tier: "Greater", category: "Warlock Invocation", minLevel: 11, source: "Complete Arcane p.135", benefit: "Eldritch Blast asit hasarına dönüşür, SR'ı tamamen yok sayar ve devam hasarı verir." },
+      { name: "Eldritch Cone", tier: "Greater", category: "Warlock Invocation", minLevel: 11, source: "Complete Arcane p.134", benefit: "Eldritch Blast 30 ft'lik koni alan etkisine dönüşür (Reflex DC yarısı)." },
+      { name: "Chilling Tentacles", tier: "Greater", category: "Warlock Invocation", minLevel: 11, source: "Complete Arcane p.133", benefit: "Evard's Black Tentacles gibi kollar çıkarır + her tur alandakilere 2d6 soğuk hasarı verir." },
+      { name: "Devour Magic", tier: "Greater", category: "Warlock Invocation", minLevel: 11, source: "Complete Arcane p.133", benefit: "Dokunmayla Greater Dispel Magic; bozduğu büyü seviyesi başına 5 geçici can puanı kazanır." },
+      { name: "Noxious Blast", tier: "Greater", category: "Warlock Invocation", minLevel: 11, source: "Complete Arcane p.134", benefit: "Eldritch Blast vurduğu hedefi 1 dakika boyunca mide bulantısı (Nauseated) yapar (Fort Save)." },
+      { name: "Repelling Blast", tier: "Greater", category: "Warlock Invocation", minLevel: 11, source: "Complete Arcane p.135", benefit: "Eldritch Blast vurduğu hedefleri 1d6x5 ft geriye fırlatır (Reflex Save)." },
+      { name: "Wall of Perilous Flame", tier: "Greater", category: "Warlock Invocation", minLevel: 11, source: "Complete Arcane p.135", benefit: "Wall of Fire duvarı yaratır; hasarın yarısı büyüsel ateş olduğu için dirençleri aşar." },
+
+      // Dark (Level 16+)
+      { name: "Eldritch Doom", tier: "Dark", category: "Warlock Invocation", minLevel: 16, source: "Complete Arcane p.134", benefit: "Eldritch Blast etrafında 20 ft yarıçaplı patlamaya dönüşür (Reflex Save yarısı)." },
+      { name: "Utterdark Blast", tier: "Dark", category: "Warlock Invocation", minLevel: 16, source: "Complete Arcane p.135", benefit: "Eldritch Blast negatif enerji hasarına dönüşür ve hedefe 2 negatif seviye verir." },
+      { name: "Dark Foresight", tier: "Dark", category: "Warlock Invocation", minLevel: 16, source: "Complete Arcane p.133", benefit: "24 saat boyunca Foresight büyüsü: Asla şaşırmaz, AC ve Reflex'e +2 insight bonusu." },
+      { name: "Dark Discorporation", tier: "Dark", category: "Warlock Invocation", minLevel: 16, source: "Complete Arcane p.133", benefit: "Gölge yarasa sürüsüne dönüşür; uçma hızı, fiziksel bağışıklık, %50 alan hasarı azaltma." },
+      { name: "Retributive Phantasm", tier: "Dark", category: "Warlock Invocation", minLevel: 16, source: "Complete Mage p.124", benefit: "Saldırgana anında Phantasmal Killer illüzyonel ölümcül korkusu fırlatır." }
+    ];
+
+    function isWarlockInvocationLevel(level) {
+      const l = Number(level);
+      return [1, 2, 4, 6, 8, 10, 11, 13, 16, 18, 20].includes(l);
+    }
+
+    function getWarlockMaxTierForLevel(level) {
+      const l = Number(level);
+      if (l >= 16) return 'Dark';
+      if (l >= 11) return 'Greater';
+      if (l >= 6) return 'Lesser';
+      return 'Least';
+    }
+
     function isLevelQualifiesForFeat(level, mode) {
       if (mode === 'Every 2 Levels (1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)') {
         return level === 1 || (level % 2 === 0);
@@ -11373,8 +11432,14 @@
       const sel = document.getElementById('setting-cl-mode');
       if (sel) {
         character.settings.clMode = sel.value;
+        const isBoon = sel.value === 'Character Level (DM Boon)' || sel.value.includes('Warlock Boon');
+        if (sel.value.includes('Warlock Boon')) {
+          character.settings.warlockBoon = true;
+        } else {
+          character.settings.warlockBoon = false;
+        }
         if (character.spellcasting) {
-          if (sel.value === 'Character Level (DM Boon)') {
+          if (isBoon) {
             character.spellcasting.cl = Number(character.level) || 6;
           } else {
             const prog = character.levelProgression || [];
@@ -11952,6 +12017,14 @@
           }
         }
       });
+      if (typeof DND35_WARLOCK_INVOCATIONS !== 'undefined') {
+        DND35_WARLOCK_INVOCATIONS.forEach(inv => {
+          map.set(inv.name.toLowerCase(), {
+            ...inv,
+            category: 'Warlock Invocation'
+          });
+        });
+      }
       return Array.from(map.values());
     }
 
@@ -12288,12 +12361,22 @@
       } else if (catVal === 'Special Ability') {
         filtered = filtered.filter(f => f.category === 'Special Ability');
         if (filtered.length === 0) filtered = catalog.filter(f => !f.name.includes('↳'));
+      } else if (catVal === 'Warlock Invocation') {
+        const lvlObj = (activeQuickLevelIndex !== null && character.levelProgression) ? character.levelProgression[activeQuickLevelIndex] : null;
+        const lvlNum = lvlObj ? lvlObj.level : (character.level || 6);
+        const maxTier = (typeof getWarlockMaxTierForLevel === 'function') ? getWarlockMaxTierForLevel(lvlNum) : 'Least';
+        const tierHierarchy = ['Least', 'Lesser', 'Greater', 'Dark'];
+        const maxIdx = tierHierarchy.indexOf(maxTier);
+        filtered = (typeof DND35_WARLOCK_INVOCATIONS !== 'undefined') ? DND35_WARLOCK_INVOCATIONS.filter(inv => {
+          const invIdx = tierHierarchy.indexOf(inv.tier);
+          return invIdx !== -1 && invIdx <= maxIdx;
+        }) : [];
       }
 
       filtered.forEach(f => {
         const opt = document.createElement('option');
         opt.value = f.name;
-        opt.textContent = `${f.name} [${f.category || 'General'}]`;
+        opt.textContent = `${f.name} [${f.tier ? f.tier + ' Invocation' : (f.category || 'General')}]`;
         sel.appendChild(opt);
       });
     }
@@ -12354,6 +12437,7 @@
       else if (category === 'Flaw') prefix = '⚠️ [Flaw] ';
       else if (category === 'Racial Trait') prefix = '🧬 [Racial] ';
       else if (category === 'Special Ability') prefix = '✨ ';
+      else if (category === 'Warlock Invocation') prefix = '🔮 [Invocation] ';
       else prefix = '🎖️ ';
 
       const formattedName = `${prefix}${featName}`;
@@ -12367,6 +12451,26 @@
             category: 'Special Ability',
             benefit: benefit,
             source: `Level ${row.level} (${row.className})`
+          });
+        }
+      } else if (category === 'Warlock Invocation') {
+        row.feats.push(formattedName);
+        if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
+        if (!character.specialAbilities.some(a => (typeof a === 'string' ? a : a.name).toLowerCase().trim() === featName.toLowerCase())) {
+          character.specialAbilities.push({
+            name: `${featName} (Invocation)`,
+            category: 'Warlock Invocation',
+            benefit: benefit,
+            source: `Level ${row.level} (Warlock Boon)`
+          });
+        }
+        if (!Array.isArray(character.feats)) character.feats = [];
+        if (!character.feats.some(f => (typeof f === 'string' ? f : f.name).toLowerCase().trim() === featName.toLowerCase())) {
+          character.feats.push({
+            name: featName,
+            category: 'Warlock Invocation',
+            benefit: benefit,
+            source: `Level ${row.level} (Warlock Boon)`
           });
         }
       } else {
@@ -14514,63 +14618,25 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           statBadgeItem = `<button type="button" onclick="openStatPickerForLevel(${idx})" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-sky-950/90 hover:bg-sky-900 active:scale-95 text-sky-300 hover:text-white border border-dashed border-sky-500 shadow-sm animate-pulse transition text-left leading-none shrink-0 cursor-pointer" title="Seviye ${lvl.level} için +1 Yetenek Skoru (Stat) seçin"><span>💪</span><span>+ Stat Seç (+1)</span></button>`;
         }
 
-        // Filtered chosen feats for display
-        const chosenFeats = (lvl.feats || []).filter(f => {
-          const s = String(f);
-          return !s.includes('+1 Stat') && !s.includes('Stat:') && !s.includes('Caster Lvl') && !s.includes('+1 Primary CL');
-        });
-
-        // Feat Badges (stacked vertically, with rich RAW tooltips on hover)
-        const featBadgeItems = (chosenFeats || []).map(fStr => {
+        // Filtered and partitioned feats for 3-column split (Regular Feats vs Bonus / Boons / Invocations)
+        const regularFeats = [];
+        const bonusFeats = [];
+        (lvl.feats || []).forEach(fStr => {
           const str = String(fStr);
-          const rawName = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
-          const safeF = rawName.replace(/'/g, "\\'");
-          const tip = getFeatTooltipText(fStr);
-          const safeTip = tip.replace(/"/g, '&quot;');
-          if (str.includes('[DM Boon]') || str.includes('Boon') || str.includes('DM Grant')) {
-            return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-amber-950/80 hover:bg-amber-900 text-amber-300 border border-amber-600/70 shadow-sm transition text-left leading-none shrink-0"><span>🌟</span><span>${str}</span></button>`;
-          } else if (str.includes('Caster Lvl') || str.includes('+1 Primary CL') || str.includes('🔮')) {
-            return `<span title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-purple-950/80 text-purple-300 border border-purple-600/70 shadow-sm text-left leading-none shrink-0"><span>🔮</span><span>${str}</span></span>`;
-          } else if (str.includes('+1 Stat') || str.includes('Stat:')) {
-            return `<span title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-sky-950/80 text-sky-300 border border-sky-600/70 shadow-sm text-left leading-none shrink-0"><span>💪</span><span>${str}</span></span>`;
-          } else if (str.includes('[Flaw]') || str.includes('Flaw:')) {
-            return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-600/70 shadow-sm transition text-left leading-none shrink-0"><span>⚠️</span><span>${str}</span></button>`;
-          } else if (str.includes('[Bonus]') || str.includes('Bonus')) {
-            return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border border-indigo-600/70 shadow-sm transition text-left leading-none shrink-0"><span>⚔️</span><span>${str}</span></button>`;
-          } else if (str.includes('[Racial]')) {
-            return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-teal-950/80 hover:bg-teal-900 text-teal-300 border border-teal-600/70 shadow-sm transition text-left leading-none shrink-0"><span>🧬</span><span>${str}</span></button>`;
+          if (str.includes('+1 Stat') || str.includes('Stat:')) return; // handled by statBadgeItem
+          if (str.includes('[DM Boon]') || str.includes('Boon') || str.includes('DM Grant') ||
+              str.includes('[Bonus]') || str.includes('Bonus') ||
+              str.includes('[Flaw]') || str.includes('Flaw:') ||
+              str.includes('[Racial]') ||
+              str.includes('[Invocation]') || str.includes('Invocation') ||
+              str.includes('Caster Lvl') || str.includes('+1 Primary CL') || str.includes('🔮')) {
+            bonusFeats.push(fStr);
           } else {
-            return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-600/70 shadow-sm transition text-left leading-none shrink-0"><span>🎖️</span><span>${str}</span></button>`;
+            regularFeats.push(fStr);
           }
         });
 
-        // Check if level qualifies for feat or bonus feat
-        const featMode = character.settings?.featMode || 'Standard 3.5e (1, 3, 6, 9, 12, 15, 18)';
-        const qualifiesForRegularFeat = isLevelQualifiesForFeat(lvl.level, featMode);
-        const qualifiesForHumanBonus = (lvl.level === 1 && isHuman);
-
-        let classLevelSoFar = 0;
-        for (let i = 0; i <= idx; i++) {
-          if (prog[i].className === lvl.className) classLevelSoFar++;
-        }
-        const classFeats = (typeof RuleEngine !== 'undefined' && RuleEngine.getClassLevelFeatures)
-          ? RuleEngine.getClassLevelFeatures(lvl.className, classLevelSoFar)
-          : { hasBonusFeat: false };
-        const qualifiesForClassBonus = classFeats.hasBonusFeat;
-
-        const pendingButtons = [];
-        if (qualifiesForClassBonus && !chosenFeats.some(f => String(f).includes('[Bonus]') || String(f).toLowerCase().includes('bonus'))) {
-          pendingButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Class Bonus Feat')" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-amber-950/90 hover:bg-amber-900 text-amber-300 border border-dashed border-amber-500 shadow-sm animate-pulse transition text-left leading-none shrink-0" title="Bu seviye için Sınıf Bonus Feati seçin"><span>⚔️</span><span>+ Bonus Feat Seç</span></button>`);
-        }
-        if (qualifiesForRegularFeat && chosenFeats.length === 0) {
-          pendingButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Regular Feat')" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-purple-950/90 hover:bg-purple-900 text-purple-300 border border-dashed border-purple-500 shadow-sm animate-pulse transition text-left leading-none shrink-0" title="Bu seviye için Normal Feat seçin"><span>🎖️</span><span>+ Feat Seç</span></button>`);
-        } else if (qualifiesForHumanBonus && chosenFeats.length <= (qualifiesForRegularFeat ? 1 : 0)) {
-          pendingButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Regular Feat')" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-teal-950/90 hover:bg-teal-900 text-teal-300 border border-dashed border-teal-500 shadow-sm animate-pulse transition text-left leading-none shrink-0" title="İnsan ırksal bonus feati seçin"><span>🧬</span><span>+ Irk Feati Seç</span></button>`);
-        }
-
-        const inlineAddFeatBtn = `<button onclick="openQuickFeatPickerForLevel(${idx}, 'Regular Feat')" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700/80 transition leading-none shrink-0" title="Bu seviyeye serbest Bonus Feat, DM Lütfu veya Kusur ekle"><span>➕</span><span>Bonus Feat</span></button>`;
-
-        // Special Abilities Badges (stacked vertically, with rich RAW tooltips on hover)
+        // 1. Sınıf Özellikleri badges
         const abilityBadgeItems = (lvl.specialAbilities || []).map(aStr => {
           const str = String(aStr);
           const rawName = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
@@ -14580,7 +14646,77 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           return `<button onclick="showFeatDetail('${safeA}', ${idx}, 'ability')" title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-sky-950/80 hover:bg-sky-900 text-sky-300 border border-sky-600/70 shadow-sm transition text-left leading-none shrink-0"><span>✨</span><span>${str}</span></button>`;
         });
 
-        const inlineAddAbilityBtn = `<button onclick="openQuickAbilityPickerForLevel(${idx})" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700/80 transition leading-none shrink-0" title="Bu seviyeye serbest sınıf özelliği veya özel yetenek ekle"><span>➕</span><span>Özel Yetenek</span></button>`;
+        // 2. Beceriler (Regular Feats) badges
+        const regularFeatBadgeItems = regularFeats.map(fStr => {
+          const str = String(fStr);
+          const rawName = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
+          const safeF = rawName.replace(/'/g, "\\'");
+          const tip = getFeatTooltipText(fStr);
+          const safeTip = tip.replace(/"/g, '&quot;');
+          return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-600/70 shadow-sm transition text-left leading-none shrink-0"><span>🎖️</span><span>${str}</span></button>`;
+        });
+
+        // Check regular feat eligibility
+        const featMode = character.settings?.featMode || 'Standard 3.5e (1, 3, 6, 9, 12, 15, 18)';
+        const qualifiesForRegularFeat = isLevelQualifiesForFeat(lvl.level, featMode);
+        const regularPromptButtons = [];
+        if (qualifiesForRegularFeat && regularFeats.length === 0) {
+          regularPromptButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Regular Feat')" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-purple-950/90 hover:bg-purple-900 text-purple-300 border border-dashed border-purple-500 shadow-sm animate-pulse transition text-left leading-none shrink-0" title="Bu seviye için Normal Feat seçin"><span>🎖️</span><span>+ Feat Seç</span></button>`);
+        }
+
+        // 3. Bonus badges (DM Boons, Invocations, Flaws, Class Bonus, Racial, CL Boons)
+        const bonusFeatBadgeItems = bonusFeats.map(fStr => {
+          const str = String(fStr);
+          const rawName = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
+          const safeF = rawName.replace(/'/g, "\\'");
+          const tip = getFeatTooltipText(fStr);
+          const safeTip = tip.replace(/"/g, '&quot;');
+          if (str.includes('[DM Boon]') || str.includes('Boon') || str.includes('DM Grant')) {
+            return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-amber-950/80 hover:bg-amber-900 text-amber-300 border border-amber-600/70 shadow-sm transition text-left leading-none shrink-0"><span>🌟</span><span>${str}</span></button>`;
+          } else if (str.includes('[Invocation]') || str.includes('Invocation') || str.includes('🔮')) {
+            return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-purple-950/80 hover:bg-purple-900 text-purple-300 border border-purple-600/70 shadow-sm transition text-left leading-none shrink-0"><span>🔮</span><span>${str}</span></button>`;
+          } else if (str.includes('[Flaw]') || str.includes('Flaw:')) {
+            return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-600/70 shadow-sm transition text-left leading-none shrink-0"><span>⚠️</span><span>${str}</span></button>`;
+          } else if (str.includes('[Bonus]') || str.includes('Bonus')) {
+            return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border border-indigo-600/70 shadow-sm transition text-left leading-none shrink-0"><span>⚔️</span><span>${str}</span></button>`;
+          } else if (str.includes('[Racial]')) {
+            return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-teal-950/80 hover:bg-teal-900 text-teal-300 border border-teal-600/70 shadow-sm transition text-left leading-none shrink-0"><span>🧬</span><span>${str}</span></button>`;
+          } else {
+            return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-amber-950/80 hover:bg-amber-900 text-amber-300 border border-amber-600/70 shadow-sm transition text-left leading-none shrink-0"><span>🌟</span><span>${str}</span></button>`;
+          }
+        });
+
+        // Check class bonus feat & racial bonus eligibility
+        let classLevelSoFar = 0;
+        for (let i = 0; i <= idx; i++) {
+          if (prog[i].className === lvl.className) classLevelSoFar++;
+        }
+        const classFeats = (typeof RuleEngine !== 'undefined' && RuleEngine.getClassLevelFeatures)
+          ? RuleEngine.getClassLevelFeatures(lvl.className, classLevelSoFar)
+          : { hasBonusFeat: false };
+        const qualifiesForClassBonus = classFeats.hasBonusFeat;
+        const qualifiesForHumanBonus = (lvl.level === 1 && isHuman);
+
+        const pendingBonusButtons = [];
+        if (qualifiesForClassBonus && !bonusFeats.some(f => String(f).includes('[Bonus]') || String(f).toLowerCase().includes('bonus'))) {
+          pendingBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Class Bonus Feat')" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-amber-950/90 hover:bg-amber-900 text-amber-300 border border-dashed border-amber-500 shadow-sm animate-pulse transition text-left leading-none shrink-0" title="Bu seviye için Sınıf Bonus Feati seçin"><span>⚔️</span><span>+ Bonus Feat Seç</span></button>`);
+        }
+        if (qualifiesForHumanBonus && !bonusFeats.some(f => String(f).includes('[Racial]'))) {
+          pendingBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Racial Trait')" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-teal-950/90 hover:bg-teal-900 text-teal-300 border border-dashed border-teal-500 shadow-sm animate-pulse transition text-left leading-none shrink-0" title="İnsan ırksal bonus feati seçin"><span>🧬</span><span>+ Irk Feati Seç</span></button>`);
+        }
+
+        // Warlock Boon Invocation Progression Check (Complete Arcane p.7)
+        const isWarlockBoon = character.settings?.warlockBoon || 
+          (character.settings?.clMode && String(character.settings.clMode).includes('Warlock Boon')) ||
+          (character.boons && character.boons.some(b => String(b.name || b).toLowerCase().includes('warlock')));
+        
+        if (isWarlockBoon && typeof isWarlockInvocationLevel === 'function' && isWarlockInvocationLevel(lvl.level)) {
+          const hasInvocation = bonusFeats.some(f => String(f).includes('[Invocation]') || String(f).toLowerCase().includes('invocation'));
+          if (!hasInvocation) {
+            const tier = (typeof getWarlockMaxTierForLevel === 'function') ? getWarlockMaxTierForLevel(lvl.level) : 'Least';
+            pendingBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Warlock Invocation')" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-purple-950/90 hover:bg-purple-900 text-purple-300 border border-dashed border-purple-500 shadow-sm animate-pulse transition text-left leading-none shrink-0" title="Seviye ${lvl.level} Warlock Yakarışı (${tier} Invocation) seçin"><span>🔮</span><span>+ Invocation Seç (${tier})</span></button>`);
+          }
+        }
 
         // Sequential progression check for checkbox:
         let canActivate = true;
@@ -14656,20 +14792,24 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           </td>
           <td class="pt-2.5 pb-2.5 px-3 font-sans align-top">
             <div class="flex flex-col gap-1.5 items-start">
-              ${abilityBadgeItems.join('')}
-              ${inlineAddAbilityBtn}
+              ${abilityBadgeItems.length > 0 ? abilityBadgeItems.join('') : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
             </div>
           </td>
           <td class="pt-2.5 pb-2.5 px-3 font-sans align-top">
             <div class="flex flex-col gap-1.5 items-start">
-              ${statBadgeItem ? statBadgeItem : ''}
-              ${featBadgeItems.join('')}
-              ${pendingButtons.join('')}
-              ${inlineAddFeatBtn}
+              ${(regularFeatBadgeItems.length > 0 || regularPromptButtons.length > 0) ? (regularFeatBadgeItems.join('') + regularPromptButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
+            </div>
+          </td>
+          <td class="pt-2.5 pb-2.5 px-3 font-sans align-top">
+            <div class="flex flex-col gap-1.5 items-start">
+              ${(statBadgeItem || bonusFeatBadgeItems.length > 0 || pendingBonusButtons.length > 0) ? ((statBadgeItem || '') + bonusFeatBadgeItems.join('') + pendingBonusButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
             </div>
           </td>
           <td class="pt-2.5 pb-2.5 px-2 align-top text-center">
             <div class="h-6 flex items-center justify-center gap-1">
+              <button onclick="openQuickFeatPickerForLevel(${idx})" class="text-emerald-400 hover:text-emerald-300 p-0.5 text-xs transition font-bold" title="Bu seviyeye Feat, Yetenek, Invocation veya Bonus Ekle">
+                ➕
+              </button>
               <button onclick="openChangeLevelClassModal(${idx})" class="text-slate-400 hover:text-amber-400 p-0.5 text-xs transition" title="Bu seviyenin sınıf ve statını düzenle">
                 ✏️
               </button>
