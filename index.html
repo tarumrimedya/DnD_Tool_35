@@ -574,8 +574,8 @@
               </div>
               <div>
                 <div class="flex items-center gap-2">
-                  <h3 id="spells-cockpit-class-title" class="font-extrabold text-white text-sm md:text-base">Sorcerer Büyü Komuta Merkezi</h3>
-                  <span id="spells-cockpit-type-badge" class="badge bg-purple-950 text-purple-300 border border-purple-700 text-[10px] font-bold">Doğal / Anlık</span>
+                  <h3 id="spells-cockpit-class-title" class="font-extrabold text-white text-sm md:text-base">Doğal / Anlık Büyüler</h3>
+                  <span id="spells-cockpit-type-badge" class="badge bg-purple-950 text-purple-300 border border-purple-700 text-[10px] font-bold">Sorcerer</span>
                 </div>
                 <p id="spells-hud-subtitle" class="text-[11px] text-purple-300">CL: 6 (DM Boon: Karakter Seviyesi) • Stat Mod: +6 (CHA: 22) • Base + 24H Ekipman Bonusu Dahil</p>
               </div>
@@ -699,7 +699,7 @@
               </div>
               <div>
                 <div class="flex items-center gap-2">
-                  <h3 id="maneuvers-cockpit-class-title" class="font-extrabold text-white text-sm md:text-base">Warblade Savaş Sanatı</h3>
+                  <h3 id="maneuvers-cockpit-class-title" class="font-extrabold text-white text-sm md:text-base">Savaş Manevraları & Duruşlar</h3>
                   <span id="maneuvers-adept-badge" class="badge bg-rose-950 text-rose-300 border border-rose-700 text-[10px] font-bold">Tome of Battle</span>
                 </div>
                 <p id="maneuvers-hud-subtitle" class="text-[11px] text-rose-300">IL: 3 • Maks Manevra: 2. Seviye • İnisiasyon Havuzu</p>
@@ -10076,12 +10076,11 @@
       renderDivineDisciplineView(classesStatus.hasDivine);
 
       const titleEl = document.getElementById('spells-cockpit-class-title');
-      if (titleEl) titleEl.textContent = `${primaryClass} Büyü Komuta Merkezi`;
+      if (titleEl) titleEl.textContent = 'Doğal / Anlık Büyüler';
 
       const typeBadge = document.getElementById('spells-cockpit-type-badge');
       if (typeBadge) {
-        const isSpontaneous = ['Sorcerer', 'Bard', 'Favored Soul'].includes(primaryClass);
-        typeBadge.textContent = isSpontaneous ? 'Doğal / Anlık' : 'Prepared';
+        typeBadge.textContent = primaryClass || 'Sorcerer';
       }
 
       const subEl = document.getElementById('spells-hud-subtitle');
