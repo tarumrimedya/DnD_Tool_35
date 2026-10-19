@@ -588,8 +588,8 @@
               <span class="text-slate-400 text-[10px]">Büyü atıldığında ilgili seviyedeki slot otomatik düşer</span>
             </div>
             
-            <!-- Dynamic Compact Slot Capsules Container (Eşit Boyutlu Hücreler) -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 w-full" id="compact-spell-slots-grid">
+            <!-- Dynamic Compact Slot Capsules Container (4x3 Sabit Matris - 0'dan 11'e 12 Hücre) -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full" id="compact-spell-slots-grid">
               <!-- Rendered dynamically -->
             </div>
           </div>
@@ -10334,29 +10334,56 @@
       const slots = character?.spellcasting?.slots || [];
       const { statKey, statMod } = getCasterInfo();
 
-      slots.forEach((s, idx) => {
-        const remaining = s.daily - s.used;
-        const dc = getSpellDc(s.level);
+      for (let lvl = 0; lvl <= 11; lvl++) {
+        const s = slots.find(item => Number(item.level) === lvl);
+        const isUnlocked = Boolean(s && s.daily > 0);
+        const remaining = isUnlocked ? (s.daily - s.used) : 0;
+        const dc = getSpellDc(lvl);
+        const lvlLabel = lvl === 0 ? '0 (Cantrip)' : (lvl >= 10 ? `${lvl}. Seviye (Epic)` : `${lvl}. Seviye`);
         const div = document.createElement('div');
-        div.className = 'flex items-center justify-between bg-slate-900/90 border border-purple-800/60 hover:border-purple-600 rounded-xl px-3.5 py-2.5 shadow-sm transition w-full';
-        div.innerHTML = `
-          <div class="flex flex-col min-w-0">
-            <div class="flex items-center gap-1.5 flex-wrap">
-              <span class="font-extrabold text-white text-xs whitespace-nowrap">${s.level === 0 ? '0 (Cantrip)' : s.level + '. Seviye'}</span>
-              <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-purple-950/90 text-emerald-400 border border-purple-700/60 font-bold whitespace-nowrap" title="Save DC = 10 + ${s.level} + ${statKey}(+${statMod})">DC ${dc}</span>
+
+        if (isUnlocked) {
+          div.className = 'flex items-center justify-between bg-slate-900/90 border border-purple-800/60 hover:border-purple-600 rounded-xl px-3 py-2 shadow-sm transition w-full';
+          div.innerHTML = `
+            <div class="flex flex-col min-w-0">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="font-extrabold text-white text-xs whitespace-nowrap">${lvlLabel}</span>
+                <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-purple-950/90 text-emerald-400 border border-purple-700/60 font-bold whitespace-nowrap" title="Save DC = 10 + ${lvl} + ${statKey}(+${statMod})">DC ${dc}</span>
+              </div>
+              <span class="text-[10px] text-purple-300 font-mono mt-0.5">${s.known ? s.known + ' Bilinen' : (lvl === 0 ? '6 Bilinen' : 'Epic / Metamagic')}</span>
             </div>
-            <span class="text-[10px] text-purple-300 font-mono mt-0.5">${s.known ? s.known + ' Bilinen' : (s.level === 0 ? '6 Bilinen' : '')}</span>
-          </div>
 
-          <div class="h-7 w-px bg-slate-800 mx-2 shrink-0"></div>
+            <div class="h-7 w-px bg-slate-800 mx-1.5 shrink-0"></div>
 
-          <div class="flex flex-col items-end shrink-0">
-            <span class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Kalan Slot</span>
-            <span class="text-sm font-black font-mono ${remaining > 0 ? 'text-emerald-400' : 'text-rose-500'} whitespace-nowrap">${remaining} / ${s.daily}</span>
-          </div>
-        `;
+            <div class="flex flex-col items-end shrink-0">
+              <span class="text-[9px] text-slate-400 uppercase tracking-wider font-semibold">Kalan Slot</span>
+              <span class="text-xs sm:text-sm font-black font-mono ${remaining > 0 ? 'text-emerald-400' : 'text-rose-500'} whitespace-nowrap">${remaining} / ${s.daily}</span>
+            </div>
+          `;
+        } else {
+          const reqClText = lvl >= 10 ? 'Epic (CL 21+)' : `CL ${lvl * 2}+`;
+          div.className = 'flex items-center justify-between bg-slate-950/50 border border-slate-800/70 rounded-xl px-3 py-2 opacity-50 select-none transition w-full';
+          div.title = `${lvlLabel} henüz kilitli (${reqClText} gerekir)`;
+          div.innerHTML = `
+            <div class="flex flex-col min-w-0">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="font-bold text-slate-500 text-xs whitespace-nowrap">${lvlLabel}</span>
+                <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-900 text-slate-500 border border-slate-800 font-bold whitespace-nowrap" title="Save DC = 10 + ${lvl} + ${statKey}(+${statMod})">DC ${dc}</span>
+              </div>
+              <span class="text-[10px] text-slate-600 font-mono mt-0.5">🔒 Kilitli (${reqClText})</span>
+            </div>
+
+            <div class="h-7 w-px bg-slate-800/60 mx-1.5 shrink-0"></div>
+
+            <div class="flex flex-col items-end shrink-0">
+              <span class="text-[9px] text-slate-600 uppercase tracking-wider font-semibold">Kalan Slot</span>
+              <span class="text-xs sm:text-sm font-black font-mono text-slate-600 whitespace-nowrap">🔒 0 / 0</span>
+            </div>
+          `;
+        }
+
         container.appendChild(div);
-      });
+      }
     }
 
     function useSpellSlot(idx) {
