@@ -687,15 +687,17 @@
                 ⚔️
               </div>
               <div>
-                <div class="flex items-center gap-2">
+                <div class="flex flex-wrap items-center gap-2">
                   <h3 id="maneuvers-cockpit-class-title" class="font-extrabold text-white text-sm md:text-base">Savaş Manevraları & Duruşlar</h3>
-                  <span id="maneuvers-adept-badge" class="badge bg-rose-950 text-rose-300 border border-rose-700 text-[10px] font-bold">Tome of Battle</span>
+                  <span id="maneuvers-adept-badge" class="badge bg-rose-950 text-rose-300 border border-rose-700 text-[10px] font-bold">Warblade</span>
+                  <span id="maneuvers-il-badge" class="badge bg-amber-950/90 text-amber-300 border border-amber-500/80 text-xs font-extrabold px-2.5 py-0.5 font-mono shadow-sm" title="Initiator Level = Martial Sınıf Seviyesi + (Diğer Sınıflar / 2)">IL: 7</span>
+                  <span id="maneuvers-maxlvl-badge" class="badge bg-teal-950/90 text-teal-300 border border-teal-600/80 text-[10px] font-bold font-mono" title="Erişilebilir Maksimum Manevra Seviyesi">Maks: 4. Seviye</span>
                 </div>
-                <p id="maneuvers-hud-subtitle" class="text-[11px] text-rose-300">IL: 3 • Maks Manevra: 2. Seviye • İnisiasyon Havuzu</p>
+                <p id="maneuvers-hud-subtitle" class="text-[11px] text-rose-300">Tome of Battle: Book of Nine Swords • İnisiasyon Havuzu & Savaş Destesi</p>
               </div>
             </div>
             <div class="flex items-center gap-2">
-              <span id="readied-quota-badge" class="badge bg-slate-950 text-amber-300 border border-amber-600/60 text-xs font-bold font-mono">3 / 3 Kuşanıldı</span>
+              <span id="readied-quota-badge" class="badge bg-slate-950 text-amber-300 border border-amber-600/60 text-xs font-bold font-mono">3 / 3 Hazır</span>
               <button onclick="recoverAllManeuvers()" class="bg-rose-700 hover:bg-rose-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-rose-500/60 shadow transition flex items-center gap-1.5 cursor-pointer" title="Swift Action ile harcanan tüm manevraları tazele">
                 <span>🔄</span>
                 <span>Swift Yenile (Recover)</span>
@@ -730,9 +732,9 @@
                   <span class="text-base">⚡</span>
                   <h3 class="text-xs md:text-sm font-extrabold text-rose-300 uppercase tracking-wide">KUŞANILAN: HAZIR MANEVRA DESTESİ (READIED SLOTS)</h3>
                 </div>
-                <p class="text-[11px] text-slate-400">Savaşta anında kullanıma hazır manevra eliniz. Harcanan manevralar swift action ile yenilenir.</p>
+                <p class="text-[11px] text-slate-400">Savaşta anında kullanıma hazır manevra eliniz. Zar atışı olan manevralarda butona basmak hem manevrayı kullanır hem hasar zarını yuvarlar.</p>
               </div>
-              <span id="readied-maneuvers-counter" class="badge bg-rose-950 text-rose-200 border border-rose-700 text-xs font-bold font-mono">3 / 3 Kuşanıldı</span>
+              <span id="readied-maneuvers-counter" class="badge bg-rose-950 text-rose-200 border border-rose-700 text-xs font-bold font-mono">3 / 3 Hazır</span>
             </div>
 
             <!-- Readied Maneuvers Tactical Cards Grid -->
@@ -742,28 +744,52 @@
           </div>
 
           <!-- Section 2: Havuz: Bilinen Manevralar & Duruşlar Kütüphanesi -->
-          <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-900/60 shadow space-y-0">
-            <div class="bg-slate-950 px-4 py-2.5 text-xs font-bold text-amber-300 flex justify-between items-center border-b border-slate-800">
-              <div class="flex items-center gap-2">
-                <span>📚</span>
-                <span class="uppercase tracking-wider">HAVUZ: BİLİNEN TÜM MANEVRALAR & DURUŞLAR (MANEUVERS KNOWN)</span>
+          <div class="space-y-3">
+            <!-- Search & Filters Bar for Maneuvers -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3">
+              <div class="flex flex-wrap items-center gap-2 flex-1 min-w-[260px]">
+                <div class="relative flex-1 min-w-[180px]">
+                  <input type="text" id="maneuver-filter-search" oninput="renderManeuvers()" placeholder="Manevra veya duruş adı, disiplin, etki ara..." class="w-full bg-slate-950 text-white placeholder-slate-500 text-xs rounded-lg border border-slate-700 px-3 py-1.5 pl-8 focus:outline-none focus:border-rose-500">
+                  <span class="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
+                </div>
+                <select id="maneuver-filter-discipline" onchange="renderManeuvers()" class="bg-slate-950 text-slate-300 text-xs rounded-lg border border-slate-700 px-2.5 py-1.5 focus:outline-none focus:border-rose-500">
+                  <option value="all">Tüm Disiplinler</option>
+                  <option value="Diamond Mind">Diamond Mind</option>
+                  <option value="Iron Heart">Iron Heart</option>
+                  <option value="Stone Dragon">Stone Dragon</option>
+                  <option value="Tiger Claw">Tiger Claw</option>
+                  <option value="White Raven">White Raven</option>
+                  <option value="Shadow Hand">Shadow Hand</option>
+                  <option value="Devoted Spirit">Devoted Spirit</option>
+                  <option value="Desert Wind">Desert Wind</option>
+                  <option value="Setting Sun">Setting Sun</option>
+                </select>
               </div>
-              <span class="text-[11px] text-slate-400 font-normal">Savaşa çıkmadan önce bu havuzdan manevralarınızı seçip kuşanın</span>
+              <div class="flex flex-wrap items-center gap-1" id="maneuver-type-filter-pills">
+                <!-- Dynamically populated -->
+              </div>
             </div>
 
-            <div class="p-3">
+            <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-950/40 shadow">
+              <div class="bg-slate-900/80 px-4 py-2.5 text-xs font-bold text-amber-300 flex justify-between items-center border-b border-slate-800">
+                <div class="flex items-center gap-2">
+                  <span>📚</span>
+                  <span class="uppercase tracking-wider">HAVUZ: BİLİNEN TÜM MANEVRALAR & DURUŞLAR (MANEUVERS & STANCES KNOWN)</span>
+                </div>
+                <span class="text-[11px] text-slate-400 font-normal">Savaşa çıkmadan önce bu havuzdan manevralarınızı seçip kuşanın veya boş slotlara yenisini ekleyin</span>
+              </div>
+
               <!-- Maneuvers Known Table -->
               <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs">
-                  <thead class="bg-slate-950/80 text-slate-400 text-[10px] uppercase font-bold border-b border-slate-800">
+                  <thead class="bg-slate-950 text-slate-400 text-[10px] uppercase font-bold border-b border-slate-800">
                     <tr>
                       <th class="py-2.5 px-3 w-12 text-center">Lvl</th>
-                      <th class="py-2.5 px-3 w-44">Manevra / Duruş Adı</th>
-                      <th class="py-2.5 px-3 w-28">Disiplin</th>
-                      <th class="py-2.5 px-3 w-28">Tür / Eylem</th>
+                      <th class="py-2.5 px-3 w-48">Manevra / Duruş Adı</th>
+                      <th class="py-2.5 px-3 w-32">Disiplin</th>
+                      <th class="py-2.5 px-3 w-32">Tür / Eylem</th>
                       <th class="py-2.5 px-3">Etki & Açıklama</th>
-                      <th class="py-2.5 px-3 text-center w-36">Kuşanma Durumu</th>
-                      <th class="py-2.5 px-3 text-center w-20">İşlem</th>
+                      <th class="py-2.5 px-3 text-right pr-4 w-48">İşlemler</th>
                     </tr>
                   </thead>
                   <tbody id="maneuvers-library-tbody" class="divide-y divide-slate-800 font-medium">
@@ -6056,7 +6082,61 @@
         { name: "Wish", type: "Spell", level: 9, school: "Universal", action: "Standard Action", range: "See text", benefit: "The mightiest mortal spell; alters reality or duplicates any 8th-level or lower Sorc/Wiz spell." },
         { name: "Meteor Swarm", type: "Spell", level: 9, school: "Evocation", action: "Standard Action", range: "Long", damageDice: "24d6", benefit: "Four exploding spheres deal 2d6 bludgeoning + 6d6 fire damage each in 40-ft spreads." },
         { name: "Shapechange", type: "Spell", level: 9, school: "Transmutation", action: "Standard Action", range: "Personal", benefit: "Assume the form and supernatural abilities of any non-unique creature up to 25 HD (free change each round)." },
-        { name: "Mordenkainen's Disjunction", type: "Spell", level: 9, school: "Abjuration", action: "Standard Action", range: "Close", benefit: "Automatically ends all magical effects and disjoins magic items in a 40-ft burst." }
+        { name: "Mordenkainen's Disjunction", type: "Spell", level: 9, school: "Abjuration", action: "Standard Action", range: "Close", benefit: "Automatically ends all magical effects and disjoins magic items in a 40-ft burst." },
+        // Core Divine Spells (Cleric / Druid)
+        { name: "Cure Minor Wounds", type: "Spell", level: 0, school: "Conjuration", action: "Standard Action", range: "Touch", benefit: "Cures 1 point of damage." },
+        { name: "Guidance", type: "Spell", level: 0, school: "Divination", action: "Standard Action", range: "Touch", benefit: "+1 competence bonus on one attack roll, saving throw, or skill check." },
+        { name: "Cure Light Wounds", type: "Spell", level: 1, school: "Conjuration", action: "Standard Action", range: "Touch", damageDice: "1d8+5", benefit: "Cures 1d8 +1/level (max +5) points of damage." },
+        { name: "Bless", type: "Spell", level: 1, school: "Enchantment", action: "Standard Action", range: "50 ft", benefit: "Allies gain +1 morale bonus on attack rolls and saves against fear." },
+        { name: "Divine Favor", type: "Spell", level: 1, school: "Evocation", action: "Standard Action", range: "Personal", benefit: "You gain +1 per three levels (max +3) luck bonus on attack and weapon damage rolls." },
+        { name: "Cure Moderate Wounds", type: "Spell", level: 2, school: "Conjuration", action: "Standard Action", range: "Touch", damageDice: "2d8+10", benefit: "Cures 2d8 +1/level (max +10) points of damage." },
+        { name: "Spiritual Weapon", type: "Spell", level: 2, school: "Evocation", action: "Standard Action", range: "Medium", damageDice: "1d8+4", benefit: "Magical force weapon attacks on its own for 1d8 +1/3 levels force damage." },
+        { name: "Cure Serious Wounds", type: "Spell", level: 3, school: "Conjuration", action: "Standard Action", range: "Touch", damageDice: "3d8+13", benefit: "Cures 3d8 +1/level (max +15) points of damage." },
+        { name: "Prayer", type: "Spell", level: 3, school: "Enchantment", action: "Standard Action", range: "40 ft", benefit: "Allies get +1 luck bonus on most rolls; enemies take -1 penalty." },
+        { name: "Divine Power", type: "Spell", level: 4, school: "Evocation", action: "Standard Action", range: "Personal", benefit: "BAB equals character level, +6 enhancement to STR, and +1 temp HP/level." },
+        { name: "Freedom of Movement", type: "Spell", level: 4, school: "Abjuration", action: "Standard Action", range: "Touch", benefit: "Subject moves and attacks normally despite magic or grapple/paralysis." },
+        { name: "Righteous Might", type: "Spell", level: 5, school: "Transmutation", action: "Standard Action", range: "Personal", benefit: "Your size increases to Large (+4 STR, +2 CON, +2 natural armor, DR/evil or good)." },
+        { name: "Flame Strike", type: "Spell", level: 5, school: "Evocation", action: "Standard Action", range: "Medium", damageDice: "13d6", benefit: "Vertical column of divine fire deals 1d6/level (max 15d6) damage (half fire, half divine)." },
+        { name: "Heal", type: "Spell", level: 6, school: "Conjuration", action: "Standard Action", range: "Touch", benefit: "Cures 10 points/level of damage (max 150) and removes nearly all adverse conditions." },
+        { name: "Holy Word", type: "Spell", level: 7, school: "Evocation", action: "Standard Action", range: "40 ft", benefit: "Deafens, blinds, paralyzes, or kills non-good creatures depending on HD vs Caster Level." },
+        { name: "Fire Storm", type: "Spell", level: 8, school: "Evocation", action: "Standard Action", range: "Medium", damageDice: "15d6", benefit: "Deals 1d6/level (max 20d6) fire damage in two 10-ft cubes per level." },
+        { name: "Miracle", type: "Spell", level: 9, school: "Evocation", action: "Standard Action", range: "See text", benefit: "Requests direct deity intervention; duplicates any Cleric spell up to 8th or other spell up to 7th." },
+        // Tome of Battle Maneuvers (Levels 1-9)
+        { name: "Steel Wind", type: "Maneuver", level: 1, discipline: "Iron Heart", action: "Standard Action", benefit: "Strike: Make melee attacks against two adjacent opponents you threaten." },
+        { name: "Steely Strike", type: "Maneuver", level: 1, discipline: "Iron Heart", action: "Standard Action", benefit: "Strike: +4 bonus on single melee attack roll; opponents get +4 to hit you until next turn." },
+        { name: "Moment of Perfect Mind", type: "Maneuver", level: 1, discipline: "Diamond Mind", action: "Immediate Action", benefit: "Counter: Use a Concentration check in place of a Will save." },
+        { name: "Sapphire Nightmare Blade", type: "Maneuver", level: 1, discipline: "Diamond Mind", action: "Standard Action", damageDice: "1d6", benefit: "Strike: Concentration check vs AC; target is flat-footed and takes +1d6 damage." },
+        { name: "Sudden Leap", type: "Maneuver", level: 1, discipline: "Tiger Claw", action: "Swift Action", benefit: "Boost: Make a Jump check and move the distance as a swift action." },
+        { name: "Mountain Hammer", type: "Maneuver", level: 2, discipline: "Stone Dragon", action: "Standard Action", damageDice: "2d6", benefit: "Strike: Deals +2d6 damage and automatically overcomes all DR and hardness." },
+        { name: "Wall of Blades", type: "Maneuver", level: 2, discipline: "Iron Heart", action: "Immediate Action", benefit: "Counter: Replace your AC with an attack roll against a single melee or ranged attack." },
+        { name: "Emerald Razor", type: "Maneuver", level: 2, discipline: "Diamond Mind", action: "Standard Action", benefit: "Strike: Make a single melee attack as a touch attack." },
+        { name: "Action Before Thought", type: "Maneuver", level: 2, discipline: "Diamond Mind", action: "Immediate Action", benefit: "Counter: Use a Concentration check in place of a Reflex save." },
+        { name: "Rabid Wolf Strike", type: "Maneuver", level: 2, discipline: "Tiger Claw", action: "Standard Action", damageDice: "2d6", benefit: "Strike: +4 attack and +2d6 damage, -4 AC for 1 round." },
+        { name: "Iron Heart Surge", type: "Maneuver", level: 3, discipline: "Iron Heart", action: "Standard Action", benefit: "Immediately end one spell, effect, or condition with duration of 1+ rounds, and gain +2 morale on attacks for 1 round." },
+        { name: "White Raven Tactics", type: "Maneuver", level: 3, discipline: "White Raven", action: "Swift Action", benefit: "Boost: Adjacent ally's initiative changes to your initiative -1, allowing them to act immediately." },
+        { name: "Mind Over Body", type: "Maneuver", level: 3, discipline: "Diamond Mind", action: "Immediate Action", benefit: "Counter: Use a Concentration check in place of a Fortitude save." },
+        { name: "Insightful Strike", type: "Maneuver", level: 3, discipline: "Diamond Mind", action: "Standard Action", benefit: "Strike: Make a Concentration check; your melee attack deals damage equal to the check result." },
+        { name: "Mithral Tornado", type: "Maneuver", level: 4, discipline: "Iron Heart", action: "Standard Action", benefit: "Strike: Make a single melee attack at highest BAB +2 against every adjacent opponent." },
+        { name: "Ruby Nightmare Blade", type: "Maneuver", level: 4, discipline: "Diamond Mind", action: "Standard Action", benefit: "Strike: Concentration check vs AC; melee attack deals double (x2) normal melee damage." },
+        { name: "Elder Mountain Hammer", type: "Maneuver", level: 5, discipline: "Stone Dragon", action: "Standard Action", damageDice: "6d6", benefit: "Strike: Deals +6d6 extra damage and ignores all DR and hardness." },
+        { name: "Pouncing Charge", type: "Maneuver", level: 5, discipline: "Tiger Claw", action: "Full-Round Action", benefit: "Strike: Charge and make a full attack (pounce) at the end of the charge." },
+        { name: "Greater Insightful Strike", type: "Maneuver", level: 6, discipline: "Diamond Mind", action: "Standard Action", benefit: "Strike: Melee attack deals damage equal to 2x your Concentration check result." },
+        { name: "Avalanche of Blades", type: "Maneuver", level: 7, discipline: "Diamond Mind", action: "Full-Round Action", benefit: "Strike: Each hit allows another attack at cumulative -4 penalty until you miss." },
+        { name: "Adamantine Hurricane", type: "Maneuver", level: 8, discipline: "Iron Heart", action: "Standard Action", benefit: "Strike: Make two melee attacks at +4 bonus against each adjacent opponent." },
+        { name: "Time Stands Still", type: "Maneuver", level: 9, discipline: "Diamond Mind", action: "Full-Round Action", benefit: "Strike: Take two consecutive full attack actions in a single round." },
+        { name: "Strike of Perfect Clarity", type: "Maneuver", level: 9, discipline: "Iron Heart", action: "Standard Action", damageDice: "100d1", benefit: "Strike: Single melee attack deals +100 extra damage on hit." },
+        // Tome of Battle Stances (Levels 1-8)
+        { name: "Punishing Stance", type: "Stance", level: 1, discipline: "Iron Heart", action: "Swift Action", damageDice: "1d6", benefit: "+1d6 melee damage on all attacks, -2 penalty to AC." },
+        { name: "Blood in the Water", type: "Stance", level: 1, discipline: "Tiger Claw", action: "Swift Action", benefit: "Gain cumulative +1 bonus on attack and damage rolls for each critical hit." },
+        { name: "Stance of Clarity", type: "Stance", level: 1, discipline: "Diamond Mind", action: "Swift Action", benefit: "+2 insight bonus to AC against one chosen foe, -2 AC against all others." },
+        { name: "Bolstering Voice", type: "Stance", level: 1, discipline: "White Raven", action: "Swift Action", benefit: "Allies within 60 ft gain +2 morale on Will saves (+4 vs fear)." },
+        { name: "Leading the Charge", type: "Stance", level: 1, discipline: "White Raven", action: "Swift Action", benefit: "Allies within 60 ft deal extra damage on charges equal to your Initiator Level." },
+        { name: "Hunter's Sense", type: "Stance", level: 1, discipline: "Tiger Claw", action: "Swift Action", benefit: "You gain the scent ability (detect foes within 30 ft)." },
+        { name: "Absolute Steel", type: "Stance", level: 3, discipline: "Iron Heart", action: "Swift Action", benefit: "+10 ft enhancement bonus to speed; moving 10+ ft grants +2 dodge bonus to AC." },
+        { name: "Leaping Dragon Stance", type: "Stance", level: 3, discipline: "Tiger Claw", action: "Swift Action", benefit: "+10 ft enhancement bonus on Jump checks and all jumps are considered running jumps." },
+        { name: "Pearl of Black Doubt", type: "Stance", level: 3, discipline: "Diamond Mind", action: "Swift Action", benefit: "Gain cumulative +2 dodge bonus to AC each time an opponent misses you until your next turn." },
+        { name: "Hearing the Air", type: "Stance", level: 5, discipline: "Diamond Mind", action: "Swift Action", benefit: "Gain blindsense 30 ft and +5 insight bonus on Listen checks." },
+        { name: "Stance of Alacrity", type: "Stance", level: 8, discipline: "Diamond Mind", action: "Swift Action", benefit: "Once per round, use one Counter maneuver as a free action without using your immediate action." }
       ];
 
       if (!Array.isArray(masterDb)) masterDb = [];
@@ -10027,136 +10107,820 @@
       else switchMagicDisciplineTab(tab);
     }
 
+    function calculateWizardSlots(wizardLvl, intScore, existingSlots = []) {
+      const lvl = Math.min(20, Math.max(1, Number(wizardLvl) || 1));
+      const intMod = Math.floor(((Number(intScore) || 10) - 10) / 2);
+      const wizDailyTable = [
+        [],
+        [3, 1],
+        [4, 2],
+        [4, 2, 1],
+        [4, 3, 2],
+        [4, 3, 2, 1],
+        [4, 3, 3, 2],
+        [4, 4, 3, 2, 1],
+        [4, 4, 3, 3, 2],
+        [4, 4, 4, 3, 2, 1],
+        [4, 4, 4, 3, 3, 2],
+        [4, 4, 4, 4, 3, 2, 1],
+        [4, 4, 4, 4, 3, 3, 2],
+        [4, 4, 4, 4, 4, 3, 2, 1],
+        [4, 4, 4, 4, 4, 3, 3, 2],
+        [4, 4, 4, 4, 4, 4, 3, 2, 1],
+        [4, 4, 4, 4, 4, 4, 3, 3, 2],
+        [4, 4, 4, 4, 4, 4, 4, 3, 2, 1],
+        [4, 4, 4, 4, 4, 4, 4, 3, 3, 2],
+        [4, 4, 4, 4, 4, 4, 4, 4, 3, 3],
+        [4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+      ];
+      const baseDaily = wizDailyTable[lvl] || [3, 1];
+      return baseDaily.map((base, spellLvl) => {
+        const bonus = (spellLvl >= 1 && intMod >= spellLvl) ? Math.floor((intMod - spellLvl) / 4) + 1 : 0;
+        const daily = base + bonus;
+        const prev = (existingSlots || []).find(s => Number(s.level) === spellLvl);
+        return {
+          level: spellLvl,
+          daily,
+          used: prev ? Math.min(daily, Number(prev.used) || 0) : 0,
+          known: daily
+        };
+      });
+    }
+
+    function calculateDivineSlots(divineLvl, wisScore, existingSlots = []) {
+      const lvl = Math.min(20, Math.max(1, Number(divineLvl) || 1));
+      const wisMod = Math.floor(((Number(wisScore) || 10) - 10) / 2);
+      // Cleric base daily slots + 1 domain slot for levels 1..9
+      const clericDailyTable = [
+        [],
+        [3, 2],
+        [4, 3],
+        [4, 3, 2],
+        [5, 4, 3],
+        [5, 4, 3, 2],
+        [5, 4, 4, 3],
+        [6, 5, 4, 3, 2],
+        [6, 5, 4, 4, 3],
+        [6, 5, 5, 4, 3, 2],
+        [6, 5, 5, 4, 4, 3],
+        [6, 6, 5, 5, 4, 3, 2],
+        [6, 6, 5, 5, 4, 4, 3],
+        [6, 6, 6, 5, 5, 4, 3, 2],
+        [6, 6, 6, 5, 5, 4, 4, 3],
+        [6, 6, 6, 6, 5, 5, 4, 3, 2],
+        [6, 6, 6, 6, 5, 5, 4, 4, 3],
+        [6, 6, 6, 6, 6, 5, 5, 4, 3, 2],
+        [6, 6, 6, 6, 6, 5, 5, 4, 4, 3],
+        [6, 6, 6, 6, 6, 5, 5, 5, 4, 4],
+        [6, 6, 6, 6, 6, 5, 5, 5, 5, 5]
+      ];
+      const baseDaily = clericDailyTable[lvl] || [3, 2];
+      return baseDaily.map((base, spellLvl) => {
+        const bonus = (spellLvl >= 1 && wisMod >= spellLvl) ? Math.floor((wisMod - spellLvl) / 4) + 1 : 0;
+        const daily = base + bonus;
+        const prev = (existingSlots || []).find(s => Number(s.level) === spellLvl);
+        return {
+          level: spellLvl,
+          daily,
+          used: prev ? Math.min(daily, Number(prev.used) || 0) : 0,
+          known: daily
+        };
+      });
+    }
+
+    function getPreparedCasterInfo() {
+      const intVal = character?.stats?.INT?.value ?? character?.abilities?.int ?? 16;
+      const intMod = character?.stats?.INT?.mod ?? Math.floor((intVal - 10) / 2);
+      const clMode = character?.settings?.clMode || 'Character Level (DM Boon)';
+      const prog = character?.levelProgression || [];
+      const activeLevels = prog.filter(p => p.active !== false).length || Number(character?.level) || 6;
+      const wizLvls = prog.filter(p => p.active !== false && ['wizard', 'artificer', 'archivist', 'wu jen'].includes((p.className || p.class || '').toLowerCase())).length;
+      const cl = (clMode === 'Character Level (DM Boon)') ? Math.max(wizLvls || 1, activeLevels) : Math.max(1, wizLvls || activeLevels);
+      return { statKey: 'INT', statVal: intVal, statMod: intMod, cl, clMode, hasClass: wizLvls > 0 };
+    }
+
+    function getDivineCasterInfo() {
+      const wisVal = character?.stats?.WIS?.value ?? character?.abilities?.wis ?? 14;
+      const wisMod = character?.stats?.WIS?.mod ?? Math.floor((wisVal - 10) / 2);
+      const clMode = character?.settings?.clMode || 'Character Level (DM Boon)';
+      const prog = character?.levelProgression || [];
+      const activeLevels = prog.filter(p => p.active !== false).length || Number(character?.level) || 6;
+      const divLvls = prog.filter(p => p.active !== false && ['cleric', 'druid', 'paladin', 'ranger', 'favored soul'].includes((p.className || p.class || '').toLowerCase())).length;
+      const cl = (clMode === 'Character Level (DM Boon)') ? Math.max(divLvls || 1, activeLevels) : Math.max(1, divLvls || activeLevels);
+      return { statKey: 'WIS', statVal: wisVal, statMod: wisMod, cl, clMode, hasClass: divLvls > 0 };
+    }
+
     function renderPreparedDisciplineView(hasPrepared) {
       const container = document.getElementById('discipline-prepared-content');
       if (!container) return;
 
-      if (!hasPrepared) {
-        container.innerHTML = `
-          <div class="bg-gradient-to-br from-slate-900 via-slate-950 to-sky-950/40 border border-slate-800 rounded-xl p-6 text-center space-y-4 shadow-xl">
-            <div class="w-16 h-16 mx-auto rounded-2xl bg-sky-950/60 border border-sky-600/40 flex items-center justify-center text-3xl shadow-inner">
-              📖
+      if (!character.spellcasting) character.spellcasting = {};
+      const { statKey, statVal, statMod, cl, clMode } = getPreparedCasterInfo();
+      character.spellcasting.preparedSlots = calculateWizardSlots(cl, statVal, character.spellcasting.preparedSlots);
+      if (!Array.isArray(character.spellcasting.preparedSpells)) {
+        character.spellcasting.preparedSpells = [
+          { name: "Detect Magic", level: 0, school: "Divination", action: "Standard Action", range: "60 ft", benefit: "Detects magical auras within 60 ft." },
+          { name: "Read Magic", level: 0, school: "Divination", action: "Standard Action", range: "Personal", benefit: "Read magical inscriptions, scrolls, and spellbooks." },
+          { name: "Mage Armor", level: 1, school: "Conjuration", action: "Standard Action", range: "Touch", benefit: "+4 armor bonus to AC for 1 hour/level." },
+          { name: "Magic Missile", level: 1, school: "Evocation", action: "Standard Action", range: "Medium (150 ft)", damageDice: "1d4+1", benefit: "Fires force missiles dealing 1d4+1 each (unerring hit)." }
+        ];
+      }
+
+      const slots = character.spellcasting.preparedSlots;
+      const spells = character.spellcasting.preparedSpells;
+      const ignoreAsf = character?.settings?.ignoreAsf !== false;
+      const searchVal = (document.getElementById('prep-spell-filter-search')?.value || '').toLowerCase().trim();
+      const schoolVal = document.getElementById('prep-spell-filter-school')?.value || 'all';
+      const lvlFilter = window._prepSpellCurrentFilterLevel || 'all';
+
+      // Build 4x3 Fixed Slot Matrix HTML (Levels 0-11)
+      let matrixHtml = '';
+      for (let lvl = 0; lvl <= 11; lvl++) {
+        const s = slots.find(item => Number(item.level) === lvl);
+        const isUnlocked = Boolean(s && s.daily > 0);
+        const remaining = isUnlocked ? (s.daily - s.used) : 0;
+        const dc = 10 + lvl + statMod;
+        const lvlLabel = lvl === 0 ? '0 (Cantrip)' : (lvl >= 10 ? `${lvl}. Seviye (Epic)` : `${lvl}. Seviye`);
+
+        if (isUnlocked) {
+          matrixHtml += `
+            <div class="flex items-center justify-between bg-slate-900/90 border border-sky-800/60 hover:border-sky-500 rounded-xl px-3 py-2 shadow-sm transition w-full">
+              <div class="flex flex-col min-w-0">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="font-extrabold text-white text-xs whitespace-nowrap">${lvlLabel}</span>
+                  <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-sky-950/90 text-emerald-400 border border-sky-700/60 font-bold whitespace-nowrap" title="Save DC = 10 + ${lvl} + ${statKey}(+${statMod >= 0 ? '+' + statMod : statMod})">DC ${dc}</span>
+                </div>
+                <span class="text-[10px] text-sky-300 font-mono mt-0.5">${s.daily} Hazırlık Slotu</span>
+              </div>
+              <div class="h-7 w-px bg-slate-800 mx-1.5 shrink-0"></div>
+              <div class="flex flex-col items-end shrink-0">
+                <span class="text-[9px] text-slate-400 uppercase tracking-wider font-semibold">Kalan Slot</span>
+                <span class="text-xs sm:text-sm font-black font-mono ${remaining > 0 ? 'text-emerald-400' : 'text-rose-500'} whitespace-nowrap">${remaining} / ${s.daily}</span>
+              </div>
             </div>
-            <div class="max-w-xl mx-auto space-y-2">
-              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-700 text-slate-400 text-xs font-semibold">
-                <span>🔒</span>
-                <span>Sınıf Bulunmuyor (Pasif Disiplin)</span>
+          `;
+        } else {
+          const reqClText = lvl >= 10 ? 'Epic (CL 21+)' : `CL ${Math.max(1, lvl * 2 - 1)}+`;
+          matrixHtml += `
+            <div class="flex items-center justify-between bg-slate-950/50 border border-slate-800/70 rounded-xl px-3 py-2 opacity-50 select-none transition w-full" title="${lvlLabel} henüz kilitli (${reqClText} gerekir)">
+              <div class="flex flex-col min-w-0">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="font-bold text-slate-500 text-xs whitespace-nowrap">${lvlLabel}</span>
+                  <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-900 text-slate-500 border border-slate-800 font-bold whitespace-nowrap">DC ${dc}</span>
+                </div>
+                <span class="text-[10px] text-slate-600 font-mono mt-0.5">🔒 Kilitli (${reqClText})</span>
               </div>
-              <h3 class="text-base md:text-lg font-black text-white">2. Kitaplı Hazırlık Büyücülüğü (Wizard / Vancian Spellbook)</h3>
-              <p class="text-xs text-slate-300 leading-relaxed">
-                Karakterinizde şu an <strong>Wizard (Büyücü)</strong> seviyesi bulunmamaktadır. D&D 3.5e kurallarına göre Wizard büyücülüğü özel bir mimariye sahiptir:
-              </p>
+              <div class="h-7 w-px bg-slate-800/60 mx-1.5 shrink-0"></div>
+              <div class="flex flex-col items-end shrink-0">
+                <span class="text-[9px] text-slate-600 uppercase tracking-wider font-semibold">Kalan Slot</span>
+                <span class="text-xs sm:text-sm font-black font-mono text-slate-600 whitespace-nowrap">🔒 0 / 0</span>
+              </div>
             </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 max-w-2xl mx-auto text-left">
-              <div class="p-3 rounded-lg bg-slate-900/80 border border-slate-800 space-y-1">
-                <div class="text-sky-400 font-bold text-xs flex items-center gap-1.5">
-                  <span>📚</span>
-                  <span>Sınırsız Büyü Kitabı</span>
-                </div>
-                <p class="text-[11px] text-slate-400">
-                  Wizard'lar parşömenlerden kopyalayarak kitaplarına sınırsız sayıda büyü ekleyebilirler.
-                </p>
+          `;
+        }
+      }
+
+      const unlockedLevels = slots.filter(s => s.daily > 0).map(s => Number(s.level));
+      const allLevels = Array.from(new Set([...unlockedLevels, ...spells.map(s => Number(s.level || 0))])).sort((a, b) => a - b);
+      const pillsHtml = ['all', ...allLevels].map(lvl => {
+        const isActive = String(lvlFilter) === String(lvl);
+        const label = lvl === 'all' ? 'Tümü' : (lvl === 0 ? '0. Seviye' : `${lvl}. Seviye`);
+        return `
+          <button type="button" onclick="setPreparedFilterLevel('${lvl}')" class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer border ${
+            isActive ? 'bg-sky-700 text-white border-sky-400 shadow' : 'bg-slate-950 text-slate-400 hover:text-white border-slate-800'
+          }">${label}</button>
+        `;
+      }).join('');
+
+      const displayLevels = lvlFilter === 'all' ? allLevels : [Number(lvlFilter)];
+      let rowsHtml = '';
+      let totalRendered = 0;
+
+      displayLevels.forEach(lvl => {
+        const spellsAtLvl = [];
+        spells.forEach((s, idx) => {
+          if (Number(s.level || 0) === lvl) spellsAtLvl.push({ s, idx });
+        });
+        const dc = 10 + lvl + statMod;
+
+        if (searchVal || schoolVal !== 'all') {
+          spellsAtLvl.filter(({ s }) => {
+            if (schoolVal !== 'all' && (s.school || '').toLowerCase() !== schoolVal.toLowerCase()) return false;
+            if (searchVal) {
+              const str = `${s.name || ''} ${s.benefit || ''} ${s.school || ''}`.toLowerCase();
+              if (!str.includes(searchVal)) return false;
+            }
+            return true;
+          }).forEach(({ s, idx }) => {
+            totalRendered++;
+            rowsHtml += buildPreparedRowHtml(s, idx, lvl, dc);
+          });
+        } else {
+          const slotObj = slots.find(sl => Number(sl.level) === lvl);
+          const quota = slotObj ? slotObj.daily : spellsAtLvl.length;
+          const totalRows = Math.max(quota, spellsAtLvl.length);
+          for (let i = 0; i < totalRows; i++) {
+            totalRendered++;
+            if (i < spellsAtLvl.length) {
+              rowsHtml += buildPreparedRowHtml(spellsAtLvl[i].s, spellsAtLvl[i].idx, lvl, dc);
+            } else {
+              rowsHtml += buildPreparedEmptyRowHtml(lvl, dc);
+            }
+          }
+        }
+      });
+
+      function buildPreparedRowHtml(s, originalIdx, lvl, dc) {
+        const dmgExpr = s.damageDice || findDiceExpression(s.benefit);
+        return `
+          <tr class="hover:bg-slate-900/60 transition">
+            <td class="py-2.5 px-3 text-sky-400 font-bold font-mono text-center">${lvl}</td>
+            <td class="py-2.5 px-3 font-bold text-white flex items-center gap-1.5">
+              <span>📖</span>
+              <span>${s.name}</span>
+            </td>
+            <td class="py-2.5 px-3 text-slate-300">
+              <span class="badge bg-sky-950/60 text-sky-300 border border-sky-800/80 text-[10px] font-semibold">${s.school || 'Universal'}</span>
+            </td>
+            <td class="py-2.5 px-3 text-amber-300 text-[11px]">${s.action || 'Standard Action'}</td>
+            <td class="py-2.5 px-3 text-slate-300 text-[11px]">${s.range || '-'}</td>
+            <td class="py-2.5 px-3 text-center">
+              <span class="badge bg-slate-900 text-emerald-300 border border-emerald-700/60 font-mono text-[11px] font-bold">DC ${dc}</span>
+            </td>
+            <td class="py-2.5 px-3 text-slate-300 text-[11px]">${s.benefit || '-'}</td>
+            <td class="py-2.5 px-3 text-right align-middle">
+              <div class="flex items-center justify-end gap-2 w-full">
+                ${dmgExpr ? `
+                  <button onclick="castPreparedSpellDirectly(${originalIdx})" class="bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white text-xs font-bold font-mono px-2.5 py-1 rounded-lg border border-amber-600/80 shadow transition inline-flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap" title="Büyüyü At & Hasar Zarını Yuvarla (${dmgExpr})">
+                    ${getD20IconSvg('w-3.5 h-3.5 text-amber-400 shrink-0')}
+                    <span>${dmgExpr}</span>
+                  </button>
+                ` : `
+                  <button onclick="castPreparedSpellDirectly(${originalIdx})" class="bg-sky-900/70 hover:bg-sky-600 text-white text-xs font-bold px-2.5 py-1 rounded-lg border border-sky-500 shadow transition inline-flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap" title="Büyüyü At (Slot Harca)">
+                    <span>📖</span>
+                    <span>At</span>
+                  </button>
+                `}
+                <button onclick="deletePreparedSpell(${originalIdx})" class="w-6 h-6 inline-flex items-center justify-center text-slate-500 hover:text-rose-400 text-xs transition cursor-pointer shrink-0" title="Büyüyü Sil (Slot Boş Kalır)">
+                  🗑️
+                </button>
               </div>
-              <div class="p-3 rounded-lg bg-slate-900/80 border border-slate-800 space-y-1">
-                <div class="text-sky-400 font-bold text-xs flex items-center gap-1.5">
-                  <span>☀️</span>
-                  <span>Sabah Slot Tahsisi</span>
-                </div>
-                <p class="text-[11px] text-slate-400">
-                  Her sabah dinlendikten sonra o gün atacakları büyüleri slot sayıları kadar tek tek hazırlarlar.
-                </p>
+            </td>
+          </tr>
+        `;
+      }
+
+      function buildPreparedEmptyRowHtml(lvl, dc) {
+        return `
+          <tr class="hover:bg-sky-950/25 transition cursor-pointer group bg-slate-950/20" onclick="if(!event.target.closest('button')) openPreparedSpellPickerForLevel(${lvl})">
+            <td class="py-2.5 px-3 text-sky-400/60 font-bold font-mono text-center">${lvl}</td>
+            <td class="py-2.5 px-3">
+              <button type="button" onclick="openPreparedSpellPickerForLevel(${lvl})" class="inline-flex items-center gap-1.5 text-xs font-semibold text-sky-300/80 group-hover:text-sky-100 cursor-pointer">
+                <span class="w-4 h-4 rounded border border-dashed border-sky-500/70 bg-sky-950/60 flex items-center justify-center text-[10px] text-sky-300 group-hover:bg-sky-800 transition">+</span>
+                <span class="italic">+ Büyü Hazırla (Boş Slot)</span>
+              </button>
+            </td>
+            <td class="py-2.5 px-3 text-slate-500 text-[10px] italic">-</td>
+            <td class="py-2.5 px-3 text-slate-500 text-[10px] italic">-</td>
+            <td class="py-2.5 px-3 text-slate-500 text-[10px] italic">-</td>
+            <td class="py-2.5 px-3 text-center">
+              <span class="badge bg-slate-900/60 text-slate-500 border border-slate-800/80 font-mono text-[10px]">DC ${dc}</span>
+            </td>
+            <td class="py-2.5 px-3 text-slate-500 text-[11px] italic">Bu hazırlık slotu boş. ${lvl === 0 ? '0. Seviye (Cantrip)' : `${lvl}. Seviye`} büyüsü hazırlamak için tıklayın.</td>
+            <td class="py-2.5 px-3 text-right align-middle">
+              <div class="flex items-center justify-end gap-2 w-full">
+                <button type="button" onclick="openPreparedSpellPickerForLevel(${lvl})" class="bg-sky-950/80 hover:bg-sky-900 text-sky-300 hover:text-white border border-dashed border-sky-500/80 text-xs font-bold px-2.5 py-1 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="${lvl}. Seviye Büyü Hazırla">
+                  <span>✨</span>
+                  <span>+ Büyü Seç</span>
+                </button>
+                <span class="w-6 h-6 shrink-0 inline-block"></span>
               </div>
-              <div class="p-3 rounded-lg bg-slate-900/80 border border-slate-800 space-y-1">
-                <div class="text-sky-400 font-bold text-xs flex items-center gap-1.5">
-                  <span>🧠</span>
-                  <span>INT Tabanlı DC</span>
+            </td>
+          </tr>
+        `;
+      }
+
+      container.innerHTML = `
+        <div class="space-y-4">
+          <!-- Caster Header Bar -->
+          <div class="bg-gradient-to-r from-sky-950/70 via-slate-900 to-blue-950/50 border border-sky-600/40 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 shadow-md">
+            <div class="flex items-center gap-2.5">
+              <div class="w-9 h-9 rounded-lg bg-sky-900/70 border border-sky-500/60 flex items-center justify-center text-lg shadow-inner">
+                📖
+              </div>
+              <div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <h3 class="font-extrabold text-white text-sm md:text-base">Kitaplı Hazırlık Büyüler (Vancian)</h3>
+                  <span class="badge bg-sky-950 text-sky-300 border border-sky-700 text-[10px] font-bold">Wizard</span>
+                  <span class="badge bg-amber-950/90 text-amber-300 border border-amber-500/80 text-xs font-extrabold px-2.5 py-0.5 font-mono shadow-sm" title="Caster Level: ${cl} (${clMode})">CL: ${cl}</span>
+                  ${!hasPrepared ? `<span class="badge bg-slate-800 text-slate-300 border border-slate-700 text-[10px]">Önizleme / Pasif Sınıf</span>` : ''}
                 </div>
-                <p class="text-[11px] text-slate-400">
-                  Büyü kurtarma zorluk dereceleri (Save DC) ve ekstra slotlar Zeka (Intelligence) ile hesaplanır.
-                </p>
+                <p class="text-[11px] text-sky-300">Stat Mod: ${statMod >= 0 ? '+' + statMod : statMod} (${statKey}: ${statVal}) • Base + 24H Ekipman Bonusu Dahil • ${clMode}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="badge ${ignoreAsf ? 'bg-emerald-950 text-emerald-300 border border-emerald-600' : 'bg-slate-800 text-slate-400 border border-slate-700'} text-xs font-bold">${ignoreAsf ? '🛡️ ASF: %0 (DM Boon)' : '🛡️ ASF: Standart'}</span>
+              <button onclick="restoreAllPreparedSlots()" class="bg-sky-800 hover:bg-sky-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-sky-500/50 shadow transition flex items-center gap-1 cursor-pointer">
+                <span>✨</span>
+                <span>Tüm Slotları Yenile</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 4x3 Fixed Slot Matrix -->
+          <div class="bg-slate-950/80 border border-sky-900/50 rounded-xl p-2.5 space-y-2 shadow">
+            <div class="flex items-center justify-between text-[11px] px-1">
+              <span class="text-sky-300 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                <span>⚡</span>
+                <span>Günlük Hazırlık Slotları (4×3 Vancian Matrisi):</span>
+              </span>
+              <span class="text-slate-400 text-[10px]">Büyü atıldığında ilgili seviyedeki hazırlık slotu otomatik düşer</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full">
+              ${matrixHtml}
+            </div>
+          </div>
+
+          <!-- Search & Filters + Prepared Spells Table -->
+          <div class="space-y-3">
+            <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3">
+              <div class="flex flex-wrap items-center gap-2 flex-1 min-w-[280px]">
+                <div class="relative flex-1 min-w-[180px]">
+                  <input type="text" id="prep-spell-filter-search" value="${searchVal}" oninput="renderPreparedDisciplineView(${Boolean(hasPrepared)})" placeholder="Hazırlanan büyü adı, okul veya etki ara..." class="w-full bg-slate-950 text-white placeholder-slate-500 text-xs rounded-lg border border-slate-700 px-3 py-1.5 pl-8 focus:outline-none focus:border-sky-500">
+                  <span class="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
+                </div>
+                <select id="prep-spell-filter-school" onchange="renderPreparedDisciplineView(${Boolean(hasPrepared)})" class="bg-slate-950 text-slate-300 text-xs rounded-lg border border-slate-700 px-2.5 py-1.5 focus:outline-none focus:border-sky-500">
+                  <option value="all" ${schoolVal === 'all' ? 'selected' : ''}>Tüm Okullar</option>
+                  <option value="Abjuration" ${schoolVal === 'Abjuration' ? 'selected' : ''}>Abjuration (Koruma)</option>
+                  <option value="Conjuration" ${schoolVal === 'Conjuration' ? 'selected' : ''}>Conjuration (Çağırma)</option>
+                  <option value="Divination" ${schoolVal === 'Divination' ? 'selected' : ''}>Divination (Kehanet)</option>
+                  <option value="Enchantment" ${schoolVal === 'Enchantment' ? 'selected' : ''}>Enchantment (Büyüleme)</option>
+                  <option value="Evocation" ${schoolVal === 'Evocation' ? 'selected' : ''}>Evocation (Yıkım)</option>
+                  <option value="Illusion" ${schoolVal === 'Illusion' ? 'selected' : ''}>Illusion (Yanılsama)</option>
+                  <option value="Necromancy" ${schoolVal === 'Necromancy' ? 'selected' : ''}>Necromancy (Ölüm)</option>
+                  <option value="Transmutation" ${schoolVal === 'Transmutation' ? 'selected' : ''}>Transmutation (Dönüşüm)</option>
+                  <option value="Universal" ${schoolVal === 'Universal' ? 'selected' : ''}>Universal (Evrensel)</option>
+                </select>
+              </div>
+              <div class="flex flex-wrap items-center gap-1">
+                ${pillsHtml}
               </div>
             </div>
 
-            <div class="pt-2 text-[11px] text-slate-500">
-              💡 Karakterinize Wizard seviyesi eklendiğinde bu sekmede tam interaktif Büyü Kitabı ve Günlük Slot Tahsis masası aktif olacaktır.
+            <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-950/40 shadow">
+              <div class="bg-slate-900/80 px-4 py-2.5 text-xs font-bold text-sky-300 flex justify-between items-center border-b border-slate-800">
+                <div class="flex items-center gap-2">
+                  <span>📖</span>
+                  <span class="uppercase tracking-wider">HAVUZ: HAZIRLANAN BÜYÜLER & BÜYÜ KİTABI (PREPARED SPELLS)</span>
+                </div>
+                <span class="text-[11px] text-slate-400 font-normal">✨ Slot harcayarak büyü atın veya boş slotlara büyü hazırlayın</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-950 text-slate-400 text-[10px] uppercase font-bold border-b border-slate-800">
+                    <tr>
+                      <th class="py-2.5 px-3 w-12 text-center">Lvl</th>
+                      <th class="py-2.5 px-3 w-44">Büyü Adı</th>
+                      <th class="py-2.5 px-3 w-28">Okul</th>
+                      <th class="py-2.5 px-3 w-28">Eylem</th>
+                      <th class="py-2.5 px-3 w-28">Menzil</th>
+                      <th class="py-2.5 px-3 w-20 text-center">DC</th>
+                      <th class="py-2.5 px-3">Etki & Açıklama</th>
+                      <th class="py-2.5 px-3 text-right pr-4 w-40">İşlemler</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800 font-medium">
+                    ${totalRendered > 0 ? rowsHtml : `<tr><td colspan="8" class="py-8 text-center text-slate-400"><p class="text-xs">Filtrelere uygun büyü bulunamadı.</p></td></tr>`}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-        `;
+        </div>
+      `;
+    }
+
+    function setPreparedFilterLevel(lvl) {
+      window._prepSpellCurrentFilterLevel = lvl;
+      const classesStatus = checkCharacterMagicClasses();
+      renderPreparedDisciplineView(classesStatus.hasPrepared);
+    }
+
+    function openPreparedSpellPickerForLevel(lvl) {
+      window._spellPickerTargetPool = 'prepared';
+      openSpellManeuverPickerModal('Spell', lvl);
+    }
+
+    function deletePreparedSpell(idx) {
+      if (!character?.spellcasting?.preparedSpells?.[idx]) return;
+      const s = character.spellcasting.preparedSpells[idx];
+      character.spellcasting.preparedSpells.splice(idx, 1);
+      saveStateToStorage(true);
+      renderAll();
+      showDiceTopToast({
+        icon: '🗑️',
+        title: 'Hazırlık Silindi',
+        breakdown: `"${s.name}" kaldırıldı. Hazırlık slotu boş bırakıldı.`,
+        total: 'Slot Boş'
+      });
+    }
+
+    function castPreparedSpellDirectly(spellIdx) {
+      const s = character?.spellcasting?.preparedSpells?.[spellIdx];
+      if (!s) return;
+      const name = s.name;
+      const lvl = Number(s.level) || 0;
+      const dmgExpr = s.damageDice || findDiceExpression(s.benefit);
+      const slot = character.spellcasting?.preparedSlots?.find(sl => Number(sl.level) === lvl);
+      if (slot && slot.used < slot.daily) {
+        slot.used++;
+        saveStateToStorage(true);
+        renderAll();
+        if (dmgExpr) {
+          rollSpellOrManeuverFormula(dmgExpr, `${name} (${lvl}. Seviye • -1 Slot)`);
+        } else {
+          showDiceTopToast({
+            icon: '📖',
+            title: name,
+            breakdown: `${lvl}. Seviye Hazırlık Slotu Harcandı`,
+            total: '-1 Slot'
+          });
+        }
       } else {
-        container.innerHTML = `
-          <div class="bg-slate-900 border border-sky-800/60 rounded-xl p-4 text-white">
-            <h3 class="font-bold text-sm text-sky-300">Wizard Büyü Kitabı & Günlük Hazırlık Masası</h3>
-            <p class="text-xs text-slate-400">Hazırlanan büyüler ve büyü kitabı yönetimi aktif.</p>
-          </div>
-        `;
+        showDiceTopToast({
+          icon: '⚠️',
+          title: 'Slot Yetersiz',
+          breakdown: `${lvl}. seviye hazırlık slotunuz kalmadı!`,
+          total: '0 Slot'
+        });
       }
+    }
+
+    function restoreAllPreparedSlots() {
+      (character?.spellcasting?.preparedSlots || []).forEach(s => s.used = 0);
+      saveStateToStorage();
+      renderAll();
+      showDiceTopToast({
+        icon: '✨',
+        title: 'Hazırlık Slotları',
+        breakdown: 'Tüm günlük Wizard hazırlık slotları yenilendi',
+        total: 'Yenilendi'
+      });
     }
 
     function renderDivineDisciplineView(hasDivine) {
       const container = document.getElementById('discipline-divine-content');
       if (!container) return;
 
-      if (!hasDivine) {
-        container.innerHTML = `
-          <div class="bg-gradient-to-br from-slate-900 via-slate-950 to-amber-950/40 border border-slate-800 rounded-xl p-6 text-center space-y-4 shadow-xl">
-            <div class="w-16 h-16 mx-auto rounded-2xl bg-amber-950/60 border border-amber-600/40 flex items-center justify-center text-3xl shadow-inner">
-              ✨
+      if (!character.spellcasting) character.spellcasting = {};
+      const { statKey, statVal, statMod, cl, clMode } = getDivineCasterInfo();
+      character.spellcasting.divineSlots = calculateDivineSlots(cl, statVal, character.spellcasting.divineSlots);
+      if (!Array.isArray(character.spellcasting.divineSpells)) {
+        character.spellcasting.divineSpells = [
+          { name: "Guidance", level: 0, school: "Divination", action: "Standard Action", range: "Touch", benefit: "+1 competence bonus on one attack roll, saving throw, or skill check." },
+          { name: "Cure Light Wounds", level: 1, school: "Conjuration", action: "Standard Action", range: "Touch", damageDice: "1d8+5", benefit: "Cures 1d8 +1/level (max +5) points of damage." },
+          { name: "Bless", level: 1, school: "Enchantment", action: "Standard Action", range: "50 ft", benefit: "Allies gain +1 morale bonus on attack rolls and saves against fear." },
+          { name: "Divine Favor", level: 1, school: "Evocation", action: "Standard Action", range: "Personal", benefit: "You gain +1 per three levels (max +3) luck bonus on attack and weapon damage rolls." }
+        ];
+      }
+
+      const slots = character.spellcasting.divineSlots;
+      const spells = character.spellcasting.divineSpells;
+      const searchVal = (document.getElementById('divine-spell-filter-search')?.value || '').toLowerCase().trim();
+      const schoolVal = document.getElementById('divine-spell-filter-school')?.value || 'all';
+      const lvlFilter = window._divineSpellCurrentFilterLevel || 'all';
+
+      // Build 4x3 Fixed Slot Matrix HTML (Levels 0-11)
+      let matrixHtml = '';
+      for (let lvl = 0; lvl <= 11; lvl++) {
+        const s = slots.find(item => Number(item.level) === lvl);
+        const isUnlocked = Boolean(s && s.daily > 0);
+        const remaining = isUnlocked ? (s.daily - s.used) : 0;
+        const dc = 10 + lvl + statMod;
+        const lvlLabel = lvl === 0 ? '0 (Orison)' : (lvl >= 10 ? `${lvl}. Seviye (Epic)` : `${lvl}. Seviye`);
+
+        if (isUnlocked) {
+          matrixHtml += `
+            <div class="flex items-center justify-between bg-slate-900/90 border border-amber-800/60 hover:border-amber-500 rounded-xl px-3 py-2 shadow-sm transition w-full">
+              <div class="flex flex-col min-w-0">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="font-extrabold text-white text-xs whitespace-nowrap">${lvlLabel}</span>
+                  <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-950/90 text-emerald-400 border border-amber-700/60 font-bold whitespace-nowrap" title="Save DC = 10 + ${lvl} + ${statKey}(+${statMod >= 0 ? '+' + statMod : statMod})">DC ${dc}</span>
+                </div>
+                <span class="text-[10px] text-amber-300 font-mono mt-0.5">${s.daily} Dua Slotu${lvl >= 1 && lvl <= 9 ? ' (+Domain)' : ''}</span>
+              </div>
+              <div class="h-7 w-px bg-slate-800 mx-1.5 shrink-0"></div>
+              <div class="flex flex-col items-end shrink-0">
+                <span class="text-[9px] text-slate-400 uppercase tracking-wider font-semibold">Kalan Slot</span>
+                <span class="text-xs sm:text-sm font-black font-mono ${remaining > 0 ? 'text-emerald-400' : 'text-rose-500'} whitespace-nowrap">${remaining} / ${s.daily}</span>
+              </div>
             </div>
-            <div class="max-w-xl mx-auto space-y-2">
-              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-700 text-slate-400 text-xs font-semibold">
-                <span>🔒</span>
-                <span>Sınıf Bulunmuyor (Pasif Disiplin)</span>
+          `;
+        } else {
+          const reqClText = lvl >= 10 ? 'Epic (CL 21+)' : `CL ${Math.max(1, lvl * 2 - 1)}+`;
+          matrixHtml += `
+            <div class="flex items-center justify-between bg-slate-950/50 border border-slate-800/70 rounded-xl px-3 py-2 opacity-50 select-none transition w-full" title="${lvlLabel} henüz kilitli (${reqClText} gerekir)">
+              <div class="flex flex-col min-w-0">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="font-bold text-slate-500 text-xs whitespace-nowrap">${lvlLabel}</span>
+                  <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-900 text-slate-500 border border-slate-800 font-bold whitespace-nowrap">DC ${dc}</span>
+                </div>
+                <span class="text-[10px] text-slate-600 font-mono mt-0.5">🔒 Kilitli (${reqClText})</span>
               </div>
-              <h3 class="text-base md:text-lg font-black text-white">3. İlahi Dua & İnanç Büyücülüğü (Cleric / Druid)</h3>
-              <p class="text-xs text-slate-300 leading-relaxed">
-                Karakterinizde şu an <strong>Cleric (Rahip) veya Druid</strong> seviyesi bulunmamaktadır. İlahi büyücülük D&D 3.5e sisteminde kutsal inanca dayanır:
-              </p>
+              <div class="h-7 w-px bg-slate-800/60 mx-1.5 shrink-0"></div>
+              <div class="flex flex-col items-end shrink-0">
+                <span class="text-[9px] text-slate-600 uppercase tracking-wider font-semibold">Kalan Slot</span>
+                <span class="text-xs sm:text-sm font-black font-mono text-slate-600 whitespace-nowrap">🔒 0 / 0</span>
+              </div>
             </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 max-w-2xl mx-auto text-left">
-              <div class="p-3 rounded-lg bg-slate-900/80 border border-slate-800 space-y-1">
-                <div class="text-amber-400 font-bold text-xs flex items-center gap-1.5">
-                  <span>⛪</span>
-                  <span>Tüm Külliyat Bilinir</span>
-                </div>
-                <p class="text-[11px] text-slate-400">
-                  Büyü kitabı tutmalarına gerek yoktur; tanrılarına ettikleri dua ile o seviyedeki tüm büyüleri bilirler.
-                </p>
+          `;
+        }
+      }
+
+      const unlockedLevels = slots.filter(s => s.daily > 0).map(s => Number(s.level));
+      const allLevels = Array.from(new Set([...unlockedLevels, ...spells.map(s => Number(s.level || 0))])).sort((a, b) => a - b);
+      const pillsHtml = ['all', ...allLevels].map(lvl => {
+        const isActive = String(lvlFilter) === String(lvl);
+        const label = lvl === 'all' ? 'Tümü' : (lvl === 0 ? '0. Seviye' : `${lvl}. Seviye`);
+        return `
+          <button type="button" onclick="setDivineFilterLevel('${lvl}')" class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer border ${
+            isActive ? 'bg-amber-700 text-white border-amber-400 shadow' : 'bg-slate-950 text-slate-400 hover:text-white border-slate-800'
+          }">${label}</button>
+        `;
+      }).join('');
+
+      const displayLevels = lvlFilter === 'all' ? allLevels : [Number(lvlFilter)];
+      let rowsHtml = '';
+      let totalRendered = 0;
+
+      displayLevels.forEach(lvl => {
+        const spellsAtLvl = [];
+        spells.forEach((s, idx) => {
+          if (Number(s.level || 0) === lvl) spellsAtLvl.push({ s, idx });
+        });
+        const dc = 10 + lvl + statMod;
+
+        if (searchVal || schoolVal !== 'all') {
+          spellsAtLvl.filter(({ s }) => {
+            if (schoolVal !== 'all' && (s.school || '').toLowerCase() !== schoolVal.toLowerCase()) return false;
+            if (searchVal) {
+              const str = `${s.name || ''} ${s.benefit || ''} ${s.school || ''}`.toLowerCase();
+              if (!str.includes(searchVal)) return false;
+            }
+            return true;
+          }).forEach(({ s, idx }) => {
+            totalRendered++;
+            rowsHtml += buildDivineRowHtml(s, idx, lvl, dc);
+          });
+        } else {
+          const slotObj = slots.find(sl => Number(sl.level) === lvl);
+          const quota = slotObj ? slotObj.daily : spellsAtLvl.length;
+          const totalRows = Math.max(quota, spellsAtLvl.length);
+          for (let i = 0; i < totalRows; i++) {
+            totalRendered++;
+            if (i < spellsAtLvl.length) {
+              rowsHtml += buildDivineRowHtml(spellsAtLvl[i].s, spellsAtLvl[i].idx, lvl, dc);
+            } else {
+              rowsHtml += buildDivineEmptyRowHtml(lvl, dc);
+            }
+          }
+        }
+      });
+
+      function buildDivineRowHtml(s, originalIdx, lvl, dc) {
+        const dmgExpr = s.damageDice || findDiceExpression(s.benefit);
+        return `
+          <tr class="hover:bg-slate-900/60 transition">
+            <td class="py-2.5 px-3 text-amber-400 font-bold font-mono text-center">${lvl}</td>
+            <td class="py-2.5 px-3 font-bold text-white flex items-center gap-1.5">
+              <span>✨</span>
+              <span>${s.name}</span>
+            </td>
+            <td class="py-2.5 px-3 text-slate-300">
+              <span class="badge bg-amber-950/60 text-amber-300 border border-amber-800/80 text-[10px] font-semibold">${s.school || 'Conjuration'}</span>
+            </td>
+            <td class="py-2.5 px-3 text-amber-300 text-[11px]">${s.action || 'Standard Action'}</td>
+            <td class="py-2.5 px-3 text-slate-300 text-[11px]">${s.range || '-'}</td>
+            <td class="py-2.5 px-3 text-center">
+              <span class="badge bg-slate-900 text-emerald-300 border border-emerald-700/60 font-mono text-[11px] font-bold">DC ${dc}</span>
+            </td>
+            <td class="py-2.5 px-3 text-slate-300 text-[11px]">${s.benefit || '-'}</td>
+            <td class="py-2.5 px-3 text-right align-middle">
+              <div class="flex items-center justify-end gap-2 w-full">
+                ${dmgExpr ? `
+                  <button onclick="castDivineSpellDirectly(${originalIdx})" class="bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white text-xs font-bold font-mono px-2.5 py-1 rounded-lg border border-amber-600/80 shadow transition inline-flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap" title="Büyüyü At & Zar Yuvarla (${dmgExpr})">
+                    ${getD20IconSvg('w-3.5 h-3.5 text-amber-400 shrink-0')}
+                    <span>${dmgExpr}</span>
+                  </button>
+                ` : `
+                  <button onclick="castDivineSpellDirectly(${originalIdx})" class="bg-amber-900/70 hover:bg-amber-600 text-white text-xs font-bold px-2.5 py-1 rounded-lg border border-amber-500 shadow transition inline-flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap" title="Büyüyü At (Slot Harca)">
+                    <span>✨</span>
+                    <span>At</span>
+                  </button>
+                `}
+                <button onclick="deleteDivineSpell(${originalIdx})" class="w-6 h-6 inline-flex items-center justify-center text-slate-500 hover:text-rose-400 text-xs transition cursor-pointer shrink-0" title="Büyüyü Sil (Slot Boş Kalır)">
+                  🗑️
+                </button>
               </div>
-              <div class="p-3 rounded-lg bg-slate-900/80 border border-slate-800 space-y-1">
-                <div class="text-amber-400 font-bold text-xs flex items-center gap-1.5">
-                  <span>☀️</span>
-                  <span>Sabah Duası ile Seçim</span>
-                </div>
-                <p class="text-[11px] text-slate-400">
-                  Her sabah ibadet ve meditasyonla tüm ilahi büyü havuzundan günlük slotları kadar büyü seçerler.
-                </p>
+            </td>
+          </tr>
+        `;
+      }
+
+      function buildDivineEmptyRowHtml(lvl, dc) {
+        return `
+          <tr class="hover:bg-amber-950/25 transition cursor-pointer group bg-slate-950/20" onclick="if(!event.target.closest('button')) openDivineSpellPickerForLevel(${lvl})">
+            <td class="py-2.5 px-3 text-amber-400/60 font-bold font-mono text-center">${lvl}</td>
+            <td class="py-2.5 px-3">
+              <button type="button" onclick="openDivineSpellPickerForLevel(${lvl})" class="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-300/80 group-hover:text-amber-100 cursor-pointer">
+                <span class="w-4 h-4 rounded border border-dashed border-amber-500/70 bg-amber-950/60 flex items-center justify-center text-[10px] text-amber-300 group-hover:bg-amber-800 transition">+</span>
+                <span class="italic">+ Dua Büyüsü Seç (Boş Slot)</span>
+              </button>
+            </td>
+            <td class="py-2.5 px-3 text-slate-500 text-[10px] italic">-</td>
+            <td class="py-2.5 px-3 text-slate-500 text-[10px] italic">-</td>
+            <td class="py-2.5 px-3 text-slate-500 text-[10px] italic">-</td>
+            <td class="py-2.5 px-3 text-center">
+              <span class="badge bg-slate-900/60 text-slate-500 border border-slate-800/80 font-mono text-[10px]">DC ${dc}</span>
+            </td>
+            <td class="py-2.5 px-3 text-slate-500 text-[11px] italic">Bu dua slotu boş. ${lvl === 0 ? '0. Seviye (Orison)' : `${lvl}. Seviye`} ilahi büyüsü seçmek için tıklayın.</td>
+            <td class="py-2.5 px-3 text-right align-middle">
+              <div class="flex items-center justify-end gap-2 w-full">
+                <button type="button" onclick="openDivineSpellPickerForLevel(${lvl})" class="bg-amber-950/80 hover:bg-amber-900 text-amber-300 hover:text-white border border-dashed border-amber-500/80 text-xs font-bold px-2.5 py-1 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="${lvl}. Seviye İlahi Büyü Seç">
+                  <span>✨</span>
+                  <span>+ Büyü Seç</span>
+                </button>
+                <span class="w-6 h-6 shrink-0 inline-block"></span>
               </div>
-              <div class="p-3 rounded-lg bg-slate-900/80 border border-slate-800 space-y-1">
-                <div class="text-amber-400 font-bold text-xs flex items-center gap-1.5">
-                  <span>🕊️</span>
-                  <span>WIS & Alan Büyüleri</span>
+            </td>
+          </tr>
+        `;
+      }
+
+      container.innerHTML = `
+        <div class="space-y-4">
+          <!-- Caster Header Bar -->
+          <div class="bg-gradient-to-r from-amber-950/70 via-slate-900 to-yellow-950/40 border border-amber-600/40 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 shadow-md">
+            <div class="flex items-center gap-2.5">
+              <div class="w-9 h-9 rounded-lg bg-amber-900/70 border border-amber-500/60 flex items-center justify-center text-lg shadow-inner">
+                ✨
+              </div>
+              <div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <h3 class="font-extrabold text-white text-sm md:text-base">İlahi Dua & İnanç Büyüleri</h3>
+                  <span class="badge bg-amber-950 text-amber-300 border border-amber-700 text-[10px] font-bold">Cleric / Druid</span>
+                  <span class="badge bg-amber-950/90 text-amber-200 border border-amber-400/80 text-xs font-extrabold px-2.5 py-0.5 font-mono shadow-sm" title="Caster Level: ${cl} (${clMode})">CL: ${cl}</span>
+                  ${!hasDivine ? `<span class="badge bg-slate-800 text-slate-300 border border-slate-700 text-[10px]">Önizleme / Pasif Sınıf</span>` : ''}
                 </div>
-                <p class="text-[11px] text-slate-400">
-                  Save DC ve ekstra slotlar Bilgelik (Wisdom) ile hesaplanır; alan (Domain) büyüleri bonus slot verir.
-                </p>
+                <p class="text-[11px] text-amber-300">Stat Mod: ${statMod >= 0 ? '+' + statMod : statMod} (${statKey}: ${statVal}) • İlahi Külliyat & Domain Bonusu Dahil • ${clMode}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="badge bg-emerald-950 text-emerald-300 border border-emerald-600 text-xs font-bold">🛡️ ASF: %0 (İlahi Büyü)</span>
+              <button onclick="restoreAllDivineSlots()" class="bg-amber-800 hover:bg-amber-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-amber-500/50 shadow transition flex items-center gap-1 cursor-pointer">
+                <span>✨</span>
+                <span>Tüm Slotları Yenile</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 4x3 Fixed Slot Matrix -->
+          <div class="bg-slate-950/80 border border-amber-900/50 rounded-xl p-2.5 space-y-2 shadow">
+            <div class="flex items-center justify-between text-[11px] px-1">
+              <span class="text-amber-300 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                <span>⚡</span>
+                <span>Günlük İlahi Dua Slotları (4×3 Sabit Matris):</span>
+              </span>
+              <span class="text-slate-400 text-[10px]">Büyü atıldığında ilgili seviyedeki dua slotu otomatik düşer</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full">
+              ${matrixHtml}
+            </div>
+          </div>
+
+          <!-- Search & Filters + Divine Spells Table -->
+          <div class="space-y-3">
+            <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3">
+              <div class="flex flex-wrap items-center gap-2 flex-1 min-w-[280px]">
+                <div class="relative flex-1 min-w-[180px]">
+                  <input type="text" id="divine-spell-filter-search" value="${searchVal}" oninput="renderDivineDisciplineView(${Boolean(hasDivine)})" placeholder="İlahi büyü adı, okul veya etki ara..." class="w-full bg-slate-950 text-white placeholder-slate-500 text-xs rounded-lg border border-slate-700 px-3 py-1.5 pl-8 focus:outline-none focus:border-amber-500">
+                  <span class="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
+                </div>
+                <select id="divine-spell-filter-school" onchange="renderDivineDisciplineView(${Boolean(hasDivine)})" class="bg-slate-950 text-slate-300 text-xs rounded-lg border border-slate-700 px-2.5 py-1.5 focus:outline-none focus:border-amber-500">
+                  <option value="all" ${schoolVal === 'all' ? 'selected' : ''}>Tüm Okullar</option>
+                  <option value="Abjuration" ${schoolVal === 'Abjuration' ? 'selected' : ''}>Abjuration (Koruma)</option>
+                  <option value="Conjuration" ${schoolVal === 'Conjuration' ? 'selected' : ''}>Conjuration (İyileştirme / Çağırma)</option>
+                  <option value="Divination" ${schoolVal === 'Divination' ? 'selected' : ''}>Divination (Kehanet)</option>
+                  <option value="Enchantment" ${schoolVal === 'Enchantment' ? 'selected' : ''}>Enchantment (Kutsama)</option>
+                  <option value="Evocation" ${schoolVal === 'Evocation' ? 'selected' : ''}>Evocation (İlahi Gazap)</option>
+                  <option value="Necromancy" ${schoolVal === 'Necromancy' ? 'selected' : ''}>Necromancy (Yaşam / Ölüm)</option>
+                  <option value="Transmutation" ${schoolVal === 'Transmutation' ? 'selected' : ''}>Transmutation (Dönüşüm)</option>
+                </select>
+              </div>
+              <div class="flex flex-wrap items-center gap-1">
+                ${pillsHtml}
               </div>
             </div>
 
-            <div class="pt-2 text-[11px] text-slate-500">
-              💡 Karakterinize Cleric veya Druid seviyesi eklendiğinde bu sekmede tüm ilahi külliyat listesi ve günlük dua hazırlığı açılacaktır.
+            <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-950/40 shadow">
+              <div class="bg-slate-900/80 px-4 py-2.5 text-xs font-bold text-amber-300 flex justify-between items-center border-b border-slate-800">
+                <div class="flex items-center gap-2">
+                  <span>✨</span>
+                  <span class="uppercase tracking-wider">HAVUZ: GÜNLÜK DUA İLE HAZIRLANAN İLAHİ BÜYÜLER (DIVINE SPELLS)</span>
+                </div>
+                <span class="text-[11px] text-slate-400 font-normal">✨ Slot harcayarak büyü atın veya boş dua slotlarına ilahi büyü seçin</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-950 text-slate-400 text-[10px] uppercase font-bold border-b border-slate-800">
+                    <tr>
+                      <th class="py-2.5 px-3 w-12 text-center">Lvl</th>
+                      <th class="py-2.5 px-3 w-44">Büyü Adı</th>
+                      <th class="py-2.5 px-3 w-28">Okul</th>
+                      <th class="py-2.5 px-3 w-28">Eylem</th>
+                      <th class="py-2.5 px-3 w-28">Menzil</th>
+                      <th class="py-2.5 px-3 w-20 text-center">DC</th>
+                      <th class="py-2.5 px-3">Etki & Açıklama</th>
+                      <th class="py-2.5 px-3 text-right pr-4 w-40">İşlemler</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800 font-medium">
+                    ${totalRendered > 0 ? rowsHtml : `<tr><td colspan="8" class="py-8 text-center text-slate-400"><p class="text-xs">Filtrelere uygun ilahi büyü bulunamadı.</p></td></tr>`}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-        `;
+        </div>
+      `;
+    }
+
+    function setDivineFilterLevel(lvl) {
+      window._divineSpellCurrentFilterLevel = lvl;
+      const classesStatus = checkCharacterMagicClasses();
+      renderDivineDisciplineView(classesStatus.hasDivine);
+    }
+
+    function openDivineSpellPickerForLevel(lvl) {
+      window._spellPickerTargetPool = 'divine';
+      openSpellManeuverPickerModal('Spell', lvl);
+    }
+
+    function deleteDivineSpell(idx) {
+      if (!character?.spellcasting?.divineSpells?.[idx]) return;
+      const s = character.spellcasting.divineSpells[idx];
+      character.spellcasting.divineSpells.splice(idx, 1);
+      saveStateToStorage(true);
+      renderAll();
+      showDiceTopToast({
+        icon: '🗑️',
+        title: 'İlahi Büyü Silindi',
+        breakdown: `"${s.name}" kaldırıldı. Dua slotu boş bırakıldı.`,
+        total: 'Slot Boş'
+      });
+    }
+
+    function castDivineSpellDirectly(spellIdx) {
+      const s = character?.spellcasting?.divineSpells?.[spellIdx];
+      if (!s) return;
+      const name = s.name;
+      const lvl = Number(s.level) || 0;
+      const dmgExpr = s.damageDice || findDiceExpression(s.benefit);
+      const slot = character.spellcasting?.divineSlots?.find(sl => Number(sl.level) === lvl);
+      if (slot && slot.used < slot.daily) {
+        slot.used++;
+        saveStateToStorage(true);
+        renderAll();
+        if (dmgExpr) {
+          rollSpellOrManeuverFormula(dmgExpr, `${name} (${lvl}. Seviye • -1 Slot)`);
+        } else {
+          showDiceTopToast({
+            icon: '✨',
+            title: name,
+            breakdown: `${lvl}. Seviye İlahi Dua Slotu Harcandı`,
+            total: '-1 Slot'
+          });
+        }
       } else {
-        container.innerHTML = `
-          <div class="bg-slate-900 border border-amber-800/60 rounded-xl p-4 text-white">
-            <h3 class="font-bold text-sm text-amber-300">İlahi Dua & Büyü Hazırlığı</h3>
-            <p class="text-xs text-slate-400">İlahi büyü külliyatı ve dua hazırlığı aktif.</p>
-          </div>
-        `;
+        showDiceTopToast({
+          icon: '⚠️',
+          title: 'Slot Yetersiz',
+          breakdown: `${lvl}. seviye dua slotunuz kalmadı!`,
+          total: '0 Slot'
+        });
       }
+    }
+
+    function restoreAllDivineSlots() {
+      (character?.spellcasting?.divineSlots || []).forEach(s => s.used = 0);
+      saveStateToStorage();
+      renderAll();
+      showDiceTopToast({
+        icon: '✨',
+        title: 'İlahi Dua Slotları',
+        breakdown: 'Tüm günlük ilahi dua slotları yenilendi',
+        total: 'Yenilendi'
+      });
     }
 
     function getCasterInfo() {
@@ -10183,11 +10947,41 @@
     }
 
     function getInitiatorInfo() {
-      const il = character?.tomeOfBattle?.initiatorLevel || 3;
+      const prog = character?.levelProgression || [];
+      const activeRows = prog.filter(p => p.active !== false);
+      let martialLvls = 0;
+      let otherLvls = 0;
+      let adeptClass = 'Warblade';
+
+      activeRows.forEach(p => {
+        const c = (p.className || p.class || '').toLowerCase();
+        if (c.includes('warblade') || c.includes('swordsage') || c.includes('crusader')) {
+          martialLvls++;
+          if (c.includes('swordsage')) adeptClass = 'Swordsage';
+          else if (c.includes('crusader')) adeptClass = 'Crusader';
+          else adeptClass = 'Warblade';
+        } else {
+          otherLvls++;
+        }
+      });
+
+      const computedIl = martialLvls > 0
+        ? (martialLvls + Math.floor(otherLvls / 2))
+        : Math.max(1, Math.floor((activeRows.length || Number(character?.level) || 6) / 2));
+      const storedIl = Number(character?.tomeOfBattle?.initiatorLevel) || 0;
+      const il = Math.max(storedIl, computedIl, 1);
+      if (character?.tomeOfBattle) {
+        character.tomeOfBattle.initiatorLevel = il;
+      }
+
       const maxManeuverLvl = Math.min(9, Math.max(1, Math.ceil(il / 2)));
       const readiedList = character?.tomeOfBattle?.readiedManeuvers || [];
-      const maxReadied = 3;
-      return { il, maxManeuverLvl, readiedCount: readiedList.length, maxReadied };
+      const baseReadied = martialLvls >= 20 ? 7 : (martialLvls >= 15 ? 6 : (martialLvls >= 10 ? 5 : (martialLvls >= 4 ? 4 : 3)));
+      const maxReadied = Math.max(baseReadied, readiedList.length, 3);
+      const maxKnownManeuvers = Math.max(3 + Math.max(0, martialLvls - 1), 2 + maxManeuverLvl, (character?.tomeOfBattle?.maneuversKnown || []).length);
+      const maxKnownStances = Math.max(il >= 10 ? 3 : (il >= 4 ? 2 : 1), (character?.tomeOfBattle?.stancesKnown || []).length);
+
+      return { il, maxManeuverLvl, readiedCount: readiedList.length, maxReadied, maxKnownManeuvers, maxKnownStances, adeptClass, martialLvls, otherLvls };
     }
 
     function renderSpellsCockpit() {
@@ -10209,34 +11003,46 @@
         const totalUsed = slots.reduce((sum, s) => sum + (Number(s.used) || 0), 0);
         const totalRemaining = Math.max(0, totalDaily - totalUsed);
         spontBadge.textContent = `${totalRemaining} / ${totalDaily}`;
-        spontBadge.className = 'bg-purple-950/80 text-purple-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-purple-600/60';
+        spontBadge.className = 'bg-purple-950/80 text-purple-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-purple-600/60 shrink-0';
         spontBadge.title = `Günlük Kalan Slot: ${totalRemaining} / ${totalDaily}`;
       }
 
+      const prepInfo = getPreparedCasterInfo();
+      if (character?.spellcasting) {
+        character.spellcasting.preparedSlots = calculateWizardSlots(prepInfo.cl, prepInfo.statVal, character.spellcasting.preparedSlots);
+      }
       const prepBadge = document.getElementById('tab-prepared-badge');
       if (prepBadge) {
-        prepBadge.textContent = classesStatus.hasPrepared ? '0 / 0' : 'Sınıf Yok';
-        prepBadge.className = classesStatus.hasPrepared
-          ? 'bg-sky-950 text-sky-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-sky-600/60'
-          : 'bg-sky-950/60 text-sky-300/80 text-[10px] px-1.5 py-0.5 rounded-full font-mono border border-sky-800/50';
+        const pSlots = character?.spellcasting?.preparedSlots || [];
+        const pDaily = pSlots.reduce((sum, s) => sum + (Number(s.daily) || 0), 0);
+        const pUsed = pSlots.reduce((sum, s) => sum + (Number(s.used) || 0), 0);
+        const pRem = Math.max(0, pDaily - pUsed);
+        prepBadge.textContent = classesStatus.hasPrepared ? `${pRem} / ${pDaily}` : `Önizleme (${pRem}/${pDaily})`;
+        prepBadge.className = 'bg-sky-950 text-sky-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-sky-600/60 shrink-0';
       }
 
+      const divInfo = getDivineCasterInfo();
+      if (character?.spellcasting) {
+        character.spellcasting.divineSlots = calculateDivineSlots(divInfo.cl, divInfo.statVal, character.spellcasting.divineSlots);
+      }
       const divineBadge = document.getElementById('tab-divine-badge');
       if (divineBadge) {
-        divineBadge.textContent = classesStatus.hasDivine ? '0 / 0' : 'Sınıf Yok';
-        divineBadge.className = classesStatus.hasDivine
-          ? 'bg-amber-950 text-amber-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-amber-600/60'
-          : 'bg-amber-950/60 text-amber-300/80 text-[10px] px-1.5 py-0.5 rounded-full font-mono border border-amber-800/50';
+        const dSlots = character?.spellcasting?.divineSlots || [];
+        const dDaily = dSlots.reduce((sum, s) => sum + (Number(s.daily) || 0), 0);
+        const dUsed = dSlots.reduce((sum, s) => sum + (Number(s.used) || 0), 0);
+        const dRem = Math.max(0, dDaily - dUsed);
+        divineBadge.textContent = classesStatus.hasDivine ? `${dRem} / ${dDaily}` : `Önizleme (${dRem}/${dDaily})`;
+        divineBadge.className = 'bg-amber-950 text-amber-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-amber-600/60 shrink-0';
       }
 
       const initInfo = getInitiatorInfo();
       const readiedList = character?.tomeOfBattle?.readiedManeuvers || [];
       const readyManeuvers = readiedList.filter(m => !m.expended).length;
-      const totalReadied = readiedList.length || initInfo.maxReadied || 3;
+      const totalReadied = initInfo.maxReadied || 3;
       const martialBadge = document.getElementById('tab-martial-badge');
       if (martialBadge) {
         martialBadge.textContent = `${readyManeuvers} / ${totalReadied}`;
-        martialBadge.className = 'bg-rose-950/80 text-rose-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-rose-600/60';
+        martialBadge.className = 'bg-rose-950/80 text-rose-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-rose-600/60 shrink-0';
         martialBadge.title = `Savaşta Hazır Manevra: ${readyManeuvers} / ${totalReadied}`;
       }
 
@@ -10272,9 +11078,22 @@
       }
 
       // Martial Adept Header Info
+      const adeptBadgeEl = document.getElementById('maneuvers-adept-badge');
+      if (adeptBadgeEl) {
+        adeptBadgeEl.textContent = initInfo.adeptClass || 'Warblade';
+      }
+      const ilBadgeEl = document.getElementById('maneuvers-il-badge');
+      if (ilBadgeEl) {
+        ilBadgeEl.textContent = `IL: ${initInfo.il}`;
+        ilBadgeEl.title = `Initiator Level: ${initInfo.il} (${initInfo.martialLvls} Martial + ⌊${initInfo.otherLvls} Diğer / 2⌋)`;
+      }
+      const maxLvlBadgeEl = document.getElementById('maneuvers-maxlvl-badge');
+      if (maxLvlBadgeEl) {
+        maxLvlBadgeEl.textContent = `Maks: ${initInfo.maxManeuverLvl}. Seviye`;
+      }
       const adeptSubEl = document.getElementById('maneuvers-hud-subtitle');
       if (adeptSubEl) {
-        adeptSubEl.textContent = `IL: ${initInfo.il} • Maks Manevra: ${initInfo.maxManeuverLvl}. Seviye • İnisiasyon Havuzu`;
+        adeptSubEl.textContent = `Tome of Battle: ${initInfo.martialLvls} ${initInfo.adeptClass} + ⌊${initInfo.otherLvls} Diğer Sınıf / 2⌋ = IL ${initInfo.il} • Bilinen Kotası: ${initInfo.maxKnownManeuvers} Manevra, ${initInfo.maxKnownStances} Duruş`;
       }
       const quotaBadge = document.getElementById('readied-quota-badge');
       if (quotaBadge) {
@@ -10486,7 +11305,6 @@
     function renderManeuvers() {
       renderSpellsCockpit();
 
-      // Ensure data structures exist
       if (!character.tomeOfBattle) character.tomeOfBattle = {};
       if (!Array.isArray(character.tomeOfBattle.readiedManeuvers)) character.tomeOfBattle.readiedManeuvers = [];
       if (!Array.isArray(character.tomeOfBattle.stancesKnown)) character.tomeOfBattle.stancesKnown = [];
@@ -10494,35 +11312,35 @@
         character.tomeOfBattle.maneuversKnown = character.tomeOfBattle.readiedManeuvers.map(m => ({ ...m }));
       }
 
-      // 1. Readied Maneuvers Deck Cards
+      const initInfo = getInitiatorInfo();
+      const maxReadied = initInfo.maxReadied || 3;
+      const maxKnownManeuvers = initInfo.maxKnownManeuvers || 3;
+      const maxKnownStances = initInfo.maxKnownStances || 1;
+
+      // 1. Readied Maneuvers Deck Cards (Fixed slot count = maxReadied)
       const container = document.getElementById('maneuvers-container');
       if (container) {
         container.innerHTML = '';
         const readied = character.tomeOfBattle.readiedManeuvers;
+        const totalCards = Math.max(maxReadied, readied.length);
 
-        if (readied.length === 0) {
-          container.innerHTML = `
-            <div class="col-span-full p-6 text-center text-slate-400 bg-slate-950/60 rounded-xl border border-slate-800">
-              <p class="text-xs">Savaş için kuşanılmış bir manevra bulunmuyor.</p>
-              <p class="text-[11px] text-slate-500 mt-1">Aşağıdaki <strong>Bilinen Manevralar Havuzu</strong>'ndan manevralarınızı savaşa kuşanın.</p>
-            </div>
-          `;
-        } else {
-          readied.forEach((m, idx) => {
-            const div = document.createElement('div');
+        for (let slotIdx = 0; slotIdx < totalCards; slotIdx++) {
+          const m = readied[slotIdx];
+          const div = document.createElement('div');
+
+          if (m) {
+            const dmgExpr = m.damageDice || findDiceExpression(m.notes || m.benefit);
             div.className = `p-3.5 rounded-xl border flex flex-col justify-between transition-all shadow-md ${
               m.expended 
                 ? 'bg-slate-950/70 border-slate-800 opacity-60' 
                 : 'bg-gradient-to-br from-slate-900 to-rose-950/40 border-rose-500/50 hover:border-rose-400'
             }`;
 
-            const dmgExpr = m.damageDice || findDiceExpression(m.notes);
-
             div.innerHTML = `
               <div class="space-y-1.5 mb-3">
                 <div class="flex items-center justify-between gap-1">
                   <span class="badge ${m.expended ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-rose-950 text-rose-300 border-rose-700'} text-[10px] font-bold">
-                    ${m.discipline} ${m.level || 1}
+                    ${m.discipline || 'Iron Heart'} ${m.level || 1}
                   </span>
                   <span class="badge ${m.expended ? 'bg-rose-950/80 text-rose-400 border-rose-800' : 'bg-emerald-950/80 text-emerald-300 border-emerald-700'} text-[10px] font-bold">
                     ${m.expended ? '🔄 Harcandı' : '⚡ Hazır'}
@@ -10530,77 +11348,162 @@
                 </div>
                 <h4 class="text-xs font-black ${m.expended ? 'line-through text-slate-400' : 'text-white'}">${m.name}</h4>
                 <div class="text-[10px] text-amber-300 font-semibold">${m.action || 'Standard Action'}</div>
-                <p class="text-[11px] text-slate-300 line-clamp-2">${m.notes || '-'}</p>
+                <p class="text-[11px] text-slate-300 line-clamp-2">${m.notes || m.benefit || '-'}</p>
               </div>
 
-              <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-1.5">
-                <button onclick="toggleManeuverExpended(${idx})" class="flex-1 text-xs font-bold py-1 px-2 rounded-lg border transition shadow flex items-center justify-center gap-1 cursor-pointer ${
-                  m.expended 
-                    ? 'bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-700' 
-                    : 'bg-rose-950 hover:bg-rose-900 text-rose-300 border-rose-700'
-                }">
-                  <span>${m.expended ? '🔄' : '⚡'}</span>
-                  <span>${m.expended ? 'Yenile' : 'Harca'}</span>
-                </button>
-
-                ${dmgExpr ? `
-                  <button onclick="rollSpellOrManeuverFormula('${dmgExpr}', '${m.name} Hasarı')" class="bg-amber-950 hover:bg-amber-900 text-amber-300 border border-amber-700 text-xs font-bold py-1 px-2 rounded-lg transition shadow flex items-center gap-1 cursor-pointer" title="Hasar Zarı Yuvarla (${dmgExpr})">
+              <div class="pt-2 border-t border-slate-800/80 flex items-center justify-end gap-2">
+                ${m.expended ? `
+                  <button onclick="useOrRecoverManeuver(${slotIdx})" class="flex-1 text-xs font-bold py-1 px-2.5 rounded-lg border transition shadow flex items-center justify-center gap-1.5 cursor-pointer bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-700" title="Manevrayı Yenile (Recover)">
+                    <span>🔄</span>
+                    <span>Yenile</span>
+                  </button>
+                ` : (dmgExpr ? `
+                  <button onclick="useOrRecoverManeuver(${slotIdx})" class="flex-1 bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white border border-amber-600/80 text-xs font-bold font-mono py-1 px-2.5 rounded-lg transition shadow flex items-center justify-center gap-1.5 cursor-pointer" title="Manevrayı Kullan & Hasar Zarını Yuvarla (${dmgExpr})">
                     ${getD20IconSvg('w-3.5 h-3.5 text-amber-400 shrink-0')}
                     <span>${dmgExpr}</span>
                   </button>
-                ` : ''}
+                ` : `
+                  <button onclick="useOrRecoverManeuver(${slotIdx})" class="flex-1 bg-rose-950 hover:bg-rose-800 text-rose-200 hover:text-white border border-rose-600 text-xs font-bold py-1 px-2.5 rounded-lg transition shadow flex items-center justify-center gap-1.5 cursor-pointer" title="Manevrayı Kullan (Harca)">
+                    <span>⚡</span>
+                    <span>Kullan</span>
+                  </button>
+                `)}
 
-                <button onclick="toggleManeuverReadied('${escape(m.name)}')" class="bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white text-xs px-2 py-1 rounded-lg border border-slate-700 transition cursor-pointer" title="Kuşanmayı Bırak (Havuzda tut)">
+                <button onclick="toggleManeuverReadied('${escape(m.name)}')" class="w-6 h-6 inline-flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-rose-400 text-xs rounded-lg border border-slate-700 transition cursor-pointer shrink-0" title="Kuşanmayı Bırak (Slot Boş Kalır)">
                   ✕
                 </button>
               </div>
             `;
-            container.appendChild(div);
-          });
+          } else {
+            div.className = 'p-3.5 rounded-xl border border-dashed border-rose-500/40 bg-slate-950/40 hover:bg-rose-950/20 flex flex-col justify-between transition-all cursor-pointer group';
+            div.onclick = (e) => {
+              if (e.target.closest('button')) return;
+              openManeuverPickerModal('Maneuver');
+            };
+            div.innerHTML = `
+              <div class="space-y-1.5 mb-3">
+                <div class="flex items-center justify-between gap-1">
+                  <span class="badge bg-slate-900 text-slate-500 border border-slate-800 text-[10px] font-bold">Hazır Yuva #${slotIdx + 1}</span>
+                  <span class="badge bg-slate-900 text-rose-300/70 border border-rose-900/50 text-[10px]">Boş Slot</span>
+                </div>
+                <h4 class="text-xs font-bold text-rose-300/80 group-hover:text-rose-200 italic">+ Savaşa Manevra Kuşan</h4>
+                <p class="text-[11px] text-slate-500">Aşağıdaki bilinen manevra havuzundan bir manevrayı kuşanın veya yeni manevra seçmek için tıklayın.</p>
+              </div>
+              <div class="pt-2 border-t border-slate-800/60 flex items-center justify-end">
+                <button type="button" onclick="openManeuverPickerModal('Maneuver')" class="w-full bg-rose-950/70 hover:bg-rose-900 text-rose-300 hover:text-white border border-dashed border-rose-500/60 text-xs font-bold py-1 px-2.5 rounded-lg transition flex items-center justify-center gap-1 cursor-pointer">
+                  <span>⚔️</span>
+                  <span>+ Manevra Seç / Kuşan</span>
+                </button>
+              </div>
+            `;
+          }
+          container.appendChild(div);
         }
       }
 
-      // 2. Maneuvers & Stances Library Table
+      // Render Type Filter Pills
+      const typeFilter = window._maneuverCurrentTypeFilter || 'all';
+      const pillsEl = document.getElementById('maneuver-type-filter-pills');
+      if (pillsEl) {
+        const types = [
+          { key: 'all', label: 'Tümü' },
+          { key: 'maneuver', label: '⚔️ Manevralar' },
+          { key: 'stance', label: '🥋 Duruşlar (Stance)' }
+        ];
+        pillsEl.innerHTML = types.map(t => `
+          <button type="button" onclick="setManeuverTypeFilter('${t.key}')" class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer border ${
+            typeFilter === t.key ? 'bg-rose-800 text-white border-rose-500 shadow' : 'bg-slate-950 text-slate-400 hover:text-white border-slate-800'
+          }">${t.label}</button>
+        `).join('');
+      }
+
+      // 2. Maneuvers & Stances Library Table (Fixed quota rows + Right-aligned actions)
       const libTbody = document.getElementById('maneuvers-library-tbody');
       if (libTbody) {
         libTbody.innerHTML = '';
+        const searchVal = (document.getElementById('maneuver-filter-search')?.value || '').toLowerCase().trim();
+        const discVal = document.getElementById('maneuver-filter-discipline')?.value || 'all';
         const readiedNames = (character.tomeOfBattle.readiedManeuvers || []).map(m => (m.name || '').toLowerCase().trim());
-        const maxReadied = 3;
 
-        // Maneuvers
-        (character.tomeOfBattle.maneuversKnown || []).forEach(m => {
+        const maneuvers = character.tomeOfBattle.maneuversKnown || [];
+        const stances = character.tomeOfBattle.stancesKnown || [];
+
+        const renderManeuverLibRow = (m) => {
           const isReadied = readiedNames.includes((m.name || '').toLowerCase().trim());
+          const dmgExpr = m.damageDice || findDiceExpression(m.notes || m.benefit);
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-slate-900/60 transition';
           tr.innerHTML = `
             <td class="py-2.5 px-3 text-rose-400 font-bold font-mono text-center">${m.level || 1}</td>
-            <td class="py-2.5 px-3 font-bold text-white">${m.name}</td>
-            <td class="py-2.5 px-3 text-slate-300">${m.discipline}</td>
+            <td class="py-2.5 px-3 font-bold text-white flex items-center gap-1.5">
+              <span>⚔️</span>
+              <span>${m.name}</span>
+            </td>
+            <td class="py-2.5 px-3 text-slate-300">
+              <span class="badge bg-rose-950/60 text-rose-300 border border-rose-800/80 text-[10px] font-semibold">${m.discipline || 'Iron Heart'}</span>
+            </td>
             <td class="py-2.5 px-3 text-amber-300 text-[11px]">${m.action || 'Standard Action'}</td>
             <td class="py-2.5 px-3 text-slate-300 text-[11px]">${m.notes || m.benefit || '-'}</td>
-            <td class="py-2.5 px-3 text-center">
-              ${isReadied ? `
-                <button onclick="toggleManeuverReadied('${escape(m.name)}')" class="bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 text-xs font-bold px-2.5 py-1 rounded-lg transition shadow cursor-pointer">
-                  ✓ Kuşanıldı (Çıkar)
+            <td class="py-2.5 px-3 text-right align-middle">
+              <div class="flex items-center justify-end gap-2 w-full">
+                ${dmgExpr ? `
+                  <button onclick="rollSpellOrManeuverFormula('${dmgExpr}', '${m.name} Hasarı')" class="bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white text-xs font-bold font-mono px-2 py-1 rounded-lg border border-amber-600/80 shadow transition inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="Hasar Zarı Yuvarla (${dmgExpr})">
+                    ${getD20IconSvg('w-3.5 h-3.5 text-amber-400 shrink-0')}
+                    <span>${dmgExpr}</span>
+                  </button>
+                ` : ''}
+                ${isReadied ? `
+                  <button onclick="toggleManeuverReadied('${escape(m.name)}')" class="bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 text-xs font-bold px-2.5 py-1 rounded-lg transition shadow inline-flex items-center justify-center cursor-pointer whitespace-nowrap">
+                    ✓ Kuşanıldı
+                  </button>
+                ` : `
+                  <button onclick="toggleManeuverReadied('${escape(m.name)}')" ${character.tomeOfBattle.readiedManeuvers.length >= maxReadied ? 'disabled' : ''} class="bg-slate-800 hover:bg-rose-900 disabled:opacity-40 text-slate-300 hover:text-white border border-slate-700 hover:border-rose-600 text-xs font-bold px-2.5 py-1 rounded-lg transition shadow inline-flex items-center justify-center cursor-pointer whitespace-nowrap">
+                    + Savaşa Kuşan
+                  </button>
+                `}
+                <button onclick="deleteManeuverFromLibrary('${escape(m.name)}', false)" class="w-6 h-6 inline-flex items-center justify-center text-slate-500 hover:text-rose-400 text-xs transition cursor-pointer shrink-0" title="Manevrayı Sil (Slot Boş Kalır)">
+                  🗑️
                 </button>
-              ` : `
-                <button onclick="toggleManeuverReadied('${escape(m.name)}')" ${character.tomeOfBattle.readiedManeuvers.length >= maxReadied ? 'disabled' : ''} class="bg-slate-800 hover:bg-rose-900 disabled:opacity-40 text-slate-300 hover:text-white border border-slate-700 hover:border-rose-600 text-xs font-bold px-2.5 py-1 rounded-lg transition shadow cursor-pointer">
-                  + Savaşa Kuşan
-                </button>
-              `}
-            </td>
-            <td class="py-2.5 px-3 text-center">
-              <button onclick="deleteManeuverFromLibrary('${escape(m.name)}', false)" class="text-slate-500 hover:text-rose-400 text-xs p-1 transition cursor-pointer" title="Havuzdan Sil">
-                🗑️
-              </button>
+              </div>
             </td>
           `;
           libTbody.appendChild(tr);
-        });
+        };
 
-        // Stances
-        (character.tomeOfBattle.stancesKnown || []).forEach(st => {
+        const renderEmptyManeuverLibRow = (slotNum) => {
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-rose-950/20 transition cursor-pointer group bg-slate-950/20';
+          tr.onclick = (e) => {
+            if (e.target.closest('button')) return;
+            openManeuverPickerModal('Maneuver');
+          };
+          tr.innerHTML = `
+            <td class="py-2.5 px-3 text-rose-400/60 font-bold font-mono text-center">≤${initInfo.maxManeuverLvl}</td>
+            <td class="py-2.5 px-3">
+              <button type="button" onclick="openManeuverPickerModal('Maneuver')" class="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-300/80 group-hover:text-rose-100 cursor-pointer">
+                <span class="w-4 h-4 rounded border border-dashed border-rose-500/70 bg-rose-950/60 flex items-center justify-center text-[10px] text-rose-300 group-hover:bg-rose-800 transition">+</span>
+                <span class="italic">+ Manevra Seç (Boş Slot #${slotNum})</span>
+              </button>
+            </td>
+            <td class="py-2.5 px-3 text-slate-500 text-[10px] italic">-</td>
+            <td class="py-2.5 px-3 text-slate-500 text-[10px] italic">Manevra</td>
+            <td class="py-2.5 px-3 text-slate-500 text-[11px] italic">Bu manevra slotu boş. Maksimum ${initInfo.maxManeuverLvl}. seviye manevra öğrenmek için tıklayın.</td>
+            <td class="py-2.5 px-3 text-right align-middle">
+              <div class="flex items-center justify-end gap-2 w-full">
+                <button type="button" onclick="openManeuverPickerModal('Maneuver')" class="bg-rose-950/80 hover:bg-rose-900 text-rose-300 hover:text-white border border-dashed border-rose-500/80 text-xs font-bold px-2.5 py-1 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap">
+                  <span>⚔️</span>
+                  <span>+ Manevra Seç</span>
+                </button>
+                <span class="w-6 h-6 shrink-0 inline-block"></span>
+              </div>
+            </td>
+          `;
+          libTbody.appendChild(tr);
+        };
+
+        const renderStanceLibRow = (st) => {
           const isActive = (character.activeStance || '').toLowerCase().trim() === (st.name || '').toLowerCase().trim();
+          const dmgExpr = st.damageDice || findDiceExpression(st.benefit);
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-slate-900/60 transition bg-slate-950/30';
           tr.innerHTML = `
@@ -10609,36 +11512,153 @@
               <span>🥋</span>
               <span>${st.name}</span>
             </td>
-            <td class="py-2.5 px-3 text-slate-300">${st.discipline}</td>
+            <td class="py-2.5 px-3 text-slate-300">
+              <span class="badge bg-teal-950/60 text-teal-300 border border-teal-800/80 text-[10px] font-semibold">${st.discipline || 'Iron Heart'}</span>
+            </td>
             <td class="py-2.5 px-3 text-teal-300 text-[11px]">Duruş (Stance) • Swift</td>
             <td class="py-2.5 px-3 text-slate-300 text-[11px]">${st.benefit || '-'}</td>
-            <td class="py-2.5 px-3 text-center">
-              ${isActive ? `
-                <span class="badge bg-teal-950 text-teal-300 border border-teal-600 text-xs font-bold px-2.5 py-1">
-                  🥋 Aktif Duruş
-                </span>
-              ` : `
-                <button onclick="selectStanceDirectly('${escape(st.name)}')" class="bg-slate-800 hover:bg-teal-900 text-teal-300 border border-slate-700 hover:border-teal-600 text-xs font-bold px-2.5 py-1 rounded-lg transition shadow cursor-pointer">
-                  Duruşa Geç
+            <td class="py-2.5 px-3 text-right align-middle">
+              <div class="flex items-center justify-end gap-2 w-full">
+                ${dmgExpr ? `
+                  <button onclick="rollSpellOrManeuverFormula('${dmgExpr}', '${st.name} Hasarı')" class="bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white text-xs font-bold font-mono px-2 py-1 rounded-lg border border-amber-600/80 shadow transition inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="Duruş Hasar Zarı (${dmgExpr})">
+                    ${getD20IconSvg('w-3.5 h-3.5 text-amber-400 shrink-0')}
+                    <span>${dmgExpr}</span>
+                  </button>
+                ` : ''}
+                ${isActive ? `
+                  <span class="badge bg-teal-950 text-teal-300 border border-teal-600 text-xs font-bold px-2.5 py-1 whitespace-nowrap">
+                    🥋 Aktif Duruş
+                  </span>
+                ` : `
+                  <button onclick="selectStanceDirectly('${escape(st.name)}')" class="bg-slate-800 hover:bg-teal-900 text-teal-300 border border-slate-700 hover:border-teal-600 text-xs font-bold px-2.5 py-1 rounded-lg transition shadow inline-flex items-center justify-center cursor-pointer whitespace-nowrap">
+                    Duruşa Geç
+                  </button>
+                `}
+                <button onclick="deleteManeuverFromLibrary('${escape(st.name)}', true)" class="w-6 h-6 inline-flex items-center justify-center text-slate-500 hover:text-rose-400 text-xs transition cursor-pointer shrink-0" title="Duruşu Sil (Slot Boş Kalır)">
+                  🗑️
                 </button>
-              `}
-            </td>
-            <td class="py-2.5 px-3 text-center">
-              <button onclick="deleteManeuverFromLibrary('${escape(st.name)}', true)" class="text-slate-500 hover:text-rose-400 text-xs p-1 transition cursor-pointer" title="Havuzdan Sil">
-                🗑️
-              </button>
+              </div>
             </td>
           `;
           libTbody.appendChild(tr);
+        };
+
+        const renderEmptyStanceLibRow = (slotNum) => {
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-teal-950/20 transition cursor-pointer group bg-slate-950/20';
+          tr.onclick = (e) => {
+            if (e.target.closest('button')) return;
+            openManeuverPickerModal('Stance');
+          };
+          tr.innerHTML = `
+            <td class="py-2.5 px-3 text-teal-400/60 font-bold font-mono text-center">≤${initInfo.maxManeuverLvl}</td>
+            <td class="py-2.5 px-3">
+              <button type="button" onclick="openManeuverPickerModal('Stance')" class="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-300/80 group-hover:text-teal-100 cursor-pointer">
+                <span class="w-4 h-4 rounded border border-dashed border-teal-500/70 bg-teal-950/60 flex items-center justify-center text-[10px] text-teal-300 group-hover:bg-teal-800 transition">+</span>
+                <span class="italic">+ Duruş Seç (Boş Stance Slotu #${slotNum})</span>
+              </button>
+            </td>
+            <td class="py-2.5 px-3 text-slate-500 text-[10px] italic">-</td>
+            <td class="py-2.5 px-3 text-teal-500/70 text-[10px] italic">Duruş (Stance)</td>
+            <td class="py-2.5 px-3 text-slate-500 text-[11px] italic">Bu duruş (stance) slotu boş. Yeni savaş duruşu öğrenmek için tıklayın.</td>
+            <td class="py-2.5 px-3 text-right align-middle">
+              <div class="flex items-center justify-end gap-2 w-full">
+                <button type="button" onclick="openManeuverPickerModal('Stance')" class="bg-teal-950/80 hover:bg-teal-900 text-teal-300 hover:text-white border border-dashed border-teal-500/80 text-xs font-bold px-2.5 py-1 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap">
+                  <span>🥋</span>
+                  <span>+ Duruş Seç</span>
+                </button>
+                <span class="w-6 h-6 shrink-0 inline-block"></span>
+              </div>
+            </td>
+          `;
+          libTbody.appendChild(tr);
+        };
+
+        const isFiltering = Boolean(searchVal || discVal !== 'all');
+
+        if (typeFilter === 'all' || typeFilter === 'maneuver') {
+          if (isFiltering) {
+            maneuvers.filter(m => {
+              if (discVal !== 'all' && (m.discipline || '').toLowerCase() !== discVal.toLowerCase()) return false;
+              if (searchVal) {
+                const str = `${m.name || ''} ${m.discipline || ''} ${m.notes || ''} ${m.benefit || ''}`.toLowerCase();
+                if (!str.includes(searchVal)) return false;
+              }
+              return true;
+            }).forEach(m => renderManeuverLibRow(m));
+          } else {
+            const totalMRows = Math.max(maxKnownManeuvers, maneuvers.length);
+            for (let i = 0; i < totalMRows; i++) {
+              if (i < maneuvers.length) renderManeuverLibRow(maneuvers[i]);
+              else renderEmptyManeuverLibRow(i + 1);
+            }
+          }
+        }
+
+        if (typeFilter === 'all' || typeFilter === 'stance') {
+          if (isFiltering) {
+            stances.filter(st => {
+              if (discVal !== 'all' && (st.discipline || '').toLowerCase() !== discVal.toLowerCase()) return false;
+              if (searchVal) {
+                const str = `${st.name || ''} ${st.discipline || ''} ${st.benefit || ''}`.toLowerCase();
+                if (!str.includes(searchVal)) return false;
+              }
+              return true;
+            }).forEach(st => renderStanceLibRow(st));
+          } else {
+            const totalSRows = Math.max(maxKnownStances, stances.length);
+            for (let i = 0; i < totalSRows; i++) {
+              if (i < stances.length) renderStanceLibRow(stances[i]);
+              else renderEmptyStanceLibRow(i + 1);
+            }
+          }
+        }
+      }
+    }
+
+    function setManeuverTypeFilter(typeKey) {
+      window._maneuverCurrentTypeFilter = typeKey;
+      renderManeuvers();
+    }
+
+    function openManeuverPickerModal(type = 'Maneuver') {
+      window._spellPickerTargetPool = 'martial';
+      openSpellManeuverPickerModal(type, 'all');
+    }
+
+    function useOrRecoverManeuver(idx) {
+      const m = character?.tomeOfBattle?.readiedManeuvers?.[idx];
+      if (!m) return;
+      if (m.expended) {
+        m.expended = false;
+        renderManeuvers();
+        saveStateToStorage();
+        showDiceTopToast({
+          icon: '🔄',
+          title: m.name,
+          breakdown: 'Manevra tazelendi ve tekrar kullanıma hazır',
+          total: 'Hazır'
         });
+      } else {
+        m.expended = true;
+        const dmgExpr = m.damageDice || findDiceExpression(m.notes || m.benefit);
+        renderManeuvers();
+        saveStateToStorage();
+        if (dmgExpr) {
+          rollSpellOrManeuverFormula(dmgExpr, `${m.name} (Manevra Kullanıldı)`);
+        } else {
+          showDiceTopToast({
+            icon: '⚡',
+            title: m.name,
+            breakdown: `${m.discipline || 'Martial'} manevrası kullanıldı`,
+            total: 'Harcandı'
+          });
+        }
       }
     }
 
     function toggleManeuverExpended(idx) {
-      if (!character?.tomeOfBattle?.readiedManeuvers?.[idx]) return;
-      character.tomeOfBattle.readiedManeuvers[idx].expended = !character.tomeOfBattle.readiedManeuvers[idx].expended;
-      renderManeuvers();
-      saveStateToStorage();
+      useOrRecoverManeuver(idx);
     }
 
     function toggleManeuverReadied(escapedName) {
@@ -10646,20 +11666,19 @@
       const cleanName = (name || '').toLowerCase().trim();
       const readied = character.tomeOfBattle.readiedManeuvers || [];
       const existingIdx = readied.findIndex(m => (m.name || '').toLowerCase().trim() === cleanName);
+      const { maxReadied } = getInitiatorInfo();
 
       if (existingIdx >= 0) {
-        // Unready
         readied.splice(existingIdx, 1);
         showDiceTopToast({
           icon: '⚔️',
           title: 'Manevra Çıkarıldı',
-          breakdown: `"${name}" savaş masasından çıkarıldı`,
+          breakdown: `"${name}" savaş masasından çıkarıldı (Slot boş bırakıldı)`,
           total: '-1 Kuşanılan'
         });
       } else {
-        // Ready
-        if (readied.length >= 3) {
-          alert('⚠️ Maksimum kuşanılabilir manevra kotanız doldu (3/3). Birini çıkarmadan yenisini kuşanamazsınız.');
+        if (readied.length >= maxReadied) {
+          alert(`⚠️ Maksimum kuşanılabilir manevra kotanız doldu (${maxReadied}/${maxReadied}). Birini çıkarmadan yenisini kuşanamazsınız.`);
           return;
         }
         const knownItem = (character.tomeOfBattle.maneuversKnown || []).find(m => (m.name || '').toLowerCase().trim() === cleanName);
@@ -10731,7 +11750,6 @@
         if (idx >= 0) {
           character.tomeOfBattle.maneuversKnown.splice(idx, 1);
         }
-        // Also remove from readied if present
         const rIdx = (character.tomeOfBattle?.readiedManeuvers || []).findIndex(m => (m.name || '').toLowerCase().trim() === cleanName);
         if (rIdx >= 0) {
           character.tomeOfBattle.readiedManeuvers.splice(rIdx, 1);
@@ -10743,24 +11761,21 @@
       showDiceTopToast({
         icon: '🗑️',
         title: 'Yetenek Silindi',
-        breakdown: `"${name}" havuzdan kaldırıldı`,
-        total: 'Silindi'
+        breakdown: `"${name}" silindi. Slot boş bırakıldı.`,
+        total: 'Slot Boş'
       });
     }
 
     function getSpellsKnownQuota(lvl) {
       const numLvl = Number(lvl) || 0;
-      // 1. Check if defined in character.spellcasting.slots
       const slot = character?.spellcasting?.slots?.find(s => Number(s.level) === numLvl);
       if (slot && typeof slot.known === 'number' && slot.known > 0) {
         return slot.known;
       }
 
-      // 2. Compute based on Caster Level and primary class (default Sorcerer)
       const { cl, primaryClass } = getCasterInfo();
       const casterLvl = Math.min(20, Math.max(1, Number(cl) || 1));
 
-      // D&D 3.5e Sorcerer Spells Known Table (PHB Table 3-17)
       const sorcKnownTable = [
         [],
         [4, 2],
@@ -10834,7 +11849,6 @@
 
       const spells = character?.spellcasting?.knownSpells || [];
 
-      // Determine available spell levels
       const slotLevels = (character?.spellcasting?.slots || []).map(s => Number(s.level));
       const knownLevels = spells.map(s => Number(s.level));
       const allLevelsSet = new Set([...slotLevels, ...knownLevels]);
@@ -10845,7 +11859,6 @@
       }
       const allLevels = Array.from(allLevelsSet).sort((a, b) => a - b);
 
-      // Render Level Filter Pills
       const pillsContainer = document.getElementById('spell-level-filter-pills');
       if (pillsContainer) {
         const levelsArr = ['all', ...allLevels];
@@ -10870,7 +11883,6 @@
       let totalRendered = 0;
 
       displayLevels.forEach(lvl => {
-        // Collect known spells of this level with their original indices
         const spellsAtLvl = [];
         spells.forEach((s, idx) => {
           if (Number(s.level || 0) === lvl) {
@@ -10879,7 +11891,6 @@
         });
 
         if (searchVal || schoolVal !== 'all') {
-          // Filtered view: only display matching spells
           const matching = spellsAtLvl.filter(({ s }) => {
             if (schoolVal !== 'all') {
               if ((s.school || '').toLowerCase() !== schoolVal.toLowerCase()) return false;
@@ -10898,7 +11909,6 @@
             renderSpellRow(s, idx, lvl);
           });
         } else {
-          // Standard slot mode: Render exactly the quota of rows for this level
           const quota = getSpellsKnownQuota(lvl);
           const totalRows = Math.max(quota, spellsAtLvl.length);
 
@@ -11038,7 +12048,6 @@
       if (slot && slot.used < slot.daily) {
         slot.used++;
 
-        // Auto-activate corresponding buff if available
         let buffApplied = null;
         const cleanName = (name || '').toLowerCase().trim();
         if (Array.isArray(character.buffs)) {
@@ -11103,6 +12112,7 @@
     }
 
     function openSpellPickerForSpecificLevel(lvl) {
+      window._spellPickerTargetPool = 'spontaneous';
       openSpellManeuverPickerModal('Spell', lvl);
     }
 
@@ -11139,6 +12149,7 @@
       if (!container) return;
 
       const type = window._currentSpellPickerType || 'Spell';
+      const targetPool = window._spellPickerTargetPool || 'spontaneous';
       const query = (document.getElementById('spell-picker-search')?.value || '').toLowerCase().trim();
       const levelFilter = document.getElementById('spell-picker-level-filter')?.value || 'all';
 
@@ -11191,7 +12202,10 @@
         let alreadyKnown = false;
 
         if (type === 'Spell') {
-          alreadyKnown = (character.spellcasting?.knownSpells || []).some(s => (s.name || '').toLowerCase().trim() === cleanName);
+          const targetArr = targetPool === 'prepared'
+            ? (character.spellcasting?.preparedSpells || [])
+            : (targetPool === 'divine' ? (character.spellcasting?.divineSpells || []) : (character.spellcasting?.knownSpells || []));
+          alreadyKnown = targetArr.some(s => (s.name || '').toLowerCase().trim() === cleanName);
         } else if (type === 'Maneuver') {
           alreadyKnown = (character.tomeOfBattle?.maneuversKnown || []).some(m => (m.name || '').toLowerCase().trim() === cleanName);
         } else if (type === 'Stance') {
@@ -11217,7 +12231,7 @@
           <div class="shrink-0">
             ${alreadyKnown ? `
               <span class="text-[11px] text-emerald-400 font-bold px-2.5 py-1 bg-emerald-950/60 border border-emerald-700 rounded-lg inline-flex items-center gap-1">
-                ✓ Biliniyor
+                ✓ Eklendi
               </span>
             ` : `
               <button type="button" onclick="addMasterDbItemToCharacter('${escape(item.name)}')" class="bg-purple-700 hover:bg-purple-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg border border-purple-500 shadow transition flex items-center gap-1 cursor-pointer">
@@ -11237,22 +12251,18 @@
       if (!item) return;
 
       const type = window._currentSpellPickerType || 'Spell';
+      const targetPool = window._spellPickerTargetPool || 'spontaneous';
 
       if (type === 'Spell') {
         if (!character.spellcasting) character.spellcasting = {};
-        if (!Array.isArray(character.spellcasting.knownSpells)) character.spellcasting.knownSpells = [];
-
-        const exists = character.spellcasting.knownSpells.some(s => (s.name || '').toLowerCase().trim() === name.toLowerCase().trim());
-        if (exists) {
-          alert('Bu büyü zaten bilinen büyüler listenizde var.');
-          return;
-        }
+        const poolKey = targetPool === 'prepared' ? 'preparedSpells' : (targetPool === 'divine' ? 'divineSpells' : 'knownSpells');
+        if (!Array.isArray(character.spellcasting[poolKey])) character.spellcasting[poolKey] = [];
 
         const resolvedLvl = item.level !== undefined
           ? Number(item.level)
           : ((Array.isArray(item.tags) && item.tags.some(t => String(t).toLowerCase() === 'cantrip')) ? 0 : 1);
 
-        character.spellcasting.knownSpells.push({
+        character.spellcasting[poolKey].push({
           name: item.name,
           level: resolvedLvl,
           school: item.school || 'Universal',
@@ -11266,9 +12276,9 @@
         renderAll();
         renderSpellPickerResults();
         showDiceTopToast({
-          icon: '🔮',
-          title: 'Büyü Öğrenildi',
-          breakdown: `"${item.name}" bilinen büyüler listenize eklendi`,
+          icon: targetPool === 'prepared' ? '📖' : (targetPool === 'divine' ? '✨' : '🔮'),
+          title: 'Büyü Eklendi',
+          breakdown: `"${item.name}" büyü havuzunuza eklendi`,
           total: '+1 Büyü'
         });
       } else if (type === 'Maneuver') {
@@ -11287,13 +12297,15 @@
           level: item.level !== undefined ? Number(item.level) : 1,
           discipline: item.discipline || 'Iron Heart',
           action: item.action || 'Standard Action',
+          damageDice: item.damageDice || undefined,
           notes: item.benefit || item.description || '',
           expended: false
         };
 
         character.tomeOfBattle.maneuversKnown.push(newManeuver);
 
-        if (character.tomeOfBattle.readiedManeuvers.length < 3) {
+        const { maxReadied } = getInitiatorInfo();
+        if (character.tomeOfBattle.readiedManeuvers.length < maxReadied) {
           character.tomeOfBattle.readiedManeuvers.push({ ...newManeuver });
         }
 
@@ -11320,6 +12332,7 @@
           name: item.name,
           level: item.level !== undefined ? Number(item.level) : 1,
           discipline: item.discipline || 'Iron Heart',
+          damageDice: item.damageDice || undefined,
           benefit: item.benefit || item.description || ''
         });
 
