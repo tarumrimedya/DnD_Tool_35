@@ -134,10 +134,6 @@
             </h3>
             <div class="flex items-center gap-2">
               <span class="text-[10px] text-slate-400 hidden sm:inline">24H Eşya ve Geçici Modifiyeler Dahil</span>
-              <button onclick="openStatDistributionModal()" type="button" class="text-[10px] bg-slate-800 hover:bg-purple-900/60 border border-slate-700 hover:border-purple-500 text-purple-300 font-bold px-2 py-0.5 rounded transition cursor-pointer flex items-center gap-1 active:scale-95" title="Stat dağılımını ayarla">
-                <span class="inline-flex items-center"><svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"></polygon><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"></polygon><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"></line><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
-                <span>Düzenle</span>
-              </button>
             </div>
           </div>
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-center" id="abilities-grid">
@@ -817,7 +813,7 @@
               </div>
             </div>
             <div class="flex items-center gap-2">
-              <button type="button" onclick="openStatDistributionModal()" class="bg-gradient-to-r from-purple-800/90 to-indigo-800/90 hover:from-purple-700 hover:to-indigo-700 text-purple-100 hover:text-white border border-purple-500/60 font-bold text-xs px-3 py-1.5 rounded-lg transition shadow-md flex items-center gap-1.5 cursor-pointer active:scale-95" title="Karakter temel statlarını (STR, DEX, CON, INT, WIS, CHA) düzenle, Point Buy veya 4d6 zar ile belirle">
+              <button id="btn-open-stat-dist" type="button" onclick="openStatDistributionModal()" class="bg-gradient-to-r from-purple-800/90 to-indigo-800/90 hover:from-purple-700 hover:to-indigo-700 text-purple-100 hover:text-white border border-purple-500/60 font-bold text-xs px-3 py-1.5 rounded-lg transition shadow-md flex items-center gap-1.5 cursor-pointer active:scale-95" title="Karakter temel statlarını (STR, DEX, CON, INT, WIS, CHA) düzenle, Point Buy veya 4d6 zar ile belirle">
                 <span class="inline-flex items-center"><svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"></polygon><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"></polygon><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"></line><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
                 <span>Statları Düzenle</span>
               </button>
@@ -7235,7 +7231,21 @@
       if (raceBadge) raceBadge.textContent = race;
 
       const lvlBadge = document.getElementById('core-profile-level-badge');
-      if (lvlBadge) lvlBadge.textContent = `Seviye ${character.level || 1}`;
+      const charLevel = (character.levelProgression || []).filter(p => p.active !== false).length || Number(character.level) || 1;
+      if (lvlBadge) lvlBadge.textContent = `Seviye ${charLevel}`;
+
+      const statDistBtn = document.getElementById('btn-open-stat-dist');
+      if (statDistBtn) {
+        if (charLevel === 1) {
+          statDistBtn.disabled = false;
+          statDistBtn.className = "bg-gradient-to-r from-purple-800/90 to-indigo-800/90 hover:from-purple-700 hover:to-indigo-700 text-purple-100 hover:text-white border border-purple-500/60 font-bold text-xs px-3 py-1.5 rounded-lg transition shadow-md flex items-center gap-1.5 cursor-pointer active:scale-95";
+          statDistBtn.title = "Karakter temel statlarını (STR, DEX, CON, INT, WIS, CHA) düzenle, Point Buy veya 4d6 zar ile belirle";
+        } else {
+          statDistBtn.disabled = true;
+          statDistBtn.className = "bg-slate-800/40 text-slate-500 border border-slate-700/50 font-bold text-xs px-3 py-1.5 rounded-lg transition shadow-none flex items-center gap-1.5 cursor-not-allowed opacity-50";
+          statDistBtn.title = `Temel stat dağılımı (Point Buy / 4d6 Roll) yalnızca 1. Seviyede belirlenebilir. (Mevcut Seviye: ${charLevel})`;
+        }
+      }
 
       const classesEl = document.getElementById('core-profile-classes');
       if (classesEl) classesEl.textContent = character.classes || "Belirtilmemiş";
@@ -7395,6 +7405,12 @@
 
     function openStatDistributionModal() {
       if (!character) return;
+      
+      const currentLvl = (character.levelProgression || []).filter(p => p.active !== false).length || Number(character.level) || 1;
+      if (currentLvl > 1) {
+        alert(`⚠️ Temel stat dağılımı (Point Buy / 4d6 Roll) yalnızca 1. Seviyede belirlenebilir.\nMevcut Karakter Seviyeniz: ${currentLvl}`);
+        return;
+      }
       
       // Taban statları karakterin mevcut gerçek taban değerlerinden oku
       statDistState.workingAbilities = {
