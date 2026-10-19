@@ -5550,25 +5550,37 @@
               </div>
             </div>
 
-            <!-- 3. CASTER CL KURALI (CASTER LEVEL RULE) -->
+            <!-- 3. CASTER CL KURALI (CASTER LEVEL RULE) & CASTER TYPE -->
             <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5 hover:border-slate-700 transition">
               <div class="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <div class="font-bold text-purple-300 flex items-center gap-1.5 text-xs">
                     <span>🔮</span>
-                    <span>Caster Level (CL) Kuralı</span>
+                    <span>Caster Level (CL) Kuralı & Caster Tipi</span>
                     <span class="badge bg-purple-950 text-purple-300 border border-purple-700 text-[9px]">Masa Kuralı</span>
                   </div>
-                  <div class="text-[10px] text-slate-400 mt-0.5">Çoklu sınıflarda Caster Level hesaplama kuralı.</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Çoklu sınıflarda Caster / Initiator Level kuralı ve uygulanacağı caster disiplini.</div>
                 </div>
-                <div class="flex items-center gap-1.5">
-                  <label class="text-[10px] font-bold text-purple-400 uppercase">🔮 Caster CL Kuralı:</label>
-                  <select id="setting-cl-mode" onchange="onSettingClModeChange()" class="bg-slate-900 border border-slate-700 text-purple-300 font-semibold text-[11px] rounded px-2 py-1 focus:outline-none focus:border-purple-400">
-                    <option value="Character Level (DM Boon)">Character Level (DM Boon: CL = Karakter Seviyesi)</option>
-                    <option value="Warlock Boon (Invocations & Eldritch Blast)">Warlock Boon (CL = Karakter Seviyesi + Invocations)</option>
-                    <option value="Class Level">Class Level (Yalnızca Sınıf Seviyesi)</option>
-                    <option value="Custom">Custom (Manuel)</option>
-                  </select>
+                <div class="flex flex-wrap items-center gap-2">
+                  <div class="flex items-center gap-1.5">
+                    <label class="text-[10px] font-bold text-purple-400 uppercase whitespace-nowrap">🔮 CL Kuralı:</label>
+                    <select id="setting-cl-mode" onchange="onSettingClModeChange()" class="bg-slate-900 border border-slate-700 text-purple-300 font-semibold text-[11px] rounded px-2 py-1 focus:outline-none focus:border-purple-400">
+                      <option value="Character Level (DM Boon)">Character Level (DM Boon: CL = Karakter Seviyesi)</option>
+                      <option value="Warlock Boon (Invocations & Eldritch Blast)">Warlock Boon (CL = Karakter Seviyesi + Invocations)</option>
+                      <option value="Class Level">Class Level (Yalnızca Sınıf Seviyesi)</option>
+                      <option value="Custom">Custom (Manuel)</option>
+                    </select>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <label class="text-[10px] font-bold text-indigo-400 uppercase whitespace-nowrap">🎯 Caster Tipi:</label>
+                    <select id="setting-caster-type" onchange="onSettingCasterTypeChange()" class="bg-slate-900 border border-slate-700 text-indigo-300 font-semibold text-[11px] rounded px-2 py-1 focus:outline-none focus:border-indigo-400">
+                      <option value="spontaneous">🔮 1. Doğal / Anlık (Sorcerer vb.)</option>
+                      <option value="prepared">📖 2. Kitaplı Hazırlık (Wizard vb.)</option>
+                      <option value="divine">✨ 3. İlahi Dua (Cleric vb.)</option>
+                      <option value="martial">⚔️ 4. Savaş Manevraları (Martial Adept / IL)</option>
+                      <option value="warlock">👁️ 5. Warlock (Yakarışlar & Blast)</option>
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>
@@ -6013,6 +6025,10 @@
       const clModeSel = document.getElementById('setting-cl-mode');
       if (clModeSel && character.settings?.clMode) {
         clModeSel.value = character.settings.clMode;
+      }
+      const casterTypeSel = document.getElementById('setting-caster-type');
+      if (casterTypeSel) {
+        casterTypeSel.value = character.settings?.casterType || 'spontaneous';
       }
       const asfChk = document.getElementById('setting-ignore-asf');
       if (asfChk) {
@@ -11363,9 +11379,11 @@
 
     function isWarlockEnabledForLevel(levelIdx = null) {
       if (!character) return false;
-      // 1. Check if Warlock Boon is active via settings or character boons
+      // 1. Check if Warlock Boon is active via settings, casterType or character boons
       const clMode = character.settings?.clMode || '';
+      const cType = character.settings?.casterType || '';
       const hasWarlockBoon = character.settings?.warlockBoon === true || 
+        cType === 'warlock' ||
         clMode.includes('Warlock Boon') ||
         (character.boons && character.boons.some(b => String(b.name || b).toLowerCase().includes('warlock')));
       if (hasWarlockBoon) return true;
@@ -11467,27 +11485,93 @@
       }
     }
 
+    function applyCasterLevelRule() {
+      if (!character) return;
+      if (!character.settings) character.settings = {};
+      const clMode = character.settings.clMode || 'Character Level (DM Boon)';
+      const cType = character.settings.casterType || 'spontaneous';
+      const isBoon = clMode === 'Character Level (DM Boon)' || clMode.includes('Warlock Boon');
+      const prog = character.levelProgression || [];
+      const activeLevels = prog.filter(p => p.active !== false).length || Number(character.level) || 6;
+
+      const sorcLvls = prog.filter(p => p.className === 'Sorcerer' && p.active !== false).length || 5;
+      const martialLvls = prog.filter(p => ['Warblade', 'Swordsage', 'Crusader'].includes(p.className) && p.active !== false).length || 1;
+      const otherLvls = activeLevels - martialLvls;
+
+      if (character.spellcasting) {
+        if (isBoon) {
+          if (cType === 'martial') {
+            character.spellcasting.cl = sorcLvls;
+          } else {
+            character.spellcasting.cl = activeLevels;
+          }
+        } else {
+          character.spellcasting.cl = sorcLvls;
+        }
+      }
+
+      if (character.tomeOfBattle) {
+        if (isBoon && cType === 'martial') {
+          character.tomeOfBattle.initiatorLevel = activeLevels;
+        } else {
+          character.tomeOfBattle.initiatorLevel = Math.max(1, martialLvls + Math.floor(otherLvls / 2));
+        }
+      }
+    }
+
     function onSettingClModeChange() {
       if (!character) return;
       if (!character.settings) character.settings = {};
       const sel = document.getElementById('setting-cl-mode');
       if (sel) {
         character.settings.clMode = sel.value;
-        const isBoon = sel.value === 'Character Level (DM Boon)' || sel.value.includes('Warlock Boon');
-        if (sel.value.includes('Warlock Boon')) {
-          character.settings.warlockBoon = true;
-        } else {
-          character.settings.warlockBoon = false;
+        const isWarlock = sel.value.includes('Warlock Boon');
+        character.settings.warlockBoon = isWarlock;
+
+        if (isWarlock) {
+          character.settings.casterType = 'warlock';
+          const typeSel = document.getElementById('setting-caster-type');
+          if (typeSel) typeSel.value = 'warlock';
+        } else if (character.settings.casterType === 'warlock') {
+          character.settings.casterType = 'spontaneous';
+          const typeSel = document.getElementById('setting-caster-type');
+          if (typeSel) typeSel.value = 'spontaneous';
         }
-        if (character.spellcasting) {
-          if (isBoon) {
-            character.spellcasting.cl = Number(character.level) || 6;
-          } else {
-            const prog = character.levelProgression || [];
-            const sorcLvls = prog.filter(p => p.className === 'Sorcerer').length || 5;
-            character.spellcasting.cl = sorcLvls;
+
+        applyCasterLevelRule();
+        saveStateToStorage(true);
+        if (typeof updateQuickFeatCategoryWarlockState === 'function') {
+          updateQuickFeatCategoryWarlockState();
+        }
+        renderSpellSlots();
+        renderLevelProgression();
+      }
+    }
+
+    function onSettingCasterTypeChange() {
+      if (!character) return;
+      if (!character.settings) character.settings = {};
+      const sel = document.getElementById('setting-caster-type');
+      if (sel) {
+        const cType = sel.value;
+        character.settings.casterType = cType;
+
+        const clSel = document.getElementById('setting-cl-mode');
+        if (cType === 'warlock') {
+          character.settings.warlockBoon = true;
+          if (clSel && !clSel.value.includes('Warlock Boon')) {
+            clSel.value = 'Warlock Boon (Invocations & Eldritch Blast)';
+            character.settings.clMode = clSel.value;
+          }
+        } else {
+          if (clSel && clSel.value.includes('Warlock Boon')) {
+            clSel.value = 'Character Level (DM Boon)';
+            character.settings.clMode = clSel.value;
+            character.settings.warlockBoon = false;
           }
         }
+
+        applyCasterLevelRule();
         saveStateToStorage(true);
         if (typeof updateQuickFeatCategoryWarlockState === 'function') {
           updateQuickFeatCategoryWarlockState();
@@ -14605,6 +14689,10 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       const clModeSel = document.getElementById('setting-cl-mode');
       if (clModeSel && character.settings?.clMode) {
         clModeSel.value = character.settings.clMode;
+      }
+      const casterTypeSel = document.getElementById('setting-caster-type');
+      if (casterTypeSel) {
+        casterTypeSel.value = character.settings?.casterType || 'spontaneous';
       }
       const asfChk = document.getElementById('setting-ignore-asf');
       if (asfChk) {
