@@ -10228,7 +10228,7 @@
               <span class="font-extrabold text-white text-xs whitespace-nowrap">${s.level === 0 ? '0 (Cantrip)' : s.level + '. Seviye'}</span>
               <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-purple-950/90 text-emerald-400 border border-purple-700/60 font-bold whitespace-nowrap" title="Save DC = 10 + ${s.level} + ${statKey}(+${statMod})">DC ${dc}</span>
             </div>
-            <span class="text-[10px] text-purple-300 font-mono mt-0.5">${s.level === 0 ? '6 Günlük' : (s.known ? s.known + ' Bilinen' : '')}</span>
+            <span class="text-[10px] text-purple-300 font-mono mt-0.5">${s.known ? s.known + ' Bilinen' : (s.level === 0 ? '6 Bilinen' : '')}</span>
           </div>
 
           <div class="h-7 w-px bg-slate-800 mx-2 shrink-0"></div>
