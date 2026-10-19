@@ -646,7 +646,7 @@
                       <th class="py-2.5 px-3 w-28">Menzil</th>
                       <th class="py-2.5 px-3 w-20 text-center">DC</th>
                       <th class="py-2.5 px-3">Etki & Açıklama</th>
-                      <th class="py-2.5 px-3 text-center w-36">İşlemler</th>
+                      <th class="py-2.5 px-3 text-right pr-4 w-40">İşlemler</th>
                     </tr>
                   </thead>
                   <tbody id="known-spells-tbody" class="divide-y divide-slate-800 font-medium">
@@ -10455,6 +10455,7 @@
 
       const onDone = () => {
         addDiceHistoryEntry({
+          icon: getD20IconSvg('w-5 h-5 text-amber-400'),
           title: `${title} (${clean})`,
           formula: clean,
           breakdown: breakdownStr,
@@ -10463,7 +10464,7 @@
           critInfo: ''
         });
         showDiceTopToast({
-          icon: '🎲',
+          icon: getD20IconSvg('w-6 h-6 text-amber-400'),
           title: title || 'Zar Atışı',
           breakdown: breakdownStr,
           total: grandTotal
@@ -10544,7 +10545,7 @@
 
                 ${dmgExpr ? `
                   <button onclick="rollSpellOrManeuverFormula('${dmgExpr}', '${m.name} Hasarı')" class="bg-amber-950 hover:bg-amber-900 text-amber-300 border border-amber-700 text-xs font-bold py-1 px-2 rounded-lg transition shadow flex items-center gap-1 cursor-pointer" title="Hasar Zarı Yuvarla (${dmgExpr})">
-                    <span>🎲</span>
+                    ${getD20IconSvg('w-3.5 h-3.5 text-amber-400 shrink-0')}
                     <span>${dmgExpr}</span>
                   </button>
                 ` : ''}
@@ -10945,21 +10946,21 @@
             <span class="badge bg-slate-900 text-emerald-300 border border-emerald-700/60 font-mono text-[11px] font-bold">DC ${dc}</span>
           </td>
           <td class="py-2.5 px-3 text-slate-300 text-[11px]">${s.benefit || '-'}</td>
-          <td class="py-2.5 px-3 text-center">
-            <div class="inline-flex items-center gap-1.5">
-              <button onclick="castSpellDirectly(${originalIdx})" class="bg-purple-900/70 hover:bg-purple-600 text-white text-xs font-bold px-2.5 py-1 rounded-lg border border-purple-500 shadow transition flex items-center gap-1 cursor-pointer" title="Büyüyü At (Slot Harca)">
-                <span>🔮</span>
-                <span>At</span>
-              </button>
-
+          <td class="py-2.5 px-3 text-right align-middle">
+            <div class="flex items-center justify-end gap-2 w-full">
               ${dmgExpr ? `
-                <button onclick="rollSpellOrManeuverFormula('${dmgExpr}', '${s.name} Hasarı')" class="bg-amber-950 hover:bg-amber-900 text-amber-300 border border-amber-700 text-xs font-bold px-2 py-1 rounded-lg transition shadow flex items-center gap-1 cursor-pointer" title="Hasar Zarı Yuvarla (${dmgExpr})">
-                  <span>🎲</span>
+                <button onclick="castSpellDirectly(${originalIdx})" class="bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white text-xs font-bold font-mono px-2.5 py-1 rounded-lg border border-amber-600/80 shadow transition inline-flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap" title="Büyüyü At & Hasar Zarını Yuvarla (${dmgExpr})">
+                  ${getD20IconSvg('w-3.5 h-3.5 text-amber-400 shrink-0')}
                   <span>${dmgExpr}</span>
                 </button>
-              ` : ''}
+              ` : `
+                <button onclick="castSpellDirectly(${originalIdx})" class="bg-purple-900/70 hover:bg-purple-600 text-white text-xs font-bold px-2.5 py-1 rounded-lg border border-purple-500 shadow transition inline-flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap" title="Büyüyü At (Slot Harca)">
+                  <span>🔮</span>
+                  <span>At</span>
+                </button>
+              `}
 
-              <button onclick="deleteKnownSpell(${originalIdx})" class="text-slate-500 hover:text-rose-400 text-xs p-1 transition cursor-pointer" title="Büyüyü Sil (Slot Boş Kalır)">
+              <button onclick="deleteKnownSpell(${originalIdx})" class="w-6 h-6 inline-flex items-center justify-center text-slate-500 hover:text-rose-400 text-xs transition cursor-pointer shrink-0" title="Büyüyü Sil (Slot Boş Kalır)">
                 🗑️
               </button>
             </div>
@@ -10993,11 +10994,14 @@
           <td class="py-2.5 px-3 text-slate-500 text-[11px] italic">
             Bu slot boş. ${lvl === 0 ? '0. Seviye (Cantrip)' : `${lvl}. Seviye`} büyüsü seçmek için tıklayın.
           </td>
-          <td class="py-2.5 px-3 text-center">
-            <button type="button" onclick="openSpellPickerForSpecificLevel(${lvl})" class="bg-purple-950/80 hover:bg-purple-900 text-purple-300 hover:text-white border border-dashed border-purple-500/80 text-xs font-bold px-2.5 py-1 rounded-lg transition shadow-sm inline-flex items-center gap-1 cursor-pointer" title="${lvl}. Seviye Büyü Seç">
-              <span>✨</span>
-              <span>+ Büyü Seç</span>
-            </button>
+          <td class="py-2.5 px-3 text-right align-middle">
+            <div class="flex items-center justify-end gap-2 w-full">
+              <button type="button" onclick="openSpellPickerForSpecificLevel(${lvl})" class="bg-purple-950/80 hover:bg-purple-900 text-purple-300 hover:text-white border border-dashed border-purple-500/80 text-xs font-bold px-2.5 py-1 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="${lvl}. Seviye Büyü Seç">
+                <span>✨</span>
+                <span>+ Büyü Seç</span>
+              </button>
+              <span class="w-6 h-6 shrink-0 inline-block"></span>
+            </div>
           </td>
         `;
         tbody.appendChild(tr);
@@ -11028,6 +11032,7 @@
       if (!s) return;
       const name = s.name;
       const lvl = Number(s.level) || 0;
+      const dmgExpr = s.damageDice || findDiceExpression(s.benefit);
 
       const slot = character.spellcasting?.slots?.find(sl => sl.level === lvl);
       if (slot && slot.used < slot.daily) {
@@ -11050,19 +11055,21 @@
         saveStateToStorage(true);
         renderAll();
 
-        if (buffApplied) {
+        if (dmgExpr) {
+          rollSpellOrManeuverFormula(dmgExpr, `${name} (${lvl}. Seviye • -1 Slot)`);
+        } else if (buffApplied) {
           showDiceTopToast({
             icon: '🔮',
             title: name,
             breakdown: `"${buffApplied}" aktif edildi • ${lvl}. Seviye Slot Harcandı`,
-            total: `-${lvl} Slot`
+            total: `-1 Slot`
           });
         } else {
           showDiceTopToast({
             icon: '🔮',
             title: name,
             breakdown: `${lvl}. Seviye Büyü Slotu Harcandı`,
-            total: `-${lvl} Slot`
+            total: `-1 Slot`
           });
         }
       } else {
