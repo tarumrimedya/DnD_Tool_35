@@ -5969,20 +5969,125 @@
         masterDb = defaultDb;
       }
 
-      // Merge new default items from master_db.json into masterDb if not already present
-      if (Array.isArray(defaultDb) && defaultDb.length > 0) {
-        if (!Array.isArray(masterDb)) masterDb = [];
-        let addedCount = 0;
-        defaultDb.forEach(defItem => {
-          const exists = masterDb.some(m => (m.name || '').toLowerCase().trim() === (defItem.name || '').toLowerCase().trim());
-          if (!exists) {
-            masterDb.push(defItem);
+      // Merge new default items from master_db.json and core 3.5e spell compendium into masterDb if not already present
+      const coreArcaneSpells35e = [
+        // Level 0 (Cantrips)
+        { name: "Detect Magic", type: "Spell", level: 0, school: "Divination", action: "Standard Action", range: "60 ft", benefit: "Detects magical auras within 60 ft." },
+        { name: "Read Magic", type: "Spell", level: 0, school: "Divination", action: "Standard Action", range: "Personal", benefit: "Read magical inscriptions, scrolls, and spellbooks." },
+        { name: "Light", type: "Spell", level: 0, school: "Evocation", action: "Standard Action", range: "Touch", benefit: "Object shines like a torch for 10 min/level." },
+        { name: "Mage Hand", type: "Spell", level: 0, school: "Transmutation", action: "Standard Action", range: "Close", benefit: "5-pound telekinesis at close range." },
+        { name: "Prestidigitation", type: "Spell", level: 0, school: "Universal", action: "Standard Action", range: "10 ft", benefit: "Performs minor magical tricks, cleaning, or flavoring for 1 hour." },
+        { name: "Ghost Sound", type: "Spell", level: 0, school: "Illusion", action: "Standard Action", range: "Close", benefit: "Creates figment sounds equivalent to 4 humans per caster level." },
+        { name: "Ray of Frost", type: "Spell", level: 0, school: "Evocation", action: "Standard Action", range: "Close", damageDice: "1d3", benefit: "Ranged touch ray deals 1d3 cold damage." },
+        { name: "Acid Splash", type: "Spell", level: 0, school: "Conjuration", action: "Standard Action", range: "Close", damageDice: "1d3", benefit: "Ranged touch orb deals 1d3 acid damage." },
+        { name: "Message", type: "Spell", level: 0, school: "Transmutation", action: "Standard Action", range: "Medium", benefit: "Whispered conversation at a distance (10 min/level)." },
+        { name: "Mending", type: "Spell", level: 0, school: "Transmutation", action: "Standard Action", range: "10 ft", benefit: "Makes minor repairs on an object." },
+        { name: "Dancing Lights", type: "Spell", level: 0, school: "Evocation", action: "Standard Action", range: "Medium", benefit: "Creates up to four floating torches or glowing spheres." },
+        { name: "Touch of Fatigue", type: "Spell", level: 0, school: "Necromancy", action: "Standard Action", range: "Touch", benefit: "Touch attack fatigues target (Fort negates)." },
+        // Level 1
+        { name: "Grease", type: "Spell", level: 1, school: "Conjuration", action: "Standard Action", range: "Close", benefit: "Makes 10-ft square or one object slippery (Ref negates)." },
+        { name: "Ray of Enfeeblement", type: "Spell", level: 1, school: "Necromancy", action: "Standard Action", range: "Close", damageDice: "1d6+5", benefit: "Ranged touch ray applies 1d6 + 1 per 2 CL (max +5) STR penalty." },
+        { name: "Enlarge Person", type: "Spell", level: 1, school: "Transmutation", action: "1 Round", range: "Close", benefit: "Humanoid creature doubles in size (+2 STR, -2 DEX, -1 atk/AC, larger weapon dice)." },
+        { name: "Shocking Grasp", type: "Spell", level: 1, school: "Evocation", action: "Standard Action", range: "Touch", damageDice: "5d6", benefit: "Melee touch deals 1d6/level (max 5d6) electricity damage (+3 atk if target wears metal)." },
+        { name: "True Strike", type: "Spell", level: 1, school: "Divination", action: "Standard Action", range: "Personal", benefit: "+20 insight bonus on your next single attack roll and ignores concealment." },
+        { name: "Feather Fall", type: "Spell", level: 1, school: "Transmutation", action: "Immediate Action", range: "Close", benefit: "Free-falling objects or creatures descend slowly (60 ft/round), taking no falling damage." },
+        { name: "Nerveskitter", type: "Spell", level: 1, school: "Transmutation", action: "Immediate Action", range: "Close", benefit: "SpC: Grants +5 bonus on Initiative checks at the start of combat." },
+        { name: "Benign Transposition", type: "Spell", level: 1, school: "Conjuration", action: "Standard Action", range: "Medium", benefit: "SpC: Two willing allies swap positions instantly." },
+        { name: "Protection from Evil", type: "Spell", level: 1, school: "Abjuration", action: "Standard Action", range: "Touch", benefit: "+2 deflection AC, +2 resistance saves vs evil, blocks mental control." },
+        // Level 2
+        { name: "Glitterdust", type: "Spell", level: 2, school: "Conjuration", action: "Standard Action", range: "Medium", benefit: "Blinds creatures in 10-ft spread (Will negates) and outlines invisible things (-40 Hide)." },
+        { name: "Invisibility", type: "Spell", level: 2, school: "Illusion", action: "Standard Action", range: "Touch", benefit: "Subject is invisible for 1 min/level or until it attacks." },
+        { name: "Web", type: "Spell", level: 2, school: "Conjuration", action: "Standard Action", range: "Medium", benefit: "Fills 20-ft radius spread with sticky webs that entangle foes." },
+        { name: "False Life", type: "Spell", level: 2, school: "Necromancy", action: "Standard Action", range: "Personal", damageDice: "1d10+10", benefit: "Gain 1d10 + 1/level (max +10) temporary HP for 1 hour/level." },
+        { name: "Wraithstrike", type: "Spell", level: 2, school: "Transmutation", action: "Swift Action", range: "Personal", benefit: "SpC: Your melee attacks resolve as melee touch attacks for 1 round." },
+        { name: "Wings of Cover", type: "Spell", level: 2, school: "Evocation", action: "Immediate Action", range: "Personal", benefit: "RotD: Dragon wings grant total cover against a single attack or spell." },
+        { name: "Resist Energy", type: "Spell", level: 2, school: "Abjuration", action: "Standard Action", range: "Touch", benefit: "Ignores 10 (20 at CL 7, 30 at CL 11) damage per attack from chosen energy type." },
+        { name: "See Invisibility", type: "Spell", level: 2, school: "Divination", action: "Standard Action", range: "Personal", benefit: "Reveals invisible and ethereal creatures or objects within vision." },
+        { name: "Cat's Grace", type: "Spell", level: 2, school: "Transmutation", action: "Standard Action", range: "Touch", benefit: "+4 enhancement bonus to Dexterity for 1 min/level." },
+        { name: "Bear's Endurance", type: "Spell", level: 2, school: "Transmutation", action: "Standard Action", range: "Touch", benefit: "+4 enhancement bonus to Constitution for 1 min/level." },
+        // Level 3
+        { name: "Fireball", type: "Spell", level: 3, school: "Evocation", action: "Standard Action", range: "Long (400 ft + 40 ft/lvl)", damageDice: "10d6", benefit: "20-ft radius spread deals 1d6/level (max 10d6) fire damage (Reflex half)." },
+        { name: "Lightning Bolt", type: "Spell", level: 3, school: "Evocation", action: "Standard Action", range: "120 ft", damageDice: "10d6", benefit: "120-ft line deals 1d6/level (max 10d6) electricity damage (Reflex half)." },
+        { name: "Haste", type: "Spell", level: 3, school: "Transmutation", action: "Standard Action", range: "Close", benefit: "1 creature/level moves +30 ft, +1 atk, +1 dodge AC/Reflex, and 1 extra attack on full attack." },
+        { name: "Fly", type: "Spell", level: 3, school: "Transmutation", action: "Standard Action", range: "Touch", benefit: "Subject flies at speed of 60 ft (good maneuverability) for 1 min/level." },
+        { name: "Displacement", type: "Spell", level: 3, school: "Illusion", action: "Standard Action", range: "Touch", benefit: "Attacks against subject suffer 50% miss chance (total concealment) for 1 round/level." },
+        { name: "Dispel Magic", type: "Spell", level: 3, school: "Abjuration", action: "Standard Action", range: "Medium", benefit: "Cancels magical spells and effects (1d20 + CL, max +10 dispel check)." },
+        { name: "Slow", type: "Spell", level: 3, school: "Transmutation", action: "Standard Action", range: "Close", benefit: "1 target/level takes only single action/round, -1 AC, -1 atk, -1 Reflex, half speed (Will negates)." },
+        { name: "Vampiric Touch", type: "Spell", level: 3, school: "Necromancy", action: "Standard Action", range: "Touch", damageDice: "6d6", benefit: "Melee touch deals 1d6 per 2 CL (max 10d6) damage; caster gains damage as temp HP." },
+        { name: "Greater Mage Armor", type: "Spell", level: 3, school: "Conjuration", action: "Standard Action", range: "Touch", benefit: "SpC: +6 armor bonus to AC (also applies vs incorporeal touch) for 1 hour/level." },
+        { name: "Stinking Cloud", type: "Spell", level: 3, school: "Conjuration", action: "Standard Action", range: "Medium", benefit: "20-ft radius cloud of vapors nauseates living creatures (Fort negates)." },
+        { name: "Heroism", type: "Spell", level: 3, school: "Enchantment", action: "Standard Action", range: "Touch", benefit: "+2 morale bonus on attack rolls, saves, and skill checks for 10 min/level." },
+        // Level 4
+        { name: "Greater Invisibility", type: "Spell", level: 4, school: "Illusion", action: "Standard Action", range: "Touch", benefit: "As Invisibility, but subject does not become visible when attacking (1 round/level)." },
+        { name: "Dimension Door", type: "Spell", level: 4, school: "Conjuration", action: "Standard Action", range: "Long", benefit: "Instantly teleports you and touched allies up to 400 ft + 40 ft/level." },
+        { name: "Enervation", type: "Spell", level: 4, school: "Necromancy", action: "Standard Action", range: "Close", damageDice: "1d4", benefit: "Ranged touch ray inflicts 1d4 negative levels (no save, no SR)." },
+        { name: "Stoneskin", type: "Spell", level: 4, school: "Abjuration", action: "Standard Action", range: "Touch", benefit: "Grants DR 10/adamantine, absorbing up to 10 points/level (max 150) of damage." },
+        { name: "Evard's Black Tentacles", type: "Spell", level: 4, school: "Conjuration", action: "Standard Action", range: "Medium", damageDice: "1d6+4", benefit: "20-ft radius tentacles grapple all within (Grapple bonus = CL + 8, deals 1d6+4)." },
+        { name: "Polymorph", type: "Spell", level: 4, school: "Transmutation", action: "Standard Action", range: "Touch", benefit: "Transforms willing living creature into another creature form (up to 15 HD / CL)." },
+        { name: "Orb of Force", type: "Spell", level: 4, school: "Conjuration", action: "Standard Action", range: "Medium", damageDice: "10d6", benefit: "SpC: Ranged touch orb deals 1d6/level (max 10d6) force damage (no save, no SR)." },
+        { name: "Orb of Acid", type: "Spell", level: 4, school: "Conjuration", action: "Standard Action", range: "Close", damageDice: "13d6", benefit: "SpC: Ranged touch deals 1d6/level (max 15d6) acid damage + sickens (no SR)." },
+        { name: "Celerity", type: "Spell", level: 4, school: "Transmutation", action: "Immediate Action", range: "Personal", benefit: "PHB2: Take a standard action immediately out of turn, then become dazed for 1 round." },
+        { name: "Solid Fog", type: "Spell", level: 4, school: "Conjuration", action: "Standard Action", range: "Medium", benefit: "Blocks vision and slows movement to 5 ft/round, -2 melee atk/dmg (no save)." },
+        // Level 5
+        { name: "Teleport", type: "Spell", level: 5, school: "Conjuration", action: "Standard Action", range: "Touch", benefit: "Instantly transports you and touched allies up to 100 miles/level." },
+        { name: "Cone of Cold", type: "Spell", level: 5, school: "Evocation", action: "Standard Action", range: "60 ft", damageDice: "13d6", benefit: "60-ft cone deals 1d6/level (max 15d6) cold damage (Reflex half)." },
+        { name: "Wall of Force", type: "Spell", level: 5, school: "Evocation", action: "Standard Action", range: "Close", benefit: "Creates an invisible, indestructible barrier immune to all damage and Dispel Magic." },
+        { name: "Overland Flight", type: "Spell", level: 5, school: "Transmutation", action: "Standard Action", range: "Personal", benefit: "Fly at 40 ft speed (average maneuverability) for 1 hour/level." },
+        { name: "Hold Monster", type: "Spell", level: 5, school: "Enchantment", action: "Standard Action", range: "Medium", benefit: "Paralyzes any living creature for 1 round/level (Will negates)." },
+        { name: "Baleful Polymorph", type: "Spell", level: 5, school: "Transmutation", action: "Standard Action", range: "Close", benefit: "Permanently transforms target into a harmless small animal (Fort/Will negates)." },
+        { name: "Arcane Fusion", type: "Spell", level: 5, school: "Universal", action: "Standard Action", range: "Personal", benefit: "CM (Sorcerer Only): Cast one 4th-level or lower spell and one 1st-level spell simultaneously." },
+        { name: "Cloudkill", type: "Spell", level: 5, school: "Conjuration", action: "Standard Action", range: "Medium", damageDice: "1d4", benefit: "Kills 3 HD or less; 4-6 HD save or die; 6+ HD takes 1d4 CON damage/round." },
+        { name: "Telekinesis", type: "Spell", level: 5, school: "Transmutation", action: "Standard Action", range: "Long", benefit: "Moves objects, bull rushes, disarms, grappes, or hurls up to 15 weapons/objects." },
+        // Level 6
+        { name: "Disintegrate", type: "Spell", level: 6, school: "Transmutation", action: "Standard Action", range: "Medium", damageDice: "26d6", benefit: "Ranged touch ray deals 2d6/level (max 40d6) damage (Fort partial reduces to 5d6)." },
+        { name: "Chain Lightning", type: "Spell", level: 6, school: "Evocation", action: "Standard Action", range: "Long", damageDice: "13d6", benefit: "1d6/level (max 20d6) electricity to primary target + half damage to 1 secondary target/level." },
+        { name: "Greater Dispel Magic", type: "Spell", level: 6, school: "Abjuration", action: "Standard Action", range: "Medium", benefit: "As Dispel Magic, but caster level bonus on dispel check goes up to +20." },
+        { name: "True Seeing", type: "Spell", level: 6, school: "Divination", action: "Standard Action", range: "Touch", benefit: "See all things as they actually are within 120 ft (pierces illusions, darkness, polymorph)." },
+        { name: "Contingency", type: "Spell", level: 6, school: "Evocation", action: "10 Minutes", range: "Personal", benefit: "Sets a trigger condition to automatically cast a companion spell (up to 1/3 CL, max 6th)." },
+        { name: "Globe of Invulnerability", type: "Spell", level: 6, school: "Abjuration", action: "Standard Action", range: "10 ft", benefit: "10-ft sphere excludes all 4th-level or lower spell effects." },
+        { name: "Greater Heroism", type: "Spell", level: 6, school: "Enchantment", action: "Standard Action", range: "Touch", benefit: "+4 morale on attacks, saves, skills, immunity to fear, and +CL temp HP (1 min/level)." },
+        { name: "Antimagic Field", type: "Spell", level: 6, school: "Abjuration", action: "Standard Action", range: "10 ft", benefit: "10-ft radius barrier suppresses all magic, spells, and magic items." },
+        // Level 7
+        { name: "Greater Teleport", type: "Spell", level: 7, school: "Conjuration", action: "Standard Action", range: "Touch", benefit: "Instantly teleport anywhere on the same plane with no range limit and no off-target roll." },
+        { name: "Limited Wish", type: "Spell", level: 7, school: "Universal", action: "Standard Action", range: "See text", benefit: "Alters reality, duplicates any Sorc/Wiz spell of 6th level or lower or other spell of 5th or lower." },
+        { name: "Finger of Death", type: "Spell", level: 7, school: "Necromancy", action: "Standard Action", range: "Close", damageDice: "3d6+13", benefit: "Slays one living creature instantly (Fort partial deals 3d6 + 1/level damage instead)." },
+        { name: "Prismatic Spray", type: "Spell", level: 7, school: "Evocation", action: "Standard Action", range: "60 ft", benefit: "60-ft cone of 7 colored beams inflicts random deadly effects, damage, petrification, or plane shift." },
+        { name: "Forcecage", type: "Spell", level: 7, school: "Evocation", action: "Standard Action", range: "Close", benefit: "Creates an immovable, indestructible cube or cage of force (no save, no SR)." },
+        // Level 8
+        { name: "Horrid Wilting", type: "Spell", level: 8, school: "Necromancy", action: "Standard Action", range: "Long", damageDice: "15d6", benefit: "Evaporates moisture from living creatures, dealing 1d6/level (max 20d6) damage (Fort half)." },
+        { name: "Polar Ray", type: "Spell", level: 8, school: "Evocation", action: "Standard Action", range: "Close", damageDice: "15d6", benefit: "Ranged touch ray deals 1d6/level (max 25d6) cold damage (no save)." },
+        { name: "Mind Blank", type: "Spell", level: 8, school: "Abjuration", action: "Standard Action", range: "Close", benefit: "Subject is completely immune to all mind-affecting spells and scrying/divination for 24 hours." },
+        { name: "Greater Arcane Fusion", type: "Spell", level: 8, school: "Universal", action: "Standard Action", range: "Personal", benefit: "CM (Sorcerer Only): Cast one 7th-level or lower spell and one 4th-level or lower spell simultaneously." },
+        { name: "Maze", type: "Spell", level: 8, school: "Conjuration", action: "Standard Action", range: "Close", benefit: "Banishes target to an extradimensional labyrinth for up to 10 min (no save, DC 20 INT check to escape)." },
+        // Level 9
+        { name: "Time Stop", type: "Spell", level: 9, school: "Transmutation", action: "Standard Action", range: "Personal", damageDice: "1d4+1", benefit: "You act freely for 1d4+1 rounds of apparent time while all other creatures are frozen." },
+        { name: "Wish", type: "Spell", level: 9, school: "Universal", action: "Standard Action", range: "See text", benefit: "The mightiest mortal spell; alters reality or duplicates any 8th-level or lower Sorc/Wiz spell." },
+        { name: "Meteor Swarm", type: "Spell", level: 9, school: "Evocation", action: "Standard Action", range: "Long", damageDice: "24d6", benefit: "Four exploding spheres deal 2d6 bludgeoning + 6d6 fire damage each in 40-ft spreads." },
+        { name: "Shapechange", type: "Spell", level: 9, school: "Transmutation", action: "Standard Action", range: "Personal", benefit: "Assume the form and supernatural abilities of any non-unique creature up to 25 HD (free change each round)." },
+        { name: "Mordenkainen's Disjunction", type: "Spell", level: 9, school: "Abjuration", action: "Standard Action", range: "Close", benefit: "Automatically ends all magical effects and disjoins magic items in a 40-ft burst." }
+      ];
+
+      if (!Array.isArray(masterDb)) masterDb = [];
+      let addedCount = 0;
+      const combinedDefaults = [...(Array.isArray(defaultDb) ? defaultDb : []), ...coreArcaneSpells35e];
+      combinedDefaults.forEach(defItem => {
+        const exists = masterDb.some(m => (m.name || '').toLowerCase().trim() === (defItem.name || '').toLowerCase().trim());
+        if (!exists) {
+          masterDb.push(defItem);
+          addedCount++;
+        }
+      });
+      // Ensure cantrips in masterDb have level: 0 explicitly
+      masterDb.forEach(m => {
+        if ((m.type === 'Spell' || (m.category || '').includes('Spell')) && m.level === undefined) {
+          if (Array.isArray(m.tags) && m.tags.some(t => String(t).toLowerCase() === 'cantrip')) {
+            m.level = 0;
             addedCount++;
           }
-        });
-        if (addedCount > 0) {
-          localStorage.setItem('dnd35_master_db', JSON.stringify(masterDb));
         }
+      });
+      if (addedCount > 0) {
+        localStorage.setItem('dnd35_master_db', JSON.stringify(masterDb));
       }
 
       if (typeof syncCustomClassesToRuleEngine === 'function') {
@@ -10069,10 +10174,13 @@
       else if (['Cleric', 'Druid', 'Favored Soul'].includes(primaryClass)) statKey = 'WIS';
       else if (character?.spellcasting?.statName) statKey = character.spellcasting.statName;
 
-      const statVal = character?.stats?.[statKey]?.value ?? 22;
+      const statVal = character?.stats?.[statKey]?.value ?? character?.abilities?.[statKey.toLowerCase()] ?? 22;
       const statMod = character?.stats?.[statKey]?.mod ?? Math.floor((statVal - 10) / 2);
-      const cl = character?.spellcasting?.caster_level ?? character?.spellcasting?.cl ?? 6;
       const clMode = character?.settings?.clMode || 'Character Level (DM Boon)';
+      const prog = character?.levelProgression || [];
+      const activeLevels = prog.filter(p => p.active !== false).length || Number(character?.level) || 6;
+      const rawCl = character?.spellcasting?.caster_level ?? character?.spellcasting?.cl ?? 6;
+      const cl = (clMode === 'Character Level (DM Boon)') ? Math.max(Number(rawCl) || 1, activeLevels) : (Number(rawCl) || 1);
 
       return { primaryClass, statKey, statVal, statMod, cl, clMode };
     }
@@ -10093,6 +10201,13 @@
     function renderSpellsCockpit() {
       const { primaryClass, statKey, statVal, statMod, cl, clMode } = getCasterInfo();
       const classesStatus = checkCharacterMagicClasses();
+
+      // Synchronize Sorcerer spell slots with effective Caster Level (CL)
+      if (character && typeof calculateSorcererSlots === 'function') {
+        if (!character.spellcasting) character.spellcasting = {};
+        character.spellcasting.cl = cl;
+        character.spellcasting.slots = calculateSorcererSlots(cl, statVal, character.spellcasting.slots);
+      }
 
       // Top archetype badges (Sadeleştirilmiş Kalan / Toplam Sayaçları)
       const spontBadge = document.getElementById('tab-spontaneous-badge');
@@ -11019,7 +11134,8 @@
         if (!isTypeMatch) return false;
 
         if (levelFilter !== 'all') {
-          if (String(item.level ?? '') !== String(levelFilter)) return false;
+          const itemLvl = item.level !== undefined ? Number(item.level) : ((Array.isArray(item.tags) && item.tags.some(t => String(t).toLowerCase() === 'cantrip')) ? 0 : null);
+          if (String(itemLvl ?? '') !== String(levelFilter)) return false;
         }
 
         if (query) {
@@ -11056,13 +11172,15 @@
           alreadyKnown = (character.tomeOfBattle?.stancesKnown || []).some(st => (st.name || '').toLowerCase().trim() === cleanName);
         }
 
+        const itemLvlDisplay = item.level !== undefined ? item.level : ((Array.isArray(item.tags) && item.tags.some(t => String(t).toLowerCase() === 'cantrip')) ? 0 : null);
+
         const card = document.createElement('div');
         card.className = 'pt-2.5 pb-2.5 flex items-start justify-between gap-3';
         card.innerHTML = `
           <div class="space-y-1 flex-1">
             <div class="flex items-center gap-2">
               <span class="badge ${type === 'Spell' ? 'bg-purple-950 text-purple-300 border-purple-700' : 'bg-rose-950 text-rose-300 border-rose-700'} text-[10px] font-bold">
-                ${item.level !== undefined ? item.level + '. Seviye' : 'Lvl ?'}
+                ${itemLvlDisplay !== null ? itemLvlDisplay + '. Seviye' : 'Lvl ?'}
               </span>
               <h4 class="font-extrabold text-white text-xs">${item.name}</h4>
               <span class="text-[10px] text-slate-400">(${item.school || item.discipline || item.type || '-'})</span>
@@ -11104,12 +11222,17 @@
           return;
         }
 
+        const resolvedLvl = item.level !== undefined
+          ? Number(item.level)
+          : ((Array.isArray(item.tags) && item.tags.some(t => String(t).toLowerCase() === 'cantrip')) ? 0 : 1);
+
         character.spellcasting.knownSpells.push({
           name: item.name,
-          level: item.level !== undefined ? Number(item.level) : 1,
+          level: resolvedLvl,
           school: item.school || 'Universal',
           action: item.action || 'Standard Action',
           range: item.range || 'Close',
+          damageDice: item.damageDice || undefined,
           benefit: item.benefit || item.description || ''
         });
 
@@ -11641,7 +11764,8 @@
       }
     }
 
-    function calculateSorcererSlots(sorcererLvl, chaScore) {
+    function calculateSorcererSlots(sorcererLvl, chaScore, existingSlots = null) {
+      const clampedLvl = Math.min(20, Math.max(1, Number(sorcererLvl) || 1));
       const chaMod = Math.floor(((Number(chaScore) || 10) - 10) / 2);
       const basePerLvl = {
         1:  [5, 3],
@@ -11665,19 +11789,46 @@
         19: [6, 6, 6, 6, 6, 6, 6, 6, 6, 4],
         20: [6, 6, 6, 6, 6, 6, 6, 6, 6, 6]
       };
-      const base = basePerLvl[Math.min(20, Math.max(1, sorcererLvl))] || [6, 6, 4];
+      const knownPerLvl = {
+        1:  [4, 2],
+        2:  [5, 2],
+        3:  [5, 3],
+        4:  [6, 3, 1],
+        5:  [6, 4, 2],
+        6:  [7, 4, 2, 1],
+        7:  [7, 5, 3, 2],
+        8:  [8, 5, 3, 2, 1],
+        9:  [8, 5, 4, 3, 2],
+        10: [9, 5, 4, 3, 2, 1],
+        11: [9, 5, 5, 3, 2, 2],
+        12: [9, 5, 5, 4, 3, 2, 1],
+        13: [9, 5, 5, 4, 3, 2, 2],
+        14: [9, 5, 5, 4, 4, 3, 2, 1],
+        15: [9, 5, 5, 4, 4, 3, 2, 2],
+        16: [9, 5, 5, 4, 4, 3, 3, 2, 1],
+        17: [9, 5, 5, 4, 4, 3, 3, 2, 2],
+        18: [9, 5, 5, 4, 4, 3, 3, 3, 2, 1],
+        19: [9, 5, 5, 4, 4, 3, 3, 3, 3, 2],
+        20: [9, 5, 5, 4, 4, 3, 3, 3, 3, 3]
+      };
+      const base = basePerLvl[clampedLvl] || [6, 6, 4];
+      const knownArr = knownPerLvl[clampedLvl] || [6, 4, 2];
+      const prevSlots = Array.isArray(existingSlots) ? existingSlots : (character?.spellcasting?.slots || []);
       const names = ['Cantrip', '1st Level', '2nd Level', '3rd Level', '4th Level', '5th Level', '6th Level', '7th Level', '8th Level', '9th Level'];
       return base.map((dailyBase, spellLvl) => {
         let bonus = 0;
         if (spellLvl > 0 && chaMod >= spellLvl) {
           bonus = 1 + Math.floor((chaMod - spellLvl) / 4);
         }
+        const prev = prevSlots.find(s => Number(s.level) === spellLvl);
+        const dailyTotal = dailyBase + bonus;
+        const usedVal = prev ? Math.min(dailyTotal, Math.max(0, Number(prev.used) || 0)) : 0;
         return {
           level: spellLvl,
           name: names[spellLvl] || `${spellLvl}. Seviye`,
-          known: spellLvl === 0 ? Math.min(9, 4 + Math.floor(sorcererLvl / 2)) : Math.max(1, Math.min(5, Math.floor(sorcererLvl / 2) + (spellLvl === 1 ? 2 : 1))),
-          daily: dailyBase + bonus,
-          used: 0
+          known: knownArr[spellLvl] ?? 1,
+          daily: dailyTotal,
+          used: usedVal
         };
       });
     }
@@ -11716,6 +11867,8 @@
         } else {
           character.spellcasting.cl = sorcLvls;
         }
+        const chaVal = character.stats?.CHA?.value ?? character.abilities?.cha ?? 22;
+        character.spellcasting.slots = calculateSorcererSlots(character.spellcasting.cl, chaVal, character.spellcasting.slots);
       }
 
       if (character.tomeOfBattle) {
@@ -11752,6 +11905,7 @@
           updateQuickFeatCategoryWarlockState();
         }
         renderSpellSlots();
+        renderKnownSpells();
         renderLevelProgression();
       }
     }
@@ -11785,6 +11939,7 @@
           updateQuickFeatCategoryWarlockState();
         }
         renderSpellSlots();
+        renderKnownSpells();
         renderLevelProgression();
       }
     }
@@ -11898,12 +12053,14 @@
         const sorcLvls = summary.classCounts ? (summary.classCounts['Sorcerer'] || 0) : 0;
         if (sorcLvls > 0 && typeof calculateSorcererSlots === 'function') {
           if (!character.spellcasting) character.spellcasting = {};
-          character.spellcasting.slots = calculateSorcererSlots(sorcLvls, character.abilities?.cha || 22);
           if (character.settings?.clMode === 'Character Level (DM Boon)') {
             character.spellcasting.cl = character.level;
           } else {
             character.spellcasting.cl = sorcLvls;
           }
+          const effectiveSorcLvl = character.spellcasting.cl || sorcLvls;
+          const chaVal = character.stats?.CHA?.value ?? character.abilities?.cha ?? 22;
+          character.spellcasting.slots = calculateSorcererSlots(effectiveSorcLvl, chaVal, character.spellcasting.slots);
         }
       }
     }
@@ -14203,15 +14360,15 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           if (character.spellcasting && isActive) character.spellcasting.cl = sorcLvls;
         }
         if (character.spellcasting && isActive) {
-          character.spellcasting.slots = calculateSorcererSlots(sorcLvls, character.abilities?.cha || 22);
+          const effectiveCl = character.spellcasting.cl || sorcLvls;
+          character.spellcasting.slots = calculateSorcererSlots(effectiveCl, character.abilities?.cha || 22, character.spellcasting.slots);
         }
         rowFeats.push(`🔮 +1 Caster Lvl (CL: ${character.spellcasting?.cl || nextLvl})`);
       } else if (casterProg === 'cl_boon') {
         character.settings.clMode = 'Character Level (DM Boon)';
         if (character.spellcasting && isActive) {
           character.spellcasting.cl = nextLvl;
-          const sorcLvls = prog.filter(p => p.className === 'Sorcerer' && p.active !== false).length || 5;
-          character.spellcasting.slots = calculateSorcererSlots(sorcLvls, character.abilities?.cha || 22);
+          character.spellcasting.slots = calculateSorcererSlots(nextLvl, character.abilities?.cha || 22, character.spellcasting.slots);
         }
         rowFeats.push(`🌟 DM Boon: CL = Seviye ${nextLvl}`);
       }
@@ -14284,14 +14441,15 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       }
 
       // Revert Caster Level
-      if (last.casterProg === 'primary' && last.active !== false && character.spellcasting) {
+      if ((last.casterProg === 'primary' || last.casterProg === 'cl_boon') && last.active !== false && character.spellcasting) {
         const sorcLvls = Math.max(1, (prog.filter(p => p.className === 'Sorcerer' && p.active !== false).length || 5));
         if (character.settings?.clMode === 'Character Level (DM Boon)') {
           character.spellcasting.cl = prog.filter(p => p.active !== false).length;
         } else {
           character.spellcasting.cl = sorcLvls;
         }
-        character.spellcasting.slots = calculateSorcererSlots(sorcLvls, character.abilities?.cha || 22);
+        const effectiveCl = character.spellcasting.cl || sorcLvls;
+        character.spellcasting.slots = calculateSorcererSlots(effectiveCl, character.abilities?.cha || 22, character.spellcasting.slots);
       }
 
       recalculateCharacterClassSummary();
