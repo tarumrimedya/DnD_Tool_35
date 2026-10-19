@@ -275,7 +275,17 @@ const RuleMaster = {
       oldName = oldEntry.name;
       masterDb[editIndex] = entryData;
     } else {
-      masterDb.push(entryData);
+      const parentName = (entryData.parent && entryData.parent !== '-') ? entryData.parent.replace(/^↳\s*/, '').trim().toLowerCase() : '';
+      const parentIdx = parentName ? masterDb.findIndex(m => (m.name || '').replace(/^↳\s*/, '').trim().toLowerCase() === parentName) : -1;
+      if (parentIdx >= 0) {
+        let insertAt = parentIdx + 1;
+        while (insertAt < masterDb.length && (masterDb[insertAt].parent || '').replace(/^↳\s*/, '').trim().toLowerCase() === parentName) {
+          insertAt++;
+        }
+        masterDb.splice(insertAt, 0, entryData);
+      } else {
+        masterDb.unshift(entryData);
+      }
     }
 
     // Cascade changes into character state (inventory, body slots, weapons, consumables)
@@ -721,18 +731,69 @@ const RuleMaster = {
       return matchQ && matchCat && matchBonus && matchScope;
     });
 
+    // Group parent and child entries so parents always render above their children
+    const getCleanName = (str) => (str || '').replace(/^↳\s*/, '').trim().toLowerCase();
+    const isChildItem = (it) => Boolean((it.parent && it.parent !== '-' && it.parent !== '') || (it.name && it.name.trim().startsWith('↳')));
+    const getParentKey = (it) => {
+      if (it.parent && it.parent !== '-' && it.parent !== '') return getCleanName(it.parent);
+      if (it.name && it.name.trim().startsWith('↳')) {
+        const clean = it.name.replace(/^↳\s*/, '').trim();
+        return clean.split(':')[0].trim().toLowerCase();
+      }
+      return '';
+    };
+
+    const parentSet = new Set();
+    filtered.forEach(it => {
+      if (!isChildItem(it)) {
+        parentSet.add(getCleanName(it.name));
+      }
+    });
+
+    const childrenByParent = new Map();
+    filtered.forEach(it => {
+      if (isChildItem(it)) {
+        const pKey = getParentKey(it);
+        if (pKey && parentSet.has(pKey)) {
+          if (!childrenByParent.has(pKey)) childrenByParent.set(pKey, []);
+          childrenByParent.get(pKey).push(it);
+        }
+      }
+    });
+
+    const orderedFiltered = [];
+    filtered.forEach(it => {
+      if (isChildItem(it)) {
+        const pKey = getParentKey(it);
+        if (pKey && parentSet.has(pKey)) {
+          // Will be rendered immediately below its parent
+          return;
+        }
+      }
+      orderedFiltered.push(it);
+      if (!isChildItem(it)) {
+        const pKey = getCleanName(it.name);
+        if (childrenByParent.has(pKey)) {
+          childrenByParent.get(pKey).forEach(child => orderedFiltered.push(child));
+          childrenByParent.delete(pKey);
+        }
+      }
+    });
+
     // Update count badge
     const countBadge = document.getElementById('mdb-total-count-badge');
-    if (countBadge) countBadge.textContent = `${filtered.length} / ${masterDb.length} Kayıt`;
+    if (countBadge) countBadge.textContent = `${orderedFiltered.length} / ${masterDb.length} Kayıt`;
 
     tbody.innerHTML = '';
 
-    filtered.forEach(item => {
+    orderedFiltered.forEach(item => {
       const idx = item._originalIndex;
       const tr = document.createElement('tr');
-      tr.className = 'hover:bg-slate-800/50 transition border-b border-slate-800/80';
+      const isChild = isChildItem(item);
+      tr.className = isChild
+        ? 'bg-purple-950/15 hover:bg-slate-800/50 transition border-b border-slate-800/80'
+        : 'hover:bg-slate-800/50 transition border-b border-slate-800/80';
 
-      const isChild = item.parent && item.parent !== '-' && item.parent !== '';
       const typeBadgeClass = this.getTypeBadgeClass(item.type);
 
       // Stat summary string
@@ -750,10 +811,10 @@ const RuleMaster = {
       const statsSummary = statParts.length > 0 ? statParts.join(' • ') : '-';
 
       tr.innerHTML = `
-        <td class="py-2.5 px-3">
+        <td class="py-2.5 px-3 ${isChild ? 'pl-7 border-l-2 border-purple-500/60' : ''}">
           <div class="font-bold text-white flex items-center gap-1.5 flex-wrap">
             <span>${item.name}</span>
-            ${isChild ? `<span class="px-2 py-0.5 rounded text-[9px] font-bold bg-purple-950 text-purple-300 border border-purple-800">↳ Parent: ${item.parent}</span>` : ''}
+            ${isChild && item.parent && item.parent !== '-' ? `<span class="px-2 py-0.5 rounded text-[9px] font-bold bg-purple-950 text-purple-300 border border-purple-800">↳ Parent: ${item.parent}</span>` : ''}
           </div>
           <div class="text-[10px] text-slate-400 font-mono mt-0.5">${item.source || 'PHB'}</div>
         </td>
@@ -782,12 +843,6 @@ const RuleMaster = {
             </button>
             <button onclick="RuleMaster.addChildPower(${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-purple-300 text-xs transition" title="Alt Yetenek Ekle (Child Power)">
               🔗
-            </button>
-            <button onclick="RuleMaster.equipToCharacter(${idx})" class="p-1 rounded bg-emerald-950 hover:bg-emerald-900 border border-emerald-700 text-emerald-300 text-xs transition" title="Karaktere Ekle / Kuşan">
-              ⚡
-            </button>
-            <button onclick="RuleMaster.addToInventory(${idx})" class="p-1 rounded bg-amber-950 hover:bg-amber-900 border border-amber-700 text-amber-300 text-xs transition" title="Çantaya / Envantere Ekle">
-              🎒
             </button>
             <button onclick="RuleMaster.duplicateEntry(${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs transition" title="Kopyala">
               📑
@@ -2888,7 +2943,7 @@ Return valid JSON only matching this schema:
       children.forEach(c => itemsToAdd.push(c));
     }
 
-    itemsToAdd.forEach(it => {
+    [...itemsToAdd].reverse().forEach(it => {
       const copy = JSON.parse(JSON.stringify(it));
       const existsIdx = masterDb.findIndex(m => (m.name || '').toLowerCase().trim() === (copy.name || '').toLowerCase().trim());
       if (existsIdx >= 0) {
@@ -2910,7 +2965,7 @@ Return valid JSON only matching this schema:
 
   addAllInlineResultsToDb() {
     if (!this._inlineEntries || !this._inlineEntries.length) return;
-    this._inlineEntries.forEach(it => {
+    [...this._inlineEntries].reverse().forEach(it => {
       const copy = JSON.parse(JSON.stringify(it));
       const existsIdx = masterDb.findIndex(m => (m.name || '').toLowerCase().trim() === (copy.name || '').toLowerCase().trim());
       if (existsIdx >= 0) {
