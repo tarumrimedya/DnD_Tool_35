@@ -160,10 +160,11 @@
       </div>
 
       <!-- Current / Max HP Display -->
-      <div class="flex items-baseline justify-center gap-1 my-1">
+      <div class="flex items-baseline justify-center gap-1 my-1 flex-wrap">
         <span id="hp-current-display" class="text-2xl sm:text-3xl font-extrabold text-emerald-400 font-mono">38</span>
         <span class="text-slate-400 text-xs sm:text-sm">/ <span id="hp-max-display">38</span></span>
         <span id="hp-bonus-tag" class="text-[10px] sm:text-[11px] text-amber-300 font-mono font-bold ml-1"></span>
+        <span id="hp-temp-tag" onclick="clearTempHp()" class="hidden badge bg-cyan-950/90 hover:bg-rose-950 text-cyan-300 hover:text-rose-300 border border-cyan-600/70 text-[10px] font-mono font-bold ml-1 cursor-pointer transition" title="Geçici Can Puanı (Temporary HP) • Sıfırlamak için tıklayın"></span>
       </div>
 
       <!-- Mini HP Progress Bar -->
@@ -6084,15 +6085,21 @@
         { name: "Shapechange", type: "Spell", level: 9, school: "Transmutation", action: "Standard Action", range: "Personal", benefit: "Assume the form and supernatural abilities of any non-unique creature up to 25 HD (free change each round)." },
         { name: "Mordenkainen's Disjunction", type: "Spell", level: 9, school: "Abjuration", action: "Standard Action", range: "Close", benefit: "Automatically ends all magical effects and disjoins magic items in a 40-ft burst." },
         // Core Divine Spells (Cleric / Druid)
-        { name: "Cure Minor Wounds", type: "Spell", level: 0, school: "Conjuration", action: "Standard Action", range: "Touch", benefit: "Cures 1 point of damage." },
+        { name: "Cure Minor Wounds", type: "Spell", level: 0, school: "Conjuration", action: "Standard Action", range: "Touch", damageDice: "1", benefit: "Cures 1 point of damage." },
+        { name: "Inflict Minor Wounds", type: "Spell", level: 0, school: "Necromancy", action: "Standard Action", range: "Touch", damageDice: "1", benefit: "Touch attack deals 1 point of negative energy damage (Will negates)." },
         { name: "Guidance", type: "Spell", level: 0, school: "Divination", action: "Standard Action", range: "Touch", benefit: "+1 competence bonus on one attack roll, saving throw, or skill check." },
         { name: "Cure Light Wounds", type: "Spell", level: 1, school: "Conjuration", action: "Standard Action", range: "Touch", damageDice: "1d8+5", benefit: "Cures 1d8 +1/level (max +5) points of damage." },
+        { name: "Inflict Light Wounds", type: "Spell", level: 1, school: "Necromancy", action: "Standard Action", range: "Touch", damageDice: "1d8+5", benefit: "Touch attack deals 1d8 +1/level (max +5) negative energy damage (Will half)." },
         { name: "Bless", type: "Spell", level: 1, school: "Enchantment", action: "Standard Action", range: "50 ft", benefit: "Allies gain +1 morale bonus on attack rolls and saves against fear." },
         { name: "Divine Favor", type: "Spell", level: 1, school: "Evocation", action: "Standard Action", range: "Personal", benefit: "You gain +1 per three levels (max +3) luck bonus on attack and weapon damage rolls." },
         { name: "Cure Moderate Wounds", type: "Spell", level: 2, school: "Conjuration", action: "Standard Action", range: "Touch", damageDice: "2d8+10", benefit: "Cures 2d8 +1/level (max +10) points of damage." },
+        { name: "Inflict Moderate Wounds", type: "Spell", level: 2, school: "Necromancy", action: "Standard Action", range: "Touch", damageDice: "2d8+10", benefit: "Touch attack deals 2d8 +1/level (max +10) negative energy damage (Will half)." },
         { name: "Spiritual Weapon", type: "Spell", level: 2, school: "Evocation", action: "Standard Action", range: "Medium", damageDice: "1d8+4", benefit: "Magical force weapon attacks on its own for 1d8 +1/3 levels force damage." },
         { name: "Cure Serious Wounds", type: "Spell", level: 3, school: "Conjuration", action: "Standard Action", range: "Touch", damageDice: "3d8+13", benefit: "Cures 3d8 +1/level (max +15) points of damage." },
+        { name: "Inflict Serious Wounds", type: "Spell", level: 3, school: "Necromancy", action: "Standard Action", range: "Touch", damageDice: "3d8+13", benefit: "Touch attack deals 3d8 +1/level (max +15) negative energy damage (Will half)." },
         { name: "Prayer", type: "Spell", level: 3, school: "Enchantment", action: "Standard Action", range: "40 ft", benefit: "Allies get +1 luck bonus on most rolls; enemies take -1 penalty." },
+        { name: "Cure Critical Wounds", type: "Spell", level: 4, school: "Conjuration", action: "Standard Action", range: "Touch", damageDice: "4d8+13", benefit: "Cures 4d8 +1/level (max +20) points of damage." },
+        { name: "Inflict Critical Wounds", type: "Spell", level: 4, school: "Necromancy", action: "Standard Action", range: "Touch", damageDice: "4d8+13", benefit: "Touch attack deals 4d8 +1/level (max +20) negative energy damage (Will half)." },
         { name: "Divine Power", type: "Spell", level: 4, school: "Evocation", action: "Standard Action", range: "Personal", benefit: "BAB equals character level, +6 enhancement to STR, and +1 temp HP/level." },
         { name: "Freedom of Movement", type: "Spell", level: 4, school: "Abjuration", action: "Standard Action", range: "Touch", benefit: "Subject moves and attacks normally despite magic or grapple/paralysis." },
         { name: "Righteous Might", type: "Spell", level: 5, school: "Transmutation", action: "Standard Action", range: "Personal", benefit: "Your size increases to Large (+4 STR, +2 CON, +2 natural armor, DR/evil or good)." },
@@ -6102,6 +6109,7 @@
         { name: "Fire Storm", type: "Spell", level: 8, school: "Evocation", action: "Standard Action", range: "Medium", damageDice: "15d6", benefit: "Deals 1d6/level (max 20d6) fire damage in two 10-ft cubes per level." },
         { name: "Miracle", type: "Spell", level: 9, school: "Evocation", action: "Standard Action", range: "See text", benefit: "Requests direct deity intervention; duplicates any Cleric spell up to 8th or other spell up to 7th." },
         // Tome of Battle Maneuvers (Levels 1-9)
+        { name: "Crusader's Strike", type: "Maneuver", level: 1, discipline: "Devoted Spirit", action: "Standard Action", damageDice: "1d6+5", benefit: "Strike: Successful melee attack cures 1d6 +1/IL (max +5) damage on you or an ally within 10 ft." },
         { name: "Steel Wind", type: "Maneuver", level: 1, discipline: "Iron Heart", action: "Standard Action", benefit: "Strike: Make melee attacks against two adjacent opponents you threaten." },
         { name: "Steely Strike", type: "Maneuver", level: 1, discipline: "Iron Heart", action: "Standard Action", benefit: "Strike: +4 bonus on single melee attack roll; opponents get +4 to hit you until next turn." },
         { name: "Moment of Perfect Mind", type: "Maneuver", level: 1, discipline: "Diamond Mind", action: "Immediate Action", benefit: "Counter: Use a Concentration check in place of a Will save." },
@@ -6566,6 +6574,18 @@
         } else {
           hpBonusTag.textContent = '';
           hpBonusTag.title = '';
+        }
+      }
+
+      const hpTempTag = document.getElementById('hp-temp-tag');
+      if (hpTempTag) {
+        const tempHp = Math.max(0, Number(character.hp?.temp) || 0);
+        if (tempHp > 0) {
+          hpTempTag.textContent = `🛡️ +${tempHp} Temp`;
+          hpTempTag.classList.remove('hidden');
+        } else {
+          hpTempTag.textContent = '';
+          hpTempTag.classList.add('hidden');
         }
       }
 
@@ -8176,14 +8196,23 @@
       const input = document.getElementById('hp-adjust-input');
       const evaluated = evaluateHpAmount(input?.value || '0');
       if (evaluated.total <= 0) return;
-      character.hp.current = Math.max(-10, (Number(character.hp.current) || 0) - evaluated.total);
+      let dmgLeft = evaluated.total;
+      const curTemp = Math.max(0, Number(character.hp.temp) || 0);
+      if (curTemp > 0) {
+        const absorbed = Math.min(curTemp, dmgLeft);
+        character.hp.temp = curTemp - absorbed;
+        dmgLeft -= absorbed;
+      }
+      if (dmgLeft > 0) {
+        character.hp.current = Math.max(-10, (Number(character.hp.current) || 0) - dmgLeft);
+      }
       saveStateToStorage(true);
       renderAll();
       if (evaluated.isDice) {
         showDiceTopToast({
           icon: '💥',
           title: 'Hasar Zarı',
-          breakdown: `${evaluated.rollDesc} • Kalan Can: ${character.hp.current}/${character.hp.max}`,
+          breakdown: `${evaluated.rollDesc} • Kalan Can: ${character.hp.current}/${character.hp.max}${character.hp.temp > 0 ? ` (+${character.hp.temp} Temp)` : ''}`,
           total: `-${evaluated.total} HP`
         });
       }
@@ -8205,6 +8234,78 @@
           total: `+${evaluated.total} HP`
         });
       }
+    }
+
+    function clearTempHp() {
+      if (!character || !character.hp) return;
+      const curTemp = Number(character.hp.temp) || 0;
+      if (curTemp <= 0) return;
+      character.hp.temp = 0;
+      saveStateToStorage(true);
+      renderAll();
+      showDiceTopToast({
+        icon: '🛡️',
+        title: 'Geçici HP Sıfırlandı',
+        breakdown: `Temporary HP (+${curTemp}) kaldırıldı • Güncel Can: ${character.hp.current}/${character.hp.max}`,
+        total: '0 Temp'
+      });
+    }
+
+    function applySpellHealToSelf(amount, sourceName = 'Büyü Şifası') {
+      if (!character || !character.hp) return;
+      const healVal = Math.max(0, Number(amount) || 0);
+      if (healVal <= 0) return;
+      const prevHp = Number(character.hp.current) || 0;
+      const maxHp = Number(character.hp.max) || 1;
+      character.hp.current = Math.min(maxHp, prevHp + healVal);
+      const actualGain = character.hp.current - prevHp;
+      saveStateToStorage(true);
+      renderAll();
+      showDiceTopToast({
+        icon: '💚',
+        title: `${sourceName} Uygulandı`,
+        breakdown: `Can Puanı: ${prevHp} ➔ ${character.hp.current} / ${maxHp} (+${actualGain} HP)`,
+        total: `+${healVal} HP`
+      });
+    }
+
+    function applySpellTempHpToSelf(amount, sourceName = 'Geçici HP') {
+      if (!character || !character.hp) return;
+      const tempVal = Math.max(0, Number(amount) || 0);
+      if (tempVal <= 0) return;
+      const prevTemp = Math.max(0, Number(character.hp.temp) || 0);
+      character.hp.temp = prevTemp + tempVal;
+      saveStateToStorage(true);
+      renderAll();
+      showDiceTopToast({
+        icon: '🛡️',
+        title: `${sourceName} (Geçici HP)`,
+        breakdown: `Geçici Can: +${character.hp.temp} Temp HP • Ana Can: ${character.hp.current}/${character.hp.max}`,
+        total: `+${tempVal} Temp`
+      });
+    }
+
+    function applySpellSelfDamage(amount, sourceName = 'Kan Fedası') {
+      if (!character || !character.hp) return;
+      let dmgLeft = Math.max(0, Number(amount) || 0);
+      if (dmgLeft <= 0) return;
+      const curTemp = Math.max(0, Number(character.hp.temp) || 0);
+      if (curTemp > 0) {
+        const absorbed = Math.min(curTemp, dmgLeft);
+        character.hp.temp = curTemp - absorbed;
+        dmgLeft -= absorbed;
+      }
+      if (dmgLeft > 0) {
+        character.hp.current = Math.max(-10, (Number(character.hp.current) || 0) - dmgLeft);
+      }
+      saveStateToStorage(true);
+      renderAll();
+      showDiceTopToast({
+        icon: '🩸',
+        title: `${sourceName} (-${amount} HP)`,
+        breakdown: `Öz-Hasar Uygulandı • Kalan Can: ${character.hp.current}/${character.hp.max}`,
+        total: `-${amount} HP`
+      });
     }
 
     // ==========================================
@@ -8939,6 +9040,8 @@
         }
       }
 
+      const hasActions = Array.isArray(entry.actions) && entry.actions.length > 0;
+
       toast.innerHTML = `
         <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 shadow-inner" style="background: ${palette.iconBg}; border: 1px solid ${palette.iconBorder};">
           ${icon}
@@ -8951,6 +9054,7 @@
           <div class="text-xs text-slate-300 font-mono truncate" title="${breakdown.replace(/"/g, '&quot;')}">
             ${breakdown}
           </div>
+          ${hasActions ? `<div id="dice-toast-actions-bar" class="flex flex-wrap items-center gap-1.5 mt-2 pt-1.5 border-t border-slate-700/80"></div>` : ''}
         </div>
         ${formattedTotal ? `
         <div class="shrink-0 flex items-center pl-3 border-l border-slate-700/80">
@@ -8960,6 +9064,25 @@
         </div>
         ` : ''}
       `;
+
+      if (hasActions) {
+        const actionsBar = toast.querySelector('#dice-toast-actions-bar');
+        if (actionsBar) {
+          entry.actions.forEach(act => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = act.className || 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-800 hover:bg-emerald-700 text-white border border-emerald-500 transition shadow cursor-pointer';
+            btn.innerHTML = act.label || 'Uygula';
+            btn.onclick = (ev) => {
+              ev.stopPropagation();
+              if (typeof act.onClick === 'function') {
+                act.onClick();
+              }
+            };
+            actionsBar.appendChild(btn);
+          });
+        }
+      }
 
       // Click to dismiss immediately
       toast.onclick = () => {
@@ -8980,14 +9103,15 @@
         });
       });
 
-      // Auto dismiss after exactly 3 seconds
+      // Auto dismiss after 8s if interactive actions exist, otherwise 3s
+      const dismissMs = hasActions ? 8500 : 3000;
       _diceToastTimer = setTimeout(() => {
         toast.classList.remove('translate-y-0', 'opacity-100');
         toast.classList.add('-translate-y-12', 'opacity-0');
         setTimeout(() => {
           if (toast.parentNode) toast.remove();
         }, 350);
-      }, 3000);
+      }, dismissMs);
     }
     window.showDiceTopToast = showDiceTopToast;
 
@@ -10525,19 +10649,116 @@
       });
     }
 
+    function resolveSpellEffectiveFormula(s, cl = 6) {
+      if (!s) return null;
+      const direct = s.damageDice || findDiceExpression(s.benefit || s.notes || s.description);
+      if (direct) return direct;
+      const n = (s.name || '').toLowerCase().trim();
+      if (n === 'heal' || n === 'mass heal') {
+        const cap = n === 'mass heal' ? 250 : 150;
+        return String(Math.min(cap, 10 * Math.max(1, Number(cl) || 6)));
+      }
+      if (n === 'cure minor wounds' || n === 'inflict minor wounds' || n === 'virtue') {
+        return '1';
+      }
+      if (n === 'divine power' || n === 'greater heroism') {
+        return String(Math.max(1, Number(cl) || 6));
+      }
+      return null;
+    }
+
+    function getClericSpontaneousSpellInfo(lvl, cl = 6, mode = 'cure') {
+      const numLvl = Number(lvl);
+      if (isNaN(numLvl) || numLvl < 0 || numLvl > 8) return null;
+      const effCl = Math.max(1, Number(cl) || 6);
+      const isCure = mode !== 'inflict';
+
+      if (numLvl === 0) {
+        return isCure
+          ? { name: 'Cure Minor Wounds', formula: '1', effectType: 'heal', shortLabel: 'Cure (1 HP)', icon: '💚' }
+          : { name: 'Inflict Minor Wounds', formula: '1', effectType: 'damage', shortLabel: 'Inflict (1)', icon: '💀' };
+      }
+
+      const tierNames = ['', 'Light', 'Moderate', 'Serious', 'Critical'];
+      if (numLvl >= 1 && numLvl <= 4) {
+        const cap = Math.min(effCl, numLvl * 5);
+        const formula = `${numLvl}d8+${cap}`;
+        const tier = tierNames[numLvl];
+        return isCure
+          ? { name: `Cure ${tier} Wounds`, formula, effectType: 'heal', shortLabel: `Cure (${formula})`, icon: '💚' }
+          : { name: `Inflict ${tier} Wounds`, formula, effectType: 'damage', shortLabel: `Inflict (${formula})`, icon: '💀' };
+      }
+
+      const diceCount = numLvl - 4;
+      const cap = Math.min(effCl, numLvl * 5);
+      const formula = `${diceCount}d8+${cap}`;
+      const tier = tierNames[diceCount];
+      return isCure
+        ? { name: `Mass Cure ${tier} Wounds`, formula, effectType: 'heal', shortLabel: `M.Cure (${formula})`, icon: '💚' }
+        : { name: `Mass Inflict ${tier} Wounds`, formula, effectType: 'damage', shortLabel: `M.Inflict (${formula})`, icon: '💀' };
+    }
+
+    function toggleClericSpontaneousMode() {
+      if (!character.spellcasting) character.spellcasting = {};
+      const cur = character.spellcasting.clericSpontaneousMode || 'cure';
+      const next = cur === 'cure' ? 'inflict' : 'cure';
+      character.spellcasting.clericSpontaneousMode = next;
+      saveStateToStorage(true);
+      const classesStatus = checkCharacterMagicClasses();
+      renderDivineDisciplineView(classesStatus.hasDivine);
+      showDiceTopToast({
+        icon: next === 'cure' ? '💚' : '💀',
+        title: next === 'cure' ? 'Pozitif Enerji (Cure Wounds)' : 'Negatif Enerji (Inflict Wounds)',
+        breakdown: next === 'cure'
+          ? 'Cleric anlık büyü dönüşümü Şifa (Cure Wounds) kanalına alındı.'
+          : 'Cleric anlık büyü dönüşümü Yara (Inflict Wounds) kanalına alındı.',
+        total: next === 'cure' ? 'Cure' : 'Inflict'
+      });
+    }
+
+    function castClericSpontaneousConversion(spellIdx) {
+      const s = character?.spellcasting?.divineSpells?.[spellIdx];
+      if (!s) return;
+      const lvl = Number(s.level) || 0;
+      const { cl } = getDivineCasterInfo();
+      const mode = character?.spellcasting?.clericSpontaneousMode || 'cure';
+      const spont = getClericSpontaneousSpellInfo(lvl, cl, mode);
+      if (!spont) return;
+
+      const slot = character.spellcasting?.divineSlots?.find(sl => Number(sl.level) === lvl);
+      if (slot && slot.used < slot.daily) {
+        slot.used++;
+        saveStateToStorage(true);
+        renderAll();
+        rollSpellOrManeuverFormula(
+          spont.formula,
+          `${s.name} ➔ ${spont.name} (${lvl}. Seviye • -1 Slot)`,
+          { name: spont.name, effectType: spont.effectType }
+        );
+      } else {
+        showDiceTopToast({
+          icon: '⚠️',
+          title: 'Slot Yetersiz',
+          breakdown: `${lvl}. seviye dua slotunuz kalmadı!`,
+          total: '0 Slot'
+        });
+      }
+    }
+
     function castPreparedSpellDirectly(spellIdx) {
       const s = character?.spellcasting?.preparedSpells?.[spellIdx];
       if (!s) return;
       const name = s.name;
       const lvl = Number(s.level) || 0;
-      const dmgExpr = s.damageDice || findDiceExpression(s.benefit);
+      const { cl } = getPreparedCasterInfo();
+      const dmgExpr = resolveSpellEffectiveFormula(s, cl);
       const slot = character.spellcasting?.preparedSlots?.find(sl => Number(sl.level) === lvl);
       if (slot && slot.used < slot.daily) {
         slot.used++;
         saveStateToStorage(true);
         renderAll();
         if (dmgExpr) {
-          rollSpellOrManeuverFormula(dmgExpr, `${name} (${lvl}. Seviye • -1 Slot)`);
+          rollSpellOrManeuverFormula(dmgExpr, `${name} (${lvl}. Seviye • -1 Slot)`, s);
         } else {
           showDiceTopToast({
             icon: '📖',
@@ -10574,6 +10795,7 @@
 
       if (!character.spellcasting) character.spellcasting = {};
       const { statKey, statVal, statMod, cl, clMode } = getDivineCasterInfo();
+      const spontMode = character.spellcasting.clericSpontaneousMode || 'cure';
       character.spellcasting.divineSlots = calculateDivineSlots(cl, statVal, character.spellcasting.divineSlots);
       if (!Array.isArray(character.spellcasting.divineSpells)) {
         character.spellcasting.divineSpells = [
@@ -10689,6 +10911,20 @@
 
       function buildDivineRowHtml(s, originalIdx, lvl, dc) {
         const dmgExpr = s.damageDice || findDiceExpression(s.benefit);
+        const spontInfo = getClericSpontaneousSpellInfo(lvl, cl, spontMode);
+        const isAlreadyCureOrInflict = /^(cure|inflict|mass cure|mass inflict)\b/i.test((s.name || '').trim());
+        const showSpontBtn = Boolean(spontInfo && !isAlreadyCureOrInflict);
+        const spontBtnHtml = showSpontBtn ? `
+          <button onclick="castClericSpontaneousConversion(${originalIdx})" class="${
+            spontMode === 'cure'
+              ? 'bg-emerald-950/90 hover:bg-emerald-800 text-emerald-300 hover:text-white border-emerald-600/80'
+              : 'bg-rose-950/90 hover:bg-rose-800 text-rose-300 hover:text-white border-rose-600/80'
+          } text-[11px] font-bold font-mono px-2 py-1 rounded-lg border shadow transition inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="Cleric Anlık Dönüşüm: '${s.name}' slotunu '${spontInfo.name}' (${spontInfo.formula}) büyüsüne dönüştürerek at">
+            <span>${spontInfo.icon}</span>
+            <span>${spontInfo.shortLabel}</span>
+          </button>
+        ` : '';
+
         return `
           <tr class="hover:bg-slate-900/60 transition">
             <td class="py-2.5 px-3 text-amber-400 font-bold font-mono text-center">${lvl}</td>
@@ -10706,7 +10942,8 @@
             </td>
             <td class="py-2.5 px-3 text-slate-300 text-[11px]">${s.benefit || '-'}</td>
             <td class="py-2.5 px-3 text-right align-middle">
-              <div class="flex items-center justify-end gap-2 w-full">
+              <div class="flex items-center justify-end gap-1.5 w-full">
+                ${spontBtnHtml}
                 ${dmgExpr ? `
                   <button onclick="castDivineSpellDirectly(${originalIdx})" class="bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white text-xs font-bold font-mono px-2.5 py-1 rounded-lg border border-amber-600/80 shadow transition inline-flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap" title="Büyüyü At & Zar Yuvarla (${dmgExpr})">
                     ${getD20IconSvg('w-3.5 h-3.5 text-amber-400 shrink-0')}
@@ -10775,8 +11012,16 @@
                 <p class="text-[11px] text-amber-300">Stat Mod: ${statMod >= 0 ? '+' + statMod : statMod} (${statKey}: ${statVal}) • İlahi Külliyat & Domain Bonusu Dahil • ${clMode}</p>
               </div>
             </div>
-            <div class="flex items-center gap-2">
-              <span class="badge bg-emerald-950 text-emerald-300 border border-emerald-600 text-xs font-bold">🛡️ ASF: %0 (İlahi Büyü)</span>
+            <div class="flex flex-wrap items-center gap-2">
+              <button type="button" onclick="toggleClericSpontaneousMode()" class="${
+                spontMode === 'cure'
+                  ? 'bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-500/80'
+                  : 'bg-rose-950 hover:bg-rose-900 text-rose-300 border-rose-500/80'
+              } border text-xs font-bold px-2.5 py-1.5 rounded-lg shadow transition flex items-center gap-1.5 cursor-pointer" title="Cleric Anlık Dönüşüm Kanalı (Spontaneous Casting): Tıklayarak Cure (Pozitif Enerji / Şifa) veya Inflict (Negatif Enerji / Yara) arasında geçiş yapın">
+                <span>${spontMode === 'cure' ? '💚' : '💀'}</span>
+                <span>Anlık Dönüşüm: ${spontMode === 'cure' ? 'Cure (Şifa)' : 'Inflict (Yara)'}</span>
+              </button>
+              <span class="badge bg-emerald-950 text-emerald-300 border border-emerald-600 text-xs font-bold">🛡️ ASF: %0</span>
               <button onclick="restoreAllDivineSlots()" class="bg-amber-800 hover:bg-amber-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-amber-500/50 shadow transition flex items-center gap-1 cursor-pointer">
                 <span>✨</span>
                 <span>Tüm Slotları Yenile</span>
@@ -10828,7 +11073,7 @@
                   <span>✨</span>
                   <span class="uppercase tracking-wider">HAVUZ: GÜNLÜK DUA İLE HAZIRLANAN İLAHİ BÜYÜLER (DIVINE SPELLS)</span>
                 </div>
-                <span class="text-[11px] text-slate-400 font-normal">✨ Slot harcayarak büyü atın veya boş dua slotlarına ilahi büyü seçin</span>
+                <span class="text-[11px] text-slate-400 font-normal">✨ Büyüyü doğrudan atın veya ${spontMode === 'cure' ? '💚 Cure (Şifa)' : '💀 Inflict (Yara)'} büyüsüne dönüştürün</span>
               </div>
               <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs">
@@ -10841,7 +11086,7 @@
                       <th class="py-2.5 px-3 w-28">Menzil</th>
                       <th class="py-2.5 px-3 w-20 text-center">DC</th>
                       <th class="py-2.5 px-3">Etki & Açıklama</th>
-                      <th class="py-2.5 px-3 text-right pr-4 w-40">İşlemler</th>
+                      <th class="py-2.5 px-3 text-right pr-4 w-56">İşlemler</th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-slate-800 font-medium">
@@ -10885,14 +11130,15 @@
       if (!s) return;
       const name = s.name;
       const lvl = Number(s.level) || 0;
-      const dmgExpr = s.damageDice || findDiceExpression(s.benefit);
+      const { cl } = getDivineCasterInfo();
+      const dmgExpr = resolveSpellEffectiveFormula(s, cl);
       const slot = character.spellcasting?.divineSlots?.find(sl => Number(sl.level) === lvl);
       if (slot && slot.used < slot.daily) {
         slot.used++;
         saveStateToStorage(true);
         renderAll();
         if (dmgExpr) {
-          rollSpellOrManeuverFormula(dmgExpr, `${name} (${lvl}. Seviye • -1 Slot)`);
+          rollSpellOrManeuverFormula(dmgExpr, `${name} (${lvl}. Seviye • -1 Slot)`, s);
         } else {
           showDiceTopToast({
             icon: '✨',
@@ -11242,10 +11488,175 @@
       return m ? m[1].replace(/\s+/g, '') : null;
     }
 
-    // Direct dice roller for spells and maneuvers
-    function rollSpellOrManeuverFormula(expr, title) {
+    // Classify spell or maneuver effect for Option A interactive HP / Temp HP actions
+    function classifySpellOrManeuverEffect(itemOrTitle) {
+      if (!itemOrTitle) return 'damage';
+      if (typeof itemOrTitle === 'object' && itemOrTitle.effectType) {
+        return itemOrTitle.effectType;
+      }
+      const rawName = (typeof itemOrTitle === 'string' ? itemOrTitle : (itemOrTitle.name || itemOrTitle.title || '')).toLowerCase().trim();
+      const rawDesc = (typeof itemOrTitle === 'object' ? (itemOrTitle.benefit || itemOrTitle.notes || itemOrTitle.description || '') : '').toLowerCase().trim();
+
+      // 1. Vampiric / Life Drain (Deals damage AND grants Temp HP / Heal)
+      if (
+        rawName.includes('vampiric') ||
+        rawName.includes('consumptive field') ||
+        rawDesc.includes('damage as temp hp') ||
+        rawDesc.includes('equal to the damage')
+      ) {
+        return 'vampiric';
+      }
+
+      // 2. Blood Sacrifice (Blade of Blood: Sacrifice 5 HP for +2d6)
+      if (rawName.includes('blade of blood')) {
+        return 'blood_sacrifice';
+      }
+
+      // 3. Direct Healing (Cure Wounds, Heal, Close Wounds, Devoted Spirit strikes)
+      if (
+        rawName.includes('cure ') ||
+        rawName === 'heal' ||
+        rawName.startsWith('heal ') ||
+        rawName.includes('mass heal') ||
+        rawName.includes('close wounds') ||
+        rawName.includes('faith healing') ||
+        rawName.includes('panacea') ||
+        rawName.includes("crusader's strike") ||
+        rawName.includes('crusader strike') ||
+        rawName.includes('revitalizing strike') ||
+        rawName.includes('rallying strike') ||
+        rawName.includes('strike of righteous vitality') ||
+        rawName.includes('martial spirit') ||
+        rawDesc.includes('cures ') ||
+        rawDesc.includes('heals ') ||
+        rawDesc.includes('iyileştir')
+      ) {
+        return 'heal';
+      }
+
+      // 4. Temporary HP (False Life, Aid, Virtue, Heroes' Feast)
+      if (
+        rawName.includes('false life') ||
+        rawName === 'aid' ||
+        rawName.startsWith('aid ') ||
+        rawName.includes('virtue') ||
+        rawDesc.includes('temporary hp') ||
+        rawDesc.includes('temporary hit points') ||
+        rawDesc.includes('temp hp')
+      ) {
+        return 'temp_hp';
+      }
+
+      return 'damage';
+    }
+
+    function buildOptionAToastActions(effectType, amount, cleanSourceName) {
+      const val = Math.max(0, Number(amount) || 0);
+      if (val <= 0) return [];
+      const labelName = (cleanSourceName || 'Büyü').replace(/\s*\(.*?\)\s*/g, '').trim();
+
+      if (effectType === 'heal') {
+        return [
+          {
+            label: `💚 Kendime (+${val} HP)`,
+            className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-700 hover:bg-emerald-600 text-white border border-emerald-400 transition shadow cursor-pointer',
+            onClick: () => applySpellHealToSelf(val, labelName)
+          },
+          {
+            label: '🤝 Dosta / Hedefe',
+            className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition cursor-pointer',
+            onClick: () => {
+              const t = document.getElementById('dice-top-toast');
+              if (t) t.remove();
+            }
+          }
+        ];
+      }
+
+      if (effectType === 'vampiric') {
+        return [
+          {
+            label: `🛡️ +${val} Temp HP (RAW)`,
+            className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-cyan-800 hover:bg-cyan-700 text-cyan-100 border border-cyan-400 transition shadow cursor-pointer',
+            onClick: () => applySpellTempHpToSelf(val, labelName)
+          },
+          {
+            label: `💚 +${val} Gerçek HP`,
+            className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-800 hover:bg-emerald-700 text-emerald-100 border border-emerald-500 transition shadow cursor-pointer',
+            onClick: () => applySpellHealToSelf(val, labelName)
+          }
+        ];
+      }
+
+      if (effectType === 'temp_hp') {
+        return [
+          {
+            label: `🛡️ Kendime (+${val} Temp HP)`,
+            className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-cyan-800 hover:bg-cyan-700 text-cyan-100 border border-cyan-400 transition shadow cursor-pointer',
+            onClick: () => applySpellTempHpToSelf(val, labelName)
+          },
+          {
+            label: '🤝 Dosta / Geç',
+            className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition cursor-pointer',
+            onClick: () => {
+              const t = document.getElementById('dice-top-toast');
+              if (t) t.remove();
+            }
+          }
+        ];
+      }
+
+      if (effectType === 'blood_sacrifice') {
+        return [
+          {
+            label: '🩸 -5 HP Feda Et (3d6)',
+            className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-rose-800 hover:bg-rose-700 text-rose-100 border border-rose-400 transition shadow cursor-pointer',
+            onClick: () => applySpellSelfDamage(5, labelName)
+          },
+          {
+            label: '⚔️ Fedasız',
+            className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition cursor-pointer',
+            onClick: () => {
+              const t = document.getElementById('dice-top-toast');
+              if (t) t.remove();
+            }
+          }
+        ];
+      }
+
+      return [];
+    }
+
+    // Direct dice roller for spells and maneuvers (supports both XdY+Z and flat numbers like '1' or '60')
+    function rollSpellOrManeuverFormula(expr, title, sourceItem = null) {
       if (!expr) return;
-      const clean = expr.trim();
+      const clean = String(expr).trim();
+      const effectType = classifySpellOrManeuverEffect(sourceItem || title);
+
+      // Flat number case (e.g. Cure Minor Wounds = '1', Heal = '60')
+      if (/^\d+$/.test(clean)) {
+        const flatVal = parseInt(clean, 10) || 0;
+        const actions = buildOptionAToastActions(effectType, flatVal, (sourceItem && sourceItem.name) || title);
+        const toastIcon = effectType === 'heal' ? '💚' : (effectType === 'vampiric' ? '🩸' : (effectType === 'temp_hp' ? '🛡️' : getD20IconSvg('w-6 h-6 text-amber-400')));
+        addDiceHistoryEntry({
+          icon: toastIcon,
+          title: `${title}`,
+          formula: `${flatVal}`,
+          breakdown: `Sabit Etki: ${flatVal}`,
+          total: flatVal,
+          isCrit: false,
+          critInfo: ''
+        });
+        showDiceTopToast({
+          icon: toastIcon,
+          title: title || 'Büyü Etkisi',
+          breakdown: effectType === 'heal' ? `Şifa Miktarı: +${flatVal} HP` : `Etki Değeri: ${flatVal}`,
+          total: effectType === 'heal' ? `+${flatVal}` : flatVal,
+          actions
+        });
+        return;
+      }
+
       const match = clean.match(/^(\d+)d(\d+)(?:\s*([+-])\s*(\d+))?$/i);
       if (!match) {
         alert(`Zar formülü: ${expr}`);
@@ -11273,6 +11684,15 @@
       if (mod !== 0) breakdownStr += ` ${mod >= 0 ? '+' : '-'} ${Math.abs(mod)}`;
 
       const onDone = () => {
+        const actions = buildOptionAToastActions(effectType, grandTotal, (sourceItem && sourceItem.name) || title);
+        const toastIcon = effectType === 'heal'
+          ? '💚'
+          : (effectType === 'vampiric'
+            ? '🩸'
+            : (effectType === 'temp_hp'
+              ? '🛡️'
+              : getD20IconSvg('w-6 h-6 text-amber-400')));
+
         addDiceHistoryEntry({
           icon: getD20IconSvg('w-5 h-5 text-amber-400'),
           title: `${title} (${clean})`,
@@ -11283,10 +11703,11 @@
           critInfo: ''
         });
         showDiceTopToast({
-          icon: getD20IconSvg('w-6 h-6 text-amber-400'),
+          icon: toastIcon,
           title: title || 'Zar Atışı',
           breakdown: breakdownStr,
-          total: grandTotal
+          total: effectType === 'heal' ? `+${grandTotal}` : grandTotal,
+          actions
         });
       };
 
@@ -11645,7 +12066,7 @@
         renderManeuvers();
         saveStateToStorage();
         if (dmgExpr) {
-          rollSpellOrManeuverFormula(dmgExpr, `${m.name} (Manevra Kullanıldı)`);
+          rollSpellOrManeuverFormula(dmgExpr, `${m.name} (Manevra Kullanıldı)`, m);
         } else {
           showDiceTopToast({
             icon: '⚡',
@@ -12042,7 +12463,8 @@
       if (!s) return;
       const name = s.name;
       const lvl = Number(s.level) || 0;
-      const dmgExpr = s.damageDice || findDiceExpression(s.benefit);
+      const { cl } = getCasterInfo();
+      const dmgExpr = resolveSpellEffectiveFormula(s, cl);
 
       const slot = character.spellcasting?.slots?.find(sl => sl.level === lvl);
       if (slot && slot.used < slot.daily) {
@@ -12065,7 +12487,7 @@
         renderAll();
 
         if (dmgExpr) {
-          rollSpellOrManeuverFormula(dmgExpr, `${name} (${lvl}. Seviye • -1 Slot)`);
+          rollSpellOrManeuverFormula(dmgExpr, `${name} (${lvl}. Seviye • -1 Slot)`, s);
         } else if (buffApplied) {
           showDiceTopToast({
             icon: '🔮',
