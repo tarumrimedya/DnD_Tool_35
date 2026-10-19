@@ -596,11 +596,11 @@
                 <span>⚡</span>
                 <span>Günlük Büyü Slotları (Tüketim Bataryası):</span>
               </span>
-              <span class="text-slate-400 text-[10px]">Harcanan slotu 'Harca' ile düşebilir, '+1' ile geri alabilirsiniz</span>
+              <span class="text-slate-400 text-[10px]">Büyü atıldığında ilgili seviyedeki slot otomatik düşer</span>
             </div>
             
-            <!-- Dynamic Compact Slot Capsules Container -->
-            <div class="flex flex-wrap items-center gap-2" id="compact-spell-slots-grid">
+            <!-- Dynamic Compact Slot Capsules Container (Eşit Boyutlu Hücreler) -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 w-full" id="compact-spell-slots-grid">
               <!-- Rendered dynamically -->
             </div>
           </div>
@@ -10164,31 +10164,21 @@
         const remaining = s.daily - s.used;
         const dc = getSpellDc(s.level);
         const div = document.createElement('div');
-        div.className = 'flex items-center gap-2.5 bg-slate-900/90 border border-purple-800/60 hover:border-purple-600 rounded-xl px-3 py-1.5 shadow-sm transition';
+        div.className = 'flex items-center justify-between bg-slate-900/90 border border-purple-800/60 hover:border-purple-600 rounded-xl px-3.5 py-2.5 shadow-sm transition w-full';
         div.innerHTML = `
-          <div class="flex flex-col">
-            <div class="flex items-center gap-1.5">
+          <div class="flex flex-col min-w-0">
+            <div class="flex items-center gap-1.5 flex-wrap">
               <span class="font-extrabold text-white text-xs whitespace-nowrap">${s.level === 0 ? '0 (Cantrip)' : s.level + '. Seviye'}</span>
-              <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-purple-950/90 text-emerald-400 border border-purple-700/60 font-bold whitespace-nowrap" title="Save DC = 10 + ${s.level} + ${statKey}(+${statMod})">DC ${dc}</span>
+              <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-purple-950/90 text-emerald-400 border border-purple-700/60 font-bold whitespace-nowrap" title="Save DC = 10 + ${s.level} + ${statKey}(+${statMod})">DC ${dc}</span>
             </div>
-            <span class="text-[10px] text-purple-300 font-mono">${s.level === 0 ? '6 Günlük' : (s.known ? s.known + ' Bilinen' : '')}</span>
+            <span class="text-[10px] text-purple-300 font-mono mt-0.5">${s.level === 0 ? '6 Günlük' : (s.known ? s.known + ' Bilinen' : '')}</span>
           </div>
 
-          <div class="h-6 w-px bg-slate-800"></div>
+          <div class="h-7 w-px bg-slate-800 mx-2 shrink-0"></div>
 
-          <div class="flex items-baseline gap-1">
-            <span class="text-[11px] text-slate-400">Kalan:</span>
+          <div class="flex flex-col items-end shrink-0">
+            <span class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Kalan Slot</span>
             <span class="text-sm font-black font-mono ${remaining > 0 ? 'text-emerald-400' : 'text-rose-500'} whitespace-nowrap">${remaining} / ${s.daily}</span>
-          </div>
-
-          <div class="flex items-center gap-1">
-            <button onclick="useSpellSlot(${idx})" ${remaining <= 0 ? 'disabled' : ''} class="bg-purple-600/40 hover:bg-purple-600 disabled:opacity-30 text-purple-200 hover:text-white px-2 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer" title="1 Slot Harca">
-              <span>✨</span>
-              <span>Harca</span>
-            </button>
-            <button onclick="restoreSpellSlot(${idx})" ${s.used <= 0 ? 'disabled' : ''} class="bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-slate-300 px-2 py-1 rounded-lg text-xs font-bold transition cursor-pointer" title="1 Slot Geri Al">
-              +1
-            </button>
           </div>
         `;
         container.appendChild(div);
