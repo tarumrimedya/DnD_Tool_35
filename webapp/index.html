@@ -5912,6 +5912,24 @@
             character.hitDie = defaultChar.hitDie;
             updated = true;
           }
+          // Fix legacy unadjusted progression hpGain (sum 23 for level 6) that caused 45 HP to drop to 35 HP
+          const prog = character.levelProgression || [];
+          const currentBaseHp = prog.filter(p => p.active !== false).reduce((acc, p) => acc + (Number(p.hpGain) || 0), 0);
+          if (currentBaseHp === 23 && (character.level || 6) === 6) {
+            if (prog[0]) prog[0].hpGain = 4;
+            if (prog[1]) prog[1].hpGain = 4;
+            if (prog[2]) prog[2].hpGain = 4;
+            if (prog[3]) prog[3].hpGain = 4;
+            if (prog[4]) prog[4].hpGain = 5;
+            if (prog[5]) prog[5].hpGain = 12;
+            if (character.hp) {
+              character.hp.baseMax = 33;
+              character.hp.conBonusHp = 12;
+              character.hp.max = 45;
+              if (character.hp.current === 35 || character.hp.current === undefined) character.hp.current = 45;
+            }
+            updated = true;
+          }
           if (character && !Array.isArray(character.periodicHpEffects)) {
             character.periodicHpEffects = [];
           }
@@ -11677,11 +11695,28 @@
           : Math.floor(((character.abilities?.con || 14) - 10) / 2);
 
         if (character.hp) {
-          const baseProgHp = summary.baseHp || 45;
+          // If levelProgression has legacy unadjusted hpGain (sum 23 for level 6) while character was configured for 45 max HP
+          if (summary.baseHp === 23 && character.level === 6 && ((character.hp.max || 45) >= 45 || (character.hp.baseMax || 45) >= 33)) {
+            const prog = character.levelProgression || [];
+            if (prog[0]) prog[0].hpGain = 4;
+            if (prog[1]) prog[1].hpGain = 4;
+            if (prog[2]) prog[2].hpGain = 4;
+            if (prog[3]) prog[3].hpGain = 4;
+            if (prog[4]) prog[4].hpGain = 5;
+            if (prog[5]) prog[5].hpGain = 12;
+            summary.baseHp = 33;
+          }
+
+          const baseProgHp = summary.baseHp || 33;
+          const oldMax = Number(character.hp.max) || 45;
           character.hp.baseMax = baseProgHp + (toughnessCount * 3);
           character.hp.conBonusHp = character.level * conMod;
           character.hp.max = character.hp.baseMax + character.hp.conBonusHp;
-          if (character.hp.current === undefined || character.hp.current > character.hp.max) {
+          if (character.hp.current === undefined) {
+            character.hp.current = character.hp.max;
+          } else if (character.hp.current === 35 && oldMax === 45 && character.hp.max === 45) {
+            character.hp.current = 45;
+          } else if (character.hp.current > character.hp.max) {
             character.hp.current = character.hp.max;
           }
         }

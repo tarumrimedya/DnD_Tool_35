@@ -37,8 +37,8 @@
   "hp": {
     "current": 45,
     "max": 45,
-    "baseMax": 45,
-    "conBonusHp": 0,
+    "baseMax": 33,
+    "conBonusHp": 12,
     "temp": 0,
     "nonlethal": 0
   },
@@ -128,11 +128,11 @@
   ],
   "levelProgression": [
     { "level": 1, "active": true, "className": "Sorcerer", "hd": "d4", "hpGain": 4, "bab": 0, "fort": 0, "ref": 0, "will": 2, "skillPts": 8, "feats": ["Weapon Finesse (Lvl 1)", "Shadow Blade (Human Bonus)"], "specialAbilities": ["Summon Familiar"], "notes": "Max HP at Lvl 1, Spellcasting starts" },
-    { "level": 2, "active": true, "className": "Sorcerer", "hd": "d4", "hpGain": 3, "bab": 1, "fort": 0, "ref": 0, "will": 3, "skillPts": 4, "feats": [], "specialAbilities": [], "notes": "RAW avg HD rounded" },
-    { "level": 3, "active": true, "className": "Sorcerer", "hd": "d4", "hpGain": 3, "bab": 1, "fort": 1, "ref": 1, "will": 3, "skillPts": 4, "feats": ["Weapon Focus (Rapier)"], "specialAbilities": [], "notes": "3. Seviye Genel Feat hakkı" },
-    { "level": 4, "active": true, "className": "Sorcerer", "hd": "d4", "hpGain": 3, "bab": 2, "fort": 1, "ref": 1, "will": 4, "skillPts": 4, "feats": ["+1 Stat: Charisma"], "specialAbilities": [], "statIncreased": "cha", "notes": "2. Seviye Büyü Slotları açıldı" },
-    { "level": 5, "active": true, "className": "Sorcerer", "hd": "d4", "hpGain": 3, "bab": 2, "fort": 1, "ref": 1, "will": 4, "skillPts": 4, "feats": [], "specialAbilities": [], "notes": "Caster Level 5 tamamlandı" },
-    { "level": 6, "active": true, "className": "Warblade", "hd": "d12", "hpGain": 7, "bab": 3, "fort": 4, "ref": 3, "will": 4, "skillPts": 6, "feats": ["Power Attack (Lvl 6)"], "specialAbilities": ["Battle Clarity (Ex)", "Weapon Aptitude (Ex)"], "notes": "Battle Clarity, Weapon Aptitude, Maneuvers açıldı" }
+    { "level": 2, "active": true, "className": "Sorcerer", "hd": "d4", "hpGain": 4, "bab": 1, "fort": 0, "ref": 0, "will": 3, "skillPts": 4, "feats": [], "specialAbilities": [], "notes": "RAW avg HD rounded" },
+    { "level": 3, "active": true, "className": "Sorcerer", "hd": "d4", "hpGain": 4, "bab": 1, "fort": 1, "ref": 1, "will": 3, "skillPts": 4, "feats": ["Weapon Focus (Rapier)"], "specialAbilities": [], "notes": "3. Seviye Genel Feat hakkı" },
+    { "level": 4, "active": true, "className": "Sorcerer", "hd": "d4", "hpGain": 4, "bab": 2, "fort": 1, "ref": 1, "will": 4, "skillPts": 4, "feats": ["+1 Stat: Charisma"], "specialAbilities": [], "statIncreased": "cha", "notes": "2. Seviye Büyü Slotları açıldı" },
+    { "level": 5, "active": true, "className": "Sorcerer", "hd": "d4", "hpGain": 5, "bab": 2, "fort": 1, "ref": 1, "will": 4, "skillPts": 4, "feats": [], "specialAbilities": [], "notes": "Caster Level 5 tamamlandı" },
+    { "level": 6, "active": true, "className": "Warblade", "hd": "d12", "hpGain": 12, "bab": 3, "fort": 4, "ref": 3, "will": 4, "skillPts": 6, "feats": ["Power Attack (Lvl 6)"], "specialAbilities": ["Battle Clarity (Ex)", "Weapon Aptitude (Ex)"], "notes": "Battle Clarity, Weapon Aptitude, Maneuvers açıldı" }
   ],
   "weapons": [
     {
@@ -221,12 +221,12 @@
       { "level": 0, "name": "Mage Hand", "school": "Transmutation", "action": "Standard Action", "range": "Close (25 ft)", "benefit": "5-pound telekinesis." },
       { "level": 0, "name": "Prestidigitation", "school": "Universal", "action": "Standard Action", "range": "10 ft", "benefit": "Minor magic tricks and cleaning." },
       { "level": 0, "name": "Ghost Sound", "school": "Illusion", "action": "Standard Action", "range": "Close (25 ft)", "benefit": "Creates phantom auditory sounds." },
-      { "level": 1, "name": "Magic Missile", "school": "Evocation", "action": "Standard Action", "range": "Medium (150 ft)", "benefit": "Fires 3 force missiles dealing 1d4+1 each (unerring hit)." },
+      { "level": 1, "name": "Magic Missile", "school": "Evocation", "action": "Standard Action", "range": "Medium (150 ft)", "damageDice": "3d4+3", "benefit": "Fires 3 force missiles dealing 1d4+1 each (unerring hit)." },
       { "level": 1, "name": "Shield", "school": "Abjuration", "action": "Standard Action", "range": "Personal", "benefit": "+4 shield bonus to AC and negates Magic Missile." },
       { "level": 1, "name": "Mage Armor", "school": "Conjuration", "action": "Standard Action", "range": "Touch", "benefit": "+4 armor bonus to AC for 5 hours." },
-      { "level": 1, "name": "Blade of Blood", "school": "Necromancy", "action": "Swift Action", "range": "Touch", "benefit": "Deal extra 1d6 (or 3d6 for 5 HP) on next strike." },
+      { "level": 1, "name": "Blade of Blood", "school": "Necromancy", "action": "Swift Action", "range": "Touch", "damageDice": "3d6", "benefit": "Deal extra 1d6 (or 3d6 for 5 HP) on next strike." },
       { "level": 2, "name": "Bull's Strength", "school": "Transmutation", "action": "Standard Action", "range": "Touch", "benefit": "+4 enhancement bonus to Strength for 5 minutes." },
-      { "level": 2, "name": "Scorching Ray", "school": "Evocation", "action": "Standard Action", "range": "Close (35 ft)", "benefit": "Ranged touch ray dealing 4d6 fire damage." }
+      { "level": 2, "name": "Scorching Ray", "school": "Evocation", "action": "Standard Action", "range": "Close (35 ft)", "damageDice": "4d6", "benefit": "Ranged touch ray dealing 4d6 fire damage." }
     ]
   },
   "tomeOfBattle": {
@@ -235,6 +235,11 @@
       { "name": "Mountain Hammer", "level": 2, "discipline": "Stone Dragon", "action": "Standard Action", "expended": false, "notes": "Weapon + 2d6, overcomes DR" },
       { "name": "Steel Wind", "level": 1, "discipline": "Iron Heart", "action": "Standard Action", "expended": false, "notes": "Attack two adjacent foes" },
       { "name": "Shadow Garrote", "level": 3, "discipline": "Shadow Hand", "action": "Standard Action", "expended": false, "notes": "5d6 ranged touch attack" }
+    ],
+    "maneuversKnown": [
+      { "name": "Mountain Hammer", "level": 2, "discipline": "Stone Dragon", "action": "Standard Action", "notes": "Weapon + 2d6, overcomes DR" },
+      { "name": "Steel Wind", "level": 1, "discipline": "Iron Heart", "action": "Standard Action", "notes": "Attack two adjacent foes" },
+      { "name": "Shadow Garrote", "level": 3, "discipline": "Shadow Hand", "action": "Standard Action", "notes": "5d6 ranged touch attack" }
     ],
     "stancesKnown": [
       { "name": "Punishing Stance", "discipline": "Iron Heart", "level": 1, "benefit": "+1d6 melee damage, -2 AC" },
