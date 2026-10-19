@@ -14764,25 +14764,30 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           statBadgeItem = `<button type="button" onclick="openStatPickerForLevel(${idx})" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-sky-950/90 hover:bg-sky-900 active:scale-95 text-sky-300 hover:text-white border border-dashed border-sky-500 shadow-sm animate-pulse transition text-left leading-none shrink-0 cursor-pointer" title="Seviye ${lvl.level} için +1 Yetenek Skoru (Stat) seçin"><span>💪</span><span>+ Stat Seç (+1)</span></button>`;
         }
 
-        // Filtered and partitioned feats for 3-column split (Regular Feats vs Bonus / Boons / Invocations)
+        // Filtered and partitioned feats for 3-column split:
+        // 1. Regular Feats (Beceriler)
+        // 2. Class Bonus Feats (Sınıf Özellikleri)
+        // 3. Other Bonus Feats / Boons / Invocations / Flaws (Bonus)
         const regularFeats = [];
-        const bonusFeats = [];
+        const classBonusFeats = [];
+        const otherBonusFeats = [];
         (lvl.feats || []).forEach(fStr => {
           const str = String(fStr);
           if (str.includes('+1 Stat') || str.includes('Stat:')) return; // handled by statBadgeItem
-          if (str.includes('[DM Boon]') || str.includes('Boon') || str.includes('DM Grant') ||
-              str.includes('[Bonus]') || str.includes('Bonus') ||
+          if (str.includes('[Bonus]') || str.includes('Bonus')) {
+            classBonusFeats.push(fStr);
+          } else if (str.includes('[DM Boon]') || str.includes('Boon') || str.includes('DM Grant') ||
               str.includes('[Flaw]') || str.includes('Flaw:') ||
               str.includes('[Racial]') ||
               str.includes('[Invocation]') || str.includes('Invocation') ||
               str.includes('Caster Lvl') || str.includes('+1 Primary CL') || str.includes('🔮')) {
-            bonusFeats.push(fStr);
+            otherBonusFeats.push(fStr);
           } else {
             regularFeats.push(fStr);
           }
         });
 
-        // 1. Sınıf Özellikleri badges
+        // 1. Sınıf Özellikleri (Core Class Abilities + Class Bonus Feats)
         const abilityBadgeItems = (lvl.specialAbilities || []).map(aStr => {
           const str = String(aStr);
           const rawName = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
@@ -14791,6 +14796,29 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           const safeTip = tip.replace(/"/g, '&quot;');
           return `<button onclick="showFeatDetail('${safeA}', ${idx}, 'ability')" title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-sky-950/80 hover:bg-sky-900 text-sky-300 border border-sky-600/70 shadow-sm transition text-left leading-none shrink-0"><span>✨</span><span>${str}</span></button>`;
         });
+
+        const classBonusBadgeItems = classBonusFeats.map(fStr => {
+          const str = String(fStr);
+          const rawName = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
+          const safeF = rawName.replace(/'/g, "\\'");
+          const tip = getFeatTooltipText(fStr);
+          const safeTip = tip.replace(/"/g, '&quot;');
+          return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border border-indigo-600/70 shadow-sm transition text-left leading-none shrink-0"><span>⚔️</span><span>${str}</span></button>`;
+        });
+
+        let classLevelSoFar = 0;
+        for (let i = 0; i <= idx; i++) {
+          if (prog[i].className === lvl.className) classLevelSoFar++;
+        }
+        const classFeats = (typeof RuleEngine !== 'undefined' && RuleEngine.getClassLevelFeatures)
+          ? RuleEngine.getClassLevelFeatures(lvl.className, classLevelSoFar)
+          : { hasBonusFeat: false };
+        const qualifiesForClassBonus = classFeats.hasBonusFeat;
+
+        const pendingClassBonusButtons = [];
+        if (qualifiesForClassBonus && classBonusFeats.length === 0) {
+          pendingClassBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Class Bonus Feat')" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-amber-950/90 hover:bg-amber-900 text-amber-300 border border-dashed border-amber-500 shadow-sm animate-pulse transition text-left leading-none shrink-0" title="Bu seviye için Sınıf Bonus Feati seçin"><span>⚔️</span><span>+ Bonus Feat Seç</span></button>`);
+        }
 
         // 2. Beceriler (Regular Feats) badges
         const regularFeatBadgeItems = regularFeats.map(fStr => {
@@ -14810,8 +14838,8 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           regularPromptButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Regular Feat')" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-purple-950/90 hover:bg-purple-900 text-purple-300 border border-dashed border-purple-500 shadow-sm animate-pulse transition text-left leading-none shrink-0" title="Bu seviye için Normal Feat seçin"><span>🎖️</span><span>+ Feat Seç</span></button>`);
         }
 
-        // 3. Bonus badges (DM Boons, Invocations, Flaws, Class Bonus, Racial, CL Boons)
-        const bonusFeatBadgeItems = bonusFeats.map(fStr => {
+        // 3. Bonus badges (DM Boons, Invocations, Flaws, Racial, CL Boons)
+        const otherBonusBadgeItems = otherBonusFeats.map(fStr => {
           const str = String(fStr);
           const rawName = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
           const safeF = rawName.replace(/'/g, "\\'");
@@ -14823,8 +14851,6 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-purple-950/80 hover:bg-purple-900 text-purple-300 border border-purple-600/70 shadow-sm transition text-left leading-none shrink-0"><span>🔮</span><span>${str}</span></button>`;
           } else if (str.includes('[Flaw]') || str.includes('Flaw:')) {
             return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-600/70 shadow-sm transition text-left leading-none shrink-0"><span>⚠️</span><span>${str}</span></button>`;
-          } else if (str.includes('[Bonus]') || str.includes('Bonus')) {
-            return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border border-indigo-600/70 shadow-sm transition text-left leading-none shrink-0"><span>⚔️</span><span>${str}</span></button>`;
           } else if (str.includes('[Racial]')) {
             return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-teal-950/80 hover:bg-teal-900 text-teal-300 border border-teal-600/70 shadow-sm transition text-left leading-none shrink-0"><span>🧬</span><span>${str}</span></button>`;
           } else {
@@ -14832,22 +14858,9 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           }
         });
 
-        // Check class bonus feat & racial bonus eligibility
-        let classLevelSoFar = 0;
-        for (let i = 0; i <= idx; i++) {
-          if (prog[i].className === lvl.className) classLevelSoFar++;
-        }
-        const classFeats = (typeof RuleEngine !== 'undefined' && RuleEngine.getClassLevelFeatures)
-          ? RuleEngine.getClassLevelFeatures(lvl.className, classLevelSoFar)
-          : { hasBonusFeat: false };
-        const qualifiesForClassBonus = classFeats.hasBonusFeat;
         const qualifiesForHumanBonus = (lvl.level === 1 && isHuman);
-
         const pendingBonusButtons = [];
-        if (qualifiesForClassBonus && !bonusFeats.some(f => String(f).includes('[Bonus]') || String(f).toLowerCase().includes('bonus'))) {
-          pendingBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Class Bonus Feat')" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-amber-950/90 hover:bg-amber-900 text-amber-300 border border-dashed border-amber-500 shadow-sm animate-pulse transition text-left leading-none shrink-0" title="Bu seviye için Sınıf Bonus Feati seçin"><span>⚔️</span><span>+ Bonus Feat Seç</span></button>`);
-        }
-        if (qualifiesForHumanBonus && !bonusFeats.some(f => String(f).includes('[Racial]'))) {
+        if (qualifiesForHumanBonus && !otherBonusFeats.some(f => String(f).includes('[Racial]'))) {
           pendingBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Racial Trait')" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-teal-950/90 hover:bg-teal-900 text-teal-300 border border-dashed border-teal-500 shadow-sm animate-pulse transition text-left leading-none shrink-0" title="İnsan ırksal bonus feati seçin"><span>🧬</span><span>+ Irk Feati Seç</span></button>`);
         }
 
@@ -14857,7 +14870,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           : Boolean(character.settings?.warlockBoon || (character.settings?.clMode && String(character.settings.clMode).includes('Warlock Boon')));
         
         if (isWarlockActive && typeof isWarlockInvocationLevel === 'function' && isWarlockInvocationLevel(lvl.level)) {
-          const hasInvocation = bonusFeats.some(f => String(f).includes('[Invocation]') || String(f).toLowerCase().includes('invocation'));
+          const hasInvocation = otherBonusFeats.some(f => String(f).includes('[Invocation]') || String(f).toLowerCase().includes('invocation'));
           if (!hasInvocation) {
             const tier = (typeof getWarlockMaxTierForLevel === 'function') ? getWarlockMaxTierForLevel(lvl.level) : 'Least';
             pendingBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Warlock Invocation')" class="h-6 inline-flex items-center gap-1.5 px-2 rounded text-[10px] font-bold bg-purple-950/90 hover:bg-purple-900 text-purple-300 border border-dashed border-purple-500 shadow-sm animate-pulse transition text-left leading-none shrink-0" title="Seviye ${lvl.level} Warlock Yakarışı (${tier} Invocation) seçin"><span>🔮</span><span>+ Invocation Seç (${tier})</span></button>`);
@@ -14938,7 +14951,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           </td>
           <td class="pt-2.5 pb-2.5 px-3 font-sans align-top">
             <div class="flex flex-col gap-1.5 items-start">
-              ${abilityBadgeItems.length > 0 ? abilityBadgeItems.join('') : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
+              ${(abilityBadgeItems.length > 0 || classBonusBadgeItems.length > 0 || pendingClassBonusButtons.length > 0) ? (abilityBadgeItems.join('') + classBonusBadgeItems.join('') + pendingClassBonusButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
             </div>
           </td>
           <td class="pt-2.5 pb-2.5 px-3 font-sans align-top">
@@ -14948,7 +14961,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           </td>
           <td class="pt-2.5 pb-2.5 px-3 font-sans align-top">
             <div class="flex flex-col gap-1.5 items-start">
-              ${(statBadgeItem || bonusFeatBadgeItems.length > 0 || pendingBonusButtons.length > 0) ? ((statBadgeItem || '') + bonusFeatBadgeItems.join('') + pendingBonusButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
+              ${(statBadgeItem || otherBonusBadgeItems.length > 0 || pendingBonusButtons.length > 0) ? ((statBadgeItem || '') + otherBonusBadgeItems.join('') + pendingBonusButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
             </div>
           </td>
           <td class="pt-2.5 pb-2.5 px-2 align-top text-center">
