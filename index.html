@@ -9017,16 +9017,43 @@
         });
       });
 
-      // Auto dismiss
+      // Auto dismiss (Karar isteyen toastlar için 30sn, normal bildirimler için 3.5sn)
       if (options.autoDismiss !== false) {
-        const dismissMs = options.dismissMs || (hasActions ? 8500 : 3500);
+        const dismissMs = options.dismissMs || (hasActions ? 30000 : 3500);
         toast._dismissTimer = setTimeout(() => {
+          if (hasActions && typeof entry.onCancel === 'function') {
+            try { entry.onCancel(); } catch (err) {}
+          }
           toast.classList.remove('translate-y-0', 'opacity-100');
           toast.classList.add('-translate-y-6', 'opacity-0');
           setTimeout(() => {
             if (toast.parentNode) toast.remove();
           }, 350);
         }, dismissMs);
+      }
+
+      // Karar isteyen toastlarda dışarıya/boşa tıklandığında kapat ve harcanmamış say
+      if (hasActions) {
+        setTimeout(() => {
+          const onOutsideClick = (e) => {
+            if (!toast.parentNode) {
+              document.removeEventListener('click', onOutsideClick);
+              return;
+            }
+            if (e.target.closest('#' + toast.id)) return;
+            document.removeEventListener('click', onOutsideClick);
+            if (toast._dismissTimer) clearTimeout(toast._dismissTimer);
+            if (typeof entry.onCancel === 'function') {
+              try { entry.onCancel(); } catch (err) {}
+            }
+            toast.classList.remove('translate-y-0', 'opacity-100');
+            toast.classList.add('-translate-y-6', 'opacity-0');
+            setTimeout(() => {
+              if (toast.parentNode) toast.remove();
+            }, 300);
+          };
+          document.addEventListener('click', onOutsideClick);
+        }, 60);
       }
 
       return toast;
@@ -11920,11 +11947,11 @@
             </div>
           </div>
           <span id="spell-precast-countdown-badge" class="px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-400/60 shrink-0 font-mono animate-pulse">
-            \u23F3 5s
+            ⏳ 30s
           </span>
         </div>
         <div class="text-[11px] text-slate-300">
-          L\u00FCtfen b\u00FCy\u00FC varyant\u0131n\u0131 veya feda durumunu se\u00E7in (5sn bekliyor).
+          Lütfen büyü varyantını veya feda durumunu seçin (30sn bekliyor).
         </div>
         <div id="spell-precast-btns-bar" class="flex flex-wrap items-center gap-1.5 pt-1">
           ${btnsHtml}
@@ -11967,27 +11994,49 @@
         }
       }
 
-      // 5-second countdown timer
-      let secondsLeft = 5;
+      // 30-second countdown timer
+      let secondsLeft = 30;
+      const totalSeconds = 30;
       const badge = toast.querySelector('#spell-precast-countdown-badge');
       const progress = toast.querySelector('#spell-precast-progress');
 
       _spellPreCastCountdownInterval = setInterval(() => {
         secondsLeft--;
-        if (badge) badge.textContent = `\u23F3 ${secondsLeft}s`;
-        if (progress) progress.style.width = `${(secondsLeft / 5) * 100}%`;
+        if (badge) badge.textContent = `⏳ ${secondsLeft}s`;
+        if (progress) progress.style.width = `${(secondsLeft / totalSeconds) * 100}%`;
 
         if (secondsLeft <= 0) {
           clearSpellPreCastChoice();
           // Notify user: spell aborted, slot NOT spent
           showDiceTopToast({
-            icon: '\u23F3',
-            title: `${spellName} \u0130ptal Edildi`,
-            breakdown: '5 saniye i\u00E7inde se\u00E7im yap\u0131lmad\u0131 \u2022 B\u00FCy\u00FC slotu harcanmad\u0131.',
-            total: '\u0130ptal'
+            icon: '⏳',
+            title: `${spellName} İptal Edildi`,
+            breakdown: '30 saniye içinde seçim yapılmadı • Büyü slotu harcanmadı.',
+            total: 'İptal'
           });
         }
       }, 1000);
+
+      // Sayfada boşa / toast dışına tıklandığında büyüyü iptal et ve slotu harcama
+      setTimeout(() => {
+        const onOutsidePrecastClick = (e) => {
+          const el = document.getElementById('spell-precast-choice-toast');
+          if (!el) {
+            document.removeEventListener('click', onOutsidePrecastClick);
+            return;
+          }
+          if (e.target.closest('#spell-precast-choice-toast')) return;
+          document.removeEventListener('click', onOutsidePrecastClick);
+          clearSpellPreCastChoice();
+          showDiceTopToast({
+            icon: 'ℹ️',
+            title: `${spellName} İptal Edildi`,
+            breakdown: 'Dışarı tıklandı • Büyü slotu harcanmadı.',
+            total: 'İptal'
+          }, { autoDismiss: true, dismissMs: 3000 });
+        };
+        document.addEventListener('click', onOutsidePrecastClick);
+      }, 60);
     }
 
     function getSpellPreCastOptions(spellItem, cl, slotRef, lvl) {
@@ -19003,7 +19052,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             }
           }
         ]
-      }, { autoDismiss: true, dismissMs: 16000, stack: false });
+      }, { autoDismiss: true, dismissMs: 30000, stack: false });
     }
 
     function executeLongRest(isFullHeal = true) {
@@ -19177,7 +19226,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             }
           }
         ]
-      }, { autoDismiss: true, dismissMs: 14000, stack: false });
+      }, { autoDismiss: true, dismissMs: 30000, stack: false });
     }
 
     function executeShortRest(minutes = 5) {
