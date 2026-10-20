@@ -8173,7 +8173,7 @@
       });
     }
 
-    function applySpellSelfDamage(amount, sourceName = 'Kan Fedası') {
+    function applySpellSelfDamage(amount, sourceName = 'Kan Fedası', showToast = true) {
       if (!character || !character.hp) return;
       let dmgLeft = Math.max(0, Number(amount) || 0);
       if (dmgLeft <= 0) return;
@@ -8188,12 +8188,14 @@
       }
       saveStateToStorage(true);
       renderAll();
+      if (showToast) {
       showDiceTopToast({
         icon: '🩸',
         title: `${sourceName} (-${amount} HP)`,
         breakdown: `Öz-Hasar Uygulandı • Kalan Can: ${character.hp.current}/${character.hp.max}`,
         total: `-${amount} HP`
       });
+      }
     }
 
     // ==========================================
@@ -11574,14 +11576,26 @@
           {
             label: '🩸 -5 HP Feda Et (3d6)',
             className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-rose-800 hover:bg-rose-700 text-rose-100 border border-rose-400 transition shadow cursor-pointer',
-            onClick: () => applySpellSelfDamage(5, labelName)
+            onClick: () => {
+              applySpellSelfDamage(5, labelName, false);
+              rollSpellOrManeuverFormula(
+                '3d6',
+                `${labelName} ➔ 5 HP Feda (3d6 Hasar • -5 HP)`,
+                { name: `${labelName} (5 HP Feda)`, dice: '3d6', effectType: 'damage' },
+                { name: labelName }
+              );
+            }
           },
           {
-            label: '⚔️ Fedasız',
+            label: '⚔️ Fedasız (1d6)',
             className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition cursor-pointer',
             onClick: () => {
-              const t = document.getElementById('dice-top-toast');
-              if (t) t.remove();
+              rollSpellOrManeuverFormula(
+                '1d6',
+                `${labelName} ➔ Fedasız (1d6 Hasar)`,
+                { name: `${labelName} (Fedasız)`, dice: '1d6', effectType: 'damage' },
+                { name: labelName }
+              );
             }
           }
         ];
@@ -11645,14 +11659,8 @@
       let sacrificeNote = '';
       const hpCost = Number(child.selfHpCost) || 0;
       if (hpCost > 0 && character?.hp) {
-        if (typeof applyDamage === 'function') {
-          applyDamage(hpCost);
-        } else {
-          character.hp.current = (Number(character.hp.current) || 0) - hpCost;
-          saveStateToStorage(true);
-          renderAll();
-        }
-        sacrificeNote = ` • -${hpCost} HP Feda`;
+        applySpellSelfDamage(hpCost, child.name || pName, false);
+        sacrificeNote = ` • -${hpCost} HP Feda (${character.hp.current}/${character.hp.max} Can)`;
       }
 
       if (childDice) {
