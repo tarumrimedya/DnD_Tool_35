@@ -2246,7 +2246,7 @@ Return valid JSON only matching this schema:
           <!-- Combat Stats Pills -->
           <div class="flex flex-wrap gap-1.5 text-xs font-mono">
             ${isWeapon ? `
-              <span class="badge bg-slate-800 text-amber-300 font-bold inline-flex items-center gap-1">${typeof getD20IconSvg === 'function' ? getD20IconSvg('w-3 h-3 text-amber-400 shrink-0') : ''}<span>${item.dice || item.extraDmg || '1d8'}</span></span>
+              <span class="badge bg-slate-800 text-amber-300 font-bold inline-flex items-center gap-1">${typeof getFormulaDiceIconSvg === 'function' ? getFormulaDiceIconSvg(item.dice || item.extraDmg || '1d8', 'w-3 h-3 text-amber-400 shrink-0') : ''}<span>${item.dice || item.extraDmg || '1d8'}</span></span>
               <span class="badge bg-slate-800 text-rose-300 font-bold">🎯 ${item.critMin || 20}-20/x${item.critMult || 2}</span>
               ${item.attBonus ? `<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-800">Atk +${item.attBonus}</span>` : ''}
               ${item.dmgBonus ? `<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-800">Dmg +${item.dmgBonus}</span>` : ''}
@@ -2542,7 +2542,7 @@ Return valid JSON only matching this schema:
                       ${cIdx >= 0 ? `<button onclick="RuleMaster.openModalWithData(masterDb[${cIdx}], ${cIdx})" class="text-[11px] text-sky-400 hover:underline">Düzenle ✏️</button>` : ''}
                     </div>
                     <div class="text-[11px] text-slate-300">${child.benefit || child.description || '-'}</div>
-                    ${child.extraDmg || child.dice ? `<div class="text-[10px] font-mono text-emerald-400 inline-flex items-center gap-1">${typeof getD20IconSvg === 'function' ? getD20IconSvg('w-3 h-3 text-emerald-400 shrink-0') : ''}<span>Ek Zar/Hasar: ${child.extraDmg || child.dice}</span></div>` : ''}
+                    ${child.extraDmg || child.dice ? `<div class="text-[10px] font-mono text-emerald-400 inline-flex items-center gap-1">${typeof getFormulaDiceIconSvg === 'function' ? getFormulaDiceIconSvg(child.extraDmg || child.dice, 'w-3 h-3 text-emerald-400 shrink-0') : ''}<span>Ek Zar/Hasar: ${child.extraDmg || child.dice}</span></div>` : ''}
                   </div>
                 `;
               }).join('')}
