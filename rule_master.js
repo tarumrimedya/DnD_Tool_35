@@ -1343,7 +1343,246 @@ const RuleMaster = {
     this.queryAiRule();
   },
 
-  async fetchSingleAiRuleRows(query, categoryHint, apiKey, statusTextEl = null) {
+  // Normalize any AI or raw payload object into canonical Master_DB 29-column + child entry
+  normalizeEntry(raw, isRowArray = false) {
+    if (!raw) return null;
+    let entry = {};
+
+    if (isRowArray && Array.isArray(raw)) {
+      // Legacy 29-column row fallback
+      let rawName = String(raw[0] || '').trim();
+      const parentVal = String(raw[3] || '-').trim();
+      const isChild = rawName.startsWith('â†³') || (parentVal !== '' && parentVal !== '-');
+      if (isChild && !rawName.startsWith('â†³') && parentVal && parentVal !== '-') {
+        rawName = `â†³ ${rawName}`;
+      }
+      const cat = String(raw[1] || 'Feat').trim();
+      let normType = cat;
+      const catLower = cat.toLowerCase();
+      if (catLower.includes('weapon')) normType = 'Weapon';
+      else if (catLower.includes('shield')) normType = 'Shield';
+      else if (catLower.includes('armor')) normType = 'Armor';
+      else if (catLower.includes('spell')) normType = 'Spell';
+      else if (catLower.includes('maneuver')) normType = 'Maneuver';
+      else if (catLower.includes('stance')) normType = 'Stance';
+      else if (catLower.includes('potion')) normType = 'Potion';
+      else if (catLower.includes('scroll')) normType = 'Scroll';
+      else if (catLower.includes('wand')) normType = 'Wand';
+      else if (catLower.includes('consumable')) normType = 'Consumable';
+      else if (catLower.includes('wondrous')) normType = 'Wondrous Item';
+      else if (catLower.includes('ring')) normType = 'Ring';
+
+      let diceVal = String(raw[24] || '').trim();
+      const cleanDiceMatch = diceVal.match(/(\d+d\d+(?:\s*[\+\-]\s*\d+)?)/i);
+      const cleanDice = cleanDiceMatch ? cleanDiceMatch[1].replace(/\s+/g, '') : (diceVal || (normType === 'Weapon' ? '1d8' : ''));
+
+      entry = {
+        name: rawName,
+        type: normType,
+        slot: String(raw[2] || 'None').trim(),
+        parent: parentVal,
+        source: String(raw[4] || 'Core 3.5e').trim(),
+        benefit: String(raw[5] || '').trim(),
+        description: String(raw[5] || '').trim(),
+        bonusType: String(raw[6] || 'Untyped').trim(),
+        scope: String(raw[7] || 'None / General').trim(),
+        strBonus: Number(raw[8]) || '',
+        dexBonus: Number(raw[9]) || '',
+        conBonus: Number(raw[10]) || '',
+        intBonus: Number(raw[11]) || '',
+        wisBonus: Number(raw[12]) || '',
+        chaBonus: Number(raw[13]) || '',
+        acBonus: Number(raw[14]) || '',
+        hpBonus: Number(raw[15]) || '',
+        attBonus: Number(raw[16]) || '',
+        dmgBonus: Number(raw[17]) || '',
+        fortBonus: Number(raw[18]) || '',
+        refBonus: Number(raw[19]) || '',
+        willBonus: Number(raw[20]) || '',
+        skillBonus: Number(raw[21]) || '',
+        clBonus: '',
+        speedBonus: Number(raw[23]) || '',
+        extraDmg: cleanDice,
+        dice: cleanDice,
+        damageDice: cleanDice,
+        critMin: 20,
+        critMult: 2,
+        dmgType: '',
+        action: String(raw[25] || 'Passive').trim(),
+        duration: String(raw[26] || 'Continuous').trim(),
+        weight: Number(raw[27]) || 0,
+        cost: Number(raw[28]) || 0,
+        role: isChild ? 'Secondary Power' : 'General',
+        prereq: '-',
+        discipline: '-',
+        school: '-',
+        level: '',
+        tags: [normType.toLowerCase()],
+        isChild: isChild
+      };
+    } else {
+      // Full JSON Object from Gemini
+      let rawName = String(raw.name || '').trim();
+      const parentVal = String(raw.parent || '-').trim();
+      const isChild = Boolean(raw.isChild) || rawName.startsWith('â†³') || (parentVal !== '' && parentVal !== '-');
+      if (isChild && !rawName.startsWith('â†³') && parentVal && parentVal !== '-') {
+        rawName = `â†³ ${rawName}`;
+      }
+
+      const rawType = String(raw.type || raw.category || 'Feat').trim();
+      let normType = rawType;
+      const typeLower = rawType.toLowerCase();
+      if (typeLower.includes('weapon')) normType = 'Weapon';
+      else if (typeLower.includes('shield')) normType = 'Shield';
+      else if (typeLower.includes('armor')) normType = 'Armor';
+      else if (typeLower.includes('spell')) normType = 'Spell';
+      else if (typeLower.includes('maneuver')) normType = 'Maneuver';
+      else if (typeLower.includes('stance')) normType = 'Stance';
+      else if (typeLower.includes('potion')) normType = 'Potion';
+      else if (typeLower.includes('scroll')) normType = 'Scroll';
+      else if (typeLower.includes('wand')) normType = 'Wand';
+      else if (typeLower.includes('consumable')) normType = 'Consumable';
+      else if (typeLower.includes('wondrous')) normType = 'Wondrous Item';
+      else if (typeLower.includes('ring')) normType = 'Ring';
+
+      let slotVal = String(raw.slot || 'None').trim();
+      if (slotVal === 'Two-Hand' || slotVal === 'Both Hands') slotVal = 'Two-Handed';
+      if (normType === 'Spell' || normType === 'Maneuver' || normType === 'Stance' || normType === 'Feat' || normType === 'Consumable' || normType === 'Potion' || normType === 'Scroll' || normType === 'Wand') {
+        slotVal = 'None';
+      }
+
+      // Level normalization (0-9 integer)
+      let levelVal = raw.level !== undefined && raw.level !== null && raw.level !== '' ? raw.level : '';
+      if (typeof levelVal === 'string') {
+        const lvlMatch = levelVal.match(/(\d+)/);
+        levelVal = lvlMatch ? Number(lvlMatch[1]) : '';
+      } else if (typeof levelVal === 'number') {
+        levelVal = Math.round(levelVal);
+      }
+
+      // Clean rollable dice expression (extract e.g. '3d8' from '1d8/2 CL (max 5d8)' if needed)
+      let diceRaw = String(raw.dice || raw.extraDmg || raw.damageDice || '').trim();
+      let cleanDice = diceRaw;
+      if (diceRaw && !diceRaw.match(/^\d+d\d+(?:\s*[\+\-]\s*\d+)?$/i)) {
+        const mDice = diceRaw.match(/(\d+d\d+(?:\s*[\+\-]\s*\d+)?)/i);
+        if (mDice) cleanDice = mDice[1].replace(/\s+/g, '');
+      }
+      if (!cleanDice && normType === 'Weapon') cleanDice = '1d8';
+
+      // Tags normalization
+      let tags = [];
+      if (Array.isArray(raw.tags)) {
+        tags = raw.tags.map(t => String(t).trim().toLowerCase()).filter(Boolean);
+      } else if (typeof raw.tags === 'string' && raw.tags.trim()) {
+        tags = raw.tags.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+      }
+      if (!tags.includes(normType.toLowerCase())) tags.push(normType.toLowerCase());
+      if (isChild && !tags.includes('child')) tags.push('child');
+
+      const descText = String(raw.benefit || raw.description || '').trim();
+
+      entry = {
+        name: rawName,
+        type: normType,
+        slot: slotVal,
+        parent: parentVal,
+        prereq: String(raw.prereq || '-').trim(),
+        source: String(raw.source || (normType === 'Maneuver' || normType === 'Stance' ? 'ToB p.' : 'PHB p.')).trim(),
+        benefit: descText,
+        description: descText,
+        bonusType: String(raw.bonusType || 'Untyped').trim(),
+        scope: String(raw.scope || (normType === 'Spell' ? 'Spells' : (normType === 'Weapon' ? 'Melee Only' : 'None / General'))).trim(),
+        role: String(raw.role || (isChild ? 'Secondary Power' : (normType === 'Spell' ? 'Offense / Spell' : (normType === 'Maneuver' ? 'Offense / Strike' : (normType === 'Stance' ? 'Tactical / Stance' : 'General'))))).trim(),
+
+        // Stats
+        strBonus: Number(raw.strBonus) || '',
+        dexBonus: Number(raw.dexBonus) || '',
+        conBonus: Number(raw.conBonus) || '',
+        intBonus: Number(raw.intBonus) || '',
+        wisBonus: Number(raw.wisBonus) || '',
+        chaBonus: Number(raw.chaBonus) || '',
+        acBonus: Number(raw.acBonus) || '',
+        hpBonus: Number(raw.hpBonus) || '',
+        attBonus: Number(raw.attBonus) || '',
+        dmgBonus: Number(raw.dmgBonus) || '',
+        fortBonus: Number(raw.fortBonus) || '',
+        refBonus: Number(raw.refBonus) || '',
+        willBonus: Number(raw.willBonus) || '',
+        skillBonus: Number(raw.skillBonus) || '',
+        clBonus: Number(raw.clBonus) || '',
+        speedBonus: Number(raw.speedBonus) || '',
+
+        // Combat & Action
+        extraDmg: cleanDice,
+        dice: cleanDice,
+        damageDice: (normType === 'Spell' || normType === 'Maneuver' || normType === 'Stance') ? cleanDice : '',
+        critMin: Number(raw.critMin) || 20,
+        critMult: Number(raw.critMult) || 2,
+        dmgType: String(raw.dmgType || '').trim(),
+        action: String(raw.action || (normType === 'Stance' ? 'Swift Action' : (normType === 'Spell' || normType === 'Maneuver' ? 'Standard Action' : 'Passive'))).trim(),
+        duration: String(raw.duration || (normType === 'Stance' ? 'Stance (Continuous)' : (normType === 'Spell' ? 'Instantaneous' : 'Continuous'))).trim(),
+        range: String(raw.range || (normType === 'Spell' ? 'Close' : (normType === 'Maneuver' ? 'Melee Attack' : '-'))).trim(),
+        weight: Number(raw.weight) || 0,
+        cost: Number(raw.cost) || 0,
+
+        // Magic / Martial specifics
+        school: normType === 'Spell' ? String(raw.school || 'Universal').trim() : '-',
+        level: levelVal,
+        discipline: (normType === 'Maneuver' || normType === 'Stance') ? String(raw.discipline || 'Iron Heart').trim() : '-',
+        tags: tags,
+
+        // Child specific fields
+        isChild: isChild,
+        effectType: raw.effectType || (isChild ? 'damage' : undefined),
+        childButtonLabel: raw.childButtonLabel || undefined,
+        selfHpCost: raw.selfHpCost !== undefined && raw.selfHpCost !== null && raw.selfHpCost !== '' ? Number(raw.selfHpCost) : undefined,
+        unitLabel: raw.unitLabel || undefined
+      };
+    }
+
+    // Auto-detect School if missing for Spells
+    if (entry.type === 'Spell' && (!entry.school || entry.school === '-')) {
+      const bLower = (entry.benefit || '').toLowerCase();
+      const schools = ['abjuration', 'conjuration', 'divination', 'enchantment', 'evocation', 'illusion', 'necromancy', 'transmutation', 'universal'];
+      for (const s of schools) {
+        if (bLower.includes(s)) {
+          entry.school = s.charAt(0).toUpperCase() + s.slice(1);
+          break;
+        }
+      }
+    }
+
+    // Auto-detect Discipline if missing for Maneuvers/Stances
+    if ((entry.type === 'Maneuver' || entry.type === 'Stance') && (!entry.discipline || entry.discipline === '-')) {
+      const bLower = (entry.benefit || '').toLowerCase();
+      const disciplines = ['desert wind', 'devoted spirit', 'diamond mind', 'iron heart', 'setting sun', 'shadow hand', 'stone dragon', 'tiger claw', 'white raven'];
+      for (const d of disciplines) {
+        if (bLower.includes(d)) {
+          entry.discipline = d.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+          break;
+        }
+      }
+    }
+
+    return entry;
+  },
+
+  convertAiPayloadToEntries(payload) {
+    if (!payload) return [];
+    let list = [];
+    if (Array.isArray(payload.entries)) {
+      list = payload.entries.map(e => this.normalizeEntry(e, false));
+    } else if (Array.isArray(payload.rows)) {
+      list = payload.rows.map(r => this.normalizeEntry(r, true));
+    } else if (Array.isArray(payload)) {
+      list = payload.map(item => this.normalizeEntry(item, Array.isArray(item)));
+    } else if (typeof payload === 'object') {
+      list = [this.normalizeEntry(payload, false)];
+    }
+    return list.filter(Boolean);
+  },
+
+  async fetchSingleAiRuleEntries(query, categoryHint, apiKey, statusTextEl = null) {
     const promptText = `You are a master D&D 3.5e Rule Arbiter and Database Architect.
 User query: "${query}" (Category Hint: "${categoryHint}").
 
@@ -1353,63 +1592,63 @@ NEVER fabricate, invent, or hallucinate a rule, feat, spell, magic item, or book
 2. MANDATORY TYPO / FUZZY SPELLING CORRECTION:
 User input frequently contains typos or phonetic misspellings (e.g. "clave" -> "Cleave", "gret cleve" -> "Great Cleave", "power atac" -> "Power Attack", "shok trooper" -> "Shock Trooper", "flometong" -> "Flametongue", "hast" -> "Haste", "moutain hamer" -> "Mountain Hammer").
 You MUST recognize the intended canonical element and output the real, correct official D&D 3.5e element!
-For example:
-- Query "clave" -> Entry Name MUST BE "Cleave", Source: "PHB p.92", Prerequisites: "Str 13, Power Attack.", Benefit: "If you deal a creature enough damage to make it drop (below 0 hp or killed), you get an immediate extra melee attack against another creature in immediate vicinity. Once per round."
-DO NOT INVENT A FAKE FEAT CALLED "CLAVE" FROM "COMPLETE DIVINE"!
 3. SOURCE INTEGRITY:
-In Col 4, cite the exact real book and page (e.g. 'PHB p.92', 'MIC p.128', 'DMG p.224', 'CW p.112', 'ToB p.84'). Never cite a book that doesn't contain that rule.
-
-PRIORITIZED KNOWLEDGE BASES (Cascading Search Order):
-1. Priority 1 (Core SRD): https://www.d20srd.org & http://dndsrd.net (PHB, DMG, MM Core 3.5e rules)
-2. Priority 2 (Foundry JSON): D&D 3.5e structured JSON compendiums (spells, feats, items, maneuvers)
-3. Priority 3 (Extended Splatbooks): Complete series, Magic Item Compendium (MIC), Spell Compendium (SC), Tome of Battle (ToB), Frostburn, Sandstorm, etc.
+Cite the exact real book and page (e.g. 'PHB p.98', 'MIC p.128', 'DMG p.224', 'CW p.112', 'ToB p.84', 'SpC p.150', 'PHB2 p.103'). Never cite a book that doesn't contain that rule.
 
 TASK:
-Resolve the target D&D 3.5e game element into an array of rows adhering strictly to the Master_DB 29-column schema.
-If the item has multiple distinct powers (e.g. passive weapon/item stats + on-hit damage + 1/day active spell power), OR if a Spell/Maneuver has conditional damage/effects depending on target creature type, save result, HP sacrifice, or sub-mode (e.g. Searing Light vs Undead/Constructs, Chill Touch vs Undead, Blade of Blood +5 HP sacrifice for 3d6, Disintegrate 5d6 Fort partial, Horrid Wilting vs Plants/Water Elementals, Pyrotechnics Fireworks vs Smoke), produce 1 Parent row with the primary effect/dice and 1 or more Child rows starting with '↳ ' (e.g. '↳ Searing Light (Undead)') with Col 3 (Parent Entry) set to the exact parent entry name and Col 24 set to that child condition's dice formula.
+Resolve the target D&D 3.5e game element into an array of fully populated JSON objects adhering strictly to the Master_DB JSON schema below.
+If the item has multiple distinct powers (e.g. passive weapon/item stats + on-hit damage + 1/day active spell power), OR if a Spell/Maneuver has conditional damage/effects depending on target creature type, save result, HP sacrifice, or sub-mode (e.g. Searing Light vs Undead/Constructs, Chill Touch vs Undead, Blade of Blood +5 HP sacrifice for 3d6, Disintegrate 5d6 Fort partial, Horrid Wilting vs Plants/Water Elementals, Pyrotechnics Fireworks vs Smoke), produce:
+- 1 Parent object with the base effect and primary dice formula.
+- 1 or more Child objects starting with 'â†³ ' (e.g. 'â†³ Searing Light (Undead)') with "parent" set to the exact parent entry name, "isChild": true, "dice": clean condition dice formula, and appropriate "effectType" ('damage', 'heal', 'duration', 'status', 'blood_sacrifice_roll') and "childButtonLabel" (e.g. 'Undead (6d6)').
 
-MASTER_DB 29-COLUMN SCHEMA (Every row MUST contain exactly 29 elements in this order):
-0: Entry Name (string, child begins with '↳ ')
-1: Category ('Feat', 'Weapon', 'Armor / Shield', 'Ring', 'Wondrous Item', 'Scroll', 'Potion', 'Wand', 'Staff', 'Slotless Item', 'Spell', 'Maneuver', 'Stance', 'Consumable', 'Special Ability')
-2: Slot ('Armor', 'Shield', 'Main Hand', 'Off Hand', 'Both Hands', 'Head', 'Eyes', 'Neck', 'Torso', 'Body', 'Waist', 'Shoulders', 'Arms', 'Hands', 'Ring', 'Feet', 'Slotless', 'None')
-NOTE ON SLOTS: Consumables (scrolls, potions, wands, elixirs) and ordinary gear (rope, rations, backpack) MUST have Slot set to 'None'. Wondrous items that do not occupy a worn body slot (like Ioun Stones, Bag of Holding, Pearl of Power, Stone of Good Luck) MUST have Slot set to 'Slotless'. ONLY wearable items occupying one of the 14 body slots may specify that slot.
-3: Parent Entry (string; '-' if none, or exact parent name if child)
-4: Source (e.g. 'PHB p.98', 'MIC p.128', 'DMG p.224', 'ToB p.68')
-5: Description / Rules Mechanics (string, concise mechanics text)
-6: Bonus Type ('Alchemical', 'Armor', 'Circumstance', 'Competence', 'Deflection', 'Dodge', 'Enhancement', 'Inherent', 'Insight', 'Luck', 'Morale', 'Natural Armor', 'Resistance', 'Sacred', 'Shield', 'Size', 'Untyped')
-7: Applies To / Scope ('All Attacks', 'Melee Only', 'Ranged Only', 'Thrown Only', 'Slashing', 'Piercing', 'Bludgeoning', 'Spells', 'None / General')
-8: Str (number or 0)
-9: Dex (number or 0)
-10: Con (number or 0)
-11: Int (number or 0)
-12: Wis (number or 0)
-13: Cha (number or 0)
-14: AC (number or 0)
-15: HP (number or 0)
-16: Att (number or 0)
-17: Dmg (number or 0)
-18: Fort (number or 0)
-19: Ref (number or 0)
-20: Will (number or 0)
-21: Skill (number or 0)
-22: Init (number or 0)
-23: Speed (number or 0)
-24: On-Hit Dmg / Dice Expression (string, e.g. '+1d6 Fire', '3d8', or '')
-25: Action ('-', 'Passive', 'Free Action', 'Swift Action', 'Immediate Action', 'Move Action', 'Standard Action', 'Full-Round Action')
-26: Duration / Uses (string, e.g. 'Passive', 'Continuous', '1 round/lvl', '1/day', 'At Will', 'Instantaneous')
-27: Weight (lbs) (number or 0)
-28: Cost (gp) (number or 0)
-
-OUTPUT REQUIREMENT:
-Return valid JSON only matching this schema:
-{ "rows": [ [col0, col1, ... col28], ... ] }`;
+JSON OBJECT SCHEMA (Return valid JSON only matching this format):
+{
+  "entries": [
+    {
+      "name": "Searing Light",
+      "type": "Spell", // 'Weapon', 'Shield', 'Armor', 'Ring', 'Wondrous Item', 'Scroll', 'Potion', 'Wand', 'Staff', 'Slotless Item', 'Spell', 'Maneuver', 'Stance', 'Consumable', 'Special Ability', 'Feat'
+      "slot": "None", // Official 14 body slots ('Armor', 'Shield', 'Main Hand', 'Off Hand', 'Both Hands', 'Head', 'Eyes', 'Neck', 'Torso', 'Body', 'Waist', 'Shoulders', 'Arms', 'Hands', 'Ring', 'Feet') or 'Slotless' or 'None'. Spells/Maneuvers/Feats/Consumables must be 'None'.
+      "parent": "-",
+      "prereq": "-", // Prerequisites for feats or maneuvers, or '-'
+      "source": "PHB p.275", // Exact official book and page citation
+      "benefit": "Ray of divine light deals 1d8/2 CL (max 5d8); deals 1d6/CL (max 10d6) to undead; deals 1d8/CL (max 10d8) to light-vulnerable undead; deals 1d6/2 CL (max 5d6) to constructs/objects.",
+      "description": "Ray of divine light deals 1d8/2 CL (max 5d8); deals 1d6/CL (max 10d6) to undead; deals 1d8/CL (max 10d8) to light-vulnerable undead; deals 1d6/2 CL (max 5d6) to constructs/objects.",
+      "bonusType": "Untyped", // 'Alchemical', 'Armor', 'Circumstance', 'Competence', 'Deflection', 'Dodge', 'Enhancement', 'Inherent', 'Insight', 'Luck', 'Morale', 'Natural Armor', 'Resistance', 'Sacred', 'Shield', 'Size', 'Untyped'
+      "scope": "Spells", // 'All Attacks', 'Melee Only', 'Ranged Only', 'Thrown Only', 'Slashing', 'Piercing', 'Bludgeoning', 'Spells', 'None / General'
+      "role": "Offense / Spell", // 'Offense / Spell', 'Buff / Spell', 'Defense / Spell', 'Healing / Spell', 'Control / Spell', 'Secondary Power', 'Offense / Strike', 'Defense / Counter', 'Tactical / Boost', 'Tactical / Stance', 'Offense / Attack'
+      "level": 3, // CRITICAL: 0-9 for Spells/Cantrips, 1-9 for Maneuvers/Stances (number or null)
+      "school": "Evocation", // CRITICAL: 'Abjuration', 'Conjuration', 'Divination', 'Enchantment', 'Evocation', 'Illusion', 'Necromancy', 'Transmutation', 'Universal', or '-'
+      "discipline": "-", // CRITICAL for Tome of Battle: 'Devoted Spirit', 'Desert Wind', 'Diamond Mind', 'Iron Heart', 'Setting Sun', 'Shadow Hand', 'Stone Dragon', 'Tiger Claw', 'White Raven', or '-'
+      "range": "Medium (100 ft + 10 ft/lvl)", // Spells/powers range ('Personal', 'Touch', 'Close (25 ft + 5 ft/2 lvls)', 'Medium (100 ft + 10 ft/lvl)', 'Long (400 ft + 40 ft/lvl)', '60 ft' etc.)
+      "action": "Standard Action", // 'Passive', 'Free Action', 'Swift Action', 'Immediate Action', 'Move Action', 'Standard Action', 'Full-Round Action'
+      "duration": "Instantaneous", // 'Passive', 'Continuous', '1 round/level', '1 min/level', '1 hour/level', 'Instantaneous', 'Stance (Continuous)'
+      "dice": "3d8", // CRITICAL: clean rollable dice expression ONLY (e.g. '3d8', '6d6', '1d8+5', '2d6', '1d4+1'). Do NOT write text, formulas, or scaling words here! Put scaling details in benefit!
+      "extraDmg": "3d8",
+      "damageDice": "3d8",
+      "dmgType": "Divine Light", // 'Slashing', 'Piercing', 'Bludgeoning', 'Fire', 'Cold', 'Electricity', 'Acid', 'Force', 'Positive Energy', 'Negative Energy', 'Divine Light', 'None'
+      "critMin": 20, // 18, 19, or 20 for weapons
+      "critMult": 2, // 2, 3, or 4 for weapons
+      "weight": 0, // lbs (number)
+      "cost": 0, // gp (number)
+      "strBonus": 0, "dexBonus": 0, "conBonus": 0, "intBonus": 0, "wisBonus": 0, "chaBonus": 0,
+      "acBonus": 0, "hpBonus": 0, "attBonus": 0, "dmgBonus": 0,
+      "fortBonus": 0, "refBonus": 0, "willBonus": 0, "skillBonus": 0, "clBonus": 0, "speedBonus": 0,
+      "tags": ["spell", "divine", "evocation", "ray", "undead"], // lowercase strings
+      "isChild": false,
+      "effectType": "", // 'damage', 'heal', 'duration', 'status', 'blood_sacrifice_roll'
+      "childButtonLabel": "", // short label for toast buttons, e.g. 'Undead (6d6)'
+      "selfHpCost": 0, // number, e.g. 5 for Blade of Blood
+      "unitLabel": "" // e.g. 'Tur Blinded'
+    }
+  ]
+}`;
 
     const availableModels = await this.getAvailableGeminiModels(apiKey);
     let successResponse = null;
     let lastError = null;
 
     for (const model of availableModels) {
-      if (statusTextEl) statusTextEl.textContent = `"${query}" ➔ ${model} sorgulanıyor...`;
+      if (statusTextEl) statusTextEl.textContent = `"${query}" â” ${model} sorgulanÄ±yor...`;
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
       try {
         const resp = await fetch(url, {
@@ -1433,7 +1672,7 @@ Return valid JSON only matching this schema:
               successResponse = JSON.parse(cleanText);
               break;
             } catch (pErr) {
-              lastError = 'JSON Çözümleme hatası: ' + pErr.message;
+              lastError = 'JSON Ã‡Ã¶zÃ¼mleme hatasÄ±: ' + pErr.message;
             }
           }
         } else {
@@ -1445,17 +1684,37 @@ Return valid JSON only matching this schema:
       }
     }
 
-    if (successResponse && Array.isArray(successResponse.rows)) {
-      return successResponse.rows;
+    if (successResponse) {
+      const parsedEntries = this.convertAiPayloadToEntries(successResponse);
+      if (parsedEntries.length) return parsedEntries;
     }
-    throw new Error(lastError || 'Bilinmeyen API yanıtı');
+    throw new Error(lastError || 'Bilinmeyen API yanÄ±tÄ±');
+  },
+
+  // Backward-compatible alias for any callers expecting rows
+  async fetchSingleAiRuleRows(query, categoryHint, apiKey, statusTextEl = null) {
+    return this.fetchSingleAiRuleEntries(query, categoryHint, apiKey, statusTextEl);
+  },
+
+  // Backward-compatible alias
+  convertRowsToEntries(rowsOrEntries) {
+    return this.convertAiPayloadToEntries(rowsOrEntries);
+  },
+
+  processAiEntries(entries) {
+    this.lastAiResults = Array.isArray(entries) ? entries.map(e => this.normalizeEntry(e, false)) : [];
+    this.renderAiResults();
+  },
+
+  processAiRows(rows) {
+    this.processAiEntries(this.convertAiPayloadToEntries({ rows }));
   },
 
   async queryAiRule() {
     const queryInput = document.getElementById('ai-rule-query');
     let query = queryInput?.value?.trim() || '';
     if (!query) {
-      alert('⚠️ Lütfen aranacak kural, hüner, büyü veya eşya adını yazın.');
+      alert('âš ï¸ LÃ¼tfen aranacak kural, hÃ¼ner, bÃ¼yÃ¼ veya eÅŸya adÄ±nÄ± yazÄ±n.');
       queryInput?.focus();
       return;
     }
@@ -1468,14 +1727,14 @@ Return valid JSON only matching this schema:
     const matchedCanonical = this.canonicalDictionary[cleanKey];
     if (matchedCanonical && typeof matchedCanonical === 'object') {
       if (queryInput) queryInput.value = matchedCanonical.name;
-      const row = this.entryToRow(matchedCanonical);
-      this.processAiRows([row]);
+      const entry = this.normalizeEntry(matchedCanonical, false);
+      this.processAiEntries([entry]);
       return;
     }
 
     const apiKey = this.getApiKey();
     if (!apiKey) {
-      alert('⚠️ Lütfen önce bir Google Gemini API Anahtarı girin (Google AI Studio ücretsiz anahtar).');
+      alert('âš ï¸ LÃ¼tfen Ã¶nce bir Google Gemini API AnahtarÄ± girin (Google AI Studio Ã¼cretsiz anahtar).');
       this.promptChangeApiKey();
       return;
     }
@@ -1493,10 +1752,10 @@ Return valid JSON only matching this schema:
     if (resultsBox) resultsBox.innerHTML = '';
 
     try {
-      const rows = await this.fetchSingleAiRuleRows(query, categoryHint, apiKey, statusText);
-      this.processAiRows(rows);
+      const entries = await this.fetchSingleAiRuleEntries(query, categoryHint, apiKey, statusText);
+      this.processAiEntries(entries);
     } catch (err) {
-      alert(`⚠️ Kural getirilemedi: ${err.message}\nLütfen internet bağlantınızı ve API anahtarınızı kontrol edin.`);
+      alert(`âš ï¸ Kural getirilemedi: ${err.message}\nLÃ¼tfen internet baÄŸlantÄ±nÄ±zÄ± ve API anahtarÄ±nÄ±zÄ± kontrol edin.`);
     } finally {
       if (btn) btn.disabled = false;
       if (loadingBox) loadingBox.classList.add('hidden');
@@ -1506,14 +1765,14 @@ Return valid JSON only matching this schema:
   async queryAiBatch() {
     const apiKey = this.getApiKey();
     if (!apiKey) {
-      alert('⚠️ Lütfen önce bir Google Gemini API Anahtarı girin.');
+      alert('âš ï¸ LÃ¼tfen Ã¶nce bir Google Gemini API AnahtarÄ± girin.');
       this.promptChangeApiKey();
       return;
     }
     const text = document.getElementById('ai-batch-query')?.value || '';
     const items = text.split('\n').map(l => l.trim()).filter(Boolean);
     if (!items.length) {
-      alert('⚠️ Lütfen her satıra bir kural adı yazın (Örn: Shock Trooper, Boots of Speed, Haste...).');
+      alert('âš ï¸ LÃ¼tfen her satÄ±ra bir kural adÄ± yazÄ±n (Ã–rn: Shock Trooper, Boots of Speed, Haste...).');
       return;
     }
 
@@ -1527,13 +1786,22 @@ Return valid JSON only matching this schema:
     let totalImported = 0;
     for (let i = 0; i < items.length; i++) {
       const itemQuery = items[i];
-      if (statusText) statusText.textContent = `[${i + 1}/${items.length}] "${itemQuery}" taranıyor...`;
+      if (statusText) statusText.textContent = `[${i + 1}/${items.length}] "${itemQuery}" taranÄ±yor...`;
       try {
-        const rows = await this.fetchSingleAiRuleRows(itemQuery, 'ALL', apiKey, statusText);
-        if (rows && rows.length) {
-          const parsed = this.convertRowsToEntries(rows);
-          parsed.forEach(entry => {
-            masterDb.push(entry);
+        const entries = await this.fetchSingleAiRuleEntries(itemQuery, 'ALL', apiKey, statusText);
+        if (entries && entries.length) {
+          entries.forEach(entry => {
+            const parentName = (entry.parent && entry.parent !== '-') ? entry.parent.replace(/^â†³\s*/, '').trim().toLowerCase() : '';
+            const parentIdx = parentName ? masterDb.findIndex(m => (m.name || '').replace(/^â†³\s*/, '').trim().toLowerCase() === parentName) : -1;
+            if (parentIdx >= 0) {
+              let insertAt = parentIdx + 1;
+              while (insertAt < masterDb.length && (masterDb[insertAt].parent || '').replace(/^â†³\s*/, '').trim().toLowerCase() === parentName) {
+                insertAt++;
+              }
+              masterDb.splice(insertAt, 0, entry);
+            } else {
+              masterDb.push(entry);
+            }
             totalImported++;
           });
         }
@@ -1546,119 +1814,14 @@ Return valid JSON only matching this schema:
     if (statusBox) statusBox.classList.add('hidden');
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
     this.renderTable();
-    alert(`🎉 Toplu İçe Aktarma Tamamlandı!\n${totalImported} adet kural ve alt güç başarıyla Master_DB'ye eklendi.`);
-  },
-
-  convertRowsToEntries(rows) {
-    const list = [];
-    rows.forEach(row => {
-      let rawName = String(row[0] || '').trim();
-      const parentVal = String(row[3] || '').trim();
-      const isChild = rawName.startsWith('↳') || (parentVal !== '' && parentVal !== '-');
-      if (isChild && !rawName.startsWith('↳') && parentVal && parentVal !== '-') {
-        rawName = `↳ ${rawName}`;
-      }
-
-      const cat = String(row[1] || 'Feat').trim();
-      let normType = 'Feat';
-      if (cat.toLowerCase().includes('weapon')) normType = 'Weapon';
-      else if (cat.toLowerCase().includes('shield')) normType = 'Shield';
-      else if (cat.toLowerCase().includes('armor')) normType = 'Armor';
-      else if (cat.toLowerCase().includes('spell')) normType = 'Spell';
-      else if (cat.toLowerCase().includes('maneuver')) normType = 'Maneuver';
-      else if (cat.toLowerCase().includes('stance')) normType = 'Stance';
-      else if (cat.toLowerCase().includes('potion')) normType = 'Potion';
-      else if (cat.toLowerCase().includes('scroll')) normType = 'Scroll';
-      else if (cat.toLowerCase().includes('wand')) normType = 'Wand';
-      else if (cat.toLowerCase().includes('consumable')) normType = 'Consumable';
-      else if (cat.toLowerCase().includes('wondrous')) normType = 'Wondrous Item';
-      else if (cat.toLowerCase().includes('ring')) normType = 'Ring';
-      else normType = cat;
-
-      let slotVal = String(row[2] || 'None').trim();
-      if (slotVal === 'Two-Hand' || slotVal === 'Both Hands') slotVal = 'Two-Handed';
-
-      // Enforce 3.5e RAW: Consumables (Scrolls, Potions, Wands) never have a worn body slot!
-      const normLower = normType.toLowerCase();
-      const rawNameLower = rawName.toLowerCase();
-      if (normLower === 'scroll' || normLower === 'potion' || normLower === 'wand' || normLower === 'consumable' ||
-          rawNameLower.startsWith('scroll of') || rawNameLower.startsWith('potion of') || rawNameLower.startsWith('wand of')) {
-        slotVal = 'None';
-      }
-
-      const tags = [];
-      const descLower = (String(row[5] || '')).toLowerCase();
-      const rawLower = rawName.toLowerCase();
-      if (slotVal === 'Two-Handed' || slotVal.toLowerCase().includes('two-hand') || descLower.includes('two-handed') || descLower.includes('2-handed') || descLower.includes('two hands') || (typeof RuleEngine !== 'undefined' && RuleEngine.isTwoHandedWeapon({ name: rawName, slot: slotVal }))) {
-        if (normType === 'Weapon') {
-          slotVal = 'Two-Handed';
-          if (!tags.includes('two-handed')) tags.push('two-handed');
-        }
-      }
-      if (descLower.includes('exotic') || rawLower.includes('jovar') || rawLower.includes('bastard sword')) tags.push('exotic');
-      if (descLower.includes('martial')) tags.push('martial');
-      if (descLower.includes('slashing')) tags.push('slashing');
-      if (descLower.includes('piercing')) tags.push('piercing');
-      if (descLower.includes('bludgeoning')) tags.push('bludgeoning');
-
-      const entry = {
-        name: rawName,
-        type: normType,
-        slot: slotVal,
-        tags: tags,
-        parent: String(row[3] || '-').trim(),
-        source: String(row[4] || 'Core 3.5e').trim(),
-        benefit: String(row[5] || '').trim(),
-        description: String(row[5] || '').trim(),
-        bonusType: String(row[6] || 'Untyped').trim(),
-        scope: String(row[7] || 'None / General').trim(),
-        strBonus: Number(row[8]) || '',
-        dexBonus: Number(row[9]) || '',
-        conBonus: Number(row[10]) || '',
-        intBonus: Number(row[11]) || '',
-        wisBonus: Number(row[12]) || '',
-        chaBonus: Number(row[13]) || '',
-        acBonus: Number(row[14]) || '',
-        hpBonus: Number(row[15]) || '',
-        attBonus: Number(row[16]) || '',
-        dmgBonus: Number(row[17]) || '',
-        fortBonus: Number(row[18]) || '',
-        refBonus: Number(row[19]) || '',
-        willBonus: Number(row[20]) || '',
-        skillBonus: Number(row[21]) || '',
-        clBonus: '',
-        speedBonus: Number(row[23]) || '',
-        extraDmg: String(row[24] || '').trim(),
-        dice: String(row[24] || (normType === 'Weapon' ? '1d8' : '')).trim(),
-        damageDice: (normType === 'Spell' || normType === 'Maneuver' || normType === 'Stance') ? (String(row[24] || '').trim() || undefined) : undefined,
-        critMin: 20,
-        critMult: 2,
-        dmgType: '',
-        action: String(row[25] || 'Passive').trim(),
-        duration: String(row[26] || 'Continuous').trim(),
-        weight: Number(row[27]) || 0,
-        cost: Number(row[28]) || 0,
-        role: isChild ? 'Secondary Power' : 'General',
-        prereq: '',
-        discipline: '',
-        level: '',
-        isChild: isChild
-      };
-      list.push(entry);
-    });
-    return list;
-  },
-
-  processAiRows(rows) {
-    this.lastAiResults = this.convertRowsToEntries(rows);
-    this.renderAiResults();
+    alert(`ğŸ‰ Toplu Ä°Ã§e Aktarma TamamlandÄ±!\n${totalImported} adet kural ve alt gÃ¼Ã§ baÅŸarÄ±yla Master_DB'ye eklendi.`);
   },
 
   getChildrenForEntry(item, sourceList = null) {
     if (!item || !item.name) return [];
     const list = Array.isArray(sourceList) ? sourceList : (Array.isArray(masterDb) ? masterDb : []);
     const pName = (item.name || '').toLowerCase().trim();
-    const cleanPName = pName.replace(/^↳\s*/, '').trim();
+    const cleanPName = pName.replace(/^â†³\s*/, '').trim();
 
     return list.filter(other => {
       if (!other || other === item) return false;
@@ -1667,8 +1830,8 @@ Return valid JSON only matching this schema:
         return true;
       }
       const otherName = (other.name || '').toLowerCase().trim();
-      if (otherName.startsWith('↳')) {
-        const afterArrow = otherName.replace(/^↳\s*/, '').trim();
+      if (otherName.startsWith('â†³')) {
+        const afterArrow = otherName.replace(/^â†³\s*/, '').trim();
         if (afterArrow.startsWith(cleanPName) || afterArrow.startsWith(pName)) {
           return true;
         }
@@ -1684,7 +1847,7 @@ Return valid JSON only matching this schema:
     if (!this.lastAiResults.length) {
       container.innerHTML = `
         <div class="p-6 text-center text-slate-500 bg-slate-950/40 rounded-xl border border-slate-800">
-          Sonuç bulunamadı. Lütfen kural adını kontrol edip tekrar arayın.
+          SonuÃ§ bulunamadÄ±. LÃ¼tfen kural adÄ±nÄ± kontrol edip tekrar arayÄ±n.
         </div>
       `;
       return;
@@ -1693,13 +1856,13 @@ Return valid JSON only matching this schema:
     let html = `
       <div class="flex items-center justify-between bg-slate-900 border border-purple-500/40 p-3 rounded-xl mb-3 shadow-lg">
         <div class="flex items-center gap-2">
-          <span class="text-base">✨</span>
-          <span class="text-xs font-bold text-white">${this.lastAiResults.length} Kural / Alt Güç Üretildi</span>
-          <span class="text-[11px] text-slate-400">Master_DB 29 sütunlu şemasıyla tam uyumlu</span>
+          <span class="text-base">âœ¨</span>
+          <span class="text-xs font-bold text-white">${this.lastAiResults.length} Kural / Alt GÃ¼Ã§ Ãœretildi</span>
+          <span class="text-[11px] text-slate-400">Master_DB 29 sÃ¼tunlu JSON ÅŸemasÄ±yla tam uyumlu</span>
         </div>
         <button onclick="RuleMaster.addAllAiResultsToDb()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-3.5 py-1.5 rounded-lg shadow transition flex items-center gap-1.5">
-          <span>📥</span>
-          <span>Tümünü DB'ye Ekle</span>
+          <span>ğŸ“¥</span>
+          <span>TÃ¼mÃ¼nÃ¼ DB'ye Ekle</span>
         </button>
       </div>
       <div class="space-y-3">
@@ -1722,51 +1885,69 @@ Return valid JSON only matching this schema:
       if (item.acBonus) statPills.push(`+${item.acBonus} AC`);
       if (item.attBonus) statPills.push(`+${item.attBonus} Atk`);
       if (item.dmgBonus) statPills.push(`+${item.dmgBonus} Dmg`);
-      if (item.speedBonus) statPills.push(`+${item.speedBonus} ft Hız`);
-      if (item.extraDmg) statPills.push(`${item.extraDmg}`);
+      if (item.speedBonus) statPills.push(`+${item.speedBonus} ft HÄ±z`);
+      if (item.extraDmg || item.dice) statPills.push(`ğŸ² ${item.extraDmg || item.dice}`);
+
+      // Specific badges (Level, School, Discipline, Child Button)
+      const specificBadges = [];
+      if (item.level !== undefined && item.level !== null && item.level !== '') {
+        specificBadges.push(`<span class="badge bg-amber-950 text-amber-300 border border-amber-800 text-[10px] font-bold">${item.level}. Seviye</span>`);
+      }
+      if (item.school && item.school !== '-') {
+        specificBadges.push(`<span class="badge bg-indigo-950 text-indigo-300 border border-indigo-800 text-[10px]">${item.school}</span>`);
+      }
+      if (item.discipline && item.discipline !== '-') {
+        specificBadges.push(`<span class="badge bg-rose-950 text-rose-300 border border-rose-800 text-[10px]">${item.discipline}</span>`);
+      }
+      if (item.childButtonLabel) {
+        specificBadges.push(`<span class="badge bg-purple-900 text-purple-200 border border-purple-600 text-[10px] font-mono">Toast: ${item.childButtonLabel}</span>`);
+      }
 
       html += `
         <div class="${isChild ? 'ml-6 border-l-4 border-l-purple-500 bg-slate-900/60' : (isParent ? 'bg-slate-900 border-purple-500/50 shadow-purple-950/20' : 'bg-slate-900')} border border-slate-800 rounded-xl p-4 space-y-3 shadow-md transition">
           <div class="flex flex-wrap items-start justify-between gap-2 border-b border-slate-800 pb-2">
             <div>
-              <div class="flex items-center gap-2">
-                ${isChild ? '<span class="text-purple-400 font-bold">↳</span>' : ''}
+              <div class="flex items-center gap-2 flex-wrap">
+                ${isChild ? '<span class="text-purple-400 font-bold">â†³</span>' : ''}
                 <span class="text-sm font-extrabold text-white">${item.name}</span>
                 <span class="badge ${badgeClass}">${item.type}</span>
-                ${isParent ? `<span class="badge bg-purple-950 text-purple-200 border border-purple-600 text-[10px] font-bold">👑 Ana Eşya (${children.length} Alt Güç)</span>` : ''}
-                ${isChild ? `<span class="badge bg-purple-950 text-purple-300 border border-purple-800 font-mono text-[10px]">Bağlı: ${item.parent}</span>` : ''}
+                ${specificBadges.join(' ')}
+                ${isParent ? `<span class="badge bg-purple-950 text-purple-200 border border-purple-600 text-[10px] font-bold">ğŸ‘‘ Ana EÅŸya (${children.length} Alt GÃ¼Ã§)</span>` : ''}
+                ${isChild && item.parent && item.parent !== '-' ? `<span class="badge bg-purple-950 text-purple-300 border border-purple-800 font-mono text-[10px]">BaÄŸlÄ±: ${item.parent}</span>` : ''}
               </div>
-              <div class="flex items-center gap-2 text-[11px] text-slate-400 mt-1">
-                <span>📚 <b>${item.source || 'Core 3.5e'}</b></span>
-                <span>•</span>
+              <div class="flex items-center gap-2 text-[11px] text-slate-400 mt-1 flex-wrap">
+                <span>ğŸ“š <b>${item.source || 'Core 3.5e'}</b></span>
+                <span>â€¢</span>
                 <span>Yuva: <b>${item.slot || 'None'}</b></span>
-                <span>•</span>
-                <span>Tür: <b>${item.bonusType || 'Untyped'}</b></span>
-                <span>•</span>
+                <span>â€¢</span>
+                <span>TÃ¼r: <b>${item.bonusType || 'Untyped'}</b></span>
+                <span>â€¢</span>
                 <span>Kapsam: <b>${item.scope || 'None / General'}</b></span>
+                ${item.range && item.range !== '-' ? `<span>â€¢</span><span>Menzil: <b class="text-cyan-400">${item.range}</b></span>` : ''}
+                ${item.dmgType ? `<span>â€¢</span><span>Hasar TÃ¼rÃ¼: <b class="text-rose-400">${item.dmgType}</b></span>` : ''}
               </div>
             </div>
 
             <div class="flex items-center gap-1.5">
               ${isParent ? `
-                <button onclick="RuleMaster.addAiResultToDb(${idx}, true)" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1" title="Ana eşyayı ve tüm ${children.length} alt gücünü tek seferde Master DB'ye ekler">
-                  <span>📥</span>
-                  <span>Tümünü DB'ye Ekle</span>
+                <button onclick="RuleMaster.addAiResultToDb(${idx}, true)" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1" title="Ana eÅŸyayÄ± ve tÃ¼m ${children.length} alt gÃ¼cÃ¼nÃ¼ tek seferde Master DB'ye ekler">
+                  <span>ğŸ“¥</span>
+                  <span>TÃ¼mÃ¼nÃ¼ DB'ye Ekle</span>
                 </button>
-                <button onclick="RuleMaster.equipAiResultToCharacter(${idx})" class="bg-purple-900 hover:bg-purple-800 border border-purple-600 text-purple-200 text-xs px-2.5 py-1.5 rounded-lg transition font-bold" title="Ana eşyayı ve alt güçlerini tek seferde kuşanır">
-                  ⚡ Hepsini Kuşan
+                <button onclick="RuleMaster.equipAiResultToCharacter(${idx})" class="bg-purple-900 hover:bg-purple-800 border border-purple-600 text-purple-200 text-xs px-2.5 py-1.5 rounded-lg transition font-bold" title="Ana eÅŸyayÄ± ve alt gÃ¼Ã§lerini tek seferde kuÅŸanÄ±r">
+                  âš¡ Hepsini KuÅŸan
                 </button>
               ` : `
                 <button onclick="RuleMaster.addAiResultToDb(${idx}, false)" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1">
-                  <span>📥</span>
-                  <span>${isChild ? 'Yalnızca Bunu Ekle' : 'DB\'ye Ekle'}</span>
+                  <span>ğŸ“¥</span>
+                  <span>${isChild ? 'YalnÄ±zca Bunu Ekle' : 'DB\'ye Ekle'}</span>
                 </button>
-                <button onclick="RuleMaster.equipAiResultToCharacter(${idx})" class="bg-emerald-950 hover:bg-emerald-900 border border-emerald-700 text-emerald-300 text-xs px-2.5 py-1.5 rounded-lg transition" title="Karaktere Kuşan / Ekle">
-                  ⚡ Kuşan
+                <button onclick="RuleMaster.equipAiResultToCharacter(${idx})" class="bg-emerald-950 hover:bg-emerald-900 border border-emerald-700 text-emerald-300 text-xs px-2.5 py-1.5 rounded-lg transition" title="Karaktere KuÅŸan / Ekle">
+                  âš¡ KuÅŸan
                 </button>
               `}
-              <button onclick="RuleMaster.editAiResultInModal(${idx})" class="bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition" title="29 Sütunlu Formda Aç">
-                ✏️ Düzenle
+              <button onclick="RuleMaster.editAiResultInModal(${idx})" class="bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition" title="29 SÃ¼tunlu Formda AÃ§">
+                âœï¸ DÃ¼zenle
               </button>
             </div>
           </div>
@@ -1774,7 +1955,7 @@ Return valid JSON only matching this schema:
           <!-- Modifiers Row -->
           ${statPills.length > 0 ? `
             <div class="flex flex-wrap items-center gap-1.5">
-              <span class="text-[10px] uppercase font-bold text-slate-400">Bonuslar:</span>
+              <span class="text-[10px] uppercase font-bold text-slate-400">Bonuslar & Zar:</span>
               ${statPills.map(p => `<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 font-mono font-bold">${p}</span>`).join('')}
             </div>
           ` : ''}
@@ -1788,10 +1969,10 @@ Return valid JSON only matching this schema:
           <div class="flex flex-wrap items-center justify-between text-[11px] text-slate-400 pt-1">
             <div class="flex items-center gap-3">
               <span>Aksiyon: <b class="text-amber-400">${item.action || 'Passive'}</b></span>
-              <span>Süre/Kullanım: <b class="text-purple-300">${item.duration || 'Continuous'}</b></span>
+              <span>SÃ¼re/KullanÄ±m: <b class="text-purple-300">${item.duration || 'Continuous'}</b></span>
             </div>
             <div class="flex items-center gap-3">
-              <span>Ağırlık: <b class="text-slate-300">${item.weight || 0} lbs</b></span>
+              <span>AÄŸÄ±rlÄ±k: <b class="text-slate-300">${item.weight || 0} lbs</b></span>
               <span>Fiyat: <b class="text-amber-300">${item.cost || 0} gp</b></span>
             </div>
           </div>
@@ -1818,16 +1999,27 @@ Return valid JSON only matching this schema:
         if (existsIdx >= 0) {
           masterDb[existsIdx] = copy;
         } else {
-          masterDb.push(copy);
+          // If child, insert directly below parent in masterDb
+          const parentName = (copy.parent && copy.parent !== '-') ? copy.parent.replace(/^â†³\s*/, '').trim().toLowerCase() : '';
+          const parentIdx = parentName ? masterDb.findIndex(m => (m.name || '').replace(/^â†³\s*/, '').trim().toLowerCase() === parentName) : -1;
+          if (parentIdx >= 0) {
+            let insertAt = parentIdx + 1;
+            while (insertAt < masterDb.length && (masterDb[insertAt].parent || '').replace(/^â†³\s*/, '').trim().toLowerCase() === parentName) {
+              insertAt++;
+            }
+            masterDb.splice(insertAt, 0, copy);
+          } else {
+            masterDb.push(copy);
+          }
         }
       });
 
       if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
       this.renderTable();
       if (itemsToAdd.length > 1) {
-        alert(`✅ "${item.name}" ve ${itemsToAdd.length - 1} alt gücü tek seferde başarıyla Master_DB kütüphanesine eklendi!`);
+        alert(`âœ… "${item.name}" ve ${itemsToAdd.length - 1} alt gÃ¼cÃ¼ tek seferde baÅŸarÄ±yla Master_DB kÃ¼tÃ¼phanesine eklendi!`);
       } else {
-        alert(`✅ "${item.name}" başarıyla Master_DB kütüphanesine eklendi!`);
+        alert(`âœ… "${item.name}" baÅŸarÄ±yla Master_DB kÃ¼tÃ¼phanesine eklendi!`);
       }
     }
   },
@@ -1840,12 +2032,22 @@ Return valid JSON only matching this schema:
       if (existsIdx >= 0) {
         masterDb[existsIdx] = copy;
       } else {
-        masterDb.push(copy);
+        const parentName = (copy.parent && copy.parent !== '-') ? copy.parent.replace(/^â†³\s*/, '').trim().toLowerCase() : '';
+        const parentIdx = parentName ? masterDb.findIndex(m => (m.name || '').replace(/^â†³\s*/, '').trim().toLowerCase() === parentName) : -1;
+        if (parentIdx >= 0) {
+          let insertAt = parentIdx + 1;
+          while (insertAt < masterDb.length && (masterDb[insertAt].parent || '').replace(/^â†³\s*/, '').trim().toLowerCase() === parentName) {
+            insertAt++;
+          }
+          masterDb.splice(insertAt, 0, copy);
+        } else {
+          masterDb.push(copy);
+        }
       }
     });
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
     this.renderTable();
-    alert(`✅ ${this.lastAiResults.length} kural ve alt güç tek seferde Master_DB kütüphanesine eklendi!`);
+    alert(`âœ… ${this.lastAiResults.length} kural ve alt gÃ¼Ã§ tek seferde Master_DB kÃ¼tÃ¼phanesine eklendi!`);
   },
 
   editAiResultInModal(index) {
