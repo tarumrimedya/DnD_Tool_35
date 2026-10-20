@@ -8173,7 +8173,7 @@
       });
     }
 
-    function applySpellSelfDamage(amount, sourceName = 'Kan Fedası', showToast = true) {
+    function applySpellSelfDamage(amount, sourceName = 'Kan Fedas\u0131', showToast = true, toastOptions = { stack: true }) {
       if (!character || !character.hp) return;
       let dmgLeft = Math.max(0, Number(amount) || 0);
       if (dmgLeft <= 0) return;
@@ -8189,13 +8189,13 @@
       saveStateToStorage(true);
       renderAll();
       if (showToast) {
-      showDiceTopToast({
+        showDiceTopToast({
         icon: '🩸',
         title: `${sourceName} (-${amount} HP)`,
         breakdown: `Öz-Hasar Uygulandı • Kalan Can: ${character.hp.current}/${character.hp.max}`,
         total: `-${amount} HP`
-      });
-      }
+        }, { stack: true, ...(toastOptions || {}) });
+    }
     }
 
     // ==========================================
@@ -8870,8 +8870,8 @@
     }
 
     let _diceToastTimer = null;
-    function showDiceTopToast(entry) {
-      if (!entry) return;
+    function showDiceTopToast(entry, options = {}) {
+      if (!entry) return null;
       if (typeof entry === 'string') {
         entry = { title: 'Bildirim', breakdown: entry, total: '' };
       }
@@ -8880,29 +8880,47 @@
       if (!container) {
         container = document.createElement('div');
         container.id = 'dice-top-toast-container';
-        container.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[10000] flex flex-col items-center pointer-events-none transition-all duration-300 max-w-[94vw] sm:max-w-md w-max';
+        container.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[10000] flex flex-col items-center gap-2 pointer-events-none transition-all duration-300 max-w-[94vw] sm:max-w-md w-max';
         document.body.appendChild(container);
+      } else {
+        container.classList.add('gap-2');
       }
 
-      if (_diceToastTimer) {
-        clearTimeout(_diceToastTimer);
-        _diceToastTimer = null;
+      const shouldStack = options.stack === true || entry.stack === true;
+      const replaceId = options.replaceId || entry.replaceId;
+
+      let replaceTarget = replaceId ? document.getElementById(replaceId) : null;
+      if (replaceTarget && replaceTarget.parentNode !== container) {
+        replaceTarget = null;
       }
 
-      const existing = document.getElementById('dice-top-toast');
-      if (existing) existing.remove();
+      if (!shouldStack && !replaceTarget) {
+        const items = container.querySelectorAll('.dice-toast-item');
+        items.forEach(it => {
+          if (it._dismissTimer) clearTimeout(it._dismissTimer);
+          it.remove();
+        });
+      } else if (shouldStack) {
+        const items = container.querySelectorAll('.dice-toast-item');
+        if (items.length >= 4) {
+          const oldest = items[0];
+          if (oldest._dismissTimer) clearTimeout(oldest._dismissTimer);
+          oldest.remove();
+        }
+      }
 
       const palette = getDiceColorPalette();
 
       const toast = document.createElement('div');
-      toast.id = 'dice-top-toast';
-      toast.className = 'pointer-events-auto transform -translate-y-12 opacity-0 transition-all duration-300 ease-out bg-slate-900/95 rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 backdrop-blur-md flex items-center gap-3 sm:gap-4 text-white max-w-[94vw] sm:max-w-md w-full select-none cursor-pointer';
+      const toastId = options.toastId || entry.toastId || (replaceId || 'dice-top-toast');
+      toast.id = toastId;
+      toast.className = 'dice-toast-item pointer-events-auto transform -translate-y-8 opacity-0 transition-all duration-300 ease-out bg-slate-900/95 rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 backdrop-blur-md flex items-center gap-3 sm:gap-4 text-white max-w-[94vw] sm:max-w-md w-full select-none cursor-pointer shadow-xl';
       toast.style.border = `2px solid ${palette.border}`;
       toast.style.boxShadow = palette.glow;
-      toast.title = 'Kapatmak için tıklayın';
+      toast.title = 'Kapatmak i\u00E7in t\u0131klay\u0131n';
 
       const isCrit = !!entry.isCrit;
-      let defaultToastIcon = '⚡';
+      let defaultToastIcon = '\u26A1';
       if (!isCrit) {
         const str = ((entry.formula || '') + ' ' + (entry.title || '') + ' ' + (entry.breakdown || '')).toLowerCase();
         let dieType = '20';
@@ -8917,7 +8935,7 @@
         defaultToastIcon = getDiceIconSvg(dieType, 'w-6 h-6');
       }
       const icon = entry.icon || defaultToastIcon;
-      const title = entry.title || 'Zar Atışı';
+      const title = entry.title || 'Zar At\u0131\u015F\u0131';
       const breakdown = entry.breakdown || entry.formula || '';
       const totalRaw = entry.total !== undefined ? String(entry.total).trim() : '';
 
@@ -8939,7 +8957,7 @@
         <div class="flex flex-col min-w-0 flex-1 pr-1">
           <div class="text-sm font-black truncate flex items-center gap-1.5" style="color: ${palette.accent};">
             <span class="truncate">${title}</span>
-            ${isCrit ? '<span class="text-[10px] bg-red-600 text-white px-1.5 py-0.5 rounded font-black shrink-0 animate-pulse">KRİTİK!</span>' : ''}
+            ${isCrit ? '<span class="text-[10px] bg-red-600 text-white px-1.5 py-0.5 rounded font-black shrink-0 animate-pulse">KR\u0130T\u0130K!</span>' : ''}
           </div>
           <div class="text-xs text-slate-300 font-mono truncate" title="${breakdown.replace(/"/g, '&quot;')}">
             ${breakdown}
@@ -8976,32 +8994,42 @@
 
       // Click to dismiss immediately
       toast.onclick = () => {
+        if (toast._dismissTimer) clearTimeout(toast._dismissTimer);
         toast.classList.remove('translate-y-0', 'opacity-100');
-        toast.classList.add('-translate-y-12', 'opacity-0');
+        toast.classList.add('-translate-y-6', 'opacity-0');
         setTimeout(() => {
           if (toast.parentNode) toast.remove();
         }, 300);
       };
 
-      container.appendChild(toast);
+      if (replaceTarget) {
+        if (replaceTarget._dismissTimer) clearTimeout(replaceTarget._dismissTimer);
+        container.replaceChild(toast, replaceTarget);
+      } else {
+        container.appendChild(toast);
+      }
 
       // Trigger slide down
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          toast.classList.remove('-translate-y-12', 'opacity-0');
+          toast.classList.remove('-translate-y-8', 'opacity-0');
           toast.classList.add('translate-y-0', 'opacity-100');
         });
       });
 
-      // Auto dismiss after 8s if interactive actions exist, otherwise 3s
-      const dismissMs = hasActions ? 8500 : 3000;
-      _diceToastTimer = setTimeout(() => {
-        toast.classList.remove('translate-y-0', 'opacity-100');
-        toast.classList.add('-translate-y-12', 'opacity-0');
-        setTimeout(() => {
-          if (toast.parentNode) toast.remove();
-        }, 350);
-      }, dismissMs);
+      // Auto dismiss
+      if (options.autoDismiss !== false) {
+        const dismissMs = options.dismissMs || (hasActions ? 8500 : 3500);
+        toast._dismissTimer = setTimeout(() => {
+          toast.classList.remove('translate-y-0', 'opacity-100');
+          toast.classList.add('-translate-y-6', 'opacity-0');
+          setTimeout(() => {
+            if (toast.parentNode) toast.remove();
+          }, 350);
+        }, dismissMs);
+      }
+
+      return toast;
     }
     window.showDiceTopToast = showDiceTopToast;
 
@@ -9416,6 +9444,13 @@
       };
 
       if (window.Dice3D && typeof Dice3D.roll === 'function' && dice3dList.length > 0) {
+        showDiceTopToast({
+          icon: '\uD83C\uDFB2',
+          title: title || 'Zar At\u0131\u015F\u0131',
+          breakdown: `Zarlar yuvarlan\u0131yor... [${clean}]`,
+          total: '\uD83C\uDFB2'
+        }, { toastId: 'dice-roll-active-toast', autoDismiss: false });
+
         try {
           Dice3D.roll(dice3dList, onDone);
         } catch (e) {
@@ -9724,6 +9759,13 @@
       };
 
       if (window.Dice3D && typeof Dice3D.roll === 'function' && dice3dList.length > 0) {
+        showDiceTopToast({
+          icon: '\uD83C\uDFB2',
+          title: title || 'Zar At\u0131\u015F\u0131',
+          breakdown: `Zarlar yuvarlan\u0131yor... [${clean}]`,
+          total: '\uD83C\uDFB2'
+        }, { toastId: 'dice-roll-active-toast', autoDismiss: false });
+
         try {
           Dice3D.roll(dice3dList, onDone);
         } catch (e) {
@@ -9887,6 +9929,13 @@
       };
 
       if (window.Dice3D && typeof Dice3D.roll === 'function' && dice3dList.length > 0) {
+        showDiceTopToast({
+          icon: '\uD83C\uDFB2',
+          title: title || 'Zar At\u0131\u015F\u0131',
+          breakdown: `Zarlar yuvarlan\u0131yor... [${clean}]`,
+          total: '\uD83C\uDFB2'
+        }, { toastId: 'dice-roll-active-toast', autoDismiss: false });
+
         try {
           Dice3D.roll(dice3dList, onDone);
         } catch (e) {
@@ -10626,7 +10675,7 @@
         showDiceTopToast({
           icon: '⚠️',
           title: 'Slot Yetersiz',
-          breakdown: `${lvl}. seviye dua slotunuz kalmadı!`,
+          breakdown: `${lvl}. seviye dua slotunuz kalmad\u0131!`,
           total: '0 Slot'
         });
       }
@@ -10640,6 +10689,23 @@
       const { cl } = getPreparedCasterInfo();
       const dmgExpr = resolveSpellEffectiveFormula(s, cl);
       const slot = character.spellcasting?.preparedSlots?.find(sl => Number(sl.level) === lvl);
+      if (!slot || slot.used >= slot.daily) {
+        showDiceTopToast({
+          icon: '\u26A0\uFE0F',
+          title: 'Slot Yetersiz',
+          breakdown: `${lvl}. seviye haz\u0131rl\u0131k slotunuz kalmad\u0131!`,
+          total: '0 Slot'
+        });
+        return;
+      }
+
+      const preCast = getSpellPreCastOptions(s, cl, slot, lvl);
+      if (preCast && Array.isArray(preCast.options) && preCast.options.length > 0) {
+        showSpellPreCastChoiceToast(preCast);
+        return;
+      }
+
+      const dmgExpr = resolveSpellEffectiveFormula(s, cl);
       if (slot && slot.used < slot.daily) {
         slot.used++;
         saveStateToStorage(true);
@@ -10659,7 +10725,7 @@
         showDiceTopToast({
           icon: '⚠️',
           title: 'Slot Yetersiz',
-          breakdown: `${lvl}. seviye hazırlık slotunuz kalmadı!`,
+          breakdown: `${lvl}. seviye haz\u0131rl\u0131k slotunuz kalmad\u0131!`,
           total: '0 Slot'
         });
       }
@@ -11018,6 +11084,23 @@
       const { cl } = getDivineCasterInfo();
       const dmgExpr = resolveSpellEffectiveFormula(s, cl);
       const slot = character.spellcasting?.divineSlots?.find(sl => Number(sl.level) === lvl);
+      if (!slot || slot.used >= slot.daily) {
+        showDiceTopToast({
+          icon: '\u26A0\uFE0F',
+          title: 'Slot Yetersiz',
+          breakdown: `${lvl}. seviye dua slotunuz kalmad\u0131!`,
+          total: '0 Slot'
+        });
+        return;
+      }
+
+      const preCast = getSpellPreCastOptions(s, cl, slot, lvl);
+      if (preCast && Array.isArray(preCast.options) && preCast.options.length > 0) {
+        showSpellPreCastChoiceToast(preCast);
+        return;
+      }
+
+      const dmgExpr = resolveSpellEffectiveFormula(s, cl);
       if (slot && slot.used < slot.daily) {
         slot.used++;
         saveStateToStorage(true);
@@ -11037,7 +11120,7 @@
         showDiceTopToast({
           icon: '⚠️',
           title: 'Slot Yetersiz',
-          breakdown: `${lvl}. seviye dua slotunuz kalmadı!`,
+          breakdown: `${lvl}. seviye dua slotunuz kalmad\u0131!`,
           total: '0 Slot'
         });
       }
@@ -11515,6 +11598,291 @@
       return 'damage';
     }
 
+    // ====================================================
+    // PRE-CAST 5-SECOND CHOICE TOAST & VARIANT SELECTOR
+    // ====================================================
+    let _spellPreCastCountdownInterval = null;
+    let _spellPreCastTimeout = null;
+
+    function clearSpellPreCastChoice() {
+      if (_spellPreCastCountdownInterval) {
+        clearInterval(_spellPreCastCountdownInterval);
+        _spellPreCastCountdownInterval = null;
+      }
+      if (_spellPreCastTimeout) {
+        clearTimeout(_spellPreCastTimeout);
+        _spellPreCastTimeout = null;
+      }
+      const existing = document.getElementById('spell-precast-choice-toast');
+      if (existing) {
+        existing.classList.remove('translate-y-0', 'opacity-100');
+        existing.classList.add('-translate-y-8', 'opacity-0');
+        setTimeout(() => existing.remove(), 250);
+      }
+    }
+
+    function showSpellPreCastChoiceToast(data) {
+      if (!data || !Array.isArray(data.options) || data.options.length === 0) return;
+      clearSpellPreCastChoice();
+
+      const { spell, slot, lvl, cl, options } = data;
+      const spellName = spell.name || 'B\u00FCy\u00FC';
+      const slotLabel = lvl === 0 ? '0. Seviye (Cantrip)' : `${lvl}. Seviye Slot`;
+
+      let container = document.getElementById('dice-top-toast-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'dice-top-toast-container';
+        container.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[10000] flex flex-col items-center gap-2 pointer-events-none transition-all duration-300 max-w-[94vw] sm:max-w-md w-max';
+        document.body.appendChild(container);
+      } else {
+        container.classList.add('gap-2');
+      }
+
+      // Remove unpinned toasts
+      const items = container.querySelectorAll('.dice-toast-item');
+      items.forEach(it => {
+        if (it._dismissTimer) clearTimeout(it._dismissTimer);
+        it.remove();
+      });
+
+      const toast = document.createElement('div');
+      toast.id = 'spell-precast-choice-toast';
+      toast.className = 'dice-toast-item pointer-events-auto transform -translate-y-8 opacity-0 transition-all duration-300 ease-out bg-slate-900/98 border-2 border-amber-500/80 rounded-2xl p-3.5 sm:p-4 backdrop-blur-md flex flex-col gap-2.5 text-white max-w-[94vw] sm:max-w-md w-full select-none shadow-[0_0_30px_rgba(245,158,11,0.25)]';
+
+      let btnsHtml = '';
+      options.forEach((opt, idx) => {
+        btnsHtml += `
+          <button type="button" data-opt-idx="${idx}" class="${opt.className || 'px-2.5 py-1.5 rounded-lg text-xs font-bold bg-amber-950 hover:bg-amber-800 text-amber-200 border border-amber-500/80 transition cursor-pointer shadow inline-flex items-center gap-1'}">
+            ${opt.label}
+          </button>
+        `;
+      });
+      btnsHtml += `
+        <button type="button" id="spell-precast-cancel-btn" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 transition cursor-pointer">
+          \u274C Vazge\u00E7
+        </button>
+      `;
+
+      toast.innerHTML = `
+        <div class="flex items-center justify-between gap-2 border-b border-slate-700/80 pb-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-xl shrink-0">\uD83D\uDD2E</span>
+            <div class="min-w-0">
+              <div class="text-sm font-black text-amber-300 truncate">${spellName}</div>
+              <div class="text-[11px] text-slate-400 font-medium">${slotLabel} \u2022 Se\u00E7enek Belirle</div>
+            </div>
+          </div>
+          <span id="spell-precast-countdown-badge" class="px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-400/60 shrink-0 font-mono animate-pulse">
+            \u23F3 5s
+          </span>
+        </div>
+        <div class="text-[11px] text-slate-300">
+          L\u00FCtfen b\u00FCy\u00FC varyant\u0131n\u0131 veya feda durumunu se\u00E7in (5sn bekliyor).
+        </div>
+        <div id="spell-precast-btns-bar" class="flex flex-wrap items-center gap-1.5 pt-1">
+          ${btnsHtml}
+        </div>
+        <div class="w-full bg-slate-800 rounded-full h-1 overflow-hidden mt-0.5">
+          <div id="spell-precast-progress" class="bg-amber-400 h-full transition-all duration-1000 ease-linear rounded-full" style="width: 100%;"></div>
+        </div>
+      `;
+
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          toast.classList.remove('-translate-y-8', 'opacity-0');
+          toast.classList.add('translate-y-0', 'opacity-100');
+        });
+      });
+
+      // Bind button events
+      const btnsBar = toast.querySelector('#spell-precast-btns-bar');
+      if (btnsBar) {
+        options.forEach((opt, idx) => {
+          const btn = btnsBar.querySelector(`[data-opt-idx="${idx}"]`);
+          if (btn) {
+            btn.onclick = (e) => {
+              e.stopPropagation();
+              clearSpellPreCastChoice();
+              if (typeof opt.execute === 'function') {
+                opt.execute();
+              }
+            };
+          }
+        });
+        const cancelBtn = btnsBar.querySelector('#spell-precast-cancel-btn');
+        if (cancelBtn) {
+          cancelBtn.onclick = (e) => {
+            e.stopPropagation();
+            clearSpellPreCastChoice();
+          };
+        }
+      }
+
+      // 5-second countdown timer
+      let secondsLeft = 5;
+      const badge = toast.querySelector('#spell-precast-countdown-badge');
+      const progress = toast.querySelector('#spell-precast-progress');
+
+      _spellPreCastCountdownInterval = setInterval(() => {
+        secondsLeft--;
+        if (badge) badge.textContent = `\u23F3 ${secondsLeft}s`;
+        if (progress) progress.style.width = `${(secondsLeft / 5) * 100}%`;
+
+        if (secondsLeft <= 0) {
+          clearSpellPreCastChoice();
+          // Notify user: spell aborted, slot NOT spent
+          showDiceTopToast({
+            icon: '\u23F3',
+            title: `${spellName} \u0130ptal Edildi`,
+            breakdown: '5 saniye i\u00E7inde se\u00E7im yap\u0131lmad\u0131 \u2022 B\u00FCy\u00FC slotu harcanmad\u0131.',
+            total: '\u0130ptal'
+          });
+        }
+      }, 1000);
+    }
+
+    function getSpellPreCastOptions(spellItem, cl, slotRef, lvl) {
+      if (!spellItem) return null;
+      if (isMasterDbChildEntry(spellItem)) return null;
+
+      const rawName = String(spellItem.name || '').trim();
+      const pName = extractCleanParentSpellName(spellItem);
+      const children = getSpellOrManeuverChildren(pName);
+      const effType = classifySpellOrManeuverEffect(spellItem);
+
+      const isBloodSacrifice = effType === 'blood_sacrifice' || /feda|blade of blood/i.test(rawName) || Number(spellItem.selfHpCost) > 0;
+      const hasChildren = Array.isArray(children) && children.length > 0;
+
+      if (!isBloodSacrifice && !hasChildren) {
+        return null;
+      }
+
+      const options = [];
+
+      if (hasChildren) {
+        children.forEach(child => {
+          const childDice = resolveSpellEffectiveFormula(child, cl);
+          const shortTitle = getShortChildVariantTitle(child, pName);
+          const childEff = classifySpellOrManeuverEffect(child);
+          const hpCost = Number(child.selfHpCost) || (/feda/i.test(child.name || '') ? 5 : 0);
+
+          let btnClass = 'px-2.5 py-1.5 rounded-lg text-xs font-bold transition shadow cursor-pointer inline-flex items-center gap-1 ';
+          if (hpCost > 0 || childEff === 'blood_sacrifice_roll') {
+            btnClass += 'bg-rose-900/90 hover:bg-rose-700 text-rose-100 border border-rose-400';
+          } else if (childEff === 'heal') {
+            btnClass += 'bg-emerald-900/90 hover:bg-emerald-700 text-emerald-100 border border-emerald-400';
+          } else {
+            btnClass += 'bg-amber-950/90 hover:bg-amber-800 text-amber-200 border border-amber-500/80';
+          }
+
+          let label = child.childButtonLabel || (childDice ? `${shortTitle} (${childDice})` : shortTitle);
+          if (hpCost > 0 && !label.includes('HP')) {
+            label = `\uD83E\uDE78 -${hpCost} HP Feda: ${label}`;
+          }
+
+          options.push({
+            label,
+            className: btnClass,
+            execute: () => {
+              if (slotRef && slotRef.used < slotRef.daily) {
+                slotRef.used++;
+                saveStateToStorage(true);
+                renderAll();
+              }
+              if (childDice) {
+                rollSpellOrManeuverFormula(
+                  childDice,
+                  `${pName} \u2794 ${shortTitle}${hpCost > 0 ? ` (\u2022 -${hpCost} HP Feda)` : ''}`,
+                  child,
+                  { name: pName }
+                );
+              } else {
+                showDiceTopToast({
+                  icon: '\u26A1',
+                  title: `${pName} \u2794 ${shortTitle}`,
+                  breakdown: child.benefit || child.description || 'Alt etki uyguland\u0131',
+                  total: child.shortResult || '\u00D6zel Etki'
+                });
+              }
+              if (hpCost > 0) {
+                applySpellSelfDamage(hpCost, child.name || pName, true, { stack: true });
+              }
+            }
+          });
+        });
+
+        // Add standard/normal variant if parent formula is distinct and not represented
+        const parentDice = resolveSpellEffectiveFormula(spellItem, cl);
+        const hasMatchingChildDice = options.some(o => parentDice && o.label.includes(parentDice));
+        if (parentDice && !hasMatchingChildDice && !/blade of blood/i.test(pName)) {
+          options.unshift({
+            label: `\u2600\uFE0F Standart (${parentDice})`,
+            className: 'px-2.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition cursor-pointer',
+            execute: () => {
+              if (slotRef && slotRef.used < slotRef.daily) {
+                slotRef.used++;
+                saveStateToStorage(true);
+                renderAll();
+              }
+              rollSpellOrManeuverFormula(
+                parentDice,
+                `${pName} (${lvl}. Seviye \u2022 -1 Slot)`,
+                spellItem
+              );
+            }
+          });
+        }
+      } else if (isBloodSacrifice) {
+        options.push(
+          {
+            label: '\uD83E\uDE78 -5 HP Feda Et (3d6)',
+            className: 'px-2.5 py-1.5 rounded-lg text-xs font-bold bg-rose-800 hover:bg-rose-700 text-rose-100 border border-rose-400 transition shadow cursor-pointer',
+            execute: () => {
+              if (slotRef && slotRef.used < slotRef.daily) {
+                slotRef.used++;
+                saveStateToStorage(true);
+                renderAll();
+              }
+              rollSpellOrManeuverFormula(
+                '3d6',
+                `${pName} \u2794 5 HP Feda (3d6 Hasar)`,
+                { name: `${pName} (5 HP Feda)`, dice: '3d6', effectType: 'damage' },
+                { name: pName }
+              );
+              applySpellSelfDamage(5, pName, true, { stack: true });
+            }
+          },
+          {
+            label: '\u2694\uFE0F Fedas\u0131z (1d6)',
+            className: 'px-2.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition cursor-pointer',
+            execute: () => {
+              if (slotRef && slotRef.used < slotRef.daily) {
+                slotRef.used++;
+                saveStateToStorage(true);
+                renderAll();
+              }
+              rollSpellOrManeuverFormula(
+                '1d6',
+                `${pName} \u2794 Fedas\u0131z (1d6 Hasar)`,
+                { name: `${pName} (Fedas\u0131z)`, dice: '1d6', effectType: 'damage' },
+                { name: pName }
+              );
+            }
+          }
+        );
+      }
+
+      return {
+        spell: spellItem,
+        slot: slotRef,
+        lvl,
+        cl,
+        options
+      };
+    }
     function buildOptionAToastActions(effectType, amount, cleanSourceName) {
       const val = Math.max(0, Number(amount) || 0);
       if (val <= 0) return [];
@@ -11711,7 +12079,7 @@
           breakdown: effectType === 'heal' ? `Şifa Miktarı: +${flatVal} HP` : (sourceItem?.benefit || `Etki Değeri: ${flatVal}`),
           total: effectType === 'heal' ? `+${flatVal}` : (unitLabel ? `${flatVal} ${unitLabel}` : flatVal),
           actions
-        });
+        }, { replaceId: 'dice-roll-active-toast' });
         return;
       }
 
@@ -11772,10 +12140,17 @@
           breakdown: breakdownStr,
           total: effectType === 'heal' ? `+${grandTotal}` : (unitLabel ? `${grandTotal} ${unitLabel}` : grandTotal),
           actions
-        });
+        }, { replaceId: 'dice-roll-active-toast' });
       };
 
       if (window.Dice3D && typeof Dice3D.roll === 'function' && dice3dList.length > 0) {
+        showDiceTopToast({
+          icon: '\uD83C\uDFB2',
+          title: title || 'Zar At\u0131\u015F\u0131',
+          breakdown: `Zarlar yuvarlan\u0131yor... [${clean}]`,
+          total: '\uD83C\uDFB2'
+        }, { toastId: 'dice-roll-active-toast', autoDismiss: false });
+
         try {
           Dice3D.roll(dice3dList, onDone);
         } catch (e) {
@@ -12523,6 +12898,23 @@
       const dmgExpr = resolveSpellEffectiveFormula(s, cl);
 
       const slot = character.spellcasting?.slots?.find(sl => sl.level === lvl);
+      if (!slot || slot.used >= slot.daily) {
+        showDiceTopToast({
+          icon: '\u26A0\uFE0F',
+          title: 'Slot Yetersiz',
+          breakdown: `${lvl}. seviye b\u00FCy\u00FC slotunuz kalmad\u0131!`,
+          total: '0 Slot'
+        });
+        return;
+      }
+
+      const preCast = getSpellPreCastOptions(s, cl, slot, lvl);
+      if (preCast && Array.isArray(preCast.options) && preCast.options.length > 0) {
+        showSpellPreCastChoiceToast(preCast);
+        return;
+      }
+
+      const dmgExpr = resolveSpellEffectiveFormula(s, cl);
       if (slot && slot.used < slot.daily) {
         slot.used++;
 
@@ -12565,7 +12957,7 @@
         showDiceTopToast({
           icon: '⚠️',
           title: 'Slot Yetersiz',
-          breakdown: `${lvl}. seviye büyü slotunuz kalmadı!`,
+          breakdown: `${lvl}. seviye b\u00FCy\u00FC slotunuz kalmad\u0131!`,
           total: '0 Slot'
         });
       }
