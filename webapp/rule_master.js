@@ -488,11 +488,15 @@ const RuleMaster = {
   addChildPower(parentIndex) {
     if (parentIndex >= 0 && parentIndex < masterDb.length) {
       const parentItem = masterDb[parentIndex];
-      const child = this.createEmptyEntry('Active Power');
-      child.name = `↳ ${parentItem.name}: Özel Güç`;
+      const child = this.createEmptyEntry(parentItem.type || 'Active Power');
+      child.name = `↳ ${parentItem.name} (Alt Etki)`;
       child.parent = parentItem.name;
-      child.slot = parentItem.slot;
+      child.isChild = true;
+      child.slot = parentItem.slot || 'None';
       child.source = parentItem.source;
+      child.school = parentItem.school || '';
+      child.discipline = parentItem.discipline || '';
+      child.level = parentItem.level !== undefined ? parentItem.level : '';
       child.role = 'Tactical / Power';
       child.weight = 0;
       child.cost = 0;
@@ -1362,7 +1366,7 @@ PRIORITIZED KNOWLEDGE BASES (Cascading Search Order):
 
 TASK:
 Resolve the target D&D 3.5e game element into an array of rows adhering strictly to the Master_DB 29-column schema.
-If the item has multiple distinct powers (e.g. passive weapon/item stats + on-hit damage + 1/day active spell power), produce 1 Parent row and 1 or more Child rows starting with '↳ ' and setting Col 3 (Parent Entry) to the exact parent entry name.
+If the item has multiple distinct powers (e.g. passive weapon/item stats + on-hit damage + 1/day active spell power), OR if a Spell/Maneuver has conditional damage/effects depending on target creature type, save result, HP sacrifice, or sub-mode (e.g. Searing Light vs Undead/Constructs, Chill Touch vs Undead, Blade of Blood +5 HP sacrifice for 3d6, Disintegrate 5d6 Fort partial, Horrid Wilting vs Plants/Water Elementals, Pyrotechnics Fireworks vs Smoke), produce 1 Parent row with the primary effect/dice and 1 or more Child rows starting with '↳ ' (e.g. '↳ Searing Light (Undead)') with Col 3 (Parent Entry) set to the exact parent entry name and Col 24 set to that child condition's dice formula.
 
 MASTER_DB 29-COLUMN SCHEMA (Every row MUST contain exactly 29 elements in this order):
 0: Entry Name (string, child begins with '↳ ')
@@ -1626,6 +1630,7 @@ Return valid JSON only matching this schema:
         speedBonus: Number(row[23]) || '',
         extraDmg: String(row[24] || '').trim(),
         dice: String(row[24] || (normType === 'Weapon' ? '1d8' : '')).trim(),
+        damageDice: (normType === 'Spell' || normType === 'Maneuver' || normType === 'Stance') ? (String(row[24] || '').trim() || undefined) : undefined,
         critMin: 20,
         critMult: 2,
         dmgType: '',

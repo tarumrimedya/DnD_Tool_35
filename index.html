@@ -6013,7 +6013,15 @@
         { name: "Nerveskitter", type: "Spell", level: 1, school: "Transmutation", action: "Immediate Action", range: "Close", benefit: "SpC: Grants +5 bonus on Initiative checks at the start of combat." },
         { name: "Benign Transposition", type: "Spell", level: 1, school: "Conjuration", action: "Standard Action", range: "Medium", benefit: "SpC: Two willing allies swap positions instantly." },
         { name: "Protection from Evil", type: "Spell", level: 1, school: "Abjuration", action: "Standard Action", range: "Touch", benefit: "+2 deflection AC, +2 resistance saves vs evil, blocks mental control." },
+        { name: "Blade of Blood", type: "Spell", level: 1, school: "Necromancy", action: "Swift Action", range: "Touch", damageDice: "1d6", dice: "1d6", benefit: "PHB2: Weapon deals +1d6 extra damage on next hit, or sacrifice 5 HP to deal +3d6 total extra damage." },
+        { name: "↳ Blade of Blood (5 HP Feda: 3d6)", parent: "Blade of Blood", isChild: true, type: "Spell", level: 1, school: "Necromancy", action: "Free (Sacrifice 5 HP)", range: "Touch", damageDice: "3d6", dice: "3d6", extraDmg: "3d6", effectType: "blood_sacrifice_roll", selfHpCost: 5, childButtonLabel: "🩸 -5 HP Feda (3d6)", benefit: "5 HP feda ederek toplam +3d6 ekstra silah hasarı verir." },
+        { name: "↳ Blade of Blood (Fedasız: 1d6)", parent: "Blade of Blood", isChild: true, type: "Spell", level: 1, school: "Necromancy", action: "Free / Variant", range: "Touch", damageDice: "1d6", dice: "1d6", extraDmg: "1d6", effectType: "damage", childButtonLabel: "⚔️ Fedasız (1d6)", benefit: "HP feda etmeden +1d6 ekstra silah hasarı verir." },
+        { name: "Chill Touch", type: "Spell", level: 1, school: "Necromancy", action: "Standard Action", range: "Touch", damageDice: "1d6", dice: "1d6", benefit: "1 touch/level deals 1d6 negative energy + 1 STR damage (Fort negates); Undead take no damage but flee panicked for 1d4+CL rounds (Will negates)." },
+        { name: "↳ Chill Touch (Undead Panik)", parent: "Chill Touch", isChild: true, type: "Spell", level: 1, school: "Necromancy", action: "Free / Variant", range: "Touch", damageDice: "1d4+6", dice: "1d4+6", extraDmg: "1d4+6", effectType: "duration", unitLabel: "Tur Panicked", childButtonLabel: "💀 Undead Panik (1d4+6 Tur)", benefit: "Undead yaratıklar hasar almaz; Will kurtulma zarını kaçırırsa 1d4+CL tur Panicked olarak kaçar." },
         // Level 2
+        { name: "Pyrotechnics", type: "Spell", level: 2, school: "Transmutation", action: "Standard Action", range: "Long", damageDice: "1d4+1", dice: "1d4+1", benefit: "Turns a fire source into blinding Fireworks (1d4+1 rounds blinded, Will negates) or choking Smoke Cloud (-4 STR/DEX for 1d4+1 rounds, Fort negates)." },
+        { name: "↳ Pyrotechnics (Fireworks: Körlük)", parent: "Pyrotechnics", isChild: true, type: "Spell", level: 2, school: "Transmutation", action: "Free / Variant", range: "120 ft", damageDice: "1d4+1", dice: "1d4+1", extraDmg: "1d4+1", effectType: "duration", unitLabel: "Tur Blinded", childButtonLabel: "🎆 Fireworks: Körlük (1d4+1 Tur)", benefit: "120 ft içindekiler Will kurtulma zarını kaçırırsa 1d4+1 tur kör (Blinded) olur." },
+        { name: "↳ Pyrotechnics (Smoke Cloud: -4 STR/DEX)", parent: "Pyrotechnics", isChild: true, type: "Spell", level: 2, school: "Transmutation", action: "Free / Variant", range: "20 ft", damageDice: "1d4+1", dice: "1d4+1", extraDmg: "1d4+1", effectType: "duration", unitLabel: "Tur -4 STR/DEX", childButtonLabel: "💨 Smoke: -4 STR/DEX (1d4+1 Tur)", benefit: "20 ft duman bulutu görüşü kapatır; Fort kaçıranlar 1d4+1 tur -4 STR ve -4 DEX cezası alır." },
         { name: "Glitterdust", type: "Spell", level: 2, school: "Conjuration", action: "Standard Action", range: "Medium", benefit: "Blinds creatures in 10-ft spread (Will negates) and outlines invisible things (-40 Hide)." },
         { name: "Invisibility", type: "Spell", level: 2, school: "Illusion", action: "Standard Action", range: "Touch", benefit: "Subject is invisible for 1 min/level or until it attacks." },
         { name: "Web", type: "Spell", level: 2, school: "Conjuration", action: "Standard Action", range: "Medium", benefit: "Fills 20-ft radius spread with sticky webs that entangle foes." },
@@ -6058,7 +6066,8 @@
         { name: "Cloudkill", type: "Spell", level: 5, school: "Conjuration", action: "Standard Action", range: "Medium", damageDice: "1d4", benefit: "Kills 3 HD or less; 4-6 HD save or die; 6+ HD takes 1d4 CON damage/round." },
         { name: "Telekinesis", type: "Spell", level: 5, school: "Transmutation", action: "Standard Action", range: "Long", benefit: "Moves objects, bull rushes, disarms, grappes, or hurls up to 15 weapons/objects." },
         // Level 6
-        { name: "Disintegrate", type: "Spell", level: 6, school: "Transmutation", action: "Standard Action", range: "Medium", damageDice: "26d6", benefit: "Ranged touch ray deals 2d6/level (max 40d6) damage (Fort partial reduces to 5d6)." },
+        { name: "Disintegrate", type: "Spell", level: 6, school: "Transmutation", action: "Standard Action", range: "Medium", damageDice: "26d6", dice: "26d6", benefit: "Ranged touch ray deals 2d6/level (max 40d6) damage (Fort partial reduces to 5d6)." },
+        { name: "↳ Disintegrate (Fort Save Başarılı)", parent: "Disintegrate", isChild: true, type: "Spell", level: 6, school: "Transmutation", action: "Free / Variant", range: "Medium", damageDice: "5d6", dice: "5d6", extraDmg: "5d6", effectType: "damage", childButtonLabel: "🛡️ Fort Başarılı (5d6)", benefit: "Hedef Fortitude kurtulma zarını başarırsa kısmi olarak 5d6 hasar alır." },
         { name: "Chain Lightning", type: "Spell", level: 6, school: "Evocation", action: "Standard Action", range: "Long", damageDice: "13d6", benefit: "1d6/level (max 20d6) electricity to primary target + half damage to 1 secondary target/level." },
         { name: "Greater Dispel Magic", type: "Spell", level: 6, school: "Abjuration", action: "Standard Action", range: "Medium", benefit: "As Dispel Magic, but caster level bonus on dispel check goes up to +20." },
         { name: "True Seeing", type: "Spell", level: 6, school: "Divination", action: "Standard Action", range: "Touch", benefit: "See all things as they actually are within 120 ft (pierces illusions, darkness, polymorph)." },
@@ -6069,11 +6078,13 @@
         // Level 7
         { name: "Greater Teleport", type: "Spell", level: 7, school: "Conjuration", action: "Standard Action", range: "Touch", benefit: "Instantly teleport anywhere on the same plane with no range limit and no off-target roll." },
         { name: "Limited Wish", type: "Spell", level: 7, school: "Universal", action: "Standard Action", range: "See text", benefit: "Alters reality, duplicates any Sorc/Wiz spell of 6th level or lower or other spell of 5th or lower." },
-        { name: "Finger of Death", type: "Spell", level: 7, school: "Necromancy", action: "Standard Action", range: "Close", damageDice: "3d6+13", benefit: "Slays one living creature instantly (Fort partial deals 3d6 + 1/level damage instead)." },
+        { name: "Finger of Death", type: "Spell", level: 7, school: "Necromancy", action: "Standard Action", range: "Close", damageDice: "3d6+13", dice: "3d6+13", benefit: "Slays one living creature instantly (Fort partial deals 3d6 + 1/level damage instead)." },
+        { name: "↳ Finger of Death (Fort Başarısız: Ölüm)", parent: "Finger of Death", isChild: true, type: "Spell", level: 7, school: "Necromancy", action: "Free / Variant", range: "Close", effectType: "status", childButtonLabel: "☠️ Fort Başarısız (Ölüm)", benefit: "Hedef Fortitude kurtulma zarını kaçırırsa anında ölür (Slay Living)." },
         { name: "Prismatic Spray", type: "Spell", level: 7, school: "Evocation", action: "Standard Action", range: "60 ft", benefit: "60-ft cone of 7 colored beams inflicts random deadly effects, damage, petrification, or plane shift." },
         { name: "Forcecage", type: "Spell", level: 7, school: "Evocation", action: "Standard Action", range: "Close", benefit: "Creates an immovable, indestructible cube or cage of force (no save, no SR)." },
         // Level 8
-        { name: "Horrid Wilting", type: "Spell", level: 8, school: "Necromancy", action: "Standard Action", range: "Long", damageDice: "15d6", benefit: "Evaporates moisture from living creatures, dealing 1d6/level (max 20d6) damage (Fort half)." },
+        { name: "Horrid Wilting", type: "Spell", level: 8, school: "Necromancy", action: "Standard Action", range: "Long", damageDice: "15d6", dice: "15d6", benefit: "Evaporates moisture from living creatures, dealing 1d6/level (max 20d6) damage (Fort half; 1d8/level vs plants and water elementals)." },
+        { name: "↳ Horrid Wilting (Bitki / Su Elementali)", parent: "Horrid Wilting", isChild: true, type: "Spell", level: 8, school: "Necromancy", action: "Free / Variant", range: "Long", damageDice: "15d8", dice: "15d8", extraDmg: "15d8", effectType: "damage", childButtonLabel: "🌿 Bitki / Su Elementali (15d8)", benefit: "Bitki ve Su elementali yaratıklara 1d8/CL (max 20d8) hasar verir." },
         { name: "Polar Ray", type: "Spell", level: 8, school: "Evocation", action: "Standard Action", range: "Close", damageDice: "15d6", benefit: "Ranged touch ray deals 1d6/level (max 25d6) cold damage (no save)." },
         { name: "Mind Blank", type: "Spell", level: 8, school: "Abjuration", action: "Standard Action", range: "Close", benefit: "Subject is completely immune to all mind-affecting spells and scrying/divination for 24 hours." },
         { name: "Greater Arcane Fusion", type: "Spell", level: 8, school: "Universal", action: "Standard Action", range: "Personal", benefit: "CM (Sorcerer Only): Cast one 7th-level or lower spell and one 4th-level or lower spell simultaneously." },
@@ -6088,23 +6099,39 @@
         { name: "Cure Minor Wounds", type: "Spell", level: 0, school: "Conjuration", action: "Standard Action", range: "Touch", damageDice: "1", benefit: "Cures 1 point of damage." },
         { name: "Inflict Minor Wounds", type: "Spell", level: 0, school: "Necromancy", action: "Standard Action", range: "Touch", damageDice: "1", benefit: "Touch attack deals 1 point of negative energy damage (Will negates)." },
         { name: "Guidance", type: "Spell", level: 0, school: "Divination", action: "Standard Action", range: "Touch", benefit: "+1 competence bonus on one attack roll, saving throw, or skill check." },
-        { name: "Cure Light Wounds", type: "Spell", level: 1, school: "Conjuration", action: "Standard Action", range: "Touch", damageDice: "1d8+5", benefit: "Cures 1d8 +1/level (max +5) points of damage." },
-        { name: "Inflict Light Wounds", type: "Spell", level: 1, school: "Necromancy", action: "Standard Action", range: "Touch", damageDice: "1d8+5", benefit: "Touch attack deals 1d8 +1/level (max +5) negative energy damage (Will half)." },
+        { name: "Cure Light Wounds", type: "Spell", level: 1, school: "Conjuration", action: "Standard Action", range: "Touch", damageDice: "1d8+5", dice: "1d8+5", benefit: "Cures 1d8 +1/level (max +5) points of damage (or deals positive energy damage to undead, Will half)." },
+        { name: "↳ Cure Light Wounds (Undead Hasarı)", parent: "Cure Light Wounds", isChild: true, type: "Spell", level: 1, school: "Conjuration", action: "Free / Variant", range: "Touch", damageDice: "1d8+5", dice: "1d8+5", extraDmg: "1d8+5", effectType: "damage", childButtonLabel: "💀 Undead Hasarı (1d8+5)", benefit: "Undead hedefe 1d8+5 pozitif enerji hasarı verir (Will half)." },
+        { name: "Inflict Light Wounds", type: "Spell", level: 1, school: "Necromancy", action: "Standard Action", range: "Touch", damageDice: "1d8+5", dice: "1d8+5", benefit: "Touch attack deals 1d8 +1/level (max +5) negative energy damage (Will half; heals undead)." },
+        { name: "↳ Inflict Light Wounds (Undead İyileştirme)", parent: "Inflict Light Wounds", isChild: true, type: "Spell", level: 1, school: "Necromancy", action: "Free / Variant", range: "Touch", damageDice: "1d8+5", dice: "1d8+5", extraDmg: "1d8+5", effectType: "heal", childButtonLabel: "💚 Undead İyileştir (1d8+5)", benefit: "Negatif enerji Undead hedefi 1d8+5 HP iyileştirir." },
         { name: "Bless", type: "Spell", level: 1, school: "Enchantment", action: "Standard Action", range: "50 ft", benefit: "Allies gain +1 morale bonus on attack rolls and saves against fear." },
         { name: "Divine Favor", type: "Spell", level: 1, school: "Evocation", action: "Standard Action", range: "Personal", benefit: "You gain +1 per three levels (max +3) luck bonus on attack and weapon damage rolls." },
-        { name: "Cure Moderate Wounds", type: "Spell", level: 2, school: "Conjuration", action: "Standard Action", range: "Touch", damageDice: "2d8+10", benefit: "Cures 2d8 +1/level (max +10) points of damage." },
-        { name: "Inflict Moderate Wounds", type: "Spell", level: 2, school: "Necromancy", action: "Standard Action", range: "Touch", damageDice: "2d8+10", benefit: "Touch attack deals 2d8 +1/level (max +10) negative energy damage (Will half)." },
+        { name: "Cure Moderate Wounds", type: "Spell", level: 2, school: "Conjuration", action: "Standard Action", range: "Touch", damageDice: "2d8+10", dice: "2d8+10", benefit: "Cures 2d8 +1/level (max +10) points of damage." },
+        { name: "↳ Cure Moderate Wounds (Undead Hasarı)", parent: "Cure Moderate Wounds", isChild: true, type: "Spell", level: 2, school: "Conjuration", action: "Free / Variant", range: "Touch", damageDice: "2d8+10", dice: "2d8+10", extraDmg: "2d8+10", effectType: "damage", childButtonLabel: "💀 Undead Hasarı (2d8+10)", benefit: "Undead hedefe 2d8+10 pozitif enerji hasarı verir (Will half)." },
+        { name: "Inflict Moderate Wounds", type: "Spell", level: 2, school: "Necromancy", action: "Standard Action", range: "Touch", damageDice: "2d8+10", dice: "2d8+10", benefit: "Touch attack deals 2d8 +1/level (max +10) negative energy damage (Will half)." },
+        { name: "↳ Inflict Moderate Wounds (Undead İyileştirme)", parent: "Inflict Moderate Wounds", isChild: true, type: "Spell", level: 2, school: "Necromancy", action: "Free / Variant", range: "Touch", damageDice: "2d8+10", dice: "2d8+10", extraDmg: "2d8+10", effectType: "heal", childButtonLabel: "💚 Undead İyileştir (2d8+10)", benefit: "Negatif enerji Undead hedefi 2d8+10 HP iyileştirir." },
         { name: "Spiritual Weapon", type: "Spell", level: 2, school: "Evocation", action: "Standard Action", range: "Medium", damageDice: "1d8+4", benefit: "Magical force weapon attacks on its own for 1d8 +1/3 levels force damage." },
-        { name: "Cure Serious Wounds", type: "Spell", level: 3, school: "Conjuration", action: "Standard Action", range: "Touch", damageDice: "3d8+13", benefit: "Cures 3d8 +1/level (max +15) points of damage." },
-        { name: "Inflict Serious Wounds", type: "Spell", level: 3, school: "Necromancy", action: "Standard Action", range: "Touch", damageDice: "3d8+13", benefit: "Touch attack deals 3d8 +1/level (max +15) negative energy damage (Will half)." },
+        { name: "Searing Light", type: "Spell", level: 3, school: "Evocation", action: "Standard Action", range: "Medium", damageDice: "3d8", dice: "3d8", benefit: "Ranged touch ray deals 1d8/2 levels (max 5d8); 1d6/level (max 10d6) vs undead; 1d8/level (max 10d8) vs light-vulnerable undead; 1d6/2 levels (max 5d6) vs constructs/objects." },
+        { name: "↳ Searing Light (Undead)", parent: "Searing Light", isChild: true, type: "Spell", level: 3, school: "Evocation", action: "Free / Variant", range: "Medium", damageDice: "6d6", dice: "6d6", extraDmg: "6d6", effectType: "damage", childButtonLabel: "💀 Undead (6d6)", benefit: "Undead yaratıklara 1d6/CL (max 10d6) pozitif ışık hasarı verir." },
+        { name: "↳ Searing Light (Işığa Hassas Undead)", parent: "Searing Light", isChild: true, type: "Spell", level: 3, school: "Evocation", action: "Free / Variant", range: "Medium", damageDice: "6d8", dice: "6d8", extraDmg: "6d8", effectType: "damage", childButtonLabel: "🧛 Vampir/Işık Hassas (6d8)", benefit: "Işığa duyarlı Undead yaratıklara 1d8/CL (max 10d8) hasar verir." },
+        { name: "↳ Searing Light (Construct / Cansız)", parent: "Searing Light", isChild: true, type: "Spell", level: 3, school: "Evocation", action: "Free / Variant", range: "Medium", damageDice: "3d6", dice: "3d6", extraDmg: "3d6", effectType: "damage", childButtonLabel: "🗿 Construct / Cansız (3d6)", benefit: "Construct ve cansız nesnelere 1d6/2 CL (max 5d6) hasar verir." },
+        { name: "Cure Serious Wounds", type: "Spell", level: 3, school: "Conjuration", action: "Standard Action", range: "Touch", damageDice: "3d8+13", dice: "3d8+13", benefit: "Cures 3d8 +1/level (max +15) points of damage." },
+        { name: "↳ Cure Serious Wounds (Undead Hasarı)", parent: "Cure Serious Wounds", isChild: true, type: "Spell", level: 3, school: "Conjuration", action: "Free / Variant", range: "Touch", damageDice: "3d8+13", dice: "3d8+13", extraDmg: "3d8+13", effectType: "damage", childButtonLabel: "💀 Undead Hasarı (3d8+13)", benefit: "Undead hedefe 3d8+13 pozitif enerji hasarı verir (Will half)." },
+        { name: "Inflict Serious Wounds", type: "Spell", level: 3, school: "Necromancy", action: "Standard Action", range: "Touch", damageDice: "3d8+13", dice: "3d8+13", benefit: "Touch attack deals 3d8 +1/level (max +15) negative energy damage (Will half)." },
+        { name: "↳ Inflict Serious Wounds (Undead İyileştirme)", parent: "Inflict Serious Wounds", isChild: true, type: "Spell", level: 3, school: "Necromancy", action: "Free / Variant", range: "Touch", damageDice: "3d8+13", dice: "3d8+13", extraDmg: "3d8+13", effectType: "heal", childButtonLabel: "💚 Undead İyileştir (3d8+13)", benefit: "Negatif enerji Undead hedefi 3d8+13 HP iyileştirir." },
         { name: "Prayer", type: "Spell", level: 3, school: "Enchantment", action: "Standard Action", range: "40 ft", benefit: "Allies get +1 luck bonus on most rolls; enemies take -1 penalty." },
-        { name: "Cure Critical Wounds", type: "Spell", level: 4, school: "Conjuration", action: "Standard Action", range: "Touch", damageDice: "4d8+13", benefit: "Cures 4d8 +1/level (max +20) points of damage." },
-        { name: "Inflict Critical Wounds", type: "Spell", level: 4, school: "Necromancy", action: "Standard Action", range: "Touch", damageDice: "4d8+13", benefit: "Touch attack deals 4d8 +1/level (max +20) negative energy damage (Will half)." },
+        { name: "Holy Smite", type: "Spell", level: 4, school: "Evocation", action: "Standard Action", range: "Medium", damageDice: "3d8", dice: "3d8", benefit: "20-ft burst deals 1d8/2 levels (max 5d8) to evil creatures (or 1d6/level, max 10d6 to evil outsiders) and blinds for 1 round (Will partial)." },
+        { name: "↳ Holy Smite (Evil Outsider)", parent: "Holy Smite", isChild: true, type: "Spell", level: 4, school: "Evocation", action: "Free / Variant", range: "Medium", damageDice: "6d6", dice: "6d6", extraDmg: "6d6", effectType: "damage", childButtonLabel: "😈 Evil Outsider (6d6)", benefit: "Evil Outsider yaratıklara 1d6/CL (max 10d6) kutsal hasar verir + 1 tur Blind." },
+        { name: "↳ Holy Smite (Neutral Hedef)", parent: "Holy Smite", isChild: true, type: "Spell", level: 4, school: "Evocation", action: "Free / Variant", range: "Medium", damageDice: "1d8", dice: "1d8", extraDmg: "1d8", effectType: "damage", childButtonLabel: "⚖️ Neutral Hedef (1d8)", benefit: "Tarafsız (Neutral) yaratıklar yarı hasar alır ve kör olmaz." },
+        { name: "Cure Critical Wounds", type: "Spell", level: 4, school: "Conjuration", action: "Standard Action", range: "Touch", damageDice: "4d8+13", dice: "4d8+13", benefit: "Cures 4d8 +1/level (max +20) points of damage." },
+        { name: "↳ Cure Critical Wounds (Undead Hasarı)", parent: "Cure Critical Wounds", isChild: true, type: "Spell", level: 4, school: "Conjuration", action: "Free / Variant", range: "Touch", damageDice: "4d8+13", dice: "4d8+13", extraDmg: "4d8+13", effectType: "damage", childButtonLabel: "💀 Undead Hasarı (4d8+13)", benefit: "Undead hedefe 4d8+13 pozitif enerji hasarı verir (Will half)." },
+        { name: "Inflict Critical Wounds", type: "Spell", level: 4, school: "Necromancy", action: "Standard Action", range: "Touch", damageDice: "4d8+13", dice: "4d8+13", benefit: "Touch attack deals 4d8 +1/level (max +20) negative energy damage (Will half)." },
+        { name: "↳ Inflict Critical Wounds (Undead İyileştirme)", parent: "Inflict Critical Wounds", isChild: true, type: "Spell", level: 4, school: "Necromancy", action: "Free / Variant", range: "Touch", damageDice: "4d8+13", dice: "4d8+13", extraDmg: "4d8+13", effectType: "heal", childButtonLabel: "💚 Undead İyileştir (4d8+13)", benefit: "Negatif enerji Undead hedefi 4d8+13 HP iyileştirir." },
         { name: "Divine Power", type: "Spell", level: 4, school: "Evocation", action: "Standard Action", range: "Personal", benefit: "BAB equals character level, +6 enhancement to STR, and +1 temp HP/level." },
         { name: "Freedom of Movement", type: "Spell", level: 4, school: "Abjuration", action: "Standard Action", range: "Touch", benefit: "Subject moves and attacks normally despite magic or grapple/paralysis." },
         { name: "Righteous Might", type: "Spell", level: 5, school: "Transmutation", action: "Standard Action", range: "Personal", benefit: "Your size increases to Large (+4 STR, +2 CON, +2 natural armor, DR/evil or good)." },
         { name: "Flame Strike", type: "Spell", level: 5, school: "Evocation", action: "Standard Action", range: "Medium", damageDice: "13d6", benefit: "Vertical column of divine fire deals 1d6/level (max 15d6) damage (half fire, half divine)." },
         { name: "Heal", type: "Spell", level: 6, school: "Conjuration", action: "Standard Action", range: "Touch", benefit: "Cures 10 points/level of damage (max 150) and removes nearly all adverse conditions." },
+        { name: "↳ Heal (Undead Hasarı / Harm Etkisi)", parent: "Heal", isChild: true, type: "Spell", level: 6, school: "Conjuration", action: "Free / Variant", range: "Touch", damageDice: "60", dice: "60", extraDmg: "60", effectType: "damage", childButtonLabel: "💀 Undead Hasarı (60)", benefit: "Undead hedefe 10/CL (max 150) pozitif enerji hasarı verir (Will half)." },
         { name: "Holy Word", type: "Spell", level: 7, school: "Evocation", action: "Standard Action", range: "40 ft", benefit: "Deafens, blinds, paralyzes, or kills non-good creatures depending on HD vs Caster Level." },
         { name: "Fire Storm", type: "Spell", level: 8, school: "Evocation", action: "Standard Action", range: "Medium", damageDice: "15d6", benefit: "Deals 1d6/level (max 20d6) fire damage in two 10-ft cubes per level." },
         { name: "Miracle", type: "Spell", level: 9, school: "Evocation", action: "Standard Action", range: "See text", benefit: "Requests direct deity intervention; duplicates any Cleric spell up to 8th or other spell up to 7th." },
@@ -6113,7 +6140,8 @@
         { name: "Steel Wind", type: "Maneuver", level: 1, discipline: "Iron Heart", action: "Standard Action", benefit: "Strike: Make melee attacks against two adjacent opponents you threaten." },
         { name: "Steely Strike", type: "Maneuver", level: 1, discipline: "Iron Heart", action: "Standard Action", benefit: "Strike: +4 bonus on single melee attack roll; opponents get +4 to hit you until next turn." },
         { name: "Moment of Perfect Mind", type: "Maneuver", level: 1, discipline: "Diamond Mind", action: "Immediate Action", benefit: "Counter: Use a Concentration check in place of a Will save." },
-        { name: "Sapphire Nightmare Blade", type: "Maneuver", level: 1, discipline: "Diamond Mind", action: "Standard Action", damageDice: "1d6", benefit: "Strike: Concentration check vs AC; target is flat-footed and takes +1d6 damage." },
+        { name: "Sapphire Nightmare Blade", type: "Maneuver", level: 1, discipline: "Diamond Mind", action: "Standard Action", damageDice: "1d6", dice: "1d6", benefit: "Strike: Concentration check vs AC; target is flat-footed and takes +1d6 damage." },
+        { name: "↳ Sapphire Nightmare Blade (Konsantrasyon Başarısız)", parent: "Sapphire Nightmare Blade", isChild: true, type: "Maneuver", level: 1, discipline: "Diamond Mind", action: "Free / Variant", effectType: "status", childButtonLabel: "⚠️ Konsantrasyon Başarısız (-2 Atk)", benefit: "Konsantrasyon zarı rakibin AC değerini geçemezse normal saldırı -2 ceza ile yapılır, +1d6 ekstra hasar eklenmez." },
         { name: "Sudden Leap", type: "Maneuver", level: 1, discipline: "Tiger Claw", action: "Swift Action", benefit: "Boost: Make a Jump check and move the distance as a swift action." },
         { name: "Mountain Hammer", type: "Maneuver", level: 2, discipline: "Stone Dragon", action: "Standard Action", damageDice: "2d6", benefit: "Strike: Deals +2d6 damage and automatically overcomes all DR and hardness." },
         { name: "Wall of Blades", type: "Maneuver", level: 2, discipline: "Iron Heart", action: "Immediate Action", benefit: "Counter: Replace your AC with an attack roll against a single melee or ranged attack." },
@@ -6149,12 +6177,31 @@
 
       if (!Array.isArray(masterDb)) masterDb = [];
       let addedCount = 0;
+      window.CORE_SPELLS_AND_MANEUVERS_35E = coreArcaneSpells35e;
       const combinedDefaults = [...(Array.isArray(defaultDb) ? defaultDb : []), ...coreArcaneSpells35e];
       combinedDefaults.forEach(defItem => {
-        const exists = masterDb.some(m => (m.name || '').toLowerCase().trim() === (defItem.name || '').toLowerCase().trim());
-        if (!exists) {
-          masterDb.push(defItem);
+        const defName = (defItem.name || '').toLowerCase().trim();
+        const existingItem = masterDb.find(m => (m.name || '').toLowerCase().trim() === defName);
+        if (!existingItem) {
+          const parentName = (defItem.parent && defItem.parent !== '-') ? defItem.parent.replace(/^↳\s*/, '').trim().toLowerCase() : '';
+          const parentIdx = parentName ? masterDb.findIndex(m => (m.name || '').replace(/^↳\s*/, '').trim().toLowerCase() === parentName) : -1;
+          if (parentIdx >= 0) {
+            let insertAt = parentIdx + 1;
+            while (insertAt < masterDb.length && (masterDb[insertAt].parent || '').replace(/^↳\s*/, '').trim().toLowerCase() === parentName) {
+              insertAt++;
+            }
+            masterDb.splice(insertAt, 0, defItem);
+          } else {
+            masterDb.push(defItem);
+          }
           addedCount++;
+        } else {
+          ['parent', 'isChild', 'effectType', 'childButtonLabel', 'selfHpCost', 'unitLabel', 'damageDice', 'dice', 'extraDmg'].forEach(k => {
+            if (defItem[k] !== undefined && existingItem[k] === undefined) {
+              existingItem[k] = defItem[k];
+              addedCount++;
+            }
+          });
         }
       });
       // Ensure cantrips in masterDb have level: 0 explicitly
@@ -10648,7 +10695,7 @@
 
     function resolveSpellEffectiveFormula(s, cl = 6) {
       if (!s) return null;
-      const direct = s.damageDice || findDiceExpression(s.benefit || s.notes || s.description);
+      const direct = s.damageDice || s.dice || s.extraDmg || findDiceExpression(s.benefit || s.notes || s.description);
       if (direct) return direct;
       const n = (s.name || '').toLowerCase().trim();
       if (n === 'heal' || n === 'mass heal') {
@@ -10761,7 +10808,8 @@
             icon: '📖',
             title: name,
             breakdown: `${lvl}. Seviye Hazırlık Slotu Harcandı`,
-            total: '-1 Slot'
+            total: '-1 Slot',
+            actions: buildChildVariantToastActions(s, s)
           });
         }
       } else {
@@ -11138,7 +11186,8 @@
             icon: '✨',
             title: name,
             breakdown: `${lvl}. Seviye İlahi Dua Slotu Harcandı`,
-            total: '-1 Slot'
+            total: '-1 Slot',
+            actions: buildChildVariantToastActions(s, s)
           });
         }
       } else {
@@ -11482,6 +11531,77 @@
       return m ? m[1].replace(/\s+/g, '') : null;
     }
 
+    // Helper: Check if a Master DB entry is a Child row (parent !== '-' or starts with '↳')
+    function isMasterDbChildEntry(item) {
+      if (!item) return false;
+      if (item.isChild) return true;
+      const p = String(item.parent || '').trim();
+      if (p && p !== '-') return true;
+      const n = String(item.name || '').trim();
+      return n.startsWith('↳');
+    }
+
+    // Helper: Extract clean parent spell/maneuver name from item object or roll title
+    function extractCleanParentSpellName(itemOrTitle) {
+      if (!itemOrTitle) return '';
+      if (typeof itemOrTitle === 'object') {
+        if (isMasterDbChildEntry(itemOrTitle) && itemOrTitle.parent && itemOrTitle.parent !== '-') {
+          return String(itemOrTitle.parent).replace(/^↳\s*/, '').trim();
+        }
+        const raw = String(itemOrTitle.name || itemOrTitle.title || '').trim();
+        if (raw) {
+          const arrowParts = raw.replace(/^↳\s*/, '').split('➔');
+          const candidate = arrowParts[0]
+            .replace(/\s*\(\d+\.\s*Seviye.*?\)\s*$/i, '')
+            .replace(/\s+Hasarı$/i, '')
+            .replace(/\s*\(Manevra Kullanıldı\)\s*$/i, '')
+            .trim();
+          return candidate;
+        }
+      }
+      const str = String(itemOrTitle).replace(/^↳\s*/, '');
+      const parts = str.split('➔');
+      return parts[0]
+        .replace(/\s*\(\d+\.\s*Seviye.*?\)\s*$/i, '')
+        .replace(/\s+Hasarı$/i, '')
+        .replace(/\s*\(Manevra Kullanıldı\)\s*$/i, '')
+        .trim();
+    }
+
+    // Helper: Retrieve linked Child entries from Master DB for a Parent spell/maneuver
+    function getSpellOrManeuverChildren(itemOrTitle) {
+      const parentName = extractCleanParentSpellName(itemOrTitle);
+      if (!parentName) return [];
+      const allDb = Array.isArray(masterDb) ? masterDb : [];
+      if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.getChildrenForEntry === 'function') {
+        return RuleMaster.getChildrenForEntry({ name: parentName }, allDb);
+      }
+      const pLower = parentName.toLowerCase();
+      return allDb.filter(other => {
+        if (!other || !other.name) return false;
+        const otherParent = String(other.parent || '').toLowerCase().trim();
+        if (otherParent && otherParent !== '-' && otherParent === pLower) return true;
+        const otherName = String(other.name || '').toLowerCase().trim();
+        if (otherName.startsWith('↳')) {
+          const afterArrow = otherName.replace(/^↳\s*/, '').trim();
+          if (afterArrow.startsWith(pLower)) return true;
+        }
+        return false;
+      });
+    }
+
+    // Helper: Extract short variant label for a Child entry
+    function getShortChildVariantTitle(child, parentName) {
+      if (!child) return 'Alt Etki';
+      let raw = String(child.name || '').replace(/^↳\s*/, '').trim();
+      const pClean = String(parentName || child.parent || '').replace(/^↳\s*/, '').trim();
+      if (pClean && raw.toLowerCase().startsWith(pClean.toLowerCase())) {
+        raw = raw.slice(pClean.length).trim();
+      }
+      raw = raw.replace(/^[:\-–—]\s*/, '').replace(/^\((.*)\)$/, '$1').trim();
+      return raw || String(child.name || 'Alt Etki').replace(/^↳\s*/, '').trim();
+    }
+
     // Classify spell or maneuver effect for Option A interactive HP / Temp HP actions
     function classifySpellOrManeuverEffect(itemOrTitle) {
       if (!itemOrTitle) return 'damage';
@@ -11490,6 +11610,14 @@
       }
       const rawName = (typeof itemOrTitle === 'string' ? itemOrTitle : (itemOrTitle.name || itemOrTitle.title || '')).toLowerCase().trim();
       const rawDesc = (typeof itemOrTitle === 'object' ? (itemOrTitle.benefit || itemOrTitle.notes || itemOrTitle.description || '') : '').toLowerCase().trim();
+
+      // Explicit Undead overrides on Child rows
+      if (rawName.includes('undead hasar') || (rawName.includes('undead') && rawDesc.includes('hasar verir'))) {
+        return 'damage';
+      }
+      if (rawName.includes('undead iyileş') || (rawName.includes('inflict') && rawName.includes('undead'))) {
+        return 'heal';
+      }
 
       // 1. Vampiric / Life Drain (Deals damage AND grants Temp HP / Heal)
       if (
@@ -11600,7 +11728,7 @@
         ];
       }
 
-      if (effectType === 'blood_sacrifice') {
+      if (effectType === 'blood_sacrifice' && getSpellOrManeuverChildren(cleanSourceName).length === 0) {
         return [
           {
             label: '🩸 -5 HP Feda Et (3d6)',
@@ -11621,16 +11749,103 @@
       return [];
     }
 
+    // Build Toast action buttons for all Child entries linked to the Parent in Master DB
+    function buildChildVariantToastActions(currentItem, rootParentItem = null) {
+      const parentRef = rootParentItem || currentItem;
+      const parentName = extractCleanParentSpellName(parentRef);
+      if (!parentName) return [];
+      const children = getSpellOrManeuverChildren(parentName);
+      if (!children || children.length === 0) return [];
+
+      const { cl } = typeof getCasterInfo === 'function' ? getCasterInfo() : { cl: 6 };
+      const currentNameLower = (typeof currentItem === 'object' && currentItem?.name ? currentItem.name : '').toLowerCase().trim();
+
+      return children.map(child => {
+        const childDice = resolveSpellEffectiveFormula(child, cl);
+        const shortTitle = getShortChildVariantTitle(child, parentName);
+        const isCurrent = currentNameLower && currentNameLower === (child.name || '').toLowerCase().trim();
+        const effType = classifySpellOrManeuverEffect(child);
+
+        let btnClass = 'px-2.5 py-1 rounded-lg text-[11px] font-bold transition shadow cursor-pointer inline-flex items-center gap-1 ';
+        if (isCurrent) {
+          btnClass += 'bg-amber-600 text-slate-950 border border-amber-300 ring-1 ring-amber-300';
+        } else if (effType === 'blood_sacrifice_roll' || child.selfHpCost) {
+          btnClass += 'bg-rose-900/90 hover:bg-rose-700 text-rose-100 border border-rose-400/80';
+        } else if (effType === 'heal') {
+          btnClass += 'bg-emerald-900/90 hover:bg-emerald-700 text-emerald-100 border border-emerald-500/80';
+        } else if (effType === 'duration' || effType === 'status') {
+          btnClass += 'bg-purple-900/90 hover:bg-purple-700 text-purple-100 border border-purple-400/80';
+        } else {
+          btnClass += 'bg-amber-950/90 hover:bg-amber-800 text-amber-200 hover:text-white border border-amber-500/80';
+        }
+
+        const displayText = child.childButtonLabel || (childDice ? `${shortTitle} (${childDice})` : shortTitle);
+        const labelHtml = childDice
+          ? `${getD20IconSvg('w-3.5 h-3.5 text-amber-300 shrink-0')}<span>${displayText}</span>`
+          : `<span>${displayText}</span>`;
+
+        return {
+          label: labelHtml,
+          className: btnClass,
+          onClick: () => executeChildSpellOrManeuverVariant(child, parentName)
+        };
+      });
+    }
+
+    // Execute a Child entry from the Toast without spending an additional spell slot
+    function executeChildSpellOrManeuverVariant(child, parentName) {
+      if (!child) return;
+      const pName = parentName || extractCleanParentSpellName(child) || 'Büyü';
+      const shortTitle = getShortChildVariantTitle(child, pName);
+      const { cl } = typeof getCasterInfo === 'function' ? getCasterInfo() : { cl: 6 };
+      const childDice = resolveSpellEffectiveFormula(child, cl);
+
+      // Handle self HP sacrifice if required by Child (e.g. Blade of Blood -5 HP -> 3d6)
+      let sacrificeNote = '';
+      const hpCost = Number(child.selfHpCost) || 0;
+      if (hpCost > 0 && character?.hp) {
+        if (typeof applyDamage === 'function') {
+          applyDamage(hpCost);
+        } else {
+          character.hp.current = (Number(character.hp.current) || 0) - hpCost;
+          saveStateToStorage(true);
+          renderAll();
+        }
+        sacrificeNote = ` • -${hpCost} HP Feda`;
+      }
+
+      if (childDice) {
+        rollSpellOrManeuverFormula(
+          childDice,
+          `${pName} ➔ ${shortTitle}${sacrificeNote}`,
+          child,
+          { name: pName }
+        );
+      } else {
+        const childActions = buildChildVariantToastActions(child, { name: pName });
+        showDiceTopToast({
+          icon: '⚡',
+          title: `${pName} ➔ ${shortTitle}`,
+          breakdown: child.benefit || child.description || 'Alt etki uygulandı',
+          total: child.shortResult || 'Özel Etki',
+          actions: childActions
+        });
+      }
+    }
+
     // Direct dice roller for spells and maneuvers (supports both XdY+Z and flat numbers like '1' or '60')
-    function rollSpellOrManeuverFormula(expr, title, sourceItem = null) {
+    function rollSpellOrManeuverFormula(expr, title, sourceItem = null, rootParentItem = null) {
       if (!expr) return;
       const clean = String(expr).trim();
       const effectType = classifySpellOrManeuverEffect(sourceItem || title);
+      const unitLabel = (sourceItem && typeof sourceItem === 'object' && sourceItem.unitLabel) ? sourceItem.unitLabel : '';
 
       // Flat number case (e.g. Cure Minor Wounds = '1', Heal = '60')
       if (/^\d+$/.test(clean)) {
         const flatVal = parseInt(clean, 10) || 0;
-        const actions = buildOptionAToastActions(effectType, flatVal, (sourceItem && sourceItem.name) || title);
+        const optionAActions = buildOptionAToastActions(effectType, flatVal, (sourceItem && sourceItem.name) || title);
+        const childActions = buildChildVariantToastActions(sourceItem || title, rootParentItem || sourceItem || title);
+        const actions = [...optionAActions, ...childActions];
         const toastIcon = effectType === 'heal' ? '💚' : (effectType === 'vampiric' ? '🩸' : (effectType === 'temp_hp' ? '🛡️' : getD20IconSvg('w-6 h-6 text-amber-400')));
         addDiceHistoryEntry({
           icon: toastIcon,
@@ -11644,8 +11859,8 @@
         showDiceTopToast({
           icon: toastIcon,
           title: title || 'Büyü Etkisi',
-          breakdown: effectType === 'heal' ? `Şifa Miktarı: +${flatVal} HP` : `Etki Değeri: ${flatVal}`,
-          total: effectType === 'heal' ? `+${flatVal}` : flatVal,
+          breakdown: effectType === 'heal' ? `Şifa Miktarı: +${flatVal} HP` : (sourceItem?.benefit || `Etki Değeri: ${flatVal}`),
+          total: effectType === 'heal' ? `+${flatVal}` : (unitLabel ? `${flatVal} ${unitLabel}` : flatVal),
           actions
         });
         return;
@@ -11676,9 +11891,12 @@
       const grandTotal = sumOfDice + mod;
       let breakdownStr = `${count}d${sides} [${rolls.join(', ')}]`;
       if (mod !== 0) breakdownStr += ` ${mod >= 0 ? '+' : '-'} ${Math.abs(mod)}`;
+      if (unitLabel) breakdownStr += ` • ${unitLabel}`;
 
       const onDone = () => {
-        const actions = buildOptionAToastActions(effectType, grandTotal, (sourceItem && sourceItem.name) || title);
+        const optionAActions = buildOptionAToastActions(effectType, grandTotal, (sourceItem && sourceItem.name) || title);
+        const childActions = buildChildVariantToastActions(sourceItem || title, rootParentItem || sourceItem || title);
+        const actions = [...optionAActions, ...childActions];
         const toastIcon = effectType === 'heal'
           ? '💚'
           : (effectType === 'vampiric'
@@ -11700,7 +11918,7 @@
           icon: toastIcon,
           title: title || 'Zar Atışı',
           breakdown: breakdownStr,
-          total: effectType === 'heal' ? `+${grandTotal}` : grandTotal,
+          total: effectType === 'heal' ? `+${grandTotal}` : (unitLabel ? `${grandTotal} ${unitLabel}` : grandTotal),
           actions
         });
       };
@@ -12060,7 +12278,8 @@
             icon: '⚡',
             title: m.name,
             breakdown: `${m.discipline || 'Martial'} manevrası kullanıldı`,
-            total: 'Harcandı'
+            total: 'Harcandı',
+            actions: buildChildVariantToastActions(m, m)
           });
         }
       }
@@ -12478,14 +12697,16 @@
             icon: '🔮',
             title: name,
             breakdown: `"${buffApplied}" aktif edildi • ${lvl}. Seviye Slot Harcandı`,
-            total: `-1 Slot`
+            total: `-1 Slot`,
+            actions: buildChildVariantToastActions(s, s)
           });
         } else {
           showDiceTopToast({
             icon: '🔮',
             title: name,
             breakdown: `${lvl}. Seviye Büyü Slotu Harcandı`,
-            total: `-1 Slot`
+            total: `-1 Slot`,
+            actions: buildChildVariantToastActions(s, s)
           });
         }
       } else {
@@ -12563,6 +12784,7 @@
       const allDb = Array.isArray(masterDb) ? masterDb : [];
 
       const matches = allDb.filter(item => {
+        if (isMasterDbChildEntry(item)) return false;
         const itemType = (item.type || '').toLowerCase();
         const itemCat = (item.category || '').toLowerCase();
 
@@ -12632,6 +12854,12 @@
               <h4 class="font-extrabold text-white text-xs">${item.name}</h4>
               <span class="text-[10px] text-slate-400">(${item.school || item.discipline || item.type || '-'})</span>
               ${item.action ? `<span class="text-[10px] text-amber-300">${item.action}</span>` : ''}
+              ${(() => {
+                const ch = getSpellOrManeuverChildren(item);
+                return ch.length > 0
+                  ? `<span class="badge bg-amber-950/80 text-amber-300 border border-amber-700/70 text-[10px] font-bold" title="Zar atıldığında açılacak alt etkiler: ${ch.map(c => (c.name || '').replace(/^↳\s*/, '')).join(' • ')}">🔗 +${ch.length} Alt Etki</span>`
+                  : '';
+              })()}
             </div>
             <p class="text-[11px] text-slate-300 line-clamp-2">${item.benefit || item.description || item.notes || '-'}</p>
           </div>
