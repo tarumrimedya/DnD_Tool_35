@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
@@ -5977,6 +5977,12 @@
           if (typeof ensureAllSkills === 'function') {
             ensureAllSkills(character);
             updated = true;
+          }
+          if (!character.tomeOfBattle || !Array.isArray(character.tomeOfBattle.readiedManeuvers) || character.tomeOfBattle.readiedManeuvers.length === 0) {
+            if (defaultChar && defaultChar.tomeOfBattle && Array.isArray(defaultChar.tomeOfBattle.readiedManeuvers) && defaultChar.tomeOfBattle.readiedManeuvers.length > 0) {
+              character.tomeOfBattle = JSON.parse(JSON.stringify(defaultChar.tomeOfBattle));
+              updated = true;
+            }
           }
           if (updated) saveStateToStorage(false);
         }
@@ -19104,12 +19110,45 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         });
       }
 
-      // 3. Tome of Battle Maneuvers
+      // 3. Tome of Battle Maneuvers: Kusanan & kullanilan manevralarin tekrar kusanilmasi / tazelenmesi
       let refreshedManeuvers = 0;
-      if (character.tomeOfBattle && Array.isArray(character.tomeOfBattle.readiedManeuvers)) {
-        character.tomeOfBattle.readiedManeuvers.forEach(m => {
+      let reReadiedCount = 0;
+      if (!character.tomeOfBattle) character.tomeOfBattle = {};
+      if (!Array.isArray(character.tomeOfBattle.readiedManeuvers)) character.tomeOfBattle.readiedManeuvers = [];
+      if (!Array.isArray(character.tomeOfBattle.maneuversKnown)) {
+        character.tomeOfBattle.maneuversKnown = character.tomeOfBattle.readiedManeuvers.map(m => ({ ...m }));
+      }
+
+      // A. Kusanan ve kullanilmis (expended) tum manevralar tekrar kusanilir / hazir hale getirilir
+      character.tomeOfBattle.readiedManeuvers.forEach(m => {
+        if (m.expended) {
           m.expended = false;
           refreshedManeuvers++;
+        }
+      });
+
+      // B. Bos kalan hazir yuvalar varsa, bilinen manevralar havuzundan (maneuversKnown) otomatik tekrar kusanilir
+      const initInfo = typeof getInitiatorInfo === 'function' ? getInitiatorInfo() : { maxReadied: 3 };
+      const maxReadied = initInfo.maxReadied || 3;
+      if (character.tomeOfBattle.readiedManeuvers.length < maxReadied && Array.isArray(character.tomeOfBattle.maneuversKnown)) {
+        const readiedNames = character.tomeOfBattle.readiedManeuvers.map(m => (m.name || '').toLowerCase().trim());
+        for (const known of character.tomeOfBattle.maneuversKnown) {
+          if (character.tomeOfBattle.readiedManeuvers.length >= maxReadied) break;
+          const kName = (known.name || '').toLowerCase().trim();
+          if (!readiedNames.includes(kName)) {
+            character.tomeOfBattle.readiedManeuvers.push({ ...known, expended: false });
+            readiedNames.push(kName);
+            reReadiedCount++;
+          }
+        }
+      }
+
+      // C. Aktif modifiyerlerde gecici acik kalan manevralar sifirlanir
+      if (Array.isArray(character.activeModifiers)) {
+        character.activeModifiers.forEach(mod => {
+          if (mod.source === 'Maneuver' && mod.active) {
+            mod.active = false;
+          }
         });
       }
 
@@ -19182,7 +19221,8 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
       const details = [];
       details.push(isFullHeal ? `Can Full (${character.hp.current}/${maxHp})` : `+${hpGain} HP Doğal İyileşme (${character.hp.current}/${maxHp})`);
-      details.push("Tüm büyü ve manevra slotları yenilendi");
+      const totalReadyLong = (character.tomeOfBattle?.readiedManeuvers || []).filter(m => !m.expended).length;
+      details.push("T\u00FCm b\u00FCy\u00FCler ve " + totalReadyLong + " manevra tekrar ku\u015Fan\u0131ld\u0131");
       if (refreshedDailyItems > 0 || refreshedDailyFeats > 0) details.push(`${refreshedDailyItems + refreshedDailyFeats} Günlük Şarj/Feat yenilendi`);
       if (removedConditions > 0) details.push("Yorgunluk/Debufflar silindi");
       if (hasRingOfSustenance) details.push("💍 2 Saat (Ring of Sustenance)");
@@ -19232,12 +19272,45 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
     function executeShortRest(minutes = 5) {
       if (!character) return;
 
-      // 1. Maneuver Recovery
+      // 1. Tome of Battle Maneuvers: Kusanan & kullanilan manevralarin tekrar kusanilmasi / tazelenmesi
       let refreshedManeuvers = 0;
-      if (character.tomeOfBattle && Array.isArray(character.tomeOfBattle.readiedManeuvers)) {
-        character.tomeOfBattle.readiedManeuvers.forEach(m => {
+      let reReadiedCount = 0;
+      if (!character.tomeOfBattle) character.tomeOfBattle = {};
+      if (!Array.isArray(character.tomeOfBattle.readiedManeuvers)) character.tomeOfBattle.readiedManeuvers = [];
+      if (!Array.isArray(character.tomeOfBattle.maneuversKnown)) {
+        character.tomeOfBattle.maneuversKnown = character.tomeOfBattle.readiedManeuvers.map(m => ({ ...m }));
+      }
+
+      // A. Kusanan ve kullanilmis (expended) tum manevralar tekrar kusanilir / hazir hale getirilir
+      character.tomeOfBattle.readiedManeuvers.forEach(m => {
+        if (m.expended) {
           m.expended = false;
           refreshedManeuvers++;
+        }
+      });
+
+      // B. Bos kalan hazir yuvalar varsa, bilinen manevralar havuzundan (maneuversKnown) otomatik tekrar kusanilir
+      const initInfo = typeof getInitiatorInfo === 'function' ? getInitiatorInfo() : { maxReadied: 3 };
+      const maxReadied = initInfo.maxReadied || 3;
+      if (character.tomeOfBattle.readiedManeuvers.length < maxReadied && Array.isArray(character.tomeOfBattle.maneuversKnown)) {
+        const readiedNames = character.tomeOfBattle.readiedManeuvers.map(m => (m.name || '').toLowerCase().trim());
+        for (const known of character.tomeOfBattle.maneuversKnown) {
+          if (character.tomeOfBattle.readiedManeuvers.length >= maxReadied) break;
+          const kName = (known.name || '').toLowerCase().trim();
+          if (!readiedNames.includes(kName)) {
+            character.tomeOfBattle.readiedManeuvers.push({ ...known, expended: false });
+            readiedNames.push(kName);
+            reReadiedCount++;
+          }
+        }
+      }
+
+      // C. Aktif modifiyerlerde gecici acik kalan manevralar sifirlanir
+      if (Array.isArray(character.activeModifiers)) {
+        character.activeModifiers.forEach(mod => {
+          if (mod.source === 'Maneuver' && mod.active) {
+            mod.active = false;
+          }
         });
       }
 
@@ -19288,7 +19361,12 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       renderAll();
 
       const summaryParts = [];
-      if (refreshedManeuvers > 0) summaryParts.push(`${refreshedManeuvers} manevra tazelendi`);
+      const totalReadyShort = (character.tomeOfBattle?.readiedManeuvers || []).filter(m => !m.expended).length;
+      if (refreshedManeuvers > 0 || reReadiedCount > 0) {
+        summaryParts.push((refreshedManeuvers + reReadiedCount) + " manevra tekrar ku\u015Fan\u0131ld\u0131 / haz\u0131r");
+      } else {
+        summaryParts.push(totalReadyShort + " manevra sava\u015Fa haz\u0131r");
+      }
       if (nonlethalHealed > 0) summaryParts.push(`${nonlethalHealed} Nonlethal HP iyileşti`);
       if (downgradedExhausted) summaryParts.push("Exhausted durumu Fatigued durumuna indirgendi");
       if (expiredBuffs > 0) summaryParts.push(`${expiredBuffs} süreli buff sona erdi`);
@@ -19314,8 +19392,14 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       if (!character) return;
       character.encounterRound = 1;
 
-      if (character.tomeOfBattle && Array.isArray(character.tomeOfBattle.readiedManeuvers)) {
+      if (!character.tomeOfBattle) character.tomeOfBattle = {};
+      if (Array.isArray(character.tomeOfBattle.readiedManeuvers)) {
         character.tomeOfBattle.readiedManeuvers.forEach(m => m.expended = false);
+      }
+      if (Array.isArray(character.activeModifiers)) {
+        character.activeModifiers.forEach(mod => {
+          if (mod.source === 'Maneuver' && mod.active) mod.active = false;
+        });
       }
 
       if (Array.isArray(character.buffs)) {
