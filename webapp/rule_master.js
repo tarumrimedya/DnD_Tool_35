@@ -1,4 +1,4 @@
-/**
+﻿/**
  * D&D 3.5e Rule Master & Master_DB Management Engine
  * Features:
  * 1. Full CRUD for Master_DB with 29-column architecture
@@ -1343,6 +1343,16 @@ const RuleMaster = {
     this.queryAiRule();
   },
 
+  cleanArrow(str) {
+    if (!str) return '';
+    return String(str).replace(/^[\u21B3\u2192\s\u00E2\u2020\u00B3\?]+\s*/, '').trim();
+  },
+
+  formatChildName(str) {
+    const clean = this.cleanArrow(str);
+    return clean ? `\u21B3 ${clean}` : '';
+  },
+
   // Normalize any AI or raw payload object into canonical Master_DB 29-column + child entry
   normalizeEntry(raw, isRowArray = false) {
     if (!raw) return null;
@@ -1351,11 +1361,14 @@ const RuleMaster = {
     if (isRowArray && Array.isArray(raw)) {
       // Legacy 29-column row fallback
       let rawName = String(raw[0] || '').trim();
-      const parentVal = String(raw[3] || '-').trim();
-      const isChild = rawName.startsWith('â†³') || (parentVal !== '' && parentVal !== '-');
-      if (isChild && !rawName.startsWith('â†³') && parentVal && parentVal !== '-') {
-        rawName = `â†³ ${rawName}`;
-      }
+      let parentVal = String(raw[3] || '-').trim();
+      if (parentVal === '-' || parentVal === '') parentVal = '-';
+      else parentVal = this.cleanArrow(parentVal);
+
+      const isChild = (parentVal !== '-') || /^[\u21B3\u2192\u00E2\u2020\u00B3\?]/.test(rawName);
+      const cleanName = this.cleanArrow(rawName);
+      rawName = isChild ? this.formatChildName(cleanName) : cleanName;
+
       const cat = String(raw[1] || 'Feat').trim();
       let normType = cat;
       const catLower = cat.toLowerCase();
@@ -1423,11 +1436,13 @@ const RuleMaster = {
     } else {
       // Full JSON Object from Gemini
       let rawName = String(raw.name || '').trim();
-      const parentVal = String(raw.parent || '-').trim();
-      const isChild = Boolean(raw.isChild) || rawName.startsWith('â†³') || (parentVal !== '' && parentVal !== '-');
-      if (isChild && !rawName.startsWith('â†³') && parentVal && parentVal !== '-') {
-        rawName = `â†³ ${rawName}`;
-      }
+      let parentVal = String(raw.parent || '-').trim();
+      if (parentVal === '-' || parentVal === '') parentVal = '-';
+      else parentVal = this.cleanArrow(parentVal);
+
+      const isChild = Boolean(raw.isChild) || (parentVal !== '-') || /^[\u21B3\u2192\u00E2\u2020\u00B3\?]/.test(rawName);
+      const cleanName = this.cleanArrow(rawName);
+      rawName = isChild ? this.formatChildName(cleanName) : cleanName;
 
       const rawType = String(raw.type || raw.category || 'Feat').trim();
       let normType = rawType;
@@ -1445,56 +1460,38 @@ const RuleMaster = {
       else if (typeLower.includes('wondrous')) normType = 'Wondrous Item';
       else if (typeLower.includes('ring')) normType = 'Ring';
 
-      let slotVal = String(raw.slot || 'None').trim();
-      if (slotVal === 'Two-Hand' || slotVal === 'Both Hands') slotVal = 'Two-Handed';
-      if (normType === 'Spell' || normType === 'Maneuver' || normType === 'Stance' || normType === 'Feat' || normType === 'Consumable' || normType === 'Potion' || normType === 'Scroll' || normType === 'Wand') {
-        slotVal = 'None';
+      let diceVal = String(raw.dice || raw.damageDice || raw.extraDmg || '').trim();
+      const cleanDiceMatch = diceVal.match(/(\d+d\d+(?:\s*[\+\-]\s*\d+)?)/i);
+      const cleanDice = cleanDiceMatch ? cleanDiceMatch[1].replace(/\s+/g, '') : (diceVal || (normType === 'Weapon' ? '1d8' : ''));
+
+      let critMinVal = Number(raw.critMin);
+      if (isNaN(critMinVal) || critMinVal < 10 || critMinVal > 20) critMinVal = 20;
+
+      let critMultVal = Number(raw.critMult);
+      if (isNaN(critMultVal) || critMultVal < 2 || critMultVal > 5) critMultVal = 2;
+
+      let levelVal = raw.level;
+      if (levelVal !== undefined && levelVal !== null && String(levelVal).trim() !== '' && String(levelVal).trim() !== '-') {
+        levelVal = Number(levelVal);
+        if (isNaN(levelVal)) levelVal = '';
+      } else {
+        levelVal = '';
       }
 
-      // Level normalization (0-9 integer)
-      let levelVal = raw.level !== undefined && raw.level !== null && raw.level !== '' ? raw.level : '';
-      if (typeof levelVal === 'string') {
-        const lvlMatch = levelVal.match(/(\d+)/);
-        levelVal = lvlMatch ? Number(lvlMatch[1]) : '';
-      } else if (typeof levelVal === 'number') {
-        levelVal = Math.round(levelVal);
-      }
-
-      // Clean rollable dice expression (extract e.g. '3d8' from '1d8/2 CL (max 5d8)' if needed)
-      let diceRaw = String(raw.dice || raw.extraDmg || raw.damageDice || '').trim();
-      let cleanDice = diceRaw;
-      if (diceRaw && !diceRaw.match(/^\d+d\d+(?:\s*[\+\-]\s*\d+)?$/i)) {
-        const mDice = diceRaw.match(/(\d+d\d+(?:\s*[\+\-]\s*\d+)?)/i);
-        if (mDice) cleanDice = mDice[1].replace(/\s+/g, '');
-      }
-      if (!cleanDice && normType === 'Weapon') cleanDice = '1d8';
-
-      // Tags normalization
-      let tags = [];
-      if (Array.isArray(raw.tags)) {
-        tags = raw.tags.map(t => String(t).trim().toLowerCase()).filter(Boolean);
-      } else if (typeof raw.tags === 'string' && raw.tags.trim()) {
-        tags = raw.tags.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
-      }
-      if (!tags.includes(normType.toLowerCase())) tags.push(normType.toLowerCase());
+      const tags = Array.isArray(raw.tags) ? raw.tags.map(t => String(t).trim().toLowerCase()) : [normType.toLowerCase()];
       if (isChild && !tags.includes('child')) tags.push('child');
-
-      const descText = String(raw.benefit || raw.description || '').trim();
+      if (normType && !tags.includes(normType.toLowerCase())) tags.push(normType.toLowerCase());
 
       entry = {
         name: rawName,
         type: normType,
-        slot: slotVal,
+        slot: String(raw.slot || 'None').trim(),
         parent: parentVal,
-        prereq: String(raw.prereq || '-').trim(),
-        source: String(raw.source || (normType === 'Maneuver' || normType === 'Stance' ? 'ToB p.' : 'PHB p.')).trim(),
-        benefit: descText,
-        description: descText,
+        source: String(raw.source || 'Core 3.5e').trim(),
+        benefit: String(raw.benefit || raw.description || '').trim(),
+        description: String(raw.description || raw.benefit || '').trim(),
         bonusType: String(raw.bonusType || 'Untyped').trim(),
-        scope: String(raw.scope || (normType === 'Spell' ? 'Spells' : (normType === 'Weapon' ? 'Melee Only' : 'None / General'))).trim(),
-        role: String(raw.role || (isChild ? 'Secondary Power' : (normType === 'Spell' ? 'Offense / Spell' : (normType === 'Maneuver' ? 'Offense / Strike' : (normType === 'Stance' ? 'Tactical / Stance' : 'General'))))).trim(),
-
-        // Stats
+        scope: String(raw.scope || 'None / General').trim(),
         strBonus: Number(raw.strBonus) || '',
         dexBonus: Number(raw.dexBonus) || '',
         conBonus: Number(raw.conBonus) || '',
@@ -1511,78 +1508,44 @@ const RuleMaster = {
         skillBonus: Number(raw.skillBonus) || '',
         clBonus: Number(raw.clBonus) || '',
         speedBonus: Number(raw.speedBonus) || '',
-
-        // Combat & Action
         extraDmg: cleanDice,
         dice: cleanDice,
-        damageDice: (normType === 'Spell' || normType === 'Maneuver' || normType === 'Stance') ? cleanDice : '',
-        critMin: Number(raw.critMin) || 20,
-        critMult: Number(raw.critMult) || 2,
+        damageDice: cleanDice,
+        critMin: critMinVal,
+        critMult: critMultVal,
         dmgType: String(raw.dmgType || '').trim(),
-        action: String(raw.action || (normType === 'Stance' ? 'Swift Action' : (normType === 'Spell' || normType === 'Maneuver' ? 'Standard Action' : 'Passive'))).trim(),
-        duration: String(raw.duration || (normType === 'Stance' ? 'Stance (Continuous)' : (normType === 'Spell' ? 'Instantaneous' : 'Continuous'))).trim(),
-        range: String(raw.range || (normType === 'Spell' ? 'Close' : (normType === 'Maneuver' ? 'Melee Attack' : '-'))).trim(),
+        action: String(raw.action || 'Passive').trim(),
+        duration: String(raw.duration || 'Continuous').trim(),
         weight: Number(raw.weight) || 0,
         cost: Number(raw.cost) || 0,
-
-        // Magic / Martial specifics
-        school: normType === 'Spell' ? String(raw.school || 'Universal').trim() : '-',
+        role: String(raw.role || (isChild ? 'Secondary Power' : (normType === 'Spell' ? 'Offense / Spell' : (normType === 'Maneuver' ? 'Offense / Strike' : (normType === 'Stance' ? 'Tactical / Stance' : 'General'))))).trim(),
+        prereq: String(raw.prereq || '-').trim(),
+        discipline: String(raw.discipline || '-').trim(),
+        school: String(raw.school || '-').trim(),
         level: levelVal,
-        discipline: (normType === 'Maneuver' || normType === 'Stance') ? String(raw.discipline || 'Iron Heart').trim() : '-',
         tags: tags,
-
-        // Child specific fields
+        range: String(raw.range || '-').trim(),
         isChild: isChild,
         effectType: raw.effectType || (isChild ? 'damage' : undefined),
-        childButtonLabel: raw.childButtonLabel || undefined,
-        selfHpCost: raw.selfHpCost !== undefined && raw.selfHpCost !== null && raw.selfHpCost !== '' ? Number(raw.selfHpCost) : undefined,
-        unitLabel: raw.unitLabel || undefined
+        childButtonLabel: raw.childButtonLabel ? String(raw.childButtonLabel).trim() : undefined,
+        selfHpCost: Number(raw.selfHpCost) || undefined,
+        unitLabel: raw.unitLabel ? String(raw.unitLabel).trim() : undefined
       };
     }
 
-    // Auto-detect School if missing for Spells
-    if (entry.type === 'Spell' && (!entry.school || entry.school === '-')) {
-      const bLower = (entry.benefit || '').toLowerCase();
-      const schools = ['abjuration', 'conjuration', 'divination', 'enchantment', 'evocation', 'illusion', 'necromancy', 'transmutation', 'universal'];
-      for (const s of schools) {
-        if (bLower.includes(s)) {
-          entry.school = s.charAt(0).toUpperCase() + s.slice(1);
-          break;
-        }
-      }
-    }
-
-    // Auto-detect Discipline if missing for Maneuvers/Stances
-    if ((entry.type === 'Maneuver' || entry.type === 'Stance') && (!entry.discipline || entry.discipline === '-')) {
-      const bLower = (entry.benefit || '').toLowerCase();
-      const disciplines = ['desert wind', 'devoted spirit', 'diamond mind', 'iron heart', 'setting sun', 'shadow hand', 'stone dragon', 'tiger claw', 'white raven'];
-      for (const d of disciplines) {
-        if (bLower.includes(d)) {
-          entry.discipline = d.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-          break;
-        }
+    if (entry.isChild) {
+      if (!entry.role || entry.role === 'General') entry.role = 'Secondary Power';
+      if (!entry.childButtonLabel && entry.name) {
+        const afterArrow = this.cleanArrow(entry.name);
+        const parenMatch = afterArrow.match(/\(([^)]+)\)/);
+        entry.childButtonLabel = parenMatch ? parenMatch[1].trim() : afterArrow;
       }
     }
 
     return entry;
   },
 
-  convertAiPayloadToEntries(payload) {
-    if (!payload) return [];
-    let list = [];
-    if (Array.isArray(payload.entries)) {
-      list = payload.entries.map(e => this.normalizeEntry(e, false));
-    } else if (Array.isArray(payload.rows)) {
-      list = payload.rows.map(r => this.normalizeEntry(r, true));
-    } else if (Array.isArray(payload)) {
-      list = payload.map(item => this.normalizeEntry(item, Array.isArray(item)));
-    } else if (typeof payload === 'object') {
-      list = [this.normalizeEntry(payload, false)];
-    }
-    return list.filter(Boolean);
-  },
-
-  async fetchSingleAiRuleEntries(query, categoryHint, apiKey, statusTextEl = null) {
+  async fetchSingleAiRuleObjects(query, categoryHint, apiKey, statusTextEl = null) {
     const promptText = `You are a master D&D 3.5e Rule Arbiter and Database Architect.
 User query: "${query}" (Category Hint: "${categoryHint}").
 
@@ -1592,193 +1555,224 @@ NEVER fabricate, invent, or hallucinate a rule, feat, spell, magic item, or book
 2. MANDATORY TYPO / FUZZY SPELLING CORRECTION:
 User input frequently contains typos or phonetic misspellings (e.g. "clave" -> "Cleave", "gret cleve" -> "Great Cleave", "power atac" -> "Power Attack", "shok trooper" -> "Shock Trooper", "flometong" -> "Flametongue", "hast" -> "Haste", "moutain hamer" -> "Mountain Hammer").
 You MUST recognize the intended canonical element and output the real, correct official D&D 3.5e element!
-3. SOURCE INTEGRITY:
-Cite the exact real book and page (e.g. 'PHB p.98', 'MIC p.128', 'DMG p.224', 'CW p.112', 'ToB p.84', 'SpC p.150', 'PHB2 p.103'). Never cite a book that doesn't contain that rule.
+3. PARENT & CONDITIONAL CHILD VARIANTS (CRITICAL FOR COMBAT / TOAST / SPELL VARIATIONS):
+When querying an item, spell, maneuver, or feat with conditional variants, sub-effects, or multi-modes (e.g. Searing Light vs Undead / Construct, Blade of Blood with self-damage, Pyrotechnics fireworks vs smoke, Energy Substitution elements, Boots of Speed active mode), return BOTH:
+- The primary parent item with all base attributes
+- 1 or more Child objects starting with '\\u21B3 ' (e.g. '\\u21B3 Searing Light (Undead)') with "parent" set to the exact parent entry name, "isChild": true, "dice": clean condition dice formula, and appropriate "effectType" ('damage', 'heal', 'duration', 'status', 'blood_sacrifice_roll') and "childButtonLabel" (e.g. 'Undead (6d6)').
 
-TASK:
-Resolve the target D&D 3.5e game element into an array of fully populated JSON objects adhering strictly to the Master_DB JSON schema below.
-If the item has multiple distinct powers (e.g. passive weapon/item stats + on-hit damage + 1/day active spell power), OR if a Spell/Maneuver has conditional damage/effects depending on target creature type, save result, HP sacrifice, or sub-mode (e.g. Searing Light vs Undead/Constructs, Chill Touch vs Undead, Blade of Blood +5 HP sacrifice for 3d6, Disintegrate 5d6 Fort partial, Horrid Wilting vs Plants/Water Elementals, Pyrotechnics Fireworks vs Smoke), produce:
-- 1 Parent object with the base effect and primary dice formula.
-- 1 or more Child objects starting with 'â†³ ' (e.g. 'â†³ Searing Light (Undead)') with "parent" set to the exact parent entry name, "isChild": true, "dice": clean condition dice formula, and appropriate "effectType" ('damage', 'heal', 'duration', 'status', 'blood_sacrifice_roll') and "childButtonLabel" (e.g. 'Undead (6d6)').
-
-JSON OBJECT SCHEMA (Return valid JSON only matching this format):
+JSON OUTPUT SPECIFICATION:
+Return valid JSON only matching this schema:
 {
   "entries": [
     {
       "name": "Searing Light",
-      "type": "Spell", // 'Weapon', 'Shield', 'Armor', 'Ring', 'Wondrous Item', 'Scroll', 'Potion', 'Wand', 'Staff', 'Slotless Item', 'Spell', 'Maneuver', 'Stance', 'Consumable', 'Special Ability', 'Feat'
-      "slot": "None", // Official 14 body slots ('Armor', 'Shield', 'Main Hand', 'Off Hand', 'Both Hands', 'Head', 'Eyes', 'Neck', 'Torso', 'Body', 'Waist', 'Shoulders', 'Arms', 'Hands', 'Ring', 'Feet') or 'Slotless' or 'None'. Spells/Maneuvers/Feats/Consumables must be 'None'.
+      "type": "Spell",
+      "level": 3,
+      "school": "Evocation",
+      "discipline": "-",
+      "slot": "None",
       "parent": "-",
-      "prereq": "-", // Prerequisites for feats or maneuvers, or '-'
-      "source": "PHB p.275", // Exact official book and page citation
-      "benefit": "Ray of divine light deals 1d8/2 CL (max 5d8); deals 1d6/CL (max 10d6) to undead; deals 1d8/CL (max 10d8) to light-vulnerable undead; deals 1d6/2 CL (max 5d6) to constructs/objects.",
-      "description": "Ray of divine light deals 1d8/2 CL (max 5d8); deals 1d6/CL (max 10d6) to undead; deals 1d8/CL (max 10d8) to light-vulnerable undead; deals 1d6/2 CL (max 5d6) to constructs/objects.",
-      "bonusType": "Untyped", // 'Alchemical', 'Armor', 'Circumstance', 'Competence', 'Deflection', 'Dodge', 'Enhancement', 'Inherent', 'Insight', 'Luck', 'Morale', 'Natural Armor', 'Resistance', 'Sacred', 'Shield', 'Size', 'Untyped'
-      "scope": "Spells", // 'All Attacks', 'Melee Only', 'Ranged Only', 'Thrown Only', 'Slashing', 'Piercing', 'Bludgeoning', 'Spells', 'None / General'
-      "role": "Offense / Spell", // 'Offense / Spell', 'Buff / Spell', 'Defense / Spell', 'Healing / Spell', 'Control / Spell', 'Secondary Power', 'Offense / Strike', 'Defense / Counter', 'Tactical / Boost', 'Tactical / Stance', 'Offense / Attack'
-      "level": 3, // CRITICAL: 0-9 for Spells/Cantrips, 1-9 for Maneuvers/Stances (number or null)
-      "school": "Evocation", // CRITICAL: 'Abjuration', 'Conjuration', 'Divination', 'Enchantment', 'Evocation', 'Illusion', 'Necromancy', 'Transmutation', 'Universal', or '-'
-      "discipline": "-", // CRITICAL for Tome of Battle: 'Devoted Spirit', 'Desert Wind', 'Diamond Mind', 'Iron Heart', 'Setting Sun', 'Shadow Hand', 'Stone Dragon', 'Tiger Claw', 'White Raven', or '-'
-      "range": "Medium (100 ft + 10 ft/lvl)", // Spells/powers range ('Personal', 'Touch', 'Close (25 ft + 5 ft/2 lvls)', 'Medium (100 ft + 10 ft/lvl)', 'Long (400 ft + 40 ft/lvl)', '60 ft' etc.)
-      "action": "Standard Action", // 'Passive', 'Free Action', 'Swift Action', 'Immediate Action', 'Move Action', 'Standard Action', 'Full-Round Action'
-      "duration": "Instantaneous", // 'Passive', 'Continuous', '1 round/level', '1 min/level', '1 hour/level', 'Instantaneous', 'Stance (Continuous)'
-      "dice": "3d8", // CRITICAL: clean rollable dice expression ONLY (e.g. '3d8', '6d6', '1d8+5', '2d6', '1d4+1'). Do NOT write text, formulas, or scaling words here! Put scaling details in benefit!
-      "extraDmg": "3d8",
+      "source": "Player's Handbook v.3.5, p. 275",
+      "benefit": "Ray deals 1d8/2 levels (max 5d8) to living creatures; 1d6/level (max 10d6) to undead; 1d8/level (max 10d8) to undead vulnerable to bright light; 1d6/2 levels (max 5d6) to constructs.",
+      "description": "Ray deals 1d8/2 levels (max 5d8) to living creatures; 1d6/level (max 10d6) to undead; 1d8/level (max 10d8) to undead vulnerable to bright light; 1d6/2 levels (max 5d6) to constructs.",
+      "bonusType": "Untyped",
+      "scope": "Target: Ray",
+      "range": "Medium (100 ft. + 10 ft./level)",
+      "strBonus": 0,
+      "dexBonus": 0,
+      "conBonus": 0,
+      "intBonus": 0,
+      "wisBonus": 0,
+      "chaBonus": 0,
+      "acBonus": 0,
+      "hpBonus": 0,
+      "attBonus": 0,
+      "dmgBonus": 0,
+      "fortBonus": 0,
+      "refBonus": 0,
+      "willBonus": 0,
+      "skillBonus": 0,
+      "clBonus": 0,
+      "speedBonus": 0,
+      "dice": "3d8",
       "damageDice": "3d8",
-      "dmgType": "Divine Light", // 'Slashing', 'Piercing', 'Bludgeoning', 'Fire', 'Cold', 'Electricity', 'Acid', 'Force', 'Positive Energy', 'Negative Energy', 'Divine Light', 'None'
-      "critMin": 20, // 18, 19, or 20 for weapons
-      "critMult": 2, // 2, 3, or 4 for weapons
-      "weight": 0, // lbs (number)
-      "cost": 0, // gp (number)
-      "strBonus": 0, "dexBonus": 0, "conBonus": 0, "intBonus": 0, "wisBonus": 0, "chaBonus": 0,
-      "acBonus": 0, "hpBonus": 0, "attBonus": 0, "dmgBonus": 0,
-      "fortBonus": 0, "refBonus": 0, "willBonus": 0, "skillBonus": 0, "clBonus": 0, "speedBonus": 0,
-      "tags": ["spell", "divine", "evocation", "ray", "undead"], // lowercase strings
-      "isChild": false,
-      "effectType": "", // 'damage', 'heal', 'duration', 'status', 'blood_sacrifice_roll'
-      "childButtonLabel": "", // short label for toast buttons, e.g. 'Undead (6d6)'
-      "selfHpCost": 0, // number, e.g. 5 for Blade of Blood
-      "unitLabel": "" // e.g. 'Tur Blinded'
+      "critMin": 20,
+      "critMult": 2,
+      "dmgType": "Untyped / Divine Light",
+      "action": "Standard Action",
+      "duration": "Instantaneous",
+      "weight": 0,
+      "cost": 0,
+      "role": "Offense / Spell",
+      "prereq": "-",
+      "tags": ["spell", "evocation", "divine"],
+      "isChild": false
+    },
+    {
+      "name": "\\u21B3 Searing Light (Undead)",
+      "type": "Spell",
+      "level": 3,
+      "school": "Evocation",
+      "discipline": "-",
+      "slot": "None",
+      "parent": "Searing Light",
+      "source": "Player's Handbook v.3.5, p. 275",
+      "benefit": "Deals 1d6 per caster level (max 10d6) to undead creatures.",
+      "description": "Deals 1d6 per caster level (max 10d6) to undead creatures.",
+      "bonusType": "Untyped",
+      "scope": "Target: Undead",
+      "range": "Medium (100 ft. + 10 ft./level)",
+      "dice": "6d6",
+      "damageDice": "6d6",
+      "critMin": 20,
+      "critMult": 2,
+      "dmgType": "Untyped / Divine Light",
+      "action": "Standard Action",
+      "duration": "Instantaneous",
+      "role": "Secondary Power",
+      "isChild": true,
+      "effectType": "damage",
+      "childButtonLabel": "Undead (6d6)"
     }
   ]
 }`;
 
-    const availableModels = await this.getAvailableGeminiModels(apiKey);
-    let successResponse = null;
-    let lastError = null;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    const payload = {
+      contents: [{ parts: [{ text: promptText }] }],
+      generationConfig: {
+        temperature: 0.1,
+        responseMimeType: "application/json"
+      }
+    };
 
-    for (const model of availableModels) {
-      if (statusTextEl) statusTextEl.textContent = `"${query}" â” ${model} sorgulanÄ±yor...`;
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
-      try {
-        const resp = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: promptText }] }],
-            generationConfig: {
-              response_mime_type: 'application/json',
-              temperature: 0.0
-            }
-          })
-        });
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
 
-        if (resp.ok) {
-          const json = await resp.json();
-          const rawText = json.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (rawText) {
-            try {
-              const cleanText = this.cleanJsonText(rawText);
-              successResponse = JSON.parse(cleanText);
-              break;
-            } catch (pErr) {
-              lastError = 'JSON Ã‡Ã¶zÃ¼mleme hatasÄ±: ' + pErr.message;
-            }
-          }
-        } else {
-          const errData = await resp.json().catch(() => ({}));
-          lastError = errData.error?.message || `HTTP ${resp.status}`;
-        }
-      } catch (netErr) {
-        lastError = netErr.message;
+    if (!response.ok) {
+      const errJson = await response.json().catch(() => ({}));
+      throw new Error(`Gemini API Hatası: ${response.status} ${errJson.error?.message || response.statusText}`);
+    }
+
+    const data = await response.json();
+    const rawAiText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!rawAiText) throw new Error('Yapay zekadan boş yanıt döndü.');
+
+    let parsed = null;
+    try {
+      parsed = JSON.parse(rawAiText);
+    } catch (e) {
+      const match = rawAiText.match(/\{[\s\S]*\}/);
+      if (match) {
+        parsed = JSON.parse(match[0]);
+      } else {
+        throw new Error('Yapay zeka yanıtı geçerli JSON formatında değil.');
       }
     }
 
-    if (successResponse) {
-      const parsedEntries = this.convertAiPayloadToEntries(successResponse);
-      if (parsedEntries.length) return parsedEntries;
+    let rawList = [];
+    if (parsed && Array.isArray(parsed.entries)) {
+      rawList = parsed.entries;
+    } else if (Array.isArray(parsed)) {
+      rawList = parsed;
+    } else if (parsed && typeof parsed === 'object') {
+      rawList = [parsed];
     }
-    throw new Error(lastError || 'Bilinmeyen API yanÄ±tÄ±');
-  },
 
-  // Backward-compatible alias for any callers expecting rows
-  async fetchSingleAiRuleRows(query, categoryHint, apiKey, statusTextEl = null) {
-    return this.fetchSingleAiRuleEntries(query, categoryHint, apiKey, statusTextEl);
-  },
+    const normalizedEntries = [];
+    rawList.forEach(rawItem => {
+      const isArrayRow = Array.isArray(rawItem);
+      const norm = this.normalizeEntry(rawItem, isArrayRow);
+      if (norm && norm.name) {
+        normalizedEntries.push(norm);
+      }
+    });
 
-  // Backward-compatible alias
-  convertRowsToEntries(rowsOrEntries) {
-    return this.convertAiPayloadToEntries(rowsOrEntries);
-  },
-
-  processAiEntries(entries) {
-    this.lastAiResults = Array.isArray(entries) ? entries.map(e => this.normalizeEntry(e, false)) : [];
-    this.renderAiResults();
-  },
-
-  processAiRows(rows) {
-    this.processAiEntries(this.convertAiPayloadToEntries({ rows }));
+    return normalizedEntries;
   },
 
   async queryAiRule() {
     const queryInput = document.getElementById('ai-rule-query');
-    let query = queryInput?.value?.trim() || '';
-    if (!query) {
-      alert('âš ï¸ LÃ¼tfen aranacak kural, hÃ¼ner, bÃ¼yÃ¼ veya eÅŸya adÄ±nÄ± yazÄ±n.');
-      queryInput?.focus();
-      return;
-    }
+    const catSelect = document.getElementById('ai-rule-category');
+    const statusBox = document.getElementById('ai-rule-status');
+    const statusText = document.getElementById('ai-rule-status-text');
+    const resultsContainer = document.getElementById('ai-results-container');
+    const resultsWrapper = document.getElementById('ai-results-wrapper');
+    const btn = document.getElementById('ai-rule-btn');
 
-    // Check Local Canonical Compendium & Typo Resolver First!
-    let cleanKey = query.toLowerCase().trim();
-    if (typeof this.canonicalDictionary[cleanKey] === 'string') {
-      cleanKey = this.canonicalDictionary[cleanKey];
-    }
-    const matchedCanonical = this.canonicalDictionary[cleanKey];
-    if (matchedCanonical && typeof matchedCanonical === 'object') {
-      if (queryInput) queryInput.value = matchedCanonical.name;
-      const entry = this.normalizeEntry(matchedCanonical, false);
-      this.processAiEntries([entry]);
+    const query = queryInput ? queryInput.value.trim() : '';
+    const categoryHint = catSelect ? catSelect.value : 'ALL';
+
+    if (!query) {
+      alert('Lütfen aramak istediğiniz kural, eşya, büyü, hüner veya yeteneğin adını yazın.');
+      if (queryInput) queryInput.focus();
       return;
     }
 
     const apiKey = this.getApiKey();
     if (!apiKey) {
-      alert('âš ï¸ LÃ¼tfen Ã¶nce bir Google Gemini API AnahtarÄ± girin (Google AI Studio Ã¼cretsiz anahtar).');
-      this.promptChangeApiKey();
+      alert('Rule Master AI özelliğini kullanmak için geçerli bir Gemini API Anahtarı girmeniz gerekmektedir.');
+      this.promptApiKey();
       return;
     }
 
-    const catSelect = document.getElementById('ai-rule-category');
-    const categoryHint = catSelect?.value || 'ALL';
-
-    const btn = document.getElementById('btn-ai-search');
-    const loadingBox = document.getElementById('ai-loading-indicator');
-    const resultsBox = document.getElementById('ai-results-container');
-    const statusText = document.getElementById('ai-loading-status-text');
-
     if (btn) btn.disabled = true;
-    if (loadingBox) loadingBox.classList.remove('hidden');
-    if (resultsBox) resultsBox.innerHTML = '';
+    if (statusBox) statusBox.classList.remove('hidden');
+    if (statusText) statusText.textContent = `"${query}" aranıyor ve D&D 3.5e RAW kütüphanesinden doğrulanıyor...`;
+    if (resultsContainer) resultsContainer.innerHTML = '';
+    if (resultsWrapper) resultsWrapper.classList.add('hidden');
 
     try {
-      const entries = await this.fetchSingleAiRuleEntries(query, categoryHint, apiKey, statusText);
-      this.processAiEntries(entries);
+      const entries = await this.fetchSingleAiRuleObjects(query, categoryHint, apiKey, statusText);
+
+      if (!entries || !entries.length) {
+        throw new Error(`"${query}" ile ilgili resmi bir D&D 3.5e kuralı veya eşyası bulunamadı.`);
+      }
+
+      this.lastAiResults = entries;
+      this.renderAiResults();
+      if (resultsWrapper) resultsWrapper.classList.remove('hidden');
     } catch (err) {
-      alert(`âš ï¸ Kural getirilemedi: ${err.message}\nLÃ¼tfen internet baÄŸlantÄ±nÄ±zÄ± ve API anahtarÄ±nÄ±zÄ± kontrol edin.`);
+      console.error(err);
+      alert(`Hata: ${err.message}`);
     } finally {
       if (btn) btn.disabled = false;
-      if (loadingBox) loadingBox.classList.add('hidden');
+      if (statusBox) statusBox.classList.add('hidden');
     }
   },
 
-  async queryAiBatch() {
-    const apiKey = this.getApiKey();
-    if (!apiKey) {
-      alert('âš ï¸ LÃ¼tfen Ã¶nce bir Google Gemini API AnahtarÄ± girin.');
-      this.promptChangeApiKey();
-      return;
-    }
-    const text = document.getElementById('ai-batch-query')?.value || '';
-    const items = text.split('\n').map(l => l.trim()).filter(Boolean);
-    if (!items.length) {
-      alert('âš ï¸ LÃ¼tfen her satÄ±ra bir kural adÄ± yazÄ±n (Ã–rn: Shock Trooper, Boots of Speed, Haste...).');
+  async fetchSingleAiRuleEntries(query, categoryHint, apiKey, statusTextEl = null) {
+    return await this.fetchSingleAiRuleObjects(query, categoryHint, apiKey, statusTextEl);
+  },
+
+  async importMultipleFromAi() {
+    const input = document.getElementById('ai-bulk-import-input');
+    const btn = document.getElementById('ai-bulk-import-btn');
+    const statusBox = document.getElementById('ai-rule-status');
+    const statusText = document.getElementById('ai-rule-status-text');
+
+    if (!input || !input.value.trim()) {
+      alert('Lütfen içe aktarmak istediğiniz kuralları virgülle veya satır satır ayırarak yazın.');
       return;
     }
 
-    const btn = document.getElementById('btn-ai-batch-search');
-    const statusBox = document.getElementById('ai-batch-status');
-    const statusText = document.getElementById('ai-batch-status-text');
+    const apiKey = this.getApiKey();
+    if (!apiKey) {
+      alert('Gemini API Anahtarı bulunamadı.');
+      this.promptApiKey();
+      return;
+    }
+
+    const rawQueries = input.value.split(/[\n,;]+/).map(s => s.trim()).filter(Boolean);
+    if (!rawQueries.length) return;
+
+    const items = [...new Set(rawQueries)];
+    if (!confirm(`Toplam ${items.length} adet farklı kural tek tek Gemini AI ile aranıp Master DB'ye eklenecek. Devam edilsin mi?`)) {
+      return;
+    }
 
     if (btn) btn.disabled = true;
     if (statusBox) statusBox.classList.remove('hidden');
@@ -1786,16 +1780,16 @@ JSON OBJECT SCHEMA (Return valid JSON only matching this format):
     let totalImported = 0;
     for (let i = 0; i < items.length; i++) {
       const itemQuery = items[i];
-      if (statusText) statusText.textContent = `[${i + 1}/${items.length}] "${itemQuery}" taranÄ±yor...`;
+      if (statusText) statusText.textContent = `[${i + 1}/${items.length}] "${itemQuery}" taranıyor...`;
       try {
         const entries = await this.fetchSingleAiRuleEntries(itemQuery, 'ALL', apiKey, statusText);
         if (entries && entries.length) {
           entries.forEach(entry => {
-            const parentName = (entry.parent && entry.parent !== '-') ? entry.parent.replace(/^â†³\s*/, '').trim().toLowerCase() : '';
-            const parentIdx = parentName ? masterDb.findIndex(m => (m.name || '').replace(/^â†³\s*/, '').trim().toLowerCase() === parentName) : -1;
+            const parentName = (entry.parent && entry.parent !== '-') ? this.cleanArrow(entry.parent).toLowerCase() : '';
+            const parentIdx = parentName ? masterDb.findIndex(m => this.cleanArrow(m.name).toLowerCase() === parentName) : -1;
             if (parentIdx >= 0) {
               let insertAt = parentIdx + 1;
-              while (insertAt < masterDb.length && (masterDb[insertAt].parent || '').replace(/^â†³\s*/, '').trim().toLowerCase() === parentName) {
+              while (insertAt < masterDb.length && this.cleanArrow(masterDb[insertAt].parent).toLowerCase() === parentName) {
                 insertAt++;
               }
               masterDb.splice(insertAt, 0, entry);
@@ -1814,27 +1808,24 @@ JSON OBJECT SCHEMA (Return valid JSON only matching this format):
     if (statusBox) statusBox.classList.add('hidden');
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
     this.renderTable();
-    alert(`ğŸ‰ Toplu Ä°Ã§e Aktarma TamamlandÄ±!\n${totalImported} adet kural ve alt gÃ¼Ã§ baÅŸarÄ±yla Master_DB'ye eklendi.`);
+    alert(`🎉 Toplu İçe Aktarma Tamamlandı!\n${totalImported} adet kural ve alt güç başarıyla Master_DB'ye eklendi.`);
   },
 
   getChildrenForEntry(item, sourceList = null) {
     if (!item || !item.name) return [];
     const list = Array.isArray(sourceList) ? sourceList : (Array.isArray(masterDb) ? masterDb : []);
-    const pName = (item.name || '').toLowerCase().trim();
-    const cleanPName = pName.replace(/^â†³\s*/, '').trim();
+    const cleanPName = this.cleanArrow(item.name).toLowerCase();
 
     return list.filter(other => {
       if (!other || other === item) return false;
-      const otherParent = (other.parent || '').toLowerCase().trim();
-      if (otherParent && otherParent !== '-' && (otherParent === pName || otherParent === cleanPName)) {
+      const otherParent = this.cleanArrow(other.parent || '').toLowerCase();
+      if (otherParent && otherParent !== '-' && otherParent === cleanPName) {
         return true;
       }
-      const otherName = (other.name || '').toLowerCase().trim();
-      if (otherName.startsWith('â†³')) {
-        const afterArrow = otherName.replace(/^â†³\s*/, '').trim();
-        if (afterArrow.startsWith(cleanPName) || afterArrow.startsWith(pName)) {
-          return true;
-        }
+      const otherName = this.cleanArrow(other.name || '').toLowerCase();
+      const isOtherChild = other.isChild || (other.parent && other.parent !== '-') || this.cleanArrow(other.name) !== (other.name || '').trim();
+      if (isOtherChild && (otherName.startsWith(cleanPName) || (other.parent && this.cleanArrow(other.parent).toLowerCase() === cleanPName))) {
+        return true;
       }
       return false;
     });
@@ -1844,25 +1835,21 @@ JSON OBJECT SCHEMA (Return valid JSON only matching this format):
     const container = document.getElementById('ai-results-container');
     if (!container) return;
 
-    if (!this.lastAiResults.length) {
-      container.innerHTML = `
-        <div class="p-6 text-center text-slate-500 bg-slate-950/40 rounded-xl border border-slate-800">
-          SonuÃ§ bulunamadÄ±. LÃ¼tfen kural adÄ±nÄ± kontrol edip tekrar arayÄ±n.
-        </div>
-      `;
+    if (!this.lastAiResults || !this.lastAiResults.length) {
+      container.innerHTML = '<div class="text-center text-slate-400 py-6">Sonuç bulunamadı.</div>';
       return;
     }
 
     let html = `
-      <div class="flex items-center justify-between bg-slate-900 border border-purple-500/40 p-3 rounded-xl mb-3 shadow-lg">
-        <div class="flex items-center gap-2">
-          <span class="text-base">âœ¨</span>
-          <span class="text-xs font-bold text-white">${this.lastAiResults.length} Kural / Alt GÃ¼Ã§ Ãœretildi</span>
-          <span class="text-[11px] text-slate-400">Master_DB 29 sÃ¼tunlu JSON ÅŸemasÄ±yla tam uyumlu</span>
+      <div class="flex items-center justify-between bg-slate-900 border border-slate-800 p-3 rounded-xl mb-3 shadow">
+        <div>
+          <span class="text-xs font-bold text-amber-300">D&D 3.5e RAW Doğrulandı:</span>
+          <span class="text-xs text-slate-200 ml-1 font-semibold">${this.lastAiResults.length} Sonuç Bulundu</span>
+          <span class="text-[11px] text-slate-400 block sm:inline sm:ml-2">Master_DB 29 sütunlu JSON şemasıyla tam uyumlu</span>
         </div>
         <button onclick="RuleMaster.addAllAiResultsToDb()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-3.5 py-1.5 rounded-lg shadow transition flex items-center gap-1.5">
-          <span>ğŸ“¥</span>
-          <span>TÃ¼mÃ¼nÃ¼ DB'ye Ekle</span>
+          <span>📥</span>
+          <span>Tümünü DB'ye Ekle</span>
         </button>
       </div>
       <div class="space-y-3">
@@ -1873,6 +1860,7 @@ JSON OBJECT SCHEMA (Return valid JSON only matching this format):
       const children = this.getChildrenForEntry(item, this.lastAiResults);
       const isParent = !isChild && children.length > 0;
       const badgeClass = this.getTypeBadgeClass(item.type);
+      const displayName = isChild ? this.cleanArrow(item.name) : item.name;
 
       // Stat badges
       const statPills = [];
@@ -1885,8 +1873,8 @@ JSON OBJECT SCHEMA (Return valid JSON only matching this format):
       if (item.acBonus) statPills.push(`+${item.acBonus} AC`);
       if (item.attBonus) statPills.push(`+${item.attBonus} Atk`);
       if (item.dmgBonus) statPills.push(`+${item.dmgBonus} Dmg`);
-      if (item.speedBonus) statPills.push(`+${item.speedBonus} ft HÄ±z`);
-      if (item.extraDmg || item.dice) statPills.push(`ğŸ² ${item.extraDmg || item.dice}`);
+      if (item.speedBonus) statPills.push(`+${item.speedBonus} ft Hız`);
+      if (item.extraDmg || item.dice) statPills.push(`🎲 ${item.extraDmg || item.dice}`);
 
       // Specific badges (Level, School, Discipline, Child Button)
       const specificBadges = [];
@@ -1902,52 +1890,51 @@ JSON OBJECT SCHEMA (Return valid JSON only matching this format):
       if (item.childButtonLabel) {
         specificBadges.push(`<span class="badge bg-purple-900 text-purple-200 border border-purple-600 text-[10px] font-mono">Toast: ${item.childButtonLabel}</span>`);
       }
-
       html += `
         <div class="${isChild ? 'ml-6 border-l-4 border-l-purple-500 bg-slate-900/60' : (isParent ? 'bg-slate-900 border-purple-500/50 shadow-purple-950/20' : 'bg-slate-900')} border border-slate-800 rounded-xl p-4 space-y-3 shadow-md transition">
           <div class="flex flex-wrap items-start justify-between gap-2 border-b border-slate-800 pb-2">
             <div>
               <div class="flex items-center gap-2 flex-wrap">
-                ${isChild ? '<span class="text-purple-400 font-bold">â†³</span>' : ''}
-                <span class="text-sm font-extrabold text-white">${item.name}</span>
+                ${isChild ? '<span class="text-purple-400 font-bold font-mono">↳</span>' : ''}
+                <span class="text-sm font-extrabold text-white">${displayName}</span>
                 <span class="badge ${badgeClass}">${item.type}</span>
                 ${specificBadges.join(' ')}
-                ${isParent ? `<span class="badge bg-purple-950 text-purple-200 border border-purple-600 text-[10px] font-bold">ğŸ‘‘ Ana EÅŸya (${children.length} Alt GÃ¼Ã§)</span>` : ''}
-                ${isChild && item.parent && item.parent !== '-' ? `<span class="badge bg-purple-950 text-purple-300 border border-purple-800 font-mono text-[10px]">BaÄŸlÄ±: ${item.parent}</span>` : ''}
+                ${isParent ? `<span class="badge bg-purple-950 text-purple-200 border border-purple-600 text-[10px] font-bold">👑 Ana Eşya (${children.length} Alt Güç)</span>` : ''}
+                ${isChild && item.parent && item.parent !== '-' ? `<span class="badge bg-purple-950 text-purple-300 border border-purple-800 font-mono text-[10px]">Bağlı: ${item.parent}</span>` : ''}
               </div>
               <div class="flex items-center gap-2 text-[11px] text-slate-400 mt-1 flex-wrap">
-                <span>ğŸ“š <b>${item.source || 'Core 3.5e'}</b></span>
-                <span>â€¢</span>
+                <span>📚 <b>${item.source || 'Core 3.5e'}</b></span>
+                <span>•</span>
                 <span>Yuva: <b>${item.slot || 'None'}</b></span>
-                <span>â€¢</span>
-                <span>TÃ¼r: <b>${item.bonusType || 'Untyped'}</b></span>
-                <span>â€¢</span>
+                <span>•</span>
+                <span>Tür: <b>${item.bonusType || 'Untyped'}</b></span>
+                <span>•</span>
                 <span>Kapsam: <b>${item.scope || 'None / General'}</b></span>
-                ${item.range && item.range !== '-' ? `<span>â€¢</span><span>Menzil: <b class="text-cyan-400">${item.range}</b></span>` : ''}
-                ${item.dmgType ? `<span>â€¢</span><span>Hasar TÃ¼rÃ¼: <b class="text-rose-400">${item.dmgType}</b></span>` : ''}
+                ${item.range && item.range !== '-' ? `<span>•</span><span>Menzil: <b class="text-cyan-400">${item.range}</b></span>` : ''}
+                ${item.dmgType ? `<span>•</span><span>Hasar Türü: <b class="text-rose-400">${item.dmgType}</b></span>` : ''}
               </div>
             </div>
 
             <div class="flex items-center gap-1.5">
               ${isParent ? `
-                <button onclick="RuleMaster.addAiResultToDb(${idx}, true)" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1" title="Ana eÅŸyayÄ± ve tÃ¼m ${children.length} alt gÃ¼cÃ¼nÃ¼ tek seferde Master DB'ye ekler">
-                  <span>ğŸ“¥</span>
-                  <span>TÃ¼mÃ¼nÃ¼ DB'ye Ekle</span>
+                <button onclick="RuleMaster.addAiResultToDb(${idx}, true)" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1" title="Ana eşyayı ve tüm ${children.length} alt gücünü tek seferde Master DB'ye ekler">
+                  <span>📥</span>
+                  <span>Tümünü DB'ye Ekle</span>
                 </button>
-                <button onclick="RuleMaster.equipAiResultToCharacter(${idx})" class="bg-purple-900 hover:bg-purple-800 border border-purple-600 text-purple-200 text-xs px-2.5 py-1.5 rounded-lg transition font-bold" title="Ana eÅŸyayÄ± ve alt gÃ¼Ã§lerini tek seferde kuÅŸanÄ±r">
-                  âš¡ Hepsini KuÅŸan
+                <button onclick="RuleMaster.equipAiResultToCharacter(${idx})" class="bg-purple-900 hover:bg-purple-800 border border-purple-600 text-purple-200 text-xs px-2.5 py-1.5 rounded-lg transition font-bold" title="Ana eşyayı ve alt güçlerini tek seferde kuşanır">
+                  ⚡ Hepsini Kuşan
                 </button>
               ` : `
                 <button onclick="RuleMaster.addAiResultToDb(${idx}, false)" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1">
-                  <span>ğŸ“¥</span>
-                  <span>${isChild ? 'YalnÄ±zca Bunu Ekle' : 'DB\'ye Ekle'}</span>
+                  <span>📥</span>
+                  <span>${isChild ? 'Yalnızca Bunu Ekle' : 'DB\'ye Ekle'}</span>
                 </button>
-                <button onclick="RuleMaster.equipAiResultToCharacter(${idx})" class="bg-emerald-950 hover:bg-emerald-900 border border-emerald-700 text-emerald-300 text-xs px-2.5 py-1.5 rounded-lg transition" title="Karaktere KuÅŸan / Ekle">
-                  âš¡ KuÅŸan
+                <button onclick="RuleMaster.equipAiResultToCharacter(${idx})" class="bg-emerald-950 hover:bg-emerald-900 border border-emerald-700 text-emerald-300 text-xs px-2.5 py-1.5 rounded-lg transition" title="Karaktere Kuşan / Ekle">
+                  ⚡ Kuşan
                 </button>
               `}
-              <button onclick="RuleMaster.editAiResultInModal(${idx})" class="bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition" title="29 SÃ¼tunlu Formda AÃ§">
-                âœï¸ DÃ¼zenle
+              <button onclick="RuleMaster.editAiResultInModal(${idx})" class="bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition" title="29 Sütunlu Formda Aç">
+                ✏️ Düzenle
               </button>
             </div>
           </div>
@@ -1960,19 +1947,19 @@ JSON OBJECT SCHEMA (Return valid JSON only matching this format):
             </div>
           ` : ''}
 
-          <!-- Mechanics & Benefit Description -->
-          <div class="text-xs text-slate-200 leading-relaxed bg-slate-950/60 p-3 rounded-lg border border-slate-800">
-            ${item.benefit || item.description || '-'}
+          <!-- Benefit / Description -->
+          <div class="text-xs text-slate-300 bg-slate-950/80 p-3 rounded-lg border border-slate-800/80 leading-relaxed font-sans">
+            ${item.benefit || item.description || 'Açıklama belirtilmemiş.'}
           </div>
 
-          <!-- Extra details: Action, Duration, Cost, Weight -->
+          <!-- Footer Specs -->
           <div class="flex flex-wrap items-center justify-between text-[11px] text-slate-400 pt-1">
             <div class="flex items-center gap-3">
               <span>Aksiyon: <b class="text-amber-400">${item.action || 'Passive'}</b></span>
-              <span>SÃ¼re/KullanÄ±m: <b class="text-purple-300">${item.duration || 'Continuous'}</b></span>
+              <span>Süre/Kullanım: <b class="text-purple-300">${item.duration || 'Continuous'}</b></span>
             </div>
             <div class="flex items-center gap-3">
-              <span>AÄŸÄ±rlÄ±k: <b class="text-slate-300">${item.weight || 0} lbs</b></span>
+              <span>Ağırlık: <b class="text-slate-300">${item.weight || 0} lbs</b></span>
               <span>Fiyat: <b class="text-amber-300">${item.cost || 0} gp</b></span>
             </div>
           </div>
@@ -1984,7 +1971,7 @@ JSON OBJECT SCHEMA (Return valid JSON only matching this format):
     container.innerHTML = html;
   },
 
-  addAiResultToDb(index, includeChildren = true) {
+  addAiResultToDb(index, includeChildren = false) {
     if (index >= 0 && index < this.lastAiResults.length) {
       const item = this.lastAiResults[index];
       const itemsToAdd = [item];
@@ -2000,11 +1987,11 @@ JSON OBJECT SCHEMA (Return valid JSON only matching this format):
           masterDb[existsIdx] = copy;
         } else {
           // If child, insert directly below parent in masterDb
-          const parentName = (copy.parent && copy.parent !== '-') ? copy.parent.replace(/^â†³\s*/, '').trim().toLowerCase() : '';
-          const parentIdx = parentName ? masterDb.findIndex(m => (m.name || '').replace(/^â†³\s*/, '').trim().toLowerCase() === parentName) : -1;
+          const parentName = (copy.parent && copy.parent !== '-') ? this.cleanArrow(copy.parent).toLowerCase() : '';
+          const parentIdx = parentName ? masterDb.findIndex(m => this.cleanArrow(m.name).toLowerCase() === parentName) : -1;
           if (parentIdx >= 0) {
             let insertAt = parentIdx + 1;
-            while (insertAt < masterDb.length && (masterDb[insertAt].parent || '').replace(/^â†³\s*/, '').trim().toLowerCase() === parentName) {
+            while (insertAt < masterDb.length && this.cleanArrow(masterDb[insertAt].parent).toLowerCase() === parentName) {
               insertAt++;
             }
             masterDb.splice(insertAt, 0, copy);
@@ -2017,9 +2004,9 @@ JSON OBJECT SCHEMA (Return valid JSON only matching this format):
       if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
       this.renderTable();
       if (itemsToAdd.length > 1) {
-        alert(`âœ… "${item.name}" ve ${itemsToAdd.length - 1} alt gÃ¼cÃ¼ tek seferde baÅŸarÄ±yla Master_DB kÃ¼tÃ¼phanesine eklendi!`);
+        alert(`✅ "${item.name}" ve ${itemsToAdd.length - 1} alt gücü tek seferde başarıyla Master_DB kütüphanesine eklendi!`);
       } else {
-        alert(`âœ… "${item.name}" baÅŸarÄ±yla Master_DB kÃ¼tÃ¼phanesine eklendi!`);
+        alert(`✅ "${item.name}" başarıyla Master_DB kütüphanesine eklendi!`);
       }
     }
   },
@@ -2032,11 +2019,11 @@ JSON OBJECT SCHEMA (Return valid JSON only matching this format):
       if (existsIdx >= 0) {
         masterDb[existsIdx] = copy;
       } else {
-        const parentName = (copy.parent && copy.parent !== '-') ? copy.parent.replace(/^â†³\s*/, '').trim().toLowerCase() : '';
-        const parentIdx = parentName ? masterDb.findIndex(m => (m.name || '').replace(/^â†³\s*/, '').trim().toLowerCase() === parentName) : -1;
+        const parentName = (copy.parent && copy.parent !== '-') ? this.cleanArrow(copy.parent).toLowerCase() : '';
+        const parentIdx = parentName ? masterDb.findIndex(m => this.cleanArrow(m.name).toLowerCase() === parentName) : -1;
         if (parentIdx >= 0) {
           let insertAt = parentIdx + 1;
-          while (insertAt < masterDb.length && (masterDb[insertAt].parent || '').replace(/^â†³\s*/, '').trim().toLowerCase() === parentName) {
+          while (insertAt < masterDb.length && this.cleanArrow(masterDb[insertAt].parent).toLowerCase() === parentName) {
             insertAt++;
           }
           masterDb.splice(insertAt, 0, copy);
@@ -2047,9 +2034,8 @@ JSON OBJECT SCHEMA (Return valid JSON only matching this format):
     });
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
     this.renderTable();
-    alert(`âœ… ${this.lastAiResults.length} kural ve alt gÃ¼Ã§ tek seferde Master_DB kÃ¼tÃ¼phanesine eklendi!`);
+    alert(`✅ ${this.lastAiResults.length} kural ve alt güç tek seferde Master_DB kütüphanesine eklendi!`);
   },
-
   editAiResultInModal(index) {
     if (index >= 0 && index < this.lastAiResults.length) {
       const item = JSON.parse(JSON.stringify(this.lastAiResults[index]));
@@ -2736,8 +2722,8 @@ JSON OBJECT SCHEMA (Return valid JSON only matching this format):
                   <div class="bg-slate-950/60 border border-slate-800 rounded-lg p-3 space-y-1.5 hover:border-purple-500/40 transition">
                     <div class="flex items-center justify-between">
                       <div class="flex items-center gap-1.5">
-                        <span class="text-purple-400 font-bold">↳</span>
-                        <span class="text-xs font-bold text-purple-200">${child.name}</span>
+                        <span class="text-purple-400 font-bold font-mono">↳</span>
+                        <span class="text-xs font-bold text-purple-200">${RuleMaster.cleanArrow(child.name)}</span>
                         <span class="badge bg-slate-800 text-slate-400 text-[10px]">${child.action || 'Passive'}</span>
                         <span class="badge bg-purple-950 text-purple-300 border border-purple-800 text-[10px]">${child.bonusType || 'Untyped'}</span>
                       </div>
@@ -3078,8 +3064,8 @@ JSON OBJECT SCHEMA (Return valid JSON only matching this format):
           <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
             <div>
               <div class="flex items-center gap-2">
-                ${isChild ? '<span class="text-purple-400 font-bold">↳</span>' : ''}
-                <span class="text-xs md:text-sm font-extrabold text-white">${item.name}</span>
+                ${isChild ? '<span class="text-purple-400 font-bold font-mono">↳</span>' : ''}
+                <span class="text-xs md:text-sm font-extrabold text-white">${isChild ? RuleMaster.cleanArrow(item.name) : item.name}</span>
                 <span class="badge ${badgeClass} text-[10px]">${item.type}</span>
                 ${isParent ? `<span class="badge bg-purple-950 text-purple-200 border border-purple-600 text-[10px] font-bold">👑 Ana Eşya (${children.length} Alt Güç)</span>` : ''}
                 ${isChild ? `<span class="badge bg-purple-950 text-purple-300 border border-purple-800 font-mono text-[9px]">Bağlı: ${item.parent}</span>` : ''}
@@ -3150,13 +3136,23 @@ JSON OBJECT SCHEMA (Return valid JSON only matching this format):
       children.forEach(c => itemsToAdd.push(c));
     }
 
-    [...itemsToAdd].reverse().forEach(it => {
+    itemsToAdd.forEach(it => {
       const copy = JSON.parse(JSON.stringify(it));
       const existsIdx = masterDb.findIndex(m => (m.name || '').toLowerCase().trim() === (copy.name || '').toLowerCase().trim());
       if (existsIdx >= 0) {
         masterDb[existsIdx] = copy;
       } else {
-        masterDb.unshift(copy);
+        const parentName = (copy.parent && copy.parent !== '-') ? RuleMaster.cleanArrow(copy.parent).toLowerCase() : '';
+        const parentIdx = parentName ? masterDb.findIndex(m => RuleMaster.cleanArrow(m.name).toLowerCase() === parentName) : -1;
+        if (parentIdx >= 0) {
+          let insertAt = parentIdx + 1;
+          while (insertAt < masterDb.length && RuleMaster.cleanArrow(masterDb[insertAt].parent).toLowerCase() === parentName) {
+            insertAt++;
+          }
+          masterDb.splice(insertAt, 0, copy);
+        } else {
+          masterDb.push(copy);
+        }
       }
     });
 
@@ -3914,5 +3910,3 @@ if (typeof document !== 'undefined') {
 }
 
 window.RuleMaster = RuleMaster;
-
-
