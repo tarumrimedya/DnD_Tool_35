@@ -254,14 +254,14 @@
     <!-- Card 5: Eylemler & Dinlenme (En Sağda, Yarı En: 1 Kolon) -->
     <div class="bg-dndCard border border-dndBorder rounded-xl p-2.5 sm:p-3 flex flex-col justify-between shadow col-span-1 lg:col-span-1">
       <div class="text-xs font-bold text-amber-400 flex items-center gap-1 mb-1 truncate text-[11px]">☀️ DİNLENME</div>
-      <div class="grid grid-cols-2 gap-1.5 my-1">
-        <button onclick="performRest()" class="bg-slate-800 hover:bg-slate-700 text-emerald-300 rounded p-1 text-[10px] font-bold border border-slate-700 flex items-center justify-center gap-1 transition truncate cursor-pointer" title="Rest (Kısa Dinlenme - 5 Dk veya 1 Saat Seçenekli)">
+      <div class="flex flex-col gap-1.5 my-1">
+        <button onclick="performRest()" class="w-full bg-slate-800 hover:bg-slate-700 text-emerald-300 rounded py-1 px-1.5 text-[10px] font-bold border border-slate-700 flex items-center justify-center gap-1 transition shadow-sm cursor-pointer" title="Rest (Kısa Dinlenme - 5 Dk veya 1 Saat Seçenekli)">
           <span>☕</span>
-          <span class="truncate">Rest</span>
+          <span class="truncate">Kısa Dinlenme</span>
         </button>
-        <button onclick="performLongRest()" class="bg-slate-800 hover:bg-slate-700 text-amber-300 rounded p-1 text-[10px] font-bold border border-slate-700 flex items-center justify-center gap-1 transition truncate cursor-pointer" title="Long Rest (Uzun Dinlenme - Tam Can veya D&D 3.5e RAW Seçenekli)">
+        <button onclick="performLongRest()" class="w-full bg-slate-800 hover:bg-slate-700 text-amber-300 rounded py-1 px-1.5 text-[10px] font-bold border border-slate-700 flex items-center justify-center gap-1 transition shadow-sm cursor-pointer" title="Long Rest (Uzun Dinlenme - Tam Can veya D&D 3.5e RAW Seçenekli)">
           <span>☀️</span>
-          <span class="truncate">Long Rest</span>
+          <span class="truncate">Uzun Dinlenme</span>
         </button>
       </div>
       <button onclick="advanceNextRound()" class="w-full bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-500/40 rounded py-1 px-1 text-[10px] font-bold flex items-center justify-center gap-1 transition shadow-sm cursor-pointer" title="Sonraki tura geçer, aktif buff sürelerini 1 tur azaltır">
