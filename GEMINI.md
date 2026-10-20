@@ -31,3 +31,9 @@ To maximize token efficiency and minimize API costs across all conversations in 
     - Kan Fedası: `🩸`
     - Şifa / Can: `💚`
     - Geçici Can: `🛡️`
+
+## 4. Kullanıcı Sorularında Geliştirme Yapmama ve Eleştirel Yaklaşım (STRICT)
+- Kullanıcı bir konu hakkında soru sorduğunda, fikir danıştığında veya ("ihtiyaç var mı?", "mantıklı mı?", "sence nasıl olmalı?" gibi) sorgulayıcı yaklaşımlarda bulunduğunda:
+  - **Kesinlikle doğrudan kod geliştirmesi / dosya değişikliği YAPILMAYACAKTIR.**
+  - Kullanıcı açıkça *"uygula"*, *"kodu değiştir"*, *"geliştir"*, *"ekle/kaldır"* gibi net bir eylem talimatı vermediği sürece sadece analiz ve değerlendirme sunulacaktır.
+  - Verilen yanıtlar yüzeysel veya körü körüne onaylayıcı olmamalı; konuya **eleştirel ve sorgulayıcı bir yaklaşımla** (artıları, eksileri, UX/UI ergonomisi, D&D 3.5e RAW kural mekanikleri, performans ve alternatif çözüm yolları ile) derinlemesine bakılarak objektif argümanlarla cevap verilmelidir.
