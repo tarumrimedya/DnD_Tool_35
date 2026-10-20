@@ -18971,27 +18971,99 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
     function performLongRest() {
       if (!character) return;
+
+      const hasRingOfSustenance = !!(
+        character.bodySlots && (
+          (character.bodySlots.ring1 && (character.bodySlots.ring1.name || "").includes("Ring of Sustenance")) ||
+          (character.bodySlots.ring2 && (character.bodySlots.ring2.name || "").includes("Ring of Sustenance"))
+        )
+      );
+      const restHours = hasRingOfSustenance ? 2 : 8;
+      const rawHpHeal = Number(character.level) || 6;
+      const currentHp = Number(character.hp?.current) || 0;
+      const maxHp = Number(character.hp?.max) || 45;
+      const missingHp = Math.max(0, maxHp - currentHp);
+
+      showDiceTopToast({
+        icon: "☀️",
+        title: `Uzun Dinlenme (${restHours} Saat Uykusu${hasRingOfSustenance ? " 💍" : ""})`,
+        breakdown: hasRingOfSustenance
+          ? "💍 Ring of Sustenance Kuşanılı: Yalnızca 2 saat sürer! İyileşme modunu seçin:"
+          : "8 saatlik gece uykusu. İyileşme modunu seçin:",
+        total: "",
+        actions: [
+          {
+            label: `⚡ Tam Can (${maxHp}/${maxHp}) & Slotlar`,
+            className: "px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-700 hover:bg-amber-600 text-amber-100 border border-amber-400 transition shadow cursor-pointer",
+            onClick: () => executeLongRest(true)
+          },
+          {
+            label: `📜 D&D 3.5e RAW (+${Math.min(missingHp, rawHpHeal)} HP)`,
+            className: "px-2.5 py-1 rounded-lg text-[11px] font-bold bg-sky-800 hover:bg-sky-700 text-sky-100 border border-sky-400 transition shadow cursor-pointer",
+            onClick: () => executeLongRest(false)
+          },
+          {
+            label: "Kapat",
+            className: "px-2 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white border border-slate-700 transition cursor-pointer",
+            onClick: () => {
+              const el = document.getElementById("dice-top-toast");
+              if (el) el.remove();
+            }
+          }
+        ]
+      }, { autoDismiss: true, dismissMs: 16000, stack: false });
+    }
+
+    function executeLongRest(isFullHeal = true) {
+      if (!character) return;
       character.encounterRound = 1;
-      character.hp.current = character.hp.max;
+
+      const hasRingOfSustenance = !!(
+        character.bodySlots && (
+          (character.bodySlots.ring1 && (character.bodySlots.ring1.name || "").includes("Ring of Sustenance")) ||
+          (character.bodySlots.ring2 && (character.bodySlots.ring2.name || "").includes("Ring of Sustenance"))
+        )
+      );
+
+      // 1. HP & Nonlethal & Temp HP
+      const charLvl = Number(character.level) || 6;
+      const currentHp = Number(character.hp?.current) || 0;
+      const maxHp = Number(character.hp?.max) || 45;
+      let hpGain = 0;
+
+      if (isFullHeal) {
+        hpGain = maxHp - currentHp;
+        character.hp.current = maxHp;
+      } else {
+        // D&D 3.5e RAW: 1 HP per character level per 8 hours of rest
+        hpGain = Math.min(maxHp - currentHp, charLvl);
+        character.hp.current = Math.min(maxHp, currentHp + charLvl);
+      }
       character.hp.temp = 0;
       character.hp.nonlethal = 0;
 
-      // 1. Spontaneous Arcane Spell Slots (Sorcerer / Bard)
+      // 2. Spell Slots (Spontaneous Arcane, Prepared Wizard, Divine)
+      let refreshedSpells = 0;
       if (character.spellcasting && Array.isArray(character.spellcasting.slots)) {
-        character.spellcasting.slots.forEach(s => s.used = 0);
+        character.spellcasting.slots.forEach(s => {
+          if (s.used > 0) refreshedSpells += s.used;
+          s.used = 0;
+        });
       }
-
-      // 2. Prepared Wizard Spell Slots
       if (character.spellcasting && Array.isArray(character.spellcasting.preparedSlots)) {
-        character.spellcasting.preparedSlots.forEach(s => s.used = 0);
+        character.spellcasting.preparedSlots.forEach(s => {
+          if (s.used > 0) refreshedSpells += s.used;
+          s.used = 0;
+        });
       }
-
-      // 3. Divine Spell Slots (Cleric / Druid)
       if (character.spellcasting && Array.isArray(character.spellcasting.divineSlots)) {
-        character.spellcasting.divineSlots.forEach(s => s.used = 0);
+        character.spellcasting.divineSlots.forEach(s => {
+          if (s.used > 0) refreshedSpells += s.used;
+          s.used = 0;
+        });
       }
 
-      // 4. Tome of Battle Maneuvers (All readied maneuvers refreshed)
+      // 3. Tome of Battle Maneuvers
       let refreshedManeuvers = 0;
       if (character.tomeOfBattle && Array.isArray(character.tomeOfBattle.readiedManeuvers)) {
         character.tomeOfBattle.readiedManeuvers.forEach(m => {
@@ -19000,21 +19072,36 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         });
       }
 
-      // 5. Expire duration buffs
+      // 4. Durations, Conditions & Debuffs
+      let removedConditions = 0;
       if (Array.isArray(character.buffs)) {
         character.buffs.forEach(b => {
-          if (b.rounds !== null && b.rounds !== undefined) {
+          if (!b.active) return;
+          const isFatigued = b.id === "debuff_fatigued" || (b.name || "").toLowerCase().includes("fatigued");
+          const isExhausted = b.id === "debuff_exhausted" || (b.name || "").toLowerCase().includes("exhausted");
+          const isSickened = b.id === "debuff_sickened" || (b.name || "").toLowerCase().includes("sickened");
+          const isShaken = b.id === "debuff_shaken" || (b.name || "").toLowerCase().includes("shaken");
+          if (isFatigued || isExhausted || isSickened || isShaken) {
+            b.active = false;
+            removedConditions++;
+            return;
+          }
+
+          const dur = (b.durationText || "").toLowerCase();
+          const isPermanent = dur.includes("kalıcı") || dur.includes("permanent") || b.permanent;
+          const is24h = dur.includes("24 saat") || dur.includes("24 hour");
+          if (!isPermanent && !is24h) {
             b.active = false;
           }
         });
       }
 
-      // 6. Reset temporary periodic HP effects
+      // 5. Periodic HP effects reset
       if (Array.isArray(character.periodicHpEffects)) {
         character.periodicHpEffects = [];
       }
 
-      // 7. Reset daily charges on magic items (e.g. Ring of Sending 3/day)
+      // 6. Reset daily charges on magic items
       let refreshedDailyItems = 0;
       const resetCharges = (item) => {
         if (item && item.dailyCharges && typeof item.dailyCharges.max === "number") {
@@ -19022,7 +19109,6 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           refreshedDailyItems++;
         }
       };
-
       if (character.bodySlots) {
         Object.values(character.bodySlots).forEach(resetCharges);
       }
@@ -19033,44 +19119,146 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         character.consumables.forEach(resetCharges);
       }
 
+      // 7. Reset daily feats / abilities (e.g. Draconic Shield 1/d, Draconic Core 1h/day)
+      let refreshedDailyFeats = 0;
+      const resetFeatCharges = (f) => {
+        if (!f) return;
+        if (f.used) { f.used = false; refreshedDailyFeats++; }
+        if (f.expended) { f.expended = false; refreshedDailyFeats++; }
+        if (f.dailyCharges && typeof f.dailyCharges.max === "number") {
+          f.dailyCharges.current = f.dailyCharges.max;
+          refreshedDailyFeats++;
+        }
+      };
+      if (Array.isArray(character.feats)) character.feats.forEach(resetFeatCharges);
+      if (Array.isArray(character.specialAbilities)) character.specialAbilities.forEach(resetFeatCharges);
+
       updateRoundDisplays();
       saveStateToStorage(true);
       if (typeof renderManeuvers === "function") renderManeuvers();
       if (typeof renderSpellSlots === "function") renderSpellSlots();
       renderAll();
 
+      const details = [];
+      details.push(isFullHeal ? `Can Full (${character.hp.current}/${maxHp})` : `+${hpGain} HP Doğal İyileşme (${character.hp.current}/${maxHp})`);
+      details.push("Tüm büyü ve manevra slotları yenilendi");
+      if (refreshedDailyItems > 0 || refreshedDailyFeats > 0) details.push(`${refreshedDailyItems + refreshedDailyFeats} Günlük Şarj/Feat yenilendi`);
+      if (removedConditions > 0) details.push("Yorgunluk/Debufflar silindi");
+      if (hasRingOfSustenance) details.push("💍 2 Saat (Ring of Sustenance)");
+
       showDiceTopToast({
         icon: "☀️",
-        title: "Uzun Dinlenme Tamamlandı (Long Rest)",
-        breakdown: "Tüm büyü slotları (Arcane, Hazırlık, İlahi) ve " + (refreshedManeuvers > 0 ? refreshedManeuvers + " manevra" : "manevralar") + " tazelendi • Can ve eşyalar yenilendi" + (refreshedDailyItems > 0 ? " • " + refreshedDailyItems + " Günlük Eşya Şarjı (X/gün) yenilendi" : ""),
-        total: "Full HP & Slotlar"
-      });
+        title: `Uzun Dinlenme Tamamlandı (${isFullHeal ? "Tam İyileşme" : "D&D 3.5e RAW"})`,
+        breakdown: details.join(" • "),
+        total: `${character.hp.current}/${maxHp} HP`
+      }, { stack: false, autoDismiss: true, dismissMs: 5000 });
     }
 
     function performRest() {
       if (!character) return;
 
-      // Reset all readied Tome of Battle maneuvers
-      let count = 0;
+      const nonlethalHeal = Number(character.level) || 6;
+      const currentNonlethal = Number(character.hp?.nonlethal) || 0;
+
+      showDiceTopToast({
+        icon: "☕",
+        title: "Kısa Dinlenme Seçenekleri (Short Rest)",
+        breakdown: "Dinlenme türünü seçin: 5 dk (Manevralar) veya 1 Saat (Manevralar + Nonlethal HP)",
+        total: "",
+        actions: [
+          {
+            label: "⚡ 5 Dk (Manevralar)",
+            className: "px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-800 hover:bg-emerald-700 text-emerald-100 border border-emerald-500 transition shadow cursor-pointer",
+            onClick: () => executeShortRest(5)
+          },
+          {
+            label: `⏱️ 1 Saat (+${Math.min(currentNonlethal, nonlethalHeal)} Nonlethal & Durum)`,
+            className: "px-2.5 py-1 rounded-lg text-[11px] font-bold bg-teal-800 hover:bg-teal-700 text-teal-100 border border-teal-500 transition shadow cursor-pointer",
+            onClick: () => executeShortRest(60)
+          },
+          {
+            label: "Kapat",
+            className: "px-2 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white border border-slate-700 transition cursor-pointer",
+            onClick: () => {
+              const el = document.getElementById("dice-top-toast");
+              if (el) el.remove();
+            }
+          }
+        ]
+      }, { autoDismiss: true, dismissMs: 14000, stack: false });
+    }
+
+    function executeShortRest(minutes = 5) {
+      if (!character) return;
+
+      // 1. Maneuver Recovery
+      let refreshedManeuvers = 0;
       if (character.tomeOfBattle && Array.isArray(character.tomeOfBattle.readiedManeuvers)) {
         character.tomeOfBattle.readiedManeuvers.forEach(m => {
           m.expended = false;
-          count++;
+          refreshedManeuvers++;
         });
       }
 
+      // 2. Encounter round reset
+      character.encounterRound = 1;
+
+      // 3. Expire combat / round-based buffs
+      let expiredBuffs = 0;
+      if (Array.isArray(character.buffs)) {
+        character.buffs.forEach(b => {
+          if (b.active) {
+            const isRoundBased = b.rounds !== null && b.rounds !== undefined;
+            const isMinuteBased = (b.durationText || "").toLowerCase().includes("dk") || (b.durationText || "").toLowerCase().includes("min");
+            if (isRoundBased || (minutes >= 60 && isMinuteBased)) {
+              b.active = false;
+              expiredBuffs++;
+            }
+          }
+        });
+      }
+
+      // 4. Nonlethal and Condition healing for 1 Hour rest (60 min)
+      let nonlethalHealed = 0;
+      let downgradedExhausted = false;
+      if (minutes >= 60) {
+        const charLvl = Number(character.level) || 6;
+        const currentNonlethal = Number(character.hp?.nonlethal) || 0;
+        if (currentNonlethal > 0) {
+          nonlethalHealed = Math.min(currentNonlethal, charLvl);
+          character.hp.nonlethal = currentNonlethal - nonlethalHealed;
+        }
+
+        // Exhausted -> Fatigued
+        if (Array.isArray(character.buffs)) {
+          const exhaustedBuff = character.buffs.find(b => b.active && (b.id === "debuff_exhausted" || (b.name || "").toLowerCase().includes("exhausted")));
+          if (exhaustedBuff) {
+            exhaustedBuff.active = false;
+            downgradedExhausted = true;
+            const fatiguedBuff = character.buffs.find(b => b.id === "debuff_fatigued" || (b.name || "").toLowerCase().includes("fatigued"));
+            if (fatiguedBuff) fatiguedBuff.active = true;
+          }
+        }
+      }
+
+      updateRoundDisplays();
       saveStateToStorage(true);
       if (typeof renderManeuvers === "function") renderManeuvers();
       renderAll();
 
+      const summaryParts = [];
+      if (refreshedManeuvers > 0) summaryParts.push(`${refreshedManeuvers} manevra tazelendi`);
+      if (nonlethalHealed > 0) summaryParts.push(`${nonlethalHealed} Nonlethal HP iyileşti`);
+      if (downgradedExhausted) summaryParts.push("Exhausted durumu Fatigued durumuna indirgendi");
+      if (expiredBuffs > 0) summaryParts.push(`${expiredBuffs} süreli buff sona erdi`);
+      summaryParts.push("Encounter round sıfırlandı");
+
       showDiceTopToast({
-        icon: "🔄",
-        title: "Dinlenme Tamamlandı (Rest)",
-        breakdown: count > 0
-          ? ("Tüm savaş manevraları (" + count + " kuşanılan) tazelendi ve kullanıma hazır.")
-          : "Tüm savaş manevraları tazelendi ve kullanıma hazır.",
+        icon: "☕",
+        title: `${minutes >= 60 ? "1 Saatlik Kısa Mola" : "5 Dk Hızlı Dinlenme"} Tamamlandı`,
+        breakdown: summaryParts.join(" • "),
         total: "Manevralar Hazır"
-      });
+      }, { stack: false, autoDismiss: true, dismissMs: 4500 });
     }
 
     // Global window mappings
@@ -19078,6 +19266,8 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
     window.rest = performRest;
     window.performLongRest = performLongRest;
     window.longRest = performLongRest;
+    window.executeShortRest = executeShortRest;
+    window.executeLongRest = executeLongRest;
 
     function performEncounterReset() {
       if (!character) return;
