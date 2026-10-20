@@ -966,7 +966,8 @@ const RuleMaster = {
                  !lower.includes('embedding') &&
                  !lower.includes('realtime') &&
                  !lower.includes('bison') &&
-                 !lower.includes('gemma');
+                 !lower.includes('gemma') &&
+                 !lower.includes('1.5');
         });
 
         // 1. Separate into strict speed tiers:
@@ -1637,61 +1638,81 @@ Return valid JSON only matching this schema:
   ]
 }`;
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-    const payload = {
-      contents: [{ parts: [{ text: promptText }] }],
-      generationConfig: {
-        temperature: 0.1,
-        responseMimeType: "application/json"
+    const availableModels = await this.getAvailableGeminiModels(apiKey);
+    let lastError = null;
+
+    for (const model of availableModels) {
+      if (statusTextEl) {
+        statusTextEl.textContent = `"${query}" ➔ ${model} sorgulanıyor...`;
       }
-    };
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+      const payload = {
+        contents: [{ parts: [{ text: promptText }] }],
+        generationConfig: {
+          temperature: 0.1,
+          responseMimeType: "application/json"
+        }
+      };
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
 
-    if (!response.ok) {
-      const errJson = await response.json().catch(() => ({}));
-      throw new Error(`Gemini API Hatası: ${response.status} ${errJson.error?.message || response.statusText}`);
+        if (response.ok) {
+          const data = await response.json();
+          const rawAiText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (rawAiText) {
+            try {
+              let parsed = null;
+              try {
+                parsed = JSON.parse(rawAiText);
+              } catch (e) {
+                const match = rawAiText.match(/\{[\s\S]*\}/);
+                if (match) {
+                  parsed = JSON.parse(match[0]);
+                } else {
+                  throw new Error('Yapay zeka yanıtı geçerli JSON formatında değil.');
+                }
+              }
+
+              let rawList = [];
+              if (parsed && Array.isArray(parsed.entries)) {
+                rawList = parsed.entries;
+              } else if (Array.isArray(parsed)) {
+                rawList = parsed;
+              } else if (parsed && typeof parsed === 'object') {
+                rawList = [parsed];
+              }
+
+              const normalizedEntries = [];
+              rawList.forEach(rawItem => {
+                const isArrayRow = Array.isArray(rawItem);
+                const norm = this.normalizeEntry(rawItem, isArrayRow);
+                if (norm && norm.name) {
+                  normalizedEntries.push(norm);
+                }
+              });
+
+              if (normalizedEntries.length > 0) {
+                return normalizedEntries;
+              }
+            } catch (pErr) {
+              lastError = `JSON Çözümleme hatası (${model}): ${pErr.message}`;
+            }
+          }
+        } else {
+          const errJson = await response.json().catch(() => ({}));
+          lastError = errJson.error?.message || `HTTP ${response.status} (${model})`;
+        }
+      } catch (netErr) {
+        lastError = `${netErr.message} (${model})`;
+      }
     }
 
-    const data = await response.json();
-    const rawAiText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!rawAiText) throw new Error('Yapay zekadan boş yanıt döndü.');
-
-    let parsed = null;
-    try {
-      parsed = JSON.parse(rawAiText);
-    } catch (e) {
-      const match = rawAiText.match(/\{[\s\S]*\}/);
-      if (match) {
-        parsed = JSON.parse(match[0]);
-      } else {
-        throw new Error('Yapay zeka yanıtı geçerli JSON formatında değil.');
-      }
-    }
-
-    let rawList = [];
-    if (parsed && Array.isArray(parsed.entries)) {
-      rawList = parsed.entries;
-    } else if (Array.isArray(parsed)) {
-      rawList = parsed;
-    } else if (parsed && typeof parsed === 'object') {
-      rawList = [parsed];
-    }
-
-    const normalizedEntries = [];
-    rawList.forEach(rawItem => {
-      const isArrayRow = Array.isArray(rawItem);
-      const norm = this.normalizeEntry(rawItem, isArrayRow);
-      if (norm && norm.name) {
-        normalizedEntries.push(norm);
-      }
-    });
-
-    return normalizedEntries;
+    throw new Error(lastError || `"${query}" ile ilgili resmi bir D&D 3.5e kuralı veya eşyası bulunamadı.`);
   },
 
   async queryAiRule() {
