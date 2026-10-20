@@ -2003,15 +2003,20 @@ Return valid JSON only matching this schema:
                 <button onclick="RuleMaster.equipAiResultToCharacter(${idx})" class="bg-purple-900 hover:bg-purple-800 border border-purple-600 text-purple-200 text-xs px-2.5 py-1.5 rounded-lg transition font-bold" title="Ana eşyayı ve alt güçlerini tek seferde kuşanır">
                   ⚡ Hepsini Kuşan
                 </button>
+              ` : (isChild ? `
+                <span class="text-[11px] text-purple-300 bg-purple-950/80 border border-purple-700/60 rounded-lg px-2.5 py-1.5 font-medium flex items-center gap-1.5 shadow-sm" title="Alt güçler ana öğe (${item.parent || 'Parent'}) ile bir bütün olarak eklenir ve kuşanılır.">
+                  <span>🔗</span>
+                  <span>Ana Öğe ile Birlikte Eklenir</span>
+                </span>
               ` : `
                 <button onclick="RuleMaster.addAiResultToDb(${idx}, false)" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1">
                   <span>📥</span>
-                  <span>${isChild ? 'Yalnızca Bunu Ekle' : 'DB\'ye Ekle'}</span>
+                  <span>DB'ye Ekle</span>
                 </button>
                 <button onclick="RuleMaster.equipAiResultToCharacter(${idx})" class="bg-emerald-950 hover:bg-emerald-900 border border-emerald-700 text-emerald-300 text-xs px-2.5 py-1.5 rounded-lg transition" title="Karaktere Kuşan / Ekle">
                   ⚡ Kuşan
                 </button>
-              `}
+              `)}
               <button onclick="RuleMaster.editAiResultInModal(${idx})" class="bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition" title="29 Sütunlu Formda Aç">
                 ✏️ Düzenle
               </button>
@@ -2050,14 +2055,25 @@ Return valid JSON only matching this schema:
     container.innerHTML = html;
   },
 
-  addAiResultToDb(index, includeChildren = false) {
+  addAiResultToDb(index, includeChildren = true) {
     if (index >= 0 && index < this.lastAiResults.length) {
-      const item = this.lastAiResults[index];
-      const itemsToAdd = [item];
-      if (includeChildren && (!item.parent || item.parent === '-')) {
-        const children = this.getChildrenForEntry(item, this.lastAiResults);
-        children.forEach(c => itemsToAdd.push(c));
+      let item = this.lastAiResults[index];
+      const isChild = item.isChild || (item.parent && item.parent !== '-');
+
+      // Parent-Child ilişkileri bütün olarak eklensin: Eğer bir alt güç (child) seçildiyse,
+      // otomatik olarak ana öğesi bulunup tüm aile birlikte eklenir!
+      if (isChild) {
+        const pName = this.cleanArrow(item.parent || '').toLowerCase().trim();
+        const pIdx = this.lastAiResults.findIndex(entry => this.cleanArrow(entry.name).toLowerCase().trim() === pName);
+        if (pIdx >= 0) {
+          index = pIdx;
+          item = this.lastAiResults[pIdx];
+        }
       }
+
+      const itemsToAdd = [item];
+      const children = this.getChildrenForEntry(item, this.lastAiResults);
+      children.forEach(c => itemsToAdd.push(c));
 
       itemsToAdd.forEach(it => {
         const copy = JSON.parse(JSON.stringify(it));
@@ -2124,7 +2140,13 @@ Return valid JSON only matching this schema:
 
   equipAiResultToCharacter(index) {
     if (index >= 0 && index < this.lastAiResults.length) {
-      const item = JSON.parse(JSON.stringify(this.lastAiResults[index]));
+      let item = JSON.parse(JSON.stringify(this.lastAiResults[index]));
+      const isChild = item.isChild || (item.parent && item.parent !== '-');
+      if (isChild) {
+        const pName = this.cleanArrow(item.parent || '').toLowerCase().trim();
+        const pParent = this.lastAiResults.find(entry => this.cleanArrow(entry.name).toLowerCase().trim() === pName);
+        if (pParent) item = JSON.parse(JSON.stringify(pParent));
+      }
       this.equipItemWithChildren(item, this.lastAiResults);
     }
   },
@@ -3161,15 +3183,20 @@ Return valid JSON only matching this schema:
                 <button onclick="RuleMaster.equipInlineResultToCharacter(${idx})" class="bg-purple-900 hover:bg-purple-800 border border-purple-600 text-purple-200 text-xs px-2.5 py-1 rounded-lg transition font-bold" title="Ana eşya ve tüm alt güçlerini tek seferde kuşanır">
                   ⚡ Hepsini Kuşan
                 </button>
+              ` : (isChild ? `
+                <span class="text-[10px] text-purple-300 bg-purple-950/80 border border-purple-700/60 rounded-lg px-2.5 py-1 font-medium flex items-center gap-1.5 shadow-sm" title="Alt güçler ana öğe (${item.parent || 'Parent'}) ile bir bütün olarak eklenir ve kuşanılır.">
+                  <span>🔗</span>
+                  <span>Ana Öğe ile Birlikte Eklenir</span>
+                </span>
               ` : `
                 <button onclick="RuleMaster.addInlineResultToDb(${idx}, false)" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-2.5 py-1 rounded-lg shadow transition flex items-center gap-1">
                   <span>📥</span>
-                  <span>${isChild ? 'Yalnızca Bunu Ekle' : 'DB\'ye Ekle'}</span>
+                  <span>DB'ye Ekle</span>
                 </button>
                 <button onclick="RuleMaster.equipInlineResultToCharacter(${idx})" class="bg-purple-950 hover:bg-purple-900 border border-purple-700 text-purple-300 text-xs px-2 py-1 rounded-lg transition" title="Karaktere Kuşan">
                   ⚡ Kuşan
                 </button>
-              `}
+              `)}
               <button onclick="RuleMaster.editInlineResultInModal(${idx})" class="bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs px-2 py-1 rounded-lg border border-slate-700 transition" title="29 Sütunlu Formda İncele/Düzenle">
                 ✏️ Düzenle
               </button>
@@ -3207,13 +3234,23 @@ Return valid JSON only matching this schema:
 
   addInlineResultToDb(idx, includeChildren = true) {
     if (!this._inlineEntries || !this._inlineEntries[idx]) return;
-    const item = this._inlineEntries[idx];
-    const itemsToAdd = [item];
+    let item = this._inlineEntries[idx];
+    const isChild = item.isChild || (item.parent && item.parent !== '-');
 
-    if (includeChildren && (!item.parent || item.parent === '-')) {
-      const children = this.getChildrenForEntry(item, this._inlineEntries);
-      children.forEach(c => itemsToAdd.push(c));
+    // Parent-Child ilişkileri bütün olarak eklensin: Eğer bir alt güç (child) seçildiyse,
+    // otomatik olarak ana öğesi bulunup tüm aile birlikte eklenir!
+    if (isChild) {
+      const pName = RuleMaster.cleanArrow(item.parent || '').toLowerCase().trim();
+      const pIdx = this._inlineEntries.findIndex(entry => RuleMaster.cleanArrow(entry.name).toLowerCase().trim() === pName);
+      if (pIdx >= 0) {
+        idx = pIdx;
+        item = this._inlineEntries[pIdx];
+      }
     }
+
+    const itemsToAdd = [item];
+    const children = this.getChildrenForEntry(item, this._inlineEntries);
+    children.forEach(c => itemsToAdd.push(c));
 
     itemsToAdd.forEach(it => {
       const copy = JSON.parse(JSON.stringify(it));
@@ -3269,7 +3306,13 @@ Return valid JSON only matching this schema:
 
   equipInlineResultToCharacter(idx) {
     if (!this._inlineEntries || !this._inlineEntries[idx]) return;
-    const item = this._inlineEntries[idx];
+    let item = this._inlineEntries[idx];
+    const isChild = item.isChild || (item.parent && item.parent !== '-');
+    if (isChild) {
+      const pName = RuleMaster.cleanArrow(item.parent || '').toLowerCase().trim();
+      const pParent = this._inlineEntries.find(entry => RuleMaster.cleanArrow(entry.name).toLowerCase().trim() === pName);
+      if (pParent) item = pParent;
+    }
     this.equipItemWithChildren(item, this._inlineEntries);
   },
 
