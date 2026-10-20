@@ -1748,6 +1748,64 @@ Return valid JSON only matching this schema:
     return await this.fetchSingleAiRuleObjects(query, categoryHint, apiKey, statusTextEl);
   },
 
+  entryToRow(entry) {
+    if (!entry) return [];
+    if (Array.isArray(entry) && entry.name) return entry;
+    // Map canonical 29-column row array
+    const row = [
+      entry.name || '',                             // 0
+      entry.type || 'Feat',                         // 1
+      entry.slot || 'None',                         // 2
+      entry.parent || '-',                          // 3
+      entry.source || 'Core 3.5e',                  // 4
+      entry.benefit || entry.description || '',     // 5
+      entry.bonusType || 'Untyped',                 // 6
+      entry.scope || 'None / General',              // 7
+      entry.strBonus ?? '',                         // 8
+      entry.dexBonus ?? '',                         // 9
+      entry.conBonus ?? '',                         // 10
+      entry.intBonus ?? '',                         // 11
+      entry.wisBonus ?? '',                         // 12
+      entry.chaBonus ?? '',                         // 13
+      entry.acBonus ?? '',                          // 14
+      entry.hpBonus ?? '',                          // 15
+      entry.attBonus ?? '',                         // 16
+      entry.dmgBonus ?? '',                         // 17
+      entry.fortBonus ?? '',                        // 18
+      entry.refBonus ?? '',                         // 19
+      entry.willBonus ?? '',                        // 20
+      entry.skillBonus ?? '',                       // 21
+      entry.clBonus ?? '',                          // 22
+      entry.speedBonus ?? '',                       // 23
+      entry.dice || entry.extraDmg || '',           // 24
+      entry.action || 'Passive',                    // 25
+      entry.duration || 'Continuous',               // 26
+      entry.weight ?? 0,                            // 27
+      entry.cost ?? 0                               // 28
+    ];
+    // Attach all object properties directly onto the array row for complete compatibility
+    Object.assign(row, entry);
+    return row;
+  },
+
+  async fetchSingleAiRuleRows(query, categoryHint, apiKey, statusTextEl = null) {
+    const entries = await this.fetchSingleAiRuleObjects(query, categoryHint, apiKey, statusTextEl);
+    return (entries || []).map(e => this.entryToRow(e));
+  },
+
+  convertRowsToEntries(rows) {
+    if (!Array.isArray(rows)) return [];
+    return rows.map(r => {
+      if (r && typeof r === 'object' && !Array.isArray(r)) {
+        return this.normalizeEntry(r, false);
+      }
+      if (Array.isArray(r)) {
+        return this.normalizeEntry(r, !r.type && !r.benefit);
+      }
+      return r;
+    });
+  },
+
   async importMultipleFromAi() {
     const input = document.getElementById('ai-bulk-import-input');
     const btn = document.getElementById('ai-bulk-import-btn');
