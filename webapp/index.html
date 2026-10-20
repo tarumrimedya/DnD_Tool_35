@@ -254,14 +254,18 @@
     <!-- Card 5: Eylemler & Dinlenme (En Sağda, Yarı En: 1 Kolon) -->
     <div class="bg-dndCard border border-dndBorder rounded-xl p-2.5 sm:p-3 flex flex-col justify-between shadow col-span-1 lg:col-span-1">
       <div class="text-xs font-bold text-amber-400 flex items-center gap-1 mb-1 truncate text-[11px]">☀️ DİNLENME</div>
-      <div class="grid grid-cols-2 gap-1 my-1">
-        <button onclick="performLongRest()" class="bg-slate-800 hover:bg-slate-700 text-white rounded p-1 text-[10px] font-bold border border-slate-700 flex items-center justify-center gap-0.5 transition truncate cursor-pointer" title="Long Rest (Uzun Dinlenme)">
-          <span>☀️</span>
-          <span>Rest</span>
+      <div class="grid grid-cols-3 gap-1 my-1">
+        <button onclick="performRest()" class="bg-slate-800 hover:bg-slate-700 text-emerald-300 rounded p-1 text-[10px] font-bold border border-slate-700 flex items-center justify-center gap-0.5 transition truncate cursor-pointer" title="Rest (Kısa Dinlenme - Manevraları Yeniler)">
+          <span>☕</span>
+          <span class="truncate">Rest</span>
         </button>
-        <button onclick="performEncounterReset()" class="bg-slate-800 hover:bg-slate-700 text-white rounded p-1 text-[10px] font-bold border border-slate-700 flex items-center justify-center gap-0.5 transition truncate cursor-pointer" title="Karşılaşmayı Sıfırla">
+        <button onclick="performLongRest()" class="bg-slate-800 hover:bg-slate-700 text-amber-300 rounded p-1 text-[10px] font-bold border border-slate-700 flex items-center justify-center gap-0.5 transition truncate cursor-pointer" title="Long Rest (Uzun Dinlenme - Tüm Büyü, Manevra, Eşya ve Canı Yeniler)">
+          <span>☀️</span>
+          <span class="truncate">L.Rest</span>
+        </button>
+        <button onclick="performEncounterReset()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 rounded p-1 text-[10px] font-bold border border-slate-700 flex items-center justify-center gap-0.5 transition truncate cursor-pointer" title="Karşılaşmayı Sıfırla">
           <span>🔄</span>
-          <span>Reset</span>
+          <span class="truncate">Reset</span>
         </button>
       </div>
       <button onclick="advanceNextRound()" class="w-full bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-500/40 rounded py-1 px-1 text-[10px] font-bold flex items-center justify-center gap-1 transition shadow-sm cursor-pointer" title="Sonraki tura geçer, aktif buff sürelerini 1 tur azaltır">
@@ -1141,10 +1145,13 @@
                 <span>⏭️</span><span class="tracking-wide">Sonraki Tur</span>
                 <span class="round-counter-badge bg-indigo-950/80 text-indigo-200 border border-indigo-300/40 px-2 py-0.5 rounded-md text-[11px] font-mono font-black shadow-sm min-w-[3.25rem] text-center inline-block">Tur 1</span>
               </button>
-              <button onclick="performEncounterReset()" class="text-xs bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 font-medium px-2 py-1 rounded transition flex items-center gap-1">
+              <button onclick="performEncounterReset()" class="text-xs bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 font-medium px-2 py-1 rounded transition flex items-center gap-1" title="Karşılaşma turunu ve kısa buffları sıfırla">
                 <span>🔄</span><span>Enc. Sıfırla</span>
               </button>
-              <button onclick="performLongRest()" class="text-xs bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 font-medium px-2 py-1 rounded transition flex items-center gap-1">
+              <button onclick="performRest()" class="text-xs bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 font-medium px-2 py-1 rounded transition flex items-center gap-1" title="Rest: Manevraları tazele">
+                <span>☕</span><span>Rest</span>
+              </button>
+              <button onclick="performLongRest()" class="text-xs bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 font-medium px-2 py-1 rounded transition flex items-center gap-1" title="Long Rest: Tüm büyü ve manevra slotları ile canı tazele">
                 <span>☀️</span><span>Long Rest</span>
               </button>
             </div>
@@ -18640,14 +18647,31 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       character.hp.temp = 0;
       character.hp.nonlethal = 0;
 
+      // 1. Spontaneous Arcane Spell Slots (Sorcerer / Bard)
       if (character.spellcasting && Array.isArray(character.spellcasting.slots)) {
         character.spellcasting.slots.forEach(s => s.used = 0);
       }
 
-      if (character.tomeOfBattle && Array.isArray(character.tomeOfBattle.readiedManeuvers)) {
-        character.tomeOfBattle.readiedManeuvers.forEach(m => m.expended = false);
+      // 2. Prepared Wizard Spell Slots
+      if (character.spellcasting && Array.isArray(character.spellcasting.preparedSlots)) {
+        character.spellcasting.preparedSlots.forEach(s => s.used = 0);
       }
 
+      // 3. Divine Spell Slots (Cleric / Druid)
+      if (character.spellcasting && Array.isArray(character.spellcasting.divineSlots)) {
+        character.spellcasting.divineSlots.forEach(s => s.used = 0);
+      }
+
+      // 4. Tome of Battle Maneuvers (All readied maneuvers refreshed)
+      let refreshedManeuvers = 0;
+      if (character.tomeOfBattle && Array.isArray(character.tomeOfBattle.readiedManeuvers)) {
+        character.tomeOfBattle.readiedManeuvers.forEach(m => {
+          m.expended = false;
+          refreshedManeuvers++;
+        });
+      }
+
+      // 5. Expire duration buffs
       if (Array.isArray(character.buffs)) {
         character.buffs.forEach(b => {
           if (b.rounds !== null && b.rounds !== undefined) {
@@ -18656,15 +18680,15 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         });
       }
 
-      // Reset temporary periodic HP effects
+      // 6. Reset temporary periodic HP effects
       if (Array.isArray(character.periodicHpEffects)) {
         character.periodicHpEffects = [];
       }
 
-      // Reset daily charges on magic items (e.g. Ring of Sending 3/day)
+      // 7. Reset daily charges on magic items (e.g. Ring of Sending 3/day)
       let refreshedDailyItems = 0;
       const resetCharges = (item) => {
-        if (item && item.dailyCharges && typeof item.dailyCharges.max === 'number') {
+        if (item && item.dailyCharges && typeof item.dailyCharges.max === "number") {
           item.dailyCharges.current = item.dailyCharges.max;
           refreshedDailyItems++;
         }
@@ -18682,15 +18706,49 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
       updateRoundDisplays();
       saveStateToStorage(true);
+      if (typeof renderManeuvers === "function") renderManeuvers();
+      if (typeof renderSpellSlots === "function") renderSpellSlots();
       renderAll();
 
       showDiceTopToast({
-        icon: '☀️',
-        title: 'Uzun Dinlenme Tamamlandı',
-        breakdown: `HP maksimuma getirildi • Slotlar ve manevralar tazelendi${refreshedDailyItems > 0 ? ` • ${refreshedDailyItems} Günlük Eşya Şarjı (X/gün) yenilendi` : ''}`,
-        total: 'Full HP'
+        icon: "☀️",
+        title: "Uzun Dinlenme Tamamlandı (Long Rest)",
+        breakdown: "Tüm büyü slotları (Arcane, Hazırlık, İlahi) ve " + (refreshedManeuvers > 0 ? refreshedManeuvers + " manevra" : "manevralar") + " tazelendi • Can ve eşyalar yenilendi" + (refreshedDailyItems > 0 ? " • " + refreshedDailyItems + " Günlük Eşya Şarjı (X/gün) yenilendi" : ""),
+        total: "Full HP & Slotlar"
       });
     }
+
+    function performRest() {
+      if (!character) return;
+
+      // Reset all readied Tome of Battle maneuvers
+      let count = 0;
+      if (character.tomeOfBattle && Array.isArray(character.tomeOfBattle.readiedManeuvers)) {
+        character.tomeOfBattle.readiedManeuvers.forEach(m => {
+          m.expended = false;
+          count++;
+        });
+      }
+
+      saveStateToStorage(true);
+      if (typeof renderManeuvers === "function") renderManeuvers();
+      renderAll();
+
+      showDiceTopToast({
+        icon: "🔄",
+        title: "Dinlenme Tamamlandı (Rest)",
+        breakdown: count > 0
+          ? ("Tüm savaş manevraları (" + count + " kuşanılan) tazelendi ve kullanıma hazır.")
+          : "Tüm savaş manevraları tazelendi ve kullanıma hazır.",
+        total: "Manevralar Hazır"
+      });
+    }
+
+    // Global window mappings
+    window.performRest = performRest;
+    window.rest = performRest;
+    window.performLongRest = performLongRest;
+    window.longRest = performLongRest;
 
     function performEncounterReset() {
       if (!character) return;
