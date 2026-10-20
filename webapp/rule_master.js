@@ -1,4 +1,4 @@
-﻿/**
+/**
  * D&D 3.5e Rule Master & Master_DB Management Engine
  * Features:
  * 1. Full CRUD for Master_DB with 29-column architecture
@@ -1953,7 +1953,7 @@ Return valid JSON only matching this schema:
       if (item.attBonus) statPills.push(`+${item.attBonus} Atk`);
       if (item.dmgBonus) statPills.push(`+${item.dmgBonus} Dmg`);
       if (item.speedBonus) statPills.push(`+${item.speedBonus} ft Hız`);
-      if (item.extraDmg || item.dice) statPills.push(`🎲 ${item.extraDmg || item.dice}`);
+      if (item.extraDmg || item.dice) statPills.push(`⚔️ ${item.extraDmg || item.dice}`);
 
       // Specific badges (Level, School, Discipline, Child Button)
       const specificBadges = [];

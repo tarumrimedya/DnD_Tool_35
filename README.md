@@ -34,7 +34,7 @@ Bu uygulama herkese açık ortak bir sunucu yerine **her kullanıcının kendi �
    - `gemini-3.5-flash-lite`, `gemini-3.5-flash`, `gemini-3.8-flash`, `gemini-2.5-flash-lite` ve `gemini-2.5-flash` modelleriyle serbest metin veya kural açıklamalarını tek tıkla 29 sütunlu D&D 3.5e Master DB formatına ayrıştırır.
    - Parent-Child (ebeveyn eşya ve alt güçleri) ilişkili karmaşık büyülü eşyaları tek seferde ayrıştırıp envantere ve kuşanılan yuvalara ekler.
 
-3. **🎲 3D Fizik Simülasyonlu Animasyonlu Zar Atıcı (`dice3d.js`):**
+3. **⚡ 3D Fizik Simülasyonlu Animasyonlu Zar Atıcı (`dice3d.js`):**
    - Saldırı zarı (d20), hasar zarları (d6, d8), kayıt zarları (saves) ve beceri zarlarında (skills) ekranda gerçekçi dönme, sekme ve çarpışma fizikli 3D zarlar yuvarlanır.
 
 4. **⚙️ Bildirimsel Kural ve Modifiye Motoru (`rule_engine.js`):**
