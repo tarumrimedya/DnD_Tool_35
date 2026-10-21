@@ -1,4 +1,4 @@
-[
+﻿[
     {
         "name":  "Jovar +4",
         "type":  "Weapon",
@@ -937,14 +937,14 @@
                  ]
     },
     {
-        "name":  "↳ Blade of Blood (5 HP Feda: 3d6)",
+        "name":  "â†³ Blade of Blood (5 HP Feda: 3d6)",
         "type":  "Spell",
         "slot":  "None",
         "parent":  "Blade of Blood",
         "prereq":  "-",
         "source":  "Player\u0027s Handbook II p.103",
-        "benefit":  "5 HP feda ederek toplam +3d6 ekstra silah hasarı verir.",
-        "description":  "5 HP feda ederek toplam +3d6 ekstra silah hasarı verir.",
+        "benefit":  "5 HP feda ederek toplam +3d6 ekstra silah hasarÄ± verir.",
+        "description":  "5 HP feda ederek toplam +3d6 ekstra silah hasarÄ± verir.",
         "bonusType":  "Untyped",
         "scope":  "Melee Only",
         "role":  "Secondary Power",
@@ -989,14 +989,14 @@
         "selfHpCost":  5
     },
     {
-        "name":  "↳ Blade of Blood (Fedasız: 1d6)",
+        "name":  "â†³ Blade of Blood (FedasÄ±z: 1d6)",
         "type":  "Spell",
         "slot":  "None",
         "parent":  "Blade of Blood",
         "prereq":  "-",
         "source":  "Player\u0027s Handbook II p.103",
-        "benefit":  "HP feda etmeden +1d6 ekstra silah hasarı verir.",
-        "description":  "HP feda etmeden +1d6 ekstra silah hasarı verir.",
+        "benefit":  "HP feda etmeden +1d6 ekstra silah hasarÄ± verir.",
+        "description":  "HP feda etmeden +1d6 ekstra silah hasarÄ± verir.",
         "bonusType":  "Untyped",
         "scope":  "Melee Only",
         "role":  "Secondary Power",
@@ -1037,7 +1037,7 @@
                  ],
         "isChild":  true,
         "effectType":  "damage",
-        "childButtonLabel":  "Fedasız (1d6)"
+        "childButtonLabel":  "FedasÄ±z (1d6)"
     },
     {
         "name":  "Potion of Cure Serious Wounds",
@@ -1205,7 +1205,12 @@
         "role":  "Utility / Skills",
         "name":  "Vest of Escape",
         "slot":  "Torso",
-        "benefit":  "Grants a +2 competence bonus on Disable Device and a +10 competence bonus on Escape Artist checks."
+        "benefit":  "Grants a +4 competence bonus on Open Lock and a +6 competence bonus on Escape Artist checks.",
+        "bonusType":  "Competence",
+        "skillBonuses":  {
+                             "Open Lock":  4,
+                             "Escape Artist":  6
+                         }
     },
     {
         "source":  "DMG p.250",
@@ -1222,7 +1227,10 @@
         "role":  "Mobility / Utility",
         "name":  "Boots of Striding and Springing",
         "slot":  "Boots",
-        "benefit":  "Increases base land speed by +10 feet and grants a +5 competence bonus on Jump checks."
+        "benefit":  "Increases base land speed by +10 feet and grants a +5 competence bonus on Jump checks.",
+        "skillBonuses":  {
+                             "Jump":  5
+                         }
     },
     {
         "maxDex":  6,
@@ -2127,14 +2135,14 @@
                  ]
     },
     {
-        "name":  "Skilleri Birleştir (Skill Consolidation)",
+        "name":  "Skilleri BirleÅŸtir (Skill Consolidation)",
         "type":  "House Rule",
         "category":  "House Rule",
         "slot":  "None",
         "parent":  "Alternative Rules",
         "prereq":  "-",
         "source":  "Unearthed Arcana / Pathfinder 1e",
-        "benefit":  "Beceriler 7 konsolide grupta (Athletics, Stealth, Perception, Acrobatics, Thievery, Diplomacy, Linguistics) birleştirilerek oyun akışı sadeleştirilir. Birleşik becerinin rankı altındaki becerilerin en yükseğidir.",
+        "benefit":  "Beceriler 7 konsolide grupta (Athletics, Stealth, Perception, Acrobatics, Thievery, Diplomacy, Linguistics) birleÅŸtirilerek oyun akÄ±ÅŸÄ± sadeleÅŸtirilir. BirleÅŸik becerinin rankÄ± altÄ±ndaki becerilerin en yÃ¼kseÄŸidir.",
         "bonusType":  "Rule",
         "scope":  "Skills",
         "action":  "Passive",
@@ -2155,7 +2163,7 @@
         "weight":  1,
         "cost":  1500,
         "source":  "Magic Item Compendium p.190",
-        "benefit":  "Günde 3 kez, sayfalarına 1 dakika göz gezdirerek yapılacak herhangi bir Knowledge kontrolüne +5 Competence bonusu verir (eğitimsiz dahi atılabilir).",
+        "benefit":  "GÃ¼nde 3 kez, sayfalarÄ±na 1 dakika gÃ¶z gezdirerek yapÄ±lacak herhangi bir Knowledge kontrolÃ¼ne +5 Competence bonusu verir (eÄŸitimsiz dahi atÄ±labilir).",
         "bonusType":  "Competence",
         "scope":  "Knowledge",
         "skillBonus":  5,
@@ -2175,7 +2183,7 @@
         "weight":  0,
         "cost":  20000,
         "source":  "DMG p.267",
-        "benefit":  "Taşıyıcısına tüm Saving Throw, Ability Check ve tüm Beceri kontrollerinde (Knowledge dahil) +1 Luck bonusu sağlar.",
+        "benefit":  "TaÅŸÄ±yÄ±cÄ±sÄ±na tÃ¼m Saving Throw, Ability Check ve tÃ¼m Beceri kontrollerinde (Knowledge dahil) +1 Luck bonusu saÄŸlar.",
         "bonusType":  "Luck",
         "scope":  "All Skills",
         "skillBonus":  1,
@@ -2186,7 +2194,9 @@
                      "skills",
                      "saves",
                      "luckstone"
-                 ]
+                 ],
+        "saveBonus":  1,
+        "abilityCheckBonus":  1
     },
     {
         "name":  "Pale Green Ioun Stone",
@@ -2196,7 +2206,7 @@
         "weight":  0,
         "cost":  30000,
         "source":  "DMG p.260",
-        "benefit":  "Başın etrafında dönerek tüm saldırı zarlarına, kurtarma zarlarına ve tüm beceri kontrollerine +1 Competence bonusu verir.",
+        "benefit":  "BaÅŸÄ±n etrafÄ±nda dÃ¶nerek tÃ¼m saldÄ±rÄ± zarlarÄ±na, kurtarma zarlarÄ±na ve tÃ¼m beceri kontrollerine +1 Competence bonusu verir.",
         "bonusType":  "Competence",
         "scope":  "All Skills",
         "skillBonus":  1,
@@ -2206,7 +2216,10 @@
                      "ioun-stone",
                      "competence",
                      "skills"
-                 ]
+                 ],
+        "attBonus":  1,
+        "saveBonus":  1,
+        "abilityCheckBonus":  1
     },
     {
         "name":  "Collector of Stories",
@@ -2215,7 +2228,7 @@
         "slot":  "None",
         "prereq":  "Knowledge 5 ranks",
         "source":  "Complete Scoundrel p.85",
-        "benefit":  "Karşılaşılan canavarları tanımlamak ve zayıflıklarını öğrenmek için yapılan eğitilmiş Knowledge kontrollerine +5 Competence bonusu verir.",
+        "benefit":  "KarÅŸÄ±laÅŸÄ±lan canavarlarÄ± tanÄ±mlamak ve zayÄ±flÄ±klarÄ±nÄ± Ã¶ÄŸrenmek iÃ§in yapÄ±lan eÄŸitilmiÅŸ Knowledge kontrollerine +5 Competence bonusu verir.",
         "bonusType":  "Competence",
         "scope":  "Knowledge",
         "skillBonus":  5,
@@ -2233,8 +2246,8 @@
         "parent":  "-",
         "prereq":  "-",
         "source":  "Complete Divine p.168",
-        "benefit":  "İlahi ilhamla zihni açar. Süresi boyunca tüm Knowledge kontrollerine +5 Insight bonusu (Knowledge Domain varsa +10) sağlar.",
-        "description":  "İlahi ilhamla zihni açar. Süresi boyunca tüm Knowledge kontrollerine +5 Insight bonusu (Knowledge Domain varsa +10) sağlar.",
+        "benefit":  "Ä°lahi ilhamla zihni aÃ§ar. SÃ¼resi boyunca tÃ¼m Knowledge kontrollerine +5 Insight bonusu (Knowledge Domain varsa +10) saÄŸlar.",
+        "description":  "Ä°lahi ilhamla zihni aÃ§ar. SÃ¼resi boyunca tÃ¼m Knowledge kontrollerine +5 Insight bonusu (Knowledge Domain varsa +10) saÄŸlar.",
         "bonusType":  "Insight",
         "scope":  "Knowledge",
         "role":  "Spell / Buff / Lore",
@@ -2281,7 +2294,7 @@
         "category":  "Knowledge Skill",
         "slot":  "None",
         "source":  "PHB p.78",
-        "benefit":  "Düzlemler, Astral/Ethereal seyahat, dış düzlem varlıkları (Fiend, Celestial vb.) hakkında derin bilgi.",
+        "benefit":  "DÃ¼zlemler, Astral/Ethereal seyahat, dÄ±ÅŸ dÃ¼zlem varlÄ±klarÄ± (Fiend, Celestial vb.) hakkÄ±nda derin bilgi.",
         "stat":  "int",
         "untrained":  false,
         "acp":  false,
@@ -2299,7 +2312,7 @@
         "category":  "Knowledge Skill",
         "slot":  "None",
         "source":  "PHB p.78",
-        "benefit":  "Araziler, haritalar, topoğrafya, iklimler ve yerleşimler.",
+        "benefit":  "Araziler, haritalar, topoÄŸrafya, iklimler ve yerleÅŸimler.",
         "stat":  "int",
         "untrained":  false,
         "acp":  false,
@@ -2317,7 +2330,7 @@
         "category":  "Knowledge Skill",
         "slot":  "None",
         "source":  "PHB p.78",
-        "benefit":  "Yeraltı dünyası, mağaralar, zindan ekolojisi, Aberration yaratıkları ve yön bulma.",
+        "benefit":  "YeraltÄ± dÃ¼nyasÄ±, maÄŸaralar, zindan ekolojisi, Aberration yaratÄ±klarÄ± ve yÃ¶n bulma.",
         "stat":  "int",
         "untrained":  false,
         "acp":  false,
@@ -2335,7 +2348,7 @@
         "category":  "Knowledge Skill",
         "slot":  "None",
         "source":  "Heroes of Battle / Tome of Battle",
-        "benefit":  "Savaş taktikleri, ordu konuşlanması, muharebe stratejisi ve kuşatma manevraları.",
+        "benefit":  "SavaÅŸ taktikleri, ordu konuÅŸlanmasÄ±, muharebe stratejisi ve kuÅŸatma manevralarÄ±.",
         "stat":  "int",
         "untrained":  false,
         "acp":  false,
@@ -2354,7 +2367,7 @@
         "category":  "Knowledge Skill",
         "slot":  "None",
         "source":  "PHB p.78",
-        "benefit":  "Bina yapıları, kaleler, tüneller, köprüler, yapısal zayıflıklar ve tahkimatlar.",
+        "benefit":  "Bina yapÄ±larÄ±, kaleler, tÃ¼neller, kÃ¶prÃ¼ler, yapÄ±sal zayÄ±flÄ±klar ve tahkimatlar.",
         "stat":  "int",
         "untrained":  false,
         "acp":  false,
@@ -2372,7 +2385,7 @@
         "category":  "Knowledge Skill",
         "slot":  "None",
         "source":  "PHB p.78",
-        "benefit":  "Soylu hanedanlar, armalar, saray protokolleri, unvanlar ve veraset kanunları.",
+        "benefit":  "Soylu hanedanlar, armalar, saray protokolleri, unvanlar ve veraset kanunlarÄ±.",
         "stat":  "int",
         "untrained":  false,
         "acp":  false,
@@ -2390,7 +2403,7 @@
         "category":  "Knowledge Skill",
         "slot":  "None",
         "source":  "PHB p.78",
-        "benefit":  "Antik krallıklar, tarihi savaşlar, efsanevi kahramanlar ve geçmiş olaylar.",
+        "benefit":  "Antik krallÄ±klar, tarihi savaÅŸlar, efsanevi kahramanlar ve geÃ§miÅŸ olaylar.",
         "stat":  "int",
         "untrained":  false,
         "acp":  false,
@@ -3793,14 +3806,14 @@
                  ]
     },
     {
-        "name":  "↳ Chill Touch (Undead Panik)",
+        "name":  "â†³ Chill Touch (Undead Panik)",
         "type":  "Spell",
         "slot":  "None",
         "parent":  "Chill Touch",
         "prereq":  "-",
         "source":  "PHB p.209",
-        "benefit":  "Undead yaratıklar hasar almaz; Will kurtulma zarını kaçırırsa 1d4+CL tur Panicked olarak kaçar.",
-        "description":  "Undead yaratıklar hasar almaz; Will kurtulma zarını kaçırırsa 1d4+CL tur Panicked olarak kaçar.",
+        "benefit":  "Undead yaratÄ±klar hasar almaz; Will kurtulma zarÄ±nÄ± kaÃ§Ä±rÄ±rsa 1d4+CL tur Panicked olarak kaÃ§ar.",
+        "description":  "Undead yaratÄ±klar hasar almaz; Will kurtulma zarÄ±nÄ± kaÃ§Ä±rÄ±rsa 1d4+CL tur Panicked olarak kaÃ§ar.",
         "bonusType":  "Untyped",
         "scope":  "Spells",
         "role":  "Secondary Power",
@@ -3895,14 +3908,14 @@
                  ]
     },
     {
-        "name":  "↳ Pyrotechnics (Fireworks: Körlük)",
+        "name":  "â†³ Pyrotechnics (Fireworks: KÃ¶rlÃ¼k)",
         "type":  "Spell",
         "slot":  "None",
         "parent":  "Pyrotechnics",
         "prereq":  "-",
         "source":  "PHB p.267",
-        "benefit":  "120 ft içindekiler Will kurtulma zarını kaçırırsa 1d4+1 tur kör (Blinded) olur.",
-        "description":  "120 ft içindekiler Will kurtulma zarını kaçırırsa 1d4+1 tur kör (Blinded) olur.",
+        "benefit":  "120 ft iÃ§indekiler Will kurtulma zarÄ±nÄ± kaÃ§Ä±rÄ±rsa 1d4+1 tur kÃ¶r (Blinded) olur.",
+        "description":  "120 ft iÃ§indekiler Will kurtulma zarÄ±nÄ± kaÃ§Ä±rÄ±rsa 1d4+1 tur kÃ¶r (Blinded) olur.",
         "bonusType":  "Untyped",
         "scope":  "Spells",
         "role":  "Secondary Power",
@@ -3943,18 +3956,18 @@
                  ],
         "isChild":  true,
         "effectType":  "duration",
-        "childButtonLabel":  "Fireworks: Körlük (1d4+1 Tur)",
+        "childButtonLabel":  "Fireworks: KÃ¶rlÃ¼k (1d4+1 Tur)",
         "unitLabel":  "Tur Blinded"
     },
     {
-        "name":  "↳ Pyrotechnics (Smoke Cloud: -4 STR/DEX)",
+        "name":  "â†³ Pyrotechnics (Smoke Cloud: -4 STR/DEX)",
         "type":  "Spell",
         "slot":  "None",
         "parent":  "Pyrotechnics",
         "prereq":  "-",
         "source":  "PHB p.267",
-        "benefit":  "20 ft duman bulutu görüşü kapatır; Fort kaçıranlar 1d4+1 tur -4 STR ve -4 DEX cezası alır.",
-        "description":  "20 ft duman bulutu görüşü kapatır; Fort kaçıranlar 1d4+1 tur -4 STR ve -4 DEX cezası alır.",
+        "benefit":  "20 ft duman bulutu gÃ¶rÃ¼ÅŸÃ¼ kapatÄ±r; Fort kaÃ§Ä±ranlar 1d4+1 tur -4 STR ve -4 DEX cezasÄ± alÄ±r.",
+        "description":  "20 ft duman bulutu gÃ¶rÃ¼ÅŸÃ¼ kapatÄ±r; Fort kaÃ§Ä±ranlar 1d4+1 tur -4 STR ve -4 DEX cezasÄ± alÄ±r.",
         "bonusType":  "Untyped",
         "scope":  "Spells",
         "role":  "Secondary Power",
@@ -6042,14 +6055,14 @@
                  ]
     },
     {
-        "name":  "↳ Disintegrate (Fort Save Başarılı)",
+        "name":  "â†³ Disintegrate (Fort Save BaÅŸarÄ±lÄ±)",
         "type":  "Spell",
         "slot":  "None",
         "parent":  "Disintegrate",
         "prereq":  "-",
         "source":  "PHB p.222",
-        "benefit":  "Hedef Fortitude kurtulma zarını başarırsa kısmi olarak 5d6 hasar alır.",
-        "description":  "Hedef Fortitude kurtulma zarını başarırsa kısmi olarak 5d6 hasar alır.",
+        "benefit":  "Hedef Fortitude kurtulma zarÄ±nÄ± baÅŸarÄ±rsa kÄ±smi olarak 5d6 hasar alÄ±r.",
+        "description":  "Hedef Fortitude kurtulma zarÄ±nÄ± baÅŸarÄ±rsa kÄ±smi olarak 5d6 hasar alÄ±r.",
         "bonusType":  "Untyped",
         "scope":  "Spells",
         "role":  "Secondary Power",
@@ -6090,7 +6103,7 @@
                  ],
         "isChild":  true,
         "effectType":  "damage",
-        "childButtonLabel":  "Fort Başarılı (5d6)"
+        "childButtonLabel":  "Fort BaÅŸarÄ±lÄ± (5d6)"
     },
     {
         "name":  "Chain Lightning",
@@ -6585,14 +6598,14 @@
                  ]
     },
     {
-        "name":  "↳ Finger of Death (Fort Başarısız: Ölüm)",
+        "name":  "â†³ Finger of Death (Fort BaÅŸarÄ±sÄ±z: Ã–lÃ¼m)",
         "type":  "Spell",
         "slot":  "None",
         "parent":  "Finger of Death",
         "prereq":  "-",
         "source":  "PHB p.230",
-        "benefit":  "Hedef Fortitude kurtulma zarını kaçırırsa anında ölür (Slay Living).",
-        "description":  "Hedef Fortitude kurtulma zarını kaçırırsa anında ölür (Slay Living).",
+        "benefit":  "Hedef Fortitude kurtulma zarÄ±nÄ± kaÃ§Ä±rÄ±rsa anÄ±nda Ã¶lÃ¼r (Slay Living).",
+        "description":  "Hedef Fortitude kurtulma zarÄ±nÄ± kaÃ§Ä±rÄ±rsa anÄ±nda Ã¶lÃ¼r (Slay Living).",
         "bonusType":  "Untyped",
         "scope":  "Spells",
         "role":  "Secondary Power",
@@ -6633,7 +6646,7 @@
                  ],
         "isChild":  true,
         "effectType":  "status",
-        "childButtonLabel":  "☠️ Fort Başarısız (Ölüm)"
+        "childButtonLabel":  "â˜ ï¸ Fort BaÅŸarÄ±sÄ±z (Ã–lÃ¼m)"
     },
     {
         "name":  "Prismatic Spray",
@@ -6785,14 +6798,14 @@
                  ]
     },
     {
-        "name":  "↳ Horrid Wilting (Bitki / Su Elementali)",
+        "name":  "â†³ Horrid Wilting (Bitki / Su Elementali)",
         "type":  "Spell",
         "slot":  "None",
         "parent":  "Horrid Wilting",
         "prereq":  "-",
         "source":  "PHB p.242",
-        "benefit":  "Bitki ve Su elementali yaratıklara 1d8/CL (max 20d8) hasar verir.",
-        "description":  "Bitki ve Su elementali yaratıklara 1d8/CL (max 20d8) hasar verir.",
+        "benefit":  "Bitki ve Su elementali yaratÄ±klara 1d8/CL (max 20d8) hasar verir.",
+        "description":  "Bitki ve Su elementali yaratÄ±klara 1d8/CL (max 20d8) hasar verir.",
         "bonusType":  "Untyped",
         "scope":  "Spells",
         "role":  "Secondary Power",
@@ -7484,14 +7497,14 @@
                  ]
     },
     {
-        "name":  "↳ Cure Light Wounds (Undead Hasarı)",
+        "name":  "â†³ Cure Light Wounds (Undead HasarÄ±)",
         "type":  "Spell",
         "slot":  "None",
         "parent":  "Cure Light Wounds",
         "prereq":  "-",
         "source":  "PHB p.215",
-        "benefit":  "Undead hedefe 1d8+5 pozitif enerji hasarı verir (Will half).",
-        "description":  "Undead hedefe 1d8+5 pozitif enerji hasarı verir (Will half).",
+        "benefit":  "Undead hedefe 1d8+5 pozitif enerji hasarÄ± verir (Will half).",
+        "description":  "Undead hedefe 1d8+5 pozitif enerji hasarÄ± verir (Will half).",
         "bonusType":  "Untyped",
         "scope":  "Spells",
         "role":  "Secondary Power",
@@ -7532,7 +7545,7 @@
                  ],
         "isChild":  true,
         "effectType":  "damage",
-        "childButtonLabel":  "Undead Hasarı (1d8+5)"
+        "childButtonLabel":  "Undead HasarÄ± (1d8+5)"
     },
     {
         "name":  "Inflict Light Wounds",
@@ -7584,14 +7597,14 @@
                  ]
     },
     {
-        "name":  "↳ Inflict Light Wounds (Undead İyileştirme)",
+        "name":  "â†³ Inflict Light Wounds (Undead Ä°yileÅŸtirme)",
         "type":  "Spell",
         "slot":  "None",
         "parent":  "Inflict Light Wounds",
         "prereq":  "-",
         "source":  "PHB p.244",
-        "benefit":  "Negatif enerji Undead hedefi 1d8+5 HP iyileştirir.",
-        "description":  "Negatif enerji Undead hedefi 1d8+5 HP iyileştirir.",
+        "benefit":  "Negatif enerji Undead hedefi 1d8+5 HP iyileÅŸtirir.",
+        "description":  "Negatif enerji Undead hedefi 1d8+5 HP iyileÅŸtirir.",
         "bonusType":  "Untyped",
         "scope":  "Spells",
         "role":  "Secondary Power",
@@ -7632,7 +7645,7 @@
                  ],
         "isChild":  true,
         "effectType":  "heal",
-        "childButtonLabel":  "Undead İyileştir (1d8+5)"
+        "childButtonLabel":  "Undead Ä°yileÅŸtir (1d8+5)"
     },
     {
         "name":  "Bless",
@@ -7789,14 +7802,14 @@
                  ]
     },
     {
-        "name":  "↳ Cure Moderate Wounds (Undead Hasarı)",
+        "name":  "â†³ Cure Moderate Wounds (Undead HasarÄ±)",
         "type":  "Spell",
         "slot":  "None",
         "parent":  "Cure Moderate Wounds",
         "prereq":  "-",
         "source":  "PHB p.216",
-        "benefit":  "Undead hedefe 2d8+10 pozitif enerji hasarı verir (Will half).",
-        "description":  "Undead hedefe 2d8+10 pozitif enerji hasarı verir (Will half).",
+        "benefit":  "Undead hedefe 2d8+10 pozitif enerji hasarÄ± verir (Will half).",
+        "description":  "Undead hedefe 2d8+10 pozitif enerji hasarÄ± verir (Will half).",
         "bonusType":  "Untyped",
         "scope":  "Spells",
         "role":  "Secondary Power",
@@ -7837,7 +7850,7 @@
                  ],
         "isChild":  true,
         "effectType":  "damage",
-        "childButtonLabel":  "Undead Hasarı (2d8+10)"
+        "childButtonLabel":  "Undead HasarÄ± (2d8+10)"
     },
     {
         "name":  "Inflict Moderate Wounds",
@@ -7889,14 +7902,14 @@
                  ]
     },
     {
-        "name":  "↳ Inflict Moderate Wounds (Undead İyileştirme)",
+        "name":  "â†³ Inflict Moderate Wounds (Undead Ä°yileÅŸtirme)",
         "type":  "Spell",
         "slot":  "None",
         "parent":  "Inflict Moderate Wounds",
         "prereq":  "-",
         "source":  "PHB p.244",
-        "benefit":  "Negatif enerji Undead hedefi 2d8+10 HP iyileştirir.",
-        "description":  "Negatif enerji Undead hedefi 2d8+10 HP iyileştirir.",
+        "benefit":  "Negatif enerji Undead hedefi 2d8+10 HP iyileÅŸtirir.",
+        "description":  "Negatif enerji Undead hedefi 2d8+10 HP iyileÅŸtirir.",
         "bonusType":  "Untyped",
         "scope":  "Spells",
         "role":  "Secondary Power",
@@ -7937,7 +7950,7 @@
                  ],
         "isChild":  true,
         "effectType":  "heal",
-        "childButtonLabel":  "Undead İyileştir (2d8+10)"
+        "childButtonLabel":  "Undead Ä°yileÅŸtir (2d8+10)"
     },
     {
         "name":  "Spiritual Weapon",
@@ -8041,14 +8054,14 @@
                  ]
     },
     {
-        "name":  "↳ Searing Light (Undead)",
+        "name":  "â†³ Searing Light (Undead)",
         "type":  "Spell",
         "slot":  "None",
         "parent":  "Searing Light",
         "prereq":  "-",
         "source":  "PHB p.275",
-        "benefit":  "Undead yaratıklara 1d6/CL (max 10d6) pozitif ışık hasarı verir.",
-        "description":  "Undead yaratıklara 1d6/CL (max 10d6) pozitif ışık hasarı verir.",
+        "benefit":  "Undead yaratÄ±klara 1d6/CL (max 10d6) pozitif Ä±ÅŸÄ±k hasarÄ± verir.",
+        "description":  "Undead yaratÄ±klara 1d6/CL (max 10d6) pozitif Ä±ÅŸÄ±k hasarÄ± verir.",
         "bonusType":  "Untyped",
         "scope":  "Spells",
         "role":  "Secondary Power",
@@ -8092,14 +8105,14 @@
         "childButtonLabel":  "Undead (6d6)"
     },
     {
-        "name":  "↳ Searing Light (Işığa Hassas Undead)",
+        "name":  "â†³ Searing Light (IÅŸÄ±ÄŸa Hassas Undead)",
         "type":  "Spell",
         "slot":  "None",
         "parent":  "Searing Light",
         "prereq":  "-",
         "source":  "PHB p.275",
-        "benefit":  "Işığa duyarlı Undead yaratıklara 1d8/CL (max 10d8) hasar verir.",
-        "description":  "Işığa duyarlı Undead yaratıklara 1d8/CL (max 10d8) hasar verir.",
+        "benefit":  "IÅŸÄ±ÄŸa duyarlÄ± Undead yaratÄ±klara 1d8/CL (max 10d8) hasar verir.",
+        "description":  "IÅŸÄ±ÄŸa duyarlÄ± Undead yaratÄ±klara 1d8/CL (max 10d8) hasar verir.",
         "bonusType":  "Untyped",
         "scope":  "Spells",
         "role":  "Secondary Power",
@@ -8140,17 +8153,17 @@
                  ],
         "isChild":  true,
         "effectType":  "damage",
-        "childButtonLabel":  "Işığa Hassas Undead (6d8)"
+        "childButtonLabel":  "IÅŸÄ±ÄŸa Hassas Undead (6d8)"
     },
     {
-        "name":  "↳ Searing Light (Construct / Cansız)",
+        "name":  "â†³ Searing Light (Construct / CansÄ±z)",
         "type":  "Spell",
         "slot":  "None",
         "parent":  "Searing Light",
         "prereq":  "-",
         "source":  "PHB p.275",
-        "benefit":  "Construct ve cansız nesnelere 1d6/2 CL (max 5d6) hasar verir.",
-        "description":  "Construct ve cansız nesnelere 1d6/2 CL (max 5d6) hasar verir.",
+        "benefit":  "Construct ve cansÄ±z nesnelere 1d6/2 CL (max 5d6) hasar verir.",
+        "description":  "Construct ve cansÄ±z nesnelere 1d6/2 CL (max 5d6) hasar verir.",
         "bonusType":  "Untyped",
         "scope":  "Spells",
         "role":  "Secondary Power",
@@ -8191,7 +8204,7 @@
                  ],
         "isChild":  true,
         "effectType":  "damage",
-        "childButtonLabel":  "Construct / Cansız (3d6)"
+        "childButtonLabel":  "Construct / CansÄ±z (3d6)"
     },
     {
         "name":  "Cure Serious Wounds",
@@ -8247,14 +8260,14 @@
                  ]
     },
     {
-        "name":  "↳ Cure Serious Wounds (Undead Hasarı)",
+        "name":  "â†³ Cure Serious Wounds (Undead HasarÄ±)",
         "type":  "Spell",
         "slot":  "None",
         "parent":  "Cure Serious Wounds",
         "prereq":  "-",
         "source":  "PHB p.216",
-        "benefit":  "Undead hedefe 3d8+13 pozitif enerji hasarı verir (Will half).",
-        "description":  "Undead hedefe 3d8+13 pozitif enerji hasarı verir (Will half).",
+        "benefit":  "Undead hedefe 3d8+13 pozitif enerji hasarÄ± verir (Will half).",
+        "description":  "Undead hedefe 3d8+13 pozitif enerji hasarÄ± verir (Will half).",
         "bonusType":  "Untyped",
         "scope":  "Spells",
         "role":  "Secondary Power",
@@ -8295,7 +8308,7 @@
                  ],
         "isChild":  true,
         "effectType":  "damage",
-        "childButtonLabel":  "Undead Hasarı (3d8+13)"
+        "childButtonLabel":  "Undead HasarÄ± (3d8+13)"
     },
     {
         "name":  "Inflict Serious Wounds",
@@ -8347,14 +8360,14 @@
                  ]
     },
     {
-        "name":  "↳ Inflict Serious Wounds (Undead İyileştirme)",
+        "name":  "â†³ Inflict Serious Wounds (Undead Ä°yileÅŸtirme)",
         "type":  "Spell",
         "slot":  "None",
         "parent":  "Inflict Serious Wounds",
         "prereq":  "-",
         "source":  "PHB p.244",
-        "benefit":  "Negatif enerji Undead hedefi 3d8+13 HP iyileştirir.",
-        "description":  "Negatif enerji Undead hedefi 3d8+13 HP iyileştirir.",
+        "benefit":  "Negatif enerji Undead hedefi 3d8+13 HP iyileÅŸtirir.",
+        "description":  "Negatif enerji Undead hedefi 3d8+13 HP iyileÅŸtirir.",
         "bonusType":  "Untyped",
         "scope":  "Spells",
         "role":  "Secondary Power",
@@ -8395,7 +8408,7 @@
                  ],
         "isChild":  true,
         "effectType":  "heal",
-        "childButtonLabel":  "Undead İyileştir (3d8+13)"
+        "childButtonLabel":  "Undead Ä°yileÅŸtir (3d8+13)"
     },
     {
         "name":  "Prayer",
@@ -8499,14 +8512,14 @@
                  ]
     },
     {
-        "name":  "↳ Holy Smite (Evil Outsider)",
+        "name":  "â†³ Holy Smite (Evil Outsider)",
         "type":  "Spell",
         "slot":  "None",
         "parent":  "Holy Smite",
         "prereq":  "-",
         "source":  "PHB p.241",
-        "benefit":  "Evil Outsider yaratıklara 1d6/CL (max 10d6) kutsal hasar verir + 1 tur Blind.",
-        "description":  "Evil Outsider yaratıklara 1d6/CL (max 10d6) kutsal hasar verir + 1 tur Blind.",
+        "benefit":  "Evil Outsider yaratÄ±klara 1d6/CL (max 10d6) kutsal hasar verir + 1 tur Blind.",
+        "description":  "Evil Outsider yaratÄ±klara 1d6/CL (max 10d6) kutsal hasar verir + 1 tur Blind.",
         "bonusType":  "Untyped",
         "scope":  "Spells",
         "role":  "Secondary Power",
@@ -8550,14 +8563,14 @@
         "childButtonLabel":  "Evil Outsider (6d6)"
     },
     {
-        "name":  "↳ Holy Smite (Neutral Hedef)",
+        "name":  "â†³ Holy Smite (Neutral Hedef)",
         "type":  "Spell",
         "slot":  "None",
         "parent":  "Holy Smite",
         "prereq":  "-",
         "source":  "PHB p.241",
-        "benefit":  "Tarafsız (Neutral) yaratıklar yarı hasar alır ve kör olmaz.",
-        "description":  "Tarafsız (Neutral) yaratıklar yarı hasar alır ve kör olmaz.",
+        "benefit":  "TarafsÄ±z (Neutral) yaratÄ±klar yarÄ± hasar alÄ±r ve kÃ¶r olmaz.",
+        "description":  "TarafsÄ±z (Neutral) yaratÄ±klar yarÄ± hasar alÄ±r ve kÃ¶r olmaz.",
         "bonusType":  "Untyped",
         "scope":  "Spells",
         "role":  "Secondary Power",
@@ -8652,14 +8665,14 @@
                  ]
     },
     {
-        "name":  "↳ Cure Critical Wounds (Undead Hasarı)",
+        "name":  "â†³ Cure Critical Wounds (Undead HasarÄ±)",
         "type":  "Spell",
         "slot":  "None",
         "parent":  "Cure Critical Wounds",
         "prereq":  "-",
         "source":  "PHB p.215",
-        "benefit":  "Undead hedefe 4d8+13 pozitif enerji hasarı verir (Will half).",
-        "description":  "Undead hedefe 4d8+13 pozitif enerji hasarı verir (Will half).",
+        "benefit":  "Undead hedefe 4d8+13 pozitif enerji hasarÄ± verir (Will half).",
+        "description":  "Undead hedefe 4d8+13 pozitif enerji hasarÄ± verir (Will half).",
         "bonusType":  "Untyped",
         "scope":  "Spells",
         "role":  "Secondary Power",
@@ -8700,7 +8713,7 @@
                  ],
         "isChild":  true,
         "effectType":  "damage",
-        "childButtonLabel":  "Undead Hasarı (4d8+13)"
+        "childButtonLabel":  "Undead HasarÄ± (4d8+13)"
     },
     {
         "name":  "Inflict Critical Wounds",
@@ -8752,14 +8765,14 @@
                  ]
     },
     {
-        "name":  "↳ Inflict Critical Wounds (Undead İyileştirme)",
+        "name":  "â†³ Inflict Critical Wounds (Undead Ä°yileÅŸtirme)",
         "type":  "Spell",
         "slot":  "None",
         "parent":  "Inflict Critical Wounds",
         "prereq":  "-",
         "source":  "PHB p.244",
-        "benefit":  "Negatif enerji Undead hedefi 4d8+13 HP iyileştirir.",
-        "description":  "Negatif enerji Undead hedefi 4d8+13 HP iyileştirir.",
+        "benefit":  "Negatif enerji Undead hedefi 4d8+13 HP iyileÅŸtirir.",
+        "description":  "Negatif enerji Undead hedefi 4d8+13 HP iyileÅŸtirir.",
         "bonusType":  "Untyped",
         "scope":  "Spells",
         "role":  "Secondary Power",
@@ -8800,7 +8813,7 @@
                  ],
         "isChild":  true,
         "effectType":  "heal",
-        "childButtonLabel":  "Undead İyileştir (4d8+13)"
+        "childButtonLabel":  "Undead Ä°yileÅŸtir (4d8+13)"
     },
     {
         "name":  "Divine Power",
@@ -9059,14 +9072,14 @@
                  ]
     },
     {
-        "name":  "↳ Heal (Undead Hasarı / Harm Etkisi)",
+        "name":  "â†³ Heal (Undead HasarÄ± / Harm Etkisi)",
         "type":  "Spell",
         "slot":  "None",
         "parent":  "Heal",
         "prereq":  "-",
         "source":  "PHB p.239",
-        "benefit":  "Undead hedefe 10/CL (max 150) pozitif enerji hasarı verir (Will half).",
-        "description":  "Undead hedefe 10/CL (max 150) pozitif enerji hasarı verir (Will half).",
+        "benefit":  "Undead hedefe 10/CL (max 150) pozitif enerji hasarÄ± verir (Will half).",
+        "description":  "Undead hedefe 10/CL (max 150) pozitif enerji hasarÄ± verir (Will half).",
         "bonusType":  "Untyped",
         "scope":  "Spells",
         "role":  "Secondary Power",
@@ -9107,7 +9120,7 @@
                  ],
         "isChild":  true,
         "effectType":  "damage",
-        "childButtonLabel":  "Undead Hasarı (60)"
+        "childButtonLabel":  "Undead HasarÄ± (60)"
     },
     {
         "name":  "Holy Word",
@@ -9465,14 +9478,14 @@
                  ]
     },
     {
-        "name":  "↳ Sapphire Nightmare Blade (Konsantrasyon Başarısız)",
+        "name":  "â†³ Sapphire Nightmare Blade (Konsantrasyon BaÅŸarÄ±sÄ±z)",
         "type":  "Maneuver",
         "slot":  "None",
         "parent":  "Sapphire Nightmare Blade",
         "prereq":  "-",
         "source":  "Tome of Battle p.65",
-        "benefit":  "Konsantrasyon zarı rakibin AC değerini geçemezse normal saldırı -2 ceza ile yapılır, +1d6 ekstra hasar eklenmez.",
-        "description":  "Konsantrasyon zarı rakibin AC değerini geçemezse normal saldırı -2 ceza ile yapılır, +1d6 ekstra hasar eklenmez.",
+        "benefit":  "Konsantrasyon zarÄ± rakibin AC deÄŸerini geÃ§emezse normal saldÄ±rÄ± -2 ceza ile yapÄ±lÄ±r, +1d6 ekstra hasar eklenmez.",
+        "description":  "Konsantrasyon zarÄ± rakibin AC deÄŸerini geÃ§emezse normal saldÄ±rÄ± -2 ceza ile yapÄ±lÄ±r, +1d6 ekstra hasar eklenmez.",
         "bonusType":  "Untyped",
         "scope":  "Melee Only",
         "role":  "Secondary Power",
@@ -9513,7 +9526,7 @@
                  ],
         "isChild":  true,
         "effectType":  "status",
-        "childButtonLabel":  "⚠️ Konsantrasyon Başarısız (-2 Atk)"
+        "childButtonLabel":  "âš ï¸ Konsantrasyon BaÅŸarÄ±sÄ±z (-2 Atk)"
     },
     {
         "name":  "Sudden Leap",
@@ -10891,5 +10904,81 @@
                      "warblade",
                      "swordsage"
                  ]
+    },
+    {
+        "name":  "Goggles of Minute Seeing",
+        "type":  "Magic Item",
+        "slot":  "Eyes",
+        "cost":  1250,
+        "weight":  0,
+        "bonusType":  "Competence",
+        "skillBonuses":  {
+                             "Search":  5
+                         },
+        "tags":  [
+                     "wondrous",
+                     "vision",
+                     "search"
+                 ],
+        "role":  "Utility / Exploration",
+        "source":  "DMG p.258",
+        "benefit":  "The lenses of this item grant a +5 competence bonus on Search checks."
+    },
+    {
+        "name":  "Eyes of the Eagle",
+        "type":  "Magic Item",
+        "slot":  "Eyes",
+        "cost":  2500,
+        "weight":  0,
+        "bonusType":  "Competence",
+        "skillBonuses":  {
+                             "Spot":  5
+                         },
+        "tags":  [
+                     "wondrous",
+                     "vision",
+                     "spot"
+                 ],
+        "role":  "Perception / Scouting",
+        "source":  "DMG p.256",
+        "benefit":  "These items grant a +5 competence bonus on Spot checks."
+    },
+    {
+        "name":  "Cloak of Elvenkind",
+        "type":  "Magic Item",
+        "slot":  "Shoulders",
+        "cost":  2500,
+        "weight":  1,
+        "bonusType":  "Competence",
+        "skillBonuses":  {
+                             "Hide":  5
+                         },
+        "tags":  [
+                     "wondrous",
+                     "stealth",
+                     "hide"
+                 ],
+        "role":  "Stealth / Infiltration",
+        "source":  "DMG p.252",
+        "benefit":  "This cloak grants a +5 competence bonus on Hide checks."
+    },
+    {
+        "name":  "Boots of Elvenkind",
+        "type":  "Magic Item",
+        "slot":  "Boots",
+        "cost":  2500,
+        "weight":  1,
+        "bonusType":  "Competence",
+        "skillBonuses":  {
+                             "Move Silently":  5
+                         },
+        "tags":  [
+                     "wondrous",
+                     "stealth",
+                     "move silently"
+                 ],
+        "role":  "Stealth / Infiltration",
+        "source":  "DMG p.250",
+        "benefit":  "These soft boots grant a +5 competence bonus on Move Silently checks."
     }
 ]

@@ -1,290 +1,1020 @@
-{
-  "schemaVersion": "2.0",
-  "name": "Kazmil'in Çırağı",
-  "classes": "Sorcerer 5 / Warblade 1",
-  "race": "Human",
-  "level": 6,
-  "bab": 3,
-  "baseSpeed": 30,
-  "hitDie": "5d4 + 1d12",
-  "size": "Medium",
-  "alignment": "Chaotic Good",
-  "deity": "Boccob",
-  "gender": "Erkek",
-  "age": 24,
-  "height": "178 cm",
-  "weight": "72 kg",
-  "portrait": "",
-  "portraitPosition": "50% 20%",
-  "portraitFit": "cover",
-  "wallpaper": null,
-  "baseAbilities": {
-    "str": 12,
-    "dex": 14,
-    "con": 14,
-    "int": 14,
-    "wis": 10,
-    "cha": 22
-  },
-  "abilities": {
-    "str": 14,
-    "dex": 16,
-    "con": 14,
-    "int": 14,
-    "wis": 10,
-    "cha": 22
-  },
-  "hp": {
-    "current": 45,
-    "max": 45,
-    "baseMax": 33,
-    "conBonusHp": 12,
-    "temp": 0,
-    "nonlethal": 0
-  },
-  "acBreakdown": {
-    "armor": 5,
-    "shield": 2,
-    "natural": 1,
-    "deflection": 1,
-    "size": 0
-  },
-  "baseSaves": {
-    "fort": 4,
-    "ref": 3,
-    "will": 4
-  },
-  "saveBonuses": {
-    "resistance": 1
-  },
-  "activeStance": "Punishing Stance",
-  "activeWeapon": "Rapier +2",
-  "activeGrip": "1-Hand",
-  "tactical": {
-    "powerAttack": 0,
-    "flanking": false,
-    "charge": false,
-    "higherGround": false,
-    "combatExpertise": 0,
-    "fightingDefensively": false,
-    "totalDefense": false,
-    "shieldBlockActive": false,
-    "round": 1
-  },
-  "combatPins": {
-    "offense": [
-      { "id": "m_mountain_hammer", "name": "Mountain Hammer", "sourceType": "Maneuver", "action": "Standard", "badge": "2d6 DR", "desc": "Stone Dragon Lvl 2 Strike: +2d6 hasar ve DR/Hardness yok sayar." },
-      { "id": "m_steel_wind", "name": "Steel Wind", "sourceType": "Maneuver", "action": "Standard", "badge": "2 Hedef", "desc": "Iron Heart Lvl 1 Strike: Tehdit alanındaki 2 bitişik düşmana saldırır." },
-      { "id": "s_blade_of_blood", "name": "Blade of Blood", "sourceType": "Spell", "action": "Swift", "badge": "+3d6 Hasar", "desc": "Necromancy Lvl 1: 5 Can feda et, sonraki vuruşa +3d6 hasar ekle." },
-      { "id": "s_scorching_ray", "name": "Scorching Ray", "sourceType": "Spell", "action": "Standard", "badge": "4d6 Ateş", "desc": "Evocation Lvl 2: 35 ft menzilli dokunma ışını, 4d6 ateş hasarı." },
-      { "id": "m_punishing_stance", "name": "Punishing Stance", "sourceType": "Stance", "action": "Swift", "badge": "+1d6 / -2 AC", "desc": "Iron Heart Lvl 1 Stance: Her yakın dövüş vuruşuna +1d6 hasar, -2 AC." },
-      { "id": "st_island", "name": "Island of Blades", "sourceType": "Stance", "action": "Swift", "badge": "Duruş", "desc": "Gölge Duruşu: Yanınızdaki müttefikleriniz düşmanı otomatik olarak Flank eder." }
-    ],
-    "defense": [
-      { "id": "r_shield_block", "name": "Shield Block", "sourceType": "Counter", "action": "Immediate", "badge": "+4 AC Kalkan", "desc": "Devoted Spirit Lvl 2 Counter: Bitişik müttefike veya kendine anlık +4 AC kalkan bonusu." },
-      { "id": "s_shield", "name": "Shield", "sourceType": "Spell", "action": "Standard", "badge": "+4 AC (Force)", "desc": "Abjuration Lvl 1: +4 Force Shield AC sağlar ve Magic Missile büyüsünü engeller." },
-      { "id": "sk_tumble", "name": "Tumble (Akrobasi)", "sourceType": "Skill", "action": "Move", "badge": "+7 Check", "desc": "AoO tetiklemeden düşmanların arasından geçmek için DC 15 / DC 25 kontrolü." },
-      { "id": "sk_concentration", "name": "Concentration", "sourceType": "Skill", "action": "None", "badge": "+10 Check", "desc": "Hasar alırken veya tehdit altındayken büyü yapabilmek (Cast Defensively) için kontrol." },
-      { "id": "f_elusiveness", "name": "Boon of Elusiveness", "sourceType": "Feat", "action": "Pasif", "badge": "+2 Dodge / %25 AoE", "desc": "Alan etkili büyülerden %25 daha az hasar ve +2 Dodge AC." }
-    ]
-  },
-  "weaponAttackProfiles": {
-    "Rapier +2": {
-      "modifiers": ["Punishing Stance", "Mountain Hammer"]
-    }
-  },
-  "houseRules": {
-    "noCritConfirm": true,
-    "maneuverCrit": false
-  },
-  "settings": {
-    "featMode": "Standard 3.5e (1, 3, 6, 9, 12, 15, 18)",
-    "clMode": "Character Level (DM Boon)",
-    "ignoreAsf": true,
-    "mergeSkills": true,
-    "babSaveSystem": "fractional",
-    "pinDrawerLimit": 5
-  },
-  "feats": [
-    { "name": "Weapon Finesse", "source": "Player's Handbook p. 102", "category": "General", "benefit": "Use DEX modifier instead of STR on attack rolls with light weapons, rapier, whip, or spiked chain." },
-    { "name": "Power Attack", "source": "Player's Handbook p. 98", "category": "General", "benefit": "Trade attack bonus for damage (1x for 1-hand, 2x for 2-hand, 0x for off-hand)." },
-    { "name": "Shadow Blade", "source": "Tome of Battle p. 32", "category": "Martial", "benefit": "Add DEX modifier to damage rolls with Shadow Hand discipline weapons while in a Shadow Hand stance." },
-    { "name": "Weapon Focus (Rapier)", "source": "Player's Handbook p. 102", "category": "General", "benefit": "+1 bonus on all attack rolls made with the chosen weapon." },
-    { "name": "Boon of Elusiveness Lesser", "source": "Campaign Boon", "category": "DM Grant", "benefit": "Get 25% less damage from all AoE attacks and spells. Gain +2 Dodge bonus to Armor Class (AC)." },
-    { "name": "Draconic Core (1h/day)", "source": "Campaign Boon", "category": "DM Grant", "benefit": "Swift Action (1 hour/day): Total immunity to acid damage, and breath weapon deals x2 damage." },
-    { "name": "Draconic Shield (1/d)", "source": "Campaign Boon", "category": "DM Grant", "benefit": "Immediate Action (1/day): Negate and ignore all critical hit damage from one attack." },
-    { "name": "Endurance", "source": "Campaign Boon", "category": "DM Grant", "benefit": "+4 bonus on checks against exhaustion, forced march, and holding breath." },
-    { "name": "Steadfast Determination", "source": "Campaign Boon", "category": "DM Grant", "benefit": "Use Constitution modifier instead of Wisdom modifier for Will saving throws." }
-  ],
-  "specialAbilities": [
-    { "name": "Battle Clarity (Ex)", "source": "Tome of Battle p. 22", "benefit": "Add INT bonus (max Warblade level) to Reflex saves when not flat-footed." },
-    { "name": "Weapon Aptitude (Ex)", "source": "Tome of Battle p. 22", "benefit": "Change the chosen weapon of weapon-specific feats with 1 hour of practice." },
-    { "name": "Summon Familiar", "source": "Player's Handbook p. 52", "benefit": "Summons a magical companion animal providing empathic link and bonuses." },
-    { "name": "Ignore ASF (DM Boon)", "source": "Campaign Boon", "benefit": "Arcane Spell Failure percentage (ASF %) from worn armor is completely negated." }
-  ],
-  "bodySlots": {
-    "head": { "name": "Circlet of Mages", "masterDbName": "Circlet of Mages", "active": true, "category": "Head", "weight": 1, "cost": 3000, "desc": "Retain expended spell slots and enhance caster level." },
-    "eyes": { "name": "Goggles of Night", "masterDbName": "Goggles of Night", "active": true, "category": "Eyes", "weight": 0.5, "cost": 12000, "desc": "Grants wearer Darkvision up to 60 ft." },
-    "neck": { "name": "Amulet of Natural Armor +1", "masterDbName": "Amulet of Natural Armor +1", "active": true, "category": "Neck", "bonusType": "Natural", "acBonus": 1, "weight": 0.5, "cost": 2000, "desc": "+1 Natural Armor bonus to AC." },
-    "shoulders": { "name": "Cloak of Resistance +1", "masterDbName": "Cloak of Resistance +1", "active": true, "category": "Shoulders", "bonusType": "Resistance", "resistance": 1, "weight": 1, "cost": 1000, "desc": "+1 Resistance bonus to all saving throws." },
-    "torso": { "name": "Vest of Escape", "masterDbName": "Vest of Escape", "active": true, "category": "Torso", "weight": 1, "cost": 5200, "desc": "+2 Competence on Disable Device, +10 on Escape Artist." },
-    "armor": { "name": "Mithral Chain Shirt +1", "masterDbName": "Mithral Chain Shirt +1", "active": true, "category": "Armor", "bonusType": "Armor", "acBonus": 5, "maxDex": 6, "checkPenalty": 0, "weight": 10, "cost": 2100, "desc": "+5 Armor AC, Max Dex +6, Check Penalty 0." },
-    "belt": { "name": "Belt of Giant Strength +2", "masterDbName": "Belt of Giant Strength +2", "active": true, "category": "Belt", "bonusType": "Enhancement", "strBonus": 2, "weight": 1, "cost": 4000, "desc": "+2 Enhancement bonus to Strength." },
-    "bracers": { "name": "-", "active": false, "category": "Bracers", "weight": 0, "cost": 0, "desc": "Boş Yuva" },
-    "gloves": { "name": "Gloves of Dexterity +2", "masterDbName": "Gloves of Dexterity +2", "active": true, "category": "Gloves", "bonusType": "Enhancement", "dexBonus": 2, "weight": 1, "cost": 4000, "desc": "+2 Enhancement bonus to Dexterity." },
-    "ring1": { "name": "Ring of Protection +1", "masterDbName": "Ring of Protection +1", "active": true, "category": "Ring", "bonusType": "Deflection", "acBonus": 1, "weight": 0.1, "cost": 2000, "desc": "+1 Deflection bonus to AC." },
-    "ring2": { "name": "Ring of Sustenance", "masterDbName": "Ring of Sustenance", "active": true, "category": "Ring", "weight": 0.1, "cost": 2500, "desc": "No food/water needed, requires only 2 hours sleep." },
-    "boots": { "name": "Boots of Striding and Springing", "masterDbName": "Boots of Striding and Springing", "active": true, "category": "Boots", "speedBonus": 10, "weight": 1, "cost": 5500, "desc": "+10 ft land speed, +5 Competence bonus on Jump checks." },
-    "mainHand": { "name": "Rapier +2", "masterDbName": "Rapier +2", "active": true, "category": "Weapon", "weight": 2, "cost": 8320, "desc": "1d6 18-20/x2 Piercing, +2 Enhancement." },
-    "offHand": { "name": "Darkwood Buckler +1", "masterDbName": "Darkwood Buckler +1", "active": true, "category": "Shield", "bonusType": "Shield", "acBonus": 2, "checkPenalty": 0, "weight": 1.5, "cost": 1205, "desc": "+2 Shield AC, Check Penalty 0." }
-  },
-  "gearPool": [
-    { "id": 1, "name": "Rapier +2", "category": "Weapon", "slot": "Main Hand", "qty": 1, "weight": 2, "cost": 8320, "isEquipped": true, "isBelt": false, "desc": "Finessable 1d6 Piercing 18-20/x2, +2 Enhancement" },
-    { "id": 2, "name": "Darkwood Buckler +1", "category": "Shield", "slot": "Off-Hand/Shield", "qty": 1, "weight": 1.5, "cost": 1205, "isEquipped": true, "isBelt": false, "desc": "+2 Shield AC, ACP 0, Light Shield" },
-    { "id": 3, "name": "Spiked Chain +2", "category": "Weapon", "slot": "Main Hand", "qty": 1, "weight": 10, "cost": 8325, "isEquipped": false, "isBelt": false, "desc": "Exotic 2-Hand Reach weapon, Finessable, Shadow Hand discipline" },
-    { "id": 4, "name": "Dagger (Masterwork)", "category": "Weapon", "slot": "Off-Hand/Shield", "qty": 2, "weight": 2, "cost": 604, "isEquipped": false, "isBelt": true, "desc": "Light weapon 1d4 19-20/x2, throwable 10 ft, +1 attack" },
-    { "id": 5, "name": "Mithral Chain Shirt +1", "category": "Armor", "slot": "Armor", "qty": 1, "weight": 10, "cost": 2100, "isEquipped": true, "isBelt": false, "desc": "+5 Armor AC, Max Dex +6, Check Penalty 0" },
-    { "id": 6, "name": "Potion of Cure Serious Wounds", "category": "Consumable", "slot": "Consumable", "qty": 3, "weight": 0.5, "cost": 750, "isEquipped": false, "isBelt": true, "desc": "Heals 3d8+5 Hit Points on consumption" },
-    { "id": 7, "name": "Potion of Bull's Strength", "category": "Consumable", "slot": "Consumable", "qty": 2, "weight": 0.5, "cost": 300, "isEquipped": false, "isBelt": true, "desc": "+4 Enhancement bonus to STR for 30 rounds" },
-    { "id": 8, "name": "Wand of Magic Missile (CL 3)", "category": "Consumable", "slot": "Consumable", "qty": 1, "weight": 0.1, "cost": 2250, "isEquipped": false, "isBelt": true, "desc": "50 charges, deals 2d4+2 force damage" },
-    { "id": 9, "name": "Backpack, Masterwork", "category": "Other", "slot": "Slotless", "qty": 1, "weight": 2, "cost": 50, "isEquipped": false, "isBelt": false, "desc": "Treats STR score as 1 higher for carrying capacity calculations" },
-    { "id": 10, "name": "Rope, Silk (50 ft)", "category": "Other", "slot": "Slotless", "qty": 1, "weight": 5, "cost": 10, "isEquipped": false, "isBelt": false, "desc": "50 ft strong silk rope, +2 Circumstance on Use Rope" },
-    { "id": 11, "name": "Trail Rations (5 Days)", "category": "Other", "slot": "Slotless", "qty": 5, "weight": 5, "cost": 2.5, "isEquipped": false, "isBelt": false, "desc": "Compacted sustenance for travel" }
-  ],
-  "levelProgression": [
-    { "level": 1, "active": true, "className": "Sorcerer", "hd": "d4", "hpGain": 4, "bab": 0, "fort": 0, "ref": 0, "will": 2, "skillPts": 8, "feats": ["Weapon Finesse (Lvl 1)", "Shadow Blade (Human Bonus)"], "specialAbilities": ["Summon Familiar"], "notes": "Max HP at Lvl 1, Spellcasting starts" },
-    { "level": 2, "active": true, "className": "Sorcerer", "hd": "d4", "hpGain": 4, "bab": 1, "fort": 0, "ref": 0, "will": 3, "skillPts": 4, "feats": [], "specialAbilities": [], "notes": "RAW avg HD rounded" },
-    { "level": 3, "active": true, "className": "Sorcerer", "hd": "d4", "hpGain": 4, "bab": 1, "fort": 1, "ref": 1, "will": 3, "skillPts": 4, "feats": ["Weapon Focus (Rapier)"], "specialAbilities": [], "notes": "3. Seviye Genel Feat hakkı" },
-    { "level": 4, "active": true, "className": "Sorcerer", "hd": "d4", "hpGain": 4, "bab": 2, "fort": 1, "ref": 1, "will": 4, "skillPts": 4, "feats": ["+1 Stat: Charisma"], "specialAbilities": [], "statIncreased": "cha", "notes": "2. Seviye Büyü Slotları açıldı" },
-    { "level": 5, "active": true, "className": "Sorcerer", "hd": "d4", "hpGain": 5, "bab": 2, "fort": 1, "ref": 1, "will": 4, "skillPts": 4, "feats": [], "specialAbilities": [], "notes": "Caster Level 5 tamamlandı" },
-    { "level": 6, "active": true, "className": "Warblade", "hd": "d12", "hpGain": 12, "bab": 3, "fort": 4, "ref": 3, "will": 4, "skillPts": 6, "feats": ["Power Attack (Lvl 6)"], "specialAbilities": ["Battle Clarity (Ex)", "Weapon Aptitude (Ex)"], "notes": "Battle Clarity, Weapon Aptitude, Maneuvers açıldı" }
-  ],
-  "weapons": [
-    {
-      "name": "Rapier +2",
-      "grip": "1-Hand",
-      "dice": "1d6",
-      "critMin": 18,
-      "critMult": 2,
-      "attBonus": 2,
-      "dmgBonus": 2,
-      "dmgType": "Piercing",
-      "bonusType": "Enhancement",
-      "isLight": false,
-      "tags": ["finessable", "piercing"]
-    },
-    {
-      "name": "Spiked Chain +2",
-      "grip": "2-Hand",
-      "dice": "2d4",
-      "critMin": 20,
-      "critMult": 2,
-      "attBonus": 2,
-      "dmgBonus": 2,
-      "dmgType": "Piercing",
-      "bonusType": "Enhancement",
-      "discipline": "Shadow Hand",
-      "tags": ["finessable", "shadow hand", "reach", "trip"]
-    },
-    {
-      "name": "Dagger (Masterwork)",
-      "grip": "1-Hand",
-      "dice": "1d4",
-      "critMin": 19,
-      "critMult": 2,
-      "attBonus": 1,
-      "dmgBonus": 0,
-      "dmgType": "Piercing",
-      "bonusType": "Masterwork",
-      "isLight": true,
-      "tags": ["finessable", "light", "thrown"]
-    }
-  ],
-  "activeModifiers": [
-    {
-      "name": "Punishing Stance",
-      "source": "Stance",
-      "bonusAtk": 0,
-      "dice": "1d6",
-      "type": "Slashing",
-      "active": true,
-      "notes": "+1d6 Hasar, -2 AC"
-    },
-    {
-      "name": "Mountain Hammer",
-      "source": "Maneuver",
-      "bonusAtk": 0,
-      "dice": "2d6",
-      "type": "Slashing",
-      "active": false,
-      "notes": "DR ve Sertliği aşar"
-    },
-    {
-      "name": "Blade of Blood",
-      "source": "Spell",
-      "bonusAtk": 0,
-      "dice": "3d6",
-      "type": "Negative Energy",
-      "active": false,
-      "notes": "5 Can feda et, +3d6 hasar vur"
-    }
-  ],
-  "spellcasting": {
-    "primaryClass": "Sorcerer",
-    "cl": 5,
-    "statName": "CHA",
-    "statMod": 6,
-    "slots": [
-      { "level": 0, "name": "Cantrip", "known": 6, "daily": 6, "used": 1 },
-      { "level": 1, "name": "1st Level", "known": 4, "daily": 8, "used": 2 },
-      { "level": 2, "name": "2nd Level", "known": 2, "daily": 6, "used": 1 }
-    ],
-    "knownSpells": [
-      { "level": 0, "name": "Detect Magic", "school": "Divination", "action": "Standard Action", "range": "60 ft", "benefit": "Detects magical auras within 60 ft." },
-      { "level": 0, "name": "Read Magic", "school": "Divination", "action": "Standard Action", "range": "Personal", "benefit": "Read magical inscriptions and scrolls." },
-      { "level": 0, "name": "Light", "school": "Evocation", "action": "Standard Action", "range": "Touch", "benefit": "Object shines like a torch for 10 min/level." },
-      { "level": 0, "name": "Mage Hand", "school": "Transmutation", "action": "Standard Action", "range": "Close (25 ft)", "benefit": "5-pound telekinesis." },
-      { "level": 0, "name": "Prestidigitation", "school": "Universal", "action": "Standard Action", "range": "10 ft", "benefit": "Minor magic tricks and cleaning." },
-      { "level": 0, "name": "Ghost Sound", "school": "Illusion", "action": "Standard Action", "range": "Close (25 ft)", "benefit": "Creates phantom auditory sounds." },
-      { "level": 1, "name": "Magic Missile", "school": "Evocation", "action": "Standard Action", "range": "Medium (150 ft)", "damageDice": "3d4+3", "benefit": "Fires 3 force missiles dealing 1d4+1 each (unerring hit)." },
-      { "level": 1, "name": "Shield", "school": "Abjuration", "action": "Standard Action", "range": "Personal", "benefit": "+4 shield bonus to AC and negates Magic Missile." },
-      { "level": 1, "name": "Mage Armor", "school": "Conjuration", "action": "Standard Action", "range": "Touch", "benefit": "+4 armor bonus to AC for 5 hours." },
-      { "level": 1, "name": "Blade of Blood", "school": "Necromancy", "action": "Swift Action", "range": "Touch", "damageDice": "3d6", "benefit": "Deal extra 1d6 (or 3d6 for 5 HP) on next strike." },
-      { "level": 2, "name": "Bull's Strength", "school": "Transmutation", "action": "Standard Action", "range": "Touch", "benefit": "+4 enhancement bonus to Strength for 5 minutes." },
-      { "level": 2, "name": "Scorching Ray", "school": "Evocation", "action": "Standard Action", "range": "Close (35 ft)", "damageDice": "4d6", "benefit": "Ranged touch ray dealing 4d6 fire damage." }
-    ]
-  },
-  "tomeOfBattle": {
-    "initiatorLevel": 3,
-    "readiedManeuvers": [
-      { "name": "Mountain Hammer", "level": 2, "discipline": "Stone Dragon", "action": "Standard Action", "expended": false, "notes": "Weapon + 2d6, overcomes DR" },
-      { "name": "Steel Wind", "level": 1, "discipline": "Iron Heart", "action": "Standard Action", "expended": false, "notes": "Attack two adjacent foes" },
-      { "name": "Shadow Garrote", "level": 3, "discipline": "Shadow Hand", "action": "Standard Action", "expended": false, "notes": "5d6 ranged touch attack" }
-    ],
-    "maneuversKnown": [
-      { "name": "Mountain Hammer", "level": 2, "discipline": "Stone Dragon", "action": "Standard Action", "notes": "Weapon + 2d6, overcomes DR" },
-      { "name": "Steel Wind", "level": 1, "discipline": "Iron Heart", "action": "Standard Action", "notes": "Attack two adjacent foes" },
-      { "name": "Shadow Garrote", "level": 3, "discipline": "Shadow Hand", "action": "Standard Action", "notes": "5d6 ranged touch attack" }
-    ],
-    "stancesKnown": [
-      { "name": "Punishing Stance", "discipline": "Iron Heart", "level": 1, "benefit": "+1d6 melee damage, -2 AC" },
-      { "name": "Island of Blades", "discipline": "Shadow Hand", "level": 1, "benefit": "Adjacent allies automatically flank" }
-    ]
-  },
-  "skills": [
-    { "name": "Concentration", "stat": "con", "ranks": 8, "misc": 0, "acp": false },
-    { "name": "Spellcraft", "stat": "int", "ranks": 8, "misc": 2, "acp": false },
-    { "name": "Knowledge (Arcana)", "stat": "int", "ranks": 6, "misc": 0, "acp": false },
-    { "name": "Martial Lore", "stat": "int", "ranks": 4, "misc": 0, "acp": false },
-    { "name": "Tumble", "stat": "dex", "ranks": 4, "misc": 0, "acp": true },
-    { "name": "Balance", "stat": "dex", "ranks": 2, "misc": 0, "acp": true },
-    { "name": "Jump", "stat": "str", "ranks": 4, "misc": 0, "acp": true },
-    { "name": "Spot", "stat": "wis", "ranks": 0, "misc": 0, "acp": false },
-    { "name": "Listen", "stat": "wis", "ranks": 0, "misc": 0, "acp": false }
-  ],
-  "consumables": [
-    { "name": "Potion of Cure Serious Wounds", "qty": 3, "effect": "Heals 3d8+5 HP" },
-    { "name": "Potion of Bull's Strength", "qty": 2, "effect": "+4 Str for 30 rounds" }
-  ],
-  "lastModified": "2026-10-15T21:50:00.000Z"
+﻿{
+    "schemaVersion":  "2.0",
+    "name":  "Kazmil\u0027in Ã‡Ä±raÄŸÄ±",
+    "classes":  "Sorcerer 5 / Warblade 1",
+    "race":  "Human",
+    "level":  6,
+    "bab":  3,
+    "baseSpeed":  30,
+    "hitDie":  "5d4 + 1d12",
+    "size":  "Medium",
+    "alignment":  "Chaotic Good",
+    "deity":  "Boccob",
+    "gender":  "Erkek",
+    "age":  24,
+    "height":  "178 cm",
+    "weight":  "72 kg",
+    "portrait":  "",
+    "portraitPosition":  "50% 20%",
+    "portraitFit":  "cover",
+    "wallpaper":  null,
+    "baseAbilities":  {
+                          "str":  12,
+                          "dex":  14,
+                          "con":  14,
+                          "int":  14,
+                          "wis":  10,
+                          "cha":  22
+                      },
+    "abilities":  {
+                      "str":  14,
+                      "dex":  16,
+                      "con":  14,
+                      "int":  14,
+                      "wis":  10,
+                      "cha":  22
+                  },
+    "hp":  {
+               "current":  44,
+               "max":  44,
+               "baseMax":  32,
+               "conBonusHp":  12,
+               "temp":  0,
+               "nonlethal":  0
+           },
+    "acBreakdown":  {
+                        "armor":  5,
+                        "shield":  2,
+                        "natural":  1,
+                        "deflection":  1,
+                        "size":  0
+                    },
+    "baseSaves":  {
+                      "fort":  4,
+                      "ref":  3,
+                      "will":  4
+                  },
+    "saveBonuses":  {
+                        "resistance":  1
+                    },
+    "activeStance":  "Punishing Stance",
+    "activeWeapon":  "Rapier +2",
+    "activeGrip":  "1-Hand",
+    "tactical":  {
+                     "powerAttack":  0,
+                     "flanking":  false,
+                     "charge":  false,
+                     "higherGround":  false,
+                     "combatExpertise":  0,
+                     "fightingDefensively":  false,
+                     "totalDefense":  false,
+                     "shieldBlockActive":  false,
+                     "round":  1
+                 },
+    "combatPins":  {
+                       "offense":  [
+                                       {
+                                           "id":  "m_mountain_hammer",
+                                           "name":  "Mountain Hammer",
+                                           "sourceType":  "Maneuver",
+                                           "action":  "Standard",
+                                           "badge":  "2d6 DR",
+                                           "desc":  "Stone Dragon Lvl 2 Strike: +2d6 hasar ve DR/Hardness yok sayar."
+                                       },
+                                       {
+                                           "id":  "m_steel_wind",
+                                           "name":  "Steel Wind",
+                                           "sourceType":  "Maneuver",
+                                           "action":  "Standard",
+                                           "badge":  "2 Hedef",
+                                           "desc":  "Iron Heart Lvl 1 Strike: Tehdit alanÄ±ndaki 2 bitiÅŸik dÃ¼ÅŸmana saldÄ±rÄ±r."
+                                       },
+                                       {
+                                           "id":  "s_blade_of_blood",
+                                           "name":  "Blade of Blood",
+                                           "sourceType":  "Spell",
+                                           "action":  "Swift",
+                                           "badge":  "+3d6 Hasar",
+                                           "desc":  "Necromancy Lvl 1: 5 Can feda et, sonraki vuruÅŸa +3d6 hasar ekle."
+                                       },
+                                       {
+                                           "id":  "s_scorching_ray",
+                                           "name":  "Scorching Ray",
+                                           "sourceType":  "Spell",
+                                           "action":  "Standard",
+                                           "badge":  "4d6 AteÅŸ",
+                                           "desc":  "Evocation Lvl 2: 35 ft menzilli dokunma Ä±ÅŸÄ±nÄ±, 4d6 ateÅŸ hasarÄ±."
+                                       },
+                                       {
+                                           "id":  "m_punishing_stance",
+                                           "name":  "Punishing Stance",
+                                           "sourceType":  "Stance",
+                                           "action":  "Swift",
+                                           "badge":  "+1d6 / -2 AC",
+                                           "desc":  "Iron Heart Lvl 1 Stance: Her yakÄ±n dÃ¶vÃ¼ÅŸ vuruÅŸuna +1d6 hasar, -2 AC."
+                                       },
+                                       {
+                                           "id":  "st_island",
+                                           "name":  "Island of Blades",
+                                           "sourceType":  "Stance",
+                                           "action":  "Swift",
+                                           "badge":  "DuruÅŸ",
+                                           "desc":  "GÃ¶lge DuruÅŸu: YanÄ±nÄ±zdaki mÃ¼ttefikleriniz dÃ¼ÅŸmanÄ± otomatik olarak Flank eder."
+                                       }
+                                   ],
+                       "defense":  [
+                                       {
+                                           "id":  "r_shield_block",
+                                           "name":  "Shield Block",
+                                           "sourceType":  "Counter",
+                                           "action":  "Immediate",
+                                           "badge":  "+4 AC Kalkan",
+                                           "desc":  "Devoted Spirit Lvl 2 Counter: BitiÅŸik mÃ¼ttefike veya kendine anlÄ±k +4 AC kalkan bonusu."
+                                       },
+                                       {
+                                           "id":  "s_shield",
+                                           "name":  "Shield",
+                                           "sourceType":  "Spell",
+                                           "action":  "Standard",
+                                           "badge":  "+4 AC (Force)",
+                                           "desc":  "Abjuration Lvl 1: +4 Force Shield AC saÄŸlar ve Magic Missile bÃ¼yÃ¼sÃ¼nÃ¼ engeller."
+                                       },
+                                       {
+                                           "id":  "sk_tumble",
+                                           "name":  "Tumble (Akrobasi)",
+                                           "sourceType":  "Skill",
+                                           "action":  "Move",
+                                           "badge":  "+7 Check",
+                                           "desc":  "AoO tetiklemeden dÃ¼ÅŸmanlarÄ±n arasÄ±ndan geÃ§mek iÃ§in DC 15 / DC 25 kontrolÃ¼."
+                                       },
+                                       {
+                                           "id":  "sk_concentration",
+                                           "name":  "Concentration",
+                                           "sourceType":  "Skill",
+                                           "action":  "None",
+                                           "badge":  "+10 Check",
+                                           "desc":  "Hasar alÄ±rken veya tehdit altÄ±ndayken bÃ¼yÃ¼ yapabilmek (Cast Defensively) iÃ§in kontrol."
+                                       },
+                                       {
+                                           "id":  "f_elusiveness",
+                                           "name":  "Boon of Elusiveness",
+                                           "sourceType":  "Feat",
+                                           "action":  "Pasif",
+                                           "badge":  "+2 Dodge / %25 AoE",
+                                           "desc":  "Alan etkili bÃ¼yÃ¼lerden %25 daha az hasar ve +2 Dodge AC."
+                                       }
+                                   ]
+                   },
+    "weaponAttackProfiles":  {
+                                 "Rapier +2":  {
+                                                   "modifiers":  [
+                                                                     "Punishing Stance",
+                                                                     "Mountain Hammer"
+                                                                 ]
+                                               }
+                             },
+    "houseRules":  {
+                       "noCritConfirm":  true,
+                       "maneuverCrit":  false
+                   },
+    "settings":  {
+                     "featMode":  "Standard 3.5e (1, 3, 6, 9, 12, 15, 18)",
+                     "clMode":  "Character Level (DM Boon)",
+                     "ignoreAsf":  true,
+                     "mergeSkills":  true,
+                     "babSaveSystem":  "fractional",
+                     "pinDrawerLimit":  5
+                 },
+    "feats":  [
+                  {
+                      "name":  "Weapon Finesse",
+                      "source":  "Player\u0027s Handbook p. 102",
+                      "category":  "General",
+                      "benefit":  "Use DEX modifier instead of STR on attack rolls with light weapons, rapier, whip, or spiked chain."
+                  },
+                  {
+                      "name":  "Power Attack",
+                      "source":  "Player\u0027s Handbook p. 98",
+                      "category":  "General",
+                      "benefit":  "Trade attack bonus for damage (1x for 1-hand, 2x for 2-hand, 0x for off-hand)."
+                  },
+                  {
+                      "name":  "Shadow Blade",
+                      "source":  "Tome of Battle p. 32",
+                      "category":  "Martial",
+                      "benefit":  "Add DEX modifier to damage rolls with Shadow Hand discipline weapons while in a Shadow Hand stance."
+                  },
+                  {
+                      "name":  "Weapon Focus (Rapier)",
+                      "source":  "Player\u0027s Handbook p. 102",
+                      "category":  "General",
+                      "benefit":  "+1 bonus on all attack rolls made with the chosen weapon."
+                  },
+                  {
+                      "name":  "Boon of Elusiveness Lesser",
+                      "source":  "Campaign Boon",
+                      "category":  "DM Grant",
+                      "benefit":  "Get 25% less damage from all AoE attacks and spells. Gain +2 Dodge bonus to Armor Class (AC)."
+                  },
+                  {
+                      "name":  "Draconic Core (1h/day)",
+                      "source":  "Campaign Boon",
+                      "category":  "DM Grant",
+                      "benefit":  "Swift Action (1 hour/day): Total immunity to acid damage, and breath weapon deals x2 damage."
+                  },
+                  {
+                      "name":  "Draconic Shield (1/d)",
+                      "source":  "Campaign Boon",
+                      "category":  "DM Grant",
+                      "benefit":  "Immediate Action (1/day): Negate and ignore all critical hit damage from one attack."
+                  },
+                  {
+                      "name":  "Endurance",
+                      "source":  "Campaign Boon",
+                      "category":  "DM Grant",
+                      "benefit":  "+4 bonus on checks against exhaustion, forced march, and holding breath."
+                  },
+                  {
+                      "name":  "Steadfast Determination",
+                      "source":  "Campaign Boon",
+                      "category":  "DM Grant",
+                      "benefit":  "Use Constitution modifier instead of Wisdom modifier for Will saving throws."
+                  }
+              ],
+    "specialAbilities":  [
+                             {
+                                 "name":  "Battle Clarity (Ex)",
+                                 "source":  "Tome of Battle p. 22",
+                                 "benefit":  "Add INT bonus (max Warblade level) to Reflex saves when not flat-footed."
+                             },
+                             {
+                                 "name":  "Weapon Aptitude (Ex)",
+                                 "source":  "Tome of Battle p. 22",
+                                 "benefit":  "Change the chosen weapon of weapon-specific feats with 1 hour of practice."
+                             },
+                             {
+                                 "name":  "Summon Familiar",
+                                 "source":  "Player\u0027s Handbook p. 52",
+                                 "benefit":  "Summons a magical companion animal providing empathic link and bonuses."
+                             },
+                             {
+                                 "name":  "Ignore ASF (DM Boon)",
+                                 "source":  "Campaign Boon",
+                                 "benefit":  "Arcane Spell Failure percentage (ASF %) from worn armor is completely negated."
+                             }
+                         ],
+    "bodySlots":  {
+                      "head":  {
+                                   "name":  "Circlet of Mages",
+                                   "masterDbName":  "Circlet of Mages",
+                                   "active":  true,
+                                   "category":  "Head",
+                                   "weight":  1,
+                                   "cost":  3000,
+                                   "desc":  "Retain expended spell slots and enhance caster level."
+                               },
+                      "eyes":  {
+                                   "name":  "Goggles of Night",
+                                   "masterDbName":  "Goggles of Night",
+                                   "active":  true,
+                                   "category":  "Eyes",
+                                   "weight":  0.5,
+                                   "cost":  12000,
+                                   "desc":  "Grants wearer Darkvision up to 60 ft."
+                               },
+                      "neck":  {
+                                   "name":  "Amulet of Natural Armor +1",
+                                   "masterDbName":  "Amulet of Natural Armor +1",
+                                   "active":  true,
+                                   "category":  "Neck",
+                                   "bonusType":  "Natural",
+                                   "acBonus":  1,
+                                   "weight":  0.5,
+                                   "cost":  2000,
+                                   "desc":  "+1 Natural Armor bonus to AC."
+                               },
+                      "shoulders":  {
+                                        "name":  "Cloak of Resistance +1",
+                                        "masterDbName":  "Cloak of Resistance +1",
+                                        "active":  true,
+                                        "category":  "Shoulders",
+                                        "bonusType":  "Resistance",
+                                        "resistance":  1,
+                                        "weight":  1,
+                                        "cost":  1000,
+                                        "desc":  "+1 Resistance bonus to all saving throws."
+                                    },
+                      "torso":  {
+                                    "name":  "Vest of Escape",
+                                    "masterDbName":  "Vest of Escape",
+                                    "active":  true,
+                                    "category":  "Torso",
+                                    "weight":  1,
+                                    "cost":  5200,
+                                    "desc":  "+2 Competence on Disable Device, +10 on Escape Artist."
+                                },
+                      "armor":  {
+                                    "name":  "Mithral Chain Shirt +1",
+                                    "masterDbName":  "Mithral Chain Shirt +1",
+                                    "active":  true,
+                                    "category":  "Armor",
+                                    "bonusType":  "Armor",
+                                    "acBonus":  5,
+                                    "maxDex":  6,
+                                    "checkPenalty":  0,
+                                    "weight":  10,
+                                    "cost":  2100,
+                                    "desc":  "+5 Armor AC, Max Dex +6, Check Penalty 0."
+                                },
+                      "belt":  {
+                                   "name":  "Belt of Giant Strength +2",
+                                   "masterDbName":  "Belt of Giant Strength +2",
+                                   "active":  true,
+                                   "category":  "Belt",
+                                   "bonusType":  "Enhancement",
+                                   "strBonus":  2,
+                                   "weight":  1,
+                                   "cost":  4000,
+                                   "desc":  "+2 Enhancement bonus to Strength."
+                               },
+                      "bracers":  {
+                                      "name":  "-",
+                                      "active":  false,
+                                      "category":  "Bracers",
+                                      "weight":  0,
+                                      "cost":  0,
+                                      "desc":  "BoÅŸ Yuva"
+                                  },
+                      "gloves":  {
+                                     "name":  "Gloves of Dexterity +2",
+                                     "masterDbName":  "Gloves of Dexterity +2",
+                                     "active":  true,
+                                     "category":  "Gloves",
+                                     "bonusType":  "Enhancement",
+                                     "dexBonus":  2,
+                                     "weight":  1,
+                                     "cost":  4000,
+                                     "desc":  "+2 Enhancement bonus to Dexterity."
+                                 },
+                      "ring1":  {
+                                    "name":  "Ring of Protection +1",
+                                    "masterDbName":  "Ring of Protection +1",
+                                    "active":  true,
+                                    "category":  "Ring",
+                                    "bonusType":  "Deflection",
+                                    "acBonus":  1,
+                                    "weight":  0.1,
+                                    "cost":  2000,
+                                    "desc":  "+1 Deflection bonus to AC."
+                                },
+                      "ring2":  {
+                                    "name":  "Ring of Sustenance",
+                                    "masterDbName":  "Ring of Sustenance",
+                                    "active":  true,
+                                    "category":  "Ring",
+                                    "weight":  0.1,
+                                    "cost":  2500,
+                                    "desc":  "No food/water needed, requires only 2 hours sleep."
+                                },
+                      "boots":  {
+                                    "name":  "Boots of Striding and Springing",
+                                    "masterDbName":  "Boots of Striding and Springing",
+                                    "active":  true,
+                                    "category":  "Boots",
+                                    "speedBonus":  10,
+                                    "weight":  1,
+                                    "cost":  5500,
+                                    "desc":  "+10 ft land speed, +5 Competence bonus on Jump checks."
+                                },
+                      "mainHand":  {
+                                       "name":  "Rapier +2",
+                                       "masterDbName":  "Rapier +2",
+                                       "active":  true,
+                                       "category":  "Weapon",
+                                       "weight":  2,
+                                       "cost":  8320,
+                                       "desc":  "1d6 18-20/x2 Piercing, +2 Enhancement."
+                                   },
+                      "offHand":  {
+                                      "name":  "Darkwood Buckler +1",
+                                      "masterDbName":  "Darkwood Buckler +1",
+                                      "active":  true,
+                                      "category":  "Shield",
+                                      "bonusType":  "Shield",
+                                      "acBonus":  2,
+                                      "checkPenalty":  0,
+                                      "weight":  1.5,
+                                      "cost":  1205,
+                                      "desc":  "+2 Shield AC, Check Penalty 0."
+                                  }
+                  },
+    "gearPool":  [
+                     {
+                         "id":  1,
+                         "name":  "Rapier +2",
+                         "category":  "Weapon",
+                         "slot":  "Main Hand",
+                         "qty":  1,
+                         "weight":  2,
+                         "cost":  8320,
+                         "isEquipped":  true,
+                         "isBelt":  false,
+                         "desc":  "Finessable 1d6 Piercing 18-20/x2, +2 Enhancement"
+                     },
+                     {
+                         "id":  2,
+                         "name":  "Darkwood Buckler +1",
+                         "category":  "Shield",
+                         "slot":  "Off-Hand/Shield",
+                         "qty":  1,
+                         "weight":  1.5,
+                         "cost":  1205,
+                         "isEquipped":  true,
+                         "isBelt":  false,
+                         "desc":  "+2 Shield AC, ACP 0, Light Shield"
+                     },
+                     {
+                         "id":  3,
+                         "name":  "Spiked Chain +2",
+                         "category":  "Weapon",
+                         "slot":  "Main Hand",
+                         "qty":  1,
+                         "weight":  10,
+                         "cost":  8325,
+                         "isEquipped":  false,
+                         "isBelt":  false,
+                         "desc":  "Exotic 2-Hand Reach weapon, Finessable, Shadow Hand discipline"
+                     },
+                     {
+                         "id":  4,
+                         "name":  "Dagger (Masterwork)",
+                         "category":  "Weapon",
+                         "slot":  "Off-Hand/Shield",
+                         "qty":  2,
+                         "weight":  2,
+                         "cost":  604,
+                         "isEquipped":  false,
+                         "isBelt":  true,
+                         "desc":  "Light weapon 1d4 19-20/x2, throwable 10 ft, +1 attack"
+                     },
+                     {
+                         "id":  5,
+                         "name":  "Mithral Chain Shirt +1",
+                         "category":  "Armor",
+                         "slot":  "Armor",
+                         "qty":  1,
+                         "weight":  10,
+                         "cost":  2100,
+                         "isEquipped":  true,
+                         "isBelt":  false,
+                         "desc":  "+5 Armor AC, Max Dex +6, Check Penalty 0"
+                     },
+                     {
+                         "id":  6,
+                         "name":  "Potion of Cure Serious Wounds",
+                         "category":  "Consumable",
+                         "slot":  "Consumable",
+                         "qty":  3,
+                         "weight":  0.5,
+                         "cost":  750,
+                         "isEquipped":  false,
+                         "isBelt":  true,
+                         "desc":  "Heals 3d8+5 Hit Points on consumption"
+                     },
+                     {
+                         "id":  7,
+                         "name":  "Potion of Bull\u0027s Strength",
+                         "category":  "Consumable",
+                         "slot":  "Consumable",
+                         "qty":  2,
+                         "weight":  0.5,
+                         "cost":  300,
+                         "isEquipped":  false,
+                         "isBelt":  true,
+                         "desc":  "+4 Enhancement bonus to STR for 30 rounds"
+                     },
+                     {
+                         "id":  8,
+                         "name":  "Wand of Magic Missile (CL 3)",
+                         "category":  "Consumable",
+                         "slot":  "Consumable",
+                         "qty":  1,
+                         "weight":  0.1,
+                         "cost":  2250,
+                         "isEquipped":  false,
+                         "isBelt":  true,
+                         "desc":  "50 charges, deals 2d4+2 force damage"
+                     },
+                     {
+                         "id":  9,
+                         "name":  "Backpack, Masterwork",
+                         "category":  "Other",
+                         "slot":  "Slotless",
+                         "qty":  1,
+                         "weight":  2,
+                         "cost":  50,
+                         "isEquipped":  false,
+                         "isBelt":  false,
+                         "desc":  "Treats STR score as 1 higher for carrying capacity calculations"
+                     },
+                     {
+                         "id":  10,
+                         "name":  "Rope, Silk (50 ft)",
+                         "category":  "Other",
+                         "slot":  "Slotless",
+                         "qty":  1,
+                         "weight":  5,
+                         "cost":  10,
+                         "isEquipped":  false,
+                         "isBelt":  false,
+                         "desc":  "50 ft strong silk rope, +2 Circumstance on Use Rope"
+                     },
+                     {
+                         "id":  11,
+                         "name":  "Trail Rations (5 Days)",
+                         "category":  "Other",
+                         "slot":  "Slotless",
+                         "qty":  5,
+                         "weight":  5,
+                         "cost":  2.5,
+                         "isEquipped":  false,
+                         "isBelt":  false,
+                         "desc":  "Compacted sustenance for travel"
+                     }
+                 ],
+    "levelProgression":  [
+                             {
+                                 "level":  1,
+                                 "active":  true,
+                                 "className":  "Sorcerer",
+                                 "hd":  "d4",
+                                 "hpGain":  4,
+                                 "bab":  0,
+                                 "fort":  0,
+                                 "ref":  0,
+                                 "will":  2,
+                                 "skillPts":  20,
+                                 "feats":  [
+                                               "Weapon Finesse (Lvl 1)",
+                                               "Shadow Blade (Human Bonus)"
+                                           ],
+                                 "specialAbilities":  [
+                                                          "Summon Familiar"
+                                                      ],
+                                 "notes":  "Max HP at Lvl 1, Spellcasting starts"
+                             },
+                             {
+                                 "level":  2,
+                                 "active":  true,
+                                 "className":  "Sorcerer",
+                                 "hd":  "d4",
+                                 "hpGain":  4,
+                                 "bab":  1,
+                                 "fort":  0,
+                                 "ref":  0,
+                                 "will":  3,
+                                 "skillPts":  4,
+                                 "feats":  [
+
+                                           ],
+                                 "specialAbilities":  [
+
+                                                      ],
+                                 "notes":  "RAW avg HD rounded"
+                             },
+                             {
+                                 "level":  3,
+                                 "active":  true,
+                                 "className":  "Sorcerer",
+                                 "hd":  "d4",
+                                 "hpGain":  4,
+                                 "bab":  1,
+                                 "fort":  1,
+                                 "ref":  1,
+                                 "will":  3,
+                                 "skillPts":  4,
+                                 "feats":  [
+                                               "Weapon Focus (Rapier)"
+                                           ],
+                                 "specialAbilities":  [
+
+                                                      ],
+                                 "notes":  "3. Seviye Genel Feat hakkÄ±"
+                             },
+                             {
+                                 "level":  4,
+                                 "active":  true,
+                                 "className":  "Sorcerer",
+                                 "hd":  "d4",
+                                 "hpGain":  4,
+                                 "bab":  2,
+                                 "fort":  1,
+                                 "ref":  1,
+                                 "will":  4,
+                                 "skillPts":  4,
+                                 "feats":  [
+                                               "+1 Stat: Charisma"
+                                           ],
+                                 "specialAbilities":  [
+
+                                                      ],
+                                 "statIncreased":  "cha",
+                                 "notes":  "2. Seviye BÃ¼yÃ¼ SlotlarÄ± aÃ§Ä±ldÄ±"
+                             },
+                             {
+                                 "level":  5,
+                                 "active":  true,
+                                 "className":  "Sorcerer",
+                                 "hd":  "d4",
+                                 "hpGain":  4,
+                                 "bab":  2,
+                                 "fort":  1,
+                                 "ref":  1,
+                                 "will":  4,
+                                 "skillPts":  4,
+                                 "feats":  [
+
+                                           ],
+                                 "specialAbilities":  [
+
+                                                      ],
+                                 "notes":  "Caster Level 5 tamamlandÄ±"
+                             },
+                             {
+                                 "level":  6,
+                                 "active":  true,
+                                 "className":  "Warblade",
+                                 "hd":  "d12",
+                                 "hpGain":  12,
+                                 "bab":  3,
+                                 "fort":  4,
+                                 "ref":  3,
+                                 "will":  4,
+                                 "skillPts":  6,
+                                 "feats":  [
+                                               "Power Attack (Lvl 6)"
+                                           ],
+                                 "specialAbilities":  [
+                                                          "Battle Clarity (Ex)",
+                                                          "Weapon Aptitude (Ex)"
+                                                      ],
+                                 "notes":  "Battle Clarity, Weapon Aptitude, Maneuvers aÃ§Ä±ldÄ±"
+                             }
+                         ],
+    "weapons":  [
+                    {
+                        "name":  "Rapier +2",
+                        "grip":  "1-Hand",
+                        "dice":  "1d6",
+                        "critMin":  18,
+                        "critMult":  2,
+                        "attBonus":  2,
+                        "dmgBonus":  2,
+                        "dmgType":  "Piercing",
+                        "bonusType":  "Enhancement",
+                        "isLight":  false,
+                        "tags":  [
+                                     "finessable",
+                                     "piercing"
+                                 ]
+                    },
+                    {
+                        "name":  "Spiked Chain +2",
+                        "grip":  "2-Hand",
+                        "dice":  "2d4",
+                        "critMin":  20,
+                        "critMult":  2,
+                        "attBonus":  2,
+                        "dmgBonus":  2,
+                        "dmgType":  "Piercing",
+                        "bonusType":  "Enhancement",
+                        "discipline":  "Shadow Hand",
+                        "tags":  [
+                                     "finessable",
+                                     "shadow hand",
+                                     "reach",
+                                     "trip"
+                                 ]
+                    },
+                    {
+                        "name":  "Dagger (Masterwork)",
+                        "grip":  "1-Hand",
+                        "dice":  "1d4",
+                        "critMin":  19,
+                        "critMult":  2,
+                        "attBonus":  1,
+                        "dmgBonus":  0,
+                        "dmgType":  "Piercing",
+                        "bonusType":  "Masterwork",
+                        "isLight":  true,
+                        "tags":  [
+                                     "finessable",
+                                     "light",
+                                     "thrown"
+                                 ]
+                    }
+                ],
+    "activeModifiers":  [
+                            {
+                                "name":  "Punishing Stance",
+                                "source":  "Stance",
+                                "bonusAtk":  0,
+                                "dice":  "1d6",
+                                "type":  "Slashing",
+                                "active":  true,
+                                "notes":  "+1d6 Hasar, -2 AC"
+                            },
+                            {
+                                "name":  "Mountain Hammer",
+                                "source":  "Maneuver",
+                                "bonusAtk":  0,
+                                "dice":  "2d6",
+                                "type":  "Slashing",
+                                "active":  false,
+                                "notes":  "DR ve SertliÄŸi aÅŸar"
+                            },
+                            {
+                                "name":  "Blade of Blood",
+                                "source":  "Spell",
+                                "bonusAtk":  0,
+                                "dice":  "3d6",
+                                "type":  "Negative Energy",
+                                "active":  false,
+                                "notes":  "5 Can feda et, +3d6 hasar vur"
+                            }
+                        ],
+    "spellcasting":  {
+                         "primaryClass":  "Sorcerer",
+                         "cl":  5,
+                         "statName":  "CHA",
+                         "statMod":  6,
+                         "slots":  [
+                                       {
+                                           "level":  0,
+                                           "name":  "Cantrip",
+                                           "known":  6,
+                                           "daily":  6,
+                                           "used":  1
+                                       },
+                                       {
+                                           "level":  1,
+                                           "name":  "1st Level",
+                                           "known":  4,
+                                           "daily":  8,
+                                           "used":  2
+                                       },
+                                       {
+                                           "level":  2,
+                                           "name":  "2nd Level",
+                                           "known":  2,
+                                           "daily":  6,
+                                           "used":  1
+                                       }
+                                   ],
+                         "knownSpells":  [
+                                             {
+                                                 "level":  0,
+                                                 "name":  "Detect Magic",
+                                                 "school":  "Divination",
+                                                 "action":  "Standard Action",
+                                                 "range":  "60 ft",
+                                                 "benefit":  "Detects magical auras within 60 ft."
+                                             },
+                                             {
+                                                 "level":  0,
+                                                 "name":  "Read Magic",
+                                                 "school":  "Divination",
+                                                 "action":  "Standard Action",
+                                                 "range":  "Personal",
+                                                 "benefit":  "Read magical inscriptions and scrolls."
+                                             },
+                                             {
+                                                 "level":  0,
+                                                 "name":  "Light",
+                                                 "school":  "Evocation",
+                                                 "action":  "Standard Action",
+                                                 "range":  "Touch",
+                                                 "benefit":  "Object shines like a torch for 10 min/level."
+                                             },
+                                             {
+                                                 "level":  0,
+                                                 "name":  "Mage Hand",
+                                                 "school":  "Transmutation",
+                                                 "action":  "Standard Action",
+                                                 "range":  "Close (25 ft)",
+                                                 "benefit":  "5-pound telekinesis."
+                                             },
+                                             {
+                                                 "level":  0,
+                                                 "name":  "Prestidigitation",
+                                                 "school":  "Universal",
+                                                 "action":  "Standard Action",
+                                                 "range":  "10 ft",
+                                                 "benefit":  "Minor magic tricks and cleaning."
+                                             },
+                                             {
+                                                 "level":  0,
+                                                 "name":  "Ghost Sound",
+                                                 "school":  "Illusion",
+                                                 "action":  "Standard Action",
+                                                 "range":  "Close (25 ft)",
+                                                 "benefit":  "Creates phantom auditory sounds."
+                                             },
+                                             {
+                                                 "level":  1,
+                                                 "name":  "Magic Missile",
+                                                 "school":  "Evocation",
+                                                 "action":  "Standard Action",
+                                                 "range":  "Medium (150 ft)",
+                                                 "damageDice":  "3d4+3",
+                                                 "benefit":  "Fires 3 force missiles dealing 1d4+1 each (unerring hit)."
+                                             },
+                                             {
+                                                 "level":  1,
+                                                 "name":  "Shield",
+                                                 "school":  "Abjuration",
+                                                 "action":  "Standard Action",
+                                                 "range":  "Personal",
+                                                 "benefit":  "+4 shield bonus to AC and negates Magic Missile."
+                                             },
+                                             {
+                                                 "level":  1,
+                                                 "name":  "Mage Armor",
+                                                 "school":  "Conjuration",
+                                                 "action":  "Standard Action",
+                                                 "range":  "Touch",
+                                                 "benefit":  "+4 armor bonus to AC for 5 hours."
+                                             },
+                                             {
+                                                 "level":  1,
+                                                 "name":  "Blade of Blood",
+                                                 "school":  "Necromancy",
+                                                 "action":  "Swift Action",
+                                                 "range":  "Touch",
+                                                 "damageDice":  "3d6",
+                                                 "benefit":  "Deal extra 1d6 (or 3d6 for 5 HP) on next strike."
+                                             },
+                                             {
+                                                 "level":  2,
+                                                 "name":  "Bull\u0027s Strength",
+                                                 "school":  "Transmutation",
+                                                 "action":  "Standard Action",
+                                                 "range":  "Touch",
+                                                 "benefit":  "+4 enhancement bonus to Strength for 5 minutes."
+                                             },
+                                             {
+                                                 "level":  2,
+                                                 "name":  "Scorching Ray",
+                                                 "school":  "Evocation",
+                                                 "action":  "Standard Action",
+                                                 "range":  "Close (35 ft)",
+                                                 "damageDice":  "4d6",
+                                                 "benefit":  "Ranged touch ray dealing 4d6 fire damage."
+                                             }
+                                         ]
+                     },
+    "tomeOfBattle":  {
+                         "initiatorLevel":  3,
+                         "readiedManeuvers":  [
+                                                  {
+                                                      "name":  "Mountain Hammer",
+                                                      "level":  2,
+                                                      "discipline":  "Stone Dragon",
+                                                      "action":  "Standard Action",
+                                                      "expended":  false,
+                                                      "notes":  "Weapon + 2d6, overcomes DR"
+                                                  },
+                                                  {
+                                                      "name":  "Steel Wind",
+                                                      "level":  1,
+                                                      "discipline":  "Iron Heart",
+                                                      "action":  "Standard Action",
+                                                      "expended":  false,
+                                                      "notes":  "Attack two adjacent foes"
+                                                  },
+                                                  {
+                                                      "name":  "Shadow Garrote",
+                                                      "level":  3,
+                                                      "discipline":  "Shadow Hand",
+                                                      "action":  "Standard Action",
+                                                      "expended":  false,
+                                                      "notes":  "5d6 ranged touch attack"
+                                                  }
+                                              ],
+                         "maneuversKnown":  [
+                                                {
+                                                    "name":  "Mountain Hammer",
+                                                    "level":  2,
+                                                    "discipline":  "Stone Dragon",
+                                                    "action":  "Standard Action",
+                                                    "notes":  "Weapon + 2d6, overcomes DR"
+                                                },
+                                                {
+                                                    "name":  "Steel Wind",
+                                                    "level":  1,
+                                                    "discipline":  "Iron Heart",
+                                                    "action":  "Standard Action",
+                                                    "notes":  "Attack two adjacent foes"
+                                                },
+                                                {
+                                                    "name":  "Shadow Garrote",
+                                                    "level":  3,
+                                                    "discipline":  "Shadow Hand",
+                                                    "action":  "Standard Action",
+                                                    "notes":  "5d6 ranged touch attack"
+                                                }
+                                            ],
+                         "stancesKnown":  [
+                                              {
+                                                  "name":  "Punishing Stance",
+                                                  "discipline":  "Iron Heart",
+                                                  "level":  1,
+                                                  "benefit":  "+1d6 melee damage, -2 AC"
+                                              },
+                                              {
+                                                  "name":  "Island of Blades",
+                                                  "discipline":  "Shadow Hand",
+                                                  "level":  1,
+                                                  "benefit":  "Adjacent allies automatically flank"
+                                              }
+                                          ]
+                     },
+    "skills":  [
+                   {
+                       "name":  "Concentration",
+                       "stat":  "con",
+                       "ranks":  8,
+                       "misc":  0,
+                       "acp":  false
+                   },
+                   {
+                       "name":  "Spellcraft",
+                       "stat":  "int",
+                       "ranks":  8,
+                       "misc":  2,
+                       "acp":  false
+                   },
+                   {
+                       "name":  "Knowledge (Arcana)",
+                       "stat":  "int",
+                       "ranks":  6,
+                       "misc":  0,
+                       "acp":  false
+                   },
+                   {
+                       "name":  "Martial Lore",
+                       "stat":  "int",
+                       "ranks":  4,
+                       "misc":  0,
+                       "acp":  false
+                   },
+                   {
+                       "name":  "Tumble",
+                       "stat":  "dex",
+                       "ranks":  4,
+                       "misc":  0,
+                       "acp":  true
+                   },
+                   {
+                       "name":  "Balance",
+                       "stat":  "dex",
+                       "ranks":  2,
+                       "misc":  0,
+                       "acp":  true
+                   },
+                   {
+                       "name":  "Jump",
+                       "stat":  "str",
+                       "ranks":  4,
+                       "misc":  0,
+                       "acp":  true
+                   },
+                   {
+                       "name":  "Spot",
+                       "stat":  "wis",
+                       "ranks":  0,
+                       "misc":  0,
+                       "acp":  false
+                   },
+                   {
+                       "name":  "Listen",
+                       "stat":  "wis",
+                       "ranks":  0,
+                       "misc":  0,
+                       "acp":  false
+                   }
+               ],
+    "consumables":  [
+                        {
+                            "name":  "Potion of Cure Serious Wounds",
+                            "qty":  3,
+                            "effect":  "Heals 3d8+5 HP"
+                        },
+                        {
+                            "name":  "Potion of Bull\u0027s Strength",
+                            "qty":  2,
+                            "effect":  "+4 Str for 30 rounds"
+                        }
+                    ],
+    "lastModified":  "2026-10-15T21:50:00.000Z"
 }

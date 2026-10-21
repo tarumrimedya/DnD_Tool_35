@@ -6325,22 +6325,22 @@
             character.hitDie = defaultChar.hitDie;
             updated = true;
           }
-          // Fix legacy unadjusted progression hpGain (sum 23 for level 6) that caused 45 HP to drop to 35 HP
+          // Fix legacy unadjusted progression hpGain (sum 23 for level 6) that caused HP misalignment
           const prog = character.levelProgression || [];
           if (prog.length >= 6) {
             const sumFirst6 = prog.slice(0, 6).reduce((acc, p) => acc + (Number(p.hpGain) || 0), 0);
-            if (sumFirst6 === 23 || (sumFirst6 < 33 && prog[5]?.className === 'Warblade')) {
+            if (sumFirst6 === 23 || (sumFirst6 < 32 && prog[5]?.className === 'Warblade')) {
               if (prog[0]) prog[0].hpGain = 4;
               if (prog[1]) prog[1].hpGain = 4;
               if (prog[2]) prog[2].hpGain = 4;
               if (prog[3]) prog[3].hpGain = 4;
-              if (prog[4]) prog[4].hpGain = 5;
+              if (prog[4]) prog[4].hpGain = 4;
               if (prog[5]) prog[5].hpGain = 12;
               if (character.hp) {
-                character.hp.baseMax = 33;
+                character.hp.baseMax = 32;
                 character.hp.conBonusHp = 12;
-                if (!character.hp.max || character.hp.max < 45) character.hp.max = 45;
-                if (character.hp.current === 35 || character.hp.current === undefined) character.hp.current = 45;
+                if (!character.hp.max || character.hp.max < 44) character.hp.max = 44;
+                if (character.hp.current === 35 || character.hp.current === undefined) character.hp.current = 44;
               }
               updated = true;
             }
@@ -9891,7 +9891,7 @@
         }
         const totalHeal = sum + 5;
         const prevHp = character.hp.current || 0;
-        character.hp.current = Math.min(character.hp.max || 45, prevHp + totalHeal);
+        character.hp.current = Math.min(character.hp.max || 44, prevHp + totalHeal);
         const actualGain = character.hp.current - prevHp;
 
         showDiceTopToast({
@@ -10039,7 +10039,7 @@
     function triggerCockpitLongRest() {
       if (confirm('🌙 Uzun mola vermek ve tüm can, büyü slotları ve manevraları tamamen yenilemek istiyor musunuz?')) {
         // Refill HP
-        if (character.hp) character.hp.current = character.hp.max || 45;
+        if (character.hp) character.hp.current = character.hp.max || 44;
         // Refill spell slots
         if (character.spellcasting && Array.isArray(character.spellcasting.slots)) {
           character.spellcasting.slots.forEach(s => s.used = 0);
@@ -16369,21 +16369,21 @@
           : Math.floor(((character.abilities?.con || 14) - 10) / 2);
 
         if (character.hp) {
-          const oldMax = Number(character.hp.max) || 45;
+          const oldMax = Number(character.hp.max) || 44;
           const oldCurrent = (character.hp.current !== undefined && character.hp.current !== null)
             ? Number(character.hp.current)
             : null;
 
-          // 1. Permanently sanitize legacy base HP for initial 6 levels (must sum to at least 33)
+          // 1. Permanently sanitize legacy base HP for initial 6 levels (must sum to at least 32)
           const prog = character.levelProgression || [];
           if (prog.length >= 6) {
             const sumFirst6 = prog.slice(0, 6).reduce((acc, p) => acc + (Number(p.hpGain) || 0), 0);
-            if (sumFirst6 === 23 || (sumFirst6 < 33 && prog[5]?.className === 'Warblade')) {
+            if (sumFirst6 === 23 || (sumFirst6 < 32 && prog[5]?.className === 'Warblade')) {
               if (prog[0]) prog[0].hpGain = 4;
               if (prog[1]) prog[1].hpGain = 4;
               if (prog[2]) prog[2].hpGain = 4;
               if (prog[3]) prog[3].hpGain = 4;
-              if (prog[4]) prog[4].hpGain = 5;
+              if (prog[4]) prog[4].hpGain = 4;
               if (prog[5]) prog[5].hpGain = 12;
               if (summary) {
                 summary.baseHp = prog.filter(p => p.active !== false).reduce((acc, p) => acc + (Number(p.hpGain) || 0), 0);
@@ -16391,7 +16391,7 @@
             }
           }
 
-          const baseProgHp = (summary && summary.baseHp) ? summary.baseHp : 33;
+          const baseProgHp = (summary && summary.baseHp) ? summary.baseHp : 32;
           character.hp.baseMax = baseProgHp + (toughnessCount * 3);
           character.hp.conBonusHp = character.level * conMod;
           
@@ -17681,7 +17681,7 @@
           });
           // Toughness immediate +3 HP support
           if (clean === 'toughness' && character.hp) {
-            if (character.hp.baseMax === undefined) character.hp.baseMax = (Number(character.hp.max) || 45) - (Number(character.hp.conBonusHp) || 0);
+            if (character.hp.baseMax === undefined) character.hp.baseMax = (Number(character.hp.max) || 44) - (Number(character.hp.conBonusHp) || 0);
             character.hp.baseMax = (Number(character.hp.baseMax) || 0) + 3;
             character.hp.max = (Number(character.hp.baseMax) || 0) + (Number(character.hp.conBonusHp) || 0);
             character.hp.current = (Number(character.hp.current) || 0) + 3;
@@ -17968,7 +17968,7 @@
             source: `Level ${row.level} (${row.className})`
           });
           if (featName.toLowerCase() === 'toughness' && character.hp) {
-            if (character.hp.baseMax === undefined) character.hp.baseMax = (Number(character.hp.max) || 45) - (Number(character.hp.conBonusHp) || 0);
+            if (character.hp.baseMax === undefined) character.hp.baseMax = (Number(character.hp.max) || 44) - (Number(character.hp.conBonusHp) || 0);
             character.hp.baseMax = (Number(character.hp.baseMax) || 0) + 3;
             character.hp.max = (Number(character.hp.baseMax) || 0) + (Number(character.hp.conBonusHp) || 0);
             character.hp.current = (Number(character.hp.current) || 0) + 3;
@@ -19905,9 +19905,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
 
       // 5. HP Gain (User Rule: Toplam HP artar, o anki HP sabit kalır)
       if (isActive) {
-        if (!character.hp) character.hp = { current: 45, max: 45, temp: 0, nonlethal: 0 };
+        if (!character.hp) character.hp = { current: 44, max: 44, temp: 0, nonlethal: 0 };
         const curHpBefore = Number(character.hp.current);
-        if (character.hp.baseMax === undefined) character.hp.baseMax = (Number(character.hp.max) || 45) - (Number(character.hp.conBonusHp) || 0);
+        if (character.hp.baseMax === undefined) character.hp.baseMax = (Number(character.hp.max) || 44) - (Number(character.hp.conBonusHp) || 0);
         character.hp.baseMax = (Number(character.hp.baseMax) || 0) + hpGain;
         character.hp.max = (Number(character.hp.baseMax) || 0) + (Number(character.hp.conBonusHp) || 0);
         // Strict: O anki mevcut can (current HP) sabit kalır, artırılmaz veya düşürülmez
@@ -19962,7 +19962,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       // Revert HP
       if (character.hp && last.hpGain && last.active !== false) {
         const gain = Number(last.hpGain) || 0;
-        if (character.hp.baseMax === undefined) character.hp.baseMax = (Number(character.hp.max) || 45) - (Number(character.hp.conBonusHp) || 0);
+        if (character.hp.baseMax === undefined) character.hp.baseMax = (Number(character.hp.max) || 44) - (Number(character.hp.conBonusHp) || 0);
         character.hp.baseMax = Math.max(1, (Number(character.hp.baseMax) || 1) - gain);
         character.hp.max = Math.max(1, (Number(character.hp.baseMax) || 1) + (Number(character.hp.conBonusHp) || 0));
         character.hp.current = Math.min(character.hp.max, Math.max(1, (Number(character.hp.current) || 1) - gain));
@@ -20377,10 +20377,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         dieRoll = isFirstLvl ? def.hd : (Math.floor(def.hd / 2) + 1);
       }
 
-      const totalHpGain = Math.max(1, dieRoll + conMod);
-      hpInput.value = totalHpGain;
+      hpInput.value = dieRoll;
       if (hint) {
-        hint.innerHTML = `Yeni Zar (d${def.hd}): <b>${dieRoll}</b> + CON Mod (<b>${conMod >= 0 ? '+' + conMod : conMod}</b>) = <b class="text-emerald-400">+${totalHpGain} HP</b>`;
+        hint.innerHTML = `Yeni Can Zarı (d${def.hd}): <b>${dieRoll}</b> (Temel havuza +${dieRoll} eklenir, CON Modu [${conMod >= 0 ? '+' + conMod : conMod}] otomatik yansıtılır)`;
       }
     }
 
@@ -20389,7 +20388,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       const hpInput = document.getElementById('change-class-hp-input');
       const val = parseInt(hpInput?.value, 10);
       if (hint && !isNaN(val)) {
-        hint.innerHTML = `Elle girilen Can Puanı artışı: <b class="text-emerald-400">+${val} HP</b>`;
+        hint.innerHTML = `Elle girilen Can Zarı: <b class="text-emerald-400">+${val}</b> (CON Modu otomatik yansıtılır)`;
       }
     }
 
@@ -20453,11 +20452,11 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         : Math.floor(((character.abilities?.int || 10) - 10) / 2);
       const isHuman = (character.race || '').toLowerCase().includes('human') ? 1 : 0;
 
-      // Calculate old vs new HP difference if active
+      // Calculate old vs new HP difference if active (using pure die roll without double-counting CON)
       const oldHp = Number(prog[idx].hpGain) || 0;
       const manualHp = parseInt(document.getElementById('change-class-hp-input')?.value, 10);
       const rollHp = (idx === 0) ? def.hd : (Math.floor(def.hd / 2) + 1);
-      const fallbackHp = Math.max(1, rollHp + conMod);
+      const fallbackHp = rollHp;
       const newHp = (!isNaN(manualHp) && manualHp > 0) ? manualHp : fallbackHp;
       const hpDiff = newHp - oldHp;
 
@@ -20474,7 +20473,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
 
       // If active, update character HP
       if (prog[idx].active !== false && character.hp) {
-        if (character.hp.baseMax === undefined) character.hp.baseMax = (Number(character.hp.max) || 45) - (Number(character.hp.conBonusHp) || 0);
+        if (character.hp.baseMax === undefined) character.hp.baseMax = (Number(character.hp.max) || 44) - (Number(character.hp.conBonusHp) || 0);
         character.hp.baseMax = Math.max(1, (Number(character.hp.baseMax) || 1) + hpDiff);
         character.hp.max = Math.max(1, (Number(character.hp.baseMax) || 1) + (Number(character.hp.conBonusHp) || 0));
         character.hp.current = Math.min(character.hp.max, Math.max(1, (Number(character.hp.current) || 1) + hpDiff));
@@ -20551,7 +20550,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       const targetClassLvl = classLvlSoFar + 1;
 
       const rollHp = (nextLvl === 1) ? def.hd : (Math.floor(def.hd / 2) + 1);
-      const hpGain = Math.max(1, rollHp + conMod);
+      const hpGain = rollHp;
       const skillPts = (nextLvl === 1)
         ? Math.max(4, ((def.skills || 2) + intMod + isHuman) * 4)
         : Math.max(1, (def.skills || 2) + intMod + isHuman);
@@ -22310,7 +22309,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       const restHours = hasRingOfSustenance ? 2 : 8;
       const rawHpHeal = Number(character.level) || 6;
       const currentHp = Number(character.hp?.current) || 0;
-      const maxHp = Number(character.hp?.max) || 45;
+      const maxHp = Number(character.hp?.max) || 44;
       const missingHp = Math.max(0, maxHp - currentHp);
 
       showDiceTopToast({
@@ -22357,7 +22356,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       // 1. HP & Nonlethal & Temp HP
       const charLvl = Number(character.level) || 6;
       const currentHp = Number(character.hp?.current) || 0;
-      const maxHp = Number(character.hp?.max) || 45;
+      const maxHp = Number(character.hp?.max) || 44;
       let hpGain = 0;
 
       if (isFullHeal) {
