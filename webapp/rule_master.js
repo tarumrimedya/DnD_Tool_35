@@ -2226,9 +2226,25 @@ Return valid JSON only matching this schema:
         };
       }
       if (unequippedOffHandName) {
-        alert(`⚔️ "${item.name}" iki elli (Two-Handed) bir silahtır! 'Oversized Two-Weapon Fighting' veya 'Monkey Grip' feat'iniz olmadığı için iki elinizi de kaplar. İkinci elinizdeki "${unequippedOffHandName}" çıkarıldı.`);
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            title: 'Silah Kuşanıldı',
+            breakdown: `"${item.name}" iki elli silah olduğu için ikinci eldeki "${unequippedOffHandName}" çıkarıldı.`,
+            icon: '⚔️'
+          });
+        } else {
+          alert(`⚔️ "${item.name}" iki elli (Two-Handed) bir silahtır! 'Oversized Two-Weapon Fighting' veya 'Monkey Grip' feat'iniz olmadığı için iki elinizi de kaplar. İkinci elinizdeki "${unequippedOffHandName}" çıkarıldı.`);
+        }
       } else {
-        alert(`⚔️ "${item.name}" silahı kuşanıldı ve çantaya eklendi!`);
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            title: 'Silah Kuşanıldı',
+            breakdown: `"${item.name}" kuşanıldı ve envantere eklendi.`,
+            icon: '⚔️'
+          });
+        } else {
+          alert(`⚔️ "${item.name}" silahı kuşanıldı ve çantaya eklendi!`);
+        }
       }
     } else if (type === 'spell') {
       if (!character.spellcasting) character.spellcasting = { slots: [], knownSpells: [] };
@@ -2359,9 +2375,25 @@ Return valid JSON only matching this schema:
           chaBonus: item.chaBonus
         };
         if (poolExisting) poolExisting.isEquipped = true;
-        alert(`🛡️ "${item.name}" kuşanıldı (${slotKey} yuvasına yerleştirildi) ve çantaya eklendi!`);
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            title: 'Eşya Kuşanıldı',
+            breakdown: `"${item.name}" (${slotKey} yuvasına) kuşanıldı.`,
+            icon: '🛡️'
+          });
+        } else {
+          alert(`🛡️ "${item.name}" kuşanıldı (${slotKey} yuvasına yerleştirildi) ve çantaya eklendi!`);
+        }
       } else {
-        alert(`🎒 "${item.name}" (${item.type}) çantanıza / envanter havuzunuza eklendi!`);
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            title: 'Eşya Eklendi',
+            breakdown: `"${item.name}" envanter havuzuna eklendi.`,
+            icon: '🎒'
+          });
+        } else {
+          alert(`🎒 "${item.name}" (${item.type}) çantanıza / envanter havuzunuza eklendi!`);
+        }
       }
     }
 
@@ -2529,7 +2561,10 @@ Return valid JSON only matching this schema:
               </div>
               <div class="text-[10px] text-slate-400 mt-0.5">📚 ${item.source || 'PHB'} • Yuva: <b>${item.slot || 'Main Hand'}</b></div>
             </div>
-            <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Düzenle">✏️</button>
+            <div class="flex items-center gap-1">
+              <button onclick="toggleUniversalPin({ name: '${item.name.replace(/'/g, "\\'")}', type: 'Feat', action: 'Passive', desc: '${(item.benefit || item.description || '').replace(/'/g, "\\'")}', badge: '${item.bonusType || 'Feat'}' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Savaş Kokpitine Sabitle / Çıkar">📌</button>
+              <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Düzenle">✏️</button>
+            </div>
           </div>
 
           <!-- Combat Stats Pills -->
@@ -2612,7 +2647,10 @@ Return valid JSON only matching this schema:
                 • 📚 ${item.source || 'PHB/ToB'}
               </div>
             </div>
-            <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Düzenle">✏️</button>
+            <div class="flex items-center gap-1">
+              <button onclick="toggleUniversalPin({ name: '${item.name.replace(/'/g, "\\'")}', type: 'Feat', action: 'Passive', desc: '${(item.benefit || item.description || '').replace(/'/g, "\\'")}', badge: '${item.bonusType || 'Feat'}' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Savaş Kokpitine Sabitle / Çıkar">📌</button>
+              <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Düzenle">✏️</button>
+            </div>
           </div>
 
           <div class="flex flex-wrap gap-2 text-[10px] text-slate-400">
@@ -2674,7 +2712,10 @@ Return valid JSON only matching this schema:
               </div>
               <div class="text-[10px] text-slate-400 mt-0.5">📚 ${item.source || 'PHB'} • Tür: <b>${item.bonusType || 'Untyped'}</b></div>
             </div>
-            <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Düzenle">✏️</button>
+            <div class="flex items-center gap-1">
+              <button onclick="toggleUniversalPin({ name: '${item.name.replace(/'/g, "\\'")}', type: 'Feat', action: 'Passive', desc: '${(item.benefit || item.description || '').replace(/'/g, "\\'")}', badge: '${item.bonusType || 'Feat'}' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Savaş Kokpitine Sabitle / Çıkar">📌</button>
+              <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Düzenle">✏️</button>
+            </div>
           </div>
 
           ${item.prereq && item.prereq !== '-' ? `
@@ -2736,7 +2777,10 @@ Return valid JSON only matching this schema:
               </div>
               <div class="text-[10px] text-slate-400 mt-0.5">📚 ${item.source || 'MIC'} • Bonus: <b>${item.bonusType || 'Untyped'}</b></div>
             </div>
-            <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Düzenle">✏️</button>
+            <div class="flex items-center gap-1">
+              <button onclick="toggleUniversalPin({ name: '${item.name.replace(/'/g, "\\'")}', type: 'Feat', action: 'Passive', desc: '${(item.benefit || item.description || '').replace(/'/g, "\\'")}', badge: '${item.bonusType || 'Feat'}' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Savaş Kokpitine Sabitle / Çıkar">📌</button>
+              <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Düzenle">✏️</button>
+            </div>
           </div>
 
           <p class="text-[11px] text-slate-300 leading-relaxed bg-slate-950/40 p-2.5 rounded border border-slate-800/80">${item.benefit || item.description || '-'}</p>

@@ -1059,9 +1059,15 @@ const RuleEngine = {
       effectiveDodge += 1;
     }
 
+    // D&D 3.5e RAW (PHB p. 84, Tumble): 5+ ranks in Tumble increases Fighting Defensively dodge bonus to +3 and Total Defense to +6
+    const tumbleSkill = (character.skills || []).find(s => s && s.name && s.name.toLowerCase() === 'tumble');
+    const tumbleRanks = tumbleSkill ? (Number(tumbleSkill.ranks) || 0) : 0;
+    const fightingDefDodge = tumbleRanks >= 5 ? 3 : 2;
+    const totalDefDodge = tumbleRanks >= 5 ? 6 : 4;
+
     if (combatExpertise > 0) effectiveDodge += Math.min(5, combatExpertise);
-    if (fightingDefensively) effectiveDodge += 2;
-    if (totalDefense) effectiveDodge += 4;
+    if (fightingDefensively) effectiveDodge += fightingDefDodge;
+    if (totalDefense) effectiveDodge += totalDefDodge;
 
     // Dex to AC capped by Max Dex
     const fullDexMod = this.getAbilityMod(character.abilities.dex || 10);
@@ -1250,6 +1256,18 @@ const RuleEngine = {
       { type: 'untyped', val: attackStatMod, source: attackStatName },
       { type: 'untyped', val: -effectivePA, source: 'Power Attack Penalty' }
     ];
+
+    // Combat Expertise penalty (cannot exceed BAB)
+    const combatExpertise = Math.min(bab, Math.max(0, Number(options.combatExpertise !== undefined ? options.combatExpertise : (character.tactical?.combatExpertise || 0))));
+    if (combatExpertise > 0) {
+      attackBonusItems.push({ type: 'untyped', val: -combatExpertise, source: 'Combat Expertise Penalty' });
+    }
+
+    // Fighting Defensively penalty (-4 to all attack rolls)
+    const fightingDefensively = options.fightingDefensively !== undefined ? options.fightingDefensively : (character.tactical?.fightingDefensively || false);
+    if (fightingDefensively) {
+      attackBonusItems.push({ type: 'untyped', val: -4, source: 'Fighting Defensively Penalty' });
+    }
 
     // Monkey Grip penalty: -2 on attack rolls when wielding an oversized or 2-handed weapon in 1 hand
     if (isTwoHand && grip === '1-Hand' && hasOversized) {
