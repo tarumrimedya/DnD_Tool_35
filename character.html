@@ -6331,21 +6331,23 @@
           }
           // Fix legacy unadjusted progression hpGain (sum 23 for level 6) that caused 45 HP to drop to 35 HP
           const prog = character.levelProgression || [];
-          const currentBaseHp = prog.filter(p => p.active !== false).reduce((acc, p) => acc + (Number(p.hpGain) || 0), 0);
-          if (currentBaseHp === 23 && (character.level || 6) === 6) {
-            if (prog[0]) prog[0].hpGain = 4;
-            if (prog[1]) prog[1].hpGain = 4;
-            if (prog[2]) prog[2].hpGain = 4;
-            if (prog[3]) prog[3].hpGain = 4;
-            if (prog[4]) prog[4].hpGain = 5;
-            if (prog[5]) prog[5].hpGain = 12;
-            if (character.hp) {
-              character.hp.baseMax = 33;
-              character.hp.conBonusHp = 12;
-              character.hp.max = 45;
-              if (character.hp.current === 35 || character.hp.current === undefined) character.hp.current = 45;
+          if (prog.length >= 6) {
+            const sumFirst6 = prog.slice(0, 6).reduce((acc, p) => acc + (Number(p.hpGain) || 0), 0);
+            if (sumFirst6 === 23 || (sumFirst6 < 33 && prog[5]?.className === 'Warblade')) {
+              if (prog[0]) prog[0].hpGain = 4;
+              if (prog[1]) prog[1].hpGain = 4;
+              if (prog[2]) prog[2].hpGain = 4;
+              if (prog[3]) prog[3].hpGain = 4;
+              if (prog[4]) prog[4].hpGain = 5;
+              if (prog[5]) prog[5].hpGain = 12;
+              if (character.hp) {
+                character.hp.baseMax = 33;
+                character.hp.conBonusHp = 12;
+                if (!character.hp.max || character.hp.max < 45) character.hp.max = 45;
+                if (character.hp.current === 35 || character.hp.current === undefined) character.hp.current = 45;
+              }
+              updated = true;
             }
-            updated = true;
           }
           if (character && !Array.isArray(character.periodicHpEffects)) {
             character.periodicHpEffects = [];
@@ -16287,29 +16289,45 @@
           : Math.floor(((character.abilities?.con || 14) - 10) / 2);
 
         if (character.hp) {
-          // If levelProgression has legacy unadjusted hpGain (sum 23 for level 6) while character was configured for 45 max HP
-          if (summary.baseHp === 23 && character.level === 6 && ((character.hp.max || 45) >= 45 || (character.hp.baseMax || 45) >= 33)) {
-            const prog = character.levelProgression || [];
-            if (prog[0]) prog[0].hpGain = 4;
-            if (prog[1]) prog[1].hpGain = 4;
-            if (prog[2]) prog[2].hpGain = 4;
-            if (prog[3]) prog[3].hpGain = 4;
-            if (prog[4]) prog[4].hpGain = 5;
-            if (prog[5]) prog[5].hpGain = 12;
-            summary.baseHp = 33;
+          const oldMax = Number(character.hp.max) || 45;
+          const oldCurrent = (character.hp.current !== undefined && character.hp.current !== null)
+            ? Number(character.hp.current)
+            : null;
+
+          // 1. Permanently sanitize legacy base HP for initial 6 levels (must sum to at least 33)
+          const prog = character.levelProgression || [];
+          if (prog.length >= 6) {
+            const sumFirst6 = prog.slice(0, 6).reduce((acc, p) => acc + (Number(p.hpGain) || 0), 0);
+            if (sumFirst6 === 23 || (sumFirst6 < 33 && prog[5]?.className === 'Warblade')) {
+              if (prog[0]) prog[0].hpGain = 4;
+              if (prog[1]) prog[1].hpGain = 4;
+              if (prog[2]) prog[2].hpGain = 4;
+              if (prog[3]) prog[3].hpGain = 4;
+              if (prog[4]) prog[4].hpGain = 5;
+              if (prog[5]) prog[5].hpGain = 12;
+              if (summary) {
+                summary.baseHp = prog.filter(p => p.active !== false).reduce((acc, p) => acc + (Number(p.hpGain) || 0), 0);
+              }
+            }
           }
 
-          const baseProgHp = summary.baseHp || 33;
-          const oldMax = Number(character.hp.max) || 45;
+          const baseProgHp = (summary && summary.baseHp) ? summary.baseHp : 33;
           character.hp.baseMax = baseProgHp + (toughnessCount * 3);
           character.hp.conBonusHp = character.level * conMod;
-          character.hp.max = character.hp.baseMax + character.hp.conBonusHp;
-          if (character.hp.current === undefined) {
+          
+          let calculatedMax = character.hp.baseMax + character.hp.conBonusHp;
+          // Guard: Toplam HP (Max HP) can NEVER drop when character level increases or stays same
+          if (calculatedMax < oldMax && character.level >= 6) {
+            calculatedMax = oldMax;
+          }
+          character.hp.max = calculatedMax;
+
+          // Strict User Rule: "o anki hp sabit kalsın" (Current HP must remain constant!)
+          if (oldCurrent === null || isNaN(oldCurrent)) {
             character.hp.current = character.hp.max;
-          } else if (character.hp.current === 35 && oldMax === 45 && character.hp.max === 45) {
-            character.hp.current = 45;
-          } else if (character.hp.current > character.hp.max) {
-            character.hp.current = character.hp.max;
+          } else {
+            // Keep current HP exactly what it was, clamped only to new max HP if exceeded
+            character.hp.current = Math.min(oldCurrent, character.hp.max);
           }
         }
 
@@ -18358,7 +18376,8 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
     function rollLevelUpHp(mode = 'avg') {
       const className = document.getElementById('lvlup-class-select')?.value || 'Warblade';
-      const def = DND35_CLASS_DEFS[className] || { hd: 8 };
+      const allDefs = (typeof getAvailableClassDefs === 'function') ? getAvailableClassDefs() : {};
+      const def = allDefs[className] || DND35_CLASS_DEFS[className] || { hd: 8 };
       const conMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
         ? RuleEngine.getAbilityMod(character.abilities?.con || 10)
         : Math.floor(((character.abilities?.con || 10) - 10) / 2);
@@ -18369,12 +18388,11 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       } else if (mode === 'max') {
         dieRoll = def.hd;
       }
-      const totalHpGain = Math.max(1, dieRoll + conMod);
       const hpInput = document.getElementById('lvlup-hp-gain-input');
-      if (hpInput) hpInput.value = totalHpGain;
+      if (hpInput) hpInput.value = dieRoll;
       const hint = document.getElementById('lvlup-hp-formula-hint');
       if (hint) {
-        hint.textContent = `Zar (d${def.hd}): ${dieRoll} + CON Mod (${conMod >= 0 ? '+' + conMod : conMod}) = +${totalHpGain} HP`;
+        hint.textContent = `Can Zarı (d${def.hd}): ${dieRoll} (+ CON Mod ${conMod >= 0 ? '+' + conMod : conMod} ile Toplam Max HP Artışı: +${Math.max(1, dieRoll + conMod)})`;
       }
     }
 
@@ -19535,13 +19553,17 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         rowFeats.push(`🌟 DM Boon: CL = Seviye ${nextLvl}`);
       }
 
-      // 5. HP Gain
+      // 5. HP Gain (User Rule: Toplam HP artar, o anki HP sabit kalır)
       if (isActive) {
-        if (!character.hp) character.hp = { current: 10, max: 10, temp: 0, nonlethal: 0 };
+        if (!character.hp) character.hp = { current: 45, max: 45, temp: 0, nonlethal: 0 };
+        const curHpBefore = Number(character.hp.current);
         if (character.hp.baseMax === undefined) character.hp.baseMax = (Number(character.hp.max) || 45) - (Number(character.hp.conBonusHp) || 0);
         character.hp.baseMax = (Number(character.hp.baseMax) || 0) + hpGain;
         character.hp.max = (Number(character.hp.baseMax) || 0) + (Number(character.hp.conBonusHp) || 0);
-        character.hp.current = (Number(character.hp.current) || 0) + hpGain;
+        // Strict: O anki mevcut can (current HP) sabit kalır, artırılmaz veya düşürülmez
+        if (!isNaN(curHpBefore)) {
+          character.hp.current = curHpBefore;
+        }
       }
 
       // 6. Push Row
