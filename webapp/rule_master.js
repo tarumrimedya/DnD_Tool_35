@@ -945,6 +945,9 @@ const RuleMaster = {
   },
 
   async getAvailableGeminiModels(apiKey, forceRefresh = false) {
+    const HARDCODED_MODELS = ['gemini-flash-lite-latest', 'gemini-flash-latest'];
+    if (!apiKey) return HARDCODED_MODELS;
+
     if (!forceRefresh && this._cachedModels && this._cachedModels.length > 0) {
       return this._cachedModels;
     }
@@ -952,107 +955,16 @@ const RuleMaster = {
     try {
       const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`);
       if (resp.ok) {
-        const data = await resp.json();
-        const available = (data.models || [])
-          .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'))
-          .map(m => m.name.replace(/^models\//, ''));
-
-        // Exclude unsupported modalities (tts, image, audio, embeddings, realtime, bison, gemma)
-        const textModels = available.filter(m => {
-          const lower = m.toLowerCase();
-          return !lower.includes('tts') &&
-                 !lower.includes('image') &&
-                 !lower.includes('audio') &&
-                 !lower.includes('embedding') &&
-                 !lower.includes('realtime') &&
-                 !lower.includes('bison') &&
-                 !lower.includes('gemma') &&
-                 !lower.includes('1.5');
-        });
-
-        // 1. Separate into strict speed tiers:
-        // Tier 1 (Speed Priority #1): Flash-Lite (fastest latency, lightweight token cost)
-        // Tier 2 (Speed Priority #2): Standard Flash (fast, full general model)
-        // Tier 3 (Speed Priority #3): Pro (deep fallback)
-        const flashLiteList = [];
-        const flashList = [];
-        const proList = [];
-
-        textModels.forEach(name => {
-          const lower = name.toLowerCase();
-          const verMatch = lower.match(/(?:gemini-)?(\d+(?:\.\d+)?)/);
-          const ver = verMatch ? parseFloat(verMatch[1]) : 0;
-          const isLatest = lower.includes('latest');
-          const isPreview = lower.includes('preview') || lower.includes('exp');
-
-          const item = { name, ver, isLatest, isPreview };
-
-          if (lower.includes('flash-lite') || lower.includes('flash_lite')) {
-            flashLiteList.push(item);
-          } else if (lower.includes('flash')) {
-            flashList.push(item);
-          } else if (lower.includes('pro')) {
-            proList.push(item);
-          }
-        });
-
-        // Sorter within a tier:
-        // - Rolling 'latest' alias first
-        // - Higher version first (2.5 > 2.0 > 1.5)
-        // - Clean release before preview/exp
-        const sortWithinTier = (a, b) => {
-          if (a.isLatest !== b.isLatest) return a.isLatest ? -1 : 1;
-          if (b.ver !== a.ver) return b.ver - a.ver;
-          if (a.isPreview !== b.isPreview) return a.isPreview ? 1 : -1;
-          return a.name.localeCompare(b.name);
-        };
-
-        flashLiteList.sort(sortWithinTier);
-        flashList.sort(sortWithinTier);
-        proList.sort(sortWithinTier);
-
-        const ordered = [
-          ...flashLiteList.map(m => m.name),
-          ...flashList.map(m => m.name),
-          ...proList.map(m => m.name)
-        ];
-
-        // Ensure rolling official aliases are included if present in available
-        for (const alias of ['gemini-flash-lite-latest', 'gemini-flash-latest']) {
-          if (available.includes(alias) && !ordered.includes(alias)) {
-            if (alias.includes('flash-lite')) {
-              ordered.unshift(alias);
-            } else {
-              const firstFlashIdx = ordered.findIndex(n => n.includes('flash') && !n.includes('flash-lite'));
-              if (firstFlashIdx >= 0) {
-                ordered.splice(firstFlashIdx, 0, alias);
-              } else {
-                ordered.push(alias);
-              }
-            }
-          }
-        }
-
-        const selected = Array.from(new Set(ordered));
-
-        if (selected.length > 0) {
-          this._cachedModels = selected;
-          return selected;
-        }
+        // API key verified. Return strictly only the hardcoded models to be used.
+        this._cachedModels = HARDCODED_MODELS;
+        return HARDCODED_MODELS;
       }
     } catch (e) {
       console.warn('Could not query dynamic Gemini models list:', e);
     }
 
-    // Default fast-priority fallback (flash-lite models strictly first)
-    return [
-      'gemini-flash-lite-latest',
-      'gemini-2.5-flash-lite',
-      'gemini-2.0-flash-lite',
-      'gemini-flash-latest',
-      'gemini-2.5-flash',
-      'gemini-2.0-flash'
-    ];
+    this._cachedModels = HARDCODED_MODELS;
+    return HARDCODED_MODELS;
   },
 
   getApiKey() {
