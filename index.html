@@ -10084,7 +10084,9 @@
           <div id="pin-card-${category}-${idx}" class="pin-card relative group bg-slate-900/90 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 rounded-lg p-2 flex items-center justify-between gap-2 transition select-none cursor-pointer" onclick="onPinCardClick(event, '${category}', ${idx})">
             <!-- Pin Info -->
             <div class="flex items-center gap-2 min-w-0 flex-1">
-              <span class="text-xs text-amber-400/80 shrink-0">📌</span>
+              <span class="text-xs ${category === 'offense' ? 'text-rose-400' : (category === 'defense' ? 'text-indigo-400' : 'text-emerald-400')} shrink-0">
+                <svg class="w-3.5 h-3.5 fill-current inline-block" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>
+              </span>
               <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-1.5">
                   <span class="text-xs font-bold text-white truncate">${pin.name}</span>
@@ -10318,6 +10320,65 @@
       saveStateToStorage(true);
       closePinCategoryPicker();
       renderAll();
+    }
+
+    function getUniversalPinButtonHtml(item, options = {}) {
+      if (!character) return '';
+      if (!character.combatPins) character.combatPins = { offense: [], defense: [], utility: [] };
+      const itemName = item.name || '';
+      const cleanName = itemName.trim().toLowerCase();
+
+      let category = null;
+      if ((character.combatPins.offense || []).some(p => (p.name || '').trim().toLowerCase() === cleanName)) {
+        category = 'offense';
+      } else if ((character.combatPins.defense || []).some(p => (p.name || '').trim().toLowerCase() === cleanName)) {
+        category = 'defense';
+      } else if ((character.combatPins.utility || []).some(p => (p.name || '').trim().toLowerCase() === cleanName)) {
+        category = 'utility';
+      }
+
+      const isPinned = category !== null;
+      const safeName = itemName.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      const safeType = (item.type || item.sourceType || 'Item').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      const safeAction = (item.action || 'Standard').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      const safeDesc = (item.desc || item.benefit || item.notes || '')
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'")
+        .replace(/\n/g, ' ')
+        .replace(/\r/g, '');
+      const safeBadge = (item.badge || item.damageDice || '')
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'");
+
+      let colorClasses = '';
+      let tooltip = '';
+      let iconSvg = '';
+
+      if (category === 'offense') {
+        colorClasses = 'bg-rose-950/80 text-rose-300 border-rose-500/80 shadow-[0_0_8px_rgba(244,63,94,0.45)] hover:bg-rose-900 hover:border-rose-400 ring-1 ring-rose-500/40';
+        tooltip = `📌 Savaş Kokpiti: SALDIRI Çekmecesinde Sabitli (${itemName}) - Çıkarmak için tıkla`;
+        iconSvg = `<svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>`;
+      } else if (category === 'defense') {
+        colorClasses = 'bg-indigo-950/80 text-indigo-300 border-indigo-500/80 shadow-[0_0_8px_rgba(99,102,241,0.45)] hover:bg-indigo-900 hover:border-indigo-400 ring-1 ring-indigo-500/40';
+        tooltip = `📌 Savaş Kokpiti: SAVUNMA Çekmecesinde Sabitli (${itemName}) - Çıkarmak için tıkla`;
+        iconSvg = `<svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>`;
+      } else if (category === 'utility') {
+        colorClasses = 'bg-emerald-950/80 text-emerald-300 border-emerald-500/80 shadow-[0_0_8px_rgba(16,185,129,0.45)] hover:bg-emerald-900 hover:border-emerald-400 ring-1 ring-emerald-500/40';
+        tooltip = `📌 Savaş Kokpiti: LOJİSTİK Çekmecesinde Sabitli (${itemName}) - Çıkarmak için tıkla`;
+        iconSvg = `<svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>`;
+      } else {
+        colorClasses = 'bg-slate-900/50 text-slate-500 hover:text-slate-200 border-slate-700/60 hover:border-slate-500 opacity-35 hover:opacity-100 hover:bg-slate-800';
+        tooltip = `📌 Savaş Kokpitine Sabitle (${itemName})`;
+        iconSvg = `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path></svg>`;
+      }
+
+      const extraClass = options.extraClass || 'w-6 h-6';
+
+      return `
+        <button type="button" onclick="event.stopPropagation(); toggleUniversalPin({ name: '${safeName}', type: '${safeType}', action: '${safeAction}', desc: '${safeDesc}', badge: '${safeBadge}' })" class="${extraClass} inline-flex items-center justify-center rounded-lg border transition-all cursor-pointer shrink-0 ${colorClasses}" title="${tooltip}">
+          ${iconSvg}
+        </button>
+      `;
     }
 
     function toggleUniversalPin(item) {
@@ -14037,9 +14098,7 @@
                   </button>
                 `)}
 
-                <button onclick="toggleUniversalPin({ name: '${m.name.replace(/'/g, "\\'")}', type: 'Maneuver', action: '${m.action || 'Standard'}', desc: '${(m.notes || m.benefit || '').replace(/'/g, "\\'")}', badge: '${dmgExpr || ''}' })" class="w-6 h-6 inline-flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs rounded-lg border border-slate-700 transition cursor-pointer shrink-0" title="Savaş Kokpitine Sabitle / Çıkar">
-                  📌
-                </button>
+                ${getUniversalPinButtonHtml({ name: m.name, type: 'Maneuver', action: m.action || 'Standard', desc: m.notes || m.benefit || '', badge: dmgExpr || '' })}
                 <button onclick="toggleManeuverReadied('${escape(m.name)}')" class="w-6 h-6 inline-flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-rose-400 text-xs rounded-lg border border-slate-700 transition cursor-pointer shrink-0" title="Kuşanmayı Bırak (Slot Boş Kalır)">
                   ✕
                 </button>
@@ -14117,7 +14176,8 @@
               <span class="badge ${theme.badge} text-[10px] font-bold font-mono px-2 py-0.5">${mLvl}</span>
             </td>
             <td class="py-2.5 px-3 font-bold text-white align-middle">
-              <div class="flex items-center gap-1.5 flex-wrap">
+              <div class="flex items-center gap-2 flex-wrap">
+                ${getUniversalPinButtonHtml({ name: m.name, type: 'Maneuver', action: m.action || 'Standard Action', desc: m.notes || m.benefit || '', badge: dmgExpr || '' })}
                 <span>⚔️</span>
                 <span class="${isOverLevel ? 'text-slate-400' : 'text-white'}">${m.name}</span>
                 ${isOverLevel ? `<span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-rose-950/90 text-rose-300 border border-rose-800/80 font-bold shrink-0">IL Yetersiz (Maks: ${initInfo.maxManeuverLvl})</span>` : ''}
@@ -14192,7 +14252,13 @@
           tr.className = 'hover:bg-slate-900/60 transition bg-slate-950/30';
           tr.innerHTML = `
             <td class="py-2.5 px-3 text-teal-400 font-bold font-mono text-center">${st.level || 1}</td>
-            <td class="py-2.5 px-3 font-bold text-teal-300 align-middle"><div class="flex items-center gap-1.5"><span>🥋</span><span>${st.name}</span></div></td>
+            <td class="py-2.5 px-3 font-bold text-teal-300 align-middle">
+              <div class="flex items-center gap-2">
+                ${getUniversalPinButtonHtml({ name: st.name, type: 'Stance', action: 'Swift', desc: st.benefit || '', badge: dmgExpr || '' })}
+                <span>🥋</span>
+                <span>${st.name}</span>
+              </div>
+            </td>
             <td class="py-2.5 px-3 text-slate-300">
               <span class="badge bg-teal-950/60 text-teal-300 border border-teal-800/80 text-[10px] font-semibold">${st.discipline || 'Iron Heart'}</span>
             </td>
@@ -14663,7 +14729,8 @@
             <span class="badge ${theme.badge} text-[10px] font-bold font-mono px-2 py-0.5">${lvl === 0 ? '0' : lvl}</span>
           </td>
           <td class="py-2.5 px-3 font-bold text-white align-middle">
-            <div class="flex items-center gap-1.5 flex-wrap">
+            <div class="flex items-center gap-2 flex-wrap">
+              ${getUniversalPinButtonHtml({ name: s.name, type: 'Spell', action: s.action || 'Standard', desc: s.benefit || '', badge: dmgExpr || '', damageDice: dmgExpr || '' })}
               <span>🔮</span>
               <span class="${hasActiveSlot ? 'text-white' : 'text-slate-400'}">${s.name}</span>
               ${!hasActiveSlot ? `<span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-rose-950/90 text-rose-300 border border-rose-800/80 font-bold shrink-0">0 Slot</span>` : ''}
@@ -14703,9 +14770,6 @@
                     <span>At</span>
                   </button>
               `}
-              <button onclick="toggleUniversalPin({ name: '${s.name.replace(/'/g, "\\'")}', type: 'Spell', action: '${s.action || 'Standard'}', desc: '${(s.benefit || '').replace(/'/g, "\\'")}', damageDice: '${dmgExpr || ''}' })" class="w-6 h-6 inline-flex items-center justify-center text-slate-400 hover:text-amber-400 text-xs transition cursor-pointer shrink-0" title="Savaş Kokpitine Sabitle / Çıkar">
-                📌
-              </button>
               <button onclick="deleteKnownSpell(${originalIdx})" class="w-6 h-6 inline-flex items-center justify-center text-slate-500 hover:text-rose-400 text-xs transition cursor-pointer shrink-0" title="Büyüyü Sil (Slot Boş Kalır)">
                 🗑️
               </button>
@@ -20036,7 +20100,8 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
           <!-- Beceri Adı & Bileşenleri -->
           <td class="py-2 px-3 align-middle">
-            <div class="font-bold ${item.isClass ? 'text-amber-300' : 'text-white'} flex items-center gap-1.5 flex-wrap">
+            <div class="font-bold ${item.isClass ? 'text-amber-300' : 'text-white'} flex items-center gap-2 flex-wrap">
+              ${getUniversalPinButtonHtml({ name: safeName, type: 'Skill', action: 'Check', desc: `${safeName} beceri kontrolü (${total >= 0 ? '+' : ''}${total})`, badge: `${total >= 0 ? '+' : ''}${total} Check` })}
               <span>${item.name}</span>
               ${item.isConsolidated ? '<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[9px]">Konsolide</span>' : ''}
               ${item.isClass ? '<span class="badge bg-amber-950 text-amber-300 border border-amber-700 text-[8px] font-mono">Sınıf</span>' : ''}
@@ -20062,9 +20127,6 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
               <button onclick="rollSkill3D('${safeName}', ${total}, '${safeSubtitle}')" class="bg-slate-800 hover:bg-slate-700 text-amber-400 px-2.5 py-1 rounded-lg border border-slate-700 text-xs font-mono transition inline-flex items-center gap-1.5 justify-center shadow-sm active:scale-95" title="${safeName} için 1d20${total >= 0 ? '+' : ''}${total} zarı at">
                 ${getD20IconSvg('w-3.5 h-3.5 text-amber-400')}
                 <span>Zar</span>
-              </button>
-              <button onclick="toggleUniversalPin({ name: '${safeName}', type: 'Skill', action: 'Check', desc: '${safeName} beceri kontrolü (${total >= 0 ? '+' : ''}${total})', badge: '${total >= 0 ? '+' : ''}${total} Check' })" class="p-1 text-slate-500 hover:text-amber-400 text-xs transition cursor-pointer" title="Savaş Kokpitine Sabitle / Çıkar">
-                📌
               </button>
             </div>
           </td>
@@ -22932,7 +22994,12 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             <input type="checkbox" ${item.isBelt ? 'checked' : ''} onchange="togglePoolBelt(${item.id})" class="w-4 h-4 rounded text-amber-500 border-slate-700 focus:ring-0">
           </td>
           <td class="py-2.5 px-3 align-middle font-semibold text-purple-400">${item.category}</td>
-          <td class="py-2.5 px-3 align-middle font-bold text-white">${item.name}</td>
+          <td class="py-2.5 px-3 align-middle font-bold text-white">
+            <div class="flex items-center gap-2">
+              ${getUniversalPinButtonHtml({ name: item.name, type: item.category || 'Item', action: 'Standard', desc: item.desc || '', badge: item.category || '' })}
+              <span>${item.name}</span>
+            </div>
+          </td>
           <td class="py-2.5 px-3 align-middle text-slate-300 text-xs">${item.desc || '-'}</td>
           <td class="py-2.5 px-3 text-center align-middle font-mono">
             <div class="flex items-center justify-center gap-1">
@@ -22954,9 +23021,6 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                   ⚡ Kuşan
                 </button>
               `}
-              <button onclick="toggleUniversalPin({ name: '${(item.name || '').replace(/'/g, "\\'")}', type: '${item.category || 'Item'}', action: 'Standard', desc: '${(item.desc || '').replace(/'/g, "\\'")}', badge: '${item.category || ''}' })" class="bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-[11px] px-1.5 py-0.5 rounded transition cursor-pointer" title="Savaş Kokpitine Sabitle / Çıkar">
-                📌
-              </button>
               <button onclick="deletePoolItem(${item.id})" class="bg-slate-800 hover:bg-rose-900 text-slate-400 hover:text-rose-200 text-[11px] px-1.5 py-0.5 rounded transition cursor-pointer" title="Sil">
                 🗑️
               </button>
