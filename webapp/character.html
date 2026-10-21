@@ -16433,13 +16433,48 @@
       "Bloodstorm Blade": {
         hd: 12, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 2,
         type: 'Prestige Class', source: 'Tome of Battle', role: 'Martial / Thrown Weapon Specialist',
+        maxLevel: 10,
         description: 'Fırlatılan yakın dövüş silahlarını anında eline geri döndüren ve fırlatma saldırılarını yakın dövüş (Power Attack vb.) gibi saydıran efsanevi Iron Heart savaşçısı.',
         prerequisites: [
           { text: "Base Attack Bonus: +4", key: "bab", min: 4 },
           { text: "Feat: Point Blank Shot", key: "feat", name: "Point Blank Shot" },
           { text: "Manevra/Duruş: En az bir Iron Heart manevrası veya duruşu", key: "maneuver" },
           { text: "Beceri: Balance 4", key: "skill" }
-        ]
+        ],
+        features: {
+          "1": [
+            { name: "Returning Weapon (Ex)", summary: "Swift action ile fırlatılan yakın dövüş silahı turun sonunda anında ele döner" },
+            { name: "Weapon Aptitude (Ex)", summary: "Fighter silah featlerini her sabah 1 saatlik antrenmanla farklı silaha uyarlayabilme" }
+          ],
+          "2": [
+            { name: "Martial Throw (Ex)", summary: "Fırlatma saldırılarında yakın dövüş featlerini (Power Attack vb.) kullanabilme" },
+            { name: "Thunderous Throw (Ex)", summary: "Swift action harcayarak bu turdaki tüm fırlatma saldırılarını yakın dövüş saldırısı saydırma" }
+          ],
+          "3": [
+            { name: "Bonus Feat", summary: "Fighter veya Iron Heart bonus feat seçimi" }
+          ],
+          "4": [
+            { name: "Lightning Ricochet (Ex)", summary: "Fırlatılan silah hedefe çarpar çarpmaz anında ve serbest eylemle (Free) ele geri döner; çoklu saldırı yapılabilir" }
+          ],
+          "5": [
+            { name: "Blood Wind Ricochet (Ex)", summary: "Tam tur eylemiyle fırlatılan bir silah hedeften hedefe sekerek birden fazla düşmana vurur" }
+          ],
+          "6": [
+            { name: "Bonus Feat", summary: "Fighter veya Iron Heart bonus feat seçimi" }
+          ],
+          "7": [
+            { name: "Eye of the Storm (Ex)", summary: "Tehdit altındayken (tehdit alanında) silah fırlatmak Fırsat Saldırısı (AoO) tetiklemez" }
+          ],
+          "8": [
+            { name: "Blood Rain (Ex)", summary: "Iron Heart manevrası harcayarak fırlatma vuruşlarında düşmanlara ağır kanama hasarı verme" }
+          ],
+          "9": [
+            { name: "Bonus Feat", summary: "Fighter veya Iron Heart bonus feat seçimi" }
+          ],
+          "10": [
+            { name: "Blade Storm (Ex)", summary: "Tam tur eylemiyle menzildeki tüm düşmanlara tek seferde fırlatma saldırısı gerçekleştirme" }
+          ]
+        }
       },
       "Arcane Archer": {
         hd: 8, bab: 1.0, fort: "good", ref: "good", will: "poor", skills: 4,
@@ -16544,8 +16579,12 @@
               ref: c.ref || 'poor',
               will: c.will || 'poor',
               skills: Number(c.skills) || 2,
+              maxLevel: Number(c.maxLevel) || (c.type === 'Prestige Class' ? 10 : 20),
               features: c.features || {},
               bonusFeatLevels: c.bonusFeatLevels || [],
+              prerequisites: c.prerequisites || [],
+              description: c.description || c.desc || '',
+              role: c.role || '',
               source: c.source || 'Custom / Homebrew',
               type: c.type || 'Custom Class',
               isCustom: true
@@ -16564,8 +16603,12 @@
               ref: c.ref || 'poor',
               will: c.will || 'poor',
               skills: Number(c.skills) || 2,
+              maxLevel: Number(c.maxLevel) || (c.type === 'Prestige Class' ? 10 : 20),
               features: c.features || {},
               bonusFeatLevels: c.bonusFeatLevels || [],
+              prerequisites: c.prerequisites || [],
+              description: c.description || c.desc || '',
+              role: c.role || '',
               source: c.source || 'Master DB',
               type: c.type || 'Prestige Class',
               isCustom: true
@@ -18489,10 +18532,199 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       return { hasPrereqs: true, allMet, checks };
     }
 
+    const _expandedClassProgressions = new Set();
+
+    function getClassMaxLevel(def) {
+      if (!def) return 10;
+      if (Number(def.maxLevel) > 0) return Number(def.maxLevel);
+      if (def.features && typeof def.features === 'object') {
+        const keys = Object.keys(def.features).map(Number).filter(n => !isNaN(n) && n > 0);
+        if (keys.length > 0) {
+          const maxK = Math.max(...keys);
+          if (maxK <= 5 && def.type === 'Prestige Class') return 5;
+          if (def.type === 'Prestige Class') return Math.max(10, maxK);
+          return Math.max(20, maxK);
+        }
+      }
+      return (def.type === 'Prestige Class') ? 10 : 20;
+    }
+
+    function getClassLevelStats(def, lvl) {
+      const babRate = Number(def.bab) || 0.75;
+      let bab = 0;
+      if (babRate === 1.0) bab = lvl;
+      else if (babRate === 0.75) bab = Math.floor(lvl * 0.75);
+      else bab = Math.floor(lvl * 0.5);
+
+      const isGoodFort = def.fort === 'good';
+      const isGoodRef = def.ref === 'good';
+      const isGoodWill = def.will === 'good';
+
+      const fort = isGoodFort ? Math.floor(2 + (lvl / 2)) : Math.floor(lvl / 3);
+      const ref = isGoodRef ? Math.floor(2 + (lvl / 2)) : Math.floor(lvl / 3);
+      const will = isGoodWill ? Math.floor(2 + (lvl / 2)) : Math.floor(lvl / 3);
+
+      return {
+        bab: `+${bab}`,
+        fort: `+${fort}`,
+        ref: `+${ref}`,
+        will: `+${will}`,
+        isGoodFort,
+        isGoodRef,
+        isGoodWill
+      };
+    }
+
+    function getClassFeaturesForLevel(def, lvl) {
+      if (!def) return [];
+      const res = [];
+
+      if (def.features && typeof def.features === 'object') {
+        const raw = def.features[lvl] || def.features[String(lvl)];
+        if (Array.isArray(raw)) {
+          raw.forEach(item => {
+            if (typeof item === 'string' && item.trim()) {
+              res.push({ name: item.trim(), summary: '' });
+            } else if (item && typeof item === 'object') {
+              res.push({
+                name: item.name || item.title || 'Sınıf Yeteneği',
+                summary: item.summary || item.description || item.desc || ''
+              });
+            }
+          });
+        } else if (typeof raw === 'string' && raw.trim()) {
+          res.push({ name: raw.trim(), summary: '' });
+        } else if (raw && typeof raw === 'object') {
+          res.push({
+            name: raw.name || raw.title || 'Sınıf Yeteneği',
+            summary: raw.summary || raw.description || raw.desc || ''
+          });
+        }
+      }
+
+      if (Array.isArray(def.bonusFeatLevels) && def.bonusFeatLevels.includes(lvl)) {
+        if (!res.some(r => r.name.toLowerCase().includes('bonus feat'))) {
+          res.push({ name: 'Bonus Feat', summary: 'Seçilebilir ek sınıf/savaş featı' });
+        }
+      }
+
+      return res;
+    }
+
+    function generateClassProgressionHtml(className, def) {
+      const maxLvl = getClassMaxLevel(def);
+      const safeName = className.replace(/'/g, "\\'");
+      const hasFeatures = def.features && Object.keys(def.features).length > 0;
+
+      let rows = '';
+      for (let lvl = 1; lvl <= maxLvl; lvl++) {
+        const stats = getClassLevelStats(def, lvl);
+        const feats = getClassFeaturesForLevel(def, lvl);
+
+        let featsHtml = '';
+        if (feats.length > 0) {
+          featsHtml = feats.map(f => {
+            const lower = f.name.toLowerCase();
+            const isSpell = lower.includes('spell') || lower.includes('büyü');
+            const isFeat = lower.includes('feat');
+            const badgeBg = isSpell 
+              ? 'bg-purple-950/80 border-purple-500/50 text-purple-200' 
+              : (isFeat 
+                  ? 'bg-amber-950/80 border-amber-500/50 text-amber-200' 
+                  : 'bg-slate-900 border-slate-700 text-slate-200');
+            const icon = isSpell ? '🔮' : (isFeat ? '🎖️' : '⚡');
+
+            return `
+              <div class="inline-flex flex-wrap items-baseline gap-1 text-[10px] ${badgeBg} border px-2 py-0.5 rounded shadow-sm">
+                <span class="font-bold text-white">${icon} ${f.name}</span>
+                ${f.summary ? `<span class="text-slate-300 text-[9px]">(${f.summary})</span>` : ''}
+              </div>
+            `;
+          }).join(' ');
+        } else {
+          featsHtml = '<span class="text-slate-500 text-[10px] italic">—</span>';
+        }
+
+        const rowBg = lvl % 2 === 0 ? 'bg-slate-900/50' : 'bg-slate-950/50';
+
+        rows += `
+          <tr class="${rowBg} hover:bg-purple-950/40 transition border-b border-slate-800/80">
+            <td class="px-2.5 py-1.5 text-center font-mono font-bold text-amber-300 text-[11px] whitespace-nowrap">${lvl}. Seviye</td>
+            <td class="px-2.5 py-1.5 text-center font-mono font-bold text-sky-300 text-[11px] whitespace-nowrap">${stats.bab}</td>
+            <td class="px-2.5 py-1.5 text-center font-mono text-[10px] whitespace-nowrap ${stats.isGoodFort ? 'text-emerald-400 font-bold' : 'text-slate-400'}">${stats.fort}</td>
+            <td class="px-2.5 py-1.5 text-center font-mono text-[10px] whitespace-nowrap ${stats.isGoodRef ? 'text-emerald-400 font-bold' : 'text-slate-400'}">${stats.ref}</td>
+            <td class="px-2.5 py-1.5 text-center font-mono text-[10px] whitespace-nowrap ${stats.isGoodWill ? 'text-emerald-400 font-bold' : 'text-slate-400'}">${stats.will}</td>
+            <td class="px-3 py-1.5 text-[11px] leading-relaxed">
+              <div class="flex flex-wrap gap-1 items-center">
+                ${featsHtml}
+              </div>
+            </td>
+          </tr>
+        `;
+      }
+
+      return `
+        <div class="mt-2 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 border border-purple-500/40 rounded-xl p-3 shadow-2xl space-y-2.5 text-xs">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-purple-500/20 pb-2">
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 rounded bg-purple-950 border border-purple-500/40 flex items-center justify-center text-xs">📊</div>
+              <div>
+                <h4 class="font-extrabold text-white text-xs flex items-center gap-2">
+                  <span>${className} Sınıf Gelişim Tablosu</span>
+                  <span class="text-[9px] font-mono text-purple-300 bg-purple-950/90 px-1.5 py-0.5 rounded border border-purple-600/50">1 - ${maxLvl}. Seviye RAW</span>
+                </h4>
+                <div class="text-[10px] text-slate-400">${def.source || 'D&D 3.5e'} • Can Zarı: <strong class="text-amber-300 font-mono">d${def.hd}</strong> • Beceri: <strong class="text-purple-300 font-mono">${def.skills || 2}+INT</strong>/seviye</div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+              ${!hasFeatures ? `
+                <button type="button" onclick="fetchClassFromRuleMasterAi('${safeName}')" class="text-[10px] text-purple-300 hover:text-white bg-purple-950/80 hover:bg-purple-900 border border-purple-500/50 font-bold px-2 py-1 rounded-lg flex items-center gap-1 transition cursor-pointer" title="Rule Master AI ile yetenekleri kural kitaplarından detaylandır">
+                  <span>✨</span>
+                  <span>Yetenekleri Getir</span>
+                </button>
+              ` : ''}
+              <button type="button" onclick="toggleClassProgression('${safeName}')" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded text-[10px] font-bold transition cursor-pointer" title="Tabloyu kapat">✕ Kapat</button>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto max-h-80 overflow-y-auto pr-1 rounded-lg border border-slate-800 custom-scroll">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-purple-950/80 text-[10px] uppercase tracking-wider text-purple-200 font-bold border-b border-purple-500/40 sticky top-0 z-10 backdrop-blur">
+                  <th class="px-2.5 py-1.5 text-center w-20">Seviye</th>
+                  <th class="px-2.5 py-1.5 text-center w-16">BAB</th>
+                  <th class="px-2 py-1.5 text-center w-14">Fort</th>
+                  <th class="px-2 py-1.5 text-center w-14">Ref</th>
+                  <th class="px-2 py-1.5 text-center w-14">Will</th>
+                  <th class="px-3 py-1.5">Kazanılan Sınıf Yetenekleri & Büyü İlerlemesi</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function toggleClassProgression(className, forceOpen = false) {
+      if (forceOpen) {
+        _expandedClassProgressions.add(className);
+      } else if (_expandedClassProgressions.has(className)) {
+        _expandedClassProgressions.delete(className);
+      } else {
+        _expandedClassProgressions.add(className);
+      }
+      filterLevelUpClassSearch();
+    }
+
     function filterLevelUpClassSearch() {
       const resultsContainer = document.getElementById('lvlup-class-search-results');
       const countBadge = document.getElementById('lvlup-class-count-badge');
       if (!resultsContainer) return;
+      const prevScroll = resultsContainer.scrollTop;
 
       const q = (document.getElementById('lvlup-class-search-input')?.value || '').trim().toLowerCase();
       const allDefs = getAvailableClassDefs();
@@ -18572,6 +18804,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         const isSelected = (cName.toLowerCase() === selectedClass.toLowerCase());
         const isPrestige = def.type === 'Prestige Class';
         const isCustom = def.isCustom === true;
+        const isProgExpanded = _expandedClassProgressions.has(cName);
 
         const prereqResult = checkClassPrerequisites(cName, def);
 
@@ -18632,6 +18865,10 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
               <div class="flex items-center gap-1.5">
                 ${isSelected ? '<span class="text-[10px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-600/60 px-2 py-0.5 rounded">✓ Seçili Sınıf</span>' : ''}
+                <button type="button" onclick="toggleClassProgression('${safeName}')" class="px-2.5 py-1 rounded-lg ${isProgExpanded ? 'bg-indigo-900 border-indigo-400 text-white ring-1 ring-indigo-400/50' : 'bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-500/50 text-indigo-200 hover:text-white'} font-bold text-[11px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer" title="${cName} seviye gelişim tablosunu göster / gizle">
+                  <span>📜</span>
+                  <span>${isProgExpanded ? 'Gelişimi Gizle' : 'Gelişimi Göster'}</span>
+                </button>
                 <button type="button" onclick="selectClassFromSearch('${safeName}')" class="px-2.5 py-1 rounded-lg ${isSelected ? 'bg-emerald-700 hover:bg-emerald-600' : 'bg-purple-700 hover:bg-purple-600'} text-white font-bold text-[11px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer">
                   <span>➕</span>
                   <span>${isSelected ? 'Seviyeyi Yenile' : 'Bu Sınıftan Seviye Ekle'}</span>
@@ -18649,9 +18886,11 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
             ${def.description ? `<p class="text-[10px] text-slate-400 leading-relaxed">${def.description}</p>` : ''}
             ${prereqHtml}
+            ${isProgExpanded ? generateClassProgressionHtml(cName, def) : ''}
           </div>
         `;
       }).join('');
+      resultsContainer.scrollTop = prevScroll;
     }
 
     function onClassSearchEnterKey() {
@@ -18713,6 +18952,7 @@ Format:
 {
   "name": "Exact Official Class Name in English",
   "type": "Prestige Class" or "Base Class",
+  "maxLevel": 5 or 10 or 20,
   "source": "Official 3.5e Book Name (e.g. Complete Scoundrel, Complete Mage, DMG)",
   "role": "Role summary in Turkish (e.g. Gish / Arcane Melee Channeler)",
   "hd": 4 or 6 or 8 or 10 or 12,
@@ -18734,7 +18974,7 @@ Format:
 STRICT RULE: Do NOT include standard 6-sided dice emoji (U+1F3B2) anywhere in any field. Use plain notation like "d10 HD", "1d6", "2d8".`;
 
       const userPrompt = `Extract the exact official D&D 3.5e RAW class parameters for: "${q}". (If the query contains typos such as "bloodstarm blade" for "Bloodstorm Blade", automatically correct to the official D&D 3.5e class name).
-Provide complete hit die, bab, fort, ref, will, skill points per level, prerequisites, description in Turkish, and level features up to maximum level (10 levels for prestige class, 20 levels for base class).`;
+Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit die, bab, fort, ref, will, skill points per level, prerequisites, description in Turkish, and level-by-level features for every level from 1 up to maxLevel (keys "1", "2", ...). If a level grants spell advancement e.g. "+1 level of existing spellcasting class" or bonus feats, list that in the level's features.`;
 
       let modelsToTry = [];
       if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.getAvailableGeminiModels === 'function') {
@@ -18811,11 +19051,13 @@ Provide complete hit die, bab, fort, ref, will, skill points per level, prerequi
       const validWill = classData.will === 'good' ? 'good' : 'poor';
       const validSkills = Number(classData.skills) || 2;
       const classType = (classData.type || '').toLowerCase().includes('base') ? 'Base Class' : 'Prestige Class';
+      const validMaxLevel = Number(classData.maxLevel) || (classType === 'Prestige Class' ? 10 : 20);
 
       const newEntry = {
         id: 'class_' + Date.now(),
         name: cleanName,
         type: classType,
+        maxLevel: validMaxLevel,
         category: 'Class',
         source: classData.source || 'Official D&D 3.5e',
         role: classData.role || '',
@@ -18858,13 +19100,16 @@ Provide complete hit die, bab, fort, ref, will, skill points per level, prerequi
       populateLevelUpClassSelect(cleanName);
       selectClassFromSearch(cleanName);
 
-      // 4. Update search input to match clean name and re-filter
+      // 4. Automatically expand progression table for newly found class
+      _expandedClassProgressions.add(cleanName);
+
+      // 5. Update search input to match clean name and re-filter
       const searchInput = document.getElementById('lvlup-class-search-input');
       if (searchInput) searchInput.value = cleanName;
       filterLevelUpClassSearch();
 
       if (typeof showToast === 'function') {
-        showToast(`✨ Rule Master: "${cleanName}" D&D 3.5e kitaplarından başarıyla çekildi ve Master DB'ye kaydedildi!`, 'success');
+        showToast(`✨ Rule Master: "${cleanName}" ve gelişim tablosu başarıyla getirildi!`, 'success');
       }
     }
 
