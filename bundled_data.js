@@ -78,7 +78,8 @@ window.BUNDLED_CHARACTER_DATA = {
       { "id": "m_steel_wind", "name": "Steel Wind", "sourceType": "Maneuver", "action": "Standard", "badge": "2 Hedef", "desc": "Iron Heart Lvl 1 Strike: Tehdit alanındaki 2 bitişik düşmana saldırır." },
       { "id": "s_blade_of_blood", "name": "Blade of Blood", "sourceType": "Spell", "action": "Swift", "badge": "+3d6 Hasar", "desc": "Necromancy Lvl 1: 5 Can feda et, sonraki vuruşa +3d6 hasar ekle." },
       { "id": "s_scorching_ray", "name": "Scorching Ray", "sourceType": "Spell", "action": "Standard", "badge": "4d6 Ateş", "desc": "Evocation Lvl 2: 35 ft menzilli dokunma ışını, 4d6 ateş hasarı." },
-      { "id": "m_punishing_stance", "name": "Punishing Stance", "sourceType": "Stance", "action": "Swift", "badge": "+1d6 / -2 AC", "desc": "Iron Heart Lvl 1 Stance: Her yakın dövüş vuruşuna +1d6 hasar, -2 AC." }
+      { "id": "m_punishing_stance", "name": "Punishing Stance", "sourceType": "Stance", "action": "Swift", "badge": "+1d6 / -2 AC", "desc": "Iron Heart Lvl 1 Stance: Her yakın dövüş vuruşuna +1d6 hasar, -2 AC." },
+      { "id": "st_island", "name": "Island of Blades", "sourceType": "Stance", "action": "Swift", "badge": "Duruş", "desc": "Gölge Duruşu: Yanınızdaki müttefikleriniz düşmanı otomatik olarak Flank eder." }
     ],
     "defense": [
       { "id": "r_shield_block", "name": "Shield Block", "sourceType": "Counter", "action": "Immediate", "badge": "+4 AC Kalkan", "desc": "Devoted Spirit Lvl 2 Counter: Bitişik müttefike veya kendine anlık +4 AC kalkan bonusu." },
@@ -86,13 +87,6 @@ window.BUNDLED_CHARACTER_DATA = {
       { "id": "sk_tumble", "name": "Tumble (Akrobasi)", "sourceType": "Skill", "action": "Move", "badge": "+7 Check", "desc": "AoO tetiklemeden düşmanların arasından geçmek için DC 15 / DC 25 kontrolü." },
       { "id": "sk_concentration", "name": "Concentration", "sourceType": "Skill", "action": "None", "badge": "+10 Check", "desc": "Hasar alırken veya tehdit altındayken büyü yapabilmek (Cast Defensively) için kontrol." },
       { "id": "f_elusiveness", "name": "Boon of Elusiveness", "sourceType": "Feat", "action": "Pasif", "badge": "+2 Dodge / %25 AoE", "desc": "Alan etkili büyülerden %25 daha az hasar ve +2 Dodge AC." }
-    ],
-    "utility": [
-      { "id": "c_cure_wounds", "name": "Potion of Cure Serious Wounds", "sourceType": "Consumable", "action": "Standard", "badge": "3d8+5 HP", "desc": "Tüketildiğinde anında 3d8+5 HP can yeniler (Envanterde kayıtlı)." },
-      { "id": "c_bulls_str", "name": "Potion of Bull's Strength", "sourceType": "Consumable", "action": "Standard", "badge": "+4 STR", "desc": "30 tur boyunca Güç (STR) değerine +4 Enhancement bonusu verir." },
-      { "id": "c_wand_mm", "name": "Wand of Magic Missile", "sourceType": "Item", "action": "Standard", "badge": "2d4+2 Hasar", "desc": "CL 3 Asası. Otomatik isabet eden 2 adet büyü oku fırlatır." },
-      { "id": "s_detect_magic", "name": "Detect Magic", "sourceType": "Spell", "action": "Standard", "badge": "60 ft Aura", "desc": "Divination Cantrip: 60 ft içindeki büyü auralarını ve güçlerini tespit eder." },
-      { "id": "sk_spot_listen", "name": "Spot & Listen (Algı)", "sourceType": "Skill", "action": "Free", "badge": "+0 Check", "desc": "Gizlenen veya pusu kuran rakipleri fark etmek için zıt algı zarı." }
     ]
   },
   "weaponAttackProfiles": {

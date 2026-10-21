@@ -631,24 +631,6 @@
             </div>
           </div>
 
-          <!-- 3. UTILITY PIN DRAWER -->
-          <div class="bg-dndCard border border-dndBorder rounded-xl p-3.5 shadow-lg space-y-2.5">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-              <div class="flex items-center gap-1.5">
-                <span class="text-emerald-400">📌</span>
-                <span class="text-xs font-black uppercase text-slate-200 tracking-wider">LOJİSTİK ÇEKMECESİ</span>
-                <span id="utility-pins-badge" class="bg-slate-800 text-emerald-400 font-mono font-bold text-[10px] px-1.5 py-0.5 rounded">0</span>
-              </div>
-              <button id="toggle-utility-pins-btn" onclick="togglePinDrawer('utility')" class="text-[11px] font-bold text-slate-400 hover:text-white bg-slate-900 px-2 py-0.5 rounded border border-slate-800 transition">
-                Tümünü Göster
-              </button>
-            </div>
-            
-            <div id="combat-pins-utility" class="space-y-1.5">
-              <!-- Dynamically populated -->
-            </div>
-          </div>
-
         </div>
 
       </div>
@@ -3030,10 +3012,6 @@
         <button onclick="confirmPinToCategory('defense')" class="w-full py-2 px-3 bg-slate-900 hover:bg-indigo-950/40 border border-slate-700 hover:border-indigo-500 rounded-lg text-left text-xs font-bold text-white flex items-center justify-between transition group">
           <span class="flex items-center gap-2"><span>🛡️</span> Savunma Çekmecesi (Defense)</span>
           <span class="text-indigo-400 group-hover:translate-x-1 transition-transform">➔</span>
-        </button>
-        <button onclick="confirmPinToCategory('utility')" class="w-full py-2 px-3 bg-slate-900 hover:bg-emerald-950/40 border border-slate-700 hover:border-emerald-500 rounded-lg text-left text-xs font-bold text-white flex items-center justify-between transition group">
-          <span class="flex items-center gap-2"><span>🧪</span> Lojistik Çekmecesi (Utility)</span>
-          <span class="text-emerald-400 group-hover:translate-x-1 transition-transform">➔</span>
         </button>
       </div>
     </div>
@@ -6011,7 +5989,7 @@
                   <span>📌</span>
                   <span>Savaş Kokpiti Çekmece Yuva Sayısı (Pin Drawer Kapasitesi)</span>
                 </div>
-                <div class="text-[10px] text-slate-400 mt-0.5">Saldırı, Savunma ve Lojistik çekmecelerinde varsayılan kaç slot gösterileceğini belirleyin (Standart: 5, Maksimum: 9).</div>
+                <div class="text-[10px] text-slate-400 mt-0.5">Saldırı ve Savunma çekmecelerinde varsayılan kaç slot gösterileceğini belirleyin (Standart: 5, Maksimum: 9).</div>
               </div>
               <div class="flex items-center gap-1.5 shrink-0 ml-2">
                 <select id="setting-pin-drawer-limit" onchange="onSettingPinDrawerLimitChange()" class="bg-slate-900 border border-slate-700 text-amber-300 font-bold text-xs rounded px-2.5 py-1 focus:outline-none focus:border-amber-400">
@@ -6381,7 +6359,7 @@
             }
           }
           if (!character.combatPins || !character.combatPins.offense) {
-            character.combatPins = (defaultChar && defaultChar.combatPins) ? JSON.parse(JSON.stringify(defaultChar.combatPins)) : { offense: [], defense: [], utility: [] };
+            character.combatPins = (defaultChar && defaultChar.combatPins) ? JSON.parse(JSON.stringify(defaultChar.combatPins)) : { offense: [], defense: [] };
             updated = true;
           }
           if (!character.weaponAttackProfiles) {
@@ -9295,18 +9273,33 @@
     // ====================================================
     // ⚔️ TACTICAL COMBAT COCKPIT ENGINE (3-COLUMN DASHBOARD)
     // ====================================================
-    window.combatDrawerExpanded = { offense: false, defense: false, utility: false };
-    window.combatPinReorderMode = { offense: false, defense: false, utility: false };
+    window.combatDrawerExpanded = { offense: false, defense: false };
+    window.combatPinReorderMode = { offense: false, defense: false };
     window.pendingCombatPinItem = null;
 
     // --- AUTOMATED COMBAT PINS SYNCHRONIZATION ---
-    // Readied maneuvers, known stances, equipped items with active abilities, and belt items route automatically.
+    // Readied maneuvers, known stances, equipped items with active abilities route automatically.
     function syncAutomatedCombatPins(char) {
       if (!char) return;
-      if (!char.combatPins) char.combatPins = { offense: [], defense: [], utility: [] };
+      if (!char.combatPins) char.combatPins = { offense: [], defense: [] };
       if (!char.combatPins.offense) char.combatPins.offense = [];
       if (!char.combatPins.defense) char.combatPins.defense = [];
-      if (!char.combatPins.utility) char.combatPins.utility = [];
+
+      // Migration: Clean up or migrate any legacy utility pins to offense/defense
+      if (Array.isArray(char.combatPins.utility) && char.combatPins.utility.length > 0) {
+        char.combatPins.utility.forEach(pin => {
+          if (!pin || !pin.name) return;
+          const isConsumable = pin.sourceType === 'Consumable' || /potion|scroll|wand/i.test(pin.name);
+          if (!isConsumable) {
+            const isDef = /(shield|armor|ac\b|defense|save|counter|dodge)/i.test((pin.name + ' ' + (pin.desc || '')).toLowerCase());
+            const targetCat = isDef ? 'defense' : 'offense';
+            if (!char.combatPins[targetCat].some(p => (p.name || '').toLowerCase() === (pin.name || '').toLowerCase())) {
+              char.combatPins[targetCat].push(pin);
+            }
+          }
+        });
+        delete char.combatPins.utility;
+      }
 
       // Helper: detect active ability or spell effect in an equipped item
       function inspectItemActiveAbility(item) {
@@ -9327,14 +9320,8 @@
         const isActive = hasDailyCharges || mentionsActivation || mentionsSpellOrPower;
         if (!isActive) return null;
 
-        const isOffense = /(fireball|lightning|missile|scorching|flame|frost|shock|hasar|saldırı|attack|damage|strike|blast|ray|ram|blasting|weapon|touch|burst|harm)/i.test(fullText);
         const isDefense = /(shield|protection|resist|saving|counter|ac\b|zırh|savunma|koruma|dodge|deflect|ward|barrier|fortification|displacement|stoneskin|endure)/i.test(fullText);
-        const isUtility = /(cure|heal|şifa|speed|haste|fly|teleport|dimension door|jump|levitate|invisibility|see invisibility|görünmezlik|restore|light|identify)/i.test(fullText);
-
-        let cat = 'utility';
-        if (isOffense) cat = 'offense';
-        else if (isDefense) cat = 'defense';
-        else if (isUtility) cat = 'utility';
+        let cat = isDefense ? 'defense' : 'offense';
 
         const dmgExpr = typeof findDiceExpression === 'function' ? findDiceExpression(item.desc || item.benefit || '') : '';
         let badge = dmgExpr || '';
@@ -9371,8 +9358,6 @@
         let cat = 'offense';
         if (mDisc.includes('setting sun') || mAction.includes('immediate') || /(counter|block|wall of blades|shield|save|ac\b|dodge|defense|mind over body|moment of perfect mind|action before thought|iron heart focus)/i.test(fullText)) {
           cat = 'defense';
-        } else if (/(heal|cure|şifa|movement|teleport|boost|white raven tactics)/i.test(fullText)) {
-          cat = 'utility';
         }
 
         const dmgExpr = m.damageDice || (typeof findDiceExpression === 'function' ? findDiceExpression(m.notes || m.benefit) : '');
@@ -9396,11 +9381,9 @@
         const stDesc = (st.benefit || '').toLowerCase();
         const fullText = stName + ' ' + stDesc;
 
-        let cat = 'utility';
+        let cat = 'offense';
         if (/(ac\b|dodge|defense|save|shield|clarity|roots of the mountain|bolstering)/i.test(fullText)) {
           cat = 'defense';
-        } else if (/(damage|hasar|punishing|flame|fire|strike|hunter)/i.test(fullText)) {
-          cat = 'offense';
         }
 
         const dmgExpr = st.damageDice || (typeof findDiceExpression === 'function' ? findDiceExpression(st.benefit) : '');
@@ -9435,27 +9418,21 @@
         });
       }
 
-      // D. Belt items from gearPool
+      // D. Belt items from gearPool (only non-consumables, as consumables are managed in Acil Sarf Kemeri)
       if (Array.isArray(char.gearPool)) {
-        char.gearPool.filter(g => g && g.isBelt && !g.isEquipped).forEach(item => {
+        char.gearPool.filter(g => g && g.isBelt && !g.isEquipped && g.category !== 'Consumable' && !/potion|scroll|wand/i.test(g.name || '')).forEach(item => {
           const name = (item.name || '').toLowerCase();
           const desc = (item.desc || '').toLowerCase();
           const fullText = name + ' ' + desc;
 
-          let cat = 'utility';
-          if (/(fire|acid|bomb|alchemist|flame|hasar|damage|attack|weapon|dagger|dart|sword|axe|arrow|bolt)/i.test(fullText)) {
-            cat = 'offense';
-          } else if (/(shield|barkskin|armor|defense|protection|dodge|save|resist)/i.test(fullText)) {
-            cat = 'defense';
-          }
-
+          let cat = /(shield|barkskin|armor|defense|protection|dodge|save|resist)/i.test(fullText) ? 'defense' : 'offense';
           const badge = item.qty ? `${item.qty} Adet` : (item.category || 'Kemer');
           currentAutoPins.push({
             autoKey: `belt_${item.id || item.name.toLowerCase()}`,
             autoType: 'belt_item',
             category: cat,
             name: item.name,
-            sourceType: item.category || 'Consumable',
+            sourceType: item.category || 'Item',
             action: 'Standard',
             badge: badge,
             desc: item.desc || 'Kemerde taşınan hızlı erişim eşyası.'
@@ -9465,7 +9442,7 @@
 
       // Seamlessly tag existing pins matching current auto-pins if they don't have autoType yet
       currentAutoPins.forEach(autoPin => {
-        ['offense', 'defense', 'utility'].forEach(c => {
+        ['offense', 'defense'].forEach(c => {
           const match = (char.combatPins[c] || []).find(p => (p.name || '').toLowerCase() === autoPin.name.toLowerCase());
           if (match && !match.autoType) {
             match.autoType = autoPin.autoType;
@@ -9478,7 +9455,7 @@
       // 2. Reconcile with character.combatPins:
       // Remove outdated auto-pins that no longer match any current auto-item
       const validAutoKeys = new Set(currentAutoPins.map(p => p.autoKey));
-      ['offense', 'defense', 'utility'].forEach(c => {
+      ['offense', 'defense'].forEach(c => {
         char.combatPins[c] = (char.combatPins[c] || []).filter(p => {
           if (!p.autoType) return true; // Keep manual pins
           return validAutoKeys.has(p.autoKey);
@@ -9488,13 +9465,14 @@
       // 3. Add missing auto-pins
       currentAutoPins.forEach(autoPin => {
         let exists = false;
-        ['offense', 'defense', 'utility'].forEach(c => {
+        ['offense', 'defense'].forEach(c => {
           if (char.combatPins[c].some(p => (p.name || '').toLowerCase() === autoPin.name.toLowerCase())) {
             exists = true;
           }
         });
 
         if (!exists) {
+          if (!char.combatPins[autoPin.category]) char.combatPins[autoPin.category] = [];
           char.combatPins[autoPin.category].push({
             id: 'auto_' + autoPin.autoKey + '_' + Date.now(),
             autoKey: autoPin.autoKey,
@@ -9519,7 +9497,7 @@
         };
       }
       if (!character.combatPins) {
-        character.combatPins = { offense: [], defense: [], utility: [] };
+        character.combatPins = { offense: [], defense: [] };
       }
       if (!character.weaponAttackProfiles) {
         character.weaponAttackProfiles = {};
@@ -9639,7 +9617,6 @@
       // 5. Pin Drawers
       renderCombatPins('offense');
       renderCombatPins('defense');
-      renderCombatPins('utility');
     }
 
     // --- OFF-HAND & TWF SELECTOR ---
@@ -10617,7 +10594,7 @@
 
       let foundPin = null;
       let foundCategory = null;
-      ['offense', 'defense', 'utility'].forEach(cat => {
+      ['offense', 'defense'].forEach(cat => {
         const list = character.combatPins[cat] || [];
         const p = list.find(item => {
           const pName = (item.name || '').toLowerCase().trim();
@@ -10733,7 +10710,7 @@
       const item = window.pendingCombatPinItem;
       if (!item) return;
 
-      if (!character.combatPins) character.combatPins = { offense: [], defense: [], utility: [] };
+      if (!character.combatPins) character.combatPins = { offense: [], defense: [] };
       if (!character.combatPins[category]) character.combatPins[category] = [];
 
       // Check if already in this category
@@ -10777,8 +10754,6 @@
         return `<svg class="w-6 h-6 text-rose-400 fill-current drop-shadow-[0_0_8px_rgba(244,63,94,0.7)]" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>`;
       } else if (cat === 'defense') {
         return `<svg class="w-6 h-6 text-indigo-400 fill-current drop-shadow-[0_0_8px_rgba(99,102,241,0.7)]" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>`;
-      } else if (cat === 'utility') {
-        return `<svg class="w-6 h-6 text-emerald-400 fill-current drop-shadow-[0_0_8px_rgba(16,185,129,0.7)]" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>`;
       }
       return `<svg class="w-6 h-6 text-amber-400 fill-current drop-shadow-[0_0_8px_rgba(245,158,11,0.7)]" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>`;
     }
@@ -10797,7 +10772,7 @@
 
     function getUniversalPinButtonHtml(item, options = {}) {
       if (!character) return '';
-      if (!character.combatPins) character.combatPins = { offense: [], defense: [], utility: [] };
+      if (!character.combatPins) character.combatPins = { offense: [], defense: [] };
       const itemName = item.name || '';
       const cleanName = itemName.trim().toLowerCase();
 
@@ -10806,8 +10781,6 @@
         category = 'offense';
       } else if ((character.combatPins.defense || []).some(p => (p.name || '').trim().toLowerCase() === cleanName)) {
         category = 'defense';
-      } else if ((character.combatPins.utility || []).some(p => (p.name || '').trim().toLowerCase() === cleanName)) {
-        category = 'utility';
       }
 
       const isPinned = category !== null;
@@ -10835,10 +10808,6 @@
         colorClasses = 'bg-indigo-950/80 text-indigo-300 border-indigo-500/80 shadow-[0_0_8px_rgba(99,102,241,0.45)] hover:bg-indigo-900 hover:border-indigo-400 ring-1 ring-indigo-500/40';
         tooltip = `📌 Savaş Kokpiti: SAVUNMA Çekmecesinde Sabitli (${itemName}) - Çıkarmak için tıkla`;
         iconSvg = `<svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>`;
-      } else if (category === 'utility') {
-        colorClasses = 'bg-emerald-950/80 text-emerald-300 border-emerald-500/80 shadow-[0_0_8px_rgba(16,185,129,0.45)] hover:bg-emerald-900 hover:border-emerald-400 ring-1 ring-emerald-500/40';
-        tooltip = `📌 Savaş Kokpiti: LOJİSTİK Çekmecesinde Sabitli (${itemName}) - Çıkarmak için tıkla`;
-        iconSvg = `<svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>`;
       } else {
         colorClasses = 'bg-slate-900/50 text-slate-500 hover:text-slate-200 border-slate-700/60 hover:border-slate-500 opacity-35 hover:opacity-100 hover:bg-slate-800';
         tooltip = `📌 Savaş Kokpitine Sabitle (${itemName})`;
@@ -10855,11 +10824,11 @@
     }
 
     function toggleUniversalPin(item) {
-      if (!character.combatPins) character.combatPins = { offense: [], defense: [], utility: [] };
+      if (!character.combatPins) character.combatPins = { offense: [], defense: [] };
       // Check if item is already pinned in ANY category
       let foundCategory = null;
       let foundIdx = -1;
-      ['offense', 'defense', 'utility'].forEach(cat => {
+      ['offense', 'defense'].forEach(cat => {
         const idx = (character.combatPins[cat] || []).findIndex(p => p.name.toLowerCase() === item.name.toLowerCase());
         if (idx >= 0) {
           foundCategory = cat;
@@ -11027,7 +10996,6 @@
         const text = ((entry.title || '') + ' ' + (entry.breakdown || '')).toLowerCase();
         if (text.includes('saldırı') || text.includes('offense')) entry.pinCategory = 'offense';
         else if (text.includes('savunma') || text.includes('defense')) entry.pinCategory = 'defense';
-        else if (text.includes('lojistik') || text.includes('utility')) entry.pinCategory = 'utility';
       }
 
       let icon = entry.icon;
@@ -11045,9 +11013,6 @@
       } else if (entry.pinCategory === 'defense') {
         iconBoxStyle = 'background: rgba(30, 27, 75, 0.85); border: 1px solid rgba(99, 102, 241, 0.8); box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);';
         titleColor = '#818cf8';
-      } else if (entry.pinCategory === 'utility') {
-        iconBoxStyle = 'background: rgba(6, 78, 59, 0.85); border: 1px solid rgba(16, 185, 129, 0.8); box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);';
-        titleColor = '#34d399';
       }
 
       const title = entry.title || 'Zar At\u0131\u015F\u0131';
@@ -16944,7 +16909,7 @@
 
       let foundCategory = null;
       let foundPin = null;
-      ['offense', 'defense', 'utility'].forEach(cat => {
+      ['offense', 'defense'].forEach(cat => {
         const list = character.combatPins[cat] || [];
         const match = list.find(p => {
           const pName = (p.name || '').toLowerCase().trim();
@@ -16981,7 +16946,7 @@
 
       let foundCategory = null;
       let foundPin = null;
-      ['offense', 'defense', 'utility'].forEach(cat => {
+      ['offense', 'defense'].forEach(cat => {
         const list = character?.combatPins?.[cat] || [];
         const match = list.find(p => {
           const pName = (p.name || '').toLowerCase().trim();
@@ -17008,11 +16973,6 @@
           btn.title = `📌 Savaş Kokpiti: SAVUNMA Çekmecesinde Sabitli (${item.name}) - Çıkarmak için tıkla`;
           if (icon) icon.innerHTML = filledPinSvg;
           if (label) label.textContent = '📌 Savunmada Sabitli';
-        } else if (foundCategory === 'utility') {
-          btn.className = 'px-2.5 py-1.5 rounded-lg border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-emerald-950/90 text-emerald-300 border-emerald-500/80 shadow-[0_0_8px_rgba(16,185,129,0.45)] hover:bg-emerald-900';
-          btn.title = `📌 Savaş Kokpiti: LOJİSTİK Çekmecesinde Sabitli (${item.name}) - Çıkarmak için tıkla`;
-          if (icon) icon.innerHTML = filledPinSvg;
-          if (label) label.textContent = '📌 Lojistikte Sabitli';
         }
 
         // Active/Passive toggle button in modal
@@ -17267,7 +17227,7 @@
       }
 
       // 3. Update in combatPins if pinned
-      ['offense', 'defense', 'utility'].forEach(cat => {
+      ['offense', 'defense'].forEach(cat => {
         (character.combatPins?.[cat] || []).forEach(p => {
           const pClean = String(p.name).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim().toLowerCase();
           if (pClean === oldClean || pClean.startsWith(baseClean)) {
