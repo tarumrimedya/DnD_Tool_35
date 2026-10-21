@@ -313,52 +313,6 @@
     <!-- TAB 1: ⚔️ TACTICAL COMBAT COCKPIT -->
     <!-- ==================================================== -->
     <div id="tab-combat" class="tab-content space-y-4">
-      
-      <!-- TOP COMBAT HUD & STATUS BAR -->
-      <div class="bg-dndCard border border-dndBorder rounded-xl p-3 md:p-4 shadow-lg">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-          <!-- Left: Title & Round Tracker -->
-          <div class="flex items-center gap-3 flex-wrap">
-            <div class="flex items-center gap-2">
-              <span class="text-rose-500 font-black text-base md:text-lg tracking-wide">⚔️ SAVAŞ KOKPİTİ</span>
-              <span class="bg-slate-800 text-slate-400 text-[10px] font-bold px-2 py-0.5 rounded border border-slate-700">D&D 3.5e RAW</span>
-            </div>
-            
-            <!-- Round Advancement Counter -->
-            <div class="flex items-center bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 gap-2">
-              <span class="text-xs text-slate-400 font-bold uppercase">Tur:</span>
-              <span id="combat-round-val" class="font-mono font-black text-sm text-amber-400">1</span>
-              <button onclick="advanceCombatRound()" class="bg-amber-600/30 hover:bg-amber-600 text-amber-300 hover:text-white border border-amber-500/40 text-[11px] font-bold px-2 py-0.5 rounded transition flex items-center gap-1" title="Sonraki tura geç ve 1 turluk geçici reaksiyonları sıfırla">
-                <span>⏭️ Sonraki Tur</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Right: Rest Actions & House Rules -->
-          <div class="flex items-center gap-2 flex-wrap">
-            <button onclick="triggerCockpitShortRest()" class="bg-slate-900 hover:bg-slate-800 border border-emerald-500/40 text-emerald-300 hover:text-white px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5" title="Kısa Mola: Tüm savaş manevralarını hemen yeniden hazırla">
-              <span>⚡ Kısa Mola</span>
-            </button>
-            <button onclick="triggerCockpitLongRest()" class="bg-slate-900 hover:bg-slate-800 border border-purple-500/40 text-purple-300 hover:text-white px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5" title="Uzun Dinlenme: Tüm HP, büyü slotları ve günlük hakları yenile">
-              <span>🌙 Uzun Mola</span>
-            </button>
-
-            <!-- House Rule Checkboxes -->
-            <label class="flex items-center gap-1.5 cursor-pointer bg-slate-900 border border-amber-500/40 px-2.5 py-1 rounded-lg text-xs">
-              <input type="checkbox" id="house-no-crit-confirm" checked class="rounded border-slate-700 text-amber-500 focus:ring-0">
-              <span class="font-bold text-amber-400">🚫 No Crit Confirm</span>
-            </label>
-            <label class="flex items-center gap-1.5 cursor-pointer bg-slate-900 border border-indigo-500/40 px-2.5 py-1 rounded-lg text-xs">
-              <input type="checkbox" id="house-maneuver-crit" class="rounded border-slate-700 text-indigo-500 focus:ring-0">
-              <span class="font-bold text-indigo-300">⚡ Manevra Katla</span>
-            </label>
-            <button onclick="openHouseRulesModal()" class="flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-lg text-xs text-slate-300 hover:text-white transition" title="Tüm Masa & Kural Tercihlerini Aç">
-              <span class="inline-flex items-center"><svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"></polygon><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"></polygon><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"></line><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
-            </button>
-          </div>
-        </div>
-      </div>
-
       <!-- 3-COLUMN TACTICAL DASHBOARD -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
         
@@ -6043,7 +5997,7 @@
                 <div class="font-bold text-slate-200">🚫 No Crit Confirm (Otomatik Kritik)</div>
                 <div class="text-[10px] text-slate-400">Kritik tehdit atıldığında teyit zarı atmadan doğrudan kritik hasar uygular.</div>
               </div>
-              <input type="checkbox" id="settings-no-crit-confirm" checked onchange="document.getElementById('house-no-crit-confirm').checked = this.checked; if(character.houseRules) character.houseRules.noCritConfirm = this.checked; saveStateToStorage(false);" class="rounded border-slate-700 text-amber-500 focus:ring-0">
+              <input type="checkbox" id="settings-no-crit-confirm" checked onchange="const h=document.getElementById('house-no-crit-confirm'); if(h) h.checked = this.checked; if(!character.houseRules) character.houseRules = {}; character.houseRules.noCritConfirm = this.checked; saveStateToStorage(false);" class="rounded border-slate-700 text-amber-500 focus:ring-0">
             </label>
 
             <!-- 6. TOME OF BATTLE MANEUVER CRIT -->
@@ -6052,7 +6006,7 @@
                 <div class="font-bold text-slate-200">⚡ Tome of Battle Manevralarını Katla</div>
                 <div class="text-[10px] text-slate-400">Manevra ile yapılan saldırılarda ekstra zarları kritik vuruşa dahil eder.</div>
               </div>
-              <input type="checkbox" id="settings-maneuver-crit" onchange="document.getElementById('house-maneuver-crit').checked = this.checked; if(character.houseRules) character.houseRules.maneuverCrit = this.checked; saveStateToStorage(false);" class="rounded border-slate-700 text-indigo-500 focus:ring-0">
+              <input type="checkbox" id="settings-maneuver-crit" onchange="const h=document.getElementById('house-maneuver-crit'); if(h) h.checked = this.checked; if(!character.houseRules) character.houseRules = {}; character.houseRules.maneuverCrit = this.checked; saveStateToStorage(false);" class="rounded border-slate-700 text-indigo-500 focus:ring-0">
             </label>
 
             <!-- 7. COMBAT PIN DRAWER CAPACITY -->
@@ -6559,8 +6513,10 @@
       const manCrit = document.getElementById('house-maneuver-crit');
       const setNoCrit = document.getElementById('settings-no-crit-confirm');
       const setManCrit = document.getElementById('settings-maneuver-crit');
-      if (noCrit && setNoCrit) setNoCrit.checked = noCrit.checked;
-      if (manCrit && setManCrit) setManCrit.checked = manCrit.checked;
+      if (setNoCrit) setNoCrit.checked = character.houseRules?.noCritConfirm ?? true;
+      if (setManCrit) setManCrit.checked = character.houseRules?.maneuverCrit ?? false;
+      if (noCrit) noCrit.checked = character.houseRules?.noCritConfirm ?? true;
+      if (manCrit) manCrit.checked = character.houseRules?.maneuverCrit ?? false;
       updateHouseRuleSkillConsolidationUI();
 
       // Sync Feat Mode, Caster CL Mode & Ignore ASF in House Rules
@@ -9138,8 +9094,8 @@
       const flanking = document.getElementById('mod-flanking').checked;
       const charge = document.getElementById('mod-charge').checked;
       const hg = document.getElementById('mod-higher-ground').checked;
-      const noCritConfirm = document.getElementById('house-no-crit-confirm').checked;
-      const maneuverCrit = document.getElementById('house-maneuver-crit').checked;
+      const noCritConfirm = document.getElementById('house-no-crit-confirm') ? document.getElementById('house-no-crit-confirm').checked : (character.houseRules?.noCritConfirm ?? true);
+      const maneuverCrit = document.getElementById('house-maneuver-crit') ? document.getElementById('house-maneuver-crit').checked : (character.houseRules?.maneuverCrit ?? false);
 
       const evalResult = RuleEngine.evaluateWeaponAttack(character, wep, {
         grip, powerAttack: paVal, flanking, charge, higherGround: hg,
