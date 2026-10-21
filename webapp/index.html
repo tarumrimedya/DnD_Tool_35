@@ -10265,7 +10265,13 @@
           saveStateToStorage(true);
           closePinDetailsModal();
           renderAll();
-          showDiceTopToast({ icon: '📌', title: 'Pini Kaldırıldı', breakdown: `${pin.name} savaş kokpitinden çıkarıldı.`, total: 'Kaldırıldı' });
+          showDiceTopToast({
+            icon: getPinToastIconSvg(category),
+            pinCategory: category,
+            title: 'Pini Kaldırıldı',
+            breakdown: `${pin.name} savaş kokpitinden çıkarıldı.`,
+            total: 'Kaldırıldı'
+          });
         };
       }
 
@@ -10304,7 +10310,13 @@
       const existingIdx = character.combatPins[category].findIndex(p => p.name.toLowerCase() === item.name.toLowerCase());
       if (existingIdx >= 0) {
         character.combatPins[category].splice(existingIdx, 1);
-        showDiceTopToast({ icon: '📌', title: 'Pin Kaldırıldı', breakdown: `"${item.name}" kokpitten çıkarıldı.`, total: 'Kaldırıldı' });
+        showDiceTopToast({
+          icon: getPinToastIconSvg(category),
+          pinCategory: category,
+          title: 'Pin Kaldırıldı',
+          breakdown: `"${item.name}" kokpitten çıkarıldı.`,
+          total: 'Kaldırıldı'
+        });
       } else {
         character.combatPins[category].push({
           id: 'pin_' + Date.now(),
@@ -10314,12 +10326,30 @@
           badge: item.badge || item.damageDice || item.dice || item.benefit?.slice(0, 16) || '',
           desc: item.desc || item.benefit || item.description || ''
         });
-        showDiceTopToast({ icon: '📌', title: 'Kokpite Sabitlendi!', breakdown: `"${item.name}" ${category.toUpperCase()} çekmecesine eklendi.`, total: 'Eklendi' });
+        showDiceTopToast({
+          icon: getPinToastIconSvg(category),
+          pinCategory: category,
+          title: 'Kokpite Sabitlendi!',
+          breakdown: `"${item.name}" ${category.toUpperCase()} çekmecesine eklendi.`,
+          total: 'Eklendi'
+        });
       }
 
       saveStateToStorage(true);
       closePinCategoryPicker();
       renderAll();
+    }
+
+    function getPinToastIconSvg(category) {
+      const cat = (category || '').toLowerCase();
+      if (cat === 'offense') {
+        return `<svg class="w-6 h-6 text-rose-400 fill-current drop-shadow-[0_0_8px_rgba(244,63,94,0.7)]" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>`;
+      } else if (cat === 'defense') {
+        return `<svg class="w-6 h-6 text-indigo-400 fill-current drop-shadow-[0_0_8px_rgba(99,102,241,0.7)]" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>`;
+      } else if (cat === 'utility') {
+        return `<svg class="w-6 h-6 text-emerald-400 fill-current drop-shadow-[0_0_8px_rgba(16,185,129,0.7)]" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>`;
+      }
+      return `<svg class="w-6 h-6 text-amber-400 fill-current drop-shadow-[0_0_8px_rgba(245,158,11,0.7)]" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>`;
     }
 
     function formatActionShort(action) {
@@ -10411,7 +10441,13 @@
         character.combatPins[foundCategory].splice(foundIdx, 1);
         saveStateToStorage(true);
         renderAll();
-        showDiceTopToast({ icon: '📌', title: 'Pin Kaldırıldı', breakdown: `"${item.name}" kokpitten çıkarıldı.`, total: 'Kaldırıldı' });
+        showDiceTopToast({
+          icon: getPinToastIconSvg(foundCategory),
+          pinCategory: foundCategory,
+          title: 'Pin Kaldırıldı',
+          breakdown: `"${item.name}" kokpitten çıkarıldı.`,
+          total: 'Kaldırıldı'
+        });
       } else {
         // Prompt category picker modal
         openPinCategoryPicker(item);
@@ -10554,7 +10590,35 @@
 
         defaultToastIcon = getDiceIconSvg(dieType, 'w-6 h-6');
       }
-      const icon = entry.icon || defaultToastIcon;
+
+      // Auto-detect pin category if not explicitly provided
+      if (!entry.pinCategory && (entry.icon === '📌' || String(entry.icon || '').includes('M16 3a1 1 0 0 1'))) {
+        const text = ((entry.title || '') + ' ' + (entry.breakdown || '')).toLowerCase();
+        if (text.includes('saldırı') || text.includes('offense')) entry.pinCategory = 'offense';
+        else if (text.includes('savunma') || text.includes('defense')) entry.pinCategory = 'defense';
+        else if (text.includes('lojistik') || text.includes('utility')) entry.pinCategory = 'utility';
+      }
+
+      let icon = entry.icon;
+      if (entry.pinCategory || entry.icon === '📌') {
+        icon = getPinToastIconSvg(entry.pinCategory);
+      } else if (!icon) {
+        icon = defaultToastIcon;
+      }
+
+      let iconBoxStyle = `background: ${palette.iconBg}; border: 1px solid ${palette.iconBorder};`;
+      let titleColor = palette.accent;
+      if (entry.pinCategory === 'offense') {
+        iconBoxStyle = 'background: rgba(76, 5, 25, 0.85); border: 1px solid rgba(244, 63, 94, 0.8); box-shadow: 0 0 12px rgba(244, 63, 94, 0.4);';
+        titleColor = '#fb7185';
+      } else if (entry.pinCategory === 'defense') {
+        iconBoxStyle = 'background: rgba(30, 27, 75, 0.85); border: 1px solid rgba(99, 102, 241, 0.8); box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);';
+        titleColor = '#818cf8';
+      } else if (entry.pinCategory === 'utility') {
+        iconBoxStyle = 'background: rgba(6, 78, 59, 0.85); border: 1px solid rgba(16, 185, 129, 0.8); box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);';
+        titleColor = '#34d399';
+      }
+
       const title = entry.title || 'Zar At\u0131\u015F\u0131';
       const breakdown = entry.breakdown || entry.formula || '';
       const totalRaw = entry.total !== undefined ? String(entry.total).trim() : '';
@@ -10571,11 +10635,11 @@
       const hasActions = Array.isArray(entry.actions) && entry.actions.length > 0;
 
       toast.innerHTML = `
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 shadow-inner" style="background: ${palette.iconBg}; border: 1px solid ${palette.iconBorder};">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 shadow-inner" style="${iconBoxStyle}">
           ${icon}
         </div>
         <div class="flex flex-col min-w-0 flex-1 pr-1">
-          <div class="text-sm font-black truncate flex items-center gap-1.5" style="color: ${palette.accent};">
+          <div class="text-sm font-black truncate flex items-center gap-1.5" style="color: ${titleColor};">
             <span class="truncate">${title}</span>
             ${isCrit ? '<span class="text-[10px] bg-red-600 text-white px-1.5 py-0.5 rounded font-black shrink-0 animate-pulse">KR\u0130T\u0130K!</span>' : ''}
           </div>
