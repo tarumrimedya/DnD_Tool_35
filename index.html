@@ -860,9 +860,9 @@
                   <thead class="bg-slate-950 text-slate-400 text-[10px] uppercase font-bold border-b border-slate-800">
                     <tr>
                       <th class="py-2.5 px-3 w-12 text-center">Lvl</th>
-                      <th class="py-2.5 px-3 w-44">Büyü Adı</th>
+                      <th class="py-2.5 px-3 min-w-[200px]">Büyü Adı</th>
                       <th class="py-2.5 px-3 w-28">Okul</th>
-                      <th class="py-2.5 px-3 w-28">Eylem</th>
+                      <th class="py-2.5 px-3 w-16 text-center">Eylem</th>
                       <th class="py-2.5 px-3 w-28">Menzil</th>
                       <th class="py-2.5 px-3 w-20 text-center">DC</th>
                       <th class="py-2.5 px-3">Etki & Açıklama</th>
@@ -1005,9 +1005,9 @@
                   <thead class="bg-slate-950 text-slate-400 text-[10px] uppercase font-bold border-b border-slate-800">
                     <tr>
                       <th class="py-2.5 px-3 w-12 text-center">Lvl</th>
-                      <th class="py-2.5 px-3 w-48">Manevra / Duruş Adı</th>
-                      <th class="py-2.5 px-3 w-32">Disiplin</th>
-                      <th class="py-2.5 px-3 w-32">Tür / Eylem</th>
+                      <th class="py-2.5 px-3 min-w-[200px]">Manevra / Duruş Adı</th>
+                      <th class="py-2.5 px-3 w-28">Disiplin</th>
+                      <th class="py-2.5 px-3 w-20 text-center">Tür / Eylem</th>
                       <th class="py-2.5 px-3">Etki & Açıklama</th>
                       <th class="py-2.5 px-3 text-right pr-4 w-48">İşlemler</th>
                     </tr>
@@ -10322,6 +10322,18 @@
       renderAll();
     }
 
+    function formatActionShort(action) {
+      if (!action) return 'Std';
+      const a = String(action).trim();
+      if (/^standard/i.test(a)) return 'Std';
+      if (/^swift/i.test(a)) return 'Swift';
+      if (/^immediate/i.test(a)) return 'Immed';
+      if (/^full/i.test(a)) return 'Full';
+      if (/^move/i.test(a)) return 'Move';
+      if (/^free/i.test(a)) return 'Free';
+      return a.replace(/Action/i, '').trim() || a;
+    }
+
     function getUniversalPinButtonHtml(item, options = {}) {
       if (!character) return '';
       if (!character.combatPins) character.combatPins = { offense: [], defense: [], utility: [] };
@@ -12069,7 +12081,7 @@
               <span class="badge ${theme.badge} text-[10px] font-bold font-mono px-2 py-0.5">${lvl}</span>
             </td>
             <td class="py-2.5 px-3 font-bold text-white align-middle">
-              <div class="flex items-center gap-2 flex-wrap">
+              <div class="flex items-center gap-2 whitespace-nowrap">
                 ${getUniversalPinButtonHtml({ name: s.name, type: 'Spell', action: s.action || 'Standard Action', desc: s.benefit || '', badge: dmgExpr || '', damageDice: dmgExpr || '' })}
                 <span>📖</span>
                 <span class="${hasActiveSlot ? 'text-white' : 'text-slate-400'}">${s.name}</span>
@@ -12079,7 +12091,7 @@
             <td class="py-2.5 px-3 text-slate-300">
               <span class="badge bg-sky-950/60 text-sky-300 border border-sky-800/80 text-[10px] font-semibold">${s.school || 'Universal'}</span>
             </td>
-            <td class="py-2.5 px-3 text-amber-300 text-[11px]">${s.action || 'Standard Action'}</td>
+            <td class="py-2.5 px-3 text-center text-amber-300 text-[11px] whitespace-nowrap font-medium" title="${s.action || 'Standard Action'}">${formatActionShort(s.action)}</td>
             <td class="py-2.5 px-3 text-slate-300 text-[11px]">${s.range || '-'}</td>
             <td class="py-2.5 px-3 text-center">
               <span class="badge bg-slate-900 text-emerald-300 border border-emerald-700/60 font-mono text-[11px] font-bold">DC ${dc}</span>
@@ -12238,9 +12250,9 @@
                   <thead class="bg-slate-950 text-slate-400 text-[10px] uppercase font-bold border-b border-slate-800">
                     <tr>
                       <th class="py-2.5 px-3 w-12 text-center">Lvl</th>
-                      <th class="py-2.5 px-3 w-44">Büyü Adı</th>
+                      <th class="py-2.5 px-3 min-w-[200px]">Büyü Adı</th>
                       <th class="py-2.5 px-3 w-28">Okul</th>
-                      <th class="py-2.5 px-3 w-28">Eylem</th>
+                      <th class="py-2.5 px-3 w-16 text-center">Eylem</th>
                       <th class="py-2.5 px-3 w-28">Menzil</th>
                       <th class="py-2.5 px-3 w-20 text-center">DC</th>
                       <th class="py-2.5 px-3">Etki & Açıklama</th>
@@ -12618,7 +12630,7 @@
               <span class="badge ${theme.badge} text-[10px] font-bold font-mono px-2 py-0.5">${lvl}</span>
             </td>
             <td class="py-2.5 px-3 font-bold text-white align-middle">
-              <div class="flex items-center gap-2 flex-wrap">
+              <div class="flex items-center gap-2 whitespace-nowrap">
                 ${getUniversalPinButtonHtml({ name: s.name, type: 'Spell', action: s.action || 'Standard Action', desc: s.benefit || '', badge: dmgExpr || '', damageDice: dmgExpr || '' })}
                 <span>✨</span>
                 <span class="${hasActiveSlot ? 'text-white' : 'text-slate-400'}">${s.name}</span>
@@ -12628,7 +12640,7 @@
             <td class="py-2.5 px-3 text-slate-300">
               <span class="badge bg-amber-950/60 text-amber-300 border border-amber-800/80 text-[10px] font-semibold">${s.school || 'Conjuration'}</span>
             </td>
-            <td class="py-2.5 px-3 text-amber-300 text-[11px]">${s.action || 'Standard Action'}</td>
+            <td class="py-2.5 px-3 text-center text-amber-300 text-[11px] whitespace-nowrap font-medium" title="${s.action || 'Standard Action'}">${formatActionShort(s.action)}</td>
             <td class="py-2.5 px-3 text-slate-300 text-[11px]">${s.range || '-'}</td>
             <td class="py-2.5 px-3 text-center">
               <span class="badge bg-slate-900 text-emerald-300 border border-emerald-700/60 font-mono text-[11px] font-bold">DC ${dc}</span>
@@ -12794,9 +12806,9 @@
                   <thead class="bg-slate-950 text-slate-400 text-[10px] uppercase font-bold border-b border-slate-800">
                     <tr>
                       <th class="py-2.5 px-3 w-12 text-center">Lvl</th>
-                      <th class="py-2.5 px-3 w-44">Büyü Adı</th>
+                      <th class="py-2.5 px-3 min-w-[200px]">Büyü Adı</th>
                       <th class="py-2.5 px-3 w-28">Okul</th>
-                      <th class="py-2.5 px-3 w-28">Eylem</th>
+                      <th class="py-2.5 px-3 w-16 text-center">Eylem</th>
                       <th class="py-2.5 px-3 w-28">Menzil</th>
                       <th class="py-2.5 px-3 w-20 text-center">DC</th>
                       <th class="py-2.5 px-3">Etki & Açıklama</th>
@@ -14178,7 +14190,7 @@
               <span class="badge ${theme.badge} text-[10px] font-bold font-mono px-2 py-0.5">${mLvl}</span>
             </td>
             <td class="py-2.5 px-3 font-bold text-white align-middle">
-              <div class="flex items-center gap-2 flex-wrap">
+              <div class="flex items-center gap-2 whitespace-nowrap">
                 ${getUniversalPinButtonHtml({ name: m.name, type: 'Maneuver', action: m.action || 'Standard Action', desc: m.notes || m.benefit || '', badge: dmgExpr || '' })}
                 <span>⚔️</span>
                 <span class="${isOverLevel ? 'text-slate-400' : 'text-white'}">${m.name}</span>
@@ -14188,7 +14200,7 @@
             <td class="py-2.5 px-3 text-slate-300">
               <span class="badge bg-rose-950/60 text-rose-300 border border-rose-800/80 text-[10px] font-semibold">${m.discipline || 'Iron Heart'}</span>
             </td>
-            <td class="py-2.5 px-3 text-amber-300 text-[11px]">${m.action || 'Standard Action'}</td>
+            <td class="py-2.5 px-3 text-center text-amber-300 text-[11px] whitespace-nowrap font-medium" title="${m.action || 'Standard Action'}">${formatActionShort(m.action)}</td>
             <td class="py-2.5 px-3 text-slate-300 text-[11px]">${m.notes || m.benefit || '-'}</td>
             <td class="py-2.5 px-3 text-right align-middle">
               <div class="flex items-center justify-end gap-2 w-full">
@@ -14255,7 +14267,7 @@
           tr.innerHTML = `
             <td class="py-2.5 px-3 text-teal-400 font-bold font-mono text-center">${st.level || 1}</td>
             <td class="py-2.5 px-3 font-bold text-teal-300 align-middle">
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 whitespace-nowrap">
                 ${getUniversalPinButtonHtml({ name: st.name, type: 'Stance', action: 'Swift', desc: st.benefit || '', badge: dmgExpr || '' })}
                 <span>🥋</span>
                 <span>${st.name}</span>
@@ -14264,7 +14276,7 @@
             <td class="py-2.5 px-3 text-slate-300">
               <span class="badge bg-teal-950/60 text-teal-300 border border-teal-800/80 text-[10px] font-semibold">${st.discipline || 'Iron Heart'}</span>
             </td>
-            <td class="py-2.5 px-3 text-teal-300 text-[11px]">Duruş (Stance) • Swift</td>
+            <td class="py-2.5 px-3 text-center text-teal-300 text-[11px] whitespace-nowrap font-medium" title="Duruş (Stance) • Swift Action">Stance • Swift</td>
             <td class="py-2.5 px-3 text-slate-300 text-[11px]">${st.benefit || '-'}</td>
             <td class="py-2.5 px-3 text-right align-middle">
               <div class="flex items-center justify-end gap-2 w-full">
@@ -14731,7 +14743,7 @@
             <span class="badge ${theme.badge} text-[10px] font-bold font-mono px-2 py-0.5">${lvl === 0 ? '0' : lvl}</span>
           </td>
           <td class="py-2.5 px-3 font-bold text-white align-middle">
-            <div class="flex items-center gap-2 flex-wrap">
+            <div class="flex items-center gap-2 whitespace-nowrap">
               ${getUniversalPinButtonHtml({ name: s.name, type: 'Spell', action: s.action || 'Standard', desc: s.benefit || '', badge: dmgExpr || '', damageDice: dmgExpr || '' })}
               <span>🔮</span>
               <span class="${hasActiveSlot ? 'text-white' : 'text-slate-400'}">${s.name}</span>
@@ -14741,7 +14753,7 @@
           <td class="py-2.5 px-3 text-slate-300">
             <span class="badge bg-purple-950/60 text-purple-300 border border-purple-800/80 text-[10px] font-semibold">${s.school || 'Universal'}</span>
             </td>
-          <td class="py-2.5 px-3 text-amber-300 text-[11px]">${s.action || 'Standard'}</td>
+          <td class="py-2.5 px-3 text-center text-amber-300 text-[11px] whitespace-nowrap font-medium" title="${s.action || 'Standard Action'}">${formatActionShort(s.action)}</td>
           <td class="py-2.5 px-3 text-slate-300 text-[11px]">${s.range || '-'}</td>
           <td class="py-2.5 px-3 text-center">
             <span class="badge bg-slate-900 text-emerald-300 border border-emerald-700/60 font-mono text-[11px] font-bold">DC ${dc}</span>
