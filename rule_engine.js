@@ -1358,6 +1358,13 @@ const RuleEngine = {
       damageBonusItems.push({ type: 'untyped', val: 2, source: 'Weapon Specialization' });
     }
 
+    // Add damage bonuses from customModifiers (e.g. Enhance Arrow, active ability buffs)
+    customModifiers.forEach(m => {
+      if (m.bonusDmg) {
+        damageBonusItems.push({ type: m.bonusType || 'untyped', val: m.bonusDmg, source: m.name });
+      }
+    });
+
     // Add damage bonuses from active buffs and child debuffs (Prayer, Divine Favor, Sickened, etc.)
     if (Array.isArray(character.buffs)) {
       character.buffs.forEach(b => {

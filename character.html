@@ -3053,6 +3053,7 @@
           </div>
         </div>
         <div class="flex items-center gap-2">
+          <button id="feat-modal-toggle-btn" type="button" onclick="toggleCurrentFeatModalActive()" class="hidden px-2.5 py-1.5 rounded-lg border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer" title="Savaş modunu aç / kapat"></button>
           <button id="feat-modal-pin-btn" type="button" onclick="toggleCurrentFeatModalPin()" class="px-2.5 py-1.5 rounded-lg border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border-slate-700/80 hover:border-slate-500" title="Savaş Kokpitine Sabitle (📌)">
             <span id="feat-modal-pin-icon" class="w-3.5 h-3.5 flex items-center justify-center">
               <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path></svg>
@@ -10322,8 +10323,12 @@
         } else if (pin.sourceType === 'Skill') {
           actionBtn = `<button onclick="executePinAction('${category}', ${idx})" class="py-1 px-2 rounded bg-sky-950/60 hover:bg-sky-900 border border-sky-700/70 text-sky-300 font-bold text-[10px] transition shrink-0">🎯 Zar At</button>`;
         } else {
-          actionBtn = `<button onclick="executePinAction('${category}', ${idx})" class="py-1 px-2 rounded bg-amber-950/60 hover:bg-amber-900 border border-amber-700/70 text-amber-300 font-bold text-[10px] transition shrink-0">⚡ Kullan</button>`;
+          // Feats, Special Abilities, Buffs: Interactive Aktif / Pasif Toggle Button
+          const isActive = Boolean(pin.active);
+          actionBtn = `<button onclick="toggleCombatPinActive('${category}', ${idx})" class="py-1 px-2.5 rounded font-bold text-[10px] transition shrink-0 flex items-center gap-1 ${isActive ? 'bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]' : 'bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-700'}">${isActive ? '✓ Aktif' : '⚪ Pasif'}</button>`;
         }
+
+        const activeCardBorder = pin.active ? 'border-emerald-500/80 ring-1 ring-emerald-500/60 bg-emerald-950/20' : 'border-slate-800 hover:border-slate-700 bg-slate-900/90 hover:bg-slate-850';
 
         const reorderControls = isReorder ? `
           <div class="flex items-center gap-1 shrink-0">
@@ -10333,7 +10338,7 @@
         ` : '';
 
         return `
-          <div id="pin-card-${category}-${idx}" class="pin-card relative group bg-slate-900/90 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 rounded-lg p-2 flex items-center justify-between gap-2 transition select-none cursor-pointer" onclick="onPinCardClick(event, '${category}', ${idx})">
+          <div id="pin-card-${category}-${idx}" class="pin-card relative group ${activeCardBorder} rounded-lg p-2 flex items-center justify-between gap-2 transition select-none cursor-pointer" onclick="onPinCardClick(event, '${category}', ${idx})">
             <!-- Pin Info -->
             <div class="flex items-center gap-2 min-w-0 flex-1">
               <span class="text-xs ${category === 'offense' ? 'text-rose-400' : (category === 'defense' ? 'text-indigo-400' : 'text-emerald-400')} shrink-0">
@@ -10506,18 +10511,111 @@
       } else if (pin.sourceType === 'Skill') {
         rollCombatSkill(pin.name);
       } else {
-        const formula = pin.badge || (typeof findDiceExpression === 'function' ? findDiceExpression(pin.desc) : '');
-        if (formula && typeof rollSpellOrManeuverFormula === 'function') {
-          rollSpellOrManeuverFormula(formula, `${pin.name} Etkisi`);
+        toggleCombatPinActive(category, idx);
+      }
+    }
+
+    // --- TOGGLE PIN ACTIVE STATE (FOR FEATS & SPECIAL ABILITIES & BUFFS) ---
+    function toggleCombatPinActive(category, idx) {
+      const pin = character.combatPins?.[category]?.[idx];
+      if (!pin) return;
+
+      pin.active = !pin.active;
+      syncPinWithActiveModifiers(pin);
+      saveStateToStorage(false);
+      renderAll();
+
+      showDiceTopToast({
+        icon: '⚡',
+        title: `${pin.name} ${pin.active ? 'Aktif Edildi' : 'Pasif Yapıldı'}`,
+        breakdown: pin.active ? (pin.desc || 'Bonus dövüş rotasyonuna dahil edildi.') : 'Modifiyer devreden çıkarıldı.',
+        total: pin.active ? 'Aktif' : 'Pasif'
+      });
+    }
+
+    function syncPinWithActiveModifiers(pin) {
+      if (!character.activeModifiers) character.activeModifiers = [];
+      const cleanName = String(pin.name).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
+      const lower = cleanName.toLowerCase();
+
+      let mod = character.activeModifiers.find(m => m.name.toLowerCase() === lower || m.name.toLowerCase() === pin.name.toLowerCase());
+
+      if (pin.active) {
+        if (!mod) {
+          let bAtk = 0;
+          let bDmg = 0;
+          let bType = 'enhancement';
+          let dice = '';
+
+          // Enhance Arrow (+1, +2, +3, +4, +5)
+          const enhanceMatch = lower.match(/enhance arrow\s*\+(\d+)/i) || (lower.includes('enhance arrow') ? [null, '1'] : null);
+          if (enhanceMatch) {
+            const val = parseInt(enhanceMatch[1]) || 1;
+            bAtk = val;
+            bDmg = val;
+            bType = 'enhancement';
+          } else if (lower.includes('point blank shot')) {
+            bAtk = 1;
+            bDmg = 1;
+            bType = 'untyped';
+          } else {
+            // General parser for +N bonus in name or description
+            const plusMatch = (pin.name + ' ' + (pin.desc || '')).match(/\+(\d+)\s*(saldırı|attack|hasar|damage|enhancement|bonus)/i);
+            if (plusMatch) {
+              const val = parseInt(plusMatch[1]) || 1;
+              bAtk = val;
+              bDmg = val;
+            }
+            const diceMatch = (pin.name + ' ' + (pin.desc || '')).match(/(\d+d\d+)/i);
+            if (diceMatch) {
+              dice = diceMatch[1];
+            }
+          }
+
+          mod = {
+            name: cleanName,
+            source: pin.sourceType || 'Feat',
+            active: true,
+            bonusAtk: bAtk,
+            bonusDmg: bDmg,
+            bonusType: bType,
+            dice: dice,
+            desc: pin.desc || ''
+          };
+          character.activeModifiers.push(mod);
         } else {
-          showDiceTopToast({
-            icon: '✨',
-            title: `${pin.name} Etkinleştirildi`,
-            breakdown: pin.desc || 'Eşyanın aktif özelliği tetiklendi.',
-            total: 'Aktif'
-          });
+          mod.active = true;
+        }
+      } else {
+        if (mod) {
+          mod.active = false;
         }
       }
+    }
+
+    function toggleFeatPinActiveState(featName) {
+      if (!character || !character.combatPins || !featName) return;
+      const cleanTarget = String(featName).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim().toLowerCase();
+
+      let foundPin = null;
+      let foundCategory = null;
+      ['offense', 'defense', 'utility'].forEach(cat => {
+        const list = character.combatPins[cat] || [];
+        const p = list.find(item => {
+          const pName = (item.name || '').toLowerCase().trim();
+          const pClean = pName.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
+          return pName === cleanTarget || pClean === cleanTarget;
+        });
+        if (p) {
+          foundPin = p;
+          foundCategory = cat;
+        }
+      });
+
+      if (foundPin) {
+        toggleCombatPinActive(foundCategory, character.combatPins[foundCategory].indexOf(foundPin));
+      }
+    }
     }
 
     // --- PIN DETAILS MODAL ---
@@ -16822,91 +16920,115 @@
     let isFeatPickerForQuickLevel = false;
     window.currentViewedFeatItem = null;
 
-    // Returns a tiny colored pin badge in the top-right corner if the feat/ability is pinned
+    // Returns an interactive active/passive toggle badge in the top-right corner if the feat/ability is pinned
     function getFeatPinCornerBadgeHtml(featName) {
       if (!character || !character.combatPins || !featName) return '';
       const cleanTarget = String(featName).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim().toLowerCase();
 
       let foundCategory = null;
+      let foundPin = null;
       ['offense', 'defense', 'utility'].forEach(cat => {
         const list = character.combatPins[cat] || [];
-        if (list.some(p => {
+        const match = list.find(p => {
           const pName = (p.name || '').toLowerCase().trim();
           const pClean = pName.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
           return pName === cleanTarget || pClean === cleanTarget;
-        })) {
+        });
+        if (match) {
           foundCategory = cat;
+          foundPin = match;
         }
       });
 
-      if (!foundCategory) return '';
+      if (!foundCategory || !foundPin) return '';
 
-      let colorClasses = '';
-      let tooltip = '';
-      if (foundCategory === 'offense') {
-        colorClasses = 'bg-rose-950 text-rose-300 border-rose-500/80 shadow-[0_0_6px_rgba(244,63,94,0.7)]';
-        tooltip = '📌 Savaş Kokpiti: SALDIRI Çekmecesinde Sabitli';
-      } else if (foundCategory === 'defense') {
-        colorClasses = 'bg-indigo-950 text-indigo-300 border-indigo-500/80 shadow-[0_0_6px_rgba(99,102,241,0.7)]';
-        tooltip = '📌 Savaş Kokpiti: SAVUNMA Çekmecesinde Sabitli';
+      const isActive = Boolean(foundPin.active);
+      const safeTarget = cleanTarget.replace(/'/g, "\\'");
+
+      if (isActive) {
+        return `<span onclick="event.stopPropagation(); toggleFeatPinActiveState('${safeTarget}')" class="absolute top-0.5 right-0.5 inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[9px] border border-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.85)] pointer-events-auto z-10 cursor-pointer transition active:scale-95" title="📌 Savaş Modu: AKTİF (+Bonus devrede). Pasif yapmak için tıklayın!"><span class="text-[9px]">✓</span><span>Aktif</span></span>`;
       } else {
-        colorClasses = 'bg-emerald-950 text-emerald-300 border-emerald-500/80 shadow-[0_0_6px_rgba(16,185,129,0.7)]';
-        tooltip = '📌 Savaş Kokpiti: LOJİSTİK Çekmecesinde Sabitli';
+        return `<span onclick="event.stopPropagation(); toggleFeatPinActiveState('${safeTarget}')" class="absolute top-0.5 right-0.5 inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-full bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white font-bold text-[9px] border border-slate-700 shadow pointer-events-auto z-10 cursor-pointer transition active:scale-95" title="📌 Savaş Modu: PASİF. Aktif yapmak için tıklayın!"><span class="text-[8px]">⚪</span><span>Pasif</span></span>`;
       }
-
-      return `<span class="absolute top-0.5 right-0.5 flex items-center justify-center w-3.5 h-3.5 rounded-full ${colorClasses} border pointer-events-none z-10" title="${tooltip}"><svg class="w-2 h-2 fill-current" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg></span>`;
     }
 
     function updateFeatModalPinButton() {
       const btn = document.getElementById('feat-modal-pin-btn');
       const icon = document.getElementById('feat-modal-pin-icon');
       const label = document.getElementById('feat-modal-pin-label');
+      const toggleBtn = document.getElementById('feat-modal-toggle-btn');
       if (!btn || !window.currentViewedFeatItem) return;
 
       const item = window.currentViewedFeatItem;
       const cleanTarget = String(item.name).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim().toLowerCase();
 
       let foundCategory = null;
+      let foundPin = null;
       ['offense', 'defense', 'utility'].forEach(cat => {
         const list = character?.combatPins?.[cat] || [];
-        if (list.some(p => {
+        const match = list.find(p => {
           const pName = (p.name || '').toLowerCase().trim();
           const pClean = pName.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
           return pName === cleanTarget || pClean === cleanTarget;
-        })) {
+        });
+        if (match) {
           foundCategory = cat;
+          foundPin = match;
         }
       });
 
       const filledPinSvg = `<svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>`;
       const outlinePinSvg = `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path></svg>`;
 
-      if (foundCategory === 'offense') {
-        btn.className = 'px-2.5 py-1.5 rounded-lg border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-rose-950/90 text-rose-300 border-rose-500/80 shadow-[0_0_8px_rgba(244,63,94,0.45)] hover:bg-rose-900';
-        btn.title = `📌 Savaş Kokpiti: SALDIRI Çekmecesinde Sabitli (${item.name}) - Çıkarmak için tıkla`;
-        if (icon) icon.innerHTML = filledPinSvg;
-        if (label) label.textContent = '📌 Saldırıda Sabitli';
-      } else if (foundCategory === 'defense') {
-        btn.className = 'px-2.5 py-1.5 rounded-lg border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-indigo-950/90 text-indigo-300 border-indigo-500/80 shadow-[0_0_8px_rgba(99,102,241,0.45)] hover:bg-indigo-900';
-        btn.title = `📌 Savaş Kokpiti: SAVUNMA Çekmecesinde Sabitli (${item.name}) - Çıkarmak için tıkla`;
-        if (icon) icon.innerHTML = filledPinSvg;
-        if (label) label.textContent = '📌 Savunmada Sabitli';
-      } else if (foundCategory === 'utility') {
-        btn.className = 'px-2.5 py-1.5 rounded-lg border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-emerald-950/90 text-emerald-300 border-emerald-500/80 shadow-[0_0_8px_rgba(16,185,129,0.45)] hover:bg-emerald-900';
-        btn.title = `📌 Savaş Kokpiti: LOJİSTİK Çekmecesinde Sabitli (${item.name}) - Çıkarmak için tıkla`;
-        if (icon) icon.innerHTML = filledPinSvg;
-        if (label) label.textContent = '📌 Lojistikte Sabitli';
+      if (foundCategory && foundPin) {
+        if (foundCategory === 'offense') {
+          btn.className = 'px-2.5 py-1.5 rounded-lg border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-rose-950/90 text-rose-300 border-rose-500/80 shadow-[0_0_8px_rgba(244,63,94,0.45)] hover:bg-rose-900';
+          btn.title = `📌 Savaş Kokpiti: SALDIRI Çekmecesinde Sabitli (${item.name}) - Çıkarmak için tıkla`;
+          if (icon) icon.innerHTML = filledPinSvg;
+          if (label) label.textContent = '📌 Saldırıda Sabitli';
+        } else if (foundCategory === 'defense') {
+          btn.className = 'px-2.5 py-1.5 rounded-lg border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-indigo-950/90 text-indigo-300 border-indigo-500/80 shadow-[0_0_8px_rgba(99,102,241,0.45)] hover:bg-indigo-900';
+          btn.title = `📌 Savaş Kokpiti: SAVUNMA Çekmecesinde Sabitli (${item.name}) - Çıkarmak için tıkla`;
+          if (icon) icon.innerHTML = filledPinSvg;
+          if (label) label.textContent = '📌 Savunmada Sabitli';
+        } else if (foundCategory === 'utility') {
+          btn.className = 'px-2.5 py-1.5 rounded-lg border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-emerald-950/90 text-emerald-300 border-emerald-500/80 shadow-[0_0_8px_rgba(16,185,129,0.45)] hover:bg-emerald-900';
+          btn.title = `📌 Savaş Kokpiti: LOJİSTİK Çekmecesinde Sabitli (${item.name}) - Çıkarmak için tıkla`;
+          if (icon) icon.innerHTML = filledPinSvg;
+          if (label) label.textContent = '📌 Lojistikte Sabitli';
+        }
+
+        // Active/Passive toggle button in modal
+        if (toggleBtn) {
+          toggleBtn.classList.remove('hidden');
+          if (foundPin.active) {
+            toggleBtn.className = 'px-2.5 py-1.5 rounded-lg border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.7)]';
+            toggleBtn.innerHTML = '<span>✓</span><span>Savaşta Aktif</span>';
+            toggleBtn.title = 'Yetenek dövüşte aktif ve bonusları uygulanıyor. Pasif yapmak için tıklayın.';
+          } else {
+            toggleBtn.className = 'px-2.5 py-1.5 rounded-lg border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border-slate-700/80 hover:border-slate-500';
+            toggleBtn.innerHTML = '<span>⚪</span><span>Savaşta Pasif</span>';
+            toggleBtn.title = 'Yetenek sabitli ancak şu an pasif. Dövüşte aktif hale getirmek için tıklayın.';
+          }
+        }
       } else {
         btn.className = 'px-2.5 py-1.5 rounded-lg border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border-slate-700/80 hover:border-slate-500';
         btn.title = `📌 Savaş Kokpitine Sabitle (${item.name})`;
         if (icon) icon.innerHTML = outlinePinSvg;
         if (label) label.textContent = '📌 Sabitle';
+        if (toggleBtn) toggleBtn.classList.add('hidden');
       }
     }
 
     function toggleCurrentFeatModalPin() {
       if (!window.currentViewedFeatItem) return;
       toggleUniversalPin(window.currentViewedFeatItem);
+      updateFeatModalPinButton();
+    }
+
+    function toggleCurrentFeatModalActive() {
+      if (!window.currentViewedFeatItem) return;
+      toggleFeatPinActiveState(window.currentViewedFeatItem.name);
       updateFeatModalPinButton();
     }
 
