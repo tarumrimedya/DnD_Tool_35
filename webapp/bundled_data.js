@@ -109,7 +109,8 @@ window.BUNDLED_CHARACTER_DATA = {
     "clMode": "Character Level (DM Boon)",
     "ignoreAsf": true,
     "mergeSkills": true,
-    "babSaveSystem": "fractional"
+    "babSaveSystem": "fractional",
+    "pinDrawerLimit": 5
   },
   "feats": [
     { "name": "Weapon Finesse", "source": "Player's Handbook p. 102", "category": "General", "benefit": "Use DEX modifier instead of STR on attack rolls with light weapons, rapier, whip, or spiked chain." },

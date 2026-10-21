@@ -6054,6 +6054,28 @@
               </div>
               <input type="checkbox" id="settings-maneuver-crit" onchange="document.getElementById('house-maneuver-crit').checked = this.checked; if(character.houseRules) character.houseRules.maneuverCrit = this.checked; saveStateToStorage(false);" class="rounded border-slate-700 text-indigo-500 focus:ring-0">
             </label>
+
+            <!-- 7. COMBAT PIN DRAWER CAPACITY -->
+            <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950 border border-slate-800">
+              <div>
+                <div class="font-bold text-slate-200 flex items-center gap-1.5 text-xs">
+                  <span>📌</span>
+                  <span>Savaş Kokpiti Çekmece Yuva Sayısı (Pin Drawer Kapasitesi)</span>
+                </div>
+                <div class="text-[10px] text-slate-400 mt-0.5">Saldırı, Savunma ve Lojistik çekmecelerinde varsayılan kaç slot gösterileceğini belirleyin (Standart: 5, Maksimum: 9).</div>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0 ml-2">
+                <select id="setting-pin-drawer-limit" onchange="onSettingPinDrawerLimitChange()" class="bg-slate-900 border border-slate-700 text-amber-300 font-bold text-xs rounded px-2.5 py-1 focus:outline-none focus:border-amber-400">
+                  <option value="3">3 Slot</option>
+                  <option value="4">4 Slot</option>
+                  <option value="5">5 Slot (Standart)</option>
+                  <option value="6">6 Slot</option>
+                  <option value="7">7 Slot</option>
+                  <option value="8">8 Slot</option>
+                  <option value="9">9 Slot (Maksimum)</option>
+                </select>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -6402,6 +6424,11 @@
             character.tactical.round = 1;
             updated = true;
           }
+          if (!character.settings) character.settings = {};
+          if (!character.settings.pinDrawerLimit) {
+            character.settings.pinDrawerLimit = 5;
+            updated = true;
+          }
           if (updated) saveStateToStorage(false);
         }
       } catch (e) {
@@ -6558,10 +6585,32 @@
         babSaveSel.value = character.settings?.babSaveSystem || 'fractional';
       }
 
+      const pinLimitSel = document.getElementById('setting-pin-drawer-limit');
+      if (pinLimitSel) {
+        pinLimitSel.value = character.settings?.pinDrawerLimit || 5;
+      }
+
       // Populate Rule Sources and Splatbooks Catalog
       if (window.RuleMaster && typeof RuleMaster.renderSourcesCatalog === 'function') {
         RuleMaster.renderSourcesCatalog();
       }
+    }
+
+    function onSettingPinDrawerLimitChange() {
+      const sel = document.getElementById('setting-pin-drawer-limit');
+      if (!sel || !character) return;
+      if (!character.settings) character.settings = {};
+      const val = Math.max(1, Math.min(9, parseInt(sel.value) || 5));
+      character.settings.pinDrawerLimit = val;
+      sel.value = val;
+      saveStateToStorage(false);
+      renderCombatCockpit();
+      showDiceTopToast({
+        icon: '📌',
+        title: 'Çekmece Kapasitesi Güncellendi',
+        breakdown: `Savaş kokpiti çekmecelerinde varsayılan ${val} slot gösterilecek (Maksimum: 9).`,
+        total: `${val} Slot`
+      });
     }
 
     function closeSettingsModal() {
@@ -10038,9 +10087,21 @@
         return;
       }
 
+      const drawerLimit = Math.max(1, Math.min(9, Number(character.settings?.pinDrawerLimit) || 5));
       const isExpanded = window.combatDrawerExpanded[category];
-      const visiblePins = isExpanded ? pins : pins.slice(0, 5);
+      const visiblePins = isExpanded ? pins : pins.slice(0, drawerLimit);
       const isReorder = window.combatPinReorderMode[category];
+
+      // Update drawer expand/collapse toggle button visibility and label
+      const toggleBtn = document.getElementById(`toggle-${category}-pins-btn`);
+      if (toggleBtn) {
+        if (pins.length > drawerLimit) {
+          toggleBtn.classList.remove('hidden');
+          toggleBtn.textContent = isExpanded ? 'Daralt' : `Tümünü Göster (${pins.length})`;
+        } else {
+          toggleBtn.classList.add('hidden');
+        }
+      }
 
       container.innerHTML = visiblePins.map((pin, idx) => {
         let actionBtn = '';
