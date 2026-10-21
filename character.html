@@ -16430,6 +16430,17 @@
           { text: "Büyü: 3. seviye arcane büyü atabilme", key: "arcane", minLvl: 3 }
         ]
       },
+      "Bloodstorm Blade": {
+        hd: 12, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 2,
+        type: 'Prestige Class', source: 'Tome of Battle', role: 'Martial / Thrown Weapon Specialist',
+        description: 'Fırlatılan yakın dövüş silahlarını anında eline geri döndüren ve fırlatma saldırılarını yakın dövüş (Power Attack vb.) gibi saydıran efsanevi Iron Heart savaşçısı.',
+        prerequisites: [
+          { text: "Base Attack Bonus: +4", key: "bab", min: 4 },
+          { text: "Feat: Point Blank Shot", key: "feat", name: "Point Blank Shot" },
+          { text: "Manevra/Duruş: En az bir Iron Heart manevrası veya duruşu", key: "maneuver" },
+          { text: "Beceri: Balance 4", key: "skill" }
+        ]
+      },
       "Arcane Archer": {
         hd: 8, bab: 1.0, fort: "good", ref: "good", will: "poor", skills: 4,
         type: 'Prestige Class', source: "Dungeon Master's Guide", role: 'Ranged Martial / Arcane Archer',
@@ -18722,17 +18733,29 @@ Format:
 }
 STRICT RULE: Do NOT include standard 6-sided dice emoji (U+1F3B2) anywhere in any field. Use plain notation like "d10 HD", "1d6", "2d8".`;
 
-      const userPrompt = `Extract the exact official D&D 3.5e RAW class parameters for: "${q}".
+      const userPrompt = `Extract the exact official D&D 3.5e RAW class parameters for: "${q}". (If the query contains typos such as "bloodstarm blade" for "Bloodstorm Blade", automatically correct to the official D&D 3.5e class name).
 Provide complete hit die, bab, fort, ref, will, skill points per level, prerequisites, description in Turkish, and level features up to maximum level (10 levels for prestige class, 20 levels for base class).`;
 
-      const modelsToTry = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
+      let modelsToTry = [];
+      if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.getAvailableGeminiModels === 'function') {
+        try {
+          modelsToTry = await RuleMaster.getAvailableGeminiModels(apiKey);
+        } catch (e) {
+          console.warn('getAvailableGeminiModels failed:', e);
+        }
+      }
+      if (!Array.isArray(modelsToTry) || modelsToTry.length === 0) {
+        modelsToTry = ['gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-flash-latest'];
+      }
+
       let classData = null;
       let lastErr = null;
 
       for (const model of modelsToTry) {
-        if (statusText) statusText.textContent = `D&D 3.5e kütüphaneleri taranıyor (${model}): "${q}"...`;
+        const cleanModel = String(model).replace(/^models\//, '');
+        if (statusText) statusText.textContent = `D&D 3.5e kütüphaneleri taranıyor (${cleanModel}): "${q}"...`;
         try {
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${cleanModel}:generateContent?key=${encodeURIComponent(apiKey)}`;
           const payload = {
             contents: [{ parts: [{ text: userPrompt }] }],
             systemInstruction: { parts: [{ text: systemPrompt }] },

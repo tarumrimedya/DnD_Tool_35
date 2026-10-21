@@ -1847,6 +1847,23 @@ const RuleEngine = {
         1: [{ name: "Diverse Training (Ex)", category: "Special Ability", type: "Ex", summary: "Levels stack with fighter and caster levels for prerequisites" }]
       }
     },
+    "Bloodstorm Blade": {
+      hd: 12, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 2,
+      bonusFeatLevels: [],
+      features: {
+        1: [
+          { name: "Returning Attacks (Ex)", category: "Special Ability", type: "Ex", summary: "Thrown weapons return to your hand just before your next attack" },
+          { name: "Weapon Aptitude (Ex)", category: "Special Ability", type: "Ex", summary: "Reassign weapon-specific feats to other weapons with 1 hour practice" }
+        ],
+        2: [
+          { name: "Throw Anything (Ex)", category: "Special Ability", type: "Ex", summary: "Throw any melee weapon with 10 ft range increment without penalty" },
+          { name: "Iron Wind (Ex)", category: "Special Ability", type: "Ex", summary: "Swift action: hit two adjacent foes with a single thrown weapon" }
+        ],
+        3: [{ name: "Thunderous Throw (Ex)", category: "Special Ability", type: "Ex", summary: "Swift action: treat thrown attacks as melee attacks for Power Attack and feats" }],
+        4: [{ name: "Lightning Ricochet (Ex)", category: "Special Ability", type: "Ex", summary: "Thrown weapon returns immediately after attack, enabling full iterative attacks" }],
+        5: [{ name: "Blood Wind (Ex)", category: "Special Ability", type: "Ex", summary: "Ricochet thrown weapon to an additional foe within range" }]
+      }
+    },
     "Arcane Archer": {
       hd: 8, bab: 1.0, fort: "good", ref: "good", will: "poor", skills: 4,
       bonusFeatLevels: [],
