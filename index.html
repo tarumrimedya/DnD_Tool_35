@@ -9240,6 +9240,216 @@
     window.combatPinReorderMode = { offense: false, defense: false, utility: false };
     window.pendingCombatPinItem = null;
 
+    // --- AUTOMATED COMBAT PINS SYNCHRONIZATION ---
+    // Readied maneuvers, known stances, equipped items with active abilities, and belt items route automatically.
+    function syncAutomatedCombatPins(char) {
+      if (!char) return;
+      if (!char.combatPins) char.combatPins = { offense: [], defense: [], utility: [] };
+      if (!char.combatPins.offense) char.combatPins.offense = [];
+      if (!char.combatPins.defense) char.combatPins.defense = [];
+      if (!char.combatPins.utility) char.combatPins.utility = [];
+
+      // Helper: detect active ability or spell effect in an equipped item
+      function inspectItemActiveAbility(item) {
+        if (!item || !item.name || item.name === '-') return null;
+        const name = (item.name || '').toLowerCase();
+        const desc = (item.desc || item.benefit || item.description || '').toLowerCase();
+        const fullText = name + ' ' + desc;
+
+        const hasDailyCharges = item.dailyCharges || (item.charges !== undefined && item.charges !== null && item.charges > 0) || (item.maxCharges && item.maxCharges > 0);
+        const mentionsActivation = /(\d+)\s*\/\s*(gün|day)|per day|günde\s*(\d+)|command word|use-activated|at will|şarj|büyüsü|casts?\b|activat|etkinleştir/i.test(fullText);
+        const mentionsSpellOrPower = /(fireball|lightning bolt|magic missile|scorching ray|cure|heal|shield|dimension door|teleport|haste|invisibility|fly|true seeing|blur|mirror image|barkskin|protection from|flame blade|flaming|frost|shock|shocking grasp|vampiric touch|cone of cold|disintegrate|chain lightning|sound burst)/i.test(fullText);
+
+        const isPurePassiveStat = /^(cloak of resistance|belt of giant strength|ring of protection|amulet of natural armor|bracers of armor|headband of intellect|periapt of wisdom|gloves of dexterity)/i.test(name.trim());
+        if (isPurePassiveStat && !hasDailyCharges && !mentionsActivation) {
+          return null;
+        }
+
+        const isActive = hasDailyCharges || mentionsActivation || mentionsSpellOrPower;
+        if (!isActive) return null;
+
+        const isOffense = /(fireball|lightning|missile|scorching|flame|frost|shock|hasar|saldırı|attack|damage|strike|blast|ray|ram|blasting|weapon|touch|burst|harm)/i.test(fullText);
+        const isDefense = /(shield|protection|resist|saving|counter|ac\b|zırh|savunma|koruma|dodge|deflect|ward|barrier|fortification|displacement|stoneskin|endure)/i.test(fullText);
+        const isUtility = /(cure|heal|şifa|speed|haste|fly|teleport|dimension door|jump|levitate|invisibility|see invisibility|görünmezlik|restore|light|identify)/i.test(fullText);
+
+        let cat = 'utility';
+        if (isOffense) cat = 'offense';
+        else if (isDefense) cat = 'defense';
+        else if (isUtility) cat = 'utility';
+
+        const dmgExpr = typeof findDiceExpression === 'function' ? findDiceExpression(item.desc || item.benefit || '') : '';
+        let badge = dmgExpr || '';
+        if (!badge) {
+          if (hasDailyCharges) {
+            badge = `${item.charges || item.dailyCharges}/gün`;
+          } else {
+            badge = item.category || 'Aktif';
+          }
+        }
+
+        return {
+          isActive: true,
+          category: cat,
+          badge: badge,
+          action: 'Standard',
+          desc: item.desc || item.benefit || 'Kuşanılan eşya aktif özelliği.'
+        };
+      }
+
+      // 1. Gather all current target auto-items
+      const currentAutoPins = [];
+
+      // A. Readied maneuvers
+      const readiedManeuvers = char.tomeOfBattle?.readiedManeuvers || [];
+      readiedManeuvers.forEach(m => {
+        if (!m || !m.name) return;
+        const mName = (m.name || '').toLowerCase();
+        const mDesc = (m.notes || m.benefit || '').toLowerCase();
+        const mDisc = (m.discipline || '').toLowerCase();
+        const mAction = (m.action || 'Standard').toLowerCase();
+        const fullText = mName + ' ' + mDesc + ' ' + mDisc;
+
+        let cat = 'offense';
+        if (mDisc.includes('setting sun') || mAction.includes('immediate') || /(counter|block|wall of blades|shield|save|ac\b|dodge|defense|mind over body|moment of perfect mind|action before thought|iron heart focus)/i.test(fullText)) {
+          cat = 'defense';
+        } else if (/(heal|cure|şifa|movement|teleport|boost|white raven tactics)/i.test(fullText)) {
+          cat = 'utility';
+        }
+
+        const dmgExpr = m.damageDice || (typeof findDiceExpression === 'function' ? findDiceExpression(m.notes || m.benefit) : '');
+        currentAutoPins.push({
+          autoKey: `maneuver_${m.name.toLowerCase()}`,
+          autoType: 'readied_maneuver',
+          category: cat,
+          name: m.name,
+          sourceType: 'Maneuver',
+          action: m.action || 'Standard',
+          badge: dmgExpr || m.discipline || 'Manevra',
+          desc: m.notes || m.benefit || ''
+        });
+      });
+
+      // B. Known stances
+      const stancesKnown = char.tomeOfBattle?.stancesKnown || [];
+      stancesKnown.forEach(st => {
+        if (!st || !st.name) return;
+        const stName = (st.name || '').toLowerCase();
+        const stDesc = (st.benefit || '').toLowerCase();
+        const fullText = stName + ' ' + stDesc;
+
+        let cat = 'utility';
+        if (/(ac\b|dodge|defense|save|shield|clarity|roots of the mountain|bolstering)/i.test(fullText)) {
+          cat = 'defense';
+        } else if (/(damage|hasar|punishing|flame|fire|strike|hunter)/i.test(fullText)) {
+          cat = 'offense';
+        }
+
+        const dmgExpr = st.damageDice || (typeof findDiceExpression === 'function' ? findDiceExpression(st.benefit) : '');
+        currentAutoPins.push({
+          autoKey: `stance_${st.name.toLowerCase()}`,
+          autoType: 'known_stance',
+          category: cat,
+          name: st.name,
+          sourceType: 'Stance',
+          action: 'Swift',
+          badge: dmgExpr || 'Duruş',
+          desc: st.benefit || ''
+        });
+      });
+
+      // C. Equipped items with active abilities
+      if (char.bodySlots) {
+        Object.entries(char.bodySlots).forEach(([slotKey, item]) => {
+          const activeData = inspectItemActiveAbility(item);
+          if (activeData) {
+            currentAutoPins.push({
+              autoKey: `equipped_${slotKey}_${item.name.toLowerCase()}`,
+              autoType: 'equipped_item',
+              category: activeData.category,
+              name: item.name,
+              sourceType: item.category || 'Item',
+              action: activeData.action,
+              badge: activeData.badge,
+              desc: activeData.desc
+            });
+          }
+        });
+      }
+
+      // D. Belt items from gearPool
+      if (Array.isArray(char.gearPool)) {
+        char.gearPool.filter(g => g && g.isBelt && !g.isEquipped).forEach(item => {
+          const name = (item.name || '').toLowerCase();
+          const desc = (item.desc || '').toLowerCase();
+          const fullText = name + ' ' + desc;
+
+          let cat = 'utility';
+          if (/(fire|acid|bomb|alchemist|flame|hasar|damage|attack|weapon|dagger|dart|sword|axe|arrow|bolt)/i.test(fullText)) {
+            cat = 'offense';
+          } else if (/(shield|barkskin|armor|defense|protection|dodge|save|resist)/i.test(fullText)) {
+            cat = 'defense';
+          }
+
+          const badge = item.qty ? `${item.qty} Adet` : (item.category || 'Kemer');
+          currentAutoPins.push({
+            autoKey: `belt_${item.id || item.name.toLowerCase()}`,
+            autoType: 'belt_item',
+            category: cat,
+            name: item.name,
+            sourceType: item.category || 'Consumable',
+            action: 'Standard',
+            badge: badge,
+            desc: item.desc || 'Kemerde taşınan hızlı erişim eşyası.'
+          });
+        });
+      }
+
+      // Seamlessly tag existing pins matching current auto-pins if they don't have autoType yet
+      currentAutoPins.forEach(autoPin => {
+        ['offense', 'defense', 'utility'].forEach(c => {
+          const match = (char.combatPins[c] || []).find(p => (p.name || '').toLowerCase() === autoPin.name.toLowerCase());
+          if (match && !match.autoType) {
+            match.autoType = autoPin.autoType;
+            match.autoKey = autoPin.autoKey;
+            if (!match.badge && autoPin.badge) match.badge = autoPin.badge;
+          }
+        });
+      });
+
+      // 2. Reconcile with character.combatPins:
+      // Remove outdated auto-pins that no longer match any current auto-item
+      const validAutoKeys = new Set(currentAutoPins.map(p => p.autoKey));
+      ['offense', 'defense', 'utility'].forEach(c => {
+        char.combatPins[c] = (char.combatPins[c] || []).filter(p => {
+          if (!p.autoType) return true; // Keep manual pins
+          return validAutoKeys.has(p.autoKey);
+        });
+      });
+
+      // 3. Add missing auto-pins
+      currentAutoPins.forEach(autoPin => {
+        let exists = false;
+        ['offense', 'defense', 'utility'].forEach(c => {
+          if (char.combatPins[c].some(p => (p.name || '').toLowerCase() === autoPin.name.toLowerCase())) {
+            exists = true;
+          }
+        });
+
+        if (!exists) {
+          char.combatPins[autoPin.category].push({
+            id: 'auto_' + autoPin.autoKey + '_' + Date.now(),
+            autoKey: autoPin.autoKey,
+            autoType: autoPin.autoType,
+            name: autoPin.name,
+            sourceType: autoPin.sourceType,
+            action: autoPin.action,
+            badge: autoPin.badge,
+            desc: autoPin.desc
+          });
+        }
+      });
+    }
+
     function renderCombatCockpit() {
       if (!character) return;
       if (!character.tactical) {
@@ -9255,6 +9465,9 @@
       if (!character.weaponAttackProfiles) {
         character.weaponAttackProfiles = {};
       }
+
+      // Automated Pin Sync: Readied maneuvers, known stances, equipped active items, and belt items
+      syncAutomatedCombatPins(character);
 
       // 1. Round Tracker
       const roundEl = document.getElementById('combat-round-val');
@@ -10039,7 +10252,7 @@
       if (badge) badge.textContent = pins.length;
 
       if (pins.length === 0) {
-        container.innerHTML = `<div class="text-[11px] text-slate-500 italic p-3 text-center border border-dashed border-slate-800 rounded-lg">Henüz sabitlenmiş öğe yok. Kütüphanelerden 📌 butonuna tıklayarak ekleyin.</div>`;
+        container.innerHTML = `<div class="text-[11px] text-slate-500 italic p-3 text-center border border-dashed border-slate-800 rounded-lg">Henüz bu çekmecede öğe yok. (Büyü/yetenek sabitleyebilir veya kemer/manevra/aktif eşya kuşanabilirsiniz.)</div>`;
         return;
       }
 
@@ -10065,12 +10278,12 @@
           actionBtn = `<button onclick="executePinAction('${category}', ${idx})" class="py-1 px-2 rounded bg-rose-950/60 hover:bg-rose-900 border border-rose-700/70 text-rose-300 font-bold text-[10px] transition shrink-0">⚡ Hazırla</button>`;
         } else if (pin.sourceType === 'Spell') {
           actionBtn = `<button onclick="executePinAction('${category}', ${idx})" class="py-1 px-2 rounded bg-purple-950/60 hover:bg-purple-900 border border-purple-700/70 text-purple-300 font-bold text-[10px] transition shrink-0">🔮 At</button>`;
-        } else if (pin.sourceType === 'Consumable' || pin.sourceType === 'Item') {
+        } else if (pin.sourceType === 'Consumable' || pin.autoType === 'belt_item') {
           actionBtn = `<button onclick="executePinAction('${category}', ${idx})" class="py-1 px-2 rounded bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-700/70 text-emerald-300 font-bold text-[10px] transition shrink-0">🧪 Kullan</button>`;
         } else if (pin.sourceType === 'Skill') {
           actionBtn = `<button onclick="executePinAction('${category}', ${idx})" class="py-1 px-2 rounded bg-sky-950/60 hover:bg-sky-900 border border-sky-700/70 text-sky-300 font-bold text-[10px] transition shrink-0">🎯 Zar At</button>`;
         } else {
-          actionBtn = `<button onclick="openPinDetailsModalById('${category}', ${idx})" class="py-1 px-2 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[10px] transition shrink-0">Detay</button>`;
+          actionBtn = `<button onclick="executePinAction('${category}', ${idx})" class="py-1 px-2 rounded bg-amber-950/60 hover:bg-amber-900 border border-amber-700/70 text-amber-300 font-bold text-[10px] transition shrink-0">⚡ Kullan</button>`;
         }
 
         const reorderControls = isReorder ? `
@@ -10223,26 +10436,48 @@
             total: mod.active ? 'Aktif' : 'Pasif'
           });
         } else {
-          showDiceTopToast({
-            icon: '⚡',
-            title: `${pin.name} Hazırlandı`,
-            breakdown: pin.desc || '',
-            total: 'Hazır'
-          });
+          const formula = pin.badge || (typeof findDiceExpression === 'function' ? findDiceExpression(pin.desc) : '');
+          if (formula && typeof rollSpellOrManeuverFormula === 'function') {
+            rollSpellOrManeuverFormula(formula, `${pin.name} Hasarı`);
+          } else {
+            showDiceTopToast({
+              icon: '⚡',
+              title: `${pin.name} Hazırlandı`,
+              breakdown: pin.desc || '',
+              total: 'Hazır'
+            });
+          }
         }
         saveStateToStorage(false);
         renderAll();
       } else if (pin.sourceType === 'Spell') {
-        showDiceTopToast({
-          icon: '🔮',
-          title: `${pin.name} Hazırlandı`,
-          breakdown: pin.desc || 'Büyü hazırlandı.',
-          total: 'Büyü'
-        });
-      } else if (pin.sourceType === 'Consumable' || pin.sourceType === 'Item') {
+        const formula = pin.badge || (typeof findDiceExpression === 'function' ? findDiceExpression(pin.desc) : '');
+        if (formula && typeof rollSpellOrManeuverFormula === 'function') {
+          rollSpellOrManeuverFormula(formula, `${pin.name} Etkisi`);
+        } else {
+          showDiceTopToast({
+            icon: '🔮',
+            title: `${pin.name} Hazırlandı`,
+            breakdown: pin.desc || 'Büyü hazırlandı.',
+            total: 'Büyü'
+          });
+        }
+      } else if (pin.sourceType === 'Consumable' || pin.autoType === 'belt_item') {
         consumeCockpitItem(encodeURIComponent(pin.name));
       } else if (pin.sourceType === 'Skill') {
         rollCombatSkill(pin.name);
+      } else {
+        const formula = pin.badge || (typeof findDiceExpression === 'function' ? findDiceExpression(pin.desc) : '');
+        if (formula && typeof rollSpellOrManeuverFormula === 'function') {
+          rollSpellOrManeuverFormula(formula, `${pin.name} Etkisi`);
+        } else {
+          showDiceTopToast({
+            icon: '✨',
+            title: `${pin.name} Etkinleştirildi`,
+            breakdown: pin.desc || 'Eşyanın aktif özelliği tetiklendi.',
+            total: 'Aktif'
+          });
+        }
       }
     }
 
@@ -10254,25 +10489,66 @@
       if (!modal) return;
 
       document.getElementById('pin-modal-title').textContent = pin.name;
-      document.getElementById('pin-modal-type-badge').textContent = pin.sourceType || 'Combat Item';
+      const typeLabel = pin.autoType 
+        ? (pin.autoType === 'readied_maneuver' ? 'Kuşanılan Manevra' : (pin.autoType === 'known_stance' ? 'Bilinen Duruş' : (pin.autoType === 'belt_item' ? 'Kemer Eşyası' : (pin.autoType === 'equipped_item' ? 'Kuşanılan Aktif Eşya' : pin.sourceType))))
+        : (pin.sourceType || 'Combat Item');
+      document.getElementById('pin-modal-type-badge').textContent = typeLabel;
       document.getElementById('pin-modal-action-badge').textContent = pin.action || 'Standard Action';
       document.getElementById('pin-modal-desc').textContent = pin.desc || 'Açıklama bulunmuyor.';
 
       const unpinBtn = document.getElementById('pin-modal-unpin-btn');
       if (unpinBtn) {
-        unpinBtn.onclick = () => {
-          character.combatPins[category].splice(idx, 1);
-          saveStateToStorage(true);
-          closePinDetailsModal();
-          renderAll();
-          showDiceTopToast({
-            icon: getPinToastIconSvg(category),
-            pinCategory: category,
-            title: 'Pini Kaldırıldı',
-            breakdown: `${pin.name} savaş kokpitinden çıkarıldı.`,
-            total: 'Kaldırıldı'
-          });
-        };
+        if (pin.autoType === 'readied_maneuver') {
+          unpinBtn.textContent = 'Kuşanmayı Bırak (Unready)';
+          unpinBtn.onclick = () => {
+            toggleManeuverReadied(escape(pin.name));
+            closePinDetailsModal();
+          };
+        } else if (pin.autoType === 'belt_item') {
+          unpinBtn.textContent = 'Kemerden Çıkar';
+          unpinBtn.onclick = () => {
+            const bItem = (character.gearPool || []).find(g => (g.name || '').toLowerCase() === (pin.name || '').toLowerCase() && g.isBelt);
+            if (bItem) togglePoolBelt(bItem.id);
+            closePinDetailsModal();
+          };
+        } else if (pin.autoType === 'known_stance') {
+          unpinBtn.textContent = 'Duruş (Bilinen)';
+          unpinBtn.onclick = () => {
+            closePinDetailsModal();
+            showDiceTopToast({
+              icon: '🥋',
+              title: 'Bilinen Duruş',
+              breakdown: `${pin.name} bilinen duruşlarınızdan biridir. Manevralar sekmesinden yönetebilirsiniz.`,
+              total: 'Bilgi'
+            });
+          };
+        } else if (pin.autoType === 'equipped_item') {
+          unpinBtn.textContent = 'Eşya (Kuşanıldı)';
+          unpinBtn.onclick = () => {
+            closePinDetailsModal();
+            showDiceTopToast({
+              icon: '✨',
+              title: 'Kuşanılan Eşya',
+              breakdown: `"${pin.name}" vücut yuvalarında kuşanılmıştır. Çıkarmak için Vücut Yuvaları sekmesini kullanabilirsiniz.`,
+              total: 'Bilgi'
+            });
+          };
+        } else {
+          unpinBtn.textContent = 'Pini Kaldır';
+          unpinBtn.onclick = () => {
+            character.combatPins[category].splice(idx, 1);
+            saveStateToStorage(true);
+            closePinDetailsModal();
+            renderAll();
+            showDiceTopToast({
+              icon: getPinToastIconSvg(category),
+              pinCategory: category,
+              title: 'Pini Kaldırıldı',
+              breakdown: `${pin.name} savaş kokpitinden çıkarıldı.`,
+              total: 'Kaldırıldı'
+            });
+          };
+        }
       }
 
       modal.classList.remove('hidden');
@@ -14176,7 +14452,6 @@
                   </button>
                 `)}
 
-                ${getUniversalPinButtonHtml({ name: m.name, type: 'Maneuver', action: m.action || 'Standard', desc: m.notes || m.benefit || '', badge: dmgExpr || '' })}
                 <button onclick="toggleManeuverReadied('${escape(m.name)}')" class="w-6 h-6 inline-flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-rose-400 text-xs rounded-lg border border-slate-700 transition cursor-pointer shrink-0" title="Kuşanmayı Bırak (Slot Boş Kalır)">
                   ✕
                 </button>
@@ -14255,7 +14530,6 @@
             </td>
             <td class="py-2.5 px-3 font-bold text-white align-middle">
               <div class="flex items-center gap-2 whitespace-nowrap">
-                ${getUniversalPinButtonHtml({ name: m.name, type: 'Maneuver', action: m.action || 'Standard Action', desc: m.notes || m.benefit || '', badge: dmgExpr || '' })}
                 <span>⚔️</span>
                 <span class="${isOverLevel ? 'text-slate-400' : 'text-white'}">${m.name}</span>
                 ${isOverLevel ? `<span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-rose-950/90 text-rose-300 border border-rose-800/80 font-bold shrink-0">IL Yetersiz (Maks: ${initInfo.maxManeuverLvl})</span>` : ''}
@@ -14332,7 +14606,6 @@
             <td class="py-2.5 px-3 text-teal-400 font-bold font-mono text-center">${st.level || 1}</td>
             <td class="py-2.5 px-3 font-bold text-teal-300 align-middle">
               <div class="flex items-center gap-2 whitespace-nowrap">
-                ${getUniversalPinButtonHtml({ name: st.name, type: 'Stance', action: 'Swift', desc: st.benefit || '', badge: dmgExpr || '' })}
                 <span>🥋</span>
                 <span>${st.name}</span>
               </div>
@@ -14518,6 +14791,7 @@
         }
       }
 
+      if (typeof syncAutomatedCombatPins === 'function') syncAutomatedCombatPins(character);
       saveStateToStorage(true);
       renderManeuvers();
     }
@@ -14539,6 +14813,7 @@
       if (selectEl) {
         character.activeStance = selectEl.value;
       }
+      if (typeof syncAutomatedCombatPins === 'function') syncAutomatedCombatPins(character);
       recalculateOffense();
       renderSpellsCockpit();
       renderManeuvers();
@@ -14548,6 +14823,7 @@
     function selectStanceDirectly(escapedName) {
       const name = unescape(escapedName);
       character.activeStance = name;
+      if (typeof syncAutomatedCombatPins === 'function') syncAutomatedCombatPins(character);
       recalculateOffense();
       renderSpellsCockpit();
       renderManeuvers();
@@ -14581,6 +14857,7 @@
         }
       }
 
+      if (typeof syncAutomatedCombatPins === 'function') syncAutomatedCombatPins(character);
       saveStateToStorage(true);
       renderManeuvers();
       showDiceTopToast({
@@ -23074,7 +23351,6 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           <td class="py-2.5 px-3 align-middle font-semibold text-purple-400">${item.category}</td>
           <td class="py-2.5 px-3 align-middle font-bold text-white">
             <div class="flex items-center gap-2">
-              ${getUniversalPinButtonHtml({ name: item.name, type: item.category || 'Item', action: 'Standard', desc: item.desc || '', badge: item.category || '' })}
               <span>${item.name}</span>
             </div>
           </td>
@@ -23113,6 +23389,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       const item = (character.gearPool || []).find(p => p.id === itemId);
       if (item) {
         item.isBelt = !item.isBelt;
+        if (typeof syncAutomatedCombatPins === 'function') syncAutomatedCombatPins(character);
         saveStateToStorage(true);
         renderAll();
       }
