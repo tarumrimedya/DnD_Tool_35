@@ -1236,7 +1236,9 @@ const RuleEngine = {
     const hasWeaponFinesse = feats.some(f => f.includes('weapon finesse'));
     const hasShadowBlade = feats.some(f => f.includes('shadow blade'));
     const hasWeaponFocus = feats.some(f => f.includes('weapon focus') && ((baseWepName && f.includes(baseWepName)) || f.includes(weapon.name.toLowerCase()) || f.includes('all')));
+    const hasGreaterWeaponFocus = feats.some(f => f.includes('greater weapon focus') && ((baseWepName && f.includes(baseWepName)) || f.includes(weapon.name.toLowerCase()) || f.includes('all')));
     const hasWeaponSpec = feats.some(f => f.includes('weapon specialization') && ((baseWepName && f.includes(baseWepName)) || f.includes(weapon.name.toLowerCase()) || f.includes('all')));
+    const hasGreaterWeaponSpec = feats.some(f => f.includes('greater weapon specialization') && ((baseWepName && f.includes(baseWepName)) || f.includes(weapon.name.toLowerCase()) || f.includes('all')));
 
     // 1. Attack Stat Calculation
     let attackStatMod = strMod;
@@ -1289,6 +1291,9 @@ const RuleEngine = {
     }
     if (hasWeaponFocus) {
       attackBonusItems.push({ type: 'untyped', val: 1, source: 'Weapon Focus' });
+    }
+    if (hasGreaterWeaponFocus) {
+      attackBonusItems.push({ type: 'untyped', val: 1, source: 'Greater Weapon Focus' });
     }
     if (flanking) {
       attackBonusItems.push({ type: 'untyped', val: 2, source: 'Flanking' });
@@ -1356,6 +1361,9 @@ const RuleEngine = {
     }
     if (hasWeaponSpec) {
       damageBonusItems.push({ type: 'untyped', val: 2, source: 'Weapon Specialization' });
+    }
+    if (hasGreaterWeaponSpec) {
+      damageBonusItems.push({ type: 'untyped', val: 2, source: 'Greater Weapon Specialization' });
     }
 
     // Add damage bonuses from customModifiers (e.g. Enhance Arrow, active ability buffs)

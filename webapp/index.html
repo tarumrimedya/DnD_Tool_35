@@ -3078,6 +3078,23 @@
         <div id="feat-modal-notes-container" class="hidden bg-slate-900/50 border border-slate-800/80 rounded-xl p-2.5 text-[11px] text-slate-400">
           <strong class="text-slate-300">Notlar:</strong> <span id="feat-modal-notes"></span>
         </div>
+
+        <!-- TARGET CONFIGURATION / SELECTOR CONTAINER (For Weapon Focus, Spell Focus, Skill Focus etc.) -->
+        <div id="feat-modal-target-container" class="hidden bg-slate-950/90 border border-amber-500/50 rounded-xl p-3 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] uppercase font-bold text-amber-300 flex items-center gap-1.5">
+              <span id="feat-modal-target-icon">🎯</span>
+              <span id="feat-modal-target-title">Odaklanılan Silah / Hedef Seçimi</span>
+            </span>
+            <span class="text-[9px] text-slate-400 font-mono">D&D 3.5e RAW Parametresi</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <select id="feat-modal-target-select" onchange="onFeatTargetSelectChanged()" class="w-full bg-slate-900 border border-amber-500/40 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-amber-400 font-sans cursor-pointer">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+          <p id="feat-modal-target-help" class="text-[10px] text-slate-400">Bu seçim zar motorundaki (+1) bonuslarını ve silah eşleşmesini doğrudan belirler.</p>
+        </div>
       </div>
       <div class="bg-slate-950 px-4 py-2.5 border-t border-slate-800 flex items-center justify-between">
         <button id="btn-remove-feat-from-char" onclick="removeCurrentViewedFeat()" class="bg-rose-950 hover:bg-rose-800 text-rose-300 hover:text-white border border-rose-700 font-bold text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1 shadow-sm">
@@ -17032,6 +17049,244 @@
       updateFeatModalPinButton();
     }
 
+    // D&D 3.5e Standard SRD Weapons Reference List
+    const DND35_SRD_WEAPONS = [
+      // Simple Weapons
+      "Dagger", "Punching Dagger", "Spiked Gauntlet", "Light Mace", "Sickle", "Club", "Heavy Mace", 
+      "Morningstar", "Shortspear", "Spear", "Quarterstaff", "Heavy Crossbow", "Light Crossbow", "Dart", "Sling", "Javelin",
+      // Martial Weapons
+      "Throwing Axe", "Handaxe", "Light Hammer", "Lance", "Kukri", "Short Sword", "Battleaxe", "Flail", 
+      "Heavy Flail", "Longsword", "Heavy Pick", "Light Pick", "Rapier", "Scimitar", "Trident", "Warhammer", 
+      "Falchion", "Glaive", "Greataxe", "Greatclub", "Greatsword", "Guislame", "Halberd", "Longspear", 
+      "Ranseur", "Scythe", "Shortbow", "Composite Shortbow", "Longbow", "Composite Longbow",
+      // Exotic Weapons
+      "Bastard Sword", "Dwarven Waraxe", "Whip", "Spiked Chain", "Dire Flail", "Two-Bladed Sword", 
+      "Orc Double Axe", "Gnome Hooked Hammer", "Bolas", "Hand Crossbow", "Repeating Heavy Crossbow", "Repeating Light Crossbow", "Shuriken", "Net",
+      // Unarmed / Touch
+      "Unarmed Strike", "Grapple", "Ray", "Touch"
+    ];
+
+    const DND35_SPELL_SCHOOLS = [
+      "Abjuration", "Conjuration", "Divination", "Enchantment", 
+      "Evocation", "Illusion", "Necromancy", "Transmutation"
+    ];
+
+    window.currentFeatTargetConfig = null;
+
+    function setupFeatTargetSelector(featTitle) {
+      const container = document.getElementById('feat-modal-target-container');
+      const select = document.getElementById('feat-modal-target-select');
+      const titleEl = document.getElementById('feat-modal-target-title');
+      const iconEl = document.getElementById('feat-modal-target-icon');
+      const helpEl = document.getElementById('feat-modal-target-help');
+      if (!container || !select) return;
+
+      window.currentFeatTargetConfig = null;
+      if (!featTitle) {
+        container.classList.add('hidden');
+        return;
+      }
+
+      const t = String(featTitle).trim();
+      const lower = t.toLowerCase();
+
+      // Check weapon feats
+      const isWeaponFeat = /^(weapon focus|greater weapon focus|weapon specialization|greater weapon specialization|improved critical|exotic weapon proficiency)/i.test(lower);
+      // Check spell focus
+      const isSpellFocus = /^(spell focus|greater spell focus)/i.test(lower);
+      // Check skill focus
+      const isSkillFocus = /^skill focus/i.test(lower);
+
+      if (!isWeaponFeat && !isSpellFocus && !isSkillFocus) {
+        container.classList.add('hidden');
+        return;
+      }
+
+      // Extract current target in parentheses if present e.g. "Weapon Focus (Rapier)" -> target = "Rapier"
+      const match = t.match(/\((.*?)\)/);
+      const currentTarget = match ? match[1].trim() : '';
+      const baseName = t.replace(/\(.*?\)/g, '').trim();
+
+      window.currentFeatTargetConfig = {
+        baseName,
+        currentTarget,
+        type: isWeaponFeat ? 'weapon' : (isSpellFocus ? 'spell_school' : 'skill')
+      };
+
+      select.innerHTML = '';
+
+      if (isWeaponFeat) {
+        if (titleEl) titleEl.textContent = 'Odaklanılan Silah Seçimi (Weapon Target)';
+        if (iconEl) iconEl.textContent = '⚔️';
+        if (helpEl) helpEl.textContent = 'Karakter bu silahı kuşandığında Rule Engine otomatik +1/+2 saldırı ve hasar bonusu uygular.';
+
+        const defOpt = document.createElement('option');
+        defOpt.value = '';
+        defOpt.textContent = '-- Bir Silah Seçin --';
+        select.appendChild(defOpt);
+
+        // Group 1: Character's inventory & equipped weapons
+        const charWeps = (character.weapons || []).map(w => (w.name || '').replace(/\+\d+/g, '').replace(/\(.*?\)/g, '').trim()).filter(Boolean);
+        const uniqueCharWeps = [...new Set(charWeps)];
+        if (uniqueCharWeps.length > 0) {
+          const grpChar = document.createElement('optgroup');
+          grpChar.label = '⚔️ Kuşanılan / Envanterdeki Silahlar';
+          uniqueCharWeps.forEach(w => {
+            const opt = document.createElement('option');
+            opt.value = w;
+            opt.textContent = `${w} (Kuşanılan)`;
+            if (currentTarget.toLowerCase() === w.toLowerCase()) opt.selected = true;
+            grpChar.appendChild(opt);
+          });
+          select.appendChild(grpChar);
+        }
+
+        // Group 2: All Standard D&D 3.5e SRD Weapons
+        const grpSrd = document.createElement('optgroup');
+        grpSrd.label = '📚 Tüm D&D 3.5e SRD Silahları';
+        DND35_SRD_WEAPONS.forEach(w => {
+          const opt = document.createElement('option');
+          opt.value = w;
+          opt.textContent = w;
+          if (!select.value && currentTarget.toLowerCase() === w.toLowerCase()) opt.selected = true;
+          grpSrd.appendChild(opt);
+        });
+        select.appendChild(grpSrd);
+
+      } else if (isSpellFocus) {
+        if (titleEl) titleEl.textContent = 'Odaklanılan Büyü Okulu (Spell School Target)';
+        if (iconEl) iconEl.textContent = '🔮';
+        if (helpEl) helpEl.textContent = 'Seçilen okuldaki büyüler için Kurtarma Zarı Zorluğu (Save DC) +1 artar.';
+
+        const defOpt = document.createElement('option');
+        defOpt.value = '';
+        defOpt.textContent = '-- Bir Büyü Okulu Seçin --';
+        select.appendChild(defOpt);
+
+        DND35_SPELL_SCHOOLS.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s;
+          opt.textContent = s;
+          if (currentTarget.toLowerCase() === s.toLowerCase()) opt.selected = true;
+          select.appendChild(opt);
+        });
+
+      } else if (isSkillFocus) {
+        if (titleEl) titleEl.textContent = 'Odaklanılan Beceri (Skill Target)';
+        if (iconEl) iconEl.textContent = '🎯';
+        if (helpEl) helpEl.textContent = 'Seçilen beceri kontrol zarlarına +3 yetenek bonusu sağlar.';
+
+        const defOpt = document.createElement('option');
+        defOpt.value = '';
+        defOpt.textContent = '-- Bir Beceri Seçin --';
+        select.appendChild(defOpt);
+
+        const skills = (character.skills || []).map(sk => sk.name).filter(Boolean);
+        skills.forEach(sk => {
+          const opt = document.createElement('option');
+          opt.value = sk;
+          opt.textContent = sk;
+          if (currentTarget.toLowerCase() === sk.toLowerCase()) opt.selected = true;
+          select.appendChild(opt);
+        });
+      }
+
+      container.classList.remove('hidden');
+    }
+
+    function onFeatTargetSelectChanged() {
+      const select = document.getElementById('feat-modal-target-select');
+      if (!select || !window.currentFeatTargetConfig || !currentViewedFeatName) return;
+
+      const newTarget = select.value.trim();
+      const baseName = window.currentFeatTargetConfig.baseName;
+      const oldFullName = currentViewedFeatName;
+      const newFullName = newTarget ? `${baseName} (${newTarget})` : baseName;
+
+      if (oldFullName === newFullName) return;
+
+      const oldClean = String(oldFullName).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim().toLowerCase();
+      const baseClean = String(baseName).toLowerCase();
+
+      // 1. Update in Level Progression if viewing from a specific level row
+      if (currentFeatSourceLevelIndex !== null && character.levelProgression && character.levelProgression[currentFeatSourceLevelIndex]) {
+        const row = character.levelProgression[currentFeatSourceLevelIndex];
+        if (Array.isArray(row.feats)) {
+          for (let i = 0; i < row.feats.length; i++) {
+            const f = row.feats[i];
+            const str = String(typeof f === 'string' ? f : f.name).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim().toLowerCase();
+            if (str === oldClean || str.startsWith(baseClean)) {
+              if (typeof f === 'string') {
+                row.feats[i] = newFullName;
+              } else {
+                f.name = newFullName;
+              }
+              break;
+            }
+          }
+        }
+        if (Array.isArray(row.specialAbilities)) {
+          for (let i = 0; i < row.specialAbilities.length; i++) {
+            const a = row.specialAbilities[i];
+            const str = String(typeof a === 'string' ? a : a.name).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim().toLowerCase();
+            if (str === oldClean || str.startsWith(baseClean)) {
+              if (typeof a === 'string') {
+                row.specialAbilities[i] = newFullName;
+              } else {
+                a.name = newFullName;
+              }
+              break;
+            }
+          }
+        }
+      }
+
+      // 2. Update in character.feats array
+      if (Array.isArray(character.feats)) {
+        for (let i = 0; i < character.feats.length; i++) {
+          const f = character.feats[i];
+          const str = String(typeof f === 'string' ? f : f.name).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim().toLowerCase();
+          if (str === oldClean || str.startsWith(baseClean)) {
+            if (typeof f === 'string') {
+              character.feats[i] = newFullName;
+            } else {
+              f.name = newFullName;
+            }
+            break;
+          }
+        }
+      }
+
+      // 3. Update in combatPins if pinned
+      ['offense', 'defense', 'utility'].forEach(cat => {
+        (character.combatPins?.[cat] || []).forEach(p => {
+          const pClean = String(p.name).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim().toLowerCase();
+          if (pClean === oldClean || pClean.startsWith(baseClean)) {
+            p.name = newFullName;
+          }
+        });
+      });
+
+      // 4. Update modal state
+      currentViewedFeatName = newFullName;
+      window.currentFeatTargetConfig.currentTarget = newTarget;
+      document.getElementById('feat-modal-title').textContent = newFullName;
+      if (window.currentViewedFeatItem) {
+        window.currentViewedFeatItem.name = newFullName;
+      }
+      updateFeatModalPinButton();
+
+      saveStateToStorage(true);
+      renderAll();
+
+      showDiceTopToast({
+        icon: '🎯',
+        title: `${baseName} Güncellendi`,
+        breakdown: newTarget ? `Seçilen Hedef: ${newTarget}` : 'Hedef kaldırıldı.',
+        total: newTarget || 'Standart'
+      });
+    }
+
     function showFeatDetail(featName, levelIndex = null, sourceCategory = 'feat') {
       const modal = document.getElementById('feat-detail-modal');
       if (!modal) return;
@@ -17134,6 +17389,9 @@
       };
       updateFeatModalPinButton();
 
+      // Setup dynamic target configuration (Weapon Focus, Spell Focus, Skill Focus)
+      setupFeatTargetSelector(title);
+
       modal.classList.remove('hidden');
     }
 
@@ -17143,6 +17401,7 @@
       currentViewedFeatName = null;
       currentFeatSourceLevelIndex = null;
       window.currentViewedFeatItem = null;
+      window.currentFeatTargetConfig = null;
     }
 
     function removeCurrentViewedFeat() {
