@@ -631,31 +631,6 @@
             </div>
           </div>
 
-          <!-- 2. Mini Spell Slots & Readied Maneuvers HUD -->
-          <div class="bg-dndCard border border-purple-500/40 rounded-xl p-3.5 shadow-lg space-y-3">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-              <span class="text-xs font-black uppercase text-purple-400 tracking-wider flex items-center gap-1.5">
-                <span>🔮</span> BÜYÜ SLOTLARI & MANEVRALAR
-              </span>
-              <button onclick="recoverAllManeuvers()" class="text-[10px] font-bold text-amber-300 hover:text-white bg-slate-900 border border-slate-700 px-2 py-0.5 rounded transition" title="Warblade Swift Action: Tüm harcanmış manevraları hemen toparla">
-                🔄 Swift Recover
-              </button>
-            </div>
-
-            <!-- Mini Spell Slots -->
-            <div id="cockpit-mini-spell-slots" class="space-y-1.5">
-              <!-- Dynamically populated -->
-            </div>
-
-            <!-- Readied Maneuvers Deck Mini -->
-            <div class="border-t border-slate-800 pt-2 space-y-1.5">
-              <div class="text-[10px] font-bold text-slate-400 uppercase">Kuşanılmış Manevralar</div>
-              <div id="cockpit-mini-maneuvers" class="flex flex-wrap gap-1.5">
-                <!-- Dynamically populated -->
-              </div>
-            </div>
-          </div>
-
           <!-- 3. UTILITY PIN DRAWER -->
           <div class="bg-dndCard border border-dndBorder rounded-xl p-3.5 shadow-lg space-y-2.5">
             <div class="flex items-center justify-between border-b border-slate-800 pb-2">
@@ -9648,10 +9623,8 @@
       renderOffHandSelector();
       renderActiveProfilePills();
 
-      // 4. Utility Column: Quick Consumables, Mini Spell Slots, Mini Maneuvers
+      // 4. Utility Column: Quick Consumables
       renderCockpitConsumables();
-      renderCockpitMiniSpellSlots();
-      renderCockpitMiniManeuvers();
 
       // 5. Pin Drawers
       renderCombatPins('offense');
