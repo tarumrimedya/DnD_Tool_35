@@ -1846,6 +1846,100 @@ const RuleEngine = {
       features: {
         1: [{ name: "Diverse Training (Ex)", category: "Special Ability", type: "Ex", summary: "Levels stack with fighter and caster levels for prerequisites" }]
       }
+    },
+    "Arcane Archer": {
+      hd: 8, bab: 1.0, fort: "good", ref: "good", will: "poor", skills: 4,
+      bonusFeatLevels: [],
+      features: {
+        1: [{ name: "Enhance Arrow +1 (Su)", category: "Special Ability", type: "Su", summary: "Fired arrows receive +1 enhancement bonus" }],
+        2: [{ name: "Imbue Arrow (Sp)", category: "Special Ability", type: "Sp", summary: "Place area spell upon an arrow; spell detonates where arrow lands" }],
+        4: [{ name: "Seeker Arrow (Sp)", category: "Special Ability", type: "Sp", summary: "Arrow shoots around corners and ignores cover" }]
+      }
+    },
+    "Assassin": {
+      hd: 6, bab: 0.75, fort: "poor", ref: "good", will: "poor", skills: 4,
+      bonusFeatLevels: [],
+      features: {
+        1: [
+          { name: "Sneak Attack +1d6", category: "Special Ability", type: "Ex", summary: "+1d6 precision damage" },
+          { name: "Death Attack (Ex)", category: "Special Ability", type: "Ex", summary: "Kill or paralyze studied target" },
+          { name: "Poison Use", category: "Special Ability", type: "Ex", summary: "Never risk poisoning self when applying poison" }
+        ],
+        2: [{ name: "+1 Save vs Poison", category: "Special Ability", type: "Ex", summary: "+1 bonus on saving throws against poison" }]
+      }
+    },
+    "Shadowdancer": {
+      hd: 8, bab: 0.75, fort: "poor", ref: "good", will: "poor", skills: 6,
+      bonusFeatLevels: [],
+      features: {
+        1: [{ name: "Hide in Plain Sight (Su)", category: "Special Ability", type: "Su", summary: "Hide while observed as long as within 10 ft of a shadow" }],
+        2: [
+          { name: "Evasion (Ex)", category: "Special Ability", type: "Ex", summary: "Take no damage on successful Reflex save" },
+          { name: "Uncanny Dodge (Ex)", category: "Special Ability", type: "Ex", summary: "Retain Dex bonus to AC even when flat-footed" }
+        ],
+        4: [{ name: "Shadow Jump (Su)", category: "Special Ability", type: "Su", summary: "Travel between shadows like Dimension Door" }]
+      }
+    },
+    "Dragon Disciple": {
+      hd: 12, bab: 0.75, fort: "good", ref: "poor", will: "good", skills: 2,
+      bonusFeatLevels: [],
+      features: {
+        1: [{ name: "Natural Armor Increase +1 (Ex)", category: "Special Ability", type: "Ex", summary: "+1 natural armor bonus to AC" }],
+        2: [{ name: "Ability Boost (+2 Str) (Ex)", category: "Special Ability", type: "Ex", summary: "Permanent +2 racial bonus to Strength" }],
+        3: [{ name: "Breath Weapon (Su)", category: "Special Ability", type: "Su", summary: "Line or cone breath weapon dealing energy damage" }]
+      }
+    },
+    "Mystic Theurge": {
+      hd: 4, bab: 0.5, fort: "poor", ref: "poor", will: "good", skills: 2,
+      bonusFeatLevels: [],
+      features: {
+        1: [{ name: "Combined Spellcasting (Arcane & Divine)", category: "Special Ability", type: "Ex", summary: "Advance both arcane and divine spellcasting progression" }]
+      }
+    },
+    "Dervish": {
+      hd: 10, bab: 1.0, fort: "good", ref: "good", will: "poor", skills: 4,
+      bonusFeatLevels: [],
+      features: {
+        1: [
+          { name: "Dervish Dance 1/day (Ex)", category: "Special Ability", type: "Ex", summary: "Take full attack action while moving up to speed" },
+          { name: "AC Bonus +1 (Ex)", category: "Special Ability", type: "Ex", summary: "+1 dodge bonus to AC while wearing light or no armor" }
+        ],
+        2: [{ name: "Fast Movement +5 ft (Ex)", category: "Special Ability", type: "Ex", summary: "+5 ft speed bonus" }]
+      }
+    },
+    "Spellsword": {
+      hd: 8, bab: 1.0, fort: "good", ref: "poor", will: "good", skills: 2,
+      bonusFeatLevels: [],
+      features: {
+        1: [{ name: "Ignore Spell Failure 10% (Ex)", category: "Special Ability", type: "Ex", summary: "Reduce arcane spell failure chance of armor by 10%" }],
+        2: [{ name: "Multiple Spell Channeling (Su)", category: "Special Ability", type: "Su", summary: "Store a spell in melee weapon to release upon hit" }]
+      }
+    },
+    "Jade Phoenix Mage": {
+      hd: 6, bab: 1.0, fort: "good", ref: "poor", will: "good", skills: 2,
+      bonusFeatLevels: [],
+      features: {
+        1: [
+          { name: "Arcane Wrath (Su)", category: "Special Ability", type: "Su", summary: "Expend spell slot for +4 attack and +1d10 energy damage per spell level" },
+          { name: "Rite of Waking (Ex)", category: "Special Ability", type: "Ex", summary: "+2 on Knowledge checks and advance arcane CL & martial IL" }
+        ],
+        2: [{ name: "Mystic Phoenix Stance (Su)", category: "Special Ability", type: "Su", summary: "Stance: +2 CL on fire spells, DR 2/evil, and +1 CL" }]
+      }
+    },
+    "Warlock": {
+      hd: 6, bab: 0.75, fort: "poor", ref: "poor", will: "good", skills: 2,
+      bonusFeatLevels: [],
+      features: {
+        1: [
+          { name: "Eldritch Blast 1d6 (Sp)", category: "Special Ability", type: "Sp", summary: "At will ranged touch attack dealing 1d6 untyped magical damage" },
+          { name: "Least Invocations", category: "Special Ability", type: "Sp", summary: "Cast least warlock invocations at will" }
+        ],
+        2: [{ name: "Detect Magic (Sp)", category: "Special Ability", type: "Sp", summary: "At will Detect Magic" }],
+        3: [
+          { name: "Damage Reduction 1/cold iron (Su)", category: "Special Ability", type: "Su", summary: "DR 1/cold iron" },
+          { name: "Eldritch Blast 2d6 (Sp)", category: "Special Ability", type: "Sp", summary: "Eldritch blast damage increases to 2d6" }
+        ]
+      }
     }
   },
 
