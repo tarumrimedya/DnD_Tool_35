@@ -1,5 +1,9 @@
 {
   "version": 2,
-  "public": true,
-  "cleanUrls": true
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/hub", "destination": "/webapp/hub.html" },
+    { "source": "/", "destination": "/webapp/index.html" },
+    { "source": "/((?!api/).*)", "destination": "/webapp/$1" }
+  ]
 }
