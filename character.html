@@ -10555,7 +10555,8 @@
       const cleanName = String(pin.name).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
       const lower = cleanName.toLowerCase();
 
-      let mod = character.activeModifiers.find(m => m.name.toLowerCase() === lower || m.name.toLowerCase() === pin.name.toLowerCase());
+      const pinNameLower = (pin.name || '').toLowerCase();
+      let mod = (character.activeModifiers || []).find(m => m && m.name && (m.name.toLowerCase() === lower || m.name.toLowerCase() === pinNameLower));
 
       if (pin.active) {
         if (!mod) {
@@ -10632,7 +10633,6 @@
       if (foundPin) {
         toggleCombatPinActive(foundCategory, character.combatPins[foundCategory].indexOf(foundPin));
       }
-    }
     }
 
     // --- PIN DETAILS MODAL ---
@@ -17214,12 +17214,16 @@
         if (Array.isArray(row.feats)) {
           for (let i = 0; i < row.feats.length; i++) {
             const f = row.feats[i];
-            const str = String(typeof f === 'string' ? f : f.name).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim().toLowerCase();
+            const rawStr = String(typeof f === 'string' ? f : (f?.name || ''));
+            const str = rawStr.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim().toLowerCase();
             if (str === oldClean || str.startsWith(baseClean)) {
+              const prefixMatch = rawStr.match(/^([🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*)/);
+              const prefix = prefixMatch ? prefixMatch[1] : '';
+              const updatedName = `${prefix}${newFullName}`;
               if (typeof f === 'string') {
-                row.feats[i] = newFullName;
-              } else {
-                f.name = newFullName;
+                row.feats[i] = updatedName;
+              } else if (f && typeof f === 'object') {
+                f.name = updatedName;
               }
               break;
             }
@@ -17228,12 +17232,16 @@
         if (Array.isArray(row.specialAbilities)) {
           for (let i = 0; i < row.specialAbilities.length; i++) {
             const a = row.specialAbilities[i];
-            const str = String(typeof a === 'string' ? a : a.name).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim().toLowerCase();
+            const rawStr = String(typeof a === 'string' ? a : (a?.name || ''));
+            const str = rawStr.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim().toLowerCase();
             if (str === oldClean || str.startsWith(baseClean)) {
+              const prefixMatch = rawStr.match(/^([🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*)/);
+              const prefix = prefixMatch ? prefixMatch[1] : '';
+              const updatedName = `${prefix}${newFullName}`;
               if (typeof a === 'string') {
-                row.specialAbilities[i] = newFullName;
-              } else {
-                a.name = newFullName;
+                row.specialAbilities[i] = updatedName;
+              } else if (a && typeof a === 'object') {
+                a.name = updatedName;
               }
               break;
             }
@@ -17245,11 +17253,12 @@
       if (Array.isArray(character.feats)) {
         for (let i = 0; i < character.feats.length; i++) {
           const f = character.feats[i];
-          const str = String(typeof f === 'string' ? f : f.name).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim().toLowerCase();
+          const rawStr = String(typeof f === 'string' ? f : (f?.name || ''));
+          const str = rawStr.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim().toLowerCase();
           if (str === oldClean || str.startsWith(baseClean)) {
             if (typeof f === 'string') {
               character.feats[i] = newFullName;
-            } else {
+            } else if (f && typeof f === 'object') {
               f.name = newFullName;
             }
             break;
