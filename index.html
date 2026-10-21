@@ -12069,7 +12069,8 @@
               <span class="badge ${theme.badge} text-[10px] font-bold font-mono px-2 py-0.5">${lvl}</span>
             </td>
             <td class="py-2.5 px-3 font-bold text-white align-middle">
-              <div class="flex items-center gap-1.5 flex-wrap">
+              <div class="flex items-center gap-2 flex-wrap">
+                ${getUniversalPinButtonHtml({ name: s.name, type: 'Spell', action: s.action || 'Standard Action', desc: s.benefit || '', badge: dmgExpr || '', damageDice: dmgExpr || '' })}
                 <span>📖</span>
                 <span class="${hasActiveSlot ? 'text-white' : 'text-slate-400'}">${s.name}</span>
                 ${!hasActiveSlot ? `<span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-rose-950/90 text-rose-300 border border-rose-800/80 font-bold shrink-0">0 Slot</span>` : ''}
@@ -12617,7 +12618,8 @@
               <span class="badge ${theme.badge} text-[10px] font-bold font-mono px-2 py-0.5">${lvl}</span>
             </td>
             <td class="py-2.5 px-3 font-bold text-white align-middle">
-              <div class="flex items-center gap-1.5 flex-wrap">
+              <div class="flex items-center gap-2 flex-wrap">
+                ${getUniversalPinButtonHtml({ name: s.name, type: 'Spell', action: s.action || 'Standard Action', desc: s.benefit || '', badge: dmgExpr || '', damageDice: dmgExpr || '' })}
                 <span>✨</span>
                 <span class="${hasActiveSlot ? 'text-white' : 'text-slate-400'}">${s.name}</span>
                 ${!hasActiveSlot ? `<span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-rose-950/90 text-rose-300 border border-rose-800/80 font-bold shrink-0">0 Slot</span>` : ''}
