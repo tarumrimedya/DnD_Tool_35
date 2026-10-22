@@ -396,59 +396,104 @@
                 </div>
               </div>
 
-              <!-- Weapon Stat Override Badge (Temel Hasarın Üstünde) -->
-              <div class="flex items-center justify-between px-1">
-                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">⚔️ Silah Hasar & Kritik</span>
-                <div id="weapon-stat-override-badge" class="text-[10px] font-semibold text-emerald-400 text-right">
-                  ✨ Weapon Finesse: DEX (+3) devrede
-                </div>
-              </div>
-
-              <!-- Weapon Base Stats Pill Grid (Temel Hasar Üstte Geniş, Kritik ve Hasar Türü Altta) -->
-              <div class="bg-slate-950/70 border border-slate-800 rounded-lg p-2 space-y-1.5">
-                <div class="text-center px-1">
-                  <div class="text-[9px] uppercase font-bold text-slate-400">Temel Hasar</div>
-                  <div id="weapon-damage-formula-display" class="text-xs md:text-sm font-black text-white font-mono mt-0.5 break-words">1d6+4</div>
-                </div>
-                <div class="grid grid-cols-2 gap-1.5 pt-1.5 border-t border-slate-800/80 text-center">
-                  <div>
-                    <div class="text-[9px] uppercase font-bold text-slate-400">Kritik</div>
-                    <div id="weapon-crit-display" class="text-xs font-black text-amber-400 font-mono mt-0.5">18-20 / x2</div>
+              <!-- DUAL EQUIPMENT SLOTS (SEÇENEK A: İKİLİ KUŞANMA YUVALARI) -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                
+                <!-- SLOT 1: ⚔️ ANA EL (MAIN HAND) -->
+                <div class="bg-gradient-to-b from-slate-900/95 to-slate-950/95 border border-amber-500/40 rounded-xl p-3 shadow-lg flex flex-col justify-between space-y-2.5 relative group hover:border-amber-500/70 transition">
+                  <!-- Slot Header -->
+                  <div class="flex items-center justify-between border-b border-slate-800/80 pb-1.5">
+                    <span class="text-[10px] font-black uppercase text-amber-400 tracking-wider flex items-center gap-1.5">
+                      <span>⚔️</span> ANA EL (MAIN HAND)
+                    </span>
+                    <div id="weapon-stat-override-badge" class="text-[9px] font-semibold text-emerald-400 text-right truncate max-w-[140px]">
+                      ✨ Weapon Finesse
+                    </div>
                   </div>
-                  <div>
-                    <div class="text-[9px] uppercase font-bold text-slate-400">Hasar Türü</div>
-                    <div id="weapon-type-display" class="text-[11px] font-bold text-sky-400 mt-0.5 truncate">Piercing</div>
+
+                  <!-- Weapon Name & Dropdown -->
+                  <div class="space-y-1">
+                    <label class="text-[9px] uppercase font-bold text-slate-400 block">Kuşanılan Silah</label>
+                    <select id="active-weapon-select" onchange="onWeaponChange()" class="w-full bg-slate-950/90 text-amber-200 font-extrabold text-xs sm:text-sm rounded-lg border border-amber-500/30 hover:border-amber-500/60 px-2.5 py-1.5 focus:outline-none focus:border-amber-400 cursor-pointer transition">
+                      <!-- Populated dynamically -->
+                    </select>
+                  </div>
+
+                  <!-- Weapon Stats Grid (Temel Hasar, Kritik, Hasar Türü) -->
+                  <div class="bg-slate-950/80 border border-slate-800/90 rounded-lg p-2 space-y-1">
+                    <div class="text-center px-1">
+                      <span class="text-[8px] uppercase font-bold text-slate-400 block leading-tight">Toplam Hasar Formülü</span>
+                      <div id="weapon-damage-formula-display" class="text-xs sm:text-sm font-black text-amber-300 font-mono mt-0.5 break-words">1d6+4</div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-1 pt-1 border-t border-slate-800/80 text-center text-[10px]">
+                      <div>
+                        <span class="text-[8px] uppercase font-bold text-slate-500 block">Kritik</span>
+                        <span id="weapon-crit-display" class="font-black text-white font-mono">18-20 / x2</span>
+                      </div>
+                      <div>
+                        <span class="text-[8px] uppercase font-bold text-slate-500 block">Hasar Türü</span>
+                        <span id="weapon-type-display" class="font-bold text-sky-400 truncate block">Piercing</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Grip Selector (Tutuş) Segmented Pill Bar -->
+                  <div class="flex items-center justify-between pt-0.5 border-t border-slate-800/60">
+                    <span class="text-[9px] uppercase font-bold text-slate-400">Tutuş Modu:</span>
+                    <div class="inline-flex rounded-lg p-0.5 bg-slate-950 border border-slate-800">
+                      <button type="button" id="grip-btn-1h" onclick="setCombatGrip('1-Hand')" class="px-2.5 py-0.5 rounded text-[10px] font-bold transition cursor-pointer bg-amber-500/20 text-amber-300 border border-amber-500/40">1-El</button>
+                      <button type="button" id="grip-btn-2h" onclick="setCombatGrip('2-Hand')" class="px-2.5 py-0.5 rounded text-[10px] font-bold transition cursor-pointer text-slate-400 hover:text-white border border-transparent">2-El</button>
+                    </div>
+                    <!-- Hidden select for complete compatibility with existing engine calculations -->
+                    <select id="active-grip-select" onchange="syncCombatGripUI(); recalculateOffense();" class="hidden">
+                      <option value="1-Hand">1-Hand</option>
+                      <option value="2-Hand">2-Hand</option>
+                      <option value="Off-Hand">Off-Hand</option>
+                    </select>
                   </div>
                 </div>
-              </div>
 
-              <!-- Weapon Selector & Grip -->
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <div class="sm:col-span-2">
-                  <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Ana El Silahı</label>
-                  <select id="active-weapon-select" onchange="onWeaponChange()" class="w-full bg-slate-900 text-white font-bold text-xs rounded border border-slate-700 px-2 py-1.5 focus:outline-none focus:border-rose-500">
-                    <!-- Dynamically populated -->
-                  </select>
-                </div>
-                <div>
-                  <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Tutuş (Grip)</label>
-                  <select id="active-grip-select" onchange="recalculateOffense()" class="w-full bg-slate-900 text-amber-300 font-bold text-xs rounded border border-slate-700 px-2 py-1.5 focus:outline-none">
-                    <option value="1-Hand">1-Hand</option>
-                    <option value="2-Hand">2-Hand</option>
-                    <option value="Off-Hand">Off-Hand</option>
-                  </select>
-                </div>
-              </div>
+                <!-- SLOT 2: 🛡️ İKİNCİ EL (OFF-HAND / KALKAN) -->
+                <div class="bg-gradient-to-b from-slate-900/95 to-slate-950/95 border border-sky-500/40 rounded-xl p-3 shadow-lg flex flex-col justify-between space-y-2.5 relative group hover:border-sky-500/70 transition">
+                  <!-- Slot Header -->
+                  <div class="flex items-center justify-between border-b border-slate-800/80 pb-1.5">
+                    <span class="text-[10px] font-black uppercase text-sky-400 tracking-wider flex items-center gap-1.5">
+                      <span>🛡️</span> İKİNCİ EL (OFF-HAND)
+                    </span>
+                    <span id="offhand-slot-mode-badge" class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800">
+                      Serbest El
+                    </span>
+                  </div>
 
-              <!-- Off-Hand Weapon / Shield Bash Selector -->
-              <div>
-                <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1">İkinci El (Off-Hand / Kalkan)</label>
-                <select id="active-offhand-select" onchange="onOffHandChange()" class="w-full bg-slate-900 text-sky-300 font-semibold text-xs rounded border border-slate-700 px-2 py-1.5 focus:outline-none focus:border-sky-500">
-                  <!-- Dynamically populated with off-hand weapons and shields -->
-                </select>
-                <div id="twf-bonus-badge" class="hidden text-[10px] font-semibold text-amber-400 mt-1 bg-amber-950/40 border border-amber-700/50 rounded px-2 py-1">
-                  <!-- Populated dynamically -->
+                  <!-- Off-Hand Dropdown -->
+                  <div class="space-y-1">
+                    <label class="text-[9px] uppercase font-bold text-slate-400 block">Kuşanılan Nesne / Kalkan</label>
+                    <select id="active-offhand-select" onchange="onOffHandChange()" class="w-full bg-slate-950/90 text-sky-200 font-extrabold text-xs sm:text-sm rounded-lg border border-sky-500/30 hover:border-sky-500/60 px-2.5 py-1.5 focus:outline-none focus:border-sky-400 cursor-pointer transition">
+                      <!-- Populated dynamically -->
+                    </select>
+                  </div>
+
+                  <!-- Off-Hand Live Status & Stat Card -->
+                  <div id="offhand-status-card" class="bg-slate-950/80 border border-slate-800/90 rounded-lg p-2 flex flex-col justify-center min-h-[64px] text-center space-y-1">
+                    <div id="offhand-status-main" class="text-xs font-black text-sky-300">
+                      Yok / Boş
+                    </div>
+                    <div id="offhand-status-detail" class="text-[10px] font-semibold text-slate-400">
+                      🖐️ Serbest El (Büyü & Manevra Hazır)
+                    </div>
+                  </div>
+
+                  <!-- TWF Status / Quick Tip Bar -->
+                  <div class="pt-0.5 border-t border-slate-800/60">
+                    <div id="twf-bonus-badge" class="hidden text-[9px] font-semibold text-amber-300 bg-amber-950/40 border border-amber-700/50 rounded-lg px-2 py-1 text-center mb-1">
+                      <!-- Populated dynamically -->
+                    </div>
+                    <div id="offhand-quick-tip" class="text-[9px] text-slate-400 text-center">
+                      💡 Kalkan AC sağlar; çift silah (TWF) için modifiyerlerden seçebilirsiniz.
+                    </div>
+                  </div>
                 </div>
+
               </div>
 
               <!-- TACTICAL MODIFIERS (Power Attack + 3x3 Modifier Grid) -->
@@ -9738,15 +9783,50 @@
         const hasOversized = RuleEngine.hasOversizedWeaponFeat(character);
         if (isTwoHand && !hasOversized) {
           wep.grip = '2-Hand';
-          document.getElementById('active-grip-select').value = '2-Hand';
+          const gripSelect = document.getElementById('active-grip-select');
+          if (gripSelect) gripSelect.value = '2-Hand';
         } else if (wep.grip) {
-          document.getElementById('active-grip-select').value = wep.grip;
+          const gripSelect = document.getElementById('active-grip-select');
+          if (gripSelect) gripSelect.value = wep.grip;
         } else if (isTwoHand) {
-          document.getElementById('active-grip-select').value = '2-Hand';
+          const gripSelect = document.getElementById('active-grip-select');
+          if (gripSelect) gripSelect.value = '2-Hand';
         }
       }
+      syncCombatGripUI();
       recalculateOffense();
       saveStateToStorage();
+    }
+
+    function setCombatGrip(grip) {
+      const gripSelect = document.getElementById('active-grip-select');
+      if (gripSelect) {
+        gripSelect.value = grip;
+      }
+      const wep = (character.weapons || []).find(w => w.name === character.activeWeapon);
+      if (wep) {
+        wep.grip = grip;
+      }
+      syncCombatGripUI();
+      recalculateOffense();
+      saveStateToStorage(false);
+    }
+
+    function syncCombatGripUI() {
+      const gripSelect = document.getElementById('active-grip-select');
+      const grip = gripSelect?.value || '1-Hand';
+      const btn1h = document.getElementById('grip-btn-1h');
+      const btn2h = document.getElementById('grip-btn-2h');
+      
+      if (btn1h && btn2h) {
+        if (grip === '2-Hand') {
+          btn2h.className = 'px-2.5 py-0.5 rounded text-[10px] font-bold transition cursor-pointer bg-amber-500/30 text-amber-200 border border-amber-500/50 shadow-sm';
+          btn1h.className = 'px-2.5 py-0.5 rounded text-[10px] font-bold transition cursor-pointer text-slate-400 hover:text-white border border-transparent';
+        } else {
+          btn1h.className = 'px-2.5 py-0.5 rounded text-[10px] font-bold transition cursor-pointer bg-amber-500/30 text-amber-200 border border-amber-500/50 shadow-sm';
+          btn2h.className = 'px-2.5 py-0.5 rounded text-[10px] font-bold transition cursor-pointer text-slate-400 hover:text-white border border-transparent';
+        }
+      }
     }
 
     function hasFlurryAbility(char) {
@@ -10286,6 +10366,7 @@
       if (isTwoHand && !hasOversized && gripSelect && gripSelect.value !== '2-Hand') {
         gripSelect.value = '2-Hand';
       }
+      if (typeof syncCombatGripUI === 'function') syncCombatGripUI();
 
       const grip = gripSelect?.value || '1-Hand';
       const paVal = parseInt(document.getElementById('power-attack-val')?.value) || 0;
@@ -11065,6 +11146,7 @@
 
       // 3. Offense Column: Off-Hand Selector & TWF
       try { renderOffHandSelector(); } catch (e) { console.error('renderOffHandSelector error:', e); }
+      try { syncCombatGripUI(); } catch (e) { console.error('syncCombatGripUI error:', e); }
       try { renderSavedProfiles(); } catch (e) { console.error('renderSavedProfiles error:', e); }
       try { renderOffenseModifiersGrid(); } catch (e) { console.error('renderOffenseModifiersGrid error:', e); }
       try { recalculateOffense(); } catch (e) { console.error('recalculateOffense error:', e); }
@@ -11105,6 +11187,52 @@
           select.appendChild(opt);
         }
       });
+
+      // Update Slot 2 Status Cards (Seçenek A: İkili Kuşanma Yuvaları)
+      const modeBadge = document.getElementById('offhand-slot-mode-badge');
+      const statusMain = document.getElementById('offhand-status-main');
+      const statusDetail = document.getElementById('offhand-status-detail');
+
+      if (currentVal === 'None' || !currentVal) {
+        if (modeBadge) {
+          modeBadge.textContent = 'Serbest El';
+          modeBadge.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800';
+        }
+        if (statusMain) statusMain.textContent = 'Yok / Boş';
+        if (statusDetail) {
+          statusDetail.textContent = '🖐️ Serbest El (Büyü & Manevra Hazır)';
+          statusDetail.className = 'text-[10px] font-semibold text-slate-400';
+        }
+      } else {
+        const offHandItem = character.bodySlots?.offHand;
+        const isShield = offHandItem && offHandItem.name === currentVal && (offHandItem.category === 'Shield' || (offHandItem.desc && offHandItem.desc.toLowerCase().includes('shield')));
+        if (isShield) {
+          if (modeBadge) {
+            modeBadge.textContent = '🛡️ Kalkan Takılı';
+            modeBadge.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-950/60 text-emerald-300 border border-emerald-700/50';
+          }
+          if (statusMain) statusMain.textContent = `Kalkan: ${offHandItem.name}`;
+          const acBonus = offHandItem.armorBonus || offHandItem.shieldBonus || (offHandItem.name.includes('+1') ? 2 : 1);
+          if (statusDetail) {
+            statusDetail.textContent = `🛡️ +${acBonus} AC Kalkan Bonusu Devrede`;
+            statusDetail.className = 'text-[10px] font-semibold text-emerald-400';
+          }
+        } else {
+          // Off-hand weapon
+          const secondWep = (character.weapons || []).find(w => w.name === currentVal);
+          if (modeBadge) {
+            modeBadge.textContent = '⚔️ İkinci Silah (TWF)';
+            modeBadge.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded bg-cyan-950/60 text-cyan-300 border border-cyan-700/50';
+          }
+          if (statusMain) statusMain.textContent = `Silah: ${currentVal}`;
+          const dmgDice = secondWep?.damage || '1d4';
+          const crit = secondWep?.crit || '19-20/x2';
+          if (statusDetail) {
+            statusDetail.textContent = `⚔️ İkinci El: ${dmgDice} (${crit})`;
+            statusDetail.className = 'text-[10px] font-semibold text-cyan-300';
+          }
+        }
+      }
 
       // TWF Summary Badge
       const twfBadge = document.getElementById('twf-bonus-badge');
