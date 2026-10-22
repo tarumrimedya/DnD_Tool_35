@@ -13206,9 +13206,9 @@
 
       if (window.Dice3D && typeof Dice3D.roll === 'function' && dice3dList.length > 0) {
         showDiceTopToast({
-          icon: getFormulaDiceIconSvg(clean, 'w-6 h-6 text-amber-400') || '\u26A1',
-          title: title || 'Zar At\u0131\u015F\u0131',
-          breakdown: `Zarlar yuvarlan\u0131yor... [${clean}]`,
+          icon: getFormulaDiceIconSvg(formulaStr, 'w-6 h-6 text-amber-400') || '⚡',
+          title: `Havuz Zarı (${parts.join('+')})`,
+          breakdown: `Zarlar yuvarlanıyor... [${formulaStr}]`,
           total: '...'
         }, { toastId: 'dice-roll-active-toast', autoDismiss: false });
 
@@ -13521,9 +13521,9 @@
 
       if (window.Dice3D && typeof Dice3D.roll === 'function' && dice3dList.length > 0) {
         showDiceTopToast({
-          icon: getFormulaDiceIconSvg(clean, 'w-6 h-6 text-amber-400') || '\u26A1',
-          title: title || 'Zar At\u0131\u015F\u0131',
-          breakdown: `Zarlar yuvarlan\u0131yor... [${clean}]`,
+          icon: getFormulaDiceIconSvg(damageDiceStr, 'w-6 h-6 text-amber-400') || '⚡',
+          title: 'Hedefli Saldırı Zarı',
+          breakdown: `Zarlar yuvarlanıyor... [${rawInput}]`,
           total: '...'
         }, { toastId: 'dice-roll-active-toast', autoDismiss: false });
 
@@ -13691,9 +13691,9 @@
 
       if (window.Dice3D && typeof Dice3D.roll === 'function' && dice3dList.length > 0) {
         showDiceTopToast({
-          icon: getFormulaDiceIconSvg(clean, 'w-6 h-6 text-amber-400') || '\u26A1',
-          title: title || 'Zar At\u0131\u015F\u0131',
-          breakdown: `Zarlar yuvarlan\u0131yor... [${clean}]`,
+          icon: getFormulaDiceIconSvg(val, 'w-6 h-6 text-amber-400') || '⚡',
+          title: `Serbest Formül (${val})`,
+          breakdown: `Zarlar yuvarlanıyor... [${val}]`,
           total: '...'
         }, { toastId: 'dice-roll-active-toast', autoDismiss: false });
 
@@ -16145,9 +16145,9 @@
 
       if (window.Dice3D && typeof Dice3D.roll === 'function' && dice3dList.length > 0) {
         showDiceTopToast({
-          icon: getFormulaDiceIconSvg(clean, 'w-6 h-6 text-amber-400') || '\u26A1',
-          title: title || 'Zar At\u0131\u015F\u0131',
-          breakdown: `Zarlar yuvarlan\u0131yor... [${clean}]`,
+          icon: getFormulaDiceIconSvg(clean, 'w-6 h-6 text-amber-400') || '⚡',
+          title: title || 'Zar Atışı',
+          breakdown: `Zarlar yuvarlanıyor... [${clean}]`,
           total: '...'
         }, { toastId: 'dice-roll-active-toast', autoDismiss: false });
 
