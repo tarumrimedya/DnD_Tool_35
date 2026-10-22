@@ -83,7 +83,22 @@ const RuleMaster = {
     { code: "PlH", name: "Planar Handbook", cat: "Planar", note: "Düzlemler arası seyahat, Jovar ve egzotik silahlar", url: "https://srd.dndtools.org" }
   ],
 
-  // Default Item Schema (29 fields)
+  // Utility to derive standardized actionType for D&D 3.5e Action Economy (Standard, Swift, Immediate, Full-Round, Passive)
+  deriveActionType(actionStr, type = '') {
+    const act = String(actionStr || '').toLowerCase().trim();
+    const t = String(type || '').toLowerCase().trim();
+    if (act.includes('immediate')) return 'Immediate';
+    if (act.includes('swift')) return 'Swift';
+    if (act.includes('full-round') || act.includes('full attack') || act.includes('full')) return 'Full-Round';
+    if (act.includes('standard') || act.includes('attack') || act.includes('cast')) return 'Standard';
+    if (act.includes('move')) return 'Move';
+    if (act.includes('free')) return 'Free';
+    if (act.includes('passive') || act.includes('continuous') || act.includes('none')) return 'Passive';
+    if (t === 'spell' || t === 'maneuver') return 'Standard';
+    return 'Passive';
+  },
+
+  // Default Item Schema (Declarative Master_DB Schema with actionType, ruleFlags, combatModifiers, skillBonuses)
   createEmptyEntry(type = 'Weapon') {
     return {
       name: '',
@@ -119,10 +134,15 @@ const RuleMaster = {
       critMult: 2,
       dmgType: type === 'Weapon' ? 'Slashing' : '',
       action: 'Standard Action',
+      actionType: this.deriveActionType('Standard Action', type),
       duration: 'Continuous',
       weight: 1,
       cost: 10,
       role: 'Offense / Attack',
+      // Declarative Rules Engine Extensions (Commit fbfbf1c+)
+      ruleFlags: null,
+      combatModifiers: null,
+      skillBonuses: null,
       // Magic/Maneuver specifics
       school: '',
       level: '',
@@ -273,8 +293,34 @@ const RuleMaster = {
     if (editIndex >= 0 && editIndex < masterDb.length) {
       oldEntry = JSON.parse(JSON.stringify(masterDb[editIndex]));
       oldName = oldEntry.name;
-      masterDb[editIndex] = entryData;
+
+      // Safe Merge: Preserve modern declarative fields (ruleFlags, combatModifiers, skillBonuses, actionType, proficiency)
+      const mergedEntry = Object.assign({}, oldEntry, entryData);
+      if (!entryData.actionType) {
+        mergedEntry.actionType = oldEntry.actionType || this.deriveActionType(mergedEntry.action, mergedEntry.type);
+      }
+      if (entryData.ruleFlags === undefined && oldEntry.ruleFlags !== undefined) {
+        mergedEntry.ruleFlags = oldEntry.ruleFlags;
+      }
+      if (entryData.combatModifiers === undefined && oldEntry.combatModifiers !== undefined) {
+        mergedEntry.combatModifiers = oldEntry.combatModifiers;
+      }
+      if (entryData.skillBonuses === undefined && oldEntry.skillBonuses !== undefined) {
+        mergedEntry.skillBonuses = oldEntry.skillBonuses;
+      }
+      if (entryData.isLight === undefined && oldEntry.isLight !== undefined) {
+        mergedEntry.isLight = oldEntry.isLight;
+      }
+      if (entryData.proficiency === undefined && oldEntry.proficiency !== undefined) {
+        mergedEntry.proficiency = oldEntry.proficiency;
+      }
+
+      masterDb[editIndex] = mergedEntry;
+      entryData = mergedEntry;
     } else {
+      if (!entryData.actionType) {
+        entryData.actionType = this.deriveActionType(entryData.action, entryData.type);
+      }
       const parentName = (entryData.parent && entryData.parent !== '-') ? entryData.parent.replace(/^↳\s*/, '').trim().toLowerCase() : '';
       const parentIdx = parentName ? masterDb.findIndex(m => (m.name || '').replace(/^↳\s*/, '').trim().toLowerCase() === parentName) : -1;
       if (parentIdx >= 0) {
@@ -355,6 +401,10 @@ const RuleMaster = {
             slotObj.weight = Number(updatedEntry.weight) || 0;
             slotObj.cost = Number(updatedEntry.cost) || 0;
             slotObj.desc = updatedEntry.benefit || updatedEntry.description || '';
+            if (updatedEntry.actionType) slotObj.actionType = updatedEntry.actionType;
+            if (updatedEntry.skillBonuses) slotObj.skillBonuses = updatedEntry.skillBonuses;
+            if (updatedEntry.ruleFlags) slotObj.ruleFlags = updatedEntry.ruleFlags;
+            if (updatedEntry.combatModifiers) slotObj.combatModifiers = updatedEntry.combatModifiers;
             changesCount++;
           }
         }
@@ -376,6 +426,9 @@ const RuleMaster = {
           if (updatedEntry.dmgBonus !== undefined && updatedEntry.dmgBonus !== '') w.dmgBonus = Number(updatedEntry.dmgBonus);
           if (updatedEntry.dmgType) w.dmgType = updatedEntry.dmgType;
           if (updatedEntry.bonusType) w.bonusType = updatedEntry.bonusType;
+          if (updatedEntry.actionType) w.actionType = updatedEntry.actionType;
+          if (updatedEntry.ruleFlags) w.ruleFlags = updatedEntry.ruleFlags;
+          if (updatedEntry.combatModifiers) w.combatModifiers = updatedEntry.combatModifiers;
           changesCount++;
         }
       });
@@ -409,6 +462,9 @@ const RuleMaster = {
           if (f.name.toLowerCase().trim() === cleanOld) {
             f.name = updatedEntry.name;
             f.benefit = updatedEntry.benefit || f.benefit;
+            if (updatedEntry.actionType) f.actionType = updatedEntry.actionType;
+            if (updatedEntry.ruleFlags) f.ruleFlags = updatedEntry.ruleFlags;
+            if (updatedEntry.combatModifiers) f.combatModifiers = updatedEntry.combatModifiers;
             changesCount++;
           }
           return f;
@@ -553,6 +609,7 @@ const RuleMaster = {
   // Open Edit / Add Modal
   openModalWithData(entry, editIndex = -1) {
     this.selectedEntryIndex = editIndex;
+    this._currentEditingEntry = entry ? JSON.parse(JSON.stringify(entry)) : null;
     const modal = document.getElementById('rule-crud-modal');
     if (!modal) return;
 
@@ -619,10 +676,21 @@ const RuleMaster = {
 
   // Save Modal Action
   submitModal() {
-    const entry = {
+    const editIdx = this.selectedEntryIndex;
+    const baseObj = (editIdx >= 0 && masterDb && masterDb[editIdx])
+      ? JSON.parse(JSON.stringify(masterDb[editIdx]))
+      : (this._currentEditingEntry ? JSON.parse(JSON.stringify(this._currentEditingEntry)) : {});
+
+    const actVal = document.getElementById('rf-action').value;
+    const typeVal = document.getElementById('rf-type').value;
+    const derivedActType = this.deriveActionType(actVal, typeVal);
+
+    const formData = {
       name: document.getElementById('rf-name').value.trim(),
-      type: document.getElementById('rf-type').value,
+      type: typeVal,
       slot: document.getElementById('rf-slot').value,
+      action: actVal,
+      actionType: baseObj.actionType || derivedActType,
       tags: (() => {
         const rawTags = document.getElementById('rf-tags')?.value || '';
         const tagsArr = rawTags.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
@@ -664,7 +732,6 @@ const RuleMaster = {
       critMin: Number(document.getElementById('rf-crit-min').value) || 20,
       critMult: Number(document.getElementById('rf-crit-mult').value) || 2,
       dmgType: document.getElementById('rf-dmg-type').value.trim(),
-      action: document.getElementById('rf-action').value,
       duration: document.getElementById('rf-duration').value.trim(),
       weight: Number(document.getElementById('rf-weight').value) || 0,
       cost: Number(document.getElementById('rf-cost').value) || 0,
@@ -674,6 +741,9 @@ const RuleMaster = {
       level: document.getElementById('rf-level').value ? Number(document.getElementById('rf-level').value) : '',
       discipline: document.getElementById('rf-discipline').value.trim()
     };
+
+    // Deep Merge with baseObj to guarantee ruleFlags, combatModifiers, and skillBonuses are preserved
+    const entry = Object.assign({}, baseObj, formData);
 
     if (this.saveEntry(entry, this.selectedEntryIndex)) {
       this.closeModal();
@@ -1335,6 +1405,7 @@ const RuleMaster = {
         critMult: 2,
         dmgType: '',
         action: String(raw[25] || 'Passive').trim(),
+        actionType: this.deriveActionType(raw[25], normType),
         duration: String(raw[26] || 'Continuous').trim(),
         weight: Number(raw[27]) || 0,
         cost: Number(raw[28]) || 0,
@@ -1395,6 +1466,9 @@ const RuleMaster = {
       if (isChild && !tags.includes('child')) tags.push('child');
       if (normType && !tags.includes(normType.toLowerCase())) tags.push(normType.toLowerCase());
 
+      const rawAction = String(raw.action || 'Passive').trim();
+      const rawActionType = raw.actionType || this.deriveActionType(rawAction, normType);
+
       entry = {
         name: rawName,
         type: normType,
@@ -1427,7 +1501,8 @@ const RuleMaster = {
         critMin: critMinVal,
         critMult: critMultVal,
         dmgType: String(raw.dmgType || '').trim(),
-        action: String(raw.action || 'Passive').trim(),
+        action: rawAction,
+        actionType: rawActionType,
         duration: String(raw.duration || 'Continuous').trim(),
         weight: Number(raw.weight) || 0,
         cost: Number(raw.cost) || 0,
@@ -1442,7 +1517,13 @@ const RuleMaster = {
         effectType: raw.effectType || (isChild ? 'damage' : undefined),
         childButtonLabel: raw.childButtonLabel ? String(raw.childButtonLabel).trim() : undefined,
         selfHpCost: Number(raw.selfHpCost) || undefined,
-        unitLabel: raw.unitLabel ? String(raw.unitLabel).trim() : undefined
+        unitLabel: raw.unitLabel ? String(raw.unitLabel).trim() : undefined,
+        // Modern declarative rule engine fields
+        ruleFlags: (raw.ruleFlags && typeof raw.ruleFlags === 'object') ? JSON.parse(JSON.stringify(raw.ruleFlags)) : undefined,
+        combatModifiers: (raw.combatModifiers && typeof raw.combatModifiers === 'object') ? JSON.parse(JSON.stringify(raw.combatModifiers)) : undefined,
+        skillBonuses: (raw.skillBonuses && typeof raw.skillBonuses === 'object') ? JSON.parse(JSON.stringify(raw.skillBonuses)) : undefined,
+        isLight: raw.isLight !== undefined ? Boolean(raw.isLight) : undefined,
+        proficiency: raw.proficiency ? String(raw.proficiency).trim() : undefined
       };
     }
 
