@@ -416,39 +416,7 @@
                   <!-- Dynamically populated: Set 1 Card and Set 2 Card -->
                 </div>
 
-                <!-- Active Set Compact Stats & Damage Bar -->
-                <div class="bg-slate-950/90 border border-slate-800/90 rounded-lg p-2 space-y-1.5">
-                  <div class="flex flex-wrap items-center justify-between gap-1 border-b border-slate-800/70 pb-1">
-                    <div class="flex items-center gap-1.5">
-                      <span class="text-[9px] uppercase font-bold text-slate-400">Aktif Donanım:</span>
-                      <span id="weapon-set-active-summary" class="text-xs font-black text-amber-300 font-mono">Rapier +2 (1-El)</span>
-                    </div>
-                    <div id="weapon-stat-override-badge" class="text-[9px] font-semibold text-emerald-400">
-                      ✨ Weapon Finesse: DEX (+3)
-                    </div>
-                  </div>
 
-                  <!-- Damage Formula, Crit, Damage Type -->
-                  <div class="grid grid-cols-3 gap-1 text-center items-center">
-                    <div class="col-span-1">
-                      <span class="text-[8px] uppercase font-bold text-slate-500 block leading-tight">Hasar Formülü</span>
-                      <span id="weapon-damage-formula-display" class="text-xs sm:text-sm font-black text-white font-mono break-words">1d6+4</span>
-                    </div>
-                    <div>
-                      <span class="text-[8px] uppercase font-bold text-slate-500 block">Kritik</span>
-                      <span id="weapon-crit-display" class="text-[11px] font-black text-amber-400 font-mono">18-20 / x2</span>
-                    </div>
-                    <div>
-                      <span class="text-[8px] uppercase font-bold text-slate-500 block">Hasar Türü</span>
-                      <span id="weapon-type-display" class="text-[11px] font-bold text-sky-400 truncate block">Piercing</span>
-                    </div>
-                  </div>
-
-                  <!-- Off-Hand / TWF Live Notification inside Bar -->
-                  <div id="twf-bonus-badge" class="hidden text-[9px] font-semibold text-amber-300 bg-amber-950/40 border border-amber-700/50 rounded px-2 py-0.5 text-center">
-                    <!-- Populated dynamically -->
-                  </div>
-                </div>
 
                 <!-- Hidden/Collapsible Quick Edit Drawer for Sets -->
                 <div id="weapon-sets-editor" class="hidden bg-slate-900 border border-amber-500/30 rounded-lg p-2.5 space-y-2.5">
@@ -461,8 +429,8 @@
                     <!-- Set 1 Config -->
                     <div class="bg-slate-950/80 border border-slate-800 rounded p-2 space-y-1.5">
                       <div class="flex items-center justify-between">
-                        <span class="font-black text-amber-400 text-[10px]">SET I (ANA SET)</span>
-                        <input type="text" id="set1-name-input" value="Rapier & Buckler" onchange="saveWeaponSetConfig(1)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[10px] text-white w-28">
+                        <span class="font-black text-amber-400 text-[10px]">KART 1 (ANA EL)</span>
+                        <input type="text" id="set1-name-input" value="Ana El" onchange="saveWeaponSetConfig(1)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[10px] text-white w-28">
                       </div>
                       <div>
                         <label class="text-[8px] uppercase font-bold text-slate-500 block">Ana El Silahı</label>
@@ -470,49 +438,29 @@
                           <!-- Populated dynamically -->
                         </select>
                       </div>
-                      <div class="grid grid-cols-2 gap-1">
-                        <div>
-                          <label class="text-[8px] uppercase font-bold text-slate-500 block">Tutuş</label>
-                          <select id="set1-grip-select" onchange="saveWeaponSetConfig(1)" class="w-full bg-slate-900 text-slate-200 font-bold text-[10px] rounded border border-slate-700 p-1 cursor-pointer">
-                            <option value="1-Hand">1-El</option>
-                            <option value="2-Hand">2-El</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label class="text-[8px] uppercase font-bold text-slate-500 block">İkinci El / Kalkan</label>
-                          <select id="set1-offhand-select" onchange="saveWeaponSetConfig(1)" class="w-full bg-slate-900 text-sky-200 font-bold text-[10px] rounded border border-slate-700 p-1 cursor-pointer">
-                            <!-- Populated dynamically -->
-                          </select>
-                        </div>
+                      <div>
+                        <label class="text-[8px] uppercase font-bold text-slate-500 block">Tutuş</label>
+                        <select id="set1-grip-select" onchange="saveWeaponSetConfig(1)" class="w-full bg-slate-900 text-slate-200 font-bold text-[10px] rounded border border-slate-700 p-1 cursor-pointer">
+                          <option value="1-Hand">1-El</option>
+                          <option value="2-Hand">2-El</option>
+                        </select>
                       </div>
                     </div>
 
                     <!-- Set 2 Config -->
                     <div class="bg-slate-950/80 border border-slate-800 rounded p-2 space-y-1.5">
                       <div class="flex items-center justify-between">
-                        <span class="font-black text-sky-400 text-[10px]">SET II (YEDEK / TWF)</span>
-                        <input type="text" id="set2-name-input" value="Çift Hançer (TWF)" onchange="saveWeaponSetConfig(2)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[10px] text-white w-28">
+                        <span class="font-black text-sky-400 text-[10px]">KART 2 (İKİNCİ EL / KALKAN)</span>
+                        <input type="text" id="set2-name-input" value="İkinci El" onchange="saveWeaponSetConfig(2)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[10px] text-white w-28">
                       </div>
                       <div>
-                        <label class="text-[8px] uppercase font-bold text-slate-500 block">Ana El Silahı</label>
-                        <select id="set2-main-select" onchange="saveWeaponSetConfig(2)" class="w-full bg-slate-900 text-amber-200 font-bold text-[11px] rounded border border-slate-700 p-1 cursor-pointer">
+                        <label class="text-[8px] uppercase font-bold text-slate-500 block">İkinci El Donanımı (Silah / Kalkan)</label>
+                        <select id="set2-main-select" onchange="saveWeaponSetConfig(2)" class="w-full bg-slate-900 text-sky-200 font-bold text-[11px] rounded border border-slate-700 p-1 cursor-pointer">
                           <!-- Populated dynamically -->
                         </select>
                       </div>
-                      <div class="grid grid-cols-2 gap-1">
-                        <div>
-                          <label class="text-[8px] uppercase font-bold text-slate-500 block">Tutuş</label>
-                          <select id="set2-grip-select" onchange="saveWeaponSetConfig(2)" class="w-full bg-slate-900 text-slate-200 font-bold text-[10px] rounded border border-slate-700 p-1 cursor-pointer">
-                            <option value="1-Hand">1-El</option>
-                            <option value="2-Hand">2-El</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label class="text-[8px] uppercase font-bold text-slate-500 block">İkinci El / Kalkan</label>
-                          <select id="set2-offhand-select" onchange="saveWeaponSetConfig(2)" class="w-full bg-slate-900 text-sky-200 font-bold text-[10px] rounded border border-slate-700 p-1 cursor-pointer">
-                            <!-- Populated dynamically -->
-                          </select>
-                        </div>
+                      <div class="text-[9px] text-slate-400 italic pt-1">
+                        * Bu donanım, çift silahla dövüşte (TWF) veya kalkan savunmasında ikinci el olarak kuşanılır.
                       </div>
                     </div>
                   </div>
@@ -9878,35 +9826,127 @@
       }
     }
 
-    // --- WEAPON SETS SYSTEM (SEÇENEK B: ÇİFT SEÇİLEBİLİR VE ALT ALTA) ---
+    // --- WEAPON SETS SYSTEM (SEÇENEK B: KART 1 ANA EL, KART 2 İKİNCİ EL) ---
+    function findWeaponEverywhere(wepName) {
+      if (!wepName || wepName === 'None' || wepName === 'Yok' || wepName === 'Boş') return null;
+
+      // 1. Check character.weapons
+      let found = (character.weapons || []).find(w => w && w.name === wepName);
+      if (found) return found;
+
+      // 2. Check bodySlots.mainHand / offHand
+      if (character.bodySlots?.mainHand?.name === wepName) {
+        return character.bodySlots.mainHand;
+      }
+      if (character.bodySlots?.offHand?.name === wepName) {
+        return character.bodySlots.offHand;
+      }
+
+      // 3. Check gearPool
+      found = (character.gearPool || []).find(g => g && g.name === wepName);
+      if (found) return found;
+
+      // 4. Check masterDb if available
+      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        found = masterDb.find(item => item && (item.name === wepName || item.masterDbName === wepName));
+        if (found) return found;
+      }
+
+      // 5. Parametric D&D 3.5e standard weapon fallback
+      const lower = wepName.toLowerCase();
+      if (lower.includes('dagger') || lower.includes('hançer')) {
+        return {
+          name: wepName,
+          dice: '1d4',
+          critMin: 19,
+          critMult: 2,
+          attBonus: lower.includes('masterwork') ? 1 : 0,
+          dmgBonus: 0,
+          dmgType: 'Piercing',
+          isLight: true,
+          tags: ['finessable', 'light', 'thrown']
+        };
+      }
+      if (lower.includes('rapier')) {
+        return {
+          name: wepName,
+          dice: '1d6',
+          critMin: 18,
+          critMult: 2,
+          attBonus: lower.includes('+2') ? 2 : (lower.includes('+1') ? 1 : 0),
+          dmgBonus: lower.includes('+2') ? 2 : (lower.includes('+1') ? 1 : 0),
+          dmgType: 'Piercing',
+          isLight: false,
+          tags: ['finessable', 'piercing']
+        };
+      }
+      if (lower.includes('shortsword') || lower.includes('kısa kılıç')) {
+        return {
+          name: wepName,
+          dice: '1d6',
+          critMin: 19,
+          critMult: 2,
+          attBonus: 0,
+          dmgBonus: 0,
+          dmgType: 'Piercing',
+          isLight: true,
+          tags: ['finessable', 'light']
+        };
+      }
+      if (lower.includes('chain')) {
+        return {
+          name: wepName,
+          dice: '2d4',
+          critMin: 20,
+          critMult: 2,
+          attBonus: lower.includes('+2') ? 2 : 0,
+          dmgBonus: lower.includes('+2') ? 2 : 0,
+          dmgType: 'Piercing',
+          isLight: false,
+          tags: ['finessable', 'reach', 'trip']
+        };
+      }
+      return null;
+    }
+
     function ensureWeaponSetsData() {
       if (!character) return;
       if (!character.tactical) character.tactical = {};
       if (!character.tactical.weaponSets) {
         const mainWep = character.activeWeapon || character.weapons?.[0]?.name || 'Rapier +2';
-        const offHandShield = character.bodySlots?.offHand?.name || '+1 Buckler';
         const secondWep = (character.weapons || []).find(w => w.name !== mainWep)?.name || 'Dagger (Masterwork)';
 
         character.tactical.weaponSets = {
           activeSets: [1],
           activeSet: 1,
           set1: {
-            name: 'Rapier & Buckler',
+            name: 'Ana El',
             mainWeapon: mainWep,
-            grip: '1-Hand',
-            offHand: offHandShield
+            grip: '1-Hand'
           },
           set2: {
-            name: 'Çift Hançer (TWF)',
+            name: 'İkinci El',
             mainWeapon: secondWep,
-            grip: '1-Hand',
-            offHand: secondWep
+            grip: 'Off-Hand'
           }
         };
       } else {
         if (!Array.isArray(character.tactical.weaponSets.activeSets)) {
           const prev = character.tactical.weaponSets.activeSet;
           character.tactical.weaponSets.activeSets = prev === 'both' ? [1, 2] : (prev === 2 ? [2] : [1]);
+        }
+        if (!character.tactical.weaponSets.set1) {
+          character.tactical.weaponSets.set1 = { name: 'Ana El', mainWeapon: character.activeWeapon || 'Rapier +2', grip: '1-Hand' };
+        }
+        if (!character.tactical.weaponSets.set2) {
+          const secondWep = (character.weapons || []).find(w => w.name !== character.tactical.weaponSets.set1.mainWeapon)?.name || 'Dagger (Masterwork)';
+          character.tactical.weaponSets.set2 = { name: 'İkinci El', mainWeapon: secondWep, grip: 'Off-Hand' };
+        }
+        if (!character.tactical.weaponSets.set1.name || character.tactical.weaponSets.set1.name.includes('Buckler') || character.tactical.weaponSets.set1.name.includes('Set I')) {
+          character.tactical.weaponSets.set1.name = 'Ana El';
+        }
+        if (!character.tactical.weaponSets.set2.name || character.tactical.weaponSets.set2.name.includes('Set II') || character.tactical.weaponSets.set2.name.includes('Çift Hançer')) {
+          character.tactical.weaponSets.set2.name = 'İkinci El';
         }
       }
     }
@@ -9916,48 +9956,46 @@
       if (!character || !wepName || wepName === 'None' || wepName === 'Yok' || wepName === 'Boş') {
         return null;
       }
-      const allWeps = character.weapons || [];
-      let wep = allWeps.find(w => w.name === wepName);
 
-      // Check if item is in bodySlots.offHand (e.g. Buckler or Shield)
+      const lower = wepName.toLowerCase();
       const offItem = character.bodySlots?.offHand;
-      if (!wep && offItem && offItem.name === wepName) {
-        const isShield = offItem.category === 'Shield' || (offItem.desc && offItem.desc.toLowerCase().includes('shield'));
-        const isHeavy = (offItem.name || '').toLowerCase().includes('heavy');
-        const isBuckler = (offItem.name || '').toLowerCase().includes('buckler');
-        const shieldAc = offItem.shieldBonus || (isHeavy ? 2 : 1);
+      const isShieldItem = (offItem && offItem.name === wepName && (offItem.category === 'Shield' || (offItem.desc && offItem.desc.toLowerCase().includes('shield')))) || lower.includes('shield') || lower.includes('buckler') || lower.includes('kalkan');
+
+      if (isShieldItem) {
+        const isBuckler = lower.includes('buckler');
+        const isHeavy = lower.includes('heavy');
+        const shieldAc = offItem?.shieldBonus || offItem?.acBonus || (isHeavy ? 2 : 1);
         if (isBuckler) {
           return {
             dmgStr: 'Vuruş Yok',
             critStr: '-',
             dmgType: 'Kalkan',
             shieldAcText: `+${shieldAc} AC Kalkan`,
+            isShield: true,
             isBuckler: true
           };
         }
-        if (isShield) {
-          wep = {
-            name: offItem.name,
-            dice: isHeavy ? '1d4' : '1d3',
-            critMin: 20,
-            critMult: 2,
-            dmgType: 'Bludgeoning',
-            isLight: !isHeavy
-          };
-        }
-      }
-
-      if (wepName.toLowerCase().includes('buckler')) {
         return {
-          dmgStr: 'Vuruş Yok',
-          critStr: '-',
-          dmgType: 'Kalkan',
-          shieldAcText: '+1 AC Kalkan',
-          isBuckler: true
+          dmgStr: isHeavy ? '1d4' : '1d3',
+          critStr: '20 / x2',
+          dmgType: 'Ezici',
+          shieldAcText: `+${shieldAc} AC Kalkan`,
+          isShield: true,
+          isWeapon: true
         };
       }
 
-      if (wep && typeof RuleEngine !== 'undefined' && RuleEngine.evaluateWeaponAttack) {
+      let wep = findWeaponEverywhere(wepName);
+      if (!wep) {
+        return {
+          dmgStr: '1d6',
+          critStr: '20 / x2',
+          dmgType: 'Fiziksel',
+          isWeapon: true
+        };
+      }
+
+      if (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateWeaponAttack) {
         try {
           const paVal = parseInt(document.getElementById('power-attack-val')?.value) || 0;
           const flanking = document.getElementById('mod-flanking')?.checked ?? false;
@@ -9996,6 +10034,8 @@
             dmgStr,
             critStr,
             dmgType,
+            finesseMod: evalRes.attackStatMod,
+            isFinesse: evalRes.attackStatName && evalRes.attackStatName.includes('Weapon Finesse'),
             isWeapon: true
           };
         } catch (e) {
@@ -10019,47 +10059,45 @@
       const sets = character.tactical.weaponSets;
       const s1 = sets.set1 || {};
       const s2 = sets.set2 || {};
-      const activeSets = sets.activeSets || [sets.activeSet === 2 ? 2 : 1];
+      const activeSets = sets.activeSets || [1];
       const is1 = activeSets.includes(1);
       const is2 = activeSets.includes(2);
       const isDual = is1 && is2;
 
-      // Stats for Set 1
+      // Stats for Card 1: STRICTLY Main Hand only
       const s1MainStats = getWeaponCombatDisplayStats(s1.mainWeapon, s1.grip || '1-Hand', false);
-      const s1OffStats = getWeaponCombatDisplayStats(isDual ? (s2.mainWeapon || s1.offHand) : s1.offHand, 'Off-Hand', true);
 
-      // Stats for Set 2
-      const s2MainStats = getWeaponCombatDisplayStats(s2.mainWeapon, s2.grip || '1-Hand', isDual);
-      const s2OffStats = getWeaponCombatDisplayStats(s2.offHand, 'Off-Hand', true);
+      // Stats for Card 2: STRICTLY Off-Hand / Shield only
+      const s2OffStats = getWeaponCombatDisplayStats(s2.mainWeapon, 'Off-Hand', true);
+      const isCard2Shield = s2OffStats?.isShield;
 
-      // Populate cards (stacked vertically - alt alta)
-      container.innerHTML = `
-        <!-- SET 1 CARD -->
+      // Card 1 UI (Ana El)
+      const card1Html = `
+        <!-- KART 1: ANA EL -->
         <div onclick="activateWeaponSet(1)" class="p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between gap-2 ${is1 ? 'bg-gradient-to-r from-amber-950/60 to-slate-900/90 border-amber-500 text-amber-200 shadow-md shadow-amber-950/40 ring-1 ring-amber-500/40' : 'bg-slate-900/70 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'}">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5">
               <span class="text-xs ${is1 ? 'text-amber-400' : 'text-slate-500'}">⚔️</span>
-              <span class="text-xs font-black truncate ${is1 ? 'text-white' : 'text-slate-300'}">${s1.name || 'Set I'}</span>
-              ${is1 ? `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-amber-500/30 text-amber-300 border border-amber-500/50">${isDual ? 'AKTİF (Ana El)' : 'AKTİF'}</span>` : ''}
+              <span class="text-xs font-black truncate ${is1 ? 'text-white' : 'text-slate-300'}">${s1.name || 'Ana El'}</span>
+              ${is1 ? `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-amber-500/30 text-amber-300 border border-amber-500/50">AKTİF</span>` : ''}
             </div>
-            <!-- Donanım İsimleri -->
+            <!-- Donanım ve Tutuş -->
             <div class="text-[10px] text-slate-400 truncate mt-0.5 font-mono">
-              <span class="${is1 ? 'text-amber-300 font-bold' : 'text-slate-400 font-bold'}">${s1.mainWeapon || 'Yok'}</span> (${s1.grip || '1-El'}) + <span class="${is1 ? 'text-sky-300 font-bold' : 'text-slate-400 font-bold'}">${isDual ? (s2.mainWeapon || s1.offHand) : (s1.offHand || 'Boş')}</span>
+              <span class="${is1 ? 'text-amber-300 font-bold' : 'text-slate-400 font-bold'}">${s1.mainWeapon || 'Yok'}</span>
+              <span class="text-slate-500">(${s1.grip || '1-El'})</span>
             </div>
             <!-- Satır 1: Silahın Modifiye Hasarı -->
             <div class="text-[10px] font-mono mt-0.5 flex items-center gap-1.5 flex-wrap">
               <span class="text-slate-400 font-sans text-[9px] uppercase tracking-wider">Hasar:</span>
               <span class="font-bold ${is1 ? 'text-amber-300' : 'text-slate-300'}">${s1MainStats?.dmgStr || '1d6+3'}</span>
-              ${s1OffStats?.shieldAcText ? `<span class="text-slate-600">•</span><span class="text-emerald-400 text-[9px] font-sans font-bold">${s1OffStats.shieldAcText}</span>` : ''}
-              ${(!isDual && s1OffStats?.isWeapon) ? `<span class="text-slate-600">•</span><span class="text-slate-400 text-[9px] font-sans">Sol:</span><span class="font-bold text-sky-300">${s1OffStats.dmgStr}</span>` : ''}
+              ${s1MainStats?.isFinesse ? `<span class="text-emerald-400 text-[9px] font-sans font-bold">• DEX (+${s1MainStats.finesseMod}) Finesse</span>` : ''}
             </div>
             <!-- Satır 2: Kritik & Hasar Türü -->
             <div class="text-[9px] font-mono flex items-center gap-1.5 flex-wrap">
               <span class="text-slate-500 font-sans uppercase text-[8px] tracking-wider">Kritik &amp; Tür:</span>
-              <span class="${is1 ? 'text-white' : 'text-slate-300'} font-semibold">${s1MainStats?.critStr || '18-20 / x2'}</span>
+              <span class="${is1 ? 'text-white' : 'text-slate-300'} font-semibold font-mono">${s1MainStats?.critStr || '18-20 / x2'}</span>
               <span class="text-slate-600">•</span>
               <span class="${is1 ? 'text-amber-200/90' : 'text-slate-400'}">${s1MainStats?.dmgType || 'Delici'}</span>
-              ${(!isDual && s1OffStats?.isWeapon) ? `<span class="text-slate-600">|</span><span class="text-slate-400 text-[8px]">Sol:</span><span class="text-sky-300">${s1OffStats.critStr} (${s1OffStats.dmgType})</span>` : ''}
             </div>
           </div>
           <div class="shrink-0 text-right">
@@ -10068,33 +10106,44 @@
             </span>
           </div>
         </div>
+      `;
 
-        <!-- SET 2 CARD -->
+      // Card 2 UI (İkinci El / Kalkan)
+      const card2Html = `
+        <!-- KART 2: İKİNCİ EL -->
         <div onclick="activateWeaponSet(2)" class="p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between gap-2 ${is2 ? 'bg-gradient-to-r from-sky-950/60 to-slate-900/90 border-sky-500 text-sky-200 shadow-md shadow-sky-950/40 ring-1 ring-sky-500/40' : 'bg-slate-900/70 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'}">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5">
-              <span class="text-xs ${is2 ? 'text-sky-400' : 'text-slate-500'}">🗡️</span>
-              <span class="text-xs font-black truncate ${is2 ? 'text-white' : 'text-slate-300'}">${s2.name || 'Set II'}</span>
-              ${is2 ? `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-sky-500/30 text-sky-300 border border-sky-500/50">${isDual ? 'AKTİF (İkinci El - TWF)' : 'AKTİF'}</span>` : ''}
+              <span class="text-xs ${is2 ? 'text-sky-400' : 'text-slate-500'}">${isCard2Shield ? '🛡️' : '🗡️'}</span>
+              <span class="text-xs font-black truncate ${is2 ? 'text-white' : 'text-slate-300'}">${s2.name || 'İkinci El'}</span>
+              ${is2 ? `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-sky-500/30 text-sky-300 border border-sky-500/50">${isDual ? (isCard2Shield ? 'AKTİF (Kalkan)' : 'AKTİF (TWF)') : 'AKTİF'}</span>` : ''}
             </div>
-            <!-- Donanım İsimleri -->
+            <!-- Donanım ve Tür -->
             <div class="text-[10px] text-slate-400 truncate mt-0.5 font-mono">
-              <span class="${is2 ? 'text-sky-300 font-bold' : 'text-slate-400 font-bold'}">${s2.mainWeapon || 'Yok'}</span> (${s2.grip || '1-El'}) + <span class="${is2 ? 'text-sky-300 font-bold' : 'text-slate-400 font-bold'}">${s2.offHand || 'Boş'}</span>
+              <span class="${is2 ? 'text-sky-300 font-bold' : 'text-slate-400 font-bold'}">${s2.mainWeapon || 'Yok'}</span>
+              <span class="text-slate-500">(${isCard2Shield ? 'Kalkan' : 'İkinci El'})</span>
             </div>
-            <!-- Satır 1: Silahın Modifiye Hasarı -->
+            <!-- Satır 1: Silah Hasarı veya Kalkan Koruması -->
             <div class="text-[10px] font-mono mt-0.5 flex items-center gap-1.5 flex-wrap">
-              <span class="text-slate-400 font-sans text-[9px] uppercase tracking-wider">Hasar:</span>
-              <span class="font-bold ${is2 ? 'text-sky-300' : 'text-slate-300'}">${s2MainStats?.dmgStr || '1d4'}</span>
-              ${s2OffStats?.shieldAcText ? `<span class="text-slate-600">•</span><span class="text-emerald-400 text-[9px] font-sans font-bold">${s2OffStats.shieldAcText}</span>` : ''}
-              ${s2OffStats?.isWeapon ? `<span class="text-slate-600">•</span><span class="text-slate-400 text-[9px] font-sans">Sol:</span><span class="font-bold text-sky-300">${s2OffStats.dmgStr}</span>` : ''}
+              ${isCard2Shield ? `
+                <span class="text-slate-400 font-sans text-[9px] uppercase tracking-wider">Koruma:</span>
+                <span class="font-bold text-emerald-400">${s2OffStats?.shieldAcText || '+1 AC Kalkan'}</span>
+              ` : `
+                <span class="text-slate-400 font-sans text-[9px] uppercase tracking-wider">Hasar:</span>
+                <span class="font-bold ${is2 ? 'text-sky-300' : 'text-slate-300'}">${s2OffStats?.dmgStr || '1d4'}</span>
+              `}
             </div>
             <!-- Satır 2: Kritik & Hasar Türü -->
             <div class="text-[9px] font-mono flex items-center gap-1.5 flex-wrap">
-              <span class="text-slate-500 font-sans uppercase text-[8px] tracking-wider">Kritik &amp; Tür:</span>
-              <span class="${is2 ? 'text-white' : 'text-slate-300'} font-semibold">${s2MainStats?.critStr || '19-20 / x2'}</span>
-              <span class="text-slate-600">•</span>
-              <span class="${is2 ? 'text-sky-200/90' : 'text-slate-400'}">${s2MainStats?.dmgType || 'Delici'}</span>
-              ${s2OffStats?.isWeapon ? `<span class="text-slate-600">|</span><span class="text-slate-400 text-[8px]">Sol:</span><span class="text-sky-300">${s2OffStats.critStr} (${s2OffStats.dmgType})</span>` : ''}
+              ${isCard2Shield ? `
+                <span class="text-slate-500 font-sans uppercase text-[8px] tracking-wider">Tür:</span>
+                <span class="text-slate-300 font-medium">Kalkan Savunması</span>
+              ` : `
+                <span class="text-slate-500 font-sans uppercase text-[8px] tracking-wider">Kritik &amp; Tür:</span>
+                <span class="${is2 ? 'text-white' : 'text-slate-300'} font-semibold font-mono">${s2OffStats?.critStr || '19-20 / x2'}</span>
+                <span class="text-slate-600">•</span>
+                <span class="${is2 ? 'text-sky-200/90' : 'text-slate-400'}">${s2OffStats?.dmgType || 'Delici'}</span>
+              `}
             </div>
           </div>
           <div class="shrink-0 text-right">
@@ -10105,18 +10154,7 @@
         </div>
       `;
 
-      // Update active summary text
-      const sumEl = document.getElementById('weapon-set-active-summary');
-      if (sumEl) {
-        if (isDual) {
-          sumEl.innerHTML = `<span class="text-amber-400 font-bold">⚔️ Çift Silah (TWF):</span> ${s1.mainWeapon || 'Yok'} <span class="text-slate-400 text-[10px]">(Ana El)</span> + ${s2.mainWeapon || 'Yok'} <span class="text-sky-300 text-[10px]">(İkinci El)</span>`;
-        } else if (is2) {
-          sumEl.textContent = `${s2.mainWeapon || 'Yok'} (${s2.grip || '1-El'}) • ${s2.offHand || 'Boş El'}`;
-        } else {
-          sumEl.textContent = `${s1.mainWeapon || 'Yok'} (${s1.grip || '1-El'}) • ${s1.offHand || 'Boş El'}`;
-        }
-      }
-
+      container.innerHTML = card1Html + card2Html;
       populateWeaponSetsEditorDropdowns();
     }
 
@@ -10130,16 +10168,15 @@
       const idx = sets.activeSets.indexOf(setNum);
       if (idx >= 0) {
         if (sets.activeSets.length > 1) {
-          // Both were active, deselect this one
+          // If both were active, toggle off this set
           sets.activeSets.splice(idx, 1);
         } else {
-          // Only this set was active: if user clicks it again, keep active with informative toast
           if (typeof showToast === 'function') {
-            showToast(setNum === 1 ? 'Set I aktif. Çift silah (TWF) için Set II\'yi de tıklayarak ekleyin.' : 'Set II aktif. Çift silah (TWF) için Set I\'i de tıklayarak ekleyin.', 'info');
+            showToast(setNum === 1 ? 'Ana El devrede. Çift silahla dövüşmek (TWF) veya kalkan eklemek için İkinci El kartına tıklayın.' : 'İkinci El tek başına devrede.', 'info');
           }
         }
       } else {
-        // Was inactive, activate it! (Both are now active -> TWF!)
+        // Toggle on: both are now active!
         sets.activeSets.push(setNum);
       }
 
@@ -10158,45 +10195,53 @@
       const is2 = sets.activeSets.includes(2);
       const isDual = is1 && is2;
 
-      let twfMod = (character.activeModifiers || []).find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Çift Silah')));
+      if (!character.activeModifiers) character.activeModifiers = [];
+      let twfMod = character.activeModifiers.find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Çift Silah')));
+      if (!twfMod) {
+        twfMod = {
+          name: 'Çift Silah (TWF)',
+          source: 'Combat',
+          bonusAtk: 0,
+          dice: '',
+          type: 'TWF',
+          active: false,
+          notes: 'İkinci El ile Ek Vuruş (RAW Çift Silah)'
+        };
+        character.activeModifiers.push(twfMod);
+      }
 
       if (isDual) {
-        // BOTH SETS ACTIVE -> DUAL WEAPON / TWF MODE
+        // BOTH ACTIVE: Main Hand (Card 1) + Off Hand (Card 2)
         character.activeWeapon = sets.set1.mainWeapon;
-        // In dual set mode: Set 1 is main hand, Set 2 is off-hand
-        character.activeOffHand = sets.set2.mainWeapon || sets.set2.offHand;
+        character.activeOffHand = sets.set2.mainWeapon;
 
         const gripSelect = document.getElementById('active-grip-select');
         if (gripSelect) gripSelect.value = '1-Hand';
+        if (sets.set1) sets.set1.grip = '1-Hand';
 
-        if (twfMod) {
-          twfMod.active = true;
-        }
+        // Check if Card 2 is a weapon (not pure shield)
+        const offItemStats = getWeaponCombatDisplayStats(sets.set2.mainWeapon, 'Off-Hand', true);
+        const isOffWeapon = offItemStats && !offItemStats.isBuckler && offItemStats.dmgType !== 'Kalkan';
+
+        twfMod.active = isOffWeapon;
       } else if (is1) {
-        // ONLY SET 1 ACTIVE
+        // ONLY CARD 1 ACTIVE: Single weapon combat, Off-Hand is None
         character.activeWeapon = sets.set1.mainWeapon;
-        character.activeOffHand = sets.set1.offHand;
+        character.activeOffHand = 'None';
 
         const gripSelect = document.getElementById('active-grip-select');
         if (gripSelect) gripSelect.value = sets.set1.grip || '1-Hand';
 
-        const isSecondWeapon = (character.weapons || []).some(w => w.name === sets.set1.offHand && w.name !== 'None');
-        if (twfMod) {
-          twfMod.active = isSecondWeapon;
-        }
+        twfMod.active = false;
       } else if (is2) {
-        // ONLY SET 2 ACTIVE
+        // ONLY CARD 2 ACTIVE AS PRIMARY WEAPON
         character.activeWeapon = sets.set2.mainWeapon;
-        character.activeOffHand = sets.set2.offHand;
+        character.activeOffHand = 'None';
 
         const gripSelect = document.getElementById('active-grip-select');
         if (gripSelect) gripSelect.value = sets.set2.grip || '1-Hand';
 
-        const isSecondWeapon = (character.weapons || []).some(w => w.name === sets.set2.offHand && w.name !== 'None');
-        const isNamedTWF = sets.set2.name && (sets.set2.name.includes('TWF') || sets.set2.name.includes('Çift'));
-        if (twfMod) {
-          twfMod.active = isSecondWeapon || isNamedTWF;
-        }
+        twfMod.active = false;
       }
 
       const wepSelect = document.getElementById('active-weapon-select');
@@ -10233,9 +10278,9 @@
       const allWeps = character.weapons || [];
       const wepOptionsHtml = allWeps.map(w => `<option value="${w.name}">${w.name}</option>`).join('');
 
-      // Off-hand options (None + shields + weapons)
+      // Off-hand / Card 2 options: shields + weapons
       const offHandShield = character.bodySlots?.offHand;
-      let offOptionsHtml = '<option value="None">Yok / Boş (Tek Silah)</option>';
+      let offOptionsHtml = '';
       if (offHandShield && offHandShield.name && offHandShield.name !== '-') {
         offOptionsHtml += `<option value="${offHandShield.name}">${offHandShield.name} (Kalkan)</option>`;
       }
@@ -10243,7 +10288,7 @@
         offOptionsHtml += `<option value="${w.name}">${w.name} (Silah)</option>`;
       });
 
-      // Set 1
+      // Card 1
       const s1Main = document.getElementById('set1-main-select');
       if (s1Main) {
         s1Main.innerHTML = wepOptionsHtml;
@@ -10251,29 +10296,17 @@
       }
       const s1Grip = document.getElementById('set1-grip-select');
       if (s1Grip) s1Grip.value = sets.set1.grip || '1-Hand';
-      const s1Off = document.getElementById('set1-offhand-select');
-      if (s1Off) {
-        s1Off.innerHTML = offOptionsHtml;
-        s1Off.value = sets.set1.offHand;
-      }
       const s1Name = document.getElementById('set1-name-input');
-      if (s1Name) s1Name.value = sets.set1.name || 'Set I';
+      if (s1Name) s1Name.value = sets.set1.name || 'Ana El';
 
-      // Set 2
+      // Card 2
       const s2Main = document.getElementById('set2-main-select');
       if (s2Main) {
-        s2Main.innerHTML = wepOptionsHtml;
+        s2Main.innerHTML = offOptionsHtml;
         s2Main.value = sets.set2.mainWeapon;
       }
-      const s2Grip = document.getElementById('set2-grip-select');
-      if (s2Grip) s2Grip.value = sets.set2.grip || '1-Hand';
-      const s2Off = document.getElementById('set2-offhand-select');
-      if (s2Off) {
-        s2Off.innerHTML = offOptionsHtml;
-        s2Off.value = sets.set2.offHand;
-      }
       const s2Name = document.getElementById('set2-name-input');
-      if (s2Name) s2Name.value = sets.set2.name || 'Set II';
+      if (s2Name) s2Name.value = sets.set2.name || 'İkinci El';
     }
 
     function saveWeaponSetConfig(setNum) {
@@ -10282,24 +10315,16 @@
       if (!sets) return;
 
       if (setNum === 1) {
-        sets.set1.name = document.getElementById('set1-name-input')?.value || 'Set I';
+        sets.set1.name = document.getElementById('set1-name-input')?.value || 'Ana El';
         sets.set1.mainWeapon = document.getElementById('set1-main-select')?.value || sets.set1.mainWeapon;
         sets.set1.grip = document.getElementById('set1-grip-select')?.value || '1-Hand';
-        sets.set1.offHand = document.getElementById('set1-offhand-select')?.value || 'None';
       } else {
-        sets.set2.name = document.getElementById('set2-name-input')?.value || 'Set II';
+        sets.set2.name = document.getElementById('set2-name-input')?.value || 'İkinci El';
         sets.set2.mainWeapon = document.getElementById('set2-main-select')?.value || sets.set2.mainWeapon;
-        sets.set2.grip = document.getElementById('set2-grip-select')?.value || '1-Hand';
-        sets.set2.offHand = document.getElementById('set2-offhand-select')?.value || 'None';
+        sets.set2.grip = 'Off-Hand';
       }
 
-      // If updating currently active set, re-apply
-      if (sets.activeSets && sets.activeSets.includes(setNum)) {
-        applyWeaponSetsConfiguration();
-      } else {
-        saveStateToStorage(false);
-        renderWeaponSetsUI();
-      }
+      applyWeaponSetsConfiguration();
     }
 
     function hasFlurryAbility(char) {
@@ -10540,65 +10565,39 @@
 
     function getResolvedOffHandWeapon(character) {
       const currentOffHandName = character.activeOffHand;
-      if (currentOffHandName && currentOffHandName !== 'None') {
-        const fromWeps = (character.weapons || []).find(w => w.name === currentOffHandName);
-        if (fromWeps) return { ...fromWeps, grip: 'Off-Hand' };
-
-        const offHandItem = character.bodySlots?.offHand;
-        if (offHandItem && offHandItem.name === currentOffHandName) {
-          const isShield = offHandItem.category === 'Shield' || (offHandItem.desc && offHandItem.desc.toLowerCase().includes('shield'));
-          const isHeavy = (offHandItem.name || '').toLowerCase().includes('heavy');
-          const isBuckler = (offHandItem.name || '').toLowerCase().includes('buckler');
-          return {
-            name: offHandItem.name + (isShield ? ' (Kalkan Vuruşu)' : ''),
-            grip: 'Off-Hand',
-            dice: isShield ? (isHeavy ? '1d4' : (isBuckler ? '1d3' : '1d3')) : (offHandItem.dice || '1d4'),
-            critMin: 20,
-            critMult: 2,
-            attBonus: offHandItem.attBonus || 0,
-            dmgBonus: offHandItem.dmgBonus || 0,
-            dmgType: isShield ? 'Bludgeoning' : (offHandItem.dmgType || 'Piercing'),
-            isLight: !isHeavy,
-            tags: ['off-hand', isShield ? 'shield-bash' : 'light']
-          };
-        }
+      if (!currentOffHandName || currentOffHandName === 'None' || currentOffHandName === 'Yok' || currentOffHandName === 'Boş') {
+        return null;
       }
 
-      const altWeapon = (character.weapons || []).find(w => w.name !== character.activeWeapon);
-      if (altWeapon) {
-        return { ...altWeapon, grip: 'Off-Hand' };
-      }
+      const fromWeps = (character.weapons || []).find(w => w.name === currentOffHandName);
+      if (fromWeps) return { ...fromWeps, grip: 'Off-Hand' };
 
       const offHandItem = character.bodySlots?.offHand;
-      if (offHandItem && offHandItem.name && offHandItem.name !== '-') {
+      if (offHandItem && offHandItem.name === currentOffHandName) {
         const isShield = offHandItem.category === 'Shield' || (offHandItem.desc && offHandItem.desc.toLowerCase().includes('shield'));
         const isHeavy = (offHandItem.name || '').toLowerCase().includes('heavy');
+        const isBuckler = (offHandItem.name || '').toLowerCase().includes('buckler');
         return {
           name: offHandItem.name + (isShield ? ' (Kalkan Vuruşu)' : ''),
           grip: 'Off-Hand',
-          dice: isHeavy ? '1d4' : '1d3',
+          dice: isShield ? (isHeavy ? '1d4' : (isBuckler ? '1d3' : '1d3')) : (offHandItem.dice || '1d4'),
           critMin: 20,
           critMult: 2,
           attBonus: offHandItem.attBonus || 0,
           dmgBonus: offHandItem.dmgBonus || 0,
-          dmgType: isShield ? 'Bludgeoning' : 'Piercing',
+          dmgType: isShield ? 'Bludgeoning' : (offHandItem.dmgType || 'Piercing'),
           isLight: !isHeavy,
-          tags: ['off-hand']
+          isBuckler,
+          tags: ['off-hand', isShield ? 'shield-bash' : 'light']
         };
       }
 
-      return {
-        name: 'Unarmed Strike (Off-Hand)',
-        grip: 'Off-Hand',
-        dice: '1d3',
-        critMin: 20,
-        critMult: 2,
-        attBonus: 0,
-        dmgBonus: 0,
-        dmgType: 'Bludgeoning',
-        isLight: true,
-        tags: ['unarmed', 'light']
-      };
+      const everywhere = findWeaponEverywhere(currentOffHandName);
+      if (everywhere) {
+        return { ...everywhere, grip: 'Off-Hand' };
+      }
+
+      return null;
     }
 
     function computeCombatAttackChain(character) {
@@ -10614,7 +10613,12 @@
       const hg = document.getElementById('mod-higher-ground') ? document.getElementById('mod-higher-ground').checked : (character.tactical?.higherGround ?? false);
 
       const activeMods = (character.activeModifiers || []).filter(m => m && m.active);
-      const isTWF = activeMods.some(m => (m.name || '').includes('TWF') || (m.name || '').includes('Çift Silah'));
+      const sets = character.tactical?.weaponSets;
+      const isDualFromSets = sets && Array.isArray(sets.activeSets) && sets.activeSets.includes(1) && sets.activeSets.includes(2);
+      const offHandWep = getResolvedOffHandWeapon(character);
+      const hasOffHandWeapon = !!(offHandWep && offHandWep.name && offHandWep.name !== 'None' && !offHandWep.isBuckler && offHandWep.dmgType !== 'Kalkan');
+
+      const isTWF = (isDualFromSets && hasOffHandWeapon) || (activeMods.some(m => (m.name || '').includes('TWF') || (m.name || '').includes('Çift Silah')) && hasOffHandWeapon);
       const isFlurry = activeMods.some(m => (m.name || '').includes('Flurry') || (m.name || '').includes('Seri Vuruş'));
 
       const nonChainMods = activeMods.filter(m => m && m.name && !m.name.includes('TWF') && !m.name.includes('Çift Silah') && !m.name.includes('Flurry') && !m.name.includes('Seri Vuruş'));
@@ -10635,12 +10639,11 @@
       const hasGTWF = feats.some(f => f.includes('greater two-weapon fighting'));
       const hasOversized = feats.some(f => f.includes('oversized two-weapon fighting'));
 
-      const offHandWep = getResolvedOffHandWeapon(character);
-      const isOffHandLight = offHandWep.isLight || hasOversized;
+      const isOffHandLight = offHandWep ? (offHandWep.isLight || hasOversized) : false;
 
       let twfMainPenalty = 0;
       let twfOffPenalty = 0;
-      if (isTWF && grip !== '2-Hand') {
+      if (isTWF && grip !== '2-Hand' && offHandWep) {
         if (hasTWF) {
           twfMainPenalty = isOffHandLight ? -2 : -4;
           twfOffPenalty = isOffHandLight ? -2 : -4;
