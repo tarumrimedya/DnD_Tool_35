@@ -754,15 +754,6 @@
                                 "type":  "TWF",
                                 "active":  false,
                                 "notes":  "İkinci El ile Ek Vuruş (RAW Çift Silah)"
-                            },
-                            {
-                                "name":  "Seri Vuruş (Flurry)",
-                                "source":  "Monk",
-                                "bonusAtk":  0,
-                                "dice":  "",
-                                "type":  "Flurry",
-                                "active":  false,
-                                "notes":  "Full Attack: +1 Ek Vuruş (-2 Ceza)"
                             }
                         ],
     "spellcasting":  {

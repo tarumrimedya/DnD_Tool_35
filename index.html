@@ -9751,6 +9751,14 @@
       saveStateToStorage();
     }
 
+    function hasFlurryAbility(char) {
+      if (!char) return false;
+      const hasMonk = (char.classes || []).some(c => (c.name || '').toLowerCase().includes('monk'));
+      const hasSpecial = (char.specialAbilities || []).some(a => (typeof a === 'string' ? a : (a.name || '')).toLowerCase().includes('flurry'));
+      const hasFeat = (char.feats || []).some(f => (typeof f === 'string' ? f : (f.name || '')).toLowerCase().includes('flurry'));
+      return hasMonk || hasSpecial || hasFeat;
+    }
+
     function ensureActiveModifiersPool() {
       if (!Array.isArray(character.activeModifiers)) {
         character.activeModifiers = [];
@@ -9760,13 +9768,28 @@
         { name: 'Mountain Hammer', source: 'Maneuver', bonusAtk: 0, dice: '2d6', type: 'Slashing', active: false, notes: 'DR ve Sertliği aşar' },
         { name: 'Blade of Blood', source: 'Spell', bonusAtk: 0, dice: '3d6', type: 'Negative Energy', active: false, notes: '+3d6 Hasar' },
         { name: 'Çift Silah (TWF)', source: 'Combat', bonusAtk: 0, dice: '', type: 'TWF', active: false, notes: 'İkinci El ile Ek Vuruş (RAW Çift Silah)' },
-        { name: 'Seri Vuruş (Flurry)', source: 'Monk', bonusAtk: 0, dice: '', type: 'Flurry', active: false, notes: 'Full Attack: +1 Ek Vuruş (-2 Ceza)' },
         { name: 'Witchlight (+2 Hasar)', source: 'Item', bonusAtk: 0, bonusDmg: 2, dice: '', type: 'Untyped', active: false, notes: '+2 Melee Hasarı (1 Tur)' },
         { name: 'Witchlight (+4 Hasar)', source: 'Item', bonusAtk: 0, bonusDmg: 4, dice: '', type: 'Untyped', active: false, notes: '+4 Melee Hasarı (1 Tur)' },
         { name: 'Boots of Speed (Haste)', source: 'Item', bonusAtk: 1, dice: '', type: 'Untyped', active: false, notes: '+1 Saldırı, +1 AC, Ekstra Vuruş' },
         { name: 'Steel Wind', source: 'Maneuver', bonusAtk: 0, dice: '', type: 'Martial', active: false, notes: '2 Farklı Hedefe Saldırı' },
         { name: 'Sneak Attack', source: 'Feat', bonusAtk: 0, dice: '1d6', type: 'Precision', active: false, notes: '+1d6 Hassas Hasar' }
       ];
+
+      // Flurry (Seri Vuruş) yalnız karakterde Monk sınıfı veya Flurry yeteneği varsa eklenir
+      if (hasFlurryAbility(character)) {
+        defaultPool.push({
+          name: 'Seri Vuruş (Flurry)',
+          source: 'Monk',
+          bonusAtk: 0,
+          dice: '',
+          type: 'Flurry',
+          active: false,
+          notes: 'Full Attack: +1 Ek Vuruş (-2 Ceza)'
+        });
+      } else {
+        // Karakterde yetenek yoksa çekmecede yer kaplamaması için activeModifiers listesinden temizle
+        character.activeModifiers = character.activeModifiers.filter(m => !m.name.includes('Flurry') && !m.name.includes('Seri Vuruş'));
+      }
 
       defaultPool.forEach(def => {
         const existing = character.activeModifiers.find(m => m.name.toLowerCase() === def.name.toLowerCase());
