@@ -9810,7 +9810,7 @@
 
       const flanking = document.getElementById('mod-flanking')?.checked ?? false;
       const charge = document.getElementById('mod-charge')?.checked ?? false;
-      const hg = document.getElementById('mod-higher-ground')?.checked ?? false;
+      const hg = document.getElementById('mod-higher-ground') ? document.getElementById('mod-higher-ground').checked : (character.tactical?.higherGround ?? false);
       const twfMod = (character.activeModifiers || []).find(m => m.name.includes('TWF') || m.name.includes('Çift Silah'));
       const isTWF = twfMod?.active ?? false;
 
@@ -9848,8 +9848,9 @@
       // Rows 2+ : Dynamic modifiers (excluding TWF which sits in slot 3)
       const isExpanded = !!window.combatModifiersGridExpanded;
       const dynamicMods = (character.activeModifiers || []).filter(m => !m.name.includes('TWF') && !m.name.includes('Çift Silah'));
-      // In 3x3 layout: 3 top + 5 dynamic + 1 Higher Gr. = 9 cards total!
-      const visibleCount = isExpanded ? dynamicMods.length : Math.min(5, dynamicMods.length);
+      // In 3x3 layout when collapsed: 3 top + 6 dynamic = 9 cards total!
+      // When expanded: all dynamic mods are rendered, plus Higher Gr. at the very end
+      const visibleCount = isExpanded ? dynamicMods.length : Math.min(6, dynamicMods.length);
       const visibleMods = dynamicMods.slice(0, visibleCount);
 
       const dynamicCardsHtml = visibleMods.map((mod) => {
@@ -9887,8 +9888,8 @@
         `;
       });
 
-      // Higher Ground Card: Always at the very end of the list (her zaman en sonda)
-      const higherGroundCardHtml = `
+      // Higher Ground Card: Only rendered in the expanded drawer at the very end
+      const higherGroundCardHtml = isExpanded ? `
         <label class="bg-slate-900 border ${hg ? 'border-amber-500 bg-amber-950/40 text-amber-200 shadow-sm' : 'border-slate-800 text-slate-300'} hover:border-amber-500/60 rounded-lg p-2 cursor-pointer transition flex flex-col justify-between text-center select-none min-h-[64px]">
           <div>
             <div class="text-[11px] font-bold text-amber-400 leading-tight">Higher Gr.</div>
@@ -9896,19 +9897,19 @@
           </div>
           <input type="checkbox" id="mod-higher-ground" ${hg ? 'checked' : ''} onchange="onFixedModifierToggle()" class="mt-1 mx-auto w-3.5 h-3.5 rounded text-amber-500 focus:ring-0 cursor-pointer">
         </label>
-      `;
+      ` : '';
 
       grid.innerHTML = fixedCardsHtml.join('') + dynamicCardsHtml.join('') + higherGroundCardHtml;
 
-      // Show/hide expand button if dynamic mods > 5
+      // Show/hide expand button if dynamic mods > 6
       const expandBar = document.getElementById('combat-modifiers-expand-bar');
       const expandBtn = document.getElementById('btn-toggle-expand-mods');
       if (expandBar && expandBtn) {
-        if (dynamicMods.length > 5) {
+        if (dynamicMods.length > 6) {
           expandBar.classList.remove('hidden');
           expandBtn.innerHTML = isExpanded 
             ? '<span>▴ Daha Az Göster (3x3 Daralt)</span>' 
-            : `<span>▾ Daha Fazla Göster (+${dynamicMods.length - 5} Modifiyer)</span>`;
+            : `<span>▾ Daha Fazla Göster (+${dynamicMods.length - 6} Modifiyer)</span>`;
         } else {
           expandBar.classList.add('hidden');
         }
@@ -9921,8 +9922,14 @@
     }
 
     function onFixedModifierToggle() {
+      const hgEl = document.getElementById('mod-higher-ground');
+      if (hgEl) {
+        if (!character.tactical) character.tactical = {};
+        character.tactical.higherGround = hgEl.checked;
+      }
       recalculateOffense();
       renderOffenseModifiersGrid();
+      saveStateToStorage(false);
     }
 
     function moveModifierOrder(idx, delta, event) {
@@ -10014,7 +10021,7 @@
       const paVal = parseInt(document.getElementById('power-attack-val')?.value) || 0;
       const flanking = document.getElementById('mod-flanking')?.checked ?? false;
       const charge = document.getElementById('mod-charge')?.checked ?? false;
-      const hg = document.getElementById('mod-higher-ground')?.checked ?? false;
+      const hg = document.getElementById('mod-higher-ground') ? document.getElementById('mod-higher-ground').checked : (character.tactical?.higherGround ?? false);
 
       const activeMods = (character.activeModifiers || []).filter(m => m.active);
       const isTWF = activeMods.some(m => (m.name || '').includes('TWF') || (m.name || '').includes('Çift Silah'));
@@ -10225,7 +10232,7 @@
       const paVal = parseInt(document.getElementById('power-attack-val')?.value) || 0;
       const flanking = document.getElementById('mod-flanking')?.checked ?? false;
       const charge = document.getElementById('mod-charge')?.checked ?? false;
-      const hg = document.getElementById('mod-higher-ground')?.checked ?? false;
+      const hg = document.getElementById('mod-higher-ground') ? document.getElementById('mod-higher-ground').checked : (character.tactical?.higherGround ?? false);
 
       const activeMods = (character.activeModifiers || []).filter(m => m.active);
       const nonChainMods = activeMods.filter(m => !m.name.includes('TWF') && !m.name.includes('Çift Silah') && !m.name.includes('Flurry') && !m.name.includes('Seri Vuruş'));
@@ -11669,7 +11676,7 @@
         const pa = parseInt(document.getElementById('power-attack-val')?.value) || 0;
         const fl = document.getElementById('mod-flanking')?.checked ?? false;
         const ch = document.getElementById('mod-charge')?.checked ?? false;
-        const hg = document.getElementById('mod-higher-ground')?.checked ?? false;
+        const hg = document.getElementById('mod-higher-ground') ? document.getElementById('mod-higher-ground').checked : (character.tactical?.higherGround ?? false);
         const activeMods = (character.activeModifiers || []).filter(m => m.active);
 
         const summary = buildProfileSummary(pa, fl, ch, hg, activeMods);
@@ -11702,7 +11709,7 @@
       const pa = parseInt(document.getElementById('power-attack-val')?.value) || 0;
       const fl = document.getElementById('mod-flanking')?.checked ?? false;
       const ch = document.getElementById('mod-charge')?.checked ?? false;
-      const hg = document.getElementById('mod-higher-ground')?.checked ?? false;
+      const hg = document.getElementById('mod-higher-ground') ? document.getElementById('mod-higher-ground').checked : (character.tactical?.higherGround ?? false);
       const activeMods = (character.activeModifiers || []).filter(m => m.active);
 
       const newProf = {
