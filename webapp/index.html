@@ -10698,8 +10698,9 @@
       if (atkRowContainer) {
         const isLocked = !!character.tactical?.totalDefense;
         const count = attackChain.length;
-        // If 4 or more attacks, each button takes 25% basis so max 4 attacks sit on line 1, and > 4 wrap to line 2
-        const btnBasisClass = (count >= 4) ? 'basis-[calc(25%-5px)] flex-1 min-w-[55px]' : 'flex-1 min-w-[58px]';
+        const totalBtns = count + 1;
+        // All buttons including Full Attack share the exact same width basis and padding!
+        const btnBasisClass = (totalBtns >= 4) ? 'basis-[calc(25%-5px)] flex-1 min-w-[58px]' : 'flex-1 min-w-[58px]';
 
         const buttonsHtml = attackChain.map((item, idx) => {
           let colorBorder = 'border-emerald-500/50 hover:border-emerald-400';
@@ -10732,12 +10733,13 @@
           `;
         }).join('');
 
-        // Full Attack button scaling: if 4 attacks, it takes full-width on row 2; if > 4, it shares row 2 with 5th+ attacks
-        const fullAttackWidthClass = (count === 4) ? 'w-full mt-0.5' : (count > 4 ? 'flex-1 min-w-[120px]' : 'shrink-0');
         const fullAttackBtn = `
-          <button type="button" onclick="executeFullAttackRoll(false)" class="${fullAttackWidthClass} py-2 px-3 md:px-4 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-600 active:scale-95 text-white font-black text-xs md:text-sm rounded-lg shadow-md border border-red-400/50 flex items-center justify-center gap-1.5 transition cursor-pointer" title="Tüm ardışık vuruşları (Full Attack) sırayla zarla">
-            <span>⚔️</span>
-            <span class="whitespace-nowrap">Full Attack</span>
+          <button type="button" onclick="executeFullAttackRoll(false)" class="${btnBasisClass} py-1.5 px-1 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-600 active:scale-95 text-white rounded-lg shadow-md border border-red-400/50 flex flex-col items-center justify-center transition cursor-pointer text-center shrink-0 group" title="Tüm ardışık vuruşları (Full Attack) sırayla zarla">
+            <div class="text-[9px] uppercase tracking-wider text-red-100/90 font-sans truncate flex items-center justify-center gap-0.5">
+              <span>⚔️</span>
+              <span class="truncate">Full</span>
+            </div>
+            <div class="text-xs sm:text-sm md:text-base font-black text-white font-mono leading-tight truncate">Attack</div>
           </button>
         `;
 
