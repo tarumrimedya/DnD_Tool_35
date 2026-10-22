@@ -11675,29 +11675,18 @@
                          },
         "chargeOptions":  [
                               {
-                                  "label":  "1 Tur Haste (Saldırı +1, AC +1, Hız +30 ft)",
+                                  "label":  "Cast (1 Tur Harca \u0026 Aktif Et)",
+                                  "action":  "cast",
                                   "cost":  1,
                                   "type":  "haste"
+                              },
+                              {
+                                  "label":  "Discharge (Etkiyi Sonlandır)",
+                                  "action":  "discharge",
+                                  "cost":  0,
+                                  "type":  "discharge"
                               }
                           ]
-    },
-    {
-        "name":  "↳ Boots of Speed (1 Tur Haste)",
-        "parent":  "Boots of Speed",
-        "type":  "Magic Item",
-        "slot":  "Boots",
-        "cost":  12000,
-        "weight":  1,
-        "source":  "DMG p.250",
-        "benefit":  "Spend 1 round of haste effect (gain +1 attack, +1 dodge AC, +1 Reflex saves, +30 ft speed, extra attack on full attack).",
-        "chargeCost":  1,
-        "effectType":  "haste",
-        "role":  "Buff",
-        "actionType":  "Free",
-        "tags":  [
-                     "buff",
-                     "haste"
-                 ]
     },
     {
         "name":  "Belt of Battle",

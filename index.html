@@ -10581,9 +10581,46 @@
           const isHeal = lower.includes('heal');
           const isSpeed = lower.includes('speed') || lower.includes('boot');
           const icon = isHeal ? '💚' : (isSpeed ? '🏃' : '⚡');
+          const isRoundUnit = (dc.unit === 'rounds' || dc.unit === 'tur' || dc.unit === 'turn');
+          const active = isRoundUnit && isItemBuffActive(item);
+
+          if (isRoundUnit) {
+            return `
+              <div class="bg-slate-900/90 border ${active ? 'border-cyan-500/80 shadow-cyan-950/50 shadow-md ring-1 ring-cyan-500/30' : 'border-amber-900/50 hover:border-amber-500/50'} rounded-lg p-2 flex items-center justify-between gap-2 shadow-sm transition">
+                <div class="min-w-0 flex-1">
+                  <div class="text-xs font-bold text-amber-200 flex items-center gap-1.5 truncate">
+                    <span>${icon}</span>
+                    <span class="truncate">${item.name}</span>
+                    ${isSlot ? `<span class="text-[8px] font-mono px-1 py-0.2 rounded bg-slate-800 text-amber-300 border border-slate-700 uppercase">${slotKey}</span>` : ''}
+                    ${active ? `<span class="px-1.5 py-0.2 rounded text-[8px] font-extrabold bg-cyan-950 text-cyan-300 border border-cyan-400 shadow-sm animate-pulse">⚡ AKTİF</span>` : ''}
+                  </div>
+                  <div class="text-[10px] text-slate-400 flex items-center gap-1.5 mt-0.5">
+                    <span class="text-slate-500">Günlük:</span>
+                    <span class="font-mono font-bold text-amber-400 bg-amber-950/90 px-1.5 py-0.5 rounded border border-amber-600/50 shadow-inner">⚡ ${dc.current}/${dc.max}</span>
+                    <span class="text-slate-500">${dc.unit || 'tur'}</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1.5 shrink-0">
+                  <button type="button" onclick="castDailyRoundItem('${encodeURIComponent(item.name)}', '${slotKey || ''}')"
+                          class="py-1 px-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-[11px] rounded-lg shadow transition active:scale-95 flex items-center gap-1 cursor-pointer"
+                          title="1 Tur Harca & Aktif Et" ${dc.current <= 0 ? 'disabled' : ''}>
+                    <span>✨</span>
+                    <span>Cast (+1)</span>
+                  </button>
+                  <button type="button" onclick="dischargeDailyRoundItem('${encodeURIComponent(item.name)}', '${slotKey || ''}')"
+                          class="py-1 px-2 bg-gradient-to-r from-rose-800 to-red-700 hover:from-rose-700 hover:to-red-600 text-white font-extrabold text-[11px] rounded-lg shadow transition active:scale-95 flex items-center gap-1 cursor-pointer ${!active ? 'opacity-40 cursor-not-allowed' : ''}"
+                          title="Etkiyi Sonlandır / Kapat" ${!active ? 'disabled' : ''}>
+                    <span>🛑</span>
+                    <span>Discharge</span>
+                  </button>
+                </div>
+              </div>
+            `;
+          }
+
           const opts = getItemDailyOptions(item);
           const hasMultipleOpts = opts.length > 1;
-          const btnLabel = hasMultipleOpts ? 'Seç & Kullan' : (isSpeed ? '1 Tur Haste' : 'Kullan (-1)');
+          const btnLabel = hasMultipleOpts ? 'Seç & Kullan' : 'Kullan (-1)';
 
           return `
             <div class="bg-slate-900/90 border border-amber-900/50 hover:border-amber-500/50 rounded-lg p-2 flex items-center justify-between gap-2 shadow-sm transition">
@@ -25191,12 +25228,21 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
                     ${(() => {
                       const dailyC = (typeof ensureItemDailyCharges === 'function') ? ensureItemDailyCharges(slotData) : slotData.dailyCharges;
                       if (!dailyC) return '';
+                      const isRound = (dailyC.unit === 'rounds' || dailyC.unit === 'tur' || dailyC.unit === 'turn');
+                      const activeBuff = isRound && (typeof isItemBuffActive === 'function') && isItemBuffActive(slotData);
                       return `
                         <div class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-mono font-bold bg-amber-950/90 text-amber-300 border border-amber-500/50 shadow-sm" title="Günlük Kalan: ${dailyC.current}/${dailyC.max} ${dailyC.unit || 'şarj'}">
                           <span>⚡ ${dailyC.current}/${dailyC.max}</span>
                           <button type="button" onclick="event.stopPropagation(); spendSlotCharge('${slotKey}', 1)" title="1 Şarj Harca" class="hover:text-white px-0.5 transition font-extrabold cursor-pointer" ${dailyC.current <= 0 ? 'disabled' : ''}>-</button>
                           <button type="button" onclick="event.stopPropagation(); restoreSlotCharge('${slotKey}', 1)" title="1 Şarj Geri Al" class="hover:text-white px-0.5 transition font-extrabold cursor-pointer" ${dailyC.current >= dailyC.max ? 'disabled' : ''}>+</button>
                         </div>
+                        ${isRound ? `
+                          <button type="button" onclick="event.stopPropagation(); ${activeBuff ? `dischargeDailyRoundItem('${encodeURIComponent(slotData.name)}', '${slotKey}')` : `castDailyRoundItem('${encodeURIComponent(slotData.name)}', '${slotKey}')`}"
+                                  title="${activeBuff ? 'Etkiyi Sonlandır (Discharge)' : '1 Tur Harca & Aktif Et (Cast)'}"
+                                  class="px-1.5 py-0.5 rounded text-[8px] font-bold transition flex items-center gap-0.5 cursor-pointer shadow-sm ${activeBuff ? 'bg-rose-950 text-rose-300 border border-rose-500 hover:bg-rose-900 animate-pulse' : 'bg-emerald-950 text-emerald-300 border border-emerald-600 hover:bg-emerald-900'}">
+                            <span>${activeBuff ? '🛑 Discharge' : '✨ Cast'}</span>
+                          </button>
+                        ` : ''}
                       `;
                     })()}
                   </div>
@@ -26885,6 +26931,165 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       renderAll();
     }
 
+    function isItemBuffActive(item) {
+      if (!item || !Array.isArray(character.buffs)) return false;
+      const cleanName = (item.name || '').toLowerCase();
+      return character.buffs.some(b => b.active && (
+        (b.source && b.source.toLowerCase().includes(cleanName)) ||
+        (cleanName.includes('boots of speed') && (b.name || '').toLowerCase().includes('haste')) ||
+        ((b.name || '').toLowerCase().includes(cleanName))
+      ));
+    }
+
+    function castDailyRoundItem(encodedName, slotKey) {
+      const name = decodeURIComponent(encodedName);
+      let item = null;
+      if (slotKey && character.bodySlots?.[slotKey]) {
+        item = character.bodySlots[slotKey];
+      }
+      if (!item && character.bodySlots) {
+        for (const [sk, sItem] of Object.entries(character.bodySlots)) {
+          if (sItem && sItem.name === name) {
+            item = sItem;
+            break;
+          }
+        }
+      }
+      if (!item && Array.isArray(character.gearPool)) {
+        item = character.gearPool.find(g => g && g.name === name);
+      }
+      if (!item) return;
+
+      const dc = ensureItemDailyCharges(item);
+      if (!dc || dc.current <= 0) {
+        showDiceTopToast({
+          icon: '⏳',
+          title: item.name,
+          breakdown: `Tüm günlük kullanım hakkı (${dc?.max || 0} ${dc?.unit || 'tur'}) tükendi! Uzun Dinlenme (☀️) ile yenilenir.`,
+          total: '0 Tur'
+        });
+        return;
+      }
+
+      dc.current = Math.max(0, dc.current - 1);
+      const cleanName = item.name.toLowerCase();
+
+      if (cleanName.includes('boots of speed')) {
+        if (!Array.isArray(character.buffs)) character.buffs = [];
+        const existing = character.buffs.find(b => b.name && b.name.toLowerCase().includes('haste'));
+        if (existing) {
+          existing.active = true;
+          existing.rounds = (Number(existing.rounds) || 0) + 1;
+          existing.durationText = `${existing.rounds} Tur`;
+        } else {
+          character.buffs.push({
+            id: 'buff_boots_haste',
+            name: 'Haste (Boots of Speed)',
+            active: true,
+            rounds: 1,
+            attBonus: 1,
+            acBonus: 1,
+            bonusType: 'Dodge',
+            speedBonus: 30,
+            durationText: '1 Tur',
+            source: 'Boots of Speed'
+          });
+        }
+        showDiceTopToast({
+          icon: '🏃',
+          title: 'Boots of Speed: Cast Edildi!',
+          breakdown: `Haste aktif edildi (+1 Saldırı, +1 Dodge AC, +30 ft Hız, Full Attack\'ta +1 ek vuruş). Kalan: ${dc.current}/${dc.max} Tur.`,
+          total: 'Cast (1 Tur)'
+        });
+      } else {
+        if (!Array.isArray(character.buffs)) character.buffs = [];
+        const buffId = 'buff_' + item.name.replace(/\s+/g, '_').toLowerCase();
+        const existing = character.buffs.find(b => b.id === buffId || (b.source && b.source === item.name));
+        if (existing) {
+          existing.active = true;
+          existing.rounds = (Number(existing.rounds) || 0) + 1;
+          existing.durationText = `${existing.rounds} Tur`;
+        } else {
+          character.buffs.push({
+            id: buffId,
+            name: item.name,
+            active: true,
+            rounds: 1,
+            durationText: '1 Tur',
+            source: item.name
+          });
+        }
+        showDiceTopToast({
+          icon: '⚡',
+          title: `${item.name}: Cast Edildi!`,
+          breakdown: `1 tur boyunca aktif bufflara işlendi. Kalan: ${dc.current}/${dc.max} ${dc.unit || 'tur'}.`,
+          total: 'Cast (1 Tur)'
+        });
+      }
+
+      saveStateToStorage(true);
+      renderAll();
+    }
+
+    function dischargeDailyRoundItem(encodedName, slotKey) {
+      const name = decodeURIComponent(encodedName);
+      let item = null;
+      if (slotKey && character.bodySlots?.[slotKey]) {
+        item = character.bodySlots[slotKey];
+      }
+      if (!item && character.bodySlots) {
+        for (const [sk, sItem] of Object.entries(character.bodySlots)) {
+          if (sItem && sItem.name === name) {
+            item = sItem;
+            break;
+          }
+        }
+      }
+      if (!item && Array.isArray(character.gearPool)) {
+        item = character.gearPool.find(g => g && g.name === name);
+      }
+      const cleanName = (item?.name || name).toLowerCase();
+
+      let dischargedCount = 0;
+      if (Array.isArray(character.buffs)) {
+        character.buffs.forEach(b => {
+          const bName = (b.name || '').toLowerCase();
+          const bSource = (b.source || '').toLowerCase();
+          if (b.active && (
+            bSource.includes(cleanName) ||
+            bName.includes(cleanName) ||
+            (cleanName.includes('boots of speed') && bName.includes('haste'))
+          )) {
+            b.active = false;
+            b.rounds = 0;
+            dischargedCount++;
+          }
+        });
+      }
+
+      const dc = item ? ensureItemDailyCharges(item) : null;
+      const remStr = dc ? ` (Kalan: ${dc.current}/${dc.max} ${dc.unit || 'tur'})` : '';
+
+      if (dischargedCount > 0) {
+        showDiceTopToast({
+          icon: '🛑',
+          title: `${item?.name || name}: Discharge Edildi!`,
+          breakdown: `Aktif büyü/eşya etkisi sonlandırıldı (Discharged)${remStr}.`,
+          total: 'Discharge'
+        });
+      } else {
+        showDiceTopToast({
+          icon: 'ℹ️',
+          title: `${item?.name || name}`,
+          breakdown: `Şu anda aktif bir etkisi bulunmuyor.${remStr}`,
+          total: 'Pasif'
+        });
+      }
+
+      saveStateToStorage(true);
+      renderAll();
+    }
+
     function getItemDailyOptions(item) {
       if (!item) return [];
       if (Array.isArray(item.chargeOptions) && item.chargeOptions.length > 0) {
@@ -26924,7 +27129,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       }
       if (itemName.includes('boots of speed')) {
         return [
-          { label: '1 Tur Haste (Saldırı +1, AC +1, Hız +30 ft)', cost: 1, type: 'haste' }
+          { label: 'Cast (1 Tur Harca & Aktif Et)', action: 'cast', cost: 1, type: 'haste' },
+          { label: 'Discharge (Etkiyi Sonlandır)', action: 'discharge', cost: 0, type: 'discharge' }
         ];
       }
       if (itemName.includes('belt of battle')) {
@@ -26932,6 +27138,14 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           { label: '1 Şarj: Ekstra Move Action', cost: 1, type: 'info', note: 'Ekstra Move Action kazandınız!' },
           { label: '2 Şarj: Ekstra Standard Action', cost: 2, type: 'info', note: 'Ekstra Standard Action kazandınız!' },
           { label: '3 Şarj: Ekstra Full-Round Action', cost: 3, type: 'info', note: 'Ekstra Full-Round Action kazandınız!' }
+        ];
+      }
+
+      const isRoundUnit = item.dailyCharges && (item.dailyCharges.unit === 'rounds' || item.dailyCharges.unit === 'tur' || item.dailyCharges.unit === 'turn');
+      if (isRoundUnit) {
+        return [
+          { label: 'Cast (1 Tur Harca & Aktif Et)', action: 'cast', cost: 1, type: 'cast' },
+          { label: 'Discharge (Etkiyi Sonlandır)', action: 'discharge', cost: 0, type: 'discharge' }
         ];
       }
 
@@ -27044,6 +27258,18 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
 
     function executeItemOption(item, opt) {
       if (!item || !opt) return;
+
+      // Handle round-based Discharge
+      if (opt.action === 'discharge' || opt.type === 'discharge') {
+        dischargeDailyRoundItem(encodeURIComponent(item.name), item.slotKey);
+        return;
+      }
+      // Handle round-based Cast
+      if (opt.action === 'cast' || opt.type === 'cast') {
+        castDailyRoundItem(encodeURIComponent(item.name), item.slotKey);
+        return;
+      }
+
       const dc = ensureItemDailyCharges(item);
       if (!dc) return;
       const cost = Number(opt.cost) || 1;
