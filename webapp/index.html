@@ -574,24 +574,6 @@
             </div>
           </div>
 
-          <!-- 2. OFFENSE PIN DRAWER -->
-          <div class="bg-dndCard border border-dndBorder rounded-xl p-3.5 shadow-lg space-y-2.5">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-              <div class="flex items-center gap-1.5">
-                <span class="text-rose-400">📌</span>
-                <span class="text-xs font-black uppercase text-slate-200 tracking-wider">SALDIRI ÇEKMECESİ</span>
-                <span id="offense-pins-badge" class="bg-slate-800 text-rose-400 font-mono font-bold text-[10px] px-1.5 py-0.5 rounded">0</span>
-              </div>
-              <button id="toggle-offense-pins-btn" onclick="togglePinDrawer('offense')" class="text-[11px] font-bold text-slate-400 hover:text-white bg-slate-900 px-2 py-0.5 rounded border border-slate-800 transition">
-                Tümünü Göster
-              </button>
-            </div>
-            
-            <div id="combat-pins-offense" class="space-y-1.5">
-              <!-- Dynamically populated -->
-            </div>
-          </div>
-
         </div>
 
         <!-- ==================================================== -->
@@ -9769,7 +9751,15 @@
 
     function hasFlurryAbility(char) {
       if (!char) return false;
-      const hasMonk = (char.classes || []).some(c => c && (c.name || '').toLowerCase().includes('monk'));
+      let hasMonk = false;
+      if (typeof char.classes === 'string') {
+        hasMonk = char.classes.toLowerCase().includes('monk');
+      } else if (Array.isArray(char.classes)) {
+        hasMonk = char.classes.some(c => c && (typeof c === 'string' ? c : (c.name || '')).toLowerCase().includes('monk'));
+      }
+      if (!hasMonk && Array.isArray(char.levelProgression)) {
+        hasMonk = char.levelProgression.some(p => p && (p.className || '').toLowerCase().includes('monk') && p.active !== false);
+      }
       const hasSpecial = (char.specialAbilities || []).some(a => {
         if (!a) return false;
         const name = typeof a === 'string' ? a : (a.name || '');
@@ -10122,7 +10112,17 @@
       let flurryPenalty = 0;
       let flurryExtraCount = 0;
       if (isFlurry) {
-        const monkLvl = (character.classes || []).find(c => (c.name || '').toLowerCase() === 'monk')?.level || 0;
+        let monkLvl = 0;
+        if (Array.isArray(character.levelProgression)) {
+          monkLvl = character.levelProgression.filter(p => p && (p.className || '').toLowerCase().includes('monk') && p.active !== false).length;
+        } else if (Array.isArray(character.classes)) {
+          const m = character.classes.find(c => c && (typeof c === 'string' ? c : (c.name || '')).toLowerCase().includes('monk'));
+          monkLvl = m ? (Number(m.level) || 1) : 0;
+        } else if (typeof character.classes === 'string') {
+          const match = character.classes.match(/monk\s*(\d+)/i);
+          monkLvl = match ? parseInt(match[1], 10) : (character.classes.toLowerCase().includes('monk') ? 1 : 0);
+        }
+
         if (monkLvl >= 11) {
           flurryPenalty = 0;
           flurryExtraCount = 2;
@@ -17797,7 +17797,9 @@
 
       // Check if character has taken any Warlock level in progression or classes
       const hasWarlockProg = prog.some(p => (p.className || '').toLowerCase() === 'warlock');
-      const hasWarlockClass = character.classes && character.classes.some(c => (c.name || '').toLowerCase() === 'warlock');
+      const hasWarlockClass = typeof character.classes === 'string' 
+        ? character.classes.toLowerCase().includes('warlock') 
+        : (Array.isArray(character.classes) && character.classes.some(c => (typeof c === 'string' ? c : (c?.name || '')).toLowerCase() === 'warlock'));
       return Boolean(hasWarlockProg || hasWarlockClass);
     }
 
