@@ -1223,10 +1223,207 @@ const RuleEngine = {
     character.effectiveSpeed = baseSpeed + itemSpeedBonus + buffSpeedBonus;
     character.buffSkillBonus = buffSkillBonus;
 
+    // 8. Resolve Rule Flags & Action Economy
+    character.ruleFlags = this.evaluateRuleFlags(character);
+    character.actionEconomy = this.evaluateActionEconomy(character, options);
+
     return {
       ac: character.acBreakdown,
       abilities: character.abilities,
-      saves: character.evaluatedSaves
+      saves: character.evaluatedSaves,
+      ruleFlags: character.ruleFlags,
+      actionEconomy: character.actionEconomy
+    };
+  },
+
+  // D&D 3.5e & DM House Rules Dynamic Threat Range Calculator
+  evaluateCritThreatRange(weapon, character = null, houseRules = null) {
+    if (!weapon) return { critMin: 20, critMult: 2, threatRangeCount: 1, threatRangeDisplay: '20', isKeen: false, hasImpCrit: false };
+
+    const hr = houseRules || character?.houseRules || {};
+    const critCapMin = Number(hr.critCapMin) || 15;
+    const stackingMode = hr.keenImpCritStacking || 'stack_diminishing'; // 'none' (RAW), 'stack_diminishing', 'full'
+
+    let baseMin = Number(weapon.baseCritMin !== undefined ? weapon.baseCritMin : weapon.critMin);
+    let critMult = Number(weapon.critMult);
+
+    // Parse from string like "18-20/x2" or "19-20" if baseMin or critMult is missing
+    const critStr = String(weapon.crit || weapon.critical || '');
+    if ((isNaN(baseMin) || baseMin <= 0) && critStr) {
+      const match = critStr.match(/(\d+)(?:-(\d+))?(?:\/x(\d+))?/i);
+      if (match) {
+        baseMin = match[2] ? parseInt(match[1], 10) : (match[1] ? parseInt(match[1], 10) : 20);
+        if (match[3] && (isNaN(critMult) || critMult <= 0)) {
+          critMult = parseInt(match[3], 10);
+        }
+      }
+    }
+    if (isNaN(baseMin) || baseMin <= 0 || baseMin > 20) baseMin = 20;
+    if (isNaN(critMult) || critMult <= 0) critMult = 2;
+
+    // Base threat range span: 20 -> 1, 19-20 -> 2, 18-20 -> 3
+    const baseSpan = Math.max(1, 21 - baseMin);
+
+    // Check Keen property
+    const wepName = (weapon.name || '').toLowerCase();
+    const wepTags = Array.isArray(weapon.tags) ? weapon.tags.map(t => String(t).toLowerCase()) : [];
+    const wepDesc = (weapon.benefit || weapon.desc || weapon.summary || '').toLowerCase();
+    const isKeen = !!weapon.isKeen || wepTags.includes('keen') || wepName.includes('keen') || wepDesc.includes('keen');
+
+    // Check Improved Critical Feat
+    let hasImpCrit = false;
+    if (character && Array.isArray(character.feats)) {
+      const cleanWepName = wepName.replace(/\+\d+/g, '').replace(/\(.*?\)/g, '').trim();
+      hasImpCrit = character.feats.some(f => {
+        const fn = (typeof f === 'string' ? f : f.name || '').toLowerCase();
+        if (!fn.includes('improved critical')) return false;
+        if (fn.includes('all') || fn === 'improved critical') return true;
+        const targetWep = fn.replace('improved critical', '').replace(/[\(\)]/g, '').trim();
+        return cleanWepName.includes(targetWep) || targetWep.includes(cleanWepName);
+      });
+    }
+
+    let finalSpan = baseSpan;
+    if (isKeen && hasImpCrit) {
+      if (stackingMode === 'none') {
+        // RAW D&D 3.5e: Does not stack
+        finalSpan = baseSpan * 2;
+      } else if (stackingMode === 'stack_diminishing') {
+        // DM House Rule: Keen doubles threat span, Improved Critical adds +1
+        finalSpan = (baseSpan * 2) + 1;
+      } else if (stackingMode === 'full') {
+        // Full stacking: 4x base span
+        finalSpan = baseSpan * 4;
+      }
+    } else if (isKeen || hasImpCrit) {
+      finalSpan = baseSpan * 2;
+    }
+
+    let calculatedMin = 21 - finalSpan;
+
+    // Apply House Rule Crit Cap (e.g. min 15)
+    let capped = false;
+    if (calculatedMin < critCapMin) {
+      calculatedMin = critCapMin;
+      capped = true;
+    }
+
+    const threatRangeCount = 21 - calculatedMin;
+    const threatRangeDisplay = calculatedMin === 20 ? '20' : `${calculatedMin}-20`;
+
+    return {
+      critMin: calculatedMin,
+      critMult,
+      baseMin,
+      baseSpan,
+      finalSpan,
+      threatRangeCount,
+      threatRangeDisplay,
+      isKeen,
+      hasImpCrit,
+      stackingMode,
+      critCapMin,
+      capped
+    };
+  },
+
+  // Evaluate Passive / Rule Flags across feats, abilities and buffs
+  evaluateRuleFlags(character) {
+    if (!character) return {};
+    const feats = (character.feats || []).map(f => (typeof f === 'string' ? f : f.name || '').toLowerCase());
+    const buffs = (character.buffs || []).filter(b => b && b.active).map(b => (b.name || '').toLowerCase());
+    
+    const flags = {
+      allowFlatFootedAoO: feats.some(f => f.includes('combat reflexes')),
+      disabledAtNegativeHp: feats.some(f => f.includes('diehard')),
+      castInWildShape: feats.some(f => f.includes('natural spell')),
+      hasMultiattack: feats.some(f => f.includes('multiattack')),
+      hasImprovedMultiattack: feats.some(f => f.includes('improved multiattack')),
+      hasCombatReflexes: feats.some(f => f.includes('combat reflexes')),
+      hasDiehard: feats.some(f => f.includes('diehard')),
+      hasManyshot: feats.some(f => f.includes('manyshot')),
+      hasSpiritedCharge: feats.some(f => f.includes('spirited charge')),
+      hasRideByAttack: feats.some(f => f.includes('ride-by attack') || f.includes('ride by attack')),
+      hasMountedCombat: feats.some(f => f.includes('mounted combat')),
+      opposedCheckBonus: {
+        trip: feats.some(f => f.includes('improved trip')) ? 4 : 0,
+        disarm: feats.some(f => f.includes('improved disarm')) ? 4 : 0,
+        sunder: feats.some(f => f.includes('improved sunder')) ? 4 : 0,
+        grapple: feats.some(f => f.includes('improved grapple')) ? 4 : 0,
+        bullrush: feats.some(f => f.includes('improved bull rush')) ? 4 : 0,
+        overrun: feats.some(f => f.includes('improved overrun')) ? 4 : 0
+      }
+    };
+
+    // Merge explicit declarative ruleFlags from character feat objects if present
+    (character.feats || []).forEach(f => {
+      if (typeof f === 'object' && f && f.ruleFlags) {
+        Object.entries(f.ruleFlags).forEach(([k, v]) => {
+          if (k === 'opposedCheckBonus' && typeof v === 'object') {
+            Object.assign(flags.opposedCheckBonus, v);
+          } else {
+            flags[k] = v;
+          }
+        });
+      }
+    });
+
+    return flags;
+  },
+
+  // Evaluate Action Economy Budget (Standard, Move, Full-Round, Swift, Immediate, Free)
+  evaluateActionEconomy(character, options = {}) {
+    const tactical = character?.tactical || {};
+    const spentActions = options.spentActions || tactical.spentActions || {};
+    
+    const standardSpent = !!spentActions.standard;
+    const moveSpent = !!spentActions.move;
+    const fullRoundSpent = !!spentActions.fullRound || (standardSpent && moveSpent);
+    const swiftSpent = !!spentActions.swift;
+    const immediateSpent = !!spentActions.immediate;
+
+    return {
+      standard: standardSpent ? 'spent' : 'available',
+      move: moveSpent ? 'spent' : 'available',
+      fullRound: fullRoundSpent ? 'spent' : (standardSpent || moveSpent ? 'unavailable' : 'available'),
+      swift: swiftSpent ? 'spent' : (immediateSpent ? 'consumed_by_immediate' : 'available'),
+      immediate: immediateSpent ? 'spent' : (swiftSpent ? 'consumed_by_swift' : 'available'),
+      free: 'unlimited',
+      spentActions: {
+        standard: standardSpent,
+        move: moveSpent,
+        fullRound: fullRoundSpent,
+        swift: swiftSpent,
+        immediate: immediateSpent
+      }
+    };
+  },
+
+  // Evaluate Charge & Spirited Charge Multipliers
+  evaluateChargeDamage(weapon, character, options = {}) {
+    const isCharge = !!(options.charge !== undefined ? options.charge : character?.tactical?.charge);
+    if (!isCharge) return { isCharge: false, multiplier: 1, isLance: false, hasSpiritedCharge: false, desc: 'Normal' };
+
+    const wepName = (weapon?.name || '').toLowerCase();
+    const wepTags = Array.isArray(weapon?.tags) ? weapon.tags.map(t => String(t).toLowerCase()) : [];
+    const isLance = wepName.includes('lance') || wepName.includes('kargı') || wepTags.includes('lance');
+
+    const feats = (character?.feats || []).map(f => (typeof f === 'string' ? f : f.name || '').toLowerCase());
+    const hasSpiritedCharge = feats.some(f => f.includes('spirited charge'));
+
+    let multiplier = 1;
+    if (hasSpiritedCharge) {
+      multiplier = isLance ? 3 : 2;
+    } else if (isLance && (options.mounted || wepTags.includes('mounted'))) {
+      multiplier = 2;
+    }
+
+    return {
+      isCharge: true,
+      multiplier,
+      isLance,
+      hasSpiritedCharge,
+      desc: multiplier > 1 ? `Charge ${multiplier}x (${hasSpiritedCharge ? 'Spirited Charge' : 'Mounted Lance'})` : 'Charge (+2 Atk / -2 AC)'
     };
   },
 
@@ -1283,8 +1480,15 @@ const RuleEngine = {
       charge = false,
       higherGround = false,
       activeStance = character.activeStance || 'None',
-      customModifiers = []
+      customModifiers = [],
+      manyshot = false,
+      manyshotArrows: optManyshotArrows = 0
     } = options;
+
+    const houseRules = options.houseRules || character?.houseRules || {};
+    const critData = this.evaluateCritThreatRange(weapon, character, houseRules);
+    const chargeData = this.evaluateChargeDamage(weapon, character, options);
+    const ruleFlags = this.evaluateRuleFlags(character);
 
     const bab = Number(character.bab) || 0;
     const strMod = this.getAbilityMod(character.abilities?.str || 10);
@@ -1360,6 +1564,13 @@ const RuleEngine = {
     // Flaw: Shaky (-2 penalty on all ranged attack rolls)
     if (isRangedWep && feats.some(f => f.includes('flaw: shaky') || f === 'shaky')) {
       attackBonusItems.push({ type: 'untyped', val: -2, source: 'Flaw: Shaky (-2 Ranged)' });
+    }
+
+    // Manyshot penalty: 2 arrows -> -2, 3 arrows -> -4, 4 arrows -> -6
+    const effectiveManyshotArrows = isRangedWep && manyshot ? Math.min(4, Math.max(2, Number(optManyshotArrows || manyshot) || 2)) : 0;
+    if (effectiveManyshotArrows > 0) {
+      const penalty = (effectiveManyshotArrows - 1) * 2;
+      attackBonusItems.push({ type: 'untyped', val: -penalty, source: `Manyshot (${effectiveManyshotArrows} Ok / -${penalty} Atk)` });
     }
 
     if (weapon.attBonus) {
@@ -1531,16 +1742,24 @@ const RuleEngine = {
     const netFlatDamage = this.resolveBonusStacking(damageBonusItems);
 
     // Iterative attacks for 3.5e: BAB >= 16 -> 4 attacks (+0/-5/-10/-15), BAB >= 11 -> 3, BAB >= 6 -> 2, otherwise 1
-    const iteratives = [netAttackBonus];
-    if (bab >= 6) iteratives.push(netAttackBonus - 5);
-    if (bab >= 11) iteratives.push(netAttackBonus - 10);
-    if (bab >= 16) iteratives.push(netAttackBonus - 15);
+    let iteratives = [netAttackBonus];
+    if (effectiveManyshotArrows > 0) {
+      // Manyshot is a single Standard Action attack firing multiple arrows at once
+      iteratives = [netAttackBonus];
+    } else {
+      if (bab >= 6) iteratives.push(netAttackBonus - 5);
+      if (bab >= 11) iteratives.push(netAttackBonus - 10);
+      if (bab >= 16) iteratives.push(netAttackBonus - 15);
 
-    // Haste grants 1 extra full attack at highest BAB
-    const hasHaste = (character.buffs || []).some(b => b.active && b.name.toLowerCase().includes('haste'));
-    if (hasHaste) {
-      iteratives.unshift(netAttackBonus); // duplicate primary attack
+      // Haste grants 1 extra full attack at highest BAB
+      const hasHaste = (character.buffs || []).some(b => b.active && b.name.toLowerCase().includes('haste'));
+      if (hasHaste) {
+        iteratives.unshift(netAttackBonus); // duplicate primary attack
+      }
     }
+
+    const chargeMultiplier = chargeData.multiplier || 1;
+    const chargeFlatDamage = netFlatDamage * chargeMultiplier;
 
     return {
       netAttackBonus,
@@ -1550,8 +1769,18 @@ const RuleEngine = {
       effectivePA,
       baseDice: weapon.extraDmg || weapon.dice || '1d8',
       netFlatDamage,
-      critMin: weapon.critMin || 20,
-      critMult: weapon.critMult || 2,
+      critMin: critData.critMin,
+      critMult: critData.critMult,
+      critThreatRangeCount: critData.threatRangeCount,
+      critThreatRangeDisplay: critData.threatRangeDisplay,
+      isKeen: critData.isKeen,
+      hasImpCrit: critData.hasImpCrit,
+      critData,
+      chargeData,
+      chargeMultiplier,
+      chargeFlatDamage,
+      ruleFlags,
+      manyshotArrows: effectiveManyshotArrows,
       damageType: weapon.dmgType || 'Slashing',
       attackBonusItems,
       damageBonusItems

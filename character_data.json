@@ -175,7 +175,10 @@
                              },
     "houseRules":  {
                        "noCritConfirm":  true,
-                       "maneuverCrit":  false
+                       "maneuverCrit":  false,
+                       "critCapMin":  15,
+                       "keenImpCritStacking":  "stack_diminishing",
+                       "precisionDamageRule":  "once_per_turn"
                    },
     "settings":  {
                      "featMode":  "Standard 3.5e (1, 3, 6, 9, 12, 15, 18)",
