@@ -317,21 +317,10 @@
     <!-- TAB 1: ⚔️ TACTICAL COMBAT COCKPIT -->
     <!-- ==================================================== -->
     <div id="tab-combat" class="tab-content space-y-4">
-      <!-- ACTION ECONOMY & TURN TRACKER BAR -->
-      <div class="bg-dndCard border border-amber-500/30 rounded-xl p-2.5 shadow-md flex flex-wrap items-center justify-between gap-2.5">
-        <div class="flex items-center gap-2">
-          <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1">
-            <span class="text-xs font-black text-amber-400">⚔️ TUR</span>
-            <span id="action-economy-round" class="text-sm font-black font-mono text-white">1</span>
-          </div>
-          <button type="button" onclick="advanceCombatTurn()" class="px-2 py-1 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-300 text-[10px] font-bold rounded transition flex items-center gap-1 cursor-pointer">
-            <span>🔄</span>
-            <span>Turu Yenile</span>
-          </button>
-        </div>
-
-        <!-- Action Status Badges -->
-        <div class="flex items-center flex-wrap gap-1.5" id="action-economy-buttons-container">
+      <!-- ACTION ECONOMY BAR -->
+      <div class="bg-dndCard border border-amber-500/30 rounded-xl p-2.5 shadow-md flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <!-- Action Status Badges (Sola Yaslı) -->
+        <div class="flex items-center flex-wrap gap-1.5 shrink-0" id="action-economy-buttons-container">
           <button type="button" id="btn-action-std" onclick="toggleActionEconomy('standard')" class="px-2.5 py-1 rounded-lg text-xs font-bold border transition flex items-center gap-1 bg-emerald-950/80 border-emerald-500/60 text-emerald-300 shadow-sm cursor-pointer">
             <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
             <span>Standart: Hazır</span>
@@ -350,9 +339,9 @@
           </button>
         </div>
 
-        <!-- Passive Rule Badges -->
-        <div class="flex items-center gap-1.5 flex-wrap text-[10px]" id="action-economy-passive-badges">
-          <!-- Dynamically populated with e.g. Combat Reflexes AoO, Diehard -->
+        <!-- Passive Rule Badges (Sağa Yaslı, Sola Doğru Artar, Taşarsa Sağ Alt Satırdan Devam Eder) -->
+        <div class="flex items-center justify-end gap-1.5 flex-wrap text-[10px] ml-auto" id="action-economy-passive-badges">
+          <span class="px-2 py-0.5 rounded bg-amber-950 border border-amber-600/50 text-amber-300 font-semibold" title="Manevra Kontrolleri: +4 trip">⚔️ Manevralar: +4 trip</span>
         </div>
       </div>
 
