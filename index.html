@@ -9901,6 +9901,106 @@
       }
     }
 
+    // Helper function to calculate combat display stats for a weapon / shield
+    function getWeaponCombatDisplayStats(wepName, grip = '1-Hand', isOffHand = false) {
+      if (!character || !wepName || wepName === 'None' || wepName === 'Yok' || wepName === 'Boş') {
+        return null;
+      }
+      const allWeps = character.weapons || [];
+      let wep = allWeps.find(w => w.name === wepName);
+
+      // Check if item is in bodySlots.offHand (e.g. Buckler or Shield)
+      const offItem = character.bodySlots?.offHand;
+      if (!wep && offItem && offItem.name === wepName) {
+        const isShield = offItem.category === 'Shield' || (offItem.desc && offItem.desc.toLowerCase().includes('shield'));
+        const isHeavy = (offItem.name || '').toLowerCase().includes('heavy');
+        const isBuckler = (offItem.name || '').toLowerCase().includes('buckler');
+        const shieldAc = offItem.shieldBonus || (isHeavy ? 2 : 1);
+        if (isBuckler) {
+          return {
+            dmgStr: 'Vuruş Yok',
+            critStr: '-',
+            dmgType: 'Kalkan',
+            shieldAcText: `+${shieldAc} AC Kalkan`,
+            isBuckler: true
+          };
+        }
+        if (isShield) {
+          wep = {
+            name: offItem.name,
+            dice: isHeavy ? '1d4' : '1d3',
+            critMin: 20,
+            critMult: 2,
+            dmgType: 'Bludgeoning',
+            isLight: !isHeavy
+          };
+        }
+      }
+
+      if (wepName.toLowerCase().includes('buckler')) {
+        return {
+          dmgStr: 'Vuruş Yok',
+          critStr: '-',
+          dmgType: 'Kalkan',
+          shieldAcText: '+1 AC Kalkan',
+          isBuckler: true
+        };
+      }
+
+      if (wep && typeof RuleEngine !== 'undefined' && RuleEngine.evaluateWeaponAttack) {
+        try {
+          const paVal = parseInt(document.getElementById('power-attack-val')?.value) || 0;
+          const flanking = document.getElementById('mod-flanking')?.checked ?? false;
+          const charge = document.getElementById('mod-charge')?.checked ?? false;
+          const hg = document.getElementById('mod-higher-ground')?.checked ?? (character.tactical?.higherGround ?? false);
+          const activeMods = (character.activeModifiers || []).filter(m => m && m.active);
+          const nonChainMods = activeMods.filter(m => m && m.name && !m.name.includes('TWF') && !m.name.includes('Çift Silah') && !m.name.includes('Flurry') && !m.name.includes('Seri Vuruş'));
+
+          const evalRes = RuleEngine.evaluateWeaponAttack(character, wep, {
+            grip: isOffHand ? 'Off-Hand' : grip,
+            powerAttack: isOffHand ? 0 : paVal,
+            flanking,
+            charge,
+            higherGround: hg,
+            activeStance: character.activeStance || 'None',
+            customModifiers: nonChainMods
+          });
+
+          const activeDiceMods = activeMods.filter(m => m.dice);
+          let extraDiceStr = '';
+          if (activeDiceMods.length > 0) {
+            extraDiceStr = ' + ' + activeDiceMods.map(m => m.dice).join('+');
+          }
+
+          const flatDmg = evalRes.netFlatDamage;
+          const dmgStr = `${evalRes.baseDice}${flatDmg >= 0 ? '+' : ''}${flatDmg}${extraDiceStr}`;
+          const critRange = evalRes.critMin === 20 ? '20' : `${evalRes.critMin}-20`;
+          const critStr = `${critRange} / x${evalRes.critMult}`;
+
+          let dmgType = evalRes.damageType || 'Delici';
+          if (dmgType === 'Piercing') dmgType = 'Delici';
+          else if (dmgType === 'Slashing') dmgType = 'Kesici';
+          else if (dmgType === 'Bludgeoning') dmgType = 'Ezici';
+
+          return {
+            dmgStr,
+            critStr,
+            dmgType,
+            isWeapon: true
+          };
+        } catch (e) {
+          console.warn('getWeaponCombatDisplayStats error:', e);
+        }
+      }
+
+      return {
+        dmgStr: wep?.dice || '1d6',
+        critStr: '20 / x2',
+        dmgType: 'Fiziksel',
+        isWeapon: true
+      };
+    }
+
     function renderWeaponSetsUI() {
       ensureWeaponSetsData();
       const container = document.getElementById('weapon-sets-cards-container');
@@ -9914,6 +10014,14 @@
       const is2 = activeSets.includes(2);
       const isDual = is1 && is2;
 
+      // Stats for Set 1
+      const s1MainStats = getWeaponCombatDisplayStats(s1.mainWeapon, s1.grip || '1-Hand', false);
+      const s1OffStats = getWeaponCombatDisplayStats(isDual ? (s2.mainWeapon || s1.offHand) : s1.offHand, 'Off-Hand', true);
+
+      // Stats for Set 2
+      const s2MainStats = getWeaponCombatDisplayStats(s2.mainWeapon, s2.grip || '1-Hand', isDual);
+      const s2OffStats = getWeaponCombatDisplayStats(s2.offHand, 'Off-Hand', true);
+
       // Populate cards (stacked vertically - alt alta)
       container.innerHTML = `
         <!-- SET 1 CARD -->
@@ -9924,12 +10032,28 @@
               <span class="text-xs font-black truncate ${is1 ? 'text-white' : 'text-slate-300'}">${s1.name || 'Set I'}</span>
               ${is1 ? `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-amber-500/30 text-amber-300 border border-amber-500/50">${isDual ? 'AKTİF (Ana El)' : 'AKTİF'}</span>` : ''}
             </div>
+            <!-- Donanım İsimleri -->
             <div class="text-[10px] text-slate-400 truncate mt-0.5 font-mono">
               <span class="${is1 ? 'text-amber-300 font-bold' : 'text-slate-400 font-bold'}">${s1.mainWeapon || 'Yok'}</span> (${s1.grip || '1-El'}) + <span class="${is1 ? 'text-sky-300 font-bold' : 'text-slate-400 font-bold'}">${isDual ? (s2.mainWeapon || s1.offHand) : (s1.offHand || 'Boş')}</span>
             </div>
+            <!-- Satır 1: Silahın Modifiye Hasarı -->
+            <div class="text-[10px] font-mono mt-0.5 flex items-center gap-1.5 flex-wrap">
+              <span class="text-slate-400 font-sans text-[9px] uppercase tracking-wider">Hasar:</span>
+              <span class="font-bold ${is1 ? 'text-amber-300' : 'text-slate-300'}">${s1MainStats?.dmgStr || '1d6+3'}</span>
+              ${s1OffStats?.shieldAcText ? `<span class="text-slate-600">•</span><span class="text-emerald-400 text-[9px] font-sans font-bold">${s1OffStats.shieldAcText}</span>` : ''}
+              ${(!isDual && s1OffStats?.isWeapon) ? `<span class="text-slate-600">•</span><span class="text-slate-400 text-[9px] font-sans">Sol:</span><span class="font-bold text-sky-300">${s1OffStats.dmgStr}</span>` : ''}
+            </div>
+            <!-- Satır 2: Kritik & Hasar Türü -->
+            <div class="text-[9px] font-mono flex items-center gap-1.5 flex-wrap">
+              <span class="text-slate-500 font-sans uppercase text-[8px] tracking-wider">Kritik &amp; Tür:</span>
+              <span class="${is1 ? 'text-white' : 'text-slate-300'} font-semibold">${s1MainStats?.critStr || '18-20 / x2'}</span>
+              <span class="text-slate-600">•</span>
+              <span class="${is1 ? 'text-amber-200/90' : 'text-slate-400'}">${s1MainStats?.dmgType || 'Delici'}</span>
+              ${(!isDual && s1OffStats?.isWeapon) ? `<span class="text-slate-600">|</span><span class="text-slate-400 text-[8px]">Sol:</span><span class="text-sky-300">${s1OffStats.critStr} (${s1OffStats.dmgType})</span>` : ''}
+            </div>
           </div>
           <div class="shrink-0 text-right">
-            <span class="text-[9px] font-bold px-2 py-1 rounded-lg ${is1 ? 'bg-amber-500 text-slate-950 font-black shadow' : 'bg-slate-800 text-slate-400 hover:text-slate-200'}">
+            <span class="text-[9px] font-bold px-2.5 py-1 rounded-lg ${is1 ? 'bg-amber-500 text-slate-950 font-black shadow' : 'bg-slate-800 text-slate-400 hover:text-slate-200'}">
               ${is1 ? 'Kuşanıldı' : 'Kuşan'}
             </span>
           </div>
@@ -9943,12 +10067,28 @@
               <span class="text-xs font-black truncate ${is2 ? 'text-white' : 'text-slate-300'}">${s2.name || 'Set II'}</span>
               ${is2 ? `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-sky-500/30 text-sky-300 border border-sky-500/50">${isDual ? 'AKTİF (İkinci El - TWF)' : 'AKTİF'}</span>` : ''}
             </div>
+            <!-- Donanım İsimleri -->
             <div class="text-[10px] text-slate-400 truncate mt-0.5 font-mono">
               <span class="${is2 ? 'text-sky-300 font-bold' : 'text-slate-400 font-bold'}">${s2.mainWeapon || 'Yok'}</span> (${s2.grip || '1-El'}) + <span class="${is2 ? 'text-sky-300 font-bold' : 'text-slate-400 font-bold'}">${s2.offHand || 'Boş'}</span>
             </div>
+            <!-- Satır 1: Silahın Modifiye Hasarı -->
+            <div class="text-[10px] font-mono mt-0.5 flex items-center gap-1.5 flex-wrap">
+              <span class="text-slate-400 font-sans text-[9px] uppercase tracking-wider">Hasar:</span>
+              <span class="font-bold ${is2 ? 'text-sky-300' : 'text-slate-300'}">${s2MainStats?.dmgStr || '1d4'}</span>
+              ${s2OffStats?.shieldAcText ? `<span class="text-slate-600">•</span><span class="text-emerald-400 text-[9px] font-sans font-bold">${s2OffStats.shieldAcText}</span>` : ''}
+              ${s2OffStats?.isWeapon ? `<span class="text-slate-600">•</span><span class="text-slate-400 text-[9px] font-sans">Sol:</span><span class="font-bold text-sky-300">${s2OffStats.dmgStr}</span>` : ''}
+            </div>
+            <!-- Satır 2: Kritik & Hasar Türü -->
+            <div class="text-[9px] font-mono flex items-center gap-1.5 flex-wrap">
+              <span class="text-slate-500 font-sans uppercase text-[8px] tracking-wider">Kritik &amp; Tür:</span>
+              <span class="${is2 ? 'text-white' : 'text-slate-300'} font-semibold">${s2MainStats?.critStr || '19-20 / x2'}</span>
+              <span class="text-slate-600">•</span>
+              <span class="${is2 ? 'text-sky-200/90' : 'text-slate-400'}">${s2MainStats?.dmgType || 'Delici'}</span>
+              ${s2OffStats?.isWeapon ? `<span class="text-slate-600">|</span><span class="text-slate-400 text-[8px]">Sol:</span><span class="text-sky-300">${s2OffStats.critStr} (${s2OffStats.dmgType})</span>` : ''}
+            </div>
           </div>
           <div class="shrink-0 text-right">
-            <span class="text-[9px] font-bold px-2 py-1 rounded-lg ${is2 ? 'bg-sky-500 text-slate-950 font-black shadow' : 'bg-slate-800 text-slate-400 hover:text-slate-200'}">
+            <span class="text-[9px] font-bold px-2.5 py-1 rounded-lg ${is2 ? 'bg-sky-500 text-slate-950 font-black shadow' : 'bg-slate-800 text-slate-400 hover:text-slate-200'}">
               ${is2 ? 'Kuşanıldı' : 'Kuşan'}
             </span>
           </div>
@@ -10259,7 +10399,7 @@
       const twfMod = (character.activeModifiers || []).find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Çift Silah')));
       const isTWF = twfMod?.active ?? false;
 
-      // Row 1: Fixed 3 items: 1. Flanking, 2. Charge, 3. Çift Silah (TWF)
+      // Row 1: Fixed 3 items: 1. Flanking, 2. Charge, 3. Higher Ground (TWF artık silah setlerinden doğrudan yönetiliyor)
       const fixedCardsHtml = [
         `
         <label class="bg-slate-900 border ${flanking ? 'border-sky-500 bg-sky-950/40 text-sky-200 shadow-sm' : 'border-slate-800 text-slate-300'} hover:border-sky-500/60 rounded-lg p-2 cursor-pointer transition flex flex-col justify-between text-center select-none min-h-[64px]">
@@ -10280,21 +10420,20 @@
         </label>
         `,
         `
-        <label class="bg-slate-900 border ${isTWF ? 'border-cyan-500 bg-cyan-950/40 text-cyan-200 shadow-sm shadow-cyan-950/50' : 'border-slate-800 text-slate-300'} hover:border-cyan-500/60 rounded-lg p-2 cursor-pointer transition flex flex-col justify-between text-center select-none min-h-[64px]">
+        <label class="bg-slate-900 border ${hg ? 'border-amber-500 bg-amber-950/40 text-amber-200 shadow-sm' : 'border-slate-800 text-slate-300'} hover:border-amber-500/60 rounded-lg p-2 cursor-pointer transition flex flex-col justify-between text-center select-none min-h-[64px]">
           <div>
-            <div class="text-[11px] font-bold text-cyan-400 leading-tight">Çift Silah</div>
-            <div class="text-[9px] text-cyan-300/80 font-mono mt-0.5">İkinci El (TWF)</div>
+            <div class="text-[11px] font-bold text-amber-400 leading-tight">Higher Gr.</div>
+            <div class="text-[9px] text-slate-400 mt-0.5">+1 Melee</div>
           </div>
-          <input type="checkbox" id="mod-twf" ${isTWF ? 'checked' : ''} onchange="onTWFModifierToggle()" class="mt-1 mx-auto w-3.5 h-3.5 rounded text-cyan-500 focus:ring-0 cursor-pointer">
+          <input type="checkbox" id="mod-higher-ground" ${hg ? 'checked' : ''} onchange="onFixedModifierToggle()" class="mt-1 mx-auto w-3.5 h-3.5 rounded text-amber-500 focus:ring-0 cursor-pointer">
         </label>
         `
       ];
 
-      // Rows 2+ : Dynamic modifiers (excluding TWF which sits in slot 3)
+      // Rows 2+ : Dynamic modifiers (excluding TWF which is managed by weapon sets)
       const isExpanded = !!window.combatModifiersGridExpanded;
       const dynamicMods = (character.activeModifiers || []).filter(m => m && m.name && !m.name.includes('TWF') && !m.name.includes('Çift Silah'));
-      // In 3x3 layout when collapsed: 3 top + 6 dynamic = 9 cards total!
-      // When expanded: all dynamic mods are rendered, plus Higher Gr. at the very end
+      // In 3x3 layout when collapsed: 3 top (Flanking, Charge, Higher Ground) + 6 dynamic = 9 cards total!
       const visibleCount = isExpanded ? dynamicMods.length : Math.min(6, dynamicMods.length);
       const visibleMods = dynamicMods.slice(0, visibleCount);
 
@@ -10334,18 +10473,7 @@
         `;
       });
 
-      // Higher Ground Card: Only rendered in the expanded drawer at the very end
-      const higherGroundCardHtml = isExpanded ? `
-        <label class="bg-slate-900 border ${hg ? 'border-amber-500 bg-amber-950/40 text-amber-200 shadow-sm' : 'border-slate-800 text-slate-300'} hover:border-amber-500/60 rounded-lg p-2 cursor-pointer transition flex flex-col justify-between text-center select-none min-h-[64px]">
-          <div>
-            <div class="text-[11px] font-bold text-amber-400 leading-tight">Higher Gr.</div>
-            <div class="text-[9px] text-slate-400 mt-0.5">+1 Melee</div>
-          </div>
-          <input type="checkbox" id="mod-higher-ground" ${hg ? 'checked' : ''} onchange="onFixedModifierToggle()" class="mt-1 mx-auto w-3.5 h-3.5 rounded text-amber-500 focus:ring-0 cursor-pointer">
-        </label>
-      ` : '';
-
-      grid.innerHTML = fixedCardsHtml.join('') + dynamicCardsHtml.join('') + higherGroundCardHtml;
+      grid.innerHTML = fixedCardsHtml.join('') + dynamicCardsHtml.join('');
 
       // Show/hide expand button if dynamic mods > 6
       const expandBar = document.getElementById('combat-modifiers-expand-bar');
