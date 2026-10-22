@@ -411,8 +411,8 @@
                   </button>
                 </div>
 
-                <!-- 2 Big Touch Weapon Set Cards -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="weapon-sets-cards-container">
+                <!-- 2 Big Touch Weapon Set Cards (Stacked Alt Alta) -->
+                <div class="flex flex-col gap-2" id="weapon-sets-cards-container">
                   <!-- Dynamically populated: Set 1 Card and Set 2 Card -->
                 </div>
 
@@ -9868,7 +9868,7 @@
       }
     }
 
-    // --- WEAPON SETS SYSTEM (SEÇENEK B) ---
+    // --- WEAPON SETS SYSTEM (SEÇENEK B: ÇİFT SEÇİLEBİLİR VE ALT ALTA) ---
     function ensureWeaponSetsData() {
       if (!character) return;
       if (!character.tactical) character.tactical = {};
@@ -9878,6 +9878,7 @@
         const secondWep = (character.weapons || []).find(w => w.name !== mainWep)?.name || 'Dagger (Masterwork)';
 
         character.tactical.weaponSets = {
+          activeSets: [1],
           activeSet: 1,
           set1: {
             name: 'Rapier & Buckler',
@@ -9892,6 +9893,11 @@
             offHand: secondWep
           }
         };
+      } else {
+        if (!Array.isArray(character.tactical.weaponSets.activeSets)) {
+          const prev = character.tactical.weaponSets.activeSet;
+          character.tactical.weaponSets.activeSets = prev === 'both' ? [1, 2] : (prev === 2 ? [2] : [1]);
+        }
       }
     }
 
@@ -9903,83 +9909,151 @@
       const sets = character.tactical.weaponSets;
       const s1 = sets.set1 || {};
       const s2 = sets.set2 || {};
-      const active = sets.activeSet || 1;
+      const activeSets = sets.activeSets || [sets.activeSet === 2 ? 2 : 1];
+      const is1 = activeSets.includes(1);
+      const is2 = activeSets.includes(2);
+      const isDual = is1 && is2;
 
-      // Populate cards
+      // Populate cards (stacked vertically - alt alta)
       container.innerHTML = `
         <!-- SET 1 CARD -->
-        <div onclick="activateWeaponSet(1)" class="p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between gap-2 ${active === 1 ? 'bg-gradient-to-r from-amber-950/60 to-slate-900/90 border-amber-500 text-amber-200 shadow-md shadow-amber-950/40 ring-1 ring-amber-500/40' : 'bg-slate-900/70 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'}">
+        <div onclick="activateWeaponSet(1)" class="p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between gap-2 ${is1 ? 'bg-gradient-to-r from-amber-950/60 to-slate-900/90 border-amber-500 text-amber-200 shadow-md shadow-amber-950/40 ring-1 ring-amber-500/40' : 'bg-slate-900/70 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'}">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5">
-              <span class="text-xs ${active === 1 ? 'text-amber-400' : 'text-slate-500'}">⚔️</span>
-              <span class="text-xs font-black truncate ${active === 1 ? 'text-white' : 'text-slate-300'}">${s1.name || 'Set I'}</span>
-              ${active === 1 ? '<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-amber-500/30 text-amber-300 border border-amber-500/50">AKTİF</span>' : ''}
+              <span class="text-xs ${is1 ? 'text-amber-400' : 'text-slate-500'}">⚔️</span>
+              <span class="text-xs font-black truncate ${is1 ? 'text-white' : 'text-slate-300'}">${s1.name || 'Set I'}</span>
+              ${is1 ? `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-amber-500/30 text-amber-300 border border-amber-500/50">${isDual ? 'AKTİF (Ana El)' : 'AKTİF'}</span>` : ''}
             </div>
             <div class="text-[10px] text-slate-400 truncate mt-0.5 font-mono">
-              <span class="${active === 1 ? 'text-amber-300' : 'text-slate-400'} font-bold">${s1.mainWeapon || 'Yok'}</span> (${s1.grip || '1-El'}) + <span class="text-sky-300 font-bold">${s1.offHand || 'Boş'}</span>
+              <span class="${is1 ? 'text-amber-300 font-bold' : 'text-slate-400 font-bold'}">${s1.mainWeapon || 'Yok'}</span> (${s1.grip || '1-El'}) + <span class="${is1 ? 'text-sky-300 font-bold' : 'text-slate-400 font-bold'}">${isDual ? (s2.mainWeapon || s1.offHand) : (s1.offHand || 'Boş')}</span>
             </div>
           </div>
           <div class="shrink-0 text-right">
-            <span class="text-[9px] font-bold px-2 py-1 rounded-lg ${active === 1 ? 'bg-amber-500 text-slate-950 font-black shadow' : 'bg-slate-800 text-slate-400'}">
-              ${active === 1 ? 'Kuşanıldı' : 'Kuşan'}
+            <span class="text-[9px] font-bold px-2 py-1 rounded-lg ${is1 ? 'bg-amber-500 text-slate-950 font-black shadow' : 'bg-slate-800 text-slate-400 hover:text-slate-200'}">
+              ${is1 ? 'Kuşanıldı' : 'Kuşan'}
             </span>
           </div>
         </div>
 
         <!-- SET 2 CARD -->
-        <div onclick="activateWeaponSet(2)" class="p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between gap-2 ${active === 2 ? 'bg-gradient-to-r from-sky-950/60 to-slate-900/90 border-sky-500 text-sky-200 shadow-md shadow-sky-950/40 ring-1 ring-sky-500/40' : 'bg-slate-900/70 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'}">
+        <div onclick="activateWeaponSet(2)" class="p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between gap-2 ${is2 ? 'bg-gradient-to-r from-sky-950/60 to-slate-900/90 border-sky-500 text-sky-200 shadow-md shadow-sky-950/40 ring-1 ring-sky-500/40' : 'bg-slate-900/70 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'}">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5">
-              <span class="text-xs ${active === 2 ? 'text-sky-400' : 'text-slate-500'}">🗡️</span>
-              <span class="text-xs font-black truncate ${active === 2 ? 'text-white' : 'text-slate-300'}">${s2.name || 'Set II'}</span>
-              ${active === 2 ? '<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-sky-500/30 text-sky-300 border border-sky-500/50">AKTİF</span>' : ''}
+              <span class="text-xs ${is2 ? 'text-sky-400' : 'text-slate-500'}">🗡️</span>
+              <span class="text-xs font-black truncate ${is2 ? 'text-white' : 'text-slate-300'}">${s2.name || 'Set II'}</span>
+              ${is2 ? `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-sky-500/30 text-sky-300 border border-sky-500/50">${isDual ? 'AKTİF (İkinci El - TWF)' : 'AKTİF'}</span>` : ''}
             </div>
             <div class="text-[10px] text-slate-400 truncate mt-0.5 font-mono">
-              <span class="${active === 2 ? 'text-sky-300' : 'text-slate-400'} font-bold">${s2.mainWeapon || 'Yok'}</span> (${s2.grip || '1-El'}) + <span class="text-sky-300 font-bold">${s2.offHand || 'Boş'}</span>
+              <span class="${is2 ? 'text-sky-300 font-bold' : 'text-slate-400 font-bold'}">${s2.mainWeapon || 'Yok'}</span> (${s2.grip || '1-El'}) + <span class="${is2 ? 'text-sky-300 font-bold' : 'text-slate-400 font-bold'}">${s2.offHand || 'Boş'}</span>
             </div>
           </div>
           <div class="shrink-0 text-right">
-            <span class="text-[9px] font-bold px-2 py-1 rounded-lg ${active === 2 ? 'bg-sky-500 text-slate-950 font-black shadow' : 'bg-slate-800 text-slate-400'}">
-              ${active === 2 ? 'Kuşanıldı' : 'Kuşan'}
+            <span class="text-[9px] font-bold px-2 py-1 rounded-lg ${is2 ? 'bg-sky-500 text-slate-950 font-black shadow' : 'bg-slate-800 text-slate-400 hover:text-slate-200'}">
+              ${is2 ? 'Kuşanıldı' : 'Kuşan'}
             </span>
           </div>
         </div>
       `;
 
       // Update active summary text
-      const curCfg = active === 2 ? s2 : s1;
       const sumEl = document.getElementById('weapon-set-active-summary');
       if (sumEl) {
-        sumEl.textContent = `${curCfg.mainWeapon || 'Yok'} (${curCfg.grip || '1-El'}) • ${curCfg.offHand || 'Boş El'}`;
+        if (isDual) {
+          sumEl.innerHTML = `<span class="text-amber-400 font-bold">⚔️ Çift Silah (TWF):</span> ${s1.mainWeapon || 'Yok'} <span class="text-slate-400 text-[10px]">(Ana El)</span> + ${s2.mainWeapon || 'Yok'} <span class="text-sky-300 text-[10px]">(İkinci El)</span>`;
+        } else if (is2) {
+          sumEl.textContent = `${s2.mainWeapon || 'Yok'} (${s2.grip || '1-El'}) • ${s2.offHand || 'Boş El'}`;
+        } else {
+          sumEl.textContent = `${s1.mainWeapon || 'Yok'} (${s1.grip || '1-El'}) • ${s1.offHand || 'Boş El'}`;
+        }
       }
 
       populateWeaponSetsEditorDropdowns();
     }
 
-    function activateWeaponSet(setNum) {
+    function toggleWeaponSet(setNum) {
       ensureWeaponSetsData();
       const sets = character.tactical.weaponSets;
-      sets.activeSet = setNum;
-      const cfg = setNum === 2 ? sets.set2 : sets.set1;
+      if (!Array.isArray(sets.activeSets)) {
+        sets.activeSets = [sets.activeSet === 2 ? 2 : 1];
+      }
 
-      character.activeWeapon = cfg.mainWeapon;
-      character.activeOffHand = cfg.offHand;
+      const idx = sets.activeSets.indexOf(setNum);
+      if (idx >= 0) {
+        if (sets.activeSets.length > 1) {
+          // Both were active, deselect this one
+          sets.activeSets.splice(idx, 1);
+        } else {
+          // Only this set was active: if user clicks it again, keep active with informative toast
+          if (typeof showToast === 'function') {
+            showToast(setNum === 1 ? 'Set I aktif. Çift silah (TWF) için Set II\'yi de tıklayarak ekleyin.' : 'Set II aktif. Çift silah (TWF) için Set I\'i de tıklayarak ekleyin.', 'info');
+          }
+        }
+      } else {
+        // Was inactive, activate it! (Both are now active -> TWF!)
+        sets.activeSets.push(setNum);
+      }
+
+      sets.activeSet = (sets.activeSets.includes(1) && sets.activeSets.includes(2)) ? 'both' : (sets.activeSets.includes(2) ? 2 : 1);
+      applyWeaponSetsConfiguration();
+    }
+
+    function activateWeaponSet(setNum) {
+      toggleWeaponSet(setNum);
+    }
+
+    function applyWeaponSetsConfiguration() {
+      ensureWeaponSetsData();
+      const sets = character.tactical.weaponSets;
+      const is1 = sets.activeSets.includes(1);
+      const is2 = sets.activeSets.includes(2);
+      const isDual = is1 && is2;
+
+      let twfMod = (character.activeModifiers || []).find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Çift Silah')));
+
+      if (isDual) {
+        // BOTH SETS ACTIVE -> DUAL WEAPON / TWF MODE
+        character.activeWeapon = sets.set1.mainWeapon;
+        // In dual set mode: Set 1 is main hand, Set 2 is off-hand
+        character.activeOffHand = sets.set2.mainWeapon || sets.set2.offHand;
+
+        const gripSelect = document.getElementById('active-grip-select');
+        if (gripSelect) gripSelect.value = '1-Hand';
+
+        if (twfMod) {
+          twfMod.active = true;
+        }
+      } else if (is1) {
+        // ONLY SET 1 ACTIVE
+        character.activeWeapon = sets.set1.mainWeapon;
+        character.activeOffHand = sets.set1.offHand;
+
+        const gripSelect = document.getElementById('active-grip-select');
+        if (gripSelect) gripSelect.value = sets.set1.grip || '1-Hand';
+
+        const isSecondWeapon = (character.weapons || []).some(w => w.name === sets.set1.offHand && w.name !== 'None');
+        if (twfMod) {
+          twfMod.active = isSecondWeapon;
+        }
+      } else if (is2) {
+        // ONLY SET 2 ACTIVE
+        character.activeWeapon = sets.set2.mainWeapon;
+        character.activeOffHand = sets.set2.offHand;
+
+        const gripSelect = document.getElementById('active-grip-select');
+        if (gripSelect) gripSelect.value = sets.set2.grip || '1-Hand';
+
+        const isSecondWeapon = (character.weapons || []).some(w => w.name === sets.set2.offHand && w.name !== 'None');
+        const isNamedTWF = sets.set2.name && (sets.set2.name.includes('TWF') || sets.set2.name.includes('Çift'));
+        if (twfMod) {
+          twfMod.active = isSecondWeapon || isNamedTWF;
+        }
+      }
 
       const wepSelect = document.getElementById('active-weapon-select');
-      if (wepSelect) wepSelect.value = cfg.mainWeapon;
-
-      const gripSelect = document.getElementById('active-grip-select');
-      if (gripSelect) gripSelect.value = cfg.grip || '1-Hand';
+      if (wepSelect) wepSelect.value = character.activeWeapon;
 
       const offSelect = document.getElementById('active-offhand-select');
-      if (offSelect) offSelect.value = cfg.offHand;
-
-      // Automatically manage TWF modifier checkbox based on off-hand weapon vs shield
-      const isSecondWeapon = (character.weapons || []).some(w => w.name === cfg.offHand && w.name !== 'None');
-      let twfMod = (character.activeModifiers || []).find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Çift Silah')));
-      if (twfMod) {
-        twfMod.active = isSecondWeapon;
-      }
+      if (offSelect) offSelect.value = character.activeOffHand;
 
       saveStateToStorage(false);
       renderWeaponSetsUI();
@@ -10070,8 +10144,8 @@
       }
 
       // If updating currently active set, re-apply
-      if (sets.activeSet === setNum) {
-        activateWeaponSet(setNum);
+      if (sets.activeSets && sets.activeSets.includes(setNum)) {
+        applyWeaponSetsConfiguration();
       } else {
         saveStateToStorage(false);
         renderWeaponSetsUI();
