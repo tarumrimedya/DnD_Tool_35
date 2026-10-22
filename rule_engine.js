@@ -760,6 +760,7 @@ const RuleEngine = {
   // Central Recalculation Engine for Character State (Abilities, AC, Saves, Speed, Buffs)
   recalculateCharacter(character, masterDb = [], tacticalOptions = {}) {
     if (!character) return;
+    const options = tacticalOptions || {};
 
     // 1. Ensure Base Abilities
     if (!character.baseAbilities) {

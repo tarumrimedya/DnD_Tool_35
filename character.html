@@ -7494,63 +7494,92 @@
       }
 
       // AC Live Evaluation
-      const ceVal = character.tactical?.combatExpertise !== undefined 
-        ? character.tactical.combatExpertise 
-        : (parseInt(document.getElementById('defense-combat-expertise-val')?.value || document.getElementById('combat-expertise-val')?.textContent) || 0);
-      const fdVal = character.tactical?.fightingDefensively !== undefined
-        ? character.tactical.fightingDefensively
-        : (document.getElementById('toggle-fighting-defensively')?.checked || document.getElementById('mod-defensive-fighting')?.checked || false);
-      const tdVal = character.tactical?.totalDefense !== undefined
-        ? character.tactical.totalDefense
-        : (document.getElementById('toggle-total-defense')?.checked || document.getElementById('mod-total-defense')?.checked || false);
-      const chargeVal = character.tactical?.charge !== undefined
-        ? character.tactical.charge
-        : (document.getElementById('mod-charge')?.checked || false);
+      let acCalc = null;
+      try {
+        const ceVal = character.tactical?.combatExpertise !== undefined 
+          ? character.tactical.combatExpertise 
+          : (parseInt(document.getElementById('defense-combat-expertise-val')?.value || document.getElementById('combat-expertise-val')?.textContent) || 0);
+        const fdVal = character.tactical?.fightingDefensively !== undefined
+          ? character.tactical.fightingDefensively
+          : (document.getElementById('toggle-fighting-defensively')?.checked || document.getElementById('mod-defensive-fighting')?.checked || false);
+        const tdVal = character.tactical?.totalDefense !== undefined
+          ? character.tactical.totalDefense
+          : (document.getElementById('toggle-total-defense')?.checked || document.getElementById('mod-total-defense')?.checked || false);
+        const chargeVal = character.tactical?.charge !== undefined
+          ? character.tactical.charge
+          : (document.getElementById('mod-charge')?.checked || false);
 
-      const acCalc = RuleEngine.evaluateAC(character, {
-        combatExpertise: ceVal,
-        fightingDefensively: fdVal,
-        totalDefense: tdVal,
-        charge: chargeVal
-      });
+        if (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateAC) {
+          acCalc = RuleEngine.evaluateAC(character, {
+            combatExpertise: ceVal,
+            fightingDefensively: fdVal,
+            totalDefense: tdVal,
+            charge: chargeVal
+          });
+        }
+      } catch (e) {
+        console.error('AC evaluation error in renderHUD:', e);
+      }
+
+      const totalAc = acCalc?.total ?? character.acBreakdown?.total ?? 10;
+      const touchAc = acCalc?.touch ?? character.acBreakdown?.touch ?? 10;
+      const flatAc = acCalc?.flat ?? character.acBreakdown?.flat ?? 10;
 
       const acTotalEl = document.getElementById('ac-total-display');
-      if (acTotalEl) acTotalEl.textContent = acCalc.total;
+      if (acTotalEl) acTotalEl.textContent = totalAc;
       const acTouchEl = document.getElementById('ac-touch-display');
-      if (acTouchEl) acTouchEl.textContent = acCalc.touch;
+      if (acTouchEl) acTouchEl.textContent = touchAc;
       const acFlatEl = document.getElementById('ac-flat-display');
-      if (acFlatEl) acFlatEl.textContent = acCalc.flat;
+      if (acFlatEl) acFlatEl.textContent = flatAc;
 
       const acNotesEl = document.getElementById('ac-notes-display');
-      if (acNotesEl && acCalc.breakdown) {
-        const bd = character.acBreakdown || {};
-        const armorName = (Array.isArray(bd.sources?.armor) && bd.sources.armor[0]?.source) ? bd.sources.armor[0].source : null;
-        const shieldName = (Array.isArray(bd.sources?.shield) && bd.sources.shield[0]?.source) ? bd.sources.shield[0].source : null;
+      if (acNotesEl) {
+        const bd = acCalc?.breakdown || character.acBreakdown || {};
+        const sources = character.acBreakdown?.sources || {};
+        const armorName = (Array.isArray(sources.armor) && sources.armor[0]?.source) ? sources.armor[0].source : null;
+        const shieldName = (Array.isArray(sources.shield) && sources.shield[0]?.source) ? sources.shield[0].source : null;
 
         const detailedParts = [];
-        if (acCalc.breakdown.armor) detailedParts.push(`Zırh +${acCalc.breakdown.armor}${armorName ? ` (${armorName})` : ''}`);
-        if (acCalc.breakdown.shield) detailedParts.push(`Kalkan +${acCalc.breakdown.shield}${shieldName ? ` (${shieldName})` : ''}`);
-        if (acCalc.breakdown.dex !== undefined) detailedParts.push(`Dex ${acCalc.breakdown.dex >= 0 ? '+' + acCalc.breakdown.dex : acCalc.breakdown.dex}`);
-        if (acCalc.breakdown.natural) detailedParts.push(`Nat +${acCalc.breakdown.natural}`);
-        if (acCalc.breakdown.deflection) detailedParts.push(`Defl +${acCalc.breakdown.deflection}`);
-        if (acCalc.breakdown.dodge) detailedParts.push(`Dodge +${acCalc.breakdown.dodge}`);
-        if (acCalc.breakdown.penalty) detailedParts.push(`Ceza ${acCalc.breakdown.penalty}`);
+        if (bd.armor) detailedParts.push(`Zırh +${bd.armor}${armorName ? ` (${armorName})` : ''}`);
+        if (bd.shield) detailedParts.push(`Kalkan +${bd.shield}${shieldName ? ` (${shieldName})` : ''}`);
+        if (bd.dex !== undefined) detailedParts.push(`Dex ${bd.dex >= 0 ? '+' + bd.dex : bd.dex}`);
+        if (bd.natural) detailedParts.push(`Nat +${bd.natural}`);
+        if (bd.deflection) detailedParts.push(`Defl +${bd.deflection}`);
+        if (bd.dodge) detailedParts.push(`Dodge +${bd.dodge}`);
+        if (bd.penalty) detailedParts.push(`Ceza ${bd.penalty}`);
 
         const shortParts = [];
-        if (acCalc.breakdown.armor) shortParts.push(`Zırh +${acCalc.breakdown.armor}`);
-        if (acCalc.breakdown.shield) shortParts.push(`Kalkan +${acCalc.breakdown.shield}`);
-        if (acCalc.breakdown.dex !== undefined) shortParts.push(`Dex ${acCalc.breakdown.dex >= 0 ? '+' + acCalc.breakdown.dex : acCalc.breakdown.dex}`);
-        if (acCalc.breakdown.natural) shortParts.push(`Nat +${acCalc.breakdown.natural}`);
-        if (acCalc.breakdown.deflection) shortParts.push(`Defl +${acCalc.breakdown.deflection}`);
-        if (acCalc.breakdown.dodge) shortParts.push(`Dodge +${acCalc.breakdown.dodge}`);
-        if (acCalc.breakdown.penalty) shortParts.push(`Ceza ${acCalc.breakdown.penalty}`);
+        if (bd.armor) shortParts.push(`Zırh +${bd.armor}`);
+        if (bd.shield) shortParts.push(`Kalkan +${bd.shield}`);
+        if (bd.dex !== undefined) shortParts.push(`Dex ${bd.dex >= 0 ? '+' + bd.dex : bd.dex}`);
+        if (bd.natural) shortParts.push(`Nat +${bd.natural}`);
+        if (bd.deflection) shortParts.push(`Defl +${bd.deflection}`);
+        if (bd.dodge) shortParts.push(`Dodge +${bd.dodge}`);
+        if (bd.penalty) shortParts.push(`Ceza ${bd.penalty}`);
 
         acNotesEl.textContent = shortParts.join(' • ') || 'Taban AC 10';
         acNotesEl.title = `AC Dökümü: ${detailedParts.join(' • ')} (Taban 10) | Detay için 'Döküm' bağlantısına tıklayın.`;
       }
 
       // Saves Live Evaluation
-      const saves = RuleEngine.evaluateSaves(character);
+      let saves = null;
+      try {
+        if (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateSaves) {
+          saves = RuleEngine.evaluateSaves(character);
+        }
+      } catch (e) {
+        console.error('Saves evaluation error in renderHUD:', e);
+      }
+      if (!saves) {
+        const cMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod) ? RuleEngine.getAbilityMod(character.abilities?.con || 10) : 0;
+        const dMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod) ? RuleEngine.getAbilityMod(character.abilities?.dex || 10) : 0;
+        const wMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod) ? RuleEngine.getAbilityMod(character.abilities?.wis || 10) : 0;
+        saves = character.evaluatedSaves || {
+          fort: (character.baseSaves?.fort || 0) + cMod,
+          ref: (character.baseSaves?.ref || 0) + dMod,
+          will: (character.baseSaves?.will || 0) + wMod
+        };
+      }
       const saveFortEl = document.getElementById('save-fort-display');
       if (saveFortEl) saveFortEl.textContent = (saves.fort >= 0 ? '+' : '') + saves.fort;
       const saveRefEl = document.getElementById('save-ref-display');
