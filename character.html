@@ -5713,6 +5713,33 @@
           </div>
         </div>
 
+        <!-- SECTION 6: GÜNLÜK ŞARJ & KULLANIM SINIRI -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 space-y-2">
+          <div class="text-[11px] font-bold text-amber-400 uppercase tracking-wide flex items-center gap-1.5">
+            <span>⚡</span>
+            <span>6. Günlük Şarj & Kullanım Sınırı (Daily Charges / Uses)</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Maksimum Şarj / Günlük Hak</label>
+              <input type="number" id="rf-daily-charges" min="0" max="100" placeholder="Örn: 5, 3, 10 (Boşsa sınırsız)" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-amber-300 font-mono">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Şarj Birimi (Unit)</label>
+              <select id="rf-charge-unit" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
+                <option value="charges">Şarj (Charge - Witchlight, Healing Belt vb.)</option>
+                <option value="rounds">Tur (Round - Boots of Speed vb.)</option>
+                <option value="uses">Kullanım (X/day - 1/day, 3/day vb.)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Yenilenme Periyodu</label>
+              <input type="text" id="rf-charge-recharge" value="Long Rest (Şafak / Uzun Dinlenme)" disabled class="w-full bg-slate-950/70 border border-slate-800 rounded px-2.5 py-1 text-xs text-slate-400 cursor-not-allowed">
+            </div>
+          </div>
+          <p class="text-[10px] text-slate-400 italic">Eşya kuşanıldığında Savaş Kokpitinde otomatik batarya ve tek tıkla şarj harcama butonu belirir. Uzun Dinlenme (☀️) yapıldığında şarjlar otomatik dolar.</p>
+        </div>
+
       </div>
 
       <!-- Modal Footer -->
@@ -10502,48 +10529,159 @@
     function renderCockpitConsumables() {
       const listEl = document.getElementById('cockpit-consumables-list');
       if (!listEl) return;
-      const consumables = (character.gearPool || []).filter(g => g.category === 'Consumable' || (g.name && (g.name.includes('Potion') || g.name.includes('Wand') || g.name.includes('Scroll'))));
 
-      if (consumables.length === 0) {
-        listEl.innerHTML = '<div class="text-[11px] text-slate-500 italic p-2 text-center">Kemerde acil sarf malzemesi yok.</div>';
+      // 1. Kuşanılmış yuvalardan veya envanterden günlük şarjlı eşyalar (Witchlight Reservoir, Healing Belt, Boots of Speed vb.)
+      const dailyItems = [];
+      if (character.bodySlots) {
+        Object.entries(character.bodySlots).forEach(([slotKey, item]) => {
+          if (!item) return;
+          const dc = ensureItemDailyCharges(item);
+          if (dc) {
+            dailyItems.push({
+              item,
+              slotKey,
+              isSlot: true,
+              dailyCharges: dc
+            });
+          }
+        });
+      }
+      if (Array.isArray(character.gearPool)) {
+        character.gearPool.forEach(g => {
+          if (!g) return;
+          const dc = ensureItemDailyCharges(g);
+          if (dc && !dailyItems.some(x => x.item.name === g.name)) {
+            dailyItems.push({
+              item: g,
+              slotKey: null,
+              isSlot: false,
+              dailyCharges: dc
+            });
+          }
+        });
+      }
+
+      // 2. Standart sarf malzemeleri (İksir, Parşömen, Değnek)
+      const normalConsumables = (character.gearPool || []).filter(g =>
+        (g.category === 'Consumable' || (g.name && (g.name.includes('Potion') || g.name.includes('Wand') || g.name.includes('Scroll')))) &&
+        !ensureItemDailyCharges(g)
+      );
+
+      if (dailyItems.length === 0 && normalConsumables.length === 0) {
+        listEl.innerHTML = '<div class="text-[11px] text-slate-500 italic p-2 text-center">Kemerde acil sarf malzemesi veya günlük şarjlı eşya yok.</div>';
         return;
       }
 
-      listEl.innerHTML = consumables.map((item, idx) => {
-        const isPotion = item.name.toLowerCase().includes('potion');
-        const isWand = item.name.toLowerCase().includes('wand');
-        const isScroll = item.name.toLowerCase().includes('scroll');
-        const icon = isPotion ? '🧪' : (isWand ? '✨' : '📜');
-        const btnColor = isPotion ? 'from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500' : 'from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500';
+      let html = '';
 
-        let actionLabel = 'Kullan';
-        if (item.name.includes('Cure Serious')) actionLabel = 'İç (+3d8+5 HP)';
-        else if (item.name.includes('Cure')) actionLabel = 'İç (İyileş)';
-        else if (item.name.includes('Bull')) actionLabel = 'İç (+4 STR)';
-        else if (isWand) actionLabel = 'Ateşle (2d4+2)';
-        else if (isPotion) actionLabel = 'İç';
-        else if (isScroll) actionLabel = 'Oku';
+      // Günlük Şarjlı Eşyalar
+      if (dailyItems.length > 0) {
+        html += dailyItems.map(({ item, slotKey, isSlot, dailyCharges: dc }) => {
+          const lower = (item.name || '').toLowerCase();
+          const isHeal = lower.includes('heal');
+          const isSpeed = lower.includes('speed') || lower.includes('boot');
+          const icon = isHeal ? '💚' : (isSpeed ? '🏃' : '⚡');
+          const opts = getItemDailyOptions(item);
+          const hasMultipleOpts = opts.length > 1;
+          const btnLabel = hasMultipleOpts ? 'Seç & Kullan' : (isSpeed ? '1 Tur Haste' : 'Kullan (-1)');
 
-        return `
-          <div class="bg-slate-900/80 border border-slate-800 rounded-lg p-2 flex items-center justify-between gap-2">
-            <div class="min-w-0 flex-1">
-              <div class="text-xs font-bold text-white flex items-center gap-1.5 truncate">
-                <span>${icon}</span>
-                <span class="truncate">${item.name}</span>
+          return `
+            <div class="bg-slate-900/90 border border-amber-900/50 hover:border-amber-500/50 rounded-lg p-2 flex items-center justify-between gap-2 shadow-sm transition">
+              <div class="min-w-0 flex-1">
+                <div class="text-xs font-bold text-amber-200 flex items-center gap-1.5 truncate">
+                  <span>${icon}</span>
+                  <span class="truncate">${item.name}</span>
+                  ${isSlot ? `<span class="text-[8px] font-mono px-1 py-0.2 rounded bg-slate-800 text-amber-300 border border-slate-700 uppercase">${slotKey}</span>` : ''}
+                </div>
+                <div class="text-[10px] text-slate-400 flex items-center gap-1.5 mt-0.5">
+                  <span class="text-slate-500">Günlük:</span>
+                  <span class="font-mono font-bold text-amber-400 bg-amber-950/90 px-1.5 py-0.5 rounded border border-amber-600/50 shadow-inner">⚡ ${dc.current}/${dc.max}</span>
+                  <span class="text-slate-500">${dc.unit || 'şarj'}</span>
+                </div>
               </div>
-              <div class="text-[10px] text-slate-400">Adet: <strong class="text-amber-400 font-mono">${item.qty || 1}</strong> • ${item.desc ? item.desc.slice(0, 32) + '...' : ''}</div>
+              <div class="flex items-center gap-1 shrink-0">
+                ${isSlot ? `
+                  <div class="inline-flex items-center rounded border border-slate-700 bg-slate-800 text-[10px] font-mono overflow-hidden">
+                    <button type="button" onclick="event.stopPropagation(); spendSlotCharge('${slotKey}', 1)" title="1 Şarj Harca" class="px-1.5 py-0.5 text-slate-300 hover:text-white hover:bg-slate-700 transition cursor-pointer" ${dc.current <= 0 ? 'disabled' : ''}>-</button>
+                    <button type="button" onclick="event.stopPropagation(); restoreSlotCharge('${slotKey}', 1)" title="1 Şarj Geri Al" class="px-1.5 py-0.5 text-slate-300 hover:text-white hover:bg-slate-700 transition cursor-pointer" ${dc.current >= dc.max ? 'disabled' : ''}>+</button>
+                  </div>
+                ` : ''}
+                <button type="button" onclick="consumeCockpitDailyItem('${encodeURIComponent(item.name)}', '${slotKey || ''}')"
+                        class="py-1 px-2.5 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-extrabold text-[11px] rounded-lg shadow transition active:scale-95 flex items-center gap-1 cursor-pointer"
+                        ${dc.current <= 0 ? 'disabled' : ''}>
+                  <span>${icon}</span>
+                  <span>${btnLabel}</span>
+                </button>
+              </div>
             </div>
-            <button onclick="consumeCockpitItem('${encodeURIComponent(item.name)}')" class="shrink-0 py-1 px-2.5 bg-gradient-to-r ${btnColor} text-white font-extrabold text-[11px] rounded-lg shadow transition active:scale-95 flex items-center gap-1" ${(item.qty || 1) <= 0 ? 'disabled' : ''}>
-              <span>${icon}</span>
-              <span>${actionLabel}</span>
-            </button>
-          </div>
-        `;
-      }).join('');
+          `;
+        }).join('');
+      }
+
+      // Standart Sarf Malzemeleri (İksirler, Parşömenler vb.)
+      if (normalConsumables.length > 0) {
+        html += normalConsumables.map((item) => {
+          const isPotion = item.name.toLowerCase().includes('potion');
+          const isWand = item.name.toLowerCase().includes('wand');
+          const isScroll = item.name.toLowerCase().includes('scroll');
+          const icon = isPotion ? '🧪' : (isWand ? '✨' : '📜');
+          const btnColor = isPotion ? 'from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500' : 'from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500';
+
+          let actionLabel = 'Kullan';
+          if (item.name.includes('Cure Serious')) actionLabel = 'İç (+3d8+5 HP)';
+          else if (item.name.includes('Cure')) actionLabel = 'İç (İyileş)';
+          else if (item.name.includes('Bull')) actionLabel = 'İç (+4 STR)';
+          else if (isWand) actionLabel = 'Ateşle (2d4+2)';
+          else if (isPotion) actionLabel = 'İç';
+          else if (isScroll) actionLabel = 'Oku';
+
+          return `
+            <div class="bg-slate-900/80 border border-slate-800 rounded-lg p-2 flex items-center justify-between gap-2 shadow-sm">
+              <div class="min-w-0 flex-1">
+                <div class="text-xs font-bold text-white flex items-center gap-1.5 truncate">
+                  <span>${icon}</span>
+                  <span class="truncate">${item.name}</span>
+                </div>
+                <div class="text-[10px] text-slate-400">Adet: <strong class="text-amber-400 font-mono">${item.qty || 1}</strong> • ${item.desc ? item.desc.slice(0, 32) + '...' : ''}</div>
+              </div>
+              <button onclick="consumeCockpitItem('${encodeURIComponent(item.name)}')" class="shrink-0 py-1 px-2.5 bg-gradient-to-r ${btnColor} text-white font-extrabold text-[11px] rounded-lg shadow transition active:scale-95 flex items-center gap-1 cursor-pointer" ${(item.qty || 1) <= 0 ? 'disabled' : ''}>
+                <span>${icon}</span>
+                <span>${actionLabel}</span>
+              </button>
+            </div>
+          `;
+        }).join('');
+      }
+
+      listEl.innerHTML = html;
     }
 
     function consumeCockpitItem(encodedName) {
       const name = decodeURIComponent(encodedName);
+
+      // Günlük şarjlı bir eşya ise otomatik consumeCockpitDailyItem'a yönlendir
+      let dailyItem = null;
+      let dailySlotKey = null;
+      if (character.bodySlots) {
+        for (const [sk, sItem] of Object.entries(character.bodySlots)) {
+          if (sItem && sItem.name === name && ensureItemDailyCharges(sItem)) {
+            dailyItem = sItem;
+            dailySlotKey = sk;
+            break;
+          }
+        }
+      }
+      if (!dailyItem && Array.isArray(character.gearPool)) {
+        const gItem = character.gearPool.find(g => g && g.name === name);
+        if (gItem && ensureItemDailyCharges(gItem)) {
+          dailyItem = gItem;
+        }
+      }
+      if (dailyItem) {
+        consumeCockpitDailyItem(encodedName, dailySlotKey);
+        return;
+      }
+
       const item = (character.gearPool || []).find(g => g.name === name);
       if (!item || (item.qty || 1) <= 0) {
         showDiceTopToast({ icon: '⚠️', title: 'Tükendi', breakdown: `${name} envanterinizde kalmadı.`, total: '0 Adet' });
@@ -25050,6 +25188,17 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
                   <div class="flex items-center gap-1.5 flex-wrap">
                     <span class="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider text-sky-400">${def.trName || def.name}</span>
                     ${slotData.active ? '<span class="px-1.5 py-0.2 rounded text-[8px] font-bold bg-sky-950 text-sky-300 border border-sky-600/40">AKTİF</span>' : '<span class="px-1.5 py-0.2 rounded text-[8px] font-bold bg-slate-800 text-slate-400 border border-slate-700">PASİF</span>'}
+                    ${(() => {
+                      const dailyC = (typeof ensureItemDailyCharges === 'function') ? ensureItemDailyCharges(slotData) : slotData.dailyCharges;
+                      if (!dailyC) return '';
+                      return `
+                        <div class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-mono font-bold bg-amber-950/90 text-amber-300 border border-amber-500/50 shadow-sm" title="Günlük Kalan: ${dailyC.current}/${dailyC.max} ${dailyC.unit || 'şarj'}">
+                          <span>⚡ ${dailyC.current}/${dailyC.max}</span>
+                          <button type="button" onclick="event.stopPropagation(); spendSlotCharge('${slotKey}', 1)" title="1 Şarj Harca" class="hover:text-white px-0.5 transition font-extrabold cursor-pointer" ${dailyC.current <= 0 ? 'disabled' : ''}>-</button>
+                          <button type="button" onclick="event.stopPropagation(); restoreSlotCharge('${slotKey}', 1)" title="1 Şarj Geri Al" class="hover:text-white px-0.5 transition font-extrabold cursor-pointer" ${dailyC.current >= dailyC.max ? 'disabled' : ''}>+</button>
+                        </div>
+                      `;
+                    })()}
                   </div>
                   <div class="text-xs font-bold text-white truncate group-hover:text-amber-300 transition" title="${slotData.name}">
                     ${slotData.name}
@@ -26663,20 +26812,306 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       return true;
     }
 
-    // Günlük Şarj Takip Edici (Örn: Ring of Sending 3/day, 3/gün)
+    // Günlük Şarj Takip Edici (Örn: Witchlight Reservoir 5 charges/day, Boots of Speed 10 rounds/day, Ring of Sending 3/day)
     function ensureItemDailyCharges(item) {
       if (!item) return null;
       if (item.dailyCharges && typeof item.dailyCharges.max === 'number') {
+        if (item.dailyCharges.current === undefined) item.dailyCharges.current = item.dailyCharges.max;
+        if (!item.dailyCharges.unit) item.dailyCharges.unit = 'charges';
         return item.dailyCharges;
       }
-      const combined = `${item.name || ''} ${item.desc || ''} ${item.effect || ''}`;
-      const match = combined.match(/(?:(\d+)\s*(?:\/|\s*x\s*|\s*kullanım\s*\/?\s*|\s*defa\s*)(?:day|gün|günde|günlük))|(?:(?:günde|günlük)\s*(\d+))/i);
+      const lowerName = (item.name || '').toLowerCase();
+      if (lowerName.includes('healing belt')) {
+        item.dailyCharges = { current: 3, max: 3, unit: 'charges', recharge: 'long_rest' };
+        return item.dailyCharges;
+      }
+      if (lowerName.includes('witchlight reservoir')) {
+        item.dailyCharges = { current: 5, max: 5, unit: 'charges', recharge: 'long_rest' };
+        return item.dailyCharges;
+      }
+      if (lowerName.includes('boots of speed')) {
+        item.dailyCharges = { current: 10, max: 10, unit: 'rounds', recharge: 'long_rest' };
+        return item.dailyCharges;
+      }
+      if (lowerName.includes('belt of battle')) {
+        item.dailyCharges = { current: 3, max: 3, unit: 'charges', recharge: 'long_rest' };
+        return item.dailyCharges;
+      }
+      const combined = `${item.name || ''} ${item.desc || ''} ${item.effect || ''} ${item.benefit || ''}`;
+      const match = combined.match(/(?:(\d+)\s*(?:charges?|rounds?|uses?|times?|kullanım|şarj|tur|defa)?\s*(?:\/|\s*per\s*|\s*x\s*|\s*a\s*)\s*(?:day|gün|günde|günlük))|(?:(?:günde|günlük)\s*(\d+)\s*(?:şarj|kullanım|tur|round|defa)?)/i);
       if (match) {
         const maxVal = parseInt(match[1] || match[2]) || 1;
-        item.dailyCharges = { current: maxVal, max: maxVal };
+        let unit = 'charges';
+        const matchedStr = match[0].toLowerCase();
+        if (matchedStr.includes('round') || matchedStr.includes('tur')) unit = 'rounds';
+        else if (matchedStr.includes('use') || matchedStr.includes('kullanım') || matchedStr.includes('defa')) unit = 'uses';
+        item.dailyCharges = { current: maxVal, max: maxVal, unit: unit, recharge: 'long_rest' };
         return item.dailyCharges;
       }
       return null;
+    }
+
+    function spendSlotCharge(slotKey, amount = 1) {
+      const item = character.bodySlots?.[slotKey];
+      if (!item) return;
+      const dc = ensureItemDailyCharges(item);
+      if (!dc || dc.current <= 0) {
+        showDiceTopToast({
+          icon: '⏳',
+          title: item.name || 'Şarjlı Eşya',
+          breakdown: 'Bugünkü tüm kullanım hakları tükendi! Uzun Dinlenme (☀️) ile sıfırlanır.',
+          total: '0 Şarj'
+        });
+        return;
+      }
+      dc.current = Math.max(0, dc.current - amount);
+      saveStateToStorage(true);
+      renderAll();
+      showDiceTopToast({
+        icon: '⚡',
+        title: item.name || 'Şarj Harcandı',
+        breakdown: `${amount} şarj harcandı. Kalan: ${dc.current}/${dc.max} ${dc.unit || 'şarj'}.`,
+        total: `${dc.current}/${dc.max}`
+      });
+    }
+
+    function restoreSlotCharge(slotKey, amount = 1) {
+      const item = character.bodySlots?.[slotKey];
+      if (!item) return;
+      const dc = ensureItemDailyCharges(item);
+      if (!dc || dc.current >= dc.max) return;
+      dc.current = Math.min(dc.max, dc.current + amount);
+      saveStateToStorage(true);
+      renderAll();
+    }
+
+    function getItemDailyOptions(item) {
+      if (!item) return [];
+      if (Array.isArray(item.chargeOptions) && item.chargeOptions.length > 0) {
+        return item.chargeOptions;
+      }
+      const itemName = (item.name || '').toLowerCase().trim();
+      if (Array.isArray(window.masterDb)) {
+        const children = window.masterDb.filter(m => (m.parent || '').toLowerCase().trim() === itemName);
+        if (children.length > 0) {
+          return children.map(ch => ({
+            label: ch.name.replace(/^\u21B3\s*/, ''),
+            cost: Number(ch.chargeCost) || 1,
+            dice: ch.dice || ch.formula || null,
+            effectType: ch.effectType || 'custom',
+            type: ch.effectType || 'custom',
+            buffName: ch.buffName,
+            bonusAtk: ch.bonusAtk,
+            bonusDmg: ch.bonusDmg,
+            speedBonus: ch.speedBonus
+          }));
+        }
+      }
+
+      if (itemName.includes('healing belt')) {
+        return [
+          { label: '1 Şarj: 2d8 Can Yenile', cost: 1, dice: '2d8', effectType: 'heal' },
+          { label: '2 Şarj: 3d8 Can Yenile', cost: 2, dice: '3d8', effectType: 'heal' },
+          { label: '3 Şarj: 4d8 Can Yenile', cost: 3, dice: '4d8', effectType: 'heal' }
+        ];
+      }
+      if (itemName.includes('witchlight reservoir')) {
+        return [
+          { label: '1 Şarj: +2 Melee Hasarı (1 Tur)', cost: 1, type: 'buff', buffName: 'Witchlight (+2 Hasar)', bonusDmg: 2 },
+          { label: '2 Şarj: +4 Melee Hasarı (1 Tur)', cost: 2, type: 'buff', buffName: 'Witchlight (+4 Hasar)', bonusDmg: 4 },
+          { label: '2 Şarj: +20 ft Hız (1 Tur)', cost: 2, type: 'buff', buffName: 'Witchlight (+20 ft Hız)', speedBonus: 20 }
+        ];
+      }
+      if (itemName.includes('boots of speed')) {
+        return [
+          { label: '1 Tur Haste (Saldırı +1, AC +1, Hız +30 ft)', cost: 1, type: 'haste' }
+        ];
+      }
+      if (itemName.includes('belt of battle')) {
+        return [
+          { label: '1 Şarj: Ekstra Move Action', cost: 1, type: 'info', note: 'Ekstra Move Action kazandınız!' },
+          { label: '2 Şarj: Ekstra Standard Action', cost: 2, type: 'info', note: 'Ekstra Standard Action kazandınız!' },
+          { label: '3 Şarj: Ekstra Full-Round Action', cost: 3, type: 'info', note: 'Ekstra Full-Round Action kazandınız!' }
+        ];
+      }
+
+      return [
+        { label: `1 ${item.dailyCharges?.unit || 'Şarj'} Harca`, cost: 1 }
+      ];
+    }
+
+    function consumeCockpitDailyItem(encodedName, slotKey) {
+      const name = decodeURIComponent(encodedName);
+      let item = null;
+      let isSlot = false;
+      if (slotKey && character.bodySlots?.[slotKey]) {
+        item = character.bodySlots[slotKey];
+        isSlot = true;
+      }
+      if (!item && character.bodySlots) {
+        for (const [sk, sItem] of Object.entries(character.bodySlots)) {
+          if (sItem && sItem.name === name) {
+            item = sItem;
+            isSlot = true;
+            slotKey = sk;
+            break;
+          }
+        }
+      }
+      if (!item && Array.isArray(character.gearPool)) {
+        item = character.gearPool.find(g => g && g.name === name);
+      }
+      if (!item && Array.isArray(character.consumables)) {
+        item = character.consumables.find(c => c && c.name === name);
+      }
+      if (!item) return;
+
+      const dc = ensureItemDailyCharges(item);
+      if (!dc || dc.current <= 0) {
+        showDiceTopToast({
+          icon: '⏳',
+          title: item.name,
+          breakdown: `Bugünkü tüm kullanım hakları (${dc?.max || 0} ${dc?.unit || 'şarj'}) tükendi! Uzun Dinlenme (☀️) ile yenilenir.`,
+          total: '0 Şarj'
+        });
+        return;
+      }
+
+      const options = getItemDailyOptions(item);
+
+      if (options.length === 1) {
+        executeItemOption(item, options[0]);
+        return;
+      }
+
+      const currentCharges = dc.current;
+      const unitName = dc.unit || 'Şarj';
+      const actions = options.map((opt) => {
+        const cost = Number(opt.cost) || 1;
+        const canAfford = currentCharges >= cost;
+        let btnClass = 'px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition shadow cursor-pointer inline-flex items-center gap-1.5 ';
+        if (!canAfford) {
+          btnClass += 'bg-slate-800 text-slate-500 border border-slate-700 opacity-60 cursor-not-allowed';
+        } else if (opt.effectType === 'heal' || (opt.dice && opt.dice.includes('d8'))) {
+          btnClass += 'bg-emerald-900/90 hover:bg-emerald-700 text-emerald-100 border border-emerald-500/80 active:scale-95';
+        } else if (opt.type === 'haste') {
+          btnClass += 'bg-cyan-900/90 hover:bg-cyan-700 text-cyan-100 border border-cyan-500/80 active:scale-95';
+        } else {
+          btnClass += 'bg-amber-950/90 hover:bg-amber-800 text-amber-200 hover:text-white border border-amber-500/80 active:scale-95';
+        }
+
+        let diceIcon = '';
+        if (opt.dice) {
+          diceIcon = getFormulaDiceIconSvg(opt.dice, 'w-3.5 h-3.5 text-amber-300 shrink-0');
+        } else if (opt.effectType === 'heal') {
+          diceIcon = '💚';
+        } else if (opt.type === 'haste') {
+          diceIcon = '🏃';
+        } else {
+          diceIcon = '⚡';
+        }
+
+        return {
+          label: `${diceIcon}<span>${opt.label}</span>`,
+          className: btnClass,
+          onClick: () => {
+            if (!canAfford) {
+              showDiceTopToast({ icon: '⚠️', title: 'Yetersiz Şarj', breakdown: `Bu aksiyon için ${cost} ${unitName} gerekiyor. Mevcut: ${currentCharges}`, total: 'Hata' });
+              return;
+            }
+            executeItemOption(item, opt);
+          }
+        };
+      });
+
+      actions.push({
+        label: '<span>İptal</span>',
+        className: 'px-2 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white border border-slate-700 transition cursor-pointer',
+        onClick: () => {
+          const el = document.getElementById('dice-top-toast');
+          if (el) el.remove();
+        }
+      });
+
+      showDiceTopToast({
+        icon: '⚡',
+        title: `${item.name} (${currentCharges}/${dc.max} ${unitName})`,
+        breakdown: 'Kullanmak istediğiniz etkiyi ve harcanacak şarjı seçin:',
+        total: `${currentCharges} ${unitName}`,
+        actions: actions
+      }, { replaceId: 'dice-roll-active-toast', autoDismiss: false, stack: false });
+    }
+
+    function executeItemOption(item, opt) {
+      if (!item || !opt) return;
+      const dc = ensureItemDailyCharges(item);
+      if (!dc) return;
+      const cost = Number(opt.cost) || 1;
+      if (dc.current < cost) {
+        showDiceTopToast({ icon: '⚠️', title: 'Yetersiz Şarj', breakdown: `Bu aksiyon için ${cost} ${dc.unit || 'şarj'} gerekiyor, mevcut: ${dc.current}`, total: 'Hata' });
+        return;
+      }
+      dc.current -= cost;
+
+      if (opt.dice) {
+        rollSpellOrManeuverFormula(opt.dice, `${item.name} (${opt.label})`, { name: item.name, effectType: opt.effectType || 'heal' });
+      } else if (opt.type === 'haste') {
+        if (!Array.isArray(character.buffs)) character.buffs = [];
+        const existingHaste = character.buffs.find(b => b.name && b.name.toLowerCase().includes('haste'));
+        if (existingHaste) {
+          existingHaste.active = true;
+          existingHaste.duration = 1;
+          existingHaste.durationText = '1 Tur';
+        } else {
+          character.buffs.push({
+            id: 'buff_boots_haste',
+            name: 'Haste (Boots of Speed)',
+            active: true,
+            attBonus: 1,
+            acBonus: 1,
+            bonusType: 'Dodge',
+            speedBonus: 30,
+            duration: 1,
+            durationText: '1 Tur',
+            source: 'Boots of Speed'
+          });
+        }
+        showDiceTopToast({
+          icon: '🏃',
+          title: 'Boots of Speed Aktif!',
+          breakdown: `1 tur boyunca Haste aktif (+1 Saldırı, +1 Dodge AC, +30 ft Hız, Full Attack'ta +1 ek vuruş). Kalan: ${dc.current}/${dc.max} Tur.`,
+          total: '+1 Tur Haste'
+        });
+      } else if (opt.type === 'buff' && opt.buffName) {
+        if (!Array.isArray(character.buffs)) character.buffs = [];
+        character.buffs.push({
+          id: 'buff_' + Date.now(),
+          name: opt.buffName,
+          active: true,
+          attBonus: opt.bonusAtk || 0,
+          dmgBonus: opt.bonusDmg || 0,
+          speedBonus: opt.speedBonus || 0,
+          duration: 1,
+          durationText: '1 Tur',
+          source: item.name
+        });
+        showDiceTopToast({
+          icon: '⚡',
+          title: `${opt.buffName} Aktif!`,
+          breakdown: `1 tur boyunca aktif bufflara işlendi. Kalan: ${dc.current}/${dc.max} ${dc.unit || 'şarj'}.`,
+          total: 'Aktif'
+        });
+      } else {
+        showDiceTopToast({
+          icon: '⚡',
+          title: `${item.name} Kullanıldı!`,
+          breakdown: `${opt.label || opt.note || '1 şarj harcandı'}. Kalan: ${dc.current}/${dc.max} ${dc.unit || 'şarj'}.`,
+          total: `${dc.current}/${dc.max}`
+        });
+      }
+
+      saveStateToStorage(true);
+      renderAll();
     }
 
     // Hasar / Büyü Formülü Ayrıştırıcı (Wand of Fireball, Magic Missile, Lightning vb.)

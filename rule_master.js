@@ -671,6 +671,32 @@ const RuleMaster = {
     document.getElementById('rf-level').value = entry.level || '';
     document.getElementById('rf-discipline').value = entry.discipline || '';
 
+    // Daily Charges / Uses
+    const dcInput = document.getElementById('rf-daily-charges');
+    const unitInput = document.getElementById('rf-charge-unit');
+    if (dcInput) {
+      let maxVal = '';
+      let unit = 'charges';
+      if (entry.dailyCharges && typeof entry.dailyCharges.max === 'number') {
+        maxVal = entry.dailyCharges.max;
+        unit = entry.dailyCharges.unit || 'charges';
+      } else if (typeof entry.dailyCharges === 'number') {
+        maxVal = entry.dailyCharges;
+      } else if (entry.charges && typeof entry.charges === 'number') {
+        maxVal = entry.charges;
+      } else {
+        const fullDesc = `${entry.name || ''} ${entry.benefit || ''} ${entry.description || ''} ${entry.duration || ''}`;
+        const match = fullDesc.match(/(?:(\d+)\s*(?:charges?|rounds?|uses?|times?|kullanım|şarj|defa)?\s*(?:\/|\s*per\s*|\s*x\s*|\s*a\s*)\s*(?:day|gün|günde|günlük))|(?:(?:günde|günlük)\s*(\d+)\s*(?:şarj|kullanım|tur|round|defa)?)/i);
+        if (match) {
+          maxVal = parseInt(match[1] || match[2]) || '';
+          if (/round|tur/i.test(match[0])) unit = 'rounds';
+          else if (/use|kullanım|times|defa/i.test(match[0])) unit = 'uses';
+        }
+      }
+      dcInput.value = maxVal;
+      if (unitInput) unitInput.value = unit;
+    }
+
     modal.classList.remove('hidden');
   },
 
@@ -741,6 +767,20 @@ const RuleMaster = {
       level: document.getElementById('rf-level').value ? Number(document.getElementById('rf-level').value) : '',
       discipline: document.getElementById('rf-discipline').value.trim()
     };
+
+    // Process Daily Charges
+    const dailyChargesVal = parseInt(document.getElementById('rf-daily-charges')?.value);
+    const chargeUnitVal = document.getElementById('rf-charge-unit')?.value || 'charges';
+    if (!isNaN(dailyChargesVal) && dailyChargesVal > 0) {
+      formData.dailyCharges = {
+        current: (baseObj.dailyCharges?.current !== undefined && baseObj.dailyCharges.current <= dailyChargesVal) ? baseObj.dailyCharges.current : dailyChargesVal,
+        max: dailyChargesVal,
+        unit: chargeUnitVal,
+        recharge: 'long_rest'
+      };
+    } else if (baseObj.dailyCharges) {
+      delete formData.dailyCharges;
+    }
 
     // Deep Merge with baseObj to guarantee ruleFlags, combatModifiers, and skillBonuses are preserved
     const entry = Object.assign({}, baseObj, formData);

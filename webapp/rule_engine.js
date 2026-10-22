@@ -243,6 +243,8 @@ const RuleEngine = {
       if (dbEntry.willBonus) res.will = Number(dbEntry.willBonus) || 0;
       if (dbEntry.speedBonus) res.speed = Number(dbEntry.speedBonus) || 0;
       if (dbEntry.bonusType) res.bonusType = dbEntry.bonusType;
+      if (dbEntry.dailyCharges) res.dailyCharges = JSON.parse(JSON.stringify(dbEntry.dailyCharges));
+      if (dbEntry.chargeOptions) res.chargeOptions = JSON.parse(JSON.stringify(dbEntry.chargeOptions));
     }
 
     // 2. Direct item properties
@@ -272,6 +274,8 @@ const RuleEngine = {
     if (item.intBonus) { res.int = Number(item.intBonus) || 0; res.bonusType = item.bonusType || 'Enhancement'; }
     if (item.wisBonus) { res.wis = Number(item.wisBonus) || 0; res.bonusType = item.bonusType || 'Enhancement'; }
     if (item.chaBonus) { res.cha = Number(item.chaBonus) || 0; res.bonusType = item.bonusType || 'Enhancement'; }
+    if (item.dailyCharges) res.dailyCharges = JSON.parse(JSON.stringify(item.dailyCharges));
+    if (item.chargeOptions) res.chargeOptions = JSON.parse(JSON.stringify(item.chargeOptions));
 
     // 3. Fallback to SRD Catalogs & Intelligent Heuristics if AC/stat is still 0
     const fullText = `${item.name} ${item.desc || ''} ${dbEntry?.benefit || ''}`.toLowerCase();
