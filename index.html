@@ -10605,13 +10605,13 @@
                           class="py-1 px-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-[11px] rounded-lg shadow transition active:scale-95 flex items-center gap-1 cursor-pointer"
                           title="1 Tur Harca & Aktif Et" ${dc.current <= 0 ? 'disabled' : ''}>
                     <span>✨</span>
-                    <span>Cast (+1)</span>
+                    <span>At (+1)</span>
                   </button>
                   <button type="button" onclick="dischargeDailyRoundItem('${encodeURIComponent(item.name)}', '${slotKey || ''}')"
-                          class="py-1 px-2 bg-gradient-to-r from-rose-800 to-red-700 hover:from-rose-700 hover:to-red-600 text-white font-extrabold text-[11px] rounded-lg shadow transition active:scale-95 flex items-center gap-1 cursor-pointer ${!active ? 'opacity-40 cursor-not-allowed' : ''}"
-                          title="Etkiyi Sonlandır / Kapat" ${!active ? 'disabled' : ''}>
+                          class="py-1 px-2.5 bg-gradient-to-r from-rose-800 to-red-700 hover:from-rose-700 hover:to-red-600 text-white font-extrabold text-[11px] rounded-lg shadow transition active:scale-95 flex items-center gap-1 cursor-pointer ${!active ? 'opacity-40 cursor-not-allowed' : ''}"
+                          title="Etkiyi Sonlandır (Son)" ${!active ? 'disabled' : ''}>
                     <span>🛑</span>
-                    <span>Discharge</span>
+                    <span>Son</span>
                   </button>
                 </div>
               </div>
@@ -25238,9 +25238,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
                         </div>
                         ${isRound ? `
                           <button type="button" onclick="event.stopPropagation(); ${activeBuff ? `dischargeDailyRoundItem('${encodeURIComponent(slotData.name)}', '${slotKey}')` : `castDailyRoundItem('${encodeURIComponent(slotData.name)}', '${slotKey}')`}"
-                                  title="${activeBuff ? 'Etkiyi Sonlandır (Discharge)' : '1 Tur Harca & Aktif Et (Cast)'}"
+                                  title="${activeBuff ? 'Etkiyi Sonlandır (Son)' : '1 Tur Harca & Aktif Et (At)'}"
                                   class="px-1.5 py-0.5 rounded text-[8px] font-bold transition flex items-center gap-0.5 cursor-pointer shadow-sm ${activeBuff ? 'bg-rose-950 text-rose-300 border border-rose-500 hover:bg-rose-900 animate-pulse' : 'bg-emerald-950 text-emerald-300 border border-emerald-600 hover:bg-emerald-900'}">
-                            <span>${activeBuff ? '🛑 Discharge' : '✨ Cast'}</span>
+                            <span>${activeBuff ? '🛑 Son' : '✨ At'}</span>
                           </button>
                         ` : ''}
                       `;
@@ -26997,9 +26997,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         }
         showDiceTopToast({
           icon: '🏃',
-          title: 'Boots of Speed: Cast Edildi!',
+          title: 'Boots of Speed: Atıldı!',
           breakdown: `Haste aktif edildi (+1 Saldırı, +1 Dodge AC, +30 ft Hız, Full Attack\'ta +1 ek vuruş). Kalan: ${dc.current}/${dc.max} Tur.`,
-          total: 'Cast (1 Tur)'
+          total: 'At (1 Tur)'
         });
       } else {
         if (!Array.isArray(character.buffs)) character.buffs = [];
@@ -27021,9 +27021,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         }
         showDiceTopToast({
           icon: '⚡',
-          title: `${item.name}: Cast Edildi!`,
+          title: `${item.name}: Atıldı!`,
           breakdown: `1 tur boyunca aktif bufflara işlendi. Kalan: ${dc.current}/${dc.max} ${dc.unit || 'tur'}.`,
-          total: 'Cast (1 Tur)'
+          total: 'At (1 Tur)'
         });
       }
 
@@ -27073,9 +27073,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       if (dischargedCount > 0) {
         showDiceTopToast({
           icon: '🛑',
-          title: `${item?.name || name}: Discharge Edildi!`,
-          breakdown: `Aktif büyü/eşya etkisi sonlandırıldı (Discharged)${remStr}.`,
-          total: 'Discharge'
+          title: `${item?.name || name}: Sonlandırıldı!`,
+          breakdown: `Aktif büyü/eşya etkisi sonlandırıldı (Son)${remStr}.`,
+          total: 'Son'
         });
       } else {
         showDiceTopToast({
@@ -27129,8 +27129,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       }
       if (itemName.includes('boots of speed')) {
         return [
-          { label: 'Cast (1 Tur Harca & Aktif Et)', action: 'cast', cost: 1, type: 'haste' },
-          { label: 'Discharge (Etkiyi Sonlandır)', action: 'discharge', cost: 0, type: 'discharge' }
+          { label: 'At (1 Tur Harca & Aktif Et)', action: 'cast', cost: 1, type: 'haste' },
+          { label: 'Son (Etkiyi Sonlandır)', action: 'discharge', cost: 0, type: 'discharge' }
         ];
       }
       if (itemName.includes('belt of battle')) {
@@ -27144,8 +27144,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       const isRoundUnit = item.dailyCharges && (item.dailyCharges.unit === 'rounds' || item.dailyCharges.unit === 'tur' || item.dailyCharges.unit === 'turn');
       if (isRoundUnit) {
         return [
-          { label: 'Cast (1 Tur Harca & Aktif Et)', action: 'cast', cost: 1, type: 'cast' },
-          { label: 'Discharge (Etkiyi Sonlandır)', action: 'discharge', cost: 0, type: 'discharge' }
+          { label: 'At (1 Tur Harca & Aktif Et)', action: 'cast', cost: 1, type: 'cast' },
+          { label: 'Son (Etkiyi Sonlandır)', action: 'discharge', cost: 0, type: 'discharge' }
         ];
       }
 

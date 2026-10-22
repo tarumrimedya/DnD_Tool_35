@@ -11675,13 +11675,13 @@
                          },
         "chargeOptions":  [
                               {
-                                  "label":  "Cast (1 Tur Harca \u0026 Aktif Et)",
+                                  "label":  "At (1 Tur Harca \u0026 Aktif Et)",
                                   "action":  "cast",
                                   "cost":  1,
                                   "type":  "haste"
                               },
                               {
-                                  "label":  "Discharge (Etkiyi Sonlandır)",
+                                  "label":  "Son (Etkiyi Sonlandır)",
                                   "action":  "discharge",
                                   "cost":  0,
                                   "type":  "discharge"
