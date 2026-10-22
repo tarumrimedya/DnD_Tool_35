@@ -1568,6 +1568,16 @@
               <span class="text-[10px] text-slate-400 font-mono bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700">D&D 3.5e RAW Stacking</span>
             </div>
             <div class="flex items-center gap-1.5 flex-wrap">
+              <!-- Görünüm Değiştirici: Kart / Liste -->
+              <div class="inline-flex rounded-lg bg-slate-950 p-0.5 border border-slate-800 text-xs shadow-inner">
+                <button type="button" onclick="setBuffsViewMode('grid')" id="buffs-view-grid-btn" class="px-2 py-1 rounded-md font-bold transition flex items-center gap-1 cursor-pointer bg-indigo-600 text-white shadow-sm" title="Kart Görünümü (3'lü Izgara)">
+                  <span>🎴</span><span class="hidden sm:inline">Kart</span>
+                </button>
+                <button type="button" onclick="setBuffsViewMode('list')" id="buffs-view-list-btn" class="px-2 py-1 rounded-md font-bold transition flex items-center gap-1 cursor-pointer text-slate-400 hover:text-white" title="Liste Görünümü (Kompakt Satırlar)">
+                  <span>📋</span><span class="hidden sm:inline">Liste</span>
+                </button>
+              </div>
+
               <button onclick="openAddBuffModal()" class="text-xs bg-emerald-700 hover:bg-emerald-600 text-white font-bold px-2.5 py-1 rounded transition flex items-center gap-1 shadow">
                 <span>➕</span><span>Buff Ekle</span>
               </button>
@@ -24430,6 +24440,14 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
     }
 
     // ✨ ACTIVE BUFFS & ROUND COUNTDOWN ENGINE
+    function setBuffsViewMode(mode) {
+      if (!character) return;
+      if (!character.tactical) character.tactical = {};
+      character.tactical.buffsViewMode = mode;
+      saveStateToStorage(false);
+      renderActiveBuffs();
+    }
+
     function renderActiveBuffs() {
       const container = document.getElementById('buffs-list-container');
       if (!container) return;
@@ -24442,6 +24460,35 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           character.buffs = [];
         }
       }
+
+      const viewMode = character.tactical?.buffsViewMode || 'grid';
+
+      // Update switcher buttons UI
+      const gridBtn = document.getElementById('buffs-view-grid-btn');
+      const listBtn = document.getElementById('buffs-view-list-btn');
+      if (gridBtn && listBtn) {
+        if (viewMode === 'list') {
+          listBtn.className = "px-2 py-1 rounded-md font-bold transition flex items-center gap-1 cursor-pointer bg-indigo-600 text-white shadow-sm";
+          gridBtn.className = "px-2 py-1 rounded-md font-bold transition flex items-center gap-1 cursor-pointer text-slate-400 hover:text-white";
+        } else {
+          gridBtn.className = "px-2 py-1 rounded-md font-bold transition flex items-center gap-1 cursor-pointer bg-indigo-600 text-white shadow-sm";
+          listBtn.className = "px-2 py-1 rounded-md font-bold transition flex items-center gap-1 cursor-pointer text-slate-400 hover:text-white";
+        }
+      }
+
+      // Container layout class based on viewMode
+      if (viewMode === 'list') {
+        container.className = "p-3 flex flex-col gap-2";
+      } else {
+        container.className = "p-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5";
+      }
+
+      // Sort buffs: Active ones (active === true) first!
+      const sortedBuffs = [...character.buffs].sort((a, b) => {
+        const aAct = a.active ? 1 : 0;
+        const bAct = b.active ? 1 : 0;
+        return bAct - aAct;
+      });
 
       // Detect active body slot armor & shield to inform user of suppressed stackings
       const activeArmor = Object.values(character.bodySlots || {}).find(s => s && s.active && s.name && s.name !== '-' && (s.category === 'Armor' || (s.slot && s.slot.toLowerCase().includes('armor'))));
@@ -24458,19 +24505,16 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         if (m) activeShieldVal = m.shield;
       }
 
-      character.buffs.forEach(buff => {
+      sortedBuffs.forEach(buff => {
         const isAct = buff.active;
         const isDebuff = buff.isDebuff || buff.category === 'Debuff';
-        const card = document.createElement('div');
 
         const activeBorder = isDebuff 
           ? 'bg-slate-900/95 border-rose-500/70 shadow-lg ring-1 ring-rose-500/20' 
           : 'bg-slate-900/90 border-indigo-500/70 shadow-lg ring-1 ring-indigo-500/20';
         const inactiveBorder = isDebuff 
-          ? 'bg-slate-950/40 border-rose-950/50 opacity-60' 
-          : 'bg-slate-950/40 border-slate-800/80 opacity-60';
-
-        card.className = `border rounded-xl p-3 transition flex flex-col justify-between ${isAct ? activeBorder : inactiveBorder}`;
+          ? 'bg-slate-950/40 border-rose-950/50 opacity-60 hover:opacity-90' 
+          : 'bg-slate-950/40 border-slate-800/80 opacity-60 hover:opacity-90';
 
         // Stacking check
         let suppressionWarning = '';
@@ -24551,46 +24595,98 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           `;
         }
 
-        card.innerHTML = `
-          <div class="space-y-1.5">
-            <div class="flex items-center justify-between gap-1.5">
-              <label class="flex items-center gap-2 cursor-pointer select-none">
-                <input type="checkbox" ${isAct ? 'checked' : ''} onchange="toggleBuffActive('${buff.id}')" class="w-4 h-4 rounded ${isDebuff ? 'text-rose-600 focus:ring-rose-500' : 'text-indigo-600 focus:ring-0'}">
-                <span class="font-bold text-xs ${isAct ? (isDebuff ? 'text-rose-200' : 'text-white') : 'text-slate-400'}">${buff.name}</span>
-              </label>
-              <div class="flex items-center gap-1">
-                <span class="text-[9px] px-1.5 py-0.5 rounded font-mono font-bold ${isDebuff ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-slate-800 text-purple-300 border border-slate-700'}">${buff.source || (isDebuff ? 'Debuff' : 'Buff')}</span>
-                <button onclick="deleteBuff('${buff.id}')" class="text-slate-500 hover:text-rose-400 p-0.5 text-xs transition" title="${isDebuff ? 'Debuffı Sil' : 'Buffı Sil'}">🗑️</button>
+        if (viewMode === 'list') {
+          // --- LISTE GÖRÜNÜMÜ (COMPACT LIST VIEW) ---
+          const row = document.createElement('div');
+          row.className = `border rounded-xl px-3 py-2 transition flex flex-col gap-1.5 ${isAct ? activeBorder : inactiveBorder}`;
+
+          row.innerHTML = `
+            <div class="flex items-center justify-between gap-2.5 flex-wrap sm:flex-nowrap">
+              <!-- Sol: Checkbox + İsim + Kategori Rozeti -->
+              <div class="flex items-center gap-2.5 min-w-0">
+                <input type="checkbox" ${isAct ? 'checked' : ''} onchange="toggleBuffActive('${buff.id}')" class="w-4 h-4 rounded shrink-0 ${isDebuff ? 'text-rose-600 focus:ring-rose-500' : 'text-indigo-600 focus:ring-0'} cursor-pointer">
+                <div class="min-w-0 flex items-center gap-1.5 flex-wrap">
+                  <span class="font-bold text-xs truncate ${isAct ? (isDebuff ? 'text-rose-200' : 'text-white') : 'text-slate-400'}">${buff.name}</span>
+                  <span class="text-[9px] px-1.5 py-0.2 rounded font-mono font-bold ${isDebuff ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-slate-800 text-purple-300 border border-slate-700'}">${buff.source || (isDebuff ? 'Debuff' : 'Buff')}</span>
+                </div>
+              </div>
+
+              <!-- Orta: Etki Rozetleri -->
+              <div class="flex items-center gap-1 flex-wrap shrink-0">
+                ${badges.join(' ')}
+              </div>
+
+              <!-- Sağ: Süre / Tur Sayaç Butonları + Sil -->
+              <div class="flex items-center gap-2 shrink-0 ml-auto">
+                <div class="text-[10px] font-mono text-slate-400 hidden md:inline">
+                  ${buff.durationText || (buff.rounds ? `${buff.rounds} Tur` : 'Sürekli')}
+                </div>
+                <div class="flex items-center gap-1">
+                  ${buff.rounds !== null && buff.rounds !== undefined ? `
+                    <button type="button" onclick="adjustBuffRounds('${buff.id}', -1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center cursor-pointer" title="1 Tur Azalt">-</button>
+                    <span class="font-mono font-bold px-1 text-xs ${buff.rounds <= 3 ? 'text-rose-400 animate-pulse' : 'text-amber-400'} min-w-[36px] text-center">${buff.rounds} Rd</span>
+                    <button type="button" onclick="adjustBuffRounds('${buff.id}', 1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center cursor-pointer" title="1 Tur Artır">+</button>
+                  ` : `<span class="text-[10px] text-slate-500 italic px-2">Sürekli</span>`}
+                </div>
+                <button type="button" onclick="deleteBuff('${buff.id}')" class="text-slate-500 hover:text-rose-400 p-1 text-xs transition cursor-pointer" title="${isDebuff ? 'Debuffı Sil' : 'Buffı Sil'}">🗑️</button>
               </div>
             </div>
 
-            <div class="flex flex-wrap gap-1 my-1">
-              ${badges.join(' ')}
+            ${(buff.notes || childrenAccordion || suppressionWarning) ? `
+              <div class="text-[10px] text-slate-400 pl-6 space-y-1 border-t border-slate-800/40 pt-1">
+                ${buff.notes ? `<div class="text-slate-300">${buff.notes}</div>` : ''}
+                ${childrenAccordion}
+                ${suppressionWarning ? `<div class="text-amber-400 bg-amber-950/30 border border-amber-800/40 rounded px-1.5 py-0.5">${suppressionWarning}</div>` : ''}
+              </div>
+            ` : ''}
+          `;
+          container.appendChild(row);
+        } else {
+          // --- KART GÖRÜNÜMÜ (GRID / CARD VIEW) ---
+          const card = document.createElement('div');
+          card.className = `border rounded-xl p-3 transition flex flex-col justify-between ${isAct ? activeBorder : inactiveBorder}`;
+
+          card.innerHTML = `
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between gap-1.5">
+                <label class="flex items-center gap-2 cursor-pointer select-none">
+                  <input type="checkbox" ${isAct ? 'checked' : ''} onchange="toggleBuffActive('${buff.id}')" class="w-4 h-4 rounded ${isDebuff ? 'text-rose-600 focus:ring-rose-500' : 'text-indigo-600 focus:ring-0'}">
+                  <span class="font-bold text-xs ${isAct ? (isDebuff ? 'text-rose-200' : 'text-white') : 'text-slate-400'}">${buff.name}</span>
+                </label>
+                <div class="flex items-center gap-1">
+                  <span class="text-[9px] px-1.5 py-0.5 rounded font-mono font-bold ${isDebuff ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-slate-800 text-purple-300 border border-slate-700'}">${buff.source || (isDebuff ? 'Debuff' : 'Buff')}</span>
+                  <button onclick="deleteBuff('${buff.id}')" class="text-slate-500 hover:text-rose-400 p-0.5 text-xs transition" title="${isDebuff ? 'Debuffı Sil' : 'Buffı Sil'}">🗑️</button>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap gap-1 my-1">
+                ${badges.join(' ')}
+              </div>
+
+              <div class="text-[11px] text-slate-300 font-sans">
+                ${buff.notes || ''}
+              </div>
+
+              ${childrenAccordion}
+
+              ${suppressionWarning ? `<div class="text-[10px] text-amber-400 bg-amber-950/30 border border-amber-800/40 rounded px-1.5 py-0.5">${suppressionWarning}</div>` : ''}
             </div>
 
-            <div class="text-[11px] text-slate-300 font-sans">
-              ${buff.notes || ''}
+            <div class="flex items-center justify-between pt-2 border-t border-slate-800/80 mt-2 text-xs">
+              <div class="text-[10px] font-mono text-slate-400">
+                ${buff.durationText || (buff.rounds ? `${buff.rounds} Tur` : 'Sürekli')}
+              </div>
+              <div class="flex items-center gap-1">
+                ${buff.rounds !== null && buff.rounds !== undefined ? `
+                  <button onclick="adjustBuffRounds('${buff.id}', -1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center">-</button>
+                  <span class="font-mono font-bold px-1.5 ${buff.rounds <= 3 ? 'text-rose-400 animate-pulse' : 'text-amber-400'}">${buff.rounds} Rd</span>
+                  <button onclick="adjustBuffRounds('${buff.id}', 1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center">+</button>
+                ` : `<span class="text-[10px] text-slate-500 italic">Sürekli</span>`}
+              </div>
             </div>
-
-            ${childrenAccordion}
-
-            ${suppressionWarning ? `<div class="text-[10px] text-amber-400 bg-amber-950/30 border border-amber-800/40 rounded px-1.5 py-0.5">${suppressionWarning}</div>` : ''}
-          </div>
-
-          <div class="flex items-center justify-between pt-2 border-t border-slate-800/80 mt-2 text-xs">
-            <div class="text-[10px] font-mono text-slate-400">
-              ${buff.durationText || (buff.rounds ? `${buff.rounds} Tur` : 'Sürekli')}
-            </div>
-            <div class="flex items-center gap-1">
-              ${buff.rounds !== null && buff.rounds !== undefined ? `
-                <button onclick="adjustBuffRounds('${buff.id}', -1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center">-</button>
-                <span class="font-mono font-bold px-1.5 ${buff.rounds <= 3 ? 'text-rose-400 animate-pulse' : 'text-amber-400'}">${buff.rounds} Rd</span>
-                <button onclick="adjustBuffRounds('${buff.id}', 1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center">+</button>
-              ` : `<span class="text-[10px] text-slate-500 italic">Sürekli</span>`}
-            </div>
-          </div>
-        `;
-        container.appendChild(card);
+          `;
+          container.appendChild(card);
+        }
       });
     }
 
