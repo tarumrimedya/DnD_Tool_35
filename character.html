@@ -574,7 +574,23 @@
             </div>
           </div>
 
-
+          <!-- 2. OFFENSE PIN DRAWER -->
+          <div class="bg-dndCard border border-dndBorder rounded-xl p-3.5 shadow-lg space-y-2.5">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+              <div class="flex items-center gap-1.5">
+                <span class="text-rose-400">📌</span>
+                <span class="text-xs font-black uppercase text-slate-200 tracking-wider">SALDIRI ÇEKMECESİ</span>
+                <span id="offense-pins-badge" class="bg-slate-800 text-rose-400 font-mono font-bold text-[10px] px-1.5 py-0.5 rounded">0</span>
+              </div>
+              <button id="toggle-offense-pins-btn" onclick="togglePinDrawer('offense')" class="text-[11px] font-bold text-slate-400 hover:text-white bg-slate-900 px-2 py-0.5 rounded border border-slate-800 transition">
+                Tümünü Göster
+              </button>
+            </div>
+            
+            <div id="combat-pins-offense" class="space-y-1.5">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
 
         </div>
 
@@ -9753,16 +9769,29 @@
 
     function hasFlurryAbility(char) {
       if (!char) return false;
-      const hasMonk = (char.classes || []).some(c => (c.name || '').toLowerCase().includes('monk'));
-      const hasSpecial = (char.specialAbilities || []).some(a => (typeof a === 'string' ? a : (a.name || '')).toLowerCase().includes('flurry'));
-      const hasFeat = (char.feats || []).some(f => (typeof f === 'string' ? f : (f.name || '')).toLowerCase().includes('flurry'));
+      const hasMonk = (char.classes || []).some(c => c && (c.name || '').toLowerCase().includes('monk'));
+      const hasSpecial = (char.specialAbilities || []).some(a => {
+        if (!a) return false;
+        const name = typeof a === 'string' ? a : (a.name || '');
+        return name.toLowerCase().includes('flurry');
+      });
+      const hasFeat = (char.feats || []).some(f => {
+        if (!f) return false;
+        const name = typeof f === 'string' ? f : (f.name || '');
+        return name.toLowerCase().includes('flurry');
+      });
       return hasMonk || hasSpecial || hasFeat;
     }
 
     function ensureActiveModifiersPool() {
+      if (!character) return;
       if (!Array.isArray(character.activeModifiers)) {
         character.activeModifiers = [];
       }
+
+      // Sanitize: filter out any null, string, or malformed entries
+      character.activeModifiers = character.activeModifiers.filter(m => m && typeof m === 'object' && typeof m.name === 'string');
+
       const defaultPool = [
         { name: 'Punishing Stance', source: 'Stance', bonusAtk: 0, dice: '1d6', type: 'Slashing', active: true, notes: '+1d6 Hasar, -2 AC' },
         { name: 'Mountain Hammer', source: 'Maneuver', bonusAtk: 0, dice: '2d6', type: 'Slashing', active: false, notes: 'DR ve Sertliği aşar' },
@@ -9788,11 +9817,11 @@
         });
       } else {
         // Karakterde yetenek yoksa çekmecede yer kaplamaması için activeModifiers listesinden temizle
-        character.activeModifiers = character.activeModifiers.filter(m => !m.name.includes('Flurry') && !m.name.includes('Seri Vuruş'));
+        character.activeModifiers = character.activeModifiers.filter(m => m && m.name && !m.name.includes('Flurry') && !m.name.includes('Seri Vuruş'));
       }
 
       defaultPool.forEach(def => {
-        const existing = character.activeModifiers.find(m => m.name.toLowerCase() === def.name.toLowerCase());
+        const existing = character.activeModifiers.find(m => m && m.name && m.name.toLowerCase() === def.name.toLowerCase());
         if (!existing) {
           character.activeModifiers.push({ ...def });
         } else {
@@ -9805,7 +9834,7 @@
 
     function onTWFModifierToggle() {
       const isChecked = document.getElementById('mod-twf')?.checked ?? false;
-      let mod = (character.activeModifiers || []).find(m => m.name.includes('TWF') || m.name.includes('Çift Silah'));
+      let mod = (character.activeModifiers || []).find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Çift Silah')));
       if (mod) {
         mod.active = isChecked;
       } else {
@@ -9834,7 +9863,7 @@
       const flanking = document.getElementById('mod-flanking')?.checked ?? false;
       const charge = document.getElementById('mod-charge')?.checked ?? false;
       const hg = document.getElementById('mod-higher-ground') ? document.getElementById('mod-higher-ground').checked : (character.tactical?.higherGround ?? false);
-      const twfMod = (character.activeModifiers || []).find(m => m.name.includes('TWF') || m.name.includes('Çift Silah'));
+      const twfMod = (character.activeModifiers || []).find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Çift Silah')));
       const isTWF = twfMod?.active ?? false;
 
       // Row 1: Fixed 3 items: 1. Flanking, 2. Charge, 3. Çift Silah (TWF)
@@ -9870,13 +9899,14 @@
 
       // Rows 2+ : Dynamic modifiers (excluding TWF which sits in slot 3)
       const isExpanded = !!window.combatModifiersGridExpanded;
-      const dynamicMods = (character.activeModifiers || []).filter(m => !m.name.includes('TWF') && !m.name.includes('Çift Silah'));
+      const dynamicMods = (character.activeModifiers || []).filter(m => m && m.name && !m.name.includes('TWF') && !m.name.includes('Çift Silah'));
       // In 3x3 layout when collapsed: 3 top + 6 dynamic = 9 cards total!
       // When expanded: all dynamic mods are rendered, plus Higher Gr. at the very end
       const visibleCount = isExpanded ? dynamicMods.length : Math.min(6, dynamicMods.length);
       const visibleMods = dynamicMods.slice(0, visibleCount);
 
       const dynamicCardsHtml = visibleMods.map((mod) => {
+        if (!mod || !mod.name) return '';
         let bonusStr = mod.dice ? mod.dice : (mod.bonusDmg ? `+${mod.bonusDmg} Dmg` : (mod.bonusAtk ? `+${mod.bonusAtk} Atk` : 'Aktif'));
         let cardBorderActive = 'border-purple-500 bg-purple-950/30 text-purple-200 shadow-sm';
         let checkboxColor = 'text-purple-500';
@@ -9936,6 +9966,12 @@
         } else {
           expandBar.classList.add('hidden');
         }
+      }
+    }
+
+    function renderActiveModifiers() {
+      if (typeof renderOffenseModifiersGrid === 'function') {
+        renderOffenseModifiersGrid();
       }
     }
 
@@ -10046,11 +10082,11 @@
       const charge = document.getElementById('mod-charge')?.checked ?? false;
       const hg = document.getElementById('mod-higher-ground') ? document.getElementById('mod-higher-ground').checked : (character.tactical?.higherGround ?? false);
 
-      const activeMods = (character.activeModifiers || []).filter(m => m.active);
+      const activeMods = (character.activeModifiers || []).filter(m => m && m.active);
       const isTWF = activeMods.some(m => (m.name || '').includes('TWF') || (m.name || '').includes('Çift Silah'));
       const isFlurry = activeMods.some(m => (m.name || '').includes('Flurry') || (m.name || '').includes('Seri Vuruş'));
 
-      const nonChainMods = activeMods.filter(m => !m.name.includes('TWF') && !m.name.includes('Çift Silah') && !m.name.includes('Flurry') && !m.name.includes('Seri Vuruş'));
+      const nonChainMods = activeMods.filter(m => m && m.name && !m.name.includes('TWF') && !m.name.includes('Çift Silah') && !m.name.includes('Flurry') && !m.name.includes('Seri Vuruş'));
 
       const mainEval = RuleEngine.evaluateWeaponAttack(character, wep, {
         grip,
@@ -10062,7 +10098,7 @@
         customModifiers: nonChainMods
       });
 
-      const feats = (character.feats || []).map(f => (typeof f === 'string' ? f : f.name).toLowerCase());
+      const feats = (character.feats || []).map(f => (typeof f === 'string' ? f : (f?.name || '')).toLowerCase());
       const hasTWF = feats.some(f => f.includes('two-weapon fighting') && !f.includes('oversized') && !f.includes('shield'));
       const hasITWF = feats.some(f => f.includes('improved two-weapon fighting'));
       const hasGTWF = feats.some(f => f.includes('greater two-weapon fighting'));
@@ -10257,8 +10293,8 @@
       const charge = document.getElementById('mod-charge')?.checked ?? false;
       const hg = document.getElementById('mod-higher-ground') ? document.getElementById('mod-higher-ground').checked : (character.tactical?.higherGround ?? false);
 
-      const activeMods = (character.activeModifiers || []).filter(m => m.active);
-      const nonChainMods = activeMods.filter(m => !m.name.includes('TWF') && !m.name.includes('Çift Silah') && !m.name.includes('Flurry') && !m.name.includes('Seri Vuruş'));
+      const activeMods = (character.activeModifiers || []).filter(m => m && m.active);
+      const nonChainMods = activeMods.filter(m => m && m.name && !m.name.includes('TWF') && !m.name.includes('Çift Silah') && !m.name.includes('Flurry') && !m.name.includes('Seri Vuruş'));
 
       const evalResult = RuleEngine.evaluateWeaponAttack(character, wep, {
         grip,
@@ -10857,8 +10893,10 @@
 
       // Seamlessly tag existing pins matching current auto-pins if they don't have autoType yet
       currentAutoPins.forEach(autoPin => {
+        if (!autoPin || !autoPin.name) return;
+        const autoNameLower = (autoPin.name || '').toLowerCase();
         ['offense', 'defense'].forEach(c => {
-          const match = (char.combatPins[c] || []).find(p => (p.name || '').toLowerCase() === autoPin.name.toLowerCase());
+          const match = (char.combatPins[c] || []).find(p => (p && p.name ? p.name : '').toLowerCase() === autoNameLower);
           if (match && !match.autoType) {
             match.autoType = autoPin.autoType;
             match.autoKey = autoPin.autoKey;
@@ -10872,6 +10910,7 @@
       const validAutoKeys = new Set(currentAutoPins.map(p => p.autoKey));
       ['offense', 'defense'].forEach(c => {
         char.combatPins[c] = (char.combatPins[c] || []).filter(p => {
+          if (!p) return false;
           if (!p.autoType) return true; // Keep manual pins
           return validAutoKeys.has(p.autoKey);
         });
@@ -10879,9 +10918,11 @@
 
       // 3. Add missing auto-pins
       currentAutoPins.forEach(autoPin => {
+        if (!autoPin || !autoPin.name) return;
+        const autoNameLower = (autoPin.name || '').toLowerCase();
         let exists = false;
         ['offense', 'defense'].forEach(c => {
-          if (char.combatPins[c].some(p => (p.name || '').toLowerCase() === autoPin.name.toLowerCase())) {
+          if ((char.combatPins[c] || []).some(p => (p && p.name ? p.name : '').toLowerCase() === autoNameLower)) {
             exists = true;
           }
         });
@@ -11023,17 +11064,17 @@
       }
 
       // 3. Offense Column: Off-Hand Selector & TWF
-      renderOffHandSelector();
-      renderSavedProfiles();
-      renderOffenseModifiersGrid();
-      recalculateOffense();
+      try { renderOffHandSelector(); } catch (e) { console.error('renderOffHandSelector error:', e); }
+      try { renderSavedProfiles(); } catch (e) { console.error('renderSavedProfiles error:', e); }
+      try { renderOffenseModifiersGrid(); } catch (e) { console.error('renderOffenseModifiersGrid error:', e); }
+      try { recalculateOffense(); } catch (e) { console.error('recalculateOffense error:', e); }
 
       // 4. Utility Column: Quick Consumables
-      renderCockpitConsumables();
+      try { renderCockpitConsumables(); } catch (e) { console.error('renderCockpitConsumables error:', e); }
 
       // 5. Pin Drawers
-      renderCombatPins('offense');
-      renderCombatPins('defense');
+      try { renderCombatPins('offense'); } catch (e) { console.error("renderCombatPins('offense') error:", e); }
+      try { renderCombatPins('defense'); } catch (e) { console.error("renderCombatPins('defense') error:", e); }
     }
 
     // --- OFF-HAND & TWF SELECTOR ---
