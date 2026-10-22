@@ -9762,6 +9762,8 @@
         { name: 'Punishing Stance', source: 'Stance', bonusAtk: 0, dice: '1d6', type: 'Slashing', active: true, notes: '+1d6 Hasar, -2 AC' },
         { name: 'Mountain Hammer', source: 'Maneuver', bonusAtk: 0, dice: '2d6', type: 'Slashing', active: false, notes: 'DR ve Sertliği aşar' },
         { name: 'Blade of Blood', source: 'Spell', bonusAtk: 0, dice: '3d6', type: 'Negative Energy', active: false, notes: '+3d6 Hasar' },
+        { name: 'Çift Silah (TWF)', source: 'Combat', bonusAtk: 0, dice: '', type: 'TWF', active: false, notes: 'İkinci El ile Ek Vuruş (RAW Çift Silah)' },
+        { name: 'Seri Vuruş (Flurry)', source: 'Monk', bonusAtk: 0, dice: '', type: 'Flurry', active: false, notes: 'Full Attack: +1 Ek Vuruş (-2 Ceza)' },
         { name: 'Witchlight (+2 Hasar)', source: 'Item', bonusAtk: 0, bonusDmg: 2, dice: '', type: 'Untyped', active: false, notes: '+2 Melee Hasarı (1 Tur)' },
         { name: 'Witchlight (+4 Hasar)', source: 'Item', bonusAtk: 0, bonusDmg: 4, dice: '', type: 'Untyped', active: false, notes: '+4 Melee Hasarı (1 Tur)' },
         { name: 'Boots of Speed (Haste)', source: 'Item', bonusAtk: 1, dice: '', type: 'Untyped', active: false, notes: '+1 Saldırı, +1 AC, Ekstra Vuruş' },
@@ -9829,9 +9831,25 @@
       const visibleMods = dynamicMods.slice(0, visibleCount);
 
       const dynamicCardsHtml = visibleMods.map((mod, idx) => {
-        const bonusStr = mod.dice ? mod.dice : (mod.bonusDmg ? `+${mod.bonusDmg} Dmg` : (mod.bonusAtk ? `+${mod.bonusAtk} Atk` : 'Aktif'));
+        let bonusStr = mod.dice ? mod.dice : (mod.bonusDmg ? `+${mod.bonusDmg} Dmg` : (mod.bonusAtk ? `+${mod.bonusAtk} Atk` : 'Aktif'));
+        let cardBorderActive = 'border-purple-500 bg-purple-950/30 text-purple-200 shadow-sm';
+        let checkboxColor = 'text-purple-500';
+        let bonusColor = 'text-amber-300';
+
+        if (mod.name.includes('TWF') || mod.name.includes('Çift Silah')) {
+          bonusStr = 'İkinci El';
+          cardBorderActive = 'border-cyan-500 bg-cyan-950/40 text-cyan-200 shadow-sm shadow-cyan-950/50';
+          checkboxColor = 'text-cyan-500';
+          bonusColor = 'text-cyan-300';
+        } else if (mod.name.includes('Flurry') || mod.name.includes('Seri Vuruş')) {
+          bonusStr = '+1 Vuruş';
+          cardBorderActive = 'border-purple-500 bg-purple-950/40 text-purple-200 shadow-sm shadow-purple-950/50';
+          checkboxColor = 'text-purple-500';
+          bonusColor = 'text-purple-300';
+        }
+
         return `
-        <div class="bg-slate-900 border ${mod.active ? 'border-purple-500 bg-purple-950/30 text-purple-200 shadow-sm' : 'border-slate-800 text-slate-300'} hover:border-purple-500/60 rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] relative group">
+        <div class="bg-slate-900 border ${mod.active ? cardBorderActive : 'border-slate-800 text-slate-300'} hover:border-purple-500/60 rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] relative group">
           <!-- Reorder Mini Controls -->
           <div class="flex items-center justify-between px-0.5 text-[9px] text-slate-500 leading-none">
             <button type="button" onclick="moveModifierOrder(${idx}, -1, event)" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx === 0 ? 'disabled' : ''} title="Sola Taşı">◀</button>
@@ -9842,9 +9860,9 @@
           <label class="cursor-pointer flex-1 flex flex-col justify-between mt-0.5">
             <div class="px-0.5">
               <div class="text-[10px] font-bold text-white leading-tight truncate" title="${mod.name}">${mod.name}</div>
-              <div class="text-[9px] text-amber-300 font-mono font-bold mt-0.5">${bonusStr}</div>
+              <div class="text-[9px] ${bonusColor} font-mono font-bold mt-0.5">${bonusStr}</div>
             </div>
-            <input type="checkbox" ${mod.active ? 'checked' : ''} onchange="toggleModifier(${idx})" class="mt-1 mx-auto w-3.5 h-3.5 rounded text-purple-500 focus:ring-0 cursor-pointer">
+            <input type="checkbox" ${mod.active ? 'checked' : ''} onchange="toggleModifier(${idx})" class="mt-1 mx-auto w-3.5 h-3.5 rounded ${checkboxColor} focus:ring-0 cursor-pointer">
           </label>
         </div>
         `;
@@ -9893,6 +9911,274 @@
       renderOffenseModifiersGrid();
     }
 
+    function getResolvedOffHandWeapon(character) {
+      const currentOffHandName = character.activeOffHand;
+      if (currentOffHandName && currentOffHandName !== 'None') {
+        const fromWeps = (character.weapons || []).find(w => w.name === currentOffHandName);
+        if (fromWeps) return { ...fromWeps, grip: 'Off-Hand' };
+
+        const offHandItem = character.bodySlots?.offHand;
+        if (offHandItem && offHandItem.name === currentOffHandName) {
+          const isShield = offHandItem.category === 'Shield' || (offHandItem.desc && offHandItem.desc.toLowerCase().includes('shield'));
+          const isHeavy = (offHandItem.name || '').toLowerCase().includes('heavy');
+          const isBuckler = (offHandItem.name || '').toLowerCase().includes('buckler');
+          return {
+            name: offHandItem.name + (isShield ? ' (Kalkan Vuruşu)' : ''),
+            grip: 'Off-Hand',
+            dice: isShield ? (isHeavy ? '1d4' : (isBuckler ? '1d3' : '1d3')) : (offHandItem.dice || '1d4'),
+            critMin: 20,
+            critMult: 2,
+            attBonus: offHandItem.attBonus || 0,
+            dmgBonus: offHandItem.dmgBonus || 0,
+            dmgType: isShield ? 'Bludgeoning' : (offHandItem.dmgType || 'Piercing'),
+            isLight: !isHeavy,
+            tags: ['off-hand', isShield ? 'shield-bash' : 'light']
+          };
+        }
+      }
+
+      const altWeapon = (character.weapons || []).find(w => w.name !== character.activeWeapon);
+      if (altWeapon) {
+        return { ...altWeapon, grip: 'Off-Hand' };
+      }
+
+      const offHandItem = character.bodySlots?.offHand;
+      if (offHandItem && offHandItem.name && offHandItem.name !== '-') {
+        const isShield = offHandItem.category === 'Shield' || (offHandItem.desc && offHandItem.desc.toLowerCase().includes('shield'));
+        const isHeavy = (offHandItem.name || '').toLowerCase().includes('heavy');
+        return {
+          name: offHandItem.name + (isShield ? ' (Kalkan Vuruşu)' : ''),
+          grip: 'Off-Hand',
+          dice: isHeavy ? '1d4' : '1d3',
+          critMin: 20,
+          critMult: 2,
+          attBonus: offHandItem.attBonus || 0,
+          dmgBonus: offHandItem.dmgBonus || 0,
+          dmgType: isShield ? 'Bludgeoning' : 'Piercing',
+          isLight: !isHeavy,
+          tags: ['off-hand']
+        };
+      }
+
+      return {
+        name: 'Unarmed Strike (Off-Hand)',
+        grip: 'Off-Hand',
+        dice: '1d3',
+        critMin: 20,
+        critMult: 2,
+        attBonus: 0,
+        dmgBonus: 0,
+        dmgType: 'Bludgeoning',
+        isLight: true,
+        tags: ['unarmed', 'light']
+      };
+    }
+
+    function computeCombatAttackChain(character) {
+      const wep = (character.weapons || []).find(w => w.name === character.activeWeapon) || character.weapons?.[0];
+      if (!wep) return [];
+
+      const isTwoHand = RuleEngine.isTwoHandedWeapon(wep);
+      const gripSelect = document.getElementById('active-grip-select');
+      const grip = (isTwoHand ? '2-Hand' : (gripSelect?.value || '1-Hand'));
+      const paVal = parseInt(document.getElementById('power-attack-val')?.value) || 0;
+      const flanking = document.getElementById('mod-flanking')?.checked ?? false;
+      const charge = document.getElementById('mod-charge')?.checked ?? false;
+      const hg = document.getElementById('mod-higher-ground')?.checked ?? false;
+
+      const activeMods = (character.activeModifiers || []).filter(m => m.active);
+      const isTWF = activeMods.some(m => (m.name || '').includes('TWF') || (m.name || '').includes('Çift Silah'));
+      const isFlurry = activeMods.some(m => (m.name || '').includes('Flurry') || (m.name || '').includes('Seri Vuruş'));
+
+      const nonChainMods = activeMods.filter(m => !m.name.includes('TWF') && !m.name.includes('Çift Silah') && !m.name.includes('Flurry') && !m.name.includes('Seri Vuruş'));
+
+      const mainEval = RuleEngine.evaluateWeaponAttack(character, wep, {
+        grip,
+        powerAttack: paVal,
+        flanking,
+        charge,
+        higherGround: hg,
+        activeStance: character.activeStance || 'None',
+        customModifiers: nonChainMods
+      });
+
+      const feats = (character.feats || []).map(f => (typeof f === 'string' ? f : f.name).toLowerCase());
+      const hasTWF = feats.some(f => f.includes('two-weapon fighting') && !f.includes('oversized') && !f.includes('shield'));
+      const hasITWF = feats.some(f => f.includes('improved two-weapon fighting'));
+      const hasGTWF = feats.some(f => f.includes('greater two-weapon fighting'));
+      const hasOversized = feats.some(f => f.includes('oversized two-weapon fighting'));
+
+      const offHandWep = getResolvedOffHandWeapon(character);
+      const isOffHandLight = offHandWep.isLight || hasOversized;
+
+      let twfMainPenalty = 0;
+      let twfOffPenalty = 0;
+      if (isTWF && grip !== '2-Hand') {
+        if (hasTWF) {
+          twfMainPenalty = isOffHandLight ? -2 : -4;
+          twfOffPenalty = isOffHandLight ? -2 : -4;
+        } else {
+          twfMainPenalty = isOffHandLight ? -4 : -6;
+          twfOffPenalty = isOffHandLight ? -8 : -10;
+        }
+      }
+
+      let flurryPenalty = 0;
+      let flurryExtraCount = 0;
+      if (isFlurry) {
+        const monkLvl = (character.classes || []).find(c => (c.name || '').toLowerCase() === 'monk')?.level || 0;
+        if (monkLvl >= 11) {
+          flurryPenalty = 0;
+          flurryExtraCount = 2;
+        } else if (monkLvl >= 9) {
+          flurryPenalty = 0;
+          flurryExtraCount = 1;
+        } else if (monkLvl >= 5) {
+          flurryPenalty = -1;
+          flurryExtraCount = 1;
+        } else {
+          flurryPenalty = -2;
+          flurryExtraCount = 1;
+        }
+      }
+
+      const mainPenalty = twfMainPenalty + flurryPenalty;
+      const offPenalty = twfOffPenalty + flurryPenalty;
+
+      let offEval = null;
+      if (isTWF && grip !== '2-Hand') {
+        offEval = RuleEngine.evaluateWeaponAttack(character, offHandWep, {
+          grip: 'Off-Hand',
+          powerAttack: paVal,
+          flanking,
+          charge,
+          higherGround: hg,
+          activeStance: character.activeStance || 'None',
+          customModifiers: nonChainMods
+        });
+      }
+
+      const attackChain = [];
+      const bab = Number(character.bab) || 0;
+
+      // 1. Primary Main-Hand Attack
+      const primaryBonus = mainEval.netAttackBonus + mainPenalty;
+      attackChain.push({
+        id: 'main-1',
+        label: isTWF ? '1. Ana' : '1. Vuruş',
+        hand: 'main',
+        handLabel: 'Ana El',
+        weapon: wep,
+        bonus: primaryBonus,
+        evalResult: mainEval,
+        badgeColor: 'amber'
+      });
+
+      // 2. Flurry Extra Attacks
+      for (let f = 0; f < flurryExtraCount; f++) {
+        attackChain.push({
+          id: `flurry-${f + 1}`,
+          label: flurryExtraCount > 1 ? `Flurry ${f + 1}` : 'Flurry',
+          hand: 'flurry',
+          handLabel: 'Seri Vuruş',
+          weapon: wep,
+          bonus: primaryBonus,
+          evalResult: mainEval,
+          badgeColor: 'purple'
+        });
+      }
+
+      // 3. Primary Off-Hand Attack
+      if (isTWF && offEval && grip !== '2-Hand') {
+        const offPrimaryBonus = offEval.netAttackBonus + offPenalty;
+        attackChain.push({
+          id: 'off-1',
+          label: '1. Sol',
+          hand: 'offhand',
+          handLabel: 'İkinci El',
+          weapon: offHandWep,
+          bonus: offPrimaryBonus,
+          evalResult: offEval,
+          badgeColor: 'cyan'
+        });
+      }
+
+      // 4. Secondary Iterative Attacks (BAB >= 6)
+      if (bab >= 6) {
+        const secBonus = primaryBonus - 5;
+        attackChain.push({
+          id: 'main-2',
+          label: isTWF ? '2. Ana' : '2. Vuruş',
+          hand: 'main',
+          handLabel: 'Ana El',
+          weapon: wep,
+          bonus: secBonus,
+          evalResult: mainEval,
+          badgeColor: 'amber'
+        });
+
+        if (isTWF && offEval && hasITWF && grip !== '2-Hand') {
+          const offSecBonus = offEval.netAttackBonus - 5 + offPenalty;
+          attackChain.push({
+            id: 'off-2',
+            label: '2. Sol',
+            hand: 'offhand',
+            handLabel: 'İkinci El',
+            weapon: offHandWep,
+            bonus: offSecBonus,
+            evalResult: offEval,
+            badgeColor: 'cyan'
+          });
+        }
+      }
+
+      // 5. Tertiary Iterative Attacks (BAB >= 11)
+      if (bab >= 11) {
+        const tertBonus = primaryBonus - 10;
+        attackChain.push({
+          id: 'main-3',
+          label: isTWF ? '3. Ana' : '3. Vuruş',
+          hand: 'main',
+          handLabel: 'Ana El',
+          weapon: wep,
+          bonus: tertBonus,
+          evalResult: mainEval,
+          badgeColor: 'amber'
+        });
+
+        if (isTWF && offEval && hasGTWF && grip !== '2-Hand') {
+          const offTertBonus = offEval.netAttackBonus - 10 + offPenalty;
+          attackChain.push({
+            id: 'off-3',
+            label: '3. Sol',
+            hand: 'offhand',
+            handLabel: 'İkinci El',
+            weapon: offHandWep,
+            bonus: offTertBonus,
+            evalResult: offEval,
+            badgeColor: 'cyan'
+          });
+        }
+      }
+
+      // 6. Quaternary Iterative Attacks (BAB >= 16)
+      if (bab >= 16) {
+        const quatBonus = primaryBonus - 15;
+        attackChain.push({
+          id: 'main-4',
+          label: isTWF ? '4. Ana' : '4. Vuruş',
+          hand: 'main',
+          handLabel: 'Ana El',
+          weapon: wep,
+          bonus: quatBonus,
+          evalResult: mainEval,
+          badgeColor: 'amber'
+        });
+      }
+
+      return attackChain;
+    }
+
     function recalculateOffense() {
       const wep = (character.weapons || []).find(w => w.name === character.activeWeapon) || character.weapons?.[0];
       if (!wep) return;
@@ -9911,6 +10197,9 @@
       const charge = document.getElementById('mod-charge')?.checked ?? false;
       const hg = document.getElementById('mod-higher-ground')?.checked ?? false;
 
+      const activeMods = (character.activeModifiers || []).filter(m => m.active);
+      const nonChainMods = activeMods.filter(m => !m.name.includes('TWF') && !m.name.includes('Çift Silah') && !m.name.includes('Flurry') && !m.name.includes('Seri Vuruş'));
+
       const evalResult = RuleEngine.evaluateWeaponAttack(character, wep, {
         grip,
         powerAttack: paVal,
@@ -9918,7 +10207,7 @@
         charge,
         higherGround: hg,
         activeStance: character.activeStance || 'None',
-        customModifiers: (character.activeModifiers || []).filter(m => m.active)
+        customModifiers: nonChainMods
       });
 
       // Update Weapon Base Stats (Temel Hasar + Stance/Manevra extra dice)
@@ -9950,8 +10239,13 @@
       const typeDisplayEl = document.getElementById('weapon-type-display');
       if (typeDisplayEl) typeDisplayEl.textContent = evalResult.damageType;
 
+      const attackChain = computeCombatAttackChain(character);
+      window.currentCombatAttackChain = attackChain;
+
       const iterDisplayEl = document.getElementById('iteratives-display');
-      if (iterDisplayEl) iterDisplayEl.textContent = evalResult.iteratives.map(b => (b >= 0 ? '+' : '') + b).join(' / ');
+      if (iterDisplayEl) {
+        iterDisplayEl.textContent = attackChain.map(b => `${b.label}: ${b.bonus >= 0 ? '+' : ''}${b.bonus}`).join(' / ');
+      }
 
       // Weapon Finesse indicator
       const badge = document.getElementById('weapon-stat-override-badge');
@@ -9977,12 +10271,37 @@
       const atkRowContainer = document.getElementById('attack-buttons-row-container');
       if (atkRowContainer) {
         const isLocked = !!character.tactical?.totalDefense;
-        const buttonsHtml = evalResult.iteratives.map((bonus, idx) => `
-          <button type="button" onclick="rollSingleAttackWith3D(${idx})" class="flex-1 min-w-0 py-2 px-1 bg-slate-900 hover:bg-slate-800 active:bg-slate-700 border ${isLocked ? 'border-slate-800 opacity-50 cursor-not-allowed' : 'border-emerald-500/50 hover:border-emerald-400 cursor-pointer'} rounded-lg text-center font-mono transition shadow group" title="${idx + 1}. Saldırıyı Zarla (+${bonus})">
-            <div class="text-[9px] uppercase tracking-wider text-slate-400 font-sans group-hover:text-emerald-300 truncate">${idx + 1}. Vuruş</div>
-            <div class="text-sm md:text-base font-black text-emerald-400 font-mono leading-tight">${bonus >= 0 ? '+' : ''}${bonus}</div>
-          </button>
-        `).join('');
+
+        const buttonsHtml = attackChain.map((item, idx) => {
+          let colorBorder = 'border-emerald-500/50 hover:border-emerald-400';
+          let textColor = 'text-emerald-400';
+          let subtitleColor = 'text-slate-400 group-hover:text-emerald-300';
+          let bgClass = 'bg-slate-900 hover:bg-slate-800';
+
+          if (item.badgeColor === 'amber') {
+            colorBorder = 'border-amber-500/70 hover:border-amber-400';
+            textColor = 'text-amber-400';
+            subtitleColor = 'text-amber-300/80 group-hover:text-amber-200';
+            bgClass = 'bg-amber-950/20 hover:bg-amber-950/40';
+          } else if (item.badgeColor === 'cyan') {
+            colorBorder = 'border-cyan-500/70 hover:border-cyan-400';
+            textColor = 'text-cyan-400';
+            subtitleColor = 'text-cyan-300/80 group-hover:text-cyan-200';
+            bgClass = 'bg-cyan-950/20 hover:bg-cyan-950/40';
+          } else if (item.badgeColor === 'purple') {
+            colorBorder = 'border-purple-500/70 hover:border-purple-400';
+            textColor = 'text-purple-400';
+            subtitleColor = 'text-purple-300/80 group-hover:text-purple-200';
+            bgClass = 'bg-purple-950/20 hover:bg-purple-950/40';
+          }
+
+          return `
+            <button type="button" onclick="rollAttackChainItemByIndex(${idx})" class="flex-1 min-w-[72px] py-2 px-1 ${bgClass} active:scale-95 border ${isLocked ? 'border-slate-800 opacity-50 cursor-not-allowed' : colorBorder + ' cursor-pointer'} rounded-lg text-center font-mono transition shadow group shrink-0" title="${item.label} (${item.handLabel}): ${item.bonus >= 0 ? '+' : ''}${item.bonus}">
+              <div class="text-[9px] uppercase tracking-wider ${subtitleColor} font-sans truncate">${item.label}</div>
+              <div class="text-sm md:text-base font-black ${textColor} font-mono leading-tight">${item.bonus >= 0 ? '+' : ''}${item.bonus}</div>
+            </button>
+          `;
+        }).join('');
 
         const fullAttackBtn = `
           <button type="button" onclick="executeFullAttackRoll(false)" class="shrink-0 py-2 px-3 md:px-4 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-600 active:scale-95 text-white font-black text-xs md:text-sm rounded-lg shadow-md border border-red-400/50 flex items-center justify-center gap-1.5 transition cursor-pointer" title="Tüm ardışık vuruşları (Full Attack) sırayla zarla">
@@ -10009,8 +10328,8 @@
       saveStateToStorage(false);
     }
 
-    // Single Iterative Attack Roll (+19, +14, +9...)
-    function rollSingleAttackWith3D(targetIdx) {
+    // Single Iterative Attack Roll (Handles Main Hand, Off-Hand, and Flurry individually)
+    function rollAttackChainItemByIndex(targetIdx) {
       if (character.tactical?.totalDefense) {
         showDiceTopToast({
           icon: '🛡️',
@@ -10021,22 +10340,15 @@
         return;
       }
 
-      const wep = (character.weapons || []).find(w => w.name === character.activeWeapon) || character.weapons?.[0];
-      const grip = document.getElementById('active-grip-select')?.value || '1-Hand';
-      const paVal = parseInt(document.getElementById('power-attack-val')?.value) || 0;
-      const flanking = document.getElementById('mod-flanking')?.checked ?? false;
-      const charge = document.getElementById('mod-charge')?.checked ?? false;
-      const hg = document.getElementById('mod-higher-ground')?.checked ?? false;
+      const chain = window.currentCombatAttackChain || computeCombatAttackChain(character);
+      const item = chain[targetIdx] || chain[0];
+      if (!item) return;
+
       const noCritConfirm = document.getElementById('house-no-crit-confirm') ? document.getElementById('house-no-crit-confirm').checked : (character.houseRules?.noCritConfirm ?? true);
       const maneuverCrit = document.getElementById('house-maneuver-crit') ? document.getElementById('house-maneuver-crit').checked : (character.houseRules?.maneuverCrit ?? false);
 
-      const evalResult = RuleEngine.evaluateWeaponAttack(character, wep, {
-        grip, powerAttack: paVal, flanking, charge, higherGround: hg,
-        activeStance: character.activeStance || 'None',
-        customModifiers: (character.activeModifiers || []).filter(m => m.active)
-      });
-
-      const bonus = evalResult.iteratives[targetIdx] !== undefined ? evalResult.iteratives[targetIdx] : (evalResult.iteratives[0] || 0);
+      const evalResult = item.evalResult;
+      const bonus = item.bonus;
       const d20 = Math.floor(Math.random() * 20) + 1;
       const diceToRoll3D = [{ type: 'd20', value: d20 }];
 
@@ -10048,7 +10360,7 @@
 
       let diceSides = 6;
       let diceCount = 1;
-      const match = evalResult.baseDice.match(/(\d+)d(\d+)/i);
+      const match = (item.weapon?.dice || evalResult.baseDice || '1d6').match(/(\d+)d(\d+)/i);
       if (match) {
         diceCount = parseInt(match[1]) || 1;
         diceSides = parseInt(match[2]) || 6;
@@ -10065,6 +10377,9 @@
 
       const attackPlans = [{
         idx: targetIdx + 1,
+        label: `${item.label} (${item.handLabel})`,
+        hand: item.hand,
+        badgeColor: item.badgeColor,
         d20,
         bonus,
         totalAtk: d20 + bonus,
@@ -10131,29 +10446,25 @@
       }
     }
 
-    // [d20] 3D TACTICAL ROLL ATTACK
+    // Single Iterative legacy bridge (aliases targetIdx to rollAttackChainItemByIndex)
+    function rollSingleAttackWith3D(targetIdx) {
+      rollAttackChainItemByIndex(targetIdx);
+    }
+
+    // [d20] 3D TACTICAL ROLL ATTACK (Full Attack Sequence)
     function rollFullAttackWith3D() {
-      const wep = (character.weapons || []).find(w => w.name === character.activeWeapon) || character.weapons[0];
-      const grip = document.getElementById('active-grip-select').value;
-      const paVal = parseInt(document.getElementById('power-attack-val').value) || 0;
-      const flanking = document.getElementById('mod-flanking').checked;
-      const charge = document.getElementById('mod-charge').checked;
-      const hg = document.getElementById('mod-higher-ground').checked;
+      const chain = computeCombatAttackChain(character);
+      if (!chain || chain.length === 0) return;
+
       const noCritConfirm = document.getElementById('house-no-crit-confirm') ? document.getElementById('house-no-crit-confirm').checked : (character.houseRules?.noCritConfirm ?? true);
       const maneuverCrit = document.getElementById('house-maneuver-crit') ? document.getElementById('house-maneuver-crit').checked : (character.houseRules?.maneuverCrit ?? false);
-
-      const evalResult = RuleEngine.evaluateWeaponAttack(character, wep, {
-        grip, powerAttack: paVal, flanking, charge, higherGround: hg,
-        activeStance: character.activeStance || 'None',
-        customModifiers: (character.activeModifiers || []).filter(m => m.active)
-      });
-
       const activeMods = (character.activeModifiers || []).filter(m => m.active);
+
       const diceToRoll3D = [];
       const attackPlans = [];
 
-      // For each iterative attack
-      evalResult.iteratives.forEach((bonus, idx) => {
+      chain.forEach((item, idx) => {
+        const evalResult = item.evalResult;
         const d20 = Math.floor(Math.random() * 20) + 1;
         diceToRoll3D.push({ type: 'd20', value: d20 });
 
@@ -10163,10 +10474,9 @@
         const chargeMult = evalResult.chargeMultiplier || 1;
         const totalDiceMult = mult * chargeMult;
 
-        // Roll weapon damage dice (e.g. 1d6 or 2d6)
         let diceSides = 6;
         let diceCount = 1;
-        const match = evalResult.baseDice.match(/(\d+)d(\d+)/i);
+        const match = (item.weapon?.dice || evalResult.baseDice || '1d6').match(/(\d+)d(\d+)/i);
         if (match) {
           diceCount = parseInt(match[1]) || 1;
           diceSides = parseInt(match[2]) || 6;
@@ -10183,9 +10493,15 @@
 
         attackPlans.push({
           idx: idx + 1,
-          d20, bonus,
-          totalAtk: d20 + bonus,
-          isThreat, isCrit, mult,
+          label: `${item.label} (${item.handLabel})`,
+          hand: item.hand,
+          badgeColor: item.badgeColor,
+          d20,
+          bonus: item.bonus,
+          totalAtk: d20 + item.bonus,
+          isThreat,
+          isCrit,
+          mult,
           chargeMult,
           weaponRollSum,
           flatDmg: (evalResult.chargeFlatDamage || evalResult.netFlatDamage) * mult,
@@ -10193,14 +10509,13 @@
         });
       });
 
-      // Roll 3D Animated Dice Canvas!
       const onRollComplete = () => {
-        renderAttackResults(attackPlans, evalResult, activeMods, maneuverCrit);
+        renderAttackResults(attackPlans, chain[0].evalResult, activeMods, maneuverCrit);
       };
 
       if (window.Dice3D && typeof Dice3D.roll === 'function') {
         try {
-          Dice3D.roll(diceToRoll3D.slice(0, 6), onRollComplete);
+          Dice3D.roll(diceToRoll3D.slice(0, 10), onRollComplete);
         } catch (err) {
           onRollComplete();
         }
@@ -10227,7 +10542,7 @@
             const isPrecision = (mod.name || '').toLowerCase().includes('sneak') || (mod.name || '').toLowerCase().includes('skirmish') || (mod.tags && mod.tags.includes('precision'));
             const precisionRule = character.houseRules?.precisionDamageRule || 'once_per_turn';
             if (isPrecision && precisionRule === 'once_per_turn' && atk.idx > 1) {
-              return; // Skip precision extra dice on secondary iteratives per House Rules
+              return;
             }
 
             const mMatch = mod.dice.match(/(\d+)d(\d+)/i);
@@ -10251,14 +10566,32 @@
 
         if (summaryGrid) {
           const div = document.createElement('div');
-          div.className = `p-3 rounded-lg border ${atk.isCrit ? 'bg-rose-950/40 border-rose-500' : 'bg-slate-900 border-slate-700'}`;
+          let borderClass = 'border-slate-700 bg-slate-900';
+          let tagBadge = '<span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-950/60 text-amber-300 border border-amber-600/50 font-bold">Ana El</span>';
+
+          if (atk.badgeColor === 'cyan') {
+            borderClass = 'border-cyan-800/60 bg-cyan-950/20';
+            tagBadge = '<span class="text-[9px] px-1.5 py-0.5 rounded bg-cyan-950/60 text-cyan-300 border border-cyan-600/50 font-bold">İkinci El</span>';
+          } else if (atk.badgeColor === 'purple') {
+            borderClass = 'border-purple-800/60 bg-purple-950/20';
+            tagBadge = '<span class="text-[9px] px-1.5 py-0.5 rounded bg-purple-950/60 text-purple-300 border border-purple-600/50 font-bold">Flurry</span>';
+          }
+
+          if (atk.isCrit) {
+            borderClass = 'bg-rose-950/40 border-rose-500';
+          }
+
+          div.className = `p-3 rounded-lg border ${borderClass}`;
           div.innerHTML = `
             <div class="flex justify-between items-center mb-1">
-              <span class="font-bold text-white">${atk.idx}. Vuruş</span>
+              <div class="flex items-center gap-1.5">
+                <span class="font-bold text-white">${atk.label || (atk.idx + '. Vuruş')}</span>
+                ${tagBadge}
+              </div>
               ${atk.isCrit ? '<span class="badge bg-rose-600 text-white animate-pulse inline-flex items-center gap-1">' + getD20IconSvg('w-3.5 h-3.5') + '<span>KRİTİK</span></span>' : (atk.d20 === 20 ? '<span class="badge bg-amber-500 text-black">NAT 20</span>' : '')}
             </div>
             <div class="flex justify-between items-baseline font-mono border-t border-slate-800 pt-1.5 mt-1">
-              <span class="text-xs text-slate-400">Atk: <strong class="text-emerald-400 text-base">${atk.totalAtk}</strong> (d20:${atk.d20})</span>
+              <span class="text-xs text-slate-400">Atk: <strong class="${atk.badgeColor === 'cyan' ? 'text-cyan-400' : (atk.badgeColor === 'amber' ? 'text-amber-400' : 'text-emerald-400')} text-base">${atk.totalAtk >= 0 ? '+' : ''}${atk.totalAtk}</strong> (d20:${atk.d20})</span>
               <span class="text-xs text-slate-400">DMG: <strong class="text-rose-400 text-base">${totalAttackDmg}</strong></span>
             </div>
             <div class="text-[10px] text-amber-300 truncate mt-1">Silah: ${atk.weaponRollSum + atk.flatDmg} ${extraDetails.length ? '• ' + extraDetails.join(', ') : ''}</div>
@@ -10670,15 +11003,17 @@
       // TWF Summary Badge
       const twfBadge = document.getElementById('twf-bonus-badge');
       if (twfBadge) {
-        if (currentVal && currentVal !== 'None') {
+        const isTWFActive = (character.activeModifiers || []).some(m => m.active && (m.name.includes('TWF') || m.name.includes('Çift Silah')));
+        if (isTWFActive) {
           twfBadge.classList.remove('hidden');
+          const offHandItem = character.bodySlots?.offHand;
           const isShield = offHandItem && offHandItem.name === currentVal && (offHandItem.category === 'Shield' || (offHandItem.desc && offHandItem.desc.toLowerCase().includes('shield')));
           const hasImpShieldBash = (character.feats || []).some(f => (typeof f === 'string' ? f : f.name).toLowerCase().includes('improved shield bash'));
           let shieldWarning = '';
           if (isShield && !hasImpShieldBash) {
             shieldWarning = ' • ⚠️ Kalkan AC (+2) bu tur geçici devre dışı kalır (RAW PHB p.125)';
           }
-          twfBadge.innerHTML = `⚔️ Çift Silah Modu: Ana El (-2 Att) • İkinci El (-2 Att)${shieldWarning}`;
+          twfBadge.innerHTML = `⚔️ Çift Silah Modu Devrede: Ana El (Altın) • İkinci El (Camgöbeği)${shieldWarning}`;
         } else {
           twfBadge.classList.add('hidden');
         }
