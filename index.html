@@ -1405,7 +1405,7 @@
               <div class="text-xs font-bold text-sky-400">Combat Expertise</div>
               <div class="text-[10px] text-slate-400">-Att / +Dodge AC (Max 3)</div>
             </div>
-            <input type="number" id="combat-expertise-val" value="0" min="0" max="3" onchange="recalculateDefense()" class="w-12 bg-slate-950 border border-sky-500 rounded px-1.5 py-1 text-center font-mono font-bold text-sm text-white">
+            <input type="number" id="defense-combat-expertise-val" value="0" min="0" max="3" onchange="recalculateDefense()" class="w-12 bg-slate-950 border border-sky-500 rounded px-1.5 py-1 text-center font-mono font-bold text-sm text-white">
           </div>
           <label class="bg-slate-900 border border-slate-700 p-3 rounded-lg flex items-center justify-between cursor-pointer">
             <div>
@@ -1432,7 +1432,19 @@
               <span id="defense-ac-total-badge" class="font-mono text-sky-300 font-bold">Total: 22</span>
             </div>
             <div class="space-y-1.5 text-xs font-mono" id="defense-ac-breakdown-list">
-              <!-- Dynamically populated: Base 10 + Armor + Shield + Dex + Deflection + Natural + Dodge -->
+              <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">10 Taban (Base):</span><span class="text-white font-bold">10</span></div>
+              <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Zırh Bonusu (Armor): <span class="text-[10px] text-sky-500 font-normal">(Mithral Breastplate)</span></span><span class="text-sky-400 font-bold">+5</span></div>
+              <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Kalkan Bonusu (Shield): <span class="text-[10px] text-sky-500 font-normal">(Darkwood Shield)</span></span><span class="text-sky-400 font-bold">+2</span></div>
+              <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">DEX Modifiyeri <span class="text-[10px] text-slate-400 font-normal">(Max Dex: +5)</span>:</span><span class="text-emerald-400 font-bold">+3</span></div>
+              <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Deflection (Saptırma): <span class="text-[10px] text-indigo-400 font-normal">(Ring of Protection +1)</span></span><span class="text-indigo-400 font-bold">+1</span></div>
+              <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Doğal Zırh (Natural): <span class="text-[10px] text-teal-400 font-normal">(Amulet of Natural Armor +1)</span></span><span class="text-teal-400 font-bold">+1</span></div>
+              <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Dodge (Kaçınma - Stacks):</span><span class="text-amber-400 font-bold">+0</span></div>
+              <div class="flex justify-between py-1.5 text-slate-300 font-bold border-t border-slate-700 mt-1"><span class="text-emerald-300 text-xs">NİHAİ ZIRH SINIFI:</span><span class="text-emerald-400 text-sm font-black">22 AC</span></div>
+              <div class="flex justify-between text-[11px] text-slate-400 pt-0.5">
+                <span>Touch: <strong class="text-sky-300">14</strong></span>
+                <span>Flat-Footed: <strong class="text-amber-300">19</strong></span>
+                <span>Zırh Cezası (ACP): <strong class="text-rose-400">-1</strong></span>
+              </div>
             </div>
           </div>
 
@@ -1443,7 +1455,56 @@
               <span class="text-[10px] text-slate-400 font-normal">Base + Stat + Resist + Bonus</span>
             </div>
             <div class="space-y-1.5 text-xs font-mono" id="defense-saves-breakdown-list">
-              <!-- Dynamically populated: Fort, Ref, Will breakdown -->
+              <div class="flex items-center py-1 border-b border-slate-800 text-xs font-mono">
+                <span class="text-slate-400 w-36 shrink-0 flex items-center gap-1.5 font-sans">
+                  <span>🛡️</span>
+                  <span>Fortitude:</span>
+                </span>
+                <span class="text-emerald-400 font-bold w-9 text-right shrink-0">+7</span>
+                <span class="text-slate-500 font-bold px-2 shrink-0">:</span>
+                <span class="text-white flex-1 truncate">
+                  4 (Base) + 2 (Con) + 1 (Resist)
+                </span>
+              </div>
+              <div class="flex items-center py-1 border-b border-slate-800 text-xs font-mono">
+                <span class="text-slate-400 w-36 shrink-0 flex items-center gap-1.5 font-sans">
+                  <span>⚡</span>
+                  <span>Reflex:</span>
+                </span>
+                <span class="text-sky-400 font-bold w-9 text-right shrink-0">+8</span>
+                <span class="text-slate-500 font-bold px-2 shrink-0">:</span>
+                <span class="text-white flex-1 truncate">
+                  3 (Base) + 3 (Dex) + 1 (Resist) <span class="text-amber-300 font-bold">+ 1 (Bonus)</span>
+                </span>
+              </div>
+              <div class="flex items-center py-1 border-b border-slate-800 text-xs font-mono">
+                <span class="text-slate-400 w-36 shrink-0 flex items-center gap-1.5 font-sans">
+                  <span>🧠</span>
+                  <span>Will:</span>
+                </span>
+                <span class="text-purple-400 font-bold w-9 text-right shrink-0">+5</span>
+                <span class="text-slate-500 font-bold px-2 shrink-0">:</span>
+                <span class="text-white flex-1 truncate">
+                  4 (Base) + 0 (Wis) + 1 (Resist)
+                </span>
+              </div>
+              <div class="flex items-center py-1 border-b border-slate-800 text-xs font-mono">
+                <span class="text-slate-400 w-36 shrink-0 flex items-center gap-1.5 font-sans">
+                  <span>🩸</span>
+                  <span>Can Puanı (HP):</span>
+                </span>
+                <span class="text-emerald-400 font-bold shrink-0">44 / 44 HP</span>
+                <span class="text-slate-500 font-bold px-2 shrink-0">:</span>
+                <span class="text-white flex-1 truncate">
+                  44 Taban
+                </span>
+              </div>
+              <div class="pt-1.5 space-y-0.5 text-[10px] text-indigo-300 font-sans border-t border-slate-800/60 mt-1">
+                <div class="flex items-center justify-between py-0.5">
+                  <span>✨ Battle Clarity (Warblade 1): Düztaban değilken Reflex zarlarına +1 INT bonusu eklenir.</span>
+                  <span class="text-emerald-400 font-bold font-mono">Nihai Refl: +8</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -7172,6 +7233,10 @@
 
       if (tabId === 'tab-database' && window.RuleMaster) {
         RuleMaster.init();
+      }
+      if (tabId === 'tab-defense') {
+        renderDefenseBreakdown();
+        renderActiveBuffs();
       }
       if (tabId === 'tab-dice') {
         renderDiceHistory();
@@ -22731,36 +22796,74 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       const wisMod = RuleEngine.getAbilityMod(character.abilities?.wis || 10);
       const intMod = RuleEngine.getAbilityMod(character.abilities?.int || 10);
 
+      // Sync and retrieve tactical modifiers
+      const ceInput = document.getElementById('defense-combat-expertise-val');
+      const ceVal = character.tactical?.combatExpertise !== undefined 
+        ? character.tactical.combatExpertise 
+        : (parseInt(ceInput?.value || document.getElementById('combat-expertise-val')?.textContent) || 0);
+      if (ceInput && ceInput.value != ceVal) ceInput.value = ceVal;
+
+      const fdInput = document.getElementById('mod-defensive-fighting');
+      const fdVal = character.tactical?.fightingDefensively !== undefined
+        ? character.tactical.fightingDefensively
+        : (fdInput?.checked || false);
+      if (fdInput) fdInput.checked = fdVal;
+
+      const tdInput = document.getElementById('mod-total-defense');
+      const tdVal = character.tactical?.totalDefense !== undefined
+        ? character.tactical.totalDefense
+        : (tdInput?.checked || false);
+      if (tdInput) tdInput.checked = tdVal;
+
+      const chargeVal = character.tactical?.charge !== undefined
+        ? character.tactical.charge
+        : (document.getElementById('mod-charge')?.checked || false);
+
       const acCalc = RuleEngine.evaluateAC(character, {
-        combatExpertise: parseInt(document.getElementById('combat-expertise-val')?.value) || 0,
-        fightingDefensively: document.getElementById('mod-defensive-fighting')?.checked || false,
-        totalDefense: document.getElementById('mod-total-defense')?.checked || false,
-        charge: document.getElementById('mod-charge')?.checked || false
+        combatExpertise: ceVal,
+        fightingDefensively: fdVal,
+        totalDefense: tdVal,
+        charge: chargeVal
       });
 
       const bd = character.acBreakdown || {};
       const totalBadge = document.getElementById('defense-ac-total-badge');
       if (totalBadge) totalBadge.textContent = `Total: ${bd.total ?? acCalc.total} • Touch: ${bd.touch ?? acCalc.touch} • Flat: ${bd.flat ?? acCalc.flat}`;
 
-      const maxDexInfo = bd.maxDex !== null && bd.maxDex !== undefined ? ` (Max Dex: +${bd.maxDex})` : '';
+      const maxDexInfo = bd.maxDex !== null && bd.maxDex !== undefined ? ` <span class="text-[10px] text-slate-400 font-normal">(Max Dex: +${bd.maxDex})</span>` : '';
       const penaltyInfo = bd.penalty > 0 ? `<div class="flex justify-between py-1 border-b border-slate-800 text-rose-400 font-bold"><span class="text-rose-300">Savunma Cezaları (Charge/Stance):</span><span>-${bd.penalty}</span></div>` : '';
-      const armorCatInfo = bd.armorCategory && bd.armorCategory !== 'None' ? ` <span class="text-[10px] text-sky-500 font-normal">(${bd.armorCategory})</span>` : '';
+      
+      const armorSourceStr = (Array.isArray(bd.sources?.armor) && bd.sources.armor.length > 0 && bd.sources.armor[0].source) 
+        ? ` <span class="text-[10px] text-sky-400 font-normal">(${bd.sources.armor[0].source})</span>`
+        : (bd.armorCategory && bd.armorCategory !== 'None' ? ` <span class="text-[10px] text-sky-500 font-normal">(${bd.armorCategory})</span>` : '');
+
+      const shieldSourceStr = (Array.isArray(bd.sources?.shield) && bd.sources.shield.length > 0 && bd.sources.shield[0].source)
+        ? ` <span class="text-[10px] text-sky-400 font-normal">(${bd.sources.shield[0].source})</span>`
+        : '';
+
+      const deflSourceStr = (Array.isArray(bd.sources?.deflection) && bd.sources.deflection.length > 0 && bd.sources.deflection[0].source)
+        ? ` <span class="text-[10px] text-indigo-300 font-normal">(${bd.sources.deflection[0].source})</span>`
+        : '';
 
       let naturalDetail = '';
-      if (Array.isArray(bd.sources?.natural) && bd.sources.natural.length > 1) {
-        const natItems = bd.sources.natural.map(s => {
-          const typeLabel = s.type === 'natural_armor_ench' ? 'Enh' : 'Base';
-          return `${s.source}: +${s.val} (${typeLabel})`;
-        }).join(', ');
-        naturalDetail = ` <span class="text-[10px] text-slate-500 font-normal">(${natItems})</span>`;
+      if (Array.isArray(bd.sources?.natural) && bd.sources.natural.length > 0) {
+        if (bd.sources.natural.length > 1) {
+          const natItems = bd.sources.natural.map(s => {
+            const typeLabel = s.type === 'natural_armor_ench' ? 'Enh' : 'Base';
+            return `${s.source}: +${s.val} (${typeLabel})`;
+          }).join(', ');
+          naturalDetail = ` <span class="text-[10px] text-slate-500 font-normal">(${natItems})</span>`;
+        } else if (bd.sources.natural[0].source) {
+          naturalDetail = ` <span class="text-[10px] text-teal-300 font-normal">(${bd.sources.natural[0].source})</span>`;
+        }
       }
 
       acList.innerHTML = `
         <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">10 Taban (Base):</span><span class="text-white font-bold">10</span></div>
-        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Zırh Bonusu (Armor):${armorCatInfo}</span><span class="text-sky-400 font-bold">+${bd.armor || 0}</span></div>
-        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Kalkan Bonusu (Shield):</span><span class="text-sky-400 font-bold">+${bd.shield || 0}</span></div>
+        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Zırh Bonusu (Armor):${armorSourceStr}</span><span class="text-sky-400 font-bold">+${bd.armor || 0}</span></div>
+        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Kalkan Bonusu (Shield):${shieldSourceStr}</span><span class="text-sky-400 font-bold">+${bd.shield || 0}</span></div>
         <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">DEX Modifiyeri${maxDexInfo}:</span><span class="text-emerald-400 font-bold">+${bd.effectiveDex ?? dexMod}</span></div>
-        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Deflection (Saptırma):</span><span class="text-indigo-400 font-bold">+${bd.deflection || 0}</span></div>
+        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Deflection (Saptırma):${deflSourceStr}</span><span class="text-indigo-400 font-bold">+${bd.deflection || 0}</span></div>
         <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Doğal Zırh (Natural):${naturalDetail}</span><span class="text-teal-400 font-bold">+${bd.natural || 0}</span></div>
         <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Dodge (Kaçınma - Stacks):</span><span class="text-amber-400 font-bold">+${bd.dodge || 0}</span></div>
         ${penaltyInfo}
@@ -22795,7 +22898,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       const bonusNotes = [];
 
       // 1. Battle Clarity
-      const hasBattleClarity = (character.specialAbilities || []).some(a => (typeof a === 'string' ? a : a.name || '').toLowerCase().includes('battle clarity')) || (character.classes || '').toLowerCase().includes('warblade');
+      const hasBattleClarity = (character.specialAbilities || []).some(a => (typeof a === 'string' ? a : a?.name || '').toLowerCase().includes('battle clarity')) || (character.classes || '').toLowerCase().includes('warblade');
       if (hasBattleClarity) {
         bonusNotes.push(`
           <div class="flex items-center justify-between py-0.5">
@@ -22807,7 +22910,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
 
       // 2. Active Buffs & Debuffs contributing to saves
       (character.buffs || []).forEach(b => {
-        if (!b.active) return;
+        if (!b || !b.active) return;
         const bNotes = [];
         if (b.saveBonus) bNotes.push(`Tüm Zarlara ${b.saveBonus > 0 ? '+' : ''}${b.saveBonus}`);
         if (b.fortBonus) bNotes.push(`Fort ${b.fortBonus > 0 ? '+' : ''}${b.fortBonus}`);
@@ -22816,6 +22919,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         if (b.negativeLevels) bNotes.push(`-${b.negativeLevels} Negatif Seviye (Tüm Kurtarma Zarlarına -${b.negativeLevels})`);
         if (Array.isArray(b.children)) {
           b.children.forEach(c => {
+            if (!c) return;
             if (c.saveBonus) bNotes.push(`Tüm Zarlara ${c.saveBonus > 0 ? '+' : ''}${c.saveBonus}`);
             if (c.fortBonus && c.refBonus && c.willBonus && c.fortBonus === c.refBonus && c.refBonus === c.willBonus) {
               bNotes.push(`Tüm Kurtarmalara ${c.fortBonus > 0 ? '+' : ''}${c.fortBonus}`);
@@ -22837,7 +22941,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       });
 
       // 3. Feats contributing to saves
-      const charFeats = (character.feats || []).map(f => (typeof f === 'string' ? f : f.name || '').toLowerCase());
+      const charFeats = (character.feats || []).map(f => (typeof f === 'string' ? f : f?.name || '').toLowerCase());
       if (charFeats.some(f => f.includes('great fortitude'))) {
         bonusNotes.push(`<div class="py-0.5 text-slate-300">✨ Great Fortitude: Fortitude kurtarma zarlarına +2 feat bonusu eklenir.</div>`);
       }
@@ -22893,10 +22997,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
             <span>🩸</span>
             <span>Can Puanı (HP):</span>
           </span>
-          <span class="text-emerald-400 font-bold shrink-0">${character.hp?.current} / ${character.hp?.max} HP</span>
+          <span class="text-emerald-400 font-bold shrink-0">${character.hp?.current ?? 44} / ${character.hp?.max ?? 44} HP</span>
           <span class="text-slate-500 font-bold px-2 shrink-0">:</span>
           <span class="text-white flex-1 truncate">
-            ${character.hp?.baseMax || character.hp?.max} Taban${character.hp?.conBonusHp ? ` <span class="text-amber-400">+ ${character.hp.conBonusHp} (CON Buff)</span>` : ''}${character.hp?.debuffHpPenalty ? ` <span class="text-rose-400 font-bold">- ${character.hp.debuffHpPenalty} (Debuff/Drain)</span>` : ''}
+            ${character.hp?.baseMax || character.hp?.max || 44} Taban${character.hp?.conBonusHp ? ` <span class="text-amber-400">+ ${character.hp.conBonusHp} (CON Buff)</span>` : ''}${character.hp?.debuffHpPenalty ? ` <span class="text-rose-400 font-bold">- ${character.hp.debuffHpPenalty} (Debuff/Drain)</span>` : ''}
           </span>
         </div>
         <div class="pt-1.5 space-y-0.5 text-[10px] text-indigo-300 font-sans border-t border-slate-800/60 mt-1">
@@ -22906,16 +23010,33 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
     }
 
     function recalculateDefense() {
+      const ceInput = document.getElementById('defense-combat-expertise-val') || document.getElementById('combat-expertise-val');
+      const ceVal = parseInt(ceInput?.value || ceInput?.textContent) || 0;
+      if (!character.tactical) character.tactical = {};
+      character.tactical.combatExpertise = ceVal;
+      character.tactical.fightingDefensively = document.getElementById('mod-defensive-fighting')?.checked || false;
+      character.tactical.totalDefense = document.getElementById('mod-total-defense')?.checked || false;
+
+      // Keep Cockpit toggles and Defense toggles synced
+      const cpCe = document.getElementById('combat-expertise-val');
+      if (cpCe && cpCe.tagName === 'SPAN') cpCe.textContent = ceVal;
+      const cpFd = document.getElementById('toggle-fighting-defensively');
+      if (cpFd) cpFd.checked = character.tactical.fightingDefensively;
+      const cpTd = document.getElementById('toggle-total-defense');
+      if (cpTd) cpTd.checked = character.tactical.totalDefense;
+
       if (typeof RuleEngine !== 'undefined' && RuleEngine.recalculateCharacter) {
         RuleEngine.recalculateCharacter(character, (typeof masterDb !== 'undefined' ? masterDb : []), {
-          combatExpertise: parseInt(document.getElementById('combat-expertise-val')?.value) || 0,
-          fightingDefensively: document.getElementById('mod-defensive-fighting')?.checked || false,
-          totalDefense: document.getElementById('mod-total-defense')?.checked || false,
-          charge: document.getElementById('mod-charge')?.checked || false
+          combatExpertise: ceVal,
+          fightingDefensively: character.tactical.fightingDefensively,
+          totalDefense: character.tactical.totalDefense,
+          charge: character.tactical.charge || false
         });
       }
+      saveStateToStorage(false);
       renderHUD();
       renderDefenseBreakdown();
+      if (typeof renderCombatCockpit === 'function') renderCombatCockpit();
     }
 
     // ✨ ACTIVE BUFFS & ROUND COUNTDOWN ENGINE
