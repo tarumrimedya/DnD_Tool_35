@@ -365,14 +365,18 @@
             </div>
 
             <!-- COMBAT OFFENSE MODE SWITCHER -->
-            <div class="grid grid-cols-2 gap-1.5 p-1 bg-slate-950/80 border border-slate-800 rounded-lg">
+            <div class="grid grid-cols-3 gap-1.5 p-1 bg-slate-950/80 border border-slate-800 rounded-lg">
               <button type="button" id="btn-mode-melee" onclick="switchCombatOffenseMode('melee')" class="py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-gradient-to-r from-red-600 to-rose-600 text-white shadow cursor-pointer">
                 <span>⚔️</span>
-                <span>Fiziksel Saldırı</span>
+                <span>Yakın</span>
+              </button>
+              <button type="button" id="btn-mode-ranged" onclick="switchCombatOffenseMode('ranged')" class="py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 cursor-pointer">
+                <span>🏹</span>
+                <span>Uzak</span>
               </button>
               <button type="button" id="btn-mode-spell" onclick="switchCombatOffenseMode('spell')" class="py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 cursor-pointer">
                 <span>🔮</span>
-                <span>Büyü & Metamagic</span>
+                <span>Büyü</span>
               </button>
             </div>
 
@@ -9478,16 +9482,20 @@
       const meleePanel = document.getElementById('combat-mode-melee-panel');
       const spellPanel = document.getElementById('combat-mode-spell-panel');
       const btnMelee = document.getElementById('btn-mode-melee');
+      const btnRanged = document.getElementById('btn-mode-ranged');
       const btnSpell = document.getElementById('btn-mode-spell');
       const cardTitle = document.getElementById('combat-card-title');
-      const profileBtn = document.getElementById('combat-profile-settings-btn');
+      const profileBtn = document.getElementById('combat-profile-save-btn');
+
+      const inactiveClass = 'py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 cursor-pointer';
+
+      if (btnMelee) btnMelee.className = inactiveClass;
+      if (btnRanged) btnRanged.className = inactiveClass;
+      if (btnSpell) btnSpell.className = inactiveClass;
 
       if (mode === 'spell') {
         if (meleePanel) meleePanel.classList.add('hidden');
         if (spellPanel) spellPanel.classList.remove('hidden');
-        if (btnMelee) {
-          btnMelee.className = 'py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 cursor-pointer';
-        }
         if (btnSpell) {
           btnSpell.className = 'py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-gradient-to-r from-purple-700 to-indigo-600 text-white shadow cursor-pointer';
         }
@@ -9498,17 +9506,27 @@
         if (profileBtn) profileBtn.classList.add('hidden');
         populateCombatSpells();
         recalculateCombatSpell();
+      } else if (mode === 'ranged') {
+        if (meleePanel) meleePanel.classList.remove('hidden');
+        if (spellPanel) spellPanel.classList.add('hidden');
+        if (btnRanged) {
+          btnRanged.className = 'py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow cursor-pointer';
+        }
+        if (cardTitle) {
+          cardTitle.innerHTML = '<span>🏹</span> SALDIRI & SİLAH ROTASYONU (UZAK)';
+          cardTitle.className = 'text-xs font-black uppercase text-amber-400 tracking-wider flex items-center gap-1.5';
+        }
+        if (profileBtn) profileBtn.classList.remove('hidden');
+        recalculateOffense();
       } else {
+        // default: melee (Yakın)
         if (meleePanel) meleePanel.classList.remove('hidden');
         if (spellPanel) spellPanel.classList.add('hidden');
         if (btnMelee) {
           btnMelee.className = 'py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-gradient-to-r from-red-600 to-rose-600 text-white shadow cursor-pointer';
         }
-        if (btnSpell) {
-          btnSpell.className = 'py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 cursor-pointer';
-        }
         if (cardTitle) {
-          cardTitle.innerHTML = '<span>⚔️</span> SALDIRI & SİLAH ROTASYONU';
+          cardTitle.innerHTML = '<span>⚔️</span> SALDIRI & SİLAH ROTASYONU (YAKIN)';
           cardTitle.className = 'text-xs font-black uppercase text-rose-400 tracking-wider flex items-center gap-1.5';
         }
         if (profileBtn) profileBtn.classList.remove('hidden');
