@@ -1212,7 +1212,13 @@
         "name":  "Circlet of Mages",
         "slot":  "Head",
         "benefit":  "Grants a +1 competence bonus on Concentration checks and allows retaining expended spell slots up to 3 times/day.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "dailyCharges":  {
+                             "current":  3,
+                             "max":  3,
+                             "unit":  "charges",
+                             "recharge":  "long_rest"
+                         }
     },
     {
         "source":  "DMG p.257",
@@ -2259,7 +2265,13 @@
                      "skill-bonus",
                      "tome"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "dailyCharges":  {
+                             "current":  3,
+                             "max":  3,
+                             "unit":  "uses",
+                             "recharge":  "long_rest"
+                         }
     },
     {
         "name":  "Stone of Good Luck (Luckstone)",
@@ -11422,5 +11434,366 @@
         "source":  "PHB p.97",
         "type":  "Feat",
         "actionType":  "Standard"
+    },
+    {
+        "name":  "Healing Belt",
+        "type":  "Magic Item",
+        "slot":  "Belt",
+        "cost":  750,
+        "weight":  1,
+        "source":  "Magic Item Compendium p.110",
+        "skillBonus":  2,
+        "scope":  "Heal",
+        "bonusType":  "Competence",
+        "benefit":  "Grants a +2 competence bonus on Heal checks. Has 3 charges per day (recharges with a long rest). As a standard action, spend 1 charge to heal 2d8 HP, 2 charges to heal 3d8 HP, or 3 charges to heal 4d8 HP (deals equivalent damage to undead with a touch attack).",
+        "role":  "Utility / Healing",
+        "actionType":  "Standard",
+        "tags":  [
+                     "magic item",
+                     "wondrous",
+                     "belt",
+                     "healing"
+                 ],
+        "dailyCharges":  {
+                             "current":  3,
+                             "max":  3,
+                             "unit":  "charges",
+                             "recharge":  "long_rest"
+                         },
+        "chargeOptions":  [
+                              {
+                                  "label":  "1 Şarj: 2d8 Can Yenile",
+                                  "cost":  1,
+                                  "dice":  "2d8",
+                                  "effectType":  "heal"
+                              },
+                              {
+                                  "label":  "2 Şarj: 3d8 Can Yenile",
+                                  "cost":  2,
+                                  "dice":  "3d8",
+                                  "effectType":  "heal"
+                              },
+                              {
+                                  "label":  "3 Şarj: 4d8 Can Yenile",
+                                  "cost":  3,
+                                  "dice":  "4d8",
+                                  "effectType":  "heal"
+                              }
+                          ]
+    },
+    {
+        "name":  "↳ Healing Belt (1 Şarj: 2d8 Can)",
+        "parent":  "Healing Belt",
+        "type":  "Magic Item",
+        "slot":  "Belt",
+        "cost":  750,
+        "weight":  1,
+        "source":  "Magic Item Compendium p.110",
+        "benefit":  "Spend 1 charge to heal 2d8 HP (or deal 2d8 damage to undead with a touch attack).",
+        "chargeCost":  1,
+        "dice":  "2d8",
+        "effectType":  "heal",
+        "role":  "Healing",
+        "actionType":  "Standard",
+        "tags":  [
+                     "magic item",
+                     "healing"
+                 ]
+    },
+    {
+        "name":  "↳ Healing Belt (2 Şarj: 3d8 Can)",
+        "parent":  "Healing Belt",
+        "type":  "Magic Item",
+        "slot":  "Belt",
+        "cost":  750,
+        "weight":  1,
+        "source":  "Magic Item Compendium p.110",
+        "benefit":  "Spend 2 charges to heal 3d8 HP (or deal 3d8 damage to undead with a touch attack).",
+        "chargeCost":  2,
+        "dice":  "3d8",
+        "effectType":  "heal",
+        "role":  "Healing",
+        "actionType":  "Standard",
+        "tags":  [
+                     "magic item",
+                     "healing"
+                 ]
+    },
+    {
+        "name":  "↳ Healing Belt (3 Şarj: 4d8 Can)",
+        "parent":  "Healing Belt",
+        "type":  "Magic Item",
+        "slot":  "Belt",
+        "cost":  750,
+        "weight":  1,
+        "source":  "Magic Item Compendium p.110",
+        "benefit":  "Spend 3 charges to heal 4d8 HP (or deal 4d8 damage to undead with a touch attack).",
+        "chargeCost":  3,
+        "dice":  "4d8",
+        "effectType":  "heal",
+        "role":  "Healing",
+        "actionType":  "Standard",
+        "tags":  [
+                     "magic item",
+                     "healing"
+                 ]
+    },
+    {
+        "name":  "Witchlight Reservoir",
+        "type":  "Magic Item",
+        "slot":  "Slotless",
+        "cost":  5000,
+        "weight":  1,
+        "source":  "Magic Item Compendium p.147",
+        "benefit":  "Holds 5 charges per day. Spend charges as a swift action: 1 charge for +2 melee damage (1 round), 2 charges for +4 melee damage (1 round), or 2 charges for +20 ft land speed (1 round).",
+        "role":  "Offense / Utility",
+        "actionType":  "Swift",
+        "tags":  [
+                     "magic item",
+                     "wondrous",
+                     "slotless",
+                     "buff",
+                     "damage",
+                     "speed"
+                 ],
+        "dailyCharges":  {
+                             "current":  5,
+                             "max":  5,
+                             "unit":  "charges",
+                             "recharge":  "long_rest"
+                         },
+        "chargeOptions":  [
+                              {
+                                  "label":  "1 Şarj: +2 Melee Hasarı (1 Tur)",
+                                  "cost":  1,
+                                  "type":  "buff",
+                                  "buffName":  "Witchlight (+2 Hasar)",
+                                  "bonusDmg":  2,
+                                  "durationText":  "1 Tur"
+                              },
+                              {
+                                  "label":  "2 Şarj: +4 Melee Hasarı (1 Tur)",
+                                  "cost":  2,
+                                  "type":  "buff",
+                                  "buffName":  "Witchlight (+4 Hasar)",
+                                  "bonusDmg":  4,
+                                  "durationText":  "1 Tur"
+                              },
+                              {
+                                  "label":  "2 Şarj: +20 ft Hız (1 Tur)",
+                                  "cost":  2,
+                                  "type":  "buff",
+                                  "buffName":  "Witchlight (+20 ft Hız)",
+                                  "speedBonus":  20,
+                                  "durationText":  "1 Tur"
+                              }
+                          ]
+    },
+    {
+        "name":  "↳ Witchlight Reservoir (1 Şarj: +2 Hasar)",
+        "parent":  "Witchlight Reservoir",
+        "type":  "Magic Item",
+        "slot":  "Slotless",
+        "cost":  5000,
+        "weight":  1,
+        "source":  "Magic Item Compendium p.147",
+        "benefit":  "Spend 1 charge as a swift action for +2 melee damage for 1 round.",
+        "chargeCost":  1,
+        "effectType":  "buff",
+        "buffName":  "Witchlight (+2 Hasar)",
+        "bonusDmg":  2,
+        "role":  "Offense",
+        "actionType":  "Swift",
+        "tags":  [
+                     "buff",
+                     "damage"
+                 ]
+    },
+    {
+        "name":  "↳ Witchlight Reservoir (2 Şarj: +4 Hasar)",
+        "parent":  "Witchlight Reservoir",
+        "type":  "Magic Item",
+        "slot":  "Slotless",
+        "cost":  5000,
+        "weight":  1,
+        "source":  "Magic Item Compendium p.147",
+        "benefit":  "Spend 2 charges as a swift action for +4 melee damage for 1 round.",
+        "chargeCost":  2,
+        "effectType":  "buff",
+        "buffName":  "Witchlight (+4 Hasar)",
+        "bonusDmg":  4,
+        "role":  "Offense",
+        "actionType":  "Swift",
+        "tags":  [
+                     "buff",
+                     "damage"
+                 ]
+    },
+    {
+        "name":  "↳ Witchlight Reservoir (2 Şarj: +20 ft Hız)",
+        "parent":  "Witchlight Reservoir",
+        "type":  "Magic Item",
+        "slot":  "Slotless",
+        "cost":  5000,
+        "weight":  1,
+        "source":  "Magic Item Compendium p.147",
+        "benefit":  "Spend 2 charges as a swift action for +20 ft land speed for 1 round.",
+        "chargeCost":  2,
+        "effectType":  "buff",
+        "buffName":  "Witchlight (+20 ft Hız)",
+        "speedBonus":  20,
+        "role":  "Utility",
+        "actionType":  "Swift",
+        "tags":  [
+                     "buff",
+                     "speed"
+                 ]
+    },
+    {
+        "name":  "Boots of Speed",
+        "type":  "Magic Item",
+        "slot":  "Boots",
+        "cost":  12000,
+        "weight":  1,
+        "source":  "DMG p.250",
+        "benefit":  "Enables the wearer to act as if affected by the haste spell for up to 10 rounds each day (+1 attack, +1 dodge AC, +1 Reflex saves, +30 ft speed, extra attack on full attack). The 10 rounds do not need to be consecutive.",
+        "role":  "Buff / Movement / Offense",
+        "actionType":  "Free",
+        "tags":  [
+                     "magic item",
+                     "wondrous",
+                     "boots",
+                     "haste",
+                     "speed",
+                     "ac"
+                 ],
+        "dailyCharges":  {
+                             "current":  10,
+                             "max":  10,
+                             "unit":  "rounds",
+                             "recharge":  "long_rest"
+                         },
+        "chargeOptions":  [
+                              {
+                                  "label":  "1 Tur Haste (Saldırı +1, AC +1, Hız +30 ft)",
+                                  "cost":  1,
+                                  "type":  "haste"
+                              }
+                          ]
+    },
+    {
+        "name":  "↳ Boots of Speed (1 Tur Haste)",
+        "parent":  "Boots of Speed",
+        "type":  "Magic Item",
+        "slot":  "Boots",
+        "cost":  12000,
+        "weight":  1,
+        "source":  "DMG p.250",
+        "benefit":  "Spend 1 round of haste effect (gain +1 attack, +1 dodge AC, +1 Reflex saves, +30 ft speed, extra attack on full attack).",
+        "chargeCost":  1,
+        "effectType":  "haste",
+        "role":  "Buff",
+        "actionType":  "Free",
+        "tags":  [
+                     "buff",
+                     "haste"
+                 ]
+    },
+    {
+        "name":  "Belt of Battle",
+        "type":  "Magic Item",
+        "slot":  "Belt",
+        "cost":  12000,
+        "weight":  1,
+        "source":  "Magic Item Compendium p.73",
+        "benefit":  "Grants a +2 competence bonus on initiative checks. Has 3 charges per day. As a swift action, spend: 1 charge for an extra move action, 2 charges for an extra standard action, or 3 charges for an extra full-round action.",
+        "initiativeBonus":  2,
+        "bonusType":  "Competence",
+        "role":  "Utility / Tactical",
+        "actionType":  "Swift",
+        "tags":  [
+                     "magic item",
+                     "wondrous",
+                     "belt",
+                     "initiative",
+                     "action-economy"
+                 ],
+        "dailyCharges":  {
+                             "current":  3,
+                             "max":  3,
+                             "unit":  "charges",
+                             "recharge":  "long_rest"
+                         },
+        "chargeOptions":  [
+                              {
+                                  "label":  "1 Şarj: Ekstra Move Action",
+                                  "cost":  1,
+                                  "actionType":  "Swift",
+                                  "note":  "Ekstra Move Action kazandınız"
+                              },
+                              {
+                                  "label":  "2 Şarj: Ekstra Standard Action",
+                                  "cost":  2,
+                                  "actionType":  "Swift",
+                                  "note":  "Ekstra Standard Action kazandınız"
+                              },
+                              {
+                                  "label":  "3 Şarj: Ekstra Full-Round Action",
+                                  "cost":  3,
+                                  "actionType":  "Swift",
+                                  "note":  "Ekstra Full-Round Action kazandınız"
+                              }
+                          ]
+    },
+    {
+        "name":  "↳ Belt of Battle (1 Şarj: Move Action)",
+        "parent":  "Belt of Battle",
+        "type":  "Magic Item",
+        "slot":  "Belt",
+        "cost":  12000,
+        "weight":  1,
+        "source":  "Magic Item Compendium p.73",
+        "benefit":  "Spend 1 charge as a swift action for an extra move action.",
+        "chargeCost":  1,
+        "role":  "Tactical",
+        "actionType":  "Swift",
+        "tags":  [
+                     "tactical",
+                     "action-economy"
+                 ]
+    },
+    {
+        "name":  "↳ Belt of Battle (2 Şarj: Standard Action)",
+        "parent":  "Belt of Battle",
+        "type":  "Magic Item",
+        "slot":  "Belt",
+        "cost":  12000,
+        "weight":  1,
+        "source":  "Magic Item Compendium p.73",
+        "benefit":  "Spend 2 charges as a swift action for an extra standard action.",
+        "chargeCost":  2,
+        "role":  "Tactical",
+        "actionType":  "Swift",
+        "tags":  [
+                     "tactical",
+                     "action-economy"
+                 ]
+    },
+    {
+        "name":  "↳ Belt of Battle (3 Şarj: Full-Round Action)",
+        "parent":  "Belt of Battle",
+        "type":  "Magic Item",
+        "slot":  "Belt",
+        "cost":  12000,
+        "weight":  1,
+        "source":  "Magic Item Compendium p.73",
+        "benefit":  "Spend 3 charges as a swift action for an extra full-round action.",
+        "chargeCost":  3,
+        "role":  "Tactical",
+        "actionType":  "Swift",
+        "tags":  [
+                     "tactical",
+                     "action-economy"
+                 ]
     }
 ];
