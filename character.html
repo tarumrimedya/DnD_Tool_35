@@ -204,42 +204,52 @@
 
     <!-- Card 2: Armor Class (Orantılı Geniş En: 2 Kolon) -->
     <div class="bg-dndCard border border-dndBorder rounded-xl p-3 flex flex-col justify-between shadow col-span-1 md:col-span-2 lg:col-span-2">
-      <div class="text-xs font-bold text-sky-400 flex items-center gap-1 mb-1">🛡️ ZIRH SINIFI (AC)</div>
+      <div class="flex items-center justify-between mb-1">
+        <div class="text-xs font-bold text-sky-400 flex items-center gap-1">🛡️ ZIRH SINIFI (AC)</div>
+        <button type="button" onclick="switchTab('tab-defense')" class="text-[10px] text-slate-400 hover:text-sky-300 font-semibold flex items-center gap-0.5 transition cursor-pointer" title="Detaylı Savunma ve AC Dökümüne Git">
+          <span>Döküm</span><span>➔</span>
+        </button>
+      </div>
       <div class="grid grid-cols-3 gap-1 text-center my-1">
         <div class="bg-slate-900/70 p-1.5 rounded border border-slate-800">
-          <div id="ac-total-display" class="text-xl font-extrabold text-sky-400 font-mono">18</div>
+          <div id="ac-total-display" class="text-xl font-extrabold text-sky-400 font-mono">--</div>
           <div class="text-[9px] text-slate-400 font-semibold uppercase">Total</div>
         </div>
         <div class="bg-slate-900/70 p-1.5 rounded border border-slate-800">
-          <div id="ac-touch-display" class="text-lg font-bold text-slate-300 font-mono">14</div>
+          <div id="ac-touch-display" class="text-lg font-bold text-slate-300 font-mono">--</div>
           <div class="text-[9px] text-slate-400 font-semibold uppercase">Touch</div>
         </div>
         <div class="bg-slate-900/70 p-1.5 rounded border border-slate-800">
-          <div id="ac-flat-display" class="text-lg font-bold text-slate-400 font-mono">15</div>
+          <div id="ac-flat-display" class="text-lg font-bold text-slate-400 font-mono">--</div>
           <div class="text-[9px] text-slate-400 font-semibold uppercase">Flat-F.</div>
         </div>
       </div>
-      <div id="ac-notes-display" class="text-[10px] text-indigo-300 text-center truncate">Mage Armor +4 • Dex +3 • Ring +1</div>
+      <div id="ac-notes-display" class="text-[10px] text-indigo-300 text-center truncate" title="AC Dökümü">Hesaplanıyor...</div>
     </div>
 
     <!-- Card 3: Saves (Kayıt Zarları - Orantılı Geniş En: 2 Kolon) -->
     <div class="bg-dndCard border border-dndBorder rounded-xl p-3 flex flex-col justify-between shadow col-span-2 md:col-span-2 lg:col-span-2">
-      <div class="text-xs font-bold text-purple-400 flex items-center gap-1 mb-1">⚡ SAVES (KAYIT ZARLARI)</div>
+      <div class="flex items-center justify-between mb-1">
+        <div class="text-xs font-bold text-purple-400 flex items-center gap-1">⚡ SAVES (KAYIT ZARLARI)</div>
+        <button type="button" onclick="switchTab('tab-defense')" class="text-[10px] text-slate-400 hover:text-purple-300 font-semibold flex items-center gap-0.5 transition cursor-pointer" title="Detaylı Savunma ve Kayıt Zarları Dökümüne Git">
+          <span>Döküm</span><span>➔</span>
+        </button>
+      </div>
       <div class="grid grid-cols-3 gap-1 text-center my-1">
-        <button onclick="rollSave3D('Fortitude')" class="bg-slate-900/70 hover:bg-slate-800 p-1.5 rounded border border-slate-800 transition cursor-pointer">
-          <div id="save-fort-display" class="text-lg font-bold text-emerald-400 font-mono">+6</div>
+        <button onclick="rollSave3D('Fortitude')" class="bg-slate-900/70 hover:bg-slate-800 p-1.5 rounded border border-slate-800 transition cursor-pointer group" title="Fortitude (Dayanıklılık) zarı at">
+          <div id="save-fort-display" class="text-lg font-bold text-emerald-400 font-mono group-hover:scale-105 transition-transform">--</div>
           <div class="text-[9px] text-slate-400 font-semibold uppercase">🛡️ Fort</div>
         </button>
-        <button onclick="rollSave3D('Reflex')" class="bg-slate-900/70 hover:bg-slate-800 p-1.5 rounded border border-slate-800 transition cursor-pointer">
-          <div id="save-ref-display" class="text-lg font-bold text-sky-400 font-mono">+7</div>
+        <button onclick="rollSave3D('Reflex')" class="bg-slate-900/70 hover:bg-slate-800 p-1.5 rounded border border-slate-800 transition cursor-pointer group" title="Reflex (Refleks) zarı at">
+          <div id="save-ref-display" class="text-lg font-bold text-sky-400 font-mono group-hover:scale-105 transition-transform">--</div>
           <div class="text-[9px] text-slate-400 font-semibold uppercase">⚡ Ref</div>
         </button>
-        <button onclick="rollSave3D('Will')" class="bg-slate-900/70 hover:bg-slate-800 p-1.5 rounded border border-slate-800 transition cursor-pointer">
-          <div id="save-will-display" class="text-lg font-bold text-purple-400 font-mono">+5</div>
+        <button onclick="rollSave3D('Will')" class="bg-slate-900/70 hover:bg-slate-800 p-1.5 rounded border border-slate-800 transition cursor-pointer group" title="Will (İrade) zarı at">
+          <div id="save-will-display" class="text-lg font-bold text-purple-400 font-mono group-hover:scale-105 transition-transform">--</div>
           <div class="text-[9px] text-slate-400 font-semibold uppercase">🧠 Will</div>
         </button>
       </div>
-      <div class="text-[10px] text-amber-300 text-center truncate">Zar atmak için tıklayın</div>
+      <div id="saves-subtitle-notes" class="text-[10px] text-amber-300 text-center truncate">Zar atmak için tıklayın</div>
     </div>
 
     <!-- Card 4: İnisiyatif (Save ile Dinlenme Arasında, Yarı En: 1 Kolon) -->
@@ -7439,37 +7449,107 @@
         renderPeriodicHpEffects();
       }
 
-      // AC
+      // AC Live Evaluation
+      const ceVal = character.tactical?.combatExpertise !== undefined 
+        ? character.tactical.combatExpertise 
+        : (parseInt(document.getElementById('defense-combat-expertise-val')?.value || document.getElementById('combat-expertise-val')?.textContent) || 0);
+      const fdVal = character.tactical?.fightingDefensively !== undefined
+        ? character.tactical.fightingDefensively
+        : (document.getElementById('toggle-fighting-defensively')?.checked || document.getElementById('mod-defensive-fighting')?.checked || false);
+      const tdVal = character.tactical?.totalDefense !== undefined
+        ? character.tactical.totalDefense
+        : (document.getElementById('toggle-total-defense')?.checked || document.getElementById('mod-total-defense')?.checked || false);
+      const chargeVal = character.tactical?.charge !== undefined
+        ? character.tactical.charge
+        : (document.getElementById('mod-charge')?.checked || false);
+
       const acCalc = RuleEngine.evaluateAC(character, {
-        combatExpertise: parseInt(document.getElementById('combat-expertise-val')?.value) || 0,
-        fightingDefensively: document.getElementById('mod-defensive-fighting')?.checked || false,
-        totalDefense: document.getElementById('mod-total-defense')?.checked || false,
-        charge: document.getElementById('mod-charge')?.checked || false
+        combatExpertise: ceVal,
+        fightingDefensively: fdVal,
+        totalDefense: tdVal,
+        charge: chargeVal
       });
-      document.getElementById('ac-total-display').textContent = acCalc.total;
-      document.getElementById('ac-touch-display').textContent = acCalc.touch;
-      document.getElementById('ac-flat-display').textContent = acCalc.flat;
+
+      const acTotalEl = document.getElementById('ac-total-display');
+      if (acTotalEl) acTotalEl.textContent = acCalc.total;
+      const acTouchEl = document.getElementById('ac-touch-display');
+      if (acTouchEl) acTouchEl.textContent = acCalc.touch;
+      const acFlatEl = document.getElementById('ac-flat-display');
+      if (acFlatEl) acFlatEl.textContent = acCalc.flat;
+
       const acNotesEl = document.getElementById('ac-notes-display');
       if (acNotesEl && acCalc.breakdown) {
-        const parts = [];
-        if (acCalc.breakdown.armor) parts.push(`Zırh +${acCalc.breakdown.armor}`);
-        if (acCalc.breakdown.shield) parts.push(`Kalkan +${acCalc.breakdown.shield}`);
-        if (acCalc.breakdown.dex !== undefined) parts.push(`Dex ${acCalc.breakdown.dex >= 0 ? '+' + acCalc.breakdown.dex : acCalc.breakdown.dex}`);
-        if (acCalc.breakdown.natural) parts.push(`Nat +${acCalc.breakdown.natural}`);
-        if (acCalc.breakdown.deflection) parts.push(`Defl +${acCalc.breakdown.deflection}`);
-        if (acCalc.breakdown.dodge) parts.push(`Dodge +${acCalc.breakdown.dodge}`);
-        if (acCalc.breakdown.sacred) parts.push(`Sacred +${acCalc.breakdown.sacred}`);
-        if (acCalc.breakdown.luck) parts.push(`Luck +${acCalc.breakdown.luck}`);
-        if (acCalc.breakdown.insight) parts.push(`Insight +${acCalc.breakdown.insight}`);
-        if (acCalc.breakdown.penalty) parts.push(`Ceza ${acCalc.breakdown.penalty}`);
-        acNotesEl.textContent = parts.join(' • ') || 'Taban AC 10';
+        const bd = character.acBreakdown || {};
+        const armorName = (Array.isArray(bd.sources?.armor) && bd.sources.armor[0]?.source) ? bd.sources.armor[0].source : null;
+        const shieldName = (Array.isArray(bd.sources?.shield) && bd.sources.shield[0]?.source) ? bd.sources.shield[0].source : null;
+
+        const detailedParts = [];
+        if (acCalc.breakdown.armor) detailedParts.push(`Zırh +${acCalc.breakdown.armor}${armorName ? ` (${armorName})` : ''}`);
+        if (acCalc.breakdown.shield) detailedParts.push(`Kalkan +${acCalc.breakdown.shield}${shieldName ? ` (${shieldName})` : ''}`);
+        if (acCalc.breakdown.dex !== undefined) detailedParts.push(`Dex ${acCalc.breakdown.dex >= 0 ? '+' + acCalc.breakdown.dex : acCalc.breakdown.dex}`);
+        if (acCalc.breakdown.natural) detailedParts.push(`Nat +${acCalc.breakdown.natural}`);
+        if (acCalc.breakdown.deflection) detailedParts.push(`Defl +${acCalc.breakdown.deflection}`);
+        if (acCalc.breakdown.dodge) detailedParts.push(`Dodge +${acCalc.breakdown.dodge}`);
+        if (acCalc.breakdown.penalty) detailedParts.push(`Ceza ${acCalc.breakdown.penalty}`);
+
+        const shortParts = [];
+        if (acCalc.breakdown.armor) shortParts.push(`Zırh +${acCalc.breakdown.armor}`);
+        if (acCalc.breakdown.shield) shortParts.push(`Kalkan +${acCalc.breakdown.shield}`);
+        if (acCalc.breakdown.dex !== undefined) shortParts.push(`Dex ${acCalc.breakdown.dex >= 0 ? '+' + acCalc.breakdown.dex : acCalc.breakdown.dex}`);
+        if (acCalc.breakdown.natural) shortParts.push(`Nat +${acCalc.breakdown.natural}`);
+        if (acCalc.breakdown.deflection) shortParts.push(`Defl +${acCalc.breakdown.deflection}`);
+        if (acCalc.breakdown.dodge) shortParts.push(`Dodge +${acCalc.breakdown.dodge}`);
+        if (acCalc.breakdown.penalty) shortParts.push(`Ceza ${acCalc.breakdown.penalty}`);
+
+        acNotesEl.textContent = shortParts.join(' • ') || 'Taban AC 10';
+        acNotesEl.title = `AC Dökümü: ${detailedParts.join(' • ')} (Taban 10) | Detay için 'Döküm' bağlantısına tıklayın.`;
       }
 
-      // Saves
+      // Saves Live Evaluation
       const saves = RuleEngine.evaluateSaves(character);
-      document.getElementById('save-fort-display').textContent = '+' + saves.fort;
-      document.getElementById('save-ref-display').textContent = '+' + saves.ref;
-      document.getElementById('save-will-display').textContent = '+' + saves.will;
+      const saveFortEl = document.getElementById('save-fort-display');
+      if (saveFortEl) saveFortEl.textContent = (saves.fort >= 0 ? '+' : '') + saves.fort;
+      const saveRefEl = document.getElementById('save-ref-display');
+      if (saveRefEl) saveRefEl.textContent = (saves.ref >= 0 ? '+' : '') + saves.ref;
+      const saveWillEl = document.getElementById('save-will-display');
+      if (saveWillEl) saveWillEl.textContent = (saves.will >= 0 ? '+' : '') + saves.will;
+
+      // Update save button hover tooltips with detailed calculation breakdown
+      const baseFort = character.baseSaves?.fort || 0;
+      const baseRef = character.baseSaves?.ref || 0;
+      const baseWill = character.baseSaves?.will || 0;
+      const conMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.con || 10) : 0;
+      const dexMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.dex || 10) : 0;
+      const wisMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.wis || 10) : 0;
+      const resBonus = character.saveBonuses?.resistance || 0;
+      const clarityBonus = saves.battleClarityBonus || 0;
+
+      const btnFort = saveFortEl?.closest('button');
+      if (btnFort) {
+        btnFort.title = `🛡️ Fortitude: Taban ${baseFort} + CON (${conMod >= 0 ? '+' : ''}${conMod})${resBonus ? ` + Resist (+${resBonus})` : ''}${saves.bonusFort ? ` + Diğer (+${saves.bonusFort})` : ''} = ${saves.fort >= 0 ? '+' : ''}${saves.fort}`;
+      }
+      const btnRef = saveRefEl?.closest('button');
+      if (btnRef) {
+        btnRef.title = `⚡ Reflex: Taban ${baseRef} + DEX (${dexMod >= 0 ? '+' : ''}${dexMod})${resBonus ? ` + Resist (+${resBonus})` : ''}${clarityBonus ? ` + Battle Clarity (+${clarityBonus})` : ''}${saves.bonusRef ? ` + Diğer (+${saves.bonusRef})` : ''} = ${saves.ref >= 0 ? '+' : ''}${saves.ref}`;
+      }
+      const btnWill = saveWillEl?.closest('button');
+      if (btnWill) {
+        btnWill.title = `🧠 Will: Taban ${baseWill} + WIS (${wisMod >= 0 ? '+' : ''}${wisMod})${resBonus ? ` + Resist (+${resBonus})` : ''}${saves.bonusWill ? ` + Diğer (+${saves.bonusWill})` : ''} = ${saves.will >= 0 ? '+' : ''}${saves.will}`;
+      }
+
+      const savesSubtitle = document.getElementById('saves-subtitle-notes');
+      if (savesSubtitle) {
+        const activeSaveBuffs = (character.buffs || []).filter(b => b.active && (b.saveBonus || b.fortBonus || b.refBonus || b.willBonus));
+        if (activeSaveBuffs.length > 0) {
+          savesSubtitle.textContent = `✨ Aktif: ${activeSaveBuffs.map(b => b.name).join(', ')}`;
+          savesSubtitle.className = 'text-[10px] text-emerald-400 text-center truncate';
+          savesSubtitle.title = `Aktif bufflar save zarlarına eklenmiştir. Zar atmak için butonlara tıklayın.`;
+        } else {
+          savesSubtitle.textContent = 'Zar atmak için tıklayın';
+          savesSubtitle.className = 'text-[10px] text-amber-300 text-center truncate';
+          savesSubtitle.title = '3D fiziksel zar yuvarlamak için tıklayın.';
+        }
+      }
 
       // Encounter Round Displays
       if (typeof updateRoundDisplays === 'function') {
@@ -10325,6 +10405,8 @@
       renderWeaponSetsUI();
       recalculateOffense();
       if (typeof renderOffenseModifiersGrid === 'function') renderOffenseModifiersGrid();
+      renderHUD();
+      if (typeof renderCombatCockpit === 'function') renderCombatCockpit();
     }
 
     function toggleWeaponSetsEditor(forceState) {
@@ -10754,8 +10836,15 @@
         if (!character.tactical) character.tactical = {};
         character.tactical.higherGround = hgEl.checked;
       }
+      const chargeEl = document.getElementById('mod-charge');
+      if (chargeEl) {
+        if (!character.tactical) character.tactical = {};
+        character.tactical.charge = chargeEl.checked;
+      }
       recalculateOffense();
       renderOffenseModifiersGrid();
+      renderHUD();
+      if (typeof renderCombatCockpit === 'function') renderCombatCockpit();
       saveStateToStorage(false);
     }
 
