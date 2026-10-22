@@ -429,11 +429,10 @@
                     <!-- Set 1 Config -->
                     <div class="bg-slate-950/80 border border-slate-800 rounded p-2 space-y-1.5">
                       <div class="flex items-center justify-between">
-                        <span class="font-black text-amber-400 text-[10px]">KART 1 (ANA EL)</span>
-                        <input type="text" id="set1-name-input" value="Ana El" onchange="saveWeaponSetConfig(1)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[10px] text-white w-28">
+                        <span class="font-black text-amber-400 text-[10px]">ANA EL</span>
                       </div>
                       <div>
-                        <label class="text-[8px] uppercase font-bold text-slate-500 block">Ana El Silahı</label>
+                        <label class="text-[8px] uppercase font-bold text-slate-500 block">Ana El Donanımı (Silah / Kalkan)</label>
                         <select id="set1-main-select" onchange="saveWeaponSetConfig(1)" class="w-full bg-slate-900 text-amber-200 font-bold text-[11px] rounded border border-slate-700 p-1 cursor-pointer">
                           <!-- Populated dynamically -->
                         </select>
@@ -450,8 +449,7 @@
                     <!-- Set 2 Config -->
                     <div class="bg-slate-950/80 border border-slate-800 rounded p-2 space-y-1.5">
                       <div class="flex items-center justify-between">
-                        <span class="font-black text-sky-400 text-[10px]">KART 2 (İKİNCİ EL / KALKAN)</span>
-                        <input type="text" id="set2-name-input" value="İkinci El" onchange="saveWeaponSetConfig(2)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[10px] text-white w-28">
+                        <span class="font-black text-sky-400 text-[10px]">İKİNCİ EL</span>
                       </div>
                       <div>
                         <label class="text-[8px] uppercase font-bold text-slate-500 block">İkinci El Donanımı (Silah / Kalkan)</label>
@@ -9975,8 +9973,22 @@
 
     // Helper function to calculate combat display stats for a weapon / shield
     function getWeaponCombatDisplayStats(wepName, grip = '1-Hand', isOffHand = false) {
-      if (!character || !wepName || wepName === 'None' || wepName === 'Yok' || wepName === 'Boş') {
-        return null;
+      if (!character || !wepName || wepName === 'None' || wepName === 'Yok' || wepName === 'Boş' || wepName === '-') {
+        if (isOffHand) {
+          return {
+            dmgStr: '-',
+            critStr: '-',
+            dmgType: 'Boş El',
+            isShield: false,
+            isWeapon: false
+          };
+        }
+        return {
+          dmgStr: '1d3+0 (Silahsız)',
+          critStr: '20 / x2',
+          dmgType: 'Ezici',
+          isWeapon: false
+        };
       }
 
       const lower = wepName.toLowerCase();
@@ -10113,21 +10125,31 @@
             <!-- Donanım ve Tutuş -->
             <div class="text-[10px] text-slate-400 truncate mt-0.5 font-mono">
               <span class="${is1 ? 'text-amber-300 font-bold' : 'text-slate-400 font-bold'}">${s1.mainWeapon || 'Yok'}</span>
-              <span class="text-slate-500">(${s1.grip || '1-El'})</span>
+              <span class="text-slate-500">(${s1MainStats?.isShield ? 'Kalkan' : (s1.grip || '1-El')})</span>
             </div>
-            <!-- Satır 1: Silahın Modifiye Hasarı -->
+            <!-- Satır 1: Silahın Modifiye Hasarı veya Kalkan Koruması -->
             <div class="text-[10px] font-mono mt-0.5 flex items-center gap-1.5 flex-wrap">
-              <span class="text-slate-400 font-sans text-[9px] uppercase tracking-wider">Hasar:</span>
-              <span class="font-bold ${is1 ? 'text-amber-300' : 'text-slate-300'}">${s1MainStats?.dmgStr || '1d6+3'}</span>
-              ${s1MainStats?.hasExtraMods ? `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">⚡ Modifiye</span>` : ''}
-              ${s1MainStats?.isFinesse ? `<span class="text-emerald-400 text-[9px] font-sans font-bold">• DEX (+${s1MainStats.finesseMod}) Finesse</span>` : ''}
+              ${s1MainStats?.isShield ? `
+                <span class="text-slate-400 font-sans text-[9px] uppercase tracking-wider">Koruma:</span>
+                <span class="font-bold text-emerald-400">${s1MainStats?.shieldAcText || '+1 AC Kalkan'}</span>
+              ` : `
+                <span class="text-slate-400 font-sans text-[9px] uppercase tracking-wider">Hasar:</span>
+                <span class="font-bold ${is1 ? 'text-amber-300' : 'text-slate-300'}">${s1MainStats?.dmgStr || '1d6+3'}</span>
+                ${s1MainStats?.hasExtraMods ? `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">⚡ Modifiye</span>` : ''}
+                ${s1MainStats?.isFinesse ? `<span class="text-emerald-400 text-[9px] font-sans font-bold">• DEX (+${s1MainStats.finesseMod}) Finesse</span>` : ''}
+              `}
             </div>
             <!-- Satır 2: Kritik & Hasar Türü -->
             <div class="text-[9px] font-mono flex items-center gap-1.5 flex-wrap">
-              <span class="text-slate-500 font-sans uppercase text-[8px] tracking-wider">Kritik &amp; Tür:</span>
-              <span class="${is1 ? 'text-white' : 'text-slate-300'} font-semibold font-mono">${s1MainStats?.critStr || '18-20 / x2'}</span>
-              <span class="text-slate-600">•</span>
-              <span class="${is1 ? 'text-amber-200/90' : 'text-slate-400'}">${s1MainStats?.dmgType || 'Delici'}</span>
+              ${s1MainStats?.isShield ? `
+                <span class="text-slate-500 font-sans uppercase text-[8px] tracking-wider">Tür:</span>
+                <span class="text-slate-300 font-medium">Kalkan Savunması</span>
+              ` : `
+                <span class="text-slate-500 font-sans uppercase text-[8px] tracking-wider">Kritik &amp; Tür:</span>
+                <span class="${is1 ? 'text-white' : 'text-slate-300'} font-semibold font-mono">${s1MainStats?.critStr || '18-20 / x2'}</span>
+                <span class="text-slate-600">•</span>
+                <span class="${is1 ? 'text-amber-200/90' : 'text-slate-400'}">${s1MainStats?.dmgType || 'Delici'}</span>
+              `}
             </div>
           </div>
           <div class="shrink-0 text-right">
@@ -10151,7 +10173,7 @@
             <!-- Donanım ve Tür -->
             <div class="text-[10px] text-slate-400 truncate mt-0.5 font-mono">
               <span class="${is2 ? 'text-sky-300 font-bold' : 'text-slate-400 font-bold'}">${s2.mainWeapon || 'Yok'}</span>
-              <span class="text-slate-500">(${isCard2Shield ? 'Kalkan' : 'İkinci El'})</span>
+              <span class="text-slate-500">(${isCard2Shield ? 'Kalkan' : (!s2.mainWeapon || s2.mainWeapon === 'Yok' || s2.mainWeapon === '-' ? 'Boş' : 'İkinci El')})</span>
             </div>
             <!-- Satır 1: Silah Hasarı veya Kalkan Koruması -->
             <div class="text-[10px] font-mono mt-0.5 flex items-center gap-1.5 flex-wrap">
@@ -10179,15 +10201,6 @@
           </div>
           <div class="shrink-0 text-right">
             <span class="text-[9px] font-bold px-2.5 py-1 rounded-lg ${is2 ? 'bg-sky-500 text-slate-950 font-black shadow' : 'bg-slate-800 text-slate-400 hover:text-slate-200'}">
-              ${is2 ? 'Kuşanıldı' : 'Kuşan'}
-            </span>
-          </div>
-        </div>
-      `;
-
-      container.innerHTML = card1Html + card2Html;
-      populateWeaponSetsEditorDropdowns();
-    }
               ${is2 ? 'Kuşanıldı' : 'Kuşan'}
             </span>
           </div>
@@ -10310,48 +10323,176 @@
       }
     }
 
+    function syncWeaponSetToBodySlot(slotKey, itemName) {
+      if (!character || !slotKey) return;
+      if (!character.bodySlots) character.bodySlots = {};
+
+      if (!itemName || itemName === 'None' || itemName === 'Yok' || itemName === 'Boş' || itemName === '-') {
+        if (character.bodySlots[slotKey] && character.bodySlots[slotKey].name !== '-') {
+          unequipSlot(slotKey, true);
+        }
+        return;
+      }
+
+      // If already equipped with exact name, ensure active
+      if (character.bodySlots[slotKey]?.name === itemName) {
+        character.bodySlots[slotKey].active = true;
+        return;
+      }
+
+      // Unequip currently equipped item if different
+      if (character.bodySlots[slotKey] && character.bodySlots[slotKey].name && character.bodySlots[slotKey].name !== '-') {
+        unequipSlot(slotKey, true);
+      }
+
+      // Check if item is in gearPool
+      let poolItem = (character.gearPool || []).find(p => p && p.name === itemName);
+      if (poolItem) {
+        poolItem.isEquipped = true;
+      }
+
+      // Check masterDb or character.weapons or enrich
+      let fromDb = (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) ? masterDb.find(m => m && (m.name === itemName || m.masterDbName === itemName)) : null;
+      let fromWep = (character.weapons || []).find(w => w && w.name === itemName);
+      const isShieldItem = (fromDb && fromDb.category === 'Shield') || itemName.toLowerCase().includes('shield') || itemName.toLowerCase().includes('buckler') || itemName.toLowerCase().includes('kalkan');
+      const enriched = enrichWeaponStats({ ...(fromDb || fromWep || {}) }, itemName);
+
+      character.bodySlots[slotKey] = {
+        name: itemName,
+        masterDbName: fromDb?.name || itemName,
+        category: isShieldItem ? 'Shield' : 'Weapon',
+        active: true,
+        weight: fromDb?.weight || fromWep?.weight || (isShieldItem ? 1.5 : 2),
+        cost: fromDb?.cost || fromWep?.cost || 1000,
+        desc: fromDb?.desc || `${enriched.dice} ${enriched.critMin}-20/x${enriched.critMult} ${enriched.dmgType}`,
+        acBonus: fromDb?.acBonus || (itemName.toLowerCase().includes('buckler') ? 1 : (itemName.toLowerCase().includes('heavy') ? 2 : 0)),
+        bonusType: fromDb?.bonusType || (isShieldItem ? 'Shield' : 'Enhancement')
+      };
+
+      if (!isShieldItem) {
+        if (!character.weapons) character.weapons = [];
+        let wExists = character.weapons.find(w => w && w.name === itemName);
+        if (!wExists) {
+          character.weapons.push({
+            name: itemName,
+            grip: slotKey === 'offHand' ? 'Off-Hand' : '1-Hand',
+            dice: enriched.dice,
+            critMin: enriched.critMin,
+            critMult: enriched.critMult,
+            attBonus: enriched.attBonus,
+            dmgBonus: enriched.dmgBonus,
+            dmgType: enriched.dmgType,
+            isLight: enriched.isLight,
+            tags: enriched.isLight ? ['light', 'finessable'] : []
+          });
+        }
+      }
+    }
+
     function populateWeaponSetsEditorDropdowns() {
       ensureWeaponSetsData();
       const sets = character.tactical.weaponSets;
       if (!sets) return;
 
-      const allWeps = character.weapons || [];
-      const wepOptionsHtml = allWeps.map(w => `<option value="${w.name}">${w.name}</option>`).join('');
+      const availableItems = [];
 
-      // Off-hand / Card 2 options: shields + weapons
-      const offHandShield = character.bodySlots?.offHand;
-      let offOptionsHtml = '';
-      if (offHandShield && offHandShield.name && offHandShield.name !== '-') {
-        const isShield = offHandShield.category === 'Shield' || (offHandShield.desc && offHandShield.desc.toLowerCase().includes('shield')) || offHandShield.name.toLowerCase().includes('shield') || offHandShield.name.toLowerCase().includes('buckler') || offHandShield.name.toLowerCase().includes('kalkan');
-        if (isShield) {
-          offOptionsHtml += `<option value="${offHandShield.name}">${offHandShield.name} (Kalkan)</option>`;
-        }
-      }
-      allWeps.forEach(w => {
-        if (!offOptionsHtml.includes(`value="${w.name}"`)) {
-          offOptionsHtml += `<option value="${w.name}">${w.name} (Silah)</option>`;
+      // 1. From character.weapons
+      (character.weapons || []).forEach(w => {
+        if (w && w.name && w.name !== 'None' && w.name !== 'Yok') {
+          if (!availableItems.some(i => i.name === w.name)) {
+            availableItems.push({
+              name: w.name,
+              category: (w.dmgType === 'Kalkan' || w.name.toLowerCase().includes('shield') || w.name.toLowerCase().includes('buckler')) ? 'Shield' : 'Weapon'
+            });
+          }
         }
       });
 
-      // Card 1
+      // 2. From bodySlots (mainHand and offHand)
+      const mh = character.bodySlots?.mainHand;
+      if (mh && mh.name && mh.name !== '-' && mh.name !== 'Yok') {
+        if (!availableItems.some(i => i.name === mh.name)) {
+          availableItems.push({
+            name: mh.name,
+            category: mh.category || 'Weapon'
+          });
+        }
+      }
+      const oh = character.bodySlots?.offHand;
+      if (oh && oh.name && oh.name !== '-' && oh.name !== 'Yok') {
+        if (!availableItems.some(i => i.name === oh.name)) {
+          availableItems.push({
+            name: oh.name,
+            category: oh.category || (oh.name.toLowerCase().includes('shield') || oh.name.toLowerCase().includes('buckler') ? 'Shield' : 'Weapon')
+          });
+        }
+      }
+
+      // 3. From gearPool
+      (character.gearPool || []).forEach(item => {
+        if (item && item.name && (item.category === 'Weapon' || item.category === 'Shield')) {
+          if (!availableItems.some(i => i.name === item.name)) {
+            availableItems.push({
+              name: item.name,
+              category: item.category
+            });
+          }
+        }
+      });
+
+      // 4. Default shields if not present
+      const standardShields = ['Darkwood Buckler +1', '+1 Buckler', 'Heavy Shield'];
+      standardShields.forEach(shName => {
+        if (!availableItems.some(i => i.name === shName)) {
+          availableItems.push({
+            name: shName,
+            category: 'Shield'
+          });
+        }
+      });
+
+      // Build unified options HTML for both Ana El and İkinci El
+      let optionsHtml = '<option value="Yok">Yok / Boş</option>';
+      const wepsList = availableItems.filter(i => i.category === 'Weapon');
+      const shieldsList = availableItems.filter(i => i.category === 'Shield');
+
+      if (wepsList.length > 0) {
+        optionsHtml += '<optgroup label="⚔️ Silahlar">';
+        wepsList.forEach(w => {
+          optionsHtml += `<option value="${w.name}">${w.name} (Silah)</option>`;
+        });
+        optionsHtml += '</optgroup>';
+      }
+
+      if (shieldsList.length > 0) {
+        optionsHtml += '<optgroup label="🛡️ Kalkanlar">';
+        shieldsList.forEach(s => {
+          optionsHtml += `<option value="${s.name}">${s.name} (Kalkan)</option>`;
+        });
+        optionsHtml += '</optgroup>';
+      }
+
+      // Populate Set 1 (Ana El) dropdown
       const s1Main = document.getElementById('set1-main-select');
       if (s1Main) {
-        s1Main.innerHTML = wepOptionsHtml;
-        s1Main.value = sets.set1.mainWeapon;
+        s1Main.innerHTML = optionsHtml;
+        if (sets.set1?.mainWeapon) {
+          s1Main.value = sets.set1.mainWeapon;
+        }
       }
       const s1Grip = document.getElementById('set1-grip-select');
-      if (s1Grip) s1Grip.value = sets.set1.grip || '1-Hand';
-      const s1Name = document.getElementById('set1-name-input');
-      if (s1Name && document.activeElement !== s1Name) s1Name.value = sets.set1.name || 'Ana El';
+      if (s1Grip && sets.set1?.grip) {
+        s1Grip.value = sets.set1.grip;
+      }
 
-      // Card 2
+      // Populate Set 2 (İkinci El) dropdown
       const s2Main = document.getElementById('set2-main-select');
       if (s2Main) {
-        s2Main.innerHTML = offOptionsHtml;
-        s2Main.value = sets.set2.mainWeapon;
+        s2Main.innerHTML = optionsHtml;
+        if (sets.set2?.mainWeapon) {
+          s2Main.value = sets.set2.mainWeapon;
+        }
       }
-      const s2Name = document.getElementById('set2-name-input');
-      if (s2Name && document.activeElement !== s2Name) s2Name.value = sets.set2.name || 'İkinci El';
     }
 
     function saveWeaponSetConfig(setNum) {
@@ -10360,16 +10501,24 @@
       if (!sets) return;
 
       if (setNum === 1) {
-        sets.set1.name = document.getElementById('set1-name-input')?.value || 'Ana El';
-        sets.set1.mainWeapon = document.getElementById('set1-main-select')?.value || sets.set1.mainWeapon;
+        sets.set1.name = 'Ana El';
+        const chosen = document.getElementById('set1-main-select')?.value || sets.set1.mainWeapon;
+        sets.set1.mainWeapon = chosen;
         sets.set1.grip = document.getElementById('set1-grip-select')?.value || '1-Hand';
+        // Bidirectional sync: set1 -> bodySlots.mainHand
+        syncWeaponSetToBodySlot('mainHand', chosen);
       } else {
-        sets.set2.name = document.getElementById('set2-name-input')?.value || 'İkinci El';
-        sets.set2.mainWeapon = document.getElementById('set2-main-select')?.value || sets.set2.mainWeapon;
+        sets.set2.name = 'İkinci El';
+        const chosen = document.getElementById('set2-main-select')?.value || sets.set2.mainWeapon;
+        sets.set2.mainWeapon = chosen;
         sets.set2.grip = 'Off-Hand';
+        // Bidirectional sync: set2 -> bodySlots.offHand
+        syncWeaponSetToBodySlot('offHand', chosen);
       }
 
       applyWeaponSetsConfiguration();
+      if (typeof renderBodySlotsSilhouette === 'function') renderBodySlotsSilhouette();
+      if (typeof renderGearPoolTable === 'function') renderGearPoolTable();
     }
 
     function hasFlurryAbility(char) {
@@ -27204,6 +27353,23 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       }
 
       character.bodySlots[slotKey] = { name: '-', active: false, weight: 0, cost: 0, desc: '' };
+
+      // Reverse sync: update tactical weapon sets when unequipped from inventory
+      ensureWeaponSetsData();
+      if (slotKey === 'mainHand') {
+        if (character.tactical?.weaponSets?.set1) {
+          character.tactical.weaponSets.set1.mainWeapon = 'Yok';
+        }
+        character.activeWeapon = 'Yok';
+      } else if (slotKey === 'offHand') {
+        if (character.tactical?.weaponSets?.set2) {
+          character.tactical.weaponSets.set2.mainWeapon = 'Yok';
+        }
+        character.activeOffHand = 'None';
+      }
+      try { renderWeaponSetsUI(); } catch (e) {}
+      try { recalculateOffense(); } catch (e) {}
+
       saveStateToStorage(true);
       renderAll();
 
@@ -27497,6 +27663,24 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           character.activeWeapon = item.name;
         }
       }
+
+      // Reverse sync: update tactical weapon sets when equipped from inventory/gearPool
+      ensureWeaponSetsData();
+      if (targetSlotKey === 'mainHand') {
+        if (character.tactical?.weaponSets?.set1) {
+          character.tactical.weaponSets.set1.mainWeapon = item.name;
+        }
+        character.activeWeapon = item.name;
+      } else if (targetSlotKey === 'offHand') {
+        if (character.tactical?.weaponSets?.set2) {
+          character.tactical.weaponSets.set2.mainWeapon = item.name;
+        }
+        if (character.tactical?.weaponSets?.activeSets?.includes(2)) {
+          character.activeOffHand = item.name;
+        }
+      }
+      try { renderWeaponSetsUI(); } catch (e) {}
+      try { recalculateOffense(); } catch (e) {}
 
       saveStateToStorage(true);
       renderAll();
