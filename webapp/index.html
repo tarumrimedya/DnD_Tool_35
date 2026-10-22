@@ -495,7 +495,7 @@
                   <span class="text-xs font-bold text-rose-400">Power Attack</span>
                   <div class="flex items-center gap-1.5">
                     <button type="button" onclick="adjustPowerAttack(-1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center cursor-pointer">-</button>
-                    <input type="number" id="power-attack-val" value="0" min="0" max="3" onchange="recalculateOffense()" class="w-10 bg-slate-950 border border-rose-500/50 rounded text-center font-mono font-bold text-xs text-white py-0.5">
+                    <input type="number" id="power-attack-val" value="0" min="0" max="3" oninput="recalculateOffense()" onchange="recalculateOffense()" class="w-10 bg-slate-950 border border-rose-500/50 rounded text-center font-mono font-bold text-xs text-white py-0.5">
                     <button type="button" onclick="adjustPowerAttack(1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center cursor-pointer">+</button>
                   </div>
                 </div>
@@ -9827,86 +9827,108 @@
     }
 
     // --- WEAPON SETS SYSTEM (SEÇENEK B: KART 1 ANA EL, KART 2 İKİNCİ EL) ---
+    function enrichWeaponStats(item, wepName) {
+      if (!item) item = {};
+      const targetName = wepName || item.name || '';
+      item.name = targetName;
+      const lower = targetName.toLowerCase();
+
+      // Ensure dice
+      if (!item.dice) {
+        if (lower.includes('dagger') || lower.includes('hançer')) item.dice = '1d4';
+        else if (lower.includes('rapier')) item.dice = '1d6';
+        else if (lower.includes('spiked chain')) item.dice = '2d4';
+        else if (lower.includes('shortsword') || lower.includes('kısa kılıç')) item.dice = '1d6';
+        else if (lower.includes('longsword') || lower.includes('uzun kılıç')) item.dice = '1d8';
+        else if (lower.includes('greatsword')) item.dice = '2d6';
+        else if (lower.includes('heavy shield') || lower.includes('ağır kalkan')) item.dice = '1d4';
+        else if (lower.includes('light shield') || lower.includes('buckler')) item.dice = '1d3';
+        else item.dice = '1d4';
+      }
+
+      // Ensure critMin
+      if (!item.critMin) {
+        if (lower.includes('rapier')) item.critMin = 18;
+        else if (lower.includes('dagger') || lower.includes('hançer') || lower.includes('shortsword') || lower.includes('kısa kılıç') || lower.includes('kukri') || lower.includes('scimitar')) item.critMin = 19;
+        else item.critMin = 20;
+      }
+
+      // Ensure critMult
+      if (!item.critMult) {
+        if (lower.includes('scythe') || lower.includes('pick')) item.critMult = 4;
+        else if (lower.includes('axe') || lower.includes('balta') || lower.includes('spear') || lower.includes('mızrak') || lower.includes('bow') || lower.includes('yay')) item.critMult = 3;
+        else item.critMult = 2;
+      }
+
+      // Ensure dmgType
+      if (!item.dmgType) {
+        if (lower.includes('rapier') || lower.includes('dagger') || lower.includes('hançer') || lower.includes('chain') || lower.includes('spear') || lower.includes('mızrak') || lower.includes('bow') || lower.includes('yay')) {
+          item.dmgType = 'Piercing';
+        } else if (lower.includes('mace') || lower.includes('flail') || lower.includes('club') || lower.includes('hammer') || lower.includes('shield') || lower.includes('kalkan')) {
+          item.dmgType = 'Bludgeoning';
+        } else {
+          item.dmgType = 'Slashing';
+        }
+      }
+
+      // Ensure attBonus
+      if (item.attBonus === undefined) {
+        if (lower.includes('+5')) item.attBonus = 5;
+        else if (lower.includes('+4')) item.attBonus = 4;
+        else if (lower.includes('+3')) item.attBonus = 3;
+        else if (lower.includes('+2')) item.attBonus = 2;
+        else if (lower.includes('+1')) item.attBonus = 1;
+        else if (lower.includes('masterwork') || lower.includes('mwk')) item.attBonus = 1;
+        else item.attBonus = 0;
+      }
+
+      // Ensure dmgBonus
+      if (item.dmgBonus === undefined) {
+        if (lower.includes('+5')) item.dmgBonus = 5;
+        else if (lower.includes('+4')) item.dmgBonus = 4;
+        else if (lower.includes('+3')) item.dmgBonus = 3;
+        else if (lower.includes('+2')) item.dmgBonus = 2;
+        else if (lower.includes('+1')) item.dmgBonus = 1;
+        else item.dmgBonus = 0;
+      }
+
+      if (item.isLight === undefined) {
+        item.isLight = lower.includes('dagger') || lower.includes('hançer') || lower.includes('shortsword') || lower.includes('kukri') || lower.includes('light');
+      }
+
+      return item;
+    }
+
     function findWeaponEverywhere(wepName) {
       if (!wepName || wepName === 'None' || wepName === 'Yok' || wepName === 'Boş') return null;
 
       // 1. Check character.weapons
       let found = (character.weapons || []).find(w => w && w.name === wepName);
-      if (found) return found;
+      if (!found) {
+        found = (character.weapons || []).find(w => w && w.name && w.name.toLowerCase().trim() === wepName.toLowerCase().trim());
+      }
+      if (found) return enrichWeaponStats({ ...found }, wepName);
 
       // 2. Check bodySlots.mainHand / offHand
       if (character.bodySlots?.mainHand?.name === wepName) {
-        return character.bodySlots.mainHand;
+        return enrichWeaponStats({ ...character.bodySlots.mainHand }, wepName);
       }
       if (character.bodySlots?.offHand?.name === wepName) {
-        return character.bodySlots.offHand;
+        return enrichWeaponStats({ ...character.bodySlots.offHand }, wepName);
       }
 
       // 3. Check gearPool
       found = (character.gearPool || []).find(g => g && g.name === wepName);
-      if (found) return found;
+      if (found) return enrichWeaponStats({ ...found }, wepName);
 
       // 4. Check masterDb if available
       if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
         found = masterDb.find(item => item && (item.name === wepName || item.masterDbName === wepName));
-        if (found) return found;
+        if (found) return enrichWeaponStats({ ...found }, wepName);
       }
 
       // 5. Parametric D&D 3.5e standard weapon fallback
-      const lower = wepName.toLowerCase();
-      if (lower.includes('dagger') || lower.includes('hançer')) {
-        return {
-          name: wepName,
-          dice: '1d4',
-          critMin: 19,
-          critMult: 2,
-          attBonus: lower.includes('masterwork') ? 1 : 0,
-          dmgBonus: 0,
-          dmgType: 'Piercing',
-          isLight: true,
-          tags: ['finessable', 'light', 'thrown']
-        };
-      }
-      if (lower.includes('rapier')) {
-        return {
-          name: wepName,
-          dice: '1d6',
-          critMin: 18,
-          critMult: 2,
-          attBonus: lower.includes('+2') ? 2 : (lower.includes('+1') ? 1 : 0),
-          dmgBonus: lower.includes('+2') ? 2 : (lower.includes('+1') ? 1 : 0),
-          dmgType: 'Piercing',
-          isLight: false,
-          tags: ['finessable', 'piercing']
-        };
-      }
-      if (lower.includes('shortsword') || lower.includes('kısa kılıç')) {
-        return {
-          name: wepName,
-          dice: '1d6',
-          critMin: 19,
-          critMult: 2,
-          attBonus: 0,
-          dmgBonus: 0,
-          dmgType: 'Piercing',
-          isLight: true,
-          tags: ['finessable', 'light']
-        };
-      }
-      if (lower.includes('chain')) {
-        return {
-          name: wepName,
-          dice: '2d4',
-          critMin: 20,
-          critMult: 2,
-          attBonus: lower.includes('+2') ? 2 : 0,
-          dmgBonus: lower.includes('+2') ? 2 : 0,
-          dmgType: 'Piercing',
-          isLight: false,
-          tags: ['finessable', 'reach', 'trip']
-        };
-      }
-      return null;
+      return enrichWeaponStats({}, wepName);
     }
 
     function ensureWeaponSetsData() {
@@ -10017,11 +10039,15 @@
           const activeDiceMods = activeMods.filter(m => m.dice);
           let extraDiceStr = '';
           if (activeDiceMods.length > 0) {
-            extraDiceStr = ' + ' + activeDiceMods.map(m => m.dice).join('+');
+            extraDiceStr = ' + ' + activeDiceMods.map(m => m.dice).join(' + ');
           }
 
           const flatDmg = evalRes.netFlatDamage;
-          const dmgStr = `${evalRes.baseDice}${flatDmg >= 0 ? '+' : ''}${flatDmg}${extraDiceStr}`;
+          let basePart = `${evalRes.baseDice}${flatDmg >= 0 ? '+' : ''}${flatDmg}`;
+          if (evalRes.chargeMultiplier > 1) {
+            basePart += ` (Şarj: x${evalRes.chargeMultiplier})`;
+          }
+          const dmgStr = `${basePart}${extraDiceStr}`;
           const critRange = evalRes.critMin === 20 ? '20' : `${evalRes.critMin}-20`;
           const critStr = `${critRange} / x${evalRes.critMult}`;
 
@@ -10030,13 +10056,16 @@
           else if (dmgType === 'Slashing') dmgType = 'Kesici';
           else if (dmgType === 'Bludgeoning') dmgType = 'Ezici';
 
+          const hasExtraMods = (paVal > 0 && !isOffHand) || activeDiceMods.length > 0 || nonChainMods.some(m => m.bonusDmg);
+
           return {
             dmgStr,
             critStr,
             dmgType,
             finesseMod: evalRes.attackStatMod,
             isFinesse: evalRes.attackStatName && evalRes.attackStatName.includes('Weapon Finesse'),
-            isWeapon: true
+            isWeapon: true,
+            hasExtraMods
           };
         } catch (e) {
           console.warn('getWeaponCombatDisplayStats error:', e);
@@ -10090,6 +10119,7 @@
             <div class="text-[10px] font-mono mt-0.5 flex items-center gap-1.5 flex-wrap">
               <span class="text-slate-400 font-sans text-[9px] uppercase tracking-wider">Hasar:</span>
               <span class="font-bold ${is1 ? 'text-amber-300' : 'text-slate-300'}">${s1MainStats?.dmgStr || '1d6+3'}</span>
+              ${s1MainStats?.hasExtraMods ? `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">⚡ Modifiye</span>` : ''}
               ${s1MainStats?.isFinesse ? `<span class="text-emerald-400 text-[9px] font-sans font-bold">• DEX (+${s1MainStats.finesseMod}) Finesse</span>` : ''}
             </div>
             <!-- Satır 2: Kritik & Hasar Türü -->
@@ -10131,6 +10161,7 @@
               ` : `
                 <span class="text-slate-400 font-sans text-[9px] uppercase tracking-wider">Hasar:</span>
                 <span class="font-bold ${is2 ? 'text-sky-300' : 'text-slate-300'}">${s2OffStats?.dmgStr || '1d4'}</span>
+                ${s2OffStats?.hasExtraMods ? `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40">⚡ Modifiye</span>` : ''}
               `}
             </div>
             <!-- Satır 2: Kritik & Hasar Türü -->
@@ -10148,6 +10179,15 @@
           </div>
           <div class="shrink-0 text-right">
             <span class="text-[9px] font-bold px-2.5 py-1 rounded-lg ${is2 ? 'bg-sky-500 text-slate-950 font-black shadow' : 'bg-slate-800 text-slate-400 hover:text-slate-200'}">
+              ${is2 ? 'Kuşanıldı' : 'Kuşan'}
+            </span>
+          </div>
+        </div>
+      `;
+
+      container.innerHTML = card1Html + card2Html;
+      populateWeaponSetsEditorDropdowns();
+    }
               ${is2 ? 'Kuşanıldı' : 'Kuşan'}
             </span>
           </div>
@@ -10282,10 +10322,15 @@
       const offHandShield = character.bodySlots?.offHand;
       let offOptionsHtml = '';
       if (offHandShield && offHandShield.name && offHandShield.name !== '-') {
-        offOptionsHtml += `<option value="${offHandShield.name}">${offHandShield.name} (Kalkan)</option>`;
+        const isShield = offHandShield.category === 'Shield' || (offHandShield.desc && offHandShield.desc.toLowerCase().includes('shield')) || offHandShield.name.toLowerCase().includes('shield') || offHandShield.name.toLowerCase().includes('buckler') || offHandShield.name.toLowerCase().includes('kalkan');
+        if (isShield) {
+          offOptionsHtml += `<option value="${offHandShield.name}">${offHandShield.name} (Kalkan)</option>`;
+        }
       }
       allWeps.forEach(w => {
-        offOptionsHtml += `<option value="${w.name}">${w.name} (Silah)</option>`;
+        if (!offOptionsHtml.includes(`value="${w.name}"`)) {
+          offOptionsHtml += `<option value="${w.name}">${w.name} (Silah)</option>`;
+        }
       });
 
       // Card 1
@@ -10297,7 +10342,7 @@
       const s1Grip = document.getElementById('set1-grip-select');
       if (s1Grip) s1Grip.value = sets.set1.grip || '1-Hand';
       const s1Name = document.getElementById('set1-name-input');
-      if (s1Name) s1Name.value = sets.set1.name || 'Ana El';
+      if (s1Name && document.activeElement !== s1Name) s1Name.value = sets.set1.name || 'Ana El';
 
       // Card 2
       const s2Main = document.getElementById('set2-main-select');
@@ -10306,7 +10351,7 @@
         s2Main.value = sets.set2.mainWeapon;
       }
       const s2Name = document.getElementById('set2-name-input');
-      if (s2Name) s2Name.value = sets.set2.name || 'İkinci El';
+      if (s2Name && document.activeElement !== s2Name) s2Name.value = sets.set2.name || 'İkinci El';
     }
 
     function saveWeaponSetConfig(setNum) {
@@ -10965,6 +11010,13 @@
 
       if (typeof updateActionEconomyUI === 'function') {
         updateActionEconomyUI();
+      }
+
+      // Live update weapon set cards so damage, extra dice & crit modifiers immediately reflect!
+      try {
+        renderWeaponSetsUI();
+      } catch (err) {
+        console.warn('recalculateOffense renderWeaponSetsUI error:', err);
       }
     }
 
