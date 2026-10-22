@@ -1129,7 +1129,7 @@
     {
         "source":  "DMG p.246",
         "type":  "Magic Item",
-        "bonusType":  "Natural",
+        "bonusType":  "natural_armor_ench",
         "cost":  2000,
         "tags":  [
                      "wondrous",
@@ -1140,7 +1140,8 @@
         "name":  "Amulet of Natural Armor +1",
         "naturalBonus":  1,
         "slot":  "Neck",
-        "benefit":  "Grants a +1 natural armor bonus to Armor Class.",
+        "benefit":  "Grants a +1 enhancement bonus to natural armor.",
+        "acBonus":  1,
         "actionType":  "Passive"
     },
     {

@@ -14187,7 +14187,7 @@
       const activeRows = prog.filter(p => p.active !== false);
       let martialLvls = 0;
       let otherLvls = 0;
-      let adeptClass = 'Warblade';
+      let adeptClass = null;
 
       activeRows.forEach(p => {
         const c = (p.className || p.class || '').toLowerCase();
@@ -14200,6 +14200,9 @@
           otherLvls++;
         }
       });
+      if (!adeptClass) {
+        adeptClass = 'Martial Adept';
+      }
 
       const computedIl = martialLvls > 0
         ? (martialLvls + Math.floor(otherLvls / 2))
@@ -16869,9 +16872,10 @@
       const isBoon = clMode === 'Character Level (DM Boon)' || clMode.includes('Warlock Boon');
       const prog = character.levelProgression || [];
       const activeLevels = prog.filter(p => p.active !== false).length || Number(character.level) || 6;
+      const hasProg = prog.some(p => p.active !== false);
 
-      const sorcLvls = prog.filter(p => p.className === 'Sorcerer' && p.active !== false).length || 5;
-      const martialLvls = prog.filter(p => ['Warblade', 'Swordsage', 'Crusader'].includes(p.className) && p.active !== false).length || 1;
+      const sorcLvls = hasProg ? prog.filter(p => p.className === 'Sorcerer' && p.active !== false).length : ((character.classes || '').includes('Sorcerer') ? 5 : 0);
+      const martialLvls = hasProg ? prog.filter(p => ['Warblade', 'Swordsage', 'Crusader'].includes(p.className) && p.active !== false).length : ((character.classes || '').includes('Warblade') ? 1 : 0);
       const otherLvls = activeLevels - martialLvls;
 
       if (character.spellcasting) {
@@ -17408,7 +17412,8 @@
       if (!select) return;
 
       const allDefs = getAvailableClassDefs();
-      const currentVal = selectedClass || select.value || 'Warblade';
+      const defaultClass = (character.classes?.split(' ')[0]) || (character.levelProgression?.[0]?.className) || 'Fighter';
+      const currentVal = selectedClass || select.value || defaultClass;
 
       select.innerHTML = '';
 
@@ -19291,7 +19296,8 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
     }
 
     function onLevelUpClassChange() {
-      const className = document.getElementById('lvlup-class-select')?.value || 'Warblade';
+      const defaultClass = (character.classes?.split(' ')[0]) || (character.levelProgression?.[0]?.className) || 'Fighter';
+      const className = document.getElementById('lvlup-class-select')?.value || defaultClass;
       const allDefs = getAvailableClassDefs();
       const def = allDefs[className] || DND35_CLASS_DEFS[className] || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
 
@@ -19397,7 +19403,8 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
     }
 
     function rollLevelUpHp(mode = 'avg') {
-      const className = document.getElementById('lvlup-class-select')?.value || 'Warblade';
+      const defaultClass = (character.classes?.split(' ')[0]) || (character.levelProgression?.[0]?.className) || 'Fighter';
+      const className = document.getElementById('lvlup-class-select')?.value || defaultClass;
       const allDefs = (typeof getAvailableClassDefs === 'function') ? getAvailableClassDefs() : {};
       const def = allDefs[className] || DND35_CLASS_DEFS[className] || { hd: 8 };
       const conMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
@@ -20313,7 +20320,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       }
 
       // Default class to last taken class
-      const lastClass = prog.length > 0 ? prog[prog.length - 1].className : (character.classes?.split(' ')[0] || 'Warblade');
+      const defaultClass = (character.classes?.split(' ')[0]) || (character.levelProgression?.[0]?.className) || 'Fighter';
+      const lastClass = prog.length > 0 ? prog[prog.length - 1].className : defaultClass;
       populateLevelUpClassSelect(lastClass);
       onLevelUpClassChange();
       if (typeof initLevelUpClassSearch === 'function') {
@@ -20452,7 +20460,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       const prog = character.levelProgression;
       const nextLvl = prog.length + 1;
 
-      const className = document.getElementById('lvlup-class-select')?.value || 'Warblade';
+      const defaultClass = (character.classes?.split(' ')[0]) || (character.levelProgression?.[0]?.className) || 'Fighter';
+      const className = document.getElementById('lvlup-class-select')?.value || defaultClass;
       const hd = document.getElementById('lvlup-hd-input')?.value || 'd8';
       const hpGain = Math.max(1, parseInt(document.getElementById('lvlup-hp-gain-input')?.value) || 1);
       const bab = parseInt(document.getElementById('lvlup-bab-input')?.value) || 0;
@@ -21238,7 +21247,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
     function addNewLevelRowToProgression(chosenClass = null) {
       const prog = character.levelProgression || [];
       const nextLvl = prog.length + 1;
-      const lastClass = prog.length > 0 ? prog[prog.length - 1].className : (character.classes?.split(' ')[0] || 'Warblade');
+      const defaultClass = (character.classes?.split(' ')[0]) || (character.levelProgression?.[0]?.className) || 'Fighter';
+      const lastClass = prog.length > 0 ? prog[prog.length - 1].className : defaultClass;
       const targetClass = chosenClass || lastClass;
 
       const def = (typeof DND35_CLASS_DEFS !== 'undefined' && DND35_CLASS_DEFS[targetClass])
@@ -22559,14 +22569,24 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
 
       const maxDexInfo = bd.maxDex !== null && bd.maxDex !== undefined ? ` (Max Dex: +${bd.maxDex})` : '';
       const penaltyInfo = bd.penalty > 0 ? `<div class="flex justify-between py-1 border-b border-slate-800 text-rose-400 font-bold"><span class="text-rose-300">Savunma Cezaları (Charge/Stance):</span><span>-${bd.penalty}</span></div>` : '';
+      const armorCatInfo = bd.armorCategory && bd.armorCategory !== 'None' ? ` <span class="text-[10px] text-sky-500 font-normal">(${bd.armorCategory})</span>` : '';
+
+      let naturalDetail = '';
+      if (Array.isArray(bd.sources?.natural) && bd.sources.natural.length > 1) {
+        const natItems = bd.sources.natural.map(s => {
+          const typeLabel = s.type === 'natural_armor_ench' ? 'Enh' : 'Base';
+          return `${s.source}: +${s.val} (${typeLabel})`;
+        }).join(', ');
+        naturalDetail = ` <span class="text-[10px] text-slate-500 font-normal">(${natItems})</span>`;
+      }
 
       acList.innerHTML = `
         <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">10 Taban (Base):</span><span class="text-white font-bold">10</span></div>
-        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Zırh Bonusu (Armor):</span><span class="text-sky-400 font-bold">+${bd.armor || 0}</span></div>
+        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Zırh Bonusu (Armor):${armorCatInfo}</span><span class="text-sky-400 font-bold">+${bd.armor || 0}</span></div>
         <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Kalkan Bonusu (Shield):</span><span class="text-sky-400 font-bold">+${bd.shield || 0}</span></div>
         <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">DEX Modifiyeri${maxDexInfo}:</span><span class="text-emerald-400 font-bold">+${bd.effectiveDex ?? dexMod}</span></div>
         <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Deflection (Saptırma):</span><span class="text-indigo-400 font-bold">+${bd.deflection || 0}</span></div>
-        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Doğal Zırh (Natural):</span><span class="text-teal-400 font-bold">+${bd.natural || 0}</span></div>
+        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Doğal Zırh (Natural):${naturalDetail}</span><span class="text-teal-400 font-bold">+${bd.natural || 0}</span></div>
         <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Dodge (Kaçınma - Stacks):</span><span class="text-amber-400 font-bold">+${bd.dodge || 0}</span></div>
         ${penaltyInfo}
         <div class="flex justify-between py-1.5 text-slate-300 font-bold border-t border-slate-700 mt-1"><span class="text-emerald-300 text-xs">NİHAİ ZIRH SINIFI:</span><span class="text-emerald-400 text-sm font-black">${bd.total || acCalc.total} AC</span></div>

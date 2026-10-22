@@ -317,6 +317,45 @@
     <!-- TAB 1: ⚔️ TACTICAL COMBAT COCKPIT -->
     <!-- ==================================================== -->
     <div id="tab-combat" class="tab-content space-y-4">
+      <!-- ACTION ECONOMY & TURN TRACKER BAR -->
+      <div class="bg-dndCard border border-amber-500/30 rounded-xl p-2.5 shadow-md flex flex-wrap items-center justify-between gap-2.5">
+        <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1">
+            <span class="text-xs font-black text-amber-400">⚔️ TUR</span>
+            <span id="action-economy-round" class="text-sm font-black font-mono text-white">1</span>
+          </div>
+          <button type="button" onclick="advanceCombatTurn()" class="px-2 py-1 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-300 text-[10px] font-bold rounded transition flex items-center gap-1 cursor-pointer">
+            <span>🔄</span>
+            <span>Turu Yenile</span>
+          </button>
+        </div>
+
+        <!-- Action Status Badges -->
+        <div class="flex items-center flex-wrap gap-1.5" id="action-economy-buttons-container">
+          <button type="button" id="btn-action-std" onclick="toggleActionEconomy('standard')" class="px-2.5 py-1 rounded-lg text-xs font-bold border transition flex items-center gap-1 bg-emerald-950/80 border-emerald-500/60 text-emerald-300 shadow-sm cursor-pointer">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
+            <span>Standart: Hazır</span>
+          </button>
+          <button type="button" id="btn-action-move" onclick="toggleActionEconomy('move')" class="px-2.5 py-1 rounded-lg text-xs font-bold border transition flex items-center gap-1 bg-emerald-950/80 border-emerald-500/60 text-emerald-300 shadow-sm cursor-pointer">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
+            <span>Hareket: Hazır</span>
+          </button>
+          <button type="button" id="btn-action-swift" onclick="toggleActionEconomy('swift')" class="px-2.5 py-1 rounded-lg text-xs font-bold border transition flex items-center gap-1 bg-emerald-950/80 border-emerald-500/60 text-emerald-300 shadow-sm cursor-pointer">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
+            <span>Swift: Hazır</span>
+          </button>
+          <button type="button" id="btn-action-immediate" onclick="toggleActionEconomy('immediate')" class="px-2.5 py-1 rounded-lg text-xs font-bold border transition flex items-center gap-1 bg-slate-900 border-slate-700 text-slate-400 hover:text-slate-200 cursor-pointer">
+            <span class="w-2 h-2 rounded-full bg-slate-500 inline-block"></span>
+            <span>Immediate (Reaksiyon)</span>
+          </button>
+        </div>
+
+        <!-- Passive Rule Badges -->
+        <div class="flex items-center gap-1.5 flex-wrap text-[10px]" id="action-economy-passive-badges">
+          <!-- Dynamically populated with e.g. Combat Reflexes AoO, Diehard -->
+        </div>
+      </div>
+
       <!-- 3-COLUMN TACTICAL DASHBOARD -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
         
@@ -328,123 +367,229 @@
           <!-- 1. Weapon Selector & TWF Card -->
           <div class="bg-dndCard border border-rose-500/40 rounded-xl p-3.5 shadow-lg space-y-3">
             <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-              <span class="text-xs font-black uppercase text-rose-400 tracking-wider flex items-center gap-1.5">
+              <span id="combat-card-title" class="text-xs font-black uppercase text-rose-400 tracking-wider flex items-center gap-1.5">
                 <span>⚔️</span> SALDIRI & SİLAH ROTASYONU
               </span>
-              <button onclick="openWeaponProfileModal()" class="bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-white px-2 py-0.5 rounded text-[11px] font-bold border border-slate-700 flex items-center gap-1 transition" title="Bu silahın hazır rotasyonunu ve otomatik hasar eklentilerini ayarla">
+              <button id="combat-profile-settings-btn" onclick="openWeaponProfileModal()" class="bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-white px-2 py-0.5 rounded text-[11px] font-bold border border-slate-700 flex items-center gap-1 transition cursor-pointer" title="Bu silahın hazır rotasyonunu ve otomatik hasar eklentilerini ayarla">
                 <span>⚙️ Profil Ayarla</span>
               </button>
             </div>
 
-            <!-- Weapon Selector & Grip -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <div class="sm:col-span-2">
-                <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Ana El Silahı</label>
-                <select id="active-weapon-select" onchange="onWeaponChange()" class="w-full bg-slate-900 text-white font-bold text-xs rounded border border-slate-700 px-2 py-1.5 focus:outline-none focus:border-rose-500">
-                  <!-- Dynamically populated -->
-                </select>
-              </div>
-              <div>
-                <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Tutuş (Grip)</label>
-                <select id="active-grip-select" onchange="recalculateOffense()" class="w-full bg-slate-900 text-amber-300 font-bold text-xs rounded border border-slate-700 px-2 py-1.5 focus:outline-none">
-                  <option value="1-Hand">1-Hand</option>
-                  <option value="2-Hand">2-Hand</option>
-                  <option value="Off-Hand">Off-Hand</option>
-                </select>
-              </div>
+            <!-- COMBAT OFFENSE MODE SWITCHER -->
+            <div class="grid grid-cols-2 gap-1.5 p-1 bg-slate-950/80 border border-slate-800 rounded-lg">
+              <button type="button" id="btn-mode-melee" onclick="switchCombatOffenseMode('melee')" class="py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-gradient-to-r from-red-600 to-rose-600 text-white shadow cursor-pointer">
+                <span>⚔️</span>
+                <span>Fiziksel Saldırı</span>
+              </button>
+              <button type="button" id="btn-mode-spell" onclick="switchCombatOffenseMode('spell')" class="py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 cursor-pointer">
+                <span>🔮</span>
+                <span>Büyü & Metamagic</span>
+              </button>
             </div>
 
-            <!-- Off-Hand Weapon / Shield Bash Selector -->
-            <div>
-              <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1">İkinci El (Off-Hand / Kalkan)</label>
-              <select id="active-offhand-select" onchange="onOffHandChange()" class="w-full bg-slate-900 text-sky-300 font-semibold text-xs rounded border border-slate-700 px-2 py-1.5 focus:outline-none focus:border-sky-500">
-                <!-- Dynamically populated with off-hand weapons and shields -->
-              </select>
-              <div id="twf-bonus-badge" class="hidden text-[10px] font-semibold text-amber-400 mt-1 bg-amber-950/40 border border-amber-700/50 rounded px-2 py-1">
-                <!-- Populated dynamically -->
-              </div>
-            </div>
-
-            <!-- Weapon Base Stats Pill Grid -->
-            <div class="grid grid-cols-3 gap-1.5 bg-slate-950/70 border border-slate-800 rounded-lg p-2 text-center">
-              <div>
-                <div class="text-[9px] uppercase font-bold text-slate-400">Temel Hasar</div>
-                <div id="weapon-damage-formula-display" class="text-xs font-black text-white font-mono mt-0.5">1d6+4</div>
-              </div>
-              <div>
-                <div class="text-[9px] uppercase font-bold text-slate-400">Kritik</div>
-                <div id="weapon-crit-display" class="text-xs font-black text-amber-400 font-mono mt-0.5">18-20 / x2</div>
-              </div>
-              <div>
-                <div class="text-[9px] uppercase font-bold text-slate-400">Hasar Türü</div>
-                <div id="weapon-type-display" class="text-[11px] font-bold text-sky-400 mt-0.5 truncate">Piercing</div>
-              </div>
-            </div>
-
-            <!-- Weapon Iteratives & Stat Badge -->
-            <div class="flex items-center justify-between bg-slate-900/60 border border-slate-800 rounded-lg px-2.5 py-1.5">
-              <div>
-                <span class="text-[9px] uppercase font-bold text-slate-400 block">Saldırı Bonusu (Zincir)</span>
-                <span id="iteratives-display" class="text-sm font-black text-emerald-400 font-mono">+8</span>
-              </div>
-              <div id="weapon-stat-override-badge" class="text-[10px] font-semibold text-emerald-400 text-right">
-                ✨ Weapon Finesse devrede
-              </div>
-            </div>
-
-            <!-- TACTICAL MODIFIERS -->
-            <div class="bg-slate-950/80 border border-slate-800 rounded-lg p-2.5 space-y-2">
-              <div class="text-[10px] font-bold text-sky-400 uppercase tracking-wide flex items-center justify-between">
-                <span>⚡ POZİSYONEL AVANTAJLAR</span>
-                <span class="text-[9px] text-slate-400" id="pa-explanation">(-BAB / +1x PA)</span>
-              </div>
-              
-              <!-- Power Attack Stepper -->
-              <div class="flex items-center justify-between bg-slate-900/80 border border-rose-500/30 rounded px-2 py-1">
-                <span class="text-xs font-bold text-rose-400">Power Attack</span>
-                <div class="flex items-center gap-1.5">
-                  <button onclick="adjustPowerAttack(-1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center">-</button>
-                  <input type="number" id="power-attack-val" value="0" min="0" max="3" onchange="recalculateOffense()" class="w-10 bg-slate-950 border border-rose-500/50 rounded text-center font-mono font-bold text-xs text-white py-0.5">
-                  <button onclick="adjustPowerAttack(1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center">+</button>
+            <!-- PANEL 1: MELEE / PHYSICAL OFFENSE -->
+            <div id="combat-mode-melee-panel" class="space-y-3">
+              <!-- Weapon Selector & Grip -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div class="sm:col-span-2">
+                  <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Ana El Silahı</label>
+                  <select id="active-weapon-select" onchange="onWeaponChange()" class="w-full bg-slate-900 text-white font-bold text-xs rounded border border-slate-700 px-2 py-1.5 focus:outline-none focus:border-rose-500">
+                    <!-- Dynamically populated -->
+                  </select>
+                </div>
+                <div>
+                  <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Tutuş (Grip)</label>
+                  <select id="active-grip-select" onchange="recalculateOffense()" class="w-full bg-slate-900 text-amber-300 font-bold text-xs rounded border border-slate-700 px-2 py-1.5 focus:outline-none">
+                    <option value="1-Hand">1-Hand</option>
+                    <option value="2-Hand">2-Hand</option>
+                    <option value="Off-Hand">Off-Hand</option>
+                  </select>
                 </div>
               </div>
 
-              <!-- Checkbox Toggles -->
-              <div class="grid grid-cols-3 gap-1.5 text-center">
-                <label class="bg-slate-900 border border-slate-800 hover:border-sky-500/50 rounded p-1.5 cursor-pointer transition">
-                  <div class="text-[10px] font-bold text-sky-400">Flanking</div>
-                  <div class="text-[9px] text-slate-400">+2 Melee</div>
-                  <input type="checkbox" id="mod-flanking" onchange="recalculateOffense()" class="mt-1 w-3.5 h-3.5 rounded text-sky-500 focus:ring-0">
-                </label>
-                <label class="bg-slate-900 border border-slate-800 hover:border-rose-500/50 rounded p-1.5 cursor-pointer transition">
-                  <div class="text-[10px] font-bold text-rose-400">Charge</div>
-                  <div class="text-[9px] text-slate-400">+2 Atk/-2 AC</div>
-                  <input type="checkbox" id="mod-charge" onchange="recalculateOffense()" class="mt-1 w-3.5 h-3.5 rounded text-rose-500 focus:ring-0">
-                </label>
-                <label class="bg-slate-900 border border-slate-800 hover:border-amber-500/50 rounded p-1.5 cursor-pointer transition">
-                  <div class="text-[10px] font-bold text-amber-400">Higher Gr.</div>
-                  <div class="text-[9px] text-slate-400">+1 Melee</div>
-                  <input type="checkbox" id="mod-higher-ground" onchange="recalculateOffense()" class="mt-1 w-3.5 h-3.5 rounded text-amber-500 focus:ring-0">
-                </label>
+              <!-- Off-Hand Weapon / Shield Bash Selector -->
+              <div>
+                <label class="text-[10px] uppercase font-bold text-slate-400 block mb-1">İkinci El (Off-Hand / Kalkan)</label>
+                <select id="active-offhand-select" onchange="onOffHandChange()" class="w-full bg-slate-900 text-sky-300 font-semibold text-xs rounded border border-slate-700 px-2 py-1.5 focus:outline-none focus:border-sky-500">
+                  <!-- Dynamically populated with off-hand weapons and shields -->
+                </select>
+                <div id="twf-bonus-badge" class="hidden text-[10px] font-semibold text-amber-400 mt-1 bg-amber-950/40 border border-amber-700/50 rounded px-2 py-1">
+                  <!-- Populated dynamically -->
+                </div>
               </div>
+
+              <!-- Weapon Base Stats Pill Grid -->
+              <div class="grid grid-cols-3 gap-1.5 bg-slate-950/70 border border-slate-800 rounded-lg p-2 text-center">
+                <div>
+                  <div class="text-[9px] uppercase font-bold text-slate-400">Temel Hasar</div>
+                  <div id="weapon-damage-formula-display" class="text-xs font-black text-white font-mono mt-0.5">1d6+4</div>
+                </div>
+                <div>
+                  <div class="text-[9px] uppercase font-bold text-slate-400">Kritik</div>
+                  <div id="weapon-crit-display" class="text-xs font-black text-amber-400 font-mono mt-0.5">18-20 / x2</div>
+                </div>
+                <div>
+                  <div class="text-[9px] uppercase font-bold text-slate-400">Hasar Türü</div>
+                  <div id="weapon-type-display" class="text-[11px] font-bold text-sky-400 mt-0.5 truncate">Piercing</div>
+                </div>
+              </div>
+
+              <!-- Weapon Iteratives & Stat Badge -->
+              <div class="flex items-center justify-between bg-slate-900/60 border border-slate-800 rounded-lg px-2.5 py-1.5">
+                <div>
+                  <span class="text-[9px] uppercase font-bold text-slate-400 block">Saldırı Bonusu (Zincir)</span>
+                  <span id="iteratives-display" class="text-sm font-black text-emerald-400 font-mono">+8</span>
+                </div>
+                <div id="weapon-stat-override-badge" class="text-[10px] font-semibold text-emerald-400 text-right">
+                  ✨ Weapon Finesse devrede
+                </div>
+              </div>
+
+              <!-- TACTICAL MODIFIERS -->
+              <div class="bg-slate-950/80 border border-slate-800 rounded-lg p-2.5 space-y-2">
+                <div class="text-[10px] font-bold text-sky-400 uppercase tracking-wide flex items-center justify-between">
+                  <span>⚡ POZİSYONEL AVANTAJLAR</span>
+                  <span class="text-[9px] text-slate-400" id="pa-explanation">(-BAB / +1x PA)</span>
+                </div>
+                
+                <!-- Power Attack Stepper -->
+                <div class="flex items-center justify-between bg-slate-900/80 border border-rose-500/30 rounded px-2 py-1">
+                  <span class="text-xs font-bold text-rose-400">Power Attack</span>
+                  <div class="flex items-center gap-1.5">
+                    <button onclick="adjustPowerAttack(-1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center">-</button>
+                    <input type="number" id="power-attack-val" value="0" min="0" max="3" onchange="recalculateOffense()" class="w-10 bg-slate-950 border border-rose-500/50 rounded text-center font-mono font-bold text-xs text-white py-0.5">
+                    <button onclick="adjustPowerAttack(1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center">+</button>
+                  </div>
+                </div>
+
+                <!-- Checkbox Toggles -->
+                <div class="grid grid-cols-3 gap-1.5 text-center">
+                  <label class="bg-slate-900 border border-slate-800 hover:border-sky-500/50 rounded p-1.5 cursor-pointer transition">
+                    <div class="text-[10px] font-bold text-sky-400">Flanking</div>
+                    <div class="text-[9px] text-slate-400">+2 Melee</div>
+                    <input type="checkbox" id="mod-flanking" onchange="recalculateOffense()" class="mt-1 w-3.5 h-3.5 rounded text-sky-500 focus:ring-0">
+                  </label>
+                  <label class="bg-slate-900 border border-slate-800 hover:border-rose-500/50 rounded p-1.5 cursor-pointer transition">
+                    <div class="text-[10px] font-bold text-rose-400">Charge</div>
+                    <div class="text-[9px] text-slate-400">+2 Atk/-2 AC</div>
+                    <input type="checkbox" id="mod-charge" onchange="recalculateOffense()" class="mt-1 w-3.5 h-3.5 rounded text-rose-500 focus:ring-0">
+                  </label>
+                  <label class="bg-slate-900 border border-slate-800 hover:border-amber-500/50 rounded p-1.5 cursor-pointer transition">
+                    <div class="text-[10px] font-bold text-amber-400">Higher Gr.</div>
+                    <div class="text-[9px] text-slate-400">+1 Melee</div>
+                    <input type="checkbox" id="mod-higher-ground" onchange="recalculateOffense()" class="mt-1 w-3.5 h-3.5 rounded text-amber-500 focus:ring-0">
+                  </label>
+                </div>
+              </div>
+
+              <!-- Active Attack Profile Pills Preview -->
+              <div class="bg-slate-900/60 border border-slate-800 rounded-lg p-2">
+                <div class="flex items-center justify-between text-[10px] font-bold text-slate-400 mb-1">
+                  <span>HAZIR PROFİL MODİFİYERLERİ</span>
+                  <span class="text-amber-400 font-mono text-[9px]" id="active-profile-count">0 Aktif</span>
+                </div>
+                <div id="active-profile-pills-preview" class="flex flex-wrap gap-1.5 min-h-[24px]">
+                  <!-- Populated dynamically -->
+                </div>
+              </div>
+
+              <!-- Large 3D Roll Attack Button -->
+              <button id="main-attack-roll-btn" onclick="initiateCombatAttack()" class="w-full py-3 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-600 text-white font-black text-sm md:text-base rounded-xl shadow-lg border border-red-400/40 flex items-center justify-center gap-2 transition transform active:scale-[0.98]">
+                <span class="inline-flex items-center"><svg class="w-5 h-5 text-white" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.35" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"/><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"/><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
+                <span id="main-attack-btn-text">SALDIRI YAP (ROLL ATTACK)</span>
+              </button>
             </div>
 
-            <!-- Active Attack Profile Pills Preview -->
-            <div class="bg-slate-900/60 border border-slate-800 rounded-lg p-2">
-              <div class="flex items-center justify-between text-[10px] font-bold text-slate-400 mb-1">
-                <span>HAZIR PROFİL MODİFİYERLERİ</span>
-                <span class="text-amber-400 font-mono text-[9px]" id="active-profile-count">0 Aktif</span>
+            <!-- PANEL 2: SPELL & METAMAGIC OFFENSE -->
+            <div id="combat-mode-spell-panel" class="hidden space-y-3">
+              <!-- Spell Selector -->
+              <div>
+                <label class="text-[10px] uppercase font-bold text-purple-400 block mb-1">İcra Edilecek Büyü</label>
+                <select id="combat-active-spell-select" onchange="onCombatSpellChange()" class="w-full bg-slate-900 text-purple-200 font-bold text-xs rounded border border-purple-500/50 px-2 py-1.5 focus:outline-none focus:border-purple-400">
+                  <!-- Populated dynamically -->
+                </select>
               </div>
-              <div id="active-profile-pills-preview" class="flex flex-wrap gap-1.5 min-h-[24px]">
-                <!-- Populated dynamically -->
-              </div>
-            </div>
 
-            <!-- Large 3D Roll Attack Button -->
-            <button id="main-attack-roll-btn" onclick="initiateCombatAttack()" class="w-full py-3 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-600 text-white font-black text-sm md:text-base rounded-xl shadow-lg border border-red-400/40 flex items-center justify-center gap-2 transition transform active:scale-[0.98]">
-              <span class="inline-flex items-center"><svg class="w-5 h-5 text-white" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.35" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"/><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"/><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
-              <span id="main-attack-btn-text">SALDIRI YAP (ROLL ATTACK)</span>
-            </button>
+              <!-- Spell Base Stats Pill Grid -->
+              <div class="grid grid-cols-3 gap-1.5 bg-slate-950/70 border border-slate-800 rounded-lg p-2 text-center">
+                <div>
+                  <div class="text-[9px] uppercase font-bold text-slate-400">Büyü Seviyesi</div>
+                  <div id="combat-spell-level-display" class="text-xs font-black text-white font-mono mt-0.5">2. Seviye</div>
+                </div>
+                <div>
+                  <div class="text-[9px] uppercase font-bold text-slate-400">İcra Süresi</div>
+                  <div id="combat-spell-action-display" class="text-xs font-black text-amber-400 font-mono mt-0.5">Standart</div>
+                </div>
+                <div>
+                  <div class="text-[9px] uppercase font-bold text-slate-400">Menzil / Okul</div>
+                  <div id="combat-spell-school-display" class="text-[11px] font-bold text-sky-400 mt-0.5 truncate">Evocation</div>
+                </div>
+              </div>
+
+              <!-- Spell Slot Status Indicator -->
+              <div class="flex items-center justify-between bg-slate-900/80 border border-purple-800/40 rounded-lg px-2.5 py-1.5">
+                <div>
+                  <span class="text-[9px] uppercase font-bold text-slate-400 block">Tüketilecek Büyü Yuvası</span>
+                  <span id="combat-spell-slot-req-display" class="text-xs font-black text-purple-300 font-mono">2. Seviye Yuva (Kalan: 5/6)</span>
+                </div>
+                <div id="combat-spell-dc-display" class="text-[10px] font-semibold text-emerald-400 text-right">
+                  DC 18 • Ranged Touch +5
+                </div>
+              </div>
+
+              <!-- METAMAGIC MODIFIERS -->
+              <div class="bg-slate-950/80 border border-purple-900/50 rounded-lg p-2.5 space-y-2">
+                <div class="text-[10px] font-bold text-purple-400 uppercase tracking-wide flex items-center justify-between">
+                  <span>⚡ METAMAGIC TAKTİKSEL MODİFİYERLER</span>
+                  <span class="text-[9px] text-amber-400" id="metamagic-action-note">(Spontaneous: Full-Round Action)</span>
+                </div>
+
+                <!-- Metamagic Toggles -->
+                <div class="grid grid-cols-2 gap-1.5">
+                  <label class="bg-slate-900 border border-purple-900/60 hover:border-purple-500/60 rounded p-2 cursor-pointer transition flex items-start justify-between gap-1">
+                    <div>
+                      <div class="text-[11px] font-bold text-purple-300">Empower Spell</div>
+                      <div class="text-[9px] text-slate-400">+50% Hasar / +2 Yuva</div>
+                    </div>
+                    <input type="checkbox" id="mod-empower-spell" onchange="recalculateCombatSpell()" class="mt-0.5 w-4 h-4 rounded text-purple-500 border-slate-700 focus:ring-0">
+                  </label>
+                  <label class="bg-slate-900 border border-purple-900/60 hover:border-purple-500/60 rounded p-2 cursor-pointer transition flex items-start justify-between gap-1">
+                    <div>
+                      <div class="text-[11px] font-bold text-amber-300">Maximize Spell</div>
+                      <div class="text-[9px] text-slate-400">Tavan Zar / +3 Yuva</div>
+                    </div>
+                    <input type="checkbox" id="mod-maximize-spell" onchange="recalculateCombatSpell()" class="mt-0.5 w-4 h-4 rounded text-amber-500 border-slate-700 focus:ring-0">
+                  </label>
+                  <label class="bg-slate-900 border border-purple-900/60 hover:border-purple-500/60 rounded p-2 cursor-pointer transition flex items-start justify-between gap-1">
+                    <div>
+                      <div class="text-[11px] font-bold text-sky-300">Enlarge Spell</div>
+                      <div class="text-[9px] text-slate-400">Menzil x2 / +1 Yuva</div>
+                    </div>
+                    <input type="checkbox" id="mod-enlarge-spell" onchange="recalculateCombatSpell()" class="mt-0.5 w-4 h-4 rounded text-sky-500 border-slate-700 focus:ring-0">
+                  </label>
+                  <label class="bg-slate-900 border border-purple-900/60 hover:border-purple-500/60 rounded p-2 cursor-pointer transition flex items-start justify-between gap-1">
+                    <div>
+                      <div class="text-[11px] font-bold text-emerald-300">Extend Spell</div>
+                      <div class="text-[9px] text-slate-400">Süre x2 / +1 Yuva</div>
+                    </div>
+                    <input type="checkbox" id="mod-extend-spell" onchange="recalculateCombatSpell()" class="mt-0.5 w-4 h-4 rounded text-emerald-500 border-slate-700 focus:ring-0">
+                  </label>
+                </div>
+              </div>
+
+              <!-- Spell Result Preview -->
+              <div class="bg-slate-900/70 border border-purple-800/40 rounded-lg p-2 text-center">
+                <span class="text-[9px] uppercase font-bold text-slate-400 block">Hesaplanan Büyü Hasarı / Etkisi</span>
+                <span id="combat-spell-damage-preview" class="text-sm font-black text-amber-300 font-mono">4d6 Ateş</span>
+                <div id="combat-spell-metamagic-badge" class="text-[10px] text-purple-400 mt-0.5">Standart İcra</div>
+              </div>
+
+              <!-- Large 3D Roll Spell Button -->
+              <button id="main-spell-cast-btn" onclick="initiateCombatSpellCast()" class="w-full py-3 bg-gradient-to-r from-purple-700 via-indigo-600 to-purple-800 hover:from-purple-600 hover:to-indigo-500 text-white font-black text-sm md:text-base rounded-xl shadow-lg border border-purple-400/40 flex items-center justify-center gap-2 transition transform active:scale-[0.98] cursor-pointer">
+                <span>🔮</span>
+                <span id="main-spell-btn-text">BÜYÜYÜ İCRA ET & ZAR AT</span>
+              </button>
+            </div>
           </div>
 
           <!-- 2. OFFENSE PIN DRAWER -->
@@ -5982,6 +6127,62 @@
               <input type="checkbox" id="settings-maneuver-crit" onchange="const h=document.getElementById('house-maneuver-crit'); if(h) h.checked = this.checked; if(!character.houseRules) character.houseRules = {}; character.houseRules.maneuverCrit = this.checked; saveStateToStorage(false);" class="rounded border-slate-700 text-indigo-500 focus:ring-0">
             </label>
 
+            <!-- CRIT THREAT CAP (HOUSE RULE) -->
+            <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950 border border-slate-800">
+              <div>
+                <div class="font-bold text-slate-200 flex items-center gap-1.5 text-xs">
+                  <span>🎯</span>
+                  <span>Kritik Tehdit Tavanı (Crit Range Cap)</span>
+                </div>
+                <div class="text-[10px] text-slate-400 mt-0.5">Kritik tehdit aralığının inebileceği en düşük taban sınır (DM Limiti: Max 15-20).</div>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0 ml-2">
+                <select id="setting-crit-cap-min" onchange="onHouseRuleCritCapChange(this.value)" class="bg-slate-900 border border-slate-700 text-amber-300 font-bold text-xs rounded px-2.5 py-1 focus:outline-none focus:border-amber-400">
+                  <option value="15">Max 15-20 (DM Limiti)</option>
+                  <option value="16">Max 16-20</option>
+                  <option value="17">Max 17-20</option>
+                  <option value="18">Max 18-20</option>
+                  <option value="12">Max 12-20 (Geniş)</option>
+                  <option value="1">Sınırsız (Cap Yok)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- KEEN & IMPROVED CRITICAL STACKING -->
+            <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950 border border-slate-800">
+              <div>
+                <div class="font-bold text-slate-200 flex items-center gap-1.5 text-xs">
+                  <span>⚔️</span>
+                  <span>Keen ve Improved Critical İstiflenmesi</span>
+                </div>
+                <div class="text-[10px] text-slate-400 mt-0.5">Keen silah özelliği ile Improved Critical feat'i birlikte olduğunda kural tercihi.</div>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0 ml-2">
+                <select id="setting-keen-imp-stacking" onchange="onHouseRuleKeenStackingChange(this.value)" class="bg-slate-900 border border-slate-700 text-amber-300 font-bold text-xs rounded px-2.5 py-1 focus:outline-none focus:border-amber-400">
+                  <option value="stack_diminishing">DM Kuralı: Stack Olur (+1 Aralık Genişletir)</option>
+                  <option value="none">RAW Core 3.5e: Stack Olmaz (Tek Katlama)</option>
+                  <option value="full">3.0e Nostaljisi: Tam Katlama (4x Aralık)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- PRECISION DAMAGE (SNEAK ATTACK) PER TURN RULE -->
+            <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950 border border-slate-800">
+              <div>
+                <div class="font-bold text-slate-200 flex items-center gap-1.5 text-xs">
+                  <span>🗡️</span>
+                  <span>Hassas Hasar Limiti (Sneak Attack / Skirmish)</span>
+                </div>
+                <div class="text-[10px] text-slate-400 mt-0.5">Gizli saldırı zarlarının iteratif vuruşlara uygulanma şekli.</div>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0 ml-2">
+                <select id="setting-precision-rule" onchange="onHouseRulePrecisionChange(this.value)" class="bg-slate-900 border border-slate-700 text-amber-300 font-bold text-xs rounded px-2.5 py-1 focus:outline-none focus:border-amber-400">
+                  <option value="once_per_turn">Turda İlk İsabet (Taktiksel Limit)</option>
+                  <option value="every_hit">Her İsabet (Standart RAW 3.5e)</option>
+                </select>
+              </div>
+            </div>
+
             <!-- 7. COMBAT PIN DRAWER CAPACITY -->
             <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950 border border-slate-800">
               <div>
@@ -6554,6 +6755,14 @@
       if (setManCrit) setManCrit.checked = character.houseRules?.maneuverCrit ?? false;
       if (noCrit) noCrit.checked = character.houseRules?.noCritConfirm ?? true;
       if (manCrit) manCrit.checked = character.houseRules?.maneuverCrit ?? false;
+
+      const setCritCap = document.getElementById('setting-crit-cap-min');
+      if (setCritCap) setCritCap.value = String(character.houseRules?.critCapMin ?? 15);
+      const setKeenStack = document.getElementById('setting-keen-imp-stacking');
+      if (setKeenStack) setKeenStack.value = character.houseRules?.keenImpCritStacking || 'stack_diminishing';
+      const setPrecisionRule = document.getElementById('setting-precision-rule');
+      if (setPrecisionRule) setPrecisionRule.value = character.houseRules?.precisionDamageRule || 'once_per_turn';
+
       updateHouseRuleSkillConsolidationUI();
 
       // Sync Feat Mode, Caster CL Mode & Ignore ASF in House Rules
@@ -6624,6 +6833,139 @@
           }, 2000);
         }
       }, 50);
+    }
+
+    function onHouseRuleCritCapChange(val) {
+      if (!character.houseRules) character.houseRules = {};
+      character.houseRules.critCapMin = Number(val) || 15;
+      saveStateToStorage(true);
+      if (typeof recalculateOffense === 'function') recalculateOffense();
+      showDiceTopToast({
+        icon: '🎯',
+        title: 'Kritik Tavanı Güncellendi',
+        breakdown: `Kritik tehdit aralığı en fazla ${character.houseRules.critCapMin}-20 seviyesine inebilir.`,
+        total: `Cap: ${character.houseRules.critCapMin}`
+      });
+    }
+
+    function onHouseRuleKeenStackingChange(val) {
+      if (!character.houseRules) character.houseRules = {};
+      character.houseRules.keenImpCritStacking = val;
+      saveStateToStorage(true);
+      if (typeof recalculateOffense === 'function') recalculateOffense();
+      showDiceTopToast({
+        icon: '⚔️',
+        title: 'Kritik İstiflenme Kuralı Güncellendi',
+        breakdown: val === 'stack_diminishing' ? 'Keen ve Imp. Critical stack olur (+1 aralık genişletir).' : (val === 'full' ? 'Tam katlama devrede (4x).' : 'RAW Core 3.5e: Stack olmaz.'),
+        total: val
+      });
+    }
+
+    function onHouseRulePrecisionChange(val) {
+      if (!character.houseRules) character.houseRules = {};
+      character.houseRules.precisionDamageRule = val;
+      saveStateToStorage(true);
+      if (typeof recalculateOffense === 'function') recalculateOffense();
+      showDiceTopToast({
+        icon: '🗡️',
+        title: 'Hassas Hasar Kuralı Güncellendi',
+        breakdown: val === 'once_per_turn' ? 'Gizli saldırı zarları turda yalnızca ilk isabete uygulanır.' : 'Her isabete ayrı uygulanır.',
+        total: val
+      });
+    }
+
+    function updateActionEconomyUI() {
+      if (!character.tactical) character.tactical = {};
+      if (!character.tactical.spentActions) character.tactical.spentActions = {};
+
+      const roundEl = document.getElementById('action-economy-round');
+      if (roundEl) roundEl.textContent = character.tactical.round || 1;
+
+      const spent = character.tactical.spentActions;
+      
+      const btnStd = document.getElementById('btn-action-std');
+      if (btnStd) {
+        const isSpent = !!spent.standard;
+        btnStd.className = isSpent
+          ? 'px-2.5 py-1 rounded-lg text-xs font-bold border transition flex items-center gap-1 bg-slate-900 border-slate-700 text-slate-500 line-through opacity-60 cursor-pointer'
+          : 'px-2.5 py-1 rounded-lg text-xs font-bold border transition flex items-center gap-1 bg-emerald-950/80 border-emerald-500/60 text-emerald-300 shadow-sm cursor-pointer';
+        btnStd.innerHTML = isSpent ? '<span class="w-2 h-2 rounded-full bg-slate-500 inline-block"></span><span>Standart: Harcandı</span>' : '<span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span><span>Standart: Hazır</span>';
+      }
+
+      const btnMove = document.getElementById('btn-action-move');
+      if (btnMove) {
+        const isSpent = !!spent.move;
+        btnMove.className = isSpent
+          ? 'px-2.5 py-1 rounded-lg text-xs font-bold border transition flex items-center gap-1 bg-slate-900 border-slate-700 text-slate-500 line-through opacity-60 cursor-pointer'
+          : 'px-2.5 py-1 rounded-lg text-xs font-bold border transition flex items-center gap-1 bg-emerald-950/80 border-emerald-500/60 text-emerald-300 shadow-sm cursor-pointer';
+        btnMove.innerHTML = isSpent ? '<span class="w-2 h-2 rounded-full bg-slate-500 inline-block"></span><span>Hareket: Harcandı</span>' : '<span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span><span>Hareket: Hazır</span>';
+      }
+
+      const btnSwift = document.getElementById('btn-action-swift');
+      if (btnSwift) {
+        const isSpent = !!spent.swift;
+        btnSwift.className = isSpent
+          ? 'px-2.5 py-1 rounded-lg text-xs font-bold border transition flex items-center gap-1 bg-slate-900 border-slate-700 text-slate-500 line-through opacity-60 cursor-pointer'
+          : 'px-2.5 py-1 rounded-lg text-xs font-bold border transition flex items-center gap-1 bg-purple-950/80 border-purple-500/60 text-purple-300 shadow-sm cursor-pointer';
+        btnSwift.innerHTML = isSpent ? '<span class="w-2 h-2 rounded-full bg-slate-500 inline-block"></span><span>Swift: Harcandı</span>' : '<span class="w-2 h-2 rounded-full bg-purple-400 inline-block"></span><span>Swift: Hazır</span>';
+      }
+
+      const btnImm = document.getElementById('btn-action-immediate');
+      if (btnImm) {
+        const isSpent = !!spent.immediate;
+        btnImm.className = isSpent
+          ? 'px-2.5 py-1 rounded-lg text-xs font-bold border transition flex items-center gap-1 bg-rose-950/80 border-rose-500/60 text-rose-300 cursor-pointer'
+          : 'px-2.5 py-1 rounded-lg text-xs font-bold border transition flex items-center gap-1 bg-slate-900 border-slate-700 text-slate-400 hover:text-slate-200 cursor-pointer';
+        btnImm.innerHTML = isSpent ? '<span class="w-2 h-2 rounded-full bg-rose-500 inline-block"></span><span>Immediate Kullanıldı</span>' : '<span class="w-2 h-2 rounded-full bg-slate-500 inline-block"></span><span>Immediate (Reaksiyon)</span>';
+      }
+
+      // Render passive badges
+      const passiveContainer = document.getElementById('action-economy-passive-badges');
+      if (passiveContainer && typeof RuleEngine !== 'undefined' && RuleEngine.evaluateRuleFlags) {
+        const flags = RuleEngine.evaluateRuleFlags(character);
+        const badges = [];
+        if (flags.allowFlatFootedAoO) {
+          badges.push('<span class="px-2 py-0.5 rounded bg-blue-950 border border-blue-600/50 text-blue-300 font-semibold" title="Combat Reflexes: Flat-Footed iken fırsat saldırısı vurabilir">⚡ Flat-Footed AoO</span>');
+        }
+        if (flags.disabledAtNegativeHp) {
+          badges.push('<span class="px-2 py-0.5 rounded bg-rose-950 border border-rose-600/50 text-rose-300 font-semibold" title="Diehard: HP 0 ila -9 iken bilinç açık / Disabled">🛡️ Diehard (0 ila -9 HP)</span>');
+        }
+        if (flags.castInWildShape) {
+          badges.push('<span class="px-2 py-0.5 rounded bg-emerald-950 border border-emerald-600/50 text-emerald-300 font-semibold" title="Natural Spell: Wild Shape formunda büyü yapılabilir">🐾 Natural Spell</span>');
+        }
+        if (flags.opposedCheckBonus && Object.values(flags.opposedCheckBonus).some(v => v > 0)) {
+          const ops = Object.entries(flags.opposedCheckBonus).filter(([k, v]) => v > 0).map(([k, v]) => `+${v} ${k}`).join(', ');
+          badges.push(`<span class="px-2 py-0.5 rounded bg-amber-950 border border-amber-600/50 text-amber-300 font-semibold" title="Manevra Kontrolleri: ${ops}">⚔️ Manevralar: ${ops}</span>`);
+        }
+        passiveContainer.innerHTML = badges.join(' ');
+      }
+    }
+
+    function toggleActionEconomy(type) {
+      if (!character.tactical) character.tactical = {};
+      if (!character.tactical.spentActions) character.tactical.spentActions = {};
+      character.tactical.spentActions[type] = !character.tactical.spentActions[type];
+      updateActionEconomyUI();
+      saveStateToStorage(false);
+    }
+
+    function advanceCombatTurn() {
+      if (!character.tactical) character.tactical = {};
+      character.tactical.round = (Number(character.tactical.round) || 1) + 1;
+      character.tactical.spentActions = {
+        standard: false,
+        move: false,
+        swift: false,
+        immediate: false
+      };
+      updateActionEconomyUI();
+      saveStateToStorage(false);
+      showDiceTopToast({
+        icon: '⚔️',
+        title: 'Yeni Tur Başladı',
+        breakdown: `Tur ${character.tactical.round}: Tüm aksiyon bütçesi (Standart, Hareket, Swift) yenilendi.`,
+        total: `Tur ${character.tactical.round}`
+      });
     }
 
     function setHouseRuleSkillConsolidation(isMerged) {
@@ -9026,6 +9368,308 @@
       recalculateOffense();
     }
 
+    // ====================================================
+    // COMBAT OFFENSE MODE: MELEE vs SPELL & METAMAGIC
+    // ====================================================
+    window._combatOffenseMode = 'melee';
+
+    function switchCombatOffenseMode(mode) {
+      window._combatOffenseMode = mode;
+      const meleePanel = document.getElementById('combat-mode-melee-panel');
+      const spellPanel = document.getElementById('combat-mode-spell-panel');
+      const btnMelee = document.getElementById('btn-mode-melee');
+      const btnSpell = document.getElementById('btn-mode-spell');
+      const cardTitle = document.getElementById('combat-card-title');
+      const profileBtn = document.getElementById('combat-profile-settings-btn');
+
+      if (mode === 'spell') {
+        if (meleePanel) meleePanel.classList.add('hidden');
+        if (spellPanel) spellPanel.classList.remove('hidden');
+        if (btnMelee) {
+          btnMelee.className = 'py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 cursor-pointer';
+        }
+        if (btnSpell) {
+          btnSpell.className = 'py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-gradient-to-r from-purple-700 to-indigo-600 text-white shadow cursor-pointer';
+        }
+        if (cardTitle) {
+          cardTitle.innerHTML = '<span>🔮</span> BÜYÜ & METAMAGIC İCRASI';
+          cardTitle.className = 'text-xs font-black uppercase text-purple-400 tracking-wider flex items-center gap-1.5';
+        }
+        if (profileBtn) profileBtn.classList.add('hidden');
+        populateCombatSpells();
+        recalculateCombatSpell();
+      } else {
+        if (meleePanel) meleePanel.classList.remove('hidden');
+        if (spellPanel) spellPanel.classList.add('hidden');
+        if (btnMelee) {
+          btnMelee.className = 'py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-gradient-to-r from-red-600 to-rose-600 text-white shadow cursor-pointer';
+        }
+        if (btnSpell) {
+          btnSpell.className = 'py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 cursor-pointer';
+        }
+        if (cardTitle) {
+          cardTitle.innerHTML = '<span>⚔️</span> SALDIRI & SİLAH ROTASYONU';
+          cardTitle.className = 'text-xs font-black uppercase text-rose-400 tracking-wider flex items-center gap-1.5';
+        }
+        if (profileBtn) profileBtn.classList.remove('hidden');
+        recalculateOffense();
+      }
+    }
+
+    function populateCombatSpells() {
+      const select = document.getElementById('combat-active-spell-select');
+      if (!select) return;
+
+      const currentVal = select.value;
+      select.innerHTML = '';
+
+      // Get spells from character.spellcasting.knownSpells
+      const known = (character?.spellcasting?.knownSpells || []).slice();
+
+      // If knownSpells is empty, provide default combat spells
+      if (known.length === 0) {
+        known.push(
+          { name: 'Scorching Ray', level: 2, school: 'Evocation', range: 'Close (35 ft)', dice: '4d6', type: 'Ateş (Fire)', action: 'Standard Action', attackType: 'Ranged Touch', benefit: '1 ray of fire (4d6 damage).' },
+          { name: 'Magic Missile', level: 1, school: 'Evocation', range: 'Medium (150 ft)', dice: '3d4+3', type: 'Kuvvet (Force)', action: 'Standard Action', attackType: 'Otomatik İsabet', benefit: '3 missiles (1d4+1 each).' },
+          { name: 'Ray of Enfeeblement', level: 1, school: 'Necromancy', range: 'Close (35 ft)', dice: '1d6+2', type: 'Str Hasarı (Penalty)', action: 'Standard Action', attackType: 'Ranged Touch', benefit: 'Ray deals 1d6+2 Str penalty.' },
+          { name: 'Shocking Grasp', level: 1, school: 'Evocation', range: 'Touch', dice: '5d6', type: 'Elektrik (Electricity)', action: 'Standard Action', attackType: 'Melee Touch', benefit: 'Touch deals 5d6 electricity damage.' }
+        );
+      }
+
+      known.forEach(sp => {
+        const opt = document.createElement('option');
+        opt.value = sp.name;
+        opt.textContent = `[Lvl ${sp.level}] ${sp.name} (${sp.school || 'Spell'})`;
+        if (sp.name === currentVal) opt.selected = true;
+        select.appendChild(opt);
+      });
+    }
+
+    function onCombatSpellChange() {
+      recalculateCombatSpell();
+    }
+
+    function getSelectedCombatSpell() {
+      const select = document.getElementById('combat-active-spell-select');
+      const name = select ? select.value : '';
+      const known = (character?.spellcasting?.knownSpells || []);
+      let found = known.find(s => s.name === name);
+      if (!found) {
+        const defaults = [
+          { name: 'Scorching Ray', level: 2, school: 'Evocation', range: 'Close (35 ft)', dice: '4d6', dmgType: 'Ateş', action: 'Standard Action', attackType: 'Ranged Touch' },
+          { name: 'Magic Missile', level: 1, school: 'Evocation', range: 'Medium (150 ft)', dice: '3d4+3', dmgType: 'Kuvvet', action: 'Standard Action', attackType: 'Otomatik' },
+          { name: 'Ray of Enfeeblement', level: 1, school: 'Necromancy', range: 'Close (35 ft)', dice: '1d6+2', dmgType: 'Str Cezası', action: 'Standard Action', attackType: 'Ranged Touch' },
+          { name: 'Shocking Grasp', level: 1, school: 'Evocation', range: 'Touch', dice: '5d6', dmgType: 'Elektrik', action: 'Standard Action', attackType: 'Melee Touch' }
+        ];
+        found = defaults.find(s => s.name === name) || defaults[0];
+      }
+      return found;
+    }
+
+    function recalculateCombatSpell() {
+      const spell = getSelectedCombatSpell();
+      if (!spell) return;
+
+      const baseLvl = Number(spell.level) || 0;
+      const isEmpower = document.getElementById('mod-empower-spell')?.checked || false;
+      const isMaximize = document.getElementById('mod-maximize-spell')?.checked || false;
+      const isEnlarge = document.getElementById('mod-enlarge-spell')?.checked || false;
+      const isExtend = document.getElementById('mod-extend-spell')?.checked || false;
+
+      let slotDiff = 0;
+      const metamagicTags = [];
+      if (isEmpower) { slotDiff += 2; metamagicTags.push('Empower (+50% Zar)'); }
+      if (isMaximize) { slotDiff += 3; metamagicTags.push('Maximize (Tavan Zar)'); }
+      if (isEnlarge) { slotDiff += 1; metamagicTags.push('Enlarge (Menzil x2)'); }
+      if (isExtend) { slotDiff += 1; metamagicTags.push('Extend (Süre x2)'); }
+
+      const finalLvl = baseLvl + slotDiff;
+      const isMetamagicActive = metamagicTags.length > 0;
+
+      // Update Spell Base Stats
+      const lvlEl = document.getElementById('combat-spell-level-display');
+      if (lvlEl) lvlEl.textContent = baseLvl === 0 ? 'Cantrip (0)' : `${baseLvl}. Seviye`;
+
+      const actionEl = document.getElementById('combat-spell-action-display');
+      if (actionEl) {
+        actionEl.textContent = isMetamagicActive ? 'Full-Round (Spontaneous)' : (spell.action || 'Standart');
+        actionEl.className = isMetamagicActive ? 'text-xs font-black text-rose-400 font-mono mt-0.5' : 'text-xs font-black text-amber-400 font-mono mt-0.5';
+      }
+
+      const schoolEl = document.getElementById('combat-spell-school-display');
+      if (schoolEl) schoolEl.textContent = spell.school || 'Universal';
+
+      // Check slot capacity
+      const slots = character?.spellcasting?.slots || [];
+      const targetSlot = slots.find(s => Number(s.level) === finalLvl);
+      const remaining = targetSlot ? Math.max(0, targetSlot.daily - targetSlot.used) : 0;
+      const totalDaily = targetSlot ? targetSlot.daily : 0;
+
+      const slotReqEl = document.getElementById('combat-spell-slot-req-display');
+      if (slotReqEl) {
+        if (targetSlot) {
+          slotReqEl.textContent = `${finalLvl}. Seviye Yuva (Kalan: ${remaining}/${totalDaily})`;
+          slotReqEl.className = remaining > 0 ? 'text-xs font-black text-purple-300 font-mono' : 'text-xs font-black text-rose-400 font-mono';
+        } else {
+          slotReqEl.textContent = `${finalLvl}. Seviye Yuva (Kilitli / Henüz Yok)`;
+          slotReqEl.className = 'text-xs font-black text-rose-500 font-mono';
+        }
+      }
+
+      // Attack roll & DC calculation
+      const bab = Number(character.bab) || 0;
+      const dexMod = RuleEngine.getAbilityMod(character.abilities?.dex || 10);
+      const strMod = RuleEngine.getAbilityMod(character.abilities?.str || 10);
+      const chaMod = RuleEngine.getAbilityMod(character.abilities?.cha || 10);
+
+      const rangedTouchAtk = bab + dexMod;
+      const meleeTouchAtk = bab + strMod;
+      const saveDc = 10 + finalLvl + chaMod;
+
+      const dcEl = document.getElementById('combat-spell-dc-display');
+      if (dcEl) {
+        const isRanged = (spell.attackType || '').toLowerCase().includes('ranged') || (spell.range || '').toLowerCase().includes('ft');
+        const atkText = isRanged ? `Ranged Touch +${rangedTouchAtk}` : `Melee Touch +${meleeTouchAtk}`;
+        dcEl.textContent = `DC ${saveDc} • ${atkText}`;
+      }
+
+      // Damage / effect preview
+      let baseDice = spell.dice || (spell.benefit && spell.benefit.match(/\d+d\d+/i) ? spell.benefit.match(/\d+d\d+/i)[0] : '4d6');
+      let previewText = `${baseDice} ${spell.dmgType || 'Büyü Hasarı'}`;
+      if (isEmpower && isMaximize) {
+        previewText = `${baseDice} Max + 50%`;
+      } else if (isEmpower) {
+        previewText = `${baseDice} x 1.5 (+50%)`;
+      } else if (isMaximize) {
+        previewText = `${baseDice} (Tavan/Max)`;
+      }
+
+      const dmgPreviewEl = document.getElementById('combat-spell-damage-preview');
+      if (dmgPreviewEl) dmgPreviewEl.textContent = previewText;
+
+      const metaBadgeEl = document.getElementById('combat-spell-metamagic-badge');
+      if (metaBadgeEl) {
+        if (isMetamagicActive) {
+          metaBadgeEl.textContent = `✨ Metamagic: ${metamagicTags.join(' • ')} (Yuva: ${finalLvl})`;
+          metaBadgeEl.className = 'text-[10px] text-purple-300 font-bold mt-0.5';
+        } else {
+          metaBadgeEl.textContent = `Standart İcra (${baseLvl}. Seviye Yuva)`;
+          metaBadgeEl.className = 'text-[10px] text-slate-400 mt-0.5';
+        }
+      }
+    }
+
+    function initiateCombatSpellCast() {
+      const spell = getSelectedCombatSpell();
+      if (!spell) return;
+
+      const baseLvl = Number(spell.level) || 0;
+      const isEmpower = document.getElementById('mod-empower-spell')?.checked || false;
+      const isMaximize = document.getElementById('mod-maximize-spell')?.checked || false;
+      const isEnlarge = document.getElementById('mod-enlarge-spell')?.checked || false;
+      const isExtend = document.getElementById('mod-extend-spell')?.checked || false;
+
+      let slotDiff = 0;
+      if (isEmpower) slotDiff += 2;
+      if (isMaximize) slotDiff += 3;
+      if (isEnlarge) slotDiff += 1;
+      if (isExtend) slotDiff += 1;
+
+      const finalLvl = baseLvl + slotDiff;
+      const isMetamagicActive = slotDiff > 0;
+
+      // Consume slot
+      const slots = character?.spellcasting?.slots || [];
+      const targetSlot = slots.find(s => Number(s.level) === finalLvl);
+      if (targetSlot) {
+        if (targetSlot.used >= targetSlot.daily) {
+          showDiceTopToast({
+            icon: '⚠️',
+            title: 'Büyü Yuvası Tükendi!',
+            breakdown: `${finalLvl}. Seviye büyü yuvanız kalmadı (${targetSlot.used}/${targetSlot.daily}).`,
+            total: 'Hata'
+          });
+          return;
+        }
+        targetSlot.used++;
+        if (typeof renderSpellSlots === 'function') renderSpellSlots();
+        saveStateToStorage(false);
+      }
+
+      // If spontaneous metamagic, consume Full-Round Action in Action Economy!
+      if (isMetamagicActive) {
+        if (!character.tactical) character.tactical = {};
+        if (!character.tactical.spentActions) character.tactical.spentActions = {};
+        character.tactical.spentActions.standard = true;
+        character.tactical.spentActions.move = true;
+        if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
+      } else {
+        if (!character.tactical) character.tactical = {};
+        if (!character.tactical.spentActions) character.tactical.spentActions = {};
+        character.tactical.spentActions.standard = true;
+        if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
+      }
+
+      // Roll Spell Damage Dice
+      const diceStr = spell.dice || (spell.benefit && spell.benefit.match(/\d+d\d+/i) ? spell.benefit.match(/\d+d\d+/i)[0] : '4d6');
+      let count = 4, sides = 6;
+      const dMatch = diceStr.match(/(\d+)d(\d+)/i);
+      if (dMatch) {
+        count = parseInt(dMatch[1], 10) || 1;
+        sides = parseInt(dMatch[2], 10) || 6;
+      }
+
+      const diceToRoll3D = [];
+      const rolls = [];
+      let rawSum = 0;
+
+      for (let i = 0; i < count; i++) {
+        const r = Math.floor(Math.random() * sides) + 1;
+        rolls.push(r);
+        rawSum += r;
+        diceToRoll3D.push({ type: 'd' + sides, value: r });
+      }
+
+      let finalDmg = rawSum;
+      let calcNotice = '';
+
+      if (isEmpower && isMaximize) {
+        const maxVal = count * sides;
+        const empowerBonus = Math.floor(rawSum * 0.5);
+        finalDmg = maxVal + empowerBonus;
+        calcNotice = `Max (${maxVal}) + Empowered (+${empowerBonus}) = ${finalDmg}`;
+      } else if (isEmpower) {
+        finalDmg = Math.floor(rawSum * 1.5);
+        calcNotice = `Zar [${rolls.join('+')}] = ${rawSum} × 1.5 = ${finalDmg}`;
+      } else if (isMaximize) {
+        finalDmg = count * sides;
+        calcNotice = `Max Zar = ${finalDmg}`;
+      } else {
+        calcNotice = `Zar [${rolls.join('+')}] = ${finalDmg}`;
+      }
+
+      // Trigger 3D dice animation and toast
+      const onComplete = () => {
+        showDiceTopToast({
+          icon: '🔮',
+          title: `${spell.name} İcra Edildi`,
+          breakdown: `${calcNotice} (${finalLvl}. Seviye Yuva)`,
+          total: `${finalDmg} Hasar`
+        });
+        recalculateCombatSpell();
+      };
+
+      if (window.Dice3D && typeof Dice3D.roll === 'function') {
+        try {
+          Dice3D.roll(diceToRoll3D.slice(0, 6), onComplete);
+        } catch (e) {
+          onComplete();
+        }
+      } else {
+        onComplete();
+      }
+    }
+
     function onWeaponChange() {
       character.activeWeapon = document.getElementById('active-weapon-select').value;
       const wep = (character.weapons || []).find(w => w.name === character.activeWeapon);
@@ -9073,8 +9717,23 @@
         customModifiers: (character.activeModifiers || []).filter(m => m.active)
       });
 
-      document.getElementById('weapon-damage-formula-display').textContent = evalResult.baseDice + (evalResult.netFlatDamage >= 0 ? '+' : '') + evalResult.netFlatDamage;
-      document.getElementById('weapon-crit-display').textContent = (evalResult.critMin === 20 ? '20' : evalResult.critMin + '-20') + ' / x' + evalResult.critMult;
+      const dmgDisplayEl = document.getElementById('weapon-damage-formula-display');
+      if (evalResult.chargeMultiplier > 1) {
+        dmgDisplayEl.textContent = `${evalResult.baseDice}+${evalResult.netFlatDamage} (Şarj: x${evalResult.chargeMultiplier})`;
+        dmgDisplayEl.title = `Spirited Charge / Şarj: Hasar ${evalResult.chargeMultiplier} katına çıkar (${evalResult.chargeFlatDamage} taban)`;
+      } else {
+        dmgDisplayEl.textContent = evalResult.baseDice + (evalResult.netFlatDamage >= 0 ? '+' : '') + evalResult.netFlatDamage;
+        dmgDisplayEl.title = '';
+      }
+
+      const critDisplayEl = document.getElementById('weapon-crit-display');
+      let critText = (evalResult.critMin === 20 ? '20' : evalResult.critMin + '-20') + ' / x' + evalResult.critMult;
+      if (evalResult.critData?.capped) {
+        critText += ' (Cap)';
+      }
+      critDisplayEl.textContent = critText;
+      critDisplayEl.title = `Kritik Tehdit: ${evalResult.critThreatRangeDisplay} / x${evalResult.critMult} (${evalResult.isKeen ? 'Keen ' : ''}${evalResult.hasImpCrit ? 'Imp.Crit ' : ''}${evalResult.critData?.capped ? '[Cap ' + evalResult.critData.critCapMin + ']' : ''})`;
+
       document.getElementById('weapon-type-display').textContent = evalResult.damageType;
 
       document.getElementById('iteratives-display').textContent = evalResult.iteratives.map(b => (b >= 0 ? '+' : '') + b).join(' / ');
@@ -9094,6 +9753,10 @@
       if (grip === '2-Hand') paExplanation.textContent = '(-BAB Att / +2x Dmg)';
       else if (grip === 'Off-Hand') paExplanation.textContent = '(-BAB Att / +0x Dmg)';
       else paExplanation.textContent = '(-BAB Att / +1x Dmg)';
+
+      if (typeof updateActionEconomyUI === 'function') {
+        updateActionEconomyUI();
+      }
     }
 
     function renderActiveModifiers() {
@@ -9152,6 +9815,8 @@
         const isThreat = (d20 >= evalResult.critMin);
         const isCrit = isThreat && noCritConfirm;
         const mult = isCrit ? evalResult.critMult : 1;
+        const chargeMult = evalResult.chargeMultiplier || 1;
+        const totalDiceMult = mult * chargeMult;
 
         // Roll weapon damage dice (e.g. 1d6 or 2d6)
         let diceSides = 6;
@@ -9164,7 +9829,7 @@
 
         const weaponRolls = [];
         let weaponRollSum = 0;
-        for (let b = 0; b < diceCount * mult; b++) {
+        for (let b = 0; b < diceCount * totalDiceMult; b++) {
           const r = Math.floor(Math.random() * diceSides) + 1;
           weaponRolls.push(r);
           weaponRollSum += r;
@@ -9176,8 +9841,9 @@
           d20, bonus,
           totalAtk: d20 + bonus,
           isThreat, isCrit, mult,
+          chargeMult,
           weaponRollSum,
-          flatDmg: evalResult.netFlatDamage * mult,
+          flatDmg: (evalResult.chargeFlatDamage || evalResult.netFlatDamage) * mult,
           breakdown: []
         });
       });
@@ -9213,6 +9879,12 @@
 
         activeMods.forEach(mod => {
           if (mod.dice) {
+            const isPrecision = (mod.name || '').toLowerCase().includes('sneak') || (mod.name || '').toLowerCase().includes('skirmish') || (mod.tags && mod.tags.includes('precision'));
+            const precisionRule = character.houseRules?.precisionDamageRule || 'once_per_turn';
+            if (isPrecision && precisionRule === 'once_per_turn' && atk.idx > 1) {
+              return; // Skip precision extra dice on secondary iteratives per House Rules
+            }
+
             const mMatch = mod.dice.match(/(\d+)d(\d+)/i);
             if (mMatch) {
               let mCount = parseInt(mMatch[1]) || 1;
@@ -9224,7 +9896,7 @@
                 mSum += Math.floor(Math.random() * mSides) + 1;
               }
               extraDiceSum += mSum;
-              extraDetails.push(`${mod.name}: +${mSum} ${mod.type}`);
+              extraDetails.push(`${mod.name}: +${mSum} ${mod.type}${isPrecision && precisionRule === 'once_per_turn' ? ' (İlk İsabet)' : ''}`);
             }
           }
         });
@@ -13515,7 +14187,7 @@
       const activeRows = prog.filter(p => p.active !== false);
       let martialLvls = 0;
       let otherLvls = 0;
-      let adeptClass = 'Warblade';
+      let adeptClass = null;
 
       activeRows.forEach(p => {
         const c = (p.className || p.class || '').toLowerCase();
@@ -13528,6 +14200,9 @@
           otherLvls++;
         }
       });
+      if (!adeptClass) {
+        adeptClass = 'Martial Adept';
+      }
 
       const computedIl = martialLvls > 0
         ? (martialLvls + Math.floor(otherLvls / 2))
@@ -16197,9 +16872,10 @@
       const isBoon = clMode === 'Character Level (DM Boon)' || clMode.includes('Warlock Boon');
       const prog = character.levelProgression || [];
       const activeLevels = prog.filter(p => p.active !== false).length || Number(character.level) || 6;
+      const hasProg = prog.some(p => p.active !== false);
 
-      const sorcLvls = prog.filter(p => p.className === 'Sorcerer' && p.active !== false).length || 5;
-      const martialLvls = prog.filter(p => ['Warblade', 'Swordsage', 'Crusader'].includes(p.className) && p.active !== false).length || 1;
+      const sorcLvls = hasProg ? prog.filter(p => p.className === 'Sorcerer' && p.active !== false).length : ((character.classes || '').includes('Sorcerer') ? 5 : 0);
+      const martialLvls = hasProg ? prog.filter(p => ['Warblade', 'Swordsage', 'Crusader'].includes(p.className) && p.active !== false).length : ((character.classes || '').includes('Warblade') ? 1 : 0);
       const otherLvls = activeLevels - martialLvls;
 
       if (character.spellcasting) {
@@ -16736,7 +17412,8 @@
       if (!select) return;
 
       const allDefs = getAvailableClassDefs();
-      const currentVal = selectedClass || select.value || 'Warblade';
+      const defaultClass = (character.classes?.split(' ')[0]) || (character.levelProgression?.[0]?.className) || 'Fighter';
+      const currentVal = selectedClass || select.value || defaultClass;
 
       select.innerHTML = '';
 
@@ -18619,7 +19296,8 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
     }
 
     function onLevelUpClassChange() {
-      const className = document.getElementById('lvlup-class-select')?.value || 'Warblade';
+      const defaultClass = (character.classes?.split(' ')[0]) || (character.levelProgression?.[0]?.className) || 'Fighter';
+      const className = document.getElementById('lvlup-class-select')?.value || defaultClass;
       const allDefs = getAvailableClassDefs();
       const def = allDefs[className] || DND35_CLASS_DEFS[className] || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
 
@@ -18725,7 +19403,8 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
     }
 
     function rollLevelUpHp(mode = 'avg') {
-      const className = document.getElementById('lvlup-class-select')?.value || 'Warblade';
+      const defaultClass = (character.classes?.split(' ')[0]) || (character.levelProgression?.[0]?.className) || 'Fighter';
+      const className = document.getElementById('lvlup-class-select')?.value || defaultClass;
       const allDefs = (typeof getAvailableClassDefs === 'function') ? getAvailableClassDefs() : {};
       const def = allDefs[className] || DND35_CLASS_DEFS[className] || { hd: 8 };
       const conMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
@@ -19641,7 +20320,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       }
 
       // Default class to last taken class
-      const lastClass = prog.length > 0 ? prog[prog.length - 1].className : (character.classes?.split(' ')[0] || 'Warblade');
+      const defaultClass = (character.classes?.split(' ')[0]) || (character.levelProgression?.[0]?.className) || 'Fighter';
+      const lastClass = prog.length > 0 ? prog[prog.length - 1].className : defaultClass;
       populateLevelUpClassSelect(lastClass);
       onLevelUpClassChange();
       if (typeof initLevelUpClassSearch === 'function') {
@@ -19780,7 +20460,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       const prog = character.levelProgression;
       const nextLvl = prog.length + 1;
 
-      const className = document.getElementById('lvlup-class-select')?.value || 'Warblade';
+      const defaultClass = (character.classes?.split(' ')[0]) || (character.levelProgression?.[0]?.className) || 'Fighter';
+      const className = document.getElementById('lvlup-class-select')?.value || defaultClass;
       const hd = document.getElementById('lvlup-hd-input')?.value || 'd8';
       const hpGain = Math.max(1, parseInt(document.getElementById('lvlup-hp-gain-input')?.value) || 1);
       const bab = parseInt(document.getElementById('lvlup-bab-input')?.value) || 0;
@@ -20566,7 +21247,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
     function addNewLevelRowToProgression(chosenClass = null) {
       const prog = character.levelProgression || [];
       const nextLvl = prog.length + 1;
-      const lastClass = prog.length > 0 ? prog[prog.length - 1].className : (character.classes?.split(' ')[0] || 'Warblade');
+      const defaultClass = (character.classes?.split(' ')[0]) || (character.levelProgression?.[0]?.className) || 'Fighter';
+      const lastClass = prog.length > 0 ? prog[prog.length - 1].className : defaultClass;
       const targetClass = chosenClass || lastClass;
 
       const def = (typeof DND35_CLASS_DEFS !== 'undefined' && DND35_CLASS_DEFS[targetClass])
@@ -21887,14 +22569,24 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
 
       const maxDexInfo = bd.maxDex !== null && bd.maxDex !== undefined ? ` (Max Dex: +${bd.maxDex})` : '';
       const penaltyInfo = bd.penalty > 0 ? `<div class="flex justify-between py-1 border-b border-slate-800 text-rose-400 font-bold"><span class="text-rose-300">Savunma Cezaları (Charge/Stance):</span><span>-${bd.penalty}</span></div>` : '';
+      const armorCatInfo = bd.armorCategory && bd.armorCategory !== 'None' ? ` <span class="text-[10px] text-sky-500 font-normal">(${bd.armorCategory})</span>` : '';
+
+      let naturalDetail = '';
+      if (Array.isArray(bd.sources?.natural) && bd.sources.natural.length > 1) {
+        const natItems = bd.sources.natural.map(s => {
+          const typeLabel = s.type === 'natural_armor_ench' ? 'Enh' : 'Base';
+          return `${s.source}: +${s.val} (${typeLabel})`;
+        }).join(', ');
+        naturalDetail = ` <span class="text-[10px] text-slate-500 font-normal">(${natItems})</span>`;
+      }
 
       acList.innerHTML = `
         <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">10 Taban (Base):</span><span class="text-white font-bold">10</span></div>
-        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Zırh Bonusu (Armor):</span><span class="text-sky-400 font-bold">+${bd.armor || 0}</span></div>
+        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Zırh Bonusu (Armor):${armorCatInfo}</span><span class="text-sky-400 font-bold">+${bd.armor || 0}</span></div>
         <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Kalkan Bonusu (Shield):</span><span class="text-sky-400 font-bold">+${bd.shield || 0}</span></div>
         <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">DEX Modifiyeri${maxDexInfo}:</span><span class="text-emerald-400 font-bold">+${bd.effectiveDex ?? dexMod}</span></div>
         <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Deflection (Saptırma):</span><span class="text-indigo-400 font-bold">+${bd.deflection || 0}</span></div>
-        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Doğal Zırh (Natural):</span><span class="text-teal-400 font-bold">+${bd.natural || 0}</span></div>
+        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Doğal Zırh (Natural):${naturalDetail}</span><span class="text-teal-400 font-bold">+${bd.natural || 0}</span></div>
         <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Dodge (Kaçınma - Stacks):</span><span class="text-amber-400 font-bold">+${bd.dodge || 0}</span></div>
         ${penaltyInfo}
         <div class="flex justify-between py-1.5 text-slate-300 font-bold border-t border-slate-700 mt-1"><span class="text-emerald-300 text-xs">NİHAİ ZIRH SINIFI:</span><span class="text-emerald-400 text-sm font-black">${bd.total || acCalc.total} AC</span></div>

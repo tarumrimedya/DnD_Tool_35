@@ -290,11 +290,12 @@
                                    "masterDbName":  "Amulet of Natural Armor +1",
                                    "active":  true,
                                    "category":  "Neck",
-                                   "bonusType":  "Natural",
+                                   "bonusType":  "natural_armor_ench",
                                    "acBonus":  1,
                                    "weight":  0.5,
                                    "cost":  2000,
-                                   "desc":  "+1 Natural Armor bonus to AC."
+                                   "desc":  "+1 enhancement bonus to natural armor.",
+                                   "naturalBonus":  1
                                },
                       "shoulders":  {
                                         "name":  "Cloak of Resistance +1",

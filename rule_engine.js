@@ -46,13 +46,26 @@ const RuleEngine = {
   isFinessable(weapon) {
     if (!weapon) return false;
     const name = (weapon.name || '').toLowerCase();
-    const type = (weapon.type || '').toLowerCase();
     const tags = Array.isArray(weapon.tags) ? weapon.tags.map(t => t.toLowerCase()) : [];
+    const cat = (weapon.category || weapon.type || '').toLowerCase();
     
-    // Light weapons or explicitly finessable weapons
-    if (weapon.isLight || tags.includes('light') || tags.includes('finessable')) return true;
-    if (name.includes('rapier') || name.includes('whip') || name.includes('spiked chain') || name.includes('dagger') || name.includes('short sword')) return true;
-    return false;
+    // 1. Any Light weapon qualifies for Weapon Finesse per D&D 3.5e RAW (PHB p. 102)
+    if (weapon.isLight || tags.includes('light') || tags.includes('finessable') || cat === 'light' || cat.includes('light')) {
+      return true;
+    }
+
+    // 2. Canonical D&D 3.5e RAW exceptions (usable with Weapon Finesse despite not being light)
+    if (name.includes('rapier') || name.includes('whip') || name.includes('spiked chain')) {
+      return true;
+    }
+
+    // 3. Fallback catalog of standard D&D 3.5e light weapons for untagged / legacy items
+    const standardLightWeapons = [
+      'dagger', 'punching dagger', 'gauntlet', 'spiked gauntlet', 'light mace', 'sickle',
+      'club', 'short sword', 'kukri', 'handaxe', 'light hammer', 'sap', 'light pick',
+      'kama', 'nunchaku', 'sai', 'siangham', 'unarmed strike'
+    ];
+    return standardLightWeapons.some(lw => name.includes(lw));
   },
 
   // Check if weapon belongs to Shadow Hand discipline
@@ -79,16 +92,25 @@ const RuleEngine = {
     if (slot.includes('two-hand') || slot.includes('2-hand') || slot.includes('two handed')) return true;
     if (desc.includes('2-handed') || desc.includes('two-handed') || desc.includes('two hands') || desc.includes('requires 2 hands') || desc.includes('massive 2-handed')) return true;
 
-    // Standard D&D 3.5e Two-Handed Weapons (including Planar Handbook Jovar)
+    // Standard D&D 3.5e Two-Handed Weapons (including Planar Handbook Jovar, greatclub, spear)
     const twoHandedWeapons = [
-      'jovar', 'greatsword', 'greataxe', 'falchion', 'scythe', 'halberd',
+      'jovar', 'greatsword', 'greataxe', 'greatclub', 'falchion', 'scythe', 'halberd',
       'heavy flail', 'guisarme', 'glaive', 'ranseur', 'spiked chain',
       'orc double axe', 'gnome hooked hammer', 'two-bladed sword', 'dire flail',
       'longspear', 'quarterstaff', 'longbow', 'composite longbow',
       'shortbow', 'composite shortbow', 'heavy crossbow', 'light crossbow'
     ];
 
-    return twoHandedWeapons.some(w => name.includes(w));
+    if (twoHandedWeapons.some(w => name.includes(w))) {
+      return true;
+    }
+
+    // Spear is two-handed in 3.5e; shortspear is one-handed
+    if (name.includes('spear') && !name.includes('shortspear')) {
+      return true;
+    }
+
+    return false;
   },
 
   // Check if character possesses feat/trait allowing two-handed weapons or oversized weapons in one hand
@@ -143,9 +165,13 @@ const RuleEngine = {
     const res = {
       name: item.name,
       category: item.category || 'Other',
+      armorCategory: null,
+      effectiveArmorCategory: null,
+      isMithral: false,
       armor: 0,
       shield: 0,
       natural: 0,
+      naturalBonusType: 'natural',
       deflection: 0,
       dodge: 0,
       maxDex: null,
@@ -188,13 +214,17 @@ const RuleEngine = {
           res.deflection = acVal;
         } else if (bType.includes('natural') || (dbEntry.slot && dbEntry.slot.toLowerCase().includes('neck'))) {
           res.natural = acVal;
+          res.naturalBonusType = dbEntry.bonusType || 'natural';
         } else if (bType.includes('dodge')) {
           res.dodge = acVal;
         } else {
           res.armor = acVal;
         }
       }
-      if (dbEntry.naturalBonus) res.natural = Math.max(res.natural, Number(dbEntry.naturalBonus) || 0);
+      if (dbEntry.naturalBonus) {
+        res.natural = Math.max(res.natural, Number(dbEntry.naturalBonus) || 0);
+        if (dbEntry.bonusType) res.naturalBonusType = dbEntry.bonusType;
+      }
       if (dbEntry.deflection || dbEntry.deflectionBonus) res.deflection = Math.max(res.deflection, Number(dbEntry.deflection || dbEntry.deflectionBonus) || 0);
       if (dbEntry.dodgeBonus) res.dodge = Math.max(res.dodge, Number(dbEntry.dodgeBonus) || 0);
       if (dbEntry.resistance) res.resistance = Math.max(res.resistance, Number(dbEntry.resistance) || 0);
@@ -221,11 +251,17 @@ const RuleEngine = {
       const bType = (item.bonusType || item.category || '').toLowerCase();
       if (bType.includes('shield')) res.shield = acVal;
       else if (bType.includes('deflection')) res.deflection = acVal;
-      else if (bType.includes('natural')) res.natural = acVal;
+      else if (bType.includes('natural')) {
+        res.natural = acVal;
+        res.naturalBonusType = item.bonusType || 'natural';
+      }
       else if (bType.includes('dodge')) res.dodge = acVal;
       else res.armor = acVal;
     }
-    if (item.naturalBonus) res.natural = Math.max(res.natural, Number(item.naturalBonus) || 0);
+    if (item.naturalBonus) {
+      res.natural = Math.max(res.natural, Number(item.naturalBonus) || 0);
+      if (item.bonusType) res.naturalBonusType = item.bonusType;
+    }
     if (item.deflection || item.deflectionBonus) res.deflection = Math.max(res.deflection, Number(item.deflection || item.deflectionBonus) || 0);
     if (item.resistance) res.resistance = Math.max(res.resistance, Number(item.resistance) || 0);
     if (item.maxDex !== undefined && item.maxDex !== null) res.maxDex = Number(item.maxDex);
@@ -257,11 +293,16 @@ const RuleEngine = {
           let baseArmor = val.armor;
           let mDex = val.maxDex;
           let checkPen = val.acp;
+          let armorType = val.type; // 'Light', 'Medium', 'Heavy'
 
-          // Mithral modifier (RAW SRD): +2 maxDex, ACP reduced by 3 (towards 0)
-          if (cleanName.includes('mithral') || fullText.includes('mithral')) {
+          // Mithral modifier (RAW SRD / DMG p. 284): +2 maxDex, ACP reduced by 3 (towards 0), category reduced by 1 step
+          const isMithral = cleanName.includes('mithral') || fullText.includes('mithral');
+          if (isMithral) {
+            res.isMithral = true;
             mDex = mDex !== null ? mDex + 2 : null;
             checkPen = Math.min(0, checkPen + 3);
+            if (armorType === 'Heavy') armorType = 'Medium';
+            else if (armorType === 'Medium') armorType = 'Light';
           }
 
           // Check enhancement bonus like +1, +2, +3...
@@ -271,6 +312,8 @@ const RuleEngine = {
           }
 
           res.armor = baseArmor;
+          res.armorCategory = val.type;
+          res.effectiveArmorCategory = armorType;
           if (res.maxDex === null) res.maxDex = mDex;
           if (res.acp === 0) res.acp = checkPen;
           res.bonusType = 'Armor';
@@ -777,20 +820,22 @@ const RuleEngine = {
 
     let twoHandedConflict = null;
     let offHandSuppressed = false;
+    let equippedArmorCategory = 'None';
 
     if (character.bodySlots && typeof character.bodySlots === 'object') {
       const mh = character.bodySlots.mainHand;
       const oh = character.bodySlots.offHand;
       const isMhTwoHand = mh && mh.name && mh.name !== '-' && this.isTwoHandedWeapon(mh);
       const isOhOccupied = oh && oh.active !== false && oh.name && oh.name !== '-';
-      const hasOversized = this.hasOversizedWeaponFeat(character);
 
-      if (isMhTwoHand && isOhOccupied && !hasOversized) {
+      // RAW D&D 3.5e: Two-handed weapons require both hands. Neither Monkey Grip nor Oversized TWF permits
+      // wielding a two-handed weapon in one hand alongside an off-hand weapon or shield.
+      if (isMhTwoHand && isOhOccupied) {
         offHandSuppressed = true;
         twoHandedConflict = {
           mainHand: mh.name,
           offHand: oh.name,
-          message: `⚠️ "${mh.name}" iki elli (Two-Handed) bir silahtır! 'Oversized Two-Weapon Fighting' veya 'Monkey Grip' feat'i olmadan aynı anda ikinci el eşyası ("${oh.name}") kullanılamaz. İkinci el etkileri devre dışı bırakıldı.`
+          message: `⚠️ "${mh.name}" iki elli (Two-Handed) bir silahtır! D&D 3.5e RAW kurallarına göre iki elli silahlar her iki eli birden gerektirdiğinden aynı anda ikinci el eşyası ("${oh.name}") kullanılamaz. İkinci el etkileri devre dışı bırakıldı.`
         };
       }
       character.twoHandedConflict = twoHandedConflict;
@@ -802,9 +847,13 @@ const RuleEngine = {
         const mods = this.parseItemModifiers(slotData, masterDb);
         if (!mods) return;
 
+        if (slotKey === 'armor' || (mods.armor > 0 && mods.effectiveArmorCategory)) {
+          equippedArmorCategory = mods.effectiveArmorCategory || 'Light';
+        }
+
         if (mods.armor > 0) armorBonuses.push({ val: mods.armor, source: slotData.name, type: 'Armor' });
         if (mods.shield > 0) shieldBonuses.push({ val: mods.shield, source: slotData.name, type: 'Shield' });
-        if (mods.natural > 0) naturalBonuses.push({ val: mods.natural, source: slotData.name, type: 'Natural' });
+        if (mods.natural > 0) naturalBonuses.push({ val: mods.natural, source: slotData.name, type: mods.naturalBonusType || mods.bonusType || 'Natural' });
         if (mods.deflection > 0) deflectionBonuses.push({ val: mods.deflection, source: slotData.name, type: 'Deflection' });
         if (mods.dodge > 0) dodgeBonuses.push({ val: mods.dodge, source: slotData.name, type: 'Dodge' });
 
@@ -873,7 +922,8 @@ const RuleEngine = {
           } else if (bType.includes('deflection')) {
             deflectionBonuses.push({ val: item.acBonus, source: item.name, type: 'Deflection' });
           } else if (bType.includes('natural')) {
-            naturalBonuses.push({ val: item.acBonus, source: item.name, type: 'Natural' });
+            const natType = (bType.includes('ench') || item.name.toLowerCase().includes('barkskin') || item.name.toLowerCase().includes('amulet of natural armor')) ? 'natural_armor_ench' : 'Natural';
+            naturalBonuses.push({ val: item.acBonus, source: item.name, type: natType });
           } else {
             armorBonuses.push({ val: item.acBonus, source: item.name, type: 'Armor' });
           }
@@ -883,7 +933,10 @@ const RuleEngine = {
         }
         if (item.acPenalty > 0) buffAcPenalty += item.acPenalty;
 
-        if (item.naturalBonus > 0) naturalBonuses.push({ val: item.naturalBonus, source: item.name, type: 'Natural' });
+        if (item.naturalBonus > 0) {
+          const natType = (bType.includes('ench') || item.name.toLowerCase().includes('barkskin') || item.name.toLowerCase().includes('amulet of natural armor')) ? 'natural_armor_ench' : 'Natural';
+          naturalBonuses.push({ val: item.naturalBonus, source: item.name, type: natType });
+        }
         if (item.deflectionBonus > 0) deflectionBonuses.push({ val: item.deflectionBonus, source: item.name, type: 'Deflection' });
         if (item.dodgeBonus > 0) dodgeBonuses.push({ val: item.dodgeBonus, source: item.name, type: 'Dodge' });
 
@@ -1149,6 +1202,7 @@ const RuleEngine = {
       total: totalAC,
       touch: touchAC,
       flat: flatAC,
+      armorCategory: equippedArmorCategory,
       sources: {
         armor: armorBonuses,
         shield: shieldBonuses,
@@ -1218,9 +1272,15 @@ const RuleEngine = {
       battleClarityBonus: battleClarityBonus
     };
 
-    // 7. Resolve Effective Speed
+    // 7. Resolve Effective Speed (RAW D&D 3.5e Table 8-2: Armor and Speed)
     const baseSpeed = character.baseSpeed || 30;
-    character.effectiveSpeed = baseSpeed + itemSpeedBonus + buffSpeedBonus;
+    const isDwarf = (character.race || '').toLowerCase().includes('dwarf');
+    let armorSpeedPenalty = 0;
+    if (!isDwarf && (equippedArmorCategory === 'Medium' || equippedArmorCategory === 'Heavy')) {
+      armorSpeedPenalty = (baseSpeed > 20) ? 10 : 5;
+    }
+    character.effectiveSpeed = Math.max(5, baseSpeed - armorSpeedPenalty + itemSpeedBonus + buffSpeedBonus);
+    character.effectiveArmorCategory = equippedArmorCategory;
     character.buffSkillBonus = buffSkillBonus;
 
     // 8. Resolve Rule Flags & Action Economy
@@ -1465,11 +1525,10 @@ const RuleEngine = {
   // Evaluate Weapon Attack Modifiers & Damage
   evaluateWeaponAttack(character, weapon, options = {}) {
     const isTwoHand = this.isTwoHandedWeapon(weapon);
-    const hasOversized = this.hasOversizedWeaponFeat(character);
     let resolvedGrip = options.grip || weapon.grip || (isTwoHand ? '2-Hand' : '1-Hand');
 
-    // Two-handed weapon without oversized feat MUST be wielded with 2-Hand grip
-    if (isTwoHand && !hasOversized && resolvedGrip !== '2-Hand') {
+    // Two-handed weapon MUST be wielded with 2-Hand grip per D&D 3.5e RAW
+    if (isTwoHand && resolvedGrip !== '2-Hand') {
       resolvedGrip = '2-Hand';
     }
 
@@ -1551,8 +1610,10 @@ const RuleEngine = {
       attackBonusItems.push({ type: 'untyped', val: -4, source: 'Fighting Defensively Penalty' });
     }
 
-    // Monkey Grip penalty: -2 on attack rolls when wielding an oversized or 2-handed weapon in 1 hand
-    if (isTwoHand && grip === '1-Hand' && hasOversized) {
+    // Monkey Grip penalty: -2 on attack rolls when wielding an oversized weapon
+    const hasMonkeyGrip = feats.some(f => f.includes('monkey grip'));
+    const isOversizedWeapon = weapon.isOversized || weapon.oversized || (weapon.tags && weapon.tags.includes('oversized'));
+    if (isOversizedWeapon && hasMonkeyGrip) {
       attackBonusItems.push({ type: 'untyped', val: -2, source: 'Monkey Grip (-2 Att)' });
     }
 
