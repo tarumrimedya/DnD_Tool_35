@@ -11973,7 +11973,7 @@
         if (!m || !m.name) return false;
         const low = m.name.toLowerCase();
         if (low.includes('fighting defensively') || low.includes('total defense') || low.includes('combat expertise') || low.includes('shield block')) return false;
-        if (m.combatScope === 'defense' || m.scope === 'Defense Only' || low.includes('dodge') || low.includes('punishing stance')) return true;
+        if (m.combatScope === 'defense' || m.scope === 'Defense Only' || low.includes('dodge')) return true;
         return defensePins.some(p => p.name.toLowerCase().trim() === low);
       });
 
@@ -13950,9 +13950,24 @@
       const combatScope = pin.combatScope || dbItem?.combatScope || '';
       const sourceType = pin.sourceType || dbItem?.type || '';
 
+      // GENERAL ARCHITECTURAL RULE (Offense vs Defense Routing):
+      // Stances, maneuvers, feats, or abilities whose primary identity is offensive damage or attack,
+      // but which inflict an AC/Defense penalty (e.g., -2 AC, -4 AC, penalty to AC), are OFFENSE abilities, NOT defense abilities,
+      // unless they provide a genuine positive defensive benefit (positive AC bonus, dodge, saving throws, shield, counter reaction).
+      const hasOffenseIdentity = /(damage|hasar|\+\d+d\d+|\bmelee\b|\byakın\b|strike|attack\b|vuruş|weapon)/i.test(fullText) ||
+                                 attackType === 'weapon_buff' ||
+                                 ((sourceType === 'Stance' || sourceType === 'Maneuver') && /(hasar|damage|\+\d+d\d+|strike|slash|pierce|bludgeon)/i.test(fullText));
+      const hasAcPenaltyOnly = /(-\d+\s*(?:to\s*)?ac\b|-\d+\s*zırh|penalty to ac)/i.test(fullText) &&
+                               !/(\+\d+\s*(?:to\s*)?(?:ac|dodge|armor|shield|deflect)|counter|\bblock\b|\bwall of blades\b|\broots of the mountain\b|\bpearl of black doubt\b|\biron heart focus\b)/i.test(fullText);
+
+      // If it's an offensive ability with AC penalty (e.g., Punishing Stance), route strictly to offense_melee
+      if (hasOffenseIdentity && hasAcPenaltyOnly) {
+        return 'offense_melee';
+      }
+
       // 1. Defense checks
       if (combatScope === 'defense' || pin.category === 'defense') return 'defense';
-      if (/(shield|armor|ac\b|defense|savunma|zırh|koruma|dodge|deflect|resist|ward|saving throw|save\b|counter|wall of blades|shield block|roots of the mountain)/i.test(fullText)) {
+      if (!hasAcPenaltyOnly && /(shield|armor|ac\b|defense|savunma|zırh|koruma|dodge|deflect|resist|ward|saving throw|save\b|counter|wall of blades|shield block|roots of the mountain)/i.test(fullText)) {
         if (!/(acid arrow|scorching ray|fireball|ray of frost|disintegrate|magic missile|blade of blood)/i.test(name)) {
           return 'defense';
         }
@@ -14282,7 +14297,10 @@
         const fullText = stName + ' ' + stDesc;
 
         let cat = 'offense_melee';
-        if (/(ac\b|dodge|defense|save|shield|clarity|roots of the mountain|bolstering)/i.test(fullText)) {
+        const hasPositiveDef = /(\+\d+\s*(?:to\s*)?(?:ac|dodge|armor|shield|deflect)|counter|\bblock\b|roots of the mountain|bolstering|clarity|pearl of black doubt|iron heart focus)/i.test(fullText);
+        const hasAcPenaltyOnly = /(-\d+\s*(?:to\s*)?ac\b|-\d+\s*zırh|penalty to ac)/i.test(fullText) && !hasPositiveDef;
+
+        if (!hasAcPenaltyOnly && (hasPositiveDef || /(dodge|defense|saving throw|save\b|shield)/i.test(fullText))) {
           cat = 'defense';
         }
 
@@ -14368,7 +14386,26 @@
         }
       });
 
-      // 3. Add missing auto-pins
+      // 3. Migrate auto-pins to updated category if not manually overridden by user
+      currentAutoPins.forEach(autoPin => {
+        if (!autoPin || !autoPin.name) return;
+        const autoNameLower = (autoPin.name || '').toLowerCase();
+        allCategories.forEach(c => {
+          if (c !== autoPin.category && Array.isArray(char.combatPins[c])) {
+            const wrongIdx = char.combatPins[c].findIndex(p => p && p.autoType && (p.name || '').toLowerCase() === autoNameLower && (!p.pinTarget || p.pinTarget === 'auto'));
+            if (wrongIdx !== -1) {
+              const [moved] = char.combatPins[c].splice(wrongIdx, 1);
+              moved.category = autoPin.category;
+              if (!char.combatPins[autoPin.category]) char.combatPins[autoPin.category] = [];
+              if (!char.combatPins[autoPin.category].some(p => (p && p.name ? p.name : '').toLowerCase() === autoNameLower)) {
+                char.combatPins[autoPin.category].push(moved);
+              }
+            }
+          }
+        });
+      });
+
+      // 4. Add missing auto-pins
       currentAutoPins.forEach(autoPin => {
         if (!autoPin || !autoPin.name) return;
         const autoNameLower = (autoPin.name || '').toLowerCase();

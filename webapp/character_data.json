@@ -2576,17 +2576,6 @@
                                          ],
                        "defense":  [
                                        {
-                                           "id":  "auto_stance_punishing stance_1792603916519",
-                                           "autoKey":  "stance_punishing stance",
-                                           "autoType":  "known_stance",
-                                           "name":  "Punishing Stance",
-                                           "sourceType":  "Stance",
-                                           "action":  "Swift",
-                                           "badge":  "1d6",
-                                           "desc":  "+1d6 melee damage, -2 AC",
-                                           "pinTarget":  "defense"
-                                       },
-                                       {
                                            "name":  "Shield Block",
                                            "sourceType":  "Maneuver",
                                            "action":  "Immediate Action",
