@@ -10158,22 +10158,71 @@
       return enrichWeaponStats({}, wepName);
     }
 
+    // Helper to determine if a weapon is strictly a ranged-only projectile weapon (e.g. Longbow, Crossbow, Sling)
+    // Melee weapons and versatile/thrown weapons (Dagger, Unarmed Strike, Spiked Chain, etc.) return false.
+    function isRangedOnlyWeapon(item) {
+      if (!item) return false;
+      const name = typeof item === 'string' ? item : (item.name || '');
+      if (!name || name === 'Yok' || name === '-' || name === 'None' || name === 'Boş') return false;
+      const low = name.toLowerCase().trim();
+
+      // Versatile / thrown / melee exceptions that can ALWAYS be used in melee
+      if (low.includes('unarmed') || low.includes('silahsız') || low.includes('dagger') || low.includes('hançer') || low.includes('spiked chain') || low.includes('rapier') || low.includes('jovar')) {
+        return false;
+      }
+
+      // 1. Direct item property check
+      if (typeof item === 'object') {
+        if (item.combatScope === 'ranged') return true;
+        if (item.combatScope === 'both' || item.combatScope === 'melee') return false;
+      }
+
+      // 2. Lookup in masterDb (if available)
+      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        const m = masterDb.find(entry => entry && (
+          (entry.name && entry.name.toLowerCase().trim() === low) ||
+          (entry.masterDbName && entry.masterDbName.toLowerCase().trim() === low)
+        ));
+        if (m) {
+          if (m.combatScope === 'ranged') return true;
+          if (m.combatScope === 'both' || m.combatScope === 'melee') return false;
+        }
+      }
+
+      // 3. Keyword heuristic for projectile / purely ranged weapons
+      if (
+        low.includes('longbow') || 
+        low.includes('shortbow') || 
+        low.includes('crossbow') || 
+        low.includes('composite') || 
+        low.includes('arbalet') || 
+        low.includes('sling') || 
+        low.includes('sapan') ||
+        low.includes('yay')
+      ) {
+        return true;
+      }
+
+      return false;
+    }
+
     function ensureWeaponSetsData() {
       if (!character) return;
       if (!character.tactical) character.tactical = {};
 
       const getValidMainWeapon = () => {
         const equippedMain = character.bodySlots?.mainHand?.name && character.bodySlots.mainHand.name !== '-' ? character.bodySlots.mainHand.name : null;
-        if (equippedMain && equippedMain !== 'Yok' && equippedMain !== 'None') return equippedMain;
-        if (character.activeWeapon && character.activeWeapon !== 'Yok' && character.activeWeapon !== 'None') return character.activeWeapon;
-        if (Array.isArray(character.weapons) && character.weapons.length > 0 && character.weapons[0]?.name) return character.weapons[0].name;
+        if (equippedMain && equippedMain !== 'Yok' && equippedMain !== 'None' && !isRangedOnlyWeapon(equippedMain)) return equippedMain;
+        if (character.activeWeapon && character.activeWeapon !== 'Yok' && character.activeWeapon !== 'None' && !isRangedOnlyWeapon(character.activeWeapon)) return character.activeWeapon;
+        const firstMelee = (character.weapons || []).find(w => w && w.name && !isRangedOnlyWeapon(w));
+        if (firstMelee && firstMelee.name) return firstMelee.name;
         return 'Unarmed Strike';
       };
 
       const getValidOffWeapon = (mainWep) => {
         const equippedOff = character.bodySlots?.offHand?.name && character.bodySlots.offHand.name !== '-' ? character.bodySlots.offHand.name : null;
-        if (equippedOff && equippedOff !== 'Yok' && equippedOff !== 'None') return equippedOff;
-        const otherWep = (character.weapons || []).find(w => w && w.name && w.name !== mainWep)?.name;
+        if (equippedOff && equippedOff !== 'Yok' && equippedOff !== 'None' && !isRangedOnlyWeapon(equippedOff)) return equippedOff;
+        const otherWep = (character.weapons || []).find(w => w && w.name && w.name !== mainWep && !isRangedOnlyWeapon(w))?.name;
         if (otherWep) return otherWep;
         return 'Yok';
       };
@@ -10208,12 +10257,12 @@
           character.tactical.weaponSets.set2 = { name: 'İkinci El', mainWeapon: getValidOffWeapon(character.tactical.weaponSets.set1.mainWeapon), grip: 'Off-Hand' };
         }
 
-        // If set1 had legacy hardcoded dummy fallback like 'Rapier +2' and character actually doesn't have it
+        // If set1 had legacy hardcoded dummy fallback or a ranged weapon (like Longbow)
         const s1Wep = character.tactical.weaponSets.set1.mainWeapon;
         const hasS1Wep = (character.weapons || []).some(w => w && w.name === s1Wep) || 
                          character.bodySlots?.mainHand?.name === s1Wep || 
                          (character.gearPool || []).some(g => g && g.name === s1Wep);
-        if (!hasS1Wep && (s1Wep === 'Rapier +2' || !s1Wep)) {
+        if ((!hasS1Wep && (s1Wep === 'Rapier +2' || !s1Wep)) || isRangedOnlyWeapon(s1Wep)) {
           character.tactical.weaponSets.set1.mainWeapon = getValidMainWeapon();
         }
 
@@ -10222,7 +10271,7 @@
                          (character.weapons || []).some(w => w && w.name === s2Wep) || 
                          character.bodySlots?.offHand?.name === s2Wep || 
                          (character.gearPool || []).some(g => g && g.name === s2Wep);
-        if (!hasS2Wep && (s2Wep === 'Dagger (Masterwork)' || !s2Wep)) {
+        if ((!hasS2Wep && (s2Wep === 'Dagger (Masterwork)' || !s2Wep)) || (s2Wep !== 'Yok' && isRangedOnlyWeapon(s2Wep))) {
           character.tactical.weaponSets.set2.mainWeapon = getValidOffWeapon(character.tactical.weaponSets.set1.mainWeapon);
         }
 
@@ -10681,10 +10730,10 @@
 
       const availableItems = [];
 
-      // 1. From character.weapons
+      // 1. From character.weapons (excluding ranged-only weapons)
       (character.weapons || []).forEach(w => {
         if (w && w.name && w.name !== 'None' && w.name !== 'Yok') {
-          if (!availableItems.some(i => i.name === w.name)) {
+          if (!isRangedOnlyWeapon(w) && !availableItems.some(i => i.name === w.name)) {
             availableItems.push({
               name: w.name,
               category: (w.dmgType === 'Kalkan' || w.name.toLowerCase().includes('shield') || w.name.toLowerCase().includes('buckler')) ? 'Shield' : 'Weapon'
@@ -10693,10 +10742,10 @@
         }
       });
 
-      // 2. From bodySlots (mainHand and offHand)
+      // 2. From bodySlots (mainHand and offHand, excluding ranged-only weapons)
       const mh = character.bodySlots?.mainHand;
       if (mh && mh.name && mh.name !== '-' && mh.name !== 'Yok') {
-        if (!availableItems.some(i => i.name === mh.name)) {
+        if (!isRangedOnlyWeapon(mh) && !availableItems.some(i => i.name === mh.name)) {
           availableItems.push({
             name: mh.name,
             category: mh.category || 'Weapon'
@@ -10705,7 +10754,7 @@
       }
       const oh = character.bodySlots?.offHand;
       if (oh && oh.name && oh.name !== '-' && oh.name !== 'Yok') {
-        if (!availableItems.some(i => i.name === oh.name)) {
+        if (!isRangedOnlyWeapon(oh) && !availableItems.some(i => i.name === oh.name)) {
           availableItems.push({
             name: oh.name,
             category: oh.category || (oh.name.toLowerCase().includes('shield') || oh.name.toLowerCase().includes('buckler') ? 'Shield' : 'Weapon')
@@ -10713,10 +10762,10 @@
         }
       }
 
-      // 3. From gearPool
+      // 3. From gearPool (excluding ranged-only weapons)
       (character.gearPool || []).forEach(item => {
         if (item && item.name && (item.category === 'Weapon' || item.category === 'Shield')) {
-          if (!availableItems.some(i => i.name === item.name)) {
+          if (!isRangedOnlyWeapon(item) && !availableItems.some(i => i.name === item.name)) {
             availableItems.push({
               name: item.name,
               category: item.category
@@ -10725,7 +10774,19 @@
         }
       });
 
-      // 4. Default shields if not present
+      // 4. From character.inventory (dynamically discover weapons/shields in backpack/inventory)
+      (character.inventory || []).forEach(item => {
+        if (item && item.name && (item.category === 'Weapon' || item.type === 'Weapon' || item.category === 'Shield' || item.type === 'Shield')) {
+          if (!isRangedOnlyWeapon(item) && !availableItems.some(i => i.name === item.name)) {
+            availableItems.push({
+              name: item.name,
+              category: (item.category === 'Shield' || item.type === 'Shield' || item.name.toLowerCase().includes('shield') || item.name.toLowerCase().includes('buckler')) ? 'Shield' : 'Weapon'
+            });
+          }
+        }
+      });
+
+      // 5. Default shields if not present
       const standardShields = ['Darkwood Buckler +1', '+1 Buckler', 'Heavy Shield'];
       standardShields.forEach(shName => {
         if (!availableItems.some(i => i.name === shName)) {
@@ -10736,7 +10797,7 @@
         }
       });
 
-      // 5. Always ensure Unarmed Strike is available in weapon selection
+      // 6. Always ensure Unarmed Strike is available in melee weapon selection
       if (!availableItems.some(i => (i.name || '').toLowerCase().includes('unarmed') || (i.name || '').toLowerCase().includes('silahsız'))) {
         availableItems.unshift({
           name: 'Unarmed Strike',
@@ -10769,8 +10830,11 @@
       const s1Main = document.getElementById('set1-main-select');
       if (s1Main) {
         s1Main.innerHTML = optionsHtml;
-        if (sets.set1?.mainWeapon) {
+        if (sets.set1?.mainWeapon && Array.from(s1Main.options).some(o => o.value === sets.set1.mainWeapon)) {
           s1Main.value = sets.set1.mainWeapon;
+        } else if (wepsList.length > 0) {
+          s1Main.value = wepsList[0].name;
+          sets.set1.mainWeapon = s1Main.value;
         }
       }
       const s1Grip = document.getElementById('set1-grip-select');
@@ -10782,8 +10846,11 @@
       const s2Main = document.getElementById('set2-main-select');
       if (s2Main) {
         s2Main.innerHTML = optionsHtml;
-        if (sets.set2?.mainWeapon) {
+        if (sets.set2?.mainWeapon && Array.from(s2Main.options).some(o => o.value === sets.set2.mainWeapon)) {
           s2Main.value = sets.set2.mainWeapon;
+        } else {
+          s2Main.value = 'Yok';
+          sets.set2.mainWeapon = 'Yok';
         }
       }
     }
