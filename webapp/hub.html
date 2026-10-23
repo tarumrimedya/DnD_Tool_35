@@ -40,22 +40,22 @@
           </p>
         </div>
 
-        <!-- Üst Eylem Butonları (Sağa Yaslı & Alt Alta) -->
-        <div class="flex flex-col items-start sm:items-end justify-center gap-2 shrink-0 self-start sm:self-auto sm:ml-auto">
+        <!-- Üst Eylem Butonları (Sağa Yaslı, Eşit Boyutlu & Tam Simetrik) -->
+        <div class="flex flex-col items-stretch sm:items-end justify-center gap-2 shrink-0 self-start sm:self-auto sm:ml-auto w-full sm:w-[210px]">
           <!-- Yeni Kampanya Ekle Butonu -->
-          <button onclick="openNewCampaignModal()" class="w-full sm:w-auto px-3.5 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-950/50 border border-indigo-400/40 cursor-pointer active:scale-95">
+          <button onclick="openNewCampaignModal()" class="w-full h-9 px-3 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-md shadow-indigo-950/50 border border-indigo-400/40 cursor-pointer active:scale-95">
             <span class="text-sm">🏰</span>
             <span>Yeni Kampanya Ekle</span>
           </button>
 
-          <!-- Yedekleme & İçe Aktarma Grubu -->
-          <div class="inline-flex items-center rounded-xl bg-slate-900/90 p-0.5 border border-slate-700/80 shadow-md">
-            <button onclick="exportHubData()" class="px-3 py-1.5 hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer" title="Tüm kampanya ve karakter verisini JSON olarak indir">
+          <!-- Yedekleme & İçe Aktarma Grubu (Eşit Genişlik & Yükseklik) -->
+          <div class="w-full h-9 flex items-center rounded-xl bg-slate-900/90 p-0.5 border border-slate-700/80 shadow-md">
+            <button onclick="exportHubData()" class="flex-1 h-full hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer" title="Tüm kampanya ve karakter verisini JSON olarak indir">
               <span class="text-sm">💾</span>
               <span>Yedekle</span>
             </button>
-            <div class="w-px h-4 bg-slate-700 mx-0.5"></div>
-            <label class="px-3 py-1.5 hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer" title="JSON yedeği içe aktar">
+            <div class="w-px h-4 bg-slate-700 mx-0.5 shrink-0"></div>
+            <label class="flex-1 h-full hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer" title="JSON yedeği içe aktar">
               <span class="text-sm">📂</span>
               <span>İçe Aktar</span>
               <input type="file" id="import-hub-file" accept=".json" class="hidden" onchange="importHubData(event)">
