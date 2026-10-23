@@ -11926,46 +11926,6 @@
       return matched;
     }
 
-    function populateRangedWeaponAndAmmoUI() {
-      if (!character) return;
-      if (!character.tactical) character.tactical = {};
-
-      const weaponSelect = document.getElementById('combat-active-ranged-weapon-select');
-      const weaponIcon = document.getElementById('combat-ranged-weapon-icon');
-      const ammoSelect = document.getElementById('combat-ranged-arrow-select');
-      const ammoIcon = document.getElementById('combat-ammo-icon');
-      const ammoTitle = document.getElementById('combat-ammo-title');
-
-      const allRanged = findAvailableRangedWeapons(character);
-      const activeWep = getActiveCombatRangedWeapon(character);
-
-      // Populate Ranged Weapon Dropdown
-      if (weaponSelect) {
-        weaponSelect.innerHTML = allRanged.map(w => {
-          const isSel = w.name === activeWep.name;
-          const badge = w.source.includes('Envanter') || w.source.includes('Kuşan') ? '🎒 ' : '';
-          return `<option value="${w.name}" ${isSel ? 'selected' : ''}>${badge}${w.name} (${w.dice} • ${w.range})</option>`;
-        }).join('');
-      }
-
-      if (weaponIcon) {
-        const at = activeWep.ammoType;
-        weaponIcon.textContent = at === 'thrown' ? '🗡️' : (at === 'bullet' ? '🪨' : '🏹');
-      }
-
-      // Determine Ammunition Type
-      const ammoType = activeWep.ammoType || 'arrow';
-      if (ammoIcon) {
-        ammoIcon.textContent = ammoType === 'bullet' ? '🪨' : (ammoType === 'thrown' ? '🗡️' : '🏹');
-      }
-      if (ammoTitle) {
-        if (ammoType === 'arrow') ammoTitle.textContent = 'Ok & Mühimmat (Yay)';
-        else if (ammoType === 'bolt') ammoTitle.textContent = 'Kundak Oku / Bolt (Arbalet)';
-        else if (ammoType === 'bullet') ammoTitle.textContent = 'Sapan Taşı / Mermi (Sapan)';
-        else if (ammoType === 'thrown') ammoTitle.textContent = 'Fırlatma Mühimmatı';
-        else ammoTitle.textContent = 'Mühimmat';
-      }
-
     // --- AMMUNITION STOCK & INVENTORY SYNC ENGINE ---
     function ensureAmmunitionInventory() {
       if (!character) return;
