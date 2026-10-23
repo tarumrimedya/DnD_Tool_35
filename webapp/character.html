@@ -727,36 +727,9 @@
                   </button>
                 </div>
 
-                <!-- Metamagic Toggles -->
-                <div class="grid grid-cols-2 gap-1.5 pt-0.5">
-                  <label class="bg-slate-900 border border-purple-900/60 hover:border-purple-500/60 rounded p-1.5 cursor-pointer transition flex items-start justify-between gap-1">
-                    <div>
-                      <div class="text-[10px] font-bold text-purple-300">Empower Spell</div>
-                      <div class="text-[8px] text-slate-400">+50% Hasar / +2 Yuva</div>
-                    </div>
-                    <input type="checkbox" id="mod-empower-spell" onchange="recalculateCombatSpell()" class="mt-0.5 w-3.5 h-3.5 rounded text-purple-500 border-slate-700 focus:ring-0 cursor-pointer">
-                  </label>
-                  <label class="bg-slate-900 border border-purple-900/60 hover:border-purple-500/60 rounded p-1.5 cursor-pointer transition flex items-start justify-between gap-1">
-                    <div>
-                      <div class="text-[10px] font-bold text-amber-300">Maximize Spell</div>
-                      <div class="text-[8px] text-slate-400">Tavan Zar / +3 Yuva</div>
-                    </div>
-                    <input type="checkbox" id="mod-maximize-spell" onchange="recalculateCombatSpell()" class="mt-0.5 w-3.5 h-3.5 rounded text-amber-500 border-slate-700 focus:ring-0 cursor-pointer">
-                  </label>
-                  <label class="bg-slate-900 border border-purple-900/60 hover:border-purple-500/60 rounded p-1.5 cursor-pointer transition flex items-start justify-between gap-1">
-                    <div>
-                      <div class="text-[10px] font-bold text-sky-300">Enlarge Spell</div>
-                      <div class="text-[8px] text-slate-400">Menzil x2 / +1 Yuva</div>
-                    </div>
-                    <input type="checkbox" id="mod-enlarge-spell" onchange="recalculateCombatSpell()" class="mt-0.5 w-3.5 h-3.5 rounded text-sky-500 border-slate-700 focus:ring-0 cursor-pointer">
-                  </label>
-                  <label class="bg-slate-900 border border-purple-900/60 hover:border-purple-500/60 rounded p-1.5 cursor-pointer transition flex items-start justify-between gap-1">
-                    <div>
-                      <div class="text-[10px] font-bold text-emerald-300">Extend Spell</div>
-                      <div class="text-[8px] text-slate-400">Süre x2 / +1 Yuva</div>
-                    </div>
-                    <input type="checkbox" id="mod-extend-spell" onchange="recalculateCombatSpell()" class="mt-0.5 w-3.5 h-3.5 rounded text-emerald-500 border-slate-700 focus:ring-0 cursor-pointer">
-                  </label>
+                <!-- Dynamic Metamagic & Spell Modifiers Grid -->
+                <div id="combat-spell-modifiers-dynamic-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-0.5">
+                  <!-- Populated dynamically by renderSpellTacticalModifiers() -->
                 </div>
               </div>
 
@@ -11330,6 +11303,7 @@
       // Update Spells list in dropdown & quick spells for active category
       populateCombatSpells();
       renderCombatQuickSpells();
+      if (typeof renderSpellTacticalModifiers === 'function') renderSpellTacticalModifiers();
       recalculateCombatSpell();
       renderCombatPins(category);
     }
@@ -11444,6 +11418,308 @@
       return known.find(s => s.name === name) || known[0] || null;
     }
 
+    // --- SPELL TACTICAL MODIFIERS & METAMAGIC ENGINE ---
+    function getSpellTacticalModifiers() {
+      if (!character) return [];
+      const modifiers = [];
+      const seen = new Set();
+
+      // 1. Core Metamagic Options (Empower, Maximize, Enlarge, Extend)
+      const coreMetamagic = [
+        {
+          id: 'meta_empower',
+          elementId: 'mod-empower-spell',
+          key: 'empower',
+          name: 'Empower Spell',
+          slotDiff: 2,
+          desc: '+50% Hasar / +2 Yuva',
+          badge: '+2 Yuva',
+          color: 'purple',
+          tag: 'Empower (+50% Zar)',
+          isMetamagic: true
+        },
+        {
+          id: 'meta_maximize',
+          elementId: 'mod-maximize-spell',
+          key: 'maximize',
+          name: 'Maximize Spell',
+          slotDiff: 3,
+          desc: 'Tavan Zar / +3 Yuva',
+          badge: '+3 Yuva',
+          color: 'amber',
+          tag: 'Maximize (Tavan Zar)',
+          isMetamagic: true
+        },
+        {
+          id: 'meta_enlarge',
+          elementId: 'mod-enlarge-spell',
+          key: 'enlarge',
+          name: 'Enlarge Spell',
+          slotDiff: 1,
+          desc: 'Menzil x2 / +1 Yuva',
+          badge: '+1 Yuva',
+          color: 'sky',
+          tag: 'Enlarge (Menzil x2)',
+          isMetamagic: true
+        },
+        {
+          id: 'meta_extend',
+          elementId: 'mod-extend-spell',
+          key: 'extend',
+          name: 'Extend Spell',
+          slotDiff: 1,
+          desc: 'Süre x2 / +1 Yuva',
+          badge: '+1 Yuva',
+          color: 'emerald',
+          tag: 'Extend (Süre x2)',
+          isMetamagic: true
+        }
+      ];
+
+      coreMetamagic.forEach(m => {
+        seen.add(m.name.toLowerCase().trim());
+        seen.add(m.key.toLowerCase().trim());
+        modifiers.push(m);
+      });
+
+      // 2. Extra Metamagic feats owned by character in character.feats
+      const extraMetamagicDefs = {
+        'quicken spell': { name: 'Quicken Spell', key: 'quicken', slotDiff: 4, desc: 'Swift Action / +4 Yuva', badge: '+4 Yuva', color: 'rose', tag: 'Quicken (Swift)' },
+        'silent spell': { name: 'Silent Spell', key: 'silent', slotDiff: 1, desc: 'Sözsüz İcra / +1 Yuva', badge: '+1 Yuva', color: 'indigo', tag: 'Silent (Sözsüz)' },
+        'still spell': { name: 'Still Spell', key: 'still', slotDiff: 1, desc: 'Hareketsiz / +1 Yuva', badge: '+1 Yuva', color: 'cyan', tag: 'Still (Hareketsiz)' },
+        'widen spell': { name: 'Widen Spell', key: 'widen', slotDiff: 3, desc: 'Alan x2 / +3 Yuva', badge: '+3 Yuva', color: 'teal', tag: 'Widen (Alan x2)' },
+        'heighten spell': { name: 'Heighten Spell', key: 'heighten', slotDiff: 1, desc: 'DC +1 / +1 Yuva', badge: '+1 Yuva', color: 'purple', tag: 'Heighten (DC +1)', dcBonus: 1 }
+      };
+
+      (character.feats || []).forEach(f => {
+        if (!f || !f.name) return;
+        const low = f.name.toLowerCase().trim();
+        if (extraMetamagicDefs[low] && !seen.has(low)) {
+          seen.add(low);
+          const def = extraMetamagicDefs[low];
+          modifiers.push({
+            id: `meta_${def.key}`,
+            elementId: `mod-${def.key}-spell`,
+            key: def.key,
+            name: def.name,
+            slotDiff: def.slotDiff,
+            dcBonus: def.dcBonus || 0,
+            desc: def.desc,
+            badge: def.badge,
+            color: def.color,
+            tag: def.tag,
+            isMetamagic: true
+          });
+        }
+      });
+
+      // 3. Metamagic Rods in body slots / inventory
+      const allItems = [...(character.inventory || []), ...(character.gearPool || [])];
+      if (character.bodySlots) {
+        Object.values(character.bodySlots).forEach(item => { if (item) allItems.push(item); });
+      }
+      allItems.forEach(item => {
+        if (!item) return;
+        const iName = typeof item === 'string' ? item : (item.name || '');
+        const low = iName.toLowerCase();
+        if (low.includes('metamagic rod') || low.includes('rod of empower') || low.includes('rod of extend') || low.includes('rod of maximize') || low.includes('rod of quicken')) {
+          if (!seen.has(low)) {
+            seen.add(low);
+            let rodKey = 'empower';
+            if (low.includes('maximize')) rodKey = 'maximize';
+            else if (low.includes('extend')) rodKey = 'extend';
+            else if (low.includes('quicken')) rodKey = 'quicken';
+            modifiers.push({
+              id: `rod_${iName.replace(/\s+/g, '_')}`,
+              key: `rod_${rodKey}`,
+              name: iName,
+              sourceType: 'Item',
+              slotDiff: 0,
+              desc: 'Metamagic Rod (Yuva Artırmaz, 3/gün)',
+              badge: 'Rod',
+              color: 'amber',
+              tag: `${iName} (Rod)`,
+              isRod: true
+            });
+          }
+        }
+      });
+
+      // 4. Any Feat, Special Ability, or Buff pinned with ANY spell pin ("ayrıca feat ve abilityde hangi büyü pini seçilirse seçilsin bu alana gelmeli")
+      const spellCatKeys = ['offense_spell', 'spell_control', 'spell_support'];
+      const allPins = typeof getAllCombatPins === 'function' ? getAllCombatPins() : [];
+
+      allPins.forEach(p => {
+        if (!p || !p.name) return;
+        const low = p.name.toLowerCase().trim();
+        if (seen.has(low)) return;
+
+        const target = typeof resolvePinTarget === 'function' ? resolvePinTarget(p) : (p.pinTarget || '');
+        if (!spellCatKeys.includes(target)) return;
+        if (p.sourceType === 'Spell' || p.type === 'Spell') return;
+
+        seen.add(low);
+        const catBadge = target === 'offense_spell' ? '⚔️ Saldırı' : (target === 'spell_control' ? '🕸️ Kontrol' : '✨ Destek');
+        const badgeText = p.badge || catBadge;
+        const descText = p.desc || p.benefit || p.notes || `${p.sourceType || 'Yetenek'} Modifiyeri`;
+
+        modifiers.push({
+          id: `pin_${p.name.replace(/\s+/g, '_')}`,
+          key: `pin_${low}`,
+          name: p.name,
+          sourceType: p.sourceType || 'Feat',
+          slotDiff: Number(p.slotDiff) || 0,
+          desc: descText,
+          badge: badgeText,
+          color: target === 'offense_spell' ? 'purple' : (target === 'spell_control' ? 'amber' : 'emerald'),
+          tag: `${p.name} (Aktif)`,
+          pinTarget: target,
+          rawPin: p
+        });
+      });
+
+      return modifiers;
+    }
+
+    function isSpellCockpitModifierActive(mod) {
+      if (!character) return false;
+      if (!character.tactical) character.tactical = {};
+      if (!character.tactical.activeSpellModifiers) character.tactical.activeSpellModifiers = {};
+      const activeDict = character.tactical.activeSpellModifiers;
+
+      if (activeDict[mod.id] !== undefined) return Boolean(activeDict[mod.id]);
+      if (mod.key && activeDict[mod.key] !== undefined) return Boolean(activeDict[mod.key]);
+      if (activeDict[mod.name] !== undefined) return Boolean(activeDict[mod.name]);
+      if (mod.rawPin && mod.rawPin.active !== undefined) return Boolean(mod.rawPin.active);
+      if (mod.elementId) {
+        const el = document.getElementById(mod.elementId);
+        if (el) return Boolean(el.checked);
+      }
+      return false;
+    }
+
+    function getActiveSpellTacticalModifiers() {
+      const all = getSpellTacticalModifiers();
+      return all.filter(m => isSpellCockpitModifierActive(m));
+    }
+
+    function toggleSpellCockpitModifier(modId, event) {
+      if (event && event.stopPropagation) event.stopPropagation();
+      if (!character) return;
+      if (!character.tactical) character.tactical = {};
+      if (!character.tactical.activeSpellModifiers) character.tactical.activeSpellModifiers = {};
+
+      const allMods = getSpellTacticalModifiers();
+      const mod = allMods.find(m => m.id === modId || m.key === modId || m.name === modId);
+      if (!mod) return;
+
+      const currentActive = isSpellCockpitModifierActive(mod);
+      const nextActive = !currentActive;
+
+      character.tactical.activeSpellModifiers[mod.id] = nextActive;
+      if (mod.key) character.tactical.activeSpellModifiers[mod.key] = nextActive;
+      character.tactical.activeSpellModifiers[mod.name] = nextActive;
+
+      if (mod.elementId) {
+        const el = document.getElementById(mod.elementId);
+        if (el) el.checked = nextActive;
+      }
+
+      if (mod.rawPin) {
+        mod.rawPin.active = nextActive;
+      }
+      const allPins = typeof getAllCombatPins === 'function' ? getAllCombatPins() : [];
+      const matchingPin = allPins.find(p => p && (p.name.toLowerCase().trim() === mod.name.toLowerCase().trim() || p.id === mod.id));
+      if (matchingPin) {
+        matchingPin.active = nextActive;
+      }
+
+      if (Array.isArray(character.activeModifiers)) {
+        const matchingActiveMod = character.activeModifiers.find(m => m && m.name && m.name.toLowerCase().trim() === mod.name.toLowerCase().trim());
+        if (matchingActiveMod) {
+          matchingActiveMod.active = nextActive;
+        }
+      }
+
+      saveStateToStorage(false);
+      renderSpellTacticalModifiers();
+      recalculateCombatSpell();
+    }
+
+    function renderSpellTacticalModifiers() {
+      const container = document.getElementById('combat-spell-modifiers-dynamic-grid');
+      if (!container) return;
+
+      const modifiers = getSpellTacticalModifiers();
+      if (modifiers.length === 0) {
+        container.innerHTML = `<div class="col-span-full text-[10px] text-slate-500 italic p-2 text-center border border-dashed border-slate-800 rounded">Henüz büyü modifiyeri veya sabitlenmiş yetenek yok.</div>`;
+        return;
+      }
+
+      container.innerHTML = modifiers.map(mod => {
+        const isActive = isSpellCockpitModifierActive(mod);
+
+        let borderClass = 'border-purple-900/60 text-slate-300';
+        let bgClass = 'bg-slate-900';
+        let titleColor = 'text-purple-300';
+        let checkColor = 'text-purple-500';
+
+        if (mod.color === 'amber') {
+          titleColor = 'text-amber-300';
+          checkColor = 'text-amber-500';
+          if (isActive) {
+            borderClass = 'border-amber-500/80 shadow-[0_0_8px_rgba(245,158,11,0.3)] text-amber-200';
+            bgClass = 'bg-amber-950/40';
+          }
+        } else if (mod.color === 'sky' || mod.color === 'cyan') {
+          titleColor = 'text-sky-300';
+          checkColor = 'text-sky-500';
+          if (isActive) {
+            borderClass = 'border-sky-500/80 shadow-[0_0_8px_rgba(14,165,233,0.3)] text-sky-200';
+            bgClass = 'bg-sky-950/40';
+          }
+        } else if (mod.color === 'emerald') {
+          titleColor = 'text-emerald-300';
+          checkColor = 'text-emerald-500';
+          if (isActive) {
+            borderClass = 'border-emerald-500/80 shadow-[0_0_8px_rgba(16,185,129,0.3)] text-emerald-200';
+            bgClass = 'bg-emerald-950/40';
+          }
+        } else if (mod.color === 'rose') {
+          titleColor = 'text-rose-300';
+          checkColor = 'text-rose-500';
+          if (isActive) {
+            borderClass = 'border-rose-500/80 shadow-[0_0_8px_rgba(244,63,94,0.3)] text-rose-200';
+            bgClass = 'bg-rose-950/40';
+          }
+        } else {
+          titleColor = 'text-purple-300';
+          checkColor = 'text-purple-500';
+          if (isActive) {
+            borderClass = 'border-purple-500/80 shadow-[0_0_8px_rgba(168,85,247,0.3)] text-purple-200';
+            bgClass = 'bg-purple-950/40';
+          }
+        }
+
+        const icon = mod.isRod ? '🪄' : (mod.isMetamagic ? '✨' : (mod.sourceType === 'Feat' ? '⚡' : '🔮'));
+        const inputId = mod.elementId || `mod-spell-${mod.id}`;
+
+        return `
+          <label class="${bgClass} border ${borderClass} hover:border-purple-500/60 rounded p-1.5 cursor-pointer transition flex items-start justify-between gap-1 group select-none min-h-[44px]">
+            <div class="min-w-0 pr-1">
+              <div class="text-[10px] font-bold ${titleColor} flex items-center gap-1 leading-tight">
+                <span class="shrink-0">${icon}</span>
+                <span class="truncate">${mod.name}</span>
+                ${mod.badge ? `<span class="shrink-0 text-[8px] font-mono font-bold px-1 py-0.2 rounded bg-slate-800/80 text-amber-300 border border-slate-700/60">${mod.badge}</span>` : ''}
+              </div>
+              <div class="text-[8px] text-slate-400 mt-0.5 line-clamp-1 leading-tight">${mod.desc}</div>
+            </div>
+            <input type="checkbox" id="${inputId}" ${isActive ? 'checked' : ''} onchange="toggleSpellCockpitModifier('${mod.id}', event)" class="mt-0.5 shrink-0 w-3.5 h-3.5 rounded ${checkColor} border-slate-700 focus:ring-0 cursor-pointer">
+          </label>
+        `;
+      }).join('');
+    }
+
     function recalculateCombatSpell() {
       const spell = getSelectedCombatSpell();
       if (!spell) {
@@ -11457,20 +11733,55 @@
       }
 
       const baseLvl = Number(spell.level) || 0;
-      const isEmpower = document.getElementById('mod-empower-spell')?.checked || false;
-      const isMaximize = document.getElementById('mod-maximize-spell')?.checked || false;
-      const isEnlarge = document.getElementById('mod-enlarge-spell')?.checked || false;
-      const isExtend = document.getElementById('mod-extend-spell')?.checked || false;
-
+      const activeSpellMods = typeof getActiveSpellTacticalModifiers === 'function' ? getActiveSpellTacticalModifiers() : [];
       let slotDiff = 0;
+      let dcBonus = 0;
       const metamagicTags = [];
-      if (isEmpower) { slotDiff += 2; metamagicTags.push('Empower (+50% Zar)'); }
-      if (isMaximize) { slotDiff += 3; metamagicTags.push('Maximize (Tavan Zar)'); }
-      if (isEnlarge) { slotDiff += 1; metamagicTags.push('Enlarge (Menzil x2)'); }
-      if (isExtend) { slotDiff += 1; metamagicTags.push('Extend (Süre x2)'); }
+      let isEmpower = false;
+      let isMaximize = false;
+      let isEnlarge = false;
+      let isExtend = false;
+      let isQuicken = false;
+
+      activeSpellMods.forEach(mod => {
+        if (!mod) return;
+        if (mod.key === 'empower' || mod.id === 'meta_empower') isEmpower = true;
+        if (mod.key === 'maximize' || mod.id === 'meta_maximize') isMaximize = true;
+        if (mod.key === 'enlarge' || mod.id === 'meta_enlarge') isEnlarge = true;
+        if (mod.key === 'extend' || mod.id === 'meta_extend') isExtend = true;
+        if (mod.key === 'quicken' || mod.id === 'meta_quicken') isQuicken = true;
+
+        if (Number(mod.slotDiff)) {
+          slotDiff += Number(mod.slotDiff);
+        }
+        if (Number(mod.dcBonus)) {
+          dcBonus += Number(mod.dcBonus);
+        }
+        metamagicTags.push(mod.tag || mod.badge || mod.name);
+      });
+
+      // Fallback check on checkboxes if dynamic grid rendered them with those IDs
+      if (!isEmpower && document.getElementById('mod-empower-spell')?.checked) { isEmpower = true; slotDiff += 2; metamagicTags.push('Empower (+50% Zar)'); }
+      if (!isMaximize && document.getElementById('mod-maximize-spell')?.checked) { isMaximize = true; slotDiff += 3; metamagicTags.push('Maximize (Tavan Zar)'); }
+      if (!isEnlarge && document.getElementById('mod-enlarge-spell')?.checked) { isEnlarge = true; slotDiff += 1; metamagicTags.push('Enlarge (Menzil x2)'); }
+      if (!isExtend && document.getElementById('mod-extend-spell')?.checked) { isExtend = true; slotDiff += 1; metamagicTags.push('Extend (Süre x2)'); }
 
       const finalLvl = baseLvl + slotDiff;
       const isMetamagicActive = metamagicTags.length > 0;
+
+      const metaNote = document.getElementById('metamagic-action-note');
+      if (metaNote) {
+        if (isQuicken) {
+          metaNote.textContent = '(Quicken: Swift Action)';
+          metaNote.className = 'text-[9px] text-rose-400 font-bold';
+        } else if (isMetamagicActive) {
+          metaNote.textContent = '(Spontaneous: Full-Round)';
+          metaNote.className = 'text-[9px] text-amber-400 font-bold';
+        } else {
+          metaNote.textContent = '(Standart Eylem)';
+          metaNote.className = 'text-[9px] text-slate-400';
+        }
+      }
 
       // Update Spell Base Stats
       const lvlEl = document.getElementById('combat-spell-level-display');
@@ -11478,8 +11789,16 @@
 
       const actionEl = document.getElementById('combat-spell-action-display');
       if (actionEl) {
-        actionEl.textContent = isMetamagicActive ? 'Full-Round (Spontaneous)' : (spell.action || 'Standart');
-        actionEl.className = isMetamagicActive ? 'text-xs font-black text-rose-400 font-mono mt-0.5' : 'text-xs font-black text-amber-400 font-mono mt-0.5';
+        if (isQuicken) {
+          actionEl.textContent = 'Swift Action (Quicken)';
+          actionEl.className = 'text-xs font-black text-rose-400 font-mono mt-0.5';
+        } else if (isMetamagicActive) {
+          actionEl.textContent = 'Full-Round (Spontaneous)';
+          actionEl.className = 'text-xs font-black text-rose-400 font-mono mt-0.5';
+        } else {
+          actionEl.textContent = spell.action || 'Standart';
+          actionEl.className = 'text-xs font-black text-amber-400 font-mono mt-0.5';
+        }
       }
 
       const schoolEl = document.getElementById('combat-spell-school-display');
@@ -11510,7 +11829,7 @@
 
       const rangedTouchAtk = bab + dexMod;
       const meleeTouchAtk = bab + strMod;
-      const saveDc = 10 + finalLvl + chaMod;
+      const saveDc = 10 + finalLvl + chaMod + dcBonus;
 
       const dcEl = document.getElementById('combat-spell-dc-display');
       if (dcEl) {
@@ -11546,7 +11865,7 @@
       const metaBadgeEl = document.getElementById('combat-spell-metamagic-badge');
       if (metaBadgeEl) {
         if (isMetamagicActive) {
-          metaBadgeEl.textContent = `✨ Metamagic: ${metamagicTags.join(' • ')} (Yuva: ${finalLvl})`;
+          metaBadgeEl.textContent = `✨ Aktif Modlar: ${metamagicTags.join(' • ')} (Yuva: ${finalLvl})`;
           metaBadgeEl.className = 'text-[10px] text-purple-300 font-bold mt-0.5';
         } else {
           metaBadgeEl.textContent = `Standart İcra (${baseLvl}. Seviye Yuva)`;
@@ -11563,8 +11882,15 @@
       if (clBadge) clBadge.textContent = `CL: ${cl} • Yuva: ${totalRemainingSlots}/${totalDailySlots}`;
       const spellSummary = document.getElementById('combat-spell-collapsed-summary');
       if (spellSummary) spellSummary.textContent = `CL: ${cl} • Kalan Yuva: ${totalRemainingSlots}/${totalDailySlots}`;
+
+      // Spell Penetration feats calculation for SR check badge
+      const featsList = character.feats || [];
+      const hasSpellPen = featsList.some(f => (f.name || '').toLowerCase().includes('spell penetration') && !(f.name || '').toLowerCase().includes('greater'));
+      const hasGrtSpellPen = featsList.some(f => (f.name || '').toLowerCase().includes('greater spell penetration'));
+      const srBonusFromFeats = hasGrtSpellPen ? 4 : (hasSpellPen ? 2 : 0);
+      const totalSrBonus = cl + srBonusFromFeats;
       const srBadge = document.getElementById('sr-check-bonus-badge');
-      if (srBadge) srBadge.textContent = `+${cl}`;
+      if (srBadge) srBadge.textContent = `+${totalSrBonus}`;
       const concDcHint = document.getElementById('defensive-casting-dc-hint');
       if (concDcHint) concDcHint.textContent = `DC ${15 + finalLvl} • AoO Engeller`;
 
@@ -11613,19 +11939,32 @@
       if (!spell) return;
 
       const baseLvl = Number(spell.level) || 0;
-      const isEmpower = document.getElementById('mod-empower-spell')?.checked || false;
-      const isMaximize = document.getElementById('mod-maximize-spell')?.checked || false;
-      const isEnlarge = document.getElementById('mod-enlarge-spell')?.checked || false;
-      const isExtend = document.getElementById('mod-extend-spell')?.checked || false;
-
+      const activeSpellMods = typeof getActiveSpellTacticalModifiers === 'function' ? getActiveSpellTacticalModifiers() : [];
       let slotDiff = 0;
-      if (isEmpower) slotDiff += 2;
-      if (isMaximize) slotDiff += 3;
-      if (isEnlarge) slotDiff += 1;
-      if (isExtend) slotDiff += 1;
+      let isEmpower = false;
+      let isMaximize = false;
+      let isEnlarge = false;
+      let isExtend = false;
+      let isQuicken = false;
+
+      activeSpellMods.forEach(mod => {
+        if (!mod) return;
+        if (mod.key === 'empower' || mod.id === 'meta_empower') isEmpower = true;
+        if (mod.key === 'maximize' || mod.id === 'meta_maximize') isMaximize = true;
+        if (mod.key === 'enlarge' || mod.id === 'meta_enlarge') isEnlarge = true;
+        if (mod.key === 'extend' || mod.id === 'meta_extend') isExtend = true;
+        if (mod.key === 'quicken' || mod.id === 'meta_quicken') isQuicken = true;
+        if (Number(mod.slotDiff)) slotDiff += Number(mod.slotDiff);
+      });
+
+      // Fallback check on checkboxes if present
+      if (!isEmpower && document.getElementById('mod-empower-spell')?.checked) { isEmpower = true; slotDiff += 2; }
+      if (!isMaximize && document.getElementById('mod-maximize-spell')?.checked) { isMaximize = true; slotDiff += 3; }
+      if (!isEnlarge && document.getElementById('mod-enlarge-spell')?.checked) { isEnlarge = true; slotDiff += 1; }
+      if (!isExtend && document.getElementById('mod-extend-spell')?.checked) { isExtend = true; slotDiff += 1; }
 
       const finalLvl = baseLvl + slotDiff;
-      const isMetamagicActive = slotDiff > 0;
+      const isMetamagicActive = slotDiff > 0 || isEmpower || isMaximize || isEnlarge || isExtend || isQuicken;
 
       // Defensive Casting Check (D&D 3.5e RAW: Concentration DC 15 + Spell Level)
       const isDefensive = document.getElementById('mod-defensive-casting')?.checked || false;
@@ -11689,8 +12028,13 @@
         saveStateToStorage(false);
       }
 
-      // If spontaneous metamagic, consume Full-Round Action in Action Economy!
-      if (isMetamagicActive) {
+      // If Quicken, consume Swift Action; if spontaneous metamagic, consume Full-Round Action in Action Economy!
+      if (isQuicken) {
+        if (!character.tactical) character.tactical = {};
+        if (!character.tactical.spentActions) character.tactical.spentActions = {};
+        character.tactical.spentActions.swift = true;
+        if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
+      } else if (isMetamagicActive) {
         if (!character.tactical) character.tactical = {};
         if (!character.tactical.spentActions) character.tactical.spentActions = {};
         character.tactical.spentActions.standard = true;
@@ -11814,23 +12158,31 @@
 
     function rollSpellResistanceCheck() {
       const cl = Number(character.casterLevel) || (character.classes ? Object.values(character.classes)[0]?.level : 1) || 1;
+      const featsList = character.feats || [];
+      const hasSpellPen = featsList.some(f => (f.name || '').toLowerCase().includes('spell penetration') && !(f.name || '').toLowerCase().includes('greater'));
+      const hasGrtSpellPen = featsList.some(f => (f.name || '').toLowerCase().includes('greater spell penetration'));
+      const srBonusFromFeats = hasGrtSpellPen ? 4 : (hasSpellPen ? 2 : 0);
+      const totalBonus = cl + srBonusFromFeats;
       const d20 = Math.floor(Math.random() * 20) + 1;
-      const total = d20 + cl;
+      const totalCheck = d20 + totalBonus;
+
+      const formulaStr = srBonusFromFeats > 0 ? `1d20 + ${cl} (CL) + ${srBonusFromFeats} (Feat)` : `1d20 + ${cl} (CL)`;
+      const breakdownStr = srBonusFromFeats > 0 ? `d20:${d20} + CL:${cl} + Feat:${srBonusFromFeats} = ${totalCheck}` : `d20:${d20} + CL:${cl} = ${totalCheck}`;
 
       const onComplete = () => {
         showDiceTopToast({
           icon: '🔮',
           title: 'Spell Resistance (SR) Kontrolü',
-          breakdown: `d20:${d20} + CL:${cl} = ${total}`,
-          total: `SR Testi: ${total}`
+          breakdown: breakdownStr,
+          total: `SR Testi: ${totalCheck}`
         });
         if (typeof addDiceHistoryEntry === 'function') {
           addDiceHistoryEntry({
             icon: '🔮',
             title: 'Büyü Direnci (SR) Aşma Zarı',
-            formula: `1d20 + ${cl} (CL)`,
-            breakdown: `d20:${d20} + CL:${cl}`,
-            total: `${total}`,
+            formula: formulaStr,
+            breakdown: breakdownStr,
+            total: `${totalCheck}`,
             isCrit: d20 === 20
           });
         }
@@ -15680,6 +16032,8 @@
       ['offense_spell', 'spell_control', 'spell_support', 'defense'].forEach(cat => {
         try { renderCombatPins(cat); } catch (e) {}
       });
+      try { if (typeof renderSpellTacticalModifiers === 'function') renderSpellTacticalModifiers(); } catch (e) {}
+      try { if (typeof recalculateCombatSpell === 'function') recalculateCombatSpell(); } catch (e) {}
 
       const labelMap = {
         auto: '🎯 Oto (Kural Motoru)',
@@ -16405,6 +16759,7 @@
       try { initCockpitPanelsState(); } catch (e) { console.error('initCockpitPanelsState error:', e); }
       try { populateCombatSpells(); } catch (e) { console.error('populateCombatSpells error:', e); }
       try { renderCombatQuickSpells(); } catch (e) { console.error('renderCombatQuickSpells error:', e); }
+      try { if (typeof renderSpellTacticalModifiers === 'function') renderSpellTacticalModifiers(); } catch (e) { console.error('renderSpellTacticalModifiers error:', e); }
       try { recalculateCombatSpell(); } catch (e) { console.error('recalculateCombatSpell error:', e); }
     }
 
@@ -17765,6 +18120,12 @@
       if (!pin) return;
 
       pin.active = !pin.active;
+      if (!character.tactical) character.tactical = {};
+      if (!character.tactical.activeSpellModifiers) character.tactical.activeSpellModifiers = {};
+      character.tactical.activeSpellModifiers[pin.name] = pin.active;
+      character.tactical.activeSpellModifiers[`pin_${pin.name.replace(/\s+/g, '_')}`] = pin.active;
+      character.tactical.activeSpellModifiers[`pin_${pin.name.toLowerCase().trim()}`] = pin.active;
+
       syncPinWithActiveModifiers(pin);
       saveStateToStorage(false);
       renderAll();
