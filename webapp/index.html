@@ -1501,12 +1501,6 @@
           </div>
         </div>
 
-
-        <!-- FEATS & SPECIAL ABILITIES SHOWCASE (Hünerler ve Özel Yetenekler Vitrini) -->
-        <div id="core-feats-abilities-container" class="mt-4 space-y-4">
-          <!-- Dynamically populated by renderCoreFeatsAndSpecialAbilities() -->
-        </div>
-
         <!-- LEVEL PROGRESSION & EVOLUTION (lvl_up - Madde 1, 2, 3, 12, Unearthed Arcana Fractional & Level Planning) -->
         <div id="level-progression-block" class="border border-slate-800 rounded-xl overflow-hidden mt-4">
           <div class="bg-slate-900 px-3 py-2.5 text-xs font-bold text-emerald-400 flex flex-wrap justify-between items-center gap-2">
@@ -1575,6 +1569,11 @@
               </button>
             </div>
           </div>
+        </div>
+
+        <!-- FEATS & SPECIAL ABILITIES SHOWCASE (Hünerler ve Özel Yetenekler Akordeon Vitrini) -->
+        <div id="core-feats-abilities-container" class="mt-4">
+          <!-- Dynamically populated by renderCoreFeatsAndSpecialAbilities() -->
         </div>
 
       </div>
@@ -27902,6 +27901,14 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       });
     }
 
+    let _coreFeatsAccordionOpen = null; // null: auto (false for PC, true for NPC)
+
+    function toggleCoreFeatsAccordion() {
+      const current = (_coreFeatsAccordionOpen !== null) ? _coreFeatsAccordionOpen : (character?.isNpc ? true : false);
+      _coreFeatsAccordionOpen = !current;
+      renderCoreFeatsAndSpecialAbilities();
+    }
+
     function renderCoreFeatsAndSpecialAbilities() {
       const container = document.getElementById('core-feats-abilities-container');
       if (!container) return;
@@ -27984,91 +27991,108 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       });
 
       const abilitiesList = Array.from(abilityMap.values());
+      const isOpen = (_coreFeatsAccordionOpen !== null) ? _coreFeatsAccordionOpen : (character?.isNpc ? true : false);
 
       container.innerHTML = `
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <!-- FEATS SHOWCASE CARD -->
-          <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950/40 border border-slate-700/80 rounded-xl p-3.5 shadow-md flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between border-b border-slate-800 pb-2.5 mb-3">
-                <div class="flex items-center gap-2">
-                  <span class="text-base">🎖️</span>
-                  <span class="text-xs font-black text-amber-400 uppercase tracking-wide">HÜNERLER (FEATS)</span>
-                  <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-950 text-amber-300 border border-amber-700/60">${featsList.length} Hüner</span>
-                </div>
-                <button type="button" onclick="character?.isNpc ? openNpcStatblockModal('feats') : openFeatPickerModal(false)" class="text-[11px] font-bold bg-amber-600/90 hover:bg-amber-500 text-white px-2.5 py-1 rounded-lg transition shadow-sm flex items-center gap-1 active:scale-95 cursor-pointer" title="Yeni hüner seç veya kütüphaneden ekle">
-                  <span>➕</span>
-                  <span>Hüner Ekle</span>
+        <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-900/60 shadow mt-4">
+          <!-- Akordeon Başlık Çubuğu -->
+          <div onclick="toggleCoreFeatsAccordion()" class="bg-slate-900 hover:bg-slate-800/80 px-3.5 py-2.5 flex items-center justify-between gap-3 cursor-pointer transition select-none">
+            <div class="flex items-center gap-2.5 flex-wrap">
+              <span class="text-base">🎖️</span>
+              <span class="text-xs font-black text-amber-400 uppercase tracking-wide">HÜNERLER VE ÖZEL YETENEKLER VİTRİNİ</span>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-950 text-amber-300 border border-amber-700/60">${featsList.length} Hüner</span>
+                <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-purple-950 text-purple-300 border border-purple-700/60">${abilitiesList.length} Yetenek</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              ${character?.isNpc ? `
+                <button type="button" onclick="event.stopPropagation(); openNpcStatblockModal('feats')" class="text-[11px] font-bold bg-amber-600/90 hover:bg-amber-500 text-white px-2.5 py-0.5 rounded-lg transition shadow-sm flex items-center gap-1 active:scale-95 cursor-pointer" title="Statblock Stüdyosunda Düzenle">
+                  <span>⚡</span>
+                  <span>Stüdyo</span>
                 </button>
-              </div>
-
-              <div class="flex flex-wrap gap-1.5 min-h-[50px] items-start">
-                ${featsList.length > 0 ? featsList.map(f => {
-                  const safeName = f.name.replace(/'/g, "\\'");
-                  const safeTip = (f.benefit || f.source || 'Kural detayını incele').replace(/"/g, '&quot;');
-                  const catBadge = f.category && f.category !== 'Feat' ? `<span class="text-[9px] opacity-75 font-normal">(${safeEscapeHtml(f.category)})</span>` : '';
-                  return `
-                    <button type="button" onclick="showFeatDetail('${safeName}', null, 'feat')" title="${safeTip}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-200 border border-indigo-600/60 hover:border-indigo-400 shadow-sm transition active:scale-95 cursor-pointer text-left">
-                      <span class="text-amber-400 shrink-0">🎖️</span>
-                      <span class="truncate max-w-[170px]">${safeEscapeHtml(f.name)}</span>
-                      ${catBadge}
-                    </button>
-                  `;
-                }).join('') : `
-                  <div class="py-4 text-center text-slate-500 text-xs italic w-full">
-                    Henüz kayıtlı hüner bulunmamaktadır. "➕ Hüner Ekle" butonu ile ekleyebilirsiniz.
-                  </div>
-                `}
-              </div>
+              ` : ''}
+              <span class="text-xs text-slate-400 font-mono transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}">▼</span>
             </div>
           </div>
 
-          <!-- SPECIAL ABILITIES & TRAITS SHOWCASE CARD -->
-          <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-purple-950/40 border border-slate-700/80 rounded-xl p-3.5 shadow-md flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between border-b border-slate-800 pb-2.5 mb-3">
-                <div class="flex items-center gap-2">
-                  <span class="text-base">⚡</span>
-                  <span class="text-xs font-black text-purple-400 uppercase tracking-wide">ÖZEL YETENEKLER &amp; IRKSAL NİTELİKLER</span>
-                  <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-purple-950 text-purple-300 border border-purple-700/60">${abilitiesList.length} Yetenek</span>
+          <!-- Akordeon Gövdesi (Açılır / Kapanır) -->
+          <div class="${isOpen ? 'block' : 'hidden'} p-3.5 border-t border-slate-800/80 bg-slate-950/60">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <!-- SOL: FEATS SHOWCASE -->
+              <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 space-y-2 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between border-b border-slate-800/80 pb-2 mb-2">
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-sm">🎖️</span>
+                      <span class="text-xs font-bold text-amber-300 uppercase tracking-wide">Kazanılmış Hünerler (Feats)</span>
+                    </div>
+                    <span class="text-[10px] text-slate-400 font-normal">Seviye ve ırktan gelenler</span>
+                  </div>
+                  <div class="flex flex-wrap gap-1.5 min-h-[40px] items-start">
+                    ${featsList.length > 0 ? featsList.map(f => {
+                      const safeName = f.name.replace(/'/g, "\\'");
+                      const safeTip = (f.benefit || f.source || 'Kural detayını incele').replace(/"/g, '&quot;');
+                      const catBadge = f.category && f.category !== 'Feat' ? `<span class="text-[9px] opacity-75 font-normal">(${safeEscapeHtml(f.category)})</span>` : '';
+                      return `
+                        <button type="button" onclick="showFeatDetail('${safeName}', null, 'feat')" title="${safeTip}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-200 border border-indigo-600/60 hover:border-indigo-400 shadow-sm transition active:scale-95 cursor-pointer text-left">
+                          <span class="text-amber-400 shrink-0">🎖️</span>
+                          <span class="truncate max-w-[170px]">${safeEscapeHtml(f.name)}</span>
+                          ${catBadge}
+                        </button>
+                      `;
+                    }).join('') : `
+                      <div class="py-3 text-center text-slate-500 text-xs italic w-full">
+                        Kayıtlı hüner bulunmamaktadır.
+                      </div>
+                    `}
+                  </div>
                 </div>
-                <button type="button" onclick="character?.isNpc ? openNpcStatblockModal('feats') : openAddSpecialAbilityPrompt()" class="text-[11px] font-bold bg-purple-600/90 hover:bg-purple-500 text-white px-2.5 py-1 rounded-lg transition shadow-sm flex items-center gap-1 active:scale-95 cursor-pointer" title="Yeni özel yetenek ekle">
-                  <span>➕</span>
-                  <span>Yetenek Ekle</span>
-                </button>
               </div>
 
-              <div class="flex flex-wrap gap-1.5 min-h-[50px] items-start">
-                ${abilitiesList.length > 0 ? abilitiesList.map(a => {
-                  const safeName = a.name.replace(/'/g, "\\'");
-                  const safeTip = (a.benefit || a.source || 'Kural detayını incele').replace(/"/g, '&quot;');
-                  let typeBadge = '';
-                  let borderCls = 'border-purple-600/60 hover:border-purple-400 text-purple-200 bg-purple-950/80 hover:bg-purple-900';
-                  const tUpper = (a.type || '').toUpperCase();
-                  if (tUpper === 'EX') {
-                    typeBadge = '<span class="text-[9px] px-1 py-0.2 rounded font-mono font-bold bg-amber-900/80 text-amber-300 border border-amber-600/50">Ex</span>';
-                    borderCls = 'border-amber-600/50 hover:border-amber-400 text-amber-200 bg-amber-950/60 hover:bg-amber-900/80';
-                  } else if (tUpper === 'SU') {
-                    typeBadge = '<span class="text-[9px] px-1 py-0.2 rounded font-mono font-bold bg-purple-900/80 text-purple-300 border border-purple-600/50">Su</span>';
-                    borderCls = 'border-purple-600/50 hover:border-purple-400 text-purple-200 bg-purple-950/70 hover:bg-purple-900/80';
-                  } else if (tUpper === 'SP') {
-                    typeBadge = '<span class="text-[9px] px-1 py-0.2 rounded font-mono font-bold bg-sky-900/80 text-sky-300 border border-sky-600/50">Sp</span>';
-                    borderCls = 'border-sky-600/50 hover:border-sky-400 text-sky-200 bg-sky-950/70 hover:bg-sky-900/80';
-                  } else if (a.type) {
-                    typeBadge = `<span class="text-[9px] px-1 py-0.2 rounded font-mono font-bold bg-emerald-900/80 text-emerald-300 border border-emerald-600/50">${safeEscapeHtml(a.type)}</span>`;
-                  }
-                  return `
-                    <button type="button" onclick="showFeatDetail('${safeName}', null, 'ability')" title="${safeTip}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold border shadow-sm transition active:scale-95 cursor-pointer text-left ${borderCls}">
-                      <span class="shrink-0">⚡</span>
-                      <span class="truncate max-w-[170px]">${safeEscapeHtml(a.name)}</span>
-                      ${typeBadge}
-                    </button>
-                  `;
-                }).join('') : `
-                  <div class="py-4 text-center text-slate-500 text-xs italic w-full">
-                    Henüz kayıtlı özel yetenek bulunmamaktadır. "➕ Yetenek Ekle" butonu ile ekleyebilirsiniz.
+              <!-- SAĞ: SPECIAL ABILITIES SHOWCASE -->
+              <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 space-y-2 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between border-b border-slate-800/80 pb-2 mb-2">
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-sm">⚡</span>
+                      <span class="text-xs font-bold text-purple-300 uppercase tracking-wide">Özel Yetenekler &amp; Irksal Nitelikler</span>
+                    </div>
+                    <span class="text-[10px] text-slate-400 font-normal">Ex, Su, Sp ve Irksal</span>
                   </div>
-                `}
+                  <div class="flex flex-wrap gap-1.5 min-h-[40px] items-start">
+                    ${abilitiesList.length > 0 ? abilitiesList.map(a => {
+                      const safeName = a.name.replace(/'/g, "\\'");
+                      const safeTip = (a.benefit || a.source || 'Kural detayını incele').replace(/"/g, '&quot;');
+                      let typeBadge = '';
+                      let borderCls = 'border-purple-600/60 hover:border-purple-400 text-purple-200 bg-purple-950/80 hover:bg-purple-900';
+                      const tUpper = (a.type || '').toUpperCase();
+                      if (tUpper === 'EX') {
+                        typeBadge = '<span class="text-[9px] px-1 py-0.2 rounded font-mono font-bold bg-amber-900/80 text-amber-300 border border-amber-600/50">Ex</span>';
+                        borderCls = 'border-amber-600/50 hover:border-amber-400 text-amber-200 bg-amber-950/60 hover:bg-amber-900/80';
+                      } else if (tUpper === 'SU') {
+                        typeBadge = '<span class="text-[9px] px-1 py-0.2 rounded font-mono font-bold bg-purple-900/80 text-purple-300 border border-purple-600/50">Su</span>';
+                        borderCls = 'border-purple-600/50 hover:border-purple-400 text-purple-200 bg-purple-950/70 hover:bg-purple-900/80';
+                      } else if (tUpper === 'SP') {
+                        typeBadge = '<span class="text-[9px] px-1 py-0.2 rounded font-mono font-bold bg-sky-900/80 text-sky-300 border border-sky-600/50">Sp</span>';
+                        borderCls = 'border-sky-600/50 hover:border-sky-400 text-sky-200 bg-sky-950/70 hover:bg-sky-900/80';
+                      } else if (a.type) {
+                        typeBadge = `<span class="text-[9px] px-1 py-0.2 rounded font-mono font-bold bg-emerald-900/80 text-emerald-300 border border-emerald-600/50">${safeEscapeHtml(a.type)}</span>`;
+                      }
+                      return `
+                        <button type="button" onclick="showFeatDetail('${safeName}', null, 'ability')" title="${safeTip}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold border shadow-sm transition active:scale-95 cursor-pointer text-left ${borderCls}">
+                          <span class="shrink-0">⚡</span>
+                          <span class="truncate max-w-[170px]">${safeEscapeHtml(a.name)}</span>
+                          ${typeBadge}
+                        </button>
+                      `;
+                    }).join('') : `
+                      <div class="py-3 text-center text-slate-500 text-xs italic w-full">
+                        Kayıtlı özel yetenek bulunmamaktadır.
+                      </div>
+                    `}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
