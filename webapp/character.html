@@ -525,23 +525,6 @@
                 </div>
               </div>
 
-              <!-- YAKIN SALDIRI PİNLERİ (MELEE PINS DRAWER) -->
-              <div id="combat-pins-container-offense_melee" class="bg-slate-950/80 border border-slate-800 rounded-lg p-2.5 space-y-2">
-                <div class="flex items-center justify-between text-[10px] font-bold text-slate-300 border-b border-slate-800 pb-1.5">
-                  <div class="flex items-center gap-1.5">
-                    <span class="text-amber-400">📌</span>
-                    <span class="uppercase tracking-wider">YAKIN SALDIRI ÇEKMECESİ</span>
-                    <span id="offense_melee-pins-badge" class="bg-slate-800 text-amber-300 font-mono font-bold text-[9px] px-1.5 py-0.2 rounded">0</span>
-                  </div>
-                  <button id="toggle-offense_melee-pins-btn" onclick="togglePinDrawer('offense_melee')" class="text-[9px] text-slate-400 hover:text-white bg-slate-900 px-2 py-0.5 rounded border border-slate-800 transition cursor-pointer">
-                    Tümünü Göster
-                  </button>
-                </div>
-                <div id="combat-pins-offense_melee" class="space-y-1.5">
-                  <!-- Populated dynamically -->
-                </div>
-              </div>
-
               <!-- 2. RANGED TACTICAL MODIFIERS & AMMUNITION (Menzilli & Ok Modifiyerleri) -->
               <div id="combat-modifiers-ranged-block" class="hidden bg-slate-950/80 border border-slate-800 rounded-lg p-2.5 space-y-2">
                 <div class="text-[10px] font-bold text-amber-400 uppercase tracking-wide flex items-center justify-between">
@@ -582,23 +565,6 @@
                   <button type="button" onclick="toggleExpandRangedModifiersGrid()" id="btn-toggle-expand-ranged-mods" class="text-[10px] text-amber-400 hover:text-amber-300 font-bold transition flex items-center justify-center gap-1 mx-auto cursor-pointer">
                     <span>▾ Daha Fazla Göster (Genişlet)</span>
                   </button>
-                </div>
-              </div>
-
-              <!-- UZAK SALDIRI PİNLERİ (RANGED PINS DRAWER) -->
-              <div id="combat-pins-container-offense_ranged" class="bg-slate-950/80 border border-slate-800 rounded-lg p-2.5 space-y-2">
-                <div class="flex items-center justify-between text-[10px] font-bold text-amber-300 border-b border-slate-800 pb-1.5">
-                  <div class="flex items-center gap-1.5">
-                    <span class="text-amber-400">📌</span>
-                    <span class="uppercase tracking-wider">UZAK SALDIRI ÇEKMECESİ</span>
-                    <span id="offense_ranged-pins-badge" class="bg-slate-800 text-amber-300 font-mono font-bold text-[9px] px-1.5 py-0.2 rounded">0</span>
-                  </div>
-                  <button id="toggle-offense_ranged-pins-btn" onclick="togglePinDrawer('offense_ranged')" class="text-[9px] text-slate-400 hover:text-white bg-slate-900 px-2 py-0.5 rounded border border-slate-800 transition cursor-pointer">
-                    Tümünü Göster
-                  </button>
-                </div>
-                <div id="combat-pins-offense_ranged" class="space-y-1.5">
-                  <!-- Populated dynamically -->
                 </div>
               </div>
             </div>
@@ -11169,9 +11135,35 @@
         if (n.includes('witchlight')) return characterHasItem(character, 'Witchlight');
         if (n.includes('boots of speed') || n.includes('haste')) return characterHasItem(character, 'Boots of Speed') || characterHasBuff(character, 'Haste');
         if (n.includes('sneak attack')) return characterHasSneakAttack(character);
+        if (typeof getPinsForDrawer === 'function') {
+          const isPinnedMelee = getPinsForDrawer('offense_melee').some(p => p && p.name && p.name.toLowerCase().trim() === n);
+          if (isPinnedMelee) return true;
+        }
         if (m.combatScope === 'ranged' || m.scope === 'Ranged Only') return false;
         return true;
       });
+
+      // Also include any pinned items in offense_melee into qualifiedPool
+      if (typeof getPinsForDrawer === 'function') {
+        const meleePins = getPinsForDrawer('offense_melee');
+        meleePins.forEach(p => {
+          if (!p || !p.name) return;
+          const pNameLower = p.name.toLowerCase().trim();
+          if (!qualifiedPool.some(q => q.name.toLowerCase().trim() === pNameLower)) {
+            const dmgExpr = p.badge || (typeof findDiceExpression === 'function' ? findDiceExpression(p.desc) : '');
+            qualifiedPool.push({
+              name: p.name,
+              source: p.sourceType || 'Combat',
+              bonusAtk: 0,
+              dice: dmgExpr,
+              type: 'Melee',
+              combatScope: 'melee',
+              active: Boolean(p.active),
+              notes: p.desc || ''
+            });
+          }
+        });
+      }
 
       // Synchronize qualified items into character.activeModifiers
       qualifiedPool.forEach(def => {
@@ -13054,7 +13046,9 @@
       character.combatPins = targetBuckets;
 
       saveStateToStorage(true);
-      ['offense_melee', 'offense_ranged', 'offense_spell', 'defense'].forEach(cat => {
+      try { renderOffenseModifiersGrid(); } catch (e) {}
+      try { if (typeof renderRangedModifiersGrid === 'function') renderRangedModifiersGrid(); } catch (e) {}
+      ['offense_spell', 'defense'].forEach(cat => {
         try { renderCombatPins(cat); } catch (e) {}
       });
 
@@ -13554,9 +13548,7 @@
       // 4. Utility Column: Quick Consumables
       try { renderCockpitConsumables(); } catch (e) { console.error('renderCockpitConsumables error:', e); }
 
-      // 5. Pin Drawers (Yakın, Uzak, Büyü Saldırı ve Savunma)
-      try { renderCombatPins('offense_melee'); } catch (e) { console.error("renderCombatPins('offense_melee') error:", e); }
-      try { renderCombatPins('offense_ranged'); } catch (e) { console.error("renderCombatPins('offense_ranged') error:", e); }
+      // 5. Pin Drawers (Büyü Saldırı ve Savunma - Yakın ve Uzak 3x3 ızgaradan yönetilir)
       try { renderCombatPins('offense_spell'); } catch (e) { console.error("renderCombatPins('offense_spell') error:", e); }
       try { renderCombatPins('defense'); } catch (e) { console.error("renderCombatPins('defense') error:", e); }
     }
