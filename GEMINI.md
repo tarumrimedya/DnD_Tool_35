@@ -45,3 +45,10 @@ To maximize token efficiency and minimize API costs across all conversations in 
   2. **Aşama 2 (Master DB Kaydı):** Doğrulanan veri, şemaya uygun şekilde `master_db.json` (ve `bundled_data.js`) veri tabanına resmi ve kalıcı bir kayıt olarak eklenir.
   3. **Aşama 3 (İlgili Alana Entegrasyon):** Yalnızca `master_db.json` içinde doğrulanmış ve kaydedilmiş olan veri, ilgili test alanına, karakter kâğıdına (`character_data.json`), envantere veya arayüz çekmecesine referans verilerek bağlanır.
 
+## 6. HUB Sayfası & Karakter Motoru Çapraz Etkileşim Uyarısı (STRICT)
+- HUB sayfası (`hub.html`) veya kampanya yönetim modülleri ile ilgili gelen herhangi bir geliştirme talebinde:
+  - Eğer talep edilen değişiklik; ana karakter kağıdını (`index.html` / `character.html`), D&D 3.5e karakter motorunu (`rule_engine.js`, `rule_master.js`), karakter veri şemasını (`character_data.json`, `dnd35_character`), yerel depolama anahtarlarını veya senkronizasyon mekanizmalarını (`gdrive_sync.js`) doğrudan veya dolaylı olarak etkileme/bozma riski taşıyorsa:
+  - **Ajan, kod değişikliği yapmadan önce kullanıcıyı açıkça uyarmakla yükümlüdür.**
+  - Olası çapraz etkiler (veri kirlenmesi, şema uyumsuzluğu, routing/state çakışması, performans ve izolasyon riskleri) net argümanlarla kullanıcıya sunulmalı ve kullanıcının onayı/yönlendirmesi alınmadan karakter motorunu etkileyecek adımlar atılmamalıdır.
+
+
