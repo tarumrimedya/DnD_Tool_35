@@ -569,23 +569,6 @@
                     <span>▾ Daha Fazla Göster (Genişlet)</span>
                   </button>
                 </div>
-
-                <!-- UZAK SALDIRI & MÜHİMMAT ÇEKMECESİ (DRAWER) -->
-                <div id="combat-pins-container-offense_ranged" class="bg-slate-950/80 border border-amber-900/50 rounded-lg p-2.5 space-y-2 mt-2">
-                  <div class="flex items-center justify-between text-[10px] font-bold text-amber-300 border-b border-amber-900/50 pb-1.5">
-                    <div class="flex items-center gap-1.5">
-                      <span class="text-amber-400">🏹</span>
-                      <span class="uppercase tracking-wider">UZAK SALDIRI &amp; MÜHİMMAT ÇEKMECESİ</span>
-                      <span id="offense_ranged-pins-badge" class="bg-slate-900 text-amber-300 border border-amber-700/50 font-mono font-bold text-[9px] px-1.5 py-0.2 rounded">0</span>
-                    </div>
-                    <button type="button" id="toggle-offense_ranged-pins-btn" onclick="togglePinDrawer('offense_ranged')" class="text-[9px] text-amber-400 hover:text-white bg-slate-900 px-2 py-0.5 rounded border border-amber-800/60 transition cursor-pointer">
-                      Tümünü Göster
-                    </button>
-                  </div>
-                  <div id="combat-pins-offense_ranged" class="space-y-1.5">
-                    <!-- Populated dynamically -->
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -11983,94 +11966,309 @@
         else ammoTitle.textContent = 'Mühimmat';
       }
 
-      // Scan inventory for matching ammunition
-      const invAmmo = [];
-      const gearPool = [...(character.gearPool || []), ...(character.inventory || [])];
-      gearPool.forEach(item => {
-        if (!item) return;
-        const name = typeof item === 'string' ? item : (item.name || '');
-        const low = name.toLowerCase();
-        const count = item.count || item.quantity || item.charges || '';
-        const countStr = count ? ` (${count} Adet)` : '';
+    // --- AMMUNITION STOCK & INVENTORY SYNC ENGINE ---
+    function ensureAmmunitionInventory() {
+      if (!character) return;
+      if (!Array.isArray(character.gearPool)) character.gearPool = [];
 
-        if (ammoType === 'arrow' && (low.includes('arrow') || low.includes('ok') || item.weaponType === 'Bow')) {
-          invAmmo.push({ label: `🎒 ${name}${countStr}`, value: `inv_${name}` });
-        } else if (ammoType === 'bolt' && (low.includes('bolt') || low.includes('kundak') || item.weaponType === 'Crossbow')) {
-          invAmmo.push({ label: `🎒 ${name}${countStr}`, value: `inv_${name}` });
-        } else if (ammoType === 'bullet' && (low.includes('bullet') || low.includes('sapan') || low.includes('taş') || item.weaponType === 'Sling')) {
-          invAmmo.push({ label: `🎒 ${name}${countStr}`, value: `inv_${name}` });
+      const standardAmmos = [
+        { name: 'Standart Ok', weaponType: 'Bow', ammoVal: 'standard', qty: 20, weight: 3, cost: 1, desc: 'Standart 20 adet ok (1d8 Delici).' },
+        { name: 'Usta İşi Ok', weaponType: 'Bow', ammoVal: 'masterwork', qty: 10, weight: 1.5, cost: 70, desc: 'Usta işi ok (+1 Saldırı Bonusu).' },
+        { name: '+1 Büyülü Ok', weaponType: 'Bow', ammoVal: 'plus1', qty: 10, weight: 1.5, cost: 400, desc: '+1 Büyülü ok (+1 Saldırı & +1 Hasar).' },
+        { name: '+2 Büyülü Ok', weaponType: 'Bow', ammoVal: 'plus2', qty: 5, weight: 0.75, cost: 400, desc: '+2 Büyülü ok (+2 Saldırı & +2 Hasar).' },
+        { name: 'Alevli Ok', weaponType: 'Bow', ammoVal: 'fire', qty: 5, weight: 0.75, cost: 400, desc: 'Alevli ok (+1d6 Ateş Hasarı).' },
+        { name: 'Gümüş Uçlu Ok', weaponType: 'Bow', ammoVal: 'silver', qty: 10, weight: 1.5, cost: 21, desc: 'Gümüş uçlu ok (DR/Gümüş Aşar, -1 Hasar).' },
+        { name: 'Standart Bolt', weaponType: 'Crossbow', ammoVal: 'standard', qty: 10, weight: 1, cost: 1, desc: 'Standart 10 adet arbalet oku.' },
+        { name: 'Usta İşi Bolt', weaponType: 'Crossbow', ammoVal: 'masterwork', qty: 10, weight: 1, cost: 70, desc: 'Usta işi arbalet oku (+1 Saldırı Bonusu).' },
+        { name: 'Sapan Taşı', weaponType: 'Sling', ammoVal: 'standard', qty: 20, weight: 5, cost: 0.1, desc: 'Standart 20 adet sapan mermisi.' }
+      ];
+
+      standardAmmos.forEach(sa => {
+        let existing = character.gearPool.find(g => g && g.name && g.name.toLowerCase().trim() === sa.name.toLowerCase().trim());
+        if (!existing) {
+          if (sa.name === 'Standart Ok') existing = character.gearPool.find(g => g && g.name && (g.name.includes('Arrows') || g.name === 'Standart Ok'));
+          if (sa.name === 'Standart Bolt') existing = character.gearPool.find(g => g && g.name && (g.name.includes('Crossbow Bolts') || g.name === 'Standart Bolt'));
+          if (sa.name === 'Sapan Taşı') existing = character.gearPool.find(g => g && g.name && (g.name.includes('Sling Bullets') || g.name === 'Sapan Taşı'));
+        }
+
+        if (!existing) {
+          character.gearPool.push({
+            id: Date.now() + Math.floor(Math.random() * 10000),
+            name: sa.name,
+            masterDbName: sa.name,
+            category: 'Ammunition',
+            type: 'Ammunition',
+            slot: 'Slotless',
+            weaponType: sa.weaponType,
+            ammoVal: sa.ammoVal,
+            qty: sa.qty,
+            count: sa.qty,
+            weight: sa.weight,
+            cost: sa.cost,
+            isBelt: false,
+            isEquipped: false,
+            desc: sa.desc
+          });
+        } else {
+          if (existing.qty === undefined && existing.count !== undefined) {
+            existing.qty = existing.count;
+          } else if (existing.qty === undefined) {
+            existing.qty = sa.qty;
+          }
+          if (existing.category !== 'Ammunition') existing.category = 'Ammunition';
+          if (!existing.weaponType) existing.weaponType = sa.weaponType;
+          if (!existing.ammoVal) existing.ammoVal = sa.ammoVal;
+        }
+      });
+    }
+
+    function getAmmunitionItemByName(chosenName) {
+      if (!character || !chosenName) return null;
+      ensureAmmunitionInventory();
+      const allGear = [...(character.gearPool || []), ...(character.inventory || [])];
+      const low = chosenName.toLowerCase().trim();
+
+      // 1. Direct match
+      let item = allGear.find(g => g && g.name && g.name.toLowerCase().trim() === low);
+      if (item) return item;
+
+      // 2. AmmoVal match (e.g. 'masterwork', 'plus1', etc.)
+      item = allGear.find(g => g && g.ammoVal && g.ammoVal.toLowerCase() === low);
+      if (item) return item;
+
+      // 3. Substring match
+      if (low.includes('masterwork') || low.includes('usta işi')) return allGear.find(g => (g.name || '').toLowerCase().includes('usta işi') || (g.name || '').toLowerCase().includes('masterwork'));
+      if (low.includes('+2')) return allGear.find(g => (g.name || '').includes('+2'));
+      if (low.includes('+1')) return allGear.find(g => (g.name || '').includes('+1'));
+      if (low.includes('alev') || low.includes('fire')) return allGear.find(g => (g.name || '').toLowerCase().includes('alev') || (g.name || '').toLowerCase().includes('fire'));
+      if (low.includes('gümüş') || low.includes('silver')) return allGear.find(g => (g.name || '').toLowerCase().includes('gümüş') || (g.name || '').toLowerCase().includes('silver'));
+      if (low.includes('acid') || low.includes('asit')) return allGear.find(g => (g.name || '').toLowerCase().includes('acid') || (g.name || '').toLowerCase().includes('asit'));
+
+      const activeWep = getActiveCombatRangedWeapon(character);
+      const at = activeWep ? activeWep.ammoType : 'arrow';
+      if (at === 'arrow') return allGear.find(g => (g.name || '').toLowerCase().includes('ok') || (g.name || '').toLowerCase().includes('arrow'));
+      if (at === 'bolt') return allGear.find(g => (g.name || '').toLowerCase().includes('bolt') || (g.name || '').toLowerCase().includes('kundak'));
+      if (at === 'bullet') return allGear.find(g => (g.name || '').toLowerCase().includes('mermi') || (g.name || '').toLowerCase().includes('sapan') || (g.name || '').toLowerCase().includes('taş'));
+
+      return allGear[0] || null;
+    }
+
+    function consumeEquippedAmmunition(count = 1) {
+      if (window._combatOffenseMode !== 'ranged') return true;
+      const arrowSel = document.getElementById('combat-ranged-arrow-select');
+      const chosenName = arrowSel?.value || character.tactical?.selectedArrow || 'Standart Ok';
+      const item = getAmmunitionItemByName(chosenName);
+
+      if (!item) {
+        if (typeof showToast === 'function') {
+          showToast('⚠️ Envanterde seçili mühimmat bulunamadı!', 'warning');
+        }
+        return false;
+      }
+
+      const currentQty = Number(item.qty !== undefined ? item.qty : (item.count !== undefined ? item.count : 0));
+      if (currentQty <= 0) {
+        if (typeof showToast === 'function') {
+          showToast(`⚠️ Seçili mühimmat ("${item.name}") tükendi! Saldırı yapmak için başka bir mühimmat seçin veya envanterden yenileyin.`, 'warning');
+        }
+        return false;
+      }
+
+      const toConsume = Math.min(currentQty, count);
+      const remaining = currentQty - toConsume;
+      item.qty = remaining;
+      item.count = remaining;
+
+      saveStateToStorage(false);
+      populateRangedWeaponAndAmmoUI();
+      updateRangedArrowDescription();
+      if (typeof renderGearPoolTable === 'function') renderGearPoolTable();
+
+      if (remaining === 0) {
+        if (typeof showToast === 'function') {
+          showToast(`⚠️ "${item.name}" tükendi! (0 Adet kaldı)`, 'warning');
+        }
+      } else {
+        if (typeof showToast === 'function') {
+          showToast(`🏹 ${toConsume}x "${item.name}" harcandı. Kalan: ${remaining} Adet`, 'info');
+        }
+      }
+
+      return true;
+    }
+
+    function populateRangedWeaponAndAmmoUI() {
+      if (!character) return;
+      if (!character.tactical) character.tactical = {};
+      ensureAmmunitionInventory();
+
+      const weaponSelect = document.getElementById('combat-active-ranged-weapon-select');
+      const weaponIcon = document.getElementById('combat-ranged-weapon-icon');
+      const ammoSelect = document.getElementById('combat-ranged-arrow-select');
+      const ammoIcon = document.getElementById('combat-ammo-icon');
+      const ammoTitle = document.getElementById('combat-ammo-title');
+
+      const allRanged = findAvailableRangedWeapons(character);
+      const activeWep = getActiveCombatRangedWeapon(character);
+
+      // Populate Ranged Weapon Dropdown
+      if (weaponSelect) {
+        weaponSelect.innerHTML = allRanged.map(w => {
+          const isSel = w.name === activeWep.name;
+          const badge = w.source.includes('Envanter') || w.source.includes('Kuşan') ? '🎒 ' : '';
+          return `<option value="${w.name}" ${isSel ? 'selected' : ''}>${badge}${w.name} (${w.dice} • ${w.range})</option>`;
+        }).join('');
+      }
+
+      if (weaponIcon) {
+        const at = activeWep.ammoType;
+        weaponIcon.textContent = at === 'thrown' ? '🗡️' : (at === 'bullet' ? '🪨' : '🏹');
+      }
+
+      // Determine Ammunition Type
+      const ammoType = activeWep.ammoType || 'arrow';
+      if (ammoIcon) {
+        ammoIcon.textContent = ammoType === 'bullet' ? '🪨' : (ammoType === 'thrown' ? '🗡️' : '🏹');
+      }
+      if (ammoTitle) {
+        if (ammoType === 'arrow') ammoTitle.textContent = 'Ok & Mühimmat (Yay)';
+        else if (ammoType === 'bolt') ammoTitle.textContent = 'Kundak Oku / Bolt (Arbalet)';
+        else if (ammoType === 'bullet') ammoTitle.textContent = 'Sapan Taşı / Mermi (Sapan)';
+        else if (ammoType === 'thrown') ammoTitle.textContent = 'Fırlatma Mühimmatı';
+        else ammoTitle.textContent = 'Mühimmat';
+      }
+
+      // Collect matching ammunitions directly from character.gearPool and character.inventory
+      const allGear = [...(character.gearPool || []), ...(character.inventory || [])];
+      const seenNames = new Set();
+      const matchingAmmo = [];
+
+      allGear.forEach(item => {
+        if (!item || !item.name) return;
+        const low = item.name.toLowerCase().trim();
+        if (seenNames.has(low)) return;
+
+        let matches = false;
+        if (ammoType === 'arrow') {
+          matches = low.includes('ok') || low.includes('arrow') || item.weaponType === 'Bow' || item.category === 'Ammunition';
+        } else if (ammoType === 'bolt') {
+          matches = low.includes('bolt') || low.includes('kundak') || item.weaponType === 'Crossbow';
+        } else if (ammoType === 'bullet') {
+          matches = low.includes('bullet') || low.includes('mermi') || low.includes('sapan') || low.includes('taş') || item.weaponType === 'Sling';
+        } else if (ammoType === 'thrown') {
+          matches = low.includes('thrown') || low.includes('fırlatma') || (item.tags && item.tags.includes('thrown'));
+        }
+
+        // Exclude bow/crossbow weapons from ammo list
+        if (item.category === 'Weapon' && !low.includes('arrow') && !low.includes('ok') && !low.includes('bolt') && !low.includes('bullet') && !low.includes('taş')) {
+          matches = false;
+        }
+
+        if (matches) {
+          seenNames.add(low);
+          matchingAmmo.push(item);
         }
       });
 
-      // Standard Options per Ammo Type
-      let standardOptions = [];
-      if (ammoType === 'arrow') {
-        standardOptions = [
-          { value: 'standard', label: '🏹 Standart Ok (Normal)' },
-          { value: 'masterwork', label: '✨ Usta İşi Ok (+1 Atk)' },
-          { value: 'plus1', label: '🛡️ +1 Büyülü Ok (+1/+1)' },
-          { value: 'plus2', label: '🛡️ +2 Büyülü Ok (+2/+2)' },
-          { value: 'silver', label: '🔘 Gümüş Ok (DR Aşar, -1)' },
-          { value: 'cold_iron', label: '❄️ Soğuk Demir Ok (DR Aşar)' },
-          { value: 'adamantine', label: '💎 Adamantin Ok (DR & Sertlik)' },
-          { value: 'fire', label: '🔥 Alevli Ok (+1d6 Ateş)' },
-          { value: 'acid', label: '🧪 Asitli Ok (+1d6 Asit)' },
-          { value: 'shock', label: '⚡ Şok Oku (+1d6 Elektrik)' },
-          { value: 'blunt', label: '🪵 Ezici/Kör Ok (Ezici Hasar)' }
-        ];
-      } else if (ammoType === 'bolt') {
-        standardOptions = [
-          { value: 'standard', label: '🏹 Standart Bolt (Normal)' },
-          { value: 'masterwork', label: '✨ Usta İşi Bolt (+1 Atk)' },
-          { value: 'plus1', label: '🛡️ +1 Büyülü Bolt (+1/+1)' },
-          { value: 'plus2', label: '🛡️ +2 Büyülü Bolt (+2/+2)' },
-          { value: 'silver', label: '🔘 Gümüş Bolt (DR Aşar, -1)' },
-          { value: 'cold_iron', label: '❄️ Soğuk Demir Bolt (DR Aşar)' },
-          { value: 'adamantine', label: '💎 Adamantin Bolt (DR & Sertlik)' },
-          { value: 'fire', label: '🔥 Alevli Bolt (+1d6 Ateş)' },
-          { value: 'acid', label: '🧪 Asitli Bolt (+1d6 Asit)' },
-          { value: 'shock', label: '⚡ Şok Boltu (+1d6 Elektrik)' }
-        ];
-      } else if (ammoType === 'bullet') {
-        standardOptions = [
-          { value: 'standard', label: '🪨 Standart Kurşun Mermi (Normal)' },
-          { value: 'stone', label: '🪨 Sıradan Taş (1d3, -1 Atk)' },
-          { value: 'masterwork', label: '✨ Usta İşi Mermi (+1 Atk)' },
-          { value: 'plus1', label: '🛡️ +1 Büyülü Mermi (+1/+1)' },
-          { value: 'plus2', label: '🛡️ +2 Büyülü Mermi (+2/+2)' },
-          { value: 'silver', label: '🔘 Gümüş Kaplama Mermi (DR Aşar)' },
-          { value: 'cold_iron', label: '❄️ Soğuk Demir Mermi (DR Aşar)' },
-          { value: 'adamantine', label: '💎 Adamantin Mermi (DR & Sertlik)' },
-          { value: 'fire', label: '🔥 Alevli Mermi (+1d6 Ateş)' },
-          { value: 'acid', label: '🧪 Asitli Mermi (+1d6 Asit)' }
-        ];
-      } else if (ammoType === 'thrown') {
-        standardOptions = [
-          { value: 'standard', label: '🗡️ Standart Fırlatma' },
-          { value: 'masterwork', label: '✨ Usta İşi Fırlatma (+1 Atk)' },
-          { value: 'plus1', label: '🛡️ +1 Büyülü Fırlatma (+1/+1)' },
-          { value: 'returning', label: '🪃 Returning (Geri Dönen)' }
-        ];
-      } else {
-        standardOptions = [
-          { value: 'standard', label: '⚡ Standart Mühimmat' }
-        ];
+      if (ammoSelect) {
+        let curSel = character.tactical.selectedArrow;
+        if (!curSel || !matchingAmmo.some(a => a.name === curSel || a.ammoVal === curSel)) {
+          curSel = matchingAmmo[0]?.name || 'Standart Ok';
+          character.tactical.selectedArrow = curSel;
+        }
+
+        ammoSelect.innerHTML = matchingAmmo.map(item => {
+          const qty = Number(item.qty !== undefined ? item.qty : (item.count !== undefined ? item.count : 0));
+          const isSelected = (curSel === item.name || curSel === item.ammoVal || curSel === `inv_${item.name}`);
+          const isDepleted = qty <= 0;
+          const icon = isDepleted ? '⚠️' : '🏹';
+          const qtyText = isDepleted ? ' (TÜKENDİ - 0 Adet)' : ` (${qty} Adet)`;
+          return `<option value="${item.name}" ${isSelected ? 'selected' : ''} ${isDepleted ? 'class="text-rose-400 font-bold"' : ''}>${icon} ${item.name}${qtyText}</option>`;
+        }).join('');
       }
 
-      if (ammoSelect) {
-        const curSel = character.tactical.selectedArrow || 'standard';
-        let html = '';
-        if (invAmmo.length > 0) {
-          html += `<optgroup label="🎒 Envanter Mühimmatı">`;
-          html += invAmmo.map(a => `<option value="${a.value}" ${curSel === a.value ? 'selected' : ''}>${a.label}</option>`).join('');
-          html += `</optgroup>`;
-        }
-        html += `<optgroup label="Standart Türler">`;
-        html += standardOptions.map(o => `<option value="${o.value}" ${curSel === o.value ? 'selected' : ''}>${o.label}</option>`).join('');
-        html += `</optgroup>`;
-        ammoSelect.innerHTML = html;
-      }
       updateRangedArrowDescription();
+    }
+
+    function updateRangedArrowDescription() {
+      const arrowSel = document.getElementById('combat-ranged-arrow-select');
+      const descEl = document.getElementById('selected-arrow-bonus-desc');
+      if (!arrowSel || !descEl) return;
+      const chosenName = arrowSel.value || character.tactical?.selectedArrow || 'Standart Ok';
+      const item = getAmmunitionItemByName(chosenName);
+      const qty = item ? Number(item.qty !== undefined ? item.qty : (item.count !== undefined ? item.count : 0)) : 0;
+
+      let bonusDesc = 'Normal Vuruş';
+      const low = chosenName.toLowerCase();
+      if (low.includes('masterwork') || low.includes('usta işi')) bonusDesc = '✨ +1 Saldırı Bonusu';
+      else if (low.includes('+2')) bonusDesc = '🛡️ +2 Saldırı & +2 Hasar';
+      else if (low.includes('+1')) bonusDesc = '🛡️ +1 Saldırı & +1 Hasar';
+      else if (low.includes('fire') || low.includes('alev')) bonusDesc = '🔥 +1d6 Ateş Hasarı';
+      else if (low.includes('acid') || low.includes('asit')) bonusDesc = '🧪 +1d6 Asit Hasarı';
+      else if (low.includes('silver') || low.includes('gümüş')) bonusDesc = '🔘 DR/Gümüş Aşar (-1 Hasar)';
+      else if (low.includes('cold iron') || low.includes('soğuk demir')) bonusDesc = '❄️ DR/Soğuk Demir Aşar';
+      else if (low.includes('adamantine') || low.includes('adamantin')) bonusDesc = '💎 DR & Sertlik Aşar';
+      else if (low.includes('blunt') || low.includes('kör') || low.includes('ezici')) bonusDesc = '🪵 Ezici Hasar';
+      else if (low.includes('stone') || low.includes('taş')) bonusDesc = '🪨 -1 Atk, Ezici Hasar';
+
+      if (qty <= 0) {
+        descEl.innerHTML = `<span class="text-rose-400 font-bold">⚠️ TÜKENDİ (0 Adet)</span> • <span class="text-slate-400">Envanterden yenileyin veya mühimmat değiştirin</span>`;
+      } else {
+        descEl.innerHTML = `<span class="text-amber-300 font-semibold">${bonusDesc}</span> • <span class="text-emerald-400 font-bold">Kalan: ${qty} Adet</span>`;
+      }
+    }
+
+    function onRangedArrowChange() {
+      const arrowSel = document.getElementById('combat-ranged-arrow-select');
+      if (!arrowSel) return;
+      if (!character.tactical) character.tactical = {};
+      character.tactical.selectedArrow = arrowSel.value;
+      updateRangedArrowDescription();
+      recalculateOffense();
+      saveStateToStorage(false);
+    }
+
+    function selectCombatAmmoPin(ammoName, explicitVal) {
+      if (!character) return;
+      if (!character.tactical) character.tactical = {};
+
+      const val = explicitVal || ammoName;
+      character.tactical.selectedArrow = val;
+
+      const arrowSel = document.getElementById('combat-ranged-arrow-select');
+      if (arrowSel) {
+        if (Array.from(arrowSel.options).some(o => o.value === val)) {
+          arrowSel.value = val;
+        }
+      }
+
+      updateRangedArrowDescription();
+      recalculateOffense();
+      saveStateToStorage(false);
+
+      showDiceTopToast({
+        icon: '🏹',
+        title: 'Mühimmat Kuşanıldı: ' + ammoName,
+        breakdown: 'Menzilli saldırılar için aktif mühimmat güncellendi.',
+        total: 'Kuşanıldı'
+      });
+    }
+
+    function getAmmoValFromName(name) {
+      if (!name) return 'standard';
+      const low = name.toLowerCase();
+      if (low.includes('masterwork') || low.includes('usta işi')) return 'masterwork';
+      if (low.includes('+2')) return 'plus2';
+      if (low.includes('+1')) return 'plus1';
+      if (low.includes('fire') || low.includes('alev')) return 'fire';
+      if (low.includes('acid') || low.includes('asit')) return 'acid';
+      if (low.includes('shock') || low.includes('şok')) return 'shock';
+      if (low.includes('silver') || low.includes('gümüş')) return 'silver';
+      if (low.includes('cold iron') || low.includes('soğuk demir')) return 'cold_iron';
+      if (low.includes('adamantine') || low.includes('adamantin')) return 'adamantine';
+      if (low.includes('blunt') || low.includes('ezici') || low.includes('kör')) return 'blunt';
+      if (low.includes('stone') || low.includes('taş')) return 'stone';
+      return name;
     }
 
     function onCombatRangedWeaponChange() {
@@ -12078,13 +12276,13 @@
       if (!weaponSelect) return;
       if (!character.tactical) character.tactical = {};
       character.tactical.selectedRangedWeapon = weaponSelect.value;
-      character.tactical.selectedArrow = 'standard';
+      character.tactical.selectedArrow = 'Standart Ok';
       populateRangedWeaponAndAmmoUI();
       recalculateOffense();
       saveStateToStorage(false);
     }
 
-    // --- RANGED COMBAT & AMMUNITION MODIFIERS ENGINE ---
+    // --- RANGED COMBAT & TACTICAL MODIFIERS ENGINE (AREA 2) ---
     function renderRangedModifiersGrid() {
       const grid = document.getElementById('combat-modifiers-ranged-3x3-grid');
       if (!grid) return;
@@ -12096,10 +12294,15 @@
       const hasRapid = characterHasFeat(character, 'Rapid Shot');
       const hasMany = characterHasFeat(character, 'Manyshot');
       const hasPrecise = characterHasFeat(character, 'Precise Shot');
+      const hasFar = characterHasFeat(character, 'Far Shot');
       const hasTrueStrike = characterHasSpell(character, 'True Strike');
       const hasBootsHaste = characterHasItem(character, 'Boots of Speed') || characterHasBuff(character, 'Haste');
       const hasWitchlight = characterHasItem(character, 'Witchlight');
       const hasSneak = characterHasSneakAttack(character);
+      const hasEnhanceArrow = (character.specialAbilities || []).some(a => {
+        const name = typeof a === 'string' ? a : (a.name || '');
+        return name.toLowerCase().includes('enhance arrow');
+      });
 
       const hg = !!t.rangedHigherGround;
       const tinM = !!t.targetInMelee;
@@ -12136,7 +12339,7 @@
         `
       ];
 
-      // Qualified Ranged Modifiers Pool: ONLY feats, spells, items the character ACTUALLY has
+      // Qualified Ranged Modifiers Pool: Feats, Abilities, Spells & Pinned items in Area 2
       const qualifiedRangedList = [];
 
       if (hasPBS) {
@@ -12149,6 +12352,16 @@
           activeClass: 'border-amber-500 bg-amber-950/40 text-amber-200 shadow-sm'
         });
       }
+
+      // Situational: Uzak Menzil (Distance penalty)
+      qualifiedRangedList.push({
+        id: 'rangePenalty',
+        name: 'Uzak Menzil',
+        source: 'Distance',
+        bonusStr: hasFar ? '-1 Atk (Far Shot)' : '-2 Atk / Kademe',
+        active: !!t.rangePenalty,
+        activeClass: 'border-orange-500 bg-orange-950/40 text-orange-200 shadow-sm'
+      });
 
       if (hasRapid) {
         qualifiedRangedList.push({
@@ -12169,6 +12382,17 @@
           bonusStr: '-4 Atk / 2x Ok',
           active: !!t.manyshot,
           activeClass: 'border-amber-500 bg-amber-950/40 text-amber-200 shadow-sm'
+        });
+      }
+
+      if (hasEnhanceArrow) {
+        qualifiedRangedList.push({
+          id: 'enhanceArrow',
+          name: 'Enhance Arrow',
+          source: 'Ability',
+          bonusStr: '+1 Atk / +1 Dmg',
+          active: !!t.enhanceArrow,
+          activeClass: 'border-emerald-500 bg-emerald-950/40 text-emerald-200 shadow-sm'
         });
       }
 
@@ -12216,15 +12440,28 @@
         });
       }
 
-      // Situational: Uzak Menzil (Distance penalty)
-      qualifiedRangedList.push({
-        id: 'rangePenalty',
-        name: 'Uzak Menzil',
-        source: 'Distance',
-        bonusStr: '-2 Atk / Kademe',
-        active: !!t.rangePenalty,
-        activeClass: 'border-orange-500 bg-orange-950/40 text-orange-200 shadow-sm'
-      });
+      // Also include any pinned items in offense_ranged (excluding ammunitions)
+      if (typeof getPinsForDrawer === 'function') {
+        const rangedPins = getPinsForDrawer('offense_ranged');
+        rangedPins.forEach(pin => {
+          if (!pin || !pin.name) return;
+          const pNameLower = pin.name.toLowerCase().trim();
+          if (pNameLower.includes('ok') || pNameLower.includes('arrow') || pNameLower.includes('bolt') || pNameLower.includes('mermi') || pin.sourceType === 'Ammunition' || pin.attackType === 'ammunition') {
+            return;
+          }
+          if (qualifiedRangedList.some(q => q.name.toLowerCase().trim() === pNameLower)) return;
+
+          qualifiedRangedList.push({
+            id: `pin_${pin.name}`,
+            pinRef: pin,
+            name: pin.name,
+            source: pin.sourceType || 'Pin',
+            bonusStr: pin.badge || '+ Pin',
+            active: Boolean(pin.active),
+            activeClass: 'border-sky-500 bg-sky-950/40 text-sky-200 shadow-sm'
+          });
+        });
+      }
 
       const isExpanded = !!window.combatRangedModifiersGridExpanded;
       const visibleCount = isExpanded ? qualifiedRangedList.length : Math.min(6, qualifiedRangedList.length);
@@ -12267,141 +12504,18 @@
       populateRangedWeaponAndAmmoUI();
     }
 
-    function updateRangedArrowDescription() {
-      const arrowSel = document.getElementById('combat-ranged-arrow-select');
-      const descEl = document.getElementById('selected-arrow-bonus-desc');
-      if (!arrowSel || !descEl) return;
-      const val = arrowSel.value || 'standard';
-
-      const activeWep = getActiveCombatRangedWeapon(character);
-      const at = activeWep ? activeWep.ammoType : 'arrow';
-
-      if (val.startsWith('inv_')) {
-        const itemName = val.replace('inv_', '');
-        descEl.textContent = `🎒 Envanter: ${itemName}`;
-        return;
-      }
-
-      if (at === 'bolt') {
-        const boltMap = {
-          standard: 'Standart Bolt (1d8/1d10 Delici)',
-          masterwork: '✨ Usta İşi: +1 Saldırı Bonusu',
-          plus1: '🛡️ +1 Büyülü: +1 Saldırı & +1 Hasar',
-          plus2: '🛡️ +2 Büyülü: +2 Saldırı & +2 Hasar',
-          silver: '🔘 Gümüş Uçlu: DR/Gümüş Aşar (-1 Hasar)',
-          cold_iron: '❄️ Soğuk Demir: DR/Soğuk Demir Aşar',
-          adamantine: '💎 Adamantin: DR & Sertlik Aşar',
-          fire: '🔥 Alevli Bolt: +1d6 Ateş Hasarı',
-          acid: '🧪 Asitli Bolt: +1d6 Asit Hasarı',
-          shock: '⚡ Şok Boltu: +1d6 Elektrik Hasarı'
-        };
-        descEl.textContent = boltMap[val] || 'Standart Bolt';
-        return;
-      }
-
-      if (at === 'bullet') {
-        const bulletMap = {
-          standard: 'Kurşun Mermi (1d4 Ezici)',
-          stone: '🪨 Basit Taş (1d3 Ezici, -1 Atk)',
-          masterwork: '✨ Usta İşi: +1 Saldırı Bonusu',
-          plus1: '🛡️ +1 Büyülü: +1 Saldırı & +1 Hasar',
-          plus2: '🛡️ +2 Büyülü: +2 Saldırı & +2 Hasar',
-          silver: '🔘 Gümüş Kaplama: DR/Gümüş Aşar',
-          cold_iron: '❄️ Soğuk Demir: DR/Soğuk Demir Aşar',
-          adamantine: '💎 Adamantin: DR & Sertlik Aşar',
-          fire: '🔥 Alevli Mermi: +1d6 Ateş Hasarı',
-          acid: '🧪 Asitli Mermi: +1d6 Asit Hasarı'
-        };
-        descEl.textContent = bulletMap[val] || 'Kurşun Mermi (1d4)';
-        return;
-      }
-
-      if (at === 'thrown') {
-        const thrownMap = {
-          standard: 'Standart Fırlatma (Silah Hasarı)',
-          masterwork: '✨ Usta İşi: +1 Saldırı Bonusu',
-          plus1: '🛡️ +1 Büyülü: +1 Saldırı & +1 Hasar',
-          returning: '🪃 Returning: Tur sonu ele geri döner'
-        };
-        descEl.textContent = thrownMap[val] || 'Fırlatılan Silah';
-        return;
-      }
-
-      // Default: Arrow
-      const arrowMap = {
-        standard: 'Standart Ok (1d8 Delici)',
-        masterwork: '✨ Usta İşi: +1 Saldırı Bonusu',
-        plus1: '🛡️ +1 Büyülü: +1 Saldırı & +1 Hasar',
-        plus2: '🛡️ +2 Büyülü: +2 Saldırı & +2 Hasar',
-        silver: '🔘 Gümüş Uçlu: DR/Gümüş Aşar (-1 Hasar)',
-        cold_iron: '❄️ Soğuk Demir: DR/Soğuk Demir Aşar',
-        adamantine: '💎 Adamantin: DR & Sertlik Aşar',
-        fire: '🔥 Alevli Ok: +1d6 Ateş Hasarı',
-        acid: '🧪 Asitli Ok: +1d6 Asit Hasarı',
-        shock: '⚡ Şok Oku: +1d6 Elektrik Hasarı',
-        blunt: '🪵 Ezici/Kör Ok: Delici yerine Ezici Hasar'
-      };
-      descEl.textContent = arrowMap[val] || 'Standart Ok (1d8)';
-    }
-
-    function onRangedArrowChange() {
-      const arrowSel = document.getElementById('combat-ranged-arrow-select');
-      if (!arrowSel) return;
-      if (!character.tactical) character.tactical = {};
-      character.tactical.selectedArrow = arrowSel.value;
-      updateRangedArrowDescription();
-      recalculateOffense();
-      if (typeof renderCombatPins === 'function') renderCombatPins('offense_ranged');
-      saveStateToStorage(false);
-    }
-
-    function selectCombatAmmoPin(ammoName, explicitVal) {
-      if (!character) return;
-      if (!character.tactical) character.tactical = {};
-
-      const val = explicitVal || getAmmoValFromName(ammoName);
-      character.tactical.selectedArrow = val;
-
-      const arrowSel = document.getElementById('combat-ranged-arrow-select');
-      if (arrowSel) {
-        if (Array.from(arrowSel.options).some(o => o.value === val)) {
-          arrowSel.value = val;
-        }
-      }
-
-      updateRangedArrowDescription();
-      recalculateOffense();
-      if (typeof renderCombatPins === 'function') renderCombatPins('offense_ranged');
-      saveStateToStorage(false);
-
-      showDiceTopToast({
-        icon: '🏹',
-        title: 'Mühimmat Kuşanıldı: ' + ammoName,
-        breakdown: 'Menzilli saldırılar için aktif mühimmat güncellendi.',
-        total: 'Kuşanıldı'
-      });
-    }
-
-    function getAmmoValFromName(name) {
-      if (!name) return 'standard';
-      const low = name.toLowerCase();
-      if (low.includes('masterwork') || low.includes('usta işi')) return 'masterwork';
-      if (low.includes('+2')) return 'plus2';
-      if (low.includes('+1')) return 'plus1';
-      if (low.includes('fire') || low.includes('alev')) return 'fire';
-      if (low.includes('acid') || low.includes('asit')) return 'acid';
-      if (low.includes('shock') || low.includes('şok')) return 'shock';
-      if (low.includes('silver') || low.includes('gümüş')) return 'silver';
-      if (low.includes('cold iron') || low.includes('soğuk demir')) return 'cold_iron';
-      if (low.includes('adamantine') || low.includes('adamantin')) return 'adamantine';
-      if (low.includes('blunt') || low.includes('ezici') || low.includes('kör')) return 'blunt';
-      if (low.includes('stone') || low.includes('taş')) return 'stone';
-      return `inv_${name}`;
-    }
-
     function onRangedModifierToggle(modKey) {
       if (!character.tactical) character.tactical = {};
-      character.tactical[modKey] = !character.tactical[modKey];
+      if (modKey.startsWith('pin_')) {
+        const pinName = modKey.replace('pin_', '');
+        const allPins = getAllCombatPins();
+        const pin = allPins.find(p => p.name === pinName);
+        if (pin) {
+          pin.active = !pin.active;
+        }
+      } else {
+        character.tactical[modKey] = !character.tactical[modKey];
+      }
       renderRangedModifiersGrid();
       recalculateOffense();
       saveStateToStorage(false);
@@ -12542,9 +12656,32 @@
         if (t.bootsHaste && hasHaste) netRangedMod += 1;
         if (t.manyshot && hasMany) netRangedMod -= 4;
         if (t.trueStrike && hasTrue) netRangedMod += 20;
+        if (t.enhanceArrow) netRangedMod += 1;
+
+        if (typeof getAllCombatPins === 'function') {
+          const allPins = getAllCombatPins();
+          allPins.forEach(p => {
+            if (p.active && (p.category === 'offense_ranged' || p.scope === 'Ranged Only' || p.combatScope === 'ranged' || p.combatScope === 'both')) {
+              if (p.bonusAtk) netRangedMod += Number(p.bonusAtk);
+            }
+          });
+        }
 
         let flatDmg = arrowDmgBonus;
         if (t.pointBlankShot && hasPBS) flatDmg += 1;
+        if (t.enhanceArrow) flatDmg += 1;
+        if (typeof getAllCombatPins === 'function') {
+          const allPins = getAllCombatPins();
+          allPins.forEach(p => {
+            if (p.active && (p.category === 'offense_ranged' || p.scope === 'Ranged Only' || p.combatScope === 'ranged' || p.combatScope === 'both')) {
+              if (p.bonusDmg) flatDmg += Number(p.bonusDmg);
+              if (p.dice) arrowExtraDice = arrowExtraDice ? `${arrowExtraDice} + ${p.dice}` : p.dice;
+            }
+          });
+        }
+        if (t.sneakAttack && hasSneak) {
+          arrowExtraDice = arrowExtraDice ? `${arrowExtraDice} + 1d6 (Sneak)` : '1d6 (Sneak)';
+        }
         if (at === 'thrown' && strMod > 0) flatDmg += strMod;
 
         let rawDice = activeRangedWep.dice || '1d8';
@@ -12924,6 +13061,16 @@
 
         let flatDmg = arrowDmgBonus;
         if (t.pointBlankShot && hasPBS) flatDmg += 1;
+        if (t.enhanceArrow) flatDmg += 1;
+        if (typeof getAllCombatPins === 'function') {
+          const allPins = getAllCombatPins();
+          allPins.forEach(p => {
+            if (p.active && (p.category === 'offense_ranged' || p.scope === 'Ranged Only' || p.combatScope === 'ranged' || p.combatScope === 'both')) {
+              if (p.bonusDmg) flatDmg += Number(p.bonusDmg);
+              if (p.dice) arrowExtraDice = arrowExtraDice ? `${arrowExtraDice} + ${p.dice}` : ` + ${p.dice}`;
+            }
+          });
+        }
         if (at === 'thrown' && strMod > 0) flatDmg += strMod;
 
         let extraDice = arrowExtraDice;
@@ -13196,6 +13343,11 @@
         return;
       }
 
+      if (window._combatOffenseMode === 'ranged') {
+        const canShoot = consumeEquippedAmmunition(1);
+        if (!canShoot) return;
+      }
+
       const chain = window.currentCombatAttackChain || computeCombatAttackChain(character);
       const item = chain[targetIdx] || chain[0];
       if (!item) return;
@@ -13311,6 +13463,11 @@
     function rollFullAttackWith3D() {
       const chain = computeCombatAttackChain(character);
       if (!chain || chain.length === 0) return;
+
+      if (window._combatOffenseMode === 'ranged') {
+        const canShoot = consumeEquippedAmmunition(chain.length);
+        if (!canShoot) return;
+      }
 
       const noCritConfirm = document.getElementById('house-no-crit-confirm') ? document.getElementById('house-no-crit-confirm').checked : (character.houseRules?.noCritConfirm ?? true);
       const maneuverCrit = document.getElementById('house-maneuver-crit') ? document.getElementById('house-maneuver-crit').checked : (character.houseRules?.maneuverCrit ?? false);
@@ -15104,9 +15261,9 @@
     }
 
     function renderCombatPins(category) {
+      if (category === 'offense_ranged') return;
       if (category === 'offense') {
         renderCombatPins('offense_melee');
-        renderCombatPins('offense_ranged');
         renderCombatPins('offense_spell');
         return;
       }
