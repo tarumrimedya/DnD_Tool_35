@@ -11194,6 +11194,32 @@
       const list = [];
       const seen = new Set();
 
+      function getRangedWeaponDefaultDice(item, low) {
+        if (item && item.dice) return item.dice;
+        if (low.includes('heavy crossbow')) return '1d10';
+        if (low.includes('shortbow') || low.includes('kısa yay')) return '1d6';
+        if (low.includes('sling') || low.includes('dagger') || low.includes('hançer') || low.includes('sapan')) return '1d4';
+        return '1d8';
+      }
+
+      function getRangedWeaponDefaultCrit(item, low) {
+        if (item && item.crit) return item.crit;
+        if (low.includes('crossbow') || low.includes('arbalet') || low.includes('dagger') || low.includes('hançer')) return '19-20 / x2';
+        if (low.includes('sling') || low.includes('sapan')) return '20 / x2';
+        return '20 / x3';
+      }
+
+      function getRangedWeaponDefaultRange(item, low) {
+        if (item && item.rangeIncrement && item.rangeIncrement > 0) return `${item.rangeIncrement} ft`;
+        if (low.includes('heavy crossbow')) return '120 ft';
+        if (low.includes('composite longbow')) return '110 ft';
+        if (low.includes('longbow') || low.includes('uzun yay')) return '100 ft';
+        if (low.includes('light crossbow')) return '80 ft';
+        if (low.includes('shortbow') || low.includes('kısa yay')) return '60 ft';
+        if (low.includes('sling') || low.includes('sapan')) return '50 ft';
+        return '10 ft';
+      }
+
       function checkAndAdd(item, source) {
         if (!item) return;
         const name = typeof item === 'string' ? item : (item.name || '');
@@ -11207,9 +11233,9 @@
           list.push({
             name: name,
             source: source,
-            dice: item.dice || (low.includes('heavy crossbow') ? '1d10' : (low.includes('shortbow') || low.includes('kısa yay') ? '1d6' : (low.includes('sling') || low.includes('dagger') || low.includes('hançer') || low.includes('sapan') ? '1d4' : '1d8'))),
-            crit: item.crit || (low.includes('crossbow') || low.includes('arbalet') || low.includes('dagger') || low.includes('hançer') ? '19-20 / x2' : (low.includes('sling') || low.includes('sapan') ? '20 / x2' : '20 / x3')),
-            range: item.rangeIncrement ? `${item.rangeIncrement} ft` : (low.includes('heavy crossbow') ? '120 ft' : (low.includes('composite longbow') ? '110 ft' : (low.includes('longbow') || low.includes('uzun yay') ? '100 ft' : (low.includes('light crossbow') ? '80 ft' : (low.includes('shortbow') || low.includes('kısa yay') ? '60 ft' : (low.includes('sling') ? '50 ft' : '10 ft'))))),
+            dice: getRangedWeaponDefaultDice(item, low),
+            crit: getRangedWeaponDefaultCrit(item, low),
+            range: getRangedWeaponDefaultRange(item, low),
             dmgType: (low.includes('sling') || low.includes('sapan')) ? 'Ezici' : 'Delici',
             ammoType: getRequiredAmmunitionType(name)
           });
