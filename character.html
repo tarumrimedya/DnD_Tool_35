@@ -416,8 +416,8 @@
                 <!-- Header with Edit Toggle -->
                 <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
                   <div class="flex items-center gap-1.5">
-                    <span class="text-amber-400">⚡</span>
-                    <span class="text-xs font-black uppercase text-slate-200 tracking-wider">HIZLI SİLAH SETLERİ</span>
+                    <span class="text-amber-400" id="weapon-sets-header-icon">⚔️</span>
+                    <span id="weapon-sets-header-title" class="text-xs font-black uppercase text-slate-200 tracking-wider">HIZLI SİLAH SETLERİ (YAKIN)</span>
                   </div>
                   <button type="button" onclick="toggleWeaponSetsEditor()" id="btn-toggle-weapon-sets-edit" class="text-[10px] font-bold text-slate-400 hover:text-amber-300 bg-slate-900/90 hover:bg-slate-800 px-2 py-0.5 rounded border border-slate-700 transition flex items-center gap-1 cursor-pointer">
                     <span>⚙️</span>
@@ -532,16 +532,6 @@
                   <span class="text-[9px] text-slate-400" id="ranged-mod-explanation">DEX Mod (+3) devrede</span>
                 </div>
                 
-                <!-- Ranged Weapon Selector -->
-                <div class="flex items-center justify-between bg-slate-900/80 border border-amber-500/30 rounded px-2.5 py-1.5">
-                  <div class="flex items-center gap-1.5">
-                    <span class="text-xs" id="combat-ranged-weapon-icon">🏹</span>
-                    <div class="text-xs font-bold text-amber-300">Menzilli Silah:</div>
-                  </div>
-                  <select id="combat-active-ranged-weapon-select" onchange="onCombatRangedWeaponChange()" class="bg-slate-950 border border-amber-500/50 rounded text-amber-200 font-mono font-bold text-xs py-1 px-2 cursor-pointer max-w-[190px] sm:max-w-[230px]">
-                  </select>
-                </div>
-
                 <!-- Ammunition Selector (Dynamically adapted by weapon type: Arrow, Bolt, Bullet, Thrown) -->
                 <div id="combat-ammo-container" class="flex items-center justify-between bg-slate-900/80 border border-amber-500/30 rounded px-2.5 py-1.5">
                   <div class="flex items-center gap-1.5">
@@ -565,6 +555,23 @@
                   <button type="button" onclick="toggleExpandRangedModifiersGrid()" id="btn-toggle-expand-ranged-mods" class="text-[10px] text-amber-400 hover:text-amber-300 font-bold transition flex items-center justify-center gap-1 mx-auto cursor-pointer">
                     <span>▾ Daha Fazla Göster (Genişlet)</span>
                   </button>
+                </div>
+
+                <!-- UZAK SALDIRI & MÜHİMMAT ÇEKMECESİ (DRAWER) -->
+                <div id="combat-pins-container-offense_ranged" class="bg-slate-950/80 border border-amber-900/50 rounded-lg p-2.5 space-y-2 mt-2">
+                  <div class="flex items-center justify-between text-[10px] font-bold text-amber-300 border-b border-amber-900/50 pb-1.5">
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-amber-400">🏹</span>
+                      <span class="uppercase tracking-wider">UZAK SALDIRI &amp; MÜHİMMAT ÇEKMECESİ</span>
+                      <span id="offense_ranged-pins-badge" class="bg-slate-900 text-amber-300 border border-amber-700/50 font-mono font-bold text-[9px] px-1.5 py-0.2 rounded">0</span>
+                    </div>
+                    <button type="button" id="toggle-offense_ranged-pins-btn" onclick="togglePinDrawer('offense_ranged')" class="text-[9px] text-amber-400 hover:text-white bg-slate-900 px-2 py-0.5 rounded border border-amber-800/60 transition cursor-pointer">
+                      Tümünü Göster
+                    </button>
+                  </div>
+                  <div id="combat-pins-offense_ranged" class="space-y-1.5">
+                    <!-- Populated dynamically -->
+                  </div>
                 </div>
               </div>
             </div>
@@ -6928,8 +6935,11 @@
               hubDb.characters[idx].fortSave = character.saves?.fort?.total ?? hubDb.characters[idx].fortSave;
               hubDb.characters[idx].refSave = character.saves?.ref?.total ?? hubDb.characters[idx].refSave;
               hubDb.characters[idx].willSave = character.saves?.will?.total ?? hubDb.characters[idx].willSave;
-              if (character.avatarUrl || character.portraitUrl) {
-                hubDb.characters[idx].avatarUrl = character.avatarUrl || character.portraitUrl;
+              if (character.portrait || character.avatarUrl || character.portraitUrl) {
+                hubDb.characters[idx].portrait = character.portrait || character.avatarUrl || character.portraitUrl;
+                hubDb.characters[idx].avatarUrl = hubDb.characters[idx].portrait;
+                hubDb.characters[idx].portraitPosition = character.portraitPosition || '50% 50%';
+                hubDb.characters[idx].portraitFit = character.portraitFit || '125%';
               }
               hubDb.characters[idx].fullData = character;
               localStorage.setItem('dnd35_hub_db', JSON.stringify(hubDb));
@@ -9755,9 +9765,32 @@
           cardTitle.innerHTML = '<span>🏹</span> SALDIRI & SİLAH ROTASYONU (UZAK)';
           cardTitle.className = 'text-xs font-black uppercase text-amber-400 tracking-wider flex items-center gap-1.5';
         }
+        const wsTitle = document.getElementById('weapon-sets-header-title');
+        const wsIcon = document.getElementById('weapon-sets-header-icon');
+        if (wsTitle) wsTitle.textContent = 'MENZİLLİ SİLAH SETLERİ (UZAK)';
+        if (wsIcon) wsIcon.textContent = '🏹';
+
+        // Contextual Weapon Sets Persistence
+        if (character && character.tactical) {
+          if (character.tactical.weaponSets && (!character.tactical.mode || character.tactical.mode === 'melee')) {
+            character.tactical.meleeWeaponSets = JSON.parse(JSON.stringify(character.tactical.weaponSets));
+          }
+          character.tactical.mode = 'ranged';
+          if (character.tactical.rangedWeaponSets) {
+            character.tactical.weaponSets = JSON.parse(JSON.stringify(character.tactical.rangedWeaponSets));
+          } else {
+            character.tactical.weaponSets = null;
+          }
+        }
+
         if (profileBtn) profileBtn.classList.remove('hidden');
+        ensureWeaponSetsData();
+        applyWeaponSetsConfiguration();
+        renderWeaponSetsUI();
+        if (typeof populateWeaponSetsEditorDropdowns === 'function') populateWeaponSetsEditorDropdowns();
         if (typeof populateRangedWeaponAndAmmoUI === 'function') populateRangedWeaponAndAmmoUI();
         if (typeof renderRangedModifiersGrid === 'function') renderRangedModifiersGrid();
+        if (typeof renderCombatPins === 'function') renderCombatPins('offense_ranged');
         recalculateOffense();
       } else {
         // default: melee (Yakın)
@@ -9775,7 +9808,29 @@
           cardTitle.innerHTML = '<span>⚔️</span> SALDIRI & SİLAH ROTASYONU (YAKIN)';
           cardTitle.className = 'text-xs font-black uppercase text-rose-400 tracking-wider flex items-center gap-1.5';
         }
+        const wsTitle = document.getElementById('weapon-sets-header-title');
+        const wsIcon = document.getElementById('weapon-sets-header-icon');
+        if (wsTitle) wsTitle.textContent = 'HIZLI SİLAH SETLERİ (YAKIN)';
+        if (wsIcon) wsIcon.textContent = '⚔️';
+
+        // Contextual Weapon Sets Persistence
+        if (character && character.tactical) {
+          if (character.tactical.weaponSets && character.tactical.mode === 'ranged') {
+            character.tactical.rangedWeaponSets = JSON.parse(JSON.stringify(character.tactical.weaponSets));
+          }
+          character.tactical.mode = 'melee';
+          if (character.tactical.meleeWeaponSets) {
+            character.tactical.weaponSets = JSON.parse(JSON.stringify(character.tactical.meleeWeaponSets));
+          } else {
+            character.tactical.weaponSets = null;
+          }
+        }
+
         if (profileBtn) profileBtn.classList.remove('hidden');
+        ensureWeaponSetsData();
+        applyWeaponSetsConfiguration();
+        renderWeaponSetsUI();
+        if (typeof populateWeaponSetsEditorDropdowns === 'function') populateWeaponSetsEditorDropdowns();
         if (typeof renderOffenseModifiersGrid === 'function') renderOffenseModifiersGrid();
         recalculateOffense();
       }
@@ -10248,30 +10303,102 @@
       return false;
     }
 
+    // Helper to determine if an item is a ranged or thrown weapon (Bows, Crossbows, Slings, Thrown Daggers, etc.)
+    function isRangedOrThrownWeapon(item) {
+      if (!item) return false;
+      const name = typeof item === 'string' ? item : (item.name || '');
+      if (!name || name === 'Yok' || name === '-' || name === 'None' || name === 'Boş') return false;
+      const low = name.toLowerCase().trim();
+
+      // Explicit property checks
+      if (typeof item === 'object') {
+        if (item.combatScope === 'ranged' || item.combatScope === 'both') return true;
+        if (item.attackType === 'ranged' || item.category === 'Ranged' || item.ammoType) return true;
+      }
+
+      // Lookup in masterDb
+      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        const m = masterDb.find(entry => entry && (
+          (entry.name && entry.name.toLowerCase().trim() === low) ||
+          (entry.masterDbName && entry.masterDbName.toLowerCase().trim() === low)
+        ));
+        if (m) {
+          if (m.combatScope === 'ranged' || m.combatScope === 'both') return true;
+          if (m.attackType === 'ranged' || m.category === 'Ranged' || m.ammoType) return true;
+        }
+      }
+
+      // Keyword heuristic for ranged & thrown weapons
+      return (
+        low.includes('bow') || 
+        low.includes('yay') || 
+        low.includes('crossbow') || 
+        low.includes('arbalet') || 
+        low.includes('sling') || 
+        low.includes('sapan') || 
+        low.includes('dagger') || 
+        low.includes('hançer') || 
+        low.includes('dart') || 
+        low.includes('shuriken') || 
+        low.includes('javelin') || 
+        low.includes('cirit') || 
+        low.includes('fırlatma') || 
+        low.includes('thrown') ||
+        low.includes('taş') ||
+        low.includes('bullet')
+      );
+    }
+
     function ensureWeaponSetsData() {
       if (!character) return;
       if (!character.tactical) character.tactical = {};
 
+      const isRangedMode = window._combatOffenseMode === 'ranged';
+
       const getValidMainWeapon = () => {
-        const equippedMain = character.bodySlots?.mainHand?.name && character.bodySlots.mainHand.name !== '-' ? character.bodySlots.mainHand.name : null;
-        if (equippedMain && equippedMain !== 'Yok' && equippedMain !== 'None' && !isRangedOnlyWeapon(equippedMain)) return equippedMain;
-        if (character.activeWeapon && character.activeWeapon !== 'Yok' && character.activeWeapon !== 'None' && !isRangedOnlyWeapon(character.activeWeapon)) return character.activeWeapon;
-        const firstMelee = (character.weapons || []).find(w => w && w.name && !isRangedOnlyWeapon(w));
-        if (firstMelee && firstMelee.name) return firstMelee.name;
-        return 'Unarmed Strike';
+        if (isRangedMode) {
+          const equippedMain = character.bodySlots?.mainHand?.name && character.bodySlots.mainHand.name !== '-' ? character.bodySlots.mainHand.name : null;
+          if (equippedMain && equippedMain !== 'Yok' && equippedMain !== 'None' && isRangedOrThrownWeapon(equippedMain)) return equippedMain;
+          if (character.tactical.selectedRangedWeapon && isRangedOrThrownWeapon(character.tactical.selectedRangedWeapon)) return character.tactical.selectedRangedWeapon;
+          const firstRanged = (character.weapons || []).find(w => w && w.name && isRangedOrThrownWeapon(w));
+          if (firstRanged && firstRanged.name) return firstRanged.name;
+          const gearRanged = (character.gearPool || []).find(g => g && g.name && isRangedOrThrownWeapon(g));
+          if (gearRanged && gearRanged.name) return gearRanged.name;
+          return 'Kompozit Uzun Yay (Composite Longbow)';
+        } else {
+          const equippedMain = character.bodySlots?.mainHand?.name && character.bodySlots.mainHand.name !== '-' ? character.bodySlots.mainHand.name : null;
+          if (equippedMain && equippedMain !== 'Yok' && equippedMain !== 'None' && !isRangedOnlyWeapon(equippedMain)) return equippedMain;
+          if (character.activeWeapon && character.activeWeapon !== 'Yok' && character.activeWeapon !== 'None' && !isRangedOnlyWeapon(character.activeWeapon)) return character.activeWeapon;
+          const firstMelee = (character.weapons || []).find(w => w && w.name && !isRangedOnlyWeapon(w));
+          if (firstMelee && firstMelee.name) return firstMelee.name;
+          return 'Unarmed Strike';
+        }
       };
 
       const getValidOffWeapon = (mainWep) => {
-        const equippedOff = character.bodySlots?.offHand?.name && character.bodySlots.offHand.name !== '-' ? character.bodySlots.offHand.name : null;
-        if (equippedOff && equippedOff !== 'Yok' && equippedOff !== 'None' && !isRangedOnlyWeapon(equippedOff)) return equippedOff;
-        const otherWep = (character.weapons || []).find(w => w && w.name && w.name !== mainWep && !isRangedOnlyWeapon(w))?.name;
-        if (otherWep) return otherWep;
-        return 'Yok';
+        if (isRangedMode) {
+          const isTwoHanded = isRangedOnlyWeapon(mainWep);
+          if (isTwoHanded) {
+            const equippedOff = character.bodySlots?.offHand?.name;
+            if (equippedOff && equippedOff.toLowerCase().includes('buckler')) return equippedOff;
+            return 'Yok';
+          }
+          const otherWep = (character.weapons || []).find(w => w && w.name && isRangedOrThrownWeapon(w) && !isRangedOnlyWeapon(w))?.name;
+          if (otherWep) return otherWep;
+          return 'Yok';
+        } else {
+          const equippedOff = character.bodySlots?.offHand?.name && character.bodySlots.offHand.name !== '-' ? character.bodySlots.offHand.name : null;
+          if (equippedOff && equippedOff !== 'Yok' && equippedOff !== 'None' && !isRangedOnlyWeapon(equippedOff)) return equippedOff;
+          const otherWep = (character.weapons || []).find(w => w && w.name && w.name !== mainWep && !isRangedOnlyWeapon(w))?.name;
+          if (otherWep) return otherWep;
+          return 'Yok';
+        }
       };
 
       if (!character.tactical.weaponSets) {
         const mainWep = getValidMainWeapon();
         const secondWep = getValidOffWeapon(mainWep);
+        const autoGrip = (isRangedMode && isRangedOnlyWeapon(mainWep)) ? '2-Hand' : '1-Hand';
 
         character.tactical.weaponSets = {
           activeSets: [1],
@@ -10279,7 +10406,7 @@
           set1: {
             name: 'Ana El',
             mainWeapon: mainWep,
-            grip: '1-Hand'
+            grip: autoGrip
           },
           set2: {
             name: 'İkinci El',
@@ -10293,28 +10420,35 @@
           character.tactical.weaponSets.activeSets = prev === 'both' ? [1, 2] : (prev === 2 ? [2] : [1]);
         }
         if (!character.tactical.weaponSets.set1) {
-          character.tactical.weaponSets.set1 = { name: 'Ana El', mainWeapon: getValidMainWeapon(), grip: '1-Hand' };
+          character.tactical.weaponSets.set1 = { name: 'Ana El', mainWeapon: getValidMainWeapon(), grip: isRangedMode ? '2-Hand' : '1-Hand' };
         }
         if (!character.tactical.weaponSets.set2) {
           character.tactical.weaponSets.set2 = { name: 'İkinci El', mainWeapon: getValidOffWeapon(character.tactical.weaponSets.set1.mainWeapon), grip: 'Off-Hand' };
         }
 
-        // If set1 had legacy hardcoded dummy fallback or a ranged weapon (like Longbow)
         const s1Wep = character.tactical.weaponSets.set1.mainWeapon;
-        const hasS1Wep = (character.weapons || []).some(w => w && w.name === s1Wep) || 
-                         character.bodySlots?.mainHand?.name === s1Wep || 
-                         (character.gearPool || []).some(g => g && g.name === s1Wep);
-        if ((!hasS1Wep && (s1Wep === 'Rapier +2' || !s1Wep)) || isRangedOnlyWeapon(s1Wep)) {
-          character.tactical.weaponSets.set1.mainWeapon = getValidMainWeapon();
+        if (isRangedMode) {
+          if (!s1Wep || s1Wep === 'Yok' || !isRangedOrThrownWeapon(s1Wep)) {
+            character.tactical.weaponSets.set1.mainWeapon = getValidMainWeapon();
+            if (isRangedOnlyWeapon(character.tactical.weaponSets.set1.mainWeapon)) {
+              character.tactical.weaponSets.set1.grip = '2-Hand';
+            }
+          }
+        } else {
+          if (isRangedOnlyWeapon(s1Wep) || !s1Wep || s1Wep === 'Yok') {
+            character.tactical.weaponSets.set1.mainWeapon = getValidMainWeapon();
+          }
         }
 
         const s2Wep = character.tactical.weaponSets.set2.mainWeapon;
-        const hasS2Wep = s2Wep === 'Yok' || s2Wep === 'None' ||
-                         (character.weapons || []).some(w => w && w.name === s2Wep) || 
-                         character.bodySlots?.offHand?.name === s2Wep || 
-                         (character.gearPool || []).some(g => g && g.name === s2Wep);
-        if ((!hasS2Wep && (s2Wep === 'Dagger (Masterwork)' || !s2Wep)) || (s2Wep !== 'Yok' && isRangedOnlyWeapon(s2Wep))) {
-          character.tactical.weaponSets.set2.mainWeapon = getValidOffWeapon(character.tactical.weaponSets.set1.mainWeapon);
+        if (isRangedMode) {
+          if (s2Wep && s2Wep !== 'Yok' && !isRangedOrThrownWeapon(s2Wep) && !s2Wep.toLowerCase().includes('buckler')) {
+            character.tactical.weaponSets.set2.mainWeapon = 'Yok';
+          }
+        } else {
+          if (s2Wep && s2Wep !== 'Yok' && isRangedOnlyWeapon(s2Wep)) {
+            character.tactical.weaponSets.set2.mainWeapon = getValidOffWeapon(character.tactical.weaponSets.set1.mainWeapon);
+          }
         }
 
         if (!character.tactical.weaponSets.set1.name || character.tactical.weaponSets.set1.name.includes('Buckler') || character.tactical.weaponSets.set1.name.includes('Set I')) {
@@ -10381,6 +10515,45 @@
           critStr: '20 / x2',
           dmgType: 'Fiziksel',
           isWeapon: true
+        };
+      }
+
+      // Ranged combat mode calculation for cards
+      if (window._combatOffenseMode === 'ranged' && !isShieldItem) {
+        const at = getRequiredAmmunitionType(wepName);
+        const low = wepName.toLowerCase();
+        const baseDice = wep?.dice || getRangedWeaponDefaultDice(wep, low);
+        const crit = wep?.crit || (wep?.critMin ? `${wep.critMin}-20/x${wep.critMult || 2}` : getRangedWeaponDefaultCrit(wep, low));
+        const dexMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.dex || 10) : 3;
+        const strMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.str || 10) : 0;
+        const t = character.tactical || {};
+        const selArrow = t.selectedArrow || 'standard';
+
+        let arrowBonus = 0;
+        let extraDice = '';
+        if (selArrow === 'plus1') arrowBonus = 1;
+        else if (selArrow === 'plus2') arrowBonus = 2;
+        else if (selArrow === 'silver') arrowBonus = -1;
+        else if (selArrow === 'fire') extraDice = ' + 1d6 (Ateş)';
+        else if (selArrow === 'acid') extraDice = ' + 1d6 (Asit)';
+        else if (selArrow === 'shock') extraDice = ' + 1d6 (Şok)';
+
+        let flatDmg = arrowBonus;
+        if (t.pointBlankShot && characterHasFeat(character, 'Point Blank')) flatDmg += 1;
+        if (at === 'thrown' && strMod > 0) flatDmg += strMod;
+
+        const flatStr = flatDmg !== 0 ? (flatDmg > 0 ? `+${flatDmg}` : `${flatDmg}`) : '';
+        const dmgStr = `${baseDice}${flatStr}${extraDice}`;
+        const dmgType = (at === 'bullet' || selArrow === 'blunt') ? 'Ezici' : 'Delici';
+
+        return {
+          dmgStr,
+          critStr: crit,
+          dmgType,
+          finesseMod: dexMod,
+          isFinesse: true,
+          isWeapon: true,
+          hasExtraMods: flatDmg !== 0 || extraDice !== ''
         };
       }
 
@@ -10770,81 +10943,150 @@
       const sets = character.tactical.weaponSets;
       if (!sets) return;
 
+      const isRangedMode = window._combatOffenseMode === 'ranged';
       const availableItems = [];
 
-      // 1. From character.weapons (excluding ranged-only weapons)
-      (character.weapons || []).forEach(w => {
-        if (w && w.name && w.name !== 'None' && w.name !== 'Yok') {
-          if (!isRangedOnlyWeapon(w) && !availableItems.some(i => i.name === w.name)) {
-            availableItems.push({
-              name: w.name,
-              category: (w.dmgType === 'Kalkan' || w.name.toLowerCase().includes('shield') || w.name.toLowerCase().includes('buckler')) ? 'Shield' : 'Weapon'
-            });
+      if (isRangedMode) {
+        // Collect ONLY ranged & thrown weapons for Ranged mode
+        (character.weapons || []).forEach(w => {
+          if (w && w.name && w.name !== 'None' && w.name !== 'Yok') {
+            if (isRangedOrThrownWeapon(w) && !availableItems.some(i => i.name === w.name)) {
+              availableItems.push({
+                name: w.name,
+                category: 'Weapon'
+              });
+            }
           }
-        }
-      });
-
-      // 2. From bodySlots (mainHand and offHand, excluding ranged-only weapons)
-      const mh = character.bodySlots?.mainHand;
-      if (mh && mh.name && mh.name !== '-' && mh.name !== 'Yok') {
-        if (!isRangedOnlyWeapon(mh) && !availableItems.some(i => i.name === mh.name)) {
-          availableItems.push({
-            name: mh.name,
-            category: mh.category || 'Weapon'
-          });
-        }
-      }
-      const oh = character.bodySlots?.offHand;
-      if (oh && oh.name && oh.name !== '-' && oh.name !== 'Yok') {
-        if (!isRangedOnlyWeapon(oh) && !availableItems.some(i => i.name === oh.name)) {
-          availableItems.push({
-            name: oh.name,
-            category: oh.category || (oh.name.toLowerCase().includes('shield') || oh.name.toLowerCase().includes('buckler') ? 'Shield' : 'Weapon')
-          });
-        }
-      }
-
-      // 3. From gearPool (excluding ranged-only weapons)
-      (character.gearPool || []).forEach(item => {
-        if (item && item.name && (item.category === 'Weapon' || item.category === 'Shield')) {
-          if (!isRangedOnlyWeapon(item) && !availableItems.some(i => i.name === item.name)) {
-            availableItems.push({
-              name: item.name,
-              category: item.category
-            });
-          }
-        }
-      });
-
-      // 4. From character.inventory (dynamically discover weapons/shields in backpack/inventory)
-      (character.inventory || []).forEach(item => {
-        if (item && item.name && (item.category === 'Weapon' || item.type === 'Weapon' || item.category === 'Shield' || item.type === 'Shield')) {
-          if (!isRangedOnlyWeapon(item) && !availableItems.some(i => i.name === item.name)) {
-            availableItems.push({
-              name: item.name,
-              category: (item.category === 'Shield' || item.type === 'Shield' || item.name.toLowerCase().includes('shield') || item.name.toLowerCase().includes('buckler')) ? 'Shield' : 'Weapon'
-            });
-          }
-        }
-      });
-
-      // 5. Default shields if not present
-      const standardShields = ['Darkwood Buckler +1', '+1 Buckler', 'Heavy Shield'];
-      standardShields.forEach(shName => {
-        if (!availableItems.some(i => i.name === shName)) {
-          availableItems.push({
-            name: shName,
-            category: 'Shield'
-          });
-        }
-      });
-
-      // 6. Always ensure Unarmed Strike is available in melee weapon selection
-      if (!availableItems.some(i => (i.name || '').toLowerCase().includes('unarmed') || (i.name || '').toLowerCase().includes('silahsız'))) {
-        availableItems.unshift({
-          name: 'Unarmed Strike',
-          category: 'Weapon'
         });
+
+        const mh = character.bodySlots?.mainHand;
+        if (mh && mh.name && mh.name !== '-' && mh.name !== 'Yok') {
+          if (isRangedOrThrownWeapon(mh) && !availableItems.some(i => i.name === mh.name)) {
+            availableItems.push({ name: mh.name, category: 'Weapon' });
+          }
+        }
+        const oh = character.bodySlots?.offHand;
+        if (oh && oh.name && oh.name !== '-' && oh.name !== 'Yok') {
+          if (isRangedOrThrownWeapon(oh) && !availableItems.some(i => i.name === oh.name)) {
+            availableItems.push({ name: oh.name, category: 'Weapon' });
+          } else if (oh.name.toLowerCase().includes('buckler') && !availableItems.some(i => i.name === oh.name)) {
+            availableItems.push({ name: oh.name, category: 'Shield' });
+          }
+        }
+
+        (character.gearPool || []).forEach(item => {
+          if (item && item.name) {
+            if (isRangedOrThrownWeapon(item) && !availableItems.some(i => i.name === item.name)) {
+              availableItems.push({ name: item.name, category: 'Weapon' });
+            } else if (item.name.toLowerCase().includes('buckler') && !availableItems.some(i => i.name === item.name)) {
+              availableItems.push({ name: item.name, category: 'Shield' });
+            }
+          }
+        });
+
+        (character.inventory || []).forEach(item => {
+          if (item && item.name) {
+            if (isRangedOrThrownWeapon(item) && !availableItems.some(i => i.name === item.name)) {
+              availableItems.push({ name: item.name, category: 'Weapon' });
+            } else if (item.name.toLowerCase().includes('buckler') && !availableItems.some(i => i.name === item.name)) {
+              availableItems.push({ name: item.name, category: 'Shield' });
+            }
+          }
+        });
+
+        const standardRanged = [
+          'Kompozit Uzun Yay (Composite Longbow)',
+          'Uzun Yay (Longbow)',
+          'Kısa Yay (Shortbow)',
+          'Hafif Arbalet (Light Crossbow)',
+          'Ağır Arbalet (Heavy Crossbow)',
+          'Sapan (Sling)',
+          'Fırlatma Hançeri (Thrown Dagger)'
+        ];
+        standardRanged.forEach(rName => {
+          if (!availableItems.some(i => i.name === rName)) {
+            availableItems.push({ name: rName, category: 'Weapon' });
+          }
+        });
+
+        if (!availableItems.some(i => i.name.toLowerCase().includes('buckler'))) {
+          availableItems.push({ name: 'Darkwood Buckler +1', category: 'Shield' });
+        }
+      } else {
+        // 1. From character.weapons (excluding ranged-only weapons)
+        (character.weapons || []).forEach(w => {
+          if (w && w.name && w.name !== 'None' && w.name !== 'Yok') {
+            if (!isRangedOnlyWeapon(w) && !availableItems.some(i => i.name === w.name)) {
+              availableItems.push({
+                name: w.name,
+                category: (w.dmgType === 'Kalkan' || w.name.toLowerCase().includes('shield') || w.name.toLowerCase().includes('buckler')) ? 'Shield' : 'Weapon'
+              });
+            }
+          }
+        });
+
+        // 2. From bodySlots (mainHand and offHand, excluding ranged-only weapons)
+        const mh = character.bodySlots?.mainHand;
+        if (mh && mh.name && mh.name !== '-' && mh.name !== 'Yok') {
+          if (!isRangedOnlyWeapon(mh) && !availableItems.some(i => i.name === mh.name)) {
+            availableItems.push({
+              name: mh.name,
+              category: mh.category || 'Weapon'
+            });
+          }
+        }
+        const oh = character.bodySlots?.offHand;
+        if (oh && oh.name && oh.name !== '-' && oh.name !== 'Yok') {
+          if (!isRangedOnlyWeapon(oh) && !availableItems.some(i => i.name === oh.name)) {
+            availableItems.push({
+              name: oh.name,
+              category: oh.category || (oh.name.toLowerCase().includes('shield') || oh.name.toLowerCase().includes('buckler') ? 'Shield' : 'Weapon')
+            });
+          }
+        }
+
+        // 3. From gearPool (excluding ranged-only weapons)
+        (character.gearPool || []).forEach(item => {
+          if (item && item.name && (item.category === 'Weapon' || item.category === 'Shield')) {
+            if (!isRangedOnlyWeapon(item) && !availableItems.some(i => i.name === item.name)) {
+              availableItems.push({
+                name: item.name,
+                category: item.category
+              });
+            }
+          }
+        });
+
+        // 4. From character.inventory (dynamically discover weapons/shields in backpack/inventory)
+        (character.inventory || []).forEach(item => {
+          if (item && item.name && (item.category === 'Weapon' || item.type === 'Weapon' || item.category === 'Shield' || item.type === 'Shield')) {
+            if (!isRangedOnlyWeapon(item) && !availableItems.some(i => i.name === item.name)) {
+              availableItems.push({
+                name: item.name,
+                category: (item.category === 'Shield' || item.type === 'Shield' || item.name.toLowerCase().includes('shield') || item.name.toLowerCase().includes('buckler')) ? 'Shield' : 'Weapon'
+              });
+            }
+          }
+        });
+
+        // 5. Default shields if not present
+        const standardShields = ['Darkwood Buckler +1', '+1 Buckler', 'Heavy Shield'];
+        standardShields.forEach(shName => {
+          if (!availableItems.some(i => i.name === shName)) {
+            availableItems.push({
+              name: shName,
+              category: 'Shield'
+            });
+          }
+        });
+
+        // 6. Always ensure Unarmed Strike is available in melee weapon selection
+        if (!availableItems.some(i => (i.name || '').toLowerCase().includes('unarmed') || (i.name || '').toLowerCase().includes('silahsız'))) {
+          availableItems.unshift({
+            name: 'Unarmed Strike',
+            category: 'Weapon'
+          });
+        }
       }
 
       // Build unified options HTML for both Ana El and İkinci El
@@ -10906,19 +11148,30 @@
         sets.set1.name = 'Ana El';
         const chosen = document.getElementById('set1-main-select')?.value || sets.set1.mainWeapon;
         sets.set1.mainWeapon = chosen;
-        sets.set1.grip = document.getElementById('set1-grip-select')?.value || '1-Hand';
-        // Bidirectional sync: set1 -> bodySlots.mainHand
+
+        if (window._combatOffenseMode === 'ranged') {
+          if (isRangedOnlyWeapon(chosen)) {
+            sets.set1.grip = '2-Hand';
+            const s1Grip = document.getElementById('set1-grip-select');
+            if (s1Grip) s1Grip.value = '2-Hand';
+          } else {
+            sets.set1.grip = document.getElementById('set1-grip-select')?.value || '1-Hand';
+          }
+          character.tactical.selectedRangedWeapon = chosen;
+        } else {
+          sets.set1.grip = document.getElementById('set1-grip-select')?.value || '1-Hand';
+        }
         syncWeaponSetToBodySlot('mainHand', chosen);
       } else {
         sets.set2.name = 'İkinci El';
         const chosen = document.getElementById('set2-main-select')?.value || sets.set2.mainWeapon;
         sets.set2.mainWeapon = chosen;
         sets.set2.grip = 'Off-Hand';
-        // Bidirectional sync: set2 -> bodySlots.offHand
         syncWeaponSetToBodySlot('offHand', chosen);
       }
 
       applyWeaponSetsConfiguration();
+      if (typeof populateRangedWeaponAndAmmoUI === 'function') populateRangedWeaponAndAmmoUI();
       if (typeof renderBodySlotsSilhouette === 'function') renderBodySlotsSilhouette();
       if (typeof renderGearPoolTable === 'function') renderGearPoolTable();
     }
@@ -11446,11 +11699,36 @@
       if (!char.tactical) char.tactical = {};
       const allRanged = findAvailableRangedWeapons(char);
 
+      // 1. First priority: Check weapon sets Set 1 (Ana El)
+      const s1Wep = char.tactical?.weaponSets?.set1?.mainWeapon;
+      if (s1Wep && s1Wep !== 'Yok' && s1Wep !== 'None' && s1Wep !== '-') {
+        const foundInRanged = allRanged.find(w => w.name.toLowerCase().trim() === s1Wep.toLowerCase().trim());
+        if (foundInRanged) {
+          char.tactical.selectedRangedWeapon = foundInRanged.name;
+          return foundInRanged;
+        }
+        if (isRangedOrThrownWeapon(s1Wep)) {
+          const anyWep = findWeaponEverywhere(s1Wep);
+          const low = s1Wep.toLowerCase();
+          const constructed = {
+            name: s1Wep,
+            source: 'Kuşanılan (Ana El)',
+            dice: anyWep?.dice || getRangedWeaponDefaultDice(anyWep, low),
+            crit: anyWep?.critMin ? `${anyWep.critMin}-20/x${anyWep.critMult || 2}` : getRangedWeaponDefaultCrit(anyWep, low),
+            range: anyWep?.range || getRangedWeaponDefaultRange(anyWep, low),
+            dmgType: (low.includes('sling') || low.includes('sapan')) ? 'Ezici' : 'Delici',
+            ammoType: getRequiredAmmunitionType(s1Wep)
+          };
+          char.tactical.selectedRangedWeapon = s1Wep;
+          return constructed;
+        }
+      }
+
       let chosenName = char.tactical.selectedRangedWeapon;
       let matched = allRanged.find(w => w.name === chosenName);
 
       if (!matched) {
-        matched = allRanged[0] || { name: 'Uzun Yay (Longbow)', source: 'SRD Standart', dice: '1d8', crit: '20 / x3', range: '100 ft', dmgType: 'Delici', ammoType: 'arrow' };
+        matched = allRanged[0] || { name: 'Kompozit Uzun Yay (Composite Longbow)', source: 'SRD Standart', dice: '1d8', crit: '20 / x3', range: '100 ft', dmgType: 'Delici', ammoType: 'arrow' };
         char.tactical.selectedRangedWeapon = matched.name;
       }
       return matched;
@@ -11864,7 +12142,52 @@
       character.tactical.selectedArrow = arrowSel.value;
       updateRangedArrowDescription();
       recalculateOffense();
+      if (typeof renderCombatPins === 'function') renderCombatPins('offense_ranged');
       saveStateToStorage(false);
+    }
+
+    function selectCombatAmmoPin(ammoName, explicitVal) {
+      if (!character) return;
+      if (!character.tactical) character.tactical = {};
+
+      const val = explicitVal || getAmmoValFromName(ammoName);
+      character.tactical.selectedArrow = val;
+
+      const arrowSel = document.getElementById('combat-ranged-arrow-select');
+      if (arrowSel) {
+        if (Array.from(arrowSel.options).some(o => o.value === val)) {
+          arrowSel.value = val;
+        }
+      }
+
+      updateRangedArrowDescription();
+      recalculateOffense();
+      if (typeof renderCombatPins === 'function') renderCombatPins('offense_ranged');
+      saveStateToStorage(false);
+
+      showDiceTopToast({
+        icon: '🏹',
+        title: 'Mühimmat Kuşanıldı: ' + ammoName,
+        breakdown: 'Menzilli saldırılar için aktif mühimmat güncellendi.',
+        total: 'Kuşanıldı'
+      });
+    }
+
+    function getAmmoValFromName(name) {
+      if (!name) return 'standard';
+      const low = name.toLowerCase();
+      if (low.includes('masterwork') || low.includes('usta işi')) return 'masterwork';
+      if (low.includes('+2')) return 'plus2';
+      if (low.includes('+1')) return 'plus1';
+      if (low.includes('fire') || low.includes('alev')) return 'fire';
+      if (low.includes('acid') || low.includes('asit')) return 'acid';
+      if (low.includes('shock') || low.includes('şok')) return 'shock';
+      if (low.includes('silver') || low.includes('gümüş')) return 'silver';
+      if (low.includes('cold iron') || low.includes('soğuk demir')) return 'cold_iron';
+      if (low.includes('adamantine') || low.includes('adamantin')) return 'adamantine';
+      if (low.includes('blunt') || low.includes('ezici') || low.includes('kör')) return 'blunt';
+      if (low.includes('stone') || low.includes('taş')) return 'stone';
+      return `inv_${name}`;
     }
 
     function onRangedModifierToggle(modKey) {
@@ -13553,8 +13876,9 @@
       // 4. Utility Column: Quick Consumables
       try { renderCockpitConsumables(); } catch (e) { console.error('renderCockpitConsumables error:', e); }
 
-      // 5. Pin Drawers (Büyü Saldırı ve Savunma - Yakın ve Uzak 3x3 ızgaradan yönetilir)
+      // 5. Pin Drawers (Büyü, Savunma ve Uzak Mühimmat Çekmeceleri)
       try { renderCombatPins('offense_spell'); } catch (e) { console.error("renderCombatPins('offense_spell') error:", e); }
+      try { renderCombatPins('offense_ranged'); } catch (e) { console.error("renderCombatPins('offense_ranged') error:", e); }
       try { renderCombatPins('defense'); } catch (e) { console.error("renderCombatPins('defense') error:", e); }
     }
 
@@ -14535,8 +14859,55 @@
       const badge = document.getElementById(`${category}-pins-badge`);
       if (!container) return;
 
-      const pins = getPinsForDrawer(category);
+      let pins = getPinsForDrawer(category);
       if (!character.combatPins) character.combatPins = {};
+
+      if (category === 'offense_ranged') {
+        const activeRangedWep = getActiveCombatRangedWeapon(character);
+        const at = activeRangedWep?.ammoType || 'arrow';
+        if (pins.length === 0) {
+          if (at === 'arrow') {
+            pins.push(
+              { name: 'Standart Ok', sourceType: 'Ammunition', action: 'Serbest', badge: '1d8 Delici • Normal', ammoVal: 'standard' },
+              { name: 'Usta İşi Ok', sourceType: 'Ammunition', action: 'Serbest', badge: '+1 Vuruş', ammoVal: 'masterwork' },
+              { name: '+1 Büyülü Ok', sourceType: 'Ammunition', action: 'Serbest', badge: '+1 Vuruş & +1 Hasar', ammoVal: 'plus1' },
+              { name: '+2 Büyülü Ok', sourceType: 'Ammunition', action: 'Serbest', badge: '+2 Vuruş & +2 Hasar', ammoVal: 'plus2' },
+              { name: 'Alevli Ok', sourceType: 'Ammunition', action: 'Serbest', badge: '+1d6 Ateş Hasarı', ammoVal: 'fire' },
+              { name: 'Gümüş Uçlu Ok', sourceType: 'Ammunition', action: 'Serbest', badge: 'DR/Gümüş Aşar (-1 Hasar)', ammoVal: 'silver' },
+              { name: 'Adamantin Ok', sourceType: 'Ammunition', action: 'Serbest', badge: 'DR & Sertlik Aşar', ammoVal: 'adamantine' }
+            );
+          } else if (at === 'bolt') {
+            pins.push(
+              { name: 'Standart Bolt', sourceType: 'Ammunition', action: 'Serbest', badge: '1d8 Delici • Normal', ammoVal: 'standard' },
+              { name: 'Usta İşi Bolt', sourceType: 'Ammunition', action: 'Serbest', badge: '+1 Vuruş', ammoVal: 'masterwork' },
+              { name: '+1 Büyülü Bolt', sourceType: 'Ammunition', action: 'Serbest', badge: '+1 Vuruş & +1 Hasar', ammoVal: 'plus1' },
+              { name: 'Alevli Bolt', sourceType: 'Ammunition', action: 'Serbest', badge: '+1d6 Ateş Hasarı', ammoVal: 'fire' }
+            );
+          } else if (at === 'bullet') {
+            pins.push(
+              { name: 'Standart Mermi', sourceType: 'Ammunition', action: 'Serbest', badge: '1d4 Ezici • Normal', ammoVal: 'standard' },
+              { name: '+1 Büyülü Mermi', sourceType: 'Ammunition', action: 'Serbest', badge: '+1 Vuruş & +1 Hasar', ammoVal: 'plus1' }
+            );
+          }
+          const gearPool = [...(character.gearPool || []), ...(character.inventory || [])];
+          gearPool.forEach(it => {
+            if (!it) return;
+            const iName = typeof it === 'string' ? it : (it.name || '');
+            const low = iName.toLowerCase();
+            if (low.includes('arrow') || low.includes('ok') || low.includes('bolt') || low.includes('bullet') || low.includes('mühimmat') || it.attackType === 'ammunition' || it.category === 'Ammunition') {
+              if (!pins.some(p => p.name.toLowerCase() === iName.toLowerCase())) {
+                pins.push({
+                  name: iName,
+                  sourceType: 'Ammunition',
+                  action: 'Serbest',
+                  badge: `🎒 Envanter (${it.count || it.quantity || 1} Adet)`,
+                  ammoVal: `inv_${iName}`
+                });
+              }
+            }
+          });
+        }
+      }
       character.combatPins[category] = pins;
 
       if (badge) badge.textContent = pins.length;
@@ -14574,7 +14945,13 @@
           actionBtns.push(`<button type="button" onclick="event.stopPropagation(); rollSpellTouchAttack('${pin.name.replace(/'/g, "\\'")}')" class="py-1 px-2 rounded bg-amber-950/80 hover:bg-amber-900 border border-amber-600/70 text-amber-300 font-bold text-[10px] transition shrink-0 inline-flex items-center gap-1 cursor-pointer shadow-sm" title="Dokunma Saldırısı Zarı At (BAB + DEX/STR)"><span>⚡</span><span>Dokunma</span></button>`);
         }
 
-        if (pin.sourceType === 'Maneuver' || pin.sourceType === 'Stance') {
+        const isAmmoPin = pin.sourceType === 'Ammunition' || pin.attackType === 'ammunition' || dbItem?.attackType === 'ammunition' || (category === 'offense_ranged' && (pin.ammoVal || pin.name.toLowerCase().includes('ok') || pin.name.toLowerCase().includes('arrow') || pin.name.toLowerCase().includes('bolt') || pin.name.toLowerCase().includes('mermi')));
+        if (isAmmoPin) {
+          const selArrow = character.tactical?.selectedArrow || 'standard';
+          const pinAmmoVal = pin.ammoVal || getAmmoValFromName(pin.name);
+          const isSelected = (selArrow === pinAmmoVal) || (selArrow === `inv_${pin.name}`) || (selArrow.toLowerCase().includes(pin.name.toLowerCase()));
+          actionBtns.push(`<button type="button" onclick="event.stopPropagation(); selectCombatAmmoPin('${pin.name.replace(/'/g, "\\'")}', '${pinAmmoVal}')" class="py-1 px-2.5 rounded font-bold text-[10px] transition shrink-0 flex items-center gap-1 cursor-pointer ${isSelected ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 font-black shadow-[0_0_8px_rgba(245,158,11,0.6)]' : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700'}">${isSelected ? '🏹 Kuşanıldı' : '🏹 Kuşan'}</button>`);
+        } else if (pin.sourceType === 'Maneuver' || pin.sourceType === 'Stance') {
           actionBtns.push(`<button type="button" onclick="event.stopPropagation(); executePinAction('${category}', ${idx})" class="py-1 px-2 rounded bg-rose-950/60 hover:bg-rose-900 border border-rose-700/70 text-rose-300 font-bold text-[10px] transition shrink-0 cursor-pointer">⚡ Hazırla</button>`);
         } else if (pin.sourceType === 'Spell') {
           actionBtns.push(`<button type="button" onclick="event.stopPropagation(); executePinAction('${category}', ${idx})" class="py-1 px-2 rounded bg-purple-950/60 hover:bg-purple-900 border border-purple-700/70 text-purple-300 font-bold text-[10px] transition shrink-0 cursor-pointer">🔮 At</button>`);

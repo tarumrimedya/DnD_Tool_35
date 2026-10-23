@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>D&D 3.5e Karakter & Kampanya Yönetim Merkezi (Hub)</title>
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <script src="bundled_data.js"></script>
   <style>
     body {
       font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -255,8 +256,83 @@
       characters: []
     };
 
+    // Karakter Portre Görseli Render Yardımcısı
+    function getCharacterPortraitHtml(c, iconSize = 'text-2xl') {
+      const portraitSrc = c.portrait || c.avatarUrl || '';
+      if (portraitSrc) {
+        const pos = c.portraitPosition || '50% 50%';
+        const fit = c.portraitFit || 'cover';
+        return `<div class="w-full h-full bg-no-repeat transition-transform duration-300 group-hover:scale-105" style="background-image: url('${portraitSrc}'); background-position: ${pos}; background-size: ${fit};"></div>`;
+      }
+      const emoji = c.emoji || (c.isNpc ? '👹' : '👤');
+      return `<span class="${iconSize}">${emoji}</span>`;
+    }
+
     // Hub Veritabanını Başlat (Initialize or Load from LocalStorage)
     function initHubStorage() {
+      // 1. Karakter sayfasındaki mevcut karakteri çek (LocalStorage veya BUNDLED_CHARACTER_DATA)
+      let activeChar = null;
+      try {
+        const rawChar = localStorage.getItem('dnd35_character');
+        if (rawChar) activeChar = JSON.parse(rawChar);
+      } catch (e) {
+        console.warn('LocalStorage dnd35_character okunamadı:', e);
+      }
+      if (!activeChar && window.BUNDLED_CHARACTER_DATA) {
+        activeChar = window.BUNDLED_CHARACTER_DATA;
+      }
+
+      // Kazmil'in Çırağı / Aktif karakter özellikleri
+      const charName = activeChar?.name || "Kazmil'in Çırağı";
+      const charRace = activeChar?.race || "Human";
+      const charClasses = activeChar?.classes || (activeChar?.class ? `${activeChar.class} ${activeChar.level || 6}` : "Sorcerer 5 / Warblade 1");
+      const charLevel = Number(activeChar?.level) || 6;
+      const charPortrait = activeChar?.portrait || activeChar?.avatarUrl || (window.BUNDLED_CHARACTER_DATA && window.BUNDLED_CHARACTER_DATA.portrait) || "";
+      const charPortraitPos = activeChar?.portraitPosition || "50% 50%";
+      const charPortraitFit = activeChar?.portraitFit || "125%";
+      const charHpCurrent = activeChar?.hp?.current ?? 45;
+      const charHpMax = activeChar?.hp?.max ?? 45;
+      const charHpTemp = activeChar?.hp?.temp ?? 0;
+      const charAc = activeChar?.ac?.total ?? 17;
+      const charTouchAc = activeChar?.ac?.touch ?? 13;
+      const charFlatFootedAc = activeChar?.ac?.flatFooted ?? 14;
+      const activeWep = (activeChar?.weapons || []).find(w => w.name === activeChar?.activeWeapon) || (activeChar?.weapons || [])[0] || {};
+      const charWeapon = activeWep.name || "Rapier";
+      const charAttackFormula = activeWep.dice ? `${activeWep.dice}+${activeWep.dmgBonus || 0}` : "+3";
+      const charFort = activeChar?.saves?.fort?.total ?? 5;
+      const charRef = activeChar?.saves?.ref?.total ?? 4;
+      const charWill = activeChar?.saves?.will?.total ?? 5;
+
+      const khazmilObj = {
+        id: 'char_kazmil_primary',
+        campaignId: 'camp_001',
+        isNpc: false,
+        name: charName,
+        race: charRace,
+        classes: charClasses,
+        level: charLevel,
+        portrait: charPortrait,
+        portraitPosition: charPortraitPos,
+        portraitFit: charPortraitFit,
+        avatarUrl: charPortrait,
+        currentHp: charHpCurrent,
+        maxHp: charHpMax,
+        tempHp: charHpTemp,
+        ac: charAc,
+        touchAc: charTouchAc,
+        flatFootedAc: charFlatFootedAc,
+        mainWeapon: charWeapon,
+        attackFormula: charAttackFormula,
+        fortSave: charFort,
+        refSave: charRef,
+        willSave: charWill,
+        initBonus: 3,
+        spotBonus: 2,
+        listenBonus: 2,
+        fullData: activeChar
+      };
+
+      // 2. Hub veritabanını yükle ve geçmiş dummy karakterleri filtrele
       let loadedDb = null;
       try {
         const raw = localStorage.getItem(HUB_STORAGE_KEY);
@@ -265,155 +341,59 @@
         console.warn('Hub storage parse error:', err);
       }
 
-      if (loadedDb && Array.isArray(loadedDb.campaigns) && Array.isArray(loadedDb.characters)) {
-        state.campaigns = loadedDb.campaigns;
-        state.characters = loadedDb.characters;
-      } else {
-        // İlk kez açılıyor: Varsayılan örnekler oluştur
-        state.campaigns = [
-          { id: 'camp_001', name: '⚔️ Karanlık Zindan', notes: 'Ravenloft esintili mahzen seferi. 4 PC, 2 Boss.' },
-          { id: 'camp_002', name: '🏕️ Vahşi Bataklık', notes: 'Lizardfolk kabilesi ile diplomatik ve askeri karşılaşma.' }
-        ];
+      // Dummy karakter kimlik ve isim filtre seti
+      const dummyIds = new Set(['char_001', 'char_002', 'char_003', 'char_004']);
+      const dummyNames = new Set([
+        'regdar ironfist',
+        'mialee moonwhisper',
+        'gargantuan umber hulk',
+        'lidda quickstep'
+      ]);
 
-        state.characters = [
-          {
-            id: 'char_001',
-            campaignId: 'camp_001',
-            isNpc: false,
-            name: 'Regdar Ironfist',
-            race: 'Human',
-            classes: 'Fighter 4 / Warblade 2',
-            level: 6,
-            avatarUrl: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=160&auto=format&fit=crop&q=80',
-            currentHp: 58,
-            maxHp: 58,
-            tempHp: 5,
-            ac: 21,
-            touchAc: 11,
-            flatFootedAc: 20,
-            mainWeapon: 'Greatsword +1',
-            attackFormula: '+12/+7 (2d6+8, 19-20x2)',
-            fortSave: 9,
-            refSave: 4,
-            willSave: 3,
-            initBonus: 1,
-            spotBonus: 2,
-            listenBonus: 2
-          },
-          {
-            id: 'char_002',
-            campaignId: 'camp_001',
-            isNpc: false,
-            name: 'Mialee Moonwhisper',
-            race: 'Elf',
-            classes: 'Wizard (Evoker) 6',
-            level: 6,
-            avatarUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=160&auto=format&fit=crop&q=80',
-            currentHp: 28,
-            maxHp: 28,
-            tempHp: 0,
-            ac: 15,
-            touchAc: 13,
-            flatFootedAc: 12,
-            mainWeapon: 'Heavy Crossbow',
-            attackFormula: '+6 (1d10, 19-20x2)',
-            fortSave: 4,
-            refSave: 5,
-            willSave: 7,
-            initBonus: 3,
-            spotBonus: 5,
-            listenBonus: 5
-          },
-          {
-            id: 'char_003',
-            campaignId: 'camp_001',
-            isNpc: true,
-            name: 'Gargantuan Umber Hulk',
-            race: 'Monstrous Aberration',
-            classes: 'HD 8d8+40',
-            level: 8,
-            avatarUrl: 'https://images.unsplash.com/photo-1563089145-599997674d42?w=160&auto=format&fit=crop&q=80',
-            currentHp: 76,
-            maxHp: 88,
-            tempHp: 0,
-            ac: 20,
-            touchAc: 9,
-            flatFootedAc: 19,
-            mainWeapon: '2 Claws / 1 Bite',
-            attackFormula: '+11/+11/+9 (2d4+6 / 2d8+3)',
-            fortSave: 10,
-            refSave: 3,
-            willSave: 6,
-            initBonus: 1,
-            spotBonus: 8,
-            listenBonus: 8
-          },
-          {
-            id: 'char_004',
-            campaignId: 'camp_002',
-            isNpc: false,
-            name: 'Lidda Quickstep',
-            race: 'Halfling',
-            classes: 'Rogue 5',
-            level: 5,
-            avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=160&auto=format&fit=crop&q=80',
-            currentHp: 32,
-            maxHp: 32,
-            tempHp: 0,
-            ac: 18,
-            touchAc: 15,
-            flatFootedAc: 14,
-            mainWeapon: 'Short Sword +1',
-            attackFormula: '+9 (1d4+2 + 3d6 Sneak)',
-            fortSave: 3,
-            refSave: 9,
-            willSave: 2,
-            initBonus: 4,
-            spotBonus: 9,
-            listenBonus: 11
-          }
-        ];
+      let campaigns = [
+        { id: 'camp_001', name: '⚔️ Ana Sefer (Main Campaign)', notes: 'Kazmil\'in Çırağı ve aktif macera seferi.' }
+      ];
 
-        // Eğer kullanıcının mevcut localStorage'ında kayıtlı bir karakter varsa (Kazmil'in Çırağı vb.), onu da hemen ekle!
-        try {
-          const existingCharRaw = localStorage.getItem('dnd35_character');
-          if (existingCharRaw) {
-            const exChar = JSON.parse(existingCharRaw);
-            if (exChar && exChar.name) {
-              const activeWep = (exChar.weapons || []).find(w => w.name === exChar.activeWeapon) || (exChar.weapons || [])[0] || {};
-              state.characters.unshift({
-                id: 'char_active_primary',
-                campaignId: 'camp_001',
-                isNpc: false,
-                name: exChar.name,
-                race: exChar.race || 'Human',
-                classes: exChar.classes || (exChar.class ? (exChar.class + ' ' + (exChar.level || 1)) : 'Sorcerer 5 / Warblade 1'),
-                level: Number(exChar.level) || 6,
-                avatarUrl: exChar.avatarUrl || exChar.portraitUrl || 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=160',
-                currentHp: exChar.hp?.current || 45,
-                maxHp: exChar.hp?.max || 45,
-                tempHp: exChar.hp?.temp || 0,
-                ac: exChar.ac?.total || 17,
-                touchAc: exChar.ac?.touch || 13,
-                flatFootedAc: exChar.ac?.flatFooted || 14,
-                mainWeapon: activeWep.name || 'Rapier',
-                attackFormula: activeWep.dice ? `${activeWep.dice}+${activeWep.dmgBonus || 0}` : '+3',
-                fortSave: exChar.saves?.fort?.total || 5,
-                refSave: exChar.saves?.ref?.total || 4,
-                willSave: exChar.saves?.will?.total || 5,
-                initBonus: 3,
-                spotBonus: 2,
-                listenBonus: 2,
-                fullData: exChar
-              });
-            }
+      let characters = [];
+
+      if (loadedDb && Array.isArray(loadedDb.characters)) {
+        // Dummy karakterleri kesin olarak temizle
+        characters = loadedDb.characters.filter(c => {
+          if (dummyIds.has(c.id)) return false;
+          if (dummyNames.has((c.name || '').toLowerCase().trim())) return false;
+          return true;
+        });
+
+        if (Array.isArray(loadedDb.campaigns) && loadedDb.campaigns.length > 0) {
+          campaigns = loadedDb.campaigns.filter(cp => cp.id !== 'camp_002' || characters.some(c => c.campaignId === cp.id));
+          if (!campaigns.some(cp => cp.id === 'camp_001')) {
+            campaigns.unshift({ id: 'camp_001', name: '⚔️ Ana Sefer (Main Campaign)', notes: 'Kazmil\'in Çırağı ve aktif macera seferi.' });
           }
-        } catch (e) {
-          console.warn('Existing char import notice:', e);
         }
-
-        saveHubStorage();
       }
+
+      // Khazmil'in varlığını kontrol et ve portresini/statlarını güncelle
+      const existingKhazmilIdx = characters.findIndex(c => 
+        c.id === 'char_kazmil_primary' || 
+        (c.name || '').toLowerCase().includes('kazmil') || 
+        (c.name || '').toLowerCase().includes('khazmil')
+      );
+
+      if (existingKhazmilIdx >= 0) {
+        characters[existingKhazmilIdx] = {
+          ...characters[existingKhazmilIdx],
+          ...khazmilObj,
+          id: characters[existingKhazmilIdx].id,
+          campaignId: characters[existingKhazmilIdx].campaignId || 'camp_001'
+        };
+      } else {
+        // Yalnızca Kazmil'in Çırağı kalır
+        characters.unshift(khazmilObj);
+      }
+
+      state.campaigns = campaigns;
+      state.characters = characters;
+      saveHubStorage();
     }
 
     function saveHubStorage() {
@@ -536,8 +516,8 @@
             <div>
               <div class="flex items-start justify-between gap-3">
                 <div class="flex items-center gap-3 min-w-0">
-                  <div class="relative shrink-0">
-                    <img src="${c.avatarUrl || 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=120'}" alt="${c.name}" class="w-13 h-13 rounded-xl object-cover border border-slate-600 shadow-md">
+                  <div class="relative shrink-0 w-14 h-14 rounded-xl border border-slate-600 bg-slate-900 shadow-md overflow-hidden flex items-center justify-center">
+                    ${getCharacterPortraitHtml(c, 'text-2xl')}
                     <span class="absolute -bottom-1.5 -right-1 px-1.5 py-0.2 rounded text-[9px] font-black uppercase tracking-wider ${c.isNpc ? 'bg-rose-950 text-rose-300 border border-rose-700' : 'bg-sky-950 text-sky-300 border border-sky-700'}">
                       ${c.isNpc ? 'NPC' : 'PC'}
                     </span>
@@ -694,7 +674,9 @@
             <!-- Karakter / Sınıf -->
             <td class="py-3 px-4">
               <div class="flex items-center gap-2.5">
-                <img src="${c.avatarUrl || 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=80'}" class="w-8 h-8 rounded-lg object-cover border border-slate-700 shrink-0">
+                <div class="w-8 h-8 rounded-lg border border-slate-700 bg-slate-900 shadow-sm overflow-hidden shrink-0 flex items-center justify-center">
+                  ${getCharacterPortraitHtml(c, 'text-xs')}
+                </div>
                 <div class="min-w-0">
                   <div class="font-bold text-white truncate">${c.name}</div>
                   <div class="text-[10px] text-slate-400 truncate">${c.race} • ${c.classes}</div>
@@ -880,7 +862,8 @@
         race: race,
         classes: classes,
         level: 1,
-        avatarUrl: avatarUrl || (isNpc ? 'https://images.unsplash.com/photo-1563089145-599997674d42?w=160' : 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=160'),
+        portrait: avatarUrl,
+        avatarUrl: avatarUrl,
         currentHp: hp,
         maxHp: hp,
         tempHp: 0,
