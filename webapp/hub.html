@@ -1308,16 +1308,26 @@ Return ONLY a single valid JSON object adhering strictly to the following struct
     { "name": "Claw", "type": "Natural", "bonus": 14, "damage": "1d8+5", "crit": "20/x2", "damageType": "Slashing", "range": "-" }
   ],
   "skills": [ { "name": "Spot", "mod": 15 }, { "name": "Listen", "mod": 15 } ],
-  "feats": [ { "name": "Power Attack", "benefit": "Trade BAB for melee damage." }, { "name": "Cleave", "benefit": "Extra attack after drop foe." } ],
+  "feats": [
+    { "name": "Power Attack", "category": "General", "benefit": "Trade BAB for melee damage." },
+    { "name": "Cleave", "category": "General", "benefit": "Extra attack after drop foe." }
+  ],
   "specialAbilities": [
-    { "name": "Damage Reduction 10/Good", "type": "Su", "description": "Takes 10 less damage unless weapon is good." }
+    { "name": "Breath Weapon", "type": "Su", "benefit": "Cone of fire/acid, Reflex DC half." },
+    { "name": "Damage Reduction 10/Good", "type": "Su", "benefit": "Takes 10 less damage unless weapon is good." },
+    { "name": "Spell Resistance 25", "type": "Ex", "benefit": "Spell Resistance 25." }
   ],
   "spells": [
-    { "name": "Chaos Hammer", "level": 4, "school": "Evocation", "castingTime": "1 standard action", "range": "Medium", "duration": "Instantaneous", "savingThrow": "Will partial", "spellResistance": "Yes", "description": "Damages and slows lawful creatures." }
+    { "name": "Fireball", "level": 3, "school": "Evocation", "castingTime": "1 standard action", "range": "Long", "duration": "Instantaneous", "savingThrow": "Reflex half", "spellResistance": "Yes", "benefit": "1d6 fire damage per level." }
   ],
   "description": "Short flavor and description.",
   "tags": ["demon", "tanari", "tanarri", "outsider"]
-}`;
+}
+
+CRITICAL RULES:
+1. SPELLS & SPELL-LIKE ABILITIES: NEVER return category summaries like "Sorcerer Spells Known", "Typical Spells", or "Innate Abilities". You MUST list each individual spell/SLA by name with its level (0-9), school, and benefit!
+2. FEATS: Every feat must be an object with exact official D&D 3.5e name and its mechanical benefit.
+3. SPECIAL ABILITIES: Include all supernatural (Su), extraordinary (Ex), and spell-like (Sp) traits (Breath Weapon, Frightful Presence, Damage Reduction, Spell Resistance, Fast Healing, Immunities) with type and benefit.`;
 
       const userPrompt = `Query: "${query}". Look up the official D&D 3.5e RAW statistics for this monster or NPC and return the exact JSON object.`;
 
@@ -1365,16 +1375,9 @@ Return ONLY a single valid JSON object adhering strictly to the following struct
         return;
       }
 
-      // Ensure required structure
+      // Ensure required structure & normalize feats, abilities, and spells
       if (!monsterData.id) monsterData.id = 'ai_' + normalizeSearchText(monsterData.name) + '_' + Date.now();
-      if (!monsterData.abilities) monsterData.abilities = { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
-      if (!monsterData.saves) monsterData.saves = { fort: 0, ref: 0, will: 0 };
-      if (!Array.isArray(monsterData.attacks)) monsterData.attacks = [];
-      if (!Array.isArray(monsterData.skills)) monsterData.skills = [];
-      if (!Array.isArray(monsterData.feats)) monsterData.feats = [];
-      if (!Array.isArray(monsterData.specialAbilities)) monsterData.specialAbilities = [];
-      if (!Array.isArray(monsterData.spells)) monsterData.spells = [];
-      if (!Array.isArray(monsterData.tags)) monsterData.tags = [];
+      normalizeMonsterData(monsterData);
 
       // Add to runtime and persistent custom storage
       if (!window.DND35_SRD_MONSTERS) window.DND35_SRD_MONSTERS = [];
@@ -1408,7 +1411,8 @@ Return ONLY a single valid JSON object adhering strictly to the following struct
 
     function renderBestiaryPreview(m) {
       const container = document.getElementById('bestiary-preview-container');
-      if (!container) return;
+      if (!container || !m) return;
+      normalizeMonsterData(m);
 
       const atkStr = (m.attacks || []).map(a => `<span class="text-amber-300 font-semibold">${a.name} ${a.bonus >= 0 ? '+' : ''}${a.bonus}</span> <span class="text-slate-400">(${a.damage})</span>`).join('<span class="text-slate-600 mx-1">|</span>') || 'Yok';
 
@@ -1507,8 +1511,89 @@ Return ONLY a single valid JSON object adhering strictly to the following struct
       `;
     }
 
+    function normalizeMonsterData(m) {
+      if (!m) return m;
+      if (!m.id) m.id = 'monster_' + Date.now();
+      if (!m.abilities) m.abilities = { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
+      if (!m.saves) m.saves = { fort: 0, ref: 0, will: 0 };
+      if (!Array.isArray(m.attacks)) m.attacks = [];
+      if (!Array.isArray(m.skills)) m.skills = [];
+      if (!Array.isArray(m.tags)) m.tags = [];
+
+      // Feats normalization: ensure array of { name, category, benefit, description, source }
+      if (!Array.isArray(m.feats)) m.feats = [];
+      m.feats = m.feats.map(f => {
+        if (typeof f === 'string') {
+          return { name: f.trim(), category: 'Feat', benefit: 'D&D 3.5e RAW Feat', description: f.trim(), source: 'Monster Manual' };
+        }
+        return {
+          name: f.name || 'Feat',
+          category: f.category || 'Feat',
+          benefit: f.benefit || f.description || 'D&D 3.5e RAW Feat',
+          description: f.description || f.benefit || '',
+          source: f.source || 'Monster Manual'
+        };
+      }).filter(f => f.name && f.name !== 'Feat');
+
+      // Special Abilities normalization: ensure array of { name, type, category, benefit, description, source }
+      if (!Array.isArray(m.specialAbilities)) m.specialAbilities = [];
+      m.specialAbilities = m.specialAbilities.map(sa => {
+        if (typeof sa === 'string') {
+          let type = 'Ex';
+          if (sa.toLowerCase().includes('(su)') || sa.toLowerCase().includes('supernatural')) type = 'Su';
+          else if (sa.toLowerCase().includes('(sp)') || sa.toLowerCase().includes('spell-like')) type = 'Sp';
+          const cleanName = sa.replace(/\s*\((?:Ex|Su|Sp)\)\s*/i, '').trim();
+          return { name: cleanName, type: type, category: 'Special Ability', benefit: cleanName, description: cleanName, source: 'Racial' };
+        }
+        return {
+          name: sa.name || 'Special Ability',
+          type: sa.type || 'Ex',
+          category: sa.category || 'Special Ability',
+          benefit: sa.benefit || sa.description || '',
+          description: sa.description || sa.benefit || '',
+          source: sa.source || 'Racial'
+        };
+      }).filter(sa => sa.name && sa.name !== 'Special Ability');
+
+      // Spells normalization: ensure array of individual spell objects
+      if (!Array.isArray(m.spells)) m.spells = [];
+      m.spells = m.spells.map(s => {
+        if (typeof s === 'string') {
+          return {
+            name: s.trim(),
+            level: 1,
+            school: 'Universal',
+            castingTime: '1 standard action',
+            range: 'Medium (100 ft. + 10 ft./level)',
+            duration: 'Instantaneous',
+            savingThrow: 'None',
+            spellResistance: 'Yes',
+            benefit: s.trim(),
+            description: s.trim(),
+            source: 'Spell-Like Ability'
+          };
+        }
+        return {
+          name: s.name || 'Spell',
+          level: Number(s.level) || 1,
+          school: s.school || 'Universal',
+          castingTime: s.castingTime || '1 standard action',
+          range: s.range || 'Medium (100 ft. + 10 ft./level)',
+          duration: s.duration || 'Instantaneous',
+          savingThrow: s.savingThrow || 'None',
+          spellResistance: s.spellResistance || 'Yes',
+          benefit: s.benefit || s.description || '',
+          description: s.description || s.benefit || '',
+          source: s.source || 'Spell-Like Ability'
+        };
+      }).filter(s => s.name && s.name !== 'Spell');
+
+      return m;
+    }
+
     function syncMonsterToMasterDb(monster) {
       try {
+        normalizeMonsterData(monster);
         let masterDb = [];
         const raw = localStorage.getItem('dnd35_master_db');
         if (raw) {
@@ -1554,8 +1639,9 @@ Return ONLY a single valid JSON object adhering strictly to the following struct
             name: f.name,
             type: 'Feat',
             slot: 'None',
+            category: f.category || 'Feat',
             benefit: f.benefit || f.description || 'D&D 3.5e RAW Feat',
-            source: 'Monster Manual'
+            source: f.source || 'Monster Manual'
           });
         });
 
@@ -1565,8 +1651,9 @@ Return ONLY a single valid JSON object adhering strictly to the following struct
             name: sa.name,
             type: 'Special Ability',
             slot: 'None',
-            benefit: sa.description || sa.benefit || '',
-            source: 'Monster Manual'
+            category: sa.category || 'Special Ability',
+            benefit: sa.benefit || sa.description || '',
+            source: sa.source || 'Monster Manual'
           });
         });
 
@@ -1578,8 +1665,8 @@ Return ONLY a single valid JSON object adhering strictly to the following struct
             slot: 'None',
             spellLevel: Number(s.level) || 1,
             school: s.school || 'Universal',
-            benefit: s.description || s.benefit || '',
-            source: 'Spell-Like Ability'
+            benefit: s.benefit || s.description || '',
+            source: s.source || 'Spell-Like Ability'
           });
         });
 
@@ -1593,7 +1680,8 @@ Return ONLY a single valid JSON object adhering strictly to the following struct
     }
 
     function convertMonsterToCharacter(monster, customName, campaignId) {
-      // 1. Sync every weapon, feat, ability, and spell into Master DB
+      // 1. Normalize monster and sync every weapon, feat, ability, and spell into Master DB
+      normalizeMonsterData(monster);
       syncMonsterToMasterDb(monster);
 
       const charId = 'char_' + Date.now();
@@ -1619,16 +1707,16 @@ Return ONLY a single valid JSON object adhering strictly to the following struct
         category: f.category || 'Feat',
         benefit: f.benefit || f.description || 'D&D 3.5e RAW Feat',
         description: f.benefit || f.description || '',
-        source: 'Monster Manual'
+        source: f.source || 'Monster Manual'
       }));
 
       const specialAbilities = (monster.specialAbilities || []).map(sa => ({
         name: sa.name,
         type: sa.type || 'Ex',
-        category: 'Special Ability',
-        benefit: sa.description || sa.benefit || '',
-        description: sa.description || sa.benefit || '',
-        source: 'Racial'
+        category: sa.category || 'Special Ability',
+        benefit: sa.benefit || sa.description || '',
+        description: sa.benefit || sa.description || '',
+        source: sa.source || 'Racial'
       }));
 
       const knownSpells = (monster.spells || []).map(s => ({
@@ -1758,7 +1846,7 @@ Return ONLY a single valid JSON object adhering strictly to the following struct
           offense_melee: weapons.filter(w => w.category === 'Melee' || w.category === 'Natural').map(w => w.name),
           offense_ranged: weapons.filter(w => w.category === 'Ranged').map(w => w.name),
           offense_spell: knownSpells.slice(0, 5).map(s => s.name),
-          defense: specialAbilities.filter(sa => sa.name.includes('Damage Reduction') || sa.name.includes('Spell Resistance') || sa.name.includes('Immunity') || sa.name.includes('Regeneration')).map(sa => sa.name)
+          defense: specialAbilities.filter(sa => /Damage Reduction|Spell Resistance|Immunity|Regeneration|Fast Healing|Aura|Frightful/i.test(sa.name)).map(sa => sa.name)
         },
         tactical: {
           powerAttack: 0,
@@ -1804,6 +1892,10 @@ Return ONLY a single valid JSON object adhering strictly to the following struct
         initBonus: Number(monster.initiative) || 0,
         spotBonus: (monster.skills || []).find(s => s.name === 'Spot')?.mod || 0,
         listenBonus: (monster.skills || []).find(s => s.name === 'Listen')?.mod || 0,
+        feats: feats,
+        specialAbilities: specialAbilities,
+        spells: knownSpells,
+        combatPins: fullData.combatPins,
         fullData: fullData
       };
     }
