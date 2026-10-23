@@ -715,39 +715,6 @@
               </div>
             </div>
 
-            <!-- POZİSYONEL & SAVUNMA MODİFİYERLERİ (3x3 PINLENEBİLİR ÇEKMECE IZGARASI) -->
-            <div id="combat-modifiers-defense-block" class="bg-slate-950/80 border border-slate-800 rounded-lg p-2.5 space-y-2">
-              <div class="text-[10px] font-bold text-indigo-400 uppercase tracking-wide flex items-center justify-between">
-                <div class="flex items-center gap-1.5">
-                  <span>⚡ POZİSYONEL &amp; SAVUNMA MODİFİYERLERİ</span>
-                  <span id="defense-pins-badge" class="bg-slate-900 text-indigo-300 border border-indigo-700/50 font-mono font-bold text-[9px] px-1.5 py-0.2 rounded">0</span>
-                </div>
-                <span class="text-[9px] text-slate-400" id="ce-explanation">(-X Saldırı / +X Dodge AC)</span>
-              </div>
-              
-              <!-- Combat Expertise Stepper -->
-              <div class="flex items-center justify-between bg-slate-900/80 border border-indigo-500/30 rounded px-2.5 py-1">
-                <span class="text-xs font-bold text-indigo-300">Combat Expertise</span>
-                <div class="flex items-center gap-1.5">
-                  <button type="button" onclick="adjustCombatExpertise(-1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center cursor-pointer">-</button>
-                  <span id="combat-expertise-val" class="w-8 text-center font-mono font-black text-sm text-indigo-400">0</span>
-                  <button type="button" onclick="adjustCombatExpertise(1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center cursor-pointer">+</button>
-                </div>
-              </div>
-
-              <!-- 3x3 Defense Modifier & Pinned Drawer Grid -->
-              <div id="combat-modifiers-defense-3x3-grid" class="grid grid-cols-3 gap-1.5">
-                <!-- Populated dynamically by renderDefenseModifiersGrid() -->
-              </div>
-
-              <!-- Expand/Collapse toggle for defense grid -->
-              <div id="combat-defense-expand-bar" class="text-center pt-1 hidden">
-                <button type="button" onclick="toggleExpandDefenseGrid()" id="btn-toggle-expand-defense" class="text-[10px] text-indigo-400 hover:text-indigo-300 font-bold transition flex items-center justify-center gap-1 mx-auto cursor-pointer">
-                  <span>▾ Daha Fazla Göster</span>
-                </button>
-              </div>
-            </div>
-
             <!-- REAKTİF HAMLELER & COUNTERS -->
             <div class="bg-slate-950/70 border border-slate-800 rounded-lg p-2.5 space-y-2">
               <div class="text-[10px] font-bold text-emerald-400 uppercase tracking-wide">
@@ -795,6 +762,39 @@
                 <button onclick="rollCombatSkill('Spot')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded px-2 py-1.5 text-left text-xs text-slate-200 hover:text-white flex items-center justify-between transition">
                   <span class="truncate">Spot / Listen</span>
                   <span id="skill-bonus-spot" class="font-mono font-bold text-emerald-400 text-xs">+0</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- POZİSYONEL & SAVUNMA MODİFİYERLERİ (3x3 PINLENEBİLİR ÇEKMECE IZGARASI) -->
+            <div id="combat-modifiers-defense-block" class="bg-slate-950/80 border border-slate-800 rounded-lg p-2.5 space-y-2">
+              <div class="text-[10px] font-bold text-indigo-400 uppercase tracking-wide flex items-center justify-between">
+                <div class="flex items-center gap-1.5">
+                  <span>⚡ POZİSYONEL &amp; SAVUNMA MODİFİYERLERİ</span>
+                  <span id="defense-pins-badge" class="bg-slate-900 text-indigo-300 border border-indigo-700/50 font-mono font-bold text-[9px] px-1.5 py-0.2 rounded">0</span>
+                </div>
+                <span class="text-[9px] text-slate-400" id="ce-explanation">(-X Saldırı / +X Dodge AC)</span>
+              </div>
+              
+              <!-- Combat Expertise Stepper -->
+              <div class="flex items-center justify-between bg-slate-900/80 border border-indigo-500/30 rounded px-2.5 py-1">
+                <span class="text-xs font-bold text-indigo-300">Combat Expertise</span>
+                <div class="flex items-center gap-1.5">
+                  <button type="button" onclick="adjustCombatExpertise(-1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center cursor-pointer">-</button>
+                  <span id="combat-expertise-val" class="w-8 text-center font-mono font-black text-sm text-indigo-400">0</span>
+                  <button type="button" onclick="adjustCombatExpertise(1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center cursor-pointer">+</button>
+                </div>
+              </div>
+
+              <!-- 3x3 Defense Modifier & Pinned Drawer Grid -->
+              <div id="combat-modifiers-defense-3x3-grid" class="grid grid-cols-3 gap-1.5">
+                <!-- Populated dynamically by renderDefenseModifiersGrid() -->
+              </div>
+
+              <!-- Expand/Collapse toggle for defense grid -->
+              <div id="combat-defense-expand-bar" class="text-center pt-1 hidden">
+                <button type="button" onclick="toggleExpandDefenseGrid()" id="btn-toggle-expand-defense" class="text-[10px] text-indigo-400 hover:text-indigo-300 font-bold transition flex items-center justify-center gap-1 mx-auto cursor-pointer">
+                  <span>▾ Daha Fazla Göster</span>
                 </button>
               </div>
             </div>
