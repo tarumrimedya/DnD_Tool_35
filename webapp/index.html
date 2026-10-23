@@ -11235,51 +11235,50 @@
     window.currentActiveCombatSpellCategory = 'offense_spell';
 
     function classifySpellRole(spell) {
-      if (!spell) return 'offense_spell';
+      if (!spell) return 'spell_support';
       const name = (spell.name || '').toLowerCase().trim();
       const desc = (spell.desc || spell.benefit || spell.description || spell.notes || '').toLowerCase();
       const school = (spell.school || '').toLowerCase();
       const attackType = (spell.attackType || '').toLowerCase();
-      const dmgType = (spell.dmgType || '').toLowerCase();
-      const dice = spell.dice || spell.damageDice || '';
       const target = (spell.target || '').toLowerCase();
-      const fullText = `${name} ${desc} ${school} ${attackType} ${dmgType}`;
 
       // 1. Weapon Buffs (strictly Melee)
       if (attackType === 'weapon_buff' || /(blade of blood|keen edge|holy sword|magic weapon|greater magic weapon|align weapon|shillelagh|flame blade)/i.test(name)) {
         return 'offense_melee';
       }
 
+      // Clean desc of defensive phrases like 'negates magic missile' or 'immune to ...' so they don't false-trigger damage
+      const cleanDesc = desc.replace(/negates\s+[^.]+/gi, '').replace(/immune\s+to\s+[^.]+/gi, '').replace(/resistance\s+to\s+[^.]+/gi, '');
+
       // 2. Offense Spell (Direct Damage / Damage Dice / Touch Attacks with damage)
-      const hasDamageDice = !!dice || /\b\d+d\d+\b/.test(desc);
-      const isHealing = /(cure|heal|vigor|restoration)/i.test(fullText);
-      const isDirectDamage = !isHealing && (hasDamageDice || /(hasar|damage|\bfire\b|\bcold\b|\belectricity\b|\bacid\b|\bsonic\b|\bforce\b|scorching ray|magic missile|fireball|lightning bolt|acid arrow|disintegrate|cone of cold|polar ray|flame strike|finger of death|horrid wilting|sound burst|shatter|shocking grasp|chill touch|ray of frost)/i.test(fullText));
+      const hasDamageDice = !!spell.dice || !!spell.damageDice || /\b\d+d\d+\b.*?(damage|hasar|fire|cold|acid|electricity|sonic|force)/i.test(cleanDesc) || /(deals?|vuran|hasar\s+veren)\s+\d+d\d+/i.test(cleanDesc);
+      const isDirectDamageSpell = /(magic missile|scorching ray|fireball|lightning bolt|acid arrow|disintegrate|cone of cold|polar ray|flame strike|finger of death|horrid wilting|sound burst|shatter|shocking grasp|chill touch|ray of frost|searing light|produce flame|flaming sphere|ice storm|chain lightning|meteor swarm|sunbeam|sunburst|prismatic spray|implosion)/i.test(name);
+      const isTouchAttackDmg = (attackType === 'ranged_touch' || attackType === 'melee_touch') && /(damage|hasar)/i.test(cleanDesc);
+      const isHealing = /(cure|heal|vigor|restoration)/i.test(cleanDesc);
 
-      // 3. Control Spell (Debuffs, Battlefield Control, Crowd Control, Disabling saves)
-      const isControl = /(grease|web|entangle|sleep|hold person|hold monster|slow|glitterdust|blindness|deafness|fog cloud|solid fog|stinking cloud|black tentacles|gust of wind|color spray|hypnotic pattern|confusion|fear|scare|cause fear|ray of enfeeblement|ray of exhaustion|ghoul touch|touch of fatigue|bestow curse|blind|silence|halt undead|deep slumber|hideous laughter|tasha|daze|command|wall of fire|wall of ice|wall of iron|wall of stone|forcecage)/i.test(fullText) ||
-                        (!isDirectDamage && /(entangle|paralyz|sleep|slow|blind|deaf|daze|stun|nausea|sickened|prone|frightened|panicked|shaken|curse|enfeebl)/i.test(fullText));
+      const isDirectDamage = (hasDamageDice || isDirectDamageSpell || isTouchAttackDmg) && !isHealing;
 
-      // 4. Support Spell (Buffs, Defense, Utility, Healing, Movement)
-      const isSupport = /(shield|mage armor|barkskin|protection|resist|endure elements|bull's strength|cat's grace|bear's endurance|fox's cunning|owl's wisdom|eagle's splendor|haste|fly|invisibility|blur|mirror image|displacement|stoneskin|cure|heal|vigor|restoration|remove|cleanse|detect|read magic|light|dancing lights|prestidigitation|mending|teleport|dimension door|expeditious retreat|feather fall|see invisibility|true seeing|heroism|bless|prayer|aid|divine favor|sanctuary)/i.test(fullText) ||
+      // 3. Control Spell (Debuffs, Battlefield Control, Crowd Control, Disabling saves, Figments)
+      const isControl = /(grease|web|entangle|sleep|hold person|hold monster|slow|glitterdust|blindness|deafness|fog cloud|solid fog|stinking cloud|black tentacles|gust of wind|color spray|hypnotic pattern|confusion|fear|scare|cause fear|ray of enfeeblement|ray of exhaustion|ghoul touch|touch of fatigue|bestow curse|silence|halt undead|deep slumber|hideous laughter|tasha|daze|command|wall of fire|wall of ice|wall of iron|wall of stone|forcecage|ghost sound)/i.test(name) ||
+                        /(entangle|paralyz|sleep|slow|blind|deaf|daze|stun|nausea|sickened|prone|frightened|panicked|shaken|curse|enfeebl|distraction|auditory sound|phantom sound)/i.test(cleanDesc);
+
+      // 4. Support Spell (Buffs, Defense, Utility, Healing, Movement, Utility Cantrips)
+      const isSupport = /(shield|mage armor|barkskin|protection|resist|endure elements|bull's strength|cat's grace|bear's endurance|fox's cunning|owl's wisdom|eagle's splendor|haste|fly|invisibility|blur|mirror image|displacement|stoneskin|cure|heal|vigor|restoration|remove|cleanse|detect|read magic|light|dancing lights|prestidigitation|mending|teleport|dimension door|expeditious retreat|feather fall|see invisibility|true seeing|heroism|bless|prayer|aid|divine favor|sanctuary|mage hand|open\/close|message|arcane mark)/i.test(name) ||
+                        /(armor bonus|shield bonus|enhancement bonus|teleport|speed|heal|cure|hp|temp hp|aura|detect|torch|trick|telekinesis)/i.test(cleanDesc) ||
                         /(personal|ally|you\b|touched creature)/i.test(target);
 
-      if (isControl && !/(magic missile|fireball|lightning bolt|scorching ray|disintegrate|acid arrow|flame strike)/i.test(name)) {
-        return 'spell_control';
-      }
-      if (isSupport && !isDirectDamage) {
-        return 'spell_support';
-      }
-      if (attackType === 'ranged_touch' || attackType === 'melee_touch' || isDirectDamage) {
+      if (isDirectDamage) {
         return 'offense_spell';
-      }
-      if (isSupport) {
-        return 'spell_support';
       }
       if (isControl) {
         return 'spell_control';
       }
+      if (isSupport) {
+        return 'spell_support';
+      }
 
-      return 'offense_spell';
+      // Default fallback for non-damage spells: Utility & Support
+      return 'spell_support';
     }
 
     function getSpellEffectiveCategory(spell) {
@@ -11521,14 +11520,24 @@
       }
 
       // Damage / effect preview
-      let baseDice = spell.dice || (spell.benefit && spell.benefit.match(/\d+d\d+/i) ? spell.benefit.match(/\d+d\d+/i)[0] : '4d6');
-      let previewText = `${baseDice} ${spell.dmgType || 'Büyü Hasarı'}`;
-      if (isEmpower && isMaximize) {
-        previewText = `${baseDice} Max + 50%`;
-      } else if (isEmpower) {
-        previewText = `${baseDice} x 1.5 (+50%)`;
-      } else if (isMaximize) {
-        previewText = `${baseDice} (Tavan/Max)`;
+      const activeCat = window.currentActiveCombatSpellCategory || 'offense_spell';
+      const hasDamageDice = !!spell.dice || (spell.benefit && /\b\d+d\d+\b/i.test(spell.benefit));
+      let baseDice = spell.dice || (spell.benefit && spell.benefit.match(/\b\d+d\d+\b/i) ? spell.benefit.match(/\b\d+d\d+\b/i)[0] : '');
+
+      let previewText = '';
+      if (hasDamageDice && baseDice) {
+        previewText = `${baseDice} ${spell.dmgType || 'Büyü Hasarı'}`;
+        if (isEmpower && isMaximize) {
+          previewText = `${baseDice} Max + 50%`;
+        } else if (isEmpower) {
+          previewText = `${baseDice} x 1.5 (+50%)`;
+        } else if (isMaximize) {
+          previewText = `${baseDice} (Tavan/Max)`;
+        }
+      } else if (activeCat === 'spell_control' || spell.save) {
+        previewText = `DC ${saveDc} ${spell.save || 'Test'} (${spell.target || spell.range || 'Kitle Kontrol'})`;
+      } else {
+        previewText = `Hasar Yok (${spell.duration || spell.range || 'Destek / Fayda'})`;
       }
 
       const dmgPreviewEl = document.getElementById('combat-spell-damage-preview');
@@ -11588,10 +11597,13 @@
           btnText.textContent = `DC ${saveDc} ${saveType} TESTİ İSTE ➔ ${spell.target || spell.range || 'Alan/Hedef'}`;
         } else if (activeCat === 'spell_support') {
           if (btnIcon) btnIcon.textContent = '✨';
-          btnText.textContent = `BÜYÜYÜ UYGULA (BUFF/DESTEK) ➔ ${previewText && !previewText.startsWith('4d6') ? previewText : (spell.duration || 'Aktif')}`;
-        } else {
+          btnText.textContent = `BÜYÜYÜ UYGULA (BUFF/DESTEK) ➔ ${previewText}`;
+        } else if (hasDamageDice) {
           if (btnIcon) btnIcon.textContent = '🔮';
           btnText.textContent = `BÜYÜYÜ İCRA ET & ZAR AT ➔ ${previewText}`;
+        } else {
+          if (btnIcon) btnIcon.textContent = '🔮';
+          btnText.textContent = `BÜYÜYÜ İCRA ET (${spell.name})`;
         }
       }
     }
