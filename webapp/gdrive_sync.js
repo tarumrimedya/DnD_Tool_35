@@ -578,19 +578,19 @@ const CloudSync = {
     const text = document.getElementById('sync-status-text');
     if (pill && text) {
       if (status === 'connected' || status === 'synced') {
-        pill.className = 'cursor-pointer flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-medium bg-emerald-950/80 text-emerald-300 border border-emerald-600 shrink-0 whitespace-nowrap';
+        pill.className = 'cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-medium bg-emerald-950/80 text-emerald-300 border border-emerald-600 w-full whitespace-nowrap shadow-sm transition';
         text.innerHTML = '🟢 <span class="hidden sm:inline">Vercel </span>Bulut<span class="hidden md:inline"> Senkron (Karakter + DB)</span>';
       } else if (status === 'syncing') {
-        pill.className = 'cursor-pointer flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-medium bg-indigo-950/80 text-indigo-300 border border-indigo-600 shrink-0 whitespace-nowrap';
+        pill.className = 'cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-medium bg-indigo-950/80 text-indigo-300 border border-indigo-600 w-full whitespace-nowrap shadow-sm transition';
         text.innerHTML = '🔄 <span class="hidden sm:inline">Bulut </span>Eşitleniyor...';
       } else if (status === 'locked') {
-        pill.className = 'cursor-pointer flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-medium bg-rose-950/80 text-rose-300 border border-rose-600 shrink-0 whitespace-nowrap';
+        pill.className = 'cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-medium bg-rose-950/80 text-rose-300 border border-rose-600 w-full whitespace-nowrap shadow-sm transition';
         text.innerHTML = '🔒 <span class="hidden sm:inline">Özel </span>Kilitli';
       } else if (status === 'error') {
-        pill.className = 'cursor-pointer flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-medium bg-rose-950/80 text-rose-300 border border-rose-600 shrink-0 whitespace-nowrap';
+        pill.className = 'cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-medium bg-rose-950/80 text-rose-300 border border-rose-600 w-full whitespace-nowrap shadow-sm transition';
         text.innerHTML = '⚠️ <span class="hidden sm:inline">Bulut </span>Hata';
       } else {
-        pill.className = 'cursor-pointer flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-medium bg-slate-800 text-slate-300 border border-slate-700 shrink-0 whitespace-nowrap';
+        pill.className = 'cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-medium bg-slate-800 text-slate-300 border border-slate-700 w-full whitespace-nowrap shadow-sm transition';
         text.innerHTML = '🟡 <span class="hidden sm:inline">Yerel </span>Kayıtlı';
       }
     }
