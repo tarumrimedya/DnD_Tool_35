@@ -1254,7 +1254,16 @@ window.DND35_SRD_MONSTERS = [
       { name: "Telepathy 100 ft.", type: "Su", description: "Can communicate mentally with any creature within 100 feet." },
       { name: "Psionics (Sp)", type: "Sp", description: "At will: charm monster (DC 17), detect thoughts (DC 15), levitate, plane shift, suggestion (DC 16)." }
     ],
-    description: "Mind flayers are sadistic subterranean masterminds that wield devastating psionic powers and feast upon brains."
+    spells: [
+      { name: "Mind Blast", level: 4, school: "Enchantment", castingTime: "1 standard action", range: "60 ft. cone", duration: "3d4 rounds", savingThrow: "Will negates (DC 17)", spellResistance: "Yes", description: "Cone of psionic energy stuns creatures for 3d4 rounds." },
+      { name: "Charm Monster", level: 4, school: "Enchantment", castingTime: "1 standard action", range: "Close (25 ft. + 5 ft./2 levels)", duration: "1 day/level", savingThrow: "Will negates (DC 17)", spellResistance: "Yes", description: "Makes monster believe it is your ally." },
+      { name: "Detect Thoughts", level: 2, school: "Divination", castingTime: "1 standard action", range: "60 ft.", duration: "Concentration", savingThrow: "Will negates (DC 15)", spellResistance: "No", description: "Allows listening to surface thoughts." },
+      { name: "Suggestion", level: 3, school: "Enchantment", castingTime: "1 standard action", range: "Close (25 ft. + 5 ft./2 levels)", duration: "1 hour/level", savingThrow: "Will negates (DC 16)", spellResistance: "Yes", description: "Compels subject to follow stated course of action." },
+      { name: "Levitate", level: 2, school: "Transmutation", castingTime: "1 standard action", range: "Personal", duration: "10 min./level", savingThrow: "None", spellResistance: "No", description: "Subject moves up and down at your direction." },
+      { name: "Plane Shift", level: 7, school: "Conjuration", castingTime: "1 standard action", range: "Touch", duration: "Instantaneous", savingThrow: "Will negates (DC 20)", spellResistance: "Yes", description: "Transports creatures to another plane of existence." }
+    ],
+    description: "Mind flayers are sadistic subterranean masterminds that wield devastating psionic powers and feast upon brains.",
+    tags: ["illithid", "mind flayer", "aberration", "psionic"]
   },
   {
     id: "young_red_dragon",
@@ -1485,6 +1494,10 @@ window.DND35_SRD_MONSTERS = [
       { name: "Tanar'ri Traits", type: "Ex", description: "Immune to electricity and poison. Resistance to acid 10, cold 10, fire 10." },
       { name: "Darkvision 60 ft.", type: "Ex", description: "Can see in total darkness." }
     ],
+    spells: [
+      { name: "Scare", level: 2, school: "Necromancy", castingTime: "1 standard action", range: "Close (25 ft. + 5 ft./2 levels)", duration: "1d4 rounds or 1 round", savingThrow: "Will partial (DC 12)", spellResistance: "Yes", description: "Panics creatures of less than 6 HD." },
+      { name: "Stinking Cloud", level: 3, school: "Conjuration", castingTime: "1 standard action", range: "Medium (100 ft. + 10 ft./level)", duration: "1 round/level", savingThrow: "Fortitude negates (DC 13)", spellResistance: "No", description: "Nauseating vapors, 1 round/level." }
+    ],
     description: "Dretches are pathetic, bloated demons that make up the rank-and-file hordes of the Abyss.",
     tags: ["tanari", "tanarri", "tanar'ri", "demon", "iblis", "dretch", "outsider", "abyss"]
   },
@@ -1578,6 +1591,11 @@ window.DND35_SRD_MONSTERS = [
       { name: "Tanar'ri Traits", type: "Ex", description: "Immune to electricity and poison. Resistance to acid 10, cold 10, fire 10." },
       { name: "Telepathy 100 ft.", type: "Su", description: "Can communicate mentally within 100 ft." }
     ],
+    spells: [
+      { name: "Darkness", level: 2, school: "Evocation", castingTime: "1 standard action", range: "Touch", duration: "10 min./level", savingThrow: "None", spellResistance: "No", description: "20-ft. radius of supernatural shadow." },
+      { name: "Dispel Magic", level: 3, school: "Abjuration", castingTime: "1 standard action", range: "Medium (100 ft. + 10 ft./level)", duration: "Instantaneous", savingThrow: "None", spellResistance: "No", description: "Cancels magical spells and effects." },
+      { name: "See Invisibility", level: 2, school: "Divination", castingTime: "1 standard action", range: "Personal", duration: "10 min./level", savingThrow: "None", spellResistance: "No", description: "Reveals invisible creatures or objects." }
+    ],
     description: "Babaus are skeletal, horned assassins that serve as the stealthy killers and scouts of the Abyss.",
     tags: ["tanari", "tanarri", "tanar'ri", "demon", "iblis", "babau", "outsider", "abyss", "assassin"]
   },
@@ -1656,6 +1674,14 @@ window.DND35_SRD_MONSTERS = [
       { name: "Tanar'ri Traits", type: "Ex", description: "Immune to electricity and poison. Resistance to acid 10, cold 10, fire 10." },
       { name: "Telepathy 100 ft.", type: "Su", description: "Can communicate mentally within 100 ft." },
       { name: "Tongues", type: "Su", description: "Can continuously speak any language as with tongues spell." }
+    ],
+    spells: [
+      { name: "Charm Monster", level: 4, school: "Enchantment", castingTime: "1 standard action", range: "Close (25 ft. + 5 ft./2 levels)", duration: "1 day/level", savingThrow: "Will negates (DC 22)", spellResistance: "Yes", description: "Makes monster believe it is your ally." },
+      { name: "Detect Thoughts", level: 2, school: "Divination", castingTime: "1 standard action", range: "60 ft.", duration: "Concentration, up to 1 min./level", savingThrow: "Will negates (DC 20)", spellResistance: "No", description: "Allows listening to surface thoughts." },
+      { name: "Suggestion", level: 3, school: "Enchantment", castingTime: "1 standard action", range: "Close (25 ft. + 5 ft./2 levels)", duration: "1 hour/level", savingThrow: "Will negates (DC 21)", spellResistance: "Yes", description: "Compels subject to follow stated course of action." },
+      { name: "Ethereal Jaunt", level: 7, school: "Transmutation", castingTime: "1 standard action", range: "Personal", duration: "1 round/level", savingThrow: "None", spellResistance: "No", description: "You become ethereal for 1 round/level." },
+      { name: "Greater Teleport", level: 7, school: "Transmutation", castingTime: "1 standard action", range: "Personal and touch", duration: "Instantaneous", savingThrow: "None", spellResistance: "No", description: "Instantly transports you anywhere without error." },
+      { name: "Detect Good", level: 1, school: "Divination", castingTime: "1 standard action", range: "60 ft.", duration: "Concentration, up to 10 min./level", savingThrow: "None", spellResistance: "No", description: "Reveals presence and aura of good creatures." }
     ],
     description: "Succubi are beautiful, winged tempters that lure mortals into wickedness and drain their life energy.",
     tags: ["tanari", "tanarri", "tanar'ri", "demon", "iblis", "succubus", "outsider", "abyss", "charm"]
@@ -1754,6 +1780,13 @@ window.DND35_SRD_MONSTERS = [
       { name: "Tanar'ri Traits", type: "Ex", description: "Immune to electricity and poison. Resistance to acid 10, cold 10, fire 10." },
       { name: "Telepathy 100 ft.", type: "Su", description: "Can communicate mentally within 100 ft." }
     ],
+    spells: [
+      { name: "Mirror Image", level: 2, school: "Illusion", castingTime: "1 standard action", range: "Personal", duration: "1 min./level", savingThrow: "None", spellResistance: "No", description: "Creates 1d4 (+1 per 3 levels) illusory duplicates." },
+      { name: "Telekinesis", level: 5, school: "Transmutation", castingTime: "1 standard action", range: "Long (400 ft. + 40 ft./level)", duration: "Concentration (up to 1 round/level)", savingThrow: "Will negates (DC 18)", spellResistance: "Yes", description: "Moves objects, attacks creatures, or hurls objects or creatures." },
+      { name: "Heroism", level: 3, school: "Enchantment", castingTime: "1 standard action", range: "Touch", duration: "10 min./level", savingThrow: "Will negates (harmless)", spellResistance: "Yes", description: "Gives +2 bonus on attack rolls, saves, skill checks." },
+      { name: "Greater Teleport", level: 7, school: "Transmutation", castingTime: "1 standard action", range: "Personal and touch", duration: "Instantaneous", savingThrow: "None", spellResistance: "No", description: "Instantly transports you without error." },
+      { name: "Darkness", level: 2, school: "Evocation", castingTime: "1 standard action", range: "Touch", duration: "10 min./level", savingThrow: "None", spellResistance: "No", description: "20-ft. radius of supernatural shadow." }
+    ],
     description: "Vrocks are giant, vulture-headed demons that screech from above and release deadly spores.",
     tags: ["tanari", "tanarri", "tanar'ri", "demon", "iblis", "vrock", "outsider", "abyss"]
   },
@@ -1838,6 +1871,13 @@ window.DND35_SRD_MONSTERS = [
       { name: "Summon Tanar'ri", type: "Sp", description: "1/day: summon 4d10 dretches (50%) or 1 hezrou (35%)." },
       { name: "Tanar'ri Traits", type: "Ex", description: "Immune to electricity and poison. Resistance to acid 10, cold 10, fire 10." },
       { name: "Telepathy 100 ft.", type: "Su", description: "Can communicate mentally within 100 ft." }
+    ],
+    spells: [
+      { name: "Chaos Hammer", level: 4, school: "Evocation", castingTime: "1 standard action", range: "Medium (100 ft. + 10 ft./level)", duration: "Instantaneous", savingThrow: "Will partial (DC 18)", spellResistance: "Yes", description: "Damages and slows lawful creatures (5d8 damage)." },
+      { name: "Unholy Blight", level: 4, school: "Evocation", castingTime: "1 standard action", range: "Medium (100 ft. + 10 ft./level)", duration: "Instantaneous", savingThrow: "Will partial (DC 18)", spellResistance: "Yes", description: "Damages and sickens good creatures (5d8 damage)." },
+      { name: "Blasphemy", level: 7, school: "Evocation", castingTime: "1 standard action", range: "30 ft.", duration: "Instantaneous", savingThrow: "None", spellResistance: "Yes", description: "Kills, paralyzes, weakens, or dazes non-evil creatures (DC 21)." },
+      { name: "Gaseous Form", level: 3, school: "Transmutation", castingTime: "1 standard action", range: "Touch", duration: "2 min./level", savingThrow: "None", spellResistance: "No", description: "Subject becomes insubstantial and flies slowly." },
+      { name: "Greater Teleport", level: 7, school: "Transmutation", castingTime: "1 standard action", range: "Personal and touch", duration: "Instantaneous", savingThrow: "None", spellResistance: "No", description: "Instantly transports you without error." }
     ],
     description: "Hezrous are repulsive, amphibious toad-demons that dwell in the abyssal swamps and mire.",
     tags: ["tanari", "tanarri", "tanar'ri", "demon", "iblis", "hezrou", "outsider", "abyss"]
@@ -1945,6 +1985,17 @@ window.DND35_SRD_MONSTERS = [
       { name: "Tanar'ri Traits", type: "Ex", description: "Immune to electricity and poison. Resistance to acid 10, cold 10, fire 10." },
       { name: "Telepathy 100 ft.", type: "Su", description: "Can communicate mentally within 100 ft." }
     ],
+    spells: [
+      { name: "Chaos Hammer", level: 4, school: "Evocation", castingTime: "1 standard action", range: "Medium (100 ft. + 10 ft./level)", duration: "Instantaneous", savingThrow: "Will partial (DC 19)", spellResistance: "Yes", description: "Damages and slows lawful creatures." },
+      { name: "Confusion", level: 4, school: "Enchantment", castingTime: "1 standard action", range: "Medium (100 ft. + 10 ft./level)", duration: "1 round/level", savingThrow: "Will negates (DC 19)", spellResistance: "Yes", description: "Makes subjects behave bizarrely for 1 round/level." },
+      { name: "Dispel Magic", level: 3, school: "Abjuration", castingTime: "1 standard action", range: "Medium (100 ft. + 10 ft./level)", duration: "Instantaneous", savingThrow: "None", spellResistance: "No", description: "Cancels magical spells and effects." },
+      { name: "Mirror Image", level: 2, school: "Illusion", castingTime: "1 standard action", range: "Personal", duration: "1 min./level", savingThrow: "None", spellResistance: "No", description: "Creates illusory duplicates." },
+      { name: "Reverse Gravity", level: 7, school: "Transmutation", castingTime: "1 standard action", range: "Medium (100 ft. + 10 ft./level)", duration: "1 round/level", savingThrow: "None (DC 22)", spellResistance: "No", description: "Objects and creatures fall upward." },
+      { name: "Unholy Blight", level: 4, school: "Evocation", castingTime: "1 standard action", range: "Medium (100 ft. + 10 ft./level)", duration: "Instantaneous", savingThrow: "Will partial (DC 19)", spellResistance: "Yes", description: "Damages and sickens good creatures." },
+      { name: "Power Word Stun", level: 8, school: "Enchantment", castingTime: "1 standard action", range: "Close (25 ft. + 5 ft./2 levels)", duration: "See text", savingThrow: "None", spellResistance: "Yes", description: "Stuns creature with 150 hp or less." },
+      { name: "Wish", level: 9, school: "Universal", castingTime: "1 standard action", range: "See text", duration: "See text", savingThrow: "See text", spellResistance: "Yes", description: "Alters reality when granted to mortal humanoid." },
+      { name: "Greater Teleport", level: 7, school: "Transmutation", castingTime: "1 standard action", range: "Personal and touch", duration: "Instantaneous", savingThrow: "None", spellResistance: "No", description: "Instantly transports you without error." }
+    ],
     description: "Glabrezu are towering, four-armed fiends with giant crab claws that tempt power-hungry mortals into ruin.",
     tags: ["tanari", "tanarri", "tanar'ri", "demon", "iblis", "glabrezu", "outsider", "abyss", "wish"]
   },
@@ -2034,6 +2085,15 @@ window.DND35_SRD_MONSTERS = [
       { name: "Tanar'ri Traits", type: "Ex", description: "Immune to electricity and poison. Resistance to acid 10, cold 10, fire 10." },
       { name: "Telepathy 100 ft.", type: "Su", description: "Can communicate mentally within 100 ft." }
     ],
+    spells: [
+      { name: "Blade Barrier", level: 6, school: "Evocation", castingTime: "1 standard action", range: "Medium (100 ft. + 10 ft./level)", duration: "1 min./level", savingThrow: "Reflex half (DC 23)", spellResistance: "Yes", description: "Wall of blades deals 15d6 slashing damage." },
+      { name: "Polymorph", level: 4, school: "Transmutation", castingTime: "1 standard action", range: "Touch", duration: "1 min./level", savingThrow: "None", spellResistance: "No", description: "Gives one willing subject a new form." },
+      { name: "Telekinesis", level: 5, school: "Transmutation", castingTime: "1 standard action", range: "Long (400 ft. + 40 ft./level)", duration: "Concentration", savingThrow: "Will negates (DC 22)", spellResistance: "Yes", description: "Moves objects or hurls creatures." },
+      { name: "Unholy Aura", level: 8, school: "Abjuration", castingTime: "1 standard action", range: "20 ft.", duration: "1 round/level", savingThrow: "Fortitude partial (DC 25)", spellResistance: "Yes", description: "+4 AC, +4 resistance, SR 25 against good spells." },
+      { name: "Align Weapon", level: 2, school: "Transmutation", castingTime: "1 standard action", range: "Touch", duration: "1 min./level", savingThrow: "Will negates (harmless)", spellResistance: "Yes", description: "Weapon becomes evil or chaotic aligned." },
+      { name: "See Invisibility", level: 2, school: "Divination", castingTime: "1 standard action", range: "Personal", duration: "10 min./level", savingThrow: "None", spellResistance: "No", description: "Reveals invisible creatures." },
+      { name: "Greater Teleport", level: 7, school: "Transmutation", castingTime: "1 standard action", range: "Personal and touch", duration: "Instantaneous", savingThrow: "None", spellResistance: "No", description: "Instantly transports you without error." }
+    ],
     description: "Mariliths are six-armed serpent fiends who serve as the brilliant, deadly tacticians and generals of demonic armies.",
     tags: ["tanari", "tanarri", "tanar'ri", "demon", "iblis", "marilith", "outsider", "abyss"]
   },
@@ -2119,6 +2179,17 @@ window.DND35_SRD_MONSTERS = [
       { name: "Summon Tanar'ri", type: "Sp", description: "1/day: summon 4d10 dretches, 1d4 hezrous, or 1 glabrezu/marilith/balor (20%)." },
       { name: "Tanar'ri Traits", type: "Ex", description: "Immune to electricity and poison. Resistance to acid 10, cold 10, fire 10." },
       { name: "Telepathy 100 ft.", type: "Su", description: "Can communicate mentally within 100 ft." }
+    ],
+    spells: [
+      { name: "Fire Storm", level: 8, school: "Evocation", castingTime: "1 standard action", range: "Medium (100 ft. + 10 ft./level)", duration: "Instantaneous", savingThrow: "Reflex half (DC 26)", spellResistance: "Yes", description: "Raging tempest of fire deals 20d6 fire damage." },
+      { name: "Implosion", level: 9, school: "Evocation", castingTime: "1 standard action", range: "Close (25 ft. + 5 ft./2 levels)", duration: "Concentration (up to 4 rounds)", savingThrow: "Fortitude negates (DC 27)", spellResistance: "Yes", description: "Destroys one creature per round." },
+      { name: "Blasphemy", level: 7, school: "Evocation", castingTime: "1 standard action", range: "30 ft.", duration: "Instantaneous", savingThrow: "None", spellResistance: "Yes", description: "Kills, paralyzes, weakens, or dazes non-evil creatures (DC 25)." },
+      { name: "Dominate Monster", level: 9, school: "Enchantment", castingTime: "1 standard action", range: "Close (25 ft. + 5 ft./2 levels)", duration: "1 day/level", savingThrow: "Will negates (DC 27)", spellResistance: "Yes", description: "Controls any creature telepathically." },
+      { name: "Greater Dispel Magic", level: 6, school: "Abjuration", castingTime: "1 standard action", range: "Medium (100 ft. + 10 ft./level)", duration: "Instantaneous", savingThrow: "None", spellResistance: "No", description: "As dispel magic, up to +20 on check." },
+      { name: "Power Word Stun", level: 8, school: "Enchantment", castingTime: "1 standard action", range: "Close (25 ft. + 5 ft./2 levels)", duration: "See text", savingThrow: "None", spellResistance: "Yes", description: "Stuns creature with 150 hp or less." },
+      { name: "Telekinesis", level: 5, school: "Transmutation", castingTime: "1 standard action", range: "Long (400 ft. + 40 ft./level)", duration: "Concentration", savingThrow: "Will negates (DC 20)", spellResistance: "Yes", description: "Moves objects or hurls enemies." },
+      { name: "Unholy Aura", level: 8, school: "Abjuration", castingTime: "1 standard action", range: "20 ft.", duration: "1 round/level", savingThrow: "Fortitude partial", spellResistance: "Yes", description: "+4 AC, +4 resistance, SR 25 against good spells." },
+      { name: "Greater Teleport", level: 7, school: "Transmutation", castingTime: "1 standard action", range: "Personal and touch", duration: "Instantaneous", savingThrow: "None", spellResistance: "No", description: "Instantly transports you without error." }
     ],
     description: "Balors are towering shadowy humanoids crowned in flames, wielding vorpal swords and fiery whips as the greatest lords of the Abyss.",
     tags: ["tanari", "tanarri", "tanar'ri", "demon", "iblis", "balor", "outsider", "abyss", "vorpal"]
@@ -2221,6 +2292,15 @@ window.DND35_SRD_MONSTERS = [
       { name: "Summon Baatezu", type: "Sp", description: "2/day: summon 2 bearded devils or 1 bone devil (100%), or 1 horned devil/ice devil (50%)." },
       { name: "Baatezu Traits", type: "Ex", description: "Immune to fire and poison. Resistance to acid 10, cold 10." },
       { name: "Telepathy 100 ft.", type: "Su", description: "Can communicate mentally within 100 ft." }
+    ],
+    spells: [
+      { name: "Fireball", level: 3, school: "Evocation", castingTime: "1 standard action", range: "Long (400 ft. + 40 ft./level)", duration: "Instantaneous", savingThrow: "Reflex half (DC 21)", spellResistance: "Yes", description: "Explosion of flame deals 10d6 fire damage." },
+      { name: "Meteor Swarm", level: 9, school: "Evocation", castingTime: "1 standard action", range: "Long (400 ft. + 40 ft./level)", duration: "Instantaneous", savingThrow: "None/Reflex half", spellResistance: "Yes", description: "Four 2-ft. spheres deal 24d6 total bludgeoning and fire damage." },
+      { name: "Mass Hold Monster", level: 9, school: "Enchantment", castingTime: "1 standard action", range: "Medium (100 ft. + 10 ft./level)", duration: "1 round/level", savingThrow: "Will negates (DC 27)", spellResistance: "Yes", description: "Paralyzes all creatures in area." },
+      { name: "Wish", level: 9, school: "Universal", castingTime: "1 standard action", range: "See text", duration: "See text", savingThrow: "See text", spellResistance: "Yes", description: "Alters reality once per day." },
+      { name: "Persistent Image", level: 5, school: "Illusion", castingTime: "1 standard action", range: "Long (400 ft. + 40 ft./level)", duration: "1 min./level", savingThrow: "Will disbelief (DC 23)", spellResistance: "No", description: "Illusion includes sight, sound, and smell." },
+      { name: "Unholy Aura", level: 8, school: "Abjuration", castingTime: "1 standard action", range: "20 ft.", duration: "1 round/level", savingThrow: "Fortitude partial", spellResistance: "Yes", description: "+4 AC, +4 resistance, SR 25." },
+      { name: "Greater Teleport", level: 7, school: "Transmutation", castingTime: "1 standard action", range: "Personal and touch", duration: "Instantaneous", savingThrow: "None", spellResistance: "No", description: "Instantly transports you without error." }
     ],
     description: "Pit fiends are the undisputed lords and generals of the Nine Hells of Baator, master manipulators of tyrannical evil.",
     tags: ["baatezu", "devil", "seytan", "pit fiend", "outsider", "nine hells"]

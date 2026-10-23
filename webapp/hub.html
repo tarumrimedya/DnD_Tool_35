@@ -1308,9 +1308,12 @@ Return ONLY a single valid JSON object adhering strictly to the following struct
     { "name": "Claw", "type": "Natural", "bonus": 14, "damage": "1d8+5", "crit": "20/x2", "damageType": "Slashing", "range": "-" }
   ],
   "skills": [ { "name": "Spot", "mod": 15 }, { "name": "Listen", "mod": 15 } ],
-  "feats": [ { "name": "Power Attack" }, { "name": "Cleave" } ],
+  "feats": [ { "name": "Power Attack", "benefit": "Trade BAB for melee damage." }, { "name": "Cleave", "benefit": "Extra attack after drop foe." } ],
   "specialAbilities": [
-    { "name": "Damage Reduction 10/Good", "type": "Su", "description": "Description of ability." }
+    { "name": "Damage Reduction 10/Good", "type": "Su", "description": "Takes 10 less damage unless weapon is good." }
+  ],
+  "spells": [
+    { "name": "Chaos Hammer", "level": 4, "school": "Evocation", "castingTime": "1 standard action", "range": "Medium", "duration": "Instantaneous", "savingThrow": "Will partial", "spellResistance": "Yes", "description": "Damages and slows lawful creatures." }
   ],
   "description": "Short flavor and description.",
   "tags": ["demon", "tanari", "tanarri", "outsider"]
@@ -1370,6 +1373,7 @@ Return ONLY a single valid JSON object adhering strictly to the following struct
       if (!Array.isArray(monsterData.skills)) monsterData.skills = [];
       if (!Array.isArray(monsterData.feats)) monsterData.feats = [];
       if (!Array.isArray(monsterData.specialAbilities)) monsterData.specialAbilities = [];
+      if (!Array.isArray(monsterData.spells)) monsterData.spells = [];
       if (!Array.isArray(monsterData.tags)) monsterData.tags = [];
 
       // Add to runtime and persistent custom storage
@@ -1408,9 +1412,11 @@ Return ONLY a single valid JSON object adhering strictly to the following struct
 
       const atkStr = (m.attacks || []).map(a => `<span class="text-amber-300 font-semibold">${a.name} ${a.bonus >= 0 ? '+' : ''}${a.bonus}</span> <span class="text-slate-400">(${a.damage})</span>`).join('<span class="text-slate-600 mx-1">|</span>') || 'Yok';
 
-      const featStr = (m.feats || []).map(f => `<span class="bg-slate-800 border border-slate-700 px-1.5 py-0.5 rounded text-[10px] text-slate-300">${f.name}</span>`).join(' ') || '<span class="text-slate-500">-</span>';
+      const featStr = (m.feats || []).map(f => `<span class="bg-slate-800 border border-slate-700 px-1.5 py-0.5 rounded text-[10px] text-slate-300" title="${f.benefit || f.description || ''}">${f.name}</span>`).join(' ') || '<span class="text-slate-500">-</span>';
 
       const saStr = (m.specialAbilities || []).map(sa => `<span class="bg-indigo-950/60 border border-indigo-800/80 px-1.5 py-0.5 rounded text-[10px] text-indigo-200" title="${sa.description || ''}">${sa.name}</span>`).join(' ') || '<span class="text-slate-500">-</span>';
+
+      const spellStr = (m.spells || []).map(s => `<span class="bg-purple-950/70 border border-purple-800/80 px-1.5 py-0.5 rounded text-[10px] text-purple-200" title="${s.description || ''}">🔮 ${s.name} (${s.level}. Seviye)</span>`).join(' ') || '';
 
       container.innerHTML = `
         <div class="space-y-2">
@@ -1481,8 +1487,8 @@ Return ONLY a single valid JSON object adhering strictly to the following struct
             <div class="font-mono text-xs">${atkStr}</div>
           </div>
 
-          <!-- Featler & Özel Yetenekler -->
-          <div class="space-y-1 text-[10px]">
+          <!-- Featler, Büyüler & Özel Yetenekler -->
+          <div class="space-y-1.5 text-[10px]">
             <div>
               <span class="text-slate-400 text-[9px] uppercase font-bold block mb-0.5">Hünerler (Feats):</span>
               <div class="flex flex-wrap gap-1">${featStr}</div>
@@ -1491,12 +1497,105 @@ Return ONLY a single valid JSON object adhering strictly to the following struct
               <span class="text-slate-400 text-[9px] uppercase font-bold block mb-0.5">Özel Yetenekler (Special Abilities):</span>
               <div class="flex flex-wrap gap-1">${saStr}</div>
             </div>
+            ${spellStr ? `
+            <div>
+              <span class="text-purple-400 text-[9px] uppercase font-bold block mb-0.5">Büyüler &amp; SLA (Spells):</span>
+              <div class="flex flex-wrap gap-1">${spellStr}</div>
+            </div>` : ''}
           </div>
         </div>
       `;
     }
 
+    function syncMonsterToMasterDb(monster) {
+      try {
+        let masterDb = [];
+        const raw = localStorage.getItem('dnd35_master_db');
+        if (raw) {
+          try { masterDb = JSON.parse(raw); } catch (e) {}
+        }
+        if (!Array.isArray(masterDb) || masterDb.length === 0) {
+          masterDb = (window.MASTER_DB || []).slice();
+        }
+
+        const addOrUpdate = (entry) => {
+          if (!entry || !entry.name) return;
+          const cleanName = entry.name.toLowerCase().trim();
+          const existingIdx = masterDb.findIndex(m => m && (m.name || '').toLowerCase().trim() === cleanName);
+          if (existingIdx >= 0) {
+            masterDb[existingIdx] = { ...masterDb[existingIdx], ...entry };
+          } else {
+            masterDb.push(entry);
+          }
+        };
+
+        // 1. Sync Weapons
+        (monster.attacks || []).forEach(atk => {
+          addOrUpdate({
+            name: atk.name,
+            type: 'Weapon',
+            slot: atk.type === 'Ranged' ? 'Both Hands' : 'Main Hand',
+            category: atk.type || 'Natural',
+            dice: atk.damage || '1d6',
+            critMin: atk.crit ? (parseInt(atk.crit.split('/')[0].split('-')[0]) || 20) : 20,
+            critMult: atk.crit && atk.crit.includes('x3') ? 3 : (atk.crit && atk.crit.includes('x4') ? 4 : 2),
+            attBonus: Number(atk.bonus) || 0,
+            dmgBonus: 0,
+            dmgType: atk.damageType || 'Physical',
+            bonusType: 'Natural',
+            range: atk.range || '-',
+            source: 'Monster Manual'
+          });
+        });
+
+        // 2. Sync Feats
+        (monster.feats || []).forEach(f => {
+          addOrUpdate({
+            name: f.name,
+            type: 'Feat',
+            slot: 'None',
+            benefit: f.benefit || f.description || 'D&D 3.5e RAW Feat',
+            source: 'Monster Manual'
+          });
+        });
+
+        // 3. Sync Special Abilities
+        (monster.specialAbilities || []).forEach(sa => {
+          addOrUpdate({
+            name: sa.name,
+            type: 'Special Ability',
+            slot: 'None',
+            benefit: sa.description || sa.benefit || '',
+            source: 'Monster Manual'
+          });
+        });
+
+        // 4. Sync Spells
+        (monster.spells || []).forEach(s => {
+          addOrUpdate({
+            name: s.name,
+            type: 'Spell',
+            slot: 'None',
+            spellLevel: Number(s.level) || 1,
+            school: s.school || 'Universal',
+            benefit: s.description || s.benefit || '',
+            source: 'Spell-Like Ability'
+          });
+        });
+
+        localStorage.setItem('dnd35_master_db', JSON.stringify(masterDb));
+        if (window.RuleMaster && Array.isArray(window.RuleMaster.masterDb)) {
+          window.RuleMaster.masterDb = masterDb;
+        }
+      } catch (err) {
+        console.warn('Could not sync monster to master_db:', err);
+      }
+    }
+
     function convertMonsterToCharacter(monster, customName, campaignId) {
+      // 1. Sync every weapon, feat, ability, and spell into Master DB
+      syncMonsterToMasterDb(monster);
+
       const charId = 'char_' + Date.now();
       const name = customName || monster.name;
 
@@ -1514,6 +1613,51 @@ Return ONLY a single valid JSON object adhering strictly to the following struct
         category: atk.type || 'Natural',
         range: atk.range || '-'
       }));
+
+      const feats = (monster.feats || []).map(f => ({
+        name: f.name,
+        category: f.category || 'Feat',
+        benefit: f.benefit || f.description || 'D&D 3.5e RAW Feat',
+        description: f.benefit || f.description || '',
+        source: 'Monster Manual'
+      }));
+
+      const specialAbilities = (monster.specialAbilities || []).map(sa => ({
+        name: sa.name,
+        type: sa.type || 'Ex',
+        category: 'Special Ability',
+        benefit: sa.description || sa.benefit || '',
+        description: sa.description || sa.benefit || '',
+        source: 'Racial'
+      }));
+
+      const knownSpells = (monster.spells || []).map(s => ({
+        name: s.name,
+        level: Number(s.level) || 1,
+        school: s.school || 'Universal',
+        castingTime: s.castingTime || '1 standard action',
+        range: s.range || 'Medium (100 ft. + 10 ft./level)',
+        duration: s.duration || 'Instantaneous',
+        savingThrow: s.savingThrow || 'None',
+        spellResistance: s.spellResistance || 'Yes',
+        benefit: s.benefit || s.description || '',
+        description: s.benefit || s.description || '',
+        source: s.source || 'Spell-Like Ability'
+      }));
+
+      const cl = Number(monster.casterLevel || monster.cl || monster.crNumeric || monster.level || 1);
+      const spellAbility = monster.spellAbility || (monster.abilities?.cha >= 14 ? 'cha' : (monster.abilities?.int >= 14 ? 'int' : 'wis'));
+      const spellStatName = spellAbility.toUpperCase();
+
+      const slots = [];
+      const maxSpellLvl = knownSpells.reduce((max, s) => Math.max(max, s.level), 0);
+      for (let l = 0; l <= Math.max(1, maxSpellLvl); l++) {
+        slots.push({
+          level: l,
+          daily: l === 0 ? 6 : Math.max(3, 8 - l),
+          used: 0
+        });
+      }
 
       const mainWep = monster.attacks && monster.attacks.length ? monster.attacks[0].name : '-';
       const atkFormula = monster.attacks && monster.attacks.length 
@@ -1592,22 +1736,18 @@ Return ONLY a single valid JSON object adhering strictly to the following struct
           ranks: s.mod || 0,
           total: s.mod || 0
         })),
-        feats: (monster.feats || []).map(f => ({
-          name: f.name,
-          description: ''
-        })),
-        specialAbilities: (monster.specialAbilities || []).map(sa => ({
-          name: sa.name,
-          type: sa.type || 'Ex',
-          description: sa.description || ''
-        })),
-        spells: [],
+        feats: feats,
+        specialAbilities: specialAbilities,
+        spells: knownSpells,
         buffs: [],
         debuffs: [],
         spellcasting: {
-          cl: 0,
-          ability: 'int',
-          slots: { 0: { daily: 0, used: 0 } }
+          cl: cl,
+          ability: spellAbility,
+          statName: spellStatName,
+          primaryClass: 'Sorcerer',
+          slots: slots,
+          knownSpells: knownSpells
         },
         levelProgression: [],
         tomeOfBattle: {
@@ -1617,8 +1757,8 @@ Return ONLY a single valid JSON object adhering strictly to the following struct
         combatPins: {
           offense_melee: weapons.filter(w => w.category === 'Melee' || w.category === 'Natural').map(w => w.name),
           offense_ranged: weapons.filter(w => w.category === 'Ranged').map(w => w.name),
-          offense_spell: [],
-          defense: []
+          offense_spell: knownSpells.slice(0, 5).map(s => s.name),
+          defense: specialAbilities.filter(sa => sa.name.includes('Damage Reduction') || sa.name.includes('Spell Resistance') || sa.name.includes('Immunity') || sa.name.includes('Regeneration')).map(sa => sa.name)
         },
         tactical: {
           powerAttack: 0,

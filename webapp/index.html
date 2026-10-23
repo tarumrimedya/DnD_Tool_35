@@ -17629,7 +17629,8 @@
         });
       }
       
-      const hasSpontaneous = classNames.some(c => c.includes('sorcerer') || c.includes('bard') || c.includes('favored soul') || c.includes('warlock'));
+      const hasNpcSpells = Boolean(character?.isNpc && ((character?.spellcasting?.knownSpells && character.spellcasting.knownSpells.length > 0) || (Array.isArray(character?.spells) && character.spells.length > 0)));
+      const hasSpontaneous = classNames.some(c => c.includes('sorcerer') || c.includes('bard') || c.includes('favored soul') || c.includes('warlock')) || hasNpcSpells;
       const hasPrepared = classNames.some(c => c.includes('wizard') || c.includes('artificer') || c.includes('archivist') || c.includes('wu jen'));
       const hasDivine = classNames.some(c => c.includes('cleric') || c.includes('druid') || c.includes('paladin') || c.includes('ranger') || c.includes('rahip'));
       const hasMartial = classNames.some(c => c.includes('warblade') || c.includes('swordsage') || c.includes('crusader'));
