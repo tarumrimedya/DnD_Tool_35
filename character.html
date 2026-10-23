@@ -6747,6 +6747,8 @@
         feats: [],
         specialAbilities: [],
         spells: [],
+        buffs: [],
+        debuffs: [],
         spellcasting: {
           cl: 0,
           ability: 'int',
@@ -27575,12 +27577,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       if (!container) return;
       container.innerHTML = '';
 
-      if (!Array.isArray(character.buffs) || character.buffs.length === 0) {
-        if (RuleEngine && RuleEngine.getDefaultBuffs) {
-          character.buffs = RuleEngine.getDefaultBuffs();
-        } else {
-          character.buffs = [];
-        }
+      if (!Array.isArray(character.buffs)) {
+        character.buffs = [];
       }
 
       const viewMode = character.tactical?.buffsViewMode || 'grid';

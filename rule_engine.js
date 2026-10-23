@@ -801,8 +801,8 @@ const RuleEngine = {
     }
 
     // Ensure buffs array
-    if (!Array.isArray(character.buffs) || character.buffs.length === 0) {
-      character.buffs = this.getDefaultBuffs();
+    if (!Array.isArray(character.buffs)) {
+      character.buffs = [];
     }
 
     // 2. Collect Equipment Bonuses from active bodySlots
