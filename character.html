@@ -95,9 +95,13 @@
                   <span id="core-name" class="hidden">Kazmil'in Çırağı</span>
                 </h1>
                 <span id="core-race" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 text-[10px] font-bold uppercase tracking-wider">Human</span>
-                <button onclick="openLevelUpModal()" class="px-2.5 sm:px-3 py-1 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-sans font-bold text-xs shadow flex items-center gap-1.5 transition transform active:scale-95 cursor-pointer shrink-0" title="Yeni seviye ekle, HP/BAB/Save ve Feat seç">
+                <button id="btn-header-level-up" onclick="openLevelUpModal()" class="px-2.5 sm:px-3 py-1 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-sans font-bold text-xs shadow flex items-center gap-1.5 transition transform active:scale-95 cursor-pointer shrink-0" title="Yeni seviye ekle, HP/BAB/Save ve Feat seç">
                   <span>⬆️</span>
                   <span>Level Up</span>
+                </button>
+                <button id="btn-header-npc-statblock" type="button" onclick="openNpcStatblockModal()" class="hidden px-2.5 sm:px-3 py-1 rounded-lg bg-gradient-to-r from-amber-600 to-rose-600 hover:from-amber-500 hover:to-rose-500 text-white font-sans font-bold text-xs shadow flex items-center gap-1.5 transition transform active:scale-95 cursor-pointer shrink-0" title="Canavar / NPC statblock değerlerini (HP, AC, Saves, Statlar, Büyüler, Yetenekler) düzenle">
+                  <span>⚡</span>
+                  <span>Statblock Düzenle</span>
                 </button>
               </div>
               
@@ -4582,6 +4586,438 @@
   </div>
 
   <!-- ==================================================== -->
+  <!-- MODAL: DM STATBLOCK & ABILITY STUDIO (Canavar / NPC Düzenleme Merkezi) -->
+  <!-- ==================================================== -->
+  <div id="npc-statblock-modal" class="hidden fixed inset-0 z-[120] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
+    <div class="bg-dndCard border border-amber-500/80 rounded-2xl max-w-4xl w-full shadow-2xl overflow-hidden my-auto animate-fadeIn flex flex-col max-h-[92vh]">
+      <!-- Header -->
+      <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-600 to-rose-700 flex items-center justify-center text-lg shadow-inner border border-amber-400/50">
+            <span>⚡</span>
+          </div>
+          <div>
+            <h3 class="text-sm font-black text-white tracking-wide flex items-center gap-2">
+              <span>CANAVAR / NPC STATBLOCK STÜDYOSU</span>
+              <span class="badge bg-amber-950 text-amber-300 border border-amber-600/70 text-[10px] font-bold">DM Sandbox</span>
+            </h3>
+            <p class="text-[10px] text-slate-400">D&D 3.5e Canavar Değerleri, Serbest Büyüler, Manevralar ve Özel Yetenekler</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeNpcStatblockModal()" class="text-slate-400 hover:text-white p-1 text-base font-bold transition cursor-pointer">&times;</button>
+      </div>
+
+      <!-- Studio Sub-Tabs Bar -->
+      <div class="bg-slate-900/90 px-4 py-2 border-b border-slate-800 flex items-center gap-2 shrink-0 overflow-x-auto">
+        <button type="button" id="btn-npc-tab-vitals" onclick="switchNpcStudioTab('vitals')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow">
+          <span>📊</span>
+          <span>1. Temel Vitals &amp; Statlar</span>
+        </button>
+        <button type="button" id="btn-npc-tab-feats" onclick="switchNpcStudioTab('feats')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-slate-950 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800">
+          <span>🎖️</span>
+          <span>2. Hünerler &amp; Özel Yetenekler</span>
+        </button>
+        <button type="button" id="btn-npc-tab-spells" onclick="switchNpcStudioTab('spells')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-slate-950 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800">
+          <span>🔮</span>
+          <span>3. Büyüler &amp; Manevralar</span>
+        </button>
+      </div>
+
+      <!-- Studio Scrollable Content Body -->
+      <div class="p-4 space-y-4 overflow-y-auto flex-1 text-xs">
+        
+        <!-- PANE 1: VITALS & STATS -->
+        <div id="npc-studio-pane-vitals" class="space-y-4">
+          <!-- Identity Grid -->
+          <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 space-y-2.5">
+            <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wide flex items-center gap-1.5">
+              <span>🪪</span>
+              <span>Kimlik &amp; Sınıf Bilgileri</span>
+            </h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Varlık / Canavar Adı *</label>
+                <input type="text" id="npc-input-name" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-bold focus:border-amber-500 focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Challenge Rating (CR)</label>
+                <input type="text" id="npc-input-cr" placeholder="Örn: 23, 1/2" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-mono font-bold focus:border-amber-500 focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Irk / Tip (Race &amp; Subtype)</label>
+                <input type="text" id="npc-input-race" placeholder="Örn: Dragon (Fire), Undead" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-medium focus:border-amber-500 focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Sınıf / Hit Die (HD)</label>
+                <input type="text" id="npc-input-classes" placeholder="Örn: Dragon 31 HD, Warrior 4" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-amber-300 font-mono font-bold focus:border-amber-500 focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Hareket Hızı (Speed)</label>
+                <input type="text" id="npc-input-speed" placeholder="Örn: 40 ft., fly 200 ft." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-mono focus:border-amber-500 focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Temel Saldırı Bonusu (BAB)</label>
+                <input type="number" id="npc-input-bab" placeholder="31" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-emerald-400 font-mono font-bold focus:border-amber-500 focus:outline-none">
+              </div>
+            </div>
+          </div>
+
+          <!-- HP & Armor Class Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- HP Card -->
+            <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 space-y-2.5">
+              <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wide flex items-center gap-1.5">
+                <span>🩸</span>
+                <span>Can Puanı (Hit Points)</span>
+              </h4>
+              <div class="grid grid-cols-3 gap-2">
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Maksimum HP</label>
+                  <input type="number" id="npc-input-max-hp" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-emerald-400 font-mono font-black text-center text-sm focus:border-emerald-500 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Güncel HP</label>
+                  <input type="number" id="npc-input-current-hp" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white font-mono font-bold text-center text-sm focus:border-emerald-500 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Geçici HP</label>
+                  <input type="number" id="npc-input-temp-hp" placeholder="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-cyan-400 font-mono font-bold text-center text-sm focus:border-cyan-500 focus:outline-none">
+                </div>
+              </div>
+            </div>
+
+            <!-- AC Card -->
+            <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 space-y-2.5">
+              <h4 class="text-xs font-bold text-sky-400 uppercase tracking-wide flex items-center gap-1.5">
+                <span>🛡️</span>
+                <span>Zırh Sınıfı (Armor Class)</span>
+              </h4>
+              <div class="grid grid-cols-3 gap-2">
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Total AC</label>
+                  <input type="number" id="npc-input-ac-total" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-amber-400 font-mono font-black text-center text-sm focus:border-amber-500 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Touch AC</label>
+                  <input type="number" id="npc-input-ac-touch" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-sky-400 font-mono font-bold text-center text-sm focus:border-sky-500 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Flat-Footed AC</label>
+                  <input type="number" id="npc-input-ac-flat" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-slate-300 font-mono font-bold text-center text-sm focus:border-slate-500 focus:outline-none">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Saves & Ability Scores -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Saves Card -->
+            <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 space-y-2.5">
+              <h4 class="text-xs font-bold text-purple-400 uppercase tracking-wide flex items-center gap-1.5">
+                <span>⚡</span>
+                <span>Kayıt Zarları (Saving Throws)</span>
+              </h4>
+              <div class="grid grid-cols-3 gap-2">
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">🛡️ Fortitude</label>
+                  <input type="number" id="npc-input-save-fort" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-emerald-400 font-mono font-black text-center text-sm focus:border-purple-500 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">⚡ Reflex</label>
+                  <input type="number" id="npc-input-save-ref" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-sky-400 font-mono font-black text-center text-sm focus:border-purple-500 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">🧠 Will</label>
+                  <input type="number" id="npc-input-save-will" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-purple-400 font-mono font-black text-center text-sm focus:border-purple-500 focus:outline-none">
+                </div>
+              </div>
+            </div>
+
+            <!-- Ability Scores Card (6 Stats) -->
+            <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 space-y-2.5">
+              <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wide flex items-center gap-1.5">
+                <span>💪</span>
+                <span>Temel Nitelikler (Ability Scores)</span>
+              </h4>
+              <div class="grid grid-cols-3 sm:grid-cols-6 gap-2 text-center">
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-0.5">STR</label>
+                  <input type="number" id="npc-input-str" oninput="updateNpcStatModDisplays()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-1 py-1 text-amber-400 font-mono font-black text-center text-xs">
+                  <span id="npc-mod-str" class="text-[10px] font-mono text-emerald-400 block mt-0.5">+0</span>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-0.5">DEX</label>
+                  <input type="number" id="npc-input-dex" oninput="updateNpcStatModDisplays()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-1 py-1 text-amber-400 font-mono font-black text-center text-xs">
+                  <span id="npc-mod-dex" class="text-[10px] font-mono text-emerald-400 block mt-0.5">+0</span>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-0.5">CON</label>
+                  <input type="number" id="npc-input-con" oninput="updateNpcStatModDisplays()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-1 py-1 text-amber-400 font-mono font-black text-center text-xs">
+                  <span id="npc-mod-con" class="text-[10px] font-mono text-emerald-400 block mt-0.5">+0</span>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-0.5">INT</label>
+                  <input type="number" id="npc-input-int" oninput="updateNpcStatModDisplays()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-1 py-1 text-amber-400 font-mono font-black text-center text-xs">
+                  <span id="npc-mod-int" class="text-[10px] font-mono text-emerald-400 block mt-0.5">+0</span>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-0.5">WIS</label>
+                  <input type="number" id="npc-input-wis" oninput="updateNpcStatModDisplays()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-1 py-1 text-amber-400 font-mono font-black text-center text-xs">
+                  <span id="npc-mod-wis" class="text-[10px] font-mono text-emerald-400 block mt-0.5">+0</span>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-0.5">CHA</label>
+                  <input type="number" id="npc-input-cha" oninput="updateNpcStatModDisplays()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-1 py-1 text-amber-400 font-mono font-black text-center text-xs">
+                  <span id="npc-mod-cha" class="text-[10px] font-mono text-emerald-400 block mt-0.5">+0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANE 2: FEATS & SPECIAL ABILITIES -->
+        <div id="npc-studio-pane-feats" class="hidden space-y-4">
+          <!-- Special Defenses Row -->
+          <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 space-y-2.5">
+            <h4 class="text-xs font-bold text-indigo-400 uppercase tracking-wide flex items-center gap-1.5">
+              <span>🛡️</span>
+              <span>Özel Savunmalar &amp; Dirençler (DR, SR, Bağışıklık)</span>
+            </h4>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Hasar Azaltımı (DR)</label>
+                <input type="text" id="npc-input-dr" placeholder="Örn: 15/Magic, 10/Cold Iron" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-amber-300 font-mono font-bold focus:border-indigo-500 focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Büyü Direnci (SR)</label>
+                <input type="text" id="npc-input-sr" placeholder="Örn: 28" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-purple-300 font-mono font-bold focus:border-indigo-500 focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Bağışıklıklar &amp; Dirençler</label>
+                <input type="text" id="npc-input-immunities" placeholder="Örn: Fire Immunity, Acid 10" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-emerald-300 font-medium focus:border-indigo-500 focus:outline-none">
+              </div>
+            </div>
+          </div>
+
+          <!-- Feats & Abilities Two Column Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Left: FEATS -->
+            <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 space-y-3 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                  <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wide flex items-center gap-1.5">
+                    <span>🎖️</span>
+                    <span>Hünerler (Feats)</span>
+                  </h4>
+                  <span id="npc-feats-count-badge" class="badge bg-amber-950 text-amber-300 border border-amber-700/60 text-[10px] font-mono">0 Feat</span>
+                </div>
+
+                <!-- Add Feat Box -->
+                <div class="mt-2.5 space-y-2 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+                  <div class="flex items-center gap-1.5">
+                    <input type="text" id="npc-add-feat-search" list="npc-catalog-feats-list" placeholder="Katalogdan veya serbest feat adı..." class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white text-xs">
+                    <datalist id="npc-catalog-feats-list"></datalist>
+                    <button type="button" onclick="addNpcStudioFeat()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition shadow shrink-0 cursor-pointer">➕ Ekle</button>
+                  </div>
+                </div>
+
+                <!-- Feats List Container -->
+                <div id="npc-studio-feats-list" class="mt-3 flex flex-wrap gap-1.5 max-h-52 overflow-y-auto p-1">
+                  <!-- Populated by JS -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: SPECIAL ABILITIES -->
+            <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 space-y-3 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                  <h4 class="text-xs font-bold text-purple-400 uppercase tracking-wide flex items-center gap-1.5">
+                    <span>⚡</span>
+                    <span>Özel Yetenekler (Ex/Su/Sp)</span>
+                  </h4>
+                  <span id="npc-abilities-count-badge" class="badge bg-purple-950 text-purple-300 border border-purple-700/60 text-[10px] font-mono">0 Yetenek</span>
+                </div>
+
+                <!-- Add Ability Box -->
+                <div class="mt-2.5 space-y-2 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+                  <div class="grid grid-cols-3 gap-1.5">
+                    <input type="text" id="npc-add-ability-name" placeholder="Yetenek adı (Örn: Breath Weapon)" class="col-span-2 bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-white text-xs">
+                    <select id="npc-add-ability-type" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-white text-xs font-bold">
+                      <option value="Ex">Ex (Extraord.)</option>
+                      <option value="Su">Su (Supernat.)</option>
+                      <option value="Sp">Sp (Spell-Like)</option>
+                      <option value="Genel">Genel / Irksal</option>
+                    </select>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <input type="text" id="npc-add-ability-desc" placeholder="Kural etkisi veya hasar zarı (Örn: 60-ft. cone of fire, 12d6)" class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-white text-xs">
+                    <button type="button" onclick="addNpcStudioAbility()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 py-1 rounded-lg transition shadow shrink-0 cursor-pointer">➕ Ekle</button>
+                  </div>
+                </div>
+
+                <!-- Abilities List Container -->
+                <div id="npc-studio-abilities-list" class="mt-3 flex flex-wrap gap-1.5 max-h-52 overflow-y-auto p-1">
+                  <!-- Populated by JS -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANE 3: SPELLS & MANEUVERS -->
+        <div id="npc-studio-pane-spells" class="hidden space-y-4">
+          <!-- Spellcasting Config Bar -->
+          <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 space-y-2.5">
+            <h4 class="text-xs font-bold text-sky-400 uppercase tracking-wide flex items-center gap-1.5">
+              <span>🔮</span>
+              <span>Büyücülük Parametreleri (Spellcasting Config)</span>
+            </h4>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Caster Level (CL)</label>
+                <input type="number" id="npc-input-cl" placeholder="13" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-purple-300 font-mono font-bold text-sm focus:border-sky-500 focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Büyücü Statı</label>
+                <select id="npc-select-spell-stat" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-bold text-xs focus:border-sky-500">
+                  <option value="CHA">Charisma (CHA - Sorcerer / Doğal)</option>
+                  <option value="INT">Intelligence (INT - Wizard)</option>
+                  <option value="WIS">Wisdom (WIS - Cleric / Druid)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Büyü Sınıf Türü</label>
+                <input type="text" id="npc-input-spell-class" placeholder="Örn: Sorcerer, Inherent" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-medium focus:border-sky-500 focus:outline-none">
+              </div>
+            </div>
+
+            <!-- Spell Slots Stepper Row (0 to 9) -->
+            <div class="pt-2 border-t border-slate-800">
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Günlük Büyü Slotları (0 - 9. Seviye)</label>
+              <div class="grid grid-cols-5 sm:grid-cols-10 gap-1.5 text-center">
+                <div>
+                  <span class="text-[9px] text-slate-400 block font-mono">0 (Cant.)</span>
+                  <input type="number" id="npc-slot-0" value="6" min="0" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-center font-mono font-bold text-xs text-white">
+                </div>
+                <div>
+                  <span class="text-[9px] text-slate-400 block font-mono">1. Lvl</span>
+                  <input type="number" id="npc-slot-1" value="0" min="0" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-center font-mono font-bold text-xs text-white">
+                </div>
+                <div>
+                  <span class="text-[9px] text-slate-400 block font-mono">2. Lvl</span>
+                  <input type="number" id="npc-slot-2" value="0" min="0" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-center font-mono font-bold text-xs text-white">
+                </div>
+                <div>
+                  <span class="text-[9px] text-slate-400 block font-mono">3. Lvl</span>
+                  <input type="number" id="npc-slot-3" value="0" min="0" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-center font-mono font-bold text-xs text-white">
+                </div>
+                <div>
+                  <span class="text-[9px] text-slate-400 block font-mono">4. Lvl</span>
+                  <input type="number" id="npc-slot-4" value="0" min="0" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-center font-mono font-bold text-xs text-white">
+                </div>
+                <div>
+                  <span class="text-[9px] text-slate-400 block font-mono">5. Lvl</span>
+                  <input type="number" id="npc-slot-5" value="0" min="0" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-center font-mono font-bold text-xs text-white">
+                </div>
+                <div>
+                  <span class="text-[9px] text-slate-400 block font-mono">6. Lvl</span>
+                  <input type="number" id="npc-slot-6" value="0" min="0" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-center font-mono font-bold text-xs text-white">
+                </div>
+                <div>
+                  <span class="text-[9px] text-slate-400 block font-mono">7. Lvl</span>
+                  <input type="number" id="npc-slot-7" value="0" min="0" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-center font-mono font-bold text-xs text-white">
+                </div>
+                <div>
+                  <span class="text-[9px] text-slate-400 block font-mono">8. Lvl</span>
+                  <input type="number" id="npc-slot-8" value="0" min="0" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-center font-mono font-bold text-xs text-white">
+                </div>
+                <div>
+                  <span class="text-[9px] text-slate-400 block font-mono">9. Lvl</span>
+                  <input type="number" id="npc-slot-9" value="0" min="0" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-center font-mono font-bold text-xs text-white">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Spells & Maneuvers Picker Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Left: SPELLS -->
+            <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 space-y-3 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                  <h4 class="text-xs font-bold text-sky-400 uppercase tracking-wide flex items-center gap-1.5">
+                    <span>🔮</span>
+                    <span>Bilinen / Kullanılabilir Büyüler</span>
+                  </h4>
+                  <span id="npc-spells-count-badge" class="badge bg-sky-950 text-sky-300 border border-sky-700/60 text-[10px] font-mono">0 Büyü</span>
+                </div>
+
+                <!-- Add Spell from Master DB -->
+                <div class="mt-2.5 space-y-2 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+                  <div class="flex items-center gap-1.5">
+                    <input type="text" id="npc-add-spell-search" list="npc-catalog-spells-list" placeholder="Büyü ara (Örn: Fireball, Shield)..." class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white text-xs">
+                    <datalist id="npc-catalog-spells-list"></datalist>
+                    <button type="button" onclick="addNpcStudioSpell()" class="bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition shadow shrink-0 cursor-pointer">➕ Ekle</button>
+                  </div>
+                </div>
+
+                <!-- Spells List Container -->
+                <div id="npc-studio-spells-list" class="mt-3 flex flex-wrap gap-1.5 max-h-52 overflow-y-auto p-1">
+                  <!-- Populated by JS -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: MANEUVERS & STANCES -->
+            <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 space-y-3 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                  <h4 class="text-xs font-bold text-rose-400 uppercase tracking-wide flex items-center gap-1.5">
+                    <span>⚔️</span>
+                    <span>Manevralar &amp; Duruşlar (Tome of Battle)</span>
+                  </h4>
+                  <span id="npc-maneuvers-count-badge" class="badge bg-rose-950 text-rose-300 border border-rose-700/60 text-[10px] font-mono">0 Manevra</span>
+                </div>
+
+                <!-- Add Maneuver from Master DB -->
+                <div class="mt-2.5 space-y-2 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+                  <div class="flex items-center gap-1.5">
+                    <input type="text" id="npc-add-maneuver-search" list="npc-catalog-maneuvers-list" placeholder="Manevra veya duruş ara..." class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white text-xs">
+                    <datalist id="npc-catalog-maneuvers-list"></datalist>
+                    <button type="button" onclick="addNpcStudioManeuver()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition shadow shrink-0 cursor-pointer">➕ Ekle</button>
+                  </div>
+                </div>
+
+                <!-- Maneuvers List Container -->
+                <div id="npc-studio-maneuvers-list" class="mt-3 flex flex-wrap gap-1.5 max-h-52 overflow-y-auto p-1">
+                  <!-- Populated by JS -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Studio Footer -->
+      <div class="bg-slate-950 px-4 py-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2 shrink-0">
+        <div class="text-[11px] text-slate-400 flex items-center gap-1.5">
+          <span>💡</span>
+          <span>Değişiklikler canavarın savaş kokpitine, savunma sütununa ve büyü komuta merkezine anında uygulanır.</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="closeNpcStatblockModal()" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold transition text-xs cursor-pointer">İptal</button>
+          <button type="button" onclick="saveNpcStatblockModal()" class="px-4 py-1.5 rounded-lg bg-gradient-to-r from-amber-600 to-rose-600 hover:from-amber-500 hover:to-rose-500 text-white font-bold transition flex items-center gap-1.5 text-xs shadow cursor-pointer active:scale-95">
+            <span>💾</span>
+            <span>Değişiklikleri Uygula &amp; Kaydet</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================== -->
   <!-- MODAL: PLANNED LEVEL CHOICE (Seviye Atlat vs Seviye Planla) -->
   <!-- ==================================================== -->
   <div id="planned-level-choice-modal" class="hidden fixed inset-0 z-[120] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
@@ -7809,6 +8245,17 @@
       if (classEl) classEl.textContent = character.classes;
       const babEl = document.getElementById('char-bab-display');
       if (babEl) babEl.textContent = '+' + (character.bab || 0);
+
+      // Toggle Level Up vs NPC Statblock button
+      const lvlUpBtn = document.getElementById('btn-header-level-up');
+      const npcStatBtn = document.getElementById('btn-header-npc-statblock');
+      if (character.isNpc) {
+        if (lvlUpBtn) lvlUpBtn.classList.add('hidden');
+        if (npcStatBtn) npcStatBtn.classList.remove('hidden');
+      } else {
+        if (lvlUpBtn) lvlUpBtn.classList.remove('hidden');
+        if (npcStatBtn) npcStatBtn.classList.add('hidden');
+      }
       
       const initData = getCharacterInitiative();
       const initStr = (initData.total >= 0 ? '+' : '') + initData.total;
@@ -7935,9 +8382,9 @@
         console.error('AC evaluation error in renderHUD:', e);
       }
 
-      const totalAc = acCalc?.total ?? character.acBreakdown?.total ?? 10;
-      const touchAc = acCalc?.touch ?? character.acBreakdown?.touch ?? 10;
-      const flatAc = acCalc?.flat ?? character.acBreakdown?.flat ?? 10;
+      const totalAc = (character.isNpc && character.ac?.total) ? character.ac.total : (acCalc?.total ?? character.acBreakdown?.total ?? 10);
+      const touchAc = (character.isNpc && character.ac?.touch) ? character.ac.touch : (acCalc?.touch ?? character.acBreakdown?.touch ?? 10);
+      const flatAc = (character.isNpc && character.ac?.flatFooted) ? character.ac.flatFooted : (acCalc?.flat ?? character.acBreakdown?.flat ?? 10);
 
       const acTotalEl = document.getElementById('ac-total-display');
       if (acTotalEl) acTotalEl.textContent = totalAc;
@@ -7948,31 +8395,36 @@
 
       const acNotesEl = document.getElementById('ac-notes-display');
       if (acNotesEl) {
-        const bd = acCalc?.breakdown || character.acBreakdown || {};
-        const sources = character.acBreakdown?.sources || {};
-        const armorName = (Array.isArray(sources.armor) && sources.armor[0]?.source) ? sources.armor[0].source : null;
-        const shieldName = (Array.isArray(sources.shield) && sources.shield[0]?.source) ? sources.shield[0].source : null;
+        if (character.isNpc) {
+          acNotesEl.textContent = `Doğal Zırh / Statblock AC: ${totalAc} • Touch ${touchAc} • Flat ${flatAc}`;
+          acNotesEl.title = `Canavar Zırh Sınıfı: ${totalAc} (Touch: ${touchAc}, Flat-Footed: ${flatAc})`;
+        } else {
+          const bd = acCalc?.breakdown || character.acBreakdown || {};
+          const sources = character.acBreakdown?.sources || {};
+          const armorName = (Array.isArray(sources.armor) && sources.armor[0]?.source) ? sources.armor[0].source : null;
+          const shieldName = (Array.isArray(sources.shield) && sources.shield[0]?.source) ? sources.shield[0].source : null;
 
-        const detailedParts = [];
-        if (bd.armor) detailedParts.push(`Zırh +${bd.armor}${armorName ? ` (${armorName})` : ''}`);
-        if (bd.shield) detailedParts.push(`Kalkan +${bd.shield}${shieldName ? ` (${shieldName})` : ''}`);
-        if (bd.dex !== undefined) detailedParts.push(`Dex ${bd.dex >= 0 ? '+' + bd.dex : bd.dex}`);
-        if (bd.natural) detailedParts.push(`Nat +${bd.natural}`);
-        if (bd.deflection) detailedParts.push(`Defl +${bd.deflection}`);
-        if (bd.dodge) detailedParts.push(`Dodge +${bd.dodge}`);
-        if (bd.penalty) detailedParts.push(`Ceza ${bd.penalty}`);
+          const detailedParts = [];
+          if (bd.armor) detailedParts.push(`Zırh +${bd.armor}${armorName ? ` (${armorName})` : ''}`);
+          if (bd.shield) detailedParts.push(`Kalkan +${bd.shield}${shieldName ? ` (${shieldName})` : ''}`);
+          if (bd.dex !== undefined) detailedParts.push(`Dex ${bd.dex >= 0 ? '+' + bd.dex : bd.dex}`);
+          if (bd.natural) detailedParts.push(`Nat +${bd.natural}`);
+          if (bd.deflection) detailedParts.push(`Defl +${bd.deflection}`);
+          if (bd.dodge) detailedParts.push(`Dodge +${bd.dodge}`);
+          if (bd.penalty) detailedParts.push(`Ceza ${bd.penalty}`);
 
-        const shortParts = [];
-        if (bd.armor) shortParts.push(`Zırh +${bd.armor}`);
-        if (bd.shield) shortParts.push(`Kalkan +${bd.shield}`);
-        if (bd.dex !== undefined) shortParts.push(`Dex ${bd.dex >= 0 ? '+' + bd.dex : bd.dex}`);
-        if (bd.natural) shortParts.push(`Nat +${bd.natural}`);
-        if (bd.deflection) shortParts.push(`Defl +${bd.deflection}`);
-        if (bd.dodge) shortParts.push(`Dodge +${bd.dodge}`);
-        if (bd.penalty) shortParts.push(`Ceza ${bd.penalty}`);
+          const shortParts = [];
+          if (bd.armor) shortParts.push(`Zırh +${bd.armor}`);
+          if (bd.shield) shortParts.push(`Kalkan +${bd.shield}`);
+          if (bd.dex !== undefined) shortParts.push(`Dex ${bd.dex >= 0 ? '+' + bd.dex : bd.dex}`);
+          if (bd.natural) shortParts.push(`Nat +${bd.natural}`);
+          if (bd.deflection) shortParts.push(`Defl +${bd.deflection}`);
+          if (bd.dodge) shortParts.push(`Dodge +${bd.dodge}`);
+          if (bd.penalty) shortParts.push(`Ceza ${bd.penalty}`);
 
-        acNotesEl.textContent = shortParts.join(' • ') || 'Taban AC 10';
-        acNotesEl.title = `AC Dökümü: ${detailedParts.join(' • ')} (Taban 10) | Detay için 'Döküm' bağlantısına tıklayın.`;
+          acNotesEl.textContent = shortParts.join(' • ') || 'Taban AC 10';
+          acNotesEl.title = `AC Dökümü: ${detailedParts.join(' • ')} (Taban 10) | Detay için 'Döküm' bağlantısına tıklayın.`;
+        }
       }
 
       // Saves Live Evaluation
@@ -7994,9 +8446,9 @@
           will: (character.baseSaves?.will || 0) + wMod
         };
       }
-      const saveFortVal = (saves && typeof saves.fort === 'number' && !isNaN(saves.fort)) ? saves.fort : (character.saves?.fort?.total ?? 7);
-      const saveRefVal = (saves && typeof saves.ref === 'number' && !isNaN(saves.ref)) ? saves.ref : (character.saves?.ref?.total ?? 6);
-      const saveWillVal = (saves && typeof saves.will === 'number' && !isNaN(saves.will)) ? saves.will : (character.saves?.will?.total ?? 4);
+      const saveFortVal = (character.isNpc && character.saves?.fort?.total !== undefined) ? character.saves.fort.total : ((saves && typeof saves.fort === 'number' && !isNaN(saves.fort)) ? saves.fort : (character.saves?.fort?.total ?? 7));
+      const saveRefVal = (character.isNpc && character.saves?.ref?.total !== undefined) ? character.saves.ref.total : ((saves && typeof saves.ref === 'number' && !isNaN(saves.ref)) ? saves.ref : (character.saves?.ref?.total ?? 6));
+      const saveWillVal = (character.isNpc && character.saves?.will?.total !== undefined) ? character.saves.will.total : ((saves && typeof saves.will === 'number' && !isNaN(saves.will)) ? saves.will : (character.saves?.will?.total ?? 4));
 
       const saveFortEl = document.getElementById('save-fort-display');
       if (saveFortEl) saveFortEl.textContent = (saveFortVal >= 0 ? '+' : '') + saveFortVal;
@@ -8951,6 +9403,506 @@
       saveStateToStorage(true);
       renderAll();
       alert('✅ Karakter kimliği ve özellikleri başarıyla güncellendi!');
+    }
+
+    // ====================================================
+    // CONTROLLER: DM STATBLOCK & ABILITY STUDIO MODAL
+    // Canavar / NPC statblock düzenleme, vitals, serbest hüner,
+    // yetenek, büyü ve manevra stüdyosu
+    // ====================================================
+    let _npcStudioFeats = [];
+    let _npcStudioAbilities = [];
+    let _npcStudioSpells = [];
+    let _npcStudioManeuvers = [];
+    let _npcStudioActiveTab = 'vitals';
+
+    function openNpcStatblockModal(initialTab = 'vitals') {
+      if (!character) return;
+
+      const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = (val !== undefined && val !== null) ? val : '';
+      };
+
+      // 1. Identity & Vitals
+      setVal('npc-input-name', character.name || '');
+      setVal('npc-input-cr', character.cr || character.challengeRating || '');
+      setVal('npc-input-race', character.race || '');
+      setVal('npc-input-classes', character.classes || (character.class ? `${character.class} ${character.level || 1}` : ''));
+      setVal('npc-input-speed', character.speed || (character.baseSpeed ? `${character.baseSpeed} ft.` : '30 ft.'));
+      setVal('npc-input-bab', character.bab !== undefined ? character.bab : (character.baseAttackBonus || 0));
+
+      // HP
+      setVal('npc-input-max-hp', character.hp?.max ?? 10);
+      setVal('npc-input-current-hp', character.hp?.current ?? (character.hp?.max ?? 10));
+      setVal('npc-input-temp-hp', character.hp?.temp ?? 0);
+
+      // AC
+      setVal('npc-input-ac-total', character.ac?.total ?? (character.acBreakdown?.total ?? 10));
+      setVal('npc-input-ac-touch', character.ac?.touch ?? (character.acBreakdown?.touch ?? 10));
+      setVal('npc-input-ac-flat', character.ac?.flatFooted ?? (character.acBreakdown?.flat ?? 10));
+
+      // Saves
+      setVal('npc-input-save-fort', character.saves?.fort?.total ?? (character.evaluatedSaves?.fort ?? 0));
+      setVal('npc-input-save-ref', character.saves?.ref?.total ?? (character.evaluatedSaves?.ref ?? 0));
+      setVal('npc-input-save-will', character.saves?.will?.total ?? (character.evaluatedSaves?.will ?? 0));
+
+      // Ability Scores
+      ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(stat => {
+        const val = character.abilities?.[stat] ?? (character.stats?.[stat.toUpperCase()]?.value ?? 10);
+        setVal('npc-input-' + stat, val);
+      });
+      updateNpcStatModDisplays();
+
+      // Special Defenses
+      setVal('npc-input-dr', character.dr || character.damageReduction || '');
+      setVal('npc-input-sr', character.sr || character.spellResistance || '');
+      const imms = Array.isArray(character.immunities) ? character.immunities.join(', ') : (character.immunities || '');
+      setVal('npc-input-immunities', imms);
+
+      // Spellcasting
+      const clVal = character.cl ?? character.casterLevel ?? character.spellcasting?.cl ?? 0;
+      setVal('npc-input-cl', clVal);
+      const spStat = character.spellcasting?.ability || character.spellcastingAbility || 'CHA';
+      const spStatEl = document.getElementById('npc-select-spell-stat');
+      if (spStatEl) spStatEl.value = spStat.toUpperCase();
+      const spClassEl = document.getElementById('npc-input-spell-class');
+      if (spClassEl) spClassEl.value = character.spellcasting?.class || character.spellcasting?.primaryClass || 'Sorcerer';
+
+      // Daily Spell Slots (0 - 9)
+      for (let lvl = 0; lvl <= 9; lvl++) {
+        const slotEl = document.getElementById('npc-slot-' + lvl);
+        if (slotEl) {
+          let sVal = 0;
+          if (character.spellSlots && character.spellSlots[lvl] !== undefined) {
+            sVal = character.spellSlots[lvl];
+          } else if (Array.isArray(character.spellcasting?.slots)) {
+            const found = character.spellcasting.slots.find(s => Number(s.level) === lvl);
+            if (found) sVal = found.daily;
+          }
+          slotEl.value = sVal;
+        }
+      }
+
+      // Clone lists
+      _npcStudioFeats = (character.feats || []).map(f => {
+        if (typeof f === 'string') return { name: f, category: 'Feat', benefit: '' };
+        return { name: f.name || '', category: f.category || 'Feat', benefit: f.benefit || f.desc || '', source: f.source || '' };
+      });
+
+      _npcStudioAbilities = (character.specialAbilities || []).map(a => {
+        if (typeof a === 'string') return { name: a, type: 'Ex', benefit: '' };
+        return { name: a.name || '', type: a.type || 'Ex', benefit: a.benefit || a.desc || '', source: a.source || '' };
+      });
+
+      _npcStudioSpells = (character.spells || character.spellcasting?.knownSpells || []).map(s => {
+        if (typeof s === 'string') return { name: s, level: 1 };
+        return { ...s };
+      });
+
+      _npcStudioManeuvers = (character.maneuvers || []).map(m => {
+        if (typeof m === 'string') return { name: m, level: 1 };
+        return { ...m };
+      });
+
+      renderNpcStudioFeatsList();
+      renderNpcStudioAbilitiesList();
+      renderNpcStudioSpellsList();
+      renderNpcStudioManeuversList();
+      populateNpcCatalogs();
+
+      switchNpcStudioTab(initialTab);
+
+      const modal = document.getElementById('npc-statblock-modal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeNpcStatblockModal() {
+      const modal = document.getElementById('npc-statblock-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function switchNpcStudioTab(tabKey) {
+      _npcStudioActiveTab = tabKey;
+      const vitalsPane = document.getElementById('npc-studio-pane-vitals');
+      const featsPane = document.getElementById('npc-studio-pane-feats');
+      const spellsPane = document.getElementById('npc-studio-pane-spells');
+
+      if (vitalsPane) vitalsPane.classList.toggle('hidden', tabKey !== 'vitals');
+      if (featsPane) featsPane.classList.toggle('hidden', tabKey !== 'feats');
+      if (spellsPane) spellsPane.classList.toggle('hidden', tabKey !== 'spells');
+
+      const setTabBtnStyle = (btnId, isActive) => {
+        const btn = document.getElementById(btnId);
+        if (!btn) return;
+        if (isActive) {
+          btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow';
+        } else {
+          btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-slate-950 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800';
+        }
+      };
+
+      setTabBtnStyle('btn-npc-tab-vitals', tabKey === 'vitals');
+      setTabBtnStyle('btn-npc-tab-feats', tabKey === 'feats');
+      setTabBtnStyle('btn-npc-tab-spells', tabKey === 'spells');
+    }
+
+    function updateNpcStatModDisplays() {
+      ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(stat => {
+        const input = document.getElementById('npc-input-' + stat);
+        const modEl = document.getElementById('npc-mod-' + stat);
+        if (input && modEl) {
+          const val = parseInt(input.value) || 10;
+          const mod = Math.floor((val - 10) / 2);
+          modEl.textContent = (mod >= 0 ? '+' : '') + mod;
+          modEl.className = `text-[10px] font-mono block mt-0.5 ${mod >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+        }
+      });
+    }
+
+    function populateNpcCatalogs() {
+      if (!Array.isArray(window.masterDb)) return;
+
+      const fillDatalist = (dlId, items) => {
+        const dl = document.getElementById(dlId);
+        if (!dl) return;
+        dl.innerHTML = items.map(it => `<option value="${safeEscapeHtml(it)}"></option>`).join('');
+      };
+
+      const feats = [...new Set(masterDb.filter(m => m && (m.type === 'Feat' || m.role?.includes('Feat'))).map(m => m.name).filter(Boolean))];
+      fillDatalist('npc-catalog-feats-list', feats);
+
+      const spells = [...new Set(masterDb.filter(m => m && (m.type === 'Spell' || m.role?.includes('Spell'))).map(m => m.name).filter(Boolean))];
+      fillDatalist('npc-catalog-spells-list', spells);
+
+      const maneuvers = [...new Set(masterDb.filter(m => m && (m.type === 'Maneuver' || m.type === 'Stance' || m.role?.includes('Maneuver'))).map(m => m.name).filter(Boolean))];
+      fillDatalist('npc-catalog-maneuvers-list', maneuvers);
+    }
+
+    // FEATS
+    function renderNpcStudioFeatsList() {
+      const container = document.getElementById('npc-studio-feats-list');
+      const badge = document.getElementById('npc-feats-count-badge');
+      if (badge) badge.textContent = `${_npcStudioFeats.length} Feat`;
+      if (!container) return;
+
+      if (_npcStudioFeats.length === 0) {
+        container.innerHTML = '<div class="text-[11px] text-slate-500 italic py-2 w-full text-center">Kayıtlı hüner yok. Yukarıdan ekleyebilirsiniz.</div>';
+        return;
+      }
+
+      container.innerHTML = _npcStudioFeats.map((f, idx) => `
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-indigo-950/80 border border-indigo-700/60 text-indigo-200 shadow-sm">
+          <span class="text-amber-400 shrink-0">🎖️</span>
+          <span class="font-bold truncate max-w-[140px]" title="${safeEscapeHtml(f.benefit || f.name)}">${safeEscapeHtml(f.name)}</span>
+          <button type="button" onclick="removeNpcStudioFeat(${idx})" class="text-slate-400 hover:text-rose-400 ml-1 text-sm font-black transition cursor-pointer" title="Hüneri sil">&times;</button>
+        </div>
+      `).join('');
+    }
+
+    function addNpcStudioFeat() {
+      const input = document.getElementById('npc-add-feat-search');
+      if (!input) return;
+      const rawName = input.value.trim();
+      if (!rawName) return;
+
+      const dbMatch = Array.isArray(window.masterDb) ? masterDb.find(m => m && m.name && m.name.toLowerCase() === rawName.toLowerCase()) : null;
+      _npcStudioFeats.push({
+        name: dbMatch ? dbMatch.name : rawName,
+        category: dbMatch?.category || 'Feat',
+        benefit: dbMatch?.benefit || dbMatch?.desc || '',
+        source: dbMatch?.source || 'Statblock'
+      });
+
+      input.value = '';
+      renderNpcStudioFeatsList();
+    }
+
+    function removeNpcStudioFeat(idx) {
+      if (idx >= 0 && idx < _npcStudioFeats.length) {
+        _npcStudioFeats.splice(idx, 1);
+        renderNpcStudioFeatsList();
+      }
+    }
+
+    // SPECIAL ABILITIES
+    function renderNpcStudioAbilitiesList() {
+      const container = document.getElementById('npc-studio-abilities-list');
+      const badge = document.getElementById('npc-abilities-count-badge');
+      if (badge) badge.textContent = `${_npcStudioAbilities.length} Yetenek`;
+      if (!container) return;
+
+      if (_npcStudioAbilities.length === 0) {
+        container.innerHTML = '<div class="text-[11px] text-slate-500 italic py-2 w-full text-center">Kayıtlı yetenek yok. Yukarıdan ekleyebilirsiniz.</div>';
+        return;
+      }
+
+      container.innerHTML = _npcStudioAbilities.map((a, idx) => {
+        const typeBadge = a.type ? `<span class="text-[9px] px-1 py-0.2 rounded font-mono font-bold bg-purple-900/80 text-purple-300 border border-purple-600/50">${safeEscapeHtml(a.type)}</span>` : '';
+        return `
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-purple-950/80 border border-purple-700/60 text-purple-200 shadow-sm">
+            <span class="shrink-0">⚡</span>
+            <span class="font-bold truncate max-w-[140px]" title="${safeEscapeHtml(a.benefit || a.name)}">${safeEscapeHtml(a.name)}</span>
+            ${typeBadge}
+            <button type="button" onclick="removeNpcStudioAbility(${idx})" class="text-slate-400 hover:text-rose-400 ml-1 text-sm font-black transition cursor-pointer" title="Yeteneği sil">&times;</button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function addNpcStudioAbility() {
+      const nameInput = document.getElementById('npc-add-ability-name');
+      const typeSelect = document.getElementById('npc-add-ability-type');
+      const descInput = document.getElementById('npc-add-ability-desc');
+      if (!nameInput) return;
+
+      const rawName = nameInput.value.trim();
+      if (!rawName) return;
+
+      _npcStudioAbilities.push({
+        name: rawName,
+        type: typeSelect ? typeSelect.value : 'Ex',
+        benefit: descInput ? descInput.value.trim() : ''
+      });
+
+      nameInput.value = '';
+      if (descInput) descInput.value = '';
+      renderNpcStudioAbilitiesList();
+    }
+
+    function removeNpcStudioAbility(idx) {
+      if (idx >= 0 && idx < _npcStudioAbilities.length) {
+        _npcStudioAbilities.splice(idx, 1);
+        renderNpcStudioAbilitiesList();
+      }
+    }
+
+    // SPELLS
+    function renderNpcStudioSpellsList() {
+      const container = document.getElementById('npc-studio-spells-list');
+      const badge = document.getElementById('npc-spells-count-badge');
+      if (badge) badge.textContent = `${_npcStudioSpells.length} Büyü`;
+      if (!container) return;
+
+      if (_npcStudioSpells.length === 0) {
+        container.innerHTML = '<div class="text-[11px] text-slate-500 italic py-2 w-full text-center">Kayıtlı büyü yok. Master DB kütüphanesinden ekleyebilirsiniz.</div>';
+        return;
+      }
+
+      container.innerHTML = _npcStudioSpells.map((s, idx) => {
+        const sName = typeof s === 'string' ? s : (s.name || '');
+        const sLvl = typeof s === 'object' && s.level !== undefined ? s.level : '';
+        return `
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-sky-950/80 border border-sky-700/60 text-sky-200 shadow-sm">
+            <span class="shrink-0">🔮</span>
+            <span class="font-bold truncate max-w-[140px]">${safeEscapeHtml(sName)}</span>
+            ${sLvl !== '' ? `<span class="text-[9px] font-mono text-sky-400">Lvl ${sLvl}</span>` : ''}
+            <button type="button" onclick="removeNpcStudioSpell(${idx})" class="text-slate-400 hover:text-rose-400 ml-1 text-sm font-black transition cursor-pointer" title="Büyüyü kaldır">&times;</button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function addNpcStudioSpell() {
+      const input = document.getElementById('npc-add-spell-search');
+      if (!input) return;
+      const rawName = input.value.trim();
+      if (!rawName) return;
+
+      const dbMatch = Array.isArray(window.masterDb) ? masterDb.find(m => m && m.name && m.name.toLowerCase() === rawName.toLowerCase()) : null;
+      _npcStudioSpells.push(dbMatch ? { ...dbMatch } : { name: rawName, level: 1 });
+
+      input.value = '';
+      renderNpcStudioSpellsList();
+    }
+
+    function removeNpcStudioSpell(idx) {
+      if (idx >= 0 && idx < _npcStudioSpells.length) {
+        _npcStudioSpells.splice(idx, 1);
+        renderNpcStudioSpellsList();
+      }
+    }
+
+    // MANEUVERS
+    function renderNpcStudioManeuversList() {
+      const container = document.getElementById('npc-studio-maneuvers-list');
+      const badge = document.getElementById('npc-maneuvers-count-badge');
+      if (badge) badge.textContent = `${_npcStudioManeuvers.length} Manevra`;
+      if (!container) return;
+
+      if (_npcStudioManeuvers.length === 0) {
+        container.innerHTML = '<div class="text-[11px] text-slate-500 italic py-2 w-full text-center">Kayıtlı manevra yok. Master DB kütüphanesinden ekleyebilirsiniz.</div>';
+        return;
+      }
+
+      container.innerHTML = _npcStudioManeuvers.map((m, idx) => {
+        const mName = typeof m === 'string' ? m : (m.name || '');
+        const mLvl = typeof m === 'object' && m.level !== undefined ? m.level : '';
+        return `
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-rose-950/80 border border-rose-700/60 text-rose-200 shadow-sm">
+            <span class="shrink-0">⚔️</span>
+            <span class="font-bold truncate max-w-[140px]">${safeEscapeHtml(mName)}</span>
+            ${mLvl !== '' ? `<span class="text-[9px] font-mono text-rose-400">Lvl ${mLvl}</span>` : ''}
+            <button type="button" onclick="removeNpcStudioManeuver(${idx})" class="text-slate-400 hover:text-rose-400 ml-1 text-sm font-black transition cursor-pointer" title="Manevrayı kaldır">&times;</button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function addNpcStudioManeuver() {
+      const input = document.getElementById('npc-add-maneuver-search');
+      if (!input) return;
+      const rawName = input.value.trim();
+      if (!rawName) return;
+
+      const dbMatch = Array.isArray(window.masterDb) ? masterDb.find(m => m && m.name && m.name.toLowerCase() === rawName.toLowerCase()) : null;
+      _npcStudioManeuvers.push(dbMatch ? { ...dbMatch } : { name: rawName, level: 1 });
+
+      input.value = '';
+      renderNpcStudioManeuversList();
+    }
+
+    function removeNpcStudioManeuver(idx) {
+      if (idx >= 0 && idx < _npcStudioManeuvers.length) {
+        _npcStudioManeuvers.splice(idx, 1);
+        renderNpcStudioManeuversList();
+      }
+    }
+
+    // SAVE STATBLOCK STUDIO
+    function saveNpcStatblockModal() {
+      if (!character) return;
+
+      const getVal = id => document.getElementById(id)?.value?.trim();
+      const getNum = (id, fallback = 0) => {
+        const parsed = parseInt(document.getElementById(id)?.value);
+        return isNaN(parsed) ? fallback : parsed;
+      };
+
+      // 1. Identity & Vitals
+      const newName = getVal('npc-input-name');
+      if (newName) character.name = newName;
+      const newCr = getVal('npc-input-cr');
+      if (newCr) {
+        character.cr = newCr;
+        character.challengeRating = newCr;
+      }
+      const newRace = getVal('npc-input-race');
+      if (newRace) character.race = newRace;
+      const newClasses = getVal('npc-input-classes');
+      if (newClasses) character.classes = newClasses;
+      const newSpeed = getVal('npc-input-speed');
+      if (newSpeed) {
+        character.speed = newSpeed;
+        const spdNum = parseInt(newSpeed);
+        if (!isNaN(spdNum) && spdNum > 0) character.baseSpeed = spdNum;
+      }
+      character.bab = getNum('npc-input-bab', 0);
+      character.baseAttackBonus = character.bab;
+
+      // 2. HP
+      if (!character.hp) character.hp = {};
+      character.hp.max = getNum('npc-input-max-hp', 10);
+      character.hp.current = getNum('npc-input-current-hp', character.hp.max);
+      character.hp.temp = getNum('npc-input-temp-hp', 0);
+
+      // 3. AC
+      if (!character.ac) character.ac = {};
+      character.ac.total = getNum('npc-input-ac-total', 10);
+      character.ac.touch = getNum('npc-input-ac-touch', 10);
+      character.ac.flatFooted = getNum('npc-input-ac-flat', 10);
+
+      if (!character.acBreakdown) character.acBreakdown = {};
+      character.acBreakdown.total = character.ac.total;
+      character.acBreakdown.touch = character.ac.touch;
+      character.acBreakdown.flat = character.ac.flatFooted;
+
+      // 4. Saves
+      const fortVal = getNum('npc-input-save-fort', 0);
+      const refVal = getNum('npc-input-save-ref', 0);
+      const willVal = getNum('npc-input-save-will', 0);
+
+      if (!character.saves) character.saves = {};
+      character.saves.fort = { total: fortVal, base: fortVal };
+      character.saves.ref = { total: refVal, base: refVal };
+      character.saves.will = { total: willVal, base: willVal };
+
+      if (!character.evaluatedSaves) character.evaluatedSaves = {};
+      character.evaluatedSaves.fort = fortVal;
+      character.evaluatedSaves.ref = refVal;
+      character.evaluatedSaves.will = willVal;
+
+      // 5. Abilities (6 Stats)
+      if (!character.abilities) character.abilities = {};
+      ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(stat => {
+        character.abilities[stat] = getNum('npc-input-' + stat, 10);
+        if (!character.stats) character.stats = {};
+        const u = stat.toUpperCase();
+        if (!character.stats[u]) character.stats[u] = {};
+        character.stats[u].value = character.abilities[stat];
+        character.stats[u].mod = Math.floor((character.abilities[stat] - 10) / 2);
+      });
+
+      // 6. Special Defenses
+      character.dr = getVal('npc-input-dr');
+      character.damageReduction = character.dr;
+      character.sr = getVal('npc-input-sr');
+      character.spellResistance = character.sr;
+
+      const immsStr = getVal('npc-input-immunities');
+      character.immunities = immsStr ? immsStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+      // 7. Spellcasting
+      const clNum = getNum('npc-input-cl', 0);
+      character.cl = clNum;
+      character.casterLevel = clNum;
+
+      if (!character.spellcasting) character.spellcasting = {};
+      character.spellcasting.cl = clNum;
+      character.spellcasting.ability = document.getElementById('npc-select-spell-stat')?.value || 'CHA';
+      character.spellcasting.class = getVal('npc-input-spell-class') || 'Inherent';
+      character.spellcasting.primaryClass = character.spellcasting.class;
+
+      // Slots
+      if (!character.spellSlots) character.spellSlots = {};
+      const newSlotsArray = [];
+      for (let lvl = 0; lvl <= 9; lvl++) {
+        const slotCount = getNum('npc-slot-' + lvl, 0);
+        character.spellSlots[lvl] = slotCount;
+        if (slotCount > 0 || lvl === 0) {
+          newSlotsArray.push({
+            level: lvl,
+            daily: slotCount,
+            used: 0
+          });
+        }
+      }
+      character.dailySpellSlots = { ...character.spellSlots };
+      character.spellcasting.slots = newSlotsArray;
+
+      // 8. Lists (Feats, Abilities, Spells, Maneuvers)
+      character.feats = [..._npcStudioFeats];
+      character.specialAbilities = [..._npcStudioAbilities];
+      character.spells = [..._npcStudioSpells];
+      character.spellcasting.knownSpells = [..._npcStudioSpells];
+      character.maneuvers = [..._npcStudioManeuvers];
+
+      // Mark as NPC
+      character.isNpc = true;
+
+      // Persist and Render
+      closeNpcStatblockModal();
+      saveStateToStorage(true);
+      renderAll();
+
+      if (typeof showDiceTopToast === 'function') {
+        showDiceTopToast({
+          icon: '⚡',
+          title: 'Statblock Güncellendi',
+          breakdown: `${character.name} statblock değerleri ve tüm yetenek havuzları başarıyla kaydedildi.`,
+          total: character.cr ? `CR ${character.cr}` : 'Kaydedildi'
+        });
+      }
     }
 
     // ====================================================
@@ -19677,7 +20629,26 @@
       if (character && typeof calculateSorcererSlots === 'function') {
         if (!character.spellcasting) character.spellcasting = {};
         character.spellcasting.cl = cl;
-        character.spellcasting.slots = hasSpontaneous && cl > 0 ? calculateSorcererSlots(cl, statVal, character.spellcasting.slots) : [];
+        if (character.isNpc) {
+          if (character.spellSlots && typeof character.spellSlots === 'object') {
+            const curSlots = Array.isArray(character.spellcasting.slots) ? character.spellcasting.slots : [];
+            const built = [];
+            for (let lvl = 0; lvl <= 9; lvl++) {
+              const daily = Number(character.spellSlots[lvl]) || 0;
+              if (daily > 0 || lvl === 0) {
+                const found = curSlots.find(s => Number(s.level) === lvl);
+                built.push({
+                  level: lvl,
+                  daily: daily,
+                  used: found ? Math.min(found.used || 0, daily) : 0
+                });
+              }
+            }
+            character.spellcasting.slots = built;
+          }
+        } else {
+          character.spellcasting.slots = hasSpontaneous && cl > 0 ? calculateSorcererSlots(cl, statVal, character.spellcasting.slots) : [];
+        }
       }
 
       // Top archetype badges (Sadeleştirilmiş Kalan / Toplam Sayaçları)
@@ -27025,7 +27996,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
                   <span class="text-xs font-black text-amber-400 uppercase tracking-wide">HÜNERLER (FEATS)</span>
                   <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-950 text-amber-300 border border-amber-700/60">${featsList.length} Hüner</span>
                 </div>
-                <button type="button" onclick="openFeatPickerModal(false)" class="text-[11px] font-bold bg-amber-600/90 hover:bg-amber-500 text-white px-2.5 py-1 rounded-lg transition shadow-sm flex items-center gap-1 active:scale-95 cursor-pointer" title="Yeni hüner seç veya kütüphaneden ekle">
+                <button type="button" onclick="character?.isNpc ? openNpcStatblockModal('feats') : openFeatPickerModal(false)" class="text-[11px] font-bold bg-amber-600/90 hover:bg-amber-500 text-white px-2.5 py-1 rounded-lg transition shadow-sm flex items-center gap-1 active:scale-95 cursor-pointer" title="Yeni hüner seç veya kütüphaneden ekle">
                   <span>➕</span>
                   <span>Hüner Ekle</span>
                 </button>
@@ -27061,7 +28032,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
                   <span class="text-xs font-black text-purple-400 uppercase tracking-wide">ÖZEL YETENEKLER &amp; IRKSAL NİTELİKLER</span>
                   <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-purple-950 text-purple-300 border border-purple-700/60">${abilitiesList.length} Yetenek</span>
                 </div>
-                <button type="button" onclick="openAddSpecialAbilityPrompt()" class="text-[11px] font-bold bg-purple-600/90 hover:bg-purple-500 text-white px-2.5 py-1 rounded-lg transition shadow-sm flex items-center gap-1 active:scale-95 cursor-pointer" title="Yeni özel yetenek ekle">
+                <button type="button" onclick="character?.isNpc ? openNpcStatblockModal('feats') : openAddSpecialAbilityPrompt()" class="text-[11px] font-bold bg-purple-600/90 hover:bg-purple-500 text-white px-2.5 py-1 rounded-lg transition shadow-sm flex items-center gap-1 active:scale-95 cursor-pointer" title="Yeni özel yetenek ekle">
                   <span>➕</span>
                   <span>Yetenek Ekle</span>
                 </button>

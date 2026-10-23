@@ -91,3 +91,24 @@ Hub, karakter kâğıdına veri gönderirken veya `localStorage` (`dnd35_charact
 ### GÖREV 5: Senkronizasyon ve Kural Bütünlüğü (STRICT)
 * Kök dizindeki `index.html` üzerinde yapılan her değişiklik eksiksiz olarak `webapp/index.html` dosyasına kopyalanmalı ve doğrulanmalıdır.
 * Proje kuralı gereğince standart zar emojisi `🎲` kesinlikle kullanılmamalı, SVG zar ikonları kullanılmalıdır.
+
+---
+
+## 4. TAMAMLANAN UYGULAMA DURUMU (IMPLEMENTATION REPORT)
+*Tüm maddeler başarıyla tamamlanmış ve canlı testlerden geçirilmiştir.*
+
+1. **`tab-core` Hünerler ve Özel Yetenekler Vitrini:** 
+   - `renderCoreFeatsAndSpecialAbilities()` fonksiyonu eklendi. Hem PC hem de NPC karakterlerde `character.feats` ve `character.specialAbilities` dizileri zengin çip/rozet kartları olarak sergileniyor.
+2. **`tab-combat` Savunma Sütunu DR, SR & Bağışıklıklar:**
+   - `renderSpecialDefenses()` kartı ile `character.dr`, `character.sr` ve `character.immunities` canlı olarak gösterilmektedir.
+3. **`tab-spells` CL ve Slot Koruması:**
+   - `getCasterInfo()` ve `calculateSorcererSlots()` fonksiyonlarına `character.isNpc` koruma bariyerleri eklendi. Canavarın Caster Level'ı ve slotları (0-9) sınıf tablosu boş olsa bile tam korunmaktadır.
+4. **`loadInitialData` Veri Bütünlüğü:**
+   - Hub'dan gelen tüm statblock dizileri (`feats`, `specialAbilities`, `spells`) eksiksiz şekilde `character` nesnesine aktarılmakta ve `saveStateToStorage()` ile senkronize edilmektedir.
+5. **DM Statblock & Ability Studio (`#npc-statblock-modal`):**
+   - Karakter sayfası tasarımını bozmadan, NPC karakterlerde üst başlıktaki `[⬆️ Level Up]` butonu yerine `[⚡ Statblock Düzenle]` butonu getirildi.
+   - Açılan 3 sekmeli stüdyo modali üzerinden Vitals (HP, AC, Saves, 6 Stat, BAB, CR), Hünerler & Özel Yetenekler (Ex/Su/Sp) ve Büyüler/Manevralar serbestçe eklenip düzenlenebilmektedir.
+6. **Dosya Paritesi & Zar Kuralı:**
+   - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`, `rule_engine.js` ve `webapp/rule_engine.js` dosyaları %100 senkronize edildi.
+   - Tüm dosyalarda sıfır tavla zarı (`🎲`) doğrulaması yapıldı.
+

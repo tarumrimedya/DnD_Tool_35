@@ -1226,6 +1226,13 @@ const RuleEngine = {
       }
     };
 
+    // If character is an NPC with explicit statblock AC, preserve it
+    if (character.isNpc && character.ac && character.ac.total) {
+      character.acBreakdown.total = character.ac.total;
+      character.acBreakdown.touch = character.ac.touch !== undefined ? character.ac.touch : character.ac.total;
+      character.acBreakdown.flat = character.ac.flatFooted !== undefined ? character.ac.flatFooted : character.ac.total;
+    }
+
     // 6. Resolve Saving Throws
     const conMod = this.getAbilityMod(character.abilities.con || 10);
     const dexMod = this.getAbilityMod(character.abilities.dex || 10);
@@ -1285,6 +1292,13 @@ const RuleEngine = {
       bonusWill: netBonusWill,
       battleClarityBonus: battleClarityBonus
     };
+
+    // If character is an NPC with explicit statblock saves, preserve them
+    if (character.isNpc && character.saves) {
+      if (character.saves.fort?.total !== undefined) character.evaluatedSaves.fort = character.saves.fort.total;
+      if (character.saves.ref?.total !== undefined) character.evaluatedSaves.ref = character.saves.ref.total;
+      if (character.saves.will?.total !== undefined) character.evaluatedSaves.will = character.saves.will.total;
+    }
 
     // 7. Resolve Effective Speed (RAW D&D 3.5e Table 8-2: Armor and Speed)
     const baseSpeed = character.baseSpeed || 30;
