@@ -277,6 +277,59 @@ const CloudSync = {
         const localHubRaw = localStorage.getItem('dnd35_hub_db');
         if (!localHubRaw) {
           localStorage.setItem('dnd35_hub_db', JSON.stringify(remotePayload.hubDb));
+          applied = true;
+        } else {
+          let localHub = null;
+          try { localHub = JSON.parse(localHubRaw); } catch (err) {}
+          if (localHub && typeof localHub === 'object') {
+            if (!Array.isArray(localHub.characters)) localHub.characters = [];
+            if (!Array.isArray(localHub.campaigns)) localHub.campaigns = [];
+
+            const remoteChars = Array.isArray(remotePayload.hubDb.characters) ? remotePayload.hubDb.characters : [];
+            const remoteCamps = Array.isArray(remotePayload.hubDb.campaigns) ? remotePayload.hubDb.campaigns : [];
+
+            // Merge campaigns by ID
+            remoteCamps.forEach(rc => {
+              if (!rc || !rc.id) return;
+              const exIdx = localHub.campaigns.findIndex(c => c.id === rc.id);
+              if (exIdx >= 0) {
+                localHub.campaigns[exIdx] = { ...localHub.campaigns[exIdx], ...rc };
+              } else {
+                localHub.campaigns.push(rc);
+              }
+            });
+
+            // Merge characters by ID and signature to prevent duplicate cards
+            const seenIds = new Set(localHub.characters.map(c => c.id).filter(Boolean));
+            const seenSigs = new Set(localHub.characters.map(c => `${(c.name || '').toLowerCase().trim()}__${(c.classes || '').toLowerCase().trim()}__${c.level || 1}`));
+
+            remoteChars.forEach(rc => {
+              if (!rc || !rc.id) return;
+              const exIdx = localHub.characters.findIndex(c => c.id === rc.id);
+              if (exIdx >= 0) {
+                localHub.characters[exIdx] = { ...localHub.characters[exIdx], ...rc };
+              } else {
+                const sig = `${(rc.name || '').toLowerCase().trim()}__${(rc.classes || '').toLowerCase().trim()}__${rc.level || 1}`;
+                if (!seenSigs.has(sig) && !seenIds.has(rc.id)) {
+                  seenIds.add(rc.id);
+                  seenSigs.add(sig);
+                  localHub.characters.push(rc);
+                }
+              }
+            });
+
+            localHub.lastSaved = new Date().toISOString();
+            localStorage.setItem('dnd35_hub_db', JSON.stringify(localHub));
+            applied = true;
+          }
+        }
+        if (typeof initHubStorage === 'function') {
+          try {
+            initHubStorage();
+            if (typeof renderHub === 'function') renderHub();
+          } catch (hubErr) {
+            console.warn('initHubStorage after sync notice:', hubErr);
+          }
         }
       } catch (e) {
         console.warn('CloudSync: hubDb sync notice:', e);
@@ -490,10 +543,20 @@ const CloudSync = {
         if (hubRaw) hubDb = JSON.parse(hubRaw);
       } catch (e) {}
 
+      let charObj = {};
+      if (typeof character !== 'undefined' && character) {
+        charObj = character;
+      } else {
+        try {
+          const rawChar = localStorage.getItem('dnd35_character');
+          if (rawChar) charObj = JSON.parse(rawChar);
+        } catch (e) {}
+      }
+
       const payload = {
         version: 2,
         lastModified: nowIso,
-        character: typeof character !== 'undefined' ? character : {},
+        character: charObj,
         masterDb: typeof masterDb !== 'undefined' && Array.isArray(masterDb) ? masterDb : [],
         hubDb: hubDb
       };
@@ -570,6 +633,10 @@ const CloudSync = {
     this.autoSaveTimer = setTimeout(() => {
       this.pushToCloud(true);
     }, 2500);
+  },
+
+  saveDataDebounced() {
+    return this.scheduleAutoSave();
   },
 
   // Update Top Navbar Pill & Settings Modal Status Badge
