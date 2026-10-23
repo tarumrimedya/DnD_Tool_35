@@ -887,7 +887,7 @@
                 <span class="text-sm">🔮</span>
                 <span class="truncate">1. Doğal / Anlık</span>
               </span>
-              <span id="tab-spontaneous-badge" class="bg-purple-950/80 text-purple-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-purple-600/60 shrink-0" title="Günlük Kalan Slot: 20 / 20">20 / 20</span>
+              <span id="tab-spontaneous-badge" class="bg-purple-950/80 text-purple-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-purple-600/60 shrink-0">0 / 0</span>
             </button>
 
             <!-- Tab 2: Kitaplı Hazırlık -->
@@ -914,7 +914,7 @@
                 <span class="text-sm">⚔️</span>
                 <span class="truncate">4. Savaş Manevraları</span>
               </span>
-              <span id="tab-martial-badge" class="bg-rose-950/80 text-rose-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-rose-600/60 shrink-0" title="Savaşta Hazır Manevra: 3 / 3">3 / 3</span>
+              <span id="tab-martial-badge" class="bg-rose-950/80 text-rose-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-rose-600/60 shrink-0">0 / 0</span>
             </button>
 
           </div>
@@ -933,14 +933,14 @@
               <div>
                 <div class="flex items-center gap-2">
                   <h3 id="spells-cockpit-class-title" class="font-extrabold text-white text-sm md:text-base">Doğal / Anlık Büyüler</h3>
-                  <span id="spells-cockpit-type-badge" class="badge bg-purple-950 text-purple-300 border border-purple-700 text-[10px] font-bold">Sorcerer</span>
-                  <span id="spells-cockpit-cl-badge" class="badge bg-purple-950 text-purple-300 border border-purple-700 text-[10px] font-bold" title="Caster Level (Büyücü Seviyesi)">CL: 6</span>
+                  <span id="spells-cockpit-type-badge" class="badge bg-purple-950 text-purple-300 border border-purple-700 text-[10px] font-bold">Sınıf Yok</span>
+                  <span id="spells-cockpit-cl-badge" class="badge bg-purple-950 text-purple-300 border border-purple-700 text-[10px] font-bold" title="Caster Level (Büyücü Seviyesi)">CL: 0</span>
                 </div>
-                <p id="spells-hud-subtitle" class="text-[11px] text-purple-300">Stat Mod: +6 (CHA: 22) • Base + 24H Ekipman Bonusu Dahil • DM Boon: Karakter Seviyesi</p>
+                <p id="spells-hud-subtitle" class="text-[11px] text-purple-300">Büyücü sınıfı seçilmedi</p>
               </div>
             </div>
             <div class="flex items-center gap-2">
-              <span id="spells-hud-asf-badge" class="badge bg-emerald-950 text-emerald-300 border border-emerald-600 text-xs font-bold">🛡️ ASF: %0 (DM Boon)</span>
+              <span id="spells-hud-asf-badge" class="badge bg-emerald-950 text-emerald-300 border border-emerald-600 text-xs font-bold">🛡️ ASF: %0</span>
               <button onclick="restoreAllSpellSlots()" class="bg-purple-800 hover:bg-purple-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-purple-500/50 shadow transition flex items-center gap-1 cursor-pointer">
                 <span>✨</span>
                 <span>Tüm Slotları Yenile</span>
@@ -1059,15 +1059,15 @@
               <div>
                 <div class="flex flex-wrap items-center gap-2">
                   <h3 id="maneuvers-cockpit-class-title" class="font-extrabold text-white text-sm md:text-base">Savaş Manevraları & Duruşlar</h3>
-                  <span id="maneuvers-adept-badge" class="badge bg-rose-950 text-rose-300 border border-rose-700 text-[10px] font-bold">Warblade</span>
-                  <span id="maneuvers-il-badge" class="badge bg-amber-950/90 text-amber-300 border border-amber-500/80 text-xs font-extrabold px-2.5 py-0.5 font-mono shadow-sm" title="Initiator Level = Martial Sınıf Seviyesi + (Diğer Sınıflar / 2)">IL: 7</span>
-                  <span id="maneuvers-maxlvl-badge" class="badge bg-teal-950/90 text-teal-300 border border-teal-600/80 text-[10px] font-bold font-mono" title="Erişilebilir Maksimum Manevra Seviyesi">Maks: 4. Seviye</span>
+                  <span id="maneuvers-adept-badge" class="badge bg-rose-950 text-rose-300 border border-rose-700 text-[10px] font-bold">Sınıf Yok</span>
+                  <span id="maneuvers-il-badge" class="badge bg-amber-950/90 text-amber-300 border border-amber-500/80 text-xs font-extrabold px-2.5 py-0.5 font-mono shadow-sm" title="Initiator Level = Martial Sınıf Seviyesi + (Diğer Sınıflar / 2)">IL: 0</span>
+                  <span id="maneuvers-maxlvl-badge" class="badge bg-teal-950/90 text-teal-300 border border-teal-600/80 text-[10px] font-bold font-mono" title="Erişilebilir Maksimum Manevra Seviyesi">Maks: 0</span>
                 </div>
-                <p id="maneuvers-hud-subtitle" class="text-[11px] text-rose-300">Tome of Battle: Book of Nine Swords • İnisiasyon Havuzu & Savaş Destesi</p>
+                <p id="maneuvers-hud-subtitle" class="text-[11px] text-rose-300">Tome of Battle: Book of Nine Swords</p>
               </div>
             </div>
             <div class="flex items-center gap-2">
-              <span id="readied-quota-badge" class="badge bg-slate-950 text-amber-300 border border-amber-600/60 text-xs font-bold font-mono">3 / 3 Hazır</span>
+              <span id="readied-quota-badge" class="badge bg-slate-950 text-amber-300 border border-amber-600/60 text-xs font-bold font-mono">0 / 0 Hazır</span>
               <button onclick="recoverAllManeuvers()" class="bg-rose-700 hover:bg-rose-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-rose-500/60 shadow transition flex items-center gap-1.5 cursor-pointer" title="Swift Action ile harcanan tüm manevraları tazele">
                 <span>🔄</span>
                 <span>Swift Yenile (Recover)</span>
@@ -1082,9 +1082,9 @@
               <div>
                 <div class="flex items-center gap-2">
                   <span class="text-xs font-bold text-slate-300 uppercase tracking-wider">Aktif Duruş (Stance):</span>
-                  <span id="active-stance-discipline-badge" class="text-[10px] text-teal-300 font-semibold px-2 py-0.5 bg-teal-950/80 border border-teal-700 rounded-full">Iron Heart</span>
+                  <span id="active-stance-discipline-badge" class="text-[10px] text-teal-300 font-semibold px-2 py-0.5 bg-teal-950/80 border border-teal-700 rounded-full">Duruş Yok</span>
                 </div>
-                <p id="active-stance-benefit-display" class="text-[11px] text-amber-300 italic mt-0.5">+1d6 yakın dövüş hasarı, -2 AC</p>
+                <p id="active-stance-benefit-display" class="text-[11px] text-slate-400 italic mt-0.5">Aktif bir duruş seçilmedi</p>
               </div>
             </div>
             <div class="flex items-center gap-2">
@@ -1104,7 +1104,7 @@
                 </div>
                 <p class="text-[11px] text-slate-400">Savaşta anında kullanıma hazır manevra eliniz. Zar atışı olan manevralarda butona basmak hem manevrayı kullanır hem hasar zarını yuvarlar.</p>
               </div>
-              <span id="readied-maneuvers-counter" class="badge bg-rose-950 text-rose-200 border border-rose-700 text-xs font-bold font-mono">3 / 3 Hazır</span>
+              <span id="readied-maneuvers-counter" class="badge bg-rose-950 text-rose-200 border border-rose-700 text-xs font-bold font-mono">0 / 0 Hazır</span>
             </div>
 
             <!-- Readied Maneuvers Tactical Cards Grid -->
@@ -9984,17 +9984,14 @@
       const currentVal = select.value;
       select.innerHTML = '';
 
-      // Get spells from character.spellcasting.knownSpells
       const known = (character?.spellcasting?.knownSpells || []).slice();
 
-      // If knownSpells is empty, provide default combat spells
       if (known.length === 0) {
-        known.push(
-          { name: 'Scorching Ray', level: 2, school: 'Evocation', range: 'Close (35 ft)', dice: '4d6', type: 'Ateş (Fire)', action: 'Standard Action', attackType: 'Ranged Touch', benefit: '1 ray of fire (4d6 damage).' },
-          { name: 'Magic Missile', level: 1, school: 'Evocation', range: 'Medium (150 ft)', dice: '3d4+3', type: 'Kuvvet (Force)', action: 'Standard Action', attackType: 'Otomatik İsabet', benefit: '3 missiles (1d4+1 each).' },
-          { name: 'Ray of Enfeeblement', level: 1, school: 'Necromancy', range: 'Close (35 ft)', dice: '1d6+2', type: 'Str Hasarı (Penalty)', action: 'Standard Action', attackType: 'Ranged Touch', benefit: 'Ray deals 1d6+2 Str penalty.' },
-          { name: 'Shocking Grasp', level: 1, school: 'Evocation', range: 'Touch', dice: '5d6', type: 'Elektrik (Electricity)', action: 'Standard Action', attackType: 'Melee Touch', benefit: 'Touch deals 5d6 electricity damage.' }
-        );
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = '-- Büyü Yok --';
+        select.appendChild(opt);
+        return;
       }
 
       known.forEach(sp => {
@@ -10013,23 +10010,21 @@
     function getSelectedCombatSpell() {
       const select = document.getElementById('combat-active-spell-select');
       const name = select ? select.value : '';
+      if (!name) return null;
       const known = (character?.spellcasting?.knownSpells || []);
-      let found = known.find(s => s.name === name);
-      if (!found) {
-        const defaults = [
-          { name: 'Scorching Ray', level: 2, school: 'Evocation', range: 'Close (35 ft)', dice: '4d6', dmgType: 'Ateş', action: 'Standard Action', attackType: 'Ranged Touch' },
-          { name: 'Magic Missile', level: 1, school: 'Evocation', range: 'Medium (150 ft)', dice: '3d4+3', dmgType: 'Kuvvet', action: 'Standard Action', attackType: 'Otomatik' },
-          { name: 'Ray of Enfeeblement', level: 1, school: 'Necromancy', range: 'Close (35 ft)', dice: '1d6+2', dmgType: 'Str Cezası', action: 'Standard Action', attackType: 'Ranged Touch' },
-          { name: 'Shocking Grasp', level: 1, school: 'Evocation', range: 'Touch', dice: '5d6', dmgType: 'Elektrik', action: 'Standard Action', attackType: 'Melee Touch' }
-        ];
-        found = defaults.find(s => s.name === name) || defaults[0];
-      }
-      return found;
+      return known.find(s => s.name === name) || null;
     }
 
     function recalculateCombatSpell() {
       const spell = getSelectedCombatSpell();
-      if (!spell) return;
+      if (!spell) {
+        const spellBtn = document.getElementById('combat-cast-spell-btn');
+        if (spellBtn) {
+          spellBtn.textContent = 'Büyü Yok';
+          spellBtn.disabled = true;
+        }
+        return;
+      }
 
       const baseLvl = Number(spell.level) || 0;
       const isEmpower = document.getElementById('mod-empower-spell')?.checked || false;
@@ -17580,16 +17575,27 @@
           if (c && c.name) classNames.push(String(c.name).toLowerCase().trim());
         });
       }
+      if (typeof character?.classes === 'string' && character.classes) {
+        classNames.push(character.classes.toLowerCase().trim());
+      }
+      if (typeof character?.class === 'string' && character.class) {
+        classNames.push(character.class.toLowerCase().trim());
+      }
       if (Array.isArray(character?.classProgression)) {
         character.classProgression.forEach(cp => {
           if (cp && cp.className) classNames.push(String(cp.className).toLowerCase().trim());
         });
       }
+      if (Array.isArray(character?.levelProgression)) {
+        character.levelProgression.forEach(lp => {
+          if (lp && lp.className) classNames.push(String(lp.className).toLowerCase().trim());
+        });
+      }
       
-      const hasSpontaneous = classNames.some(c => c.includes('sorcerer') || c.includes('bard') || c.includes('favored soul')) || true;
-      const hasPrepared = classNames.some(c => c.includes('wizard') || c.includes('artificer') || c.includes('archivist') || c.includes('büyücü'));
+      const hasSpontaneous = classNames.some(c => c.includes('sorcerer') || c.includes('bard') || c.includes('favored soul') || c.includes('warlock'));
+      const hasPrepared = classNames.some(c => c.includes('wizard') || c.includes('artificer') || c.includes('archivist') || c.includes('wu jen'));
       const hasDivine = classNames.some(c => c.includes('cleric') || c.includes('druid') || c.includes('paladin') || c.includes('ranger') || c.includes('rahip'));
-      const hasMartial = classNames.some(c => c.includes('warblade') || c.includes('swordsage') || c.includes('crusader')) || true;
+      const hasMartial = classNames.some(c => c.includes('warblade') || c.includes('swordsage') || c.includes('crusader'));
 
       return { hasSpontaneous, hasPrepared, hasDivine, hasMartial };
     }
@@ -17674,6 +17680,7 @@
     }
 
     function calculateWizardSlots(wizardLvl, intScore, existingSlots = []) {
+      if (Number(wizardLvl) <= 0) return [];
       const lvl = Math.min(20, Math.max(1, Number(wizardLvl) || 1));
       const intMod = Math.floor(((Number(intScore) || 10) - 10) / 2);
       const wizDailyTable = [
@@ -17714,6 +17721,7 @@
     }
 
     function calculateDivineSlots(divineLvl, wisScore, existingSlots = []) {
+      if (Number(divineLvl) <= 0) return [];
       const lvl = Math.min(20, Math.max(1, Number(divineLvl) || 1));
       const wisMod = Math.floor(((Number(wisScore) || 10) - 10) / 2);
       // Cleric base daily slots + 1 domain slot for levels 1..9
@@ -17755,25 +17763,35 @@
     }
 
     function getPreparedCasterInfo() {
-      const intVal = character?.stats?.INT?.value ?? character?.abilities?.int ?? 16;
+      const classesStatus = checkCharacterMagicClasses();
+      const intVal = character?.stats?.INT?.value ?? character?.abilities?.int ?? 10;
       const intMod = character?.stats?.INT?.mod ?? Math.floor((intVal - 10) / 2);
-      const clMode = character?.settings?.clMode || 'Character Level (DM Boon)';
+      const clMode = character?.settings?.clMode || 'Class Level';
       const prog = character?.levelProgression || [];
-      const activeLevels = prog.filter(p => p.active !== false).length || Number(character?.level) || 6;
+      const activeLevels = prog.filter(p => p.active !== false).length || Number(character?.level) || 0;
       const wizLvls = prog.filter(p => p.active !== false && ['wizard', 'artificer', 'archivist', 'wu jen'].includes((p.className || p.class || '').toLowerCase())).length;
-      const cl = (clMode === 'Character Level (DM Boon)') ? Math.max(wizLvls || 1, activeLevels) : Math.max(1, wizLvls || activeLevels);
-      return { statKey: 'INT', statVal: intVal, statMod: intMod, cl, clMode, hasClass: wizLvls > 0 };
+      
+      let cl = 0;
+      if (wizLvls > 0 || classesStatus.hasPrepared) {
+        cl = (clMode === 'Character Level (DM Boon)') ? Math.max(wizLvls || 1, activeLevels) : (wizLvls || 1);
+      }
+      return { statKey: 'INT', statVal: intVal, statMod: intMod, cl, clMode, hasClass: classesStatus.hasPrepared };
     }
 
     function getDivineCasterInfo() {
-      const wisVal = character?.stats?.WIS?.value ?? character?.abilities?.wis ?? 14;
+      const classesStatus = checkCharacterMagicClasses();
+      const wisVal = character?.stats?.WIS?.value ?? character?.abilities?.wis ?? 10;
       const wisMod = character?.stats?.WIS?.mod ?? Math.floor((wisVal - 10) / 2);
-      const clMode = character?.settings?.clMode || 'Character Level (DM Boon)';
+      const clMode = character?.settings?.clMode || 'Class Level';
       const prog = character?.levelProgression || [];
-      const activeLevels = prog.filter(p => p.active !== false).length || Number(character?.level) || 6;
+      const activeLevels = prog.filter(p => p.active !== false).length || Number(character?.level) || 0;
       const divLvls = prog.filter(p => p.active !== false && ['cleric', 'druid', 'paladin', 'ranger', 'favored soul'].includes((p.className || p.class || '').toLowerCase())).length;
-      const cl = (clMode === 'Character Level (DM Boon)') ? Math.max(divLvls || 1, activeLevels) : Math.max(1, divLvls || activeLevels);
-      return { statKey: 'WIS', statVal: wisVal, statMod: wisMod, cl, clMode, hasClass: divLvls > 0 };
+      
+      let cl = 0;
+      if (divLvls > 0 || classesStatus.hasDivine) {
+        cl = (clMode === 'Character Level (DM Boon)') ? Math.max(divLvls || 1, activeLevels) : (divLvls || 1);
+      }
+      return { statKey: 'WIS', statVal: wisVal, statMod: wisMod, cl, clMode, hasClass: classesStatus.hasDivine };
     }
 
     function renderPreparedDisciplineView(hasPrepared) {
@@ -17781,15 +17799,18 @@
       if (!container) return;
 
       if (!character.spellcasting) character.spellcasting = {};
-      const { statKey, statVal, statMod, cl, clMode } = getPreparedCasterInfo();
-      character.spellcasting.preparedSlots = calculateWizardSlots(cl, statVal, character.spellcasting.preparedSlots);
       if (!Array.isArray(character.spellcasting.preparedSpells)) {
-        character.spellcasting.preparedSpells = [
-          { name: "Detect Magic", level: 0, school: "Divination", action: "Standard Action", range: "60 ft", benefit: "Detects magical auras within 60 ft." },
-          { name: "Read Magic", level: 0, school: "Divination", action: "Standard Action", range: "Personal", benefit: "Read magical inscriptions, scrolls, and spellbooks." },
-          { name: "Mage Armor", level: 1, school: "Conjuration", action: "Standard Action", range: "Touch", benefit: "+4 armor bonus to AC for 1 hour/level." },
-          { name: "Magic Missile", level: 1, school: "Evocation", action: "Standard Action", range: "Medium (150 ft)", damageDice: "1d4+1", benefit: "Fires force missiles dealing 1d4+1 each (unerring hit)." }
-        ];
+        character.spellcasting.preparedSpells = [];
+      }
+
+      if (!hasPrepared) {
+        container.innerHTML = `
+          <div class="py-12 text-center text-slate-500 text-xs italic bg-slate-950/40 rounded-xl border border-dashed border-slate-800 space-y-2">
+            <span class="text-2xl block">📖</span>
+            <p>Bu karakterin kitaplı hazırlık büyücüsü (Wizard vb.) sınıfı bulunmamaktadır.</p>
+          </div>
+        `;
+        return;
       }
 
       const slots = character.spellcasting.preparedSlots;
@@ -18312,17 +18333,23 @@
       if (!container) return;
 
       if (!character.spellcasting) character.spellcasting = {};
+      if (!Array.isArray(character.spellcasting.divineSpells)) {
+        character.spellcasting.divineSpells = [];
+      }
+
+      if (!hasDivine) {
+        container.innerHTML = `
+          <div class="py-12 text-center text-slate-500 text-xs italic bg-slate-950/40 rounded-xl border border-dashed border-slate-800 space-y-2">
+            <span class="text-2xl block">✨</span>
+            <p>Bu karakterin ilahi dua (Cleric, Druid, Paladin vb.) sınıfı bulunmamaktadır.</p>
+          </div>
+        `;
+        return;
+      }
+
       const { statKey, statVal, statMod, cl, clMode } = getDivineCasterInfo();
       const spontMode = character.spellcasting.clericSpontaneousMode || 'cure';
       character.spellcasting.divineSlots = calculateDivineSlots(cl, statVal, character.spellcasting.divineSlots);
-      if (!Array.isArray(character.spellcasting.divineSpells)) {
-        character.spellcasting.divineSpells = [
-          { name: "Guidance", level: 0, school: "Divination", action: "Standard Action", range: "Touch", benefit: "+1 competence bonus on one attack roll, saving throw, or skill check." },
-          { name: "Cure Light Wounds", level: 1, school: "Conjuration", action: "Standard Action", range: "Touch", damageDice: "1d8+5", benefit: "Cures 1d8 +1/level (max +5) points of damage." },
-          { name: "Bless", level: 1, school: "Enchantment", action: "Standard Action", range: "50 ft", benefit: "Allies gain +1 morale bonus on attack rolls and saves against fear." },
-          { name: "Divine Favor", level: 1, school: "Evocation", action: "Standard Action", range: "Personal", benefit: "You gain +1 per three levels (max +3) luck bonus on attack and weapon damage rolls." }
-        ];
-      }
 
       const slots = character.spellcasting.divineSlots;
       const spells = character.spellcasting.divineSpells;
@@ -18768,21 +18795,26 @@
     }
 
     function getCasterInfo() {
-      const primaryClass = character?.spellcasting?.primaryClass || 'Sorcerer';
+      const classesStatus = checkCharacterMagicClasses();
+      const primaryClass = character?.spellcasting?.primaryClass || (classesStatus.hasSpontaneous ? 'Sorcerer' : '');
       let statKey = 'CHA';
       if (['Wizard', 'Artificer'].includes(primaryClass)) statKey = 'INT';
       else if (['Cleric', 'Druid', 'Favored Soul'].includes(primaryClass)) statKey = 'WIS';
       else if (character?.spellcasting?.statName) statKey = character.spellcasting.statName;
 
-      const statVal = character?.stats?.[statKey]?.value ?? character?.abilities?.[statKey.toLowerCase()] ?? 22;
+      const statVal = character?.stats?.[statKey]?.value ?? character?.abilities?.[statKey.toLowerCase()] ?? 10;
       const statMod = character?.stats?.[statKey]?.mod ?? Math.floor((statVal - 10) / 2);
-      const clMode = character?.settings?.clMode || 'Character Level (DM Boon)';
+      const clMode = character?.settings?.clMode || 'Class Level';
       const prog = character?.levelProgression || [];
-      const activeLevels = prog.filter(p => p.active !== false).length || Number(character?.level) || 6;
-      const rawCl = character?.spellcasting?.caster_level ?? character?.spellcasting?.cl ?? 6;
-      const cl = (clMode === 'Character Level (DM Boon)') ? Math.max(Number(rawCl) || 1, activeLevels) : (Number(rawCl) || 1);
+      const activeLevels = prog.filter(p => p.active !== false).length || Number(character?.level) || 0;
+      
+      let cl = 0;
+      if (classesStatus.hasSpontaneous) {
+        const rawCl = character?.spellcasting?.caster_level ?? character?.spellcasting?.cl ?? activeLevels;
+        cl = (clMode === 'Character Level (DM Boon)') ? Math.max(Number(rawCl) || 1, activeLevels) : (Number(rawCl) || 1);
+      }
 
-      return { primaryClass, statKey, statVal, statMod, cl, clMode };
+      return { primaryClass, statKey, statVal, statMod, cl, clMode, hasClass: classesStatus.hasSpontaneous };
     }
 
     function getSpellDc(spellLevel) {
@@ -18907,6 +18939,7 @@
     }
 
     function getInitiatorInfo() {
+      const classesStatus = checkCharacterMagicClasses();
       const prog = character?.levelProgression || [];
       const activeRows = prog.filter(p => p.active !== false);
       let martialLvls = 0;
@@ -18924,13 +18957,35 @@
           otherLvls++;
         }
       });
+
+      if (!adeptClass && typeof character?.classes === 'string') {
+        const cStr = character.classes.toLowerCase();
+        if (cStr.includes('swordsage')) adeptClass = 'Swordsage';
+        else if (cStr.includes('crusader')) adeptClass = 'Crusader';
+        else if (cStr.includes('warblade')) adeptClass = 'Warblade';
+      }
+
+      if (!adeptClass && !classesStatus.hasMartial) {
+        return {
+          adeptClass: 'Sınıf Yok',
+          martialLvls: 0,
+          otherLvls: 0,
+          il: 0,
+          maxManeuverLvl: 0,
+          maxReadied: 0,
+          maxKnownManeuvers: 0,
+          maxKnownStances: 0,
+          hasClass: false
+        };
+      }
+
       if (!adeptClass) {
         adeptClass = 'Martial Adept';
       }
 
       const computedIl = martialLvls > 0
         ? (martialLvls + Math.floor(otherLvls / 2))
-        : Math.max(1, Math.floor((activeRows.length || Number(character?.level) || 6) / 2));
+        : Math.max(1, Math.floor((activeRows.length || Number(character?.level) || 1) / 2));
       const storedIl = Number(character?.tomeOfBattle?.initiatorLevel) || 0;
       const il = Math.max(storedIl, computedIl, 1);
       if (character?.tomeOfBattle) {
@@ -18944,69 +18999,91 @@
       const maxKnownManeuvers = Math.max(3 + Math.max(0, martialLvls - 1), 2 + maxManeuverLvl, (character?.tomeOfBattle?.maneuversKnown || []).length);
       const maxKnownStances = Math.max(il >= 10 ? 3 : (il >= 4 ? 2 : 1), (character?.tomeOfBattle?.stancesKnown || []).length);
 
-      return { il, maxManeuverLvl, readiedCount: readiedList.length, maxReadied, maxKnownManeuvers, maxKnownStances, adeptClass, martialLvls, otherLvls };
+      return { il, maxManeuverLvl, readiedCount: readiedList.length, maxReadied, maxKnownManeuvers, maxKnownStances, adeptClass, martialLvls, otherLvls, hasClass: true };
     }
 
     function renderSpellsCockpit() {
-      const { primaryClass, statKey, statVal, statMod, cl, clMode } = getCasterInfo();
+      const { primaryClass, statKey, statVal, statMod, cl, clMode, hasClass: hasSpontaneous } = getCasterInfo();
       const classesStatus = checkCharacterMagicClasses();
 
       // Synchronize Sorcerer spell slots with effective Caster Level (CL)
       if (character && typeof calculateSorcererSlots === 'function') {
         if (!character.spellcasting) character.spellcasting = {};
         character.spellcasting.cl = cl;
-        character.spellcasting.slots = calculateSorcererSlots(cl, statVal, character.spellcasting.slots);
+        character.spellcasting.slots = hasSpontaneous && cl > 0 ? calculateSorcererSlots(cl, statVal, character.spellcasting.slots) : [];
       }
 
       // Top archetype badges (Sadeleştirilmiş Kalan / Toplam Sayaçları)
       const spontBadge = document.getElementById('tab-spontaneous-badge');
       if (spontBadge) {
-        const slots = character?.spellcasting?.slots || [];
-        const totalDaily = slots.reduce((sum, s) => sum + (Number(s.daily) || 0), 0);
-        const totalUsed = slots.reduce((sum, s) => sum + (Number(s.used) || 0), 0);
-        const totalRemaining = Math.max(0, totalDaily - totalUsed);
-        spontBadge.textContent = `${totalRemaining} / ${totalDaily}`;
-        spontBadge.className = 'bg-purple-950/80 text-purple-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-purple-600/60 shrink-0';
-        spontBadge.title = `Günlük Kalan Slot: ${totalRemaining} / ${totalDaily}`;
+        if (!hasSpontaneous || cl <= 0) {
+          spontBadge.textContent = 'Sınıf Yok';
+          spontBadge.className = 'bg-slate-900 text-slate-400 text-[10px] px-1.5 py-0.5 rounded-full font-mono border border-slate-700 shrink-0';
+          spontBadge.title = 'Doğal/anlık büyücü sınıfı yok';
+        } else {
+          const slots = character?.spellcasting?.slots || [];
+          const totalDaily = slots.reduce((sum, s) => sum + (Number(s.daily) || 0), 0);
+          const totalUsed = slots.reduce((sum, s) => sum + (Number(s.used) || 0), 0);
+          const totalRemaining = Math.max(0, totalDaily - totalUsed);
+          spontBadge.textContent = `${totalRemaining} / ${totalDaily}`;
+          spontBadge.className = 'bg-purple-950/80 text-purple-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-purple-600/60 shrink-0';
+          spontBadge.title = `Günlük Kalan Slot: ${totalRemaining} / ${totalDaily}`;
+        }
       }
 
       const prepInfo = getPreparedCasterInfo();
       if (character?.spellcasting) {
-        character.spellcasting.preparedSlots = calculateWizardSlots(prepInfo.cl, prepInfo.statVal, character.spellcasting.preparedSlots);
+        character.spellcasting.preparedSlots = classesStatus.hasPrepared && prepInfo.cl > 0 ? calculateWizardSlots(prepInfo.cl, prepInfo.statVal, character.spellcasting.preparedSlots) : [];
       }
       const prepBadge = document.getElementById('tab-prepared-badge');
       if (prepBadge) {
-        const pSlots = character?.spellcasting?.preparedSlots || [];
-        const pDaily = pSlots.reduce((sum, s) => sum + (Number(s.daily) || 0), 0);
-        const pUsed = pSlots.reduce((sum, s) => sum + (Number(s.used) || 0), 0);
-        const pRem = Math.max(0, pDaily - pUsed);
-        prepBadge.textContent = classesStatus.hasPrepared ? `${pRem} / ${pDaily}` : `Önizleme (${pRem}/${pDaily})`;
-        prepBadge.className = 'bg-sky-950 text-sky-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-sky-600/60 shrink-0';
+        if (!classesStatus.hasPrepared || prepInfo.cl <= 0) {
+          prepBadge.textContent = 'Sınıf Yok';
+          prepBadge.className = 'bg-slate-900 text-slate-400 text-[10px] px-1.5 py-0.5 rounded-full font-mono border border-slate-700 shrink-0';
+        } else {
+          const pSlots = character?.spellcasting?.preparedSlots || [];
+          const pDaily = pSlots.reduce((sum, s) => sum + (Number(s.daily) || 0), 0);
+          const pUsed = pSlots.reduce((sum, s) => sum + (Number(s.used) || 0), 0);
+          const pRem = Math.max(0, pDaily - pUsed);
+          prepBadge.textContent = `${pRem} / ${pDaily}`;
+          prepBadge.className = 'bg-sky-950 text-sky-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-sky-600/60 shrink-0';
+        }
       }
 
       const divInfo = getDivineCasterInfo();
       if (character?.spellcasting) {
-        character.spellcasting.divineSlots = calculateDivineSlots(divInfo.cl, divInfo.statVal, character.spellcasting.divineSlots);
+        character.spellcasting.divineSlots = classesStatus.hasDivine && divInfo.cl > 0 ? calculateDivineSlots(divInfo.cl, divInfo.statVal, character.spellcasting.divineSlots) : [];
       }
       const divineBadge = document.getElementById('tab-divine-badge');
       if (divineBadge) {
-        const dSlots = character?.spellcasting?.divineSlots || [];
-        const dDaily = dSlots.reduce((sum, s) => sum + (Number(s.daily) || 0), 0);
-        const dUsed = dSlots.reduce((sum, s) => sum + (Number(s.used) || 0), 0);
-        const dRem = Math.max(0, dDaily - dUsed);
-        divineBadge.textContent = classesStatus.hasDivine ? `${dRem} / ${dDaily}` : `Önizleme (${dRem}/${dDaily})`;
-        divineBadge.className = 'bg-amber-950 text-amber-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-amber-600/60 shrink-0';
+        if (!classesStatus.hasDivine || divInfo.cl <= 0) {
+          divineBadge.textContent = 'Sınıf Yok';
+          divineBadge.className = 'bg-slate-900 text-slate-400 text-[10px] px-1.5 py-0.5 rounded-full font-mono border border-slate-700 shrink-0';
+        } else {
+          const dSlots = character?.spellcasting?.divineSlots || [];
+          const dDaily = dSlots.reduce((sum, s) => sum + (Number(s.daily) || 0), 0);
+          const dUsed = dSlots.reduce((sum, s) => sum + (Number(s.used) || 0), 0);
+          const dRem = Math.max(0, dDaily - dUsed);
+          divineBadge.textContent = `${dRem} / ${dDaily}`;
+          divineBadge.className = 'bg-amber-950 text-amber-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-amber-600/60 shrink-0';
+        }
       }
 
       const initInfo = getInitiatorInfo();
       const readiedList = character?.tomeOfBattle?.readiedManeuvers || [];
       const readyManeuvers = readiedList.filter(m => !m.expended).length;
-      const totalReadied = initInfo.maxReadied || 3;
+      const totalReadied = initInfo.maxReadied || 0;
       const martialBadge = document.getElementById('tab-martial-badge');
       if (martialBadge) {
-        martialBadge.textContent = `${readyManeuvers} / ${totalReadied}`;
-        martialBadge.className = 'bg-rose-950/80 text-rose-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-rose-600/60 shrink-0';
-        martialBadge.title = `Savaşta Hazır Manevra: ${readyManeuvers} / ${totalReadied}`;
+        if (!classesStatus.hasMartial || initInfo.il <= 0) {
+          martialBadge.textContent = 'Sınıf Yok';
+          martialBadge.className = 'bg-slate-900 text-slate-400 text-[10px] px-1.5 py-0.5 rounded-full font-mono border border-slate-700 shrink-0';
+          martialBadge.title = 'Savaş manevrası sınıfı yok';
+        } else {
+          martialBadge.textContent = `${readyManeuvers} / ${totalReadied}`;
+          martialBadge.className = 'bg-rose-950/80 text-rose-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-rose-600/60 shrink-0';
+          martialBadge.title = `Savaşta Hazır Manevra: ${readyManeuvers} / ${totalReadied}`;
+        }
       }
 
       renderPreparedDisciplineView(classesStatus.hasPrepared);
@@ -19017,18 +19094,20 @@
 
       const typeBadge = document.getElementById('spells-cockpit-type-badge');
       if (typeBadge) {
-        typeBadge.textContent = primaryClass || 'Sorcerer';
+        typeBadge.textContent = hasSpontaneous ? (primaryClass || 'Sorcerer') : 'Sınıf Yok';
       }
 
       const clBadge = document.getElementById('spells-cockpit-cl-badge');
       if (clBadge) {
-        clBadge.textContent = `CL: ${cl}`;
-        clBadge.title = `Caster Level: ${cl} (${clMode})`;
+        clBadge.textContent = hasSpontaneous ? `CL: ${cl}` : 'CL: 0';
+        clBadge.title = hasSpontaneous ? `Caster Level: ${cl} (${clMode})` : 'Büyücü sınıfı yok';
       }
 
       const subEl = document.getElementById('spells-hud-subtitle');
       if (subEl) {
-        subEl.textContent = `Stat Mod: +${statMod} (${statKey}: ${statVal}) • Base + 24H Ekipman Bonusu Dahil • ${clMode}`;
+        subEl.textContent = hasSpontaneous 
+          ? `Stat Mod: +${statMod} (${statKey}: ${statVal}) • Base + 24H Ekipman Bonusu Dahil • ${clMode}`
+          : 'Büyücü sınıfı seçilmedi';
       }
 
       const asfBadge = document.getElementById('spells-hud-asf-badge');
@@ -19113,8 +19192,18 @@
       if (!container) return;
       container.innerHTML = '';
 
+      const classesStatus = checkCharacterMagicClasses();
       const slots = character?.spellcasting?.slots || [];
       const { statKey, statMod } = getCasterInfo();
+
+      if (!classesStatus.hasSpontaneous || slots.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full py-4 text-center text-slate-500 text-xs italic bg-slate-950/40 rounded-xl border border-dashed border-slate-800">
+            ${classesStatus.hasSpontaneous ? 'Kullanılabilir aktif büyü slotu bulunmamaktadır.' : 'Bu karakterin doğal/anlık büyücü (Sorcerer vb.) sınıfı bulunmamaktadır.'}
+          </div>
+        `;
+        return;
+      }
 
       for (let lvl = 0; lvl <= 11; lvl++) {
         const s = slots.find(item => Number(item.level) === lvl);
@@ -19914,7 +20003,32 @@
         character.tomeOfBattle.maneuversKnown = character.tomeOfBattle.readiedManeuvers.map(m => ({ ...m }));
       }
 
+      const classesStatus = checkCharacterMagicClasses();
       const initInfo = getInitiatorInfo();
+
+      if (!classesStatus.hasMartial) {
+        const container = document.getElementById('maneuvers-container');
+        if (container) {
+          container.innerHTML = `
+            <div class="col-span-full py-8 text-center text-slate-500 text-xs italic bg-slate-950/40 rounded-xl border border-dashed border-slate-800 space-y-2">
+              <span class="text-2xl block">⚔️</span>
+              <p>Bu karakterin savaş manevrası (Warblade, Swordsage, Crusader) sınıfı bulunmamaktadır.</p>
+            </div>
+          `;
+        }
+        const libTbody = document.getElementById('maneuvers-library-tbody');
+        if (libTbody) {
+          libTbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-500 text-xs italic bg-slate-950/40">Bu karakterin savaş manevrası sınıfı bulunmamaktadır.</td></tr>`;
+        }
+        const stanceSelect = document.getElementById('active-stance-select');
+        if (stanceSelect) stanceSelect.innerHTML = `<option value="">-- Duruş Yok --</option>`;
+        const stanceDiscBadge = document.getElementById('active-stance-discipline-badge');
+        if (stanceDiscBadge) stanceDiscBadge.textContent = 'Duruş Yok';
+        const stanceBenefitEl = document.getElementById('active-stance-benefit-display');
+        if (stanceBenefitEl) stanceBenefitEl.textContent = 'Aktif bir duruş seçilmedi';
+        return;
+      }
+
       const maxReadied = initInfo.maxReadied || 3;
       const maxKnownManeuvers = initInfo.maxKnownManeuvers || 3;
       const maxKnownStances = initInfo.maxKnownStances || 1;
@@ -20029,6 +20143,11 @@
 
         const maneuvers = character.tomeOfBattle.maneuversKnown || [];
         const stances = character.tomeOfBattle.stancesKnown || [];
+
+        if (maneuvers.length === 0 && stances.length === 0) {
+          libTbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-500 text-xs italic bg-slate-950/40">Henüz bilinen manevra veya duruş eklenmedi.</td></tr>`;
+          return;
+        }
 
         const renderManeuverLibRow = (m) => {
           const isReadied = readiedNames.includes((m.name || '').toLowerCase().trim());
@@ -20468,7 +20587,22 @@
       const schoolVal = document.getElementById('spell-filter-school')?.value || 'all';
       const lvlFilter = window._spellCurrentFilterLevel || 'all';
 
+      const classesStatus = checkCharacterMagicClasses();
       const spells = character?.spellcasting?.knownSpells || [];
+
+      if (!classesStatus.hasSpontaneous) {
+        tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-slate-500 text-xs italic bg-slate-950/40">Bu karakterin doğal/anlık büyücü (Sorcerer/Bard) sınıfı bulunmamaktadır.</td></tr>`;
+        const pillsContainer = document.getElementById('spell-level-filter-pills');
+        if (pillsContainer) pillsContainer.innerHTML = '';
+        return;
+      }
+
+      if (spells.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-slate-500 text-xs italic bg-slate-950/40">Bu karakterin bilinen büyüsü bulunmamaktadır. Büyü kütüphanesinden büyü ekleyebilirsiniz.</td></tr>`;
+        const pillsContainer = document.getElementById('spell-level-filter-pills');
+        if (pillsContainer) pillsContainer.innerHTML = '';
+        return;
+      }
 
       const slotLevels = (character?.spellcasting?.slots || []).map(s => Number(s.level));
       const knownLevels = spells.map(s => Number(s.level));
@@ -21532,6 +21666,7 @@
     }
 
     function calculateSorcererSlots(sorcererLvl, chaScore, existingSlots = null) {
+      if (Number(sorcererLvl) <= 0) return [];
       const clampedLvl = Math.min(20, Math.max(1, Number(sorcererLvl) || 1));
       const chaMod = Math.floor(((Number(chaScore) || 10) - 10) / 2);
       const basePerLvl = {
