@@ -51,4 +51,14 @@ To maximize token efficiency and minimize API costs across all conversations in 
   - **Ajan, kod değişikliği yapmadan önce kullanıcıyı açıkça uyarmakla yükümlüdür.**
   - Olası çapraz etkiler (veri kirlenmesi, şema uyumsuzluğu, routing/state çakışması, performans ve izolasyon riskleri) net argümanlarla kullanıcıya sunulmalı ve kullanıcının onayı/yönlendirmesi alınmadan karakter motorunu etkileyecek adımlar atılmamalıdır.
 
+## 7. HUB & Karakter Kâğıdı Paralel Çalışma ve Devir Teslim Standardı (STRICT: HANDOVER PROTOCOL)
+- **HUB'ın Merkezi Rolü:** HUB (`hub.html`) yalnızca Bestiary canavarları için değil; DM'in ve oyuncunun tüm karakterlerini (PC & NPC), parti dengesini, encounter/zindan gruplarını ve kampanyalarını yönettiği **ana kontrol merkezidir**.
+- **Konuşmalar Arası Güvenli İzolasyon (Separation of Concerns):**
+  - HUB geliştirmeleri (`hub.html`, `bundled_monsters.js`) ile Karakter Kâğıdı geliştirmeleri (`index.html`, `character.html`) farklı konuşma sekmelerinde yürütüldüğünde, monolitik dosyalarda kod üzerine yazılma (overwrite / regression) riski oluşmaması için:
+    1. **Handover Dokümanı Zorunluluğu:** HUB oturumunda karakter sayfasını ilgilendiren, etkileyen veya veri şemasını değiştiren her geliştirme adımında kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyası güncellenecektir.
+    2. **Hazır Yönlendirme Promptu:** Ajan, kullanıcıya diğer konuşmaya doğrudan yapıştırabileceği tek parçalık hazır bir yönlendirme promptu sunacaktır.
+    3. **Katı Veri Kontratı (Data Contract):** HUB tarafından üretilen `fullData` ile karakter kâğıdı tarafından okunan veri şeması (`isNpc`, `feats`, `specialAbilities`, `spellcasting`, `combatPins`) ortak protokole tam uyumlu olacaktır.
+    4. **Parite ve Eşitlik:** Kök dizindeki dosyalar ile `webapp/` altındaki kopyaların %100 birebir aynı olması kuralı tavizsiz korunacaktır.
+
+
 
