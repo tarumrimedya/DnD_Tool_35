@@ -163,9 +163,15 @@
       <div id="pane-char-mode-bestiary" class="space-y-3 text-xs flex-1 overflow-y-auto pr-1 custom-scroll">
         <!-- Arama ve CR / Tip Filtreleri -->
         <div class="space-y-2">
-          <div class="relative">
-            <span class="absolute left-3 top-2.5 text-slate-400 text-sm">🔍</span>
-            <input type="text" id="bestiary-search-input" oninput="filterBestiaryList()" placeholder="Canavar veya NPC ara (Örn: Goblin, Ogre, Troll, Dragon, Skeleton)..." class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-white focus:outline-none focus:border-amber-500 placeholder-slate-500">
+          <div class="flex items-center gap-2">
+            <div class="relative flex-1">
+              <span class="absolute left-3 top-2.5 text-slate-400 text-sm">🔍</span>
+              <input type="text" id="bestiary-search-input" oninput="filterBestiaryList()" placeholder="Canavar veya NPC ara (Örn: Tanari, Balor, Succubus, Goblin, Troll)..." class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-white focus:outline-none focus:border-amber-500 placeholder-slate-500">
+            </div>
+            <button type="button" onclick="searchMonsterWithRuleMasterAi()" title="Rule Master AI ile D&D 3.5e Monster Manual & Kural Kitaplarından Yaratık / NPC Ara" class="px-3.5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 border border-purple-400/40 shadow cursor-pointer">
+              <span>⚡</span>
+              <span class="hidden sm:inline">Rule Master AI</span>
+            </button>
           </div>
           <!-- Kategori & CR Filtre Hapları -->
           <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
@@ -173,6 +179,7 @@
             <button type="button" onclick="setBestiaryFilter('low', this)" class="bestiary-filter-pill px-2.5 py-1 rounded-lg font-semibold bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition">Düşük (CR &lt; 1)</button>
             <button type="button" onclick="setBestiaryFilter('mid', this)" class="bestiary-filter-pill px-2.5 py-1 rounded-lg font-semibold bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition">Orta (CR 1 - 5)</button>
             <button type="button" onclick="setBestiaryFilter('high', this)" class="bestiary-filter-pill px-2.5 py-1 rounded-lg font-semibold bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition">Yüksek (CR 6+)</button>
+            <button type="button" onclick="setBestiaryFilter('fiend', this)" class="bestiary-filter-pill px-2.5 py-1 rounded-lg font-semibold bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition">🔥 Dış Boyut (Tanar'ri / Fiend)</button>
             <button type="button" onclick="setBestiaryFilter('undead', this)" class="bestiary-filter-pill px-2.5 py-1 rounded-lg font-semibold bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition">💀 Undead</button>
             <button type="button" onclick="setBestiaryFilter('giant_dragon', this)" class="bestiary-filter-pill px-2.5 py-1 rounded-lg font-semibold bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition">🐲 Dev / Ejderha</button>
           </div>
@@ -1090,6 +1097,50 @@
       }
     }
 
+    function normalizeSearchText(str) {
+      return (str || '')
+        .toLowerCase()
+        .replace(/['’`\-]/g, '') // Kesme işaretleri ve tireleri temizle
+        .replace(/rr/g, 'r')      // Çift harf varyasyonlarını eşitle (tanarri -> tanari)
+        .trim();
+    }
+
+    function loadCustomMonsters() {
+      try {
+        const raw = localStorage.getItem('dnd35_custom_monsters');
+        if (raw) {
+          const list = JSON.parse(raw);
+          if (Array.isArray(list)) {
+            if (!window.DND35_SRD_MONSTERS) window.DND35_SRD_MONSTERS = [];
+            list.forEach(item => {
+              if (!window.DND35_SRD_MONSTERS.some(m => m.id === item.id)) {
+                window.DND35_SRD_MONSTERS.unshift(item);
+              }
+            });
+          }
+        }
+      } catch (e) {
+        console.warn('Could not load custom monsters:', e);
+      }
+    }
+
+    function saveCustomMonster(m) {
+      try {
+        const raw = localStorage.getItem('dnd35_custom_monsters');
+        let list = raw ? JSON.parse(raw) : [];
+        if (!Array.isArray(list)) list = [];
+        const idx = list.findIndex(it => it.id === m.id);
+        if (idx >= 0) {
+          list[idx] = m;
+        } else {
+          list.unshift(m);
+        }
+        localStorage.setItem('dnd35_custom_monsters', JSON.stringify(list));
+      } catch (e) {
+        console.warn('Could not save custom monster:', e);
+      }
+    }
+
     function setBestiaryFilter(filter, el) {
       currentBestiaryFilter = filter;
       document.querySelectorAll('.bestiary-filter-pill').forEach(btn => {
@@ -1107,14 +1158,21 @@
 
     function getFilteredBestiaryMonsters() {
       const monsters = window.DND35_SRD_MONSTERS || [];
-      const query = (document.getElementById('bestiary-search-input')?.value || '').trim().toLowerCase();
+      const rawQuery = (document.getElementById('bestiary-search-input')?.value || '').trim();
+      const normQuery = normalizeSearchText(rawQuery);
 
       return monsters.filter(m => {
-        if (query) {
-          const matchName = (m.name || '').toLowerCase().includes(query);
-          const matchType = (m.type || '').toLowerCase().includes(query);
-          const matchCr = (m.cr || '').toLowerCase().includes(query);
-          if (!matchName && !matchType && !matchCr) return false;
+        if (normQuery) {
+          const normName = normalizeSearchText(m.name);
+          const normType = normalizeSearchText(m.type);
+          const normCr = normalizeSearchText(m.cr);
+          const tagsMatch = (m.tags || []).some(t => normalizeSearchText(t).includes(normQuery));
+
+          const matchName = normName.includes(normQuery);
+          const matchType = normType.includes(normQuery);
+          const matchCr = normCr.includes(normQuery);
+
+          if (!matchName && !matchType && !matchCr && !tagsMatch) return false;
         }
 
         if (currentBestiaryFilter === 'low') {
@@ -1125,6 +1183,9 @@
           return m.crNumeric >= 6;
         } else if (currentBestiaryFilter === 'undead') {
           return (m.type || '').toLowerCase().includes('undead');
+        } else if (currentBestiaryFilter === 'fiend') {
+          const t = (m.type || '').toLowerCase();
+          return t.includes('tanar') || t.includes('baatezu') || t.includes('outsider') || (m.tags || []).some(tg => tg.includes('demon') || tg.includes('devil') || tg.includes('tanari'));
         } else if (currentBestiaryFilter === 'giant_dragon') {
           const t = (m.type || '').toLowerCase();
           return t.includes('giant') || t.includes('dragon');
@@ -1139,7 +1200,17 @@
 
       const list = getFilteredBestiaryMonsters();
       if (!list.length) {
-        container.innerHTML = `<div class="p-3 text-center text-slate-500 italic text-[11px]">Aramaya uygun canavar bulunamadı.</div>`;
+        const rawQ = (document.getElementById('bestiary-search-input')?.value || '').trim();
+        container.innerHTML = `
+          <div class="p-3 text-center space-y-2.5 bg-indigo-950/40 border border-indigo-800/60 rounded-xl my-1">
+            <div class="text-[11px] text-indigo-200 font-bold">${rawQ ? `"${rawQ}" Bestiary'de Bulunamadı` : 'Aramaya uygun canavar bulunamadı.'}</div>
+            <p class="text-[10px] text-slate-400">D&D 3.5e Monster Manual & kural kaynaklarından Rule Master AI ile doğrudan RAW istatistikleri çekebilirsiniz.</p>
+            <button type="button" onclick="searchMonsterWithRuleMasterAi('${rawQ ? rawQ.replace(/'/g, "\\'") : ''}')" class="w-full py-1.5 px-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold rounded-lg text-xs shadow flex items-center justify-center gap-1.5 cursor-pointer">
+              <span>⚡</span>
+              <span>Rule Master AI ile ${rawQ ? `"${rawQ}"` : 'Canavar'} Ara & Üret</span>
+            </button>
+          </div>
+        `;
         return;
       }
 
@@ -1170,6 +1241,154 @@
 
       const cur = (window.DND35_SRD_MONSTERS || []).find(m => m.id === selectedBestiaryMonsterId);
       if (cur) renderBestiaryPreview(cur);
+    }
+
+    async function searchMonsterWithRuleMasterAi(explicitQuery = '') {
+      let query = explicitQuery || document.getElementById('bestiary-search-input')?.value.trim();
+      if (!query) {
+        query = prompt('D&D 3.5e Monster Manual ve kural kitaplarından aratmak istediğiniz yaratık veya NPC adını yazın:\n(Örn: Marilith, Bebilith, Red Dragon, Lich, Drow Priestess)');
+        if (!query || !query.trim()) return;
+        query = query.trim();
+        const searchInput = document.getElementById('bestiary-search-input');
+        if (searchInput) searchInput.value = query;
+      }
+
+      let apiKey = localStorage.getItem('gemini_api_key') || (window.RuleMaster && typeof window.RuleMaster.getApiKey === 'function' ? window.RuleMaster.getApiKey() : '');
+      if (!apiKey) {
+        apiKey = prompt('⚡ Rule Master AI özelliğini kullanmak için Google AI Studio Gemini API Anahtarınızı girin:\n(Anahtarınız sadece tarayıcınızda yerel olarak saklanır)');
+        if (!apiKey || !apiKey.trim()) return;
+        apiKey = apiKey.trim();
+        localStorage.setItem('gemini_api_key', apiKey);
+        if (window.RuleMaster && typeof window.RuleMaster.setApiKey === 'function') {
+          window.RuleMaster.setApiKey(apiKey);
+        }
+      }
+
+      const previewContainer = document.getElementById('bestiary-preview-container');
+      if (previewContainer) {
+        previewContainer.innerHTML = `
+          <div class="py-12 px-4 text-center space-y-3">
+            <div class="text-3xl animate-pulse text-purple-400">⚡</div>
+            <div class="text-xs font-bold text-purple-300">Rule Master AI devrede...</div>
+            <p class="text-[11px] text-slate-300">"${query}" için D&D 3.5e Monster Manual ve RAW kural motoru taranıyor.</p>
+            <span class="inline-block text-[10px] text-slate-500 italic">Hit Dice, AC, doğal saldırılar, hünerler ve özel yetenekler çıkartılıyor...</span>
+          </div>
+        `;
+      }
+
+      const systemInstruction = `You are the official D&D 3.5e RAW Rule Master. The user will ask for a monster, creature, or NPC from D&D 3.5e (Monster Manual, Fiend Folio, Libris Mortis, Frostburn, etc.).
+You must look up or construct the exact official D&D 3.5e RAW statblock for the requested monster.
+Return ONLY a single valid JSON object adhering strictly to the following structure with no markdown backticks or commentary:
+{
+  "id": "lowercase_underscore_id",
+  "name": "Exact Official Name",
+  "cr": "Challenge Rating string, e.g. '1/3', '5', '12'",
+  "crNumeric": 5,
+  "size": "Fine/Diminutive/Tiny/Small/Medium/Large/Huge/Gargantuan/Colossal",
+  "sizeMod": 0,
+  "type": "Official Type & Subtype (e.g. Outsider (Chaotic, Evil, Tanar\\'ri))",
+  "hitDice": "e.g. 10d8+50",
+  "hitDiceStr": "e.g. Outsider 10",
+  "hp": 95,
+  "initiative": 2,
+  "speed": "30 ft. (6 squares), fly 50 ft. (average)",
+  "baseSpeed": 30,
+  "armorBonus": 0,
+  "shieldBonus": 0,
+  "naturalArmor": 11,
+  "deflection": 0,
+  "ac": 22,
+  "touchAc": 11,
+  "flatFootedAc": 20,
+  "bab": 10,
+  "grapple": 18,
+  "abilities": { "str": 21, "dex": 14, "con": 20, "int": 12, "wis": 14, "cha": 16 },
+  "saves": { "fort": 12, "ref": 9, "will": 9 },
+  "attacks": [
+    { "name": "Claw", "type": "Natural", "bonus": 14, "damage": "1d8+5", "crit": "20/x2", "damageType": "Slashing", "range": "-" }
+  ],
+  "skills": [ { "name": "Spot", "mod": 15 }, { "name": "Listen", "mod": 15 } ],
+  "feats": [ { "name": "Power Attack" }, { "name": "Cleave" } ],
+  "specialAbilities": [
+    { "name": "Damage Reduction 10/Good", "type": "Su", "description": "Description of ability." }
+  ],
+  "description": "Short flavor and description.",
+  "tags": ["demon", "tanari", "tanarri", "outsider"]
+}`;
+
+      const userPrompt = `Query: "${query}". Look up the official D&D 3.5e RAW statistics for this monster or NPC and return the exact JSON object.`;
+
+      const models = ['gemini-flash-lite-latest', 'gemini-flash-latest'];
+      let lastErr = null;
+      let monsterData = null;
+
+      for (const model of models) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: userPrompt }] }],
+              systemInstruction: { parts: [{ text: systemInstruction }] },
+              generationConfig: {
+                temperature: 0.1,
+                responseMimeType: "application/json"
+              }
+            })
+          });
+
+          if (!res.ok) {
+            const errJson = await res.json().catch(() => ({}));
+            throw new Error(errJson.error?.message || `HTTP ${res.status}`);
+          }
+
+          const data = await res.json();
+          const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          const cleanJson = rawText.replace(/```(?:json)?\s*([\s\S]*?)\s*```/g, '$1').trim();
+          monsterData = JSON.parse(cleanJson);
+          if (monsterData && monsterData.name) {
+            break;
+          }
+        } catch (e) {
+          lastErr = e;
+          console.warn(`Model ${model} failed:`, e);
+        }
+      }
+
+      if (!monsterData || !monsterData.name) {
+        alert('Rule Master AI sorgusu başarısız oldu: ' + (lastErr ? lastErr.message : 'Veri çözümlenemedi. Lütfen API anahtarınızı kontrol edin.'));
+        renderBestiaryList();
+        return;
+      }
+
+      // Ensure required structure
+      if (!monsterData.id) monsterData.id = 'ai_' + normalizeSearchText(monsterData.name) + '_' + Date.now();
+      if (!monsterData.abilities) monsterData.abilities = { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
+      if (!monsterData.saves) monsterData.saves = { fort: 0, ref: 0, will: 0 };
+      if (!Array.isArray(monsterData.attacks)) monsterData.attacks = [];
+      if (!Array.isArray(monsterData.skills)) monsterData.skills = [];
+      if (!Array.isArray(monsterData.feats)) monsterData.feats = [];
+      if (!Array.isArray(monsterData.specialAbilities)) monsterData.specialAbilities = [];
+      if (!Array.isArray(monsterData.tags)) monsterData.tags = [];
+
+      // Add to runtime and persistent custom storage
+      if (!window.DND35_SRD_MONSTERS) window.DND35_SRD_MONSTERS = [];
+      const existingIdx = window.DND35_SRD_MONSTERS.findIndex(m => m.id === monsterData.id || m.name.toLowerCase() === monsterData.name.toLowerCase());
+      if (existingIdx >= 0) {
+        window.DND35_SRD_MONSTERS[existingIdx] = monsterData;
+      } else {
+        window.DND35_SRD_MONSTERS.unshift(monsterData);
+      }
+      saveCustomMonster(monsterData);
+
+      // Select and render
+      selectedBestiaryMonsterId = monsterData.id;
+      const customNameInput = document.getElementById('bestiary-custom-name');
+      if (customNameInput) customNameInput.value = monsterData.name;
+
+      renderBestiaryList();
+      renderBestiaryPreview(monsterData);
     }
 
     function selectBestiaryMonster(id) {
@@ -1692,6 +1911,7 @@
 
     // Sayfa Açılışı
     window.addEventListener('DOMContentLoaded', () => {
+      loadCustomMonsters();
       initHubStorage();
       renderHub();
     });
