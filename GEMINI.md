@@ -37,3 +37,11 @@ To maximize token efficiency and minimize API costs across all conversations in 
   - **Kesinlikle doğrudan kod geliştirmesi / dosya değişikliği YAPILMAYACAKTIR.**
   - Kullanıcı açıkça *"uygula"*, *"kodu değiştir"*, *"geliştir"*, *"ekle/kaldır"* gibi net bir eylem talimatı vermediği sürece sadece analiz ve değerlendirme sunulacaktır.
   - Verilen yanıtlar yüzeysel veya körü körüne onaylayıcı olmamalı; konuya **eleştirel ve sorgulayıcı bir yaklaşımla** (artıları, eksileri, UX/UI ergonomisi, D&D 3.5e RAW kural mekanikleri, performans ve alternatif çözüm yolları ile) derinlemesine bakılarak objektif argümanlarla cevap verilmelidir.
+
+## 5. Dummy Data Yasağı ve Veri Ekleme Standardı (STRICT: NO DUMMY DATA)
+- Projenin hiçbir yerinde (UI testleri, prototipler, mock bileşenler veya kod içi sabitler dahil) geçici, uydurma veya doğrulanmamış **DUMMY DATA KESİNLİKLE KULLANILMAYACAKTIR**.
+- Sayfa, bileşen veya mekanik testleri için yeni bir veri eklenmesi gerektiğinde **üç aşamalı zorunlu standart akış** izlenecektir:
+  1. **Aşama 1 (Rule Master Doğrulaması):** Eklenecek veri (büyü, eşya, manevra, feat vb.) öncelikle D&D 3.5e RAW kural motoru / Rule Master yapısından geçirilerek kurallara uygunluğu ve tam parametreleri doğrulanır.
+  2. **Aşama 2 (Master DB Kaydı):** Doğrulanan veri, şemaya uygun şekilde `master_db.json` (ve `bundled_data.js`) veri tabanına resmi ve kalıcı bir kayıt olarak eklenir.
+  3. **Aşama 3 (İlgili Alana Entegrasyon):** Yalnızca `master_db.json` içinde doğrulanmış ve kaydedilmiş olan veri, ilgili test alanına, karakter kâğıdına (`character_data.json`), envantere veya arayüz çekmecesine referans verilerek bağlanır.
+
