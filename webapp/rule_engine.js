@@ -1690,7 +1690,7 @@ const RuleEngine = {
     const netAttackBonus = this.resolveBonusStacking(attackBonusItems);
 
     // 2. Damage Calculation (RAW D&D 3.5e)
-    const isLightWep = weapon.isLight || (weapon.tags && weapon.tags.includes('light')) || weapon.category === 'Light' || ['dagger', 'short sword', 'light mace', 'sickle', 'handaxe', 'kukri', 'sap', 'light hammer', 'light pick', 'kama', 'nunchaku', 'sai', 'siangham'].some(lw => baseWepName.includes(lw));
+    const isLightWep = weapon.isLight || (weapon.tags && weapon.tags.includes('light')) || weapon.category === 'Light' || ['dagger', 'short sword', 'light mace', 'sickle', 'handaxe', 'kukri', 'sap', 'light hammer', 'light pick', 'kama', 'nunchaku', 'sai', 'siangham', 'unarmed strike', 'silahsız'].some(lw => baseWepName.includes(lw));
     const isCrossbow = baseWepName.includes('crossbow');
     const isBow = baseWepName.includes('bow') && !isCrossbow;
     const isRapier = baseWepName.includes('rapier');

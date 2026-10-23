@@ -3201,7 +3201,7 @@
           <span class="text-lg">⚔️</span>
           <div>
             <h4 class="font-extrabold text-sm text-white">Saldırı Yöntemi Seçin</h4>
-            <p id="decision-toast-weapon-sub" class="text-[10px] text-slate-400 font-mono">Rapier +2</p>
+            <p id="decision-toast-weapon-sub" class="text-[10px] text-slate-400 font-mono">Unarmed Strike</p>
           </div>
         </div>
         <button onclick="dismissAttackDecisionToast()" class="text-slate-400 hover:text-white text-xs bg-slate-800 px-2 py-1 rounded">✕ İptal</button>
@@ -9614,8 +9614,10 @@
 
     function renderWeapons() {
       const select = document.getElementById('active-weapon-select');
+      if (!select) return;
       select.innerHTML = '';
-      (character.weapons || []).forEach(w => {
+      const weps = (character.weapons && character.weapons.length > 0) ? character.weapons : [{ name: 'Unarmed Strike', dice: '1d3', critMin: 20, critMult: 2, dmgType: 'Bludgeoning', isLight: true }];
+      weps.forEach(w => {
         const opt = document.createElement('option');
         opt.value = w.name;
         opt.textContent = w.name;
@@ -10016,7 +10018,13 @@
 
       // Ensure dice
       if (!item.dice) {
-        if (lower.includes('dagger') || lower.includes('hançer')) item.dice = '1d4';
+        if (lower.includes('unarmed') || lower.includes('silahsız')) {
+          const monkLvl = (character?.levelProgression || []).filter(l => (l.className || '').toLowerCase().includes('monk')).length;
+          const isSmall = (character?.size || '').toLowerCase() === 'small';
+          if (monkLvl >= 1) item.dice = isSmall ? '1d4' : '1d6';
+          else item.dice = isSmall ? '1d2' : '1d3';
+        }
+        else if (lower.includes('dagger') || lower.includes('hançer')) item.dice = '1d4';
         else if (lower.includes('rapier')) item.dice = '1d6';
         else if (lower.includes('spiked chain')) item.dice = '2d4';
         else if (lower.includes('shortsword') || lower.includes('kısa kılıç')) item.dice = '1d6';
@@ -10043,10 +10051,10 @@
 
       // Ensure dmgType
       if (!item.dmgType) {
-        if (lower.includes('rapier') || lower.includes('dagger') || lower.includes('hançer') || lower.includes('chain') || lower.includes('spear') || lower.includes('mızrak') || lower.includes('bow') || lower.includes('yay')) {
-          item.dmgType = 'Piercing';
-        } else if (lower.includes('mace') || lower.includes('flail') || lower.includes('club') || lower.includes('hammer') || lower.includes('shield') || lower.includes('kalkan')) {
+        if (lower.includes('unarmed') || lower.includes('silahsız') || lower.includes('mace') || lower.includes('flail') || lower.includes('club') || lower.includes('hammer') || lower.includes('shield') || lower.includes('kalkan')) {
           item.dmgType = 'Bludgeoning';
+        } else if (lower.includes('rapier') || lower.includes('dagger') || lower.includes('hançer') || lower.includes('chain') || lower.includes('spear') || lower.includes('mızrak') || lower.includes('bow') || lower.includes('yay')) {
+          item.dmgType = 'Piercing';
         } else {
           item.dmgType = 'Slashing';
         }
@@ -10074,7 +10082,7 @@
       }
 
       if (item.isLight === undefined) {
-        item.isLight = lower.includes('dagger') || lower.includes('hançer') || lower.includes('shortsword') || lower.includes('kukri') || lower.includes('light');
+        item.isLight = lower.includes('dagger') || lower.includes('hançer') || lower.includes('shortsword') || lower.includes('kukri') || lower.includes('light') || lower.includes('unarmed') || lower.includes('silahsız');
       }
 
       return item;
@@ -10115,9 +10123,26 @@
     function ensureWeaponSetsData() {
       if (!character) return;
       if (!character.tactical) character.tactical = {};
+
+      const getValidMainWeapon = () => {
+        const equippedMain = character.bodySlots?.mainHand?.name && character.bodySlots.mainHand.name !== '-' ? character.bodySlots.mainHand.name : null;
+        if (equippedMain && equippedMain !== 'Yok' && equippedMain !== 'None') return equippedMain;
+        if (character.activeWeapon && character.activeWeapon !== 'Yok' && character.activeWeapon !== 'None') return character.activeWeapon;
+        if (Array.isArray(character.weapons) && character.weapons.length > 0 && character.weapons[0]?.name) return character.weapons[0].name;
+        return 'Unarmed Strike';
+      };
+
+      const getValidOffWeapon = (mainWep) => {
+        const equippedOff = character.bodySlots?.offHand?.name && character.bodySlots.offHand.name !== '-' ? character.bodySlots.offHand.name : null;
+        if (equippedOff && equippedOff !== 'Yok' && equippedOff !== 'None') return equippedOff;
+        const otherWep = (character.weapons || []).find(w => w && w.name && w.name !== mainWep)?.name;
+        if (otherWep) return otherWep;
+        return 'Yok';
+      };
+
       if (!character.tactical.weaponSets) {
-        const mainWep = character.activeWeapon || character.weapons?.[0]?.name || 'Rapier +2';
-        const secondWep = (character.weapons || []).find(w => w.name !== mainWep)?.name || 'Dagger (Masterwork)';
+        const mainWep = getValidMainWeapon();
+        const secondWep = getValidOffWeapon(mainWep);
 
         character.tactical.weaponSets = {
           activeSets: [1],
@@ -10139,12 +10164,30 @@
           character.tactical.weaponSets.activeSets = prev === 'both' ? [1, 2] : (prev === 2 ? [2] : [1]);
         }
         if (!character.tactical.weaponSets.set1) {
-          character.tactical.weaponSets.set1 = { name: 'Ana El', mainWeapon: character.activeWeapon || 'Rapier +2', grip: '1-Hand' };
+          character.tactical.weaponSets.set1 = { name: 'Ana El', mainWeapon: getValidMainWeapon(), grip: '1-Hand' };
         }
         if (!character.tactical.weaponSets.set2) {
-          const secondWep = (character.weapons || []).find(w => w.name !== character.tactical.weaponSets.set1.mainWeapon)?.name || 'Dagger (Masterwork)';
-          character.tactical.weaponSets.set2 = { name: 'İkinci El', mainWeapon: secondWep, grip: 'Off-Hand' };
+          character.tactical.weaponSets.set2 = { name: 'İkinci El', mainWeapon: getValidOffWeapon(character.tactical.weaponSets.set1.mainWeapon), grip: 'Off-Hand' };
         }
+
+        // If set1 had legacy hardcoded dummy fallback like 'Rapier +2' and character actually doesn't have it
+        const s1Wep = character.tactical.weaponSets.set1.mainWeapon;
+        const hasS1Wep = (character.weapons || []).some(w => w && w.name === s1Wep) || 
+                         character.bodySlots?.mainHand?.name === s1Wep || 
+                         (character.gearPool || []).some(g => g && g.name === s1Wep);
+        if (!hasS1Wep && (s1Wep === 'Rapier +2' || !s1Wep)) {
+          character.tactical.weaponSets.set1.mainWeapon = getValidMainWeapon();
+        }
+
+        const s2Wep = character.tactical.weaponSets.set2.mainWeapon;
+        const hasS2Wep = s2Wep === 'Yok' || s2Wep === 'None' ||
+                         (character.weapons || []).some(w => w && w.name === s2Wep) || 
+                         character.bodySlots?.offHand?.name === s2Wep || 
+                         (character.gearPool || []).some(g => g && g.name === s2Wep);
+        if (!hasS2Wep && (s2Wep === 'Dagger (Masterwork)' || !s2Wep)) {
+          character.tactical.weaponSets.set2.mainWeapon = getValidOffWeapon(character.tactical.weaponSets.set1.mainWeapon);
+        }
+
         if (!character.tactical.weaponSets.set1.name || character.tactical.weaponSets.set1.name.includes('Buckler') || character.tactical.weaponSets.set1.name.includes('Set I')) {
           character.tactical.weaponSets.set1.name = 'Ana El';
         }
@@ -10635,6 +10678,14 @@
           });
         }
       });
+
+      // 5. Always ensure Unarmed Strike is available in weapon selection
+      if (!availableItems.some(i => (i.name || '').toLowerCase().includes('unarmed') || (i.name || '').toLowerCase().includes('silahsız'))) {
+        availableItems.unshift({
+          name: 'Unarmed Strike',
+          category: 'Weapon'
+        });
+      }
 
       // Build unified options HTML for both Ana El and İkinci El
       let optionsHtml = '<option value="Yok">Yok / Boş</option>';
@@ -11311,7 +11362,8 @@
         return chain;
       }
 
-      const wep = (character.weapons || []).find(w => w.name === character.activeWeapon) || character.weapons?.[0];
+      const wepName = character.activeWeapon || character.tactical?.weaponSets?.set1?.mainWeapon || 'Unarmed Strike';
+      const wep = (character.weapons || []).find(w => w && w.name === wepName) || findWeaponEverywhere(wepName) || { name: 'Unarmed Strike', dice: '1d3', critMin: 20, critMult: 2, dmgType: 'Bludgeoning', isLight: true };
       if (!wep) return [];
 
       const isTwoHand = RuleEngine.isTwoHandedWeapon(wep);
@@ -11628,7 +11680,8 @@
         return;
       }
 
-      const wep = (character.weapons || []).find(w => w.name === character.activeWeapon) || character.weapons?.[0];
+      const wepName = character.activeWeapon || character.tactical?.weaponSets?.set1?.mainWeapon || 'Unarmed Strike';
+      const wep = (character.weapons || []).find(w => w && w.name === wepName) || findWeaponEverywhere(wepName) || { name: 'Unarmed Strike', dice: '1d3', critMin: 20, critMult: 2, dmgType: 'Bludgeoning', isLight: true };
       if (!wep) return;
 
       const isTwoHand = RuleEngine.isTwoHandedWeapon(wep);
@@ -12612,7 +12665,8 @@
     }
 
     function rollAttackOfOpportunity() {
-      const wep = (character.weapons || []).find(w => w.name === character.activeWeapon) || character.weapons?.[0];
+      const wepName = character.activeWeapon || character.tactical?.weaponSets?.set1?.mainWeapon || 'Unarmed Strike';
+      const wep = (character.weapons || []).find(w => w && w.name === wepName) || findWeaponEverywhere(wepName) || { name: 'Unarmed Strike', dice: '1d3', critMin: 20, critMult: 2, dmgType: 'Bludgeoning', isLight: true };
       if (!wep) return;
       const d20 = Math.floor(Math.random() * 20) + 1;
       const evalResult = RuleEngine.evaluateWeaponAttack(character, wep, { grip: '1-Hand' });
@@ -13137,7 +13191,7 @@
       if (!modal) return;
 
       const titleEl = document.getElementById('profile-modal-weapon-name');
-      if (titleEl) titleEl.textContent = `${character.activeWeapon || 'Rapier +2'} Aktif Seçimler`;
+      if (titleEl) titleEl.textContent = `${character.activeWeapon || 'Unarmed Strike'} Aktif Seçimler`;
 
       const nameInput = document.getElementById('save-profile-name-input');
       if (nameInput) {
@@ -13155,7 +13209,7 @@
 
         const summary = buildProfileSummary(pa, fl, ch, hg, activeMods);
         previewEl.innerHTML = `
-          <div><b class="text-white">Silah:</b> ${character.activeWeapon || 'Rapier +2'} (${document.getElementById('active-grip-select')?.value || '1-Hand'})</div>
+          <div><b class="text-white">Silah:</b> ${character.activeWeapon || 'Unarmed Strike'} (${document.getElementById('active-grip-select')?.value || '1-Hand'})</div>
           <div><b class="text-white">Modifiyerler:</b> ${summary}</div>
         `;
       }
