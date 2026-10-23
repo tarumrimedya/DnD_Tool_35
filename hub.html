@@ -788,6 +788,11 @@
       const copy = JSON.parse(JSON.stringify(source));
       copy.id = 'char_' + Date.now();
       copy.name = source.name + ' (Kopya)';
+      if (copy.fullData) {
+        copy.fullData.id = copy.id;
+        copy.fullData._hubId = copy.id;
+        copy.fullData.name = copy.name;
+      }
       state.characters.push(copy);
       saveHubStorage();
       renderHub();
@@ -803,17 +808,153 @@
       }
     }
 
+    function createCleanDnd35Character(summary = {}) {
+      const charId = summary.id || ('char_' + Date.now());
+      const hpVal = Number(summary.currentHp || summary.maxHp || summary.hp || 10);
+      const acVal = Number(summary.ac || 10);
+      const touchVal = Number(summary.touchAc || 10);
+      const race = summary.race || 'Human';
+      const classes = summary.classes || 'Fighter 1';
+      const name = summary.name || 'Yeni Karakter';
+
+      return {
+        schemaVersion: "2.0",
+        id: charId,
+        _hubId: charId,
+        name: name,
+        race: race,
+        classes: classes,
+        level: Number(summary.level) || 1,
+        bab: 1,
+        baseSpeed: 30,
+        hitDie: "d10",
+        alignment: "Neutral",
+        abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+        hp: {
+          current: hpVal,
+          max: hpVal,
+          baseMax: hpVal,
+          conBonusHp: 0,
+          temp: 0,
+          nonlethal: 0
+        },
+        acBreakdown: {
+          armor: Math.max(0, acVal - 10),
+          shield: 0,
+          natural: 0,
+          deflection: 0,
+          size: 0
+        },
+        ac: {
+          total: acVal,
+          touch: touchVal,
+          flatFooted: Math.max(10, acVal - 2)
+        },
+        baseSaves: { fort: 2, ref: 0, will: 0 },
+        saveBonuses: { resistance: 0 },
+        saves: {
+          fort: { total: 2 },
+          ref: { total: 0 },
+          will: { total: 0 }
+        },
+        portrait: summary.portrait || summary.avatarUrl || '',
+        avatarUrl: summary.portrait || summary.avatarUrl || '',
+        weapons: [
+          {
+            name: summary.mainWeapon || 'Longsword',
+            category: 'Martial',
+            dice: '1d8',
+            crit: '19-20 / x2',
+            critMin: 19,
+            critMult: 2,
+            dmgType: 'Delici/Kesici',
+            slot: 'One-Handed',
+            isEquipped: true,
+            source: 'Standart Ekipman'
+          }
+        ],
+        activeWeapon: summary.mainWeapon || 'Longsword',
+        bodySlots: {
+          head: null,
+          eyes: null,
+          neck: null,
+          torso: null,
+          armor: null,
+          cloak: null,
+          waist: null,
+          wrists: null,
+          hands: null,
+          ring1: null,
+          ring2: null,
+          feet: null
+        },
+        gearPool: [
+          { name: 'Standart Ok', weaponType: 'Bow', ammoVal: 'standard', qty: 20, weight: 3, cost: 1, category: 'Ammunition', type: 'Ammunition', desc: 'Standart 20 adet ok (1d8 Delici).' },
+          { name: 'Standart Bolt', weaponType: 'Crossbow', ammoVal: 'standard', qty: 10, weight: 1, cost: 1, category: 'Ammunition', type: 'Ammunition', desc: 'Standart 10 adet arbalet oku.' },
+          { name: 'Sapan Taşı', weaponType: 'Sling', ammoVal: 'standard', qty: 20, weight: 5, cost: 0.1, category: 'Ammunition', type: 'Ammunition', desc: 'Standart 20 adet sapan mermisi.' }
+        ],
+        inventory: [],
+        skills: [],
+        feats: [],
+        specialAbilities: [],
+        spells: [],
+        spellcasting: {
+          cl: 0,
+          ability: 'int',
+          slots: {
+            0: { daily: 0, used: 0 },
+            1: { daily: 0, used: 0 }
+          }
+        },
+        levelProgression: [
+          { level: 1, className: classes, hpGain: hpVal, babGain: 1, fortGain: 2, refGain: 0, willGain: 0, skillPoints: 4, featGained: 'Bonus Feat' }
+        ],
+        tomeOfBattle: {
+          stances: [],
+          readiedManeuvers: []
+        },
+        combatPins: {
+          offense_melee: [],
+          offense_ranged: [],
+          offense_spell: [],
+          defense: []
+        },
+        tactical: {
+          powerAttack: 0,
+          flanking: false,
+          charge: false,
+          higherGround: false,
+          combatExpertise: 0,
+          fightingDefensively: false,
+          totalDefense: false,
+          shieldBlockActive: false,
+          round: 1,
+          weaponSets: {
+            activeSets: [1],
+            set1: { mainWeapon: summary.mainWeapon || 'Longsword', grip: '1-Hand' }
+          }
+        },
+        settings: {
+          pinDrawerLimit: 5
+        }
+      };
+    }
+
     function launchCharacterSheet(charId) {
       const c = state.characters.find(it => it.id === charId);
       if (!c) return;
 
+      // Eğer karakterin tam JSON nesnesi henüz yoksa temiz şablon oluştur
+      if (!c.fullData) {
+        c.fullData = createCleanDnd35Character(c);
+        saveHubStorage();
+      }
+
       // Aktif karakter ID'sini kaydet
       localStorage.setItem('dnd35_active_character_id', charId);
 
-      // Eğer karakterin tam JSON nesnesi varsa dnd35_character alanına aktar
-      if (c.fullData) {
-        localStorage.setItem('dnd35_character', JSON.stringify(c.fullData));
-      }
+      // Karakterin tam JSON nesnesini dnd35_character alanına aktar
+      localStorage.setItem('dnd35_character', JSON.stringify(c.fullData));
 
       // Ana karakter sayfasına (index.html) yönlendir
       window.location.href = '/?id=' + encodeURIComponent(charId);
@@ -879,6 +1020,9 @@
         spotBonus: 1,
         listenBonus: 1
       };
+
+      // Option 1: Clean D&D 3.5e Level 1 schema generation
+      newChar.fullData = createCleanDnd35Character(newChar);
 
       state.characters.push(newChar);
       saveHubStorage();
