@@ -225,7 +225,7 @@
       </div>
       <div class="grid grid-cols-3 gap-1 text-center my-1">
         <div class="bg-slate-900/70 p-1.5 rounded border border-slate-800">
-          <div id="ac-total-display" class="text-xl font-extrabold text-sky-400 font-mono">--</div>
+          <div id="ac-total-display" class="text-xl font-extrabold text-amber-400 font-mono">--</div>
           <div class="text-[9px] text-slate-400 font-semibold uppercase">Total</div>
         </div>
         <div class="bg-slate-900/70 p-1.5 rounded border border-slate-800">
@@ -703,7 +703,7 @@
             <div class="grid grid-cols-3 gap-2 bg-slate-950/80 border border-slate-800 rounded-lg p-2.5 text-center">
               <div>
                 <div class="text-[9px] uppercase font-bold text-slate-400">Normal AC</div>
-                <div id="cockpit-ac-normal" class="text-xl font-black text-sky-400 font-mono mt-0.5">21</div>
+                <div id="cockpit-ac-normal" class="text-xl font-black text-amber-400 font-mono mt-0.5">21</div>
               </div>
               <div>
                 <div class="text-[9px] uppercase font-bold text-slate-400">Touch AC</div>
@@ -1486,7 +1486,7 @@
               <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Deflection (Saptırma): <span class="text-[10px] text-indigo-400 font-normal">(Ring of Protection +1)</span></span><span class="text-indigo-400 font-bold">+1</span></div>
               <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Doğal Zırh (Natural): <span class="text-[10px] text-teal-400 font-normal">(Amulet of Natural Armor +1)</span></span><span class="text-teal-400 font-bold">+1</span></div>
               <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Dodge (Kaçınma - Stacks):</span><span class="text-amber-400 font-bold">+0</span></div>
-              <div class="flex justify-between py-1.5 text-slate-300 font-bold border-t border-slate-700 mt-1"><span class="text-emerald-300 text-xs">NİHAİ ZIRH SINIFI:</span><span class="text-emerald-400 text-sm font-black">22 AC</span></div>
+              <div class="flex justify-between py-1.5 text-slate-300 font-bold border-t border-slate-700 mt-1"><span class="text-amber-300 text-xs">NİHAİ ZIRH SINIFI:</span><span class="text-amber-400 text-sm font-black">22 AC</span></div>
               <div class="flex justify-between text-[11px] text-slate-400 pt-0.5">
                 <span>Touch: <strong class="text-sky-300">14</strong></span>
                 <span>Flat-Footed: <strong class="text-amber-300">19</strong></span>
@@ -27386,7 +27386,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Doğal Zırh (Natural):${naturalDetail}</span><span class="text-teal-400 font-bold">+${bd.natural || 0}</span></div>
         <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Dodge (Kaçınma - Stacks):</span><span class="text-amber-400 font-bold">+${bd.dodge || 0}</span></div>
         ${penaltyInfo}
-        <div class="flex justify-between py-1.5 text-slate-300 font-bold border-t border-slate-700 mt-1"><span class="text-emerald-300 text-xs">NİHAİ ZIRH SINIFI:</span><span class="text-emerald-400 text-sm font-black">${bd.total || acCalc.total} AC</span></div>
+        <div class="flex justify-between py-1.5 text-slate-300 font-bold border-t border-slate-700 mt-1"><span class="text-amber-300 text-xs">NİHAİ ZIRH SINIFI:</span><span class="text-amber-400 text-sm font-black">${bd.total || acCalc.total} AC</span></div>
         <div class="flex justify-between text-[11px] text-slate-400 pt-0.5">
           <span>Touch: <strong class="text-sky-300">${bd.touch || acCalc.touch}</strong></span>
           <span>Flat-Footed: <strong class="text-amber-300">${bd.flat || acCalc.flat}</strong></span>
