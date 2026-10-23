@@ -22,7 +22,9 @@
         "role":  "Offense / Attack",
         "weight":  13,
         "cost":  32350,
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee",
+        "scope":  "Melee Only"
     },
     {
         "name":  "Rapier +2",
@@ -48,7 +50,9 @@
         "role":  "Offense / Attack",
         "weight":  2,
         "cost":  8320,
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee",
+        "scope":  "Melee Only"
     },
     {
         "name":  "Spiked Chain +2",
@@ -76,7 +80,9 @@
         "role":  "Offense / Tactical",
         "weight":  10,
         "cost":  8325,
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee",
+        "scope":  "Melee Only"
     },
     {
         "name":  "Dagger (Shadow Hand)",
@@ -103,7 +109,9 @@
         "role":  "Offense / Attack",
         "weight":  1,
         "cost":  2302,
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "both",
+        "scope":  "All Attacks"
     },
     {
         "name":  "Sword of Defence +5",
@@ -126,7 +134,9 @@
         "role":  "Offense / Defense",
         "weight":  6,
         "cost":  50335,
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee",
+        "scope":  "Melee Only"
     },
     {
         "name":  "Heavy Shield +5",
@@ -146,7 +156,9 @@
         "role":  "Defense / Counter",
         "weight":  15,
         "cost":  25170,
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee",
+        "scope":  "Melee Only"
     },
     {
         "name":  "Power Attack",
@@ -158,7 +170,8 @@
         "source":  "PHB p.98",
         "benefit":  "Subtract number from melee attack rolls (up to BAB), add same number to 1-handed damage or 2x to 2-handed damage.",
         "role":  "Offense / Attack",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee"
     },
     {
         "name":  "Weapon Finesse",
@@ -170,7 +183,8 @@
         "source":  "PHB p.102",
         "benefit":  "Use Dexterity modifier instead of Strength modifier on melee attack rolls with light weapons, rapier, whip, or spiked chain.",
         "role":  "Offense / Attack",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee"
     },
     {
         "name":  "Shadow Blade",
@@ -182,7 +196,8 @@
         "source":  "Tome of Battle p.32",
         "benefit":  "While in a Shadow Hand stance, add Dexterity modifier to melee damage rolls with Shadow Hand discipline weapons.",
         "role":  "Offense / Tactical",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee"
     },
     {
         "name":  "Combat Expertise",
@@ -194,7 +209,8 @@
         "source":  "PHB p.92",
         "benefit":  "Take up to -5 penalty on attack rolls and add the same number as a dodge bonus to Armor Class.",
         "role":  "Defense / Counter",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee"
     },
     {
         "name":  "Punishing Stance",
@@ -244,7 +260,8 @@
                      "melee-damage",
                      "warblade"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee"
     },
     {
         "name":  "Island of Blades",
@@ -294,7 +311,8 @@
                      "flanking",
                      "swordsage"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee"
     },
     {
         "name":  "Child of Shadow",
@@ -306,7 +324,7 @@
         "benefit":  "Shadow Hand 1st: If you move at least 10 ft on your turn, gain concealment (20% miss chance) until start of next turn.",
         "description":  "Shadow Hand 1st: If you move at least 10 ft on your turn, gain concealment (20% miss chance) until start of next turn.",
         "bonusType":  "Untyped",
-        "scope":  "None / General",
+        "scope":  "Melee Only",
         "role":  "Defense / Stance",
         "strBonus":  0,
         "dexBonus":  0,
@@ -344,7 +362,8 @@
                      "concealment",
                      "swordsage"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee"
     },
     {
         "name":  "Leading the Charge",
@@ -396,7 +415,8 @@
                      "warblade",
                      "crusader"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee"
     },
     {
         "name":  "Mountain Hammer",
@@ -449,7 +469,8 @@
                      "crusader",
                      "swordsage"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "melee"
     },
     {
         "name":  "Steel Wind",
@@ -500,7 +521,8 @@
                      "multi-target",
                      "warblade"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "melee"
     },
     {
         "name":  "Shadow Garrote",
@@ -512,7 +534,7 @@
         "benefit":  "Shadow Hand Strike: Ranged touch attack up to 60 ft dealing 5d6 damage and flat-footing target on failed Fortitude DC 13+Wis.",
         "description":  "Shadow Hand Strike: Ranged touch attack up to 60 ft dealing 5d6 damage and flat-footing target on failed Fortitude DC 13+Wis.",
         "bonusType":  "Untyped",
-        "scope":  "All Attacks",
+        "scope":  "Ranged Only",
         "role":  "Offense / Strike",
         "strBonus":  0,
         "dexBonus":  0,
@@ -551,7 +573,8 @@
                      "ranged-touch",
                      "swordsage"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "ranged"
     },
     {
         "name":  "Charging Minotaur",
@@ -602,7 +625,8 @@
                      "charge",
                      "bull-rush"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "melee"
     },
     {
         "name":  "Magic Missile",
@@ -614,7 +638,7 @@
         "benefit":  "Fires magical darts of force that unerringly hit. Deals 1d4+1 force damage per missile (3 missiles at CL 5).",
         "description":  "Fires magical darts of force that unerringly hit. Deals 1d4+1 force damage per missile (3 missiles at CL 5).",
         "bonusType":  "Untyped",
-        "scope":  "Spells",
+        "scope":  "Ranged Only",
         "role":  "Offense / Spell",
         "strBonus":  0,
         "dexBonus":  0,
@@ -652,7 +676,8 @@
                      "force",
                      "auto-hit"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "ranged"
     },
     {
         "name":  "Shield",
@@ -868,7 +893,7 @@
         "benefit":  "Ranged touch attack dealing 4d6 fire damage per ray (2 rays at CL 7).",
         "description":  "Ranged touch attack dealing 4d6 fire damage per ray (2 rays at CL 7).",
         "bonusType":  "Untyped",
-        "scope":  "Spells",
+        "scope":  "Ranged Only",
         "role":  "Offense / Spell",
         "strBonus":  0,
         "dexBonus":  0,
@@ -907,7 +932,8 @@
                      "ray",
                      "ranged-touch"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "ranged"
     },
     {
         "name":  "Blade of Blood",
@@ -959,7 +985,8 @@
                      "weapon-buff",
                      "phb2"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "melee"
     },
     {
         "name":  "â†³ Blade of Blood (5 HP Feda: 3d6)",
@@ -1012,7 +1039,8 @@
         "effectType":  "blood_sacrifice_roll",
         "childButtonLabel":  "-5 HP Feda (3d6)",
         "selfHpCost":  5,
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "melee"
     },
     {
         "name":  "â†³ Blade of Blood (FedasÄ±z: 1d6)",
@@ -1064,7 +1092,8 @@
         "isChild":  true,
         "effectType":  "damage",
         "childButtonLabel":  "FedasÄ±z (1d6)",
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "melee"
     },
     {
         "name":  "Potion of Cure Serious Wounds",
@@ -1317,7 +1346,9 @@
         "role":  "Defense",
         "weight":  1.5,
         "benefit":  "+2 Shield AC (+1 base, +1 enhancement). Crafted from darkwood, 0 check penalty and half weight.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee",
+        "scope":  "Melee Only"
     },
     {
         "attBonus":  1,
@@ -1342,7 +1373,9 @@
         "bonusType":  "Masterwork",
         "name":  "Dagger (Masterwork)",
         "dmgBonus":  0,
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "both",
+        "scope":  "All Attacks"
     },
     {
         "source":  "DMG p.245",
@@ -1421,7 +1454,9 @@
         "name":  "Weapon Focus (Rapier)",
         "slot":  "None",
         "attBonus":  1,
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "both",
+        "scope":  "All Attacks"
     },
     {
         "slot":  "None",
@@ -1779,7 +1814,9 @@
                      "dual-wield",
                      "two-weapon"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "both",
+        "scope":  "All Attacks"
     },
     {
         "name":  "Monkey Grip",
@@ -3170,7 +3207,7 @@
         "benefit":  "Ranged touch ray deals 1d3 cold damage.",
         "description":  "Ranged touch ray deals 1d3 cold damage.",
         "bonusType":  "Untyped",
-        "scope":  "Spells",
+        "scope":  "Ranged Only",
         "role":  "Offense / Spell",
         "strBonus":  0,
         "dexBonus":  0,
@@ -3210,7 +3247,8 @@
                      "ray",
                      "ranged-touch"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "ranged"
     },
     {
         "name":  "Acid Splash",
@@ -3715,7 +3753,8 @@
                      "attack-buff",
                      "insight"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "both"
     },
     {
         "name":  "Feather Fall",
@@ -4839,7 +4878,8 @@
                      "extra-attack",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "both"
     },
     {
         "name":  "Fly",
@@ -7939,7 +7979,8 @@
                      "morale",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "both"
     },
     {
         "name":  "Divine Favor",
@@ -8717,7 +8758,8 @@
                      "luck",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "both"
     },
     {
         "name":  "Holy Smite",
@@ -9597,7 +9639,8 @@
                      "healing",
                      "crusader"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "melee"
     },
     {
         "name":  "Steely Strike",
@@ -9647,7 +9690,8 @@
                      "strike",
                      "warblade"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "melee"
     },
     {
         "name":  "Moment of Perfect Mind",
@@ -9659,7 +9703,7 @@
         "benefit":  "Counter: Use a Concentration check in place of a Will save.",
         "description":  "Counter: Use a Concentration check in place of a Will save.",
         "bonusType":  "Untyped",
-        "scope":  "None / General",
+        "scope":  "All Attacks",
         "role":  "Defense / Counter",
         "strBonus":  0,
         "dexBonus":  0,
@@ -9700,7 +9744,8 @@
                      "warblade",
                      "swordsage"
                  ],
-        "actionType":  "Immediate"
+        "actionType":  "Immediate",
+        "combatScope":  "both"
     },
     {
         "name":  "Sapphire Nightmare Blade",
@@ -9753,7 +9798,8 @@
                      "warblade",
                      "swordsage"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "melee"
     },
     {
         "name":  "â†³ Sapphire Nightmare Blade (Konsantrasyon BaÅŸarÄ±sÄ±z)",
@@ -9805,7 +9851,8 @@
         "isChild":  true,
         "effectType":  "status",
         "childButtonLabel":  "âš ï¸ Konsantrasyon BaÅŸarÄ±sÄ±z (-2 Atk)",
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "melee"
     },
     {
         "name":  "Sudden Leap",
@@ -9817,7 +9864,7 @@
         "benefit":  "Boost: Make a Jump check and move the distance as a swift action.",
         "description":  "Boost: Make a Jump check and move the distance as a swift action.",
         "bonusType":  "Untyped",
-        "scope":  "None / General",
+        "scope":  "Melee Only",
         "role":  "Tactical / Boost",
         "strBonus":  0,
         "dexBonus":  0,
@@ -9858,7 +9905,8 @@
                      "warblade",
                      "swordsage"
                  ],
-        "actionType":  "Swift"
+        "actionType":  "Swift",
+        "combatScope":  "melee"
     },
     {
         "name":  "Wall of Blades",
@@ -9910,7 +9958,8 @@
                      "ac",
                      "warblade"
                  ],
-        "actionType":  "Immediate"
+        "actionType":  "Immediate",
+        "combatScope":  "melee"
     },
     {
         "name":  "Emerald Razor",
@@ -9962,7 +10011,8 @@
                      "warblade",
                      "swordsage"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "melee"
     },
     {
         "name":  "Action Before Thought",
@@ -9974,7 +10024,7 @@
         "benefit":  "Counter: Use a Concentration check in place of a Reflex save.",
         "description":  "Counter: Use a Concentration check in place of a Reflex save.",
         "bonusType":  "Untyped",
-        "scope":  "None / General",
+        "scope":  "All Attacks",
         "role":  "Defense / Counter",
         "strBonus":  0,
         "dexBonus":  0,
@@ -10015,7 +10065,8 @@
                      "warblade",
                      "swordsage"
                  ],
-        "actionType":  "Immediate"
+        "actionType":  "Immediate",
+        "combatScope":  "both"
     },
     {
         "name":  "Rabid Wolf Strike",
@@ -10066,7 +10117,8 @@
                      "warblade",
                      "swordsage"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "melee"
     },
     {
         "name":  "Iron Heart Surge",
@@ -10117,7 +10169,8 @@
                      "morale",
                      "warblade"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "both"
     },
     {
         "name":  "White Raven Tactics",
@@ -10129,7 +10182,7 @@
         "benefit":  "Boost: Adjacent ally\u0027s initiative changes to your initiative -1, allowing them to act immediately.",
         "description":  "Boost: Adjacent ally\u0027s initiative changes to your initiative -1, allowing them to act immediately.",
         "bonusType":  "Untyped",
-        "scope":  "None / General",
+        "scope":  "Melee Only",
         "role":  "Tactical / Boost",
         "strBonus":  0,
         "dexBonus":  0,
@@ -10170,7 +10223,8 @@
                      "warblade",
                      "crusader"
                  ],
-        "actionType":  "Swift"
+        "actionType":  "Swift",
+        "combatScope":  "melee"
     },
     {
         "name":  "Mind Over Body",
@@ -10182,7 +10236,7 @@
         "benefit":  "Counter: Use a Concentration check in place of a Fortitude save.",
         "description":  "Counter: Use a Concentration check in place of a Fortitude save.",
         "bonusType":  "Untyped",
-        "scope":  "None / General",
+        "scope":  "All Attacks",
         "role":  "Defense / Counter",
         "strBonus":  0,
         "dexBonus":  0,
@@ -10223,7 +10277,8 @@
                      "warblade",
                      "swordsage"
                  ],
-        "actionType":  "Immediate"
+        "actionType":  "Immediate",
+        "combatScope":  "both"
     },
     {
         "name":  "Insightful Strike",
@@ -10275,7 +10330,8 @@
                      "warblade",
                      "swordsage"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "melee"
     },
     {
         "name":  "Mithral Tornado",
@@ -10326,7 +10382,8 @@
                      "aoe",
                      "warblade"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "melee"
     },
     {
         "name":  "Ruby Nightmare Blade",
@@ -10379,7 +10436,8 @@
                      "warblade",
                      "swordsage"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "melee"
     },
     {
         "name":  "Elder Mountain Hammer",
@@ -10432,7 +10490,8 @@
                      "crusader",
                      "swordsage"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "melee"
     },
     {
         "name":  "Pouncing Charge",
@@ -10485,7 +10544,8 @@
                      "warblade",
                      "swordsage"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "melee"
     },
     {
         "name":  "Greater Insightful Strike",
@@ -10537,7 +10597,8 @@
                      "warblade",
                      "swordsage"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "melee"
     },
     {
         "name":  "Avalanche of Blades",
@@ -10589,7 +10650,8 @@
                      "warblade",
                      "swordsage"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "melee"
     },
     {
         "name":  "Adamantine Hurricane",
@@ -10640,7 +10702,8 @@
                      "aoe",
                      "warblade"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "melee"
     },
     {
         "name":  "Time Stands Still",
@@ -10693,7 +10756,8 @@
                      "warblade",
                      "swordsage"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "both"
     },
     {
         "name":  "Strike of Perfect Clarity",
@@ -10744,7 +10808,8 @@
                      "ultimate",
                      "warblade"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "melee"
     },
     {
         "name":  "Blood in the Water",
@@ -10795,7 +10860,8 @@
                      "warblade",
                      "swordsage"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee"
     },
     {
         "name":  "Stance of Clarity",
@@ -10807,7 +10873,7 @@
         "benefit":  "+2 insight bonus to AC against one chosen foe, -2 AC against all others.",
         "description":  "+2 insight bonus to AC against one chosen foe, -2 AC against all others.",
         "bonusType":  "Insight",
-        "scope":  "None / General",
+        "scope":  "Melee Only",
         "role":  "Defense / Stance",
         "strBonus":  0,
         "dexBonus":  0,
@@ -10846,7 +10912,8 @@
                      "warblade",
                      "swordsage"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee"
     },
     {
         "name":  "Bolstering Voice",
@@ -10858,7 +10925,7 @@
         "benefit":  "Allies within 60 ft gain +2 morale on Will saves (+4 vs fear).",
         "description":  "Allies within 60 ft gain +2 morale on Will saves (+4 vs fear).",
         "bonusType":  "Morale",
-        "scope":  "None / General",
+        "scope":  "Melee Only",
         "role":  "Buff / Stance",
         "strBonus":  0,
         "dexBonus":  0,
@@ -10899,7 +10966,8 @@
                      "warblade",
                      "crusader"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee"
     },
     {
         "name":  "Hunter\u0027s Sense",
@@ -10911,7 +10979,7 @@
         "benefit":  "You gain the scent ability (detect foes within 30 ft).",
         "description":  "You gain the scent ability (detect foes within 30 ft).",
         "bonusType":  "Untyped",
-        "scope":  "None / General",
+        "scope":  "Melee Only",
         "role":  "Utility / Stance",
         "strBonus":  0,
         "dexBonus":  0,
@@ -10951,7 +11019,8 @@
                      "warblade",
                      "swordsage"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee"
     },
     {
         "name":  "Absolute Steel",
@@ -10963,7 +11032,7 @@
         "benefit":  "+10 ft enhancement bonus to speed; moving 10+ ft grants +2 dodge bonus to AC.",
         "description":  "+10 ft enhancement bonus to speed; moving 10+ ft grants +2 dodge bonus to AC.",
         "bonusType":  "Dodge",
-        "scope":  "None / General",
+        "scope":  "Melee Only",
         "role":  "Mobility / Stance",
         "strBonus":  0,
         "dexBonus":  0,
@@ -11002,7 +11071,8 @@
                      "dodge-ac",
                      "warblade"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee"
     },
     {
         "name":  "Leaping Dragon Stance",
@@ -11014,7 +11084,7 @@
         "benefit":  "+10 ft enhancement bonus on Jump checks and all jumps are considered running jumps.",
         "description":  "+10 ft enhancement bonus on Jump checks and all jumps are considered running jumps.",
         "bonusType":  "Enhancement",
-        "scope":  "None / General",
+        "scope":  "Melee Only",
         "role":  "Mobility / Stance",
         "strBonus":  0,
         "dexBonus":  0,
@@ -11054,7 +11124,8 @@
                      "warblade",
                      "swordsage"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee"
     },
     {
         "name":  "Pearl of Black Doubt",
@@ -11066,7 +11137,7 @@
         "benefit":  "Gain cumulative +2 dodge bonus to AC each time an opponent misses you until your next turn.",
         "description":  "Gain cumulative +2 dodge bonus to AC each time an opponent misses you until your next turn.",
         "bonusType":  "Dodge",
-        "scope":  "None / General",
+        "scope":  "Melee Only",
         "role":  "Defense / Stance",
         "strBonus":  0,
         "dexBonus":  0,
@@ -11105,7 +11176,8 @@
                      "warblade",
                      "swordsage"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee"
     },
     {
         "name":  "Hearing the Air",
@@ -11117,7 +11189,7 @@
         "benefit":  "Gain blindsense 30 ft and +5 insight bonus on Listen checks.",
         "description":  "Gain blindsense 30 ft and +5 insight bonus on Listen checks.",
         "bonusType":  "Insight",
-        "scope":  "None / General",
+        "scope":  "Melee Only",
         "role":  "Utility / Stance",
         "strBonus":  0,
         "dexBonus":  0,
@@ -11157,7 +11229,8 @@
                      "warblade",
                      "swordsage"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee"
     },
     {
         "name":  "Stance of Alacrity",
@@ -11169,7 +11242,7 @@
         "benefit":  "Once per round, use one Counter maneuver as a free action without using your immediate action.",
         "description":  "Once per round, use one Counter maneuver as a free action without using your immediate action.",
         "bonusType":  "Untyped",
-        "scope":  "None / General",
+        "scope":  "Melee Only",
         "role":  "Tactical / Stance",
         "strBonus":  0,
         "dexBonus":  0,
@@ -11209,7 +11282,8 @@
                      "warblade",
                      "swordsage"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee"
     },
     {
         "name":  "Goggles of Minute Seeing",
@@ -11299,7 +11373,9 @@
                           "allowFlatFootedAoO":  true
                       },
         "type":  "Feat",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "both",
+        "scope":  "All Attacks"
     },
     {
         "benefit":  "When reduced to negative hit points, you continue to act as if disabled.",
@@ -11329,7 +11405,9 @@
                           "hasMultiattack":  true
                       },
         "type":  "Feat",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee",
+        "scope":  "Melee Only"
     },
     {
         "benefit":  "You do not provoke an attack of opportunity when performing a trip attack. If you trip an opponent, you immediately get a melee attack against that opponent as if you hadn\u0027t used your attack for the trip.",
@@ -11341,7 +11419,9 @@
                                                 }
                       },
         "type":  "Feat",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee",
+        "scope":  "Melee Only"
     },
     {
         "benefit":  "You do not provoke an attack of opportunity when performing a disarm attempt.",
@@ -11353,7 +11433,9 @@
                                                 }
                       },
         "type":  "Feat",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee",
+        "scope":  "Melee Only"
     },
     {
         "benefit":  "You do not provoke an attack of opportunity when performing a sunder attempt.",
@@ -11365,7 +11447,9 @@
                                                 }
                       },
         "type":  "Feat",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee",
+        "scope":  "Melee Only"
     },
     {
         "benefit":  "You do not provoke an attack of opportunity when starting a grapple.",
@@ -11377,7 +11461,9 @@
                                                 }
                       },
         "type":  "Feat",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee",
+        "scope":  "Melee Only"
     },
     {
         "benefit":  "You do not provoke an attack of opportunity when performing a bull rush.",
@@ -11389,7 +11475,9 @@
                                                 }
                       },
         "type":  "Feat",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee",
+        "scope":  "Melee Only"
     },
     {
         "benefit":  "You do not provoke an attack of opportunity when performing an overrun.",
@@ -11401,7 +11489,9 @@
                                                 }
                       },
         "type":  "Feat",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee",
+        "scope":  "Melee Only"
     },
     {
         "benefit":  "When mounted and using the charge action, you deal double damage with a melee weapon (or triple with a lance).",
@@ -11412,7 +11502,9 @@
                             },
         "source":  "PHB p.100",
         "type":  "Feat",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "melee",
+        "scope":  "Melee Only"
     },
     {
         "benefit":  "When using the chosen weapon, your threat range is doubled.",
@@ -11422,7 +11514,9 @@
                             },
         "source":  "PHB p.95",
         "type":  "Feat",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "combatScope":  "both",
+        "scope":  "All Attacks"
     },
     {
         "benefit":  "You can fire multiple arrows simultaneously as a standard action.",
@@ -11433,7 +11527,9 @@
                             },
         "source":  "PHB p.97",
         "type":  "Feat",
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "combatScope":  "ranged",
+        "scope":  "Ranged Only"
     },
     {
         "name":  "Healing Belt",
@@ -11587,7 +11683,9 @@
                                   "speedBonus":  20,
                                   "durationText":  "1 Tur"
                               }
-                          ]
+                          ],
+        "combatScope":  "melee",
+        "scope":  "Melee Only"
     },
     {
         "name":  "↳ Witchlight Reservoir (1 Şarj: +2 Hasar)",
@@ -11607,7 +11705,9 @@
         "tags":  [
                      "buff",
                      "damage"
-                 ]
+                 ],
+        "combatScope":  "melee",
+        "scope":  "Melee Only"
     },
     {
         "name":  "↳ Witchlight Reservoir (2 Şarj: +4 Hasar)",
@@ -11627,7 +11727,9 @@
         "tags":  [
                      "buff",
                      "damage"
-                 ]
+                 ],
+        "combatScope":  "melee",
+        "scope":  "Melee Only"
     },
     {
         "name":  "↳ Witchlight Reservoir (2 Şarj: +20 ft Hız)",
@@ -11647,7 +11749,9 @@
         "tags":  [
                      "buff",
                      "speed"
-                 ]
+                 ],
+        "combatScope":  "melee",
+        "scope":  "Melee Only"
     },
     {
         "name":  "Boots of Speed",
@@ -11686,7 +11790,9 @@
                                   "cost":  0,
                                   "type":  "discharge"
                               }
-                          ]
+                          ],
+        "combatScope":  "both",
+        "scope":  "All Attacks"
     },
     {
         "name":  "Belt of Battle",
@@ -11732,7 +11838,9 @@
                                   "actionType":  "Swift",
                                   "note":  "Ekstra Full-Round Action kazandınız"
                               }
-                          ]
+                          ],
+        "combatScope":  "both",
+        "scope":  "All Attacks"
     },
     {
         "name":  "↳ Belt of Battle (1 Şarj: Move Action)",
@@ -11749,7 +11857,9 @@
         "tags":  [
                      "tactical",
                      "action-economy"
-                 ]
+                 ],
+        "combatScope":  "both",
+        "scope":  "All Attacks"
     },
     {
         "name":  "↳ Belt of Battle (2 Şarj: Standard Action)",
@@ -11766,7 +11876,9 @@
         "tags":  [
                      "tactical",
                      "action-economy"
-                 ]
+                 ],
+        "combatScope":  "both",
+        "scope":  "All Attacks"
     },
     {
         "name":  "↳ Belt of Battle (3 Şarj: Full-Round Action)",
@@ -11783,7 +11895,9 @@
         "tags":  [
                      "tactical",
                      "action-economy"
-                 ]
+                 ],
+        "combatScope":  "both",
+        "scope":  "All Attacks"
     },
     {
         "source":  "Players Handbook p.116",
@@ -11797,7 +11911,9 @@
         "name":  "Longbow",
         "damage":  "1d8",
         "crit":  "20/x3",
-        "cost":  75
+        "cost":  75,
+        "combatScope":  "ranged",
+        "scope":  "Ranged Only"
     },
     {
         "source":  "Players Handbook p.116",
@@ -11811,7 +11927,9 @@
         "name":  "Shortbow",
         "damage":  "1d6",
         "crit":  "20/x3",
-        "cost":  30
+        "cost":  30,
+        "combatScope":  "ranged",
+        "scope":  "Ranged Only"
     },
     {
         "source":  "Players Handbook p.116",
@@ -11825,7 +11943,9 @@
         "name":  "Composite Longbow",
         "damage":  "1d8",
         "crit":  "20/x3",
-        "cost":  100
+        "cost":  100,
+        "combatScope":  "ranged",
+        "scope":  "Ranged Only"
     },
     {
         "source":  "Players Handbook p.116",
@@ -11839,7 +11959,9 @@
         "name":  "Composite Shortbow",
         "damage":  "1d6",
         "crit":  "20/x3",
-        "cost":  75
+        "cost":  75,
+        "combatScope":  "ranged",
+        "scope":  "Ranged Only"
     },
     {
         "source":  "Players Handbook p.116",
@@ -11853,7 +11975,9 @@
         "name":  "Light Crossbow",
         "damage":  "1d8",
         "crit":  "19-20/x2",
-        "cost":  35
+        "cost":  35,
+        "combatScope":  "ranged",
+        "scope":  "Ranged Only"
     },
     {
         "source":  "Players Handbook p.116",
@@ -11867,7 +11991,9 @@
         "name":  "Heavy Crossbow",
         "damage":  "1d10",
         "crit":  "19-20/x2",
-        "cost":  50
+        "cost":  50,
+        "combatScope":  "ranged",
+        "scope":  "Ranged Only"
     },
     {
         "source":  "Players Handbook p.116",
@@ -11881,7 +12007,9 @@
         "name":  "Sling",
         "damage":  "1d4",
         "crit":  "20/x2",
-        "cost":  0
+        "cost":  0,
+        "combatScope":  "ranged",
+        "scope":  "Ranged Only"
     },
     {
         "source":  "Players Handbook p.116",
@@ -11892,7 +12020,9 @@
         "name":  "Arrows (20)",
         "weaponType":  "Bow",
         "desc":  "Standart 20 adet ok.",
-        "cost":  1
+        "cost":  1,
+        "combatScope":  "ranged",
+        "scope":  "Ranged Only"
     },
     {
         "source":  "Players Handbook p.116",
@@ -11903,7 +12033,9 @@
         "name":  "Crossbow Bolts (10)",
         "weaponType":  "Crossbow",
         "desc":  "Standart 10 adet arbalet oku.",
-        "cost":  1
+        "cost":  1,
+        "combatScope":  "ranged",
+        "scope":  "Ranged Only"
     },
     {
         "source":  "Players Handbook p.116",
@@ -11914,7 +12046,9 @@
         "name":  "Sling Bullets (10)",
         "weaponType":  "Sling",
         "desc":  "Standart 10 adet kursun sapan mermisi.",
-        "cost":  0.1
+        "cost":  0.1,
+        "combatScope":  "ranged",
+        "scope":  "Ranged Only"
     },
     {
         "source":  "Players Handbook p.116",
@@ -11925,7 +12059,9 @@
         "name":  "Silver Arrows (10)",
         "weaponType":  "Bow",
         "desc":  "Gumus uclu 10 adet ok. DR/Gumus asar (-1 hasar).",
-        "cost":  21
+        "cost":  21,
+        "combatScope":  "ranged",
+        "scope":  "Ranged Only"
     },
     {
         "source":  "Players Handbook p.116",
@@ -11936,7 +12072,9 @@
         "name":  "Cold Iron Arrows (20)",
         "weaponType":  "Bow",
         "desc":  "Soguk demir 20 adet ok. DR/Soguk demir asar.",
-        "cost":  2
+        "cost":  2,
+        "combatScope":  "ranged",
+        "scope":  "Ranged Only"
     },
     {
         "source":  "Players Handbook p.116",
@@ -11947,7 +12085,9 @@
         "name":  "Adamantine Arrows (5)",
         "weaponType":  "Bow",
         "desc":  "Adamantin uclu 5 adet ok. DR ve sertligi asar.",
-        "cost":  300
+        "cost":  300,
+        "combatScope":  "ranged",
+        "scope":  "Ranged Only"
     },
     {
         "source":  "Dungeon Masters Guide p.221",
@@ -11958,7 +12098,9 @@
         "name":  "+1 Arrows (10)",
         "weaponType":  "Bow",
         "desc":  "+1 buyulu 10 adet ok (+1 Saldiri / +1 Hasar).",
-        "cost":  400
+        "cost":  400,
+        "combatScope":  "ranged",
+        "scope":  "Ranged Only"
     },
     {
         "source":  "Dungeon Masters Guide p.221",
@@ -11969,7 +12111,85 @@
         "name":  "+1 Crossbow Bolts (10)",
         "weaponType":  "Crossbow",
         "desc":  "+1 buyulu 10 adet arbalet oku (+1 Saldiri / +1 Hasar).",
-        "cost":  400
+        "cost":  400,
+        "combatScope":  "ranged",
+        "scope":  "Ranged Only"
+    },
+    {
+        "name":  "Point Blank Shot",
+        "type":  "Feat",
+        "slot":  "None",
+        "source":  "PHB p.98",
+        "benefit":  "You get a +1 bonus on attack and damage rolls with ranged weapons at ranges of up to 30 feet.",
+        "description":  "+1 bonus on attack and damage rolls with ranged weapons within 30 feet.",
+        "scope":  "Ranged Only",
+        "role":  "Offense / Ranged",
+        "attBonus":  1,
+        "dmgBonus":  1,
+        "tags":  [
+                     "combat",
+                     "ranged",
+                     "feat",
+                     "fighter bonus"
+                 ],
+        "combatScope":  "ranged"
+    },
+    {
+        "name":  "Rapid Shot",
+        "type":  "Feat",
+        "slot":  "None",
+        "prereq":  "Dex 13, Point Blank Shot",
+        "source":  "PHB p.99",
+        "benefit":  "You can get one extra attack per round with a ranged weapon at your highest base attack bonus, but all attack rolls for the round suffer a -2 penalty.",
+        "description":  "Extra ranged attack on full attack with a -2 penalty on all attack rolls.",
+        "scope":  "Ranged Only",
+        "role":  "Offense / Ranged",
+        "attBonus":  -2,
+        "tags":  [
+                     "combat",
+                     "ranged",
+                     "feat",
+                     "fighter bonus",
+                     "full attack"
+                 ],
+        "combatScope":  "ranged"
+    },
+    {
+        "name":  "Precise Shot",
+        "type":  "Feat",
+        "slot":  "None",
+        "prereq":  "Point Blank Shot",
+        "source":  "PHB p.98",
+        "benefit":  "You can shoot or throw ranged weapons at an opponent engaged in melee without taking the standard -4 penalty on your attack roll.",
+        "description":  "Negates standard -4 penalty when shooting into melee.",
+        "scope":  "Ranged Only",
+        "role":  "Offense / Ranged",
+        "tags":  [
+                     "combat",
+                     "ranged",
+                     "feat",
+                     "fighter bonus",
+                     "melee negation"
+                 ],
+        "combatScope":  "ranged"
+    },
+    {
+        "name":  "Far Shot",
+        "type":  "Feat",
+        "slot":  "None",
+        "prereq":  "Point Blank Shot",
+        "source":  "PHB p.93",
+        "benefit":  "When you use a projectile weapon, such as a bow, its range increment increases by one-half (multiply by 1.5). When you use a thrown weapon, its range increment is doubled.",
+        "description":  "Increases projectile range increment by 1.5x, thrown by 2x.",
+        "scope":  "Ranged Only",
+        "role":  "Utility / Ranged",
+        "tags":  [
+                     "combat",
+                     "ranged",
+                     "feat",
+                     "fighter bonus"
+                 ],
+        "combatScope":  "ranged"
     }
 ];
 

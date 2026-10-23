@@ -6791,7 +6791,7 @@
         );
         const canonicalKeysToSync = [
           'type', 'slot', 'parent', 'prereq', 'source', 'benefit', 'description',
-          'bonusType', 'scope', 'role',
+          'bonusType', 'scope', 'combatScope', 'role',
           'strBonus', 'dexBonus', 'conBonus', 'intBonus', 'wisBonus', 'chaBonus',
           'acBonus', 'hpBonus', 'attBonus', 'dmgBonus',
           'fortBonus', 'refBonus', 'willBonus', 'skillBonus', 'clBonus', 'speedBonus',
@@ -6817,7 +6817,7 @@
               masterDb.push(defItem);
             }
             addedCount++;
-          } else if (defItem.type === 'Spell' || defItem.type === 'Maneuver' || defItem.type === 'Stance') {
+          } else {
             canonicalKeysToSync.forEach(k => {
               if (defItem[k] !== undefined && JSON.stringify(existingItem[k]) !== JSON.stringify(defItem[k])) {
                 existingItem[k] = defItem[k];
@@ -10300,7 +10300,12 @@
           const charge = document.getElementById('mod-charge')?.checked ?? false;
           const hg = document.getElementById('mod-higher-ground')?.checked ?? (character.tactical?.higherGround ?? false);
           const activeMods = (character.activeModifiers || []).filter(m => m && m.active);
-          const nonChainMods = activeMods.filter(m => m && m.name && !m.name.includes('TWF') && !m.name.includes('Çift Silah') && !m.name.includes('Flurry') && !m.name.includes('Seri Vuruş'));
+          const nonChainMods = activeMods.filter(m => {
+        if (!m || !m.name) return false;
+        if (m.name.includes('TWF') || m.name.includes('Çift Silah') || m.name.includes('Flurry') || m.name.includes('Seri Vuruş')) return false;
+        if (m.combatScope === 'ranged' || m.scope === 'Ranged Only') return false;
+        return true;
+      });
 
           const evalRes = RuleEngine.evaluateWeaponAttack(character, wep, {
             grip: isOffHand ? 'Off-Hand' : grip,
@@ -10949,7 +10954,7 @@
 
       // Qualified pool: ONLY modifiers the character actually qualifies for
       const qualifiedPool = [
-        { name: 'Çift Silah (TWF)', source: 'Combat', bonusAtk: 0, dice: '', type: 'TWF', active: false, notes: 'İkinci El ile Ek Vuruş (RAW Çift Silah)' }
+        { name: 'Çift Silah (TWF)', source: 'Combat', bonusAtk: 0, dice: '', type: 'TWF', combatScope: 'melee', active: false, notes: 'İkinci El ile Ek Vuruş (RAW Çift Silah)' }
       ];
 
       // Flurry (Monk)
@@ -10960,6 +10965,7 @@
           bonusAtk: 0,
           dice: '',
           type: 'Flurry',
+          combatScope: 'melee',
           active: false,
           notes: 'Full Attack: +1 Ek Vuruş (-2 Ceza)'
         });
@@ -10967,34 +10973,34 @@
 
       // Stances
       if (characterHasManeuver(character, 'Punishing Stance')) {
-        qualifiedPool.push({ name: 'Punishing Stance', source: 'Stance', bonusAtk: 0, dice: '1d6', type: 'Slashing', active: false, notes: '+1d6 Hasar, -2 AC' });
+        qualifiedPool.push({ name: 'Punishing Stance', source: 'Stance', bonusAtk: 0, dice: '1d6', type: 'Slashing', combatScope: 'melee', active: false, notes: '+1d6 Hasar, -2 AC' });
       }
 
       // Strike Maneuvers
       if (characterHasManeuver(character, 'Mountain Hammer')) {
-        qualifiedPool.push({ name: 'Mountain Hammer', source: 'Maneuver', bonusAtk: 0, dice: '2d6', type: 'Slashing', active: false, notes: 'DR ve Sertliği aşar' });
+        qualifiedPool.push({ name: 'Mountain Hammer', source: 'Maneuver', bonusAtk: 0, dice: '2d6', type: 'Slashing', combatScope: 'melee', active: false, notes: 'DR ve Sertliği aşar' });
       }
       if (characterHasManeuver(character, 'Steel Wind')) {
-        qualifiedPool.push({ name: 'Steel Wind', source: 'Maneuver', bonusAtk: 0, dice: '', type: 'Martial', active: false, notes: '2 Farklı Hedefe Saldırı' });
+        qualifiedPool.push({ name: 'Steel Wind', source: 'Maneuver', bonusAtk: 0, dice: '', type: 'Martial', combatScope: 'melee', active: false, notes: '2 Farklı Hedefe Saldırı' });
       }
 
       // Spells
       if (characterHasSpell(character, 'Blade of Blood')) {
-        qualifiedPool.push({ name: 'Blade of Blood', source: 'Spell', bonusAtk: 0, dice: '3d6', type: 'Negative Energy', active: false, notes: '+3d6 Hasar' });
+        qualifiedPool.push({ name: 'Blade of Blood', source: 'Spell', bonusAtk: 0, dice: '3d6', type: 'Negative Energy', combatScope: 'melee', active: false, notes: '+3d6 Hasar' });
       }
 
       // Items
       if (characterHasItem(character, 'Witchlight')) {
-        qualifiedPool.push({ name: 'Witchlight (+2 Hasar)', source: 'Item', bonusAtk: 0, bonusDmg: 2, dice: '', type: 'Untyped', active: false, notes: '+2 Melee Hasarı (1 Tur)' });
-        qualifiedPool.push({ name: 'Witchlight (+4 Hasar)', source: 'Item', bonusAtk: 0, bonusDmg: 4, dice: '', type: 'Untyped', active: false, notes: '+4 Melee Hasarı (1 Tur)' });
+        qualifiedPool.push({ name: 'Witchlight (+2 Hasar)', source: 'Item', bonusAtk: 0, bonusDmg: 2, dice: '', type: 'Untyped', combatScope: 'melee', active: false, notes: '+2 Melee Hasarı (1 Tur)' });
+        qualifiedPool.push({ name: 'Witchlight (+4 Hasar)', source: 'Item', bonusAtk: 0, bonusDmg: 4, dice: '', type: 'Untyped', combatScope: 'melee', active: false, notes: '+4 Melee Hasarı (1 Tur)' });
       }
-      if (characterHasItem(character, 'Boots of Speed')) {
-        qualifiedPool.push({ name: 'Boots of Speed (Haste)', source: 'Item', bonusAtk: 1, dice: '', type: 'Untyped', active: false, notes: '+1 Saldırı, +1 AC, Ekstra Vuruş' });
+      if (characterHasItem(character, 'Boots of Speed') || characterHasBuff(character, 'Haste')) {
+        qualifiedPool.push({ name: 'Boots of Speed (Haste)', source: 'Item', bonusAtk: 1, dice: '', type: 'Untyped', combatScope: 'both', active: false, notes: '+1 Saldırı, +1 AC, Ekstra Vuruş' });
       }
 
       // Sneak Attack
       if (characterHasSneakAttack(character)) {
-        qualifiedPool.push({ name: 'Sneak Attack', source: 'Feat', bonusAtk: 0, dice: '1d6', type: 'Precision', active: false, notes: '+1d6 Hassas Hasar' });
+        qualifiedPool.push({ name: 'Sneak Attack', source: 'Feat', bonusAtk: 0, dice: '1d6', type: 'Precision', combatScope: 'both', active: false, notes: '+1d6 Hassas Hasar' });
       }
 
       // CLEANUP: Strictly remove unowned modifiers lingering from prior storage/dummy data
@@ -11019,6 +11025,7 @@
         if (!existing) {
           character.activeModifiers.push({ ...def });
         } else {
+          if (def.combatScope && !existing.combatScope) existing.combatScope = def.combatScope;
           if (def.bonusDmg && !existing.bonusDmg) existing.bonusDmg = def.bonusDmg;
           if (def.dice && !existing.dice) existing.dice = def.dice;
           if (def.notes && !existing.notes) existing.notes = def.notes;
@@ -11091,13 +11098,13 @@
         `
       ];
 
-      // Rows 2+ : Dynamic modifiers (excluding TWF and ranged-only modifiers)
+      // Rows 2+ : Dynamic modifiers (strictly melee & both modifiers, excluding TWF which is managed by weapon sets)
       const isExpanded = !!window.combatModifiersGridExpanded;
       const dynamicMods = (character.activeModifiers || []).filter(m => {
         if (!m || !m.name) return false;
         if (m.name.includes('TWF') || m.name.includes('Çift Silah')) return false;
-        if (m.scope === 'ranged' || m.name.includes('Rapid Shot') || m.name.includes('Point Blank') || m.name.includes('Manyshot')) return false;
-        return true;
+        if (m.combatScope === 'ranged' || m.scope === 'Ranged Only') return false;
+        return (m.combatScope === 'melee' || m.combatScope === 'both' || !m.combatScope);
       });
       // In 3x3 layout when collapsed: 3 top (Flanking, Charge, Higher Ground) + 6 dynamic = 9 cards total!
       const visibleCount = isExpanded ? dynamicMods.length : Math.min(6, dynamicMods.length);
@@ -11226,7 +11233,8 @@
         if (!name || name === 'Yok' || name === '-' || name === 'None' || seen.has(name)) return;
 
         const low = name.toLowerCase();
-        const isRanged = low.includes('bow') || low.includes('yay') || low.includes('crossbow') || low.includes('arbalet') || low.includes('sling') || low.includes('sapan') || low.includes('dart') || low.includes('javelin') || low.includes('shuriken') || low.includes('dagger') || low.includes('hançer') || (item.rangeIncrement && item.rangeIncrement > 0) || item.isRanged;
+        const cs = item.combatScope || (typeof masterDb !== 'undefined' ? masterDb.find(m => m && (m.name === name || m.masterDbName === name))?.combatScope : null);
+        const isRanged = cs === 'ranged' || cs === 'both' || (cs !== 'melee' && (low.includes('bow') || low.includes('yay') || low.includes('crossbow') || low.includes('arbalet') || low.includes('sling') || low.includes('sapan') || low.includes('dart') || low.includes('javelin') || low.includes('shuriken') || low.includes('dagger') || low.includes('hançer') || (item.rangeIncrement && item.rangeIncrement > 0) || item.isRanged));
 
         if (isRanged) {
           seen.add(name);
@@ -11990,7 +11998,12 @@
       const isTWF = (isDualFromSets && hasOffHandWeapon) || (activeMods.some(m => (m.name || '').includes('TWF') || (m.name || '').includes('Çift Silah')) && hasOffHandWeapon);
       const isFlurry = activeMods.some(m => (m.name || '').includes('Flurry') || (m.name || '').includes('Seri Vuruş'));
 
-      const nonChainMods = activeMods.filter(m => m && m.name && !m.name.includes('TWF') && !m.name.includes('Çift Silah') && !m.name.includes('Flurry') && !m.name.includes('Seri Vuruş'));
+      const nonChainMods = activeMods.filter(m => {
+        if (!m || !m.name) return false;
+        if (m.name.includes('TWF') || m.name.includes('Çift Silah') || m.name.includes('Flurry') || m.name.includes('Seri Vuruş')) return false;
+        if (m.combatScope === 'ranged' || m.scope === 'Ranged Only') return false;
+        return true;
+      });
 
       const mainEval = RuleEngine.evaluateWeaponAttack(character, wep, {
         grip,
@@ -12326,7 +12339,12 @@
       const hg = document.getElementById('mod-higher-ground') ? document.getElementById('mod-higher-ground').checked : (character.tactical?.higherGround ?? false);
 
       const activeMods = (character.activeModifiers || []).filter(m => m && m.active);
-      const nonChainMods = activeMods.filter(m => m && m.name && !m.name.includes('TWF') && !m.name.includes('Çift Silah') && !m.name.includes('Flurry') && !m.name.includes('Seri Vuruş'));
+      const nonChainMods = activeMods.filter(m => {
+        if (!m || !m.name) return false;
+        if (m.name.includes('TWF') || m.name.includes('Çift Silah') || m.name.includes('Flurry') || m.name.includes('Seri Vuruş')) return false;
+        if (m.combatScope === 'ranged' || m.scope === 'Ranged Only') return false;
+        return true;
+      });
 
       const evalResult = RuleEngine.evaluateWeaponAttack(character, wep, {
         grip,
@@ -12341,7 +12359,7 @@
       // Update Weapon Base Stats (Temel Hasar + Stance/Manevra extra dice)
       const dmgDisplayEl = document.getElementById('weapon-damage-formula-display');
       if (dmgDisplayEl) {
-        const activeDiceMods = (character.activeModifiers || []).filter(m => m.active && m.dice);
+        const activeDiceMods = (character.activeModifiers || []).filter(m => m.active && m.dice && m.combatScope !== 'ranged' && m.scope !== 'Ranged Only');
         let extraDiceStr = '';
         if (activeDiceMods.length > 0) {
           extraDiceStr = ' + ' + activeDiceMods.map(m => `${m.dice} (${m.name})`).join(' + ');
