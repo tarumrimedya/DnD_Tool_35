@@ -373,35 +373,48 @@
         <!-- ==================================================== -->
         <div class="lg:col-span-4 space-y-3.5">
           
-          <!-- 1. Weapon Selector & TWF Card -->
-          <div class="bg-dndCard border border-rose-500/40 rounded-xl p-3.5 shadow-lg space-y-3">
+          <!-- 1. Weapon Selector & TWF Card (FİZİKSEL SALDIRI) -->
+          <div class="bg-dndCard border border-rose-500/40 rounded-xl p-3.5 shadow-lg space-y-3" id="cockpit-physical-card">
             <div class="flex items-center justify-between border-b border-slate-800 pb-2">
               <span id="combat-card-title" class="text-xs font-black uppercase text-rose-400 tracking-wider flex items-center gap-1.5">
-                <span>⚔️</span> SALDIRI & SİLAH ROTASYONU
+                <span>⚔️</span> SALDIRI &amp; SİLAH ROTASYONU
               </span>
-              <button id="combat-profile-save-btn" onclick="openSaveProfileModal()" class="bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-white px-2.5 py-1 rounded text-xs font-bold border border-slate-700 flex items-center gap-1 transition cursor-pointer" title="Seçilmiş modifiyerleri isim vererek kaydet">
-                <span>💾 Kaydet</span>
-              </button>
+              <div class="flex items-center gap-1.5">
+                <button id="combat-profile-save-btn" onclick="openSaveProfileModal()" class="bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-white px-2 py-0.5 rounded text-xs font-bold border border-slate-700 flex items-center gap-1 transition cursor-pointer" title="Seçilmiş modifiyerleri isim vererek kaydet">
+                  <span>💾 Kaydet</span>
+                </button>
+                <button type="button" onclick="toggleCockpitPanel('physical')" id="btn-collapse-physical" class="text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700 text-xs font-bold cursor-pointer" title="Paneli Katla/Aç">
+                  <span>▴</span>
+                </button>
+              </div>
             </div>
 
-            <!-- COMBAT OFFENSE MODE SWITCHER -->
-            <div class="grid grid-cols-3 gap-1.5 p-1 bg-slate-950/80 border border-slate-800 rounded-lg">
-              <button type="button" id="btn-mode-melee" onclick="switchCombatOffenseMode('melee')" class="py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-gradient-to-r from-red-600 to-rose-600 text-white shadow cursor-pointer">
+            <!-- COLLAPSED MINI BAR (When physical panel is collapsed) -->
+            <div id="combat-physical-collapsed-bar" onclick="toggleCockpitPanel('physical')" class="hidden bg-slate-950/80 hover:bg-slate-900 border border-rose-900/40 hover:border-rose-600/50 rounded-lg p-2.5 flex items-center justify-between cursor-pointer transition">
+              <div class="flex items-center gap-2">
                 <span>⚔️</span>
-                <span>Yakın</span>
-              </button>
-              <button type="button" id="btn-mode-ranged" onclick="switchCombatOffenseMode('ranged')" class="py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 cursor-pointer">
-                <span>🏹</span>
-                <span>Uzak</span>
-              </button>
-              <button type="button" id="btn-mode-spell" onclick="switchCombatOffenseMode('spell')" class="py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 cursor-pointer">
-                <span>🔮</span>
-                <span>Büyü</span>
-              </button>
+                <span class="text-xs font-bold text-rose-300">Fiziksel Saldırı</span>
+                <span id="combat-physical-collapsed-summary" class="text-[10px] text-amber-400 font-mono">Hazır</span>
+              </div>
+              <span class="text-[10px] text-rose-400 font-bold">▾ Aç</span>
             </div>
 
-            <!-- PANEL 1: MELEE / PHYSICAL OFFENSE -->
-            <div id="combat-mode-melee-panel" class="space-y-3">
+            <!-- PHYSICAL CARD BODY (Collapsible) -->
+            <div id="combat-physical-card-body" class="space-y-3">
+              <!-- COMBAT OFFENSE MODE SWITCHER (YAKIN & UZAK) -->
+              <div class="grid grid-cols-2 gap-1.5 p-1 bg-slate-950/80 border border-slate-800 rounded-lg">
+                <button type="button" id="btn-mode-melee" onclick="switchCombatOffenseMode('melee')" class="py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-gradient-to-r from-red-600 to-rose-600 text-white shadow cursor-pointer">
+                  <span>⚔️</span>
+                  <span>Yakın</span>
+                </button>
+                <button type="button" id="btn-mode-ranged" onclick="switchCombatOffenseMode('ranged')" class="py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 cursor-pointer">
+                  <span>🏹</span>
+                  <span>Uzak</span>
+                </button>
+              </div>
+
+              <!-- PANEL 1: MELEE / PHYSICAL OFFENSE -->
+              <div id="combat-mode-melee-panel" class="space-y-3">
               <!-- Active Attack Profile Pills Preview (Hazır Profil Modifiyerleri) -->
               <div class="bg-slate-900/60 border border-slate-800 rounded-lg p-2">
                 <div class="flex items-center justify-between text-[10px] font-bold text-slate-400 mb-1">
@@ -568,18 +581,70 @@
                 </div>
               </div>
             </div>
+            <!-- End of Physical Card Body -->
+          </div>
 
-            <!-- PANEL 2: SPELL & METAMAGIC OFFENSE -->
-            <div id="combat-mode-spell-panel" class="hidden space-y-3">
-              <!-- Spell Selector -->
-              <div>
-                <label class="text-[10px] uppercase font-bold text-purple-400 block mb-1">İcra Edilecek Büyü</label>
-                <select id="combat-active-spell-select" onchange="onCombatSpellChange()" class="w-full bg-slate-900 text-purple-200 font-bold text-xs rounded border border-purple-500/50 px-2 py-1.5 focus:outline-none focus:border-purple-400">
-                  <!-- Populated dynamically -->
-                </select>
+        </div>
+
+        <!-- ==================================================== -->
+        <!-- COLUMN 2: 🔮 BÜYÜ KOMUTA MERKEZİ (lg:col-span-4) -->
+        <!-- ==================================================== -->
+        <div class="lg:col-span-4 space-y-3.5" id="cockpit-column-spell">
+          
+          <div class="bg-dndCard border border-purple-500/40 rounded-xl p-3.5 shadow-lg space-y-3" id="cockpit-spell-card">
+            <!-- Header with Title, CL Badge & Collapse Toggle -->
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+              <span class="text-xs font-black uppercase text-purple-400 tracking-wider flex items-center gap-1.5">
+                <span>🔮</span> BÜYÜ KOMUTA MERKEZİ
+              </span>
+              <div class="flex items-center gap-1.5">
+                <span id="combat-spell-cl-slot-badge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded border border-purple-900/60 bg-purple-950/50 text-purple-300">
+                  CL: 6
+                </span>
+                <button type="button" onclick="toggleCockpitPanel('spell')" id="btn-collapse-spell" class="text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700 text-xs font-bold cursor-pointer" title="Paneli Katla/Aç">
+                  <span>▴</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- COLLAPSED MINI BAR (When spell panel is collapsed) -->
+            <div id="combat-spell-collapsed-bar" onclick="toggleCockpitPanel('spell')" class="hidden bg-slate-950/80 hover:bg-slate-900 border border-purple-900/40 hover:border-purple-600/50 rounded-lg p-2.5 flex items-center justify-between cursor-pointer transition">
+              <div class="flex items-center gap-2">
+                <span>🔮</span>
+                <span class="text-xs font-bold text-purple-300">Büyü Komuta Merkezi</span>
+                <span id="combat-spell-collapsed-summary" class="text-[10px] text-amber-400 font-mono">CL: 6 • Kalan Slot: 16/20</span>
+              </div>
+              <span class="text-[10px] text-purple-400 font-bold">▾ Aç</span>
+            </div>
+
+            <!-- SPELL PANEL BODY (Collapsible) -->
+            <div id="combat-spell-card-body" class="space-y-3">
+              
+              <!-- 1. HIZLI BÜYÜ ROTASYONU (FAVORİ KARTLAR / LOADOUT) -->
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between text-[10px] font-bold text-slate-400">
+                  <span class="uppercase tracking-wider">HIZLI BÜYÜ ROTASYONU</span>
+                  <button type="button" onclick="toggleCombatSpellLibraryDrawer()" class="text-[9px] text-purple-400 hover:text-purple-200 font-bold flex items-center gap-1 cursor-pointer">
+                    <span>📚</span>
+                    <span>Tüm Büyüler ▾</span>
+                  </button>
+                </div>
+                
+                <!-- 2-3 Touch Quick Spell Cards -->
+                <div id="combat-quick-spells-container" class="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                  <!-- Dynamically populated with quick cards -->
+                </div>
+
+                <!-- Full Spell Selector Dropdown (Collapsible drawer) -->
+                <div id="combat-spell-library-drawer" class="hidden pt-1">
+                  <label class="text-[9px] uppercase font-bold text-purple-400 block mb-1">Büyü Kütüphanesinden Seç</label>
+                  <select id="combat-active-spell-select" onchange="onCombatSpellChange()" class="w-full bg-slate-900 text-purple-200 font-bold text-xs rounded border border-purple-500/50 px-2 py-1.5 focus:outline-none focus:border-purple-400 cursor-pointer">
+                    <!-- Populated dynamically -->
+                  </select>
+                </div>
               </div>
 
-              <!-- Spell Base Stats Pill Grid -->
+              <!-- 2. Spell Base Stats Pill Grid -->
               <div class="grid grid-cols-3 gap-1.5 bg-slate-950/70 border border-slate-800 rounded-lg p-2 text-center">
                 <div>
                   <div class="text-[9px] uppercase font-bold text-slate-400">Büyü Seviyesi</div>
@@ -595,7 +660,7 @@
                 </div>
               </div>
 
-              <!-- Spell Slot Status Indicator -->
+              <!-- 3. Spell Slot Status Indicator -->
               <div class="flex items-center justify-between bg-slate-900/80 border border-purple-800/40 rounded-lg px-2.5 py-1.5">
                 <div>
                   <span class="text-[9px] uppercase font-bold text-slate-400 block">Tüketilecek Büyü Yuvası</span>
@@ -606,60 +671,87 @@
                 </div>
               </div>
 
-              <!-- METAMAGIC MODIFIERS -->
+              <!-- 4. BÜYÜCÜ TAKTİKSEL MODİFİYERLERİ -->
               <div class="bg-slate-950/80 border border-purple-900/50 rounded-lg p-2.5 space-y-2">
                 <div class="text-[10px] font-bold text-purple-400 uppercase tracking-wide flex items-center justify-between">
-                  <span>⚡ METAMAGIC TAKTİKSEL MODİFİYERLER</span>
-                  <span class="text-[9px] text-amber-400" id="metamagic-action-note">(Spontaneous: Full-Round Action)</span>
+                  <span>⚡ BÜYÜCÜ TAKTİKSEL MODİFİYERLERİ</span>
+                  <span class="text-[9px] text-amber-400" id="metamagic-action-note">(Spontaneous: Full-Round)</span>
+                </div>
+
+                <!-- Defensive Casting & SR Quick Actions Row -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                  <!-- Defensive Casting Toggle -->
+                  <label class="bg-slate-900 border border-indigo-900/60 hover:border-indigo-500/60 rounded p-1.5 cursor-pointer transition flex items-center justify-between gap-1 group">
+                    <div>
+                      <div class="text-[10px] font-bold text-indigo-300 group-hover:text-white flex items-center gap-1">
+                        <span>🛡️</span>
+                        <span>Defensive Casting</span>
+                      </div>
+                      <div class="text-[8px] text-slate-400" id="defensive-casting-dc-hint">DC 15 + Lvl • AoO Engeller</div>
+                    </div>
+                    <input type="checkbox" id="mod-defensive-casting" class="w-3.5 h-3.5 rounded text-indigo-500 border-slate-700 focus:ring-0 cursor-pointer">
+                  </label>
+
+                  <!-- Spell Resistance Check Button -->
+                  <button type="button" onclick="rollSpellResistanceCheck()" class="bg-slate-900 hover:bg-slate-800 border border-purple-900/60 hover:border-purple-500/60 rounded p-1.5 transition text-left flex items-center justify-between gap-1 group cursor-pointer" title="Hedefin Büyü Direncine (SR) karşı test zarı at: 1d20 + CL">
+                    <div>
+                      <div class="text-[10px] font-bold text-purple-300 group-hover:text-white flex items-center gap-1">
+                        <span>⚡</span>
+                        <span>SR (Büyü Direnci) Del</span>
+                      </div>
+                      <div class="text-[8px] text-slate-400">1d20 + CL Testi At</div>
+                    </div>
+                    <span id="sr-check-bonus-badge" class="font-mono font-bold text-xs text-amber-400">+6</span>
+                  </button>
                 </div>
 
                 <!-- Metamagic Toggles -->
-                <div class="grid grid-cols-2 gap-1.5">
-                  <label class="bg-slate-900 border border-purple-900/60 hover:border-purple-500/60 rounded p-2 cursor-pointer transition flex items-start justify-between gap-1">
+                <div class="grid grid-cols-2 gap-1.5 pt-0.5">
+                  <label class="bg-slate-900 border border-purple-900/60 hover:border-purple-500/60 rounded p-1.5 cursor-pointer transition flex items-start justify-between gap-1">
                     <div>
-                      <div class="text-[11px] font-bold text-purple-300">Empower Spell</div>
-                      <div class="text-[9px] text-slate-400">+50% Hasar / +2 Yuva</div>
+                      <div class="text-[10px] font-bold text-purple-300">Empower Spell</div>
+                      <div class="text-[8px] text-slate-400">+50% Hasar / +2 Yuva</div>
                     </div>
-                    <input type="checkbox" id="mod-empower-spell" onchange="recalculateCombatSpell()" class="mt-0.5 w-4 h-4 rounded text-purple-500 border-slate-700 focus:ring-0">
+                    <input type="checkbox" id="mod-empower-spell" onchange="recalculateCombatSpell()" class="mt-0.5 w-3.5 h-3.5 rounded text-purple-500 border-slate-700 focus:ring-0 cursor-pointer">
                   </label>
-                  <label class="bg-slate-900 border border-purple-900/60 hover:border-purple-500/60 rounded p-2 cursor-pointer transition flex items-start justify-between gap-1">
+                  <label class="bg-slate-900 border border-purple-900/60 hover:border-purple-500/60 rounded p-1.5 cursor-pointer transition flex items-start justify-between gap-1">
                     <div>
-                      <div class="text-[11px] font-bold text-amber-300">Maximize Spell</div>
-                      <div class="text-[9px] text-slate-400">Tavan Zar / +3 Yuva</div>
+                      <div class="text-[10px] font-bold text-amber-300">Maximize Spell</div>
+                      <div class="text-[8px] text-slate-400">Tavan Zar / +3 Yuva</div>
                     </div>
-                    <input type="checkbox" id="mod-maximize-spell" onchange="recalculateCombatSpell()" class="mt-0.5 w-4 h-4 rounded text-amber-500 border-slate-700 focus:ring-0">
+                    <input type="checkbox" id="mod-maximize-spell" onchange="recalculateCombatSpell()" class="mt-0.5 w-3.5 h-3.5 rounded text-amber-500 border-slate-700 focus:ring-0 cursor-pointer">
                   </label>
-                  <label class="bg-slate-900 border border-purple-900/60 hover:border-purple-500/60 rounded p-2 cursor-pointer transition flex items-start justify-between gap-1">
+                  <label class="bg-slate-900 border border-purple-900/60 hover:border-purple-500/60 rounded p-1.5 cursor-pointer transition flex items-start justify-between gap-1">
                     <div>
-                      <div class="text-[11px] font-bold text-sky-300">Enlarge Spell</div>
-                      <div class="text-[9px] text-slate-400">Menzil x2 / +1 Yuva</div>
+                      <div class="text-[10px] font-bold text-sky-300">Enlarge Spell</div>
+                      <div class="text-[8px] text-slate-400">Menzil x2 / +1 Yuva</div>
                     </div>
-                    <input type="checkbox" id="mod-enlarge-spell" onchange="recalculateCombatSpell()" class="mt-0.5 w-4 h-4 rounded text-sky-500 border-slate-700 focus:ring-0">
+                    <input type="checkbox" id="mod-enlarge-spell" onchange="recalculateCombatSpell()" class="mt-0.5 w-3.5 h-3.5 rounded text-sky-500 border-slate-700 focus:ring-0 cursor-pointer">
                   </label>
-                  <label class="bg-slate-900 border border-purple-900/60 hover:border-purple-500/60 rounded p-2 cursor-pointer transition flex items-start justify-between gap-1">
+                  <label class="bg-slate-900 border border-purple-900/60 hover:border-purple-500/60 rounded p-1.5 cursor-pointer transition flex items-start justify-between gap-1">
                     <div>
-                      <div class="text-[11px] font-bold text-emerald-300">Extend Spell</div>
-                      <div class="text-[9px] text-slate-400">Süre x2 / +1 Yuva</div>
+                      <div class="text-[10px] font-bold text-emerald-300">Extend Spell</div>
+                      <div class="text-[8px] text-slate-400">Süre x2 / +1 Yuva</div>
                     </div>
-                    <input type="checkbox" id="mod-extend-spell" onchange="recalculateCombatSpell()" class="mt-0.5 w-4 h-4 rounded text-emerald-500 border-slate-700 focus:ring-0">
+                    <input type="checkbox" id="mod-extend-spell" onchange="recalculateCombatSpell()" class="mt-0.5 w-3.5 h-3.5 rounded text-emerald-500 border-slate-700 focus:ring-0 cursor-pointer">
                   </label>
                 </div>
               </div>
 
-              <!-- Spell Result Preview -->
+              <!-- 5. Spell Result Preview & Dynamic Cast Action Button -->
               <div class="bg-slate-900/70 border border-purple-800/40 rounded-lg p-2 text-center">
                 <span class="text-[9px] uppercase font-bold text-slate-400 block">Hesaplanan Büyü Hasarı / Etkisi</span>
                 <span id="combat-spell-damage-preview" class="text-sm font-black text-amber-300 font-mono">4d6 Ateş</span>
                 <div id="combat-spell-metamagic-badge" class="text-[10px] text-purple-400 mt-0.5">Standart İcra</div>
               </div>
 
-              <!-- Large 3D Roll Spell Button -->
-              <button id="main-spell-cast-btn" onclick="initiateCombatSpellCast()" class="w-full py-3 bg-gradient-to-r from-purple-700 via-indigo-600 to-purple-800 hover:from-purple-600 hover:to-indigo-500 text-white font-black text-sm md:text-base rounded-xl shadow-lg border border-purple-400/40 flex items-center justify-center gap-2 transition transform active:scale-[0.98] cursor-pointer">
-                <span>🔮</span>
-                <span id="main-spell-btn-text">BÜYÜYÜ İCRA ET & ZAR AT</span>
+              <!-- Large 3D Roll Spell Button (Smart Adaptive Label) -->
+              <button id="main-spell-cast-btn" onclick="initiateCombatSpellCast()" class="w-full py-2.5 sm:py-3 bg-gradient-to-r from-purple-700 via-indigo-600 to-purple-800 hover:from-purple-600 hover:to-indigo-500 text-white font-black text-xs sm:text-sm rounded-xl shadow-lg border border-purple-400/40 flex items-center justify-center gap-2 transition transform active:scale-[0.98] cursor-pointer">
+                <span id="main-spell-btn-icon">🔮</span>
+                <span id="main-spell-btn-text">BÜYÜYÜ İCRA ET &amp; ZAR AT</span>
               </button>
 
-              <!-- BÜYÜ SALDIRI PİNLERİ (SPELL PINS DRAWER) -->
+              <!-- 6. BÜYÜ SALDIRI PİNLERİ (SPELL PINS DRAWER) -->
               <div id="combat-pins-container-offense_spell" class="bg-slate-950/80 border border-purple-900/50 rounded-lg p-2.5 space-y-2">
                 <div class="flex items-center justify-between text-[10px] font-bold text-purple-300 border-b border-purple-900/50 pb-1.5">
                   <div class="flex items-center gap-1.5">
@@ -675,149 +767,181 @@
                   <!-- Populated dynamically -->
                 </div>
               </div>
+
             </div>
+
           </div>
 
         </div>
 
         <!-- ==================================================== -->
-        <!-- COLUMN 2: 🛡️ DEFENSE & REACTIONS (lg:col-span-4) -->
+        <!-- COLUMN 3: 🛡️ SAVUNMA & 🧪 KEMER / ENVANTER (lg:col-span-4) -->
         <!-- ==================================================== -->
-        <div class="lg:col-span-4 space-y-3.5">
+        <div class="lg:col-span-4 space-y-3.5" id="cockpit-column-defense-consumables">
           
-          <!-- 1. Live AC & Vitals Card -->
-          <div class="bg-dndCard border border-indigo-500/40 rounded-xl p-3.5 shadow-lg space-y-3">
+          <!-- CARD A: 🛡️ SAVUNMA & REAKSİYONLAR -->
+          <div class="bg-dndCard border border-indigo-500/40 rounded-xl p-3.5 shadow-lg space-y-3" id="cockpit-defense-card">
             <div class="flex items-center justify-between border-b border-slate-800 pb-2">
               <span class="text-xs font-black uppercase text-indigo-400 tracking-wider flex items-center gap-1.5">
-                <span>🛡️</span> SAVUNMA & REAKSİYONLAR
+                <span>🛡️</span> SAVUNMA &amp; REAKSİYONLAR
               </span>
-              <div id="cockpit-ac-status-badge" class="text-[10px] font-bold px-2 py-0.5 rounded border border-slate-700 bg-slate-900 text-slate-400 transition-all">
-                Standart Savunma
-              </div>
-            </div>
-
-            <!-- AC Breakdown Triad -->
-            <div class="grid grid-cols-3 gap-2 bg-slate-950/80 border border-slate-800 rounded-lg p-2.5 text-center">
-              <div>
-                <div class="text-[9px] uppercase font-bold text-slate-400">Normal AC</div>
-                <div id="cockpit-ac-normal" class="text-xl font-black text-amber-400 font-mono mt-0.5">21</div>
-              </div>
-              <div>
-                <div class="text-[9px] uppercase font-bold text-slate-400">Touch AC</div>
-                <div id="cockpit-ac-touch" class="text-xl font-black text-sky-400 font-mono mt-0.5">16</div>
-              </div>
-              <div>
-                <div class="text-[9px] uppercase font-bold text-slate-400">Flat-Footed</div>
-                <div id="cockpit-ac-flat" class="text-xl font-black text-slate-400 font-mono mt-0.5">18</div>
-              </div>
-            </div>
-
-            <!-- REAKTİF HAMLELER & COUNTERS -->
-            <div class="bg-slate-950/70 border border-slate-800 rounded-lg p-2.5 space-y-2">
-              <div class="text-[10px] font-bold text-emerald-400 uppercase tracking-wide">
-                ⚡ REAKTİF HAMLELER & REAKSİYONLAR
-              </div>
-              <div class="grid grid-cols-2 gap-2">
-                <!-- Shield Block -->
-                <button onclick="triggerShieldBlockReaction()" class="bg-slate-900 hover:bg-slate-800 border border-emerald-500/40 rounded p-2 text-left transition group">
-                  <div class="text-[11px] font-bold text-emerald-400 group-hover:text-white flex items-center justify-between">
-                    <span>Shield Block</span>
-                    <span>⚡</span>
-                  </div>
-                  <div class="text-[9px] text-slate-400 mt-0.5">+4 AC Kalkan (1 Vuruş)</div>
-                </button>
-
-                <!-- AoO -->
-                <button onclick="rollAttackOfOpportunity()" class="bg-slate-900 hover:bg-slate-800 border border-rose-500/40 rounded p-2 text-left transition group">
-                  <div class="text-[11px] font-bold text-rose-400 group-hover:text-white flex items-center justify-between">
-                    <span>Fırsat Saldırısı</span>
-                    <span id="aoo-bonus-badge" class="font-mono text-[10px] text-amber-400">+8</span>
-                  </div>
-                  <div class="text-[9px] text-slate-400 mt-0.5">AoO Reaksiyonu Vur</div>
-                </button>
-              </div>
-            </div>
-
-            <!-- CORE COMBAT SKILLS -->
-            <div class="bg-slate-950/70 border border-slate-800 rounded-lg p-2.5 space-y-2">
-              <div class="text-[10px] font-bold text-sky-400 uppercase tracking-wide">
-                🎯 SAVAŞ BECERİLERİ (COMBAT SKILLS)
-              </div>
-              <div class="grid grid-cols-2 gap-1.5">
-                <button onclick="rollCombatSkill('Concentration')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded px-2 py-1.5 text-left text-xs text-slate-200 hover:text-white flex items-center justify-between transition">
-                  <span class="truncate">Concentration</span>
-                  <span id="skill-bonus-concentration" class="font-mono font-bold text-emerald-400 text-xs">+10</span>
-                </button>
-                <button onclick="rollCombatSkill('Tumble')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded px-2 py-1.5 text-left text-xs text-slate-200 hover:text-white flex items-center justify-between transition">
-                  <span class="truncate">Tumble</span>
-                  <span id="skill-bonus-tumble" class="font-mono font-bold text-emerald-400 text-xs">+7</span>
-                </button>
-                <button onclick="rollCombatSkill('Jump')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded px-2 py-1.5 text-left text-xs text-slate-200 hover:text-white flex items-center justify-between transition">
-                  <span class="truncate">Jump</span>
-                  <span id="skill-bonus-jump" class="font-mono font-bold text-emerald-400 text-xs">+6</span>
-                </button>
-                <button onclick="rollCombatSkill('Spot')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded px-2 py-1.5 text-left text-xs text-slate-200 hover:text-white flex items-center justify-between transition">
-                  <span class="truncate">Spot / Listen</span>
-                  <span id="skill-bonus-spot" class="font-mono font-bold text-emerald-400 text-xs">+0</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- POZİSYONEL & SAVUNMA MODİFİYERLERİ (3x3 PINLENEBİLİR ÇEKMECE IZGARASI) -->
-            <div id="combat-modifiers-defense-block" class="bg-slate-950/80 border border-slate-800 rounded-lg p-2.5 space-y-2">
-              <div class="text-[10px] font-bold text-indigo-400 uppercase tracking-wide flex items-center justify-between">
-                <div class="flex items-center gap-1.5">
-                  <span>⚡ POZİSYONEL &amp; SAVUNMA MODİFİYERLERİ</span>
-                  <span id="defense-pins-badge" class="bg-slate-900 text-indigo-300 border border-indigo-700/50 font-mono font-bold text-[9px] px-1.5 py-0.2 rounded">0</span>
+              <div class="flex items-center gap-1.5">
+                <div id="cockpit-ac-status-badge" class="text-[9px] font-bold px-2 py-0.5 rounded border border-slate-700 bg-slate-900 text-slate-400 transition-all">
+                  Standart Savunma
                 </div>
-                <span class="text-[9px] text-slate-400" id="ce-explanation">(-X Saldırı / +X Dodge AC)</span>
+                <button type="button" onclick="toggleCockpitPanel('defense')" id="btn-collapse-defense" class="text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700 text-xs font-bold cursor-pointer" title="Paneli Katla/Aç">
+                  <span>▴</span>
+                </button>
               </div>
-              
-              <!-- Combat Expertise Stepper -->
-              <div class="flex items-center justify-between bg-slate-900/80 border border-indigo-500/30 rounded px-2.5 py-1">
-                <span class="text-xs font-bold text-indigo-300">Combat Expertise</span>
-                <div class="flex items-center gap-1.5">
-                  <button type="button" onclick="adjustCombatExpertise(-1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center cursor-pointer">-</button>
-                  <span id="combat-expertise-val" class="w-8 text-center font-mono font-black text-sm text-indigo-400">0</span>
-                  <button type="button" onclick="adjustCombatExpertise(1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center cursor-pointer">+</button>
+            </div>
+
+            <!-- COLLAPSED MINI BAR (When defense panel is collapsed) -->
+            <div id="combat-defense-collapsed-bar" onclick="toggleCockpitPanel('defense')" class="hidden bg-slate-950/80 hover:bg-slate-900 border border-indigo-900/40 hover:border-indigo-600/50 rounded-lg p-2.5 flex items-center justify-between cursor-pointer transition">
+              <div class="flex items-center gap-2">
+                <span>🛡️</span>
+                <span class="text-xs font-bold text-indigo-300">Savunma</span>
+                <span id="combat-defense-collapsed-summary" class="text-[10px] text-amber-400 font-mono">AC: 21 | Touch: 16 | Flat: 18</span>
+              </div>
+              <span class="text-[10px] text-indigo-400 font-bold">▾ Aç</span>
+            </div>
+
+            <!-- DEFENSE CARD BODY (Collapsible) -->
+            <div id="combat-defense-card-body" class="space-y-3">
+              <!-- AC Breakdown Triad -->
+              <div class="grid grid-cols-3 gap-2 bg-slate-950/80 border border-slate-800 rounded-lg p-2.5 text-center">
+                <div>
+                  <div class="text-[9px] uppercase font-bold text-slate-400">Normal AC</div>
+                  <div id="cockpit-ac-normal" class="text-xl font-black text-amber-400 font-mono mt-0.5">21</div>
+                </div>
+                <div>
+                  <div class="text-[9px] uppercase font-bold text-slate-400">Touch AC</div>
+                  <div id="cockpit-ac-touch" class="text-xl font-black text-sky-400 font-mono mt-0.5">16</div>
+                </div>
+                <div>
+                  <div class="text-[9px] uppercase font-bold text-slate-400">Flat-Footed</div>
+                  <div id="cockpit-ac-flat" class="text-xl font-black text-slate-400 font-mono mt-0.5">18</div>
                 </div>
               </div>
 
-              <!-- 3x3 Defense Modifier & Pinned Drawer Grid -->
-              <div id="combat-modifiers-defense-3x3-grid" class="grid grid-cols-3 gap-1.5">
-                <!-- Populated dynamically by renderDefenseModifiersGrid() -->
+              <!-- REAKTİF HAMLELER & COUNTERS -->
+              <div class="bg-slate-950/70 border border-slate-800 rounded-lg p-2.5 space-y-2">
+                <div class="text-[10px] font-bold text-emerald-400 uppercase tracking-wide">
+                  ⚡ REAKTİF HAMLELER &amp; REAKSİYONLAR
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <!-- Shield Block -->
+                  <button onclick="triggerShieldBlockReaction()" class="bg-slate-900 hover:bg-slate-800 border border-emerald-500/40 rounded p-2 text-left transition group">
+                    <div class="text-[11px] font-bold text-emerald-400 group-hover:text-white flex items-center justify-between">
+                      <span>Shield Block</span>
+                      <span>⚡</span>
+                    </div>
+                    <div class="text-[9px] text-slate-400 mt-0.5">+4 AC Kalkan (1 Vuruş)</div>
+                  </button>
+
+                  <!-- AoO -->
+                  <button onclick="rollAttackOfOpportunity()" class="bg-slate-900 hover:bg-slate-800 border border-rose-500/40 rounded p-2 text-left transition group">
+                    <div class="text-[11px] font-bold text-rose-400 group-hover:text-white flex items-center justify-between">
+                      <span>Fırsat Saldırısı</span>
+                      <span id="aoo-bonus-badge" class="font-mono text-[10px] text-amber-400">+8</span>
+                    </div>
+                    <div class="text-[9px] text-slate-400 mt-0.5">AoO Reaksiyonu Vur</div>
+                  </button>
+                </div>
               </div>
 
-              <!-- Expand/Collapse toggle for defense grid -->
-              <div id="combat-defense-expand-bar" class="text-center pt-1 hidden">
-                <button type="button" onclick="toggleExpandDefenseGrid()" id="btn-toggle-expand-defense" class="text-[10px] text-indigo-400 hover:text-indigo-300 font-bold transition flex items-center justify-center gap-1 mx-auto cursor-pointer">
-                  <span>▾ Daha Fazla Göster</span>
-                </button>
+              <!-- CORE COMBAT SKILLS -->
+              <div class="bg-slate-950/70 border border-slate-800 rounded-lg p-2.5 space-y-2">
+                <div class="text-[10px] font-bold text-sky-400 uppercase tracking-wide">
+                  🎯 SAVAŞ BECERİLERİ (COMBAT SKILLS)
+                </div>
+                <div class="grid grid-cols-2 gap-1.5">
+                  <button onclick="rollCombatSkill('Concentration')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded px-2 py-1.5 text-left text-xs text-slate-200 hover:text-white flex items-center justify-between transition">
+                    <span class="truncate">Concentration</span>
+                    <span id="skill-bonus-concentration" class="font-mono font-bold text-emerald-400 text-xs">+10</span>
+                  </button>
+                  <button onclick="rollCombatSkill('Tumble')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded px-2 py-1.5 text-left text-xs text-slate-200 hover:text-white flex items-center justify-between transition">
+                    <span class="truncate">Tumble</span>
+                    <span id="skill-bonus-tumble" class="font-mono font-bold text-emerald-400 text-xs">+7</span>
+                  </button>
+                  <button onclick="rollCombatSkill('Jump')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded px-2 py-1.5 text-left text-xs text-slate-200 hover:text-white flex items-center justify-between transition">
+                    <span class="truncate">Jump</span>
+                    <span id="skill-bonus-jump" class="font-mono font-bold text-emerald-400 text-xs">+6</span>
+                  </button>
+                  <button onclick="rollCombatSkill('Spot')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded px-2 py-1.5 text-left text-xs text-slate-200 hover:text-white flex items-center justify-between transition">
+                    <span class="truncate">Spot / Listen</span>
+                    <span id="skill-bonus-spot" class="font-mono font-bold text-emerald-400 text-xs">+0</span>
+                  </button>
+                </div>
               </div>
+
+              <!-- POZİSYONEL & SAVUNMA MODİFİYERLERİ (3x3 PINLENEBİLİR ÇEKMECE IZGARASI) -->
+              <div id="combat-modifiers-defense-block" class="bg-slate-950/80 border border-slate-800 rounded-lg p-2.5 space-y-2">
+                <div class="text-[10px] font-bold text-indigo-400 uppercase tracking-wide flex items-center justify-between">
+                  <div class="flex items-center gap-1.5">
+                    <span>⚡ POZİSYONEL &amp; SAVUNMA MODİFİYERLERİ</span>
+                    <span id="defense-pins-badge" class="bg-slate-900 text-indigo-300 border border-indigo-700/50 font-mono font-bold text-[9px] px-1.5 py-0.2 rounded">0</span>
+                  </div>
+                  <span class="text-[9px] text-slate-400" id="ce-explanation">(-X Saldırı / +X Dodge AC)</span>
+                </div>
+                
+                <!-- Combat Expertise Stepper -->
+                <div class="flex items-center justify-between bg-slate-900/80 border border-indigo-500/30 rounded px-2.5 py-1">
+                  <span class="text-xs font-bold text-indigo-300">Combat Expertise</span>
+                  <div class="flex items-center gap-1.5">
+                    <button type="button" onclick="adjustCombatExpertise(-1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center cursor-pointer">-</button>
+                    <span id="combat-expertise-val" class="w-8 text-center font-mono font-black text-sm text-indigo-400">0</span>
+                    <button type="button" onclick="adjustCombatExpertise(1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center cursor-pointer">+</button>
+                  </div>
+                </div>
+
+                <!-- 3x3 Defense Modifier & Pinned Drawer Grid -->
+                <div id="combat-modifiers-defense-3x3-grid" class="grid grid-cols-3 gap-1.5">
+                  <!-- Populated dynamically by renderDefenseModifiersGrid() -->
+                </div>
+
+                <!-- Expand/Collapse toggle for defense grid -->
+                <div id="combat-defense-expand-bar" class="text-center pt-1 hidden">
+                  <button type="button" onclick="toggleExpandDefenseGrid()" id="btn-toggle-expand-defense" class="text-[10px] text-indigo-400 hover:text-indigo-300 font-bold transition flex items-center justify-center gap-1 mx-auto cursor-pointer">
+                    <span>▾ Daha Fazla Göster</span>
+                  </button>
+                </div>
+              </div>
+
             </div>
 
           </div>
 
-        </div>
-
-        <!-- ==================================================== -->
-        <!-- COLUMN 3: 🧪 UTILITY & LOGISTICS (lg:col-span-4) -->
-        <!-- ==================================================== -->
-        <div class="lg:col-span-4 space-y-3.5">
-          
-          <!-- 1. Quick Consumables Belt -->
-          <div class="bg-dndCard border border-emerald-500/40 rounded-xl p-3.5 shadow-lg space-y-3">
+          <!-- CARD B: 🧪 ACİL SARF & İKSİR KEMERİ -->
+          <div class="bg-dndCard border border-emerald-500/40 rounded-xl p-3.5 shadow-lg space-y-3" id="cockpit-consumables-card">
             <div class="flex items-center justify-between border-b border-slate-800 pb-2">
               <span class="text-xs font-black uppercase text-emerald-400 tracking-wider flex items-center gap-1.5">
-                <span>🧪</span> ACİL SARF & İKSİR KEMERİ
+                <span>🧪</span> ACİL SARF &amp; İKSİR KEMERİ
               </span>
-              <span class="text-[10px] text-slate-400 font-semibold">Tek Tıkla Tüket</span>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[9px] text-slate-400 font-semibold">Tek Tıkla Tüket</span>
+                <button type="button" onclick="toggleCockpitPanel('consumables')" id="btn-collapse-consumables" class="text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700 text-xs font-bold cursor-pointer" title="Paneli Katla/Aç">
+                  <span>▴</span>
+                </button>
+              </div>
             </div>
 
-            <!-- Consumables List -->
-            <div id="cockpit-consumables-list" class="space-y-2">
-              <!-- Dynamically populated -->
+            <!-- COLLAPSED MINI BAR (When consumables panel is collapsed) -->
+            <div id="combat-consumables-collapsed-bar" onclick="toggleCockpitPanel('consumables')" class="hidden bg-slate-950/80 hover:bg-slate-900 border border-emerald-900/40 hover:border-emerald-600/50 rounded-lg p-2.5 flex items-center justify-between cursor-pointer transition">
+              <div class="flex items-center gap-2">
+                <span>🧪</span>
+                <span class="text-xs font-bold text-emerald-300">Acil Sarf &amp; Kemer</span>
+                <span id="combat-consumables-collapsed-summary" class="text-[10px] text-slate-400 font-mono">Hızlı İksirler</span>
+              </div>
+              <span class="text-[10px] text-emerald-400 font-bold">▾ Aç</span>
             </div>
+
+            <!-- CONSUMABLES CARD BODY (Collapsible) -->
+            <div id="combat-consumables-card-body" class="space-y-2">
+              <div id="cockpit-consumables-list" class="space-y-2">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
           </div>
 
         </div>
@@ -9858,17 +9982,15 @@
     }
 
     // ====================================================
-    // COMBAT OFFENSE MODE: MELEE vs SPELL & METAMAGIC
+    // COMBAT OFFENSE MODE: MELEE vs RANGED (PHYSICAL)
     // ====================================================
     window._combatOffenseMode = 'melee';
 
     function switchCombatOffenseMode(mode) {
       window._combatOffenseMode = mode;
       const meleePanel = document.getElementById('combat-mode-melee-panel');
-      const spellPanel = document.getElementById('combat-mode-spell-panel');
       const btnMelee = document.getElementById('btn-mode-melee');
       const btnRanged = document.getElementById('btn-mode-ranged');
-      const btnSpell = document.getElementById('btn-mode-spell');
       const cardTitle = document.getElementById('combat-card-title');
       const profileBtn = document.getElementById('combat-profile-save-btn');
 
@@ -9876,24 +9998,9 @@
 
       if (btnMelee) btnMelee.className = inactiveClass;
       if (btnRanged) btnRanged.className = inactiveClass;
-      if (btnSpell) btnSpell.className = inactiveClass;
 
-      if (mode === 'spell') {
-        if (meleePanel) meleePanel.classList.add('hidden');
-        if (spellPanel) spellPanel.classList.remove('hidden');
-        if (btnSpell) {
-          btnSpell.className = 'py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-gradient-to-r from-purple-700 to-indigo-600 text-white shadow cursor-pointer';
-        }
-        if (cardTitle) {
-          cardTitle.innerHTML = '<span>🔮</span> BÜYÜ & METAMAGIC İCRASI';
-          cardTitle.className = 'text-xs font-black uppercase text-purple-400 tracking-wider flex items-center gap-1.5';
-        }
-        if (profileBtn) profileBtn.classList.add('hidden');
-        populateCombatSpells();
-        recalculateCombatSpell();
-      } else if (mode === 'ranged') {
+      if (mode === 'ranged') {
         if (meleePanel) meleePanel.classList.remove('hidden');
-        if (spellPanel) spellPanel.classList.add('hidden');
         const meleeModsBlock = document.getElementById('combat-modifiers-melee-block');
         const rangedModsBlock = document.getElementById('combat-modifiers-ranged-block');
         if (meleeModsBlock) meleeModsBlock.classList.add('hidden');
@@ -9903,7 +10010,7 @@
           btnRanged.className = 'py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow cursor-pointer';
         }
         if (cardTitle) {
-          cardTitle.innerHTML = '<span>🏹</span> SALDIRI & SİLAH ROTASYONU (UZAK)';
+          cardTitle.innerHTML = '<span>🏹</span> SALDIRI &amp; SİLAH ROTASYONU (UZAK)';
           cardTitle.className = 'text-xs font-black uppercase text-amber-400 tracking-wider flex items-center gap-1.5';
         }
         const wsTitle = document.getElementById('weapon-sets-header-title');
@@ -9936,7 +10043,6 @@
       } else {
         // default: melee (Yakın)
         if (meleePanel) meleePanel.classList.remove('hidden');
-        if (spellPanel) spellPanel.classList.add('hidden');
         const meleeModsBlock = document.getElementById('combat-modifiers-melee-block');
         const rangedModsBlock = document.getElementById('combat-modifiers-ranged-block');
         if (meleeModsBlock) meleeModsBlock.classList.remove('hidden');
@@ -9946,7 +10052,7 @@
           btnMelee.className = 'py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-gradient-to-r from-red-600 to-rose-600 text-white shadow cursor-pointer';
         }
         if (cardTitle) {
-          cardTitle.innerHTML = '<span>⚔️</span> SALDIRI & SİLAH ROTASYONU (YAKIN)';
+          cardTitle.innerHTML = '<span>⚔️</span> SALDIRI &amp; SİLAH ROTASYONU (YAKIN)';
           cardTitle.className = 'text-xs font-black uppercase text-rose-400 tracking-wider flex items-center gap-1.5';
         }
         const wsTitle = document.getElementById('weapon-sets-header-title');
@@ -9977,6 +10083,114 @@
       }
     }
 
+    // ====================================================
+    // 📐 COCKPIT PANELS COLLAPSE & MODULAR SYSTEM
+    // ====================================================
+    function toggleCockpitPanel(panelKey) {
+      if (!character) return;
+      if (!character.cockpitCollapsed) character.cockpitCollapsed = {};
+      character.cockpitCollapsed[panelKey] = !character.cockpitCollapsed[panelKey];
+      renderCockpitPanelsCollapsedState();
+      saveStateToStorage(false);
+    }
+
+    function renderCockpitPanelsCollapsedState() {
+      if (!character) return;
+      if (!character.cockpitCollapsed) character.cockpitCollapsed = {};
+
+      const panels = [
+        { key: 'physical', bodyId: 'combat-physical-card-body', barId: 'combat-physical-collapsed-bar', btnId: 'btn-collapse-physical' },
+        { key: 'spell', bodyId: 'combat-spell-card-body', barId: 'combat-spell-collapsed-bar', btnId: 'btn-collapse-spell' },
+        { key: 'defense', bodyId: 'combat-defense-card-body', barId: 'combat-defense-collapsed-bar', btnId: 'btn-collapse-defense' },
+        { key: 'consumables', bodyId: 'combat-consumables-card-body', barId: 'combat-consumables-collapsed-bar', btnId: 'btn-collapse-consumables' }
+      ];
+
+      panels.forEach(p => {
+        const isCollapsed = !!character.cockpitCollapsed[p.key];
+        const bodyEl = document.getElementById(p.bodyId);
+        const barEl = document.getElementById(p.barId);
+        const btnEl = document.getElementById(p.btnId);
+
+        if (bodyEl) {
+          if (isCollapsed) bodyEl.classList.add('hidden');
+          else bodyEl.classList.remove('hidden');
+        }
+        if (barEl) {
+          if (isCollapsed) barEl.classList.remove('hidden');
+          else barEl.classList.add('hidden');
+        }
+        if (btnEl) {
+          btnEl.innerHTML = isCollapsed ? '<span>▾</span>' : '<span>▴</span>';
+          btnEl.title = isCollapsed ? 'Paneli Genişlet' : 'Paneli Katla';
+        }
+      });
+    }
+
+    function initCockpitPanelsState() {
+      if (!character) return;
+      if (!character.cockpitCollapsed) {
+        const hasSpells = (character.spellcasting?.knownSpells?.length > 0) || (Number(character.casterLevel) > 0);
+        character.cockpitCollapsed = {
+          physical: false,
+          spell: !hasSpells,
+          defense: false,
+          consumables: false
+        };
+      }
+      renderCockpitPanelsCollapsedState();
+    }
+
+    // ====================================================
+    // 🔮 SPELLCASTING COCKPIT (BÜYÜ KOMUTA MERKEZİ)
+    // ====================================================
+    function renderCombatQuickSpells() {
+      const container = document.getElementById('combat-quick-spells-container');
+      if (!container) return;
+      const known = (character?.spellcasting?.knownSpells || []);
+      if (known.length === 0) {
+        container.innerHTML = '<span class="col-span-full text-[10px] text-slate-500 italic py-1">Bilinen büyü yok.</span>';
+        return;
+      }
+
+      const activeSpell = getSelectedCombatSpell();
+      const activeName = activeSpell ? activeSpell.name : (known[0]?.name || '');
+
+      // Pick top 3 known spells
+      const topSpells = known.slice(0, 3);
+      container.innerHTML = topSpells.map(sp => {
+        const isActive = sp.name === activeName;
+        const activeBorder = isActive ? 'border-purple-500 bg-purple-950/60 shadow-md shadow-purple-950/50' : 'border-slate-800 bg-slate-900/80 hover:border-purple-800/60';
+        const activeText = isActive ? 'text-purple-200' : 'text-slate-300';
+        const dmgExpr = sp.dice || (sp.benefit && sp.benefit.match(/\d+d\d+/i) ? sp.benefit.match(/\d+d\d+/i)[0] : `${sp.level}. Lvl`);
+
+        return `
+          <button type="button" onclick="selectQuickCombatSpell('${sp.name.replace(/'/g, "\\'")}')" class="p-1.5 rounded-lg border ${activeBorder} text-left transition flex flex-col justify-between cursor-pointer min-h-[52px] group">
+            <div class="flex items-center justify-between w-full">
+              <span class="text-[8px] font-mono text-purple-400 font-bold uppercase">${sp.level === 0 ? 'Cantrip' : `Lvl ${sp.level}`}</span>
+              <span class="text-[9px] text-amber-300 font-mono font-bold">${dmgExpr}</span>
+            </div>
+            <div class="text-[10px] font-bold ${activeText} group-hover:text-white truncate mt-1" title="${sp.name}">
+              ${sp.name}
+            </div>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function selectQuickCombatSpell(spellName) {
+      const select = document.getElementById('combat-active-spell-select');
+      if (select) {
+        select.value = spellName;
+      }
+      renderCombatQuickSpells();
+      recalculateCombatSpell();
+    }
+
+    function toggleCombatSpellLibraryDrawer() {
+      const drawer = document.getElementById('combat-spell-library-drawer');
+      if (drawer) drawer.classList.toggle('hidden');
+    }
+
     function populateCombatSpells() {
       const select = document.getElementById('combat-active-spell-select');
       if (!select) return;
@@ -10004,23 +10218,25 @@
     }
 
     function onCombatSpellChange() {
+      renderCombatQuickSpells();
       recalculateCombatSpell();
     }
 
     function getSelectedCombatSpell() {
       const select = document.getElementById('combat-active-spell-select');
       const name = select ? select.value : '';
-      if (!name) return null;
       const known = (character?.spellcasting?.knownSpells || []);
-      return known.find(s => s.name === name) || null;
+      if (!name) return known[0] || null;
+      return known.find(s => s.name === name) || known[0] || null;
     }
 
     function recalculateCombatSpell() {
       const spell = getSelectedCombatSpell();
       if (!spell) {
-        const spellBtn = document.getElementById('combat-cast-spell-btn');
+        const spellBtn = document.getElementById('main-spell-cast-btn');
         if (spellBtn) {
-          spellBtn.textContent = 'Büyü Yok';
+          const btnText = document.getElementById('main-spell-btn-text');
+          if (btnText) btnText.textContent = 'Büyü Yok';
           spellBtn.disabled = true;
         }
         return;
@@ -10074,9 +10290,9 @@
 
       // Attack roll & DC calculation
       const bab = Number(character.bab) || 0;
-      const dexMod = RuleEngine.getAbilityMod(character.abilities?.dex || 10);
-      const strMod = RuleEngine.getAbilityMod(character.abilities?.str || 10);
-      const chaMod = RuleEngine.getAbilityMod(character.abilities?.cha || 10);
+      const dexMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.dex || 10) : 0;
+      const strMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.str || 10) : 0;
+      const chaMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.cha || 10) : 0;
 
       const rangedTouchAtk = bab + dexMod;
       const meleeTouchAtk = bab + strMod;
@@ -10113,6 +10329,48 @@
           metaBadgeEl.className = 'text-[10px] text-slate-400 mt-0.5';
         }
       }
+
+      // Top CL & Slot Badges and Collapsed Bar Summary
+      const cl = Number(character.casterLevel) || (character.classes ? Object.values(character.classes)[0]?.level : 1) || 1;
+      const clBadge = document.getElementById('combat-spell-cl-slot-badge');
+      const totalDailySlots = (character.spellcasting?.slots || []).reduce((acc, s) => acc + (Number(s.daily) || 0), 0);
+      const totalUsedSlots = (character.spellcasting?.slots || []).reduce((acc, s) => acc + (Number(s.used) || 0), 0);
+      const totalRemainingSlots = Math.max(0, totalDailySlots - totalUsedSlots);
+      if (clBadge) clBadge.textContent = `CL: ${cl} • Yuva: ${totalRemainingSlots}/${totalDailySlots}`;
+      const spellSummary = document.getElementById('combat-spell-collapsed-summary');
+      if (spellSummary) spellSummary.textContent = `CL: ${cl} • Kalan Yuva: ${totalRemainingSlots}/${totalDailySlots}`;
+      const srBadge = document.getElementById('sr-check-bonus-badge');
+      if (srBadge) srBadge.textContent = `+${cl}`;
+      const concDcHint = document.getElementById('defensive-casting-dc-hint');
+      if (concDcHint) concDcHint.textContent = `DC ${15 + finalLvl} • AoO Engeller`;
+
+      // Smart Adaptive Action Button
+      const castBtn = document.getElementById('main-spell-cast-btn');
+      const btnIcon = document.getElementById('main-spell-btn-icon');
+      const btnText = document.getElementById('main-spell-btn-text');
+      if (castBtn && btnText) {
+        castBtn.disabled = false;
+        const atkType = (spell.attackType || '').toLowerCase();
+        const nameLower = (spell.name || '').toLowerCase();
+
+        if (atkType === 'ranged_touch' || nameLower.includes('scorching ray') || nameLower.includes('ray of frost')) {
+          if (btnIcon) btnIcon.textContent = '⚡';
+          btnText.textContent = `DOKUNUŞ SALDIRISI (+${rangedTouchAtk}) ➔ ${previewText}`;
+        } else if (atkType === 'melee_touch' || nameLower.includes('shocking grasp')) {
+          if (btnIcon) btnIcon.textContent = '⚡';
+          btnText.textContent = `YAKIN DOKUNUŞ (+${meleeTouchAtk}) ➔ ${previewText}`;
+        } else if (atkType === 'saving_throw' || nameLower.includes('fireball') || nameLower.includes('lightning bolt') || spell.save) {
+          const saveType = spell.save || 'Reflex';
+          if (btnIcon) btnIcon.textContent = '🔮';
+          btnText.textContent = `DC ${saveDc} ${saveType} TESTİ İSTE ➔ ${previewText}`;
+        } else if (atkType === 'spell_auto' || nameLower.includes('magic missile')) {
+          if (btnIcon) btnIcon.textContent = '✨';
+          btnText.textContent = `OTOMATİK İSABET ➔ ${previewText}`;
+        } else {
+          if (btnIcon) btnIcon.textContent = '🔮';
+          btnText.textContent = `BÜYÜYÜ İCRA ET & ZAR AT ➔ ${previewText}`;
+        }
+      }
     }
 
     function initiateCombatSpellCast() {
@@ -10133,6 +10391,50 @@
 
       const finalLvl = baseLvl + slotDiff;
       const isMetamagicActive = slotDiff > 0;
+
+      // Defensive Casting Check (D&D 3.5e RAW: Concentration DC 15 + Spell Level)
+      const isDefensive = document.getElementById('mod-defensive-casting')?.checked || false;
+      if (isDefensive) {
+        const concSkill = (character.skills || []).find(s => s && s.name && s.name.toLowerCase() === 'concentration');
+        const concRanks = Number(concSkill?.ranks) || 0;
+        const concMisc = Number(concSkill?.misc) || 0;
+        const conMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.con || 10) : 0;
+        const concBonus = concRanks + conMod + concMisc;
+        const targetDc = 15 + finalLvl;
+        const d20 = Math.floor(Math.random() * 20) + 1;
+        const totalConc = d20 + concBonus;
+        const passed = totalConc >= targetDc;
+
+        if (typeof addDiceHistoryEntry === 'function') {
+          addDiceHistoryEntry({
+            icon: '🛡️',
+            title: 'Defensive Casting (Konsantrasyon)',
+            formula: `1d20 + ${concBonus} vs DC ${targetDc}`,
+            breakdown: `d20: ${d20} + ${concBonus} = ${totalConc} vs DC ${targetDc}`,
+            total: passed ? 'Başarılı (AoO Engellendi)' : 'Başarısız (Büyü Bozuldu)',
+            isCrit: d20 === 20
+          });
+        }
+
+        if (!passed) {
+          showDiceTopToast({
+            icon: '⚠️',
+            title: 'Konsantrasyon Başarısız!',
+            breakdown: `d20:${d20} + ${concBonus} = ${totalConc} (Gereken: DC ${targetDc}). Büyü heba oldu!`,
+            total: 'Bozuldu'
+          });
+          // Consume slot on failure (RAW 3.5e)
+          const slots = character?.spellcasting?.slots || [];
+          const targetSlot = slots.find(s => Number(s.level) === finalLvl);
+          if (targetSlot) {
+            targetSlot.used++;
+            if (typeof renderSpellSlots === 'function') renderSpellSlots();
+            saveStateToStorage(false);
+          }
+          recalculateCombatSpell();
+          return;
+        }
+      }
 
       // Consume slot
       const slots = character?.spellcasting?.slots || [];
@@ -10212,12 +10514,57 @@
           breakdown: `${calcNotice} (${finalLvl}. Seviye Yuva)`,
           total: `${finalDmg} Hasar`
         });
+        if (typeof addDiceHistoryEntry === 'function') {
+          addDiceHistoryEntry({
+            icon: '🔮',
+            title: `${spell.name} İcrası`,
+            formula: `${diceStr} (${finalLvl}. Seviye Yuva)`,
+            breakdown: calcNotice,
+            total: `${finalDmg} Hasar`,
+            isCrit: false
+          });
+        }
         recalculateCombatSpell();
       };
 
       if (window.Dice3D && typeof Dice3D.roll === 'function') {
         try {
           Dice3D.roll(diceToRoll3D.slice(0, 6), onComplete);
+        } catch (e) {
+          onComplete();
+        }
+      } else {
+        onComplete();
+      }
+    }
+
+    function rollSpellResistanceCheck() {
+      const cl = Number(character.casterLevel) || (character.classes ? Object.values(character.classes)[0]?.level : 1) || 1;
+      const d20 = Math.floor(Math.random() * 20) + 1;
+      const total = d20 + cl;
+
+      const onComplete = () => {
+        showDiceTopToast({
+          icon: '🔮',
+          title: 'Spell Resistance (SR) Kontrolü',
+          breakdown: `d20:${d20} + CL:${cl} = ${total}`,
+          total: `SR Testi: ${total}`
+        });
+        if (typeof addDiceHistoryEntry === 'function') {
+          addDiceHistoryEntry({
+            icon: '🔮',
+            title: 'Büyü Direnci (SR) Aşma Zarı',
+            formula: `1d20 + ${cl} (CL)`,
+            breakdown: `d20:${d20} + CL:${cl}`,
+            total: `${total}`,
+            isCrit: d20 === 20
+          });
+        }
+      };
+
+      if (window.Dice3D && typeof Dice3D.roll === 'function') {
+        try {
+          Dice3D.roll([{ type: 'd20', value: d20 }], onComplete);
         } catch (e) {
           onComplete();
         }
@@ -14506,6 +14853,21 @@
         }
       }
 
+      // Collapsed Bar Summaries
+      const defSummary = document.getElementById('combat-defense-collapsed-summary');
+      if (defSummary && acNormal && acTouch && acFlat) {
+        defSummary.textContent = `AC: ${acNormal.textContent} | Touch: ${acTouch.textContent} | Flat: ${acFlat.textContent}`;
+      }
+      const physSummary = document.getElementById('combat-physical-collapsed-summary');
+      if (physSummary) {
+        physSummary.textContent = `${character.activeWeapon || 'Silah Yok'}`;
+      }
+      const consSummary = document.getElementById('combat-consumables-collapsed-summary');
+      if (consSummary) {
+        const beltItems = (character.gearPool || []).filter(g => g && g.isBelt && !g.isEquipped);
+        consSummary.textContent = `${beltItems.length} Sarf / Kemer Eşyası`;
+      }
+
       // Stepper & Toggles
       const ceValEl = document.getElementById('combat-expertise-val');
       if (ceValEl) ceValEl.textContent = ce;
@@ -14579,6 +14941,12 @@
       try { renderCombatPins('offense_ranged'); } catch (e) { console.error("renderCombatPins('offense_ranged') error:", e); }
       try { renderCombatPins('defense'); } catch (e) { console.error("renderCombatPins('defense') error:", e); }
       try { renderDefenseModifiersGrid(); } catch (e) { console.error("renderDefenseModifiersGrid error:", e); }
+
+      // 6. Spellcasting Cockpit & Panels State
+      try { initCockpitPanelsState(); } catch (e) { console.error('initCockpitPanelsState error:', e); }
+      try { populateCombatSpells(); } catch (e) { console.error('populateCombatSpells error:', e); }
+      try { renderCombatQuickSpells(); } catch (e) { console.error('renderCombatQuickSpells error:', e); }
+      try { recalculateCombatSpell(); } catch (e) { console.error('recalculateCombatSpell error:', e); }
     }
 
     // --- OFF-HAND & TWF SELECTOR ---
