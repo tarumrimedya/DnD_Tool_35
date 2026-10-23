@@ -6,6 +6,7 @@
   <title>D&D 3.5e Karakter & Kampanya Yönetim Merkezi (Hub)</title>
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
   <script src="bundled_data.js"></script>
+  <script src="bundled_monsters.js"></script>
   <style>
     body {
       font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -133,18 +134,84 @@
 
   </div>
 
-  <!-- MODAL: YENİ KARAKTER OLUŞTURMA MODALI -->
-  <div id="new-character-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-[#131d33] border border-slate-700 rounded-2xl w-full max-w-md p-5 shadow-2xl text-slate-100 space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-700/80 pb-3">
+  <!-- MODAL: YENİ KARAKTER OLUŞTURMA MODALI (BESTIARY + SIFIR ŞABLON) -->
+  <div id="new-character-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div id="new-character-modal-card" class="bg-[#131d33] border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[92vh] flex flex-col p-4 sm:p-5 shadow-2xl text-slate-100 space-y-3.5">
+      
+      <!-- Modal Başlık ve Kapat Butonu -->
+      <div class="flex items-center justify-between border-b border-slate-700/80 pb-3 shrink-0">
         <div class="flex items-center gap-2">
           <span class="text-xl">✨</span>
-          <h3 class="text-base font-bold text-white">Yeni Karakter Ekle</h3>
+          <h3 class="text-base font-bold text-white">Yeni Karakter / NPC Ekle</h3>
         </div>
-        <button onclick="closeNewCharacterModal()" class="text-slate-400 hover:text-white text-lg">✕</button>
+        <button onclick="closeNewCharacterModal()" class="text-slate-400 hover:text-white text-lg font-bold px-1">✕</button>
       </div>
 
-      <div class="space-y-3 text-xs">
+      <!-- Mod Seçim Sekmeleri (Rule Master Bestiary vs Manuel Boş Şablon) -->
+      <div class="flex items-center gap-2 bg-slate-900/90 p-1 rounded-xl border border-slate-800 shrink-0">
+        <button type="button" id="btn-char-mode-bestiary" onclick="switchCharCreateMode('bestiary')" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-amber-500 text-slate-950 shadow">
+          <span>📚</span>
+          <span>Rule Master Bestiary (Canavar / NPC)</span>
+        </button>
+        <button type="button" id="btn-char-mode-manual" onclick="switchCharCreateMode('manual')" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white">
+          <span>✨</span>
+          <span>Sıfır Şablon (Manuel)</span>
+        </button>
+      </div>
+
+      <!-- SEKME 1: RULE MASTER BESTIARY (CANAVAR / NPC ARAMA VE ÖNİZLEME) -->
+      <div id="pane-char-mode-bestiary" class="space-y-3 text-xs flex-1 overflow-y-auto pr-1 custom-scroll">
+        <!-- Arama ve CR / Tip Filtreleri -->
+        <div class="space-y-2">
+          <div class="relative">
+            <span class="absolute left-3 top-2.5 text-slate-400 text-sm">🔍</span>
+            <input type="text" id="bestiary-search-input" oninput="filterBestiaryList()" placeholder="Canavar veya NPC ara (Örn: Goblin, Ogre, Troll, Dragon, Skeleton)..." class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-white focus:outline-none focus:border-amber-500 placeholder-slate-500">
+          </div>
+          <!-- Kategori & CR Filtre Hapları -->
+          <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
+            <button type="button" onclick="setBestiaryFilter('all', this)" class="bestiary-filter-pill px-2.5 py-1 rounded-lg font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/40 transition">Tümü</button>
+            <button type="button" onclick="setBestiaryFilter('low', this)" class="bestiary-filter-pill px-2.5 py-1 rounded-lg font-semibold bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition">Düşük (CR &lt; 1)</button>
+            <button type="button" onclick="setBestiaryFilter('mid', this)" class="bestiary-filter-pill px-2.5 py-1 rounded-lg font-semibold bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition">Orta (CR 1 - 5)</button>
+            <button type="button" onclick="setBestiaryFilter('high', this)" class="bestiary-filter-pill px-2.5 py-1 rounded-lg font-semibold bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition">Yüksek (CR 6+)</button>
+            <button type="button" onclick="setBestiaryFilter('undead', this)" class="bestiary-filter-pill px-2.5 py-1 rounded-lg font-semibold bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition">💀 Undead</button>
+            <button type="button" onclick="setBestiaryFilter('giant_dragon', this)" class="bestiary-filter-pill px-2.5 py-1 rounded-lg font-semibold bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition">🐲 Dev / Ejderha</button>
+          </div>
+        </div>
+
+        <!-- 2 Kolon: Sol Canavar Listesi, Sağ Detaylı Statblock Önizleme -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-3 min-h-[220px]">
+          <!-- Sol Liste (5 Kolon) -->
+          <div id="bestiary-list-container" class="md:col-span-5 max-h-56 md:max-h-72 overflow-y-auto custom-scroll space-y-1 bg-slate-900/60 p-1.5 rounded-xl border border-slate-800">
+            <!-- Dinamik Canavar Butonları -->
+          </div>
+
+          <!-- Sağ Önizleme Kartı (7 Kolon) -->
+          <div id="bestiary-preview-container" class="md:col-span-7 bg-slate-900/90 border border-slate-700/80 rounded-xl p-3 flex flex-col justify-between">
+            <div id="bestiary-preview-content" class="space-y-2">
+              <div class="text-center py-10 text-slate-500 italic">
+                Soldaki listeden bir canavar veya NPC seçin.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Özel Ad & Kampanya Ataması -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-800">
+          <div>
+            <label class="block text-slate-400 mb-1 font-semibold">Özel Karakter / Encounter Adı</label>
+            <input type="text" id="bestiary-custom-name" placeholder="Örn: Goblin Gözcüsü 1" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1 font-semibold">Bağlı Kampanya</label>
+            <select id="bestiary-campaign" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500">
+              <!-- JS ile doldurulur -->
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEKME 2: SIFIR ŞABLON (MANUEL BOŞ KARAKTER) -->
+      <div id="pane-char-mode-manual" class="space-y-3 text-xs hidden shrink-0">
         <div>
           <label class="block text-slate-400 mb-1 font-semibold">Karakter Adı *</label>
           <input type="text" id="new-char-name" placeholder="Örn: Regdar, Jozan, Mialee" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500">
@@ -167,10 +234,20 @@
         </div>
       </div>
 
-      <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-700/80">
-        <button onclick="closeNewCharacterModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition">İptal</button>
-        <button onclick="saveNewCharacter()" class="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs transition shadow">Karakteri Kaydet</button>
+      <!-- Modal Alt Bar & Onay Butonu -->
+      <div class="flex items-center justify-between pt-3 border-t border-slate-700/80 shrink-0">
+        <div id="modal-footer-hint" class="text-[11px] text-slate-400 hidden sm:block">
+          Seçilen resmi D&D 3.5e SRD canavarının tüm istatistikleri aktarılır.
+        </div>
+        <div class="flex items-center gap-2 ml-auto">
+          <button onclick="closeNewCharacterModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition">İptal</button>
+          <button id="btn-save-character" onclick="submitCharacterModal()" class="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs transition shadow flex items-center gap-1.5">
+            <span>⚡</span>
+            <span id="btn-save-character-text">Bestiary'den İçe Aktar</span>
+          </button>
+        </div>
       </div>
+
     </div>
   </div>
 
@@ -540,6 +617,7 @@
                     <p class="text-[11px] text-slate-300 truncate">${c.race || 'Irk Seçilmedi'} • <span class="text-amber-400 font-semibold">${c.classes || 'Sınıf Seçilmedi'}</span></p>
                     <div class="mt-1 flex items-center gap-1.5">
                       <span class="text-[10px] text-slate-400 bg-slate-900/90 px-2 py-0.5 rounded-md border border-slate-800 truncate" title="Kampanya">${campName}</span>
+                      ${c.cr ? `<span class="text-[9px] font-mono font-bold text-amber-300 bg-amber-950/80 px-1.5 py-0.2 rounded border border-amber-700/80">CR ${c.cr}</span>` : ''}
                     </div>
                   </div>
                 </div>
@@ -634,18 +712,26 @@
         `;
       });
 
-      // BOŞ KART (YENİ KARAKTER EKLE)
+      // BOŞ KART (YENİ KARAKTER VEYA CANAVAR EKLE)
+      const isNpcFilter = state.filterType === 'npc';
+      const emptyTitle = isNpcFilter ? 'Yeni Canavar / NPC Ekle' : 'Yeni Karakter Ekle';
+      const emptyDesc = isNpcFilter 
+        ? 'D&D 3.5e Bestiary\'den resmi bir canavarı içe aktarın veya sıfır NPC oluşturun.' 
+        : 'Sıfırdan yeni bir PC veya NPC oluşturun ve kampanyanıza bağlayın.';
+      const emptyBtnLabel = isNpcFilter ? '📚 Rule Master Bestiary' : '⚡ Hızlı Oluştur';
+      const emptyIcon = isNpcFilter ? '📚' : '➕';
+
       html += `
-        <div onclick="openNewCharacterModal()" class="group min-h-[300px] border-2 border-dashed border-slate-700/80 hover:border-amber-500/80 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer bg-slate-900/30 hover:bg-slate-900/60 transition duration-200 shadow-inner">
+        <div onclick="openNewCharacterModal('${isNpcFilter ? 'bestiary' : 'manual'}')" class="group min-h-[300px] border-2 border-dashed border-slate-700/80 hover:border-amber-500/80 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer bg-slate-900/30 hover:bg-slate-900/60 transition duration-200 shadow-inner">
           <div class="w-14 h-14 rounded-2xl bg-slate-800 group-hover:bg-amber-500/20 border border-slate-700 group-hover:border-amber-500/50 flex items-center justify-center text-2xl text-slate-400 group-hover:text-amber-300 transition duration-200 shadow-md">
-            ➕
+            ${emptyIcon}
           </div>
-          <h3 class="text-sm font-bold text-white group-hover:text-amber-300 transition mt-3">Yeni Karakter Ekle</h3>
+          <h3 class="text-sm font-bold text-white group-hover:text-amber-300 transition mt-3">${emptyTitle}</h3>
           <p class="text-xs text-slate-400 mt-1 max-w-[200px]">
-            Sıfırdan yeni bir PC veya NPC oluşturun ve kampanyanıza bağlayın.
+            ${emptyDesc}
           </p>
           <span class="mt-3 px-3 py-1 rounded-lg bg-slate-800 text-[11px] font-semibold text-slate-300 border border-slate-700 group-hover:border-amber-500/40">
-            Hızlı Oluştur
+            ${emptyBtnLabel}
           </span>
         </div>
       `;
@@ -680,7 +766,7 @@
             <!-- Tür -->
             <td class="py-3 px-3">
               <span class="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${c.isNpc ? 'bg-rose-950 text-rose-300 border border-rose-700' : 'bg-sky-950 text-sky-300 border border-sky-700'}">
-                ${c.isNpc ? 'NPC' : 'PC'}
+                ${c.isNpc ? (c.cr ? `NPC CR ${c.cr}` : 'NPC') : 'PC'}
               </span>
             </td>
 
@@ -962,25 +1048,470 @@
       window.location.href = '/?id=' + encodeURIComponent(charId);
     }
 
-    // Modal Yönetimi: Karakter Ekleme
-    function openNewCharacterModal() {
-      const select = document.getElementById('new-char-campaign');
-      if (select) {
-        select.innerHTML = `
-          <option value="">-- Bağımsız / Kampanyasız --</option>
-          ${state.campaigns.map(camp => `<option value="${camp.id}" ${state.activeCampaignId === camp.id ? 'selected' : ''}>${camp.name}</option>`).join('')}
-        `;
+    // ==========================================
+    // RULE MASTER BESTIARY & KARAKTER YÖNETİMİ
+    // ==========================================
+    let currentBestiaryFilter = 'all';
+    let selectedBestiaryMonsterId = null;
+    let currentCharCreateMode = 'bestiary';
+
+    function switchCharCreateMode(mode) {
+      currentCharCreateMode = mode;
+      const bestiaryBtn = document.getElementById('btn-char-mode-bestiary');
+      const manualBtn = document.getElementById('btn-char-mode-manual');
+      const bestiaryPane = document.getElementById('pane-char-mode-bestiary');
+      const manualPane = document.getElementById('pane-char-mode-manual');
+      const saveBtnText = document.getElementById('btn-save-character-text');
+      const hintText = document.getElementById('modal-footer-hint');
+
+      if (mode === 'bestiary') {
+        if (bestiaryBtn) {
+          bestiaryBtn.className = "flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-amber-500 text-slate-950 shadow";
+        }
+        if (manualBtn) {
+          manualBtn.className = "flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white";
+        }
+        if (bestiaryPane) bestiaryPane.classList.remove('hidden');
+        if (manualPane) manualPane.classList.add('hidden');
+        if (saveBtnText) saveBtnText.textContent = "Bestiary'den İçe Aktar";
+        if (hintText) hintText.textContent = "Seçilen resmi D&D 3.5e SRD canavarının tüm istatistikleri aktarılır.";
+        renderBestiaryList();
+      } else {
+        if (bestiaryBtn) {
+          bestiaryBtn.className = "flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white";
+        }
+        if (manualBtn) {
+          manualBtn.className = "flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-amber-500 text-slate-950 shadow";
+        }
+        if (bestiaryPane) bestiaryPane.classList.add('hidden');
+        if (manualPane) manualPane.classList.remove('hidden');
+        if (saveBtnText) saveBtnText.textContent = "Karakteri Kaydet";
+        if (hintText) hintText.textContent = "Sıfır, temiz bir D&D 3.5e karakter şablonu oluşturulur.";
       }
+    }
+
+    function setBestiaryFilter(filter, el) {
+      currentBestiaryFilter = filter;
+      document.querySelectorAll('.bestiary-filter-pill').forEach(btn => {
+        btn.className = "bestiary-filter-pill px-2.5 py-1 rounded-lg font-semibold bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition";
+      });
+      if (el) {
+        el.className = "bestiary-filter-pill px-2.5 py-1 rounded-lg font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/40 transition";
+      }
+      renderBestiaryList();
+    }
+
+    function filterBestiaryList() {
+      renderBestiaryList();
+    }
+
+    function getFilteredBestiaryMonsters() {
+      const monsters = window.DND35_SRD_MONSTERS || [];
+      const query = (document.getElementById('bestiary-search-input')?.value || '').trim().toLowerCase();
+
+      return monsters.filter(m => {
+        if (query) {
+          const matchName = (m.name || '').toLowerCase().includes(query);
+          const matchType = (m.type || '').toLowerCase().includes(query);
+          const matchCr = (m.cr || '').toLowerCase().includes(query);
+          if (!matchName && !matchType && !matchCr) return false;
+        }
+
+        if (currentBestiaryFilter === 'low') {
+          return m.crNumeric < 1;
+        } else if (currentBestiaryFilter === 'mid') {
+          return m.crNumeric >= 1 && m.crNumeric <= 5;
+        } else if (currentBestiaryFilter === 'high') {
+          return m.crNumeric >= 6;
+        } else if (currentBestiaryFilter === 'undead') {
+          return (m.type || '').toLowerCase().includes('undead');
+        } else if (currentBestiaryFilter === 'giant_dragon') {
+          const t = (m.type || '').toLowerCase();
+          return t.includes('giant') || t.includes('dragon');
+        }
+        return true;
+      });
+    }
+
+    function renderBestiaryList() {
+      const container = document.getElementById('bestiary-list-container');
+      if (!container) return;
+
+      const list = getFilteredBestiaryMonsters();
+      if (!list.length) {
+        container.innerHTML = `<div class="p-3 text-center text-slate-500 italic text-[11px]">Aramaya uygun canavar bulunamadı.</div>`;
+        return;
+      }
+
+      if (!selectedBestiaryMonsterId || !list.some(m => m.id === selectedBestiaryMonsterId)) {
+        selectedBestiaryMonsterId = list[0].id;
+      }
+
+      container.innerHTML = list.map(m => {
+        const isSelected = m.id === selectedBestiaryMonsterId;
+        const crBg = m.crNumeric >= 6 ? 'bg-rose-950 text-rose-300 border-rose-800' :
+                     m.crNumeric >= 1 ? 'bg-amber-950 text-amber-300 border-amber-800' :
+                     'bg-slate-800 text-slate-300 border-slate-700';
+
+        return `
+          <div onclick="selectBestiaryMonster('${m.id}')" class="p-2 rounded-xl border cursor-pointer transition flex items-center justify-between gap-2 ${isSelected ? 'bg-amber-500/20 border-amber-500/80 shadow' : 'bg-slate-900/80 border-slate-800 hover:bg-slate-800/60 hover:border-slate-700'}">
+            <div class="min-w-0 flex-1">
+              <div class="font-bold text-white text-xs truncate flex items-center gap-1.5">
+                <span>${m.name}</span>
+              </div>
+              <div class="text-[10px] text-slate-400 truncate">${m.size} ${m.type}</div>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <span class="text-[9px] font-mono px-1.5 py-0.5 rounded border ${crBg}">CR ${m.cr}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const cur = (window.DND35_SRD_MONSTERS || []).find(m => m.id === selectedBestiaryMonsterId);
+      if (cur) renderBestiaryPreview(cur);
+    }
+
+    function selectBestiaryMonster(id) {
+      selectedBestiaryMonsterId = id;
+      const cur = (window.DND35_SRD_MONSTERS || []).find(m => m.id === id);
+      if (cur) {
+        const nameInput = document.getElementById('bestiary-custom-name');
+        if (nameInput) nameInput.value = cur.name;
+        renderBestiaryPreview(cur);
+      }
+      renderBestiaryList();
+    }
+
+    function renderBestiaryPreview(m) {
+      const container = document.getElementById('bestiary-preview-container');
+      if (!container) return;
+
+      const atkStr = (m.attacks || []).map(a => `<span class="text-amber-300 font-semibold">${a.name} ${a.bonus >= 0 ? '+' : ''}${a.bonus}</span> <span class="text-slate-400">(${a.damage})</span>`).join('<span class="text-slate-600 mx-1">|</span>') || 'Yok';
+
+      const featStr = (m.feats || []).map(f => `<span class="bg-slate-800 border border-slate-700 px-1.5 py-0.5 rounded text-[10px] text-slate-300">${f.name}</span>`).join(' ') || '<span class="text-slate-500">-</span>';
+
+      const saStr = (m.specialAbilities || []).map(sa => `<span class="bg-indigo-950/60 border border-indigo-800/80 px-1.5 py-0.5 rounded text-[10px] text-indigo-200" title="${sa.description || ''}">${sa.name}</span>`).join(' ') || '<span class="text-slate-500">-</span>';
+
+      container.innerHTML = `
+        <div class="space-y-2">
+          <!-- Başlık ve CR -->
+          <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2">
+            <div>
+              <h4 class="text-sm font-bold text-amber-300 flex items-center gap-1.5">
+                <span>⚔️</span>
+                <span>${m.name}</span>
+              </h4>
+              <p class="text-[10px] text-slate-400">${m.size} ${m.type} • HD: <strong class="text-slate-200 font-mono">${m.hitDice}</strong></p>
+            </div>
+            <div class="px-2 py-0.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 font-mono font-bold text-xs shrink-0">
+              CR ${m.cr}
+            </div>
+          </div>
+
+          <!-- Can ve Savunma Hapları -->
+          <div class="grid grid-cols-4 gap-1.5 text-center text-[10px] font-mono">
+            <div class="bg-slate-950/60 p-1.5 rounded-lg border border-slate-800">
+              <span class="text-slate-400 block text-[9px] uppercase font-sans">HP</span>
+              <strong class="text-emerald-400 text-xs">${m.hp}</strong>
+            </div>
+            <div class="bg-slate-950/60 p-1.5 rounded-lg border border-slate-800">
+              <span class="text-slate-400 block text-[9px] uppercase font-sans">AC</span>
+              <strong class="text-white text-xs">${m.ac}</strong>
+              <div class="text-[8px] text-slate-500">T:${m.touchAc} | FF:${m.flatFootedAc}</div>
+            </div>
+            <div class="bg-slate-950/60 p-1.5 rounded-lg border border-slate-800">
+              <span class="text-slate-400 block text-[9px] uppercase font-sans">Hız</span>
+              <strong class="text-sky-300">${m.baseSpeed} ft.</strong>
+            </div>
+            <div class="bg-slate-950/60 p-1.5 rounded-lg border border-slate-800">
+              <span class="text-slate-400 block text-[9px] uppercase font-sans">İnisiyatif</span>
+              <strong class="text-amber-400">${m.initiative >= 0 ? '+' : ''}${m.initiative}</strong>
+            </div>
+          </div>
+
+          <!-- Yetenek Değerleri (STR, DEX, CON, INT, WIS, CHA) -->
+          <div class="grid grid-cols-6 gap-1 text-center font-mono text-[10px] bg-slate-950/40 p-1.5 rounded-lg border border-slate-800/80">
+            <div><span class="text-slate-500 block text-[8px] uppercase">STR</span><strong class="text-slate-200">${m.abilities.str}</strong></div>
+            <div><span class="text-slate-500 block text-[8px] uppercase">DEX</span><strong class="text-slate-200">${m.abilities.dex}</strong></div>
+            <div><span class="text-slate-500 block text-[8px] uppercase">CON</span><strong class="text-slate-200">${m.abilities.con}</strong></div>
+            <div><span class="text-slate-500 block text-[8px] uppercase">INT</span><strong class="text-slate-200">${m.abilities.int}</strong></div>
+            <div><span class="text-slate-500 block text-[8px] uppercase">WIS</span><strong class="text-slate-200">${m.abilities.wis}</strong></div>
+            <div><span class="text-slate-500 block text-[8px] uppercase">CHA</span><strong class="text-slate-200">${m.abilities.cha}</strong></div>
+          </div>
+
+          <!-- Kurtarma Zarları & BAB -->
+          <div class="flex items-center justify-between text-[10px] font-mono bg-slate-950/60 px-2 py-1 rounded-lg border border-slate-800">
+            <div>
+              <span class="text-slate-400">Saves:</span>
+              <span class="text-slate-200 ml-1">F:+${m.saves.fort}</span>
+              <span class="text-slate-500 mx-0.5">•</span>
+              <span class="text-slate-200">R:+${m.saves.ref}</span>
+              <span class="text-slate-500 mx-0.5">•</span>
+              <span class="text-slate-200">W:+${m.saves.will}</span>
+            </div>
+            <div>
+              <span class="text-slate-400">BAB/Grap:</span>
+              <span class="text-amber-400 ml-1">+${m.bab}/+${m.grapple}</span>
+            </div>
+          </div>
+
+          <!-- Saldırılar -->
+          <div class="text-[11px] bg-slate-950/60 p-2 rounded-lg border border-slate-800">
+            <span class="text-slate-400 text-[9px] uppercase font-bold block mb-0.5">Saldırılar & Silahlar:</span>
+            <div class="font-mono text-xs">${atkStr}</div>
+          </div>
+
+          <!-- Featler & Özel Yetenekler -->
+          <div class="space-y-1 text-[10px]">
+            <div>
+              <span class="text-slate-400 text-[9px] uppercase font-bold block mb-0.5">Hünerler (Feats):</span>
+              <div class="flex flex-wrap gap-1">${featStr}</div>
+            </div>
+            <div>
+              <span class="text-slate-400 text-[9px] uppercase font-bold block mb-0.5">Özel Yetenekler (Special Abilities):</span>
+              <div class="flex flex-wrap gap-1">${saStr}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function convertMonsterToCharacter(monster, customName, campaignId) {
+      const charId = 'char_' + Date.now();
+      const name = customName || monster.name;
+
+      const weapons = (monster.attacks || []).map((atk, idx) => ({
+        id: 'wpn_' + idx,
+        name: atk.name,
+        grip: atk.type === 'Melee' ? '1-Hand' : (atk.type === 'Ranged' ? '2-Hand' : '1-Hand'),
+        dice: atk.damage || '1d6',
+        critMin: atk.crit ? (parseInt(atk.crit.split('/')[0].split('-')[0]) || 20) : 20,
+        critMult: atk.crit && atk.crit.includes('x3') ? 3 : (atk.crit && atk.crit.includes('x4') ? 4 : 2),
+        attBonus: Number(atk.bonus) || 0,
+        dmgBonus: 0,
+        dmgType: atk.damageType || 'Physical',
+        bonusType: 'Natural',
+        category: atk.type || 'Natural',
+        range: atk.range || '-'
+      }));
+
+      const mainWep = monster.attacks && monster.attacks.length ? monster.attacks[0].name : '-';
+      const atkFormula = monster.attacks && monster.attacks.length 
+        ? `${monster.attacks[0].bonus >= 0 ? '+' : ''}${monster.attacks[0].bonus} (${monster.attacks[0].damage})`
+        : '-';
+
+      const fullData = {
+        schemaVersion: "2.0",
+        id: charId,
+        _hubId: charId,
+        isNpc: true,
+        name: name,
+        race: monster.type || 'Monster',
+        classes: monster.hitDiceStr || monster.hitDice || 'Monster',
+        level: Math.max(1, Math.round(monster.crNumeric || 1)),
+        bab: Number(monster.bab) || 0,
+        baseSpeed: monster.baseSpeed || 30,
+        hitDie: monster.hitDice || '',
+        alignment: '',
+        abilities: { ...monster.abilities },
+        baseAbilities: { ...monster.abilities },
+        hp: {
+          current: monster.hp,
+          max: monster.hp,
+          baseMax: monster.hp,
+          conBonusHp: 0,
+          temp: 0,
+          nonlethal: 0
+        },
+        acBreakdown: {
+          armor: monster.armorBonus || 0,
+          shield: monster.shieldBonus || 0,
+          natural: monster.naturalArmor || 0,
+          deflection: monster.deflection || 0,
+          size: monster.sizeMod || 0
+        },
+        ac: {
+          total: monster.ac,
+          touch: monster.touchAc,
+          flatFooted: monster.flatFootedAc
+        },
+        baseSaves: {
+          fort: Number(monster.saves.fort) || 0,
+          ref: Number(monster.saves.ref) || 0,
+          will: Number(monster.saves.will) || 0
+        },
+        saveBonuses: { resistance: 0 },
+        saves: {
+          fort: { total: Number(monster.saves.fort) || 0 },
+          ref: { total: Number(monster.saves.ref) || 0 },
+          will: { total: Number(monster.saves.will) || 0 }
+        },
+        portrait: '',
+        avatarUrl: '',
+        weapons: weapons,
+        activeWeapon: mainWep,
+        bodySlots: {
+          head: null,
+          eyes: null,
+          neck: null,
+          torso: null,
+          armor: monster.armorBonus ? { name: `${monster.armorBonus} AC Zırh` } : null,
+          cloak: null,
+          waist: null,
+          wrists: null,
+          hands: null,
+          ring1: null,
+          ring2: null,
+          feet: null,
+          mainHand: mainWep !== '-' ? { name: mainWep } : null
+        },
+        gearPool: [],
+        inventory: [],
+        skills: (monster.skills || []).map(s => ({
+          name: s.name,
+          ranks: s.mod || 0,
+          total: s.mod || 0
+        })),
+        feats: (monster.feats || []).map(f => ({
+          name: f.name,
+          description: ''
+        })),
+        specialAbilities: (monster.specialAbilities || []).map(sa => ({
+          name: sa.name,
+          type: sa.type || 'Ex',
+          description: sa.description || ''
+        })),
+        spells: [],
+        buffs: [],
+        debuffs: [],
+        spellcasting: {
+          cl: 0,
+          ability: 'int',
+          slots: { 0: { daily: 0, used: 0 } }
+        },
+        levelProgression: [],
+        tomeOfBattle: {
+          stances: [],
+          readiedManeuvers: []
+        },
+        combatPins: {
+          offense_melee: weapons.filter(w => w.category === 'Melee' || w.category === 'Natural').map(w => w.name),
+          offense_ranged: weapons.filter(w => w.category === 'Ranged').map(w => w.name),
+          offense_spell: [],
+          defense: []
+        },
+        tactical: {
+          powerAttack: 0,
+          flanking: false,
+          charge: false,
+          higherGround: false,
+          combatExpertise: 0,
+          fightingDefensively: false,
+          totalDefense: false,
+          shieldBlockActive: false,
+          round: 1,
+          weaponSets: { activeSets: [1] }
+        },
+        notes: `[CR ${monster.cr}] ${monster.size} ${monster.type}\nHit Dice: ${monster.hitDice}\n\n${monster.description || ''}`,
+        settings: {
+          pinDrawerLimit: 5
+        }
+      };
+
+      return {
+        id: charId,
+        campaignId: campaignId || null,
+        isNpc: true,
+        name: name,
+        race: monster.type || 'Monster',
+        classes: monster.hitDiceStr || monster.hitDice || 'Monster',
+        level: Math.max(1, Math.round(monster.crNumeric || 1)),
+        cr: monster.cr,
+        monsterTemplate: monster.id,
+        portrait: '',
+        avatarUrl: '',
+        currentHp: monster.hp,
+        maxHp: monster.hp,
+        tempHp: 0,
+        ac: monster.ac,
+        touchAc: monster.touchAc,
+        flatFootedAc: monster.flatFootedAc,
+        mainWeapon: mainWep,
+        attackFormula: atkFormula,
+        fortSave: Number(monster.saves.fort) || 0,
+        refSave: Number(monster.saves.ref) || 0,
+        willSave: Number(monster.saves.will) || 0,
+        initBonus: Number(monster.initiative) || 0,
+        spotBonus: (monster.skills || []).find(s => s.name === 'Spot')?.mod || 0,
+        listenBonus: (monster.skills || []).find(s => s.name === 'Listen')?.mod || 0,
+        fullData: fullData
+      };
+    }
+
+    // Modal Yönetimi: Karakter Ekleme
+    function openNewCharacterModal(preferredMode = null) {
+      const campOptions = `
+        <option value="">-- Bağımsız / Kampanyasız --</option>
+        ${state.campaigns.map(camp => `<option value="${camp.id}" ${state.activeCampaignId === camp.id ? 'selected' : ''}>${camp.name}</option>`).join('')}
+      `;
+
+      const selectCampManual = document.getElementById('new-char-campaign');
+      if (selectCampManual) selectCampManual.innerHTML = campOptions;
+
+      const selectCampBestiary = document.getElementById('bestiary-campaign');
+      if (selectCampBestiary) selectCampBestiary.innerHTML = campOptions;
+
       const nameInput = document.getElementById('new-char-name');
       if (nameInput) nameInput.value = '';
+
       const typeSelect = document.getElementById('new-char-type');
-      if (typeSelect) typeSelect.value = 'pc';
+      if (typeSelect) typeSelect.value = state.filterType === 'npc' ? 'npc' : 'pc';
+
+      const mode = preferredMode || (state.filterType === 'npc' ? 'bestiary' : 'manual');
+      switchCharCreateMode(mode);
+
       document.getElementById('new-character-modal').classList.remove('hidden');
-      if (nameInput) nameInput.focus();
+
+      if (mode === 'bestiary') {
+        const searchInput = document.getElementById('bestiary-search-input');
+        if (searchInput) {
+          searchInput.value = '';
+          searchInput.focus();
+        }
+        renderBestiaryList();
+      } else {
+        if (nameInput) nameInput.focus();
+      }
     }
 
     function closeNewCharacterModal() {
       document.getElementById('new-character-modal').classList.add('hidden');
+    }
+
+    function submitCharacterModal() {
+      if (currentCharCreateMode === 'bestiary') {
+        saveBestiaryCharacter();
+      } else {
+        saveNewCharacter();
+      }
+    }
+
+    function saveBestiaryCharacter() {
+      const monster = (window.DND35_SRD_MONSTERS || []).find(m => m.id === selectedBestiaryMonsterId);
+      if (!monster) {
+        alert('Lütfen Bestiary listesinden bir canavar seçin!');
+        return;
+      }
+
+      const customName = document.getElementById('bestiary-custom-name')?.value.trim() || monster.name;
+      const campaignId = document.getElementById('bestiary-campaign')?.value || null;
+
+      const newChar = convertMonsterToCharacter(monster, customName, campaignId);
+      state.characters.push(newChar);
+      saveHubStorage();
+      closeNewCharacterModal();
+      renderHub();
     }
 
     function saveNewCharacter() {
