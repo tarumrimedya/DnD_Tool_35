@@ -239,67 +239,39 @@
 
     // Hub Veritabanını Başlat (Initialize or Load from LocalStorage)
     function initHubStorage() {
-      // 1. Karakter sayfasındaki mevcut karakteri çek (LocalStorage veya BUNDLED_CHARACTER_DATA)
-      let activeChar = null;
-      try {
-        const rawChar = localStorage.getItem('dnd35_character');
-        if (rawChar) activeChar = JSON.parse(rawChar);
-      } catch (e) {
-        console.warn('LocalStorage dnd35_character okunamadı:', e);
+      // 1. Orijinal Kazmil Şablon Oluşturucu
+      function buildKazmilSummary(data) {
+        const kData = data || window.BUNDLED_CHARACTER_DATA || {};
+        const activeWep = (kData.weapons || []).find(w => w.name === kData.activeWeapon) || (kData.weapons || [])[0] || {};
+        return {
+          id: 'char_kazmil_primary',
+          campaignId: 'camp_001',
+          isNpc: false,
+          name: "Kazmil'in Çırağı",
+          race: kData.race || "Human",
+          classes: kData.classes || (kData.class ? `${kData.class} ${kData.level || 6}` : "Sorcerer 5 / Warblade 1"),
+          level: Number(kData.level) || 6,
+          portrait: kData.portrait || kData.avatarUrl || (window.BUNDLED_CHARACTER_DATA && window.BUNDLED_CHARACTER_DATA.portrait) || "",
+          portraitPosition: kData.portraitPosition || "50% 50%",
+          portraitFit: kData.portraitFit || "125%",
+          avatarUrl: kData.portrait || kData.avatarUrl || (window.BUNDLED_CHARACTER_DATA && window.BUNDLED_CHARACTER_DATA.portrait) || "",
+          currentHp: kData.hp?.current ?? 45,
+          maxHp: kData.hp?.max ?? 45,
+          tempHp: kData.hp?.temp ?? 0,
+          ac: kData.ac?.total ?? 17,
+          touchAc: kData.ac?.touch ?? 13,
+          flatFootedAc: kData.ac?.flatFooted ?? 14,
+          mainWeapon: activeWep.name || "Rapier",
+          attackFormula: activeWep.dice ? `${activeWep.dice}+${activeWep.dmgBonus || 0}` : "+3",
+          fortSave: kData.saves?.fort?.total ?? 5,
+          refSave: kData.saves?.ref?.total ?? 4,
+          willSave: kData.saves?.will?.total ?? 5,
+          initBonus: 3,
+          spotBonus: 2,
+          listenBonus: 2,
+          fullData: kData
+        };
       }
-      if (!activeChar && window.BUNDLED_CHARACTER_DATA) {
-        activeChar = window.BUNDLED_CHARACTER_DATA;
-      }
-
-      // Kazmil'in Çırağı / Aktif karakter özellikleri
-      const charName = activeChar?.name || "Kazmil'in Çırağı";
-      const charRace = activeChar?.race || "Human";
-      const charClasses = activeChar?.classes || (activeChar?.class ? `${activeChar.class} ${activeChar.level || 6}` : "Sorcerer 5 / Warblade 1");
-      const charLevel = Number(activeChar?.level) || 6;
-      const charPortrait = activeChar?.portrait || activeChar?.avatarUrl || (window.BUNDLED_CHARACTER_DATA && window.BUNDLED_CHARACTER_DATA.portrait) || "";
-      const charPortraitPos = activeChar?.portraitPosition || "50% 50%";
-      const charPortraitFit = activeChar?.portraitFit || "125%";
-      const charHpCurrent = activeChar?.hp?.current ?? 45;
-      const charHpMax = activeChar?.hp?.max ?? 45;
-      const charHpTemp = activeChar?.hp?.temp ?? 0;
-      const charAc = activeChar?.ac?.total ?? 17;
-      const charTouchAc = activeChar?.ac?.touch ?? 13;
-      const charFlatFootedAc = activeChar?.ac?.flatFooted ?? 14;
-      const activeWep = (activeChar?.weapons || []).find(w => w.name === activeChar?.activeWeapon) || (activeChar?.weapons || [])[0] || {};
-      const charWeapon = activeWep.name || "Rapier";
-      const charAttackFormula = activeWep.dice ? `${activeWep.dice}+${activeWep.dmgBonus || 0}` : "+3";
-      const charFort = activeChar?.saves?.fort?.total ?? 5;
-      const charRef = activeChar?.saves?.ref?.total ?? 4;
-      const charWill = activeChar?.saves?.will?.total ?? 5;
-
-      const khazmilObj = {
-        id: 'char_kazmil_primary',
-        campaignId: 'camp_001',
-        isNpc: false,
-        name: charName,
-        race: charRace,
-        classes: charClasses,
-        level: charLevel,
-        portrait: charPortrait,
-        portraitPosition: charPortraitPos,
-        portraitFit: charPortraitFit,
-        avatarUrl: charPortrait,
-        currentHp: charHpCurrent,
-        maxHp: charHpMax,
-        tempHp: charHpTemp,
-        ac: charAc,
-        touchAc: charTouchAc,
-        flatFootedAc: charFlatFootedAc,
-        mainWeapon: charWeapon,
-        attackFormula: charAttackFormula,
-        fortSave: charFort,
-        refSave: charRef,
-        willSave: charWill,
-        initBonus: 3,
-        spotBonus: 2,
-        listenBonus: 2,
-        fullData: activeChar
-      };
 
       // 2. Hub veritabanını yükle ve geçmiş dummy karakterleri filtrele
       let loadedDb = null;
@@ -341,23 +313,67 @@
         }
       }
 
-      // Khazmil'in varlığını kontrol et ve portresini/statlarını güncelle
-      const existingKhazmilIdx = characters.findIndex(c => 
-        c.id === 'char_kazmil_primary' || 
-        (c.name || '').toLowerCase().includes('kazmil') || 
-        (c.name || '').toLowerCase().includes('khazmil')
+      // 3. Karakter sayfasındaki mevcut karakteri çek
+      let activeChar = null;
+      try {
+        const rawChar = localStorage.getItem('dnd35_character');
+        if (rawChar) activeChar = JSON.parse(rawChar);
+      } catch (e) {
+        console.warn('LocalStorage dnd35_character okunamadı:', e);
+      }
+
+      // 4. Kazmil kontrolü ve izolasyonu (Asla başka karakterle ezilemez!)
+      const kazmilIdx = characters.findIndex(c => c.id === 'char_kazmil_primary');
+      const isKazmilActive = activeChar && (
+        activeChar.id === 'char_kazmil_primary' || 
+        activeChar._hubId === 'char_kazmil_primary' || 
+        activeChar.name === "Kazmil'in Çırağı" || 
+        activeChar.name === "Khazmil'in Çırağı"
       );
 
-      if (existingKhazmilIdx >= 0) {
-        characters[existingKhazmilIdx] = {
-          ...characters[existingKhazmilIdx],
-          ...khazmilObj,
-          id: characters[existingKhazmilIdx].id,
-          campaignId: characters[existingKhazmilIdx].campaignId || 'camp_001'
-        };
+      if (kazmilIdx >= 0) {
+        // Eğer Kazmil yuvası başka bir karakterin ismiyle bozulmuşsa kendini otomatik onar!
+        const existingName = characters[kazmilIdx].name;
+        if (existingName !== "Kazmil'in Çırağı" && existingName !== "Khazmil'in Çırağı") {
+          console.warn(`initHubStorage: char_kazmil_primary '${existingName}' tarafından ezilmiş, orijinal Kazmil onarılıyor.`);
+          characters[kazmilIdx] = buildKazmilSummary(window.BUNDLED_CHARACTER_DATA);
+        } else if (isKazmilActive) {
+          // Sadece aktif karakter gerçekten Kazmil ise güncelle
+          characters[kazmilIdx] = {
+            ...characters[kazmilIdx],
+            ...buildKazmilSummary(activeChar)
+          };
+        }
       } else {
-        // Yalnızca Kazmil'in Çırağı kalır
-        characters.unshift(khazmilObj);
+        // Kazmil hiç yoksa ekle
+        characters.unshift(buildKazmilSummary(window.BUNDLED_CHARACTER_DATA));
+      }
+
+      // 5. Diğer karakterlerin güncellenmesi (Sadece kendi ID'siyle eşleşen kart güncellenir)
+      if (activeChar && !isKazmilActive) {
+        const activeId = activeChar._hubId || activeChar.id;
+        if (activeId && activeId !== 'char_kazmil_primary') {
+          const matchIdx = characters.findIndex(c => c.id === activeId);
+          if (matchIdx >= 0) {
+            const mc = characters[matchIdx];
+            mc.name = activeChar.name || mc.name;
+            mc.race = activeChar.race || mc.race;
+            mc.classes = activeChar.classes || mc.classes;
+            mc.level = Number(activeChar.level) || mc.level;
+            mc.portrait = activeChar.portrait || activeChar.avatarUrl || mc.portrait;
+            mc.avatarUrl = mc.portrait;
+            if (activeChar.hp) {
+              mc.currentHp = activeChar.hp.current ?? mc.currentHp;
+              mc.maxHp = activeChar.hp.max ?? mc.maxHp;
+            }
+            if (activeChar.ac) {
+              mc.ac = activeChar.ac.total ?? mc.ac;
+              mc.touchAc = activeChar.ac.touch ?? mc.touchAc;
+              mc.flatFootedAc = activeChar.ac.flatFooted ?? mc.flatFootedAc;
+            }
+            mc.fullData = activeChar;
+          }
+        }
       }
 
       state.campaigns = campaigns;
@@ -917,6 +933,9 @@
       if (!c.fullData) {
         c.fullData = createCleanDnd35Character(c);
         saveHubStorage();
+      } else {
+        c.fullData.id = charId;
+        c.fullData._hubId = charId;
       }
 
       // Aktif karakter ID'sini kaydet
