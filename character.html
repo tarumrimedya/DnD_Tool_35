@@ -6661,11 +6661,11 @@
 
     function createCleanDnd35Character(summary = {}) {
       const charId = summary.id || ('char_' + Date.now());
-      const hpVal = Number(summary.currentHp || summary.maxHp || summary.hp || 10);
+      const hpVal = Number(summary.currentHp || summary.maxHp || summary.hp || 0);
       const acVal = Number(summary.ac || 10);
       const touchVal = Number(summary.touchAc || 10);
-      const race = summary.race || 'Human';
-      const classes = summary.classes || 'Fighter 1';
+      const race = summary.race || '';
+      const classes = summary.classes || '';
       const name = summary.name || 'Yeni Karakter';
 
       return {
@@ -6676,11 +6676,12 @@
         race: race,
         classes: classes,
         level: Number(summary.level) || 1,
-        bab: 1,
+        bab: Number(summary.bab) || 0,
         baseSpeed: 30,
-        hitDie: "d10",
-        alignment: "Neutral",
+        hitDie: summary.hitDie || '',
+        alignment: summary.alignment || '',
         abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+        baseAbilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
         hp: {
           current: hpVal,
           max: hpVal,
@@ -6690,7 +6691,7 @@
           nonlethal: 0
         },
         acBreakdown: {
-          armor: Math.max(0, acVal - 10),
+          armor: 0,
           shield: 0,
           natural: 0,
           deflection: 0,
@@ -6701,30 +6702,17 @@
           touch: touchVal,
           flatFooted: Math.max(10, acVal - 2)
         },
-        baseSaves: { fort: 2, ref: 0, will: 0 },
+        baseSaves: { fort: Number(summary.fortSave) || 0, ref: Number(summary.refSave) || 0, will: Number(summary.willSave) || 0 },
         saveBonuses: { resistance: 0 },
         saves: {
-          fort: { total: 2 },
-          ref: { total: 0 },
-          will: { total: 0 }
+          fort: { total: Number(summary.fortSave) || 0 },
+          ref: { total: Number(summary.refSave) || 0 },
+          will: { total: Number(summary.willSave) || 0 }
         },
         portrait: summary.portrait || summary.avatarUrl || '',
         avatarUrl: summary.portrait || summary.avatarUrl || '',
-        weapons: [
-          {
-            name: summary.mainWeapon || 'Longsword',
-            category: 'Martial',
-            dice: '1d8',
-            crit: '19-20 / x2',
-            critMin: 19,
-            critMult: 2,
-            dmgType: 'Delici/Kesici',
-            slot: 'One-Handed',
-            isEquipped: true,
-            source: 'Standart Ekipman'
-          }
-        ],
-        activeWeapon: summary.mainWeapon || 'Longsword',
+        weapons: Array.isArray(summary.weapons) ? summary.weapons : [],
+        activeWeapon: summary.mainWeapon || '',
         bodySlots: {
           head: null,
           eyes: null,
@@ -6739,29 +6727,22 @@
           ring2: null,
           feet: null
         },
-        gearPool: [
-          { name: 'Standart Ok', weaponType: 'Bow', ammoVal: 'standard', qty: 20, weight: 3, cost: 1, category: 'Ammunition', type: 'Ammunition', desc: 'Standart 20 adet ok (1d8 Delici).' },
-          { name: 'Standart Bolt', weaponType: 'Crossbow', ammoVal: 'standard', qty: 10, weight: 1, cost: 1, category: 'Ammunition', type: 'Ammunition', desc: 'Standart 10 adet arbalet oku.' },
-          { name: 'Sapan Taşı', weaponType: 'Sling', ammoVal: 'standard', qty: 20, weight: 5, cost: 0.1, category: 'Ammunition', type: 'Ammunition', desc: 'Standart 20 adet sapan mermisi.' }
-        ],
-        inventory: [],
-        skills: [],
-        feats: [],
-        specialAbilities: [],
-        spells: [],
-        buffs: [],
-        debuffs: [],
+        gearPool: Array.isArray(summary.gearPool) ? summary.gearPool : [],
+        inventory: Array.isArray(summary.inventory) ? summary.inventory : [],
+        skills: Array.isArray(summary.skills) ? summary.skills : [],
+        feats: Array.isArray(summary.feats) ? summary.feats : [],
+        specialAbilities: Array.isArray(summary.specialAbilities) ? summary.specialAbilities : [],
+        spells: Array.isArray(summary.spells) ? summary.spells : [],
+        buffs: Array.isArray(summary.buffs) ? summary.buffs : [],
+        debuffs: Array.isArray(summary.debuffs) ? summary.debuffs : [],
         spellcasting: {
           cl: 0,
           ability: 'int',
           slots: {
-            0: { daily: 0, used: 0 },
-            1: { daily: 0, used: 0 }
+            0: { daily: 0, used: 0 }
           }
         },
-        levelProgression: [
-          { level: 1, className: classes, hpGain: hpVal, babGain: 1, fortGain: 2, refGain: 0, willGain: 0, skillPoints: 4, featGained: 'Bonus Feat' }
-        ],
+        levelProgression: Array.isArray(summary.levelProgression) ? summary.levelProgression : [],
         tomeOfBattle: {
           stances: [],
           readiedManeuvers: []
@@ -6783,8 +6764,7 @@
           shieldBlockActive: false,
           round: 1,
           weaponSets: {
-            activeSets: [1],
-            set1: { mainWeapon: summary.mainWeapon || 'Longsword', grip: '1-Hand' }
+            activeSets: [1]
           }
         },
         settings: {
@@ -8683,25 +8663,25 @@
       if (classesEl) classesEl.textContent = character.classes || "Belirtilmemiş";
 
       const hdEl = document.getElementById('core-profile-hd');
-      if (hdEl) hdEl.textContent = character.hitDie || "d8";
+      if (hdEl) hdEl.textContent = character.hitDie || "-";
 
       const raceEl = document.getElementById('core-profile-race');
-      if (raceEl) raceEl.textContent = race;
+      if (raceEl) raceEl.textContent = character.race || "Belirtilmemiş";
 
       const alignEl = document.getElementById('core-profile-alignment');
-      if (alignEl) alignEl.textContent = character.alignment || "Chaotic Good";
+      if (alignEl) alignEl.textContent = character.alignment || "-";
 
       const deityEl = document.getElementById('core-profile-deity');
-      if (deityEl) deityEl.textContent = character.deity || "Boccob";
+      if (deityEl) deityEl.textContent = character.deity || "-";
 
       const sizeEl = document.getElementById('core-profile-size');
       if (sizeEl) sizeEl.textContent = character.size || "Medium (Orta)";
 
       const gaEl = document.getElementById('core-profile-gender-age');
-      if (gaEl) gaEl.textContent = `${gender}, ${character.age || 24} Yaş`;
+      if (gaEl) gaEl.textContent = `${gender || 'Belirtilmedi'}, ${character.age ? (character.age + ' Yaş') : '-'}`;
 
       const hwEl = document.getElementById('core-profile-height-weight');
-      if (hwEl) hwEl.textContent = `${character.height || '178 cm'}, ${character.weight || '72 kg'}`;
+      if (hwEl) hwEl.textContent = `${character.height || '-'}, ${character.weight || '-'}`;
     }
 
     function openProfileEditModal() {
@@ -8711,14 +8691,14 @@
         if (el) el.value = val !== undefined && val !== null ? val : '';
       };
       setVal('profile-edit-name', character.name || '');
-      setVal('profile-edit-race', character.race || 'Human');
-      setVal('profile-edit-alignment', character.alignment || 'Chaotic Good');
-      setVal('profile-edit-deity', character.deity || 'Boccob');
+      setVal('profile-edit-race', character.race || '');
+      setVal('profile-edit-alignment', character.alignment || '');
+      setVal('profile-edit-deity', character.deity || '');
       setVal('profile-edit-size', character.size || 'Medium');
-      setVal('profile-edit-gender', character.gender || 'Erkek');
-      setVal('profile-edit-age', character.age || 24);
-      setVal('profile-edit-height', character.height || '178 cm');
-      setVal('profile-edit-weight', character.weight || '72 kg');
+      setVal('profile-edit-gender', character.gender || '');
+      setVal('profile-edit-age', character.age || '');
+      setVal('profile-edit-height', character.height || '');
+      setVal('profile-edit-weight', character.weight || '');
       setVal('profile-edit-speed', character.baseSpeed || 30);
 
       updateProfileModalAvatar();
@@ -21306,11 +21286,11 @@
 
       // Bio summary
       if (document.getElementById('core-name')) document.getElementById('core-name').textContent = character.name || 'İsimsiz Kahraman';
-      if (document.getElementById('core-race')) document.getElementById('core-race').textContent = character.race || 'Human';
-      if (document.getElementById('core-classes')) document.getElementById('core-classes').textContent = (character.classes || 'Fighter 1') + ` • Seviye ${character.level || 1}`;
+      if (document.getElementById('core-race')) document.getElementById('core-race').textContent = character.race || 'Irk Seçilmedi';
+      if (document.getElementById('core-classes')) document.getElementById('core-classes').textContent = (character.classes || 'Sınıf Seçilmedi') + ` • Seviye ${character.level || 1}`;
       if (document.getElementById('core-bab')) document.getElementById('core-bab').textContent = '+' + (character.bab || 0);
       if (document.getElementById('core-speed')) document.getElementById('core-speed').textContent = (character.effectiveSpeed || character.baseSpeed || 30) + ' ft';
-      if (document.getElementById('core-hd')) document.getElementById('core-hd').textContent = character.hitDie || 'd8';
+      if (document.getElementById('core-hd')) document.getElementById('core-hd').textContent = character.hitDie || '-';
 
       // Ability scores
       const container = document.getElementById('abilities-grid');

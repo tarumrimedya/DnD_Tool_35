@@ -495,7 +495,7 @@
                   </div>
                   <div class="min-w-0 flex-1">
                     <h3 class="text-sm font-bold text-white truncate group-hover:text-indigo-300 transition" title="${c.name}">${c.name}</h3>
-                    <p class="text-[11px] text-slate-300 truncate">${c.race} • <span class="text-amber-400 font-semibold">${c.classes}</span></p>
+                    <p class="text-[11px] text-slate-300 truncate">${c.race || 'Irk Seçilmedi'} • <span class="text-amber-400 font-semibold">${c.classes || 'Sınıf Seçilmedi'}</span></p>
                     <div class="mt-1 flex items-center gap-1.5">
                       <span class="text-[10px] text-slate-400 bg-slate-900/90 px-2 py-0.5 rounded-md border border-slate-800 truncate" title="Kampanya">${campName}</span>
                     </div>
@@ -650,7 +650,7 @@
                 </div>
                 <div class="min-w-0">
                   <div class="font-bold text-white truncate">${c.name}</div>
-                  <div class="text-[10px] text-slate-400 truncate">${c.race} • ${c.classes}</div>
+                  <div class="text-[10px] text-slate-400 truncate">${c.race || 'Irk Seçilmedi'} • ${c.classes || 'Sınıf Seçilmedi'}</div>
                 </div>
               </div>
             </td>
@@ -785,11 +785,11 @@
 
     function createCleanDnd35Character(summary = {}) {
       const charId = summary.id || ('char_' + Date.now());
-      const hpVal = Number(summary.currentHp || summary.maxHp || summary.hp || 10);
+      const hpVal = Number(summary.currentHp || summary.maxHp || summary.hp || 0);
       const acVal = Number(summary.ac || 10);
       const touchVal = Number(summary.touchAc || 10);
-      const race = summary.race || 'Human';
-      const classes = summary.classes || 'Fighter 1';
+      const race = summary.race || '';
+      const classes = summary.classes || '';
       const name = summary.name || 'Yeni Karakter';
 
       return {
@@ -800,11 +800,12 @@
         race: race,
         classes: classes,
         level: Number(summary.level) || 1,
-        bab: 1,
+        bab: Number(summary.bab) || 0,
         baseSpeed: 30,
-        hitDie: "d10",
-        alignment: "Neutral",
+        hitDie: summary.hitDie || '',
+        alignment: summary.alignment || '',
         abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+        baseAbilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
         hp: {
           current: hpVal,
           max: hpVal,
@@ -814,7 +815,7 @@
           nonlethal: 0
         },
         acBreakdown: {
-          armor: Math.max(0, acVal - 10),
+          armor: 0,
           shield: 0,
           natural: 0,
           deflection: 0,
@@ -825,30 +826,17 @@
           touch: touchVal,
           flatFooted: Math.max(10, acVal - 2)
         },
-        baseSaves: { fort: 2, ref: 0, will: 0 },
+        baseSaves: { fort: Number(summary.fortSave) || 0, ref: Number(summary.refSave) || 0, will: Number(summary.willSave) || 0 },
         saveBonuses: { resistance: 0 },
         saves: {
-          fort: { total: 2 },
-          ref: { total: 0 },
-          will: { total: 0 }
+          fort: { total: Number(summary.fortSave) || 0 },
+          ref: { total: Number(summary.refSave) || 0 },
+          will: { total: Number(summary.willSave) || 0 }
         },
         portrait: summary.portrait || summary.avatarUrl || '',
         avatarUrl: summary.portrait || summary.avatarUrl || '',
-        weapons: [
-          {
-            name: summary.mainWeapon || 'Longsword',
-            category: 'Martial',
-            dice: '1d8',
-            crit: '19-20 / x2',
-            critMin: 19,
-            critMult: 2,
-            dmgType: 'Delici/Kesici',
-            slot: 'One-Handed',
-            isEquipped: true,
-            source: 'Standart Ekipman'
-          }
-        ],
-        activeWeapon: summary.mainWeapon || 'Longsword',
+        weapons: Array.isArray(summary.weapons) ? summary.weapons : [],
+        activeWeapon: summary.mainWeapon || '',
         bodySlots: {
           head: null,
           eyes: null,
@@ -863,29 +851,22 @@
           ring2: null,
           feet: null
         },
-        gearPool: [
-          { name: 'Standart Ok', weaponType: 'Bow', ammoVal: 'standard', qty: 20, weight: 3, cost: 1, category: 'Ammunition', type: 'Ammunition', desc: 'Standart 20 adet ok (1d8 Delici).' },
-          { name: 'Standart Bolt', weaponType: 'Crossbow', ammoVal: 'standard', qty: 10, weight: 1, cost: 1, category: 'Ammunition', type: 'Ammunition', desc: 'Standart 10 adet arbalet oku.' },
-          { name: 'Sapan Taşı', weaponType: 'Sling', ammoVal: 'standard', qty: 20, weight: 5, cost: 0.1, category: 'Ammunition', type: 'Ammunition', desc: 'Standart 20 adet sapan mermisi.' }
-        ],
-        inventory: [],
-        skills: [],
-        feats: [],
-        specialAbilities: [],
-        spells: [],
-        buffs: [],
-        debuffs: [],
+        gearPool: Array.isArray(summary.gearPool) ? summary.gearPool : [],
+        inventory: Array.isArray(summary.inventory) ? summary.inventory : [],
+        skills: Array.isArray(summary.skills) ? summary.skills : [],
+        feats: Array.isArray(summary.feats) ? summary.feats : [],
+        specialAbilities: Array.isArray(summary.specialAbilities) ? summary.specialAbilities : [],
+        spells: Array.isArray(summary.spells) ? summary.spells : [],
+        buffs: Array.isArray(summary.buffs) ? summary.buffs : [],
+        debuffs: Array.isArray(summary.debuffs) ? summary.debuffs : [],
         spellcasting: {
           cl: 0,
           ability: 'int',
           slots: {
-            0: { daily: 0, used: 0 },
-            1: { daily: 0, used: 0 }
+            0: { daily: 0, used: 0 }
           }
         },
-        levelProgression: [
-          { level: 1, className: classes, hpGain: hpVal, babGain: 1, fortGain: 2, refGain: 0, willGain: 0, skillPoints: 4, featGained: 'Bonus Feat' }
-        ],
+        levelProgression: Array.isArray(summary.levelProgression) ? summary.levelProgression : [],
         tomeOfBattle: {
           stances: [],
           readiedManeuvers: []
@@ -907,8 +888,7 @@
           shieldBlockActive: false,
           round: 1,
           weaponSets: {
-            activeSets: [1],
-            set1: { mainWeapon: summary.mainWeapon || 'Longsword', grip: '1-Hand' }
+            activeSets: [1]
           }
         },
         settings: {
@@ -975,20 +955,20 @@
         campaignId: campaignId,
         isNpc: isNpc,
         name: name,
-        race: 'Human',
-        classes: 'Fighter 1',
+        race: '',
+        classes: '',
         level: 1,
         portrait: '',
         avatarUrl: '',
-        currentHp: 10,
-        maxHp: 10,
+        currentHp: 0,
+        maxHp: 0,
         tempHp: 0,
         ac: 10,
         touchAc: 10,
         flatFootedAc: 10,
-        mainWeapon: 'Longsword',
-        attackFormula: '+1 (1d8, 19-20x2)',
-        fortSave: 2,
+        mainWeapon: '-',
+        attackFormula: '-',
+        fortSave: 0,
         refSave: 0,
         willSave: 0,
         initBonus: 0,
