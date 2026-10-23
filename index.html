@@ -366,12 +366,12 @@
       </div>
 
       <!-- 3-COLUMN TACTICAL DASHBOARD -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 xl:gap-4 items-start">
         
         <!-- ==================================================== -->
-        <!-- COLUMN 1: ⚔️ OFFENSE / SALDIRI (lg:col-span-4) -->
+        <!-- COLUMN 1: ⚔️ OFFENSE / SALDIRI (MARTIAL) -->
         <!-- ==================================================== -->
-        <div class="lg:col-span-4 space-y-3.5">
+        <div class="space-y-3.5" id="cockpit-column-physical">
           
           <!-- 1. Weapon Selector & TWF Card (FİZİKSEL SALDIRI) -->
           <div class="bg-dndCard border border-rose-500/40 rounded-xl p-3.5 shadow-lg space-y-3" id="cockpit-physical-card">
@@ -583,13 +583,15 @@
             </div>
             <!-- End of Physical Card Body -->
           </div>
-
+          <!-- End of Cockpit Physical Card -->
         </div>
+        <!-- End of Column 1 (Physical) -->
+      </div>
 
         <!-- ==================================================== -->
-        <!-- COLUMN 2: 🔮 BÜYÜ KOMUTA MERKEZİ (lg:col-span-4) -->
+        <!-- COLUMN 2: 🔮 BÜYÜ KOMUTA MERKEZİ -->
         <!-- ==================================================== -->
-        <div class="lg:col-span-4 space-y-3.5" id="cockpit-column-spell">
+        <div class="space-y-3.5" id="cockpit-column-spell">
           
           <div class="bg-dndCard border border-purple-500/40 rounded-xl p-3.5 shadow-lg space-y-3" id="cockpit-spell-card">
             <!-- Header with Title, CL Badge & Collapse Toggle -->
@@ -775,9 +777,9 @@
         </div>
 
         <!-- ==================================================== -->
-        <!-- COLUMN 3: 🛡️ SAVUNMA & 🧪 KEMER / ENVANTER (lg:col-span-4) -->
+        <!-- COLUMN 3: 🛡️ SAVUNMA & 🧪 KEMER / ENVANTER -->
         <!-- ==================================================== -->
-        <div class="lg:col-span-4 space-y-3.5" id="cockpit-column-defense-consumables">
+        <div class="space-y-3.5" id="cockpit-column-defense-consumables">
           
           <!-- CARD A: 🛡️ SAVUNMA & REAKSİYONLAR -->
           <div class="bg-dndCard border border-indigo-500/40 rounded-xl p-3.5 shadow-lg space-y-3" id="cockpit-defense-card">
