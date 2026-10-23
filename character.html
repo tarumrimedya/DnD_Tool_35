@@ -6533,14 +6533,29 @@
     let masterDb = [];
 
     window.addEventListener('DOMContentLoaded', async () => {
-      await loadInitialData();
-      initSkillFilters();
-      try { renderAll(); } catch (e) { console.error('Initial renderAll error:', e); }
-      verifySettingsGeminiApiKey(false);
-      await CloudSync.init();
-      initDiceColor();
-      renderCustomTemplates();
-      restoreActiveTabAndScroll();
+      try {
+        await loadInitialData();
+      } catch (err) {
+        console.error('loadInitialData failed, attempting fallback to bundled data:', err);
+      }
+      if (!character && window.BUNDLED_CHARACTER_DATA) {
+        character = JSON.parse(JSON.stringify(window.BUNDLED_CHARACTER_DATA));
+      }
+      try {
+        initSkillFilters();
+      } catch (err) {
+        console.error('initSkillFilters failed:', err);
+      }
+      try {
+        renderAll();
+      } catch (e) {
+        console.error('Initial renderAll error:', e);
+      }
+      try { verifySettingsGeminiApiKey(false); } catch (e) {}
+      try { await CloudSync.init(); } catch (e) {}
+      try { initDiceColor(); } catch (e) {}
+      try { renderCustomTemplates(); } catch (e) {}
+      try { restoreActiveTabAndScroll(); } catch (e) {}
     });
 
     let _geminiVerifiedState = null; // null | 'checking' | 'connected' | 'error' | 'empty'
@@ -6655,13 +6670,19 @@
       try {
         let defaultChar = window.BUNDLED_CHARACTER_DATA || null;
         if (!defaultChar) {
-          const res = await fetch('character_data.json');
-          defaultChar = await res.json();
+          try {
+            const res = await fetch('character_data.json');
+            if (res.ok) defaultChar = await res.json();
+          } catch (fetchErr) {
+            console.warn('Network fetch of character_data.json failed:', fetchErr);
+          }
         }
         if (!character) {
-          character = defaultChar;
-          saveStateToStorage(false);
-        } else {
+          if (defaultChar) {
+            character = JSON.parse(JSON.stringify(defaultChar));
+            saveStateToStorage(false);
+          }
+        } else if (defaultChar) {
           let updated = false;
           if (!character.bodySlots || Object.keys(character.bodySlots).length === 0) {
             character.bodySlots = defaultChar.bodySlots;
@@ -6746,7 +6767,7 @@
       if (!defaultDb || defaultDb.length === 0) {
         try {
           const res = await fetch('master_db.json');
-          defaultDb = await res.json();
+          if (res.ok) defaultDb = await res.json();
         } catch (e) {
           console.error('Error fetching master_db.json:', e);
         }
@@ -6760,59 +6781,65 @@
       }
 
       // Sync canonical 29-column RuleMaster entries from defaultDb (master_db.json / BUNDLED_MASTER_DB) into masterDb
-      if (!Array.isArray(masterDb)) masterDb = [];
-      let addedCount = 0;
-      const canonicalDefaults = Array.isArray(defaultDb) ? defaultDb : [];
-      window.CORE_SPELLS_AND_MANEUVERS_35E = canonicalDefaults.filter(
-        m => m && (m.type === 'Spell' || m.type === 'Maneuver' || m.type === 'Stance')
-      );
-      const canonicalKeysToSync = [
-        'type', 'slot', 'parent', 'prereq', 'source', 'benefit', 'description',
-        'bonusType', 'scope', 'role',
-        'strBonus', 'dexBonus', 'conBonus', 'intBonus', 'wisBonus', 'chaBonus',
-        'acBonus', 'hpBonus', 'attBonus', 'dmgBonus',
-        'fortBonus', 'refBonus', 'willBonus', 'skillBonus', 'clBonus', 'speedBonus',
-        'extraDmg', 'dice', 'damageDice', 'critMin', 'critMult', 'dmgType',
-        'action', 'duration', 'range', 'weight', 'cost',
-        'school', 'level', 'discipline', 'tags',
-        'isChild', 'effectType', 'childButtonLabel', 'selfHpCost', 'unitLabel'
-      ];
-      canonicalDefaults.forEach(defItem => {
-        const defName = (defItem.name || '').toLowerCase().trim();
-        const existingItem = masterDb.find(m => (m.name || '').toLowerCase().trim() === defName);
-        if (!existingItem) {
-          const parentName = (defItem.parent && defItem.parent !== '-') ? defItem.parent.replace(/^\u21B3\s*/, '').trim().toLowerCase() : '';
-          const parentIdx = parentName ? masterDb.findIndex(m => (m.name || '').replace(/^\u21B3\s*/, '').trim().toLowerCase() === parentName) : -1;
-          if (parentIdx >= 0) {
-            let insertAt = parentIdx + 1;
-            while (insertAt < masterDb.length && (masterDb[insertAt].parent || '').replace(/^\u21B3\s*/, '').trim().toLowerCase() === parentName) {
-              insertAt++;
+      try {
+        if (!Array.isArray(masterDb)) masterDb = [];
+        masterDb = masterDb.filter(m => m && typeof m === 'object');
+        let addedCount = 0;
+        const canonicalDefaults = Array.isArray(defaultDb) ? defaultDb.filter(m => m && typeof m === 'object' && m.name) : [];
+        window.CORE_SPELLS_AND_MANEUVERS_35E = canonicalDefaults.filter(
+          m => m && (m.type === 'Spell' || m.type === 'Maneuver' || m.type === 'Stance')
+        );
+        const canonicalKeysToSync = [
+          'type', 'slot', 'parent', 'prereq', 'source', 'benefit', 'description',
+          'bonusType', 'scope', 'role',
+          'strBonus', 'dexBonus', 'conBonus', 'intBonus', 'wisBonus', 'chaBonus',
+          'acBonus', 'hpBonus', 'attBonus', 'dmgBonus',
+          'fortBonus', 'refBonus', 'willBonus', 'skillBonus', 'clBonus', 'speedBonus',
+          'extraDmg', 'dice', 'damageDice', 'critMin', 'critMult', 'dmgType',
+          'action', 'duration', 'range', 'weight', 'cost',
+          'school', 'level', 'discipline', 'tags',
+          'isChild', 'effectType', 'childButtonLabel', 'selfHpCost', 'unitLabel'
+        ];
+        canonicalDefaults.forEach(defItem => {
+          if (!defItem || !defItem.name) return;
+          const defName = (defItem.name || '').toLowerCase().trim();
+          const existingItem = masterDb.find(m => m && (m.name || '').toLowerCase().trim() === defName);
+          if (!existingItem) {
+            const parentName = (defItem.parent && defItem.parent !== '-') ? defItem.parent.replace(/^\u21B3\s*/, '').trim().toLowerCase() : '';
+            const parentIdx = parentName ? masterDb.findIndex(m => m && (m.name || '').replace(/^\u21B3\s*/, '').trim().toLowerCase() === parentName) : -1;
+            if (parentIdx >= 0) {
+              let insertAt = parentIdx + 1;
+              while (insertAt < masterDb.length && masterDb[insertAt] && (masterDb[insertAt].parent || '').replace(/^\u21B3\s*/, '').trim().toLowerCase() === parentName) {
+                insertAt++;
+              }
+              masterDb.splice(insertAt, 0, defItem);
+            } else {
+              masterDb.push(defItem);
             }
-            masterDb.splice(insertAt, 0, defItem);
-          } else {
-            masterDb.push(defItem);
+            addedCount++;
+          } else if (defItem.type === 'Spell' || defItem.type === 'Maneuver' || defItem.type === 'Stance') {
+            canonicalKeysToSync.forEach(k => {
+              if (defItem[k] !== undefined && JSON.stringify(existingItem[k]) !== JSON.stringify(defItem[k])) {
+                existingItem[k] = defItem[k];
+                addedCount++;
+              }
+            });
           }
-          addedCount++;
-        } else if (defItem.type === 'Spell' || defItem.type === 'Maneuver' || defItem.type === 'Stance') {
-          canonicalKeysToSync.forEach(k => {
-            if (defItem[k] !== undefined && JSON.stringify(existingItem[k]) !== JSON.stringify(defItem[k])) {
-              existingItem[k] = defItem[k];
+        });
+        // Ensure cantrips in masterDb have level: 0 explicitly
+        masterDb.forEach(m => {
+          if (m && (m.type === 'Spell' || (m.category || '').includes('Spell')) && m.level === undefined) {
+            if (Array.isArray(m.tags) && m.tags.some(t => String(t).toLowerCase() === 'cantrip')) {
+              m.level = 0;
               addedCount++;
             }
-          });
-        }
-      });
-      // Ensure cantrips in masterDb have level: 0 explicitly
-      masterDb.forEach(m => {
-        if ((m.type === 'Spell' || (m.category || '').includes('Spell')) && m.level === undefined) {
-          if (Array.isArray(m.tags) && m.tags.some(t => String(t).toLowerCase() === 'cantrip')) {
-            m.level = 0;
-            addedCount++;
           }
+        });
+        if (addedCount > 0) {
+          localStorage.setItem('dnd35_master_db', JSON.stringify(masterDb));
         }
-      });
-      if (addedCount > 0) {
-        localStorage.setItem('dnd35_master_db', JSON.stringify(masterDb));
+      } catch (syncErr) {
+        console.warn('Canonical masterDb sync warning:', syncErr);
       }
 
       if (typeof syncCustomClassesToRuleEngine === 'function') {
@@ -7344,7 +7371,14 @@
     }
 
     function renderAll() {
-      if (!character) return;
+      if (!character) {
+        if (window.BUNDLED_CHARACTER_DATA) {
+          character = JSON.parse(JSON.stringify(window.BUNDLED_CHARACTER_DATA));
+        } else {
+          console.warn('renderAll: character is null and no bundled data available');
+          return;
+        }
+      }
 
       // Recalculate RAW D&D 3.5e character state, equipment bonuses, and active buffs
       if (typeof RuleEngine !== 'undefined' && RuleEngine.recalculateCharacter) {
@@ -7579,12 +7613,16 @@
           will: (character.baseSaves?.will || 0) + wMod
         };
       }
+      const saveFortVal = (saves && typeof saves.fort === 'number' && !isNaN(saves.fort)) ? saves.fort : (character.saves?.fort?.total ?? 7);
+      const saveRefVal = (saves && typeof saves.ref === 'number' && !isNaN(saves.ref)) ? saves.ref : (character.saves?.ref?.total ?? 6);
+      const saveWillVal = (saves && typeof saves.will === 'number' && !isNaN(saves.will)) ? saves.will : (character.saves?.will?.total ?? 4);
+
       const saveFortEl = document.getElementById('save-fort-display');
-      if (saveFortEl) saveFortEl.textContent = (saves.fort >= 0 ? '+' : '') + saves.fort;
+      if (saveFortEl) saveFortEl.textContent = (saveFortVal >= 0 ? '+' : '') + saveFortVal;
       const saveRefEl = document.getElementById('save-ref-display');
-      if (saveRefEl) saveRefEl.textContent = (saves.ref >= 0 ? '+' : '') + saves.ref;
+      if (saveRefEl) saveRefEl.textContent = (saveRefVal >= 0 ? '+' : '') + saveRefVal;
       const saveWillEl = document.getElementById('save-will-display');
-      if (saveWillEl) saveWillEl.textContent = (saves.will >= 0 ? '+' : '') + saves.will;
+      if (saveWillEl) saveWillEl.textContent = (saveWillVal >= 0 ? '+' : '') + saveWillVal;
 
       // Update save button hover tooltips with detailed calculation breakdown
       const baseFort = character.baseSaves?.fort || 0;
@@ -10319,24 +10357,24 @@
     }
 
     function renderWeaponSetsUI() {
-      ensureWeaponSetsData();
       const container = document.getElementById('weapon-sets-cards-container');
       if (!container) return;
+      try {
+        ensureWeaponSetsData();
+        const sets = character?.tactical?.weaponSets || {};
+        const s1 = sets.set1 || { name: 'Ana El', mainWeapon: character?.activeWeapon || 'Rapier +2', grip: '1-Hand' };
+        const s2 = sets.set2 || { name: 'İkinci El', mainWeapon: '+1 Buckler', grip: 'Off-Hand' };
+        const activeSets = Array.isArray(sets.activeSets) ? sets.activeSets : [1];
+        const is1 = activeSets.includes(1);
+        const is2 = activeSets.includes(2);
+        const isDual = is1 && is2;
 
-      const sets = character.tactical.weaponSets;
-      const s1 = sets.set1 || {};
-      const s2 = sets.set2 || {};
-      const activeSets = sets.activeSets || [1];
-      const is1 = activeSets.includes(1);
-      const is2 = activeSets.includes(2);
-      const isDual = is1 && is2;
+        // Stats for Card 1: STRICTLY Main Hand only
+        const s1MainStats = getWeaponCombatDisplayStats(s1.mainWeapon, s1.grip || '1-Hand', false);
 
-      // Stats for Card 1: STRICTLY Main Hand only
-      const s1MainStats = getWeaponCombatDisplayStats(s1.mainWeapon, s1.grip || '1-Hand', false);
-
-      // Stats for Card 2: STRICTLY Off-Hand / Shield only
-      const s2OffStats = getWeaponCombatDisplayStats(s2.mainWeapon, 'Off-Hand', true);
-      const isCard2Shield = s2OffStats?.isShield;
+        // Stats for Card 2: STRICTLY Off-Hand / Shield only
+        const s2OffStats = getWeaponCombatDisplayStats(s2.mainWeapon, 'Off-Hand', true);
+        const isCard2Shield = s2OffStats?.isShield;
 
       // Card 1 UI (Ana El)
       const card1Html = `
@@ -10435,7 +10473,21 @@
 
       container.innerHTML = card1Html + card2Html;
       populateWeaponSetsEditorDropdowns();
+    } catch (err) {
+      console.error('renderWeaponSetsUI execution error:', err);
+      if (container && !container.innerHTML) {
+        container.innerHTML = `
+          <div class="p-2.5 rounded-xl border border-amber-500/50 bg-slate-900/90 text-amber-200 text-xs flex items-center justify-between">
+            <div>
+              <div class="font-bold">⚔️ Ana El: ${character?.activeWeapon || 'Rapier +2'}</div>
+              <div class="text-[10px] text-slate-400 font-mono">1d6+3 • 18-20/x2 • Delici</div>
+            </div>
+            <span class="text-[9px] font-bold px-2 py-0.5 rounded bg-amber-500/30 text-amber-300">AKTİF</span>
+          </div>
+        `;
+      }
     }
+  }
 
     function toggleWeaponSet(setNum) {
       ensureWeaponSetsData();
@@ -11779,12 +11831,15 @@
           else if (rawDice === '1d4') baseDice = '2d4';
         }
 
-        let critMin = 20;
-        let critMult = 3;
-        if (activeRangedWep.crit.includes('19-20')) {
+        const critStr = (typeof activeRangedWep?.crit === 'string')
+          ? activeRangedWep.crit
+          : (activeRangedWep?.critMin ? `${activeRangedWep.critMin}-20 / x${activeRangedWep.critMult || 2}` : '20 / x3');
+        let critMin = activeRangedWep?.critMin || 20;
+        let critMult = activeRangedWep?.critMult || 3;
+        if (critStr.includes('19-20')) {
           critMin = 19;
           critMult = 2;
-        } else if (activeRangedWep.crit.includes('x2')) {
+        } else if (critStr.includes('x2')) {
           critMin = 20;
           critMult = 2;
         }
@@ -12157,9 +12212,10 @@
         if (dmgDisplayEl) dmgDisplayEl.textContent = dmgText;
 
         const critDisplayEl = document.getElementById('weapon-crit-display');
+        const critText = activeRangedWep.crit || (activeRangedWep.critMin ? `${activeRangedWep.critMin}-20 / x${activeRangedWep.critMult || 2}` : '20 / x3');
         if (critDisplayEl) {
-          critDisplayEl.textContent = activeRangedWep.crit || '20 / x3';
-          critDisplayEl.title = `Kritik Tehdit: ${activeRangedWep.crit} (${activeRangedWep.name})`;
+          critDisplayEl.textContent = critText;
+          critDisplayEl.title = `Kritik Tehdit: ${critText} (${activeRangedWep.name || 'Menzilli'})`;
         }
 
         const typeDisplayEl = document.getElementById('weapon-type-display');
@@ -12919,10 +12975,18 @@
       }
 
       // Ensure qualified modifiers pool & clean unowned entries
-      ensureActiveModifiersPool();
+      try {
+        ensureActiveModifiersPool();
+      } catch (err) {
+        console.warn('ensureActiveModifiersPool error:', err);
+      }
 
       // Automated Pin Sync: Readied maneuvers, known stances, equipped active items, and belt items
-      syncAutomatedCombatPins(character);
+      try {
+        syncAutomatedCombatPins(character);
+      } catch (err) {
+        console.warn('syncAutomatedCombatPins error:', err);
+      }
 
       // 1. Round Tracker
       const roundEl = document.getElementById('combat-round-val');

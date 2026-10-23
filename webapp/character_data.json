@@ -745,6 +745,15 @@
                                 "type":  "Negative Energy",
                                 "active":  false,
                                 "notes":  "5 Can feda et, +3d6 hasar vur"
+                            },
+                            {
+                                "name":  "Çift Silah (TWF)",
+                                "source":  "Combat",
+                                "bonusAtk":  0,
+                                "dice":  "",
+                                "type":  "TWF",
+                                "active":  false,
+                                "notes":  "İkinci El ile Ek Vuruş (RAW Çift Silah)"
                             }
                         ],
     "spellcasting":  {
