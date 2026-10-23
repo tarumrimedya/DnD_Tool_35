@@ -72,56 +72,67 @@
                      "round":  1
                  },
     "combatPins":  {
-                       "offense":  [
-                                       {
-                                           "id":  "m_mountain_hammer",
-                                           "name":  "Mountain Hammer",
-                                           "sourceType":  "Maneuver",
-                                           "action":  "Standard",
-                                           "badge":  "2d6 DR",
-                                           "desc":  "Stone Dragon Lvl 2 Strike: +2d6 hasar ve DR/Hardness yok sayar."
-                                       },
-                                       {
-                                           "id":  "m_steel_wind",
-                                           "name":  "Steel Wind",
-                                           "sourceType":  "Maneuver",
-                                           "action":  "Standard",
-                                           "badge":  "2 Hedef",
-                                           "desc":  "Iron Heart Lvl 1 Strike: Tehdit alanÄ±ndaki 2 bitiÅŸik dÃ¼ÅŸmana saldÄ±rÄ±r."
-                                       },
-                                       {
-                                           "id":  "s_blade_of_blood",
-                                           "name":  "Blade of Blood",
-                                           "sourceType":  "Spell",
-                                           "action":  "Swift",
-                                           "badge":  "+3d6 Hasar",
-                                           "desc":  "Necromancy Lvl 1: 5 Can feda et, sonraki vuruÅŸa +3d6 hasar ekle."
-                                       },
-                                       {
-                                           "id":  "s_scorching_ray",
-                                           "name":  "Scorching Ray",
-                                           "sourceType":  "Spell",
-                                           "action":  "Standard",
-                                           "badge":  "4d6 AteÅŸ",
-                                           "desc":  "Evocation Lvl 2: 35 ft menzilli dokunma Ä±ÅŸÄ±nÄ±, 4d6 ateÅŸ hasarÄ±."
-                                       },
-                                       {
-                                           "id":  "m_punishing_stance",
-                                           "name":  "Punishing Stance",
-                                           "sourceType":  "Stance",
-                                           "action":  "Swift",
-                                           "badge":  "+1d6 / -2 AC",
-                                           "desc":  "Iron Heart Lvl 1 Stance: Her yakÄ±n dÃ¶vÃ¼ÅŸ vuruÅŸuna +1d6 hasar, -2 AC."
-                                       },
-                                       {
-                                           "id":  "st_island",
-                                           "name":  "Island of Blades",
-                                           "sourceType":  "Stance",
-                                           "action":  "Swift",
-                                           "badge":  "DuruÅŸ",
-                                           "desc":  "GÃ¶lge DuruÅŸu: YanÄ±nÄ±zdaki mÃ¼ttefikleriniz dÃ¼ÅŸmanÄ± otomatik olarak Flank eder."
-                                       }
-                                   ],
+                       "offense_melee":  [
+                                             {
+                                                 "id":  "m_mountain_hammer",
+                                                 "name":  "Mountain Hammer",
+                                                 "pinTarget":  "auto",
+                                                 "sourceType":  "Maneuver",
+                                                 "action":  "Standard",
+                                                 "badge":  "2d6 DR",
+                                                 "desc":  "Stone Dragon Lvl 2 Strike: +2d6 hasar ve DR/Hardness yok sayar."
+                                             },
+                                             {
+                                                 "id":  "m_steel_wind",
+                                                 "name":  "Steel Wind",
+                                                 "pinTarget":  "auto",
+                                                 "sourceType":  "Maneuver",
+                                                 "action":  "Standard",
+                                                 "badge":  "2 Hedef",
+                                                 "desc":  "Iron Heart Lvl 1 Strike: Tehdit alanÄ±ndaki 2 bitiÅŸik dÃ¼ÅŸmana saldÄ±rÄ±r."
+                                             },
+                                             {
+                                                 "id":  "s_blade_of_blood",
+                                                 "name":  "Blade of Blood",
+                                                 "pinTarget":  "auto",
+                                                 "sourceType":  "Spell",
+                                                 "action":  "Swift",
+                                                 "badge":  "+3d6 Hasar",
+                                                 "desc":  "Necromancy Lvl 1: 5 Can feda et, sonraki vuruÅŸa +3d6 hasar ekle."
+                                             },
+                                             {
+                                                 "id":  "m_punishing_stance",
+                                                 "name":  "Punishing Stance",
+                                                 "pinTarget":  "auto",
+                                                 "sourceType":  "Stance",
+                                                 "action":  "Swift",
+                                                 "badge":  "+1d6 / -2 AC",
+                                                 "desc":  "Iron Heart Lvl 1 Stance: Her yakÄ±n dÃ¶vÃ¼ÅŸ vuruÅŸuna +1d6 hasar, -2 AC."
+                                             },
+                                             {
+                                                 "id":  "st_island",
+                                                 "name":  "Island of Blades",
+                                                 "pinTarget":  "auto",
+                                                 "sourceType":  "Stance",
+                                                 "action":  "Swift",
+                                                 "badge":  "DuruÅŸ",
+                                                 "desc":  "GÃ¶lge DuruÅŸu: YanÄ±nÄ±zdaki mÃ¼ttefikleriniz dÃ¼ÅŸmanÄ± otomatik olarak Flank eder."
+                                             }
+                                         ],
+                       "offense_ranged":  [
+
+                                          ],
+                       "offense_spell":  [
+                                             {
+                                                 "id":  "s_scorching_ray",
+                                                 "name":  "Scorching Ray",
+                                                 "pinTarget":  "auto",
+                                                 "sourceType":  "Spell",
+                                                 "action":  "Standard",
+                                                 "badge":  "4d6 AteÅŸ",
+                                                 "desc":  "Evocation Lvl 2: 35 ft menzilli dokunma Ä±ÅŸÄ±nÄ±, 4d6 ateÅŸ hasarÄ±."
+                                             }
+                                         ],
                        "defense":  [
                                        {
                                            "id":  "r_shield_block",
@@ -163,6 +174,9 @@
                                            "badge":  "+2 Dodge / %25 AoE",
                                            "desc":  "Alan etkili bÃ¼yÃ¼lerden %25 daha az hasar ve +2 Dodge AC."
                                        }
+                                   ],
+                       "offense":  [
+
                                    ]
                    },
     "weaponAttackProfiles":  {

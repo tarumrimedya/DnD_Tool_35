@@ -23,8 +23,9 @@
         "weight":  13,
         "cost":  32350,
         "actionType":  "Passive",
-        "combatScope":  "melee",
-        "scope":  "Melee Only"
+        "scope":  "Melee Only",
+        "attackType":  "weapon",
+        "combatScope":  "melee"
     },
     {
         "name":  "Rapier +2",
@@ -51,8 +52,9 @@
         "weight":  2,
         "cost":  8320,
         "actionType":  "Passive",
-        "combatScope":  "melee",
-        "scope":  "Melee Only"
+        "scope":  "Melee Only",
+        "attackType":  "weapon",
+        "combatScope":  "melee"
     },
     {
         "name":  "Spiked Chain +2",
@@ -81,8 +83,9 @@
         "weight":  10,
         "cost":  8325,
         "actionType":  "Passive",
-        "combatScope":  "melee",
-        "scope":  "Melee Only"
+        "scope":  "Melee Only",
+        "attackType":  "weapon",
+        "combatScope":  "melee"
     },
     {
         "name":  "Dagger (Shadow Hand)",
@@ -110,8 +113,9 @@
         "weight":  1,
         "cost":  2302,
         "actionType":  "Passive",
-        "combatScope":  "both",
-        "scope":  "All Attacks"
+        "scope":  "All Attacks",
+        "attackType":  "weapon",
+        "combatScope":  "both"
     },
     {
         "name":  "Sword of Defence +5",
@@ -135,8 +139,9 @@
         "weight":  6,
         "cost":  50335,
         "actionType":  "Passive",
-        "combatScope":  "melee",
-        "scope":  "Melee Only"
+        "scope":  "Melee Only",
+        "attackType":  "weapon",
+        "combatScope":  "melee"
     },
     {
         "name":  "Heavy Shield +5",
@@ -157,8 +162,9 @@
         "weight":  15,
         "cost":  25170,
         "actionType":  "Passive",
-        "combatScope":  "melee",
-        "scope":  "Melee Only"
+        "scope":  "Melee Only",
+        "attackType":  "shield",
+        "combatScope":  "melee"
     },
     {
         "name":  "Power Attack",
@@ -171,6 +177,7 @@
         "benefit":  "Subtract number from melee attack rolls (up to BAB), add same number to 1-handed damage or 2x to 2-handed damage.",
         "role":  "Offense / Attack",
         "actionType":  "Passive",
+        "attackType":  "feat_melee",
         "combatScope":  "melee"
     },
     {
@@ -184,6 +191,7 @@
         "benefit":  "Use Dexterity modifier instead of Strength modifier on melee attack rolls with light weapons, rapier, whip, or spiked chain.",
         "role":  "Offense / Attack",
         "actionType":  "Passive",
+        "attackType":  "feat_melee",
         "combatScope":  "melee"
     },
     {
@@ -197,6 +205,7 @@
         "benefit":  "While in a Shadow Hand stance, add Dexterity modifier to melee damage rolls with Shadow Hand discipline weapons.",
         "role":  "Offense / Tactical",
         "actionType":  "Passive",
+        "attackType":  "feat_melee",
         "combatScope":  "melee"
     },
     {
@@ -210,6 +219,7 @@
         "benefit":  "Take up to -5 penalty on attack rolls and add the same number as a dodge bonus to Armor Class.",
         "role":  "Defense / Counter",
         "actionType":  "Passive",
+        "attackType":  "feat_melee",
         "combatScope":  "melee"
     },
     {
@@ -261,6 +271,7 @@
                      "warblade"
                  ],
         "actionType":  "Passive",
+        "attackType":  "stance",
         "combatScope":  "melee"
     },
     {
@@ -312,6 +323,7 @@
                      "swordsage"
                  ],
         "actionType":  "Passive",
+        "attackType":  "stance",
         "combatScope":  "melee"
     },
     {
@@ -363,6 +375,7 @@
                      "swordsage"
                  ],
         "actionType":  "Passive",
+        "attackType":  "stance",
         "combatScope":  "melee"
     },
     {
@@ -416,6 +429,7 @@
                      "crusader"
                  ],
         "actionType":  "Passive",
+        "attackType":  "stance",
         "combatScope":  "melee"
     },
     {
@@ -470,6 +484,7 @@
                      "swordsage"
                  ],
         "actionType":  "Standard",
+        "attackType":  "strike",
         "combatScope":  "melee"
     },
     {
@@ -522,6 +537,7 @@
                      "warblade"
                  ],
         "actionType":  "Standard",
+        "attackType":  "strike",
         "combatScope":  "melee"
     },
     {
@@ -574,6 +590,7 @@
                      "swordsage"
                  ],
         "actionType":  "Standard",
+        "attackType":  "ranged_touch",
         "combatScope":  "ranged"
     },
     {
@@ -626,6 +643,7 @@
                      "bull-rush"
                  ],
         "actionType":  "Standard",
+        "attackType":  "strike",
         "combatScope":  "melee"
     },
     {
@@ -677,6 +695,7 @@
                      "auto-hit"
                  ],
         "actionType":  "Standard",
+        "attackType":  "spell_auto",
         "combatScope":  "ranged"
     },
     {
@@ -728,7 +747,8 @@
                      "shield-ac",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Mage Armor",
@@ -779,7 +799,8 @@
                      "armor-ac",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Bull\u0027s Strength",
@@ -830,7 +851,8 @@
                      "strength",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Mirror Image",
@@ -881,7 +903,8 @@
                      "defense",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Scorching Ray",
@@ -933,6 +956,7 @@
                      "ranged-touch"
                  ],
         "actionType":  "Standard",
+        "attackType":  "ranged_touch",
         "combatScope":  "ranged"
     },
     {
@@ -986,6 +1010,7 @@
                      "phb2"
                  ],
         "actionType":  "Standard",
+        "attackType":  "weapon_buff",
         "combatScope":  "melee"
     },
     {
@@ -1040,6 +1065,7 @@
         "childButtonLabel":  "-5 HP Feda (3d6)",
         "selfHpCost":  5,
         "actionType":  "Standard",
+        "attackType":  "weapon_buff",
         "combatScope":  "melee"
     },
     {
@@ -1093,6 +1119,7 @@
         "effectType":  "damage",
         "childButtonLabel":  "FedasÄ±z (1d6)",
         "actionType":  "Standard",
+        "attackType":  "weapon_buff",
         "combatScope":  "melee"
     },
     {
@@ -1105,7 +1132,8 @@
         "role":  "Defense / Consumable",
         "weight":  0.1,
         "cost":  750,
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Potion of Bull\u0027s Strength",
@@ -1117,7 +1145,8 @@
         "role":  "Buff / Consumable",
         "weight":  0.1,
         "cost":  300,
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "source":  "DMG p.248",
@@ -1135,7 +1164,8 @@
         "strBonus":  2,
         "slot":  "Belt",
         "benefit":  "Grants the wearer an enhancement bonus to Strength of +2.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "source":  "DMG p.257",
@@ -1153,7 +1183,8 @@
         "name":  "Gloves of Dexterity +2",
         "slot":  "Gloves",
         "benefit":  "Grants the wearer an enhancement bonus to Dexterity of +2.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "source":  "DMG p.246",
@@ -1171,7 +1202,8 @@
         "slot":  "Neck",
         "benefit":  "Grants a +1 enhancement bonus to natural armor.",
         "acBonus":  1,
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "fortBonus":  1,
@@ -1192,7 +1224,8 @@
         "role":  "Defense / Saves",
         "benefit":  "Grants a +1 resistance bonus on all saving throws (Fortitude, Reflex, and Will).",
         "refBonus":  1,
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "source":  "DMG p.232",
@@ -1210,7 +1243,8 @@
         "name":  "Ring of Protection +1",
         "slot":  "Ring",
         "benefit":  "Grants a +1 deflection bonus to Armor Class.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "source":  "DMG p.233",
@@ -1226,7 +1260,8 @@
         "name":  "Ring of Sustenance",
         "slot":  "Ring",
         "benefit":  "Provides life-sustaining nourishment. Wearer needs only 2 hours of sleep per day for full rest.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "source":  "Magic Item Compendium p.86",
@@ -1247,7 +1282,8 @@
                              "max":  3,
                              "unit":  "charges",
                              "recharge":  "long_rest"
-                         }
+                         },
+        "attackType":  "none"
     },
     {
         "source":  "DMG p.257",
@@ -1263,7 +1299,8 @@
         "name":  "Goggles of Night",
         "slot":  "Eyes",
         "benefit":  "Grants the wearer darkvision out to a range of 60 feet.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "source":  "DMG p.268",
@@ -1284,7 +1321,8 @@
                              "Open Lock":  4,
                              "Escape Artist":  6
                          },
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "source":  "DMG p.250",
@@ -1305,7 +1343,8 @@
         "skillBonuses":  {
                              "Jump":  5
                          },
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "maxDex":  6,
@@ -1326,7 +1365,8 @@
         "spellFailure":  10,
         "weight":  10,
         "benefit":  "+5 Armor AC (+4 base, +1 enhancement). Mithral craftsmanship reduces ACP to 0 and increases Max Dex to +6.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "spellFailure":  5,
@@ -1347,8 +1387,9 @@
         "weight":  1.5,
         "benefit":  "+2 Shield AC (+1 base, +1 enhancement). Crafted from darkwood, 0 check penalty and half weight.",
         "actionType":  "Passive",
-        "combatScope":  "melee",
-        "scope":  "Melee Only"
+        "scope":  "Melee Only",
+        "attackType":  "shield",
+        "combatScope":  "melee"
     },
     {
         "attBonus":  1,
@@ -1374,8 +1415,9 @@
         "name":  "Dagger (Masterwork)",
         "dmgBonus":  0,
         "actionType":  "Passive",
-        "combatScope":  "both",
-        "scope":  "All Attacks"
+        "scope":  "All Attacks",
+        "attackType":  "weapon",
+        "combatScope":  "both"
     },
     {
         "source":  "DMG p.245",
@@ -1391,7 +1433,8 @@
         "name":  "Wand of Magic Missile (CL 3)",
         "slot":  "Consumable",
         "benefit":  "50 charges of Magic Missile (CL 3), firing 2 missiles for 2d4+2 force damage.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "source":  "PHB p.126",
@@ -1407,7 +1450,8 @@
         "name":  "Backpack, Masterwork",
         "slot":  "Slotless",
         "benefit":  "Ergonomically designed backpack treating Strength score as 1 higher for carrying capacity calculations.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "source":  "PHB p.128",
@@ -1423,7 +1467,8 @@
         "name":  "Rope, Silk (50 ft)",
         "slot":  "Slotless",
         "benefit":  "50 ft strong silk rope, +2 circumstance bonus on Use Rope checks.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "source":  "PHB p.128",
@@ -1438,7 +1483,8 @@
         "name":  "Trail Rations (5 Days)",
         "slot":  "Slotless",
         "benefit":  "Compact rations for 5 days of sustenance during wilderness expeditions.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "source":  "PHB p.102",
@@ -1455,8 +1501,9 @@
         "slot":  "None",
         "attBonus":  1,
         "actionType":  "Passive",
-        "combatScope":  "both",
-        "scope":  "All Attacks"
+        "scope":  "All Attacks",
+        "attackType":  "none",
+        "combatScope":  "both"
     },
     {
         "slot":  "None",
@@ -1470,7 +1517,8 @@
         "benefit":  "Add INT modifier (up to Warblade level) as an insight bonus to Reflex saves when not flat-footed.",
         "type":  "Special Ability",
         "role":  "Defense / Class Feature",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -1483,7 +1531,8 @@
         "benefit":  "Switch the designated weapon for weapon-specific feats (like Weapon Focus) with 1 hour of practice.",
         "type":  "Special Ability",
         "role":  "Utility / Class Feature",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -1497,7 +1546,8 @@
         "benefit":  "Summons a magical companion granting alertness and special bonuses to master.",
         "type":  "Special Ability",
         "role":  "Utility / Class Feature",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Detect Magic",
@@ -1548,7 +1598,8 @@
                      "divination",
                      "detection"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Read Magic",
@@ -1598,7 +1649,8 @@
                      "divine",
                      "divination"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Light",
@@ -1649,7 +1701,8 @@
                      "evocation",
                      "light"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Mage Hand",
@@ -1699,7 +1752,8 @@
                      "transmutation",
                      "telekinesis"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Prestidigitation",
@@ -1749,7 +1803,8 @@
                      "universal",
                      "utility"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Ghost Sound",
@@ -1799,7 +1854,8 @@
                      "illusion",
                      "figment"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Oversized Two-Weapon Fighting",
@@ -1815,8 +1871,9 @@
                      "two-weapon"
                  ],
         "actionType":  "Passive",
-        "combatScope":  "both",
-        "scope":  "All Attacks"
+        "scope":  "All Attacks",
+        "attackType":  "none",
+        "combatScope":  "both"
     },
     {
         "name":  "Monkey Grip",
@@ -1831,7 +1888,8 @@
                      "weapons",
                      "oversized"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Exotic Weapon Proficiency (Jovar)",
@@ -1846,7 +1904,8 @@
                      "proficiency",
                      "jovar"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Boon of Elusiveness Lesser",
@@ -1863,7 +1922,8 @@
                      "defense",
                      "aoe-resist"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Draconic Core (1h/day)",
@@ -1879,7 +1939,8 @@
                      "acid-immunity",
                      "breath-weapon"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Draconic Shield (1/d)",
@@ -1895,7 +1956,8 @@
                      "crit-immunity",
                      "defense"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Draconic Shield (DR/- 1min)",
@@ -1911,7 +1973,8 @@
                      "damage-reduction",
                      "defense"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Draconic Toughness",
@@ -1927,7 +1990,8 @@
                      "hit-points",
                      "passive"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Save Magic +1 Draconic",
@@ -1943,7 +2007,8 @@
                      "saves",
                      "magic-resist"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Ability Boost (+2 Con, +2 Cha)",
@@ -1960,7 +2025,8 @@
                      "con",
                      "cha"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Endurance",
@@ -1976,7 +2042,8 @@
                      "feat",
                      "endurance"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Steadfast Determination",
@@ -1992,7 +2059,8 @@
                      "saves",
                      "will-con"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Ignore ASF / Boon",
@@ -2008,7 +2076,8 @@
                      "asf-ignore",
                      "spellcasting"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Character Level (DM Boon)",
@@ -2024,7 +2093,8 @@
                      "caster-level",
                      "multiclass"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Flaw: Shaky",
@@ -2042,7 +2112,8 @@
                      "bonus-feat",
                      "level-1-only"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Flaw: Frail",
@@ -2060,7 +2131,8 @@
                      "bonus-feat",
                      "level-1-only"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Flaw: Vulnerable",
@@ -2078,7 +2150,8 @@
                      "bonus-feat",
                      "level-1-only"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Flaw: Meager Heft",
@@ -2096,7 +2169,8 @@
                      "bonus-feat",
                      "level-1-only"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Flaw: Poor Reflexes",
@@ -2114,7 +2188,8 @@
                      "bonus-feat",
                      "level-1-only"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Flaw: Noncombatant",
@@ -2132,7 +2207,8 @@
                      "bonus-feat",
                      "level-1-only"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Flaw: Inattentive",
@@ -2150,7 +2226,8 @@
                      "bonus-feat",
                      "level-1-only"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Flaw: Murky-Eyed",
@@ -2168,7 +2245,8 @@
                      "bonus-feat",
                      "level-1-only"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Human Bonus Feat",
@@ -2187,7 +2265,8 @@
                      "bonus-feat",
                      "level-1-only"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Human Versatility (Extra Skills)",
@@ -2205,7 +2284,8 @@
                      "skills",
                      "level-1-only"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Elf Weapon Proficiency",
@@ -2223,7 +2303,8 @@
                      "weapons",
                      "level-1-only"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Dwarven Stonecunning",
@@ -2241,7 +2322,8 @@
                      "stonework",
                      "level-1-only"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Halfling Luck",
@@ -2259,7 +2341,8 @@
                      "saves",
                      "level-1-only"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Skilleri BirleÅŸtir (Skill Consolidation)",
@@ -2281,7 +2364,8 @@
                      "pathfinder",
                      "unearthed-arcana"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Tome of Worldly Memory",
@@ -2308,7 +2392,8 @@
                              "max":  3,
                              "unit":  "uses",
                              "recharge":  "long_rest"
-                         }
+                         },
+        "attackType":  "none"
     },
     {
         "name":  "Stone of Good Luck (Luckstone)",
@@ -2332,7 +2417,8 @@
                  ],
         "saveBonus":  1,
         "abilityCheckBonus":  1,
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Pale Green Ioun Stone",
@@ -2356,7 +2442,8 @@
         "attBonus":  1,
         "saveBonus":  1,
         "abilityCheckBonus":  1,
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Collector of Stories",
@@ -2375,7 +2462,8 @@
                      "knowledge",
                      "monster-identify"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Lore of the Gods",
@@ -2425,7 +2513,8 @@
                      "knowledge",
                      "insight"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Knowledge (The Planes)",
@@ -2444,7 +2533,8 @@
                      "knowledge",
                      "planes"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Knowledge (Geography)",
@@ -2463,7 +2553,8 @@
                      "knowledge",
                      "geography"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Knowledge (Dungeoneering)",
@@ -2482,7 +2573,8 @@
                      "knowledge",
                      "dungeoneering"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Knowledge (Warfare \u0026 Tactics)",
@@ -2502,7 +2594,8 @@
                      "warfare",
                      "tactics"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Knowledge (Architecture and Engineering)",
@@ -2521,7 +2614,8 @@
                      "knowledge",
                      "engineering"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Knowledge (Nobility and Royalty)",
@@ -2540,7 +2634,8 @@
                      "knowledge",
                      "nobility"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Knowledge (History)",
@@ -2559,7 +2654,8 @@
                      "knowledge",
                      "history"
                  ],
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -2575,7 +2671,8 @@
         "name":  "Uncanny Dodge (Ex)",
         "role":  "Defense / Class Feature",
         "benefit":  "Retain Dex bonus to AC even if caught flat-footed or struck by an invisible attacker.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -2591,7 +2688,8 @@
         "name":  "Improved Uncanny Dodge (Ex)",
         "role":  "Defense / Class Feature",
         "benefit":  "Can no longer be flanked; only a rogue with 4+ more rogue levels than character can sneak attack.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -2607,7 +2705,8 @@
         "name":  "Battle Ardor (Ex)",
         "role":  "Offense / Class Feature",
         "benefit":  "Add INT modifier as an insight bonus on rolls made to confirm critical hits.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -2623,7 +2722,8 @@
         "name":  "Battle Cunning (Ex)",
         "role":  "Offense / Class Feature",
         "benefit":  "Add INT modifier as an insight bonus on damage rolls against flat-footed or flanked opponents.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -2639,7 +2739,8 @@
         "name":  "Battle Skill (Ex)",
         "role":  "Defense / Class Feature",
         "benefit":  "Add INT modifier as an insight bonus on checks to resist combat maneuvers (bull rush, trip, disarm, sunder, grapple).",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -2655,7 +2756,8 @@
         "name":  "Battle Mastery (Ex)",
         "role":  "Offense / Class Feature",
         "benefit":  "Add INT modifier as an insight bonus on attack and damage rolls made during attacks of opportunity.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -2671,7 +2773,8 @@
         "name":  "Stance Mastery (Ex)",
         "role":  "Tactical / Class Feature",
         "benefit":  "Can have two martial stances active simultaneously and gain the benefits of both.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -2687,7 +2790,8 @@
         "name":  "Fast Movement (Ex)",
         "role":  "Mobility / Class Feature",
         "benefit":  "+10 ft enhancement bonus to base land speed when wearing light armor, medium armor, or no armor and carrying less than a heavy load.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -2703,7 +2807,8 @@
         "name":  "Rage (Ex)",
         "role":  "Combat Buff / Class Feature",
         "benefit":  "Gain +4 Str, +4 Con, +2 morale bonus to Will saves, -2 penalty to AC for 3+Con modifier rounds.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -2719,7 +2824,8 @@
         "name":  "Damage Reduction 1/- (Ex)",
         "role":  "Defense / Class Feature",
         "benefit":  "Ignore 1 point of physical damage from each weapon attack and natural weapon.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -2735,7 +2841,8 @@
         "name":  "Trap Sense +1 (Ex)",
         "role":  "Defense / Class Feature",
         "benefit":  "Gain +1 reflex bonus on Reflex saves made to avoid traps and +1 dodge bonus to AC against attacks made by traps.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -2751,7 +2858,8 @@
         "name":  "Sneak Attack +1d6",
         "role":  "Offense / Class Feature",
         "benefit":  "Deals +1d6 extra precision damage whenever target is denied Dex bonus to AC or when flanked.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -2767,7 +2875,8 @@
         "name":  "Trapfinding (Ex)",
         "role":  "Utility / Class Feature",
         "benefit":  "Can use Search skill to locate traps with DC \u003e 20 and Disable Device to disarm magic traps.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -2784,7 +2893,8 @@
         "name":  "Evasion (Ex)",
         "role":  "Defense / Class Feature",
         "benefit":  "Take no damage on successful Reflex saving throw against attacks that normally deal half damage on a save.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -2801,7 +2911,8 @@
         "name":  "Turn Undead (Su)",
         "role":  "Tactical / Class Feature",
         "benefit":  "Channel positive divine energy to turn or destroy undead creatures 3 + Cha modifier times per day.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -2817,7 +2928,8 @@
         "name":  "Divine Grace (Su)",
         "role":  "Defense / Class Feature",
         "benefit":  "Gain a bonus equal to Charisma modifier (if any) on all saving throws (Fortitude, Reflex, and Will).",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -2833,7 +2945,8 @@
         "name":  "Lay on Hands (Su)",
         "role":  "Healing / Class Feature",
         "benefit":  "Heal each day a total amount of hit points equal to Paladin level x Charisma modifier by touch.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -2849,7 +2962,8 @@
         "name":  "Smite Evil (Su)",
         "role":  "Offense / Class Feature",
         "benefit":  "Add Cha modifier to attack roll and +1 damage per Paladin level against an evil foe.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -2865,7 +2979,8 @@
         "name":  "Aura of Courage (Su)",
         "role":  "Buff / Class Feature",
         "benefit":  "Immune to fear; allies within 10 ft gain +4 morale bonus on saving throws vs fear effects.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -2881,7 +2996,8 @@
         "name":  "Divine Health (Ex)",
         "role":  "Defense / Class Feature",
         "benefit":  "Immunity to all diseases, including supernatural and magical diseases.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -2897,7 +3013,8 @@
         "name":  "Flurry of Blows (Ex)",
         "role":  "Offense / Class Feature",
         "benefit":  "One additional attack each round with unarmed strike or special monk weapons with -2 on all attack rolls.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -2913,7 +3030,8 @@
         "name":  "Still Mind (Ex)",
         "role":  "Defense / Class Feature",
         "benefit":  "+2 bonus on saving throws against spells and effects from the enchantment school.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -2929,7 +3047,8 @@
         "name":  "Ki Strike (Magic) (Su)",
         "role":  "Offense / Class Feature",
         "benefit":  "Unarmed strikes are treated as magic weapons for the purpose of overcoming damage reduction.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -2944,7 +3063,8 @@
         "name":  "1st Favored Enemy",
         "role":  "Combat Buff / Class Feature",
         "benefit":  "+2 bonus on Bluff, Listen, Sense Motive, Spot, and Survival checks and weapon damage rolls vs chosen creature type.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -2960,7 +3080,8 @@
         "name":  "Wild Empathy (Ex)",
         "role":  "Social / Class Feature",
         "benefit":  "Improve the attitude of an animal with 1d20 + class level + Cha modifier check.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -2975,7 +3096,8 @@
         "name":  "Combat Style (Ex)",
         "role":  "Feat / Class Feature",
         "benefit":  "Gain Rapid Shot (Archery) or Two-Weapon Fighting (TWF) as a bonus feat without meeting prerequisites.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -2991,7 +3113,8 @@
         "name":  "Animal Companion (Ex)",
         "role":  "Companion / Class Feature",
         "benefit":  "Gain a loyal animal companion that advances in power alongside the master.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -3006,7 +3129,8 @@
         "name":  "Wild Shape (Su)",
         "role":  "Transformation / Class Feature",
         "benefit":  "Magically assume the shape of any animal of Medium or Small size for 1 hour per Druid level.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -3022,7 +3146,8 @@
         "name":  "Bardic Music (Su)",
         "role":  "Buff / Class Feature",
         "benefit":  "Use song or poetics to produce magical effects on allies and foes 1 time per day per Bard level.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -3038,7 +3163,8 @@
         "name":  "Bardic Knowledge (Ex)",
         "role":  "Lore / Class Feature",
         "benefit":  "Make special bardic knowledge check (1d20 + Bard level + Int mod) for ancient lore and legends.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -3053,7 +3179,8 @@
         "name":  "Inspire Courage +1 (Su)",
         "role":  "Buff / Class Feature",
         "benefit":  "Allies within 30 ft gain +1 morale bonus on saving throws vs charm/fear and +1 attack/weapon damage.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -3068,7 +3195,8 @@
         "name":  "Steely Resolve 5 (Ex)",
         "role":  "Defense / Class Feature",
         "benefit":  "Delayed damage pool of 5 points; damage taken enters pool and affects you at end of next turn.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -3083,7 +3211,8 @@
         "name":  "Furious Counterstrike (Ex)",
         "role":  "Offense / Class Feature",
         "benefit":  "Gain +1 to +6 morale bonus on melee attack and damage rolls based on amount in delayed damage pool.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -3099,7 +3228,8 @@
         "name":  "Indomitable Soul (Ex)",
         "role":  "Defense / Class Feature",
         "benefit":  "Add CHA modifier as an insight bonus to Will saves.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -3116,7 +3246,8 @@
         "name":  "Abjurant Armor (Su)",
         "role":  "Defense / Class Feature",
         "benefit":  "Whenever you cast an abjuration spell that grants an armor or shield bonus to AC (e.g. Shield, Mage Armor), increase the bonus by your Abjurant Champion level.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -3132,7 +3263,8 @@
         "name":  "Extended Abjuration (Su)",
         "role":  "Buff / Class Feature",
         "benefit":  "All abjuration spells you cast have their duration automatically doubled, as though affected by Extend Spell.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -3148,7 +3280,8 @@
         "name":  "Swift Abjuration (Su)",
         "role":  "Utility / Class Feature",
         "benefit":  "Cast any abjuration spell of up to 2nd level (higher at later levels) as a swift action.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -3163,7 +3296,8 @@
         "name":  "Arcane Boost (Su)",
         "role":  "Combat Buff / Class Feature",
         "benefit":  "Burn a spell slot as a swift action to gain insight bonus to attack, damage, AC, saves, or resistance.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -3179,7 +3313,8 @@
         "name":  "Martial Arcanist (Ex)",
         "role":  "Caster / Class Feature",
         "benefit":  "Your Caster Level in all arcane spellcasting classes becomes equal to your Base Attack Bonus (BAB).",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "slot":  "None",
@@ -3195,7 +3330,8 @@
         "name":  "Diverse Training (Ex)",
         "role":  "Utility / Class Feature",
         "benefit":  "Eldritch knight levels stack with fighter levels for feat prerequisites and with caster levels for spell progression.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Ray of Frost",
@@ -3248,6 +3384,7 @@
                      "ranged-touch"
                  ],
         "actionType":  "Standard",
+        "attackType":  "ranged_touch",
         "combatScope":  "ranged"
     },
     {
@@ -3300,7 +3437,9 @@
                      "orb",
                      "ranged-touch"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "ranged_touch",
+        "combatScope":  "ranged"
     },
     {
         "name":  "Message",
@@ -3350,7 +3489,8 @@
                      "transmutation",
                      "language-dependent"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Mending",
@@ -3401,7 +3541,8 @@
                      "transmutation",
                      "repair"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Dancing Lights",
@@ -3451,7 +3592,8 @@
                      "evocation",
                      "light"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Touch of Fatigue",
@@ -3502,7 +3644,9 @@
                      "touch",
                      "fatigue"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "melee_touch",
+        "combatScope":  "melee"
     },
     {
         "name":  "Grease",
@@ -3552,7 +3696,8 @@
                      "control",
                      "reflex"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Ray of Enfeeblement",
@@ -3603,7 +3748,9 @@
                      "ranged-touch",
                      "debuff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "ranged_touch",
+        "combatScope":  "ranged"
     },
     {
         "name":  "Enlarge Person",
@@ -3653,7 +3800,8 @@
                      "size",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Shocking Grasp",
@@ -3703,7 +3851,9 @@
                      "electricity",
                      "melee-touch"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "melee_touch",
+        "combatScope":  "melee"
     },
     {
         "name":  "True Strike",
@@ -3754,6 +3904,7 @@
                      "insight"
                  ],
         "actionType":  "Standard",
+        "attackType":  "none",
         "combatScope":  "both"
     },
     {
@@ -3804,7 +3955,8 @@
                      "immediate",
                      "utility"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Nerveskitter",
@@ -3855,7 +4007,8 @@
                      "initiative",
                      "spc"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Benign Transposition",
@@ -3905,7 +4058,8 @@
                      "teleportation",
                      "spc"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Protection from Evil",
@@ -3957,7 +4111,8 @@
                      "resistance",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Chill Touch",
@@ -4007,7 +4162,9 @@
                      "melee-touch",
                      "negative-energy"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "melee_touch",
+        "combatScope":  "melee"
     },
     {
         "name":  "â†³ Chill Touch (Undead Panik)",
@@ -4060,7 +4217,9 @@
         "effectType":  "duration",
         "childButtonLabel":  "Undead Panik (1d4+6 Tur)",
         "unitLabel":  "Tur Panicked",
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "melee_touch",
+        "combatScope":  "melee"
     },
     {
         "name":  "Pyrotechnics",
@@ -4111,7 +4270,8 @@
                      "blind",
                      "smoke"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "â†³ Pyrotechnics (Fireworks: KÃ¶rlÃ¼k)",
@@ -4164,7 +4324,8 @@
         "effectType":  "duration",
         "childButtonLabel":  "Fireworks: KÃ¶rlÃ¼k (1d4+1 Tur)",
         "unitLabel":  "Tur Blinded",
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "â†³ Pyrotechnics (Smoke Cloud: -4 STR/DEX)",
@@ -4217,7 +4378,8 @@
         "effectType":  "duration",
         "childButtonLabel":  "Smoke: -4 STR/DEX (1d4+1 Tur)",
         "unitLabel":  "Tur -4 STR/DEX",
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Glitterdust",
@@ -4268,7 +4430,8 @@
                      "anti-invisibility",
                      "control"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Invisibility",
@@ -4319,7 +4482,8 @@
                      "stealth",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Web",
@@ -4369,7 +4533,8 @@
                      "control",
                      "entangle"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "False Life",
@@ -4419,7 +4584,8 @@
                      "temp-hp",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Wraithstrike",
@@ -4471,7 +4637,8 @@
                      "gish",
                      "spc"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Wings of Cover",
@@ -4523,7 +4690,8 @@
                      "immediate",
                      "rotd"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Resist Energy",
@@ -4574,7 +4742,8 @@
                      "resistance",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "See Invisibility",
@@ -4624,7 +4793,8 @@
                      "detection",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Cat\u0027s Grace",
@@ -4675,7 +4845,8 @@
                      "dexterity",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Bear\u0027s Endurance",
@@ -4726,7 +4897,8 @@
                      "constitution",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Fireball",
@@ -4776,7 +4948,9 @@
                      "fire",
                      "aoe"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "saving_throw",
+        "combatScope":  "both"
     },
     {
         "name":  "Lightning Bolt",
@@ -4826,7 +5000,9 @@
                      "electricity",
                      "aoe"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "saving_throw",
+        "combatScope":  "both"
     },
     {
         "name":  "Haste",
@@ -4879,6 +5055,7 @@
                      "buff"
                  ],
         "actionType":  "Standard",
+        "attackType":  "none",
         "combatScope":  "both"
     },
     {
@@ -4930,7 +5107,8 @@
                      "mobility",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Displacement",
@@ -4981,7 +5159,8 @@
                      "miss-chance",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Dispel Magic",
@@ -5031,7 +5210,8 @@
                      "abjuration",
                      "dispel"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Slow",
@@ -5082,7 +5262,8 @@
                      "control",
                      "debuff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Vampiric Touch",
@@ -5133,7 +5314,9 @@
                      "drain",
                      "temp-hp"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "melee_touch",
+        "combatScope":  "melee"
     },
     {
         "name":  "Greater Mage Armor",
@@ -5185,7 +5368,8 @@
                      "buff",
                      "spc"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Stinking Cloud",
@@ -5235,7 +5419,8 @@
                      "control",
                      "nauseated"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Heroism",
@@ -5285,7 +5470,8 @@
                      "morale",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Greater Invisibility",
@@ -5336,7 +5522,8 @@
                      "invisibility",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Dimension Door",
@@ -5385,7 +5572,8 @@
                      "conjuration",
                      "teleportation"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Enervation",
@@ -5436,7 +5624,8 @@
                      "ranged-touch",
                      "negative-levels"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Stoneskin",
@@ -5487,7 +5676,8 @@
                      "adamantine",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Evard\u0027s Black Tentacles",
@@ -5538,7 +5728,8 @@
                      "control",
                      "aoe"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Polymorph",
@@ -5588,7 +5779,8 @@
                      "polymorph",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Orb of Force",
@@ -5641,7 +5833,9 @@
                      "no-sr",
                      "spc"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "ranged_touch",
+        "combatScope":  "ranged"
     },
     {
         "name":  "Orb of Acid",
@@ -5694,7 +5888,9 @@
                      "no-sr",
                      "spc"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "ranged_touch",
+        "combatScope":  "ranged"
     },
     {
         "name":  "Celerity",
@@ -5745,7 +5941,8 @@
                      "extra-action",
                      "phb2"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Solid Fog",
@@ -5796,7 +5993,8 @@
                      "control",
                      "no-save"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Teleport",
@@ -5845,7 +6043,8 @@
                      "conjuration",
                      "teleportation"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Cone of Cold",
@@ -5895,7 +6094,9 @@
                      "cold",
                      "aoe"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "saving_throw",
+        "combatScope":  "both"
     },
     {
         "name":  "Wall of Force",
@@ -5946,7 +6147,8 @@
                      "wall",
                      "control"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Overland Flight",
@@ -5997,7 +6199,8 @@
                      "mobility",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Hold Monster",
@@ -6048,7 +6251,8 @@
                      "paralysis",
                      "control"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Baleful Polymorph",
@@ -6099,7 +6303,8 @@
                      "polymorph",
                      "save-or-lose"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Arcane Fusion",
@@ -6150,7 +6355,8 @@
                      "action-economy",
                      "cm"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Cloudkill",
@@ -6201,7 +6407,9 @@
                      "con-damage",
                      "aoe"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "saving_throw",
+        "combatScope":  "both"
     },
     {
         "name":  "Telekinesis",
@@ -6251,7 +6459,8 @@
                      "telekinesis",
                      "control"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Disintegrate",
@@ -6302,7 +6511,9 @@
                      "ranged-touch",
                      "disintegrate"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "ranged_touch",
+        "combatScope":  "ranged"
     },
     {
         "name":  "â†³ Disintegrate (Fort Save BaÅŸarÄ±lÄ±)",
@@ -6354,7 +6565,9 @@
         "isChild":  true,
         "effectType":  "damage",
         "childButtonLabel":  "Fort BaÅŸarÄ±lÄ± (5d6)",
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "ranged_touch",
+        "combatScope":  "ranged"
     },
     {
         "name":  "Chain Lightning",
@@ -6404,7 +6617,9 @@
                      "electricity",
                      "multi-target"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "saving_throw",
+        "combatScope":  "both"
     },
     {
         "name":  "Greater Dispel Magic",
@@ -6454,7 +6669,8 @@
                      "abjuration",
                      "dispel"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "True Seeing",
@@ -6505,7 +6721,8 @@
                      "true-seeing",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Contingency",
@@ -6555,7 +6772,8 @@
                      "contingency",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Globe of Invulnerability",
@@ -6605,7 +6823,8 @@
                      "spell-immunity",
                      "defense"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Greater Heroism",
@@ -6656,7 +6875,8 @@
                      "fear-immunity",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Antimagic Field",
@@ -6706,7 +6926,8 @@
                      "abjuration",
                      "antimagic"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Greater Teleport",
@@ -6755,7 +6976,8 @@
                      "conjuration",
                      "teleportation"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Limited Wish",
@@ -6805,7 +7027,8 @@
                      "wish",
                      "versatile"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Finger of Death",
@@ -6856,7 +7079,8 @@
                      "death",
                      "slay"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "â†³ Finger of Death (Fort BaÅŸarÄ±sÄ±z: Ã–lÃ¼m)",
@@ -6908,7 +7132,8 @@
         "isChild":  true,
         "effectType":  "status",
         "childButtonLabel":  "â˜ ï¸ Fort BaÅŸarÄ±sÄ±z (Ã–lÃ¼m)",
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Prismatic Spray",
@@ -6958,7 +7183,9 @@
                      "prismatic",
                      "aoe"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "saving_throw",
+        "combatScope":  "both"
     },
     {
         "name":  "Forcecage",
@@ -7010,7 +7237,8 @@
                      "no-sr",
                      "control"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Horrid Wilting",
@@ -7060,7 +7288,9 @@
                      "desiccation",
                      "aoe"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "saving_throw",
+        "combatScope":  "both"
     },
     {
         "name":  "â†³ Horrid Wilting (Bitki / Su Elementali)",
@@ -7112,7 +7342,9 @@
         "isChild":  true,
         "effectType":  "damage",
         "childButtonLabel":  "Bitki / Su Elementali (15d8)",
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "saving_throw",
+        "combatScope":  "both"
     },
     {
         "name":  "Polar Ray",
@@ -7163,7 +7395,9 @@
                      "ray",
                      "ranged-touch"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "ranged_touch",
+        "combatScope":  "ranged"
     },
     {
         "name":  "Mind Blank",
@@ -7213,7 +7447,8 @@
                      "mind-immunity",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Greater Arcane Fusion",
@@ -7264,7 +7499,8 @@
                      "action-economy",
                      "cm"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Maze",
@@ -7315,7 +7551,8 @@
                      "no-save",
                      "control"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Time Stop",
@@ -7365,7 +7602,8 @@
                      "time-stop",
                      "extra-turns"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Wish",
@@ -7415,7 +7653,8 @@
                      "wish",
                      "reality-altering"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Meteor Swarm",
@@ -7465,7 +7704,9 @@
                      "fire",
                      "aoe"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "saving_throw",
+        "combatScope":  "both"
     },
     {
         "name":  "Shapechange",
@@ -7516,7 +7757,8 @@
                      "shapechange",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Mordenkainen\u0027s Disjunction",
@@ -7566,7 +7808,8 @@
                      "disjunction",
                      "dispel"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Cure Minor Wounds",
@@ -7617,7 +7860,9 @@
                      "conjuration",
                      "healing"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "melee_touch",
+        "combatScope":  "melee"
     },
     {
         "name":  "Inflict Minor Wounds",
@@ -7667,7 +7912,9 @@
                      "necromancy",
                      "negative-energy"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "melee_touch",
+        "combatScope":  "melee"
     },
     {
         "name":  "Guidance",
@@ -7719,7 +7966,8 @@
                      "competence",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Cure Light Wounds",
@@ -7773,7 +8021,9 @@
                      "conjuration",
                      "healing"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "melee_touch",
+        "combatScope":  "melee"
     },
     {
         "name":  "â†³ Cure Light Wounds (Undead HasarÄ±)",
@@ -7825,7 +8075,9 @@
         "isChild":  true,
         "effectType":  "damage",
         "childButtonLabel":  "Undead HasarÄ± (1d8+5)",
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "melee_touch",
+        "combatScope":  "melee"
     },
     {
         "name":  "Inflict Light Wounds",
@@ -7875,7 +8127,9 @@
                      "necromancy",
                      "negative-energy"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "melee_touch",
+        "combatScope":  "melee"
     },
     {
         "name":  "â†³ Inflict Light Wounds (Undead Ä°yileÅŸtirme)",
@@ -7927,7 +8181,9 @@
         "isChild":  true,
         "effectType":  "heal",
         "childButtonLabel":  "Undead Ä°yileÅŸtir (1d8+5)",
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "melee_touch",
+        "combatScope":  "melee"
     },
     {
         "name":  "Bless",
@@ -7980,6 +8236,7 @@
                      "buff"
                  ],
         "actionType":  "Standard",
+        "attackType":  "none",
         "combatScope":  "both"
     },
     {
@@ -8032,7 +8289,8 @@
                      "luck",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Cure Moderate Wounds",
@@ -8085,7 +8343,9 @@
                      "conjuration",
                      "healing"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "melee_touch",
+        "combatScope":  "melee"
     },
     {
         "name":  "â†³ Cure Moderate Wounds (Undead HasarÄ±)",
@@ -8137,7 +8397,9 @@
         "isChild":  true,
         "effectType":  "damage",
         "childButtonLabel":  "Undead HasarÄ± (2d8+10)",
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "melee_touch",
+        "combatScope":  "melee"
     },
     {
         "name":  "Inflict Moderate Wounds",
@@ -8187,7 +8449,9 @@
                      "necromancy",
                      "negative-energy"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "melee_touch",
+        "combatScope":  "melee"
     },
     {
         "name":  "â†³ Inflict Moderate Wounds (Undead Ä°yileÅŸtirme)",
@@ -8239,7 +8503,9 @@
         "isChild":  true,
         "effectType":  "heal",
         "childButtonLabel":  "Undead Ä°yileÅŸtir (2d8+10)",
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "melee_touch",
+        "combatScope":  "melee"
     },
     {
         "name":  "Spiritual Weapon",
@@ -8289,7 +8555,8 @@
                      "evocation",
                      "force"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Searing Light",
@@ -8342,7 +8609,8 @@
                      "ranged-touch",
                      "undead"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "â†³ Searing Light (Undead)",
@@ -8394,7 +8662,8 @@
         "isChild":  true,
         "effectType":  "damage",
         "childButtonLabel":  "Undead (6d6)",
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "â†³ Searing Light (IÅŸÄ±ÄŸa Hassas Undead)",
@@ -8446,7 +8715,8 @@
         "isChild":  true,
         "effectType":  "damage",
         "childButtonLabel":  "IÅŸÄ±ÄŸa Hassas Undead (6d8)",
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "â†³ Searing Light (Construct / CansÄ±z)",
@@ -8498,7 +8768,8 @@
         "isChild":  true,
         "effectType":  "damage",
         "childButtonLabel":  "Construct / CansÄ±z (3d6)",
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Cure Serious Wounds",
@@ -8552,7 +8823,9 @@
                      "conjuration",
                      "healing"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "melee_touch",
+        "combatScope":  "melee"
     },
     {
         "name":  "â†³ Cure Serious Wounds (Undead HasarÄ±)",
@@ -8604,7 +8877,9 @@
         "isChild":  true,
         "effectType":  "damage",
         "childButtonLabel":  "Undead HasarÄ± (3d8+13)",
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "melee_touch",
+        "combatScope":  "melee"
     },
     {
         "name":  "Inflict Serious Wounds",
@@ -8654,7 +8929,9 @@
                      "necromancy",
                      "negative-energy"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "melee_touch",
+        "combatScope":  "melee"
     },
     {
         "name":  "â†³ Inflict Serious Wounds (Undead Ä°yileÅŸtirme)",
@@ -8706,7 +8983,9 @@
         "isChild":  true,
         "effectType":  "heal",
         "childButtonLabel":  "Undead Ä°yileÅŸtir (3d8+13)",
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "melee_touch",
+        "combatScope":  "melee"
     },
     {
         "name":  "Prayer",
@@ -8759,6 +9038,7 @@
                      "buff"
                  ],
         "actionType":  "Standard",
+        "attackType":  "none",
         "combatScope":  "both"
     },
     {
@@ -8810,7 +9090,8 @@
                      "aoe",
                      "blind"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "â†³ Holy Smite (Evil Outsider)",
@@ -8862,7 +9143,8 @@
         "isChild":  true,
         "effectType":  "damage",
         "childButtonLabel":  "Evil Outsider (6d6)",
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "â†³ Holy Smite (Neutral Hedef)",
@@ -8914,7 +9196,8 @@
         "isChild":  true,
         "effectType":  "damage",
         "childButtonLabel":  "Neutral Hedef (1d8)",
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Cure Critical Wounds",
@@ -8966,7 +9249,9 @@
                      "conjuration",
                      "healing"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "melee_touch",
+        "combatScope":  "melee"
     },
     {
         "name":  "â†³ Cure Critical Wounds (Undead HasarÄ±)",
@@ -9018,7 +9303,9 @@
         "isChild":  true,
         "effectType":  "damage",
         "childButtonLabel":  "Undead HasarÄ± (4d8+13)",
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "melee_touch",
+        "combatScope":  "melee"
     },
     {
         "name":  "Inflict Critical Wounds",
@@ -9068,7 +9355,9 @@
                      "necromancy",
                      "negative-energy"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "melee_touch",
+        "combatScope":  "melee"
     },
     {
         "name":  "â†³ Inflict Critical Wounds (Undead Ä°yileÅŸtirme)",
@@ -9120,7 +9409,9 @@
         "isChild":  true,
         "effectType":  "heal",
         "childButtonLabel":  "Undead Ä°yileÅŸtir (4d8+13)",
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "melee_touch",
+        "combatScope":  "melee"
     },
     {
         "name":  "Divine Power",
@@ -9172,7 +9463,8 @@
                      "full-bab",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Freedom of Movement",
@@ -9225,7 +9517,8 @@
                      "abjuration",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Righteous Might",
@@ -9277,7 +9570,8 @@
                      "dr",
                      "buff"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Flame Strike",
@@ -9329,7 +9623,8 @@
                      "fire",
                      "aoe"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Heal",
@@ -9381,7 +9676,9 @@
                      "healing",
                      "cleanse"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "melee_touch",
+        "combatScope":  "melee"
     },
     {
         "name":  "â†³ Heal (Undead HasarÄ± / Harm Etkisi)",
@@ -9433,7 +9730,9 @@
         "isChild":  true,
         "effectType":  "damage",
         "childButtonLabel":  "Undead HasarÄ± (60)",
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "melee_touch",
+        "combatScope":  "melee"
     },
     {
         "name":  "Holy Word",
@@ -9485,7 +9784,8 @@
                      "sonic",
                      "aoe"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Fire Storm",
@@ -9537,7 +9837,8 @@
                      "fire",
                      "aoe"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Miracle",
@@ -9588,7 +9889,8 @@
                      "miracle",
                      "ultimate"
                  ],
-        "actionType":  "Standard"
+        "actionType":  "Standard",
+        "attackType":  "none"
     },
     {
         "name":  "Crusader\u0027s Strike",
@@ -9640,6 +9942,7 @@
                      "crusader"
                  ],
         "actionType":  "Standard",
+        "attackType":  "strike",
         "combatScope":  "melee"
     },
     {
@@ -9691,6 +9994,7 @@
                      "warblade"
                  ],
         "actionType":  "Standard",
+        "attackType":  "strike",
         "combatScope":  "melee"
     },
     {
@@ -9745,7 +10049,8 @@
                      "swordsage"
                  ],
         "actionType":  "Immediate",
-        "combatScope":  "both"
+        "attackType":  "strike",
+        "combatScope":  "melee"
     },
     {
         "name":  "Sapphire Nightmare Blade",
@@ -9799,6 +10104,7 @@
                      "swordsage"
                  ],
         "actionType":  "Standard",
+        "attackType":  "strike",
         "combatScope":  "melee"
     },
     {
@@ -9852,6 +10158,7 @@
         "effectType":  "status",
         "childButtonLabel":  "âš ï¸ Konsantrasyon BaÅŸarÄ±sÄ±z (-2 Atk)",
         "actionType":  "Standard",
+        "attackType":  "strike",
         "combatScope":  "melee"
     },
     {
@@ -9906,6 +10213,7 @@
                      "swordsage"
                  ],
         "actionType":  "Swift",
+        "attackType":  "strike",
         "combatScope":  "melee"
     },
     {
@@ -9959,7 +10267,8 @@
                      "warblade"
                  ],
         "actionType":  "Immediate",
-        "combatScope":  "melee"
+        "attackType":  "counter",
+        "combatScope":  "both"
     },
     {
         "name":  "Emerald Razor",
@@ -10012,6 +10321,7 @@
                      "swordsage"
                  ],
         "actionType":  "Standard",
+        "attackType":  "strike",
         "combatScope":  "melee"
     },
     {
@@ -10066,7 +10376,8 @@
                      "swordsage"
                  ],
         "actionType":  "Immediate",
-        "combatScope":  "both"
+        "attackType":  "strike",
+        "combatScope":  "melee"
     },
     {
         "name":  "Rabid Wolf Strike",
@@ -10118,6 +10429,7 @@
                      "swordsage"
                  ],
         "actionType":  "Standard",
+        "attackType":  "strike",
         "combatScope":  "melee"
     },
     {
@@ -10170,7 +10482,8 @@
                      "warblade"
                  ],
         "actionType":  "Standard",
-        "combatScope":  "both"
+        "attackType":  "strike",
+        "combatScope":  "melee"
     },
     {
         "name":  "White Raven Tactics",
@@ -10224,6 +10537,7 @@
                      "crusader"
                  ],
         "actionType":  "Swift",
+        "attackType":  "strike",
         "combatScope":  "melee"
     },
     {
@@ -10278,7 +10592,8 @@
                      "swordsage"
                  ],
         "actionType":  "Immediate",
-        "combatScope":  "both"
+        "attackType":  "strike",
+        "combatScope":  "melee"
     },
     {
         "name":  "Insightful Strike",
@@ -10331,6 +10646,7 @@
                      "swordsage"
                  ],
         "actionType":  "Standard",
+        "attackType":  "strike",
         "combatScope":  "melee"
     },
     {
@@ -10383,6 +10699,7 @@
                      "warblade"
                  ],
         "actionType":  "Standard",
+        "attackType":  "strike",
         "combatScope":  "melee"
     },
     {
@@ -10437,6 +10754,7 @@
                      "swordsage"
                  ],
         "actionType":  "Standard",
+        "attackType":  "strike",
         "combatScope":  "melee"
     },
     {
@@ -10491,6 +10809,7 @@
                      "swordsage"
                  ],
         "actionType":  "Standard",
+        "attackType":  "strike",
         "combatScope":  "melee"
     },
     {
@@ -10545,6 +10864,7 @@
                      "swordsage"
                  ],
         "actionType":  "Standard",
+        "attackType":  "strike",
         "combatScope":  "melee"
     },
     {
@@ -10598,6 +10918,7 @@
                      "swordsage"
                  ],
         "actionType":  "Standard",
+        "attackType":  "strike",
         "combatScope":  "melee"
     },
     {
@@ -10651,6 +10972,7 @@
                      "swordsage"
                  ],
         "actionType":  "Standard",
+        "attackType":  "strike",
         "combatScope":  "melee"
     },
     {
@@ -10703,6 +11025,7 @@
                      "warblade"
                  ],
         "actionType":  "Standard",
+        "attackType":  "strike",
         "combatScope":  "melee"
     },
     {
@@ -10757,7 +11080,8 @@
                      "swordsage"
                  ],
         "actionType":  "Standard",
-        "combatScope":  "both"
+        "attackType":  "strike",
+        "combatScope":  "melee"
     },
     {
         "name":  "Strike of Perfect Clarity",
@@ -10809,6 +11133,7 @@
                      "warblade"
                  ],
         "actionType":  "Standard",
+        "attackType":  "strike",
         "combatScope":  "melee"
     },
     {
@@ -10861,6 +11186,7 @@
                      "swordsage"
                  ],
         "actionType":  "Passive",
+        "attackType":  "stance",
         "combatScope":  "melee"
     },
     {
@@ -10913,6 +11239,7 @@
                      "swordsage"
                  ],
         "actionType":  "Passive",
+        "attackType":  "stance",
         "combatScope":  "melee"
     },
     {
@@ -10967,6 +11294,7 @@
                      "crusader"
                  ],
         "actionType":  "Passive",
+        "attackType":  "stance",
         "combatScope":  "melee"
     },
     {
@@ -11020,6 +11348,7 @@
                      "swordsage"
                  ],
         "actionType":  "Passive",
+        "attackType":  "stance",
         "combatScope":  "melee"
     },
     {
@@ -11072,6 +11401,7 @@
                      "warblade"
                  ],
         "actionType":  "Passive",
+        "attackType":  "stance",
         "combatScope":  "melee"
     },
     {
@@ -11125,6 +11455,7 @@
                      "swordsage"
                  ],
         "actionType":  "Passive",
+        "attackType":  "stance",
         "combatScope":  "melee"
     },
     {
@@ -11177,6 +11508,7 @@
                      "swordsage"
                  ],
         "actionType":  "Passive",
+        "attackType":  "stance",
         "combatScope":  "melee"
     },
     {
@@ -11230,6 +11562,7 @@
                      "swordsage"
                  ],
         "actionType":  "Passive",
+        "attackType":  "stance",
         "combatScope":  "melee"
     },
     {
@@ -11283,6 +11616,7 @@
                      "swordsage"
                  ],
         "actionType":  "Passive",
+        "attackType":  "stance",
         "combatScope":  "melee"
     },
     {
@@ -11303,7 +11637,8 @@
         "role":  "Utility / Exploration",
         "source":  "DMG p.258",
         "benefit":  "The lenses of this item grant a +5 competence bonus on Search checks.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Eyes of the Eagle",
@@ -11323,7 +11658,8 @@
         "role":  "Perception / Scouting",
         "source":  "DMG p.256",
         "benefit":  "These items grant a +5 competence bonus on Spot checks.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Cloak of Elvenkind",
@@ -11343,7 +11679,8 @@
         "role":  "Stealth / Infiltration",
         "source":  "DMG p.252",
         "benefit":  "This cloak grants a +5 competence bonus on Hide checks.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "name":  "Boots of Elvenkind",
@@ -11363,7 +11700,8 @@
         "role":  "Stealth / Infiltration",
         "source":  "DMG p.250",
         "benefit":  "These soft boots grant a +5 competence bonus on Move Silently checks.",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "benefit":  "You may make a number of additional attacks of opportunity equal to your Dexterity bonus. You may also make attacks of opportunity when flat-footed.",
@@ -11374,8 +11712,9 @@
                       },
         "type":  "Feat",
         "actionType":  "Passive",
-        "combatScope":  "both",
-        "scope":  "All Attacks"
+        "scope":  "All Attacks",
+        "attackType":  "none",
+        "combatScope":  "both"
     },
     {
         "benefit":  "When reduced to negative hit points, you continue to act as if disabled.",
@@ -11385,7 +11724,8 @@
                           "disabledAtNegativeHp":  true
                       },
         "type":  "Feat",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "benefit":  "You can cast spells while in wild shape.",
@@ -11395,7 +11735,8 @@
                           "castInWildShape":  true
                       },
         "type":  "Feat",
-        "actionType":  "Passive"
+        "actionType":  "Passive",
+        "attackType":  "none"
     },
     {
         "benefit":  "Secondary attacks with natural weapons suffer only a -2 penalty.",
@@ -11406,8 +11747,9 @@
                       },
         "type":  "Feat",
         "actionType":  "Passive",
-        "combatScope":  "melee",
-        "scope":  "Melee Only"
+        "scope":  "Melee Only",
+        "attackType":  "none",
+        "combatScope":  "melee"
     },
     {
         "benefit":  "You do not provoke an attack of opportunity when performing a trip attack. If you trip an opponent, you immediately get a melee attack against that opponent as if you hadn\u0027t used your attack for the trip.",
@@ -11420,8 +11762,9 @@
                       },
         "type":  "Feat",
         "actionType":  "Passive",
-        "combatScope":  "melee",
-        "scope":  "Melee Only"
+        "scope":  "Melee Only",
+        "attackType":  "none",
+        "combatScope":  "melee"
     },
     {
         "benefit":  "You do not provoke an attack of opportunity when performing a disarm attempt.",
@@ -11434,8 +11777,9 @@
                       },
         "type":  "Feat",
         "actionType":  "Passive",
-        "combatScope":  "melee",
-        "scope":  "Melee Only"
+        "scope":  "Melee Only",
+        "attackType":  "none",
+        "combatScope":  "melee"
     },
     {
         "benefit":  "You do not provoke an attack of opportunity when performing a sunder attempt.",
@@ -11448,8 +11792,9 @@
                       },
         "type":  "Feat",
         "actionType":  "Passive",
-        "combatScope":  "melee",
-        "scope":  "Melee Only"
+        "scope":  "Melee Only",
+        "attackType":  "none",
+        "combatScope":  "melee"
     },
     {
         "benefit":  "You do not provoke an attack of opportunity when starting a grapple.",
@@ -11462,8 +11807,9 @@
                       },
         "type":  "Feat",
         "actionType":  "Passive",
-        "combatScope":  "melee",
-        "scope":  "Melee Only"
+        "scope":  "Melee Only",
+        "attackType":  "none",
+        "combatScope":  "melee"
     },
     {
         "benefit":  "You do not provoke an attack of opportunity when performing a bull rush.",
@@ -11476,8 +11822,9 @@
                       },
         "type":  "Feat",
         "actionType":  "Passive",
-        "combatScope":  "melee",
-        "scope":  "Melee Only"
+        "scope":  "Melee Only",
+        "attackType":  "none",
+        "combatScope":  "melee"
     },
     {
         "benefit":  "You do not provoke an attack of opportunity when performing an overrun.",
@@ -11490,8 +11837,9 @@
                       },
         "type":  "Feat",
         "actionType":  "Passive",
-        "combatScope":  "melee",
-        "scope":  "Melee Only"
+        "scope":  "Melee Only",
+        "attackType":  "none",
+        "combatScope":  "melee"
     },
     {
         "benefit":  "When mounted and using the charge action, you deal double damage with a melee weapon (or triple with a lance).",
@@ -11503,8 +11851,9 @@
         "source":  "PHB p.100",
         "type":  "Feat",
         "actionType":  "Passive",
-        "combatScope":  "melee",
-        "scope":  "Melee Only"
+        "scope":  "Melee Only",
+        "attackType":  "none",
+        "combatScope":  "melee"
     },
     {
         "benefit":  "When using the chosen weapon, your threat range is doubled.",
@@ -11515,8 +11864,9 @@
         "source":  "PHB p.95",
         "type":  "Feat",
         "actionType":  "Passive",
-        "combatScope":  "both",
-        "scope":  "All Attacks"
+        "scope":  "All Attacks",
+        "attackType":  "none",
+        "combatScope":  "both"
     },
     {
         "benefit":  "You can fire multiple arrows simultaneously as a standard action.",
@@ -11528,8 +11878,9 @@
         "source":  "PHB p.97",
         "type":  "Feat",
         "actionType":  "Standard",
-        "combatScope":  "ranged",
-        "scope":  "Ranged Only"
+        "scope":  "Ranged Only",
+        "attackType":  "feat_ranged",
+        "combatScope":  "ranged"
     },
     {
         "name":  "Healing Belt",
@@ -11575,7 +11926,8 @@
                                   "dice":  "4d8",
                                   "effectType":  "heal"
                               }
-                          ]
+                          ],
+        "attackType":  "none"
     },
     {
         "name":  "↳ Healing Belt (1 Şarj: 2d8 Can)",
@@ -11594,7 +11946,8 @@
         "tags":  [
                      "magic item",
                      "healing"
-                 ]
+                 ],
+        "attackType":  "none"
     },
     {
         "name":  "↳ Healing Belt (2 Şarj: 3d8 Can)",
@@ -11613,7 +11966,8 @@
         "tags":  [
                      "magic item",
                      "healing"
-                 ]
+                 ],
+        "attackType":  "none"
     },
     {
         "name":  "↳ Healing Belt (3 Şarj: 4d8 Can)",
@@ -11632,7 +11986,8 @@
         "tags":  [
                      "magic item",
                      "healing"
-                 ]
+                 ],
+        "attackType":  "none"
     },
     {
         "name":  "Witchlight Reservoir",
@@ -11684,8 +12039,9 @@
                                   "durationText":  "1 Tur"
                               }
                           ],
-        "combatScope":  "melee",
-        "scope":  "Melee Only"
+        "scope":  "Melee Only",
+        "attackType":  "none",
+        "combatScope":  "melee"
     },
     {
         "name":  "↳ Witchlight Reservoir (1 Şarj: +2 Hasar)",
@@ -11706,8 +12062,9 @@
                      "buff",
                      "damage"
                  ],
-        "combatScope":  "melee",
-        "scope":  "Melee Only"
+        "scope":  "Melee Only",
+        "attackType":  "none",
+        "combatScope":  "melee"
     },
     {
         "name":  "↳ Witchlight Reservoir (2 Şarj: +4 Hasar)",
@@ -11728,8 +12085,9 @@
                      "buff",
                      "damage"
                  ],
-        "combatScope":  "melee",
-        "scope":  "Melee Only"
+        "scope":  "Melee Only",
+        "attackType":  "none",
+        "combatScope":  "melee"
     },
     {
         "name":  "↳ Witchlight Reservoir (2 Şarj: +20 ft Hız)",
@@ -11750,8 +12108,9 @@
                      "buff",
                      "speed"
                  ],
-        "combatScope":  "melee",
-        "scope":  "Melee Only"
+        "scope":  "Melee Only",
+        "attackType":  "none",
+        "combatScope":  "melee"
     },
     {
         "name":  "Boots of Speed",
@@ -11791,8 +12150,9 @@
                                   "type":  "discharge"
                               }
                           ],
-        "combatScope":  "both",
-        "scope":  "All Attacks"
+        "scope":  "All Attacks",
+        "attackType":  "none",
+        "combatScope":  "both"
     },
     {
         "name":  "Belt of Battle",
@@ -11839,8 +12199,9 @@
                                   "note":  "Ekstra Full-Round Action kazandınız"
                               }
                           ],
-        "combatScope":  "both",
-        "scope":  "All Attacks"
+        "scope":  "All Attacks",
+        "attackType":  "none",
+        "combatScope":  "both"
     },
     {
         "name":  "↳ Belt of Battle (1 Şarj: Move Action)",
@@ -11858,8 +12219,9 @@
                      "tactical",
                      "action-economy"
                  ],
-        "combatScope":  "both",
-        "scope":  "All Attacks"
+        "scope":  "All Attacks",
+        "attackType":  "none",
+        "combatScope":  "both"
     },
     {
         "name":  "↳ Belt of Battle (2 Şarj: Standard Action)",
@@ -11877,8 +12239,9 @@
                      "tactical",
                      "action-economy"
                  ],
-        "combatScope":  "both",
-        "scope":  "All Attacks"
+        "scope":  "All Attacks",
+        "attackType":  "none",
+        "combatScope":  "both"
     },
     {
         "name":  "↳ Belt of Battle (3 Şarj: Full-Round Action)",
@@ -11896,8 +12259,9 @@
                      "tactical",
                      "action-economy"
                  ],
-        "combatScope":  "both",
-        "scope":  "All Attacks"
+        "scope":  "All Attacks",
+        "attackType":  "none",
+        "combatScope":  "both"
     },
     {
         "source":  "Players Handbook p.116",
@@ -11912,8 +12276,9 @@
         "damage":  "1d8",
         "crit":  "20/x3",
         "cost":  75,
-        "combatScope":  "ranged",
-        "scope":  "Ranged Only"
+        "scope":  "Ranged Only",
+        "attackType":  "weapon",
+        "combatScope":  "ranged"
     },
     {
         "source":  "Players Handbook p.116",
@@ -11928,8 +12293,9 @@
         "damage":  "1d6",
         "crit":  "20/x3",
         "cost":  30,
-        "combatScope":  "ranged",
-        "scope":  "Ranged Only"
+        "scope":  "Ranged Only",
+        "attackType":  "weapon",
+        "combatScope":  "ranged"
     },
     {
         "source":  "Players Handbook p.116",
@@ -11944,8 +12310,9 @@
         "damage":  "1d8",
         "crit":  "20/x3",
         "cost":  100,
-        "combatScope":  "ranged",
-        "scope":  "Ranged Only"
+        "scope":  "Ranged Only",
+        "attackType":  "weapon",
+        "combatScope":  "ranged"
     },
     {
         "source":  "Players Handbook p.116",
@@ -11960,8 +12327,9 @@
         "damage":  "1d6",
         "crit":  "20/x3",
         "cost":  75,
-        "combatScope":  "ranged",
-        "scope":  "Ranged Only"
+        "scope":  "Ranged Only",
+        "attackType":  "weapon",
+        "combatScope":  "ranged"
     },
     {
         "source":  "Players Handbook p.116",
@@ -11976,8 +12344,9 @@
         "damage":  "1d8",
         "crit":  "19-20/x2",
         "cost":  35,
-        "combatScope":  "ranged",
-        "scope":  "Ranged Only"
+        "scope":  "Ranged Only",
+        "attackType":  "weapon",
+        "combatScope":  "ranged"
     },
     {
         "source":  "Players Handbook p.116",
@@ -11992,8 +12361,9 @@
         "damage":  "1d10",
         "crit":  "19-20/x2",
         "cost":  50,
-        "combatScope":  "ranged",
-        "scope":  "Ranged Only"
+        "scope":  "Ranged Only",
+        "attackType":  "weapon",
+        "combatScope":  "ranged"
     },
     {
         "source":  "Players Handbook p.116",
@@ -12008,8 +12378,9 @@
         "damage":  "1d4",
         "crit":  "20/x2",
         "cost":  0,
-        "combatScope":  "ranged",
-        "scope":  "Ranged Only"
+        "scope":  "Ranged Only",
+        "attackType":  "weapon",
+        "combatScope":  "ranged"
     },
     {
         "source":  "Players Handbook p.116",
@@ -12021,8 +12392,9 @@
         "weaponType":  "Bow",
         "desc":  "Standart 20 adet ok.",
         "cost":  1,
-        "combatScope":  "ranged",
-        "scope":  "Ranged Only"
+        "scope":  "Ranged Only",
+        "attackType":  "ammunition",
+        "combatScope":  "ranged"
     },
     {
         "source":  "Players Handbook p.116",
@@ -12034,8 +12406,9 @@
         "weaponType":  "Crossbow",
         "desc":  "Standart 10 adet arbalet oku.",
         "cost":  1,
-        "combatScope":  "ranged",
-        "scope":  "Ranged Only"
+        "scope":  "Ranged Only",
+        "attackType":  "ammunition",
+        "combatScope":  "ranged"
     },
     {
         "source":  "Players Handbook p.116",
@@ -12047,8 +12420,9 @@
         "weaponType":  "Sling",
         "desc":  "Standart 10 adet kursun sapan mermisi.",
         "cost":  0.1,
-        "combatScope":  "ranged",
-        "scope":  "Ranged Only"
+        "scope":  "Ranged Only",
+        "attackType":  "ammunition",
+        "combatScope":  "ranged"
     },
     {
         "source":  "Players Handbook p.116",
@@ -12060,8 +12434,9 @@
         "weaponType":  "Bow",
         "desc":  "Gumus uclu 10 adet ok. DR/Gumus asar (-1 hasar).",
         "cost":  21,
-        "combatScope":  "ranged",
-        "scope":  "Ranged Only"
+        "scope":  "Ranged Only",
+        "attackType":  "ammunition",
+        "combatScope":  "ranged"
     },
     {
         "source":  "Players Handbook p.116",
@@ -12073,8 +12448,9 @@
         "weaponType":  "Bow",
         "desc":  "Soguk demir 20 adet ok. DR/Soguk demir asar.",
         "cost":  2,
-        "combatScope":  "ranged",
-        "scope":  "Ranged Only"
+        "scope":  "Ranged Only",
+        "attackType":  "ammunition",
+        "combatScope":  "ranged"
     },
     {
         "source":  "Players Handbook p.116",
@@ -12086,8 +12462,9 @@
         "weaponType":  "Bow",
         "desc":  "Adamantin uclu 5 adet ok. DR ve sertligi asar.",
         "cost":  300,
-        "combatScope":  "ranged",
-        "scope":  "Ranged Only"
+        "scope":  "Ranged Only",
+        "attackType":  "ammunition",
+        "combatScope":  "ranged"
     },
     {
         "source":  "Dungeon Masters Guide p.221",
@@ -12099,8 +12476,9 @@
         "weaponType":  "Bow",
         "desc":  "+1 buyulu 10 adet ok (+1 Saldiri / +1 Hasar).",
         "cost":  400,
-        "combatScope":  "ranged",
-        "scope":  "Ranged Only"
+        "scope":  "Ranged Only",
+        "attackType":  "ammunition",
+        "combatScope":  "ranged"
     },
     {
         "source":  "Dungeon Masters Guide p.221",
@@ -12112,8 +12490,9 @@
         "weaponType":  "Crossbow",
         "desc":  "+1 buyulu 10 adet arbalet oku (+1 Saldiri / +1 Hasar).",
         "cost":  400,
-        "combatScope":  "ranged",
-        "scope":  "Ranged Only"
+        "scope":  "Ranged Only",
+        "attackType":  "ammunition",
+        "combatScope":  "ranged"
     },
     {
         "name":  "Point Blank Shot",
@@ -12132,6 +12511,7 @@
                      "feat",
                      "fighter bonus"
                  ],
+        "attackType":  "feat_ranged",
         "combatScope":  "ranged"
     },
     {
@@ -12152,6 +12532,7 @@
                      "fighter bonus",
                      "full attack"
                  ],
+        "attackType":  "feat_ranged",
         "combatScope":  "ranged"
     },
     {
@@ -12171,6 +12552,7 @@
                      "fighter bonus",
                      "melee negation"
                  ],
+        "attackType":  "feat_ranged",
         "combatScope":  "ranged"
     },
     {
@@ -12189,6 +12571,36 @@
                      "feat",
                      "fighter bonus"
                  ],
+        "attackType":  "feat_ranged",
+        "combatScope":  "ranged"
+    },
+    {
+        "name":  "Melf\u0027s Acid Arrow",
+        "type":  "Spell",
+        "slot":  "None",
+        "tags":  [
+                     "acid",
+                     "ranged-touch",
+                     "conjuration",
+                     "sorcerer",
+                     "wizard"
+                 ],
+        "attBonus":  0,
+        "dmgBonus":  0,
+        "extraDmg":  "2d4",
+        "dice":  "2d4",
+        "critMin":  20,
+        "critMult":  2,
+        "dmgType":  "Acid",
+        "bonusType":  "Untyped",
+        "source":  "PHB p.253",
+        "benefit":  "Ranged touch attack deals 2d4 acid damage on hit and continues dealing acid damage for 1 round + 1 round per 3 levels (no SR).",
+        "role":  "Offense / Ranged Touch",
+        "weight":  0,
+        "cost":  0,
+        "actionType":  "Standard Action",
+        "scope":  "Ranged Only",
+        "attackType":  "ranged_touch",
         "combatScope":  "ranged"
     }
 ];
@@ -12267,56 +12679,67 @@ window.BUNDLED_CHARACTER_DATA = {
                      "round":  1
                  },
     "combatPins":  {
-                       "offense":  [
-                                       {
-                                           "id":  "m_mountain_hammer",
-                                           "name":  "Mountain Hammer",
-                                           "sourceType":  "Maneuver",
-                                           "action":  "Standard",
-                                           "badge":  "2d6 DR",
-                                           "desc":  "Stone Dragon Lvl 2 Strike: +2d6 hasar ve DR/Hardness yok sayar."
-                                       },
-                                       {
-                                           "id":  "m_steel_wind",
-                                           "name":  "Steel Wind",
-                                           "sourceType":  "Maneuver",
-                                           "action":  "Standard",
-                                           "badge":  "2 Hedef",
-                                           "desc":  "Iron Heart Lvl 1 Strike: Tehdit alanÄ±ndaki 2 bitiÅŸik dÃ¼ÅŸmana saldÄ±rÄ±r."
-                                       },
-                                       {
-                                           "id":  "s_blade_of_blood",
-                                           "name":  "Blade of Blood",
-                                           "sourceType":  "Spell",
-                                           "action":  "Swift",
-                                           "badge":  "+3d6 Hasar",
-                                           "desc":  "Necromancy Lvl 1: 5 Can feda et, sonraki vuruÅŸa +3d6 hasar ekle."
-                                       },
-                                       {
-                                           "id":  "s_scorching_ray",
-                                           "name":  "Scorching Ray",
-                                           "sourceType":  "Spell",
-                                           "action":  "Standard",
-                                           "badge":  "4d6 AteÅŸ",
-                                           "desc":  "Evocation Lvl 2: 35 ft menzilli dokunma Ä±ÅŸÄ±nÄ±, 4d6 ateÅŸ hasarÄ±."
-                                       },
-                                       {
-                                           "id":  "m_punishing_stance",
-                                           "name":  "Punishing Stance",
-                                           "sourceType":  "Stance",
-                                           "action":  "Swift",
-                                           "badge":  "+1d6 / -2 AC",
-                                           "desc":  "Iron Heart Lvl 1 Stance: Her yakÄ±n dÃ¶vÃ¼ÅŸ vuruÅŸuna +1d6 hasar, -2 AC."
-                                       },
-                                       {
-                                           "id":  "st_island",
-                                           "name":  "Island of Blades",
-                                           "sourceType":  "Stance",
-                                           "action":  "Swift",
-                                           "badge":  "DuruÅŸ",
-                                           "desc":  "GÃ¶lge DuruÅŸu: YanÄ±nÄ±zdaki mÃ¼ttefikleriniz dÃ¼ÅŸmanÄ± otomatik olarak Flank eder."
-                                       }
-                                   ],
+                       "offense_melee":  [
+                                             {
+                                                 "id":  "m_mountain_hammer",
+                                                 "name":  "Mountain Hammer",
+                                                 "pinTarget":  "auto",
+                                                 "sourceType":  "Maneuver",
+                                                 "action":  "Standard",
+                                                 "badge":  "2d6 DR",
+                                                 "desc":  "Stone Dragon Lvl 2 Strike: +2d6 hasar ve DR/Hardness yok sayar."
+                                             },
+                                             {
+                                                 "id":  "m_steel_wind",
+                                                 "name":  "Steel Wind",
+                                                 "pinTarget":  "auto",
+                                                 "sourceType":  "Maneuver",
+                                                 "action":  "Standard",
+                                                 "badge":  "2 Hedef",
+                                                 "desc":  "Iron Heart Lvl 1 Strike: Tehdit alanÄ±ndaki 2 bitiÅŸik dÃ¼ÅŸmana saldÄ±rÄ±r."
+                                             },
+                                             {
+                                                 "id":  "s_blade_of_blood",
+                                                 "name":  "Blade of Blood",
+                                                 "pinTarget":  "auto",
+                                                 "sourceType":  "Spell",
+                                                 "action":  "Swift",
+                                                 "badge":  "+3d6 Hasar",
+                                                 "desc":  "Necromancy Lvl 1: 5 Can feda et, sonraki vuruÅŸa +3d6 hasar ekle."
+                                             },
+                                             {
+                                                 "id":  "m_punishing_stance",
+                                                 "name":  "Punishing Stance",
+                                                 "pinTarget":  "auto",
+                                                 "sourceType":  "Stance",
+                                                 "action":  "Swift",
+                                                 "badge":  "+1d6 / -2 AC",
+                                                 "desc":  "Iron Heart Lvl 1 Stance: Her yakÄ±n dÃ¶vÃ¼ÅŸ vuruÅŸuna +1d6 hasar, -2 AC."
+                                             },
+                                             {
+                                                 "id":  "st_island",
+                                                 "name":  "Island of Blades",
+                                                 "pinTarget":  "auto",
+                                                 "sourceType":  "Stance",
+                                                 "action":  "Swift",
+                                                 "badge":  "DuruÅŸ",
+                                                 "desc":  "GÃ¶lge DuruÅŸu: YanÄ±nÄ±zdaki mÃ¼ttefikleriniz dÃ¼ÅŸmanÄ± otomatik olarak Flank eder."
+                                             }
+                                         ],
+                       "offense_ranged":  [
+
+                                          ],
+                       "offense_spell":  [
+                                             {
+                                                 "id":  "s_scorching_ray",
+                                                 "name":  "Scorching Ray",
+                                                 "pinTarget":  "auto",
+                                                 "sourceType":  "Spell",
+                                                 "action":  "Standard",
+                                                 "badge":  "4d6 AteÅŸ",
+                                                 "desc":  "Evocation Lvl 2: 35 ft menzilli dokunma Ä±ÅŸÄ±nÄ±, 4d6 ateÅŸ hasarÄ±."
+                                             }
+                                         ],
                        "defense":  [
                                        {
                                            "id":  "r_shield_block",
@@ -12358,6 +12781,9 @@ window.BUNDLED_CHARACTER_DATA = {
                                            "badge":  "+2 Dodge / %25 AoE",
                                            "desc":  "Alan etkili bÃ¼yÃ¼lerden %25 daha az hasar ve +2 Dodge AC."
                                        }
+                                   ],
+                       "offense":  [
+
                                    ]
                    },
     "weaponAttackProfiles":  {
@@ -13225,5 +13651,4 @@ window.BUNDLED_CHARACTER_DATA = {
                         }
                     ],
     "lastModified":  "2026-10-15T21:50:00.000Z"
-}
-;
+};

@@ -525,6 +525,23 @@
                 </div>
               </div>
 
+              <!-- YAKIN SALDIRI PİNLERİ (MELEE PINS DRAWER) -->
+              <div id="combat-pins-container-offense_melee" class="bg-slate-950/80 border border-slate-800 rounded-lg p-2.5 space-y-2">
+                <div class="flex items-center justify-between text-[10px] font-bold text-slate-300 border-b border-slate-800 pb-1.5">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-amber-400">📌</span>
+                    <span class="uppercase tracking-wider">YAKIN SALDIRI ÇEKMECESİ</span>
+                    <span id="offense_melee-pins-badge" class="bg-slate-800 text-amber-300 font-mono font-bold text-[9px] px-1.5 py-0.2 rounded">0</span>
+                  </div>
+                  <button id="toggle-offense_melee-pins-btn" onclick="togglePinDrawer('offense_melee')" class="text-[9px] text-slate-400 hover:text-white bg-slate-900 px-2 py-0.5 rounded border border-slate-800 transition cursor-pointer">
+                    Tümünü Göster
+                  </button>
+                </div>
+                <div id="combat-pins-offense_melee" class="space-y-1.5">
+                  <!-- Populated dynamically -->
+                </div>
+              </div>
+
               <!-- 2. RANGED TACTICAL MODIFIERS & AMMUNITION (Menzilli & Ok Modifiyerleri) -->
               <div id="combat-modifiers-ranged-block" class="hidden bg-slate-950/80 border border-slate-800 rounded-lg p-2.5 space-y-2">
                 <div class="text-[10px] font-bold text-amber-400 uppercase tracking-wide flex items-center justify-between">
@@ -565,6 +582,23 @@
                   <button type="button" onclick="toggleExpandRangedModifiersGrid()" id="btn-toggle-expand-ranged-mods" class="text-[10px] text-amber-400 hover:text-amber-300 font-bold transition flex items-center justify-center gap-1 mx-auto cursor-pointer">
                     <span>▾ Daha Fazla Göster (Genişlet)</span>
                   </button>
+                </div>
+              </div>
+
+              <!-- UZAK SALDIRI PİNLERİ (RANGED PINS DRAWER) -->
+              <div id="combat-pins-container-offense_ranged" class="bg-slate-950/80 border border-slate-800 rounded-lg p-2.5 space-y-2">
+                <div class="flex items-center justify-between text-[10px] font-bold text-amber-300 border-b border-slate-800 pb-1.5">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-amber-400">📌</span>
+                    <span class="uppercase tracking-wider">UZAK SALDIRI ÇEKMECESİ</span>
+                    <span id="offense_ranged-pins-badge" class="bg-slate-800 text-amber-300 font-mono font-bold text-[9px] px-1.5 py-0.2 rounded">0</span>
+                  </div>
+                  <button id="toggle-offense_ranged-pins-btn" onclick="togglePinDrawer('offense_ranged')" class="text-[9px] text-slate-400 hover:text-white bg-slate-900 px-2 py-0.5 rounded border border-slate-800 transition cursor-pointer">
+                    Tümünü Göster
+                  </button>
+                </div>
+                <div id="combat-pins-offense_ranged" class="space-y-1.5">
+                  <!-- Populated dynamically -->
                 </div>
               </div>
             </div>
@@ -658,6 +692,23 @@
                 <span>🔮</span>
                 <span id="main-spell-btn-text">BÜYÜYÜ İCRA ET & ZAR AT</span>
               </button>
+
+              <!-- BÜYÜ SALDIRI PİNLERİ (SPELL PINS DRAWER) -->
+              <div id="combat-pins-container-offense_spell" class="bg-slate-950/80 border border-purple-900/50 rounded-lg p-2.5 space-y-2">
+                <div class="flex items-center justify-between text-[10px] font-bold text-purple-300 border-b border-purple-900/50 pb-1.5">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-purple-400">📌</span>
+                    <span class="uppercase tracking-wider">BÜYÜ SALDIRI ÇEKMECESİ</span>
+                    <span id="offense_spell-pins-badge" class="bg-slate-900 text-purple-300 border border-purple-700/50 font-mono font-bold text-[9px] px-1.5 py-0.2 rounded">0</span>
+                  </div>
+                  <button id="toggle-offense_spell-pins-btn" onclick="togglePinDrawer('offense_spell')" class="text-[9px] text-purple-400 hover:text-white bg-slate-900 px-2 py-0.5 rounded border border-purple-800/60 transition cursor-pointer">
+                    Tümünü Göster
+                  </button>
+                </div>
+                <div id="combat-pins-offense_spell" class="space-y-1.5">
+                  <!-- Populated dynamically -->
+                </div>
+              </div>
             </div>
           </div>
 
@@ -3252,10 +3303,23 @@
           <span id="pin-modal-action-badge" class="bg-slate-800 text-amber-300 font-bold px-2 py-0.5 rounded border border-slate-700">Standard Action</span>
         </div>
         <p id="pin-modal-desc" class="text-slate-300 leading-relaxed bg-slate-950/60 p-2.5 rounded-lg border border-slate-800 font-medium">Açıklama</p>
+        
+        <!-- Çekmece Konumu Değiştirici -->
+        <div class="bg-slate-950/80 border border-slate-800 rounded-lg p-2 space-y-1">
+          <label class="text-[9px] uppercase font-bold text-slate-400 block">Savaş Çekmecesi Konumu:</label>
+          <select id="pin-modal-drawer-select" onchange="onPinModalDrawerChange()" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-amber-200 font-bold focus:outline-none cursor-pointer">
+            <option value="auto">🎯 Otomatik (Türe Göre Akıllı Konum)</option>
+            <option value="offense_melee">⚔️ Yakın Saldırı Çekmecesi</option>
+            <option value="offense_ranged">🏹 Uzak Saldırı Çekmecesi</option>
+            <option value="offense_spell">🔮 Büyü Saldırı Çekmecesi</option>
+            <option value="defense">🛡️ Savunma Çekmecesi</option>
+          </select>
+          <div class="text-[9px] text-slate-500 italic">* Farklı bir çekmecede görmek isterseniz buradan değiştirebilirsiniz.</div>
+        </div>
       </div>
       <div class="flex justify-end gap-2 pt-1 border-t border-slate-800">
-        <button id="pin-modal-unpin-btn" class="px-3 py-1.5 bg-rose-950/50 hover:bg-rose-900 border border-rose-700 text-rose-300 font-bold text-xs rounded-lg transition">📌 Pini Kaldır</button>
-        <button onclick="closePinDetailsModal()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-lg transition">Tamam</button>
+        <button id="pin-modal-unpin-btn" class="px-3 py-1.5 bg-rose-950/50 hover:bg-rose-900 border border-rose-700 text-rose-300 font-bold text-xs rounded-lg transition cursor-pointer">📌 Pini Kaldır</button>
+        <button onclick="closePinDetailsModal()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-lg transition cursor-pointer">Tamam</button>
       </div>
     </div>
   </div>
@@ -3269,19 +3333,31 @@
         <h3 class="font-extrabold text-sm text-white flex items-center gap-1.5">
           <span>📌</span> Savaş Kokpitine Ekle
         </h3>
-        <button onclick="closePinCategoryPicker()" class="text-slate-400 hover:text-white">✕</button>
+        <button onclick="closePinCategoryPicker()" class="text-slate-400 hover:text-white cursor-pointer">✕</button>
       </div>
       <div class="text-xs">
         <div id="pin-picker-item-name" class="font-bold text-amber-300 mb-1">Mountain Hammer</div>
         <div class="text-[11px] text-slate-400">Bu öğeyi hangi savaş çekmecesine sabitlemek istersiniz?</div>
       </div>
       <div class="space-y-1.5 pt-1">
-        <button onclick="confirmPinToCategory('offense')" class="w-full py-2 px-3 bg-slate-900 hover:bg-rose-950/40 border border-slate-700 hover:border-rose-500 rounded-lg text-left text-xs font-bold text-white flex items-center justify-between transition group">
-          <span class="flex items-center gap-2"><span>⚔️</span> Saldırı Çekmecesi (Offense)</span>
+        <button onclick="confirmPinToCategory('auto')" class="w-full py-1.5 px-3 bg-gradient-to-r from-amber-950/60 to-slate-900 hover:from-amber-900/70 hover:to-slate-800 border border-amber-500/60 hover:border-amber-400 rounded-lg text-left text-xs font-bold text-amber-200 flex items-center justify-between transition group cursor-pointer shadow-sm">
+          <span class="flex items-center gap-2"><span>🎯</span> <span>Otomatik (Akıllı Yerleşim)</span></span>
+          <span class="text-amber-400 group-hover:translate-x-1 transition-transform">➔</span>
+        </button>
+        <button onclick="confirmPinToCategory('offense_melee')" class="w-full py-1.5 px-3 bg-slate-900 hover:bg-rose-950/40 border border-slate-700 hover:border-rose-500 rounded-lg text-left text-xs font-bold text-white flex items-center justify-between transition group cursor-pointer">
+          <span class="flex items-center gap-2"><span>⚔️</span> <span>Yakın Saldırı Çekmecesi</span></span>
           <span class="text-rose-400 group-hover:translate-x-1 transition-transform">➔</span>
         </button>
-        <button onclick="confirmPinToCategory('defense')" class="w-full py-2 px-3 bg-slate-900 hover:bg-indigo-950/40 border border-slate-700 hover:border-indigo-500 rounded-lg text-left text-xs font-bold text-white flex items-center justify-between transition group">
-          <span class="flex items-center gap-2"><span>🛡️</span> Savunma Çekmecesi (Defense)</span>
+        <button onclick="confirmPinToCategory('offense_ranged')" class="w-full py-1.5 px-3 bg-slate-900 hover:bg-amber-950/40 border border-slate-700 hover:border-amber-500 rounded-lg text-left text-xs font-bold text-white flex items-center justify-between transition group cursor-pointer">
+          <span class="flex items-center gap-2"><span>🏹</span> <span>Uzak Saldırı Çekmecesi</span></span>
+          <span class="text-amber-400 group-hover:translate-x-1 transition-transform">➔</span>
+        </button>
+        <button onclick="confirmPinToCategory('offense_spell')" class="w-full py-1.5 px-3 bg-slate-900 hover:bg-purple-950/40 border border-slate-700 hover:border-purple-500 rounded-lg text-left text-xs font-bold text-white flex items-center justify-between transition group cursor-pointer">
+          <span class="flex items-center gap-2"><span>🔮</span> <span>Büyü Saldırı Çekmecesi</span></span>
+          <span class="text-purple-400 group-hover:translate-x-1 transition-transform">➔</span>
+        </button>
+        <button onclick="confirmPinToCategory('defense')" class="w-full py-1.5 px-3 bg-slate-900 hover:bg-indigo-950/40 border border-slate-700 hover:border-indigo-500 rounded-lg text-left text-xs font-bold text-white flex items-center justify-between transition group cursor-pointer">
+          <span class="flex items-center gap-2"><span>🛡️</span> <span>Savunma Çekmecesi</span></span>
           <span class="text-indigo-400 group-hover:translate-x-1 transition-transform">➔</span>
         </button>
       </div>
@@ -6733,8 +6809,8 @@
               updated = true;
             }
           }
-          if (!character.combatPins || !character.combatPins.offense) {
-            character.combatPins = (defaultChar && defaultChar.combatPins) ? JSON.parse(JSON.stringify(defaultChar.combatPins)) : { offense: [], defense: [] };
+          if (!character.combatPins || (!character.combatPins.offense_melee && !character.combatPins.offense)) {
+            character.combatPins = (defaultChar && defaultChar.combatPins) ? JSON.parse(JSON.stringify(defaultChar.combatPins)) : { offense_melee: [], offense_ranged: [], offense_spell: [], defense: [] };
             updated = true;
           }
           if (!character.weaponAttackProfiles) {
@@ -6791,7 +6867,7 @@
         );
         const canonicalKeysToSync = [
           'type', 'slot', 'parent', 'prereq', 'source', 'benefit', 'description',
-          'bonusType', 'scope', 'combatScope', 'role',
+          'bonusType', 'scope', 'combatScope', 'attackType', 'role',
           'strBonus', 'dexBonus', 'conBonus', 'intBonus', 'wisBonus', 'chaBonus',
           'acBonus', 'hpBonus', 'attBonus', 'dmgBonus',
           'fortBonus', 'refBonus', 'willBonus', 'skillBonus', 'clBonus', 'speedBonus',
@@ -11070,10 +11146,20 @@
         qualifiedPool.push({ name: 'Sneak Attack', source: 'Feat', bonusAtk: 0, dice: '1d6', type: 'Precision', combatScope: 'both', active: false, notes: '+1d6 Hassas Hasar' });
       }
 
-      // CLEANUP: Strictly remove unowned modifiers lingering from prior storage/dummy data
+      // CLEANUP: Strictly remove unowned modifiers, spell attacks, and non-melee items lingering from prior storage/dummy data
       character.activeModifiers = character.activeModifiers.filter(m => {
         if (!m || !m.name) return false;
         const n = m.name.toLowerCase();
+        // Disallow spell attacks, saving throw spells, and direct ammunition from melee active modifiers
+        if (n.includes('acid arrow') || n.includes('fireball') || n.includes('scorching ray') || n.includes('magic missile') || n.includes('ray of frost') || n.includes('disintegrate')) return false;
+        if ((n.includes('arrow') || n.includes('ok\b')) && !n.includes('enhance arrow') && !n.includes('blade of blood')) return false;
+        const dbEntry = typeof findMasterItem === 'function' ? findMasterItem(m.name) : null;
+        if (dbEntry) {
+          if (['ranged_touch', 'melee_touch', 'spell_auto', 'saving_throw', 'ammunition', 'weapon', 'shield'].includes(dbEntry.attackType)) {
+            return false;
+          }
+          if (dbEntry.combatScope === 'ranged' || dbEntry.scope === 'Ranged Only') return false;
+        }
         if (n.includes('twf') || n.includes('çift silah')) return true;
         if (n.includes('flurry') || n.includes('seri vuruş')) return hasFlurryAbility(character);
         if (n.includes('punishing stance')) return characterHasManeuver(character, 'Punishing Stance');
@@ -11083,6 +11169,7 @@
         if (n.includes('witchlight')) return characterHasItem(character, 'Witchlight');
         if (n.includes('boots of speed') || n.includes('haste')) return characterHasItem(character, 'Boots of Speed') || characterHasBuff(character, 'Haste');
         if (n.includes('sneak attack')) return characterHasSneakAttack(character);
+        if (m.combatScope === 'ranged' || m.scope === 'Ranged Only') return false;
         return true;
       });
 
@@ -11171,6 +11258,16 @@
         if (!m || !m.name) return false;
         if (m.name.includes('TWF') || m.name.includes('Çift Silah')) return false;
         if (m.combatScope === 'ranged' || m.scope === 'Ranged Only') return false;
+        const n = m.name.toLowerCase();
+        if (n.includes('acid arrow') || n.includes('fireball') || n.includes('scorching ray') || n.includes('magic missile') || n.includes('ray of frost') || n.includes('disintegrate')) return false;
+        if ((n.includes('arrow') || n.includes('ok\b')) && !n.includes('enhance arrow') && !n.includes('blade of blood')) return false;
+        const dbEntry = typeof findMasterItem === 'function' ? findMasterItem(m.name) : null;
+        if (dbEntry) {
+          if (['ranged_touch', 'melee_touch', 'spell_auto', 'saving_throw', 'ammunition', 'weapon', 'shield'].includes(dbEntry.attackType)) {
+            return false;
+          }
+          if (dbEntry.combatScope === 'ranged' || dbEntry.scope === 'Ranged Only') return false;
+        }
         return (m.combatScope === 'melee' || m.combatScope === 'both' || !m.combatScope);
       });
       // In 3x3 layout when collapsed: 3 top (Flanking, Charge, Higher Ground) + 6 dynamic = 9 cards total!
@@ -12850,32 +12947,272 @@
     // ====================================================
     // ⚔️ TACTICAL COMBAT COCKPIT ENGINE (3-COLUMN DASHBOARD)
     // ====================================================
-    window.combatDrawerExpanded = { offense: false, defense: false };
-    window.combatPinReorderMode = { offense: false, defense: false };
+    window.combatDrawerExpanded = { offense: false, defense: false, offense_melee: false, offense_ranged: false, offense_spell: false };
+    window.combatPinReorderMode = { offense: false, defense: false, offense_melee: false, offense_ranged: false, offense_spell: false };
     window.pendingCombatPinItem = null;
+    window.currentActivePinModal = null;
+
+    // --- PIN DRAWER ROUTING & CATEGORIZATION MOTORU ---
+    function resolvePinTarget(pin) {
+      if (!pin) return 'offense_melee';
+      if (pin.pinTarget && pin.pinTarget !== 'auto') {
+        if (['offense_melee', 'offense_ranged', 'offense_spell', 'defense'].includes(pin.pinTarget)) {
+          return pin.pinTarget;
+        }
+      }
+
+      const name = (pin.name || '').toLowerCase().trim();
+      const desc = (pin.desc || pin.benefit || pin.notes || '').toLowerCase();
+      const fullText = name + ' ' + desc;
+      const dbItem = typeof findMasterItem === 'function' ? findMasterItem(pin.name) : null;
+      const attackType = pin.attackType || dbItem?.attackType || '';
+      const combatScope = pin.combatScope || dbItem?.combatScope || '';
+      const sourceType = pin.sourceType || dbItem?.type || '';
+
+      // 1. Defense checks
+      if (combatScope === 'defense' || pin.category === 'defense') return 'defense';
+      if (/(shield|armor|ac\b|defense|savunma|zırh|koruma|dodge|deflect|resist|ward|saving throw|save\b|counter|wall of blades|shield block|roots of the mountain)/i.test(fullText)) {
+        if (!/(acid arrow|scorching ray|fireball|ray of frost|disintegrate|magic missile|blade of blood)/i.test(name)) {
+          return 'defense';
+        }
+      }
+
+      // 2. Spell Attack / Spell checks
+      if (attackType === 'ranged_touch' || attackType === 'spell_auto' || attackType === 'saving_throw') {
+        return 'offense_spell';
+      }
+      if (sourceType === 'Spell' || dbItem?.type === 'Spell') {
+        if (attackType === 'weapon_buff' || /(blade of blood|keen edge|holy sword|magic weapon|align weapon)/i.test(name)) {
+          return 'offense_melee';
+        }
+        if (/(shield|mage armor|protection from|blur|mirror image|resist energy)/i.test(name)) {
+          return 'defense';
+        }
+        return 'offense_spell';
+      }
+
+      // 3. Ranged checks
+      if (attackType === 'ammunition' || combatScope === 'ranged' || sourceType === 'Ammunition' || dbItem?.type === 'Ammunition') {
+        return 'offense_ranged';
+      }
+      if (/(arrow|ok\b|bow\b|yay\b|crossbow|arbalet|sling|sapan|dart|shuriken|point blank|precise shot|rapid shot|many shot|far shot|enhance arrow)/i.test(name)) {
+        if (!/(acid arrow)/i.test(name)) {
+          return 'offense_ranged';
+        }
+      }
+
+      // 4. Melee checks (Maneuver, Stance, Melee Touch, Weapon Buff)
+      if (attackType === 'melee_touch' || attackType === 'weapon_buff') {
+        return 'offense_melee';
+      }
+      if (sourceType === 'Maneuver' || sourceType === 'Stance') {
+        return 'offense_melee';
+      }
+
+      return 'offense_melee';
+    }
+
+    function getAllCombatPins() {
+      if (!character) return [];
+      if (!character.combatPins) character.combatPins = { offense_melee: [], offense_ranged: [], offense_spell: [], defense: [] };
+      const all = [];
+      const seenNames = new Set();
+      const keys = ['offense_melee', 'offense_ranged', 'offense_spell', 'defense', 'offense'];
+      keys.forEach(k => {
+        (character.combatPins[k] || []).forEach(p => {
+          if (!p || !p.name) return;
+          const lower = p.name.toLowerCase().trim();
+          if (!seenNames.has(lower)) {
+            seenNames.add(lower);
+            all.push(p);
+          }
+        });
+      });
+      return all;
+    }
+
+    function getPinsForDrawer(drawerKey) {
+      const all = getAllCombatPins();
+      return all.filter(p => resolvePinTarget(p) === drawerKey);
+    }
+
+    function changePinTargetDirect(pinName, newTarget) {
+      if (!character) return;
+      const all = getAllCombatPins();
+      const cleanTarget = String(pinName).toLowerCase().trim();
+      const pin = all.find(p => (p.name || '').toLowerCase().trim() === cleanTarget);
+      if (!pin) return;
+
+      pin.pinTarget = newTarget;
+
+      const targetBuckets = { offense_melee: [], offense_ranged: [], offense_spell: [], defense: [] };
+      all.forEach(p => {
+        const t = resolvePinTarget(p);
+        if (!targetBuckets[t]) targetBuckets[t] = [];
+        targetBuckets[t].push(p);
+      });
+      character.combatPins = targetBuckets;
+
+      saveStateToStorage(true);
+      ['offense_melee', 'offense_ranged', 'offense_spell', 'defense'].forEach(cat => {
+        try { renderCombatPins(cat); } catch (e) {}
+      });
+
+      const labelMap = {
+        auto: 'Otomatik',
+        offense_melee: 'Yakın Saldırı',
+        offense_ranged: 'Uzak Saldırı',
+        offense_spell: 'Büyü Saldırı',
+        defense: 'Savunma'
+      };
+      showDiceTopToast({
+        icon: '📌',
+        title: 'Çekmece Değiştirildi',
+        breakdown: `"${pin.name}" ➔ ${labelMap[newTarget] || newTarget} çekmecesine taşındı.`,
+        total: 'Taşındı'
+      });
+    }
+
+    function onPinModalDrawerChange() {
+      const select = document.getElementById('pin-modal-drawer-select');
+      if (!select || !window.currentActivePinModal) return;
+      changePinTargetDirect(window.currentActivePinModal.name, select.value);
+    }
+
+    function removeCombatPinByName(pinName) {
+      if (!character || !character.combatPins) return;
+      const clean = (pinName || '').toLowerCase().trim();
+      ['offense_melee', 'offense_ranged', 'offense_spell', 'defense', 'offense'].forEach(k => {
+        if (Array.isArray(character.combatPins[k])) {
+          character.combatPins[k] = character.combatPins[k].filter(p => (p.name || '').toLowerCase().trim() !== clean);
+        }
+      });
+    }
+
+    // --- SPELL TOUCH ATTACK ROLLER (BAB + DEX/STR vs TOUCH AC + DAMAGE) ---
+    function rollSpellTouchAttack(spellOrIdx) {
+      let s = null;
+      if (typeof spellOrIdx === 'number' || (!isNaN(spellOrIdx) && typeof spellOrIdx === 'string' && /^\d+$/.test(spellOrIdx))) {
+        s = character?.spellcasting?.knownSpells?.[parseInt(spellOrIdx, 10)];
+      } else if (typeof spellOrIdx === 'object' && spellOrIdx !== null) {
+        s = spellOrIdx;
+      } else if (typeof spellOrIdx === 'string') {
+        const clean = spellOrIdx.toLowerCase().trim();
+        s = (character?.spellcasting?.knownSpells || []).find(sp => (sp.name || '').toLowerCase().trim() === clean)
+          || (typeof findMasterItem === 'function' ? findMasterItem(spellOrIdx) : null)
+          || { name: spellOrIdx };
+      }
+      if (!s) return;
+
+      const dbItem = typeof findMasterItem === 'function' ? findMasterItem(s.name) : null;
+      const attackType = s.attackType || dbItem?.attackType || 'ranged_touch';
+      const isRanged = attackType === 'ranged_touch';
+
+      const bab = Number(character.bab) || 0;
+      const dexMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.dex || 10) : 0;
+      const strMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.str || 10) : 0;
+      const touchAtkBonus = isRanged ? (bab + dexMod) : (bab + strMod);
+
+      const d20 = Math.floor(Math.random() * 20) + 1;
+      const totalAtk = d20 + touchAtkBonus;
+      const isCrit = d20 === 20;
+
+      const { cl } = typeof getCasterInfo === 'function' ? getCasterInfo() : { cl: 1 };
+      const dmgExpr = typeof resolveSpellEffectiveFormula === 'function' ? resolveSpellEffectiveFormula(s, cl) : (s.dice || s.damageDice || (dbItem && dbItem.dice) || '');
+
+      let diceSides = 6;
+      let diceCount = 0;
+      const rolls = [];
+      let dmgSum = 0;
+
+      if (dmgExpr) {
+        const match = String(dmgExpr).match(/^(\d+)d(\d+)(?:\s*([+-])\s*(\d+))?$/i);
+        if (match) {
+          diceCount = parseInt(match[1], 10) || 1;
+          diceSides = parseInt(match[2], 10) || 6;
+          const sign = match[3] || '+';
+          const mod = match[4] ? parseInt(match[4], 10) * (sign === '-' ? -1 : 1) : 0;
+          for (let i = 0; i < diceCount; i++) {
+            const r = Math.floor(Math.random() * diceSides) + 1;
+            rolls.push(r);
+            dmgSum += r;
+          }
+          dmgSum += mod;
+        }
+      }
+
+      const dice3dList = [{ type: 'd20', value: d20 }];
+      rolls.forEach(r => {
+        if (dice3dList.length < 6) dice3dList.push({ type: 'd' + diceSides, value: r });
+      });
+
+      const onDone = () => {
+        const critText = isCrit ? ' 💥 KRİTİK TEHDİT! (20/x2)' : '';
+        const typeLabel = isRanged ? 'Menzilli Dokunma (Ranged Touch)' : 'Yakın Dokunma (Melee Touch)';
+        const dmgText = dmgExpr ? ` • Hasar: ${dmgSum} (${dmgExpr} [${rolls.join('+')}])` : '';
+
+        showDiceTopToast({
+          icon: '⚡',
+          title: `${s.name} - ${typeLabel}`,
+          breakdown: `Dokunma Saldırısı: d20 [${d20}] + ${touchAtkBonus} = ${totalAtk} (Hedef Touch AC'ye Karşı)${critText}${dmgText}`,
+          total: `${totalAtk} Dokunma Vuruşu`
+        });
+
+        addDiceHistoryEntry({
+          icon: '⚡',
+          title: `${s.name} Dokunma Saldırısı`,
+          formula: `d20+${touchAtkBonus}${dmgExpr ? ` & ${dmgExpr}` : ''}`,
+          breakdown: `Atk: ${totalAtk} (d20:${d20})${dmgText}`,
+          total: `${totalAtk} Vuruş`
+        });
+      };
+
+      if (window.Dice3D && typeof Dice3D.roll === 'function') {
+        try {
+          Dice3D.roll(dice3dList, onDone);
+        } catch (e) {
+          onDone();
+        }
+      } else {
+        onDone();
+      }
+    }
 
     // --- AUTOMATED COMBAT PINS SYNCHRONIZATION ---
     // Readied maneuvers, known stances, equipped items with active abilities route automatically.
     function syncAutomatedCombatPins(char) {
       if (!char) return;
-      if (!char.combatPins) char.combatPins = { offense: [], defense: [] };
-      if (!char.combatPins.offense) char.combatPins.offense = [];
+      if (!char.combatPins) char.combatPins = { offense_melee: [], offense_ranged: [], offense_spell: [], defense: [] };
+      if (!char.combatPins.offense_melee) char.combatPins.offense_melee = [];
+      if (!char.combatPins.offense_ranged) char.combatPins.offense_ranged = [];
+      if (!char.combatPins.offense_spell) char.combatPins.offense_spell = [];
       if (!char.combatPins.defense) char.combatPins.defense = [];
 
-      // Migration: Clean up or migrate any legacy utility pins to offense/defense
+      // Migration: Clean up or migrate any legacy utility/offense pins
       if (Array.isArray(char.combatPins.utility) && char.combatPins.utility.length > 0) {
         char.combatPins.utility.forEach(pin => {
           if (!pin || !pin.name) return;
           const isConsumable = pin.sourceType === 'Consumable' || /potion|scroll|wand/i.test(pin.name);
           if (!isConsumable) {
-            const isDef = /(shield|armor|ac\b|defense|save|counter|dodge)/i.test((pin.name + ' ' + (pin.desc || '')).toLowerCase());
-            const targetCat = isDef ? 'defense' : 'offense';
+            const targetCat = resolvePinTarget(pin);
             if (!char.combatPins[targetCat].some(p => (p.name || '').toLowerCase() === (pin.name || '').toLowerCase())) {
               char.combatPins[targetCat].push(pin);
             }
           }
         });
         delete char.combatPins.utility;
+      }
+
+      if (Array.isArray(char.combatPins.offense) && char.combatPins.offense.length > 0) {
+        char.combatPins.offense.forEach(pin => {
+          if (!pin || !pin.name) return;
+          const target = resolvePinTarget(pin);
+          if (!char.combatPins[target]) char.combatPins[target] = [];
+          if (!char.combatPins[target].some(p => (p.name || '').toLowerCase() === (pin.name || '').toLowerCase())) {
+            char.combatPins[target].push(pin);
+          }
+        });
+        delete char.combatPins.offense;
       }
 
       // Helper: detect active ability or spell effect in an equipped item
@@ -12898,7 +13235,10 @@
         if (!isActive) return null;
 
         const isDefense = /(shield|protection|resist|saving|counter|ac\b|zırh|savunma|koruma|dodge|deflect|ward|barrier|fortification|displacement|stoneskin|endure)/i.test(fullText);
-        let cat = isDefense ? 'defense' : 'offense';
+        const isRanged = /(arrow|bow|crossbow|sling|dart|shuriken|quiver)/i.test(fullText);
+        const isSpellAtk = /(acid arrow|scorching ray|fireball|ray of frost|magic missile|disintegrate|orb of|lightning bolt)/i.test(fullText);
+
+        let cat = isDefense ? 'defense' : (isSpellAtk ? 'offense_spell' : (isRanged ? 'offense_ranged' : 'offense_melee'));
 
         const dmgExpr = typeof findDiceExpression === 'function' ? findDiceExpression(item.desc || item.benefit || '') : '';
         let badge = dmgExpr || '';
@@ -12932,7 +13272,7 @@
         const mAction = (m.action || 'Standard').toLowerCase();
         const fullText = mName + ' ' + mDesc + ' ' + mDisc;
 
-        let cat = 'offense';
+        let cat = 'offense_melee';
         if (mDisc.includes('setting sun') || mAction.includes('immediate') || /(counter|block|wall of blades|shield|save|ac\b|dodge|defense|mind over body|moment of perfect mind|action before thought|iron heart focus)/i.test(fullText)) {
           cat = 'defense';
         }
@@ -12958,7 +13298,7 @@
         const stDesc = (st.benefit || '').toLowerCase();
         const fullText = stName + ' ' + stDesc;
 
-        let cat = 'offense';
+        let cat = 'offense_melee';
         if (/(ac\b|dodge|defense|save|shield|clarity|roots of the mountain|bolstering)/i.test(fullText)) {
           cat = 'defense';
         }
@@ -12995,14 +13335,14 @@
         });
       }
 
-      // D. Belt items from gearPool (only non-consumables, as consumables are managed in Acil Sarf Kemeri)
+      // D. Belt items from gearPool
       if (Array.isArray(char.gearPool)) {
         char.gearPool.filter(g => g && g.isBelt && !g.isEquipped && g.category !== 'Consumable' && !/potion|scroll|wand/i.test(g.name || '')).forEach(item => {
           const name = (item.name || '').toLowerCase();
           const desc = (item.desc || '').toLowerCase();
           const fullText = name + ' ' + desc;
 
-          let cat = /(shield|barkskin|armor|defense|protection|dodge|save|resist)/i.test(fullText) ? 'defense' : 'offense';
+          let cat = /(shield|barkskin|armor|defense|protection|dodge|save|resist)/i.test(fullText) ? 'defense' : 'offense_melee';
           const badge = item.qty ? `${item.qty} Adet` : (item.category || 'Kemer');
           currentAutoPins.push({
             autoKey: `belt_${item.id || item.name.toLowerCase()}`,
@@ -13018,10 +13358,11 @@
       }
 
       // Seamlessly tag existing pins matching current auto-pins if they don't have autoType yet
+      const allCategories = ['offense_melee', 'offense_ranged', 'offense_spell', 'defense', 'offense'];
       currentAutoPins.forEach(autoPin => {
         if (!autoPin || !autoPin.name) return;
         const autoNameLower = (autoPin.name || '').toLowerCase();
-        ['offense', 'defense'].forEach(c => {
+        allCategories.forEach(c => {
           const match = (char.combatPins[c] || []).find(p => (p && p.name ? p.name : '').toLowerCase() === autoNameLower);
           if (match && !match.autoType) {
             match.autoType = autoPin.autoType;
@@ -13034,12 +13375,14 @@
       // 2. Reconcile with character.combatPins:
       // Remove outdated auto-pins that no longer match any current auto-item
       const validAutoKeys = new Set(currentAutoPins.map(p => p.autoKey));
-      ['offense', 'defense'].forEach(c => {
-        char.combatPins[c] = (char.combatPins[c] || []).filter(p => {
-          if (!p) return false;
-          if (!p.autoType) return true; // Keep manual pins
-          return validAutoKeys.has(p.autoKey);
-        });
+      allCategories.forEach(c => {
+        if (Array.isArray(char.combatPins[c])) {
+          char.combatPins[c] = char.combatPins[c].filter(p => {
+            if (!p) return false;
+            if (!p.autoType) return true; // Keep manual pins
+            return validAutoKeys.has(p.autoKey);
+          });
+        }
       });
 
       // 3. Add missing auto-pins
@@ -13047,7 +13390,7 @@
         if (!autoPin || !autoPin.name) return;
         const autoNameLower = (autoPin.name || '').toLowerCase();
         let exists = false;
-        ['offense', 'defense'].forEach(c => {
+        allCategories.forEach(c => {
           if ((char.combatPins[c] || []).some(p => (p && p.name ? p.name : '').toLowerCase() === autoNameLower)) {
             exists = true;
           }
@@ -13079,7 +13422,7 @@
         };
       }
       if (!character.combatPins) {
-        character.combatPins = { offense: [], defense: [] };
+        character.combatPins = { offense_melee: [], offense_ranged: [], offense_spell: [], defense: [] };
       }
       if (!character.weaponAttackProfiles) {
         character.weaponAttackProfiles = {};
@@ -13211,8 +13554,10 @@
       // 4. Utility Column: Quick Consumables
       try { renderCockpitConsumables(); } catch (e) { console.error('renderCockpitConsumables error:', e); }
 
-      // 5. Pin Drawers
-      try { renderCombatPins('offense'); } catch (e) { console.error("renderCombatPins('offense') error:", e); }
+      // 5. Pin Drawers (Yakın, Uzak, Büyü Saldırı ve Savunma)
+      try { renderCombatPins('offense_melee'); } catch (e) { console.error("renderCombatPins('offense_melee') error:", e); }
+      try { renderCombatPins('offense_ranged'); } catch (e) { console.error("renderCombatPins('offense_ranged') error:", e); }
+      try { renderCombatPins('offense_spell'); } catch (e) { console.error("renderCombatPins('offense_spell') error:", e); }
       try { renderCombatPins('defense'); } catch (e) { console.error("renderCombatPins('defense') error:", e); }
     }
 
@@ -14182,15 +14527,25 @@
     }
 
     function renderCombatPins(category) {
+      if (category === 'offense') {
+        renderCombatPins('offense_melee');
+        renderCombatPins('offense_ranged');
+        renderCombatPins('offense_spell');
+        return;
+      }
+
       const container = document.getElementById(`combat-pins-${category}`);
       const badge = document.getElementById(`${category}-pins-badge`);
       if (!container) return;
 
-      const pins = character.combatPins?.[category] || [];
+      const pins = getPinsForDrawer(category);
+      if (!character.combatPins) character.combatPins = {};
+      character.combatPins[category] = pins;
+
       if (badge) badge.textContent = pins.length;
 
       if (pins.length === 0) {
-        container.innerHTML = `<div class="text-[11px] text-slate-500 italic p-3 text-center border border-dashed border-slate-800 rounded-lg">Henüz bu çekmecede öğe yok. (Büyü/yetenek sabitleyebilir veya kemer/manevra/aktif eşya kuşanabilirsiniz.)</div>`;
+        container.innerHTML = `<div class="text-[11px] text-slate-500 italic p-3 text-center border border-dashed border-slate-800 rounded-lg">Henüz bu çekmecede öğe yok. (Büyü/yetenek sabitleyebilir veya hedef çekmecesini değiştirebilirsiniz.)</div>`;
         return;
       }
 
@@ -14211,50 +14566,78 @@
       }
 
       container.innerHTML = visiblePins.map((pin, idx) => {
-        let actionBtn = '';
+        const dbItem = typeof findMasterItem === 'function' ? findMasterItem(pin.name) : null;
+        const attackType = pin.attackType || dbItem?.attackType || '';
+        const isTouchAttack = (attackType === 'ranged_touch' || attackType === 'melee_touch');
+
+        let actionBtns = [];
+
+        // If it's a touch attack spell (e.g. Melf's Acid Arrow, Scorching Ray, Vampiric Touch)
+        if (isTouchAttack) {
+          actionBtns.push(`<button type="button" onclick="event.stopPropagation(); rollSpellTouchAttack('${pin.name.replace(/'/g, "\\'")}')" class="py-1 px-2 rounded bg-amber-950/80 hover:bg-amber-900 border border-amber-600/70 text-amber-300 font-bold text-[10px] transition shrink-0 inline-flex items-center gap-1 cursor-pointer shadow-sm" title="Dokunma Saldırısı Zarı At (BAB + DEX/STR)"><span>⚡</span><span>Dokunma</span></button>`);
+        }
+
         if (pin.sourceType === 'Maneuver' || pin.sourceType === 'Stance') {
-          actionBtn = `<button onclick="executePinAction('${category}', ${idx})" class="py-1 px-2 rounded bg-rose-950/60 hover:bg-rose-900 border border-rose-700/70 text-rose-300 font-bold text-[10px] transition shrink-0">⚡ Hazırla</button>`;
+          actionBtns.push(`<button type="button" onclick="event.stopPropagation(); executePinAction('${category}', ${idx})" class="py-1 px-2 rounded bg-rose-950/60 hover:bg-rose-900 border border-rose-700/70 text-rose-300 font-bold text-[10px] transition shrink-0 cursor-pointer">⚡ Hazırla</button>`);
         } else if (pin.sourceType === 'Spell') {
-          actionBtn = `<button onclick="executePinAction('${category}', ${idx})" class="py-1 px-2 rounded bg-purple-950/60 hover:bg-purple-900 border border-purple-700/70 text-purple-300 font-bold text-[10px] transition shrink-0">🔮 At</button>`;
+          actionBtns.push(`<button type="button" onclick="event.stopPropagation(); executePinAction('${category}', ${idx})" class="py-1 px-2 rounded bg-purple-950/60 hover:bg-purple-900 border border-purple-700/70 text-purple-300 font-bold text-[10px] transition shrink-0 cursor-pointer">🔮 At</button>`);
         } else if (pin.sourceType === 'Consumable' || pin.autoType === 'belt_item') {
-          actionBtn = `<button onclick="executePinAction('${category}', ${idx})" class="py-1 px-2 rounded bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-700/70 text-emerald-300 font-bold text-[10px] transition shrink-0">🧪 Kullan</button>`;
+          actionBtns.push(`<button type="button" onclick="event.stopPropagation(); executePinAction('${category}', ${idx})" class="py-1 px-2 rounded bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-700/70 text-emerald-300 font-bold text-[10px] transition shrink-0 cursor-pointer">🧪 Kullan</button>`);
         } else if (pin.sourceType === 'Skill') {
-          actionBtn = `<button onclick="executePinAction('${category}', ${idx})" class="py-1 px-2 rounded bg-sky-950/60 hover:bg-sky-900 border border-sky-700/70 text-sky-300 font-bold text-[10px] transition shrink-0">🎯 Zar At</button>`;
+          actionBtns.push(`<button type="button" onclick="event.stopPropagation(); executePinAction('${category}', ${idx})" class="py-1 px-2 rounded bg-sky-950/60 hover:bg-sky-900 border border-sky-700/70 text-sky-300 font-bold text-[10px] transition shrink-0 cursor-pointer">🎯 Zar At</button>`);
         } else {
           // Feats, Special Abilities, Buffs: Interactive Aktif / Pasif Toggle Button
           const isActive = Boolean(pin.active);
-          actionBtn = `<button onclick="toggleCombatPinActive('${category}', ${idx})" class="py-1 px-2.5 rounded font-bold text-[10px] transition shrink-0 flex items-center gap-1 ${isActive ? 'bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]' : 'bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-700'}">${isActive ? '✓ Aktif' : '⚪ Pasif'}</button>`;
+          actionBtns.push(`<button type="button" onclick="event.stopPropagation(); toggleCombatPinActive('${category}', ${idx})" class="py-1 px-2.5 rounded font-bold text-[10px] transition shrink-0 flex items-center gap-1 cursor-pointer ${isActive ? 'bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]' : 'bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-700'}">${isActive ? '✓ Aktif' : '⚪ Pasif'}</button>`);
         }
+
+        const autoResolved = resolvePinTarget({ ...pin, pinTarget: 'auto' });
+        const autoShortMap = { offense_melee: 'Yakın', offense_ranged: 'Uzak', offense_spell: 'Büyü', defense: 'Savunma' };
+        const autoShort = autoShortMap[autoResolved] || 'Oto';
+
+        const quickDrawerSelect = `
+          <select onclick="event.stopPropagation()" onchange="changePinTargetDirect('${pin.name.replace(/'/g, "\\'")}', this.value)" class="text-[9px] font-mono bg-slate-950 text-slate-300 border border-slate-700/80 rounded px-1.5 py-0.5 cursor-pointer hover:border-amber-500 transition shrink-0" title="Savaş Çekmecesini Değiştir">
+            <option value="auto" ${pin.pinTarget === 'auto' || !pin.pinTarget ? 'selected' : ''}>🎯 Oto (${autoShort})</option>
+            <option value="offense_melee" ${pin.pinTarget === 'offense_melee' ? 'selected' : ''}>⚔️ Yakın</option>
+            <option value="offense_ranged" ${pin.pinTarget === 'offense_ranged' ? 'selected' : ''}>🏹 Uzak</option>
+            <option value="offense_spell" ${pin.pinTarget === 'offense_spell' ? 'selected' : ''}>🔮 Büyü</option>
+            <option value="defense" ${pin.pinTarget === 'defense' ? 'selected' : ''}>🛡️ Savunma</option>
+          </select>
+        `;
 
         const activeCardBorder = pin.active ? 'border-emerald-500/80 ring-1 ring-emerald-500/60 bg-emerald-950/20' : 'border-slate-800 hover:border-slate-700 bg-slate-900/90 hover:bg-slate-850';
 
         const reorderControls = isReorder ? `
           <div class="flex items-center gap-1 shrink-0">
-            <button onclick="movePinItem('${category}', ${idx}, -1)" class="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center" title="Yukarı Taşı">▲</button>
-            <button onclick="movePinItem('${category}', ${idx}, 1)" class="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center" title="Aşağı Taşı">▼</button>
+            <button onclick="movePinItem('${category}', ${idx}, -1)" class="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center cursor-pointer" title="Yukarı Taşı">▲</button>
+            <button onclick="movePinItem('${category}', ${idx}, 1)" class="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center cursor-pointer" title="Aşağı Taşı">▼</button>
           </div>
         ` : '';
+
+        const iconSymbol = category === 'offense_melee' ? '⚔️' : (category === 'offense_ranged' ? '🏹' : (category === 'offense_spell' ? '🔮' : '🛡️'));
+        const iconColor = category === 'offense_melee' ? 'text-rose-400' : (category === 'offense_ranged' ? 'text-amber-400' : (category === 'offense_spell' ? 'text-purple-400' : 'text-indigo-400'));
 
         return `
           <div id="pin-card-${category}-${idx}" class="pin-card relative group ${activeCardBorder} rounded-lg p-2 flex items-center justify-between gap-2 transition select-none cursor-pointer" onclick="onPinCardClick(event, '${category}', ${idx})">
             <!-- Pin Info -->
             <div class="flex items-center gap-2 min-w-0 flex-1">
-              <span class="text-xs ${category === 'offense' ? 'text-rose-400' : (category === 'defense' ? 'text-indigo-400' : 'text-emerald-400')} shrink-0">
-                <svg class="w-3.5 h-3.5 fill-current inline-block" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>
+              <span class="text-xs ${iconColor} shrink-0">
+                ${iconSymbol}
               </span>
               <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-1.5">
                   <span class="text-xs font-bold text-white truncate">${pin.name}</span>
-                  <span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-800 text-slate-400 shrink-0">${pin.action || 'Std'}</span>
+                  <span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-800 text-slate-400 shrink-0">${formatActionShort(pin.action)}</span>
                 </div>
                 <div class="text-[10px] text-amber-300/80 font-mono truncate">${pin.badge || pin.desc || ''}</div>
               </div>
             </div>
 
-            <!-- Action & Reorder -->
+            <!-- Drawer Switcher & Reorder & Action -->
             <div class="flex items-center gap-1.5 shrink-0" onclick="event.stopPropagation()">
+              ${quickDrawerSelect}
               ${reorderControls}
-              ${actionBtn}
+              ${actionBtns.join('')}
             </div>
 
             <!-- Desktop Floating Tooltip -->
@@ -14274,7 +14657,7 @@
       if (isReorder) {
         container.innerHTML += `
           <div class="pt-1 text-center">
-            <button onclick="togglePinReorderMode('${category}')" class="py-1 px-3 bg-emerald-950 border border-emerald-600 text-emerald-300 font-bold text-xs rounded-lg shadow transition">
+            <button onclick="togglePinReorderMode('${category}')" class="py-1 px-3 bg-emerald-950 border border-emerald-600 text-emerald-300 font-bold text-xs rounded-lg shadow transition cursor-pointer">
               ✓ Sıralamayı Tamamla
             </button>
           </div>
@@ -14349,12 +14732,14 @@
     }
 
     function movePinItem(category, idx, direction) {
-      const pins = character.combatPins?.[category] || [];
+      const pins = getPinsForDrawer(category);
       const targetIdx = idx + direction;
       if (targetIdx < 0 || targetIdx >= pins.length) return;
       const temp = pins[idx];
       pins[idx] = pins[targetIdx];
       pins[targetIdx] = temp;
+      if (!character.combatPins) character.combatPins = {};
+      character.combatPins[category] = pins;
       saveStateToStorage(true);
       renderCombatPins(category);
     }
@@ -14364,7 +14749,8 @@
     }
 
     function executePinAction(category, idx) {
-      const pin = character.combatPins?.[category]?.[idx];
+      const pins = getPinsForDrawer(category);
+      const pin = pins[idx] || character.combatPins?.[category]?.[idx];
       if (!pin) return;
 
       if (pin.sourceType === 'Maneuver' || pin.sourceType === 'Stance') {
@@ -14415,7 +14801,8 @@
 
     // --- TOGGLE PIN ACTIVE STATE (FOR FEATS & SPECIAL ABILITIES & BUFFS) ---
     function toggleCombatPinActive(category, idx) {
-      const pin = character.combatPins?.[category]?.[idx];
+      const pins = getPinsForDrawer(category);
+      const pin = pins[idx] || character.combatPins?.[category]?.[idx];
       if (!pin) return;
 
       pin.active = !pin.active;
@@ -14498,7 +14885,7 @@
 
       let foundPin = null;
       let foundCategory = null;
-      ['offense', 'defense'].forEach(cat => {
+      ['offense_melee', 'offense_ranged', 'offense_spell', 'defense', 'offense'].forEach(cat => {
         const list = character.combatPins[cat] || [];
         const p = list.find(item => {
           const pName = (item.name || '').toLowerCase().trim();
@@ -14518,10 +14905,13 @@
 
     // --- PIN DETAILS MODAL ---
     function openPinDetailsModalById(category, idx) {
-      const pin = character.combatPins?.[category]?.[idx];
+      const pins = getPinsForDrawer(category);
+      const pin = pins[idx] || character.combatPins?.[category]?.[idx];
       if (!pin) return;
       const modal = document.getElementById('modal-pin-details');
       if (!modal) return;
+
+      window.currentActivePinModal = { category, idx, name: pin.name };
 
       document.getElementById('pin-modal-title').textContent = pin.name;
       const typeLabel = pin.autoType 
@@ -14530,6 +14920,11 @@
       document.getElementById('pin-modal-type-badge').textContent = typeLabel;
       document.getElementById('pin-modal-action-badge').textContent = pin.action || 'Standard Action';
       document.getElementById('pin-modal-desc').textContent = pin.desc || 'Açıklama bulunmuyor.';
+
+      const drawerSelect = document.getElementById('pin-modal-drawer-select');
+      if (drawerSelect) {
+        drawerSelect.value = pin.pinTarget || 'auto';
+      }
 
       const unpinBtn = document.getElementById('pin-modal-unpin-btn');
       if (unpinBtn) {
@@ -14571,13 +14966,12 @@
         } else {
           unpinBtn.textContent = 'Pini Kaldır';
           unpinBtn.onclick = () => {
-            character.combatPins[category].splice(idx, 1);
+            removeCombatPinByName(pin.name);
             saveStateToStorage(true);
             closePinDetailsModal();
             renderAll();
             showDiceTopToast({
-              icon: getPinToastIconSvg(category),
-              pinCategory: category,
+              icon: '📌',
               title: 'Pini Kaldırıldı',
               breakdown: `${pin.name} savaş kokpitinden çıkarıldı.`,
               total: 'Kaldırıldı'
@@ -14592,6 +14986,7 @@
     function closePinDetailsModal() {
       const modal = document.getElementById('modal-pin-details');
       if (modal) modal.classList.add('hidden');
+      window.currentActivePinModal = null;
     }
 
     // --- UNIVERSAL PINNING DIALOG (📌) ---
@@ -14614,37 +15009,43 @@
       const item = window.pendingCombatPinItem;
       if (!item) return;
 
-      if (!character.combatPins) character.combatPins = { offense: [], defense: [] };
-      if (!character.combatPins[category]) character.combatPins[category] = [];
+      if (!character.combatPins) character.combatPins = { offense_melee: [], offense_ranged: [], offense_spell: [], defense: [] };
 
-      // Check if already in this category
-      const existingIdx = character.combatPins[category].findIndex(p => p.name.toLowerCase() === item.name.toLowerCase());
-      if (existingIdx >= 0) {
-        character.combatPins[category].splice(existingIdx, 1);
-        showDiceTopToast({
-          icon: getPinToastIconSvg(category),
-          pinCategory: category,
-          title: 'Pin Kaldırıldı',
-          breakdown: `"${item.name}" kokpitten çıkarıldı.`,
-          total: 'Kaldırıldı'
-        });
-      } else {
-        character.combatPins[category].push({
-          id: 'pin_' + Date.now(),
-          name: item.name,
-          sourceType: item.type || item.sourceType || 'Item',
-          action: item.action || 'Standard',
-          badge: item.badge || item.damageDice || item.dice || item.benefit?.slice(0, 16) || '',
-          desc: item.desc || item.benefit || item.description || ''
-        });
-        showDiceTopToast({
-          icon: getPinToastIconSvg(category),
-          pinCategory: category,
-          title: 'Kokpite Sabitlendi!',
-          breakdown: `"${item.name}" ${category.toUpperCase()} çekmecesine eklendi.`,
-          total: 'Eklendi'
-        });
-      }
+      // Check if already pinned: if clicked on same category, remove it; otherwise set/move it
+      const allPins = getAllCombatPins();
+      const existing = allPins.find(p => (p.name || '').toLowerCase().trim() === item.name.toLowerCase().trim());
+
+      removeCombatPinByName(item.name);
+
+      const targetCategory = category === 'auto' ? resolvePinTarget(item) : category;
+      const pinTargetSetting = category; // 'auto', 'offense_melee', 'offense_ranged', 'offense_spell', or 'defense'
+
+      if (!character.combatPins[targetCategory]) character.combatPins[targetCategory] = [];
+
+      character.combatPins[targetCategory].push({
+        id: 'pin_' + Date.now(),
+        name: item.name,
+        pinTarget: pinTargetSetting,
+        sourceType: item.type || item.sourceType || 'Item',
+        action: item.action || 'Standard',
+        badge: item.badge || item.damageDice || item.dice || item.benefit?.slice(0, 16) || '',
+        desc: item.desc || item.benefit || item.description || ''
+      });
+
+      const labelMap = {
+        auto: 'Otomatik',
+        offense_melee: 'Yakın Saldırı',
+        offense_ranged: 'Uzak Saldırı',
+        offense_spell: 'Büyü Saldırı',
+        defense: 'Savunma'
+      };
+
+      showDiceTopToast({
+        icon: '📌',
+        title: 'Kokpite Sabitlendi!',
+        breakdown: `"${item.name}" ${labelMap[category] || category} çekmecesine eklendi.`,
+        total: 'Eklendi'
+      });
 
       saveStateToStorage(true);
       closePinCategoryPicker();
@@ -14654,8 +15055,12 @@
 
     function getPinToastIconSvg(category) {
       const cat = (category || '').toLowerCase();
-      if (cat === 'offense') {
+      if (cat === 'offense_melee') {
         return `<svg class="w-6 h-6 text-rose-400 fill-current drop-shadow-[0_0_8px_rgba(244,63,94,0.7)]" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>`;
+      } else if (cat === 'offense_ranged') {
+        return `<svg class="w-6 h-6 text-amber-400 fill-current drop-shadow-[0_0_8px_rgba(245,158,11,0.7)]" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>`;
+      } else if (cat === 'offense_spell') {
+        return `<svg class="w-6 h-6 text-purple-400 fill-current drop-shadow-[0_0_8px_rgba(168,85,247,0.7)]" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>`;
       } else if (cat === 'defense') {
         return `<svg class="w-6 h-6 text-indigo-400 fill-current drop-shadow-[0_0_8px_rgba(99,102,241,0.7)]" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>`;
       }
@@ -14676,15 +15081,15 @@
 
     function getUniversalPinButtonHtml(item, options = {}) {
       if (!character) return '';
-      if (!character.combatPins) character.combatPins = { offense: [], defense: [] };
+      if (!character.combatPins) character.combatPins = { offense_melee: [], offense_ranged: [], offense_spell: [], defense: [] };
       const itemName = item.name || '';
       const cleanName = itemName.trim().toLowerCase();
 
       let category = null;
-      if ((character.combatPins.offense || []).some(p => (p.name || '').trim().toLowerCase() === cleanName)) {
-        category = 'offense';
-      } else if ((character.combatPins.defense || []).some(p => (p.name || '').trim().toLowerCase() === cleanName)) {
-        category = 'defense';
+      const allPins = getAllCombatPins();
+      const match = allPins.find(p => (p.name || '').trim().toLowerCase() === cleanName);
+      if (match) {
+        category = resolvePinTarget(match);
       }
 
       const isPinned = category !== null;
@@ -14704,9 +15109,17 @@
       let tooltip = '';
       let iconSvg = '';
 
-      if (category === 'offense') {
+      if (category === 'offense_melee') {
         colorClasses = 'bg-rose-950/80 text-rose-300 border-rose-500/80 shadow-[0_0_8px_rgba(244,63,94,0.45)] hover:bg-rose-900 hover:border-rose-400 ring-1 ring-rose-500/40';
-        tooltip = `📌 Savaş Kokpiti: SALDIRI Çekmecesinde Sabitli (${itemName}) - Çıkarmak için tıkla`;
+        tooltip = `📌 Savaş Kokpiti: YAKIN SALDIRI Çekmecesinde Sabitli (${itemName}) - Çıkarmak için tıkla`;
+        iconSvg = `<svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>`;
+      } else if (category === 'offense_ranged') {
+        colorClasses = 'bg-amber-950/80 text-amber-300 border-amber-500/80 shadow-[0_0_8px_rgba(245,158,11,0.45)] hover:bg-amber-900 hover:border-amber-400 ring-1 ring-amber-500/40';
+        tooltip = `📌 Savaş Kokpiti: UZAK SALDIRI Çekmecesinde Sabitli (${itemName}) - Çıkarmak için tıkla`;
+        iconSvg = `<svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>`;
+      } else if (category === 'offense_spell') {
+        colorClasses = 'bg-purple-950/80 text-purple-300 border-purple-500/80 shadow-[0_0_8px_rgba(168,85,247,0.45)] hover:bg-purple-900 hover:border-purple-400 ring-1 ring-purple-500/40';
+        tooltip = `📌 Savaş Kokpiti: BÜYÜ SALDIRI Çekmecesinde Sabitli (${itemName}) - Çıkarmak için tıkla`;
         iconSvg = `<svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>`;
       } else if (category === 'defense') {
         colorClasses = 'bg-indigo-950/80 text-indigo-300 border-indigo-500/80 shadow-[0_0_8px_rgba(99,102,241,0.45)] hover:bg-indigo-900 hover:border-indigo-400 ring-1 ring-indigo-500/40';
@@ -14728,32 +15141,22 @@
     }
 
     function toggleUniversalPin(item) {
-      if (!character.combatPins) character.combatPins = { offense: [], defense: [] };
-      // Check if item is already pinned in ANY category
-      let foundCategory = null;
-      let foundIdx = -1;
-      ['offense', 'defense'].forEach(cat => {
-        const idx = (character.combatPins[cat] || []).findIndex(p => p.name.toLowerCase() === item.name.toLowerCase());
-        if (idx >= 0) {
-          foundCategory = cat;
-          foundIdx = idx;
-        }
-      });
+      if (!character) return;
+      if (!character.combatPins) character.combatPins = { offense_melee: [], offense_ranged: [], offense_spell: [], defense: [] };
+      const allPins = getAllCombatPins();
+      const match = allPins.find(p => (p.name || '').trim().toLowerCase() === (item.name || '').trim().toLowerCase());
 
-      if (foundCategory !== null) {
-        // Unpin directly
-        character.combatPins[foundCategory].splice(foundIdx, 1);
+      if (match) {
+        removeCombatPinByName(item.name);
         saveStateToStorage(true);
         renderAll();
         showDiceTopToast({
-          icon: getPinToastIconSvg(foundCategory),
-          pinCategory: foundCategory,
+          icon: '📌',
           title: 'Pin Kaldırıldı',
           breakdown: `"${item.name}" kokpitten çıkarıldı.`,
           total: 'Kaldırıldı'
         });
       } else {
-        // Prompt category picker modal
         openPinCategoryPicker(item);
       }
     }
@@ -19102,6 +19505,15 @@
         const hasActiveSlot = remainingSlots > 0;
         const theme = getSpellLevelTheme(lvl);
 
+        const dbItem = typeof findMasterItem === 'function' ? findMasterItem(s.name) : null;
+        const attackType = s.attackType || dbItem?.attackType || '';
+        const isTouchAttack = (attackType === 'ranged_touch' || attackType === 'melee_touch');
+        const isRangedTouch = attackType === 'ranged_touch';
+        const bab = Number(character.bab) || 0;
+        const dexMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.dex || 10) : 0;
+        const strMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.str || 10) : 0;
+        const touchAtkBonus = isRangedTouch ? (bab + dexMod) : (bab + strMod);
+
         const tr = document.createElement('tr');
         tr.className = `transition border-l-4 ${theme.borderLeft} ${
           hasActiveSlot ? `hover:bg-slate-900/70 ${theme.rowBg}` : 'opacity-40 grayscale-[35%] bg-slate-950/60'
@@ -19129,6 +19541,12 @@
           <td class="py-2.5 px-3 text-slate-300 text-[11px]">${s.benefit || '-'}</td>
           <td class="py-2.5 px-3 text-right align-middle">
             <div class="flex items-center justify-end gap-2 w-full">
+              ${isTouchAttack ? `
+                <button type="button" onclick="rollSpellTouchAttack(${originalIdx})" class="bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white border border-amber-600/80 text-xs font-bold font-mono px-2 py-1 rounded-lg transition inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap shadow" title="${isRangedTouch ? 'Menzilli' : 'Yakın'} Dokunma Saldırısı Zarı At (BAB + ${isRangedTouch ? 'DEX' : 'STR'})">
+                  <span>⚡</span>
+                  <span>Dokunma ${touchAtkBonus >= 0 ? '+' : ''}${touchAtkBonus}</span>
+                </button>
+              ` : ''}
               ${dmgExpr ? `
                 <button onclick="castSpellDirectly(${originalIdx})" class="${
                   hasActiveSlot 
@@ -19270,7 +19688,13 @@
         saveStateToStorage(true);
         renderAll();
 
-        if (dmgExpr) {
+        const dbItem = typeof findMasterItem === 'function' ? findMasterItem(name) : null;
+        const attackType = s.attackType || dbItem?.attackType || '';
+        const isTouchAttack = (attackType === 'ranged_touch' || attackType === 'melee_touch');
+
+        if (isTouchAttack) {
+          rollSpellTouchAttack(s);
+        } else if (dmgExpr) {
           rollSpellOrManeuverFormula(dmgExpr, `${name} (${lvl}. Seviye • -1 Slot)`, s);
         } else if (buffApplied) {
           showDiceTopToast({
@@ -20820,7 +21244,7 @@
 
       let foundCategory = null;
       let foundPin = null;
-      ['offense', 'defense'].forEach(cat => {
+      ['offense_melee', 'offense_ranged', 'offense_spell', 'defense', 'offense'].forEach(cat => {
         const list = character.combatPins[cat] || [];
         const match = list.find(p => {
           const pName = (p.name || '').toLowerCase().trim();
@@ -20857,7 +21281,7 @@
 
       let foundCategory = null;
       let foundPin = null;
-      ['offense', 'defense'].forEach(cat => {
+      ['offense_melee', 'offense_ranged', 'offense_spell', 'defense', 'offense'].forEach(cat => {
         const list = character?.combatPins?.[cat] || [];
         const match = list.find(p => {
           const pName = (p.name || '').toLowerCase().trim();
@@ -21138,7 +21562,7 @@
       }
 
       // 3. Update in combatPins if pinned
-      ['offense', 'defense'].forEach(cat => {
+      ['offense_melee', 'offense_ranged', 'offense_spell', 'defense', 'offense'].forEach(cat => {
         (character.combatPins?.[cat] || []).forEach(p => {
           const pClean = String(p.name).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim().toLowerCase();
           if (pClean === oldClean || pClean.startsWith(baseClean)) {
