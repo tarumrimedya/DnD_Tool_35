@@ -6445,12 +6445,12 @@
   </div>
 
   <!-- SCRIPT LOGIC -->
-  <script src="rule_engine.js"></script>
-  <script src="rule_master.js"></script>
-  <script src="dice3d.js"></script>
-  <script src="gdrive_sync.js"></script>
-  <script src="hero_silhouette_data.js"></script>
-  <script src="bundled_data.js"></script>
+  <script src="rule_engine.js?v=20261023_16"></script>
+  <script src="rule_master.js?v=20261023_16"></script>
+  <script src="dice3d.js?v=20261023_16"></script>
+  <script src="gdrive_sync.js?v=20261023_16"></script>
+  <script src="hero_silhouette_data.js?v=20261023_16"></script>
+  <script src="bundled_data.js?v=20261023_16"></script>
 
   <script>
     function getDiceIconSvg(die, cls = "w-4 h-4 inline-block align-middle") {
@@ -11033,6 +11033,7 @@
       ];
       return pool.some(b => {
         if (!b) return false;
+        if (typeof b === 'object' && b.active !== undefined && !b.active) return false;
         const n = (typeof b === 'string' ? b : (b.name || '')).toLowerCase().trim();
         return n === target || n.includes(target);
       });
@@ -11103,8 +11104,11 @@
         qualifiedPool.push({ name: 'Witchlight (+2 Hasar)', source: 'Item', bonusAtk: 0, bonusDmg: 2, dice: '', type: 'Untyped', combatScope: 'melee', active: false, notes: '+2 Melee Hasarı (1 Tur)' });
         qualifiedPool.push({ name: 'Witchlight (+4 Hasar)', source: 'Item', bonusAtk: 0, bonusDmg: 4, dice: '', type: 'Untyped', combatScope: 'melee', active: false, notes: '+4 Melee Hasarı (1 Tur)' });
       }
-      if (characterHasItem(character, 'Boots of Speed') || characterHasBuff(character, 'Haste')) {
-        qualifiedPool.push({ name: 'Boots of Speed (Haste)', source: 'Item', bonusAtk: 1, dice: '', type: 'Untyped', combatScope: 'both', active: false, notes: '+1 Saldırı, +1 AC, Ekstra Vuruş' });
+      if (characterHasItem(character, 'Boots of Speed')) {
+        qualifiedPool.push({ name: 'Boots of Speed', source: 'Item', bonusAtk: 1, dice: '', type: 'Untyped', combatScope: 'both', active: false, notes: '+1 Saldırı, +1 AC, Ekstra Vuruş' });
+      }
+      if (characterHasBuff(character, 'Haste')) {
+        qualifiedPool.push({ name: 'Haste (Büyü)', source: 'Spell', bonusAtk: 1, dice: '', type: 'Untyped', combatScope: 'both', active: true, notes: '+1 Saldırı, +1 AC, Ekstra Vuruş' });
       }
 
       // Sneak Attack
@@ -11133,7 +11137,8 @@
         if (n.includes('steel wind')) return characterHasManeuver(character, 'Steel Wind');
         if (n.includes('blade of blood')) return characterHasSpell(character, 'Blade of Blood');
         if (n.includes('witchlight')) return characterHasItem(character, 'Witchlight');
-        if (n.includes('boots of speed') || n.includes('haste')) return characterHasItem(character, 'Boots of Speed') || characterHasBuff(character, 'Haste');
+        if (n.includes('boots of speed')) return characterHasItem(character, 'Boots of Speed');
+        if (n.includes('haste')) return characterHasBuff(character, 'Haste');
         if (n.includes('sneak attack')) return characterHasSneakAttack(character);
         if (typeof getPinsForDrawer === 'function') {
           const isPinnedMelee = getPinsForDrawer('offense_melee').some(p => p && p.name && p.name.toLowerCase().trim() === n);

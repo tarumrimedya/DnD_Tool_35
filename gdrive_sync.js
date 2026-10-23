@@ -276,19 +276,73 @@ const CloudSync = {
     if (remoteChar && typeof character !== 'undefined' && character) {
       Object.keys(character).forEach(k => delete character[k]);
       Object.assign(character, remoteChar);
+
+      // Clean unowned dummy modifiers (like Boots of Speed or Acid Arrow) from activeModifiers
+      if (Array.isArray(character.activeModifiers)) {
+        character.activeModifiers = character.activeModifiers.filter(m => {
+          if (!m || !m.name) return false;
+          const n = m.name.toLowerCase().trim();
+          if (n.includes('boots of speed')) {
+            const hasBoots = typeof characterHasItem === 'function' ? characterHasItem(character, 'Boots of Speed') : false;
+            if (!hasBoots) return false;
+          }
+          if (n.includes('acid arrow')) return false; // Spell attacks belong in spell drawers, not melee modifiers
+          return true;
+        });
+      }
+
       localStorage.setItem('dnd35_character', JSON.stringify(character));
       applied = true;
     }
 
-    // 2. Restore Master DB (29-column library)
-    if (Array.isArray(remotePayload.masterDb) && remotePayload.masterDb.length > 0 && typeof masterDb !== 'undefined') {
+    // 2. Restore & Upgrade Master DB (Intelligent Merge / Never Downgrade Canonical DB)
+    if (typeof masterDb !== 'undefined') {
+      const canonicalDefaults = Array.isArray(window.BUNDLED_MASTER_DB) && window.BUNDLED_MASTER_DB.length > 0
+        ? window.BUNDLED_MASTER_DB
+        : (Array.isArray(masterDb) ? masterDb : []);
+
+      const incomingList = Array.isArray(remotePayload.masterDb) && remotePayload.masterDb.length > 0
+        ? remotePayload.masterDb
+        : [];
+
+      const mergedDb = [];
+      const seenNames = new Set();
+
+      // Priority 1: Canonical verified defaults from bundled_data.js / master_db.json
+      canonicalDefaults.forEach(item => {
+        if (!item || !item.name) return;
+        const lower = item.name.toLowerCase().trim();
+        seenNames.add(lower);
+        mergedDb.push(item);
+      });
+
+      // Priority 2: Custom user-created items from remote cloud storage
+      incomingList.forEach(item => {
+        if (!item || !item.name) return;
+        const lower = item.name.toLowerCase().trim();
+        if (!seenNames.has(lower)) {
+          seenNames.add(lower);
+          mergedDb.push(item);
+        }
+      });
+
+      const needsUpgrade = incomingList.length < mergedDb.length;
       masterDb.length = 0;
-      remotePayload.masterDb.forEach(item => masterDb.push(item));
+      mergedDb.forEach(item => masterDb.push(item));
       localStorage.setItem('dnd35_master_db', JSON.stringify(masterDb));
+
       if (window.RuleMaster && typeof RuleMaster.renderTable === 'function') {
         try { RuleMaster.renderTable(); } catch (e) { console.warn('RuleMaster.renderTable error:', e); }
       }
       applied = true;
+
+      // Automatically upgrade Cloud DB if local canonical database had more verified entries than cloud
+      if (needsUpgrade && this.configured && this.authenticated) {
+        console.log(`CloudSync: Upgrading Cloud DB with canonical entries (${incomingList.length} -> ${mergedDb.length} items)...`);
+        setTimeout(() => {
+          this.pushToCloud(true);
+        }, 1500);
+      }
     }
 
     if (applied && typeof renderAll === 'function') {
