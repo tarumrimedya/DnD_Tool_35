@@ -471,7 +471,7 @@
                           <!-- Populated dynamically -->
                         </select>
                       </div>
-                      <div class="text-[9px] text-slate-400 italic pt-1">
+                      <div id="set2-weapon-editor-hint" class="text-[9px] text-slate-400 italic pt-1">
                         * Bu donanım, çift silahla dövüşte (TWF) veya kalkan savunmasında ikinci el olarak kuşanılır.
                       </div>
                     </div>
@@ -10092,15 +10092,37 @@
 
     function onWeaponChange() {
       character.activeWeapon = document.getElementById('active-weapon-select').value;
-      const wep = (character.weapons || []).find(w => w.name === character.activeWeapon);
-      if (wep) {
-        const isTwoHand = RuleEngine.isTwoHandedWeapon(wep);
-        const hasOversized = RuleEngine.hasOversizedWeaponFeat(character);
-        if (isTwoHand && !hasOversized) {
-          wep.grip = '2-Hand';
-          const gripSelect = document.getElementById('active-grip-select');
-          if (gripSelect) gripSelect.value = '2-Hand';
-        } else if (wep.grip) {
+      const wep = (character.weapons || []).find(w => w.name === character.activeWeapon) || (typeof findWeaponEverywhere === 'function' ? findWeaponEverywhere(character.activeWeapon) : null);
+      const isTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(character.activeWeapon) : false;
+      const hasOversized = typeof RuleEngine !== 'undefined' ? RuleEngine.hasOversizedWeaponFeat(character) : false;
+
+      if (isTwoHand && !hasOversized) {
+        if (wep) wep.grip = '2-Hand';
+        const gripSelect = document.getElementById('active-grip-select');
+        if (gripSelect) gripSelect.value = '2-Hand';
+
+        // Rule 3: Ana ele iki elli bir silah seçilirse ikinci el haznesi boşaltılsın
+        character.activeOffHand = 'None';
+        if (character.tactical?.weaponSets) {
+          character.tactical.weaponSets.set1.mainWeapon = character.activeWeapon;
+          character.tactical.weaponSets.set1.grip = '2-Hand';
+          character.tactical.weaponSets.set2.mainWeapon = 'Yok';
+          character.tactical.weaponSets.set2.grip = 'Off-Hand';
+          character.tactical.weaponSets.activeSets = [1];
+          character.tactical.weaponSets.activeSet = 1;
+        }
+        syncWeaponSetToBodySlot('offHand', 'Yok');
+        const offSelect = document.getElementById('active-offhand-select');
+        if (offSelect) offSelect.value = 'None';
+
+        let twfMod = (character.activeModifiers || []).find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Çift Silah')));
+        if (twfMod) twfMod.active = false;
+
+        if (typeof showToast === 'function') {
+          showToast(`"${character.activeWeapon}" iki elli bir silahtır. İkinci el haznesi otomatik olarak boşaltıldı.`, 'info');
+        }
+      } else if (wep) {
+        if (wep.grip) {
           const gripSelect = document.getElementById('active-grip-select');
           if (gripSelect) gripSelect.value = wep.grip;
         } else if (isTwoHand) {
@@ -10109,6 +10131,7 @@
         }
       }
       syncCombatGripUI();
+      renderWeaponSetsUI();
       recalculateOffense();
       saveStateToStorage();
     }
@@ -10440,14 +10463,28 @@
           }
         }
 
-        const s2Wep = character.tactical.weaponSets.set2.mainWeapon;
-        if (isRangedMode) {
-          if (s2Wep && s2Wep !== 'Yok' && !isRangedOrThrownWeapon(s2Wep) && !s2Wep.toLowerCase().includes('buckler')) {
-            character.tactical.weaponSets.set2.mainWeapon = 'Yok';
-          }
+        const currentMainWep = character.tactical.weaponSets.set1.mainWeapon;
+        const mainIsTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(currentMainWep) : isRangedOnlyWeapon(currentMainWep);
+        const hasOversized = typeof RuleEngine !== 'undefined' ? RuleEngine.hasOversizedWeaponFeat(character) : false;
+
+        if (mainIsTwoHand && !hasOversized) {
+          // Rule 1, 2, 3: Two-handed weapon without oversized feat forces 2-Hand grip, empties Set 2, and limits to single weapon
+          character.tactical.weaponSets.set1.grip = '2-Hand';
+          character.tactical.weaponSets.set2.mainWeapon = 'Yok';
+          character.tactical.weaponSets.set2.grip = 'Off-Hand';
+          character.tactical.weaponSets.activeSets = [1];
+          character.tactical.weaponSets.activeSet = 1;
+          character.activeOffHand = 'None';
         } else {
-          if (s2Wep && s2Wep !== 'Yok' && isRangedOnlyWeapon(s2Wep)) {
-            character.tactical.weaponSets.set2.mainWeapon = getValidOffWeapon(character.tactical.weaponSets.set1.mainWeapon);
+          const s2Wep = character.tactical.weaponSets.set2.mainWeapon;
+          if (isRangedMode) {
+            if (s2Wep && s2Wep !== 'Yok' && !isRangedOrThrownWeapon(s2Wep) && !s2Wep.toLowerCase().includes('buckler')) {
+              character.tactical.weaponSets.set2.mainWeapon = 'Yok';
+            }
+          } else {
+            if (s2Wep && s2Wep !== 'Yok' && isRangedOnlyWeapon(s2Wep)) {
+              character.tactical.weaponSets.set2.mainWeapon = getValidOffWeapon(character.tactical.weaponSets.set1.mainWeapon);
+            }
           }
         }
 
@@ -10638,11 +10675,15 @@
         const is2 = activeSets.includes(2);
         const isDual = is1 && is2;
 
+        const mainIsTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(s1.mainWeapon) : false;
+        const hasOversized = typeof RuleEngine !== 'undefined' ? RuleEngine.hasOversizedWeaponFeat(character) : false;
+        const isTwoHandLocked = mainIsTwoHand && !hasOversized;
+
         // Stats for Card 1: STRICTLY Main Hand only
-        const s1MainStats = getWeaponCombatDisplayStats(s1.mainWeapon, s1.grip || '1-Hand', false);
+        const s1MainStats = getWeaponCombatDisplayStats(s1.mainWeapon, isTwoHandLocked ? '2-Hand' : (s1.grip || '1-Hand'), false);
 
         // Stats for Card 2: STRICTLY Off-Hand / Shield only
-        const s2OffStats = getWeaponCombatDisplayStats(s2.mainWeapon, 'Off-Hand', true);
+        const s2OffStats = isTwoHandLocked ? null : getWeaponCombatDisplayStats(s2.mainWeapon, 'Off-Hand', true);
         const isCard2Shield = s2OffStats?.isShield;
 
       // Card 1 UI (Ana El)
@@ -10654,11 +10695,12 @@
               <span class="text-xs ${is1 ? 'text-amber-400' : 'text-slate-500'}">⚔️</span>
               <span class="text-xs font-black truncate ${is1 ? 'text-white' : 'text-slate-300'}">${s1.name || 'Ana El'}</span>
               ${is1 ? `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-amber-500/30 text-amber-300 border border-amber-500/50">AKTİF</span>` : ''}
+              ${isTwoHandLocked ? `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-amber-900/40 text-amber-400 border border-amber-700/50">2-El Silahı</span>` : ''}
             </div>
             <!-- Donanım ve Tutuş -->
             <div class="text-[10px] text-slate-400 truncate mt-0.5 font-mono">
               <span class="${is1 ? 'text-amber-300 font-bold' : 'text-slate-400 font-bold'}">${s1.mainWeapon || 'Yok'}</span>
-              <span class="text-slate-500">(${s1MainStats?.isShield ? 'Kalkan' : (s1.grip || '1-El')})</span>
+              <span class="text-slate-500">(${s1MainStats?.isShield ? 'Kalkan' : (isTwoHandLocked ? '2-El' : (s1.grip || '1-El'))})</span>
             </div>
             <!-- Satır 1: Silahın Modifiye Hasarı veya Kalkan Koruması -->
             <div class="text-[10px] font-mono mt-0.5 flex items-center gap-1.5 flex-wrap">
@@ -10693,8 +10735,36 @@
         </div>
       `;
 
-      // Card 2 UI (İkinci El / Kalkan)
-      const card2Html = `
+      // Card 2 UI (İkinci El / Kalkan) - Disabled if main weapon is two-handed
+      let card2Html = '';
+      if (isTwoHandLocked) {
+        card2Html = `
+        <!-- KART 2: İKİNCİ EL (KİLİTLİ - ÇİFT ELLİ SİLAH) -->
+        <div onclick="activateWeaponSet(2)" class="p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 text-slate-500 cursor-not-allowed select-none flex items-center justify-between gap-2 opacity-70">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs text-slate-600">🔒</span>
+              <span class="text-xs font-bold text-slate-400">İkinci El (Kilitli)</span>
+              <span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-amber-950/50 text-amber-500 border border-amber-900/50">2-El Gerekli</span>
+            </div>
+            <!-- Donanım Bilgisi -->
+            <div class="text-[10px] text-slate-500 truncate mt-0.5 font-mono">
+              <span>Ana eldeki "${s1.mainWeapon || 'Silah'}" iki el gerektirir</span>
+            </div>
+            <!-- Açıklama -->
+            <div class="text-[9px] text-slate-600 mt-0.5 font-mono">
+              <span>* Monkey Grip olmadan ikinci el seçilemez &amp; TWF çalışmaz</span>
+            </div>
+          </div>
+          <div class="shrink-0 text-right">
+            <span class="text-[9px] font-bold px-2 py-1 rounded-lg bg-slate-900 text-slate-600 border border-slate-800">
+              Devre Dışı
+            </span>
+          </div>
+        </div>
+        `;
+      } else {
+        card2Html = `
         <!-- KART 2: İKİNCİ EL -->
         <div onclick="activateWeaponSet(2)" class="p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between gap-2 ${is2 ? 'bg-gradient-to-r from-sky-950/60 to-slate-900/90 border-sky-500 text-sky-200 shadow-md shadow-sky-950/40 ring-1 ring-sky-500/40' : 'bg-slate-900/70 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'}">
           <div class="min-w-0 flex-1">
@@ -10738,7 +10808,8 @@
             </span>
           </div>
         </div>
-      `;
+        `;
+      }
 
       container.innerHTML = card1Html + card2Html;
       populateWeaponSetsEditorDropdowns();
@@ -10763,6 +10834,18 @@
       const sets = character.tactical.weaponSets;
       if (!Array.isArray(sets.activeSets)) {
         sets.activeSets = [sets.activeSet === 2 ? 2 : 1];
+      }
+
+      const s1Main = sets.set1?.mainWeapon;
+      const mainIsTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(s1Main) : false;
+      const hasOversized = typeof RuleEngine !== 'undefined' ? RuleEngine.hasOversizedWeaponFeat(character) : false;
+
+      // Rule 1: Ana el çift elli ise ve oversized feat yoksa, ikinci el aktif edilemez
+      if (setNum === 2 && mainIsTwoHand && !hasOversized) {
+        if (typeof showToast === 'function') {
+          showToast(`Ana elinizdeki "${s1Main}" iki elli bir silahtır! 'Monkey Grip' feat'i olmadan ikinci el kullanılamaz ve TWF aktif edilemez.`, 'warning');
+        }
+        return;
       }
 
       const idx = sets.activeSets.indexOf(setNum);
@@ -10791,9 +10874,11 @@
     function applyWeaponSetsConfiguration() {
       ensureWeaponSetsData();
       const sets = character.tactical.weaponSets;
-      const is1 = sets.activeSets.includes(1);
-      const is2 = sets.activeSets.includes(2);
-      const isDual = is1 && is2;
+
+      const s1Main = sets.set1?.mainWeapon;
+      const mainIsTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(s1Main) : false;
+      const hasOversized = typeof RuleEngine !== 'undefined' ? RuleEngine.hasOversizedWeaponFeat(character) : false;
+      const isTwoHandLocked = mainIsTwoHand && !hasOversized;
 
       if (!character.activeModifiers) character.activeModifiers = [];
       let twfMod = character.activeModifiers.find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Çift Silah')));
@@ -10809,6 +10894,40 @@
         };
         character.activeModifiers.push(twfMod);
       }
+
+      // Rule 1, 2, 3: Two-handed weapon enforcement
+      if (isTwoHandLocked) {
+        sets.set1.grip = '2-Hand';
+        sets.set2.mainWeapon = 'Yok';
+        sets.set2.grip = 'Off-Hand';
+        sets.activeSets = [1];
+        sets.activeSet = 1;
+
+        character.activeWeapon = sets.set1.mainWeapon;
+        character.activeOffHand = 'None';
+        twfMod.active = false;
+
+        const gripSelect = document.getElementById('active-grip-select');
+        if (gripSelect) gripSelect.value = '2-Hand';
+
+        const wepSelect = document.getElementById('active-weapon-select');
+        if (wepSelect) wepSelect.value = character.activeWeapon;
+
+        const offSelect = document.getElementById('active-offhand-select');
+        if (offSelect) offSelect.value = 'None';
+
+        saveStateToStorage(false);
+        renderWeaponSetsUI();
+        recalculateOffense();
+        if (typeof renderOffenseModifiersGrid === 'function') renderOffenseModifiersGrid();
+        renderHUD();
+        if (typeof renderCombatCockpit === 'function') renderCombatCockpit();
+        return;
+      }
+
+      const is1 = sets.activeSets.includes(1);
+      const is2 = sets.activeSets.includes(2);
+      const isDual = is1 && is2;
 
       if (isDual) {
         // BOTH ACTIVE: Main Hand (Card 1) + Off Hand (Card 2)
@@ -11128,13 +11247,33 @@
 
       // Populate Set 2 (İkinci El) dropdown
       const s2Main = document.getElementById('set2-main-select');
+      const s2Hint = document.getElementById('set2-weapon-editor-hint');
+      const mainWep = sets.set1?.mainWeapon;
+      const mainIsTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(mainWep) : false;
+      const hasOversized = typeof RuleEngine !== 'undefined' ? RuleEngine.hasOversizedWeaponFeat(character) : false;
+      const isTwoHandLocked = mainIsTwoHand && !hasOversized;
+
       if (s2Main) {
-        s2Main.innerHTML = optionsHtml;
-        if (sets.set2?.mainWeapon && Array.from(s2Main.options).some(o => o.value === sets.set2.mainWeapon)) {
-          s2Main.value = sets.set2.mainWeapon;
-        } else {
+        if (isTwoHandLocked) {
+          s2Main.innerHTML = '<option value="Yok" selected>Yok / Boş (Ana El İki Elli Silah)</option>';
           s2Main.value = 'Yok';
+          s2Main.disabled = true;
           sets.set2.mainWeapon = 'Yok';
+          if (s2Hint) {
+            s2Hint.innerHTML = `<span class="text-amber-400 font-medium">⚠️ Ana elinizdeki "${mainWep}" iki elli bir silahtır. Monkey Grip feat'i olmadan ikinci ele silah veya kalkan seçilemez.</span>`;
+          }
+        } else {
+          s2Main.disabled = false;
+          s2Main.innerHTML = optionsHtml;
+          if (s2Hint) {
+            s2Hint.textContent = '* Bu donanım, çift silahla dövüşte (TWF) veya kalkan savunmasında ikinci el olarak kuşanılır.';
+          }
+          if (sets.set2?.mainWeapon && Array.from(s2Main.options).some(o => o.value === sets.set2.mainWeapon)) {
+            s2Main.value = sets.set2.mainWeapon;
+          } else {
+            s2Main.value = 'Yok';
+            sets.set2.mainWeapon = 'Yok';
+          }
         }
       }
     }
@@ -11144,25 +11283,68 @@
       const sets = character.tactical.weaponSets;
       if (!sets) return;
 
+      const hasOversized = typeof RuleEngine !== 'undefined' ? RuleEngine.hasOversizedWeaponFeat(character) : false;
+
       if (setNum === 1) {
         sets.set1.name = 'Ana El';
         const chosen = document.getElementById('set1-main-select')?.value || sets.set1.mainWeapon;
         sets.set1.mainWeapon = chosen;
 
-        if (window._combatOffenseMode === 'ranged') {
-          if (isRangedOnlyWeapon(chosen)) {
-            sets.set1.grip = '2-Hand';
-            const s1Grip = document.getElementById('set1-grip-select');
-            if (s1Grip) s1Grip.value = '2-Hand';
+        const isChosenTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(chosen) : isRangedOnlyWeapon(chosen);
+
+        if (isChosenTwoHand && !hasOversized) {
+          // Rule 1, 2, 3: Two-handed weapon without oversized feat
+          sets.set1.grip = '2-Hand';
+          const s1Grip = document.getElementById('set1-grip-select');
+          if (s1Grip) s1Grip.value = '2-Hand';
+
+          // Rule 3: Ana ele iki elli bir silah seçilirse ikinci el haznesi boşaltılsın
+          sets.set2.mainWeapon = 'Yok';
+          sets.set2.grip = 'Off-Hand';
+          sets.activeSets = [1];
+          sets.activeSet = 1;
+          character.activeOffHand = 'None';
+          syncWeaponSetToBodySlot('offHand', 'Yok');
+
+          if (window._combatOffenseMode === 'ranged') {
+            character.tactical.selectedRangedWeapon = chosen;
+          }
+
+          if (typeof showToast === 'function') {
+            showToast(`"${chosen}" iki elli bir silahtır. İkinci el haznesi otomatik olarak boşaltıldı ve tek silah moduna geçildi.`, 'info');
+          }
+        } else {
+          if (window._combatOffenseMode === 'ranged') {
+            if (isRangedOnlyWeapon(chosen)) {
+              sets.set1.grip = '2-Hand';
+              const s1Grip = document.getElementById('set1-grip-select');
+              if (s1Grip) s1Grip.value = '2-Hand';
+            } else {
+              sets.set1.grip = document.getElementById('set1-grip-select')?.value || '1-Hand';
+            }
+            character.tactical.selectedRangedWeapon = chosen;
           } else {
             sets.set1.grip = document.getElementById('set1-grip-select')?.value || '1-Hand';
           }
-          character.tactical.selectedRangedWeapon = chosen;
-        } else {
-          sets.set1.grip = document.getElementById('set1-grip-select')?.value || '1-Hand';
         }
         syncWeaponSetToBodySlot('mainHand', chosen);
       } else {
+        // setNum === 2 (İkinci El)
+        const mainWep = sets.set1?.mainWeapon;
+        const mainIsTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(mainWep) : false;
+
+        // Rule 1: İkinci ele başka silah seçilemesin
+        if (mainIsTwoHand && !hasOversized) {
+          sets.set2.mainWeapon = 'Yok';
+          sets.set2.grip = 'Off-Hand';
+          syncWeaponSetToBodySlot('offHand', 'Yok');
+          if (typeof showToast === 'function') {
+            showToast(`Ana elinizdeki "${mainWep}" iki elli bir silahtır! 'Monkey Grip' feat'i olmadan ikinci ele silah veya kalkan seçilemez.`, 'warning');
+          }
+          populateWeaponSetsEditorDropdowns();
+          return;
+        }
+
         sets.set2.name = 'İkinci El';
         const chosen = document.getElementById('set2-main-select')?.value || sets.set2.mainWeapon;
         sets.set2.mainWeapon = chosen;
@@ -11439,6 +11621,20 @@
 
     function onTWFModifierToggle() {
       const isChecked = document.getElementById('mod-twf')?.checked ?? false;
+      const mainWep = character.activeWeapon || character.tactical?.weaponSets?.set1?.mainWeapon;
+      const mainIsTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(mainWep) : false;
+      const hasOversized = typeof RuleEngine !== 'undefined' ? RuleEngine.hasOversizedWeaponFeat(character) : false;
+
+      // Rule 2: Ana el çift elli ise ve tek elle tutmayı sağlayan feat yoksa TWF çalışamaz
+      if (isChecked && mainIsTwoHand && !hasOversized) {
+        if (typeof showToast === 'function') {
+          showToast(`Ana elinizdeki "${mainWep}" iki elli bir silahtır! 'Monkey Grip' feat'i olmadan çift silah (TWF) çalışamaz.`, 'warning');
+        }
+        const twfCb = document.getElementById('mod-twf');
+        if (twfCb) twfCb.checked = false;
+        return;
+      }
+
       let mod = (character.activeModifiers || []).find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Çift Silah')));
       if (mod) {
         mod.active = isChecked;
@@ -12466,8 +12662,10 @@
       if (!wep) return [];
 
       const isTwoHand = RuleEngine.isTwoHandedWeapon(wep);
+      const hasOversizedWeaponFeat = RuleEngine ? RuleEngine.hasOversizedWeaponFeat(character) : false;
+      const effectiveTwoHand = isTwoHand && !hasOversizedWeaponFeat;
       const gripSelect = document.getElementById('active-grip-select');
-      const grip = (isTwoHand ? '2-Hand' : (gripSelect?.value || '1-Hand'));
+      const grip = (effectiveTwoHand ? '2-Hand' : (gripSelect?.value || '1-Hand'));
       const paVal = parseInt(document.getElementById('power-attack-val')?.value) || 0;
       const flanking = document.getElementById('mod-flanking')?.checked ?? false;
       const charge = document.getElementById('mod-charge')?.checked ?? false;
@@ -12479,7 +12677,8 @@
       const offHandWep = getResolvedOffHandWeapon(character);
       const hasOffHandWeapon = !!(offHandWep && offHandWep.name && offHandWep.name !== 'None' && !offHandWep.isBuckler && offHandWep.dmgType !== 'Kalkan');
 
-      const isTWF = (isDualFromSets && hasOffHandWeapon) || (activeMods.some(m => (m.name || '').includes('TWF') || (m.name || '').includes('Çift Silah')) && hasOffHandWeapon);
+      // Rule 2: Ana el çift elli ise ve tek elle tutmayı sağlayan feat yoksa TWF kesinlikle çalışmaz
+      const isTWF = !effectiveTwoHand && ((isDualFromSets && hasOffHandWeapon) || (activeMods.some(m => (m.name || '').includes('TWF') || (m.name || '').includes('Çift Silah')) && hasOffHandWeapon));
       const isFlurry = activeMods.some(m => (m.name || '').includes('Flurry') || (m.name || '').includes('Seri Vuruş'));
 
       const nonChainMods = activeMods.filter(m => {
@@ -13886,6 +14085,35 @@
     function renderOffHandSelector() {
       const select = document.getElementById('active-offhand-select');
       if (!select) return;
+
+      const currentMainWep = character.activeWeapon || character.tactical?.weaponSets?.set1?.mainWeapon;
+      const mainIsTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(currentMainWep) : false;
+      const hasOversized = typeof RuleEngine !== 'undefined' ? RuleEngine.hasOversizedWeaponFeat(character) : false;
+
+      if (mainIsTwoHand && !hasOversized) {
+        select.innerHTML = '<option value="None" selected>Yok / Boş (Ana El İki Elli Silah)</option>';
+        select.value = 'None';
+        select.disabled = true;
+        character.activeOffHand = 'None';
+
+        const modeBadge = document.getElementById('offhand-slot-mode-badge');
+        const statusMain = document.getElementById('offhand-status-main');
+        const statusDetail = document.getElementById('offhand-status-detail');
+        if (modeBadge) {
+          modeBadge.textContent = '🔒 İki Elli Silah';
+          modeBadge.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-950/60 text-amber-400 border border-amber-800';
+        }
+        if (statusMain) statusMain.textContent = 'İkinci El Kilitli';
+        if (statusDetail) {
+          statusDetail.textContent = `🔒 Ana eldeki "${currentMainWep}" iki elle tutulmaktadır`;
+          statusDetail.className = 'text-[10px] font-semibold text-slate-400';
+        }
+        const twfBadge = document.getElementById('twf-bonus-badge');
+        if (twfBadge) twfBadge.classList.add('hidden');
+        return;
+      }
+
+      select.disabled = false;
       const currentVal = character.activeOffHand || 'None';
       select.innerHTML = '<option value="None">Yok / Boş (Tek Silahla Dövüş)</option>';
 
@@ -13980,6 +14208,21 @@
     function onOffHandChange() {
       const select = document.getElementById('active-offhand-select');
       if (!select) return;
+
+      const currentMainWep = character.activeWeapon || character.tactical?.weaponSets?.set1?.mainWeapon;
+      const mainIsTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(currentMainWep) : false;
+      const hasOversized = typeof RuleEngine !== 'undefined' ? RuleEngine.hasOversizedWeaponFeat(character) : false;
+
+      // Rule 1: İkinci ele başka silah seçilemesin
+      if (mainIsTwoHand && !hasOversized && select.value !== 'None') {
+        select.value = 'None';
+        character.activeOffHand = 'None';
+        if (typeof showToast === 'function') {
+          showToast(`Ana elinizdeki "${currentMainWep}" iki elli bir silahtır! 'Monkey Grip' olmadan ikinci ele silah veya kalkan seçilemez.`, 'warning');
+        }
+        return;
+      }
+
       character.activeOffHand = select.value;
       saveStateToStorage(false);
       renderCombatCockpit();

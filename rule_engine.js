@@ -81,24 +81,29 @@ const RuleEngine = {
   // Check if weapon is Two-Handed according to D&D 3.5e RAW rules
   isTwoHandedWeapon(weapon) {
     if (!weapon) return false;
-    const name = (weapon.name || '').toLowerCase();
-    const type = (weapon.type || weapon.category || '').toLowerCase();
-    const slot = (weapon.slot || '').toLowerCase();
-    const tags = Array.isArray(weapon.tags) ? weapon.tags.map(t => t.toLowerCase()) : [];
-    const desc = (weapon.desc || weapon.benefit || weapon.description || '').toLowerCase();
+    const name = (typeof weapon === 'string' ? weapon : (weapon.name || '')).toLowerCase().trim();
+    if (!name || name === 'yok' || name === '-' || name === 'none' || name === 'boş') return false;
 
-    if (weapon.isTwoHanded || weapon.twoHanded || weapon.grip === '2-Hand') return true;
-    if (tags.some(t => t.includes('two-hand') || t.includes('2-hand') || t.includes('two handed'))) return true;
-    if (slot.includes('two-hand') || slot.includes('2-hand') || slot.includes('two handed')) return true;
-    if (desc.includes('2-handed') || desc.includes('two-handed') || desc.includes('two hands') || desc.includes('requires 2 hands') || desc.includes('massive 2-handed')) return true;
+    const type = (typeof weapon === 'object' ? (weapon.type || weapon.category || '') : '').toLowerCase();
+    const slot = (typeof weapon === 'object' ? (weapon.slot || '') : '').toLowerCase();
+    const tags = (typeof weapon === 'object' && Array.isArray(weapon.tags)) ? weapon.tags.map(t => t.toLowerCase()) : [];
+    const desc = (typeof weapon === 'object' ? (weapon.desc || weapon.benefit || weapon.description || '') : '').toLowerCase();
 
-    // Standard D&D 3.5e Two-Handed Weapons (including Planar Handbook Jovar, greatclub, spear)
+    if (typeof weapon === 'object') {
+      if (weapon.isTwoHanded || weapon.twoHanded || weapon.grip === '2-Hand') return true;
+    }
+    if (tags.some(t => t.includes('two-hand') || t.includes('2-hand') || t.includes('two handed') || t.includes('çift el') || t.includes('iki el'))) return true;
+    if (slot.includes('two-hand') || slot.includes('2-hand') || slot.includes('two handed') || slot.includes('çift el') || slot.includes('iki el')) return true;
+    if (desc.includes('2-handed') || desc.includes('two-handed') || desc.includes('two hands') || desc.includes('requires 2 hands') || desc.includes('massive 2-handed') || desc.includes('çift el') || desc.includes('iki el')) return true;
+
+    // Standard D&D 3.5e Two-Handed Weapons (including Turkish names and SRD weapons)
     const twoHandedWeapons = [
       'jovar', 'greatsword', 'greataxe', 'greatclub', 'falchion', 'scythe', 'halberd',
       'heavy flail', 'guisarme', 'glaive', 'ranseur', 'spiked chain',
       'orc double axe', 'gnome hooked hammer', 'two-bladed sword', 'dire flail',
       'longspear', 'quarterstaff', 'longbow', 'composite longbow',
-      'shortbow', 'composite shortbow', 'heavy crossbow', 'light crossbow'
+      'shortbow', 'composite shortbow', 'heavy crossbow', 'light crossbow',
+      'yay', 'arbalet', 'kundak', 'büyük kılıç', 'büyük balta', 'tırpan', 'asa'
     ];
 
     if (twoHandedWeapons.some(w => name.includes(w))) {
@@ -106,7 +111,7 @@ const RuleEngine = {
     }
 
     // Spear is two-handed in 3.5e; shortspear is one-handed
-    if (name.includes('spear') && !name.includes('shortspear')) {
+    if ((name.includes('spear') && !name.includes('shortspear')) || (name.includes('mızrak') && !name.includes('kısa mızrak'))) {
       return true;
     }
 
@@ -117,12 +122,16 @@ const RuleEngine = {
   hasOversizedWeaponFeat(character) {
     if (!character) return false;
     const feats = (character.feats || []).map(f => (typeof f === 'string' ? f : f.name || '').toLowerCase());
-    return feats.some(f => 
+    const abilities = (character.specialAbilities || []).map(a => (typeof a === 'string' ? a : a.name || '').toLowerCase());
+    const all = [...feats, ...abilities];
+    return all.some(f => 
+      f.includes('monkey grip') || 
       f.includes('oversized two-weapon fighting') || 
       f.includes('oversized weapon fighting') || 
       f.includes('oversized weapon') || 
-      f.includes('monkey grip') || 
-      f.includes('powerful build')
+      f.includes('powerful build') ||
+      f.includes('jotunbrud') ||
+      f.includes('tek elle çift el')
     );
   },
 
