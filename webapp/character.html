@@ -6801,7 +6801,15 @@
             const hubDb = JSON.parse(hubRaw);
             const found = (hubDb.characters || []).find(c => c.id === reqId);
             if (found) {
-              if (found.fullData) {
+              if (found.fullData && found.name !== "Kazmil'in Çırağı" && (found.fullData.name === "Kazmil'in Çırağı" || found.fullData.name === "Khazmil'in Çırağı")) {
+                // Cross-contamination recovery: character fullData was contaminated by test character
+                console.warn(`loadInitialData: Cross-contamination detected on character '${found.name}'. Re-generating clean Level 1 sheet.`);
+                character = createCleanDnd35Character(found);
+                character._hubId = reqId;
+                found.fullData = character;
+                localStorage.setItem('dnd35_hub_db', JSON.stringify(hubDb));
+                loadedFromHub = true;
+              } else if (found.fullData) {
                 character = found.fullData;
                 character._hubId = reqId;
                 loadedFromHub = true;
@@ -7060,10 +7068,16 @@
         if (hubRaw) {
           const hubDb = JSON.parse(hubRaw);
           const urlParams = new URLSearchParams(window.location.search);
-          const charId = character._hubId || urlParams.get('id') || localStorage.getItem('dnd35_active_character_id');
+          const requestedId = urlParams.get('id') || localStorage.getItem('dnd35_active_character_id');
+          const charId = character._hubId || character.id || requestedId;
           if (charId && Array.isArray(hubDb.characters)) {
             const idx = hubDb.characters.findIndex(c => c.id === charId);
             if (idx >= 0) {
+              // Guard clause: ensure we are not overwriting a different character
+              if (character._hubId && hubDb.characters[idx].id && character._hubId !== hubDb.characters[idx].id) {
+                console.warn(`saveStateToStorage guard: character._hubId (${character._hubId}) !== summary.id (${hubDb.characters[idx].id}). Aborting hub overwrite.`);
+                return;
+              }
               const activeWep = (character.weapons || []).find(w => w.name === character.activeWeapon) || (character.weapons || [])[0] || {};
               hubDb.characters[idx].name = character.name || hubDb.characters[idx].name;
               hubDb.characters[idx].race = character.race || hubDb.characters[idx].race;

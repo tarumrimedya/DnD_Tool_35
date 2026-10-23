@@ -261,7 +261,7 @@ const CloudSync = {
     }
   },
 
-  // Apply cloud payload (character + masterDb) into active app state
+  // Apply cloud payload (character + masterDb + optional hubDb) into active app state
   applyRemotePayload(remotePayload) {
     if (!remotePayload) return false;
     if (typeof remotePayload === 'string') {
@@ -271,28 +271,70 @@ const CloudSync = {
 
     let applied = false;
 
-    // 1. Restore Character
+    // 0. Sync Hub Database if present in cloud payload
+    if (remotePayload.hubDb && typeof remotePayload.hubDb === 'object') {
+      try {
+        const localHubRaw = localStorage.getItem('dnd35_hub_db');
+        if (!localHubRaw) {
+          localStorage.setItem('dnd35_hub_db', JSON.stringify(remotePayload.hubDb));
+        }
+      } catch (e) {
+        console.warn('CloudSync: hubDb sync notice:', e);
+      }
+    }
+
+    // 1. Restore Character (with strict isolation guard against cross-contamination)
     const remoteChar = remotePayload.character || (remotePayload.name || remotePayload.abilities ? remotePayload : null);
     if (remoteChar && typeof character !== 'undefined' && character) {
-      Object.keys(character).forEach(k => delete character[k]);
-      Object.assign(character, remoteChar);
+      const urlParams = new URLSearchParams(window.location.search);
+      const reqId = urlParams.get('id') || localStorage.getItem('dnd35_active_character_id');
+      const currentCharId = character._hubId || character.id || reqId;
+      const remoteCharId = remoteChar._hubId || remoteChar.id;
 
-      // Clean unowned dummy modifiers (like Boots of Speed or Acid Arrow) from activeModifiers
-      if (Array.isArray(character.activeModifiers)) {
-        character.activeModifiers = character.activeModifiers.filter(m => {
-          if (!m || !m.name) return false;
-          const n = m.name.toLowerCase().trim();
-          if (n.includes('boots of speed')) {
-            const hasBoots = typeof characterHasItem === 'function' ? characterHasItem(character, 'Boots of Speed') : false;
-            if (!hasBoots) return false;
-          }
-          if (n.includes('acid arrow')) return false; // Spell attacks belong in spell drawers, not melee modifiers
-          return true;
-        });
+      // Check if remote payload has hubDb containing the current character
+      let matchedFromHub = false;
+      if (remotePayload.hubDb && Array.isArray(remotePayload.hubDb.characters) && currentCharId) {
+        const foundInCloudHub = remotePayload.hubDb.characters.find(c => c.id === currentCharId);
+        if (foundInCloudHub && foundInCloudHub.fullData) {
+          Object.keys(character).forEach(k => delete character[k]);
+          Object.assign(character, foundInCloudHub.fullData);
+          character._hubId = currentCharId;
+          applied = true;
+          matchedFromHub = true;
+        }
       }
 
-      localStorage.setItem('dnd35_character', JSON.stringify(character));
-      applied = true;
+      if (!matchedFromHub) {
+        // Guard Clause: If user is viewing a specific Hub character or requested a specific ID:
+        // Do NOT overwrite it with an unrelated cloud single-character!
+        const isDefaultTestChar = (remoteChar.name === "Kazmil'in Çırağı" || remoteChar.name === "Khazmil'in Çırağı" || !remoteCharId);
+        const isCurrentDifferent = (currentCharId && remoteCharId && currentCharId !== remoteCharId) ||
+                                   (reqId && isDefaultTestChar && character.name !== remoteChar.name);
+
+        if (isCurrentDifferent) {
+          console.warn(`CloudSync: Cloud character (${remoteChar.name || remoteCharId}) does not match current active character (${character.name || currentCharId}). Skipping character overwrite to protect character isolation.`);
+        } else {
+          Object.keys(character).forEach(k => delete character[k]);
+          Object.assign(character, remoteChar);
+
+          // Clean unowned dummy modifiers (like Boots of Speed or Acid Arrow) from activeModifiers
+          if (Array.isArray(character.activeModifiers)) {
+            character.activeModifiers = character.activeModifiers.filter(m => {
+              if (!m || !m.name) return false;
+              const n = m.name.toLowerCase().trim();
+              if (n.includes('boots of speed')) {
+                const hasBoots = typeof characterHasItem === 'function' ? characterHasItem(character, 'Boots of Speed') : false;
+                if (!hasBoots) return false;
+              }
+              if (n.includes('acid arrow')) return false; // Spell attacks belong in spell drawers, not melee modifiers
+              return true;
+            });
+          }
+
+          localStorage.setItem('dnd35_character', JSON.stringify(character));
+          applied = true;
+        }
+      }
     }
 
     // 2. Restore & Upgrade Master DB (Intelligent Merge / Never Downgrade Canonical DB)
@@ -442,11 +484,18 @@ const CloudSync = {
         character.lastModified = nowIso;
       }
 
+      let hubDb = null;
+      try {
+        const hubRaw = localStorage.getItem('dnd35_hub_db');
+        if (hubRaw) hubDb = JSON.parse(hubRaw);
+      } catch (e) {}
+
       const payload = {
         version: 2,
         lastModified: nowIso,
         character: typeof character !== 'undefined' ? character : {},
-        masterDb: typeof masterDb !== 'undefined' && Array.isArray(masterDb) ? masterDb : []
+        masterDb: typeof masterDb !== 'undefined' && Array.isArray(masterDb) ? masterDb : [],
+        hubDb: hubDb
       };
 
       if (this.serverAvailable) {
