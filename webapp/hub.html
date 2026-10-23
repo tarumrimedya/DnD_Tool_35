@@ -69,21 +69,22 @@
         </div>
       </div>
 
-      <!-- KAMPANYA SEKMELERİ (CAMPAIGN FILTER PILLS) -->
-      <div class="mt-5 pt-4 border-t border-slate-700/60 flex items-center justify-between gap-3 flex-wrap">
-        <div class="flex items-center gap-2 overflow-x-auto pb-1 max-w-full custom-scroll" id="campaign-tabs-container">
+      <!-- KAMPANYA SEKMELERİ (CAMPAIGN FILTER PILLS & VIEW TOGGLE) -->
+      <div class="mt-5 pt-4 border-t border-slate-700/60 flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <!-- Dinamik Aşağı Doğru Genişleyen Kampanya Hapları -->
+        <div class="flex flex-wrap items-center gap-2 flex-1" id="campaign-tabs-container">
           <!-- JS tarafından dinamik doldurulur -->
         </div>
 
         <!-- Görünüm Modu Değiştirici (Kart vs DM Tablosu) -->
-        <div class="flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-700/80 shrink-0">
+        <div class="flex items-center self-start md:self-auto bg-slate-900/90 p-1 rounded-xl border border-slate-700/80 shrink-0 shadow-md">
           <button id="view-mode-card-btn" onclick="setViewMode('cards')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 bg-indigo-600 text-white shadow">
             <span>🎴</span>
-            <span class="hidden sm:inline">Kart Görünümü</span>
+            <span>Kart Görünümü</span>
           </button>
           <button id="view-mode-dm-btn" onclick="setViewMode('dm-table')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 text-slate-400 hover:text-white">
             <span>📋</span>
-            <span class="hidden sm:inline">DM Muharebe Tablosu</span>
+            <span>DM Tablosu</span>
           </button>
         </div>
       </div>
@@ -575,13 +576,13 @@
         const count = state.characters.filter(c => c.campaignId === camp.id).length;
         const isActive = state.activeCampaignId === camp.id;
         html += `
-          <div class="inline-flex items-center shrink-0 rounded-xl overflow-hidden border ${isActive ? 'border-indigo-500 shadow-md ring-1 ring-indigo-400/40' : 'border-slate-700 bg-slate-900/80'}">
-            <button onclick="setCampaignFilter('${camp.id}')" class="px-3 py-1.5 text-xs font-bold transition flex items-center gap-1.5 ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800 text-slate-300'}">
-              <span>🏰</span>
-              <span>${camp.name}</span>
-              <span class="text-[10px] px-1.5 py-0.2 rounded-full ${isActive ? 'bg-indigo-800 text-indigo-200' : 'bg-slate-800 text-slate-400'}">${count}</span>
+          <div class="inline-flex items-center shrink-0 rounded-xl overflow-hidden border max-w-full ${isActive ? 'border-indigo-500 shadow-md ring-1 ring-indigo-400/40' : 'border-slate-700 bg-slate-900/80'}">
+            <button onclick="setCampaignFilter('${camp.id}')" class="px-3 py-1.5 text-xs font-bold transition flex items-center gap-1.5 min-w-0 ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800 text-slate-300'}">
+              <span class="shrink-0">🏰</span>
+              <span class="truncate max-w-[150px] sm:max-w-none">${camp.name}</span>
+              <span class="text-[10px] px-1.5 py-0.2 rounded-full shrink-0 ${isActive ? 'bg-indigo-800 text-indigo-200' : 'bg-slate-800 text-slate-400'}">${count}</span>
             </button>
-            <button onclick="openEditCampaignModal('${camp.id}', event)" class="px-2 py-1.5 text-xs transition border-l border-slate-700/60 ${isActive ? 'bg-indigo-700 text-indigo-200 hover:text-white hover:bg-indigo-800' : 'bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-amber-300'}" title="Kampanyayı Düzenle veya Sil">
+            <button onclick="openEditCampaignModal('${camp.id}', event)" class="px-2 py-1.5 text-xs transition border-l border-slate-700/60 shrink-0 ${isActive ? 'bg-indigo-700 text-indigo-200 hover:text-white hover:bg-indigo-800' : 'bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-amber-300'}" title="Kampanyayı Düzenle veya Sil">
               <span>✏️</span>
             </button>
           </div>
