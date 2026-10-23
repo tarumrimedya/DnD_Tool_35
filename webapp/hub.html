@@ -239,22 +239,84 @@
 
     // Hub Veritabanını Başlat (Initialize or Load from LocalStorage)
     function initHubStorage() {
-      // 1. Orijinal Kazmil Şablon Oluşturucu
-      function buildKazmilSummary(data) {
-        const kData = data || window.BUNDLED_CHARACTER_DATA || {};
+      // 1. Hub veritabanını yükle
+      let loadedDb = null;
+      try {
+        const raw = localStorage.getItem(HUB_STORAGE_KEY);
+        if (raw) loadedDb = JSON.parse(raw);
+      } catch (err) {
+        console.warn('Hub storage parse error:', err);
+      }
+
+      // Dummy karakter filtre seti (eski test verilerini temizlemek için)
+      const dummyIds = new Set(['char_001', 'char_002', 'char_003', 'char_004']);
+      const dummyNames = new Set([
+        'regdar ironfist',
+        'mialee moonwhisper',
+        'gargantuan umber hulk',
+        'lidda quickstep'
+      ]);
+
+      let campaigns = [
+        { id: 'camp_001', name: '⚔️ Ana Sefer (Main Campaign)', notes: 'Aktif macera seferi.' }
+      ];
+
+      let rawCharacters = [];
+
+      if (loadedDb && Array.isArray(loadedDb.characters)) {
+        rawCharacters = loadedDb.characters.filter(c => {
+          if (!c || typeof c !== 'object') return false;
+          if (dummyIds.has(c.id)) return false;
+          if (dummyNames.has((c.name || '').toLowerCase().trim())) return false;
+          return true;
+        });
+
+        if (Array.isArray(loadedDb.campaigns) && loadedDb.campaigns.length > 0) {
+          campaigns = loadedDb.campaigns.filter(cp => cp.id !== 'camp_002' || rawCharacters.some(c => c.campaignId === cp.id));
+          if (!campaigns.some(cp => cp.id === 'camp_001')) {
+            campaigns.unshift({ id: 'camp_001', name: '⚔️ Ana Sefer (Main Campaign)', notes: 'Aktif macera seferi.' });
+          }
+        }
+      }
+
+      // 2. Akıllı Tekilleştirme (Deduplication): Aynı ID veya mükerrer kopyaları otomatik temizle
+      const seenIds = new Set();
+      const seenSignatures = new Set();
+      const characters = [];
+
+      rawCharacters.forEach(c => {
+        if (!c.id) c.id = 'char_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+        if (seenIds.has(c.id)) return;
+
+        const signature = `${(c.name || '').toLowerCase().trim()}__${(c.classes || '').toLowerCase().trim()}__${c.level || 1}`;
+        const isSampleTest = (c.name || '').toLowerCase().includes('kazmil') || (c.name || '').toLowerCase().includes('khazmil');
+
+        if (!isSampleTest && seenSignatures.has(signature)) {
+          // Bu karakterin tıpatıp kopyası zaten var, atla
+          return;
+        }
+
+        seenIds.add(c.id);
+        seenSignatures.add(signature);
+        characters.push(c);
+      });
+
+      // 3. Sıfır Karakter Koruması (Yalnızca DB tamamen boşsa ilk seferde örnek test karakteri sun)
+      if (characters.length === 0 && window.BUNDLED_CHARACTER_DATA) {
+        const kData = window.BUNDLED_CHARACTER_DATA;
         const activeWep = (kData.weapons || []).find(w => w.name === kData.activeWeapon) || (kData.weapons || [])[0] || {};
-        return {
-          id: 'char_kazmil_primary',
+        characters.push({
+          id: 'char_test_khazmil',
           campaignId: 'camp_001',
           isNpc: false,
-          name: "Kazmil'in Çırağı",
+          name: kData.name || "Kazmil'in Çırağı",
           race: kData.race || "Human",
           classes: kData.classes || (kData.class ? `${kData.class} ${kData.level || 6}` : "Sorcerer 5 / Warblade 1"),
           level: Number(kData.level) || 6,
-          portrait: kData.portrait || kData.avatarUrl || (window.BUNDLED_CHARACTER_DATA && window.BUNDLED_CHARACTER_DATA.portrait) || "",
+          portrait: kData.portrait || kData.avatarUrl || "",
           portraitPosition: kData.portraitPosition || "50% 50%",
           portraitFit: kData.portraitFit || "125%",
-          avatarUrl: kData.portrait || kData.avatarUrl || (window.BUNDLED_CHARACTER_DATA && window.BUNDLED_CHARACTER_DATA.portrait) || "",
+          avatarUrl: kData.portrait || kData.avatarUrl || "",
           currentHp: kData.hp?.current ?? 45,
           maxHp: kData.hp?.max ?? 45,
           tempHp: kData.hp?.temp ?? 0,
@@ -270,50 +332,10 @@
           spotBonus: 2,
           listenBonus: 2,
           fullData: kData
-        };
-      }
-
-      // 2. Hub veritabanını yükle ve geçmiş dummy karakterleri filtrele
-      let loadedDb = null;
-      try {
-        const raw = localStorage.getItem(HUB_STORAGE_KEY);
-        if (raw) loadedDb = JSON.parse(raw);
-      } catch (err) {
-        console.warn('Hub storage parse error:', err);
-      }
-
-      // Dummy karakter kimlik ve isim filtre seti
-      const dummyIds = new Set(['char_001', 'char_002', 'char_003', 'char_004']);
-      const dummyNames = new Set([
-        'regdar ironfist',
-        'mialee moonwhisper',
-        'gargantuan umber hulk',
-        'lidda quickstep'
-      ]);
-
-      let campaigns = [
-        { id: 'camp_001', name: '⚔️ Ana Sefer (Main Campaign)', notes: 'Kazmil\'in Çırağı ve aktif macera seferi.' }
-      ];
-
-      let characters = [];
-
-      if (loadedDb && Array.isArray(loadedDb.characters)) {
-        // Dummy karakterleri kesin olarak temizle
-        characters = loadedDb.characters.filter(c => {
-          if (dummyIds.has(c.id)) return false;
-          if (dummyNames.has((c.name || '').toLowerCase().trim())) return false;
-          return true;
         });
-
-        if (Array.isArray(loadedDb.campaigns) && loadedDb.campaigns.length > 0) {
-          campaigns = loadedDb.campaigns.filter(cp => cp.id !== 'camp_002' || characters.some(c => c.campaignId === cp.id));
-          if (!campaigns.some(cp => cp.id === 'camp_001')) {
-            campaigns.unshift({ id: 'camp_001', name: '⚔️ Ana Sefer (Main Campaign)', notes: 'Kazmil\'in Çırağı ve aktif macera seferi.' });
-          }
-        }
       }
 
-      // 3. Karakter sayfasındaki mevcut karakteri çek
+      // 4. Karakter sayfasındaki aktif karakteri sadece kendi ID'sine sahip kartla senkronize et
       let activeChar = null;
       try {
         const rawChar = localStorage.getItem('dnd35_character');
@@ -322,37 +344,9 @@
         console.warn('LocalStorage dnd35_character okunamadı:', e);
       }
 
-      // 4. Kazmil kontrolü ve izolasyonu (Asla başka karakterle ezilemez!)
-      const kazmilIdx = characters.findIndex(c => c.id === 'char_kazmil_primary');
-      const isKazmilActive = activeChar && (
-        activeChar.id === 'char_kazmil_primary' || 
-        activeChar._hubId === 'char_kazmil_primary' || 
-        activeChar.name === "Kazmil'in Çırağı" || 
-        activeChar.name === "Khazmil'in Çırağı"
-      );
-
-      if (kazmilIdx >= 0) {
-        // Eğer Kazmil yuvası başka bir karakterin ismiyle bozulmuşsa kendini otomatik onar!
-        const existingName = characters[kazmilIdx].name;
-        if (existingName !== "Kazmil'in Çırağı" && existingName !== "Khazmil'in Çırağı") {
-          console.warn(`initHubStorage: char_kazmil_primary '${existingName}' tarafından ezilmiş, orijinal Kazmil onarılıyor.`);
-          characters[kazmilIdx] = buildKazmilSummary(window.BUNDLED_CHARACTER_DATA);
-        } else if (isKazmilActive) {
-          // Sadece aktif karakter gerçekten Kazmil ise güncelle
-          characters[kazmilIdx] = {
-            ...characters[kazmilIdx],
-            ...buildKazmilSummary(activeChar)
-          };
-        }
-      } else {
-        // Kazmil hiç yoksa ekle
-        characters.unshift(buildKazmilSummary(window.BUNDLED_CHARACTER_DATA));
-      }
-
-      // 5. Diğer karakterlerin güncellenmesi (Sadece kendi ID'siyle eşleşen kart güncellenir)
-      if (activeChar && !isKazmilActive) {
+      if (activeChar) {
         const activeId = activeChar._hubId || activeChar.id;
-        if (activeId && activeId !== 'char_kazmil_primary') {
+        if (activeId) {
           const matchIdx = characters.findIndex(c => c.id === activeId);
           if (matchIdx >= 0) {
             const mc = characters[matchIdx];
@@ -770,8 +764,12 @@
       const source = state.characters.find(it => it.id === charId);
       if (!source) return;
 
+      if (!confirm(`"${source.name}" karakterini kopyalamak istediğinize emin misiniz?`)) {
+        return;
+      }
+
       const copy = JSON.parse(JSON.stringify(source));
-      copy.id = 'char_' + Date.now();
+      copy.id = 'char_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
       copy.name = source.name + ' (Kopya)';
       if (copy.fullData) {
         copy.fullData.id = copy.id;

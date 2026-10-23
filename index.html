@@ -6801,20 +6801,14 @@
             const hubDb = JSON.parse(hubRaw);
             const found = (hubDb.characters || []).find(c => c.id === reqId);
             if (found) {
-              if (found.fullData && found.name !== "Kazmil'in Çırağı" && (found.fullData.name === "Kazmil'in Çırağı" || found.fullData.name === "Khazmil'in Çırağı")) {
-                // Cross-contamination recovery: character fullData was contaminated by test character
-                console.warn(`loadInitialData: Cross-contamination detected on character '${found.name}'. Re-generating clean Level 1 sheet.`);
-                character = createCleanDnd35Character(found);
-                character._hubId = reqId;
-                found.fullData = character;
-                localStorage.setItem('dnd35_hub_db', JSON.stringify(hubDb));
-                loadedFromHub = true;
-              } else if (found.fullData) {
+              if (found.fullData) {
                 character = found.fullData;
                 character._hubId = reqId;
+                if (found.name && character.name !== found.name) {
+                  character.name = found.name;
+                }
                 loadedFromHub = true;
               } else {
-                // Option 3 Guard Clause: Generate clean character from found summary
                 character = createCleanDnd35Character(found);
                 character._hubId = reqId;
                 found.fullData = character;
