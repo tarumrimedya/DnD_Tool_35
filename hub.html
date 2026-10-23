@@ -143,7 +143,7 @@
 
   <!-- MODAL: YENİ KARAKTER OLUŞTURMA MODALI -->
   <div id="new-character-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-[#131d33] border border-slate-700 rounded-2xl w-full max-w-lg p-5 shadow-2xl text-slate-100 space-y-4">
+    <div class="bg-[#131d33] border border-slate-700 rounded-2xl w-full max-w-md p-5 shadow-2xl text-slate-100 space-y-4">
       <div class="flex items-center justify-between border-b border-slate-700/80 pb-3">
         <div class="flex items-center gap-2">
           <span class="text-xl">✨</span>
@@ -172,37 +172,6 @@
               <!-- JS ile doldurulur -->
             </select>
           </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-slate-400 mb-1 font-semibold">Irk</label>
-            <input type="text" id="new-char-race" placeholder="Örn: Human, Elf, Dwarf" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500">
-          </div>
-          <div>
-            <label class="block text-slate-400 mb-1 font-semibold">Sınıf & Seviye</label>
-            <input type="text" id="new-char-class" placeholder="Örn: Fighter 5, Rogue 3 / Wizard 2" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500">
-          </div>
-        </div>
-
-        <div class="grid grid-cols-3 gap-3">
-          <div>
-            <label class="block text-slate-400 mb-1 font-semibold">Maksimum HP</label>
-            <input type="number" id="new-char-hp" value="30" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500 font-mono">
-          </div>
-          <div>
-            <label class="block text-slate-400 mb-1 font-semibold">Zırh Sınıfı (AC)</label>
-            <input type="number" id="new-char-ac" value="16" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500 font-mono">
-          </div>
-          <div>
-            <label class="block text-slate-400 mb-1 font-semibold">Dokunuş (Touch AC)</label>
-            <input type="number" id="new-char-touch" value="12" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500 font-mono">
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-slate-400 mb-1 font-semibold">Portre Görseli URL (Opsiyonel)</label>
-          <input type="text" id="new-char-avatar" placeholder="https://... (boş bırakılırsa sınıf silüeti kullanılır)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500">
         </div>
       </div>
 
@@ -969,11 +938,12 @@
           ${state.campaigns.map(camp => `<option value="${camp.id}" ${state.activeCampaignId === camp.id ? 'selected' : ''}>${camp.name}</option>`).join('')}
         `;
       }
-      document.getElementById('new-char-name').value = '';
-      document.getElementById('new-char-race').value = '';
-      document.getElementById('new-char-class').value = '';
-      document.getElementById('new-char-avatar').value = '';
+      const nameInput = document.getElementById('new-char-name');
+      if (nameInput) nameInput.value = '';
+      const typeSelect = document.getElementById('new-char-type');
+      if (typeSelect) typeSelect.value = 'pc';
       document.getElementById('new-character-modal').classList.remove('hidden');
+      if (nameInput) nameInput.focus();
     }
 
     function closeNewCharacterModal() {
@@ -988,40 +958,34 @@
       }
       const isNpc = document.getElementById('new-char-type')?.value === 'npc';
       const campaignId = document.getElementById('new-char-campaign')?.value || null;
-      const race = document.getElementById('new-char-race')?.value.trim() || 'Human';
-      const classes = document.getElementById('new-char-class')?.value.trim() || 'Fighter 1';
-      const hp = Number(document.getElementById('new-char-hp')?.value) || 20;
-      const ac = Number(document.getElementById('new-char-ac')?.value) || 14;
-      const touchAc = Number(document.getElementById('new-char-touch')?.value) || 11;
-      const avatarUrl = document.getElementById('new-char-avatar')?.value.trim() || '';
 
       const newChar = {
         id: 'char_' + Date.now(),
         campaignId: campaignId,
         isNpc: isNpc,
         name: name,
-        race: race,
-        classes: classes,
+        race: 'Human',
+        classes: 'Fighter 1',
         level: 1,
-        portrait: avatarUrl,
-        avatarUrl: avatarUrl,
-        currentHp: hp,
-        maxHp: hp,
+        portrait: '',
+        avatarUrl: '',
+        currentHp: 10,
+        maxHp: 10,
         tempHp: 0,
-        ac: ac,
-        touchAc: touchAc,
-        flatFootedAc: Math.max(10, ac - 2),
+        ac: 10,
+        touchAc: 10,
+        flatFootedAc: 10,
         mainWeapon: 'Longsword',
-        attackFormula: '+4 (1d8+2, 19-20x2)',
-        fortSave: 4,
-        refSave: 1,
-        willSave: 1,
-        initBonus: 1,
-        spotBonus: 1,
-        listenBonus: 1
+        attackFormula: '+1 (1d8, 19-20x2)',
+        fortSave: 2,
+        refSave: 0,
+        willSave: 0,
+        initBonus: 0,
+        spotBonus: 0,
+        listenBonus: 0
       };
 
-      // Option 1: Clean D&D 3.5e Level 1 schema generation
+      // Clean D&D 3.5e Level 1 schema generation
       newChar.fullData = createCleanDnd35Character(newChar);
 
       state.characters.push(newChar);
