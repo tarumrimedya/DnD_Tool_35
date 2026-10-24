@@ -1047,16 +1047,29 @@
                 <div class="${hpColor} h-full transition-all duration-300" style="width: ${hpPct}%;"></div>
               </div>
 
-              <!-- Hızlı Can Artır/Azalt Kontrolleri -->
-              <div class="flex items-center justify-between pt-1 text-[11px]">
-                <div class="flex items-center gap-1">
-                  <button onclick="adjustHp('${c.id}', -5)" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-rose-900 text-slate-300 hover:text-white border border-slate-700 transition font-mono cursor-pointer">-5</button>
-                  <button onclick="adjustHp('${c.id}', -1)" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-rose-900 text-slate-300 hover:text-white border border-slate-700 transition font-mono cursor-pointer">-1</button>
+              <!-- Hızlı Can Artır/Azalt & Özel Hasar/Şifa Kontrolleri -->
+              <div class="flex items-center justify-between gap-1 pt-1 text-[11px]">
+                <div class="flex items-center gap-1 shrink-0">
+                  <button onclick="adjustHp('${c.id}', -5)" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-rose-900 text-slate-300 hover:text-white border border-slate-700 transition font-mono cursor-pointer" title="5 Hasar Ver">-5</button>
+                  <button onclick="adjustHp('${c.id}', -1)" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-rose-900 text-slate-300 hover:text-white border border-slate-700 transition font-mono cursor-pointer" title="1 Hasar Ver">-1</button>
                 </div>
-                <span class="text-[10px] text-slate-500 font-semibold">%${hpPct}</span>
-                <div class="flex items-center gap-1">
-                  <button onclick="adjustHp('${c.id}', +1)" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-emerald-900 text-slate-300 hover:text-white border border-slate-700 transition font-mono cursor-pointer">+1</button>
-                  <button onclick="adjustHp('${c.id}', +5)" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-emerald-900 text-slate-300 hover:text-white border border-slate-700 transition font-mono cursor-pointer">+5</button>
+
+                <!-- Özel Miktar Girişi (Hasar / Şifa) -->
+                <div class="flex items-center gap-1 bg-slate-950/70 p-0.5 rounded-lg border border-slate-800" onclick="event.stopPropagation()">
+                  <button onclick="applyCustomHp('${c.id}', -1)" title="Yazılan miktar kadar hasar ver" class="px-1.5 py-0.5 rounded bg-rose-950/80 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800/80 transition font-mono font-bold text-[10px] cursor-pointer flex items-center gap-0.5">
+                    <span>⚔️</span>
+                    <span>-</span>
+                  </button>
+                  <input type="number" id="custom-hp-input-${c.id}" min="1" placeholder="Miktar" class="w-11 sm:w-12 h-5 text-center bg-slate-900 text-white font-mono text-[11px] font-bold rounded border border-slate-700/80 focus:border-amber-400 focus:outline-none p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" onkeydown="if(event.key==='Enter') applyCustomHp('${c.id}', -1)">
+                  <button onclick="applyCustomHp('${c.id}', 1)" title="Yazılan miktar kadar can / şifa ver" class="px-1.5 py-0.5 rounded bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 hover:text-white border border-emerald-800/80 transition font-mono font-bold text-[10px] cursor-pointer flex items-center gap-0.5">
+                    <span>+</span>
+                    <span>💚</span>
+                  </button>
+                </div>
+
+                <div class="flex items-center gap-1 shrink-0">
+                  <button onclick="adjustHp('${c.id}', +1)" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-emerald-900 text-slate-300 hover:text-white border border-slate-700 transition font-mono cursor-pointer" title="1 Şifa Ver">+1</button>
+                  <button onclick="adjustHp('${c.id}', +5)" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-emerald-900 text-slate-300 hover:text-white border border-slate-700 transition font-mono cursor-pointer" title="5 Şifa Ver">+5</button>
                 </div>
               </div>
             </div>
@@ -1473,13 +1486,35 @@
     function adjustHp(charId, delta) {
       const c = state.characters.find(it => it.id === charId);
       if (c) {
-        c.currentHp = Math.max(0, Math.min(c.maxHp, c.currentHp + delta));
+        if (delta < 0 && c.tempHp > 0) {
+          const dmg = Math.abs(delta);
+          if (c.tempHp >= dmg) {
+            c.tempHp -= dmg;
+          } else {
+            const remainder = dmg - c.tempHp;
+            c.tempHp = 0;
+            c.currentHp = Math.max(0, c.currentHp - remainder);
+          }
+        } else {
+          c.currentHp = Math.max(0, Math.min(c.maxHp, c.currentHp + delta));
+        }
         if (c.fullData && c.fullData.hp) {
           c.fullData.hp.current = c.currentHp;
+          c.fullData.hp.temp = c.tempHp || 0;
         }
         saveHubStorage();
         renderHub();
       }
+    }
+
+    function applyCustomHp(charId, multiplier) {
+      const input = document.getElementById(`custom-hp-input-${charId}`);
+      let amount = parseInt(input?.value, 10);
+      if (isNaN(amount) || amount <= 0) {
+        amount = 1;
+      }
+      const delta = amount * multiplier;
+      adjustHp(charId, delta);
     }
 
     function duplicateCharacter(charId) {
