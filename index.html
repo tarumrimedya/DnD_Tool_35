@@ -681,7 +681,7 @@
                   
                   <!-- 1. Satır: Büyü Adı -->
                   <div class="flex items-center justify-center gap-1.5 w-full leading-tight">
-                    <span class="text-purple-400 text-xs">🔮</span>
+                    <span id="combat-selected-spell-source-icon" class="text-purple-400 text-xs">🔮</span>
                     <span id="combat-selected-spell-title" class="text-xs font-black text-white group-hover:text-purple-200 truncate">Magic Missile</span>
                   </div>
 
@@ -11349,12 +11349,14 @@
       }
 
       // Automatically pick first spell in this category if current selected is not in it
-      const known = (character?.spellcasting?.knownSpells || []);
-      const categorySpells = known.filter(sp => getSpellEffectiveCategory(sp) === category);
+      const allSpells = getAllCharacterCombatSpells();
+      const categorySpells = allSpells.filter(sp => getSpellEffectiveCategory(sp) === category);
       const curSelected = window.currentSelectedCombatSpellName;
-      const isCurInCategory = categorySpells.some(sp => sp.name === curSelected);
+      const curSource = window.currentSelectedCombatSpellSource;
+      const isCurInCategory = categorySpells.some(sp => sp.name === curSelected && (!curSource || sp._spellSource === curSource));
       if (!isCurInCategory && categorySpells.length > 0) {
         window.currentSelectedCombatSpellName = categorySpells[0].name;
+        window.currentSelectedCombatSpellSource = categorySpells[0]._spellSource;
       }
 
       populateCombatSpells();
@@ -11459,8 +11461,37 @@
       return character.spellcasting.slots;
     }
 
+    function getAllCharacterCombatSpells() {
+      const sc = (typeof character !== 'undefined' && character && character.spellcasting) ? character.spellcasting : {};
+      const spont = Array.isArray(sc.knownSpells) ? sc.knownSpells : [];
+      const prep = Array.isArray(sc.preparedSpells) ? sc.preparedSpells : [];
+      const div = Array.isArray(sc.divineSpells) ? sc.divineSpells : [];
+      const list = [];
+      const seen = new Set();
+      const add = (sp, srcKey) => {
+        if (!sp) return;
+        const name = typeof sp === 'string' ? sp : sp.name;
+        if (!name) return;
+        const lvl = typeof sp === 'object' && sp.level !== undefined ? sp.level : 0;
+        const key = `${name.toLowerCase().trim()}__${lvl}__${srcKey}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        const obj = typeof sp === 'object' ? Object.assign({}, sp) : { name: sp, level: lvl };
+        obj._spellSource = srcKey;
+        list.push(obj);
+      };
+      spont.forEach(s => add(s, 'spontaneous'));
+      if (spont.length === 0 && Array.isArray(character?.spells)) {
+        character.spells.forEach(s => add(s, 'spontaneous'));
+      }
+      prep.forEach(s => add(s, 'prepared'));
+      div.forEach(s => add(s, 'divine'));
+      return list;
+    }
+
     function getSpellSlotSource(spell) {
       if (!spell) return 'spontaneous';
+      if (spell._spellSource) return spell._spellSource;
       const nameClean = (spell.name || '').toLowerCase().trim();
       const sourceClean = (spell.source || '').toLowerCase();
       const tags = (spell.tags || []).map(t => String(t).toLowerCase());
@@ -11505,7 +11536,7 @@
       }
 
       // Determine max spell level (standard 9 for D&D 3.5e, or higher if epic)
-      const allKnown = character?.spellcasting?.knownSpells || [];
+      const allKnown = getAllCharacterCombatSpells();
       const presentLevels = new Set();
       allKnown.forEach(sp => {
         const l = Number(sp.level);
@@ -12207,8 +12238,8 @@
     function getEffectiveSpellCasterLevel(spell = null) {
       if (spell) {
         const spellNameLower = (spell.name || '').toLowerCase();
-        const isDivineSpell = Array.isArray(character?.spellcasting?.divineSpells) && character.spellcasting.divineSpells.some(s => (s.name || '').toLowerCase() === spellNameLower);
-        const isPreparedSpell = Array.isArray(character?.spellcasting?.preparedSpells) && character.spellcasting.preparedSpells.some(s => (s.name || '').toLowerCase() === spellNameLower);
+        const isDivineSpell = (spell._spellSource === 'divine') || (Array.isArray(character?.spellcasting?.divineSpells) && character.spellcasting.divineSpells.some(s => (s.name || '').toLowerCase() === spellNameLower));
+        const isPreparedSpell = (spell._spellSource === 'prepared') || (Array.isArray(character?.spellcasting?.preparedSpells) && character.spellcasting.preparedSpells.some(s => (s.name || '').toLowerCase() === spellNameLower));
 
         if (isDivineSpell && typeof getDivineCasterInfo === 'function') {
           const dCl = Number(getDivineCasterInfo().cl);
@@ -12295,7 +12326,7 @@
       };
     }
 
-    function showSpellHoverTooltip(event, spellName) {
+    function showSpellHoverTooltip(event, spellName, sourceKey) {
       // On mobile / touch devices, disable hover popup as selecting the spell directly displays all details in Tier 5
       if (window.innerWidth < 768) return;
       if (window.matchMedia && window.matchMedia('(hover: none)').matches) return;
@@ -12304,8 +12335,14 @@
       const tooltip = document.getElementById('combat-spell-hover-tooltip');
       if (!tooltip) return;
 
-      const known = (character?.spellcasting?.knownSpells || []);
-      const spell = known.find(s => s.name === spellName);
+      const allSpells = getAllCharacterCombatSpells();
+      let spell = null;
+      if (sourceKey) {
+        spell = allSpells.find(s => s.name === spellName && (s._spellSource === sourceKey || getSpellSlotSource(s) === sourceKey));
+      }
+      if (!spell) {
+        spell = allSpells.find(s => s.name === spellName);
+      }
       if (!spell) return;
 
       const params = getSpellCriticalParams(spell);
@@ -12345,7 +12382,7 @@
     function showActiveSpellHoverTooltip(event) {
       const activeSpell = typeof getSelectedCombatSpell === 'function' ? getSelectedCombatSpell() : null;
       if (activeSpell && activeSpell.name && typeof showSpellHoverTooltip === 'function') {
-        showSpellHoverTooltip(event, activeSpell.name);
+        showSpellHoverTooltip(event, activeSpell.name, activeSpell._spellSource);
       }
     }
 
@@ -12690,8 +12727,8 @@
       if (!container) return;
 
       const activeCat = window.currentActiveCombatSpellCategory || 'offense_spell';
-      const known = (character?.spellcasting?.knownSpells || []).slice();
-      let categorySpells = known.filter(sp => getSpellEffectiveCategory(sp) === activeCat);
+      const allSpells = getAllCharacterCombatSpells();
+      let categorySpells = allSpells.filter(sp => getSpellEffectiveCategory(sp) === activeCat);
 
       // Apply custom order if defined
       const customOrder = character?.tactical?.spellOrder?.[activeCat];
@@ -12724,6 +12761,7 @@
 
       const activeSpell = getSelectedCombatSpell();
       const activeName = activeSpell ? activeSpell.name : (categorySpells[0]?.name || '');
+      const activeSource = activeSpell ? (activeSpell._spellSource || getSpellSlotSource(activeSpell)) : (categorySpells[0]?._spellSource || '');
 
       // Group spells by level
       const spellsByLevel = {};
@@ -12769,7 +12807,7 @@
             const remColor = remaining > 0 ? textColor : 'text-rose-400 opacity-60';
 
             sourceBadges.push(`
-              <span class="inline-flex items-center gap-1 font-mono text-[9px] font-bold ${remColor}" title="${src.shortLabel} ${lvl}. Seviye: ${remaining}/${daily} Kalan Slot">
+              <span class="inline-flex items-center gap-1 font-mono text-[9px] font-bold ${remColor}">
                 <span>${src.shortLabel}</span>
                 <span>${remaining}/${daily}</span>
               </span>
@@ -12782,49 +12820,53 @@
           : `<span class="font-mono text-[9px] text-slate-500">Yuva Yok</span>`;
 
         const cardsHtml = lvlSpells.map(sp => {
-          const isActive = sp.name === activeName;
+          const srcKey = sp._spellSource || (typeof getSpellSlotSource === 'function' ? getSpellSlotSource(sp) : 'spontaneous');
+          const isActive = (sp.name === activeName) && (!activeSource || srcKey === activeSource);
           const params = getSpellCriticalParams(sp);
 
-          let activeBorder = 'border-slate-800 bg-slate-900/80 hover:border-purple-800/60';
-          let activeTitleColor = 'text-slate-300';
+          let srcBadgeLabel = 'Anlık';
+          let srcBadgeClass = 'bg-purple-950/80 text-purple-300 border-purple-700/60';
           let badgeColor = 'text-purple-400';
+          let activeBorder = isActive
+            ? 'border-purple-500 bg-purple-950/70 shadow-md shadow-purple-950/50 ring-1 ring-purple-500/60'
+            : 'border-slate-800 bg-slate-900/80 hover:border-purple-700/80';
 
-          if (activeCat === 'offense_spell') {
-            badgeColor = 'text-purple-400';
-            if (isActive) {
-              activeBorder = 'border-purple-500 bg-purple-950/70 shadow-md shadow-purple-950/50 ring-1 ring-purple-500/60';
-              activeTitleColor = 'text-white font-extrabold';
-            }
-          } else if (activeCat === 'spell_control') {
+          if (srcKey === 'prepared') {
+            srcBadgeLabel = 'Kitap';
+            srcBadgeClass = 'bg-sky-950/80 text-sky-300 border-sky-700/60';
+            badgeColor = 'text-sky-400';
+            activeBorder = isActive
+              ? 'border-sky-500 bg-sky-950/70 shadow-md shadow-sky-950/50 ring-1 ring-sky-500/60'
+              : 'border-slate-800 bg-slate-900/80 hover:border-sky-700/80';
+          } else if (srcKey === 'divine') {
+            srcBadgeLabel = 'İlahi';
+            srcBadgeClass = 'bg-amber-950/80 text-amber-300 border-amber-700/60';
             badgeColor = 'text-amber-400';
-            if (isActive) {
-              activeBorder = 'border-amber-500 bg-amber-950/70 shadow-md shadow-amber-950/50 ring-1 ring-amber-500/60';
-              activeTitleColor = 'text-white font-extrabold';
-            }
-          } else {
-            badgeColor = 'text-emerald-400';
-            if (isActive) {
-              activeBorder = 'border-emerald-500 bg-emerald-950/70 shadow-md shadow-emerald-950/50 ring-1 ring-emerald-500/60';
-              activeTitleColor = 'text-white font-extrabold';
-            }
+            activeBorder = isActive
+              ? 'border-amber-500 bg-amber-950/70 shadow-md shadow-amber-950/50 ring-1 ring-amber-500/60'
+              : 'border-slate-800 bg-slate-900/80 hover:border-amber-700/80';
           }
 
+          const activeTitleColor = isActive ? 'text-white font-extrabold' : 'text-slate-300';
           const safeName = sp.name.replace(/'/g, "\\'");
           const reorderControls = window.spellReorderModeActive ? `
             <div class="flex items-center gap-1 shrink-0" onclick="event.stopPropagation()">
-              <button type="button" onclick="moveCategorySpellOrder('${activeCat}', '${safeName}', -1, event)" class="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold flex items-center justify-center text-[10px] cursor-pointer" title="Sola Taşı">◀</button>
-              <button type="button" onclick="moveCategorySpellOrder('${activeCat}', '${safeName}', 1, event)" class="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold flex items-center justify-center text-[10px] cursor-pointer" title="Sağa Taşı">▶</button>
+              <button type="button" onclick="moveCategorySpellOrder('${activeCat}', '${safeName}', -1, event)" class="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold flex items-center justify-center text-[10px] cursor-pointer">◀</button>
+              <button type="button" onclick="moveCategorySpellOrder('${activeCat}', '${safeName}', 1, event)" class="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold flex items-center justify-center text-[10px] cursor-pointer">▶</button>
             </div>
           ` : '';
 
           return `
-            <div onclick="selectCombatSpellDirect('${safeName}')"
-                 onmouseenter="showSpellHoverTooltip(event, '${safeName}')"
+            <div onclick="selectCombatSpellDirect('${safeName}', '${srcKey}')"
+                 onmouseenter="showSpellHoverTooltip(event, '${safeName}', '${srcKey}')"
                  onmouseleave="hideSpellHoverTooltip()"
                  onmousemove="updateSpellHoverTooltipPos(event)"
                  class="p-2 rounded-xl border ${activeBorder} transition flex flex-col justify-between cursor-pointer min-h-[58px] group relative select-none">
               <div class="flex items-center justify-between w-full gap-1">
-                <span class="text-[8px] font-mono ${badgeColor} font-bold uppercase truncate">${params.school || (sp.level === 0 ? 'Cantrip' : 'Lvl ' + sp.level)}</span>
+                <div class="flex items-center gap-1 min-w-0">
+                  <span class="text-[7px] font-mono font-bold px-1 py-0.2 rounded border uppercase tracking-wider shrink-0 ${srcBadgeClass}">${srcBadgeLabel}</span>
+                  <span class="text-[8px] font-mono ${badgeColor} font-bold uppercase truncate">${params.school || (sp.level === 0 ? 'Cantrip' : 'Lvl ' + sp.level)}</span>
+                </div>
                 <span class="text-[9px] text-amber-300 font-mono font-bold shrink-0 truncate">${params.dice || params.effect || ''}</span>
               </div>
               <div class="text-[11px] font-bold ${activeTitleColor} group-hover:text-white truncate my-0.5">
@@ -12855,8 +12897,9 @@
       }).join('');
     }
 
-    function selectCombatSpellDirect(spellName) {
+    function selectCombatSpellDirect(spellName, sourceKey) {
       window.currentSelectedCombatSpellName = spellName;
+      if (sourceKey) window.currentSelectedCombatSpellSource = sourceKey;
       hideSpellHoverTooltip();
       const select = document.getElementById('combat-active-spell-select');
       if (select) select.value = spellName;
@@ -12886,8 +12929,8 @@
       select.innerHTML = '';
 
       const activeCat = window.currentActiveCombatSpellCategory || 'offense_spell';
-      const known = (character?.spellcasting?.knownSpells || []).slice();
-      const categorySpells = known.filter(sp => getSpellEffectiveCategory(sp) === activeCat);
+      const allSpells = getAllCharacterCombatSpells();
+      const categorySpells = allSpells.filter(sp => getSpellEffectiveCategory(sp) === activeCat);
 
       if (categorySpells.length === 0) {
         const opt = document.createElement('option');
@@ -12899,10 +12942,12 @@
       }
 
       let hasMatch = false;
+      const srcLabels = { spontaneous: 'Anlık', prepared: 'Kitap', divine: 'İlahi' };
       categorySpells.forEach(sp => {
         const opt = document.createElement('option');
         opt.value = sp.name;
-        opt.textContent = `[Lvl ${sp.level}] ${sp.name} (${sp.school || 'Spell'})`;
+        const srcTag = srcLabels[sp._spellSource] || 'Büyü';
+        opt.textContent = `[${srcTag} Lvl ${sp.level}] ${sp.name} (${sp.school || 'Spell'})`;
         if (sp.name === currentVal) {
           opt.selected = true;
           hasMatch = true;
@@ -12913,6 +12958,7 @@
       if (!hasMatch && categorySpells.length > 0) {
         select.value = categorySpells[0].name;
         window.currentSelectedCombatSpellName = categorySpells[0].name;
+        window.currentSelectedCombatSpellSource = categorySpells[0]._spellSource;
       }
     }
 
@@ -12927,15 +12973,20 @@
 
     function getSelectedCombatSpell() {
       const activeCat = window.currentActiveCombatSpellCategory || 'offense_spell';
-      const known = (character?.spellcasting?.knownSpells || []);
-      const categorySpells = known.filter(sp => getSpellEffectiveCategory(sp) === activeCat);
+      const allSpells = getAllCharacterCombatSpells();
+      const categorySpells = allSpells.filter(sp => getSpellEffectiveCategory(sp) === activeCat);
 
       const selName = window.currentSelectedCombatSpellName || (document.getElementById('combat-active-spell-select')?.value);
+      const selSrc = window.currentSelectedCombatSpellSource;
       if (selName) {
-        const found = known.find(s => s.name === selName);
+        if (selSrc) {
+          const match = allSpells.find(s => s.name === selName && (s._spellSource === selSrc || getSpellSlotSource(s) === selSrc));
+          if (match) return match;
+        }
+        const found = allSpells.find(s => s.name === selName);
         if (found) return found;
       }
-      return categorySpells[0] || known[0] || null;
+      return categorySpells[0] || allSpells[0] || null;
     }
 
     function toggleSpellReorderMode() {
@@ -12959,8 +13010,8 @@
       if (!character.tactical) character.tactical = {};
       if (!character.tactical.spellOrder) character.tactical.spellOrder = {};
 
-      const known = (character.spellcasting?.knownSpells || []).slice();
-      let categorySpells = known.filter(sp => getSpellEffectiveCategory(sp) === category);
+      const allSpells = getAllCharacterCombatSpells();
+      let categorySpells = allSpells.filter(sp => getSpellEffectiveCategory(sp) === category);
 
       let orderList = Array.isArray(character.tactical.spellOrder[category])
         ? character.tactical.spellOrder[category].slice()
@@ -13398,6 +13449,14 @@
       // Update Selected Spell Title & School/Level Badges
       const titleEl = document.getElementById('combat-selected-spell-title');
       if (titleEl) titleEl.textContent = spell.name;
+
+      const sourceIcon = document.getElementById('combat-selected-spell-source-icon');
+      if (sourceIcon) {
+        const effSrc = spell._spellSource || (typeof getSpellSlotSource === 'function' ? getSpellSlotSource(spell) : 'spontaneous');
+        if (effSrc === 'prepared') sourceIcon.className = 'text-sky-400 text-xs';
+        else if (effSrc === 'divine') sourceIcon.className = 'text-amber-400 text-xs';
+        else sourceIcon.className = 'text-purple-400 text-xs';
+      }
 
       const schoolBadge = document.getElementById('combat-selected-spell-school-badge');
       if (schoolBadge) schoolBadge.textContent = spell.school || 'Universal';
