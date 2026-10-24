@@ -8312,7 +8312,9 @@
       try { renderDefenseBreakdown(); } catch (e) { console.error('renderDefenseBreakdown error:', e); }
       try { renderInventory(); } catch (e) { console.error('renderInventory error:', e); }
       try { renderConsumables(); } catch (e) { console.error('renderConsumables error:', e); }
-      try { renderMasterDbTable(); } catch (e) { console.error('renderMasterDbTable error:', e); }
+      if (typeof renderMasterDbTable === 'function') {
+        try { renderMasterDbTable(); } catch (e) { console.error('renderMasterDbTable error:', e); }
+      }
       try { renderDiceHistory(); } catch (e) { console.error('renderDiceHistory error:', e); }
     }
 
@@ -16326,15 +16328,6 @@
             dice: dbEntry?.dice || dbEntry?.extraDmg || pin.dice || '',
             bonusType: dbEntry?.bonusType || pin.bonusType || 'untyped',
             combatScope: 'ranged',
-            active: Boolean(pin.active),
-            activeClass: 'border-sky-500 bg-sky-950/40 text-sky-200 shadow-sm'
-          });
-        });
-      }
-            pinRef: pin,
-            name: pin.name,
-            source: pin.sourceType || 'Pin',
-            bonusStr: pin.badge || '+ Pin',
             active: Boolean(pin.active),
             activeClass: 'border-sky-500 bg-sky-950/40 text-sky-200 shadow-sm'
           });
