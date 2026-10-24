@@ -12184,6 +12184,30 @@
       }
     }
 
+    function getEffectiveSpellCasterLevel(spell = null) {
+      if (spell) {
+        const spellNameLower = (spell.name || '').toLowerCase();
+        const isDivineSpell = Array.isArray(character?.spellcasting?.divineSpells) && character.spellcasting.divineSpells.some(s => (s.name || '').toLowerCase() === spellNameLower);
+        const isPreparedSpell = Array.isArray(character?.spellcasting?.preparedSpells) && character.spellcasting.preparedSpells.some(s => (s.name || '').toLowerCase() === spellNameLower);
+
+        if (isDivineSpell && typeof getDivineCasterInfo === 'function') {
+          const dCl = Number(getDivineCasterInfo().cl);
+          if (dCl > 0) return dCl;
+        }
+        if (isPreparedSpell && typeof getPreparedCasterInfo === 'function') {
+          const pCl = Number(getPreparedCasterInfo().cl);
+          if (pCl > 0) return pCl;
+        }
+      }
+
+      if (typeof getCasterInfo === 'function') {
+        const cCl = Number(getCasterInfo()?.cl);
+        if (cCl > 0) return cCl;
+      }
+
+      return Number(character?.spellcasting?.cl) || Number(character?.spellcasting?.caster_level) || Number(character?.casterLevel) || Number(character?.level) || 1;
+    }
+
     // --- SPELL CRITICAL PARAMETERS & HOVER TOOLTIP ENGINE ---
     function getSpellCriticalParams(spell) {
       if (!spell) {
@@ -12200,7 +12224,7 @@
       }
 
       // Dynamic Spell Scaling (D&D 3.5e RAW)
-      const cl = Number(character?.casterLevel) || (character?.classes ? Object.values(character.classes)[0]?.level : 1) || 1;
+      const cl = getEffectiveSpellCasterLevel(spell);
       const scaling = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveSpellDynamicScaling === 'function')
         ? RuleEngine.resolveSpellDynamicScaling(spell, cl)
         : null;
@@ -12279,7 +12303,7 @@
       if (saveEl) saveEl.textContent = params.save;
       if (srEl) srEl.textContent = params.sr;
       if (actionEl) actionEl.textContent = `${params.action} • ${params.range}`;
-      const cl = Number(character?.casterLevel) || (character?.classes ? Object.values(character.classes)[0]?.level : 1) || 1;
+      const cl = getEffectiveSpellCasterLevel(spell);
       const scaling = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveSpellDynamicScaling === 'function')
         ? RuleEngine.resolveSpellDynamicScaling(spell, cl)
         : null;
@@ -12837,7 +12861,7 @@
       const currentLvl = currentSpell ? (Number(currentSpell.level) || 0) : 0;
 
       // Calculate SR bonus for SR check card
-      const cl = Number(character?.casterLevel) || (character?.classes ? Object.values(character.classes)[0]?.level : 1) || 1;
+      const cl = getEffectiveSpellCasterLevel(spell);
       const featsList = character?.feats || [];
       const hasSpellPen = featsList.some(f => (f.name || '').toLowerCase().includes('spell penetration') && !(f.name || '').toLowerCase().includes('greater'));
       const hasGrtSpellPen = featsList.some(f => (f.name || '').toLowerCase().includes('greater spell penetration'));
@@ -13032,7 +13056,7 @@
       }
 
       // Caster Level & Spell Dynamic Scaling (D&D 3.5e RAW)
-      const cl = Number(character?.casterLevel) || (character?.classes ? Object.values(character.classes)[0]?.level : 1) || 1;
+      const cl = getEffectiveSpellCasterLevel(spell);
       const scaling = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveSpellDynamicScaling === 'function')
         ? RuleEngine.resolveSpellDynamicScaling(spell, cl)
         : null;
@@ -13344,7 +13368,7 @@
       }
 
       // Caster Level & Dynamic Spell Scaling (D&D 3.5e RAW)
-      const cl = Number(character?.casterLevel) || (character?.classes ? Object.values(character.classes)[0]?.level : 1) || 1;
+      const cl = getEffectiveSpellCasterLevel(spell);
       const scaling = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveSpellDynamicScaling === 'function')
         ? RuleEngine.resolveSpellDynamicScaling(spell, cl)
         : null;
