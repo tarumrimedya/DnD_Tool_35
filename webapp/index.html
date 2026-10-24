@@ -12899,20 +12899,29 @@
 
       // Card 1: Defensive Casting (Fixed Item 1 - Glow Card Toggle)
       const defCardHtml = `
-        <div onclick="toggleDefensiveCastingModifier()" class="relative ${isDefensiveActive ? 'border border-indigo-500 bg-indigo-950/60 text-white shadow-md shadow-indigo-950/50 ring-1 ring-indigo-500/40' : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-indigo-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
-          <div class="text-[11px] font-bold ${isDefensiveActive ? 'text-white font-black' : 'text-indigo-400'} leading-tight">Defensive Cast</div>
-          <div class="text-[9px] ${isDefensiveActive ? 'text-indigo-200 font-bold' : 'text-slate-400'} mt-1" id="defensive-casting-dc-hint">DC ${15 + currentLvl} • AoO Engeller</div>
+        <div onclick="toggleDefensiveCastingModifier()" class="relative ${isDefensiveActive ? 'border-2 border-indigo-400 bg-indigo-950 text-white shadow-[0_0_12px_rgba(129,140,248,0.35)] ring-1 ring-indigo-400/30' : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-indigo-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer" title="Defensive Casting: AoO tetiklemeden büyü yap">
+          <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
+            <span class="text-[8px] font-mono ${isDefensiveActive ? 'text-indigo-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">Action</span>
+          </div>
+          <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
+            <div class="text-[10px] ${isDefensiveActive ? 'font-black text-white' : 'font-bold text-indigo-400'} leading-tight truncate w-full" title="Defensive Cast">Defensive Cast</div>
+            <div class="text-[9px] ${isDefensiveActive ? 'text-indigo-200 font-bold' : 'text-slate-400'} font-mono mt-1" id="defensive-casting-dc-hint">DC ${15 + currentLvl} • AoO Engeller</div>
+          </div>
         </div>
       `;
 
       // Card 2: Spell Resistance Check Button (Fixed Item 2 - Aligned 64px)
       const srCardHtml = `
-        <button type="button" onclick="rollSpellResistanceCheck()" class="bg-slate-900 hover:bg-slate-800 border border-purple-900/60 hover:border-purple-500/60 rounded-lg p-2 transition text-center flex flex-col justify-center items-center group cursor-pointer min-h-[64px] select-none" title="Hedefin Büyü Direncine (SR) karşı test zarı at: 1d20 + CL">
-          <div class="text-[11px] font-bold text-purple-300 group-hover:text-white flex items-center justify-center gap-1 leading-tight">
-            <span>⚡</span>
-            <span>SR Testi At</span>
+        <button type="button" onclick="rollSpellResistanceCheck()" class="relative border border-slate-800 bg-slate-900 text-slate-300 hover:border-purple-500/60 rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer w-full" title="Hedefin Büyü Direncine (SR) karşı test zarı at: 1d20 + CL">
+          <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
+            <span class="text-[8px] font-mono text-purple-400 font-bold truncate max-w-[75px]">Check</span>
           </div>
-          <div class="text-[9px] text-amber-400 font-mono font-bold mt-1">1d20 + ${totalSrBonus} vs SR</div>
+          <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
+            <div class="text-[10px] font-bold text-purple-300 group-hover:text-white leading-tight truncate w-full" title="SR Testi At">
+              <span class="mr-0.5 text-[9px]">⚡</span>SR Testi At
+            </div>
+            <div class="text-[9px] text-amber-400 font-mono font-bold mt-1">1d20 + ${totalSrBonus} vs SR</div>
+          </div>
         </button>
       `;
 
@@ -12920,33 +12929,43 @@
       const modCards = modifiers.map(mod => {
         const isActive = isSpellCockpitModifierActive(mod);
 
-        let activeBorder = 'border border-purple-500 bg-purple-950/60 text-white shadow-md shadow-purple-950/50 ring-1 ring-purple-500/40';
-        let titleColor = 'text-purple-300';
+        let activeBorder = 'border-2 border-purple-400 bg-purple-950 text-white shadow-[0_0_12px_rgba(192,132,252,0.35)] ring-1 ring-purple-400/30';
+        let badgeColor = 'text-purple-300';
+        let valueColor = 'text-purple-200';
 
         if (mod.color === 'amber') {
-          titleColor = 'text-amber-300';
-          activeBorder = 'border border-amber-500 bg-amber-950/60 text-white shadow-md shadow-amber-950/50 ring-1 ring-amber-500/40';
+          activeBorder = 'border-2 border-amber-400 bg-amber-950 text-white shadow-[0_0_12px_rgba(251,191,36,0.35)] ring-1 ring-amber-400/30';
+          badgeColor = 'text-amber-300';
+          valueColor = 'text-amber-200';
         } else if (mod.color === 'sky' || mod.color === 'cyan') {
-          titleColor = 'text-sky-300';
-          activeBorder = 'border border-sky-500 bg-sky-950/60 text-white shadow-md shadow-sky-950/50 ring-1 ring-sky-500/40';
+          activeBorder = 'border-2 border-sky-400 bg-sky-950 text-white shadow-[0_0_12px_rgba(56,189,248,0.35)] ring-1 ring-sky-400/30';
+          badgeColor = 'text-sky-300';
+          valueColor = 'text-sky-200';
         } else if (mod.color === 'emerald') {
-          titleColor = 'text-emerald-300';
-          activeBorder = 'border border-emerald-500 bg-emerald-950/60 text-white shadow-md shadow-emerald-950/50 ring-1 ring-emerald-500/40';
+          activeBorder = 'border-2 border-emerald-400 bg-emerald-950 text-white shadow-[0_0_12px_rgba(52,211,153,0.35)] ring-1 ring-emerald-400/30';
+          badgeColor = 'text-emerald-300';
+          valueColor = 'text-emerald-200';
         } else if (mod.color === 'rose') {
-          titleColor = 'text-rose-300';
-          activeBorder = 'border border-rose-500 bg-rose-950/60 text-white shadow-md shadow-rose-950/50 ring-1 ring-rose-500/40';
+          activeBorder = 'border-2 border-rose-400 bg-rose-950 text-white shadow-[0_0_12px_rgba(251,113,133,0.35)] ring-1 ring-rose-400/30';
+          badgeColor = 'text-rose-300';
+          valueColor = 'text-rose-200';
         }
 
         const icon = mod.isRod ? '🪄' : (mod.isMetamagic ? '✨' : (mod.sourceType === 'Feat' ? '⚡' : '🔮'));
+        const badgeLabel = mod.badge || (mod.isRod ? 'Rod' : (mod.isMetamagic ? 'Metamagic' : (mod.sourceType || 'Büyü')));
 
         return `
-          <div onclick="toggleSpellCockpitModifier('${mod.id}', event)" class="relative ${isActive ? activeBorder : 'border border-purple-900/60 bg-slate-900 text-slate-300 hover:border-purple-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px] group">
-            <div class="text-[11px] font-bold ${isActive ? 'text-white font-black' : titleColor} flex items-center justify-center gap-1 leading-tight truncate w-full">
-              <span class="shrink-0">${icon}</span>
-              <span class="truncate">${mod.name}</span>
-              ${mod.badge ? `<span class="shrink-0 text-[8px] font-mono font-bold px-1 py-0.2 rounded bg-slate-800/80 text-amber-300 border border-slate-700/60">${mod.badge}</span>` : ''}
+          <div onclick="toggleSpellCockpitModifier('${mod.id}', event)" class="relative ${isActive ? activeBorder : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-purple-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer" title="${mod.name}: ${mod.desc}">
+            <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
+              <span class="text-[8px] font-mono ${isActive ? `${badgeColor} font-bold` : 'text-slate-500'} truncate max-w-[75px]">${badgeLabel}</span>
             </div>
-            <div class="text-[9px] ${isActive ? 'text-amber-200 font-bold' : 'text-slate-400'} mt-1 line-clamp-1 leading-tight">${mod.desc}</div>
+
+            <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
+              <div class="text-[10px] ${isActive ? 'font-black text-white' : 'font-bold text-slate-200'} leading-tight truncate w-full" title="${mod.name}">
+                <span class="mr-0.5 text-[9px]">${icon}</span>${mod.name}
+              </div>
+              <div class="text-[9px] ${isActive ? `${valueColor} font-bold` : 'text-slate-400'} font-mono mt-1 truncate w-full">${mod.desc}</div>
+            </div>
           </div>
         `;
       });
