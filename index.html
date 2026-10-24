@@ -13016,6 +13016,8 @@
       container.innerHTML = filteredLevels.map(lvl => {
         const lvlSpells = spellsByLevel[lvl];
         const lvlTitle = lvl === 0 ? '0. Seviye (Cantrips)' : `${lvl}. Seviye Büyüler`;
+        const theme = typeof getSpellLevelTheme === 'function' ? getSpellLevelTheme(lvl) : null;
+        const dc = typeof getSpellDc === 'function' ? getSpellDc(lvl) : (10 + lvl);
 
         // Multi-source slot breakdown for this level: e.g. Anlık 4/4 • Kitap 3/5 • İlahi 1/3
         const sourceBadges = [];
@@ -13106,13 +13108,16 @@
         }).join('');
 
         return `
-          <div class="space-y-1">
-            <div class="flex items-center justify-between px-1 text-[10px] font-bold border-b border-slate-800/80 pb-0.5">
-              <span class="text-slate-300 flex items-center gap-1">
-                <span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
-                <span>${lvlTitle}</span>
-              </span>
-              ${slotBadgeHtml}
+          <div class="space-y-1.5">
+            <div class="bg-gradient-to-r ${theme ? theme.headerGradient : 'from-slate-900 via-slate-950 to-transparent'} border-y ${theme ? theme.border : 'border-slate-800'} px-2 py-1 rounded-md flex items-center justify-between text-[10px] font-black select-none">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="w-2.5 h-2.5 rounded-full ${theme ? theme.dot : 'bg-purple-400'} shrink-0"></span>
+                <span class="${theme ? theme.text : 'text-slate-200'} uppercase tracking-wider font-extrabold text-[10px] truncate">${lvlTitle}</span>
+                <span class="text-[9px] text-slate-400 font-normal shrink-0">DC ${dc}</span>
+              </div>
+              <div class="shrink-0 ml-1.5">
+                ${slotBadgeHtml}
+              </div>
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
               ${cardsHtml}
