@@ -674,17 +674,26 @@
                 <div class="flex flex-col sm:flex-row gap-2 w-full items-stretch">
                   
                   <div class="flex-1 grid grid-cols-2 sm:flex sm:flex-row gap-2 min-w-0">
-                    <!-- Box 1: HESAPLANAN ETKİ -->
-                    <div class="sm:flex-[3] min-w-0 bg-slate-950/80 p-2 rounded-lg border border-slate-800 text-center flex flex-col justify-center min-h-[56px]">
-                      <span class="text-[8px] uppercase font-bold text-slate-400 block tracking-wider">Hesaplanan Etki</span>
-                      <span id="combat-spell-damage-preview" class="text-xs font-mono font-black text-amber-300 leading-tight my-0.5 truncate">Hasar Yok</span>
+                    <!-- Box 1: BÜYÜNÜN ADI & BİLGİSİ (Hover ile Detay Açılır) -->
+                    <div id="combat-selected-spell-info-cell"
+                         onmouseenter="showActiveSpellHoverTooltip(event)"
+                         onmouseleave="hideSpellHoverTooltip()"
+                         onmousemove="updateSpellHoverTooltipPos(event)"
+                         class="sm:flex-[3] min-w-0 bg-slate-950/80 p-2 rounded-lg border border-slate-800 hover:border-purple-600/70 hover:bg-purple-950/20 text-center flex flex-col justify-center min-h-[56px] cursor-help group transition relative"
+                         title="Büyü detaylarını görmek için üzerine gelin">
+                      <div class="flex items-center justify-center gap-1 text-[8px] font-mono text-purple-400 font-bold uppercase tracking-wider truncate">
+                        <span id="combat-selected-spell-school-badge">Büyü</span>
+                        <span>•</span>
+                        <span id="combat-selected-spell-level-badge">Seviye</span>
+                      </div>
+                      <span id="combat-selected-spell-title" class="text-xs font-black text-white group-hover:text-purple-200 leading-tight my-0.5 truncate block">Büyü Seçilmedi</span>
                       <div id="combat-spell-metamagic-badge" class="text-[8px] text-slate-500 truncate">Metamagic: Yok</div>
                     </div>
 
-                    <!-- Box 2: KURTARMA ZARI & ATK (Genişletilmiş Alan) -->
+                    <!-- Box 2: ETKİ / HASAR & KURTARMA ZARI & ATK (3 Satır) -->
                     <div class="sm:flex-[4] min-w-0 bg-slate-950/80 p-2 rounded-lg border border-slate-800 text-center flex flex-col justify-center min-h-[56px]">
-                      <span class="text-[8px] uppercase font-bold text-slate-400 block tracking-wider">Kurtarma Zarı &amp; Atk</span>
-                      <span id="combat-spell-dc-display" class="text-xs font-mono font-black text-emerald-400 leading-tight my-0.5 truncate">DC 16 • Touch +5</span>
+                      <span id="combat-spell-damage-preview" class="text-xs font-mono font-black text-amber-300 leading-tight truncate block">Hasar Yok</span>
+                      <span id="combat-spell-dc-display" class="text-xs font-mono font-black text-emerald-400 leading-tight my-0.5 truncate block">DC 16 • Touch +5</span>
                       <div id="combat-spell-sr-target-display" class="text-[8px] text-slate-400 truncate">SR: Evet • Orta (270 ft)</div>
                     </div>
                   </div>
@@ -12335,6 +12344,13 @@
       if (tooltip) tooltip.classList.add('hidden');
     }
 
+    function showActiveSpellHoverTooltip(event) {
+      const activeSpell = typeof getSelectedCombatSpell === 'function' ? getSelectedCombatSpell() : null;
+      if (activeSpell && activeSpell.name && typeof showSpellHoverTooltip === 'function') {
+        showSpellHoverTooltip(event, activeSpell.name);
+      }
+    }
+
     // Dismiss floating hover tooltips on tap or click anywhere outside
     document.addEventListener('pointerdown', (e) => {
       const tooltip = document.getElementById('combat-spell-hover-tooltip');
@@ -13321,6 +13337,8 @@
         }
         const titleEl = document.getElementById('combat-selected-spell-title');
         if (titleEl) titleEl.textContent = 'Büyü Seçilmedi';
+        const infoCell = document.getElementById('combat-selected-spell-info-cell');
+        if (infoCell) infoCell.title = 'Büyü detaylarını görmek için üzerine gelin';
         return;
       }
 
@@ -13384,6 +13402,11 @@
       // Update Selected Spell Title & School/Level Badges
       const titleEl = document.getElementById('combat-selected-spell-title');
       if (titleEl) titleEl.textContent = spell.name;
+
+      const infoCell = document.getElementById('combat-selected-spell-info-cell');
+      if (infoCell) {
+        infoCell.title = `${spell.name} (${spell.school || 'Universal'}, ${baseLvl === 0 ? 'Cantrip' : baseLvl + '. Seviye'})\n${spell.benefit || spell.desc || spell.description || ''}`;
+      }
 
       const schoolBadge = document.getElementById('combat-selected-spell-school-badge');
       if (schoolBadge) schoolBadge.textContent = spell.school || 'Universal';
