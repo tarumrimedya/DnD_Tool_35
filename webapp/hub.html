@@ -365,6 +365,237 @@
       return `<span class="${iconSize}">${emoji}</span>`;
     }
 
+    // =========================================================================
+    // D&D 3.5e DİNAMİK STAT HESAPLAMA MOTORU (RULE ENGINE ENTEGRASYONU)
+    // =========================================================================
+    function getCharacterAC(data) {
+      if (!data) return { total: 10, touch: 10, flat: 10 };
+      if (data.acBreakdown && typeof data.acBreakdown.total === 'number' && data.acBreakdown.total > 0) {
+        return {
+          total: data.acBreakdown.total,
+          touch: data.acBreakdown.touch ?? 10,
+          flat: data.acBreakdown.flat ?? data.acBreakdown.flatFooted ?? 10
+        };
+      }
+      if (data.ac && typeof data.ac.total === 'number' && data.ac.total > 0) {
+        return {
+          total: data.ac.total,
+          touch: data.ac.touch ?? data.ac.total,
+          flat: data.ac.flatFooted ?? data.ac.total
+        };
+      }
+      return {
+        total: Number(data.ac) || 10,
+        touch: Number(data.touchAc) || 10,
+        flat: Number(data.flatFootedAc) || 10
+      };
+    }
+
+    function getCharacterSaves(data) {
+      if (!data) return { fort: 0, ref: 0, will: 0 };
+      if (data.evaluatedSaves && typeof data.evaluatedSaves.fort === 'number') {
+        return {
+          fort: data.evaluatedSaves.fort,
+          ref: data.evaluatedSaves.ref,
+          will: data.evaluatedSaves.will
+        };
+      }
+      if (data.saves && typeof data.saves === 'object') {
+        const f = data.saves.fort?.total ?? data.saves.fort;
+        const r = data.saves.ref?.total ?? data.saves.ref;
+        const w = data.saves.will?.total ?? data.saves.will;
+        if (typeof f === 'number' && typeof r === 'number' && typeof w === 'number') {
+          return { fort: f, ref: r, will: w };
+        }
+      }
+      const baseFort = Number(data.baseSaves?.fort || 0);
+      const baseRef = Number(data.baseSaves?.ref || 0);
+      const baseWill = Number(data.baseSaves?.will || 0);
+      const conMod = Math.floor(((Number(data.abilities?.con || 10)) - 10) / 2);
+      const dexMod = Math.floor(((Number(data.abilities?.dex || 10)) - 10) / 2);
+      const wisMod = Math.floor(((Number(data.abilities?.wis || 10)) - 10) / 2);
+      const intMod = Math.floor(((Number(data.abilities?.int || 10)) - 10) / 2);
+      const resist = Number(data.saveBonuses?.resistance || 0);
+
+      // Battle Clarity (Warblade 1)
+      let battleClarity = 0;
+      const classStr = (data.classes || '').toLowerCase();
+      if (classStr.includes('warblade') || (data.specialAbilities || []).some(a => (typeof a === 'string' ? a : (a.name || '')).toLowerCase().includes('battle clarity'))) {
+        battleClarity = Math.max(0, intMod);
+      }
+
+      return {
+        fort: baseFort + conMod + resist,
+        ref: baseRef + dexMod + resist + battleClarity,
+        will: baseWill + wisMod + resist
+      };
+    }
+
+    function getCharacterInitiativeBonus(data) {
+      if (!data) return 0;
+      if (typeof data.initBonus === 'number' && !data.fullData && !data.abilities) {
+        return data.initBonus;
+      }
+      const dex = Number(data.abilities?.dex ?? data.baseAbilities?.dex ?? 10);
+      const dexMod = Math.floor((dex - 10) / 2);
+      const feats = Array.isArray(data.feats) ? data.feats : [];
+      const hasImprovedInit = feats.some(f => {
+        const fn = (typeof f === 'string' ? f : (f?.name || '')).toLowerCase();
+        return fn.includes('improved initiative') || fn.includes('gelişmiş inisiyatif');
+      });
+      const featBonus = hasImprovedInit ? 4 : 0;
+      const misc = Number(data.initiativeMisc || data.initiative?.misc || 0);
+      return dexMod + featBonus + misc;
+    }
+
+    function getCharacterSpotListen(data) {
+      if (!data) return { spot: 0, listen: 0 };
+      const skills = Array.isArray(data.skills) ? data.skills : [];
+      const wisMod = Math.floor(((Number(data.abilities?.wis || 10)) - 10) / 2);
+
+      let spotBonus = wisMod;
+      const spotSkill = skills.find(s => (s.key || '').toLowerCase() === 'spot' || (s.name || '').toLowerCase().includes('spot'));
+      if (spotSkill) {
+        spotBonus = (Number(spotSkill.ranks) || 0) + wisMod + (Number(spotSkill.misc) || 0);
+        if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluateSkillBonus === 'function') {
+          const eb = RuleEngine.evaluateSkillBonus(data, 'spot', spotSkill.name || 'Spot', 'wis');
+          if (eb && eb.total) spotBonus += eb.total;
+        }
+      }
+
+      let listenBonus = wisMod;
+      const listenSkill = skills.find(s => (s.key || '').toLowerCase() === 'listen' || (s.name || '').toLowerCase().includes('listen'));
+      if (listenSkill) {
+        listenBonus = (Number(listenSkill.ranks) || 0) + wisMod + (Number(listenSkill.misc) || 0);
+        if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluateSkillBonus === 'function') {
+          const eb = RuleEngine.evaluateSkillBonus(data, 'listen', listenSkill.name || 'Listen', 'wis');
+          if (eb && eb.total) listenBonus += eb.total;
+        }
+      }
+
+      return { spot: spotBonus, listen: listenBonus };
+    }
+
+    function getCharacterMainAttack(data) {
+      if (!data) return { weaponName: 'Silahsız (Unarmed)', attackBonusStr: '+0', damageStr: '1d3', fullFormula: '+0 (1d3)' };
+      let wep = null;
+      const weapons = Array.isArray(data.weapons) ? data.weapons : [];
+
+      if (data.activeWeapon) {
+        wep = weapons.find(w => w.name === data.activeWeapon);
+      }
+      if (!wep && data.tactical?.weaponSets?.set1?.mainWeapon) {
+        wep = weapons.find(w => w.name === data.tactical.weaponSets.set1.mainWeapon);
+      }
+      if (!wep && data.bodySlots?.mainHand?.name) {
+        wep = weapons.find(w => w.name === data.bodySlots.mainHand.name) || data.bodySlots.mainHand;
+      }
+      if (!wep && weapons.length > 0) {
+        wep = weapons[0];
+      }
+
+      if (!wep) {
+        const rawWep = data.mainWeapon || 'Silahsız';
+        const rawFormula = data.attackFormula || '+0';
+        return {
+          weaponName: rawWep,
+          attackBonusStr: rawFormula.startsWith('+') || rawFormula.startsWith('-') ? rawFormula : '+0',
+          damageStr: rawFormula.includes('d') ? rawFormula : '1d3',
+          fullFormula: rawFormula
+        };
+      }
+
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluateWeaponAttack === 'function') {
+        try {
+          const evalAtk = RuleEngine.evaluateWeaponAttack(data, wep);
+          const wepName = wep.name || 'Weapon';
+          let attBonusStr = '+0';
+          if (Array.isArray(evalAtk.iteratives) && evalAtk.iteratives.length > 0) {
+            attBonusStr = evalAtk.iteratives.map(b => (b >= 0 ? '+' + b : String(b))).join('/');
+          } else {
+            const b = evalAtk.netAttackBonus || 0;
+            attBonusStr = (b >= 0 ? '+' + b : String(b));
+          }
+          const dice = evalAtk.baseDice || wep.dice || '1d8';
+          const flatDmg = evalAtk.netFlatDamage || 0;
+          let dmgStr = dice;
+          if (flatDmg > 0) dmgStr += `+${flatDmg}`;
+          else if (flatDmg < 0) dmgStr += `${flatDmg}`;
+          const threatStr = evalAtk.critThreatRangeDisplay || (wep.critMin && wep.critMin < 20 ? `${wep.critMin}-20/x${wep.critMult || 2}` : (wep.critMult && wep.critMult > 2 ? `x${wep.critMult}` : ''));
+          const fullFormula = threatStr ? `${attBonusStr} (${dmgStr} • ${threatStr})` : `${attBonusStr} (${dmgStr})`;
+          return {
+            weaponName: wepName,
+            attackBonusStr: attBonusStr,
+            damageStr: dmgStr,
+            threatStr: threatStr,
+            fullFormula: fullFormula
+          };
+        } catch (e) {
+          console.warn('evaluateWeaponAttack fallback:', e);
+        }
+      }
+
+      const wepName = wep.name || 'Weapon';
+      const bab = Number(data.bab) || 0;
+      const str = Number(data.abilities?.str || 10);
+      const strMod = Math.floor((str - 10) / 2);
+      const attBonus = bab + strMod + (Number(wep.attBonus) || 0);
+      const attStr = (attBonus >= 0 ? '+' + attBonus : String(attBonus));
+      const dice = wep.dice || '1d8';
+      const dmgBonus = strMod + (Number(wep.dmgBonus) || 0);
+      const dmgStr = dmgBonus !== 0 ? `${dice}${dmgBonus > 0 ? '+' + dmgBonus : dmgBonus}` : dice;
+      return {
+        weaponName: wepName,
+        attackBonusStr: attStr,
+        damageStr: dmgStr,
+        fullFormula: `${attStr} (${dmgStr})`
+      };
+    }
+
+    function syncCharacterSummaryStats(c) {
+      if (!c) return c;
+      const data = c.fullData || c;
+
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.recalculateCharacter === 'function') {
+        try {
+          const masterDb = window.MASTER_DB_DATA || [];
+          RuleEngine.recalculateCharacter(data, masterDb);
+        } catch (e) {
+          console.warn('RuleEngine recalculate error for ' + c.name, e);
+        }
+      }
+
+      const acData = getCharacterAC(data);
+      c.ac = acData.total;
+      c.touchAc = acData.touch;
+      c.flatFootedAc = acData.flat;
+
+      const savesData = getCharacterSaves(data);
+      c.fortSave = savesData.fort;
+      c.refSave = savesData.ref;
+      c.willSave = savesData.will;
+
+      c.initBonus = getCharacterInitiativeBonus(data);
+
+      const slData = getCharacterSpotListen(data);
+      c.spotBonus = slData.spot;
+      c.listenBonus = slData.listen;
+
+      const atkData = getCharacterMainAttack(data);
+      c.mainWeapon = atkData.weaponName;
+      c.attackFormula = atkData.fullFormula;
+      c.attackBonusStr = atkData.attackBonusStr;
+      c.damageStr = atkData.damageStr;
+
+      if (data.hp) {
+        c.currentHp = Number(data.hp.current ?? c.currentHp ?? c.maxHp ?? 10);
+        c.maxHp = Number(data.hp.max ?? c.maxHp ?? 10);
+        c.tempHp = Number(data.hp.temp ?? c.tempHp ?? 0);
+      }
+
+      return c;
+    }
+
     // Hub Veritabanını Başlat (Initialize or Load from LocalStorage)
     function initHubStorage() {
       // 1. Hub veritabanını yükle
@@ -473,29 +704,35 @@
 
       if (activeChar) {
         const activeId = activeChar._hubId || activeChar.id;
+        let matchIdx = -1;
         if (activeId) {
-          const matchIdx = characters.findIndex(c => c.id === activeId);
-          if (matchIdx >= 0) {
-            const mc = characters[matchIdx];
-            mc.name = activeChar.name || mc.name;
-            mc.race = activeChar.race || mc.race;
-            mc.classes = activeChar.classes || mc.classes;
-            mc.level = Number(activeChar.level) || mc.level;
-            mc.portrait = activeChar.portrait || activeChar.avatarUrl || mc.portrait;
-            mc.avatarUrl = mc.portrait;
-            if (activeChar.hp) {
-              mc.currentHp = activeChar.hp.current ?? mc.currentHp;
-              mc.maxHp = activeChar.hp.max ?? mc.maxHp;
-            }
-            if (activeChar.ac) {
-              mc.ac = activeChar.ac.total ?? mc.ac;
-              mc.touchAc = activeChar.ac.touch ?? mc.touchAc;
-              mc.flatFootedAc = activeChar.ac.flatFooted ?? mc.flatFootedAc;
-            }
-            mc.fullData = activeChar;
+          matchIdx = characters.findIndex(c => c.id === activeId);
+        }
+        if (matchIdx < 0 && activeChar.name) {
+          const nameMatches = characters.filter(c => (c.name || '').trim().toLowerCase() === activeChar.name.trim().toLowerCase());
+          if (nameMatches.length === 1) {
+            matchIdx = characters.findIndex(c => c.id === nameMatches[0].id);
           }
         }
+        if (matchIdx >= 0) {
+          const mc = characters[matchIdx];
+          mc.name = activeChar.name || mc.name;
+          mc.race = activeChar.race || mc.race;
+          mc.classes = activeChar.classes || mc.classes;
+          mc.level = Number(activeChar.level) || mc.level;
+          mc.portrait = activeChar.portrait || activeChar.avatarUrl || mc.portrait;
+          mc.portraitPosition = activeChar.portraitPosition || mc.portraitPosition || '50% 50%';
+          mc.portraitFit = activeChar.portraitFit || mc.portraitFit || '125%';
+          mc.avatarUrl = mc.portrait;
+          mc.fullData = activeChar;
+          syncCharacterSummaryStats(mc);
+        }
       }
+
+      // Tüm karakterleri hesaplanmış canlı statlarla senkronize et
+      characters.forEach(c => {
+        syncCharacterSummaryStats(c);
+      });
 
       state.campaigns = campaigns;
       state.characters = characters;
@@ -613,6 +850,7 @@
       let html = '';
 
       chars.forEach(c => {
+        syncCharacterSummaryStats(c);
         const hpPct = Math.min(100, Math.max(0, Math.round((c.currentHp / (c.maxHp || 1)) * 100)));
         let hpColor = 'bg-emerald-500';
         if (hpPct <= 25) hpColor = 'bg-rose-500';
@@ -703,7 +941,7 @@
                 <div class="bg-slate-900/60 p-2 rounded-xl border border-slate-800 col-span-2 text-left px-3">
                   <div class="text-[10px] text-slate-400 font-semibold uppercase flex items-center justify-between">
                     <span>⚔️ Ana Saldırı</span>
-                    <span class="text-amber-400 font-mono">${c.mainWeapon || 'Weapon'}</span>
+                    <span class="text-amber-400 font-mono font-semibold truncate max-w-[130px]" title="${c.mainWeapon}">${c.mainWeapon || 'Silahsız'}</span>
                   </div>
                   <div class="text-xs font-extrabold text-amber-300 mt-0.5 font-mono truncate" title="${c.attackFormula || '+0'}">
                     ${c.attackFormula || '+0'}
@@ -715,12 +953,12 @@
               <!-- KURTARMA ATIŞLARI (SAVES) & PASİFLER -->
               <div class="mt-2.5 flex items-center justify-between bg-slate-900/60 px-3 py-1.5 rounded-xl border border-slate-800 text-[11px] font-mono">
                 <div class="flex items-center gap-2">
-                  <span title="Fortitude (Dayanıklılık)" class="text-slate-300"><strong class="text-slate-500 font-sans">F:</strong> +${c.fortSave}</span>
-                  <span title="Reflex (Refleks)" class="text-slate-300"><strong class="text-slate-500 font-sans">R:</strong> +${c.refSave}</span>
-                  <span title="Will (İrade)" class="text-slate-300"><strong class="text-slate-500 font-sans">W:</strong> +${c.willSave}</span>
+                  <span title="Fortitude (Dayanıklılık)" class="text-slate-300"><strong class="text-slate-500 font-sans">F:</strong> ${c.fortSave >= 0 ? '+' + c.fortSave : c.fortSave}</span>
+                  <span title="Reflex (Refleks)" class="text-slate-300"><strong class="text-slate-500 font-sans">R:</strong> ${c.refSave >= 0 ? '+' + c.refSave : c.refSave}</span>
+                  <span title="Will (İrade)" class="text-slate-300"><strong class="text-slate-500 font-sans">W:</strong> ${c.willSave >= 0 ? '+' + c.willSave : c.willSave}</span>
                 </div>
                 <div class="text-slate-400 text-[10px]">
-                  Spot/Listen: <strong class="text-slate-200">+${c.spotBonus}/+${c.listenBonus}</strong>
+                  Spot/Listen: <strong class="text-slate-200">${c.spotBonus >= 0 ? '+' + c.spotBonus : c.spotBonus}/${c.listenBonus >= 0 ? '+' + c.listenBonus : c.listenBonus}</strong>
                 </div>
               </div>
             </div>
@@ -775,6 +1013,7 @@
       }
 
       tbody.innerHTML = chars.map(c => {
+        syncCharacterSummaryStats(c);
         const hpPct = Math.min(100, Math.max(0, Math.round((c.currentHp / (c.maxHp || 1)) * 100)));
         let hpColor = 'bg-emerald-500';
         if (hpPct <= 25) hpColor = 'bg-rose-500';
@@ -831,16 +1070,16 @@
 
             <!-- Saves -->
             <td class="py-3 px-3 font-mono text-[11px]">
-              <span class="text-slate-300">F:+${c.fortSave}</span>
+              <span class="text-slate-300">F:${c.fortSave >= 0 ? '+' + c.fortSave : c.fortSave}</span>
               <span class="text-slate-500">•</span>
-              <span class="text-slate-300">R:+${c.refSave}</span>
+              <span class="text-slate-300">R:${c.refSave >= 0 ? '+' + c.refSave : c.refSave}</span>
               <span class="text-slate-500">•</span>
-              <span class="text-slate-300">W:+${c.willSave}</span>
+              <span class="text-slate-300">W:${c.willSave >= 0 ? '+' + c.willSave : c.willSave}</span>
             </td>
 
             <!-- Spot / Listen -->
             <td class="py-3 px-3 font-mono text-[11px] text-slate-300">
-              +${c.spotBonus} / +${c.listenBonus}
+              ${c.spotBonus >= 0 ? '+' + c.spotBonus : c.spotBonus} / ${c.listenBonus >= 0 ? '+' + c.listenBonus : c.listenBonus}
             </td>
 
             <!-- Eylemler -->
@@ -899,6 +1138,9 @@
       const c = state.characters.find(it => it.id === charId);
       if (c) {
         c.currentHp = Math.max(0, Math.min(c.maxHp, c.currentHp + delta));
+        if (c.fullData && c.fullData.hp) {
+          c.fullData.hp.current = c.currentHp;
+        }
         saveHubStorage();
         renderHub();
       }

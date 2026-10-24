@@ -7738,14 +7738,15 @@
               hubDb.characters[idx].currentHp = character.hp?.current ?? hubDb.characters[idx].currentHp;
               hubDb.characters[idx].maxHp = character.hp?.max ?? hubDb.characters[idx].maxHp;
               hubDb.characters[idx].tempHp = character.hp?.temp ?? 0;
-              hubDb.characters[idx].ac = character.ac?.total ?? hubDb.characters[idx].ac;
-              hubDb.characters[idx].touchAc = character.ac?.touch ?? hubDb.characters[idx].touchAc;
-              hubDb.characters[idx].flatFootedAc = character.ac?.flatFooted ?? hubDb.characters[idx].flatFootedAc;
+              hubDb.characters[idx].ac = character.acBreakdown?.total ?? character.ac?.total ?? hubDb.characters[idx].ac;
+              hubDb.characters[idx].touchAc = character.acBreakdown?.touch ?? character.ac?.touch ?? hubDb.characters[idx].touchAc;
+              hubDb.characters[idx].flatFootedAc = character.acBreakdown?.flat ?? character.ac?.flatFooted ?? hubDb.characters[idx].flatFootedAc;
               hubDb.characters[idx].mainWeapon = activeWep.name || hubDb.characters[idx].mainWeapon || 'Weapon';
               hubDb.characters[idx].attackFormula = (activeWep.dice ? `${activeWep.dice}` : '') || hubDb.characters[idx].attackFormula || '+0';
-              hubDb.characters[idx].fortSave = character.saves?.fort?.total ?? hubDb.characters[idx].fortSave;
-              hubDb.characters[idx].refSave = character.saves?.ref?.total ?? hubDb.characters[idx].refSave;
-              hubDb.characters[idx].willSave = character.saves?.will?.total ?? hubDb.characters[idx].willSave;
+              hubDb.characters[idx].fortSave = character.evaluatedSaves?.fort ?? character.saves?.fort?.total ?? hubDb.characters[idx].fortSave;
+              hubDb.characters[idx].refSave = character.evaluatedSaves?.ref ?? character.saves?.ref?.total ?? hubDb.characters[idx].refSave;
+              hubDb.characters[idx].willSave = character.evaluatedSaves?.will ?? character.saves?.will?.total ?? hubDb.characters[idx].willSave;
+              hubDb.characters[idx].initBonus = (typeof getCharacterInitiative === 'function') ? getCharacterInitiative().total : (hubDb.characters[idx].initBonus ?? 0);
               if (character.portrait || character.avatarUrl || character.portraitUrl) {
                 hubDb.characters[idx].portrait = character.portrait || character.avatarUrl || character.portraitUrl;
                 hubDb.characters[idx].avatarUrl = hubDb.characters[idx].portrait;
