@@ -15165,7 +15165,7 @@
       const dynamicCardsHtml = visibleMods.map((mod, idx) => {
         if (!mod || !mod.name) return '';
         let bonusStr = mod.dice ? mod.dice : (mod.bonusDmg ? `+${mod.bonusDmg} Dmg` : (mod.bonusAtk ? `+${mod.bonusAtk} Atk` : 'Aktif'));
-        let cardBorderActive = 'border-2 border-rose-400 bg-rose-950 text-white shadow-[0_0_14px_rgba(251,113,133,0.45)] ring-2 ring-rose-400/30';
+        let cardBorderActive = 'border border-rose-500 bg-rose-950/60 text-white shadow-md shadow-rose-950/50 ring-1 ring-rose-500/40';
         let bonusColor = 'text-amber-300';
 
         if (mod.name.includes('Flurry') || mod.name.includes('Seri Vuruş')) {
@@ -15182,9 +15182,8 @@
             <button type="button" onclick="moveMeleeModifierOrder(${idx}, 1, event)" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx >= dynamicMods.length - 1 ? 'disabled' : ''} title="Sağa Taşı">▶</button>
           </div>
         ` : `
-          <div class="flex items-center justify-between px-1 text-[9px] leading-none shrink-0 w-full">
-            <span class="text-[8px] font-mono ${mod.active ? 'text-rose-300 font-bold' : 'text-slate-500'} truncate max-w-[60px]">${mod.source || ''}</span>
-            ${mod.active ? '<span class="text-[8px] font-black font-mono text-rose-200 bg-rose-900/80 px-1 rounded border border-rose-400/50">✓ AÇIK</span>' : ''}
+          <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
+            <span class="text-[8px] font-mono ${mod.active ? 'text-rose-400 font-bold' : 'text-slate-500'} truncate max-w-[75px]">${mod.source || ''}</span>
           </div>
         `;
 
@@ -15194,8 +15193,8 @@
           ${reorderControls}
 
           <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
-            <div class="text-[10px] ${mod.active ? 'font-black text-white' : 'font-bold text-slate-200'} leading-tight truncate w-full" title="${mod.name}">${mod.name}</div>
-            <div class="text-[9px] ${mod.active ? 'text-amber-300 font-black' : bonusColor} font-mono mt-1">${bonusStr}</div>
+            <div class="text-[10px] font-bold ${mod.active ? 'text-white font-extrabold' : 'text-slate-200'} leading-tight truncate w-full" title="${mod.name}">${mod.name}</div>
+            <div class="text-[9px] ${mod.active ? 'text-amber-300 font-bold' : bonusColor} font-mono mt-1">${bonusStr}</div>
           </div>
         </div>
         `;
