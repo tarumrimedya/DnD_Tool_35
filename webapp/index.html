@@ -15391,7 +15391,7 @@
       renderOffenseModifiersGrid();
     }
 
-    // --- TACTICAL DEFENSE & PINNED DRAWER GRID ENGINE ---
+    // --- TACTICAL DEFENSE GRID ENGINE ---
     function renderDefenseModifiersGrid() {
       const grid = document.getElementById('combat-modifiers-defense-3x3-grid');
       if (!grid) return;
@@ -15407,132 +15407,57 @@
       const fdDodge = tumbleRanks >= 5 ? 3 : 2;
       const tdDodge = tumbleRanks >= 5 ? 6 : 4;
 
-      // Row 1: Fixed 3 situational defense toggles
-      const fixedCardsHtml = [
-        `
-        <label class="bg-slate-900 border ${fd ? 'border-indigo-500 bg-indigo-950/40 text-indigo-200 shadow-sm' : 'border-slate-800 text-slate-300'} hover:border-indigo-500/60 rounded-lg p-2 cursor-pointer transition flex flex-col justify-between text-center select-none min-h-[64px]" title="Fighting Defensively: -4 Saldırı / +${fdDodge} Dodge AC">
-          <div>
-            <div class="text-[11px] font-bold text-indigo-400 leading-tight">Fighting Def.</div>
-            <div class="text-[9px] text-slate-400 mt-0.5">+${fdDodge} AC / -4 Atk</div>
-          </div>
-          <input type="checkbox" id="toggle-fighting-defensively" ${fd ? 'checked' : ''} onchange="onToggleFightingDefensively()" class="mt-1 mx-auto w-3.5 h-3.5 rounded text-indigo-500 focus:ring-0 cursor-pointer">
-        </label>
-        `,
-        `
-        <label class="bg-slate-900 border ${td ? 'border-amber-500 bg-amber-950/40 text-amber-200 shadow-sm' : 'border-slate-800 text-slate-300'} hover:border-amber-500/60 rounded-lg p-2 cursor-pointer transition flex flex-col justify-between text-center select-none min-h-[64px]" title="Total Defense: +${tdDodge} Dodge AC • Saldırı Yapılamaz">
-          <div>
-            <div class="text-[11px] font-bold text-amber-400 leading-tight">Total Defense</div>
-            <div class="text-[9px] text-slate-400 mt-0.5">+${tdDodge} AC • Saldırı Yok</div>
-          </div>
-          <input type="checkbox" id="toggle-total-defense" ${td ? 'checked' : ''} onchange="onToggleTotalDefense()" class="mt-1 mx-auto w-3.5 h-3.5 rounded text-amber-500 focus:ring-0 cursor-pointer">
-        </label>
-        `,
-        `
-        <label class="bg-slate-900 border ${sb ? 'border-emerald-500 bg-emerald-950/40 text-emerald-200 shadow-sm' : 'border-slate-800 text-slate-300'} hover:border-emerald-500/60 rounded-lg p-2 cursor-pointer transition flex flex-col justify-between text-center select-none min-h-[64px]" title="Shield Block (Counter): Anlık +4 AC Kalkan Bonusu">
-          <div>
-            <div class="text-[11px] font-bold text-emerald-400 leading-tight">Shield Block</div>
-            <div class="text-[9px] text-slate-400 mt-0.5">+4 AC Kalkan</div>
-          </div>
-          <input type="checkbox" id="toggle-shield-block-grid" ${sb ? 'checked' : ''} onchange="triggerShieldBlockReaction()" class="mt-1 mx-auto w-3.5 h-3.5 rounded text-emerald-500 focus:ring-0 cursor-pointer">
-        </label>
-        `
+      const activeClass = 'relative border-2 border-indigo-400 bg-indigo-950 text-white shadow-[0_0_12px_rgba(129,140,248,0.35)] ring-1 ring-indigo-400/30 rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer';
+      const inactiveClass = 'relative border border-slate-800 bg-slate-900 text-slate-300 hover:border-indigo-500/60 rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer';
+
+      const cards = [
+        {
+          id: 'fightingDefensively',
+          name: 'Fighting Def.',
+          source: 'Action',
+          bonusStr: `+${fdDodge} AC / -4 Atk`,
+          active: fd,
+          onclick: 'onToggleFightingDefensively()',
+          title: `Fighting Defensively: -4 Saldırı / +${fdDodge} Dodge AC`
+        },
+        {
+          id: 'totalDefense',
+          name: 'Total Defense',
+          source: 'Standard',
+          bonusStr: `+${tdDodge} AC • Pasif`,
+          active: td,
+          onclick: 'onToggleTotalDefense()',
+          title: `Total Defense: +${tdDodge} Dodge AC • Saldırı Yapılamaz`
+        },
+        {
+          id: 'shieldBlock',
+          name: 'Shield Block',
+          source: 'Counter',
+          bonusStr: '+4 AC Kalkan',
+          active: sb,
+          onclick: 'triggerShieldBlockReaction()',
+          title: 'Shield Block (Counter): Anlık +4 AC Kalkan Bonusu'
+        }
       ];
 
-      // Rows 2+: Pinned defense cards + defense active modifiers
-      const defensePins = typeof getPinsForDrawer === 'function' ? getPinsForDrawer('defense') : [];
-      const activeDefenseMods = (character.activeModifiers || []).filter(m => {
-        if (!m || !m.name) return false;
-        const low = m.name.toLowerCase();
-        if (low.includes('fighting defensively') || low.includes('total defense') || low.includes('combat expertise') || low.includes('shield block')) return false;
-        if (m.combatScope === 'defense' || m.scope === 'Defense Only' || low.includes('dodge')) return true;
-        return defensePins.some(p => p.name.toLowerCase().trim() === low);
-      });
-
-      const unifiedCards = [];
-      const seen = new Set();
-
-      defensePins.forEach(p => {
-        const low = (p.name || '').toLowerCase().trim();
-        if (!seen.has(low)) {
-          seen.add(low);
-          unifiedCards.push({
-            name: p.name,
-            source: p.sourceType || 'Pin',
-            badge: p.badge || (p.acPenalty ? `-${p.acPenalty} AC` : (p.bonusAc ? `+${p.bonusAc} AC` : (low.includes('punishing') ? '-2 AC • 1d6' : 'Savunma'))),
-            active: Boolean(p.active),
-            pinObj: p
-          });
-        }
-      });
-
-      activeDefenseMods.forEach(m => {
-        const low = (m.name || '').toLowerCase().trim();
-        if (!seen.has(low)) {
-          seen.add(low);
-          unifiedCards.push({
-            name: m.name,
-            source: m.source || 'Mod',
-            badge: m.badge || (m.acPenalty ? `-${m.acPenalty} AC` : (m.bonusAc ? `+${m.bonusAc} AC` : (low.includes('punishing') ? '-2 AC • 1d6' : (low.includes('dodge') ? '+1 Dodge' : 'Aktif')))),
-            active: Boolean(m.active),
-            modObj: m
-          });
-        } else {
-          const item = unifiedCards.find(c => c.name.toLowerCase().trim() === low);
-          if (item && m.active !== undefined) item.active = m.active;
-        }
-      });
-
-      // Update badge in header
-      const badgeEl = document.getElementById('defense-pins-badge');
-      if (badgeEl) badgeEl.textContent = unifiedCards.length;
-
-      const isExpanded = !!window.combatDefenseGridExpanded;
-      const visibleCount = isExpanded ? unifiedCards.length : Math.min(6, unifiedCards.length);
-      const visibleCards = unifiedCards.slice(0, visibleCount);
-
-      const dynamicCardsHtml = visibleCards.map((card, idx) => {
-        let bonusStr = card.badge || 'Aktif';
-        if (card.name.toLowerCase().includes('punishing stance')) {
-          bonusStr = '-2 AC • 1d6';
-        }
-        const cardBorderActive = card.active ? 'border-indigo-500 bg-indigo-950/40 text-indigo-200 shadow-sm' : 'border-slate-800 text-slate-300';
-        const checkboxColor = 'text-indigo-500';
-        const bonusColor = card.name.toLowerCase().includes('punishing stance') ? 'text-amber-300' : 'text-emerald-300';
-
-        return `
-        <div class="bg-slate-900 border ${cardBorderActive} hover:border-indigo-500/60 rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] relative group">
-          <!-- Reorder Mini Controls -->
-          <div class="flex items-center justify-between px-0.5 text-[9px] text-slate-500 leading-none">
-            <button type="button" onclick="moveDefenseCardOrder(${idx}, -1, event)" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx <= 0 ? 'disabled' : ''} title="Sola Taşı">◀</button>
-            <span class="text-[8px] text-slate-500 font-mono truncate max-w-[45px]">${card.source || 'Pin'}</span>
-            <button type="button" onclick="moveDefenseCardOrder(${idx}, 1, event)" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx >= unifiedCards.length - 1 ? 'disabled' : ''} title="Sağa Taşı">▶</button>
+      grid.innerHTML = cards.map(c => `
+        <div onclick="${c.onclick}" class="${c.active ? activeClass : inactiveClass}" title="${c.title}">
+          <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
+            <span class="text-[8px] font-mono ${c.active ? 'text-indigo-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">${c.source}</span>
           </div>
 
-          <label class="cursor-pointer flex-1 flex flex-col justify-between mt-0.5">
-            <div class="px-0.5">
-              <div class="text-[10px] font-bold text-white leading-tight truncate" title="${card.name}">${card.name}</div>
-              <div class="text-[9px] ${bonusColor} font-mono font-bold mt-0.5">${bonusStr}</div>
-            </div>
-            <input type="checkbox" ${card.active ? 'checked' : ''} onchange="toggleDefenseCardActive('${card.name.replace(/'/g, "\\'")}')" class="mt-1 mx-auto w-3.5 h-3.5 rounded ${checkboxColor} focus:ring-0 cursor-pointer">
-          </label>
+          <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
+            <div class="text-[10px] ${c.active ? 'font-black text-white' : 'font-bold text-slate-200'} leading-tight truncate w-full" title="${c.name}">${c.name}</div>
+            <div class="text-[9px] ${c.active ? 'text-indigo-200 font-bold' : 'text-indigo-400'} font-mono mt-1">${c.bonusStr}</div>
+          </div>
         </div>
-        `;
-      });
+      `).join('');
 
-      grid.innerHTML = fixedCardsHtml.join('') + dynamicCardsHtml.join('');
-
-      // Expand / Collapse Bar
+      // Hide pin badge and expand bar since pins are disabled for this grid per user instruction
+      const badgeEl = document.getElementById('defense-pins-badge');
+      if (badgeEl) badgeEl.classList.add('hidden');
       const expandBar = document.getElementById('combat-defense-expand-bar');
-      const expandBtn = document.getElementById('btn-toggle-expand-defense');
-      if (expandBar && expandBtn) {
-        if (unifiedCards.length > 6) {
-          expandBar.classList.remove('hidden');
-          const remaining = unifiedCards.length - 6;
-          expandBtn.innerHTML = isExpanded ? '<span>▴ Daha Az Göster</span>' : `<span>▾ Daha Fazla Göster (+${remaining} Savunma Pini)</span>`;
-        } else {
-          expandBar.classList.add('hidden');
-        }
-      }
+      if (expandBar) expandBar.classList.add('hidden');
     }
 
     function toggleDefenseCardActive(name) {
@@ -18640,29 +18565,31 @@
     }
 
     function onToggleFightingDefensively() {
-      const input = document.getElementById('toggle-fighting-defensively');
-      if (!input || !character.tactical) return;
-      character.tactical.fightingDefensively = input.checked;
-      if (input.checked) {
+      if (!character.tactical) character.tactical = {};
+      character.tactical.fightingDefensively = !character.tactical.fightingDefensively;
+      if (character.tactical.fightingDefensively) {
         character.tactical.totalDefense = false;
-        const tdInput = document.getElementById('toggle-total-defense');
-        if (tdInput) tdInput.checked = false;
       }
       saveStateToStorage(false);
-      renderAll();
+      renderDefenseModifiersGrid();
+      if (typeof recalculateDefense === 'function') recalculateDefense();
+      if (typeof recalculateOffense === 'function') recalculateOffense();
+      renderHUD();
+      if (typeof renderCombatCockpit === 'function') renderCombatCockpit();
     }
 
     function onToggleTotalDefense() {
-      const input = document.getElementById('toggle-total-defense');
-      if (!input || !character.tactical) return;
-      character.tactical.totalDefense = input.checked;
-      if (input.checked) {
+      if (!character.tactical) character.tactical = {};
+      character.tactical.totalDefense = !character.tactical.totalDefense;
+      if (character.tactical.totalDefense) {
         character.tactical.fightingDefensively = false;
-        const fdInput = document.getElementById('toggle-fighting-defensively');
-        if (fdInput) fdInput.checked = false;
       }
       saveStateToStorage(false);
-      renderAll();
+      renderDefenseModifiersGrid();
+      if (typeof recalculateDefense === 'function') recalculateDefense();
+      if (typeof recalculateOffense === 'function') recalculateOffense();
+      renderHUD();
+      if (typeof renderCombatCockpit === 'function') renderCombatCockpit();
     }
 
     function adjustPowerAttack(delta) {
@@ -18677,22 +18604,28 @@
     // --- REAKTİF HAMLELER & COUNTERS ---
     function triggerShieldBlockReaction() {
       if (!character.tactical) character.tactical = {};
-      character.tactical.shieldBlockActive = true;
+      const nextState = !character.tactical.shieldBlockActive;
+      character.tactical.shieldBlockActive = nextState;
       saveStateToStorage(false);
-      renderAll();
-      showDiceTopToast({
-        icon: '🛡️',
-        title: 'Shield Block Tetiklendi!',
-        breakdown: 'Devoted Spirit: Anlık +4 Kalkan AC sonraki tura kadar aktif edildi.',
-        total: '+4 Shield AC'
-      });
-      addDiceHistoryEntry({
-        icon: '🛡️',
-        title: 'Shield Block Reaksiyonu',
-        formula: '+4 Shield AC',
-        breakdown: 'Immediate Action karşı savunma tetiklendi',
-        total: '+4 AC'
-      });
+      renderDefenseModifiersGrid();
+      if (typeof recalculateDefense === 'function') recalculateDefense();
+      renderHUD();
+      if (typeof renderCombatCockpit === 'function') renderCombatCockpit();
+      if (nextState) {
+        showDiceTopToast({
+          icon: '🛡️',
+          title: 'Shield Block Tetiklendi!',
+          breakdown: 'Devoted Spirit: Anlık +4 Kalkan AC sonraki tura kadar aktif edildi.',
+          total: '+4 Shield AC'
+        });
+        addDiceHistoryEntry({
+          icon: '🛡️',
+          title: 'Shield Block Reaksiyonu',
+          formula: '+4 Shield AC',
+          breakdown: 'Immediate Action karşı savunma tetiklendi',
+          total: '+4 AC'
+        });
+      }
     }
 
     function rollAttackOfOpportunity() {
@@ -32341,11 +32274,25 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
 
     function recalculateDefense() {
       const ceInput = document.getElementById('defense-combat-expertise-val') || document.getElementById('combat-expertise-val');
-      const ceVal = parseInt(ceInput?.value || ceInput?.textContent) || 0;
+      const ceVal = character.tactical?.combatExpertise !== undefined
+        ? character.tactical.combatExpertise
+        : (parseInt(ceInput?.value || ceInput?.textContent) || 0);
       if (!character.tactical) character.tactical = {};
       character.tactical.combatExpertise = ceVal;
-      character.tactical.fightingDefensively = document.getElementById('mod-defensive-fighting')?.checked || false;
-      character.tactical.totalDefense = document.getElementById('mod-total-defense')?.checked || false;
+
+      const modFd = document.getElementById('mod-defensive-fighting');
+      const fdVal = character.tactical?.fightingDefensively !== undefined
+        ? character.tactical.fightingDefensively
+        : (modFd?.checked || false);
+      character.tactical.fightingDefensively = fdVal;
+      if (modFd) modFd.checked = fdVal;
+
+      const modTd = document.getElementById('mod-total-defense');
+      const tdVal = character.tactical?.totalDefense !== undefined
+        ? character.tactical.totalDefense
+        : (modTd?.checked || false);
+      character.tactical.totalDefense = tdVal;
+      if (modTd) modTd.checked = tdVal;
 
       // Keep Cockpit toggles and Defense toggles synced
       const cpCe = document.getElementById('combat-expertise-val');
