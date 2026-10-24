@@ -524,9 +524,18 @@
 
               <!-- 1. MELEE TACTICAL MODIFIERS (Yakın Dövüş Modifiyerleri) -->
               <div id="combat-modifiers-melee-block" class="bg-slate-950/80 border border-slate-800 rounded-lg p-2.5 space-y-2">
-                <div class="text-[10px] font-bold text-sky-400 uppercase tracking-wide flex items-center justify-between">
-                  <span>⚡ POZİSYONEL &amp; HASAR MODİFİYERLERİ (YAKIN)</span>
-                  <span class="text-[9px] text-slate-400" id="pa-explanation">(-BAB Att / +1x Dmg)</span>
+                <div class="text-[10px] font-bold text-sky-400 uppercase tracking-wide flex items-center justify-between gap-1 flex-wrap">
+                  <div class="flex items-center gap-1.5">
+                    <span>⚡</span>
+                    <span>POZİSYONEL &amp; HASAR MODİFİYERLERİ (YAKIN)</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-[9px] text-slate-400 font-normal" id="pa-explanation">(-BAB Att / +1x Dmg)</span>
+                    <button type="button" id="btn-melee-reorder-toggle" onclick="toggleMeleeReorderMode()" class="text-[9px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-slate-800 transition" title="Yakın dövüş modifiyerlerinin sırasını düzenle">
+                      <span>⇄</span>
+                      <span id="melee-reorder-btn-text">Sırala</span>
+                    </button>
+                  </div>
                 </div>
                 
                 <!-- Power Attack Stepper -->
@@ -554,9 +563,18 @@
 
               <!-- 2. RANGED TACTICAL MODIFIERS & AMMUNITION (Menzilli & Ok Modifiyerleri) -->
               <div id="combat-modifiers-ranged-block" class="hidden bg-slate-950/80 border border-slate-800 rounded-lg p-2.5 space-y-2">
-                <div class="text-[10px] font-bold text-amber-400 uppercase tracking-wide flex items-center justify-between">
-                  <span>🏹 MENZİLLİ SALDIRI &amp; MÜHİMMAT MODİFİYERLERİ (UZAK)</span>
-                  <span class="text-[9px] text-slate-400" id="ranged-mod-explanation">DEX Mod (+3) devrede</span>
+                <div class="text-[10px] font-bold text-amber-400 uppercase tracking-wide flex items-center justify-between gap-1 flex-wrap">
+                  <div class="flex items-center gap-1.5">
+                    <span>🏹</span>
+                    <span>MENZİLLİ SALDIRI &amp; MÜHİMMAT MODİFİYERLERİ (UZAK)</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-[9px] text-slate-400 font-normal" id="ranged-mod-explanation">DEX Mod (+3) devrede</span>
+                    <button type="button" id="btn-ranged-reorder-toggle" onclick="toggleRangedReorderMode()" class="text-[9px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-slate-800 transition" title="Menzilli modifiyerlerin sırasını düzenle">
+                      <span>⇄</span>
+                      <span id="ranged-reorder-btn-text">Sırala</span>
+                    </button>
+                  </div>
                 </div>
                 
                 <!-- Ammunition Selector (Dynamically adapted by weapon type: Arrow, Bolt, Bullet, Thrown) -->
@@ -11286,6 +11304,8 @@
     window.currentSelectedCombatSpellName = null;
     window.spellReorderModeActive = false;
     window.spellModifiersExpanded = false;
+    window.meleeReorderModeActive = false;
+    window.rangedReorderModeActive = false;
 
     function switchCombatSpellCategory(category) {
       if (!['offense_spell', 'spell_control', 'spell_support'].includes(category)) {
@@ -15155,27 +15175,24 @@
 
       // Rows 2+ : Dynamic modifiers (strictly melee & both modifiers, excluding TWF which is managed by weapon sets)
       const isExpanded = !!window.combatModifiersGridExpanded;
-      const dynamicMods = (character.activeModifiers || []).filter(m => {
-        if (!m || !m.name) return false;
-        if (m.name.includes('TWF') || m.name.includes('Çift Silah')) return false;
-        if (m.combatScope === 'ranged' || m.scope === 'Ranged Only') return false;
-        const n = m.name.toLowerCase();
-        if (n.includes('acid arrow') || n.includes('fireball') || n.includes('scorching ray') || n.includes('magic missile') || n.includes('ray of frost') || n.includes('disintegrate')) return false;
-        if ((n.includes('arrow') || n.includes('ok\b')) && !n.includes('enhance arrow') && !n.includes('blade of blood')) return false;
-        const dbEntry = typeof findMasterItem === 'function' ? findMasterItem(m.name) : null;
-        if (dbEntry) {
-          if (['ranged_touch', 'melee_touch', 'spell_auto', 'saving_throw', 'ammunition', 'weapon', 'shield'].includes(dbEntry.attackType)) {
-            return false;
-          }
-          if (dbEntry.combatScope === 'ranged' || dbEntry.scope === 'Ranged Only') return false;
-        }
-        return (m.combatScope === 'melee' || m.combatScope === 'both' || !m.combatScope);
-      });
+      const dynamicMods = getMeleeDynamicModifiers();
       // In 3x3 layout when collapsed: 3 top (Flanking, Charge, Higher Ground) + 6 dynamic = 9 cards total!
       const visibleCount = isExpanded ? dynamicMods.length : Math.min(6, dynamicMods.length);
       const visibleMods = dynamicMods.slice(0, visibleCount);
 
-      const dynamicCardsHtml = visibleMods.map((mod) => {
+      // Sync Melee Reorder Toggle UI
+      const meleeBtn = document.getElementById('btn-melee-reorder-toggle');
+      const meleeBtnText = document.getElementById('melee-reorder-btn-text');
+      if (meleeBtnText) meleeBtnText.textContent = window.meleeReorderModeActive ? 'Tamam ✓' : 'Sırala';
+      if (meleeBtn) {
+        if (window.meleeReorderModeActive) {
+          meleeBtn.className = 'text-[9px] text-emerald-300 bg-emerald-950/70 hover:bg-emerald-900 font-bold flex items-center gap-1 cursor-pointer px-2 py-0.5 rounded border border-emerald-600 transition';
+        } else {
+          meleeBtn.className = 'text-[9px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-slate-800 transition';
+        }
+      }
+
+      const dynamicCardsHtml = visibleMods.map((mod, idx) => {
         if (!mod || !mod.name) return '';
         let bonusStr = mod.dice ? mod.dice : (mod.bonusDmg ? `+${mod.bonusDmg} Dmg` : (mod.bonusAtk ? `+${mod.bonusAtk} Atk` : 'Aktif'));
         let cardBorderActive = 'border-purple-500 bg-purple-950/30 text-purple-200 shadow-sm';
@@ -15191,14 +15208,22 @@
 
         const actualIdx = character.activeModifiers.indexOf(mod);
 
+        const reorderControls = window.meleeReorderModeActive ? `
+          <div class="flex items-center justify-between px-0.5 text-[9px] text-slate-500 leading-none">
+            <button type="button" onclick="moveMeleeModifierOrder(${idx}, -1, event)" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx <= 0 ? 'disabled' : ''} title="Sola Taşı">◀</button>
+            <span class="text-[8px] text-slate-500 font-mono truncate max-w-[45px]">${mod.source || ''}</span>
+            <button type="button" onclick="moveMeleeModifierOrder(${idx}, 1, event)" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx >= dynamicMods.length - 1 ? 'disabled' : ''} title="Sağa Taşı">▶</button>
+          </div>
+        ` : `
+          <div class="flex items-center justify-center px-0.5 text-[9px] text-slate-500 leading-none">
+            <span class="text-[8px] text-slate-500 font-mono truncate max-w-[75px]">${mod.source || ''}</span>
+          </div>
+        `;
+
         return `
         <div class="bg-slate-900 border ${mod.active ? cardBorderActive : 'border-slate-800 text-slate-300'} hover:border-purple-500/60 rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] relative group">
           <!-- Reorder Mini Controls -->
-          <div class="flex items-center justify-between px-0.5 text-[9px] text-slate-500 leading-none">
-            <button type="button" onclick="moveModifierOrder(${actualIdx}, -1, event)" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${actualIdx <= 0 ? 'disabled' : ''} title="Sola Taşı">◀</button>
-            <span class="text-[8px] text-slate-500 font-mono truncate max-w-[45px]">${mod.source || ''}</span>
-            <button type="button" onclick="moveModifierOrder(${actualIdx}, 1, event)" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${actualIdx >= character.activeModifiers.length - 1 ? 'disabled' : ''} title="Sağa Taşı">▶</button>
-          </div>
+          ${reorderControls}
 
           <label class="cursor-pointer flex-1 flex flex-col justify-between mt-0.5">
             <div class="px-0.5">
@@ -15950,7 +15975,192 @@
         `
       ];
 
-      // Qualified Ranged Modifiers Pool: Feats, Abilities, Spells & Pinned items in Area 2
+      // Sync Ranged Reorder Toggle UI
+      const rangedBtn = document.getElementById('btn-ranged-reorder-toggle');
+      const rangedBtnText = document.getElementById('ranged-reorder-btn-text');
+      if (rangedBtnText) rangedBtnText.textContent = window.rangedReorderModeActive ? 'Tamam ✓' : 'Sırala';
+      if (rangedBtn) {
+        if (window.rangedReorderModeActive) {
+          rangedBtn.className = 'text-[9px] text-emerald-300 bg-emerald-950/70 hover:bg-emerald-900 font-bold flex items-center gap-1 cursor-pointer px-2 py-0.5 rounded border border-emerald-600 transition';
+        } else {
+          rangedBtn.className = 'text-[9px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-slate-800 transition';
+        }
+      }
+
+      // Qualified Ranged Modifiers Pool: Feats, Abilities, Spells & Pinned items
+      const qualifiedRangedList = getQualifiedRangedModifiersList();
+
+      const isExpanded = !!window.combatRangedModifiersGridExpanded;
+      const visibleCount = isExpanded ? qualifiedRangedList.length : Math.min(6, qualifiedRangedList.length);
+      const visibleMods = qualifiedRangedList.slice(0, visibleCount);
+
+      const dynamicCardsHtml = visibleMods.map((mod, idx) => {
+        const reorderControls = window.rangedReorderModeActive ? `
+          <div class="flex items-center justify-between px-0.5 text-[9px] text-slate-500 leading-none">
+            <button type="button" onclick="moveRangedModifierOrder(${idx}, -1, event)" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx <= 0 ? 'disabled' : ''} title="Sola Taşı">◀</button>
+            <span class="text-[8px] text-slate-500 font-mono truncate max-w-[45px]">${mod.source}</span>
+            <button type="button" onclick="moveRangedModifierOrder(${idx}, 1, event)" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx >= qualifiedRangedList.length - 1 ? 'disabled' : ''} title="Sağa Taşı">▶</button>
+          </div>
+        ` : `
+          <div class="flex items-center justify-center px-0.5 text-[9px] text-slate-500 leading-none">
+            <span class="text-[8px] text-slate-500 font-mono truncate max-w-[75px]">${mod.source}</span>
+          </div>
+        `;
+
+        return `
+        <div class="bg-slate-900 border ${mod.active ? mod.activeClass : 'border-slate-800 text-slate-300'} hover:border-amber-500/60 rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] relative group">
+          ${reorderControls}
+
+          <label class="cursor-pointer flex-1 flex flex-col justify-between mt-0.5">
+            <div class="px-0.5">
+              <div class="text-[10px] font-bold text-white leading-tight truncate" title="${mod.name}">${mod.name}</div>
+              <div class="text-[9px] text-amber-300 font-mono font-bold mt-0.5">${mod.bonusStr}</div>
+            </div>
+            <input type="checkbox" ${mod.active ? 'checked' : ''} onchange="onRangedModifierToggle('${mod.id}')" class="mt-1 mx-auto w-3.5 h-3.5 rounded text-amber-500 focus:ring-0 cursor-pointer">
+          </label>
+        </div>
+        `;
+      });
+
+      grid.innerHTML = baseCardsHtml.join('') + dynamicCardsHtml.join('');
+
+      // Show/hide expand button if dynamic mods > 6
+      const expandBar = document.getElementById('combat-modifiers-ranged-expand-bar');
+      const expandBtn = document.getElementById('btn-toggle-expand-ranged-mods');
+      if (expandBar && expandBtn) {
+        if (qualifiedRangedList.length > 6) {
+          expandBar.classList.remove('hidden');
+          expandBtn.innerHTML = isExpanded 
+            ? '<span>▴ Daha Az Göster (3x3 Daralt)</span>' 
+            : `<span>▾ Daha Fazla Göster (+${qualifiedRangedList.length - 6} Modifiyer)</span>`;
+        } else {
+          expandBar.classList.add('hidden');
+        }
+      }
+
+      populateRangedWeaponAndAmmoUI();
+    }
+
+    function onRangedModifierToggle(modKey) {
+      if (!character.tactical) character.tactical = {};
+      if (modKey.startsWith('pin_')) {
+        const pinName = modKey.replace('pin_', '');
+        const allPins = getAllCombatPins();
+        const pin = allPins.find(p => p.name === pinName);
+        if (pin) {
+          pin.active = !pin.active;
+        }
+      } else {
+        character.tactical[modKey] = !character.tactical[modKey];
+      }
+      renderRangedModifiersGrid();
+      recalculateOffense();
+      saveStateToStorage(false);
+    }
+
+    function toggleExpandRangedModifiersGrid() {
+      window.combatRangedModifiersGridExpanded = !window.combatRangedModifiersGridExpanded;
+      renderRangedModifiersGrid();
+    }
+
+    function onFixedModifierToggle() {
+      const hgEl = document.getElementById('mod-higher-ground');
+      if (hgEl) {
+        if (!character.tactical) character.tactical = {};
+        character.tactical.higherGround = hgEl.checked;
+      }
+      const chargeEl = document.getElementById('mod-charge');
+      if (chargeEl) {
+        if (!character.tactical) character.tactical = {};
+        character.tactical.charge = chargeEl.checked;
+      }
+      recalculateOffense();
+      renderOffenseModifiersGrid();
+      renderHUD();
+      if (typeof renderCombatCockpit === 'function') renderCombatCockpit();
+      saveStateToStorage(false);
+    }
+
+    function getMeleeDynamicModifiers() {
+      if (!character || !character.activeModifiers) return [];
+      return (character.activeModifiers || []).filter(m => {
+        if (!m || !m.name) return false;
+        if (m.name.includes('TWF') || m.name.includes('Çift Silah')) return false;
+        if (m.combatScope === 'ranged' || m.scope === 'Ranged Only') return false;
+        const n = m.name.toLowerCase();
+        if (n.includes('acid arrow') || n.includes('fireball') || n.includes('scorching ray') || n.includes('magic missile') || n.includes('ray of frost') || n.includes('disintegrate')) return false;
+        if ((n.includes('arrow') || n.includes('ok\b')) && !n.includes('enhance arrow') && !n.includes('blade of blood')) return false;
+        const dbEntry = typeof findMasterItem === 'function' ? findMasterItem(m.name) : null;
+        if (dbEntry) {
+          if (['ranged_touch', 'melee_touch', 'spell_auto', 'saving_throw', 'ammunition', 'weapon', 'shield'].includes(dbEntry.attackType)) {
+            return false;
+          }
+          if (dbEntry.combatScope === 'ranged' || dbEntry.scope === 'Ranged Only') return false;
+        }
+        return (m.combatScope === 'melee' || m.combatScope === 'both' || !m.combatScope);
+      });
+    }
+
+    function toggleMeleeReorderMode() {
+      window.meleeReorderModeActive = !window.meleeReorderModeActive;
+      const btnText = document.getElementById('melee-reorder-btn-text');
+      const btn = document.getElementById('btn-melee-reorder-toggle');
+      if (btnText) btnText.textContent = window.meleeReorderModeActive ? 'Tamam ✓' : 'Sırala';
+      if (btn) {
+        if (window.meleeReorderModeActive) {
+          btn.className = 'text-[9px] text-emerald-300 bg-emerald-950/70 hover:bg-emerald-900 font-bold flex items-center gap-1 cursor-pointer px-2 py-0.5 rounded border border-emerald-600 transition';
+        } else {
+          btn.className = 'text-[9px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-slate-800 transition';
+        }
+      }
+      renderOffenseModifiersGrid();
+    }
+
+    function moveMeleeModifierOrder(idx, delta, event) {
+      if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+      }
+      if (!character || !character.activeModifiers) return;
+
+      const dynamicMods = getMeleeDynamicModifiers();
+      const currentMod = dynamicMods[idx];
+      const targetMod = dynamicMods[idx + delta];
+      if (!currentMod || !targetMod) return;
+
+      const idxA = character.activeModifiers.indexOf(currentMod);
+      const idxB = character.activeModifiers.indexOf(targetMod);
+      if (idxA === -1 || idxB === -1) return;
+
+      const temp = character.activeModifiers[idxA];
+      character.activeModifiers[idxA] = character.activeModifiers[idxB];
+      character.activeModifiers[idxB] = temp;
+
+      saveStateToStorage(true);
+      renderOffenseModifiersGrid();
+    }
+
+    function getQualifiedRangedModifiersList() {
+      if (!character) return [];
+      if (!character.tactical) character.tactical = {};
+      const t = character.tactical;
+      const featsList = character.feats || [];
+      const hasPBS = featsList.some(f => (f.name || '').toLowerCase().includes('point blank shot'));
+      const hasFar = featsList.some(f => (f.name || '').toLowerCase().includes('far shot'));
+      const hasRapid = featsList.some(f => (f.name || '').toLowerCase().includes('rapid shot'));
+      const hasMany = featsList.some(f => (f.name || '').toLowerCase().includes('manyshot'));
+
+      const specials = (character.specialAbilities || []).concat(character.classFeatures || []);
+      const hasEnhanceArrow = specials.some(s => (s.name || '').toLowerCase().includes('enhance arrow'));
+      const hasSneak = specials.some(s => (s.name || '').toLowerCase().includes('sneak attack'));
+
+      const knownSpells = character.spellcasting?.knownSpells || [];
+      const hasTrueStrike = knownSpells.some(s => (s.name || '').toLowerCase().includes('true strike'));
+
+      const inv = character.inventory || [];
+      const hasBootsHaste = inv.some(i => (i.name || '').toLowerCase().includes('boots of speed') || (i.name || '').toLowerCase().includes('haste'));
+      const hasWitchlight = inv.some(i => (i.name || '').toLowerCase().includes('witchlight') || (i.name || '').toLowerCase().includes('cadıışığı'));
+
       const qualifiedRangedList = [];
 
       if (hasPBS) {
@@ -16074,101 +16284,60 @@
         });
       }
 
-      const isExpanded = !!window.combatRangedModifiersGridExpanded;
-      const visibleCount = isExpanded ? qualifiedRangedList.length : Math.min(6, qualifiedRangedList.length);
-      const visibleMods = qualifiedRangedList.slice(0, visibleCount);
+      // Apply Custom Order Sort
+      if (Array.isArray(character.tactical?.rangedModifierOrder) && character.tactical.rangedModifierOrder.length > 0) {
+        const orderMap = character.tactical.rangedModifierOrder;
+        qualifiedRangedList.sort((a, b) => {
+          const idxA = orderMap.indexOf(a.id);
+          const idxB = orderMap.indexOf(b.id);
+          if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+          if (idxA !== -1) return -1;
+          if (idxB !== -1) return 1;
+          return 0;
+        });
+      }
 
-      const dynamicCardsHtml = visibleMods.map((mod) => {
-        return `
-        <div class="bg-slate-900 border ${mod.active ? mod.activeClass : 'border-slate-800 text-slate-300'} hover:border-amber-500/60 rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] relative group">
-          <div class="flex items-center justify-between px-0.5 text-[9px] text-slate-500 leading-none">
-            <span class="text-[8px] text-slate-500 font-mono truncate">${mod.source}</span>
-          </div>
+      return qualifiedRangedList;
+    }
 
-          <label class="cursor-pointer flex-1 flex flex-col justify-between mt-0.5">
-            <div class="px-0.5">
-              <div class="text-[10px] font-bold text-white leading-tight truncate" title="${mod.name}">${mod.name}</div>
-              <div class="text-[9px] text-amber-300 font-mono font-bold mt-0.5">${mod.bonusStr}</div>
-            </div>
-            <input type="checkbox" ${mod.active ? 'checked' : ''} onchange="onRangedModifierToggle('${mod.id}')" class="mt-1 mx-auto w-3.5 h-3.5 rounded text-amber-500 focus:ring-0 cursor-pointer">
-          </label>
-        </div>
-        `;
-      });
-
-      grid.innerHTML = baseCardsHtml.join('') + dynamicCardsHtml.join('');
-
-      // Show/hide expand button if dynamic mods > 6
-      const expandBar = document.getElementById('combat-modifiers-ranged-expand-bar');
-      const expandBtn = document.getElementById('btn-toggle-expand-ranged-mods');
-      if (expandBar && expandBtn) {
-        if (qualifiedRangedList.length > 6) {
-          expandBar.classList.remove('hidden');
-          expandBtn.innerHTML = isExpanded 
-            ? '<span>▴ Daha Az Göster (3x3 Daralt)</span>' 
-            : `<span>▾ Daha Fazla Göster (+${qualifiedRangedList.length - 6} Modifiyer)</span>`;
+    function toggleRangedReorderMode() {
+      window.rangedReorderModeActive = !window.rangedReorderModeActive;
+      const btnText = document.getElementById('ranged-reorder-btn-text');
+      const btn = document.getElementById('btn-ranged-reorder-toggle');
+      if (btnText) btnText.textContent = window.rangedReorderModeActive ? 'Tamam ✓' : 'Sırala';
+      if (btn) {
+        if (window.rangedReorderModeActive) {
+          btn.className = 'text-[9px] text-emerald-300 bg-emerald-950/70 hover:bg-emerald-900 font-bold flex items-center gap-1 cursor-pointer px-2 py-0.5 rounded border border-emerald-600 transition';
         } else {
-          expandBar.classList.add('hidden');
+          btn.className = 'text-[9px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-slate-800 transition';
         }
       }
-
-      populateRangedWeaponAndAmmoUI();
-    }
-
-    function onRangedModifierToggle(modKey) {
-      if (!character.tactical) character.tactical = {};
-      if (modKey.startsWith('pin_')) {
-        const pinName = modKey.replace('pin_', '');
-        const allPins = getAllCombatPins();
-        const pin = allPins.find(p => p.name === pinName);
-        if (pin) {
-          pin.active = !pin.active;
-        }
-      } else {
-        character.tactical[modKey] = !character.tactical[modKey];
-      }
-      renderRangedModifiersGrid();
-      recalculateOffense();
-      saveStateToStorage(false);
-    }
-
-    function toggleExpandRangedModifiersGrid() {
-      window.combatRangedModifiersGridExpanded = !window.combatRangedModifiersGridExpanded;
       renderRangedModifiersGrid();
     }
 
-    function onFixedModifierToggle() {
-      const hgEl = document.getElementById('mod-higher-ground');
-      if (hgEl) {
-        if (!character.tactical) character.tactical = {};
-        character.tactical.higherGround = hgEl.checked;
-      }
-      const chargeEl = document.getElementById('mod-charge');
-      if (chargeEl) {
-        if (!character.tactical) character.tactical = {};
-        character.tactical.charge = chargeEl.checked;
-      }
-      recalculateOffense();
-      renderOffenseModifiersGrid();
-      renderHUD();
-      if (typeof renderCombatCockpit === 'function') renderCombatCockpit();
-      saveStateToStorage(false);
-    }
-
-    function moveModifierOrder(idx, delta, event) {
+    function moveRangedModifierOrder(idx, delta, event) {
       if (event) {
         event.stopPropagation();
         event.preventDefault();
       }
-      const newIdx = idx + delta;
-      if (!character.activeModifiers || newIdx < 0 || newIdx >= character.activeModifiers.length) return;
-      
-      const temp = character.activeModifiers[idx];
-      character.activeModifiers[idx] = character.activeModifiers[newIdx];
-      character.activeModifiers[newIdx] = temp;
+      if (!character) return;
+      if (!character.tactical) character.tactical = {};
 
-      saveStateToStorage(true);
-      renderOffenseModifiersGrid();
+      const list = getQualifiedRangedModifiersList();
+      const targetIdx = idx + delta;
+      if (idx < 0 || idx >= list.length || targetIdx < 0 || targetIdx >= list.length) return;
+
+      const orderList = list.map(m => m.id);
+      const item = orderList.splice(idx, 1)[0];
+      orderList.splice(targetIdx, 0, item);
+
+      character.tactical.rangedModifierOrder = orderList;
+      saveStateToStorage(false);
+      renderRangedModifiersGrid();
+    }
+
+    function moveModifierOrder(idx, delta, event) {
+      moveMeleeModifierOrder(idx, delta, event);
     }
 
     function getResolvedOffHandWeapon(character) {
