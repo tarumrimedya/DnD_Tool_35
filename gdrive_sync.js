@@ -646,7 +646,7 @@ const CloudSync = {
     if (pill && text) {
       if (status === 'connected' || status === 'synced') {
         pill.className = 'cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-xl text-[10px] sm:text-[11px] font-medium bg-emerald-950/80 text-emerald-300 border border-emerald-600 w-full h-9 whitespace-nowrap shadow-sm transition';
-        text.innerHTML = '🟢 <span class="hidden sm:inline">Vercel </span>Bulut<span class="hidden md:inline"> Senkron (Karakter + DB)</span>';
+        text.innerHTML = '🟢 Bulut<span class="hidden md:inline"> Senkron (Karakter + DB)</span>';
       } else if (status === 'syncing') {
         pill.className = 'cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-xl text-[10px] sm:text-[11px] font-medium bg-indigo-950/80 text-indigo-300 border border-indigo-600 w-full h-9 whitespace-nowrap shadow-sm transition';
         text.innerHTML = '🔄 <span class="hidden sm:inline">Bulut </span>Eşitleniyor...';
