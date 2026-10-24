@@ -21095,6 +21095,11 @@
         character.spellcasting.preparedSlots = [];
       }
 
+      const { statKey, statVal, statMod, cl, clMode } = getPreparedCasterInfo();
+      if (hasPrepared && Number(cl) > 0) {
+        character.spellcasting.preparedSlots = calculateWizardSlots(cl, statVal, character.spellcasting.preparedSlots);
+      }
+
       const slots = character.spellcasting.preparedSlots;
       const spells = character.spellcasting.preparedSpells;
       const ignoreAsf = character?.settings?.ignoreAsf !== false;
@@ -22388,8 +22393,8 @@
         }
       }
 
-      renderPreparedDisciplineView(classesStatus.hasPrepared);
-      renderDivineDisciplineView(classesStatus.hasDivine);
+      try { renderPreparedDisciplineView(classesStatus.hasPrepared); } catch (e) { console.error('renderPreparedDisciplineView error:', e); }
+      try { renderDivineDisciplineView(classesStatus.hasDivine); } catch (e) { console.error('renderDivineDisciplineView error:', e); }
 
       const titleEl = document.getElementById('spells-cockpit-class-title');
       if (titleEl) titleEl.textContent = 'Doğal / Anlık Büyüler';
