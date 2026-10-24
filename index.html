@@ -971,10 +971,10 @@
       <div id="attack-results-card" class="hidden bg-dndCard border border-indigo-500/50 rounded-xl p-4 shadow-2xl space-y-3">
         <div class="flex items-center justify-between border-b border-slate-700 pb-2.5">
           <div class="flex items-center gap-2">
-            <span class="text-xl">⚔️</span>
+            <span id="result-card-icon" class="text-xl">⚔️</span>
             <div>
               <h2 id="result-card-title" class="font-bold text-sm md:text-base text-white">Saldırı Sonucu</h2>
-              <p class="text-[10px] text-slate-400">Sonuç kartı siz kapatana kadar açık kalır.</p>
+              <p id="result-card-subtitle" class="text-[10px] text-slate-400">Sonuç kartı siz kapatana kadar açık kalır.</p>
             </div>
           </div>
           <button onclick="dismissAttackResult()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg text-xs font-bold transition">✕ Kapat</button>
@@ -987,7 +987,7 @@
 
         <!-- Total Potential Damage Banner -->
         <div class="bg-indigo-950/80 border border-indigo-700/60 rounded-xl p-3 flex items-center justify-between">
-          <span class="font-bold text-sm text-indigo-200">Toplam Potansiyel Hasar:</span>
+          <span id="result-grand-total-label" class="font-bold text-sm text-indigo-200">Toplam Potansiyel Hasar:</span>
           <span id="result-grand-total-damage" class="font-black text-2xl text-emerald-400 font-mono">0 HP</span>
         </div>
 
@@ -13896,6 +13896,178 @@
       }
     }
 
+    function getSpellAttackType(spell) {
+      if (!spell) return null;
+      const master = typeof findMasterItem === 'function' ? findMasterItem(spell.name) : null;
+      const rawType = (spell.attackType || master?.attackType || '').toLowerCase().trim();
+      if (rawType.includes('ranged_touch') || rawType.includes('ranged touch')) return 'ranged_touch';
+      if (rawType.includes('melee_touch') || rawType.includes('melee touch')) return 'melee_touch';
+      if (rawType.includes('touch')) return 'melee_touch';
+      if (rawType.includes('ranged')) return 'ranged_touch';
+
+      const textToScan = `${spell.name} ${spell.benefit || ''} ${spell.desc || ''} ${spell.description || ''}`.toLowerCase();
+      if (textToScan.includes('ranged touch attack') || textToScan.includes('menzilli temas') || textToScan.includes('ranged touch')) {
+        return 'ranged_touch';
+      }
+      if (textToScan.includes('melee touch attack') || textToScan.includes('yakın temas') || textToScan.includes('melee touch')) {
+        return 'melee_touch';
+      }
+      return null;
+    }
+
+    function getSpellHasSpellResistance(spell) {
+      if (!spell) return false;
+      const params = typeof getSpellCriticalParams === 'function' ? getSpellCriticalParams(spell) : {};
+      const master = typeof findMasterItem === 'function' ? findMasterItem(spell.name) : null;
+      const srVal = (params.sr || spell.sr || master?.sr || '').toString().toLowerCase();
+      if (srVal.includes('evet') || srVal.includes('yes') || srVal === 'true' || srVal.includes('haric') || srVal.includes('gerek')) {
+        return true;
+      }
+      return false;
+    }
+
+    function renderSpellCastResults(spell, castData) {
+      const card = document.getElementById('attack-results-card');
+      if (!card) return;
+      card.classList.remove('hidden');
+
+      const sourceLabels = { spontaneous: 'Anlık', prepared: 'Kitap', divine: 'İlahi' };
+      const iconEl = document.getElementById('result-card-icon');
+      if (iconEl) iconEl.textContent = '🔮';
+      const titleEl = document.getElementById('result-card-title');
+      if (titleEl) titleEl.textContent = `${spell.name} — Büyü İcrası & Sonucu`;
+      const subEl = document.getElementById('result-card-subtitle');
+      if (subEl) subEl.textContent = `${castData.finalLvl}. Seviye Yuva (${sourceLabels[castData.slotSource] || 'Büyü'}) • CL ${castData.cl} • ${spell.school || 'Universal'}`;
+      const grandLabel = document.getElementById('result-grand-total-label');
+      if (grandLabel) grandLabel.textContent = castData.hasDamageDice ? 'Toplam Büyü Hasarı:' : 'Büyü Etkisi:';
+
+      const summaryGrid = document.getElementById('result-summary-grid');
+      if (summaryGrid) {
+        summaryGrid.innerHTML = '';
+
+        // 1. Saldırı Zarı Kartı (Varsa)
+        if (castData.hasAtk) {
+          const atkDiv = document.createElement('div');
+          const isCrit = castData.isAtkCrit;
+          atkDiv.className = `p-3 rounded-lg border ${isCrit ? 'bg-rose-950/40 border-rose-500' : 'border-amber-700/60 bg-slate-900'}`;
+          atkDiv.innerHTML = `
+            <div class="flex justify-between items-center mb-1">
+              <div class="flex items-center gap-1.5">
+                <span class="font-bold text-white">${castData.atkType === 'ranged_touch' ? 'Menzilli Temas' : 'Yakın Temas'}</span>
+                <span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-950/60 text-amber-300 border border-amber-600/50 font-bold uppercase">Atk</span>
+              </div>
+              ${isCrit ? '<span class="badge bg-amber-500 text-black font-black">NAT 20 / KRİTİK</span>' : ''}
+            </div>
+            <div class="flex justify-between items-baseline font-mono border-t border-slate-800 pt-1.5 mt-1">
+              <span class="text-xs text-slate-400">Atk: <strong class="text-amber-400 text-base font-black">${castData.totalAtk >= 0 ? '+' : ''}${castData.totalAtk}</strong></span>
+              <span class="text-xs text-slate-400">(d20: <strong class="text-white">${castData.d20Atk}</strong> + ${castData.atkBonus})</span>
+            </div>
+            <div class="text-[10px] text-amber-300 truncate mt-1">Hedefin Dokunma Zırh Sınıfına (Touch AC) karşı</div>
+          `;
+          summaryGrid.appendChild(atkDiv);
+        }
+
+        // 2. Büyü Direnci (SR) Testi Kartı (Varsa)
+        if (castData.hasSr) {
+          const srDiv = document.createElement('div');
+          srDiv.className = 'p-3 rounded-lg border border-purple-700/60 bg-slate-900';
+          srDiv.innerHTML = `
+            <div class="flex justify-between items-center mb-1">
+              <div class="flex items-center gap-1.5">
+                <span class="font-bold text-white">Büyü Direnci (SR)</span>
+                <span class="text-[9px] px-1.5 py-0.5 rounded bg-purple-950/60 text-purple-300 border border-purple-600/50 font-bold uppercase">SR</span>
+              </div>
+              <span class="text-[9px] font-mono text-purple-300 font-bold">CL ${castData.cl}</span>
+            </div>
+            <div class="flex justify-between items-baseline font-mono border-t border-slate-800 pt-1.5 mt-1">
+              <span class="text-xs text-slate-400">SR: <strong class="text-purple-400 text-base font-black">${castData.totalSr}</strong></span>
+              <span class="text-xs text-slate-400">(d20: <strong class="text-white">${castData.d20Sr}</strong> + ${castData.totalSrBonus})</span>
+            </div>
+            <div class="text-[10px] text-purple-300 truncate mt-1">Hedefin SR direncini kırmak için Caster Level testi</div>
+          `;
+          summaryGrid.appendChild(srDiv);
+        }
+
+        // 3. Defensive Casting Kartı (Varsa)
+        if (castData.isDefensive) {
+          const concDiv = document.createElement('div');
+          concDiv.className = `p-3 rounded-lg border ${castData.concPassed ? 'border-indigo-700/60 bg-slate-900' : 'border-rose-700/60 bg-rose-950/30'}`;
+          concDiv.innerHTML = `
+            <div class="flex justify-between items-center mb-1">
+              <span class="font-bold text-white">Defensive Casting</span>
+              <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${castData.concPassed ? 'bg-emerald-950 text-emerald-300 border border-emerald-600' : 'bg-rose-950 text-rose-300 border border-rose-600'}">${castData.concPassed ? 'Başarılı ✓' : 'Bozuldu ✗'}</span>
+            </div>
+            <div class="flex justify-between items-baseline font-mono border-t border-slate-800 pt-1.5 mt-1">
+              <span class="text-xs text-slate-400">Konsantrasyon: <strong class="text-indigo-300 text-base font-black">${castData.totalConc}</strong></span>
+              <span class="text-xs text-slate-400">(d20: <strong class="text-white">${castData.d20Conc}</strong> vs DC ${castData.targetConcDc})</span>
+            </div>
+            <div class="text-[10px] text-slate-400 truncate mt-1">AoO Fırsat Saldırısını engelleme testi</div>
+          `;
+          summaryGrid.appendChild(concDiv);
+        }
+
+        // 4. Kurtarma Zarı (Save DC) Kartı
+        const saveDiv = document.createElement('div');
+        const hasSave = castData.saveType && !castData.saveType.toLowerCase().includes('yok') && !castData.saveType.toLowerCase().includes('none');
+        saveDiv.className = 'p-3 rounded-lg border border-emerald-700/60 bg-slate-900';
+        saveDiv.innerHTML = `
+          <div class="flex justify-between items-center mb-1">
+            <div class="flex items-center gap-1.5">
+              <span class="font-bold text-white">Kurtarma Zarı</span>
+              <span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-950/60 text-emerald-300 border border-emerald-600/50 font-bold uppercase">DC</span>
+            </div>
+            <span class="text-[9px] font-mono font-bold text-emerald-300 truncate">${hasSave ? castData.saveType : 'Kurtarma Yok'}</span>
+          </div>
+          <div class="flex justify-between items-baseline font-mono border-t border-slate-800 pt-1.5 mt-1">
+            <span class="text-xs text-slate-400">DC: <strong class="text-emerald-400 text-base font-black">DC ${castData.saveDc}</strong></span>
+            <span class="text-xs text-slate-400">${hasSave ? castData.saveType : 'Otomatik Etki'}</span>
+          </div>
+          <div class="text-[10px] text-slate-400 truncate mt-1">${hasSave ? 'Hedef bu DC değerine karşı kurtarma zarı atar' : 'Kurtarma zarı gerektirmez, doğrudan etki eder'}</div>
+        `;
+        summaryGrid.appendChild(saveDiv);
+      }
+
+      // Grand Total Damage / Effect Banner
+      const grandTotalEl = document.getElementById('result-grand-total-damage');
+      if (grandTotalEl) {
+        if (castData.hasDamageDice) {
+          grandTotalEl.textContent = `${castData.finalDmg} HP (${castData.dmgType})`;
+        } else {
+          grandTotalEl.textContent = `Etki Devrede (${castData.durationText})`;
+        }
+      }
+
+      // Detailed Breakdown Container
+      const breakdownContainer = document.getElementById('result-breakdown-container');
+      if (breakdownContainer) {
+        breakdownContainer.innerHTML = `
+          <div class="bg-slate-900/90 border border-slate-800 rounded-lg p-3 text-xs space-y-2 font-mono">
+            <div class="flex items-center justify-between text-slate-300 border-b border-slate-800/80 pb-1.5">
+              <span>🔮 Büyü & Yuva Seviyesi:</span>
+              <span class="font-bold text-white">${spell.name} (${castData.finalLvl}. Seviye ${sourceLabels[castData.slotSource] || ''} Yuvası)</span>
+            </div>
+            ${castData.hasDamageDice ? `
+            <div class="flex items-center justify-between text-amber-300 border-b border-slate-800/80 pb-1.5">
+              <span>⚡ Hasar / Etki Zarları:</span>
+              <span class="font-bold">${castData.calcNotice}</span>
+            </div>` : ''}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-slate-300">
+              <div><span class="text-slate-500">Menzil:</span> <span class="text-slate-200 font-semibold">${castData.rangeText}</span></div>
+              <div><span class="text-slate-500">Hedef:</span> <span class="text-slate-200 font-semibold">${castData.targetText}</span></div>
+              <div><span class="text-slate-500">Süre:</span> <span class="text-slate-200 font-semibold">${castData.durationText}</span></div>
+              <div><span class="text-slate-500">Bileşenler:</span> <span class="text-slate-200 font-semibold">${castData.componentsText}</span></div>
+            </div>
+            <div class="flex flex-wrap items-center justify-between gap-2 border-t border-slate-800/80 pt-1.5 text-[11px]">
+              ${castData.hasAtk ? `<span class="text-amber-300">⚔️ Saldırı Zarı: <strong>Atk: +${castData.totalAtk}</strong> (d20:${castData.d20Atk}+${castData.atkBonus})</span>` : '<span class="text-slate-500">⚔️ Saldırı Zarı: Gerekmez (Otomatik İsabet)</span>'}
+              ${castData.hasSr ? `<span class="text-purple-300">✨ Büyü Direnci (SR): <strong>SR: ${castData.totalSr}</strong> (d20:${castData.d20Sr}+CL:${castData.totalSrBonus})</span>` : '<span class="text-slate-500">✨ Büyü Direnci (SR): Hayır</span>'}
+            </div>
+          </div>
+        `;
+      }
+
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
     function initiateCombatSpellCast() {
       const spell = getSelectedCombatSpell();
       if (!spell) return;
@@ -13903,6 +14075,7 @@
       const baseLvl = Number(spell.level) || 0;
       const activeSpellMods = typeof getActiveSpellTacticalModifiers === 'function' ? getActiveSpellTacticalModifiers() : [];
       let slotDiff = 0;
+      let dcBonus = 0;
       let isEmpower = false;
       let isMaximize = false;
       let isEnlarge = false;
@@ -13930,33 +14103,33 @@
 
       // Defensive Casting Check (D&D 3.5e RAW: Concentration DC 15 + Spell Level)
       const isDefensive = Boolean(character?.tactical?.defensiveCastingActive || document.getElementById('mod-defensive-casting')?.checked);
+      let d20Conc = 0, totalConc = 0, targetConcDc = 15 + finalLvl, concPassed = true;
       if (isDefensive) {
         const concSkill = (character.skills || []).find(s => s && s.name && s.name.toLowerCase() === 'concentration');
         const concRanks = Number(concSkill?.ranks) || 0;
         const concMisc = Number(concSkill?.misc) || 0;
         const conMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.con || 10) : 0;
         const concBonus = concRanks + conMod + concMisc;
-        const targetDc = 15 + finalLvl;
-        const d20 = Math.floor(Math.random() * 20) + 1;
-        const totalConc = d20 + concBonus;
-        const passed = totalConc >= targetDc;
+        d20Conc = Math.floor(Math.random() * 20) + 1;
+        totalConc = d20Conc + concBonus;
+        concPassed = totalConc >= targetConcDc;
 
         if (typeof addDiceHistoryEntry === 'function') {
           addDiceHistoryEntry({
             icon: '🛡️',
             title: 'Defensive Casting (Konsantrasyon)',
-            formula: `1d20 + ${concBonus} vs DC ${targetDc}`,
-            breakdown: `d20: ${d20} + ${concBonus} = ${totalConc} vs DC ${targetDc}`,
-            total: passed ? 'Başarılı (AoO Engellendi)' : 'Başarısız (Büyü Bozuldu)',
-            isCrit: d20 === 20
+            formula: `1d20 + ${concBonus} vs DC ${targetConcDc}`,
+            breakdown: `d20: ${d20Conc} + ${concBonus} = ${totalConc} vs DC ${targetConcDc}`,
+            total: concPassed ? 'Başarılı (AoO Engellendi)' : 'Başarısız (Büyü Bozuldu)',
+            isCrit: d20Conc === 20
           });
         }
 
-        if (!passed) {
+        if (!concPassed) {
           showDiceTopToast({
             icon: '⚠️',
             title: 'Konsantrasyon Başarısız!',
-            breakdown: `d20:${d20} + ${concBonus} = ${totalConc} (Gereken: DC ${targetDc}). Büyü heba oldu!`,
+            breakdown: `d20:${d20Conc} + ${concBonus} = ${totalConc} (Gereken: DC ${targetConcDc}). Büyü heba oldu!`,
             total: 'Bozuldu'
           });
           // Consume slot on failure (RAW 3.5e)
@@ -14032,52 +14205,44 @@
 
       // Caster Level & Dynamic Spell Scaling (D&D 3.5e RAW)
       const cl = getEffectiveSpellCasterLevel(spell);
+      const params = typeof getSpellCriticalParams === 'function' ? getSpellCriticalParams(spell) : {};
       const scaling = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveSpellDynamicScaling === 'function')
         ? RuleEngine.resolveSpellDynamicScaling(spell, cl)
         : null;
 
-      // Roll Spell Damage Dice or apply Effect
-      const hasDice = (scaling && scaling.diceCount > 0) || !!spell.dice || (spell.benefit && /\d+d\d+/i.test(spell.benefit));
-
-      if (!hasDice) {
-        const activeCat = window.currentActiveCombatSpellCategory || 'offense_spell';
-        const icon = activeCat === 'spell_control' ? '🕸️' : (activeCat === 'spell_support' ? '✨' : '🔮');
-        const outcomeText = spell.save ? `DC ${10 + finalLvl + (RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.cha || 10) : 0)} ${spell.save}` : (spell.duration || 'Aktif');
-
-        const onComplete = () => {
-          showDiceTopToast({
-            icon: icon,
-            title: `${spell.name} İcra Edildi`,
-            breakdown: `${spell.school || 'Büyü'} (${finalLvl}. Seviye Yuva)`,
-            total: outcomeText
-          });
-          if (typeof addDiceHistoryEntry === 'function') {
-            addDiceHistoryEntry({
-              icon: icon,
-              title: `${spell.name} İcrası`,
-              formula: `${finalLvl}. Seviye Yuva`,
-              breakdown: `${spell.school || 'Büyü'} • ${spell.benefit || spell.desc || 'Etki devrede'}`,
-              total: outcomeText,
-              isCrit: false
-            });
-          }
-          recalculateCombatSpell();
-          renderSpellSlotsStrip();
-          renderCombatCategorySpells();
-        };
-
-        if (window.Dice3D && typeof Dice3D.roll === 'function') {
-          try {
-            Dice3D.roll([{ type: 'd20', value: 20 }], onComplete);
-          } catch (e) {
-            onComplete();
-          }
-        } else {
-          onComplete();
-        }
-        return;
+      // 1. Attack Roll Check (if touch/ranged touch)
+      const atkType = getSpellAttackType(spell);
+      const hasAtk = Boolean(atkType);
+      let d20Atk = 0, atkBonus = 0, totalAtk = 0, isAtkCrit = false;
+      if (hasAtk) {
+        const bab = Number(character?.bab) || 0;
+        const dexMod = RuleEngine ? RuleEngine.getAbilityMod(character?.abilities?.dex || 10) : 0;
+        const strMod = RuleEngine ? RuleEngine.getAbilityMod(character?.abilities?.str || 10) : 0;
+        atkBonus = (atkType === 'ranged_touch') ? (bab + dexMod) : (bab + strMod);
+        d20Atk = Math.floor(Math.random() * 20) + 1;
+        totalAtk = d20Atk + atkBonus;
+        isAtkCrit = (d20Atk === 20);
       }
 
+      // 2. Spell Resistance Check (if subject to SR)
+      const hasSr = getSpellHasSpellResistance(spell);
+      let d20Sr = 0, totalSrBonus = 0, totalSr = 0;
+      if (hasSr) {
+        const featsList = character.feats || [];
+        const hasSpellPen = featsList.some(f => (f.name || '').toLowerCase().includes('spell penetration') && !(f.name || '').toLowerCase().includes('greater'));
+        const hasGrtSpellPen = featsList.some(f => (f.name || '').toLowerCase().includes('greater spell penetration'));
+        const srBonusFromFeats = hasGrtSpellPen ? 4 : (hasSpellPen ? 2 : 0);
+        totalSrBonus = cl + srBonusFromFeats;
+        d20Sr = Math.floor(Math.random() * 20) + 1;
+        totalSr = d20Sr + totalSrBonus;
+      }
+
+      // 3. Save DC Check
+      const chaMod = RuleEngine ? RuleEngine.getAbilityMod(character?.abilities?.cha || 10) : 0;
+      const saveDc = 10 + finalLvl + chaMod + dcBonus;
+
+      // 4. Damage Dice / Effect
+      const hasDamageDice = (scaling && scaling.diceCount > 0) || !!spell.dice || (spell.benefit && /\d+d\d+/i.test(spell.benefit));
       let count = 1, sides = 6, staticBonus = 0;
       let diceStr = '';
 
@@ -14086,7 +14251,7 @@
         sides = scaling.dieSides;
         staticBonus = scaling.staticBonus || 0;
         diceStr = scaling.diceFormula;
-      } else {
+      } else if (hasDamageDice) {
         const rawDice = spell.dice || (spell.benefit && spell.benefit.match(/\d+d\d+(?:\s*[+-]\s*\d+)?/i) ? spell.benefit.match(/\d+d\d+(?:\s*[+-]\s*\d+)?/i)[0] : '');
         const dMatch = (rawDice || '').match(/(\d+)d(\d+)(?:\s*([+-])\s*(\d+))?/i);
         if (dMatch) {
@@ -14103,11 +14268,19 @@
       const rolls = [];
       let rawSum = 0;
 
-      for (let i = 0; i < count; i++) {
-        const r = Math.floor(Math.random() * sides) + 1;
-        rolls.push(r);
-        rawSum += r;
-        diceToRoll3D.push({ type: 'd' + sides, value: r });
+      if (hasAtk) diceToRoll3D.push({ type: 'd20', value: d20Atk });
+      if (hasSr) diceToRoll3D.push({ type: 'd20', value: d20Sr });
+      if (isDefensive) diceToRoll3D.push({ type: 'd20', value: d20Conc });
+
+      if (hasDamageDice) {
+        for (let i = 0; i < count; i++) {
+          const r = Math.floor(Math.random() * sides) + 1;
+          rolls.push(r);
+          rawSum += r;
+          diceToRoll3D.push({ type: 'd' + sides, value: r });
+        }
+      } else if (diceToRoll3D.length === 0) {
+        diceToRoll3D.push({ type: 'd20', value: 20 });
       }
 
       let finalDmg = rawSum + staticBonus;
@@ -14115,40 +14288,122 @@
       const bonusStr = staticBonus > 0 ? ` + ${staticBonus}` : (staticBonus < 0 ? ` - ${Math.abs(staticBonus)}` : '');
       const projLabel = (scaling && scaling.projectiles > 1 && scaling.projectileName) ? `${scaling.projectiles} ${scaling.projectileName}` : '';
 
-      if (isEmpower && isMaximize) {
-        const maxVal = count * sides + staticBonus;
-        const empowerBonus = Math.floor((rawSum + staticBonus) * 0.5);
-        finalDmg = maxVal + empowerBonus;
-        calcNotice = `Max (${maxVal}) + Empowered (+${empowerBonus}) = ${finalDmg}${projLabel ? ` (${projLabel})` : ''}`;
-      } else if (isEmpower) {
-        const totalBase = rawSum + staticBonus;
-        finalDmg = Math.floor(totalBase * 1.5);
-        calcNotice = `Zar [${rolls.join('+')}]${bonusStr} = ${totalBase} × 1.5 = ${finalDmg}${projLabel ? ` (${projLabel})` : ''}`;
-      } else if (isMaximize) {
-        finalDmg = count * sides + staticBonus;
-        calcNotice = `Max Zar = ${finalDmg}${projLabel ? ` (${projLabel})` : ''}`;
+      if (hasDamageDice) {
+        if (isEmpower && isMaximize) {
+          const maxVal = count * sides + staticBonus;
+          const empowerBonus = Math.floor((rawSum + staticBonus) * 0.5);
+          finalDmg = maxVal + empowerBonus;
+          calcNotice = `Max (${maxVal}) + Empowered (+${empowerBonus}) = ${finalDmg}${projLabel ? ` (${projLabel})` : ''}`;
+        } else if (isEmpower) {
+          const totalBase = rawSum + staticBonus;
+          finalDmg = Math.floor(totalBase * 1.5);
+          calcNotice = `Zar [${rolls.join('+')}]${bonusStr} = ${totalBase} × 1.5 = ${finalDmg}${projLabel ? ` (${projLabel})` : ''}`;
+        } else if (isMaximize) {
+          finalDmg = count * sides + staticBonus;
+          calcNotice = `Max Zar = ${finalDmg}${projLabel ? ` (${projLabel})` : ''}`;
+        } else {
+          calcNotice = `Zar [${rolls.join('+')}]${bonusStr} = ${finalDmg}${projLabel ? ` (${projLabel})` : ''}`;
+        }
       } else {
-        calcNotice = `Zar [${rolls.join('+')}]${bonusStr} = ${finalDmg}${projLabel ? ` (${projLabel})` : ''}`;
+        calcNotice = spell.duration || 'Etki devrede';
       }
 
-      // Trigger 3D dice animation and toast
+      // Helper for Range text
+      function formatSpellRangeWithFeet(rangeStr, casterLvl) {
+        if (!rangeStr) return 'Yakın';
+        const rLower = rangeStr.toLowerCase();
+        if (rLower.includes('personal') || rLower.includes('kişisel')) return 'Kişisel';
+        if (rLower.includes('touch') || rLower.includes('temas') || rLower.includes('dokunma')) return 'Dokunma';
+        if (rLower.includes('close') || rLower.includes('yakın')) {
+          const feet = 25 + Math.floor(casterLvl / 2) * 5;
+          return `Yakın (${feet} ft)`;
+        }
+        if (rLower.includes('medium') || rLower.includes('orta')) {
+          const feet = 100 + casterLvl * 10;
+          return `Orta (${feet} ft)`;
+        }
+        if (rLower.includes('long') || rLower.includes('uzak')) {
+          const feet = 400 + casterLvl * 40;
+          return `Uzak (${feet} ft)`;
+        }
+        return rangeStr;
+      }
+
+      const castData = {
+        finalLvl,
+        cl,
+        slotSource,
+        hasAtk,
+        atkType,
+        atkBonus,
+        d20Atk,
+        totalAtk,
+        isAtkCrit,
+        hasSr,
+        totalSrBonus,
+        d20Sr,
+        totalSr,
+        isDefensive,
+        d20Conc,
+        totalConc,
+        targetConcDc,
+        concPassed,
+        saveDc,
+        saveType: spell.save,
+        hasDamageDice,
+        damageDiceStr: diceStr,
+        rolls,
+        staticBonus,
+        finalDmg,
+        dmgType: scaling?.dmgType || spell.dmgType || 'Force',
+        calcNotice,
+        isEmpower,
+        isMaximize,
+        isQuicken,
+        isEnlarge,
+        isExtend,
+        rangeText: formatSpellRangeWithFeet(params.range, cl),
+        durationText: params.duration || spell.duration || 'Anlık',
+        targetText: params.target || spell.target || '1 Hedef',
+        componentsText: params.components || spell.components || 'V, S'
+      };
+
+      // Summary string for Toast and History
+      const summaryList = [];
+      if (hasAtk) summaryList.push(`Atk: ${totalAtk >= 0 ? '+' : ''}${totalAtk}`);
+      if (hasSr) summaryList.push(`SR: ${totalSr}`);
+      if (hasDamageDice) summaryList.push(`${finalDmg} Hasar`);
+      else summaryList.push(`DC ${saveDc}`);
+      const summaryText = summaryList.join(', ');
+
       const onComplete = () => {
+        // 1. Render in attack results card at the bottom of the Combat page
+        renderSpellCastResults(spell, castData);
+
+        // 2. Toast notification
         showDiceTopToast({
           icon: '🔮',
           title: `${spell.name} İcra Edildi`,
-          breakdown: `${calcNotice} (${finalLvl}. Seviye Yuva)`,
-          total: `${finalDmg} Hasar`
+          breakdown: `${finalLvl}. Seviye Yuva • ${summaryText}`,
+          total: hasDamageDice ? `${finalDmg} Hasar` : (hasAtk ? `Atk: +${totalAtk}` : `SR: ${totalSr}`)
         });
+
+        // 3. Add to dice history
         if (typeof addDiceHistoryEntry === 'function') {
           addDiceHistoryEntry({
             icon: '🔮',
             title: `${spell.name} İcrası`,
-            formula: `${diceStr} (${finalLvl}. Seviye Yuva)`,
-            breakdown: calcNotice,
-            total: `${finalDmg} Hasar`,
-            isCrit: false
+            formula: summaryText,
+            breakdown: [
+              hasAtk ? `Atk: ${totalAtk} (d20:${d20Atk}+${atkBonus}${isAtkCrit ? ' ⚡' : ''})` : null,
+              hasSr ? `SR: ${totalSr} (d20:${d20Sr}+CL:${totalSrBonus})` : null,
+              hasDamageDice ? calcNotice : `DC ${saveDc} ${spell.save || ''}`
+            ].filter(Boolean).join(' • '),
+            total: hasDamageDice ? `${finalDmg} Hasar` : `DC ${saveDc}`,
+            isCrit: isAtkCrit
           });
         }
+
         recalculateCombatSpell();
         renderSpellSlotsStrip();
         renderCombatCategorySpells();
@@ -18159,6 +18414,15 @@
       const card = document.getElementById('attack-results-card');
       if (!card) return;
       card.classList.remove('hidden');
+
+      const iconEl = document.getElementById('result-card-icon');
+      if (iconEl) iconEl.textContent = '⚔️';
+      const titleEl = document.getElementById('result-card-title');
+      if (titleEl) titleEl.textContent = 'Saldırı Sonucu';
+      const subEl = document.getElementById('result-card-subtitle');
+      if (subEl) subEl.textContent = 'Sonuç kartı siz kapatana kadar açık kalır.';
+      const grandLabel = document.getElementById('result-grand-total-label');
+      if (grandLabel) grandLabel.textContent = 'Toplam Potansiyel Hasar:';
 
       let grandTotalDmg = 0;
       const summaryGrid = document.getElementById('result-summary-grid');
