@@ -11789,65 +11789,68 @@
         const isUnlocked = daily > 0;
         const dmBonus = s ? (Number(s.dmBonus) || 0) : 0;
 
-        let lvlTitle = `${lvl}. Seviye ${activeSource.shortLabel} Büyüler`;
-        if (lvl === 0) lvlTitle = `0. Seviye (${activeSource.shortLabel} Cantrips)`;
-        else if (lvl === 10) lvlTitle = `10. Seviye (Epic / Metamagic)`;
-        else if (lvl === 11) lvlTitle = `Epic (+10) ${activeSource.shortLabel} Yuvası`;
+        let lvlHeader = `${lvl}. Seviye Büyüler`;
+        if (lvl === 0) lvlHeader = `0. Seviye (Cantrip)`;
+        else if (lvl === 10) lvlHeader = `10. Seviye (Epic / Metamagic)`;
+        else if (lvl === 11) lvlHeader = `Epic (+10) Büyü Yuvası`;
+
+        let lvlSub = `${activeSource.shortLabel} Büyü Havuzu`;
+        if (dmBonus > 0) {
+          lvlSub += ` • <span class="text-amber-400 font-bold">+${dmBonus} DM Yuvası</span>`;
+        }
 
         if (isUnlocked) {
+          const placeholderSpacer = dmBonus > 0 ? `<span class="w-7 h-7 shrink-0 inline-block"></span>` : '';
           let secondRowHtml = '';
           if (activeSource.key === 'spontaneous') {
             const curKnown = (character.spellcasting?.knownSpells || []).filter(sp => Number(sp.level) === lvl).length;
             const quota = s.known !== undefined ? s.known : getSpellsKnownQuota(lvl);
             secondRowHtml = `
               <div class="flex items-center gap-1.5 shrink-0">
-                <span class="text-[10px] text-purple-300 font-mono w-14 text-right shrink-0">Bilinen:</span>
+                <span class="text-[10px] text-purple-300 font-mono w-12 text-right shrink-0">Bilinen:</span>
                 <button type="button" onclick="modifySpellsKnownQuota(${lvl}, -1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 font-bold flex items-center justify-center border border-slate-700 cursor-pointer text-xs transition" title="Bilinen Büyü Kotasını -1 Azalt">-1</button>
                 <span class="text-xs font-mono font-black text-purple-300 w-14 text-center">${curKnown} / ${quota}</span>
                 <button type="button" onclick="modifySpellsKnownQuota(${lvl}, 1)" class="w-7 h-7 rounded-lg bg-purple-950 hover:bg-purple-800 text-purple-200 font-bold flex items-center justify-center border border-purple-700 cursor-pointer text-xs transition" title="DM Bonusu: Bilinen Büyü Kotasını +1 Artır">+1</button>
-                <button type="button" onclick="openSpellPickerForSpecificLevel(${lvl})" class="px-2 py-1 rounded-lg bg-purple-950 hover:bg-purple-900 text-purple-300 hover:text-white border border-purple-700 text-[10px] font-bold cursor-pointer transition whitespace-nowrap" title="${lvl}. Seviye Büyü Öğren">+ Büyü</button>
+                ${placeholderSpacer}
               </div>
             `;
           } else if (activeSource.key === 'prepared') {
             const curPrep = (character.spellcasting?.preparedSpells || []).filter(sp => Number(sp.level) === lvl).length;
             secondRowHtml = `
               <div class="flex items-center gap-1.5 shrink-0">
-                <span class="text-[10px] text-sky-300 font-mono w-14 text-right shrink-0">Hazır:</span>
+                <span class="text-[10px] text-sky-300 font-mono w-12 text-right shrink-0">Hazır:</span>
                 <button type="button" onclick="unprepareSpellForLevel(${lvl})" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 font-bold flex items-center justify-center border border-slate-700 cursor-pointer text-xs transition" title="Son Hazırlanan Büyüyü Kaldır">-1</button>
                 <span class="text-xs font-mono font-black text-sky-300 w-14 text-center">${curPrep} / ${daily}</span>
                 <button type="button" onclick="openPreparedSpellPickerForLevel(${lvl})" class="w-7 h-7 rounded-lg bg-sky-950 hover:bg-sky-800 text-sky-200 font-bold flex items-center justify-center border border-sky-700 cursor-pointer text-xs transition" title="Büyü Hazırla">+1</button>
-                <button type="button" onclick="openPreparedSpellPickerForLevel(${lvl})" class="px-2 py-1 rounded-lg bg-sky-950 hover:bg-sky-900 text-sky-300 hover:text-white border border-sky-700 text-[10px] font-bold cursor-pointer transition whitespace-nowrap" title="${lvl}. Seviye Büyü Hazırla">+ Büyü</button>
+                ${placeholderSpacer}
               </div>
             `;
           } else if (activeSource.key === 'divine') {
             const curDiv = (character.spellcasting?.divineSpells || []).filter(sp => Number(sp.level) === lvl).length;
             secondRowHtml = `
               <div class="flex items-center gap-1.5 shrink-0">
-                <span class="text-[10px] text-amber-300 font-mono w-14 text-right shrink-0">Dua:</span>
+                <span class="text-[10px] text-amber-300 font-mono w-12 text-right shrink-0">Dua:</span>
                 <button type="button" onclick="unprepareDivineSpellForLevel(${lvl})" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 font-bold flex items-center justify-center border border-slate-700 cursor-pointer text-xs transition" title="Son Seçilen Duayı Kaldır">-1</button>
                 <span class="text-xs font-mono font-black text-amber-300 w-14 text-center">${curDiv} / ${daily}</span>
                 <button type="button" onclick="openDivineSpellPickerForLevel(${lvl})" class="w-7 h-7 rounded-lg bg-amber-950 hover:bg-amber-800 text-amber-200 font-bold flex items-center justify-center border border-amber-700 cursor-pointer text-xs transition" title="Dua Seç">+1</button>
-                <button type="button" onclick="openDivineSpellPickerForLevel(${lvl})" class="px-2 py-1 rounded-lg bg-amber-950 hover:bg-amber-900 text-amber-300 hover:text-white border border-amber-700 text-[10px] font-bold cursor-pointer transition whitespace-nowrap" title="${lvl}. Seviye Dua Seç">+ Dua</button>
+                ${placeholderSpacer}
               </div>
             `;
           }
 
           rowsHtml.push(`
-            <div id="modal-slot-row-${lvl}" class="flex flex-wrap items-center justify-between gap-3 bg-slate-900/90 border border-slate-800 rounded-xl px-3.5 py-2.5 shadow-sm transition">
-              <div class="flex flex-col min-w-0">
-                <span class="text-xs font-bold text-white">${lvlTitle}</span>
-                ${dmBonus > 0 ? `
-                  <span class="text-[10px] text-amber-400 font-semibold font-mono mt-0.5">+${dmBonus} DM Yuva Bonusu</span>
-                ` : ''}
+            <div id="modal-slot-row-${lvl}" class="flex flex-wrap items-center justify-between gap-2.5 bg-slate-900/90 border border-slate-800 rounded-xl px-3 py-1.5 shadow-sm transition">
+              <div class="flex flex-col min-w-0 pr-2">
+                <span class="text-xs font-bold text-white leading-tight">${lvlHeader}</span>
+                <span class="text-[10px] text-slate-400 font-mono mt-0.5 leading-tight">${lvlSub}</span>
               </div>
-              <div class="flex flex-col gap-1.5 items-end ml-auto shrink-0">
+              <div class="flex flex-col gap-1 items-end ml-auto shrink-0">
                 <!-- 1. Yuva Tüketim Satırı -->
                 <div class="flex items-center gap-1.5 shrink-0">
-                  <span class="text-[10px] text-slate-400 font-mono w-14 text-right shrink-0">Yuva:</span>
+                  <span class="text-[10px] text-slate-400 font-mono w-12 text-right shrink-0">Yuva:</span>
                   <button type="button" onclick="modifySpellSlotUsed(${lvl}, 1, '${activeSource.key}')" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-rose-300 font-bold flex items-center justify-center border border-slate-700 cursor-pointer text-xs transition" title="1 Yuva Harca">-1</button>
                   <span class="text-xs font-mono font-black ${remaining > 0 ? 'text-emerald-400' : 'text-rose-400'} w-14 text-center">${remaining} / ${daily}</span>
                   <button type="button" onclick="modifySpellSlotUsed(${lvl}, -1, '${activeSource.key}')" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-300 font-bold flex items-center justify-center border border-slate-700 cursor-pointer text-xs transition" title="1 Yuva İade Et (Doluysa +1 DM Yuvası)">+1</button>
-                  <button type="button" onclick="replenishSpellSlotLevel(${lvl}, '${activeSource.key}')" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-[10px] font-bold cursor-pointer transition whitespace-nowrap" title="Bu Seviyeyi Yenile">Yenile</button>
                   ${dmBonus > 0 ? `
                     <button type="button" onclick="revokeSpellSlotLevel(${lvl}, '${activeSource.key}')" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-300 border border-slate-700 text-xs font-bold cursor-pointer transition flex items-center justify-center shrink-0" title="DM Yuvasını Tamamen Sil / Kapat">
                       🗑️
@@ -11862,9 +11865,9 @@
         } else {
           rowsHtml.push(`
             <div id="modal-slot-row-${lvl}" class="flex items-center justify-between bg-slate-950/60 border border-slate-800/70 rounded-xl px-3 py-1.5 opacity-70 transition">
-              <div class="flex flex-col">
-                <span class="text-xs font-bold text-slate-400">${lvlTitle}</span>
-                <span class="text-[9px] text-slate-500 font-mono">0 / 0 (Kilitli / Henüz Yok)</span>
+              <div class="flex flex-col min-w-0 pr-2">
+                <span class="text-xs font-bold text-slate-400 leading-tight">${lvlHeader}</span>
+                <span class="text-[10px] text-slate-500 font-mono mt-0.5 leading-tight">0 / 0 (Kilitli / Henüz Yok)</span>
               </div>
               <button type="button" onclick="modifySpellSlotDaily(${lvl}, 1, '${activeSource.key}')" class="px-2.5 py-1 rounded-lg bg-purple-950 hover:bg-purple-900 text-purple-300 hover:text-white border border-purple-700/70 text-[10px] font-bold cursor-pointer transition flex items-center gap-1" title="DM Bonusu: Bu Seviye İçin 1 Yuva Tanımla">
                 <span>+</span>
