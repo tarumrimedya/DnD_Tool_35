@@ -12898,92 +12898,76 @@
       // 1. Defensive Casting Checkbox State
       const isDefensiveActive = Boolean(character?.tactical?.defensiveCastingActive);
 
-      // Card 1: Defensive Casting (Fixed Item 1)
+      // Card 1: Defensive Casting (Fixed Item 1 - Glow Card Toggle)
       const defCardHtml = `
-        <label class="bg-slate-900 border ${isDefensiveActive ? 'border-indigo-500 bg-indigo-950/40 text-indigo-200 shadow-sm' : 'border-slate-800 text-slate-300'} hover:border-indigo-500/60 rounded-lg p-2 cursor-pointer transition flex flex-col justify-between text-center select-none min-h-[64px]">
-          <div>
-            <div class="text-[11px] font-bold text-indigo-400 leading-tight">Defensive Cast</div>
-            <div class="text-[9px] text-slate-400 mt-0.5" id="defensive-casting-dc-hint">DC ${15 + currentLvl} • AoO Engeller</div>
-          </div>
-          <input type="checkbox" id="mod-defensive-casting" ${isDefensiveActive ? 'checked' : ''} onchange="character.tactical.defensiveCastingActive = this.checked; saveStateToStorage(false); renderSpellTacticalModifiers();" class="mt-1 mx-auto w-3.5 h-3.5 rounded text-indigo-500 focus:ring-0 cursor-pointer">
-        </label>
+        <div onclick="toggleDefensiveCastingModifier()" class="bg-slate-900 border ${isDefensiveActive ? 'border-indigo-400 bg-indigo-950/60 text-indigo-100 shadow-[0_0_10px_rgba(129,140,248,0.35)] ring-1 ring-indigo-500/50' : 'border-slate-800 text-slate-300 hover:border-indigo-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
+          <div class="text-[11px] font-bold ${isDefensiveActive ? 'text-white' : 'text-indigo-400'} leading-tight">Defensive Cast</div>
+          <div class="text-[9px] ${isDefensiveActive ? 'text-indigo-200 font-semibold' : 'text-slate-400'} mt-1" id="defensive-casting-dc-hint">DC ${15 + currentLvl} • AoO Engeller</div>
+        </div>
       `;
 
-      // Card 2: Spell Resistance Check Button (Fixed Item 2)
+      // Card 2: Spell Resistance Check Button (Fixed Item 2 - Aligned 64px)
       const srCardHtml = `
-        <button type="button" onclick="rollSpellResistanceCheck()" class="bg-slate-900 hover:bg-slate-800 border border-purple-900/60 hover:border-purple-500/60 rounded p-1.5 transition text-left flex items-start justify-between gap-1 group cursor-pointer min-h-[44px] select-none" title="Hedefin Büyü Direncine (SR) karşı test zarı at: 1d20 + CL">
-          <div class="min-w-0 pr-1">
-            <div class="text-[10px] font-bold text-purple-300 group-hover:text-white flex items-center gap-1 leading-tight">
-              <span class="shrink-0">⚡</span>
-              <span class="truncate">SR Testi At</span>
-            </div>
-            <div class="text-[8px] text-slate-400 mt-0.5 leading-tight">1d20 + CL vs SR</div>
+        <button type="button" onclick="rollSpellResistanceCheck()" class="bg-slate-900 hover:bg-slate-800 border border-purple-900/60 hover:border-purple-500/60 rounded-lg p-2 transition text-center flex flex-col justify-center items-center group cursor-pointer min-h-[64px] select-none" title="Hedefin Büyü Direncine (SR) karşı test zarı at: 1d20 + CL">
+          <div class="text-[11px] font-bold text-purple-300 group-hover:text-white flex items-center justify-center gap-1 leading-tight">
+            <span>⚡</span>
+            <span>SR Testi At</span>
           </div>
-          <span id="sr-check-bonus-badge" class="mt-0.5 shrink-0 font-mono font-bold text-xs text-amber-400">+${totalSrBonus}</span>
+          <div class="text-[9px] text-amber-400 font-mono font-bold mt-1">1d20 + ${totalSrBonus} vs SR</div>
         </button>
       `;
 
-      // Build modifier cards
+      // Build modifier cards (Glow Card Toggle)
       const modCards = modifiers.map(mod => {
         const isActive = isSpellCockpitModifierActive(mod);
 
         let borderClass = 'border-purple-900/60 text-slate-300';
         let bgClass = 'bg-slate-900';
         let titleColor = 'text-purple-300';
-        let checkColor = 'text-purple-500';
 
         if (mod.color === 'amber') {
           titleColor = 'text-amber-300';
-          checkColor = 'text-amber-500';
           if (isActive) {
-            borderClass = 'border-amber-500/80 shadow-[0_0_8px_rgba(245,158,11,0.3)] text-amber-200';
+            borderClass = 'border-amber-400 bg-amber-950/60 text-amber-100 shadow-[0_0_10px_rgba(251,191,36,0.3)] ring-1 ring-amber-500/50';
             bgClass = 'bg-amber-950/40';
           }
         } else if (mod.color === 'sky' || mod.color === 'cyan') {
           titleColor = 'text-sky-300';
-          checkColor = 'text-sky-500';
           if (isActive) {
-            borderClass = 'border-sky-500/80 shadow-[0_0_8px_rgba(14,165,233,0.3)] text-sky-200';
+            borderClass = 'border-sky-400 bg-sky-950/60 text-sky-100 shadow-[0_0_10px_rgba(56,189,248,0.3)] ring-1 ring-sky-500/50';
             bgClass = 'bg-sky-950/40';
           }
         } else if (mod.color === 'emerald') {
           titleColor = 'text-emerald-300';
-          checkColor = 'text-emerald-500';
           if (isActive) {
-            borderClass = 'border-emerald-500/80 shadow-[0_0_8px_rgba(16,185,129,0.3)] text-emerald-200';
+            borderClass = 'border-emerald-400 bg-emerald-950/60 text-emerald-100 shadow-[0_0_10px_rgba(52,211,153,0.3)] ring-1 ring-emerald-500/50';
             bgClass = 'bg-emerald-950/40';
           }
         } else if (mod.color === 'rose') {
           titleColor = 'text-rose-300';
-          checkColor = 'text-rose-500';
           if (isActive) {
-            borderClass = 'border-rose-500/80 shadow-[0_0_8px_rgba(244,63,94,0.3)] text-rose-200';
+            borderClass = 'border-rose-400 bg-rose-950/60 text-rose-100 shadow-[0_0_10px_rgba(251,113,133,0.3)] ring-1 ring-rose-500/50';
             bgClass = 'bg-rose-950/40';
           }
         } else {
           titleColor = 'text-purple-300';
-          checkColor = 'text-purple-500';
           if (isActive) {
-            borderClass = 'border-purple-500/80 shadow-[0_0_8px_rgba(168,85,247,0.3)] text-purple-200';
+            borderClass = 'border-purple-400 bg-purple-950/60 text-purple-100 shadow-[0_0_10px_rgba(192,132,252,0.3)] ring-1 ring-purple-500/50';
             bgClass = 'bg-purple-950/40';
           }
         }
 
         const icon = mod.isRod ? '🪄' : (mod.isMetamagic ? '✨' : (mod.sourceType === 'Feat' ? '⚡' : '🔮'));
-        const inputId = mod.elementId || `mod-spell-${mod.id}`;
 
         return `
-          <label class="${bgClass} border ${borderClass} hover:border-purple-500/60 rounded p-1.5 cursor-pointer transition flex items-start justify-between gap-1 group select-none min-h-[44px]">
-            <div class="min-w-0 pr-1">
-              <div class="text-[10px] font-bold ${titleColor} flex items-center gap-1 leading-tight">
-                <span class="shrink-0">${icon}</span>
-                <span class="truncate">${mod.name}</span>
-                ${mod.badge ? `<span class="shrink-0 text-[8px] font-mono font-bold px-1 py-0.2 rounded bg-slate-800/80 text-amber-300 border border-slate-700/60">${mod.badge}</span>` : ''}
-              </div>
-              <div class="text-[8px] text-slate-400 mt-0.5 line-clamp-1 leading-tight">${mod.desc}</div>
+          <div onclick="toggleSpellCockpitModifier('${mod.id}', event)" class="${bgClass} border ${borderClass} hover:border-purple-500/60 rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px] group">
+            <div class="text-[11px] font-bold ${isActive ? 'text-white' : titleColor} flex items-center justify-center gap-1 leading-tight truncate w-full">
+              <span class="shrink-0">${icon}</span>
+              <span class="truncate">${mod.name}</span>
+              ${mod.badge ? `<span class="shrink-0 text-[8px] font-mono font-bold px-1 py-0.2 rounded bg-slate-800/80 text-amber-300 border border-slate-700/60">${mod.badge}</span>` : ''}
             </div>
-            <input type="checkbox" id="${inputId}" ${isActive ? 'checked' : ''} onchange="toggleSpellCockpitModifier('${mod.id}', event)" class="mt-0.5 shrink-0 w-3.5 h-3.5 rounded ${checkColor} border-slate-700 focus:ring-0 cursor-pointer">
-          </label>
+            <div class="text-[9px] ${isActive ? 'text-amber-200 font-semibold' : 'text-slate-400'} mt-1 line-clamp-1 leading-tight">${mod.desc}</div>
+          </div>
         `;
       });
 
@@ -15140,40 +15124,31 @@
 
       ensureActiveModifiersPool();
 
-      const flanking = document.getElementById('mod-flanking')?.checked ?? false;
-      const charge = document.getElementById('mod-charge')?.checked ?? false;
-      const hg = document.getElementById('mod-higher-ground') ? document.getElementById('mod-higher-ground').checked : (character.tactical?.higherGround ?? false);
+      const flanking = !!character.tactical?.flanking;
+      const charge = !!character.tactical?.charge;
+      const hg = !!character.tactical?.higherGround;
       const twfMod = (character.activeModifiers || []).find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Çift Silah')));
       const isTWF = twfMod?.active ?? false;
 
-      // Row 1: Fixed 3 items: 1. Flanking, 2. Charge, 3. Higher Ground (TWF artık silah setlerinden doğrudan yönetiliyor)
+      // Row 1: Fixed 3 items: 1. Flanking, 2. Charge, 3. Higher Ground (Glow Card Toggle)
       const fixedCardsHtml = [
         `
-        <label class="bg-slate-900 border ${flanking ? 'border-sky-500 bg-sky-950/40 text-sky-200 shadow-sm' : 'border-slate-800 text-slate-300'} hover:border-sky-500/60 rounded-lg p-2 cursor-pointer transition flex flex-col justify-between text-center select-none min-h-[64px]">
-          <div>
-            <div class="text-[11px] font-bold text-sky-400 leading-tight">Flanking</div>
-            <div class="text-[9px] text-slate-400 mt-0.5">+2 Melee</div>
-          </div>
-          <input type="checkbox" id="mod-flanking" ${flanking ? 'checked' : ''} onchange="onFixedModifierToggle()" class="mt-1 mx-auto w-3.5 h-3.5 rounded text-sky-500 focus:ring-0 cursor-pointer">
-        </label>
+        <div onclick="toggleFixedMeleeModifier('flanking')" class="bg-slate-900 border ${flanking ? 'border-sky-400 bg-sky-950/60 text-sky-100 shadow-[0_0_10px_rgba(56,189,248,0.3)] ring-1 ring-sky-500/50' : 'border-slate-800 text-slate-300 hover:border-sky-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
+          <div class="text-[11px] font-bold ${flanking ? 'text-white' : 'text-sky-400'} leading-tight">Flanking</div>
+          <div class="text-[9px] ${flanking ? 'text-sky-200 font-semibold' : 'text-slate-400'} mt-1">+2 Melee</div>
+        </div>
         `,
         `
-        <label class="bg-slate-900 border ${charge ? 'border-rose-500 bg-rose-950/40 text-rose-200 shadow-sm' : 'border-slate-800 text-slate-300'} hover:border-rose-500/60 rounded-lg p-2 cursor-pointer transition flex flex-col justify-between text-center select-none min-h-[64px]">
-          <div>
-            <div class="text-[11px] font-bold text-rose-400 leading-tight">Charge</div>
-            <div class="text-[9px] text-slate-400 mt-0.5">+2 Atk/-2 AC</div>
-          </div>
-          <input type="checkbox" id="mod-charge" ${charge ? 'checked' : ''} onchange="onFixedModifierToggle()" class="mt-1 mx-auto w-3.5 h-3.5 rounded text-rose-500 focus:ring-0 cursor-pointer">
-        </label>
+        <div onclick="toggleFixedMeleeModifier('charge')" class="bg-slate-900 border ${charge ? 'border-rose-400 bg-rose-950/60 text-rose-100 shadow-[0_0_10px_rgba(251,113,133,0.3)] ring-1 ring-rose-500/50' : 'border-slate-800 text-slate-300 hover:border-rose-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
+          <div class="text-[11px] font-bold ${charge ? 'text-white' : 'text-rose-400'} leading-tight">Charge</div>
+          <div class="text-[9px] ${charge ? 'text-rose-200 font-semibold' : 'text-slate-400'} mt-1">+2 Atk / -2 AC</div>
+        </div>
         `,
         `
-        <label class="bg-slate-900 border ${hg ? 'border-amber-500 bg-amber-950/40 text-amber-200 shadow-sm' : 'border-slate-800 text-slate-300'} hover:border-amber-500/60 rounded-lg p-2 cursor-pointer transition flex flex-col justify-between text-center select-none min-h-[64px]">
-          <div>
-            <div class="text-[11px] font-bold text-amber-400 leading-tight">Higher Gr.</div>
-            <div class="text-[9px] text-slate-400 mt-0.5">+1 Melee</div>
-          </div>
-          <input type="checkbox" id="mod-higher-ground" ${hg ? 'checked' : ''} onchange="onFixedModifierToggle()" class="mt-1 mx-auto w-3.5 h-3.5 rounded text-amber-500 focus:ring-0 cursor-pointer">
-        </label>
+        <div onclick="toggleFixedMeleeModifier('higherGround')" class="bg-slate-900 border ${hg ? 'border-amber-400 bg-amber-950/60 text-amber-100 shadow-[0_0_10px_rgba(251,191,36,0.3)] ring-1 ring-amber-500/50' : 'border-slate-800 text-slate-300 hover:border-amber-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
+          <div class="text-[11px] font-bold ${hg ? 'text-white' : 'text-amber-400'} leading-tight">Higher Gr.</div>
+          <div class="text-[9px] ${hg ? 'text-amber-200 font-semibold' : 'text-slate-400'} mt-1">+1 Melee</div>
+        </div>
         `
       ];
 
@@ -15199,43 +15174,38 @@
       const dynamicCardsHtml = visibleMods.map((mod, idx) => {
         if (!mod || !mod.name) return '';
         let bonusStr = mod.dice ? mod.dice : (mod.bonusDmg ? `+${mod.bonusDmg} Dmg` : (mod.bonusAtk ? `+${mod.bonusAtk} Atk` : 'Aktif'));
-        let cardBorderActive = 'border-purple-500 bg-purple-950/30 text-purple-200 shadow-sm';
-        let checkboxColor = 'text-purple-500';
+        let cardBorderActive = 'border-purple-400 bg-purple-950/60 text-purple-100 shadow-[0_0_10px_rgba(192,132,252,0.3)] ring-1 ring-purple-500/50';
         let bonusColor = 'text-amber-300';
 
         if (mod.name.includes('Flurry') || mod.name.includes('Seri Vuruş')) {
           bonusStr = '+1 Vuruş';
-          cardBorderActive = 'border-purple-500 bg-purple-950/40 text-purple-200 shadow-sm shadow-purple-950/50';
-          checkboxColor = 'text-purple-500';
+          cardBorderActive = 'border-purple-400 bg-purple-950/60 text-purple-100 shadow-[0_0_10px_rgba(192,132,252,0.3)] ring-1 ring-purple-500/50';
           bonusColor = 'text-purple-300';
         }
 
         const actualIdx = character.activeModifiers.indexOf(mod);
 
         const reorderControls = window.meleeReorderModeActive ? `
-          <div class="flex items-center justify-between px-0.5 text-[9px] text-slate-500 leading-none">
+          <div class="flex items-center justify-between px-0.5 text-[9px] text-slate-500 leading-none shrink-0" onclick="event.stopPropagation()">
             <button type="button" onclick="moveMeleeModifierOrder(${idx}, -1, event)" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx <= 0 ? 'disabled' : ''} title="Sola Taşı">◀</button>
             <span class="text-[8px] text-slate-500 font-mono truncate max-w-[45px]">${mod.source || ''}</span>
             <button type="button" onclick="moveMeleeModifierOrder(${idx}, 1, event)" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx >= dynamicMods.length - 1 ? 'disabled' : ''} title="Sağa Taşı">▶</button>
           </div>
         ` : `
-          <div class="flex items-center justify-center px-0.5 text-[9px] text-slate-500 leading-none">
+          <div class="flex items-center justify-center px-0.5 text-[9px] text-slate-500 leading-none shrink-0">
             <span class="text-[8px] text-slate-500 font-mono truncate max-w-[75px]">${mod.source || ''}</span>
           </div>
         `;
 
         return `
-        <div class="bg-slate-900 border ${mod.active ? cardBorderActive : 'border-slate-800 text-slate-300'} hover:border-purple-500/60 rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] relative group">
+        <div onclick="toggleModifier(${actualIdx})" class="bg-slate-900 border ${mod.active ? cardBorderActive : 'border-slate-800 text-slate-300 hover:border-purple-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] relative group cursor-pointer">
           <!-- Reorder Mini Controls -->
           ${reorderControls}
 
-          <label class="cursor-pointer flex-1 flex flex-col justify-between mt-0.5">
-            <div class="px-0.5">
-              <div class="text-[10px] font-bold text-white leading-tight truncate" title="${mod.name}">${mod.name}</div>
-              <div class="text-[9px] ${bonusColor} font-mono font-bold mt-0.5">${bonusStr}</div>
-            </div>
-            <input type="checkbox" ${mod.active ? 'checked' : ''} onchange="toggleModifier(${actualIdx})" class="mt-1 mx-auto w-3.5 h-3.5 rounded ${checkboxColor} focus:ring-0 cursor-pointer">
-          </label>
+          <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
+            <div class="text-[10px] font-bold ${mod.active ? 'text-white' : 'text-slate-200'} leading-tight truncate w-full" title="${mod.name}">${mod.name}</div>
+            <div class="text-[9px] ${mod.active ? 'text-amber-200 font-bold' : bonusColor} font-mono mt-1">${bonusStr}</div>
+          </div>
         </div>
         `;
       });
@@ -15940,34 +15910,25 @@
       const tinM = !!t.targetInMelee;
       const cvr = !!t.coverPenalty;
 
-      // Base Situational Cards: Rules every ranged combatant can use
+      // Base Situational Cards: Rules every ranged combatant can use (Glow Card Toggle)
       const baseCardsHtml = [
         `
-        <label class="bg-slate-900 border ${hg ? 'border-amber-500 bg-amber-950/40 text-amber-200 shadow-sm' : 'border-slate-800 text-slate-300'} hover:border-amber-500/60 rounded-lg p-2 cursor-pointer transition flex flex-col justify-between text-center select-none min-h-[64px]">
-          <div>
-            <div class="text-[11px] font-bold text-amber-400 leading-tight">Higher Gr.</div>
-            <div class="text-[9px] text-slate-400 mt-0.5">+1 Ranged</div>
-          </div>
-          <input type="checkbox" id="mod-ranged-hg" ${hg ? 'checked' : ''} onchange="onRangedModifierToggle('rangedHigherGround')" class="mt-1 mx-auto w-3.5 h-3.5 rounded text-amber-500 focus:ring-0 cursor-pointer">
-        </label>
+        <div onclick="onRangedModifierToggle('rangedHigherGround')" class="bg-slate-900 border ${hg ? 'border-amber-400 bg-amber-950/60 text-amber-100 shadow-[0_0_10px_rgba(251,191,36,0.3)] ring-1 ring-amber-500/50' : 'border-slate-800 text-slate-300 hover:border-amber-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
+          <div class="text-[11px] font-bold ${hg ? 'text-white' : 'text-amber-400'} leading-tight">Higher Gr.</div>
+          <div class="text-[9px] ${hg ? 'text-amber-200 font-semibold' : 'text-slate-400'} mt-1">+1 Ranged</div>
+        </div>
         `,
         `
-        <label class="bg-slate-900 border ${tinM ? 'border-rose-500 bg-rose-950/40 text-rose-200 shadow-sm' : 'border-slate-800 text-slate-300'} hover:border-rose-500/60 rounded-lg p-2 cursor-pointer transition flex flex-col justify-between text-center select-none min-h-[64px]">
-          <div>
-            <div class="text-[11px] font-bold text-rose-400 leading-tight">Hedef Yakında</div>
-            <div class="text-[9px] text-slate-400 mt-0.5">${hasPrecise ? '⚡ Ceza Yok (Precise)' : '-4 Atk (Melee)'}</div>
-          </div>
-          <input type="checkbox" id="mod-ranged-target-melee" ${tinM ? 'checked' : ''} onchange="onRangedModifierToggle('targetInMelee')" class="mt-1 mx-auto w-3.5 h-3.5 rounded text-rose-500 focus:ring-0 cursor-pointer">
-        </label>
+        <div onclick="onRangedModifierToggle('targetInMelee')" class="bg-slate-900 border ${tinM ? 'border-rose-400 bg-rose-950/60 text-rose-100 shadow-[0_0_10px_rgba(251,113,133,0.3)] ring-1 ring-rose-500/50' : 'border-slate-800 text-slate-300 hover:border-rose-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
+          <div class="text-[11px] font-bold ${tinM ? 'text-white' : 'text-rose-400'} leading-tight">Hedef Yakında</div>
+          <div class="text-[9px] ${tinM ? 'text-rose-200 font-semibold' : 'text-slate-400'} mt-1">${hasPrecise ? '⚡ Ceza Yok (Precise)' : '-4 Atk (Melee)'}</div>
+        </div>
         `,
         `
-        <label class="bg-slate-900 border ${cvr ? 'border-slate-500 bg-slate-950/40 text-slate-200 shadow-sm' : 'border-slate-800 text-slate-300'} hover:border-slate-500/60 rounded-lg p-2 cursor-pointer transition flex flex-col justify-between text-center select-none min-h-[64px]">
-          <div>
-            <div class="text-[11px] font-bold text-slate-300 leading-tight">Hedef Siperde</div>
-            <div class="text-[9px] text-slate-400 mt-0.5">-4 Atk (Cover)</div>
-          </div>
-          <input type="checkbox" id="mod-ranged-cover" ${cvr ? 'checked' : ''} onchange="onRangedModifierToggle('coverPenalty')" class="mt-1 mx-auto w-3.5 h-3.5 rounded text-slate-400 focus:ring-0 cursor-pointer">
-        </label>
+        <div onclick="onRangedModifierToggle('coverPenalty')" class="bg-slate-900 border ${cvr ? 'border-slate-400 bg-slate-800/80 text-white shadow-[0_0_10px_rgba(148,163,184,0.3)] ring-1 ring-slate-400/50' : 'border-slate-800 text-slate-300 hover:border-slate-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
+          <div class="text-[11px] font-bold ${cvr ? 'text-white' : 'text-slate-300'} leading-tight">Hedef Siperde</div>
+          <div class="text-[9px] ${cvr ? 'text-slate-200 font-semibold' : 'text-slate-400'} mt-1">-4 Atk (Cover)</div>
+        </div>
         `
       ];
 
@@ -15992,28 +15953,27 @@
 
       const dynamicCardsHtml = visibleMods.map((mod, idx) => {
         const reorderControls = window.rangedReorderModeActive ? `
-          <div class="flex items-center justify-between px-0.5 text-[9px] text-slate-500 leading-none">
+          <div class="flex items-center justify-between px-0.5 text-[9px] text-slate-500 leading-none shrink-0" onclick="event.stopPropagation()">
             <button type="button" onclick="moveRangedModifierOrder(${idx}, -1, event)" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx <= 0 ? 'disabled' : ''} title="Sola Taşı">◀</button>
             <span class="text-[8px] text-slate-500 font-mono truncate max-w-[45px]">${mod.source}</span>
             <button type="button" onclick="moveRangedModifierOrder(${idx}, 1, event)" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx >= qualifiedRangedList.length - 1 ? 'disabled' : ''} title="Sağa Taşı">▶</button>
           </div>
         ` : `
-          <div class="flex items-center justify-center px-0.5 text-[9px] text-slate-500 leading-none">
+          <div class="flex items-center justify-center px-0.5 text-[9px] text-slate-500 leading-none shrink-0">
             <span class="text-[8px] text-slate-500 font-mono truncate max-w-[75px]">${mod.source}</span>
           </div>
         `;
 
+        const activeBorder = mod.activeClass || 'border-amber-400 bg-amber-950/60 text-amber-100 shadow-[0_0_10px_rgba(251,191,36,0.3)] ring-1 ring-amber-500/50';
+
         return `
-        <div class="bg-slate-900 border ${mod.active ? mod.activeClass : 'border-slate-800 text-slate-300'} hover:border-amber-500/60 rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] relative group">
+        <div onclick="onRangedModifierToggle('${mod.id}')" class="bg-slate-900 border ${mod.active ? activeBorder : 'border-slate-800 text-slate-300 hover:border-amber-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] relative group cursor-pointer">
           ${reorderControls}
 
-          <label class="cursor-pointer flex-1 flex flex-col justify-between mt-0.5">
-            <div class="px-0.5">
-              <div class="text-[10px] font-bold text-white leading-tight truncate" title="${mod.name}">${mod.name}</div>
-              <div class="text-[9px] text-amber-300 font-mono font-bold mt-0.5">${mod.bonusStr}</div>
-            </div>
-            <input type="checkbox" ${mod.active ? 'checked' : ''} onchange="onRangedModifierToggle('${mod.id}')" class="mt-1 mx-auto w-3.5 h-3.5 rounded text-amber-500 focus:ring-0 cursor-pointer">
-          </label>
+          <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
+            <div class="text-[10px] font-bold ${mod.active ? 'text-white' : 'text-slate-200'} leading-tight truncate w-full" title="${mod.name}">${mod.name}</div>
+            <div class="text-[9px] ${mod.active ? 'text-amber-200 font-bold' : 'text-amber-300'} font-mono mt-1">${mod.bonusStr}</div>
+          </div>
         </div>
         `;
       });
@@ -16059,17 +16019,27 @@
       renderRangedModifiersGrid();
     }
 
+    function toggleFixedMeleeModifier(key) {
+      if (!character) return;
+      if (!character.tactical) character.tactical = {};
+      character.tactical[key] = !character.tactical[key];
+      recalculateOffense();
+      renderOffenseModifiersGrid();
+      renderHUD();
+      if (typeof renderCombatCockpit === 'function') renderCombatCockpit();
+      saveStateToStorage(false);
+    }
+
+    function toggleDefensiveCastingModifier() {
+      if (!character) return;
+      if (!character.tactical) character.tactical = {};
+      character.tactical.defensiveCastingActive = !character.tactical.defensiveCastingActive;
+      saveStateToStorage(false);
+      renderSpellTacticalModifiers();
+      if (typeof recalculateCombatSpell === 'function') recalculateCombatSpell();
+    }
+
     function onFixedModifierToggle() {
-      const hgEl = document.getElementById('mod-higher-ground');
-      if (hgEl) {
-        if (!character.tactical) character.tactical = {};
-        character.tactical.higherGround = hgEl.checked;
-      }
-      const chargeEl = document.getElementById('mod-charge');
-      if (chargeEl) {
-        if (!character.tactical) character.tactical = {};
-        character.tactical.charge = chargeEl.checked;
-      }
       recalculateOffense();
       renderOffenseModifiersGrid();
       renderHUD();
