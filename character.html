@@ -11827,6 +11827,11 @@
                 <span class="text-xs font-mono font-black ${remaining > 0 ? 'text-emerald-400' : 'text-rose-400'} w-14 text-center">${remaining} / ${daily}</span>
                 <button type="button" onclick="modifySpellSlotUsed(${lvl}, -1, '${activeSource.key}')" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-300 font-bold flex items-center justify-center border border-slate-700 cursor-pointer text-xs transition" title="1 Yuva İade Et">+1</button>
                 <button type="button" onclick="replenishSpellSlotLevel(${lvl}, '${activeSource.key}')" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-[10px] font-bold cursor-pointer transition" title="Bu Seviyeyi Yenile">Yenile</button>
+                ${dmBonus > 0 ? `
+                  <button type="button" onclick="revokeSpellSlotLevel(${lvl}, '${activeSource.key}')" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-300 border border-slate-700 text-xs font-bold cursor-pointer transition flex items-center justify-center shrink-0" title="DM Yuvasını Tamamen Sil / Kapat">
+                    🗑️
+                  </button>
+                ` : ''}
               </div>
             </div>
           `);
@@ -11857,9 +11862,8 @@
       let s = slots.find(item => Number(item.level) === Number(lvl));
       if (!s) {
         if (delta > 0) {
-          s = { level: Number(lvl), daily: delta, used: 0, dmBonus: delta };
+          s = { level: Number(lvl), daily: delta, used: 0, dmBonus: delta, known: delta };
           if (key === 'spontaneous') {
-            s.known = delta;
             s.knownBonus = delta;
           }
           slots.push(s);
@@ -11868,23 +11872,67 @@
           return;
         }
       } else {
-        s.dmBonus = (Number(s.dmBonus) || 0) + delta;
+        s.dmBonus = Math.max(0, (Number(s.dmBonus) || 0) + delta);
         s.daily = Math.max(0, (Number(s.daily) || 0) + delta);
         if (key === 'spontaneous') {
-          s.knownBonus = (Number(s.knownBonus) || 0) + delta;
+          s.knownBonus = Math.max(0, (Number(s.knownBonus) || 0) + delta);
           s.known = Math.max(0, (Number(s.known) || 0) + delta);
+        } else {
+          s.known = s.daily;
         }
         if (s.used > s.daily) s.used = s.daily;
+
+        // If daily capacity drops to 0, completely delete the slot entry so it relocks cleanly
+        if (s.daily <= 0) {
+          const sIdx = slots.indexOf(s);
+          if (sIdx >= 0) slots.splice(sIdx, 1);
+          s = null;
+        }
       }
 
       saveStateToStorage(false);
-      renderAll();
+      renderSpellSlotsStrip();
+      renderSpellSlotsModalRows();
+      renderCombatCategorySpells();
+      recalculateCombatSpell();
+      if (typeof renderSpellSlots === 'function') renderSpellSlots();
+      if (typeof renderPreparedSpells === 'function') renderPreparedSpells();
+      if (typeof renderDivineSpells === 'function') renderDivineSpells();
+      if (typeof renderAll === 'function') renderAll();
+
       showDiceTopToast({
-        icon: 'âœ¨',
-        title: 'Günlük Slot Güncellendi',
-        breakdown: `${lvl}. Seviye slot kapasitesi ${delta > 0 ? '+' + delta : delta} deÄŸiştirildi (DM Bonusu).`,
-        total: `${s.daily} Yuva`
+        icon: '✨',
+        title: s && s.daily > 0 ? 'Günlük Slot Güncellendi' : 'DM Yuvası Silindi',
+        breakdown: s && s.daily > 0 
+          ? `${lvl}. Seviye slot kapasitesi ${delta > 0 ? '+' + delta : delta} değiştirildi (DM Bonusu).`
+          : `${lvl}. Seviye DM yuvası kaldırıldı ve kilitlendi.`,
+        total: s && s.daily > 0 ? `${s.daily} Yuva` : 'Kilitlendi'
       });
+    }
+
+    function revokeSpellSlotLevel(lvl, sourceKey) {
+      if (!character) return;
+      const key = sourceKey || window.currentCompactSlotsSource || window.currentSpellSlotsModalSource || 'spontaneous';
+      const slots = getSpellSlotsArrayBySource(key);
+      const sIdx = slots.findIndex(item => Number(item.level) === Number(lvl));
+      if (sIdx >= 0) {
+        slots.splice(sIdx, 1);
+        saveStateToStorage(false);
+        renderSpellSlotsStrip();
+        renderSpellSlotsModalRows();
+        renderCombatCategorySpells();
+        recalculateCombatSpell();
+        if (typeof renderSpellSlots === 'function') renderSpellSlots();
+        if (typeof renderPreparedSpells === 'function') renderPreparedSpells();
+        if (typeof renderDivineSpells === 'function') renderDivineSpells();
+        if (typeof renderAll === 'function') renderAll();
+        showDiceTopToast({
+          icon: '🗑️',
+          title: 'DM Yuvası Silindi',
+          breakdown: `${lvl}. Seviye ${key === 'prepared' ? 'hazırlık' : (key === 'divine' ? 'dua' : 'büyü')} yuvası tamamen kaldırıldı ve kilitlendi.`,
+          total: 'Kilitlendi'
+        });
+      }
     }
 
     function modifySpellsKnownQuota(lvl, delta) {
@@ -21066,12 +21114,28 @@
         classNames.push(prim);
       }
       
-      const hasSpontaneous = classNames.some(c => c.includes('sorcerer') || c.includes('bard') || c.includes('favored soul') || c.includes('warlock'));
-      const hasPrepared = classNames.some(c => c.includes('wizard') || c.includes('artificer') || c.includes('archivist') || c.includes('wu jen'));
-      const hasDivine = classNames.some(c => c.includes('cleric') || c.includes('druid') || c.includes('paladin') || c.includes('ranger') || c.includes('rahip'));
-      const hasMartial = classNames.some(c => c.includes('warblade') || c.includes('swordsage') || c.includes('crusader'));
+      const hasSpontaneousSlots = Array.isArray(character?.spellcasting?.slots) && character.spellcasting.slots.some(s => (Number(s.daily) || 0) > 0);
+      const hasPreparedSlots = Array.isArray(character?.spellcasting?.preparedSlots) && character.spellcasting.preparedSlots.some(s => (Number(s.daily) || 0) > 0);
+      const hasDivineSlots = Array.isArray(character?.spellcasting?.divineSlots) && character.spellcasting.divineSlots.some(s => (Number(s.daily) || 0) > 0);
+      const hasMartialSlots = (Array.isArray(character?.tomeOfBattle?.readiedManeuvers) && character.tomeOfBattle.readiedManeuvers.length > 0)
+        || ((Number(character?.tomeOfBattle?.dmReadiedBonus) || 0) > 0);
+
+      const hasSpontaneous = classNames.some(c => c.includes('sorcerer') || c.includes('bard') || c.includes('favored soul') || c.includes('warlock')) || hasSpontaneousSlots;
+      const hasPrepared = classNames.some(c => c.includes('wizard') || c.includes('artificer') || c.includes('archivist') || c.includes('wu jen')) || hasPreparedSlots;
+      const hasDivine = classNames.some(c => c.includes('cleric') || c.includes('druid') || c.includes('paladin') || c.includes('ranger') || c.includes('rahip')) || hasDivineSlots;
+      const hasMartial = classNames.some(c => c.includes('warblade') || c.includes('swordsage') || c.includes('crusader')) || hasMartialSlots;
 
       return { hasSpontaneous, hasPrepared, hasDivine, hasMartial };
+    }
+
+    function renderPreparedSpells() {
+      const classesStatus = checkCharacterMagicClasses();
+      if (typeof renderPreparedDisciplineView === 'function') renderPreparedDisciplineView(classesStatus.hasPrepared);
+    }
+
+    function renderDivineSpells() {
+      const classesStatus = checkCharacterMagicClasses();
+      if (typeof renderDivineDisciplineView === 'function') renderDivineDisciplineView(classesStatus.hasDivine);
     }
 
     function switchMagicDisciplineTab(discipline) {
@@ -21154,7 +21218,7 @@
     }
 
     function calculateWizardSlots(wizardLvl, intScore, existingSlots = []) {
-      if (Number(wizardLvl) <= 0) return [];
+      if (Number(wizardLvl) <= 0) return (existingSlots || []).filter(s => (Number(s.daily) || 0) > 0);
       const lvl = Math.min(20, Math.max(1, Number(wizardLvl) || 1));
       const intMod = Math.floor(((Number(intScore) || 10) - 10) / 2);
       const wizDailyTable = [
@@ -21212,7 +21276,7 @@
     }
 
     function calculateDivineSlots(divineLvl, wisScore, existingSlots = []) {
-      if (Number(divineLvl) <= 0) return [];
+      if (Number(divineLvl) <= 0) return (existingSlots || []).filter(s => (Number(s.daily) || 0) > 0);
       const lvl = Math.min(20, Math.max(1, Number(divineLvl) || 1));
       const wisMod = Math.floor(((Number(wisScore) || 10) - 10) / 2);
       // Cleric base daily slots + 1 domain slot for levels 1..9
@@ -21280,9 +21344,9 @@
       
       let cl = 0;
       if (wizLvls > 0 || classesStatus.hasPrepared) {
-        cl = (clMode === 'Character Level (DM Boon)') ? Math.max(wizLvls || 1, activeLevels) : (wizLvls || 1);
+        cl = (clMode === 'Character Level (DM Boon)') ? Math.max(wizLvls || 1, activeLevels || 1) : Math.max(wizLvls || 1, 1);
       }
-      return { statKey: 'INT', statVal: intVal, statMod: intMod, cl, clMode, hasClass: classesStatus.hasPrepared };
+      return { statKey: 'INT', statVal: intVal, statMod: intMod, cl, clMode, hasClass: classesStatus.hasPrepared, wizLvls };
     }
 
     function getDivineCasterInfo() {
@@ -21296,9 +21360,9 @@
       
       let cl = 0;
       if (divLvls > 0 || classesStatus.hasDivine) {
-        cl = (clMode === 'Character Level (DM Boon)') ? Math.max(divLvls || 1, activeLevels) : (divLvls || 1);
+        cl = (clMode === 'Character Level (DM Boon)') ? Math.max(divLvls || 1, activeLevels || 1) : Math.max(divLvls || 1, 1);
       }
-      return { statKey: 'WIS', statVal: wisVal, statMod: wisMod, cl, clMode, hasClass: classesStatus.hasDivine };
+      return { statKey: 'WIS', statVal: wisVal, statMod: wisMod, cl, clMode, hasClass: classesStatus.hasDivine, divLvls };
     }
 
     function renderPreparedDisciplineView(hasPrepared) {
@@ -22570,22 +22634,24 @@
             character.spellcasting.slots = built;
           }
         } else {
-          character.spellcasting.slots = hasSpontaneous && cl > 0 ? calculateSorcererSlots(cl, statVal, character.spellcasting.slots) : [];
+          character.spellcasting.slots = hasSpontaneous && cl > 0 
+            ? calculateSorcererSlots(cl, statVal, character.spellcasting.slots) 
+            : ((character.spellcasting.slots || []).filter(s => (Number(s.daily) || 0) > 0));
         }
       }
 
       // Top archetype badges (Sadeleştirilmiş Kalan / Toplam Sayaçları)
       const spontBadge = document.getElementById('tab-spontaneous-badge');
       if (spontBadge) {
-        if (!hasSpontaneous || cl <= 0) {
+        const slots = character?.spellcasting?.slots || [];
+        const totalDaily = slots.reduce((sum, s) => sum + (Number(s.daily) || 0), 0);
+        const totalUsed = slots.reduce((sum, s) => sum + (Number(s.used) || 0), 0);
+        const totalRemaining = Math.max(0, totalDaily - totalUsed);
+        if ((!hasSpontaneous || cl <= 0) && totalDaily === 0) {
           spontBadge.textContent = 'Sınıf Yok';
           spontBadge.className = 'bg-slate-900 text-slate-400 text-[10px] px-1.5 py-0.5 rounded-full font-mono border border-slate-700 shrink-0';
           spontBadge.title = 'Doğal/anlık büyücü sınıfı yok';
         } else {
-          const slots = character?.spellcasting?.slots || [];
-          const totalDaily = slots.reduce((sum, s) => sum + (Number(s.daily) || 0), 0);
-          const totalUsed = slots.reduce((sum, s) => sum + (Number(s.used) || 0), 0);
-          const totalRemaining = Math.max(0, totalDaily - totalUsed);
           spontBadge.textContent = `${totalRemaining} / ${totalDaily}`;
           spontBadge.className = 'bg-purple-950/80 text-purple-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-purple-600/60 shrink-0';
           spontBadge.title = `Günlük Kalan Slot: ${totalRemaining} / ${totalDaily}`;
@@ -22594,18 +22660,20 @@
 
       const prepInfo = getPreparedCasterInfo();
       if (character?.spellcasting) {
-        character.spellcasting.preparedSlots = classesStatus.hasPrepared && prepInfo.cl > 0 ? calculateWizardSlots(prepInfo.cl, prepInfo.statVal, character.spellcasting.preparedSlots) : [];
+        character.spellcasting.preparedSlots = (classesStatus.hasPrepared && prepInfo.cl > 0)
+          ? calculateWizardSlots(prepInfo.cl, prepInfo.statVal, character.spellcasting.preparedSlots)
+          : ((character.spellcasting.preparedSlots || []).filter(s => (Number(s.daily) || 0) > 0));
       }
       const prepBadge = document.getElementById('tab-prepared-badge');
       if (prepBadge) {
-        if (!classesStatus.hasPrepared || prepInfo.cl <= 0) {
+        const pSlots = character?.spellcasting?.preparedSlots || [];
+        const pDaily = pSlots.reduce((sum, s) => sum + (Number(s.daily) || 0), 0);
+        const pUsed = pSlots.reduce((sum, s) => sum + (Number(s.used) || 0), 0);
+        const pRem = Math.max(0, pDaily - pUsed);
+        if ((!classesStatus.hasPrepared || prepInfo.cl <= 0) && pDaily === 0) {
           prepBadge.textContent = 'Sınıf Yok';
           prepBadge.className = 'bg-slate-900 text-slate-400 text-[10px] px-1.5 py-0.5 rounded-full font-mono border border-slate-700 shrink-0';
         } else {
-          const pSlots = character?.spellcasting?.preparedSlots || [];
-          const pDaily = pSlots.reduce((sum, s) => sum + (Number(s.daily) || 0), 0);
-          const pUsed = pSlots.reduce((sum, s) => sum + (Number(s.used) || 0), 0);
-          const pRem = Math.max(0, pDaily - pUsed);
           prepBadge.textContent = `${pRem} / ${pDaily}`;
           prepBadge.className = 'bg-sky-950 text-sky-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-sky-600/60 shrink-0';
         }
@@ -22613,18 +22681,20 @@
 
       const divInfo = getDivineCasterInfo();
       if (character?.spellcasting) {
-        character.spellcasting.divineSlots = classesStatus.hasDivine && divInfo.cl > 0 ? calculateDivineSlots(divInfo.cl, divInfo.statVal, character.spellcasting.divineSlots) : [];
+        character.spellcasting.divineSlots = (classesStatus.hasDivine && divInfo.cl > 0)
+          ? calculateDivineSlots(divInfo.cl, divInfo.statVal, character.spellcasting.divineSlots)
+          : ((character.spellcasting.divineSlots || []).filter(s => (Number(s.daily) || 0) > 0));
       }
       const divineBadge = document.getElementById('tab-divine-badge');
       if (divineBadge) {
-        if (!classesStatus.hasDivine || divInfo.cl <= 0) {
+        const dSlots = character?.spellcasting?.divineSlots || [];
+        const dDaily = dSlots.reduce((sum, s) => sum + (Number(s.daily) || 0), 0);
+        const dUsed = dSlots.reduce((sum, s) => sum + (Number(s.used) || 0), 0);
+        const dRem = Math.max(0, dDaily - dUsed);
+        if ((!classesStatus.hasDivine || divInfo.cl <= 0) && dDaily === 0) {
           divineBadge.textContent = 'Sınıf Yok';
           divineBadge.className = 'bg-slate-900 text-slate-400 text-[10px] px-1.5 py-0.5 rounded-full font-mono border border-slate-700 shrink-0';
         } else {
-          const dSlots = character?.spellcasting?.divineSlots || [];
-          const dDaily = dSlots.reduce((sum, s) => sum + (Number(s.daily) || 0), 0);
-          const dUsed = dSlots.reduce((sum, s) => sum + (Number(s.used) || 0), 0);
-          const dRem = Math.max(0, dDaily - dUsed);
           divineBadge.textContent = `${dRem} / ${dDaily}`;
           divineBadge.className = 'bg-amber-950 text-amber-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold border border-amber-600/60 shrink-0';
         }
@@ -22647,8 +22717,8 @@
         }
       }
 
-      try { renderPreparedDisciplineView(classesStatus.hasPrepared); } catch (e) { console.error('renderPreparedDisciplineView error:', e); }
-      try { renderDivineDisciplineView(classesStatus.hasDivine); } catch (e) { console.error('renderDivineDisciplineView error:', e); }
+      try { renderPreparedDisciplineView(classesStatus.hasPrepared || (character?.spellcasting?.preparedSlots || []).some(s => (Number(s.daily) || 0) > 0)); } catch (e) { console.error('renderPreparedDisciplineView error:', e); }
+      try { renderDivineDisciplineView(classesStatus.hasDivine || (character?.spellcasting?.divineSlots || []).some(s => (Number(s.daily) || 0) > 0)); } catch (e) { console.error('renderDivineDisciplineView error:', e); }
 
       const titleEl = document.getElementById('spells-cockpit-class-title');
       if (titleEl) titleEl.textContent = 'Doğal / Anlık Büyüler';
@@ -24135,6 +24205,9 @@
       if (slot && typeof slot.known === 'number' && slot.known > 0) {
         return slot.known;
       }
+      if (slot && Number(slot.daily) > 0) {
+        return Math.max(1, Number(slot.daily) || 1);
+      }
 
       const { cl, primaryClass } = getCasterInfo();
       const casterLvl = Math.min(20, Math.max(1, Number(cl) || 1));
@@ -25456,7 +25529,7 @@
         if (character?.isNpc && Array.isArray(character?.spellcasting?.slots) && character.spellcasting.slots.length > 0) {
           return character.spellcasting.slots;
         }
-        return [];
+        return (existingSlots || []).filter(s => (Number(s.daily) || 0) > 0);
       }
       const clampedLvl = Math.min(20, Math.max(1, Number(sorcererLvl) || 1));
       const chaMod = Math.floor(((Number(chaScore) || 10) - 10) / 2);
