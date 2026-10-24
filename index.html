@@ -17429,17 +17429,22 @@
             }
 
             return `
-              <button type="button" onclick="rollAttackChainItemByIndex(${idx})" class="${btnBasisClass} py-1.5 px-1 ${bgClass} active:scale-95 border ${isLocked ? 'border-slate-800 opacity-50 cursor-not-allowed' : colorBorder + ' cursor-pointer'} rounded-lg text-center font-mono transition shadow group shrink-0" title="${item.label} (${item.handLabel}): ${item.bonus >= 0 ? '+' : ''}${item.bonus}">
-                <div class="text-[9px] uppercase tracking-wider ${subtitleColor} font-sans truncate">${item.label}</div>
-                <div class="text-xs sm:text-sm md:text-base font-black ${textColor} font-mono leading-tight">${item.bonus >= 0 ? '+' : ''}${item.bonus}</div>
+              <button type="button" onclick="rollAttackChainItemByIndex(${idx})" class="${btnBasisClass} min-h-[56px] py-1 px-1.5 ${bgClass} active:scale-95 border ${isLocked ? 'border-slate-800 opacity-50 cursor-not-allowed' : colorBorder + ' cursor-pointer'} rounded-lg flex flex-col items-center justify-center text-center font-mono transition shadow group shrink-0" title="${item.label} (${item.handLabel}): ${item.bonus >= 0 ? '+' : ''}${item.bonus}">
+                <div class="text-[9px] uppercase tracking-wider ${subtitleColor} font-sans font-bold truncate leading-tight">${item.label}</div>
+                <div class="text-xs sm:text-sm md:text-base font-black ${textColor} font-mono leading-tight my-0.5">${item.bonus >= 0 ? '+' : ''}${item.bonus}</div>
+                <div class="text-[8px] font-sans text-slate-400 group-hover:text-slate-300 font-bold truncate leading-tight">${item.handLabel || 'Menzilli'}</div>
               </button>
             `;
           }).join('');
 
           const fullAttackBtnHtml = `
-            <button type="button" onclick="executeFullAttackRoll(false)" class="${btnBasisClass} py-1.5 px-1 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-600 active:scale-95 text-white font-black text-xs md:text-sm rounded-lg shadow-md border border-red-400/50 flex flex-col items-center justify-center transition cursor-pointer group shrink-0" title="Tüm ardışık menzilli atışları (Full Attack) sırayla zarla">
-              <span class="text-xs leading-none">🏹</span>
-              <span class="text-[10px] md:text-xs font-black truncate leading-tight mt-0.5">Full Attack</span>
+            <button type="button" onclick="executeFullAttackRoll(false)" class="${btnBasisClass} min-h-[56px] py-1 px-1.5 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-600 active:scale-95 text-white rounded-lg shadow-md border border-red-400/50 flex flex-col items-center justify-center transition cursor-pointer text-center shrink-0 group" title="Tüm ardışık menzilli atışları (Full Attack) sırayla zarla">
+              <div class="text-[9px] uppercase tracking-wider text-red-100/90 font-sans font-bold truncate flex items-center justify-center gap-0.5 leading-tight">
+                <span>🏹</span>
+                <span class="truncate">Full</span>
+              </div>
+              <div class="text-xs sm:text-sm md:text-base font-black text-white font-mono leading-tight my-0.5 truncate">Attack</div>
+              <div class="text-[8px] font-sans text-red-200/90 font-bold truncate leading-tight">Tam Tur</div>
             </button>
           `;
 
@@ -17585,20 +17590,22 @@
           }
 
           return `
-            <button type="button" onclick="rollAttackChainItemByIndex(${idx})" class="${btnBasisClass} py-1.5 px-1 ${bgClass} active:scale-95 border ${isLocked ? 'border-slate-800 opacity-50 cursor-not-allowed' : colorBorder + ' cursor-pointer'} rounded-lg text-center font-mono transition shadow group shrink-0" title="${item.label} (${item.handLabel}): ${item.bonus >= 0 ? '+' : ''}${item.bonus}">
-              <div class="text-[9px] uppercase tracking-wider ${subtitleColor} font-sans truncate">${item.label}</div>
-              <div class="text-xs sm:text-sm md:text-base font-black ${textColor} font-mono leading-tight">${item.bonus >= 0 ? '+' : ''}${item.bonus}</div>
+            <button type="button" onclick="rollAttackChainItemByIndex(${idx})" class="${btnBasisClass} min-h-[56px] py-1 px-1.5 ${bgClass} active:scale-95 border ${isLocked ? 'border-slate-800 opacity-50 cursor-not-allowed' : colorBorder + ' cursor-pointer'} rounded-lg flex flex-col items-center justify-center text-center font-mono transition shadow group shrink-0" title="${item.label} (${item.handLabel}): ${item.bonus >= 0 ? '+' : ''}${item.bonus}">
+              <div class="text-[9px] uppercase tracking-wider ${subtitleColor} font-sans font-bold truncate leading-tight">${item.label}</div>
+              <div class="text-xs sm:text-sm md:text-base font-black ${textColor} font-mono leading-tight my-0.5">${item.bonus >= 0 ? '+' : ''}${item.bonus}</div>
+              <div class="text-[8px] font-sans text-slate-400 group-hover:text-slate-300 font-bold truncate leading-tight">${item.handLabel || 'Standart'}</div>
             </button>
           `;
         }).join('');
 
         const fullAttackBtn = `
-          <button type="button" onclick="executeFullAttackRoll(false)" class="${btnBasisClass} py-1.5 px-1 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-600 active:scale-95 text-white rounded-lg shadow-md border border-red-400/50 flex flex-col items-center justify-center transition cursor-pointer text-center shrink-0 group" title="Tüm ardışık vuruşları (Full Attack) sırayla zarla">
-            <div class="text-[9px] uppercase tracking-wider text-red-100/90 font-sans truncate flex items-center justify-center gap-0.5">
+          <button type="button" onclick="executeFullAttackRoll(false)" class="${btnBasisClass} min-h-[56px] py-1 px-1.5 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-600 active:scale-95 text-white rounded-lg shadow-md border border-red-400/50 flex flex-col items-center justify-center transition cursor-pointer text-center shrink-0 group" title="Tüm ardışık vuruşları (Full Attack) sırayla zarla">
+            <div class="text-[9px] uppercase tracking-wider text-red-100/90 font-sans font-bold truncate flex items-center justify-center gap-0.5 leading-tight">
               <span>⚔️</span>
               <span class="truncate">Full</span>
             </div>
-            <div class="text-xs sm:text-sm md:text-base font-black text-white font-mono leading-tight truncate">Attack</div>
+            <div class="text-xs sm:text-sm md:text-base font-black text-white font-mono leading-tight my-0.5 truncate">Attack</div>
+            <div class="text-[8px] font-sans text-red-200/90 font-bold truncate leading-tight">Tam Tur</div>
           </button>
         `;
 
