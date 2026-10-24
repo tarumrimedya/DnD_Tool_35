@@ -626,7 +626,46 @@
             <!-- SPELL PANEL BODY (Collapsible) -->
             <div id="combat-spell-card-body" class="space-y-3">
 
-              <!-- 3-WAY TACTICAL SPELL MODE SWITCHER (SALDIRI | KONTROL | DESTEK) -->
+              <!-- 1. BÜYÜ YUVALARI TRACKER ŞERİDİ (ANLIK SLOT SAYAÇLARI) -->
+              <div class="bg-slate-950/90 border border-purple-900/40 rounded-xl p-2.5 space-y-1.5 shadow-inner">
+                <div class="flex items-center justify-between text-[10px] font-bold">
+                  <span class="text-purple-400 uppercase tracking-wider flex items-center gap-1">
+                    <span>✨</span>
+                    <span>GÜNLÜK BÜYÜ YUVALARI</span>
+                  </span>
+                  <button type="button" onclick="openSpellSlotsModal()" class="text-[9px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-amber-900/50 transition" title="Yuva Yönetimi & Yenileme">
+                    <span>⚙️</span>
+                    <span>Yuva Yönetimi</span>
+                  </button>
+                </div>
+                <div id="combat-spell-slots-strip" class="flex flex-wrap gap-1.5 items-center">
+                  <!-- Populated dynamically by renderSpellSlotsStrip() -->
+                </div>
+              </div>
+
+              <!-- 2. BÜYÜCÜ TAKTİKSEL MODİFİYERLERİ (3x3 ÇEKMECE) -->
+              <div class="bg-slate-950/80 border border-purple-900/50 rounded-xl p-2.5 space-y-2">
+                <div class="flex items-center justify-between text-[10px] font-bold text-purple-400 uppercase tracking-wide">
+                  <div class="flex items-center gap-1.5">
+                    <span>⚡</span>
+                    <span>BÜYÜCÜ TAKTİKSEL MODİFİYERLERİ</span>
+                    <span id="spell-modifiers-count-badge" class="bg-slate-900 text-purple-300 border border-purple-700/50 font-mono font-bold text-[9px] px-1.5 py-0.2 rounded">0</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-[9px] text-amber-400 font-mono" id="metamagic-action-note">(Standart Eylem)</span>
+                    <button type="button" id="toggle-spell-modifiers-btn" onclick="toggleSpellModifiersGridExpanded()" class="text-[9px] text-purple-400 hover:text-white bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-purple-800/60 transition cursor-pointer hidden">
+                      Daha Fazla ▾
+                    </button>
+                  </div>
+                </div>
+
+                <!-- 3x3 Dynamic Modifiers Grid -->
+                <div id="combat-spell-modifiers-dynamic-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-1.5 pt-0.5">
+                  <!-- Populated dynamically by renderSpellTacticalModifiers() -->
+                </div>
+              </div>
+
+              <!-- 3. TAKTİK MOD SEKMELERİ (SALDIRI | KONTROL | DESTEK) -->
               <div class="grid grid-cols-3 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
                 <button type="button" id="btn-spell-tab-offense_spell" onclick="switchCombatSpellCategory('offense_spell')" class="py-1.5 px-1 sm:px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer bg-gradient-to-r from-purple-700 to-indigo-600 text-white shadow">
                   <span>⚔️</span>
@@ -641,161 +680,70 @@
                   <span>Destek</span>
                 </button>
               </div>
-              
-              <!-- 1. HIZLI BÜYÜ ROTASYONU (FAVORİ KARTLAR / LOADOUT) -->
-              <div class="space-y-1.5">
-                <div class="flex items-center justify-between text-[10px] font-bold text-slate-400">
-                  <span class="uppercase tracking-wider">HIZLI BÜYÜ ROTASYONU</span>
-                  <button type="button" onclick="toggleCombatSpellLibraryDrawer()" class="text-[9px] text-purple-400 hover:text-purple-200 font-bold flex items-center gap-1 cursor-pointer">
-                    <span>📚</span>
-                    <span>Tüm Büyüler ▾</span>
-                  </button>
-                </div>
-                
-                <!-- 2-3 Touch Quick Spell Cards -->
-                <div id="combat-quick-spells-container" class="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-                  <!-- Dynamically populated with quick cards -->
+
+              <!-- 4. SEVİYELERE GÖRE GRUPLU BÜYÜ KARTLARI ÇEKMECESİ (3x2 IZGARA) -->
+              <div class="space-y-2">
+                <div class="flex items-center justify-between text-[10px] font-bold text-slate-400 px-0.5">
+                  <span id="combat-spell-category-title" class="uppercase tracking-wider text-purple-300">SALDIRI BÜYÜLERİ</span>
+                  <div class="flex items-center gap-2">
+                    <button type="button" id="btn-spell-reorder-toggle" onclick="toggleSpellReorderMode()" class="text-[9px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-slate-800 transition" title="Büyü kartlarının sırasını düzenle">
+                      <span>⇄</span>
+                      <span id="spell-reorder-btn-text">Sırala</span>
+                    </button>
+                    <span id="combat-spell-count-badge" class="text-[9px] font-mono text-purple-400 font-bold">0 Büyü</span>
+                  </div>
                 </div>
 
-                <!-- Full Spell Selector Dropdown (Collapsible drawer) -->
-                <div id="combat-spell-library-drawer" class="hidden pt-1">
-                  <label class="text-[9px] uppercase font-bold text-purple-400 block mb-1">Büyü Kütüphanesinden Seç</label>
-                  <select id="combat-active-spell-select" onchange="onCombatSpellChange()" class="w-full bg-slate-900 text-purple-200 font-bold text-xs rounded border border-purple-500/50 px-2 py-1.5 focus:outline-none focus:border-purple-400 cursor-pointer">
-                    <!-- Populated dynamically -->
-                  </select>
+                <!-- Container where level groups (Cantrips, Lvl 1, Lvl 2...) and 3x2 cards live -->
+                <div id="combat-category-spells-container" class="space-y-2.5">
+                  <!-- Populated dynamically by renderCombatCategorySpells() -->
                 </div>
+
+                <!-- Hidden select for backward compatibility -->
+                <select id="combat-active-spell-select" onchange="onCombatSpellChange()" class="hidden"></select>
               </div>
 
-              <!-- 2. Spell Base Stats Pill Grid -->
-              <div class="grid grid-cols-3 gap-1.5 bg-slate-950/70 border border-slate-800 rounded-lg p-2 text-center">
-                <div>
-                  <div class="text-[9px] uppercase font-bold text-slate-400">Büyü Seviyesi</div>
-                  <div id="combat-spell-level-display" class="text-xs font-black text-white font-mono mt-0.5">2. Seviye</div>
-                </div>
-                <div>
-                  <div class="text-[9px] uppercase font-bold text-slate-400">İcra Süresi</div>
-                  <div id="combat-spell-action-display" class="text-xs font-black text-amber-400 font-mono mt-0.5">Standart</div>
-                </div>
-                <div>
-                  <div class="text-[9px] uppercase font-bold text-slate-400">Menzil / Okul</div>
-                  <div id="combat-spell-school-display" class="text-[11px] font-bold text-sky-400 mt-0.5 truncate">Evocation</div>
-                </div>
-              </div>
-
-              <!-- 3. Spell Slot Status Indicator -->
-              <div class="flex items-center justify-between bg-slate-900/80 border border-purple-800/40 rounded-lg px-2.5 py-1.5">
-                <div>
-                  <span class="text-[9px] uppercase font-bold text-slate-400 block">Tüketilecek Büyü Yuvası</span>
-                  <span id="combat-spell-slot-req-display" class="text-xs font-black text-purple-300 font-mono">2. Seviye Yuva (Kalan: 5/6)</span>
-                </div>
-                <div id="combat-spell-dc-display" class="text-[10px] font-semibold text-emerald-400 text-right">
-                  DC 18 • Ranged Touch +5
-                </div>
-              </div>
-
-              <!-- 4. BÜYÜCÜ TAKTİKSEL MODİFİYERLERİ -->
-              <div class="bg-slate-950/80 border border-purple-900/50 rounded-lg p-2.5 space-y-2">
-                <div class="text-[10px] font-bold text-purple-400 uppercase tracking-wide flex items-center justify-between">
-                  <span>⚡ BÜYÜCÜ TAKTİKSEL MODİFİYERLERİ</span>
-                  <span class="text-[9px] text-amber-400" id="metamagic-action-note">(Spontaneous: Full-Round)</span>
-                </div>
-
-                <!-- Defensive Casting & SR Quick Actions Row -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                  <!-- Defensive Casting Toggle -->
-                  <label class="bg-slate-900 border border-indigo-900/60 hover:border-indigo-500/60 rounded p-1.5 cursor-pointer transition flex items-center justify-between gap-1 group">
-                    <div>
-                      <div class="text-[10px] font-bold text-indigo-300 group-hover:text-white flex items-center gap-1">
-                        <span>🛡️</span>
-                        <span>Defensive Casting</span>
-                      </div>
-                      <div class="text-[8px] text-slate-400" id="defensive-casting-dc-hint">DC 15 + Lvl • AoO Engeller</div>
+              <!-- 5. SEÇİLEN BÜYÜ KOKPİTİ & DİNAMİK İCRA PANELİ -->
+              <div class="bg-slate-900/90 border border-purple-800/50 rounded-xl p-3 space-y-2.5 shadow-lg">
+                <!-- Selected Spell Title & Critical Specs -->
+                <div class="flex items-start justify-between gap-2 border-b border-purple-900/40 pb-2">
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <span class="text-xs text-purple-400">🔮</span>
+                      <span id="combat-selected-spell-title" class="text-xs font-black text-white">Büyü Seçilmedi</span>
+                      <span id="combat-selected-spell-school-badge" class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-800">Universal</span>
+                      <span id="combat-selected-spell-level-badge" class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-slate-800 text-amber-300 border border-slate-700">Cantrip</span>
                     </div>
-                    <input type="checkbox" id="mod-defensive-casting" class="w-3.5 h-3.5 rounded text-indigo-500 border-slate-700 focus:ring-0 cursor-pointer">
-                  </label>
-
-                  <!-- Spell Resistance Check Button -->
-                  <button type="button" onclick="rollSpellResistanceCheck()" class="bg-slate-900 hover:bg-slate-800 border border-purple-900/60 hover:border-purple-500/60 rounded p-1.5 transition text-left flex items-center justify-between gap-1 group cursor-pointer" title="Hedefin Büyü Direncine (SR) karşı test zarı at: 1d20 + CL">
-                    <div>
-                      <div class="text-[10px] font-bold text-purple-300 group-hover:text-white flex items-center gap-1">
-                        <span>⚡</span>
-                        <span>SR (Büyü Direnci) Del</span>
-                      </div>
-                      <div class="text-[8px] text-slate-400">1d20 + CL Testi At</div>
+                    <div id="combat-selected-spell-meta-desc" class="text-[9px] text-slate-300 mt-1 line-clamp-2 leading-relaxed">
+                      Lütfen yukarıdan bir büyü seçin.
                     </div>
-                    <span id="sr-check-bonus-badge" class="font-mono font-bold text-xs text-amber-400">+6</span>
-                  </button>
-                </div>
-
-                <!-- Dynamic Metamagic & Spell Modifiers Grid -->
-                <div id="combat-spell-modifiers-dynamic-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-0.5">
-                  <!-- Populated dynamically by renderSpellTacticalModifiers() -->
-                </div>
-              </div>
-
-              <!-- 5. Spell Result Preview & Dynamic Cast Action Button -->
-              <div class="bg-slate-900/70 border border-purple-800/40 rounded-lg p-2 text-center">
-                <span class="text-[9px] uppercase font-bold text-slate-400 block">Hesaplanan Büyü Hasarı / Etkisi</span>
-                <span id="combat-spell-damage-preview" class="text-sm font-black text-amber-300 font-mono">4d6 Ateş</span>
-                <div id="combat-spell-metamagic-badge" class="text-[10px] text-purple-400 mt-0.5">Standart İcra</div>
-              </div>
-
-              <!-- Large 3D Roll Spell Button (Smart Adaptive Label) -->
-              <button id="main-spell-cast-btn" onclick="initiateCombatSpellCast()" class="w-full py-2.5 sm:py-3 bg-gradient-to-r from-purple-700 via-indigo-600 to-purple-800 hover:from-purple-600 hover:to-indigo-500 text-white font-black text-xs sm:text-sm rounded-xl shadow-lg border border-purple-400/40 flex items-center justify-center gap-2 transition transform active:scale-[0.98] cursor-pointer">
-                <span id="main-spell-btn-icon">🔮</span>
-                <span id="main-spell-btn-text">BÜYÜYÜ İCRA ET &amp; ZAR AT</span>
-              </button>
-
-              <!-- 6. BÜYÜ PİNLERİ ÇEKMECELERİ (SALDIRI / KONTROL / DESTEK) -->
-              <!-- 6a. Büyü Saldırı Pinleri -->
-              <div id="combat-pins-container-offense_spell" class="bg-slate-950/80 border border-purple-900/50 rounded-lg p-2.5 space-y-2">
-                <div class="flex items-center justify-between text-[10px] font-bold text-purple-300 border-b border-purple-900/50 pb-1.5">
-                  <div class="flex items-center gap-1.5">
-                    <span class="text-purple-400">⚔️</span>
-                    <span class="uppercase tracking-wider">BÜYÜ SALDIRI ÇEKMECESİ</span>
-                    <span id="offense_spell-pins-badge" class="bg-slate-900 text-purple-300 border border-purple-700/50 font-mono font-bold text-[9px] px-1.5 py-0.2 rounded">0</span>
                   </div>
-                  <button id="toggle-offense_spell-pins-btn" onclick="togglePinDrawer('offense_spell')" class="text-[9px] text-purple-400 hover:text-white bg-slate-900 px-2 py-0.5 rounded border border-purple-800/60 transition cursor-pointer">
-                    Tümünü Göster
-                  </button>
-                </div>
-                <div id="combat-pins-offense_spell" class="space-y-1.5">
-                  <!-- Populated dynamically -->
-                </div>
-              </div>
-
-              <!-- 6b. Büyü Kontrol Pinleri -->
-              <div id="combat-pins-container-spell_control" class="hidden bg-slate-950/80 border border-amber-900/50 rounded-lg p-2.5 space-y-2">
-                <div class="flex items-center justify-between text-[10px] font-bold text-amber-300 border-b border-amber-900/50 pb-1.5">
-                  <div class="flex items-center gap-1.5">
-                    <span class="text-amber-400">🕸️</span>
-                    <span class="uppercase tracking-wider">BÜYÜ KONTROL ÇEKMECESİ</span>
-                    <span id="spell_control-pins-badge" class="bg-slate-900 text-amber-300 border border-amber-700/50 font-mono font-bold text-[9px] px-1.5 py-0.2 rounded">0</span>
+                  <!-- Quick Slot Requirement Badge -->
+                  <div class="text-right shrink-0">
+                    <div id="combat-spell-slot-req-display" class="text-xs font-mono font-bold text-purple-300">0. Seviye Yuva (6/6)</div>
+                    <div id="combat-spell-action-display" class="text-[9px] font-mono font-bold text-amber-400">Standart Eylem</div>
                   </div>
-                  <button id="toggle-spell_control-pins-btn" onclick="togglePinDrawer('spell_control')" class="text-[9px] text-amber-400 hover:text-white bg-slate-900 px-2 py-0.5 rounded border border-amber-800/60 transition cursor-pointer">
-                    Tümünü Göster
-                  </button>
                 </div>
-                <div id="combat-pins-spell_control" class="space-y-1.5">
-                  <!-- Populated dynamically -->
-                </div>
-              </div>
 
-              <!-- 6c. Büyü Destek Pinleri -->
-              <div id="combat-pins-container-spell_support" class="hidden bg-slate-950/80 border border-emerald-900/50 rounded-lg p-2.5 space-y-2">
-                <div class="flex items-center justify-between text-[10px] font-bold text-emerald-300 border-b border-emerald-900/50 pb-1.5">
-                  <div class="flex items-center gap-1.5">
-                    <span class="text-emerald-400">✨</span>
-                    <span class="uppercase tracking-wider">BÜYÜ DESTEK ÇEKMECESİ</span>
-                    <span id="spell_support-pins-badge" class="bg-slate-900 text-emerald-300 border border-emerald-700/50 font-mono font-bold text-[9px] px-1.5 py-0.2 rounded">0</span>
+                <!-- Calculated Effect, DC & Attack Badges -->
+                <div class="grid grid-cols-2 gap-2 bg-slate-950/70 p-2 rounded-lg border border-slate-800 text-center">
+                  <div>
+                    <span class="text-[8px] uppercase font-bold text-slate-400 block">Hesaplanan Etki / Hasar</span>
+                    <span id="combat-spell-damage-preview" class="text-xs font-mono font-black text-amber-300">Hasar Yok</span>
+                    <div id="combat-spell-metamagic-badge" class="text-[8px] text-purple-400 truncate mt-0.5">Standart İcra</div>
                   </div>
-                  <button id="toggle-spell_support-pins-btn" onclick="togglePinDrawer('spell_support')" class="text-[9px] text-emerald-400 hover:text-white bg-slate-900 px-2 py-0.5 rounded border border-emerald-800/60 transition cursor-pointer">
-                    Tümünü Göster
-                  </button>
+                  <div>
+                    <span class="text-[8px] uppercase font-bold text-slate-400 block">Kurtarma Zarı (DC) &amp; Dokunma</span>
+                    <span id="combat-spell-dc-display" class="text-xs font-mono font-black text-emerald-400">DC 16 • Ranged Touch +5</span>
+                    <div id="combat-spell-sr-target-display" class="text-[8px] text-slate-400 mt-0.5">SR: Evet • Menzil: Medium</div>
+                  </div>
                 </div>
-                <div id="combat-pins-spell_support" class="space-y-1.5">
-                  <!-- Populated dynamically -->
-                </div>
+
+                <!-- Large 3D Roll Spell Button (Smart Adaptive Label) -->
+                <button id="main-spell-cast-btn" onclick="initiateCombatSpellCast()" class="w-full py-2.5 sm:py-3 bg-gradient-to-r from-purple-700 via-indigo-600 to-purple-800 hover:from-purple-600 hover:to-indigo-500 text-white font-black text-xs sm:text-sm rounded-xl shadow-lg border border-purple-400/40 flex items-center justify-center gap-2 transition transform active:scale-[0.98] cursor-pointer">
+                  <span id="main-spell-btn-icon">🔮</span>
+                  <span id="main-spell-btn-text">BÜYÜYÜ İCRA ET &amp; ZAR AT</span>
+                </button>
               </div>
 
             </div>
@@ -3488,6 +3436,40 @@
         <button onclick="confirmPinToCategory('defense')" class="w-full py-1.5 px-3 bg-slate-900 hover:bg-indigo-950/40 border border-slate-700 hover:border-indigo-500 rounded-lg text-left text-xs font-bold text-white flex items-center justify-between transition group cursor-pointer">
           <span class="flex items-center gap-2"><span>🛡️</span> <span>Fiziksel: Savunma</span></span>
           <span class="text-indigo-400 group-hover:translate-x-1 transition-transform">➔</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================== -->
+  <!-- MODAL: SPELL SLOTS MANAGER (YENİLEME & DÜZENLEME)   -->
+  <!-- ==================================================== -->
+  <div id="modal-spell-slots-manager" class="hidden fixed inset-0 z-[120] bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
+    <div class="bg-dndCard border border-purple-500/70 rounded-2xl max-w-sm w-full shadow-2xl p-4 space-y-3.5 my-auto">
+      <div class="flex items-center justify-between border-b border-purple-900/50 pb-2">
+        <h3 class="font-extrabold text-sm text-purple-300 flex items-center gap-1.5">
+          <span>🔮</span> Büyü Yuvaları Yönetimi
+        </h3>
+        <button onclick="closeSpellSlotsModal()" class="text-slate-400 hover:text-white text-sm font-bold cursor-pointer">✕</button>
+      </div>
+
+      <div class="text-[11px] text-slate-300 leading-tight">
+        Büyü yuvalarınızın kalan ve harcanan adetlerini düzenleyebilir veya dinlenerek tüm yuvaları yenileyebilirsiniz.
+      </div>
+
+      <!-- Level by Level Slot Rows -->
+      <div id="modal-spell-slots-rows" class="space-y-1.5 max-h-[50vh] overflow-y-auto pr-1">
+        <!-- Populated dynamically -->
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="pt-2 border-t border-slate-800 space-y-1.5">
+        <button type="button" onclick="replenishAllSpellSlots()" class="w-full py-2 px-3 bg-purple-900/60 hover:bg-purple-800 text-purple-200 border border-purple-600/70 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shadow-md">
+          <span>🌙</span>
+          <span>Tüm Büyü Yuvalarını Yenile (Long Rest)</span>
+        </button>
+        <button type="button" onclick="closeSpellSlotsModal()" class="w-full py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-xs font-bold transition cursor-pointer">
+          Kapat
         </button>
       </div>
     </div>
@@ -11264,6 +11246,11 @@
       return classifySpellRole(spell);
     }
 
+    window.currentActiveCombatSpellCategory = 'offense_spell';
+    window.currentSelectedCombatSpellName = null;
+    window.spellReorderModeActive = false;
+    window.spellModifiersExpanded = false;
+
     function switchCombatSpellCategory(category) {
       if (!['offense_spell', 'spell_control', 'spell_support'].includes(category)) {
         category = 'offense_spell';
@@ -11287,80 +11274,445 @@
         }
       });
 
-      // Toggle Pin Drawers Visibility
-      const containers = ['offense_spell', 'spell_control', 'spell_support'];
-      containers.forEach(c => {
-        const el = document.getElementById(`combat-pins-container-${c}`);
-        if (el) {
-          if (c === category) {
-            el.classList.remove('hidden');
-          } else {
-            el.classList.add('hidden');
-          }
+      // Update Category Title Header
+      const titleEl = document.getElementById('combat-spell-category-title');
+      if (titleEl) {
+        if (category === 'offense_spell') {
+          titleEl.textContent = 'SALDIRI BÜYÜLERİ';
+          titleEl.className = 'uppercase tracking-wider text-purple-300 font-bold';
+        } else if (category === 'spell_control') {
+          titleEl.textContent = 'KONTROL BÜYÜLERİ';
+          titleEl.className = 'uppercase tracking-wider text-amber-300 font-bold';
+        } else {
+          titleEl.textContent = 'DESTEK BÜYÜLERİ';
+          titleEl.className = 'uppercase tracking-wider text-emerald-300 font-bold';
         }
-      });
+      }
 
-      // Update Spells list in dropdown & quick spells for active category
+      // Automatically pick first spell in this category if current selected is not in it
+      const known = (character?.spellcasting?.knownSpells || []);
+      const categorySpells = known.filter(sp => getSpellEffectiveCategory(sp) === category);
+      const curSelected = window.currentSelectedCombatSpellName;
+      const isCurInCategory = categorySpells.some(sp => sp.name === curSelected);
+      if (!isCurInCategory && categorySpells.length > 0) {
+        window.currentSelectedCombatSpellName = categorySpells[0].name;
+      }
+
       populateCombatSpells();
-      renderCombatQuickSpells();
+      renderCombatCategorySpells();
       if (typeof renderSpellTacticalModifiers === 'function') renderSpellTacticalModifiers();
       recalculateCombatSpell();
-      renderCombatPins(category);
     }
 
-    function renderCombatQuickSpells() {
-      const container = document.getElementById('combat-quick-spells-container');
+    // --- 1. DAILY SPELL SLOTS TRACKER STRIP (TIER 1) ---
+    function renderSpellSlotsStrip() {
+      const container = document.getElementById('combat-spell-slots-strip');
       if (!container) return;
-      const activeCat = window.currentActiveCombatSpellCategory || 'offense_spell';
+
+      const slots = character?.spellcasting?.slots || [];
+      const unlockedSlots = slots.filter(s => Number(s.daily) > 0);
+
+      if (unlockedSlots.length === 0) {
+        container.innerHTML = `<span class="text-[10px] text-slate-500 italic py-0.5">Aktif büyü yuvası bulunmamaktadır.</span>`;
+        return;
+      }
+
+      container.innerHTML = unlockedSlots.map(s => {
+        const lvl = Number(s.level);
+        const daily = Number(s.daily) || 0;
+        const used = Number(s.used) || 0;
+        const remaining = Math.max(0, daily - used);
+        const isDepleted = remaining <= 0;
+
+        let badgeClass = 'border-purple-800/80 bg-slate-900/90 hover:border-purple-500 text-purple-200';
+        let remColor = 'text-emerald-400 font-bold';
+        if (isDepleted) {
+          badgeClass = 'border-rose-900/60 bg-rose-950/30 hover:border-rose-700 text-rose-300';
+          remColor = 'text-rose-400 font-bold';
+        }
+
+        const lvlLabel = lvl === 0 ? '0.Lvl' : `${lvl}.Lvl`;
+
+        return `
+          <button type="button" onclick="openSpellSlotsModal(${lvl})" class="px-2.5 py-1 rounded-lg border text-xs font-mono font-bold transition flex items-center gap-1.5 cursor-pointer shadow-sm ${badgeClass}" title="${lvlLabel} Yuvalarını Düzenle">
+            <span class="text-[10px] text-slate-400 font-semibold">${lvlLabel}:</span>
+            <span class="${remColor}">${remaining}/${daily}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    // Modal: Spell Slots Manager
+    function openSpellSlotsModal(focusLvl) {
+      renderSpellSlotsModalRows();
+      const modal = document.getElementById('modal-spell-slots-manager');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeSpellSlotsModal() {
+      const modal = document.getElementById('modal-spell-slots-manager');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function renderSpellSlotsModalRows() {
+      const container = document.getElementById('modal-spell-slots-rows');
+      if (!container) return;
+
+      const slots = character?.spellcasting?.slots || [];
+      const unlockedSlots = slots.filter(s => Number(s.daily) > 0);
+
+      if (unlockedSlots.length === 0) {
+        container.innerHTML = `<div class="text-center text-xs text-slate-500 italic py-3">Aktif büyü yuvası bulunmamaktadır.</div>`;
+        return;
+      }
+
+      container.innerHTML = unlockedSlots.map(s => {
+        const lvl = Number(s.level);
+        const daily = Number(s.daily) || 0;
+        const used = Number(s.used) || 0;
+        const remaining = Math.max(0, daily - used);
+        const lvlLabel = lvl === 0 ? '0. Seviye (Cantrip)' : `${lvl}. Seviye`;
+
+        return `
+          <div class="flex items-center justify-between bg-slate-900/90 border border-purple-900/60 rounded-xl px-3 py-2 shadow-sm">
+            <div class="flex flex-col">
+              <span class="text-xs font-bold text-white">${lvlLabel}</span>
+              <span class="text-[9px] text-slate-400 font-mono">Toplam: ${daily} Yuva</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="modifySpellSlotUsed(${lvl}, 1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-rose-300 font-bold flex items-center justify-center border border-slate-700 cursor-pointer text-xs" title="1 Yuva Harca">-1</button>
+              <span class="text-xs font-mono font-black ${remaining > 0 ? 'text-emerald-400' : 'text-rose-400'} w-12 text-center">${remaining} / ${daily}</span>
+              <button type="button" onclick="modifySpellSlotUsed(${lvl}, -1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-300 font-bold flex items-center justify-center border border-slate-700 cursor-pointer text-xs" title="1 Yuva İade Et">+1</button>
+              <button type="button" onclick="replenishSpellSlotLevel(${lvl})" class="px-2 py-1 rounded-lg bg-purple-950/80 hover:bg-purple-900 text-purple-300 border border-purple-700/60 text-[10px] font-bold cursor-pointer transition" title="Bu Seviyeyi Yenile">Yenile</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function modifySpellSlotUsed(lvl, delta) {
+      const slots = character?.spellcasting?.slots || [];
+      const s = slots.find(item => Number(item.level) === Number(lvl));
+      if (!s) return;
+
+      const daily = Number(s.daily) || 0;
+      let used = Number(s.used) || 0;
+      used = Math.max(0, Math.min(daily, used + delta));
+      s.used = used;
+
+      saveStateToStorage(false);
+      renderSpellSlotsStrip();
+      renderSpellSlotsModalRows();
+      renderCombatCategorySpells();
+      recalculateCombatSpell();
+      if (typeof renderSpellSlots === 'function') renderSpellSlots();
+    }
+
+    function replenishSpellSlotLevel(lvl) {
+      const slots = character?.spellcasting?.slots || [];
+      const s = slots.find(item => Number(item.level) === Number(lvl));
+      if (!s) return;
+      s.used = 0;
+
+      saveStateToStorage(false);
+      renderSpellSlotsStrip();
+      renderSpellSlotsModalRows();
+      renderCombatCategorySpells();
+      recalculateCombatSpell();
+      if (typeof renderSpellSlots === 'function') renderSpellSlots();
+    }
+
+    function replenishAllSpellSlots() {
+      const slots = character?.spellcasting?.slots || [];
+      slots.forEach(s => s.used = 0);
+
+      saveStateToStorage(false);
+      renderSpellSlotsStrip();
+      renderSpellSlotsModalRows();
+      renderCombatCategorySpells();
+      recalculateCombatSpell();
+      if (typeof renderSpellSlots === 'function') renderSpellSlots();
+      closeSpellSlotsModal();
+
+      if (typeof showDiceTopToast === 'function') {
+        showDiceTopToast({
+          icon: '🌙',
+          title: 'Büyü Yuvaları Yenilendi',
+          breakdown: 'Tüm seviyelerdeki büyü yuvaları tam kapasiteye ulaştı.',
+          total: 'Yenilendi'
+        });
+      }
+    }
+
+    // --- SPELL CRITICAL PARAMETERS & HOVER TOOLTIP ENGINE ---
+    function getSpellCriticalParams(spell) {
+      if (!spell) {
+        return {
+          dice: '',
+          effect: 'Yok',
+          save: 'Yok (None)',
+          sr: 'Hayır (No)',
+          school: 'Universal',
+          action: 'Standart',
+          range: 'Close',
+          duration: 'Anlık'
+        };
+      }
+
+      // 1. Damage / Dice expression
+      let diceExpr = spell.dice || spell.damageDice || spell.extraDmg || '';
+      if (!diceExpr && spell.benefit) {
+        const m = spell.benefit.match(/\b\d+d\d+(?:\s*\+\s*\d+)?\b/i);
+        if (m) diceExpr = m[0];
+      }
+      let effectText = diceExpr ? `${diceExpr} ${spell.dmgType || ''}`.trim() : (spell.effect || spell.target || 'Etki / Fayda');
+
+      // 2. Saving Throw
+      let saveText = spell.save || spell.savingThrow || '';
+      if (!saveText) {
+        if (spell.attackType === 'saving_throw') {
+          saveText = 'Reflex / Will / Fort';
+        } else if (spell.benefit && /save|saving throw|reflex|fortitude|will/i.test(spell.benefit)) {
+          const sm = spell.benefit.match(/(reflex|fortitude|will)\s*(?:half|negates|partial)?/i);
+          if (sm) saveText = sm[0];
+        }
+        if (!saveText) saveText = 'Yok (None)';
+      }
+
+      // 3. Spell Resistance (SR)
+      let srText = spell.spellResistance || spell.sr || '';
+      if (!srText) {
+        const noSrSpells = /(acid arrow|acid splash|orb of|glitterdust|grease|web|solid fog|fog cloud|stinking cloud|black tentacles|teleport|dimension door)/i;
+        if (noSrSpells.test(spell.name)) {
+          srText = 'Hayır (No)';
+        } else if (spell.level === 0 && (spell.name || '').toLowerCase().includes('light')) {
+          srText = 'Hayır (No)';
+        } else {
+          srText = 'Evet (Yes)';
+        }
+      }
+
+      return {
+        dice: diceExpr,
+        effect: effectText,
+        save: saveText,
+        sr: srText,
+        school: spell.school || 'Universal',
+        action: spell.action || spell.castTime || 'Standart Eylem',
+        range: spell.range || 'Close (25 ft + 5 ft/2 lvl)',
+        duration: spell.duration || 'Instantaneous',
+        benefit: spell.benefit || spell.desc || spell.description || ''
+      };
+    }
+
+    function showSpellHoverTooltip(event, spellName) {
+      const tooltip = document.getElementById('combat-spell-hover-tooltip');
+      if (!tooltip) return;
+
       const known = (character?.spellcasting?.knownSpells || []);
-      const categorySpells = known.filter(sp => getSpellEffectiveCategory(sp) === activeCat);
+      const spell = known.find(s => s.name === spellName);
+      if (!spell) return;
+
+      const params = getSpellCriticalParams(spell);
+      const titleEl = document.getElementById('spell-tooltip-title');
+      const schoolEl = document.getElementById('spell-tooltip-school');
+      const effectEl = document.getElementById('spell-tooltip-effect');
+      const saveEl = document.getElementById('spell-tooltip-save');
+      const srEl = document.getElementById('spell-tooltip-sr');
+      const actionEl = document.getElementById('spell-tooltip-action');
+      const descEl = document.getElementById('spell-tooltip-desc');
+
+      if (titleEl) titleEl.textContent = spell.name;
+      if (schoolEl) schoolEl.textContent = `${spell.level === 0 ? 'Cantrip' : spell.level + '. Lvl'} • ${params.school}`;
+      if (effectEl) effectEl.textContent = params.effect || 'Hasar Yok';
+      if (saveEl) saveEl.textContent = params.save;
+      if (srEl) srEl.textContent = params.sr;
+      if (actionEl) actionEl.textContent = `${params.action} • ${params.range}`;
+      if (descEl) descEl.textContent = params.benefit || 'Açıklama bulunmuyor.';
+
+      updateSpellHoverTooltipPos(event);
+      tooltip.classList.remove('hidden');
+    }
+
+    function hideSpellHoverTooltip() {
+      const tooltip = document.getElementById('combat-spell-hover-tooltip');
+      if (tooltip) tooltip.classList.add('hidden');
+    }
+
+    function updateSpellHoverTooltipPos(event) {
+      const tooltip = document.getElementById('combat-spell-hover-tooltip');
+      if (!tooltip || tooltip.classList.contains('hidden')) return;
+
+      const pad = 12;
+      let x = event.clientX + pad;
+      let y = event.clientY + pad;
+
+      const tipRect = tooltip.getBoundingClientRect();
+      const winW = window.innerWidth;
+      const winH = window.innerHeight;
+
+      if (x + tipRect.width > winW - pad) {
+        x = event.clientX - tipRect.width - pad;
+      }
+      if (y + tipRect.height > winH - pad) {
+        y = event.clientY - tipRect.height - pad;
+      }
+
+      tooltip.style.left = `${Math.max(pad, x)}px`;
+      tooltip.style.top = `${Math.max(pad, y)}px`;
+    }
+
+    // --- 4. LEVEL-GROUPED 3x2 SPELL CARDS REPERTOIRE (TIER 4) ---
+    function renderCombatCategorySpells() {
+      const container = document.getElementById('combat-category-spells-container');
+      if (!container) return;
+
+      const activeCat = window.currentActiveCombatSpellCategory || 'offense_spell';
+      const known = (character?.spellcasting?.knownSpells || []).slice();
+      let categorySpells = known.filter(sp => getSpellEffectiveCategory(sp) === activeCat);
+
+      // Apply custom order if defined
+      const customOrder = character?.tactical?.spellOrder?.[activeCat];
+      if (Array.isArray(customOrder)) {
+        categorySpells.sort((a, b) => {
+          const idxA = customOrder.indexOf(a.name);
+          const idxB = customOrder.indexOf(b.name);
+          if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+          if (idxA !== -1) return -1;
+          if (idxB !== -1) return 1;
+          return (Number(a.level) || 0) - (Number(b.level) || 0);
+        });
+      } else {
+        categorySpells.sort((a, b) => (Number(a.level) || 0) - (Number(b.level) || 0));
+      }
+
+      // Update spell count badge
+      const countBadge = document.getElementById('combat-spell-count-badge');
+      if (countBadge) countBadge.textContent = `${categorySpells.length} Büyü`;
 
       if (categorySpells.length === 0) {
         const catLabels = { offense_spell: 'Saldırı', spell_control: 'Kontrol', spell_support: 'Destek' };
-        container.innerHTML = `<span class="col-span-full text-[10px] text-slate-500 italic py-1">Bu rolde (${catLabels[activeCat] || activeCat}) bilinen büyü yok.</span>`;
+        container.innerHTML = `
+          <div class="p-3 text-center text-xs text-slate-500 italic bg-slate-950/60 rounded-xl border border-dashed border-slate-800">
+            Bu kategoride (${catLabels[activeCat] || activeCat}) bilinen büyü bulunmamaktadır.
+          </div>
+        `;
         return;
       }
 
       const activeSpell = getSelectedCombatSpell();
       const activeName = activeSpell ? activeSpell.name : (categorySpells[0]?.name || '');
 
-      // Pick top 3 spells in this category
-      const topSpells = categorySpells.slice(0, 3);
-      container.innerHTML = topSpells.map(sp => {
-        const isActive = sp.name === activeName;
-        let activeBorder = isActive ? 'border-purple-500 bg-purple-950/60 shadow-md shadow-purple-950/50' : 'border-slate-800 bg-slate-900/80 hover:border-purple-800/60';
-        let badgeColor = 'text-purple-400';
-        if (activeCat === 'spell_control') {
-          activeBorder = isActive ? 'border-amber-500 bg-amber-950/60 shadow-md shadow-amber-950/50' : 'border-slate-800 bg-slate-900/80 hover:border-amber-800/60';
-          badgeColor = 'text-amber-400';
-        } else if (activeCat === 'spell_support') {
-          activeBorder = isActive ? 'border-emerald-500 bg-emerald-950/60 shadow-md shadow-emerald-950/50' : 'border-slate-800 bg-slate-900/80 hover:border-emerald-800/60';
-          badgeColor = 'text-emerald-400';
-        }
-        const activeText = isActive ? 'text-white' : 'text-slate-300';
-        const dmgExpr = sp.dice || (sp.benefit && sp.benefit.match(/\d+d\d+/i) ? sp.benefit.match(/\d+d\d+/i)[0] : `${sp.level}. Lvl`);
+      // Group spells by level
+      const spellsByLevel = {};
+      categorySpells.forEach(sp => {
+        const lvl = Number(sp.level) || 0;
+        if (!spellsByLevel[lvl]) spellsByLevel[lvl] = [];
+        spellsByLevel[lvl].push(sp);
+      });
+
+      const sortedLevels = Object.keys(spellsByLevel).map(Number).sort((a, b) => a - b);
+      const slots = character?.spellcasting?.slots || [];
+
+      container.innerHTML = sortedLevels.map(lvl => {
+        const lvlSpells = spellsByLevel[lvl];
+        const targetSlot = slots.find(s => Number(s.level) === lvl);
+        const daily = targetSlot ? Number(targetSlot.daily) || 0 : 0;
+        const used = targetSlot ? Number(targetSlot.used) || 0 : 0;
+        const remaining = Math.max(0, daily - used);
+        const lvlTitle = lvl === 0 ? '0. Seviye (Cantrips)' : `${lvl}. Seviye Büyüler`;
+        const slotText = targetSlot ? `Yuva: ${remaining}/${daily}` : 'Yuva Yok';
+        const slotColor = remaining > 0 ? 'text-emerald-400' : 'text-slate-500';
+
+        const cardsHtml = lvlSpells.map(sp => {
+          const isActive = sp.name === activeName;
+          const params = getSpellCriticalParams(sp);
+
+          let activeBorder = 'border-slate-800 bg-slate-900/80 hover:border-purple-800/60';
+          let activeTitleColor = 'text-slate-300';
+          let badgeColor = 'text-purple-400';
+
+          if (activeCat === 'offense_spell') {
+            badgeColor = 'text-purple-400';
+            if (isActive) {
+              activeBorder = 'border-purple-500 bg-purple-950/70 shadow-md shadow-purple-950/50 ring-1 ring-purple-500/60';
+              activeTitleColor = 'text-white font-extrabold';
+            }
+          } else if (activeCat === 'spell_control') {
+            badgeColor = 'text-amber-400';
+            if (isActive) {
+              activeBorder = 'border-amber-500 bg-amber-950/70 shadow-md shadow-amber-950/50 ring-1 ring-amber-500/60';
+              activeTitleColor = 'text-white font-extrabold';
+            }
+          } else {
+            badgeColor = 'text-emerald-400';
+            if (isActive) {
+              activeBorder = 'border-emerald-500 bg-emerald-950/70 shadow-md shadow-emerald-950/50 ring-1 ring-emerald-500/60';
+              activeTitleColor = 'text-white font-extrabold';
+            }
+          }
+
+          const safeName = sp.name.replace(/'/g, "\\'");
+          const reorderControls = window.spellReorderModeActive ? `
+            <div class="flex items-center gap-1 shrink-0" onclick="event.stopPropagation()">
+              <button type="button" onclick="moveCategorySpellOrder('${activeCat}', '${safeName}', -1, event)" class="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold flex items-center justify-center text-[10px] cursor-pointer" title="Sola Taşı">◀</button>
+              <button type="button" onclick="moveCategorySpellOrder('${activeCat}', '${safeName}', 1, event)" class="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold flex items-center justify-center text-[10px] cursor-pointer" title="Sağa Taşı">▶</button>
+            </div>
+          ` : '';
+
+          return `
+            <div onclick="selectCombatSpellDirect('${safeName}')"
+                 onmouseenter="showSpellHoverTooltip(event, '${safeName}')"
+                 onmouseleave="hideSpellHoverTooltip()"
+                 onmousemove="updateSpellHoverTooltipPos(event)"
+                 class="p-2 rounded-xl border ${activeBorder} transition flex flex-col justify-between cursor-pointer min-h-[58px] group relative select-none">
+              <div class="flex items-center justify-between w-full gap-1">
+                <span class="text-[8px] font-mono ${badgeColor} font-bold uppercase truncate">${params.school || (sp.level === 0 ? 'Cantrip' : 'Lvl ' + sp.level)}</span>
+                <span class="text-[9px] text-amber-300 font-mono font-bold shrink-0 truncate">${params.dice || params.effect || ''}</span>
+              </div>
+              <div class="text-[11px] font-bold ${activeTitleColor} group-hover:text-white truncate my-0.5" title="${sp.name}">
+                ${sp.name}
+              </div>
+              <div class="flex items-center justify-between w-full text-[8px] text-slate-400 mt-0.5">
+                <span class="truncate">${params.action}</span>
+                ${reorderControls ? reorderControls : `<span class="truncate shrink-0 font-mono text-[8px] text-slate-500">${params.save !== 'Yok (None)' ? params.save : params.sr}</span>`}
+              </div>
+            </div>
+          `;
+        }).join('');
 
         return `
-          <button type="button" onclick="selectQuickCombatSpell('${sp.name.replace(/'/g, "\\'")}')" class="p-1.5 rounded-lg border ${activeBorder} text-left transition flex flex-col justify-between cursor-pointer min-h-[52px] group">
-            <div class="flex items-center justify-between w-full">
-              <span class="text-[8px] font-mono ${badgeColor} font-bold uppercase">${sp.level === 0 ? 'Cantrip' : `Lvl ${sp.level}`}</span>
-              <span class="text-[9px] text-amber-300 font-mono font-bold">${dmgExpr}</span>
+          <div class="space-y-1">
+            <div class="flex items-center justify-between px-1 text-[10px] font-bold border-b border-slate-800/80 pb-0.5">
+              <span class="text-slate-300 flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                <span>${lvlTitle}</span>
+              </span>
+              <span class="font-mono text-[9px] ${slotColor}">${slotText}</span>
             </div>
-            <div class="text-[10px] font-bold ${activeText} group-hover:text-white truncate mt-1" title="${sp.name}">
-              ${sp.name}
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+              ${cardsHtml}
             </div>
-          </button>
+          </div>
         `;
       }).join('');
     }
 
-    function selectQuickCombatSpell(spellName) {
+    function selectCombatSpellDirect(spellName) {
+      window.currentSelectedCombatSpellName = spellName;
       const select = document.getElementById('combat-active-spell-select');
-      if (select) {
-        select.value = spellName;
-      }
-      renderCombatQuickSpells();
+      if (select) select.value = spellName;
+      renderCombatCategorySpells();
       recalculateCombatSpell();
+    }
+
+    // Aliases for backward compatibility
+    function renderCombatQuickSpells() {
+      renderCombatCategorySpells();
+    }
+
+    function selectQuickCombatSpell(spellName) {
+      selectCombatSpellDirect(spellName);
     }
 
     function toggleCombatSpellLibraryDrawer() {
@@ -11372,7 +11724,7 @@
       const select = document.getElementById('combat-active-spell-select');
       if (!select) return;
 
-      const currentVal = select.value;
+      const currentVal = window.currentSelectedCombatSpellName || select.value;
       select.innerHTML = '';
 
       const activeCat = window.currentActiveCombatSpellCategory || 'offense_spell';
@@ -11402,23 +11754,78 @@
 
       if (!hasMatch && categorySpells.length > 0) {
         select.value = categorySpells[0].name;
+        window.currentSelectedCombatSpellName = categorySpells[0].name;
       }
     }
 
     function onCombatSpellChange() {
-      renderCombatQuickSpells();
+      const select = document.getElementById('combat-active-spell-select');
+      if (select && select.value) {
+        window.currentSelectedCombatSpellName = select.value;
+      }
+      renderCombatCategorySpells();
       recalculateCombatSpell();
     }
 
     function getSelectedCombatSpell() {
-      const select = document.getElementById('combat-active-spell-select');
-      const name = select ? select.value : '';
+      const activeCat = window.currentActiveCombatSpellCategory || 'offense_spell';
       const known = (character?.spellcasting?.knownSpells || []);
-      if (!name) return known[0] || null;
-      return known.find(s => s.name === name) || known[0] || null;
+      const categorySpells = known.filter(sp => getSpellEffectiveCategory(sp) === activeCat);
+
+      const selName = window.currentSelectedCombatSpellName || (document.getElementById('combat-active-spell-select')?.value);
+      if (selName) {
+        const found = known.find(s => s.name === selName);
+        if (found) return found;
+      }
+      return categorySpells[0] || known[0] || null;
     }
 
-    // --- SPELL TACTICAL MODIFIERS & METAMAGIC ENGINE ---
+    function toggleSpellReorderMode() {
+      window.spellReorderModeActive = !window.spellReorderModeActive;
+      const btnText = document.getElementById('spell-reorder-btn-text');
+      const btn = document.getElementById('btn-spell-reorder-toggle');
+      if (btnText) btnText.textContent = window.spellReorderModeActive ? 'Tamam ✓' : 'Sırala';
+      if (btn) {
+        if (window.spellReorderModeActive) {
+          btn.className = 'text-[9px] text-emerald-300 bg-emerald-950/70 hover:bg-emerald-900 font-bold flex items-center gap-1 cursor-pointer px-2 py-0.5 rounded border border-emerald-600 transition';
+        } else {
+          btn.className = 'text-[9px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-slate-800 transition';
+        }
+      }
+      renderCombatCategorySpells();
+    }
+
+    function moveCategorySpellOrder(category, spellName, delta, event) {
+      if (event && event.stopPropagation) event.stopPropagation();
+      if (!character) return;
+      if (!character.tactical) character.tactical = {};
+      if (!character.tactical.spellOrder) character.tactical.spellOrder = {};
+
+      const known = (character.spellcasting?.knownSpells || []).slice();
+      let categorySpells = known.filter(sp => getSpellEffectiveCategory(sp) === category);
+
+      let orderList = Array.isArray(character.tactical.spellOrder[category])
+        ? character.tactical.spellOrder[category].slice()
+        : categorySpells.map(s => s.name);
+
+      categorySpells.forEach(s => {
+        if (!orderList.includes(s.name)) orderList.push(s.name);
+      });
+
+      const idx = orderList.indexOf(spellName);
+      if (idx === -1) return;
+      const targetIdx = idx + delta;
+      if (targetIdx < 0 || targetIdx >= orderList.length) return;
+
+      const item = orderList.splice(idx, 1)[0];
+      orderList.splice(targetIdx, 0, item);
+
+      character.tactical.spellOrder[category] = orderList;
+      saveStateToStorage(false);
+      renderCombatCategorySpells();
+    }
+
+    // --- 2. SPELL TACTICAL MODIFIERS ENGINE (TIER 2 - 3x3 GRID) ---
     function getSpellTacticalModifiers() {
       if (!character) return [];
       const modifiers = [];
@@ -11545,7 +11952,7 @@
         }
       });
 
-      // 4. Any Feat, Special Ability, or Buff pinned with ANY spell pin ("ayrıca feat ve abilityde hangi büyü pini seçilirse seçilsin bu alana gelmeli")
+      // 4. Any Feat, Special Ability, or Buff pinned with ANY spell pin
       const spellCatKeys = ['offense_spell', 'spell_control', 'spell_support'];
       const allPins = typeof getAllCombatPins === 'function' ? getAllCombatPins() : [];
 
@@ -11646,17 +12053,60 @@
       recalculateCombatSpell();
     }
 
+    function toggleSpellModifiersGridExpanded() {
+      window.spellModifiersExpanded = !window.spellModifiersExpanded;
+      renderSpellTacticalModifiers();
+    }
+
     function renderSpellTacticalModifiers() {
       const container = document.getElementById('combat-spell-modifiers-dynamic-grid');
       if (!container) return;
 
       const modifiers = getSpellTacticalModifiers();
-      if (modifiers.length === 0) {
-        container.innerHTML = `<div class="col-span-full text-[10px] text-slate-500 italic p-2 text-center border border-dashed border-slate-800 rounded">Henüz büyü modifiyeri veya sabitlenmiş yetenek yok.</div>`;
-        return;
-      }
+      const currentSpell = getSelectedCombatSpell();
+      const currentLvl = currentSpell ? (Number(currentSpell.level) || 0) : 0;
 
-      container.innerHTML = modifiers.map(mod => {
+      // Calculate SR bonus for SR check card
+      const cl = Number(character?.casterLevel) || (character?.classes ? Object.values(character.classes)[0]?.level : 1) || 1;
+      const featsList = character?.feats || [];
+      const hasSpellPen = featsList.some(f => (f.name || '').toLowerCase().includes('spell penetration') && !(f.name || '').toLowerCase().includes('greater'));
+      const hasGrtSpellPen = featsList.some(f => (f.name || '').toLowerCase().includes('greater spell penetration'));
+      const srBonusFromFeats = hasGrtSpellPen ? 4 : (hasSpellPen ? 2 : 0);
+      const totalSrBonus = cl + srBonusFromFeats;
+
+      // 1. Defensive Casting Checkbox State
+      const isDefensiveActive = Boolean(character?.tactical?.defensiveCastingActive);
+
+      // Card 1: Defensive Casting (Fixed Item 1)
+      const defCardHtml = `
+        <label class="bg-slate-900 border ${isDefensiveActive ? 'border-indigo-500 bg-indigo-950/40 text-indigo-200 shadow-[0_0_8px_rgba(99,102,241,0.3)]' : 'border-indigo-900/60 text-slate-300'} hover:border-indigo-500/60 rounded p-1.5 cursor-pointer transition flex items-start justify-between gap-1 group select-none min-h-[44px]">
+          <div class="min-w-0 pr-1">
+            <div class="text-[10px] font-bold text-indigo-300 group-hover:text-white flex items-center gap-1 leading-tight">
+              <span class="shrink-0">🛡️</span>
+              <span class="truncate">Defensive Cast</span>
+            </div>
+            <div class="text-[8px] text-slate-400 mt-0.5 leading-tight" id="defensive-casting-dc-hint">DC ${15 + currentLvl} • AoO Engeller</div>
+          </div>
+          <input type="checkbox" id="mod-defensive-casting" ${isDefensiveActive ? 'checked' : ''} onchange="character.tactical.defensiveCastingActive = this.checked; saveStateToStorage(false); renderSpellTacticalModifiers();" class="mt-0.5 shrink-0 w-3.5 h-3.5 rounded text-indigo-500 border-slate-700 focus:ring-0 cursor-pointer">
+        </label>
+      `;
+
+      // Card 2: Spell Resistance Check Button (Fixed Item 2)
+      const srCardHtml = `
+        <button type="button" onclick="rollSpellResistanceCheck()" class="bg-slate-900 hover:bg-slate-800 border border-purple-900/60 hover:border-purple-500/60 rounded p-1.5 transition text-left flex items-start justify-between gap-1 group cursor-pointer min-h-[44px] select-none" title="Hedefin Büyü Direncine (SR) karşı test zarı at: 1d20 + CL">
+          <div class="min-w-0 pr-1">
+            <div class="text-[10px] font-bold text-purple-300 group-hover:text-white flex items-center gap-1 leading-tight">
+              <span class="shrink-0">⚡</span>
+              <span class="truncate">SR Testi At</span>
+            </div>
+            <div class="text-[8px] text-slate-400 mt-0.5 leading-tight">1d20 + CL vs SR</div>
+          </div>
+          <span id="sr-check-bonus-badge" class="mt-0.5 shrink-0 font-mono font-bold text-xs text-amber-400">+${totalSrBonus}</span>
+        </button>
+      `;
+
+      // Build modifier cards
+      const modCards = modifiers.map(mod => {
         const isActive = isSpellCockpitModifierActive(mod);
 
         let borderClass = 'border-purple-900/60 text-slate-300';
@@ -11717,9 +12167,35 @@
             <input type="checkbox" id="${inputId}" ${isActive ? 'checked' : ''} onchange="toggleSpellCockpitModifier('${mod.id}', event)" class="mt-0.5 shrink-0 w-3.5 h-3.5 rounded ${checkColor} border-slate-700 focus:ring-0 cursor-pointer">
           </label>
         `;
-      }).join('');
+      });
+
+      const allItems = [defCardHtml, srCardHtml, ...modCards];
+      const totalCount = allItems.length;
+
+      // Update badge
+      const countBadge = document.getElementById('spell-modifiers-count-badge');
+      if (countBadge) countBadge.textContent = totalCount;
+
+      // 3x3 Drawer Collapse/Expand Logic
+      const toggleBtn = document.getElementById('toggle-spell-modifiers-btn');
+      let displayItems = allItems;
+
+      if (totalCount > 6) {
+        if (toggleBtn) {
+          toggleBtn.classList.remove('hidden');
+          toggleBtn.textContent = window.spellModifiersExpanded ? 'Daralt ▴' : `Daha Fazla (${totalCount - 6}) ▾`;
+        }
+        if (!window.spellModifiersExpanded) {
+          displayItems = allItems.slice(0, 6);
+        }
+      } else {
+        if (toggleBtn) toggleBtn.classList.add('hidden');
+      }
+
+      container.innerHTML = displayItems.join('');
     }
 
+    // --- 5. SELECTED SPELL COCKPIT & RECALCULATION ENGINE (TIER 5) ---
     function recalculateCombatSpell() {
       const spell = getSelectedCombatSpell();
       if (!spell) {
@@ -11729,6 +12205,8 @@
           if (btnText) btnText.textContent = 'Büyü Yok';
           spellBtn.disabled = true;
         }
+        const titleEl = document.getElementById('combat-selected-spell-title');
+        if (titleEl) titleEl.textContent = 'Büyü Seçilmedi';
         return;
       }
 
@@ -11783,26 +12261,35 @@
         }
       }
 
-      // Update Spell Base Stats
-      const lvlEl = document.getElementById('combat-spell-level-display');
-      if (lvlEl) lvlEl.textContent = baseLvl === 0 ? 'Cantrip (0)' : `${baseLvl}. Seviye`;
+      // Update Selected Spell Title & School/Level Badges
+      const titleEl = document.getElementById('combat-selected-spell-title');
+      if (titleEl) titleEl.textContent = spell.name;
 
+      const schoolBadge = document.getElementById('combat-selected-spell-school-badge');
+      if (schoolBadge) schoolBadge.textContent = spell.school || 'Universal';
+
+      const lvlBadge = document.getElementById('combat-selected-spell-level-badge');
+      if (lvlBadge) lvlBadge.textContent = baseLvl === 0 ? 'Cantrip (0)' : `${baseLvl}. Seviye`;
+
+      const metaDescEl = document.getElementById('combat-selected-spell-meta-desc');
+      if (metaDescEl) {
+        metaDescEl.textContent = spell.benefit || spell.desc || spell.description || 'Açıklama bulunmuyor.';
+      }
+
+      // Update Action Display
       const actionEl = document.getElementById('combat-spell-action-display');
       if (actionEl) {
         if (isQuicken) {
           actionEl.textContent = 'Swift Action (Quicken)';
-          actionEl.className = 'text-xs font-black text-rose-400 font-mono mt-0.5';
+          actionEl.className = 'text-[9px] font-mono font-bold text-rose-400';
         } else if (isMetamagicActive) {
           actionEl.textContent = 'Full-Round (Spontaneous)';
-          actionEl.className = 'text-xs font-black text-rose-400 font-mono mt-0.5';
+          actionEl.className = 'text-[9px] font-mono font-bold text-amber-400';
         } else {
-          actionEl.textContent = spell.action || 'Standart';
-          actionEl.className = 'text-xs font-black text-amber-400 font-mono mt-0.5';
+          actionEl.textContent = spell.action || 'Standart Eylem';
+          actionEl.className = 'text-[9px] font-mono font-bold text-amber-400';
         }
       }
-
-      const schoolEl = document.getElementById('combat-spell-school-display');
-      if (schoolEl) schoolEl.textContent = spell.school || 'Universal';
 
       // Check slot capacity
       const slots = character?.spellcasting?.slots || [];
@@ -11814,18 +12301,18 @@
       if (slotReqEl) {
         if (targetSlot) {
           slotReqEl.textContent = `${finalLvl}. Seviye Yuva (Kalan: ${remaining}/${totalDaily})`;
-          slotReqEl.className = remaining > 0 ? 'text-xs font-black text-purple-300 font-mono' : 'text-xs font-black text-rose-400 font-mono';
+          slotReqEl.className = remaining > 0 ? 'text-xs font-mono font-bold text-purple-300' : 'text-xs font-mono font-bold text-rose-400';
         } else {
           slotReqEl.textContent = `${finalLvl}. Seviye Yuva (Kilitli / Henüz Yok)`;
-          slotReqEl.className = 'text-xs font-black text-rose-500 font-mono';
+          slotReqEl.className = 'text-xs font-mono font-bold text-rose-500';
         }
       }
 
       // Attack roll & DC calculation
-      const bab = Number(character.bab) || 0;
-      const dexMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.dex || 10) : 0;
-      const strMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.str || 10) : 0;
-      const chaMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.cha || 10) : 0;
+      const bab = Number(character?.bab) || 0;
+      const dexMod = RuleEngine ? RuleEngine.getAbilityMod(character?.abilities?.dex || 10) : 0;
+      const strMod = RuleEngine ? RuleEngine.getAbilityMod(character?.abilities?.str || 10) : 0;
+      const chaMod = RuleEngine ? RuleEngine.getAbilityMod(character?.abilities?.cha || 10) : 0;
 
       const rangedTouchAtk = bab + dexMod;
       const meleeTouchAtk = bab + strMod;
@@ -11836,6 +12323,13 @@
         const isRanged = (spell.attackType || '').toLowerCase().includes('ranged') || (spell.range || '').toLowerCase().includes('ft');
         const atkText = isRanged ? `Ranged Touch +${rangedTouchAtk}` : `Melee Touch +${meleeTouchAtk}`;
         dcEl.textContent = `DC ${saveDc} • ${atkText}`;
+      }
+
+      // SR & Target / Range display
+      const params = getSpellCriticalParams(spell);
+      const srTargetEl = document.getElementById('combat-spell-sr-target-display');
+      if (srTargetEl) {
+        srTargetEl.textContent = `SR: ${params.sr} • Menzil: ${params.range}`;
       }
 
       // Damage / effect preview
@@ -11866,25 +12360,25 @@
       if (metaBadgeEl) {
         if (isMetamagicActive) {
           metaBadgeEl.textContent = `✨ Aktif Modlar: ${metamagicTags.join(' • ')} (Yuva: ${finalLvl})`;
-          metaBadgeEl.className = 'text-[10px] text-purple-300 font-bold mt-0.5';
+          metaBadgeEl.className = 'text-[8px] text-purple-300 font-bold truncate mt-0.5';
         } else {
           metaBadgeEl.textContent = `Standart İcra (${baseLvl}. Seviye Yuva)`;
-          metaBadgeEl.className = 'text-[10px] text-slate-400 mt-0.5';
+          metaBadgeEl.className = 'text-[8px] text-slate-400 truncate mt-0.5';
         }
       }
 
       // Top CL & Slot Badges and Collapsed Bar Summary
-      const cl = Number(character.casterLevel) || (character.classes ? Object.values(character.classes)[0]?.level : 1) || 1;
+      const cl = Number(character?.casterLevel) || (character?.classes ? Object.values(character.classes)[0]?.level : 1) || 1;
       const clBadge = document.getElementById('combat-spell-cl-slot-badge');
-      const totalDailySlots = (character.spellcasting?.slots || []).reduce((acc, s) => acc + (Number(s.daily) || 0), 0);
-      const totalUsedSlots = (character.spellcasting?.slots || []).reduce((acc, s) => acc + (Number(s.used) || 0), 0);
+      const totalDailySlots = (character?.spellcasting?.slots || []).reduce((acc, s) => acc + (Number(s.daily) || 0), 0);
+      const totalUsedSlots = (character?.spellcasting?.slots || []).reduce((acc, s) => acc + (Number(s.used) || 0), 0);
       const totalRemainingSlots = Math.max(0, totalDailySlots - totalUsedSlots);
       if (clBadge) clBadge.textContent = `CL: ${cl} • Yuva: ${totalRemainingSlots}/${totalDailySlots}`;
       const spellSummary = document.getElementById('combat-spell-collapsed-summary');
       if (spellSummary) spellSummary.textContent = `CL: ${cl} • Kalan Yuva: ${totalRemainingSlots}/${totalDailySlots}`;
 
       // Spell Penetration feats calculation for SR check badge
-      const featsList = character.feats || [];
+      const featsList = character?.feats || [];
       const hasSpellPen = featsList.some(f => (f.name || '').toLowerCase().includes('spell penetration') && !(f.name || '').toLowerCase().includes('greater'));
       const hasGrtSpellPen = featsList.some(f => (f.name || '').toLowerCase().includes('greater spell penetration'));
       const srBonusFromFeats = hasGrtSpellPen ? 4 : (hasSpellPen ? 2 : 0);
@@ -11902,7 +12396,6 @@
         castBtn.disabled = false;
         const atkType = (spell.attackType || '').toLowerCase();
         const nameLower = (spell.name || '').toLowerCase();
-        const activeCat = window.currentActiveCombatSpellCategory || 'offense_spell';
 
         if (atkType === 'ranged_touch' || nameLower.includes('scorching ray') || nameLower.includes('ray of frost')) {
           if (btnIcon) btnIcon.textContent = '⚡';
@@ -11967,7 +12460,7 @@
       const isMetamagicActive = slotDiff > 0 || isEmpower || isMaximize || isEnlarge || isExtend || isQuicken;
 
       // Defensive Casting Check (D&D 3.5e RAW: Concentration DC 15 + Spell Level)
-      const isDefensive = document.getElementById('mod-defensive-casting')?.checked || false;
+      const isDefensive = Boolean(character?.tactical?.defensiveCastingActive || document.getElementById('mod-defensive-casting')?.checked);
       if (isDefensive) {
         const concSkill = (character.skills || []).find(s => s && s.name && s.name.toLowerCase() === 'concentration');
         const concRanks = Number(concSkill?.ranks) || 0;
@@ -12003,6 +12496,8 @@
           if (targetSlot) {
             targetSlot.used++;
             if (typeof renderSpellSlots === 'function') renderSpellSlots();
+            renderSpellSlotsStrip();
+            renderCombatCategorySpells();
             saveStateToStorage(false);
           }
           recalculateCombatSpell();
@@ -12025,6 +12520,8 @@
         }
         targetSlot.used++;
         if (typeof renderSpellSlots === 'function') renderSpellSlots();
+        renderSpellSlotsStrip();
+        renderCombatCategorySpells();
         saveStateToStorage(false);
       }
 
@@ -12074,6 +12571,8 @@
             });
           }
           recalculateCombatSpell();
+          renderSpellSlotsStrip();
+          renderCombatCategorySpells();
         };
 
         if (window.Dice3D && typeof Dice3D.roll === 'function') {
@@ -12143,6 +12642,8 @@
           });
         }
         recalculateCombatSpell();
+        renderSpellSlotsStrip();
+        renderCombatCategorySpells();
       };
 
       if (window.Dice3D && typeof Dice3D.roll === 'function') {
@@ -16757,8 +17258,9 @@
 
       // 6. Spellcasting Cockpit & Panels State
       try { initCockpitPanelsState(); } catch (e) { console.error('initCockpitPanelsState error:', e); }
+      try { renderSpellSlotsStrip(); } catch (e) { console.error('renderSpellSlotsStrip error:', e); }
       try { populateCombatSpells(); } catch (e) { console.error('populateCombatSpells error:', e); }
-      try { renderCombatQuickSpells(); } catch (e) { console.error('renderCombatQuickSpells error:', e); }
+      try { renderCombatCategorySpells(); } catch (e) { console.error('renderCombatCategorySpells error:', e); }
       try { if (typeof renderSpellTacticalModifiers === 'function') renderSpellTacticalModifiers(); } catch (e) { console.error('renderSpellTacticalModifiers error:', e); }
       try { recalculateCombatSpell(); } catch (e) { console.error('recalculateCombatSpell error:', e); }
     }
@@ -21468,6 +21970,7 @@
     // Daily Spell Slots (Kompakt Kapsül Şeridi - Asla taşmaz veya şişmez)
     function renderSpellSlots() {
       renderSpellsCockpit();
+      if (typeof renderSpellSlotsStrip === 'function') renderSpellSlotsStrip();
 
       const container = document.getElementById('compact-spell-slots-grid') || document.getElementById('spell-slots-grid');
       if (!container) return;
@@ -35723,5 +36226,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       }
     }
   </script>
+  <!-- Floating Tooltip for Combat Spells Hover -->
+  <div id="combat-spell-hover-tooltip" class="hidden fixed z-[200] pointer-events-none bg-slate-950/95 border border-purple-500/80 rounded-xl p-3 shadow-2xl max-w-xs text-xs space-y-1.5 backdrop-blur-md transition-opacity duration-150 text-slate-200"></div>
 </body>
 </html>
