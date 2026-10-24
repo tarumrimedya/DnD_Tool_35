@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
@@ -6037,6 +6037,12 @@
             >
             <span class="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
           </div>
+          <select id="spell-picker-source-filter" onchange="renderSpellPickerResults()" class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:border-purple-500 focus:outline-none" title="B&#252;y&#252; Kayna&#287;&#305; Filtresi">
+            <option value="auto">&#x1F3AF; Otomatik (Hedefe Uygun)</option>
+            <option value="arcane">&#x26A1; Arcane (Anl&#305;k / Kitap)</option>
+            <option value="divine">&#x1F52E; Divine (&#304;lahi)</option>
+            <option value="all">&#x1F310; T&#252;m&#252; (Filtresiz)</option>
+          </select>
           <select id="spell-picker-level-filter" onchange="renderSpellPickerResults()" class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:border-purple-500 focus:outline-none">
             <option value="all">Tüm Seviyeler</option>
             <option value="0">0. Seviye</option>
@@ -6051,6 +6057,7 @@
             <option value="9">9. Seviye</option>
           </select>
         </div>
+        <div id="spell-picker-target-hint" class="text-[11px] text-slate-400 flex items-center justify-between px-1"></div>
       </div>
 
       <!-- Results Body -->
@@ -7584,7 +7591,27 @@
 
       const savedDb = localStorage.getItem('dnd35_master_db');
       if (savedDb) {
-        try { masterDb = JSON.parse(savedDb); } catch (e) {}
+        try {
+          const parsed = JSON.parse(savedDb);
+          if (Array.isArray(parsed)) {
+            masterDb = parsed.map(item => {
+              if (!item || typeof item !== 'object') return item;
+              if (item.name) item.name = sanitizeMojibakeString(item.name);
+              if (item.parent) item.parent = sanitizeMojibakeString(item.parent);
+              if (item.benefit) item.benefit = sanitizeMojibakeString(item.benefit);
+              if (item.description) item.description = sanitizeMojibakeString(item.description);
+              return item;
+            });
+            const seen = new Set();
+            masterDb = masterDb.filter(item => {
+              if (!item || !item.name) return false;
+              const k = (item.name || '').toLowerCase().trim();
+              if (seen.has(k)) return false;
+              seen.add(k);
+              return true;
+            });
+          }
+        } catch (e) {}
       } else {
         masterDb = defaultDb;
       }
@@ -22471,14 +22498,34 @@
       return m ? m[1].replace(/\s+/g, '') : null;
     }
 
-    // Helper: Check if a Master DB entry is a Child row (parent !== '-' or starts with '↳')
+    // Helper: Sanitize Turkish mojibake strings and corrupt characters
+    function sanitizeMojibakeString(str) {
+      if (typeof str !== 'string') return str;
+      return str
+        .replace(/\u00E2\u2020\u00B3/g, '\u21B3')
+        .replace(/\u00E2\u2020\u2019/g, '\u2794')
+        .replace(/\u00C4\u00B0/g, '\u0130')
+        .replace(/\u00C4\u00B1/g, '\u0131')
+        .replace(/\u00C5\u0178/g, '\u015F')
+        .replace(/\u00C5\u017D/g, '\u015E')
+        .replace(/\u00C3\u00A7/g, '\u00E7')
+        .replace(/\u00C3\u2021/g, '\u00C7')
+        .replace(/\u00C3\u00B6/g, '\u00F6')
+        .replace(/\u00C3\u2013/g, '\u00D6')
+        .replace(/\u00C3\u00BC/g, '\u00FC')
+        .replace(/\u00C3\u0153/g, '\u00DC')
+        .replace(/\u00C4\u017F/g, '\u011F')
+        .replace(/\u00C4\u017D/g, '\u011E');
+    }
+
+    // Helper: Check if a Master DB entry is a Child row (parent !== '-' or starts with '\u21B3')
     function isMasterDbChildEntry(item) {
       if (!item) return false;
       if (item.isChild) return true;
-      const p = String(item.parent || '').trim();
+      const p = sanitizeMojibakeString(String(item.parent || '')).trim();
       if (p && p !== '-') return true;
-      const n = String(item.name || '').trim();
-      return n.startsWith('↳');
+      const n = sanitizeMojibakeString(String(item.name || '')).trim();
+      return n.startsWith('\u21B3') || n.startsWith('\u2794') || n.startsWith('\u2192') || n.startsWith('>');
     }
 
     // Helper: Extract clean parent spell/maneuver name from item object or roll title
@@ -22486,25 +22533,25 @@
       if (!itemOrTitle) return '';
       if (typeof itemOrTitle === 'object') {
         if (isMasterDbChildEntry(itemOrTitle) && itemOrTitle.parent && itemOrTitle.parent !== '-') {
-          return String(itemOrTitle.parent).replace(/^↳\s*/, '').trim();
+          return sanitizeMojibakeString(String(itemOrTitle.parent)).replace(/^[\u21B3\u2794\u2192>\s]+/, '').trim();
         }
-        const raw = String(itemOrTitle.name || itemOrTitle.title || '').trim();
+        const raw = sanitizeMojibakeString(String(itemOrTitle.name || itemOrTitle.title || '')).trim();
         if (raw) {
-          const arrowParts = raw.replace(/^↳\s*/, '').split('➔');
+          const arrowParts = raw.replace(/^[\u21B3\u2794\u2192>\s]+/, '').split(/[\u2794\u2192â”]/);
           const candidate = arrowParts[0]
             .replace(/\s*\(\d+\.\s*Seviye.*?\)\s*$/i, '')
-            .replace(/\s+Hasarı$/i, '')
-            .replace(/\s*\(Manevra Kullanıldı\)\s*$/i, '')
+            .replace(/\s+Hasar[\u0131Ä±]$/i, '')
+            .replace(/\s*\(Manevra Kullan[\u0131Ä±]ld[\u0131Ä±]\)\s*$/i, '')
             .trim();
           return candidate;
         }
       }
-      const str = String(itemOrTitle).replace(/^↳\s*/, '');
-      const parts = str.split('➔');
+      const str = sanitizeMojibakeString(String(itemOrTitle)).replace(/^[\u21B3\u2794\u2192>\s]+/, '');
+      const parts = str.split(/[\u2794\u2192â”]/);
       return parts[0]
         .replace(/\s*\(\d+\.\s*Seviye.*?\)\s*$/i, '')
-        .replace(/\s+Hasarı$/i, '')
-        .replace(/\s*\(Manevra Kullanıldı\)\s*$/i, '')
+        .replace(/\s+Hasar[\u0131Ä±]$/i, '')
+        .replace(/\s*\(Manevra Kullan[\u0131Ä±]ld[\u0131Ä±]\)\s*$/i, '')
         .trim();
     }
 
@@ -22513,23 +22560,33 @@
       const parentName = extractCleanParentSpellName(itemOrTitle);
       if (!parentName) return [];
       const allDb = Array.isArray(masterDb) ? masterDb : [];
+      let list = [];
       if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.getChildrenForEntry === 'function') {
-        return RuleMaster.getChildrenForEntry({ name: parentName }, allDb);
+        list = RuleMaster.getChildrenForEntry({ name: parentName }, allDb);
+      } else {
+        const pLower = parentName.toLowerCase();
+        list = allDb.filter(other => {
+          if (!other || !other.name) return false;
+          const otherParent = sanitizeMojibakeString(String(other.parent || '')).toLowerCase().trim();
+          if (otherParent && otherParent !== '-' && otherParent === pLower) return true;
+          const otherName = sanitizeMojibakeString(String(other.name || '')).toLowerCase().trim();
+          if (otherName.startsWith('\u21B3') || otherName.startsWith('>')) {
+            const afterArrow = otherName.replace(/^[\u21B3\u2794\u2192>\s]+/, '').trim();
+            if (afterArrow.startsWith(pLower)) return true;
+          }
+          return false;
+        });
       }
-      const pLower = parentName.toLowerCase();
-      return allDb.filter(other => {
-        if (!other || !other.name) return false;
-        const otherParent = String(other.parent || '').toLowerCase().trim();
-        if (otherParent && otherParent !== '-' && otherParent === pLower) return true;
-        const otherName = String(other.name || '').toLowerCase().trim();
-        if (otherName.startsWith('↳')) {
-          const afterArrow = otherName.replace(/^↳\s*/, '').trim();
-          if (afterArrow.startsWith(pLower)) return true;
-        }
-        return false;
+      // Deduplicate children by sanitized name
+      const seen = new Set();
+      return (list || []).filter(c => {
+        if (!c || !c.name) return false;
+        const cleanName = sanitizeMojibakeString(String(c.name)).replace(/^[\u21B3\u2794\u2192>\s]+/, '').toLowerCase().trim();
+        if (seen.has(cleanName)) return false;
+        seen.add(cleanName);
+        return true;
       });
     }
-
     // Helper: Extract short variant label for a Child entry
     function getShortChildVariantTitle(child, parentName) {
       if (!child) return 'Alt Etki';
@@ -24123,6 +24180,10 @@
     // MODAL: ADD SPELL / MANEUVER / STANCE PICKER LOGIC
     // ====================================================
     function openSpellManeuverPickerModal(initialType = 'Spell', preselectLevel = null) {
+      const sourceSelect = document.getElementById('spell-picker-source-filter');
+      if (sourceSelect) {
+        sourceSelect.value = 'auto';
+      }
       setSpellPickerType(initialType);
       if (preselectLevel !== null && preselectLevel !== undefined) {
         const levelSelect = document.getElementById('spell-picker-level-filter');
@@ -24133,8 +24194,8 @@
         if (searchInput) {
           searchInput.value = '';
         }
-        renderSpellPickerResults();
       }
+      renderSpellPickerResults();
       const modal = document.getElementById('spell-maneuver-modal');
       if (modal) modal.classList.remove('hidden');
     }
@@ -24164,12 +24225,42 @@
 
       const headerIcon = document.getElementById('spell-picker-header-icon');
       if (headerIcon) {
-        if (type === 'Spell') headerIcon.textContent = '🔮';
-        else if (type === 'Maneuver') headerIcon.textContent = '⚔️';
-        else headerIcon.textContent = '🥋';
+        if (type === 'Spell') headerIcon.textContent = '\uD83D\uDD2E';
+        else if (type === 'Maneuver') headerIcon.textContent = '\u2694\uFE0F';
+        else headerIcon.textContent = '\uD83E\uDD4B';
+      }
+
+      const sourceFilter = document.getElementById('spell-picker-source-filter');
+      if (sourceFilter) {
+        sourceFilter.style.display = (type === 'Spell') ? 'block' : 'none';
       }
 
       renderSpellPickerResults();
+    }
+
+    // Helper: Determine if spell matches the target pool (Arcane vs Divine)
+    function isSpellMatchingTargetSource(item, effectiveSource) {
+      if (!item) return false;
+      if (effectiveSource === 'all') return true;
+
+      const tags = Array.isArray(item.tags) ? item.tags.map(t => String(t).toLowerCase().trim()) : [];
+      const isArcaneTag = tags.some(t => ['arcane', 'sorcerer', 'wizard', 'bard', 'wu-jen', 'beguiler', 'duskblade', 'warmage'].includes(t));
+      const isDivineTag = tags.some(t => ['divine', 'cleric', 'druid', 'paladin', 'ranger', 'domain'].includes(t));
+
+      const isPureDivine = isDivineTag && !isArcaneTag;
+      const isPureArcane = isArcaneTag && !isDivineTag;
+
+      if (effectiveSource === 'arcane') {
+        if (isPureDivine) return false;
+        return isArcaneTag || !isDivineTag;
+      }
+
+      if (effectiveSource === 'divine') {
+        if (isPureArcane) return false;
+        return isDivineTag;
+      }
+
+      return true;
     }
 
     function renderSpellPickerResults() {
@@ -24180,6 +24271,60 @@
       const targetPool = window._spellPickerTargetPool || 'spontaneous';
       const query = (document.getElementById('spell-picker-search')?.value || '').toLowerCase().trim();
       const levelFilter = document.getElementById('spell-picker-level-filter')?.value || 'all';
+      const sourceFilterSelect = document.getElementById('spell-picker-source-filter');
+      const selectedSource = sourceFilterSelect ? sourceFilterSelect.value : 'auto';
+
+      // Determine effectiveSource based on target pool
+      let effectiveSource = selectedSource;
+      if (selectedSource === 'auto') {
+        if (targetPool === 'divine') {
+          effectiveSource = 'divine';
+        } else if (targetPool === 'prepared' || targetPool === 'spontaneous') {
+          effectiveSource = 'arcane';
+        } else {
+          effectiveSource = 'all';
+        }
+      }
+
+      // Update target hint banner
+      const targetHint = document.getElementById('spell-picker-target-hint');
+      if (targetHint) {
+        if (type === 'Spell') {
+          let poolLabel = '\u26A1 Anl\u0131k B\u00FCy\u00FCler (Sorcerer / Arcane)';
+          let badgeColor = 'text-purple-300 bg-purple-950/80 border-purple-800';
+          if (targetPool === 'prepared') {
+            poolLabel = '\uD83D\uDCD6 B\u00FCy\u00FC Kitab\u0131 (Wizard / Arcane)';
+            badgeColor = 'text-cyan-300 bg-cyan-950/80 border-cyan-800';
+          } else if (targetPool === 'divine') {
+            poolLabel = '\uD83D\uDD2E \u0130lahi B\u00FCy\u00FCler (Cleric / Druid / Divine)';
+            badgeColor = 'text-amber-300 bg-amber-950/80 border-amber-800';
+          }
+
+          let filterBadge = '\u26A1 Arcane Filtreli';
+          let filterColor = 'text-purple-300 border-purple-700 bg-purple-950/60';
+          if (effectiveSource === 'divine') {
+            filterBadge = '\uD83D\uDD2E \u0130lahi (Divine) Filtreli';
+            filterColor = 'text-amber-300 border-amber-700 bg-amber-950/60';
+          } else if (effectiveSource === 'all') {
+            filterBadge = '\uD83C\uDF10 T\u00FCm\u00FC (Filtresiz)';
+            filterColor = 'text-slate-300 border-slate-700 bg-slate-900';
+          }
+
+          targetHint.innerHTML = `
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-400 text-[10px]">Hedef:</span>
+              <span class="font-bold border px-1.5 py-0.5 rounded text-[10px] ${badgeColor}">${poolLabel}</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-400 text-[10px]">Aktif Filtre:</span>
+              <span class="font-bold border px-1.5 py-0.5 rounded text-[10px] ${filterColor}">${filterBadge}</span>
+            </div>
+          `;
+          targetHint.style.display = 'flex';
+        } else {
+          targetHint.style.display = 'none';
+        }
+      }
 
       const allDb = Array.isArray(masterDb) ? masterDb : [];
 
@@ -24191,6 +24336,9 @@
         let isTypeMatch = false;
         if (type === 'Spell') {
           isTypeMatch = itemType.includes('spell') || itemCat.includes('spell');
+          if (isTypeMatch && !isSpellMatchingTargetSource(item, effectiveSource)) {
+            return false;
+          }
         } else if (type === 'Maneuver') {
           isTypeMatch = (itemType.includes('maneuver') || itemCat.includes('maneuver')) && !itemType.includes('stance') && !itemCat.includes('stance');
         } else if (type === 'Stance') {
@@ -24218,14 +24366,13 @@
       if (matches.length === 0) {
         container.innerHTML = `
           <div class="p-6 text-center text-slate-400 space-y-2">
-            <div class="text-3xl">🔍</div>
-            <p class="text-xs">Master DB'de eşleşen ${type === 'Spell' ? 'büyü' : (type === 'Maneuver' ? 'manevra' : 'duruş')} bulunamadı.</p>
-            <p class="text-[11px] text-slate-500">Aşağıdaki <strong>Rule Master AI</strong> butonuna tıklayarak kural kitaplarından anında getirebilirsiniz.</p>
+            <div class="text-3xl">\uD83D\uDD0D</div>
+            <p class="text-xs">Master DB'de e\u015Fle\u015Fen ${type === 'Spell' ? 'b\u00FCy\u00FC' : (type === 'Maneuver' ? 'manevra' : 'duru\u015F')} bulunamad\u0131.</p>
+            <p class="text-[11px] text-slate-500">A\u015Fa\u011F\u0131daki <strong>Rule Master AI</strong> butonuna t\u0131klayarak kural kitaplar\u0131ndan an\u0131nda getirebilirsiniz.</p>
           </div>
         `;
         return;
       }
-
       matches.forEach(item => {
         const cleanName = (item.name || '').toLowerCase().trim();
         let alreadyKnown = false;

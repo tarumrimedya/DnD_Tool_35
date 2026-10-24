@@ -2511,7 +2511,9 @@
                      "spell",
                      "divination",
                      "knowledge",
-                     "insight"
+                     "insight",
+                     "divine",
+                     "cleric"
                  ],
         "actionType":  "Standard",
         "attackType":  "none"
@@ -12720,7 +12722,13 @@
                      "transmutation",
                      "buff",
                      "initiative",
-                     "survival"
+                     "survival",
+                     "arcane",
+                     "divine",
+                     "druid",
+                     "ranger",
+                     "sorcerer",
+                     "wizard"
                  ]
     },
     {

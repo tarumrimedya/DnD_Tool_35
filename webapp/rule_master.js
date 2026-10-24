@@ -1,4 +1,4 @@
-/**
+﻿/**
  * D&D 3.5e Rule Master & Master_DB Management Engine
  * Features:
  * 1. Full CRUD for Master_DB with 29-column architecture
@@ -1368,7 +1368,23 @@ const RuleMaster = {
 
   cleanArrow(str) {
     if (!str) return '';
-    return String(str).replace(/^[\u21B3\u2192\s\u00E2\u2020\u00B3\?]+\s*/, '').trim();
+    return String(str)
+      .replace(/â†³/g, '')
+      .replace(/â†’/g, '')
+      .replace(/^[\u21B3\u2192\s\u00E2\u2020\u00B3\?]+\s*/, '')
+      .replace(/Ä°/g, 'İ')
+      .replace(/Ä±/g, 'ı')
+      .replace(/ÅŸ/g, 'ş')
+      .replace(/Åž/g, 'Ş')
+      .replace(/Ã§/g, 'ç')
+      .replace(/Ã‡/g, 'Ç')
+      .replace(/Ã¶/g, 'ö')
+      .replace(/Ã–/g, 'Ö')
+      .replace(/Ã¼/g, 'ü')
+      .replace(/Ãœ/g, 'Ü')
+      .replace(/ÄŸ/g, 'ğ')
+      .replace(/Äž/g, 'Ğ')
+      .trim();
   },
 
   formatChildName(str) {
@@ -1927,19 +1943,27 @@ Return valid JSON only matching this schema:
     if (!item || !item.name) return [];
     const list = Array.isArray(sourceList) ? sourceList : (Array.isArray(masterDb) ? masterDb : []);
     const cleanPName = this.cleanArrow(item.name).toLowerCase();
+    const seenTitles = new Set();
 
     return list.filter(other => {
       if (!other || other === item) return false;
       const otherParent = this.cleanArrow(other.parent || '').toLowerCase();
+      let isMatch = false;
       if (otherParent && otherParent !== '-' && otherParent === cleanPName) {
-        return true;
+        isMatch = true;
       }
-      const otherName = this.cleanArrow(other.name || '').toLowerCase();
-      const isOtherChild = other.isChild || (other.parent && other.parent !== '-') || this.cleanArrow(other.name) !== (other.name || '').trim();
-      if (isOtherChild && (otherName.startsWith(cleanPName) || (other.parent && this.cleanArrow(other.parent).toLowerCase() === cleanPName))) {
-        return true;
+      if (!isMatch) {
+        const otherName = this.cleanArrow(other.name || '').toLowerCase();
+        const isOtherChild = other.isChild || (other.parent && other.parent !== '-') || this.cleanArrow(other.name) !== (other.name || '').trim();
+        if (isOtherChild && (otherName.startsWith(cleanPName) || (other.parent && this.cleanArrow(other.parent).toLowerCase() === cleanPName))) {
+          isMatch = true;
+        }
       }
-      return false;
+      if (!isMatch) return false;
+      const childKey = this.cleanArrow(other.name || '').toLowerCase();
+      if (seenTitles.has(childKey)) return false;
+      seenTitles.add(childKey);
+      return true;
     });
   },
 
