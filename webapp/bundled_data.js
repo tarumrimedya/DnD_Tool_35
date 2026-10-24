@@ -13113,7 +13113,8 @@ window.BUNDLED_CHARACTER_DATA = {
           "Mountain Hammer",
           "Blade of Blood"
         ],
-        "summary": "1d6, 2d6, 3d6"
+        "summary": "1d6, 2d6, 3d6",
+        "mode": "melee"
       }
     ],
     "weaponSets": {

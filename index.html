@@ -419,23 +419,24 @@
 
               <!-- PANEL 1: MELEE / PHYSICAL OFFENSE -->
               <div id="combat-mode-melee-panel" class="space-y-3">
-              <!-- Active Attack Profile Pills Preview (Hazır Profil Modifiyerleri) -->
-              <div class="bg-slate-900/60 border border-slate-800 rounded-lg p-2">
-                <div class="flex items-center justify-between text-[10px] font-bold text-slate-400 mb-1">
-                  <span>HAZIR PROFİL MODİFİYERLERİ</span>
-                  <span class="text-amber-400 font-mono text-[9px]" id="active-profile-count">1 Aktif</span>
-                </div>
-                <div id="active-profile-pills-preview" class="flex flex-wrap gap-1.5 min-h-[24px]">
-                  <!-- Populated dynamically -->
-                </div>
-              </div>
 
-              <!-- Attack Buttons Row (Interactive iterative attack buttons + Full Attack button) -->
-              <div class="w-full">
-                <div id="attack-buttons-row-container" class="flex flex-wrap items-center gap-1.5 w-full">
-                  <!-- Dynamically populated with individual attack buttons + Full Attack button -->
+                <!-- Attack Buttons Row (Interactive iterative attack buttons + Full Attack button) -->
+                <div class="w-full">
+                  <div id="attack-buttons-row-container" class="flex flex-wrap items-center gap-1.5 w-full">
+                    <!-- Dynamically populated with individual attack buttons + Full Attack button -->
+                  </div>
                 </div>
-              </div>
+
+                <!-- Active Attack Profile Pills Preview (Hazır Profil Modifiyerleri - Bir Aşağı Taşındı) -->
+                <div class="bg-slate-900/60 border border-slate-800 rounded-lg p-2">
+                  <div class="flex items-center justify-between text-[10px] font-bold text-slate-400 mb-1">
+                    <span id="active-profile-box-title">HAZIR PROFİL MODİFİYERLERİ (YAKIN)</span>
+                    <span class="text-amber-400 font-mono text-[9px]" id="active-profile-count">0 Kayıtlı</span>
+                  </div>
+                  <div id="active-profile-pills-preview" class="flex flex-wrap gap-1.5 min-h-[24px]">
+                    <!-- Populated dynamically -->
+                  </div>
+                </div>
 
               <!-- WEAPON SETS SYSTEM (SEÇENEK B: HIZLI SİLAH SETLERİ) -->
               <div class="bg-gradient-to-b from-slate-900/95 to-slate-950/95 border border-slate-800 rounded-xl p-3 shadow-lg space-y-2.5">
@@ -11129,6 +11130,7 @@
         if (typeof populateRangedWeaponAndAmmoUI === 'function') populateRangedWeaponAndAmmoUI();
         if (typeof renderRangedModifiersGrid === 'function') renderRangedModifiersGrid();
         if (typeof renderCombatPins === 'function') renderCombatPins('offense_ranged');
+        if (typeof renderSavedProfiles === 'function') renderSavedProfiles();
         recalculateOffense();
       } else {
         // default: melee (Yakın)
@@ -11169,6 +11171,7 @@
         renderWeaponSetsUI();
         if (typeof populateWeaponSetsEditorDropdowns === 'function') populateWeaponSetsEditorDropdowns();
         if (typeof renderOffenseModifiersGrid === 'function') renderOffenseModifiersGrid();
+        if (typeof renderSavedProfiles === 'function') renderSavedProfiles();
         recalculateOffense();
       }
     }
@@ -19465,7 +19468,15 @@
     function renderSavedProfiles() {
       const container = document.getElementById('active-profile-pills-preview');
       const countEl = document.getElementById('active-profile-count');
+      const titleEl = document.getElementById('active-profile-box-title');
       if (!container) return;
+
+      const currentMode = window._combatOffenseMode || 'melee';
+      const isRanged = currentMode === 'ranged';
+
+      if (titleEl) {
+        titleEl.textContent = isRanged ? 'HAZIR PROFİL MODİFİYERLERİ (UZAK)' : 'HAZIR PROFİL MODİFİYERLERİ (YAKIN)';
+      }
 
       if (!character.tactical) character.tactical = {};
       if (!Array.isArray(character.tactical.savedProfiles)) {
@@ -19473,6 +19484,7 @@
           {
             id: 'prof_default_1',
             name: 'Punishing Stance',
+            mode: 'melee',
             powerAttack: 0,
             flanking: false,
             charge: false,
@@ -19483,18 +19495,21 @@
         ];
       }
 
-      const profiles = character.tactical.savedProfiles;
+      // Filter by active mode (melee vs ranged)
+      const profiles = character.tactical.savedProfiles.filter(p => (p.mode || 'melee') === currentMode);
+
       if (countEl) countEl.textContent = `${profiles.length} Kayıtlı`;
 
       if (profiles.length === 0) {
-        container.innerHTML = '<span class="text-[10px] text-slate-500 italic">Kayıtlı profil yok. "💾 Kaydet" butonu ile ekleyebilirsiniz.</span>';
+        container.innerHTML = `<span class="text-[10px] text-slate-500 italic">${isRanged ? 'Menzilli (Uzak)' : 'Yakın dövüş'} için kayıtlı profil yok. Üstteki "💾 Kaydet" butonu ile ekleyebilirsiniz.</span>`;
         return;
       }
 
+      const icon = isRanged ? '🏹' : '⚔️';
       container.innerHTML = profiles.map(prof => `
         <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-900 border border-slate-700 hover:border-amber-500/80 text-xs text-amber-300 transition group shadow-sm select-none">
           <button type="button" onclick="applySavedProfile('${prof.id}')" class="font-bold flex items-center gap-1 cursor-pointer text-left" title="Profili Uygula: ${prof.name}">
-            <span>✨</span>
+            <span>${icon}</span>
             <span class="hover:underline">${prof.name}</span>
             <span class="text-[10px] text-slate-400 font-mono">(${prof.summary || 'Mod'})</span>
           </button>
@@ -19511,8 +19526,13 @@
       const modal = document.getElementById('modal-weapon-profile-settings');
       if (!modal) return;
 
+      const currentMode = window._combatOffenseMode || 'melee';
+      const isRanged = currentMode === 'ranged';
+
       const titleEl = document.getElementById('profile-modal-weapon-name');
-      if (titleEl) titleEl.textContent = `${character.activeWeapon || 'Unarmed Strike'} Aktif Seçimler`;
+      if (titleEl) {
+        titleEl.textContent = `${isRanged ? '🏹 Uzak' : '⚔️ Yakın'} Saldırı Profili Kaydet`;
+      }
 
       const nameInput = document.getElementById('save-profile-name-input');
       if (nameInput) {
@@ -19522,17 +19542,36 @@
 
       const previewEl = document.getElementById('save-profile-summary-preview');
       if (previewEl) {
-        const pa = parseInt(document.getElementById('power-attack-val')?.value) || 0;
-        const fl = document.getElementById('mod-flanking')?.checked ?? false;
-        const ch = document.getElementById('mod-charge')?.checked ?? false;
-        const hg = document.getElementById('mod-higher-ground') ? document.getElementById('mod-higher-ground').checked : (character.tactical?.higherGround ?? false);
-        const activeMods = (character.activeModifiers || []).filter(m => m.active);
+        if (!isRanged) {
+          const pa = parseInt(document.getElementById('power-attack-val')?.value) || 0;
+          const fl = document.getElementById('mod-flanking')?.checked ?? false;
+          const ch = document.getElementById('mod-charge')?.checked ?? false;
+          const hg = document.getElementById('mod-higher-ground') ? document.getElementById('mod-higher-ground').checked : (character.tactical?.higherGround ?? false);
+          const activeMods = (character.activeModifiers || []).filter(m => m.active);
 
-        const summary = buildProfileSummary(pa, fl, ch, hg, activeMods);
-        previewEl.innerHTML = `
-          <div><b class="text-white">Silah:</b> ${character.activeWeapon || 'Unarmed Strike'} (${document.getElementById('active-grip-select')?.value || '1-Hand'})</div>
-          <div><b class="text-white">Modifiyerler:</b> ${summary}</div>
-        `;
+          const summary = buildProfileSummary(pa, fl, ch, hg, activeMods);
+          previewEl.innerHTML = `
+            <div><b class="text-white">Tür:</b> ⚔️ Yakın Dövüş</div>
+            <div><b class="text-white">Silah:</b> ${character.activeWeapon || 'Unarmed Strike'} (${document.getElementById('active-grip-select')?.value || '1-Hand'})</div>
+            <div><b class="text-white">Modifiyerler:</b> ${summary}</div>
+          `;
+        } else {
+          const t = character.tactical || {};
+          const rangedParts = [];
+          if (t.pointBlank) rangedParts.push('Point Blank (+1/+1)');
+          if (t.rapidShot) rangedParts.push('Rapid Shot (+1 Ok/-2 Atk)');
+          if (t.manyshot) rangedParts.push('Manyshot');
+          if (t.preciseShot) rangedParts.push('Precise Shot');
+          if (t.farShot) rangedParts.push('Far Shot');
+          const activeMods = (character.activeModifiers || []).filter(m => m.active);
+          activeMods.forEach(m => rangedParts.push(m.dice || m.name));
+          const summary = rangedParts.join(', ') || 'Temel Atış';
+          previewEl.innerHTML = `
+            <div><b class="text-white">Tür:</b> 🏹 Uzak / Menzilli</div>
+            <div><b class="text-white">Silah:</b> ${character.activeWeapon || 'Menzilli Silah'}</div>
+            <div><b class="text-white">Modifiyerler:</b> ${summary}</div>
+          `;
+        }
       }
 
       modal.classList.remove('hidden');
@@ -19552,30 +19591,56 @@
     }
 
     function confirmSaveProfile() {
+      const currentMode = window._combatOffenseMode || 'melee';
+      const isRanged = currentMode === 'ranged';
       const nameInput = document.getElementById('save-profile-name-input');
-      const name = (nameInput?.value || '').trim() || 'Özel Profil ' + ((character.tactical?.savedProfiles?.length || 0) + 1);
-
-      const pa = parseInt(document.getElementById('power-attack-val')?.value) || 0;
-      const fl = document.getElementById('mod-flanking')?.checked ?? false;
-      const ch = document.getElementById('mod-charge')?.checked ?? false;
-      const hg = document.getElementById('mod-higher-ground') ? document.getElementById('mod-higher-ground').checked : (character.tactical?.higherGround ?? false);
-      const activeMods = (character.activeModifiers || []).filter(m => m.active);
-
-      const newProf = {
-        id: 'prof_' + Date.now(),
-        name: name,
-        powerAttack: pa,
-        flanking: fl,
-        charge: ch,
-        higherGround: hg,
-        activeModifiers: activeMods.map(m => m.name),
-        summary: buildProfileSummary(pa, fl, ch, hg, activeMods)
-      };
+      const name = (nameInput?.value || '').trim() || `${isRanged ? 'Uzak' : 'Yakın'} Profil ` + ((character.tactical?.savedProfiles?.length || 0) + 1);
 
       if (!character.tactical) character.tactical = {};
       if (!Array.isArray(character.tactical.savedProfiles)) character.tactical.savedProfiles = [];
-      character.tactical.savedProfiles.push(newProf);
 
+      let newProf = {
+        id: 'prof_' + Date.now(),
+        name: name,
+        mode: currentMode,
+        weapon: character.activeWeapon || (isRanged ? 'Menzilli Silah' : 'Unarmed Strike')
+      };
+
+      if (!isRanged) {
+        const pa = parseInt(document.getElementById('power-attack-val')?.value) || 0;
+        const fl = document.getElementById('mod-flanking')?.checked ?? false;
+        const ch = document.getElementById('mod-charge')?.checked ?? false;
+        const hg = document.getElementById('mod-higher-ground') ? document.getElementById('mod-higher-ground').checked : (character.tactical?.higherGround ?? false);
+        const activeMods = (character.activeModifiers || []).filter(m => m.active);
+        newProf.powerAttack = pa;
+        newProf.flanking = fl;
+        newProf.charge = ch;
+        newProf.higherGround = hg;
+        newProf.activeModifiers = activeMods.map(m => m.name);
+        newProf.summary = buildProfileSummary(pa, fl, ch, hg, activeMods);
+      } else {
+        const t = character.tactical || {};
+        const rangedMods = {
+          pointBlank: !!t.pointBlank,
+          rapidShot: !!t.rapidShot,
+          manyshot: !!t.manyshot,
+          preciseShot: !!t.preciseShot,
+          farShot: !!t.farShot
+        };
+        const activeMods = (character.activeModifiers || []).filter(m => m.active);
+        newProf.rangedMods = rangedMods;
+        newProf.activeModifiers = activeMods.map(m => m.name);
+        const rangedParts = [];
+        if (t.pointBlank) rangedParts.push('Point Blank (+1/+1)');
+        if (t.rapidShot) rangedParts.push('Rapid Shot');
+        if (t.manyshot) rangedParts.push('Manyshot');
+        if (t.preciseShot) rangedParts.push('Precise Shot');
+        if (t.farShot) rangedParts.push('Far Shot');
+        activeMods.forEach(m => rangedParts.push(m.dice || m.name));
+        newProf.summary = rangedParts.join(', ') || 'Temel Atış';
+      }
+
+      character.tactical.savedProfiles.push(newProf);
       saveStateToStorage(true);
       closeSaveProfileModal();
       renderSavedProfiles();
@@ -19583,7 +19648,7 @@
       showDiceTopToast({
         icon: '💾',
         title: 'Profil Kaydedildi',
-        breakdown: `"${name}" profili başarıyla kaydedildi.`,
+        breakdown: `"${name}" (${isRanged ? 'Uzak' : 'Yakın'}) profili başarıyla kaydedildi.`,
         total: 'Kaydedildi'
       });
     }
@@ -19592,30 +19657,56 @@
       const prof = (character.tactical?.savedProfiles || []).find(p => p.id === profId);
       if (!prof) return;
 
-      const paInput = document.getElementById('power-attack-val');
-      if (paInput) paInput.value = prof.powerAttack || 0;
+      const profMode = prof.mode || 'melee';
+      const isRanged = profMode === 'ranged';
 
-      const flInput = document.getElementById('mod-flanking');
-      if (flInput) flInput.checked = !!prof.flanking;
+      // If user is currently in the other mode, switch to the profile's mode first
+      if (window._combatOffenseMode !== profMode) {
+        switchCombatOffenseMode(profMode);
+      }
 
-      const chInput = document.getElementById('mod-charge');
-      if (chInput) chInput.checked = !!prof.charge;
+      if (!isRanged) {
+        const paInput = document.getElementById('power-attack-val');
+        if (paInput) paInput.value = prof.powerAttack || 0;
 
-      const hgInput = document.getElementById('mod-higher-ground');
-      if (hgInput) hgInput.checked = !!prof.higherGround;
+        const flInput = document.getElementById('mod-flanking');
+        if (flInput) flInput.checked = !!prof.flanking;
 
-      (character.activeModifiers || []).forEach(m => {
-        m.active = (prof.activeModifiers || []).includes(m.name);
-      });
+        const chInput = document.getElementById('mod-charge');
+        if (chInput) chInput.checked = !!prof.charge;
 
-      recalculateOffense();
-      renderOffenseModifiersGrid();
+        const hgInput = document.getElementById('mod-higher-ground');
+        if (hgInput) hgInput.checked = !!prof.higherGround;
+
+        (character.activeModifiers || []).forEach(m => {
+          m.active = (prof.activeModifiers || []).includes(m.name);
+        });
+
+        recalculateOffense();
+        renderOffenseModifiersGrid();
+      } else {
+        if (!character.tactical) character.tactical = {};
+        const rm = prof.rangedMods || {};
+        character.tactical.pointBlank = !!rm.pointBlank;
+        character.tactical.rapidShot = !!rm.rapidShot;
+        character.tactical.manyshot = !!rm.manyshot;
+        character.tactical.preciseShot = !!rm.preciseShot;
+        character.tactical.farShot = !!rm.farShot;
+
+        (character.activeModifiers || []).forEach(m => {
+          m.active = (prof.activeModifiers || []).includes(m.name);
+        });
+
+        if (typeof renderRangedModifiersGrid === 'function') renderRangedModifiersGrid();
+        recalculateOffense();
+      }
+
       renderSavedProfiles();
 
       showDiceTopToast({
-        icon: '✨',
+        icon: isRanged ? '🏹' : '⚔️',
         title: 'Profil Yüklendi: ' + prof.name,
-        breakdown: `Tüm kayıtlı saldırı ve hasar modifiyerleri uygulandı.`,
+        breakdown: `${isRanged ? 'Uzak' : 'Yakın'} saldırı ve hasar modifiyerleri uygulandı.`,
         total: 'Hazır'
       });
     }
