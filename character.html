@@ -667,28 +667,6 @@
                 </button>
               </div>
 
-              <!-- 1. BÜYÜ YUVALARI TRACKER ŞERİDİ (ANLIK, KİTAP, İLAHİ SLOT SAYAÇLARI) -->
-              <div class="bg-slate-950/90 border border-purple-900/40 rounded-xl p-2.5 space-y-2 shadow-inner">
-                <div class="flex flex-wrap items-center justify-between gap-1 text-[10px] font-bold">
-                  <div class="flex items-center gap-2 flex-wrap">
-                    <span class="text-purple-400 uppercase tracking-wider flex items-center gap-1">
-                      <span>✨</span>
-                      <span>GÜNLÜK BÜYÜ YUVALARI</span>
-                    </span>
-                    <div id="combat-spell-source-filter-tabs" class="flex items-center gap-1">
-                      <!-- Populated dynamically if multiple sources exist -->
-                    </div>
-                  </div>
-                  <button type="button" onclick="openSpellSlotsModal()" class="text-[9px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-amber-900/50 transition" title="Yuva Yönetimi & Yenileme">
-                    <span>⚙️</span>
-                    <span>Yuva Yönetimi</span>
-                  </button>
-                </div>
-                <div id="combat-spell-slots-strip" class="space-y-2.5">
-                  <!-- Populated dynamically by renderSpellSlotsStrip() with 2x6 grids per source -->
-                </div>
-              </div>
-
               <!-- 2. BÜYÜCÜ TAKTİKSEL MODİFİYERLERİ (3x3 ÇEKMECE) -->
               <div class="bg-slate-950/80 border border-purple-900/50 rounded-xl p-2.5 space-y-2">
                 <div class="flex items-center justify-between text-[10px] font-bold text-purple-400 uppercase tracking-wide">
@@ -708,6 +686,28 @@
                 <!-- 3x3 Dynamic Modifiers Grid -->
                 <div id="combat-spell-modifiers-dynamic-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-1.5 pt-0.5">
                   <!-- Populated dynamically by renderSpellTacticalModifiers() -->
+                </div>
+              </div>
+
+              <!-- 3. BÜYÜ YUVALARI TRACKER ŞERİDİ (ANLIK, KİTAP, İLAHİ SLOT SAYAÇLARI) -->
+              <div class="bg-slate-950/90 border border-purple-900/40 rounded-xl p-2.5 space-y-2 shadow-inner">
+                <div class="flex flex-wrap items-center justify-between gap-1 text-[10px] font-bold">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-purple-400 uppercase tracking-wider flex items-center gap-1">
+                      <span>✨</span>
+                      <span>GÜNLÜK BÜYÜ YUVALARI</span>
+                    </span>
+                    <div id="combat-spell-source-filter-tabs" class="flex items-center gap-1">
+                      <!-- Populated dynamically if multiple sources exist -->
+                    </div>
+                  </div>
+                  <button type="button" onclick="openSpellSlotsModal()" class="text-[9px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-amber-900/50 transition" title="Yuva Yönetimi & Yenileme">
+                    <span>⚙️</span>
+                    <span>Yuva Yönetimi</span>
+                  </button>
+                </div>
+                <div id="combat-spell-slots-strip" class="space-y-2.5">
+                  <!-- Populated dynamically by renderSpellSlotsStrip() with 2x6 grids per source -->
                 </div>
               </div>
 
