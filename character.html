@@ -11839,12 +11839,12 @@
           }
 
           rowsHtml.push(`
-            <div id="modal-slot-row-${lvl}" class="flex flex-wrap items-center justify-between gap-2.5 bg-slate-900/90 border border-slate-800 rounded-xl px-3 py-1.5 shadow-sm transition">
-              <div class="flex flex-col min-w-0 pr-2">
+            <div id="modal-slot-row-${lvl}" class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-slate-900/90 border border-slate-800 rounded-xl px-3 py-2 shadow-sm transition">
+              <div class="flex flex-col min-w-0 w-full sm:w-auto pr-0 sm:pr-2">
                 <span class="text-xs font-bold text-white leading-tight">${lvlHeader}</span>
                 <span class="text-[10px] text-slate-400 font-mono mt-0.5 leading-tight">${lvlSub}</span>
               </div>
-              <div class="flex flex-col gap-1 items-end ml-auto shrink-0">
+              <div class="flex flex-col gap-1 items-end w-full sm:w-auto shrink-0 pt-1 sm:pt-0 border-t border-slate-800/40 sm:border-0">
                 <!-- 1. Yuva Tüketim Satırı -->
                 <div class="flex items-center gap-1.5 shrink-0">
                   <span class="text-[10px] text-slate-400 font-mono w-12 text-right shrink-0">Yuva:</span>
@@ -11864,15 +11864,17 @@
           `);
         } else {
           rowsHtml.push(`
-            <div id="modal-slot-row-${lvl}" class="flex items-center justify-between bg-slate-950/60 border border-slate-800/70 rounded-xl px-3 py-1.5 opacity-70 transition">
-              <div class="flex flex-col min-w-0 pr-2">
+            <div id="modal-slot-row-${lvl}" class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-slate-950/60 border border-slate-800/70 rounded-xl px-3 py-2 opacity-70 transition">
+              <div class="flex flex-col min-w-0 w-full sm:w-auto pr-0 sm:pr-2">
                 <span class="text-xs font-bold text-slate-400 leading-tight">${lvlHeader}</span>
                 <span class="text-[10px] text-slate-500 font-mono mt-0.5 leading-tight">0 / 0 (Kilitli / Henüz Yok)</span>
               </div>
-              <button type="button" onclick="modifySpellSlotDaily(${lvl}, 1, '${activeSource.key}')" class="px-2.5 py-1 rounded-lg bg-purple-950 hover:bg-purple-900 text-purple-300 hover:text-white border border-purple-700/70 text-[10px] font-bold cursor-pointer transition flex items-center gap-1" title="DM Bonusu: Bu Seviye İçin 1 Yuva Tanımla">
-                <span>+</span>
-                <span>DM Yuvası Aç</span>
-              </button>
+              <div class="flex justify-end w-full sm:w-auto shrink-0 pt-0.5 sm:pt-0">
+                <button type="button" onclick="modifySpellSlotDaily(${lvl}, 1, '${activeSource.key}')" class="px-2.5 py-1 rounded-lg bg-purple-950 hover:bg-purple-900 text-purple-300 hover:text-white border border-purple-700/70 text-[10px] font-bold cursor-pointer transition flex items-center gap-1" title="DM Bonusu: Bu Seviye İçin 1 Yuva Tanımla">
+                  <span>+</span>
+                  <span>DM Yuvası Aç</span>
+                </button>
+              </div>
             </div>
           `);
         }
