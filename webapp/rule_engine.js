@@ -42,6 +42,71 @@ const RuleEngine = {
     return Math.floor(((Number(score) || 10) - 10) / 2);
   },
 
+  // Declarative Master DB lookup helper
+  getMasterDbEntry(weapon) {
+    if (!weapon) return null;
+    const clean = String(typeof weapon === 'object' ? (weapon.masterDbName || weapon.name || '') : weapon).toLowerCase().trim();
+    if (!clean) return null;
+    const db = (typeof window !== 'undefined' && (window.masterDb || window.MASTER_DB_DATA || window.BUNDLED_MASTER_DB)) || (typeof masterDb !== 'undefined' ? masterDb : []);
+    if (!Array.isArray(db) || db.length === 0) return null;
+    return db.find(m => m && ((m.name && m.name.toLowerCase().trim() === clean) || (m.masterDbName && m.masterDbName.toLowerCase().trim() === clean))) || null;
+  },
+
+  // Check if weapon is Light according to D&D 3.5e RAW rules
+  isLightWeapon(weapon) {
+    if (!weapon) return false;
+    const name = (typeof weapon === 'string' ? weapon : (weapon.name || '')).toLowerCase().trim();
+    if (!name || name === 'yok' || name === '-' || name === 'none' || name === 'boş') return false;
+
+    if (typeof weapon === 'object') {
+      if (weapon.isLight || weapon.grip === 'Light' || weapon.category === 'Light' || (Array.isArray(weapon.tags) && weapon.tags.some(t => String(t).toLowerCase() === 'light'))) {
+        return true;
+      }
+    }
+
+    const db = this.getMasterDbEntry(weapon);
+    if (db) {
+      if (db.isLight || db.grip === 'Light' || db.category === 'Light' || (Array.isArray(db.tags) && db.tags.some(t => String(t).toLowerCase() === 'light'))) {
+        return true;
+      }
+    }
+
+    const standardLightWeapons = [
+      'dagger', 'punching dagger', 'gauntlet', 'spiked gauntlet', 'light mace', 'sickle',
+      'club', 'short sword', 'kukri', 'handaxe', 'light hammer', 'sap', 'light pick',
+      'kama', 'nunchaku', 'sai', 'siangham', 'unarmed strike', 'silahsız'
+    ];
+    return standardLightWeapons.some(lw => name.includes(lw));
+  },
+
+  // Check if weapon is Exotic according to D&D 3.5e RAW rules
+  isExoticWeapon(weapon) {
+    if (!weapon) return false;
+    const name = (typeof weapon === 'string' ? weapon : (weapon.name || '')).toLowerCase().trim();
+    if (!name || name === 'yok' || name === '-' || name === 'none' || name === 'boş') return false;
+
+    if (typeof weapon === 'object') {
+      if (weapon.proficiency === 'Exotic' || weapon.category === 'Exotic' || (Array.isArray(weapon.tags) && weapon.tags.some(t => String(t).toLowerCase() === 'exotic'))) {
+        return true;
+      }
+    }
+
+    const db = this.getMasterDbEntry(weapon);
+    if (db) {
+      if (db.proficiency === 'Exotic' || db.category === 'Exotic' || (Array.isArray(db.tags) && db.tags.some(t => String(t).toLowerCase() === 'exotic'))) {
+        return true;
+      }
+    }
+
+    const baseWepName = name.replace(/\+\d+/g, '').replace(/\(.*?\)/g, '').trim();
+    const exoticWeapons = [
+      'spiked chain', 'bastard sword', 'dwarven waraxe', 'kama', 'nunchaku', 'sai', 'siangham',
+      'shuriken', 'whip', 'orc double axe', 'two-bladed sword', 'gnome hooked hammer', 'dire flail',
+      'bolas', 'kusari-gama'
+    ];
+    return exoticWeapons.some(ew => baseWepName.includes(ew) || name.includes(ew));
+  },
+
   // Check if weapon qualifies for Weapon Finesse
   isFinessable(weapon) {
     if (!weapon) return false;
@@ -50,7 +115,7 @@ const RuleEngine = {
     const cat = (weapon.category || weapon.type || '').toLowerCase();
     
     // 1. Any Light weapon qualifies for Weapon Finesse per D&D 3.5e RAW (PHB p. 102)
-    if (weapon.isLight || tags.includes('light') || tags.includes('finessable') || cat === 'light' || cat.includes('light')) {
+    if (this.isLightWeapon(weapon) || weapon.isLight || tags.includes('light') || tags.includes('finessable') || cat === 'light' || cat.includes('light')) {
       return true;
     }
 
@@ -71,9 +136,22 @@ const RuleEngine = {
   // Check if weapon belongs to Shadow Hand discipline
   isShadowHandWeapon(weapon) {
     if (!weapon) return false;
-    const name = (weapon.name || '').toLowerCase();
-    const discipline = (weapon.discipline || '').toLowerCase();
-    if (discipline === 'shadow hand') return true;
+    const name = (typeof weapon === 'string' ? weapon : (weapon.name || '')).toLowerCase().trim();
+    if (!name || name === 'yok' || name === '-' || name === 'none' || name === 'boş') return false;
+
+    if (typeof weapon === 'object') {
+      const discipline = (weapon.discipline || '').toLowerCase();
+      if (discipline === 'shadow hand') return true;
+      if (Array.isArray(weapon.tags) && weapon.tags.some(t => String(t).toLowerCase() === 'shadow hand')) return true;
+    }
+
+    const db = this.getMasterDbEntry(weapon);
+    if (db) {
+      const discipline = (db.discipline || '').toLowerCase();
+      if (discipline === 'shadow hand') return true;
+      if (Array.isArray(db.tags) && db.tags.some(t => String(t).toLowerCase() === 'shadow hand')) return true;
+    }
+
     const shadowWeapons = ['dagger', 'short sword', 'sai', 'siangham', 'unarmed strike', 'spiked chain'];
     return shadowWeapons.some(sw => name.includes(sw));
   },
@@ -86,15 +164,21 @@ const RuleEngine = {
 
     const type = (typeof weapon === 'object' ? (weapon.type || weapon.category || '') : '').toLowerCase();
     const slot = (typeof weapon === 'object' ? (weapon.slot || '') : '').toLowerCase();
-    const tags = (typeof weapon === 'object' && Array.isArray(weapon.tags)) ? weapon.tags.map(t => t.toLowerCase()) : [];
+    const tags = (typeof weapon === 'object' && Array.isArray(weapon.tags)) ? weapon.tags.map(t => String(t).toLowerCase()) : [];
     const desc = (typeof weapon === 'object' ? (weapon.desc || weapon.benefit || weapon.description || '') : '').toLowerCase();
 
     if (typeof weapon === 'object') {
-      if (weapon.isTwoHanded || weapon.twoHanded || weapon.grip === '2-Hand') return true;
+      if (weapon.isTwoHanded || weapon.twoHanded || weapon.grip === '2-Hand' || weapon.category === 'Two-Handed') return true;
     }
     if (tags.some(t => t.includes('two-hand') || t.includes('2-hand') || t.includes('two handed') || t.includes('çift el') || t.includes('iki el'))) return true;
     if (slot.includes('two-hand') || slot.includes('2-hand') || slot.includes('two handed') || slot.includes('çift el') || slot.includes('iki el')) return true;
     if (desc.includes('2-handed') || desc.includes('two-handed') || desc.includes('two hands') || desc.includes('requires 2 hands') || desc.includes('massive 2-handed') || desc.includes('çift el') || desc.includes('iki el')) return true;
+
+    const db = this.getMasterDbEntry(weapon);
+    if (db) {
+      if (db.isTwoHanded || db.twoHanded || db.grip === '2-Hand' || db.category === 'Two-Handed') return true;
+      if (Array.isArray(db.tags) && db.tags.some(t => String(t).toLowerCase().includes('two-hand') || String(t).toLowerCase().includes('2-hand'))) return true;
+    }
 
     // Standard D&D 3.5e Two-Handed Weapons (including Turkish names and SRD weapons)
     const twoHandedWeapons = [
@@ -2085,7 +2169,7 @@ const RuleEngine = {
     }
 
     // Exotic Weapon Proficiency Check (RAW D&D 3.5e: -4 attack penalty if non-proficient)
-    const isExotic = weapon.proficiency === 'Exotic' || weapon.category === 'Exotic' || (weapon.tags && weapon.tags.includes('exotic')) || ['spiked chain', 'bastard sword', 'dwarven waraxe', 'kama', 'nunchaku', 'sai', 'siangham', 'shuriken', 'whip', 'orc double axe', 'two-bladed sword', 'gnome hooked hammer', 'dire flail', 'bolas', 'kusari-gama'].some(ew => baseWepName.includes(ew));
+    const isExotic = this.isExoticWeapon(weapon);
     if (isExotic) {
       const hasEWP = feats.some(f => {
         const cleanF = f.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim().toLowerCase();
@@ -2180,7 +2264,7 @@ const RuleEngine = {
     const netAttackBonus = this.resolveBonusStacking(attackBonusItems);
 
     // 2. Damage Calculation (RAW D&D 3.5e)
-    const isLightWep = weapon.isLight || (weapon.tags && weapon.tags.includes('light')) || weapon.category === 'Light' || ['dagger', 'short sword', 'light mace', 'sickle', 'handaxe', 'kukri', 'sap', 'light hammer', 'light pick', 'kama', 'nunchaku', 'sai', 'siangham', 'unarmed strike', 'silahsız'].some(lw => baseWepName.includes(lw));
+    const isLightWep = this.isLightWeapon(weapon);
     const isCrossbow = baseWepName.includes('crossbow');
     const isBow = baseWepName.includes('bow') && !isCrossbow;
     const isRapier = baseWepName.includes('rapier');
