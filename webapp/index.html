@@ -22580,23 +22580,18 @@
 
         if (isUnlocked) {
           const isDepleted = remaining <= 0;
-          div.className = `flex items-center justify-between ${
+          div.className = `relative flex items-center justify-between ${
             isDepleted
               ? 'bg-slate-950/70 border border-slate-800/80 opacity-50 grayscale-[30%]'
               : (activeSource.key === 'prepared' ? 'bg-slate-900/90 border border-sky-800/60 hover:border-sky-500' : (activeSource.key === 'divine' ? 'bg-slate-900/90 border border-amber-800/60 hover:border-amber-500' : 'bg-slate-900/90 border border-purple-800/60 hover:border-purple-600'))
-          } rounded-xl px-3 py-2 shadow-sm transition w-full`;
+          } rounded-xl pl-3 pr-7 py-2 shadow-sm transition w-full group`;
           if (isDepleted) div.title = '⚠️ Bu seviyedeki büyü slotları tükendi';
 
           let knownSubtitle = '';
           if (activeSource.key === 'spontaneous') {
             const currentKnown = (character.spellcasting?.knownSpells || []).filter(sp => Number(sp.level) === lvl).length;
             const quota = s.known !== undefined ? s.known : getSpellsKnownQuota(lvl);
-            knownSubtitle = `
-              <div class="flex items-center gap-1 mt-0.5">
-                <span class="text-[10px] text-purple-300 font-mono">${currentKnown}/${quota} Bilinen</span>
-                <button type="button" onclick="modifySpellsKnownQuota(${lvl}, 1)" class="text-[9px] px-1 py-0.2 rounded bg-purple-950 hover:bg-purple-800 text-purple-200 border border-purple-700/60 font-bold transition cursor-pointer" title="DM Bonusu: Bilinen Büyü Kotasını +1 Artır">+</button>
-              </div>
-            `;
+            knownSubtitle = `<span class="text-[10px] text-purple-300 font-mono mt-0.5">${currentKnown}/${quota} Bilinen</span>`;
           } else if (activeSource.key === 'prepared') {
             const currentPrep = (character.spellcasting?.preparedSpells || []).filter(sp => Number(sp.level) === lvl).length;
             knownSubtitle = `<span class="text-[10px] text-sky-300 font-mono mt-0.5">${currentPrep}/${daily} Hazırlanan</span>`;
@@ -22606,6 +22601,8 @@
           }
 
           div.innerHTML = `
+            <button type="button" onclick="openSpellSlotsModal(${lvl}, '${activeSource.key}')" class="absolute top-1.5 right-1.5 text-slate-500 hover:text-amber-300 hover:bg-slate-800 text-[11px] w-5 h-5 rounded flex items-center justify-center transition cursor-pointer" title="${lvlLabel} Yuva & DM Bonusu Ayarları">⚙️</button>
+
             <div class="flex flex-col min-w-0">
               <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="font-extrabold text-white text-xs whitespace-nowrap">${lvlLabel}</span>
@@ -22616,38 +22613,31 @@
 
             <div class="h-7 w-px bg-slate-800 mx-1.5 shrink-0"></div>
 
-            <div class="flex items-center gap-1.5 shrink-0">
-              <div class="flex flex-col items-end">
-                <span class="text-[9px] text-slate-400 uppercase tracking-wider font-semibold">Kalan Slot</span>
-                <span class="text-xs sm:text-sm font-black font-mono ${remaining > 0 ? 'text-emerald-400' : 'text-rose-500'} whitespace-nowrap">${remaining} / ${daily}</span>
-              </div>
-              <div class="flex flex-col gap-0.5 ml-1">
-                <button type="button" onclick="modifySpellSlotDaily(${lvl}, 1, '${activeSource.key}')" class="w-4 h-3.5 rounded bg-slate-800 hover:bg-emerald-900 text-slate-300 hover:text-emerald-300 font-bold text-[9px] flex items-center justify-center border border-slate-700 hover:border-emerald-600 transition cursor-pointer" title="DM Bonusu: Bu Seviyenin Günlük Slot Kapasitesini +1 Artır">+</button>
-                <button type="button" onclick="modifySpellSlotDaily(${lvl}, -1, '${activeSource.key}')" class="w-4 h-3.5 rounded bg-slate-800 hover:bg-rose-900 text-slate-300 hover:text-rose-300 font-bold text-[9px] flex items-center justify-center border border-slate-700 hover:border-rose-600 transition cursor-pointer" title="Günlük Slot Kapasitesini -1 Azalt">-</button>
-              </div>
+            <div class="flex flex-col items-end shrink-0">
+              <span class="text-[9px] text-slate-400 uppercase tracking-wider font-semibold">Kalan Slot</span>
+              <span class="text-xs sm:text-sm font-black font-mono ${remaining > 0 ? 'text-emerald-400' : 'text-rose-500'} whitespace-nowrap">${remaining} / ${daily}</span>
             </div>
           `;
         } else {
           const reqClText = lvl >= 10 ? 'Epic (CL 21+)' : `CL ${lvl * 2}+`;
-          div.className = 'flex items-center justify-between bg-slate-950/50 border border-slate-800/70 rounded-xl px-3 py-2 opacity-50 select-none transition w-full';
-          div.title = `${lvlLabel} henüz kilitli (${reqClText} gerekir)`;
+          div.className = 'relative flex items-center justify-between bg-slate-950/50 border border-slate-800/70 rounded-xl pl-3 pr-7 py-2 opacity-50 select-none transition w-full group';
+          div.title = `${lvlLabel} henüz kilitli (${reqClText} gerekir). Yuva tanımlamak için ayar simgesine tıklayın.`;
           div.innerHTML = `
+            <button type="button" onclick="openSpellSlotsModal(${lvl}, '${activeSource.key}')" class="absolute top-1.5 right-1.5 text-slate-600 hover:text-amber-300 hover:bg-slate-800 text-[11px] w-5 h-5 rounded flex items-center justify-center transition cursor-pointer" title="${lvlLabel} Yuva Tanımla & Ayarla">⚙️</button>
+
             <div class="flex flex-col min-w-0">
               <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="font-bold text-slate-500 text-xs whitespace-nowrap">${lvlLabel}</span>
                 <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-900 text-slate-500 border border-slate-800 font-bold whitespace-nowrap">DC ${dc}</span>
               </div>
-              <span class="text-[10px] text-slate-600 font-mono mt-0.5">ğŸ”’ Kilitli</span>
+              <span class="text-[10px] text-slate-600 font-mono mt-0.5">🔒 Kilitli</span>
             </div>
 
             <div class="h-7 w-px bg-slate-800/60 mx-1.5 shrink-0"></div>
 
-            <div class="flex items-center gap-1.5 shrink-0">
-              <div class="flex flex-col items-end">
-                <span class="text-[9px] text-slate-600 uppercase tracking-wider font-semibold">Kalan Slot</span>
-                <span class="text-xs sm:text-sm font-black font-mono text-slate-600 whitespace-nowrap">ğŸ”’ 0 / 0</span>
-              </div>
-              <button type="button" onclick="modifySpellSlotDaily(${lvl}, 1, '${activeSource.key}')" class="ml-1 text-[9px] px-1.5 py-1 rounded bg-slate-900 hover:bg-purple-900 text-slate-400 hover:text-purple-200 border border-slate-800 font-bold transition cursor-pointer" title="DM Bonusu: Kilitli Seviyeye 1 Yuva Tanımla">+ Aç</button>
+            <div class="flex flex-col items-end shrink-0">
+              <span class="text-[9px] text-slate-600 uppercase tracking-wider font-semibold">Kalan Slot</span>
+              <span class="text-xs sm:text-sm font-black font-mono text-slate-600 whitespace-nowrap">🔒 0 / 0</span>
             </div>
           `;
         }
