@@ -13999,43 +13999,91 @@
         };
       }
 
-      // Ranged combat mode calculation for cards
+      // Ranged combat mode calculation for cards (Unified with RuleEngine)
       if (window._combatOffenseMode === 'ranged' && !isShieldItem) {
         const at = getRequiredAmmunitionType(wepName);
-        const low = wepName.toLowerCase();
-        const baseDice = wep?.dice || getRangedWeaponDefaultDice(wep, low);
-        const crit = wep?.crit || (wep?.critMin ? `${wep.critMin}-20/x${wep.critMult || 2}` : getRangedWeaponDefaultCrit(wep, low));
-        const dexMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.dex || 10) : 3;
-        const strMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.str || 10) : 0;
         const t = character.tactical || {};
+
+        // 1. Collect all active qualified ranged modifiers
+        const activeRangedMods = [];
+        const qualifiedRanged = typeof getQualifiedRangedModifiersList === 'function' ? getQualifiedRangedModifiersList() : [];
+        qualifiedRanged.forEach(m => {
+          if (m && m.active) {
+            activeRangedMods.push({
+              name: m.name,
+              bonusAtk: m.bonusAtk || 0,
+              bonusDmg: m.bonusDmg || 0,
+              dice: m.dice || '',
+              bonusType: m.bonusType || 'untyped',
+              combatScope: 'ranged'
+            });
+          }
+        });
+
+        // 2. Collect selected ammunition modifier
         const selArrow = t.selectedArrow || 'standard';
+        let arrowAtk = 0;
+        let arrowDmg = 0;
+        let arrowDice = '';
+        let arrowBonusType = 'enhancement';
+        if (selArrow === 'masterwork') { arrowAtk = 1; }
+        else if (selArrow === 'plus1') { arrowAtk = 1; arrowDmg = 1; }
+        else if (selArrow === 'plus2') { arrowAtk = 2; arrowDmg = 2; }
+        else if (selArrow === 'silver') { arrowDmg = -1; arrowBonusType = 'penalty'; }
+        else if (selArrow === 'fire') { arrowDice = '1d6 (Ateş)'; }
+        else if (selArrow === 'acid') { arrowDice = '1d6 (Asit)'; }
+        else if (selArrow === 'shock') { arrowDice = '1d6 (Şok)'; }
 
-        let arrowBonus = 0;
-        let extraDice = '';
-        if (selArrow === 'plus1') arrowBonus = 1;
-        else if (selArrow === 'plus2') arrowBonus = 2;
-        else if (selArrow === 'silver') arrowBonus = -1;
-        else if (selArrow === 'fire') extraDice = ' + 1d6 (Ateş)';
-        else if (selArrow === 'acid') extraDice = ' + 1d6 (Asit)';
-        else if (selArrow === 'shock') extraDice = ' + 1d6 (Şok)';
+        if (arrowAtk || arrowDmg || arrowDice) {
+          activeRangedMods.push({
+            name: `Ok (${selArrow})`,
+            bonusAtk: arrowAtk,
+            bonusDmg: arrowDmg,
+            dice: arrowDice,
+            bonusType: arrowBonusType,
+            combatScope: 'ranged'
+          });
+        }
 
-        let flatDmg = arrowBonus;
-        if (t.pointBlankShot && characterHasFeat(character, 'Point Blank')) flatDmg += 1;
-        if (at === 'thrown' && strMod > 0) flatDmg += strMod;
+        if (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateWeaponAttack) {
+          try {
+            const evalRes = RuleEngine.evaluateWeaponAttack(character, wep, {
+              grip: 'Ranged',
+              higherGround: !!t.rangedHigherGround,
+              customModifiers: activeRangedMods,
+              manyshot: !!t.manyshot
+            });
 
-        const flatStr = flatDmg !== 0 ? (flatDmg > 0 ? `+${flatDmg}` : `${flatDmg}`) : '';
-        const dmgStr = `${baseDice}${flatStr}${extraDice}`;
-        const dmgType = (at === 'bullet' || selArrow === 'blunt') ? 'Ezici' : 'Delici';
+            const activeDiceMods = activeRangedMods.filter(m => m.dice);
+            let extraDiceStr = '';
+            if (activeDiceMods.length > 0) {
+              extraDiceStr = ' + ' + activeDiceMods.map(m => m.dice).join(' + ');
+            }
 
-        return {
-          dmgStr,
-          critStr: crit,
-          dmgType,
-          finesseMod: dexMod,
-          isFinesse: true,
-          isWeapon: true,
-          hasExtraMods: flatDmg !== 0 || extraDice !== ''
-        };
+            const flatDmg = evalRes.netFlatDamage;
+            const flatStr = flatDmg !== 0 ? (flatDmg > 0 ? `+${flatDmg}` : `${flatDmg}`) : '';
+            const dmgStr = `${evalRes.baseDice}${flatStr}${extraDiceStr}`;
+            const critRange = evalRes.critMin === 20 ? '20' : `${evalRes.critMin}-20`;
+            const critStr = `${critRange} / x${evalRes.critMult}`;
+
+            let dmgType = evalRes.damageType || (at === 'bullet' ? 'Ezici' : 'Delici');
+            if (dmgType === 'Piercing') dmgType = 'Delici';
+            else if (dmgType === 'Bludgeoning') dmgType = 'Ezici';
+            else if (dmgType === 'Slashing') dmgType = 'Kesici';
+
+            return {
+              dmgStr,
+              critStr,
+              dmgType,
+              finesseMod: evalRes.attackStatMod,
+              isFinesse: false,
+              isWeapon: true,
+              hasExtraMods: flatDmg !== 0 || extraDiceStr !== '' || activeRangedMods.length > 0
+            };
+          } catch (e) {
+            console.warn('Ranged evaluateWeaponAttack error:', e);
+          }
+        }
       }
 
       if (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateWeaponAttack) {
@@ -16110,11 +16158,18 @@
       const qualifiedRangedList = [];
 
       if (hasPBS) {
+        const dbPBS = typeof findMasterItem === 'function' ? findMasterItem('Point Blank Shot') : null;
+        const pbsAtk = Number(dbPBS?.attBonus ?? 1);
+        const pbsDmg = Number(dbPBS?.dmgBonus ?? 1);
         qualifiedRangedList.push({
           id: 'pointBlankShot',
           name: 'Point Blank',
           source: 'Feat',
-          bonusStr: '+1 Atk / +1 Dmg',
+          bonusStr: `+${pbsAtk} Atk / +${pbsDmg} Dmg`,
+          bonusAtk: pbsAtk,
+          bonusDmg: pbsDmg,
+          bonusType: dbPBS?.bonusType || 'untyped',
+          combatScope: 'ranged',
           active: !!t.pointBlankShot,
           activeClass: 'border-amber-500 bg-amber-950/40 text-amber-200 shadow-sm'
         });
@@ -16126,6 +16181,10 @@
         name: 'Uzak Menzil',
         source: 'Distance',
         bonusStr: hasFar ? '-1 Atk (Far Shot)' : '-2 Atk / Kademe',
+        bonusAtk: hasFar ? -1 : -2,
+        bonusDmg: 0,
+        bonusType: 'penalty',
+        combatScope: 'ranged',
         active: !!t.rangePenalty,
         activeClass: 'border-orange-500 bg-orange-950/40 text-orange-200 shadow-sm'
       });
@@ -16136,6 +16195,10 @@
           name: 'Rapid Shot',
           source: 'Feat',
           bonusStr: '-2 Atk / +1 Ok',
+          bonusAtk: -2,
+          bonusDmg: 0,
+          bonusType: 'penalty',
+          combatScope: 'ranged',
           active: !!t.rapidShot,
           activeClass: 'border-rose-500 bg-rose-950/40 text-rose-200 shadow-sm'
         });
@@ -16147,17 +16210,31 @@
           name: 'Manyshot',
           source: 'Feat',
           bonusStr: '-4 Atk / 2x Ok',
+          bonusAtk: -4,
+          bonusDmg: 0,
+          bonusType: 'penalty',
+          combatScope: 'ranged',
           active: !!t.manyshot,
           activeClass: 'border-amber-500 bg-amber-950/40 text-amber-200 shadow-sm'
         });
       }
 
       if (hasEnhanceArrow) {
+        const eaObj = specials.find(s => (s.name || '').toLowerCase().includes('enhance arrow'));
+        const dbEA = typeof findMasterItem === 'function' ? findMasterItem('Enhance Arrow +1 (Su)') : null;
+        const eaAtk = Number(eaObj?.attBonus ?? dbEA?.attBonus ?? 1);
+        const eaDmg = Number(eaObj?.dmgBonus ?? dbEA?.dmgBonus ?? 1);
+        const eaType = eaObj?.bonusType || dbEA?.bonusType || 'enhancement';
+
         qualifiedRangedList.push({
           id: 'enhanceArrow',
           name: 'Enhance Arrow',
           source: 'Ability',
-          bonusStr: '+1 Atk / +1 Dmg',
+          bonusStr: `+${eaAtk} Atk / +${eaDmg} Dmg`,
+          bonusAtk: eaAtk,
+          bonusDmg: eaDmg,
+          bonusType: eaType,
+          combatScope: 'ranged',
           active: !!t.enhanceArrow,
           activeClass: 'border-emerald-500 bg-emerald-950/40 text-emerald-200 shadow-sm'
         });
@@ -16169,17 +16246,28 @@
           name: 'True Strike',
           source: 'Spell',
           bonusStr: '+20 Atk',
+          bonusAtk: 20,
+          bonusDmg: 0,
+          bonusType: 'insight',
+          combatScope: 'ranged',
           active: !!t.trueStrike,
           activeClass: 'border-sky-500 bg-sky-950/40 text-sky-200 shadow-sm'
         });
       }
 
       if (hasSneak) {
+        const dbSA = typeof findMasterItem === 'function' ? findMasterItem('Sneak Attack') : null;
+        const saDice = dbSA?.dice || dbSA?.extraDmg || '1d6';
         qualifiedRangedList.push({
           id: 'sneakAttack',
           name: 'Sneak Attack',
           source: 'Precision',
-          bonusStr: '+1d6 Hasar',
+          bonusStr: `+${saDice} Hasar`,
+          bonusAtk: 0,
+          bonusDmg: 0,
+          dice: saDice,
+          bonusType: 'precision',
+          combatScope: 'ranged',
           active: !!t.sneakAttack,
           activeClass: 'border-amber-500 bg-amber-950/40 text-amber-200 shadow-sm'
         });
@@ -16191,6 +16279,10 @@
           name: 'Boots (Haste)',
           source: 'Item',
           bonusStr: '+1 Atk / Ekstra Ok',
+          bonusAtk: 1,
+          bonusDmg: 0,
+          bonusType: 'untyped',
+          combatScope: 'ranged',
           active: !!t.bootsHaste,
           activeClass: 'border-purple-500 bg-purple-950/40 text-purple-200 shadow-sm'
         });
@@ -16202,6 +16294,10 @@
           name: 'Witchlight Hız',
           source: 'Item',
           bonusStr: '+20 ft Hız',
+          bonusAtk: 0,
+          bonusDmg: 0,
+          bonusType: 'untyped',
+          combatScope: 'ranged',
           active: !!t.witchlightSpeed,
           activeClass: 'border-indigo-500 bg-indigo-950/40 text-indigo-200 shadow-sm'
         });
@@ -16218,8 +16314,23 @@
           }
           if (qualifiedRangedList.some(q => q.name.toLowerCase().trim() === pNameLower)) return;
 
+          const dbEntry = typeof findMasterItem === 'function' ? findMasterItem(pin.name) : null;
           qualifiedRangedList.push({
             id: `pin_${pin.name}`,
+            pinRef: pin,
+            name: pin.name,
+            source: pin.sourceType || dbEntry?.type || 'Pin',
+            bonusStr: pin.badge || dbEntry?.benefit || '+ Pin',
+            bonusAtk: Number(dbEntry?.attBonus ?? pin.bonusAtk ?? 0),
+            bonusDmg: Number(dbEntry?.dmgBonus ?? pin.bonusDmg ?? 0),
+            dice: dbEntry?.dice || dbEntry?.extraDmg || pin.dice || '',
+            bonusType: dbEntry?.bonusType || pin.bonusType || 'untyped',
+            combatScope: 'ranged',
+            active: Boolean(pin.active),
+            activeClass: 'border-sky-500 bg-sky-950/40 text-sky-200 shadow-sm'
+          });
+        });
+      }
             pinRef: pin,
             name: pin.name,
             source: pin.sourceType || 'Pin',
@@ -16370,44 +16481,20 @@
         }
 
         let netRangedMod = 0;
-        if (t.pointBlankShot && hasPBS) netRangedMod += 1;
         if (t.rangedHigherGround) netRangedMod += 1;
-        if (t.rapidShot && hasRapid) netRangedMod -= 2;
-        if (t.targetInMelee) {
-          // Precise Shot negates -4 melee penalty
-          if (!hasPrecise) netRangedMod -= 4;
-        }
-        if (t.rangePenalty) netRangedMod -= 2;
+        if (t.targetInMelee && !hasPrecise) netRangedMod -= 4;
         if (t.coverPenalty) netRangedMod -= 4;
-        if (t.bootsHaste && hasHaste) netRangedMod += 1;
-        if (t.manyshot && hasMany) netRangedMod -= 4;
-        if (t.trueStrike && hasTrue) netRangedMod += 20;
-        if (t.enhanceArrow) netRangedMod += 1;
-
-        if (typeof getAllCombatPins === 'function') {
-          const allPins = getAllCombatPins();
-          allPins.forEach(p => {
-            if (p.active && (p.category === 'offense_ranged' || p.scope === 'Ranged Only' || p.combatScope === 'ranged' || p.combatScope === 'both')) {
-              if (p.bonusAtk) netRangedMod += Number(p.bonusAtk);
-            }
-          });
-        }
 
         let flatDmg = arrowDmgBonus;
-        if (t.pointBlankShot && hasPBS) flatDmg += 1;
-        if (t.enhanceArrow) flatDmg += 1;
-        if (typeof getAllCombatPins === 'function') {
-          const allPins = getAllCombatPins();
-          allPins.forEach(p => {
-            if (p.active && (p.category === 'offense_ranged' || p.scope === 'Ranged Only' || p.combatScope === 'ranged' || p.combatScope === 'both')) {
-              if (p.bonusDmg) flatDmg += Number(p.bonusDmg);
-              if (p.dice) arrowExtraDice = arrowExtraDice ? `${arrowExtraDice} + ${p.dice}` : p.dice;
-            }
-          });
-        }
-        if (t.sneakAttack && hasSneak) {
-          arrowExtraDice = arrowExtraDice ? `${arrowExtraDice} + 1d6 (Sneak)` : '1d6 (Sneak)';
-        }
+
+        const qualifiedRanged = typeof getQualifiedRangedModifiersList === 'function' ? getQualifiedRangedModifiersList() : [];
+        qualifiedRanged.forEach(m => {
+          if (m && m.active) {
+            if (m.bonusAtk) netRangedMod += Number(m.bonusAtk);
+            if (m.bonusDmg) flatDmg += Number(m.bonusDmg);
+            if (m.dice) arrowExtraDice = arrowExtraDice ? `${arrowExtraDice} + ${m.dice}` : m.dice;
+          }
+        });
         if (at === 'thrown' && strMod > 0) flatDmg += strMod;
 
         let rawDice = activeRangedWep.dice || '1d8';
@@ -16786,21 +16873,16 @@
         else if (selArrow === 'blunt') arrowType = 'Ezici';
 
         let flatDmg = arrowDmgBonus;
-        if (t.pointBlankShot && hasPBS) flatDmg += 1;
-        if (t.enhanceArrow) flatDmg += 1;
-        if (typeof getAllCombatPins === 'function') {
-          const allPins = getAllCombatPins();
-          allPins.forEach(p => {
-            if (p.active && (p.category === 'offense_ranged' || p.scope === 'Ranged Only' || p.combatScope === 'ranged' || p.combatScope === 'both')) {
-              if (p.bonusDmg) flatDmg += Number(p.bonusDmg);
-              if (p.dice) arrowExtraDice = arrowExtraDice ? `${arrowExtraDice} + ${p.dice}` : ` + ${p.dice}`;
-            }
-          });
-        }
+        const qualifiedRanged = typeof getQualifiedRangedModifiersList === 'function' ? getQualifiedRangedModifiersList() : [];
+        qualifiedRanged.forEach(m => {
+          if (m && m.active) {
+            if (m.bonusDmg) flatDmg += Number(m.bonusDmg);
+            if (m.dice) arrowExtraDice = arrowExtraDice ? `${arrowExtraDice} + ${m.dice}` : ` + ${m.dice}`;
+          }
+        });
         if (at === 'thrown' && strMod > 0) flatDmg += strMod;
 
         let extraDice = arrowExtraDice;
-        if (t.sneakAttack && hasSneak) extraDice += ' + 1d6 (Sneak)';
 
         let rawDice = activeRangedWep.dice || '1d8';
         if (selArrow === 'stone' && at === 'bullet') rawDice = '1d3';
