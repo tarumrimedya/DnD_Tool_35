@@ -13772,17 +13772,97 @@
       return false;
     }
 
-    // Helper to determine if an item is a ranged or thrown weapon (Bows, Crossbows, Slings, Thrown Daggers, etc.)
+    // Helper to determine if an item is strictly ammunition or a spell (Arrows, Bolts, Sling Bullets, Spells)
+    function isAmmunitionItem(item) {
+      if (!item) return false;
+      const name = typeof item === 'string' ? item : (item.name || '');
+      if (!name) return false;
+      const low = name.toLowerCase().trim();
+
+      // 1. Direct object properties
+      if (typeof item === 'object') {
+        if (item.category === 'Ammunition' || item.type === 'Ammunition' || item.slot === 'Ammunition' || item.isAmmunition) return true;
+        if (item.category === 'Spell' || item.type === 'Spell') return true;
+        if (item.ammoVal) return true; // Standard ammunition items created with ammoVal
+      }
+
+      // 2. Master DB check
+      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        const m = masterDb.find(entry => entry && (
+          (entry.name && entry.name.toLowerCase().trim() === low) ||
+          (entry.masterDbName && entry.masterDbName.toLowerCase().trim() === low)
+        ));
+        if (m) {
+          if (m.category === 'Ammunition' || m.type === 'Ammunition' || m.slot === 'Ammunition') return true;
+          if (m.type === 'Spell' || m.category === 'Spell') return true;
+        }
+      }
+
+      // 3. Fallback semantic check for ammunition
+      if (low.endsWith(' arrow') || low.endsWith(' ok') || low.endsWith(' bolt') || low.endsWith(' bullet') || low.endsWith(' bullets') || low.endsWith(' arrows') || low.endsWith(' bolts') || low === 'sapan taşı') {
+        return true;
+      }
+
+      return false;
+    }
+
+    // Helper to determine if an item is a thrown weapon (Dagger, Dart, Shuriken, Javelin, Throwing Axe, etc.)
+    function isThrownWeapon(item) {
+      if (!item) return false;
+      if (isAmmunitionItem(item)) return false;
+
+      const name = typeof item === 'string' ? item : (item.name || '');
+      if (!name) return false;
+      const low = name.toLowerCase().trim();
+
+      // 1. Direct object properties
+      if (typeof item === 'object') {
+        if (item.attackType === 'thrown' || item.ammoType === 'thrown') return true;
+        if (Array.isArray(item.tags) && item.tags.some(t => String(t).toLowerCase() === 'thrown')) return true;
+      }
+
+      // 2. Master DB check
+      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        const m = masterDb.find(entry => entry && (
+          (entry.name && entry.name.toLowerCase().trim() === low) ||
+          (entry.masterDbName && entry.masterDbName.toLowerCase().trim() === low)
+        ));
+        if (m) {
+          if (m.attackType === 'thrown' || m.ammoType === 'thrown') return true;
+          if (Array.isArray(m.tags) && m.tags.some(t => String(t).toLowerCase() === 'thrown')) return true;
+        }
+      }
+
+      // 3. Fallback heuristics for classic D&D 3.5e thrown weapons if tags missing
+      return (
+        low.includes('dagger') ||
+        low.includes('hançer') ||
+        low.includes('dart') ||
+        low.includes('shuriken') ||
+        low.includes('javelin') ||
+        low.includes('cirit') ||
+        low.includes('throwing axe') ||
+        low.includes('fırlatma') ||
+        low.includes('thrown')
+      );
+    }
+
+    // Helper to determine if an item is a ranged launcher or thrown weapon (Bows, Crossbows, Slings, Blowguns, Thrown Daggers, etc.)
     function isRangedOrThrownWeapon(item) {
       if (!item) return false;
+      if (isAmmunitionItem(item)) return false; // Strict D&D 3.5e RAW: Ammunition is NEVER a weapon!
+      if (isThrownWeapon(item)) return true;
+
       const name = typeof item === 'string' ? item : (item.name || '');
       if (!name || name === 'Yok' || name === '-' || name === 'None' || name === 'Boş') return false;
       const low = name.toLowerCase().trim();
 
       // Explicit property checks
       if (typeof item === 'object') {
-        if (item.combatScope === 'ranged' || item.combatScope === 'both') return true;
-        if (item.attackType === 'ranged' || item.category === 'Ranged' || item.ammoType) return true;
+        if (item.combatScope === 'ranged' || item.combatScope === 'both') {
+          if (item.category === 'Weapon' || item.type === 'Weapon' || !item.category) return true;
+        }
+        if (item.category === 'Ranged' || item.weaponType === 'Ranged') return true;
       }
 
       // Lookup in masterDb
@@ -13792,29 +13872,22 @@
           (entry.masterDbName && entry.masterDbName.toLowerCase().trim() === low)
         ));
         if (m) {
-          if (m.combatScope === 'ranged' || m.combatScope === 'both') return true;
-          if (m.attackType === 'ranged' || m.category === 'Ranged' || m.ammoType) return true;
+          if (m.type === 'Weapon' && (m.combatScope === 'ranged' || m.category === 'Ranged' || (Array.isArray(m.tags) && m.tags.includes('ranged')))) {
+            return true;
+          }
         }
       }
 
-      // Keyword heuristic for ranged & thrown weapons
+      // Keyword heuristic for actual ranged launcher weapons (Bows, Crossbows, Slings, Blowguns)
       return (
         low.includes('bow') || 
         low.includes('yay') || 
         low.includes('crossbow') || 
         low.includes('arbalet') || 
         low.includes('sling') || 
-        low.includes('sapan') || 
-        low.includes('dagger') || 
-        low.includes('hançer') || 
-        low.includes('dart') || 
-        low.includes('shuriken') || 
-        low.includes('javelin') || 
-        low.includes('cirit') || 
-        low.includes('fırlatma') || 
-        low.includes('thrown') ||
-        low.includes('taş') ||
-        low.includes('bullet')
+        low.includes('sapan') ||
+        low.includes('blowgun') ||
+        low.includes('üfleme')
       );
     }
 
@@ -15463,6 +15536,9 @@
     // --- RANGED WEAPONS & AMMUNITION REPERTOIRE ENGINE ---
     function getRequiredAmmunitionType(weaponName) {
       if (!weaponName) return 'none';
+      if (typeof isThrownWeapon === 'function' && isThrownWeapon(weaponName)) {
+        return 'thrown';
+      }
       const w = weaponName.toLowerCase();
       if (w.includes('longbow') || w.includes('shortbow') || w.includes('yay') || w.includes('composite')) {
         return 'arrow';
@@ -15475,9 +15551,6 @@
       }
       if (w.includes('blowgun') || w.includes('üfleme')) {
         return 'needle';
-      }
-      if (w.includes('dagger') || w.includes('hançer') || w.includes('dart') || w.includes('javelin') || w.includes('shuriken') || w.includes('fırlat')) {
-        return 'thrown';
       }
       return 'none';
     }
@@ -15789,18 +15862,24 @@
         if (seenNames.has(low)) return;
 
         let matches = false;
-        if (ammoType === 'arrow') {
-          matches = low.includes('ok') || low.includes('arrow') || item.weaponType === 'Bow' || item.category === 'Ammunition';
+        if (ammoType === 'thrown') {
+          matches = (typeof isThrownWeapon === 'function' && isThrownWeapon(item)) || low.includes('thrown') || low.includes('fırlatma') || (item.tags && item.tags.includes('thrown'));
+        } else if (ammoType === 'arrow') {
+          const isBolt = low.includes('bolt') || item.weaponType === 'Crossbow';
+          const isBullet = low.includes('bullet') || low.includes('sapan') || item.weaponType === 'Sling';
+          matches = !isBolt && !isBullet && (low.includes('ok') || low.includes('arrow') || item.weaponType === 'Bow');
         } else if (ammoType === 'bolt') {
-          matches = low.includes('bolt') || low.includes('kundak') || item.weaponType === 'Crossbow';
+          const isArrow = low.includes('arrow') || low.includes('ok') || item.weaponType === 'Bow';
+          const isBullet = low.includes('bullet') || low.includes('sapan') || item.weaponType === 'Sling';
+          matches = !isArrow && !isBullet && (low.includes('bolt') || low.includes('kundak') || item.weaponType === 'Crossbow');
         } else if (ammoType === 'bullet') {
-          matches = low.includes('bullet') || low.includes('mermi') || low.includes('sapan') || low.includes('taş') || item.weaponType === 'Sling';
-        } else if (ammoType === 'thrown') {
-          matches = low.includes('thrown') || low.includes('fırlatma') || (item.tags && item.tags.includes('thrown'));
+          const isArrow = low.includes('arrow') || low.includes('ok') || item.weaponType === 'Bow';
+          const isBolt = low.includes('bolt') || item.weaponType === 'Crossbow';
+          matches = !isArrow && !isBolt && (low.includes('bullet') || low.includes('mermi') || low.includes('sapan') || low.includes('taş') || item.weaponType === 'Sling');
         }
 
-        // Exclude bow/crossbow weapons from ammo list
-        if (item.category === 'Weapon' && !low.includes('arrow') && !low.includes('ok') && !low.includes('bolt') && !low.includes('bullet') && !low.includes('taş')) {
+        // Exclude weapons from ammo list unless it is a thrown weapon for thrown mode
+        if (item.category === 'Weapon' && ammoType !== 'thrown') {
           matches = false;
         }
 
