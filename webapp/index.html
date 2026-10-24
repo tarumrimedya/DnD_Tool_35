@@ -1,4 +1,4 @@
-﻿﻿﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
@@ -24723,30 +24723,10 @@
           school: item.school || 'Universal',
           benefit: item.benefit || item.description || '',
           range: item.range || 'Close',
-          action: item.action || 'Standard',
+          action: item.action || 'Standard Action',
           damageDice: item.damageDice || item.dice || item.extraDmg || ''
         });
-      } else if (type === 'Maneuver') {
-        if (!character.tomeOfBattle) character.tomeOfBattle = {};
-        if (!Array.isArray(character.tomeOfBattle.maneuversKnown)) character.tomeOfBattle.maneuversKnown = [];
-        character.tomeOfBattle.maneuversKnown.push({
-          name: item.name,
-          level: item.level !== undefined ? Number(item.level) : 1,
-          discipline: item.discipline || 'Iron Heart',
-          benefit: item.benefit || item.description || '',
-          action: item.action || 'Standard',
-          damageDice: item.damageDice || item.dice || item.extraDmg || ''
-        });
-      } else if (type === 'Stance') {
-        if (!character.tomeOfBattle) character.tomeOfBattle = {};
-        if (!Array.isArray(character.tomeOfBattle.stancesKnown)) character.tomeOfBattle.stancesKnown = [];
-        character.tomeOfBattle.stancesKnown.push({
-          name: item.name,
-          level: item.level !== undefined ? Number(item.level) : 1,
-          discipline: item.discipline || 'Iron Heart',
-          benefit: item.benefit || item.description || ''
-        });
-      }
+
         saveStateToStorage(true);
         renderAll();
         renderSpellPickerResults();
