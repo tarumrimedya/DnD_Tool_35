@@ -24093,8 +24093,8 @@
         const isTouchAttack = (attackType === 'ranged_touch' || attackType === 'melee_touch');
         const isRangedTouch = attackType === 'ranged_touch';
         const bab = Number(character.bab) || 0;
-        const dexMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.dex || 10) : 0;
-        const strMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.str || 10) : 0;
+        const dexMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod) ? RuleEngine.getAbilityMod(character.abilities?.dex || 10) : Math.floor(((character?.abilities?.dex || 10) - 10) / 2);
+        const strMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod) ? RuleEngine.getAbilityMod(character.abilities?.str || 10) : Math.floor(((character?.abilities?.str || 10) - 10) / 2);
         const touchAtkBonus = isRangedTouch ? (bab + dexMod) : (bab + strMod);
 
         const tr = document.createElement('tr');
