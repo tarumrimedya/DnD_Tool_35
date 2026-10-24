@@ -12861,7 +12861,7 @@
       const currentLvl = currentSpell ? (Number(currentSpell.level) || 0) : 0;
 
       // Calculate SR bonus for SR check card
-      const cl = getEffectiveSpellCasterLevel(spell);
+      const cl = getEffectiveSpellCasterLevel(currentSpell);
       const featsList = character?.feats || [];
       const hasSpellPen = featsList.some(f => (f.name || '').toLowerCase().includes('spell penetration') && !(f.name || '').toLowerCase().includes('greater'));
       const hasGrtSpellPen = featsList.some(f => (f.name || '').toLowerCase().includes('greater spell penetration'));
