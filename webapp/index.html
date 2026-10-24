@@ -679,8 +679,7 @@
                          onmouseenter="showActiveSpellHoverTooltip(event)"
                          onmouseleave="hideSpellHoverTooltip()"
                          onmousemove="updateSpellHoverTooltipPos(event)"
-                         class="sm:flex-[3] min-w-0 bg-slate-950/80 p-2 rounded-lg border border-slate-800 hover:border-purple-600/70 hover:bg-purple-950/20 text-center flex flex-col justify-center min-h-[56px] cursor-help group transition relative"
-                         title="Büyü detaylarını görmek için üzerine gelin">
+                         class="sm:flex-[3] min-w-0 bg-slate-950/80 p-2 rounded-lg border border-slate-800 hover:border-purple-600/70 hover:bg-purple-950/20 text-center flex flex-col justify-center min-h-[56px] cursor-help group transition relative">
                       <div class="flex items-center justify-center gap-1 text-[8px] font-mono text-purple-400 font-bold uppercase tracking-wider truncate">
                         <span id="combat-selected-spell-school-badge">Büyü</span>
                         <span>•</span>
@@ -13337,8 +13336,6 @@
         }
         const titleEl = document.getElementById('combat-selected-spell-title');
         if (titleEl) titleEl.textContent = 'Büyü Seçilmedi';
-        const infoCell = document.getElementById('combat-selected-spell-info-cell');
-        if (infoCell) infoCell.title = 'Büyü detaylarını görmek için üzerine gelin';
         return;
       }
 
@@ -13402,11 +13399,6 @@
       // Update Selected Spell Title & School/Level Badges
       const titleEl = document.getElementById('combat-selected-spell-title');
       if (titleEl) titleEl.textContent = spell.name;
-
-      const infoCell = document.getElementById('combat-selected-spell-info-cell');
-      if (infoCell) {
-        infoCell.title = `${spell.name} (${spell.school || 'Universal'}, ${baseLvl === 0 ? 'Cantrip' : baseLvl + '. Seviye'})\n${spell.benefit || spell.desc || spell.description || ''}`;
-      }
 
       const schoolBadge = document.getElementById('combat-selected-spell-school-badge');
       if (schoolBadge) schoolBadge.textContent = spell.school || 'Universal';
