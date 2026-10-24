@@ -794,9 +794,6 @@
                 <span>🛡️</span> SAVUNMA &amp; REAKSİYONLAR
               </span>
               <div class="flex items-center gap-1.5">
-                <div id="cockpit-ac-status-badge" class="text-[9px] font-bold px-2 py-0.5 rounded border border-slate-700 bg-slate-900 text-slate-400 transition-all">
-                  Standart Savunma
-                </div>
                 <button type="button" onclick="toggleCockpitPanel('defense')" id="btn-collapse-defense" class="text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700 text-xs font-bold cursor-pointer" title="Paneli Katla/Aç">
                   <span>▴</span>
                 </button>
@@ -18269,7 +18266,6 @@
       const acNormal = document.getElementById('cockpit-ac-normal');
       const acTouch = document.getElementById('cockpit-ac-touch');
       const acFlat = document.getElementById('cockpit-ac-flat');
-      const acBadge = document.getElementById('cockpit-ac-status-badge');
 
       const ce = character.tactical.combatExpertise || 0;
       const fd = character.tactical.fightingDefensively || false;
@@ -18291,19 +18287,6 @@
       if (acNormal) acNormal.textContent = bd.total || 21;
       if (acTouch) acTouch.textContent = bd.touch || 16;
       if (acFlat) acFlat.textContent = bd.flat || 18;
-
-      if (acBadge) {
-        if (td) {
-          acBadge.textContent = `🛡️ Total Defense (+${extraDodge} AC)`;
-          acBadge.className = 'text-[10px] font-black px-2 py-0.5 rounded border border-amber-500 bg-amber-950/80 text-amber-300 animate-pulse';
-        } else if (extraDodge > 0) {
-          acBadge.textContent = `🛡️ Savunma Aktif: +${extraDodge} AC`;
-          acBadge.className = 'text-[10px] font-black px-2 py-0.5 rounded border border-emerald-500 bg-emerald-950/80 text-emerald-300 animate-pulse';
-        } else {
-          acBadge.textContent = 'Standart Savunma';
-          acBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded border border-slate-700 bg-slate-900 text-slate-400';
-        }
-      }
 
       // Collapsed Bar Summaries
       const defSummary = document.getElementById('combat-defense-collapsed-summary');
