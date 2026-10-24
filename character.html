@@ -12900,15 +12900,12 @@
 
       // Card 1: Defensive Casting (Fixed Item 1)
       const defCardHtml = `
-        <label class="bg-slate-900 border ${isDefensiveActive ? 'border-indigo-500 bg-indigo-950/40 text-indigo-200 shadow-[0_0_8px_rgba(99,102,241,0.3)]' : 'border-indigo-900/60 text-slate-300'} hover:border-indigo-500/60 rounded p-1.5 cursor-pointer transition flex items-start justify-between gap-1 group select-none min-h-[44px]">
-          <div class="min-w-0 pr-1">
-            <div class="text-[10px] font-bold text-indigo-300 group-hover:text-white flex items-center gap-1 leading-tight">
-              <span class="shrink-0">🛡️</span>
-              <span class="truncate">Defensive Cast</span>
-            </div>
-            <div class="text-[8px] text-slate-400 mt-0.5 leading-tight" id="defensive-casting-dc-hint">DC ${15 + currentLvl} • AoO Engeller</div>
+        <label class="bg-slate-900 border ${isDefensiveActive ? 'border-indigo-500 bg-indigo-950/40 text-indigo-200 shadow-sm' : 'border-slate-800 text-slate-300'} hover:border-indigo-500/60 rounded-lg p-2 cursor-pointer transition flex flex-col justify-between text-center select-none min-h-[64px]">
+          <div>
+            <div class="text-[11px] font-bold text-indigo-400 leading-tight">Defensive Cast</div>
+            <div class="text-[9px] text-slate-400 mt-0.5" id="defensive-casting-dc-hint">DC ${15 + currentLvl} • AoO Engeller</div>
           </div>
-          <input type="checkbox" id="mod-defensive-casting" ${isDefensiveActive ? 'checked' : ''} onchange="character.tactical.defensiveCastingActive = this.checked; saveStateToStorage(false); renderSpellTacticalModifiers();" class="mt-0.5 shrink-0 w-3.5 h-3.5 rounded text-indigo-500 border-slate-700 focus:ring-0 cursor-pointer">
+          <input type="checkbox" id="mod-defensive-casting" ${isDefensiveActive ? 'checked' : ''} onchange="character.tactical.defensiveCastingActive = this.checked; saveStateToStorage(false); renderSpellTacticalModifiers();" class="mt-1 mx-auto w-3.5 h-3.5 rounded text-indigo-500 focus:ring-0 cursor-pointer">
         </label>
       `;
 
