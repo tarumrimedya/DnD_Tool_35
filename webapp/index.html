@@ -12900,8 +12900,7 @@
 
       // Card 1: Defensive Casting (Fixed Item 1 - Glow Card Toggle)
       const defCardHtml = `
-        <div onclick="toggleDefensiveCastingModifier()" class="relative ${isDefensiveActive ? 'border-2 border-indigo-400 bg-indigo-950 text-white shadow-[0_0_14px_rgba(129,140,248,0.45)] ring-2 ring-indigo-400/30' : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-indigo-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
-          ${isDefensiveActive ? '<span class="absolute top-1 right-1.5 text-[8px] font-black font-mono text-indigo-300 bg-indigo-900/80 px-1 rounded border border-indigo-400/50">✓ AÇIK</span>' : ''}
+        <div onclick="toggleDefensiveCastingModifier()" class="relative ${isDefensiveActive ? 'border border-indigo-500 bg-indigo-950/60 text-white shadow-md shadow-indigo-950/50 ring-1 ring-indigo-500/40' : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-indigo-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
           <div class="text-[11px] font-bold ${isDefensiveActive ? 'text-white font-black' : 'text-indigo-400'} leading-tight">Defensive Cast</div>
           <div class="text-[9px] ${isDefensiveActive ? 'text-indigo-200 font-bold' : 'text-slate-400'} mt-1" id="defensive-casting-dc-hint">DC ${15 + currentLvl} • AoO Engeller</div>
         </div>
@@ -12922,33 +12921,27 @@
       const modCards = modifiers.map(mod => {
         const isActive = isSpellCockpitModifierActive(mod);
 
-        let activeBorder = 'border-2 border-purple-400 bg-purple-950 text-white shadow-[0_0_14px_rgba(192,132,252,0.45)] ring-2 ring-purple-400/30';
+        let activeBorder = 'border border-purple-500 bg-purple-950/60 text-white shadow-md shadow-purple-950/50 ring-1 ring-purple-500/40';
         let titleColor = 'text-purple-300';
-        let badgeColor = 'text-purple-200 bg-purple-900/80 border-purple-400/50';
 
         if (mod.color === 'amber') {
           titleColor = 'text-amber-300';
-          badgeColor = 'text-amber-200 bg-amber-900/80 border-amber-400/50';
-          activeBorder = 'border-2 border-amber-400 bg-amber-950 text-white shadow-[0_0_14px_rgba(251,191,36,0.45)] ring-2 ring-amber-400/30';
+          activeBorder = 'border border-amber-500 bg-amber-950/60 text-white shadow-md shadow-amber-950/50 ring-1 ring-amber-500/40';
         } else if (mod.color === 'sky' || mod.color === 'cyan') {
           titleColor = 'text-sky-300';
-          badgeColor = 'text-sky-200 bg-sky-900/80 border-sky-400/50';
-          activeBorder = 'border-2 border-sky-400 bg-sky-950 text-white shadow-[0_0_14px_rgba(56,189,248,0.45)] ring-2 ring-sky-400/30';
+          activeBorder = 'border border-sky-500 bg-sky-950/60 text-white shadow-md shadow-sky-950/50 ring-1 ring-sky-500/40';
         } else if (mod.color === 'emerald') {
           titleColor = 'text-emerald-300';
-          badgeColor = 'text-emerald-200 bg-emerald-900/80 border-emerald-400/50';
-          activeBorder = 'border-2 border-emerald-400 bg-emerald-950 text-white shadow-[0_0_14px_rgba(52,211,153,0.45)] ring-2 ring-emerald-400/30';
+          activeBorder = 'border border-emerald-500 bg-emerald-950/60 text-white shadow-md shadow-emerald-950/50 ring-1 ring-emerald-500/40';
         } else if (mod.color === 'rose') {
           titleColor = 'text-rose-300';
-          badgeColor = 'text-rose-200 bg-rose-900/80 border-rose-400/50';
-          activeBorder = 'border-2 border-rose-400 bg-rose-950 text-white shadow-[0_0_14px_rgba(251,113,133,0.45)] ring-2 ring-rose-400/30';
+          activeBorder = 'border border-rose-500 bg-rose-950/60 text-white shadow-md shadow-rose-950/50 ring-1 ring-rose-500/40';
         }
 
         const icon = mod.isRod ? '🪄' : (mod.isMetamagic ? '✨' : (mod.sourceType === 'Feat' ? '⚡' : '🔮'));
 
         return `
           <div onclick="toggleSpellCockpitModifier('${mod.id}', event)" class="relative ${isActive ? activeBorder : 'border border-purple-900/60 bg-slate-900 text-slate-300 hover:border-purple-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px] group">
-            ${isActive ? `<span class="absolute top-1 right-1.5 text-[8px] font-black font-mono ${badgeColor} px-1 rounded border">✓ AÇIK</span>` : ''}
             <div class="text-[11px] font-bold ${isActive ? 'text-white font-black' : titleColor} flex items-center justify-center gap-1 leading-tight truncate w-full">
               <span class="shrink-0">${icon}</span>
               <span class="truncate">${mod.name}</span>
@@ -15121,22 +15114,19 @@
       // Row 1: Fixed 3 items: 1. Flanking, 2. Charge, 3. Higher Ground (Glow Card Toggle)
       const fixedCardsHtml = [
         `
-        <div onclick="toggleFixedMeleeModifier('flanking')" class="relative ${flanking ? 'border-2 border-sky-400 bg-sky-950 text-white shadow-[0_0_14px_rgba(56,189,248,0.45)] ring-2 ring-sky-400/30' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-sky-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
-          ${flanking ? '<span class="absolute top-1 right-1.5 text-[8px] font-black font-mono text-sky-300 bg-sky-900/80 px-1 rounded border border-sky-400/50">✓ AÇIK</span>' : ''}
+        <div onclick="toggleFixedMeleeModifier('flanking')" class="relative ${flanking ? 'border border-sky-500 bg-sky-950/60 text-white shadow-md shadow-sky-950/50 ring-1 ring-sky-500/40' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-sky-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
           <div class="text-[11px] font-bold ${flanking ? 'text-white font-black' : 'text-sky-400'} leading-tight">Flanking</div>
           <div class="text-[9px] ${flanking ? 'text-sky-200 font-bold' : 'text-slate-400'} mt-1">+2 Melee</div>
         </div>
         `,
         `
-        <div onclick="toggleFixedMeleeModifier('charge')" class="relative ${charge ? 'border-2 border-rose-400 bg-rose-950 text-white shadow-[0_0_14px_rgba(251,113,133,0.45)] ring-2 ring-rose-400/30' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-rose-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
-          ${charge ? '<span class="absolute top-1 right-1.5 text-[8px] font-black font-mono text-rose-300 bg-rose-900/80 px-1 rounded border border-rose-400/50">✓ AÇIK</span>' : ''}
+        <div onclick="toggleFixedMeleeModifier('charge')" class="relative ${charge ? 'border border-rose-500 bg-rose-950/60 text-white shadow-md shadow-rose-950/50 ring-1 ring-rose-500/40' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-rose-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
           <div class="text-[11px] font-bold ${charge ? 'text-white font-black' : 'text-rose-400'} leading-tight">Charge</div>
           <div class="text-[9px] ${charge ? 'text-rose-200 font-bold' : 'text-slate-400'} mt-1">+2 Atk / -2 AC</div>
         </div>
         `,
         `
-        <div onclick="toggleFixedMeleeModifier('higherGround')" class="relative ${hg ? 'border-2 border-amber-400 bg-amber-950 text-white shadow-[0_0_14px_rgba(251,191,36,0.45)] ring-2 ring-amber-400/30' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-amber-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
-          ${hg ? '<span class="absolute top-1 right-1.5 text-[8px] font-black font-mono text-amber-300 bg-amber-900/80 px-1 rounded border border-amber-400/50">✓ AÇIK</span>' : ''}
+        <div onclick="toggleFixedMeleeModifier('higherGround')" class="relative ${hg ? 'border border-amber-500 bg-amber-950/60 text-white shadow-md shadow-amber-950/50 ring-1 ring-amber-500/40' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-amber-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
           <div class="text-[11px] font-bold ${hg ? 'text-white font-black' : 'text-amber-400'} leading-tight">Higher Gr.</div>
           <div class="text-[9px] ${hg ? 'text-amber-200 font-bold' : 'text-slate-400'} mt-1">+1 Melee</div>
         </div>
@@ -15903,22 +15893,19 @@
       // Base Situational Cards: Rules every ranged combatant can use (Glow Card Toggle)
       const baseCardsHtml = [
         `
-        <div onclick="onRangedModifierToggle('rangedHigherGround')" class="relative ${hg ? 'border-2 border-amber-400 bg-amber-950 text-white shadow-[0_0_14px_rgba(251,191,36,0.45)] ring-2 ring-amber-400/30' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-amber-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
-          ${hg ? '<span class="absolute top-1 right-1.5 text-[8px] font-black font-mono text-amber-300 bg-amber-900/80 px-1 rounded border border-amber-400/50">✓ AÇIK</span>' : ''}
+        <div onclick="onRangedModifierToggle('rangedHigherGround')" class="relative ${hg ? 'border border-amber-500 bg-amber-950/60 text-white shadow-md shadow-amber-950/50 ring-1 ring-amber-500/40' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-amber-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
           <div class="text-[11px] font-bold ${hg ? 'text-white font-black' : 'text-amber-400'} leading-tight">Higher Gr.</div>
           <div class="text-[9px] ${hg ? 'text-amber-200 font-bold' : 'text-slate-400'} mt-1">+1 Ranged</div>
         </div>
         `,
         `
-        <div onclick="onRangedModifierToggle('targetInMelee')" class="relative ${tinM ? 'border-2 border-rose-400 bg-rose-950 text-white shadow-[0_0_14px_rgba(251,113,133,0.45)] ring-2 ring-rose-400/30' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-rose-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
-          ${tinM ? '<span class="absolute top-1 right-1.5 text-[8px] font-black font-mono text-rose-300 bg-rose-900/80 px-1 rounded border border-rose-400/50">✓ AÇIK</span>' : ''}
+        <div onclick="onRangedModifierToggle('targetInMelee')" class="relative ${tinM ? 'border border-rose-500 bg-rose-950/60 text-white shadow-md shadow-rose-950/50 ring-1 ring-rose-500/40' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-rose-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
           <div class="text-[11px] font-bold ${tinM ? 'text-white font-black' : 'text-rose-400'} leading-tight">Hedef Yakında</div>
           <div class="text-[9px] ${tinM ? 'text-rose-200 font-bold' : 'text-slate-400'} mt-1">${hasPrecise ? '⚡ Ceza Yok (Precise)' : '-4 Atk (Melee)'}</div>
         </div>
         `,
         `
-        <div onclick="onRangedModifierToggle('coverPenalty')" class="relative ${cvr ? 'border-2 border-slate-300 bg-slate-800 text-white shadow-[0_0_14px_rgba(203,213,225,0.4)] ring-2 ring-slate-400/40' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-slate-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
-          ${cvr ? '<span class="absolute top-1 right-1.5 text-[8px] font-black font-mono text-slate-200 bg-slate-700/80 px-1 rounded border border-slate-400/50">✓ AÇIK</span>' : ''}
+        <div onclick="onRangedModifierToggle('coverPenalty')" class="relative ${cvr ? 'border border-slate-400 bg-slate-800/80 text-white shadow-md shadow-slate-900/50 ring-1 ring-slate-400/40' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-slate-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
           <div class="text-[11px] font-bold ${cvr ? 'text-white font-black' : 'text-slate-300'} leading-tight">Hedef Siperde</div>
           <div class="text-[9px] ${cvr ? 'text-slate-100 font-bold' : 'text-slate-400'} mt-1">-4 Atk (Cover)</div>
         </div>
@@ -15952,21 +15939,20 @@
             <button type="button" onclick="moveRangedModifierOrder(${idx}, 1, event)" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx >= qualifiedRangedList.length - 1 ? 'disabled' : ''} title="Sağa Taşı">▶</button>
           </div>
         ` : `
-          <div class="flex items-center justify-between px-1 text-[9px] leading-none shrink-0 w-full">
-            <span class="text-[8px] font-mono ${mod.active ? 'text-amber-300 font-bold' : 'text-slate-500'} truncate max-w-[60px]">${mod.source}</span>
-            ${mod.active ? '<span class="text-[8px] font-black font-mono text-amber-200 bg-amber-900/80 px-1 rounded border border-amber-400/50">✓ AÇIK</span>' : ''}
+          <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
+            <span class="text-[8px] font-mono ${mod.active ? 'text-amber-400 font-bold' : 'text-slate-500'} truncate max-w-[75px]">${mod.source}</span>
           </div>
         `;
 
-        const activeBorder = 'border-2 border-amber-400 bg-amber-950 text-white shadow-[0_0_14px_rgba(251,191,36,0.45)] ring-2 ring-amber-400/30';
+        const activeBorder = 'border border-amber-500 bg-amber-950/60 text-white shadow-md shadow-amber-950/50 ring-1 ring-amber-500/40';
 
         return `
         <div onclick="onRangedModifierToggle('${mod.id}')" class="relative ${mod.active ? activeBorder : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-amber-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer">
           ${reorderControls}
 
           <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
-            <div class="text-[10px] ${mod.active ? 'font-black text-white' : 'font-bold text-slate-200'} leading-tight truncate w-full" title="${mod.name}">${mod.name}</div>
-            <div class="text-[9px] ${mod.active ? 'text-amber-300 font-black' : 'text-amber-400'} font-mono mt-1">${mod.bonusStr}</div>
+            <div class="text-[10px] font-bold ${mod.active ? 'text-white font-extrabold' : 'text-slate-200'} leading-tight truncate w-full" title="${mod.name}">${mod.name}</div>
+            <div class="text-[9px] ${mod.active ? 'text-amber-300 font-bold' : 'text-amber-400'} font-mono mt-1">${mod.bonusStr}</div>
           </div>
         </div>
         `;
