@@ -12348,7 +12348,7 @@
       if (tooltip) tooltip.classList.add('hidden');
     }
 
-    // Dismiss floating hover tooltip on tap or click anywhere outside
+    // Dismiss floating hover tooltips on tap or click anywhere outside
     document.addEventListener('pointerdown', (e) => {
       const tooltip = document.getElementById('combat-spell-hover-tooltip');
       if (tooltip && !tooltip.classList.contains('hidden')) {
@@ -12356,10 +12356,312 @@
           hideSpellHoverTooltip();
         }
       }
+      const modTooltip = document.getElementById('combat-modifier-hover-tooltip');
+      if (modTooltip && !modTooltip.classList.contains('hidden')) {
+        if (!modTooltip.contains(e.target)) {
+          hideCombatModifierHoverTooltip();
+        }
+      }
     });
 
     function updateSpellHoverTooltipPos(event) {
       const tooltip = document.getElementById('combat-spell-hover-tooltip');
+      if (!tooltip || tooltip.classList.contains('hidden')) return;
+
+      const pad = 12;
+      let x = event.clientX + pad;
+      let y = event.clientY + pad;
+
+      const tipRect = tooltip.getBoundingClientRect();
+      const winW = window.innerWidth;
+      const winH = window.innerHeight;
+
+      if (x + tipRect.width > winW - pad) {
+        x = event.clientX - tipRect.width - pad;
+      }
+      if (y + tipRect.height > winH - pad) {
+        y = event.clientY - tipRect.height - pad;
+      }
+
+      tooltip.style.left = `${Math.max(pad, x)}px`;
+      tooltip.style.top = `${Math.max(pad, y)}px`;
+    }
+
+    // --- COMBAT TACTICAL MODIFIERS HOVER TOOLTIP ENGINE ---
+    function getCombatModifierTooltipData(identifier, category) {
+      if (!character) return null;
+      const idClean = String(identifier || '').toLowerCase().trim();
+
+      // 1. Check Defense modifiers
+      if (idClean === 'fightingdefensively' || idClean === 'fighting def.' || idClean === 'fighting def') {
+        const tumbleSkill = (character.skills || []).find(s => s && s.name && s.name.toLowerCase() === 'tumble');
+        const tumbleRanks = tumbleSkill ? (Number(tumbleSkill.ranks) || 0) : 0;
+        const fdDodge = tumbleRanks >= 5 ? 3 : 2;
+        return {
+          title: 'Fighting Defensively',
+          type: 'Combat Action',
+          color: 'indigo',
+          val1: `+${fdDodge} Dodge AC`,
+          val2: '-4 Saldırı Cezası',
+          source: 'D&D 3.5e RAW',
+          action: 'Standart / Full Atk',
+          desc: `Saldırı yaparken daha temkinli ve savunmacı savaşırsınız. Turdaki tüm saldırı zarlarınıza -4 ceza alırken, sonraki turunuza kadar +${fdDodge} Dodge AC kazanırsınız${tumbleRanks >= 5 ? ' (Tumble 5+ kademe sinerjisiyle +3 AC)' : ''}. Total Defense ile birlikte kullanılamaz.`
+        };
+      }
+
+      if (idClean === 'totaldefense' || idClean === 'total defense') {
+        const tumbleSkill = (character.skills || []).find(s => s && s.name && s.name.toLowerCase() === 'tumble');
+        const tumbleRanks = tumbleSkill ? (Number(tumbleSkill.ranks) || 0) : 0;
+        const tdDodge = tumbleRanks >= 5 ? 6 : 4;
+        return {
+          title: 'Total Defense',
+          type: 'Standard Action',
+          color: 'indigo',
+          val1: `+${tdDodge} Dodge AC`,
+          val2: 'Saldırı / AoO Yok',
+          source: 'D&D 3.5e RAW',
+          action: 'Standart Eylem',
+          desc: `Turunuzdaki standart eylemi tamamen korunmaya adarsınız. Sonraki turunuza kadar +${tdDodge} Dodge AC kazanırsınız${tumbleRanks >= 5 ? ' (Tumble 5+ kademe sinerjisiyle +6 AC)' : ''}. Bu tur saldırı yapamaz veya Fırsat Saldırısı (AoO) gerçekleştiremezsiniz.`
+        };
+      }
+
+      if (idClean === 'shieldblock' || idClean === 'shield block') {
+        return {
+          title: 'Shield Block',
+          type: 'Counter (Manevra)',
+          color: 'indigo',
+          val1: '+4 Kalkan AC',
+          val2: 'Devoted Spirit 2',
+          source: 'Tome of Battle',
+          action: 'Immediate Action',
+          desc: 'Bir düşman size veya bitişiğinizdeki müttefiğinize saldırdığında reaksiyon (Immediate Action) olarak kalkanınızı siper edersiniz. Sonraki turunuzun başına kadar kalkan AC bonusunuza anlık +4 Kalkan AC eklenir.'
+        };
+      }
+
+      // 2. Check Melee Fixed modifiers
+      if (idClean === 'flanking') {
+        return {
+          title: 'Flanking (Kıstırma)',
+          type: 'Positional',
+          color: 'sky',
+          val1: '+2 Yakın Saldırı Bonusu',
+          val2: 'Sneak Attack Tetikler',
+          source: 'D&D 3.5e RAW',
+          action: 'Pasif (Konumsal)',
+          desc: 'Bir müttefikinizle birlikte bir düşmanı karşıt karelerden tehdit ettiğinizde düşmanı kıstırmış sayılırsınız. Yakın dövüş saldırı zarlarınıza +2 bonus kazanırsınız ve Sneak Attack hasarını tetikleme hakkı elde edersiniz.'
+        };
+      }
+
+      if (idClean === 'charge') {
+        return {
+          title: 'Charge (Hücum / Şarj)',
+          type: 'Special Action',
+          color: 'rose',
+          val1: '+2 Saldırı Bonusu',
+          val2: '-2 AC Cezası (1 Tur)',
+          source: 'D&D 3.5e RAW',
+          action: 'Full-Round Action',
+          desc: 'Düşmana doğru düz bir hat boyunca en az 10 ft koşarak tek bir güçlü yakın saldırı yaparsınız. Saldırı zarınıza +2 bonus alırsınız ancak sonraki turunuza kadar tüm AC değerlerinize -2 ceza uygulanır.'
+        };
+      }
+
+      if (idClean === 'higherground' || idClean === 'higher gr.' || idClean === 'higher gr') {
+        return {
+          title: 'Higher Ground (Yüksek Zemin)',
+          type: 'Positional',
+          color: 'amber',
+          val1: '+1 Yakın Saldırı Bonusu',
+          val2: 'Zemin Üstünlüğü',
+          source: 'D&D 3.5e RAW',
+          action: 'Pasif (Yüksek Konum)',
+          desc: 'Hedefinizden fiziksel olarak daha yüksek bir konumda (merdiven, bayır, binek sırtı veya yükselti) bulunurken yaptığınız yakın dövüş saldırı zarlarına +1 konumsal bonus kazanırsınız.'
+        };
+      }
+
+      // 3. Check Spell Fixed modifiers
+      if (idClean === 'defensivecast' || idClean === 'defensive casting' || idClean === 'defensive cast') {
+        const currentSpell = typeof getSelectedCombatSpell === 'function' ? getSelectedCombatSpell() : null;
+        const currentLvl = currentSpell ? (Number(currentSpell.level) || 0) : 0;
+        return {
+          title: 'Defensive Casting',
+          type: 'Konsantrasyon',
+          color: 'indigo',
+          val1: `DC ${15 + currentLvl} Testi`,
+          val2: 'AoO Engeller',
+          source: 'D&D 3.5e RAW',
+          action: 'Büyü İcrası',
+          desc: 'Tehdit altındayken (düşman yakınındayken) büyü yaparken Fırsat Saldırısı (AoO) tetiklememek için Konsantrasyon testi yaparsınız. Başarılı olursanız büyü güvenle icra edilir, başarısız olursanız büyü boşa gider ve yuva harcanır.'
+        };
+      }
+
+      if (idClean === 'srcheck' || idClean === 'sr testi at' || idClean === 'spell resistance') {
+        const currentSpell = typeof getSelectedCombatSpell === 'function' ? getSelectedCombatSpell() : null;
+        const cl = typeof getEffectiveSpellCasterLevel === 'function' ? getEffectiveSpellCasterLevel(currentSpell) : (character.casterLevel || 1);
+        const featsList = character?.feats || [];
+        const hasSpellPen = featsList.some(f => (f.name || '').toLowerCase().includes('spell penetration') && !(f.name || '').toLowerCase().includes('greater'));
+        const hasGrtSpellPen = featsList.some(f => (f.name || '').toLowerCase().includes('greater spell penetration'));
+        const srBonusFromFeats = hasGrtSpellPen ? 4 : (hasSpellPen ? 2 : 0);
+        const totalSrBonus = cl + srBonusFromFeats;
+        return {
+          title: 'Spell Resistance (SR) Testi',
+          type: 'Caster Level Testi',
+          color: 'purple',
+          val1: `1d20 + ${totalSrBonus} vs SR`,
+          val2: `CL ${cl} ${srBonusFromFeats > 0 ? '(+Feat: +' + srBonusFromFeats + ')' : ''}`,
+          source: 'D&D 3.5e RAW',
+          action: 'Büyü İsabet Anı',
+          desc: 'Büyü Direncine (SR) sahip bir hedefe büyü yaparken direnci kırmak için 1d20 + Caster Level (+ Varsa Spell Penetration bonusu) zarı atılır. Toplam sonuç hedefin SR değerine eşit veya büyükse büyü hedefe normal etki eder.'
+        };
+      }
+
+      // 4. Check Metamagic definitions
+      const metaMap = {
+        'meta_empower': { title: 'Empower Spell', type: 'Metamagic Feat', color: 'purple', val1: '+50% Zar Hasarı (x1.5)', val2: '+2 Büyü Yuvası', action: 'Büyü İcrası', desc: 'Büyünün tüm değişken sayısal etkileri (hasar, iyileştirme vb.) %50 artırılır (x1.5). Kurtarma zarları ve sabit değerler etkilenmez. Büyü 2 seviye daha yüksek bir yuva kullanır.' },
+        'meta_maximize': { title: 'Maximize Spell', type: 'Metamagic Feat', color: 'amber', val1: 'Tavan Zar (Maksimum)', val2: '+3 Büyü Yuvası', action: 'Büyü İcrası', desc: 'Büyünün tüm değişken zarları atılmaksızın doğrudan maksimum değerinde gerçekleşir (örn. 5d4+5 yerine 20+5 = 25). Büyü 3 seviye daha yüksek bir yuva kullanır.' },
+        'meta_enlarge': { title: 'Enlarge Spell', type: 'Metamagic Feat', color: 'sky', val1: 'Menzil x2 (İki Katı)', val2: '+1 Büyü Yuvası', action: 'Büyü İcrası', desc: 'Yakın, Orta veya Uzak menzile sahip büyülerin menzil mesafesini %100 (2 katına) çıkarır. Büyü 1 seviye daha yüksek bir yuva kullanır.' },
+        'meta_extend': { title: 'Extend Spell', type: 'Metamagic Feat', color: 'emerald', val1: 'Süre x2 (İki Katı)', val2: '+1 Büyü Yuvası', action: 'Büyü İcrası', desc: 'Belirli bir süreye sahip büyülerin etki süresini 2 katına çıkarır. Konsantrasyon veya anlık büyülere uygulanamaz. Büyü 1 seviye daha yüksek bir yuva kullanır.' },
+        'meta_quicken': { title: 'Quicken Spell', type: 'Metamagic Feat', color: 'rose', val1: 'Swift Action Büyü', val2: '+4 Büyü Yuvası', action: 'Swift Action', desc: 'Normal icra süresi 1 standart eylem olan bir büyüyü Swift Action olarak yapmanızı sağlar. Aynı tur normal eylemlerinizi gerçekleştirebilirsiniz. Büyü 4 seviye daha yüksek bir yuva kullanır.' },
+        'meta_silent': { title: 'Silent Spell', type: 'Metamagic Feat', color: 'indigo', val1: 'Sözsüz İcra', val2: '+1 Büyü Yuvası', action: 'Büyü İcrası', desc: 'Büyünün sözlü bileşenini (Verbal) ortadan kaldırır. Silence alanında veya konuşamazken icra edilebilir. Büyü 1 seviye daha yüksek bir yuva kullanır.' },
+        'meta_still': { title: 'Still Spell', type: 'Metamagic Feat', color: 'cyan', val1: 'Hareketsiz İcra', val2: '+1 Büyü Yuvası', action: 'Büyü İcrası', desc: 'Büyünün el/hareket bileşenini (Somatic) ortadan kaldırır. Zırh Arcane Spell Failure riski oluşturmaz ve bağlıyken icra edilebilir. Büyü 1 seviye daha yüksek bir yuva kullanır.' },
+        'meta_widen': { title: 'Widen Spell', type: 'Metamagic Feat', color: 'teal', val1: 'Etki Alanı x2', val2: '+3 Büyü Yuvası', action: 'Büyü İcrası', desc: 'Patlama, koni, silindir veya hat gibi alan etkili büyülerin yarıçapını veya menzil alanını %100 (2 katına) çıkarır. Büyü 3 seviye daha yüksek bir yuva kullanır.' },
+        'meta_heighten': { title: 'Heighten Spell', type: 'Metamagic Feat', color: 'purple', val1: 'Gerçek DC/Lvl Yükseltir', val2: '+1 veya Çok Yuva', action: 'Büyü İcrası', desc: 'Büyüyü harcanan yuvanın seviyesinde yapılmış gibi yükseltir. Kurtarma DC değeri ve seviye kontrolleri yükseltilen yeni seviyeye göre hesaplanır.' }
+      };
+
+      if (metaMap[idClean]) {
+        const m = metaMap[idClean];
+        return {
+          title: m.title,
+          type: m.type,
+          color: m.color,
+          val1: m.val1,
+          val2: m.val2,
+          source: 'Metamagic RAW',
+          action: m.action,
+          desc: m.desc
+        };
+      }
+
+      // Check if it starts with 'meta_' by looking in spell tactical modifiers
+      if (typeof getSpellTacticalModifiers === 'function') {
+        const spellMods = getSpellTacticalModifiers();
+        const foundSm = spellMods.find(m => m && (m.id === identifier || m.key === identifier || (m.name && m.name.toLowerCase().trim() === idClean)));
+        if (foundSm) {
+          return {
+            title: foundSm.name,
+            type: foundSm.isRod ? 'Metamagic Rod' : (foundSm.isMetamagic ? 'Metamagic' : (foundSm.sourceType || 'Büyücü Modifiyeri')),
+            color: foundSm.color || 'purple',
+            val1: foundSm.badge || (foundSm.slotDiff ? `+${foundSm.slotDiff} Yuva` : 'Aktif'),
+            val2: foundSm.desc || 'Büyü modifiyeri',
+            source: foundSm.isRod ? 'Eşya / Rod' : 'Büyü Taktiği',
+            action: foundSm.action || 'Büyü İcrası',
+            desc: foundSm.desc || `${foundSm.name} taktiksel modifiyeri aktif büyüye uygulanır.`
+          };
+        }
+      }
+
+      // 5. Check Melee dynamic modifiers (character.activeModifiers, pins, stances, maneuvers, masterDb)
+      const allActive = (character.activeModifiers || []);
+      const activeMatch = allActive.find(m => m && m.name && m.name.toLowerCase().trim() === idClean);
+
+      // Check masterDb for description / details
+      let dbMatch = null;
+      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        dbMatch = masterDb.find(m => m && (
+          (m.name && m.name.toLowerCase().trim() === idClean) ||
+          (m.masterDbName && m.masterDbName.toLowerCase().trim() === idClean)
+        ));
+      }
+
+      // Check maneuvers
+      const mnvMatch = (character.maneuvers || []).find(m => m && m.name && m.name.toLowerCase().trim() === idClean);
+      // Check stances
+      const stnMatch = (character.stances || []).find(s => s && s.name && s.name.toLowerCase().trim() === idClean);
+      // Check feats
+      const featMatch = (character.feats || []).find(f => f && f.name && f.name.toLowerCase().trim() === idClean);
+      // Check gear/inventory
+      const itemMatch = [...(character.inventory || []), ...(character.gearPool || [])].find(i => {
+        const iname = typeof i === 'string' ? i : (i.name || '');
+        return iname.toLowerCase().trim() === idClean;
+      });
+
+      const title = activeMatch?.name || dbMatch?.name || mnvMatch?.name || stnMatch?.name || featMatch?.name || identifier;
+      const type = dbMatch?.type || dbMatch?.category || (stnMatch ? 'Stance' : (mnvMatch ? 'Manevra' : (featMatch ? 'Feat' : (activeMatch?.source || 'Taktik'))));
+      
+      let val1 = activeMatch?.dice ? `${activeMatch.dice} Hasar` : (activeMatch?.bonusDmg ? `+${activeMatch.bonusDmg} Dmg` : (activeMatch?.bonusAtk ? `+${activeMatch.bonusAtk} Atk` : (dbMatch?.dice ? `${dbMatch.dice} Hasar` : 'Aktif Etki')));
+      let val2 = dbMatch?.school || dbMatch?.discipline || (mnvMatch?.discipline || (stnMatch?.discipline || (featMatch ? 'Kalıcı / Feat' : (itemMatch ? 'Eşya / Sarf' : 'Taktik'))));
+
+      let action = dbMatch?.action || mnvMatch?.action || (stnMatch ? 'Swift Action (Stance)' : 'Serbest Eylem');
+      let desc = dbMatch?.description || dbMatch?.desc || dbMatch?.benefit || mnvMatch?.desc || stnMatch?.desc || featMatch?.desc || activeMatch?.desc || 'Bu taktiksel modifiyer yakın dövüş saldırı veya hasar profilinize doğrudan yansıtılır.';
+
+      return {
+        title,
+        type,
+        color: category === 'melee' ? 'rose' : (category === 'spell' ? 'purple' : 'amber'),
+        val1,
+        val2,
+        source: activeMatch?.source || type,
+        action,
+        desc
+      };
+    }
+
+    function showCombatModifierHoverTooltip(event, identifier, category) {
+      if (window.innerWidth < 768) return;
+      if (window.matchMedia && window.matchMedia('(hover: none)').matches) return;
+      if (event && (event.pointerType === 'touch' || ('sourceCapabilities' in event && event.sourceCapabilities?.firesTouchEvents))) return;
+
+      const tooltip = document.getElementById('combat-modifier-hover-tooltip');
+      if (!tooltip) return;
+
+      const data = getCombatModifierTooltipData(identifier, category);
+      if (!data) return;
+
+      const titleEl = document.getElementById('mod-tooltip-title');
+      const typeEl = document.getElementById('mod-tooltip-type');
+      const val1El = document.getElementById('mod-tooltip-val-1');
+      const val2El = document.getElementById('mod-tooltip-val-2');
+      const srcEl = document.getElementById('mod-tooltip-source');
+      const actEl = document.getElementById('mod-tooltip-action');
+      const descEl = document.getElementById('mod-tooltip-desc');
+
+      if (titleEl) titleEl.textContent = data.title;
+      if (typeEl) {
+        typeEl.textContent = data.type;
+        if (data.color === 'indigo') {
+          typeEl.className = 'text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-indigo-950 text-indigo-300 border border-indigo-800 shrink-0';
+          tooltip.className = 'fixed z-[200] pointer-events-auto bg-slate-950/95 border border-indigo-500/80 rounded-xl p-3 shadow-2xl max-w-xs text-xs space-y-1.5 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none';
+        } else if (data.color === 'purple') {
+          typeEl.className = 'text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-800 shrink-0';
+          tooltip.className = 'fixed z-[200] pointer-events-auto bg-slate-950/95 border border-purple-500/80 rounded-xl p-3 shadow-2xl max-w-xs text-xs space-y-1.5 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none';
+        } else if (data.color === 'rose') {
+          typeEl.className = 'text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-rose-950 text-rose-300 border border-rose-800 shrink-0';
+          tooltip.className = 'fixed z-[200] pointer-events-auto bg-slate-950/95 border border-rose-500/80 rounded-xl p-3 shadow-2xl max-w-xs text-xs space-y-1.5 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none';
+        } else if (data.color === 'sky') {
+          typeEl.className = 'text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-sky-950 text-sky-300 border border-sky-800 shrink-0';
+          tooltip.className = 'fixed z-[200] pointer-events-auto bg-slate-950/95 border border-sky-500/80 rounded-xl p-3 shadow-2xl max-w-xs text-xs space-y-1.5 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none';
+        } else {
+          typeEl.className = 'text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-amber-950 text-amber-300 border border-amber-800 shrink-0';
+          tooltip.className = 'fixed z-[200] pointer-events-auto bg-slate-950/95 border border-amber-500/80 rounded-xl p-3 shadow-2xl max-w-xs text-xs space-y-1.5 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none';
+        }
+      }
+
+      if (val1El) val1El.textContent = data.val1;
+      if (val2El) val2El.textContent = data.val2;
+      if (srcEl) srcEl.textContent = data.source;
+      if (actEl) actEl.textContent = data.action;
+      if (descEl) descEl.textContent = data.desc;
+
+      updateCombatModifierHoverTooltipPos(event);
+      tooltip.classList.remove('hidden');
+    }
+
+    function hideCombatModifierHoverTooltip() {
+      const tooltip = document.getElementById('combat-modifier-hover-tooltip');
+      if (tooltip) tooltip.classList.add('hidden');
+    }
+
+    function updateCombatModifierHoverTooltipPos(event) {
+      const tooltip = document.getElementById('combat-modifier-hover-tooltip');
       if (!tooltip || tooltip.classList.contains('hidden')) return;
 
       const pad = 12;
@@ -12899,7 +13201,11 @@
 
       // Card 1: Defensive Casting (Fixed Item 1 - Glow Card Toggle)
       const defCardHtml = `
-        <div onclick="toggleDefensiveCastingModifier()" class="relative ${isDefensiveActive ? 'border-2 border-indigo-400 bg-indigo-950 text-white shadow-[0_0_12px_rgba(129,140,248,0.35)] ring-1 ring-indigo-400/30' : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-indigo-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer" title="Defensive Casting: AoO tetiklemeden büyü yap">
+        <div onclick="toggleDefensiveCastingModifier()"
+             onmouseenter="showCombatModifierHoverTooltip(event, 'defensiveCast', 'spell')"
+             onmouseleave="hideCombatModifierHoverTooltip()"
+             onmousemove="updateCombatModifierHoverTooltipPos(event)"
+             class="relative ${isDefensiveActive ? 'border-2 border-indigo-400 bg-indigo-950 text-white shadow-[0_0_12px_rgba(129,140,248,0.35)] ring-1 ring-indigo-400/30' : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-indigo-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer" title="Defensive Casting: AoO tetiklemeden büyü yap">
           <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
             <span class="text-[8px] font-mono ${isDefensiveActive ? 'text-indigo-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">Action</span>
           </div>
@@ -12912,7 +13218,11 @@
 
       // Card 2: Spell Resistance Check Button (Fixed Item 2 - Aligned 64px)
       const srCardHtml = `
-        <button type="button" onclick="rollSpellResistanceCheck()" class="relative border border-slate-800 bg-slate-900 text-slate-300 hover:border-purple-500/60 rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer w-full" title="Hedefin Büyü Direncine (SR) karşı test zarı at: 1d20 + CL">
+        <button type="button" onclick="rollSpellResistanceCheck()"
+                onmouseenter="showCombatModifierHoverTooltip(event, 'srCheck', 'spell')"
+                onmouseleave="hideCombatModifierHoverTooltip()"
+                onmousemove="updateCombatModifierHoverTooltipPos(event)"
+                class="relative border border-slate-800 bg-slate-900 text-slate-300 hover:border-purple-500/60 rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer w-full" title="Hedefin Büyü Direncine (SR) karşı test zarı at: 1d20 + CL">
           <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
             <span class="text-[8px] font-mono text-purple-400 font-bold truncate max-w-[75px]">Check</span>
           </div>
@@ -12953,9 +13263,14 @@
 
         const icon = mod.isRod ? '🪄' : (mod.isMetamagic ? '✨' : (mod.sourceType === 'Feat' ? '⚡' : '🔮'));
         const badgeLabel = mod.badge || (mod.isRod ? 'Rod' : (mod.isMetamagic ? 'Metamagic' : (mod.sourceType || 'Büyü')));
+        const safeId = (mod.id || '').replace(/'/g, "\\'");
 
         return `
-          <div onclick="toggleSpellCockpitModifier('${mod.id}', event)" class="relative ${isActive ? activeBorder : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-purple-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer" title="${mod.name}: ${mod.desc}">
+          <div onclick="toggleSpellCockpitModifier('${mod.id}', event)"
+               onmouseenter="showCombatModifierHoverTooltip(event, '${safeId}', 'spell')"
+               onmouseleave="hideCombatModifierHoverTooltip()"
+               onmousemove="updateCombatModifierHoverTooltipPos(event)"
+               class="relative ${isActive ? activeBorder : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-purple-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer" title="${mod.name}: ${mod.desc}">
             <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
               <span class="text-[8px] font-mono ${isActive ? `${badgeColor} font-bold` : 'text-slate-500'} truncate max-w-[75px]">${badgeLabel}</span>
             </div>
@@ -15303,21 +15618,48 @@
       // Row 1: Fixed 3 items: 1. Flanking, 2. Charge, 3. Higher Ground (Glow Card Toggle)
       const fixedCardsHtml = [
         `
-        <div onclick="toggleFixedMeleeModifier('flanking')" class="relative ${flanking ? 'border border-sky-500 bg-sky-950/60 text-white shadow-md shadow-sky-950/50 ring-1 ring-sky-500/40' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-sky-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
-          <div class="text-[11px] font-bold ${flanking ? 'text-white font-black' : 'text-sky-400'} leading-tight">Flanking</div>
-          <div class="text-[9px] ${flanking ? 'text-sky-200 font-bold' : 'text-slate-400'} mt-1">+2 Melee</div>
+        <div onclick="toggleFixedMeleeModifier('flanking')"
+             onmouseenter="showCombatModifierHoverTooltip(event, 'flanking', 'melee')"
+             onmouseleave="hideCombatModifierHoverTooltip()"
+             onmousemove="updateCombatModifierHoverTooltipPos(event)"
+             class="relative ${flanking ? 'border-2 border-sky-400 bg-sky-950 text-white shadow-[0_0_12px_rgba(56,189,248,0.35)] ring-1 ring-sky-400/30' : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-sky-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer" title="Flanking: +2 Melee Atk">
+          <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
+            <span class="text-[8px] font-mono ${flanking ? 'text-sky-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">Positional</span>
+          </div>
+          <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
+            <div class="text-[10px] ${flanking ? 'font-black text-white' : 'font-bold text-sky-400'} leading-tight truncate w-full" title="Flanking">Flanking</div>
+            <div class="text-[9px] ${flanking ? 'text-sky-200 font-bold' : 'text-slate-400'} font-mono mt-1">+2 Melee</div>
+          </div>
         </div>
         `,
         `
-        <div onclick="toggleFixedMeleeModifier('charge')" class="relative ${charge ? 'border border-rose-500 bg-rose-950/60 text-white shadow-md shadow-rose-950/50 ring-1 ring-rose-500/40' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-rose-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
-          <div class="text-[11px] font-bold ${charge ? 'text-white font-black' : 'text-rose-400'} leading-tight">Charge</div>
-          <div class="text-[9px] ${charge ? 'text-rose-200 font-bold' : 'text-slate-400'} mt-1">+2 Atk / -2 AC</div>
+        <div onclick="toggleFixedMeleeModifier('charge')"
+             onmouseenter="showCombatModifierHoverTooltip(event, 'charge', 'melee')"
+             onmouseleave="hideCombatModifierHoverTooltip()"
+             onmousemove="updateCombatModifierHoverTooltipPos(event)"
+             class="relative ${charge ? 'border-2 border-rose-400 bg-rose-950 text-white shadow-[0_0_12px_rgba(251,113,133,0.35)] ring-1 ring-rose-400/30' : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-rose-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer" title="Charge: +2 Atk / -2 AC">
+          <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
+            <span class="text-[8px] font-mono ${charge ? 'text-rose-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">Action</span>
+          </div>
+          <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
+            <div class="text-[10px] ${charge ? 'font-black text-white' : 'font-bold text-rose-400'} leading-tight truncate w-full" title="Charge">Charge</div>
+            <div class="text-[9px] ${charge ? 'text-rose-200 font-bold' : 'text-slate-400'} font-mono mt-1">+2 Atk / -2 AC</div>
+          </div>
         </div>
         `,
         `
-        <div onclick="toggleFixedMeleeModifier('higherGround')" class="relative ${hg ? 'border border-amber-500 bg-amber-950/60 text-white shadow-md shadow-amber-950/50 ring-1 ring-amber-500/40' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-amber-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
-          <div class="text-[11px] font-bold ${hg ? 'text-white font-black' : 'text-amber-400'} leading-tight">Higher Gr.</div>
-          <div class="text-[9px] ${hg ? 'text-amber-200 font-bold' : 'text-slate-400'} mt-1">+1 Melee</div>
+        <div onclick="toggleFixedMeleeModifier('higherGround')"
+             onmouseenter="showCombatModifierHoverTooltip(event, 'higherGround', 'melee')"
+             onmouseleave="hideCombatModifierHoverTooltip()"
+             onmousemove="updateCombatModifierHoverTooltipPos(event)"
+             class="relative ${hg ? 'border-2 border-amber-400 bg-amber-950 text-white shadow-[0_0_12px_rgba(251,191,36,0.35)] ring-1 ring-amber-400/30' : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-amber-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer" title="Higher Ground: +1 Melee Atk">
+          <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
+            <span class="text-[8px] font-mono ${hg ? 'text-amber-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">Positional</span>
+          </div>
+          <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
+            <div class="text-[10px] ${hg ? 'font-black text-white' : 'font-bold text-amber-400'} leading-tight truncate w-full" title="Higher Gr.">Higher Gr.</div>
+            <div class="text-[9px] ${hg ? 'text-amber-200 font-bold' : 'text-slate-400'} font-mono mt-1">+1 Melee</div>
+          </div>
         </div>
         `
       ];
@@ -15366,8 +15708,13 @@
           </div>
         `;
 
+        const safeName = (mod.name || '').replace(/'/g, "\\'");
         return `
-        <div onclick="toggleModifier(${actualIdx})" class="relative ${mod.active ? cardBorderActive : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-rose-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer">
+        <div onclick="toggleModifier(${actualIdx})"
+             onmouseenter="showCombatModifierHoverTooltip(event, '${safeName}', 'melee')"
+             onmouseleave="hideCombatModifierHoverTooltip()"
+             onmousemove="updateCombatModifierHoverTooltipPos(event)"
+             class="relative ${mod.active ? cardBorderActive : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-rose-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer">
           <!-- Reorder Mini Controls -->
           ${reorderControls}
 
@@ -15457,7 +15804,11 @@
       ];
 
       grid.innerHTML = cards.map(c => `
-        <div onclick="${c.onclick}" class="${c.active ? activeClass : inactiveClass}" title="${c.title}">
+        <div onclick="${c.onclick}"
+             onmouseenter="showCombatModifierHoverTooltip(event, '${c.id}', 'defense')"
+             onmouseleave="hideCombatModifierHoverTooltip()"
+             onmousemove="updateCombatModifierHoverTooltipPos(event)"
+             class="${c.active ? activeClass : inactiveClass}" title="${c.title}">
           <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
             <span class="text-[8px] font-mono ${c.active ? 'text-indigo-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">${c.source}</span>
           </div>
@@ -37754,6 +38105,34 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       <span>⏱️ <span id="spell-tooltip-action" class="text-amber-300">Standart</span></span>
     </div>
     <div id="spell-tooltip-desc" class="text-[9px] text-slate-400 line-clamp-3 leading-relaxed border-t border-slate-800/80 pt-1">
+      Açıklama
+    </div>
+  </div>
+
+  <!-- Floating Tooltip for Combat Tactical Modifiers Hover (Tap or click to dismiss) -->
+  <div id="combat-modifier-hover-tooltip" onclick="hideCombatModifierHoverTooltip()" class="hidden fixed z-[200] pointer-events-auto bg-slate-950/95 border border-sky-500/80 rounded-xl p-3 shadow-2xl max-w-xs text-xs space-y-1.5 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none">
+    <div class="flex items-center justify-between border-b border-slate-800 pb-1.5 gap-2">
+      <div class="flex items-center gap-1.5 min-w-0">
+        <div id="mod-tooltip-title" class="font-black text-white text-xs truncate">Modifiyer Adı</div>
+        <span id="mod-tooltip-type" class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-sky-950 text-sky-300 border border-sky-800 shrink-0">Type</span>
+      </div>
+      <button type="button" onclick="hideCombatModifierHoverTooltip(); event.stopPropagation();" class="text-slate-400 hover:text-white px-1.5 py-0.5 text-xs font-bold leading-none cursor-pointer rounded bg-slate-900 hover:bg-slate-800 border border-slate-700/60" title="Kapat">✕</button>
+    </div>
+    <div class="grid grid-cols-2 gap-1 text-[10px]">
+      <div class="bg-slate-900/80 p-1.5 rounded border border-slate-800">
+        <span id="mod-tooltip-label-1" class="text-slate-400 block text-[8px] uppercase font-bold">🎯 Hasar / Etki</span>
+        <span id="mod-tooltip-val-1" class="font-mono font-bold text-amber-300 text-[10px]">+2 Melee</span>
+      </div>
+      <div class="bg-slate-900/80 p-1.5 rounded border border-slate-800">
+        <span id="mod-tooltip-label-2" class="text-slate-400 block text-[8px] uppercase font-bold">🛡️ Savunma / Koşul</span>
+        <span id="mod-tooltip-val-2" class="font-mono font-bold text-emerald-400 text-[10px]">Normal</span>
+      </div>
+    </div>
+    <div class="flex items-center justify-between text-[9px] text-slate-300 font-mono px-0.5">
+      <span>⚡ Kaynak: <span id="mod-tooltip-source" class="text-white font-bold">Kural</span></span>
+      <span>⏱️ <span id="mod-tooltip-action" class="text-amber-300">Standart</span></span>
+    </div>
+    <div id="mod-tooltip-desc" class="text-[9px] text-slate-400 leading-relaxed border-t border-slate-800/80 pt-1">
       Açıklama
     </div>
   </div>
