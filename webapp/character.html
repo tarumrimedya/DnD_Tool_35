@@ -651,6 +651,22 @@
             <!-- SPELL PANEL BODY (Collapsible) -->
             <div id="combat-spell-card-body" class="space-y-3">
 
+              <!-- TAKTİK MOD SEKMELERİ (SALDIRI | KONTROL | DESTEK) -->
+              <div class="grid grid-cols-3 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                <button type="button" id="btn-spell-tab-offense_spell" onclick="switchCombatSpellCategory('offense_spell')" class="py-1.5 px-1 sm:px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer bg-gradient-to-r from-purple-700 to-indigo-600 text-white shadow">
+                  <span>⚔️</span>
+                  <span>Saldırı</span>
+                </button>
+                <button type="button" id="btn-spell-tab-spell_control" onclick="switchCombatSpellCategory('spell_control')" class="py-1.5 px-1 sm:px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer text-slate-400 hover:text-white hover:bg-slate-800">
+                  <span>🕸️</span>
+                  <span>Kontrol</span>
+                </button>
+                <button type="button" id="btn-spell-tab-spell_support" onclick="switchCombatSpellCategory('spell_support')" class="py-1.5 px-1 sm:px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer text-slate-400 hover:text-white hover:bg-slate-800">
+                  <span>✨</span>
+                  <span>Destek</span>
+                </button>
+              </div>
+
               <!-- 1. BÜYÜ YUVALARI TRACKER ŞERİDİ (ANLIK, KİTAP, İLAHİ SLOT SAYAÇLARI) -->
               <div class="bg-slate-950/90 border border-purple-900/40 rounded-xl p-2.5 space-y-2 shadow-inner">
                 <div class="flex flex-wrap items-center justify-between gap-1 text-[10px] font-bold">
@@ -693,22 +709,6 @@
                 <div id="combat-spell-modifiers-dynamic-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-1.5 pt-0.5">
                   <!-- Populated dynamically by renderSpellTacticalModifiers() -->
                 </div>
-              </div>
-
-              <!-- 3. TAKTİK MOD SEKMELERİ (SALDIRI | KONTROL | DESTEK) -->
-              <div class="grid grid-cols-3 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
-                <button type="button" id="btn-spell-tab-offense_spell" onclick="switchCombatSpellCategory('offense_spell')" class="py-1.5 px-1 sm:px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer bg-gradient-to-r from-purple-700 to-indigo-600 text-white shadow">
-                  <span>⚔️</span>
-                  <span>Saldırı</span>
-                </button>
-                <button type="button" id="btn-spell-tab-spell_control" onclick="switchCombatSpellCategory('spell_control')" class="py-1.5 px-1 sm:px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer text-slate-400 hover:text-white hover:bg-slate-800">
-                  <span>🕸️</span>
-                  <span>Kontrol</span>
-                </button>
-                <button type="button" id="btn-spell-tab-spell_support" onclick="switchCombatSpellCategory('spell_support')" class="py-1.5 px-1 sm:px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer text-slate-400 hover:text-white hover:bg-slate-800">
-                  <span>✨</span>
-                  <span>Destek</span>
-                </button>
               </div>
 
               <!-- 4. SEVİYELERE GÖRE GRUPLU BÜYÜ KARTLARI ÇEKMECESİ (3x2 IZGARA) -->
@@ -23635,11 +23635,17 @@
             knownSubtitle = `<span class="text-[10px] text-amber-300 font-mono mt-0.5">${currentDiv}/${daily} Hazırlanan</span>`;
           }
 
+          const dcBadgeClass = activeSource.key === 'prepared' 
+            ? 'bg-sky-950/90 text-emerald-400 border border-sky-700/60' 
+            : (activeSource.key === 'divine' 
+                ? 'bg-amber-950/90 text-emerald-400 border border-amber-700/60' 
+                : 'bg-purple-950/90 text-emerald-400 border border-purple-700/60');
+
           div.innerHTML = `
             <div class="flex flex-col min-w-0">
               <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="font-extrabold text-white text-xs whitespace-nowrap">${lvlLabel}</span>
-                <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-purple-950/90 text-emerald-400 border border-purple-700/60 font-bold whitespace-nowrap" title="Save DC = 10 + ${lvl} + ${statKey}(+${statMod})">DC ${dc}</span>
+                <span class="text-[10px] font-mono px-1.5 py-0.5 rounded ${dcBadgeClass} font-bold whitespace-nowrap" title="Save DC = 10 + ${lvl} + ${statKey}(+${statMod >= 0 ? '+' + statMod : statMod})">DC ${dc}</span>
               </div>
               ${knownSubtitle}
             </div>
@@ -23652,7 +23658,8 @@
             </div>
           `;
         } else {
-          const reqClText = lvl >= 10 ? 'Epic (CL 21+)' : `CL ${lvl * 2}+`;
+          const isSpont = activeSource.key === 'spontaneous';
+          const reqClText = lvl >= 10 ? 'Epic (CL 21+)' : (lvl <= 1 ? 'CL 1+' : (isSpont ? `CL ${lvl * 2}+` : `CL ${lvl * 2 - 1}+`));
           div.className = 'flex items-center justify-between bg-slate-950/50 border border-slate-800/70 rounded-xl px-3 py-2 opacity-50 select-none transition w-full';
           div.title = `${lvlLabel} henüz kilitli (${reqClText} gerekir)`;
           div.innerHTML = `
@@ -23661,7 +23668,7 @@
                 <span class="font-bold text-slate-500 text-xs whitespace-nowrap">${lvlLabel}</span>
                 <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-900 text-slate-500 border border-slate-800 font-bold whitespace-nowrap">DC ${dc}</span>
               </div>
-              <span class="text-[10px] text-slate-600 font-mono mt-0.5">🔒 Kilitli</span>
+              <span class="text-[10px] text-slate-600 font-mono mt-0.5">🔒 Kilitli (${reqClText})</span>
             </div>
 
             <div class="h-7 w-px bg-slate-800/60 mx-1.5 shrink-0"></div>
