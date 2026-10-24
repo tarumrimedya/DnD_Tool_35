@@ -14050,7 +14050,7 @@
         if (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateWeaponAttack) {
           try {
             const evalRes = RuleEngine.evaluateWeaponAttack(character, wep, {
-              grip: 'Ranged',
+              grip: isOffHand ? 'Off-Hand' : 'Ranged',
               higherGround: !!t.rangedHigherGround,
               customModifiers: activeRangedMods,
               manyshot: !!t.manyshot
@@ -16041,6 +16041,9 @@
       }
       renderRangedModifiersGrid();
       recalculateOffense();
+      if (typeof renderWeaponSetsUI === 'function') {
+        try { renderWeaponSetsUI(); } catch (e) {}
+      }
       saveStateToStorage(false);
     }
 
@@ -16958,6 +16961,15 @@
           `;
 
           atkRowContainer.innerHTML = buttonsHtml + fullAttackBtnHtml;
+        }
+
+        // Live update weapon set cards so damage, extra dice & crit modifiers immediately reflect in ranged mode!
+        if (typeof renderWeaponSetsUI === 'function') {
+          try {
+            renderWeaponSetsUI();
+          } catch (err) {
+            console.warn('recalculateOffense ranged renderWeaponSetsUI error:', err);
+          }
         }
 
         return;
