@@ -12828,7 +12828,7 @@
                 <span class="text-[8px] font-mono ${badgeColor} font-bold uppercase truncate">${params.school || (sp.level === 0 ? 'Cantrip' : 'Lvl ' + sp.level)}</span>
                 <span class="text-[9px] text-amber-300 font-mono font-bold shrink-0 truncate">${params.dice || params.effect || ''}</span>
               </div>
-              <div class="text-[11px] font-bold ${activeTitleColor} group-hover:text-white truncate my-0.5" title="${sp.name}">
+              <div class="text-[11px] font-bold ${activeTitleColor} group-hover:text-white truncate my-0.5">
                 ${sp.name}
               </div>
               <div class="flex items-center justify-between w-full text-[8px] text-slate-400 mt-0.5">
@@ -13218,12 +13218,12 @@
              onmouseenter="showCombatModifierHoverTooltip(event, 'defensiveCast', 'spell')"
              onmouseleave="hideCombatModifierHoverTooltip()"
              onmousemove="updateCombatModifierHoverTooltipPos(event)"
-             class="relative ${isDefensiveActive ? 'border-2 border-indigo-400 bg-indigo-950 text-white shadow-[0_0_12px_rgba(129,140,248,0.35)] ring-1 ring-indigo-400/30' : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-indigo-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer" title="Defensive Casting: AoO tetiklemeden büyü yap">
+             class="relative ${isDefensiveActive ? 'border-2 border-indigo-400 bg-indigo-950 text-white shadow-[0_0_12px_rgba(129,140,248,0.35)] ring-1 ring-indigo-400/30' : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-indigo-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer">
           <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
             <span class="text-[8px] font-mono ${isDefensiveActive ? 'text-indigo-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">Action</span>
           </div>
           <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
-            <div class="text-[10px] ${isDefensiveActive ? 'font-black text-white' : 'font-bold text-indigo-400'} leading-tight truncate w-full" title="Defensive Cast">Defensive Cast</div>
+            <div class="text-[10px] ${isDefensiveActive ? 'font-black text-white' : 'font-bold text-indigo-400'} leading-tight truncate w-full">Defensive Cast</div>
             <div class="text-[9px] ${isDefensiveActive ? 'text-indigo-200 font-bold' : 'text-slate-400'} font-mono mt-1" id="defensive-casting-dc-hint">DC ${15 + currentLvl} • AoO Engeller</div>
           </div>
         </div>
@@ -13235,12 +13235,12 @@
                 onmouseenter="showCombatModifierHoverTooltip(event, 'srCheck', 'spell')"
                 onmouseleave="hideCombatModifierHoverTooltip()"
                 onmousemove="updateCombatModifierHoverTooltipPos(event)"
-                class="relative border border-slate-800 bg-slate-900 text-slate-300 hover:border-purple-500/60 rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer w-full" title="Hedefin Büyü Direncine (SR) karşı test zarı at: 1d20 + CL">
+                class="relative border border-slate-800 bg-slate-900 text-slate-300 hover:border-purple-500/60 rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer w-full">
           <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
             <span class="text-[8px] font-mono text-purple-400 font-bold truncate max-w-[75px]">Check</span>
           </div>
           <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
-            <div class="text-[10px] font-bold text-purple-300 group-hover:text-white leading-tight truncate w-full" title="SR Testi At">
+            <div class="text-[10px] font-bold text-purple-300 group-hover:text-white leading-tight truncate w-full">
               <span class="mr-0.5 text-[9px]">⚡</span>SR Testi At
             </div>
             <div class="text-[9px] text-amber-400 font-mono font-bold mt-1">1d20 + ${totalSrBonus} vs SR</div>
@@ -13283,13 +13283,13 @@
                onmouseenter="showCombatModifierHoverTooltip(event, '${safeId}', 'spell')"
                onmouseleave="hideCombatModifierHoverTooltip()"
                onmousemove="updateCombatModifierHoverTooltipPos(event)"
-               class="relative ${isActive ? activeBorder : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-purple-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer" title="${mod.name}: ${mod.desc}">
+               class="relative ${isActive ? activeBorder : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-purple-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer">
             <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
               <span class="text-[8px] font-mono ${isActive ? `${badgeColor} font-bold` : 'text-slate-500'} truncate max-w-[75px]">${badgeLabel}</span>
             </div>
 
             <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
-              <div class="text-[10px] ${isActive ? 'font-black text-white' : 'font-bold text-slate-200'} leading-tight truncate w-full" title="${mod.name}">
+              <div class="text-[10px] ${isActive ? 'font-black text-white' : 'font-bold text-slate-200'} leading-tight truncate w-full">
                 <span class="mr-0.5 text-[9px]">${icon}</span>${mod.name}
               </div>
               <div class="text-[9px] ${isActive ? `${valueColor} font-bold` : 'text-slate-400'} font-mono mt-1 truncate w-full">${mod.desc}</div>
@@ -15645,12 +15645,12 @@
              onmouseenter="showCombatModifierHoverTooltip(event, 'flanking', 'melee')"
              onmouseleave="hideCombatModifierHoverTooltip()"
              onmousemove="updateCombatModifierHoverTooltipPos(event)"
-             class="relative ${flanking ? 'border-2 border-sky-400 bg-sky-950 text-white shadow-[0_0_12px_rgba(56,189,248,0.35)] ring-1 ring-sky-400/30' : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-sky-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer" title="Flanking: +2 Melee Atk">
+             class="relative ${flanking ? 'border-2 border-sky-400 bg-sky-950 text-white shadow-[0_0_12px_rgba(56,189,248,0.35)] ring-1 ring-sky-400/30' : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-sky-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer">
           <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
             <span class="text-[8px] font-mono ${flanking ? 'text-sky-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">Positional</span>
           </div>
           <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
-            <div class="text-[10px] ${flanking ? 'font-black text-white' : 'font-bold text-sky-400'} leading-tight truncate w-full" title="Flanking">Flanking</div>
+            <div class="text-[10px] ${flanking ? 'font-black text-white' : 'font-bold text-sky-400'} leading-tight truncate w-full">Flanking</div>
             <div class="text-[9px] ${flanking ? 'text-sky-200 font-bold' : 'text-slate-400'} font-mono mt-1">+2 Melee</div>
           </div>
         </div>
@@ -15660,12 +15660,12 @@
              onmouseenter="showCombatModifierHoverTooltip(event, 'charge', 'melee')"
              onmouseleave="hideCombatModifierHoverTooltip()"
              onmousemove="updateCombatModifierHoverTooltipPos(event)"
-             class="relative ${charge ? 'border-2 border-rose-400 bg-rose-950 text-white shadow-[0_0_12px_rgba(251,113,133,0.35)] ring-1 ring-rose-400/30' : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-rose-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer" title="Charge: +2 Atk / -2 AC">
+             class="relative ${charge ? 'border-2 border-rose-400 bg-rose-950 text-white shadow-[0_0_12px_rgba(251,113,133,0.35)] ring-1 ring-rose-400/30' : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-rose-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer">
           <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
             <span class="text-[8px] font-mono ${charge ? 'text-rose-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">Action</span>
           </div>
           <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
-            <div class="text-[10px] ${charge ? 'font-black text-white' : 'font-bold text-rose-400'} leading-tight truncate w-full" title="Charge">Charge</div>
+            <div class="text-[10px] ${charge ? 'font-black text-white' : 'font-bold text-rose-400'} leading-tight truncate w-full">Charge</div>
             <div class="text-[9px] ${charge ? 'text-rose-200 font-bold' : 'text-slate-400'} font-mono mt-1">+2 Atk / -2 AC</div>
           </div>
         </div>
@@ -15675,12 +15675,12 @@
              onmouseenter="showCombatModifierHoverTooltip(event, 'higherGround', 'melee')"
              onmouseleave="hideCombatModifierHoverTooltip()"
              onmousemove="updateCombatModifierHoverTooltipPos(event)"
-             class="relative ${hg ? 'border-2 border-amber-400 bg-amber-950 text-white shadow-[0_0_12px_rgba(251,191,36,0.35)] ring-1 ring-amber-400/30' : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-amber-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer" title="Higher Ground: +1 Melee Atk">
+             class="relative ${hg ? 'border-2 border-amber-400 bg-amber-950 text-white shadow-[0_0_12px_rgba(251,191,36,0.35)] ring-1 ring-amber-400/30' : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-amber-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer">
           <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
             <span class="text-[8px] font-mono ${hg ? 'text-amber-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">Positional</span>
           </div>
           <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
-            <div class="text-[10px] ${hg ? 'font-black text-white' : 'font-bold text-amber-400'} leading-tight truncate w-full" title="Higher Gr.">Higher Gr.</div>
+            <div class="text-[10px] ${hg ? 'font-black text-white' : 'font-bold text-amber-400'} leading-tight truncate w-full">Higher Gr.</div>
             <div class="text-[9px] ${hg ? 'text-amber-200 font-bold' : 'text-slate-400'} font-mono mt-1">+1 Melee</div>
           </div>
         </div>
@@ -15742,7 +15742,7 @@
           ${reorderControls}
 
           <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
-            <div class="text-[10px] font-bold ${mod.active ? 'text-white font-extrabold' : 'text-slate-200'} leading-tight truncate w-full" title="${mod.name}">${mod.name}</div>
+            <div class="text-[10px] font-bold ${mod.active ? 'text-white font-extrabold' : 'text-slate-200'} leading-tight truncate w-full">${mod.name}</div>
             <div class="text-[9px] ${mod.active ? 'text-amber-300 font-bold' : bonusColor} font-mono mt-1">${bonusStr}</div>
           </div>
         </div>
@@ -15803,8 +15803,7 @@
           source: 'Action',
           bonusStr: `+${fdDodge} AC / -4 Atk`,
           active: fd,
-          onclick: 'onToggleFightingDefensively()',
-          title: `Fighting Defensively: -4 Saldırı / +${fdDodge} Dodge AC`
+          onclick: 'onToggleFightingDefensively()'
         },
         {
           id: 'totalDefense',
@@ -15812,8 +15811,7 @@
           source: 'Standard',
           bonusStr: `+${tdDodge} AC • Pasif`,
           active: td,
-          onclick: 'onToggleTotalDefense()',
-          title: `Total Defense: +${tdDodge} Dodge AC • Saldırı Yapılamaz`
+          onclick: 'onToggleTotalDefense()'
         },
         {
           id: 'shieldBlock',
@@ -15821,8 +15819,7 @@
           source: 'Counter',
           bonusStr: '+4 AC Kalkan',
           active: sb,
-          onclick: 'triggerShieldBlockReaction()',
-          title: 'Shield Block (Counter): Anlık +4 AC Kalkan Bonusu'
+          onclick: 'triggerShieldBlockReaction()'
         }
       ];
 
@@ -15831,13 +15828,13 @@
              onmouseenter="showCombatModifierHoverTooltip(event, '${c.id}', 'defense')"
              onmouseleave="hideCombatModifierHoverTooltip()"
              onmousemove="updateCombatModifierHoverTooltipPos(event)"
-             class="${c.active ? activeClass : inactiveClass}" title="${c.title}">
+             class="${c.active ? activeClass : inactiveClass}">
           <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
             <span class="text-[8px] font-mono ${c.active ? 'text-indigo-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">${c.source}</span>
           </div>
 
           <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
-            <div class="text-[10px] ${c.active ? 'font-black text-white' : 'font-bold text-slate-200'} leading-tight truncate w-full" title="${c.name}">${c.name}</div>
+            <div class="text-[10px] ${c.active ? 'font-black text-white' : 'font-bold text-slate-200'} leading-tight truncate w-full">${c.name}</div>
             <div class="text-[9px] ${c.active ? 'text-indigo-200 font-bold' : 'text-indigo-400'} font-mono mt-1">${c.bonusStr}</div>
           </div>
         </div>
@@ -16455,7 +16452,7 @@
           ${reorderControls}
 
           <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
-            <div class="text-[10px] font-bold ${mod.active ? 'text-white font-extrabold' : 'text-slate-200'} leading-tight truncate w-full" title="${mod.name}">${mod.name}</div>
+            <div class="text-[10px] font-bold ${mod.active ? 'text-white font-extrabold' : 'text-slate-200'} leading-tight truncate w-full">${mod.name}</div>
             <div class="text-[9px] ${mod.active ? 'text-amber-300 font-bold' : 'text-amber-400'} font-mono mt-1">${mod.bonusStr}</div>
           </div>
         </div>
@@ -17429,7 +17426,7 @@
             }
 
             return `
-              <button type="button" onclick="rollAttackChainItemByIndex(${idx})" class="${btnBasisClass} min-h-[56px] py-1 px-1.5 ${bgClass} active:scale-95 border ${isLocked ? 'border-slate-800 opacity-50 cursor-not-allowed' : colorBorder + ' cursor-pointer'} rounded-lg flex flex-col items-center justify-center text-center font-mono transition shadow group shrink-0" title="${item.label} (${item.handLabel}): ${item.bonus >= 0 ? '+' : ''}${item.bonus}">
+              <button type="button" onclick="rollAttackChainItemByIndex(${idx})" class="${btnBasisClass} min-h-[56px] py-1 px-1.5 ${bgClass} active:scale-95 border ${isLocked ? 'border-slate-800 opacity-50 cursor-not-allowed' : colorBorder + ' cursor-pointer'} rounded-lg flex flex-col items-center justify-center text-center font-mono transition shadow group shrink-0">
                 <div class="text-[9px] uppercase tracking-wider ${subtitleColor} font-sans font-bold truncate leading-tight">${item.label}</div>
                 <div class="text-xs sm:text-sm md:text-base font-black ${textColor} font-mono leading-tight my-0.5">${item.bonus >= 0 ? '+' : ''}${item.bonus}</div>
                 <div class="text-[8px] font-sans text-slate-400 group-hover:text-slate-300 font-bold truncate leading-tight">${item.handLabel || 'Menzilli'}</div>
@@ -17438,7 +17435,7 @@
           }).join('');
 
           const fullAttackBtnHtml = `
-            <button type="button" onclick="executeFullAttackRoll(false)" class="${btnBasisClass} min-h-[56px] py-1 px-1.5 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-600 active:scale-95 text-white rounded-lg shadow-md border border-red-400/50 flex flex-col items-center justify-center transition cursor-pointer text-center shrink-0 group" title="Tüm ardışık menzilli atışları (Full Attack) sırayla zarla">
+            <button type="button" onclick="executeFullAttackRoll(false)" class="${btnBasisClass} min-h-[56px] py-1 px-1.5 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-600 active:scale-95 text-white rounded-lg shadow-md border border-red-400/50 flex flex-col items-center justify-center transition cursor-pointer text-center shrink-0 group">
               <div class="text-[9px] uppercase tracking-wider text-red-100/90 font-sans font-bold truncate flex items-center justify-center gap-0.5 leading-tight">
                 <span>🏹</span>
                 <span class="truncate">Full</span>
@@ -17590,7 +17587,7 @@
           }
 
           return `
-            <button type="button" onclick="rollAttackChainItemByIndex(${idx})" class="${btnBasisClass} min-h-[56px] py-1 px-1.5 ${bgClass} active:scale-95 border ${isLocked ? 'border-slate-800 opacity-50 cursor-not-allowed' : colorBorder + ' cursor-pointer'} rounded-lg flex flex-col items-center justify-center text-center font-mono transition shadow group shrink-0" title="${item.label} (${item.handLabel}): ${item.bonus >= 0 ? '+' : ''}${item.bonus}">
+            <button type="button" onclick="rollAttackChainItemByIndex(${idx})" class="${btnBasisClass} min-h-[56px] py-1 px-1.5 ${bgClass} active:scale-95 border ${isLocked ? 'border-slate-800 opacity-50 cursor-not-allowed' : colorBorder + ' cursor-pointer'} rounded-lg flex flex-col items-center justify-center text-center font-mono transition shadow group shrink-0">
               <div class="text-[9px] uppercase tracking-wider ${subtitleColor} font-sans font-bold truncate leading-tight">${item.label}</div>
               <div class="text-xs sm:text-sm md:text-base font-black ${textColor} font-mono leading-tight my-0.5">${item.bonus >= 0 ? '+' : ''}${item.bonus}</div>
               <div class="text-[8px] font-sans text-slate-400 group-hover:text-slate-300 font-bold truncate leading-tight">${item.handLabel || 'Standart'}</div>
@@ -17599,7 +17596,7 @@
         }).join('');
 
         const fullAttackBtn = `
-          <button type="button" onclick="executeFullAttackRoll(false)" class="${btnBasisClass} min-h-[56px] py-1 px-1.5 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-600 active:scale-95 text-white rounded-lg shadow-md border border-red-400/50 flex flex-col items-center justify-center transition cursor-pointer text-center shrink-0 group" title="Tüm ardışık vuruşları (Full Attack) sırayla zarla">
+          <button type="button" onclick="executeFullAttackRoll(false)" class="${btnBasisClass} min-h-[56px] py-1 px-1.5 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-600 active:scale-95 text-white rounded-lg shadow-md border border-red-400/50 flex flex-col items-center justify-center transition cursor-pointer text-center shrink-0 group">
             <div class="text-[9px] uppercase tracking-wider text-red-100/90 font-sans font-bold truncate flex items-center justify-center gap-0.5 leading-tight">
               <span>⚔️</span>
               <span class="truncate">Full</span>
