@@ -679,18 +679,10 @@
                      onmousemove="updateSpellHoverTooltipPos(event)"
                      class="flex-1 min-w-0 bg-slate-950/80 px-2.5 py-1 rounded-lg border border-slate-800 hover:border-purple-600/70 hover:bg-purple-950/20 flex flex-col justify-center cursor-help group transition min-h-[58px]">
                   
-                  <!-- 1. Satır: Büyü Adı (Solda Ad, Sağda Ekol • Seviye • Metamagic) -->
-                  <div class="flex items-center justify-between gap-1.5 w-full leading-tight">
-                    <div class="flex items-center gap-1.5 min-w-0 truncate">
-                      <span class="text-purple-400 text-xs">🔮</span>
-                      <span id="combat-selected-spell-title" class="text-xs font-black text-white group-hover:text-purple-200 truncate">Magic Missile</span>
-                    </div>
-                    <div class="flex items-center gap-1 shrink-0 text-[8px] font-mono text-purple-400 font-bold uppercase tracking-wider">
-                      <span id="combat-selected-spell-school-badge">Evocation</span>
-                      <span>•</span>
-                      <span id="combat-selected-spell-level-badge">1. Seviye</span>
-                      <span id="combat-spell-metamagic-badge" class="text-[8px] text-slate-500 font-normal ml-0.5">Metamagic: Yok</span>
-                    </div>
+                  <!-- 1. Satır: Büyü Adı -->
+                  <div class="flex items-center justify-center gap-1.5 w-full leading-tight">
+                    <span class="text-purple-400 text-xs">🔮</span>
+                    <span id="combat-selected-spell-title" class="text-xs font-black text-white group-hover:text-purple-200 truncate">Magic Missile</span>
                   </div>
 
                   <!-- 2. Satır: Büyü Özellikleri - Hasar / Etki -->
