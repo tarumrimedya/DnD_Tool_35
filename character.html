@@ -21344,8 +21344,10 @@
       const wizLvls = prog.filter(p => p.active !== false && ['wizard', 'artificer', 'archivist', 'wu jen'].includes((p.className || p.class || '').toLowerCase())).length;
       
       let cl = 0;
-      if (wizLvls > 0 || classesStatus.hasPrepared) {
-        cl = (clMode === 'Character Level (DM Boon)') ? Math.max(wizLvls || 1, activeLevels || 1) : Math.max(wizLvls || 1, 1);
+      if (wizLvls > 0) {
+        cl = (clMode === 'Character Level (DM Boon)') ? Math.max(wizLvls, activeLevels) : wizLvls;
+      } else if (classesStatus.hasPrepared) {
+        cl = 1;
       }
       return { statKey: 'INT', statVal: intVal, statMod: intMod, cl, clMode, hasClass: classesStatus.hasPrepared, wizLvls };
     }
@@ -21360,8 +21362,10 @@
       const divLvls = prog.filter(p => p.active !== false && ['cleric', 'druid', 'paladin', 'ranger', 'favored soul'].includes((p.className || p.class || '').toLowerCase())).length;
       
       let cl = 0;
-      if (divLvls > 0 || classesStatus.hasDivine) {
-        cl = (clMode === 'Character Level (DM Boon)') ? Math.max(divLvls || 1, activeLevels || 1) : Math.max(divLvls || 1, 1);
+      if (divLvls > 0) {
+        cl = (clMode === 'Character Level (DM Boon)') ? Math.max(divLvls, activeLevels) : divLvls;
+      } else if (classesStatus.hasDivine) {
+        cl = 1;
       }
       return { statKey: 'WIS', statVal: wisVal, statMod: wisMod, cl, clMode, hasClass: classesStatus.hasDivine, divLvls };
     }
@@ -21379,9 +21383,11 @@
         character.spellcasting.preparedSlots = [];
       }
 
-      const { statKey, statVal, statMod, cl, clMode } = getPreparedCasterInfo();
-      if (hasPrepared && Number(cl) > 0) {
-        character.spellcasting.preparedSlots = calculateWizardSlots(cl, statVal, character.spellcasting.preparedSlots);
+      const { statKey, statVal, statMod, cl, clMode, wizLvls } = getPreparedCasterInfo();
+      if (wizLvls > 0 && Number(cl) > 0) {
+        character.spellcasting.preparedSlots = calculateWizardSlots(wizLvls, statVal, character.spellcasting.preparedSlots);
+      } else {
+        character.spellcasting.preparedSlots = (character.spellcasting.preparedSlots || []).filter(s => (Number(s.dmBonus) || 0) > 0);
       }
 
       const slots = character.spellcasting.preparedSlots;
@@ -21918,10 +21924,12 @@
         character.spellcasting.divineSlots = [];
       }
 
-      const { statKey, statVal, statMod, cl, clMode } = getDivineCasterInfo();
+      const { statKey, statVal, statMod, cl, clMode, divLvls } = getDivineCasterInfo();
       const spontMode = character.spellcasting.clericSpontaneousMode || 'cure';
-      if (hasDivine && Number(cl) > 0) {
-        character.spellcasting.divineSlots = calculateDivineSlots(cl, statVal, character.spellcasting.divineSlots);
+      if (divLvls > 0 && Number(cl) > 0) {
+        character.spellcasting.divineSlots = calculateDivineSlots(divLvls, statVal, character.spellcasting.divineSlots);
+      } else {
+        character.spellcasting.divineSlots = (character.spellcasting.divineSlots || []).filter(s => (Number(s.dmBonus) || 0) > 0);
       }
 
       const slots = character.spellcasting.divineSlots;
@@ -22387,18 +22395,21 @@
       const clMode = character?.settings?.clMode || 'Class Level';
       const prog = character?.levelProgression || [];
       const activeLevels = prog.filter(p => p.active !== false).length || Number(character?.level) || 0;
+      const sorcLvls = prog.filter(p => p.active !== false && ['sorcerer', 'bard', 'favored soul', 'warlock', 'warmage', 'duskblade', 'beguiler'].includes((p.className || p.class || '').toLowerCase())).length;
       
       let cl = 0;
       if (character?.isNpc && (character?.spellcasting?.cl !== undefined || character?.spellcasting?.caster_level !== undefined)) {
         cl = Number(character.spellcasting.cl ?? character.spellcasting.caster_level) || 0;
+      } else if (sorcLvls > 0) {
+        const rawCl = character?.spellcasting?.caster_level ?? character?.spellcasting?.cl ?? sorcLvls;
+        cl = (clMode === 'Character Level (DM Boon)') ? Math.max(Number(rawCl) || 1, activeLevels) : (Number(rawCl) || sorcLvls);
       } else if (classesStatus.hasSpontaneous) {
-        const rawCl = character?.spellcasting?.caster_level ?? character?.spellcasting?.cl ?? activeLevels;
-        cl = (clMode === 'Character Level (DM Boon)') ? Math.max(Number(rawCl) || 1, activeLevels) : (Number(rawCl) || 1);
+        cl = 1;
       }
 
       const hasClass = classesStatus.hasSpontaneous || (character?.isNpc && Boolean(character?.spellcasting?.cl || character?.spellcasting?.slots?.length || character?.spellcasting?.knownSpells?.length || character?.spells?.length));
 
-      return { primaryClass, statKey, statVal, statMod, cl, clMode, hasClass };
+      return { primaryClass, statKey, statVal, statMod, cl, clMode, hasClass, sorcLvls };
     }
 
     function getSpellDc(spellLevel) {
@@ -22610,7 +22621,7 @@
     }
 
     function renderSpellsCockpit() {
-      const { primaryClass, statKey, statVal, statMod, cl, clMode, hasClass: hasSpontaneous } = getCasterInfo();
+      const { primaryClass, statKey, statVal, statMod, cl, clMode, hasClass: hasSpontaneous, sorcLvls } = getCasterInfo();
       const classesStatus = checkCharacterMagicClasses();
 
       // Synchronize Sorcerer spell slots with effective Caster Level (CL)
@@ -22635,9 +22646,9 @@
             character.spellcasting.slots = built;
           }
         } else {
-          character.spellcasting.slots = hasSpontaneous && cl > 0 
-            ? calculateSorcererSlots(cl, statVal, character.spellcasting.slots) 
-            : ((character.spellcasting.slots || []).filter(s => (Number(s.daily) || 0) > 0));
+          character.spellcasting.slots = (sorcLvls > 0 && cl > 0)
+            ? calculateSorcererSlots(sorcLvls, statVal, character.spellcasting.slots) 
+            : ((character.spellcasting.slots || []).filter(s => (Number(s.dmBonus) || 0) > 0));
         }
       }
 
@@ -22661,9 +22672,9 @@
 
       const prepInfo = getPreparedCasterInfo();
       if (character?.spellcasting) {
-        character.spellcasting.preparedSlots = (classesStatus.hasPrepared && prepInfo.cl > 0)
-          ? calculateWizardSlots(prepInfo.cl, prepInfo.statVal, character.spellcasting.preparedSlots)
-          : ((character.spellcasting.preparedSlots || []).filter(s => (Number(s.daily) || 0) > 0));
+        character.spellcasting.preparedSlots = (prepInfo.wizLvls > 0 && prepInfo.cl > 0)
+          ? calculateWizardSlots(prepInfo.wizLvls, prepInfo.statVal, character.spellcasting.preparedSlots)
+          : ((character.spellcasting.preparedSlots || []).filter(s => (Number(s.dmBonus) || 0) > 0));
       }
       const prepBadge = document.getElementById('tab-prepared-badge');
       if (prepBadge) {
@@ -22682,9 +22693,9 @@
 
       const divInfo = getDivineCasterInfo();
       if (character?.spellcasting) {
-        character.spellcasting.divineSlots = (classesStatus.hasDivine && divInfo.cl > 0)
-          ? calculateDivineSlots(divInfo.cl, divInfo.statVal, character.spellcasting.divineSlots)
-          : ((character.spellcasting.divineSlots || []).filter(s => (Number(s.daily) || 0) > 0));
+        character.spellcasting.divineSlots = (divInfo.divLvls > 0 && divInfo.cl > 0)
+          ? calculateDivineSlots(divInfo.divLvls, divInfo.statVal, character.spellcasting.divineSlots)
+          : ((character.spellcasting.divineSlots || []).filter(s => (Number(s.dmBonus) || 0) > 0));
       }
       const divineBadge = document.getElementById('tab-divine-badge');
       if (divineBadge) {
@@ -25671,7 +25682,11 @@
           character.spellcasting.cl = sorcLvls;
         }
         const chaVal = character.stats?.CHA?.value ?? character.abilities?.cha ?? 22;
-        character.spellcasting.slots = calculateSorcererSlots(character.spellcasting.cl, chaVal, character.spellcasting.slots);
+        if (sorcLvls > 0) {
+          character.spellcasting.slots = calculateSorcererSlots(sorcLvls, chaVal, character.spellcasting.slots);
+        } else {
+          character.spellcasting.slots = (character.spellcasting.slots || []).filter(s => (Number(s.dmBonus) || 0) > 0);
+        }
       }
 
       if (character.tomeOfBattle) {
@@ -25877,9 +25892,8 @@
           } else {
             character.spellcasting.cl = sorcLvls;
           }
-          const effectiveSorcLvl = character.spellcasting.cl || sorcLvls;
           const chaVal = character.stats?.CHA?.value ?? character.abilities?.cha ?? 22;
-          character.spellcasting.slots = calculateSorcererSlots(effectiveSorcLvl, chaVal, character.spellcasting.slots);
+          character.spellcasting.slots = calculateSorcererSlots(sorcLvls, chaVal, character.spellcasting.slots);
         }
       }
     }
@@ -29353,8 +29367,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           if (character.spellcasting && isActive) character.spellcasting.cl = sorcLvls;
         }
         if (character.spellcasting && isActive) {
-          const effectiveCl = character.spellcasting.cl || sorcLvls;
-          character.spellcasting.slots = calculateSorcererSlots(effectiveCl, character.abilities?.cha || 22, character.spellcasting.slots);
+          character.spellcasting.slots = calculateSorcererSlots(sorcLvls, character.abilities?.cha || 22, character.spellcasting.slots);
         }
         rowFeats.push(`🔮 +1 Caster Lvl (CL: ${character.spellcasting?.cl || nextLvl})`);
       } else if (casterProg === 'cl_boon') {
@@ -29445,8 +29458,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         } else {
           character.spellcasting.cl = sorcLvls;
         }
-        const effectiveCl = character.spellcasting.cl || sorcLvls;
-        character.spellcasting.slots = calculateSorcererSlots(effectiveCl, character.abilities?.cha || 22, character.spellcasting.slots);
+        character.spellcasting.slots = calculateSorcererSlots(sorcLvls, character.abilities?.cha || 22, character.spellcasting.slots);
       }
 
       recalculateCharacterClassSummary();
