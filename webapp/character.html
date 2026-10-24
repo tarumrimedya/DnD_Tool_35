@@ -379,15 +379,16 @@
           
           <!-- 1. Weapon Selector & TWF Card (FİZİKSEL SALDIRI) -->
           <div class="bg-dndCard border border-rose-500/40 rounded-xl p-3.5 shadow-lg space-y-3" id="cockpit-physical-card">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-              <span id="combat-card-title" class="text-xs font-black uppercase text-rose-400 tracking-wider flex items-center gap-1.5">
-                <span>⚔️</span> SALDIRI &amp; SİLAH ROTASYONU
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2 gap-2 whitespace-nowrap">
+              <span id="combat-card-title" class="text-xs font-black uppercase text-rose-400 tracking-wider flex items-center gap-1.5 truncate min-w-0">
+                <span>⚔️</span>
+                <span class="truncate">SALDIRI ROTASYONU</span>
               </span>
-              <div class="flex items-center gap-1.5">
-                <button id="combat-profile-save-btn" onclick="openSaveProfileModal()" class="bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-white px-2 py-0.5 rounded text-xs font-bold border border-slate-700 flex items-center gap-1 transition cursor-pointer" title="Seçilmiş modifiyerleri isim vererek kaydet">
-                  <span>💾 Kaydet</span>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button id="combat-profile-save-btn" onclick="openSaveProfileModal()" class="w-6 h-6 bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-white rounded text-xs font-bold border border-slate-700 flex items-center justify-center transition cursor-pointer" title="Seçilmiş modifiyerleri isim vererek kaydet">
+                  <span>💾</span>
                 </button>
-                <button type="button" onclick="toggleCockpitPanel('physical')" id="btn-collapse-physical" class="text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700 text-xs font-bold cursor-pointer" title="Paneli Katla/Aç">
+                <button type="button" onclick="toggleCockpitPanel('physical')" id="btn-collapse-physical" class="w-6 h-6 text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 rounded border border-slate-700 text-xs font-bold flex items-center justify-center cursor-pointer transition" title="Paneli Katla/Aç">
                   <span>▴</span>
                 </button>
               </div>
@@ -11101,8 +11102,8 @@
           btnRanged.className = 'py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow cursor-pointer';
         }
         if (cardTitle) {
-          cardTitle.innerHTML = '<span>🏹</span> SALDIRI &amp; SİLAH ROTASYONU (UZAK)';
-          cardTitle.className = 'text-xs font-black uppercase text-amber-400 tracking-wider flex items-center gap-1.5';
+          cardTitle.innerHTML = '<span>🏹</span> <span class="truncate">SALDIRI ROTASYONU</span>';
+          cardTitle.className = 'text-xs font-black uppercase text-amber-400 tracking-wider flex items-center gap-1.5 truncate min-w-0';
         }
         const wsTitle = document.getElementById('weapon-sets-header-title');
         const wsIcon = document.getElementById('weapon-sets-header-icon');
@@ -11144,8 +11145,8 @@
           btnMelee.className = 'py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-gradient-to-r from-red-600 to-rose-600 text-white shadow cursor-pointer';
         }
         if (cardTitle) {
-          cardTitle.innerHTML = '<span>⚔️</span> SALDIRI &amp; SİLAH ROTASYONU (YAKIN)';
-          cardTitle.className = 'text-xs font-black uppercase text-rose-400 tracking-wider flex items-center gap-1.5';
+          cardTitle.innerHTML = '<span>⚔️</span> <span class="truncate">SALDIRI ROTASYONU</span>';
+          cardTitle.className = 'text-xs font-black uppercase text-rose-400 tracking-wider flex items-center gap-1.5 truncate min-w-0';
         }
         const wsTitle = document.getElementById('weapon-sets-header-title');
         const wsIcon = document.getElementById('weapon-sets-header-icon');
