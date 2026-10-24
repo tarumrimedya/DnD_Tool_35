@@ -22580,11 +22580,11 @@
 
         if (isUnlocked) {
           const isDepleted = remaining <= 0;
-          div.className = `relative flex items-center justify-between ${
+          div.className = `flex items-center justify-between ${
             isDepleted
               ? 'bg-slate-950/70 border border-slate-800/80 opacity-50 grayscale-[30%]'
               : (activeSource.key === 'prepared' ? 'bg-slate-900/90 border border-sky-800/60 hover:border-sky-500' : (activeSource.key === 'divine' ? 'bg-slate-900/90 border border-amber-800/60 hover:border-amber-500' : 'bg-slate-900/90 border border-purple-800/60 hover:border-purple-600'))
-          } rounded-xl pl-3 pr-7 py-2 shadow-sm transition w-full group`;
+          } rounded-xl px-3 py-2 shadow-sm transition w-full`;
           if (isDepleted) div.title = '⚠️ Bu seviyedeki büyü slotları tükendi';
 
           let knownSubtitle = '';
@@ -22601,8 +22601,6 @@
           }
 
           div.innerHTML = `
-            <button type="button" onclick="openSpellSlotsModal(${lvl}, '${activeSource.key}')" class="absolute top-1.5 right-1.5 text-slate-500 hover:text-amber-300 hover:bg-slate-800 text-[11px] w-5 h-5 rounded flex items-center justify-center transition cursor-pointer" title="${lvlLabel} Yuva & DM Bonusu Ayarları">⚙️</button>
-
             <div class="flex flex-col min-w-0">
               <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="font-extrabold text-white text-xs whitespace-nowrap">${lvlLabel}</span>
@@ -22620,11 +22618,9 @@
           `;
         } else {
           const reqClText = lvl >= 10 ? 'Epic (CL 21+)' : `CL ${lvl * 2}+`;
-          div.className = 'relative flex items-center justify-between bg-slate-950/50 border border-slate-800/70 rounded-xl pl-3 pr-7 py-2 opacity-50 select-none transition w-full group';
-          div.title = `${lvlLabel} henüz kilitli (${reqClText} gerekir). Yuva tanımlamak için ayar simgesine tıklayın.`;
+          div.className = 'flex items-center justify-between bg-slate-950/50 border border-slate-800/70 rounded-xl px-3 py-2 opacity-50 select-none transition w-full';
+          div.title = `${lvlLabel} henüz kilitli (${reqClText} gerekir)`;
           div.innerHTML = `
-            <button type="button" onclick="openSpellSlotsModal(${lvl}, '${activeSource.key}')" class="absolute top-1.5 right-1.5 text-slate-600 hover:text-amber-300 hover:bg-slate-800 text-[11px] w-5 h-5 rounded flex items-center justify-center transition cursor-pointer" title="${lvlLabel} Yuva Tanımla & Ayarla">⚙️</button>
-
             <div class="flex flex-col min-w-0">
               <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="font-bold text-slate-500 text-xs whitespace-nowrap">${lvlLabel}</span>
