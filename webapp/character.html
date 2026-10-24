@@ -12900,9 +12900,10 @@
 
       // Card 1: Defensive Casting (Fixed Item 1 - Glow Card Toggle)
       const defCardHtml = `
-        <div onclick="toggleDefensiveCastingModifier()" class="bg-slate-900 border ${isDefensiveActive ? 'border-indigo-400 bg-indigo-950/60 text-indigo-100 shadow-[0_0_10px_rgba(129,140,248,0.35)] ring-1 ring-indigo-500/50' : 'border-slate-800 text-slate-300 hover:border-indigo-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
-          <div class="text-[11px] font-bold ${isDefensiveActive ? 'text-white' : 'text-indigo-400'} leading-tight">Defensive Cast</div>
-          <div class="text-[9px] ${isDefensiveActive ? 'text-indigo-200 font-semibold' : 'text-slate-400'} mt-1" id="defensive-casting-dc-hint">DC ${15 + currentLvl} • AoO Engeller</div>
+        <div onclick="toggleDefensiveCastingModifier()" class="relative ${isDefensiveActive ? 'border-2 border-indigo-400 bg-indigo-950 text-white shadow-[0_0_14px_rgba(129,140,248,0.45)] ring-2 ring-indigo-400/30' : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-indigo-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
+          ${isDefensiveActive ? '<span class="absolute top-1 right-1.5 text-[8px] font-black font-mono text-indigo-300 bg-indigo-900/80 px-1 rounded border border-indigo-400/50">✓ AÇIK</span>' : ''}
+          <div class="text-[11px] font-bold ${isDefensiveActive ? 'text-white font-black' : 'text-indigo-400'} leading-tight">Defensive Cast</div>
+          <div class="text-[9px] ${isDefensiveActive ? 'text-indigo-200 font-bold' : 'text-slate-400'} mt-1" id="defensive-casting-dc-hint">DC ${15 + currentLvl} • AoO Engeller</div>
         </div>
       `;
 
@@ -12921,52 +12922,39 @@
       const modCards = modifiers.map(mod => {
         const isActive = isSpellCockpitModifierActive(mod);
 
-        let borderClass = 'border-purple-900/60 text-slate-300';
-        let bgClass = 'bg-slate-900';
+        let activeBorder = 'border-2 border-purple-400 bg-purple-950 text-white shadow-[0_0_14px_rgba(192,132,252,0.45)] ring-2 ring-purple-400/30';
         let titleColor = 'text-purple-300';
+        let badgeColor = 'text-purple-200 bg-purple-900/80 border-purple-400/50';
 
         if (mod.color === 'amber') {
           titleColor = 'text-amber-300';
-          if (isActive) {
-            borderClass = 'border-amber-400 bg-amber-950/60 text-amber-100 shadow-[0_0_10px_rgba(251,191,36,0.3)] ring-1 ring-amber-500/50';
-            bgClass = 'bg-amber-950/40';
-          }
+          badgeColor = 'text-amber-200 bg-amber-900/80 border-amber-400/50';
+          activeBorder = 'border-2 border-amber-400 bg-amber-950 text-white shadow-[0_0_14px_rgba(251,191,36,0.45)] ring-2 ring-amber-400/30';
         } else if (mod.color === 'sky' || mod.color === 'cyan') {
           titleColor = 'text-sky-300';
-          if (isActive) {
-            borderClass = 'border-sky-400 bg-sky-950/60 text-sky-100 shadow-[0_0_10px_rgba(56,189,248,0.3)] ring-1 ring-sky-500/50';
-            bgClass = 'bg-sky-950/40';
-          }
+          badgeColor = 'text-sky-200 bg-sky-900/80 border-sky-400/50';
+          activeBorder = 'border-2 border-sky-400 bg-sky-950 text-white shadow-[0_0_14px_rgba(56,189,248,0.45)] ring-2 ring-sky-400/30';
         } else if (mod.color === 'emerald') {
           titleColor = 'text-emerald-300';
-          if (isActive) {
-            borderClass = 'border-emerald-400 bg-emerald-950/60 text-emerald-100 shadow-[0_0_10px_rgba(52,211,153,0.3)] ring-1 ring-emerald-500/50';
-            bgClass = 'bg-emerald-950/40';
-          }
+          badgeColor = 'text-emerald-200 bg-emerald-900/80 border-emerald-400/50';
+          activeBorder = 'border-2 border-emerald-400 bg-emerald-950 text-white shadow-[0_0_14px_rgba(52,211,153,0.45)] ring-2 ring-emerald-400/30';
         } else if (mod.color === 'rose') {
           titleColor = 'text-rose-300';
-          if (isActive) {
-            borderClass = 'border-rose-400 bg-rose-950/60 text-rose-100 shadow-[0_0_10px_rgba(251,113,133,0.3)] ring-1 ring-rose-500/50';
-            bgClass = 'bg-rose-950/40';
-          }
-        } else {
-          titleColor = 'text-purple-300';
-          if (isActive) {
-            borderClass = 'border-purple-400 bg-purple-950/60 text-purple-100 shadow-[0_0_10px_rgba(192,132,252,0.3)] ring-1 ring-purple-500/50';
-            bgClass = 'bg-purple-950/40';
-          }
+          badgeColor = 'text-rose-200 bg-rose-900/80 border-rose-400/50';
+          activeBorder = 'border-2 border-rose-400 bg-rose-950 text-white shadow-[0_0_14px_rgba(251,113,133,0.45)] ring-2 ring-rose-400/30';
         }
 
         const icon = mod.isRod ? '🪄' : (mod.isMetamagic ? '✨' : (mod.sourceType === 'Feat' ? '⚡' : '🔮'));
 
         return `
-          <div onclick="toggleSpellCockpitModifier('${mod.id}', event)" class="${bgClass} border ${borderClass} hover:border-purple-500/60 rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px] group">
-            <div class="text-[11px] font-bold ${isActive ? 'text-white' : titleColor} flex items-center justify-center gap-1 leading-tight truncate w-full">
+          <div onclick="toggleSpellCockpitModifier('${mod.id}', event)" class="relative ${isActive ? activeBorder : 'border border-purple-900/60 bg-slate-900 text-slate-300 hover:border-purple-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px] group">
+            ${isActive ? `<span class="absolute top-1 right-1.5 text-[8px] font-black font-mono ${badgeColor} px-1 rounded border">✓ AÇIK</span>` : ''}
+            <div class="text-[11px] font-bold ${isActive ? 'text-white font-black' : titleColor} flex items-center justify-center gap-1 leading-tight truncate w-full">
               <span class="shrink-0">${icon}</span>
               <span class="truncate">${mod.name}</span>
               ${mod.badge ? `<span class="shrink-0 text-[8px] font-mono font-bold px-1 py-0.2 rounded bg-slate-800/80 text-amber-300 border border-slate-700/60">${mod.badge}</span>` : ''}
             </div>
-            <div class="text-[9px] ${isActive ? 'text-amber-200 font-semibold' : 'text-slate-400'} mt-1 line-clamp-1 leading-tight">${mod.desc}</div>
+            <div class="text-[9px] ${isActive ? 'text-amber-200 font-bold' : 'text-slate-400'} mt-1 line-clamp-1 leading-tight">${mod.desc}</div>
           </div>
         `;
       });
@@ -15133,21 +15121,24 @@
       // Row 1: Fixed 3 items: 1. Flanking, 2. Charge, 3. Higher Ground (Glow Card Toggle)
       const fixedCardsHtml = [
         `
-        <div onclick="toggleFixedMeleeModifier('flanking')" class="bg-slate-900 border ${flanking ? 'border-sky-400 bg-sky-950/60 text-sky-100 shadow-[0_0_10px_rgba(56,189,248,0.3)] ring-1 ring-sky-500/50' : 'border-slate-800 text-slate-300 hover:border-sky-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
-          <div class="text-[11px] font-bold ${flanking ? 'text-white' : 'text-sky-400'} leading-tight">Flanking</div>
-          <div class="text-[9px] ${flanking ? 'text-sky-200 font-semibold' : 'text-slate-400'} mt-1">+2 Melee</div>
+        <div onclick="toggleFixedMeleeModifier('flanking')" class="relative ${flanking ? 'border-2 border-sky-400 bg-sky-950 text-white shadow-[0_0_14px_rgba(56,189,248,0.45)] ring-2 ring-sky-400/30' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-sky-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
+          ${flanking ? '<span class="absolute top-1 right-1.5 text-[8px] font-black font-mono text-sky-300 bg-sky-900/80 px-1 rounded border border-sky-400/50">✓ AÇIK</span>' : ''}
+          <div class="text-[11px] font-bold ${flanking ? 'text-white font-black' : 'text-sky-400'} leading-tight">Flanking</div>
+          <div class="text-[9px] ${flanking ? 'text-sky-200 font-bold' : 'text-slate-400'} mt-1">+2 Melee</div>
         </div>
         `,
         `
-        <div onclick="toggleFixedMeleeModifier('charge')" class="bg-slate-900 border ${charge ? 'border-rose-400 bg-rose-950/60 text-rose-100 shadow-[0_0_10px_rgba(251,113,133,0.3)] ring-1 ring-rose-500/50' : 'border-slate-800 text-slate-300 hover:border-rose-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
-          <div class="text-[11px] font-bold ${charge ? 'text-white' : 'text-rose-400'} leading-tight">Charge</div>
-          <div class="text-[9px] ${charge ? 'text-rose-200 font-semibold' : 'text-slate-400'} mt-1">+2 Atk / -2 AC</div>
+        <div onclick="toggleFixedMeleeModifier('charge')" class="relative ${charge ? 'border-2 border-rose-400 bg-rose-950 text-white shadow-[0_0_14px_rgba(251,113,133,0.45)] ring-2 ring-rose-400/30' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-rose-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
+          ${charge ? '<span class="absolute top-1 right-1.5 text-[8px] font-black font-mono text-rose-300 bg-rose-900/80 px-1 rounded border border-rose-400/50">✓ AÇIK</span>' : ''}
+          <div class="text-[11px] font-bold ${charge ? 'text-white font-black' : 'text-rose-400'} leading-tight">Charge</div>
+          <div class="text-[9px] ${charge ? 'text-rose-200 font-bold' : 'text-slate-400'} mt-1">+2 Atk / -2 AC</div>
         </div>
         `,
         `
-        <div onclick="toggleFixedMeleeModifier('higherGround')" class="bg-slate-900 border ${hg ? 'border-amber-400 bg-amber-950/60 text-amber-100 shadow-[0_0_10px_rgba(251,191,36,0.3)] ring-1 ring-amber-500/50' : 'border-slate-800 text-slate-300 hover:border-amber-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
-          <div class="text-[11px] font-bold ${hg ? 'text-white' : 'text-amber-400'} leading-tight">Higher Gr.</div>
-          <div class="text-[9px] ${hg ? 'text-amber-200 font-semibold' : 'text-slate-400'} mt-1">+1 Melee</div>
+        <div onclick="toggleFixedMeleeModifier('higherGround')" class="relative ${hg ? 'border-2 border-amber-400 bg-amber-950 text-white shadow-[0_0_14px_rgba(251,191,36,0.45)] ring-2 ring-amber-400/30' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-amber-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
+          ${hg ? '<span class="absolute top-1 right-1.5 text-[8px] font-black font-mono text-amber-300 bg-amber-900/80 px-1 rounded border border-amber-400/50">✓ AÇIK</span>' : ''}
+          <div class="text-[11px] font-bold ${hg ? 'text-white font-black' : 'text-amber-400'} leading-tight">Higher Gr.</div>
+          <div class="text-[9px] ${hg ? 'text-amber-200 font-bold' : 'text-slate-400'} mt-1">+1 Melee</div>
         </div>
         `
       ];
@@ -15174,37 +15165,37 @@
       const dynamicCardsHtml = visibleMods.map((mod, idx) => {
         if (!mod || !mod.name) return '';
         let bonusStr = mod.dice ? mod.dice : (mod.bonusDmg ? `+${mod.bonusDmg} Dmg` : (mod.bonusAtk ? `+${mod.bonusAtk} Atk` : 'Aktif'));
-        let cardBorderActive = 'border-purple-400 bg-purple-950/60 text-purple-100 shadow-[0_0_10px_rgba(192,132,252,0.3)] ring-1 ring-purple-500/50';
+        let cardBorderActive = 'border-2 border-purple-400 bg-purple-950 text-white shadow-[0_0_14px_rgba(192,132,252,0.45)] ring-2 ring-purple-400/30';
         let bonusColor = 'text-amber-300';
 
         if (mod.name.includes('Flurry') || mod.name.includes('Seri Vuruş')) {
           bonusStr = '+1 Vuruş';
-          cardBorderActive = 'border-purple-400 bg-purple-950/60 text-purple-100 shadow-[0_0_10px_rgba(192,132,252,0.3)] ring-1 ring-purple-500/50';
           bonusColor = 'text-purple-300';
         }
 
         const actualIdx = character.activeModifiers.indexOf(mod);
 
         const reorderControls = window.meleeReorderModeActive ? `
-          <div class="flex items-center justify-between px-0.5 text-[9px] text-slate-500 leading-none shrink-0" onclick="event.stopPropagation()">
+          <div class="flex items-center justify-between px-0.5 text-[9px] text-slate-500 leading-none shrink-0 w-full" onclick="event.stopPropagation()">
             <button type="button" onclick="moveMeleeModifierOrder(${idx}, -1, event)" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx <= 0 ? 'disabled' : ''} title="Sola Taşı">◀</button>
-            <span class="text-[8px] text-slate-500 font-mono truncate max-w-[45px]">${mod.source || ''}</span>
+            <span class="text-[8px] text-slate-400 font-mono truncate max-w-[45px]">${mod.source || ''}</span>
             <button type="button" onclick="moveMeleeModifierOrder(${idx}, 1, event)" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx >= dynamicMods.length - 1 ? 'disabled' : ''} title="Sağa Taşı">▶</button>
           </div>
         ` : `
-          <div class="flex items-center justify-center px-0.5 text-[9px] text-slate-500 leading-none shrink-0">
-            <span class="text-[8px] text-slate-500 font-mono truncate max-w-[75px]">${mod.source || ''}</span>
+          <div class="flex items-center justify-between px-1 text-[9px] leading-none shrink-0 w-full">
+            <span class="text-[8px] font-mono ${mod.active ? 'text-purple-300 font-bold' : 'text-slate-500'} truncate max-w-[60px]">${mod.source || ''}</span>
+            ${mod.active ? '<span class="text-[8px] font-black font-mono text-purple-200 bg-purple-900/80 px-1 rounded border border-purple-400/50">✓ AÇIK</span>' : ''}
           </div>
         `;
 
         return `
-        <div onclick="toggleModifier(${actualIdx})" class="bg-slate-900 border ${mod.active ? cardBorderActive : 'border-slate-800 text-slate-300 hover:border-purple-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] relative group cursor-pointer">
+        <div onclick="toggleModifier(${actualIdx})" class="relative ${mod.active ? cardBorderActive : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-purple-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer">
           <!-- Reorder Mini Controls -->
           ${reorderControls}
 
           <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
-            <div class="text-[10px] font-bold ${mod.active ? 'text-white' : 'text-slate-200'} leading-tight truncate w-full" title="${mod.name}">${mod.name}</div>
-            <div class="text-[9px] ${mod.active ? 'text-amber-200 font-bold' : bonusColor} font-mono mt-1">${bonusStr}</div>
+            <div class="text-[10px] ${mod.active ? 'font-black text-white' : 'font-bold text-slate-200'} leading-tight truncate w-full" title="${mod.name}">${mod.name}</div>
+            <div class="text-[9px] ${mod.active ? 'text-amber-300 font-black' : bonusColor} font-mono mt-1">${bonusStr}</div>
           </div>
         </div>
         `;
@@ -15913,21 +15904,24 @@
       // Base Situational Cards: Rules every ranged combatant can use (Glow Card Toggle)
       const baseCardsHtml = [
         `
-        <div onclick="onRangedModifierToggle('rangedHigherGround')" class="bg-slate-900 border ${hg ? 'border-amber-400 bg-amber-950/60 text-amber-100 shadow-[0_0_10px_rgba(251,191,36,0.3)] ring-1 ring-amber-500/50' : 'border-slate-800 text-slate-300 hover:border-amber-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
-          <div class="text-[11px] font-bold ${hg ? 'text-white' : 'text-amber-400'} leading-tight">Higher Gr.</div>
-          <div class="text-[9px] ${hg ? 'text-amber-200 font-semibold' : 'text-slate-400'} mt-1">+1 Ranged</div>
+        <div onclick="onRangedModifierToggle('rangedHigherGround')" class="relative ${hg ? 'border-2 border-amber-400 bg-amber-950 text-white shadow-[0_0_14px_rgba(251,191,36,0.45)] ring-2 ring-amber-400/30' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-amber-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
+          ${hg ? '<span class="absolute top-1 right-1.5 text-[8px] font-black font-mono text-amber-300 bg-amber-900/80 px-1 rounded border border-amber-400/50">✓ AÇIK</span>' : ''}
+          <div class="text-[11px] font-bold ${hg ? 'text-white font-black' : 'text-amber-400'} leading-tight">Higher Gr.</div>
+          <div class="text-[9px] ${hg ? 'text-amber-200 font-bold' : 'text-slate-400'} mt-1">+1 Ranged</div>
         </div>
         `,
         `
-        <div onclick="onRangedModifierToggle('targetInMelee')" class="bg-slate-900 border ${tinM ? 'border-rose-400 bg-rose-950/60 text-rose-100 shadow-[0_0_10px_rgba(251,113,133,0.3)] ring-1 ring-rose-500/50' : 'border-slate-800 text-slate-300 hover:border-rose-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
-          <div class="text-[11px] font-bold ${tinM ? 'text-white' : 'text-rose-400'} leading-tight">Hedef Yakında</div>
-          <div class="text-[9px] ${tinM ? 'text-rose-200 font-semibold' : 'text-slate-400'} mt-1">${hasPrecise ? '⚡ Ceza Yok (Precise)' : '-4 Atk (Melee)'}</div>
+        <div onclick="onRangedModifierToggle('targetInMelee')" class="relative ${tinM ? 'border-2 border-rose-400 bg-rose-950 text-white shadow-[0_0_14px_rgba(251,113,133,0.45)] ring-2 ring-rose-400/30' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-rose-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
+          ${tinM ? '<span class="absolute top-1 right-1.5 text-[8px] font-black font-mono text-rose-300 bg-rose-900/80 px-1 rounded border border-rose-400/50">✓ AÇIK</span>' : ''}
+          <div class="text-[11px] font-bold ${tinM ? 'text-white font-black' : 'text-rose-400'} leading-tight">Hedef Yakında</div>
+          <div class="text-[9px] ${tinM ? 'text-rose-200 font-bold' : 'text-slate-400'} mt-1">${hasPrecise ? '⚡ Ceza Yok (Precise)' : '-4 Atk (Melee)'}</div>
         </div>
         `,
         `
-        <div onclick="onRangedModifierToggle('coverPenalty')" class="bg-slate-900 border ${cvr ? 'border-slate-400 bg-slate-800/80 text-white shadow-[0_0_10px_rgba(148,163,184,0.3)] ring-1 ring-slate-400/50' : 'border-slate-800 text-slate-300 hover:border-slate-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
-          <div class="text-[11px] font-bold ${cvr ? 'text-white' : 'text-slate-300'} leading-tight">Hedef Siperde</div>
-          <div class="text-[9px] ${cvr ? 'text-slate-200 font-semibold' : 'text-slate-400'} mt-1">-4 Atk (Cover)</div>
+        <div onclick="onRangedModifierToggle('coverPenalty')" class="relative ${cvr ? 'border-2 border-slate-300 bg-slate-800 text-white shadow-[0_0_14px_rgba(203,213,225,0.4)] ring-2 ring-slate-400/40' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-slate-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
+          ${cvr ? '<span class="absolute top-1 right-1.5 text-[8px] font-black font-mono text-slate-200 bg-slate-700/80 px-1 rounded border border-slate-400/50">✓ AÇIK</span>' : ''}
+          <div class="text-[11px] font-bold ${cvr ? 'text-white font-black' : 'text-slate-300'} leading-tight">Hedef Siperde</div>
+          <div class="text-[9px] ${cvr ? 'text-slate-100 font-bold' : 'text-slate-400'} mt-1">-4 Atk (Cover)</div>
         </div>
         `
       ];
@@ -15953,26 +15947,27 @@
 
       const dynamicCardsHtml = visibleMods.map((mod, idx) => {
         const reorderControls = window.rangedReorderModeActive ? `
-          <div class="flex items-center justify-between px-0.5 text-[9px] text-slate-500 leading-none shrink-0" onclick="event.stopPropagation()">
+          <div class="flex items-center justify-between px-0.5 text-[9px] text-slate-500 leading-none shrink-0 w-full" onclick="event.stopPropagation()">
             <button type="button" onclick="moveRangedModifierOrder(${idx}, -1, event)" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx <= 0 ? 'disabled' : ''} title="Sola Taşı">◀</button>
-            <span class="text-[8px] text-slate-500 font-mono truncate max-w-[45px]">${mod.source}</span>
+            <span class="text-[8px] text-slate-400 font-mono truncate max-w-[45px]">${mod.source}</span>
             <button type="button" onclick="moveRangedModifierOrder(${idx}, 1, event)" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx >= qualifiedRangedList.length - 1 ? 'disabled' : ''} title="Sağa Taşı">▶</button>
           </div>
         ` : `
-          <div class="flex items-center justify-center px-0.5 text-[9px] text-slate-500 leading-none shrink-0">
-            <span class="text-[8px] text-slate-500 font-mono truncate max-w-[75px]">${mod.source}</span>
+          <div class="flex items-center justify-between px-1 text-[9px] leading-none shrink-0 w-full">
+            <span class="text-[8px] font-mono ${mod.active ? 'text-amber-300 font-bold' : 'text-slate-500'} truncate max-w-[60px]">${mod.source}</span>
+            ${mod.active ? '<span class="text-[8px] font-black font-mono text-amber-200 bg-amber-900/80 px-1 rounded border border-amber-400/50">✓ AÇIK</span>' : ''}
           </div>
         `;
 
-        const activeBorder = mod.activeClass || 'border-amber-400 bg-amber-950/60 text-amber-100 shadow-[0_0_10px_rgba(251,191,36,0.3)] ring-1 ring-amber-500/50';
+        const activeBorder = 'border-2 border-amber-400 bg-amber-950 text-white shadow-[0_0_14px_rgba(251,191,36,0.45)] ring-2 ring-amber-400/30';
 
         return `
-        <div onclick="onRangedModifierToggle('${mod.id}')" class="bg-slate-900 border ${mod.active ? activeBorder : 'border-slate-800 text-slate-300 hover:border-amber-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] relative group cursor-pointer">
+        <div onclick="onRangedModifierToggle('${mod.id}')" class="relative ${mod.active ? activeBorder : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-amber-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer">
           ${reorderControls}
 
           <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
-            <div class="text-[10px] font-bold ${mod.active ? 'text-white' : 'text-slate-200'} leading-tight truncate w-full" title="${mod.name}">${mod.name}</div>
-            <div class="text-[9px] ${mod.active ? 'text-amber-200 font-bold' : 'text-amber-300'} font-mono mt-1">${mod.bonusStr}</div>
+            <div class="text-[10px] ${mod.active ? 'font-black text-white' : 'font-bold text-slate-200'} leading-tight truncate w-full" title="${mod.name}">${mod.name}</div>
+            <div class="text-[9px] ${mod.active ? 'text-amber-300 font-black' : 'text-amber-400'} font-mono mt-1">${mod.bonusStr}</div>
           </div>
         </div>
         `;
