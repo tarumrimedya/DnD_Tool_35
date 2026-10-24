@@ -15165,12 +15165,12 @@
       const dynamicCardsHtml = visibleMods.map((mod, idx) => {
         if (!mod || !mod.name) return '';
         let bonusStr = mod.dice ? mod.dice : (mod.bonusDmg ? `+${mod.bonusDmg} Dmg` : (mod.bonusAtk ? `+${mod.bonusAtk} Atk` : 'Aktif'));
-        let cardBorderActive = 'border-2 border-purple-400 bg-purple-950 text-white shadow-[0_0_14px_rgba(192,132,252,0.45)] ring-2 ring-purple-400/30';
+        let cardBorderActive = 'border-2 border-rose-400 bg-rose-950 text-white shadow-[0_0_14px_rgba(251,113,133,0.45)] ring-2 ring-rose-400/30';
         let bonusColor = 'text-amber-300';
 
         if (mod.name.includes('Flurry') || mod.name.includes('Seri Vuruş')) {
           bonusStr = '+1 Vuruş';
-          bonusColor = 'text-purple-300';
+          bonusColor = 'text-rose-300';
         }
 
         const actualIdx = character.activeModifiers.indexOf(mod);
@@ -15183,13 +15183,13 @@
           </div>
         ` : `
           <div class="flex items-center justify-between px-1 text-[9px] leading-none shrink-0 w-full">
-            <span class="text-[8px] font-mono ${mod.active ? 'text-purple-300 font-bold' : 'text-slate-500'} truncate max-w-[60px]">${mod.source || ''}</span>
-            ${mod.active ? '<span class="text-[8px] font-black font-mono text-purple-200 bg-purple-900/80 px-1 rounded border border-purple-400/50">✓ AÇIK</span>' : ''}
+            <span class="text-[8px] font-mono ${mod.active ? 'text-rose-300 font-bold' : 'text-slate-500'} truncate max-w-[60px]">${mod.source || ''}</span>
+            ${mod.active ? '<span class="text-[8px] font-black font-mono text-rose-200 bg-rose-900/80 px-1 rounded border border-rose-400/50">✓ AÇIK</span>' : ''}
           </div>
         `;
 
         return `
-        <div onclick="toggleModifier(${actualIdx})" class="relative ${mod.active ? cardBorderActive : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-purple-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer">
+        <div onclick="toggleModifier(${actualIdx})" class="relative ${mod.active ? cardBorderActive : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-rose-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer">
           <!-- Reorder Mini Controls -->
           ${reorderControls}
 
