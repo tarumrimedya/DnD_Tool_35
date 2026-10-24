@@ -689,25 +689,17 @@
                 </div>
               </div>
 
-              <!-- 3. BÜYÜ YUVALARI TRACKER ŞERİDİ (ANLIK, KİTAP, İLAHİ SLOT SAYAÇLARI) -->
-              <div class="bg-slate-950/90 border border-purple-900/40 rounded-xl p-2.5 space-y-2 shadow-inner">
-                <div class="flex flex-wrap items-center justify-between gap-1 text-[10px] font-bold">
-                  <div class="flex items-center gap-2 flex-wrap">
-                    <span class="text-purple-400 uppercase tracking-wider flex items-center gap-1">
-                      <span>✨</span>
-                      <span>GÜNLÜK BÜYÜ YUVALARI</span>
-                    </span>
-                    <div id="combat-spell-source-filter-tabs" class="flex items-center gap-1">
-                      <!-- Populated dynamically if multiple sources exist -->
-                    </div>
-                  </div>
-                  <button type="button" onclick="openSpellSlotsModal()" class="text-[9px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-amber-900/50 transition" title="Yuva Yönetimi & Yenileme">
-                    <span>⚙️</span>
-                    <span>Yuva Yönetimi</span>
-                  </button>
+              <!-- 3. BÜYÜ SEVİYELERİ FİLTRE & YUVA ŞERİDİ -->
+              <div class="bg-slate-950/90 border border-purple-900/40 rounded-xl p-2 space-y-1.5 shadow-inner">
+                <div class="flex items-center justify-between gap-1 text-[10px] font-bold px-0.5">
+                  <span class="text-purple-400 uppercase tracking-wider flex items-center gap-1">
+                    <span>✨</span>
+                    <span>BÜYÜ SEVİYELERİ</span>
+                  </span>
+                  <span id="combat-spell-level-filter-indicator" class="text-[9px] font-mono text-purple-300 font-bold">Tümü</span>
                 </div>
-                <div id="combat-spell-slots-strip" class="space-y-2.5">
-                  <!-- Populated dynamically by renderSpellSlotsStrip() with 2x6 grids per source -->
+                <div id="combat-spell-slots-strip" class="flex items-center gap-1.5 flex-wrap">
+                  <!-- Populated dynamically with compact level buttons: Tümü, 0, 1, 2, 3... -->
                 </div>
               </div>
 
@@ -11361,6 +11353,7 @@
       }
 
       populateCombatSpells();
+      if (typeof renderSpellSlotsStrip === 'function') renderSpellSlotsStrip();
       renderCombatCategorySpells();
       if (typeof renderSpellTacticalModifiers === 'function') renderSpellTacticalModifiers();
       recalculateCombatSpell();
@@ -11492,116 +11485,109 @@
       if (!container) return;
 
       const sources = getAvailableSpellSlotSources(true);
-      const filterTabsContainer = document.getElementById('combat-spell-source-filter-tabs');
+      const activeFilter = window.currentActiveCombatSpellLevelFilter ?? 'all';
 
-      // Update Filter Tabs in Header if multiple sources exist
-      if (filterTabsContainer) {
-        if (sources.length > 1) {
-          const currentFilter = window.currentActiveCombatSpellSlotsSourceFilter || 'all';
-          const tabsHtml = [
-            `<button type="button" onclick="setCombatSpellSlotsSourceFilter('all')" class="text-[9px] px-1.5 py-0.5 rounded font-bold transition cursor-pointer ${currentFilter === 'all' ? 'bg-purple-900/80 text-white border border-purple-500 shadow-sm' : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'}">Tümü (${sources.length})</button>`
-          ];
-          sources.forEach(src => {
-            const isAct = currentFilter === src.key;
-            const sTotal = src.slots.reduce((acc, s) => acc + (Number(s.daily) || 0), 0);
-            const sUsed = src.slots.reduce((acc, s) => acc + (Number(s.used) || 0), 0);
-            const sRem = Math.max(0, sTotal - sUsed);
-            tabsHtml.push(
-              `<button type="button" onclick="setCombatSpellSlotsSourceFilter('${src.key}')" class="text-[9px] px-1.5 py-0.5 rounded font-bold transition cursor-pointer flex items-center gap-1 ${isAct ? `${src.tagClass} border shadow-sm` : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'}" title="${src.label}">
-                <span>${src.icon}</span>
-                <span>${src.shortLabel}</span>
-                <span class="font-mono text-[8px] opacity-80">${sRem}/${sTotal}</span>
-              </button>`
-            );
-          });
-          filterTabsContainer.innerHTML = tabsHtml.join('');
-          filterTabsContainer.classList.remove('hidden');
+      // Update indicator in header if present
+      const indicatorEl = document.getElementById('combat-spell-level-filter-indicator');
+      if (indicatorEl) {
+        if (activeFilter === 'all' || activeFilter === null || activeFilter === undefined) {
+          indicatorEl.textContent = 'Tümü';
+          indicatorEl.className = 'text-[9px] font-mono text-purple-300 font-bold';
         } else {
-          filterTabsContainer.innerHTML = '';
-          filterTabsContainer.classList.add('hidden');
+          indicatorEl.textContent = activeFilter === 0 ? '0 (Cantrip)' : `${activeFilter}. Seviye`;
+          indicatorEl.className = 'text-[9px] font-mono text-amber-300 font-extrabold';
         }
       }
 
-      const activeFilter = window.currentActiveCombatSpellSlotsSourceFilter || 'all';
-      const visibleSources = activeFilter === 'all' ? sources : sources.filter(s => s.key === activeFilter);
-      const sourcesHtml = [];
+      // Determine all levels that have known spells or active slots
+      const allKnown = character?.spellcasting?.knownSpells || [];
+      const availableLevelsSet = new Set();
 
-      visibleSources.forEach(src => {
-        const slots = src.slots;
-        const totalDaily = slots.reduce((acc, s) => acc + (Number(s.daily) || 0), 0);
-        const totalUsed = slots.reduce((acc, s) => acc + (Number(s.used) || 0), 0);
-        const totalRemaining = Math.max(0, totalDaily - totalUsed);
+      allKnown.forEach(sp => {
+        const l = Number(sp.level);
+        if (!isNaN(l)) availableLevelsSet.add(l);
+      });
 
-        const itemsHtml = [];
-
-        for (let lvl = 0; lvl <= 11; lvl++) {
-          const s = slots.find(item => Number(item.level) === lvl);
-          const daily = s ? (Number(s.daily) || 0) : 0;
-          const used = s ? (Number(s.used) || 0) : 0;
-          const remaining = Math.max(0, daily - used);
-          const isUnlocked = daily > 0;
-          const isDepleted = isUnlocked && remaining <= 0;
-
-          let lvlLabel = `${lvl}.`;
-          let tooltipTitle = `${lvl}. Seviye ${src.shortLabel} Yuvaları`;
-          if (lvl === 0) {
-            lvlLabel = '0.';
-            tooltipTitle = `0. Seviye (${src.shortLabel} Cantrip) Yuvaları`;
-          } else if (lvl === 10) {
-            lvlLabel = '10.';
-            tooltipTitle = `10. Seviye (Epic / Metamagic) ${src.shortLabel} Yuvaları`;
-          } else if (lvl === 11) {
-            lvlLabel = '+10';
-            tooltipTitle = `Epic (+10) ${src.shortLabel} Yuvaları`;
+      sources.forEach(src => {
+        (src.slots || []).forEach(s => {
+          if (Number(s.daily) > 0) {
+            availableLevelsSet.add(Number(s.level));
           }
+        });
+      });
 
-          let badgeClass = src.borderClass;
-          let remColor = 'text-emerald-400 font-bold';
+      if (availableLevelsSet.size === 0) {
+        availableLevelsSet.add(0);
+        availableLevelsSet.add(1);
+      }
 
-          if (!isUnlocked) {
-            badgeClass = 'border-slate-800/60 bg-slate-950/60 hover:border-slate-700 text-slate-500 opacity-60';
-            remColor = 'text-slate-500 font-mono';
-            tooltipTitle += ' (Kilitli)';
-          } else if (isDepleted) {
-            badgeClass = src.depletedClass;
-            remColor = 'text-rose-400 font-bold';
-            tooltipTitle += ' (Tükendi)';
+      const availableLevels = Array.from(availableLevelsSet).sort((a, b) => a - b);
+
+      // 1. "Tümü" button
+      const isAllActive = activeFilter === 'all' || activeFilter === null || activeFilter === undefined;
+      const allBtnClass = isAllActive
+        ? 'bg-gradient-to-r from-purple-700 to-indigo-600 text-white font-black border border-purple-400 shadow-md ring-1 ring-purple-300'
+        : 'bg-slate-900/90 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-700/80';
+
+      const buttonsHtml = [
+        `<button type="button" onclick="setCombatSpellLevelFilter('all')" class="h-7 px-2.5 rounded-lg text-xs font-bold transition cursor-pointer select-none flex items-center justify-center shrink-0 ${allBtnClass}" title="Tüm Büyü Seviyelerini Göster">Tümü</button>`
+      ];
+
+      // 2. Numbered Level buttons (0, 1, 2, 3...)
+      availableLevels.forEach(lvl => {
+        const isActive = !isAllActive && Number(activeFilter) === lvl;
+
+        // Calculate slot availability at this level across all sources
+        let totalDaily = 0;
+        let totalUsed = 0;
+        sources.forEach(src => {
+          const s = (src.slots || []).find(item => Number(item.level) === lvl);
+          if (s) {
+            totalDaily += Number(s.daily) || 0;
+            totalUsed += Number(s.used) || 0;
           }
+        });
 
-          itemsHtml.push(`
-            <button type="button" onclick="openSpellSlotsModal(${lvl}, '${src.key}')" class="w-full py-1 px-0.5 rounded-lg border text-center transition cursor-pointer select-none flex items-center justify-center gap-1 shadow-sm ${badgeClass}" title="${tooltipTitle}">
-              <span class="text-[10px] text-slate-400 font-bold whitespace-nowrap">${lvlLabel}</span>
-              <span class="text-[10px] font-mono font-bold whitespace-nowrap ${remColor}">${remaining}/${daily}</span>
-            </button>
-          `);
+        const remaining = Math.max(0, totalDaily - totalUsed);
+        const isDepleted = totalDaily > 0 && remaining <= 0;
+        const lvlLabel = lvl === 10 ? '10' : (lvl >= 11 ? '+10' : String(lvl));
+        const fullLvlTitle = lvl === 0 ? '0. Seviye (Cantrip)' : `${lvl}. Seviye Büyüler`;
+
+        let btnClass = '';
+        let titleTip = '';
+
+        if (isActive) {
+          btnClass = 'bg-gradient-to-r from-purple-700 to-indigo-600 text-white font-black border border-purple-400 shadow-md ring-2 ring-purple-400/40 scale-105';
+          titleTip = `${fullLvlTitle} (Seçili Filtre • Kaldırmak için tıkla)`;
+        } else if (isDepleted) {
+          btnClass = 'bg-rose-950/40 text-rose-300/80 hover:bg-rose-900/50 border border-rose-900/60 opacity-60';
+          titleTip = `${fullLvlTitle}: 0/${totalDaily} (Slotlar tükendi)`;
+        } else if (totalDaily > 0) {
+          btnClass = 'bg-slate-900/90 text-slate-200 hover:text-white hover:bg-slate-800 border border-purple-900/50 hover:border-purple-600/80';
+          titleTip = `${fullLvlTitle}: ${remaining}/${totalDaily} Kalan Slot`;
+        } else {
+          btnClass = 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border border-slate-800/80';
+          titleTip = `${fullLvlTitle} (Slot Yok)`;
         }
 
-        const showSourceSubHeader = sources.length > 1;
-        const sourceHeaderHtml = showSourceSubHeader ? `
-          <div class="flex items-center justify-between text-[10px] font-bold px-0.5 pb-0.5 border-b border-slate-800/60">
-            <span class="${src.textClass} flex items-center gap-1.5">
-              <span>${src.icon}</span>
-              <span class="tracking-wide">${src.label.toUpperCase()}</span>
-              <span class="text-[8px] text-slate-400 font-normal">(${src.subText})</span>
-            </span>
-            <div class="flex items-center gap-2">
-              <span class="font-mono text-[9px] ${totalRemaining > 0 ? 'text-emerald-400 font-bold' : 'text-slate-500'}">Kalan: ${totalRemaining}/${totalDaily}</span>
-              <button type="button" onclick="replenishSourceSlots('${src.key}')" class="text-[8px] px-1.5 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 transition cursor-pointer" title="Bu Kaynağın Tüm Yuvalarını Yenile">Yenile</button>
-            </div>
-          </div>
-        ` : '';
-
-        sourcesHtml.push(`
-          <div class="space-y-1 ${showSourceSubHeader ? 'p-1.5 rounded-xl bg-slate-900/40 border border-slate-800/80 shadow-sm' : ''}">
-            ${sourceHeaderHtml}
-            <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-6 gap-1 items-center">
-              ${itemsHtml.join('')}
-            </div>
-          </div>
+        buttonsHtml.push(`
+          <button type="button" onclick="setCombatSpellLevelFilter(${lvl})" class="w-7 h-7 sm:w-8 sm:h-7 rounded-lg text-xs font-mono font-bold transition cursor-pointer select-none flex items-center justify-center shrink-0 ${btnClass}" title="${titleTip}">
+            ${lvlLabel}
+          </button>
         `);
       });
 
-      container.innerHTML = sourcesHtml.join('');
+      container.innerHTML = buttonsHtml.join('');
+    }
+
+    function setCombatSpellLevelFilter(lvl) {
+      if (lvl === 'all' || window.currentActiveCombatSpellLevelFilter === lvl) {
+        window.currentActiveCombatSpellLevelFilter = 'all';
+      } else {
+        window.currentActiveCombatSpellLevelFilter = Number(lvl);
+      }
+      renderSpellSlotsStrip();
+      renderCombatCategorySpells();
     }
 
     // Modal: Spell Slots Manager
@@ -12733,17 +12719,52 @@
       });
 
       const sortedLevels = Object.keys(spellsByLevel).map(Number).sort((a, b) => a - b);
-      const slots = character?.spellcasting?.slots || [];
+      const activeLvlFilter = window.currentActiveCombatSpellLevelFilter;
+      const filteredLevels = (activeLvlFilter !== undefined && activeLvlFilter !== null && activeLvlFilter !== 'all')
+        ? sortedLevels.filter(l => l === Number(activeLvlFilter))
+        : sortedLevels;
 
-      container.innerHTML = sortedLevels.map(lvl => {
+      if (filteredLevels.length === 0) {
+        container.innerHTML = `
+          <div class="p-3 text-center text-xs text-slate-500 italic bg-slate-950/60 rounded-xl border border-dashed border-slate-800">
+            ${activeLvlFilter === 0 ? '0. Seviye (Cantrip)' : `${activeLvlFilter}. Seviye`} kategorisinde bilinen büyü bulunmamaktadır.
+          </div>
+        `;
+        return;
+      }
+
+      const sources = getAvailableSpellSlotSources(true);
+
+      container.innerHTML = filteredLevels.map(lvl => {
         const lvlSpells = spellsByLevel[lvl];
-        const targetSlot = slots.find(s => Number(s.level) === lvl);
-        const daily = targetSlot ? Number(targetSlot.daily) || 0 : 0;
-        const used = targetSlot ? Number(targetSlot.used) || 0 : 0;
-        const remaining = Math.max(0, daily - used);
         const lvlTitle = lvl === 0 ? '0. Seviye (Cantrips)' : `${lvl}. Seviye Büyüler`;
-        const slotText = targetSlot ? `Yuva: ${remaining}/${daily}` : 'Yuva Yok';
-        const slotColor = remaining > 0 ? 'text-emerald-400' : 'text-slate-500';
+
+        // Multi-source slot breakdown for this level: e.g. Anlık 4/4 • Kitap 3/5 • İlahi 1/3
+        const sourceBadges = [];
+        sources.forEach(src => {
+          const s = (src.slots || []).find(item => Number(item.level) === lvl);
+          const daily = s ? Number(s.daily) || 0 : 0;
+          if (daily > 0) {
+            const used = s ? Number(s.used) || 0 : 0;
+            const remaining = Math.max(0, daily - used);
+            let textColor = 'text-purple-300';
+            if (src.key === 'prepared') textColor = 'text-sky-300';
+            else if (src.key === 'divine') textColor = 'text-amber-300';
+
+            const remColor = remaining > 0 ? textColor : 'text-rose-400 opacity-60';
+
+            sourceBadges.push(`
+              <span class="inline-flex items-center gap-1 font-mono text-[9px] font-bold ${remColor}" title="${src.shortLabel} ${lvl}. Seviye: ${remaining}/${daily} Kalan Slot">
+                <span>${src.shortLabel}</span>
+                <span>${remaining}/${daily}</span>
+              </span>
+            `);
+          }
+        });
+
+        const slotBadgeHtml = sourceBadges.length > 0
+          ? `<div class="flex items-center gap-1.5 flex-wrap">${sourceBadges.join('<span class="text-slate-600 font-normal">•</span>')}</div>`
+          : `<span class="font-mono text-[9px] text-slate-500">Yuva Yok</span>`;
 
         const cardsHtml = lvlSpells.map(sp => {
           const isActive = sp.name === activeName;
@@ -12809,7 +12830,7 @@
                 <span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
                 <span>${lvlTitle}</span>
               </span>
-              <span class="font-mono text-[9px] ${slotColor}">${slotText}</span>
+              ${slotBadgeHtml}
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
               ${cardsHtml}
