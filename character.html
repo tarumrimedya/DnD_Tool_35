@@ -54,45 +54,6 @@
     ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
     .badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
     input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-    @keyframes roseSpellPulse {
-      0%, 100% {
-        box-shadow: 0 0 10px rgba(244, 63, 94, 0.45), 0 0 18px rgba(225, 29, 72, 0.25);
-        border-color: rgba(244, 63, 94, 0.85);
-      }
-      50% {
-        box-shadow: 0 0 20px rgba(244, 63, 94, 0.85), 0 0 28px rgba(225, 29, 72, 0.5);
-        border-color: rgba(251, 113, 133, 1);
-      }
-    }
-    .animate-spell-selected-rose {
-      animation: roseSpellPulse 2s ease-in-out infinite;
-    }
-    @keyframes amberSpellPulse {
-      0%, 100% {
-        box-shadow: 0 0 10px rgba(245, 158, 11, 0.45), 0 0 18px rgba(217, 119, 6, 0.25);
-        border-color: rgba(245, 158, 11, 0.85);
-      }
-      50% {
-        box-shadow: 0 0 20px rgba(245, 158, 11, 0.85), 0 0 28px rgba(217, 119, 6, 0.5);
-        border-color: rgba(252, 211, 77, 1);
-      }
-    }
-    .animate-spell-selected-amber {
-      animation: amberSpellPulse 2s ease-in-out infinite;
-    }
-    @keyframes emeraldSpellPulse {
-      0%, 100% {
-        box-shadow: 0 0 10px rgba(16, 185, 129, 0.45), 0 0 18px rgba(5, 150, 105, 0.25);
-        border-color: rgba(16, 185, 129, 0.85);
-      }
-      50% {
-        box-shadow: 0 0 20px rgba(16, 185, 129, 0.85), 0 0 28px rgba(5, 150, 105, 0.5);
-        border-color: rgba(110, 231, 183, 1);
-      }
-    }
-    .animate-spell-selected-emerald {
-      animation: emeraldSpellPulse 2s ease-in-out infinite;
-    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col pb-20 md:pb-6 relative">
@@ -736,7 +697,7 @@
 
               <!-- 3. TAKTİK MOD SEKMELERİ (SALDIRI | KONTROL | DESTEK) -->
               <div class="grid grid-cols-3 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
-                <button type="button" id="btn-spell-tab-offense_spell" onclick="switchCombatSpellCategory('offense_spell')" class="py-1.5 px-1 sm:px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer bg-gradient-to-r from-rose-700 to-red-600 text-white shadow">
+                <button type="button" id="btn-spell-tab-offense_spell" onclick="switchCombatSpellCategory('offense_spell')" class="py-1.5 px-1 sm:px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer bg-gradient-to-r from-purple-700 to-indigo-600 text-white shadow">
                   <span>⚔️</span>
                   <span>Saldırı</span>
                 </button>
@@ -753,13 +714,13 @@
               <!-- 4. SEVİYELERE GÖRE GRUPLU BÜYÜ KARTLARI ÇEKMECESİ (3x2 IZGARA) -->
               <div class="space-y-2">
                 <div class="flex items-center justify-between text-[10px] font-bold text-slate-400 px-0.5">
-                  <span id="combat-spell-category-title" class="uppercase tracking-wider text-rose-300 font-bold">SALDIRI BÜYÜLERİ</span>
+                  <span id="combat-spell-category-title" class="uppercase tracking-wider text-purple-300">SALDIRI BÜYÜLERİ</span>
                   <div class="flex items-center gap-2">
                     <button type="button" id="btn-spell-reorder-toggle" onclick="toggleSpellReorderMode()" class="text-[9px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-slate-800 transition" title="Büyü kartlarının sırasını düzenle">
                       <span>⇄</span>
                       <span id="spell-reorder-btn-text">Sırala</span>
                     </button>
-                    <span id="combat-spell-count-badge" class="text-[9px] font-mono text-rose-400 font-bold">0 Büyü</span>
+                    <span id="combat-spell-count-badge" class="text-[9px] font-mono text-purple-400 font-bold">0 Büyü</span>
                   </div>
                 </div>
 
@@ -11361,7 +11322,7 @@
 
       // Update Sub-Tab Buttons UI
       const tabs = [
-        { id: 'btn-spell-tab-offense_spell', cat: 'offense_spell', activeClass: 'bg-gradient-to-r from-rose-700 to-red-600 text-white shadow' },
+        { id: 'btn-spell-tab-offense_spell', cat: 'offense_spell', activeClass: 'bg-gradient-to-r from-purple-700 to-indigo-600 text-white shadow' },
         { id: 'btn-spell-tab-spell_control', cat: 'spell_control', activeClass: 'bg-gradient-to-r from-amber-700 to-yellow-600 text-white shadow' },
         { id: 'btn-spell-tab-spell_support', cat: 'spell_support', activeClass: 'bg-gradient-to-r from-emerald-700 to-teal-600 text-white shadow' }
       ];
@@ -11381,7 +11342,7 @@
       if (titleEl) {
         if (category === 'offense_spell') {
           titleEl.textContent = 'SALDIRI BÜYÜLERİ';
-          titleEl.className = 'uppercase tracking-wider text-rose-300 font-bold';
+          titleEl.className = 'uppercase tracking-wider text-purple-300 font-bold';
         } else if (category === 'spell_control') {
           titleEl.textContent = 'KONTROL BÜYÜLERİ';
           titleEl.className = 'uppercase tracking-wider text-amber-300 font-bold';
@@ -12447,11 +12408,7 @@
 
       // Update spell count badge
       const countBadge = document.getElementById('combat-spell-count-badge');
-      if (countBadge) {
-        countBadge.textContent = `${categorySpells.length} Büyü`;
-        const countColor = activeCat === 'offense_spell' ? 'text-rose-400' : (activeCat === 'spell_control' ? 'text-amber-400' : 'text-emerald-400');
-        countBadge.className = `text-[9px] font-mono font-bold ${countColor}`;
-      }
+      if (countBadge) countBadge.textContent = `${categorySpells.length} Büyü`;
 
       if (categorySpells.length === 0) {
         const catLabels = { offense_spell: 'Saldırı', spell_control: 'Kontrol', spell_support: 'Destek' };
@@ -12486,39 +12443,32 @@
         const lvlTitle = lvl === 0 ? '0. Seviye (Cantrips)' : `${lvl}. Seviye Büyüler`;
         const slotText = targetSlot ? `Yuva: ${remaining}/${daily}` : 'Yuva Yok';
         const slotColor = remaining > 0 ? 'text-emerald-400' : 'text-slate-500';
-        const dotColor = activeCat === 'offense_spell' ? 'bg-rose-500' : (activeCat === 'spell_control' ? 'bg-amber-500' : 'bg-emerald-500');
 
         const cardsHtml = lvlSpells.map(sp => {
           const isActive = sp.name === activeName;
           const params = getSpellCriticalParams(sp);
 
-          let activeBorder = 'border-slate-800 bg-slate-900/80 hover:border-slate-700';
+          let activeBorder = 'border-slate-800 bg-slate-900/80 hover:border-purple-800/60';
           let activeTitleColor = 'text-slate-300';
-          let badgeColor = 'text-slate-400';
+          let badgeColor = 'text-purple-400';
 
           if (activeCat === 'offense_spell') {
-            badgeColor = 'text-rose-400';
+            badgeColor = 'text-purple-400';
             if (isActive) {
-              activeBorder = 'border-2 border-rose-500 bg-rose-950/80 shadow-lg shadow-rose-950/60 ring-2 ring-rose-400/40 animate-spell-selected-rose';
+              activeBorder = 'border-purple-500 bg-purple-950/70 shadow-md shadow-purple-950/50 ring-1 ring-purple-500/60';
               activeTitleColor = 'text-white font-extrabold';
-            } else {
-              activeBorder = 'border-slate-800 bg-slate-900/80 hover:border-rose-500/60';
             }
           } else if (activeCat === 'spell_control') {
             badgeColor = 'text-amber-400';
             if (isActive) {
-              activeBorder = 'border-2 border-amber-500 bg-amber-950/80 shadow-lg shadow-amber-950/60 ring-2 ring-amber-400/40 animate-spell-selected-amber';
+              activeBorder = 'border-amber-500 bg-amber-950/70 shadow-md shadow-amber-950/50 ring-1 ring-amber-500/60';
               activeTitleColor = 'text-white font-extrabold';
-            } else {
-              activeBorder = 'border-slate-800 bg-slate-900/80 hover:border-amber-500/60';
             }
           } else {
             badgeColor = 'text-emerald-400';
             if (isActive) {
-              activeBorder = 'border-2 border-emerald-500 bg-emerald-950/80 shadow-lg shadow-emerald-950/60 ring-2 ring-emerald-400/40 animate-spell-selected-emerald';
+              activeBorder = 'border-emerald-500 bg-emerald-950/70 shadow-md shadow-emerald-950/50 ring-1 ring-emerald-500/60';
               activeTitleColor = 'text-white font-extrabold';
-            } else {
-              activeBorder = 'border-slate-800 bg-slate-900/80 hover:border-emerald-500/60';
             }
           }
 
@@ -12535,7 +12485,7 @@
                  onmouseenter="showSpellHoverTooltip(event, '${safeName}')"
                  onmouseleave="hideSpellHoverTooltip()"
                  onmousemove="updateSpellHoverTooltipPos(event)"
-                 class="p-2 rounded-xl ${activeBorder} transition-all duration-200 active:scale-95 flex flex-col justify-between cursor-pointer min-h-[58px] group relative select-none">
+                 class="p-2 rounded-xl border ${activeBorder} transition flex flex-col justify-between cursor-pointer min-h-[58px] group relative select-none">
               <div class="flex items-center justify-between w-full gap-1">
                 <span class="text-[8px] font-mono ${badgeColor} font-bold uppercase truncate">${params.school || (sp.level === 0 ? 'Cantrip' : 'Lvl ' + sp.level)}</span>
                 <span class="text-[9px] text-amber-300 font-mono font-bold shrink-0 truncate">${params.dice || params.effect || ''}</span>
@@ -12555,7 +12505,7 @@
           <div class="space-y-1">
             <div class="flex items-center justify-between px-1 text-[10px] font-bold border-b border-slate-800/80 pb-0.5">
               <span class="text-slate-300 flex items-center gap-1">
-                <span class="w-1.5 h-1.5 rounded-full ${dotColor}"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
                 <span>${lvlTitle}</span>
               </span>
               <span class="font-mono text-[9px] ${slotColor}">${slotText}</span>
