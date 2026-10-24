@@ -578,16 +578,23 @@
                 </div>
                 
                 <!-- Ammunition Selector (Dynamically adapted by weapon type: Arrow, Bolt, Bullet, Thrown) -->
-                <div id="combat-ammo-container" class="flex items-center justify-between bg-slate-900/80 border border-amber-500/30 rounded px-2.5 py-1.5">
-                  <div class="flex items-center gap-1.5">
-                    <span class="text-xs" id="combat-ammo-icon">🏹</span>
-                    <div>
-                      <div class="text-xs font-bold text-amber-300" id="combat-ammo-title">Ok &amp; Mühimmat</div>
-                      <div id="selected-arrow-bonus-desc" class="text-[9px] text-slate-400 font-mono">Standart Ok (1d8)</div>
+                <div id="combat-ammo-container" class="flex flex-col gap-1.5 bg-slate-900/80 border border-amber-500/30 rounded px-2.5 py-1.5">
+                  <!-- 1. Satır: Başlık & İkon -->
+                  <div class="flex items-center justify-between w-full">
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-xs" id="combat-ammo-icon">🏹</span>
+                      <span class="text-xs font-bold text-amber-300" id="combat-ammo-title">Ok &amp; Mühimmat</span>
                     </div>
                   </div>
-                  <select id="combat-ranged-arrow-select" onchange="onRangedArrowChange()" class="bg-slate-950 border border-amber-500/50 rounded text-amber-200 font-mono font-bold text-xs py-1 px-2 cursor-pointer max-w-[170px] sm:max-w-[210px]">
-                  </select>
+
+                  <!-- 2. Satır: Sol: Select, Sağ: Mühimmat Adedi -->
+                  <div class="flex items-center justify-between gap-2 w-full">
+                    <select id="combat-ranged-arrow-select" onchange="onRangedArrowChange()" class="flex-1 min-w-0 bg-slate-950 border border-amber-500/50 rounded text-amber-200 font-mono font-bold text-xs py-1 px-2 cursor-pointer">
+                    </select>
+                    <div id="combat-ammo-qty-badge" class="shrink-0 font-mono font-bold text-xs px-2.5 py-1 rounded bg-slate-950 border border-amber-500/40 text-emerald-400 whitespace-nowrap" title="Kalan Mühimmat Adedi">
+                      0 Adet
+                    </div>
+                  </div>
                 </div>
 
                 <!-- 3x3 Ranged Modifier Grid -->
@@ -15818,8 +15825,7 @@
           const isSelected = (curSel === item.name || curSel === item.ammoVal || curSel === `inv_${item.name}`);
           const isDepleted = qty <= 0;
           const icon = isDepleted ? '⚠️' : '🏹';
-          const qtyText = isDepleted ? ' (TÜKENDİ - 0 Adet)' : ` (${qty} Adet)`;
-          return `<option value="${item.name}" ${isSelected ? 'selected' : ''} ${isDepleted ? 'class="text-rose-400 font-bold"' : ''}>${icon} ${item.name}${qtyText}</option>`;
+          return `<option value="${item.name}" ${isSelected ? 'selected' : ''} ${isDepleted ? 'class="text-rose-400 font-bold"' : ''}>${icon} ${item.name}</option>`;
         }).join('');
       }
 
@@ -15828,29 +15834,22 @@
 
     function updateRangedArrowDescription() {
       const arrowSel = document.getElementById('combat-ranged-arrow-select');
-      const descEl = document.getElementById('selected-arrow-bonus-desc');
-      if (!arrowSel || !descEl) return;
+      const qtyBadge = document.getElementById('combat-ammo-qty-badge');
+      if (!arrowSel) return;
       const chosenName = arrowSel.value || character.tactical?.selectedArrow || 'Standart Ok';
       const item = getAmmunitionItemByName(chosenName);
       const qty = item ? Number(item.qty !== undefined ? item.qty : (item.count !== undefined ? item.count : 0)) : 0;
 
-      let bonusDesc = 'Normal Vuruş';
-      const low = chosenName.toLowerCase();
-      if (low.includes('masterwork') || low.includes('usta işi')) bonusDesc = '✨ +1 Saldırı Bonusu';
-      else if (low.includes('+2')) bonusDesc = '🛡️ +2 Saldırı & +2 Hasar';
-      else if (low.includes('+1')) bonusDesc = '🛡️ +1 Saldırı & +1 Hasar';
-      else if (low.includes('fire') || low.includes('alev')) bonusDesc = '🔥 +1d6 Ateş Hasarı';
-      else if (low.includes('acid') || low.includes('asit')) bonusDesc = '🧪 +1d6 Asit Hasarı';
-      else if (low.includes('silver') || low.includes('gümüş')) bonusDesc = '🔘 DR/Gümüş Aşar (-1 Hasar)';
-      else if (low.includes('cold iron') || low.includes('soğuk demir')) bonusDesc = '❄️ DR/Soğuk Demir Aşar';
-      else if (low.includes('adamantine') || low.includes('adamantin')) bonusDesc = '💎 DR & Sertlik Aşar';
-      else if (low.includes('blunt') || low.includes('kör') || low.includes('ezici')) bonusDesc = '🪵 Ezici Hasar';
-      else if (low.includes('stone') || low.includes('taş')) bonusDesc = '🪨 -1 Atk, Ezici Hasar';
-
-      if (qty <= 0) {
-        descEl.innerHTML = `<span class="text-rose-400 font-bold">⚠️ TÜKENDİ (0 Adet)</span> • <span class="text-slate-400">Envanterden yenileyin veya mühimmat değiştirin</span>`;
-      } else {
-        descEl.innerHTML = `<span class="text-amber-300 font-semibold">${bonusDesc}</span> • <span class="text-emerald-400 font-bold">Kalan: ${qty} Adet</span>`;
+      if (qtyBadge) {
+        if (qty <= 0) {
+          qtyBadge.className = 'shrink-0 font-mono font-bold text-xs px-2.5 py-1 rounded bg-rose-950/60 border border-rose-500/60 text-rose-300 whitespace-nowrap shadow-sm';
+          qtyBadge.textContent = '0 Adet';
+          qtyBadge.title = 'Mühimmat tükendi!';
+        } else {
+          qtyBadge.className = 'shrink-0 font-mono font-bold text-xs px-2.5 py-1 rounded bg-slate-950 border border-amber-500/40 text-emerald-400 whitespace-nowrap shadow-sm';
+          qtyBadge.textContent = `${qty} Adet`;
+          qtyBadge.title = `Kalan: ${qty} Adet`;
+        }
       }
     }
 
@@ -18269,6 +18268,7 @@
       try { renderCombatPins('offense_ranged'); } catch (e) { console.error("renderCombatPins('offense_ranged') error:", e); }
       try { renderCombatPins('defense'); } catch (e) { console.error("renderCombatPins('defense') error:", e); }
       try { renderDefenseModifiersGrid(); } catch (e) { console.error("renderDefenseModifiersGrid error:", e); }
+      try { if (typeof populateRangedWeaponAndAmmoUI === 'function') populateRangedWeaponAndAmmoUI(); } catch (e) {}
 
       // 6. Spellcasting Cockpit & Panels State
       try { initCockpitPanelsState(); } catch (e) { console.error('initCockpitPanelsState error:', e); }
