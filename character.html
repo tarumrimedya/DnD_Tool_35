@@ -698,7 +698,7 @@
                   </span>
                   <span id="combat-spell-level-filter-indicator" class="text-[9px] font-mono text-purple-300 font-bold">Tümü</span>
                 </div>
-                <div id="combat-spell-slots-strip" class="flex items-center gap-1.5 flex-wrap">
+                <div id="combat-spell-slots-strip" class="flex flex-col sm:flex-row gap-1.5 w-full items-stretch">
                   <!-- Populated dynamically with compact level buttons: Tümü, 0, 1, 2, 3... -->
                 </div>
               </div>
@@ -11499,29 +11499,26 @@
         }
       }
 
-      // Determine all levels that have known spells or active slots
+      // Determine max spell level (standard 9 for D&D 3.5e, or higher if epic)
       const allKnown = character?.spellcasting?.knownSpells || [];
-      const availableLevelsSet = new Set();
-
+      const presentLevels = new Set();
       allKnown.forEach(sp => {
         const l = Number(sp.level);
-        if (!isNaN(l)) availableLevelsSet.add(l);
+        if (!isNaN(l)) presentLevels.add(l);
       });
-
       sources.forEach(src => {
         (src.slots || []).forEach(s => {
           if (Number(s.daily) > 0) {
-            availableLevelsSet.add(Number(s.level));
+            presentLevels.add(Number(s.level));
           }
         });
       });
 
-      if (availableLevelsSet.size === 0) {
-        availableLevelsSet.add(0);
-        availableLevelsSet.add(1);
+      const maxLevel = Math.max(9, ...presentLevels);
+      const displayLevels = [];
+      for (let lvl = 0; lvl <= maxLevel; lvl++) {
+        displayLevels.push(lvl);
       }
-
-      const availableLevels = Array.from(availableLevelsSet).sort((a, b) => a - b);
 
       // 1. "Tümü" button
       const isAllActive = activeFilter === 'all' || activeFilter === null || activeFilter === undefined;
@@ -11529,12 +11526,8 @@
         ? 'bg-gradient-to-r from-purple-700 to-indigo-600 text-white font-black border border-purple-400 shadow-md ring-1 ring-purple-300'
         : 'bg-slate-900/90 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-700/80';
 
-      const buttonsHtml = [
-        `<button type="button" onclick="setCombatSpellLevelFilter('all')" class="h-7 px-2.5 rounded-lg text-xs font-bold transition cursor-pointer select-none flex items-center justify-center shrink-0 ${allBtnClass}" title="Tüm Büyü Seviyelerini Göster">Tümü</button>`
-      ];
-
       // 2. Numbered Level buttons (0, 1, 2, 3...)
-      availableLevels.forEach(lvl => {
+      const buttonsHtml = displayLevels.map(lvl => {
         const isActive = !isAllActive && Number(activeFilter) === lvl;
 
         // Calculate slot availability at this level across all sources
@@ -11557,7 +11550,7 @@
         let titleTip = '';
 
         if (isActive) {
-          btnClass = 'bg-gradient-to-r from-purple-700 to-indigo-600 text-white font-black border border-purple-400 shadow-md ring-2 ring-purple-400/40 scale-105';
+          btnClass = 'bg-gradient-to-r from-purple-700 to-indigo-600 text-white font-black border border-purple-400 shadow-md ring-2 ring-purple-400/40 scale-[1.02]';
           titleTip = `${fullLvlTitle} (Seçili Filtre • Kaldırmak için tıkla)`;
         } else if (isDepleted) {
           btnClass = 'bg-rose-950/40 text-rose-300/80 hover:bg-rose-900/50 border border-rose-900/60 opacity-60';
@@ -11566,18 +11559,28 @@
           btnClass = 'bg-slate-900/90 text-slate-200 hover:text-white hover:bg-slate-800 border border-purple-900/50 hover:border-purple-600/80';
           titleTip = `${fullLvlTitle}: ${remaining}/${totalDaily} Kalan Slot`;
         } else {
-          btnClass = 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border border-slate-800/80';
+          btnClass = 'bg-slate-900/40 text-slate-500 hover:text-slate-300 hover:bg-slate-800/60 border border-slate-800/80';
           titleTip = `${fullLvlTitle} (Slot Yok)`;
         }
 
-        buttonsHtml.push(`
-          <button type="button" onclick="setCombatSpellLevelFilter(${lvl})" class="w-7 h-7 sm:w-8 sm:h-7 rounded-lg text-xs font-mono font-bold transition cursor-pointer select-none flex items-center justify-center shrink-0 ${btnClass}" title="${titleTip}">
+        return `
+          <button type="button" onclick="setCombatSpellLevelFilter(${lvl})" class="w-full h-8 rounded-lg text-xs font-mono font-bold transition cursor-pointer select-none flex items-center justify-center ${btnClass}" title="${titleTip}">
             ${lvlLabel}
           </button>
-        `);
-      });
+        `;
+      }).join('');
 
-      container.innerHTML = buttonsHtml.join('');
+      const numCols = Math.ceil(displayLevels.length / 2);
+
+      container.className = 'flex flex-col sm:flex-row gap-1.5 w-full items-stretch';
+      container.innerHTML = `
+        <button type="button" onclick="setCombatSpellLevelFilter('all')" class="w-full sm:w-16 h-8 sm:h-auto py-1 sm:py-0 px-2 rounded-lg text-xs font-bold transition cursor-pointer select-none flex items-center justify-center shrink-0 ${allBtnClass}" title="Tüm Büyü Seviyelerini Göster">
+          Tümü
+        </button>
+        <div class="grid gap-1.5 flex-1 w-full" style="grid-template-columns: repeat(${numCols}, minmax(0, 1fr));">
+          ${buttonsHtml}
+        </div>
+      `;
     }
 
     function setCombatSpellLevelFilter(lvl) {
