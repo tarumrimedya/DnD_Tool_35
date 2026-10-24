@@ -669,18 +669,18 @@
                 </button>
               </div>
 
-              <!-- 2. SEÇİLEN BÜYÜ KOKPİTİ & DİNAMİK İCRA PANELİ (RESİMDEKİ YENİ YAPI) -->
+              <!-- 2. SEÇİLEN BÜYÜ KOKPİTİ & DİNAMİK İCRA PANELİ (TEK GENİŞ SOL HÜCRE + SAĞDA AT BUTONU) -->
               <div class="flex flex-row gap-1.5 w-full items-stretch min-h-[58px]">
                 
-                <!-- SOL SÜTUN: Üstte Tek Satırlık Büyü Adı, Altta 2 Satırlık Büyü Açıklaması/Özellikleri -->
-                <div class="flex-1 flex flex-col gap-1 min-w-0">
+                <!-- SOL GENİŞ HÜCRE (3 Satır: Büyü Adı + Hasar/Etki + DC / Atk / SR / Menzil) -->
+                <div id="combat-selected-spell-info-cell"
+                     onmouseenter="showActiveSpellHoverTooltip(event)"
+                     onmouseleave="hideSpellHoverTooltip()"
+                     onmousemove="updateSpellHoverTooltipPos(event)"
+                     class="flex-1 min-w-0 bg-slate-950/80 px-2.5 py-1 rounded-lg border border-slate-800 hover:border-purple-600/70 hover:bg-purple-950/20 flex flex-col justify-center cursor-help group transition min-h-[58px]">
                   
-                  <!-- ÜST HÜCRE: Tek Satırlık Büyü Adı & Ekol/Seviye (Hover ile Detay Açılır) -->
-                  <div id="combat-selected-spell-info-cell"
-                       onmouseenter="showActiveSpellHoverTooltip(event)"
-                       onmouseleave="hideSpellHoverTooltip()"
-                       onmousemove="updateSpellHoverTooltipPos(event)"
-                       class="min-w-0 bg-slate-950/80 px-2 py-0.5 rounded-lg border border-slate-800 hover:border-purple-600/70 hover:bg-purple-950/20 flex items-center justify-between gap-1.5 cursor-help group transition flex-1">
+                  <!-- 1. Satır: Büyü Adı (Solda Ad, Sağda Ekol • Seviye • Metamagic) -->
+                  <div class="flex items-center justify-between gap-1.5 w-full leading-tight">
                     <div class="flex items-center gap-1.5 min-w-0 truncate">
                       <span class="text-purple-400 text-xs">🔮</span>
                       <span id="combat-selected-spell-title" class="text-xs font-black text-white group-hover:text-purple-200 truncate">Magic Missile</span>
@@ -693,21 +693,19 @@
                     </div>
                   </div>
 
-                  <!-- ALT HÜCRE: 2 Satırlık Büyü Özellikleri (Hasar/Etki + DC / Atk / SR / Menzil) -->
-                  <div class="min-w-0 bg-slate-950/80 px-2 py-0.5 rounded-lg border border-slate-800 flex flex-col justify-center text-center flex-1">
-                    <!-- Satır 1: Hasar / Etki -->
-                    <div id="combat-spell-damage-preview" class="text-xs font-mono font-black text-amber-300 leading-tight truncate">5 Füze (5d4+5 Force)</div>
-                    <!-- Satır 2: Kurtarma Zarı / Dokunma Atışı • SR & Menzil -->
-                    <div class="flex items-center justify-center gap-1.5 text-[9px] font-mono leading-tight truncate mt-0.5">
-                      <span id="combat-spell-dc-display" class="font-bold text-emerald-400 truncate">DC 17 • Ranged Touch +16</span>
-                      <span class="text-slate-600 font-normal">•</span>
-                      <span id="combat-spell-sr-target-display" class="text-slate-400 truncate">SR: Evet • Orta (260 ft)</span>
-                    </div>
+                  <!-- 2. Satır: Büyü Özellikleri - Hasar / Etki -->
+                  <div id="combat-spell-damage-preview" class="text-xs font-mono font-black text-amber-300 leading-tight truncate text-center my-0.5">5 Füze (5d4+5 Force)</div>
+
+                  <!-- 3. Satır: Büyü Özellikleri - Kurtarma Zarı / Dokunma Atışı • SR & Menzil -->
+                  <div class="flex items-center justify-center gap-1.5 text-[9px] font-mono leading-tight truncate text-center">
+                    <span id="combat-spell-dc-display" class="font-bold text-emerald-400 truncate">DC 17 • Ranged Touch +16</span>
+                    <span class="text-slate-600 font-normal">•</span>
+                    <span id="combat-spell-sr-target-display" class="text-slate-400 truncate">SR: Evet • Orta (260 ft)</span>
                   </div>
 
                 </div>
 
-                <!-- SAĞ SÜTUN: 3 Satırlık AT Butonu (Tüm Yüksekliği Kaplar) -->
+                <!-- SAĞ SÜTUN: 3 Satırlık AT Butonu -->
                 <div class="w-[80px] shrink-0 flex">
                   <button type="button" id="main-spell-cast-btn" onclick="initiateCombatSpellCast()" class="w-full h-full min-h-[58px] py-1 px-1.5 bg-gradient-to-r from-purple-800 via-indigo-700 to-purple-900 hover:from-purple-700 hover:to-indigo-600 text-white rounded-lg shadow-md border border-purple-500/60 flex flex-col items-center justify-center transition transform active:scale-[0.98] cursor-pointer text-center leading-none">
                     <div class="flex items-center justify-center gap-1 text-xs font-black uppercase tracking-wider text-purple-100">
