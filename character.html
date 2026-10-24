@@ -626,20 +626,25 @@
             <!-- SPELL PANEL BODY (Collapsible) -->
             <div id="combat-spell-card-body" class="space-y-3">
 
-              <!-- 1. BÜYÜ YUVALARI TRACKER ŞERİDİ (ANLIK SLOT SAYAÇLARI) -->
-              <div class="bg-slate-950/90 border border-purple-900/40 rounded-xl p-2.5 space-y-1.5 shadow-inner">
-                <div class="flex items-center justify-between text-[10px] font-bold">
-                  <span class="text-purple-400 uppercase tracking-wider flex items-center gap-1">
-                    <span>✨</span>
-                    <span>GÜNLÜK BÜYÜ YUVALARI</span>
-                  </span>
+              <!-- 1. BÜYÜ YUVALARI TRACKER ŞERİDİ (ANLIK, KİTAP, İLAHİ SLOT SAYAÇLARI) -->
+              <div class="bg-slate-950/90 border border-purple-900/40 rounded-xl p-2.5 space-y-2 shadow-inner">
+                <div class="flex flex-wrap items-center justify-between gap-1 text-[10px] font-bold">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-purple-400 uppercase tracking-wider flex items-center gap-1">
+                      <span>✨</span>
+                      <span>GÜNLÜK BÜYÜ YUVALARI</span>
+                    </span>
+                    <div id="combat-spell-source-filter-tabs" class="flex items-center gap-1">
+                      <!-- Populated dynamically if multiple sources exist -->
+                    </div>
+                  </div>
                   <button type="button" onclick="openSpellSlotsModal()" class="text-[9px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-amber-900/50 transition" title="Yuva Yönetimi & Yenileme">
                     <span>⚙️</span>
                     <span>Yuva Yönetimi</span>
                   </button>
                 </div>
-                <div id="combat-spell-slots-strip" class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-12 gap-1 items-center">
-                  <!-- Populated dynamically by renderSpellSlotsStrip() -->
+                <div id="combat-spell-slots-strip" class="space-y-2.5">
+                  <!-- Populated dynamically by renderSpellSlotsStrip() with 2x6 grids per source -->
                 </div>
               </div>
 
@@ -3455,6 +3460,11 @@
 
       <div class="text-[11px] text-slate-300 leading-tight">
         Büyü yuvalarınızın kalan ve harcanan adetlerini düzenleyebilir veya dinlenerek tüm yuvaları yenileyebilirsiniz.
+      </div>
+
+      <!-- Source Selector Tabs if character has multiple sources -->
+      <div id="modal-spell-slots-source-tabs" class="flex items-center gap-1 border-b border-purple-900/40 pb-2">
+        <!-- Populated dynamically -->
       </div>
 
       <!-- Level by Level Slot Rows -->
@@ -11304,61 +11314,251 @@
       recalculateCombatSpell();
     }
 
-    // --- 1. DAILY SPELL SLOTS TRACKER STRIP (TIER 1 - 12 FIXED DIVISIBLE SLOTS: 12, 6, 4) ---
+    // --- 1. DAILY SPELL SLOTS TRACKER & MULTI-SOURCE ENGINE (TIER 1 - MIN 2 SATIR, 6 HÜCRE & ANLIK, KİTAP, İLAHİ) ---
+    window.currentActiveCombatSpellSlotsSourceFilter = 'all';
+    window.currentSpellSlotsModalSource = 'spontaneous';
+
+    function getAvailableSpellSlotSources() {
+      const sources = [];
+      const sc = character?.spellcasting || {};
+
+      // 1. Spontaneous (Anlık - Sorcerer/Bard)
+      const spontSlots = sc.slots || [];
+      const hasSpont = spontSlots.some(s => (Number(s.daily) || 0) > 0);
+      if (hasSpont) {
+        sources.push({
+          key: 'spontaneous',
+          label: 'Anlık Büyü Yuvaları',
+          shortLabel: 'Anlık',
+          subText: 'Sorcerer / Spontaneous',
+          icon: '⚡',
+          themeColor: 'purple',
+          borderClass: 'border-purple-800/80 bg-slate-900/90 hover:border-purple-500 text-purple-200',
+          depletedClass: 'border-rose-900/60 bg-rose-950/40 hover:border-rose-700 text-rose-300',
+          textClass: 'text-purple-300',
+          tagClass: 'bg-purple-950/70 border-purple-700/60 text-purple-300',
+          slots: spontSlots
+        });
+      }
+
+      // 2. Prepared (Kitap - Wizard/Wu Jen)
+      const prepSlots = sc.preparedSlots || [];
+      const hasPrep = prepSlots.some(s => (Number(s.daily) || 0) > 0);
+      if (hasPrep) {
+        sources.push({
+          key: 'prepared',
+          label: 'Kitap Büyü Yuvaları',
+          shortLabel: 'Kitap',
+          subText: 'Wizard / Prepared',
+          icon: '📖',
+          themeColor: 'sky',
+          borderClass: 'border-sky-800/80 bg-slate-900/90 hover:border-sky-500 text-sky-200',
+          depletedClass: 'border-rose-900/60 bg-rose-950/40 hover:border-rose-700 text-rose-300',
+          textClass: 'text-sky-300',
+          tagClass: 'bg-sky-950/70 border-sky-700/60 text-sky-300',
+          slots: prepSlots
+        });
+      }
+
+      // 3. Divine (İlahi - Cleric/Druid)
+      const divSlots = sc.divineSlots || [];
+      const hasDiv = divSlots.some(s => (Number(s.daily) || 0) > 0);
+      if (hasDiv) {
+        sources.push({
+          key: 'divine',
+          label: 'İlahi Büyü Yuvaları',
+          shortLabel: 'İlahi',
+          subText: 'Cleric / Divine',
+          icon: '🔮',
+          themeColor: 'amber',
+          borderClass: 'border-amber-800/80 bg-slate-900/90 hover:border-amber-500 text-amber-200',
+          depletedClass: 'border-rose-900/60 bg-rose-950/40 hover:border-rose-700 text-rose-300',
+          textClass: 'text-amber-300',
+          tagClass: 'bg-amber-950/70 border-amber-700/60 text-amber-300',
+          slots: divSlots
+        });
+      }
+
+      if (sources.length === 0) {
+        sources.push({
+          key: 'spontaneous',
+          label: 'Anlık Büyü Yuvaları',
+          shortLabel: 'Anlık',
+          subText: 'Spontaneous',
+          icon: '⚡',
+          themeColor: 'purple',
+          borderClass: 'border-purple-800/80 bg-slate-900/90 hover:border-purple-500 text-purple-200',
+          depletedClass: 'border-rose-900/60 bg-rose-950/40 hover:border-rose-700 text-rose-300',
+          textClass: 'text-purple-300',
+          tagClass: 'bg-purple-950/70 border-purple-700/60 text-purple-300',
+          slots: spontSlots
+        });
+      }
+
+      return sources;
+    }
+
+    function getSpellSlotsArrayBySource(sourceKey) {
+      if (!character) return [];
+      if (!character.spellcasting) character.spellcasting = {};
+      if (sourceKey === 'prepared') {
+        if (!character.spellcasting.preparedSlots) character.spellcasting.preparedSlots = [];
+        return character.spellcasting.preparedSlots;
+      }
+      if (sourceKey === 'divine') {
+        if (!character.spellcasting.divineSlots) character.spellcasting.divineSlots = [];
+        return character.spellcasting.divineSlots;
+      }
+      if (!character.spellcasting.slots) character.spellcasting.slots = [];
+      return character.spellcasting.slots;
+    }
+
+    function getSpellSlotSource(spell) {
+      if (!spell) return 'spontaneous';
+      const nameClean = (spell.name || '').toLowerCase().trim();
+      const sourceClean = (spell.source || '').toLowerCase();
+      const tags = (spell.tags || []).map(t => String(t).toLowerCase());
+
+      const isDivine = (character?.spellcasting?.divineSpells || []).some(s => (s.name || '').toLowerCase().trim() === nameClean)
+        || tags.includes('divine') || sourceClean.includes('cleric') || sourceClean.includes('druid') || sourceClean.includes('divine');
+
+      const isPrepared = (character?.spellcasting?.preparedSpells || []).some(s => (s.name || '').toLowerCase().trim() === nameClean)
+        || tags.includes('prepared') || tags.includes('wizard') || sourceClean.includes('wizard');
+
+      if (isDivine && (character?.spellcasting?.divineSlots || []).some(s => (Number(s.daily) || 0) > 0)) {
+        return 'divine';
+      }
+      if (isPrepared && (character?.spellcasting?.preparedSlots || []).some(s => (Number(s.daily) || 0) > 0)) {
+        return 'prepared';
+      }
+      return 'spontaneous';
+    }
+
+    function setCombatSpellSlotsSourceFilter(filterKey) {
+      window.currentActiveCombatSpellSlotsSourceFilter = filterKey;
+      renderSpellSlotsStrip();
+    }
+
     function renderSpellSlotsStrip() {
       const container = document.getElementById('combat-spell-slots-strip');
       if (!container) return;
 
-      const slots = character?.spellcasting?.slots || [];
-      const itemsHtml = [];
+      const sources = getAvailableSpellSlotSources();
+      const filterTabsContainer = document.getElementById('combat-spell-source-filter-tabs');
 
-      for (let lvl = 0; lvl <= 11; lvl++) {
-        const s = slots.find(item => Number(item.level) === lvl);
-        const daily = s ? (Number(s.daily) || 0) : 0;
-        const used = s ? (Number(s.used) || 0) : 0;
-        const remaining = Math.max(0, daily - used);
-        const isUnlocked = daily > 0;
-        const isDepleted = isUnlocked && remaining <= 0;
-
-        let lvlLabel = `${lvl}.`;
-        let tooltipTitle = `${lvl}. Seviye Büyü Yuvaları`;
-        if (lvl === 0) {
-          lvlLabel = '0.';
-          tooltipTitle = '0. Seviye (Cantrip) Yuvaları';
-        } else if (lvl === 10) {
-          lvlLabel = '10.';
-          tooltipTitle = '10. Seviye (Epic / Metamagic) Yuvaları';
-        } else if (lvl === 11) {
-          lvlLabel = '+10';
-          tooltipTitle = 'Epic (+10) Büyü Yuvaları';
+      // Update Filter Tabs in Header if multiple sources exist
+      if (filterTabsContainer) {
+        if (sources.length > 1) {
+          const currentFilter = window.currentActiveCombatSpellSlotsSourceFilter || 'all';
+          const tabsHtml = [
+            `<button type="button" onclick="setCombatSpellSlotsSourceFilter('all')" class="text-[9px] px-1.5 py-0.5 rounded font-bold transition cursor-pointer ${currentFilter === 'all' ? 'bg-purple-900/80 text-white border border-purple-500 shadow-sm' : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'}">Tümü (${sources.length})</button>`
+          ];
+          sources.forEach(src => {
+            const isAct = currentFilter === src.key;
+            const sTotal = src.slots.reduce((acc, s) => acc + (Number(s.daily) || 0), 0);
+            const sUsed = src.slots.reduce((acc, s) => acc + (Number(s.used) || 0), 0);
+            const sRem = Math.max(0, sTotal - sUsed);
+            tabsHtml.push(
+              `<button type="button" onclick="setCombatSpellSlotsSourceFilter('${src.key}')" class="text-[9px] px-1.5 py-0.5 rounded font-bold transition cursor-pointer flex items-center gap-1 ${isAct ? `${src.tagClass} border shadow-sm` : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'}" title="${src.label}">
+                <span>${src.icon}</span>
+                <span>${src.shortLabel}</span>
+                <span class="font-mono text-[8px] opacity-80">${sRem}/${sTotal}</span>
+              </button>`
+            );
+          });
+          filterTabsContainer.innerHTML = tabsHtml.join('');
+          filterTabsContainer.classList.remove('hidden');
+        } else {
+          filterTabsContainer.innerHTML = '';
+          filterTabsContainer.classList.add('hidden');
         }
-
-        let badgeClass = 'border-purple-800/80 bg-slate-900/90 hover:border-purple-500 text-purple-200';
-        let remColor = 'text-emerald-400 font-bold';
-
-        if (!isUnlocked) {
-          badgeClass = 'border-slate-800/60 bg-slate-950/60 hover:border-slate-700 text-slate-500 opacity-60';
-          remColor = 'text-slate-500 font-mono';
-          tooltipTitle += ' (Kilitli)';
-        } else if (isDepleted) {
-          badgeClass = 'border-rose-900/60 bg-rose-950/40 hover:border-rose-700 text-rose-300';
-          remColor = 'text-rose-400 font-bold';
-          tooltipTitle += ' (Tükendi)';
-        }
-
-        itemsHtml.push(`
-          <button type="button" onclick="openSpellSlotsModal(${lvl})" class="w-full py-1 px-0.5 rounded-lg border text-center transition cursor-pointer select-none flex items-center justify-center gap-1 shadow-sm ${badgeClass}" title="${tooltipTitle}">
-            <span class="text-[10px] text-slate-400 font-bold whitespace-nowrap">${lvlLabel}</span>
-            <span class="text-[10px] font-mono font-bold whitespace-nowrap ${remColor}">${remaining}/${daily}</span>
-          </button>
-        `);
       }
 
-      container.innerHTML = itemsHtml.join('');
+      const activeFilter = window.currentActiveCombatSpellSlotsSourceFilter || 'all';
+      const visibleSources = activeFilter === 'all' ? sources : sources.filter(s => s.key === activeFilter);
+      const sourcesHtml = [];
+
+      visibleSources.forEach(src => {
+        const slots = src.slots;
+        const totalDaily = slots.reduce((acc, s) => acc + (Number(s.daily) || 0), 0);
+        const totalUsed = slots.reduce((acc, s) => acc + (Number(s.used) || 0), 0);
+        const totalRemaining = Math.max(0, totalDaily - totalUsed);
+
+        const itemsHtml = [];
+
+        for (let lvl = 0; lvl <= 11; lvl++) {
+          const s = slots.find(item => Number(item.level) === lvl);
+          const daily = s ? (Number(s.daily) || 0) : 0;
+          const used = s ? (Number(s.used) || 0) : 0;
+          const remaining = Math.max(0, daily - used);
+          const isUnlocked = daily > 0;
+          const isDepleted = isUnlocked && remaining <= 0;
+
+          let lvlLabel = `${lvl}.`;
+          let tooltipTitle = `${lvl}. Seviye ${src.shortLabel} Yuvaları`;
+          if (lvl === 0) {
+            lvlLabel = '0.';
+            tooltipTitle = `0. Seviye (${src.shortLabel} Cantrip) Yuvaları`;
+          } else if (lvl === 10) {
+            lvlLabel = '10.';
+            tooltipTitle = `10. Seviye (Epic / Metamagic) ${src.shortLabel} Yuvaları`;
+          } else if (lvl === 11) {
+            lvlLabel = '+10';
+            tooltipTitle = `Epic (+10) ${src.shortLabel} Yuvaları`;
+          }
+
+          let badgeClass = src.borderClass;
+          let remColor = 'text-emerald-400 font-bold';
+
+          if (!isUnlocked) {
+            badgeClass = 'border-slate-800/60 bg-slate-950/60 hover:border-slate-700 text-slate-500 opacity-60';
+            remColor = 'text-slate-500 font-mono';
+            tooltipTitle += ' (Kilitli)';
+          } else if (isDepleted) {
+            badgeClass = src.depletedClass;
+            remColor = 'text-rose-400 font-bold';
+            tooltipTitle += ' (Tükendi)';
+          }
+
+          itemsHtml.push(`
+            <button type="button" onclick="openSpellSlotsModal(${lvl}, '${src.key}')" class="w-full py-1 px-0.5 rounded-lg border text-center transition cursor-pointer select-none flex items-center justify-center gap-1 shadow-sm ${badgeClass}" title="${tooltipTitle}">
+              <span class="text-[10px] text-slate-400 font-bold whitespace-nowrap">${lvlLabel}</span>
+              <span class="text-[10px] font-mono font-bold whitespace-nowrap ${remColor}">${remaining}/${daily}</span>
+            </button>
+          `);
+        }
+
+        const showSourceSubHeader = sources.length > 1;
+        const sourceHeaderHtml = showSourceSubHeader ? `
+          <div class="flex items-center justify-between text-[10px] font-bold px-0.5 pb-0.5 border-b border-slate-800/60">
+            <span class="${src.textClass} flex items-center gap-1.5">
+              <span>${src.icon}</span>
+              <span class="tracking-wide">${src.label.toUpperCase()}</span>
+              <span class="text-[8px] text-slate-400 font-normal">(${src.subText})</span>
+            </span>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-[9px] ${totalRemaining > 0 ? 'text-emerald-400 font-bold' : 'text-slate-500'}">Kalan: ${totalRemaining}/${totalDaily}</span>
+              <button type="button" onclick="replenishSourceSlots('${src.key}')" class="text-[8px] px-1.5 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 transition cursor-pointer" title="Bu Kaynağın Tüm Yuvalarını Yenile">Yenile</button>
+            </div>
+          </div>
+        ` : '';
+
+        sourcesHtml.push(`
+          <div class="space-y-1 ${showSourceSubHeader ? 'p-1.5 rounded-xl bg-slate-900/40 border border-slate-800/80 shadow-sm' : ''}">
+            ${sourceHeaderHtml}
+            <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-6 gap-1 items-center">
+              ${itemsHtml.join('')}
+            </div>
+          </div>
+        `);
+      });
+
+      container.innerHTML = sourcesHtml.join('');
     }
 
     // Modal: Spell Slots Manager
-    function openSpellSlotsModal(focusLvl) {
+    function openSpellSlotsModal(focusLvl, sourceKey) {
+      if (sourceKey) window.currentSpellSlotsModalSource = sourceKey;
       renderSpellSlotsModalRows();
       const modal = document.getElementById('modal-spell-slots-manager');
       if (modal) {
@@ -11381,11 +11581,41 @@
       if (modal) modal.classList.add('hidden');
     }
 
+    function switchModalSlotSource(sourceKey) {
+      window.currentSpellSlotsModalSource = sourceKey;
+      renderSpellSlotsModalRows();
+    }
+
     function renderSpellSlotsModalRows() {
       const container = document.getElementById('modal-spell-slots-rows');
       if (!container) return;
 
-      const slots = character?.spellcasting?.slots || [];
+      const sources = getAvailableSpellSlotSources();
+      let activeSourceKey = window.currentSpellSlotsModalSource || 'spontaneous';
+      let activeSource = sources.find(s => s.key === activeSourceKey) || sources[0];
+      window.currentSpellSlotsModalSource = activeSource.key;
+
+      // Render Modal Source Tabs if multiple sources exist
+      const tabsContainer = document.getElementById('modal-spell-slots-source-tabs');
+      if (tabsContainer) {
+        if (sources.length > 1) {
+          tabsContainer.innerHTML = sources.map(s => {
+            const isAct = s.key === activeSource.key;
+            return `
+              <button type="button" onclick="switchModalSlotSource('${s.key}')" class="text-[10px] font-bold px-2 py-1 rounded-lg transition cursor-pointer flex items-center gap-1.5 ${isAct ? `${s.tagClass} border shadow-sm` : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'}">
+                <span>${s.icon}</span>
+                <span>${s.shortLabel}</span>
+              </button>
+            `;
+          }).join('');
+          tabsContainer.classList.remove('hidden');
+        } else {
+          tabsContainer.innerHTML = '';
+          tabsContainer.classList.add('hidden');
+        }
+      }
+
+      const slots = activeSource.slots;
       const rowsHtml = [];
 
       for (let lvl = 0; lvl <= 11; lvl++) {
@@ -11395,23 +11625,23 @@
         const remaining = Math.max(0, daily - used);
         const isUnlocked = daily > 0;
 
-        let lvlTitle = `${lvl}. Seviye Büyüler`;
-        if (lvl === 0) lvlTitle = '0. Seviye (Cantrips)';
-        else if (lvl === 10) lvlTitle = '10. Seviye (Epic / Metamagic)';
-        else if (lvl === 11) lvlTitle = 'Epic (+10) Büyü Yuvası';
+        let lvlTitle = `${lvl}. Seviye ${activeSource.shortLabel} Büyüler`;
+        if (lvl === 0) lvlTitle = `0. Seviye (${activeSource.shortLabel} Cantrips)`;
+        else if (lvl === 10) lvlTitle = `10. Seviye (Epic / Metamagic)`;
+        else if (lvl === 11) lvlTitle = `Epic (+10) ${activeSource.shortLabel} Yuvası`;
 
         if (isUnlocked) {
           rowsHtml.push(`
-            <div id="modal-slot-row-${lvl}" class="flex items-center justify-between bg-slate-900/90 border border-purple-900/60 rounded-xl px-3 py-2 shadow-sm transition">
+            <div id="modal-slot-row-${lvl}" class="flex items-center justify-between bg-slate-900/90 border border-slate-800 rounded-xl px-3 py-2 shadow-sm transition">
               <div class="flex flex-col">
                 <span class="text-xs font-bold text-white">${lvlTitle}</span>
                 <span class="text-[9px] text-slate-400 font-mono">Toplam Kapasite: ${daily} Yuva</span>
               </div>
               <div class="flex items-center gap-2">
-                <button type="button" onclick="modifySpellSlotUsed(${lvl}, 1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-rose-300 font-bold flex items-center justify-center border border-slate-700 cursor-pointer text-xs transition" title="1 Yuva Harca">-1</button>
+                <button type="button" onclick="modifySpellSlotUsed(${lvl}, 1, '${activeSource.key}')" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-rose-300 font-bold flex items-center justify-center border border-slate-700 cursor-pointer text-xs transition" title="1 Yuva Harca">-1</button>
                 <span class="text-xs font-mono font-black ${remaining > 0 ? 'text-emerald-400' : 'text-rose-400'} w-12 text-center">${remaining} / ${daily}</span>
-                <button type="button" onclick="modifySpellSlotUsed(${lvl}, -1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-300 font-bold flex items-center justify-center border border-slate-700 cursor-pointer text-xs transition" title="1 Yuva İade Et">+1</button>
-                <button type="button" onclick="replenishSpellSlotLevel(${lvl})" class="px-2 py-1 rounded-lg bg-purple-950/80 hover:bg-purple-900 text-purple-300 border border-purple-700/60 text-[10px] font-bold cursor-pointer transition" title="Bu Seviyeyi Yenile">Yenile</button>
+                <button type="button" onclick="modifySpellSlotUsed(${lvl}, -1, '${activeSource.key}')" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-300 font-bold flex items-center justify-center border border-slate-700 cursor-pointer text-xs transition" title="1 Yuva İade Et">+1</button>
+                <button type="button" onclick="replenishSpellSlotLevel(${lvl}, '${activeSource.key}')" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-[10px] font-bold cursor-pointer transition" title="Bu Seviyeyi Yenile">Yenile</button>
               </div>
             </div>
           `);
@@ -11422,7 +11652,7 @@
                 <span class="text-xs font-bold text-slate-400">${lvlTitle}</span>
                 <span class="text-[9px] text-slate-500 font-mono">0 / 0 (Kilitli / Henüz Yok)</span>
               </div>
-              <button type="button" onclick="unlockSpellSlotLevel(${lvl})" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-300 border border-purple-900/60 text-[10px] font-bold cursor-pointer transition" title="Bu Seviye İçin Yuva Tanımla">+ Yuva Aç</button>
+              <button type="button" onclick="unlockSpellSlotLevel(${lvl}, '${activeSource.key}')" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-[10px] font-bold cursor-pointer transition" title="Bu Seviye İçin Yuva Tanımla">+ Yuva Aç</button>
             </div>
           `);
         }
@@ -11431,15 +11661,15 @@
       container.innerHTML = rowsHtml.join('');
     }
 
-    function unlockSpellSlotLevel(lvl) {
+    function unlockSpellSlotLevel(lvl, sourceKey) {
       if (!character) return;
-      if (!character.spellcasting) character.spellcasting = {};
-      if (!character.spellcasting.slots) character.spellcasting.slots = [];
+      const key = sourceKey || window.currentSpellSlotsModalSource || 'spontaneous';
+      const slots = getSpellSlotsArrayBySource(key);
 
-      let s = character.spellcasting.slots.find(item => Number(item.level) === Number(lvl));
+      let s = slots.find(item => Number(item.level) === Number(lvl));
       if (!s) {
         s = { level: lvl, daily: 1, used: 0 };
-        character.spellcasting.slots.push(s);
+        slots.push(s);
       } else {
         s.daily = Math.max(1, (Number(s.daily) || 0) + 1);
       }
@@ -11450,14 +11680,16 @@
       renderCombatCategorySpells();
       recalculateCombatSpell();
       if (typeof renderSpellSlots === 'function') renderSpellSlots();
+      if (key === 'prepared' && typeof renderPreparedSpells === 'function') renderPreparedSpells();
+      if (key === 'divine' && typeof renderDivineSpells === 'function') renderDivineSpells();
     }
 
-    function modifySpellSlotUsed(lvl, delta) {
+    function modifySpellSlotUsed(lvl, delta, sourceKey) {
       if (!character) return;
-      if (!character.spellcasting) character.spellcasting = {};
-      if (!character.spellcasting.slots) character.spellcasting.slots = [];
+      const key = sourceKey || window.currentSpellSlotsModalSource || 'spontaneous';
+      const slots = getSpellSlotsArrayBySource(key);
 
-      let s = character.spellcasting.slots.find(item => Number(item.level) === Number(lvl));
+      let s = slots.find(item => Number(item.level) === Number(lvl));
       if (!s) return;
 
       const daily = Number(s.daily) || 0;
@@ -11471,10 +11703,13 @@
       renderCombatCategorySpells();
       recalculateCombatSpell();
       if (typeof renderSpellSlots === 'function') renderSpellSlots();
+      if (key === 'prepared' && typeof renderPreparedSpells === 'function') renderPreparedSpells();
+      if (key === 'divine' && typeof renderDivineSpells === 'function') renderDivineSpells();
     }
 
-    function replenishSpellSlotLevel(lvl) {
-      const slots = character?.spellcasting?.slots || [];
+    function replenishSpellSlotLevel(lvl, sourceKey) {
+      const key = sourceKey || window.currentSpellSlotsModalSource || 'spontaneous';
+      const slots = getSpellSlotsArrayBySource(key);
       const s = slots.find(item => Number(item.level) === Number(lvl));
       if (!s) return;
       s.used = 0;
@@ -11485,11 +11720,35 @@
       renderCombatCategorySpells();
       recalculateCombatSpell();
       if (typeof renderSpellSlots === 'function') renderSpellSlots();
+      if (key === 'prepared' && typeof renderPreparedSpells === 'function') renderPreparedSpells();
+      if (key === 'divine' && typeof renderDivineSpells === 'function') renderDivineSpells();
+    }
+
+    function replenishSourceSlots(sourceKey) {
+      const slots = getSpellSlotsArrayBySource(sourceKey);
+      slots.forEach(s => s.used = 0);
+      saveStateToStorage(false);
+      renderSpellSlotsStrip();
+      renderSpellSlotsModalRows();
+      renderCombatCategorySpells();
+      recalculateCombatSpell();
+      if (typeof renderSpellSlots === 'function') renderSpellSlots();
+      if (sourceKey === 'prepared' && typeof renderPreparedSpells === 'function') renderPreparedSpells();
+      if (sourceKey === 'divine' && typeof renderDivineSpells === 'function') renderDivineSpells();
+
+      const sourceLabels = { spontaneous: 'Anlık Büyü', prepared: 'Kitap Büyü', divine: 'İlahi Büyü' };
+      showDiceTopToast({
+        icon: '✨',
+        title: 'Yuvalar Yenilendi',
+        breakdown: `${sourceLabels[sourceKey] || sourceKey} yuvalarının tümü dinlenerek sıfırlandı.`,
+        total: 'Yenilendi'
+      });
     }
 
     function replenishAllSpellSlots() {
-      const slots = character?.spellcasting?.slots || [];
-      slots.forEach(s => s.used = 0);
+      (character?.spellcasting?.slots || []).forEach(s => s.used = 0);
+      (character?.spellcasting?.preparedSlots || []).forEach(s => s.used = 0);
+      (character?.spellcasting?.divineSlots || []).forEach(s => s.used = 0);
 
       saveStateToStorage(false);
       renderSpellSlotsStrip();
@@ -11497,13 +11756,15 @@
       renderCombatCategorySpells();
       recalculateCombatSpell();
       if (typeof renderSpellSlots === 'function') renderSpellSlots();
+      if (typeof renderPreparedSpells === 'function') renderPreparedSpells();
+      if (typeof renderDivineSpells === 'function') renderDivineSpells();
       closeSpellSlotsModal();
 
       if (typeof showDiceTopToast === 'function') {
         showDiceTopToast({
           icon: '🌙',
-          title: 'Büyü Yuvaları Yenilendi',
-          breakdown: 'Tüm seviyelerdeki büyü yuvaları tam kapasiteye ulaştı.',
+          title: 'Tüm Büyü Yuvaları Yenilendi',
+          breakdown: 'Anlık, Kitap ve İlahi büyü yuvalarının tamamı dinlenerek yenilendi.',
           total: 'Yenilendi'
         });
       }
@@ -12396,19 +12657,23 @@
         }
       }
 
-      // Check slot capacity
-      const slots = character?.spellcasting?.slots || [];
+      // Check slot capacity according to spell's source (Anlık, Kitap, İlahi)
+      const slotSource = typeof getSpellSlotSource === 'function' ? getSpellSlotSource(spell) : 'spontaneous';
+      const slots = typeof getSpellSlotsArrayBySource === 'function' ? getSpellSlotsArrayBySource(slotSource) : (character?.spellcasting?.slots || []);
       const targetSlot = slots.find(s => Number(s.level) === finalLvl);
       const remaining = targetSlot ? Math.max(0, targetSlot.daily - targetSlot.used) : 0;
       const totalDaily = targetSlot ? targetSlot.daily : 0;
 
+      const sourceLabels = { spontaneous: 'Anlık', prepared: 'Kitap', divine: 'İlahi' };
+      const sourceTag = sourceLabels[slotSource] || 'Büyü';
+
       const slotReqEl = document.getElementById('combat-spell-slot-req-display');
       if (slotReqEl) {
         if (targetSlot) {
-          slotReqEl.textContent = `${finalLvl}. Seviye Yuva (Kalan: ${remaining}/${totalDaily})`;
+          slotReqEl.textContent = `${finalLvl}. Seviye ${sourceTag} Yuva (Kalan: ${remaining}/${totalDaily})`;
           slotReqEl.className = remaining > 0 ? 'text-xs font-mono font-bold text-purple-300' : 'text-xs font-mono font-bold text-rose-400';
         } else {
-          slotReqEl.textContent = `${finalLvl}. Seviye Yuva (Kilitli / Henüz Yok)`;
+          slotReqEl.textContent = `${finalLvl}. Seviye ${sourceTag} Yuva (Kilitli / Henüz Yok)`;
           slotReqEl.className = 'text-xs font-mono font-bold text-rose-500';
         }
       }
@@ -12479,8 +12744,12 @@
 
       // Top CL & Slot Badges and Collapsed Bar Summary
       const clBadge = document.getElementById('combat-spell-cl-slot-badge');
-      const totalDailySlots = (character?.spellcasting?.slots || []).reduce((acc, s) => acc + (Number(s.daily) || 0), 0);
-      const totalUsedSlots = (character?.spellcasting?.slots || []).reduce((acc, s) => acc + (Number(s.used) || 0), 0);
+      const allSources = typeof getAvailableSpellSlotSources === 'function' ? getAvailableSpellSlotSources() : [];
+      let totalDailySlots = 0, totalUsedSlots = 0;
+      allSources.forEach(src => {
+        totalDailySlots += src.slots.reduce((acc, s) => acc + (Number(s.daily) || 0), 0);
+        totalUsedSlots += src.slots.reduce((acc, s) => acc + (Number(s.used) || 0), 0);
+      });
       const totalRemainingSlots = Math.max(0, totalDailySlots - totalUsedSlots);
       if (clBadge) clBadge.textContent = `CL: ${cl} • Yuva: ${totalRemainingSlots}/${totalDailySlots}`;
       const spellSummary = document.getElementById('combat-spell-collapsed-summary');
@@ -12600,11 +12869,14 @@
             total: 'Bozuldu'
           });
           // Consume slot on failure (RAW 3.5e)
-          const slots = character?.spellcasting?.slots || [];
+          const slotSource = typeof getSpellSlotSource === 'function' ? getSpellSlotSource(spell) : 'spontaneous';
+          const slots = typeof getSpellSlotsArrayBySource === 'function' ? getSpellSlotsArrayBySource(slotSource) : (character?.spellcasting?.slots || []);
           const targetSlot = slots.find(s => Number(s.level) === finalLvl);
           if (targetSlot) {
             targetSlot.used++;
             if (typeof renderSpellSlots === 'function') renderSpellSlots();
+            if (slotSource === 'prepared' && typeof renderPreparedSpells === 'function') renderPreparedSpells();
+            if (slotSource === 'divine' && typeof renderDivineSpells === 'function') renderDivineSpells();
             renderSpellSlotsStrip();
             renderCombatCategorySpells();
             saveStateToStorage(false);
@@ -12615,20 +12887,24 @@
       }
 
       // Consume slot
-      const slots = character?.spellcasting?.slots || [];
+      const slotSource = typeof getSpellSlotSource === 'function' ? getSpellSlotSource(spell) : 'spontaneous';
+      const slots = typeof getSpellSlotsArrayBySource === 'function' ? getSpellSlotsArrayBySource(slotSource) : (character?.spellcasting?.slots || []);
       const targetSlot = slots.find(s => Number(s.level) === finalLvl);
       if (targetSlot) {
         if (targetSlot.used >= targetSlot.daily) {
+          const sourceLabels = { spontaneous: 'Anlık', prepared: 'Kitap', divine: 'İlahi' };
           showDiceTopToast({
             icon: '⚠️',
             title: 'Büyü Yuvası Tükendi!',
-            breakdown: `${finalLvl}. Seviye büyü yuvanız kalmadı (${targetSlot.used}/${targetSlot.daily}).`,
+            breakdown: `${finalLvl}. Seviye ${sourceLabels[slotSource] || ''} büyü yuvanız kalmadı (${targetSlot.used}/${targetSlot.daily}).`,
             total: 'Hata'
           });
           return;
         }
         targetSlot.used++;
         if (typeof renderSpellSlots === 'function') renderSpellSlots();
+        if (slotSource === 'prepared' && typeof renderPreparedSpells === 'function') renderPreparedSpells();
+        if (slotSource === 'divine' && typeof renderDivineSpells === 'function') renderDivineSpells();
         renderSpellSlotsStrip();
         renderCombatCategorySpells();
         saveStateToStorage(false);
