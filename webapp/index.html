@@ -669,65 +669,7 @@
                 </button>
               </div>
 
-              <!-- 2. BÜYÜCÜ TAKTİKSEL MODİFİYERLERİ (3x3 ÇEKMECE) -->
-              <div class="bg-slate-950/80 border border-purple-900/50 rounded-xl p-2.5 space-y-2">
-                <div class="flex items-center justify-between text-[10px] font-bold text-purple-400 uppercase tracking-wide">
-                  <div class="flex items-center gap-1.5">
-                    <span>⚡</span>
-                    <span>BÜYÜCÜ TAKTİKSEL MODİFİYERLERİ</span>
-                    <span id="spell-modifiers-count-badge" class="bg-slate-900 text-purple-300 border border-purple-700/50 font-mono font-bold text-[9px] px-1.5 py-0.2 rounded">0</span>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <span class="text-[9px] text-amber-400 font-mono" id="metamagic-action-note">(Standart Eylem)</span>
-                    <button type="button" id="toggle-spell-modifiers-btn" onclick="toggleSpellModifiersGridExpanded()" class="text-[9px] text-purple-400 hover:text-white bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-purple-800/60 transition cursor-pointer hidden">
-                      Daha Fazla ▾
-                    </button>
-                  </div>
-                </div>
-
-                <!-- 3x3 Dynamic Modifiers Grid -->
-                <div id="combat-spell-modifiers-dynamic-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-1.5 pt-0.5">
-                  <!-- Populated dynamically by renderSpellTacticalModifiers() -->
-                </div>
-              </div>
-
-              <!-- 3. BÜYÜ SEVİYELERİ FİLTRE & YUVA ŞERİDİ -->
-              <div class="bg-slate-950/90 border border-purple-900/40 rounded-xl p-2 space-y-1.5 shadow-inner">
-                <div class="flex items-center justify-between gap-1 text-[10px] font-bold px-0.5">
-                  <span class="text-purple-400 uppercase tracking-wider flex items-center gap-1">
-                    <span>✨</span>
-                    <span>BÜYÜ SEVİYELERİ</span>
-                  </span>
-                  <span id="combat-spell-level-filter-indicator" class="text-[9px] font-mono text-purple-300 font-bold">Tümü</span>
-                </div>
-                <div id="combat-spell-slots-strip" class="flex flex-col sm:flex-row gap-1.5 w-full items-stretch">
-                  <!-- Populated dynamically with compact level buttons: Tümü, 0, 1, 2, 3... -->
-                </div>
-              </div>
-
-              <!-- 4. SEVİYELERE GÖRE GRUPLU BÜYÜ KARTLARI ÇEKMECESİ (3x2 IZGARA) -->
-              <div class="space-y-2">
-                <div class="flex items-center justify-between text-[10px] font-bold text-slate-400 px-0.5">
-                  <span id="combat-spell-category-title" class="uppercase tracking-wider text-purple-300">SALDIRI BÜYÜLERİ</span>
-                  <div class="flex items-center gap-2">
-                    <button type="button" id="btn-spell-reorder-toggle" onclick="toggleSpellReorderMode()" class="text-[9px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-slate-800 transition" title="Büyü kartlarının sırasını düzenle">
-                      <span>⇄</span>
-                      <span id="spell-reorder-btn-text">Sırala</span>
-                    </button>
-                    <span id="combat-spell-count-badge" class="text-[9px] font-mono text-purple-400 font-bold">0 Büyü</span>
-                  </div>
-                </div>
-
-                <!-- Container where level groups (Cantrips, Lvl 1, Lvl 2...) and 3x2 cards live -->
-                <div id="combat-category-spells-container" class="space-y-2.5">
-                  <!-- Populated dynamically by renderCombatCategorySpells() -->
-                </div>
-
-                <!-- Hidden select for backward compatibility -->
-                <select id="combat-active-spell-select" onchange="onCombatSpellChange()" class="hidden"></select>
-              </div>
-
-              <!-- 5. SEÇİLEN BÜYÜ KOKPİTİ & DİNAMİK İCRA PANELİ (3 SÜTUNLU KONSOL) -->
+              <!-- 2. SEÇİLEN BÜYÜ KOKPİTİ & DİNAMİK İCRA PANELİ (2. SIRAYA ALINDI) -->
               <div class="bg-slate-900/90 border border-purple-800/50 rounded-xl p-2.5 shadow-lg overflow-hidden">
                 <div class="flex flex-col sm:flex-row gap-2 w-full items-stretch">
                   
@@ -762,6 +704,64 @@
                   </div>
 
                 </div>
+              </div>
+
+              <!-- 3. BÜYÜCÜ TAKTİKSEL MODİFİYERLERİ (3x3 ÇEKMECE) -->
+              <div class="bg-slate-950/80 border border-purple-900/50 rounded-xl p-2.5 space-y-2">
+                <div class="flex items-center justify-between text-[10px] font-bold text-purple-400 uppercase tracking-wide">
+                  <div class="flex items-center gap-1.5">
+                    <span>⚡</span>
+                    <span>BÜYÜCÜ TAKTİKSEL MODİFİYERLERİ</span>
+                    <span id="spell-modifiers-count-badge" class="bg-slate-900 text-purple-300 border border-purple-700/50 font-mono font-bold text-[9px] px-1.5 py-0.2 rounded">0</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-[9px] text-amber-400 font-mono" id="metamagic-action-note">(Standart Eylem)</span>
+                    <button type="button" id="toggle-spell-modifiers-btn" onclick="toggleSpellModifiersGridExpanded()" class="text-[9px] text-purple-400 hover:text-white bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-purple-800/60 transition cursor-pointer hidden">
+                      Daha Fazla ▾
+                    </button>
+                  </div>
+                </div>
+
+                <!-- 3x3 Dynamic Modifiers Grid -->
+                <div id="combat-spell-modifiers-dynamic-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-1.5 pt-0.5">
+                  <!-- Populated dynamically by renderSpellTacticalModifiers() -->
+                </div>
+              </div>
+
+              <!-- 4. BÜYÜ SEVİYELERİ FİLTRE & YUVA ŞERİDİ -->
+              <div class="bg-slate-950/90 border border-purple-900/40 rounded-xl p-2 space-y-1.5 shadow-inner">
+                <div class="flex items-center justify-between gap-1 text-[10px] font-bold px-0.5">
+                  <span class="text-purple-400 uppercase tracking-wider flex items-center gap-1">
+                    <span>✨</span>
+                    <span>BÜYÜ SEVİYELERİ</span>
+                  </span>
+                  <span id="combat-spell-level-filter-indicator" class="text-[9px] font-mono text-purple-300 font-bold">Tümü</span>
+                </div>
+                <div id="combat-spell-slots-strip" class="flex flex-col sm:flex-row gap-1.5 w-full items-stretch">
+                  <!-- Populated dynamically with compact level buttons: Tümü, 0, 1, 2, 3... -->
+                </div>
+              </div>
+
+              <!-- 5. SEVİYELERE GÖRE GRUPLU BÜYÜ KARTLARI ÇEKMECESİ (3x2 IZGARA) -->
+              <div class="space-y-2">
+                <div class="flex items-center justify-between text-[10px] font-bold text-slate-400 px-0.5">
+                  <span id="combat-spell-category-title" class="uppercase tracking-wider text-purple-300">SALDIRI BÜYÜLERİ</span>
+                  <div class="flex items-center gap-2">
+                    <button type="button" id="btn-spell-reorder-toggle" onclick="toggleSpellReorderMode()" class="text-[9px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-slate-800 transition" title="Büyü kartlarının sırasını düzenle">
+                      <span>⇄</span>
+                      <span id="spell-reorder-btn-text">Sırala</span>
+                    </button>
+                    <span id="combat-spell-count-badge" class="text-[9px] font-mono text-purple-400 font-bold">0 Büyü</span>
+                  </div>
+                </div>
+
+                <!-- Container where level groups (Cantrips, Lvl 1, Lvl 2...) and 3x2 cards live -->
+                <div id="combat-category-spells-container" class="space-y-2.5">
+                  <!-- Populated dynamically by renderCombatCategorySpells() -->
+                </div>
+
+                <!-- Hidden select for backward compatibility -->
+                <select id="combat-active-spell-select" onchange="onCombatSpellChange()" class="hidden"></select>
               </div>
 
             </div>
