@@ -11472,9 +11472,29 @@
         if (!sp) return;
         const name = typeof sp === 'string' ? sp : sp.name;
         if (!name) return;
-        const lvl = typeof sp === 'object' && sp.level !== undefined ? sp.level : 0;
+        const lvl = typeof sp === 'object' && sp.level !== undefined ? Number(sp.level) : 0;
         const key = `${name.toLowerCase().trim()}__${lvl}__${srcKey}`;
         if (seen.has(key)) return;
+
+        // Kontrol: Bu kaynakta (Anlık, Kitap, İlahi) bu seviye için aktif günlük büyü yuvası var mı?
+        // Seviye kilitliyse (daily <= 0) veya boşta günlük büyü skoru kalmamışsa (remaining <= 0) combat sayfasında gösterilmez
+        let slotsArr = [];
+        if (srcKey === 'prepared') {
+          slotsArr = sc.preparedSlots || [];
+        } else if (srcKey === 'divine') {
+          slotsArr = sc.divineSlots || [];
+        } else {
+          slotsArr = sc.slots || character?.spellSlots || [];
+        }
+
+        const slot = slotsArr.find(s => Number(s.level) === lvl);
+        const daily = slot ? (Number(slot.daily) || 0) : 0;
+        if (daily <= 0) return; // Seviye kilitli / bu disiplinde o seviyede yuva yok
+
+        const used = slot ? (Number(slot.used) || 0) : 0;
+        const remaining = Math.max(0, daily - used);
+        if (remaining <= 0) return; // Boşta günlük büyü skoru kalmamış
+
         seen.add(key);
         const obj = typeof sp === 'object' ? Object.assign({}, sp) : { name: sp, level: lvl };
         obj._spellSource = srcKey;
@@ -13961,25 +13981,35 @@
       const slotSource = typeof getSpellSlotSource === 'function' ? getSpellSlotSource(spell) : 'spontaneous';
       const slots = typeof getSpellSlotsArrayBySource === 'function' ? getSpellSlotsArrayBySource(slotSource) : (character?.spellcasting?.slots || []);
       const targetSlot = slots.find(s => Number(s.level) === finalLvl);
-      if (targetSlot) {
-        if (targetSlot.used >= targetSlot.daily) {
-          const sourceLabels = { spontaneous: 'Anlık', prepared: 'Kitap', divine: 'İlahi' };
-          showDiceTopToast({
-            icon: '⚠️',
-            title: 'Büyü Yuvası Tükendi!',
-            breakdown: `${finalLvl}. Seviye ${sourceLabels[slotSource] || ''} büyü yuvanız kalmadı (${targetSlot.used}/${targetSlot.daily}).`,
-            total: 'Hata'
-          });
-          return;
-        }
-        targetSlot.used++;
-        if (typeof renderSpellSlots === 'function') renderSpellSlots();
-        if (slotSource === 'prepared' && typeof renderPreparedSpells === 'function') renderPreparedSpells();
-        if (slotSource === 'divine' && typeof renderDivineSpells === 'function') renderDivineSpells();
-        renderSpellSlotsStrip();
-        renderCombatCategorySpells();
-        saveStateToStorage(false);
+      const sourceLabels = { spontaneous: 'Anlık', prepared: 'Kitap', divine: 'İlahi' };
+
+      if (!targetSlot || Number(targetSlot.daily) <= 0) {
+        showDiceTopToast({
+          icon: '⚠️',
+          title: 'Yuva Bulunamadı!',
+          breakdown: `${finalLvl}. Seviye ${sourceLabels[slotSource] || ''} büyü yuvası kilitli veya bu karakterde tanımlı değil!`,
+          total: 'Hata'
+        });
+        return;
       }
+
+      if (targetSlot.used >= targetSlot.daily) {
+        showDiceTopToast({
+          icon: '⚠️',
+          title: 'Büyü Yuvası Tükendi!',
+          breakdown: `${finalLvl}. Seviye ${sourceLabels[slotSource] || ''} büyü yuvanız kalmadı (${targetSlot.used}/${targetSlot.daily}).`,
+          total: 'Hata'
+        });
+        return;
+      }
+
+      targetSlot.used++;
+      if (typeof renderSpellSlots === 'function') renderSpellSlots();
+      if (slotSource === 'prepared' && typeof renderPreparedSpells === 'function') renderPreparedSpells();
+      if (slotSource === 'divine' && typeof renderDivineSpells === 'function') renderDivineSpells();
+      renderSpellSlotsStrip();
+      renderCombatCategorySpells();
+      saveStateToStorage(false);
 
       // If Quicken, consume Swift Action; if spontaneous metamagic, consume Full-Round Action in Action Economy!
       if (isQuicken) {
