@@ -12266,42 +12266,87 @@
           dice: '',
           effect: 'Yok',
           save: 'Yok (None)',
+          saveDC: null,
           sr: 'Hayır (No)',
           school: 'Universal',
+          descriptor: '',
+          fullSchool: 'Universal',
           action: 'Standart',
           range: 'Close',
-          duration: 'Anlık'
+          duration: 'Anlık',
+          target: '1 Hedef',
+          components: 'V, S',
+          benefit: ''
         };
       }
 
-      // Dynamic Spell Scaling (D&D 3.5e RAW)
+      // Master DB lookup fallback for missing fields
+      const masterSpell = (typeof findMasterItem === 'function' ? findMasterItem(spell.name) : null) || {};
+
       const cl = getEffectiveSpellCasterLevel(spell);
       const scaling = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveSpellDynamicScaling === 'function')
         ? RuleEngine.resolveSpellDynamicScaling(spell, cl)
         : null;
 
       // 1. Damage / Dice expression
-      let diceExpr = (scaling && scaling.diceFormula) ? scaling.diceFormula : (spell.dice || spell.damageDice || spell.extraDmg || '');
-      if (!diceExpr && spell.benefit) {
-        const m = spell.benefit.match(/\b\d+d\d+(?:\s*[+-]\s*\d+)?\b/i);
+      let diceExpr = (scaling && scaling.diceFormula) ? scaling.diceFormula : (spell.dice || spell.damageDice || spell.extraDmg || masterSpell.dice || '');
+      if (!diceExpr && (spell.benefit || masterSpell.benefit)) {
+        const text = spell.benefit || masterSpell.benefit || '';
+        const m = text.match(/\b\d+d\d+(?:\s*[+-]\s*\d+)?\b/i);
         if (m) diceExpr = m[0];
       }
-      let effectText = (scaling && scaling.displayText) ? scaling.displayText : (diceExpr ? `${diceExpr} ${spell.dmgType || ''}`.trim() : (spell.effect || spell.target || 'Etki / Fayda'));
+      let effectText = (scaling && scaling.displayText)
+        ? scaling.displayText
+        : (diceExpr ? `${diceExpr} ${spell.dmgType || masterSpell.dmgType || ''}`.trim() : (spell.effect || spell.target || masterSpell.effect || 'Etki / Fayda'));
 
-      // 2. Saving Throw
-      let saveText = spell.save || spell.savingThrow || '';
+      // 2. Saving Throw & Dynamic DC
+      let saveText = spell.save || spell.savingThrow || masterSpell.save || '';
       if (!saveText) {
-        if (spell.attackType === 'saving_throw') {
+        if (spell.attackType === 'saving_throw' || masterSpell.attackType === 'saving_throw') {
           saveText = 'Reflex / Will / Fort';
-        } else if (spell.benefit && /save|saving throw|reflex|fortitude|will/i.test(spell.benefit)) {
-          const sm = spell.benefit.match(/(reflex|fortitude|will)\s*(?:half|negates|partial)?/i);
+        } else if ((spell.benefit || masterSpell.benefit) && /save|saving throw|reflex|fortitude|will/i.test(spell.benefit || masterSpell.benefit)) {
+          const sm = (spell.benefit || masterSpell.benefit).match(/(reflex|fortitude|will)\s*(?:half|negates|partial)?/i);
           if (sm) saveText = sm[0];
         }
-        if (!saveText) saveText = 'Yok (None)';
+      }
+
+      let saveDC = null;
+      let formattedSave = 'Yok (None)';
+      const isSaveNone = !saveText || /^(none|yok|no|harmless)$/i.test(saveText.trim()) || /(yok\s*\(none\)|none)/i.test(saveText);
+      if (!isSaveNone) {
+        const baseLvl = Number(spell.level) || 0;
+        const src = spell._spellSource || (typeof getSpellSlotSource === 'function' ? getSpellSlotSource(spell) : 'spontaneous');
+        let statMod = 0;
+        if (src === 'divine') {
+          statMod = RuleEngine ? RuleEngine.getAbilityMod(character?.abilities?.wis || 10) : 0;
+        } else if (src === 'prepared') {
+          statMod = RuleEngine ? RuleEngine.getAbilityMod(character?.abilities?.int || 10) : 0;
+        } else {
+          statMod = RuleEngine ? RuleEngine.getAbilityMod(character?.abilities?.cha || 10) : 0;
+        }
+
+        // Spell Focus Feat Check
+        const schoolLower = (spell.school || masterSpell.school || '').toLowerCase();
+        let featDcBonus = 0;
+        const featsList = character?.feats || [];
+        if (featsList.some(f => (f.name || '').toLowerCase().includes('greater spell focus') && (f.name || '').toLowerCase().includes(schoolLower))) {
+          featDcBonus = 2;
+        } else if (featsList.some(f => (f.name || '').toLowerCase().includes('spell focus') && (f.name || '').toLowerCase().includes(schoolLower))) {
+          featDcBonus = 1;
+        }
+
+        saveDC = 10 + baseLvl + statMod + featDcBonus;
+        // Clean Turkish label
+        let cleanSaveLabel = saveText;
+        if (/reflex/i.test(saveText)) cleanSaveLabel = /half/i.test(saveText) ? 'Reflex Yarım' : (/negates/i.test(saveText) ? 'Reflex İptal' : 'Reflex');
+        else if (/will/i.test(saveText)) cleanSaveLabel = /half/i.test(saveText) ? 'Will Yarım' : (/negates/i.test(saveText) ? 'Will İptal' : 'Will');
+        else if (/fortitude/i.test(saveText)) cleanSaveLabel = /half/i.test(saveText) ? 'Fort Yarım' : (/negates/i.test(saveText) ? 'Fort İptal' : 'Fort');
+
+        formattedSave = `DC ${saveDC} ${cleanSaveLabel}`;
       }
 
       // 3. Spell Resistance (SR)
-      let srText = spell.spellResistance || spell.sr || '';
+      let srText = spell.spellResistance || spell.sr || masterSpell.spellResistance || masterSpell.sr || '';
       if (!srText) {
         const noSrSpells = /(acid arrow|acid splash|orb of|glitterdust|grease|web|solid fog|fog cloud|stinking cloud|black tentacles|teleport|dimension door)/i;
         if (noSrSpells.test(spell.name)) {
@@ -12311,18 +12356,134 @@
         } else {
           srText = 'Evet (Yes)';
         }
+      } else {
+        srText = /yes|evet/i.test(srText) ? 'Evet (Yes)' : 'Hayır (No)';
+      }
+
+      // 4. Descriptor / Subschool
+      let descriptor = '';
+      const tags = (spell.tags || masterSpell.tags || []).map(t => String(t).toLowerCase());
+      const dmgType = (spell.dmgType || masterSpell.dmgType || '').toLowerCase();
+      const rawText = `${spell.name} ${spell.benefit || ''} ${masterSpell.benefit || ''} ${tags.join(' ')}`.toLowerCase();
+      
+      if (tags.includes('force') || dmgType.includes('force') || /force\s+damage/i.test(rawText)) descriptor = '[Force]';
+      else if (tags.includes('fire') || dmgType.includes('fire')) descriptor = '[Fire]';
+      else if (tags.includes('cold') || dmgType.includes('cold')) descriptor = '[Cold]';
+      else if (tags.includes('acid') || dmgType.includes('acid')) descriptor = '[Acid]';
+      else if (tags.includes('electricity') || dmgType.includes('electricity')) descriptor = '[Electricity]';
+      else if (tags.includes('sonic') || dmgType.includes('sonic')) descriptor = '[Sonic]';
+      else if (tags.includes('mind-affecting') || /mind-affecting/i.test(rawText)) descriptor = '[Mind-Affecting]';
+      else if (tags.includes('light') || /light/i.test(spell.name)) descriptor = '[Light]';
+      else if (tags.includes('darkness') || /darkness/i.test(spell.name)) descriptor = '[Darkness]';
+      else if (tags.includes('death') || /death/i.test(rawText)) descriptor = '[Death]';
+
+      const baseSchool = spell.school || masterSpell.school || 'Universal';
+      const fullSchool = descriptor ? `${baseSchool} ${descriptor}` : baseSchool;
+
+      // 5. Action
+      const rawAction = spell.action || spell.castTime || masterSpell.action || 'Standard Action';
+      let actionFormatted = '1 Standart';
+      if (/swift/i.test(rawAction)) actionFormatted = '1 Swift';
+      else if (/immediate/i.test(rawAction)) actionFormatted = '1 Immediate';
+      else if (/full/i.test(rawAction)) actionFormatted = 'Full-Round';
+      else if (/round/i.test(rawAction)) actionFormatted = '1 Round';
+      else if (/min/i.test(rawAction)) actionFormatted = rawAction;
+
+      // 6. Range (Formatted with CL feet)
+      function formatSpellRangeExact(rangeStr, casterLvl) {
+        if (!rangeStr) return 'Yakın (25 ft + 5 ft/2 lvl)';
+        const rLower = rangeStr.toLowerCase();
+        if (rLower.includes('personal') || rLower.includes('kişisel')) return 'Kişisel';
+        if (rLower.includes('touch') || rLower.includes('temas') || rLower.includes('dokunma')) return 'Temas (Touch)';
+        if (rLower.includes('close') || rLower.includes('yakın')) {
+          const feet = 25 + Math.floor(casterLvl / 2) * 5;
+          return `Yakın (${feet} ft)`;
+        }
+        if (rLower.includes('medium') || rLower.includes('orta')) {
+          const feet = 100 + casterLvl * 10;
+          return `Orta (${feet} ft)`;
+        }
+        if (rLower.includes('long') || rLower.includes('uzak')) {
+          const feet = 400 + casterLvl * 40;
+          return `Uzak (${feet} ft)`;
+        }
+        return rangeStr;
+      }
+      const rangeFormatted = formatSpellRangeExact(spell.range || masterSpell.range, cl);
+
+      // 7. Duration (Formatted with CL calculation)
+      const rawDur = spell.duration || masterSpell.duration || 'Instantaneous';
+      let durationFormatted = 'Anlık';
+      if (/instantaneous|anlık/i.test(rawDur)) {
+        durationFormatted = 'Anlık (Instantaneous)';
+      } else if (/round/i.test(rawDur)) {
+        durationFormatted = `${cl} Tur (${cl} rds)`;
+      } else if (/min/i.test(rawDur)) {
+        if (/level|lvl/i.test(rawDur)) {
+          durationFormatted = `${cl} Dk (1 dk/lvl)`;
+        } else {
+          durationFormatted = rawDur;
+        }
+      } else if (/hour/i.test(rawDur)) {
+        if (/level|lvl/i.test(rawDur)) {
+          durationFormatted = `${cl} Saat (1 saat/lvl)`;
+        } else {
+          durationFormatted = rawDur;
+        }
+      } else if (/concentration/i.test(rawDur)) {
+        durationFormatted = 'Konsantrasyon';
+      } else {
+        durationFormatted = rawDur;
+      }
+
+      // 8. Target / Area
+      let targetFormatted = spell.target || masterSpell.target || '';
+      if (!targetFormatted) {
+        const sName = (spell.name || '').toLowerCase();
+        if (sName === 'magic missile') targetFormatted = '1-5 Yaratık';
+        else if (sName === 'shield' || rangeFormatted.includes('Kişisel')) targetFormatted = 'Kişisel';
+        else if (rangeFormatted.includes('Temas')) targetFormatted = '1 Yaratık / Nesne';
+        else if (/ray|işın|scorching ray|searing light|disintegrate/i.test(sName)) targetFormatted = '1 Hedef (Işın)';
+        else if (/fireball/i.test(sName)) targetFormatted = '20 ft Yarıçap';
+        else if (/lightning bolt/i.test(sName)) targetFormatted = '120 ft Hat';
+        else if (/cone/i.test(sName)) targetFormatted = 'Koni Alan';
+        else if (/bless/i.test(sName)) targetFormatted = '50 ft Müttefikler';
+        else targetFormatted = '1 Yaratık / Hedef';
+      }
+
+      // 9. Components
+      let componentsFormatted = spell.components || masterSpell.components || '';
+      if (!componentsFormatted) {
+        const src = spell._spellSource || (typeof getSpellSlotSource === 'function' ? getSpellSlotSource(spell) : 'spontaneous');
+        const sName = (spell.name || '').toLowerCase();
+        if (src === 'divine') {
+          componentsFormatted = 'V, S, DF';
+        } else if (/feather fall/i.test(sName) || /blindness/i.test(sName) || /dimension door/i.test(sName)) {
+          componentsFormatted = 'V';
+        } else if (/mage armor/i.test(sName) || /read magic/i.test(sName)) {
+          componentsFormatted = 'V, S, F';
+        } else if (/fireball/i.test(sName) || /bull's strength/i.test(sName) || /lightning bolt/i.test(sName) || /reciprocal gyre/i.test(sName)) {
+          componentsFormatted = 'V, S, M';
+        } else {
+          componentsFormatted = 'V, S';
+        }
       }
 
       return {
         dice: diceExpr,
         effect: effectText,
-        save: saveText,
+        save: formattedSave,
+        saveDC: saveDC,
         sr: srText,
-        school: spell.school || 'Universal',
-        action: spell.action || spell.castTime || 'Standart Eylem',
-        range: spell.range || 'Close (25 ft + 5 ft/2 lvl)',
-        duration: spell.duration || 'Instantaneous',
-        benefit: spell.benefit || spell.desc || spell.description || ''
+        school: baseSchool,
+        descriptor: descriptor,
+        fullSchool: fullSchool,
+        action: actionFormatted,
+        range: rangeFormatted,
+        duration: durationFormatted,
+        target: targetFormatted,
+        components: componentsFormatted,
+        benefit: spell.benefit || spell.desc || spell.description || masterSpell.benefit || masterSpell.description || ''
       };
     }
 
@@ -12346,29 +12507,93 @@
       if (!spell) return;
 
       const params = getSpellCriticalParams(spell);
-      const titleEl = document.getElementById('spell-tooltip-title');
-      const schoolEl = document.getElementById('spell-tooltip-school');
-      const effectEl = document.getElementById('spell-tooltip-effect');
-      const saveEl = document.getElementById('spell-tooltip-save');
-      const srEl = document.getElementById('spell-tooltip-sr');
-      const actionEl = document.getElementById('spell-tooltip-action');
-      const descEl = document.getElementById('spell-tooltip-desc');
-
-      if (titleEl) titleEl.textContent = spell.name;
-      if (schoolEl) schoolEl.textContent = `${spell.level === 0 ? 'Cantrip' : spell.level + '. Lvl'} • ${params.school}`;
-      if (effectEl) effectEl.textContent = params.effect || 'Hasar Yok';
-      if (saveEl) saveEl.textContent = params.save;
-      if (srEl) srEl.textContent = params.sr;
-      if (actionEl) actionEl.textContent = `${params.action} • ${params.range}`;
       const cl = getEffectiveSpellCasterLevel(spell);
       const scaling = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveSpellDynamicScaling === 'function')
         ? RuleEngine.resolveSpellDynamicScaling(spell, cl)
         : null;
-      let fullDesc = params.benefit || 'Açıklama bulunmuyor.';
-      if (scaling && scaling.descDetail) {
-        fullDesc = `${fullDesc} [⚡ ${scaling.descDetail}]`;
+
+      const src = spell._spellSource || (typeof getSpellSlotSource === 'function' ? getSpellSlotSource(spell) : 'spontaneous');
+
+      // Theme colors based on spell source
+      let sourceLabel = 'Anlık (Spontaneous) • Sorcerer';
+      let themeBorder = 'border-purple-500/80';
+      let schoolBadgeClass = 'text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800';
+      let iconColor = 'text-purple-400';
+
+      if (src === 'prepared') {
+        sourceLabel = 'Kitap (Prepared) • Wizard';
+        themeBorder = 'border-sky-500/80';
+        schoolBadgeClass = 'text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-sky-950 text-sky-300 border border-sky-800';
+        iconColor = 'text-sky-400';
+      } else if (src === 'divine') {
+        sourceLabel = 'İlahi (Divine) • Cleric';
+        themeBorder = 'border-amber-500/80';
+        schoolBadgeClass = 'text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800';
+        iconColor = 'text-amber-400';
       }
-      if (descEl) descEl.textContent = fullDesc;
+
+      // Update tooltip container styling
+      tooltip.className = `hidden fixed z-[200] pointer-events-auto bg-slate-950/95 border ${themeBorder} rounded-xl p-3 shadow-2xl w-[340px] max-w-[92vw] text-xs space-y-2 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none`;
+
+      // Header Elements
+      const iconEl = document.getElementById('spell-tooltip-icon');
+      if (iconEl) iconEl.className = `${iconColor} text-sm`;
+
+      const titleEl = document.getElementById('spell-tooltip-title');
+      if (titleEl) titleEl.textContent = spell.name;
+
+      const schoolEl = document.getElementById('spell-tooltip-school');
+      if (schoolEl) {
+        schoolEl.className = schoolBadgeClass;
+        schoolEl.textContent = `${spell.level === 0 ? 'Cantrip' : spell.level + '. Lvl'} • ${params.fullSchool}`;
+      }
+
+      const srcClassEl = document.getElementById('spell-tooltip-source-class');
+      if (srcClassEl) srcClassEl.textContent = sourceLabel;
+
+      const clBadgeEl = document.getElementById('spell-tooltip-cl-badge');
+      if (clBadgeEl) clBadgeEl.textContent = `CL ${cl}`;
+
+      // Stat Boxes
+      const effectEl = document.getElementById('spell-tooltip-effect');
+      if (effectEl) effectEl.textContent = params.effect || 'Hasar Yok';
+
+      const saveEl = document.getElementById('spell-tooltip-save');
+      if (saveEl) {
+        saveEl.textContent = params.save;
+        saveEl.className = params.save.includes('DC')
+          ? 'font-mono font-extrabold text-amber-300 text-[11px] block mt-0.5 truncate'
+          : 'font-mono font-extrabold text-emerald-400 text-[11px] block mt-0.5 truncate';
+      }
+
+      // Middle Grid Elements
+      const actionEl = document.getElementById('spell-tooltip-action');
+      if (actionEl) actionEl.textContent = params.action;
+
+      const durationEl = document.getElementById('spell-tooltip-duration');
+      if (durationEl) durationEl.textContent = params.duration;
+
+      const rangeEl = document.getElementById('spell-tooltip-range');
+      if (rangeEl) rangeEl.textContent = params.range;
+
+      const targetEl = document.getElementById('spell-tooltip-target');
+      if (targetEl) targetEl.textContent = params.target;
+
+      const srEl = document.getElementById('spell-tooltip-sr');
+      if (srEl) srEl.textContent = params.sr;
+
+      const compEl = document.getElementById('spell-tooltip-components');
+      if (compEl) compEl.textContent = params.components;
+
+      // Description & Scaling Detail
+      const descEl = document.getElementById('spell-tooltip-desc');
+      if (descEl) {
+        let fullDesc = params.benefit || 'Açıklama bulunmuyor.';
+        if (scaling && scaling.descDetail) {
+          fullDesc = `${fullDesc} \n[⚡ CL ${cl}: ${scaling.descDetail}]`;
+        }
+        descEl.innerText = fullDesc;
+      }
 
       updateSpellHoverTooltipPos(event);
       tooltip.classList.remove('hidden');
@@ -38262,29 +38487,72 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
     }
   </script>
   <!-- Floating Tooltip for Combat Spells Hover (Tap or click to dismiss) -->
-  <div id="combat-spell-hover-tooltip" onclick="hideSpellHoverTooltip()" class="hidden fixed z-[200] pointer-events-auto bg-slate-950/95 border border-purple-500/80 rounded-xl p-3 shadow-2xl max-w-xs text-xs space-y-1.5 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none">
-    <div class="flex items-center justify-between border-b border-purple-900/50 pb-1.5 gap-2">
-      <div class="flex items-center gap-1.5 min-w-0">
-        <div id="spell-tooltip-title" class="font-black text-white text-xs truncate">Büyü Adı</div>
-        <span id="spell-tooltip-school" class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-800 shrink-0">School</span>
+  <div id="combat-spell-hover-tooltip" onclick="hideSpellHoverTooltip()" class="hidden fixed z-[200] pointer-events-auto bg-slate-950/95 border border-purple-500/80 rounded-xl p-3 shadow-2xl w-[340px] max-w-[92vw] text-xs space-y-2 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none">
+    
+    <!-- 1. BAŞLIK BÖLÜMÜ -->
+    <div class="border-b border-purple-900/50 pb-1.5 space-y-0.5">
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-1.5 min-w-0">
+          <span id="spell-tooltip-icon" class="text-purple-400 text-sm">🔮</span>
+          <div id="spell-tooltip-title" class="font-black text-white text-sm truncate">Büyü Adı</div>
+        </div>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <span id="spell-tooltip-school" class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800">1. Lvl • Evocation [Force]</span>
+          <button type="button" onclick="hideSpellHoverTooltip(); event.stopPropagation();" class="text-slate-400 hover:text-white px-1.5 py-0.5 text-xs font-bold leading-none cursor-pointer rounded bg-slate-900 hover:bg-slate-800 border border-slate-700/60" title="Kapat">✕</button>
+        </div>
       </div>
-      <button type="button" onclick="hideSpellHoverTooltip(); event.stopPropagation();" class="text-slate-400 hover:text-white px-1.5 py-0.5 text-xs font-bold leading-none cursor-pointer rounded bg-slate-900 hover:bg-slate-800 border border-slate-700/60" title="Kapat">✕</button>
-    </div>
-    <div class="grid grid-cols-2 gap-1 text-[10px]">
-      <div class="bg-slate-900/80 p-1.5 rounded border border-slate-800">
-        <span class="text-slate-400 block text-[8px] uppercase font-bold">🎯 Hasar / Etki</span>
-        <span id="spell-tooltip-effect" class="font-mono font-bold text-amber-300 text-[10px]">Yok</span>
-      </div>
-      <div class="bg-slate-900/80 p-1.5 rounded border border-slate-800">
-        <span class="text-slate-400 block text-[8px] uppercase font-bold">🛡️ Kurtarma Zarı</span>
-        <span id="spell-tooltip-save" class="font-mono font-bold text-emerald-400 text-[10px]">Yok</span>
+      <!-- Kaynak & Sınıf Bilgisi -->
+      <div class="flex items-center justify-between text-[9px] font-mono text-slate-400 px-0.5">
+        <span id="spell-tooltip-source-class" class="text-purple-300 font-bold truncate">Anlık (Spontaneous) • Sorcerer</span>
+        <span id="spell-tooltip-cl-badge" class="text-amber-400/90 font-bold shrink-0">CL 16</span>
       </div>
     </div>
-    <div class="flex items-center justify-between text-[9px] text-slate-300 font-mono px-0.5">
-      <span>⚡ SR: <span id="spell-tooltip-sr" class="text-white font-bold">Evet</span></span>
-      <span>⏱️ <span id="spell-tooltip-action" class="text-amber-300">Standart</span></span>
+
+    <!-- 2. ETKİ / HASAR & KURTARMA ZARI (2 KUTU) -->
+    <div class="grid grid-cols-2 gap-1.5 text-[10px]">
+      <div class="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800">
+        <span class="text-slate-400 block text-[8px] uppercase font-bold tracking-wider">🎯 ETKİ / HASAR</span>
+        <span id="spell-tooltip-effect" class="font-mono font-extrabold text-amber-300 text-[11px] block mt-0.5 truncate">5 Füze (5d4+5 Force)</span>
+      </div>
+      <div class="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800">
+        <span class="text-slate-400 block text-[8px] uppercase font-bold tracking-wider">🛡️ KURTARMA ZARI</span>
+        <span id="spell-tooltip-save" class="font-mono font-extrabold text-emerald-400 text-[11px] block mt-0.5 truncate">Yok (None)</span>
+      </div>
     </div>
-    <div id="spell-tooltip-desc" class="text-[9px] text-slate-400 line-clamp-3 leading-relaxed border-t border-slate-800/80 pt-1">
+
+    <!-- 3. TAKTİKSEL PARAMETRELER (2 SÜTUN, 3 SATIR) -->
+    <div class="bg-slate-900/60 rounded-lg p-2 border border-slate-800/80 grid grid-cols-2 gap-x-2 gap-y-1 text-[9px] font-mono">
+      <!-- Satır 1: Eylem & Süre -->
+      <div class="truncate">
+        <span class="text-slate-400">⏱️ Eylem:</span>
+        <span id="spell-tooltip-action" class="text-amber-300 font-bold ml-1">1 Standart</span>
+      </div>
+      <div class="truncate">
+        <span class="text-slate-400">⏳ Süre:</span>
+        <span id="spell-tooltip-duration" class="text-slate-200 font-bold ml-1">Anlık</span>
+      </div>
+      <!-- Satır 2: Menzil & Hedef -->
+      <div class="truncate">
+        <span class="text-slate-400">🎯 Menzil:</span>
+        <span id="spell-tooltip-range" class="text-slate-200 font-bold ml-1">Orta (260 ft)</span>
+      </div>
+      <div class="truncate">
+        <span class="text-slate-400">👥 Hedef:</span>
+        <span id="spell-tooltip-target" class="text-slate-200 font-bold ml-1">1-5 Yaratık</span>
+      </div>
+      <!-- Satır 3: SR & Bileşen -->
+      <div class="truncate">
+        <span class="text-slate-400">⚡ SR:</span>
+        <span id="spell-tooltip-sr" class="text-white font-bold ml-1">Evet (Yes)</span>
+      </div>
+      <div class="truncate">
+        <span class="text-slate-400">📜 Bileşen:</span>
+        <span id="spell-tooltip-components" class="text-amber-200/90 font-bold ml-1">V, S</span>
+      </div>
+    </div>
+
+    <!-- 4. AÇIKLAMA & DİNAMİK ÖLÇEKLENME -->
+    <div id="spell-tooltip-desc" class="text-[9px] text-slate-300 leading-relaxed border-t border-slate-800/80 pt-1.5 max-h-28 overflow-y-auto pr-1">
       Açıklama
     </div>
   </div>
