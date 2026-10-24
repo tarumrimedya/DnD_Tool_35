@@ -11336,15 +11336,18 @@
     window.currentActiveCombatSpellSlotsSourceFilter = 'all';
     window.currentSpellSlotsModalSource = 'spontaneous';
 
-    function getAvailableSpellSlotSources() {
-      const sources = [];
-      const sc = character?.spellcasting || {};
+    function getAvailableSpellSlotSources(onlyActive = false) {
+      const sc = (typeof character !== 'undefined' && character && character.spellcasting) ? character.spellcasting : {};
 
       // 1. Spontaneous (Anlık - Sorcerer/Bard)
       const spontSlots = sc.slots || [];
-      const hasSpont = spontSlots.some(s => (Number(s.daily) || 0) > 0);
-      if (hasSpont) {
-        sources.push({
+      // 2. Prepared (Kitap - Wizard/Wu Jen)
+      const prepSlots = sc.preparedSlots || [];
+      // 3. Divine (İlahi - Cleric/Druid)
+      const divSlots = sc.divineSlots || [];
+
+      const all = [
+        {
           key: 'spontaneous',
           label: 'Anlık Büyü Yuvaları',
           shortLabel: 'Anlık',
@@ -11356,14 +11359,8 @@
           textClass: 'text-purple-300',
           tagClass: 'bg-purple-950/70 border-purple-700/60 text-purple-300',
           slots: spontSlots
-        });
-      }
-
-      // 2. Prepared (Kitap - Wizard/Wu Jen)
-      const prepSlots = sc.preparedSlots || [];
-      const hasPrep = prepSlots.some(s => (Number(s.daily) || 0) > 0);
-      if (hasPrep) {
-        sources.push({
+        },
+        {
           key: 'prepared',
           label: 'Kitap Büyü Yuvaları',
           shortLabel: 'Kitap',
@@ -11375,14 +11372,8 @@
           textClass: 'text-sky-300',
           tagClass: 'bg-sky-950/70 border-sky-700/60 text-sky-300',
           slots: prepSlots
-        });
-      }
-
-      // 3. Divine (İlahi - Cleric/Druid)
-      const divSlots = sc.divineSlots || [];
-      const hasDiv = divSlots.some(s => (Number(s.daily) || 0) > 0);
-      if (hasDiv) {
-        sources.push({
+        },
+        {
           key: 'divine',
           label: 'İlahi Büyü Yuvaları',
           shortLabel: 'İlahi',
@@ -11394,26 +11385,15 @@
           textClass: 'text-amber-300',
           tagClass: 'bg-amber-950/70 border-amber-700/60 text-amber-300',
           slots: divSlots
-        });
+        }
+      ];
+
+      if (onlyActive) {
+        const activeOnly = all.filter(s => s.slots.some(sl => (Number(sl.daily) || 0) > 0));
+        return activeOnly.length > 0 ? activeOnly : [all[0]];
       }
 
-      if (sources.length === 0) {
-        sources.push({
-          key: 'spontaneous',
-          label: 'Anlık Büyü Yuvaları',
-          shortLabel: 'Anlık',
-          subText: 'Spontaneous',
-          icon: '⚡',
-          themeColor: 'purple',
-          borderClass: 'border-purple-800/80 bg-slate-900/90 hover:border-purple-500 text-purple-200',
-          depletedClass: 'border-rose-900/60 bg-rose-950/40 hover:border-rose-700 text-rose-300',
-          textClass: 'text-purple-300',
-          tagClass: 'bg-purple-950/70 border-purple-700/60 text-purple-300',
-          slots: spontSlots
-        });
-      }
-
-      return sources;
+      return all;
     }
 
     function getSpellSlotsArrayBySource(sourceKey) {
@@ -11461,7 +11441,7 @@
       const container = document.getElementById('combat-spell-slots-strip');
       if (!container) return;
 
-      const sources = getAvailableSpellSlotSources();
+      const sources = getAvailableSpellSlotSources(true);
       const filterTabsContainer = document.getElementById('combat-spell-source-filter-tabs');
 
       // Update Filter Tabs in Header if multiple sources exist
@@ -21103,6 +21083,7 @@
     }
 
     function renderPreparedDisciplineView(hasPrepared) {
+      if (!character) return;
       const container = document.getElementById('discipline-prepared-content');
       if (!container) return;
 
@@ -21110,15 +21091,8 @@
       if (!Array.isArray(character.spellcasting.preparedSpells)) {
         character.spellcasting.preparedSpells = [];
       }
-
-      if (!hasPrepared) {
-        container.innerHTML = `
-          <div class="py-12 text-center text-slate-500 text-xs italic bg-slate-950/40 rounded-xl border border-dashed border-slate-800 space-y-2">
-            <span class="text-2xl block">📖</span>
-            <p>Bu karakterin kitaplı hazırlık büyücüsü (Wizard vb.) sınıfı bulunmamaktadır.</p>
-          </div>
-        `;
-        return;
+      if (!Array.isArray(character.spellcasting.preparedSlots)) {
+        character.spellcasting.preparedSlots = [];
       }
 
       const slots = character.spellcasting.preparedSlots;
@@ -21637,6 +21611,7 @@
     }
 
     function renderDivineDisciplineView(hasDivine) {
+      if (!character) return;
       const container = document.getElementById('discipline-divine-content');
       if (!container) return;
 
@@ -21644,20 +21619,15 @@
       if (!Array.isArray(character.spellcasting.divineSpells)) {
         character.spellcasting.divineSpells = [];
       }
-
-      if (!hasDivine) {
-        container.innerHTML = `
-          <div class="py-12 text-center text-slate-500 text-xs italic bg-slate-950/40 rounded-xl border border-dashed border-slate-800 space-y-2">
-            <span class="text-2xl block">✨</span>
-            <p>Bu karakterin ilahi dua (Cleric, Druid, Paladin vb.) sınıfı bulunmamaktadır.</p>
-          </div>
-        `;
-        return;
+      if (!Array.isArray(character.spellcasting.divineSlots)) {
+        character.spellcasting.divineSlots = [];
       }
 
       const { statKey, statVal, statMod, cl, clMode } = getDivineCasterInfo();
       const spontMode = character.spellcasting.clericSpontaneousMode || 'cure';
-      character.spellcasting.divineSlots = calculateDivineSlots(cl, statVal, character.spellcasting.divineSlots);
+      if (hasDivine && Number(cl) > 0) {
+        character.spellcasting.divineSlots = calculateDivineSlots(cl, statVal, character.spellcasting.divineSlots);
+      }
 
       const slots = character.spellcasting.divineSlots;
       const spells = character.spellcasting.divineSpells;
@@ -22533,36 +22503,22 @@
       const sources = getAvailableSpellSlotSources();
       const tabsContainer = document.getElementById('compact-slots-source-tabs');
 
-      if (!sources || sources.length === 0) {
-        if (tabsContainer) tabsContainer.innerHTML = '';
-        container.innerHTML = `
-          <div class="col-span-full py-4 text-center text-slate-500 text-xs italic bg-slate-950/40 rounded-xl border border-dashed border-slate-800">
-            Kullanılabilir aktif büyü sınıfı veya yuvası bulunmamaktadır.
-          </div>
-        `;
-        return;
-      }
-
       // Determine active source for compact grid
       let activeKey = window.currentCompactSlotsSource || sources[0].key;
       let activeSource = sources.find(s => s.key === activeKey) || sources[0];
       window.currentCompactSlotsSource = activeSource.key;
 
-      // Update tabs if multiple sources exist
+      // Update tabs (always show all sources so user can switch between Spontaneous, Prepared, and Divine)
       if (tabsContainer) {
-        if (sources.length > 1) {
-          tabsContainer.innerHTML = sources.map(s => {
-            const isAct = s.key === activeSource.key;
-            return `
-              <button type="button" onclick="switchCompactSlotsSource('${s.key}')" class="text-[9px] px-2 py-0.5 rounded font-bold transition cursor-pointer flex items-center gap-1 ${isAct ? `${s.tagClass} border shadow-sm` : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'}">
-                <span>${s.icon}</span>
-                <span>${s.shortLabel}</span>
-              </button>
-            `;
-          }).join('');
-        } else {
-          tabsContainer.innerHTML = '';
-        }
+        tabsContainer.innerHTML = sources.map(s => {
+          const isAct = s.key === activeSource.key;
+          return `
+            <button type="button" onclick="switchCompactSlotsSource('${s.key}')" class="text-[9px] px-2 py-0.5 rounded font-bold transition cursor-pointer flex items-center gap-1 ${isAct ? `${s.tagClass} border shadow-sm` : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'}">
+              <span>${s.icon}</span>
+              <span>${s.shortLabel}</span>
+            </button>
+          `;
+        }).join('');
       }
 
       const slots = activeSource.slots;
@@ -24002,27 +23958,14 @@
         if (character?.spellcasting) character.spellcasting.knownSpells = spells;
       }
 
-      if (!classesStatus.hasSpontaneous) {
-        tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-slate-500 text-xs italic bg-slate-950/40">Bu karakterin doğal/anlık büyücü (Sorcerer/Bard) sınıfı bulunmamaktadır.</td></tr>`;
-        const pillsContainer = document.getElementById('spell-level-filter-pills');
-        if (pillsContainer) pillsContainer.innerHTML = '';
-        return;
-      }
-
-      if (spells.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-slate-500 text-xs italic bg-slate-950/40">Bu karakterin bilinen büyüsü bulunmamaktadır. Büyü kütüphanesinden büyü ekleyebilirsiniz.</td></tr>`;
-        const pillsContainer = document.getElementById('spell-level-filter-pills');
-        if (pillsContainer) pillsContainer.innerHTML = '';
-        return;
-      }
+      if (!character.spellcasting) character.spellcasting = {};
+      if (!Array.isArray(character.spellcasting.knownSpells)) character.spellcasting.knownSpells = [];
 
       const slotLevels = (character?.spellcasting?.slots || []).map(s => Number(s.level));
       const knownLevels = spells.map(s => Number(s.level));
       const allLevelsSet = new Set([...slotLevels, ...knownLevels]);
       if (allLevelsSet.size === 0) {
-        allLevelsSet.add(0);
-        allLevelsSet.add(1);
-        allLevelsSet.add(2);
+        for (let i = 0; i <= 9; i++) allLevelsSet.add(i);
       }
       const allLevels = Array.from(allLevelsSet).sort((a, b) => a - b);
 
