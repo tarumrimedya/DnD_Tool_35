@@ -766,6 +766,473 @@ const RuleEngine = {
     return 0;
   },
 
+  // Central Dynamic Spell Scaling Resolver (D&D 3.5e RAW)
+  // Calculates dynamic dice formula, projectile counts (missiles/rays), static bonuses, and display tags based on Caster Level (CL)
+  resolveSpellDynamicScaling(spell, casterLevel = 1) {
+    if (!spell) {
+      return {
+        scaled: false,
+        name: '',
+        casterLevel: 1,
+        projectiles: 0,
+        projectileName: '',
+        diceCount: 0,
+        dieSides: 0,
+        staticBonus: 0,
+        diceFormula: '',
+        dmgType: '',
+        displayText: '',
+        descDetail: ''
+      };
+    }
+
+    const cl = Math.max(1, Number(casterLevel) || 1);
+    const rawName = (spell.name || '').trim();
+    const cleanName = rawName.toLowerCase();
+    const dmgType = spell.dmgType || (cleanName.includes('fire') ? 'Fire' : (cleanName.includes('frost') || cleanName.includes('cold') ? 'Cold' : (cleanName.includes('acid') ? 'Acid' : (cleanName.includes('shock') || cleanName.includes('lightning') ? 'Electricity' : (cleanName.includes('magic missile') ? 'Force' : 'Büyü Hasarı')))));
+
+    // 1. MAGIC MISSILE (PHB p.251): 1 missile at CL 1, +1 missile per 2 levels beyond 1st, max 5 missiles at CL 9+ (1d4+1 per missile)
+    if (cleanName.includes('magic missile') || cleanName.includes('büyü füzesi')) {
+      const missiles = Math.min(5, Math.max(1, Math.floor((cl + 1) / 2)));
+      const diceCount = missiles;
+      const dieSides = 4;
+      const staticBonus = missiles;
+      const diceFormula = `${diceCount}d4+${staticBonus}`;
+      return {
+        scaled: true,
+        name: rawName,
+        casterLevel: cl,
+        projectiles: missiles,
+        projectileName: 'Füze',
+        diceCount,
+        dieSides,
+        staticBonus,
+        diceFormula,
+        dmgType: 'Force',
+        displayText: `${missiles} Füze (${diceFormula} Force)`,
+        descDetail: `CL ${cl}: ${missiles} adet füze fırlatılır (her biri 1d4+1 Force)`
+      };
+    }
+
+    // 2. SCORCHING RAY (PHB p.274): 1 ray (4d6 fire), +1 ray per 4 levels above 3rd (2 rays at 7th, 3 rays at 11th, max 3 rays)
+    if (cleanName.includes('scorching ray') || cleanName.includes('yakıcı ışın')) {
+      const rays = Math.min(3, Math.max(1, 1 + Math.floor(Math.max(0, cl - 3) / 4)));
+      const diceCount = rays * 4;
+      const dieSides = 6;
+      const staticBonus = 0;
+      const diceFormula = `${diceCount}d6`;
+      return {
+        scaled: true,
+        name: rawName,
+        casterLevel: cl,
+        projectiles: rays,
+        projectileName: 'Işın',
+        diceCount,
+        dieSides,
+        staticBonus,
+        diceFormula,
+        dmgType: 'Fire',
+        displayText: `${rays} Işın (${diceFormula} Fire)`,
+        descDetail: `CL ${cl}: ${rays} adet ışın (her biri 4d6 Fire)`
+      };
+    }
+
+    // 3. SHOCKING GRASP (PHB p.279): 1d6 per level (max 5d6 electricity)
+    if (cleanName.includes('shocking grasp')) {
+      const diceCount = Math.min(5, Math.max(1, cl));
+      const dieSides = 6;
+      const diceFormula = `${diceCount}d6`;
+      return {
+        scaled: true,
+        name: rawName,
+        casterLevel: cl,
+        projectiles: 1,
+        projectileName: 'Dokunuş',
+        diceCount,
+        dieSides,
+        staticBonus: 0,
+        diceFormula,
+        dmgType: 'Electricity',
+        displayText: `${diceFormula} Electricity (+3 vs Metal)`,
+        descDetail: `CL ${cl}: ${diceCount}d6 elektrik hasarı (tavan 5d6)`
+      };
+    }
+
+    // 4. FIREBALL (PHB p.231) & LIGHTNING BOLT (PHB p.248): 1d6 per level (max 10d6)
+    if (cleanName === 'fireball' || cleanName.includes('lightning bolt') || cleanName === 'alevtoptu') {
+      const isWand = (spell.source || '').toLowerCase().includes('wand') || cleanName.includes('wand') || (spell.parent || '').toLowerCase().includes('wand');
+      const effectiveCl = isWand ? Math.min(cl, 5) : cl;
+      const diceCount = Math.min(10, Math.max(1, effectiveCl));
+      const dieSides = 6;
+      const fDmgType = cleanName.includes('lightning') ? 'Electricity' : 'Fire';
+      const diceFormula = `${diceCount}d6`;
+      return {
+        scaled: true,
+        name: rawName,
+        casterLevel: cl,
+        projectiles: 1,
+        projectileName: 'Patlama',
+        diceCount,
+        dieSides,
+        staticBonus: 0,
+        diceFormula,
+        dmgType: fDmgType,
+        displayText: `${diceFormula} ${fDmgType}`,
+        descDetail: `CL ${cl}: ${diceCount}d6 ${fDmgType} (Reflex yarısı)`
+      };
+    }
+
+    // 5. CONE OF COLD (PHB p.212): 1d6 per level (max 15d6 cold)
+    if (cleanName.includes('cone of cold')) {
+      const diceCount = Math.min(15, Math.max(1, cl));
+      const dieSides = 6;
+      const diceFormula = `${diceCount}d6`;
+      return {
+        scaled: true,
+        name: rawName,
+        casterLevel: cl,
+        projectiles: 1,
+        projectileName: 'Koni',
+        diceCount,
+        dieSides,
+        staticBonus: 0,
+        diceFormula,
+        dmgType: 'Cold',
+        displayText: `${diceFormula} Cold`,
+        descDetail: `CL ${cl}: ${diceCount}d6 soğuk hasarı`
+      };
+    }
+
+    // 6. CHAIN LIGHTNING (PHB p.208): 1d6 per level (max 20d6)
+    if (cleanName.includes('chain lightning')) {
+      const diceCount = Math.min(20, Math.max(1, cl));
+      const dieSides = 6;
+      const diceFormula = `${diceCount}d6`;
+      return {
+        scaled: true,
+        name: rawName,
+        casterLevel: cl,
+        projectiles: 1,
+        projectileName: 'Yıldırım',
+        diceCount,
+        dieSides,
+        staticBonus: 0,
+        diceFormula,
+        dmgType: 'Electricity',
+        displayText: `${diceFormula} Electricity`,
+        descDetail: `CL ${cl}: ${diceCount}d6 elektrik hasarı`
+      };
+    }
+
+    // 7. DISINTEGRATE (PHB p.222): 2d6 per level (max 40d6)
+    if (cleanName.includes('disintegrate')) {
+      const diceCount = Math.min(40, Math.max(2, cl * 2));
+      const dieSides = 6;
+      const diceFormula = `${diceCount}d6`;
+      return {
+        scaled: true,
+        name: rawName,
+        casterLevel: cl,
+        projectiles: 1,
+        projectileName: 'Işın',
+        diceCount,
+        dieSides,
+        staticBonus: 0,
+        diceFormula,
+        dmgType: 'Untyped',
+        displayText: `${diceFormula} Ayrışma Hasarı`,
+        descDetail: `CL ${cl}: ${diceCount}d6 ayrışma hasarı (Fort kurtulursa 5d6)`
+      };
+    }
+
+    // 8. POLAR RAY (PHB p.262): 1d6 per level (max 25d6 cold)
+    if (cleanName.includes('polar ray')) {
+      const diceCount = Math.min(25, Math.max(1, cl));
+      const dieSides = 6;
+      const diceFormula = `${diceCount}d6`;
+      return {
+        scaled: true,
+        name: rawName,
+        casterLevel: cl,
+        projectiles: 1,
+        projectileName: 'Kutup Işını',
+        diceCount,
+        dieSides,
+        staticBonus: 0,
+        diceFormula,
+        dmgType: 'Cold',
+        displayText: `${diceFormula} Cold`,
+        descDetail: `CL ${cl}: ${diceCount}d6 soğuk hasarı`
+      };
+    }
+
+    // 9. SEARING LIGHT (PHB p.275):
+    // Living: 1d8 / 2 CL (max 5d8), Undead: 1d6 / CL (max 10d6) or 1d8 / CL (max 10d8) if light vulnerable, Construct: 1d6 / 2 CL (max 5d6)
+    if (cleanName.includes('searing light') || cleanName.includes('kavurucu ışık')) {
+      let diceCount = 1, dieSides = 8, capDesc = '';
+      if (cleanName.includes('ışığa hassas') || cleanName.includes('vulnerable')) {
+        diceCount = Math.min(10, Math.max(1, cl));
+        dieSides = 8;
+        capDesc = `${diceCount}d8 (Işığa Hassas Undead)`;
+      } else if (cleanName.includes('undead')) {
+        diceCount = Math.min(10, Math.max(1, cl));
+        dieSides = 6;
+        capDesc = `${diceCount}d6 (Undead)`;
+      } else if (cleanName.includes('construct') || cleanName.includes('cansız')) {
+        diceCount = Math.min(5, Math.max(1, Math.floor(cl / 2)));
+        dieSides = 6;
+        capDesc = `${diceCount}d6 (Construct / Cansız)`;
+      } else {
+        diceCount = Math.min(5, Math.max(1, Math.floor(cl / 2)));
+        dieSides = 8;
+        capDesc = `${diceCount}d8 (Canlı Hedef)`;
+      }
+      const diceFormula = `${diceCount}d${dieSides}`;
+      return {
+        scaled: true,
+        name: rawName,
+        casterLevel: cl,
+        projectiles: 1,
+        projectileName: 'İlahi Işın',
+        diceCount,
+        dieSides,
+        staticBonus: 0,
+        diceFormula,
+        dmgType: 'Divine / Light',
+        displayText: `${diceFormula} İlahi Işık`,
+        descDetail: `CL ${cl}: ${capDesc}`
+      };
+    }
+
+    // 10. CURE / INFLICT SPELLS (Cure Light/Moderate/Serious/Critical)
+    if (cleanName.includes('cure light') || cleanName.includes('inflict light')) {
+      const bonus = Math.min(5, cl);
+      const diceFormula = `1d8+${bonus}`;
+      const isCure = cleanName.includes('cure');
+      return {
+        scaled: true,
+        name: rawName,
+        casterLevel: cl,
+        projectiles: 1,
+        diceCount: 1,
+        dieSides: 8,
+        staticBonus: bonus,
+        diceFormula,
+        dmgType: isCure ? 'Şifa / Pozitif' : 'Negatif Enerji',
+        displayText: `${diceFormula} ${isCure ? 'Şifa' : 'Hasar'}`,
+        descDetail: `CL ${cl}: 1d8+${bonus} (tavan +5)`
+      };
+    }
+    if (cleanName.includes('cure moderate') || cleanName.includes('inflict moderate')) {
+      const bonus = Math.min(10, cl);
+      const diceFormula = `2d8+${bonus}`;
+      const isCure = cleanName.includes('cure');
+      return {
+        scaled: true,
+        name: rawName,
+        casterLevel: cl,
+        projectiles: 1,
+        diceCount: 2,
+        dieSides: 8,
+        staticBonus: bonus,
+        diceFormula,
+        dmgType: isCure ? 'Şifa / Pozitif' : 'Negatif Enerji',
+        displayText: `${diceFormula} ${isCure ? 'Şifa' : 'Hasar'}`,
+        descDetail: `CL ${cl}: 2d8+${bonus} (tavan +10)`
+      };
+    }
+    if (cleanName.includes('cure serious') || cleanName.includes('inflict serious')) {
+      const bonus = Math.min(15, cl);
+      const diceFormula = `3d8+${bonus}`;
+      const isCure = cleanName.includes('cure');
+      return {
+        scaled: true,
+        name: rawName,
+        casterLevel: cl,
+        projectiles: 1,
+        diceCount: 3,
+        dieSides: 8,
+        staticBonus: bonus,
+        diceFormula,
+        dmgType: isCure ? 'Şifa / Pozitif' : 'Negatif Enerji',
+        displayText: `${diceFormula} ${isCure ? 'Şifa' : 'Hasar'}`,
+        descDetail: `CL ${cl}: 3d8+${bonus} (tavan +15)`
+      };
+    }
+    if (cleanName.includes('cure critical') || cleanName.includes('inflict critical')) {
+      const bonus = Math.min(20, cl);
+      const diceFormula = `4d8+${bonus}`;
+      const isCure = cleanName.includes('cure');
+      return {
+        scaled: true,
+        name: rawName,
+        casterLevel: cl,
+        projectiles: 1,
+        diceCount: 4,
+        dieSides: 8,
+        staticBonus: bonus,
+        diceFormula,
+        dmgType: isCure ? 'Şifa / Pozitif' : 'Negatif Enerji',
+        displayText: `${diceFormula} ${isCure ? 'Şifa' : 'Hasar'}`,
+        descDetail: `CL ${cl}: 4d8+${bonus} (tavan +20)`
+      };
+    }
+
+    // 11. RAY OF ENFEEBLEMENT (PHB p.269): 1d6 + 1 per 2 levels (max +5)
+    if (cleanName.includes('ray of enfeeblement') || cleanName.includes('güçsüzleştirme')) {
+      const bonus = Math.min(5, Math.floor(cl / 2));
+      const diceFormula = bonus > 0 ? `1d6+${bonus}` : `1d6`;
+      return {
+        scaled: true,
+        name: rawName,
+        casterLevel: cl,
+        projectiles: 1,
+        projectileName: 'Işın',
+        diceCount: 1,
+        dieSides: 6,
+        staticBonus: bonus,
+        diceFormula,
+        dmgType: 'STR Cezası',
+        displayText: `${diceFormula} STR Azaltma`,
+        descDetail: `CL ${cl}: 1d6 + ${bonus} Güç Cezası (tavan +5)`
+      };
+    }
+
+    // 12. VAMPIRIC TOUCH (PHB p.298): 1d6 per 2 levels (max 10d6)
+    if (cleanName.includes('vampiric touch')) {
+      const diceCount = Math.min(10, Math.max(1, Math.floor(cl / 2)));
+      const diceFormula = `${diceCount}d6`;
+      return {
+        scaled: true,
+        name: rawName,
+        casterLevel: cl,
+        projectiles: 1,
+        projectileName: 'Dokunuş',
+        diceCount,
+        dieSides: 6,
+        staticBonus: 0,
+        diceFormula,
+        dmgType: 'Negatif / Geçici Can',
+        displayText: `${diceFormula} Negatif Hasar & Can`,
+        descDetail: `CL ${cl}: ${diceCount}d6 (tavan 10d6)`
+      };
+    }
+
+    // 13. GENERIC PATTERN MATCHER (e.g. "1d6/level (max 10d6)", "1d8+1/level (max +5)")
+    const fullText = `${spell.dice || ''} ${spell.damageDice || ''} ${spell.benefit || ''} ${spell.description || ''}`;
+
+    // Pattern A: "XdY/level (max MdY)" or "XdY per level (max MdY)"
+    const perLvlMatch = fullText.match(/(\d+)d(\d+)\s*(?:\/|\s*per\s*)\s*(?:cl|level|seviye)(?:\s*\(?max\s*(\d+)d\d+\)?)?/i);
+    if (perLvlMatch) {
+      const perCl = parseInt(perLvlMatch[1], 10) || 1;
+      const dieSides = parseInt(perLvlMatch[2], 10) || 6;
+      const maxCap = perLvlMatch[3] ? parseInt(perLvlMatch[3], 10) : (perCl * 20);
+      const diceCount = Math.min(maxCap, Math.max(perCl, cl * perCl));
+      const diceFormula = `${diceCount}d${dieSides}`;
+      return {
+        scaled: true,
+        name: rawName,
+        casterLevel: cl,
+        projectiles: 1,
+        diceCount,
+        dieSides,
+        staticBonus: 0,
+        diceFormula,
+        dmgType,
+        displayText: `${diceFormula} ${dmgType}`,
+        descDetail: `CL ${cl}: ${diceCount}d${dieSides} (tavan ${maxCap}d${dieSides})`
+      };
+    }
+
+    // Pattern B: "XdY/2 levels (max MdY)"
+    const per2LvlMatch = fullText.match(/(\d+)d(\d+)\s*(?:\/|\s*per\s*)\s*2\s*(?:cl|level|seviye|levels)(?:\s*\(?max\s*(\d+)d\d+\)?)?/i);
+    if (per2LvlMatch) {
+      const per2Cl = parseInt(per2LvlMatch[1], 10) || 1;
+      const dieSides = parseInt(per2LvlMatch[2], 10) || 6;
+      const maxCap = per2LvlMatch[3] ? parseInt(per2LvlMatch[3], 10) : (per2Cl * 10);
+      const diceCount = Math.min(maxCap, Math.max(per2Cl, Math.floor(cl / 2) * per2Cl));
+      const diceFormula = `${diceCount}d${dieSides}`;
+      return {
+        scaled: true,
+        name: rawName,
+        casterLevel: cl,
+        projectiles: 1,
+        diceCount,
+        dieSides,
+        staticBonus: 0,
+        diceFormula,
+        dmgType,
+        displayText: `${diceFormula} ${dmgType}`,
+        descDetail: `CL ${cl}: ${diceCount}d${dieSides} (tavan ${maxCap}d${dieSides})`
+      };
+    }
+
+    // Pattern C: "XdY + 1/level (max +Z)"
+    const bonusLvlMatch = fullText.match(/(\d+)d(\d+)\s*\+\s*(?:1\s*(?:\/|\s*per\s*)\s*(?:cl|level)|cl)(?:\s*\(?max\s*\+(\d+)\)?)?/i);
+    if (bonusLvlMatch) {
+      const diceCount = parseInt(bonusLvlMatch[1], 10) || 1;
+      const dieSides = parseInt(bonusLvlMatch[2], 10) || 8;
+      const maxBonus = bonusLvlMatch[3] ? parseInt(bonusLvlMatch[3], 10) : 5;
+      const staticBonus = Math.min(maxBonus, cl);
+      const diceFormula = `${diceCount}d${dieSides}+${staticBonus}`;
+      return {
+        scaled: true,
+        name: rawName,
+        casterLevel: cl,
+        projectiles: 1,
+        diceCount,
+        dieSides,
+        staticBonus,
+        diceFormula,
+        dmgType,
+        displayText: `${diceFormula} ${dmgType}`,
+        descDetail: `CL ${cl}: ${diceFormula} (tavan +${maxBonus})`
+      };
+    }
+
+    // 14. FALLBACK / STATIC DICE (e.g. "1d6", "2d4+2", "3d6")
+    const diceStr = spell.dice || spell.damageDice || (spell.benefit && spell.benefit.match(/\b\d+d\d+(?:\s*[+-]\s*\d+)?\b/i) ? spell.benefit.match(/\b\d+d\d+(?:\s*[+-]\s*\d+)?\b/i)[0] : '');
+    if (diceStr) {
+      const parsed = diceStr.match(/(\d+)d(\d+)(?:\s*([+-])\s*(\d+))?/i);
+      if (parsed) {
+        const diceCount = parseInt(parsed[1], 10) || 1;
+        const dieSides = parseInt(parsed[2], 10) || 6;
+        let staticBonus = 0;
+        if (parsed[4]) {
+          staticBonus = parsed[3] === '-' ? -parseInt(parsed[4], 10) : parseInt(parsed[4], 10);
+        }
+        const cleanFormula = staticBonus !== 0 ? `${diceCount}d${dieSides}${staticBonus > 0 ? '+' : ''}${staticBonus}` : `${diceCount}d${dieSides}`;
+        return {
+          scaled: false,
+          name: rawName,
+          casterLevel: cl,
+          projectiles: 1,
+          diceCount,
+          dieSides,
+          staticBonus,
+          diceFormula: cleanFormula,
+          dmgType,
+          displayText: `${cleanFormula} ${dmgType}`,
+          descDetail: ''
+        };
+      }
+    }
+
+    return {
+      scaled: false,
+      name: rawName,
+      casterLevel: cl,
+      projectiles: 0,
+      diceCount: 0,
+      dieSides: 0,
+      staticBonus: 0,
+      diceFormula: '',
+      dmgType,
+      displayText: '',
+      descDetail: ''
+    };
+  },
+
   // Central Recalculation Engine for Character State (Abilities, AC, Saves, Speed, Buffs)
   recalculateCharacter(character, masterDb = [], tacticalOptions = {}) {
     if (!character) return;

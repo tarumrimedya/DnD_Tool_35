@@ -1295,7 +1295,9 @@
                                                  "school":  "Evocation",
                                                  "action":  "Standard Action",
                                                  "range":  "Medium (150 ft)",
-                                                 "benefit":  "Fires 3 force missiles dealing 1d4+1 each (unerring hit)."
+                                                 "benefit":  "Fires magical darts of force that unerringly hit. Deals 1d4+1 force damage per missile (+1 missile per 2 CL beyond 1st, max 5 missiles).",
+                                                 "dice":  "1d4+1/2CL (max 5d4+5)",
+                                                 "damageDice":  "1d4+1"
                                              },
                                              {
                                                  "level":  1,

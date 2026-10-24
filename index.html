@@ -11524,13 +11524,19 @@
         };
       }
 
+      // Dynamic Spell Scaling (D&D 3.5e RAW)
+      const cl = Number(character?.casterLevel) || (character?.classes ? Object.values(character.classes)[0]?.level : 1) || 1;
+      const scaling = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveSpellDynamicScaling === 'function')
+        ? RuleEngine.resolveSpellDynamicScaling(spell, cl)
+        : null;
+
       // 1. Damage / Dice expression
-      let diceExpr = spell.dice || spell.damageDice || spell.extraDmg || '';
+      let diceExpr = (scaling && scaling.diceFormula) ? scaling.diceFormula : (spell.dice || spell.damageDice || spell.extraDmg || '');
       if (!diceExpr && spell.benefit) {
-        const m = spell.benefit.match(/\b\d+d\d+(?:\s*\+\s*\d+)?\b/i);
+        const m = spell.benefit.match(/\b\d+d\d+(?:\s*[+-]\s*\d+)?\b/i);
         if (m) diceExpr = m[0];
       }
-      let effectText = diceExpr ? `${diceExpr} ${spell.dmgType || ''}`.trim() : (spell.effect || spell.target || 'Etki / Fayda');
+      let effectText = (scaling && scaling.displayText) ? scaling.displayText : (diceExpr ? `${diceExpr} ${spell.dmgType || ''}`.trim() : (spell.effect || spell.target || 'Etki / Fayda'));
 
       // 2. Saving Throw
       let saveText = spell.save || spell.savingThrow || '';
@@ -11598,7 +11604,15 @@
       if (saveEl) saveEl.textContent = params.save;
       if (srEl) srEl.textContent = params.sr;
       if (actionEl) actionEl.textContent = `${params.action} • ${params.range}`;
-      if (descEl) descEl.textContent = params.benefit || 'Açıklama bulunmuyor.';
+      const cl = Number(character?.casterLevel) || (character?.classes ? Object.values(character.classes)[0]?.level : 1) || 1;
+      const scaling = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveSpellDynamicScaling === 'function')
+        ? RuleEngine.resolveSpellDynamicScaling(spell, cl)
+        : null;
+      let fullDesc = params.benefit || 'Açıklama bulunmuyor.';
+      if (scaling && scaling.descDetail) {
+        fullDesc = `${fullDesc} [⚡ ${scaling.descDetail}]`;
+      }
+      if (descEl) descEl.textContent = fullDesc;
 
       updateSpellHoverTooltipPos(event);
       tooltip.classList.remove('hidden');
@@ -12342,6 +12356,12 @@
         }
       }
 
+      // Caster Level & Spell Dynamic Scaling (D&D 3.5e RAW)
+      const cl = Number(character?.casterLevel) || (character?.classes ? Object.values(character.classes)[0]?.level : 1) || 1;
+      const scaling = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveSpellDynamicScaling === 'function')
+        ? RuleEngine.resolveSpellDynamicScaling(spell, cl)
+        : null;
+
       // Update Selected Spell Title & School/Level Badges
       const titleEl = document.getElementById('combat-selected-spell-title');
       if (titleEl) titleEl.textContent = spell.name;
@@ -12354,7 +12374,11 @@
 
       const metaDescEl = document.getElementById('combat-selected-spell-meta-desc');
       if (metaDescEl) {
-        metaDescEl.textContent = spell.benefit || spell.desc || spell.description || 'Açıklama bulunmuyor.';
+        let descStr = spell.benefit || spell.desc || spell.description || 'Açıklama bulunmuyor.';
+        if (scaling && scaling.descDetail) {
+          descStr = `${descStr} [⚡ ${scaling.descDetail}]`;
+        }
+        metaDescEl.textContent = descStr;
       }
 
       // Update Action Display
@@ -12413,20 +12437,25 @@
         srTargetEl.textContent = `SR: ${params.sr} • Menzil: ${params.range}`;
       }
 
-      // Damage / effect preview
+      // Damage / effect preview (Dynamic Spell Scaling D&D 3.5e RAW)
       const activeCat = window.currentActiveCombatSpellCategory || 'offense_spell';
-      const hasDamageDice = !!spell.dice || (spell.benefit && /\b\d+d\d+\b/i.test(spell.benefit));
-      let baseDice = spell.dice || (spell.benefit && spell.benefit.match(/\b\d+d\d+\b/i) ? spell.benefit.match(/\b\d+d\d+\b/i)[0] : '');
+      const hasDamageDice = (scaling && scaling.diceCount > 0) || !!spell.dice || (spell.benefit && /\b\d+d\d+\b/i.test(spell.benefit));
+      let baseDice = scaling?.diceFormula || spell.dice || (spell.benefit && spell.benefit.match(/\b\d+d\d+(?:\s*[+-]\s*\d+)?\b/i) ? spell.benefit.match(/\b\d+d\d+(?:\s*[+-]\s*\d+)?\b/i)[0] : '');
 
       let previewText = '';
       if (hasDamageDice && baseDice) {
-        previewText = `${baseDice} ${spell.dmgType || 'Büyü Hasarı'}`;
+        const typeLabel = scaling?.dmgType || spell.dmgType || 'Büyü Hasarı';
+        const projPrefix = (scaling && scaling.projectiles > 1 && scaling.projectileName) ? `${scaling.projectiles} ${scaling.projectileName} • ` : '';
         if (isEmpower && isMaximize) {
-          previewText = `${baseDice} Max + 50%`;
+          previewText = `${projPrefix}${baseDice} Max + 50% (${typeLabel})`;
         } else if (isEmpower) {
-          previewText = `${baseDice} x 1.5 (+50%)`;
+          previewText = `${projPrefix}${baseDice} x 1.5 (+50%) (${typeLabel})`;
         } else if (isMaximize) {
-          previewText = `${baseDice} (Tavan/Max)`;
+          previewText = `${projPrefix}${baseDice} (Tavan/Max) (${typeLabel})`;
+        } else if (scaling?.displayText) {
+          previewText = scaling.displayText;
+        } else {
+          previewText = `${projPrefix}${baseDice} ${typeLabel}`;
         }
       } else if (activeCat === 'spell_control' || spell.save) {
         previewText = `DC ${saveDc} ${spell.save || 'Test'} (${spell.target || spell.range || 'Kitle Kontrol'})`;
@@ -12449,7 +12478,6 @@
       }
 
       // Top CL & Slot Badges and Collapsed Bar Summary
-      const cl = Number(character?.casterLevel) || (character?.classes ? Object.values(character.classes)[0]?.level : 1) || 1;
       const clBadge = document.getElementById('combat-spell-cl-slot-badge');
       const totalDailySlots = (character?.spellcasting?.slots || []).reduce((acc, s) => acc + (Number(s.daily) || 0), 0);
       const totalUsedSlots = (character?.spellcasting?.slots || []).reduce((acc, s) => acc + (Number(s.used) || 0), 0);
@@ -12625,11 +12653,16 @@
         if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
       }
 
-      // Roll Spell Damage Dice or apply Effect
-      const hasDice = !!spell.dice || (spell.benefit && /\d+d\d+/i.test(spell.benefit));
-      const diceStr = spell.dice || (spell.benefit && spell.benefit.match(/\d+d\d+/i) ? spell.benefit.match(/\d+d\d+/i)[0] : '');
+      // Caster Level & Dynamic Spell Scaling (D&D 3.5e RAW)
+      const cl = Number(character?.casterLevel) || (character?.classes ? Object.values(character.classes)[0]?.level : 1) || 1;
+      const scaling = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveSpellDynamicScaling === 'function')
+        ? RuleEngine.resolveSpellDynamicScaling(spell, cl)
+        : null;
 
-      if (!hasDice || !diceStr) {
+      // Roll Spell Damage Dice or apply Effect
+      const hasDice = (scaling && scaling.diceCount > 0) || !!spell.dice || (spell.benefit && /\d+d\d+/i.test(spell.benefit));
+
+      if (!hasDice) {
         const activeCat = window.currentActiveCombatSpellCategory || 'offense_spell';
         const icon = activeCat === 'spell_control' ? '🕸️' : (activeCat === 'spell_support' ? '✨' : '🔮');
         const outcomeText = spell.save ? `DC ${10 + finalLvl + (RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.cha || 10) : 0)} ${spell.save}` : (spell.duration || 'Aktif');
@@ -12668,11 +12701,25 @@
         return;
       }
 
-      let count = 4, sides = 6;
-      const dMatch = diceStr.match(/(\d+)d(\d+)/i);
-      if (dMatch) {
-        count = parseInt(dMatch[1], 10) || 1;
-        sides = parseInt(dMatch[2], 10) || 6;
+      let count = 1, sides = 6, staticBonus = 0;
+      let diceStr = '';
+
+      if (scaling && scaling.diceCount > 0) {
+        count = scaling.diceCount;
+        sides = scaling.dieSides;
+        staticBonus = scaling.staticBonus || 0;
+        diceStr = scaling.diceFormula;
+      } else {
+        const rawDice = spell.dice || (spell.benefit && spell.benefit.match(/\d+d\d+(?:\s*[+-]\s*\d+)?/i) ? spell.benefit.match(/\d+d\d+(?:\s*[+-]\s*\d+)?/i)[0] : '');
+        const dMatch = (rawDice || '').match(/(\d+)d(\d+)(?:\s*([+-])\s*(\d+))?/i);
+        if (dMatch) {
+          count = parseInt(dMatch[1], 10) || 1;
+          sides = parseInt(dMatch[2], 10) || 6;
+          if (dMatch[4]) {
+            staticBonus = dMatch[3] === '-' ? -parseInt(dMatch[4], 10) : parseInt(dMatch[4], 10);
+          }
+          diceStr = rawDice;
+        }
       }
 
       const diceToRoll3D = [];
@@ -12686,22 +12733,25 @@
         diceToRoll3D.push({ type: 'd' + sides, value: r });
       }
 
-      let finalDmg = rawSum;
+      let finalDmg = rawSum + staticBonus;
       let calcNotice = '';
+      const bonusStr = staticBonus > 0 ? ` + ${staticBonus}` : (staticBonus < 0 ? ` - ${Math.abs(staticBonus)}` : '');
+      const projLabel = (scaling && scaling.projectiles > 1 && scaling.projectileName) ? `${scaling.projectiles} ${scaling.projectileName}` : '';
 
       if (isEmpower && isMaximize) {
-        const maxVal = count * sides;
-        const empowerBonus = Math.floor(rawSum * 0.5);
+        const maxVal = count * sides + staticBonus;
+        const empowerBonus = Math.floor((rawSum + staticBonus) * 0.5);
         finalDmg = maxVal + empowerBonus;
-        calcNotice = `Max (${maxVal}) + Empowered (+${empowerBonus}) = ${finalDmg}`;
+        calcNotice = `Max (${maxVal}) + Empowered (+${empowerBonus}) = ${finalDmg}${projLabel ? ` (${projLabel})` : ''}`;
       } else if (isEmpower) {
-        finalDmg = Math.floor(rawSum * 1.5);
-        calcNotice = `Zar [${rolls.join('+')}] = ${rawSum} × 1.5 = ${finalDmg}`;
+        const totalBase = rawSum + staticBonus;
+        finalDmg = Math.floor(totalBase * 1.5);
+        calcNotice = `Zar [${rolls.join('+')}]${bonusStr} = ${totalBase} × 1.5 = ${finalDmg}${projLabel ? ` (${projLabel})` : ''}`;
       } else if (isMaximize) {
-        finalDmg = count * sides;
-        calcNotice = `Max Zar = ${finalDmg}`;
+        finalDmg = count * sides + staticBonus;
+        calcNotice = `Max Zar = ${finalDmg}${projLabel ? ` (${projLabel})` : ''}`;
       } else {
-        calcNotice = `Zar [${rolls.join('+')}] = ${finalDmg}`;
+        calcNotice = `Zar [${rolls.join('+')}]${bonusStr} = ${finalDmg}${projLabel ? ` (${projLabel})` : ''}`;
       }
 
       // Trigger 3D dice animation and toast
@@ -12729,7 +12779,7 @@
 
       if (window.Dice3D && typeof Dice3D.roll === 'function') {
         try {
-          Dice3D.roll(diceToRoll3D.slice(0, 6), onComplete);
+          Dice3D.roll(diceToRoll3D.slice(0, 10), onComplete);
         } catch (e) {
           onComplete();
         }
