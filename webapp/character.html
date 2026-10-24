@@ -6370,6 +6370,7 @@
               <select id="rf-bonus-type" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-amber-300 font-bold">
                 <option value="Untyped">Untyped (İstiflenir / Genel)</option>
                 <option value="Enhancement">Enhancement (En yüksek geçerli)</option>
+                <option value="Natural_Armor_Ench">Natural_Armor_Ench (Doğal Zırh Geliştirme - Amulet/Barkskin)</option>
                 <option value="Morale">Morale (En yüksek geçerli)</option>
                 <option value="Luck">Luck (En yüksek geçerli)</option>
                 <option value="Insight">Insight (En yüksek geçerli)</option>
@@ -31595,7 +31596,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       if (Array.isArray(bd.sources?.natural) && bd.sources.natural.length > 0) {
         if (bd.sources.natural.length > 1) {
           const natItems = bd.sources.natural.map(s => {
-            const typeLabel = s.type === 'natural_armor_ench' ? 'Enh' : 'Base';
+            const typeLabel = (s.type === 'Natural_Armor_Ench' || s.type === 'natural_armor_ench' || (s.type && s.type.toLowerCase().includes('ench'))) ? 'Enh' : 'Base';
             return `${s.source}: +${s.val} (${typeLabel})`;
           }).join(', ');
           naturalDetail = ` <span class="text-[10px] text-slate-500 font-normal">(${natItems})</span>`;

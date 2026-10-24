@@ -1,4 +1,4 @@
-﻿/**
+/**
  * D&D 3.5e Rule Master & Master_DB Management Engine
  * Features:
  * 1. Full CRUD for Master_DB with 29-column architecture
@@ -96,6 +96,34 @@ const RuleMaster = {
     if (act.includes('passive') || act.includes('continuous') || act.includes('none')) return 'Passive';
     if (t === 'spell' || t === 'maneuver') return 'Standard';
     return 'Passive';
+  },
+
+  // Capitalizes words and handles underscores (e.g. "natural_armor_ench" -> "Natural_Armor_Ench", "magic item" -> "Magic Item")
+  capitalizeIdentifier(val) {
+    if (!val || typeof val !== 'string') return val;
+    const str = val.trim();
+    if (!str) return str;
+
+    // Handle underscore-separated tokens (e.g., natural_armor_ench -> Natural_Armor_Ench)
+    if (str.includes('_')) {
+      return str.split('_').map(part => {
+        if (!part) return '';
+        return part.charAt(0).toUpperCase() + part.slice(1);
+      }).join('_');
+    }
+
+    // Handle space, slash, dash, or bracket separated tokens
+    return str.replace(/(^|[\s\/\(\[\-])([a-zğüşıöç])/gi, (match, sep, ch) => sep + ch.toUpperCase());
+  },
+
+  capitalizeTitle(val) {
+    if (!val || typeof val !== 'string') return val;
+    const str = val.trim();
+    if (!str) return str;
+    const prefix = str.startsWith('↳') ? '↳ ' : '';
+    const cleanStr = str.replace(/^↳\s*/, '');
+    const capitalized = cleanStr.replace(/(^|[\s\/\(\[\-])([a-zğüşıöç])/gi, (match, sep, ch) => sep + ch.toUpperCase());
+    return prefix + capitalized;
   },
 
   // Default Item Schema (Declarative Master_DB Schema with actionType, ruleFlags, combatModifiers, skillBonuses)
@@ -287,6 +315,18 @@ const RuleMaster = {
       alert('⚠️ Lütfen geçerli bir Kural / Eşya Adı giriniz.');
       return false;
     }
+
+    // Auto-capitalize first letters and identifiers (e.g. natural_armor_ench -> Natural_Armor_Ench)
+    if (entryData.name) entryData.name = this.capitalizeTitle(entryData.name);
+    if (entryData.bonusType) entryData.bonusType = this.capitalizeIdentifier(entryData.bonusType);
+    if (entryData.type) entryData.type = this.capitalizeIdentifier(entryData.type);
+    if (entryData.slot) entryData.slot = this.capitalizeIdentifier(entryData.slot);
+    if (entryData.role) entryData.role = this.capitalizeIdentifier(entryData.role);
+    if (entryData.scope) entryData.scope = this.capitalizeIdentifier(entryData.scope);
+    if (entryData.actionType) entryData.actionType = this.capitalizeIdentifier(entryData.actionType);
+    if (entryData.discipline) entryData.discipline = this.capitalizeIdentifier(entryData.discipline);
+    if (entryData.school) entryData.school = this.capitalizeIdentifier(entryData.school);
+    if (entryData.dmgType) entryData.dmgType = this.capitalizeIdentifier(entryData.dmgType);
 
     let oldName = null;
     let oldEntry = null;
@@ -634,7 +674,19 @@ const RuleMaster = {
     document.getElementById('rf-prereq').value = entry.prereq || '-';
     document.getElementById('rf-source').value = entry.source || 'PHB p.';
     document.getElementById('rf-benefit').value = entry.benefit || '';
-    document.getElementById('rf-bonus-type').value = entry.bonusType || 'Untyped';
+    const bonusTypeSelect = document.getElementById('rf-bonus-type');
+    if (bonusTypeSelect) {
+      const rawBonus = this.capitalizeIdentifier(entry.bonusType || 'Untyped');
+      let matchingOpt = Array.from(bonusTypeSelect.options).find(o => o.value.toLowerCase() === rawBonus.toLowerCase());
+      if (!matchingOpt && rawBonus) {
+        const newOpt = document.createElement('option');
+        newOpt.value = rawBonus;
+        newOpt.textContent = rawBonus;
+        bonusTypeSelect.appendChild(newOpt);
+        matchingOpt = newOpt;
+      }
+      bonusTypeSelect.value = matchingOpt ? matchingOpt.value : 'Untyped';
+    }
     document.getElementById('rf-scope').value = entry.scope || 'None / General';
     document.getElementById('rf-role').value = entry.role || 'Offense / Attack';
 
@@ -712,9 +764,9 @@ const RuleMaster = {
     const derivedActType = this.deriveActionType(actVal, typeVal);
 
     const formData = {
-      name: document.getElementById('rf-name').value.trim(),
-      type: typeVal,
-      slot: document.getElementById('rf-slot').value,
+      name: this.capitalizeTitle(document.getElementById('rf-name').value.trim()),
+      type: this.capitalizeIdentifier(typeVal),
+      slot: this.capitalizeIdentifier(document.getElementById('rf-slot').value),
       action: actVal,
       actionType: baseObj.actionType || derivedActType,
       tags: (() => {
@@ -730,9 +782,9 @@ const RuleMaster = {
       prereq: document.getElementById('rf-prereq').value.trim() || '-',
       source: document.getElementById('rf-source').value.trim() || 'PHB p.',
       benefit: document.getElementById('rf-benefit').value.trim(),
-      bonusType: document.getElementById('rf-bonus-type').value,
-      scope: document.getElementById('rf-scope').value,
-      role: document.getElementById('rf-role').value,
+      bonusType: this.capitalizeIdentifier(document.getElementById('rf-bonus-type').value),
+      scope: this.capitalizeIdentifier(document.getElementById('rf-scope').value),
+      role: this.capitalizeIdentifier(document.getElementById('rf-role').value),
 
       // Stats
       strBonus: document.getElementById('rf-str').value ? Number(document.getElementById('rf-str').value) : '',
@@ -757,15 +809,15 @@ const RuleMaster = {
       extraDmg: document.getElementById('rf-dice').value.trim(),
       critMin: Number(document.getElementById('rf-crit-min').value) || 20,
       critMult: Number(document.getElementById('rf-crit-mult').value) || 2,
-      dmgType: document.getElementById('rf-dmg-type').value.trim(),
+      dmgType: this.capitalizeIdentifier(document.getElementById('rf-dmg-type').value.trim()),
       duration: document.getElementById('rf-duration').value.trim(),
       weight: Number(document.getElementById('rf-weight').value) || 0,
       cost: Number(document.getElementById('rf-cost').value) || 0,
 
       // Specifics
-      school: document.getElementById('rf-school').value.trim(),
+      school: this.capitalizeIdentifier(document.getElementById('rf-school').value.trim()),
       level: document.getElementById('rf-level').value ? Number(document.getElementById('rf-level').value) : '',
-      discipline: document.getElementById('rf-discipline').value.trim()
+      discipline: this.capitalizeIdentifier(document.getElementById('rf-discipline').value.trim())
     };
 
     // Process Daily Charges
@@ -933,16 +985,16 @@ const RuleMaster = {
           <div class="text-[10px] text-slate-400 font-mono mt-0.5">${item.source || 'PHB'}</div>
         </td>
         <td class="py-2.5 px-3">
-          <span class="badge ${typeBadgeClass}">${item.type}</span>
-          ${item.discipline ? `<span class="badge bg-rose-950 text-rose-300 border border-rose-800 block mt-1 w-max">${item.discipline}</span>` : ''}
+          <span class="badge ${typeBadgeClass}">${item.type ? this.capitalizeIdentifier(item.type) : 'Other'}</span>
+          ${item.discipline ? `<span class="badge bg-rose-950 text-rose-300 border border-rose-800 block mt-1 w-max">${this.capitalizeIdentifier(item.discipline)}</span>` : ''}
         </td>
         <td class="py-2.5 px-3 text-slate-300 text-xs">
-          <div>${item.slot || 'None'}</div>
+          <div>${item.slot ? this.capitalizeIdentifier(item.slot) : 'None'}</div>
           ${item.level !== undefined && item.level !== '' ? `<div class="text-[10px] text-amber-400 font-bold">${item.level}. Seviye</div>` : ''}
         </td>
         <td class="py-2.5 px-3">
-          <div class="text-xs font-semibold text-amber-300">${item.bonusType || 'Untyped'}</div>
-          <div class="text-[10px] text-slate-400">${item.scope || 'General'}</div>
+          <div class="text-xs font-semibold text-amber-300">${item.bonusType ? this.capitalizeIdentifier(item.bonusType) : 'Untyped'}</div>
+          <div class="text-[10px] text-slate-400">${item.scope ? this.capitalizeIdentifier(item.scope) : 'General'}</div>
         </td>
         <td class="py-2.5 px-3 font-mono text-xs font-bold text-emerald-400">
           ${statsSummary}
@@ -1429,15 +1481,15 @@ const RuleMaster = {
       const cleanDice = cleanDiceMatch ? cleanDiceMatch[1].replace(/\s+/g, '') : (diceVal || (normType === 'Weapon' ? '1d8' : ''));
 
       entry = {
-        name: rawName,
-        type: normType,
-        slot: String(raw[2] || 'None').trim(),
+        name: this.capitalizeTitle(rawName),
+        type: this.capitalizeIdentifier(normType),
+        slot: this.capitalizeIdentifier(String(raw[2] || 'None').trim()),
         parent: parentVal,
         source: String(raw[4] || 'Core 3.5e').trim(),
         benefit: String(raw[5] || '').trim(),
         description: String(raw[5] || '').trim(),
-        bonusType: String(raw[6] || 'Untyped').trim(),
-        scope: String(raw[7] || 'None / General').trim(),
+        bonusType: this.capitalizeIdentifier(String(raw[6] || 'Untyped').trim()),
+        scope: this.capitalizeIdentifier(String(raw[7] || 'None / General').trim()),
         strBonus: Number(raw[8]) || '',
         dexBonus: Number(raw[9]) || '',
         conBonus: Number(raw[10]) || '',
@@ -1526,15 +1578,15 @@ const RuleMaster = {
       const rawActionType = raw.actionType || this.deriveActionType(rawAction, normType);
 
       entry = {
-        name: rawName,
-        type: normType,
-        slot: String(raw.slot || 'None').trim(),
+        name: this.capitalizeTitle(rawName),
+        type: this.capitalizeIdentifier(normType),
+        slot: this.capitalizeIdentifier(String(raw.slot || 'None').trim()),
         parent: parentVal,
         source: String(raw.source || 'Core 3.5e').trim(),
         benefit: String(raw.benefit || raw.description || '').trim(),
         description: String(raw.description || raw.benefit || '').trim(),
-        bonusType: String(raw.bonusType || 'Untyped').trim(),
-        scope: String(raw.scope || 'None / General').trim(),
+        bonusType: this.capitalizeIdentifier(String(raw.bonusType || 'Untyped').trim()),
+        scope: this.capitalizeIdentifier(String(raw.scope || 'None / General').trim()),
         strBonus: Number(raw.strBonus) || '',
         dexBonus: Number(raw.dexBonus) || '',
         conBonus: Number(raw.conBonus) || '',

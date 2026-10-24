@@ -1403,7 +1403,7 @@ const RuleEngine = {
           } else if (bType.includes('deflection')) {
             deflectionBonuses.push({ val: item.acBonus, source: item.name, type: 'Deflection' });
           } else if (bType.includes('natural')) {
-            const natType = (bType.includes('ench') || item.name.toLowerCase().includes('barkskin') || item.name.toLowerCase().includes('amulet of natural armor')) ? 'natural_armor_ench' : 'Natural';
+            const natType = (bType.includes('ench') || item.name.toLowerCase().includes('barkskin') || item.name.toLowerCase().includes('amulet of natural armor')) ? 'Natural_Armor_Ench' : 'Natural';
             naturalBonuses.push({ val: item.acBonus, source: item.name, type: natType });
           } else {
             armorBonuses.push({ val: item.acBonus, source: item.name, type: 'Armor' });
@@ -1415,7 +1415,7 @@ const RuleEngine = {
         if (item.acPenalty > 0) buffAcPenalty += item.acPenalty;
 
         if (item.naturalBonus > 0) {
-          const natType = (bType.includes('ench') || item.name.toLowerCase().includes('barkskin') || item.name.toLowerCase().includes('amulet of natural armor')) ? 'natural_armor_ench' : 'Natural';
+          const natType = (bType.includes('ench') || item.name.toLowerCase().includes('barkskin') || item.name.toLowerCase().includes('amulet of natural armor')) ? 'Natural_Armor_Ench' : 'Natural';
           naturalBonuses.push({ val: item.naturalBonus, source: item.name, type: natType });
         }
         if (item.deflectionBonus > 0) deflectionBonuses.push({ val: item.deflectionBonus, source: item.name, type: 'Deflection' });

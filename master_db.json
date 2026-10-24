@@ -1,4 +1,4 @@
-﻿[
+[
     {
         "name":  "Jovar +4",
         "type":  "Weapon",
@@ -1189,7 +1189,7 @@
     {
         "source":  "DMG p.246",
         "type":  "Magic Item",
-        "bonusType":  "natural_armor_ench",
+        "bonusType":  "Natural_Armor_Ench",
         "cost":  2000,
         "tags":  [
                      "wondrous",
