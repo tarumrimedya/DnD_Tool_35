@@ -21363,12 +21363,18 @@
 
           <!-- 4x3 Fixed Slot Matrix -->
           <div class="bg-slate-950/80 border border-sky-900/50 rounded-xl p-2.5 space-y-2 shadow">
-            <div class="flex items-center justify-between text-[11px] px-1">
+            <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] px-1">
               <span class="text-sky-300 font-bold uppercase tracking-wider flex items-center gap-1.5">
                 <span>⚡</span>
                 <span>Günlük Hazırlık Slotları (4×3 Vancian Matrisi):</span>
               </span>
-              <span class="text-slate-400 text-[10px]">Büyü atıldığında ilgili seviyedeki hazırlık slotu otomatik düşer</span>
+              <div class="flex items-center gap-2">
+                <span class="text-slate-400 text-[10px] hidden sm:inline">Büyü atıldığında hazırlık slotu düşer • DM slot bonusu eklenebilir</span>
+                <button type="button" onclick="openSpellSlotsModal(undefined, 'prepared')" class="text-[9px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-amber-900/50 transition" title="Yuva Yönetimi &amp; DM Bonusları">
+                  <span>⚙️</span>
+                  <span>Yuva &amp; DM Bonus Yönetimi</span>
+                </button>
+              </div>
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full">
               ${matrixHtml}
@@ -21923,12 +21929,18 @@
 
           <!-- 4x3 Fixed Slot Matrix -->
           <div class="bg-slate-950/80 border border-amber-900/50 rounded-xl p-2.5 space-y-2 shadow">
-            <div class="flex items-center justify-between text-[11px] px-1">
+            <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] px-1">
               <span class="text-amber-300 font-bold uppercase tracking-wider flex items-center gap-1.5">
                 <span>⚡</span>
                 <span>Günlük İlahi Dua Slotları (4×3 Sabit Matris):</span>
               </span>
-              <span class="text-slate-400 text-[10px]">Büyü atıldığında ilgili seviyedeki dua slotu otomatik düşer</span>
+              <div class="flex items-center gap-2">
+                <span class="text-slate-400 text-[10px] hidden sm:inline">Büyü atıldığında dua slotu düşer • DM slot bonusu eklenebilir</span>
+                <button type="button" onclick="openSpellSlotsModal(undefined, 'divine')" class="text-[9px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-amber-900/50 transition" title="Yuva Yönetimi &amp; DM Bonusları">
+                  <span>⚙️</span>
+                  <span>Yuva &amp; DM Bonus Yönetimi</span>
+                </button>
+              </div>
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full">
               ${matrixHtml}
