@@ -1236,7 +1236,13 @@
                 </div>
                 <p class="text-[11px] text-slate-400">Savaşta anında kullanıma hazır manevra eliniz. Zar atışı olan manevralarda butona basmak hem manevrayı kullanır hem hasar zarını yuvarlar.</p>
               </div>
-              <span id="readied-maneuvers-counter" class="badge bg-rose-950 text-rose-200 border border-rose-700 text-xs font-bold font-mono">0 / 0 Hazır</span>
+              <div class="flex items-center gap-2">
+                <span id="readied-maneuvers-counter" class="badge bg-rose-950 text-rose-200 border border-rose-700 text-xs font-bold font-mono">0 / 0 Hazır</span>
+                <button type="button" onclick="openSpellSlotsModal(undefined, 'martial')" class="text-[9px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-amber-900/50 transition shadow-sm" title="Manevra Deste Kapasitesi &amp; DM Bonus Yönetimi">
+                  <span>⚙️</span>
+                  <span>Deste &amp; DM Bonus Yönetimi</span>
+                </button>
+              </div>
             </div>
 
             <!-- Readied Maneuvers Tactical Cards Grid -->
@@ -3461,16 +3467,16 @@
   <!-- MODAL: SPELL SLOTS MANAGER (YENİLEME & DÜZENLEME)   -->
   <!-- ==================================================== -->
   <div id="modal-spell-slots-manager" class="hidden fixed inset-0 z-[120] bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
-    <div class="bg-dndCard border border-purple-500/70 rounded-2xl max-w-sm w-full shadow-2xl p-4 space-y-3.5 my-auto">
+    <div class="bg-dndCard border border-purple-500/70 rounded-2xl max-w-md w-full shadow-2xl p-4 space-y-3.5 my-auto">
       <div class="flex items-center justify-between border-b border-purple-900/50 pb-2">
-        <h3 class="font-extrabold text-sm text-purple-300 flex items-center gap-1.5">
-          <span>🔮</span> Büyü Yuvaları Yönetimi
+        <h3 class="font-extrabold text-sm text-purple-300 flex items-center gap-1.5" id="modal-spell-slots-title">
+          <span>🔮</span> Yuva &amp; Deste Yönetimi
         </h3>
         <button onclick="closeSpellSlotsModal()" class="text-slate-400 hover:text-white text-sm font-bold cursor-pointer">✕</button>
       </div>
 
-      <div class="text-[11px] text-slate-300 leading-tight">
-        Büyü yuvalarınızın kalan ve harcanan adetlerini düzenleyebilir veya dinlenerek tüm yuvaları yenileyebilirsiniz.
+      <div class="text-[11px] text-slate-300 leading-tight" id="modal-spell-slots-subtitle">
+        Büyü yuvalarınızın ve manevra destenizin kapasitelerini düzenleyebilir, DM bonuslarını yönetebilir veya dinlenebilirsiniz.
       </div>
 
       <!-- Source Selector Tabs if character has multiple sources -->
@@ -11338,6 +11344,7 @@
 
     function getAvailableSpellSlotSources(onlyActive = false) {
       const sc = (typeof character !== 'undefined' && character && character.spellcasting) ? character.spellcasting : {};
+      const tob = (typeof character !== 'undefined' && character && character.tomeOfBattle) ? character.tomeOfBattle : {};
 
       // 1. Spontaneous (Anlık - Sorcerer/Bard)
       const spontSlots = sc.slots || [];
@@ -11345,6 +11352,8 @@
       const prepSlots = sc.preparedSlots || [];
       // 3. Divine (İlahi - Cleric/Druid)
       const divSlots = sc.divineSlots || [];
+      // 4. Martial (Savaş Manevraları - Warblade/Swordsage/Crusader)
+      const martialReadied = tob.readiedManeuvers || [];
 
       const all = [
         {
@@ -11385,11 +11394,24 @@
           textClass: 'text-amber-300',
           tagClass: 'bg-amber-950/70 border-amber-700/60 text-amber-300',
           slots: divSlots
+        },
+        {
+          key: 'martial',
+          label: 'Savaş Manevraları',
+          shortLabel: 'Manevra',
+          subText: 'Tome of Battle / Martial',
+          icon: '⚔️',
+          themeColor: 'rose',
+          borderClass: 'border-rose-800/80 bg-slate-900/90 hover:border-rose-500 text-rose-200',
+          depletedClass: 'border-rose-900/60 bg-rose-950/40 hover:border-rose-700 text-rose-300',
+          textClass: 'text-rose-300',
+          tagClass: 'bg-rose-950/70 border-rose-700/60 text-rose-300',
+          slots: martialReadied
         }
       ];
 
       if (onlyActive) {
-        const activeOnly = all.filter(s => s.slots.some(sl => (Number(sl.daily) || 0) > 0));
+        const activeOnly = all.filter(s => s.key !== 'martial' && s.slots.some(sl => (Number(sl.daily) || 0) > 0));
         return activeOnly.length > 0 ? activeOnly : [all[0]];
       }
 
@@ -11613,6 +11635,147 @@
         }
       }
 
+      // Special Dedicated View for Tome of Battle Martial Maneuvers
+      if (activeSource.key === 'martial') {
+        const initInfo = getInitiatorInfo();
+        const readied = character?.tomeOfBattle?.readiedManeuvers || [];
+        const maneuvers = character?.tomeOfBattle?.maneuversKnown || [];
+        const stances = character?.tomeOfBattle?.stancesKnown || [];
+
+        const readiedCount = readied.length;
+        const maxReadied = initInfo.maxReadied || 3;
+
+        container.innerHTML = `
+          <div class="space-y-3">
+            <!-- Initiator Summary Card -->
+            <div class="bg-slate-900/90 border border-rose-900/60 rounded-xl p-3 shadow-sm space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-black text-rose-300 flex items-center gap-1.5">
+                  <span>⚔️</span>
+                  <span>${initInfo.adeptClass || 'Martial Adept'} (IL: ${initInfo.il})</span>
+                </span>
+                <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800">
+                  Maks Manevra: ${initInfo.maxManeuverLvl}. Seviye
+                </span>
+              </div>
+              <p class="text-[11px] text-slate-400">
+                Tome of Battle RAW: Manevralar hazır deste (Readied Deck) mantığıyla kuşanılır. Çatışmada Swift Action ile yenilenir.
+              </p>
+            </div>
+
+            <!-- Capacity & DM Bonus Controls -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 space-y-2.5">
+              <div class="text-[11px] font-bold text-white uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-800 pb-1.5">
+                <span>⚙️</span>
+                <span>Deste Kapasiteleri &amp; DM Bonusları</span>
+              </div>
+
+              <!-- Readied Maneuvers Quota -->
+              <div class="flex items-center justify-between">
+                <div class="flex flex-col">
+                  <span class="text-xs font-bold text-white">Kuşanılan Hazır Manevra Kapasitesi</span>
+                  <span class="text-[10px] font-mono text-slate-400">
+                    Temel: ${initInfo.baseReadied || 3}${initInfo.dmReadiedBonus ? ` <span class="text-amber-400 font-semibold">(+${initInfo.dmReadiedBonus} DM)</span>` : ''}
+                  </span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="flex items-center gap-0.5">
+                    <button type="button" onclick="modifyMartialReadiedQuota(-1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 font-bold flex items-center justify-center border border-slate-700 text-xs cursor-pointer" title="Kapasiteyi -1 Azalt">-</button>
+                    <span class="w-8 text-center font-mono font-bold text-xs text-rose-300">${maxReadied}</span>
+                    <button type="button" onclick="modifyMartialReadiedQuota(1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-emerald-950 text-slate-300 hover:text-emerald-300 font-bold flex items-center justify-center border border-slate-700 text-xs cursor-pointer" title="DM Bonusu: Kapasiteyi +1 Artır">+</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Known Maneuvers Quota -->
+              <div class="flex items-center justify-between pt-1.5 border-t border-slate-800/60">
+                <div class="flex flex-col">
+                  <span class="text-xs font-bold text-slate-300">Bilinen Manevra Havuz Kotası</span>
+                  <span class="text-[10px] font-mono text-slate-400">
+                    Mevcut: ${maneuvers.length} / ${initInfo.maxKnownManeuvers}${initInfo.dmKnownBonus ? ` <span class="text-amber-400 font-semibold">(+${initInfo.dmKnownBonus} DM)</span>` : ''}
+                  </span>
+                </div>
+                <div class="flex items-center gap-0.5">
+                  <button type="button" onclick="modifyMartialKnownQuota('maneuver', -1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 font-bold flex items-center justify-center border border-slate-700 text-xs cursor-pointer" title="Kotayı -1 Azalt">-</button>
+                  <span class="w-8 text-center font-mono font-bold text-xs text-slate-200">${initInfo.maxKnownManeuvers}</span>
+                  <button type="button" onclick="modifyMartialKnownQuota('maneuver', 1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-emerald-950 text-slate-300 hover:text-emerald-300 font-bold flex items-center justify-center border border-slate-700 text-xs cursor-pointer" title="DM Bonusu: Kotayı +1 Artır">+</button>
+                </div>
+              </div>
+
+              <!-- Known Stances Quota -->
+              <div class="flex items-center justify-between pt-1.5 border-t border-slate-800/60">
+                <div class="flex flex-col">
+                  <span class="text-xs font-bold text-slate-300">Bilinen Duruş (Stance) Kotası</span>
+                  <span class="text-[10px] font-mono text-slate-400">
+                    Mevcut: ${stances.length} / ${initInfo.maxKnownStances}${initInfo.dmStanceBonus ? ` <span class="text-amber-400 font-semibold">(+${initInfo.dmStanceBonus} DM)</span>` : ''}
+                  </span>
+                </div>
+                <div class="flex items-center gap-0.5">
+                  <button type="button" onclick="modifyMartialKnownQuota('stance', -1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 font-bold flex items-center justify-center border border-slate-700 text-xs cursor-pointer" title="Kotayı -1 Azalt">-</button>
+                  <span class="w-8 text-center font-mono font-bold text-xs text-teal-300">${initInfo.maxKnownStances}</span>
+                  <button type="button" onclick="modifyMartialKnownQuota('stance', 1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-emerald-950 text-slate-300 hover:text-emerald-300 font-bold flex items-center justify-center border border-slate-700 text-xs cursor-pointer" title="DM Bonusu: Kotayı +1 Artır">+</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Deck Readying Checklist -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 space-y-2">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
+                <span class="text-[11px] font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                  <span>⚡</span>
+                  <span>Hazır Manevra Destesi (${readiedCount} / ${maxReadied})</span>
+                </span>
+                <button type="button" onclick="recoverAllManeuvers(); renderSpellSlotsModalRows();" class="text-[9px] px-2 py-0.5 rounded bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 font-bold transition cursor-pointer flex items-center gap-1" title="Tüm harcanan manevraları yenile">
+                  <span>🔄</span>
+                  <span>Tümünü Yenile</span>
+                </button>
+              </div>
+
+              ${maneuvers.length === 0 ? `
+                <div class="py-4 text-center text-slate-500 text-xs italic">
+                  Henüz öğrenilmiş manevra bulunmuyor. Manevra sayfasından manevra ekleyebilirsiniz.
+                </div>
+              ` : `
+                <div class="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+                  ${maneuvers.map(m => {
+                    const isReadied = readied.some(rm => (rm.name || '').toLowerCase().trim() === (m.name || '').toLowerCase().trim());
+                    const readiedObj = readied.find(rm => (rm.name || '').toLowerCase().trim() === (m.name || '').toLowerCase().trim());
+                    const isExpended = readiedObj ? readiedObj.expended : false;
+                    const actionLabel = typeof formatActionShort === 'function' ? formatActionShort(m.action) : (m.action || 'Standard');
+                    return `
+                      <div class="flex items-center justify-between p-2 rounded-lg bg-slate-950/60 border ${isReadied ? (isExpended ? 'border-rose-900/60 bg-rose-950/20' : 'border-rose-700/80 bg-rose-950/40') : 'border-slate-800/80'} transition">
+                        <div class="flex items-center gap-2 min-w-0">
+                          <span class="badge bg-rose-950 text-rose-300 border border-rose-800 text-[9px] font-bold font-mono px-1.5 py-0.5 shrink-0">${m.discipline || 'Iron Heart'} ${m.level || 1}</span>
+                          <div class="flex flex-col min-w-0">
+                            <span class="text-xs font-bold ${isExpended ? 'line-through text-slate-400' : 'text-white'} truncate">${m.name}</span>
+                            <span class="text-[9px] text-slate-400 font-mono">${actionLabel}</span>
+                          </div>
+                        </div>
+                        <div class="flex items-center gap-1.5 shrink-0">
+                          ${isReadied && isExpended ? `
+                            <span class="text-[9px] font-mono text-rose-400 font-bold px-1.5 py-0.5 rounded bg-rose-950 border border-rose-800">Harcandı</span>
+                          ` : ''}
+                          ${isReadied ? `
+                            <button type="button" onclick="toggleManeuverReadiedInModal('${escape(m.name)}')" class="px-2 py-1 rounded-lg bg-emerald-950 hover:bg-rose-950 text-emerald-300 hover:text-rose-300 border border-emerald-700 hover:border-rose-700 text-[10px] font-bold cursor-pointer transition">
+                              ✓ Kuşanıldı
+                            </button>
+                          ` : `
+                            <button type="button" onclick="toggleManeuverReadiedInModal('${escape(m.name)}')" ${readiedCount >= maxReadied ? 'disabled' : ''} class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-rose-900 disabled:opacity-40 text-slate-300 hover:text-white border border-slate-700 hover:border-rose-600 text-[10px] font-bold cursor-pointer transition">
+                              + Kuşan
+                            </button>
+                          `}
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              `}
+            </div>
+          </div>
+        `;
+        return;
+      }
+
       const slots = activeSource.slots;
       const rowsHtml = [];
 
@@ -11743,11 +11906,59 @@
       saveStateToStorage(false);
       renderAll();
       showDiceTopToast({
-        icon: 'âœ¨',
+        icon: '✨',
         title: 'Bilinen Büyü Kotası',
-        breakdown: `${lvl}. Seviye bilinen büyü kotası ${delta > 0 ? '+' + delta : delta} deÄŸiştirildi (DM Bonusu).`,
+        breakdown: `${lvl}. Seviye bilinen büyü kotası ${delta > 0 ? '+' + delta : delta} değiştirildi (DM Bonusu).`,
         total: `${s.known} Kota`
       });
+    }
+
+    function modifyMartialReadiedQuota(delta) {
+      if (!character) return;
+      if (!character.tomeOfBattle) character.tomeOfBattle = {};
+      const curBonus = Number(character.tomeOfBattle.dmReadiedBonus) || 0;
+      character.tomeOfBattle.dmReadiedBonus = curBonus + delta;
+      saveStateToStorage(false);
+      renderManeuvers();
+      renderSpellSlotsModalRows();
+      if (typeof showDiceTopToast === 'function') {
+        const info = getInitiatorInfo();
+        showDiceTopToast({
+          icon: '⚔️',
+          title: 'Hazır Manevra Deste Kotası',
+          breakdown: `Hazır manevra kapasitesi ${delta > 0 ? '+' + delta : delta} değiştirildi (DM Bonusu).`,
+          total: `${info.maxReadied} Deste Kapasitesi`
+        });
+      }
+    }
+
+    function modifyMartialKnownQuota(type, delta) {
+      if (!character) return;
+      if (!character.tomeOfBattle) character.tomeOfBattle = {};
+      if (type === 'stance') {
+        const curBonus = Number(character.tomeOfBattle.dmStanceBonus) || 0;
+        character.tomeOfBattle.dmStanceBonus = curBonus + delta;
+      } else {
+        const curBonus = Number(character.tomeOfBattle.dmKnownBonus) || 0;
+        character.tomeOfBattle.dmKnownBonus = curBonus + delta;
+      }
+      saveStateToStorage(false);
+      renderManeuvers();
+      renderSpellSlotsModalRows();
+      if (typeof showDiceTopToast === 'function') {
+        const info = getInitiatorInfo();
+        showDiceTopToast({
+          icon: '🥋',
+          title: type === 'stance' ? 'Bilinen Duruş Kotası' : 'Bilinen Manevra Kotası',
+          breakdown: `${type === 'stance' ? 'Duruş' : 'Manevra'} kotası ${delta > 0 ? '+' + delta : delta} değiştirildi (DM Bonusu).`,
+          total: type === 'stance' ? `${info.maxKnownStances} Duruş` : `${info.maxKnownManeuvers} Manevra`
+        });
+      }
+    }
+
+    function toggleManeuverReadiedInModal(escapedName) {
+      toggleManeuverReadied(escapedName);
+      renderSpellSlotsModalRows();
     }
 
     function unlockSpellSlotLevel(lvl, sourceKey) {
@@ -11814,6 +12025,11 @@
     }
 
     function replenishSourceSlots(sourceKey) {
+      if (sourceKey === 'martial') {
+        recoverAllManeuvers();
+        renderSpellSlotsModalRows();
+        return;
+      }
       const slots = getSpellSlotsArrayBySource(sourceKey);
       slots.forEach(s => s.used = 0);
       saveStateToStorage(false);
@@ -11838,6 +12054,7 @@
       (character?.spellcasting?.slots || []).forEach(s => s.used = 0);
       (character?.spellcasting?.preparedSlots || []).forEach(s => s.used = 0);
       (character?.spellcasting?.divineSlots || []).forEach(s => s.used = 0);
+      (character?.tomeOfBattle?.readiedManeuvers || []).forEach(m => m.expended = false);
 
       saveStateToStorage(false);
       renderSpellSlotsStrip();
@@ -11847,13 +12064,14 @@
       if (typeof renderSpellSlots === 'function') renderSpellSlots();
       if (typeof renderPreparedSpells === 'function') renderPreparedSpells();
       if (typeof renderDivineSpells === 'function') renderDivineSpells();
+      if (typeof renderManeuvers === 'function') renderManeuvers();
       closeSpellSlotsModal();
 
       if (typeof showDiceTopToast === 'function') {
         showDiceTopToast({
           icon: '🌙',
-          title: 'Tüm Büyü Yuvaları Yenilendi',
-          breakdown: 'Anlık, Kitap ve İlahi büyü yuvalarının tamamı dinlenerek yenilendi.',
+          title: 'Tüm Yuvalar ve Manevralar Yenilendi',
+          breakdown: 'Büyü yuvaları ve Tome of Battle manevra destesi dinlenerek yenilendi.',
           total: 'Yenilendi'
         });
       }
@@ -22294,12 +22512,35 @@
 
       const maxManeuverLvl = Math.min(9, Math.max(1, Math.ceil(il / 2)));
       const readiedList = character?.tomeOfBattle?.readiedManeuvers || [];
-      const baseReadied = martialLvls >= 20 ? 7 : (martialLvls >= 15 ? 6 : (martialLvls >= 10 ? 5 : (martialLvls >= 4 ? 4 : 3)));
-      const maxReadied = Math.max(baseReadied, readiedList.length, 3);
-      const maxKnownManeuvers = Math.max(3 + Math.max(0, martialLvls - 1), 2 + maxManeuverLvl, (character?.tomeOfBattle?.maneuversKnown || []).length);
-      const maxKnownStances = Math.max(il >= 10 ? 3 : (il >= 4 ? 2 : 1), (character?.tomeOfBattle?.stancesKnown || []).length);
+      const dmReadiedBonus = Number(character?.tomeOfBattle?.dmReadiedBonus) || 0;
+      const dmKnownBonus = Number(character?.tomeOfBattle?.dmKnownBonus) || 0;
+      const dmStanceBonus = Number(character?.tomeOfBattle?.dmStanceBonus) || 0;
 
-      return { il, maxManeuverLvl, readiedCount: readiedList.length, maxReadied, maxKnownManeuvers, maxKnownStances, adeptClass, martialLvls, otherLvls, hasClass: true };
+      const baseReadied = martialLvls >= 20 ? 7 : (martialLvls >= 15 ? 6 : (martialLvls >= 10 ? 5 : (martialLvls >= 4 ? 4 : 3)));
+      const maxReadied = Math.max(1, Math.max(baseReadied + dmReadiedBonus, readiedList.length));
+      const baseKnownManeuvers = Math.max(3 + Math.max(0, martialLvls - 1), 2 + maxManeuverLvl, (character?.tomeOfBattle?.maneuversKnown || []).length);
+      const maxKnownManeuvers = Math.max(1, baseKnownManeuvers + dmKnownBonus);
+      const baseKnownStances = Math.max(il >= 10 ? 3 : (il >= 4 ? 2 : 1), (character?.tomeOfBattle?.stancesKnown || []).length);
+      const maxKnownStances = Math.max(1, baseKnownStances + dmStanceBonus);
+
+      return {
+        il,
+        maxManeuverLvl,
+        readiedCount: readiedList.length,
+        maxReadied,
+        baseReadied,
+        dmReadiedBonus,
+        maxKnownManeuvers,
+        baseKnownManeuvers,
+        dmKnownBonus,
+        maxKnownStances,
+        baseKnownStances,
+        dmStanceBonus,
+        adeptClass,
+        martialLvls,
+        otherLvls,
+        hasClass: true
+      };
     }
 
     function renderSpellsCockpit() {
@@ -22517,7 +22758,7 @@
       if (!container) return;
       container.innerHTML = '';
 
-      const sources = getAvailableSpellSlotSources();
+      const sources = getAvailableSpellSlotSources().filter(s => s.key !== 'martial');
       const tabsContainer = document.getElementById('compact-slots-source-tabs');
 
       // Determine active source for compact grid
