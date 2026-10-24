@@ -638,7 +638,7 @@
                     <span>Yuva Yönetimi</span>
                   </button>
                 </div>
-                <div id="combat-spell-slots-strip" class="flex flex-wrap gap-1.5 items-center">
+                <div id="combat-spell-slots-strip" class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-12 gap-1 items-center">
                   <!-- Populated dynamically by renderSpellSlotsStrip() -->
                 </div>
               </div>
@@ -11304,49 +11304,76 @@
       recalculateCombatSpell();
     }
 
-    // --- 1. DAILY SPELL SLOTS TRACKER STRIP (TIER 1) ---
+    // --- 1. DAILY SPELL SLOTS TRACKER STRIP (TIER 1 - 12 FIXED DIVISIBLE SLOTS: 12, 6, 4) ---
     function renderSpellSlotsStrip() {
       const container = document.getElementById('combat-spell-slots-strip');
       if (!container) return;
 
       const slots = character?.spellcasting?.slots || [];
-      const unlockedSlots = slots.filter(s => Number(s.daily) > 0);
+      const itemsHtml = [];
 
-      if (unlockedSlots.length === 0) {
-        container.innerHTML = `<span class="text-[10px] text-slate-500 italic py-0.5">Aktif büyü yuvası bulunmamaktadır.</span>`;
-        return;
-      }
-
-      container.innerHTML = unlockedSlots.map(s => {
-        const lvl = Number(s.level);
-        const daily = Number(s.daily) || 0;
-        const used = Number(s.used) || 0;
+      for (let lvl = 0; lvl <= 11; lvl++) {
+        const s = slots.find(item => Number(item.level) === lvl);
+        const daily = s ? (Number(s.daily) || 0) : 0;
+        const used = s ? (Number(s.used) || 0) : 0;
         const remaining = Math.max(0, daily - used);
-        const isDepleted = remaining <= 0;
+        const isUnlocked = daily > 0;
+        const isDepleted = isUnlocked && remaining <= 0;
+
+        let lvlLabel = `${lvl}.`;
+        let tooltipTitle = `${lvl}. Seviye Büyü Yuvaları`;
+        if (lvl === 0) {
+          lvlLabel = '0.';
+          tooltipTitle = '0. Seviye (Cantrip) Yuvaları';
+        } else if (lvl === 10) {
+          lvlLabel = '10.';
+          tooltipTitle = '10. Seviye (Epic / Metamagic) Yuvaları';
+        } else if (lvl === 11) {
+          lvlLabel = '+10';
+          tooltipTitle = 'Epic (+10) Büyü Yuvaları';
+        }
 
         let badgeClass = 'border-purple-800/80 bg-slate-900/90 hover:border-purple-500 text-purple-200';
         let remColor = 'text-emerald-400 font-bold';
-        if (isDepleted) {
-          badgeClass = 'border-rose-900/60 bg-rose-950/30 hover:border-rose-700 text-rose-300';
+
+        if (!isUnlocked) {
+          badgeClass = 'border-slate-800/60 bg-slate-950/60 hover:border-slate-700 text-slate-500 opacity-60';
+          remColor = 'text-slate-500 font-mono';
+          tooltipTitle += ' (Kilitli)';
+        } else if (isDepleted) {
+          badgeClass = 'border-rose-900/60 bg-rose-950/40 hover:border-rose-700 text-rose-300';
           remColor = 'text-rose-400 font-bold';
+          tooltipTitle += ' (Tükendi)';
         }
 
-        const lvlLabel = lvl === 0 ? '0.Lvl' : `${lvl}.Lvl`;
-
-        return `
-          <button type="button" onclick="openSpellSlotsModal(${lvl})" class="px-2.5 py-1 rounded-lg border text-xs font-mono font-bold transition flex items-center gap-1.5 cursor-pointer shadow-sm ${badgeClass}" title="${lvlLabel} Yuvalarını Düzenle">
-            <span class="text-[10px] text-slate-400 font-semibold">${lvlLabel}:</span>
-            <span class="${remColor}">${remaining}/${daily}</span>
+        itemsHtml.push(`
+          <button type="button" onclick="openSpellSlotsModal(${lvl})" class="w-full py-1 px-0.5 rounded-lg border text-center transition cursor-pointer select-none flex items-center justify-center gap-1 shadow-sm ${badgeClass}" title="${tooltipTitle}">
+            <span class="text-[10px] text-slate-400 font-bold whitespace-nowrap">${lvlLabel}</span>
+            <span class="text-[10px] font-mono font-bold whitespace-nowrap ${remColor}">${remaining}/${daily}</span>
           </button>
-        `;
-      }).join('');
+        `);
+      }
+
+      container.innerHTML = itemsHtml.join('');
     }
 
     // Modal: Spell Slots Manager
     function openSpellSlotsModal(focusLvl) {
       renderSpellSlotsModalRows();
       const modal = document.getElementById('modal-spell-slots-manager');
-      if (modal) modal.classList.remove('hidden');
+      if (modal) {
+        modal.classList.remove('hidden');
+        if (focusLvl !== undefined) {
+          setTimeout(() => {
+            const row = document.getElementById(`modal-slot-row-${focusLvl}`);
+            if (row) {
+              row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              row.classList.add('ring-2', 'ring-purple-400');
+              setTimeout(() => row.classList.remove('ring-2', 'ring-purple-400'), 1500);
+            }
+          }, 60);
+        }
+      }
     }
 
     function closeSpellSlotsModal() {
@@ -11359,45 +11386,92 @@
       if (!container) return;
 
       const slots = character?.spellcasting?.slots || [];
-      const unlockedSlots = slots.filter(s => Number(s.daily) > 0);
+      const rowsHtml = [];
 
-      if (unlockedSlots.length === 0) {
-        container.innerHTML = `<div class="text-center text-xs text-slate-500 italic py-3">Aktif büyü yuvası bulunmamaktadır.</div>`;
-        return;
+      for (let lvl = 0; lvl <= 11; lvl++) {
+        const s = slots.find(item => Number(item.level) === lvl);
+        const daily = s ? (Number(s.daily) || 0) : 0;
+        const used = s ? (Number(s.used) || 0) : 0;
+        const remaining = Math.max(0, daily - used);
+        const isUnlocked = daily > 0;
+
+        let lvlTitle = `${lvl}. Seviye Büyüler`;
+        if (lvl === 0) lvlTitle = '0. Seviye (Cantrips)';
+        else if (lvl === 10) lvlTitle = '10. Seviye (Epic / Metamagic)';
+        else if (lvl === 11) lvlTitle = 'Epic (+10) Büyü Yuvası';
+
+        if (isUnlocked) {
+          rowsHtml.push(`
+            <div id="modal-slot-row-${lvl}" class="flex items-center justify-between bg-slate-900/90 border border-purple-900/60 rounded-xl px-3 py-2 shadow-sm transition">
+              <div class="flex flex-col">
+                <span class="text-xs font-bold text-white">${lvlTitle}</span>
+                <span class="text-[9px] text-slate-400 font-mono">Toplam Kapasite: ${daily} Yuva</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="modifySpellSlotUsed(${lvl}, 1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-rose-300 font-bold flex items-center justify-center border border-slate-700 cursor-pointer text-xs transition" title="1 Yuva Harca">-1</button>
+                <span class="text-xs font-mono font-black ${remaining > 0 ? 'text-emerald-400' : 'text-rose-400'} w-12 text-center">${remaining} / ${daily}</span>
+                <button type="button" onclick="modifySpellSlotUsed(${lvl}, -1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-300 font-bold flex items-center justify-center border border-slate-700 cursor-pointer text-xs transition" title="1 Yuva İade Et">+1</button>
+                <button type="button" onclick="replenishSpellSlotLevel(${lvl})" class="px-2 py-1 rounded-lg bg-purple-950/80 hover:bg-purple-900 text-purple-300 border border-purple-700/60 text-[10px] font-bold cursor-pointer transition" title="Bu Seviyeyi Yenile">Yenile</button>
+              </div>
+            </div>
+          `);
+        } else {
+          rowsHtml.push(`
+            <div id="modal-slot-row-${lvl}" class="flex items-center justify-between bg-slate-950/60 border border-slate-800/70 rounded-xl px-3 py-1.5 opacity-70 transition">
+              <div class="flex flex-col">
+                <span class="text-xs font-bold text-slate-400">${lvlTitle}</span>
+                <span class="text-[9px] text-slate-500 font-mono">0 / 0 (Kilitli / Henüz Yok)</span>
+              </div>
+              <button type="button" onclick="unlockSpellSlotLevel(${lvl})" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-300 border border-purple-900/60 text-[10px] font-bold cursor-pointer transition" title="Bu Seviye İçin Yuva Tanımla">+ Yuva Aç</button>
+            </div>
+          `);
+        }
       }
 
-      container.innerHTML = unlockedSlots.map(s => {
-        const lvl = Number(s.level);
-        const daily = Number(s.daily) || 0;
-        const used = Number(s.used) || 0;
-        const remaining = Math.max(0, daily - used);
-        const lvlLabel = lvl === 0 ? '0. Seviye (Cantrip)' : `${lvl}. Seviye`;
+      container.innerHTML = rowsHtml.join('');
+    }
 
-        return `
-          <div class="flex items-center justify-between bg-slate-900/90 border border-purple-900/60 rounded-xl px-3 py-2 shadow-sm">
-            <div class="flex flex-col">
-              <span class="text-xs font-bold text-white">${lvlLabel}</span>
-              <span class="text-[9px] text-slate-400 font-mono">Toplam: ${daily} Yuva</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <button type="button" onclick="modifySpellSlotUsed(${lvl}, 1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-rose-300 font-bold flex items-center justify-center border border-slate-700 cursor-pointer text-xs" title="1 Yuva Harca">-1</button>
-              <span class="text-xs font-mono font-black ${remaining > 0 ? 'text-emerald-400' : 'text-rose-400'} w-12 text-center">${remaining} / ${daily}</span>
-              <button type="button" onclick="modifySpellSlotUsed(${lvl}, -1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-300 font-bold flex items-center justify-center border border-slate-700 cursor-pointer text-xs" title="1 Yuva İade Et">+1</button>
-              <button type="button" onclick="replenishSpellSlotLevel(${lvl})" class="px-2 py-1 rounded-lg bg-purple-950/80 hover:bg-purple-900 text-purple-300 border border-purple-700/60 text-[10px] font-bold cursor-pointer transition" title="Bu Seviyeyi Yenile">Yenile</button>
-            </div>
-          </div>
-        `;
-      }).join('');
+    function unlockSpellSlotLevel(lvl) {
+      if (!character) return;
+      if (!character.spellcasting) character.spellcasting = {};
+      if (!character.spellcasting.slots) character.spellcasting.slots = [];
+
+      let s = character.spellcasting.slots.find(item => Number(item.level) === Number(lvl));
+      if (!s) {
+        s = { level: lvl, daily: 1, used: 0 };
+        character.spellcasting.slots.push(s);
+      } else {
+        s.daily = Math.max(1, (Number(s.daily) || 0) + 1);
+      }
+
+      saveStateToStorage(false);
+      renderSpellSlotsStrip();
+      renderSpellSlotsModalRows();
+      renderCombatCategorySpells();
+      recalculateCombatSpell();
+      if (typeof renderSpellSlots === 'function') renderSpellSlots();
     }
 
     function modifySpellSlotUsed(lvl, delta) {
-      const slots = character?.spellcasting?.slots || [];
-      const s = slots.find(item => Number(item.level) === Number(lvl));
+      if (!character) return;
+      if (!character.spellcasting) character.spellcasting = {};
+      if (!character.spellcasting.slots) character.spellcasting.slots = [];
+
+      let s = character.spellcasting.slots.find(item => Number(item.level) === Number(lvl));
       if (!s) return;
 
       const daily = Number(s.daily) || 0;
       let used = Number(s.used) || 0;
       used = Math.max(0, Math.min(daily, used + delta));
+      s.used = used;
+
+      saveStateToStorage(false);
+      renderSpellSlotsStrip();
+      renderSpellSlotsModalRows();
+      renderCombatCategorySpells();
+      recalculateCombatSpell();
+      if (typeof renderSpellSlots === 'function') renderSpellSlots();
+    }
       s.used = used;
 
       saveStateToStorage(false);
