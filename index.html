@@ -11571,6 +11571,11 @@
     }
 
     function showSpellHoverTooltip(event, spellName) {
+      // On mobile / touch devices, disable hover popup as selecting the spell directly displays all details in Tier 5
+      if (window.innerWidth < 768) return;
+      if (window.matchMedia && window.matchMedia('(hover: none)').matches) return;
+      if (event && (event.pointerType === 'touch' || ('sourceCapabilities' in event && event.sourceCapabilities?.firesTouchEvents))) return;
+
       const tooltip = document.getElementById('combat-spell-hover-tooltip');
       if (!tooltip) return;
 
@@ -11603,6 +11608,16 @@
       const tooltip = document.getElementById('combat-spell-hover-tooltip');
       if (tooltip) tooltip.classList.add('hidden');
     }
+
+    // Dismiss floating hover tooltip on tap or click anywhere outside
+    document.addEventListener('pointerdown', (e) => {
+      const tooltip = document.getElementById('combat-spell-hover-tooltip');
+      if (tooltip && !tooltip.classList.contains('hidden')) {
+        if (!tooltip.contains(e.target)) {
+          hideSpellHoverTooltip();
+        }
+      }
+    });
 
     function updateSpellHoverTooltipPos(event) {
       const tooltip = document.getElementById('combat-spell-hover-tooltip');
@@ -11765,6 +11780,7 @@
 
     function selectCombatSpellDirect(spellName) {
       window.currentSelectedCombatSpellName = spellName;
+      hideSpellHoverTooltip();
       const select = document.getElementById('combat-active-spell-select');
       if (select) select.value = spellName;
       renderCombatCategorySpells();
@@ -36291,11 +36307,14 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       }
     }
   </script>
-  <!-- Floating Tooltip for Combat Spells Hover -->
-  <div id="combat-spell-hover-tooltip" class="hidden fixed z-[200] pointer-events-none bg-slate-950/95 border border-purple-500/80 rounded-xl p-3 shadow-2xl max-w-xs text-xs space-y-1.5 backdrop-blur-md transition-opacity duration-150 text-slate-200">
+  <!-- Floating Tooltip for Combat Spells Hover (Tap or click to dismiss) -->
+  <div id="combat-spell-hover-tooltip" onclick="hideSpellHoverTooltip()" class="hidden fixed z-[200] pointer-events-auto bg-slate-950/95 border border-purple-500/80 rounded-xl p-3 shadow-2xl max-w-xs text-xs space-y-1.5 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none">
     <div class="flex items-center justify-between border-b border-purple-900/50 pb-1.5 gap-2">
-      <div id="spell-tooltip-title" class="font-black text-white text-xs truncate">Büyü Adı</div>
-      <span id="spell-tooltip-school" class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-800 shrink-0">School</span>
+      <div class="flex items-center gap-1.5 min-w-0">
+        <div id="spell-tooltip-title" class="font-black text-white text-xs truncate">Büyü Adı</div>
+        <span id="spell-tooltip-school" class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-800 shrink-0">School</span>
+      </div>
+      <button type="button" onclick="hideSpellHoverTooltip(); event.stopPropagation();" class="text-slate-400 hover:text-white px-1.5 py-0.5 text-xs font-bold leading-none cursor-pointer rounded bg-slate-900 hover:bg-slate-800 border border-slate-700/60" title="Kapat">✕</button>
     </div>
     <div class="grid grid-cols-2 gap-1 text-[10px]">
       <div class="bg-slate-900/80 p-1.5 rounded border border-slate-800">
