@@ -1087,3 +1087,19 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   3. **Parite ve Devir Teslim:**
      - `hub.html` ve `webapp/hub.html` %100 SHA-256 paritesinde eşitlendi (`True`).
      - Sıfır 🎲 tavla zarı kuralı korundu.
+
+
+---
+
+## 50. STATLARI DÜZENLE BUTONUNUN KALDIRILMASI VE KARAKTER KÜNYESİ BUTONUNA D20 SVG İKONU EKLENMESİ (2026-10-25)
+* **İstek:**
+  1. Karakter ana başlık alanındaki ayrı `[ Statları Düzenle ]` (`#btn-open-stat-dist`) butonunun silinmesi.
+  2. Tek kalan `[ Karakter Künyesi ]` butonunun başına `📜` parşömen ikonunun hemen önüne çokyüzlü vektörel `d20` zar SVG ikonunun yerleştirilmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Ana Başlık Buton Sadeleştirmesi:**
+     - Eski `#btn-open-stat-dist` butonu ve JS içindeki kullanılmayan `statDistBtn` kontrol bloğu temizlendi.
+     - `[ Karakter Künyesi ]` butonu içine altın sarısı (`text-amber-400`) vektörel d20 SVG ikonu `<span>📜</span>` ifadesinin hemen önüne entegre edildi:
+       `<button onclick="openProfileEditModal()" ...><span class="inline-flex items-center"><svg ...>...</svg></span><span>📜</span><span>Karakter Künyesi</span></button>`
+  2. **Parite ve Kural Bütünlüğü:**
+     - `character.html`, `index.html`, `webapp/character.html` ve `webapp/index.html` dosyaları %100 SHA-256 eşitliğinde güncellendi (`03BBDD6D...`).
+     - Standart tavla zarı emoji yasağı tavizsiz korundu.
