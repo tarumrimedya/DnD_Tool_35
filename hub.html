@@ -346,8 +346,12 @@
               <div id="dice-pool-summary" class="text-sm md:text-base font-semibold text-slate-500 font-mono truncate h-6 flex items-center">Zar seçilmedi (Butonlara tıklayın)</div>
             </div>
             <div class="flex items-center gap-1 shrink-0">
-              <span class="text-[11px] font-bold text-slate-400 font-mono">Bonus:</span>
-              <input type="number" id="dice-pool-mod" value="0" oninput="updateDicePoolDisplay()" class="w-12 bg-slate-950 border border-slate-700 rounded-lg px-1 py-0.5 text-xs font-mono text-center text-white focus:outline-none focus:border-amber-400">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Bonus</span>
+              <div class="inline-flex items-center rounded-lg bg-slate-950 border border-slate-700/80 p-0.5 shadow-inner focus-within:border-amber-400 focus-within:ring-1 focus-within:ring-amber-400/40 transition">
+                <button type="button" onclick="adjustDicePoolMod(-1, event)" class="w-6 h-6 rounded-md flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 text-xs font-bold transition active:scale-90 cursor-pointer select-none" title="Bonusu Azalt (-1, Shift ile -5)">−</button>
+                <input type="number" id="dice-pool-mod" value="0" oninput="updateDicePoolDisplay()" onwheel="handlePoolModWheel(event)" class="w-9 bg-transparent text-center font-mono font-black text-xs text-amber-300 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" title="Doğrudan sayı girin veya fare tekerleğini kaydırın">
+                <button type="button" onclick="adjustDicePoolMod(1, event)" class="w-6 h-6 rounded-md flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 text-xs font-bold transition active:scale-90 cursor-pointer select-none" title="Bonusu Artır (+1, Shift ile +5)">+</button>
+              </div>
             </div>
           </div>
 

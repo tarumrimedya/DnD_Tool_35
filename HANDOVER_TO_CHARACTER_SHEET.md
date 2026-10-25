@@ -570,3 +570,19 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - Seçilen renk `localStorage` (`dnd_dice_color`) üzerinde saklanır.
      - Renk popover'ı otomatik kapatılır.
   3. `hub_dice.js` ve `webapp/hub_dice.js` kopyaları %100 eşitlendi; sıfır tavla zarı (`🎲`) kuralı korundu.
+
+---
+
+## 30. AKTİF ZAR HAVUZU BONUS GİRDİSİ MODERN STEPPER & DÖNER TEKERLEK KONTROLÜ (2026-10-25)
+* **İstek:** Aktif havuzdaki `#dice-pool-mod` standart sayı kutusunun modernize edilmesi; butonlu kademeli adım (stepper), döner tekerlek (mouse wheel) veya doğrudan klavye ile sayı girişine imkan tanıyan şık bir kontrole dönüştürülmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Taktiksel Kokpit Stepper Widget'ı (`hub.html` & `webapp/`):**
+     - Standart tarayıcı okları gizlendi (`[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none`).
+     - İki yana şık dokunsal `[ − ]` ve `[ + ]` butonları yerleştirildi.
+     - Ortadaki değer kehribar sarısı (`text-amber-300 font-mono font-black`) vurgulu olarak konumlandırıldı; doğrudan tıklayıp klavye ile sayı yazma özelliği korundu.
+  2. **Döner Tekerlek ve Hızlı Adım Motoru (`hub_dice.js` & `webapp/`):**
+     - `adjustDicePoolMod(delta, event)` fonksiyonu eklendi: Normal tıklamada ±1, Shift tuşuna basılı tutularak tıklandığında hızlıca ±5 bonus ekler/çıkarır.
+     - `handlePoolModWheel(event)` fonksiyonu eklendi: Fare tekerleği kontrol kutusunun üzerindeyken yukarı/aşağı kaydırıldığında rotary dial (döner düğme) gibi bonusu anında artırır/azaltır.
+  3. **Parite ve Kural Bütünlüğü:**
+     - `hub.html`, `hub_dice.js` ve `webapp/` kopyaları %100 SHA-256 eşitliğinde tutuldu.
+     - Sıfır tavla zarı (`🎲`) kuralı korundu.

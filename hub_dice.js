@@ -229,6 +229,29 @@ function resetDicePool() {
 window.resetDicePool = resetDicePool;
 window.clearDicePool = resetDicePool;
 
+function adjustDicePoolMod(delta, event) {
+  const modEl = document.getElementById('dice-pool-mod');
+  if (!modEl) return;
+  const step = (event && event.shiftKey) ? 5 : 1;
+  const current = parseInt(modEl.value) || 0;
+  modEl.value = current + (delta * step);
+  updateDicePoolDisplay();
+}
+window.adjustDicePoolMod = adjustDicePoolMod;
+
+function handlePoolModWheel(event) {
+  if (!event) return;
+  event.preventDefault();
+  const delta = event.deltaY < 0 ? 1 : -1;
+  const step = event.shiftKey ? 5 : 1;
+  const modEl = document.getElementById('dice-pool-mod');
+  if (!modEl) return;
+  const current = parseInt(modEl.value) || 0;
+  modEl.value = current + (delta * step);
+  updateDicePoolDisplay();
+}
+window.handlePoolModWheel = handlePoolModWheel;
+
 function rollSingleDie(sides) {
   const r = Math.floor(Math.random() * sides) + 1;
   const isCrit = (sides === 20 && r === 20) || (sides === 100 && r === 100);
