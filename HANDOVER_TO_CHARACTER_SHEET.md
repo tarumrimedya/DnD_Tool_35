@@ -588,3 +588,32 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   3. **Parite ve Kural Bütünlüğü:**
      - `hub.html`, `hub_dice.js` ve `webapp/` kopyaları %100 SHA-256 eşitliğinde tutuldu.
      - Sıfır tavla zarı (U+1F3B2) kuralı tavizsiz korundu.
+
+---
+
+## 33. HUB & KARAKTER SENKRONİZE NOT DEFTERİ MOTORU VE 3 KOLONLU EŞİT YERLEŞİM (2026-10-25)
+* **İstek:**
+  - Sol bölüm (karakter kartları), Not Defteri ve Zar Masası panellerinin yüksekliklerinin eşit olması.
+  - Not Defteri ve Zar Masası panellerinin genişliklerinin eşit olması.
+  - Sol bölümde tam 2 karakter kartının yan yana sığması (`grid-cols-1 sm:grid-cols-2`).
+  - Not defterinde **her zaman önce pinlenen notların (📌), ardından en son güncellenen notların** listelenmesi.
+  - Not defterinin sağ üstünde kalem ve defter ikonlu buton (`📝`) yer alması ve tıklandığında geniş, 2 kolonlu bir modalın açılması.
+  - DM modu seçilmemişse oyuncunun karakter notları ile kampanya notlarının senkron çalışması; DM notlarının ise oyuncularla paylaşılmayıp izole kalması.
+* **Uygulanan Değişiklikler:**
+  1. **Yerleşim ve Grid Ergonomisi (`hub.html` & `webapp/`):**
+     - Ana konteyner `flex flex-col xl:flex-row items-stretch gap-4 sm:gap-5` yapılarak masaüstünde Sol Bölüm, Not Defteri ve Zar Masası panellerinin yükseklikleri otomatik eşitlendi.
+     - Not Defteri (`#hub-inline-notes-panel`) ve Zar Masası (`#hub-inline-dice-panel`) genişlikleri `w-full xl:w-[320px] 2xl:w-[350px] shrink-0` olarak birebir eşitlendi.
+     - Sol ana bölümdeki karakter grid'i `grid-cols-1 sm:grid-cols-2 gap-4` olarak düzenlenerek tam 2 karakter kartının sığması sağlandı.
+  2. **Not Defteri Motoru (`hub_notes.js` & `webapp/`):**
+     - `window.HubNotes` küresel motoru oluşturuldu.
+     - **Veri Şeması (`notesList`):** Her not `{ id, text, pinned, completed, createdAt, updatedAt, tags }` nesnesi olarak saklanır; geriye dönük uyumluluk için eski düz metin `notes` alanı otomatik normalize edilir.
+     - **Sıralama:** Başa sabitlenenler (`pinned: true`) daima en üstte, kalanlar ise `updatedAt` azalan sırada görüntülenir.
+     - **Hashtag & Görev Desteği:** `#gorev`, `#npc`, `#yer`, `#loot` etiketleri otomatik renklendirilir; `- [ ]` görev kutuları tek tıkla tamamlanabilir.
+     - **DM vs. Oyuncu İzolasyonu & Senkronizasyon (Kural #6):**
+       - Aktif kampanya DM Modunda ise notlar doğrudan `campaign.notesList` içine yazılır, karakterlere sızmaz.
+       - Aktif kampanya Oyuncu Modunda ise bu seferdeki aktif karakterin `character.notesList` verisi güncellenir ve `dnd35_character` yerel depolamasıyla anlık senkronize edilir.
+  3. **Genişletilmiş Modal (`#hub-full-notes-modal`):**
+     - Sağ üstteki `[ 📝 Genişlet ]` butonuna basıldığında açılan 2 kolonlu modal: sol tarafta arama çubuğu ve not listesi, sağ tarafta hızlı etiket çubuğu, pinleme, silme ve tam ekran serbest metin editörü sunar.
+  4. **Parite ve Devir Teslim:**
+     - `hub.html`, `hub_notes.js` ve `webapp/` altındaki kopyaları %100 eşitlendi; sıfır tavla zarı (U+1F3B2) kuralı tavizsiz korundu.
+     - **Karakter Kâğıdına Yönlendirme:** Karakter sayfasında (`index.html`) notlar bölümü geliştirilirken doğrudan `hub_notes.js` dahil edilip `character.notesList` şeması kullanılarak 0 kod tekrarıyla çift yönlü senkronizasyon sağlanacaktır.

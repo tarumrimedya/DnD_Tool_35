@@ -18,6 +18,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="dice3d.js"></script>
   <script src="hub_dice.js"></script>
+  <script src="hub_notes.js"></script>
   <style>
     body {
       font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -126,10 +127,10 @@
       </div>
     </header>
 
-    <!-- ANA ÇALIŞMA ALANI: 3 KOLON KARAKTERLER + SAĞ AÇIK ZAR PANELİ -->
-    <div class="flex flex-col lg:flex-row items-start gap-5">
-      <!-- Sol / Ana Bölüm (Kalan alana tam 3 char sığacak) -->
-      <div class="flex-1 w-full min-w-0">
+    <!-- ANA ÇALIŞMA ALANI: SOL (2 KOLON KARAKTERLER) + ORTA (NOT DEFTERİ) + SAĞ (AÇIK ZAR PANELİ) -->
+    <div class="flex flex-col xl:flex-row items-stretch gap-4 sm:gap-5">
+      <!-- Sol / Ana Bölüm (Tam 2 char kartı sığacak flex-1) -->
+      <div class="flex-1 w-full min-w-0 flex flex-col space-y-4">
         <!-- KART IZGARASI ALANI (CARD GRID VIEW) -->
         <main id="hub-cards-view" class="space-y-6">
           <!-- Dinamik Kartlar, Çekmeceler ve Boş Kart Buraya Gelecek -->
@@ -168,9 +169,66 @@
         </main>
       </div>
 
-      <!-- Sağ Bölüm: Açık Zar Masası Paneli (Compact Permanent Panel) -->
-      <aside id="hub-inline-dice-panel" class="w-full lg:w-[330px] xl:w-[350px] 2xl:w-[380px] shrink-0 sticky top-4 space-y-4">
-        <div class="bg-[#131d33] border border-slate-700/80 rounded-2xl p-4 shadow-xl space-y-3.5 relative overflow-hidden">
+      <!-- Orta Bölüm: Not Defteri Paneli (Zar Masası ile Eşit Genişlik ve Yükseklik) -->
+      <aside id="hub-inline-notes-panel" class="w-full xl:w-[320px] 2xl:w-[350px] shrink-0 flex flex-col">
+        <div class="bg-[#131d33] border border-slate-700/80 rounded-2xl p-4 shadow-xl flex flex-col h-full space-y-3 relative overflow-hidden">
+          <!-- Üst Işıltı -->
+          <div class="absolute -top-10 -right-10 w-24 h-24 bg-indigo-600/10 rounded-full blur-2xl pointer-events-none"></div>
+
+          <!-- Başlık & Kontroller -->
+          <div class="flex items-center justify-between border-b border-slate-700/80 pb-3">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="w-7 h-7 rounded-xl bg-indigo-600/20 border border-indigo-500/50 flex items-center justify-center text-indigo-400 shrink-0 shadow-inner">
+                📜
+              </span>
+              <div class="min-w-0">
+                <h3 class="text-xs font-black text-white uppercase tracking-wider truncate" id="hub-notes-panel-badge">Not Defteri</h3>
+                <div class="text-[10px] text-slate-400 font-mono"><span id="hub-notes-panel-count">0</span> Not • Önce Pinliler 📌</div>
+              </div>
+            </div>
+
+            <!-- Sağ Üst Kalem & Defter İkonlu Genişletme Butonu -->
+            <button type="button" onclick="HubNotes.openFullNotesModal()" class="px-2.5 py-1.5 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/60 border border-indigo-500/50 text-indigo-200 hover:text-white transition flex items-center gap-1.5 text-xs font-bold shadow cursor-pointer active:scale-95" title="Geniş Not Defteri Sayfasını Aç">
+              <span>📝</span>
+              <span class="text-[10px] hidden sm:inline">Genişlet</span>
+            </button>
+          </div>
+
+          <!-- Hızlı Arama & Filtre Çipleri -->
+          <div class="space-y-1.5">
+            <div class="flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 rounded-xl px-2.5 py-1.5 focus-within:border-indigo-400 transition">
+              <span class="text-slate-500 text-xs">🔍</span>
+              <input type="text" id="hub-inline-notes-search" oninput="HubNotes.handleSearchInput(this.value)" placeholder="Not veya #etiket ara..." class="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none font-mono">
+            </div>
+
+            <!-- Hızlı Etiket Butonları -->
+            <div class="flex items-center gap-1 overflow-x-auto pb-1 text-[10px] font-mono no-scrollbar">
+              <button type="button" onclick="HubNotes.setTagFilter('all')" class="px-2 py-0.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer">#hepsi</button>
+              <button type="button" onclick="HubNotes.setTagFilter('#gorev')" class="px-2 py-0.5 rounded-md bg-sky-950/60 hover:bg-sky-900 border border-sky-800/60 text-sky-300 transition cursor-pointer">#gorev</button>
+              <button type="button" onclick="HubNotes.setTagFilter('#npc')" class="px-2 py-0.5 rounded-md bg-purple-950/60 hover:bg-purple-900 border border-purple-800/60 text-purple-300 transition cursor-pointer">#npc</button>
+              <button type="button" onclick="HubNotes.setTagFilter('#yer')" class="px-2 py-0.5 rounded-md bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800/60 text-emerald-300 transition cursor-pointer">#yer</button>
+              <button type="button" onclick="HubNotes.setTagFilter('#loot')" class="px-2 py-0.5 rounded-md bg-yellow-950/60 hover:bg-yellow-900 border border-yellow-800/60 text-yellow-300 transition cursor-pointer">#loot</button>
+            </div>
+          </div>
+
+          <!-- Hızlı Tek Satır Not Ekleme Girişi -->
+          <div class="flex items-center gap-1.5">
+            <input type="text" id="hub-quick-note-input" placeholder="Hızlı not yaz (+ #gorev, #npc)..." class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 font-mono focus:outline-none focus:border-indigo-400" onkeydown="if(event.key==='Enter') HubNotes.addQuickNote()">
+            <button type="button" onclick="HubNotes.addQuickNote()" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow transition active:scale-95 cursor-pointer" title="Notu Ekle">
+              ➕
+            </button>
+          </div>
+
+          <!-- Not Listesi (Pinliler Üstte, Son Notlar Altta, Akıcı Scroll) -->
+          <div id="hub-inline-notes-list" class="flex-1 overflow-y-auto space-y-2 pr-1 min-h-[220px] max-h-[500px]">
+            <!-- JS Dinamik Doldurur -->
+          </div>
+        </div>
+      </aside>
+
+      <!-- Sağ Bölüm: Açık Zar Masası Paneli (Not Defteri ile Eşit Genişlik ve Yükseklik) -->
+      <aside id="hub-inline-dice-panel" class="w-full xl:w-[320px] 2xl:w-[350px] shrink-0 flex flex-col">
+        <div class="bg-[#131d33] border border-slate-700/80 rounded-2xl p-4 shadow-xl space-y-3.5 relative overflow-hidden flex flex-col h-full">
           <!-- Üst Işıltı -->
           <div class="absolute -top-10 -right-10 w-24 h-24 bg-red-600/10 rounded-full blur-2xl pointer-events-none"></div>
 
@@ -1288,6 +1346,9 @@
         document.getElementById('hub-dm-table-view').classList.remove('hidden');
         renderDmTableView();
       }
+      if (window.HubNotes && typeof window.HubNotes.renderInlineNotes === 'function') {
+        window.HubNotes.renderInlineNotes();
+      }
     }
 
     // Kampanya Sekmelerini Render Et
@@ -1594,7 +1655,7 @@
         if (subCamps.length === 0) {
           // Alt kampanya henüz yoksa, normal 4 kolonlu grid olarak göster
           html += `
-            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               ${rootChars.map(c => getCharacterCardHtml(c)).join('')}
               ${getEmptyCharacterCardHtml(activeCamp.id)}
             </div>
@@ -1626,7 +1687,7 @@
                 </div>
               </div>
               <div id="drawer-content-${mainDrawerId}" class="p-4 ${isMainCollapsed ? 'hidden' : ''}">
-                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   ${rootChars.map(c => getCharacterCardHtml(c)).join('')}
                   ${getEmptyCharacterCardHtml(activeCamp.id)}
                 </div>
@@ -1662,7 +1723,7 @@
                   </div>
                 </div>
                 <div id="drawer-content-${subDrawerId}" class="p-4 ${isSubCollapsed ? 'hidden' : ''}">
-                  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     ${subChars.map(c => getCharacterCardHtml(c)).join('')}
                     ${getEmptyCharacterCardHtml(sub.id)}
                   </div>
@@ -1686,7 +1747,7 @@
 
       // DURUM 2: TÜMÜ VEYA BAĞIMSIZLAR SEÇİLİ
       const targetCampId = state.activeCampaignId === 'unassigned' ? null : null;
-      let html = `<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">`;
+      let html = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">`;
       if (chars.length > 0) {
         html += chars.map(c => getCharacterCardHtml(c)).join('');
       }
@@ -4060,5 +4121,80 @@ CRITICAL RULES:
       }
     });
   </script>
+
+    <!-- GENİŞ NOT DEFTERİ MODALI -->
+    <div id="hub-full-notes-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-3 sm:p-6">
+      <div class="bg-[#131d33] border border-slate-700 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl text-slate-100 overflow-hidden">
+        
+        <!-- Modal Başlığı -->
+        <div class="flex items-center justify-between border-b border-slate-700/80 px-5 py-3.5 bg-slate-900/90 shrink-0">
+          <div class="flex items-center gap-2.5">
+            <span class="text-xl">📝</span>
+            <div>
+              <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                <span>Not Defteri</span>
+                <span id="hub-modal-target-title" class="text-xs font-normal text-indigo-300 bg-indigo-950/60 px-2 py-0.5 rounded-lg border border-indigo-800/60"></span>
+              </h3>
+            </div>
+          </div>
+          <button type="button" onclick="HubNotes.closeFullNotesModal()" class="text-slate-400 hover:text-white text-lg font-bold px-2 py-1 cursor-pointer">✕</button>
+        </div>
+
+        <!-- Modal Gövdesi (2 Kolon) -->
+        <div class="flex-1 flex flex-col sm:flex-row overflow-hidden min-h-0">
+          
+          <!-- Sol Sütun: Not Listesi & Arama & Filtre -->
+          <div class="w-full sm:w-80 border-b sm:border-b-0 sm:border-r border-slate-700/80 flex flex-col bg-slate-900/40 shrink-0 p-3 space-y-3 overflow-hidden">
+            <!-- Arama -->
+            <div class="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 focus-within:border-indigo-400 transition">
+              <span class="text-slate-500 text-xs">🔍</span>
+              <input type="text" oninput="HubNotes.handleSearchInput(this.value)" placeholder="Notlarda ara..." class="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none">
+            </div>
+
+            <!-- Yeni Not Ekle Butonu -->
+            <button type="button" onclick="HubNotes.createNewModalNote()" class="w-full py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow transition active:scale-95 cursor-pointer">
+              <span>➕</span>
+              <span>Yeni Not Oluştur</span>
+            </button>
+
+            <!-- Not Listesi -->
+            <div id="hub-modal-notes-list" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar min-h-0">
+              <!-- JS Dinamik Doldurur -->
+            </div>
+          </div>
+
+          <!-- Sağ Sütun: Not Editörü -->
+          <div class="flex-1 flex flex-col p-4 space-y-3 bg-[#131d33] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2.5 shrink-0 flex-wrap gap-2">
+              <div class="text-[11px] text-slate-400 font-mono" id="hub-modal-date-badge">Seçili not bilgisi</div>
+              <div class="flex items-center gap-2">
+                <button type="button" id="hub-modal-pin-btn" onclick="HubNotes.togglePinNote(null, event)" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:text-white border border-slate-700 cursor-pointer">
+                  📌 Başa Sabitle
+                </button>
+                <button type="button" id="hub-modal-delete-btn" onclick="HubNotes.deleteNote(null, event)" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-800/60 cursor-pointer">
+                  🗑️ Sil
+                </button>
+              </div>
+            </div>
+
+            <!-- Hızlı Etiket Ekleme Araç Çubuğu -->
+            <div class="flex items-center gap-1.5 flex-wrap text-xs font-mono">
+              <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Hızlı Etiket:</span>
+              <button type="button" onclick="HubNotes.insertTagIntoEditor('#gorev')" class="px-2 py-0.5 rounded-md bg-sky-950/60 hover:bg-sky-900 text-sky-300 border border-sky-800/60 transition cursor-pointer">+ #gorev</button>
+              <button type="button" onclick="HubNotes.insertTagIntoEditor('#npc')" class="px-2 py-0.5 rounded-md bg-purple-950/60 hover:bg-purple-900 text-purple-300 border border-purple-800/60 transition cursor-pointer">+ #npc</button>
+              <button type="button" onclick="HubNotes.insertTagIntoEditor('#yer')" class="px-2 py-0.5 rounded-md bg-emerald-950/60 hover:bg-emerald-900 text-emerald-300 border border-emerald-800/60 transition cursor-pointer">+ #yer</button>
+              <button type="button" onclick="HubNotes.insertTagIntoEditor('#loot')" class="px-2 py-0.5 rounded-md bg-yellow-950/60 hover:bg-yellow-900 text-yellow-300 border border-yellow-800/60 transition cursor-pointer">+ #loot</button>
+              <button type="button" onclick="HubNotes.insertTagIntoEditor('- [ ] ')" class="px-2 py-0.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition cursor-pointer">+ [ ] Görev</button>
+            </div>
+
+            <!-- Geniş Textarea -->
+            <textarea id="hub-modal-note-editor" oninput="HubNotes.handleEditorInput()" placeholder="Notunuzu buraya yazın..." class="w-full flex-1 min-h-[280px] bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-indigo-400 font-sans leading-relaxed resize-none"></textarea>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
 </body>
 </html>
