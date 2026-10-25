@@ -1203,3 +1203,28 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   - Can (HP) bloğu önceki tam genişlikli (`w-full`) ve simetrik yapısına geri getirildi.
   - `hub.html` ve `webapp/hub.html` dosyaları %100 SHA-256 eşitliğinde güncellendi.
   - Sıfır 🎲 tavla zarı kuralı korundu.
+
+
+---
+
+## 55. HUB KARAKTER KARTLARINDA ZIRH & CAN YAN YANA VE 2x2 KURTARMA YERLEŞİMİ (2026-10-25)
+* **İstek:**
+  - Kullanıcının sunduğu görsel mockup yerleşimine geçilmesi:
+    1. ZIRH (AC) [Sol Blok: ~38%] ile CAN (HP) [Sağ Blok: ~62%] yan yana (`flex items-stretch gap-2`) konumlandırılması.
+    2. Altında 2 kolon x 2 satır Kurtarma & İnisiyatif bloğu: Sol kolonda `Fort` ve `Ref`, sağ kolonda `Will` ve `Init`.
+    3. Altında 2 kolonluk Pasif / Beceri bloğu: Sol kolonda `Spot`, sağ kolonda `Listen` ve yanına eğitilmiş beceriler çekmecesi butonu (`📜 N ▼`).
+    4. En altta tam genişlikte `⚡ Karakteri Aç & Yönet` butonu.
+* **Uygulanan Değişiklikler:**
+  1. **ZIRH & CAN Yan Yana Düzeni (`hub.html` & `webapp/hub.html`):**
+     - ZIRH (AC, Touch, FF, Hız) sol kolona (`w-[36%] sm:w-[38%] shrink-0`) alındı.
+     - CAN (HP) başlığı, ilerleme barı ve `[ ⚔️ - ] [ 5 ] [ + 💚 ]` miktar kontrolü sağ kolona (`flex-1 min-w-0`) alındı.
+     - `flex items-stretch` ile her iki kutu kusursuz bir yükseklik eşitliği ve simetriye kavuştu.
+  2. **2x2 Kurtarma & İnisiyatif Grid Düzeni:**
+     - `grid grid-cols-2 gap-2` yapısında:
+       - Sol sütun: `🛡️ Fort` ve `⚡ Ref`
+       - Sağ sütun: `🔮 Will` ve `⚡ Init`
+  3. **Spot, Listen & Beceriler Çekmecesi:**
+     - Sol sütunda `👁️ Spot`, sağ sütunda `👂 Listen` ve akordeon çekmece butonu (`📜 N ▼`) yerleştirildi.
+  4. **Parite ve Devir Teslim:**
+     - `hub.html` ve `webapp/hub.html` %100 SHA-256 eşitliğinde güncellendi (`True`).
+     - Standart tavla zarı emoji yasağı tavizsiz korundu.
