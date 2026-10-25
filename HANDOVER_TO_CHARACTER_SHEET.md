@@ -669,4 +669,21 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` %100 SHA-256 paritesinde tutuldu.
      - Sıfır tavla zarı (`🎲`) kuralı tavizsiz korundu.
 
+---
+
+## 37. KURAL KAYNAKLARI: YEREL KATALOG & PARAMETRİK MOTOR 1. SIRAYA ALINDI (2026-10-25)
+* **İstek:** `rule_master.js` ve Master DB kaynaklar kataloğunda atıl durumdaki harici Foundry VTT D35E (Rughalt) paketinin kaldırılması; ilk sıraya (Priority 1) projenin kendi dahili "Yerel Kural Kataloğu & Parametrik AI Motoru"nun yerleştirilmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Kaynaklar Kataloğu Güncellemesi (`rule_master.js` & `webapp/`):**
+     - **Priority 1 (Dahili & Yerel):** `Yerel Kural Kataloğu & Parametrik AI Motoru` (140+ hazır RAW SRD kaydı, parametrik hafıza, 0ms gecikme, çevrimdışı çalışma).
+     - **Priority 2 (Core SRD):** `Core 3.5e SRD (d20srd & dndsrd)` (PHB, DMG, MM temiz HTML / web referansı).
+     - **Priority 3 (Ek Kitaplar):** `Extended Splatbooks Index (srd.dndtools)` (Complete serisi, MIC, SpC genişletilmiş indeks).
+  2. **Arayüz ve Görsel Düzen:**
+     - `renderSourcesCatalog()` içerisinde dahili kaynaklar için `⚡ Dahili Motor` etiketi, harici web kaynakları için `Bağlantıyı Aç ↗` linki dinamik olarak render edildi.
+     - `character.html` / `index.html` üzerindeki AI arama açıklama metinleri ve yükleme göstergesi ("Yerel Katalog -> Core SRD -> Splatbooks...") güncellendi.
+  3. **Parite ve Kural Bütünlüğü:**
+     - `rule_master.js`, `character.html`, `index.html` ve `webapp/` kopyaları %100 SHA-256 eşitliğinde tutuldu.
+     - Sıfır tavla zarı (`🎲`) kuralı korundu.
+
+
 

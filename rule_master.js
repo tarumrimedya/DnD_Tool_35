@@ -19,22 +19,22 @@ const RuleMaster = {
   sourcesCatalog: [
     {
       priority: 1,
+      name: "Yerel Kural Kataloğu & Parametrik AI Motoru",
+      scope: "Yerel SRD Kataloğu (140+ kayıt) & Parametrik LLM Motoru (Sıfır ağ gecikmesi, %100 RAW 3.5e)",
+      url: "#",
+      type: "Yerel JSON & LLM",
+      status: "Aktif",
+      role: "Anında yerel Spotlight araması ve parametrik kural üretim motoru"
+    },
+    {
+      priority: 2,
       name: "Core 3.5e SRD (d20srd & dndsrd)",
       scope: "PHB, DMG, MM Core Kuralları, Featler, Büyüler, Eşyalar",
       url: "https://www.d20srd.org/index.html",
       mirror: "http://dndsrd.net",
       type: "Temiz HTML",
       status: "Aktif",
-      role: "İlk taranacak temel kural kaynağı"
-    },
-    {
-      priority: 2,
-      name: "Foundry VTT D35E Packs (Rughalt)",
-      scope: "Yapılandırılmış JSON: Eşyalar, büyüler, manevralar, hasar mekanikleri",
-      url: "https://github.com/Rughalt/D35E/tree/master/packs",
-      type: "Yapılandırılmış JSON",
-      status: "Aktif",
-      role: "Mekanik ayrıştırma (dice, DC, duration) için referans veri"
+      role: "İlk taranacak temel kural kaynağı ve web referansı"
     },
     {
       priority: 3,
@@ -3080,6 +3080,7 @@ Return valid JSON only matching this schema:
       this.sourcesCatalog.forEach(src => {
         const div = document.createElement('div');
         div.className = 'bg-slate-900 border border-indigo-600/40 rounded-xl p-3 space-y-1.5';
+        const isExternal = src.url && src.url.startsWith('http');
         div.innerHTML = `
           <div class="flex items-center justify-between">
             <span class="text-xs font-bold text-white">${src.priority}. ${src.name}</span>
@@ -3088,9 +3089,15 @@ Return valid JSON only matching this schema:
           <div class="text-[11px] text-slate-400">${src.scope}</div>
           <div class="flex items-center justify-between pt-1 border-t border-slate-800">
             <span class="text-[10px] text-indigo-300 font-mono">${src.type}</span>
-            <a href="${src.url}" target="_blank" class="text-xs text-sky-400 hover:underline flex items-center gap-1">
-              <span>Bağlantıyı Aç</span> <span>↗</span>
-            </a>
+            ${isExternal ? `
+              <a href="${src.url}" target="_blank" class="text-xs text-sky-400 hover:underline flex items-center gap-1">
+                <span>Bağlantıyı Aç</span> <span>↗</span>
+              </a>
+            ` : `
+              <span class="text-xs text-emerald-400 flex items-center gap-1 font-semibold">
+                <span>⚡</span> <span>Dahili Motor</span>
+              </span>
+            `}
           </div>
         `;
         srcContainer.appendChild(div);
