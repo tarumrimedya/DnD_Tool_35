@@ -1031,3 +1031,11 @@ function rollCustomFormula() {
   executeStandardCustomFormula(val);
 }
 window.rollCustomFormula = rollCustomFormula;
+
+// Sayfa yüklendiğinde inline panel bileşenlerini ve renk seçiciyi ilklendir
+window.addEventListener('DOMContentLoaded', () => {
+  if (typeof initDiceColor === 'function') initDiceColor();
+  if (typeof updateDicePoolDisplay === 'function') updateDicePoolDisplay();
+  if (typeof renderDiceHistory === 'function') renderDiceHistory();
+  if (typeof renderCustomTemplates === 'function') renderCustomTemplates();
+});

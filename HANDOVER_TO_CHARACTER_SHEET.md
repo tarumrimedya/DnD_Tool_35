@@ -480,3 +480,27 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      * `syncCloudUserHub` fonksiyonunda `camp_001` ile bulut seferi eşleşirse tek bir sekmede birleştirilir, çift sekme oluşması engellenir.
   5. **Parite ve Kural Bütünlüğü:**
      * `hub.html`, `supabase_auth.js` ve `webapp/` kopyaları %100 SHA-256 eşitliğinde tutuldu; sıfır tavla zarı (`🎲`) kuralı korundu.
+
+---
+
+## 24. HUB İÇİ SABİT SAĞ ZAR PANELİ VE 3 KOLONLU KART DÜZENİ ENTEGRASYONU (2026-10-25)
+* **İstek:** 
+  1. Hub üst başlığındaki "Zar At" butonunun ve açılır drawer modunun kaldırılması.
+  2. Karakter kâğıdındaki `tab-dice` zar masasının kompakt bir varyantının Hub sayfasının sağ tarafında kalıcı/açık bir panel (`#hub-inline-dice-panel`) olarak konumlandırılması.
+  3. Sol tarafta kalan karakter kartı alanının masaüstünde yan yana **tam 3 karakter sığacak** şekilde (`grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4`) ayarlanması.
+* **Uygulanan Değişiklikler:**
+  1. **Üst Başlık Sadeleştirmesi (`hub.html` & `webapp/`):**
+     * `#btn-open-hub-dice` kaldırıldı.
+     * Üst eylem alanı tekil `[ 🏰 Kampanya ]` butonu ve kullanıcı profili ile simetrik, dengeli bir yerleşime kavuşturuldu.
+  2. **Kalıcı Sağ Zar Masası (`#hub-inline-dice-panel`):**
+     * Masaüstünde sticky (`sticky top-4`), 330px-380px genişliğinde zar paneli entegre edildi.
+     * Çokyüzlü d20, d12, d10, d8, d6, d4, d100 butonları, anlık mod toggle'ı, havuz sayacı/değiştiricisi, serbest formül çubuğu, son atış kartı ve geçmiş listesi eksiksiz çalışır hale getirildi.
+     * Eski `hub-dice-drawer` ve `hub-dice-backdrop` elementleri temizlendi.
+  3. **3 Kartlı Grid Mimarisi (`renderCardsView`):**
+     * Alt kampanya çekmeceleri, genel sefer karakterleri ve bağımsız karakter listelerinde `xl:grid-cols-4` yapısı `xl:grid-cols-3` olarak güncellendi.
+     * Böylece sağdaki zar paneli açıkken sol alanda her satıra tam 3 kart oturması sağlandı.
+  4. **Sayfa Açılış Otomasyonu (`hub_dice.js` & `webapp/`):**
+     * Panel artık kalıcı olduğu için `DOMContentLoaded` olayında `initDiceColor`, `updateDicePoolDisplay`, `renderDiceHistory` ve `renderCustomTemplates` otomatik olarak tetiklenerek hazır hale getirildi.
+  5. **Parite ve Kural Bütünlüğü:**
+     * `hub.html`, `hub_dice.js` ve `webapp/` kopyaları %100 SHA-256 eşitliğinde tutuldu.
+     * Sıfır tavla zarı (`🎲`) kuralı tavizsiz korundu; çokyüzlü vektörel SVG zarlar kullanıldı.
