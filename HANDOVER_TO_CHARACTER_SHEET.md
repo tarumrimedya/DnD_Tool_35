@@ -970,3 +970,27 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   4. **Parite ve Devir Teslim:**
      - `hub.html` ve `webapp/hub.html` %100 SHA-256 paritesinde eşitlendi.
      - Proje kuralı gereğince hiçbir standart tavla zarı emoji kullanılmadı.
+
+
+---
+
+## 47. BÜTÜNLEŞİK KARAKTER PROFİLİ VE TEMEL STAT DAĞILIMI MODALI (2026-10-25)
+* **İstek:** Karakter kimlik bilgileri (Ad, Irk, Irksal Nitelikler Kartı, Yönelim, Tanrı/İnanç, Boyut, Cinsiyet, Yaş, Boy, Kilo, Taban Hız, Portre ve Duvar Kağıdı ayarları) ile Temel Stat Dağılımı (Manuel Serbest Giriş, 28 Puan RAW Point Buy, 4d6 Drop Lowest Zar Havuzu) yapısının tek bir bütünleşik "Karakter Profili & Temel Statlar" modalında birleştirilmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Bütünleşik Modal Mimarisi (`#stat-distribution-modal`):**
+     - Modal başlığı "Karakter Profili & Temel Statlar (D&D 3.5e RAW)" olarak revize edildi, genişlik ferah çalışma için `max-w-2xl` yapıldı.
+     - Üst sekmelere 4 seçenek eklendi:
+       1. `[ 👤 Kimlik & Irk ]` (`#tab-stat-dist-identity` / `#panel-stat-dist-identity`)
+       2. `[ ✏️ Manuel (Serbest) ]` (`#tab-stat-dist-manual` / `#panel-stat-dist-manual`)
+       3. `[ ⚖️ Point Buy (3.5e RAW) ]` (`#tab-stat-dist-pointbuy` / `#panel-stat-dist-pointbuy`)
+       4. `[ ⚡ 4d6 Drop Lowest (Zar) ]` (`#tab-stat-dist-roll` / `#panel-stat-dist-roll`)
+  2. **Kimlik & Irk Paneli Entegrasyonu:**
+     - Eski `#char-profile-modal` içindeki tüm etkileşimli alanlar (Mouse ile sürüklenebilir portre ve odak seçici, dosya yükleme/URL, hızlı portre odakları, sığdırma oranları, isim, ırk ve dinamik SRD ırk nitelikleri kartı, yönelim, tanrı, boyut, cinsiyet, yaş, boy, kilo, hız ve sayfa arka plan duvar kağıdı stüdyosu) eksiksiz olarak `#panel-stat-dist-identity` içine taşındı.
+     - Eski modal ID'si geriye dönük sorgular için zararsız gizli bir DOM stub'ı olarak korundu (`<div id="char-profile-modal" class="hidden" style="display:none;"></div>`).
+  3. **Açılış & Kayıt Davranışı:**
+     - `openProfileEditModal()` ve üst sol portre tıklaması doğrudan birleşik modalı `identity` sekmesiyle açar.
+     - `openStatDistributionModal()` butonu birleşik modalı `manual` (veya son aktif stat) sekmesiyle açar.
+     - Modal altındaki "💾 Kaydet & Uygula" butonu (`saveStatDistribution()`), hem kimlik/ırk alanlarını hem de taban stat skorlarını tek seferde atomik olarak doğrular, kaydeder, `saveStateToStorage(true)` ve `renderAll()` tetikler.
+  4. **Parite ve Kural Bütünlüğü:**
+     - `character.html`, `index.html`, `webapp/character.html` ve `webapp/index.html` olmak üzere 4 dosya %100 SHA-256 paritesinde eşitlendi (`A752D15C...`).
+     - Sıfır 🎲 tavla zarı emojisi kuralı tavizsiz korundu.

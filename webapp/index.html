@@ -4159,38 +4159,42 @@
   </div>
 
   <!-- ==================================================== -->
-  <!-- MODAL: STAT DISTRIBUTION & POINT BUY EDITOR -->
+  <!-- MODAL: STAT DISTRIBUTION & CHARACTER PROFILE EDITOR -->
   <!-- ==================================================== -->
   <div id="stat-distribution-modal" class="hidden fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
-    <div class="bg-dndCard border border-purple-500/80 rounded-2xl max-w-xl w-full shadow-2xl overflow-hidden my-auto max-h-[94vh] flex flex-col">
+    <div class="bg-dndCard border border-purple-500/80 rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden my-auto max-h-[94vh] flex flex-col">
       <!-- Modal Header -->
       <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between shrink-0">
         <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-900 to-indigo-950 border border-purple-500/60 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
-            <svg class="w-5 h-5 text-amber-400" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"></polygon><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"></polygon><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"></line><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg>
+          <div id="profile-modal-avatar-box" class="w-9 h-9 rounded-lg bg-indigo-950 border border-indigo-500/60 flex items-center justify-center text-xl overflow-hidden shrink-0 shadow-inner">
+            <span id="profile-modal-avatar-icon">🧙‍♂️</span>
           </div>
           <div>
             <h3 class="font-black text-white text-sm flex items-center gap-1.5">
-              <span>Temel Stat Dağılımı</span>
+              <span>Karakter Profili &amp; Temel Statlar</span>
               <span class="text-[9px] font-mono px-1.5 py-0.2 bg-purple-950 text-purple-300 border border-purple-700/60 rounded">D&amp;D 3.5e RAW</span>
             </h3>
-            <p class="text-[10px] text-purple-300">Manuel giriş, Point Buy veya 4d6 zar ile karakter taban statlarını belirleyin</p>
+            <p class="text-[10px] text-purple-300">Kimlik, ırk, görünüm ve taban yetenek skorları dağılımı</p>
           </div>
         </div>
         <button onclick="closeStatDistributionModal()" class="text-slate-400 hover:text-white text-lg p-1 transition cursor-pointer">✕</button>
       </div>
 
-      <!-- Mode Selector Tabs (Manuel, Point Buy, 4d6) -->
-      <div class="bg-slate-900/80 px-4 pt-2.5 border-b border-slate-800 flex items-center gap-2 shrink-0">
-        <button type="button" id="tab-stat-dist-manual" onclick="setStatDistMode('manual')" class="px-3 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-purple-500 text-purple-200 bg-purple-950/60 flex items-center gap-1.5 cursor-pointer">
+      <!-- Mode Selector Tabs (Kimlik & Irk, Manuel, Point Buy, 4d6) -->
+      <div class="bg-slate-900/80 px-4 pt-2.5 border-b border-slate-800 flex items-center gap-1.5 overflow-x-auto shrink-0">
+        <button type="button" id="tab-stat-dist-identity" onclick="setStatDistMode('identity')" class="px-3 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-purple-500 text-purple-200 bg-purple-950/60 flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
+          <span>👤</span>
+          <span>Kimlik &amp; Irk</span>
+        </button>
+        <button type="button" id="tab-stat-dist-manual" onclick="setStatDistMode('manual')" class="px-3 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
           <span>✏️</span>
           <span>Manuel (Serbest)</span>
         </button>
-        <button type="button" id="tab-stat-dist-pointbuy" onclick="setStatDistMode('pointbuy')" class="px-3 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-1.5 cursor-pointer">
+        <button type="button" id="tab-stat-dist-pointbuy" onclick="setStatDistMode('pointbuy')" class="px-3 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
           <span>⚖️</span>
           <span>Point Buy (3.5e RAW)</span>
         </button>
-        <button type="button" id="tab-stat-dist-roll" onclick="setStatDistMode('roll')" class="px-3 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-1.5 cursor-pointer">
+        <button type="button" id="tab-stat-dist-roll" onclick="setStatDistMode('roll')" class="px-3 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
           <span class="inline-flex items-center"><svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"></polygon><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"></polygon><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"></line><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
           <span>4d6 Drop Lowest (Zar)</span>
         </button>
@@ -4199,8 +4203,378 @@
       <!-- Modal Body -->
       <div class="p-4 space-y-3.5 overflow-y-auto text-xs">
         
+                <!-- PANEL 0: KIMLIK & IRK (KARAKTER PROFILI) -->
+        <div id="panel-stat-dist-identity" class="space-y-3">
+          <div id="profile-portrait-panel" class="bg-gradient-to-r from-slate-900/90 via-indigo-950/25 to-slate-900/90 border border-indigo-500/50 rounded-xl p-3 space-y-2.5 shadow-md">
+          <div class="flex flex-wrap items-center justify-between border-b border-slate-800 pb-2 gap-2">
+            <div class="flex items-center gap-2">
+              <span class="text-base">👤</span>
+              <div>
+                <h4 class="font-extrabold text-white text-xs flex items-center gap-2">
+                  <span>Karakter Resmi</span>
+                  <span id="portrait-status-badge" class="badge bg-slate-800 text-slate-400 border border-slate-700 text-[9px]">Dinamik Sembol</span>
+                </h4>
+                <p class="text-[10px] text-indigo-300">Orijinal renkleriyle kahraman kartına yansıyacak görseli seçin ve odaklayın</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1">
+              <input type="file" id="profile-portrait-file-input" accept="image/*" class="hidden" onchange="handlePortraitFileUpload(event)">
+              <button type="button" onclick="triggerPortraitUpload()" class="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition flex items-center gap-1 text-[11px] shadow">
+                <span>📁 Dosya Seç</span>
+              </button>
+              <button type="button" onclick="promptPortraitUrl()" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold transition text-[11px] border border-slate-700" title="İnternet Resim Linki (URL)">
+                <span>🔗 URL</span>
+              </button>
+              <button type="button" id="profile-portrait-remove-btn" onclick="removeCharacterPortrait()" class="hidden px-2 py-1 rounded-lg bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-700 font-bold transition text-[11px]" title="Karakter resmini kaldır ve dinamik sembole dön">
+                <span>✕ Kaldır</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Sizing & Focal Point (Mouse ile Sürükle-Bırak Konumlandırma) -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] text-slate-400 font-bold uppercase flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 inline-block text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>
+                <span>Mouse ile Sürükle & Odaklanacak Alanı Seç</span>
+              </span>
+              <div class="flex items-center gap-1.5">
+                <span id="portrait-pos-coords" class="px-2 py-0.5 rounded-full bg-slate-950 border border-slate-700 text-[10px] font-mono font-bold text-amber-300 shadow-sm">
+                  📍 X: %50, Y: %20
+                </span>
+                <button type="button" onclick="setPortraitPositionPercent(50, 20)" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-[10px] font-bold transition shadow-sm" title="Merkeze / Yüze Sıfırla">
+                  🔄 Sıfırla
+                </button>
+              </div>
+            </div>
+
+            <!-- Draggable Viewport & Controls Side-by-Side -->
+            <div class="flex flex-col sm:flex-row items-center sm:items-stretch gap-3">
+              <!-- Draggable Viewport Card (Matches Top Hero Card proportions) -->
+              <div id="portrait-interactive-viewport" onmousedown="onPortraitDragStart(event)" ontouchstart="onPortraitDragStart(event)"
+                   class="w-36 h-48 sm:w-40 sm:h-52 shrink-0 rounded-xl border-2 border-indigo-500/70 bg-slate-950 relative overflow-hidden shadow-2xl cursor-grab select-none group transition-all hover:shadow-indigo-500/20">
+                <!-- Image element moving with mouse drag - Natural colors, NO color filters! -->
+                <div id="portrait-mini-img" class="absolute inset-0 bg-no-repeat pointer-events-none"></div>
+
+                <!-- Fallback when no image is loaded -->
+                <div id="portrait-mini-fallback" class="absolute inset-0 flex flex-col items-center justify-center p-2 text-center pointer-events-none">
+                  <span id="portrait-fallback-icon" class="text-4xl sm:text-5xl mb-1">🧙‍♂️</span>
+                  <span class="text-[9px] text-slate-400 font-semibold">Resim Yükleyin</span>
+                </div>
+
+                <!-- Viewfinder 3x3 Grid (Rule of Thirds Guide) -->
+                <div id="portrait-grid-guide" class="absolute inset-0 pointer-events-none border border-white/10 grid grid-cols-3 grid-rows-3 opacity-25 group-hover:opacity-60 transition-opacity">
+                  <div class="border-r border-b border-white/20"></div>
+                  <div class="border-r border-b border-white/20"></div>
+                  <div class="border-b border-white/20"></div>
+                  <div class="border-r border-b border-white/20"></div>
+                  <div class="border-r border-b border-white/20 flex items-center justify-center">
+                    <div class="w-3 h-3 rounded-full border-2 border-indigo-400 bg-indigo-500/40"></div>
+                  </div>
+                  <div class="border-b border-white/20"></div>
+                  <div class="border-r border-b border-white/20"></div>
+                  <div class="border-r border-b border-white/20"></div>
+                  <div></div>
+                </div>
+
+                <!-- Drag hint badge at bottom -->
+                <div class="absolute bottom-1.5 inset-x-1.5 text-center pointer-events-none">
+                  <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-slate-950/85 border border-indigo-500/50 text-[8px] sm:text-[9px] text-indigo-200 font-semibold backdrop-blur-sm shadow">
+                    <span>✋</span> <span>Tut & Sürükle</span>
+                  </span>
+                </div>
+              </div>
+
+              <!-- Quick Focus Presets & Framing / Fit Controls -->
+              <div class="flex-1 w-full flex flex-col justify-between space-y-2">
+                <!-- Hızlı Odak Presets -->
+                <div>
+                  <span class="text-[10px] text-slate-400 font-bold block mb-1">Hızlı Odak Seçimi:</span>
+                  <div class="grid grid-cols-3 gap-1">
+                    <button type="button" onclick="setPortraitPositionPercent(50, 10)" class="py-1 px-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold transition text-center border border-slate-700" title="Yüz / Baş Bölgesi">⬆️ Yüz (Baş)</button>
+                    <button type="button" onclick="setPortraitPositionPercent(50, 50)" class="py-1 px-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold transition text-center border border-slate-700" title="Gövde / Orta Bölge">⏺️ Orta</button>
+                    <button type="button" onclick="setPortraitPositionPercent(50, 90)" class="py-1 px-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold transition text-center border border-slate-700" title="Alt / Tam Boy">⬇️ Alt</button>
+                    <button type="button" onclick="setPortraitPositionPercent(20, 30)" class="py-1 px-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold transition text-center border border-slate-700" title="Sol Açı">⬅️ Sol</button>
+                    <button type="button" onclick="setPortraitPositionPercent(50, 30)" class="py-1 px-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold transition text-center border border-slate-700" title="Portre Klasik">👤 Klasik</button>
+                    <button type="button" onclick="setPortraitPositionPercent(80, 30)" class="py-1 px-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold transition text-center border border-slate-700" title="Sağ Açı">➡️ Sağ</button>
+                  </div>
+                </div>
+
+                <!-- Sığdırma & Zoom (Fit) - Uzaklaştırma ve Yakınlaştırma -->
+                <div>
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-[10px] text-slate-400 font-bold">Görsel Boyutlandırma & Uzaklaş/Yakınlaş:</span>
+                    <span class="text-[9px] text-indigo-400 font-mono font-semibold">🔍 Uzaklaş / 🔎 Yakınlaş</span>
+                  </div>
+                  <select id="portrait-fit-select" onchange="onPortraitFitChange()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-xs text-indigo-300 font-bold shadow-inner">
+                    <optgroup label="Standart Boyutlandırma">
+                      <option value="cover">🖼️ Cover (Kartı Doldur - Önerilen)</option>
+                      <option value="contain">📐 Contain (Tüm Resmi Sığdır)</option>
+                      <option value="100%">🔍 Doğal Boyut %100</option>
+                    </optgroup>
+                    <optgroup label="Uzaklaştırma (Geniş Açı - Küçült)">
+                      <option value="40%">🔍 Uzaklaştır %40 (Ultra Geniş)</option>
+                      <option value="50%">🔍 Uzaklaştır %50 (Ekstra Geniş)</option>
+                      <option value="60%">🔍 Uzaklaştır %60 (Geniş Görünüm)</option>
+                      <option value="70%">🔍 Uzaklaştır %70 (Orta Geniş)</option>
+                      <option value="80%">🔍 Uzaklaştır %80 (Hafif Uzak)</option>
+                      <option value="90%">🔍 Uzaklaştır %90 (Hafif Küçült)</option>
+                    </optgroup>
+                    <optgroup label="Yakınlaştırma (Zoom - Büyüt)">
+                      <option value="110%">🔎 Yakınlaştır %110</option>
+                      <option value="125%">🔎 Yakınlaştır %125 (Hafif Yakın)</option>
+                      <option value="150%">🔎 Yakınlaştır %150 (Yüz / Baş Odak)</option>
+                      <option value="180%">🔎 Yakınlaştır %180 (Ekstra Yakın)</option>
+                      <option value="220%">🔎 Yakınlaştır %220 (Maksimum Odak)</option>
+                    </optgroup>
+                  </select>
+
+                  <!-- Hızlı Boyutlandırma Presetleri (Uzaklaş & Yakınlaş Kısayolları) -->
+                  <div class="flex items-center gap-1 mt-1.5">
+                    <span class="text-[9px] text-slate-400 font-bold whitespace-nowrap">Hızlı:</span>
+                    <button type="button" onclick="setPortraitFitPreset('50%')" class="flex-1 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 hover:text-white text-[9px] font-bold transition text-center border border-slate-700" title="Uzaklaştır %50 (Geniş Açı)">🔍 %50</button>
+                    <button type="button" onclick="setPortraitFitPreset('70%')" class="flex-1 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 hover:text-white text-[9px] font-bold transition text-center border border-slate-700" title="Uzaklaştır %70">🔍 %70</button>
+                    <button type="button" onclick="setPortraitFitPreset('cover')" class="flex-1 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-white text-[9px] font-bold transition text-center border border-slate-700" title="Standart Cover (Kartı Doldur)">Cover</button>
+                    <button type="button" onclick="setPortraitFitPreset('125%')" class="flex-1 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 hover:text-white text-[9px] font-bold transition text-center border border-slate-700" title="Yakınlaştır %125">🔎 %125</button>
+                    <button type="button" onclick="setPortraitFitPreset('150%')" class="flex-1 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 hover:text-white text-[9px] font-bold transition text-center border border-slate-700" title="Yakınlaştır %150 (Yüz Odak)">🔎 %150</button>
+                  </div>
+                </div>
+
+                <div class="text-[9px] text-slate-400 bg-slate-950/70 p-2 rounded-lg border border-slate-800/80">
+                  <span class="text-indigo-400 font-bold">💡 Not:</span> Karakter resminiz olduğu gibi orijinal renk ve parlaklığıyla kahraman kartına ve profilinize yansıtılır.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Karakter Adı *</label>
+            <input type="text" id="profile-edit-name" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-bold">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Irk (Race) *</label>
+            <input type="text" id="profile-edit-race" list="race-options" oninput="updateProfileModalAvatar(); onProfileRaceChange(this.value);" onchange="updateProfileModalAvatar(); onProfileRaceChange(this.value);" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-bold">
+            <datalist id="race-options">
+              <option value="Human">
+              <option value="Elf">
+              <option value="Dwarf">
+              <option value="Halfling">
+              <option value="Gnome">
+              <option value="Half-Elf">
+              <option value="Half-Orc">
+              <option value="Aasimar">
+              <option value="Tiefling">
+              <option value="Dragonborn">
+            </datalist>
+          </div>
+        </div>
+
+        <!-- Irksal Nitelik Önizleme ve Uygulama Kartı (D&D 3.5e RAW SRD Ghost Core) -->
+        <div id="profile-race-traits-card" class="hidden bg-slate-950/90 border border-amber-500/40 rounded-xl p-3 space-y-2 shadow-lg">
+          <!-- Populated dynamically via onProfileRaceChange -->
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Yönelim (Alignment)</label>
+            <select id="profile-edit-alignment" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white">
+              <option value="Lawful Good">Lawful Good</option>
+              <option value="Neutral Good">Neutral Good</option>
+              <option value="Chaotic Good">Chaotic Good</option>
+              <option value="Lawful Neutral">Lawful Neutral</option>
+              <option value="True Neutral">True Neutral</option>
+              <option value="Chaotic Neutral">Chaotic Neutral</option>
+              <option value="Lawful Evil">Lawful Evil</option>
+              <option value="Neutral Evil">Neutral Evil</option>
+              <option value="Chaotic Evil">Chaotic Evil</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tanrı / İnanç (Deity)</label>
+            <input type="text" id="profile-edit-deity" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Boyut (Size)</label>
+            <select id="profile-edit-size" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white">
+              <option value="Fine">Fine</option>
+              <option value="Diminutive">Diminutive</option>
+              <option value="Tiny">Tiny</option>
+              <option value="Small">Small</option>
+              <option value="Medium">Medium</option>
+              <option value="Large">Large</option>
+              <option value="Huge">Huge</option>
+              <option value="Gargantuan">Gargantuan</option>
+              <option value="Colossal">Colossal</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Cinsiyet</label>
+            <input type="text" id="profile-edit-gender" oninput="updateProfileModalAvatar()" onchange="updateProfileModalAvatar()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Yaş</label>
+            <input type="number" id="profile-edit-age" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white font-mono">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Boy</label>
+            <input type="text" id="profile-edit-height" placeholder="Örn: 178 cm" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white font-mono">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kilo</label>
+            <input type="text" id="profile-edit-weight" placeholder="Örn: 72 kg" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white font-mono">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Taban Hız (ft)</label>
+            <input type="number" id="profile-edit-speed" placeholder="30" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white font-mono">
+          </div>
+        </div>
+
+        <!-- SECTION: SAYFA ARKA PLANI & DUVAR KAĞIDI (WALLPAPER AYARLARI) -->
+        <div id="profile-wallpaper-panel" class="bg-gradient-to-r from-slate-900/90 via-purple-950/20 to-slate-900/90 border border-purple-500/40 rounded-xl p-3 space-y-2.5">
+          <div class="flex flex-wrap items-center justify-between border-b border-slate-800 pb-2 gap-2">
+            <div class="flex items-center gap-2">
+              <span class="text-base">🌌</span>
+              <div>
+                <h4 class="font-extrabold text-white text-xs flex items-center gap-2">
+                  <span>Sayfa Duvar Kağıdı & Arka Plan</span>
+                  <span id="wallpaper-status-badge" class="badge bg-slate-800 text-slate-400 border border-slate-700 text-[9px]">Varsayılan Tema</span>
+                </h4>
+                <p class="text-[10px] text-purple-300">Tüm sayfa arka planına temayla uyumlu özel görsel uygulayın</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1">
+              <input type="file" id="profile-wallpaper-file-input" accept="image/*" class="hidden" onchange="handleWallpaperFileUpload(event)">
+              <button type="button" onclick="triggerWallpaperUpload()" class="px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold transition flex items-center gap-1 text-[11px] shadow">
+                <span>📁 Dosya Seç</span>
+              </button>
+              <button type="button" onclick="promptWallpaperUrl()" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold transition text-[11px] border border-slate-700" title="İnternet Resim Linki (URL)">
+                <span>🔗 URL</span>
+              </button>
+              <button type="button" id="wallpaper-clear-btn" onclick="clearWallpaper()" class="hidden px-2 py-1 rounded-lg bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-700 font-bold transition text-[11px]" title="Arka planı kaldır">
+                <span>✕ Kaldır</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Sizing & Focal Point (Mouse ile Sürükle-Bırak Konumlandırma) -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] text-slate-400 font-bold uppercase flex items-center gap-1.5">
+                <span>📱</span> <span>Mouse ile Sürükle & Konumlandır (Fotoğraf / Duvar Kağıdı Gibi)</span>
+              </span>
+              <div class="flex items-center gap-1.5">
+                <span id="wallpaper-pos-coords" class="px-2 py-0.5 rounded-full bg-slate-950 border border-slate-700 text-[10px] font-mono font-bold text-amber-300 shadow-sm">
+                  📍 X: %50, Y: %50
+                </span>
+                <button type="button" onclick="setWallpaperPositionPercent(50, 50)" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-[10px] font-bold transition shadow-sm" title="Merkeze Sıfırla">
+                  🔄 Sıfırla
+                </button>
+              </div>
+            </div>
+
+            <!-- Interactive Pan Canvas Viewport -->
+            <div id="wallpaper-mini-phone" onmousedown="onWallpaperDragStart(event)" ontouchstart="onWallpaperDragStart(event)" class="w-full h-44 sm:h-52 rounded-xl border-2 border-purple-500/60 bg-slate-950 relative overflow-hidden shadow-2xl cursor-grab select-none group transition-all hover:shadow-purple-500/20">
+              <!-- Background Image that moves with mouse drag -->
+              <div id="wallpaper-mini-img" class="absolute inset-0 bg-cover bg-no-repeat pointer-events-none"></div>
+              <!-- Theme Overlay -->
+              <div id="wallpaper-mini-overlay" class="absolute inset-0 bg-slate-950/70 pointer-events-none"></div>
+              
+              <!-- Viewfinder 3x3 Grid (Rule of Thirds Guide) -->
+              <div class="absolute inset-0 pointer-events-none border border-white/10 grid grid-cols-3 grid-rows-3 opacity-25 group-hover:opacity-50 transition-opacity">
+                <div class="border-r border-b border-white/20"></div>
+                <div class="border-r border-b border-white/20"></div>
+                <div class="border-b border-white/20"></div>
+                <div class="border-r border-b border-white/20"></div>
+                <div class="border-r border-b border-white/20 flex items-center justify-center">
+                  <div class="w-3 h-3 rounded-full border-2 border-purple-400 bg-purple-500/40"></div>
+                </div>
+                <div class="border-b border-white/20"></div>
+                <div class="border-r border-white/20"></div>
+                <div class="border-r border-white/20"></div>
+                <div></div>
+              </div>
+
+              <!-- Mini HUD Mockup Card -->
+              <div class="absolute inset-x-8 top-1/2 -translate-y-1/2 pointer-events-none p-2 bg-slate-900/80 rounded-lg border border-slate-700/60 backdrop-blur-sm text-center shadow-lg">
+                <div class="text-[10px] font-black text-amber-300">D&D 3.5e Savaş Kokpiti</div>
+                <div class="text-[8px] text-slate-300">Karakter kartları bu bölgede konumlanır</div>
+              </div>
+
+              <!-- Drag hint badge at bottom -->
+              <div class="absolute bottom-2 inset-x-2 text-center pointer-events-none">
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-950/85 border border-purple-500/40 text-[9px] text-purple-200 font-semibold backdrop-blur-sm shadow">
+                  <span>✋</span> <span>Görseli mouse ile tutup sürükleyerek istediğiniz alanı seçin</span>
+                </span>
+              </div>
+            </div>
+
+            <!-- Quick Position Presets & Zoom / Theme Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 pt-1">
+              <!-- Quick Presets -->
+              <div class="sm:col-span-5 flex items-center gap-1">
+                <span class="text-[10px] text-slate-400 font-bold whitespace-nowrap">Hızlı Odak:</span>
+                <button type="button" onclick="setWallpaperPositionPercent(50, 10)" class="flex-1 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold transition text-center" title="Üst / Yüz Kısmına Odaklan">⬆️ Üst</button>
+                <button type="button" onclick="setWallpaperPositionPercent(50, 50)" class="flex-1 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold transition text-center" title="Merkeze Odaklan">⏺️ Orta</button>
+                <button type="button" onclick="setWallpaperPositionPercent(50, 90)" class="flex-1 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold transition text-center" title="Alt / Zemin Kısmına Odaklan">⬇️ Alt</button>
+              </div>
+
+              <!-- Sizing & Theme Selects -->
+              <div class="sm:col-span-7 grid grid-cols-2 gap-2">
+                <div>
+                  <select id="wallpaper-fit-select" onchange="onWallpaperFitChange()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white">
+                    <option value="cover">Cover (Ekranı Kapla)</option>
+                    <option value="contain">Contain (Ekrana Sığdır)</option>
+                    <option value="50%">Uzaklaş %50 (Geniş Açı)</option>
+                    <option value="70%">Uzaklaş %70 (Geniş)</option>
+                    <option value="85%">Uzaklaş %85 (Hafif Uzak)</option>
+                    <option value="120%">Zoom %120 (Büyüt)</option>
+                    <option value="150%">Zoom %150 (Yakın Plan)</option>
+                    <option value="200%">Zoom %200 (Ekstra Yakın)</option>
+                  </select>
+                </div>
+                <div>
+                  <select id="wallpaper-theme-select" onchange="onWallpaperThemeChange()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-indigo-300 font-bold">
+                    <option value="dark-blue">🌌 Gece Mavisi (D&D Tema)</option>
+                    <option value="mystic-purple">🔮 Mistik Büyücü Moru</option>
+                    <option value="crimson">⚔️ Kızıl Savaşçı Tonu</option>
+                    <option value="emerald">🌿 Doğa / Zümrüt Yeşili</option>
+                    <option value="monochrome">🌑 Kömür / Karanlık</option>
+                    <option value="natural">🎨 Doğal / Karartılmış</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dimming (Karartma) & Blur (Bulanıklık) Sliders -->
+          <div class="grid grid-cols-2 gap-3 pt-1 border-t border-slate-800/80">
+            <div>
+              <div class="flex justify-between items-center text-[10px] font-bold text-slate-400 mb-1">
+                <span>🌑 KARARTMA SEVİYESİ</span>
+                <span id="wallpaper-opacity-val" class="text-amber-400 font-mono">%75</span>
+              </div>
+              <input type="range" id="wallpaper-opacity-slider" min="40" max="95" value="75" step="5" oninput="onWallpaperOpacityChange()" class="w-full accent-purple-500 h-1.5 bg-slate-950 rounded cursor-pointer">
+            </div>
+            <div>
+              <div class="flex justify-between items-center text-[10px] font-bold text-slate-400 mb-1">
+                <span>🌫️ ATMOSFERİK DERİNLİK (BLUR)</span>
+                <span id="wallpaper-blur-val" class="text-sky-400 font-mono">1px</span>
+              </div>
+              <input type="range" id="wallpaper-blur-slider" min="0" max="8" value="1" step="1" oninput="onWallpaperBlurChange()" class="w-full accent-purple-500 h-1.5 bg-slate-950 rounded cursor-pointer">
+            </div>
+          </div>
+        </div>
+        </div>
         <!-- PANEL 1: MANUEL (SERBEST GİRİŞ) -->
-        <div id="panel-stat-dist-manual" class="space-y-3">
+        <div id="panel-stat-dist-manual" class="hidden space-y-3">
           <div class="flex flex-wrap items-center justify-between text-[11px] text-slate-400 pb-1 border-b border-slate-800 gap-1.5">
             <span>Taban statları (Base Abilities) doğrudan belirleyin veya kalıp seçin:</span>
             <div class="flex items-center gap-1.5">
@@ -4302,7 +4676,7 @@
         </div>
 
         <!-- ORTAK BİLGİLENDİRME & ÖZET KARTI -->
-        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-3 space-y-2 text-xs">
+        <div id="stat-dist-preview-wrapper" class="hidden bg-slate-950/80 border border-slate-800 rounded-xl p-3 space-y-2 text-xs">
           <div class="flex items-center justify-between">
             <span class="font-bold text-slate-300 flex items-center gap-1.5">
               <span>📊</span>
@@ -4322,14 +4696,29 @@
       </div>
 
       <!-- Modal Footer -->
-      <div class="bg-slate-950 px-4 py-3 border-t border-slate-800 flex items-center justify-between shrink-0">
-        <button type="button" onclick="closeStatDistributionModal()" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-lg transition cursor-pointer">
-          Vazgeç
-        </button>
-        <button type="button" onclick="saveStatDistribution()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-4 py-2 rounded-lg shadow-lg flex items-center gap-1.5 transition active:scale-95 cursor-pointer">
-          <span>💾</span>
-          <span>Statları Kaydet &amp; Uygula</span>
-        </button>
+      <div class="bg-slate-950 px-4 py-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2 shrink-0">
+        <!-- Sol Taraf: Karakter Resmi & Arka Plan Hızlı Atlama Butonları -->
+        <div class="flex items-center gap-1.5" id="stat-dist-identity-quick-links">
+          <button type="button" onclick="scrollToPortraitPanel()" class="px-2.5 py-1.5 rounded-lg bg-indigo-950 hover:bg-indigo-900 text-indigo-300 hover:text-white border border-indigo-600/70 font-bold transition flex items-center gap-1 text-xs shadow-sm" title="Karakter Resmi ayarlarına git">
+            <span>👤</span>
+            <span>Portre</span>
+          </button>
+          <button type="button" onclick="scrollToWallpaperPanel()" id="profile-wallpaper-btn" class="px-2.5 py-1.5 rounded-lg bg-purple-950/80 hover:bg-purple-900 text-purple-300 hover:text-white border border-purple-700/60 font-bold transition flex items-center gap-1 text-xs shadow-sm" title="Tüm sayfa arka plan ayarlarına git">
+            <span>🌌</span>
+            <span>Arka Plan</span>
+          </button>
+        </div>
+
+        <!-- Sağ Taraf: İptal ve Kaydet Butonları -->
+        <div class="flex items-center gap-2 ml-auto">
+          <button type="button" onclick="closeStatDistributionModal()" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-lg transition cursor-pointer">
+            Vazgeç
+          </button>
+          <button type="button" onclick="saveStatDistribution()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-4 py-2 rounded-lg shadow-lg flex items-center gap-1.5 transition active:scale-95 cursor-pointer">
+            <span>💾</span>
+            <span>Kaydet &amp; Uygula</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -9952,7 +10341,7 @@
       if (hwEl) hwEl.textContent = `${character.height || '-'}, ${character.weight || '-'}`;
     }
 
-    function openProfileEditModal() {
+    function populateProfileInputs() {
       if (!character) return;
       const setVal = (id, val) => {
         const el = document.getElementById(id);
@@ -9973,54 +10362,18 @@
       applyPortraitSettings();
       applyWallpaperSettings();
       onProfileRaceChange(character.race || '');
+    }
 
-      const modal = document.getElementById('char-profile-modal');
-      if (modal) modal.classList.remove('hidden');
+    function openProfileEditModal() {
+      openStatDistributionModal('identity');
     }
 
     function closeProfileEditModal() {
-      const modal = document.getElementById('char-profile-modal');
-      if (modal) modal.classList.add('hidden');
+      closeStatDistributionModal();
     }
 
     function saveCharacterProfile() {
-      if (!character) return;
-      const getVal = id => document.getElementById(id)?.value?.trim();
-      
-      const newName = getVal('profile-edit-name');
-      if (newName) character.name = newName;
-
-      const newRace = getVal('profile-edit-race');
-      if (newRace) character.race = newRace;
-
-      const newAlign = getVal('profile-edit-alignment');
-      if (newAlign) character.alignment = newAlign;
-
-      const newDeity = getVal('profile-edit-deity');
-      if (newDeity !== undefined) character.deity = newDeity;
-
-      const newSize = document.getElementById('profile-edit-size')?.value;
-      if (newSize) character.size = newSize;
-
-      const newGender = getVal('profile-edit-gender');
-      if (newGender !== undefined) character.gender = newGender;
-
-      const newAge = parseInt(document.getElementById('profile-edit-age')?.value);
-      if (!isNaN(newAge)) character.age = newAge;
-
-      const newHeight = getVal('profile-edit-height');
-      if (newHeight !== undefined) character.height = newHeight;
-
-      const newWeight = getVal('profile-edit-weight');
-      if (newWeight !== undefined) character.weight = newWeight;
-
-      const newSpeed = parseInt(document.getElementById('profile-edit-speed')?.value);
-      if (!isNaN(newSpeed) && newSpeed > 0) character.baseSpeed = newSpeed;
-
-      closeProfileEditModal();
-      saveStateToStorage(true);
-      renderAll();
-      alert('✅ Karakter kimliği ve özellikleri başarıyla güncellendi!');
+      saveStatDistribution();
     }
 
     // =========================================================================
@@ -10738,16 +11091,12 @@
       return Math.max(1, total - netBonus);
     }
 
-    function openStatDistributionModal() {
+    function openStatDistributionModal(initialMode = null) {
       if (!character) return;
       
-      const currentLvl = (character.levelProgression || []).filter(p => p.active !== false).length || Number(character.level) || 1;
-      if (currentLvl > 1) {
-        alert(`⚠️ Temel stat dağılımı (Point Buy / 4d6 Roll) yalnızca 1. Seviyede belirlenebilir.\nMevcut Karakter Seviyeniz: ${currentLvl}`);
-        return;
-      }
-      
-      // Taban statları karakterin mevcut gerçek taban değerlerinden oku
+      populateProfileInputs();
+
+      // Taban statlarÄ± karakterin mevcut gerÃ§ek taban deÄŸerlerinden oku
       statDistState.workingAbilities = {
         str: getCharacterBaseAbility('str'),
         dex: getCharacterBaseAbility('dex'),
@@ -10763,7 +11112,8 @@
       const modal = document.getElementById('stat-distribution-modal');
       if (modal) modal.classList.remove('hidden');
 
-      setStatDistMode(statDistState.mode || 'manual');
+      const targetMode = initialMode || (statDistState.mode && statDistState.mode !== 'identity' ? statDistState.mode : 'manual');
+      setStatDistMode(targetMode);
     }
 
     function closeStatDistributionModal() {
@@ -10775,6 +11125,7 @@
       statDistState.mode = mode;
 
       const tabs = [
+        { id: 'tab-stat-dist-identity', panel: 'panel-stat-dist-identity', key: 'identity' },
         { id: 'tab-stat-dist-manual', panel: 'panel-stat-dist-manual', key: 'manual' },
         { id: 'tab-stat-dist-pointbuy', panel: 'panel-stat-dist-pointbuy', key: 'pointbuy' },
         { id: 'tab-stat-dist-roll', panel: 'panel-stat-dist-roll', key: 'roll' }
@@ -10787,9 +11138,9 @@
 
         if (tabEl) {
           if (isActive) {
-            tabEl.className = 'px-3 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-purple-500 text-purple-200 bg-purple-950/60 flex items-center gap-1.5 cursor-pointer';
+            tabEl.className = 'px-3 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-purple-500 text-purple-200 bg-purple-950/60 flex items-center gap-1.5 cursor-pointer whitespace-nowrap';
           } else {
-            tabEl.className = 'px-3 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-1.5 cursor-pointer';
+            tabEl.className = 'px-3 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-1.5 cursor-pointer whitespace-nowrap';
           }
         }
 
@@ -10801,6 +11152,21 @@
           }
         }
       });
+
+      const quickLinks = document.getElementById('stat-dist-identity-quick-links');
+      if (quickLinks) {
+        if (mode === 'identity') quickLinks.classList.remove('hidden');
+        else quickLinks.classList.add('hidden');
+      }
+
+      const previewWrapper = document.getElementById('stat-dist-preview-wrapper');
+      if (previewWrapper) {
+        if (mode === 'identity') {
+          previewWrapper.classList.add('hidden');
+        } else {
+          previewWrapper.classList.remove('hidden');
+        }
+      }
 
       if (mode === 'manual') {
         renderManualStatsPanel();
@@ -10821,7 +11187,9 @@
         }
       }
 
-      renderStatDistPreviewRow();
+      if (mode !== 'identity') {
+        renderStatDistPreviewRow();
+      }
     }
 
     // --- 1. MANUEL MODE ---
@@ -11225,7 +11593,40 @@
     function saveStatDistribution() {
       if (!character) return;
 
-      // Point Buy kontrolü
+      // 1. Kimlik ve profil alanlarini kaydet
+      const getVal = id => document.getElementById(id)?.value?.trim();
+      
+      const newName = getVal('profile-edit-name');
+      if (newName) character.name = newName;
+
+      const newRace = getVal('profile-edit-race');
+      if (newRace) character.race = newRace;
+
+      const newAlign = getVal('profile-edit-alignment');
+      if (newAlign) character.alignment = newAlign;
+
+      const newDeity = getVal('profile-edit-deity');
+      if (newDeity !== undefined) character.deity = newDeity;
+
+      const newSize = document.getElementById('profile-edit-size')?.value;
+      if (newSize) character.size = newSize;
+
+      const newGender = getVal('profile-edit-gender');
+      if (newGender !== undefined) character.gender = newGender;
+
+      const newAge = parseInt(document.getElementById('profile-edit-age')?.value);
+      if (!isNaN(newAge)) character.age = newAge;
+
+      const newHeight = getVal('profile-edit-height');
+      if (newHeight !== undefined) character.height = newHeight;
+
+      const newWeight = getVal('profile-edit-weight');
+      if (newWeight !== undefined) character.weight = newWeight;
+
+      const newSpeed = parseInt(document.getElementById('profile-edit-speed')?.value);
+      if (!isNaN(newSpeed) && newSpeed > 0) character.baseSpeed = newSpeed;
+
+      // 2. Point Buy kontrolü (eğer stat modu pointbuy ise)
       if (statDistState.mode === 'pointbuy') {
         const budget = statDistState.pointBuyBudget || 28;
         let spent = 0;
@@ -11238,7 +11639,7 @@
         }
       }
 
-      // Taban statları uygula
+      // 3. Taban statları uygula
       if (!character.baseAbilities) character.baseAbilities = {};
       character.hasCustomBaseAbilities = true;
       STAT_KEYS.forEach(s => {
@@ -11254,12 +11655,12 @@
       if (typeof showDiceTopToast === 'function') {
         showDiceTopToast({
           icon: typeof getDiceIconSvg === 'function' ? getDiceIconSvg('20', 'w-6 h-6 text-amber-400') : '⚡',
-          title: 'Statlar Kaydedildi',
-          breakdown: 'Taban yetenek skorları güncellendi. HP, AC, Atak, Beceriler ve Kurtarma Atışları kural motoru tarafından baştan hesaplandı.',
+          title: 'Karakter & Statlar Kaydedildi',
+          breakdown: 'Kimlik özellikleri ve taban yetenek skorları güncellendi. HP, AC, Atak, Beceriler ve Kurtarma Atışları kural motoru tarafından baştan hesaplandı.',
           total: 'TAMAMLANDI'
         });
       } else {
-        alert('✅ Taban statlar başarıyla güncellendi ve tüm karakter değerleri baştan hesaplandı!');
+        alert('✅ Karakter profili ve taban statlar başarıyla güncellendi!');
       }
     }
 
