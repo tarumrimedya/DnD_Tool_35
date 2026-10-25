@@ -854,15 +854,23 @@
       saveHubStorage();
     }
 
-    function saveHubStorage(triggerCloudSync = true) {
+    function saveHubStorage(triggerCloudSync = true, isDmModeFast = false) {
       try {
         localStorage.setItem(HUB_STORAGE_KEY, JSON.stringify({
           campaigns: state.campaigns,
           characters: state.characters,
+          latestDmEvent: state.latestDmEvent || null,
           lastSaved: new Date().toISOString()
         }));
-        if (triggerCloudSync && window.CloudSync && typeof window.CloudSync.saveDataDebounced === 'function') {
-          window.CloudSync.saveDataDebounced();
+        if (triggerCloudSync && window.CloudSync) {
+          if (isDmModeFast && typeof window.CloudSync.pushToCloud === 'function') {
+            clearTimeout(window.CloudSync.autoSaveTimer);
+            window.CloudSync.autoSaveTimer = setTimeout(() => {
+              window.CloudSync.pushToCloud(true);
+            }, 300);
+          } else if (typeof window.CloudSync.saveDataDebounced === 'function') {
+            window.CloudSync.saveDataDebounced();
+          }
         }
       } catch (err) {
         console.error('Hub storage save error:', err);
@@ -1502,7 +1510,41 @@
           c.fullData.hp.current = c.currentHp;
           c.fullData.hp.temp = c.tempHp || 0;
         }
-        saveHubStorage();
+
+        // DM Mode Kontrolü ve Canlı Senkronizasyon Etkinliği
+        const camp = state.campaigns.find(cp => cp.id === c.campaignId || (cp.parentId && cp.id === c.campaignId));
+        const isDmMode = camp ? Boolean(camp.isDmMode) : false;
+
+        if (isDmMode) {
+          const hpEvent = {
+            type: 'DM_HP_UPDATE',
+            charId: charId,
+            campaignId: c.campaignId,
+            isDmMode: true,
+            delta: delta,
+            currentHp: c.currentHp,
+            maxHp: c.maxHp,
+            tempHp: c.tempHp || 0,
+            charName: c.name,
+            timestamp: Date.now()
+          };
+
+          // 1. BroadcastChannel Canlı Yayını (Aynı cihazdaki sekmeler / çift monitör için 0ms anında)
+          try {
+            const bc = new BroadcastChannel('dnd35_live_sync');
+            bc.postMessage(hpEvent);
+            bc.close();
+          } catch (e) {}
+
+          // 2. LocalStorage Canlı Yayını (Aynı cihaz fallback)
+          try {
+            localStorage.setItem('dnd35_latest_dm_event', JSON.stringify(hpEvent));
+          } catch (e) {}
+
+          state.latestDmEvent = hpEvent;
+        }
+
+        saveHubStorage(true, isDmMode);
         renderHub();
       }
     }

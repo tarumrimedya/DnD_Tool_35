@@ -336,6 +336,19 @@ const CloudSync = {
       }
     }
 
+    // Check for real-time DM HP update events (Cross-Device Cloud Sync)
+    const incomingDmEvent = remotePayload.latestDmEvent || (remotePayload.hubDb && remotePayload.hubDb.latestDmEvent);
+    if (incomingDmEvent && incomingDmEvent.type === 'DM_HP_UPDATE') {
+      try {
+        localStorage.setItem('dnd35_latest_dm_event', JSON.stringify(incomingDmEvent));
+        if (typeof window.handleIncomingDmHpEvent === 'function') {
+          window.handleIncomingDmHpEvent(incomingDmEvent);
+        }
+      } catch (e) {
+        console.warn('handleIncomingDmHpEvent error:', e);
+      }
+    }
+
     // 1. Restore Character (with strict isolation guard against cross-contamination)
     const remoteChar = remotePayload.character || (remotePayload.name || remotePayload.abilities ? remotePayload : null);
     if (remoteChar && typeof character !== 'undefined' && character) {
@@ -553,12 +566,20 @@ const CloudSync = {
         } catch (e) {}
       }
 
+      let latestDmEvent = null;
+      try {
+        const rawEvt = localStorage.getItem('dnd35_latest_dm_event');
+        if (rawEvt) latestDmEvent = JSON.parse(rawEvt);
+        else if (hubDb && hubDb.latestDmEvent) latestDmEvent = hubDb.latestDmEvent;
+      } catch (e) {}
+
       const payload = {
         version: 2,
         lastModified: nowIso,
         character: charObj,
         masterDb: typeof masterDb !== 'undefined' && Array.isArray(masterDb) ? masterDb : [],
-        hubDb: hubDb
+        hubDb: hubDb,
+        latestDmEvent: latestDmEvent
       };
 
       if (this.serverAvailable) {
@@ -637,6 +658,33 @@ const CloudSync = {
 
   saveDataDebounced() {
     return this.scheduleAutoSave();
+  },
+
+  // Live polling for cross-device DM updates (Player phone / tablet)
+  livePollingInterval: null,
+
+  startLiveSyncPolling(intervalMs = 3500) {
+    if (this.livePollingInterval) return;
+    this.livePollingInterval = setInterval(async () => {
+      if (document.hidden) return; // Ekran kapalıysa veya sekme arka plandaysa kota/pil tasarrufu
+      if (!this.configured || (this.pinRequired && !this.authenticated)) return;
+      if (this.isSyncing) return;
+
+      if (typeof character !== 'undefined' && character) {
+        try {
+          await this.pullFromCloud(true);
+        } catch (e) {
+          // Sessiz devam et
+        }
+      }
+    }, intervalMs);
+  },
+
+  stopLiveSyncPolling() {
+    if (this.livePollingInterval) {
+      clearInterval(this.livePollingInterval);
+      this.livePollingInterval = null;
+    }
   },
 
   // Update Top Navbar Pill & Settings Modal Status Badge

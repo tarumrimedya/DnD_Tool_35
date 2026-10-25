@@ -58,6 +58,9 @@
 </head>
 <body class="min-h-screen flex flex-col pb-20 md:pb-6 relative">
 
+  <!-- FULLSCREEN VIGNETTE FLASH OVERLAY (DM CANLI HASAR/ŞİFA ETKİSİ) -->
+  <div id="dm-vignette-overlay" class="pointer-events-none fixed inset-0 z-[9999] opacity-0 transition-opacity duration-300 ease-out"></div>
+
   <!-- FULL PAGE DYNAMIC WALLPAPER LAYER -->
   <div id="app-wallpaper-layer" class="fixed inset-0 pointer-events-none -z-10 overflow-hidden transition-all duration-500 ease-out" style="display: none;">
     <div id="app-wallpaper-img" class="absolute inset-0 bg-no-repeat transition-all duration-300"></div>
@@ -7213,6 +7216,105 @@
     let character = null;
     let masterDb = [];
 
+    // =========================================================================
+    // DM CANLI SENKRONİZASYON (VIGNETTE FLASH, TOAST & DİNAMİK HP GÜNCELLEMESİ)
+    // =========================================================================
+    function triggerDamageVignette(type = 'damage') {
+      const overlay = document.getElementById('dm-vignette-overlay');
+      if (!overlay) return;
+      if (type === 'damage') {
+        overlay.style.background = 'radial-gradient(circle, transparent 40%, rgba(225, 29, 72, 0.45) 90%), rgba(225, 29, 72, 0.2)';
+      } else {
+        overlay.style.background = 'radial-gradient(circle, transparent 40%, rgba(16, 185, 129, 0.45) 90%), rgba(16, 185, 129, 0.18)';
+      }
+      overlay.classList.remove('opacity-0');
+      overlay.classList.add('opacity-100');
+      setTimeout(() => {
+        overlay.classList.remove('opacity-100');
+        overlay.classList.add('opacity-0');
+      }, 650);
+    }
+    window.triggerDamageVignette = triggerDamageVignette;
+
+    window.handleIncomingDmHpEvent = function(evt) {
+      if (!evt || evt.type !== 'DM_HP_UPDATE') return;
+      if (!character) return;
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const reqId = urlParams.get('id') || localStorage.getItem('dnd35_active_character_id');
+      const myId = character._hubId || character.id || reqId;
+
+      if (!myId || myId !== evt.charId) return;
+
+      // Tekrarlanan paketleri önleme (Timestamp kontrolü)
+      if (window._lastHandledDmEventTs && window._lastHandledDmEventTs >= evt.timestamp) {
+        return;
+      }
+      window._lastHandledDmEventTs = evt.timestamp;
+
+      const delta = evt.delta;
+      const isDamage = delta < 0;
+      const absDelta = Math.abs(delta);
+
+      if (!character.hp) {
+        character.hp = { current: evt.currentHp, max: evt.maxHp, temp: evt.tempHp || 0 };
+      }
+      character.hp.current = evt.currentHp;
+      character.hp.temp = evt.tempHp || 0;
+
+      // Yerel hafızaya kaydet (tekrar buluta fırlatıp döngü oluşturmamak için triggerCloudSync = false)
+      saveStateToStorage(false);
+
+      // DOM'u güncelle
+      if (typeof renderCombatCockpit === 'function') {
+        try { renderCombatCockpit(); } catch (e) {}
+      }
+      if (typeof renderAll === 'function') {
+        try { renderAll(); } catch (e) {}
+      }
+
+      // 1. Ekran Kırmızı / Yeşil Parlama Efekti
+      triggerDamageVignette(isDamage ? 'damage' : 'heal');
+
+      // 2. Toast Bildirimi (showDiceTopToast)
+      if (typeof showDiceTopToast === 'function') {
+        if (isDamage) {
+          showDiceTopToast({
+            icon: '🩸',
+            title: 'DM Hasar Uyguladı',
+            breakdown: `${absDelta} Hasar uygulandı. Kalan Can: ${evt.currentHp}/${evt.maxHp}${evt.tempHp > 0 ? ` (+${evt.tempHp} Geçici)` : ''}`,
+            total: `-${absDelta} HP`
+          });
+        } else {
+          showDiceTopToast({
+            icon: '💚',
+            title: 'DM İyileşme Uyguladı',
+            breakdown: `${absDelta} Şifa uygulandı. Güncel Can: ${evt.currentHp}/${evt.maxHp}`,
+            total: `+${absDelta} HP`
+          });
+        }
+      }
+    };
+
+    // Aynı Cihaz Canlı Senkronizasyon Dinleyicileri (BroadcastChannel & Storage Event)
+    try {
+      const liveBc = new BroadcastChannel('dnd35_live_sync');
+      liveBc.onmessage = (e) => {
+        if (e.data && e.data.type === 'DM_HP_UPDATE') {
+          window.handleIncomingDmHpEvent(e.data);
+        }
+      };
+    } catch (e) {}
+
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'dnd35_latest_dm_event' && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          window.handleIncomingDmHpEvent(parsed);
+        } catch (err) {}
+      }
+    });
+
     window.addEventListener('DOMContentLoaded', async () => {
       try {
         await loadInitialData();
@@ -7234,6 +7336,9 @@
       }
       try { verifySettingsGeminiApiKey(false); } catch (e) {}
       try { await CloudSync.init(); } catch (e) {}
+      if (window.CloudSync && typeof window.CloudSync.startLiveSyncPolling === 'function') {
+        window.CloudSync.startLiveSyncPolling(3000);
+      }
       try { initDiceColor(); } catch (e) {}
       try { renderCustomTemplates(); } catch (e) {}
       try { restoreActiveTabAndScroll(); } catch (e) {}

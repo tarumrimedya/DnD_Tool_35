@@ -125,9 +125,25 @@ Hub, karakter kâğıdına veri gönderirken veya `localStorage` (`dnd35_charact
 
 ---
 
-## 6. HAZIR DEVİR TESLİM PROMPTU (DİĞER KONUŞMAYA YAPIŞTIRILACAK)
+## 6. CANLI DM HASAR/ŞİFA SENKRONİZASYONU VE GERÇEK ZAMANLI EFEKTLER (2026-10-25)
+* **Kapsam:** Oyun masasında DM Hub (`hub.html`) üzerinden bir karaktere hasar verdiğinde veya şifa uyguladığında, bu eylemin anında oyuncunun açık olan karakter kâğıdına (`index.html` / `character.html`) sayfa yenilenmesine gerek kalmadan canlı olarak yansıması sağlandı.
+* **Teknik Uygulama:**
+  1. **DM Modu Koruması:** Canlı sinyal fırlatma mekanizması yalnızca `isDmMode === true` olan kampanyalarda aktifleşir.
+  2. **Çift Kanallı İletim:**
+     * **Aynı Cihaz / Çift Monitör (0ms):** `BroadcastChannel('dnd35_live_sync')` ve `window.addEventListener('storage')` ile anında iletim.
+     * **Farklı Cihazlar (DM PC vs Oyuncu Telefonu):** `CloudSync.startLiveSyncPolling(3000)` ve `pushToCloud` (300ms ultra hızlı DM dispatch) ile Vercel KV üzerinden canlı çekme.
+  3. **Görsel Geri Bildirimler:**
+     * **Fullscreen Vignette Flash:** Hasarda ekranın kenarları kırmızı (`🩸`), şifada yeşil (`💚`) nabız gibi parlar.
+     * **Toast Bildirimi:** `showDiceTopToast` ile `🩸 DM Hasar Uyguladı (-14 HP)` veya `💚 DM İyileşme Uyguladı (+8 HP)` bildirimi belirir.
+  4. **Parite ve Kural Bütünlüğü:**
+     * Kök ve `webapp/` dizinindeki tüm dosyalar (`hub.html`, `index.html`, `character.html`, `gdrive_sync.js`) %100 paritede eşitlendi.
+     * Standart tavla zarı (`🎲`) kesinlikle kullanılmadı.
+
+---
+
+## 7. HAZIR DEVİR TESLİM PROMPTU (DİĞER KONUŞMAYA YAPIŞTIRILACAK)
 ```markdown
-HUB tarafındaki karakter kartlarının ve DM tablosunun dinamik stat hesaplamaları (`RuleEngine` entegrasyonu ile AC, Saves, Attack/Damage, Initiative, Spot/Listen) tamamlandı ve `dnd35_hub_db` senkronizasyonu güncellendi.
-Lütfen `HANDOVER_TO_CHARACTER_SHEET.md` dosyasındaki son güncellemeleri kontrol ederek karakter sayfasındaki geliştirmelere devam et.
+Hub ile Karakter Kâğıdı arasında DM Modu canlı hasar/şifa senkronizasyonu (`BroadcastChannel`, Vercel KV live polling, kırmızı/yeşil vignette flash ve toast bildirimleri) başarıyla tamamlandı ve `dnd35_hub_db` protokolü güncellendi.
+Lütfen `HANDOVER_TO_CHARACTER_SHEET.md` dosyasındaki son güncellemeleri kontrol ederek geliştirmelere devam et.
 ```
 
