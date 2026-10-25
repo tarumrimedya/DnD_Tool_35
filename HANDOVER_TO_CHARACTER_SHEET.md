@@ -199,9 +199,32 @@ Hub, karakter kâğıdına veri gönderirken veya `localStorage` (`dnd35_charact
 
 ---
 
-## 10. HAZIR DEVİR TESLİM PROMPTU (DİĞER KONUŞMAYA YAPIŞTIRILACAK)
+## 10. HUB 3D ZAR ANİMASYONU & SAĞ ÇEKMECE ZAR MASASI ENTEGRASYONU (2026-10-25)
+* **Kapsam:** Hub (`hub.html`) sayfasına `Three.js` ve `dice3d.js` fizik simülasyonlu 3D zar animasyon motoru entegre edildi. Ayrıca üst gezinti çubuğuna d20 vektör ikonlu "Zar At" butonu eklenerek sayfanın sağından kayarak açılan (slide-over drawer) tam teşekküllü zar masası modülü (`hub_dice.js`) Hub'a kazandırıldı.
+* **Teknik Bileşenler:**
+  1. **3D Fiziksel Zar Simülasyonu (`dice3d.js` & Three.js):**
+     * Hem karakter kartlarındaki kurtarma atışlarına (Saves), algı (Spot/Listen) ve inisiyatife tıklandığında, hem de serbest zar masası ve formül atışlarında ekranda gerçekçi 3D zar yuvarlanma animasyonu ve ses efekti çalışır.
+  2. **Sağ Kayar Çekmece (Slide-Over Drawer - `#hub-dice-drawer`):**
+     * Üst bardaki "Zar At" butonuna veya ESC tuşuna duyarlı, karartmalı arka plan (`#hub-dice-backdrop`) eşliğinde sağdan yumuşakça kayarak açılan responsive kontrol paneli.
+  3. **Serbest Zar Masası & Havuz Modu:**
+     * d4, d6, d8, d10, d12, d20 ve d100 vektör butonları.
+     * "Tıkla Hemen At" veya "Havuzda Topla ve At" modu, bonus ekleme ve sıfırlama.
+  4. **Zar Rengi ve Palet Seçici:**
+     * Yakut, Safir, Zümrüt, Ametist, Kehribar, Buzul, Obsidyen, Fildişi ve özel renk seçici. 3D zar malzemesi ve butonlar bu renkle anında uyumlanır.
+  5. **Serbest Formül & Hedefli Zar Motoru:**
+     * `Hedef:21 Bonus:4 Zar:1d6+3 19-20x2` gibi akıllı hedefli saldırı ve kritik teyit formülleri veya `8d6`, `3d6+5` gibi serbest formüller.
+     * Hızlı şablonlar (kaydet, tıkla-doldur, sil).
+  6. **Canlı Son Zar Kartı ve Geçmiş Logu:**
+     * Yapılan tüm atışlar (kart saves/spot/listen atışları dahil) `addDiceHistoryEntry` ile kalıcı olarak kaydedilir ve yeniden eskiye doğru listelenir.
+  7. **Kural ve Parite:**
+     * Proje kuralı gereğince standart tavla zarı (`🎲`) kesinlikle kullanılmamış, özel SVG çokyüzlü zar ikonları kullanılmıştır.
+     * Kök dizindeki `hub.html` ve `hub_dice.js` ile `webapp/` altındaki kopyalar %100 birebir senkronize edilmiştir.
+
+---
+
+## 11. HAZIR DEVİR TESLİM PROMPTU (DİĞER KONUŞMAYA YAPIŞTIRILACAK)
 ```markdown
-Hub üzerindeki karakter kartlarında ve DM tablosunda yer alan Kurtarma Atışları (Fortitude, Reflex, Will), Pasif Beceriler (Spot, Listen) ve İnisiyatif alanları tıklanabilir zar atışına (`rollHubCheck` & `showHubDiceToast`) dönüştürüldü. Doğal 20/1 efektleri ve animasyonlu üst toast bildirimi tamamlandı.
+Hub sayfasına Three.js destekli 3D fiziksel zar animasyonu (`dice3d.js`), sağ kayar çekmece zar masası modülü (`hub_dice.js`), d20 ikonlu üst "Zar At" butonu ve serbest formül motoru başarıyla entegre edildi. Tüm atışlar ortak zar geçmişi ve animasyonlu bildirimlerle birbirine bağlandı.
 Lütfen `HANDOVER_TO_CHARACTER_SHEET.md` dosyasındaki son güncellemeleri kontrol ederek geliştirmelere devam et.
 ```
 

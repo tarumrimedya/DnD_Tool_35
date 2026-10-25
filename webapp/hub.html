@@ -11,6 +11,13 @@
   <script src="gdrive_sync.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase_auth.js"></script>
+  <!-- Three.js & 3D Dice Roller Engine -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="dice3d.js"></script>
+  <script src="hub_dice.js"></script>
   <style>
     body {
       font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -45,15 +52,21 @@
         </div>
 
         <!-- Üst Eylem Butonları (Sağa Yaslı, Eşit Boyutlu & Tam Simetrik) -->
-        <div class="flex flex-col items-stretch sm:items-end justify-center gap-2 shrink-0 self-start sm:self-auto sm:ml-auto w-full sm:w-[210px]">
+        <div class="flex flex-col items-stretch sm:items-end justify-center gap-2 shrink-0 self-start sm:self-auto sm:ml-auto w-full sm:w-[220px]">
           <!-- Kullanıcı Profil Slotu -->
           <div id="user-profile-slot" class="w-full flex items-center justify-end"></div>
 
-          <!-- Yeni Kampanya Ekle Butonu -->
-          <button onclick="openNewCampaignModal()" class="w-full h-9 px-3 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-md shadow-indigo-950/50 border border-indigo-400/40 cursor-pointer active:scale-95">
-            <span class="text-sm">🏰</span>
-            <span>Yeni Kampanya Ekle</span>
-          </button>
+          <!-- Üst Eylem Grubu: Yeni Kampanya & Zar At (Yan Yana Çift Buton) -->
+          <div class="grid grid-cols-2 gap-1.5 w-full">
+            <button onclick="openNewCampaignModal()" class="w-full h-9 px-2 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-md shadow-indigo-950/50 border border-indigo-400/40 cursor-pointer active:scale-95" title="Yeni Kampanya Ekle">
+              <span class="text-sm">🏰</span>
+              <span class="truncate">Kampanya</span>
+            </button>
+            <button onclick="toggleHubDiceDrawer()" id="btn-open-hub-dice" class="w-full h-9 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer select-none border whitespace-nowrap shadow-sm bg-gradient-to-r from-red-600 to-rose-600 text-white border-red-400 shadow-lg shadow-red-950/60 ring-2 ring-red-400/40" title="Zar Masası & Formül Atıcı Menüsünü Aç">
+              <span class="inline-flex items-center"><svg class="w-4 h-4 text-amber-400" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"></polygon><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"></polygon><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"></line><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
+              <span>Zar At</span>
+            </button>
+          </div>
 
           <!-- Yedekleme & İçe Aktarma Grubu (Eşit Genişlik & Yükseklik) -->
           <div class="w-full h-9 flex items-center rounded-xl bg-slate-900/90 p-0.5 border border-slate-700/80 shadow-md">
@@ -437,6 +450,364 @@
       </div>
     </div>
   </div>
+
+  <!-- ==================================================== -->
+  <!-- ⚡ HUB ZAR MASASI & FORMÜL SAĞ ÇEKMECE (SLIDE-OVER DRAWER) -->
+  <!-- ==================================================== -->
+  <div id="hub-dice-backdrop" onclick="toggleHubDiceDrawer(false)" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[9990] hidden transition-opacity duration-300 opacity-0"></div>
+
+  <aside id="hub-dice-drawer" class="fixed top-0 right-0 h-full w-full sm:w-[500px] md:w-[560px] lg:w-[600px] bg-[#0c1322] border-l border-slate-700/80 shadow-2xl z-[9995] flex flex-col transition-transform duration-300 ease-out transform translate-x-full">
+    <!-- Çekmece Başlığı -->
+    <div class="p-3.5 sm:p-4 border-b border-slate-700/80 bg-slate-900/90 flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-2.5">
+        <span class="w-8 h-8 rounded-xl bg-red-600/20 border border-red-500/50 flex items-center justify-center text-amber-400 shrink-0 shadow-inner">
+          <svg class="w-5 h-5 text-amber-400" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+            <polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
+            <line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/>
+            <line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/>
+            <line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"/>
+            <line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"/>
+            <line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"/>
+            <line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"/>
+            <line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"/>
+            <line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"/>
+            <line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"/>
+            <text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text>
+          </svg>
+        </span>
+        <div>
+          <h2 class="text-sm font-black text-white tracking-wide flex items-center gap-1.5">
+            <span>ZAR MASASI & FORMÜL ATICI</span>
+            <span class="px-2 py-0.5 rounded-full bg-red-950 text-red-300 border border-red-500/40 text-[10px] font-bold">3D Fizik</span>
+          </h2>
+          <p class="text-[11px] text-slate-400">Serbest Zar Masası, Havuz & Hedefli Formül Motoru</p>
+        </div>
+      </div>
+      <button type="button" onclick="toggleHubDiceDrawer(false)" class="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer text-lg leading-none" title="Kapat (ESC)">
+        ✕
+      </button>
+    </div>
+
+    <!-- Çekmece İçeriği (Kaydırılabilir) -->
+    <div class="flex-1 overflow-y-auto p-3.5 sm:p-4 space-y-4 custom-scroll">
+      
+      <!-- 1. SERBEST ZAR MASASI & HAVUZ -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-lg space-y-3.5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="text-amber-400 font-extrabold text-sm flex items-center gap-1.5">
+              <span>SERBEST ZAR MASASI</span>
+            </span>
+            <span class="px-2 py-0.5 rounded-full bg-amber-950/80 text-amber-300 border border-amber-500/50 text-[10px] font-semibold">Hızlı & Havuz</span>
+          </div>
+          <!-- Anında At vs Havuz Toggle -->
+          <label class="flex items-center gap-1.5 cursor-pointer bg-slate-950 border border-slate-800 px-2 py-1 rounded-lg text-xs hover:border-amber-500/50 transition">
+            <input type="checkbox" id="dice-instant-mode" class="rounded border-slate-700 text-amber-500 focus:ring-0 cursor-pointer">
+            <span class="font-bold text-slate-300 select-none text-[11px]">⚡ Tıkla Hemen At</span>
+          </label>
+        </div>
+
+        <!-- Standart D&D Zarları Butonları (d4, d6, d8, d10, d12, d20, d100) -->
+        <div class="grid grid-cols-4 sm:grid-cols-7 gap-2">
+          <!-- d4 -->
+          <button onclick="handleDieClick(4)" title="d4 zarı ekle veya at" class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-950/80 hover:bg-emerald-600/30 border border-emerald-500/40 hover:border-emerald-400 text-emerald-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
+            <span class="w-6 h-6 flex items-center justify-center group-hover:scale-110 transition text-emerald-300">
+              <svg class="w-5 h-5 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="50,10 90,85 10,85" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+                <polygon points="50,34 76,76 24,76" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
+                <line x1="50" y1="34" x2="50" y2="10" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <line x1="24" y1="76" x2="10" y2="85" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <line x1="76" y1="76" x2="90" y2="85" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <text x="50" y="66" text-anchor="middle" fill="currentColor" font-size="24" font-weight="900" font-family="system-ui, sans-serif">4</text>
+              </svg>
+            </span>
+            <span class="text-xs font-black font-mono">d4</span>
+            <span id="die-count-4" class="text-[10px] font-bold text-emerald-400 mt-0.5 h-3.5"></span>
+          </button>
+          <!-- d6 -->
+          <button onclick="handleDieClick(6)" title="d6 zarı ekle veya at" class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-950/80 hover:bg-sky-600/30 border border-sky-500/40 hover:border-sky-400 text-sky-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
+            <span class="w-6 h-6 flex items-center justify-center group-hover:scale-110 transition text-sky-300">
+              <svg class="w-5 h-5 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="50,12 85,31 85,69 50,88 15,69 15,31" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+                <polygon points="50,12 85,31 50,50 15,31" fill="currentColor" fill-opacity="0.25" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+                <polygon points="15,31 50,50 50,88 15,69" fill="currentColor" fill-opacity="0.35" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+                <line x1="50" y1="50" x2="85" y2="69" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <line x1="50" y1="50" x2="50" y2="88" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <line x1="50" y1="50" x2="15" y2="31" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <text x="32" y="66" text-anchor="middle" fill="currentColor" font-size="24" font-weight="900" font-family="system-ui, sans-serif">6</text>
+              </svg>
+            </span>
+            <span class="text-xs font-black font-mono">d6</span>
+            <span id="die-count-6" class="text-[10px] font-bold text-sky-400 mt-0.5 h-3.5"></span>
+          </button>
+          <!-- d8 -->
+          <button onclick="handleDieClick(8)" title="d8 zarı ekle veya at" class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-950/80 hover:bg-indigo-600/30 border border-indigo-500/40 hover:border-indigo-400 text-indigo-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
+            <span class="w-6 h-6 flex items-center justify-center group-hover:scale-110 transition text-indigo-300">
+              <svg class="w-5 h-5 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="50,8 86,32 86,68 50,92 14,68 14,32" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+                <polygon points="50,14 82,65 18,65" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
+                <line x1="50" y1="14" x2="50" y2="8" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <line x1="18" y1="65" x2="14" y2="68" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <line x1="82" y1="65" x2="86" y2="68" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <line x1="18" y1="65" x2="14" y2="32" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <line x1="82" y1="65" x2="86" y2="32" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <line x1="18" y1="65" x2="50" y2="92" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <line x1="82" y1="65" x2="50" y2="92" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <text x="50" y="54" text-anchor="middle" fill="currentColor" font-size="24" font-weight="900" font-family="system-ui, sans-serif">8</text>
+              </svg>
+            </span>
+            <span class="text-xs font-black font-mono">d8</span>
+            <span id="die-count-8" class="text-[10px] font-bold text-indigo-400 mt-0.5 h-3.5"></span>
+          </button>
+          <!-- d10 -->
+          <button onclick="handleDieClick(10)" title="d10 zarı ekle veya at" class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-950/80 hover:bg-purple-600/30 border border-purple-500/40 hover:border-purple-400 text-purple-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
+            <span class="w-6 h-6 flex items-center justify-center group-hover:scale-110 transition text-purple-300">
+              <svg class="w-5 h-5 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="50,6 86,34 76,76 50,94 24,76 14,34" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+                <polygon points="50,14 74,44 50,70 26,44" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
+                <line x1="50" y1="14" x2="50" y2="6" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <line x1="26" y1="44" x2="14" y2="34" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <line x1="74" y1="44" x2="86" y2="34" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <line x1="26" y1="44" x2="24" y2="76" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <line x1="74" y1="44" x2="76" y2="76" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <line x1="50" y1="70" x2="50" y2="94" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <line x1="50" y1="70" x2="24" y2="76" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <line x1="50" y1="70" x2="76" y2="76" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <text x="50" y="49" text-anchor="middle" fill="currentColor" font-size="20" font-weight="900" font-family="system-ui, sans-serif" letter-spacing="-0.5">10</text>
+              </svg>
+            </span>
+            <span class="text-xs font-black font-mono">d10</span>
+            <span id="die-count-10" class="text-[10px] font-bold text-purple-400 mt-0.5 h-3.5"></span>
+          </button>
+          <!-- d12 -->
+          <button onclick="handleDieClick(12)" title="d12 zarı ekle veya at" class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-950/80 hover:bg-rose-600/30 border border-rose-500/40 hover:border-rose-400 text-rose-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
+            <span class="w-6 h-6 flex items-center justify-center group-hover:scale-110 transition text-rose-300">
+              <svg class="w-5 h-5 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="50,6 78,16 94,40 90,70 68,92 32,92 10,70 6,40 22,16" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+                <polygon points="50,28 73,45 64,72 36,72 27,45" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
+                <line x1="50" y1="28" x2="50" y2="6" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <line x1="73" y1="45" x2="94" y2="40" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <line x1="64" y1="72" x2="68" y2="92" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <line x1="36" y1="72" x2="32" y2="92" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <line x1="27" y1="45" x2="6" y2="40" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                <text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif" letter-spacing="-0.5">12</text>
+              </svg>
+            </span>
+            <span class="text-xs font-black font-mono">d12</span>
+            <span id="die-count-12" class="text-[10px] font-bold text-rose-400 mt-0.5 h-3.5"></span>
+          </button>
+          <!-- d20 -->
+          <button id="die-btn-20" onclick="handleDieClick(20)" title="d20 zarı ekle veya at" class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-950/80 hover:bg-amber-600/30 border border-amber-500/50 hover:border-amber-400 text-amber-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
+            <span id="die-icon-20" class="w-6 h-6 flex items-center justify-center group-hover:scale-110 transition text-amber-400">
+              <svg class="w-5 h-5 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+                <polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
+                <line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/>
+                <line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/>
+                <line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"/>
+                <line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"/>
+                <line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"/>
+                <line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"/>
+                <line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"/>
+                <line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"/>
+                <line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"/>
+                <text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text>
+              </svg>
+            </span>
+            <span id="die-label-20" class="text-xs font-black font-mono">d20</span>
+            <span id="die-count-20" class="text-[10px] font-bold text-amber-400 mt-0.5 h-3.5"></span>
+          </button>
+          <!-- d100 -->
+          <button onclick="handleDieClick(100)" title="d100 yüzdelik zar ekle veya at" class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-950/80 hover:bg-teal-600/30 border border-teal-500/40 hover:border-teal-400 text-teal-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
+            <span class="w-6 h-6 flex items-center justify-center group-hover:scale-110 transition text-teal-300">
+              <svg class="w-5 h-5 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="44" stroke="currentColor" stroke-width="4.5" fill="currentColor" fill-opacity="0.12"/>
+                <circle cx="50" cy="50" r="33" stroke="currentColor" stroke-width="2.5" stroke-dasharray="5 2.5" fill="none" opacity="0.6"/>
+                <circle cx="50" cy="50" r="21" stroke="currentColor" stroke-width="3.5" fill="currentColor" fill-opacity="0.3"/>
+                <text x="50" y="56" text-anchor="middle" fill="currentColor" font-size="16" font-weight="900" font-family="system-ui, sans-serif" letter-spacing="-0.8">100</text>
+              </svg>
+            </span>
+            <span class="text-xs font-black font-mono">d%</span>
+            <span id="die-count-100" class="text-[10px] font-bold text-teal-400 mt-0.5 h-3.5"></span>
+          </button>
+        </div>
+
+        <!-- Havuz Özeti ve Modifikatör Girişi -->
+        <div class="bg-slate-950/90 border border-slate-800 rounded-xl p-3 flex items-center justify-between gap-3">
+          <div class="min-w-0 flex-1">
+            <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Aktif Havuz Formülü</div>
+            <div id="dice-pool-summary" class="text-xs text-slate-500 font-mono truncate">Zar seçilmedi (Butonlara tıklayın)</div>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <label for="dice-pool-mod" class="text-[11px] font-bold text-slate-400 font-mono">Bonus:</label>
+            <input type="number" id="dice-pool-mod" value="0" oninput="updateDicePoolDisplay()" class="w-14 bg-slate-900 border border-slate-700 rounded-lg px-1.5 py-1 text-xs font-mono text-center text-white focus:outline-none focus:border-amber-400">
+          </div>
+        </div>
+
+        <!-- Aksiyon Butonları (Zarları At, Renk Popover & Sıfırla) -->
+        <div class="flex items-center gap-2 pt-1 relative">
+          <button id="dice-roll-pool-btn" onclick="rollDicePool()" class="flex-1 py-2.5 px-4 rounded-xl text-white font-black text-xs sm:text-sm shadow-lg flex items-center justify-center gap-2 transition transform active:scale-95 cursor-pointer border border-white/20">
+            <span class="inline-flex items-center"><svg class="w-4 h-4" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
+            <span>ZARLARI AT</span>
+          </button>
+
+          <!-- Zar Rengi Seçici -->
+          <div class="relative">
+            <button id="dice-color-btn" type="button" onclick="toggleDiceColorPopover(event)" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs shadow flex items-center justify-center gap-1.5 transition cursor-pointer shrink-0" title="Zar Rengini Seç">
+              <span id="dice-color-preview-dot" class="w-3.5 h-3.5 rounded-full border border-white/70 shadow-sm inline-block shrink-0 transition-colors" style="background-color: #851316;"></span>
+              <span class="text-xs font-bold text-slate-300 hidden sm:inline">Renk</span>
+              <span class="text-[9px] text-slate-400">▼</span>
+            </button>
+
+            <!-- Zar Rengi Popover -->
+            <div id="dice-color-popover" class="hidden absolute right-0 bottom-full mb-2 w-64 bg-slate-900/98 backdrop-blur-md border border-slate-700 rounded-xl p-3 shadow-2xl z-50 animate-in fade-in zoom-in-95">
+              <div class="flex items-center justify-between border-b border-slate-700/80 pb-2 mb-2.5">
+                <span class="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                  <span>🎨</span>
+                  <span>Zar Rengi Seç</span>
+                </span>
+                <span class="text-[10px] text-slate-400 font-medium">3D Zar</span>
+              </div>
+              <div class="grid grid-cols-4 gap-2 mb-3">
+                <button type="button" onclick="selectDiceColor('#851316', 'Yakut Kırmızısı')" class="group flex flex-col items-center gap-1 p-1 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Yakut Kırmızısı">
+                  <span class="w-6 h-6 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #851316;"></span>
+                  <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Yakut</span>
+                </button>
+                <button type="button" onclick="selectDiceColor('#1d4ed8', 'Safir Mavisi')" class="group flex flex-col items-center gap-1 p-1 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Safir Mavisi">
+                  <span class="w-6 h-6 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #1d4ed8;"></span>
+                  <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Safir</span>
+                </button>
+                <button type="button" onclick="selectDiceColor('#047857', 'Zümrüt Yeşili')" class="group flex flex-col items-center gap-1 p-1 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Zümrüt Yeşili">
+                  <span class="w-6 h-6 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #047857;"></span>
+                  <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Zümrüt</span>
+                </button>
+                <button type="button" onclick="selectDiceColor('#7e22ce', 'Ametist Moru')" class="group flex flex-col items-center gap-1 p-1 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Ametist Moru">
+                  <span class="w-6 h-6 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #7e22ce;"></span>
+                  <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Ametist</span>
+                </button>
+                <button type="button" onclick="selectDiceColor('#d97706', 'Kehribar Sarısı')" class="group flex flex-col items-center gap-1 p-1 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Kehribar Sarısı">
+                  <span class="w-6 h-6 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #d97706;"></span>
+                  <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Kehribar</span>
+                </button>
+                <button type="button" onclick="selectDiceColor('#0891b2', 'Buzul Turkuaz')" class="group flex flex-col items-center gap-1 p-1 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Buzul Turkuaz">
+                  <span class="w-6 h-6 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #0891b2;"></span>
+                  <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Buzul</span>
+                </button>
+                <button type="button" onclick="selectDiceColor('#18181b', 'Obsidyen Siyahı')" class="group flex flex-col items-center gap-1 p-1 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Obsidyen Siyahı">
+                  <span class="w-6 h-6 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #18181b;"></span>
+                  <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Obsidyen</span>
+                </button>
+                <button type="button" onclick="selectDiceColor('#f8fafc', 'Fildişi Beyazı')" class="group flex flex-col items-center gap-1 p-1 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Fildişi Beyazı">
+                  <span class="w-6 h-6 rounded-full shadow-md border border-slate-400 block group-hover:scale-110 transition-transform" style="background-color: #f8fafc;"></span>
+                  <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Fildişi</span>
+                </button>
+              </div>
+              <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+                <span class="text-xs text-slate-300 font-semibold flex items-center gap-1.5">
+                  <span>🌈</span>
+                  <span>Özel Renk:</span>
+                </span>
+                <input type="color" id="dice-custom-color-input" onchange="selectDiceColor(this.value, 'Özel Renk')" class="w-7 h-7 rounded-lg cursor-pointer bg-transparent border-0 p-0">
+              </div>
+            </div>
+          </div>
+
+          <!-- Sıfırla -->
+          <button onclick="resetDicePool()" class="py-2.5 px-3.5 rounded-xl bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 border border-slate-700 hover:border-rose-600/60 font-bold text-xs shadow flex items-center justify-center gap-1 transition cursor-pointer shrink-0" title="Havuzu temizle">
+            <span>🔄</span>
+            <span class="hidden sm:inline">Sıfırla</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. SERBEST FORMÜL & HEDEFLİ ZAR -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-lg space-y-3">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+          <span class="text-indigo-400 font-extrabold text-sm flex items-center gap-1.5">
+            <span>📝</span>
+            <span>SERBEST FORMÜL & HEDEFLİ ZAR</span>
+          </span>
+        </div>
+
+        <div class="flex items-stretch gap-2">
+          <input type="text" id="dice-custom-formula-input"
+                 placeholder="Örn: Hedef:21 Bonus:4 Zar:1d6+3 19-20x2 veya 8d6"
+                 onkeydown="if(event.key === 'Enter') rollCustomFormula();"
+                 class="flex-1 bg-slate-950 border border-indigo-500/50 rounded-xl px-3 py-2 text-xs font-mono text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+          <button onclick="rollCustomFormula()"
+                  class="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs shadow flex items-center gap-1.5 transition transform active:scale-95 cursor-pointer">
+            <span>⚡</span>
+            <span>At</span>
+          </button>
+        </div>
+
+        <!-- Hızlı Şablonlar -->
+        <div class="flex items-center justify-between text-[11px] text-slate-300 font-bold">
+          <span class="flex items-center gap-1">
+            <span>⚡</span>
+            <span>Hızlı Şablonlar:</span>
+          </span>
+          <button type="button" onclick="saveCurrentFormulaTemplate()" class="px-2 py-0.5 rounded bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 hover:text-indigo-100 border border-indigo-500/50 text-[10px] font-semibold flex items-center gap-1 transition cursor-pointer shadow-sm">
+            <span>💾</span>
+            <span>Kaydet</span>
+          </button>
+        </div>
+        <div id="dice-custom-templates-container" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto pr-1"></div>
+      </div>
+
+      <!-- 3. CANLI SON ZAR GÖSTERİM KARTI -->
+      <div id="dice-last-result-card" class="bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-amber-500/40 rounded-2xl p-3.5 shadow-lg flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0 flex-1">
+          <div id="dice-last-icon" class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400/60 flex items-center justify-center shrink-0 shadow-inner text-amber-300 font-black">
+            <svg class="w-6 h-6 inline-block text-amber-300" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+              <polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
+              <text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text>
+            </svg>
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Son Zar</span>
+              <span id="dice-last-label" class="px-2 py-0.5 rounded-full bg-slate-800 text-amber-300 border border-slate-700 text-[10px] font-mono">Henüz Atılmadı</span>
+              <span id="dice-last-crit-badge" class="hidden px-2 py-0.5 rounded-full bg-rose-600 text-white font-black text-[10px] animate-pulse">⚡ KRİTİK!</span>
+            </div>
+            <div id="dice-last-breakdown" class="text-[11px] text-slate-300 font-mono mt-0.5 break-words">
+              Butonlardan zar seçin veya serbest formül yazarak atın.
+            </div>
+          </div>
+        </div>
+        <div class="text-center px-3 py-1 rounded-xl bg-slate-950 border border-slate-800 shadow-inner min-w-[4rem] shrink-0">
+          <div class="text-[9px] text-slate-400 font-bold uppercase">Toplam</div>
+          <div id="dice-last-total" class="text-2xl sm:text-3xl font-black text-amber-400 font-mono">-</div>
+        </div>
+      </div>
+
+      <!-- 4. ZAR GEÇMİŞİ -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-lg space-y-3">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="text-xs sm:text-sm font-extrabold text-white flex items-center gap-1.5">
+              <span>📜</span>
+              <span>ZAR GEÇMİŞİ</span>
+            </span>
+            <span id="dice-history-count" class="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 text-[10px] font-mono">0 Kayıt</span>
+          </div>
+          <button onclick="clearDiceHistory()" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 border border-slate-700 hover:border-rose-600 text-[11px] font-bold transition flex items-center gap-1 cursor-pointer">
+            <span>🗑️</span>
+            <span>Temizle</span>
+          </button>
+        </div>
+
+        <div id="dice-history-list" class="space-y-2 max-h-[380px] overflow-y-auto pr-1 custom-scroll">
+          <div class="text-center py-6 text-slate-500 text-xs font-medium">
+            Henüz atılmış bir zar kaydı bulunmuyor.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </aside>
 
   <!-- UYGULAMA JAVASCRIPT MOTORU & KALICI VERİ YÖNETİMİ -->
   <script>
@@ -1824,6 +2195,28 @@
         checkLabel = 'İnisiyatif Zarı';
         badgeBg = 'bg-amber-950/90 text-amber-300 border border-amber-500/40';
         iconBg = 'bg-amber-900/40 text-amber-300 border border-amber-500/40';
+      }
+
+      // 3D Animasyon
+      if (window.Dice3D && typeof window.Dice3D.roll === 'function') {
+        try {
+          window.Dice3D.roll([{ type: 'd20', value: d20 }]);
+        } catch (e) {
+          console.warn('Dice3D.roll error:', e);
+        }
+      }
+
+      // Zar Geçmişi Log Kaydı
+      if (typeof addDiceHistoryEntry === 'function') {
+        addDiceHistoryEntry({
+          title: `${charName} - ${checkLabel}`,
+          formula: `1d20 ${modStr}`,
+          breakdown: `1d20 [${d20}] ${modStr} = ${total}`,
+          total: total,
+          isCrit: isNat20,
+          critInfo: isNat20 ? '• Doğal 20!' : (isNat1 ? '• Doğal 1!' : ''),
+          icon: icon
+        }, false);
       }
 
       showHubDiceToast({
