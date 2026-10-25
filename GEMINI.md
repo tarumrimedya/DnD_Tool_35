@@ -65,6 +65,26 @@ To maximize token efficiency and minimize API costs across all conversations in 
   - **Rule Master ve Şema Doğrulama Senkronizasyonu Zorunludur:** `rule_master.js` içindeki yapay zeka promptları (`fetchSingleAiRuleObjects`, `queryAiFreeTextRows`), şema normalizasyonu (`normalizeEntry`), form alanları ve veri doğrulama mantığı derhal bu yeni alanı kapsayacak şekilde güncellenmelidir.
   - **Sürekli Uyumluluk:** Gelecekte eklenecek yeni büyü, eşya, feat veya yeteneklerin Rule Master ve AI sorguları tarafından bu yeni alan kurallarına tam uyumlu olarak üretilmesi ve şemaya eksiksiz yazılması garanti altına alınacaktır.
 
+## 9. Obsidian Bilgi Bankası ve "Obsidian'a Aktar" Protokolü (STRICT: OBSIDIAN DEVLOG PROTOCOL)
+- **Kasa Konumu (Vault Path):** `D:\Obsidian\dndtools35\` (Docker Obsidian içindeki `/vaults` ile doğrudan eşleniktir).
+- **Klasör Mimarisi:**
+  - `00-Dashboard.md` (Merkezi Proje Panosu / MOC)
+  - `01-Architecture/` (Sistem Mimarisi, Core Engine, HUB, Storage)
+  - `02-Data-Contracts/` (master_db, character_data şemaları)
+  - `03-Decisions/` (ADR - Mimari Karar Kayıtları)
+  - `04-DevLogs/` (Oturum Devir Teslimleri ve Günlükler)
+- **Tetikleyici Komut ("obsidian a aktar" / "obsidian devlog"):**
+  - Kullanıcı herhangi bir konuşma sekmesinde *"obsidian a aktar"*, *"obsidian devlog"*, *"oturumu obsidian'a işle"* veya benzeri bir talepte bulunduğunda:
+  - **Ham Transkript Dökülmeyecektir:** Hata ayıklama, geçici kod blokları ve gürültü ayıklanır.
+  - **DevLog Kaydı:** `04-DevLogs/YYYY-MM-DD-[Konu].md` formatında yeni bir oturum kaydı oluşturulur:
+    - Oturumun amacı ve bağlamı
+    - Alınan mimari kararlar ve çözülen kritik sorunlar
+    - İlgili D&D 3.5e RAW kural bağıntıları
+    - Sıradaki adımlar ve teknik borçlar
+    - Çift yönlü Obsidian wikilink'leri (`[[00-Dashboard]]`, `[[Core Engine (Rule Engine & Rule Master)]]`, `[[master_db Schema]]` vb.)
+  - **Şema ve Karar Senkronizasyonu:** Eğer o oturumda kalıcı bir mimari karar (ADR) veya yeni bir veri şeması kuralı getirildiyse, ilgili `01-Architecture/`, `02-Data-Contracts/` veya `03-Decisions/` altındaki ana kartlar da eş zamanlı güncellenir.
+
+
 
 
 
