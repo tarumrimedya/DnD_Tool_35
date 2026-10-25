@@ -1472,9 +1472,39 @@
       };
       const getStatMod = (val) => Math.floor((val - 10) / 2);
 
-      const rawSkills = Array.isArray(c.fullData?.skills) ? c.fullData.skills : (Array.isArray(c.skills) ? c.skills : []);
-      const trainedSkills = rawSkills
-        .filter(s => Number(s.ranks || s.rank || 0) > 0)
+      const extractSkills = (source) => {
+        if (!source) return [];
+        if (Array.isArray(source)) return source;
+        if (typeof source === 'object') {
+          return Object.entries(source).map(([k, v]) => {
+            if (typeof v === 'object' && v !== null) {
+              return { key: k, name: v.name || k, ...v };
+            }
+            return { key: k, name: k, ranks: Number(v) || 0 };
+          });
+        }
+        return [];
+      };
+
+      const rawSkills = [
+        ...extractSkills(c.fullData?.skills),
+        ...extractSkills(c.skills)
+      ];
+
+      const uniqueSkillsMap = new Map();
+      rawSkills.forEach(s => {
+        const idKey = (s.key || s.name || '').toLowerCase();
+        if (idKey && !uniqueSkillsMap.has(idKey)) {
+          uniqueSkillsMap.set(idKey, s);
+        }
+      });
+      const allSkills = Array.from(uniqueSkillsMap.values());
+
+      const trainedSkills = allSkills
+        .filter(s => {
+          const r = Number(s.ranks ?? s.rank ?? 0);
+          return r > 0;
+        })
         .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
       return `
@@ -1607,46 +1637,46 @@
               </div>
             </div>
 
-            <!-- SATIR 4: SPOT & LISTEN + EĞİTİLMİŞ BECERİLER (RANK > 0) ÇEKMECESİ -->
+            <!-- SATIR 4: SPOT & LISTEN + GENİŞLETİLEBİLİR EĞİTİLMİŞ BECERİLER ÇEKMECESİ -->
             <div class="space-y-1.5">
               <div class="grid grid-cols-2 gap-2 text-xs">
                 <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Spot', ${c.spotBonus || 0})" title="Spot (Fark Etme) Zarı At (d20${c.spotBonus >= 0 ? '+' + c.spotBonus : c.spotBonus})" class="h-8 px-2.5 rounded-xl bg-slate-900/90 hover:bg-amber-950 text-slate-200 hover:text-amber-200 border border-slate-800 hover:border-amber-500/60 transition cursor-pointer flex items-center justify-between active:scale-95 shadow-sm font-semibold">
                   <span class="flex items-center gap-1.5 text-amber-300 text-xs truncate"><span>👁️</span> <span class="truncate">Spot</span></span>
                   <strong class="text-white font-mono font-bold shrink-0">${c.spotBonus >= 0 ? '+' + c.spotBonus : c.spotBonus}</strong>
                 </button>
-                <div class="flex items-center gap-1.5">
-                  <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Listen', ${c.listenBonus || 0})" title="Listen (Dinleme) Zarı At (d20${c.listenBonus >= 0 ? '+' + c.listenBonus : c.listenBonus})" class="flex-1 h-8 px-2.5 rounded-xl bg-slate-900/90 hover:bg-sky-950 text-slate-200 hover:text-sky-200 border border-slate-800 hover:border-sky-500/60 transition cursor-pointer flex items-center justify-between active:scale-95 shadow-sm font-semibold min-w-0">
-                    <span class="flex items-center gap-1.5 text-sky-300 text-xs truncate"><span>👂</span> <span class="truncate">Listen</span></span>
-                    <strong class="text-white font-mono font-bold shrink-0">${c.listenBonus >= 0 ? '+' + c.listenBonus : c.listenBonus}</strong>
-                  </button>
-                  ${trainedSkills.length > 0 ? `
-                    <button type="button" onclick="event.stopPropagation(); toggleHubCardSkillsDrawer('${c.id}')" class="h-8 px-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition flex items-center gap-1 text-xs font-bold cursor-pointer shrink-0 shadow-sm" title="Eğitilmiş Becerileri Göster / Gizle (${trainedSkills.length} Beceri)">
-                      <span>📜</span>
-                      <span class="text-[10px] font-mono text-amber-400 font-bold">${trainedSkills.length}</span>
-                      <span id="skills-drawer-icon-${c.id}" class="text-[9px] transition-transform duration-200">▼</span>
-                    </button>
-                  ` : ''}
-                </div>
+                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Listen', ${c.listenBonus || 0})" title="Listen (Dinleme) Zarı At (d20${c.listenBonus >= 0 ? '+' + c.listenBonus : c.listenBonus})" class="h-8 px-2.5 rounded-xl bg-slate-900/90 hover:bg-sky-950 text-slate-200 hover:text-sky-200 border border-slate-800 hover:border-sky-500/60 transition cursor-pointer flex items-center justify-between active:scale-95 shadow-sm font-semibold">
+                  <span class="flex items-center gap-1.5 text-sky-300 text-xs truncate"><span>👂</span> <span class="truncate">Listen</span></span>
+                  <strong class="text-white font-mono font-bold shrink-0">${c.listenBonus >= 0 ? '+' + c.listenBonus : c.listenBonus}</strong>
+                </button>
               </div>
 
-              <!-- Gizlenebilir Eğitilmiş Beceriler Çekmecesi (Varsayılan Olarak Kapalı) -->
-              ${trainedSkills.length > 0 ? `
-                <div id="skills-drawer-content-${c.id}" class="hidden pt-1.5 border-t border-slate-800/80 space-y-1">
-                  <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between px-0.5">
-                    <span>Eğitilmiş Beceriler</span>
-                    <span class="text-amber-400 font-mono">${trainedSkills.length} Beceri</span>
-                  </div>
+              <!-- Eğitilmiş Beceriler Çekmece Başlığı / Genişletme Çubuğu -->
+              <button type="button" onclick="event.stopPropagation(); toggleHubCardSkillsDrawer('${c.id}')" class="w-full h-7 px-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800/90 hover:border-indigo-500/40 transition flex items-center justify-between text-xs cursor-pointer shadow-sm active:scale-95" title="Eğitilmiş Becerileri Aç / Kapat (${trainedSkills.length} Beceri)">
+                <div class="flex items-center gap-1.5 truncate">
+                  <span class="text-xs">📜</span>
+                  <span class="text-[11px] font-semibold text-slate-300 truncate">Eğitilmiş Beceriler (Rank &gt; 0)</span>
+                </div>
+                <div class="flex items-center gap-1.5 shrink-0">
+                  <span class="text-[10px] font-mono text-amber-400 font-bold bg-amber-950/70 px-1.5 py-0.2 rounded border border-amber-800/60">${trainedSkills.length} Beceri</span>
+                  <span id="skills-drawer-icon-${c.id}" class="text-[9px] text-slate-400 font-mono transition-transform duration-200">▼</span>
+                </div>
+              </button>
+
+              <!-- Genişletilebilir Eğitilmiş Beceriler Çekmecesi İçeriği -->
+              <div id="skills-drawer-content-${c.id}" class="hidden pt-1 space-y-1">
+                ${trainedSkills.length > 0 ? `
                   <div class="grid grid-cols-2 gap-1 max-h-40 overflow-y-auto overflow-x-hidden custom-scroll pr-0.5">
                     ${trainedSkills.map(sk => {
-                      const r = Number(sk.ranks || sk.rank || 0);
+                      const r = Number(sk.ranks ?? sk.rank ?? 0);
                       const abilityKey = (sk.key || sk.ability || 'dex').toLowerCase();
                       const statScore = getStatScore(abilityKey);
                       const statMod = getStatMod(statScore);
                       const totalBonus = sk.total !== undefined ? Number(sk.total) : (r + statMod + (Number(sk.misc) || 0));
                       const bonusStr = totalBonus >= 0 ? `+${totalBonus}` : `${totalBonus}`;
+                      const displayName = sk.name || sk.key || 'Beceri';
                       return `
-                        <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', '${escapeHtml(sk.name)}', ${totalBonus})" class="py-1 px-1.5 rounded bg-slate-950/80 hover:bg-indigo-950/60 border border-slate-800/90 hover:border-indigo-500/50 text-slate-300 hover:text-white transition flex items-center justify-between text-[11px] font-mono cursor-pointer active:scale-95 shadow-sm min-w-0" title="${escapeHtml(sk.name)} Zarı At (d20${bonusStr}) [Rank: ${r}]">
-                          <span class="truncate text-left font-sans font-medium text-slate-300 min-w-0 flex-1">${escapeHtml(sk.name)}</span>
+                        <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', '${escapeHtml(displayName)}', ${totalBonus})" class="py-1 px-1.5 rounded-lg bg-slate-950/80 hover:bg-indigo-950/60 border border-slate-800/90 hover:border-indigo-500/50 text-slate-300 hover:text-white transition flex items-center justify-between text-[11px] font-mono cursor-pointer active:scale-95 shadow-sm min-w-0" title="${escapeHtml(displayName)} Zarı At (d20${bonusStr}) [Rank: ${r}]">
+                          <span class="truncate text-left font-sans font-medium text-slate-300 min-w-0 flex-1">${escapeHtml(displayName)}</span>
                           <div class="flex items-center gap-0.5 shrink-0 ml-1">
                             <span class="text-[9px] text-slate-500">r${r}</span>
                             <strong class="text-amber-400 font-bold">${bonusStr}</strong>
@@ -1655,8 +1685,12 @@
                       `;
                     }).join('')}
                   </div>
-                </div>
-              ` : ''}
+                ` : `
+                  <div class="text-[11px] text-slate-400 py-1.5 text-center italic bg-slate-950/60 rounded-xl border border-slate-800/80">
+                    Karakterin eğitilmiş becerisi bulunmuyor (Rank &gt; 0)
+                  </div>
+                `}
+              </div>
             </div>
           </div>
 

@@ -1228,3 +1228,22 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   4. **Parite ve Devir Teslim:**
      - `hub.html` ve `webapp/hub.html` %100 SHA-256 eşitliğinde güncellendi (`True`).
      - Standart tavla zarı emoji yasağı tavizsiz korundu.
+
+
+---
+
+## 56. HUB KARTLARINDA SPOT & LISTEN ALTINDA KALICI EĞİTİLMİŞ BECERİLER (RANK > 0) ÇEKMECESİ VE SAĞLAM VERİ AYIKLAMA (2026-10-25)
+* **İstek:**
+  - Spot ve Listen butonlarının altındaki alanın kalıcı ve genişletilebilir bir çekmece (`accordion drawer`) olması.
+  - Karakterin rütbe yatırdığı (`rank > 0` / `ranks > 0`) tüm becerilerin bu çekmecede 2 sütunlu interaktif zar butonlarıyla listelenmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Sağlam Beceri Verisi Ayıklama (`extractSkills`):**
+     - Becerilerin `character_data.json` veya `c.fullData` içinde dizi (`Array`) ya da anahtar-değer sözlüğü (`Object`) olarak saklanma durumlarının her ikisi de `extractSkills` yardımcısı ile normalize edildi.
+     - `ranks > 0` veya `rank > 0` olan beceriler filtrelenip alfabetik olarak sıralandı.
+  2. **Kalıcı Çekmece Başlığı / Butonu:**
+     - Spot ve Listen'ın hemen altına tam genişlikte `[ 📜 Eğitilmiş Beceriler (Rank > 0)     N Beceri ▼ ]` akordeon barı eklendi.
+     - Buton her zaman görünürdür; tıklandığında ok simgesi 180 derece döner ve çekmece pürüzsüzce açılır.
+     - Eğitilmiş becerisi olmayan karakterlerde kullanıcı dostu `Karakterin eğitilmiş becerisi bulunmuyor (Rank > 0)` bilgilendirme kutusu gösterilir.
+  3. **Parite ve Devir Teslim:**
+     - `hub.html` ve `webapp/hub.html` %100 SHA-256 eşitliğinde güncellendi (`True`).
+     - Standart tavla zarı emoji yasağı tavizsiz korundu.
