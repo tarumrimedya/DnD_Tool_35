@@ -320,8 +320,9 @@ class Dice3DController {
     const vertices = [];
     const customFaces = [];
 
-    const H = radius * 1.55;  // Apex height
-    const R = radius * 1.30;  // Equator radius
+    // Proportions matching d20 and d12 scale
+    const H = radius * 1.15;  // Apex height (~1.61)
+    const R = radius * 0.98;  // Equator radius (~1.37)
     const cos36 = (1 + Math.sqrt(5)) / 4;
     const h = H * (1 - cos36) / (1 + cos36);  // Exact coplanar ratio ~0.105573 * H
 
@@ -345,16 +346,16 @@ class Dice3DController {
       const lCurr = L[i];
       const lNext = L[(i + 1) % 5];
 
-      // Upper Kite i
+      // Upper Kite i (Consistent CCW outward winding)
       vertices.push(
         topPole.x, topPole.y, topPole.z,
-        lCurr.x, lCurr.y, lCurr.z,
-        uCurr.x, uCurr.y, uCurr.z
+        uCurr.x, uCurr.y, uCurr.z,
+        lCurr.x, lCurr.y, lCurr.z
       );
       vertices.push(
         topPole.x, topPole.y, topPole.z,
-        uNext.x, uNext.y, uNext.z,
-        lCurr.x, lCurr.y, lCurr.z
+        lCurr.x, lCurr.y, lCurr.z,
+        uNext.x, uNext.y, uNext.z
       );
 
       const upperCenter = new THREE.Vector3()
@@ -363,23 +364,23 @@ class Dice3DController {
 
       const uTrans = new THREE.Vector3().subVectors(uNext, uCurr);
       const uLong = new THREE.Vector3().subVectors(lCurr, topPole);
-      const upperNormal = new THREE.Vector3().crossVectors(uTrans, uLong).normalize();
+      const upperNormal = new THREE.Vector3().crossVectors(uLong, uTrans).normalize();
       if (upperNormal.dot(upperCenter) < 0) {
         upperNormal.negate();
       }
 
       const uTopVec = new THREE.Vector3().subVectors(topPole, upperCenter).normalize();
 
-      // Lower Kite i
+      // Lower Kite i (Consistent CCW outward winding, eliminates internal seam spikes)
       vertices.push(
         botPole.x, botPole.y, botPole.z,
-        uNext.x, uNext.y, uNext.z,
-        lNext.x, lNext.y, lNext.z
+        lNext.x, lNext.y, lNext.z,
+        uNext.x, uNext.y, uNext.z
       );
       vertices.push(
         botPole.x, botPole.y, botPole.z,
-        lCurr.x, lCurr.y, lCurr.z,
-        uNext.x, uNext.y, uNext.z
+        uNext.x, uNext.y, uNext.z,
+        lCurr.x, lCurr.y, lCurr.z
       );
 
       const lowerCenter = new THREE.Vector3()
@@ -388,15 +389,15 @@ class Dice3DController {
 
       const lLong = new THREE.Vector3().subVectors(uNext, botPole);
       const lTrans = new THREE.Vector3().subVectors(lNext, lCurr);
-      const lowerNormal = new THREE.Vector3().crossVectors(lLong, lTrans).normalize();
+      const lowerNormal = new THREE.Vector3().crossVectors(lTrans, lLong).normalize();
       if (lowerNormal.dot(lowerCenter) < 0) {
         lowerNormal.negate();
       }
 
       const lTopVec = new THREE.Vector3().subVectors(uNext, lowerCenter).normalize();
 
-      customFaces.push({ center: upperCenter, normal: upperNormal, topVec: uTopVec });
-      customFaces.push({ center: lowerCenter, normal: lowerNormal, topVec: lTopVec });
+      customFaces.push({ center: upperCenter, normal: upperNormal, topVec: uTopVec, scale: 0.52 });
+      customFaces.push({ center: lowerCenter, normal: lowerNormal, topVec: lTopVec, scale: 0.52 });
     }
 
     geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
@@ -646,9 +647,9 @@ class Dice3DController {
       decalScale = 0.52;
     } else if (type === 'd10') {
       sides = 10;
-      radius = 1.5;
+      radius = 1.40;
       geo = this.createD10Geometry(radius);
-      decalScale = 0.58;
+      decalScale = 0.52;
     } else if (type === 'd12') {
       sides = 12;
       radius = 1.55;
@@ -856,6 +857,23 @@ class Dice3DController {
     return new THREE.Quaternion().setFromRotationMatrix(mTarget);
   }
 
+  // Compute exact contact floor height so lowest point of die rests cleanly above table (prevents clipping)
+  computeFloorY(geo, quat, fallbackRadius) {
+    if (!geo || !geo.attributes || !geo.attributes.position) {
+      return (fallbackRadius || 1.6) * 0.98;
+    }
+    const pos = geo.attributes.position;
+    let minY = 0;
+    const v = new THREE.Vector3();
+    for (let i = 0; i < pos.count; i++) {
+      v.set(pos.getX(i), pos.getY(i), pos.getZ(i)).applyQuaternion(quat);
+      if (v.y < minY) {
+        minY = v.y;
+      }
+    }
+    return Math.abs(minY) + 0.05;
+  }
+
   getInitialSpawnPositions(count) {
     if (count <= 1) return [{ x: 0, z: 0 }];
     if (count === 2) return [{ x: -2.8, z: 0 }, { x: 2.8, z: 0 }];
@@ -930,6 +948,7 @@ class Dice3DController {
       this.scene.add(mesh);
 
       const targetQuat = this.computeTargetQuat(dieData, mesh.position);
+      const floorY = this.computeFloorY(mesh.geometry, targetQuat, dieData.radius);
 
       this.activeDice.push({
         ...dieData,
@@ -943,7 +962,7 @@ class Dice3DController {
         settled: false,
         settleProgress: 0,
         targetQuat,
-        floorY: dieData.radius * 0.95
+        floorY
       });
     });
 
@@ -982,8 +1001,9 @@ class Dice3DController {
 
             if (die.bounces >= 3 || Math.abs(die.vy) < 0.035) {
               die.settled = true;
-              die.mesh.position.y = die.floorY;
               die.targetQuat = this.computeTargetQuat(die, die.mesh.position);
+              die.floorY = this.computeFloorY(die.mesh.geometry, die.targetQuat, die.radius);
+              die.mesh.position.y = die.floorY;
             }
           }
           allSettled = false;
@@ -1070,8 +1090,16 @@ class Dice3DController {
             b.mesh.position.x += pushX;
             b.mesh.position.z += pushZ;
 
-            if (a.settled) a.targetQuat = this.computeTargetQuat(a, a.mesh.position);
-            if (b.settled) b.targetQuat = this.computeTargetQuat(b, b.mesh.position);
+            if (a.settled) {
+              a.targetQuat = this.computeTargetQuat(a, a.mesh.position);
+              a.floorY = this.computeFloorY(a.mesh.geometry, a.targetQuat, a.radius);
+              a.mesh.position.y = a.floorY;
+            }
+            if (b.settled) {
+              b.targetQuat = this.computeTargetQuat(b, b.mesh.position);
+              b.floorY = this.computeFloorY(b.mesh.geometry, b.targetQuat, b.radius);
+              b.mesh.position.y = b.floorY;
+            }
           }
         }
       }
@@ -1119,8 +1147,9 @@ class Dice3DController {
         }
 
         this.activeDice.forEach(die => {
-          die.mesh.position.y = die.floorY;
           die.targetQuat = this.computeTargetQuat(die, die.mesh.position);
+          die.floorY = this.computeFloorY(die.mesh.geometry, die.targetQuat, die.radius);
+          die.mesh.position.y = die.floorY;
           die.mesh.quaternion.copy(die.targetQuat);
         });
         this.renderer.render(this.scene, this.camera);

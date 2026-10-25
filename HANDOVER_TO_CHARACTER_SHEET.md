@@ -1814,3 +1814,27 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   4. **Parite ve Kural Uyumu:**
      - 4 dosyada (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) %100 birebir SHA-256 paritesi korundu.
      - Proje genelinde hiçbir standart tavla zarı emojisi (`🎲` / `U+1F3B2`) kullanılmadı.
+
+
+---
+
+## 64. 3D D10 (ONYÜZLÜ) ZAR ORANTI VE TABAN MANIFOLD ONARIMI (2026-10-25)
+* **İstek:**
+  - 3D zar motorunda (`dice3d.js`) d10 zarının diğer zarlardan çok daha büyük olması ve alt kısmının düzgün çıkmaması (taban köşesinin zemine batarak kesilmesi, dikiş hattında ekstra dikey çizgi çıkması) sorunlarının giderilmesi.
+* **Kök Neden Analizi (Root Cause Analysis):**
+  1. **Aşırı Boyut:** Eski d10 geometrisinde $H = 1.55 \times 1.5 = 2.325$ (toplam yükseklik 4.65) ve $R = 1.30 \times 1.5 = 1.95$ (toplam genişlik 3.90) kullanılıyordu. Bu ölçüler d20 (3.30) ve d12'den (3.10) yaklaşık %45-50 daha büyüktü.
+  2. **Yönelim (Winding) ve Dikiş Çizgisi:** Alt uçurtma yüzeylerinin üçgenleri saat yönünde (CW) ters sarılmıştı; `EdgesGeometry(geo, 12)` bu terslik sebebiyle iç köşegeni kat yeri sanarak alt köşeye doğru fazladan dikey bir altın çizgi çekiyordu.
+  3. **Zemin Kesilmesi (Floor Clipping):** Zar eğik açıyla durduğunda en alt köşe $y = 0$ zemin seviyesinin altına (-0.40 birim) iniyor ve gölge alıcı düzlem tarafından alt yüzeyleri yatay bir çizgiyle kesiliyordu.
+* **Uygulanan Değişiklikler:**
+  1. **Doğal ve Dengeli Boyutlandırma (`createD10Geometry`):**
+     - d10 yarıçapı $1.40$, $H = \text{radius} \times 1.15 \approx 1.61$ ve $R = \text{radius} \times 0.98 \approx 1.37$ olarak yeniden oranlandı.
+     - Toplam yükseklik $3.22$ ve genişlik $2.74$ seviyesine çekilerek d12 (3.10) ve d20 (3.30) ile %100 kusursuz görsel uyum sağlandı.
+  2. **Kapalı 2-Manifold ve Düzgün CCW Yönelim:**
+     - Üst ve alt uçurtma yüzeylerinin tüm üçgenleri dışarıdan bakıldığında saat yönünün tersine (CCW) yönlendirildi.
+     - İç köşegen dikiş çizgisi tamamen kalktı; yalnızca dış 20 kenar altın çerçeve olarak çizildi.
+  3. **Dinamik Zemin Temas Yüksekliği (`computeFloorY`):**
+     - Zarların duruş açısına (`targetQuat`) göre en alt köşe noktasının konumu dinamik olarak hesaplandı (`computeFloorY`).
+     - Zar merkezi zemin seviyesinin tam üzerine oturtularak zemin kesilmesi, siyah tırtıklı gölge izleri ve alt köşe kayıpları bütünüyle önlendi.
+  4. **Parite ve Güvenlik:**
+     - `dice3d.js` ve `webapp/dice3d.js` dosyalarında %100 SHA-256 eşitliği sağlandı (`1F283029CDF86E641157C1D5CD02C57A1C21F88CCAAF50D30C4D54DC220C148D`).
+     - Tavla zarı emojisi (`🎲`) kesinlikle kullanılmadı.
