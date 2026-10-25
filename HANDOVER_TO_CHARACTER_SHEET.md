@@ -222,9 +222,38 @@ Hub, karakter kâğıdına veri gönderirken veya `localStorage` (`dnd35_charact
 
 ---
 
-## 11. HAZIR DEVİR TESLİM PROMPTU (DİĞER KONUŞMAYA YAPIŞTIRILACAK)
+## 11. ÇOK KULLANICILI SUPABASE KAMPANYA DAVETİYE SİSTEMİ MİMARİSİ (SPECIFICATION)
+* **Kapsam:** Farklı kullanıcıların Google hesaplarıyla giriş yaparak karakterlerini DM masasıyla (Hub) paylaşması ve DM'in tek bir davet kodu/linki ile tüm partiyi oturuma toplayabilmesi için Supabase tabanlı "DM Kampanya Davet Kodu" mimarisi kararlaştırıldı.
+* **Seçilen Model:** **Yaklaşım B: DM Davetiye Kodu / Linki Modeli (D&D Beyond / VTT Standardı)**
+* **Veritabanı Şeması:**
+  1. `public.campaigns`:
+     - `id UUID PRIMARY KEY DEFAULT gen_random_uuid()`
+     - `dm_user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE`
+     - `name TEXT NOT NULL`, `description TEXT`
+     - `invite_code TEXT UNIQUE NOT NULL` (Örn: `RAVEN-7841`)
+     - `is_dm_mode BOOLEAN DEFAULT true`
+     - `created_at TIMESTAMPTZ DEFAULT now()`
+  2. `public.characters`:
+     - `id TEXT PRIMARY KEY` (örn: `char_...` veya UUID)
+     - `owner_user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE`
+     - `campaign_id UUID REFERENCES public.campaigns(id) ON DELETE SET NULL`
+     - `name TEXT NOT NULL`, `is_npc BOOLEAN DEFAULT false`
+     - `full_data JSONB NOT NULL`
+     - `current_hp INT`, `temp_hp INT DEFAULT 0`
+     - `last_dm_hp_update_ts BIGINT DEFAULT 0`
+     - `last_player_update_ts BIGINT DEFAULT 0`
+     - `updated_at TIMESTAMPTZ DEFAULT now()`
+  3. **Realtime Yayını:** `ALTER PUBLICATION supabase_realtime ADD TABLE public.campaigns, public.characters;`
+* **Geliştirme Görevleri:**
+  1. `supabase_auth.js` / Supabase servis katmanına `createCampaign`, `getCampaignByCode`, `joinCampaignWithCharacter`, `leaveCampaign`, `subscribeToCampaignRealtime` metodlarının eklenmesi.
+  2. `hub.html` kampanyalar sekmesine `[🎟️ Davet Kodu]` modalı eklenmesi (kod kopyalama, link paylaşımı, katılan oyuncu listesi ve çıkarma).
+  3. `index.html` ve `character.html` sayfalarına `[🎟️ Kampanyaya Katıl]` modalı ve URL'den (`?code=...`) otomatik algılama desteği getirilmesi.
+  4. DM HP otoritesi ve oyuncu stat ayrımının korunması; kök ve `webapp/` dosyalarının %100 paritede tutulması; standart tavla zarı (`🎲`) yasağının tavizsiz uygulanması.
+
+---
+
+## 12. HAZIR DEVİR TESLİM PROMPTU (DİĞER KONUŞMAYA YAPIŞTIRILACAK)
 ```markdown
-Hub sayfasına Three.js destekli 3D fiziksel zar animasyonu (`dice3d.js`), sağ kayar çekmece zar masası modülü (`hub_dice.js`), d20 ikonlu üst "Zar At" butonu ve serbest formül motoru başarıyla entegre edildi. Tüm atışlar ortak zar geçmişi ve animasyonlu bildirimlerle birbirine bağlandı.
-Lütfen `HANDOVER_TO_CHARACTER_SHEET.md` dosyasındaki son güncellemeleri kontrol ederek geliştirmelere devam et.
+DM Kampanya Davet Kodu Modeli (Supabase Auth + PostgreSQL + Realtime WebSocket) mimarisi belirlendi. Görev: `HANDOVER_TO_CHARACTER_SHEET.md` dosyasındaki Bölüm 11 spesifikasyonuna uygun olarak, `supabase_auth.js`, `hub.html`, `index.html` ve `character.html` sayfalarında çok kullanıcılı davet kodu ve kampanya katılım sistemini uçtan uca uygula. Kök ve webapp/ dosyalarında %100 pariteyi koru ve hiçbir yerde standart tavla zarı (`🎲`) kullanma.
 ```
 
