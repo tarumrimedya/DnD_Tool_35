@@ -22643,13 +22643,17 @@
 
       const palette = getDiceColorPalette();
 
+      const hasActions = Array.isArray(entry.actions) && entry.actions.length > 0;
+
       const toast = document.createElement('div');
       const toastId = options.toastId || entry.toastId || (replaceId || 'dice-top-toast');
       toast.id = toastId;
-      toast.className = 'dice-toast-item pointer-events-auto transform -translate-y-8 opacity-0 transition-all duration-300 ease-out bg-slate-900/95 rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 backdrop-blur-md flex items-center gap-3 sm:gap-4 text-white max-w-[94vw] sm:max-w-md w-full select-none cursor-pointer shadow-xl';
+      toast.className = `dice-toast-item pointer-events-auto transform -translate-y-8 opacity-0 transition-all duration-300 ease-out bg-slate-900/95 rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 backdrop-blur-md flex items-center gap-3 sm:gap-4 text-white max-w-[94vw] sm:max-w-md w-full select-none ${hasActions ? 'cursor-default' : 'cursor-pointer'} shadow-xl`;
       toast.style.border = `2px solid ${palette.border}`;
       toast.style.boxShadow = palette.glow;
-      toast.title = 'Kapatmak i\u00E7in t\u0131klay\u0131n';
+      if (!hasActions) {
+        toast.title = 'Kapatmak i\u00E7in t\u0131klay\u0131n';
+      }
 
       const isCrit = !!entry.isCrit;
       let defaultToastIcon = '\u26A1';
@@ -22704,8 +22708,6 @@
         }
       }
 
-      const hasActions = Array.isArray(entry.actions) && entry.actions.length > 0;
-
       toast.innerHTML = `
         <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 shadow-inner" style="${iconBoxStyle}">
           ${icon}
@@ -22729,18 +22731,33 @@
         ` : ''}
       `;
 
+      let cleanupOutsideClick = null;
       if (hasActions) {
         const actionsBar = toast.querySelector('#dice-toast-actions-bar');
         if (actionsBar) {
           entry.actions.forEach(act => {
             const btn = document.createElement('button');
             btn.type = 'button';
-            btn.className = act.className || 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-800 hover:bg-emerald-700 text-white border border-emerald-500 transition shadow cursor-pointer';
+            btn.className = (act.className || 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-800 hover:bg-emerald-700 text-white border border-emerald-500 transition shadow cursor-pointer') + ' touch-manipulation active:scale-95';
             btn.innerHTML = act.label || 'Uygula';
             btn.onclick = (ev) => {
               ev.stopPropagation();
+              if (toast._dismissTimer) clearTimeout(toast._dismissTimer);
+              if (typeof cleanupOutsideClick === 'function') {
+                cleanupOutsideClick();
+                cleanupOutsideClick = null;
+              }
+              toast.classList.remove('translate-y-0', 'opacity-100');
+              toast.classList.add('-translate-y-6', 'opacity-0');
+              setTimeout(() => {
+                if (toast.parentNode) toast.remove();
+              }, 200);
               if (typeof act.onClick === 'function') {
-                act.onClick();
+                try {
+                  act.onClick();
+                } catch (err) {
+                  console.error('Error executing toast action:', err);
+                }
               }
             };
             actionsBar.appendChild(btn);
@@ -22748,15 +22765,17 @@
         }
       }
 
-      // Click to dismiss immediately
-      toast.onclick = () => {
-        if (toast._dismissTimer) clearTimeout(toast._dismissTimer);
-        toast.classList.remove('translate-y-0', 'opacity-100');
-        toast.classList.add('-translate-y-6', 'opacity-0');
-        setTimeout(() => {
-          if (toast.parentNode) toast.remove();
-        }, 300);
-      };
+      // Click to dismiss immediately (yalnızca aksiyon butonu bulunmayan bilgi toastları için)
+      if (!hasActions) {
+        toast.onclick = () => {
+          if (toast._dismissTimer) clearTimeout(toast._dismissTimer);
+          toast.classList.remove('translate-y-0', 'opacity-100');
+          toast.classList.add('-translate-y-6', 'opacity-0');
+          setTimeout(() => {
+            if (toast.parentNode) toast.remove();
+          }, 300);
+        };
+      }
 
       if (replaceTarget) {
         if (replaceTarget._dismissTimer) clearTimeout(replaceTarget._dismissTimer);
@@ -22790,26 +22809,30 @@
 
       // Karar isteyen toastlarda dışarıya/boşa tıklandığında kapat ve harcanmamış say
       if (hasActions) {
-        setTimeout(() => {
-          const onOutsideClick = (e) => {
-            if (!toast.parentNode) {
-              document.removeEventListener('click', onOutsideClick);
-              return;
-            }
-            if (e.target.closest('#' + toast.id)) return;
+        const onOutsideClick = (e) => {
+          if (!toast.parentNode) {
             document.removeEventListener('click', onOutsideClick);
-            if (toast._dismissTimer) clearTimeout(toast._dismissTimer);
-            if (typeof entry.onCancel === 'function') {
-              try { entry.onCancel(); } catch (err) {}
-            }
-            toast.classList.remove('translate-y-0', 'opacity-100');
-            toast.classList.add('-translate-y-6', 'opacity-0');
-            setTimeout(() => {
-              if (toast.parentNode) toast.remove();
-            }, 300);
-          };
+            return;
+          }
+          if (e.target && e.target.closest && e.target.closest('#' + toast.id)) return;
+          document.removeEventListener('click', onOutsideClick);
+          cleanupOutsideClick = null;
+          if (toast._dismissTimer) clearTimeout(toast._dismissTimer);
+          if (typeof entry.onCancel === 'function') {
+            try { entry.onCancel(); } catch (err) {}
+          }
+          toast.classList.remove('translate-y-0', 'opacity-100');
+          toast.classList.add('-translate-y-6', 'opacity-0');
+          setTimeout(() => {
+            if (toast.parentNode) toast.remove();
+          }, 300);
+        };
+        cleanupOutsideClick = () => {
+          document.removeEventListener('click', onOutsideClick);
+        };
+        setTimeout(() => {
           document.addEventListener('click', onOutsideClick);
-        }, 60);
+        }, 80);
       }
 
       return toast;
@@ -35131,9 +35154,12 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       );
 
       // 1. HP & Nonlethal & Temp HP
-      const charLvl = Number(character.level) || 6;
-      const currentHp = Number(character.hp?.current) || 0;
-      const maxHp = Number(character.hp?.max) || 44;
+      const maxHp = Number(character.hp?.max) || (Number(character.level || 1) * 10) || 10;
+      if (!character.hp) {
+        character.hp = { current: maxHp, max: maxHp, temp: 0, nonlethal: 0 };
+      }
+      const charLvl = Number(character.level) || 1;
+      const currentHp = Number(character.hp.current) || 0;
       let hpGain = 0;
 
       if (isFullHeal) {
@@ -35395,8 +35421,12 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       let nonlethalHealed = 0;
       let downgradedExhausted = false;
       if (minutes >= 60) {
-        const charLvl = Number(character.level) || 6;
-        const currentNonlethal = Number(character.hp?.nonlethal) || 0;
+        if (!character.hp) {
+          const maxH = (Number(character.level || 1) * 10) || 10;
+          character.hp = { current: maxH, max: maxH, temp: 0, nonlethal: 0 };
+        }
+        const charLvl = Number(character.level) || 1;
+        const currentNonlethal = Number(character.hp.nonlethal) || 0;
         if (currentNonlethal > 0) {
           nonlethalHealed = Math.min(currentNonlethal, charLvl);
           character.hp.nonlethal = currentNonlethal - nonlethalHealed;

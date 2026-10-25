@@ -797,3 +797,25 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   4. **Parite ve Kural Bütünlüğü:**
      - hub.html ve webapp/hub.html %100 SHA-256 eşitliğinde tutuldu.
      - Kesinlikle hiçbir tavla zarı emoji kullanılmadı.
+
+
+---
+
+## 42. DİNLENME (SHORT & LONG REST) ETKİLEŞİMLİ TOAST SEÇİM VE TIKLAMA ONARIMI (2026-10-25)
+* **İstek:** Karakter kâğıdı sol HUD alanındaki Dinlenme butonlarında (`performRest()` / Kısa Dinlenme ve `performLongRest()` / Uzun Dinlenme) açılan bildirim menüsünden seçeneklerin (Tam Can, RAW, 5 Dk, 1 Saat vb.) seçilememesi sorununun giderilmesi.
+* **Tespit Edilen Kök Nedenler:**
+  1. **Çakışan `toast.onclick` & `cursor-pointer`:** `showDiceTopToast()` içinde kartın geneline tıklandığında hemen kapatan `toast.onclick` dinleyicisi `hasActions` true olduğunda da bağlı kalıyordu. Buton kenarına veya metnine tıklandığında kart tıklaması tetiklenerek seçim işletilmeden toast kapanıyordu.
+  2. **`onOutsideClick` Temizleme & Zamanlama:** Dışarı tıklama dinleyicisi aksiyon butonuna tıklandığında temizlenmiyor, sonraki tıklamalarda istenmeyen `onCancel` tetiklenmesine yol açıyordu.
+  3. **Mobil Dokunmatik Gecikmesi & `touch-manipulation`:** Aksiyon butonlarında mobil cihazlarda 300ms tıklama gecikmesi ve dokunmatik hedef hassasiyeti eksikti.
+  4. **`character.hp` Null Güvenliği:** Dinlenme çalıştırıcılarında (`executeLongRest` ve `executeShortRest`) eksik `character.hp` durumunda oluşabilecek `TypeError` riski önlendi.
+* **Uygulanan Değişiklikler:**
+  1. **`showDiceTopToast()` İzolasyonu (`character.html` & `index.html`):**
+     - `hasActions` true olduğunda ana karta `toast.onclick` atanması engellendi; kart imleci `cursor-default` yapıldı ve `"Kapatmak için tıklayın"` başlığı kaldırıldı.
+     - Aksiyon butonları tıklandığında `ev.stopPropagation()` ile birlikte `onOutsideClick` dinleyicisi anında temizlenmekte, karar toast'u yumuşakça kapatılmakta ve eylem (`executeLongRest` / `executeShortRest`) güvenli `try...catch` ile icra edilmektedir.
+     - Butonlara `touch-manipulation` ve `active:scale-95` eklenerek dokunmatik ekranlarda sıfır gecikmeli tepki sağlandı.
+  2. **Dinlenme Motoru Sağlamlaştırması:**
+     - `executeLongRest` ve `executeShortRest` fonksiyonlarında `character.hp` için null-guard ve güvenli tamsayı kontrolleri eklendi.
+     - Dinlenme tamamlandığında sonuç toast'u (iyileşen HP, tazelenen slot ve manevralar) sorunsuz ekrana yansıtılmaktadır.
+  3. **Parite ve Kural Bütünlüğü:**
+     - `character.html`, `index.html`, `webapp/character.html` ve `webapp/index.html` kopyaları %100 SHA-256 birebir eşitliğinde güncellendi.
+     - Kesinlikle hiçbir tavla zarı emoji (`🎲`) kullanılmadı.
