@@ -4182,29 +4182,257 @@
 
       <!-- Mode Selector Tabs (Kimlik & Irk, Manuel, Point Buy, 4d6) -->
       <div class="bg-slate-900/80 px-4 pt-2.5 border-b border-slate-800 flex items-center gap-1.5 overflow-x-auto shrink-0">
-        <button type="button" id="tab-stat-dist-identity" onclick="setStatDistMode('identity')" class="px-3 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-purple-500 text-purple-200 bg-purple-950/60 flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
+        <button type="button" id="tab-stat-dist-identity" onclick="setStatDistMode('identity')" class="px-3.5 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-purple-500 text-purple-200 bg-purple-950/60 flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
           <span>👤</span>
           <span>Kimlik &amp; Irk</span>
         </button>
-        <button type="button" id="tab-stat-dist-manual" onclick="setStatDistMode('manual')" class="px-3 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
-          <span>✏️</span>
-          <span>Manuel (Serbest)</span>
+        <button type="button" id="tab-stat-dist-abilities" onclick="setStatDistMode('abilities')" class="px-3.5 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
+          <span>📊</span>
+          <span>Yetenek Skorları</span>
         </button>
-        <button type="button" id="tab-stat-dist-pointbuy" onclick="setStatDistMode('pointbuy')" class="px-3 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
-          <span>⚖️</span>
-          <span>Point Buy (3.5e RAW)</span>
-        </button>
-        <button type="button" id="tab-stat-dist-roll" onclick="setStatDistMode('roll')" class="px-3 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
-          <span class="inline-flex items-center"><svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"></polygon><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"></polygon><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"></line><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
-          <span>4d6 Drop Lowest (Zar)</span>
+        <button type="button" id="tab-stat-dist-portrait" onclick="setStatDistMode('portrait')" class="px-3.5 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
+          <span>🎨</span>
+          <span>Profil Resmi</span>
         </button>
       </div>
 
       <!-- Modal Body -->
       <div class="p-4 space-y-3.5 overflow-y-auto text-xs">
         
-                <!-- PANEL 0: KIMLIK & IRK (KARAKTER PROFILI) -->
+        <!-- PANEL 1: KİMLİK & IRK -->
         <div id="panel-stat-dist-identity" class="space-y-3">
+          <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Karakter Adı *</label>
+            <input type="text" id="profile-edit-name" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-bold">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Irk (Race) *</label>
+            <input type="text" id="profile-edit-race" list="race-options" oninput="updateProfileModalAvatar(); onProfileRaceChange(this.value);" onchange="updateProfileModalAvatar(); onProfileRaceChange(this.value);" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-bold">
+            <datalist id="race-options">
+              <option value="Human">
+              <option value="Elf">
+              <option value="Dwarf">
+              <option value="Halfling">
+              <option value="Gnome">
+              <option value="Half-Elf">
+              <option value="Half-Orc">
+              <option value="Aasimar">
+              <option value="Tiefling">
+              <option value="Dragonborn">
+            </datalist>
+          </div>
+        </div>
+
+        <!-- Irksal Nitelik Önizleme ve Uygulama Kartı (D&D 3.5e RAW SRD Ghost Core) -->
+        <div id="profile-race-traits-card" class="hidden bg-slate-950/90 border border-amber-500/40 rounded-xl p-3 space-y-2 shadow-lg">
+          <!-- Populated dynamically via onProfileRaceChange -->
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Yönelim (Alignment)</label>
+            <select id="profile-edit-alignment" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white">
+              <option value="Lawful Good">Lawful Good</option>
+              <option value="Neutral Good">Neutral Good</option>
+              <option value="Chaotic Good">Chaotic Good</option>
+              <option value="Lawful Neutral">Lawful Neutral</option>
+              <option value="True Neutral">True Neutral</option>
+              <option value="Chaotic Neutral">Chaotic Neutral</option>
+              <option value="Lawful Evil">Lawful Evil</option>
+              <option value="Neutral Evil">Neutral Evil</option>
+              <option value="Chaotic Evil">Chaotic Evil</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tanrı / İnanç (Deity)</label>
+            <input type="text" id="profile-edit-deity" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Boyut (Size)</label>
+            <select id="profile-edit-size" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white">
+              <option value="Fine">Fine</option>
+              <option value="Diminutive">Diminutive</option>
+              <option value="Tiny">Tiny</option>
+              <option value="Small">Small</option>
+              <option value="Medium">Medium</option>
+              <option value="Large">Large</option>
+              <option value="Huge">Huge</option>
+              <option value="Gargantuan">Gargantuan</option>
+              <option value="Colossal">Colossal</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Cinsiyet</label>
+            <input type="text" id="profile-edit-gender" oninput="updateProfileModalAvatar()" onchange="updateProfileModalAvatar()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Yaş</label>
+            <input type="number" id="profile-edit-age" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white font-mono">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Boy</label>
+            <input type="text" id="profile-edit-height" placeholder="Örn: 178 cm" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white font-mono">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kilo</label>
+            <input type="text" id="profile-edit-weight" placeholder="Örn: 72 kg" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white font-mono">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Taban Hız (ft)</label>
+            <input type="number" id="profile-edit-speed" placeholder="30" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white font-mono">
+          </div>
+        </div>
+        </div>
+
+        <!-- PANEL 2: YETENEK SKORLARI -->
+        <div id="panel-stat-dist-abilities" class="hidden space-y-3">
+          <!-- Yetenek Skorları Alt Sekmeler (Manuel, Point Buy, 4d6) -->
+          <div class="flex items-center gap-1.5 p-1 bg-slate-950/80 rounded-xl border border-slate-800 shrink-0">
+            <button type="button" id="subtab-ability-manual" onclick="setStatDistAbilityMode('manual')" class="flex-1 py-1.5 px-2 rounded-lg font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer bg-purple-900/60 text-purple-200 border border-purple-500/50 shadow-sm">
+              <span>✏️</span>
+              <span>Manuel (Serbest)</span>
+            </button>
+            <button type="button" id="subtab-ability-pointbuy" onclick="setStatDistAbilityMode('pointbuy')" class="flex-1 py-1.5 px-2 rounded-lg font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer text-slate-400 hover:text-slate-200 border border-transparent">
+              <span>⚖️</span>
+              <span>Point Buy (3.5e RAW)</span>
+            </button>
+            <button type="button" id="subtab-ability-roll" onclick="setStatDistAbilityMode('roll')" class="flex-1 py-1.5 px-2 rounded-lg font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer text-slate-400 hover:text-slate-200 border border-transparent">
+              <span class="inline-flex items-center"><svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"></polygon><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"></polygon><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"></line><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
+              <span>4d6 Drop Lowest (Zar)</span>
+            </button>
+          </div>
+
+          <!-- Alt Paneller (Manuel, Point Buy, 4d6 ve Önizleme) -->
+          <!-- PANEL 1: MANUEL (SERBEST GİRİŞ) -->
+        <div id="panel-stat-dist-manual" class="hidden space-y-3">
+          <div class="flex flex-wrap items-center justify-between text-[11px] text-slate-400 pb-1 border-b border-slate-800 gap-1.5">
+            <span>Taban statları (Base Abilities) doğrudan belirleyin veya kalıp seçin:</span>
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="setEliteArrayStats()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-amber-300 font-semibold px-2 py-0.5 rounded border border-slate-700 transition cursor-pointer" title="15, 14, 13, 12, 10, 8">
+                ⭐ Elite Array
+              </button>
+              <button type="button" onclick="resetStatsToCurrent()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded border border-slate-700 transition cursor-pointer" title="Mevcut taban statlara dön">
+                ↺ Sıfırla
+              </button>
+            </div>
+          </div>
+
+          <!-- 6 Stat Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="manual-stats-container">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- PANEL 2: POINT BUY (D&D 3.5e RAW) -->
+        <div id="panel-stat-dist-pointbuy" class="hidden space-y-3">
+          <div class="bg-purple-950/40 border border-purple-500/40 rounded-xl p-2.5 space-y-2">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-1.5">
+                <span class="text-xs font-bold text-purple-200">Point Buy Bütçesi:</span>
+                <select id="pointbuy-preset-select" onchange="onPointBuyPresetChange()" class="bg-slate-900 border border-purple-500/50 rounded px-2 py-0.5 text-xs text-white font-bold cursor-pointer">
+                  <option value="25">25 Puan (Low Fantasy)</option>
+                  <option value="28" selected>28 Puan (Standard 3.5e RAW)</option>
+                  <option value="32">32 Puan (High Fantasy)</option>
+                  <option value="36">36 Puan (Epic Fantasy)</option>
+                  <option value="custom">Özel Bütçe</option>
+                </select>
+                <input type="number" id="pointbuy-custom-budget" oninput="calculatePointBuy()" class="hidden w-16 bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-xs text-center text-white font-mono font-bold" min="10" max="100" value="28">
+              </div>
+
+              <!-- Puan Durum Rozeti & Sıfırla -->
+              <div class="flex items-center gap-1.5">
+                <div id="pointbuy-summary-badge" class="px-2.5 py-1 rounded-lg font-mono font-bold text-xs flex items-center gap-1.5 bg-emerald-950 text-emerald-300 border border-emerald-600">
+                  <span>Kalan: <strong id="pointbuy-remaining-pts">0</strong> / <span id="pointbuy-total-pts">28</span> Puan</span>
+                </div>
+                <button type="button" onclick="resetStatsToCurrent()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded border border-slate-700 transition cursor-pointer" title="Mevcut taban statlara dön">
+                  ↺ Sıfırla
+                </button>
+              </div>
+            </div>
+            <p class="text-[10px] text-purple-300/80">D&amp;D 3.5e DMG s. 169 kuralları: Statlar taban 8 başlar. 14'e kadar 1'er puan, 15-16 için 2'şer puan, 17-18 için 3'er puan harcanır.</p>
+          </div>
+
+          <!-- Point Buy Stat Rows -->
+          <div class="space-y-1.5" id="pointbuy-stats-container">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- PANEL 3: 4d6 DROP LOWEST (ZAR ATMA) -->
+        <div id="panel-stat-dist-roll" class="hidden space-y-3">
+          <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 space-y-2.5">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h4 class="font-bold text-white text-xs flex items-center gap-1.5">
+                  <span class="inline-flex items-center"><svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"></polygon><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"></polygon><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"></line><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
+                  <span>4d6 Drop Lowest Zar Havuzu</span>
+                </h4>
+                <p class="text-[10px] text-slate-400">Her stat için 4 adet 6'lık zar atılır, en düşük zar elenerek kalan 3 zar toplanır.</p>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button type="button" onclick="rollAll4d6Stats()" class="bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-black text-xs px-3.5 py-1.5 rounded-lg shadow-lg flex items-center gap-1.5 transition active:scale-95 cursor-pointer">
+                  <span class="inline-flex items-center"><svg class="w-3.5 h-3.5 text-slate-950" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"></polygon><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"></polygon><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"></line><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
+                  <span>Zarları Yeniden At</span>
+                </button>
+                <button type="button" onclick="resetStatsToCurrent()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded border border-slate-700 transition cursor-pointer" title="Mevcut taban statlara dön">
+                  ↺ Sıfırla
+                </button>
+              </div>
+            </div>
+
+            <!-- Rolled Dices Display Cards -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-center" id="rolled-dice-cards-box">
+              <div class="p-3 text-center text-slate-500 italic col-span-full">Henüz zar atılmadı. "Zarları Yeniden At" butonuna basın.</div>
+            </div>
+          </div>
+
+          <!-- Atama Tablosu -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between text-[11px] font-bold text-slate-300 pb-1 border-b border-slate-800">
+              <span>Atılan Zarları Statlara Dağıtın:</span>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="autoAssignRolledStats()" class="text-[10px] text-indigo-300 hover:text-white underline cursor-pointer">
+                  ⚡ Sınıfa Göre Otomatik Dağıt
+                </button>
+                <button type="button" onclick="resetStatsToCurrent()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded border border-slate-700 transition cursor-pointer" title="Mevcut taban statlara dön">
+                  ↺ Sıfırla
+                </button>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="rolled-assign-container">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- ORTAK BİLGİLENDİRME & ÖZET KARTI -->
+        <div id="stat-dist-preview-wrapper" class="hidden bg-slate-950/80 border border-slate-800 rounded-xl p-3 space-y-2 text-xs">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-slate-300 flex items-center gap-1.5">
+              <span>📊</span>
+              <span>Nihai Skor Önizlemesi (Ekipman &amp; Buff Dahil)</span>
+            </span>
+            <span id="stat-dist-preview-total-mod" class="text-[11px] font-mono font-bold text-amber-300"></span>
+          </div>
+          <div class="grid grid-cols-6 gap-1.5 text-center font-mono" id="stat-dist-preview-row">
+            <!-- Rendered by JS -->
+          </div>
+          <div class="text-[10px] text-slate-500 flex items-center gap-1.5 pt-1 border-t border-slate-800/80">
+            <span>ℹ️</span>
+            <span>Kaydettiğinizde Can Puanı (HP), AC, Atak, Beceriler ve Kurtarma Atışları kural motoru tarafından anında baştan hesaplanacaktır.</span>
+          </div>
+        </div>
+        </div>
+
+        <!-- PANEL 3: PROFİL RESMİ (PORTRE VE DUVAR KAĞIDI) -->
+        <div id="panel-stat-dist-portrait" class="hidden space-y-3">
           <div id="profile-portrait-panel" class="bg-gradient-to-r from-slate-900/90 via-indigo-950/25 to-slate-900/90 border border-indigo-500/50 rounded-xl p-3 space-y-2.5 shadow-md">
           <div class="flex flex-wrap items-center justify-between border-b border-slate-800 pb-2 gap-2">
             <div class="flex items-center gap-2">
@@ -4348,96 +4576,7 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Karakter Adı *</label>
-            <input type="text" id="profile-edit-name" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-bold">
-          </div>
-          <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Irk (Race) *</label>
-            <input type="text" id="profile-edit-race" list="race-options" oninput="updateProfileModalAvatar(); onProfileRaceChange(this.value);" onchange="updateProfileModalAvatar(); onProfileRaceChange(this.value);" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-bold">
-            <datalist id="race-options">
-              <option value="Human">
-              <option value="Elf">
-              <option value="Dwarf">
-              <option value="Halfling">
-              <option value="Gnome">
-              <option value="Half-Elf">
-              <option value="Half-Orc">
-              <option value="Aasimar">
-              <option value="Tiefling">
-              <option value="Dragonborn">
-            </datalist>
-          </div>
-        </div>
-
-        <!-- Irksal Nitelik Önizleme ve Uygulama Kartı (D&D 3.5e RAW SRD Ghost Core) -->
-        <div id="profile-race-traits-card" class="hidden bg-slate-950/90 border border-amber-500/40 rounded-xl p-3 space-y-2 shadow-lg">
-          <!-- Populated dynamically via onProfileRaceChange -->
-        </div>
-
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Yönelim (Alignment)</label>
-            <select id="profile-edit-alignment" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white">
-              <option value="Lawful Good">Lawful Good</option>
-              <option value="Neutral Good">Neutral Good</option>
-              <option value="Chaotic Good">Chaotic Good</option>
-              <option value="Lawful Neutral">Lawful Neutral</option>
-              <option value="True Neutral">True Neutral</option>
-              <option value="Chaotic Neutral">Chaotic Neutral</option>
-              <option value="Lawful Evil">Lawful Evil</option>
-              <option value="Neutral Evil">Neutral Evil</option>
-              <option value="Chaotic Evil">Chaotic Evil</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tanrı / İnanç (Deity)</label>
-            <input type="text" id="profile-edit-deity" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white">
-          </div>
-        </div>
-
-        <div class="grid grid-cols-3 gap-2">
-          <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Boyut (Size)</label>
-            <select id="profile-edit-size" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white">
-              <option value="Fine">Fine</option>
-              <option value="Diminutive">Diminutive</option>
-              <option value="Tiny">Tiny</option>
-              <option value="Small">Small</option>
-              <option value="Medium">Medium</option>
-              <option value="Large">Large</option>
-              <option value="Huge">Huge</option>
-              <option value="Gargantuan">Gargantuan</option>
-              <option value="Colossal">Colossal</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Cinsiyet</label>
-            <input type="text" id="profile-edit-gender" oninput="updateProfileModalAvatar()" onchange="updateProfileModalAvatar()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white">
-          </div>
-          <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Yaş</label>
-            <input type="number" id="profile-edit-age" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white font-mono">
-          </div>
-        </div>
-
-        <div class="grid grid-cols-3 gap-2">
-          <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Boy</label>
-            <input type="text" id="profile-edit-height" placeholder="Örn: 178 cm" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white font-mono">
-          </div>
-          <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kilo</label>
-            <input type="text" id="profile-edit-weight" placeholder="Örn: 72 kg" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white font-mono">
-          </div>
-          <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Taban Hız (ft)</label>
-            <input type="number" id="profile-edit-speed" placeholder="30" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white font-mono">
-          </div>
-        </div>
-
-        <!-- SECTION: SAYFA ARKA PLANI & DUVAR KAĞIDI (WALLPAPER AYARLARI) -->
+          <!-- SECTION: SAYFA ARKA PLANI & DUVAR KAĞIDI (WALLPAPER AYARLARI) -->
         <div id="profile-wallpaper-panel" class="bg-gradient-to-r from-slate-900/90 via-purple-950/20 to-slate-900/90 border border-purple-500/40 rounded-xl p-3 space-y-2.5">
           <div class="flex flex-wrap items-center justify-between border-b border-slate-800 pb-2 gap-2">
             <div class="flex items-center gap-2">
@@ -4573,152 +4712,19 @@
           </div>
         </div>
         </div>
-        <!-- PANEL 1: MANUEL (SERBEST GİRİŞ) -->
-        <div id="panel-stat-dist-manual" class="hidden space-y-3">
-          <div class="flex flex-wrap items-center justify-between text-[11px] text-slate-400 pb-1 border-b border-slate-800 gap-1.5">
-            <span>Taban statları (Base Abilities) doğrudan belirleyin veya kalıp seçin:</span>
-            <div class="flex items-center gap-1.5">
-              <button type="button" onclick="setEliteArrayStats()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-amber-300 font-semibold px-2 py-0.5 rounded border border-slate-700 transition cursor-pointer" title="15, 14, 13, 12, 10, 8">
-                ⭐ Elite Array
-              </button>
-              <button type="button" onclick="resetStatsToCurrent()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded border border-slate-700 transition cursor-pointer" title="Mevcut taban statlara dön">
-                ↺ Sıfırla
-              </button>
-            </div>
-          </div>
-
-          <!-- 6 Stat Grid -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="manual-stats-container">
-            <!-- Rendered by JS -->
-          </div>
-        </div>
-
-        <!-- PANEL 2: POINT BUY (D&D 3.5e RAW) -->
-        <div id="panel-stat-dist-pointbuy" class="hidden space-y-3">
-          <div class="bg-purple-950/40 border border-purple-500/40 rounded-xl p-2.5 space-y-2">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-              <div class="flex items-center gap-1.5">
-                <span class="text-xs font-bold text-purple-200">Point Buy Bütçesi:</span>
-                <select id="pointbuy-preset-select" onchange="onPointBuyPresetChange()" class="bg-slate-900 border border-purple-500/50 rounded px-2 py-0.5 text-xs text-white font-bold cursor-pointer">
-                  <option value="25">25 Puan (Low Fantasy)</option>
-                  <option value="28" selected>28 Puan (Standard 3.5e RAW)</option>
-                  <option value="32">32 Puan (High Fantasy)</option>
-                  <option value="36">36 Puan (Epic Fantasy)</option>
-                  <option value="custom">Özel Bütçe</option>
-                </select>
-                <input type="number" id="pointbuy-custom-budget" oninput="calculatePointBuy()" class="hidden w-16 bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-xs text-center text-white font-mono font-bold" min="10" max="100" value="28">
-              </div>
-
-              <!-- Puan Durum Rozeti & Sıfırla -->
-              <div class="flex items-center gap-1.5">
-                <div id="pointbuy-summary-badge" class="px-2.5 py-1 rounded-lg font-mono font-bold text-xs flex items-center gap-1.5 bg-emerald-950 text-emerald-300 border border-emerald-600">
-                  <span>Kalan: <strong id="pointbuy-remaining-pts">0</strong> / <span id="pointbuy-total-pts">28</span> Puan</span>
-                </div>
-                <button type="button" onclick="resetStatsToCurrent()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded border border-slate-700 transition cursor-pointer" title="Mevcut taban statlara dön">
-                  ↺ Sıfırla
-                </button>
-              </div>
-            </div>
-            <p class="text-[10px] text-purple-300/80">D&amp;D 3.5e DMG s. 169 kuralları: Statlar taban 8 başlar. 14'e kadar 1'er puan, 15-16 için 2'şer puan, 17-18 için 3'er puan harcanır.</p>
-          </div>
-
-          <!-- Point Buy Stat Rows -->
-          <div class="space-y-1.5" id="pointbuy-stats-container">
-            <!-- Rendered by JS -->
-          </div>
-        </div>
-
-        <!-- PANEL 3: 4d6 DROP LOWEST (ZAR ATMA) -->
-        <div id="panel-stat-dist-roll" class="hidden space-y-3">
-          <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 space-y-2.5">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <h4 class="font-bold text-white text-xs flex items-center gap-1.5">
-                  <span class="inline-flex items-center"><svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"></polygon><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"></polygon><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"></line><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
-                  <span>4d6 Drop Lowest Zar Havuzu</span>
-                </h4>
-                <p class="text-[10px] text-slate-400">Her stat için 4 adet 6'lık zar atılır, en düşük zar elenerek kalan 3 zar toplanır.</p>
-              </div>
-              <div class="flex items-center gap-1.5">
-                <button type="button" onclick="rollAll4d6Stats()" class="bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-black text-xs px-3.5 py-1.5 rounded-lg shadow-lg flex items-center gap-1.5 transition active:scale-95 cursor-pointer">
-                  <span class="inline-flex items-center"><svg class="w-3.5 h-3.5 text-slate-950" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"></polygon><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"></polygon><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"></line><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
-                  <span>Zarları Yeniden At</span>
-                </button>
-                <button type="button" onclick="resetStatsToCurrent()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded border border-slate-700 transition cursor-pointer" title="Mevcut taban statlara dön">
-                  ↺ Sıfırla
-                </button>
-              </div>
-            </div>
-
-            <!-- Rolled Dices Display Cards -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-center" id="rolled-dice-cards-box">
-              <div class="p-3 text-center text-slate-500 italic col-span-full">Henüz zar atılmadı. "Zarları Yeniden At" butonuna basın.</div>
-            </div>
-          </div>
-
-          <!-- Atama Tablosu -->
-          <div class="space-y-1.5">
-            <div class="flex items-center justify-between text-[11px] font-bold text-slate-300 pb-1 border-b border-slate-800">
-              <span>Atılan Zarları Statlara Dağıtın:</span>
-              <div class="flex items-center gap-2">
-                <button type="button" onclick="autoAssignRolledStats()" class="text-[10px] text-indigo-300 hover:text-white underline cursor-pointer">
-                  ⚡ Sınıfa Göre Otomatik Dağıt
-                </button>
-                <button type="button" onclick="resetStatsToCurrent()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded border border-slate-700 transition cursor-pointer" title="Mevcut taban statlara dön">
-                  ↺ Sıfırla
-                </button>
-              </div>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="rolled-assign-container">
-              <!-- Rendered by JS -->
-            </div>
-          </div>
-        </div>
-
-        <!-- ORTAK BİLGİLENDİRME & ÖZET KARTI -->
-        <div id="stat-dist-preview-wrapper" class="hidden bg-slate-950/80 border border-slate-800 rounded-xl p-3 space-y-2 text-xs">
-          <div class="flex items-center justify-between">
-            <span class="font-bold text-slate-300 flex items-center gap-1.5">
-              <span>📊</span>
-              <span>Nihai Skor Önizlemesi (Ekipman &amp; Buff Dahil)</span>
-            </span>
-            <span id="stat-dist-preview-total-mod" class="text-[11px] font-mono font-bold text-amber-300"></span>
-          </div>
-          <div class="grid grid-cols-6 gap-1.5 text-center font-mono" id="stat-dist-preview-row">
-            <!-- Rendered by JS -->
-          </div>
-          <div class="text-[10px] text-slate-500 flex items-center gap-1.5 pt-1 border-t border-slate-800/80">
-            <span>ℹ️</span>
-            <span>Kaydettiğinizde Can Puanı (HP), AC, Atak, Beceriler ve Kurtarma Atışları kural motoru tarafından anında baştan hesaplanacaktır.</span>
-          </div>
-        </div>
 
       </div>
 
       <!-- Modal Footer -->
-      <div class="bg-slate-950 px-4 py-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2 shrink-0">
-        <!-- Sol Taraf: Karakter Resmi & Arka Plan Hızlı Atlama Butonları -->
-        <div class="flex items-center gap-1.5" id="stat-dist-identity-quick-links">
-          <button type="button" onclick="scrollToPortraitPanel()" class="px-2.5 py-1.5 rounded-lg bg-indigo-950 hover:bg-indigo-900 text-indigo-300 hover:text-white border border-indigo-600/70 font-bold transition flex items-center gap-1 text-xs shadow-sm" title="Karakter Resmi ayarlarına git">
-            <span>👤</span>
-            <span>Portre</span>
-          </button>
-          <button type="button" onclick="scrollToWallpaperPanel()" id="profile-wallpaper-btn" class="px-2.5 py-1.5 rounded-lg bg-purple-950/80 hover:bg-purple-900 text-purple-300 hover:text-white border border-purple-700/60 font-bold transition flex items-center gap-1 text-xs shadow-sm" title="Tüm sayfa arka plan ayarlarına git">
-            <span>🌌</span>
-            <span>Arka Plan</span>
-          </button>
-        </div>
-
-        <!-- Sağ Taraf: İptal ve Kaydet Butonları -->
-        <div class="flex items-center gap-2 ml-auto">
-          <button type="button" onclick="closeStatDistributionModal()" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-lg transition cursor-pointer">
-            Vazgeç
-          </button>
-          <button type="button" onclick="saveStatDistribution()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-4 py-2 rounded-lg shadow-lg flex items-center gap-1.5 transition active:scale-95 cursor-pointer">
-            <span>💾</span>
-            <span>Kaydet &amp; Uygula</span>
-          </button>
-        </div>
+      <div class="bg-slate-950 px-4 py-3 border-t border-slate-800 flex items-center justify-between gap-2 shrink-0">
+        <button type="button" onclick="closeStatDistributionModal()" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-lg transition cursor-pointer">
+          Vazgeç
+        </button>
+        <button type="button" onclick="saveStatDistribution()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-4 py-2 rounded-lg shadow-lg flex items-center gap-1.5 transition active:scale-95 cursor-pointer">
+          <span>💾</span>
+          <span>Kaydet &amp; Uygula</span>
+        </button>
+      </div>
       </div>
     </div>
   </div>
@@ -9669,6 +9675,7 @@
     }
 
     function scrollToPortraitPanel() {
+      setStatDistMode('portrait');
       const panel = document.getElementById('profile-portrait-panel');
       if (panel) {
         panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -10198,6 +10205,7 @@
     }
 
     function scrollToWallpaperPanel() {
+      setStatDistMode('portrait');
       const panel = document.getElementById('profile-wallpaper-panel');
       if (panel) {
         panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -11096,7 +11104,7 @@
       
       populateProfileInputs();
 
-      // Taban statlarÄ± karakterin mevcut gerÃ§ek taban deÄŸerlerinden oku
+      // Taban statları karakterin mevcut gerçek taban değerlerinden oku
       statDistState.workingAbilities = {
         str: getCharacterBaseAbility('str'),
         dex: getCharacterBaseAbility('dex'),
@@ -11112,8 +11120,8 @@
       const modal = document.getElementById('stat-distribution-modal');
       if (modal) modal.classList.remove('hidden');
 
-      const targetMode = initialMode || (statDistState.mode && statDistState.mode !== 'identity' ? statDistState.mode : 'manual');
-      setStatDistMode(targetMode);
+      const target = initialMode || (statDistState.mainTab ? statDistState.mainTab : 'identity');
+      setStatDistMode(target);
     }
 
     function closeStatDistributionModal() {
@@ -11121,57 +11129,83 @@
       if (modal) modal.classList.add('hidden');
     }
 
-    function setStatDistMode(mode) {
-      statDistState.mode = mode;
+    function setStatDistMode(tabOrMode) {
+      if (tabOrMode === 'manual' || tabOrMode === 'pointbuy' || tabOrMode === 'roll') {
+        statDistState.mainTab = 'abilities';
+        statDistState.abilityMode = tabOrMode;
+      } else if (tabOrMode === 'abilities') {
+        statDistState.mainTab = 'abilities';
+        if (!statDistState.abilityMode) statDistState.abilityMode = 'manual';
+      } else if (tabOrMode === 'portrait') {
+        statDistState.mainTab = 'portrait';
+      } else {
+        statDistState.mainTab = 'identity';
+      }
 
-      const tabs = [
+      // 1. Ana Sekme Başlıklarını Güncelle
+      const mainTabs = [
         { id: 'tab-stat-dist-identity', panel: 'panel-stat-dist-identity', key: 'identity' },
-        { id: 'tab-stat-dist-manual', panel: 'panel-stat-dist-manual', key: 'manual' },
-        { id: 'tab-stat-dist-pointbuy', panel: 'panel-stat-dist-pointbuy', key: 'pointbuy' },
-        { id: 'tab-stat-dist-roll', panel: 'panel-stat-dist-roll', key: 'roll' }
+        { id: 'tab-stat-dist-abilities', panel: 'panel-stat-dist-abilities', key: 'abilities' },
+        { id: 'tab-stat-dist-portrait', panel: 'panel-stat-dist-portrait', key: 'portrait' }
       ];
 
-      tabs.forEach(t => {
+      mainTabs.forEach(t => {
         const tabEl = document.getElementById(t.id);
         const panelEl = document.getElementById(t.panel);
-        const isActive = (t.key === mode);
+        const isActive = (statDistState.mainTab === t.key);
 
         if (tabEl) {
           if (isActive) {
-            tabEl.className = 'px-3 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-purple-500 text-purple-200 bg-purple-950/60 flex items-center gap-1.5 cursor-pointer whitespace-nowrap';
+            tabEl.className = 'px-3.5 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-purple-500 text-purple-200 bg-purple-950/60 flex items-center gap-1.5 cursor-pointer whitespace-nowrap';
           } else {
-            tabEl.className = 'px-3 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-1.5 cursor-pointer whitespace-nowrap';
+            tabEl.className = 'px-3.5 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-1.5 cursor-pointer whitespace-nowrap';
           }
         }
 
         if (panelEl) {
-          if (isActive) {
-            panelEl.classList.remove('hidden');
-          } else {
-            panelEl.classList.add('hidden');
-          }
+          if (isActive) panelEl.classList.remove('hidden');
+          else panelEl.classList.add('hidden');
         }
       });
 
-      const quickLinks = document.getElementById('stat-dist-identity-quick-links');
-      if (quickLinks) {
-        if (mode === 'identity') quickLinks.classList.remove('hidden');
-        else quickLinks.classList.add('hidden');
+      // 2. Yetenek Skorları sekmesindeyse alt modu işlet
+      if (statDistState.mainTab === 'abilities') {
+        setStatDistAbilityMode(statDistState.abilityMode || 'manual');
       }
+    }
 
-      const previewWrapper = document.getElementById('stat-dist-preview-wrapper');
-      if (previewWrapper) {
-        if (mode === 'identity') {
-          previewWrapper.classList.add('hidden');
-        } else {
-          previewWrapper.classList.remove('hidden');
+    function setStatDistAbilityMode(subMode) {
+      statDistState.abilityMode = subMode;
+
+      const subTabs = [
+        { id: 'subtab-ability-manual', panel: 'panel-stat-dist-manual', key: 'manual' },
+        { id: 'subtab-ability-pointbuy', panel: 'panel-stat-dist-pointbuy', key: 'pointbuy' },
+        { id: 'subtab-ability-roll', panel: 'panel-stat-dist-roll', key: 'roll' }
+      ];
+
+      subTabs.forEach(t => {
+        const btnEl = document.getElementById(t.id);
+        const panelEl = document.getElementById(t.panel);
+        const isActive = (t.key === subMode);
+
+        if (btnEl) {
+          if (isActive) {
+            btnEl.className = 'flex-1 py-1.5 px-2 rounded-lg font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer bg-purple-900/60 text-purple-200 border border-purple-500/50 shadow-sm';
+          } else {
+            btnEl.className = 'flex-1 py-1.5 px-2 rounded-lg font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer text-slate-400 hover:text-slate-200 border border-transparent';
+          }
         }
-      }
 
-      if (mode === 'manual') {
+        if (panelEl) {
+          if (isActive) panelEl.classList.remove('hidden');
+          else panelEl.classList.add('hidden');
+        }
+      });
+
+      // Yetenek Paneli İçeriğini Render Et
+      if (subMode === 'manual') {
         renderManualStatsPanel();
-      } else if (mode === 'pointbuy') {
-        // Clamp stats to 8-18 for point buy if needed
+      } else if (subMode === 'pointbuy') {
         STAT_KEYS.forEach(s => {
           let val = Number(statDistState.workingAbilities[s.key]) || 10;
           if (val < 8) val = 8;
@@ -11179,7 +11213,7 @@
           statDistState.workingAbilities[s.key] = val;
         });
         renderPointBuyPanel();
-      } else if (mode === 'roll') {
+      } else if (subMode === 'roll') {
         if (!statDistState.rolledDice || statDistState.rolledDice.length === 0) {
           rollAll4d6Stats();
         } else {
@@ -11187,13 +11221,13 @@
         }
       }
 
-      if (mode !== 'identity') {
-        renderStatDistPreviewRow();
-      }
+      const previewWrapper = document.getElementById('stat-dist-preview-wrapper');
+      if (previewWrapper) previewWrapper.classList.remove('hidden');
+
+      renderStatDistPreviewRow();
     }
 
-    // --- 1. MANUEL MODE ---
-    function renderManualStatsPanel() {
+function renderManualStatsPanel() {
       const container = document.getElementById('manual-stats-container');
       if (!container) return;
 

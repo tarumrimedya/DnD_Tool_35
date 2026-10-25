@@ -994,3 +994,29 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   4. **Parite ve Kural Bütünlüğü:**
      - `character.html`, `index.html`, `webapp/character.html` ve `webapp/index.html` olmak üzere 4 dosya %100 SHA-256 paritesinde eşitlendi (`A752D15C...`).
      - Sıfır 🎲 tavla zarı emojisi kuralı tavizsiz korundu.
+
+
+---
+
+## 48. BÜTÜNLEŞİK MODALIN 3 ANA SEKME VE ALT SEKMELERE AYRILMASI (2026-10-25)
+* **İstek:** "Karakter Profili & Temel Statlar" modalının sekmelerinin 3 ana sekmeye dönüştürülmesi:
+  1. `[ 👤 Kimlik & Irk ]`
+  2. `[ 📊 Yetenek Skorları ]` (altında `Manuel (Serbest)`, `Point Buy (3.5e RAW)`, `4d6 Drop Lowest (Zar)` sekmeleri)
+  3. `[ 🎨 Profil Resmi ]` (sadece portre ve arka plan duvar kağıdı düzenleme stüdyosu)
+  - Kimlik & Irk sekmesinden resim düzenleme alanlarının kaldırılarak saf kimlik bilgilerine odaklanması.
+* **Uygulanan Değişiklikler:**
+  1. **Ana Sekme Düzeni (`#stat-distribution-modal`):**
+     - Üst sekme çubuğu 3 ana butona dönüştürüldü: `#tab-stat-dist-identity`, `#tab-stat-dist-abilities`, `#tab-stat-dist-portrait`.
+  2. **Yetenek Skorları Alt Sekmeleri (`#panel-stat-dist-abilities`):**
+     - Panel içine zarif bir alt sekme grubu eklendi: `#subtab-ability-manual`, `#subtab-ability-pointbuy`, `#subtab-ability-roll`.
+     - Manuel serbest giriş, D&D 3.5e RAW 28 Puan Point Buy ve 4d6 Drop Lowest zar havuzu ile canlı skor önizleme kartı bu alt panele taşındı.
+  3. **Profil Resmi ve Duvar Kağıdı İzolasyonu (`#panel-stat-dist-portrait`):**
+     - `#profile-portrait-panel` ve `#profile-wallpaper-panel` sadece bu sekmede konumlandırıldı.
+     - Kimlik & Irk sekmesi tamamen temizlenerek sadece Ad, Irk, Irksal Nitelik Kartı, Yönelim, Tanrı, Boyut, Cinsiyet, Yaş, Boy, Kilo ve Taban Hız alanlarına tahsis edildi.
+  4. **JavaScript Durum Yönetimi & Geriye Dönük Uyumluluk:**
+     - `setStatDistMode(tabOrMode)` hem ana sekmeleri (`'identity'`, `'abilities'`, `'portrait'`) hem de doğrudan stat alt modlarını (`'manual'`, `'pointbuy'`, `'roll'`) akıllıca yönlendirecek şekilde güncellendi.
+     - `setStatDistAbilityMode(subMode)` alt sekme geçişlerini ve DOM görünürlüğünü yönetir.
+     - `scrollToPortraitPanel()` ve `scrollToWallpaperPanel()` fonksiyonları doğrudan `'portrait'` sekmesini etkinleştirir.
+  5. **Parite ve Kural Bütünlüğü:**
+     - `character.html`, `index.html`, `webapp/character.html` ve `webapp/index.html` dosyaları %100 SHA-256 eşitliğinde güncellendi (`2A557FFB...`).
+     - Sıfır 🎲 tavla zarı emojisi kuralı tavizsiz korundu.
