@@ -221,7 +221,7 @@ const RuleEngine = {
 
   // Resolve bonus stacking according to D&D 3.5e RAW rules
   resolveBonusStacking(bonusList) {
-    const stackingTypes = ['dodge', 'untyped', 'circumstance', 'synergy'];
+    const stackingTypes = ['dodge', 'untyped', 'circumstance', 'synergy', 'racial'];
     const buckets = {};
     let total = 0;
 
@@ -1648,6 +1648,23 @@ const RuleEngine = {
           saveBonusBuckets.will.push({ val: Number(saveVal), type: bType, source: item.name });
         }
       });
+    }
+
+    // 3.9. Collect Racial Ability Modifiers from canonical Race (D&D 3.5e RAW)
+    if (character.race) {
+      const curRaceName = String(character.race).toLowerCase().trim();
+      const raceCatalog = (Array.isArray(masterDb) && masterDb.length) ? masterDb : ((typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) ? window.BUNDLED_SRD_CORE_CATALOG : []);
+      const raceObj = raceCatalog.find(m => m && (m.type === 'Race' || String(m.type).toLowerCase() === 'race') && (m.name || '').toLowerCase().trim() === curRaceName);
+
+      if (raceObj) {
+        const raceLabel = raceObj.name || character.race;
+        if (raceObj.strBonus) abilityBuckets.str.push({ val: Number(raceObj.strBonus), type: 'Racial', source: `${raceLabel} (Irk)` });
+        if (raceObj.dexBonus) abilityBuckets.dex.push({ val: Number(raceObj.dexBonus), type: 'Racial', source: `${raceLabel} (Irk)` });
+        if (raceObj.conBonus) abilityBuckets.con.push({ val: Number(raceObj.conBonus), type: 'Racial', source: `${raceLabel} (Irk)` });
+        if (raceObj.intBonus) abilityBuckets.int.push({ val: Number(raceObj.intBonus), type: 'Racial', source: `${raceLabel} (Irk)` });
+        if (raceObj.wisBonus) abilityBuckets.wis.push({ val: Number(raceObj.wisBonus), type: 'Racial', source: `${raceLabel} (Irk)` });
+        if (raceObj.chaBonus) abilityBuckets.cha.push({ val: Number(raceObj.chaBonus), type: 'Racial', source: `${raceLabel} (Irk)` });
+      }
     }
 
     // 4. Resolve Stacking for Abilities (RAW: Same types take Math.max, untyped/dodge stack)

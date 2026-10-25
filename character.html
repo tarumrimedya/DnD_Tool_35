@@ -11355,14 +11355,14 @@
           ${traitsList}
         </div>
 
-        <div class="pt-1.5 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
-          <label class="flex items-center gap-1.5 text-[10px] text-slate-300 cursor-pointer select-none">
-            <input type="checkbox" id="profile-race-apply-stats-chk" class="rounded bg-slate-900 border-slate-700 text-amber-500 focus:ring-0">
-            <span>Irk stat bonuslarını/cezalarını yetenek skorlarına yansıt</span>
-          </label>
-          <span class="text-[9px] text-emerald-400/90 font-medium flex items-center gap-1">
+        <div class="pt-1.5 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2 text-[10px]">
+          <span class="text-amber-300 font-medium flex items-center gap-1.5">
+            <span>🧬</span>
+            <span>Irksal stat bonusları/cezaları kural motoru tarafından otomatik uygulanır</span>
+          </span>
+          <span class="text-emerald-400 font-medium flex items-center gap-1">
             <span>✓</span>
-            <span>Boyut, hız ve tüm ırksal nitelikler "Kaydet &amp; Uygula" ile otomatik işlenir</span>
+            <span>Boyut, hız ve tüm ırksal nitelikler "Kaydet &amp; Uygula" ile senkronize edilir</span>
           </span>
         </div>
       `;
@@ -11379,7 +11379,7 @@
       const raceObj = catalog.find(item => item && item.type === 'Race' && item.name.toLowerCase() === raceName.toLowerCase());
       if (!raceObj) return;
 
-      const includeStats = document.getElementById('profile-race-apply-stats-chk')?.checked ?? false;
+      // Auto racial stats enabled
 
       // 1. Update basic profile fields
       character.race = raceObj.name;
@@ -11396,16 +11396,7 @@
       const speedInput = document.getElementById('profile-edit-speed');
       if (speedInput && raceObj.baseSpeed) speedInput.value = raceObj.baseSpeed;
 
-      // 2. Optionally Apply Ability Modifiers
-      if (includeStats) {
-        if (!character.abilities) character.abilities = { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
-        if (raceObj.strBonus) character.abilities.str = (character.abilities.str || 10) + raceObj.strBonus;
-        if (raceObj.dexBonus) character.abilities.dex = (character.abilities.dex || 10) + raceObj.dexBonus;
-        if (raceObj.conBonus) character.abilities.con = (character.abilities.con || 10) + raceObj.conBonus;
-        if (raceObj.intBonus) character.abilities.int = (character.abilities.int || 10) + raceObj.intBonus;
-        if (raceObj.wisBonus) character.abilities.wis = (character.abilities.wis || 10) + raceObj.wisBonus;
-        if (raceObj.chaBonus) character.abilities.cha = (character.abilities.cha || 10) + raceObj.chaBonus;
-      }
+      // 2. Racial ability modifiers are handled automatically by RuleEngine.recalculateCharacter()
 
       // 3. Inject Racial Traits into character.specialAbilities (duplicate-safe)
       if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
@@ -12499,19 +12490,29 @@ function renderManualStatsPanel() {
 
       let sumMods = 0;
 
+      // Resolve selected race object for accurate preview
+      const curSelectedRace = (document.getElementById('profile-edit-race')?.value || character?.race || '').toLowerCase().trim();
+      const catalog = (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG))
+        ? window.BUNDLED_SRD_CORE_CATALOG
+        : [];
+      const raceObj = catalog.find(item => item && item.type === 'Race' && (item.name || '').toLowerCase().trim() === curSelectedRace);
+
       previewContainer.innerHTML = STAT_KEYS.map(s => {
         const baseScore = Number(statDistState.workingAbilities[s.key]) || 10;
+        const racialMod = (raceObj && raceObj[`${s.key}Bonus`]) ? Number(raceObj[`${s.key}Bonus`]) : 0;
         
-        // Ekipman & Buff bonus farkını hesapla
-        let netBonus = 0;
+        // Ekipman & Buff bonus farkını hesapla (Irksal hariç ekipman/buff bonusları)
+        let itemBuffBonus = 0;
         if (typeof RuleEngine !== 'undefined' && RuleEngine.resolveBonusStacking && character.abilitySources?.[s.key]) {
-          netBonus = RuleEngine.resolveBonusStacking(character.abilitySources[s.key]);
+          const nonRacialSources = (character.abilitySources[s.key] || []).filter(src => src && (src.type || '').toLowerCase() !== 'racial');
+          itemBuffBonus = RuleEngine.resolveBonusStacking(nonRacialSources);
         } else {
           const currentTotal = Number(character.abilities?.[s.key]) || baseScore;
           const currentBase = Number(character.baseAbilities?.[s.key]) || currentTotal;
-          netBonus = currentTotal - currentBase;
+          itemBuffBonus = currentTotal - currentBase;
         }
-        const finalScore = baseScore + netBonus;
+
+        const finalScore = baseScore + racialMod + itemBuffBonus;
         const mod = Math.floor((finalScore - 10) / 2);
         const modStr = (mod >= 0 ? '+' : '') + mod;
         sumMods += mod;
@@ -12521,7 +12522,11 @@ function renderManualStatsPanel() {
             <span class="text-[9px] text-slate-400 font-bold">${s.label}</span>
             <span class="text-sm font-black text-amber-400">${finalScore}</span>
             <span class="text-[10px] font-bold ${mod >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${modStr}</span>
-            ${netBonus !== 0 ? `<span class="text-[8px] text-slate-500">Taban: ${baseScore}</span>` : ''}
+            <div class="text-[8px] text-slate-500 font-mono mt-0.5">
+              <span>T:${baseScore}</span>
+              ${racialMod !== 0 ? `<span class="${racialMod > 0 ? 'text-emerald-400' : 'text-rose-400'} ml-0.5">${racialMod > 0 ? '+' + racialMod : racialMod}</span>` : ''}
+              ${itemBuffBonus !== 0 ? `<span class="text-purple-400 ml-0.5">${itemBuffBonus > 0 ? '+' + itemBuffBonus : itemBuffBonus}</span>` : ''}
+            </div>
           </div>
         `;
       }).join('');
@@ -12590,18 +12595,7 @@ function renderManualStatsPanel() {
             });
           }
 
-          // Optional ability modifier application
-          const applyStatsChk = document.getElementById('profile-race-apply-stats-chk');
-          if (applyStatsChk && applyStatsChk.checked) {
-            if (!character.abilities) character.abilities = { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
-            if (raceObj.strBonus) character.abilities.str = (character.abilities.str || 10) + raceObj.strBonus;
-            if (raceObj.dexBonus) character.abilities.dex = (character.abilities.dex || 10) + raceObj.dexBonus;
-            if (raceObj.conBonus) character.abilities.con = (character.abilities.con || 10) + raceObj.conBonus;
-            if (raceObj.intBonus) character.abilities.int = (character.abilities.int || 10) + raceObj.intBonus;
-            if (raceObj.wisBonus) character.abilities.wis = (character.abilities.wis || 10) + raceObj.wisBonus;
-            if (raceObj.chaBonus) character.abilities.cha = (character.abilities.cha || 10) + raceObj.chaBonus;
-            applyStatsChk.checked = false; // reset after apply
-          }
+          // Racial ability modifiers are handled dynamically and automatically by RuleEngine.recalculateCharacter()
         }
       }
 

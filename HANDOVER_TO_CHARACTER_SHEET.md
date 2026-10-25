@@ -1632,3 +1632,25 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   4. **Parite ve Güvenlik:**
      - `hub.html` ve `hub_notes.js` kök dizin dosyaları `webapp/hub.html` ve `webapp/hub_notes.js` ile %100 SHA-256 eşitliğinde güncellendi.
      - Proje kuralı gereğince tavla zarı emojisi `🎲` KESİNLİKLE kullanılmadı.
+
+
+---
+
+## 58. IRKSAL STAT MODİFİKATÖRLERİNİN OTOMATİK VE DİNAMİK KURAL MOTORUNA ENTEGRASYONU (2026-10-25)
+* **İstek:**
+  - Karakter Künyesi modalındaki kafa karıştırıcı ve mükerrer artış riski taşıyan `[ ] Irk stat bonuslarını/cezalarını yetenek skorlarına yansıt` manuel onay kutusunun kaldırılması.
+  - Sistemin D&D 3.5e RAW kural mekaniğine uygun olarak; taban statları (Point Buy / 4d6 / Manuel) saf tutması, ırksal bonus ve cezaları (`type: "Racial"`) `RuleEngine.recalculateCharacter()` motoru üzerinden otomatik ve dinamik olarak nihai skora yansıtması.
+* **Uygulanan Değişiklikler:**
+  1. **Otomatik Kural Motoru Entegrasyonu (`rule_engine.js` & `webapp/rule_engine.js`):**
+     - `resolveBonusStacking` fonksiyonuna D&D 3.5e RAW `racial` bonus türü eklendi.
+     - `recalculateCharacter` fonksiyonuna `3.9. Collect Racial Ability Modifiers from canonical Race` adımı entegre edildi. Seçili ırkın (örn. Elf için `+2 DEX, -2 CON`, Dwarf için `+2 CON, -2 CHA`, Orc için `+4 STR, -2 INT, -2 WIS, -2 CHA`) tüm stat bonusları ve cezaları `abilityBuckets` havuzuna resmi `type: "Racial", source: "${race} (Irk)"` etiketiyle otomatik aktarılır.
+     - Irk değiştirildiğinde eski ırkın bonusu/cezası kendiliğinden düşer, yeni ırkınki anında devreye girer.
+  2. **Manuel Onay Kutusunun Kaldırılması & Önizleme Geliştirmesi:**
+     - Modal içindeki manuel `checkbox` kaldırılarak yerine bilgilendirici ve güven veren otomatik rozet yerleştirildi.
+     - `saveStatDistribution()` ve `applyRacialTraitsToCharacter()` içindeki statları kalıcı olarak bozan manuel eklemeler temizlendi.
+     - Modalın *"Yetenek Skorları"* önizleme kartına (`renderStatDistPreviewRow`) gerçek zamanlı ırksal etki dökümü (`T:14 +2 -1` vb.) eklendi; böylece oyuncu taban puanını, ırk katkısını ve nihai puanını aynı anda şeffaf şekilde izleyebilmektedir.
+  3. **Parite ve Güvenlik:**
+     - HUB dosyaları (`hub.html`, `webapp/hub.html`) kesinlikle değiştirilmedi.
+     - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` (%100 SHA-256: `81424124BCF3C661B6B00BE72E4234241D1DD08266EBC0BB050EE89A96080E70`).
+     - `rule_engine.js`, `webapp/rule_engine.js` (%100 SHA-256: `1511CB08E23A3872E0F23C02DC2F9463932A51B9B0F891CF092811DF1821379A`).
+     - Standart tavla zarı emoji yasağı (Rule #3: NO `🎲`) ve dummy data yasağı (Rule #5) eksiksiz uygulandı.
