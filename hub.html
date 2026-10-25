@@ -4443,8 +4443,23 @@ CRITICAL RULES:
               <span class="text-[10px] text-slate-500 italic ml-auto hidden md:inline">💡 '#' yazarak otomatik tamamlayabilirsiniz</span>
             </div>
 
-            <!-- Geniş Textarea -->
-            <textarea id="hub-modal-note-editor" oninput="HubNotes.handleEditorInput(event)" onkeydown="HubNotes.handleEditorKeydown(event)" onblur="HubNotes.saveModalNote(false)" placeholder="Notunuzu buraya yazın..." class="w-full flex-1 min-h-[280px] bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-indigo-400 font-sans leading-relaxed resize-none"></textarea>
+            <!-- Bitişik Başlık + Gövde Not Kağıdı -->
+            <div class="w-full flex-1 min-h-[300px] bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col space-y-2.5 focus-within:border-indigo-500/80 transition shadow-inner">
+              <!-- Başlık Alanı (Büyük, Kalın & Çerçevesiz) -->
+              <input type="text" id="hub-modal-note-title" placeholder="Not Başlığı (İsteğe bağlı)..."
+                class="w-full bg-transparent text-base sm:text-lg font-bold text-white placeholder-slate-600 focus:outline-none border-b border-slate-800/80 pb-2 font-sans tracking-wide"
+                oninput="HubNotes.handleEditorInput(event)"
+                onkeydown="HubNotes.handleTitleKeydown(event)"
+                onblur="HubNotes.saveModalNote(false)">
+
+              <!-- Gövde Alanı -->
+              <textarea id="hub-modal-note-editor"
+                oninput="HubNotes.handleEditorInput(event)"
+                onkeydown="HubNotes.handleEditorKeydown(event)"
+                onblur="HubNotes.saveModalNote(false)"
+                placeholder="Not detaylarını buraya yazın...&#10;&#10;İpuçları:&#10;• '#' yazarak akıllı etiket tamamlamayı kullanabilirsiniz&#10;• Kaydetmek için Ctrl+S / Ctrl+Enter"
+                class="w-full flex-1 min-h-[220px] bg-transparent text-xs sm:text-sm text-slate-200 placeholder-slate-600 focus:outline-none font-sans leading-relaxed resize-none pt-1 custom-scrollbar"></textarea>
+            </div>
           </div>
 
         </div>

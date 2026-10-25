@@ -1706,3 +1706,26 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - `character.html`, `index.html`, `webapp/character.html` ve `webapp/index.html` dosyalarına uygulandı (%100 SHA-256 eşitliği korundu).
      - HUB modülleri (`hub.html`, `webapp/hub.html`) dokunulmadan izole bırakıldı.
      - Standart tavla zarı emoji yasağına (Rule #3: NO `🎲`) ve dummy data yasağına (Rule #5) eksiksiz uyuldu.
+
+
+---
+
+## 60. NOT DEFTERİ: BİTİŞİK BAŞLIK + GÖVDE HİYERARŞİSİ VE DİNAMİK FİHRİST (2026-10-25)
+* **İstek:**
+  - Apple Notes ve Notion standartlarında, kullanıcıya başlık ve gövde ayrımını sezgisel olarak yaşatan bitişik görsel başlık alanının (`#hub-modal-note-title`) entegrasyonu.
+  - Sol listedeki ve yan paneldeki kart başlıklarının `Not 1`, `Not 2` monotonluğundan kurtarılarak gerçek not başlıkları ile dinamik fihriste dönüştürülmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Bitişik Görsel Başlık & Gövde Kartı:**
+     - Editör alanı tek bir koyu parşömen kartı içerisinde iki hiyerarşik katmana ayrıldı:
+       - **Başlık Satırı (`#hub-modal-note-title`):** Çerçevesiz, büyük ve kalın beyaz font (`text-base sm:text-lg font-bold text-white placeholder-slate-600`). Placeholder: `"Not Başlığı (İsteğe bağlı)..."`.
+       - **Gövde Textarea (`#hub-modal-note-editor`):** Başlığın hemen altında, zarif bir ayırıcı çizgi ile kesintisiz devam eden not metni alanı.
+     - **Akıcı Klavye Ergonomisi:** Başlık alanında `Enter` tuşuna basıldığında imleç otomatik olarak altındaki gövde metin kutusuna atlar; `Ctrl+S` veya `Ctrl+Enter` doğrudan notu kaydeder.
+  2. **Dinamik Kart Başlıkları (Fihrist Görünümü):**
+     - Hem Geniş Not Defteri sol listesinde hem de yan panel kayıtlı notlar listesinde, kart başlıkları artık notun başlığını (`note.title`) gösterir.
+     - Başlık girilmemişse metnin ilk anlamlı satırı başlık olarak atanır. Boş notlarda güvenli hedef adı kullanılır.
+     - Pinned notlar rozetinde de ilk olarak başlık adı gösterilir.
+  3. **Hızlı Not Entegrasyonu:**
+     - Yan panelden çok satırlı hızlı not girildiğinde ilk satır otomatik başlık, devamı gövde olarak yapılandırılır.
+  4. **Parite ve Güvenlik:**
+     - `hub.html` ve `hub_notes.js` dosyaları `webapp/` altındaki kopyalarıyla %100 SHA-256 eşitliğinde güncellendi.
+     - Tavla zarı emojisi `🎲` kesinlikle kullanılmadı.

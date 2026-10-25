@@ -471,9 +471,19 @@
       return;
     }
 
+    const lines = val.split('\n');
+    let title = '';
+    let body = val;
+
+    if (lines.length > 1 && lines[0].trim().length > 0 && lines[0].trim().length <= 60) {
+      title = lines[0].trim();
+      body = lines.slice(1).join('\n').trim();
+    }
+
     const newNote = {
       id: 'note_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-      text: val,
+      title: title,
+      text: body,
       pinned: false,
       completed: false,
       createdAt: Date.now(),
@@ -615,12 +625,15 @@
     }
 
     stripEl.classList.remove('hidden');
-    chipsEl.innerHTML = pinnedNotes.map(n => `
-      <div onclick="HubNotes.openFullNotesModal('${n.id}')" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-amber-950/60 border border-amber-500/40 text-amber-200 text-[11px] font-medium hover:border-amber-400 transition cursor-pointer max-w-full truncate" title="${escapeHtml(n.text)}">
+    chipsEl.innerHTML = pinnedNotes.map(n => {
+      const pinTitle = (n.title || '').trim() || (n.text || '').slice(0, 26);
+      return `
+      <div onclick="HubNotes.openFullNotesModal('${n.id}')" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-amber-950/60 border border-amber-500/40 text-amber-200 text-[11px] font-medium hover:border-amber-400 transition cursor-pointer max-w-full truncate" title="${escapeHtml((n.title ? n.title + ': ' : '') + n.text)}">
         <span class="text-amber-400 text-xs shrink-0">📌</span>
-        <span class="truncate">${escapeHtml(n.text.slice(0, 28))}</span>
+        <span class="truncate">${escapeHtml(pinTitle)}</span>
       </div>
-    `).join('');
+    `;
+    }).join('');
   }
 
   /**
@@ -665,6 +678,8 @@
     filtered.forEach(note => {
       const isPinned = Boolean(note.pinned);
       const isCompleted = Boolean(note.completed);
+      const titleDisplay = (note.title || '').trim();
+      const textDisplay = note.text || '';
 
       html += `
         <div onclick="HubNotes.openFullNotesModal('${note.id}')" class="p-2.5 rounded-xl border transition group cursor-pointer relative ${isPinned ? 'bg-amber-950/20 border-amber-500/40 shadow-sm' : 'bg-slate-900/80 hover:bg-slate-800/90 border-slate-800 hover:border-slate-700'}">
@@ -679,10 +694,11 @@
               </button>
             </div>
 
-            <!-- Not Metni -->
+            <!-- Not Başlık ve Metni -->
             <div class="flex-1 min-w-0">
-              <div class="text-xs text-slate-200 leading-snug line-clamp-2 break-words ${isCompleted ? 'line-through opacity-60' : ''}">
-                ${formatNoteTextHtml(note.text)}
+              ${titleDisplay ? `<div class="text-xs font-bold text-indigo-300 truncate mb-0.5">${escapeHtml(titleDisplay)}</div>` : ''}
+              <div class="text-[11px] text-slate-300 leading-snug line-clamp-2 break-words ${isCompleted ? 'line-through opacity-60' : ''}">
+                ${formatNoteTextHtml(textDisplay)}
               </div>
             </div>
 
@@ -1812,9 +1828,11 @@ KURALLAR:
     const now = new Date();
     const monthsTr = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
     const dateTag = `#${now.getDate()}_${monthsTr[now.getMonth()]}_${now.getFullYear()}`;
+    const dateTitle = `AI Oturum Günlüğü (${now.getDate()} ${monthsTr[now.getMonth()]} ${now.getFullYear()})`;
 
     const newNote = {
       id: 'note_ai_' + Date.now(),
+      title: dateTitle,
       text: `#kronik #ai_ozet ${dateTag}\n\n${_lastAiGeneratedText}`,
       pinned: true,
       completed: false,
@@ -1826,7 +1844,7 @@ KURALLAR:
     target.notesList.unshift(newNote);
     if (target.targetObj) {
       target.targetObj.notesList = target.notesList;
-      target.targetObj.notes = target.notesList.map(n => n.text).join('\n\n');
+      target.targetObj.notes = target.notesList.map(n => (n.title ? n.title + '\n\n' : '') + n.text).join('\n\n---\n\n');
     }
     saveNotesChanges(target);
 
@@ -1922,16 +1940,21 @@ KURALLAR:
       const isSelected = note.id === _selectedModalNoteId;
       const isPinned = Boolean(note.pinned);
 
-      const cardTitle = filtered.length > 1
-        ? `${targetDisplayName} • Not ${idx + 1}`
-        : targetDisplayName;
+      // Kart Başlığı: Eğer note.title varsa onu göster, yoksa metnin ilk satırı
+      let cardTitle = (note.title || '').trim();
+      let previewText = note.text || '';
+
+      if (!cardTitle) {
+        const firstLine = (note.text || '').split('\n')[0].trim();
+        cardTitle = firstLine ? firstLine : (filtered.length > 1 ? `${targetDisplayName} • Not ${idx + 1}` : targetDisplayName);
+      }
 
       html += `
         <div onclick="HubNotes.selectNoteInModal('${note.id}')" class="p-3 rounded-xl border transition cursor-pointer flex flex-col gap-1.5 ${isSelected ? 'bg-indigo-950/60 border-indigo-500 text-white shadow-md' : 'bg-slate-900/60 hover:bg-slate-800/80 border-slate-800 text-slate-300'}">
           <div class="flex items-center justify-between gap-1.5">
             <div class="flex items-center gap-1.5 min-w-0">
               ${isPinned ? '<span class="text-amber-400 text-xs shrink-0" title="Başa Sabitlendi">📌</span>' : ''}
-              <span class="text-xs font-bold truncate text-indigo-300" title="${escapeHtml(targetDisplayName)}">${escapeHtml(cardTitle)}</span>
+              <span class="text-xs font-bold truncate text-indigo-200" title="${escapeHtml(cardTitle)}">${escapeHtml(cardTitle)}</span>
             </div>
             <div class="flex items-center gap-1.5 shrink-0">
               <span class="text-[9px] text-slate-500 font-mono">${formatTimeAgo(note.updatedAt || note.createdAt)}</span>
@@ -1939,7 +1962,7 @@ KURALLAR:
             </div>
           </div>
           <div class="text-[11px] text-slate-400 line-clamp-2 break-words">
-            ${escapeHtml(note.text) || '<span class="italic text-slate-500">Boş not metni...</span>'}
+            ${escapeHtml(previewText) || '<span class="italic text-slate-500">Boş not metni...</span>'}
           </div>
         </div>
       `;
@@ -1956,6 +1979,7 @@ KURALLAR:
   }
 
   function loadSelectedNoteIntoEditor() {
+    const titleInput = document.getElementById('hub-modal-note-title');
     const editor = document.getElementById('hub-modal-note-editor');
     const pinBtn = document.getElementById('hub-modal-pin-btn');
     const deleteBtn = document.getElementById('hub-modal-delete-btn');
@@ -1965,6 +1989,7 @@ KURALLAR:
 
     const target = getActiveNotesTarget();
     if (!target) {
+      if (titleInput) { titleInput.value = ''; titleInput.disabled = true; }
       editor.value = '';
       editor.placeholder = 'Düzenlemek için sol listeden bir not seçin veya yeni not oluşturun.';
       editor.disabled = true;
@@ -1977,6 +2002,7 @@ KURALLAR:
 
     if (target.notesList.length === 0) {
       _selectedModalNoteId = null;
+      if (titleInput) { titleInput.value = ''; titleInput.disabled = true; }
       editor.value = '';
       editor.placeholder = 'Bu defterde henüz not yok. "Yeni Not Oluştur" butonuna tıklayarak ilk notunuzu ekleyebilirsiniz.';
       editor.disabled = true;
@@ -1993,6 +2019,10 @@ KURALLAR:
       _selectedModalNoteId = note.id;
     }
 
+    if (titleInput) {
+      titleInput.disabled = false;
+      titleInput.value = note.title || '';
+    }
     editor.disabled = false;
     editor.value = note.text || '';
     if (dateBadge) {
@@ -2016,10 +2046,13 @@ KURALLAR:
   let _editorDebounceTimer = null;
 
   function handleEditorInput(event) {
+    const titleInput = document.getElementById('hub-modal-note-title');
     const editor = document.getElementById('hub-modal-note-editor');
     if (!editor || !_selectedModalNoteId) return;
 
-    checkAutocomplete(editor);
+    if (document.activeElement === editor) {
+      checkAutocomplete(editor);
+    }
 
     const target = getActiveNotesTarget();
     if (!target) return;
@@ -2027,8 +2060,11 @@ KURALLAR:
     const note = target.notesList.find(n => n.id === _selectedModalNoteId);
     if (!note) return;
 
-    note.text = editor.value;
-    note.tags = extractTags(editor.value);
+    if (titleInput) {
+      note.title = (titleInput.value || '').trim();
+    }
+    note.text = editor.value || '';
+    note.tags = extractTags((note.title || '') + ' ' + (note.text || ''));
     note.updatedAt = Date.now();
 
     if (target.targetObj) {
@@ -2039,6 +2075,22 @@ KURALLAR:
     _editorDebounceTimer = setTimeout(() => {
       saveModalNote(false);
     }, 1000);
+  }
+
+  function handleTitleKeydown(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const editor = document.getElementById('hub-modal-note-editor');
+      if (editor) {
+        editor.focus();
+        editor.selectionStart = editor.selectionEnd = 0;
+      }
+      return;
+    }
+    if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'Enter')) {
+      e.preventDefault();
+      saveModalNote(true);
+    }
   }
 
   function handleEditorKeydown(e) {
@@ -2077,6 +2129,7 @@ KURALLAR:
    */
   function saveModalNote(showToast = true) {
     clearTimeout(_editorDebounceTimer);
+    const titleInput = document.getElementById('hub-modal-note-title');
     const editor = document.getElementById('hub-modal-note-editor');
     if (!editor) return;
 
@@ -2093,13 +2146,16 @@ KURALLAR:
       }
     }
 
-    note.text = editor.value;
-    note.tags = extractTags(editor.value);
+    if (titleInput) {
+      note.title = (titleInput.value || '').trim();
+    }
+    note.text = editor.value || '';
+    note.tags = extractTags((note.title || '') + ' ' + (note.text || ''));
     note.updatedAt = Date.now();
 
     if (target.targetObj) {
       target.targetObj.notesList = target.notesList;
-      target.targetObj.notes = target.notesList.map(n => n.text).join('\n\n');
+      target.targetObj.notes = target.notesList.map(n => (n.title ? n.title + '\n\n' : '') + n.text).join('\n\n---\n\n');
     }
 
     saveNotesChanges(target);
@@ -2180,11 +2236,10 @@ KURALLAR:
       return;
     }
 
-    const defaultText = '';
-
     const newNote = {
       id: 'note_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-      text: defaultText,
+      title: '',
+      text: '',
       pinned: false,
       completed: false,
       createdAt: Date.now(),
@@ -2195,7 +2250,7 @@ KURALLAR:
     target.notesList.unshift(newNote);
     if (target.targetObj) {
       target.targetObj.notesList = target.notesList;
-      target.targetObj.notes = target.notesList.map(n => n.text).join('\n\n');
+      target.targetObj.notes = target.notesList.map(n => (n.title ? n.title + '\n\n' : '') + n.text).join('\n\n---\n\n');
     }
     saveNotesChanges(target);
 
@@ -2204,10 +2259,9 @@ KURALLAR:
     renderFullNotesModalList();
     loadSelectedNoteIntoEditor();
 
-    const editor = document.getElementById('hub-modal-note-editor');
-    if (editor) {
-      editor.focus();
-      editor.selectionStart = editor.selectionEnd = 0;
+    const titleInput = document.getElementById('hub-modal-note-title');
+    if (titleInput) {
+      titleInput.focus();
     }
   }
 
@@ -2252,6 +2306,7 @@ KURALLAR:
     selectNoteInModal,
     handleEditorInput,
     handleEditorKeydown,
+    handleTitleKeydown,
     handleQuickInput,
     handleQuickKeydown,
     saveModalNote,
