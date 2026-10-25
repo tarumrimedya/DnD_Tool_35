@@ -1193,3 +1193,13 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - `bundled_data.js`, `webapp/bundled_data.js` (%100 SHA-256: `5D404B9E...`).
      - `rule_master.js`, `webapp/rule_master.js` (%100 SHA-256: `AC14C883...`).
      - Sıfır dummy data ve sıfır standart tavla zarı emoji kuralı tavizsiz korundu.
+
+
+---
+
+## 54. HUB KARTLARINDA CAN (HP) ALANININ GERİ ALINMASI (2026-10-25)
+* **İstek:** 0.66 genişlik denemesinin geri alınması ("değişikliği geri al").
+* **Uygulanan Değişiklikler:**
+  - Can (HP) bloğu önceki tam genişlikli (`w-full`) ve simetrik yapısına geri getirildi.
+  - `hub.html` ve `webapp/hub.html` dosyaları %100 SHA-256 eşitliğinde güncellendi.
+  - Sıfır 🎲 tavla zarı kuralı korundu.

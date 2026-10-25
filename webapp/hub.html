@@ -1526,34 +1526,34 @@
               </div>
             </div>
 
-            <!-- CAN (HP) VE GEÇİCİ CAN BARI (0.66 Genişlik ve Orantılı Yükseklik) -->
-            <div class="w-[66%] mx-auto bg-slate-900/90 p-1.5 sm:p-2 rounded-xl border border-slate-800/90 space-y-1 shadow-inner">
-              <div class="flex items-center justify-between text-xs font-mono">
-                <span class="text-slate-300 font-bold flex items-center gap-1">
-                  <span class="text-xs">💚</span> <span class="text-[11px] sm:text-xs">Can (HP)</span>
+            <!-- CAN (HP) VE GEÇİCİ CAN BARI -->
+            <div class="bg-slate-900/90 p-2 sm:p-2.5 rounded-xl border border-slate-800/90 space-y-1.5 shadow-inner">
+              <div class="flex items-center justify-between text-xs sm:text-sm font-mono">
+                <span class="text-slate-300 font-bold flex items-center gap-1.5">
+                  <span class="text-sm">💚</span> <span>Can (HP)</span>
                 </span>
-                <div class="flex items-center gap-1.5">
-                  <span class="text-sm sm:text-base font-black text-white font-mono">${c.currentHp}</span>
+                <div class="flex items-center gap-2">
+                  <span class="text-base sm:text-lg font-black text-white font-mono">${c.currentHp}</span>
                   <span class="text-slate-500 font-bold">/</span>
-                  <span class="text-xs sm:text-sm font-bold text-slate-400 font-mono">${c.maxHp}</span>
-                  ${c.tempHp ? `<span class="text-[10px] font-bold text-cyan-300 bg-cyan-950/90 border border-cyan-700 px-1 py-0.2 rounded shadow-sm">+${c.tempHp}</span>` : ''}
+                  <span class="text-sm sm:text-base font-bold text-slate-400 font-mono">${c.maxHp}</span>
+                  ${c.tempHp ? `<span class="text-xs font-bold text-cyan-300 bg-cyan-950/90 border border-cyan-700 px-1.5 py-0.5 rounded-lg shadow-sm">+${c.tempHp} Geçici</span>` : ''}
                 </div>
               </div>
 
               <!-- HP Bar -->
-              <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden flex shadow-inner">
+              <div class="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden flex shadow-inner">
                 <div class="${hpColor} h-full transition-all duration-300 rounded-full" style="width: ${hpPct}%;"></div>
               </div>
 
-              <!-- Özel Hasar / Şifa Kontrolü (Tam Simetrik Düzen) -->
+              <!-- Özel Hasar / Şifa Kontrolü (Hücre Sınırına Kadar Genişleyen Tam Simetrik Düzen) -->
               <div class="pt-0.5" onclick="event.stopPropagation()">
-                <div class="flex items-center gap-1 bg-slate-950/90 p-0.5 sm:p-1 rounded-xl border border-slate-800/90 shadow-sm w-full">
-                  <button onclick="applyCustomHp('${c.id}', -1)" title="Hasar Ver (Varsayılan 5 veya yazılan miktar)" class="flex-1 h-7 rounded-lg bg-rose-950/90 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800 transition font-mono font-black text-xs cursor-pointer flex items-center justify-center gap-0.5 active:scale-95 shadow-sm">
+                <div class="flex items-center gap-1.5 bg-slate-950/90 p-1 rounded-xl border border-slate-800/90 shadow-sm w-full">
+                  <button onclick="applyCustomHp('${c.id}', -1)" title="Hasar Ver (Varsayılan 5 veya yazılan miktar)" class="flex-1 h-8 rounded-lg bg-rose-950/90 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800 transition font-mono font-black text-xs cursor-pointer flex items-center justify-center gap-1 active:scale-95 shadow-sm">
                     <span>⚔️</span>
                     <span>-</span>
                   </button>
-                  <input type="number" id="custom-hp-input-${c.id}" min="1" value="5" placeholder="5" class="w-11 sm:w-12 h-7 text-center bg-slate-900 text-white font-mono text-xs font-black rounded-lg border border-slate-700/80 focus:border-amber-400 focus:outline-none p-0 shrink-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" onkeydown="if(event.key==='Enter') applyCustomHp('${c.id}', -1)">
-                  <button onclick="applyCustomHp('${c.id}', 1)" title="Can / Şifa Ver (Varsayılan 5 veya yazılan miktar)" class="flex-1 h-7 rounded-lg bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 hover:text-white border border-emerald-800 transition font-mono font-black text-xs cursor-pointer flex items-center justify-center gap-0.5 active:scale-95 shadow-sm">
+                  <input type="number" id="custom-hp-input-${c.id}" min="1" value="5" placeholder="5" class="w-14 sm:w-16 h-8 text-center bg-slate-900 text-white font-mono text-xs sm:text-sm font-black rounded-lg border border-slate-700/80 focus:border-amber-400 focus:outline-none p-0 shrink-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" onkeydown="if(event.key==='Enter') applyCustomHp('${c.id}', -1)">
+                  <button onclick="applyCustomHp('${c.id}', 1)" title="Can / Şifa Ver (Varsayılan 5 veya yazılan miktar)" class="flex-1 h-8 rounded-lg bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 hover:text-white border border-emerald-800 transition font-mono font-black text-xs cursor-pointer flex items-center justify-center gap-1 active:scale-95 shadow-sm">
                     <span>+</span>
                     <span>💚</span>
                   </button>
