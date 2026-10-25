@@ -1,12 +1,14 @@
 {
   "version": 2,
+  "redirects": [
+    { "source": "/", "destination": "/hub", "permanent": false }
+  ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/login", "destination": "/webapp/login.html" },
     { "source": "/hub", "destination": "/webapp/hub.html" },
     { "source": "/character", "destination": "/webapp/character.html" },
     { "source": "/index", "destination": "/webapp/index.html" },
-    { "source": "/", "destination": "/webapp/login.html" },
     { "source": "/((?!api/).*)", "destination": "/webapp/$1" }
   ]
 }

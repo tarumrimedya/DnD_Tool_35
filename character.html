@@ -7416,6 +7416,15 @@
     });
 
     window.addEventListener('DOMContentLoaded', async () => {
+      // Eğer kök (/) adresine ?id olmadan gelinmişse (login sonrası yönlendirme veya doğrudan giriş), derhal /hub'a yönlendir:
+      const _urlParams = new URLSearchParams(window.location.search);
+      const _hasCharId = _urlParams.get('id');
+      const _isRootPath = window.location.pathname === '/' || window.location.pathname === '';
+      if (_isRootPath && !_hasCharId) {
+        window.location.replace('/hub' + window.location.hash);
+        return;
+      }
+
       if (window.SupabaseAuth) {
         const authUser = await window.SupabaseAuth.requireAuth();
         if (!authUser) return; // Oturum yoksa login'e yönlendirildi, sayfa yüklemesini durdur

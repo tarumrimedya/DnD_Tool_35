@@ -2434,8 +2434,8 @@
       // Karakterin tam JSON nesnesini dnd35_character alanına aktar
       localStorage.setItem('dnd35_character', JSON.stringify(c.fullData));
 
-      // Ana karakter sayfasına (index.html) yönlendir
-      window.location.href = '/?id=' + encodeURIComponent(charId);
+      // Ana karakter sayfasına (/character) yönlendir
+      window.location.href = '/character?id=' + encodeURIComponent(charId);
     }
 
     // ==========================================
