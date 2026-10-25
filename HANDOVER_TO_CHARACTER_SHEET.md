@@ -851,3 +851,26 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   3. **Parite ve Kural Bütünlüğü:**
      - `hub.html` ve `webapp/hub.html` %100 SHA-256 paritesindedir.
      - Kesinlikle hiçbir standart tavla zarı emoji kullanılmamıştır.
+
+---
+
+## 43. UZUN VE KISA DİNLENME ANLIK CAN YENİLENMESİ SENKRONİZASYON DÜZELTMESİ (2026-10-25)
+* **Kullanıcı Bildirimi:**
+  - Uzun dinlenmeye tıklanıp "Tam Can" seçildiğinde bulut senkron simgesi yanıp sönüyor ancak ekrandaki HP barı ve can değerleri artmıyor; yalnızca sayfa yenilendiğinde (F5) canın iyileştiği görülüyordu.
+* **Kök Neden Analizi (Root Causes):**
+  1. `executeLongRest()` ve `executeShortRest()` içinde `saveStateToStorage(true)` sonrasında `renderAll()` çağrılmadan önce korumasız çağrılan `renderSpellSlots()` ve `renderManeuvers()` yardımcı fonksiyonları:
+     - `character.skills` alanı bir Obje (`{}`) olduğunda `(character.skills || []).find` çağrısı `TypeError` fırlatıyor ve script icrasını durduruyordu.
+     - Büyü yuvaları kaynağında (`compact-slots-source-tabs`) `sources[0].key` kontrolü korumasız kaldığı için istisna durumunda `renderAll()` ve sonuç bildirimi toast'ına asla ulaşılamıyordu.
+  2. HP değişikliği sonrasında `renderHUD()` doğrudan ve anlık olarak çağrılmadığı için ara hesaplamalarda oluşabilecek herhangi bir gecikme veya istisna ekrandaki HP sayacını dondurabiliyordu.
+  3. `character.hp._lastPlayerChangeTs` zaman damgası DM zaman damgasının altında kalma riski taşıdığında Hub senkronizasyonu oyuncunun iyileşme aksiyonunu ezebiliyordu.
+* **Uygulanan Düzeltmeler:**
+  1. **Anlık ve Senkronize HUD Güncellemesi (0ms):**
+     - Hem `executeLongRest()` hem de `executeShortRest()` fonksiyonlarında HP hesaplandığı anda ilk satırda doğrudan `renderHUD()` çağrıldı (`try...catch` korumalı). Ekrandaki `#hp-current-display`, `#hp-max-display` ve geçici/nonlethal etiketleri 0 milisaniyede anında yenilenir.
+  2. **Savunmacı ve Hataya Dayanıklı İcra Zinciri:**
+     - `updateRoundDisplays()`, `saveStateToStorage(true)`, `renderManeuvers()`, `renderSpellSlots()` ve `renderAll()` bağımsız `try...catch` bloklarına alındı; hiçbir alt modül hatası ana ekranın güncellenmesini veya dinlenmenin tamamlanmasını engelleyemez.
+  3. **Beceriler & Kural Motoru Güvenliği:**
+     - `rule_engine.js:1722` ve `character.html:20588`'de `character.skills`'in Dizi veya Obje olması durumları `Array.isArray(character.skills) ? character.skills : Object.values(character.skills || {})` ile korumaya alındı.
+     - `renderSpellSlots()` grid kaynağı boş/tanımsız durumlarına karşı güvenli hale getirildi.
+  4. **Parite ve Kural Bütünlüğü:**
+     - `character.html`, `index.html`, `rule_engine.js` ve bunların `webapp/` altındaki kopyaları %100 SHA-256 birebir eşitliğinde güncellendi.
+     - Kesinlikle hiçbir tavla zarı emoji (`🎲`) kullanılmadı.

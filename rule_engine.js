@@ -1719,7 +1719,8 @@ const RuleEngine = {
     }
 
     // D&D 3.5e RAW (PHB p. 84, Tumble): 5+ ranks in Tumble increases Fighting Defensively dodge bonus to +3 and Total Defense to +6
-    const tumbleSkill = (character.skills || []).find(s => s && s.name && s.name.toLowerCase() === 'tumble');
+    const skillList = Array.isArray(character.skills) ? character.skills : Object.values(character.skills || {});
+    const tumbleSkill = skillList.find(s => s && s.name && s.name.toLowerCase() === 'tumble');
     const tumbleRanks = tumbleSkill ? (Number(tumbleSkill.ranks) || 0) : 0;
     const fightingDefDodge = tumbleRanks >= 5 ? 3 : 2;
     const totalDefDodge = tumbleRanks >= 5 ? 6 : 4;

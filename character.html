@@ -8760,6 +8760,11 @@
         }
       }
 
+      if (!Array.isArray(character.skills)) {
+        character.skills = Object.values(character.skills || {});
+        if (typeof ensureAllSkills === 'function') ensureAllSkills(character);
+      }
+
       // Recalculate RAW D&D 3.5e character state, equipment bonuses, and active buffs
       if (typeof RuleEngine !== 'undefined' && RuleEngine.recalculateCharacter) {
         try {
@@ -20585,7 +20590,8 @@
       const td = character.tactical.totalDefense || false;
       const sb = character.tactical.shieldBlockActive || false;
 
-      const tumbleSkill = (character.skills || []).find(s => s && s.name && s.name.toLowerCase() === 'tumble');
+      const skillList = Array.isArray(character.skills) ? character.skills : Object.values(character.skills || {});
+      const tumbleSkill = skillList.find(s => s && s.name && s.name.toLowerCase() === 'tumble');
       const tumbleRanks = tumbleSkill ? (Number(tumbleSkill.ranks) || 0) : 0;
       const fdDodge = tumbleRanks >= 5 ? 3 : 2;
       const tdDodge = tumbleRanks >= 5 ? 6 : 4;
@@ -25637,9 +25643,12 @@
       const tabsContainer = document.getElementById('compact-slots-source-tabs');
 
       // Determine active source for compact grid
-      let activeKey = window.currentCompactSlotsSource || sources[0].key;
-      let activeSource = sources.find(s => s.key === activeKey) || sources[0];
-      window.currentCompactSlotsSource = activeSource.key;
+      let activeSource = (sources.length > 0)
+        ? (sources.find(s => s.key === window.currentCompactSlotsSource) || sources[0])
+        : null;
+      let activeKey = activeSource ? activeSource.key : 'spontaneous';
+      window.currentCompactSlotsSource = activeKey;
+      if (!activeSource) return;
 
       // Update tabs (always show all sources so user can switch between Spontaneous, Prepared, and Divine)
       if (tabsContainer) {
@@ -35172,7 +35181,12 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       }
       character.hp.temp = 0;
       character.hp.nonlethal = 0;
-      character.hp._lastPlayerChangeTs = Date.now();
+      character.hp._lastPlayerChangeTs = Math.max(Date.now(), (Number(character.hp?._lastDmUpdateTs) || 0) + 100);
+
+      // 1. Immediately update HUD so HP on screen updates in 0ms synchronously
+      if (typeof renderHUD === 'function') {
+        try { renderHUD(); } catch (e) { console.warn('renderHUD immediate rest error:', e); }
+      }
 
       // 2. Spell Slots (Spontaneous Arcane, Prepared Wizard, Divine)
       let refreshedSpells = 0;
@@ -35298,11 +35312,11 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       if (Array.isArray(character.feats)) character.feats.forEach(resetFeatCharges);
       if (Array.isArray(character.specialAbilities)) character.specialAbilities.forEach(resetFeatCharges);
 
-      updateRoundDisplays();
-      saveStateToStorage(true);
-      if (typeof renderManeuvers === "function") renderManeuvers();
-      if (typeof renderSpellSlots === "function") renderSpellSlots();
-      renderAll();
+      try { updateRoundDisplays(); } catch (e) { console.warn('updateRoundDisplays error in rest:', e); }
+      try { saveStateToStorage(true); } catch (e) { console.warn('saveStateToStorage error in rest:', e); }
+      try { if (typeof renderManeuvers === "function") renderManeuvers(); } catch (e) { console.warn('renderManeuvers error in rest:', e); }
+      try { if (typeof renderSpellSlots === "function") renderSpellSlots(); } catch (e) { console.warn('renderSpellSlots error in rest:', e); }
+      try { renderAll(); } catch (e) { console.warn('renderAll error in rest:', e); }
 
       const details = [];
       details.push(isFullHeal ? `Can Full (${character.hp.current}/${maxHp})` : `+${hpGain} HP Doğal İyileşme (${character.hp.current}/${maxHp})`);
@@ -35430,6 +35444,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         if (currentNonlethal > 0) {
           nonlethalHealed = Math.min(currentNonlethal, charLvl);
           character.hp.nonlethal = currentNonlethal - nonlethalHealed;
+          character.hp._lastPlayerChangeTs = Math.max(Date.now(), (Number(character.hp?._lastDmUpdateTs) || 0) + 100);
         }
 
         // Exhausted -> Fatigued
@@ -35444,10 +35459,14 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         }
       }
 
-      updateRoundDisplays();
-      saveStateToStorage(true);
-      if (typeof renderManeuvers === "function") renderManeuvers();
-      renderAll();
+      if (typeof renderHUD === 'function') {
+        try { renderHUD(); } catch (e) { console.warn('renderHUD immediate short rest error:', e); }
+      }
+
+      try { updateRoundDisplays(); } catch (e) { console.warn('updateRoundDisplays error in short rest:', e); }
+      try { saveStateToStorage(true); } catch (e) { console.warn('saveStateToStorage error in short rest:', e); }
+      try { if (typeof renderManeuvers === "function") renderManeuvers(); } catch (e) { console.warn('renderManeuvers error in short rest:', e); }
+      try { renderAll(); } catch (e) { console.warn('renderAll error in short rest:', e); }
 
       const summaryParts = [];
       const totalReadyShort = (character.tomeOfBattle?.readiedManeuvers || []).filter(m => !m.expended).length;
