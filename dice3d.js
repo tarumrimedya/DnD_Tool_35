@@ -525,7 +525,7 @@ class Dice3DController {
     return geo;
   }
 
-  // Extract unique coplanar faces (centers and outward unit normals)
+  // Extract unique coplanar faces (exact polygon centroids, outward unit normals, and upright orientations)
   extractFaces(geo) {
     if (geo.userData && geo.userData.customFaces && geo.userData.customFaces.length > 0) {
       return geo.userData.customFaces;
@@ -533,7 +533,7 @@ class Dice3DController {
 
     const nonIndexed = geo.index ? geo.toNonIndexed() : geo.clone();
     const pos = nonIndexed.attributes.position.array;
-    const faces = [];
+    const faceGroups = [];
     const triCount = pos.length / 9;
 
     for (let i = 0; i < triCount; i++) {
@@ -542,23 +542,78 @@ class Dice3DController {
       const v1 = new THREE.Vector3(pos[i9 + 3], pos[i9 + 4], pos[i9 + 5]);
       const v2 = new THREE.Vector3(pos[i9 + 6], pos[i9 + 7], pos[i9 + 8]);
 
-      const center = new THREE.Vector3().add(v0).add(v1).add(v2).divideScalar(3);
       const edge1 = new THREE.Vector3().subVectors(v1, v0);
       const edge2 = new THREE.Vector3().subVectors(v2, v0);
-      const normal = new THREE.Vector3().crossVectors(edge1, edge2).normalize();
+      let normal = new THREE.Vector3().crossVectors(edge1, edge2).normalize();
 
-      let found = false;
-      for (const f of faces) {
-        if (f.normal.dot(normal) > 0.92) {
-          f.center.add(center).multiplyScalar(0.5);
-          found = true;
-          break;
+      const triCenter = new THREE.Vector3().add(v0).add(v1).add(v2).divideScalar(3);
+      if (normal.dot(triCenter) < 0) {
+        normal.negate();
+      }
+
+      let group = faceGroups.find(g => g.normal.dot(normal) > 0.95);
+      if (!group) {
+        group = {
+          normal: normal.clone(),
+          vertices: []
+        };
+        faceGroups.push(group);
+      }
+      [v0, v1, v2].forEach(v => {
+        if (!group.vertices.some(gv => gv.distanceTo(v) < 0.005)) {
+          group.vertices.push(v.clone());
+        }
+      });
+    }
+
+    const faces = faceGroups.map(g => {
+      // Calculate true geometric centroid from unique polygon vertices (fixes d12 pentagon skew)
+      const center = new THREE.Vector3();
+      g.vertices.forEach(v => center.add(v));
+      if (g.vertices.length > 0) {
+        center.divideScalar(g.vertices.length);
+      }
+
+      // Outward unit normal
+      let normal = center.clone().normalize();
+      if (normal.dot(g.normal) < 0) {
+        normal.negate();
+      }
+
+      // Default reference up vector
+      let refUp = new THREE.Vector3(0, 1, 0);
+      if (Math.abs(normal.dot(refUp)) > 0.92) {
+        refUp = new THREE.Vector3(0, 0, 1);
+      }
+      const projUp = refUp.clone().sub(normal.clone().multiplyScalar(normal.dot(refUp))).normalize();
+
+      let topVec = projUp;
+
+      // For pentagons (d12, 5 vertices): orient towards the apex vertex closest to projUp
+      // so the numeral sits centered and upright with a flat horizontal base at the bottom
+      if (g.vertices.length === 5) {
+        let bestVec = null;
+        let maxDot = -Infinity;
+        g.vertices.forEach(v => {
+          const rad = new THREE.Vector3().subVectors(v, center).normalize();
+          const dot = rad.dot(projUp);
+          if (dot > maxDot) {
+            maxDot = dot;
+            bestVec = rad;
+          }
+        });
+        if (bestVec && maxDot > 0.25) {
+          topVec = bestVec;
         }
       }
-      if (!found) {
-        faces.push({ center, normal });
-      }
-    }
+
+      return {
+        center,
+        normal,
+        topVec
+      };
+    });
+
     return faces;
   }
 

@@ -1765,3 +1765,25 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - Değişiklik `character.html`, `index.html`, `webapp/character.html` ve `webapp/index.html` dosyalarına uygulandı (%100 SHA-256 eşitliği sağlandı: `de4ea7fd3db67f5836a4aa4966722792fac6e8a1c5a7bdbea965229fc5ada2cb`).
      - `hub.html` ve `dice3d.js` dosyaları güvenle izole tutuldu.
      - Tavla zarı emojisi (`🎲`) yasağı ve dummy data yasağına titizlikle uyuldu.
+
+
+---
+
+## 63. 3D D12 (ONİKİYÜZLÜ) ZAR RAKAM ORTALAMA VE APEX YÖNLENDİRME DÜZELTMESİ (2026-10-25)
+* **İstek:**
+  - 3D zar motorunda (`dice3d.js`) d12 (dodecahedron) zarının yüzeylerindeki rakamların pentagon (beşgen) yüzün tam ortasında olmaması, kenara/köşeye kayık durması sorununun çözülmesi.
+* **Kök Neden Analizi (Root Cause Analysis):**
+  - Three.js `DodecahedronGeometry` içinde her bir beşgen yüzey 3 adet üçgenden (`triangles`) meydana gelmektedir.
+  - `extractFaces(geo)` metodu aynı düzlemdeki üçgenleri birleştirirken `f.center.add(center).multiplyScalar(0.5)` şeklinde ardışık ağırlık ortalaması almaktaydı.
+  - 3 üçgenli bir beşgende bu işlem 1. üçgene %25, 2. üçgene %25, 3. üçgene %50 ağırlık vererek ve ortak fan merkez köşesini aşırı ağırlıklandırarak beşgen ağırlık merkezini gerçek geometrik merkezden yaklaşık %15-20 oranında saptırmaktaydı.
+* **Uygulanan Değişiklikler:**
+  1. **Geometrik Poligon Ağırlık Merkezi (Polygon Centroid) Hesabı (`dice3d.js`):**
+     - `extractFaces(geo)` metodu coplanar yüzeyleri gruplarken o yüzeye ait benzersiz köşeleri (`group.vertices`) toplamaktadır.
+     - Yüzey merkezi artık üçgenlerin dengesiz ortalaması yerine beşgenin 5 benzersiz köşesinin aritmetik ortalaması (`center = sum(vertices) / vertices.length`) olarak hesaplanmaktadır.
+     - Dışa bakan birim normal vektör doğrudan merkezin yönünden (`center.clone().normalize()`) türetilerek sıfır sapma ve tam diklik garanti altına alınmıştır.
+  2. **d12 Beşgen Apex & Taban Yönlendirmesi (`topVec`):**
+     - Beşgen (d12, 5 köşe) yüzeylerde üst tepe noktası (`apex`), global yukarı projeksiyonuna (`projUp`) en yakın olan köşe seçilerek `topVec` belirlenmiştir.
+     - Böylece d12 üzerindeki rakamlar klasik masaüstü RPG zarlarında olduğu gibi yatay düz taban üzerinde dik durmakta ve üst köşeye doğru simetrik biçimde tam merkezde yer almaktadır.
+  3. **Parite ve Güvenlik:**
+     - Değişiklik `dice3d.js` ve `webapp/dice3d.js` dosyalarına uygulandı (%100 SHA-256 eşitliği sağlandı: `3C7BC4143D7E15BE33911EFE6614A9CB4141A6AA56D87B0B93E601951F21A008`).
+     - Tavla zarı emojisi (`🎲`) kesinlikle kullanılmadı.
