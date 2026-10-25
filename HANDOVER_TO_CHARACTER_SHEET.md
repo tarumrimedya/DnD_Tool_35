@@ -1143,3 +1143,21 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   4. **Parite ve Devir Teslim:**
      - `hub.html` ve `webapp/hub.html` %100 SHA-256 eşitliğinde tutuldu (`True`).
      - Sıfır 🎲 tavla zarı kuralı korundu.
+
+
+---
+
+## 53. HUB KARAKTER KARTLARINDA CAN (HP) ALANI GENİŞLİĞİNİN 0.66 ORANINDA MERKEZİ HİZALANMASI VE ORANTILI YÜKSEKLİK (2026-10-25)
+* **İstek:**
+  - Can (HP) bloğunun (`bg-slate-900/90`) genişliğinin 0.66 ile çarpılması (yaklaşık 2/3 genişlik) ve bu yeni kompakt genişliğe göre dikey/iç eleman boyutlarının optimize edilmesi.
+* **Uygulanan Değişiklikler:**
+  1. **0.66 Genişlik ve Ortalanmış Yerleşim (`hub.html` & `webapp/hub.html`):**
+     - Can (HP) kapsayıcısına `w-[66%] mx-auto` uygulandı.
+     - İç padding ve dikey aralıklar `p-1.5 sm:p-2 space-y-1` olarak optimize edildi.
+  2. **Orantılı İç Yükseklik ve Buton Ölçeklemesi:**
+     - HP progress bar yüksekliği `h-2` yapıldı.
+     - Simetrik miktar kontrol alanı butonları `h-7`, sayı giriş kutusu `w-11 sm:w-12 h-7` seviyesinde orantılı olarak yeniden boyutlandırıldı.
+     - Başlık fontları `text-xs font-mono` ve sayılar `text-sm sm:text-base` ile dengelendi.
+  3. **Parite ve Devir Teslim:**
+     - `hub.html` ve `webapp/hub.html` %100 SHA-256 eşitliğinde güncellendi (`True`).
+     - Sıfır 🎲 tavla zarı kuralı korundu.
