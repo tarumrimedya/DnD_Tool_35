@@ -1729,3 +1729,39 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   4. **Parite ve Güvenlik:**
      - `hub.html` ve `hub_notes.js` dosyaları `webapp/` altındaki kopyalarıyla %100 SHA-256 eşitliğinde güncellendi.
      - Tavla zarı emojisi `🎲` kesinlikle kullanılmadı.
+
+
+---
+
+## 61. 3D ZAR YÜZEY DOKUSU: RAKAMLARIN ETRAFINDAKİ SİLİK HALKANIN KALDIRILMASI (2026-10-25)
+* **İstek:**
+  - 3D çokyüzlü zarların (d20, d12, d10, d8, d6, d4, d100) yüzeylerinde, rakamların etrafında yer alan silik kesikli halkanın (arcane ring / facet frame) kaldırılması ve yüzeyin pürüzsüz koyu obsidyen kristal görünümüne kavuşturulması.
+* **Uygulanan Değişiklikler:**
+  1. **Doku Tuvali Çizim Optimizasyonu (`dice3d.js`):**
+     - `createNumberTexture()` fonksiyonu içinde yer alan ve `ctx.arc(cx, cy, 185, 0, Math.PI * 2)` ile `ctx.setLineDash([8, 8])` kesikli çember çizen kod bloğu tamamen kaldırıldı.
+     - 6 ve 9 rakamlarını ayıran alt nokta (`hasDotUnderline`) hariç tüm yapay halkalar temizlendi.
+     - Altın yaldızlı serif Roma rakamları (Cinzel style) koyu obsidyen yüzey üzerinde hiçbir daire izi olmadan pürüzsüz ve berrak hale getirildi.
+  2. **Önbellek (Cache Busting) ve Evrensel Parite:**
+     - `dice3d.js?v=20261025_2338` versiyon query parametresi `hub.html`, `index.html` ve `character.html` sayfalarında güncellendi.
+     - `dice3d.js`, `hub.html`, `index.html`, `character.html` kök dosyaları `webapp/` altındaki kopyalarıyla %100 SHA-256 eşitliğinde güncellendi.
+     - Tavla zarı emojisi `🎲` kesinlikle kullanılmadı.
+
+
+---
+
+## 62. SEVİYE ATLAMA SİHİRBAZI: RULE MASTER & SPOTLIGHT BİRLEŞİK SINIF SEÇİCİ (2026-10-25)
+* **İstek:**
+  - Seviye Atlama Sihirbazı (Level Up Wizard) penceresindeki üstte duran akordeon *"Rule Master: Sınıf & Prestij Arama Konsolu"* ile alttaki klasik HTML `<select id="lvlup-class-select">` kutusunun tek, modern bir **Spotlight & Rule Master AI Sınıf Seçici** altında birleştirilmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Arayüz ve Mantık Sadeleştirmesi (Single Unified Component):**
+     - Üstteki büyük akordeon kartı ve altındaki klasik HTML select kutusu kaldırılarak, Karakter Künyesi modalı Spotlight tasarım diliyle tam uyumlu modern bir tetikleyici kart (`#lvlup-class-dropdown-trigger`) ve açılır katman (`#lvlup-class-spotlight-dropdown`) oluşturuldu.
+     - Tetikleyici kart seçili olan sınıfı ikonu (`🛡️`, `👑`, `⚙️`), sınıf türü rozeti, Hit Die (`d10 HD`), BAB ilerleme hızı (`Tam BAB +1.0`), iyi kurtarma zarları (`İyi: Fort`) ve beceri puanı oranıyla (`2+INT Beceri`) zengin biçimde gösterir.
+  2. **Gömülü Spotlight ve Rule Master AI Araması:**
+     - Açılır katmanda hızlı arama kutusu (`#lvlup-class-search-input`), filtre çipleri (`Tümü`, `🛡️ Temel`, `👑 Prestij`, `⚙️ Özel`), prestij önkoşul doğrulayıcı (`checkClassPrerequisites`: `✅ Karşılanıyor` / `⚠️ Eksik Koşul`), seviye gelişim tablosu inceleme butonu (`📜 Gelişimi Göster`) ve `fetchClassFromRuleMasterAi` AI arama motoru eksiksiz korundu.
+     - Listede bulunmayan bir sınıf ismi yazılıp Enter'a basıldığında Rule Master AI devreye girerek D&D 3.5e RAW kural kitaplarından sınıf parametrelerini çekip seçer.
+  3. **Geriye Dönük Tam Motor Uyumluluğu:**
+     - `<select id="lvlup-class-select">` arka planda gizli (`hidden`) olarak korunarak `onLevelUpClassChange()`, HP can zarı atışları, BAB ve kurtarma zarı hesaplamaları ile kaydetme motorunun sıfır riskle çalışması sağlandı.
+  4. **Parite ve Güvenlik:**
+     - Değişiklik `character.html`, `index.html`, `webapp/character.html` ve `webapp/index.html` dosyalarına uygulandı (%100 SHA-256 eşitliği sağlandı: `de4ea7fd3db67f5836a4aa4966722792fac6e8a1c5a7bdbea965229fc5ada2cb`).
+     - `hub.html` ve `dice3d.js` dosyaları güvenle izole tutuldu.
+     - Tavla zarı emojisi (`🎲`) yasağı ve dummy data yasağına titizlikle uyuldu.

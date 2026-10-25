@@ -5365,60 +5365,73 @@
       <div class="p-4 space-y-3.5 text-xs overflow-y-auto flex-1">
         <!-- ==================================================== -->
         <!-- 🔍 RULE MASTER: SINIF & PRESTİJ SINIFI ARAMA KONSOLU -->
-        <!-- ==================================================== -->
-        <div id="lvlup-class-search-card" class="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-purple-500/50 rounded-xl p-3 shadow-xl space-y-2.5 transition">
-          <div onclick="toggleLevelUpClassSearchConsole()" class="flex flex-wrap items-center justify-between gap-2 border-b border-purple-500/20 pb-2 cursor-pointer select-none group">
-            <div class="flex items-center gap-2">
-              <div class="w-8 h-8 rounded-lg bg-purple-950/80 border border-purple-500/40 flex items-center justify-center text-base shadow shrink-0 group-hover:border-purple-400 transition">
-                👑
-              </div>
-              <div>
-                <div class="text-xs font-black text-white flex items-center gap-1.5 flex-wrap">
-                  <span class="group-hover:text-purple-300 transition">Rule Master: Sınıf & Prestij Arama Konsolu</span>
-                  <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-500/40 font-mono">D&D 3.5e RAW</span>
-                  <span id="lvlup-class-count-badge" class="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">26 Sınıf</span>
-                </div>
-                <div class="text-[10px] text-slate-400">Temel ve prestij sınıflarını arayın, gereksinimleri inceleyin ve tek tıkla seviye atayın.</div>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-1.5" onclick="event.stopPropagation()">
-              <button type="button" onclick="openCreateCustomClassModal()" class="text-[10px] text-emerald-400 hover:text-emerald-300 bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-600/50 font-bold px-2 py-1 rounded-lg flex items-center gap-1 transition cursor-pointer">
-                <span>➕</span>
-                <span>Özel Sınıf Ekle</span>
-              </button>
-              <button type="button" onclick="toggleLevelUpClassSearchConsole()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[10px] px-2 py-1 rounded-lg border border-slate-700 transition cursor-pointer" title="Konsolu daralt / genişlet">
-                <span id="lvlup-class-search-toggle-icon">▼</span>
-              </button>
-            </div>
+        <!-- ==========================================
+             1. SINIF SEÇİMİ (SPOTLIGHT & RULE MASTER AI)
+        ========================================== -->
+        <div class="relative" id="lvlup-class-custom-dropdown-container">
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1.5">
+              <span>Alınacak Sınıf (Class) *</span>
+              <span class="text-[9px] font-mono px-1.5 py-0.2 bg-purple-950 text-purple-300 border border-purple-700/60 rounded">D&D 3.5e RAW</span>
+              <span id="lvlup-class-count-badge" class="text-[9px] font-semibold px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 border border-slate-700">27 Sınıf</span>
+            </label>
+            <button type="button" onclick="openCreateCustomClassModal()" class="text-[10px] text-emerald-400 hover:text-emerald-300 font-bold hover:underline flex items-center gap-1 transition cursor-pointer">
+              <span>➕</span><span>Özel Sınıf Ekle</span>
+            </button>
           </div>
 
-          <!-- Console Body (initially collapsed) -->
-          <div id="lvlup-class-search-body" class="space-y-2 hidden">
-            <!-- Search & Filters Row -->
-            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-              <div class="relative flex-1">
+          <!-- Hidden select for engine & save backward compatibility -->
+          <select id="lvlup-class-select" onchange="onLevelUpClassChange()" class="hidden"></select>
+
+          <!-- Spotlight Trigger Button -->
+          <button type="button" id="lvlup-class-dropdown-trigger" onclick="toggleLevelUpClassSpotlightDropdown()" class="w-full bg-slate-900 hover:bg-slate-800/90 border border-purple-500/50 hover:border-purple-400 rounded-xl px-3 py-2 text-white font-bold flex items-center justify-between transition shadow-md cursor-pointer group focus:outline-none focus:ring-1 focus:ring-purple-400">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <span id="lvlup-class-trigger-icon" class="text-base p-1.5 rounded-lg bg-purple-950/80 border border-purple-600/40 shrink-0">🛡️</span>
+              <div class="text-left min-w-0">
+                <div class="flex items-center gap-1.5 truncate">
+                  <span id="lvlup-class-trigger-title" class="text-xs font-black text-amber-300 truncate">Fighter</span>
+                  <span id="lvlup-class-trigger-badge" class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/60">Temel Sınıf</span>
+                </div>
+                <div id="lvlup-class-trigger-sub" class="text-[10px] text-slate-400 font-mono truncate">d10 HD • Tam BAB (+1.0) • İyi: Fort • 2+INT Beceri</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0 ml-2">
+              <span class="text-[10px] font-semibold text-purple-300 group-hover:text-white transition">🔍 Değiştir</span>
+              <span id="lvlup-class-trigger-chevron" class="text-slate-400 group-hover:text-purple-300 transition-transform duration-200 text-xs">▼</span>
+            </div>
+          </button>
+
+          <!-- Spotlight Dropdown Panel -->
+          <div id="lvlup-class-spotlight-dropdown" class="hidden absolute top-full left-0 right-0 mt-1.5 bg-slate-950/98 border border-purple-500/60 rounded-xl shadow-2xl z-50 overflow-hidden backdrop-blur-md transition-all duration-150 animate-fadeIn">
+            
+            <!-- Quick Search Bar & Filter Chips -->
+            <div class="p-2.5 border-b border-slate-800 bg-slate-900/90 space-y-2">
+              <div class="relative flex items-center">
+                <span class="absolute left-2.5 text-xs text-purple-400 pointer-events-none">🔍</span>
                 <input 
                   type="text" 
                   id="lvlup-class-search-input" 
-                  placeholder="🔍 Sınıf veya prestij sınıfı ara (örn: Abjurant, Eldritch, Rogue, Warblade, Fighter)..."
+                  placeholder="Sınıf veya prestij ara (örn: Warblade, Duskblade, Abjurant, Rogue)..."
                   oninput="filterLevelUpClassSearch()"
                   onkeydown="if(event.key === 'Enter'){ event.preventDefault(); onClassSearchEnterKey(); }"
-                  class="w-full bg-slate-950 border border-purple-500/40 rounded-lg pl-7 pr-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-purple-400">
-                <span class="absolute left-2.5 top-1.5 text-xs text-purple-400">⚔️</span>
+                  class="w-full bg-slate-950 border border-purple-500/40 rounded-lg pl-7 pr-7 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-purple-400">
+                <button type="button" onclick="clearLevelUpClassSearch()" class="absolute right-2 text-slate-500 hover:text-white text-xs cursor-pointer">✕</button>
               </div>
-              
+
               <!-- Filter chips -->
-              <div class="flex items-center gap-1 overflow-x-auto shrink-0 pb-0.5 sm:pb-0">
-                <button type="button" onclick="setClassFilterTab('all')" id="class-filter-tab-all" class="px-2 py-1 rounded text-[10px] font-bold transition bg-purple-700 text-white shadow">Tümü</button>
-                <button type="button" onclick="setClassFilterTab('base')" id="class-filter-tab-base" class="px-2 py-1 rounded text-[10px] font-bold transition bg-slate-800 text-slate-400 hover:text-white">🛡️ Temel</button>
-                <button type="button" onclick="setClassFilterTab('prestige')" id="class-filter-tab-prestige" class="px-2 py-1 rounded text-[10px] font-bold transition bg-slate-800 text-slate-400 hover:text-white">👑 Prestij</button>
-                <button type="button" onclick="setClassFilterTab('custom')" id="class-filter-tab-custom" class="px-2 py-1 rounded text-[10px] font-bold transition bg-slate-800 text-slate-400 hover:text-white">⚙️ Özel</button>
+              <div class="flex items-center justify-between gap-1 overflow-x-auto">
+                <div class="flex items-center gap-1">
+                  <button type="button" onclick="setClassFilterTab('all')" id="class-filter-tab-all" class="px-2 py-0.5 rounded text-[10px] font-bold transition bg-purple-700 text-white shadow">Tümü</button>
+                  <button type="button" onclick="setClassFilterTab('base')" id="class-filter-tab-base" class="px-2 py-0.5 rounded text-[10px] font-bold transition bg-slate-800 text-slate-400 hover:text-white">🛡️ Temel</button>
+                  <button type="button" onclick="setClassFilterTab('prestige')" id="class-filter-tab-prestige" class="px-2 py-0.5 rounded text-[10px] font-bold transition bg-slate-800 text-slate-400 hover:text-white">👑 Prestij</button>
+                  <button type="button" onclick="setClassFilterTab('custom')" id="class-filter-tab-custom" class="px-2 py-0.5 rounded text-[10px] font-bold transition bg-slate-800 text-slate-400 hover:text-white">⚙️ Özel</button>
+                </div>
+                <div class="text-[9px] text-purple-400 font-mono hidden sm:block">↵ Enter: AI ile ara</div>
               </div>
             </div>
 
             <!-- AI Fetch Status / Progress Box -->
-            <div id="lvlup-class-ai-status" class="hidden p-2.5 rounded-lg bg-purple-950/70 border border-purple-500/40 text-xs text-purple-200 flex items-center justify-between gap-2">
+            <div id="lvlup-class-ai-status" class="hidden p-2.5 mx-2 my-2 rounded-lg bg-purple-950/70 border border-purple-500/40 text-xs text-purple-200 flex items-center justify-between gap-2">
               <div class="flex items-center gap-2">
                 <svg class="animate-spin h-4 w-4 text-purple-400 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -5429,27 +5442,13 @@
             </div>
 
             <!-- Dynamic Search Results List -->
-            <div id="lvlup-class-search-results" class="max-h-64 overflow-y-auto space-y-1.5 pr-1 text-xs">
+            <div id="lvlup-class-search-results" class="max-h-72 overflow-y-auto space-y-1.5 p-2 text-xs">
               <!-- Rendered dynamically by filterLevelUpClassSearch() -->
             </div>
           </div>
         </div>
 
-        <!-- 1. Sınıf Seçimi (Class) & Otomatik İlerleme -->
-        <div class="space-y-2.5">
-          <div>
-            <div class="flex items-center justify-between mb-1">
-              <label class="block text-[10px] font-bold text-slate-400 uppercase">Alınacak Sınıf (Class) *</label>
-              <button type="button" onclick="openCreateCustomClassModal()" class="text-[10px] text-emerald-400 hover:text-emerald-300 font-bold hover:underline flex items-center gap-1 transition">
-                <span>➕</span><span>Özel / Prestij Sınıfı Ekle</span>
-              </button>
-            </div>
-            <select id="lvlup-class-select" onchange="onLevelUpClassChange()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-amber-300 font-bold focus:outline-none focus:ring-1 focus:ring-amber-400">
-              <!-- Dynamically populated by populateLevelUpClassSelect() -->
-            </select>
-          </div>
-
-          <!-- Class Stats Preview Card (HD, BAB, Saves, Features) -->
+        <!-- Class Stats Preview Card (HD, BAB, Saves, Features) -->
           <div id="lvlup-class-preview-card" class="bg-slate-950/80 border border-slate-800 rounded-xl p-3 space-y-1.5 font-mono text-[11px]">
             <!-- Populated dynamically by onLevelUpClassChange() -->
           </div>
@@ -7306,7 +7305,7 @@
   <script src="supabase_auth.js?v=20261025_01"></script>
   <script src="rule_engine.js?v=20261025_2225"></script>
   <script src="rule_master.js?v=20261025_2225"></script>
-  <script src="dice3d.js?v=20261023_16"></script>
+  <script src="dice3d.js?v=20261025_2338"></script>
   <script src="gdrive_sync.js?v=20261023_16"></script>
   <script src="hero_silhouette_data.js?v=20261023_16"></script>
   <script src="bundled_data.js?v=20261025_2225"></script>
@@ -10598,6 +10597,10 @@
       const sizeContainer = document.getElementById('size-custom-dropdown-container');
       if (_sizeDropdownOpen && sizeContainer && !sizeContainer.contains(e.target)) {
         closeSizeDropdown();
+      }
+      const lvlupClassContainer = document.getElementById('lvlup-class-custom-dropdown-container');
+      if (_lvlupClassSpotlightOpen && lvlupClassContainer && !lvlupClassContainer.contains(e.target)) {
+        closeLevelUpClassSpotlightDropdown();
       }
     });
 
@@ -30583,6 +30586,7 @@ function renderManualStatsPanel() {
       if (customGroup.children.length > 0) {
         select.appendChild(customGroup);
       }
+      updateLevelUpClassTriggerUI(currentVal);
     }
 
     function openCreateCustomClassModal() {
@@ -32592,20 +32596,102 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       filterLevelUpClassSearch();
     }
 
-    function toggleLevelUpClassSearchConsole() {
-      const card = document.getElementById('lvlup-class-search-card');
-      const body = document.getElementById('lvlup-class-search-body');
-      const icon = document.getElementById('lvlup-class-search-toggle-icon');
-      if (!card || !body) return;
-      if (body.classList.contains('hidden')) {
-        body.classList.remove('hidden');
-        if (icon) icon.textContent = '▲';
-        setTimeout(() => {
-          document.getElementById('lvlup-class-search-input')?.focus();
-        }, 50);
+    let _lvlupClassSpotlightOpen = false;
+
+    function toggleLevelUpClassSpotlightDropdown() {
+      if (_lvlupClassSpotlightOpen) {
+        closeLevelUpClassSpotlightDropdown();
       } else {
-        body.classList.add('hidden');
-        if (icon) icon.textContent = '▼';
+        openLevelUpClassSpotlightDropdown();
+      }
+    }
+
+    // Geriye dönük uyumluluk için alias
+    function toggleLevelUpClassSearchConsole() {
+      toggleLevelUpClassSpotlightDropdown();
+    }
+
+    function openLevelUpClassSpotlightDropdown() {
+      const panel = document.getElementById('lvlup-class-spotlight-dropdown');
+      const chevron = document.getElementById('lvlup-class-trigger-chevron');
+      const input = document.getElementById('lvlup-class-search-input');
+      if (!panel) return;
+
+      panel.classList.remove('hidden');
+      if (chevron) chevron.textContent = '▲';
+      _lvlupClassSpotlightOpen = true;
+
+      filterLevelUpClassSearch();
+
+      if (input) {
+        input.value = '';
+        setTimeout(() => input.focus(), 50);
+      }
+    }
+
+    function closeLevelUpClassSpotlightDropdown() {
+      const panel = document.getElementById('lvlup-class-spotlight-dropdown');
+      const chevron = document.getElementById('lvlup-class-trigger-chevron');
+      if (!panel) return;
+
+      panel.classList.add('hidden');
+      if (chevron) chevron.textContent = '▼';
+      _lvlupClassSpotlightOpen = false;
+    }
+
+    function clearLevelUpClassSearch() {
+      const input = document.getElementById('lvlup-class-search-input');
+      if (input) {
+        input.value = '';
+        input.focus();
+        filterLevelUpClassSearch();
+      }
+    }
+
+    function updateLevelUpClassTriggerUI(className) {
+      if (!className) return;
+      const allDefs = (typeof getAvailableClassDefs === 'function') ? getAvailableClassDefs() : {};
+      const def = allDefs[className] || (typeof DND35_CLASS_DEFS !== 'undefined' ? DND35_CLASS_DEFS[className] : null) || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'poor', skillPoints: 2 };
+
+      const iconEl = document.getElementById('lvlup-class-trigger-icon');
+      const titleEl = document.getElementById('lvlup-class-trigger-title');
+      const badgeEl = document.getElementById('lvlup-class-trigger-badge');
+      const subEl = document.getElementById('lvlup-class-trigger-sub');
+
+      const isPrestige = def.type === 'Prestige Class';
+      const isCustom = def.isCustom === true;
+
+      if (iconEl) {
+        iconEl.textContent = isPrestige ? '👑' : (isCustom ? '⚙️' : '🛡️');
+      }
+      if (titleEl) {
+        titleEl.textContent = className;
+      }
+      if (badgeEl) {
+        if (isPrestige) {
+          badgeEl.className = 'text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-950 text-amber-300 border border-amber-600/50';
+          badgeEl.textContent = '👑 Prestij';
+        } else if (isCustom) {
+          badgeEl.className = 'text-[9px] font-bold px-1.5 py-0.2 rounded bg-indigo-950 text-indigo-300 border border-indigo-600/50';
+          badgeEl.textContent = '⚙️ Özel Sınıf';
+        } else {
+          badgeEl.className = 'text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-600/50';
+          badgeEl.textContent = '🛡️ Temel Sınıf';
+        }
+      }
+
+      if (subEl) {
+        const hdText = `d${def.hd || 8} HD`;
+        const babRate = Number(def.bab) || 0.75;
+        const babText = babRate === 1.0 ? 'Tam BAB (+1.0)' : (babRate === 0.75 ? '3/4 BAB (+0.75)' : '1/2 BAB (+0.5)');
+        const goodSaves = [];
+        if (def.fort === 'good') goodSaves.push('Fort');
+        if (def.ref === 'good') goodSaves.push('Ref');
+        if (def.will === 'good') goodSaves.push('Will');
+        const saveText = goodSaves.length === 3 ? 'Tüm Saves İyi' : (goodSaves.length > 0 ? `İyi: ${goodSaves.join('/')}` : 'Düşük Saves');
+        const skillsText = `${def.skills || def.skillPoints || 2}+INT Beceri`;
+
+        subEl.textContent = `${hdText} • ${babText} • ${saveText} • ${skillsText}`;
       }
     }
 
@@ -32617,18 +32703,11 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         const btn = document.getElementById(`class-filter-tab-${t}`);
         if (btn) {
           btn.className = t === 'all' 
-            ? 'px-2 py-1 rounded text-[10px] font-bold transition bg-purple-700 text-white shadow'
-            : 'px-2 py-1 rounded text-[10px] font-bold transition bg-slate-800 text-slate-400 hover:text-white';
+            ? 'px-2 py-0.5 rounded text-[10px] font-bold transition bg-purple-700 text-white shadow'
+            : 'px-2 py-0.5 rounded text-[10px] font-bold transition bg-slate-800 text-slate-400 hover:text-white';
         }
       });
-      // Keep collapsed by default on modal open as requested
-      const body = document.getElementById('lvlup-class-search-body');
-      const icon = document.getElementById('lvlup-class-search-toggle-icon');
-      if (body && !body.classList.contains('hidden')) {
-        body.classList.add('hidden');
-      }
-      if (icon) icon.textContent = '▼';
-      filterLevelUpClassSearch();
+      closeLevelUpClassSpotlightDropdown();
     }
 
     function checkClassPrerequisites(className, def) {
@@ -33302,6 +33381,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         select.appendChild(opt);
       }
 
+      // Update trigger UI & close spotlight dropdown
+      updateLevelUpClassTriggerUI(className);
+      closeLevelUpClassSpotlightDropdown();
+
       // Update level-up stats and class preview
       onLevelUpClassChange();
 
@@ -33572,6 +33655,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
     }
 
     function closeLevelUpModal() {
+      closeLevelUpClassSpotlightDropdown();
       const modal = document.getElementById('level-up-modal');
       if (modal) modal.classList.add('hidden');
     }
