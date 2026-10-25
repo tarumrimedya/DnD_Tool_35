@@ -52,7 +52,7 @@
         </div>
 
         <!-- Üst Eylem Butonları (Sağa Yaslı, Eşit Boyutlu & Tam Simetrik) -->
-        <div class="flex flex-col items-stretch sm:items-end justify-center gap-2 shrink-0 self-start sm:self-auto sm:ml-auto w-full sm:w-[220px]">
+        <div class="flex flex-col items-stretch sm:items-end justify-center gap-2 shrink-0 self-start sm:self-auto sm:ml-auto w-full sm:w-[280px] lg:w-[310px] xl:w-[330px] 2xl:w-[360px]">
           <!-- Kullanıcı Profil Slotu -->
           <div id="user-profile-slot" class="w-full"></div>
 
@@ -98,12 +98,12 @@
         </div>
 
         <!-- Görünüm Modu Değiştirici (Kart vs DM Tablosu) -->
-        <div class="flex items-center self-start md:self-auto bg-slate-900/90 p-1 rounded-xl border border-slate-700/80 shrink-0 shadow-md">
-          <button id="view-mode-card-btn" onclick="setViewMode('cards')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 bg-indigo-600 text-white shadow">
+        <div class="w-full sm:w-[280px] lg:w-[310px] xl:w-[330px] 2xl:w-[360px] flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-700/80 shrink-0 shadow-md">
+          <button id="view-mode-card-btn" onclick="setViewMode('cards')" class="flex-1 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-indigo-600 text-white shadow cursor-pointer">
             <span>🎴</span>
             <span>Kart Görünümü</span>
           </button>
-          <button id="view-mode-dm-btn" onclick="setViewMode('dm-table')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 text-slate-400 hover:text-white">
+          <button id="view-mode-dm-btn" onclick="setViewMode('dm-table')" class="flex-1 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer">
             <span>📋</span>
             <span>DM Tablosu</span>
           </button>
@@ -117,13 +117,11 @@
           <span class="absolute left-3 top-2.5 text-slate-500">🔍</span>
         </div>
 
-        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
-          <span class="text-slate-400 font-medium">Tür Filtresi:</span>
-          <div class="inline-flex rounded-lg bg-slate-900/90 p-0.5 border border-slate-700">
-            <button onclick="setTypeFilter('all')" id="filter-type-all" class="px-3 py-1 text-xs rounded-md font-semibold bg-slate-800 text-white">Tümü</button>
-            <button onclick="setTypeFilter('pc')" id="filter-type-pc" class="px-3 py-1 text-xs rounded-md font-semibold text-slate-400 hover:text-white">PC (Oyuncular)</button>
-            <button onclick="setTypeFilter('npc')" id="filter-type-npc" class="px-3 py-1 text-xs rounded-md font-semibold text-slate-400 hover:text-white">NPC (Canavarlar)</button>
-          </div>
+        <!-- Tür Filtresi -->
+        <div class="w-full sm:w-[280px] lg:w-[310px] xl:w-[330px] 2xl:w-[360px] flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-700/80 shrink-0 shadow-md">
+          <button onclick="setTypeFilter('all')" id="filter-type-all" class="flex-1 py-1.5 text-xs font-semibold rounded-lg transition text-center bg-slate-800 text-white cursor-pointer">Tümü</button>
+          <button onclick="setTypeFilter('pc')" id="filter-type-pc" class="flex-1 py-1.5 text-xs font-semibold rounded-lg transition text-center text-slate-400 hover:text-white cursor-pointer">PC (Oyuncular)</button>
+          <button onclick="setTypeFilter('npc')" id="filter-type-npc" class="flex-1 py-1.5 text-xs font-semibold rounded-lg transition text-center text-slate-400 hover:text-white cursor-pointer">NPC (Canavarlar)</button>
         </div>
       </div>
     </header>
@@ -1835,9 +1833,9 @@
         const btn = document.getElementById('filter-type-' + k);
         if (btn) {
           if (k === t) {
-            btn.className = 'px-3 py-1 text-xs rounded-md font-semibold bg-slate-800 text-white';
+            btn.className = 'flex-1 py-1.5 text-xs font-semibold rounded-lg transition text-center bg-slate-800 text-white cursor-pointer';
           } else {
-            btn.className = 'px-3 py-1 text-xs rounded-md font-semibold text-slate-400 hover:text-white';
+            btn.className = 'flex-1 py-1.5 text-xs font-semibold rounded-lg transition text-center text-slate-400 hover:text-white cursor-pointer';
           }
         }
       });
@@ -1850,11 +1848,11 @@
       const dmBtn = document.getElementById('view-mode-dm-btn');
 
       if (mode === 'cards') {
-        cardBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 bg-indigo-600 text-white shadow';
-        dmBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 text-slate-400 hover:text-white';
+        cardBtn.className = 'flex-1 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-indigo-600 text-white shadow cursor-pointer';
+        dmBtn.className = 'flex-1 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer';
       } else {
-        cardBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 text-slate-400 hover:text-white';
-        dmBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 bg-indigo-600 text-white shadow';
+        cardBtn.className = 'flex-1 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer';
+        dmBtn.className = 'flex-1 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-indigo-600 text-white shadow cursor-pointer';
       }
       renderHub();
     }

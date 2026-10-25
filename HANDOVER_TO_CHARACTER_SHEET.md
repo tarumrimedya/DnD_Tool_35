@@ -527,3 +527,18 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   2. `hub.html` içerisindeki buton doğrudan `onclick="resetDicePool()"` olarak güncellendi.
   3. Butona tıklandığında seçili tüm çokyüzlü zar sayaçları sıfırlanır, bonus girdi alanı 0 yapılır ve havuz metni anında temizlenir.
   4. `hub.html`, `hub_dice.js` ve `webapp/` kopyaları %100 eşitlendi.
+
+---
+
+## 27. HUB ÜST BAŞLIK SAĞ KOLON 3 KATMANLI DÜŞEY HİZALAMA VE SİMETRİ (2026-10-25)
+* **İstek:** Hub üst başlığındaki 3 sağ kontrol grubunun (Üst 4 Buton, Görünüm Modu Değiştirici ve Tür Filtresi) farklı genişliklerde kalarak asimetri oluşturması; altlarındaki açık zar masası paneli ile sol hizada dikey olarak buluşamaması sorununun çözülmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Standart Kolon Genişliği (`hub.html` & `webapp/`):**
+     - Her 3 grubun genişliği responsive olarak eşitlendi: `w-full sm:w-[280px] lg:w-[310px] xl:w-[330px] 2xl:w-[360px]`.
+     - Bu genişlik, başlığın 20px (`sm:p-5`) sağ iç boşluğu ile birlikte alttaki `#hub-inline-dice-panel` (`330px / 350px / 380px`) sol kenarı ile tek bir düşey çizgide kusursuz hizalanır.
+  2. **1. Sıra (Üst 4 Buton):** Profil, Yeni Kampanya, Yedekle/İçe Aktar/Sıfırla ve Bulut Senkron satırları bu genişliğe tam oturacak şekilde `w-full` çalışır.
+  3. **2. Sıra (Görünüm Modu):** Kart Görünümü ve DM Tablosu butonları `flex-1 justify-center` yapılarak kolonu %50-%50 tam doldurur.
+  4. **3. Sıra (Tür Filtresi):** Gereksiz dış etiket kaldırılarak Tümü, PC (Oyuncular) ve NPC (Canavarlar) butonları `flex-1` yapılarak kolonu %33-%33-%33 tam doldurur. `setTypeFilter` fonksiyonu bu oranları koruyacak şekilde güncellendi.
+  5. **Parite ve Kural Bütünlüğü:**
+     - `hub.html` ve `webapp/hub.html` kopyaları %100 SHA-256 eşitliğinde tutuldu.
+     - Sıfır tavla zarı (`🎲`) kuralı tavizsiz korundu.
