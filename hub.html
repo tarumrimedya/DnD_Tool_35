@@ -3924,15 +3924,101 @@ CRITICAL RULES:
       event.target.value = '';
     }
 
+    async function syncCloudUserHub(authUser) {
+      if (!authUser || authUser.id === 'local_offline_user' || window.SupabaseAuth?.isLocalMode()) return;
+      try {
+        const [cloudChars, cloudCamps] = await Promise.all([
+          window.SupabaseAuth.fetchUserCharacters(),
+          window.SupabaseAuth.fetchUserCampaigns()
+        ]);
+
+        let changed = false;
+
+        // 1. Bulut kampanyalarını yerel listeye ekle/güncelle
+        if (Array.isArray(cloudCamps) && cloudCamps.length > 0) {
+          cloudCamps.forEach(cc => {
+            let localCamp = state.campaigns.find(c => c.cloudCampaignId === cc.id || c.id === cc.id);
+            if (!localCamp) {
+              state.campaigns.push({
+                id: cc.id,
+                cloudCampaignId: cc.id,
+                invite_code: cc.invite_code,
+                name: cc.name,
+                notes: cc.description || '',
+                isDmMode: cc.is_dm_mode !== false
+              });
+              changed = true;
+            } else {
+              if (!localCamp.cloudCampaignId) { localCamp.cloudCampaignId = cc.id; changed = true; }
+              if (!localCamp.invite_code) { localCamp.invite_code = cc.invite_code; changed = true; }
+            }
+          });
+        }
+
+        // 2. Buluttaki karakterleri yerel listeye ekle/güncelle
+        if (Array.isArray(cloudChars) && cloudChars.length > 0) {
+          cloudChars.forEach(cc => {
+            let localChar = state.characters.find(c => c.id === cc.id);
+            if (!localChar) {
+              state.characters.push({
+                id: cc.id,
+                campaignId: cc.campaign_id,
+                name: cc.name,
+                isNpc: cc.is_npc,
+                currentHp: cc.current_hp,
+                maxHp: cc.full_data?.hp?.max || 10,
+                tempHp: cc.temp_hp || 0,
+                race: cc.full_data?.race || '',
+                classes: cc.full_data?.classes || '',
+                fullData: cc.full_data,
+                cloudSynced: true
+              });
+              changed = true;
+            } else {
+              if (cc.full_data) localChar.fullData = cc.full_data;
+              localChar.currentHp = cc.current_hp;
+              localChar.tempHp = cc.temp_hp || 0;
+              localChar.cloudSynced = true;
+            }
+          });
+        }
+
+        // 3. Yerelde olup henüz buluta aktarılmamış karakterleri otomatik buluta yedekle
+        for (const lc of state.characters) {
+          if (!cloudChars.some(cc => cc.id === lc.id)) {
+            window.SupabaseAuth.upsertUserCharacter(lc.fullData || lc).catch(() => {});
+          }
+        }
+
+        if (changed) {
+          saveHubStorage(false);
+          renderHub();
+        }
+      } catch (e) {
+        console.warn('syncCloudUserHub warning:', e);
+      }
+    }
+
     // Sayfa Açılışı
     window.addEventListener('DOMContentLoaded', async () => {
+      let authUser = null;
       if (window.SupabaseAuth) {
-        const authUser = await window.SupabaseAuth.requireAuth();
+        authUser = await window.SupabaseAuth.requireAuth();
         if (!authUser) return; // Oturum yoksa login'e yönlendirildi, sayfa yüklemesini durdur
       }
       loadCustomMonsters();
       initHubStorage();
       renderHub();
+
+      // Google Oturumu Varsa: Buluttaki Karakterleri & Kampanyaları Otomatik Çek & Senkronize Et
+      if (authUser && window.SupabaseAuth && !window.SupabaseAuth.isLocalMode()) {
+        syncCloudUserHub(authUser).then(() => {
+          if (typeof syncActiveCloudCampaignRealtime === 'function') {
+            syncActiveCloudCampaignRealtime();
+          }
+        });
+      }
+
       if (window.CloudSync && typeof window.CloudSync.init === 'function') {
         try {
           await window.CloudSync.init();

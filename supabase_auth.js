@@ -461,6 +461,97 @@ const SupabaseAuth = {
   },
 
   /**
+   * Oturum Açmış Kullanıcının Karakterini Otomatik Buluta Yedekler (Upsert)
+   * Kampanyaya bağlı olmasa bile Google hesabı altında kalıcı olarak saklanır.
+   */
+  async upsertUserCharacter(characterData) {
+    if (this.isLocalMode() || !characterData) return null;
+    const user = await this.getUser();
+    if (!user || user.id === 'local_offline_user') return null;
+
+    const client = this.getClient();
+    if (!client) return null;
+
+    const charId = characterData.id || `char_${Date.now()}`;
+    characterData.id = charId;
+    const curHp = characterData.hp?.current ?? characterData.hp?.max ?? 10;
+    const tmpHp = characterData.hp?.temp ?? 0;
+
+    const row = {
+      id: charId,
+      owner_user_id: user.id,
+      campaign_id: characterData.cloudCampaignId || null,
+      name: characterData.name || 'İsimsiz Kahraman',
+      is_npc: !!characterData.isNpc,
+      full_data: characterData,
+      current_hp: curHp,
+      temp_hp: tmpHp,
+      last_player_update_ts: Date.now(),
+      updated_at: new Date().toISOString()
+    };
+
+    const { data, error } = await client
+      .from('characters')
+      .upsert(row, { onConflict: 'id' })
+      .select()
+      .maybeSingle();
+
+    if (error) {
+      console.warn('upsertUserCharacter warning:', error);
+      return null;
+    }
+    return data;
+  },
+
+  /**
+   * Oturum açmış kullanıcının sahip olduğu tüm karakterleri çeker (Çoklu cihaz senkronizasyonu için)
+   */
+  async fetchUserCharacters() {
+    if (this.isLocalMode()) return [];
+    const user = await this.getUser();
+    if (!user || user.id === 'local_offline_user') return [];
+
+    const client = this.getClient();
+    if (!client) return [];
+
+    const { data, error } = await client
+      .from('characters')
+      .select('*')
+      .eq('owner_user_id', user.id)
+      .order('updated_at', { ascending: false });
+
+    if (error) {
+      console.warn('fetchUserCharacters error:', error);
+      return [];
+    }
+    return data || [];
+  },
+
+  /**
+   * Oturum açmış kullanıcının DM'i olduğu tüm bulut kampanyalarını çeker
+   */
+  async fetchUserCampaigns() {
+    if (this.isLocalMode()) return [];
+    const user = await this.getUser();
+    if (!user || user.id === 'local_offline_user') return [];
+
+    const client = this.getClient();
+    if (!client) return [];
+
+    const { data, error } = await client
+      .from('campaigns')
+      .select('*')
+      .eq('dm_user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.warn('fetchUserCampaigns error:', error);
+      return [];
+    }
+    return data || [];
+  },
+
+  /**
    * Oyuncu Yetkisi: Kendi karakterinin tam verisini buluta kaydeder
    */
   async saveCharacterDataAsPlayer(characterId, fullData) {

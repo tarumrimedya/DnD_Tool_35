@@ -7984,6 +7984,15 @@
       if (character?.cloudCampaignId && typeof initCampaignRealtimeListener === 'function') {
         initCampaignRealtimeListener(character.cloudCampaignId);
       }
+
+      // Google ile oturum açılmışsa karakteri otomatik olarak Supabase bulutuna yedekle (Upsert)
+      if (character && window.SupabaseAuth && !window.SupabaseAuth.isLocalMode()) {
+        window.SupabaseAuth.upsertUserCharacter(character).then(res => {
+          if (res) console.log('Karakter Supabase bulutuna otomatik yedeklendi:', character.name);
+        }).catch(e => {
+          console.warn('Karakter buluta otomatik yedeklenirken hata:', e);
+        });
+      }
     }
 
     function saveStateToStorage(triggerCloudSync = true) {
@@ -8061,10 +8070,10 @@
         window.GDriveSync.scheduleAutoSave();
       }
 
-      // Multi-User Cloud Karakter Senkronizasyonu
-      if (character.cloudCampaignId && window.SupabaseAuth && !window.SupabaseAuth.isLocalMode()) {
-        window.SupabaseAuth.saveCharacterDataAsPlayer(character.id, character).catch(err => {
-          console.warn('saveCharacterDataAsPlayer notice:', err);
+      // Multi-User Cloud Karakter Senkronizasyonu (Kampanyaya bağlı olsun veya olmasın)
+      if (character && window.SupabaseAuth && !window.SupabaseAuth.isLocalMode()) {
+        window.SupabaseAuth.upsertUserCharacter(character).catch(err => {
+          console.warn('upsertUserCharacter background notice:', err);
         });
       }
     }
