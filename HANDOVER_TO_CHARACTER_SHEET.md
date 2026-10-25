@@ -1531,3 +1531,31 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - `rule_master.js`, `webapp/rule_master.js` (%100 SHA-256: `2790EA5022A9810B4FDBC393F38A4F2D33073F5F497BF92A139B9FDA00A8E906`).
      - `bundled_data.js`, `webapp/bundled_data.js` (%100 SHA-256: `492C2EA12D029F84D1C5D35685774078637BB7C70B2B138254069DD4865D821D`).
      - Standart tavla zarı emoji yasağı (Rule #3: NO `🎲`) ve dummy data yasağı (Rule #5) eksiksiz uygulandı.
+
+
+---
+
+## 55. YÖNELİM (ALIGNMENT) SEMBOL VE SPOTLIGHT AÇILIR MENÜ ENTEGRASYONU (2026-10-25)
+* **İstek:**
+  - Karakter Künyesi modalındaki (`#stat-distribution-modal`) işletim sistemi kaynaklı ham/gri native `<select>` Yönelim (Alignment) menüsünün, yanındaki Tanrı/İnanç ve Irk menüleriyle %100 görsel uyumlu olacak şekilde sembollü ve modern bir açılır menüye dönüştürülmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Spotlight & Sembollü Yönelim Seçici (`#alignment-custom-dropdown-container`):**
+     - Ham `<select>` yerine, seçili yönelimin ikonunu (`⚖️`, `🕊️`, `🏹`, `📜`, `☯️`, `🎭`, `⛓️`, `💀`, `🩸`) ve Türkçe/İngilizce adını gösteren tetikleyici buton (`#alignment-dropdown-trigger`), açılır popover kartı (`#alignment-custom-dropdown`), anlık filtre kutusu (`#alignment-spotlight-search`) ve seçenek listesi (`#alignment-options-list`) entegre edildi.
+     - Form serileştirme ve sayfa uyumluluğu için `#profile-edit-alignment` gizli input (`type="hidden"`) olarak korundu.
+  2. **D&D 3.5e RAW 9 Yönelim Ahlak & Düzen Kataloğu (`DND35_ALIGNMENT_DEFINITIONS`):**
+     - *İyilik Ekseni (Good):*
+       - `⚖️ Lawful Good (Yasal İyi)`: Onur, adalet, şeref ve başkalarını koruma erdemi (Paladin).
+       - `🕊️ Neutral Good (Nötr İyi)`: Merhamet, fedakarlık ve karşılıksız yardımseverlik.
+       - `🏹 Chaotic Good (Kaotik İyi)`: Vicdan, bireysel bağımsızlık ve cömertlik.
+     - *Denge & Tarafsızlık Ekseni (Neutral):*
+       - `📜 Lawful Neutral (Yasal Nötr)`: Yasa, gelenek, disiplin ve tarafsız otorite.
+       - `☯️ True Neutral (Katıksız Nötr)`: Doğa dengesi, tarafsızlık ve sağduyu (Druid).
+       - `🎭 Chaotic Neutral (Kaotik Nötr)`: Mutlak bireysellik ve kurallardan bağımsız heves (Bard).
+     - *Kötülük Ekseni (Evil):*
+       - `⛓️ Lawful Evil (Yasal Kötü)`: Tiranlık, hiyerarşi, disiplinli zulüm ve sömürü.
+       - `💀 Neutral Evil (Nötr Kötü)`: Saf bencillik, açgözlülük, ihanet ve katıksız yıkım.
+       - `🩸 Chaotic Evil (Kaotik Kötü)`: Vahşet, katliam, kontrolsüz öfke ve şiddet.
+  3. **Parite ve Güvenlik:**
+     - HUB dosyaları (`hub.html`, `webapp/hub.html`) kesinlikle değiştirilmedi.
+     - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` (%100 SHA-256: `44074B0EE4311DC03F0A5258C0A6BCF1CE0A6F3D68475AE529B2D8B75B357CE8`).
+     - Standart tavla zarı emoji yasağı (Rule #3: NO `🎲`) ve dummy data yasağı (Rule #5) eksiksiz uygulandı.
