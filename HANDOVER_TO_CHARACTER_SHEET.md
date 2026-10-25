@@ -180,9 +180,28 @@ Hub, karakter kâğıdına veri gönderirken veya `localStorage` (`dnd35_charact
 
 ---
 
-## 9. HAZIR DEVİR TESLİM PROMPTU (DİĞER KONUŞMAYA YAPIŞTIRILACAK)
+## 9. HUB ANLIK ZAR ATMA MEKANİZMASI (SAVES, SPOT, LISTEN, İNİSİYATİF) (2026-10-25)
+* **Kapsam:** Hub (`hub.html`) üzerindeki karakter kartlarında ve DM tablosunda bulunan Kurtarma Atışları (Fortitude, Reflex, Will), Pasif Beceriler (Spot, Listen) ve İnisiyatif değerleri doğrudan tıklanarak zar atılabilir hale getirildi.
+* **Teknik Bileşenler:**
+  1. **İnteraktif Butonlar:**
+     * Kart ve tablo görünümlerindeki `F`, `R`, `W` ve `Spot`, `Listen` değerleri şık, aktif basma efektine (`active:scale-95`) sahip butonlara dönüştürüldü.
+     * Karakter açma butonunu yanlışlıkla tetiklememesi için `event.stopPropagation()` eklendi.
+  2. **Zar Atış Mantığı (`rollHubCheck`):**
+     * Standart D&D 3.5e d20 zarı atılarak ilgili bonus eklenir (`1d20 + bonus = total`).
+     * Doğal 20 (`isNat20`) ve Doğal 1 (`isNat1`) kritik durumları özel olarak tespit edilir.
+  3. **Görsel Bildirim Toast Sistemi (`showHubDiceToast`):**
+     * Ekranın üst-orta kısmında animasyonlu, dark fantasy temalı toast bildirimi açılır.
+     * Doğal 20'de altın parıltılı (`⚡ DOĞAL 20!`), Doğal 1'de kırmızı parıltılı (`💀 DOĞAL 1!`) rozet ve kenarlık gösterilir.
+     * Aynı anda en fazla 3 toast istiflenir, 4.5 saniye sonra otomatik veya tıklamayla anında kapanır.
+  4. **Kural ve Parite:**
+     * Proje kuralı gereği standart tavla zarı (`🎲`) kesinlikle kullanılmamış, tematik SVG ve ikonlar (`🛡️`, `⚡`, `🔮`, `👁️`, `👂`) tercih edilmiştir.
+     * `hub.html` ile `webapp/hub.html` arasında %100 parite sağlanmıştır.
+
+---
+
+## 10. HAZIR DEVİR TESLİM PROMPTU (DİĞER KONUŞMAYA YAPIŞTIRILACAK)
 ```markdown
-Bulut senkronizasyonu döngü hatası giderildi (sessiz polling UI titreşimi kaldırıldı, Master DB otomatik push kilidi eklendi) ve DM Modu can puanı (HP) otoritesi zaman damgalı kontratla (`_lastDmUpdateTs` vs `_lastPlayerChangeTs`) güvenceye alındı. Karakter kâğıdı artık DM'in Hub'dan uyguladığı hasar ve şifaları ezmemektedir.
+Hub üzerindeki karakter kartlarında ve DM tablosunda yer alan Kurtarma Atışları (Fortitude, Reflex, Will), Pasif Beceriler (Spot, Listen) ve İnisiyatif alanları tıklanabilir zar atışına (`rollHubCheck` & `showHubDiceToast`) dönüştürüldü. Doğal 20/1 efektleri ve animasyonlu üst toast bildirimi tamamlandı.
 Lütfen `HANDOVER_TO_CHARACTER_SHEET.md` dosyasındaki son güncellemeleri kontrol ederek geliştirmelere devam et.
 ```
 

@@ -1127,19 +1127,38 @@
                 <div class="text-xs font-extrabold text-amber-300 mt-0.5 font-mono truncate" title="${c.attackFormula || '+0'}">
                   ${c.attackFormula || '+0'}
                 </div>
-                <div class="text-[9px] text-slate-400 mt-0.5">İnisiyatif: <strong class="text-white">${c.initBonus >= 0 ? '+' + c.initBonus : c.initBonus}</strong></div>
+                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Initiative', ${c.initBonus || 0})" title="İnisiyatif Zarı At (d20${c.initBonus >= 0 ? '+' + c.initBonus : c.initBonus})" class="text-[9px] text-slate-400 hover:text-amber-300 mt-0.5 transition cursor-pointer flex items-center gap-1 group active:scale-95">
+                  <span class="group-hover:text-amber-200">İnisiyatif:</span>
+                  <strong class="text-white group-hover:text-amber-300 font-mono">${c.initBonus >= 0 ? '+' + c.initBonus : c.initBonus}</strong>
+                </button>
               </div>
             </div>
 
-            <!-- KURTARMA ATIŞLARI (SAVES) & PASİFLER -->
-            <div class="mt-2.5 flex items-center justify-between bg-slate-900/60 px-3 py-1.5 rounded-xl border border-slate-800 text-[11px] font-mono">
-              <div class="flex items-center gap-2">
-                <span title="Fortitude (Dayanıklılık)" class="text-slate-300"><strong class="text-slate-500 font-sans">F:</strong> ${c.fortSave >= 0 ? '+' + c.fortSave : c.fortSave}</span>
-                <span title="Reflex (Refleks)" class="text-slate-300"><strong class="text-slate-500 font-sans">R:</strong> ${c.refSave >= 0 ? '+' + c.refSave : c.refSave}</span>
-                <span title="Will (İrade)" class="text-slate-300"><strong class="text-slate-500 font-sans">W:</strong> ${c.willSave >= 0 ? '+' + c.willSave : c.willSave}</span>
+            <!-- KURTARMA ATIŞLARI (SAVES) & PASİFLER (ZAR ATILABİLİR) -->
+            <div class="mt-2.5 flex items-center justify-between bg-slate-900/60 px-2 sm:px-2.5 py-1.5 rounded-xl border border-slate-800 text-[11px] font-mono gap-1">
+              <div class="flex items-center gap-1 sm:gap-1.5">
+                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Fortitude', ${c.fortSave || 0})" title="Fortitude (Dayanıklılık) Zarı At (d20${c.fortSave >= 0 ? '+' + c.fortSave : c.fortSave})" class="px-1.5 py-0.5 rounded-lg bg-slate-800/80 hover:bg-indigo-950 text-slate-300 hover:text-indigo-200 border border-slate-700/60 hover:border-indigo-500/50 transition cursor-pointer flex items-center gap-1 group active:scale-95 shadow-sm">
+                  <strong class="text-slate-400 group-hover:text-indigo-300 font-sans">F:</strong>
+                  <span>${c.fortSave >= 0 ? '+' + c.fortSave : c.fortSave}</span>
+                </button>
+                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Reflex', ${c.refSave || 0})" title="Reflex (Refleks) Zarı At (d20${c.refSave >= 0 ? '+' + c.refSave : c.refSave})" class="px-1.5 py-0.5 rounded-lg bg-slate-800/80 hover:bg-emerald-950 text-slate-300 hover:text-emerald-200 border border-slate-700/60 hover:border-emerald-500/50 transition cursor-pointer flex items-center gap-1 group active:scale-95 shadow-sm">
+                  <strong class="text-slate-400 group-hover:text-emerald-300 font-sans">R:</strong>
+                  <span>${c.refSave >= 0 ? '+' + c.refSave : c.refSave}</span>
+                </button>
+                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Will', ${c.willSave || 0})" title="Will (İrade) Zarı At (d20${c.willSave >= 0 ? '+' + c.willSave : c.willSave})" class="px-1.5 py-0.5 rounded-lg bg-slate-800/80 hover:bg-purple-950 text-slate-300 hover:text-purple-200 border border-slate-700/60 hover:border-purple-500/50 transition cursor-pointer flex items-center gap-1 group active:scale-95 shadow-sm">
+                  <strong class="text-slate-400 group-hover:text-purple-300 font-sans">W:</strong>
+                  <span>${c.willSave >= 0 ? '+' + c.willSave : c.willSave}</span>
+                </button>
               </div>
-              <div class="text-slate-400 text-[10px]">
-                Spot/Listen: <strong class="text-slate-200">${c.spotBonus >= 0 ? '+' + c.spotBonus : c.spotBonus}/${c.listenBonus >= 0 ? '+' + c.listenBonus : c.listenBonus}</strong>
+              <div class="flex items-center gap-1 text-[10px]">
+                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Spot', ${c.spotBonus || 0})" title="Spot (Fark Etme) Zarı At (d20${c.spotBonus >= 0 ? '+' + c.spotBonus : c.spotBonus})" class="px-1.5 py-0.5 rounded-lg bg-slate-800/80 hover:bg-amber-950 text-slate-400 hover:text-amber-200 border border-slate-700/60 hover:border-amber-500/50 transition cursor-pointer flex items-center gap-0.5 group active:scale-95 shadow-sm">
+                  <span class="group-hover:text-amber-300">Spot</span>
+                  <strong class="text-slate-200 group-hover:text-white font-mono">${c.spotBonus >= 0 ? '+' + c.spotBonus : c.spotBonus}</strong>
+                </button>
+                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Listen', ${c.listenBonus || 0})" title="Listen (Dinleme) Zarı At (d20${c.listenBonus >= 0 ? '+' + c.listenBonus : c.listenBonus})" class="px-1.5 py-0.5 rounded-lg bg-slate-800/80 hover:bg-sky-950 text-slate-400 hover:text-sky-200 border border-slate-700/60 hover:border-sky-500/50 transition cursor-pointer flex items-center gap-0.5 group active:scale-95 shadow-sm">
+                  <span class="group-hover:text-sky-300">Listen</span>
+                  <strong class="text-slate-200 group-hover:text-white font-mono">${c.listenBonus >= 0 ? '+' + c.listenBonus : c.listenBonus}</strong>
+                </button>
               </div>
             </div>
           </div>
@@ -1382,18 +1401,21 @@
             <span class="text-[10px] text-slate-500 ml-1">(T:${c.touchAc} | FF:${c.flatFootedAc})</span>
           </td>
 
-          <!-- Saves -->
+          <!-- Saves (Zar Atılabilir) -->
           <td class="py-3 px-3 font-mono text-[11px]">
-            <span class="text-slate-300">F:${c.fortSave >= 0 ? '+' + c.fortSave : c.fortSave}</span>
-            <span class="text-slate-500">•</span>
-            <span class="text-slate-300">R:${c.refSave >= 0 ? '+' + c.refSave : c.refSave}</span>
-            <span class="text-slate-500">•</span>
-            <span class="text-slate-300">W:${c.willSave >= 0 ? '+' + c.willSave : c.willSave}</span>
+            <div class="flex items-center gap-1">
+              <button type="button" onclick="rollHubCheck('${c.id}', 'Fortitude', ${c.fortSave || 0})" title="Fortitude (Dayanıklılık) Zarı At (d20${c.fortSave >= 0 ? '+' + c.fortSave : c.fortSave})" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-indigo-900 text-slate-300 hover:text-indigo-200 border border-slate-700/60 hover:border-indigo-500/50 transition cursor-pointer active:scale-95 shadow-sm">F:${c.fortSave >= 0 ? '+' + c.fortSave : c.fortSave}</button>
+              <button type="button" onclick="rollHubCheck('${c.id}', 'Reflex', ${c.refSave || 0})" title="Reflex (Refleks) Zarı At (d20${c.refSave >= 0 ? '+' + c.refSave : c.refSave})" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-emerald-900 text-slate-300 hover:text-emerald-200 border border-slate-700/60 hover:border-emerald-500/50 transition cursor-pointer active:scale-95 shadow-sm">R:${c.refSave >= 0 ? '+' + c.refSave : c.refSave}</button>
+              <button type="button" onclick="rollHubCheck('${c.id}', 'Will', ${c.willSave || 0})" title="Will (İrade) Zarı At (d20${c.willSave >= 0 ? '+' + c.willSave : c.willSave})" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-purple-900 text-slate-300 hover:text-purple-200 border border-slate-700/60 hover:border-purple-500/50 transition cursor-pointer active:scale-95 shadow-sm">W:${c.willSave >= 0 ? '+' + c.willSave : c.willSave}</button>
+            </div>
           </td>
 
-          <!-- Spot / Listen -->
+          <!-- Spot / Listen (Zar Atılabilir) -->
           <td class="py-3 px-3 font-mono text-[11px] text-slate-300">
-            ${c.spotBonus >= 0 ? '+' + c.spotBonus : c.spotBonus} / ${c.listenBonus >= 0 ? '+' + c.listenBonus : c.listenBonus}
+            <div class="flex items-center gap-1">
+              <button type="button" onclick="rollHubCheck('${c.id}', 'Spot', ${c.spotBonus || 0})" title="Spot (Fark Etme) Zarı At (d20${c.spotBonus >= 0 ? '+' + c.spotBonus : c.spotBonus})" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-amber-900 text-slate-300 hover:text-amber-200 border border-slate-700/60 hover:border-amber-500/50 transition cursor-pointer active:scale-95 shadow-sm">Spot ${c.spotBonus >= 0 ? '+' + c.spotBonus : c.spotBonus}</button>
+              <button type="button" onclick="rollHubCheck('${c.id}', 'Listen', ${c.listenBonus || 0})" title="Listen (Dinleme) Zarı At (d20${c.listenBonus >= 0 ? '+' + c.listenBonus : c.listenBonus})" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-sky-900 text-slate-300 hover:text-sky-200 border border-slate-700/60 hover:border-sky-500/50 transition cursor-pointer active:scale-95 shadow-sm">Listen ${c.listenBonus >= 0 ? '+' + c.listenBonus : c.listenBonus}</button>
+            </div>
           </td>
 
           <!-- Eylemler -->
@@ -1754,6 +1776,146 @@
           pinDrawerLimit: 5
         }
       };
+    }
+
+    // Hub Üzerinden Anlık Zar Atışı (Saves, Spot, Listen, İnisiyatif)
+    function rollHubCheck(charId, checkType, bonus) {
+      const c = (state.characters || []).find(it => it.id === charId);
+      const charName = c ? c.name : 'Karakter';
+      const d20 = Math.floor(Math.random() * 20) + 1;
+      const mod = Number(bonus) || 0;
+      const total = d20 + mod;
+      const modStr = mod >= 0 ? `+${mod}` : `${mod}`;
+      const isNat20 = (d20 === 20);
+      const isNat1 = (d20 === 1);
+
+      let icon = '⚡';
+      let checkLabel = checkType;
+      let badgeBg = 'bg-slate-700/80 text-slate-200 border border-slate-600/50';
+      let iconBg = 'bg-indigo-950/80 text-indigo-400 border border-indigo-700/50';
+
+      if (checkType === 'Fortitude') {
+        icon = '🛡️';
+        checkLabel = 'Fortitude (Dayanıklılık)';
+        badgeBg = 'bg-indigo-950/90 text-indigo-300 border border-indigo-500/40';
+        iconBg = 'bg-indigo-900/40 text-indigo-300 border border-indigo-500/40';
+      } else if (checkType === 'Reflex') {
+        icon = '⚡';
+        checkLabel = 'Reflex (Refleks)';
+        badgeBg = 'bg-emerald-950/90 text-emerald-300 border border-emerald-500/40';
+        iconBg = 'bg-emerald-900/40 text-emerald-300 border border-emerald-500/40';
+      } else if (checkType === 'Will') {
+        icon = '🔮';
+        checkLabel = 'Will (İrade)';
+        badgeBg = 'bg-purple-950/90 text-purple-300 border border-purple-500/40';
+        iconBg = 'bg-purple-900/40 text-purple-300 border border-purple-500/40';
+      } else if (checkType === 'Spot') {
+        icon = '👁️';
+        checkLabel = 'Spot (Fark Etme)';
+        badgeBg = 'bg-amber-950/90 text-amber-300 border border-amber-500/40';
+        iconBg = 'bg-amber-900/40 text-amber-300 border border-amber-500/40';
+      } else if (checkType === 'Listen') {
+        icon = '👂';
+        checkLabel = 'Listen (Dinleme)';
+        badgeBg = 'bg-sky-950/90 text-sky-300 border border-sky-500/40';
+        iconBg = 'bg-sky-900/40 text-sky-300 border border-sky-500/40';
+      } else if (checkType === 'Initiative') {
+        icon = '⚡';
+        checkLabel = 'İnisiyatif Zarı';
+        badgeBg = 'bg-amber-950/90 text-amber-300 border border-amber-500/40';
+        iconBg = 'bg-amber-900/40 text-amber-300 border border-amber-500/40';
+      }
+
+      showHubDiceToast({
+        charName,
+        checkLabel,
+        icon,
+        iconBg,
+        badgeBg,
+        d20,
+        mod,
+        modStr,
+        total,
+        isNat20,
+        isNat1
+      });
+    }
+
+    function showHubDiceToast(data) {
+      let container = document.getElementById('hub-dice-toast-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'hub-dice-toast-container';
+        container.className = 'fixed top-5 left-1/2 -translate-x-1/2 z-[9999] flex flex-col items-center gap-2 pointer-events-none max-w-sm sm:max-w-md w-[92vw]';
+        document.body.appendChild(container);
+      }
+
+      // 3'ten fazla açık toast varsa eskilerini temizle
+      while (container.children.length >= 3) {
+        container.lastElementChild.remove();
+      }
+
+      let borderClass = 'border-slate-700/80 shadow-slate-950/80';
+      let totalColorClass = 'text-amber-400';
+      let natBanner = '';
+
+      if (data.isNat20) {
+        borderClass = 'border-amber-400/90 shadow-amber-500/30 ring-2 ring-amber-400/40';
+        totalColorClass = 'text-amber-300';
+        natBanner = '<span class="text-[10px] font-bold text-amber-300 uppercase tracking-wider block animate-pulse">⚡ DOĞAL 20!</span>';
+      } else if (data.isNat1) {
+        borderClass = 'border-rose-500/90 shadow-rose-500/30 ring-2 ring-rose-500/40';
+        totalColorClass = 'text-rose-400';
+        natBanner = '<span class="text-[10px] font-bold text-rose-400 uppercase tracking-wider block animate-pulse">💀 DOĞAL 1!</span>';
+      }
+
+      const toast = document.createElement('div');
+      toast.className = `hub-toast-item pointer-events-auto cursor-pointer w-full bg-slate-900/95 border rounded-2xl p-3 sm:p-3.5 shadow-2xl backdrop-blur-md transition-all duration-300 transform -translate-y-3 opacity-0 flex items-center justify-between gap-3 ${borderClass}`;
+      toast.title = 'Kapatmak için tıkla';
+      toast.onclick = () => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translate-y-[-8px] scale-95';
+        setTimeout(() => toast.remove(), 200);
+      };
+
+      toast.innerHTML = `
+        <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+          <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl ${data.iconBg} flex items-center justify-center text-xl shrink-0 shadow-inner">
+            ${data.icon}
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+              <span class="text-xs font-extrabold text-white truncate max-w-[130px] sm:max-w-[180px]" title="${data.charName}">${data.charName}</span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full ${data.badgeBg} font-semibold">${data.checkLabel}</span>
+            </div>
+            <div class="text-[11px] text-slate-300 font-mono mt-0.5">
+              1d20 [<strong>${data.d20}</strong>] ${data.modStr} = <strong class="text-white">${data.total}</strong>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div class="text-right font-mono">
+            <div class="text-2xl sm:text-3xl font-black ${totalColorClass} leading-tight">${data.total}</div>
+            ${natBanner}
+          </div>
+          <button type="button" class="text-slate-500 hover:text-white p-1 rounded-lg text-sm leading-none transition">✕</button>
+        </div>
+      `;
+
+      container.prepend(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('-translate-y-3', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+      });
+
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.classList.remove('translate-y-0', 'opacity-100');
+          toast.classList.add('-translate-y-3', 'opacity-0');
+          setTimeout(() => toast.remove(), 250);
+        }
+      }, 4500);
     }
 
     function launchCharacterSheet(charId) {
