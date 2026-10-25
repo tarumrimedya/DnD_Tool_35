@@ -1486,24 +1486,29 @@
           <div class="space-y-2">
             <!-- Kart Başlık & Kimlik -->
             <div class="flex items-start justify-between gap-2.5">
-              <div class="flex items-center gap-3 min-w-0 flex-1">
-                <div class="relative shrink-0 w-12 h-12 sm:w-13 sm:h-13 rounded-xl border border-slate-600 bg-slate-900 shadow-md overflow-hidden flex items-center justify-center">
-                  ${getCharacterPortraitHtml(c, 'text-2xl')}
-                  <span class="absolute -bottom-1.5 -right-1 px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider shadow ${c.isNpc ? 'bg-rose-950 text-rose-300 border border-rose-700' : 'bg-sky-950 text-sky-300 border border-sky-700'}">
+              <div class="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+                <div class="relative shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl border border-slate-600 bg-slate-900 shadow-md overflow-hidden flex items-center justify-center">
+                  ${getCharacterPortraitHtml(c, 'text-3xl')}
+                  <span class="absolute -bottom-1 -right-1 px-1.5 py-0.2 rounded text-[8px] sm:text-[9px] font-black uppercase tracking-wider shadow ${c.isNpc ? 'bg-rose-950 text-rose-300 border border-rose-700' : 'bg-sky-950 text-sky-300 border border-sky-700'}">
                     ${c.isNpc ? 'NPC' : 'PC'}
                   </span>
                 </div>
-                <div class="min-w-0 flex-1">
-                  <h3 class="text-sm sm:text-base font-black text-white truncate group-hover:text-indigo-300 transition" title="${escapeHtml(c.name)}">${escapeHtml(c.name)}</h3>
-                  <p class="text-xs text-slate-200 truncate mt-0.5 font-medium">${escapeHtml(c.race || 'Irk Belirtilmedi')} • <span class="text-amber-400 font-bold">${escapeHtml(c.classes || 'Sınıf Seçilmedi')}</span></p>
-                  <div class="mt-1 flex items-center gap-1.5 flex-wrap">
-                    <span class="text-[11px] text-slate-300 bg-slate-900/90 px-2 py-0.5 rounded-lg border border-slate-800 truncate flex items-center gap-1 font-semibold" title="Kampanya: ${escapeHtml(campName)}">
-                      <span>${campIcon}</span>
-                      <span class="truncate">${escapeHtml(campName)}</span>
-                      ${camp?.isDmMode ? '<span class="text-[8px] font-black text-amber-400 font-mono ml-0.5 bg-amber-500/20 px-1 py-0.2 rounded border border-amber-500/40">DM</span>' : ''}
-                    </span>
-                    ${c.cr ? `<span class="text-[11px] font-mono font-black text-amber-300 bg-amber-950/90 px-1.5 py-0.5 rounded-lg border border-amber-700/80">CR ${c.cr}</span>` : ''}
+                <div class="min-w-0 flex-1 flex flex-col justify-center space-y-0.5">
+                  <div class="flex items-center gap-1.5 min-w-0">
+                    <h3 class="text-sm sm:text-base font-black text-white truncate group-hover:text-indigo-300 transition" title="${escapeHtml(c.name)}">${escapeHtml(c.name)}</h3>
+                    ${c.cr ? `<span class="text-[10px] font-mono font-black text-amber-300 bg-amber-950/90 px-1.5 py-0.2 rounded border border-amber-700/80 shrink-0">CR ${c.cr}</span>` : ''}
                   </div>
+                  <p class="text-xs text-slate-300 truncate font-medium flex items-center gap-1.5">
+                    <span class="truncate">${escapeHtml(c.race || 'Irk Belirtilmedi')}</span>
+                    <span class="text-slate-500 shrink-0">•</span>
+                    <span class="text-amber-400 font-bold truncate shrink-0">${escapeHtml(c.classes || 'Sınıf Seçilmedi')}</span>
+                    <span class="text-slate-500 shrink-0">•</span>
+                    <span class="text-slate-400 text-[11px] truncate shrink-0 flex items-center gap-1" title="Kampanya: ${escapeHtml(campName)}">
+                      <span>${campIcon}</span>
+                      <span class="truncate max-w-[85px] sm:max-w-[120px]">${escapeHtml(campName)}</span>
+                      ${camp?.isDmMode ? '<span class="text-[8px] font-black text-amber-400 font-mono bg-amber-500/20 px-1 py-0.2 rounded border border-amber-500/40 shrink-0">DM</span>' : ''}
+                    </span>
+                  </p>
                 </div>
               </div>
 
@@ -1540,15 +1545,15 @@
                 <div class="${hpColor} h-full transition-all duration-300 rounded-full" style="width: ${hpPct}%;"></div>
               </div>
 
-              <!-- Özel Hasar / Şifa Kontrolü -->
-              <div class="flex items-center justify-center pt-0.5" onclick="event.stopPropagation()">
-                <div class="flex items-center justify-center gap-1.5 bg-slate-950/90 p-0.5 sm:p-1 rounded-xl border border-slate-800 shadow shrink-0">
-                  <button onclick="applyCustomHp('${c.id}', -1)" title="Hasar Ver (Varsayılan 5 veya yazılan miktar)" class="px-2 sm:px-2.5 py-1 rounded-lg bg-rose-950/90 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800 transition font-mono font-black text-xs cursor-pointer flex items-center gap-1 active:scale-95 shadow-sm">
+              <!-- Özel Hasar / Şifa Kontrolü (Hücre Sınırına Kadar Genişleyen Tam Simetrik Düzen) -->
+              <div class="pt-0.5" onclick="event.stopPropagation()">
+                <div class="flex items-center gap-1.5 bg-slate-950/90 p-1 rounded-xl border border-slate-800/90 shadow-sm w-full">
+                  <button onclick="applyCustomHp('${c.id}', -1)" title="Hasar Ver (Varsayılan 5 veya yazılan miktar)" class="flex-1 h-8 rounded-lg bg-rose-950/90 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800 transition font-mono font-black text-xs cursor-pointer flex items-center justify-center gap-1 active:scale-95 shadow-sm">
                     <span>⚔️</span>
                     <span>-</span>
                   </button>
-                  <input type="number" id="custom-hp-input-${c.id}" min="1" value="5" placeholder="5" class="w-12 sm:w-14 h-6 text-center bg-slate-900 text-white font-mono text-xs font-black rounded-lg border border-slate-700/80 focus:border-amber-400 focus:outline-none p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" onkeydown="if(event.key==='Enter') applyCustomHp('${c.id}', -1)">
-                  <button onclick="applyCustomHp('${c.id}', 1)" title="Can / Şifa Ver (Varsayılan 5 veya yazılan miktar)" class="px-2 sm:px-2.5 py-1 rounded-lg bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 hover:text-white border border-emerald-800 transition font-mono font-black text-xs cursor-pointer flex items-center gap-1 active:scale-95 shadow-sm">
+                  <input type="number" id="custom-hp-input-${c.id}" min="1" value="5" placeholder="5" class="w-14 sm:w-16 h-8 text-center bg-slate-900 text-white font-mono text-xs sm:text-sm font-black rounded-lg border border-slate-700/80 focus:border-amber-400 focus:outline-none p-0 shrink-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" onkeydown="if(event.key==='Enter') applyCustomHp('${c.id}', -1)">
+                  <button onclick="applyCustomHp('${c.id}', 1)" title="Can / Şifa Ver (Varsayılan 5 veya yazılan miktar)" class="flex-1 h-8 rounded-lg bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 hover:text-white border border-emerald-800 transition font-mono font-black text-xs cursor-pointer flex items-center justify-center gap-1 active:scale-95 shadow-sm">
                     <span>+</span>
                     <span>💚</span>
                   </button>

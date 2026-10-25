@@ -1121,3 +1121,25 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   3. **Parite ve Devir Teslim:**
      - `hub.html` ve `webapp/hub.html` %100 SHA-256 eşitliğinde tutuldu.
      - Sıfır 🎲 tavla zarı kuralı korundu.
+
+
+---
+
+## 52. HUB KARTLARINDA BÜYÜTÜLMÜŞ PORTRE, 2 SATIRLI BİLGİ DÜZENİ VE TAM SİMETRİK GENİŞ CAN KONTROLÜ (2026-10-25)
+* **İstek:**
+  1. Portre resminin 2 satır ve 2 sütun yüksekliğinde büyütülmesi.
+  2. Karakter bilgi alanının mobilde karakter ismi öncelikli ve belirgin olacak şekilde 2 satıra sığdırılması; diğer detayların (Irk, Sınıf, Kampanya) kısaltılarak tek satırda hizalanması.
+  3. Tekil Hasar/Şifa miktar kontrol alanının hücre sınırlarına kadar tam genişletilmesi ve simetrisinin korunması.
+* **Uygulanan Değişiklikler:**
+  1. **Büyütülmüş Portre (`w-14 h-14 sm:w-16 sm:h-16`):**
+     - Portre alanı 2 satır ve 2 buton satırı yüksekliğine tam uyumlu olarak büyütüldü (`text-3xl`).
+     - Köşe kıvrımları ve PC/NPC rozeti büyütülmüş portreye göre optimize edildi.
+  2. **2 Satırlı Karakter Bilgi Bloğu:**
+     - **Satır 1:** Karakter Adı (`text-sm sm:text-base font-black truncate`) ve varsa CR rozeti. Mobilde ismin bastırılması veya sıkışması tamamen engellendi.
+     - **Satır 2:** `Irk • Sınıf • Kampanya` bilgileri tek bir yatay satırda birleştirildi; `truncate` ve `max-w` ile taşma yapmadan zarifçe gösterildi.
+  3. **Tam Simetrik ve Hücreyi Kaplayan HP Kontrolü (`w-full`):**
+     - Hasar (`flex-1 h-8 bg-rose-950/90 text-rose-300`) ve Şifa (`flex-1 h-8 bg-emerald-950/90 text-emerald-300`) butonları kutunun iki yanına tam simetrik olarak yayıldı.
+     - Merkezdeki sayı kutusu (`w-14 sm:w-16 h-8 text-center font-mono font-black`) ile aralarında mükemmel bir denge sağlandı.
+  4. **Parite ve Devir Teslim:**
+     - `hub.html` ve `webapp/hub.html` %100 SHA-256 eşitliğinde tutuldu (`True`).
+     - Sıfır 🎲 tavla zarı kuralı korundu.
