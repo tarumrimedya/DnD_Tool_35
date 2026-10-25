@@ -7895,6 +7895,10 @@
             ensureAllSkills(character);
             updated = true;
           }
+          if (typeof normalizeCharacterSpellcasting === 'function') {
+            normalizeCharacterSpellcasting(character);
+            updated = true;
+          }
           if (!character.combatPins || (!character.combatPins.offense_melee && !character.combatPins.offense)) {
             character.combatPins = (defaultChar && defaultChar.combatPins && isKazmil) ? JSON.parse(JSON.stringify(defaultChar.combatPins)) : { offense_melee: [], offense_ranged: [], offense_spell: [], spell_control: [], spell_support: [], defense: [] };
             updated = true;
@@ -8750,6 +8754,42 @@
       }
     }
 
+    function normalizeCharacterSpellcasting(char) {
+      if (!char) return;
+      if (!char.spellcasting || typeof char.spellcasting !== 'object') {
+        char.spellcasting = {};
+      }
+      const sc = char.spellcasting;
+      const toSlotsArray = (raw) => {
+        if (Array.isArray(raw)) return raw;
+        if (raw && typeof raw === 'object') {
+          return Object.entries(raw).map(([lvl, val]) => {
+            if (val && typeof val === 'object') {
+              return {
+                level: Number(val.level ?? lvl),
+                daily: Number(val.daily ?? val.max ?? 0),
+                used: Number(val.used ?? 0),
+                dmBonus: Number(val.dmBonus ?? 0)
+              };
+            }
+            return { level: Number(lvl), daily: Number(val) || 0, used: 0 };
+          });
+        }
+        return [];
+      };
+
+      sc.slots = toSlotsArray(sc.slots);
+      sc.preparedSlots = toSlotsArray(sc.preparedSlots);
+      sc.divineSlots = toSlotsArray(sc.divineSlots);
+
+      if (char.spellSlots && typeof char.spellSlots === 'object' && sc.slots.length === 0) {
+        sc.slots = toSlotsArray(char.spellSlots);
+      }
+      if (!Array.isArray(sc.knownSpells)) sc.knownSpells = [];
+      if (!Array.isArray(sc.preparedSpells)) sc.preparedSpells = [];
+      if (!Array.isArray(sc.divineSpells)) sc.divineSpells = [];
+    }
+
     function renderAll() {
       if (!character) {
         if (window.BUNDLED_CHARACTER_DATA) {
@@ -8764,6 +8804,7 @@
         character.skills = Object.values(character.skills || {});
         if (typeof ensureAllSkills === 'function') ensureAllSkills(character);
       }
+      normalizeCharacterSpellcasting(character);
 
       // Recalculate RAW D&D 3.5e character state, equipment bonuses, and active buffs
       if (typeof RuleEngine !== 'undefined' && RuleEngine.recalculateCharacter) {
@@ -12038,14 +12079,32 @@
       const sc = (typeof character !== 'undefined' && character && character.spellcasting) ? character.spellcasting : {};
       const tob = (typeof character !== 'undefined' && character && character.tomeOfBattle) ? character.tomeOfBattle : {};
 
+      const toSlotsArray = (raw) => {
+        if (Array.isArray(raw)) return raw;
+        if (raw && typeof raw === 'object') {
+          return Object.entries(raw).map(([lvl, val]) => {
+            if (val && typeof val === 'object') {
+              return {
+                level: Number(val.level ?? lvl),
+                daily: Number(val.daily ?? val.max ?? 0),
+                used: Number(val.used ?? 0),
+                dmBonus: Number(val.dmBonus ?? 0)
+              };
+            }
+            return { level: Number(lvl), daily: Number(val) || 0, used: 0 };
+          });
+        }
+        return [];
+      };
+
       // 1. Spontaneous (Anlık - Sorcerer/Bard)
-      const spontSlots = sc.slots || [];
+      const spontSlots = toSlotsArray(sc.slots);
       // 2. Prepared (Kitap - Wizard/Wu Jen)
-      const prepSlots = sc.preparedSlots || [];
+      const prepSlots = toSlotsArray(sc.preparedSlots);
       // 3. Divine (İlahi - Cleric/Druid)
-      const divSlots = sc.divineSlots || [];
+      const divSlots = toSlotsArray(sc.divineSlots);
       // 4. Martial (Savaş Manevraları - Warblade/Swordsage/Crusader)
-      const martialReadied = tob.readiedManeuvers || [];
+      const martialReadied = Array.isArray(tob.readiedManeuvers) ? tob.readiedManeuvers : [];
 
       const all = [
         {
@@ -12103,7 +12162,7 @@
       ];
 
       if (onlyActive) {
-        const activeOnly = all.filter(s => s.key !== 'martial' && s.slots.some(sl => (Number(sl.daily) || 0) > 0));
+        const activeOnly = all.filter(s => s.key !== 'martial' && Array.isArray(s.slots) && s.slots.some(sl => (Number(sl.daily) || 0) > 0));
         return activeOnly.length > 0 ? activeOnly : [all[0]];
       }
 
@@ -12112,16 +12171,16 @@
 
     function getSpellSlotsArrayBySource(sourceKey) {
       if (!character) return [];
-      if (!character.spellcasting) character.spellcasting = {};
+      if (!character.spellcasting || typeof character.spellcasting !== 'object') character.spellcasting = {};
       if (sourceKey === 'prepared') {
-        if (!character.spellcasting.preparedSlots) character.spellcasting.preparedSlots = [];
+        if (!Array.isArray(character.spellcasting.preparedSlots)) character.spellcasting.preparedSlots = [];
         return character.spellcasting.preparedSlots;
       }
       if (sourceKey === 'divine') {
-        if (!character.spellcasting.divineSlots) character.spellcasting.divineSlots = [];
+        if (!Array.isArray(character.spellcasting.divineSlots)) character.spellcasting.divineSlots = [];
         return character.spellcasting.divineSlots;
       }
-      if (!character.spellcasting.slots) character.spellcasting.slots = [];
+      if (!Array.isArray(character.spellcasting.slots)) character.spellcasting.slots = [];
       return character.spellcasting.slots;
     }
 
@@ -12230,7 +12289,7 @@
         if (!isNaN(l)) presentLevels.add(l);
       });
       sources.forEach(src => {
-        (src.slots || []).forEach(s => {
+        (Array.isArray(src.slots) ? src.slots : []).forEach(s => {
           if (Number(s.daily) > 0) {
             presentLevels.add(Number(s.level));
           }
@@ -12257,7 +12316,8 @@
         let totalDaily = 0;
         let totalUsed = 0;
         sources.forEach(src => {
-          const s = (src.slots || []).find(item => Number(item.level) === lvl);
+          const sList = Array.isArray(src.slots) ? src.slots : [];
+          const s = sList.find(item => Number(item.level) === lvl);
           if (s) {
             totalDaily += Number(s.daily) || 0;
             totalUsed += Number(s.used) || 0;
@@ -24017,7 +24077,8 @@
     }
 
     function calculateWizardSlots(wizardLvl, intScore, existingSlots = []) {
-      if (Number(wizardLvl) <= 0) return (existingSlots || []).filter(s => (Number(s.daily) || 0) > 0);
+      const prevSlots = Array.isArray(existingSlots) ? existingSlots : [];
+      if (Number(wizardLvl) <= 0) return prevSlots.filter(s => (Number(s.daily) || 0) > 0);
       const lvl = Math.min(20, Math.max(1, Number(wizardLvl) || 1));
       const intMod = Math.floor(((Number(intScore) || 10) - 10) / 2);
       const wizDailyTable = [
@@ -24046,7 +24107,7 @@
       const baseDaily = wizDailyTable[lvl] || [3, 1];
       const result = baseDaily.map((base, spellLvl) => {
         const bonus = (spellLvl >= 1 && intMod >= spellLvl) ? Math.floor((intMod - spellLvl) / 4) + 1 : 0;
-        const prev = (existingSlots || []).find(s => Number(s.level) === spellLvl);
+        const prev = prevSlots.find(s => Number(s.level) === spellLvl);
         const dmBonus = prev ? (Number(prev.dmBonus) || 0) : 0;
         const daily = Math.max(0, base + bonus + dmBonus);
         return {
@@ -24058,24 +24119,23 @@
         };
       });
       // Retain custom unlocked higher-level slots
-      if (Array.isArray(existingSlots)) {
-        existingSlots.forEach(prev => {
-          if (prev && Number(prev.level) >= baseDaily.length) {
-            result.push({
-              level: Number(prev.level),
-              daily: Number(prev.daily) || 0,
-              dmBonus: Number(prev.dmBonus) || 0,
-              used: Math.min(Number(prev.daily) || 0, Number(prev.used) || 0),
-              known: Number(prev.daily) || 0
-            });
-          }
-        });
-      }
+      prevSlots.forEach(prev => {
+        if (prev && Number(prev.level) >= baseDaily.length) {
+          result.push({
+            level: Number(prev.level),
+            daily: Number(prev.daily) || 0,
+            dmBonus: Number(prev.dmBonus) || 0,
+            used: Math.min(Number(prev.daily) || 0, Number(prev.used) || 0),
+            known: Number(prev.daily) || 0
+          });
+        }
+      });
       return result;
     }
 
     function calculateDivineSlots(divineLvl, wisScore, existingSlots = []) {
-      if (Number(divineLvl) <= 0) return (existingSlots || []).filter(s => (Number(s.daily) || 0) > 0);
+      const prevSlots = Array.isArray(existingSlots) ? existingSlots : [];
+      if (Number(divineLvl) <= 0) return prevSlots.filter(s => (Number(s.daily) || 0) > 0);
       const lvl = Math.min(20, Math.max(1, Number(divineLvl) || 1));
       const wisMod = Math.floor(((Number(wisScore) || 10) - 10) / 2);
       // Cleric base daily slots + 1 domain slot for levels 1..9
@@ -24105,7 +24165,7 @@
       const baseDaily = clericDailyTable[lvl] || [3, 2];
       const result = baseDaily.map((base, spellLvl) => {
         const bonus = (spellLvl >= 1 && wisMod >= spellLvl) ? Math.floor((wisMod - spellLvl) / 4) + 1 : 0;
-        const prev = (existingSlots || []).find(s => Number(s.level) === spellLvl);
+        const prev = prevSlots.find(s => Number(s.level) === spellLvl);
         const dmBonus = prev ? (Number(prev.dmBonus) || 0) : 0;
         const daily = Math.max(0, base + bonus + dmBonus);
         return {
@@ -24117,19 +24177,17 @@
         };
       });
       // Retain custom unlocked higher-level slots
-      if (Array.isArray(existingSlots)) {
-        existingSlots.forEach(prev => {
-          if (prev && Number(prev.level) >= baseDaily.length) {
-            result.push({
-              level: Number(prev.level),
-              daily: Number(prev.daily) || 0,
-              dmBonus: Number(prev.dmBonus) || 0,
-              used: Math.min(Number(prev.daily) || 0, Number(prev.used) || 0),
-              known: Number(prev.daily) || 0
-            });
-          }
-        });
-      }
+      prevSlots.forEach(prev => {
+        if (prev && Number(prev.level) >= baseDaily.length) {
+          result.push({
+            level: Number(prev.level),
+            daily: Number(prev.daily) || 0,
+            dmBonus: Number(prev.dmBonus) || 0,
+            used: Math.min(Number(prev.daily) || 0, Number(prev.used) || 0),
+            known: Number(prev.daily) || 0
+          });
+        }
+      });
       return result;
     }
     function getPreparedCasterInfo() {
@@ -25444,16 +25502,17 @@
             character.spellcasting.slots = built;
           }
         } else {
+          const curSlots = Array.isArray(character.spellcasting.slots) ? character.spellcasting.slots : [];
           character.spellcasting.slots = (sorcLvls > 0 && cl > 0)
-            ? calculateSorcererSlots(sorcLvls, statVal, character.spellcasting.slots) 
-            : ((character.spellcasting.slots || []).filter(s => (Number(s.dmBonus) || 0) > 0));
+            ? calculateSorcererSlots(sorcLvls, statVal, curSlots) 
+            : curSlots.filter(s => (Number(s.dmBonus) || 0) > 0);
         }
       }
 
       // Top archetype badges (Sadeleştirilmiş Kalan / Toplam Sayaçları)
       const spontBadge = document.getElementById('tab-spontaneous-badge');
       if (spontBadge) {
-        const slots = character?.spellcasting?.slots || [];
+        const slots = Array.isArray(character?.spellcasting?.slots) ? character.spellcasting.slots : [];
         const totalDaily = slots.reduce((sum, s) => sum + (Number(s.daily) || 0), 0);
         const totalUsed = slots.reduce((sum, s) => sum + (Number(s.used) || 0), 0);
         const totalRemaining = Math.max(0, totalDaily - totalUsed);
@@ -25470,13 +25529,14 @@
 
       const prepInfo = getPreparedCasterInfo();
       if (character?.spellcasting) {
+        const curPrep = Array.isArray(character.spellcasting.preparedSlots) ? character.spellcasting.preparedSlots : [];
         character.spellcasting.preparedSlots = (prepInfo.wizLvls > 0 && prepInfo.cl > 0)
-          ? calculateWizardSlots(prepInfo.wizLvls, prepInfo.statVal, character.spellcasting.preparedSlots)
-          : ((character.spellcasting.preparedSlots || []).filter(s => (Number(s.dmBonus) || 0) > 0));
+          ? calculateWizardSlots(prepInfo.wizLvls, prepInfo.statVal, curPrep)
+          : curPrep.filter(s => (Number(s.dmBonus) || 0) > 0);
       }
       const prepBadge = document.getElementById('tab-prepared-badge');
       if (prepBadge) {
-        const pSlots = character?.spellcasting?.preparedSlots || [];
+        const pSlots = Array.isArray(character?.spellcasting?.preparedSlots) ? character.spellcasting.preparedSlots : [];
         const pDaily = pSlots.reduce((sum, s) => sum + (Number(s.daily) || 0), 0);
         const pUsed = pSlots.reduce((sum, s) => sum + (Number(s.used) || 0), 0);
         const pRem = Math.max(0, pDaily - pUsed);
@@ -25491,13 +25551,14 @@
 
       const divInfo = getDivineCasterInfo();
       if (character?.spellcasting) {
+        const curDiv = Array.isArray(character.spellcasting.divineSlots) ? character.spellcasting.divineSlots : [];
         character.spellcasting.divineSlots = (divInfo.divLvls > 0 && divInfo.cl > 0)
-          ? calculateDivineSlots(divInfo.divLvls, divInfo.statVal, character.spellcasting.divineSlots)
-          : ((character.spellcasting.divineSlots || []).filter(s => (Number(s.dmBonus) || 0) > 0));
+          ? calculateDivineSlots(divInfo.divLvls, divInfo.statVal, curDiv)
+          : curDiv.filter(s => (Number(s.dmBonus) || 0) > 0);
       }
       const divineBadge = document.getElementById('tab-divine-badge');
       if (divineBadge) {
-        const dSlots = character?.spellcasting?.divineSlots || [];
+        const dSlots = Array.isArray(character?.spellcasting?.divineSlots) ? character.spellcasting.divineSlots : [];
         const dDaily = dSlots.reduce((sum, s) => sum + (Number(s.daily) || 0), 0);
         const dUsed = dSlots.reduce((sum, s) => sum + (Number(s.used) || 0), 0);
         const dRem = Math.max(0, dDaily - dUsed);
@@ -28342,14 +28403,15 @@
     }
 
     function calculateSorcererSlots(sorcererLvl, chaScore, existingSlots = null) {
-      if (character?.isNpc && Array.isArray(existingSlots) && existingSlots.length > 0) {
-        return existingSlots;
+      const prevSlots = Array.isArray(existingSlots) ? existingSlots : (Array.isArray(character?.spellcasting?.slots) ? character.spellcasting.slots : []);
+      if (character?.isNpc && prevSlots.length > 0) {
+        return prevSlots;
       }
       if (Number(sorcererLvl) <= 0) {
         if (character?.isNpc && Array.isArray(character?.spellcasting?.slots) && character.spellcasting.slots.length > 0) {
           return character.spellcasting.slots;
         }
-        return (existingSlots || []).filter(s => (Number(s.daily) || 0) > 0);
+        return prevSlots.filter(s => (Number(s.daily) || 0) > 0);
       }
       const clampedLvl = Math.min(20, Math.max(1, Number(sorcererLvl) || 1));
       const chaMod = Math.floor(((Number(chaScore) || 10) - 10) / 2);
@@ -28399,7 +28461,6 @@
       };
       const base = basePerLvl[clampedLvl] || [6, 6, 4];
       const knownArr = knownPerLvl[clampedLvl] || [6, 4, 2];
-      const prevSlots = Array.isArray(existingSlots) ? existingSlots : (character?.spellcasting?.slots || []);
       const names = ['Cantrip', '1st Level', '2nd Level', '3rd Level', '4th Level', '5th Level', '6th Level', '7th Level', '8th Level', '9th Level'];
       const result = base.map((dailyBase, spellLvl) => {
         let bonus = 0;

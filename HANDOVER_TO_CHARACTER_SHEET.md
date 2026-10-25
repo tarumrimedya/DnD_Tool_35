@@ -893,3 +893,25 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   3. **Parite ve Kural Bütünlüğü:**
      - `hub.html` ve `webapp/hub.html` %100 SHA-256 eşitliğinde tutuldu.
      - Kesinlikle hiçbir tavla zarı emoji kullanılmadı.
+
+---
+
+## 44. BÜYÜ YUVALARI (SPELL SLOTS) ŞEMA NORMALİZASYONU VE GÜVENLİK KORUMASI (2026-10-25)
+* **Kullanıcı Bildirimi & Hata Dökümü:**
+  - `renderSpellSlotsStrip error: TypeError: s.slots.some is not a function`
+  - `renderSpellSlots error: TypeError: (character.spellcasting.slots || []).filter is not a function`
+  - `renderManeuvers error: TypeError: (character.spellcasting.slots || []).filter is not a function`
+  - `renderKnownSpells error: TypeError: (character.spellcasting.slots || []).filter is not a function`
+* **Kök Neden:**
+  - Karakter veri tabanında (özellikle NPC/Bestiary yaratıklarında veya harici içe aktarmalarda) büyü yuvalarının `character.spellcasting.slots`, `preparedSlots` veya `divineSlots` alanları bir Dizi (`Array`) yerine Nesne (`Object: {"0": 6, "1": 4}` veya `{}`) olarak saklandığında, `({} || []).filter` ve `s.slots.some` çağrıları `TypeError` fırlatıyor ve savaş kokpiti, büyü yönetimi, manevralar ve bilinen büyüler panellerinin çizimini kilitliyordu.
+* **Uygulanan Çözüm:**
+  1. **Evrensel Normalizasyon Fonksiyonu (`normalizeCharacterSpellcasting`):**
+     - Hem `renderAll()` hem de `loadInitialData()` aşamalarında `character.spellcasting.slots`, `preparedSlots` ve `divineSlots` alanlarının nesne veya dizi olup olmadığı kontrol edilerek anında standart `{ level, daily, used, dmBonus }` dizi formatına dönüştürülmesi sağlandı.
+  2. **Defansif Fonksiyon Korumaları:**
+     - `getAvailableSpellSlotSources()` içinde `toSlotsArray()` normalizasyonu eklenerek `all.filter(...)` içindeki `s.slots.some` çağrısı `Array.isArray(s.slots)` ile koruma altına alındı.
+     - `getSpellSlotsArrayBySource(sourceKey)` fonksiyonunda dizi garantisi sağlandı.
+     - `calculateWizardSlots`, `calculateDivineSlots` ve `calculateSorcererSlots` fonksiyonlarının girişinde `existingSlots` parametresi güvenli diziye normalize edildi.
+     - `renderSpellsCockpit()` ve `renderSpellSlotsStrip()` içindeki slot ve sayaç döngüleri korumalı hale getirildi.
+  3. **Parite ve Kural Bütünlüğü:**
+     - `character.html`, `index.html`, `webapp/character.html` ve `webapp/index.html` %100 SHA-256 paritesinde eşitlendi (`f9445bc9ce`).
+     - Sıfır `🎲` kuralı tavizsiz uygulandı.
