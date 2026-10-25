@@ -181,11 +181,19 @@
               </div>
             </div>
 
-            <!-- Sağ Üst Kalem & Defter İkonlu Genişletme Butonu -->
-            <button type="button" onclick="HubNotes.openFullNotesModal()" class="px-2 py-1 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/60 border border-indigo-500/50 text-indigo-200 hover:text-white transition flex items-center gap-1 text-[11px] font-bold shadow cursor-pointer active:scale-95" title="Geniş Not Defteri Sayfasını Aç">
-              <span>📝</span>
-              <span class="text-[9px] hidden sm:inline">Genişlet</span>
-            </button>
+            <!-- Sağ Üst Butonlar: Mindmap, AI ve Genişletme -->
+            <div class="flex items-center gap-1">
+              <button type="button" onclick="HubNotes.openFullNotesModal(null, 'mindmap')" class="px-2 py-1 rounded-lg bg-indigo-950 hover:bg-indigo-900 border border-indigo-700/60 text-indigo-300 hover:text-white transition flex items-center gap-1 text-[11px] font-bold shadow cursor-pointer active:scale-95" title="Etiket Haritasını (Mindmap) Aç">
+                <span>🕸️</span>
+              </button>
+              <button type="button" onclick="HubNotes.openFullNotesModal(null, 'ai')" class="px-2 py-1 rounded-lg bg-purple-950 hover:bg-purple-900 border border-purple-700/60 text-purple-300 hover:text-white transition flex items-center gap-1 text-[11px] font-bold shadow cursor-pointer active:scale-95" title="AI Kampanya Günlükçüsünü Aç">
+                <span>✨</span>
+              </button>
+              <button type="button" onclick="HubNotes.openFullNotesModal(null, 'editor')" class="px-2 py-1 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/60 border border-indigo-500/50 text-indigo-200 hover:text-white transition flex items-center gap-1 text-[11px] font-bold shadow cursor-pointer active:scale-95" title="Geniş Not Defteri Sayfasını Aç">
+                <span>📝</span>
+                <span class="text-[9px] hidden sm:inline">Genişlet</span>
+              </button>
+            </div>
           </div>
 
           <!-- Üst Sekmeler: [ ✏️ Not Defteri ] & [ 📋 Kayıtlı Notlar ] -->
@@ -212,7 +220,7 @@
             </div>
 
             <!-- Aşağı Kadar Genişleyen Textarea (0.66 oranına göre 105px min-h) -->
-            <textarea id="hub-quick-note-input" placeholder="Notunuzu buraya yazın...&#10;&#10;İpuçları:&#10;• #gorev, #npc, #yer, #loot etiketleri kullanabilirsiniz&#10;• - [ ] ile görev kutusu ekleyebilirsiniz&#10;• Kaydetmek için Ctrl+Enter yapın" class="w-full flex-1 min-h-[105px] bg-slate-900/90 border border-slate-700 rounded-xl p-2.5 text-xs text-white placeholder-slate-500 font-sans focus:outline-none focus:border-indigo-400 resize-none leading-relaxed shadow-inner" onkeydown="if((event.ctrlKey || event.metaKey) && event.key==='Enter') HubNotes.addQuickNote()"></textarea>
+            <textarea id="hub-quick-note-input" placeholder="Notunuzu buraya yazın...&#10;&#10;İpuçları:&#10;• #gorev, #npc, #yer, #loot etiketleri kullanabilirsiniz&#10;• - [ ] ile görev kutusu ekleyebilirsiniz&#10;• Kaydetmek için Ctrl+Enter yapın" class="w-full flex-1 min-h-[105px] bg-slate-900/90 border border-slate-700 rounded-xl p-2.5 text-xs text-white placeholder-slate-500 font-sans focus:outline-none focus:border-indigo-400 resize-none leading-relaxed shadow-inner" oninput="HubNotes.handleQuickInput(event)" onkeydown="HubNotes.handleQuickKeydown(event)"></textarea>
 
             <!-- Hızlı Etiket Araç Çubuğu ve Kaydet Butonu -->
             <div class="shrink-0 space-y-1.5 pt-0.5">
@@ -4340,39 +4348,61 @@ CRITICAL RULES:
   </script>
 
     <!-- GENİŞ NOT DEFTERİ MODALI -->
-    <div id="hub-full-notes-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-3 sm:p-6">
-      <div class="bg-[#131d33] border border-slate-700 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl text-slate-100 overflow-hidden">
+    <div id="hub-full-notes-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-2 sm:p-4 md:p-6">
+      <div class="bg-[#131d33] border border-slate-700 rounded-2xl w-full max-w-5xl max-h-[92vh] flex flex-col shadow-2xl text-slate-100 overflow-hidden">
         
-        <!-- Modal Başlığı -->
-        <div class="flex items-center justify-between border-b border-slate-700/80 px-5 py-3.5 bg-slate-900/90 shrink-0">
-          <div class="flex items-center gap-2.5">
-            <span class="text-xl">📝</span>
-            <div>
+        <!-- Modal Başlığı & Görünüm Sekmeleri -->
+        <div class="flex items-center justify-between border-b border-slate-700/80 px-4 sm:px-5 py-3 bg-slate-900/90 shrink-0 gap-2 flex-wrap">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <span class="text-xl shrink-0">📝</span>
+            <div class="min-w-0">
               <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
                 <span>Not Defteri</span>
-                <span id="hub-modal-target-title" class="inline-flex items-center text-xs font-normal text-indigo-300"></span>
+                <span id="hub-modal-target-title" class="inline-flex items-center text-xs font-normal text-indigo-300 truncate"></span>
               </h3>
             </div>
           </div>
-          <button type="button" onclick="HubNotes.closeFullNotesModal()" class="text-slate-400 hover:text-white text-lg font-bold px-2 py-1 cursor-pointer">✕</button>
+
+          <!-- Mod Switcher: [ 📝 Notlar ] [ 🕸️ Etiket Haritası ] [ ✨ AI Günlükçü ] -->
+          <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs shrink-0">
+            <button type="button" id="hub-modal-tab-editor" onclick="HubNotes.switchModalView('editor')" class="px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 bg-indigo-600 text-white shadow cursor-pointer text-xs">
+              <span>📝</span>
+              <span>Notlar</span>
+            </button>
+            <button type="button" id="hub-modal-tab-mindmap" onclick="HubNotes.switchModalView('mindmap')" class="px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 text-slate-400 hover:text-white cursor-pointer text-xs">
+              <span>🕸️</span>
+              <span>Etiket Haritası</span>
+            </button>
+            <button type="button" id="hub-modal-tab-ai" onclick="HubNotes.switchModalView('ai')" class="px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 text-slate-400 hover:text-white cursor-pointer text-xs">
+              <span>✨</span>
+              <span>AI Günlükçü</span>
+            </button>
+          </div>
+
+          <button type="button" onclick="HubNotes.closeFullNotesModal()" class="text-slate-400 hover:text-white text-lg font-bold px-2 py-1 cursor-pointer shrink-0">✕</button>
         </div>
 
-        <!-- Modal Gövdesi (2 Kolon) -->
-        <div class="flex-1 flex flex-col sm:flex-row overflow-hidden min-h-0">
+        <!-- 1. GÖRÜNÜM: Notlar & Editör (2 Kolon) -->
+        <div id="hub-modal-view-editor" class="flex-1 flex flex-col sm:flex-row overflow-hidden min-h-0">
           
-          <!-- Sol Sütun: Not Listesi & Arama & Filtre -->
-          <div class="w-full sm:w-80 border-b sm:border-b-0 sm:border-r border-slate-700/80 flex flex-col bg-slate-900/40 shrink-0 p-3 space-y-3 overflow-hidden">
+          <!-- Sol Sütun: Not Listesi & Arama & İlişkisel Filtre -->
+          <div class="w-full sm:w-80 border-b sm:border-b-0 sm:border-r border-slate-700/80 flex flex-col bg-slate-900/40 shrink-0 p-3 space-y-2.5 overflow-hidden">
             <!-- Arama -->
-            <div class="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 focus-within:border-indigo-400 transition">
+            <div class="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 focus-within:border-indigo-400 transition shrink-0">
               <span class="text-slate-500 text-xs">🔍</span>
               <input type="text" oninput="HubNotes.handleSearchInput(this.value)" placeholder="Notlarda ara..." class="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none">
             </div>
 
             <!-- Yeni Not Ekle Butonu -->
-            <button type="button" onclick="HubNotes.createNewModalNote()" class="w-full py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow transition active:scale-95 cursor-pointer">
+            <button type="button" onclick="HubNotes.createNewModalNote()" class="w-full py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow transition active:scale-95 cursor-pointer shrink-0">
               <span>➕</span>
               <span>Yeni Not Oluştur</span>
             </button>
+
+            <!-- Dinamik İlişkisel Etiket Filtre Çubuğu -->
+            <div id="hub-modal-tags-bar" class="shrink-0 space-y-1.5">
+              <!-- JS Dinamik Doldurur -->
+            </div>
 
             <!-- Not Listesi -->
             <div id="hub-modal-notes-list" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar min-h-0">
@@ -4381,10 +4411,14 @@ CRITICAL RULES:
           </div>
 
           <!-- Sağ Sütun: Not Editörü -->
-          <div class="flex-1 flex flex-col p-4 space-y-3 bg-[#131d33] overflow-y-auto">
+          <div class="flex-1 flex flex-col p-4 space-y-3 bg-[#131d33] overflow-y-auto min-h-0">
             <div class="flex items-center justify-between border-b border-slate-800 pb-2.5 shrink-0 flex-wrap gap-2">
               <div class="text-[11px] text-slate-400 font-mono" id="hub-modal-date-badge">Seçili not bilgisi</div>
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 flex-wrap">
+                <button type="button" onclick="HubNotes.openAiChroniclerWithActiveNote()" class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition bg-purple-950/60 hover:bg-purple-900/80 text-purple-300 border border-purple-800/60 flex items-center gap-1.5 cursor-pointer shadow-sm" title="Bu notu ve bağlantılı notları AI ile özetle">
+                  <span>✨</span>
+                  <span>AI Özetle</span>
+                </button>
                 <button type="button" id="hub-modal-save-btn" onclick="HubNotes.saveModalNote(true)" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-950/40 flex items-center gap-1.5 cursor-pointer active:scale-95" title="Değişiklikleri Kaydet (Ctrl+S / Ctrl+Enter)">
                   <span>💾</span>
                   <span id="hub-modal-save-text">Notu Kaydet</span>
@@ -4399,19 +4433,165 @@ CRITICAL RULES:
             </div>
 
             <!-- Hızlı Etiket Ekleme Araç Çubuğu -->
-            <div class="flex items-center gap-1.5 flex-wrap text-xs font-mono">
+            <div class="flex items-center gap-1.5 flex-wrap text-xs font-mono shrink-0">
               <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Hızlı Etiket:</span>
               <button type="button" onclick="HubNotes.insertTagIntoEditor('#gorev')" class="px-2 py-0.5 rounded-md bg-sky-950/60 hover:bg-sky-900 text-sky-300 border border-sky-800/60 transition cursor-pointer">+ #gorev</button>
               <button type="button" onclick="HubNotes.insertTagIntoEditor('#npc')" class="px-2 py-0.5 rounded-md bg-purple-950/60 hover:bg-purple-900 text-purple-300 border border-purple-800/60 transition cursor-pointer">+ #npc</button>
               <button type="button" onclick="HubNotes.insertTagIntoEditor('#yer')" class="px-2 py-0.5 rounded-md bg-emerald-950/60 hover:bg-emerald-900 text-emerald-300 border border-emerald-800/60 transition cursor-pointer">+ #yer</button>
               <button type="button" onclick="HubNotes.insertTagIntoEditor('#loot')" class="px-2 py-0.5 rounded-md bg-yellow-950/60 hover:bg-yellow-900 text-yellow-300 border border-yellow-800/60 transition cursor-pointer">+ #loot</button>
               <button type="button" onclick="HubNotes.insertTagIntoEditor('- [ ] ')" class="px-2 py-0.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition cursor-pointer">+ [ ] Görev</button>
+              <span class="text-[10px] text-slate-500 italic ml-auto hidden md:inline">💡 '#' yazarak otomatik tamamlayabilirsiniz</span>
             </div>
 
             <!-- Geniş Textarea -->
-            <textarea id="hub-modal-note-editor" oninput="HubNotes.handleEditorInput()" onblur="HubNotes.saveModalNote(false)" onkeydown="if((event.ctrlKey || event.metaKey) && (event.key==='s' || event.key==='Enter')) { event.preventDefault(); HubNotes.saveModalNote(true); }" placeholder="Notunuzu buraya yazın..." class="w-full flex-1 min-h-[280px] bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-indigo-400 font-sans leading-relaxed resize-none"></textarea>
+            <textarea id="hub-modal-note-editor" oninput="HubNotes.handleEditorInput(event)" onkeydown="HubNotes.handleEditorKeydown(event)" onblur="HubNotes.saveModalNote(false)" placeholder="Notunuzu buraya yazın..." class="w-full flex-1 min-h-[280px] bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-indigo-400 font-sans leading-relaxed resize-none"></textarea>
           </div>
 
+        </div>
+
+        <!-- 2. GÖRÜNÜM: Etiket Haritası (Mindmap) -->
+        <div id="hub-modal-view-mindmap" class="hidden flex-1 flex flex-col sm:flex-row overflow-hidden min-h-0 bg-[#0c1322]">
+          <!-- Mindmap SVG Alanı -->
+          <div class="flex-1 flex flex-col min-h-0 relative overflow-hidden">
+            <!-- Üst Kontrol Çubuğu -->
+            <div class="p-3 bg-slate-900/80 border-b border-slate-800 flex items-center justify-between gap-2 shrink-0 flex-wrap">
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-bold text-white flex items-center gap-1.5">
+                  <span>🕸️</span> <span>İlişkisel Etiket Ağı</span>
+                </span>
+                <span id="hub-mindmap-stats-badge" class="text-[10px] text-indigo-300 bg-indigo-950 px-2 py-0.5 rounded-md border border-indigo-800/60 font-mono">0 Düğüm • 0 Bağlantı</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <input type="text" id="hub-mindmap-search-input" oninput="HubNotes.handleMindmapSearch(this.value)" placeholder="Düğümlerde ara..." class="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-400 w-36 sm:w-44 font-mono">
+                <button type="button" onclick="HubNotes.renderMindmap()" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-semibold cursor-pointer" title="Yerleşimi Yeniden Hesapla">
+                  🔄 Yenile
+                </button>
+              </div>
+            </div>
+
+            <!-- SVG Graph Container -->
+            <div id="hub-mindmap-canvas-container" class="flex-1 w-full h-full relative overflow-hidden flex items-center justify-center p-2">
+              <svg id="hub-mindmap-svg" viewBox="0 0 800 500" class="w-full h-full max-h-[500px] select-none"></svg>
+            </div>
+          </div>
+
+          <!-- Mindmap Sağ Çekmece: Düğüm Detayı & Notlar -->
+          <div id="hub-mindmap-drawer" class="w-full sm:w-80 border-t sm:border-t-0 sm:border-l border-slate-800 bg-slate-900/60 flex flex-col shrink-0 p-3 space-y-2.5 overflow-hidden">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+              <div class="min-w-0">
+                <h4 id="hub-mindmap-selected-title" class="text-xs font-bold text-white truncate">Düğüm Seçin</h4>
+                <p id="hub-mindmap-selected-sub" class="text-[10px] text-slate-400 truncate">Detayları görmek için ağdaki bir düğüme tıklayın.</p>
+              </div>
+              <button type="button" id="hub-mindmap-ai-btn" onclick="HubNotes.openAiChroniclerWithMindmapTag()" class="hidden px-2 py-1 rounded-lg bg-purple-950/80 hover:bg-purple-900 text-purple-300 border border-purple-700/60 text-[10px] font-bold cursor-pointer shrink-0" title="Bu etiket grubunu AI ile özetle">
+                ✨ AI Sentezle
+              </button>
+            </div>
+
+            <!-- Bağlantılı Etiketler Çipleri -->
+            <div id="hub-mindmap-connected-tags" class="flex flex-wrap gap-1 text-[10px] font-mono max-h-20 overflow-y-auto"></div>
+
+            <!-- Eşleşen Notlar Listesi -->
+            <div id="hub-mindmap-matching-notes" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar min-h-0"></div>
+          </div>
+        </div>
+
+        <!-- 3. GÖRÜNÜM: AI Kampanya Günlükçüsü (AI Chronicler) -->
+        <div id="hub-modal-view-ai" class="hidden flex-1 flex flex-col overflow-hidden min-h-0 bg-[#0d1629]">
+          <div class="flex-1 flex flex-col sm:flex-row overflow-hidden min-h-0">
+            <!-- Sol Panel: AI Parametreleri & Mod Seçimi -->
+            <div class="w-full sm:w-80 border-b sm:border-b-0 sm:border-r border-slate-800 bg-slate-900/60 p-4 flex flex-col space-y-3.5 shrink-0 overflow-y-auto">
+              <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
+                <span class="text-xl">🧙‍♂️</span>
+                <div>
+                  <h4 class="text-xs font-bold text-white">AI Kampanya Günlükçüsü</h4>
+                  <p class="text-[10px] text-slate-400">Mikro notları edebi oturum hikayesi veya görev takip dosyasına dönüştürür.</p>
+                </div>
+              </div>
+
+              <!-- Sentez Kapsamı -->
+              <div class="space-y-1">
+                <label class="text-[11px] font-bold text-slate-300">Sentez Kapsamı:</label>
+                <select id="hub-ai-scope-select" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-400">
+                  <option value="all">🌐 Aktif Not Defterindeki Tüm Notlar</option>
+                  <option value="tag">🏷️ Seçili Etiket Grubu</option>
+                  <option value="recent5">⏱️ Son 5 Not (Son Oturum)</option>
+                  <option value="recent10">⏱️ Son 10 Not</option>
+                </select>
+                <div id="hub-ai-scope-tag-picker" class="hidden pt-1">
+                  <select id="hub-ai-tag-select" class="w-full bg-slate-950 border border-indigo-700/60 rounded-lg px-2.5 py-1.5 text-xs text-indigo-300 font-mono focus:outline-none"></select>
+                </div>
+              </div>
+
+              <!-- Sentez Formatı Seçimi -->
+              <div class="space-y-1.5">
+                <label class="text-[11px] font-bold text-slate-300">Sentez Formatı:</label>
+                <div class="space-y-1.5" id="hub-ai-modes-container">
+                  <label class="flex items-start gap-2.5 p-2 rounded-xl border border-indigo-500/50 bg-indigo-950/40 cursor-pointer transition hover:bg-indigo-950/60">
+                    <input type="radio" name="hub-ai-mode" value="narrative" checked class="mt-0.5 text-indigo-500 focus:ring-0">
+                    <div>
+                      <div class="text-xs font-bold text-indigo-200">📖 Oturum Günlüğü &amp; Hikaye</div>
+                      <div class="text-[10px] text-slate-400 leading-tight">Notları akıcı, edebi bir rol yapma hikaye günlüğüne dönüştürür.</div>
+                    </div>
+                  </label>
+                  <label class="flex items-start gap-2.5 p-2 rounded-xl border border-slate-800 bg-slate-900/60 cursor-pointer transition hover:bg-slate-800/60">
+                    <input type="radio" name="hub-ai-mode" value="quests" class="mt-0.5 text-indigo-500 focus:ring-0">
+                    <div>
+                      <div class="text-xs font-bold text-sky-300">🎯 Görev &amp; İpucu Takip Dosyası</div>
+                      <div class="text-[10px] text-slate-400 leading-tight">Açık/biten görevleri ve ipuçlarını [ ] kutularıyla düzenler.</div>
+                    </div>
+                  </label>
+                  <label class="flex items-start gap-2.5 p-2 rounded-xl border border-slate-800 bg-slate-900/60 cursor-pointer transition hover:bg-slate-800/60">
+                    <input type="radio" name="hub-ai-mode" value="dramatis" class="mt-0.5 text-indigo-500 focus:ring-0">
+                    <div>
+                      <div class="text-xs font-bold text-purple-300">👥 Karakterler &amp; Mekanlar Rehberi</div>
+                      <div class="text-[10px] text-slate-400 leading-tight">Karşılaşılan NPC'leri ve mekanları ansiklopedik döküm yapar.</div>
+                    </div>
+                  </label>
+                  <label class="flex items-start gap-2.5 p-2 rounded-xl border border-slate-800 bg-slate-900/60 cursor-pointer transition hover:bg-slate-800/60">
+                    <input type="radio" name="hub-ai-mode" value="loot" class="mt-0.5 text-indigo-500 focus:ring-0">
+                    <div>
+                      <div class="text-xs font-bold text-amber-300">💎 Hazine &amp; Eşya Envanteri</div>
+                      <div class="text-[10px] text-slate-400 leading-tight">Kazanılan ganimetleri ve büyülü eşyaları listeler.</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Sentezle Butonu -->
+              <button type="button" id="hub-ai-run-btn" onclick="HubNotes.runAiChronicler()" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-purple-950/60 transition active:scale-95 cursor-pointer">
+                <span>✨</span>
+                <span>Notları Sentezle &amp; Oluştur</span>
+              </button>
+            </div>
+
+            <!-- Sağ Panel: AI Çıktı & Okuma Alanı -->
+            <div class="flex-1 flex flex-col p-4 space-y-3 bg-[#131d33] overflow-y-auto min-h-0">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-2.5 shrink-0 flex-wrap gap-2">
+                <div class="flex items-center gap-2">
+                  <span id="hub-ai-status-badge" class="text-xs font-mono text-slate-400">Beklemede</span>
+                </div>
+                <div id="hub-ai-output-actions" class="hidden flex items-center gap-2">
+                  <button type="button" onclick="HubNotes.saveAiSynthesisAsNote()" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-600 hover:bg-emerald-500 text-white shadow-md flex items-center gap-1.5 cursor-pointer active:scale-95" title="Sentezlenen günlüğü bu kampanyaya yeni sabitlenmiş not olarak kaydet">
+                    <span>📌</span>
+                    <span>Sabitlenmiş Not Olarak Kaydet</span>
+                  </button>
+                  <button type="button" onclick="HubNotes.copyAiSynthesisToClipboard()" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 cursor-pointer">
+                    <span>📋</span>
+                    <span>Kopyala</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Sonuç Okuyucu -->
+              <div id="hub-ai-result-container" class="flex-1 overflow-y-auto bg-slate-950/70 border border-slate-800 rounded-xl p-4 text-xs text-slate-200 leading-relaxed font-sans custom-scrollbar min-h-[300px]">
+                <div class="h-full flex flex-col items-center justify-center text-center text-slate-500 gap-2 py-12">
+                  <span class="text-3xl opacity-50">🧙‍♂️✨</span>
+                  <p class="font-semibold text-slate-400">Henüz sentez başlatılmadı.</p>
+                  <p class="text-[11px] text-slate-500 max-w-md">Sol panelden kapsam ve format seçerek "Notları Sentezle &amp; Oluştur" butonuna tıklayın. Kısa notlarınız yapay zeka tarafından derli toplu bir günlüğe dönüştürülecektir.</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>

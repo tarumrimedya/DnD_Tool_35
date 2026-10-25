@@ -1601,3 +1601,34 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - HUB dosyaları (`hub.html`, `webapp/hub.html`) kesinlikle değiştirilmedi.
      - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` (%100 SHA-256: `96DC5845F6CA2C5AA044944CF480A4A156C51AD94FF554FEAC9AB89AEB2CE5CB`).
      - Kural #3 (Zar emojisi yasağı) ve Kural #5 tavizsiz korundu.
+
+
+---
+
+## 58. AKILLI NOT DEFTERİ: HASHTAG OTOMATİK TAMAMLAMA, İLİŞKİSEL ETİKET AĞI (MINDMAP) VE AI KAMPANYA GÜNLÜKÇÜSÜ (2026-10-25)
+* **İstek:**
+  - Kullanıcının kısa kısa aldığı atomik notları yönetmek amacıyla 3 aşamalı akıllı sistemin kurulması:
+    1. `#` işareti konulduğunda standart ve daha önce girilmiş `#` etiketlerinin önerilmesi, yazmaya devam ettikçe filtrelenip telefon klavyesi gibi tamamlanması.
+    2. `#` etiketlerini ve birbiriyle ilişkili etiketleri görmek ve filtrelemek için ilişkisel etiket matrisi ve etkileşimli bir Mindmap görünümü sunulması.
+    3. Kullanıcının kısa kısa aldığı bu mikro notların yapay zeka (Gemini AI) ile sentezlenerek derli toplu bir oturum hikayesi veya görev takip dosyası haline getirilmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Aşama 1: `#` Etiket Otomatik Tamamlama (Typeahead Popover):**
+     - Hem Geniş Not Defteri editöründe (`#hub-modal-note-editor`) hem de yan panel hızlı not alanında (`#hub-quick-note-input`) `#` yazıldığında anında tetiklenen dinamik açılır popover entegre edildi.
+     - Standart sistem etiketleri (`#gorev`, `#npc`, `#yer`, `#loot`, `#ipucu`, `#savas`, `#bilgi`, `#anlasma`) ve veritabanındaki tüm notlardan taranan geçmiş dinamik etiketler kullanım sıklığına göre önerilir.
+     - Klavye gezinimi (`ArrowUp`, `ArrowDown`, `Enter`, `Tab`, `Escape`) ve fare tıklaması ile tek tuşla kelimeyi tamamlar ve imleci boşluk bırakarak doğru konuma yerleştirir.
+  2. **Aşama 2: İlişkisel Etiket Filtreleme & İnteraktif SVG Mindmap Ağ Görünümü:**
+     - **Birlikte Geçen Etiketler Çubuğu:** Bir etiket seçildiğinde (örn. `#yer`), aynı notlarda onunla birlikte kullanılan diğer etiketler (`#neverwinter (3)`, `#npc (2)`) hesaplanarak ilişkisel gezinim hapları halinde listelenir.
+     - **SVG Mindmap Grafiği:** `[ 🕸️ Etiket Haritası ]` sekmesinde, kampanya içindeki tüm etiketler düğümler (node), birlikte geçtikleri notlar ise bağlar (edge) olarak fiziksel yay kuvveti simülasyonu ile çizilir.
+     - Düğüme tıklandığında ilişkili tüm bağlar ve komşu etiketler parlar; sağ çekmecede o etikete ait tüm mikro notlar listelenir. "📝 Düzenle" butonuyla doğrudan editörde ilgili not seçili olarak açılabilir.
+  3. **Aşama 3: AI Kampanya Günlükçüsü (AI Chronicler):**
+     - `[ ✨ AI Günlükçü ]` sekmesi ve hızlı sentezleme butonları eklendi.
+     - 4 farklı sentezleme modu:
+       - 📖 *Oturum Günlüğü & Hikaye:* Dağınık notları sürükleyici, edebi bir Türkçe D&D oturum hikayesi günlüğüne dönüştürür.
+       - 🎯 *Görev & İpucu Takip Dosyası:* Açık/biten görevleri, şüphelileri ve ipuçlarını `[ ]` kutucukları ile raporlar.
+       - 👥 *Karakterler & Mekanlar Rehberi:* Karşılaşılan NPC'leri, loncaları ve mekanları ansiklopedik döküm haline getirir.
+       - 💎 *Hazine & Eşya Envanteri:* Kazanılan ganimet ve eşyaları derler.
+     - Kullanıcının kayıtlı Gemini API anahtarı (`gemini-flash-lite-latest` ve fallback `gemini-flash-latest`) ile çalışır.
+     - Sentezlenen günlük tek tıkla `[ 📌 Sabitlenmiş Not Olarak Kaydet ]` butonuyla kampanyanın başına `#kronik #ai_ozet` etiketleriyle eklenir.
+  4. **Parite ve Güvenlik:**
+     - `hub.html` ve `hub_notes.js` kök dizin dosyaları `webapp/hub.html` ve `webapp/hub_notes.js` ile %100 SHA-256 eşitliğinde güncellendi.
+     - Proje kuralı gereğince tavla zarı emojisi `🎲` KESİNLİKLE kullanılmadı.
