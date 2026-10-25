@@ -1490,8 +1490,13 @@
         };
       });
 
+      const rawSkills = Array.isArray(c.fullData?.skills) ? c.fullData.skills : (Array.isArray(c.skills) ? c.skills : []);
+      const trainedSkills = rawSkills
+        .filter(s => Number(s.ranks || s.rank || 0) > 0)
+        .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
       return `
-        <div class="group bg-[#131d33] border border-slate-700/80 hover:border-indigo-500/60 rounded-2xl p-4 sm:p-5 shadow-xl hover:shadow-2xl transition duration-200 flex flex-col justify-between relative overflow-hidden h-full min-h-[390px] xl:min-h-[410px] xl:max-h-[430px]">
+        <div class="group bg-[#131d33] border border-slate-700/80 hover:border-indigo-500/60 rounded-2xl p-3.5 sm:p-4 shadow-xl hover:shadow-2xl transition duration-200 flex flex-col justify-between relative overflow-y-auto custom-scroll h-full min-h-[390px] xl:min-h-[410px] xl:max-h-[430px]">
           <!-- Üst Arka Plan Işıltısı -->
           <div class="absolute -top-12 -right-12 w-32 h-32 ${c.isNpc ? 'bg-rose-600/10' : 'bg-indigo-600/10'} rounded-full blur-2xl pointer-events-none"></div>
 
@@ -1520,15 +1525,15 @@
                 </div>
               </div>
 
-              <!-- Hızlı Eylem Menüsü -->
-              <div class="flex items-center gap-1.5 shrink-0">
-                <button onclick="openEditCharacterModal('${c.id}')" title="Karakteri / Kampanyayı Düzenle" class="w-8 h-8 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition flex items-center justify-center text-sm shadow cursor-pointer active:scale-95">
+              <!-- Hızlı Eylem Menüsü (2 Sütun: Üstte 2 Sütun Kaplayan Düzenle, Altında Kopyala ve Sil) -->
+              <div class="grid grid-cols-2 gap-1 shrink-0 w-16" onclick="event.stopPropagation()">
+                <button type="button" onclick="openEditCharacterModal('${c.id}')" title="Karakteri / Kampanyayı Düzenle" class="col-span-2 h-7 rounded-lg bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition flex items-center justify-center text-xs shadow cursor-pointer active:scale-95">
                   ✏️
                 </button>
-                <button onclick="duplicateCharacter('${c.id}')" title="Karakteri Klonla" class="w-8 h-8 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition flex items-center justify-center text-sm shadow cursor-pointer active:scale-95">
+                <button type="button" onclick="duplicateCharacter('${c.id}')" title="Karakteri Klonla" class="h-7 rounded-lg bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition flex items-center justify-center text-xs shadow cursor-pointer active:scale-95">
                   📋
                 </button>
-                <button onclick="deleteCharacter('${c.id}')" title="Karakteri Sil" class="w-8 h-8 rounded-xl bg-slate-900/90 hover:bg-rose-950 text-slate-400 hover:text-rose-300 border border-slate-700 hover:border-rose-700 transition flex items-center justify-center text-sm shadow cursor-pointer active:scale-95">
+                <button type="button" onclick="deleteCharacter('${c.id}')" title="Karakteri Sil" class="h-7 rounded-lg bg-slate-900/90 hover:bg-rose-950 text-slate-400 hover:text-rose-300 border border-slate-700 hover:border-rose-700 transition flex items-center justify-center text-xs shadow cursor-pointer active:scale-95">
                   🗑️
                 </button>
               </div>
@@ -1554,14 +1559,14 @@
               </div>
 
               <!-- Hızlı Can Artır/Azalt & Özel Hasar/Şifa Kontrolleri -->
-              <div class="flex items-center justify-between gap-1.5 pt-1 text-xs">
+              <div class="flex flex-wrap items-center justify-between gap-1.5 pt-1 text-xs">
                 <div class="flex items-center gap-1 shrink-0">
                   <button onclick="adjustHp('${c.id}', -5)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-rose-900 text-slate-200 hover:text-white border border-slate-700 transition font-mono font-bold cursor-pointer active:scale-95" title="5 Hasar Ver">-5</button>
                   <button onclick="adjustHp('${c.id}', -1)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-rose-900 text-slate-200 hover:text-white border border-slate-700 transition font-mono font-bold cursor-pointer active:scale-95" title="1 Hasar Ver">-1</button>
                 </div>
 
-                <!-- Özel Miktar Girişi (Hasar / Şifa) -->
-                <div class="flex items-center gap-1 bg-slate-950/90 p-1 rounded-xl border border-slate-800 shadow" onclick="event.stopPropagation()">
+                <!-- Özel Miktar Girişi (Hasar / Şifa) - Mobilde/Dar ekranda alt satıra iner -->
+                <div class="order-last sm:order-none w-full sm:w-auto flex items-center justify-center gap-1 bg-slate-950/90 p-1 rounded-xl border border-slate-800 shadow" onclick="event.stopPropagation()">
                   <button onclick="applyCustomHp('${c.id}', -1)" title="Yazılan miktar kadar hasar ver" class="px-2 py-1 rounded-lg bg-rose-950/90 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800 transition font-mono font-black text-xs cursor-pointer flex items-center gap-0.5 active:scale-95">
                     <span>⚔️</span>
                     <span>-</span>
@@ -1580,65 +1585,93 @@
               </div>
             </div>
 
-            <!-- TEMEL D&D 3.5e STATLAR GRID (AC / ATTACK / SAVES) -->
-            <div class="grid grid-cols-3 gap-2.5 text-center text-xs">
-              <!-- AC -->
-              <div class="bg-slate-900/80 p-2 rounded-xl border border-slate-800 flex flex-col justify-between shadow">
-                <div class="text-xs text-slate-400 font-bold uppercase tracking-wider">Zırh (AC)</div>
-                <div class="text-xl sm:text-2xl font-black text-white mt-1 font-mono">${c.ac}</div>
-                <div class="text-[11px] text-slate-400 mt-1 font-mono font-semibold">T: <strong class="text-slate-200">${c.touchAc}</strong> | FF: <strong class="text-slate-200">${c.flatFootedAc}</strong></div>
+            <!-- TEMEL D&D 3.5e STATLAR GRID (AC SOLDA + 4 SATIR 1 SÜTUN SAVES & INIT SAĞDA) -->
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <!-- AC (Zırh) -->
+              <div class="bg-slate-900/80 p-2 rounded-xl border border-slate-800 flex flex-col justify-between shadow text-center">
+                <div class="flex items-center justify-between text-[11px] text-slate-400 font-bold uppercase tracking-wider">
+                  <span>🛡️ Zırh (AC)</span>
+                  <span class="text-[10px] text-slate-400 font-mono" title="Taban Hız">🏃 ${c.baseSpeed || c.speed || 30} ft</span>
+                </div>
+                <div class="my-auto py-1">
+                  <div class="text-2xl sm:text-3xl font-black text-white font-mono leading-none">${c.ac}</div>
+                </div>
+                <div class="text-[10px] text-slate-400 font-mono font-semibold pt-1 border-t border-slate-800/80 flex items-center justify-around">
+                  <span>T: <strong class="text-slate-200">${c.touchAc}</strong></span>
+                  <span class="text-slate-600">•</span>
+                  <span>FF: <strong class="text-slate-200">${c.flatFootedAc}</strong></span>
+                </div>
               </div>
 
-              <!-- Vuruş & Silah & İnisiyatif -->
-              <div class="bg-slate-900/80 p-2 rounded-xl border border-slate-800 col-span-2 text-left flex flex-col justify-between shadow">
-                <div class="text-xs text-slate-400 font-bold uppercase tracking-wider flex items-center justify-between">
-                  <span>⚔️ Ana Saldırı</span>
-                  <span class="text-amber-400 font-mono font-bold truncate max-w-[150px]" title="${escapeHtml(c.mainWeapon)}">${escapeHtml(c.mainWeapon || 'Silahsız')}</span>
-                </div>
-                <div class="text-sm sm:text-base font-black text-amber-300 mt-0.5 font-mono truncate" title="${escapeHtml(c.attackFormula || '+0')}">
-                  ${escapeHtml(c.attackFormula || '+0')}
-                </div>
-                <div class="flex items-center justify-between mt-1 pt-1.5 border-t border-slate-800/80">
-                  <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Initiative', ${c.initBonus || 0})" title="İnisiyatif Zarı At (d20${c.initBonus >= 0 ? '+' + c.initBonus : c.initBonus})" class="px-2.5 py-1 rounded-lg bg-slate-800/90 hover:bg-amber-950 border border-slate-700 hover:border-amber-500/60 text-xs text-slate-200 hover:text-amber-300 font-bold transition cursor-pointer flex items-center gap-1 active:scale-95 shadow-sm">
-                    <span class="text-amber-400">⚡</span>
-                    <span>İnisiyatif:</span>
-                    <strong class="text-white font-mono">${c.initBonus >= 0 ? '+' + c.initBonus : c.initBonus}</strong>
-                  </button>
-                  <div class="text-xs text-slate-300 font-mono font-bold flex items-center gap-1 bg-slate-950/70 px-2.5 py-1 rounded-lg border border-slate-800" title="Taban Hız">
-                    <span>🏃</span>
-                    <span>${c.baseSpeed || c.speed || 30} ft</span>
-                  </div>
-                </div>
+              <!-- 4 Satır 1 Sütun: Fort, Ref, Will, Init -->
+              <div class="flex flex-col gap-1 justify-between">
+                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Fortitude', ${c.fortSave || 0})" title="Fortitude (Dayanıklılık) Zarı At (d20${c.fortSave >= 0 ? '+' + c.fortSave : c.fortSave})" class="flex-1 py-1 px-2.5 rounded-lg bg-slate-900/90 hover:bg-indigo-950 text-slate-200 hover:text-indigo-200 border border-slate-800 hover:border-indigo-500/60 transition cursor-pointer flex items-center justify-between active:scale-95 shadow-sm font-mono text-xs">
+                  <span class="text-indigo-400 font-sans font-bold flex items-center gap-1">🛡️ Fort</span>
+                  <strong class="font-bold font-mono text-white">${c.fortSave >= 0 ? '+' + c.fortSave : c.fortSave}</strong>
+                </button>
+                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Reflex', ${c.refSave || 0})" title="Reflex (Refleks) Zarı At (d20${c.refSave >= 0 ? '+' + c.refSave : c.refSave})" class="flex-1 py-1 px-2.5 rounded-lg bg-slate-900/90 hover:bg-emerald-950 text-slate-200 hover:text-emerald-200 border border-slate-800 hover:border-emerald-500/60 transition cursor-pointer flex items-center justify-between active:scale-95 shadow-sm font-mono text-xs">
+                  <span class="text-emerald-400 font-sans font-bold flex items-center gap-1">⚡ Ref</span>
+                  <strong class="font-bold font-mono text-white">${c.refSave >= 0 ? '+' + c.refSave : c.refSave}</strong>
+                </button>
+                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Will', ${c.willSave || 0})" title="Will (İrade) Zarı At (d20${c.willSave >= 0 ? '+' + c.willSave : c.willSave})" class="flex-1 py-1 px-2.5 rounded-lg bg-slate-900/90 hover:bg-purple-950 text-slate-200 hover:text-purple-200 border border-slate-800 hover:border-purple-500/60 transition cursor-pointer flex items-center justify-between active:scale-95 shadow-sm font-mono text-xs">
+                  <span class="text-purple-400 font-sans font-bold flex items-center gap-1">🔮 Will</span>
+                  <strong class="font-bold font-mono text-white">${c.willSave >= 0 ? '+' + c.willSave : c.willSave}</strong>
+                </button>
+                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Initiative', ${c.initBonus || 0})" title="İnisiyatif Zarı At (d20${c.initBonus >= 0 ? '+' + c.initBonus : c.initBonus})" class="flex-1 py-1 px-2.5 rounded-lg bg-slate-900/90 hover:bg-amber-950 text-slate-200 hover:text-amber-300 border border-slate-800 hover:border-amber-500/60 transition cursor-pointer flex items-center justify-between active:scale-95 shadow-sm font-mono text-xs">
+                  <span class="text-amber-400 font-sans font-bold flex items-center gap-1">⚡ Init</span>
+                  <strong class="font-bold font-mono text-white">${c.initBonus >= 0 ? '+' + c.initBonus : c.initBonus}</strong>
+                </button>
               </div>
             </div>
 
-            <!-- KURTARMA ATIŞLARI (SAVES) & PASİFLER (ZAR ATILABİLİR) -->
+            <!-- SPOT & LISTEN SABİT + EĞİTİLMİŞ BECERİLER (RANK > 0) ÇEKMECESİ -->
             <div class="bg-slate-900/80 p-2 rounded-xl border border-slate-800 space-y-1.5 shadow">
-              <div class="flex items-center gap-2">
-                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Fortitude', ${c.fortSave || 0})" title="Fortitude (Dayanıklılık) Zarı At (d20${c.fortSave >= 0 ? '+' + c.fortSave : c.fortSave})" class="flex-1 py-1.5 px-2 rounded-xl bg-slate-800/90 hover:bg-indigo-950 text-slate-200 hover:text-indigo-200 border border-slate-700/80 hover:border-indigo-500/60 transition cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 shadow font-mono text-xs font-bold">
-                  <strong class="text-indigo-400 font-sans">Fort:</strong>
-                  <span>${c.fortSave >= 0 ? '+' + c.fortSave : c.fortSave}</span>
-                </button>
-                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Reflex', ${c.refSave || 0})" title="Reflex (Refleks) Zarı At (d20${c.refSave >= 0 ? '+' + c.refSave : c.refSave})" class="flex-1 py-1.5 px-2 rounded-xl bg-slate-800/90 hover:bg-emerald-950 text-slate-200 hover:text-emerald-200 border border-slate-700/80 hover:border-emerald-500/60 transition cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 shadow font-mono text-xs font-bold">
-                  <strong class="text-emerald-400 font-sans">Ref:</strong>
-                  <span>${c.refSave >= 0 ? '+' + c.refSave : c.refSave}</span>
-                </button>
-                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Will', ${c.willSave || 0})" title="Will (İrade) Zarı At (d20${c.willSave >= 0 ? '+' + c.willSave : c.willSave})" class="flex-1 py-1.5 px-2 rounded-xl bg-slate-800/90 hover:bg-purple-950 text-slate-200 hover:text-purple-200 border border-slate-700/80 hover:border-purple-500/60 transition cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 shadow font-mono text-xs font-bold">
-                  <strong class="text-purple-400 font-sans">Will:</strong>
-                  <span>${c.willSave >= 0 ? '+' + c.willSave : c.willSave}</span>
-                </button>
-              </div>
-
-              <div class="flex items-center gap-2 pt-1 border-t border-slate-800/80 text-xs">
-                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Spot', ${c.spotBonus || 0})" title="Spot (Fark Etme) Zarı At (d20${c.spotBonus >= 0 ? '+' + c.spotBonus : c.spotBonus})" class="flex-1 py-1.5 px-3 rounded-xl bg-slate-800/80 hover:bg-amber-950 text-slate-300 hover:text-amber-200 border border-slate-700/80 hover:border-amber-500/60 transition cursor-pointer flex items-center justify-between active:scale-95 shadow-sm font-semibold">
-                  <span class="flex items-center gap-1 text-amber-300"><span>👁️</span> <span>Spot</span></span>
+              <div class="flex items-center gap-1.5 text-xs">
+                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Spot', ${c.spotBonus || 0})" title="Spot (Fark Etme) Zarı At (d20${c.spotBonus >= 0 ? '+' + c.spotBonus : c.spotBonus})" class="flex-1 py-1.5 px-2.5 rounded-lg bg-slate-950/70 hover:bg-amber-950 text-slate-300 hover:text-amber-200 border border-slate-800 hover:border-amber-500/60 transition cursor-pointer flex items-center justify-between active:scale-95 shadow-sm font-semibold">
+                  <span class="flex items-center gap-1 text-amber-300 text-[11px]"><span>👁️</span> <span>Spot</span></span>
                   <strong class="text-white font-mono font-bold">${c.spotBonus >= 0 ? '+' + c.spotBonus : c.spotBonus}</strong>
                 </button>
-                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Listen', ${c.listenBonus || 0})" title="Listen (Dinleme) Zarı At (d20${c.listenBonus >= 0 ? '+' + c.listenBonus : c.listenBonus})" class="flex-1 py-1.5 px-3 rounded-xl bg-slate-800/80 hover:bg-sky-950 text-slate-300 hover:text-sky-200 border border-slate-700/80 hover:border-sky-500/60 transition cursor-pointer flex items-center justify-between active:scale-95 shadow-sm font-semibold">
-                  <span class="flex items-center gap-1 text-sky-300"><span>👂</span> <span>Listen</span></span>
+                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Listen', ${c.listenBonus || 0})" title="Listen (Dinleme) Zarı At (d20${c.listenBonus >= 0 ? '+' + c.listenBonus : c.listenBonus})" class="flex-1 py-1.5 px-2.5 rounded-lg bg-slate-950/70 hover:bg-sky-950 text-slate-300 hover:text-sky-200 border border-slate-800 hover:border-sky-500/60 transition cursor-pointer flex items-center justify-between active:scale-95 shadow-sm font-semibold">
+                  <span class="flex items-center gap-1 text-sky-300 text-[11px]"><span>👂</span> <span>Listen</span></span>
                   <strong class="text-white font-mono font-bold">${c.listenBonus >= 0 ? '+' + c.listenBonus : c.listenBonus}</strong>
                 </button>
+                ${trainedSkills.length > 0 ? `
+                  <button type="button" onclick="event.stopPropagation(); toggleHubCardSkillsDrawer('${c.id}')" class="px-2 py-1.5 rounded-lg bg-slate-950/70 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition flex items-center gap-1 text-[11px] font-bold cursor-pointer shrink-0 shadow-sm" title="Eğitilmiş Becerileri Göster / Gizle (${trainedSkills.length} Beceri)">
+                    <span>📜</span>
+                    <span class="text-[10px] font-mono text-amber-400 font-bold">${trainedSkills.length}</span>
+                    <span id="skills-drawer-icon-${c.id}" class="text-[9px] transition-transform duration-200">▼</span>
+                  </button>
+                ` : ''}
               </div>
+
+              <!-- Gizlenebilir Eğitilmiş Beceriler Çekmecesi (Varsayılan Olarak Kapalı) -->
+              ${trainedSkills.length > 0 ? `
+                <div id="skills-drawer-content-${c.id}" class="hidden pt-1.5 border-t border-slate-800/80 space-y-1">
+                  <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between px-0.5">
+                    <span>Eğitilmiş Beceriler (Rank &gt; 0)</span>
+                    <span class="text-amber-400 font-mono">${trainedSkills.length} Beceri</span>
+                  </div>
+                  <div class="grid grid-cols-2 gap-1 max-h-40 overflow-y-auto custom-scroll pr-0.5">
+                    ${trainedSkills.map(sk => {
+                      const r = Number(sk.ranks || sk.rank || 0);
+                      const abilityKey = (sk.key || sk.ability || 'dex').toLowerCase();
+                      const statScore = getStatScore(abilityKey);
+                      const statMod = getStatMod(statScore);
+                      const totalBonus = sk.total !== undefined ? Number(sk.total) : (r + statMod + (Number(sk.misc) || 0));
+                      const bonusStr = totalBonus >= 0 ? `+${totalBonus}` : `${totalBonus}`;
+                      return `
+                        <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', '${escapeHtml(sk.name)}', ${totalBonus})" class="py-1 px-2 rounded bg-slate-950/80 hover:bg-indigo-950/60 border border-slate-800/90 hover:border-indigo-500/50 text-slate-300 hover:text-white transition flex items-center justify-between text-[11px] font-mono cursor-pointer active:scale-95 shadow-sm" title="${escapeHtml(sk.name)} Zarı At (d20${bonusStr}) [Rank: ${r}]">
+                          <span class="truncate text-left max-w-[100px] font-sans font-medium text-slate-300">${escapeHtml(sk.name)}</span>
+                          <div class="flex items-center gap-1 shrink-0">
+                            <span class="text-[9px] text-slate-500">r${r}</span>
+                            <strong class="text-amber-400 font-bold">${bonusStr}</strong>
+                          </div>
+                        </button>
+                      `;
+                    }).join('')}
+                  </div>
+                </div>
+              ` : ''}
             </div>
 
             <!-- TEMEL STATLAR BAR (STR, DEX, CON, INT, WIS, CHA) -->
@@ -1690,6 +1723,22 @@
         </div>
       `;
     }
+
+    // Karakter Kartı Eğitilmiş Beceriler Çekmecesini Aç / Kapat
+    function toggleHubCardSkillsDrawer(cardId) {
+      const content = document.getElementById(`skills-drawer-content-${cardId}`);
+      const icon = document.getElementById(`skills-drawer-icon-${cardId}`);
+      if (!content) return;
+      const isHidden = content.classList.contains('hidden');
+      if (isHidden) {
+        content.classList.remove('hidden');
+        if (icon) icon.style.transform = 'rotate(180deg)';
+      } else {
+        content.classList.add('hidden');
+        if (icon) icon.style.transform = 'rotate(0deg)';
+      }
+    }
+    window.toggleHubCardSkillsDrawer = toggleHubCardSkillsDrawer;
 
     // Kart Görünümünü Render Et (Çekmece / Accordion Desteğiyle)
     function renderCardsView() {

@@ -1020,3 +1020,30 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   5. **Parite ve Kural Bütünlüğü:**
      - `character.html`, `index.html`, `webapp/character.html` ve `webapp/index.html` dosyaları %100 SHA-256 eşitliğinde güncellendi (`2A557FFB...`).
      - Sıfır 🎲 tavla zarı emojisi kuralı tavizsiz korundu.
+
+
+---
+
+## 47. HUB KARAKTER KARTLARINDA HIZLI EYLEMLER, CAN KONTROLLERİ, AC / SAVES VE BECERİLER ÇEKMECESİ YENİLENDİ (2026-10-25)
+* **İstek:** 
+  1. Hızlı Eylem Menüsü'nün (Düzenle, Klonla, Sil) 2 sütunlu düzene getirilmesi; Düzenle butonunun en üstte 2 sütunu birden kaplaması, altında Kopyala ve Sil butonlarının yan yana yer alması.
+  2. Sayfa daraldığında (özellikle mobil ekranlarda) Özel Hasar/Şifa Giriş kutusunun (`applyCustomHp`) bir alt satıra inmesi (`order-last sm:order-none w-full sm:w-auto`).
+  3. "Ana Saldırı" kutusunun kaldırılarak Zırh (AC) yanına 4 satır 1 sütun halinde Fortitude, Reflex, Will ve Initiative (İnisiyatif) zar atılabilir butonlarının yerleştirilmesi.
+  4. Spot ve Listen butonlarının sabit kalarak yanına `rank > 0` olan tüm eğitilmiş becerilerin açılır çekmece içine yerleştirilmesi; çekmecenin varsayılan olarak kapalı olması, açıldığında hücrenin aşağı kaydırılabilmesi (`overflow-y-auto custom-scroll`) ve bu sırada hücrenin varsayılan boyutunun (`min-h-[390px] xl:min-h-[410px] xl:max-h-[430px]`) korunması.
+* **Uygulanan Değişiklikler:**
+  1. **Hızlı Eylem Menüsü:**
+     - `grid grid-cols-2 gap-1 w-16` yapısına dönüştürüldü.
+     - `✏️ Düzenle` butonu `col-span-2` olarak üst satırı kapladı, altında `📋 Kopyala` ve `🗑️ Sil` butonları eşit simetriyle yerleşti.
+  2. **Duyarlı (Responsive) Can / Hasar Kontrolü:**
+     - Kapsayıcı `flex flex-wrap items-center justify-between` yapıldı.
+     - Özel miktar girişi `order-last sm:order-none w-full sm:w-auto flex justify-center` sınıflarıyla donatıldı; dar/mobil ekranda `-5, -1` ve `+1, +5` butonları üst satırda kalırken giriş kutusu otomatik alt satıra indi, masaüstünde tek satırda kaldı.
+  3. **Zırh (AC) ve 4 Satır 1 Sütun Kurtarma / İnisiyatif Bloğu:**
+     - Eski Ana Saldırı alanı kaldırıldı.
+     - `grid grid-cols-2 gap-2` düzeninde sol kolonda Zırh (AC, Touch, FF, Taban Hız), sağ kolonda 4 satır 1 sütun halinde `🛡️ Fort`, `⚡ Ref`, `🔮 Will` ve `⚡ Init` butonları tam hizalı konumlandırıldı.
+  4. **Spot, Listen & Eğitilmiş Beceriler (`rank > 0`) Çekmecesi:**
+     - `👁️ Spot` ve `👂 Listen` sabit butonlar olarak korundu.
+     - Karakterin `c.fullData.skills` listesinden `rank > 0` olan tüm beceriler filtrelenip alfabetik sıralandı; yanlarına açılır çekmece butonu (`📜 N ▼`) ve `toggleHubCardSkillsDrawer` fonksiyonu eklendi.
+     - Çekmece açıldığında hücre içinde pürüzsüz kaydırma (`overflow-y-auto custom-scroll`) sağlandı; varsayılan kart yüksekliği (`min-h-[390px] xl:min-h-[410px] xl:max-h-[430px]`) bozulmadan korundu.
+  5. **Parite ve Devir Teslim:**
+     - `hub.html` ve `webapp/hub.html` %100 SHA-256 paritesinde eşitlendi.
+     - Standart 6 yüzlü tavla zarı emoji yasağı tavizsiz korundu.
