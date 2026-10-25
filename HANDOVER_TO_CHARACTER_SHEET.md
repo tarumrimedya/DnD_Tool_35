@@ -1672,3 +1672,18 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   3. **Parite ve Güvenlik:**
      - `hub.html` ve `hub_notes.js` dosyaları `webapp/` altındaki kopyalarıyla %100 SHA-256 eşitliğinde güncellendi.
      - Tavla zarı emojisi `🎲` kesinlikle kullanılmadı.
+
+
+---
+
+## 60. KARAKTER KÜNYESİ MODALI: IRK ÖNİZLEME KARTINDAN GEREKSİZ SENKRONİZASYON BİLGİ METNİNİN KALDIRILMASI (2026-10-25)
+* **İstek:**
+  - Karakter Künyesi (`#profile-modal`) Irk önizleme kartındaki (`#profile-race-traits-card`) yeşil *"Boyut, hız ve tüm ırksal nitelikler 'Kaydet & Uygula' ile senkronize edilir"* ibaresinin arayüzden kaldırılması.
+* **Uygulanan Değişiklikler:**
+  1. **UI Sadeleştirmesi:**
+     - `onProfileRaceChange()` fonksiyonunda `#profile-race-traits-card` alt bilgi alanındaki gereksiz yeşil senkronizasyon mesajı kaldırıldı.
+     - Kartın altında yalnızca kural motorunun yetenek bonus/cezalarını otomatik uyguladığını belirten rozet (`🧬 Irksal stat bonusları/cezaları kural motoru tarafından otomatik uygulanır`) bırakılarak görsel karmaşa giderildi.
+  2. **Parite ve Bütünlük:**
+     - Değişiklik `character.html`, `index.html`, `webapp/character.html` ve `webapp/index.html` dosyalarına uygulandı.
+     - 4 dosya arasında %100 SHA-256 paritesi korundu (`24ba8bcfaad30f0128e63cddb76263fd21e09738058a64b5e0fbb81187007181`).
+     - Standart tavla zarı emoji yasağına (Rule #3: NO `🎲`) ve HUB izolasyonuna (Rule #6 & Rule #7) titizlikle uyuldu.
