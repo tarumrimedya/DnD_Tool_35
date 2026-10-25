@@ -1305,6 +1305,29 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
 
 ---
 
+## 62. HUB NOT DEFTERİ EDİTÖRÜNE AÇIK KAYDET BUTONU, CTRL+S/CTRL+ENTER KISAYOLLARI VE OTOMATİK VERİ TAAHHÜDÜ (2026-10-25)
+* **Problem:**
+  - Geniş Not Defteri modalında yeni bir not oluşturulduğunda veya mevcut bir not güncellenmek istendiğinde açık bir `[ 💾 Notu Kaydet ]` butonu bulunmuyordu.
+  - Kullanıcı not yazıp çıktığında veya başka bir nota geçtiğinde değişikliklerin kaydedilip kaydedilmediği anlaşılamıyor ya da sekme geçişlerinde veri kaybı hissi oluşuyordu.
+* **Uygulanan Çözüm:**
+  1. **Açık `[ 💾 Notu Kaydet ]` Butonu ve Görsel Bildirim:**
+     - Not editörünün sağ üst araç çubuğuna `[ 💾 Notu Kaydet ]` butonu eklendi.
+     - Tıklandığında not veritabanına (`saveHubStorage` & `targetObj`) işlenir ve buton 1.5 saniyeliğine yeşil renkli `Kaydedildi! ✓` durumuna geçer.
+     - Bilgi rozetinde son güncelleme anlık saat olarak tazelenir.
+  2. **Klavye Kısayolları (Ctrl+S & Ctrl+Enter):**
+     - Textarea içerisindeyken `Ctrl+S` veya `Ctrl+Enter` tuşlarına basıldığında not derhal kaydedilir ve onay bildirimi gösterilir.
+  3. **Otomatik Kayıt ve Koruma Ağı:**
+     - `onblur`: Editörden dışarı tıklandığında otomatik kayıt tetiklenir.
+     - `selectNoteInModal`: Sol listeden başka bir nota geçilmeden önce mevcut açık nottaki tüm değişiklikler otomatik olarak kaydedilir.
+     - `closeFullNotesModal`: Modal çarpıdan kapatılırken mevcut düzenleme kaydedilir.
+     - `createNewModalNote`: Yeni nota geçmeden önce mevcut not otomatik kaydedilir.
+     - Yazma esnasında 1000ms gecikmeli debounced arka plan otomatik kaydı devreye alınarak DOM kasılmaları engellendi.
+  4. **Parite ve Devir Teslim:**
+     - `hub.html`, `hub_notes.js` ve `webapp/` kopyaları %100 SHA-256 eşitliğinde güncellendi.
+     - Kural #3 (Zar emojisi yasağı) tavizsiz korundu.
+
+---
+
 ## 61. HUB YENİ NOT OLUŞTURMA ŞABLONUNA OTOMATİK KARAKTER ADI, LVL VE TARİH ETİKETLERİ ENTEGRASYONU (2026-10-25)
 * **İstek:**
   - "Yeni Not Oluştur" butonuna tıklandığında oluşturulan notun boş gelmek yerine standart olarak karakter adı (`#Karakter_Adi`), karakter seviyesi (`#lvlN`) ve o günün tarihi (`#GN_Ay_Yıl`) etiketleriyle (`#`) hazır gelmesi.
@@ -1321,6 +1344,29 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - `formatNoteTextHtml` fonksiyonunda `#lvl...` etiketleri indigo, tarih etiketleri teal (turkuaz) özel RPG rozeti olarak renklendirildi.
   4. **Parite ve Devir Teslim:**
      - `hub_notes.js` ve `webapp/hub_notes.js` %100 SHA-256 eşitliğinde güncellendi.
+     - Kural #3 (Zar emojisi yasağı) tavizsiz korundu.
+
+---
+
+## 62. HUB NOT DEFTERİ EDİTÖRÜNE AÇIK KAYDET BUTONU, CTRL+S/CTRL+ENTER KISAYOLLARI VE OTOMATİK VERİ TAAHHÜDÜ (2026-10-25)
+* **Problem:**
+  - Geniş Not Defteri modalında yeni bir not oluşturulduğunda veya mevcut bir not güncellenmek istendiğinde açık bir `[ 💾 Notu Kaydet ]` butonu bulunmuyordu.
+  - Kullanıcı not yazıp çıktığında veya başka bir nota geçtiğinde değişikliklerin kaydedilip kaydedilmediği anlaşılamıyor ya da sekme geçişlerinde veri kaybı hissi oluşuyordu.
+* **Uygulanan Çözüm:**
+  1. **Açık `[ 💾 Notu Kaydet ]` Butonu ve Görsel Bildirim:**
+     - Not editörünün sağ üst araç çubuğuna `[ 💾 Notu Kaydet ]` butonu eklendi.
+     - Tıklandığında not veritabanına (`saveHubStorage` & `targetObj`) işlenir ve buton 1.5 saniyeliğine yeşil renkli `Kaydedildi! ✓` durumuna geçer.
+     - Bilgi rozetinde son güncelleme anlık saat olarak tazelenir.
+  2. **Klavye Kısayolları (Ctrl+S & Ctrl+Enter):**
+     - Textarea içerisindeyken `Ctrl+S` veya `Ctrl+Enter` tuşlarına basıldığında not derhal kaydedilir ve onay bildirimi gösterilir.
+  3. **Otomatik Kayıt ve Koruma Ağı:**
+     - `onblur`: Editörden dışarı tıklandığında otomatik kayıt tetiklenir.
+     - `selectNoteInModal`: Sol listeden başka bir nota geçilmeden önce mevcut açık nottaki tüm değişiklikler otomatik olarak kaydedilir.
+     - `closeFullNotesModal`: Modal çarpıdan kapatılırken mevcut düzenleme kaydedilir.
+     - `createNewModalNote`: Yeni nota geçmeden önce mevcut not otomatik kaydedilir.
+     - Yazma esnasında 1000ms gecikmeli debounced arka plan otomatik kaydı devreye alınarak DOM kasılmaları engellendi.
+  4. **Parite ve Devir Teslim:**
+     - `hub.html`, `hub_notes.js` ve `webapp/` kopyaları %100 SHA-256 eşitliğinde güncellendi.
      - Kural #3 (Zar emojisi yasağı) tavizsiz korundu.
 
 ---
@@ -1345,6 +1391,29 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
 
 ---
 
+## 62. HUB NOT DEFTERİ EDİTÖRÜNE AÇIK KAYDET BUTONU, CTRL+S/CTRL+ENTER KISAYOLLARI VE OTOMATİK VERİ TAAHHÜDÜ (2026-10-25)
+* **Problem:**
+  - Geniş Not Defteri modalında yeni bir not oluşturulduğunda veya mevcut bir not güncellenmek istendiğinde açık bir `[ 💾 Notu Kaydet ]` butonu bulunmuyordu.
+  - Kullanıcı not yazıp çıktığında veya başka bir nota geçtiğinde değişikliklerin kaydedilip kaydedilmediği anlaşılamıyor ya da sekme geçişlerinde veri kaybı hissi oluşuyordu.
+* **Uygulanan Çözüm:**
+  1. **Açık `[ 💾 Notu Kaydet ]` Butonu ve Görsel Bildirim:**
+     - Not editörünün sağ üst araç çubuğuna `[ 💾 Notu Kaydet ]` butonu eklendi.
+     - Tıklandığında not veritabanına (`saveHubStorage` & `targetObj`) işlenir ve buton 1.5 saniyeliğine yeşil renkli `Kaydedildi! ✓` durumuna geçer.
+     - Bilgi rozetinde son güncelleme anlık saat olarak tazelenir.
+  2. **Klavye Kısayolları (Ctrl+S & Ctrl+Enter):**
+     - Textarea içerisindeyken `Ctrl+S` veya `Ctrl+Enter` tuşlarına basıldığında not derhal kaydedilir ve onay bildirimi gösterilir.
+  3. **Otomatik Kayıt ve Koruma Ağı:**
+     - `onblur`: Editörden dışarı tıklandığında otomatik kayıt tetiklenir.
+     - `selectNoteInModal`: Sol listeden başka bir nota geçilmeden önce mevcut açık nottaki tüm değişiklikler otomatik olarak kaydedilir.
+     - `closeFullNotesModal`: Modal çarpıdan kapatılırken mevcut düzenleme kaydedilir.
+     - `createNewModalNote`: Yeni nota geçmeden önce mevcut not otomatik kaydedilir.
+     - Yazma esnasında 1000ms gecikmeli debounced arka plan otomatik kaydı devreye alınarak DOM kasılmaları engellendi.
+  4. **Parite ve Devir Teslim:**
+     - `hub.html`, `hub_notes.js` ve `webapp/` kopyaları %100 SHA-256 eşitliğinde güncellendi.
+     - Kural #3 (Zar emojisi yasağı) tavizsiz korundu.
+
+---
+
 ## 61. HUB YENİ NOT OLUŞTURMA ŞABLONUNA OTOMATİK KARAKTER ADI, LVL VE TARİH ETİKETLERİ ENTEGRASYONU (2026-10-25)
 * **İstek:**
   - "Yeni Not Oluştur" butonuna tıklandığında oluşturulan notun boş gelmek yerine standart olarak karakter adı (`#Karakter_Adi`), karakter seviyesi (`#lvlN`) ve o günün tarihi (`#GN_Ay_Yıl`) etiketleriyle (`#`) hazır gelmesi.
@@ -1361,6 +1430,29 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - `formatNoteTextHtml` fonksiyonunda `#lvl...` etiketleri indigo, tarih etiketleri teal (turkuaz) özel RPG rozeti olarak renklendirildi.
   4. **Parite ve Devir Teslim:**
      - `hub_notes.js` ve `webapp/hub_notes.js` %100 SHA-256 eşitliğinde güncellendi.
+     - Kural #3 (Zar emojisi yasağı) tavizsiz korundu.
+
+---
+
+## 62. HUB NOT DEFTERİ EDİTÖRÜNE AÇIK KAYDET BUTONU, CTRL+S/CTRL+ENTER KISAYOLLARI VE OTOMATİK VERİ TAAHHÜDÜ (2026-10-25)
+* **Problem:**
+  - Geniş Not Defteri modalında yeni bir not oluşturulduğunda veya mevcut bir not güncellenmek istendiğinde açık bir `[ 💾 Notu Kaydet ]` butonu bulunmuyordu.
+  - Kullanıcı not yazıp çıktığında veya başka bir nota geçtiğinde değişikliklerin kaydedilip kaydedilmediği anlaşılamıyor ya da sekme geçişlerinde veri kaybı hissi oluşuyordu.
+* **Uygulanan Çözüm:**
+  1. **Açık `[ 💾 Notu Kaydet ]` Butonu ve Görsel Bildirim:**
+     - Not editörünün sağ üst araç çubuğuna `[ 💾 Notu Kaydet ]` butonu eklendi.
+     - Tıklandığında not veritabanına (`saveHubStorage` & `targetObj`) işlenir ve buton 1.5 saniyeliğine yeşil renkli `Kaydedildi! ✓` durumuna geçer.
+     - Bilgi rozetinde son güncelleme anlık saat olarak tazelenir.
+  2. **Klavye Kısayolları (Ctrl+S & Ctrl+Enter):**
+     - Textarea içerisindeyken `Ctrl+S` veya `Ctrl+Enter` tuşlarına basıldığında not derhal kaydedilir ve onay bildirimi gösterilir.
+  3. **Otomatik Kayıt ve Koruma Ağı:**
+     - `onblur`: Editörden dışarı tıklandığında otomatik kayıt tetiklenir.
+     - `selectNoteInModal`: Sol listeden başka bir nota geçilmeden önce mevcut açık nottaki tüm değişiklikler otomatik olarak kaydedilir.
+     - `closeFullNotesModal`: Modal çarpıdan kapatılırken mevcut düzenleme kaydedilir.
+     - `createNewModalNote`: Yeni nota geçmeden önce mevcut not otomatik kaydedilir.
+     - Yazma esnasında 1000ms gecikmeli debounced arka plan otomatik kaydı devreye alınarak DOM kasılmaları engellendi.
+  4. **Parite ve Devir Teslim:**
+     - `hub.html`, `hub_notes.js` ve `webapp/` kopyaları %100 SHA-256 eşitliğinde güncellendi.
      - Kural #3 (Zar emojisi yasağı) tavizsiz korundu.
 
 

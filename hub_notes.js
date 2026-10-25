@@ -674,6 +674,7 @@
   }
 
   function closeFullNotesModal() {
+    saveModalNote(false);
     const modal = document.getElementById('hub-full-notes-modal');
     if (!modal) return;
     modal.classList.add('hidden');
@@ -682,7 +683,9 @@
   }
 
   function setTargetOverride(targetKey) {
+    saveModalNote(false);
     _overrideTargetKey = targetKey;
+    try { localStorage.setItem('hub_notes_active_target', targetKey); } catch (e) {}
     const target = getActiveNotesTarget();
     if (target && target.notesList.length > 0) {
       _selectedModalNoteId = target.notesList[0].id;
@@ -804,6 +807,7 @@
   }
 
   function selectNoteInModal(noteId) {
+    saveModalNote(false);
     _selectedModalNoteId = noteId;
     renderFullNotesModalList();
     loadSelectedNoteIntoEditor();
@@ -813,6 +817,7 @@
     const editor = document.getElementById('hub-modal-note-editor');
     const pinBtn = document.getElementById('hub-modal-pin-btn');
     const deleteBtn = document.getElementById('hub-modal-delete-btn');
+    const saveBtn = document.getElementById('hub-modal-save-btn');
     const dateBadge = document.getElementById('hub-modal-date-badge');
     if (!editor) return;
 
@@ -823,6 +828,7 @@
       editor.disabled = true;
       if (pinBtn) pinBtn.classList.add('opacity-40', 'pointer-events-none');
       if (deleteBtn) deleteBtn.classList.add('opacity-40', 'pointer-events-none');
+      if (saveBtn) saveBtn.classList.add('opacity-40', 'pointer-events-none');
       if (dateBadge) dateBadge.textContent = '-';
       return;
     }
@@ -834,6 +840,7 @@
       editor.disabled = true;
       if (pinBtn) pinBtn.classList.add('opacity-40', 'pointer-events-none');
       if (deleteBtn) deleteBtn.classList.add('opacity-40', 'pointer-events-none');
+      if (saveBtn) saveBtn.classList.add('opacity-40', 'pointer-events-none');
       if (dateBadge) dateBadge.textContent = '-';
       return;
     }
@@ -863,7 +870,12 @@
     if (deleteBtn) {
       deleteBtn.classList.remove('opacity-40', 'pointer-events-none');
     }
+    if (saveBtn) {
+      saveBtn.classList.remove('opacity-40', 'pointer-events-none');
+    }
   }
+
+  let _editorDebounceTimer = null;
 
   function handleEditorInput() {
     const editor = document.getElementById('hub-modal-note-editor');
@@ -879,9 +891,71 @@
     note.tags = extractTags(editor.value);
     note.updatedAt = Date.now();
 
+    if (target.targetObj) {
+      target.targetObj.notesList = target.notesList;
+    }
+
+    clearTimeout(_editorDebounceTimer);
+    _editorDebounceTimer = setTimeout(() => {
+      saveModalNote(false);
+    }, 1000);
+  }
+
+  /**
+   * Modal Notunu Kalıcı Olarak Kaydet
+   */
+  function saveModalNote(showToast = true) {
+    clearTimeout(_editorDebounceTimer);
+    const editor = document.getElementById('hub-modal-note-editor');
+    if (!editor) return;
+
+    const target = getActiveNotesTarget();
+    if (!target) return;
+
+    let note = target.notesList.find(n => n.id === _selectedModalNoteId);
+    if (!note) {
+      if (target.notesList.length > 0) {
+        note = target.notesList[0];
+        _selectedModalNoteId = note.id;
+      } else {
+        return;
+      }
+    }
+
+    note.text = editor.value;
+    note.tags = extractTags(editor.value);
+    note.updatedAt = Date.now();
+
+    if (target.targetObj) {
+      target.targetObj.notesList = target.notesList;
+      target.targetObj.notes = target.notesList.map(n => n.text).join('\n\n');
+    }
+
     saveNotesChanges(target);
     renderFullNotesModalList();
     renderInlineNotes();
+
+    const dateBadge = document.getElementById('hub-modal-date-badge');
+    const saveBtn = document.getElementById('hub-modal-save-btn');
+    const saveText = document.getElementById('hub-modal-save-text');
+
+    if (dateBadge) {
+      const state = getHubState();
+      const dName = getTargetDisplayName(target, state);
+      dateBadge.textContent = `${dName} • Son Güncelleme: ${new Date(note.updatedAt).toLocaleString('tr-TR')}`;
+    }
+
+    if (showToast && saveBtn && saveText) {
+      const originalText = saveText.textContent;
+      saveBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-500 text-white shadow-md shadow-emerald-900/50 flex items-center gap-1.5 cursor-pointer';
+      saveText.textContent = 'Kaydedildi! ✓';
+      setTimeout(() => {
+        if (saveBtn && saveText) {
+          saveBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-950/40 flex items-center gap-1.5 cursor-pointer active:scale-95';
+          saveText.textContent = originalText;
+        }
+      }, 1500);
+    }
   }
 
   function insertTagIntoEditor(tag) {
@@ -929,6 +1003,7 @@
   }
 
   function createNewModalNote() {
+    saveModalNote(false);
     const target = getActiveNotesTarget();
     if (!target) {
       alert('Lütfen önce bir kampanya veya karakter seçin.');
@@ -1018,6 +1093,7 @@
     closeFullNotesModal,
     selectNoteInModal,
     handleEditorInput,
+    saveModalNote,
     insertTagIntoEditor,
     createNewModalNote,
     setTargetOverride,
