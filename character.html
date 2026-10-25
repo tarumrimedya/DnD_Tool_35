@@ -1408,6 +1408,7 @@
     <div id="tab-core" class="tab-content hidden space-y-4">
       <div class="bg-dndCard border border-dndBorder rounded-xl p-4 shadow-lg space-y-4">
         
+        
         <!-- Character Identity & Profile Overview Card -->
         <div class="bg-gradient-to-r from-slate-900 via-slate-900/90 to-indigo-950/60 border border-slate-700/80 rounded-xl p-4 shadow-md space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
@@ -1462,6 +1463,81 @@
             <div class="bg-slate-950/60 p-2 rounded-lg border border-slate-800">
               <span class="text-[10px] text-slate-400 uppercase font-bold block">Boy & Kilo</span>
               <span id="core-profile-height-weight" class="text-slate-200 font-semibold">178 cm, 72 kg</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- FEATS & SPECIAL ABILITIES SHOWCASE (Hünerler ve Özel Yetenekler Akordeon Vitrini) -->
+        <div id="core-feats-abilities-container" class="mt-4">
+          <!-- Dynamically populated by renderCoreFeatsAndSpecialAbilities() -->
+        </div>
+
+        <!-- LEVEL PROGRESSION & EVOLUTION (lvl_up - Madde 1, 2, 3, 12, Unearthed Arcana Fractional & Level Planning) -->
+        <div id="level-progression-block" class="border border-slate-800 rounded-xl overflow-hidden mt-4">
+          <div class="bg-slate-900 px-3 py-2.5 text-xs font-bold text-emerald-400 flex flex-wrap justify-between items-center gap-2">
+            <div class="flex items-center gap-2">
+              <span>📈</span>
+              <span>SEVİYE GELİŞİMİ VE İLERLEME TABLOSU (LEVEL UP & PLANNING)</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <div class="hidden md:flex items-center gap-2 text-[11px] font-normal text-slate-300 mr-2">
+                <span>Feats: <strong class="text-amber-400">1, 3, 6, 9, 12, 15, 18</strong></span>
+                <span>•</span>
+                <span>Stat +1: <strong class="text-sky-400">4, 8, 12, 16, 20</strong></span>
+              </div>
+              <button onclick="undoLastLevel()" class="bg-slate-800 hover:bg-rose-950 text-slate-300 hover:rose-300 border border-slate-700 hover:border-rose-700 font-semibold text-xs px-2.5 py-1 rounded-lg transition flex items-center gap-1" title="Son eklenen seviyeyi geri al">
+                <span>↩️</span>
+                <span>Son Seviyeyi Geri Al</span>
+              </button>
+              <button onclick="openLevelUpModal()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg shadow flex items-center gap-1.5 transition">
+                <span>⬆️</span>
+                <span>Seviye Atla / Planla (Level Up)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- LEVEL PROGRESSION HUD SUMMARY BAR -->
+          <div id="level-progression-hud" class="bg-slate-950 px-3 py-2 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <!-- Dynamically populated by renderLevelProgression -->
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950 text-slate-400 text-[10px] uppercase font-bold border-b border-slate-800">
+                <tr>
+                  <th class="py-2 px-1 text-center w-[5%] min-w-[36px]">Lvl</th>
+                  <th class="py-2 px-2 text-center w-[12%] min-w-[90px]">Durum</th>
+                  <th class="py-2 px-3 text-left w-[20%] min-w-[140px] whitespace-nowrap">Sınıf</th>
+                  <th class="py-2 px-1 text-center w-[6%] min-w-[45px]">HD</th>
+                  <th class="py-2 px-1 text-center w-[7%] min-w-[50px]">HP</th>
+                  <th class="py-2 px-1 text-center w-[7%] min-w-[50px]">BAB</th>
+                  <th class="py-2 px-1 text-center w-[7%] min-w-[50px]">Fort</th>
+                  <th class="py-2 px-1 text-center w-[7%] min-w-[50px]">Ref</th>
+                  <th class="py-2 px-1 text-center w-[7%] min-w-[50px]">Will</th>
+                  <th class="py-2 px-1 text-center w-[8%] min-w-[55px]">Puan</th>
+                  <th class="py-2 px-2 text-center w-[145px] min-w-[145px] max-w-[145px]">Sınıf Özellikleri</th>
+                  <th class="py-2 px-2 text-center w-[145px] min-w-[145px] max-w-[145px]">Beceriler</th>
+                  <th class="py-2 px-2 text-center w-[145px] min-w-[145px] max-w-[145px]">Bonus</th>
+                  <th class="py-2 px-1 text-center w-16 min-w-[64px] max-w-[64px] whitespace-nowrap shrink-0">İşlem</th>
+                </tr>
+              </thead>
+              <tbody id="level-progression-tbody" class="divide-y divide-slate-800 font-mono text-[11px]">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Level Progression Bottom Action Bar -->
+          <div class="p-3 bg-slate-950/80 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
+            <div class="text-[11px] text-slate-400 flex items-center gap-1.5">
+              <span>💡</span>
+              <span>Herhangi bir seviyenin sınıfını değiştirmek için <strong>✏️</strong> butonunu, ilave feat/yetenek eklemek için <strong>➕</strong> butonlarını kullanabilirsiniz.</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="addNewLevelRowToProgression()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg shadow-sm transition flex items-center gap-1.5 cursor-pointer">
+                <span>➕</span>
+                <span>Yeni Seviye Ekle</span>
+              </button>
             </div>
           </div>
         </div>
@@ -1580,81 +1656,7 @@
             </table>
           </div>
         </div>
-
-        <!-- LEVEL PROGRESSION & EVOLUTION (lvl_up - Madde 1, 2, 3, 12, Unearthed Arcana Fractional & Level Planning) -->
-        <div id="level-progression-block" class="border border-slate-800 rounded-xl overflow-hidden mt-4">
-          <div class="bg-slate-900 px-3 py-2.5 text-xs font-bold text-emerald-400 flex flex-wrap justify-between items-center gap-2">
-            <div class="flex items-center gap-2">
-              <span>📈</span>
-              <span>SEVİYE GELİŞİMİ VE İLERLEME TABLOSU (LEVEL UP & PLANNING)</span>
-            </div>
-            <div class="flex flex-wrap items-center gap-2">
-              <div class="hidden md:flex items-center gap-2 text-[11px] font-normal text-slate-300 mr-2">
-                <span>Feats: <strong class="text-amber-400">1, 3, 6, 9, 12, 15, 18</strong></span>
-                <span>•</span>
-                <span>Stat +1: <strong class="text-sky-400">4, 8, 12, 16, 20</strong></span>
-              </div>
-              <button onclick="undoLastLevel()" class="bg-slate-800 hover:bg-rose-950 text-slate-300 hover:rose-300 border border-slate-700 hover:border-rose-700 font-semibold text-xs px-2.5 py-1 rounded-lg transition flex items-center gap-1" title="Son eklenen seviyeyi geri al">
-                <span>↩️</span>
-                <span>Son Seviyeyi Geri Al</span>
-              </button>
-              <button onclick="openLevelUpModal()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg shadow flex items-center gap-1.5 transition">
-                <span>⬆️</span>
-                <span>Seviye Atla / Planla (Level Up)</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- LEVEL PROGRESSION HUD SUMMARY BAR -->
-          <div id="level-progression-hud" class="bg-slate-950 px-3 py-2 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
-            <!-- Dynamically populated by renderLevelProgression -->
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-950 text-slate-400 text-[10px] uppercase font-bold border-b border-slate-800">
-                <tr>
-                  <th class="py-2 px-1 text-center w-[5%] min-w-[36px]">Lvl</th>
-                  <th class="py-2 px-2 text-center w-[12%] min-w-[90px]">Durum</th>
-                  <th class="py-2 px-3 text-left w-[20%] min-w-[140px] whitespace-nowrap">Sınıf</th>
-                  <th class="py-2 px-1 text-center w-[6%] min-w-[45px]">HD</th>
-                  <th class="py-2 px-1 text-center w-[7%] min-w-[50px]">HP</th>
-                  <th class="py-2 px-1 text-center w-[7%] min-w-[50px]">BAB</th>
-                  <th class="py-2 px-1 text-center w-[7%] min-w-[50px]">Fort</th>
-                  <th class="py-2 px-1 text-center w-[7%] min-w-[50px]">Ref</th>
-                  <th class="py-2 px-1 text-center w-[7%] min-w-[50px]">Will</th>
-                  <th class="py-2 px-1 text-center w-[8%] min-w-[55px]">Puan</th>
-                  <th class="py-2 px-2 text-center w-[145px] min-w-[145px] max-w-[145px]">Sınıf Özellikleri</th>
-                  <th class="py-2 px-2 text-center w-[145px] min-w-[145px] max-w-[145px]">Beceriler</th>
-                  <th class="py-2 px-2 text-center w-[145px] min-w-[145px] max-w-[145px]">Bonus</th>
-                  <th class="py-2 px-1 text-center w-16 min-w-[64px] max-w-[64px] whitespace-nowrap shrink-0">İşlem</th>
-                </tr>
-              </thead>
-              <tbody id="level-progression-tbody" class="divide-y divide-slate-800 font-mono text-[11px]">
-                <!-- Dynamically populated -->
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Level Progression Bottom Action Bar -->
-          <div class="p-3 bg-slate-950/80 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
-            <div class="text-[11px] text-slate-400 flex items-center gap-1.5">
-              <span>💡</span>
-              <span>Herhangi bir seviyenin sınıfını değiştirmek için <strong>✏️</strong> butonunu, ilave feat/yetenek eklemek için <strong>➕</strong> butonlarını kullanabilirsiniz.</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <button type="button" onclick="addNewLevelRowToProgression()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg shadow-sm transition flex items-center gap-1.5 cursor-pointer">
-                <span>➕</span>
-                <span>Yeni Seviye Ekle</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- FEATS & SPECIAL ABILITIES SHOWCASE (Hünerler ve Özel Yetenekler Akordeon Vitrini) -->
-        <div id="core-feats-abilities-container" class="mt-4">
-          <!-- Dynamically populated by renderCoreFeatsAndSpecialAbilities() -->
-        </div>
+      
 
       </div>
     </div>
@@ -34543,11 +34545,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       });
     }
 
-    let _coreFeatsAccordionOpen = null; // null: auto (false for PC, true for NPC)
+    let _coreFeatsAccordionOpen = false; // Closed by default
 
     function toggleCoreFeatsAccordion() {
-      const current = (_coreFeatsAccordionOpen !== null) ? _coreFeatsAccordionOpen : (character?.isNpc ? true : false);
-      _coreFeatsAccordionOpen = !current;
+      _coreFeatsAccordionOpen = !_coreFeatsAccordionOpen;
       renderCoreFeatsAndSpecialAbilities();
     }
 
@@ -34633,7 +34634,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       });
 
       const abilitiesList = Array.from(abilityMap.values());
-      const isOpen = (_coreFeatsAccordionOpen !== null) ? _coreFeatsAccordionOpen : (character?.isNpc ? true : false);
+      const isOpen = _coreFeatsAccordionOpen === true;
 
       container.innerHTML = `
         <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-900/60 shadow mt-4">

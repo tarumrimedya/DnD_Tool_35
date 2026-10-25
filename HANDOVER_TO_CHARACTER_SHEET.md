@@ -1838,3 +1838,23 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   4. **Parite ve Güvenlik:**
      - `dice3d.js` ve `webapp/dice3d.js` dosyalarında %100 SHA-256 eşitliği sağlandı (`1F283029CDF86E641157C1D5CD02C57A1C21F88CCAAF50D30C4D54DC220C148D`).
      - Tavla zarı emojisi (`🎲`) kesinlikle kullanılmadı.
+
+---
+
+## 64. TAB-CORE DÜZENİ YENİDEN SIRALAMA VE ÇEKMECE VARSAYILAN KAPALI AYARI (2026-10-25)
+* **İstek:**
+  - Ana Karakter Künyesi sekmesindeki (`#tab-core`) bileşenlerin kullanıcının belirlediği ergonomik akışa göre sıralanması:
+    1. Sırada: Karakter Künyesi Kartı (`#core-profile-...`)
+    2. Sırada: Çekmece kapalı şekilde Hünerler ve Özel Yetenekler Vitrini (`#core-feats-abilities-container`)
+    3. Sırada: Seviye Gelişimi ve İlerleme Tablosu (`#level-progression-block`)
+    4. Sırada: Beceriler Tablosu ve 3D Zar Atıcı (`#skills-tbody`)
+* **Uygulanan Değişiklikler:**
+  1. **Bileşen Sıralaması (DOM Order):**
+     - `#tab-core` içindeki 4 ana kart hiyerarşik olarak 1) Profil Künyesi, 2) Hünerler & Özel Yetenekler Çekmecesi, 3) Seviye İlerleme Tablosu, 4) Beceriler Tablosu sırasına dizildi.
+     - Tüm `<div>` kapanışları ve hiyerarşisi doğrulanarak tag derinliği sıfır (0) hata ile korundu.
+  2. **Çekmece Kapalı Başlatma (Accordion Closed Default):**
+     - `_coreFeatsAccordionOpen` değişkeni varsayılan olarak `false` yapıldı.
+     - `renderCoreFeatsAndSpecialAbilities()` fonksiyonunda çekmecenin ilk açılışta kapalı (`hidden` ve `▼` ikonu) olması, tıklandığında sorunsuz açılıp kapanması sağlandı.
+  3. **Parite ve Kural Standartları:**
+     - 4 hedef dosya (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi sağlandı.
+     - Standart tavla zarı emojisi yasağı (`🎲` / `U+1F3B2`) tavizsiz korundu.
