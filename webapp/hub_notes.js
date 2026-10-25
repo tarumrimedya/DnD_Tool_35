@@ -1135,20 +1135,19 @@
     const relatedTags = isFiltered ? getCoOccurringTags(_activeNoteFilterTag, target.notesList) : [];
 
     let html = `
-      <div class="flex items-center gap-1 overflow-x-auto pb-1 text-[10px] font-mono custom-scrollbar">
-        <button type="button" onclick="HubNotes.setTagFilter('all')" class="px-2 py-0.5 rounded-md transition cursor-pointer shrink-0 ${!isFiltered ? 'bg-indigo-600 text-white font-bold' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'}">
+      <div class="flex flex-wrap gap-1 text-[10px] font-mono max-h-36 overflow-y-auto custom-scrollbar pr-0.5">
+        <button type="button" onclick="HubNotes.setTagFilter('all')" class="px-2 py-0.5 rounded-md transition cursor-pointer ${!isFiltered ? 'bg-indigo-600 text-white font-bold shadow' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'}">
           #hepsi (${target.notesList.length})
         </button>
     `;
 
     Array.from(counts.entries())
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 10)
       .forEach(([tag, count]) => {
         const active = isFiltered && _activeNoteFilterTag.toLowerCase() === tag;
         const colorClass = getTagColorClass(tag);
         html += `
-          <button type="button" onclick="HubNotes.setTagFilter('${tag}')" class="px-2 py-0.5 rounded-md border transition cursor-pointer shrink-0 flex items-center gap-1 ${active ? 'bg-indigo-600 border-indigo-400 text-white font-bold shadow' : colorClass}">
+          <button type="button" onclick="HubNotes.setTagFilter('${tag}')" class="px-2 py-0.5 rounded-md border transition cursor-pointer flex items-center gap-1 ${active ? 'bg-indigo-600 border-indigo-400 text-white font-bold shadow' : colorClass}">
             <span>${tag}</span>
             <span class="opacity-75 text-[9px]">(${count})</span>
           </button>
@@ -1174,7 +1173,7 @@
           <div class="text-[10px] text-slate-400 font-medium">Birlikte Geçen Etiketler:</div>
           <div class="flex flex-wrap gap-1 text-[10px] font-mono">
         `;
-        relatedTags.slice(0, 6).forEach(rt => {
+        relatedTags.forEach(rt => {
           html += `
             <button type="button" onclick="HubNotes.setTagFilter('${rt.tag}')" class="px-1.5 py-0.5 rounded bg-slate-900/90 hover:bg-indigo-900 border border-slate-700 hover:border-indigo-500 text-slate-300 hover:text-white transition cursor-pointer flex items-center gap-1">
               <span>${rt.icon}</span>
