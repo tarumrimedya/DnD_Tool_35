@@ -1429,13 +1429,13 @@
               </div>
             </div>
             <div class="flex items-center gap-2">
-              <button id="btn-open-stat-dist" type="button" onclick="openStatDistributionModal()" class="bg-gradient-to-r from-purple-800/90 to-indigo-800/90 hover:from-purple-700 hover:to-indigo-700 text-purple-100 hover:text-white border border-purple-500/60 font-bold text-xs px-3 py-1.5 rounded-lg transition shadow-md flex items-center gap-1.5 cursor-pointer active:scale-95" title="Karakter temel statlarını (STR, DEX, CON, INT, WIS, CHA) düzenle, Point Buy veya 4d6 zar ile belirle">
+              <button id="btn-open-stat-dist" type="button" onclick="openStatDistributionModal('abilities')" class="bg-gradient-to-r from-purple-800/90 to-indigo-800/90 hover:from-purple-700 hover:to-indigo-700 text-purple-100 hover:text-white border border-purple-500/60 font-bold text-xs px-3 py-1.5 rounded-lg transition shadow-md flex items-center gap-1.5 cursor-pointer active:scale-95" title="Karakter temel statlarını (STR, DEX, CON, INT, WIS, CHA) düzenle, Point Buy veya 4d6 zar ile belirle">
                 <span class="inline-flex items-center"><svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"></polygon><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"></polygon><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"></line><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
                 <span>Statları Düzenle</span>
               </button>
-              <button onclick="openProfileEditModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 hover:border-slate-500 font-bold text-xs px-3 py-1.5 rounded-lg transition shadow flex items-center gap-1.5 cursor-pointer">
-                <span>✏️</span>
-                <span>Profili Düzenle</span>
+              <button onclick="openProfileEditModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 hover:border-slate-500 font-bold text-xs px-3 py-1.5 rounded-lg transition shadow flex items-center gap-1.5 cursor-pointer" title="Karakter künyesini, kimliğini, ırkını ve profilini düzenle">
+                <span>📜</span>
+                <span>Karakter Künyesi</span>
               </button>
             </div>
           </div>
@@ -4171,7 +4171,7 @@
           </div>
           <div>
             <h3 class="font-black text-white text-sm flex items-center gap-1.5">
-              <span>Karakter Profili &amp; Temel Statlar</span>
+              <span>Karakter Künyesi</span>
               <span class="text-[9px] font-mono px-1.5 py-0.2 bg-purple-950 text-purple-300 border border-purple-700/60 rounded">D&amp;D 3.5e RAW</span>
             </h3>
             <p class="text-[10px] text-purple-300">Kimlik, ırk, görünüm ve taban yetenek skorları dağılımı</p>
@@ -10271,7 +10271,7 @@
                  style="background-image: url('${character.portrait}'); background-position: ${pos}; background-size: ${fit};"></div>
             <div class="absolute inset-x-0 bottom-0 py-1.5 bg-gradient-to-t from-black/85 via-black/40 to-transparent text-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
               <span class="text-[10px] text-indigo-200 font-bold flex items-center justify-center gap-1">
-                <span>✏️</span> <span>Profili Düzenle</span>
+                <span>📜</span> <span>Karakter Künyesi</span>
               </span>
             </div>
           `;

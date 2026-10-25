@@ -1047,3 +1047,22 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   5. **Parite ve Devir Teslim:**
      - `hub.html` ve `webapp/hub.html` %100 SHA-256 paritesinde eşitlendi.
      - Standart 6 yüzlü tavla zarı emoji yasağı tavizsiz korundu.
+
+
+---
+
+## 49. PROFİL DÜZENLE VE MODAL BAŞLIĞININ "KARAKTER KÜNYESİ" OLARAK GÜNCELLENMESİ (2026-10-25)
+* **İstek:**
+  1. Karakter ana başlık alanında (core profile header) bulunan `<span>Profili Düzenle</span>` (`openProfileEditModal()`) butonunun `<span>Karakter Künyesi</span>` olarak yeniden adlandırılması.
+  2. Bütünleşik `#stat-distribution-modal` başlığındaki `<span>Karakter Profili &amp; Temel Statlar</span>` metninin `<span>Karakter Künyesi</span>` olarak güncellenmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Ana Başlık Butonları ve Yönlendirme:**
+     - `character.html` ve kopyalarında profil butonunun ikonu `📜`, metni `Karakter Künyesi`, başlık ipucu `Karakter künyesini, kimliğini, ırkını ve profilini düzenle` yapıldı.
+     - `[ Statları Düzenle ]` butonu `onclick="openStatDistributionModal('abilities')"` ile doğrudan Yetenek Skorları sekmesini açacak şekilde netleştirildi.
+     - `[ Karakter Künyesi ]` butonu `openProfileEditModal()` üzerinden doğrudan Kimlik & Irk sekmesini açar.
+     - Üst kahraman kartı portresi üzerine fare ile gelindiğinde görünen etiket `📜 Karakter Künyesi` olarak eşitlendi.
+  2. **Modal Başlığı:**
+     - `#stat-distribution-modal` üst başlığı `Karakter Künyesi` (D&D 3.5e RAW) olarak sadeleştirildi.
+  3. **Parite ve Kural Bütünlüğü:**
+     - `character.html`, `index.html`, `webapp/character.html` ve `webapp/index.html` dosyaları %100 SHA-256 eşitliğinde güncellendi.
+     - Standart 6 yüzlü tavla zarı emoji yasağı tavizsiz korundu.
