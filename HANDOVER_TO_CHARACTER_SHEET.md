@@ -931,3 +931,23 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   3. **Parite ve Kural Bütünlüğü:**
      - `hub.html` ve `webapp/hub.html` %100 SHA-256 eşitliğinde tutuldu.
      - Kesinlikle hiçbir tavla zarı emoji kullanılmadı.
+
+
+---
+
+## 45. ZAR MASASI PANELİNDEKİ KAYDIRMA ÇUBUĞU KALDIRILDI VE ZAR KONTROLLERİ KOMPAKTLAŞTIRILDI (2026-10-25)
+* **İstek:** Hub sayfasındaki Zar Masası Paneli'nde (`#hub-inline-dice-panel`) dikey kaydırma çubuğunun (scrollbar) tamamen kaldırılması, gerekirse zar sembolleri ve kontrollerin daraltılarak panel içine taşma olmaksızın sığdırılması.
+* **Uygulanan Değişiklikler:**
+  1. **Kaydırma Çubuğu Kaldırıldı (Overflow Elimination):**
+     - `#hub-inline-dice-panel` ana kart kapsayıcısındaki `overflow-y-auto custom-scroll` sınıfları kaldırılarak `overflow-hidden` yapıldı.
+     - Kart padding değeri `p-3 sm:p-3.5` yerine `p-2.5 sm:p-3`, dikey boşluklar `space-y-2` yerine `space-y-1.5` olarak dengelendi.
+  2. **Zar Butonları ve Kontrollerin Kompaktlaştırılması:**
+     - 7 standart RPG zarı butonu (d4, d6, d8, d10, d12, d20, d100) `p-2 rounded-xl` yerine `p-1 sm:p-1.5 rounded-lg` formatına çekildi.
+     - Zar vektör SVG ikonları `w-4 h-4` yerine `w-3.5 h-3.5`, fontlar `text-[10px]` ve sayaçlar `h-2.5 text-[9px]` olarak optimize edildi.
+     - Atış Modu ve Renk seçici butonları dikeyde inceltildi.
+     - Aktif Havuz Özeti ve Bonus barı `h-11` yerine `h-9` olarak revize edildi.
+     - "Zarları At" ve temizleme butonları `py-1.5 px-3` seviyesinde daraltıldı.
+     - Formül ve Son Atış çekmecesi (`#dice-advanced-content`) açıldığında dış kartın düzenini bozmaması için kendi içine `max-h-56 overflow-y-auto custom-scroll pr-1` kuralı uygulandı.
+  3. **Parite ve Kural Bütünlüğü:**
+     - `hub.html` ve `webapp/hub.html` %100 SHA-256 eşitliğinde tutuldu.
+     - Proje kuralı gereği kesinlikle hiçbir standart 6 yüzlü tavla zarı emojisi kullanılmadı.
