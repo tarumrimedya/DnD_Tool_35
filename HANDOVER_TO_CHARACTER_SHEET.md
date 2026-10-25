@@ -1268,3 +1268,28 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   4. **Parite ve Devir Teslim:**
      - `hub.html`, `hub_notes.js` ile `webapp/hub.html`, `webapp/hub_notes.js` %100 SHA-256 eşitliğinde senkronize edildi.
      - Kural #3 (Zar emojisi yasağı) tavizsiz korundu.
+
+
+---
+
+## 52. IRK NİTELİKLERİ UYGULA BUTONUNUN KALDIRILMASI & ANA KAYDETME AKIŞINA ATOMİK BAĞLANMASI (ÖNERİ A) (2026-10-25)
+* **İstek:**
+  1. Irk kartı içindeki mükerrer ve kafa karıştırıcı `[ 🧬 Irk Niteliklerini Uygula ]` butonunun kaldırılması (Öneri A).
+  2. Varsayılan olarak gelen Human (İnsan) ırkının niteliklerinin uygulanmış olup olmadığının netleştirilmesi ve otomatikleştirilmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Ayrı Butonun Kaldırılması & Önizleme Kartına Dönüşüm:**
+     - Irk kartındaki ara buton kaldırıldı; kart artık seçilen ırkın boyut, hız, stat ve özelliklerini gösteren zarif bir canlı önizleme kartı olarak çalışır.
+     - Irk değiştirildiğinde `profile-edit-size` ve `profile-edit-speed` alanları otomatik doldurulur.
+  2. **Ana `[ 💾 Kaydet & Uygula ]` Butonuna Atomik Senkronizasyon:**
+     - `saveStatDistribution()` fonksiyonu:
+       - Yeni ırk seçildiğinde eski ırktan kalma nitelikleri (`source: "... Race"`) temizler.
+       - Yeni ırkın resmi niteliklerini (`traits`) `character.specialAbilities` listesine eksiksiz ekler.
+       - Boyut ve hız değerlerini günceller.
+       - Checkbox işaretliyse ırksal stat değişimlerini uygular.
+  3. **Varsayılan Human Niteliklerinin Otomatik Yüklenmesi:**
+     - `character_data.json` dosyasına Human ırkının resmi RAW nitelikleri (`Bonus Feat (Human)`, `Skilled (Human)`) ve `size: "Medium"` eklendi.
+     - `DOMContentLoaded` akışına, sıfırdan açılan karakterlerde ırk nitelikleri boşsa otomatik olarak ilgili ırkın (Human vb.) özelliklerini yükleyen koruma eklendi.
+  4. **Parite ve İzolasyon:**
+     - HUB dosyaları (`hub.html`, `webapp/hub.html`) kesinlikle değiştirilmedi.
+     - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` (%100 SHA-256: `EB4FB7B7...`).
+     - Standart tavla zarı emoji yasağı ve sıfır dummy data kuralı tavizsiz korundu.

@@ -52,9 +52,30 @@
     "isSpeedReduced": false
   },
   "saves": {
-    "fort": { "base": 2, "ability": 0, "magic": 0, "misc": 0, "temp": 0, "total": 2 },
-    "ref": { "base": 0, "ability": 0, "magic": 0, "misc": 0, "temp": 0, "total": 0 },
-    "will": { "base": 0, "ability": 0, "magic": 0, "misc": 0, "temp": 0, "total": 0 }
+    "fort": {
+      "base": 2,
+      "ability": 0,
+      "magic": 0,
+      "misc": 0,
+      "temp": 0,
+      "total": 2
+    },
+    "ref": {
+      "base": 0,
+      "ability": 0,
+      "magic": 0,
+      "misc": 0,
+      "temp": 0,
+      "total": 0
+    },
+    "will": {
+      "base": 0,
+      "ability": 0,
+      "magic": 0,
+      "misc": 0,
+      "temp": 0,
+      "total": 0
+    }
   },
   "activeWeapon": "Unarmed Strike",
   "weapons": [
@@ -68,25 +89,63 @@
       "dmgBonus": 0,
       "dmgType": "Bludgeoning (Nonlethal)",
       "bonusType": "Untyped",
-      "tags": ["simple", "light", "unarmed", "nonlethal"],
+      "tags": [
+        "simple",
+        "light",
+        "unarmed",
+        "nonlethal"
+      ],
       "elementalMods": [],
       "keen": false
     }
   ],
   "tactical": {
     "weaponSets": {
-      "activeSets": [1],
-      "set1": { "name": "Ana El", "mainWeapon": "Unarmed Strike", "grip": "1-Hand" },
-      "set2": { "name": "İkinci El", "mainWeapon": "Yok", "grip": "Off-Hand" }
+      "activeSets": [
+        1
+      ],
+      "set1": {
+        "name": "Ana El",
+        "mainWeapon": "Unarmed Strike",
+        "grip": "1-Hand"
+      },
+      "set2": {
+        "name": "İkinci El",
+        "mainWeapon": "Yok",
+        "grip": "Off-Hand"
+      }
     }
   },
   "skills": {},
   "feats": [],
-  "specialAbilities": [],
+  "specialAbilities": [
+    {
+      "name": "Bonus Feat (Human)",
+      "source": "Human Race",
+      "benefit": "1 extra feat at 1st level.",
+      "action": "Passive",
+      "duration": "Continuous",
+      "active": true
+    },
+    {
+      "name": "Skilled (Human)",
+      "source": "Human Race",
+      "benefit": "4 extra skill points at 1st level and 1 extra skill point at each additional level.",
+      "action": "Passive",
+      "duration": "Continuous",
+      "active": true
+    }
+  ],
   "spells": [],
   "maneuvers": [],
   "gearPool": [],
   "bodySlots": {},
-  "currency": { "gp": 100, "sp": 0, "cp": 0, "pp": 0 },
-  "notes": ""
+  "currency": {
+    "gp": 100,
+    "sp": 0,
+    "cp": 0,
+    "pp": 0
+  },
+  "notes": "",
+  "size": "Medium"
 }

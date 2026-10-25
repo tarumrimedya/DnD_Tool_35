@@ -7424,6 +7424,29 @@
 
     window.addEventListener('DOMContentLoaded', async () => {
       ensureCustomRacesLoaded();
+      // Auto-ensure default race traits (e.g. Human Bonus Feat & Skilled) if specialAbilities is empty
+      try {
+        if (character && character.race && Array.isArray(character.specialAbilities) && character.specialAbilities.length === 0) {
+          const catalog = window.BUNDLED_SRD_CORE_CATALOG || [];
+          const raceObj = catalog.find(i => i && i.type === 'Race' && i.name.toLowerCase() === character.race.toLowerCase());
+          if (raceObj && Array.isArray(raceObj.traits)) {
+            raceObj.traits.forEach(t => {
+              character.specialAbilities.push({
+                name: `${t.name} (${raceObj.name})`,
+                source: `${raceObj.name} Race`,
+                benefit: t.desc || '',
+                action: 'Passive',
+                duration: 'Continuous',
+                active: true
+              });
+            });
+            if (!character.size && raceObj.size) character.size = raceObj.size;
+            if (!character.baseSpeed && raceObj.baseSpeed) character.baseSpeed = raceObj.baseSpeed;
+          }
+        }
+      } catch (e) {
+        console.warn('Auto race sync warning:', e);
+      }
       // Eğer kök (/) adresine ?id olmadan gelinmişse (login sonrası yönlendirme veya doğrudan giriş), derhal /hub'a yönlendir:
       const _urlParams = new URLSearchParams(window.location.search);
       const _hasCharId = _urlParams.get('id');
@@ -10239,6 +10262,12 @@
           `).join('')
         : `<p class="text-[10px] text-slate-300">${raceObj.benefit || ''}</p>`;
 
+      // Auto-update size & speed inputs in form
+      const sizeInput = document.getElementById('profile-edit-size');
+      if (sizeInput && raceObj.size) sizeInput.value = raceObj.size;
+      const speedInput = document.getElementById('profile-edit-speed');
+      if (speedInput && raceObj.baseSpeed) speedInput.value = raceObj.baseSpeed;
+
       const escapedRaceName = raceObj.name.replace(/'/g, "\'");
 
       card.innerHTML = `
@@ -10263,12 +10292,12 @@
         <div class="pt-1.5 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
           <label class="flex items-center gap-1.5 text-[10px] text-slate-300 cursor-pointer select-none">
             <input type="checkbox" id="profile-race-apply-stats-chk" class="rounded bg-slate-900 border-slate-700 text-amber-500 focus:ring-0">
-            <span>Stat bonuslarını yetenek puanlarına ekle</span>
+            <span>Irk stat bonuslarını/cezalarını yetenek skorlarına yansıt</span>
           </label>
-          <button type="button" onclick="applyRacialTraitsToCharacter('${escapedRaceName}')" class="px-3 py-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-95 text-white font-extrabold text-[11px] rounded-lg shadow transition flex items-center gap-1 cursor-pointer">
-            <span>🧬</span>
-            <span>Irk Niteliklerini Uygula</span>
-          </button>
+          <span class="text-[9px] text-emerald-400/90 font-medium flex items-center gap-1">
+            <span>✓</span>
+            <span>Boyut, hız ve tüm ırksal nitelikler "Kaydet &amp; Uygula" ile otomatik işlenir</span>
+          </span>
         </div>
       `;
 
@@ -11443,7 +11472,69 @@ function renderManualStatsPanel() {
       if (newName) character.name = newName;
 
       const newRace = getVal('profile-edit-race');
-      if (newRace) character.race = newRace;
+      if (newRace && !newRace.toLowerCase().includes('diğer')) {
+        const oldRace = character.race;
+        character.race = newRace;
+
+        // Auto-sync racial traits into character.specialAbilities
+        const catalog = (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG))
+          ? window.BUNDLED_SRD_CORE_CATALOG
+          : [];
+        const raceObj = catalog.find(item => item && item.type === 'Race' && (item.name.toLowerCase() === newRace.toLowerCase() || item.name.toLowerCase().includes(newRace.toLowerCase())));
+
+        if (raceObj) {
+          if (!character.size || (oldRace && oldRace.toLowerCase() !== newRace.toLowerCase())) {
+            if (raceObj.size) character.size = raceObj.size;
+          }
+          if (!character.baseSpeed || (oldRace && oldRace.toLowerCase() !== newRace.toLowerCase())) {
+            if (raceObj.baseSpeed) character.baseSpeed = raceObj.baseSpeed;
+          }
+
+          if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
+
+          // Clean up any traits from an old race if race was changed
+          if (oldRace && oldRace.toLowerCase() !== newRace.toLowerCase()) {
+            character.specialAbilities = character.specialAbilities.filter(a => {
+              const src = typeof a === 'object' && a.source ? a.source.toLowerCase() : '';
+              return !src.includes('race') || src.includes(newRace.toLowerCase());
+            });
+          }
+
+          // Add new race traits (duplicate-safe)
+          if (Array.isArray(raceObj.traits)) {
+            raceObj.traits.forEach(t => {
+              const traitFullName = `${t.name} (${raceObj.name})`;
+              const alreadyExists = character.specialAbilities.some(a => {
+                const aName = (typeof a === 'string' ? a : (a.name || '')).toLowerCase();
+                return aName === traitFullName.toLowerCase() || aName === t.name.toLowerCase();
+              });
+              if (!alreadyExists) {
+                character.specialAbilities.push({
+                  name: traitFullName,
+                  source: `${raceObj.name} Race`,
+                  benefit: t.desc || '',
+                  action: 'Passive',
+                  duration: 'Continuous',
+                  active: true
+                });
+              }
+            });
+          }
+
+          // Optional ability modifier application
+          const applyStatsChk = document.getElementById('profile-race-apply-stats-chk');
+          if (applyStatsChk && applyStatsChk.checked) {
+            if (!character.abilities) character.abilities = { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
+            if (raceObj.strBonus) character.abilities.str = (character.abilities.str || 10) + raceObj.strBonus;
+            if (raceObj.dexBonus) character.abilities.dex = (character.abilities.dex || 10) + raceObj.dexBonus;
+            if (raceObj.conBonus) character.abilities.con = (character.abilities.con || 10) + raceObj.conBonus;
+            if (raceObj.intBonus) character.abilities.int = (character.abilities.int || 10) + raceObj.intBonus;
+            if (raceObj.wisBonus) character.abilities.wis = (character.abilities.wis || 10) + raceObj.wisBonus;
+            if (raceObj.chaBonus) character.abilities.cha = (character.abilities.cha || 10) + raceObj.chaBonus;
+            applyStatsChk.checked = false; // reset after apply
+          }
+        }
+      }
 
       const newAlign = getVal('profile-edit-alignment');
       if (newAlign) character.alignment = newAlign;
