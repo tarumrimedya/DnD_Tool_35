@@ -4357,19 +4357,41 @@
         </div>
 
         <div class="grid grid-cols-3 gap-2">
-          <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Boyut (Size)</label>
-            <select id="profile-edit-size" class="w-full bg-slate-900 border border-slate-700 hover:border-slate-600 focus:border-purple-400 focus:outline-none rounded-lg px-2 py-1.5 text-white font-semibold cursor-pointer transition">
-              <option value="Fine">Fine</option>
-              <option value="Diminutive">Diminutive</option>
-              <option value="Tiny">Tiny</option>
-              <option value="Small">Small</option>
-              <option value="Medium">Medium</option>
-              <option value="Large">Large</option>
-              <option value="Huge">Huge</option>
-              <option value="Gargantuan">Gargantuan</option>
-              <option value="Colossal">Colossal</option>
-            </select>
+          <div class="relative" id="size-custom-dropdown-container">
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 flex items-center justify-between">
+              <span>Boyut (Size)</span>
+              <span class="text-[9px] text-purple-400 font-semibold flex items-center gap-1">
+                <span>📏</span> <span>3.5e RAW</span>
+              </span>
+            </label>
+
+            <!-- Hidden input for form serialization compatibility -->
+            <input type="hidden" id="profile-edit-size" value="Medium">
+
+            <!-- Trigger Button -->
+            <button type="button" id="size-dropdown-trigger" onclick="toggleSizeDropdown()" class="w-full bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-purple-500/70 rounded-lg px-2.5 py-1.5 text-white font-bold flex items-center justify-between transition shadow-sm cursor-pointer group focus:outline-none focus:border-purple-400">
+              <span class="flex items-center gap-2 truncate">
+                <span id="size-trigger-icon" class="text-xs">👤</span>
+                <span id="size-trigger-label" class="text-xs truncate">Medium (Orta)</span>
+              </span>
+              <span id="size-trigger-chevron" class="text-slate-400 group-hover:text-purple-300 transition-transform duration-200 text-[10px] ml-1 shrink-0">▼</span>
+            </button>
+
+            <!-- Custom Size Popover -->
+            <div id="size-custom-dropdown" class="hidden absolute top-full left-0 mt-1.5 bg-slate-950/95 border border-purple-500/50 rounded-xl shadow-2xl z-50 overflow-hidden backdrop-blur-md transition-all duration-150 animate-fadeIn w-64">
+              
+              <!-- Size Options List (9 RAW sizes sorted small to large) -->
+              <div id="size-options-list" class="max-h-64 overflow-y-auto p-1.5 space-y-1 custom-scroll text-xs">
+                <!-- Dynamically rendered via renderSizeItems() -->
+              </div>
+
+              <!-- Footer with Tip -->
+              <div class="p-1.5 bg-slate-900/90 border-t border-purple-900/40 flex items-center justify-between text-[10px] text-slate-400">
+                <span>💡 AC, Atak &amp; Gizlenme Mod</span>
+                <span class="text-purple-300 font-mono">9 Boyut</span>
+              </div>
+
+            </div>
           </div>
           <div>
             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Cinsiyet</label>
@@ -10064,6 +10086,7 @@
       setVal('profile-edit-deity', character.deity || '');
       updateDeitySpotlightTrigger(character.deity || '');
       setVal('profile-edit-size', character.size || 'Medium');
+      updateSizeDropdownTrigger(character.size || 'Medium');
       setVal('profile-edit-gender', character.gender || '');
       setVal('profile-edit-age', character.age || '');
       setVal('profile-edit-height', character.height || '');
@@ -10572,9 +10595,119 @@
       if (_alignmentDropdownOpen && alignContainer && !alignContainer.contains(e.target)) {
         closeAlignmentDropdown();
       }
+      const sizeContainer = document.getElementById('size-custom-dropdown-container');
+      if (_sizeDropdownOpen && sizeContainer && !sizeContainer.contains(e.target)) {
+        closeSizeDropdown();
+      }
     });
 
     // =========================================================================
+    // =========================================================================
+    // 📏 SPOTLIGHT & SYMBOL SIZE SELECTOR
+    // =========================================================================
+    const DND35_SIZE_DEFINITIONS = [
+      { id: 'Fine', label: 'Fine (Mikro)', icon: '🔬', acMod: '+8 AC/Atak', hideMod: '+16 Gizlenme', space: '0.5 ft', desc: 'Sinek, böcek veya mikroskobik yaratıklar' },
+      { id: 'Diminutive', label: 'Diminutive (Minyatür)', icon: '🤏', acMod: '+4 AC/Atak', hideMod: '+12 Gizlenme', space: '1 ft', desc: 'Kurbağa, fare, küçük kuşlar' },
+      { id: 'Tiny', label: 'Tiny (Çok Küçük)', icon: '🐾', acMod: '+2 AC/Atak', hideMod: '+8 Gizlenme', space: '2.5 ft', desc: 'Kedi, gelincik, şahin, yılan' },
+      { id: 'Small', label: 'Small (Küçük)', icon: '🍄', acMod: '+1 AC/Atak', hideMod: '+4 Gizlenme', space: '5 ft', desc: 'Halfling, Gnome, Kobold, Goblin' },
+      { id: 'Medium', label: 'Medium (Orta)', icon: '👤', acMod: '0 AC/Atak', hideMod: '0 Gizlenme', space: '5 ft', desc: 'Human, Elf, Dwarf, Orc (Standart)' },
+      { id: 'Large', label: 'Large (Büyük)', icon: '🦍', acMod: '-1 AC/Atak', hideMod: '-4 Gizlenme', space: '10 ft', desc: 'Ogre, Troll, At, Centaur, Minotaur' },
+      { id: 'Huge', label: 'Huge (Devasa)', icon: '🐘', acMod: '-2 AC/Atak', hideMod: '-8 Gizlenme', space: '15 ft', desc: 'Devler, Treant, Fil, Genç Ejderhalar' },
+      { id: 'Gargantuan', label: 'Gargantuan (Muazzam)', icon: '🌋', acMod: '-4 AC/Atak', hideMod: '-12 Gizlenme', space: '20 ft', desc: 'Kadim Ejderhalar, Kraken, Behemoth' },
+      { id: 'Colossal', label: 'Colossal (Heyula)', icon: '🪐', acMod: '-8 AC/Atak', hideMod: '-16 Gizlenme', space: '30 ft', desc: 'Tarrasque, En Yaşlı Kadim Ejderhalar' }
+    ];
+
+    let _sizeDropdownOpen = false;
+
+    function toggleSizeDropdown() {
+      if (_sizeDropdownOpen) closeSizeDropdown();
+      else openSizeDropdown();
+    }
+
+    function openSizeDropdown() {
+      const dropdown = document.getElementById('size-custom-dropdown');
+      const chevron = document.getElementById('size-trigger-chevron');
+      if (!dropdown) return;
+
+      dropdown.classList.remove('hidden');
+      if (chevron) chevron.classList.add('rotate-180');
+      _sizeDropdownOpen = true;
+
+      renderSizeItems();
+    }
+
+    function closeSizeDropdown() {
+      const dropdown = document.getElementById('size-custom-dropdown');
+      const chevron = document.getElementById('size-trigger-chevron');
+      if (!dropdown) return;
+
+      dropdown.classList.add('hidden');
+      if (chevron) chevron.classList.remove('rotate-180');
+      _sizeDropdownOpen = false;
+    }
+
+    function renderSizeItems() {
+      const listEl = document.getElementById('size-options-list');
+      if (!listEl) return;
+
+      const currentVal = (document.getElementById('profile-edit-size')?.value || character?.size || 'Medium').toLowerCase();
+
+      let html = '';
+      DND35_SIZE_DEFINITIONS.forEach(s => {
+        const isSelected = s.id.toLowerCase() === currentVal;
+        const selectedClasses = isSelected
+          ? 'bg-purple-900/60 border border-purple-500/80 text-white font-bold'
+          : 'bg-slate-900/50 hover:bg-slate-800/80 border border-transparent hover:border-purple-500/30 text-slate-200';
+
+        html += `
+          <button type="button" onclick="selectSizeItem('${s.id}')" class="w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between transition cursor-pointer group active:scale-[0.99] ${selectedClasses}">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="text-sm shrink-0">${s.icon}</span>
+              <div class="truncate">
+                <div class="text-xs font-bold flex items-center gap-1.5">
+                  <span class="truncate">${s.label}</span>
+                  ${isSelected ? '<span class="text-[9px] px-1 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-700 font-mono">Seçili</span>' : ''}
+                </div>
+                <div class="text-[9px] text-purple-300/80 font-mono truncate">
+                  ${s.acMod} • ${s.hideMod} • Alan: ${s.space}
+                </div>
+              </div>
+            </div>
+            <span class="text-xs text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity ml-2 shrink-0">➔</span>
+          </button>
+        `;
+      });
+
+      listEl.innerHTML = html;
+    }
+
+    function selectSizeItem(sizeId) {
+      updateSizeDropdownTrigger(sizeId);
+      closeSizeDropdown();
+
+      const hiddenInput = document.getElementById('profile-edit-size');
+      if (hiddenInput) hiddenInput.value = sizeId;
+    }
+
+    function updateSizeDropdownTrigger(sizeId) {
+      const labelEl = document.getElementById('size-trigger-label');
+      const iconEl = document.getElementById('size-trigger-icon');
+      const hiddenInput = document.getElementById('profile-edit-size');
+      if (hiddenInput) hiddenInput.value = sizeId || 'Medium';
+
+      const found = DND35_SIZE_DEFINITIONS.find(s => s.id.toLowerCase() === (sizeId || 'medium').toLowerCase());
+      if (found) {
+        if (labelEl) labelEl.textContent = found.label;
+        if (iconEl) iconEl.textContent = found.icon;
+      } else if (sizeId) {
+        if (labelEl) labelEl.textContent = sizeId;
+        if (iconEl) iconEl.textContent = '👤';
+      } else {
+        if (labelEl) labelEl.textContent = 'Medium (Orta)';
+        if (iconEl) iconEl.textContent = '👤';
+      }
+    }
+
     // =========================================================================
     // ⚖️ SPOTLIGHT & SYMBOL ALIGNMENT SELECTOR
     // =========================================================================
@@ -11194,7 +11327,10 @@
 
       // Auto-update size & speed inputs in form
       const sizeInput = document.getElementById('profile-edit-size');
-      if (sizeInput && raceObj.size) sizeInput.value = raceObj.size;
+      if (sizeInput && raceObj.size) {
+        sizeInput.value = raceObj.size;
+        updateSizeDropdownTrigger(raceObj.size);
+      }
       const speedInput = document.getElementById('profile-edit-speed');
       if (speedInput && raceObj.baseSpeed) speedInput.value = raceObj.baseSpeed;
 
@@ -11253,7 +11389,10 @@
       const raceInput = document.getElementById('profile-edit-race');
       if (raceInput) raceInput.value = raceObj.name;
       const sizeInput = document.getElementById('profile-edit-size');
-      if (sizeInput && raceObj.size) sizeInput.value = raceObj.size;
+      if (sizeInput && raceObj.size) {
+        sizeInput.value = raceObj.size;
+        updateSizeDropdownTrigger(raceObj.size);
+      }
       const speedInput = document.getElementById('profile-edit-speed');
       if (speedInput && raceObj.baseSpeed) speedInput.value = raceObj.baseSpeed;
 

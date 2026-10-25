@@ -1559,3 +1559,30 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - HUB dosyaları (`hub.html`, `webapp/hub.html`) kesinlikle değiştirilmedi.
      - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` (%100 SHA-256: `44074B0EE4311DC03F0A5258C0A6BCF1CE0A6F3D68475AE529B2D8B75B357CE8`).
      - Standart tavla zarı emoji yasağı (Rule #3: NO `🎲`) ve dummy data yasağı (Rule #5) eksiksiz uygulandı.
+
+
+---
+
+## 56. BOYUT (SIZE) SEMBOL VE SPOTLIGHT AÇILIR MENÜ ENTEGRASYONU (2026-10-25)
+* **İstek:**
+  - Karakter Künyesi modalındaki (`#stat-distribution-modal`) Boyut (`#profile-edit-size`) alanının, Yönelim, Tanrı/İnanç ve Irk menüleriyle %100 uyumlu olacak şekilde sembollü ve D&D 3.5e RAW dövüş modifikatörlerini gösteren modern bir açılır popover kartına dönüştürülmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Spotlight & Sembollü Boyut Seçici (`#size-custom-dropdown-container`):**
+     - Native `<select>` yerine, seçili boyutun simgesini (`🔬`, `🤏`, `🐾`, `🍄`, `👤`, `🦍`, `🐘`, `🌋`, `🪐`) ve adını gösteren tetikleyici buton (`#size-dropdown-trigger`), açılır popover penceresi (`#size-custom-dropdown`) ve seçenek listesi (`#size-options-list`) entegre edildi.
+     - Form serileştirme ve sayfa senkronizasyonu için `#profile-edit-size` gizli input (`type="hidden"`) olarak korundu.
+  2. **D&D 3.5e RAW 9 Boyut Kataloğu (`DND35_SIZE_DEFINITIONS`):**
+     - `Fine (Mikro)`: +8 AC/Atak, +16 Gizlenme, Alan 0.5 ft (Böcek / mikroskobik).
+     - `Diminutive (Minyatür)`: +4 AC/Atak, +12 Gizlenme, Alan 1 ft (Fare, kurbağa).
+     - `Tiny (Çok Küçük)`: +2 AC/Atak, +8 Gizlenme, Alan 2.5 ft (Kedi, şahin, yılan).
+     - `Small (Küçük)`: +1 AC/Atak, +4 Gizlenme, Alan 5 ft (Halfling, Gnome, Kobold, Goblin).
+     - `Medium (Orta)`: 0 AC/Atak, 0 Gizlenme, Alan 5 ft (Human, Elf, Dwarf, Orc).
+     - `Large (Büyük)`: -1 AC/Atak, -4 Gizlenme, Alan 10 ft (Ogre, Troll, At, Centaur).
+     - `Huge (Devasa)`: -2 AC/Atak, -8 Gizlenme, Alan 15 ft (Devler, Treant, Fil).
+     - `Gargantuan (Muazzam)`: -4 AC/Atak, -12 Gizlenme, Alan 20 ft (Kadim Ejderhalar, Kraken).
+     - `Colossal (Heyula)`: -8 AC/Atak, -16 Gizlenme, Alan 30 ft (Tarrasque, En Yaşlı Ejderhalar).
+  3. **Irk Değişiminde Otomatik Tetikleyici Senkronizasyonu:**
+     - `onProfileRaceChange()` ve `applyRacialTraitsToCharacter()` fonksiyonları yeni bir ırk seçildiğinde boyutu güncellerken artık `updateSizeDropdownTrigger()` çağrısını da otomatik yaparak tetikleyici butonun simge ve etiketini anında günceller.
+  4. **Parite ve Güvenlik:**
+     - HUB dosyaları (`hub.html`, `webapp/hub.html`) kesinlikle değiştirilmedi.
+     - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` (%100 SHA-256: `69569C862B67069E14C527F0E27B8102CA26BB69E29FE2C521EB2218F71AB47F`).
+     - Standart tavla zarı emoji yasağı (Rule #3: NO `🎲`) ve dummy data yasağı (Rule #5) eksiksiz uygulandı.
