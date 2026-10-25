@@ -915,3 +915,19 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   3. **Parite ve Kural Bütünlüğü:**
      - `character.html`, `index.html`, `webapp/character.html` ve `webapp/index.html` %100 SHA-256 paritesinde eşitlendi (`f9445bc9ce`).
      - Sıfır `🎲` kuralı tavizsiz uygulandı.
+
+---
+
+## 44. HUB KARAKTER KARTLARI, NOT DEFTERİ VE ZAR MASASI PANELLERİ 0.66 ORANINDA KISALTILDI (2026-10-25)
+* **İstek:** Karakter kartları, Not Defteri Paneli (`#hub-inline-notes-panel`) ve Zar Masası Paneli (`#hub-inline-dice-panel`) alanlarının dikey boylarının 0.66 ile çarpılarak (~410px) bu oranda kompaktlaştırılması ve kısaltılması.
+* **Uygulanan Değişiklikler:**
+  1. **0.66 Oranında Boyutlandırma (~410px):**
+     - Karakter kartları ve boş şablon kartının yüksekliği `min-h-[580px] xl:min-h-[620px]` değerinden 0.66 ile çarpılarak `min-h-[390px] xl:min-h-[410px] xl:max-h-[430px]` değerine çekildi.
+     - Not Defteri Paneli (`#hub-inline-notes-panel`) içindeki dikey alanlar ve textarea yüksekliği (`min-h-[160px]` -> `min-h-[105px]`) 0.66 oranında kompaktlaştırıldı.
+     - Zar Masası Paneli (`#hub-inline-dice-panel`) içindeki dikey boşluklar ve havuz özet alanı 0.66 ölçeğinde dengelenerek `min-h-[390px] xl:min-h-[410px] xl:max-h-[430px]` yüksekliğine eşitlendi.
+  2. **İç Düzen ve Ergonomi Korunumu:**
+     - Yazı büyüklükleri ve butonların ferah tıklama hedefleri korunarak dikey boşluklar (`space-y`, `padding`) optimize edildi.
+     - Masaüstü görünümünde (`xl:flex-row items-stretch`) Sol Bölüm (Karakter Kartları), Orta Bölüm (Not Defteri) ve Sağ Bölüm (Zar Masası) tamamen 410px seviyesinde simetrik ve hizalı duruma getirildi.
+  3. **Parite ve Kural Bütünlüğü:**
+     - `hub.html` ve `webapp/hub.html` %100 SHA-256 eşitliğinde tutuldu.
+     - Kesinlikle hiçbir tavla zarı emoji kullanılmadı.
