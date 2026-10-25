@@ -1,4 +1,4 @@
-[
+﻿[
     {
         "name":  "Gauntlet",
         "type":  "Weapon",
@@ -516,7 +516,7 @@
                             ]
     },
     {
-        "name":  "↳ Quarterstaff (Off-Hand Head)",
+        "name":  "â†³ Quarterstaff (Off-Hand Head)",
         "type":  "Weapon",
         "slot":  "Off-Hand",
         "category":  "Simple",
@@ -1760,7 +1760,7 @@
                             ]
     },
     {
-        "name":  "↳ Lance (Mounted One-Handed)",
+        "name":  "â†³ Lance (Mounted One-Handed)",
         "type":  "Weapon",
         "slot":  "Main Hand",
         "category":  "Martial",
@@ -2263,7 +2263,7 @@
                             ]
     },
     {
-        "name":  "↳ Bastard Sword (Two-Handed Martial)",
+        "name":  "â†³ Bastard Sword (Two-Handed Martial)",
         "type":  "Weapon",
         "slot":  "Two-Handed",
         "category":  "Martial",
@@ -2342,7 +2342,7 @@
                             ]
     },
     {
-        "name":  "↳ Dwarven Waraxe (Two-Handed Martial)",
+        "name":  "â†³ Dwarven Waraxe (Two-Handed Martial)",
         "type":  "Weapon",
         "slot":  "Two-Handed",
         "category":  "Martial",
@@ -2469,7 +2469,7 @@
                             ]
     },
     {
-        "name":  "↳ Orc Double Axe (Off-Hand Head)",
+        "name":  "â†³ Orc Double Axe (Off-Hand Head)",
         "type":  "Weapon",
         "slot":  "Off-Hand",
         "category":  "Exotic",
@@ -2600,7 +2600,7 @@
                             ]
     },
     {
-        "name":  "↳ Dire Flail (Off-Hand Head)",
+        "name":  "â†³ Dire Flail (Off-Hand Head)",
         "type":  "Weapon",
         "slot":  "Off-Hand",
         "category":  "Exotic",
@@ -2684,7 +2684,7 @@
                             ]
     },
     {
-        "name":  "↳ Gnome Hooked Hammer (Pick Off-Hand)",
+        "name":  "â†³ Gnome Hooked Hammer (Pick Off-Hand)",
         "type":  "Weapon",
         "slot":  "Off-Hand",
         "category":  "Exotic",
@@ -2766,7 +2766,7 @@
                             ]
     },
     {
-        "name":  "↳ Two-Bladed Sword (Off-Hand Head)",
+        "name":  "â†³ Two-Bladed Sword (Off-Hand Head)",
         "type":  "Weapon",
         "slot":  "Off-Hand",
         "category":  "Exotic",
@@ -2850,7 +2850,7 @@
                             ]
     },
     {
-        "name":  "↳ Dwarven Urgrosh (Spear Off-Hand)",
+        "name":  "â†³ Dwarven Urgrosh (Spear Off-Hand)",
         "type":  "Weapon",
         "slot":  "Off-Hand",
         "category":  "Exotic",
@@ -4705,5 +4705,365 @@
         "combatModifiers":  [
 
                             ]
+    },
+    {
+        "name":  "Human",
+        "type":  "Race",
+        "category":  "Standard Race",
+        "slot":  "None",
+        "size":  "Medium",
+        "baseSpeed":  30,
+        "strBonus":  0,
+        "dexBonus":  0,
+        "conBonus":  0,
+        "intBonus":  0,
+        "wisBonus":  0,
+        "chaBonus":  0,
+        "bonusFeats":  1,
+        "bonusSkillPointsPerLevel":  1,
+        "bonusSkillPointsLevel1":  4,
+        "favoredClass":  "Any",
+        "languages":  [
+                          "Common"
+                      ],
+        "bonusLanguages":  [
+                               "Any (except secret)"
+                           ],
+        "traits":  [
+                       {
+                           "name":  "Bonus Feat",
+                           "desc":  "1 extra feat at 1st level."
+                       },
+                       {
+                           "name":  "Skilled",
+                           "desc":  "4 extra skill points at 1st level and 1 extra skill point at each additional level."
+                       }
+                   ],
+        "source":  "SRD / PHB p.12",
+        "benefit":  "1 bonus feat at 1st level; 4 extra skill points at 1st level and +1 extra skill point per additional level. Favored Class: Any.",
+        "tags":  [
+                     "race",
+                     "human",
+                     "medium"
+                 ]
+    },
+    {
+        "name":  "Dwarf",
+        "type":  "Race",
+        "category":  "Standard Race",
+        "slot":  "None",
+        "size":  "Medium",
+        "baseSpeed":  20,
+        "speedNote":  "Base land speed is 20 feet. Dwarves can move at this speed even when wearing medium or heavy armor or when carrying a medium or heavy load.",
+        "strBonus":  0,
+        "dexBonus":  0,
+        "conBonus":  2,
+        "intBonus":  0,
+        "wisBonus":  0,
+        "chaBonus":  -2,
+        "favoredClass":  "Fighter",
+        "languages":  [
+                          "Common",
+                          "Dwarven"
+                      ],
+        "traits":  [
+                       {
+                           "name":  "Darkvision",
+                           "desc":  "60 ft darkvision in black and white."
+                       },
+                       {
+                           "name":  "Stonecunning",
+                           "desc":  "+2 racial bonus on Search checks to notice unusual stonework."
+                       },
+                       {
+                           "name":  "Weapon Familiarity",
+                           "desc":  "Dwarven waraxes and dwarven urgroshes are martial weapons for dwarves."
+                       },
+                       {
+                           "name":  "Stability",
+                           "desc":  "+4 bonus on ability checks to resist bull rush or trip when on firm ground."
+                       },
+                       {
+                           "name":  "Poison Resistance",
+                           "desc":  "+2 racial bonus on saving throws against poison."
+                       },
+                       {
+                           "name":  "Spell Resistance / Saves",
+                           "desc":  "+2 racial bonus on saving throws against spells and spell-like effects."
+                       },
+                       {
+                           "name":  "Combat Training (Orcs \u0026 Goblins)",
+                           "desc":  "+1 racial bonus on attack rolls against orcs and goblinoids."
+                       },
+                       {
+                           "name":  "Dodge Giants",
+                           "desc":  "+4 dodge bonus to Armor Class against monsters of the giant type."
+                       },
+                       {
+                           "name":  "Stone \u0026 Metal Appraise/Craft",
+                           "desc":  "+2 racial bonus on Appraise and Craft checks related to stone or metal."
+                       }
+                   ],
+        "source":  "SRD / PHB p.14",
+        "benefit":  "+2 Constitution, -2 Charisma. Darkvision 60 ft, Stonecunning, Weapon Familiarity (Dwarven Waraxe/Urgrosh), Stability (+4 vs trip/bull rush), +2 saves vs poison and spells, +1 attack vs orcs/goblinoids, +4 AC vs giants.",
+        "tags":  [
+                     "race",
+                     "dwarf",
+                     "medium",
+                     "stonecunning"
+                 ]
+    },
+    {
+        "name":  "Elf",
+        "type":  "Race",
+        "category":  "Standard Race",
+        "slot":  "None",
+        "size":  "Medium",
+        "baseSpeed":  30,
+        "strBonus":  0,
+        "dexBonus":  2,
+        "conBonus":  -2,
+        "intBonus":  0,
+        "wisBonus":  0,
+        "chaBonus":  0,
+        "favoredClass":  "Wizard",
+        "languages":  [
+                          "Common",
+                          "Elven"
+                      ],
+        "traits":  [
+                       {
+                           "name":  "Sleep Immunity",
+                           "desc":  "Immunity to magic sleep effects."
+                       },
+                       {
+                           "name":  "Enchantment Resistance",
+                           "desc":  "+2 racial saving throw bonus against enchantment spells or effects."
+                       },
+                       {
+                           "name":  "Low-Light Vision",
+                           "desc":  "Can see twice as far as a human in starlight, moonlight, torchlight."
+                       },
+                       {
+                           "name":  "Weapon Proficiency",
+                           "desc":  "Proficient with longsword, rapier, longbow, and shortbow."
+                       },
+                       {
+                           "name":  "Keen Senses",
+                           "desc":  "+2 racial bonus on Listen, Search, and Spot checks. Passive search for secret doors within 5 ft."
+                       }
+                   ],
+        "source":  "SRD / PHB p.15",
+        "benefit":  "+2 Dexterity, -2 Constitution. Immunity to magic sleep effects, +2 saves vs enchantment, Low-Light Vision, weapon proficiency (longsword, rapier, bows), +2 Listen/Search/Spot with passive secret door check.",
+        "tags":  [
+                     "race",
+                     "elf",
+                     "medium",
+                     "low-light-vision"
+                 ]
+    },
+    {
+        "name":  "Gnome",
+        "type":  "Race",
+        "category":  "Standard Race",
+        "slot":  "None",
+        "size":  "Small",
+        "baseSpeed":  20,
+        "strBonus":  -2,
+        "dexBonus":  0,
+        "conBonus":  2,
+        "intBonus":  0,
+        "wisBonus":  0,
+        "chaBonus":  0,
+        "favoredClass":  "Bard",
+        "languages":  [
+                          "Common",
+                          "Gnome"
+                      ],
+        "traits":  [
+                       {
+                           "name":  "Small Size",
+                           "desc":  "+1 bonus to AC, +1 bonus on attack rolls, +4 bonus on Hide checks, smaller weapon dice, 3/4 carrying capacity."
+                       },
+                       {
+                           "name":  "Low-Light Vision",
+                           "desc":  "Can see twice as far as a human in starlight, moonlight, torchlight."
+                       },
+                       {
+                           "name":  "Weapon Familiarity",
+                           "desc":  "Gnome hooked hammers are martial weapons for gnomes."
+                       },
+                       {
+                           "name":  "Illusion Resistance \u0026 Potency",
+                           "desc":  "+2 racial bonus on saving throws against illusions; +1 DC to illusion spells cast by the gnome."
+                       },
+                       {
+                           "name":  "Combat Training (Kobolds \u0026 Goblins)",
+                           "desc":  "+1 racial bonus on attack rolls against kobolds and goblinoids."
+                       },
+                       {
+                           "name":  "Dodge Giants",
+                           "desc":  "+4 dodge bonus to Armor Class against monsters of the giant type."
+                       },
+                       {
+                           "name":  "Keen Ears \u0026 Alchemy",
+                           "desc":  "+2 racial bonus on Listen checks and Craft (alchemy) checks."
+                       },
+                       {
+                           "name":  "Spell-Like Abilities",
+                           "desc":  "1/day speak with animals (burrowing mammal); with Cha 10+: 1/day dancing lights, ghost sound, prestidigitation."
+                       }
+                   ],
+        "source":  "SRD / PHB p.16",
+        "benefit":  "+2 Constitution, -2 Strength. Small size (+1 AC, +1 attack, +4 Hide), Low-Light Vision, Weapon Familiarity (Hooked Hammer), +2 saves vs illusions, +1 illusion DC, +1 attack vs kobolds/goblinoids, +4 AC vs giants, +2 Listen/Craft (alchemy), Spell-Like Abilities.",
+        "tags":  [
+                     "race",
+                     "gnome",
+                     "small",
+                     "low-light-vision"
+                 ]
+    },
+    {
+        "name":  "Half-Elf",
+        "type":  "Race",
+        "category":  "Standard Race",
+        "slot":  "None",
+        "size":  "Medium",
+        "baseSpeed":  30,
+        "strBonus":  0,
+        "dexBonus":  0,
+        "conBonus":  0,
+        "intBonus":  0,
+        "wisBonus":  0,
+        "chaBonus":  0,
+        "favoredClass":  "Any",
+        "languages":  [
+                          "Common",
+                          "Elven"
+                      ],
+        "traits":  [
+                       {
+                           "name":  "Sleep Immunity",
+                           "desc":  "Immunity to magic sleep effects."
+                       },
+                       {
+                           "name":  "Enchantment Resistance",
+                           "desc":  "+2 racial saving throw bonus against enchantment spells or effects."
+                       },
+                       {
+                           "name":  "Low-Light Vision",
+                           "desc":  "Can see twice as far as a human in starlight, moonlight, torchlight."
+                       },
+                       {
+                           "name":  "Elven Blood",
+                           "desc":  "For all effects related to race, considered an elf."
+                       },
+                       {
+                           "name":  "Social Adaptability",
+                           "desc":  "+2 racial bonus on Diplomacy and Gather Information checks."
+                       },
+                       {
+                           "name":  "Keen Senses",
+                           "desc":  "+1 racial bonus on Listen, Search, and Spot checks."
+                       }
+                   ],
+        "source":  "SRD / PHB p.18",
+        "benefit":  "Medium size. Immunity to magic sleep effects, +2 saves vs enchantment, Low-Light Vision, Elven Blood, +2 Diplomacy/Gather Information, +1 Listen/Search/Spot. Favored Class: Any.",
+        "tags":  [
+                     "race",
+                     "half-elf",
+                     "medium",
+                     "low-light-vision"
+                 ]
+    },
+    {
+        "name":  "Half-Orc",
+        "type":  "Race",
+        "category":  "Standard Race",
+        "slot":  "None",
+        "size":  "Medium",
+        "baseSpeed":  30,
+        "strBonus":  2,
+        "dexBonus":  0,
+        "conBonus":  0,
+        "intBonus":  -2,
+        "wisBonus":  0,
+        "chaBonus":  -2,
+        "favoredClass":  "Barbarian",
+        "languages":  [
+                          "Common",
+                          "Orc"
+                      ],
+        "traits":  [
+                       {
+                           "name":  "Darkvision",
+                           "desc":  "60 ft darkvision in black and white."
+                       },
+                       {
+                           "name":  "Orc Blood",
+                           "desc":  "For all effects related to race, considered an orc."
+                       }
+                   ],
+        "source":  "SRD / PHB p.18",
+        "benefit":  "+2 Strength, -2 Intelligence, -2 Charisma. Darkvision 60 ft, Orc Blood. Favored Class: Barbarian.",
+        "tags":  [
+                     "race",
+                     "half-orc",
+                     "medium",
+                     "darkvision"
+                 ]
+    },
+    {
+        "name":  "Halfling",
+        "type":  "Race",
+        "category":  "Standard Race",
+        "slot":  "None",
+        "size":  "Small",
+        "baseSpeed":  20,
+        "strBonus":  -2,
+        "dexBonus":  2,
+        "conBonus":  0,
+        "intBonus":  0,
+        "wisBonus":  0,
+        "chaBonus":  0,
+        "favoredClass":  "Rogue",
+        "languages":  [
+                          "Common",
+                          "Halfling"
+                      ],
+        "traits":  [
+                       {
+                           "name":  "Small Size",
+                           "desc":  "+1 bonus to AC, +1 bonus on attack rolls, +4 bonus on Hide checks, smaller weapon dice, 3/4 carrying capacity."
+                       },
+                       {
+                           "name":  "Athletics",
+                           "desc":  "+2 racial bonus on Climb, Jump, and Move Silently checks."
+                       },
+                       {
+                           "name":  "Halfling Luck",
+                           "desc":  "+1 racial bonus on all saving throws."
+                       },
+                       {
+                           "name":  "Fear Resistance",
+                           "desc":  "+2 morale bonus on saving throws against fear (stacks with Halfling Luck, total +3)."
+                       },
+                       {
+                           "name":  "Throwing \u0026 Sling Accuracy",
+                           "desc":  "+1 racial bonus on attack rolls with thrown weapons and slings."
+                       },
+                       {
+                           "name":  "Keen Ears",
+                           "desc":  "+2 racial bonus on Listen checks."
+                       }
+                   ],
+        "source":  "SRD / PHB p.19",
+        "benefit":  "+2 Dexterity, -2 Strength. Small size (+1 AC, +1 attack, +4 Hide), +2 Climb/Jump/Move Silently, +1 all saves (Halfling Luck), +2 saves vs fear, +1 attack with thrown weapons and slings, +2 Listen. Favored Class: Rogue.",
+        "tags":  [
+                     "race",
+                     "halfling",
+                     "small",
+                     "halfling-luck"
+                 ]
     }
 ]

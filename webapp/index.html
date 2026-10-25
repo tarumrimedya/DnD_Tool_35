@@ -4510,7 +4510,7 @@
           </div>
           <div>
             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Irk (Race) *</label>
-            <input type="text" id="profile-edit-race" list="race-options" oninput="updateProfileModalAvatar()" onchange="updateProfileModalAvatar()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-bold">
+            <input type="text" id="profile-edit-race" list="race-options" oninput="updateProfileModalAvatar(); onProfileRaceChange(this.value);" onchange="updateProfileModalAvatar(); onProfileRaceChange(this.value);" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-bold">
             <datalist id="race-options">
               <option value="Human">
               <option value="Elf">
@@ -4524,6 +4524,11 @@
               <option value="Dragonborn">
             </datalist>
           </div>
+        </div>
+
+        <!-- Irksal Nitelik Önizleme ve Uygulama Kartı (D&D 3.5e RAW SRD Ghost Core) -->
+        <div id="profile-race-traits-card" class="hidden bg-slate-950/90 border border-amber-500/40 rounded-xl p-3 space-y-2 shadow-lg">
+          <!-- Populated dynamically via onProfileRaceChange -->
         </div>
 
         <div class="grid grid-cols-2 gap-2">
@@ -9921,6 +9926,7 @@
       updateProfileModalAvatar();
       applyPortraitSettings();
       applyWallpaperSettings();
+      onProfileRaceChange(character.race || '');
 
       const modal = document.getElementById('char-profile-modal');
       if (modal) modal.classList.remove('hidden');
@@ -9969,6 +9975,160 @@
       saveStateToStorage(true);
       renderAll();
       alert('✅ Karakter kimliği ve özellikleri başarıyla güncellendi!');
+    }
+
+    // =========================================================================
+    // 🧬 D&D 3.5E RAW SRD RACIAL SYSTEM (STANDART IRK ENTEGRASYONU)
+    // =========================================================================
+    function onProfileRaceChange(raceName) {
+      const card = document.getElementById('profile-race-traits-card');
+      if (!card) return;
+
+      const q = (raceName || '').toLowerCase().trim();
+      if (!q) {
+        card.classList.add('hidden');
+        card.innerHTML = '';
+        return;
+      }
+
+      const catalog = (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG))
+        ? window.BUNDLED_SRD_CORE_CATALOG
+        : [];
+
+      const raceObj = catalog.find(item => item && item.type === 'Race' && (item.name.toLowerCase() === q || item.name.toLowerCase().includes(q)));
+      if (!raceObj) {
+        card.classList.add('hidden');
+        card.innerHTML = '';
+        return;
+      }
+
+      // Build Stat Bonus Pill
+      const statChanges = [];
+      if (raceObj.strBonus) statChanges.push(`${raceObj.strBonus > 0 ? '+' : ''}${raceObj.strBonus} STR`);
+      if (raceObj.dexBonus) statChanges.push(`${raceObj.dexBonus > 0 ? '+' : ''}${raceObj.dexBonus} DEX`);
+      if (raceObj.conBonus) statChanges.push(`${raceObj.conBonus > 0 ? '+' : ''}${raceObj.conBonus} CON`);
+      if (raceObj.intBonus) statChanges.push(`${raceObj.intBonus > 0 ? '+' : ''}${raceObj.intBonus} INT`);
+      if (raceObj.wisBonus) statChanges.push(`${raceObj.wisBonus > 0 ? '+' : ''}${raceObj.wisBonus} WIS`);
+      if (raceObj.chaBonus) statChanges.push(`${raceObj.chaBonus > 0 ? '+' : ''}${raceObj.chaBonus} CHA`);
+
+      const statBadges = statChanges.length > 0
+        ? statChanges.map(s => `<span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono text-[10px] font-bold border border-amber-500/40">${s}</span>`).join(' ')
+        : '<span class="text-[10px] text-slate-400 italic">Stat değişimi yok (Esnek)</span>';
+
+      const traitsList = Array.isArray(raceObj.traits)
+        ? raceObj.traits.map(t => `
+            <div class="text-[10px] text-slate-300">
+              <strong class="text-amber-400 font-bold">${t.name}:</strong> <span>${t.desc}</span>
+            </div>
+          `).join('')
+        : `<p class="text-[10px] text-slate-300">${raceObj.benefit || ''}</p>`;
+
+      const escapedRaceName = raceObj.name.replace(/'/g, "\\'");
+
+      card.innerHTML = `
+        <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
+          <div class="flex items-center gap-1.5">
+            <span class="text-sm">🧬</span>
+            <span class="text-xs font-black text-amber-400 uppercase tracking-wide">${raceObj.name}</span>
+            <span class="text-[9px] px-1.5 py-0.2 rounded bg-slate-900 border border-slate-700 text-slate-300 font-bold">${raceObj.size || 'Medium'} Boyut • ${raceObj.baseSpeed || 30} ft Hız</span>
+          </div>
+          <span class="text-[9px] font-mono text-slate-500">D&D 3.5e RAW SRD</span>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-[9px] uppercase font-bold text-slate-400">Irksal Statlar:</span>
+          ${statBadges}
+        </div>
+
+        <div class="max-h-36 overflow-y-auto bg-slate-900/80 border border-slate-800/80 rounded-lg p-2 space-y-1">
+          ${traitsList}
+        </div>
+
+        <div class="pt-1.5 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
+          <label class="flex items-center gap-1.5 text-[10px] text-slate-300 cursor-pointer select-none">
+            <input type="checkbox" id="profile-race-apply-stats-chk" class="rounded bg-slate-900 border-slate-700 text-amber-500 focus:ring-0">
+            <span>Stat bonuslarını yetenek puanlarına ekle</span>
+          </label>
+          <button type="button" onclick="applyRacialTraitsToCharacter('${escapedRaceName}')" class="px-3 py-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-95 text-white font-extrabold text-[11px] rounded-lg shadow transition flex items-center gap-1 cursor-pointer">
+            <span>🧬</span>
+            <span>Irk Niteliklerini Uygula</span>
+          </button>
+        </div>
+      `;
+
+      card.classList.remove('hidden');
+    }
+
+    function applyRacialTraitsToCharacter(raceName) {
+      if (!character) return;
+      const catalog = (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG))
+        ? window.BUNDLED_SRD_CORE_CATALOG
+        : [];
+
+      const raceObj = catalog.find(item => item && item.type === 'Race' && item.name.toLowerCase() === raceName.toLowerCase());
+      if (!raceObj) return;
+
+      const includeStats = document.getElementById('profile-race-apply-stats-chk')?.checked ?? false;
+
+      // 1. Update basic profile fields
+      character.race = raceObj.name;
+      if (raceObj.size) character.size = raceObj.size;
+      if (raceObj.baseSpeed) character.baseSpeed = raceObj.baseSpeed;
+
+      const raceInput = document.getElementById('profile-edit-race');
+      if (raceInput) raceInput.value = raceObj.name;
+      const sizeInput = document.getElementById('profile-edit-size');
+      if (sizeInput && raceObj.size) sizeInput.value = raceObj.size;
+      const speedInput = document.getElementById('profile-edit-speed');
+      if (speedInput && raceObj.baseSpeed) speedInput.value = raceObj.baseSpeed;
+
+      // 2. Optionally Apply Ability Modifiers
+      if (includeStats) {
+        if (!character.abilities) character.abilities = { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
+        if (raceObj.strBonus) character.abilities.str = (character.abilities.str || 10) + raceObj.strBonus;
+        if (raceObj.dexBonus) character.abilities.dex = (character.abilities.dex || 10) + raceObj.dexBonus;
+        if (raceObj.conBonus) character.abilities.con = (character.abilities.con || 10) + raceObj.conBonus;
+        if (raceObj.intBonus) character.abilities.int = (character.abilities.int || 10) + raceObj.intBonus;
+        if (raceObj.wisBonus) character.abilities.wis = (character.abilities.wis || 10) + raceObj.wisBonus;
+        if (raceObj.chaBonus) character.abilities.cha = (character.abilities.cha || 10) + raceObj.chaBonus;
+      }
+
+      // 3. Inject Racial Traits into character.specialAbilities (duplicate-safe)
+      if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
+      let addedTraitCount = 0;
+
+      if (Array.isArray(raceObj.traits)) {
+        raceObj.traits.forEach(t => {
+          const traitFullName = `${t.name} (${raceObj.name})`;
+          const alreadyExists = character.specialAbilities.some(a => {
+            const aName = (typeof a === 'string' ? a : (a.name || '')).toLowerCase();
+            return aName === traitFullName.toLowerCase() || aName === t.name.toLowerCase();
+          });
+
+          if (!alreadyExists) {
+            character.specialAbilities.push({
+              name: traitFullName,
+              source: `${raceObj.name} Race`,
+              benefit: t.desc || '',
+              action: 'Passive',
+              duration: 'Continuous',
+              active: true
+            });
+            addedTraitCount++;
+          }
+        });
+      }
+
+      saveStateToStorage(true);
+      renderAll();
+
+      if (typeof showDiceTopToast === 'function') {
+        showDiceTopToast({
+          title: `${raceObj.name} Irkı Uygulandı!`,
+          breakdown: `${addedTraitCount} ırksal nitelik özel yeteneklere eklendi. Boyut: ${raceObj.size}, Taban Hız: ${raceObj.baseSpeed} ft.${includeStats ? ' Stat modifiyerleri eklendi.' : ''}`,
+          icon: '🧬'
+        });
+      }
     }
 
     // ====================================================
