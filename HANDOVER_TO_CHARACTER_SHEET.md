@@ -402,3 +402,16 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
 
 
 
+---
+
+## 20. LOGIN VE ROOT YÖNLENDİRMESİNİN /HUB OLARAK KESİNLEŞTİRİLMESİ (2026-10-25)
+* **Sorun:** Google OAuth ve Supabase girişinden sonra kullanıcıların `https://dndtool35.vercel.app/#` adresine yönlendirilmesi neticesinde Vercel'in statik dosya önceliği sebebiyle doğrudan `index.html` (Karakter Kâğıdı / Tactical Cockpit) sayfasını açması, DM Hub masasının açılmasını engelliyordu.
+* **Uygulanan Çözümler:**
+  1. **Vercel Sunucu Yönlendirmesi (`vercel.json`):**
+     * Kök adres (`/`) için `permanent: false` HTTP 307 yönlendirmesi (`redirects`) eklendi: `{ "source": "/", "destination": "/hub" }`. Bu sayede Google OAuth geri dönüş hash'i (`#access_token=...`) tarayıcı tarafından korunarak doğrudan `/hub` sayfasına taşınır.
+  2. **İstemci Tarafı Kök Kalkanı (`index.html` / `character.html`):**
+     * Sayfa açılışında `pathname === '/'` ve URL'de `?id=` karakter parametresi yoksa, sayfa yüklemesi anında kesilerek `window.location.replace('/hub' + window.location.hash)` ile kullanıcı derhal Hub sayfasına aktarılır.
+  3. **Hub'dan Karakter Açma İyileştirmesi (`hub.html`):**
+     * Karakter açıldığında `/?id=...` yerine doğrudan `/character?id=...` rotasına yönlendirilmesi sağlandı.
+  4. **Parite ve Doğrulama:**
+     * `vercel.json`, `hub.html`, `webapp/hub.html`, `index.html`, `character.html`, `webapp/index.html` ve `webapp/character.html` dosyaları %100 SHA-256 paritesinde eşitlenip GitHub `main` branch'ine push edildi.
