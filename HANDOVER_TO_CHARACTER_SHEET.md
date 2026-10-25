@@ -1586,3 +1586,18 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - HUB dosyaları (`hub.html`, `webapp/hub.html`) kesinlikle değiştirilmedi.
      - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` (%100 SHA-256: `69569C862B67069E14C527F0E27B8102CA26BB69E29FE2C521EB2218F71AB47F`).
      - Standart tavla zarı emoji yasağı (Rule #3: NO `🎲`) ve dummy data yasağı (Rule #5) eksiksiz uygulandı.
+
+
+---
+
+## 57. KARAKTER KÜNYESİ MODALININ BOYUT VE YÜKSEKLİK OPTİMİZASYONU (2026-10-25)
+* **İstek:**
+  - Karakter Künyesi (`#stat-distribution-modal`) modalının dikey yüksekliğinin artırılması ve daha ferah bir görüntüleme alanına kavuşturulması.
+* **Uygulanan Değişiklikler:**
+  1. **Yükseklik (Height) ve Genişlik (Max-Width) Güncellemesi:**
+     - Modal dış kartı `max-w-2xl` ve serbest yükseklikten; `max-w-2xl sm:max-w-3xl w-full h-[90vh] md:h-[94vh] max-h-[96vh]` sınıflarına yükseltildi.
+     - Modal gövdesi (`<!-- Modal Body -->`) `flex-1 custom-scroll` ile donatılarak, tüm kullanılabilir dikey alanı doldurması ve açılır menülerin (Irk, Tanrı, Yönelim, Boyut) daha ferah bir alanda açılması sağlandı.
+  2. **Parite ve Güvenlik:**
+     - HUB dosyaları (`hub.html`, `webapp/hub.html`) kesinlikle değiştirilmedi.
+     - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` (%100 SHA-256: `96DC5845F6CA2C5AA044944CF480A4A156C51AD94FF554FEAC9AB89AEB2CE5CB`).
+     - Kural #3 (Zar emojisi yasağı) ve Kural #5 tavizsiz korundu.
