@@ -1,7 +1,8 @@
 /**
- * D&D 3.5e Supabase Authentication & Multi-User Module
+ * D&D 3.5e Supabase Authentication & Multi-User Campaign Module
  * 
- * Handles Google OAuth, Local/Offline Mode, session persistence, page guards, and user UI components.
+ * Handles Google OAuth, Local/Offline Mode, session persistence, page guards,
+ * campaign invitation codes, cloud character sharing, and Realtime WebSocket syncing.
  */
 
 const SUPABASE_CONFIG = {
@@ -22,6 +23,7 @@ function getSupabaseClient() {
 
 const SupabaseAuth = {
   client: null,
+  _activeChannels: {},
 
   getClient() {
     if (!this.client) {
@@ -134,8 +136,6 @@ const SupabaseAuth = {
 
   /**
    * Korumalı Sayfa Kalkanı (Auth Guard)
-   * Eğer oturum yoksa kullanıcıyı derhal /login sayfasına fırlatır.
-   * Oturum veya Yerel Mod varsa kullanıcı nesnesini döner ve sağ üstte profil rozetini çizer.
    */
   async requireAuth(options = {}) {
     // Yerel dosya sistemi (file://) protokolünde doğrudan auth kalkanını atla
@@ -173,10 +173,6 @@ const SupabaseAuth = {
     return session.user;
   },
 
-  /**
-   * Giriş Sayfası Kontrolü:
-   * Zaten oturumu olan veya Yerel Mod seçmiş bir kullanıcı /login'e gelirse otomatik yönlendir.
-   */
   async redirectIfLoggedIn(defaultTarget = '/hub') {
     if (this.isLocalMode()) {
       const urlParams = new URLSearchParams(window.location.search);
@@ -194,9 +190,6 @@ const SupabaseAuth = {
     return false;
   },
 
-  /**
-   * Sayfa Üst Barına Kullanıcı Profil & Çıkış Rozetini Çizer
-   */
   mountUserProfileUI(user, options = {}) {
     if (!user) return;
     const isLocal = !!user.user_metadata?.is_local;
@@ -204,14 +197,12 @@ const SupabaseAuth = {
     const name = meta.full_name || meta.name || (user.email ? user.email.split('@')[0] : 'Kullanıcı');
     const avatar = meta.avatar_url || meta.picture || '';
 
-    // Varsa mevcut profil konteynerini bul, yoksa oluştur
     let container = document.getElementById('supabase-user-pill-container');
     if (!container) {
       container = document.createElement('div');
       container.id = 'supabase-user-pill-container';
       container.className = 'inline-flex items-center gap-2';
 
-      // Sayfadaki hedef yerleşim noktası
       const targetNav = document.getElementById('user-profile-slot') ||
                         document.getElementById('nav-user-actions') || 
                         document.querySelector('header .flex.items-center.gap-2') ||
@@ -219,7 +210,6 @@ const SupabaseAuth = {
       if (targetNav) {
         targetNav.prepend(container);
       } else {
-        // En kötü ihtimalle body'e sağ üstte sabit yerleştir
         container.className = 'fixed top-3 right-3 z-40 bg-slate-900/90 border border-slate-700/80 px-2.5 py-1.5 rounded-xl shadow-lg flex items-center gap-2';
         document.body.appendChild(container);
       }
@@ -248,6 +238,371 @@ const SupabaseAuth = {
         </button>
       </div>
     `;
+  },
+
+  // =========================================================================
+  // 🏰 ÇOK KULLANICILI KAMPANYA & KARAKTER PAYLAŞIM MOTORU (SUPABASE)
+  // =========================================================================
+
+  /**
+   * Benzersiz, akılda kalıcı D&D temalı davet kodu üretir (Örn: 'RAVEN-7841')
+   */
+  generateInviteCode() {
+    const words = ['DRAGON', 'RAVEN', 'TIGER', 'EAGLE', 'SHADOW', 'WOLF', 'FROST', 'STORM', 'BLADE', 'SPELL', 'TITAN', 'MYTHIC', 'VALOR', 'FORGE', 'VIPER', 'GRIFFIN'];
+    const prefix = words[Math.floor(Math.random() * words.length)];
+    const num = Math.floor(1000 + Math.random() * 9000);
+    return `${prefix}-${num}`;
+  },
+
+  /**
+   * Bulutta yeni bir DM kampanyası oluşturur
+   */
+  async createCloudCampaign({ name, description = '', isDmMode = true }) {
+    if (this.isLocalMode()) {
+      throw new Error('Bulut kampanyası oluşturmak için lütfen Google hesabınızla giriş yapın.');
+    }
+    const user = await this.getUser();
+    if (!user) throw new Error('Oturum bulunamadı. Lütfen tekrar giriş yapın.');
+
+    const client = this.getClient();
+    if (!client) throw new Error('Supabase istemcisine erişilemedi.');
+
+    const inviteCode = this.generateInviteCode();
+
+    // 1. campaigns tablosuna ekle
+    const { data: campaign, error: campErr } = await client
+      .from('campaigns')
+      .insert({
+        dm_user_id: user.id,
+        name: name.trim(),
+        description: description.trim(),
+        invite_code: inviteCode,
+        is_dm_mode: isDmMode
+      })
+      .select()
+      .single();
+
+    if (campErr) throw campErr;
+
+    // 2. DM'i campaign_members tablosuna 'dm' rolüyle ekle
+    const { error: memberErr } = await client
+      .from('campaign_members')
+      .insert({
+        campaign_id: campaign.id,
+        user_id: user.id,
+        role: 'dm'
+      });
+
+    if (memberErr) {
+      console.warn('campaign_members kaydı sırasında hata (kampanya oluşturuldu):', memberErr);
+    }
+
+    return campaign;
+  },
+
+  /**
+   * Davet kodu ile kampanya bilgilerini ve DM adını sorgular
+   */
+  async getCampaignByInviteCode(inviteCode) {
+    if (!inviteCode) return null;
+    const cleanCode = String(inviteCode).toUpperCase().trim();
+
+    const client = this.getClient();
+    if (!client) return null;
+
+    const { data, error } = await client
+      .from('campaigns')
+      .select('id, dm_user_id, name, description, invite_code, is_dm_mode, created_at')
+      .eq('invite_code', cleanCode)
+      .maybeSingle();
+
+    if (error) {
+      console.error('getCampaignByInviteCode error:', error);
+      return null;
+    }
+    return data;
+  },
+
+  /**
+   * Oyuncunun karakterini davet kodu kullanarak bir kampanyaya bağlar (1 Oyuncu = 1 Aktif Karakter)
+   */
+  async joinCampaignWithCharacter(inviteCode, characterData) {
+    if (this.isLocalMode()) {
+      throw new Error('Bir kampanyaya katılmak için lütfen Google hesabınızla giriş yapın.');
+    }
+    const user = await this.getUser();
+    if (!user) throw new Error('Oturum açılmamış.');
+
+    const campaign = await this.getCampaignByInviteCode(inviteCode);
+    if (!campaign) throw new Error(`"${inviteCode}" koduna ait aktif bir kampanya bulunamadı.`);
+
+    const client = this.getClient();
+    const charId = characterData.id || `char_${Date.now()}`;
+    const charName = characterData.name || 'İsimsiz Kahraman';
+    const curHp = characterData.hp?.current ?? characterData.hp?.max ?? 10;
+    const tmpHp = characterData.hp?.temp ?? 0;
+
+    // 1. campaign_members kaydı oluştur / güncelle
+    const { error: memberErr } = await client
+      .from('campaign_members')
+      .upsert({
+        campaign_id: campaign.id,
+        user_id: user.id,
+        role: 'player'
+      }, { onConflict: 'campaign_id,user_id' });
+
+    if (memberErr) console.warn('campaign_members upsert warning:', memberErr);
+
+    // 2. Oyuncunun bu kampanyadaki eski karakterlerinin campaign_id'sini null yap (1 oyuncu = 1 aktif karakter kuralı)
+    await client
+      .from('characters')
+      .update({ campaign_id: null })
+      .eq('owner_user_id', user.id)
+      .eq('campaign_id', campaign.id);
+
+    // 3. Seçilen karakteri kampanyaya bağla
+    const { data: charRow, error: charErr } = await client
+      .from('characters')
+      .upsert({
+        id: charId,
+        owner_user_id: user.id,
+        campaign_id: campaign.id,
+        name: charName,
+        is_npc: !!characterData.isNpc,
+        full_data: characterData,
+        current_hp: curHp,
+        temp_hp: tmpHp,
+        last_player_update_ts: Date.now(),
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'id' })
+      .select()
+      .single();
+
+    if (charErr) throw charErr;
+
+    return {
+      campaign,
+      character: charRow
+    };
+  },
+
+  /**
+   * Karakteri kampanyadan çıkarır (Karakter silinmez, campaign_id = null yapılır)
+   */
+  async leaveCampaign(campaignId, characterId) {
+    const user = await this.getUser();
+    if (!user) return false;
+    const client = this.getClient();
+    if (!client) return false;
+
+    // Karakterin kampanya bağını kopar
+    if (characterId) {
+      await client
+        .from('characters')
+        .update({ campaign_id: null })
+        .eq('id', characterId);
+    }
+
+    // Üyelik tablosundan kaldır
+    if (campaignId) {
+      await client
+        .from('campaign_members')
+        .delete()
+        .eq('campaign_id', campaignId)
+        .eq('user_id', user.id);
+    }
+    return true;
+  },
+
+  /**
+   * Belirli bir kampanyaya bağlı tüm karakterleri çeker (DM masası için)
+   */
+  async fetchCampaignCharacters(campaignId) {
+    if (!campaignId) return [];
+    const client = this.getClient();
+    if (!client) return [];
+
+    const { data, error } = await client
+      .from('characters')
+      .select('*')
+      .eq('campaign_id', campaignId)
+      .order('updated_at', { ascending: false });
+
+    if (error) {
+      console.error('fetchCampaignCharacters error:', error);
+      return [];
+    }
+    return data || [];
+  },
+
+  /**
+   * DM Yetkisi: Oyuncunun canını doğrudan ve anında bulutta günceller
+   */
+  async updateCharacterHpAsDm(characterId, currentHp, tempHp = 0) {
+    const client = this.getClient();
+    if (!client || !characterId) return false;
+
+    const now = Date.now();
+    const { error } = await client
+      .from('characters')
+      .update({
+        current_hp: Number(currentHp),
+        temp_hp: Number(tempHp),
+        last_dm_hp_update_ts: now,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', characterId);
+
+    if (error) {
+      console.error('updateCharacterHpAsDm error:', error);
+      return false;
+    }
+    return true;
+  },
+
+  /**
+   * Oyuncu Yetkisi: Kendi karakterinin tam verisini buluta kaydeder
+   */
+  async saveCharacterDataAsPlayer(characterId, fullData) {
+    const client = this.getClient();
+    if (!client || !characterId || !fullData) return false;
+
+    const curHp = fullData.hp?.current ?? 10;
+    const tmpHp = fullData.hp?.temp ?? 0;
+
+    const { error } = await client
+      .from('characters')
+      .update({
+        name: fullData.name || 'İsimsiz Kahraman',
+        full_data: fullData,
+        current_hp: curHp,
+        temp_hp: tmpHp,
+        last_player_update_ts: Date.now(),
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', characterId);
+
+    if (error) {
+      console.error('saveCharacterDataAsPlayer error:', error);
+      return false;
+    }
+    return true;
+  },
+
+  /**
+   * DM'in yerel bir kampanyasını tek tıkla Supabase bulutuna taşır
+   */
+  async migrateLocalCampaignToCloud(localCampaign, localCharacters = []) {
+    const user = await this.getUser();
+    if (!user || this.isLocalMode()) {
+      throw new Error('Kampanyayı buluta taşımak için önce Google hesabınızla giriş yapmalısınız.');
+    }
+
+    const cloudCamp = await this.createCloudCampaign({
+      name: localCampaign.name || 'İsimsiz Kampanya',
+      description: localCampaign.description || '',
+      isDmMode: localCampaign.isDmMode !== false
+    });
+
+    const client = this.getClient();
+
+    // Yerel karakterleri / canavarları da buluta aktar
+    for (const char of localCharacters) {
+      const cId = char.id || `char_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
+      try {
+        await client.from('characters').insert({
+          id: cId,
+          owner_user_id: user.id,
+          campaign_id: cloudCamp.id,
+          name: char.name || 'Canavar/NPC',
+          is_npc: char.isNpc !== false,
+          full_data: char.fullData || char,
+          current_hp: char.hp?.current ?? 10,
+          temp_hp: char.hp?.temp ?? 0,
+          last_dm_hp_update_ts: Date.now()
+        });
+      } catch (e) {
+        console.warn('Karakter buluta taşınırken hata:', char.name, e);
+      }
+    }
+
+    return cloudCamp;
+  },
+
+  /**
+   * Realtime WebSocket Dinleyicisi
+   * Kampanyadaki karakterlerin HP veya durum değişikliklerini canlı dinler
+   */
+  subscribeCampaignRealtime(campaignId, { onHpChange, onCharacterUpdate, onCharacterJoined, onCharacterLeft } = {}) {
+    const client = this.getClient();
+    if (!client || !campaignId) return null;
+
+    // Varsa eski kanalı kapat
+    if (this._activeChannels[campaignId]) {
+      this.unsubscribeCampaignRealtime(campaignId);
+    }
+
+    const channelName = `campaign_sync_${campaignId}`;
+    const channel = client.channel(channelName);
+
+    channel
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'characters',
+          filter: `campaign_id=eq.${campaignId}`
+        },
+        (payload) => {
+          const { eventType, new: newRow, old: oldRow } = payload;
+
+          if (eventType === 'UPDATE' && newRow) {
+            // HP Değişimi kontrolü
+            if (oldRow && (oldRow.current_hp !== newRow.current_hp || oldRow.temp_hp !== newRow.temp_hp)) {
+              if (typeof onHpChange === 'function') {
+                onHpChange({
+                  characterId: newRow.id,
+                  currentHp: newRow.current_hp,
+                  tempHp: newRow.temp_hp,
+                  lastDmHpUpdateTs: newRow.last_dm_hp_update_ts,
+                  isDmUpdate: newRow.last_dm_hp_update_ts > (oldRow.last_dm_hp_update_ts || 0)
+                });
+              }
+            }
+
+            // Genel karakter güncellemesi
+            if (typeof onCharacterUpdate === 'function') {
+              onCharacterUpdate(newRow);
+            }
+          } else if (eventType === 'INSERT' && newRow) {
+            if (typeof onCharacterJoined === 'function') {
+              onCharacterJoined(newRow);
+            }
+          } else if (eventType === 'DELETE' && oldRow) {
+            if (typeof onCharacterLeft === 'function') {
+              onCharacterLeft(oldRow);
+            }
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log(`Supabase Realtime [${channelName}] status:`, status);
+      });
+
+    this._activeChannels[campaignId] = channel;
+    return channel;
+  },
+
+  unsubscribeCampaignRealtime(campaignId) {
+    const channel = this._activeChannels[campaignId];
+    if (channel) {
+      const client = this.getClient();
+      if (client) {
+        client.removeChannel(channel);
+      }
+      delete this._activeChannels[campaignId];
+    }
   }
 };
 

@@ -376,6 +376,22 @@
             <input type="checkbox" id="new-campaign-dm-mode" class="w-4 h-4 rounded text-amber-500 bg-slate-800 border-slate-600 focus:ring-amber-400 accent-amber-500 cursor-pointer">
           </label>
         </div>
+        <!-- Çok Oyunculu Bulut Kampanyası (Davet Kodu) Seçeneği -->
+        <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-700/80 hover:border-indigo-500/50 transition">
+          <label class="flex items-center justify-between cursor-pointer select-none">
+            <div class="flex items-center gap-2.5">
+              <span class="text-lg">🎟️</span>
+              <div>
+                <div class="font-bold text-white text-xs flex items-center gap-1.5">
+                  <span>Çok Oyunculu Bulut Seferi</span>
+                  <span class="text-[9px] uppercase px-1.5 py-0.2 rounded font-mono font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">Realtime</span>
+                </div>
+                <div class="text-[11px] text-slate-400">Otomatik davet kodu üretir; oyuncular bu kodla karakterlerini masanıza bağlayabilir.</div>
+              </div>
+            </div>
+            <input type="checkbox" id="new-campaign-cloud-mode" checked class="w-4 h-4 rounded text-indigo-500 bg-slate-800 border-slate-600 focus:ring-indigo-400 accent-indigo-500 cursor-pointer">
+          </label>
+        </div>
       </div>
 
       <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-700/80">
@@ -447,6 +463,69 @@
           <button onclick="closeEditCampaignModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition">İptal</button>
           <button onclick="saveEditCampaign()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition shadow">Kaydet</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: KAMPANYA DAVETİYE & OYUNCU MASASI MODALI -->
+  <div id="campaign-invite-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-[#131d33] border border-indigo-500/40 rounded-2xl w-full max-w-lg p-5 sm:p-6 shadow-2xl text-slate-100 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-700/80 pb-3">
+        <div class="flex items-center gap-2.5">
+          <span class="text-2xl">🎟️</span>
+          <div>
+            <h3 id="invite-modal-camp-name" class="text-base font-bold text-white">Kampanya Davetiyesi</h3>
+            <p class="text-[11px] text-slate-400">Oyuncularınızı bu kod veya link ile masaya davet edin</p>
+          </div>
+        </div>
+        <button onclick="closeCampaignInviteModal()" class="text-slate-400 hover:text-white text-lg">✕</button>
+      </div>
+
+      <!-- Büyük Davet Kodu Kartı -->
+      <div class="p-4 rounded-xl bg-slate-950/80 border border-indigo-500/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+        <div>
+          <div class="text-[10px] uppercase font-bold text-indigo-400 tracking-wider">Masa Davet Kodu</div>
+          <div id="invite-modal-code-display" class="text-2xl sm:text-3xl font-black font-mono text-amber-400 tracking-widest mt-0.5 select-all">RAVEN-0000</div>
+        </div>
+        <button onclick="copyInviteCode()" id="btn-copy-invite-code" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-md shadow-indigo-950/50 cursor-pointer active:scale-95 shrink-0">
+          <span>📋</span>
+          <span id="btn-copy-code-text">Kodu Kopyala</span>
+        </button>
+      </div>
+
+      <!-- Doğrudan Katılım Linki -->
+      <div class="space-y-1 text-xs">
+        <label class="block text-slate-400 font-semibold">Doğrudan Katılım Linki (Oyunculara Gönderin):</label>
+        <div class="flex items-center gap-2">
+          <input type="text" id="invite-modal-direct-url" readonly class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-indigo-300 font-mono text-xs select-all focus:outline-none">
+          <button onclick="copyInviteUrl()" id="btn-copy-invite-url" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold rounded-xl text-xs transition flex items-center gap-1 shrink-0 cursor-pointer active:scale-95">
+            <span>🔗</span>
+            <span id="btn-copy-url-text">Linki Kopyala</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Masadaki Canlı Oyuncular & Karakterler -->
+      <div class="space-y-2 pt-2 border-t border-slate-800">
+        <div class="flex items-center justify-between">
+          <div class="text-xs font-bold text-white flex items-center gap-1.5">
+            <span>👥</span>
+            <span>Masadaki Karakterler & Oyuncular</span>
+            <span id="invite-modal-member-count" class="text-[10px] px-2 py-0.2 bg-slate-800 text-indigo-300 rounded-full font-mono">0</span>
+          </div>
+          <button onclick="refreshInviteModalMembers()" class="text-[11px] text-slate-400 hover:text-indigo-300 flex items-center gap-1 cursor-pointer">
+            <span>🔄</span>
+            <span>Yenile</span>
+          </button>
+        </div>
+
+        <div id="invite-modal-members-list" class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+          <!-- Canlı karakter listesi buraya dolar -->
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end pt-3 border-t border-slate-700/80">
+        <button onclick="closeCampaignInviteModal()" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-xs transition">Kapat</button>
       </div>
     </div>
   </div>
@@ -1597,7 +1676,18 @@
               </div>
               ${activeCamp.notes ? `<p class="text-xs text-slate-300 mt-2 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800/80 max-w-3xl whitespace-pre-line">${activeCamp.notes}</p>` : ''}
             </div>
-            <div class="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+            <div class="flex items-center gap-2 shrink-0 self-end sm:self-auto flex-wrap">
+              ${(activeCamp.invite_code || activeCamp.cloudCampaignId) ? `
+                <button onclick="openCampaignInviteModal('${activeCamp.id}')" class="px-3.5 py-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-md shadow-amber-950/50 cursor-pointer active:scale-95" title="Oyuncuları Davet Et & Masayı Gör">
+                  <span>🎟️</span>
+                  <span>Davet Kodu (${activeCamp.invite_code || 'Gör'})</span>
+                </button>
+              ` : `
+                <button onclick="migrateCampaignToCloud('${activeCamp.id}')" class="px-3.5 py-2 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-md shadow-sky-950/50 cursor-pointer active:scale-95" title="Bu yerel kampanyayı buluta taşı ve davet kodu üret">
+                  <span>☁️</span>
+                  <span>Buluta Taşı & Davet Kodu Al</span>
+                </button>
+              `}
               <button onclick="openNewCampaignModal('${activeCamp.id}')" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-md shadow-indigo-950/50 cursor-pointer active:scale-95">
                 <span>➕</span>
                 <span>Alt Kampanya Ekle</span>
@@ -1878,6 +1968,9 @@
     function setCampaignFilter(campId) {
       state.activeCampaignId = campId;
       renderHub();
+      if (typeof syncActiveCloudCampaignRealtime === 'function') {
+        syncActiveCloudCampaignRealtime();
+      }
     }
 
     function setTypeFilter(t) {
@@ -1988,6 +2081,13 @@
         } catch (e) {}
 
         state.latestDmEvent = hpEvent;
+
+        // 3. Supabase Bulut Realtime Yayını (Farklı cihazlar / online oyuncular için)
+        if (window.SupabaseAuth && typeof window.SupabaseAuth.updateCharacterHpAsDm === 'function') {
+          window.SupabaseAuth.updateCharacterHpAsDm(c.id, c.currentHp, c.tempHp || 0).catch(err => {
+            console.warn('Supabase updateCharacterHpAsDm notice:', err);
+          });
+        }
 
         saveHubStorage(true, true);
         renderHub();
@@ -3434,7 +3534,7 @@ CRITICAL RULES:
       document.getElementById('new-campaign-modal').classList.add('hidden');
     }
 
-    function saveNewCampaign() {
+    async function saveNewCampaign() {
       const name = document.getElementById('new-campaign-name')?.value.trim();
       if (!name) {
         alert('Lütfen kampanya adını yazın!');
@@ -3442,6 +3542,7 @@ CRITICAL RULES:
       }
       const notes = document.getElementById('new-campaign-notes')?.value.trim() || '';
       const isDmMode = !!document.getElementById('new-campaign-dm-mode')?.checked;
+      const isCloudMode = !!document.getElementById('new-campaign-cloud-mode')?.checked;
       const parentId = document.getElementById('new-campaign-parent')?.value || null;
 
       const newCamp = {
@@ -3452,12 +3553,251 @@ CRITICAL RULES:
         parentId: parentId
       };
 
+      // Eğer çok oyunculu bulut modu seçildiyse ve oturum varsa Supabase'de oluştur
+      if (isCloudMode && window.SupabaseAuth && !window.SupabaseAuth.isLocalMode()) {
+        try {
+          const cloudCamp = await window.SupabaseAuth.createCloudCampaign({
+            name: name,
+            description: notes,
+            isDmMode: isDmMode
+          });
+          if (cloudCamp) {
+            newCamp.cloudCampaignId = cloudCamp.id;
+            newCamp.invite_code = cloudCamp.invite_code;
+          }
+        } catch (e) {
+          console.warn('Bulut kampanyası oluşturulamadı (yerel kaydedildi):', e);
+        }
+      }
+
       state.campaigns.push(newCamp);
       // Alt kampanya ise ebeveyn ana kampanyayı aktif tut ki çekmeceler açılsın, ana kampanya ise kendisini seç
       state.activeCampaignId = parentId ? parentId : newCamp.id;
       saveHubStorage();
       closeNewCampaignModal();
       renderHub();
+
+      if (newCamp.invite_code) {
+        openCampaignInviteModal(newCamp.id);
+      }
+    }
+
+    // =========================================================================
+    // 🎟️ KAMPANYA DAVETİYE VE BULUT YÖNETİMİ
+    // =========================================================================
+    let _activeInviteCampId = null;
+
+    function openCampaignInviteModal(campId) {
+      const camp = state.campaigns.find(c => c.id === campId);
+      if (!camp) return;
+      _activeInviteCampId = campId;
+
+      const code = camp.invite_code || 'KOD_YOK';
+      const nameEl = document.getElementById('invite-modal-camp-name');
+      const codeEl = document.getElementById('invite-modal-code-display');
+      if (nameEl) nameEl.textContent = camp.name;
+      if (codeEl) codeEl.textContent = code;
+
+      const origin = window.location.origin;
+      const joinUrl = `${origin}/character?code=${code}`;
+      const urlInput = document.getElementById('invite-modal-direct-url');
+      if (urlInput) urlInput.value = joinUrl;
+
+      // Masadaki oyuncuları yükle
+      refreshInviteModalMembers();
+
+      document.getElementById('campaign-invite-modal').classList.remove('hidden');
+    }
+
+    function closeCampaignInviteModal() {
+      document.getElementById('campaign-invite-modal').classList.add('hidden');
+      _activeInviteCampId = null;
+    }
+
+    function copyInviteCode() {
+      const code = document.getElementById('invite-modal-code-display')?.textContent.trim();
+      if (!code) return;
+      navigator.clipboard.writeText(code).then(() => {
+        const btnText = document.getElementById('btn-copy-code-text');
+        if (btnText) {
+          btnText.textContent = 'Kopyalandı!';
+          setTimeout(() => { btnText.textContent = 'Kodu Kopyala'; }, 2000);
+        }
+      });
+    }
+
+    function copyInviteUrl() {
+      const url = document.getElementById('invite-modal-direct-url')?.value;
+      if (!url) return;
+      navigator.clipboard.writeText(url).then(() => {
+        const btnText = document.getElementById('btn-copy-url-text');
+        if (btnText) {
+          btnText.textContent = 'Kopyalandı!';
+          setTimeout(() => { btnText.textContent = 'Linki Kopyala'; }, 2000);
+        }
+      });
+    }
+
+    async function refreshInviteModalMembers() {
+      if (!_activeInviteCampId) return;
+      const camp = state.campaigns.find(c => c.id === _activeInviteCampId);
+      const listEl = document.getElementById('invite-modal-members-list');
+      const countEl = document.getElementById('invite-modal-member-count');
+      if (!listEl) return;
+
+      listEl.innerHTML = '<div class="text-xs text-slate-400 py-3 text-center">Masadaki oyuncular taranıyor...</div>';
+
+      const cloudCampId = camp?.cloudCampaignId;
+      let cloudChars = [];
+      if (cloudCampId && window.SupabaseAuth) {
+        try {
+          cloudChars = await window.SupabaseAuth.fetchCampaignCharacters(cloudCampId);
+        } catch (e) {
+          console.warn('fetchCampaignCharacters warning:', e);
+        }
+      }
+
+      const localChars = state.characters.filter(c => c.campaignId === _activeInviteCampId);
+      const combined = [...localChars];
+      cloudChars.forEach(cc => {
+        if (!combined.some(it => it.id === cc.id)) {
+          combined.push({
+            id: cc.id,
+            name: cc.name,
+            isNpc: cc.is_npc,
+            currentHp: cc.current_hp,
+            maxHp: cc.full_data?.hp?.max || 10,
+            tempHp: cc.temp_hp || 0,
+            race: cc.full_data?.race || '',
+            classes: cc.full_data?.classes || '',
+            isCloud: true,
+            ownerId: cc.owner_user_id
+          });
+        }
+      });
+
+      if (countEl) countEl.textContent = combined.length;
+
+      if (combined.length === 0) {
+        listEl.innerHTML = `
+          <div class="text-center py-4 bg-slate-900/50 rounded-xl border border-slate-800 text-slate-400 text-xs">
+            Henüz masaya katılan bir oyuncu veya karakter bulunmuyor.<br>
+            <span class="text-indigo-400">Yukarıdaki davet kodunu veya linki oyuncularınızla paylaşın.</span>
+          </div>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = combined.map(c => `
+        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-white text-xs shrink-0">
+              ${c.name.charAt(0).toUpperCase()}
+            </div>
+            <div class="min-w-0">
+              <div class="font-bold text-white truncate flex items-center gap-1.5">
+                <span>${c.name}</span>
+                <span class="text-[9px] px-1 py-0.2 rounded font-mono ${c.isNpc ? 'bg-rose-950 text-rose-300' : 'bg-sky-950 text-sky-300'}">${c.isNpc ? 'NPC' : 'PC'}</span>
+              </div>
+              <div class="text-[11px] text-slate-400 font-mono">
+                HP: <span class="text-emerald-400 font-bold">${c.currentHp}</span> / ${c.maxHp || '?'} ${c.tempHp ? `(+${c.tempHp})` : ''}
+              </div>
+            </div>
+          </div>
+          <button onclick="kickMemberFromCampaign('${camp.id}', '${c.id}', '${c.name}')" class="px-2 py-1 bg-rose-950/70 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded-lg text-[10px] font-bold transition flex items-center gap-1 cursor-pointer shrink-0" title="Karakteri Masadan Çıkar">
+            <span>🚪</span>
+            <span>Çıkar</span>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    async function kickMemberFromCampaign(campId, charId, charName) {
+      const confirmed = confirm(`"${charName}" karakterini bu kampanyadan çıkarmak istiyor musunuz? (Karakter silinmeyecek, sadece masadan ayrılacak)`);
+      if (!confirmed) return;
+
+      const camp = state.campaigns.find(c => c.id === campId);
+      if (camp?.cloudCampaignId && window.SupabaseAuth) {
+        try {
+          await window.SupabaseAuth.leaveCampaign(camp.cloudCampaignId, charId);
+        } catch (e) {
+          console.warn('kick error:', e);
+        }
+      }
+
+      const localChar = state.characters.find(c => c.id === charId);
+      if (localChar) {
+        localChar.campaignId = null;
+        saveHubStorage();
+        renderHub();
+      }
+
+      refreshInviteModalMembers();
+    }
+
+    async function migrateCampaignToCloud(campId) {
+      const camp = state.campaigns.find(c => c.id === campId);
+      if (!camp) return;
+
+      if (window.SupabaseAuth?.isLocalMode()) {
+        alert('Kampanyayı buluta taşımak ve davet kodu almak için lütfen Google hesabınızla giriş yapın.');
+        return;
+      }
+
+      const confirmed = confirm(`"${camp.name}" kampanyasını Supabase bulutuna taşımak ve oyuncular için davet kodu üretmek istiyor musunuz?`);
+      if (!confirmed) return;
+
+      try {
+        const charsInCamp = state.characters.filter(c => c.campaignId === camp.id);
+        const cloudCamp = await window.SupabaseAuth.migrateLocalCampaignToCloud(camp, charsInCamp);
+        if (cloudCamp) {
+          camp.cloudCampaignId = cloudCamp.id;
+          camp.invite_code = cloudCamp.invite_code;
+          saveHubStorage();
+          renderHub();
+          openCampaignInviteModal(camp.id);
+        }
+      } catch (err) {
+        console.error('migrateCampaignToCloud error:', err);
+        alert('Kampanya buluta taşınırken bir hata oluştu: ' + (err.message || err));
+      }
+    }
+
+    function syncActiveCloudCampaignRealtime() {
+      const activeCamp = state.campaigns.find(c => c.id === state.activeCampaignId);
+      if (activeCamp && activeCamp.cloudCampaignId && window.SupabaseAuth) {
+        window.SupabaseAuth.subscribeCampaignRealtime(activeCamp.cloudCampaignId, {
+          onHpChange: (evt) => {
+            const char = state.characters.find(it => it.id === evt.characterId);
+            if (char) {
+              char.currentHp = evt.currentHp;
+              char.tempHp = evt.tempHp;
+              renderHub();
+            }
+          },
+          onCharacterJoined: (newChar) => {
+            if (!state.characters.some(it => it.id === newChar.id)) {
+              state.characters.push({
+                id: newChar.id,
+                campaignId: activeCamp.id,
+                name: newChar.name,
+                isNpc: newChar.is_npc,
+                currentHp: newChar.current_hp,
+                maxHp: newChar.full_data?.hp?.max || 10,
+                tempHp: newChar.temp_hp || 0,
+                fullData: newChar.full_data
+              });
+              saveHubStorage(false);
+              renderHub();
+            }
+          },
+          onCharacterLeft: (oldChar) => {
+            state.characters = state.characters.filter(it => it.id !== oldChar.id);
+            saveHubStorage(false);
+            renderHub();
+          }
+        });
+      }
     }
 
     // Modal Yönetimi: Kampanya Düzenleme & Silme

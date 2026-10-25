@@ -129,21 +129,27 @@
           <div class="flex flex-col items-stretch sm:items-end gap-1.5 pt-2 md:pt-0 border-t border-slate-800/80 md:border-0 w-full md:w-56 shrink-0">
             <!-- Kullanıcı Profil Rozeti -->
             <div id="user-profile-slot" class="w-full flex items-center justify-end"></div>
-            <!-- 1. Sıra: Hub ve Ayarlar Butonları (Tam Eşit Simetrik Genişlik) -->
+            <!-- 1. Sıra: Hub, Kampanya & Ayarlar Butonları -->
             <div class="grid grid-cols-2 gap-1.5 w-full">
               <a href="/hub" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-indigo-950/90 hover:bg-indigo-900 text-indigo-300 hover:text-white border border-indigo-700/80 text-xs font-bold shadow flex items-center justify-center gap-1 sm:gap-1.5 transition text-center" title="Kampanya & Karakter Hub'ına Dön">
                 <span>🏰</span>
                 <span class="inline">Hub</span>
               </a>
-              <button type="button" onclick="openSettingsModal()" class="px-2.5 sm:px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 hover:border-slate-500 rounded-lg text-xs font-bold flex items-center justify-center gap-1 sm:gap-1.5 shadow transition cursor-pointer text-center" title="Ayarları Aç">
+              <button type="button" onclick="openJoinCampaignModal()" id="btn-join-campaign-nav" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white border border-amber-500/80 text-xs font-bold shadow flex items-center justify-center gap-1 sm:gap-1.5 transition text-center cursor-pointer active:scale-95" title="Bir DM Kampanyasına Katıl">
+                <span>🎟️</span>
+                <span id="btn-join-campaign-text" class="truncate">Kampanya</span>
+              </button>
+            </div>
+            <!-- 2. Sıra: Ayarlar & Bulut Senkron Durumu -->
+            <div class="grid grid-cols-2 gap-1.5 w-full">
+              <button type="button" onclick="openSettingsModal()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 hover:border-slate-500 rounded-lg text-xs font-bold flex items-center justify-center gap-1 shadow transition cursor-pointer text-center" title="Ayarları Aç">
                 <span class="text-xs">⚙️</span>
                 <span class="inline">Ayarlar</span>
               </button>
-            </div>
-            <!-- 2. Sıra: Bulut Senkron Durumu (Tam Genişlik & Merkezlenmiş Simetri) -->
-            <div id="sync-status-pill" onclick="CloudSync.connect()" title="Bulut durumunu kontrol et / eşitle" class="cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-medium bg-emerald-950/80 text-emerald-300 border border-emerald-600 w-full whitespace-nowrap shadow-sm transition">
-              <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0"></span>
-              <span id="sync-status-text">🟢 Bulut<span class="hidden md:inline"> Senkron (Karakter + DB)</span></span>
+              <div id="sync-status-pill" onclick="CloudSync.connect()" title="Bulut durumunu kontrol et / eşitle" class="cursor-pointer flex items-center justify-center gap-1 px-2 py-1 rounded-lg text-[10px] font-medium bg-emerald-950/80 text-emerald-300 border border-emerald-600 whitespace-nowrap shadow-sm transition truncate">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0"></span>
+                <span id="sync-status-text">🟢 Bulut</span>
+              </div>
             </div>
           </div>
         </div>
@@ -6584,6 +6590,56 @@
   </div>
 
   <!-- ==================================================== -->
+  <!-- MODAL: KAMPANYAYA KATIL (SUPABASE DM DAVETİYESİ) -->
+  <!-- ==================================================== -->
+  <div id="join-campaign-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#131d33] border border-amber-500/50 rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl text-slate-100 space-y-4 my-auto">
+      <div class="flex items-center justify-between border-b border-slate-700/80 pb-3">
+        <div class="flex items-center gap-2.5">
+          <span class="text-2xl">🎟️</span>
+          <div>
+            <h3 class="text-base font-bold text-white">DM Kampanyasına Katıl</h3>
+            <p class="text-[11px] text-slate-400">DM'inizin verdiği davet kodunu girin</p>
+          </div>
+        </div>
+        <button onclick="closeJoinCampaignModal()" class="text-slate-400 hover:text-white text-lg cursor-pointer">✕</button>
+      </div>
+
+      <!-- Bağlı Kampanya Durumu (Eğer zaten bağlıysa) -->
+      <div id="current-campaign-badge-box" class="hidden p-3 rounded-xl bg-slate-900 border border-emerald-500/40 text-xs space-y-1">
+        <div class="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">Mevcut Bağlı Kampanya</div>
+        <div class="flex items-center justify-between">
+          <div>
+            <div id="current-campaign-name" class="font-bold text-white text-sm">Kampanya Adı</div>
+            <div id="current-campaign-code" class="text-amber-400 font-mono text-[11px]">KOD: RAVEN-0000</div>
+          </div>
+          <button onclick="leaveCurrentCampaign()" class="px-2.5 py-1 bg-rose-950/70 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded-lg text-xs font-bold transition cursor-pointer">
+            Ayrıl
+          </button>
+        </div>
+      </div>
+
+      <!-- Kod Giriş Formu -->
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-slate-300 mb-1 font-semibold">Kampanya Davet Kodu *</label>
+          <input type="text" id="join-campaign-input-code" placeholder="Örn: RAVEN-7841" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-amber-400 font-mono font-bold uppercase tracking-wider text-base focus:outline-none focus:border-amber-500">
+        </div>
+        <p class="text-[11px] text-slate-400 leading-relaxed">
+          Katıldığınızda bu karakteriniz DM'in Hub kontrol masasına bağlanır. DM'in uyguladığı hasar ve şifalar anında ekranınıza yansır.
+        </p>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-700/80">
+        <button onclick="closeJoinCampaignModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition cursor-pointer">İptal</button>
+        <button onclick="submitJoinCampaign()" id="btn-submit-join-campaign" class="px-5 py-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold rounded-xl text-xs transition shadow cursor-pointer active:scale-95">
+          Kampanyaya Bağlan
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================== -->
   <!-- MODAL: SETTINGS & SYSTEM CONFIGURATION -->
   <!-- ==================================================== -->
   <div id="settings-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
@@ -7914,6 +7970,20 @@
           saveStateToStorage(false);
         }
       }
+
+      // Multi-User Cloud Campaign Integration
+      if (typeof updateCampaignNavButton === 'function') {
+        updateCampaignNavButton();
+      }
+      const urlCode = new URLSearchParams(window.location.search).get('code');
+      if (urlCode && typeof openJoinCampaignModal === 'function') {
+        setTimeout(() => {
+          openJoinCampaignModal(urlCode.toUpperCase().trim());
+        }, 500);
+      }
+      if (character?.cloudCampaignId && typeof initCampaignRealtimeListener === 'function') {
+        initCampaignRealtimeListener(character.cloudCampaignId);
+      }
     }
 
     function saveStateToStorage(triggerCloudSync = true) {
@@ -7990,6 +8060,148 @@
       if (triggerCloudSync && window.GDriveSync) {
         window.GDriveSync.scheduleAutoSave();
       }
+
+      // Multi-User Cloud Karakter Senkronizasyonu
+      if (character.cloudCampaignId && window.SupabaseAuth && !window.SupabaseAuth.isLocalMode()) {
+        window.SupabaseAuth.saveCharacterDataAsPlayer(character.id, character).catch(err => {
+          console.warn('saveCharacterDataAsPlayer notice:', err);
+        });
+      }
+    }
+
+    // =========================================================================
+    // 🎟️ KAMPANYAYA KATILIM VE CANLI REALTIME YÖNETİMİ
+    // =========================================================================
+    function openJoinCampaignModal(prefilledCode = '') {
+      const modal = document.getElementById('join-campaign-modal');
+      if (!modal) return;
+
+      const codeInput = document.getElementById('join-campaign-input-code');
+      if (codeInput) {
+        codeInput.value = prefilledCode || character.campaignInviteCode || '';
+      }
+
+      const badgeBox = document.getElementById('current-campaign-badge-box');
+      const nameEl = document.getElementById('current-campaign-name');
+      const codeEl = document.getElementById('current-campaign-code');
+
+      if (character.campaignInviteCode || character.cloudCampaignId) {
+        if (badgeBox) badgeBox.classList.remove('hidden');
+        if (nameEl) nameEl.textContent = character.campaignName || 'Aktif Kampanya';
+        if (codeEl) codeEl.textContent = `KOD: ${character.campaignInviteCode || 'BULUT'}`;
+      } else {
+        if (badgeBox) badgeBox.classList.add('hidden');
+      }
+
+      modal.classList.remove('hidden');
+      if (codeInput && !prefilledCode) codeInput.focus();
+    }
+
+    function closeJoinCampaignModal() {
+      const modal = document.getElementById('join-campaign-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    async function submitJoinCampaign() {
+      const code = document.getElementById('join-campaign-input-code')?.value.trim();
+      if (!code) {
+        alert('Lütfen geçerli bir davet kodu girin!');
+        return;
+      }
+
+      if (window.SupabaseAuth?.isLocalMode()) {
+        alert('Bir bulut kampanyasına katılmak için lütfen Google hesabınızla giriş yapın.');
+        return;
+      }
+
+      const btn = document.getElementById('btn-submit-join-campaign');
+      if (btn) {
+        btn.textContent = 'Bağlanıyor...';
+        btn.disabled = true;
+      }
+
+      try {
+        const result = await window.SupabaseAuth.joinCampaignWithCharacter(code, character);
+        if (result && result.campaign) {
+          character.cloudCampaignId = result.campaign.id;
+          character.campaignInviteCode = result.campaign.invite_code;
+          character.campaignName = result.campaign.name;
+          saveStateToStorage();
+          updateCampaignNavButton();
+          initCampaignRealtimeListener(result.campaign.id);
+          closeJoinCampaignModal();
+
+          if (typeof showDiceTopToast === 'function') {
+            showDiceTopToast({
+              title: `${result.campaign.name} Kampanyasına Katıldınız!`,
+              formula: `Kod: ${result.campaign.invite_code}`,
+              breakdown: `Karakteriniz DM masasına bağlandı.`,
+              total: 'OK',
+              icon: '🎟️'
+            });
+          } else {
+            alert(`✅ "${result.campaign.name}" kampanyasına başarıyla bağlandınız!`);
+          }
+        }
+      } catch (err) {
+        console.error('joinCampaign error:', err);
+        alert('Kampanyaya katılırken hata oluştu: ' + (err.message || err));
+      } finally {
+        if (btn) {
+          btn.textContent = 'Kampanyaya Bağlan';
+          btn.disabled = false;
+        }
+      }
+    }
+
+    async function leaveCurrentCampaign() {
+      if (!character.cloudCampaignId) return;
+      if (!confirm('Bu kampanyadan ayrılmak istediğinize emin misiniz?')) return;
+
+      try {
+        await window.SupabaseAuth.leaveCampaign(character.cloudCampaignId, character.id);
+      } catch (e) {
+        console.warn('leaveCampaign warning:', e);
+      }
+
+      character.cloudCampaignId = null;
+      character.campaignInviteCode = null;
+      character.campaignName = null;
+      saveStateToStorage();
+      updateCampaignNavButton();
+      closeJoinCampaignModal();
+      alert('Kampanyadan ayrıldınız. Karakteriniz bağımsız olarak korunmaktadır.');
+    }
+
+    function updateCampaignNavButton() {
+      const btnText = document.getElementById('btn-join-campaign-text');
+      if (!btnText) return;
+      if (character.campaignInviteCode) {
+        btnText.textContent = character.campaignInviteCode;
+      } else {
+        btnText.textContent = 'Kampanya';
+      }
+    }
+
+    function initCampaignRealtimeListener(campaignId) {
+      if (!campaignId || !window.SupabaseAuth) return;
+
+      window.SupabaseAuth.subscribeCampaignRealtime(campaignId, {
+        onHpChange: (evt) => {
+          if (evt && (evt.characterId === character.id || evt.characterId === character._hubId || (character.name && evt.charName === character.name))) {
+            if (typeof window.handleIncomingDmHpEvent === 'function') {
+              window.handleIncomingDmHpEvent({
+                type: 'DM_HP_UPDATE',
+                charId: evt.characterId,
+                currentHp: evt.currentHp,
+                tempHp: evt.tempHp || 0,
+                lastHpUpdateTs: evt.lastDmHpUpdateTs || Date.now(),
+                charName: character.name
+              });
+            }
+          }
+        }
+      });
     }
 
     function openSettingsModal() {
