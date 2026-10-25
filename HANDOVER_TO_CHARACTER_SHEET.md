@@ -1654,3 +1654,21 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` (%100 SHA-256: `81424124BCF3C661B6B00BE72E4234241D1DD08266EBC0BB050EE89A96080E70`).
      - `rule_engine.js`, `webapp/rule_engine.js` (%100 SHA-256: `1511CB08E23A3872E0F23C02DC2F9463932A51B9B0F891CF092811DF1821379A`).
      - Standart tavla zarı emoji yasağı (Rule #3: NO `🎲`) ve dummy data yasağı (Rule #5) eksiksiz uygulandı.
+
+
+---
+
+## 59. NOT SİSTEMİ SADELEŞTİRMESİ: TEMİZ YENİ NOT VE TO-DO ETİKETİ DÜZENLEMESİ (2026-10-25)
+* **İstek:**
+  - "Yeni Not Oluştur" tıklandığında metin kutusunun otomatik `#Karakter #lvl1 #date` etiketleri olmadan tamamen boş ve temiz açılması.
+  - Kavram karmaşasını önlemek için `+ [ ] Görev` butonunun adının `+ To-Do` olarak güncellenmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Temiz Yeni Not Başlatma:**
+     - `createNewModalNote()` fonksiyonu not metnini boş (`""`) ve etiket dizisini boş (`[]`) başlatacak şekilde sadeleştirildi. İmleç doğrudan ilk karaktere odaklanır.
+     - Zaman damgası (`createdAt`/`updatedAt`) ve hedef karakter/kampanya bilgisi sistem tarafından arka planda tutulduğundan not metninde gereksiz veri tekrarı ve etiket haritası kirliliği önlendi.
+  2. **Araç Çubuğu Buton Düzenlemesi:**
+     - Hem Geniş Not Defteri hem de yan panel araç çubuğunda `+ [ ] Görev` butonu `+ To-Do` olarak güncellendi.
+     - `#gorev` bir meta-kategori/etiket; `- [ ] ` ise markdown yapılacaklar kutucuğu olarak net bir biçimde ayrıştırıldı.
+  3. **Parite ve Güvenlik:**
+     - `hub.html` ve `hub_notes.js` dosyaları `webapp/` altındaki kopyalarıyla %100 SHA-256 eşitliğinde güncellendi.
+     - Tavla zarı emojisi `🎲` kesinlikle kullanılmadı.

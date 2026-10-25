@@ -2180,20 +2180,7 @@ KURALLAR:
       return;
     }
 
-    const state = getHubState();
-    const char = resolveCharacterForNote(target, state);
-    const charName = char ? (char.name || 'Karakter') : 'Karakter';
-    const charLvl = char ? (Number(char.level) || 1) : 1;
-
-    const charTag = toValidHashtag(charName);
-    const lvlTag = `#lvl${charLvl}`;
-
-    const now = new Date();
-    const monthsTr = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
-    const dateTag = `#${now.getDate()}_${monthsTr[now.getMonth()]}_${now.getFullYear()}`;
-
-    const defaultText = `${charTag} ${lvlTag} ${dateTag}\n\n`;
-    const extractedTags = extractTags(defaultText);
+    const defaultText = '';
 
     const newNote = {
       id: 'note_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
@@ -2202,7 +2189,7 @@ KURALLAR:
       completed: false,
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      tags: extractedTags
+      tags: []
     };
 
     target.notesList.unshift(newNote);
@@ -2220,7 +2207,7 @@ KURALLAR:
     const editor = document.getElementById('hub-modal-note-editor');
     if (editor) {
       editor.focus();
-      editor.selectionStart = editor.selectionEnd = editor.value.length;
+      editor.selectionStart = editor.selectionEnd = 0;
     }
   }
 
