@@ -1327,3 +1327,29 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - HUB dosyaları (`hub.html`, `webapp/hub.html`) kesinlikle değiştirilmedi.
      - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` (%100 SHA-256: `EB4FB7B7...`).
      - Standart tavla zarı emoji yasağı ve sıfır dummy data kuralı tavizsiz korundu.
+
+
+---
+
+## 53. SPOTLIGHT IRK ARAMA COMBOBOX'I VE MODERN AÇILIR MENÜ ENTEGRASYONU (2026-10-25)
+* **İstek:**
+  1. Karakter Künyesi modalındaki (`#stat-distribution-modal`) işletim sistemi kaynaklı ham/sönük native `<select>` menülerinin modern, temayla uyumlu Spotlight görünümüne kavuşturulması.
+  2. Öneri A (Özel Tailwind koyu tema Popover, kategori rozetleri, mor/indigo vurgular, özel kaydırma çubuğu) ve Öneri B (Spotlight anlık arama çubuğu, klavye yön tuşları, canlı filtreleme ve 1 tıkla Rule Master AI entegrasyonu) mimarilerinin birleştirilmesi.
+  3. `Yönelim` ve `Boyut` gibi diğer açılır menülerin koyu tema ve mor odaklama çizgileriyle modernize edilmesi.
+  4. HUB sayfasının (`hub.html`, `webapp/hub.html`) kesinlikle değiştirilmemesi ve korunması.
+* **Uygulanan Değişiklikler:**
+  1. **Spotlight Race Combobox Bileşeni (`#race-custom-dropdown-container`):**
+     - Native `<select>` yerine özel tetikleyici buton (`#race-dropdown-trigger`), açılır popover kartı (`#race-spotlight-dropdown`), canlı arama kutusu (`#race-spotlight-search`) ve kaydırılabilir sonuç listesi (`#race-spotlight-list`) entegre edildi.
+     - Form serileştirme ve geriye dönük uyumluluk için `#profile-edit-race` gizli input (hidden input) olarak korundu.
+  2. **Akıllı Canlı Arama ve Kategori Gruplama:**
+     - Arama kutusuna yazıldıkça ırklar; Standart RAW (Human, Elf, Dwarf...), Genişletilmiş SRD/Ek Kitaplar (Aasimar, Tiefling, Dragonborn, Drow, Orc, Goblin, Kobold, Goliath, Warforged...) ve Özel/AI Irklar başlıkları altında anında filtrelenir.
+     - Klavye desteği: `Escape` ile kapatma, `Enter` ile filtrelenen ilk sonucu seçme veya eşleşme yoksa doğrudan Rule Master AI aramasını tetikleme.
+     - Dışarı tıklama (click outside) ile otomatik kapanma davranışı eklendi.
+  3. **1 Tıkla Rule Master AI Fallback Entegrasyonu:**
+     - Kullanıcı listede olmayan bir ırk yazdığında (örneğin Thri-Kreen, Catfolk vb.), sonuç listesinde *"Rule Master AI ile Getir"* butonu otomatik belirir ve tek tıkla resmi WotC D&D 3.5e kitaplarından ırkı getirir.
+  4. **Yönelim ve Boyut Menülerinin Modernleştirilmesi:**
+     - `#profile-edit-alignment` ve `#profile-edit-size` açılır menüleri `bg-slate-900 border border-slate-700 hover:border-slate-600 focus:border-purple-400 focus:outline-none rounded-lg font-semibold text-white cursor-pointer` sınıflarıyla modernize edildi.
+  5. **Parite ve Güvenlik:**
+     - HUB dosyaları (`hub.html`, `webapp/hub.html`) kesinlikle değiştirilmedi.
+     - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` 4 dosyada %100 SHA-256 eşitliği (`98A75AC891BCF22A249633BA2C4C1C4CB059CE3BD160E002137A49F675C36AB6`).
+     - Standart tavla zarı emoji yasağı (Rule #3: NO `🎲`) ve dummy data yasağı (Rule #5) eksiksiz uygulandı.

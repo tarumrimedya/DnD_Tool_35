@@ -4203,33 +4203,54 @@
             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Karakter Adı *</label>
             <input type="text" id="profile-edit-name" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-bold">
           </div>
-          <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Irk (Race) *</label>
-            <select id="profile-edit-race" onchange="updateProfileModalAvatar(); onProfileRaceChange(this.value);" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-bold focus:outline-none focus:border-purple-400 cursor-pointer">
-              <optgroup label="Standart D&amp;D 3.5e RAW Irkları">
-                <option value="Human">Human (İnsan)</option>
-                <option value="Elf">Elf</option>
-                <option value="Dwarf">Dwarf (Cüce)</option>
-                <option value="Halfling">Halfling (Buçukluk)</option>
-                <option value="Gnome">Gnome (Gnom)</option>
-                <option value="Half-Elf">Half-Elf (Yarı-Elf)</option>
-                <option value="Half-Orc">Half-Orc (Yarı-Ork)</option>
-              </optgroup>
-              <optgroup label="Genişletilmiş Resmi Irklar (SRD &amp; Ek Kitaplar)">
-                <option value="Aasimar">Aasimar (Planetouched)</option>
-                <option value="Tiefling">Tiefling (Planetouched)</option>
-                <option value="Dragonborn">Dragonborn of Bahamut</option>
-                <option value="Drow">Drow (Dark Elf)</option>
-                <option value="Orc">Orc (Ork)</option>
-                <option value="Goblin">Goblin</option>
-                <option value="Kobold">Kobold</option>
-                <option value="Goliath">Goliath (Races of Stone)</option>
-                <option value="Warforged">Warforged (Eberron)</option>
-              </optgroup>
-              <optgroup label="Yapay Zeka (AI) &amp; Özel">
-                <option value="Diğer">🔮 Diğer (Rule Master AI ile Ara...)</option>
-              </optgroup>
-            </select>
+          <div class="relative" id="race-custom-dropdown-container">
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 flex items-center justify-between">
+              <span>Irk (Race) *</span>
+              <span class="text-[9px] text-purple-400 font-semibold flex items-center gap-1">
+                <span>🔍</span> <span>Spotlight Arama</span>
+              </span>
+            </label>
+
+            <!-- Hidden input for form compatibility -->
+            <input type="hidden" id="profile-edit-race" value="Human">
+
+            <!-- Trigger Button -->
+            <button type="button" id="race-dropdown-trigger" onclick="toggleRaceSpotlightDropdown()" class="w-full bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-purple-500/70 rounded-lg px-2.5 py-1.5 text-white font-bold flex items-center justify-between transition shadow-sm cursor-pointer group focus:outline-none focus:border-purple-400">
+              <span class="flex items-center gap-2 truncate">
+                <span id="race-trigger-icon" class="text-xs">👤</span>
+                <span id="race-trigger-label" class="text-xs truncate">Human (İnsan)</span>
+              </span>
+              <span id="race-trigger-chevron" class="text-slate-400 group-hover:text-purple-300 transition-transform duration-200 text-[10px] ml-1 shrink-0">▼</span>
+            </button>
+
+            <!-- Spotlight Dropdown Popover -->
+            <div id="race-spotlight-dropdown" class="hidden absolute top-full left-0 right-0 mt-1.5 bg-slate-950/95 border border-purple-500/50 rounded-xl shadow-2xl z-50 overflow-hidden backdrop-blur-md transition-all duration-150 animate-fadeIn">
+              
+              <!-- Spotlight Quick Search Bar -->
+              <div class="p-2 border-b border-purple-900/40 bg-slate-900/80">
+                <div class="relative flex items-center">
+                  <span class="absolute left-2.5 text-xs text-purple-400 pointer-events-none">🔍</span>
+                  <input type="text" id="race-spotlight-search" placeholder="Irk ara veya Rule Master AI ile bul..." oninput="onRaceSpotlightFilter(this.value)" onkeydown="onRaceSpotlightKeydown(event)" class="w-full bg-slate-950 border border-purple-500/40 focus:border-purple-400 rounded-lg pl-7 pr-7 py-1 text-xs text-white placeholder-slate-500 font-medium focus:outline-none transition">
+                  <button type="button" id="race-spotlight-clear-btn" onclick="clearRaceSpotlightFilter()" class="hidden absolute right-2 text-slate-400 hover:text-white text-xs px-1" title="Temizle">✕</button>
+                </div>
+              </div>
+
+              <!-- Options List -->
+              <div id="race-spotlight-list" class="max-h-60 overflow-y-auto p-1.5 space-y-1 custom-scroll text-xs">
+                <!-- Dynamically rendered via renderRaceSpotlightItems() -->
+              </div>
+
+              <!-- Footer with Rule Master AI quick action -->
+              <div class="p-2 bg-slate-900/90 border-t border-purple-900/40 flex items-center justify-between text-[10px]">
+                <span class="text-slate-400 flex items-center gap-1">
+                  <span>💡</span> <span>↑↓ ile seç, Enter ile onayla</span>
+                </span>
+                <button type="button" onclick="selectRaceItem('Diğer')" class="text-purple-300 hover:text-white font-bold flex items-center gap-1 hover:underline cursor-pointer">
+                  <span>🔮</span> <span>AI ile Özel Irk</span>
+                </button>
+              </div>
+
+            </div>
           </div>
         </div>
 
@@ -4241,7 +4262,7 @@
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Yönelim (Alignment)</label>
-            <select id="profile-edit-alignment" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white">
+            <select id="profile-edit-alignment" class="w-full bg-slate-900 border border-slate-700 hover:border-slate-600 focus:border-purple-400 focus:outline-none rounded-lg px-2.5 py-1.5 text-white font-semibold cursor-pointer transition">
               <option value="Lawful Good">Lawful Good</option>
               <option value="Neutral Good">Neutral Good</option>
               <option value="Chaotic Good">Chaotic Good</option>
@@ -4262,7 +4283,7 @@
         <div class="grid grid-cols-3 gap-2">
           <div>
             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Boyut (Size)</label>
-            <select id="profile-edit-size" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white">
+            <select id="profile-edit-size" class="w-full bg-slate-900 border border-slate-700 hover:border-slate-600 focus:border-purple-400 focus:outline-none rounded-lg px-2 py-1.5 text-white font-semibold cursor-pointer transition">
               <option value="Fine">Fine</option>
               <option value="Diminutive">Diminutive</option>
               <option value="Tiny">Tiny</option>
@@ -9959,20 +9980,9 @@
         if (el) el.value = val !== undefined && val !== null ? val : '';
       };
       setVal('profile-edit-name', character.name || '');
-      const raceSel = document.getElementById('profile-edit-race');
-      if (raceSel && character.race) {
-        const curRace = String(character.race).trim();
-        const hasOpt = Array.from(raceSel.options).some(o => o.value.toLowerCase() === curRace.toLowerCase());
-        if (!hasOpt && curRace) {
-          const opt = document.createElement('option');
-          opt.value = curRace;
-          opt.textContent = curRace;
-          raceSel.appendChild(opt);
-        }
-        raceSel.value = curRace;
-      } else {
-        setVal('profile-edit-race', character.race || 'Human');
-      }
+      const curRace = character.race || 'Human';
+      setVal('profile-edit-race', curRace);
+      updateRaceSpotlightTrigger(curRace);
       setVal('profile-edit-alignment', character.alignment || '');
       setVal('profile-edit-deity', character.deity || '');
       setVal('profile-edit-size', character.size || 'Medium');
@@ -10186,9 +10196,10 @@
           raceSel.value = raceObj.name;
         }
 
-        // Set input value to canonical name
+        // Set input value and update trigger
         const raceInput = document.getElementById('profile-edit-race');
         if (raceInput) raceInput.value = raceObj.name;
+        updateRaceSpotlightTrigger(raceObj.name);
 
         // Render standard preview card
         onProfileRaceChange(raceObj.name);
@@ -10212,6 +10223,270 @@
         if (btn) btn.disabled = false;
       }
     }
+
+    // =========================================================================
+    // 🧬 SPOTLIGHT RACE SELECTOR & SEARCH COMBOBOX
+    // =========================================================================
+    const DND35_RACE_DEFINITIONS = [
+      // 1. Standart D&D 3.5e RAW Irkları
+      { name: 'Human', label: 'Human (İnsan)', category: 'Standart D&D 3.5e RAW Irkları', icon: '👤', size: 'Medium', speed: 30, tags: ['core', 'bonus feat', 'flexible', 'insan'] },
+      { name: 'Elf', label: 'Elf', category: 'Standart D&D 3.5e RAW Irkları', icon: '🏹', size: 'Medium', speed: 30, tags: ['core', '+2 dex', '-2 con', 'sleep immunity'] },
+      { name: 'Dwarf', label: 'Dwarf (Cüce)', category: 'Standart D&D 3.5e RAW Irkları', icon: '🛡️', size: 'Medium', speed: 20, tags: ['core', '+2 con', '-2 cha', 'darkvision', 'cuce'] },
+      { name: 'Halfling', label: 'Halfling (Buçukluk)', category: 'Standart D&D 3.5e RAW Irkları', icon: '🍀', size: 'Small', speed: 20, tags: ['core', '+2 dex', '-2 str', 'luck', 'bucukluk'] },
+      { name: 'Gnome', label: 'Gnome (Gnom)', category: 'Standart D&D 3.5e RAW Irkları', icon: '🎩', size: 'Small', speed: 20, tags: ['core', '+2 con', '-2 str', 'illusion', 'gnom'] },
+      { name: 'Half-Elf', label: 'Half-Elf (Yarı-Elf)', category: 'Standart D&D 3.5e RAW Irkları', icon: '✨', size: 'Medium', speed: 30, tags: ['core', 'diplomat', 'adaptable', 'yari-elf'] },
+      { name: 'Half-Orc', label: 'Half-Orc (Yarı-Ork)', category: 'Standart D&D 3.5e RAW Irkları', icon: '⚔️', size: 'Medium', speed: 30, tags: ['core', '+2 str', '-2 int', 'darkvision', 'yari-ork'] },
+
+      // 2. Genişletilmiş Resmi Irklar (SRD & Ek Kitaplar)
+      { name: 'Aasimar', label: 'Aasimar (Planetouched)', category: 'Genişletilmiş Resmi Irklar', icon: '😇', size: 'Medium', speed: 30, tags: ['planetouched', '+2 wis', '+2 cha', 'daylight'] },
+      { name: 'Tiefling', label: 'Tiefling (Planetouched)', category: 'Genişletilmiş Resmi Irklar', icon: '😈', size: 'Medium', speed: 30, tags: ['planetouched', '+2 dex', '+2 int', '-2 cha', 'darkness'] },
+      { name: 'Dragonborn', label: 'Dragonborn of Bahamut', category: 'Genişletilmiş Resmi Irklar', icon: '🐲', size: 'Medium', speed: 30, tags: ['races of dragon', '+2 con', '-2 dex', 'breath', 'ejderha'] },
+      { name: 'Drow', label: 'Drow (Dark Elf)', category: 'Genişletilmiş Resmi Irklar', icon: '🕷️', size: 'Medium', speed: 30, tags: ['underdark', '+2 dex', '+2 int', 'spell resistance', 'kara elf'] },
+      { name: 'Orc', label: 'Orc (Ork)', category: 'Genişletilmiş Resmi Irklar', icon: '🪓', size: 'Medium', speed: 30, tags: ['monster manual', '+4 str', 'darkvision', 'ork'] },
+      { name: 'Goblin', label: 'Goblin', category: 'Genişletilmiş Resmi Irklar', icon: '👺', size: 'Small', speed: 30, tags: ['fast small', '+2 dex', '-2 str', 'stealth'] },
+      { name: 'Kobold', label: 'Kobold', category: 'Genişletilmiş Resmi Irklar', icon: '🦎', size: 'Small', speed: 30, tags: ['dragonblood', '+2 dex', '+1 natural ac'] },
+      { name: 'Goliath', label: 'Goliath (Races of Stone)', category: 'Genişletilmiş Resmi Irklar', icon: '⛰️', size: 'Medium', speed: 30, tags: ['races of stone', '+4 str', 'powerful build'] },
+      { name: 'Warforged', label: 'Warforged (Eberron)', category: 'Genişletilmiş Resmi Irklar', icon: '🤖', size: 'Medium', speed: 30, tags: ['living construct', '+2 con', '-2 wis', '-2 cha', 'eberron'] }
+    ];
+
+    let _raceSpotlightOpen = false;
+
+    function toggleRaceSpotlightDropdown() {
+      if (_raceSpotlightOpen) closeRaceSpotlightDropdown();
+      else openRaceSpotlightDropdown();
+    }
+
+    function openRaceSpotlightDropdown() {
+      const dropdown = document.getElementById('race-spotlight-dropdown');
+      const chevron = document.getElementById('race-trigger-chevron');
+      const searchInput = document.getElementById('race-spotlight-search');
+      if (!dropdown) return;
+
+      dropdown.classList.remove('hidden');
+      if (chevron) chevron.classList.add('rotate-180');
+      _raceSpotlightOpen = true;
+
+      const q = searchInput ? searchInput.value.trim() : '';
+      renderRaceSpotlightItems(q);
+
+      setTimeout(() => {
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }, 50);
+    }
+
+    function closeRaceSpotlightDropdown() {
+      const dropdown = document.getElementById('race-spotlight-dropdown');
+      const chevron = document.getElementById('race-trigger-chevron');
+      if (!dropdown) return;
+
+      dropdown.classList.add('hidden');
+      if (chevron) chevron.classList.remove('rotate-180');
+      _raceSpotlightOpen = false;
+    }
+
+    function onRaceSpotlightFilter(val) {
+      const clearBtn = document.getElementById('race-spotlight-clear-btn');
+      if (clearBtn) {
+        if (val && val.trim()) clearBtn.classList.remove('hidden');
+        else clearBtn.classList.add('hidden');
+      }
+      renderRaceSpotlightItems(val);
+    }
+
+    function clearRaceSpotlightFilter() {
+      const searchInput = document.getElementById('race-spotlight-search');
+      if (searchInput) {
+        searchInput.value = '';
+        searchInput.focus();
+      }
+      onRaceSpotlightFilter('');
+    }
+
+    function onRaceSpotlightKeydown(e) {
+      if (e.key === 'Escape') {
+        closeRaceSpotlightDropdown();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const firstBtn = document.querySelector('#race-spotlight-list [data-race-name]');
+        if (firstBtn) {
+          const raceName = firstBtn.getAttribute('data-race-name');
+          selectRaceItem(raceName);
+        } else {
+          const searchInput = document.getElementById('race-spotlight-search');
+          if (searchInput && searchInput.value.trim()) {
+            searchRaceViaRuleMasterAi(searchInput.value.trim());
+            closeRaceSpotlightDropdown();
+          }
+        }
+      }
+    }
+
+    function getAllRacesForSpotlight() {
+      ensureCustomRacesLoaded();
+      const list = [...DND35_RACE_DEFINITIONS];
+
+      const catalog = (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG))
+        ? window.BUNDLED_SRD_CORE_CATALOG
+        : [];
+
+      catalog.forEach(item => {
+        if (item && item.type === 'Race' && !list.some(r => r.name.toLowerCase() === item.name.toLowerCase())) {
+          list.push({
+            name: item.name,
+            label: `${item.name} (Özel / AI)`,
+            category: 'Özel / AI ile Eklenen Irklar',
+            icon: '🔮',
+            size: item.size || 'Medium',
+            speed: item.baseSpeed || 30,
+            tags: ['custom', 'ai', item.name.toLowerCase()]
+          });
+        }
+      });
+
+      return list;
+    }
+
+    function renderRaceSpotlightItems(filterText = '') {
+      const listEl = document.getElementById('race-spotlight-list');
+      if (!listEl) return;
+
+      const q = (filterText || '').toLowerCase().trim();
+      const currentRace = (document.getElementById('profile-edit-race')?.value || character?.race || 'Human').toLowerCase();
+      const allRaces = getAllRacesForSpotlight();
+
+      const filtered = q
+        ? allRaces.filter(r => {
+            const matchName = r.name.toLowerCase().includes(q) || r.label.toLowerCase().includes(q);
+            const matchCat = r.category.toLowerCase().includes(q);
+            const matchTags = Array.isArray(r.tags) && r.tags.some(t => t.toLowerCase().includes(q));
+            return matchName || matchCat || matchTags;
+          })
+        : allRaces;
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = `
+          <div class="p-3 text-center space-y-2 bg-purple-950/30 rounded-xl border border-purple-500/40 my-1">
+            <span class="text-xl block">🔍</span>
+            <div class="text-xs font-bold text-slate-200">"${escapeRaceHtml(filterText)}" listede bulunamadı</div>
+            <p class="text-[10px] text-slate-400">Bu ırkı resmi Wizards of the Coast D&D 3.5e kütüphanelerinden doğrudan aratabilirsiniz.</p>
+            <button type="button" onclick="searchRaceViaRuleMasterAi('${escapeRaceHtml(filterText).replace(/'/g, "\\\'")}'); closeRaceSpotlightDropdown();" class="w-full py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:scale-95 text-white font-extrabold text-xs rounded-lg shadow transition flex items-center justify-center gap-1.5 cursor-pointer">
+              <span>🔮</span>
+              <span>"${escapeRaceHtml(filterText)}" Irkını Rule Master AI ile Getir</span>
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      const categories = {};
+      filtered.forEach(r => {
+        if (!categories[r.category]) categories[r.category] = [];
+        categories[r.category].push(r);
+      });
+
+      let html = '';
+      for (const [catName, items] of Object.entries(categories)) {
+        html += `
+          <div class="pt-1">
+            <div class="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-purple-400/90 flex items-center justify-between border-b border-purple-900/30 mb-1">
+              <span>${catName}</span>
+              <span class="text-[8px] font-mono text-slate-500">${items.length}</span>
+            </div>
+            <div class="space-y-0.5">
+        `;
+
+        items.forEach(r => {
+          const isSelected = r.name.toLowerCase() === currentRace;
+          const selectedClasses = isSelected
+            ? 'bg-purple-900/60 border border-purple-500/80 text-white font-bold'
+            : 'bg-slate-900/50 hover:bg-slate-800/80 border border-transparent hover:border-purple-500/30 text-slate-200';
+
+          html += `
+            <button type="button" data-race-name="${escapeRaceHtml(r.name)}" onclick="selectRaceItem('${escapeRaceHtml(r.name).replace(/'/g, "\\'")}')" class="w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between transition cursor-pointer group active:scale-[0.99] ${selectedClasses}">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="text-sm shrink-0">${r.icon || '🧬'}</span>
+                <div class="truncate">
+                  <div class="text-xs font-bold flex items-center gap-1.5">
+                    <span class="truncate">${r.label || r.name}</span>
+                    ${isSelected ? '<span class="text-[9px] px-1 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-700 font-mono">Seçili</span>' : ''}
+                  </div>
+                  <div class="text-[9px] text-slate-400 font-mono truncate">
+                    ${r.size || 'Medium'} Boyut • ${r.speed || 30} ft Hız
+                  </div>
+                </div>
+              </div>
+              <span class="text-xs text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity ml-2 shrink-0">➔</span>
+            </button>
+          `;
+        });
+
+        html += `
+            </div>
+          </div>
+        `;
+      }
+
+      if (!q || 'diğer'.includes(q) || 'ai'.includes(q) || 'rule master'.includes(q)) {
+        html += `
+          <div class="pt-1 border-t border-purple-900/40 mt-1">
+            <button type="button" onclick="selectRaceItem('Diğer')" class="w-full text-left px-2.5 py-2 rounded-lg bg-gradient-to-r from-purple-950/70 to-indigo-950/70 hover:from-purple-900/80 hover:to-indigo-900/80 border border-purple-500/40 hover:border-purple-400 text-purple-200 flex items-center justify-between transition cursor-pointer group active:scale-[0.99]">
+              <div class="flex items-center gap-2">
+                <span class="text-base shrink-0">🔮</span>
+                <div>
+                  <div class="text-xs font-bold text-purple-200 group-hover:text-white">Diğer (Rule Master AI ile Özel Irk Ara...)</div>
+                  <div class="text-[9px] text-purple-400/80 font-mono">Thri-Kreen, Catfolk, Illumian vb. resmi D&D 3.5e ırkları</div>
+                </div>
+              </div>
+              <span class="text-xs text-purple-300 font-bold group-hover:translate-x-0.5 transition-transform">➔</span>
+            </button>
+          </div>
+        `;
+      }
+
+      listEl.innerHTML = html;
+    }
+
+    function selectRaceItem(raceName) {
+      updateRaceSpotlightTrigger(raceName);
+      closeRaceSpotlightDropdown();
+
+      const hiddenInput = document.getElementById('profile-edit-race');
+      if (hiddenInput) hiddenInput.value = raceName;
+
+      updateProfileModalAvatar();
+      onProfileRaceChange(raceName);
+    }
+
+    function updateRaceSpotlightTrigger(raceName) {
+      const labelEl = document.getElementById('race-trigger-label');
+      const iconEl = document.getElementById('race-trigger-icon');
+      const hiddenInput = document.getElementById('profile-edit-race');
+      if (hiddenInput) hiddenInput.value = raceName;
+
+      const all = getAllRacesForSpotlight();
+      const found = all.find(r => r.name.toLowerCase() === (raceName || '').toLowerCase());
+
+      if (found) {
+        if (labelEl) labelEl.textContent = found.label || found.name;
+        if (iconEl) iconEl.textContent = found.icon || '🧬';
+      } else if (raceName && (raceName.toLowerCase().includes('diğer') || raceName.toLowerCase().includes('other'))) {
+        if (labelEl) labelEl.textContent = '🔮 Diğer (Rule Master AI)';
+        if (iconEl) iconEl.textContent = '🔮';
+      } else {
+        if (labelEl) labelEl.textContent = raceName || 'Human (İnsan)';
+        if (iconEl) iconEl.textContent = '👤';
+      }
+    }
+
+    document.addEventListener('click', (e) => {
+      const container = document.getElementById('race-custom-dropdown-container');
+      if (_raceSpotlightOpen && container && !container.contains(e.target)) {
+        closeRaceSpotlightDropdown();
+      }
+    });
 
     function onProfileRaceChange(raceName) {
       const card = document.getElementById('profile-race-traits-card');
