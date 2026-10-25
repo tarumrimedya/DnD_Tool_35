@@ -7244,7 +7244,14 @@
       const reqId = urlParams.get('id') || localStorage.getItem('dnd35_active_character_id');
       const myId = character._hubId || character.id || reqId;
 
-      if (!myId || myId !== evt.charId) return;
+      const matchesId = myId && myId === evt.charId;
+      const matchesName = character.name && evt.charName && character.name.toLowerCase().trim() === evt.charName.toLowerCase().trim();
+
+      if (!matchesId && !matchesName) return;
+
+      if (!character._hubId && evt.charId) {
+        character._hubId = evt.charId;
+      }
 
       // Tekrarlanan paketleri önleme (Timestamp kontrolü)
       if (window._lastHandledDmEventTs && window._lastHandledDmEventTs >= evt.timestamp) {
