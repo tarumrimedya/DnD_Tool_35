@@ -504,3 +504,16 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   5. **Parite ve Kural Bütünlüğü:**
      * `hub.html`, `hub_dice.js` ve `webapp/` kopyaları %100 SHA-256 eşitliğinde tutuldu.
      * Sıfır tavla zarı (`🎲`) kuralı tavizsiz korundu; çokyüzlü vektörel SVG zarlar kullanıldı.
+
+---
+
+## 25. ÜST BAŞLIK KONTROL BLOĞU TAM SİMETRİ VE KULLANICI PROFİL KARTI STANDARDI (2026-10-25)
+* **İstek:** Hub üst başlığındaki sağ kontrol kolonunda kullanıcı profil hapının diğer 3 aksiyon butonuna göre daha kısa ve dar kalması nedeniyle oluşan asimetrinin giderilmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Kullanıcı Profil Kartı Ebat Standardı (`supabase_auth.js` & `webapp/`):**
+     * `mountUserProfileUI` içinde profil hapı `w-full h-9 rounded-xl` boyutlarına getirilerek altındaki `[ 🏰 Yeni Kampanya Ekle ]`, `[ 💾 Yedekle | 📂 İçe Aktar | 🧹 ]` ve `[ 🟢 Bulut Senkron ]` satırlarıyla birebir eşitlendi.
+     * Sol tarafta avatar ve kullanıcı adı (`truncate`), sağ tarafta `[ 🚪 Çıkış ]` butonu (`shrink-0`) ile `justify-between` yerleşimi sağlandı.
+  2. **Konteyner Hizalama Temizliği (`hub.html`, `character.html`, `index.html` & `webapp/`):**
+     * `#user-profile-slot` elementinden `flex items-center justify-end` sınıfları kaldırılarak tam genişlikli (`w-full`) kart yerleşimine uyarlandı.
+  3. **Parite ve Kural Bütünlüğü:**
+     * `hub.html`, `character.html`, `index.html`, `supabase_auth.js` ve `webapp/` kopyaları %100 SHA-256 eşitliğinde tutuldu; sıfır tavla zarı (`🎲`) kuralı tavizsiz korundu.

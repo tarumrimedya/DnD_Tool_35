@@ -201,7 +201,7 @@ const SupabaseAuth = {
     if (!container) {
       container = document.createElement('div');
       container.id = 'supabase-user-pill-container';
-      container.className = 'inline-flex items-center gap-2';
+      container.className = 'w-full';
 
       const targetNav = document.getElementById('user-profile-slot') ||
                         document.getElementById('nav-user-actions') || 
@@ -213,6 +213,12 @@ const SupabaseAuth = {
         container.className = 'fixed top-3 right-3 z-40 bg-slate-900/90 border border-slate-700/80 px-2.5 py-1.5 rounded-xl shadow-lg flex items-center gap-2';
         document.body.appendChild(container);
       }
+    }
+
+    if (container.parentElement?.id === 'user-profile-slot') {
+      container.className = 'w-full';
+    } else if (!container.className || container.className.includes('inline-flex')) {
+      container.className = 'w-full';
     }
 
     let avatarHtml;
@@ -229,12 +235,14 @@ const SupabaseAuth = {
     const badgeColor = isLocal ? 'text-amber-300' : 'text-white';
 
     container.innerHTML = `
-      <div class="flex items-center gap-1.5 bg-slate-900/90 border border-slate-700/80 px-2 py-1 rounded-xl shadow-sm">
-        ${avatarHtml}
-        <span class="text-xs font-semibold ${badgeColor} max-w-[120px] truncate hidden sm:inline" title="${titleAttr}">${displayName}</span>
-        <button onclick="SupabaseAuth.signOut()" class="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-200 border border-slate-700 hover:border-rose-700 text-[10px] font-bold transition flex items-center gap-1 cursor-pointer" title="${isLocal ? 'Yerel Moddan Çık ve Giriş Ekranına Dön' : 'Oturumu Kapat'}">
+      <div class="w-full h-9 flex items-center justify-between gap-1.5 bg-slate-900/90 border border-slate-700/80 px-2.5 rounded-xl shadow-md">
+        <div class="flex items-center gap-2 min-w-0">
+          ${avatarHtml}
+          <span class="text-xs font-semibold ${badgeColor} max-w-[105px] truncate" title="${titleAttr}">${displayName}</span>
+        </div>
+        <button onclick="SupabaseAuth.signOut()" class="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-200 border border-slate-700 hover:border-rose-700 text-[10px] font-bold transition flex items-center gap-1 cursor-pointer shrink-0" title="${isLocal ? 'Yerel Moddan Çık ve Giriş Ekranına Dön' : 'Oturumu Kapat'}">
           <span>🚪</span>
-          <span class="hidden md:inline">Çıkış</span>
+          <span>Çıkış</span>
         </button>
       </div>
     `;
