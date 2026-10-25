@@ -1269,6 +1269,21 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - `hub.html`, `hub_notes.js` ile `webapp/hub.html`, `webapp/hub_notes.js` %100 SHA-256 eşitliğinde senkronize edildi.
      - Kural #3 (Zar emojisi yasağı) tavizsiz korundu.
 
+---
+
+## 58. HUB KAMPANYA BİLGİ VE AKSİYON BANDININ 2 SATIRLI DÜZENE DÖNÜŞTÜRÜLMESİ (2026-10-25)
+* **İstek:**
+  - Kampanya seçildiğinde üstte beliren Ana Kampanya Bilgi Başlık Bandının 2 satır olacak şekilde düzenlenmesi.
+* **Uygulanan Değişiklikler:**
+  1. **1. Satır (Başlık, Rozetler & Aksiyon Butonları):**
+     - Sol tarafta kampanya ikonu (`👑` / `🏰`), kampanya adı, DM Mode rozeti ve alt sefer / karakter sayısı rozeti yerleştirildi.
+     - Sağ tarafta `[Buluta Taşı & Davet Kodu Al]` (veya Davet Kodu), `[Alt Kampanya Ekle]` ve `[Düzenle]` aksiyon butonları dikeyde başlıkla tam hizada olacak şekilde konumlandırıldı (`flex justify-between items-center`).
+  2. **2. Satır (Sefer Notu / Açıklaması):**
+     - Eğer kampanyanın notu/açıklaması varsa (`activeCamp.notes`), 1. satırın altına tam genişlikte (`w-full`) ferah bir açıklama kutusu olarak yerleştirildi.
+  3. **Parite ve Devir Teslim:**
+     - `hub.html` ve `webapp/hub.html` %100 SHA-256 eşitliğinde güncellendi.
+     - Kural #3 (Zar emojisi yasağı) tavizsiz korundu.
+
 
 ---
 

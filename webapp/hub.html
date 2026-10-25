@@ -1765,38 +1765,43 @@
         const rootChars = chars.filter(c => c.campaignId === activeCamp.id);
 
         let html = `
-          <!-- Ana Kampanya Bilgi Başlık Bandı -->
-          <div class="bg-gradient-to-r from-[#131d33] to-[#1a2542] border border-slate-700/80 rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div class="min-w-0">
-              <div class="flex items-center gap-2.5 flex-wrap">
-                <span class="text-2xl">${activeCamp.isDmMode ? '👑' : '🏰'}</span>
+          <!-- Ana Kampanya Bilgi Başlık Bandı (2 Satır Düzeni) -->
+          <div class="bg-gradient-to-r from-[#131d33] to-[#1a2542] border border-slate-700/80 rounded-2xl p-3.5 sm:p-4 shadow-xl flex flex-col gap-2.5 sm:gap-3">
+            <!-- 1. Satır: Başlık, Rozetler ve Aksiyon Butonları -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="flex items-center gap-2.5 flex-wrap min-w-0">
+                <span class="text-2xl shrink-0">${activeCamp.isDmMode ? '👑' : '🏰'}</span>
                 <h2 class="text-base sm:text-lg font-black text-white truncate">${activeCamp.name}</h2>
-                ${activeCamp.isDmMode ? '<span class="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">DM Mode</span>' : ''}
-                <span class="text-xs text-slate-400 bg-slate-900/80 px-2.5 py-0.5 rounded-lg border border-slate-800">${subCamps.length} Alt Sefer • ${chars.length} Karakter</span>
+                ${activeCamp.isDmMode ? '<span class="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0">DM Mode</span>' : ''}
+                <span class="text-xs text-slate-400 bg-slate-900/80 px-2.5 py-0.5 rounded-lg border border-slate-800 shrink-0">${subCamps.length} Alt Sefer • ${chars.length} Karakter</span>
               </div>
-              ${activeCamp.notes ? `<p class="text-xs text-slate-300 mt-2 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800/80 max-w-3xl whitespace-pre-line">${activeCamp.notes}</p>` : ''}
-            </div>
-            <div class="flex items-center gap-2 shrink-0 self-end sm:self-auto flex-wrap">
-              ${(activeCamp.invite_code || activeCamp.cloudCampaignId) ? `
-                <button onclick="openCampaignInviteModal('${activeCamp.id}')" class="px-3.5 py-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-md shadow-amber-950/50 cursor-pointer active:scale-95" title="Oyuncuları Davet Et & Masayı Gör">
-                  <span>🎟️</span>
-                  <span>Davet Kodu (${activeCamp.invite_code || 'Gör'})</span>
+              <div class="flex items-center gap-2 shrink-0 flex-wrap">
+                ${(activeCamp.invite_code || activeCamp.cloudCampaignId) ? `
+                  <button onclick="openCampaignInviteModal('${activeCamp.id}')" class="px-3.5 py-1.5 sm:py-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-md shadow-amber-950/50 cursor-pointer active:scale-95" title="Oyuncuları Davet Et & Masayı Gör">
+                    <span>🎟️</span>
+                    <span>Davet Kodu (${activeCamp.invite_code || 'Gör'})</span>
+                  </button>
+                ` : `
+                  <button onclick="migrateCampaignToCloud('${activeCamp.id}')" class="px-3.5 py-1.5 sm:py-2 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-md shadow-sky-950/50 cursor-pointer active:scale-95" title="Bu yerel kampanyayı buluta taşı ve davet kodu üret">
+                    <span>☁️</span>
+                    <span>Buluta Taşı & Davet Kodu Al</span>
+                  </button>
+                `}
+                <button onclick="openNewCampaignModal('${activeCamp.id}')" class="px-3 py-1.5 sm:py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-md shadow-indigo-950/50 cursor-pointer active:scale-95">
+                  <span>➕</span>
+                  <span>Alt Kampanya Ekle</span>
                 </button>
-              ` : `
-                <button onclick="migrateCampaignToCloud('${activeCamp.id}')" class="px-3.5 py-2 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-md shadow-sky-950/50 cursor-pointer active:scale-95" title="Bu yerel kampanyayı buluta taşı ve davet kodu üret">
-                  <span>☁️</span>
-                  <span>Buluta Taşı & Davet Kodu Al</span>
+                <button onclick="openEditCampaignModal('${activeCamp.id}', event)" class="px-3 py-1.5 sm:py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-semibold transition border border-slate-700 flex items-center gap-1.5 cursor-pointer">
+                  <span>✏️</span>
+                  <span>Düzenle</span>
                 </button>
-              `}
-              <button onclick="openNewCampaignModal('${activeCamp.id}')" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-md shadow-indigo-950/50 cursor-pointer active:scale-95">
-                <span>➕</span>
-                <span>Alt Kampanya Ekle</span>
-              </button>
-              <button onclick="openEditCampaignModal('${activeCamp.id}', event)" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-semibold transition border border-slate-700 flex items-center gap-1.5 cursor-pointer">
-                <span>✏️</span>
-                <span>Düzenle</span>
-              </button>
+              </div>
             </div>
+
+            <!-- 2. Satır: Sefer Notu / Açıklaması -->
+            ${activeCamp.notes ? `
+              <p class="text-xs text-slate-300 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800/80 w-full whitespace-pre-line leading-relaxed">${activeCamp.notes}</p>
+            ` : ''}
           </div>
         `;
 
