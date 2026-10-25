@@ -917,6 +917,8 @@
       characters: [],
       collapsedDrawers: new Set()
     };
+    window.state = state;
+    window.getHubState = () => state;
 
     // Karakter Portre Görseli Render Yardımcısı
     function getCharacterPortraitHtml(c, iconSize = 'text-2xl') {
@@ -1317,6 +1319,7 @@
     }
 
     function saveHubStorage(triggerCloudSync = true, isDmModeFast = false) {
+      window.state = state;
       try {
         localStorage.setItem(HUB_STORAGE_KEY, JSON.stringify({
           campaigns: state.campaigns,
@@ -4342,7 +4345,7 @@ CRITICAL RULES:
             <div>
               <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
                 <span>Not Defteri</span>
-                <span id="hub-modal-target-title" class="text-xs font-normal text-indigo-300 bg-indigo-950/60 px-2 py-0.5 rounded-lg border border-indigo-800/60"></span>
+                <span id="hub-modal-target-title" class="inline-flex items-center text-xs font-normal text-indigo-300"></span>
               </h3>
             </div>
           </div>
@@ -5241,6 +5244,7 @@ CRITICAL RULES:
           const parsed = JSON.parse(e.target.result);
           if (parsed.characters && parsed.campaigns) {
             state = parsed;
+            window.state = state;
             saveHubStorage();
             renderHub();
             alert('✅ Hub tam paket yedeği başarıyla geri yüklendi!');

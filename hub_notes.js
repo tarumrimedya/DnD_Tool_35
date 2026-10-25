@@ -18,6 +18,7 @@
   let _activeNoteSearchQuery = '';
   let _selectedModalNoteId = null;
   let _activePanelTab = 'write'; // 'write' or 'list'
+  let _overrideTargetKey = null; // 'campaign:<id>' or 'char:<id>'
 
   // Tag extraction regex supporting Turkish and international unicode characters
   const TAG_REGEX = /#[\w\u00C0-\u024F\u1E00-\u1EFFğüşıöçĞÜŞİÖÇ]+/gi;
@@ -30,43 +31,118 @@
   }
 
   function getHubState() {
+    if (typeof window.getHubState === 'function') {
+      const s = window.getHubState();
+      if (s && Array.isArray(s.campaigns)) return s;
+    }
     if (window.state && Array.isArray(window.state.campaigns)) {
       return window.state;
     }
+    if (typeof state !== 'undefined' && state && Array.isArray(state.campaigns)) {
+      return state;
+    }
+    try {
+      const raw = localStorage.getItem('dnd35_hub_db');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.campaigns)) return parsed;
+      }
+    } catch (e) {}
     return null;
   }
 
   /**
    * Determine active notes target:
-   * 1. If active campaign is DM Mode: Campaign notes
-   * 2. If active campaign is not DM Mode: Active character in that campaign
-   * 3. Fallback: First available character or default campaign
+   * 0. User override (if selected via modal dropdown)
+   * 1. If in unassigned tab: unassigned character or first character
+   * 2. If active campaign is DM Mode: Campaign notes
+   * 3. If active campaign is player campaign: Character notes in that campaign (or campaign notes)
+   * 4. If all/fallback: First character or first campaign
+   * 5. Safe creation fallback: Ensures notes can ALWAYS be written
    */
   function getActiveNotesTarget() {
     const state = getHubState();
     if (!state) return null;
 
-    const activeCampId = state.activeCampaignId;
-    const activeCamp = state.campaigns.find(c => c.id === activeCampId);
+    if (!Array.isArray(state.campaigns)) state.campaigns = [];
+    if (!Array.isArray(state.characters)) state.characters = [];
 
-    // 1. DM Kampanyası
-    if (activeCamp && activeCamp.isDmMode) {
-      if (!Array.isArray(activeCamp.notesList)) {
-        activeCamp.notesList = normalizeLegacyNotes(activeCamp.notes);
+    // 0. Manuel Seçili Hedef (Modal Üzerinden Değiştirilmişse)
+    if (_overrideTargetKey) {
+      const parts = _overrideTargetKey.split(':');
+      const type = parts[0];
+      const id = parts[1];
+      if (type === 'campaign') {
+        const camp = state.campaigns.find(c => c.id === id);
+        if (camp) {
+          if (!Array.isArray(camp.notesList)) camp.notesList = normalizeLegacyNotes(camp.notes);
+          return {
+            type: 'campaign',
+            id: camp.id,
+            name: camp.name || 'Kampanya',
+            isDm: Boolean(camp.isDmMode),
+            titleBadge: camp.isDmMode ? '👑 DM Notları (Gizli)' : '🏰 Sefer Notları',
+            targetObj: camp,
+            notesList: camp.notesList
+          };
+        }
+      } else if (type === 'char') {
+        const char = state.characters.find(c => c.id === id);
+        if (char) {
+          if (!Array.isArray(char.notesList)) char.notesList = normalizeLegacyNotes(char.notes);
+          return {
+            type: 'character',
+            id: char.id,
+            name: char.name || 'Karakter',
+            isDm: false,
+            titleBadge: `👤 ${char.name || 'Karakter'} Notları`,
+            targetObj: char,
+            notesList: char.notesList
+          };
+        }
       }
-      return {
-        type: 'campaign',
-        id: activeCamp.id,
-        name: activeCamp.name || 'Ana Kampanya',
-        isDm: true,
-        titleBadge: '👑 DM Notları (Gizli)',
-        targetObj: activeCamp,
-        notesList: activeCamp.notesList
-      };
     }
 
-    // 2. Oyuncu Kampanyası: Bu kampanyaya bağlı oyuncu karakterini bul
-    if (activeCamp && !activeCamp.isDmMode) {
+    const activeCampId = state.activeCampaignId;
+
+    // 1. Bağımsız / Atanmamış Sekmesi
+    if (activeCampId === 'unassigned') {
+      const unassignedChar = state.characters.find(c => !c.campaignId || c.campaignId === 'unassigned') || state.characters[0];
+      if (unassignedChar) {
+        if (!Array.isArray(unassignedChar.notesList)) {
+          unassignedChar.notesList = normalizeLegacyNotes(unassignedChar.notes);
+        }
+        return {
+          type: 'character',
+          id: unassignedChar.id,
+          name: unassignedChar.name || 'Bağımsız Karakter',
+          isDm: false,
+          titleBadge: `👤 ${unassignedChar.name || 'Karakter'} Notları (Bağımsız)`,
+          targetObj: unassignedChar,
+          notesList: unassignedChar.notesList
+        };
+      }
+    }
+
+    // 2. Belirli bir Aktif Kampanya Seçili İse
+    const activeCamp = state.campaigns.find(c => c.id === activeCampId);
+    if (activeCamp) {
+      if (activeCamp.isDmMode) {
+        if (!Array.isArray(activeCamp.notesList)) {
+          activeCamp.notesList = normalizeLegacyNotes(activeCamp.notes);
+        }
+        return {
+          type: 'campaign',
+          id: activeCamp.id,
+          name: activeCamp.name || 'Ana Kampanya',
+          isDm: true,
+          titleBadge: '👑 DM Notları (Gizli)',
+          targetObj: activeCamp,
+          notesList: activeCamp.notesList
+        };
+      }
+
+      // Oyuncu Kampanyası: Bu kampanyaya bağlı oyuncu karakterini bul
       const campChars = state.characters.filter(c => c.campaignId === activeCamp.id);
       const targetChar = campChars[0] || state.characters[0];
 
@@ -100,8 +176,8 @@
       };
     }
 
-    // 3. Genel ('all') sekmesinde ilk karakter veya ilk kampanya
-    const firstChar = state.characters && state.characters[0];
+    // 3. Genel ('all') sekmesinde veya eşleşmeme durumunda ilk karakter
+    const firstChar = state.characters[0];
     if (firstChar) {
       if (!Array.isArray(firstChar.notesList)) {
         firstChar.notesList = normalizeLegacyNotes(firstChar.notes);
@@ -117,7 +193,41 @@
       };
     }
 
-    return null;
+    // 4. Karakter yoksa ilk kampanya
+    const firstCamp = state.campaigns[0];
+    if (firstCamp) {
+      if (!Array.isArray(firstCamp.notesList)) {
+        firstCamp.notesList = normalizeLegacyNotes(firstCamp.notes);
+      }
+      return {
+        type: 'campaign',
+        id: firstCamp.id,
+        name: firstCamp.name || 'Kampanya',
+        isDm: Boolean(firstCamp.isDmMode),
+        titleBadge: firstCamp.isDmMode ? '👑 DM Notları (Gizli)' : '🏰 Sefer Notları',
+        targetObj: firstCamp,
+        notesList: firstCamp.notesList
+      };
+    }
+
+    // 5. Hiçbir kampanya ve karakter yoksa dinamik güvenli alan oluştur
+    const defaultCamp = {
+      id: 'camp_default',
+      name: 'Genel Not Defteri',
+      notesList: []
+    };
+    state.campaigns.push(defaultCamp);
+    if (typeof window.saveHubStorage === 'function') window.saveHubStorage();
+
+    return {
+      type: 'campaign',
+      id: defaultCamp.id,
+      name: defaultCamp.name,
+      isDm: false,
+      titleBadge: '📝 Genel Notlar',
+      targetObj: defaultCamp,
+      notesList: defaultCamp.notesList
+    };
   }
 
   function normalizeLegacyNotes(rawNotes) {
@@ -143,6 +253,15 @@
     // 1. HUB State Depolaması
     if (state && typeof window.saveHubStorage === 'function') {
       window.saveHubStorage();
+    } else if (state) {
+      try {
+        localStorage.setItem('dnd35_hub_db', JSON.stringify({
+          campaigns: state.campaigns || [],
+          characters: state.characters || [],
+          latestDmEvent: state.latestDmEvent || null,
+          lastSaved: new Date().toISOString()
+        }));
+      } catch (e) {}
     }
 
     // 2. Karakter ise dnd35_character ile Çapraz Senkronizasyon (Kural #6)
@@ -493,22 +612,75 @@
     renderInlineNotes();
   }
 
+  function setTargetOverride(targetKey) {
+    _overrideTargetKey = targetKey;
+    const target = getActiveNotesTarget();
+    if (target && target.notesList.length > 0) {
+      _selectedModalNoteId = target.notesList[0].id;
+    } else {
+      _selectedModalNoteId = null;
+    }
+    renderFullNotesModalList();
+    loadSelectedNoteIntoEditor();
+  }
+
+  function updateModalTargetSelector(activeTarget) {
+    const titleEl = document.getElementById('hub-modal-target-title');
+    if (!titleEl) return;
+    const state = getHubState();
+    if (!state) {
+      titleEl.innerHTML = `<span class="bg-indigo-950/80 text-indigo-300 px-2 py-0.5 rounded-lg border border-indigo-800/60 font-semibold">${escapeHtml(activeTarget ? activeTarget.titleBadge : 'Not Defteri')}</span>`;
+      return;
+    }
+
+    const camps = state.campaigns || [];
+    const chars = state.characters || [];
+
+    if (camps.length + chars.length <= 1) {
+      titleEl.innerHTML = `<span class="bg-indigo-950/80 text-indigo-300 px-2 py-0.5 rounded-lg border border-indigo-800/60 font-semibold">${escapeHtml(activeTarget ? activeTarget.titleBadge : 'Not Defteri')}</span>`;
+      return;
+    }
+
+    const currentKey = activeTarget ? `${activeTarget.type === 'character' ? 'char' : 'campaign'}:${activeTarget.id}` : '';
+
+    let selectHtml = `<select onchange="HubNotes.setTargetOverride(this.value)" class="bg-indigo-950/90 hover:bg-indigo-900/90 text-indigo-200 border border-indigo-700/80 rounded-lg px-2 py-0.5 text-xs font-bold focus:outline-none focus:border-indigo-400 cursor-pointer shadow-sm max-w-[240px] truncate">`;
+
+    if (chars.length > 0) {
+      selectHtml += `<optgroup label="👤 Karakter Not Defterleri">`;
+      chars.forEach(c => {
+        const val = `char:${c.id}`;
+        selectHtml += `<option value="${val}" ${val === currentKey ? 'selected' : ''}>👤 ${escapeHtml(c.name || 'Karakter')}</option>`;
+      });
+      selectHtml += `</optgroup>`;
+    }
+
+    if (camps.length > 0) {
+      selectHtml += `<optgroup label="🏰 Kampanya Not Defterleri">`;
+      camps.forEach(cp => {
+        const val = `campaign:${cp.id}`;
+        const prefix = cp.isDmMode ? '👑 DM: ' : '🏰 ';
+        selectHtml += `<option value="${val}" ${val === currentKey ? 'selected' : ''}>${prefix}${escapeHtml(cp.name || 'Kampanya')}</option>`;
+      });
+      selectHtml += `</optgroup>`;
+    }
+
+    selectHtml += `</select>`;
+    titleEl.innerHTML = selectHtml;
+  }
+
   /**
    * Render Note List inside Full Modal
    */
   function renderFullNotesModalList() {
     const listEl = document.getElementById('hub-modal-notes-list');
-    const titleEl = document.getElementById('hub-modal-target-title');
     if (!listEl) return;
 
     const target = getActiveNotesTarget();
+    updateModalTargetSelector(target);
+
     if (!target) {
       listEl.innerHTML = `<div class="p-4 text-slate-500 text-xs italic">Aktif hedef bulunamadı.</div>`;
       return;
-    }
-
-    if (titleEl) {
-      titleEl.textContent = `${target.name} • ${target.titleBadge}`;
     }
 
     const sorted = sortNotes(target.notesList);
@@ -558,7 +730,7 @@
     if (!editor) return;
 
     const target = getActiveNotesTarget();
-    if (!target || !_selectedModalNoteId) {
+    if (!target) {
       editor.value = '';
       editor.placeholder = 'Düzenlemek için sol listeden bir not seçin veya yeni not oluşturun.';
       editor.disabled = true;
@@ -568,11 +740,21 @@
       return;
     }
 
-    const note = target.notesList.find(n => n.id === _selectedModalNoteId);
-    if (!note) {
+    if (target.notesList.length === 0) {
+      _selectedModalNoteId = null;
       editor.value = '';
+      editor.placeholder = 'Bu defterde henüz not yok. "Yeni Not Oluştur" butonuna tıklayarak ilk notunuzu ekleyebilirsiniz.';
       editor.disabled = true;
+      if (pinBtn) pinBtn.classList.add('opacity-40', 'pointer-events-none');
+      if (deleteBtn) deleteBtn.classList.add('opacity-40', 'pointer-events-none');
+      if (dateBadge) dateBadge.textContent = '-';
       return;
+    }
+
+    let note = target.notesList.find(n => n.id === _selectedModalNoteId);
+    if (!note) {
+      note = target.notesList[0];
+      _selectedModalNoteId = note.id;
     }
 
     editor.disabled = false;
@@ -696,6 +878,7 @@
     handleEditorInput,
     insertTagIntoEditor,
     createNewModalNote,
+    setTargetOverride,
     setTagFilter,
     handleSearchInput
   };

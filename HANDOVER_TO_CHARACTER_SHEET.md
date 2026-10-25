@@ -1247,3 +1247,24 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   3. **Parite ve Devir Teslim:**
      - `hub.html` ve `webapp/hub.html` %100 SHA-256 eşitliğinde güncellendi (`True`).
      - Standart tavla zarı emoji yasağı tavizsiz korundu.
+
+---
+
+## 57. HUB NOT DEFTERİ (HUB NOTES) MODAL HEDEF ÇÖZÜMLEME VE YENİ NOT OLUŞTURMA HATASI DÜZELTMESİ (2026-10-25)
+* **Problem:**
+  - Hub sayfasında geniş not defteri modali açılıp "Yeni Not Oluştur" butonuna tıklandığında `Lütfen önce bir kampanya veya karakter seçin.` uyarısı veriyor ve sol listede `Aktif hedef bulunamadı.` yazıyordu.
+* **Kök Neden:**
+  - `hub_notes.js` dosyasının `getHubState()` fonksiyonu `window.state` nesnesini sorguluyordu. Ancak `hub.html` içinde state `let state = { ... }` olarak tanımlandığı için JavaScript lexical scope kuralları gereği `window` nesnesine bağlanmıyordu (`window.state === undefined`).
+  - Ayrıca `state.activeCampaignId` değeri `'unassigned'` (Bağımsızlar) olduğunda veya karakter listesiyle eşleşmediğinde hedef `null` dönüyordu.
+* **Uygulanan Çözüm:**
+  1. **Global State Erişimi ve Senkronizasyonu (`hub.html`):**
+     - `hub.html` içinde `let state = ...` tanımlandıktan hemen sonra `window.state = state;` ve `window.getHubState = () => state;` eklendi.
+     - `saveHubStorage` ve JSON yükleme fonksiyonlarında `window.state = state;` güncelliği sağlandı.
+  2. **Dört Katmanlı Güvenli Hedef Tespiti (`hub_notes.js`):**
+     - `getHubState()` fonksiyonu `window.getHubState()`, `window.state`, `typeof state !== 'undefined'` ve `localStorage.getItem('dnd35_hub_db')` sırasıyla yedekli çalışacak biçimde güçlendirildi.
+     - `getActiveNotesTarget()`; `'unassigned'` (bağımsız karakterler), DM kampanyası, oyuncu kampanyası, `'all'` (tüm karakterler) ve sıfır kampanya durumlarında dahi otomatik güvenli bir not hedefi bağlayacak şekilde revize edildi.
+  3. **Modal İçi Hızlı Hedef Değiştirme Açılır Menüsü (`updateModalTargetSelector`):**
+     - Not defteri modal başlığına tüm karakter ve kampanya defterleri arasında geçiş yapmayı sağlayan akıllı bir `<select>` açılır kutusu entegre edildi (`char:<id>` / `campaign:<id>`).
+  4. **Parite ve Devir Teslim:**
+     - `hub.html`, `hub_notes.js` ile `webapp/hub.html`, `webapp/hub_notes.js` %100 SHA-256 eşitliğinde senkronize edildi.
+     - Kural #3 (Zar emojisi yasağı) tavizsiz korundu.
