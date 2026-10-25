@@ -620,7 +620,95 @@ const SupabaseAuth = {
       console.warn('deleteCharacter cloud error:', error);
       return false;
     }
+    await this.recordTombstone(characterId);
     return true;
+  },
+
+  /**
+   * Silinen karakter mezar taşlarını (Tombstone) Supabase user_metadata ve yerel depolamadan çeker
+   */
+  async fetchTombstones() {
+    const local = this.getLocalTombstones();
+    if (this.isLocalMode()) return local;
+
+    try {
+      const client = this.getClient();
+      if (!client) return local;
+
+      const user = await this.getUser();
+      if (!user || user.id === 'local_offline_user') return local;
+
+      const cloudList = Array.isArray(user.user_metadata?.deleted_character_ids)
+        ? user.user_metadata.deleted_character_ids
+        : [];
+
+      const merged = Array.from(new Set([...cloudList, ...local]));
+      this.saveLocalTombstones(merged);
+      return merged;
+    } catch (e) {
+      console.warn('fetchTombstones warning:', e);
+      return local;
+    }
+  },
+
+  /**
+   * Bir karakter silindiğinde hem yerel hem de bulut user_metadata'ya mezar taşı bırakır
+   */
+  async recordTombstone(characterId) {
+    if (!characterId) return;
+    const cleanId = String(characterId).trim();
+
+    // 1. Yerel Mezar Taşı Kaydı
+    const local = this.getLocalTombstones();
+    if (!local.includes(cleanId)) {
+      local.push(cleanId);
+      if (local.length > 300) local.shift();
+      this.saveLocalTombstones(local);
+    }
+
+    if (this.isLocalMode()) return;
+
+    try {
+      const client = this.getClient();
+      if (!client) return;
+
+      const user = await this.getUser();
+      if (!user || user.id === 'local_offline_user') return;
+
+      const currentList = Array.isArray(user.user_metadata?.deleted_character_ids)
+        ? user.user_metadata.deleted_character_ids
+        : [];
+
+      if (!currentList.includes(cleanId)) {
+        currentList.push(cleanId);
+        if (currentList.length > 300) currentList.shift();
+
+        await client.auth.updateUser({
+          data: {
+            deleted_character_ids: currentList
+          }
+        });
+      }
+    } catch (e) {
+      console.warn('recordTombstone cloud warning:', e);
+    }
+  },
+
+  getLocalTombstones() {
+    try {
+      const raw = localStorage.getItem('dnd35_tombstones');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (e) {}
+    return [];
+  },
+
+  saveLocalTombstones(list) {
+    try {
+      localStorage.setItem('dnd35_tombstones', JSON.stringify(list || []));
+    } catch (e) {}
   },
 
   /**

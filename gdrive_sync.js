@@ -275,12 +275,27 @@ const CloudSync = {
               }
             });
 
+            // 0. Mezar Taşlarını (Tombstones) senkronize et ve silinmiş karakterleri temizle
+            let tombstoneList = [];
+            try {
+              const rawT = localStorage.getItem('dnd35_tombstones');
+              if (rawT) tombstoneList = JSON.parse(rawT);
+            } catch (e) {}
+            if (Array.isArray(remotePayload.tombstones)) {
+              tombstoneList = Array.from(new Set([...tombstoneList, ...remotePayload.tombstones]));
+              localStorage.setItem('dnd35_tombstones', JSON.stringify(tombstoneList));
+            }
+            const tSet = new Set(tombstoneList);
+
+            // Silinmiş karakterleri yerel listeden temizle
+            localHub.characters = localHub.characters.filter(c => !tSet.has(c.id));
+
             // Merge characters by ID and signature to prevent duplicate cards
             const seenIds = new Set(localHub.characters.map(c => c.id).filter(Boolean));
             const seenSigs = new Set(localHub.characters.map(c => `${(c.name || '').toLowerCase().trim()}__${(c.classes || '').toLowerCase().trim()}__${c.level || 1}`));
 
             remoteChars.forEach(rc => {
-              if (!rc || !rc.id) return;
+              if (!rc || !rc.id || tSet.has(rc.id)) return;
               const exIdx = localHub.characters.findIndex(c => c.id === rc.id);
               if (exIdx >= 0) {
                 const localC = localHub.characters[exIdx];
@@ -596,13 +611,20 @@ const CloudSync = {
         else if (hubDb && hubDb.latestDmEvent) latestDmEvent = hubDb.latestDmEvent;
       } catch (e) {}
 
+      let tombstones = [];
+      try {
+        const rawT = localStorage.getItem('dnd35_tombstones');
+        if (rawT) tombstones = JSON.parse(rawT);
+      } catch (e) {}
+
       const payload = {
         version: 2,
         lastModified: nowIso,
         character: charObj,
         masterDb: typeof masterDb !== 'undefined' && Array.isArray(masterDb) ? masterDb : [],
         hubDb: hubDb,
-        latestDmEvent: latestDmEvent
+        latestDmEvent: latestDmEvent,
+        tombstones: tombstones
       };
 
       if (this.serverAvailable) {

@@ -2118,6 +2118,20 @@
       const c = state.characters.find(it => it.id === charId);
       if (!c) return;
       if (confirm(`"${c.name}" karakterini silmek istediğinize emin misiniz?\n\nBu işlem karakteri hem bu tarayıcıdan hem de bulut hesabınızdan kalıcı olarak silecektir.`)) {
+        // Mezar Taşı (Tombstone) kaydı oluştur (Başka cihazların silinen karakteri hortlatmasını önle)
+        if (window.SupabaseAuth && typeof window.SupabaseAuth.recordTombstone === 'function') {
+          window.SupabaseAuth.recordTombstone(charId).catch(() => {});
+        } else {
+          try {
+            const raw = localStorage.getItem('dnd35_tombstones');
+            const arr = raw ? JSON.parse(raw) : [];
+            if (!arr.includes(charId)) {
+              arr.push(charId);
+              localStorage.setItem('dnd35_tombstones', JSON.stringify(arr));
+            }
+          } catch (e) {}
+        }
+
         state.characters = state.characters.filter(it => it.id !== charId);
         if (localStorage.getItem('dnd35_active_character_id') === charId) {
           localStorage.removeItem('dnd35_active_character_id');
@@ -2125,7 +2139,7 @@
         saveHubStorage(true);
         renderHub();
 
-        // Supabase Buluttan da Kalıcı Olarak Sil (Geri gelmesini / hortlamasını önle)
+        // Supabase Buluttan da Kalıcı Olarak Sil
         if (window.SupabaseAuth && !window.SupabaseAuth.isLocalMode()) {
           try {
             await window.SupabaseAuth.deleteCharacter(charId);
@@ -3985,12 +3999,29 @@ CRITICAL RULES:
     async function syncCloudUserHub(authUser) {
       if (!authUser || authUser.id === 'local_offline_user' || window.SupabaseAuth?.isLocalMode()) return;
       try {
+        // 0. Mezar Taşlarını (Tombstones) Eşitle ve Eski Silinmiş Karakterleri Temizle
+        let tombstones = [];
+        if (window.SupabaseAuth && typeof window.SupabaseAuth.fetchTombstones === 'function') {
+          tombstones = await window.SupabaseAuth.fetchTombstones();
+        } else {
+          try {
+            tombstones = JSON.parse(localStorage.getItem('dnd35_tombstones') || '[]');
+          } catch (e) {}
+        }
+        const tombstoneSet = new Set(tombstones.map(t => String(t).trim()));
+
+        // Yerel state içerisindeki mezar taşı bulunan (başka cihazda silinmiş) karakterleri derhal ayıkla
+        const hadTombstonedChars = state.characters.some(c => tombstoneSet.has(c.id));
+        if (hadTombstonedChars) {
+          state.characters = state.characters.filter(c => !tombstoneSet.has(c.id));
+        }
+
         const [cloudChars, cloudCamps] = await Promise.all([
           window.SupabaseAuth.fetchUserCharacters(),
           window.SupabaseAuth.fetchUserCampaigns()
         ]);
 
-        let changed = false;
+        let changed = hadTombstonedChars;
 
         // 1. Bulut kampanyalarını yerel listeye ekle/güncelle & camp_001 mükerrerleşmesini önle
         if (Array.isArray(cloudCamps) && cloudCamps.length > 0) {
@@ -4035,6 +4066,12 @@ CRITICAL RULES:
           const seenSignatures = new Map();
 
           for (const cc of cloudChars) {
+            // Mezar taşındaki silinmiş karakter bulutta hortlamışsa buluttan kalıcı sil ve yerel listeye alma
+            if (tombstoneSet.has(cc.id)) {
+              window.SupabaseAuth.deleteCharacter(cc.id).catch(() => {});
+              continue;
+            }
+
             // Dummy veya sahte test karakteri bulutta kalmışsa buluttan kalıcı olarak sil
             if (dummyCloudIds.has(cc.id) || (cc.name && cc.name.toLowerCase().trim() === "kazmil'in çırağı")) {
               window.SupabaseAuth.deleteCharacter(cc.id).catch(() => {});
@@ -4097,17 +4134,45 @@ CRITICAL RULES:
           });
         }
 
-        // 3. Yerelde olup henüz buluta aktarılmamış gerçek karakterleri otomatik buluta yedekle
-        for (const lc of state.characters) {
-          const dummyLocalIds = new Set(['char_001', 'char_002', 'char_003', 'char_004', 'char_test_khazmil']);
-          if (dummyLocalIds.has(lc.id)) continue;
-          if (!cloudChars.some(cc => cc.id === lc.id)) {
-            const charPayload = lc.fullData || Object.assign({}, lc);
-            charPayload.id = lc.id;
-            charPayload._hubId = lc.id;
-            window.SupabaseAuth.upsertUserCharacter(charPayload).catch(() => {});
+        // 3. Yerelde olup henüz buluta aktarılmamış karakterleri kontrol et (Tombstone & Zaman Kalkanı)
+        const dummyLocalIds = new Set(['char_001', 'char_002', 'char_003', 'char_004', 'char_test_khazmil']);
+        const lastCloudSyncTs = Number(localStorage.getItem('dnd35_last_cloud_sync_ts')) || 0;
+        const now = Date.now();
+
+        state.characters = state.characters.filter(lc => {
+          if (dummyLocalIds.has(lc.id)) return false;
+          // Mezar taşındaki silinmiş karakter ASLA buluta geri yüklenemez
+          if (tombstoneSet.has(lc.id)) return false;
+
+          const existsInCloud = cloudChars.some(cc => cc.id === lc.id);
+          if (existsInCloud) return true;
+
+          // Karakter bulutta yok: Bu cihazda yeni mi açıldı, yoksa eski bir cihaz kalıntısı mı?
+          let charTs = Number(lc.createdAt) || 0;
+          if (!charTs && typeof lc.id === 'string' && lc.id.startsWith('char_')) {
+            const parsedTs = Number(lc.id.replace('char_', ''));
+            if (!isNaN(parsedTs) && parsedTs > 1000000000) charTs = parsedTs;
           }
-        }
+
+          // Eğer bu cihaz daha önce bulutla eşitlendiyse ve karakter tarihi o senkrondan eskiyse:
+          // Bu karakter başka cihazda silinmiştir! Buluta yükleme, yerelden de at ve mezar taşı ekle.
+          if (lastCloudSyncTs > 0 && charTs > 0 && charTs < lastCloudSyncTs) {
+            if (window.SupabaseAuth?.recordTombstone) {
+              window.SupabaseAuth.recordTombstone(lc.id).catch(() => {});
+            }
+            changed = true;
+            return false;
+          }
+
+          // Gerçekten yeni çevrimdışı karakter ise buluta yükle
+          const charPayload = lc.fullData || Object.assign({}, lc);
+          charPayload.id = lc.id;
+          charPayload._hubId = lc.id;
+          window.SupabaseAuth.upsertUserCharacter(charPayload).catch(() => {});
+          return true;
+        });
+
+        localStorage.setItem('dnd35_last_cloud_sync_ts', String(now));
 
         if (changed) {
           saveHubStorage(false);

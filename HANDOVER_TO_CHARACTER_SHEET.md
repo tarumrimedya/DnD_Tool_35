@@ -701,3 +701,21 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
 
 
 
+
+
+---
+
+## 39. ÇAPRAZ CİHAZ SENKRONİZASYONUNDA SİLİNEN KARAKTERLERİN HORTLAMASINI ÖNLEYEN "MEZAR TAŞI" (TOMBSTONE) MOTORU (2026-10-25)
+* **Sorun:** Bir cihazda silinen karakterlerin (örneğin Tarrasque), günler sonra açılan başka bir cihazın yerel önbelleğinde (localStorage) kalması sebebiyle, o eski cihazın buluta bağlanırken "Bende bu karakter var ama bulutta yok, demek ki yeni açılmış" varsayımıyla silinmiş karakteri tekrar buluta yüklemesi ve karakterin tüm cihazlarda hortlaması (Zombie / Resurrected record sorunu).
+* **Uygulanan Çözüm (Tombstone & Zaman Damgası Kalkanı):**
+  1. **Mezar Taşı (Tombstone) Listesi (supabase_auth.js & gdrive_sync.js):**
+     - Bir karakter silindiğinde (deleteCharacter), ID'si dnd35_tombstones yerel listesine ve Supabase user_metadata.deleted_character_ids bulut dizisine mezar taşı olarak kaydedilir.
+     - Vercel KV / GDriveSync bulut payload'ına tombstones dizisi dahil edildi.
+  2. **Eski Cihaz Açılış Kalkanı (hub.html & webapp/):**
+     - İkinci bir cihaz açıldığında ilk iş olarak buluttaki ve yereldeki mezar taşları birleştirilir (tombstoneSet).
+     - Yerel önbellekte mezar taşı listesinde olan bir karakter varsa derhal yerel hafızadan da temizlenir (changed = true).
+     - Bulutta hortlamış herhangi bir kopya tespit edilirse derhal buluttan silinir.
+     - **Zaman Damgası Kalkanı:** Yerelde olup bulutta bulunmayan bir karakterin ID/oluşturulma tarihi bu cihazın son bulut senkron zamanından (lastCloudSyncTs) daha eskiyse, başka bir cihazda silinmiş kabul edilir, mezar taşına eklenir ve asla buluta yüklenmez. Yalnızca son senkrondan sonra çevrimdışı gerçekten yeni oluşturulmuş karakterler buluta yüklenir.
+  3. **Parite ve Kural Bütünlüğü:**
+     - hub.html, supabase_auth.js, gdrive_sync.js ve webapp/ kopyaları %100 SHA-256 eşitliğinde tutuldu.
+     - Sıfır tavla zarı kuralı tavizsiz korundu.
