@@ -1787,3 +1787,30 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   3. **Parite ve Güvenlik:**
      - Değişiklik `dice3d.js` ve `webapp/dice3d.js` dosyalarına uygulandı (%100 SHA-256 eşitliği sağlandı: `3C7BC4143D7E15BE33911EFE6614A9CB4141A6AA56D87B0B93E601951F21A008`).
      - Tavla zarı emojisi (`🎲`) kesinlikle kullanılmadı.
+
+---
+
+## 63. SEVİYE ATLAMA SİHİRBAZI: SPOTLIGHT & RULE MASTER ARAMA KONSOLU İNLİNE KART ONARIMI & DOM DENGE DÜZELTMESİ (2026-10-25)
+* **İstek & Problem:**
+  - Kullanıcı ekran görüntüsü (`media_1792960872089_83bb22d6.png`) ile Seviye Atlama Sihirbazı (`#level-up-modal`) içinde "Alınacak Sınıf (Class) *" alanının altında sınıf seçim ve Spotlight & Rule Master arama konsolunun boş/görünmez kaldığını bildirdi.
+  - Kök neden analizi:
+    1. Gizli inputlar (`#lvlup-skill-input`) sonrasında fazladan kapanan bir `</div>` etiketi, modal gövdesini (`<div class="p-4 space-y-3.5 text-xs overflow-y-auto flex-1">`) vaktinden önce kapatıyor ve modal DOM derinliği -1'e düşüyordu.
+    2. Sınıf arama konsolu modal açılışında popover dropdown yerine doğrudan görünür ve anında kullanılabilir inline bir kart (`#lvlup-class-search-card`) olarak tasarlanmıştır.
+* **Uygulanan Değişiklikler:**
+  1. **Inline Spotlight & Rule Master Sınıf Arama Kartı (`#lvlup-class-search-card`):**
+     - Sınıf seçici, Seviye Atlama Sihirbazı gövdesine entegre, her zaman görünür, modern koyu gradyanlı bir kart olarak konumlandırıldı.
+     - Üst başlık: `Alınacak Sınıf (Class) *`, RAW rozeti, sınıf sayaç rozeti (`#lvlup-class-count-badge`) ve `Özel Sınıf Ekle` butonu.
+     - Arama çubuğu (`#lvlup-class-search-input`) ve filtreleme sekmeleri (`class-filter-tab-*`: Tümü, Temel, Prestij, Özel).
+     - AI arama / tarama durum kutusu (`#lvlup-class-ai-status`).
+     - Dinamik arama ve sınıf listesi sonuçları (`#lvlup-class-search-results`).
+     - Altta seçilen sınıfın istatistik ve özellik önizleme kartı (`#lvlup-class-preview-card`).
+     - Arka planda kural motoru ve kayıt geriye dönük uyumluluğu için gizli `<select id="lvlup-class-select">` ve gizli inputlar korundu.
+  2. **DOM Tag Denge Onarımı (HTML Div Balance):**
+     - `#lvlup-skill-input` sonundaki fazladan `</div>` kaldırıldı.
+     - `#level-up-modal` içerisindeki tüm `<div>` hiyerarşisi doğrulanarak modal sonundaki derinliğin tam olarak 0 olması sağlandı.
+  3. **Açılış ve Seçim Entegrasyonu (JS):**
+     - `initLevelUpClassSearch()` fonksiyonunun modal açılışında `filterLevelUpClassSearch()` çağırarak tüm sınıfları anında listelemesi sağlandı.
+     - `selectClassFromSearch(className)` fonksiyonu arama sonuçlarını anında yenileyecek, sınıfı seçecek ve önizleme kartını vurgulayacak şekilde sadeleştirildi.
+  4. **Parite ve Kural Uyumu:**
+     - 4 dosyada (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) %100 birebir SHA-256 paritesi korundu.
+     - Proje genelinde hiçbir standart tavla zarı emojisi (`🎲` / `U+1F3B2`) kullanılmadı.

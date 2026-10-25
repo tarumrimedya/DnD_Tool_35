@@ -5368,99 +5368,86 @@
         <!-- ==========================================
              1. SINIF SEÇİMİ (SPOTLIGHT & RULE MASTER AI)
         ========================================== -->
-        <div class="relative" id="lvlup-class-custom-dropdown-container">
-          <div class="flex items-center justify-between mb-1">
-            <label class="block text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1.5">
-              <span>Alınacak Sınıf (Class) *</span>
-              <span class="text-[9px] font-mono px-1.5 py-0.2 bg-purple-950 text-purple-300 border border-purple-700/60 rounded">D&D 3.5e RAW</span>
-              <span id="lvlup-class-count-badge" class="text-[9px] font-semibold px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 border border-slate-700">27 Sınıf</span>
-            </label>
-            <button type="button" onclick="openCreateCustomClassModal()" class="text-[10px] text-emerald-400 hover:text-emerald-300 font-bold hover:underline flex items-center gap-1 transition cursor-pointer">
-              <span>➕</span><span>Özel Sınıf Ekle</span>
-            </button>
+        <div class="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-purple-500/50 rounded-xl p-3 shadow-xl space-y-2.5 transition" id="lvlup-class-search-card">
+          <!-- Card Header -->
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-purple-500/20 pb-2">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-lg bg-purple-950/80 border border-purple-500/40 flex items-center justify-center text-base shadow shrink-0">
+                👑
+              </div>
+              <div>
+                <div class="text-xs font-black text-white flex items-center gap-1.5 flex-wrap">
+                  <span class="font-bold">Alınacak Sınıf (Class) *</span>
+                  <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-500/40 font-mono">D&D 3.5e RAW</span>
+                  <span id="lvlup-class-count-badge" class="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">27 Sınıf</span>
+                </div>
+                <div class="text-[10px] text-slate-400">Temel ve prestij sınıflarını arayın, gereksinimleri inceleyin ve seviye atayın.</div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="openCreateCustomClassModal()" class="text-[10px] text-emerald-400 hover:text-emerald-300 bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-600/50 font-bold px-2 py-1 rounded-lg flex items-center gap-1 transition cursor-pointer">
+                <span>➕</span>
+                <span>Özel Sınıf Ekle</span>
+              </button>
+            </div>
           </div>
 
           <!-- Hidden select for engine & save backward compatibility -->
           <select id="lvlup-class-select" onchange="onLevelUpClassChange()" class="hidden"></select>
 
-          <!-- Spotlight Trigger Button -->
-          <button type="button" id="lvlup-class-dropdown-trigger" onclick="toggleLevelUpClassSpotlightDropdown()" class="w-full bg-slate-900 hover:bg-slate-800/90 border border-purple-500/50 hover:border-purple-400 rounded-xl px-3 py-2 text-white font-bold flex items-center justify-between transition shadow-md cursor-pointer group focus:outline-none focus:ring-1 focus:ring-purple-400">
-            <div class="flex items-center gap-2.5 min-w-0">
-              <span id="lvlup-class-trigger-icon" class="text-base p-1.5 rounded-lg bg-purple-950/80 border border-purple-600/40 shrink-0">🛡️</span>
-              <div class="text-left min-w-0">
-                <div class="flex items-center gap-1.5 truncate">
-                  <span id="lvlup-class-trigger-title" class="text-xs font-black text-amber-300 truncate">Fighter</span>
-                  <span id="lvlup-class-trigger-badge" class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/60">Temel Sınıf</span>
-                </div>
-                <div id="lvlup-class-trigger-sub" class="text-[10px] text-slate-400 font-mono truncate">d10 HD • Tam BAB (+1.0) • İyi: Fort • 2+INT Beceri</div>
-              </div>
+          <!-- Search & Filters Row -->
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <div class="relative flex-1">
+              <input 
+                type="text" 
+                id="lvlup-class-search-input" 
+                placeholder="🔍 Sınıf veya prestij sınıfı ara (örn: Warblade, Duskblade, Abjurant, Rogue, Fighter)..."
+                oninput="filterLevelUpClassSearch()"
+                onkeydown="if(event.key === 'Enter'){ event.preventDefault(); onClassSearchEnterKey(); }"
+                class="w-full bg-slate-950 border border-purple-500/40 rounded-lg pl-7 pr-7 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-purple-400">
+              <span class="absolute left-2.5 top-2 text-xs text-purple-400 pointer-events-none">⚔️</span>
+              <button type="button" onclick="clearLevelUpClassSearch()" class="absolute right-2 top-1.5 text-slate-500 hover:text-white text-xs cursor-pointer">✕</button>
             </div>
-            <div class="flex items-center gap-1.5 shrink-0 ml-2">
-              <span class="text-[10px] font-semibold text-purple-300 group-hover:text-white transition">🔍 Değiştir</span>
-              <span id="lvlup-class-trigger-chevron" class="text-slate-400 group-hover:text-purple-300 transition-transform duration-200 text-xs">▼</span>
-            </div>
-          </button>
-
-          <!-- Spotlight Dropdown Panel -->
-          <div id="lvlup-class-spotlight-dropdown" class="hidden absolute top-full left-0 right-0 mt-1.5 bg-slate-950/98 border border-purple-500/60 rounded-xl shadow-2xl z-50 overflow-hidden backdrop-blur-md transition-all duration-150 animate-fadeIn">
             
-            <!-- Quick Search Bar & Filter Chips -->
-            <div class="p-2.5 border-b border-slate-800 bg-slate-900/90 space-y-2">
-              <div class="relative flex items-center">
-                <span class="absolute left-2.5 text-xs text-purple-400 pointer-events-none">🔍</span>
-                <input 
-                  type="text" 
-                  id="lvlup-class-search-input" 
-                  placeholder="Sınıf veya prestij ara (örn: Warblade, Duskblade, Abjurant, Rogue)..."
-                  oninput="filterLevelUpClassSearch()"
-                  onkeydown="if(event.key === 'Enter'){ event.preventDefault(); onClassSearchEnterKey(); }"
-                  class="w-full bg-slate-950 border border-purple-500/40 rounded-lg pl-7 pr-7 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-purple-400">
-                <button type="button" onclick="clearLevelUpClassSearch()" class="absolute right-2 text-slate-500 hover:text-white text-xs cursor-pointer">✕</button>
-              </div>
-
-              <!-- Filter chips -->
-              <div class="flex items-center justify-between gap-1 overflow-x-auto">
-                <div class="flex items-center gap-1">
-                  <button type="button" onclick="setClassFilterTab('all')" id="class-filter-tab-all" class="px-2 py-0.5 rounded text-[10px] font-bold transition bg-purple-700 text-white shadow">Tümü</button>
-                  <button type="button" onclick="setClassFilterTab('base')" id="class-filter-tab-base" class="px-2 py-0.5 rounded text-[10px] font-bold transition bg-slate-800 text-slate-400 hover:text-white">🛡️ Temel</button>
-                  <button type="button" onclick="setClassFilterTab('prestige')" id="class-filter-tab-prestige" class="px-2 py-0.5 rounded text-[10px] font-bold transition bg-slate-800 text-slate-400 hover:text-white">👑 Prestij</button>
-                  <button type="button" onclick="setClassFilterTab('custom')" id="class-filter-tab-custom" class="px-2 py-0.5 rounded text-[10px] font-bold transition bg-slate-800 text-slate-400 hover:text-white">⚙️ Özel</button>
-                </div>
-                <div class="text-[9px] text-purple-400 font-mono hidden sm:block">↵ Enter: AI ile ara</div>
-              </div>
+            <!-- Filter chips -->
+            <div class="flex items-center gap-1 overflow-x-auto shrink-0 pb-0.5 sm:pb-0">
+              <button type="button" onclick="setClassFilterTab('all')" id="class-filter-tab-all" class="px-2 py-1 rounded text-[10px] font-bold transition bg-purple-700 text-white shadow">Tümü</button>
+              <button type="button" onclick="setClassFilterTab('base')" id="class-filter-tab-base" class="px-2 py-1 rounded text-[10px] font-bold transition bg-slate-800 text-slate-400 hover:text-white">🛡️ Temel</button>
+              <button type="button" onclick="setClassFilterTab('prestige')" id="class-filter-tab-prestige" class="px-2 py-1 rounded text-[10px] font-bold transition bg-slate-800 text-slate-400 hover:text-white">👑 Prestij</button>
+              <button type="button" onclick="setClassFilterTab('custom')" id="class-filter-tab-custom" class="px-2 py-1 rounded text-[10px] font-bold transition bg-slate-800 text-slate-400 hover:text-white">⚙️ Özel</button>
             </div>
+          </div>
 
-            <!-- AI Fetch Status / Progress Box -->
-            <div id="lvlup-class-ai-status" class="hidden p-2.5 mx-2 my-2 rounded-lg bg-purple-950/70 border border-purple-500/40 text-xs text-purple-200 flex items-center justify-between gap-2">
-              <div class="flex items-center gap-2">
-                <svg class="animate-spin h-4 w-4 text-purple-400 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                </svg>
-                <span id="lvlup-class-ai-status-text" class="text-[11px] font-medium">D&D 3.5e Kural Kitapları Taranıyor...</span>
-              </div>
+          <!-- AI Fetch Status / Progress Box -->
+          <div id="lvlup-class-ai-status" class="hidden p-2.5 rounded-lg bg-purple-950/70 border border-purple-500/40 text-xs text-purple-200 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <svg class="animate-spin h-4 w-4 text-purple-400 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+              </svg>
+              <span id="lvlup-class-ai-status-text" class="text-[11px] font-medium">D&D 3.5e Kural Kitapları Taranıyor...</span>
             </div>
+          </div>
 
-            <!-- Dynamic Search Results List -->
-            <div id="lvlup-class-search-results" class="max-h-72 overflow-y-auto space-y-1.5 p-2 text-xs">
-              <!-- Rendered dynamically by filterLevelUpClassSearch() -->
-            </div>
+          <!-- Dynamic Search Results List -->
+          <div id="lvlup-class-search-results" class="max-h-60 overflow-y-auto space-y-1.5 pr-1 text-xs">
+            <!-- Rendered dynamically by filterLevelUpClassSearch() -->
           </div>
         </div>
 
         <!-- Class Stats Preview Card (HD, BAB, Saves, Features) -->
-          <div id="lvlup-class-preview-card" class="bg-slate-950/80 border border-slate-800 rounded-xl p-3 space-y-1.5 font-mono text-[11px]">
-            <!-- Populated dynamically by onLevelUpClassChange() -->
-          </div>
-
-          <!-- Hidden inputs for BAB, Saves, HD, Skill calculations -->
-          <input type="hidden" id="lvlup-hd-input" value="d12">
-          <input type="hidden" id="lvlup-bab-input" value="4">
-          <input type="hidden" id="lvlup-fort-input" value="4">
-          <input type="hidden" id="lvlup-ref-input" value="3">
-          <input type="hidden" id="lvlup-will-input" value="4">
-          <input type="hidden" id="lvlup-skill-input" value="6">
+        <div id="lvlup-class-preview-card" class="bg-slate-950/80 border border-slate-800 rounded-xl p-3 space-y-1.5 font-mono text-[11px]">
+          <!-- Populated dynamically by onLevelUpClassChange() -->
         </div>
+
+        <!-- Hidden inputs for BAB, Saves, HD, Skill calculations -->
+        <input type="hidden" id="lvlup-hd-input" value="d10">
+        <input type="hidden" id="lvlup-bab-input" value="1">
+        <input type="hidden" id="lvlup-fort-input" value="2">
+        <input type="hidden" id="lvlup-ref-input" value="0">
+        <input type="hidden" id="lvlup-will-input" value="0">
+        <input type="hidden" id="lvlup-skill-input" value="16">
 
         <!-- 2. Can Puanı Artışı (HP Gain = HD + CON Mod) -->
         <div class="bg-slate-900/90 border border-emerald-500/50 rounded-xl p-3 space-y-2.5 shadow-inner">
@@ -32703,11 +32690,11 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         const btn = document.getElementById(`class-filter-tab-${t}`);
         if (btn) {
           btn.className = t === 'all' 
-            ? 'px-2 py-0.5 rounded text-[10px] font-bold transition bg-purple-700 text-white shadow'
-            : 'px-2 py-0.5 rounded text-[10px] font-bold transition bg-slate-800 text-slate-400 hover:text-white';
+            ? 'px-2 py-1 rounded text-[10px] font-bold transition bg-purple-700 text-white shadow'
+            : 'px-2 py-1 rounded text-[10px] font-bold transition bg-slate-800 text-slate-400 hover:text-white';
         }
       });
-      closeLevelUpClassSpotlightDropdown();
+      filterLevelUpClassSearch();
     }
 
     function checkClassPrerequisites(className, def) {
@@ -33380,10 +33367,6 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         opt.selected = true;
         select.appendChild(opt);
       }
-
-      // Update trigger UI & close spotlight dropdown
-      updateLevelUpClassTriggerUI(className);
-      closeLevelUpClassSpotlightDropdown();
 
       // Update level-up stats and class preview
       onLevelUpClassChange();
