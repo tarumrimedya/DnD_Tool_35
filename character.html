@@ -6982,8 +6982,8 @@
             </div>
 
             <!-- 3. CASTER CL KURALI (CASTER LEVEL RULE) & CASTER TYPE -->
-            <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5 hover:border-slate-700 transition">
-              <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2 hover:border-slate-700 transition">
+              <div class="flex flex-wrap items-center justify-between gap-1.5 pb-2 border-b border-slate-800/80">
                 <div>
                   <div class="font-bold text-purple-300 flex items-center gap-1.5 text-xs">
                     <span>🔮</span>
@@ -6992,26 +6992,41 @@
                   </div>
                   <div class="text-[10px] text-slate-400 mt-0.5">Çoklu sınıflarda Caster / Initiator Level kuralı ve uygulanacağı caster disiplini.</div>
                 </div>
-                <div class="flex flex-wrap items-center gap-2">
-                  <div class="flex items-center gap-1.5">
-                    <label class="text-[10px] font-bold text-purple-400 uppercase whitespace-nowrap">🔮 CL Kuralı:</label>
-                    <select id="setting-cl-mode" onchange="onSettingClModeChange()" class="bg-slate-900 border border-slate-700 text-purple-300 font-semibold text-[11px] rounded px-2 py-1 focus:outline-none focus:border-purple-400">
-                      <option value="Character Level (DM Boon)">Character Level (DM Boon: CL = Karakter Seviyesi)</option>
-                      <option value="Warlock Boon (Invocations & Eldritch Blast)">Warlock Boon (CL = Karakter Seviyesi + Invocations)</option>
-                      <option value="Class Level">Class Level (Yalnızca Sınıf Seviyesi)</option>
-                      <option value="Custom">Custom (Manuel)</option>
-                    </select>
+              </div>
+
+              <!-- Simetrik 2 Kolonlu Seçim Alanı -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div class="bg-slate-900/90 border border-purple-900/40 rounded-xl p-2.5 flex flex-col justify-between gap-1.5">
+                  <div class="flex items-center justify-between">
+                    <label for="setting-cl-mode" class="text-[10px] font-bold text-purple-400 uppercase flex items-center gap-1.5">
+                      <span>🔮</span>
+                      <span>CL Kuralı (Caster Level):</span>
+                    </label>
+                    <span class="text-[9px] font-mono text-purple-300/70">Multiclass CL</span>
                   </div>
-                  <div class="flex items-center gap-1.5">
-                    <label class="text-[10px] font-bold text-indigo-400 uppercase whitespace-nowrap">🎯 Caster Tipi:</label>
-                    <select id="setting-caster-type" onchange="onSettingCasterTypeChange()" class="bg-slate-900 border border-slate-700 text-indigo-300 font-semibold text-[11px] rounded px-2 py-1 focus:outline-none focus:border-indigo-400">
-                      <option value="spontaneous">🔮 1. Doğal / Anlık (Sorcerer vb.)</option>
-                      <option value="prepared">📖 2. Kitaplı Hazırlık (Wizard vb.)</option>
-                      <option value="divine">✨ 3. İlahi Dua (Cleric vb.)</option>
-                      <option value="martial">⚔️ 4. Savaş Manevraları (Martial Adept / IL)</option>
-                      <option value="warlock">👁️ 5. Warlock (Yakarışlar & Blast)</option>
-                    </select>
+                  <select id="setting-cl-mode" onchange="onSettingClModeChange()" class="w-full bg-slate-950 border border-slate-700 text-purple-300 font-semibold text-[11px] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-purple-400 transition cursor-pointer">
+                    <option value="Character Level (DM Boon)" selected>Character Level (DM Boon: CL = Karakter Seviyesi)</option>
+                    <option value="Warlock Boon (Invocations & Eldritch Blast)">Warlock Boon (CL = Karakter Seviyesi + Invocations)</option>
+                    <option value="Class Level">Class Level (Yalnızca Sınıf Seviyesi)</option>
+                    <option value="Custom">Custom (Manuel)</option>
+                  </select>
+                </div>
+
+                <div class="bg-slate-900/90 border border-indigo-900/40 rounded-xl p-2.5 flex flex-col justify-between gap-1.5">
+                  <div class="flex items-center justify-between">
+                    <label for="setting-caster-type" class="text-[10px] font-bold text-indigo-400 uppercase flex items-center gap-1.5">
+                      <span>🎯</span>
+                      <span>Caster Tipi (Disiplin):</span>
+                    </label>
+                    <span class="text-[9px] font-mono text-indigo-300/70">Disiplin</span>
                   </div>
+                  <select id="setting-caster-type" onchange="onSettingCasterTypeChange()" class="w-full bg-slate-950 border border-slate-700 text-indigo-300 font-semibold text-[11px] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-400 transition cursor-pointer">
+                    <option value="spontaneous">🔮 1. Doğal / Anlık (Sorcerer vb.)</option>
+                    <option value="prepared">📖 2. Kitaplı Hazırlık (Wizard vb.)</option>
+                    <option value="divine">✨ 3. İlahi Dua (Cleric vb.)</option>
+                    <option value="martial">⚔️ 4. Savaş Manevraları (Martial Adept / IL)</option>
+                    <option value="warlock">👁️ 5. Warlock (Yakarışlar & Blast)</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -7669,7 +7684,8 @@
           }
         },
         settings: summary.settings || {
-          pinDrawerLimit: 5
+          pinDrawerLimit: 5,
+          clMode: 'Character Level (DM Boon)'
         }
       };
     }
@@ -8314,8 +8330,8 @@
         featModeSel.value = character.settings.featMode;
       }
       const clModeSel = document.getElementById('setting-cl-mode');
-      if (clModeSel && character.settings?.clMode) {
-        clModeSel.value = character.settings.clMode;
+      if (clModeSel) {
+        clModeSel.value = character.settings?.clMode || 'Character Level (DM Boon)';
       }
       const casterTypeSel = document.getElementById('setting-caster-type');
       if (casterTypeSel) {
@@ -24090,7 +24106,7 @@
       const classesStatus = checkCharacterMagicClasses();
       const intVal = character?.stats?.INT?.value ?? character?.abilities?.int ?? 10;
       const intMod = character?.stats?.INT?.mod ?? Math.floor((intVal - 10) / 2);
-      const clMode = character?.settings?.clMode || 'Class Level';
+      const clMode = character?.settings?.clMode || 'Character Level (DM Boon)';
       const prog = character?.levelProgression || [];
       const activeLevels = prog.filter(p => p.active !== false).length || Number(character?.level) || 0;
       const wizLvls = prog.filter(p => p.active !== false && ['wizard', 'artificer', 'archivist', 'wu jen'].includes((p.className || p.class || '').toLowerCase())).length;
@@ -24108,7 +24124,7 @@
       const classesStatus = checkCharacterMagicClasses();
       const wisVal = character?.stats?.WIS?.value ?? character?.abilities?.wis ?? 10;
       const wisMod = character?.stats?.WIS?.mod ?? Math.floor((wisVal - 10) / 2);
-      const clMode = character?.settings?.clMode || 'Class Level';
+      const clMode = character?.settings?.clMode || 'Character Level (DM Boon)';
       const prog = character?.levelProgression || [];
       const activeLevels = prog.filter(p => p.active !== false).length || Number(character?.level) || 0;
       const divLvls = prog.filter(p => p.active !== false && ['cleric', 'druid', 'paladin', 'ranger', 'favored soul'].includes((p.className || p.class || '').toLowerCase())).length;
@@ -33153,8 +33169,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         featModeSel.value = character.settings.featMode;
       }
       const clModeSel = document.getElementById('setting-cl-mode');
-      if (clModeSel && character.settings?.clMode) {
-        clModeSel.value = character.settings.clMode;
+      if (clModeSel) {
+        clModeSel.value = character.settings?.clMode || 'Character Level (DM Boon)';
       }
       const casterTypeSel = document.getElementById('setting-caster-type');
       if (casterTypeSel) {

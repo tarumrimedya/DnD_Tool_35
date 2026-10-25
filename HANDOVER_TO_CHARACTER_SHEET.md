@@ -698,6 +698,25 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` %100 SHA-256 eşitliğinde tutuldu.
      - Sıfır tavla zarı (`🎲`) kuralı tavizsiz korundu.
 
+---
+
+## 39. CL KURALI & CASTER TİPİ 2 KOLONLU SİMETRİK DÜZEN VE DM BOON VARSAYILANI (2026-10-25)
+* **İstek:** Ayarlar modalı Bölüm 5'teki `🔮 CL Kuralı` ve `🎯 Caster Tipi` seçim alanlarının simetrik, dengeli bir ızgara düzenine kavuşturulması ve `Character Level (DM Boon)` modunun varsayılan yapılması.
+* **Uygulanan Değişiklikler:**
+  1. **2 Kolonlu Simetrik Izgara Mimarisi (`character.html`, `index.html` & `webapp/`):**
+     - Üstte başlık ve masa kuralı açıklaması alt çizgi ile ayrıldı.
+     - Kontroller `grid grid-cols-1 sm:grid-cols-2 gap-2` ile iki eşit karta bölündü:
+       - **Sol Kolon:** `🔮 CL Kuralı (Caster Level)` kartı (`border-purple-900/40`),
+       - **Sağ Kolon:** `🎯 Caster Tipi (Disiplin)` kartı (`border-indigo-900/40`).
+     - Her iki kart da tam genişlikte (`w-full`), eşit iç boşluklu (`p-2.5 rounded-xl`) ve dengeli açılır menü boyutlarıyla tasarlandı.
+  2. **Varsayılan CL Kuralı:**
+     - Yeni oluşturulan karakterlerde ve arayüzde `clMode` değeri `Character Level (DM Boon)` olarak varsayılana çekildi.
+     - Büyü slotları ve seviyeleri sınıf seviyesine göre ayrılırken, büyü gücü ve süresi karakter seviyesine göre hesaplanır.
+  3. **Parite ve Kural Bütünlüğü:**
+     - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` %100 SHA-256 eşitliğinde güncellendi.
+     - Sıfır tavla zarı (`🎲`) kuralı korundu.
+
+
 
 
 
