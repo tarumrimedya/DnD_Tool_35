@@ -129,27 +129,27 @@
           <div class="flex flex-col items-stretch sm:items-end gap-1.5 pt-2 md:pt-0 border-t border-slate-800/80 md:border-0 w-full md:w-56 shrink-0">
             <!-- Kullanıcı Profil Rozeti -->
             <div id="user-profile-slot" class="w-full flex items-center justify-end"></div>
-            <!-- 1. Sıra: Hub, Kampanya & Ayarlar Butonları -->
+            <!-- 1. Sıra: Hub & Ayarlar Butonları -->
             <div class="grid grid-cols-2 gap-1.5 w-full">
               <a href="/hub" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-indigo-950/90 hover:bg-indigo-900 text-indigo-300 hover:text-white border border-indigo-700/80 text-xs font-bold shadow flex items-center justify-center gap-1 sm:gap-1.5 transition text-center" title="Kampanya & Karakter Hub'ına Dön">
                 <span>🏰</span>
                 <span class="inline">Hub</span>
               </a>
+              <button type="button" onclick="openSettingsModal()" class="px-2.5 sm:px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 hover:border-slate-500 rounded-lg text-xs font-bold flex items-center justify-center gap-1 shadow transition cursor-pointer text-center" title="Ayarları Aç">
+                <span class="text-xs">⚙️</span>
+                <span class="inline">Ayarlar</span>
+              </button>
+            </div>
+            <!-- 2. Sıra: Bulut Senkron Durumu & Kampanya (Ayarlar'ın Tam Altında) -->
+            <div class="grid grid-cols-2 gap-1.5 w-full">
+              <div id="sync-status-pill" onclick="CloudSync.connect()" title="Bulut durumunu kontrol et / eşitle" class="cursor-pointer flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-[10px] font-medium bg-emerald-950/80 text-emerald-300 border border-emerald-600 whitespace-nowrap shadow-sm transition truncate">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0"></span>
+                <span id="sync-status-text">🟢 Bulut</span>
+              </div>
               <button type="button" onclick="openJoinCampaignModal()" id="btn-join-campaign-nav" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white border border-amber-500/80 text-xs font-bold shadow flex items-center justify-center gap-1 sm:gap-1.5 transition text-center cursor-pointer active:scale-95" title="Bir DM Kampanyasına Katıl">
                 <span>🎟️</span>
                 <span id="btn-join-campaign-text" class="truncate">Kampanya</span>
               </button>
-            </div>
-            <!-- 2. Sıra: Ayarlar & Bulut Senkron Durumu -->
-            <div class="grid grid-cols-2 gap-1.5 w-full">
-              <button type="button" onclick="openSettingsModal()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 hover:border-slate-500 rounded-lg text-xs font-bold flex items-center justify-center gap-1 shadow transition cursor-pointer text-center" title="Ayarları Aç">
-                <span class="text-xs">⚙️</span>
-                <span class="inline">Ayarlar</span>
-              </button>
-              <div id="sync-status-pill" onclick="CloudSync.connect()" title="Bulut durumunu kontrol et / eşitle" class="cursor-pointer flex items-center justify-center gap-1 px-2 py-1 rounded-lg text-[10px] font-medium bg-emerald-950/80 text-emerald-300 border border-emerald-600 whitespace-nowrap shadow-sm transition truncate">
-                <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0"></span>
-                <span id="sync-status-text">🟢 Bulut</span>
-              </div>
             </div>
           </div>
         </div>
@@ -6735,72 +6735,22 @@
       <!-- Modal Body -->
       <div class="p-4 overflow-y-auto space-y-4 flex-1 text-xs">
         
-        <!-- SECTION 1: VERCEL STORAGE (UPSTASH KV) & PERSONAL VAULT PIN -->
-        <div class="bg-slate-900/90 border border-indigo-500/40 rounded-xl p-3.5 space-y-3 shadow">
-          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
-            <div class="flex items-center gap-2">
-              <span class="text-xl">⚡</span>
+        <!-- SECTION 1: DM KAMPANYASI & MASA BAĞLANTISI -->
+        <div class="bg-slate-900/90 border border-amber-500/40 rounded-xl p-3.5 space-y-2 shadow">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5">
+              <span class="text-xl">🎟️</span>
               <div>
                 <h4 class="text-xs font-bold text-white flex items-center gap-2">
-                  <span>Vercel Bulut Veritabanı (Upstash KV) & Özel Kasa</span>
-                  <span id="settings-gdrive-status" class="text-[10px] text-slate-400 font-normal">Kontrol Ediliyor...</span>
+                  <span>DM Kampanyası &amp; Masa Bağlantısı</span>
+                  <span id="settings-campaign-badge" class="text-[10px] px-1.5 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-600/60 font-mono font-bold">Bağlı Değil</span>
                 </h4>
-                <p class="text-[10px] text-slate-400">Kendi Vercel hesabınız üzerinden Karakter + Master DB verilerinizi şifreli ve özel olarak eşitleyin.</p>
+                <p class="text-[10px] text-slate-400">Bir DM davet kodu (<code class="text-amber-300 font-mono">DRAGON-XXXX</code>) ile canlı oturuma bağlanın veya mevcut masayı yönetin.</p>
               </div>
             </div>
-            <button onclick="CloudSync.saveCloudSettings()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition shadow flex items-center gap-1.5">
-              <span>💾</span>
-              <span>Ayarları Kaydet & Bağlan</span>
-            </button>
-          </div>
-
-          <!-- Personal APP_PIN Input -->
-          <div class="space-y-2 bg-slate-950/70 p-2.5 rounded-lg border border-slate-800">
-            <div>
-              <label class="block text-[10px] font-bold text-emerald-400 uppercase mb-1">🔒 Kişisel Uygulama Şifresi (APP_PIN - Doğrudan Buradan Belirleyin):</label>
-              <input type="password" id="settings-app-pin" placeholder="Belirlemek istediğiniz özel şifreyi buraya yazıp Kaydet'e basın..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-emerald-400">
-              <p class="text-[10px] text-slate-400 mt-1">Vercel Environment Variables içine <code class="text-amber-300">APP_PIN</code> eklemenize <b>gerek yoktur</b>! Şifrenizi doğrudan yukarıdaki kutuya yazıp <b>"Ayarları Kaydet & Bağlan"</b> dediğinizde şifreniz otomatik olarak veritabanınıza kaydedilir ve uygulamanız kilitlenir.</p>
-            </div>
-
-            <!-- Optional Direct Upstash Credentials (For Local / Offline Testing) -->
-            <details class="text-[10px] text-slate-400 pt-1 border-t border-slate-800/80">
-              <summary class="cursor-pointer text-slate-300 hover:text-white font-semibold flex items-center gap-1">
-                <span>🔧</span> <span>İsteğe Bağlı: Doğrudan Upstash REST Bağlantısı (Yerel PC / Offline Test İçin)</span>
-              </summary>
-              <div class="mt-2 space-y-2 pl-2 border-l-2 border-slate-700">
-                <div>
-                  <label class="block text-[9px] uppercase font-bold text-slate-400">KV_REST_API_URL (veya UPSTASH_REDIS_REST_URL):</label>
-                  <input type="text" id="settings-upstash-url" placeholder="https://xxxx.upstash.io" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-[11px] text-white font-mono">
-                </div>
-                <div>
-                  <label class="block text-[9px] uppercase font-bold text-slate-400">KV_REST_API_TOKEN (veya UPSTASH_REDIS_REST_TOKEN):</label>
-                  <input type="password" id="settings-upstash-token" placeholder="AXxx..." class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-[11px] text-white font-mono">
-                </div>
-              </div>
-            </details>
-
-            <!-- 1-Minute Personal Vercel Setup Guide -->
-            <details class="text-[10px] text-slate-400 pt-1 border-t border-slate-800/80">
-              <summary class="cursor-pointer text-indigo-300 hover:text-indigo-200 font-semibold flex items-center gap-1">
-                <span>❓</span> <span>Kendi Özel Vercel Veritabanınızı Nasıl Kurarsınız? (1 Dakikalık Rehber)</span>
-              </summary>
-              <div class="mt-2 space-y-1.5 pl-3 border-l-2 border-indigo-500/40 text-slate-300 leading-relaxed">
-                <p>1. Bu projeyi kendi GitHub hesabınıza aktarın ve <a href="https://vercel.com/new" target="_blank" class="text-indigo-400 underline font-bold">Vercel Dashboard ↗</a> üzerinden ücretsiz <b>Import</b> edin.</p>
-                <p>2. Vercel proje panelinizde üst menüden <b>Storage ➔ Create Database ➔ Upstash (Serverless Redis / KV)</b> seçip ücretsiz oluşturun ve projenize bağlayın (<i>KV_REST_API_URL</i> ve <i>KV_REST_API_TOKEN</i> otomatik eklenir).</p>
-                <p>3. Uygulamayı açıp <b>⚙️ Ayarlar</b> menüsündeki <b>Kişisel Uygulama Şifresi (APP_PIN)</b> kutusuna istediğiniz şifreyi yazıp <b>"Ayarları Kaydet & Bağlan"</b> butonuna tıklayın (veya isterseniz Vercel Environment Variables içine manuel <code class="text-amber-300">APP_PIN</code> satırı ekleyin).</p>
-                <p>4. Artık PC, telefon veya tabletten kendi Vercel linkinize girip yalnızca şifrenizi yazarak tüm Karakter ve Master DB verilerinizi otomatik senkronize edebilirsiniz!</p>
-              </div>
-            </details>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-            <button onclick="CloudSync.pushToCloud()" class="bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs font-semibold py-2 px-3 rounded-lg border border-emerald-500/40 transition flex items-center justify-center gap-1.5">
-              <span>⬆️</span>
-              <span>Buluta Şimdi Kaydet (Karakter + DB)</span>
-            </button>
-            <button onclick="CloudSync.pullFromCloud()" class="bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300 hover:text-white text-xs font-semibold py-2 px-3 rounded-lg border border-indigo-500/40 transition flex items-center justify-center gap-1.5">
-              <span>⬇️</span>
-              <span>Buluttan Şimdi Çek (Karakter + DB)</span>
+            <button onclick="closeSettingsModal(); openJoinCampaignModal();" class="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition shadow flex items-center gap-1.5 cursor-pointer">
+              <span>🎟️</span>
+              <span>Kampanyayı Yönet</span>
             </button>
           </div>
         </div>
@@ -8265,11 +8215,13 @@
 
     function updateCampaignNavButton() {
       const btnText = document.getElementById('btn-join-campaign-text');
-      if (!btnText) return;
+      const badge = document.getElementById('settings-campaign-badge');
       if (character.campaignInviteCode) {
-        btnText.textContent = character.campaignInviteCode;
+        if (btnText) btnText.textContent = character.campaignInviteCode;
+        if (badge) badge.textContent = character.campaignInviteCode;
       } else {
-        btnText.textContent = 'Kampanya';
+        if (btnText) btnText.textContent = 'Kampanya';
+        if (badge) badge.textContent = 'Bağlı Değil';
       }
     }
 
