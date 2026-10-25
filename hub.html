@@ -68,18 +68,22 @@
             </button>
           </div>
 
-          <!-- Yedekleme & İçe Aktarma Grubu (Eşit Genişlik & Yükseklik) -->
+          <!-- Yedekleme, İçe Aktarma & Sıfırlama Grubu -->
           <div class="w-full h-9 flex items-center rounded-xl bg-slate-900/90 p-0.5 border border-slate-700/80 shadow-md">
-            <button onclick="exportHubData()" class="flex-1 h-full hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer" title="Tüm kampanya ve karakter verisini JSON olarak indir">
-              <span class="text-sm">💾</span>
+            <button onclick="exportHubData()" class="flex-1 h-full hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1 cursor-pointer" title="Tüm kampanya ve karakter verisini JSON olarak indir">
+              <span class="text-xs">💾</span>
               <span>Yedekle</span>
             </button>
             <div class="w-px h-4 bg-slate-700 mx-0.5 shrink-0"></div>
-            <label class="flex-1 h-full hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer" title="JSON yedeği içe aktar">
-              <span class="text-sm">📂</span>
+            <label class="flex-1 h-full hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1 cursor-pointer" title="JSON yedeği içe aktar">
+              <span class="text-xs">📂</span>
               <span>İçe Aktar</span>
               <input type="file" id="import-hub-file" accept=".json" class="hidden" onchange="importHubData(event)">
             </label>
+            <div class="w-px h-4 bg-slate-700 mx-0.5 shrink-0"></div>
+            <button onclick="resetAllHubLocalData()" class="px-2.5 h-full hover:bg-rose-950 text-slate-400 hover:text-rose-300 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1 cursor-pointer" title="Tüm yerel önbelleği ve verileri sıfırla">
+              <span>🧹</span>
+            </button>
           </div>
 
           <!-- Bulut Senkron Durumu (3. Satır - Simetrik & Eşit Genişlik) -->
@@ -3922,6 +3926,18 @@ CRITICAL RULES:
       };
       reader.readAsText(file);
       event.target.value = '';
+    }
+
+    function resetAllHubLocalData() {
+      const confirmed = confirm("⚠️ DİKKAT!\nTarayıcınızdaki tüm yerel Hub verileri (seferler, karakterler, Master DB ve önbellek) sıfırlanacak ve fabrika ayarlarına dönülecektir.\n\nEmin misiniz?");
+      if (!confirmed) return;
+      try {
+        localStorage.clear();
+      } catch (e) {
+        console.warn('LocalStorage clear error:', e);
+      }
+      alert("✅ Tüm yerel veriler başarıyla sıfırlandı! Hub tertemiz baştan yükleniyor.");
+      window.location.reload();
     }
 
     async function syncCloudUserHub(authUser) {

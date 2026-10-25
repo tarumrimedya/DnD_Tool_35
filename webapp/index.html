@@ -7173,14 +7173,25 @@
         </div>
 
         <!-- SECTION 5: DANGER ZONE / RESET -->
-        <div class="bg-rose-950/20 border border-rose-600/40 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <h4 class="text-xs font-bold text-rose-400">⚠️ Karakteri Sıfırla / Temiz Başlangıç</h4>
-            <p class="text-[10px] text-slate-400">Mevcut karakteri sıfırlar ve boş bir karakter kağıdı açar.</p>
+        <div class="bg-rose-950/20 border border-rose-600/40 rounded-xl p-3.5 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-rose-900/40 pb-2">
+            <div>
+              <h4 class="text-xs font-bold text-rose-400">⚠️ Karakteri Sıfırla</h4>
+              <p class="text-[10px] text-slate-400">Yalnızca mevcut karakteri 1. seviye temiz şablona döndürür.</p>
+            </div>
+            <button onclick="resetToCleanCharacter(); closeSettingsModal();" class="bg-rose-700 hover:bg-rose-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition shadow cursor-pointer">
+              🗑️ Karakteri Sıfırla
+            </button>
           </div>
-          <button onclick="resetToCleanCharacter(); closeSettingsModal();" class="bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition shadow">
-            🗑️ Karakteri Sıfırla
-          </button>
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+            <div>
+              <h4 class="text-xs font-bold text-amber-400">🧹 Fabrika Ayarlarına Dön (Tümünü Sıfırla)</h4>
+              <p class="text-[10px] text-slate-400">Karakteri, Master DB önbelleğini ve tüm yerel hafızayı sıfırlayarak baştan başlatır.</p>
+            </div>
+            <button onclick="resetAllLocalDataToFactoryDefaults()" class="bg-gradient-to-r from-amber-600 to-rose-700 hover:from-amber-500 hover:to-rose-600 text-white font-black text-xs px-3.5 py-1.5 rounded-lg transition shadow-lg cursor-pointer">
+              🧹 Tümünü Sıfırla
+            </button>
+          </div>
         </div>
 
       </div>
@@ -40118,6 +40129,20 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         renderAll();
         alert('✅ Karakter sıfırlandı. Yeni karakteriniz hazır!');
       }
+    }
+
+    function resetAllLocalDataToFactoryDefaults() {
+      const confirmed = confirm("⚠️ DİKKAT!\nTarayıcınızdaki kayıtlı tüm yerel karakterler, kayıtlı profiller, Master DB önbelleği ve geçici ayarlar sıfırlanacak ve tertemiz fabrika ayarlarına dönülecektir.\n\nEmin misiniz?");
+      if (!confirmed) return;
+
+      try {
+        localStorage.clear();
+      } catch (e) {
+        console.warn('LocalStorage clear error:', e);
+      }
+
+      alert("✅ Tüm yerel veriler başarıyla sıfırlandı! Sayfa tertemiz fabrika şablonuyla yeniden yükleniyor.");
+      window.location.reload();
     }
   </script>
   <!-- Floating Tooltip for Combat Spells Hover (Tap or click to dismiss) -->
