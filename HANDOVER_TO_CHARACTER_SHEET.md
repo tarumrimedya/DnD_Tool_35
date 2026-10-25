@@ -1876,3 +1876,28 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   4. **Parite ve Güvenlik:**
      - `hub.html` ve `hub_notes.js` kök dosyaları `webapp/` altındaki kopyalarıyla %100 SHA-256 eşitliğinde güncellendi.
      - Tavla zarı emojisi (`🎲`) kesinlikle kullanılmadı.
+
+---
+
+## 65. SEVİYE ATLAMA SİHİRBAZI: SINIF LİSTESİ ÖNCELİKLİ SIRALAMA & KATEGORİ BAŞLIKLARI (2026-10-26)
+* **İstek:**
+  - Seviye Atlama Sihirbazı sınıf arama sonuçlarında (`#lvlup-class-search-results`):
+    1. Önce Temel Sınıflar (Base Classes),
+    2. Sonra Alınabilecek (şartları/önkoşulları eksiksiz sağlanan) Prestij Sınıfları,
+    3. Sonra Diğerleri (şartları henüz eksik olan prestij sınıfları) gösterilsin.
+* **Uygulanan Değişiklikler:**
+  1. **Öncelik Tabanlı Sıralama Algoritması (`filterLevelUpClassSearch`):**
+     - Sınıflar taranırken önkoşul kontrolünden geçirilerek 3 öncelik seviyesine (Priority 1, 2, 3) ayrıldı:
+       - `Priority 1`: Temel Sınıflar (`!isPrestige`).
+       - `Priority 2`: Alınabilir Prestij Sınıfları (`isPrestige && prereqResult.allMet`).
+       - `Priority 3`: Şartları henüz eksik olan Prestij Sınıfları (`isPrestige && !prereqResult.allMet`).
+     - Sıralama önce `priority` derecesine göre yapıldı; aynı öncelik grubu içinde seçili sınıf en üstte tutularak alfabetik sıralandı.
+  2. **Dinamik Kategori Bölücü Başlıkları (Sticky Category Dividers):**
+     - Sonuç listesinde her kategorinin başına yapışkan (sticky backdrop-blur) başlık şeridi eklendi:
+       - `🛡️ Temel Sınıflar (Base Classes)`
+       - `👑 Alınabilir Prestij Sınıfları (Önkoşulları Sağlanan)`
+       - `🔒 Diğer Prestij Sınıfları (Önkoşulları Henüz Eksik)`
+     - Her başlıkta o kategoride bulunan sınıf adedi rozetle gösterildi.
+  3. **Parite ve Kural Standartları:**
+     - 4 dosya (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi korundu.
+     - Standart tavla zarı emojisi yasağı (`🎲` / `U+1F3B2`) tavizsiz korundu.

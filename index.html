@@ -32991,13 +32991,37 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           }
         }
 
-        matched.push({ name: cName, def });
+        const prereqResult = checkClassPrerequisites(cName, def);
+
+        // Sorting Priority (Kullanıcı İsteği: 1. Temel, 2. Alınabilir Prestij, 3. Diğerleri):
+        // Priority 1: Temel Sınıflar (Base Classes)
+        // Priority 2: Alınabilecek Prestij Sınıfları (Önkoşulları eksiksiz sağlananlar)
+        // Priority 3: Diğerleri (Önkoşulları henüz eksik olan prestij sınıfları)
+        let priority = 1;
+        if (isPrestige) {
+          priority = (prereqResult.hasPrereqs && !prereqResult.allMet) ? 3 : 2;
+        }
+
+        matched.push({ 
+          name: cName, 
+          def, 
+          isPrestige, 
+          isCustom, 
+          prereqResult, 
+          priority 
+        });
       });
 
-      // Sort: Selected class first, then alphabetically
+      // Sort: Priority 1 (Base) -> Priority 2 (Eligible Prestige) -> Priority 3 (Ineligible Prestige)
+      // Within same priority: Selected class first, then alphabetically
       matched.sort((a, b) => {
-        if (a.name.toLowerCase() === selectedClass.toLowerCase()) return -1;
-        if (b.name.toLowerCase() === selectedClass.toLowerCase()) return 1;
+        if (a.priority !== b.priority) {
+          return a.priority - b.priority;
+        }
+        const aSelected = (a.name.toLowerCase() === selectedClass.toLowerCase());
+        const bSelected = (b.name.toLowerCase() === selectedClass.toLowerCase());
+        if (aSelected && !bSelected) return -1;
+        if (!aSelected && bSelected) return 1;
         return a.name.localeCompare(b.name);
       });
 
@@ -33034,15 +33058,58 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         return;
       }
 
-      resultsContainer.innerHTML = matched.map(item => {
+      let lastPriority = null;
+      let htmlOutput = '';
+
+      matched.forEach(item => {
         const cName = item.name;
         const def = item.def;
         const isSelected = (cName.toLowerCase() === selectedClass.toLowerCase());
-        const isPrestige = def.type === 'Prestige Class';
-        const isCustom = def.isCustom === true;
+        const isPrestige = item.isPrestige;
+        const isCustom = item.isCustom;
         const isProgExpanded = _expandedClassProgressions.has(cName);
+        const prereqResult = item.prereqResult;
 
-        const prereqResult = checkClassPrerequisites(cName, def);
+        // Group Header Divider
+        if (item.priority !== lastPriority) {
+          lastPriority = item.priority;
+          let headerTitle = '';
+          if (item.priority === 1) {
+            const count = matched.filter(m => m.priority === 1).length;
+            headerTitle = `
+              <div class="flex items-center justify-between py-1.5 px-2 text-[11px] font-bold text-slate-300 border-b border-purple-500/30 sticky top-0 bg-slate-950/95 z-10 backdrop-blur-sm shadow-sm rounded-lg mb-1">
+                <span class="flex items-center gap-1.5 text-purple-300">
+                  <span>🛡️</span>
+                  <span>Temel Sınıflar (Base Classes)</span>
+                </span>
+                <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-purple-950/80 text-purple-300 border border-purple-700/50">${count} Sınıf</span>
+              </div>
+            `;
+          } else if (item.priority === 2) {
+            const count = matched.filter(m => m.priority === 2).length;
+            headerTitle = `
+              <div class="flex items-center justify-between py-1.5 px-2 text-[11px] font-bold text-emerald-300 border-b border-emerald-600/40 sticky top-0 bg-slate-950/95 z-10 backdrop-blur-sm shadow-sm rounded-lg mt-2.5 mb-1">
+                <span class="flex items-center gap-1.5 text-emerald-300">
+                  <span>👑</span>
+                  <span>Alınabilir Prestij Sınıfları (Önkoşulları Sağlanan)</span>
+                </span>
+                <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-600/60">${count} Sınıf</span>
+              </div>
+            `;
+          } else if (item.priority === 3) {
+            const count = matched.filter(m => m.priority === 3).length;
+            headerTitle = `
+              <div class="flex items-center justify-between py-1.5 px-2 text-[11px] font-bold text-amber-400 border-b border-amber-600/40 sticky top-0 bg-slate-950/95 z-10 backdrop-blur-sm shadow-sm rounded-lg mt-2.5 mb-1">
+                <span class="flex items-center gap-1.5 text-amber-400">
+                  <span>🔒</span>
+                  <span>Diğer Prestij Sınıfları (Önkoşulları Henüz Eksik)</span>
+                </span>
+                <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-950/80 text-amber-300 border border-amber-700/60">${count} Sınıf</span>
+              </div>
+            `;
+          }
+          htmlOutput += headerTitle;
+        }
 
         const typeBadge = isPrestige
           ? '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-600/50">👑 Prestij</span>'
@@ -33084,7 +33151,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           `;
         }
 
-        return `
+        htmlOutput += `
           <div class="bg-slate-950/70 hover:bg-slate-900/90 border ${isSelected ? 'border-emerald-500 ring-1 ring-emerald-500/50' : 'border-slate-800 hover:border-slate-700'} rounded-lg p-2.5 transition space-y-1.5">
             <div class="flex flex-wrap items-center justify-between gap-1.5">
               <div class="flex items-center gap-2">
@@ -33125,7 +33192,9 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             ${isProgExpanded ? generateClassProgressionHtml(cName, def) : ''}
           </div>
         `;
-      }).join('');
+      });
+
+      resultsContainer.innerHTML = htmlOutput;
       resultsContainer.scrollTop = prevScroll;
     }
 
