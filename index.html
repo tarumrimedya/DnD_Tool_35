@@ -6856,15 +6856,24 @@
             </div>
           </div>
 
-          <!-- Splatbooks Catalog -->
+          <!-- Splatbooks Catalog / Kısaltmalar Çekmecesi -->
           <div class="pt-2 border-t border-slate-800">
-            <h5 class="text-[11px] font-bold text-amber-300 uppercase tracking-wide mb-1.5 flex items-center gap-1">
-              <span>📚</span>
-              <span>2. Kampanya Kitapları & Splatbook Kataloğu</span>
-            </h5>
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-64 overflow-y-auto pr-1" id="splatbooks-grid-container">
-              <!-- Dynamically populated by RuleMaster.renderSourcesCatalog() -->
-            </div>
+            <details class="group bg-slate-950/60 border border-slate-800 rounded-xl transition-all duration-200">
+              <summary class="cursor-pointer p-2.5 flex items-center justify-between text-xs font-bold text-amber-300 hover:text-amber-200 select-none list-none">
+                <span class="flex items-center gap-2">
+                  <span>📚</span>
+                  <span>2. Kampanya Kitapları Kısaltmaları</span>
+                  <span class="text-[10px] font-normal text-slate-400 font-mono">(32 Kitap / Kısaltma)</span>
+                </span>
+                <span class="text-xs text-slate-500 group-open:rotate-180 transition-transform duration-200">▼</span>
+              </summary>
+              <div class="p-2.5 pt-0 border-t border-slate-800/80 mt-1">
+                <p class="text-[10px] text-slate-400 mb-2">Master DB ve kural metinlerinde kullanılan resmi D&D 3.5e ek kitap kodları ve açıklamaları:</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-64 overflow-y-auto pr-1 scrollbar-thin" id="splatbooks-grid-container">
+                  <!-- Dynamically populated by RuleMaster.renderSourcesCatalog() -->
+                </div>
+              </div>
+            </details>
           </div>
         </div>
 

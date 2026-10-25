@@ -685,5 +685,19 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - `rule_master.js`, `character.html`, `index.html` ve `webapp/` kopyaları %100 SHA-256 eşitliğinde tutuldu.
      - Sıfır tavla zarı (`🎲`) kuralı korundu.
 
+---
+
+## 38. KAMPANYA KİTAPLARI KISALTMALARI: KOMPAKT ÇEKMECEYE DÖNÜŞTÜRÜLDÜ (2026-10-25)
+* **İstek:** Ayarlar modalı Bölüm 4'teki 32 adet statik ek kitap kartının sayfada kapladığı düşey alanı temizlemek amacıyla kompakt bir çekmeceye dönüştürülmesi ve başlığının `2. Kampanya Kitapları Kısaltmaları` olarak güncellenmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Kompakt Akordeon / Çekmece Mimarisi (`character.html`, `index.html` & `webapp/`):**
+     - Bölüm `<details class="group bg-slate-950/60 border border-slate-800 rounded-xl ...">` konteyneri içerisine alındı.
+     - Varsayılan olarak kapalı durur; başlık satırında `📚 2. Kampanya Kitapları Kısaltmaları (32 Kitap / Kısaltma)` ve dönebilen `▼` oku yer alır.
+     - Tıklandığında yumuşakça açılarak Master DB ve kural metinlerinde kullanılan resmi D&D 3.5e kitap kodlarını ve açıklamalarını listeler.
+  2. **Parite ve Kural Bütünlüğü:**
+     - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` %100 SHA-256 eşitliğinde tutuldu.
+     - Sıfır tavla zarı (`🎲`) kuralı tavizsiz korundu.
+
+
 
 
