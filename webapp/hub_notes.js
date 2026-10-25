@@ -296,6 +296,12 @@
     if (!target) return;
     const state = getHubState();
 
+    // 0. targetObj referansını daima senkronize tut
+    if (target.targetObj) {
+      target.targetObj.notesList = target.notesList || [];
+      target.targetObj.notes = (target.notesList || []).map(n => n.text).join('\n\n');
+    }
+
     // 1. HUB State Depolaması
     if (state && typeof window.saveHubStorage === 'function') {
       window.saveHubStorage();
@@ -318,7 +324,7 @@
           const activeChar = JSON.parse(charRaw);
           if (activeChar && (activeChar.id === target.id || activeChar.name === target.name)) {
             activeChar.notesList = target.notesList;
-            activeChar.notes = target.notesList.map(n => n.text).join('\n\n');
+            activeChar.notes = (target.notesList || []).map(n => n.text).join('\n\n');
             localStorage.setItem('dnd35_character', JSON.stringify(activeChar));
           }
         }
@@ -486,22 +492,37 @@
    * Delete Note
    */
   function deleteNote(noteId, event) {
-    if (event) event.stopPropagation();
-    const actualId = noteId || _selectedModalNoteId;
-    if (!actualId) return;
-
-    if (!confirm('Bu notu silmek istediğinize emin misiniz?')) return;
+    if (event) {
+      if (typeof event.preventDefault === 'function') event.preventDefault();
+      if (typeof event.stopPropagation === 'function') event.stopPropagation();
+    }
 
     const target = getActiveNotesTarget();
     if (!target) return;
 
-    target.notesList = target.notesList.filter(n => n.id !== actualId);
-    saveNotesChanges(target);
+    const actualId = noteId || _selectedModalNoteId || (target.notesList && target.notesList[0] && target.notesList[0].id);
+    if (!actualId) return;
 
-    if (_selectedModalNoteId === actualId) {
+    if (!confirm('Bu notu silmek istediğinize emin misiniz?')) return;
+
+    // 1. Notu yerel listeden kaldır
+    target.notesList = (target.notesList || []).filter(n => n.id !== actualId);
+
+    // 2. targetObj üzerindeki diziyi ve metni kalıcı senkronize et
+    if (target.targetObj) {
+      target.targetObj.notesList = target.notesList;
+      target.targetObj.notes = target.notesList.map(n => n.text).join('\n\n');
+    }
+
+    // 3. Seçili ID'yi güncelle
+    if (_selectedModalNoteId === actualId || !_selectedModalNoteId) {
       _selectedModalNoteId = target.notesList.length > 0 ? target.notesList[0].id : null;
     }
 
+    // 4. Veritabanına kalıcı yaz
+    saveNotesChanges(target);
+
+    // 5. Ekranları anında tazele
     renderInlineNotes();
     renderFullNotesModalList();
     loadSelectedNoteIntoEditor();
@@ -765,7 +786,10 @@
               ${isPinned ? '<span class="text-amber-400 text-xs shrink-0" title="Başa Sabitlendi">📌</span>' : ''}
               <span class="text-xs font-bold truncate text-indigo-300" title="${escapeHtml(targetDisplayName)}">${escapeHtml(cardTitle)}</span>
             </div>
-            <span class="text-[9px] text-slate-500 font-mono shrink-0">${formatTimeAgo(note.updatedAt || note.createdAt)}</span>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <span class="text-[9px] text-slate-500 font-mono">${formatTimeAgo(note.updatedAt || note.createdAt)}</span>
+              <button type="button" onclick="HubNotes.deleteNote('${note.id}', event)" class="p-1 text-slate-500 hover:text-rose-400 rounded text-xs transition cursor-pointer" title="Bu Notu Sil">✕</button>
+            </div>
           </div>
           <div class="text-[11px] text-slate-400 line-clamp-2 break-words">
             ${escapeHtml(note.text) || '<span class="italic text-slate-500">Boş not metni...</span>'}

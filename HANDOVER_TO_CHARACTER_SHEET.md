@@ -1303,6 +1303,26 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - `hub_notes.js` ve `webapp/hub_notes.js` %100 SHA-256 eşitliğinde güncellendi.
      - Kural #3 (Zar emojisi yasağı) tavizsiz korundu.
 
+---
+
+## 60. HUB NOT DEFTERİ SİLME (DELETE NOTE) BUTONU VE DİZİ SENKRONİZASYONU DÜZELTMESİ (2026-10-25)
+* **Problem:**
+  - Geniş Not Defteri modalında `[ 🗑️ Sil ]` butonuna tıklandığında onay verilmesine rağmen not silinmiyordu.
+* **Kök Neden:**
+  - `deleteNote()` fonksiyonu `target.notesList` transient sarmalayıcı nesnesini filtreliyordu ancak `target.targetObj.notesList` (yani `activeCamp.notesList` veya `targetChar.notesList`) kalıcı referansını güncellemiyordu.
+  - Hemen ardından `saveNotesChanges` ve `renderFullNotesModalList` çağrıldığında `getActiveNotesTarget()` veritabanındaki güncellenmemiş eski diziyi okuduğu için silinmek istenen not ekranda kalmaya devam ediyordu.
+* **Uygulanan Çözüm:**
+  1. **Kesin Referans ve Metin Senkronizasyonu:**
+     - `deleteNote` ve `saveNotesChanges` fonksiyonlarında `target.targetObj.notesList` ve `target.targetObj.notes` alanları kalıcı olarak filtrelenip senkronize edildi.
+     - Silinen not aktif seçili not ise yeni aktif ID otomatik olarak listedeki bir sonraki nota (veya liste boşaldıysa `null`'a) devredildi.
+  2. **Boş Liste ve Editör Koruması:**
+     - Tüm notlar silindiğinde editörün devre dışı kalması (`disabled`), sil butonu ve sabitle butonunun opaklaşması pürüzsüzleştirildi.
+  3. **Sol Listede Hızlı Silme Butonu (`✕`):**
+     - Modal sol listesindeki her nota da tek tıkla silme imkânı sunan hızlı `✕` butonu eklendi.
+  4. **Parite ve Devir Teslim:**
+     - `hub_notes.js` ve `webapp/hub_notes.js` %100 SHA-256 eşitliğinde güncellendi.
+     - Kural #3 (Zar emojisi yasağı) tavizsiz korundu.
+
 
 ---
 
