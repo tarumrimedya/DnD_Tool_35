@@ -694,6 +694,11 @@
         </div>
       </div>
 
+      <button type="button" onclick="const cid=document.getElementById('edit-char-id').value; closeEditCharacterModal(); openSettingsModal(cid);" class="w-full py-2 px-3 bg-slate-900 hover:bg-slate-800 text-indigo-300 hover:text-white border border-indigo-500/40 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer">
+          <span>⚙️</span>
+          <span>Bu Karakterin Özel Ayarlarını & Kurallarını Aç</span>
+        </button>
+        
       <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-700/80">
         <button onclick="closeEditCharacterModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition cursor-pointer">İptal</button>
         <button onclick="saveEditCharacter()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition shadow cursor-pointer">Değişiklikleri Kaydet</button>
@@ -4301,7 +4306,7 @@ CRITICAL RULES:
   <!-- SISTEM, MASA & KURAL STANDARTLARI AYARLARI MODALI -->
   <!-- ==================================================== -->
   <div id="settings-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
-    <div class="bg-[#131d33] border border-indigo-500/60 rounded-2xl max-w-3xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden my-auto text-slate-100">
+    <div class="bg-[#131d33] border border-purple-500/60 rounded-2xl max-w-3xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden my-auto text-slate-100">
       
       <!-- Modal Header -->
       <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between shrink-0">
@@ -4309,10 +4314,10 @@ CRITICAL RULES:
           <span class="text-xl">⚙️</span>
           <div>
             <h3 class="text-sm md:text-base font-extrabold text-white flex items-center gap-2">
-              <span>Sistem, Masa & Kural Standartları</span>
-              <span class="px-2 py-0.5 rounded-full bg-indigo-950 text-indigo-300 border border-indigo-800 text-[9px] font-mono">Hub Defaults</span>
+              <span>Sistem &amp; Veri Ayarları</span>
+              <span class="badge bg-purple-950 text-purple-300 border border-purple-800 text-[9px] px-1.5 py-0.5 rounded font-mono">v3.5 Live</span>
             </h3>
-            <p class="text-[10px] text-slate-400">Tüm karakterler için varsayılan kural şablonları • Gemini AI • Veri Yedekleme</p>
+            <p class="text-[10px] text-slate-400">Google Drive • Gemini AI • Yedekleme &amp; Geri Yükleme • Masa Kuralları</p>
           </div>
         </div>
         <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer">
@@ -4320,20 +4325,59 @@ CRITICAL RULES:
         </button>
       </div>
 
+      <!-- AYAR KAPSAMI: GLOBAL MASA STANDARTLARI VS KARAKTERE ÖZEL AYARLAR -->
+      <div class="bg-indigo-950/70 border-b border-indigo-500/30 px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="text-base shrink-0">🎯</span>
+          <div class="min-w-0">
+            <div class="font-bold text-indigo-200 text-xs truncate">Ayar Hedefi / Kapsam:</div>
+            <div class="text-[10px] text-indigo-300/80 truncate">Global masa standardı yeni karakterlere yansır; her karakter kendi özel ayarını seçebilir.</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <select id="settings-scope-select" onchange="onSettingsScopeChange(this.value)" class="bg-slate-900 border border-indigo-400/60 text-amber-300 font-bold text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-amber-400 shadow cursor-pointer max-w-[260px] truncate">
+            <option value="global">🌐 Tüm Masa Standartları (Yeni Karakterler)</option>
+          </select>
+          <button type="button" id="btn-reset-to-global-defaults" onclick="applyGlobalDefaultsToSelectedCharacter()" class="hidden px-2.5 py-1.5 bg-slate-800 hover:bg-indigo-600 text-indigo-200 hover:text-white rounded-lg text-[11px] font-semibold border border-indigo-500/40 transition cursor-pointer" title="Global masa kurallarını bu karaktere eşitle">
+            🔄 Masaya Eşitle
+          </button>
+        </div>
+      </div>
+
       <!-- Modal Body -->
       <div class="p-4 overflow-y-auto space-y-4 flex-1 text-xs">
+        
+        <!-- SECTION 1: DM KAMPANYASI & MASA BAĞLANTISI -->
+        <div class="bg-slate-900/90 border border-amber-500/40 rounded-xl p-3.5 space-y-2 shadow">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5">
+              <span class="text-xl">🎟️</span>
+              <div>
+                <h4 class="text-xs font-bold text-white flex items-center gap-2">
+                  <span>DM Kampanyası &amp; Masa Bağlantısı</span>
+                  <span id="settings-campaign-badge" class="text-[10px] px-1.5 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-600/60 font-mono font-bold">Aktif Kampanya Masası</span>
+                </h4>
+                <p class="text-[10px] text-slate-400">Kampanyalarınızı yönetin, yeni seferler tanımlayın veya alt çekmeceleri organize edin.</p>
+              </div>
+            </div>
+            <button onclick="closeSettingsModal(); openNewCampaignModal();" class="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition shadow flex items-center gap-1.5 cursor-pointer">
+              <span>🏰</span>
+              <span>Yeni Kampanya Ekle</span>
+            </button>
+          </div>
+        </div>
 
-        <!-- SECTION 1: GOOGLE GEMINI AI KEY & DIAGNOSTICS -->
+        <!-- SECTION 2: GOOGLE GEMINI AI KEY & DIAGNOSTICS -->
         <div class="bg-slate-900/90 border border-purple-500/40 rounded-xl p-3.5 space-y-3 shadow">
           <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
             <div class="flex items-center gap-2">
               <span class="text-xl">🧙‍♂️🤖</span>
               <div>
                 <h4 class="text-xs font-bold text-white flex items-center gap-2 flex-wrap">
-                  <span>Rule Master (AI) Kural Asistanı Ayarları</span>
-                  <span id="settings-gemini-live-status" class="text-[10px] text-slate-400 font-normal">Kontrol Ediliyor...</span>
+                  <span>🧙‍♂️🤖 Rule Master (AI) Kural Asistanı Ayarları</span>
+                  <span id="settings-gemini-live-status" class="text-[10px] text-slate-400 font-normal"><span class="text-amber-400">🟡 Kontrol Ediliyor...</span></span>
                 </h4>
-                <p class="text-[10px] text-slate-400">Kişisel ücretsiz Google AI Studio API anahtarınız (tarayıcınızda yerel saklanır).</p>
+                <p class="text-[10px] text-slate-400">Kişisel ücretsiz Google AI Studio API anahtarınız (tarayıcınızda güvenle saklanır).</p>
               </div>
             </div>
             <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[10px] text-purple-300 hover:text-purple-200 underline font-semibold">
@@ -4353,26 +4397,162 @@ CRITICAL RULES:
             </div>
             <div class="flex flex-wrap items-center justify-between gap-2 text-[10px]">
               <div id="settings-api-key-status" class="text-slate-400">
-                Durum: <span id="settings-masked-key" class="font-mono text-purple-300">Tanımlı Değil</span>
+                Durum: <span id="settings-masked-key" class="font-mono text-purple-300"><span class="text-amber-400">Tanımlı Değil (Ücretsiz Alın)</span></span>
               </div>
               <button onclick="diagnoseSettingsApiKey()" class="text-sky-400 hover:text-sky-300 font-bold flex items-center gap-1 underline cursor-pointer">
                 <span>🩺</span>
-                <span>Aktif Modelleri & Bağlantıyı Test Et (Ping)</span>
+                <span>Aktif Modelleri &amp; Bağlantıyı Test Et (Ping)</span>
               </button>
             </div>
           </div>
         </div>
 
-        <!-- SECTION 2: STANDART MASA & KURAL TERCİHLERİ (HER CHAR İÇİN VARSAYILAN STANDART) -->
+        <!-- SECTION 3: DATA BACKUP & RESTORE (LOCAL JSON) -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-3 shadow">
+          <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
+            <span class="text-xl">💾</span>
+            <div>
+              <h4 class="text-xs font-bold text-white">Yedekleme &amp; Geri Yükleme (JSON)</h4>
+              <p class="text-[10px] text-slate-400">Tüm karakter ve kural verilerinizi bağımsız yerel dosya olarak yedekleyin veya geri yükleyin.</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div class="bg-slate-950 p-2.5 rounded-lg border border-indigo-500/30 space-y-1.5">
+              <div class="font-bold text-indigo-300 flex items-center gap-1">
+                <span>📦</span> <span>Tam Paket (Tümü)</span>
+              </div>
+              <div class="flex gap-1.5">
+                <button onclick="exportFullBundleJson()" class="flex-1 bg-indigo-600/30 hover:bg-indigo-600 text-indigo-200 hover:text-white text-xs font-semibold py-1.5 rounded border border-indigo-500/40 transition cursor-pointer">💾 İndir</button>
+                <button onclick="document.getElementById('settings-json-file-input').click()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-1.5 rounded border border-slate-700 transition cursor-pointer">📂 Yükle</button>
+              </div>
+            </div>
+
+            <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 space-y-1.5">
+              <div class="font-bold text-slate-300 flex items-center gap-1">
+                <span>👤</span> <span>Karakter Dosyası</span>
+              </div>
+              <div class="flex gap-1.5">
+                <button onclick="exportCharacterJson()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-1.5 rounded border border-slate-700 transition cursor-pointer">💾 İndir</button>
+                <button onclick="document.getElementById('settings-json-file-input').click()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-1.5 rounded border border-slate-700 transition cursor-pointer">📂 Yükle</button>
+              </div>
+            </div>
+
+            <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 space-y-1.5">
+              <div class="font-bold text-slate-300 flex items-center gap-1">
+                <span>📚</span> <span>Master DB (Kütüphane)</span>
+              </div>
+              <div class="flex gap-1.5">
+                <button onclick="exportMasterDbJson()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-1.5 rounded border border-slate-700 transition cursor-pointer">💾 İndir</button>
+                <button onclick="document.getElementById('settings-json-file-input').click()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-1.5 rounded border border-slate-700 transition cursor-pointer">📂 Yükle</button>
+              </div>
+            </div>
+          </div>
+          <input type="file" id="settings-json-file-input" accept=".json" onchange="handleJsonFileUpload(event)" class="hidden">
+        </div>
+
+        <!-- SECTION 4: KURAL KAYNAKLARI & KAMPANYA KİTAPLARI -->
+        <div class="bg-slate-900/90 border border-indigo-500/40 rounded-xl p-3.5 space-y-3 shadow">
+          <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
+            <span class="text-xl">📖</span>
+            <div>
+              <h4 class="text-xs font-bold text-white">D&amp;D 3.5e Kural Kaynakları &amp; Kampanya Kitapları</h4>
+              <p class="text-[10px] text-slate-400">Kademeli kural arama kaynakları ve Core / Splatbook kütüphane kataloğu.</p>
+            </div>
+          </div>
+
+          <!-- Prioritized Sources -->
+          <div>
+            <h5 class="text-[11px] font-bold text-indigo-300 uppercase tracking-wide mb-1.5 flex items-center gap-1">
+              <span>⚡</span>
+              <span>1. Kademeli Arama Kaynakları (Prioritized Knowledge Bases)</span>
+            </h5>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5" id="sources-list-container">
+              <div class="bg-slate-900 border border-indigo-600/40 rounded-xl p-3 space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-white">1. Yerel Kural Kataloğu &amp; Parametrik AI Motoru</span>
+                  <span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 px-1.5 py-0.5 rounded text-[9px]">Aktif</span>
+                </div>
+                <div class="text-[11px] text-slate-400">Yerel SRD Kataloğu &amp; Parametrik LLM Motoru (Sıfır ağ gecikmesi, %100 RAW 3.5e)</div>
+                <div class="flex items-center justify-between pt-1 border-t border-slate-800">
+                  <span class="text-[10px] text-indigo-300 font-mono">Yerel JSON &amp; LLM</span>
+                  <span class="text-xs text-emerald-400 flex items-center gap-1 font-semibold">
+                    <span>⚡</span> <span>Dahili Motor</span>
+                  </span>
+                </div>
+              </div>
+              <div class="bg-slate-900 border border-indigo-600/40 rounded-xl p-3 space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-white">2. Core 3.5e SRD (d20srd &amp; dndsrd)</span>
+                  <span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 px-1.5 py-0.5 rounded text-[9px]">Aktif</span>
+                </div>
+                <div class="text-[11px] text-slate-400">PHB, DMG, MM Core Kuralları, Featler, Büyüler, Eşyalar</div>
+                <div class="flex items-center justify-between pt-1 border-t border-slate-800">
+                  <span class="text-[10px] text-indigo-300 font-mono">Temiz HTML</span>
+                  <a href="https://www.d20srd.org/index.html" target="_blank" class="text-xs text-sky-400 hover:underline flex items-center gap-1">
+                    <span>Bağlantıyı Aç</span> <span>↗</span>
+                  </a>
+                </div>
+              </div>
+              <div class="bg-slate-900 border border-indigo-600/40 rounded-xl p-3 space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-white">3. Extended Splatbooks Index (srd.dndtools)</span>
+                  <span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 px-1.5 py-0.5 rounded text-[9px]">Aktif</span>
+                </div>
+                <div class="text-[11px] text-slate-400">Complete serisi, MIC, Spell Compendium, Frostburn, Sandstorm</div>
+                <div class="flex items-center justify-between pt-1 border-t border-slate-800">
+                  <span class="text-[10px] text-indigo-300 font-mono">Geniş HTML İndeksi</span>
+                  <a href="https://srd.dndtools.org" target="_blank" class="text-xs text-sky-400 hover:underline flex items-center gap-1">
+                    <span>Bağlantıyı Aç</span> <span>↗</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Splatbooks Catalog / Kısaltmalar Çekmecesi -->
+          <div class="pt-2 border-t border-slate-800">
+            <details class="group bg-slate-950/60 border border-slate-800 rounded-xl transition-all duration-200">
+              <summary class="cursor-pointer p-2.5 flex items-center justify-between text-xs font-bold text-amber-300 hover:text-amber-200 select-none list-none">
+                <span class="flex items-center gap-2">
+                  <span>📚</span>
+                  <span>2. Kampanya Kitapları Kısaltmaları</span>
+                  <span class="text-[10px] font-normal text-slate-400 font-mono">(32 Kitap / Kısaltma)</span>
+                </span>
+                <span class="text-xs text-slate-500 group-open:rotate-180 transition-transform duration-200">▼</span>
+              </summary>
+              <div class="p-2.5 pt-0 border-t border-slate-800/80 mt-1">
+                <p class="text-[10px] text-slate-400 mb-2">Master DB ve kural metinlerinde kullanılan resmi D&amp;D 3.5e ek kitap kodları ve açıklamaları:</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-64 overflow-y-auto pr-1 custom-scroll" id="splatbooks-grid-container">
+                  <!-- JS ile 32 kitap dinamik olarak doldurulur -->
+                </div>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <!-- SECTION 5: HOUSE RULES & SYSTEM PREFERENCES -->
         <div id="section-house-rules" class="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-3 shadow transition">
           <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
-            <span class="text-lg">⚖️</span>
+            <span class="w-6 h-6 flex items-center justify-center text-amber-400 shrink-0">
+              <svg class="w-5 h-5 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"></polygon>
+                <polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"></polygon>
+                <line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4" stroke-linecap="round"></line>
+                <line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4" stroke-linecap="round"></line>
+                <line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4" stroke-linecap="round"></line>
+                <line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4" stroke-linecap="round"></line>
+                <line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"></line>
+                <line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"></line>
+                <line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"></line>
+                <line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"></line>
+                <line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4" stroke-linecap="round"></line>
+                <text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, -apple-system, sans-serif" letter-spacing="-0.5">20</text>
+              </svg>
+            </span>
             <div>
-              <h4 class="text-xs font-bold text-white flex items-center gap-2">
-                <span>Standart Masa & Kural Şablonu (House Rules Defaults)</span>
-                <span class="text-[9px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">Global Standart</span>
-              </h4>
-              <p class="text-[10px] text-slate-400">Burada belirlenen kurallar oluşturulan tüm yeni karakterler için standart olur. Karakter sayfasından her karakter için ayrıca özelleştirilebilir.</p>
+              <h4 class="text-xs font-bold text-white">Masa &amp; Kural Tercihleri (House Rules)</h4>
+              <p class="text-[10px] text-slate-400">Kampanyanıza özel D&amp;D 3.5e mekanik tercihlerini ve kural standartlarını belirleyin.</p>
             </div>
           </div>
 
@@ -4384,21 +4564,20 @@ CRITICAL RULES:
                   <div class="font-bold text-emerald-300 flex items-center gap-1.5 text-xs">
                     <span>🔗</span>
                     <span>Beceri Sistemi: Birleştirilmiş vs. RAW 46 Beceri</span>
-                    <span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[9px]">Masa Standardı</span>
+                    <span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[9px] px-1.5 py-0.5 rounded">Masa Kuralı</span>
                   </div>
                   <div class="text-[10px] text-slate-400 mt-0.5">
                     Kampanyanızda becerilerin nasıl ele alınacağını seçin. Birleştirilmiş mod 7 akıcı grup sunar.
                   </div>
                 </div>
+                <button type="button" onclick="openSkillConsolidationModal()" class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-600/60 transition shadow-sm shrink-0 cursor-pointer">
+                  ⚙️ Kural Detayları
+                </button>
               </div>
 
               <!-- Selection Cards: Birleştirilmiş (Varsayılan) vs Standart RAW -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                <button 
-                  type="button" 
-                  id="hr-skill-mode-merged-btn"
-                  onclick="setGlobalHouseRuleSkill(true)" 
-                  class="p-2.5 rounded-lg border-2 text-left transition flex items-center justify-between bg-emerald-950/70 border-emerald-500 text-emerald-300 shadow-sm cursor-pointer">
+                <button type="button" id="hr-skill-mode-merged-btn" onclick="setHouseRuleSkillConsolidation(true)" class="p-2.5 rounded-lg border-2 text-left transition flex items-center justify-between bg-emerald-950/70 border-emerald-500 text-emerald-300 shadow-sm cursor-pointer">
                   <div class="flex items-center gap-2">
                     <span class="text-base">🔗</span>
                     <div>
@@ -4409,11 +4588,7 @@ CRITICAL RULES:
                   <span id="hr-skill-mode-merged-check" class="text-emerald-400 font-black text-sm">✓</span>
                 </button>
 
-                <button 
-                  type="button" 
-                  id="hr-skill-mode-raw-btn"
-                  onclick="setGlobalHouseRuleSkill(false)" 
-                  class="p-2.5 rounded-lg border-2 text-left transition flex items-center justify-between bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500 cursor-pointer">
+                <button type="button" id="hr-skill-mode-raw-btn" onclick="setHouseRuleSkillConsolidation(false)" class="p-2.5 rounded-lg border-2 text-left transition flex items-center justify-between bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500 cursor-pointer">
                   <div class="flex items-center gap-2">
                     <span class="text-base">📂</span>
                     <div>
@@ -4432,12 +4607,14 @@ CRITICAL RULES:
                 <div>
                   <div class="font-bold text-amber-300 flex items-center gap-1.5 text-xs">
                     <span>🎖️</span>
-                    <span>Varsayılan Feat İlerleme Modu</span>
+                    <span>Feat Dağıtım Modu (Feat Progression)</span>
+                    <span class="badge bg-amber-950 text-amber-300 border border-amber-700 text-[9px] px-1.5 py-0.5 rounded">Masa Kuralı</span>
                   </div>
-                  <div class="text-[10px] text-slate-400 mt-0.5">Yeni karakterler için genel feat kazanma aralığını belirleyin.</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Seviye atlarken karakterlerin genel feat kazanma aralığını belirleyin.</div>
                 </div>
                 <div class="flex items-center gap-1.5">
-                  <select id="setting-feat-mode" onchange="onGlobalSettingChange()" class="bg-slate-900 border border-slate-700 text-amber-300 font-semibold text-[11px] rounded px-2 py-1 focus:outline-none focus:border-amber-400 cursor-pointer">
+                  <label class="text-[10px] font-bold text-amber-400 uppercase">🎖️ Feat Modu:</label>
+                  <select id="setting-feat-mode" onchange="onSettingFeatModeChange()" class="bg-slate-900 border border-slate-700 text-amber-300 font-semibold text-[11px] rounded px-2 py-1 focus:outline-none focus:border-amber-400 cursor-pointer">
                     <option value="Standard 3.5e (1, 3, 6, 9, 12, 15, 18)">Standard 3.5e (1, 3, 6, 9, 12, 15, 18)</option>
                     <option value="Every 2 Levels (1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)">Every 2 Levels (1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)</option>
                     <option value="Every 4 Levels (1, 4, 8, 12, 16, 20)">Every 4 Levels (1, 4, 8, 12, 16, 20)</option>
@@ -4447,18 +4624,82 @@ CRITICAL RULES:
               </div>
             </div>
 
-            <!-- 3. BAB & SAVE HESAPLAMA SİSTEMİ -->
+            <!-- 3. CASTER CL KURALI (CASTER LEVEL RULE) & CASTER TYPE -->
+            <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2 hover:border-slate-700 transition">
+              <div class="flex flex-wrap items-center justify-between gap-1.5 pb-2 border-b border-slate-800/80">
+                <div>
+                  <div class="font-bold text-purple-300 flex items-center gap-1.5 text-xs">
+                    <span>🔮</span>
+                    <span>Caster Level (CL) Kuralı &amp; Caster Tipi</span>
+                    <span class="badge bg-purple-950 text-purple-300 border border-purple-700 text-[9px] px-1.5 py-0.5 rounded">Masa Kuralı</span>
+                  </div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Çoklu sınıflarda Caster / Initiator Level kuralı ve uygulanacağı caster disiplini.</div>
+                </div>
+              </div>
+
+              <!-- Simetrik 2 Kolonlu Seçim Alanı -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div class="bg-slate-900/90 border border-purple-900/40 rounded-xl p-2.5 flex flex-col justify-between gap-1.5">
+                  <div class="flex items-center justify-between">
+                    <label for="setting-cl-mode" class="text-[10px] font-bold text-purple-400 uppercase flex items-center gap-1.5">
+                      <span>🔮</span>
+                      <span>CL Kuralı (Caster Level):</span>
+                    </label>
+                    <span class="text-[9px] font-mono text-purple-300/70">Multiclass CL</span>
+                  </div>
+                  <select id="setting-cl-mode" onchange="onSettingClModeChange()" class="w-full bg-slate-950 border border-slate-700 text-purple-300 font-semibold text-[11px] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-purple-400 transition cursor-pointer">
+                    <option value="Character Level (DM Boon)">Character Level (DM Boon: CL = Karakter Seviyesi)</option>
+                    <option value="Warlock Boon (Invocations &amp; Eldritch Blast)">Warlock Boon (CL = Karakter Seviyesi + Invocations)</option>
+                    <option value="Class Level">Class Level (Yalnızca Sınıf Seviyesi)</option>
+                    <option value="Custom">Custom (Manuel)</option>
+                  </select>
+                </div>
+
+                <div class="bg-slate-900/90 border border-indigo-900/40 rounded-xl p-2.5 flex flex-col justify-between gap-1.5">
+                  <div class="flex items-center justify-between">
+                    <label for="setting-caster-type" class="text-[10px] font-bold text-indigo-400 uppercase flex items-center gap-1.5">
+                      <span>🎯</span>
+                      <span>Caster Tipi (Disiplin):</span>
+                    </label>
+                    <span class="text-[9px] font-mono text-indigo-300/70">Disiplin</span>
+                  </div>
+                  <select id="setting-caster-type" onchange="onSettingCasterTypeChange()" class="w-full bg-slate-950 border border-slate-700 text-indigo-300 font-semibold text-[11px] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-400 transition cursor-pointer">
+                    <option value="spontaneous">🔮 1. Doğal / Anlık (Sorcerer vb.)</option>
+                    <option value="prepared">📖 2. Kitaplı Hazırlık (Wizard vb.)</option>
+                    <option value="divine">✨ 3. İlahi Dua (Cleric vb.)</option>
+                    <option value="martial">⚔️ 4. Savaş Manevraları (Martial Adept / IL)</option>
+                    <option value="warlock">👁️ 5. Warlock (Yakarışlar &amp; Blast)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. IGNORE ASF / BOON -->
+            <label class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
+              <div>
+                <div class="font-bold text-slate-200 flex items-center gap-1.5 text-xs">
+                  <span class="text-slate-300 font-semibold">🛡️ Ignore ASF / Boon</span>
+                  <span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[9px] px-1.5 py-0.5 rounded">DM Boon</span>
+                </div>
+                <div class="text-[10px] text-slate-400 mt-0.5">Zırh ve kalkanlardan gelen Arcane Spell Failure (ASF %) büyü bozma cezasını tamamen yoksayar.</div>
+              </div>
+              <input type="checkbox" id="setting-ignore-asf" onchange="onSettingIgnoreAsfChange()" class="w-4 h-4 rounded border-slate-700 text-emerald-500 focus:ring-0">
+            </label>
+
+            <!-- 5. BAB & SAVE PROGRESSION (FRACTIONAL BAB/SAVE - UNEARTHED ARCANA) -->
             <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5 hover:border-slate-700 transition">
               <div class="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <div class="font-bold text-sky-300 flex items-center gap-1.5 text-xs">
                     <span>📐</span>
-                    <span>BAB & Save Hesaplama Sistemi</span>
+                    <span>BAB &amp; Save Hesaplama Sistemi</span>
+                    <span class="badge bg-sky-950 text-sky-300 border border-sky-700 text-[9px] px-1.5 py-0.5 rounded">Unearthed Arcana</span>
                   </div>
-                  <div class="text-[10px] text-slate-400 mt-0.5">Çoklu sınıflarda temel saldırı ve kurtarma atışları ilerleme standardı.</div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Çoklu sınıflarda (Multiclass) kesirli BAB/Save ilerlemesi (Good BAB +1.0, Avg +0.75, Poor +0.5).</div>
                 </div>
                 <div class="flex items-center gap-1.5">
-                  <select id="setting-bab-save-system" onchange="onGlobalSettingChange()" class="bg-slate-900 border border-slate-700 text-sky-300 font-semibold text-[11px] rounded px-2 py-1 focus:outline-none focus:border-sky-400 cursor-pointer">
+                  <label class="text-[10px] font-bold text-sky-400 uppercase">📐 Kural:</label>
+                  <select id="setting-bab-save-system" onchange="onSettingBabSaveSystemChange()" class="bg-slate-900 border border-slate-700 text-sky-300 font-semibold text-[11px] rounded px-2 py-1 focus:outline-none focus:border-sky-400 cursor-pointer">
                     <option value="standard" selected>Standard Core 3.5e (Standart RAW)</option>
                     <option value="fractional">Fractional (Unearthed Arcana - Kesirli)</option>
                   </select>
@@ -4466,122 +4707,101 @@ CRITICAL RULES:
               </div>
             </div>
 
-            <!-- 4. CASTER CL KURALI & CASTER TIPI -->
-            <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2 hover:border-slate-700 transition">
-              <div class="flex flex-wrap items-center justify-between gap-1.5 pb-2 border-b border-slate-800/80">
-                <div class="font-bold text-purple-300 flex items-center gap-1.5 text-xs">
-                  <span>🔮</span>
-                  <span>Caster Level (CL) Kuralı & Disiplin Standardı</span>
-                </div>
+            <!-- 6. NO CRIT CONFIRM -->
+            <label class="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
+              <div>
+                <div class="font-bold text-slate-200">🚫 No Crit Confirm (Otomatik Kritik)</div>
+                <div class="text-[10px] text-slate-400">Kritik tehdit atıldığında teyit zarı atmadan doğrudan kritik hasar uygular.</div>
               </div>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <div class="bg-slate-900/90 border border-purple-900/40 rounded-xl p-2.5 space-y-1">
-                  <label class="text-[10px] font-bold text-purple-400 uppercase">CL Kuralı:</label>
-                  <select id="setting-cl-mode" onchange="onGlobalSettingChange()" class="w-full bg-slate-950 border border-slate-700 text-purple-300 font-semibold text-[11px] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-purple-400 cursor-pointer">
-                    <option value="Character Level (DM Boon)" selected>Character Level (DM Boon: CL = Karakter Seviyesi)</option>
-                    <option value="Warlock Boon (Invocations & Eldritch Blast)">Warlock Boon (CL = Karakter Seviyesi + Invocations)</option>
-                    <option value="Class Level">Class Level (Yalnızca Sınıf Seviyesi)</option>
-                    <option value="Custom">Custom (Manuel)</option>
-                  </select>
-                </div>
-                <div class="bg-slate-900/90 border border-indigo-900/40 rounded-xl p-2.5 space-y-1">
-                  <label class="text-[10px] font-bold text-indigo-400 uppercase">Caster Tipi:</label>
-                  <select id="setting-caster-type" onchange="onGlobalSettingChange()" class="w-full bg-slate-950 border border-slate-700 text-indigo-300 font-semibold text-[11px] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-400 cursor-pointer">
-                    <option value="spontaneous">🔮 1. Doğal / Anlık (Sorcerer vb.)</option>
-                    <option value="prepared">📖 2. Kitaplı Hazırlık (Wizard vb.)</option>
-                    <option value="divine">✨ 3. İlahi Dua (Cleric vb.)</option>
-                    <option value="martial">⚔️ 4. Savaş Manevraları (Martial Adept / IL)</option>
-                    <option value="warlock">👁️ 5. Warlock (Yakarışlar & Blast)</option>
-                  </select>
-                </div>
-              </div>
-            </div>
+              <input type="checkbox" id="settings-no-crit-confirm" checked onchange="onSettingNoCritConfirmChange()" class="rounded border-slate-700 text-amber-500 focus:ring-0">
+            </label>
 
-            <!-- 5. IGNORE ASF / BOON -->
-            <label class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
+            <!-- 7. TOME OF BATTLE MANEUVER CRIT -->
+            <label class="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
+              <div>
+                <div class="font-bold text-slate-200">⚡ Tome of Battle Manevralarını Katla</div>
+                <div class="text-[10px] text-slate-400">Manevra ile yapılan saldırılarda ekstra zarları kritik vuruşa dahil eder.</div>
+              </div>
+              <input type="checkbox" id="settings-maneuver-crit" onchange="onSettingManeuverCritChange()" class="rounded border-slate-700 text-indigo-500 focus:ring-0">
+            </label>
+
+            <!-- 8. CRIT THREAT CAP (HOUSE RULE) -->
+            <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950 border border-slate-800">
               <div>
                 <div class="font-bold text-slate-200 flex items-center gap-1.5 text-xs">
-                  <span class="text-slate-300 font-semibold">🛡️ Ignore ASF / Boon</span>
-                  <span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[9px]">DM Boon</span>
+                  <span>🎯</span>
+                  <span>Kritik Tehdit Tavanı (Crit Range Cap)</span>
                 </div>
-                <div class="text-[10px] text-slate-400 mt-0.5">Zırh ve kalkanlardan gelen Arcane Spell Failure (ASF %) büyü bozma cezasını tamamen yoksayar.</div>
+                <div class="text-[10px] text-slate-400 mt-0.5">Kritik tehdit aralığının inebileceği en düşük taban sınır (DM Limiti: Max 15-20).</div>
               </div>
-              <input type="checkbox" id="setting-ignore-asf" onchange="onGlobalSettingChange()" class="w-4 h-4 rounded border-slate-700 text-emerald-500 focus:ring-0 cursor-pointer">
-            </label>
-
-            <!-- 6. NO CRIT CONFIRM & MANEUVER CRIT -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <label class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
-                <div>
-                  <div class="font-bold text-slate-200">🚫 No Crit Confirm</div>
-                  <div class="text-[10px] text-slate-400">Teyit zarı atmadan doğrudan kritik hasar uygular.</div>
-                </div>
-                <input type="checkbox" id="setting-no-crit-confirm" onchange="onGlobalSettingChange()" class="w-4 h-4 rounded border-slate-700 text-amber-500 focus:ring-0 cursor-pointer">
-              </label>
-
-              <label class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
-                <div>
-                  <div class="font-bold text-slate-200">⚡ Manevraları Katla</div>
-                  <div class="text-[10px] text-slate-400">Tome of Battle manevra ekstra zarlarını kritiğe katar.</div>
-                </div>
-                <input type="checkbox" id="setting-maneuver-crit" onchange="onGlobalSettingChange()" class="w-4 h-4 rounded border-slate-700 text-indigo-500 focus:ring-0 cursor-pointer">
-              </label>
+              <div class="flex items-center gap-1.5 shrink-0 ml-2">
+                <select id="setting-crit-cap-min" onchange="onHouseRuleCritCapChange(this.value)" class="bg-slate-900 border border-slate-700 text-amber-300 font-bold text-xs rounded px-2.5 py-1 focus:outline-none focus:border-amber-400 cursor-pointer">
+                  <option value="15">Max 15-20 (DM Limiti)</option>
+                  <option value="16">Max 16-20</option>
+                  <option value="17">Max 17-20</option>
+                  <option value="18">Max 18-20</option>
+                  <option value="12">Max 12-20 (Geniş)</option>
+                  <option value="1">Sınırsız (Cap Yok)</option>
+                </select>
+              </div>
             </div>
+
+            <!-- 9. KEEN & IMPROVED CRITICAL STACKING -->
+            <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950 border border-slate-800">
+              <div>
+                <div class="font-bold text-slate-200 flex items-center gap-1.5 text-xs">
+                  <span>⚔️</span>
+                  <span>Keen ve Improved Critical İstiflenmesi</span>
+                </div>
+                <div class="text-[10px] text-slate-400 mt-0.5">Keen silah özelliği ile Improved Critical feat'i birlikte olduğunda kural tercihi.</div>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0 ml-2">
+                <select id="setting-keen-imp-stacking" onchange="onHouseRuleKeenStackingChange(this.value)" class="bg-slate-900 border border-slate-700 text-amber-300 font-bold text-xs rounded px-2.5 py-1 focus:outline-none focus:border-amber-400 cursor-pointer">
+                  <option value="stack_diminishing">DM Kuralı: Stack Olur (+1 Aralık Genişletir)</option>
+                  <option value="none">RAW Core 3.5e: Stack Olmaz (Tek Katlama)</option>
+                  <option value="full">3.0e Nostaljisi: Tam Katlama (4x Aralık)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- 10. PRECISION DAMAGE (SNEAK ATTACK) PER TURN RULE -->
+            <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950 border border-slate-800">
+              <div>
+                <div class="font-bold text-slate-200 flex items-center gap-1.5 text-xs">
+                  <span>🗡️</span>
+                  <span>Hassas Hasar Limiti (Sneak Attack / Skirmish)</span>
+                </div>
+                <div class="text-[10px] text-slate-400 mt-0.5">Gizli saldırı zarlarının iteratif vuruşlara uygulanma şekli.</div>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0 ml-2">
+                <select id="setting-precision-rule" onchange="onHouseRulePrecisionChange(this.value)" class="bg-slate-900 border border-slate-700 text-amber-300 font-bold text-xs rounded px-2.5 py-1 focus:outline-none focus:border-amber-400 cursor-pointer">
+                  <option value="once_per_turn">Turda İlk İsabet (Taktiksel Limit)</option>
+                  <option value="every_hit">Her İsabet (Standart RAW 3.5e)</option>
+                </select>
+              </div>
+            </div>
+
           </div>
         </div>
 
-        <!-- SECTION 3: KAMPANYA KİTAPLARI KISALTMALARI (32 KİTAP) -->
-        <div class="bg-slate-900/90 border border-indigo-500/40 rounded-xl p-3.5 space-y-2 shadow">
-          <details class="group bg-slate-950/60 border border-slate-800 rounded-xl transition-all duration-200">
-            <summary class="cursor-pointer p-2.5 flex items-center justify-between text-xs font-bold text-amber-300 hover:text-amber-200 select-none list-none">
-              <span class="flex items-center gap-2">
-                <span>📚</span>
-                <span>Kampanya Kitapları Kısaltmaları (32 Resmi Kitap / Kod)</span>
-              </span>
-              <span class="text-xs text-slate-500 group-open:rotate-180 transition-transform duration-200">▼</span>
-            </summary>
-            <div class="p-3 pt-0 border-t border-slate-800/80 mt-1">
-              <p class="text-[10px] text-slate-400 mb-2">Master DB, kurallar ve büyü açıklamalarında kullanılan standart D&D 3.5e ek kitap kısaltmaları:</p>
-              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-60 overflow-y-auto pr-1" id="hub-splatbooks-container">
-                <!-- JS dinamik doldurur -->
-              </div>
-            </div>
-          </details>
-        </div>
-
-        <!-- SECTION 4: DATA BACKUP, RESTORE & DANGER ZONE (VERİ YÖNETİMİ) -->
-        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-3 shadow">
-          <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
-            <span class="text-xl">💾</span>
+        <!-- SECTION 6: DANGER ZONE / RESET -->
+        <div class="bg-rose-950/20 border border-rose-600/40 rounded-xl p-3.5 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-rose-900/40 pb-2">
             <div>
-              <h4 class="text-xs font-bold text-white">Veri Yönetimi, Yedekleme & Sıfırlama</h4>
-              <p class="text-[10px] text-slate-400">JSON yedeklerinizi yönetin veya tüm yerel verileri sıfırlayın.</p>
+              <h4 class="text-xs font-bold text-rose-400">⚠️ Karakteri Sıfırla</h4>
+              <p class="text-[10px] text-slate-400">Yalnızca seçili karakteri 1. seviye temiz şablona döndürür veya varsayılanlara çeker.</p>
             </div>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <button onclick="exportHubData()" class="bg-indigo-600/30 hover:bg-indigo-600 text-indigo-200 hover:text-white text-xs font-semibold py-2 px-3 rounded-lg border border-indigo-500/40 transition flex items-center justify-center gap-1.5 cursor-pointer">
-              <span>💾</span>
-              <span>Hub & Karakter JSON İndir</span>
+            <button onclick="resetToCleanCharacter();" class="bg-rose-700 hover:bg-rose-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition shadow cursor-pointer">
+              🗑️ Karakteri Sıfırla
             </button>
-            <label class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2 px-3 rounded-lg border border-slate-700 transition flex items-center justify-center gap-1.5 cursor-pointer">
-              <span>📂</span>
-              <span>JSON Yedek Yükle</span>
-              <input type="file" accept=".json" class="hidden" onchange="importHubData(event)">
-            </label>
           </div>
-
-          <!-- Tehlikeli Bölge: Tüm Verileri Sıfırla -->
-          <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-3 bg-rose-950/20 border border-rose-900/30 rounded-xl p-3">
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
             <div>
-              <div class="text-xs font-bold text-rose-300 flex items-center gap-1.5">
-                <span>🧹</span>
-                <span>Tüm Yerel Önbelleği & Verileri Sıfırla</span>
-              </div>
-              <div class="text-[10px] text-slate-400">Bu tarayıcıdaki tüm yerel karakter, kampanya ve ayarları temizler.</div>
+              <h4 class="text-xs font-bold text-amber-400">🧹 Fabrika Ayarlarına Dön (Tümünü Sıfırla)</h4>
+              <p class="text-[10px] text-slate-400">Tüm karakterleri, kampanyaları, Master DB önbelleğini ve yerel hafızayı sıfırlayarak baştan başlatır.</p>
             </div>
-            <button onclick="resetAllHubLocalData()" class="px-3 py-1.5 bg-rose-900 hover:bg-rose-800 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer shrink-0 shadow-sm" title="Tüm yerel önbelleği ve verileri sıfırla">
-              <span>🧹 Sıfırla</span>
+            <button onclick="resetAllLocalDataToFactoryDefaults()" class="bg-gradient-to-r from-amber-600 to-rose-700 hover:from-amber-500 hover:to-rose-600 text-white font-black text-xs px-3.5 py-1.5 rounded-lg transition shadow-lg cursor-pointer">
+              🧹 Tümünü Sıfırla
             </button>
           </div>
         </div>
@@ -4592,9 +4812,11 @@ CRITICAL RULES:
 
 <script>
     // ==========================================
-    // GLOBAL AYARLAR & MASA STANDARTLARI MOTORU
-    // ==========================================
+    // =======================================================
+    // GLOBAL MASA STANDARTLARI & KARAKTER AYARLARI MOTORU (HUB)
+    // =======================================================
     const HUB_GLOBAL_SETTINGS_KEY = 'dnd35_global_settings';
+    let currentSettingsScope = 'global'; // 'global' veya karakter id ('char_...')
 
     function getGlobalDefaultSettings() {
       const defaults = {
@@ -4604,13 +4826,15 @@ CRITICAL RULES:
           casterType: 'spontaneous',
           featMode: 'Standard 3.5e (1, 3, 6, 9, 12, 15, 18)',
           babSaveSystem: 'standard',
-          ignoreAsf: false
+          ignoreAsf: true
         },
         houseRules: {
           skillConsolidation: true,
           noCritConfirm: true,
-          maneuverCrit: true,
-          critThreatCap: 15
+          maneuverCrit: false,
+          critCapMin: 15,
+          keenImpCritStacking: 'stack_diminishing',
+          precisionDamageRule: 'once_per_turn'
         }
       };
       try {
@@ -4630,39 +4854,33 @@ CRITICAL RULES:
       } catch (e) {}
     }
 
-    function openSettingsModal() {
+    function openSettingsModal(targetCharId = null) {
       const modal = document.getElementById('settings-modal');
       if (!modal) return;
+
+      // Kapsam / Karakter Dropdown'ını Doldur
+      const scopeSel = document.getElementById('settings-scope-select');
+      if (scopeSel) {
+        scopeSel.innerHTML = '<option value="global">🌐 Tüm Masa Standartları (Yeni Karakterler)</option>' +
+          (state.characters || []).map(c => `
+            <option value="${c.id}">👤 ${escapeHtml(c.name || 'İsimsiz')} (${escapeHtml(c.classes || 'Lv ' + (c.level || 1))})</option>
+          `).join('');
+
+        if (targetCharId && (targetCharId === 'global' || state.characters.some(it => it.id === targetCharId))) {
+          currentSettingsScope = targetCharId;
+        } else if (currentSettingsScope !== 'global' && !state.characters.some(it => it.id === currentSettingsScope)) {
+          currentSettingsScope = 'global';
+        }
+        scopeSel.value = currentSettingsScope;
+      }
+
       modal.classList.remove('hidden');
 
       // 1. Gemini API Key Durumu
       verifySettingsGeminiApiKey(false);
 
-      // 2. Global Standart Ayarlarını UI'a Doldur
-      const globalCfg = getGlobalDefaultSettings();
-
-      const featSel = document.getElementById('setting-feat-mode');
-      if (featSel) featSel.value = globalCfg.settings.featMode;
-
-      const babSel = document.getElementById('setting-bab-save-system');
-      if (babSel) babSel.value = globalCfg.settings.babSaveSystem;
-
-      const clSel = document.getElementById('setting-cl-mode');
-      if (clSel) clSel.value = globalCfg.settings.clMode;
-
-      const casterSel = document.getElementById('setting-caster-type');
-      if (casterSel) casterSel.value = globalCfg.settings.casterType;
-
-      const asfChk = document.getElementById('setting-ignore-asf');
-      if (asfChk) asfChk.checked = Boolean(globalCfg.settings.ignoreAsf);
-
-      const noCritChk = document.getElementById('setting-no-crit-confirm');
-      if (noCritChk) noCritChk.checked = Boolean(globalCfg.houseRules.noCritConfirm);
-
-      const manCritChk = document.getElementById('setting-maneuver-crit');
-      if (manCritChk) manCritChk.checked = Boolean(globalCfg.houseRules.maneuverCrit);
-
-      updateGlobalSkillUI(globalCfg.houseRules.skillConsolidation);
+      // 2. Seçili Kapsama Göre UI'ı Doldur
+      loadSettingsForCurrentScope();
 
       // 3. Kampanya Kitapları Kısaltmalarını Doldur
       renderHubSplatbooks();
@@ -4673,14 +4891,136 @@ CRITICAL RULES:
       if (modal) modal.classList.add('hidden');
     }
 
-    function setGlobalHouseRuleSkill(isMerged) {
-      const cfg = getGlobalDefaultSettings();
-      cfg.houseRules.skillConsolidation = Boolean(isMerged);
-      saveGlobalDefaultSettings(cfg);
-      updateGlobalSkillUI(isMerged);
+    function onSettingsScopeChange(val) {
+      currentSettingsScope = val;
+      loadSettingsForCurrentScope();
     }
 
-    function updateGlobalSkillUI(isMerged) {
+    function loadSettingsForCurrentScope() {
+      let cfgSettings = null;
+      let cfgHouseRules = null;
+      const resetBtn = document.getElementById('btn-reset-to-global-defaults');
+
+      if (currentSettingsScope === 'global') {
+        if (resetBtn) resetBtn.classList.add('hidden');
+        const g = getGlobalDefaultSettings();
+        cfgSettings = g.settings;
+        cfgHouseRules = g.houseRules;
+      } else {
+        if (resetBtn) resetBtn.classList.remove('hidden');
+        const c = (state.characters || []).find(it => it.id === currentSettingsScope);
+        if (c) {
+          if (!c.fullData) {
+            c.fullData = createCleanDnd35Character(c);
+            saveHubStorage();
+          }
+          if (!c.fullData.settings) c.fullData.settings = {};
+          if (!c.fullData.houseRules) c.fullData.houseRules = {};
+          
+          const g = getGlobalDefaultSettings();
+          cfgSettings = Object.assign({}, g.settings, c.fullData.settings);
+          cfgHouseRules = Object.assign({}, g.houseRules, c.fullData.houseRules);
+        } else {
+          currentSettingsScope = 'global';
+          return loadSettingsForCurrentScope();
+        }
+      }
+
+      // Inputları doldur
+      const featSel = document.getElementById('setting-feat-mode');
+      if (featSel) featSel.value = cfgSettings.featMode || 'Standard 3.5e (1, 3, 6, 9, 12, 15, 18)';
+
+      const babSel = document.getElementById('setting-bab-save-system');
+      if (babSel) babSel.value = cfgSettings.babSaveSystem || 'standard';
+
+      const clSel = document.getElementById('setting-cl-mode');
+      if (clSel) clSel.value = cfgSettings.clMode || 'Character Level (DM Boon)';
+
+      const casterSel = document.getElementById('setting-caster-type');
+      if (casterSel) casterSel.value = cfgSettings.casterType || 'spontaneous';
+
+      const asfChk = document.getElementById('setting-ignore-asf');
+      if (asfChk) asfChk.checked = cfgSettings.ignoreAsf !== false;
+
+      const noCritChk = document.getElementById('settings-no-crit-confirm');
+      if (noCritChk) noCritChk.checked = cfgHouseRules.noCritConfirm !== false;
+
+      const manCritChk = document.getElementById('settings-maneuver-crit');
+      if (manCritChk) manCritChk.checked = cfgHouseRules.maneuverCrit === true;
+
+      const critCapSel = document.getElementById('setting-crit-cap-min');
+      if (critCapSel) critCapSel.value = String(cfgHouseRules.critCapMin ?? 15);
+
+      const keenStackSel = document.getElementById('setting-keen-imp-stacking');
+      if (keenStackSel) keenStackSel.value = cfgHouseRules.keenImpCritStacking || 'stack_diminishing';
+
+      const precisionSel = document.getElementById('setting-precision-rule');
+      if (precisionSel) precisionSel.value = cfgHouseRules.precisionDamageRule || 'once_per_turn';
+
+      updateHouseRuleSkillConsolidationUI(cfgHouseRules.skillConsolidation !== false);
+    }
+
+    function onSettingChange() {
+      const featSel = document.getElementById('setting-feat-mode');
+      const babSel = document.getElementById('setting-bab-save-system');
+      const clSel = document.getElementById('setting-cl-mode');
+      const casterSel = document.getElementById('setting-caster-type');
+      const asfChk = document.getElementById('setting-ignore-asf');
+      const noCritChk = document.getElementById('settings-no-crit-confirm');
+      const manCritChk = document.getElementById('settings-maneuver-crit');
+      const critCapSel = document.getElementById('setting-crit-cap-min');
+      const keenStackSel = document.getElementById('setting-keen-imp-stacking');
+      const precisionSel = document.getElementById('setting-precision-rule');
+
+      const isSkillMerged = !document.getElementById('hr-skill-mode-merged-check')?.classList.contains('hidden');
+
+      if (currentSettingsScope === 'global') {
+        const cfg = getGlobalDefaultSettings();
+        if (featSel) cfg.settings.featMode = featSel.value;
+        if (babSel) cfg.settings.babSaveSystem = babSel.value;
+        if (clSel) cfg.settings.clMode = clSel.value;
+        if (casterSel) cfg.settings.casterType = casterSel.value;
+        if (asfChk) cfg.settings.ignoreAsf = asfChk.checked;
+
+        cfg.houseRules.skillConsolidation = isSkillMerged;
+        if (noCritChk) cfg.houseRules.noCritConfirm = noCritChk.checked;
+        if (manCritChk) cfg.houseRules.maneuverCrit = manCritChk.checked;
+        if (critCapSel) cfg.houseRules.critCapMin = Number(critCapSel.value) || 15;
+        if (keenStackSel) cfg.houseRules.keenImpCritStacking = keenStackSel.value;
+        if (precisionSel) cfg.houseRules.precisionDamageRule = precisionSel.value;
+
+        saveGlobalDefaultSettings(cfg);
+      } else {
+        const c = (state.characters || []).find(it => it.id === currentSettingsScope);
+        if (c) {
+          if (!c.fullData) c.fullData = createCleanDnd35Character(c);
+          if (!c.fullData.settings) c.fullData.settings = {};
+          if (!c.fullData.houseRules) c.fullData.houseRules = {};
+
+          if (featSel) c.fullData.settings.featMode = featSel.value;
+          if (babSel) c.fullData.settings.babSaveSystem = babSel.value;
+          if (clSel) c.fullData.settings.clMode = clSel.value;
+          if (casterSel) c.fullData.settings.casterType = casterSel.value;
+          if (asfChk) c.fullData.settings.ignoreAsf = asfChk.checked;
+
+          c.fullData.houseRules.skillConsolidation = isSkillMerged;
+          if (noCritChk) c.fullData.houseRules.noCritConfirm = noCritChk.checked;
+          if (manCritChk) c.fullData.houseRules.maneuverCrit = manCritChk.checked;
+          if (critCapSel) c.fullData.houseRules.critCapMin = Number(critCapSel.value) || 15;
+          if (keenStackSel) c.fullData.houseRules.keenImpCritStacking = keenStackSel.value;
+          if (precisionSel) c.fullData.houseRules.precisionDamageRule = precisionSel.value;
+
+          saveHubStorage();
+        }
+      }
+    }
+
+    function setHouseRuleSkillConsolidation(isMerged) {
+      updateHouseRuleSkillConsolidationUI(isMerged);
+      onSettingChange();
+    }
+
+    function updateHouseRuleSkillConsolidationUI(isMerged) {
       const mergedBtn = document.getElementById('hr-skill-mode-merged-btn');
       const rawBtn = document.getElementById('hr-skill-mode-raw-btn');
       const mergedCheck = document.getElementById('hr-skill-mode-merged-check');
@@ -4699,31 +5039,158 @@ CRITICAL RULES:
       }
     }
 
-    function onGlobalSettingChange() {
-      const cfg = getGlobalDefaultSettings();
+    function applyGlobalDefaultsToSelectedCharacter() {
+      if (currentSettingsScope === 'global') return;
+      const c = (state.characters || []).find(it => it.id === currentSettingsScope);
+      if (!c) return;
 
-      const featSel = document.getElementById('setting-feat-mode');
-      if (featSel) cfg.settings.featMode = featSel.value;
+      const g = getGlobalDefaultSettings();
+      if (!c.fullData) c.fullData = createCleanDnd35Character(c);
+      c.fullData.settings = Object.assign({}, g.settings);
+      c.fullData.houseRules = Object.assign({}, g.houseRules);
+      saveHubStorage();
+      loadSettingsForCurrentScope();
+      alert(`✅ "${c.name}" karakterinin kuralları ve ayarları Global Masa Standartlarına eşitlendi!`);
+    }
 
-      const babSel = document.getElementById('setting-bab-save-system');
-      if (babSel) cfg.settings.babSaveSystem = babSel.value;
+    function onSettingFeatModeChange() { onSettingChange(); }
+    function onSettingClModeChange() { onSettingChange(); }
+    function onSettingCasterTypeChange() { onSettingChange(); }
+    function onSettingIgnoreAsfChange() { onSettingChange(); }
+    function onSettingBabSaveSystemChange() { onSettingChange(); }
+    function onSettingNoCritConfirmChange() { onSettingChange(); }
+    function onSettingManeuverCritChange() { onSettingChange(); }
+    function onHouseRuleCritCapChange(val) { onSettingChange(); }
+    function onHouseRuleKeenStackingChange(val) { onSettingChange(); }
+    function onHouseRulePrecisionChange(val) { onSettingChange(); }
 
-      const clSel = document.getElementById('setting-cl-mode');
-      if (clSel) cfg.settings.clMode = clSel.value;
+    function openSkillConsolidationModal() {
+      alert("ℹ️ Beceri Konsolidasyonu Kuralı:\n\n" +
+        "1. Athletics: Climb, Jump, Swim\n" +
+        "2. Stealth: Hide, Move Silently\n" +
+        "3. Perception: Spot, Listen, Search\n" +
+        "4. Social: Bluff, Diplomacy, Intimidate, Sense Motive\n" +
+        "5. Knowledge: Tüm bilgi alt dalları\n" +
+        "6. Survival: Survival, Handle Animal, Ride\n" +
+        "7. Thievery: Disable Device, Open Lock, Sleight of Hand, Escape Artist\n\n" +
+        "Bu ayar açıkken karakter kağıdında 46 ayrı beceri yerine bu 7 akıcı grup kullanılır.");
+    }
 
-      const casterSel = document.getElementById('setting-caster-type');
-      if (casterSel) cfg.settings.casterType = casterSel.value;
+    function openJoinCampaignModal() {
+      closeSettingsModal();
+      openNewCampaignModal();
+    }
 
-      const asfChk = document.getElementById('setting-ignore-asf');
-      if (asfChk) cfg.settings.ignoreAsf = asfChk.checked;
+    // JSON Dışa / İçe Aktarım
+    function exportFullBundleJson() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+      const a = document.createElement('a');
+      a.href = dataStr;
+      a.download = `dnd35_hub_full_backup_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
 
-      const noCritChk = document.getElementById('setting-no-crit-confirm');
-      if (noCritChk) cfg.houseRules.noCritConfirm = noCritChk.checked;
+    function exportCharacterJson() {
+      let payload = state.characters;
+      if (currentSettingsScope && currentSettingsScope !== 'global') {
+        const c = state.characters.find(it => it.id === currentSettingsScope);
+        if (c) payload = c.fullData || c;
+      }
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
+      const a = document.createElement('a');
+      a.href = dataStr;
+      a.download = `dnd35_characters_backup_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
 
-      const manCritChk = document.getElementById('setting-maneuver-crit');
-      if (manCritChk) cfg.houseRules.maneuverCrit = manCritChk.checked;
+    function exportMasterDbJson() {
+      const raw = localStorage.getItem('dnd35_master_db') || JSON.stringify(window.BUNDLED_MASTER_DB || []);
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(raw);
+      const a = document.createElement('a');
+      a.href = dataStr;
+      a.download = `dnd35_master_db_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
 
-      saveGlobalDefaultSettings(cfg);
+    function handleJsonFileUpload(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed.characters && parsed.campaigns) {
+            state = parsed;
+            saveHubStorage();
+            renderHub();
+            alert('✅ Hub tam paket yedeği başarıyla geri yüklendi!');
+          } else if (parsed.name && (parsed.stats || parsed.abilities || parsed.classes)) {
+            const newChar = {
+              id: parsed.id || ('char_' + Date.now()),
+              name: parsed.name,
+              race: parsed.race || '',
+              classes: parsed.classes || '',
+              level: parsed.level || 1,
+              hp: parsed.hp?.max || parsed.currentHp || 10,
+              ac: parsed.ac?.total || parsed.ac || 10,
+              isNpc: Boolean(parsed.isNpc),
+              fullData: parsed
+            };
+            state.characters.push(newChar);
+            saveHubStorage();
+            renderHub();
+            alert(`✅ "${parsed.name}" karakteri başarıyla içe aktarıldı!`);
+          } else if (Array.isArray(parsed)) {
+            if (parsed.length > 0 && parsed[0].benefit !== undefined) {
+              localStorage.setItem('dnd35_master_db', JSON.stringify(parsed));
+              alert(`✅ Master DB kütüphanesi güncellendi (${parsed.length} kayıt)!`);
+            } else {
+              parsed.forEach(c => {
+                if (c && c.id && !state.characters.some(it => it.id === c.id)) {
+                  state.characters.push(c);
+                }
+              });
+              saveHubStorage();
+              renderHub();
+              alert(`✅ ${parsed.length} karakter içe aktarıldı!`);
+            }
+          }
+          closeSettingsModal();
+        } catch (err) {
+          alert('❌ JSON dosyası işlenirken hata oluştu: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function resetToCleanCharacter() {
+      if (currentSettingsScope && currentSettingsScope !== 'global') {
+        const c = state.characters.find(it => it.id === currentSettingsScope);
+        if (!c) return;
+        if (confirm(`⚠️ "${c.name}" karakterini temiz 1. seviye şablona döndürmek istediğinize emin misiniz?`)) {
+          c.fullData = createCleanDnd35Character({ id: c.id, name: c.name, campaignId: c.campaignId, isNpc: c.isNpc });
+          saveHubStorage();
+          loadSettingsForCurrentScope();
+          renderHub();
+          alert(`✅ "${c.name}" temiz şablona sıfırlandı.`);
+        }
+      } else {
+        if (confirm('⚠️ Global masa standartlarını varsayılan fabrika değerlerine döndürmek istediğinize emin misiniz?')) {
+          localStorage.removeItem(HUB_GLOBAL_SETTINGS_KEY);
+          loadSettingsForCurrentScope();
+          alert('✅ Global masa standartları varsayılanlara sıfırlandı.');
+        }
+      }
+    }
+
+    function resetAllLocalDataToFactoryDefaults() {
+      resetAllHubLocalData();
     }
 
     // Gemini API Key Yönetimi
@@ -4742,8 +5209,8 @@ CRITICAL RULES:
         if (maskedEl) maskedEl.textContent = masked;
         if (statusEl) statusEl.innerHTML = '<span class="text-emerald-400 font-bold">🟢 Tanımlı (Aktif)</span>';
       } else {
-        if (maskedEl) maskedEl.textContent = 'Tanımlı Değil';
-        if (statusEl) statusEl.innerHTML = '<span class="text-amber-400 font-bold">🟡 Tanımlı Değil</span>';
+        if (maskedEl) maskedEl.innerHTML = '<span class="text-amber-400">Tanımlı Değil (Ücretsiz Alın)</span>';
+        if (statusEl) statusEl.innerHTML = '<span class="text-amber-400 font-bold">🟡 Anahtar Girilmedi</span>';
       }
     }
 
@@ -4781,18 +5248,15 @@ CRITICAL RULES:
         const data = await res.json();
         const count = data.models ? data.models.length : 0;
         if (statusEl) statusEl.innerHTML = `<span class="text-emerald-400 font-bold">🟢 Bağlantı Başarılı (${count} Model)</span>`;
-        alert(`✅ Bağlantı Başarılı!
-
-Google Gemini API anahtarınız aktif ve çalışıyor (${count} model listelendi).`);
+        alert(`✅ Bağlantı Başarılı!\n\nGoogle Gemini API anahtarınız aktif ve çalışıyor (${count} model listelendi).`);
       } catch (e) {
         if (statusEl) statusEl.innerHTML = '<span class="text-rose-400 font-bold">⚠️ Bağlantı Başarısız</span>';
-        alert('❌ Gemini API Test Hatası:
-' + e.message);
+        alert('❌ Gemini API Test Hatası:\n' + e.message);
       }
     }
 
     function renderHubSplatbooks() {
-      const container = document.getElementById('hub-splatbooks-container');
+      const container = document.getElementById('splatbooks-grid-container');
       if (!container || container.children.length > 0) return;
 
       const splatbooks = [
@@ -4831,12 +5295,13 @@ Google Gemini API anahtarınız aktif ve çalışıyor (${count} model listelend
       ];
 
       container.innerHTML = splatbooks.map(b => `
-        <div class="bg-slate-900/90 border border-slate-800 p-2 rounded-lg flex items-center justify-between gap-1.5 hover:border-slate-700 transition">
-          <div class="min-w-0">
-            <span class="text-xs font-bold text-amber-300 font-mono">${b.code}</span>
-            <div class="text-[11px] text-slate-200 truncate font-semibold">${b.name}</div>
-            <div class="text-[9px] text-slate-500 truncate">${b.scope}</div>
+        <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-lg flex flex-col justify-between hover:border-slate-700 transition">
+          <div class="flex items-center justify-between mb-1">
+            <span class="font-mono font-bold text-xs text-amber-300">${b.code}</span>
+            <span class="badge bg-slate-950 text-slate-400 border border-slate-800 text-[9px] px-1 py-0.2 rounded">Splatbook</span>
           </div>
+          <div class="text-xs font-bold text-white">${b.name}</div>
+          <div class="text-[10px] text-slate-400 mt-1">${b.scope}</div>
         </div>
       `).join('');
     }

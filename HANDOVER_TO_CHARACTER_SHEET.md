@@ -819,3 +819,35 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   3. **Parite ve Kural Bütünlüğü:**
      - `character.html`, `index.html`, `webapp/character.html` ve `webapp/index.html` kopyaları %100 SHA-256 birebir eşitliğinde güncellendi.
      - Kesinlikle hiçbir tavla zarı emoji (`🎲`) kullanılmadı.
+
+---
+
+## 42. HUB AYARLAR MODALI KARAKTER SAYFASIYLA BİREBİR EŞİTLENDİ VE KAPSAM/KARAKTER ÖZELLEŞTİRMESİ EKLENDİ (2026-10-25)
+* **İstek:** Hub üst başlığındaki [ ⚙️ Ayarlar ] butonunun altına karakter sayfasındaki 6 bölümlü ayar menüsünün (DM Kampanyası, Rule Master AI, JSON Yedekleme/İçe Aktarma, D&D 3.5e Kural Kaynakları & 32 Splatbooks, House Rules & Masa Tercihleri, Tehlikeli Bölge) birebir getirilmesi; Hub'da yapılan ayarların yeni oluşturulan karakterlere yansıması ve her karakterin kendi özel ayarını seçebilmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Tam Pariteli Menü Yapısı (#settings-modal):**
+     - **Bölüm 1 - DM Kampanyası & Masa Bağlantısı:** Canlı kampanya durumu rozeti ve [ 🏰 Yeni Kampanya Ekle ] butonu.
+     - **Bölüm 2 - Rule Master (Gemini AI) Ayarları:** Google AI Studio anahtar girişi, tarayıcı yerel kaydı (`gemini_api_key`), canlı bağlantı ve model listeleme testi (ping) butonu.
+     - **Bölüm 3 - Yedekleme & Geri Yükleme (JSON):** Tam Paket İndir/Yükle, Karakter Dosyası İndir/Yükle, Master DB İndir/Yükle ve otomatik içe aktarma motoru (`handleJsonFileUpload`).
+     - **Bölüm 4 - Kural Kaynakları & Kampanya Kitapları:** 3 kademeli arama kaynağı ve akordiyon içinde 32 resmi D&D 3.5e ek kitap kısaltması kataloğu.
+     - **Bölüm 5 - Masa & Kural Tercihleri (House Rules):** 
+       - 1. Beceri Konsolidasyonu (Birleştirilmiş 7 Grup vs Standart 46 RAW Beceri)
+       - 2. Feat Dağıtım Modu (Standard 3.5e, Every 2 Levels, Every 4 Levels, All Free)
+       - 3. Caster Level Kuralı & Caster Tipi (Character Level Boon, Warlock Boon, Class Level, Custom)
+       - 4. Ignore ASF / Boon
+       - 5. BAB & Save Hesaplama Sistemi (Standard Core 3.5e vs Fractional Unearthed Arcana)
+       - 6. No Crit Confirm (Otomatik Kritik)
+       - 7. Tome of Battle Manevralarını Katla
+       - 8. Kritik Tehdit Tavanı (Crit Range Cap: 15-20, 16-20, vb.)
+       - 9. Keen & Improved Critical İstiflenmesi (Stack Diminishing, RAW None, Full 4x)
+       - 10. Hassas Hasar Limiti (Sneak Attack: Turda İlk İsabet vs Her İsabet)
+     - **Bölüm 6 - Tehlikeli Bölge (Danger Zone):** Seçili Karakteri Sıfırla ve Fabrika Ayarlarına Dön (Tümünü Sıfırla).
+  2. **İki Katmanlı Kapsam & Karakter Özelleştirme Motoru (Scope Architecture):**
+     - Ayarlar modalının en üstüne akıllı **Ayar Hedefi / Kapsam Seçici** (`#settings-scope-select`) eklendi:
+       - **🌐 Tüm Masa Standartları:** Seçildiğinde yapılan ayarlar `dnd35_global_settings` anahtarına yazılır ve Hub üzerinden açılan tüm yeni karakterler (Bestiary veya Boş Şablon) bu ayarları doğrudan devralır.
+       - **👤 [Karakter Adı] Özel Ayarları:** Hub'daki mevcut karakterler listeden seçilebilir. Seçilen karakterin `fullData.settings` ve `fullData.houseRules` alanları doğrudan düzenlenebilir.
+       - **🔄 Masaya Eşitle Butonu:** Bir karaktere özel ayar yapıldığında istenirse tek tıklamayla global masa standartlarına geri döndürülebilir.
+     - Ayrıca Hub Karakter Kartı Düzenleme Modalına (`#edit-character-modal`) "⚙️ Bu Karakterin Özel Ayarlarını & Kurallarını Aç" kısayol butonu entegre edildi.
+  3. **Parite ve Kural Bütünlüğü:**
+     - `hub.html` ve `webapp/hub.html` %100 SHA-256 paritesindedir.
+     - Kesinlikle hiçbir standart tavla zarı emoji kullanılmamıştır.
