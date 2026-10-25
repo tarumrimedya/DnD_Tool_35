@@ -1103,3 +1103,21 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   2. **Parite ve Kural Bütünlüğü:**
      - `character.html`, `index.html`, `webapp/character.html` ve `webapp/index.html` dosyaları %100 SHA-256 eşitliğinde güncellendi (`03BBDD6D...`).
      - Standart tavla zarı emoji yasağı tavizsiz korundu.
+
+
+---
+
+## 51. HUB KARAKTER KARTLARINDA SABİT HP BUTONLARININ (-5,-1,+1,+5) KALDIRILMASI VE VARSAYILAN 5 HP DEĞERİ (2026-10-25)
+* **İstek:**
+  1. Can (HP) kontrol alanındaki `-5, -1, +1, +5` butonlarının tamamen kaldırılması.
+  2. Kalan tekil miktar kontrol kutusunda varsayılan hasar/şifa değerinin `5` olarak gelmesi.
+* **Uygulanan Değişiklikler:**
+  1. **HP Kontrol Alanının Sadeleştirilmesi (`hub.html` & `webapp/hub.html`):**
+     - `-5, -1` ve `+1, +5` butonları kaldırıldı.
+     - Tekil özel HP kontrol alanı `[ ⚔️ - ] [ 5 ] [ + 💚 ]` olarak ortalandı (`flex items-center justify-center`).
+     - Giriş kutusu `value="5"` ve `placeholder="5"` ile yüklenecek şekilde ayarlandı.
+  2. **Fonksiyonel Varsayılan Güncellemesi (`applyCustomHp`):**
+     - Kullanıcı kutuyu boşaltsa veya geçersiz bir değer girse dahi `applyCustomHp` fonksiyonundaki geri çekilme (fallback) değeri `1` yerine varsayılan `5` olarak ayarlandı.
+  3. **Parite ve Devir Teslim:**
+     - `hub.html` ve `webapp/hub.html` %100 SHA-256 eşitliğinde tutuldu.
+     - Sıfır 🎲 tavla zarı kuralı korundu.
