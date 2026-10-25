@@ -227,6 +227,7 @@ function resetDicePool() {
   updateDicePoolDisplay();
 }
 window.resetDicePool = resetDicePool;
+window.clearDicePool = resetDicePool;
 
 function rollSingleDie(sides) {
   const r = Math.floor(Math.random() * sides) + 1;

@@ -517,3 +517,13 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      * `#user-profile-slot` elementinden `flex items-center justify-end` sınıfları kaldırılarak tam genişlikli (`w-full`) kart yerleşimine uyarlandı.
   3. **Parite ve Kural Bütünlüğü:**
      * `hub.html`, `character.html`, `index.html`, `supabase_auth.js` ve `webapp/` kopyaları %100 SHA-256 eşitliğinde tutuldu; sıfır tavla zarı (`🎲`) kuralı tavizsiz korundu.
+
+---
+
+## 26. ZAR HAVUZU TEMİZLEME BUTONU VE FONKSİYON İSİMLENDİRME DÜZELTMESİ (2026-10-25)
+* **Sorun:** Hub zar panelinde havuz temizleme çöp kutusu butonunun (`🗑️`) tetiklediği `clearDicePool()` fonksiyonunun script içinde tanımlı olmaması nedeniyle butonun tepki vermemesi.
+* **Uygulanan Çözüm:**
+  1. `hub_dice.js` içerisindeki `resetDicePool()` fonksiyonuna global `window.clearDicePool = resetDicePool;` alias'ı eklendi.
+  2. `hub.html` içerisindeki buton doğrudan `onclick="resetDicePool()"` olarak güncellendi.
+  3. Butona tıklandığında seçili tüm çokyüzlü zar sayaçları sıfırlanır, bonus girdi alanı 0 yapılır ve havuz metni anında temizlenir.
+  4. `hub.html`, `hub_dice.js` ve `webapp/` kopyaları %100 eşitlendi.
