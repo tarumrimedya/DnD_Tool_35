@@ -4502,7 +4502,7 @@
                   <span class="inline-flex items-center"><svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"></polygon><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"></polygon><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"></line><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
                   <span>4d6 Drop Lowest Zar Havuzu</span>
                 </h4>
-                <p class="text-[10px] text-slate-400">Her stat için 4 adet 6'lık zar atılır, en düşük zar elenerek kalan 3 zar toplanır.</p>
+                <p class="text-[10px] text-slate-400">Her stat için 4 adet 6'lık zar atılır (2 veya daha fazla 1 gelirse zarlar yeniden atılır), en düşük zar elenerek kalan 3 zar toplanır.</p>
               </div>
               <div class="flex items-center gap-1.5">
                 <button type="button" onclick="rollAll4d6Stats()" class="bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-black text-xs px-3.5 py-1.5 rounded-lg shadow-lg flex items-center gap-1.5 transition active:scale-95 cursor-pointer">
@@ -12318,37 +12318,96 @@ function renderManualStatsPanel() {
     }
 
     // --- 3. 4d6 DROP LOWEST MODE ---
-    function rollAll4d6Stats() {
-      const order = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
-      const newPool = [];
-      for (let i = 0; i < 6; i++) {
-        const rolls = [
+    function rollSingle4d6StatObj(id, assignedTo) {
+      let rolls;
+      let rerollCount = 0;
+      while (true) {
+        rolls = [
           Math.floor(Math.random() * 6) + 1,
           Math.floor(Math.random() * 6) + 1,
           Math.floor(Math.random() * 6) + 1,
           Math.floor(Math.random() * 6) + 1
         ];
-        let minVal = 7;
-        let minIdx = -1;
-        rolls.forEach((r, idx) => {
-          if (r < minVal) {
-            minVal = r;
-            minIdx = idx;
-          }
+        const onesCount = rolls.filter(r => r === 1).length;
+        if (onesCount >= 2) {
+          rerollCount++;
+          continue;
+        }
+        break;
+      }
+      let minVal = 7;
+      let minIdx = -1;
+      rolls.forEach((r, idx) => {
+        if (r < minVal) {
+          minVal = r;
+          minIdx = idx;
+        }
+      });
+      const total = rolls.reduce((acc, cur, idx) => (idx === minIdx ? acc : acc + cur), 0);
+      return {
+        id,
+        rolls,
+        droppedIndex: minIdx,
+        total,
+        assignedTo,
+        rerollsDueToDoubleOnes: rerollCount
+      };
+    }
+
+    function rerollSingle4d6Stat(rollId) {
+      const targetId = parseInt(rollId, 10);
+      const targetRoll = (statDistState.rolledDice || []).find(r => r.id === targetId);
+      if (!targetRoll) return;
+
+      const newRoll = rollSingle4d6StatObj(targetRoll.id, targetRoll.assignedTo);
+      const idx = statDistState.rolledDice.findIndex(r => r.id === targetId);
+      if (idx !== -1) {
+        statDistState.rolledDice[idx] = newRoll;
+        if (newRoll.assignedTo) {
+          statDistState.workingAbilities[newRoll.assignedTo] = newRoll.total;
+        }
+      }
+
+      renderRolledStatsPanel();
+      renderStatDistPreviewRow();
+
+      if (typeof showDiceTopToast === 'function') {
+        const statLabel = targetRoll.assignedTo ? targetRoll.assignedTo.toUpperCase() : 'Stat';
+        const rerollNote = newRoll.rerollsDueToDoubleOnes > 0 
+          ? ` (${newRoll.rerollsDueToDoubleOnes} kez çift '1' elenerek tekrar atıldı)` 
+          : '';
+        showDiceTopToast({
+          icon: '⚡',
+          title: `${statLabel} Zarı Yenilendi: ${newRoll.total}`,
+          breakdown: `Yeni Zarlar: [${newRoll.rolls.join(', ')}] (Elenen: ${newRoll.rolls[newRoll.droppedIndex]})${rerollNote}`
         });
-        const total = rolls.reduce((acc, cur, idx) => (idx === minIdx ? acc : acc + cur), 0);
-        newPool.push({
-          id: i,
-          rolls,
-          droppedIndex: minIdx,
-          total,
-          assignedTo: order[i]
-        });
-        statDistState.workingAbilities[order[i]] = total;
+      }
+    }
+
+    function rollAll4d6Stats() {
+      const order = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
+      const newPool = [];
+      let totalDoubleOneRerolls = 0;
+      for (let i = 0; i < 6; i++) {
+        const rollObj = rollSingle4d6StatObj(i, order[i]);
+        totalDoubleOneRerolls += rollObj.rerollsDueToDoubleOnes;
+        newPool.push(rollObj);
+        statDistState.workingAbilities[order[i]] = rollObj.total;
       }
       statDistState.rolledDice = newPool;
       renderRolledStatsPanel();
       renderStatDistPreviewRow();
+
+      if (typeof showDiceTopToast === 'function') {
+        const rerollNote = totalDoubleOneRerolls > 0 
+          ? ` (${totalDoubleOneRerolls} kez çift '1' kuralıyla otomatik yenilendi)`
+          : '';
+        showDiceTopToast({
+          icon: '⚡',
+          title: '4d6 Zarları Atıldı',
+          breakdown: `Tüm özellikler için 4d6 (drop lowest) atıldı${rerollNote}.`
+        });
+      }
     }
 
     function autoAssignRolledStats(silent = false) {
@@ -12438,7 +12497,10 @@ function renderManualStatsPanel() {
 
           return `
             <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl p-2 flex flex-col items-center justify-between">
-              <span class="text-[9px] font-mono text-purple-300 uppercase px-1.5 py-0.2 rounded bg-purple-950 border border-purple-800">${s.label}</span>
+              <div class="w-full flex items-center justify-between">
+                <span class="text-[9px] font-mono text-purple-300 uppercase px-1.5 py-0.2 rounded bg-purple-950 border border-purple-800">${s.label}</span>
+                <button type="button" onclick="rerollSingle4d6Stat(${r.id})" class="text-slate-400 hover:text-amber-300 active:scale-95 text-xs p-0.5 rounded hover:bg-slate-800 transition cursor-pointer" title="Sadece ${s.label} için zarları yeniden at (2 veya daha fazla 1 gelirse kural gereği tekrar atılır)">⚡</button>
+              </div>
               <div class="text-lg font-black text-amber-400 font-mono my-1">${r.total}</div>
               <div class="flex items-center gap-1 justify-center">${diceHtml}</div>
             </div>

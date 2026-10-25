@@ -1687,3 +1687,22 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - Değişiklik `character.html`, `index.html`, `webapp/character.html` ve `webapp/index.html` dosyalarına uygulandı.
      - 4 dosya arasında %100 SHA-256 paritesi korundu (`24ba8bcfaad30f0128e63cddb76263fd21e09738058a64b5e0fbb81187007181`).
      - Standart tavla zarı emoji yasağına (Rule #3: NO `🎲`) ve HUB izolasyonuna (Rule #6 & Rule #7) titizlikle uyuldu.
+
+
+---
+
+## 61. KARAKTER KÜNYESİ: 4d6 DROP LOWEST STAT ZARLARI ÇİFT '1' YENİDEN ATMA KURALI (2026-10-25)
+* **İstek:**
+  - Karakter Künyesi modalı *"4d6 Drop Lowest (Zar)"* sekmesinde her bir stat için zar atıldığında en az 2 adet '1' gelmesi durumunda o stat için zarların otomatik olarak yeniden atılması.
+* **Uygulanan Değişiklikler:**
+  1. **Çift '1' Yeniden Atma Mekaniği (Double-One Reroll Rule):**
+     - `rollSingle4d6StatObj(id, assignedTo)` fonksiyonu eklendi. Her stat için 4 adet d6 atılır; eğer zarlarda 2 veya daha fazla '1' tespit edilirse (`rolls.filter(r => r === 1).length >= 2`), zarlar kural gereği sıfırlanıp 1'lerin sayısı 2'nin altına düşene (0 veya 1 adet kalana) kadar otomatik olarak yeniden atılır.
+     - `rollAll4d6Stats()` fonksiyonu bu yeni modüler fonksiyona bağlandı. Toplu zar atımında kaç adet çift '1' durumunun elenip yenilendiği hesaplanarak toast bildiriminde şeffafça kullanıcıya raporlanır (`showDiceTopToast`).
+  2. **Tekil Stat Yeniden Atma Desteği:**
+     - `rerollSingle4d6Stat(rollId)` fonksiyonu ve zar kartlarının başlığına kompakt `⚡` yeniden atma butonu eklendi. Böylece kullanıcı isterse sadece istediği tekil bir statın zarını aynı çift '1' koruma kuralıyla bağımsızca yeniden yuvarlayabilir.
+  3. **Arayüz Açıklaması Güncellemesi:**
+     - Panel üstündeki kural tanımı güncellendi: *"Her stat için 4 adet 6'lık zar atılır (2 veya daha fazla 1 gelirse zarlar yeniden atılır), en düşük zar elenerek kalan 3 zar toplanır."*
+  4. **Parite ve Güvenlik:**
+     - `character.html`, `index.html`, `webapp/character.html` ve `webapp/index.html` dosyalarına uygulandı (%100 SHA-256 eşitliği korundu).
+     - HUB modülleri (`hub.html`, `webapp/hub.html`) dokunulmadan izole bırakıldı.
+     - Standart tavla zarı emoji yasağına (Rule #3: NO `🎲`) ve dummy data yasağına (Rule #5) eksiksiz uyuldu.
