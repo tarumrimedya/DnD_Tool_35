@@ -951,3 +951,22 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   3. **Parite ve Kural Bütünlüğü:**
      - `hub.html` ve `webapp/hub.html` %100 SHA-256 eşitliğinde tutuldu.
      - Proje kuralı gereği kesinlikle hiçbir standart 6 yüzlü tavla zarı emojisi kullanılmadı.
+
+
+---
+
+## 46. ZAR MASASI ÇEKMECESİ AÇILDIĞINDA TÜM HÜCRENİN AŞAĞI GENİŞLEMESİ (2026-10-25)
+* **İstek:** Zar Masası Paneli'nde "Formül, Son Atış & Geçmiş" çekmecesi açıldığında sadece çekmecenin içi değil, tüm Zar Masası hücresinin (kartının) aşağı doğru serbestçe genişlemesi, kesilen veya okunamayan alt alanların (Son Zar Sonucu kartı, Son Atışlar geçmiş listesi ve formül alanı) net ve eksiksiz okunabilir hale getirilmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Tüm Hücrenin Aşağı Doğru Doğal Genişlemesi:**
+     - `#hub-inline-dice-panel` içindeki ana karttan `xl:max-h-[430px]` ve `h-full` kısıtlamaları kaldırıldı; taban yükseklik `min-h-[390px] xl:min-h-[410px]` olarak korundu.
+     - Kart açılıp kapandığında yüksekliğin akıcı şekilde oturması için `transition-all duration-200` eklendi.
+     - Çekmece kapalıyken kart tam 410px boyutunda kalarak Not Defteri ve Karakter Kartları ile kusursuz simetrik durur; çekmece açıldığında ise tüm hücre aşağı doğru uzayarak altındaki tüm elemanları ferahça gösterir.
+  2. **İç Kısıtlamaların Kaldırılması & Geçmiş Listesi Genişletmesi:**
+     - `#dice-advanced-content` üzerindeki `max-h-56 overflow-y-auto` kaldırıldı. Çekmece içi sıkışma engellendi.
+     - `#dice-history-list` alanı `max-h-36` yerine `max-h-64` yapılarak 5-6 atış kaydının hiçbir öğesi kesilmeden, rozetleri ve detaylarıyla eksiksiz görüntülenmesi sağlandı.
+  3. **Kolon Hizalaması (`items-start`):**
+     - Üç ana sütunun (Karakterler, Not Defteri, Zar Masası) yer aldığı üst kapsayıcı `xl:flex-row items-start` olarak ayarlandı. Böylece Zar Masası aşağı doğru uzadığında Not Defteri veya karakter kartlarının altında boşluk/esneme bozulması oluşması önlendi.
+  4. **Parite ve Devir Teslim:**
+     - `hub.html` ve `webapp/hub.html` %100 SHA-256 paritesinde eşitlendi.
+     - Proje kuralı gereğince hiçbir standart tavla zarı emoji kullanılmadı.

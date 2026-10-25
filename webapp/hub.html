@@ -122,7 +122,7 @@
     </header>
 
     <!-- ANA ÇALIŞMA ALANI: SOL (2 KOLON KARAKTERLER) + ORTA (NOT DEFTERİ) + SAĞ (AÇIK ZAR PANELİ) -->
-    <div class="flex flex-col xl:flex-row items-stretch gap-4 sm:gap-5">
+    <div class="flex flex-col xl:flex-row items-start gap-4 sm:gap-5">
       <!-- Sol / Ana Bölüm (Tam 2 char kartı sığacak flex-1) -->
       <div class="flex-1 w-full min-w-0 flex flex-col space-y-4">
         <!-- KART IZGARASI ALANI (CARD GRID VIEW) -->
@@ -259,7 +259,7 @@
 
       <!-- Sağ Bölüm: Açık Zar Masası Paneli (Not Defteri ile Eşit Genişlik ve Yükseklik) -->
       <aside id="hub-inline-dice-panel" class="w-full xl:w-[320px] 2xl:w-[350px] shrink-0 flex flex-col">
-        <div class="bg-[#131d33] border border-slate-700/80 rounded-2xl p-2.5 sm:p-3 shadow-xl space-y-1.5 relative overflow-hidden flex flex-col h-full min-h-[390px] xl:min-h-[410px] xl:max-h-[430px]">
+        <div class="bg-[#131d33] border border-slate-700/80 rounded-2xl p-2.5 sm:p-3 shadow-xl space-y-1.5 relative overflow-hidden flex flex-col min-h-[390px] xl:min-h-[410px] transition-all duration-200">
           <!-- Üst Işıltı -->
           <div class="absolute -top-10 -right-10 w-24 h-24 bg-red-600/10 rounded-full blur-2xl pointer-events-none"></div>
 
@@ -468,8 +468,8 @@
               </div>
             </button>
 
-            <!-- Gizlenebilir İçerik (Varsayılan Olarak Kapalı) -->
-            <div id="dice-advanced-content" class="hidden mt-2 space-y-2 max-h-56 overflow-y-auto custom-scroll pr-1">
+            <!-- Gizlenebilir İçerik (Varsayılan Olarak Kapalı - Açıldığında Tüm Hücre Aşağı Genişler) -->
+            <div id="dice-advanced-content" class="hidden mt-2 space-y-2">
               <!-- Hızlı / Özel Formül Girişi -->
               <div class="space-y-1.5">
                 <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Formül ile Atış</div>
@@ -506,7 +506,7 @@
                   <span class="font-bold uppercase tracking-wider">Son Atışlar (<span id="dice-history-count">0</span>)</span>
                   <button onclick="clearDiceHistory()" class="hover:text-rose-400 transition cursor-pointer">Temizle</button>
                 </div>
-                <div id="dice-history-list" class="max-h-36 overflow-y-auto space-y-1 custom-scroll pr-1 text-xs">
+                <div id="dice-history-list" class="max-h-64 overflow-y-auto space-y-1.5 custom-scroll pr-1 text-xs">
                   <div class="text-[9px] text-slate-400 italic py-1.5 text-center">Atış geçmişi boş</div>
                 </div>
               </div>
