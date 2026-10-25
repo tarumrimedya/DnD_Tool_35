@@ -71,8 +71,9 @@
               <input type="file" id="import-hub-file" accept=".json" class="hidden" onchange="importHubData(event)">
             </label>
             <div class="w-px h-4 bg-slate-700 mx-0.5 shrink-0"></div>
-            <button onclick="resetAllHubLocalData()" class="px-2.5 h-full hover:bg-rose-950 text-slate-400 hover:text-rose-300 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1 cursor-pointer" title="Tüm yerel önbelleği ve verileri sıfırla">
-              <span>🧹</span>
+            <button type="button" onclick="openSettingsModal()" class="flex-1 h-full hover:bg-slate-800 text-slate-200 hover:text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer" title="Sistem, Masa Standartları ve Kural Ayarlarını Aç">
+              <span class="text-xs">⚙️</span>
+              <span>Ayarlar</span>
             </button>
           </div>
 
@@ -2256,9 +2257,8 @@
             activeSets: [1]
           }
         },
-        settings: {
-          pinDrawerLimit: 5
-        }
+        settings: Object.assign({}, getGlobalDefaultSettings().settings, summary.settings || {}),
+        houseRules: Object.assign({}, getGlobalDefaultSettings().houseRules, summary.houseRules || {})
       };
     }
 
@@ -4296,5 +4296,550 @@ CRITICAL RULES:
       </div>
     </div>
 
+
+  <!-- ==================================================== -->
+  <!-- SISTEM, MASA & KURAL STANDARTLARI AYARLARI MODALI -->
+  <!-- ==================================================== -->
+  <div id="settings-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
+    <div class="bg-[#131d33] border border-indigo-500/60 rounded-2xl max-w-3xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden my-auto text-slate-100">
+      
+      <!-- Modal Header -->
+      <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2.5">
+          <span class="text-xl">⚙️</span>
+          <div>
+            <h3 class="text-sm md:text-base font-extrabold text-white flex items-center gap-2">
+              <span>Sistem, Masa & Kural Standartları</span>
+              <span class="px-2 py-0.5 rounded-full bg-indigo-950 text-indigo-300 border border-indigo-800 text-[9px] font-mono">Hub Defaults</span>
+            </h3>
+            <p class="text-[10px] text-slate-400">Tüm karakterler için varsayılan kural şablonları • Gemini AI • Veri Yedekleme</p>
+          </div>
+        </div>
+        <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer">
+          <span>✕</span> <span>Kapat</span>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-4 overflow-y-auto space-y-4 flex-1 text-xs">
+
+        <!-- SECTION 1: GOOGLE GEMINI AI KEY & DIAGNOSTICS -->
+        <div class="bg-slate-900/90 border border-purple-500/40 rounded-xl p-3.5 space-y-3 shadow">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">🧙‍♂️🤖</span>
+              <div>
+                <h4 class="text-xs font-bold text-white flex items-center gap-2 flex-wrap">
+                  <span>Rule Master (AI) Kural Asistanı Ayarları</span>
+                  <span id="settings-gemini-live-status" class="text-[10px] text-slate-400 font-normal">Kontrol Ediliyor...</span>
+                </h4>
+                <p class="text-[10px] text-slate-400">Kişisel ücretsiz Google AI Studio API anahtarınız (tarayıcınızda yerel saklanır).</p>
+              </div>
+            </div>
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[10px] text-purple-300 hover:text-purple-200 underline font-semibold">
+              🔑 Ücretsiz Anahtar Al ↗
+            </a>
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex flex-col sm:flex-row gap-2">
+              <input type="password" id="settings-gemini-api-key" placeholder="AIzaSy... anahtarınızı buraya yapıştırın" class="flex-1 bg-slate-950 border border-purple-500/40 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-purple-400 font-mono">
+              <button onclick="saveSettingsApiKey()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition shadow whitespace-nowrap cursor-pointer">
+                💾 Kaydet
+              </button>
+              <button onclick="clearSettingsApiKey()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition whitespace-nowrap cursor-pointer">
+                🗑️ Sil
+              </button>
+            </div>
+            <div class="flex flex-wrap items-center justify-between gap-2 text-[10px]">
+              <div id="settings-api-key-status" class="text-slate-400">
+                Durum: <span id="settings-masked-key" class="font-mono text-purple-300">Tanımlı Değil</span>
+              </div>
+              <button onclick="diagnoseSettingsApiKey()" class="text-sky-400 hover:text-sky-300 font-bold flex items-center gap-1 underline cursor-pointer">
+                <span>🩺</span>
+                <span>Aktif Modelleri & Bağlantıyı Test Et (Ping)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: STANDART MASA & KURAL TERCİHLERİ (HER CHAR İÇİN VARSAYILAN STANDART) -->
+        <div id="section-house-rules" class="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-3 shadow transition">
+          <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
+            <span class="text-lg">⚖️</span>
+            <div>
+              <h4 class="text-xs font-bold text-white flex items-center gap-2">
+                <span>Standart Masa & Kural Şablonu (House Rules Defaults)</span>
+                <span class="text-[9px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">Global Standart</span>
+              </h4>
+              <p class="text-[10px] text-slate-400">Burada belirlenen kurallar oluşturulan tüm yeni karakterler için standart olur. Karakter sayfasından her karakter için ayrıca özelleştirilebilir.</p>
+            </div>
+          </div>
+
+          <div class="space-y-3 text-xs">
+            <!-- 1. SKILL CONSOLIDATION (Raw / Birleştirilmiş Skill Seçimi) -->
+            <div class="p-3 rounded-xl bg-slate-950 border border-emerald-500/40 space-y-2.5">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <div class="font-bold text-emerald-300 flex items-center gap-1.5 text-xs">
+                    <span>🔗</span>
+                    <span>Beceri Sistemi: Birleştirilmiş vs. RAW 46 Beceri</span>
+                    <span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[9px]">Masa Standardı</span>
+                  </div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">
+                    Kampanyanızda becerilerin nasıl ele alınacağını seçin. Birleştirilmiş mod 7 akıcı grup sunar.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Selection Cards: Birleştirilmiş (Varsayılan) vs Standart RAW -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                <button 
+                  type="button" 
+                  id="hr-skill-mode-merged-btn"
+                  onclick="setGlobalHouseRuleSkill(true)" 
+                  class="p-2.5 rounded-lg border-2 text-left transition flex items-center justify-between bg-emerald-950/70 border-emerald-500 text-emerald-300 shadow-sm cursor-pointer">
+                  <div class="flex items-center gap-2">
+                    <span class="text-base">🔗</span>
+                    <div>
+                      <div class="text-xs font-black">Skilleri Birleştir (7 Grup)</div>
+                      <div class="text-[10px] text-emerald-400/80">Athletics, Stealth, Perception vb. (Varsayılan)</div>
+                    </div>
+                  </div>
+                  <span id="hr-skill-mode-merged-check" class="text-emerald-400 font-black text-sm">✓</span>
+                </button>
+
+                <button 
+                  type="button" 
+                  id="hr-skill-mode-raw-btn"
+                  onclick="setGlobalHouseRuleSkill(false)" 
+                  class="p-2.5 rounded-lg border-2 text-left transition flex items-center justify-between bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500 cursor-pointer">
+                  <div class="flex items-center gap-2">
+                    <span class="text-base">📂</span>
+                    <div>
+                      <div class="text-xs font-black">Standart RAW (46 Beceri)</div>
+                      <div class="text-[10px] text-slate-400">Resmi 3.5e kural kitabı becerileri</div>
+                    </div>
+                  </div>
+                  <span id="hr-skill-mode-raw-check" class="text-sky-400 font-black text-sm hidden">✓</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 2. FEAT MODU (FEAT PROGRESSION) -->
+            <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5 hover:border-slate-700 transition">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <div class="font-bold text-amber-300 flex items-center gap-1.5 text-xs">
+                    <span>🎖️</span>
+                    <span>Varsayılan Feat İlerleme Modu</span>
+                  </div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Yeni karakterler için genel feat kazanma aralığını belirleyin.</div>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <select id="setting-feat-mode" onchange="onGlobalSettingChange()" class="bg-slate-900 border border-slate-700 text-amber-300 font-semibold text-[11px] rounded px-2 py-1 focus:outline-none focus:border-amber-400 cursor-pointer">
+                    <option value="Standard 3.5e (1, 3, 6, 9, 12, 15, 18)">Standard 3.5e (1, 3, 6, 9, 12, 15, 18)</option>
+                    <option value="Every 2 Levels (1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)">Every 2 Levels (1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)</option>
+                    <option value="Every 4 Levels (1, 4, 8, 12, 16, 20)">Every 4 Levels (1, 4, 8, 12, 16, 20)</option>
+                    <option value="All Free / Custom">All Free / Custom (Her Seviye Serbest)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. BAB & SAVE HESAPLAMA SİSTEMİ -->
+            <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5 hover:border-slate-700 transition">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <div class="font-bold text-sky-300 flex items-center gap-1.5 text-xs">
+                    <span>📐</span>
+                    <span>BAB & Save Hesaplama Sistemi</span>
+                  </div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Çoklu sınıflarda temel saldırı ve kurtarma atışları ilerleme standardı.</div>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <select id="setting-bab-save-system" onchange="onGlobalSettingChange()" class="bg-slate-900 border border-slate-700 text-sky-300 font-semibold text-[11px] rounded px-2 py-1 focus:outline-none focus:border-sky-400 cursor-pointer">
+                    <option value="standard" selected>Standard Core 3.5e (Standart RAW)</option>
+                    <option value="fractional">Fractional (Unearthed Arcana - Kesirli)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. CASTER CL KURALI & CASTER TIPI -->
+            <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2 hover:border-slate-700 transition">
+              <div class="flex flex-wrap items-center justify-between gap-1.5 pb-2 border-b border-slate-800/80">
+                <div class="font-bold text-purple-300 flex items-center gap-1.5 text-xs">
+                  <span>🔮</span>
+                  <span>Caster Level (CL) Kuralı & Disiplin Standardı</span>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div class="bg-slate-900/90 border border-purple-900/40 rounded-xl p-2.5 space-y-1">
+                  <label class="text-[10px] font-bold text-purple-400 uppercase">CL Kuralı:</label>
+                  <select id="setting-cl-mode" onchange="onGlobalSettingChange()" class="w-full bg-slate-950 border border-slate-700 text-purple-300 font-semibold text-[11px] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-purple-400 cursor-pointer">
+                    <option value="Character Level (DM Boon)" selected>Character Level (DM Boon: CL = Karakter Seviyesi)</option>
+                    <option value="Warlock Boon (Invocations & Eldritch Blast)">Warlock Boon (CL = Karakter Seviyesi + Invocations)</option>
+                    <option value="Class Level">Class Level (Yalnızca Sınıf Seviyesi)</option>
+                    <option value="Custom">Custom (Manuel)</option>
+                  </select>
+                </div>
+                <div class="bg-slate-900/90 border border-indigo-900/40 rounded-xl p-2.5 space-y-1">
+                  <label class="text-[10px] font-bold text-indigo-400 uppercase">Caster Tipi:</label>
+                  <select id="setting-caster-type" onchange="onGlobalSettingChange()" class="w-full bg-slate-950 border border-slate-700 text-indigo-300 font-semibold text-[11px] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-400 cursor-pointer">
+                    <option value="spontaneous">🔮 1. Doğal / Anlık (Sorcerer vb.)</option>
+                    <option value="prepared">📖 2. Kitaplı Hazırlık (Wizard vb.)</option>
+                    <option value="divine">✨ 3. İlahi Dua (Cleric vb.)</option>
+                    <option value="martial">⚔️ 4. Savaş Manevraları (Martial Adept / IL)</option>
+                    <option value="warlock">👁️ 5. Warlock (Yakarışlar & Blast)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- 5. IGNORE ASF / BOON -->
+            <label class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
+              <div>
+                <div class="font-bold text-slate-200 flex items-center gap-1.5 text-xs">
+                  <span class="text-slate-300 font-semibold">🛡️ Ignore ASF / Boon</span>
+                  <span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[9px]">DM Boon</span>
+                </div>
+                <div class="text-[10px] text-slate-400 mt-0.5">Zırh ve kalkanlardan gelen Arcane Spell Failure (ASF %) büyü bozma cezasını tamamen yoksayar.</div>
+              </div>
+              <input type="checkbox" id="setting-ignore-asf" onchange="onGlobalSettingChange()" class="w-4 h-4 rounded border-slate-700 text-emerald-500 focus:ring-0 cursor-pointer">
+            </label>
+
+            <!-- 6. NO CRIT CONFIRM & MANEUVER CRIT -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <label class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
+                <div>
+                  <div class="font-bold text-slate-200">🚫 No Crit Confirm</div>
+                  <div class="text-[10px] text-slate-400">Teyit zarı atmadan doğrudan kritik hasar uygular.</div>
+                </div>
+                <input type="checkbox" id="setting-no-crit-confirm" onchange="onGlobalSettingChange()" class="w-4 h-4 rounded border-slate-700 text-amber-500 focus:ring-0 cursor-pointer">
+              </label>
+
+              <label class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
+                <div>
+                  <div class="font-bold text-slate-200">⚡ Manevraları Katla</div>
+                  <div class="text-[10px] text-slate-400">Tome of Battle manevra ekstra zarlarını kritiğe katar.</div>
+                </div>
+                <input type="checkbox" id="setting-maneuver-crit" onchange="onGlobalSettingChange()" class="w-4 h-4 rounded border-slate-700 text-indigo-500 focus:ring-0 cursor-pointer">
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 3: KAMPANYA KİTAPLARI KISALTMALARI (32 KİTAP) -->
+        <div class="bg-slate-900/90 border border-indigo-500/40 rounded-xl p-3.5 space-y-2 shadow">
+          <details class="group bg-slate-950/60 border border-slate-800 rounded-xl transition-all duration-200">
+            <summary class="cursor-pointer p-2.5 flex items-center justify-between text-xs font-bold text-amber-300 hover:text-amber-200 select-none list-none">
+              <span class="flex items-center gap-2">
+                <span>📚</span>
+                <span>Kampanya Kitapları Kısaltmaları (32 Resmi Kitap / Kod)</span>
+              </span>
+              <span class="text-xs text-slate-500 group-open:rotate-180 transition-transform duration-200">▼</span>
+            </summary>
+            <div class="p-3 pt-0 border-t border-slate-800/80 mt-1">
+              <p class="text-[10px] text-slate-400 mb-2">Master DB, kurallar ve büyü açıklamalarında kullanılan standart D&D 3.5e ek kitap kısaltmaları:</p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-60 overflow-y-auto pr-1" id="hub-splatbooks-container">
+                <!-- JS dinamik doldurur -->
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <!-- SECTION 4: DATA BACKUP, RESTORE & DANGER ZONE (VERİ YÖNETİMİ) -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-3 shadow">
+          <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
+            <span class="text-xl">💾</span>
+            <div>
+              <h4 class="text-xs font-bold text-white">Veri Yönetimi, Yedekleme & Sıfırlama</h4>
+              <p class="text-[10px] text-slate-400">JSON yedeklerinizi yönetin veya tüm yerel verileri sıfırlayın.</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <button onclick="exportHubData()" class="bg-indigo-600/30 hover:bg-indigo-600 text-indigo-200 hover:text-white text-xs font-semibold py-2 px-3 rounded-lg border border-indigo-500/40 transition flex items-center justify-center gap-1.5 cursor-pointer">
+              <span>💾</span>
+              <span>Hub & Karakter JSON İndir</span>
+            </button>
+            <label class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2 px-3 rounded-lg border border-slate-700 transition flex items-center justify-center gap-1.5 cursor-pointer">
+              <span>📂</span>
+              <span>JSON Yedek Yükle</span>
+              <input type="file" accept=".json" class="hidden" onchange="importHubData(event)">
+            </label>
+          </div>
+
+          <!-- Tehlikeli Bölge: Tüm Verileri Sıfırla -->
+          <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-3 bg-rose-950/20 border border-rose-900/30 rounded-xl p-3">
+            <div>
+              <div class="text-xs font-bold text-rose-300 flex items-center gap-1.5">
+                <span>🧹</span>
+                <span>Tüm Yerel Önbelleği & Verileri Sıfırla</span>
+              </div>
+              <div class="text-[10px] text-slate-400">Bu tarayıcıdaki tüm yerel karakter, kampanya ve ayarları temizler.</div>
+            </div>
+            <button onclick="resetAllHubLocalData()" class="px-3 py-1.5 bg-rose-900 hover:bg-rose-800 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer shrink-0 shadow-sm" title="Tüm yerel önbelleği ve verileri sıfırla">
+              <span>🧹 Sıfırla</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+<script>
+    // ==========================================
+    // GLOBAL AYARLAR & MASA STANDARTLARI MOTORU
+    // ==========================================
+    const HUB_GLOBAL_SETTINGS_KEY = 'dnd35_global_settings';
+
+    function getGlobalDefaultSettings() {
+      const defaults = {
+        settings: {
+          pinDrawerLimit: 5,
+          clMode: 'Character Level (DM Boon)',
+          casterType: 'spontaneous',
+          featMode: 'Standard 3.5e (1, 3, 6, 9, 12, 15, 18)',
+          babSaveSystem: 'standard',
+          ignoreAsf: false
+        },
+        houseRules: {
+          skillConsolidation: true,
+          noCritConfirm: true,
+          maneuverCrit: true,
+          critThreatCap: 15
+        }
+      };
+      try {
+        const raw = localStorage.getItem(HUB_GLOBAL_SETTINGS_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed.settings) Object.assign(defaults.settings, parsed.settings);
+          if (parsed.houseRules) Object.assign(defaults.houseRules, parsed.houseRules);
+        }
+      } catch (e) {}
+      return defaults;
+    }
+
+    function saveGlobalDefaultSettings(cfg) {
+      try {
+        localStorage.setItem(HUB_GLOBAL_SETTINGS_KEY, JSON.stringify(cfg));
+      } catch (e) {}
+    }
+
+    function openSettingsModal() {
+      const modal = document.getElementById('settings-modal');
+      if (!modal) return;
+      modal.classList.remove('hidden');
+
+      // 1. Gemini API Key Durumu
+      verifySettingsGeminiApiKey(false);
+
+      // 2. Global Standart Ayarlarını UI'a Doldur
+      const globalCfg = getGlobalDefaultSettings();
+
+      const featSel = document.getElementById('setting-feat-mode');
+      if (featSel) featSel.value = globalCfg.settings.featMode;
+
+      const babSel = document.getElementById('setting-bab-save-system');
+      if (babSel) babSel.value = globalCfg.settings.babSaveSystem;
+
+      const clSel = document.getElementById('setting-cl-mode');
+      if (clSel) clSel.value = globalCfg.settings.clMode;
+
+      const casterSel = document.getElementById('setting-caster-type');
+      if (casterSel) casterSel.value = globalCfg.settings.casterType;
+
+      const asfChk = document.getElementById('setting-ignore-asf');
+      if (asfChk) asfChk.checked = Boolean(globalCfg.settings.ignoreAsf);
+
+      const noCritChk = document.getElementById('setting-no-crit-confirm');
+      if (noCritChk) noCritChk.checked = Boolean(globalCfg.houseRules.noCritConfirm);
+
+      const manCritChk = document.getElementById('setting-maneuver-crit');
+      if (manCritChk) manCritChk.checked = Boolean(globalCfg.houseRules.maneuverCrit);
+
+      updateGlobalSkillUI(globalCfg.houseRules.skillConsolidation);
+
+      // 3. Kampanya Kitapları Kısaltmalarını Doldur
+      renderHubSplatbooks();
+    }
+
+    function closeSettingsModal() {
+      const modal = document.getElementById('settings-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function setGlobalHouseRuleSkill(isMerged) {
+      const cfg = getGlobalDefaultSettings();
+      cfg.houseRules.skillConsolidation = Boolean(isMerged);
+      saveGlobalDefaultSettings(cfg);
+      updateGlobalSkillUI(isMerged);
+    }
+
+    function updateGlobalSkillUI(isMerged) {
+      const mergedBtn = document.getElementById('hr-skill-mode-merged-btn');
+      const rawBtn = document.getElementById('hr-skill-mode-raw-btn');
+      const mergedCheck = document.getElementById('hr-skill-mode-merged-check');
+      const rawCheck = document.getElementById('hr-skill-mode-raw-check');
+
+      if (isMerged) {
+        if (mergedBtn) mergedBtn.className = 'p-2.5 rounded-lg border-2 text-left transition flex items-center justify-between bg-emerald-950/70 border-emerald-500 text-emerald-300 shadow-sm cursor-pointer';
+        if (rawBtn) rawBtn.className = 'p-2.5 rounded-lg border-2 text-left transition flex items-center justify-between bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500 cursor-pointer';
+        if (mergedCheck) mergedCheck.classList.remove('hidden');
+        if (rawCheck) rawCheck.classList.add('hidden');
+      } else {
+        if (mergedBtn) mergedBtn.className = 'p-2.5 rounded-lg border-2 text-left transition flex items-center justify-between bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500 cursor-pointer';
+        if (rawBtn) rawBtn.className = 'p-2.5 rounded-lg border-2 text-left transition flex items-center justify-between bg-sky-950/70 border-sky-500 text-sky-300 shadow-sm cursor-pointer';
+        if (mergedCheck) mergedCheck.classList.add('hidden');
+        if (rawCheck) rawCheck.classList.remove('hidden');
+      }
+    }
+
+    function onGlobalSettingChange() {
+      const cfg = getGlobalDefaultSettings();
+
+      const featSel = document.getElementById('setting-feat-mode');
+      if (featSel) cfg.settings.featMode = featSel.value;
+
+      const babSel = document.getElementById('setting-bab-save-system');
+      if (babSel) cfg.settings.babSaveSystem = babSel.value;
+
+      const clSel = document.getElementById('setting-cl-mode');
+      if (clSel) cfg.settings.clMode = clSel.value;
+
+      const casterSel = document.getElementById('setting-caster-type');
+      if (casterSel) cfg.settings.casterType = casterSel.value;
+
+      const asfChk = document.getElementById('setting-ignore-asf');
+      if (asfChk) cfg.settings.ignoreAsf = asfChk.checked;
+
+      const noCritChk = document.getElementById('setting-no-crit-confirm');
+      if (noCritChk) cfg.houseRules.noCritConfirm = noCritChk.checked;
+
+      const manCritChk = document.getElementById('setting-maneuver-crit');
+      if (manCritChk) cfg.houseRules.maneuverCrit = manCritChk.checked;
+
+      saveGlobalDefaultSettings(cfg);
+    }
+
+    // Gemini API Key Yönetimi
+    function verifySettingsGeminiApiKey(triggerTest = false) {
+      const key = (localStorage.getItem('gemini_api_key') || '').trim();
+      const statusEl = document.getElementById('settings-gemini-live-status');
+      const maskedEl = document.getElementById('settings-masked-key');
+      const inputEl = document.getElementById('settings-gemini-api-key');
+
+      if (inputEl && !inputEl.value && key) {
+        inputEl.value = key;
+      }
+
+      if (key) {
+        const masked = key.length > 8 ? key.slice(0, 4) + '...' + key.slice(-4) : '••••••••';
+        if (maskedEl) maskedEl.textContent = masked;
+        if (statusEl) statusEl.innerHTML = '<span class="text-emerald-400 font-bold">🟢 Tanımlı (Aktif)</span>';
+      } else {
+        if (maskedEl) maskedEl.textContent = 'Tanımlı Değil';
+        if (statusEl) statusEl.innerHTML = '<span class="text-amber-400 font-bold">🟡 Tanımlı Değil</span>';
+      }
+    }
+
+    function saveSettingsApiKey() {
+      const input = document.getElementById('settings-gemini-api-key');
+      const val = (input?.value || '').trim();
+      if (!val) {
+        alert('Lütfen geçerli bir Gemini API anahtarı girin.');
+        return;
+      }
+      localStorage.setItem('gemini_api_key', val);
+      verifySettingsGeminiApiKey(false);
+      alert('✅ Gemini API anahtarınız tarayıcınızda güvenle kaydedildi!');
+    }
+
+    function clearSettingsApiKey() {
+      if (!confirm('Kayıtlı Gemini API anahtarını silmek istediğinize emin misiniz?')) return;
+      localStorage.removeItem('gemini_api_key');
+      const input = document.getElementById('settings-gemini-api-key');
+      if (input) input.value = '';
+      verifySettingsGeminiApiKey(false);
+    }
+
+    async function diagnoseSettingsApiKey() {
+      const key = (localStorage.getItem('gemini_api_key') || '').trim();
+      if (!key) {
+        alert('Önce bir Gemini API anahtarı kaydedin.');
+        return;
+      }
+      const statusEl = document.getElementById('settings-gemini-live-status');
+      if (statusEl) statusEl.innerHTML = '<span class="text-indigo-400 animate-pulse">🔄 Test Ediliyor...</span>';
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        const count = data.models ? data.models.length : 0;
+        if (statusEl) statusEl.innerHTML = `<span class="text-emerald-400 font-bold">🟢 Bağlantı Başarılı (${count} Model)</span>`;
+        alert(`✅ Bağlantı Başarılı!
+
+Google Gemini API anahtarınız aktif ve çalışıyor (${count} model listelendi).`);
+      } catch (e) {
+        if (statusEl) statusEl.innerHTML = '<span class="text-rose-400 font-bold">⚠️ Bağlantı Başarısız</span>';
+        alert('❌ Gemini API Test Hatası:
+' + e.message);
+      }
+    }
+
+    function renderHubSplatbooks() {
+      const container = document.getElementById('hub-splatbooks-container');
+      if (!container || container.children.length > 0) return;
+
+      const splatbooks = [
+        { code: "PHB", name: "Player's Handbook", scope: "Core Temel Kural Kitabı" },
+        { code: "DMG", name: "Dungeon Master's Guide", scope: "Core DM Kılavuzu & Sihirli Eşyalar" },
+        { code: "MM", name: "Monster Manual", scope: "Core Canavar Kataloğu" },
+        { code: "CW", name: "Complete Warrior", scope: "Savaşçı Sınıfları & Taktik Featler" },
+        { code: "CAr", name: "Complete Arcane", scope: "Warlock, Warmage & Arcane Büyüler" },
+        { code: "CDiv", name: "Complete Divine", scope: "İlahi Sınıflar, Favored Soul, Dualar" },
+        { code: "CAdv", name: "Complete Adventurer", scope: "Scout, Ninja, Beceri Kullanımları" },
+        { code: "CSc", name: "Complete Scoundrel", scope: "Skill Tricks & Haydut Nitelikleri" },
+        { code: "CMag", name: "Complete Mage", scope: "Büyücüler & Yedek Büyü Güçleri" },
+        { code: "CCha", name: "Complete Champion", scope: "Tapınak Savaşçıları & Domain Featler" },
+        { code: "SpC", name: "Spell Compendium", scope: "1000+ Resmi 3.5e Büyü Külliyatı" },
+        { code: "MIC", name: "Magic Item Compendium", scope: "3000+ Resmi Büyülü Eşya & Rün" },
+        { code: "ToB", name: "Tome of Battle", scope: "Book of Nine Swords (Manevralar & Duruşlar)" },
+        { code: "ToM", name: "Tome of Magic", scope: "Binder, Shadowcaster, Truenamer" },
+        { code: "PHB2", name: "Player's Handbook II", scope: "Duskblade, Beguiler, Yeniden Eğitim" },
+        { code: "DMG2", name: "Dungeon Master's Guide II", scope: "Masa Yönetimi & İleri DM Araçları" },
+        { code: "MM2", name: "Monster Manual II", scope: "Genişletilmiş Canavarlar 2" },
+        { code: "MM3", name: "Monster Manual III", scope: "Genişletilmiş Canavarlar 3" },
+        { code: "MM4", name: "Monster Manual IV", scope: "Genişletilmiş Canavarlar 4" },
+        { code: "MM5", name: "Monster Manual V", scope: "Genişletilmiş Canavarlar 5" },
+        { code: "Dra", name: "Draconomicon", scope: "Ejderhalar, Ejder Büyüleri & Eşyaları" },
+        { code: "LM", name: "Libris Mortis", scope: "Undead Kitabı, Necromancy & Mezarlar" },
+        { code: "LoM", name: "Lords of Madness", scope: "Aberration Yaratıkları & Akıl Sırrı" },
+        { code: "FC1", name: "Fiendish Codex I", scope: "Hordes of the Abyss (İblisler)" },
+        { code: "FC2", name: "Fiendish Codex II", scope: "Tyrants of the Nine Hells (Şeytanlar)" },
+        { code: "FB", name: "Frostburn", scope: "Kutup & Soğuk Maceraları" },
+        { code: "Sa", name: "Sandstorm", scope: "Çöl & Atık Topraklar" },
+        { code: "St", name: "Stormwrack", scope: "Deniz & Gemi Maceraları" },
+        { code: "Ci", name: "Cityscape", scope: "Şehir Maceraları & Kentsel Savaş" },
+        { code: "Du", name: "Dungeonscape", scope: "Zindan Tasarımı & Tuzaklar" },
+        { code: "HoH", name: "Heroes of Horror", scope: "Korku, Delilik & Dread Necromancer" },
+        { code: "UA", name: "Unearthed Arcana", scope: "Alternatif Kurallar & Kesirli İlerleyiş" }
+      ];
+
+      container.innerHTML = splatbooks.map(b => `
+        <div class="bg-slate-900/90 border border-slate-800 p-2 rounded-lg flex items-center justify-between gap-1.5 hover:border-slate-700 transition">
+          <div class="min-w-0">
+            <span class="text-xs font-bold text-amber-300 font-mono">${b.code}</span>
+            <div class="text-[11px] text-slate-200 truncate font-semibold">${b.name}</div>
+            <div class="text-[9px] text-slate-500 truncate">${b.scope}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+</script>
 </body>
 </html>

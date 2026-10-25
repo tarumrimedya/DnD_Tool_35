@@ -768,3 +768,32 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   3. **Parite ve Kural Bütünlüğü:**
      - `hub.html` ve `webapp/hub.html` kopyaları %100 SHA-256 eşitliğinde tutuldu.
      - Sıfır tavla zarı kuralı tavizsiz korundu.
+
+
+---
+
+## 41. HUB ÜST BAŞLIK SÜPÜRGE (🧹) BUTONU KALDIRILDI, YERİNE AYARLAR (⚙️) MODALI VE GLOBAL STANDARTLAR EKLENDİ (2026-10-25)
+* **İstek:** Hub üst başlık sağ eylem barındaki tüm verileri silen süpürge (🧹) butonunun kaldırılması, yerine karakter sayfasındaki [ ⚙️ Ayarlar ] butonunun ve modallarının getirilmesi; bu ayarların tüm yeni karakterler için global masa standardı olması ve karakter kağıdında istenirse özelleştirilebilmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Arayüz Değişimi (hub.html & webapp/hub.html):**
+     - Üst sağ blokta yer alan resetAllHubLocalData() süpürge butonu kaldırıldı. Yerine openSettingsModal() tetikleyicili [ ⚙️ Ayarlar ] butonu eklendi. Satır artık 3 dengeli buton halindedir: [ 💾 Yedekle ] | [ 📂 İçe Aktar ] | [ ⚙️ Ayarlar ].
+     - Sıfırlama işlevi tamamen kaybolmaması için Settings modalı içerisindeki "Veri Yönetimi / Tehlikeli Bölge" alanına güvenli bir şekilde taşındı.
+  2. **Ayarlar Modalı (#settings-modal):**
+     - **Bölüm 1 - Rule Master (Gemini AI):** Google Gemini API anahtarı girişi, localStorage.getItem('gemini_api_key') senkronizasyonu, canlı bağlantı testi (ping) ve durum göstergesi. (Karakter kağıdı ile aynı depolama anahtarını paylaşır).
+     - **Bölüm 2 - Masa & Kural Standartları:**
+       - Beceri Konsolidasyonu (3.5e RAW vs Pathfinder / Konsolide Beceriler).
+       - Feat İlerleme Sistemi (Core 1, 3, 6... vs Pathfinder / House Rule 1, 3, 5, 7...).
+       - BAB & Save Hesaplama Sistemi (Standard RAW vs Fractional BAB/Saves).
+       - Caster Level Hesaplama Modu ve Tipi.
+       - ASF (Arcane Spell Failure) Yok Sayma.
+       - Kritik Teyidi Yok Sayma (No Crit Confirm).
+       - Manevra Kritiklerini Açma.
+     - **Bölüm 3 - 32 Kampanya Kitabı Kısaltmaları (Splatbooks):** PHB, DMG, MM, SpC, MIC, ToB vb. tüm kaynak kitaplar ve kısaltma dizini.
+     - **Bölüm 4 - Veri Yönetimi & Tehlikeli Bölge:** JSON Dışa/İçe Aktar ve HUB Verilerini Sıfırla.
+  3. **Global Standart Veri Kontratı (dnd35_global_settings):**
+     - Hub'da belirlenen kurallar dnd35_global_settings anahtarında saklanır.
+     - createCleanDnd35Character() fonksiyonu artık oluşturulan her yeni karaktere settings ve houseRules nesnelerini bu global standarttan devralarak yazar.
+     - Karakter kendi kağıdında açıldığında bu ayarları değiştirebilir; karakterin yerel ayarları önceliklidir (karakter bazlı override).
+  4. **Parite ve Kural Bütünlüğü:**
+     - hub.html ve webapp/hub.html %100 SHA-256 eşitliğinde tutuldu.
+     - Kesinlikle hiçbir tavla zarı emoji kullanılmadı.
