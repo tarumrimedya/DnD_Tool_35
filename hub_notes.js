@@ -17,6 +17,7 @@
   let _activeNoteFilterTag = 'all';
   let _activeNoteSearchQuery = '';
   let _selectedModalNoteId = null;
+  let _activePanelTab = 'write'; // 'write' or 'list'
 
   // Tag extraction regex supporting Turkish and international unicode characters
   const TAG_REGEX = /#[\w\u00C0-\u024F\u1E00-\u1EFFğüşıöçĞÜŞİÖÇ]+/gi;
@@ -25,7 +26,6 @@
     if (!text || typeof text !== 'string') return [];
     const matches = text.match(TAG_REGEX);
     if (!matches) return [];
-    // Normalize to lowercase unique tags
     return Array.from(new Set(matches.map(t => t.toLowerCase())));
   }
 
@@ -194,7 +194,42 @@
   }
 
   /**
-   * Quick Add Note from Inline Bar
+   * Switch between Write tab and List tab in side panel
+   */
+  function switchPanelTab(tab) {
+    _activePanelTab = tab;
+    const writeBtn = document.getElementById('hub-notes-tab-write');
+    const listBtn = document.getElementById('hub-notes-tab-list');
+    const writeView = document.getElementById('hub-notes-write-view');
+    const listView = document.getElementById('hub-notes-list-view');
+
+    if (tab === 'write') {
+      if (writeBtn) {
+        writeBtn.className = 'flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-indigo-600 text-white shadow cursor-pointer';
+      }
+      if (listBtn) {
+        listBtn.className = 'flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer';
+      }
+      if (writeView) writeView.classList.remove('hidden');
+      if (listView) listView.classList.add('hidden');
+      const input = document.getElementById('hub-quick-note-input');
+      if (input) input.focus();
+    } else {
+      if (writeBtn) {
+        writeBtn.className = 'flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer';
+      }
+      if (listBtn) {
+        listBtn.className = 'flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-indigo-600 text-white shadow cursor-pointer';
+      }
+      if (writeView) writeView.classList.add('hidden');
+      if (listView) listView.classList.remove('hidden');
+    }
+
+    try { localStorage.setItem('hub_notes_panel_tab', tab); } catch (e) {}
+  }
+
+  /**
+   * Quick Add Note from Textarea
    */
   function addQuickNote() {
     const input = document.getElementById('hub-quick-note-input');
@@ -221,8 +256,25 @@
     target.notesList.unshift(newNote);
     saveNotesChanges(target);
     input.value = '';
+    
     renderInlineNotes();
     renderFullNotesModalList();
+
+    // Not eklendiğinde kayıtlı notlar listesini güncelle
+    const countEl = document.getElementById('hub-notes-tab-count');
+    if (countEl) countEl.textContent = String(target.notesList.length);
+  }
+
+  function insertTagIntoQuickInput(tag) {
+    const input = document.getElementById('hub-quick-note-input');
+    if (!input) return;
+
+    const pos = input.selectionStart || input.value.length;
+    const textBefore = input.value.substring(0, pos);
+    const textAfter = input.value.substring(pos);
+
+    input.value = textBefore + (textBefore.endsWith(' ') || textBefore.length === 0 ? '' : ' ') + tag + ' ' + textAfter;
+    input.focus();
   }
 
   /**
@@ -313,12 +365,36 @@
   }
 
   /**
+   * Render Pinned Notes Strip in Write View
+   */
+  function renderPinnedStrip(notes) {
+    const stripEl = document.getElementById('hub-notes-pinned-strip');
+    const chipsEl = document.getElementById('hub-notes-pinned-chips');
+    if (!stripEl || !chipsEl) return;
+
+    const pinnedNotes = notes.filter(n => Boolean(n.pinned));
+    if (pinnedNotes.length === 0) {
+      stripEl.classList.add('hidden');
+      return;
+    }
+
+    stripEl.classList.remove('hidden');
+    chipsEl.innerHTML = pinnedNotes.map(n => `
+      <div onclick="HubNotes.openFullNotesModal('${n.id}')" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-amber-950/60 border border-amber-500/40 text-amber-200 text-[11px] font-medium hover:border-amber-400 transition cursor-pointer max-w-full truncate" title="${escapeHtml(n.text)}">
+        <span class="text-amber-400 text-xs shrink-0">📌</span>
+        <span class="truncate">${escapeHtml(n.text.slice(0, 28))}</span>
+      </div>
+    `).join('');
+  }
+
+  /**
    * Render Compact Inline Notes List
    */
   function renderInlineNotes() {
     const listEl = document.getElementById('hub-inline-notes-list');
     const badgeEl = document.getElementById('hub-notes-panel-badge');
     const countEl = document.getElementById('hub-notes-panel-count');
+    const tabCountEl = document.getElementById('hub-notes-tab-count');
     if (!listEl) return;
 
     const target = getActiveNotesTarget();
@@ -326,11 +402,15 @@
       listEl.innerHTML = `<div class="p-4 text-center text-slate-500 text-xs italic">Not almak için aktif kampanya seçin.</div>`;
       if (badgeEl) badgeEl.textContent = '📜 Notlar';
       if (countEl) countEl.textContent = '0';
+      if (tabCountEl) tabCountEl.textContent = '0';
       return;
     }
 
     if (badgeEl) badgeEl.textContent = target.titleBadge;
     if (countEl) countEl.textContent = String(target.notesList.length);
+    if (tabCountEl) tabCountEl.textContent = String(target.notesList.length);
+
+    renderPinnedStrip(target.notesList);
 
     const sorted = sortNotes(target.notesList);
     const filtered = filterNotes(sorted);
@@ -339,8 +419,8 @@
       listEl.innerHTML = `
         <div class="p-6 text-center text-slate-500 text-xs flex flex-col items-center justify-center gap-2 h-44">
           <span class="text-2xl opacity-60">📜</span>
-          <span>Henüz not tutulmadı.</span>
-          <span class="text-[10px] text-slate-600">Yukarıdaki kutudan hızlıca not ekleyin veya 📝 butonuna basarak geniş sayfayı açın.</span>
+          <span>Kayıtlı not bulunamadı.</span>
+          <span class="text-[10px] text-slate-600">"Not Defteri" sekmesinden yeni not yazıp kaydedebilirsiniz.</span>
         </div>`;
       return;
     }
@@ -349,17 +429,16 @@
     filtered.forEach(note => {
       const isPinned = Boolean(note.pinned);
       const isCompleted = Boolean(note.completed);
-      const isTodo = isCompleted || note.text.trim().startsWith('- [ ]') || note.text.trim().startsWith('- [x]');
 
       html += `
-        <div onclick="openFullNotesModal('${note.id}')" class="p-2.5 rounded-xl border transition group cursor-pointer relative ${isPinned ? 'bg-amber-950/20 border-amber-500/40 shadow-sm' : 'bg-slate-900/80 hover:bg-slate-800/90 border-slate-800 hover:border-slate-700'}">
+        <div onclick="HubNotes.openFullNotesModal('${note.id}')" class="p-2.5 rounded-xl border transition group cursor-pointer relative ${isPinned ? 'bg-amber-950/20 border-amber-500/40 shadow-sm' : 'bg-slate-900/80 hover:bg-slate-800/90 border-slate-800 hover:border-slate-700'}">
           <div class="flex items-start justify-between gap-1.5">
             <!-- Pin & Checkbox Alanı -->
             <div class="flex items-center gap-1.5 shrink-0 mt-0.5">
-              <button type="button" onclick="togglePinNote('${note.id}', event)" class="p-1 rounded text-xs transition ${isPinned ? 'text-amber-400 hover:text-amber-300' : 'text-slate-600 hover:text-slate-400'}" title="${isPinned ? 'Başa Sabitlemeyi Kaldır' : 'Başa Sabitle'}">
+              <button type="button" onclick="HubNotes.togglePinNote('${note.id}', event)" class="p-1 rounded text-xs transition cursor-pointer ${isPinned ? 'text-amber-400 hover:text-amber-300' : 'text-slate-600 hover:text-slate-400'}" title="${isPinned ? 'Başa Sabitlemeyi Kaldır' : 'Başa Sabitle'}">
                 📌
               </button>
-              <button type="button" onclick="toggleCompleteNote('${note.id}', event)" class="w-4 h-4 rounded border flex items-center justify-center text-[10px] font-bold transition ${isCompleted ? 'bg-emerald-600 border-emerald-400 text-white' : 'border-slate-600 hover:border-slate-400 text-transparent'}" title="${isCompleted ? 'Tamamlandı olarak işaretlendi' : 'Tamamlandı yap'}">
+              <button type="button" onclick="HubNotes.toggleCompleteNote('${note.id}', event)" class="w-4 h-4 rounded border flex items-center justify-center text-[10px] font-bold transition cursor-pointer ${isCompleted ? 'bg-emerald-600 border-emerald-400 text-white' : 'border-slate-600 hover:border-slate-400 text-transparent'}" title="${isCompleted ? 'Tamamlandı olarak işaretlendi' : 'Tamamlandı yap'}">
                 ✓
               </button>
             </div>
@@ -373,7 +452,7 @@
 
             <!-- Hızlı Aksiyonlar -->
             <div class="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition">
-              <button type="button" onclick="deleteNote('${note.id}', event)" class="p-1 text-slate-500 hover:text-rose-400 rounded text-[11px] transition" title="Notu Sil">
+              <button type="button" onclick="HubNotes.deleteNote('${note.id}', event)" class="p-1 text-slate-500 hover:text-rose-400 rounded text-[11px] transition cursor-pointer" title="Notu Sil">
                 ✕
               </button>
             </div>
@@ -447,7 +526,7 @@
       const isCompleted = Boolean(note.completed);
 
       html += `
-        <div onclick="selectNoteInModal('${note.id}')" class="p-3 rounded-xl border transition cursor-pointer flex flex-col gap-1.5 ${isSelected ? 'bg-indigo-950/60 border-indigo-500 text-white shadow-md' : 'bg-slate-900/60 hover:bg-slate-800/80 border-slate-800 text-slate-300'}">
+        <div onclick="HubNotes.selectNoteInModal('${note.id}')" class="p-3 rounded-xl border transition cursor-pointer flex flex-col gap-1.5 ${isSelected ? 'bg-indigo-950/60 border-indigo-500 text-white shadow-md' : 'bg-slate-900/60 hover:bg-slate-800/80 border-slate-800 text-slate-300'}">
           <div class="flex items-center justify-between gap-1.5">
             <div class="flex items-center gap-1.5 min-w-0">
               ${isPinned ? '<span class="text-amber-400 text-xs shrink-0" title="Başa Sabitlendi">📌</span>' : ''}
@@ -605,7 +684,9 @@
   window.HubNotes = {
     getActiveNotesTarget,
     renderInlineNotes,
+    switchPanelTab,
     addQuickNote,
+    insertTagIntoQuickInput,
     togglePinNote,
     toggleCompleteNote,
     deleteNote,
@@ -620,8 +701,11 @@
   };
 
   window.addEventListener('DOMContentLoaded', () => {
-    // Ilklendirme
     setTimeout(() => {
+      try {
+        const savedTab = localStorage.getItem('hub_notes_panel_tab');
+        if (savedTab) switchPanelTab(savedTab);
+      } catch (e) {}
       renderInlineNotes();
     }, 150);
   });

@@ -140,16 +140,12 @@
                 <span class="inline">Ayarlar</span>
               </button>
             </div>
-            <!-- 2. Sıra: Bulut Senkron Durumu & Kampanya (Ayarlar'ın Tam Altında) -->
-            <div class="grid grid-cols-2 gap-1.5 w-full">
-              <div id="sync-status-pill" onclick="if(window.SupabaseAuth) SupabaseAuth.handlePillClick(); else if(window.CloudSync) CloudSync.connect()" title="Bulut durumunu kontrol et / eşitle" class="cursor-pointer flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-[10px] font-medium bg-emerald-950/80 text-emerald-300 border border-emerald-600 whitespace-nowrap shadow-sm transition truncate">
+            <!-- 2. Sıra: Bulut Senkron Durumu -->
+            <div class="w-full">
+              <div id="sync-status-pill" onclick="if(window.SupabaseAuth) SupabaseAuth.handlePillClick(); else if(window.CloudSync) CloudSync.connect()" title="Bulut durumunu kontrol et / eşitle" class="cursor-pointer flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-[10px] font-medium bg-emerald-950/80 text-emerald-300 border border-emerald-600 whitespace-nowrap shadow-sm transition truncate w-full">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
                 <span id="sync-status-text">🟢 <span class="hidden sm:inline">Bulut </span>Senkron</span>
               </div>
-              <button type="button" onclick="openJoinCampaignModal()" id="btn-join-campaign-nav" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white border border-amber-500/80 text-xs font-bold shadow flex items-center justify-center gap-1 sm:gap-1.5 transition text-center cursor-pointer active:scale-95" title="Bir DM Kampanyasına Katıl">
-                <span>🎟️</span>
-                <span id="btn-join-campaign-text" class="truncate">Kampanya</span>
-              </button>
             </div>
           </div>
         </div>

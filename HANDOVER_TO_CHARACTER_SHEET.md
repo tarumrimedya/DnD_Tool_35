@@ -617,3 +617,36 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   4. **Parite ve Devir Teslim:**
      - `hub.html`, `hub_notes.js` ve `webapp/` altındaki kopyaları %100 eşitlendi; sıfır tavla zarı (U+1F3B2) kuralı tavizsiz korundu.
      - **Karakter Kâğıdına Yönlendirme:** Karakter sayfasında (`index.html`) notlar bölümü geliştirilirken doğrudan `hub_notes.js` dahil edilip `character.notesList` şeması kullanılarak 0 kod tekrarıyla çift yönlü senkronizasyon sağlanacaktır.
+
+---
+
+## 34. NOT DEFTERİ AŞAĞI KADAR GENİŞLEYEN YAZMA ALANI VE SEKME DÜZENİ (2026-10-25)
+* **İstek:** Hub açık not panelindeki tek satırlık `#hub-quick-note-input` kutusunun aşağı kadar genişlemesi, kullanıcının gerçek bir not defteri gibi rahatça paragraf ve çok satırlı not alabilmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Aşağı Kadar Genişleyen Textarea Alanı (`hub.html` & `webapp/`):**
+     - Tek satırlık `<input>` kutusu, kartın kalan tüm düşey yüksekliğini dolduran esnek bir `<textarea id="hub-quick-note-input" class="w-full flex-1 min-h-[160px] ...">` çok satırlı serbest metin alanına dönüştürüldü.
+     - Klavye kısayolu olarak `Ctrl+Enter` veya `Cmd+Enter` kombinasyonu ile notu anında kaydetme desteği eklendi.
+     - Alt kısmına hızlı etiket çubuğu (`+ #gorev`, `+ #npc`, `+ #yer`, `+ #loot`, `+ [ ] Görev`) ve `[ ➕ Notu Kaydet ]` butonu konumlandırıldı.
+  2. **İkili Sekme Modu (`hub_notes.js` & `webapp/`):**
+     - Panel başlığının altına iki sekme eklendi:
+       1. **[ ✏️ Not Defteri ]:** Genişletilmiş textarea yazma alanı. Üstünde varsa sabitlenmiş notlar şeridi (`📌 Sabitlenenler`) yer alır.
+       2. **[ 📋 Kayıtlı Notlar (<sayı>) ]:** Arama çubuğu, etiket filtreleri ve geçmiş notların tam listesini gösterir.
+     - `HubNotes.switchPanelTab(tab)` fonksiyonu ile sekmeler arası geçiş sağlanır ve son tercih `localStorage` üzerinde saklanır.
+  3. **Parite ve Kural Bütünlüğü:**
+     - `hub.html`, `hub_notes.js` ve `webapp/` kopyaları %100 SHA-256 eşitliğinde tutuldu; sıfır tavla zarı (U+1F3B2) kuralı tavizsiz korundu.
+
+---
+
+## 35. KARAKTER KÂĞIDI ÜST BAŞLIK KAMPANYA BUTONUNUN KALDIRILMASI VE DÜZEN SADELEŞTİRMESİ (2026-10-25)
+* **İstek:** Karakter kâğıdı (`character.html` / `index.html`) üst gezinti çubuğundaki (navbar) `[ 🎟️ Kampanya ]` (`#btn-join-campaign-nav`) butonunun kaldırılması; kampanya katılım ve yönetim işlemlerinin tamamen `⚙️ Ayarlar` modalı içindeki resmi bölümden yürütülmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Navbar Sadeleştirmesi (`character.html`, `index.html` & `webapp/`):**
+     - Üst sağ kontrol kümesinde 2. sıradaki 2 kolonlu grid yerine tam genişlikli (`w-full`) bir satır yapısına geçildi.
+     - `#btn-join-campaign-nav` butonu navbardan tamamen kaldırıldı.
+     - `#sync-status-pill` (Bulut Senkron Durumu) 2. satırda tek başına tam genişlikte yerleştirilerek başlık görsel dengesi ve estetiği mükemmelleştirildi.
+  2. **Kod Güvenliği & Null-Safety:**
+     - `updateCampaignNavButton()` fonksiyonu `#btn-join-campaign-text` elementini null-safe olarak kontrol eder; `#settings-campaign-badge` ve `#settings-modal` içindeki kampanya yönetimi ("BÖLÜM 1: DM KAMPANYASI & MASA BAĞLANTISI") kesintisiz çalışmaya devam eder.
+  3. **Parite ve Kural Bütünlüğü:**
+     - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` kopyaları %100 SHA-256 eşitliğinde tutuldu.
+     - Sıfır tavla zarı (`🎲` / `U+1F3B2`) kuralı tavizsiz korundu.
+

@@ -194,34 +194,71 @@
             </button>
           </div>
 
-          <!-- Hızlı Arama & Filtre Çipleri -->
-          <div class="space-y-1.5">
-            <div class="flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 rounded-xl px-2.5 py-1.5 focus-within:border-indigo-400 transition">
-              <span class="text-slate-500 text-xs">🔍</span>
-              <input type="text" id="hub-inline-notes-search" oninput="HubNotes.handleSearchInput(this.value)" placeholder="Not veya #etiket ara..." class="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none font-mono">
-            </div>
-
-            <!-- Hızlı Etiket Butonları -->
-            <div class="flex items-center gap-1 overflow-x-auto pb-1 text-[10px] font-mono no-scrollbar">
-              <button type="button" onclick="HubNotes.setTagFilter('all')" class="px-2 py-0.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer">#hepsi</button>
-              <button type="button" onclick="HubNotes.setTagFilter('#gorev')" class="px-2 py-0.5 rounded-md bg-sky-950/60 hover:bg-sky-900 border border-sky-800/60 text-sky-300 transition cursor-pointer">#gorev</button>
-              <button type="button" onclick="HubNotes.setTagFilter('#npc')" class="px-2 py-0.5 rounded-md bg-purple-950/60 hover:bg-purple-900 border border-purple-800/60 text-purple-300 transition cursor-pointer">#npc</button>
-              <button type="button" onclick="HubNotes.setTagFilter('#yer')" class="px-2 py-0.5 rounded-md bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800/60 text-emerald-300 transition cursor-pointer">#yer</button>
-              <button type="button" onclick="HubNotes.setTagFilter('#loot')" class="px-2 py-0.5 rounded-md bg-yellow-950/60 hover:bg-yellow-900 border border-yellow-800/60 text-yellow-300 transition cursor-pointer">#loot</button>
-            </div>
-          </div>
-
-          <!-- Hızlı Tek Satır Not Ekleme Girişi -->
-          <div class="flex items-center gap-1.5">
-            <input type="text" id="hub-quick-note-input" placeholder="Hızlı not yaz (+ #gorev, #npc)..." class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 font-mono focus:outline-none focus:border-indigo-400" onkeydown="if(event.key==='Enter') HubNotes.addQuickNote()">
-            <button type="button" onclick="HubNotes.addQuickNote()" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow transition active:scale-95 cursor-pointer" title="Notu Ekle">
-              ➕
+          <!-- Üst Sekmeler: [ ✏️ Not Defteri ] & [ 📋 Kayıtlı Notlar ] -->
+          <div class="flex items-center gap-1 bg-slate-900/90 p-1 rounded-xl border border-slate-800 shrink-0">
+            <button type="button" id="hub-notes-tab-write" onclick="HubNotes.switchPanelTab('write')" class="flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-indigo-600 text-white shadow cursor-pointer">
+              <span>✏️</span>
+              <span>Not Defteri</span>
+            </button>
+            <button type="button" id="hub-notes-tab-list" onclick="HubNotes.switchPanelTab('list')" class="flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer">
+              <span>📋</span>
+              <span>Kayıtlı Notlar (<span id="hub-notes-tab-count">0</span>)</span>
             </button>
           </div>
 
-          <!-- Not Listesi (Pinliler Üstte, Son Notlar Altta, Akıcı Scroll) -->
-          <div id="hub-inline-notes-list" class="flex-1 overflow-y-auto space-y-2 pr-1 min-h-[220px] max-h-[500px]">
-            <!-- JS Dinamik Doldurur -->
+          <!-- GÖRÜNÜM 1: AŞAĞI KADAR GENİŞLEYEN NOT DEFTERİ YAZMA ALANI (flex-1) -->
+          <div id="hub-notes-write-view" class="flex-1 flex flex-col min-h-0 space-y-2">
+            <!-- Pinli Notlar Hatırlatıcı Şeridi (Varsa gösterilir) -->
+            <div id="hub-notes-pinned-strip" class="hidden shrink-0 space-y-1 bg-amber-950/20 border border-amber-500/30 rounded-xl p-2 text-xs">
+              <div class="text-[9px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
+                <span>📌</span>
+                <span>Sabitlenen Notlar:</span>
+              </div>
+              <div id="hub-notes-pinned-chips" class="flex flex-wrap gap-1 max-h-16 overflow-y-auto"></div>
+            </div>
+
+            <!-- Aşağı Kadar Genişleyen Textarea -->
+            <textarea id="hub-quick-note-input" placeholder="Notunuzu buraya yazın...&#10;&#10;İpuçları:&#10;• #gorev, #npc, #yer, #loot etiketleri kullanabilirsiniz&#10;• - [ ] yazarak yapılacak görev kutusu ekleyebilirsiniz&#10;• Kaydetmek için aşağıdaki butona basın veya Ctrl+Enter yapın" class="w-full flex-1 min-h-[160px] bg-slate-900/90 border border-slate-700 rounded-xl p-3 text-xs text-white placeholder-slate-500 font-sans focus:outline-none focus:border-indigo-400 resize-none leading-relaxed shadow-inner" onkeydown="if((event.ctrlKey || event.metaKey) && event.key==='Enter') HubNotes.addQuickNote()"></textarea>
+
+            <!-- Hızlı Etiket Araç Çubuğu ve Kaydet Butonu -->
+            <div class="shrink-0 space-y-2 pt-1">
+              <div class="flex items-center gap-1 flex-wrap text-[10px] font-mono">
+                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('#gorev')" class="px-2 py-0.5 rounded-md bg-sky-950/60 hover:bg-sky-900 border border-sky-800/60 text-sky-300 transition cursor-pointer">+ #gorev</button>
+                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('#npc')" class="px-2 py-0.5 rounded-md bg-purple-950/60 hover:bg-purple-900 border border-purple-800/60 text-purple-300 transition cursor-pointer">+ #npc</button>
+                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('#yer')" class="px-2 py-0.5 rounded-md bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800/60 text-emerald-300 transition cursor-pointer">+ #yer</button>
+                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('#loot')" class="px-2 py-0.5 rounded-md bg-yellow-950/60 hover:bg-yellow-900 border border-yellow-800/60 text-yellow-300 transition cursor-pointer">+ #loot</button>
+                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('- [ ] ')" class="px-2 py-0.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition cursor-pointer">+ [ ] Görev</button>
+              </div>
+
+              <button type="button" onclick="HubNotes.addQuickNote()" class="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-indigo-950/50 transition transform active:scale-95 cursor-pointer">
+                <span>➕</span>
+                <span>Notu Kaydet (Ctrl+Enter)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- GÖRÜNÜM 2: KAYITLI NOTLAR LİSTESİ VE ARAMA (flex-1) -->
+          <div id="hub-notes-list-view" class="hidden flex-1 flex flex-col min-h-0 space-y-2">
+            <!-- Arama & Filtre -->
+            <div class="space-y-1.5 shrink-0">
+              <div class="flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 rounded-xl px-2.5 py-1.5 focus-within:border-indigo-400 transition">
+                <span class="text-slate-500 text-xs">🔍</span>
+                <input type="text" id="hub-inline-notes-search" oninput="HubNotes.handleSearchInput(this.value)" placeholder="Not veya #etiket ara..." class="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none font-mono">
+              </div>
+
+              <div class="flex items-center gap-1 overflow-x-auto pb-1 text-[10px] font-mono no-scrollbar">
+                <button type="button" onclick="HubNotes.setTagFilter('all')" class="px-2 py-0.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer">#hepsi</button>
+                <button type="button" onclick="HubNotes.setTagFilter('#gorev')" class="px-2 py-0.5 rounded-md bg-sky-950/60 hover:bg-sky-900 border border-sky-800/60 text-sky-300 transition cursor-pointer">#gorev</button>
+                <button type="button" onclick="HubNotes.setTagFilter('#npc')" class="px-2 py-0.5 rounded-md bg-purple-950/60 hover:bg-purple-900 border border-purple-800/60 text-purple-300 transition cursor-pointer">#npc</button>
+                <button type="button" onclick="HubNotes.setTagFilter('#yer')" class="px-2 py-0.5 rounded-md bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800/60 text-emerald-300 transition cursor-pointer">#yer</button>
+                <button type="button" onclick="HubNotes.setTagFilter('#loot')" class="px-2 py-0.5 rounded-md bg-yellow-950/60 hover:bg-yellow-900 border border-yellow-800/60 text-yellow-300 transition cursor-pointer">#loot</button>
+              </div>
+            </div>
+
+            <!-- Liste -->
+            <div id="hub-inline-notes-list" class="flex-1 overflow-y-auto space-y-2 pr-1 min-h-0">
+              <!-- JS Dinamik Doldurur -->
+            </div>
           </div>
         </div>
       </aside>
