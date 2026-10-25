@@ -874,3 +874,22 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   4. **Parite ve Kural Bütünlüğü:**
      - `character.html`, `index.html`, `rule_engine.js` ve bunların `webapp/` altındaki kopyaları %100 SHA-256 birebir eşitliğinde güncellendi.
      - Kesinlikle hiçbir tavla zarı emoji (`🎲`) kullanılmadı.
+
+---
+
+## 43. HUB KARAKTER KARTLARI YENİLENDİ: BÜYÜTÜLMÜŞ TİPOGRAFİ, GENİŞ TIKLANABİLİR ALANLAR VE NOT DEFTERİ İLE EŞİT BOYUT (2026-10-25)
+* **İstek:** Hub sayfasındaki karakter kartlarının genel olarak yazılarının büyütülmesi, tıklanabilir buton ve alanların daha ergonomik hale getirilmesi, okunurluğun artırılması ve kartın dikeyde uzatılarak yanındaki Not Defteri Paneli (`#hub-inline-notes-panel`) ile aynı boyuta eşitlenmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Yükseklik Eşitlemesi (Height Parity with Notes Panel):**
+     - Karakter kartları ve boş kart şablonuna `h-full min-h-[580px] xl:min-h-[620px]` sınıfları uygulandı.
+     - 2 kolonlu ızgara kapsayıcılarına `items-stretch` eklendi; böylece yan yana duran Sol Bölüm (Karakter Kartları), Orta Bölüm (Not Defteri) ve Sağ Bölüm (Zar Masası) panellerinin boyları %100 kusursuz eşitlendi.
+  2. **Büyütülmüş Tipografi ve Ergonomik Tıklanabilir Kontroller:**
+     - **Kart Başlığı ve Portre:** İsim `text-base sm:text-lg font-black`, ırk/sınıf `text-xs sm:text-sm text-slate-200`, portre `w-16 h-16` ve eylem butonları `w-8 h-8` boyutuna büyütüldü.
+     - **Can (HP) Barı & Hızlı Hasar:** HP fontu `text-base sm:text-lg font-black font-mono`, bar kalınlığı `h-2.5`, hızlı +/- butonları ve özel miktar giriş kutusu (`w-14 sm:w-16 h-7`) genişletilerek dokunmatik ve fare ergonomisi maksimize edildi.
+     - **AC & Saldırı Kutusu:** Zırh değeri `text-xl sm:text-2xl font-black`, Dokunuş/FF ve İnisiyatif atma butonu daha okunaklı ve net butonlarla donatıldı; taban hız (`30 ft`) eklendi.
+     - **Kurtarma Atışları & Pasifler:** Fortitude, Reflex, Will ve Spot/Listen butonları `px-3 py-1.5` boyutunda, kalın harfli ve ferah tıklama hedefleri olarak yeniden tasarlandı.
+     - **6 Temel Yetenek Skoru Şeridi (STR, DEX, CON, INT, WIS, CHA):** Kartın uzatılan dikey alanına 6 temel stat değeri ve anlık zar atılabilir modifiye butonları eklendi.
+     - **Karakteri Aç & Yönet Butonu:** Kartın en altına `py-3 text-sm font-extrabold` boyutunda tam genişlikte buton olarak sabitlendi.
+  3. **Parite ve Kural Bütünlüğü:**
+     - `hub.html` ve `webapp/hub.html` %100 SHA-256 eşitliğinde tutuldu.
+     - Kesinlikle hiçbir tavla zarı emoji kullanılmadı.

@@ -1451,7 +1451,7 @@
       container.innerHTML = html;
     }
 
-    // Karakter Kartı HTML Üreticisi
+// Karakter Kartı HTML Üreticisi (Büyük Yazılar, Ergonomik Tıklanabilir Alanlar ve Not Defteri ile Eşit Boy)
     function getCharacterCardHtml(c) {
       syncCharacterSummaryStats(c);
       const hpPct = Math.min(100, Math.max(0, Math.round((c.currentHp / (c.maxHp || 1)) * 100)));
@@ -1463,154 +1463,201 @@
       const campIcon = camp ? (camp.isDmMode ? '👑' : (camp.parentId ? '📂' : '🏰')) : '📦';
       const campName = camp ? camp.name : 'Bağımsız';
 
-      return `
-        <div class="group bg-[#131d33] border border-slate-700/80 hover:border-indigo-500/60 rounded-2xl p-4 shadow-xl hover:shadow-2xl transition duration-200 flex flex-col justify-between relative overflow-hidden">
-          <!-- Üst Arka Plan Işıltısı -->
-          <div class="absolute -top-12 -right-12 w-28 h-28 ${c.isNpc ? 'bg-rose-600/10' : 'bg-indigo-600/10'} rounded-full blur-2xl pointer-events-none"></div>
+      const fd = c.fullData || c;
+      const getStatScore = (k) => {
+        if (fd.abilities && fd.abilities[k] !== undefined) return Number(fd.abilities[k]) || 10;
+        if (fd.stats && fd.stats[k] && fd.stats[k].total !== undefined) return Number(fd.stats[k].total) || 10;
+        if (fd.stats && fd.stats[k] && fd.stats[k].base !== undefined) return Number(fd.stats[k].base) || 10;
+        return 10;
+      };
+      const getStatMod = (val) => Math.floor((val - 10) / 2);
 
-          <!-- Kart Başlık & Kimlik -->
-          <div>
+      const statsList = [
+        { key: 'str', label: 'STR' },
+        { key: 'dex', label: 'DEX' },
+        { key: 'con', label: 'CON' },
+        { key: 'int', label: 'INT' },
+        { key: 'wis', label: 'WIS' },
+        { key: 'cha', label: 'CHA' }
+      ].map(st => {
+        const score = getStatScore(st.key);
+        const mod = getStatMod(score);
+        return {
+          label: st.label,
+          score: score,
+          mod: mod,
+          modStr: mod >= 0 ? `+${mod}` : `${mod}`
+        };
+      });
+
+      return `
+        <div class="group bg-[#131d33] border border-slate-700/80 hover:border-indigo-500/60 rounded-2xl p-4 sm:p-5 shadow-xl hover:shadow-2xl transition duration-200 flex flex-col justify-between relative overflow-hidden h-full min-h-[580px] xl:min-h-[620px]">
+          <!-- Üst Arka Plan Işıltısı -->
+          <div class="absolute -top-12 -right-12 w-32 h-32 ${c.isNpc ? 'bg-rose-600/10' : 'bg-indigo-600/10'} rounded-full blur-2xl pointer-events-none"></div>
+
+          <!-- Kart Gövdesi -->
+          <div class="space-y-3.5">
+            <!-- Kart Başlık & Kimlik -->
             <div class="flex items-start justify-between gap-3">
-              <div class="flex items-center gap-3 min-w-0">
-                <div class="relative shrink-0 w-14 h-14 rounded-xl border border-slate-600 bg-slate-900 shadow-md overflow-hidden flex items-center justify-center">
-                  ${getCharacterPortraitHtml(c, 'text-2xl')}
-                  <span class="absolute -bottom-1.5 -right-1 px-1.5 py-0.2 rounded text-[9px] font-black uppercase tracking-wider ${c.isNpc ? 'bg-rose-950 text-rose-300 border border-rose-700' : 'bg-sky-950 text-sky-300 border border-sky-700'}">
+              <div class="flex items-center gap-3.5 min-w-0">
+                <div class="relative shrink-0 w-16 h-16 rounded-2xl border border-slate-600 bg-slate-900 shadow-lg overflow-hidden flex items-center justify-center">
+                  ${getCharacterPortraitHtml(c, 'text-3xl')}
+                  <span class="absolute -bottom-1.5 -right-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider shadow ${c.isNpc ? 'bg-rose-950 text-rose-300 border border-rose-700' : 'bg-sky-950 text-sky-300 border border-sky-700'}">
                     ${c.isNpc ? 'NPC' : 'PC'}
                   </span>
                 </div>
                 <div class="min-w-0 flex-1">
-                  <h3 class="text-sm font-bold text-white truncate group-hover:text-indigo-300 transition" title="${c.name}">${c.name}</h3>
-                  <p class="text-[11px] text-slate-300 truncate">${c.race || 'Irk Seçilmedi'} • <span class="text-amber-400 font-semibold">${c.classes || 'Sınıf Seçilmedi'}</span></p>
-                  <div class="mt-1 flex items-center gap-1.5">
-                    <span class="text-[10px] text-slate-400 bg-slate-900/90 px-2 py-0.5 rounded-md border border-slate-800 truncate flex items-center gap-1" title="Kampanya: ${campName}">
+                  <h3 class="text-base sm:text-lg font-black text-white truncate group-hover:text-indigo-300 transition" title="${escapeHtml(c.name)}">${escapeHtml(c.name)}</h3>
+                  <p class="text-xs sm:text-sm text-slate-200 truncate mt-0.5 font-medium">${escapeHtml(c.race || 'Irk Belirtilmedi')} • <span class="text-amber-400 font-bold">${escapeHtml(c.classes || 'Sınıf Seçilmedi')}</span></p>
+                  <div class="mt-1.5 flex items-center gap-2 flex-wrap">
+                    <span class="text-xs text-slate-300 bg-slate-900/90 px-2.5 py-1 rounded-lg border border-slate-800 truncate flex items-center gap-1.5 font-semibold" title="Kampanya: ${escapeHtml(campName)}">
                       <span>${campIcon}</span>
-                      <span class="truncate">${campName}</span>
-                      ${camp?.isDmMode ? '<span class="text-[8px] font-bold text-amber-400 font-mono ml-0.5 bg-amber-500/10 px-1 py-0.2 rounded border border-amber-500/30">DM</span>' : ''}
+                      <span class="truncate">${escapeHtml(campName)}</span>
+                      ${camp?.isDmMode ? '<span class="text-[9px] font-black text-amber-400 font-mono ml-0.5 bg-amber-500/20 px-1.5 py-0.5 rounded border border-amber-500/40">DM</span>' : ''}
                     </span>
-                    ${c.cr ? `<span class="text-[9px] font-mono font-bold text-amber-300 bg-amber-950/80 px-1.5 py-0.2 rounded border border-amber-700/80">CR ${c.cr}</span>` : ''}
+                    ${c.cr ? `<span class="text-xs font-mono font-black text-amber-300 bg-amber-950/90 px-2 py-0.5 rounded-lg border border-amber-700/80">CR ${c.cr}</span>` : ''}
                   </div>
                 </div>
               </div>
 
               <!-- Hızlı Eylem Menüsü -->
-              <div class="flex items-center gap-1">
-                <button onclick="openEditCharacterModal('${c.id}')" title="Karakteri / Kampanyayı Düzenle" class="p-1 rounded-lg bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition text-xs cursor-pointer">
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button onclick="openEditCharacterModal('${c.id}')" title="Karakteri / Kampanyayı Düzenle" class="w-8 h-8 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition flex items-center justify-center text-sm shadow cursor-pointer active:scale-95">
                   ✏️
                 </button>
-                <button onclick="duplicateCharacter('${c.id}')" title="Karakteri Klonla" class="p-1 rounded-lg bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition text-xs cursor-pointer">
+                <button onclick="duplicateCharacter('${c.id}')" title="Karakteri Klonla" class="w-8 h-8 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition flex items-center justify-center text-sm shadow cursor-pointer active:scale-95">
                   📋
                 </button>
-                <button onclick="deleteCharacter('${c.id}')" title="Karakteri Sil" class="p-1 rounded-lg bg-slate-900/80 hover:bg-rose-950 text-slate-400 hover:text-rose-300 border border-slate-700 hover:border-rose-700 transition text-xs cursor-pointer">
+                <button onclick="deleteCharacter('${c.id}')" title="Karakteri Sil" class="w-8 h-8 rounded-xl bg-slate-900/90 hover:bg-rose-950 text-slate-400 hover:text-rose-300 border border-slate-700 hover:border-rose-700 transition flex items-center justify-center text-sm shadow cursor-pointer active:scale-95">
                   🗑️
                 </button>
               </div>
             </div>
 
             <!-- CAN (HP) VE GEÇİCİ CAN BARI -->
-            <div class="mt-3.5 bg-slate-900/80 p-2.5 rounded-xl border border-slate-800/80 space-y-1.5">
-              <div class="flex items-center justify-between text-xs font-mono">
-                <span class="text-slate-400 flex items-center gap-1">
-                  <span>💚</span> Can (HP)
+            <div class="bg-slate-900/90 p-3 sm:p-3.5 rounded-2xl border border-slate-800/90 space-y-2 shadow-inner">
+              <div class="flex items-center justify-between text-xs sm:text-sm font-mono">
+                <span class="text-slate-300 font-bold flex items-center gap-1.5">
+                  <span class="text-base">💚</span> <span>Can (HP)</span>
                 </span>
-                <div class="flex items-center gap-1.5">
-                  <span class="font-bold text-white">${c.currentHp}</span>
-                  <span class="text-slate-500">/</span>
-                  <span class="text-slate-400">${c.maxHp}</span>
-                  ${c.tempHp ? `<span class="text-[10px] font-bold text-cyan-300 bg-cyan-950/80 border border-cyan-800 px-1 rounded">+${c.tempHp} Geçici</span>` : ''}
+                <div class="flex items-center gap-2">
+                  <span class="text-base sm:text-lg font-black text-white font-mono">${c.currentHp}</span>
+                  <span class="text-slate-500 font-bold">/</span>
+                  <span class="text-sm sm:text-base font-bold text-slate-400 font-mono">${c.maxHp}</span>
+                  ${c.tempHp ? `<span class="text-xs font-bold text-cyan-300 bg-cyan-950/90 border border-cyan-700 px-2 py-0.5 rounded-lg shadow-sm">+${c.tempHp} Geçici</span>` : ''}
                 </div>
               </div>
 
               <!-- HP Bar -->
-              <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden flex">
-                <div class="${hpColor} h-full transition-all duration-300" style="width: ${hpPct}%;"></div>
+              <div class="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden flex shadow-inner">
+                <div class="${hpColor} h-full transition-all duration-300 rounded-full" style="width: ${hpPct}%;"></div>
               </div>
 
               <!-- Hızlı Can Artır/Azalt & Özel Hasar/Şifa Kontrolleri -->
-              <div class="flex items-center justify-between gap-1 pt-1 text-[11px]">
+              <div class="flex items-center justify-between gap-1.5 pt-1 text-xs">
                 <div class="flex items-center gap-1 shrink-0">
-                  <button onclick="adjustHp('${c.id}', -5)" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-rose-900 text-slate-300 hover:text-white border border-slate-700 transition font-mono cursor-pointer" title="5 Hasar Ver">-5</button>
-                  <button onclick="adjustHp('${c.id}', -1)" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-rose-900 text-slate-300 hover:text-white border border-slate-700 transition font-mono cursor-pointer" title="1 Hasar Ver">-1</button>
+                  <button onclick="adjustHp('${c.id}', -5)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-rose-900 text-slate-200 hover:text-white border border-slate-700 transition font-mono font-bold cursor-pointer active:scale-95" title="5 Hasar Ver">-5</button>
+                  <button onclick="adjustHp('${c.id}', -1)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-rose-900 text-slate-200 hover:text-white border border-slate-700 transition font-mono font-bold cursor-pointer active:scale-95" title="1 Hasar Ver">-1</button>
                 </div>
 
                 <!-- Özel Miktar Girişi (Hasar / Şifa) -->
-                <div class="flex items-center gap-1 bg-slate-950/70 p-0.5 rounded-lg border border-slate-800" onclick="event.stopPropagation()">
-                  <button onclick="applyCustomHp('${c.id}', -1)" title="Yazılan miktar kadar hasar ver" class="px-1.5 py-0.5 rounded bg-rose-950/80 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800/80 transition font-mono font-bold text-[10px] cursor-pointer flex items-center gap-0.5">
+                <div class="flex items-center gap-1 bg-slate-950/90 p-1 rounded-xl border border-slate-800 shadow" onclick="event.stopPropagation()">
+                  <button onclick="applyCustomHp('${c.id}', -1)" title="Yazılan miktar kadar hasar ver" class="px-2 py-1 rounded-lg bg-rose-950/90 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800 transition font-mono font-black text-xs cursor-pointer flex items-center gap-0.5 active:scale-95">
                     <span>⚔️</span>
                     <span>-</span>
                   </button>
-                  <input type="number" id="custom-hp-input-${c.id}" min="1" placeholder="Miktar" class="w-11 sm:w-12 h-5 text-center bg-slate-900 text-white font-mono text-[11px] font-bold rounded border border-slate-700/80 focus:border-amber-400 focus:outline-none p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" onkeydown="if(event.key==='Enter') applyCustomHp('${c.id}', -1)">
-                  <button onclick="applyCustomHp('${c.id}', 1)" title="Yazılan miktar kadar can / şifa ver" class="px-1.5 py-0.5 rounded bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 hover:text-white border border-emerald-800/80 transition font-mono font-bold text-[10px] cursor-pointer flex items-center gap-0.5">
+                  <input type="number" id="custom-hp-input-${c.id}" min="1" placeholder="Miktar" class="w-14 sm:w-16 h-7 text-center bg-slate-900 text-white font-mono text-xs font-black rounded-lg border border-slate-700/80 focus:border-amber-400 focus:outline-none p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" onkeydown="if(event.key==='Enter') applyCustomHp('${c.id}', -1)">
+                  <button onclick="applyCustomHp('${c.id}', 1)" title="Yazılan miktar kadar can / şifa ver" class="px-2 py-1 rounded-lg bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 hover:text-white border border-emerald-800 transition font-mono font-black text-xs cursor-pointer flex items-center gap-0.5 active:scale-95">
                     <span>+</span>
                     <span>💚</span>
                   </button>
                 </div>
 
                 <div class="flex items-center gap-1 shrink-0">
-                  <button onclick="adjustHp('${c.id}', +1)" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-emerald-900 text-slate-300 hover:text-white border border-slate-700 transition font-mono cursor-pointer" title="1 Şifa Ver">+1</button>
-                  <button onclick="adjustHp('${c.id}', +5)" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-emerald-900 text-slate-300 hover:text-white border border-slate-700 transition font-mono cursor-pointer" title="5 Şifa Ver">+5</button>
+                  <button onclick="adjustHp('${c.id}', +1)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-emerald-900 text-slate-200 hover:text-white border border-slate-700 transition font-mono font-bold cursor-pointer active:scale-95" title="1 Şifa Ver">+1</button>
+                  <button onclick="adjustHp('${c.id}', +5)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-emerald-900 text-slate-200 hover:text-white border border-slate-700 transition font-mono font-bold cursor-pointer active:scale-95" title="5 Şifa Ver">+5</button>
                 </div>
               </div>
             </div>
 
             <!-- TEMEL D&D 3.5e STATLAR GRID (AC / ATTACK / SAVES) -->
-            <div class="mt-3 grid grid-cols-3 gap-2 text-center text-xs">
+            <div class="grid grid-cols-3 gap-2.5 text-center text-xs">
               <!-- AC -->
-              <div class="bg-slate-900/60 p-2 rounded-xl border border-slate-800">
-                <div class="text-[10px] text-slate-400 font-semibold uppercase">Zırh (AC)</div>
-                <div class="text-sm font-extrabold text-white mt-0.5 font-mono">${c.ac}</div>
-                <div class="text-[9px] text-slate-500 mt-0.5">T:${c.touchAc} | FF:${c.flatFootedAc}</div>
+              <div class="bg-slate-900/80 p-2.5 sm:p-3 rounded-2xl border border-slate-800 flex flex-col justify-between shadow">
+                <div class="text-xs text-slate-400 font-bold uppercase tracking-wider">Zırh (AC)</div>
+                <div class="text-xl sm:text-2xl font-black text-white mt-1 font-mono">${c.ac}</div>
+                <div class="text-[11px] text-slate-400 mt-1 font-mono font-semibold">T: <strong class="text-slate-200">${c.touchAc}</strong> | FF: <strong class="text-slate-200">${c.flatFootedAc}</strong></div>
               </div>
 
-              <!-- Vuruş & Silah -->
-              <div class="bg-slate-900/60 p-2 rounded-xl border border-slate-800 col-span-2 text-left px-3">
-                <div class="text-[10px] text-slate-400 font-semibold uppercase flex items-center justify-between">
+              <!-- Vuruş & Silah & İnisiyatif -->
+              <div class="bg-slate-900/80 p-2.5 sm:p-3 rounded-2xl border border-slate-800 col-span-2 text-left flex flex-col justify-between shadow">
+                <div class="text-xs text-slate-400 font-bold uppercase tracking-wider flex items-center justify-between">
                   <span>⚔️ Ana Saldırı</span>
-                  <span class="text-amber-400 font-mono font-semibold truncate max-w-[130px]" title="${c.mainWeapon}">${c.mainWeapon || 'Silahsız'}</span>
+                  <span class="text-amber-400 font-mono font-bold truncate max-w-[150px]" title="${escapeHtml(c.mainWeapon)}">${escapeHtml(c.mainWeapon || 'Silahsız')}</span>
                 </div>
-                <div class="text-xs font-extrabold text-amber-300 mt-0.5 font-mono truncate" title="${c.attackFormula || '+0'}">
-                  ${c.attackFormula || '+0'}
+                <div class="text-sm sm:text-base font-black text-amber-300 mt-0.5 font-mono truncate" title="${escapeHtml(c.attackFormula || '+0')}">
+                  ${escapeHtml(c.attackFormula || '+0')}
                 </div>
-                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Initiative', ${c.initBonus || 0})" title="İnisiyatif Zarı At (d20${c.initBonus >= 0 ? '+' + c.initBonus : c.initBonus})" class="text-[9px] text-slate-400 hover:text-amber-300 mt-0.5 transition cursor-pointer flex items-center gap-1 group active:scale-95">
-                  <span class="group-hover:text-amber-200">İnisiyatif:</span>
-                  <strong class="text-white group-hover:text-amber-300 font-mono">${c.initBonus >= 0 ? '+' + c.initBonus : c.initBonus}</strong>
-                </button>
+                <div class="flex items-center justify-between mt-1 pt-1.5 border-t border-slate-800/80">
+                  <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Initiative', ${c.initBonus || 0})" title="İnisiyatif Zarı At (d20${c.initBonus >= 0 ? '+' + c.initBonus : c.initBonus})" class="px-2.5 py-1 rounded-lg bg-slate-800/90 hover:bg-amber-950 border border-slate-700 hover:border-amber-500/60 text-xs text-slate-200 hover:text-amber-300 font-bold transition cursor-pointer flex items-center gap-1 active:scale-95 shadow-sm">
+                    <span class="text-amber-400">⚡</span>
+                    <span>İnisiyatif:</span>
+                    <strong class="text-white font-mono">${c.initBonus >= 0 ? '+' + c.initBonus : c.initBonus}</strong>
+                  </button>
+                  <div class="text-xs text-slate-300 font-mono font-bold flex items-center gap-1 bg-slate-950/70 px-2.5 py-1 rounded-lg border border-slate-800" title="Taban Hız">
+                    <span>🏃</span>
+                    <span>${c.baseSpeed || c.speed || 30} ft</span>
+                  </div>
+                </div>
               </div>
             </div>
 
             <!-- KURTARMA ATIŞLARI (SAVES) & PASİFLER (ZAR ATILABİLİR) -->
-            <div class="mt-2.5 flex items-center justify-between bg-slate-900/60 px-2 sm:px-2.5 py-1.5 rounded-xl border border-slate-800 text-[11px] font-mono gap-1">
-              <div class="flex items-center gap-1 sm:gap-1.5">
-                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Fortitude', ${c.fortSave || 0})" title="Fortitude (Dayanıklılık) Zarı At (d20${c.fortSave >= 0 ? '+' + c.fortSave : c.fortSave})" class="px-1.5 py-0.5 rounded-lg bg-slate-800/80 hover:bg-indigo-950 text-slate-300 hover:text-indigo-200 border border-slate-700/60 hover:border-indigo-500/50 transition cursor-pointer flex items-center gap-1 group active:scale-95 shadow-sm">
-                  <strong class="text-slate-400 group-hover:text-indigo-300 font-sans">F:</strong>
+            <div class="bg-slate-900/80 p-2.5 sm:p-3 rounded-2xl border border-slate-800 space-y-2 shadow">
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Fortitude', ${c.fortSave || 0})" title="Fortitude (Dayanıklılık) Zarı At (d20${c.fortSave >= 0 ? '+' + c.fortSave : c.fortSave})" class="flex-1 py-1.5 px-2 rounded-xl bg-slate-800/90 hover:bg-indigo-950 text-slate-200 hover:text-indigo-200 border border-slate-700/80 hover:border-indigo-500/60 transition cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 shadow font-mono text-xs font-bold">
+                  <strong class="text-indigo-400 font-sans">Fort:</strong>
                   <span>${c.fortSave >= 0 ? '+' + c.fortSave : c.fortSave}</span>
                 </button>
-                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Reflex', ${c.refSave || 0})" title="Reflex (Refleks) Zarı At (d20${c.refSave >= 0 ? '+' + c.refSave : c.refSave})" class="px-1.5 py-0.5 rounded-lg bg-slate-800/80 hover:bg-emerald-950 text-slate-300 hover:text-emerald-200 border border-slate-700/60 hover:border-emerald-500/50 transition cursor-pointer flex items-center gap-1 group active:scale-95 shadow-sm">
-                  <strong class="text-slate-400 group-hover:text-emerald-300 font-sans">R:</strong>
+                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Reflex', ${c.refSave || 0})" title="Reflex (Refleks) Zarı At (d20${c.refSave >= 0 ? '+' + c.refSave : c.refSave})" class="flex-1 py-1.5 px-2 rounded-xl bg-slate-800/90 hover:bg-emerald-950 text-slate-200 hover:text-emerald-200 border border-slate-700/80 hover:border-emerald-500/60 transition cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 shadow font-mono text-xs font-bold">
+                  <strong class="text-emerald-400 font-sans">Ref:</strong>
                   <span>${c.refSave >= 0 ? '+' + c.refSave : c.refSave}</span>
                 </button>
-                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Will', ${c.willSave || 0})" title="Will (İrade) Zarı At (d20${c.willSave >= 0 ? '+' + c.willSave : c.willSave})" class="px-1.5 py-0.5 rounded-lg bg-slate-800/80 hover:bg-purple-950 text-slate-300 hover:text-purple-200 border border-slate-700/60 hover:border-purple-500/50 transition cursor-pointer flex items-center gap-1 group active:scale-95 shadow-sm">
-                  <strong class="text-slate-400 group-hover:text-purple-300 font-sans">W:</strong>
+                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Will', ${c.willSave || 0})" title="Will (İrade) Zarı At (d20${c.willSave >= 0 ? '+' + c.willSave : c.willSave})" class="flex-1 py-1.5 px-2 rounded-xl bg-slate-800/90 hover:bg-purple-950 text-slate-200 hover:text-purple-200 border border-slate-700/80 hover:border-purple-500/60 transition cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 shadow font-mono text-xs font-bold">
+                  <strong class="text-purple-400 font-sans">Will:</strong>
                   <span>${c.willSave >= 0 ? '+' + c.willSave : c.willSave}</span>
                 </button>
               </div>
-              <div class="flex items-center gap-1 text-[10px]">
-                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Spot', ${c.spotBonus || 0})" title="Spot (Fark Etme) Zarı At (d20${c.spotBonus >= 0 ? '+' + c.spotBonus : c.spotBonus})" class="px-1.5 py-0.5 rounded-lg bg-slate-800/80 hover:bg-amber-950 text-slate-400 hover:text-amber-200 border border-slate-700/60 hover:border-amber-500/50 transition cursor-pointer flex items-center gap-0.5 group active:scale-95 shadow-sm">
-                  <span class="group-hover:text-amber-300">Spot</span>
-                  <strong class="text-slate-200 group-hover:text-white font-mono">${c.spotBonus >= 0 ? '+' + c.spotBonus : c.spotBonus}</strong>
+
+              <div class="flex items-center gap-2 pt-1 border-t border-slate-800/80 text-xs">
+                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Spot', ${c.spotBonus || 0})" title="Spot (Fark Etme) Zarı At (d20${c.spotBonus >= 0 ? '+' + c.spotBonus : c.spotBonus})" class="flex-1 py-1.5 px-3 rounded-xl bg-slate-800/80 hover:bg-amber-950 text-slate-300 hover:text-amber-200 border border-slate-700/80 hover:border-amber-500/60 transition cursor-pointer flex items-center justify-between active:scale-95 shadow-sm font-semibold">
+                  <span class="flex items-center gap-1 text-amber-300"><span>👁️</span> <span>Spot</span></span>
+                  <strong class="text-white font-mono font-bold">${c.spotBonus >= 0 ? '+' + c.spotBonus : c.spotBonus}</strong>
                 </button>
-                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Listen', ${c.listenBonus || 0})" title="Listen (Dinleme) Zarı At (d20${c.listenBonus >= 0 ? '+' + c.listenBonus : c.listenBonus})" class="px-1.5 py-0.5 rounded-lg bg-slate-800/80 hover:bg-sky-950 text-slate-400 hover:text-sky-200 border border-slate-700/60 hover:border-sky-500/50 transition cursor-pointer flex items-center gap-0.5 group active:scale-95 shadow-sm">
-                  <span class="group-hover:text-sky-300">Listen</span>
-                  <strong class="text-slate-200 group-hover:text-white font-mono">${c.listenBonus >= 0 ? '+' + c.listenBonus : c.listenBonus}</strong>
+                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Listen', ${c.listenBonus || 0})" title="Listen (Dinleme) Zarı At (d20${c.listenBonus >= 0 ? '+' + c.listenBonus : c.listenBonus})" class="flex-1 py-1.5 px-3 rounded-xl bg-slate-800/80 hover:bg-sky-950 text-slate-300 hover:text-sky-200 border border-slate-700/80 hover:border-sky-500/60 transition cursor-pointer flex items-center justify-between active:scale-95 shadow-sm font-semibold">
+                  <span class="flex items-center gap-1 text-sky-300"><span>👂</span> <span>Listen</span></span>
+                  <strong class="text-white font-mono font-bold">${c.listenBonus >= 0 ? '+' + c.listenBonus : c.listenBonus}</strong>
                 </button>
               </div>
+            </div>
+
+            <!-- TEMEL STATLAR BAR (STR, DEX, CON, INT, WIS, CHA) -->
+            <div class="grid grid-cols-6 gap-1.5 text-center font-mono">
+              ${statsList.map(st => `
+                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', '${st.label} Check', ${st.mod})" class="p-1 sm:p-1.5 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-indigo-500 hover:bg-indigo-950/40 transition cursor-pointer active:scale-95 shadow-sm" title="${st.label} Yetenek Zarı At (d20${st.modStr})">
+                  <div class="text-[10px] text-slate-400 font-bold uppercase font-sans">${st.label}</div>
+                  <div class="text-xs font-black text-white mt-0.5">${st.score}</div>
+                  <div class="text-[11px] text-amber-400 font-black">${st.modStr}</div>
+                </button>
+              `).join('')}
             </div>
           </div>
 
           <!-- KART ALTI EYLEM (SHEET'E YÜKLE VE AÇ) -->
-          <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center gap-2">
-            <button onclick="launchCharacterSheet('${c.id}')" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition shadow flex items-center justify-center gap-1.5 cursor-pointer">
-              <span>⚡</span>
-              <span>Karakteri Aç & Yönet</span>
+          <div class="mt-4 pt-3 border-t border-slate-800/80">
+            <button onclick="launchCharacterSheet('${c.id}')" class="w-full py-2.5 sm:py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-extrabold rounded-xl text-xs sm:text-sm transition shadow-lg shadow-indigo-950/60 flex items-center justify-center gap-2 cursor-pointer active:scale-95 border border-indigo-400/40">
+              <span class="text-base">⚡</span>
+              <span>Karakteri Aç &amp; Yönet</span>
             </button>
           </div>
         </div>
@@ -1622,22 +1669,22 @@
       const isNpcFilter = state.typeFilter === 'npc';
       const emptyTitle = isNpcFilter ? 'Yeni Canavar / NPC Ekle' : 'Yeni Karakter Ekle';
       const emptyDesc = isNpcFilter 
-        ? 'D&D 3.5e Bestiary\'den resmi bir canavarı içe aktarın veya sıfır NPC oluşturun.' 
+        ? 'D&D 3.5e Bestiary'den resmi bir canavarı içe aktarın veya sıfır NPC oluşturun.' 
         : 'Sıfırdan yeni bir PC veya NPC oluşturun ve bu sefere bağlayın.';
       const emptyBtnLabel = isNpcFilter ? '📚 Rule Master Bestiary' : '⚡ Hızlı Oluştur';
       const emptyIcon = isNpcFilter ? '📚' : '➕';
       const campParam = targetCampaignId ? `'${targetCampaignId}'` : 'null';
 
       return `
-        <div onclick="openNewCharacterModal('${isNpcFilter ? 'bestiary' : 'manual'}', ${campParam})" class="group min-h-[300px] border-2 border-dashed border-slate-700/80 hover:border-amber-500/80 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer bg-slate-900/30 hover:bg-slate-900/60 transition duration-200 shadow-inner">
-          <div class="w-14 h-14 rounded-2xl bg-slate-800 group-hover:bg-amber-500/20 border border-slate-700 group-hover:border-amber-500/50 flex items-center justify-center text-2xl text-slate-400 group-hover:text-amber-300 transition duration-200 shadow-md">
+        <div onclick="openNewCharacterModal('${isNpcFilter ? 'bestiary' : 'manual'}', ${campParam})" class="group h-full min-h-[580px] xl:min-h-[620px] border-2 border-dashed border-slate-700/80 hover:border-amber-500/80 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer bg-slate-900/30 hover:bg-slate-900/60 transition duration-200 shadow-inner">
+          <div class="w-16 h-16 rounded-2xl bg-slate-800 group-hover:bg-amber-500/20 border border-slate-700 group-hover:border-amber-500/50 flex items-center justify-center text-3xl text-slate-400 group-hover:text-amber-300 transition duration-200 shadow-md">
             ${emptyIcon}
           </div>
-          <h3 class="text-sm font-bold text-white group-hover:text-amber-300 transition mt-3">${emptyTitle}</h3>
-          <p class="text-xs text-slate-400 mt-1 max-w-[200px]">
+          <h3 class="text-base font-extrabold text-white group-hover:text-amber-300 transition mt-4">${emptyTitle}</h3>
+          <p class="text-xs text-slate-400 mt-2 max-w-[220px] leading-relaxed">
             ${emptyDesc}
           </p>
-          <span class="mt-3 px-3 py-1 rounded-lg bg-slate-800 text-[11px] font-semibold text-slate-300 border border-slate-700 group-hover:border-amber-500/40">
+          <span class="mt-4 px-4 py-2 rounded-xl bg-slate-800 text-xs font-bold text-slate-200 border border-slate-700 group-hover:border-amber-500/40 shadow">
             ${emptyBtnLabel}
           </span>
         </div>
@@ -1696,7 +1743,7 @@
         if (subCamps.length === 0) {
           // Alt kampanya henüz yoksa, normal 4 kolonlu grid olarak göster
           html += `
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
               ${rootChars.map(c => getCharacterCardHtml(c)).join('')}
               ${getEmptyCharacterCardHtml(activeCamp.id)}
             </div>
@@ -1728,7 +1775,7 @@
                 </div>
               </div>
               <div id="drawer-content-${mainDrawerId}" class="p-4 ${isMainCollapsed ? 'hidden' : ''}">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
                   ${rootChars.map(c => getCharacterCardHtml(c)).join('')}
                   ${getEmptyCharacterCardHtml(activeCamp.id)}
                 </div>
@@ -1764,7 +1811,7 @@
                   </div>
                 </div>
                 <div id="drawer-content-${subDrawerId}" class="p-4 ${isSubCollapsed ? 'hidden' : ''}">
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
                     ${subChars.map(c => getCharacterCardHtml(c)).join('')}
                     ${getEmptyCharacterCardHtml(sub.id)}
                   </div>
@@ -1788,7 +1835,7 @@
 
       // DURUM 2: TÜMÜ VEYA BAĞIMSIZLAR SEÇİLİ
       const targetCampId = state.activeCampaignId === 'unassigned' ? null : null;
-      let html = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">`;
+      let html = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">`;
       if (chars.length > 0) {
         html += chars.map(c => getCharacterCardHtml(c)).join('');
       }
