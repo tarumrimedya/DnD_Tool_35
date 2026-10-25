@@ -1066,3 +1066,24 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   3. **Parite ve Kural Bütünlüğü:**
      - `character.html`, `index.html`, `webapp/character.html` ve `webapp/index.html` dosyaları %100 SHA-256 eşitliğinde güncellendi.
      - Standart 6 yüzlü tavla zarı emoji yasağı tavizsiz korundu.
+
+
+---
+
+## 50. HUB KARAKTER KARTLARINDAN 6'LI YETENEK SKORLARI GRID'İNİN KALDIRILMASI VE YATAY KAYDIRMA BARININ ÖNLENMESİ (2026-10-25)
+* **İstek:**
+  1. Karakter kartlarındaki 6'lı temel yetenek skorları zar atma barının (`STR, DEX, CON, INT, WIS, CHA` grid) tamamen kaldırılması.
+  2. Hücrede/kartta hiçbir şekilde yana kayma barı (`horizontal scrollbar`) oluşmaması; boyutların ve taşma kurallarının buna göre optimize edilmesi.
+* **Uygulanan Değişiklikler:**
+  1. **6'lı Yetenek Skorları Grid'inin Kaldırılması (`hub.html` & `webapp/hub.html`):**
+     - Kartın alt kısmındaki `<div class="grid grid-cols-6 gap-1.5 text-center font-mono">...</div>` bloğu ve ilişkili `statsList` haritalaması tamamen kaldırıldı.
+  2. **Yatay Kaydırma Barının Kesin Olarak Önlenmesi (`overflow-x-hidden`):**
+     - Karakter kartı ana taşıyıcısına `overflow-x-hidden overflow-y-auto custom-scroll` uygulandı.
+     - İç padding `p-3 sm:p-3.5` seviyesine çekilerek dar/mobil kolonlarda içerik için fazladan yatay alan kazanıldı.
+     - HP miktar kontrol çubuğu ve butonları kompakt ölçülere (`w-11 sm:w-13 h-6`) getirilerek yatay taşma riski ortadan kaldırıldı.
+     - AC / Saves ve Beceriler satırlarına `min-w-0` ve `truncate` kuralları eklenerek metinlerin taşması önlendi.
+     - Eğitilmiş beceriler çekmecesi konteynerine `overflow-x-hidden` eklendi.
+     - Kart ve boş kart yükseklikleri `min-h-[380px] xl:min-h-[400px] xl:max-h-[420px]` olarak dengelendi.
+  3. **Parite ve Devir Teslim:**
+     - `hub.html` ve `webapp/hub.html` %100 SHA-256 paritesinde eşitlendi (`True`).
+     - Sıfır 🎲 tavla zarı kuralı korundu.

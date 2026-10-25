@@ -1472,55 +1472,37 @@
       };
       const getStatMod = (val) => Math.floor((val - 10) / 2);
 
-      const statsList = [
-        { key: 'str', label: 'STR' },
-        { key: 'dex', label: 'DEX' },
-        { key: 'con', label: 'CON' },
-        { key: 'int', label: 'INT' },
-        { key: 'wis', label: 'WIS' },
-        { key: 'cha', label: 'CHA' }
-      ].map(st => {
-        const score = getStatScore(st.key);
-        const mod = getStatMod(score);
-        return {
-          label: st.label,
-          score: score,
-          mod: mod,
-          modStr: mod >= 0 ? `+${mod}` : `${mod}`
-        };
-      });
-
       const rawSkills = Array.isArray(c.fullData?.skills) ? c.fullData.skills : (Array.isArray(c.skills) ? c.skills : []);
       const trainedSkills = rawSkills
         .filter(s => Number(s.ranks || s.rank || 0) > 0)
         .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
       return `
-        <div class="group bg-[#131d33] border border-slate-700/80 hover:border-indigo-500/60 rounded-2xl p-3.5 sm:p-4 shadow-xl hover:shadow-2xl transition duration-200 flex flex-col justify-between relative overflow-y-auto custom-scroll h-full min-h-[390px] xl:min-h-[410px] xl:max-h-[430px]">
+        <div class="group bg-[#131d33] border border-slate-700/80 hover:border-indigo-500/60 rounded-2xl p-3 sm:p-3.5 shadow-xl hover:shadow-2xl transition duration-200 flex flex-col justify-between relative overflow-y-auto overflow-x-hidden custom-scroll h-full min-h-[380px] xl:min-h-[400px] xl:max-h-[420px]">
           <!-- Üst Arka Plan Işıltısı -->
           <div class="absolute -top-12 -right-12 w-32 h-32 ${c.isNpc ? 'bg-rose-600/10' : 'bg-indigo-600/10'} rounded-full blur-2xl pointer-events-none"></div>
 
           <!-- Kart Gövdesi -->
           <div class="space-y-2">
             <!-- Kart Başlık & Kimlik -->
-            <div class="flex items-start justify-between gap-3">
-              <div class="flex items-center gap-3.5 min-w-0">
-                <div class="relative shrink-0 w-13 h-13 rounded-xl border border-slate-600 bg-slate-900 shadow-md overflow-hidden flex items-center justify-center">
+            <div class="flex items-start justify-between gap-2.5">
+              <div class="flex items-center gap-3 min-w-0 flex-1">
+                <div class="relative shrink-0 w-12 h-12 sm:w-13 sm:h-13 rounded-xl border border-slate-600 bg-slate-900 shadow-md overflow-hidden flex items-center justify-center">
                   ${getCharacterPortraitHtml(c, 'text-2xl')}
-                  <span class="absolute -bottom-1.5 -right-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider shadow ${c.isNpc ? 'bg-rose-950 text-rose-300 border border-rose-700' : 'bg-sky-950 text-sky-300 border border-sky-700'}">
+                  <span class="absolute -bottom-1.5 -right-1 px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider shadow ${c.isNpc ? 'bg-rose-950 text-rose-300 border border-rose-700' : 'bg-sky-950 text-sky-300 border border-sky-700'}">
                     ${c.isNpc ? 'NPC' : 'PC'}
                   </span>
                 </div>
                 <div class="min-w-0 flex-1">
-                  <h3 class="text-base sm:text-lg font-black text-white truncate group-hover:text-indigo-300 transition" title="${escapeHtml(c.name)}">${escapeHtml(c.name)}</h3>
-                  <p class="text-xs sm:text-sm text-slate-200 truncate mt-0.5 font-medium">${escapeHtml(c.race || 'Irk Belirtilmedi')} • <span class="text-amber-400 font-bold">${escapeHtml(c.classes || 'Sınıf Seçilmedi')}</span></p>
-                  <div class="mt-1.5 flex items-center gap-2 flex-wrap">
-                    <span class="text-xs text-slate-300 bg-slate-900/90 px-2.5 py-1 rounded-lg border border-slate-800 truncate flex items-center gap-1.5 font-semibold" title="Kampanya: ${escapeHtml(campName)}">
+                  <h3 class="text-sm sm:text-base font-black text-white truncate group-hover:text-indigo-300 transition" title="${escapeHtml(c.name)}">${escapeHtml(c.name)}</h3>
+                  <p class="text-xs text-slate-200 truncate mt-0.5 font-medium">${escapeHtml(c.race || 'Irk Belirtilmedi')} • <span class="text-amber-400 font-bold">${escapeHtml(c.classes || 'Sınıf Seçilmedi')}</span></p>
+                  <div class="mt-1 flex items-center gap-1.5 flex-wrap">
+                    <span class="text-[11px] text-slate-300 bg-slate-900/90 px-2 py-0.5 rounded-lg border border-slate-800 truncate flex items-center gap-1 font-semibold" title="Kampanya: ${escapeHtml(campName)}">
                       <span>${campIcon}</span>
                       <span class="truncate">${escapeHtml(campName)}</span>
-                      ${camp?.isDmMode ? '<span class="text-[9px] font-black text-amber-400 font-mono ml-0.5 bg-amber-500/20 px-1.5 py-0.5 rounded border border-amber-500/40">DM</span>' : ''}
+                      ${camp?.isDmMode ? '<span class="text-[8px] font-black text-amber-400 font-mono ml-0.5 bg-amber-500/20 px-1 py-0.2 rounded border border-amber-500/40">DM</span>' : ''}
                     </span>
-                    ${c.cr ? `<span class="text-xs font-mono font-black text-amber-300 bg-amber-950/90 px-2 py-0.5 rounded-lg border border-amber-700/80">CR ${c.cr}</span>` : ''}
+                    ${c.cr ? `<span class="text-[11px] font-mono font-black text-amber-300 bg-amber-950/90 px-1.5 py-0.5 rounded-lg border border-amber-700/80">CR ${c.cr}</span>` : ''}
                   </div>
                 </div>
               </div>
@@ -1543,13 +1525,13 @@
             <div class="bg-slate-900/90 p-2 sm:p-2.5 rounded-xl border border-slate-800/90 space-y-1.5 shadow-inner">
               <div class="flex items-center justify-between text-xs sm:text-sm font-mono">
                 <span class="text-slate-300 font-bold flex items-center gap-1.5">
-                  <span class="text-base">💚</span> <span>Can (HP)</span>
+                  <span class="text-sm">💚</span> <span>Can (HP)</span>
                 </span>
                 <div class="flex items-center gap-2">
                   <span class="text-base sm:text-lg font-black text-white font-mono">${c.currentHp}</span>
                   <span class="text-slate-500 font-bold">/</span>
                   <span class="text-sm sm:text-base font-bold text-slate-400 font-mono">${c.maxHp}</span>
-                  ${c.tempHp ? `<span class="text-xs font-bold text-cyan-300 bg-cyan-950/90 border border-cyan-700 px-2 py-0.5 rounded-lg shadow-sm">+${c.tempHp} Geçici</span>` : ''}
+                  ${c.tempHp ? `<span class="text-xs font-bold text-cyan-300 bg-cyan-950/90 border border-cyan-700 px-1.5 py-0.5 rounded-lg shadow-sm">+${c.tempHp} Geçici</span>` : ''}
                 </div>
               </div>
 
@@ -1559,28 +1541,28 @@
               </div>
 
               <!-- Hızlı Can Artır/Azalt & Özel Hasar/Şifa Kontrolleri -->
-              <div class="flex flex-wrap items-center justify-between gap-1.5 pt-1 text-xs">
+              <div class="flex flex-wrap items-center justify-between gap-1 pt-0.5 text-xs">
                 <div class="flex items-center gap-1 shrink-0">
-                  <button onclick="adjustHp('${c.id}', -5)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-rose-900 text-slate-200 hover:text-white border border-slate-700 transition font-mono font-bold cursor-pointer active:scale-95" title="5 Hasar Ver">-5</button>
-                  <button onclick="adjustHp('${c.id}', -1)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-rose-900 text-slate-200 hover:text-white border border-slate-700 transition font-mono font-bold cursor-pointer active:scale-95" title="1 Hasar Ver">-1</button>
+                  <button onclick="adjustHp('${c.id}', -5)" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-rose-900 text-slate-200 hover:text-white border border-slate-700 transition font-mono font-bold cursor-pointer active:scale-95 text-[11px]" title="5 Hasar Ver">-5</button>
+                  <button onclick="adjustHp('${c.id}', -1)" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-rose-900 text-slate-200 hover:text-white border border-slate-700 transition font-mono font-bold cursor-pointer active:scale-95 text-[11px]" title="1 Hasar Ver">-1</button>
                 </div>
 
-                <!-- Özel Miktar Girişi (Hasar / Şifa) - Mobilde/Dar ekranda alt satıra iner -->
-                <div class="order-last sm:order-none w-full sm:w-auto flex items-center justify-center gap-1 bg-slate-950/90 p-1 rounded-xl border border-slate-800 shadow" onclick="event.stopPropagation()">
-                  <button onclick="applyCustomHp('${c.id}', -1)" title="Yazılan miktar kadar hasar ver" class="px-2 py-1 rounded-lg bg-rose-950/90 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800 transition font-mono font-black text-xs cursor-pointer flex items-center gap-0.5 active:scale-95">
+                <!-- Özel Miktar Girişi (Hasar / Şifa) -->
+                <div class="flex items-center justify-center gap-1 bg-slate-950/90 p-0.5 sm:p-1 rounded-xl border border-slate-800 shadow shrink-0" onclick="event.stopPropagation()">
+                  <button onclick="applyCustomHp('${c.id}', -1)" title="Yazılan miktar kadar hasar ver" class="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg bg-rose-950/90 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800 transition font-mono font-black text-xs cursor-pointer flex items-center gap-0.5 active:scale-95">
                     <span>⚔️</span>
                     <span>-</span>
                   </button>
-                  <input type="number" id="custom-hp-input-${c.id}" min="1" placeholder="Miktar" class="w-14 sm:w-16 h-7 text-center bg-slate-900 text-white font-mono text-xs font-black rounded-lg border border-slate-700/80 focus:border-amber-400 focus:outline-none p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" onkeydown="if(event.key==='Enter') applyCustomHp('${c.id}', -1)">
-                  <button onclick="applyCustomHp('${c.id}', 1)" title="Yazılan miktar kadar can / şifa ver" class="px-2 py-1 rounded-lg bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 hover:text-white border border-emerald-800 transition font-mono font-black text-xs cursor-pointer flex items-center gap-0.5 active:scale-95">
+                  <input type="number" id="custom-hp-input-${c.id}" min="1" placeholder="Miktar" class="w-11 sm:w-13 h-6 text-center bg-slate-900 text-white font-mono text-xs font-black rounded-lg border border-slate-700/80 focus:border-amber-400 focus:outline-none p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" onkeydown="if(event.key==='Enter') applyCustomHp('${c.id}', -1)">
+                  <button onclick="applyCustomHp('${c.id}', 1)" title="Yazılan miktar kadar can / şifa ver" class="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 hover:text-white border border-emerald-800 transition font-mono font-black text-xs cursor-pointer flex items-center gap-0.5 active:scale-95">
                     <span>+</span>
                     <span>💚</span>
                   </button>
                 </div>
 
                 <div class="flex items-center gap-1 shrink-0">
-                  <button onclick="adjustHp('${c.id}', +1)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-emerald-900 text-slate-200 hover:text-white border border-slate-700 transition font-mono font-bold cursor-pointer active:scale-95" title="1 Şifa Ver">+1</button>
-                  <button onclick="adjustHp('${c.id}', +5)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-emerald-900 text-slate-200 hover:text-white border border-slate-700 transition font-mono font-bold cursor-pointer active:scale-95" title="5 Şifa Ver">+5</button>
+                  <button onclick="adjustHp('${c.id}', +1)" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-emerald-900 text-slate-200 hover:text-white border border-slate-700 transition font-mono font-bold cursor-pointer active:scale-95 text-[11px]" title="1 Şifa Ver">+1</button>
+                  <button onclick="adjustHp('${c.id}', +5)" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-emerald-900 text-slate-200 hover:text-white border border-slate-700 transition font-mono font-bold cursor-pointer active:scale-95 text-[11px]" title="5 Şifa Ver">+5</button>
                 </div>
               </div>
             </div>
@@ -1588,10 +1570,10 @@
             <!-- TEMEL D&D 3.5e STATLAR GRID (AC SOLDA + 4 SATIR 1 SÜTUN SAVES & INIT SAĞDA) -->
             <div class="grid grid-cols-2 gap-2 text-xs">
               <!-- AC (Zırh) -->
-              <div class="bg-slate-900/80 p-2 rounded-xl border border-slate-800 flex flex-col justify-between shadow text-center">
+              <div class="bg-slate-900/80 p-2 rounded-xl border border-slate-800 flex flex-col justify-between shadow text-center min-w-0">
                 <div class="flex items-center justify-between text-[11px] text-slate-400 font-bold uppercase tracking-wider">
-                  <span>🛡️ Zırh (AC)</span>
-                  <span class="text-[10px] text-slate-400 font-mono" title="Taban Hız">🏃 ${c.baseSpeed || c.speed || 30} ft</span>
+                  <span class="truncate">🛡️ Zırh</span>
+                  <span class="text-[10px] text-slate-400 font-mono shrink-0" title="Taban Hız">🏃 ${c.baseSpeed || c.speed || 30} ft</span>
                 </div>
                 <div class="my-auto py-1">
                   <div class="text-2xl sm:text-3xl font-black text-white font-mono leading-none">${c.ac}</div>
@@ -1604,22 +1586,22 @@
               </div>
 
               <!-- 4 Satır 1 Sütun: Fort, Ref, Will, Init -->
-              <div class="flex flex-col gap-1 justify-between">
-                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Fortitude', ${c.fortSave || 0})" title="Fortitude (Dayanıklılık) Zarı At (d20${c.fortSave >= 0 ? '+' + c.fortSave : c.fortSave})" class="flex-1 py-1 px-2.5 rounded-lg bg-slate-900/90 hover:bg-indigo-950 text-slate-200 hover:text-indigo-200 border border-slate-800 hover:border-indigo-500/60 transition cursor-pointer flex items-center justify-between active:scale-95 shadow-sm font-mono text-xs">
-                  <span class="text-indigo-400 font-sans font-bold flex items-center gap-1">🛡️ Fort</span>
-                  <strong class="font-bold font-mono text-white">${c.fortSave >= 0 ? '+' + c.fortSave : c.fortSave}</strong>
+              <div class="flex flex-col gap-1 justify-between min-w-0">
+                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Fortitude', ${c.fortSave || 0})" title="Fortitude (Dayanıklılık) Zarı At (d20${c.fortSave >= 0 ? '+' + c.fortSave : c.fortSave})" class="flex-1 py-1 px-2 rounded-lg bg-slate-900/90 hover:bg-indigo-950 text-slate-200 hover:text-indigo-200 border border-slate-800 hover:border-indigo-500/60 transition cursor-pointer flex items-center justify-between active:scale-95 shadow-sm font-mono text-xs min-w-0">
+                  <span class="text-indigo-400 font-sans font-bold flex items-center gap-1 truncate">🛡️ Fort</span>
+                  <strong class="font-bold font-mono text-white shrink-0 ml-1">${c.fortSave >= 0 ? '+' + c.fortSave : c.fortSave}</strong>
                 </button>
-                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Reflex', ${c.refSave || 0})" title="Reflex (Refleks) Zarı At (d20${c.refSave >= 0 ? '+' + c.refSave : c.refSave})" class="flex-1 py-1 px-2.5 rounded-lg bg-slate-900/90 hover:bg-emerald-950 text-slate-200 hover:text-emerald-200 border border-slate-800 hover:border-emerald-500/60 transition cursor-pointer flex items-center justify-between active:scale-95 shadow-sm font-mono text-xs">
-                  <span class="text-emerald-400 font-sans font-bold flex items-center gap-1">⚡ Ref</span>
-                  <strong class="font-bold font-mono text-white">${c.refSave >= 0 ? '+' + c.refSave : c.refSave}</strong>
+                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Reflex', ${c.refSave || 0})" title="Reflex (Refleks) Zarı At (d20${c.refSave >= 0 ? '+' + c.refSave : c.refSave})" class="flex-1 py-1 px-2 rounded-lg bg-slate-900/90 hover:bg-emerald-950 text-slate-200 hover:text-emerald-200 border border-slate-800 hover:border-emerald-500/60 transition cursor-pointer flex items-center justify-between active:scale-95 shadow-sm font-mono text-xs min-w-0">
+                  <span class="text-emerald-400 font-sans font-bold flex items-center gap-1 truncate">⚡ Ref</span>
+                  <strong class="font-bold font-mono text-white shrink-0 ml-1">${c.refSave >= 0 ? '+' + c.refSave : c.refSave}</strong>
                 </button>
-                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Will', ${c.willSave || 0})" title="Will (İrade) Zarı At (d20${c.willSave >= 0 ? '+' + c.willSave : c.willSave})" class="flex-1 py-1 px-2.5 rounded-lg bg-slate-900/90 hover:bg-purple-950 text-slate-200 hover:text-purple-200 border border-slate-800 hover:border-purple-500/60 transition cursor-pointer flex items-center justify-between active:scale-95 shadow-sm font-mono text-xs">
-                  <span class="text-purple-400 font-sans font-bold flex items-center gap-1">🔮 Will</span>
-                  <strong class="font-bold font-mono text-white">${c.willSave >= 0 ? '+' + c.willSave : c.willSave}</strong>
+                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Will', ${c.willSave || 0})" title="Will (İrade) Zarı At (d20${c.willSave >= 0 ? '+' + c.willSave : c.willSave})" class="flex-1 py-1 px-2 rounded-lg bg-slate-900/90 hover:bg-purple-950 text-slate-200 hover:text-purple-200 border border-slate-800 hover:border-purple-500/60 transition cursor-pointer flex items-center justify-between active:scale-95 shadow-sm font-mono text-xs min-w-0">
+                  <span class="text-purple-400 font-sans font-bold flex items-center gap-1 truncate">🔮 Will</span>
+                  <strong class="font-bold font-mono text-white shrink-0 ml-1">${c.willSave >= 0 ? '+' + c.willSave : c.willSave}</strong>
                 </button>
-                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Initiative', ${c.initBonus || 0})" title="İnisiyatif Zarı At (d20${c.initBonus >= 0 ? '+' + c.initBonus : c.initBonus})" class="flex-1 py-1 px-2.5 rounded-lg bg-slate-900/90 hover:bg-amber-950 text-slate-200 hover:text-amber-300 border border-slate-800 hover:border-amber-500/60 transition cursor-pointer flex items-center justify-between active:scale-95 shadow-sm font-mono text-xs">
-                  <span class="text-amber-400 font-sans font-bold flex items-center gap-1">⚡ Init</span>
-                  <strong class="font-bold font-mono text-white">${c.initBonus >= 0 ? '+' + c.initBonus : c.initBonus}</strong>
+                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Initiative', ${c.initBonus || 0})" title="İnisiyatif Zarı At (d20${c.initBonus >= 0 ? '+' + c.initBonus : c.initBonus})" class="flex-1 py-1 px-2 rounded-lg bg-slate-900/90 hover:bg-amber-950 text-slate-200 hover:text-amber-300 border border-slate-800 hover:border-amber-500/60 transition cursor-pointer flex items-center justify-between active:scale-95 shadow-sm font-mono text-xs min-w-0">
+                  <span class="text-amber-400 font-sans font-bold flex items-center gap-1 truncate">⚡ Init</span>
+                  <strong class="font-bold font-mono text-white shrink-0 ml-1">${c.initBonus >= 0 ? '+' + c.initBonus : c.initBonus}</strong>
                 </button>
               </div>
             </div>
@@ -1627,13 +1609,13 @@
             <!-- SPOT & LISTEN SABİT + EĞİTİLMİŞ BECERİLER (RANK > 0) ÇEKMECESİ -->
             <div class="bg-slate-900/80 p-2 rounded-xl border border-slate-800 space-y-1.5 shadow">
               <div class="flex items-center gap-1.5 text-xs">
-                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Spot', ${c.spotBonus || 0})" title="Spot (Fark Etme) Zarı At (d20${c.spotBonus >= 0 ? '+' + c.spotBonus : c.spotBonus})" class="flex-1 py-1.5 px-2.5 rounded-lg bg-slate-950/70 hover:bg-amber-950 text-slate-300 hover:text-amber-200 border border-slate-800 hover:border-amber-500/60 transition cursor-pointer flex items-center justify-between active:scale-95 shadow-sm font-semibold">
-                  <span class="flex items-center gap-1 text-amber-300 text-[11px]"><span>👁️</span> <span>Spot</span></span>
-                  <strong class="text-white font-mono font-bold">${c.spotBonus >= 0 ? '+' + c.spotBonus : c.spotBonus}</strong>
+                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Spot', ${c.spotBonus || 0})" title="Spot (Fark Etme) Zarı At (d20${c.spotBonus >= 0 ? '+' + c.spotBonus : c.spotBonus})" class="flex-1 py-1.5 px-2 rounded-lg bg-slate-950/70 hover:bg-amber-950 text-slate-300 hover:text-amber-200 border border-slate-800 hover:border-amber-500/60 transition cursor-pointer flex items-center justify-between active:scale-95 shadow-sm font-semibold min-w-0">
+                  <span class="flex items-center gap-1 text-amber-300 text-[11px] truncate"><span>👁️</span> <span class="truncate">Spot</span></span>
+                  <strong class="text-white font-mono font-bold shrink-0 ml-1">${c.spotBonus >= 0 ? '+' + c.spotBonus : c.spotBonus}</strong>
                 </button>
-                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Listen', ${c.listenBonus || 0})" title="Listen (Dinleme) Zarı At (d20${c.listenBonus >= 0 ? '+' + c.listenBonus : c.listenBonus})" class="flex-1 py-1.5 px-2.5 rounded-lg bg-slate-950/70 hover:bg-sky-950 text-slate-300 hover:text-sky-200 border border-slate-800 hover:border-sky-500/60 transition cursor-pointer flex items-center justify-between active:scale-95 shadow-sm font-semibold">
-                  <span class="flex items-center gap-1 text-sky-300 text-[11px]"><span>👂</span> <span>Listen</span></span>
-                  <strong class="text-white font-mono font-bold">${c.listenBonus >= 0 ? '+' + c.listenBonus : c.listenBonus}</strong>
+                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', 'Listen', ${c.listenBonus || 0})" title="Listen (Dinleme) Zarı At (d20${c.listenBonus >= 0 ? '+' + c.listenBonus : c.listenBonus})" class="flex-1 py-1.5 px-2 rounded-lg bg-slate-950/70 hover:bg-sky-950 text-slate-300 hover:text-sky-200 border border-slate-800 hover:border-sky-500/60 transition cursor-pointer flex items-center justify-between active:scale-95 shadow-sm font-semibold min-w-0">
+                  <span class="flex items-center gap-1 text-sky-300 text-[11px] truncate"><span>👂</span> <span class="truncate">Listen</span></span>
+                  <strong class="text-white font-mono font-bold shrink-0 ml-1">${c.listenBonus >= 0 ? '+' + c.listenBonus : c.listenBonus}</strong>
                 </button>
                 ${trainedSkills.length > 0 ? `
                   <button type="button" onclick="event.stopPropagation(); toggleHubCardSkillsDrawer('${c.id}')" class="px-2 py-1.5 rounded-lg bg-slate-950/70 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition flex items-center gap-1 text-[11px] font-bold cursor-pointer shrink-0 shadow-sm" title="Eğitilmiş Becerileri Göster / Gizle (${trainedSkills.length} Beceri)">
@@ -1648,10 +1630,10 @@
               ${trainedSkills.length > 0 ? `
                 <div id="skills-drawer-content-${c.id}" class="hidden pt-1.5 border-t border-slate-800/80 space-y-1">
                   <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between px-0.5">
-                    <span>Eğitilmiş Beceriler (Rank &gt; 0)</span>
+                    <span>Eğitilmiş Beceriler</span>
                     <span class="text-amber-400 font-mono">${trainedSkills.length} Beceri</span>
                   </div>
-                  <div class="grid grid-cols-2 gap-1 max-h-40 overflow-y-auto custom-scroll pr-0.5">
+                  <div class="grid grid-cols-2 gap-1 max-h-40 overflow-y-auto overflow-x-hidden custom-scroll pr-0.5">
                     ${trainedSkills.map(sk => {
                       const r = Number(sk.ranks || sk.rank || 0);
                       const abilityKey = (sk.key || sk.ability || 'dex').toLowerCase();
@@ -1660,9 +1642,9 @@
                       const totalBonus = sk.total !== undefined ? Number(sk.total) : (r + statMod + (Number(sk.misc) || 0));
                       const bonusStr = totalBonus >= 0 ? `+${totalBonus}` : `${totalBonus}`;
                       return `
-                        <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', '${escapeHtml(sk.name)}', ${totalBonus})" class="py-1 px-2 rounded bg-slate-950/80 hover:bg-indigo-950/60 border border-slate-800/90 hover:border-indigo-500/50 text-slate-300 hover:text-white transition flex items-center justify-between text-[11px] font-mono cursor-pointer active:scale-95 shadow-sm" title="${escapeHtml(sk.name)} Zarı At (d20${bonusStr}) [Rank: ${r}]">
-                          <span class="truncate text-left max-w-[100px] font-sans font-medium text-slate-300">${escapeHtml(sk.name)}</span>
-                          <div class="flex items-center gap-1 shrink-0">
+                        <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', '${escapeHtml(sk.name)}', ${totalBonus})" class="py-1 px-1.5 rounded bg-slate-950/80 hover:bg-indigo-950/60 border border-slate-800/90 hover:border-indigo-500/50 text-slate-300 hover:text-white transition flex items-center justify-between text-[11px] font-mono cursor-pointer active:scale-95 shadow-sm min-w-0" title="${escapeHtml(sk.name)} Zarı At (d20${bonusStr}) [Rank: ${r}]">
+                          <span class="truncate text-left font-sans font-medium text-slate-300 min-w-0 flex-1">${escapeHtml(sk.name)}</span>
+                          <div class="flex items-center gap-0.5 shrink-0 ml-1">
                             <span class="text-[9px] text-slate-500">r${r}</span>
                             <strong class="text-amber-400 font-bold">${bonusStr}</strong>
                           </div>
@@ -1672,17 +1654,6 @@
                   </div>
                 </div>
               ` : ''}
-            </div>
-
-            <!-- TEMEL STATLAR BAR (STR, DEX, CON, INT, WIS, CHA) -->
-            <div class="grid grid-cols-6 gap-1.5 text-center font-mono">
-              ${statsList.map(st => `
-                <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', '${st.label} Check', ${st.mod})" class="p-1 sm:p-1.5 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-indigo-500 hover:bg-indigo-950/40 transition cursor-pointer active:scale-95 shadow-sm" title="${st.label} Yetenek Zarı At (d20${st.modStr})">
-                  <div class="text-[10px] text-slate-400 font-bold uppercase font-sans">${st.label}</div>
-                  <div class="text-xs font-black text-white mt-0.5">${st.score}</div>
-                  <div class="text-[11px] text-amber-400 font-black">${st.modStr}</div>
-                </button>
-              `).join('')}
             </div>
           </div>
 
@@ -1709,7 +1680,7 @@
       const campParam = targetCampaignId ? `'${targetCampaignId}'` : 'null';
 
       return `
-        <div onclick="openNewCharacterModal('${isNpcFilter ? 'bestiary' : 'manual'}', ${campParam})" class="group h-full min-h-[390px] xl:min-h-[410px] xl:max-h-[430px] border-2 border-dashed border-slate-700/80 hover:border-amber-500/80 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer bg-slate-900/30 hover:bg-slate-900/60 transition duration-200 shadow-inner">
+        <div onclick="openNewCharacterModal('${isNpcFilter ? 'bestiary' : 'manual'}', ${campParam})" class="group h-full min-h-[380px] xl:min-h-[400px] xl:max-h-[420px] border-2 border-dashed border-slate-700/80 hover:border-amber-500/80 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer bg-slate-900/30 hover:bg-slate-900/60 transition duration-200 shadow-inner overflow-hidden">
           <div class="w-12 h-12 rounded-xl bg-slate-800 group-hover:bg-amber-500/20 border border-slate-700 group-hover:border-amber-500/50 flex items-center justify-center text-2xl text-slate-400 group-hover:text-amber-300 transition duration-200 shadow-md">
             ${emptyIcon}
           </div>
