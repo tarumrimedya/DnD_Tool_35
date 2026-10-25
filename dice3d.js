@@ -217,15 +217,6 @@ class Dice3DController {
     const cx = 256;
     const cy = 256;
 
-    // Elegant subtle arcane ring / facet frame
-    ctx.beginPath();
-    ctx.arc(cx, cy, 185, 0, Math.PI * 2);
-    ctx.strokeStyle = isD20Nat20 ? 'rgba(254, 240, 138, 0.45)' : 'rgba(245, 158, 11, 0.22)';
-    ctx.lineWidth = 2.5;
-    ctx.setLineDash([8, 8]);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
     // Font sizing: Serif Roman font (Cinzel / Palatino / Georgia)
     const len = displayText.length;
     const fontSize = len >= 3 ? 150 : (len === 2 ? 210 : 250);
