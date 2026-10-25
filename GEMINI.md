@@ -60,5 +60,11 @@ To maximize token efficiency and minimize API costs across all conversations in 
     3. **Katı Veri Kontratı (Data Contract):** HUB tarafından üretilen `fullData` ile karakter kâğıdı tarafından okunan veri şeması (`isNpc`, `feats`, `specialAbilities`, `spellcasting`, `combatPins`) ortak protokole tam uyumlu olacaktır.
     4. **Parite ve Eşitlik:** Kök dizindeki dosyalar ile `webapp/` altındaki kopyaların %100 birebir aynı olması kuralı tavizsiz korunacaktır.
 
+## 8. Master DB Şema Güncellemeleri ve Rule Master Senkronizasyonu (STRICT)
+- `master_db.json` (veya `bundled_data.js`) veri tabanına yeni bir alan, özellik veya mekanik şeması (örneğin `sizeModifier`, `targetFilter`, `scaling`, `ruleFlags`, `combatModifiers` vb.) eklendiğinde veya mevcut bir şema alanı genişletildiğinde:
+  - **Rule Master ve Şema Doğrulama Senkronizasyonu Zorunludur:** `rule_master.js` içindeki yapay zeka promptları (`fetchSingleAiRuleObjects`, `queryAiFreeTextRows`), şema normalizasyonu (`normalizeEntry`), form alanları ve veri doğrulama mantığı derhal bu yeni alanı kapsayacak şekilde güncellenmelidir.
+  - **Sürekli Uyumluluk:** Gelecekte eklenecek yeni büyü, eşya, feat veya yeteneklerin Rule Master ve AI sorguları tarafından bu yeni alan kurallarına tam uyumlu olarak üretilmesi ve şemaya eksiksiz yazılması garanti altına alınacaktır.
+
+
 
 

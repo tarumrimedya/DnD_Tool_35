@@ -3348,6 +3348,36 @@
   </div>
 
   <!-- ==================================================== -->
+  <!-- MODAL: SPELL WEAPON TARGET SELECTOR (e.g. Greater Mighty Wallop) -->
+  <!-- ==================================================== -->
+  <div id="modal-spell-weapon-target" class="hidden fixed inset-0 z-[110] bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
+    <div class="bg-dndCard border border-purple-500/70 rounded-2xl max-w-md w-full shadow-2xl overflow-hidden my-auto flex flex-col max-h-[90vh]">
+      <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🔮</span>
+          <div>
+            <h3 id="spell-target-modal-title" class="text-sm md:text-base font-extrabold text-white">Hedef Silah Seçimi</h3>
+            <p id="spell-target-modal-subtitle" class="text-xs text-purple-400 font-mono">Büyü Etkisi</p>
+          </div>
+        </div>
+        <button onclick="closeSpellWeaponTargetModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg text-xs font-bold transition">✕ Kapat</button>
+      </div>
+      <div class="p-4 space-y-3 text-xs overflow-y-auto flex-1">
+        <div class="p-2.5 rounded-lg bg-purple-950/40 border border-purple-800/50 text-[11px] text-purple-200">
+          <div id="spell-target-modal-desc">Bu büyü eldeki ezici (bludgeoning) bir silaha uygulanır ve Caster Level seviyenize göre silahın hasar boyutunu büyütür.</div>
+        </div>
+        <div class="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Uygulanabilir Silahlar:</div>
+        <div id="spell-target-weapons-list" class="space-y-2">
+          <!-- Dynamically populated weapon cards -->
+        </div>
+      </div>
+      <div class="bg-slate-950 px-4 py-3 border-t border-slate-800 flex items-center justify-end">
+        <button onclick="closeSpellWeaponTargetModal()" class="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-lg text-xs transition">İptal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================== -->
   <!-- MODAL / TOAST: ATTACK DECISION FLYOUT -->
   <!-- ==================================================== -->
   <div id="attack-decision-toast" class="hidden fixed inset-x-0 bottom-6 z-[120] flex items-center justify-center p-3 pointer-events-none">
@@ -11496,7 +11526,10 @@
         if (remaining <= 0) return; // Boşta günlük büyü skoru kalmamış
 
         seen.add(key);
-        const obj = typeof sp === 'object' ? Object.assign({}, sp) : { name: sp, level: lvl };
+        const master = (typeof masterDb !== 'undefined' && Array.isArray(masterDb))
+          ? masterDb.find(m => m && m.name && m.name.toLowerCase().trim() === name.toLowerCase().trim())
+          : null;
+        const obj = Object.assign({}, master || {}, typeof sp === 'object' ? sp : { name: sp, level: lvl });
         obj._spellSource = srcKey;
         list.push(obj);
       };
@@ -14025,12 +14058,35 @@
           <div class="text-[10px] text-slate-400 truncate mt-1">${hasSave ? 'Hedef bu DC değerine karşı kurtarma zarı atar' : 'Kurtarma zarı gerektirmez, doğrudan etki eder'}</div>
         `;
         summaryGrid.appendChild(saveDiv);
+
+        // 5. Silah Boyut Güçlendirme Kartı (Varsa)
+        if (castData.isSizeModifier && castData.targetWeaponName) {
+          const sizeDiv = document.createElement('div');
+          sizeDiv.className = 'p-3 rounded-lg border border-purple-500/80 bg-purple-950/40 col-span-1 sm:col-span-2';
+          sizeDiv.innerHTML = `
+            <div class="flex justify-between items-center mb-1">
+              <div class="flex items-center gap-1.5">
+                <span class="font-bold text-white">✨ Silah Boyut Artışı (RAW D&D 3.5e)</span>
+                <span class="text-[9px] px-1.5 py-0.5 rounded bg-purple-900/80 text-purple-200 border border-purple-600/60 font-bold uppercase">+${castData.sizeSteps} Basamak</span>
+              </div>
+              <span class="text-[10px] font-mono font-bold text-amber-300">${castData.targetWeaponName}</span>
+            </div>
+            <div class="flex justify-between items-baseline font-mono border-t border-purple-900/60 pt-1.5 mt-1">
+              <span class="text-xs text-slate-300">Temel Hasar Dönüşümü: <span class="line-through text-slate-500">${castData.oldDice}</span> ➔ <strong class="text-amber-300 text-sm font-black">${castData.newDice}</strong></span>
+              <span class="text-xs text-purple-300 font-bold">Süre: ${castData.durationText}</span>
+            </div>
+            <div class="text-[10px] text-slate-400 mt-1">Caster Level ${castData.cl} sayesinde silahın hasar kategorisi ${castData.sizeSteps} basamak büyütüldü. Dövüş kokpitinde otomatik hesaplanır.</div>
+          `;
+          summaryGrid.insertBefore(sizeDiv, summaryGrid.firstChild);
+        }
       }
 
       // Grand Total Damage / Effect Banner
       const grandTotalEl = document.getElementById('result-grand-total-damage');
       if (grandTotalEl) {
-        if (castData.hasDamageDice) {
+        if (castData.isSizeModifier && castData.targetWeaponName) {
+          grandTotalEl.textContent = `${castData.targetWeaponName}: ${castData.oldDice} ➔ ${castData.newDice} (+${castData.sizeSteps} Basamak)`;
+        } else if (castData.hasDamageDice) {
           grandTotalEl.textContent = `${castData.finalDmg} HP (${castData.dmgType})`;
         } else {
           grandTotalEl.textContent = `Etki Devrede (${castData.durationText})`;
@@ -14046,6 +14102,11 @@
               <span>🔮 Büyü & Yuva Seviyesi:</span>
               <span class="font-bold text-white">${spell.name} (${castData.finalLvl}. Seviye ${sourceLabels[castData.slotSource] || ''} Yuvası)</span>
             </div>
+            ${(castData.isSizeModifier && castData.targetWeaponName) ? `
+            <div class="flex items-center justify-between text-purple-300 border-b border-slate-800/80 pb-1.5">
+              <span>🔮 Hedef Silah & Hasar Zarı:</span>
+              <span class="font-bold text-amber-300">${castData.targetWeaponName}: ${castData.oldDice} ➔ ${castData.newDice} (+${castData.sizeSteps} Boyut)</span>
+            </div>` : ''}
             ${castData.hasDamageDice ? `
             <div class="flex items-center justify-between text-amber-300 border-b border-slate-800/80 pb-1.5">
               <span>⚡ Hasar / Etki Zarları:</span>
@@ -14068,9 +14129,120 @@
       card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    function initiateCombatSpellCast() {
+    function closeSpellWeaponTargetModal() {
+      const modal = document.getElementById('modal-spell-weapon-target');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function confirmSpellCastOnWeapon(weaponName) {
+      closeSpellWeaponTargetModal();
+      initiateCombatSpellCast(weaponName);
+    }
+
+    function showSpellWeaponTargetModal(spell, cl, eligibleWeapons) {
+      const modal = document.getElementById('modal-spell-weapon-target');
+      if (!modal) return;
+
+      const titleEl = document.getElementById('spell-target-modal-title');
+      if (titleEl) titleEl.textContent = `${spell.name} — Hedef Silah Seçimi`;
+
+      const subEl = document.getElementById('spell-target-modal-subtitle');
+      if (subEl) subEl.textContent = `Caster Level ${cl} • Seviye ${spell.level} ${spell.school || 'Büyü'}`;
+
+      let steps = 1;
+      if (spell.sizeModifier?.scaling?.type === 'per_caster_level') {
+        const clDiv = spell.sizeModifier.scaling.clDivisor || 4;
+        const maxSteps = spell.sizeModifier.scaling.maxSteps || 5;
+        steps = Math.min(maxSteps, Math.floor(cl / clDiv));
+      } else if (spell.sizeModifier?.scaling?.type === 'flat') {
+        steps = spell.sizeModifier.scaling.steps || 1;
+      }
+
+      const descEl = document.getElementById('spell-target-modal-desc');
+      if (descEl) {
+        descEl.innerHTML = `
+          <strong>${spell.name}</strong>, eldeki ezici (bludgeoning melee) bir silaha uygulanır. 
+          Mevcut Caster Level seviyeniz (<strong>CL ${cl}</strong>) ile silahın hasar kategorisi <strong>+${steps} basamak</strong> büyüyecektir. 
+          Lütfen etkiyi uygulamak istediğiniz silahı seçin:
+        `;
+      }
+
+      const listEl = document.getElementById('spell-target-weapons-list');
+      if (listEl) {
+        listEl.innerHTML = eligibleWeapons.map(w => {
+          const rawDice = w.dice || '1d8';
+          const steppedDice = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.stepDamageDice === 'function')
+            ? RuleEngine.stepDamageDice(rawDice, steps)
+            : rawDice;
+
+          const isCurrentActive = character.activeWeapon === w.name;
+
+          const escapedName = (w.name || '').replace(/'/g, "\\'");
+          return `
+            <div onclick="confirmSpellCastOnWeapon('${escapedName}')" class="p-3 rounded-xl border border-slate-700 bg-slate-900/90 hover:border-purple-500 hover:bg-purple-950/40 transition cursor-pointer flex items-center justify-between group">
+              <div class="space-y-0.5">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-white text-xs group-hover:text-purple-300 transition">${safeEscapeHtml(w.name)}</span>
+                  ${isCurrentActive ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-950 text-amber-300 border border-amber-600/50 font-bold">Kuşanılmış</span>' : ''}
+                </div>
+                <div class="text-[10px] text-slate-400 font-mono">Tür: ${safeEscapeHtml(w.dmgType || 'Ezici')} • Tutuş: ${safeEscapeHtml(w.grip || '1-Hand')}</div>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="text-right font-mono">
+                  <div class="text-[10px] text-slate-400 line-through">${rawDice}</div>
+                  <div class="text-xs font-black text-amber-300 group-hover:text-amber-200">➔ ${steppedDice}</div>
+                </div>
+                <button type="button" class="px-3 py-1.5 rounded-lg bg-purple-600 group-hover:bg-purple-500 text-white font-bold text-xs shadow-md transition shrink-0">
+                  Uygula
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function initiateCombatSpellCast(targetWeaponName = null) {
       const spell = getSelectedCombatSpell();
       if (!spell) return;
+
+      const cl = getEffectiveSpellCasterLevel(spell);
+
+      // Check for sizeModifier targetType: weapon (e.g. Greater Mighty Wallop, Mighty Wallop)
+      if (spell.sizeModifier?.targetType === 'weapon' && !targetWeaponName) {
+        const eligibleWeapons = (character.weapons || []).filter(w => {
+          if (!w) return false;
+          if (spell.sizeModifier.targetFilter?.meleeOnly) {
+            const isRanged = w.isRanged || w.grip === 'Ranged' || (w.tags && w.tags.includes('ranged'));
+            if (isRanged) return false;
+          }
+          if (Array.isArray(spell.sizeModifier.targetFilter?.allowedDmgTypes) && spell.sizeModifier.targetFilter.allowedDmgTypes.length > 0) {
+            const dt = (w.dmgType || '').toLowerCase();
+            const tags = (w.tags || []).map(t => String(t).toLowerCase());
+            const matchesType = spell.sizeModifier.targetFilter.allowedDmgTypes.some(type => {
+              const tLower = type.toLowerCase();
+              return dt.includes(tLower) || (tLower === 'bludgeoning' && dt.includes('ezici')) || tags.includes(tLower);
+            });
+            if (!matchesType) return false;
+          }
+          return true;
+        });
+
+        if (eligibleWeapons.length === 0) {
+          showDiceTopToast({
+            icon: '⚠️',
+            title: 'Uygun Silah Bulunamadı!',
+            breakdown: `${spell.name} yalnızca ezici (bludgeoning melee) silahlara uygulanabilir. Karakterde uygun silah yok!`,
+            total: 'Geçersiz Hedef'
+          });
+          return;
+        }
+
+        showSpellWeaponTargetModal(spell, cl, eligibleWeapons);
+        return;
+      }
 
       const baseLvl = Number(spell.level) || 0;
       const activeSpellMods = typeof getActiveSpellTacticalModifiers === 'function' ? getActiveSpellTacticalModifiers() : [];
@@ -14203,8 +14375,7 @@
         if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
       }
 
-      // Caster Level & Dynamic Spell Scaling (D&D 3.5e RAW)
-      const cl = getEffectiveSpellCasterLevel(spell);
+      // Dynamic Spell Scaling (D&D 3.5e RAW)
       const params = typeof getSpellCriticalParams === 'function' ? getSpellCriticalParams(spell) : {};
       const scaling = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveSpellDynamicScaling === 'function')
         ? RuleEngine.resolveSpellDynamicScaling(spell, cl)
@@ -14329,6 +14500,79 @@
         return rangeStr;
       }
 
+      // Size modifier buff processing (Data-driven: weapon size or creature size scaling)
+      let isSizeModifier = false;
+      let targetWeaponObj = null;
+      let oldDice = '';
+      let newDice = '';
+      let calculatedSteps = 0;
+
+      if (spell.sizeModifier?.targetType === 'weapon' && targetWeaponName) {
+        isSizeModifier = true;
+        targetWeaponObj = (character.weapons || []).find(w => w && w.name === targetWeaponName);
+        oldDice = targetWeaponObj?.dice || '1d8';
+
+        if (spell.sizeModifier.scaling?.type === 'per_caster_level') {
+          const clDiv = spell.sizeModifier.scaling.clDivisor || 4;
+          const maxSteps = spell.sizeModifier.scaling.maxSteps || 5;
+          calculatedSteps = Math.min(maxSteps, Math.floor(cl / clDiv));
+        } else if (spell.sizeModifier.scaling?.type === 'flat') {
+          calculatedSteps = spell.sizeModifier.scaling.steps || 1;
+        }
+
+        newDice = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.stepDamageDice === 'function')
+          ? RuleEngine.stepDamageDice(oldDice, calculatedSteps)
+          : oldDice;
+
+        if (!Array.isArray(character.buffs)) character.buffs = [];
+        const existingIdx = character.buffs.findIndex(b => b.name === spell.name && b.targetWeapon === targetWeaponName);
+        const buffObj = {
+          name: spell.name,
+          active: true,
+          source: 'Spell',
+          targetWeapon: targetWeaponName,
+          sizeSteps: calculatedSteps,
+          baseDice: oldDice,
+          effectiveDice: newDice,
+          cl: cl,
+          duration: `${cl} saat`,
+          description: `${targetWeaponName} hasar zarı ${calculatedSteps} basamak büyütüldü (${oldDice} ➔ ${newDice}).`
+        };
+
+        if (existingIdx !== -1) {
+          character.buffs[existingIdx] = buffObj;
+        } else {
+          character.buffs.push(buffObj);
+        }
+
+        saveStateToStorage(true);
+      } else if (spell.sizeModifier?.targetType === 'creature') {
+        isSizeModifier = true;
+        calculatedSteps = spell.sizeModifier.scaling?.steps || 1;
+        if (!Array.isArray(character.buffs)) character.buffs = [];
+        const existingIdx = character.buffs.findIndex(b => b.name === spell.name);
+        const buffObj = {
+          name: spell.name,
+          active: true,
+          source: 'Spell',
+          targetType: 'creature',
+          sizeSteps: calculatedSteps,
+          strBonus: spell.strBonus || 2,
+          dexBonus: spell.dexBonus || -2,
+          acBonus: spell.acBonus || -1,
+          attBonus: spell.attBonus || -1,
+          cl: cl,
+          duration: `${cl} dk`,
+          description: `Yaratık ve tüm silahları ${calculatedSteps} boyut basamağı büyür.`
+        };
+        if (existingIdx !== -1) {
+          character.buffs[existingIdx] = buffObj;
+        } else {
+          character.buffs.push(buffObj);
+        }
+        saveStateToStorage(true);
+      }
+
       const castData = {
         finalLvl,
         cl,
@@ -14362,18 +14606,26 @@
         isQuicken,
         isEnlarge,
         isExtend,
+        isSizeModifier,
+        targetWeaponName,
+        oldDice,
+        newDice,
+        sizeSteps: calculatedSteps,
         rangeText: formatSpellRangeWithFeet(params.range, cl),
         durationText: params.duration || spell.duration || 'Anlık',
-        targetText: params.target || spell.target || '1 Hedef',
+        targetText: params.target || spell.target || (targetWeaponName ? `Silah: ${targetWeaponName}` : '1 Hedef'),
         componentsText: params.components || spell.components || 'V, S'
       };
 
       // Summary string for Toast and History
       const summaryList = [];
+      if (isSizeModifier && targetWeaponName) {
+        summaryList.push(`${targetWeaponName}: ${oldDice} ➔ ${newDice}`);
+      }
       if (hasAtk) summaryList.push(`Atk: ${totalAtk >= 0 ? '+' : ''}${totalAtk}`);
       if (hasSr) summaryList.push(`SR: ${totalSr}`);
       if (hasDamageDice) summaryList.push(`${finalDmg} Hasar`);
-      else summaryList.push(`DC ${saveDc}`);
+      else if (!isSizeModifier) summaryList.push(`DC ${saveDc}`);
       const summaryText = summaryList.join(', ');
 
       const onComplete = () => {
@@ -14381,12 +14633,21 @@
         renderSpellCastResults(spell, castData);
 
         // 2. Toast notification
-        showDiceTopToast({
-          icon: '🔮',
-          title: `${spell.name} İcra Edildi`,
-          breakdown: `${finalLvl}. Seviye Yuva • ${summaryText}`,
-          total: hasDamageDice ? `${finalDmg} Hasar` : (hasAtk ? `Atk: +${totalAtk}` : `SR: ${totalSr}`)
-        });
+        if (castData.isSizeModifier && castData.targetWeaponName) {
+          showDiceTopToast({
+            icon: '🔮',
+            title: `${spell.name} Devrede!`,
+            breakdown: `${castData.targetWeaponName}: ${castData.oldDice} ➔ ${castData.newDice} (+${castData.sizeSteps} basamak). Süre: ${castData.durationText}.`,
+            total: castData.newDice
+          });
+        } else {
+          showDiceTopToast({
+            icon: '🔮',
+            title: `${spell.name} İcra Edildi`,
+            breakdown: `${finalLvl}. Seviye Yuva • ${summaryText}`,
+            total: hasDamageDice ? `${finalDmg} Hasar` : (hasAtk ? `Atk: +${totalAtk}` : `SR: ${totalSr}`)
+          });
+        }
 
         // 3. Add to dice history
         if (typeof addDiceHistoryEntry === 'function') {
@@ -14395,15 +14656,18 @@
             title: `${spell.name} İcrası`,
             formula: summaryText,
             breakdown: [
+              (castData.isSizeModifier && castData.targetWeaponName) ? `${castData.targetWeaponName}: ${castData.oldDice} ➔ ${castData.newDice} (+${castData.sizeSteps} Boyut)` : null,
               hasAtk ? `Atk: ${totalAtk} (d20:${d20Atk}+${atkBonus}${isAtkCrit ? ' ⚡' : ''})` : null,
               hasSr ? `SR: ${totalSr} (d20:${d20Sr}+CL:${totalSrBonus})` : null,
               hasDamageDice ? calcNotice : `DC ${saveDc} ${spell.save || ''}`
             ].filter(Boolean).join(' • '),
-            total: hasDamageDice ? `${finalDmg} Hasar` : `DC ${saveDc}`,
+            total: (castData.isSizeModifier && castData.targetWeaponName) ? `${castData.newDice} (+${castData.sizeSteps})` : (hasDamageDice ? `${finalDmg} Hasar` : `DC ${saveDc}`),
             isCrit: isAtkCrit
           });
         }
 
+        if (typeof renderAll === 'function') renderAll();
+        if (typeof recalculateOffense === 'function') recalculateOffense();
         recalculateCombatSpell();
         renderSpellSlotsStrip();
         renderCombatCategorySpells();
@@ -18107,10 +18371,14 @@
         iterDisplayEl.textContent = attackChain.map(b => `${b.label}: ${b.bonus >= 0 ? '+' : ''}${b.bonus}`).join(' / ');
       }
 
-      // Weapon Finesse indicator
+      // Weapon Stat & Size Override indicator
       const badge = document.getElementById('weapon-stat-override-badge');
       if (badge) {
-        if (evalResult.attackStatName.includes('Weapon Finesse')) {
+        if (evalResult.sizeSteps > 0) {
+          const sourcesText = evalResult.sizeBuffSources?.join(', ') || `+${evalResult.sizeSteps} Boyut`;
+          badge.textContent = `✨ Boyut Artışı: ${evalResult.rawBaseDice} ➔ ${evalResult.baseDice} (${sourcesText})`;
+          badge.className = 'text-[10px] font-semibold text-purple-400 text-right';
+        } else if (evalResult.attackStatName.includes('Weapon Finesse')) {
           badge.textContent = `✨ Weapon Finesse: DEX (+${evalResult.attackStatMod}) devrede`;
           badge.className = 'text-[10px] font-semibold text-emerald-400 text-right';
         } else {
@@ -18241,7 +18509,7 @@
 
       let diceSides = 6;
       let diceCount = 1;
-      const match = (item.weapon?.dice || evalResult.baseDice || '1d6').match(/(\d+)d(\d+)/i);
+      const match = (evalResult.baseDice || item.weapon?.dice || '1d6').match(/(\d+)d(\d+)/i);
       if (match) {
         diceCount = parseInt(match[1]) || 1;
         diceSides = parseInt(match[2]) || 6;
@@ -18362,7 +18630,7 @@
 
         let diceSides = 6;
         let diceCount = 1;
-        const match = (item.weapon?.dice || evalResult.baseDice || '1d6').match(/(\d+)d(\d+)/i);
+        const match = (evalResult.baseDice || item.weapon?.dice || '1d6').match(/(\d+)d(\d+)/i);
         if (match) {
           diceCount = parseInt(match[1]) || 1;
           diceSides = parseInt(match[2]) || 6;

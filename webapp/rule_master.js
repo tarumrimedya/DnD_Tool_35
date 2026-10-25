@@ -1630,6 +1630,7 @@ const RuleMaster = {
         ruleFlags: (raw.ruleFlags && typeof raw.ruleFlags === 'object') ? JSON.parse(JSON.stringify(raw.ruleFlags)) : undefined,
         combatModifiers: (raw.combatModifiers && typeof raw.combatModifiers === 'object') ? JSON.parse(JSON.stringify(raw.combatModifiers)) : undefined,
         skillBonuses: (raw.skillBonuses && typeof raw.skillBonuses === 'object') ? JSON.parse(JSON.stringify(raw.skillBonuses)) : undefined,
+        sizeModifier: (raw.sizeModifier && typeof raw.sizeModifier === 'object') ? JSON.parse(JSON.stringify(raw.sizeModifier)) : undefined,
         isLight: raw.isLight !== undefined ? Boolean(raw.isLight) : undefined,
         proficiency: raw.proficiency ? String(raw.proficiency).trim() : undefined
       };
@@ -1661,6 +1662,13 @@ You MUST recognize the intended canonical element and output the real, correct o
 When querying an item, spell, maneuver, or feat with conditional variants, sub-effects, or multi-modes (e.g. Searing Light vs Undead / Construct, Blade of Blood with self-damage, Pyrotechnics fireworks vs smoke, Energy Substitution elements, Boots of Speed active mode), return BOTH:
 - The primary parent item with all base attributes
 - 1 or more Child objects starting with '\\u21B3 ' (e.g. '\\u21B3 Searing Light (Undead)') with "parent" set to the exact parent entry name, "isChild": true, "dice": clean condition dice formula, and appropriate "effectType" ('damage', 'heal', 'duration', 'status', 'blood_sacrifice_roll') and "childButtonLabel" (e.g. 'Undead (6d6)').
+4. SIZE MODIFIERS & WEAPON/CREATURE SCALING (CRITICAL FOR D&D 3.5E RAW):
+If a spell, feat, or item alters weapon damage size category or creature size (e.g. Greater Mighty Wallop, Mighty Wallop, Lead Blades, Enlarge Person, Righteous Might, Impact property), include the declarative 'sizeModifier' object:
+"sizeModifier": {
+  "targetType": "weapon" | "creature",
+  "targetFilter": { "meleeOnly": true, "allowedDmgTypes": ["Bludgeoning"] },
+  "scaling": { "type": "per_caster_level" | "flat", "clDivisor": 4, "maxSteps": 5, "capSize": "Colossal", "steps": 1 }
+}
 
 JSON OUTPUT SPECIFICATION:
 Return valid JSON only matching this schema:

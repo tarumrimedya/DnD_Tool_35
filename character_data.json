@@ -1029,7 +1029,7 @@
       "critMult": 2,
       "attBonus": 5,
       "dmgBonus": 0,
-      "dmgType": "Slashing",
+      "dmgType": "Bludgeoning",
       "bonusType": "Enhancement",
       "tags": [
         "two-handed"
@@ -1050,6 +1050,24 @@
         "weapon",
         "ranged",
         "bow"
+      ]
+    },
+    {
+      "name": "Morningstar",
+      "grip": "1-Hand",
+      "dice": "1d8",
+      "critMin": 20,
+      "critMult": 2,
+      "attBonus": 0,
+      "dmgBonus": 0,
+      "dmgType": "Bludgeoning / Piercing",
+      "bonusType": "Untyped",
+      "isLight": false,
+      "tags": [
+        "simple",
+        "melee",
+        "bludgeoning",
+        "piercing"
       ]
     }
   ],
@@ -1296,6 +1314,11 @@
         "action": "Standard Action",
         "range": "Touch",
         "benefit": "+4 enhancement bonus to Strength for 5 minutes."
+      },
+      {
+        "name": "Greater Mighty Wallop",
+        "level": 3,
+        "school": "Transmutation"
       }
     ],
     "preparedSlots": [],

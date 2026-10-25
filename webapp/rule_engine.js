@@ -2101,6 +2101,49 @@ const RuleEngine = {
     return character.evaluatedSaves || { fort: 0, ref: 0, will: 0, bonusFort: 0, bonusRef: 0, bonusWill: 0, battleClarityBonus: 0 };
   },
 
+  // D&D 3.5e RAW Damage Dice Stepping Progression (DMG p. 28, FAQ & Rules Compendium)
+  stepDamageDice(baseDiceStr, steps = 0) {
+    if (!baseDiceStr || steps === 0) return baseDiceStr;
+    const cleanStr = String(baseDiceStr).trim().toLowerCase().replace(/\s+/g, '');
+
+    // Canonical D&D 3.5e Size Damage Progression Ladders
+    const ladders = [
+      // Standard d6/d8 ladder: 1d2 -> 1d3 -> 1d4 -> 1d6 -> 1d8 -> 2d6 -> 3d6 -> 4d6 -> 6d6 -> 8d6 -> 12d6 -> 16d6
+      ['1', '1d2', '1d3', '1d4', '1d6', '1d8', '2d6', '3d6', '4d6', '6d6', '8d6', '12d6', '16d6'],
+      // d10 / d8 ladder: 1d10 -> 2d8 -> 3d8 -> 4d8 -> 6d8 -> 8d8 -> 12d8
+      ['1d10', '2d8', '3d8', '4d8', '6d8', '8d8', '12d8'],
+      // 1d12 ladder
+      ['1d12', '3d6', '4d6', '6d6', '8d6', '12d6', '16d6'],
+      // 2d4 ladder (e.g., Spiked Chain)
+      ['2d4', '2d6', '3d6', '4d6', '6d6', '8d6', '12d6', '16d6'],
+      // 2d6 ladder (e.g., Greatsword, Jovar)
+      ['2d6', '3d6', '4d6', '6d6', '8d6', '12d6', '16d6'],
+      // 2d8 ladder
+      ['2d8', '3d8', '4d8', '6d8', '8d8', '12d8'],
+      // 2d10 ladder
+      ['2d10', '4d8', '6d8', '8d8', '12d8']
+    ];
+
+    for (const ladder of ladders) {
+      const idx = ladder.indexOf(cleanStr);
+      if (idx !== -1) {
+        const targetIdx = Math.max(0, Math.min(ladder.length - 1, idx + steps));
+        return ladder[targetIdx];
+      }
+    }
+
+    // Generic fallback for any unrecognized die formula
+    const match = cleanStr.match(/^(\d+)d(\d+)$/);
+    if (match) {
+      let count = parseInt(match[1], 10);
+      const die = parseInt(match[2], 10);
+      count = Math.max(1, count + steps);
+      return `${count}d${die}`;
+    }
+
+    return baseDiceStr;
+  },
+
   // Evaluate Weapon Attack Modifiers & Damage
   evaluateWeaponAttack(character, weapon, options = {}) {
     const isTwoHand = this.isTwoHandedWeapon(weapon);
@@ -2401,13 +2444,47 @@ const RuleEngine = {
     const chargeMultiplier = chargeData.multiplier || 1;
     const chargeFlatDamage = netFlatDamage * chargeMultiplier;
 
+    // Check for weapon size modifications from options, weapon properties, or active character buffs
+    let effectiveSteps = Number(options.sizeSteps || weapon.sizeSteps || 0);
+    const sizeBuffSources = [];
+
+    if (Array.isArray(character?.buffs)) {
+      character.buffs.forEach(b => {
+        if (!b || !b.active) return;
+        const targetWepName = (b.targetWeapon || '').toLowerCase().trim();
+        const wepName = (weapon.name || '').toLowerCase().trim();
+        const matchesWeapon = targetWepName && (
+          targetWepName === wepName ||
+          (weapon.id && b.targetWeaponId === weapon.id) ||
+          wepName.includes(targetWepName) ||
+          targetWepName.includes(wepName)
+        );
+        const isCreatureSizeBuff = (b.targetType === 'creature' || b.scope === 'creature' || (b.name && b.name.toLowerCase().includes('enlarge person'))) && b.sizeSteps;
+
+        if (matchesWeapon && b.sizeSteps) {
+          effectiveSteps += Number(b.sizeSteps) || 0;
+          sizeBuffSources.push(`${b.name} (+${b.sizeSteps} basamak)`);
+        } else if (isCreatureSizeBuff) {
+          effectiveSteps += Number(b.sizeSteps) || 0;
+          sizeBuffSources.push(`${b.name} (+${b.sizeSteps} yaratık boyutu)`);
+        }
+      });
+    }
+
+    const rawBaseDice = weapon.extraDmg || weapon.dice || '1d8';
+    const effectiveDice = effectiveSteps !== 0 ? this.stepDamageDice(rawBaseDice, effectiveSteps) : rawBaseDice;
+
     return {
       netAttackBonus,
       iteratives,
       attackStatName,
       attackStatMod,
       effectivePA,
-      baseDice: weapon.extraDmg || weapon.dice || '1d8',
+      rawBaseDice,
+      baseDice: effectiveDice,
+      effectiveDice,
+      sizeSteps: effectiveSteps,
+      sizeBuffSources,
       netFlatDamage,
       critMin: critData.critMin,
       critMult: critData.critMult,
