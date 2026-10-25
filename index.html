@@ -127,6 +127,8 @@
 
           <!-- Sağ Bölüm: Hub'a Dön, Ayarlar & Bulut Senkron (Simetrik Kontrol Bloğu) -->
           <div class="flex flex-col items-stretch sm:items-end gap-1.5 pt-2 md:pt-0 border-t border-slate-800/80 md:border-0 w-full md:w-56 shrink-0">
+            <!-- Kullanıcı Profil Rozeti -->
+            <div id="user-profile-slot" class="w-full flex items-center justify-end"></div>
             <!-- 1. Sıra: Hub ve Ayarlar Butonları (Tam Eşit Simetrik Genişlik) -->
             <div class="grid grid-cols-2 gap-1.5 w-full">
               <a href="/hub" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-indigo-950/90 hover:bg-indigo-900 text-indigo-300 hover:text-white border border-indigo-700/80 text-xs font-bold shadow flex items-center justify-center gap-1 sm:gap-1.5 transition text-center" title="Kampanya & Karakter Hub'ına Dön">
@@ -7087,6 +7089,8 @@
   </div>
 
   <!-- SCRIPT LOGIC -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase_auth.js?v=20261025_01"></script>
   <script src="rule_engine.js?v=20261023_16"></script>
   <script src="rule_master.js?v=20261023_16"></script>
   <script src="dice3d.js?v=20261023_16"></script>
@@ -7323,6 +7327,10 @@
     });
 
     window.addEventListener('DOMContentLoaded', async () => {
+      if (window.SupabaseAuth) {
+        const authUser = await window.SupabaseAuth.requireAuth();
+        if (!authUser) return; // Oturum yoksa login'e yönlendirildi, sayfa yüklemesini durdur
+      }
       try {
         await loadInitialData();
       } catch (err) {

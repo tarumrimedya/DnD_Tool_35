@@ -141,9 +141,28 @@ Hub, karakter kâğıdına veri gönderirken veya `localStorage` (`dnd35_charact
 
 ---
 
-## 7. HAZIR DEVİR TESLİM PROMPTU (DİĞER KONUŞMAYA YAPIŞTIRILACAK)
+## 7. SUPABASE GOOGLE OAUTH KİMLİK DOĞRULAMA & GİRİŞ KALKANI (2026-10-25)
+* **Kapsam:** Hub (`hub.html`) ve Karakter Kâğıdı (`index.html` / `character.html`) sayfalarına yetkisiz erişimi engellemek, kullanıcıların Google hesapları ile tek tıkla giriş yapmasını sağlamak ve çoklu kullanıcı kampanya mimarisine zemin hazırlamak amacıyla Supabase Auth entegrasyonu tamamlandı.
+* **Teknik Bileşenler:**
+  1. **Giriş Sayfası (`login.html` & `webapp/login.html`):**
+     * Dark fantasy temalı, Google OAuth giriş butonu barındıran landing sayfası.
+     * Kullanıcı zaten giriş yapmışsa otomatik olarak `/hub` veya url parametresindeki `redirect` hedefine yönlendirir.
+  2. **Supabase Auth İstemcisi (`supabase_auth.js` & `webapp/supabase_auth.js`):**
+     * Supabase v2 JS CDN istemcisi üzerinden Google OAuth `signInWithOAuth`, `signOut`, `getSession`, `requireAuth` koruma kalkanı ve `mountUserProfileUI` rozeti sağlar.
+  3. **Sayfa Kalkanı (Auth Guard):**
+     * `hub.html`, `index.html` ve `character.html` sayfaları `DOMContentLoaded` anında `await SupabaseAuth.requireAuth()` çalıştırır; geçerli oturum yoksa kullanıcı anında `/login?redirect=...` sayfasına yönlendirilir.
+     * Oturumu olan kullanıcının avatarı, ismi ve `[🚪 Çıkış]` butonu sağ üst kontrol barına `#user-profile-slot` içine otomatik yerleştirilir.
+  4. **Yönlendirme Kuralları (`vercel.json`):**
+     * `/login` isteği `/webapp/login.html` dosyasına yönlendirilmiştir.
+  5. **Parite ve Kural Bütünlüğü:**
+     * Kök ve `webapp/` altındaki tüm kopyalar (`login.html`, `supabase_auth.js`, `hub.html`, `index.html`, `character.html`) %100 paritede tutulmuştur.
+     * Standart tavla zarı (`🎲`) kesinlikle kullanılmamıştır.
+
+---
+
+## 8. HAZIR DEVİR TESLİM PROMPTU (DİĞER KONUŞMAYA YAPIŞTIRILACAK)
 ```markdown
-Hub ile Karakter Kâğıdı arasında DM Modu canlı hasar/şifa senkronizasyonu (`BroadcastChannel`, Vercel KV live polling, kırmızı/yeşil vignette flash ve toast bildirimleri) başarıyla tamamlandı ve `dnd35_hub_db` protokolü güncellendi.
+Supabase Google OAuth kimlik doğrulama sistemi (`login.html`, `supabase_auth.js`), sayfa koruma kalkanları (`requireAuth`) ve sağ üst kullanıcı profil rozeti Hub ile Karakter Kâğıdı'na entegre edildi. Giriş yapmayan kullanıcılar doğrudan `/login` sayfasına yönlendirilmektedir.
 Lütfen `HANDOVER_TO_CHARACTER_SHEET.md` dosyasındaki son güncellemeleri kontrol ederek geliştirmelere devam et.
 ```
 

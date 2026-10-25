@@ -9,6 +9,8 @@
   <script src="bundled_monsters.js"></script>
   <script src="rule_engine.js"></script>
   <script src="gdrive_sync.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase_auth.js"></script>
   <style>
     body {
       font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -44,6 +46,9 @@
 
         <!-- Üst Eylem Butonları (Sağa Yaslı, Eşit Boyutlu & Tam Simetrik) -->
         <div class="flex flex-col items-stretch sm:items-end justify-center gap-2 shrink-0 self-start sm:self-auto sm:ml-auto w-full sm:w-[210px]">
+          <!-- Kullanıcı Profil Slotu -->
+          <div id="user-profile-slot" class="w-full flex items-center justify-end"></div>
+
           <!-- Yeni Kampanya Ekle Butonu -->
           <button onclick="openNewCampaignModal()" class="w-full h-9 px-3 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-md shadow-indigo-950/50 border border-indigo-400/40 cursor-pointer active:scale-95">
             <span class="text-sm">🏰</span>
@@ -2979,6 +2984,10 @@ CRITICAL RULES:
 
     // Sayfa Açılışı
     window.addEventListener('DOMContentLoaded', async () => {
+      if (window.SupabaseAuth) {
+        const authUser = await window.SupabaseAuth.requireAuth();
+        if (!authUser) return; // Oturum yoksa login'e yönlendirildi, sayfa yüklemesini durdur
+      }
       loadCustomMonsters();
       initHubStorage();
       renderHub();
