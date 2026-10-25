@@ -1284,6 +1284,25 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - `hub.html` ve `webapp/hub.html` %100 SHA-256 eşitliğinde güncellendi.
      - Kural #3 (Zar emojisi yasağı) tavizsiz korundu.
 
+---
+
+## 59. HUB NOT DEFTERİ LİSTESİNDE KAMPANYA ADI VE ALT KAMPANYA HİYERARŞİSİNİN GÖSTERİLMESİ (2026-10-25)
+* **İstek:**
+  - Geniş Not Defteri modalının sol not listesinde yer alan kartların başlığında kampanya açıklaması (`note.text` / "Aktif macera seferi.") yerine doğrudan **kampanya adı** gösterilmesi.
+  - Eğer seçili kampanya bir alt kampanya (`parentId` tanımlı) ise bağlı olduğu ana kampanyanın da hiyerarşik olarak (`Ana Kampanya › Alt Kampanya`) yer alması.
+* **Uygulanan Değişiklikler:**
+  1. **Hiyerarşik Kampanya Adı Çözümleyicileri (`getCampaignHierarchyName` & `getTargetDisplayName`):**
+     - Bir kampanya alt kampanya ise ebeveyni bulunarak `${parentCamp.name} › ${camp.name}` formatında hiyerarşik adı üretildi.
+     - Karakterler için bağlı oldukları sefer hiyerarşisi de eklenerek adlandırıldı.
+  2. **Not Listesi Kart Başlığı:**
+     - `renderFullNotesModalList` içinde her not kartının kalın başlığına kampanya hiyerarşik adı (`Ana Kampanya › Alt Kampanya`) bağlandı; alt satırdaki açıklama kutusunda ise notun kendi metni gösterildi.
+  3. **Açılır Menü (`<select>`) ve Editör Bilgi Çubuğu:**
+     - Modal başlığındaki defter seçici menüde alt kampanyalar ana seferleriyle birlikte listelendi.
+     - Editörün sağ üstündeki bilgi rozetine (`dateBadge`) hedef hiyerarşisi eklendi.
+  4. **Parite ve Devir Teslim:**
+     - `hub_notes.js` ve `webapp/hub_notes.js` %100 SHA-256 eşitliğinde güncellendi.
+     - Kural #3 (Zar emojisi yasağı) tavizsiz korundu.
+
 
 ---
 

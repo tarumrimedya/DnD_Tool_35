@@ -52,6 +52,45 @@
   }
 
   /**
+   * Kampanya Hiyerarşik Adını Çözümle
+   * Eğer alt kampanya ise (parentId varsa): Ana Kampanya Adı › Alt Kampanya Adı
+   */
+  function getCampaignHierarchyName(camp, state) {
+    if (!camp) return 'Kampanya';
+    if (!state || !Array.isArray(state.campaigns)) return camp.name || 'Kampanya';
+
+    if (camp.parentId) {
+      const parentCamp = state.campaigns.find(c => c.id === camp.parentId);
+      if (parentCamp) {
+        return `${parentCamp.name} › ${camp.name}`;
+      }
+    }
+    return camp.name || 'Kampanya';
+  }
+
+  /**
+   * Hedefin (Kampanya veya Karakter) Tam Görünen Adını Çözümle
+   */
+  function getTargetDisplayName(target, state) {
+    if (!target) return 'Not Defteri';
+    if (target.type === 'campaign') {
+      const camp = state?.campaigns?.find(c => c.id === target.id) || target.targetObj;
+      return getCampaignHierarchyName(camp || target, state);
+    } else if (target.type === 'character') {
+      const char = state?.characters?.find(c => c.id === target.id) || target.targetObj;
+      if (char && char.campaignId) {
+        const camp = state?.campaigns?.find(c => c.id === char.campaignId);
+        if (camp) {
+          const campHName = getCampaignHierarchyName(camp, state);
+          return `${campHName} › 👤 ${char.name || 'Karakter'}`;
+        }
+      }
+      return `👤 ${char?.name || target.name || 'Karakter'}`;
+    }
+    return target.name || 'Not Defteri';
+  }
+
+  /**
    * Determine active notes target:
    * 0. User override (if selected via modal dropdown)
    * 1. If in unassigned tab: unassigned character or first character
@@ -76,10 +115,12 @@
         const camp = state.campaigns.find(c => c.id === id);
         if (camp) {
           if (!Array.isArray(camp.notesList)) camp.notesList = normalizeLegacyNotes(camp.notes);
+          const hName = getCampaignHierarchyName(camp, state);
           return {
             type: 'campaign',
             id: camp.id,
-            name: camp.name || 'Kampanya',
+            name: hName,
+            rawName: camp.name,
             isDm: Boolean(camp.isDmMode),
             titleBadge: camp.isDmMode ? '👑 DM Notları (Gizli)' : '🏰 Sefer Notları',
             targetObj: camp,
@@ -127,6 +168,7 @@
     // 2. Belirli bir Aktif Kampanya Seçili İse
     const activeCamp = state.campaigns.find(c => c.id === activeCampId);
     if (activeCamp) {
+      const hName = getCampaignHierarchyName(activeCamp, state);
       if (activeCamp.isDmMode) {
         if (!Array.isArray(activeCamp.notesList)) {
           activeCamp.notesList = normalizeLegacyNotes(activeCamp.notes);
@@ -134,7 +176,8 @@
         return {
           type: 'campaign',
           id: activeCamp.id,
-          name: activeCamp.name || 'Ana Kampanya',
+          name: hName,
+          rawName: activeCamp.name,
           isDm: true,
           titleBadge: '👑 DM Notları (Gizli)',
           targetObj: activeCamp,
@@ -168,7 +211,8 @@
       return {
         type: 'campaign',
         id: activeCamp.id,
-        name: activeCamp.name || 'Kampanya',
+        name: hName,
+        rawName: activeCamp.name,
         isDm: false,
         titleBadge: '🏰 Sefer Notları',
         targetObj: activeCamp,
@@ -199,10 +243,12 @@
       if (!Array.isArray(firstCamp.notesList)) {
         firstCamp.notesList = normalizeLegacyNotes(firstCamp.notes);
       }
+      const hName = getCampaignHierarchyName(firstCamp, state);
       return {
         type: 'campaign',
         id: firstCamp.id,
-        name: firstCamp.name || 'Kampanya',
+        name: hName,
+        rawName: firstCamp.name,
         isDm: Boolean(firstCamp.isDmMode),
         titleBadge: firstCamp.isDmMode ? '👑 DM Notları (Gizli)' : '🏰 Sefer Notları',
         targetObj: firstCamp,
@@ -637,19 +683,25 @@
     const chars = state.characters || [];
 
     if (camps.length + chars.length <= 1) {
-      titleEl.innerHTML = `<span class="bg-indigo-950/80 text-indigo-300 px-2 py-0.5 rounded-lg border border-indigo-800/60 font-semibold">${escapeHtml(activeTarget ? activeTarget.titleBadge : 'Not Defteri')}</span>`;
+      const dName = getTargetDisplayName(activeTarget, state);
+      titleEl.innerHTML = `<span class="bg-indigo-950/80 text-indigo-300 px-2 py-0.5 rounded-lg border border-indigo-800/60 font-semibold">${escapeHtml(dName)}</span>`;
       return;
     }
 
     const currentKey = activeTarget ? `${activeTarget.type === 'character' ? 'char' : 'campaign'}:${activeTarget.id}` : '';
 
-    let selectHtml = `<select onchange="HubNotes.setTargetOverride(this.value)" class="bg-indigo-950/90 hover:bg-indigo-900/90 text-indigo-200 border border-indigo-700/80 rounded-lg px-2 py-0.5 text-xs font-bold focus:outline-none focus:border-indigo-400 cursor-pointer shadow-sm max-w-[240px] truncate">`;
+    let selectHtml = `<select onchange="HubNotes.setTargetOverride(this.value)" class="bg-indigo-950/90 hover:bg-indigo-900/90 text-indigo-200 border border-indigo-700/80 rounded-lg px-2.5 py-1 text-xs font-bold focus:outline-none focus:border-indigo-400 cursor-pointer shadow-sm max-w-[320px] truncate">`;
 
     if (chars.length > 0) {
       selectHtml += `<optgroup label="👤 Karakter Not Defterleri">`;
       chars.forEach(c => {
         const val = `char:${c.id}`;
-        selectHtml += `<option value="${val}" ${val === currentKey ? 'selected' : ''}>👤 ${escapeHtml(c.name || 'Karakter')}</option>`;
+        let charContext = '';
+        if (c.campaignId) {
+          const cp = camps.find(camp => camp.id === c.campaignId);
+          if (cp) charContext = ` (${getCampaignHierarchyName(cp, state)})`;
+        }
+        selectHtml += `<option value="${val}" ${val === currentKey ? 'selected' : ''}>👤 ${escapeHtml((c.name || 'Karakter') + charContext)}</option>`;
       });
       selectHtml += `</optgroup>`;
     }
@@ -659,7 +711,8 @@
       camps.forEach(cp => {
         const val = `campaign:${cp.id}`;
         const prefix = cp.isDmMode ? '👑 DM: ' : '🏰 ';
-        selectHtml += `<option value="${val}" ${val === currentKey ? 'selected' : ''}>${prefix}${escapeHtml(cp.name || 'Kampanya')}</option>`;
+        const hName = getCampaignHierarchyName(cp, state);
+        selectHtml += `<option value="${val}" ${val === currentKey ? 'selected' : ''}>${prefix}${escapeHtml(hName)}</option>`;
       });
       selectHtml += `</optgroup>`;
     }
@@ -675,6 +728,7 @@
     const listEl = document.getElementById('hub-modal-notes-list');
     if (!listEl) return;
 
+    const state = getHubState();
     const target = getActiveNotesTarget();
     updateModalTargetSelector(target);
 
@@ -692,22 +746,29 @@
     }
 
     let html = '';
-    filtered.forEach(note => {
+    const targetDisplayName = getTargetDisplayName(target, state);
+
+    filtered.forEach((note, idx) => {
       const isSelected = note.id === _selectedModalNoteId;
       const isPinned = Boolean(note.pinned);
       const isCompleted = Boolean(note.completed);
+
+      // Kart Başlığı: Kampanya Adı (Alt kampanya ise Ana Kampanya › Alt Kampanya)
+      const cardTitle = filtered.length > 1
+        ? `${targetDisplayName} • Not ${idx + 1}`
+        : targetDisplayName;
 
       html += `
         <div onclick="HubNotes.selectNoteInModal('${note.id}')" class="p-3 rounded-xl border transition cursor-pointer flex flex-col gap-1.5 ${isSelected ? 'bg-indigo-950/60 border-indigo-500 text-white shadow-md' : 'bg-slate-900/60 hover:bg-slate-800/80 border-slate-800 text-slate-300'}">
           <div class="flex items-center justify-between gap-1.5">
             <div class="flex items-center gap-1.5 min-w-0">
               ${isPinned ? '<span class="text-amber-400 text-xs shrink-0" title="Başa Sabitlendi">📌</span>' : ''}
-              <span class="text-xs font-bold truncate">${escapeHtml(note.text.slice(0, 30)) || 'Boş Not'}</span>
+              <span class="text-xs font-bold truncate text-indigo-300" title="${escapeHtml(targetDisplayName)}">${escapeHtml(cardTitle)}</span>
             </div>
             <span class="text-[9px] text-slate-500 font-mono shrink-0">${formatTimeAgo(note.updatedAt || note.createdAt)}</span>
           </div>
-          <div class="text-[11px] text-slate-400 line-clamp-1 break-words">
-            ${escapeHtml(note.text.slice(0, 70))}
+          <div class="text-[11px] text-slate-400 line-clamp-2 break-words">
+            ${escapeHtml(note.text) || '<span class="italic text-slate-500">Boş not metni...</span>'}
           </div>
         </div>
       `;
@@ -760,7 +821,9 @@
     editor.disabled = false;
     editor.value = note.text || '';
     if (dateBadge) {
-      dateBadge.textContent = `Son Güncelleme: ${new Date(note.updatedAt || note.createdAt).toLocaleString('tr-TR')}`;
+      const state = getHubState();
+      const dName = getTargetDisplayName(target, state);
+      dateBadge.textContent = `${dName} • Son Güncelleme: ${new Date(note.updatedAt || note.createdAt).toLocaleString('tr-TR')}`;
     }
 
     if (pinBtn) {
