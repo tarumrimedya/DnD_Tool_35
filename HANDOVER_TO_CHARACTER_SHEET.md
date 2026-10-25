@@ -541,7 +541,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   4. **3. Sıra (Tür Filtresi):** Gereksiz dış etiket kaldırılarak Tümü, PC (Oyuncular) ve NPC (Canavarlar) butonları `flex-1` yapılarak kolonu %33-%33-%33 tam doldurur. `setTypeFilter` fonksiyonu bu oranları koruyacak şekilde güncellendi.
   5. **Parite ve Kural Bütünlüğü:**
      - `hub.html` ve `webapp/hub.html` kopyaları %100 SHA-256 eşitliğinde tutuldu.
-     - Sıfır tavla zarı (`🎲`) kuralı tavizsiz korundu.
+     - Sıfır tavla zarı (U+1F3B2) kuralı tavizsiz korundu.
 
 ---
 
@@ -574,43 +574,17 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
 
 ---
 
-## 29. ZAR RENK SEÇİMİ VE SETDICECOLOR BAĞLANTISI (2026-10-25)
-* **Sorun:** Hub zar panelinde `#dice-color-popover` içindeki palet butonlarının (`setDiceColor('#dc2626')` vb.) ve özel renk seçici kutusunun (`onchange="setDiceColor(this.value)"`) fonksiyon isim uyuşmazlığı nedeniyle tetiklenmemesi.
-* **Uygulanan Çözüm:**
-  1. `hub_dice.js` içinde `selectDiceColor(color, colorName)` fonksiyonuna global `window.setDiceColor = selectDiceColor;` alias'ı eklendi.
-  2. Palet butonlarına tıklandığında veya renk seçici değiştirildiğinde:
-     - `Dice3D.setDiceColor(color)` ile Three.js 3D zar dokusu temizlenip yeni renkle güncellenir.
-     - `updateDiceColorUI(color)` ile "Renk" butonundaki önizleme noktası (`#dice-color-preview-dot`), renk seçici girdi kutusu ve "⚡ ZARLARI AT" butonunun arka plan gradyanı ve ışıma rengi anında güncellenir.
-     - Seçilen renk `localStorage` (`dnd_dice_color`) üzerinde saklanır.
-     - Renk popover'ı otomatik kapatılır.
-  3. `hub_dice.js` ve `webapp/hub_dice.js` kopyaları %100 eşitlendi; sıfır tavla zarı (`🎲`) kuralı korundu.
-
----
-
-## 30. AKTİF ZAR HAVUZU BONUS GİRDİSİ MODERN STEPPER & DÖNER TEKERLEK KONTROLÜ (2026-10-25)
-* **İstek:** Aktif havuzdaki `#dice-pool-mod` standart sayı kutusunun modernize edilmesi; butonlu kademeli adım (stepper), döner tekerlek (mouse wheel) veya doğrudan klavye ile sayı girişine imkan tanıyan şık bir kontrole dönüştürülmesi.
+## 32. HUB ZAR PANELİ DARALTILABİLİR GELİŞMİŞ ALAN (FORMÜL, SON ATIŞ & GEÇMİŞ) (2026-10-25)
+* **İstek:** Hub açık zar paneli (`#hub-inline-dice-panel`) içindeki formül ile atış, şablon çipleri, canlı son atış kartı ve zar geçmişinin varsayılan olarak gizlenmesi; panelin havuz atış butonları satırında ("⚡ ZARLARI AT" & "🗑️") sonlanması ve altındaki alanların isteğe bağlı akordeon çekmecesi ile açılıp kapanabilmesi.
 * **Uygulanan Değişiklikler:**
-  1. **Taktiksel Kokpit Stepper Widget'ı (`hub.html` & `webapp/`):**
-     - Standart tarayıcı okları gizlendi (`[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none`).
-     - İki yana şık dokunsal `[ − ]` ve `[ + ]` butonları yerleştirildi.
-     - Ortadaki değer kehribar sarısı (`text-amber-300 font-mono font-black`) vurgulu olarak konumlandırıldı; doğrudan tıklayıp klavye ile sayı yazma özelliği korundu.
-  2. **Döner Tekerlek ve Hızlı Adım Motoru (`hub_dice.js` & `webapp/`):**
-     - `adjustDicePoolMod(delta, event)` fonksiyonu eklendi: Normal tıklamada ±1, Shift tuşuna basılı tutularak tıklandığında hızlıca ±5 bonus ekler/çıkarır.
-     - `handlePoolModWheel(event)` fonksiyonu eklendi: Fare tekerleği kontrol kutusunun üzerindeyken yukarı/aşağı kaydırıldığında rotary dial (döner düğme) gibi bonusu anında artırır/azaltır.
+  1. **Akordeon Başlık Butonu ve Gizlenebilir Konteyner (`hub.html` & `webapp/`):**
+     - Havuz atış butonlarının hemen altına `toggleDiceAdvancedDrawer()` butonlu kompakt bir akordeon başlığı yerleştirildi: `[ 📜 Formül, Son Atış & Geçmiş    Göster ▼ ]`.
+     - Formül girişi, hızlı şablon çipleri, son atış kartı ve zar geçmişi listesi `#dice-advanced-content` konteyneri içerisine alındı (`hidden` sınıfı ile varsayılan olarak kapalı).
+  2. **Durum Yönetimi ve Hafıza Motoru (`hub_dice.js` & `webapp/`):**
+     - `toggleDiceAdvancedDrawer(forceOpen = null)` fonksiyonu eklendi:
+       - Tıklandığında `#dice-advanced-content` görünürlüğünü yumuşakça değiştirir.
+       - Ok simgesini (`rotate(180deg)` / `rotate(0deg)`) ve durum etiketini (`Göster` / `Gizle`) günceller.
+       - Kullanıcının tercihini `localStorage.getItem('hub_dice_adv_open')` içinde saklayarak sayfa yenilendiğinde aynı açık/kapalı durumu korur.
   3. **Parite ve Kural Bütünlüğü:**
      - `hub.html`, `hub_dice.js` ve `webapp/` kopyaları %100 SHA-256 eşitliğinde tutuldu.
-     - Sıfır tavla zarı (`🎲`) kuralı korundu.
-
----
-
-## 31. YENİ KARAKTER EKLEME MODALI IRK (RACE) SEÇİMİ ENTEGRASYONU (2026-10-25)
-* **İstek:** Hub üzerindeki "Yeni Karakter / NPC Ekle" (`#new-character-modal-card`) modalında, sıfır manuel şablon oluştururken ırk (race) seçilebilmesi.
-* **Uygulanan Değişiklikler:**
-  1. **Irk Seçim Kontrolü (`hub.html` & `webapp/`):**
-     - `#pane-char-mode-manual` içine D&D 3.5e RAW standart 7 PHB ırkını (Human, Dwarf, Elf, Gnome, Half-Elf, Half-Orc, Halfling) içeren ve "✨ Diğer / Özel Irk..." seçeneği sunan `#new-char-race` açılır menüsü eklendi.
-     - "Diğer / Özel Irk..." seçildiğinde açılan `#new-char-race-custom` metin kutusu ile her türlü canavar ırkı, alt-ırk veya ev yapımı ırk adı (Aasimar, Tiefling, Goliath vb.) yazılabilir.
-  2. **Veri Modeli ve Şema Entegrasyonu:**
-     - `saveNewCharacter()` fonksiyonu seçilen ırkı alır, `createCleanDnd35Character()` fonksiyonuna aktarır ve hem yerel Hub state'ine hem de `character_data.json` / `dnd35_character` tam şemasına resmi `race` değeri olarak yazar.
-     - Hub kartında karakter doğrudan `[Irk] • [Sınıf] [Seviye]` olarak listelenir.
-  3. **Parite ve Kural Bütünlüğü:**
-     - `hub.html` ve `webapp/hub.html` kopyaları %100 SHA-256 eşitliğinde tutuldu; sıfır tavla zarı (`🎲`) kuralı korundu.
+     - Sıfır tavla zarı (U+1F3B2) kuralı tavizsiz korundu.

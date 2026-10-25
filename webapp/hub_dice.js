@@ -1055,6 +1055,29 @@ function rollCustomFormula() {
 
   executeStandardCustomFormula(val);
 }
+function toggleDiceAdvancedDrawer(forceOpen = null) {
+  const content = document.getElementById('dice-advanced-content');
+  const icon = document.getElementById('dice-adv-icon');
+  const text = document.getElementById('dice-adv-status-text');
+  if (!content) return;
+
+  const isCurrentlyHidden = content.classList.contains('hidden');
+  const shouldOpen = forceOpen !== null ? forceOpen : isCurrentlyHidden;
+
+  if (shouldOpen) {
+    content.classList.remove('hidden');
+    if (icon) icon.style.transform = 'rotate(180deg)';
+    if (text) text.textContent = 'Gizle';
+    try { localStorage.setItem('hub_dice_adv_open', '1'); } catch (e) {}
+  } else {
+    content.classList.add('hidden');
+    if (icon) icon.style.transform = 'rotate(0deg)';
+    if (text) text.textContent = 'Göster';
+    try { localStorage.setItem('hub_dice_adv_open', '0'); } catch (e) {}
+  }
+}
+window.toggleDiceAdvancedDrawer = toggleDiceAdvancedDrawer;
+
 window.rollCustomFormula = rollCustomFormula;
 
 // Sayfa yüklendiğinde inline panel bileşenlerini ve renk seçiciyi ilklendir
@@ -1063,4 +1086,10 @@ window.addEventListener('DOMContentLoaded', () => {
   if (typeof updateDicePoolDisplay === 'function') updateDicePoolDisplay();
   if (typeof renderDiceHistory === 'function') renderDiceHistory();
   if (typeof renderCustomTemplates === 'function') renderCustomTemplates();
+  try {
+    const isAdvOpen = localStorage.getItem('hub_dice_adv_open') === '1';
+    if (typeof toggleDiceAdvancedDrawer === 'function') {
+      toggleDiceAdvancedDrawer(isAdvOpen);
+    }
+  } catch (e) {}
 });

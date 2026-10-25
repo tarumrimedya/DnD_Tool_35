@@ -366,44 +366,61 @@
             </button>
           </div>
 
-          <!-- Hızlı / Özel Formül Girişi -->
-          <div class="pt-3 border-t border-slate-800 space-y-2">
-            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Formül ile Atış</div>
-            <div class="flex items-center gap-1.5">
-              <input type="text" id="dice-custom-formula-input" placeholder="Örn: 1d20+5, 8d6, 2d6+3" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 font-mono focus:outline-none focus:border-amber-400" onkeydown="if(event.key==='Enter') rollCustomFormula()">
-              <button onclick="rollCustomFormula()" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow transition active:scale-95 cursor-pointer">
-                ⚡ At
-              </button>
-            </div>
-            <!-- Hızlı Şablon Çipleri -->
-            <div id="dice-custom-templates-container" class="flex flex-wrap items-center gap-1.5 pt-1">
-              <!-- JS dinamik doldurur -->
-            </div>
-          </div>
-
-          <!-- Canlı Son Zar Sonucu Kartı -->
-          <div id="dice-last-result-card" class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 flex items-center justify-between shadow-inner">
-            <div class="min-w-0 flex-1">
+          <!-- İsteğe Bağlı Açılır Gelişmiş Panel: Formül, Son Sonuç & Geçmiş -->
+          <div class="pt-2 border-t border-slate-800">
+            <button type="button" onclick="toggleDiceAdvancedDrawer()" class="w-full py-1.5 px-2.5 rounded-xl bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 text-slate-400 hover:text-white transition flex items-center justify-between text-[11px] font-bold cursor-pointer select-none" title="Formül Girişi, Son Atış Kartı ve Zar Geçmişini Göster / Gizle">
               <div class="flex items-center gap-1.5">
-                <span id="dice-last-icon" class="text-xs">⚡</span>
-                <span id="dice-last-label" class="text-[11px] font-bold text-slate-300 truncate">Henüz zar atılmadı</span>
+                <span>📜</span>
+                <span>Formül, Son Atış & Geçmiş</span>
               </div>
-              <div id="dice-last-breakdown" class="text-[10px] text-slate-400 font-mono mt-0.5 truncate">-</div>
-            </div>
-            <div class="flex items-center gap-2 shrink-0">
-              <span id="dice-last-crit-badge" class="hidden"></span>
-              <div id="dice-last-total" class="text-xl font-black font-mono text-amber-400">-</div>
-            </div>
-          </div>
+              <div class="flex items-center gap-1 text-[10px] text-slate-500 font-mono">
+                <span id="dice-adv-status-text">Göster</span>
+                <span id="dice-adv-icon" class="text-xs transition-transform duration-200">▼</span>
+              </div>
+            </button>
 
-          <!-- Zar Geçmişi (Açılır / Kaydırılabilir) -->
-          <div class="pt-2 border-t border-slate-800 space-y-1.5">
-            <div class="flex items-center justify-between text-[10px] text-slate-400">
-              <span class="font-bold uppercase tracking-wider">Son Atışlar (<span id="dice-history-count">0</span>)</span>
-              <button onclick="clearDiceHistory()" class="hover:text-rose-400 transition cursor-pointer">Temizle</button>
-            </div>
-            <div id="dice-history-list" class="max-h-40 overflow-y-auto space-y-1.5 custom-scroll pr-1 text-xs">
-              <div class="text-[10px] text-slate-400 italic py-2 text-center">Atış geçmişi boş</div>
+            <!-- Gizlenebilir İçerik (Varsayılan Olarak Kapalı) -->
+            <div id="dice-advanced-content" class="hidden mt-2.5 space-y-3">
+              <!-- Hızlı / Özel Formül Girişi -->
+              <div class="space-y-2">
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Formül ile Atış</div>
+                <div class="flex items-center gap-1.5">
+                  <input type="text" id="dice-custom-formula-input" placeholder="Örn: 1d20+5, 8d6, 2d6+3" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 font-mono focus:outline-none focus:border-amber-400" onkeydown="if(event.key==='Enter') rollCustomFormula()">
+                  <button onclick="rollCustomFormula()" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow transition active:scale-95 cursor-pointer">
+                    ⚡ At
+                  </button>
+                </div>
+                <!-- Hızlı Şablon Çipleri -->
+                <div id="dice-custom-templates-container" class="flex flex-wrap items-center gap-1.5 pt-1">
+                  <!-- JS dinamik doldurur -->
+                </div>
+              </div>
+
+              <!-- Canlı Son Zar Sonucu Kartı -->
+              <div id="dice-last-result-card" class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 flex items-center justify-between shadow-inner">
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-1.5">
+                    <span id="dice-last-icon" class="text-xs">⚡</span>
+                    <span id="dice-last-label" class="text-[11px] font-bold text-slate-300 truncate">Henüz zar atılmadı</span>
+                  </div>
+                  <div id="dice-last-breakdown" class="text-[10px] text-slate-400 font-mono mt-0.5 truncate">-</div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <span id="dice-last-crit-badge" class="hidden"></span>
+                  <div id="dice-last-total" class="text-xl font-black font-mono text-amber-400">-</div>
+                </div>
+              </div>
+
+              <!-- Zar Geçmişi (Açılır / Kaydırılabilir) -->
+              <div class="pt-2 border-t border-slate-800 space-y-1.5">
+                <div class="flex items-center justify-between text-[10px] text-slate-400">
+                  <span class="font-bold uppercase tracking-wider">Son Atışlar (<span id="dice-history-count">0</span>)</span>
+                  <button onclick="clearDiceHistory()" class="hover:text-rose-400 transition cursor-pointer">Temizle</button>
+                </div>
+                <div id="dice-history-list" class="max-h-40 overflow-y-auto space-y-1.5 custom-scroll pr-1 text-xs">
+                  <div class="text-[10px] text-slate-400 italic py-2 text-center">Atış geçmişi boş</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
