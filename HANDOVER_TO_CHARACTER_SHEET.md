@@ -650,3 +650,23 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` kopyaları %100 SHA-256 eşitliğinde tutuldu.
      - Sıfır tavla zarı (`🎲` / `U+1F3B2`) kuralı tavizsiz korundu.
 
+---
+
+## 36. SEKME SIRALAMASI: "KARAKTER & BECERİLER" SAĞDAN 3. SIRAYA ALINDI (2026-10-25)
+* **İstek:** Karakter kâğıdında (`character.html` / `index.html`) `[ 👤 Karakter & Beceriler ]` sekmesinin sağdan 3. sıraya taşınması.
+* **Uygulanan Değişiklikler:**
+  1. **Masaüstü ve Mobil Sekme Düzeni Senkronizasyonu:**
+     - Toplam 7 sekme içerisindeki sıralama soldan sağa şu şekilde düzenlendi:
+       1. `[ ⚔️ Savaş Kokpiti ]`
+       2. `[ 🔮 Büyü & Manevra ]`
+       3. `[ 🛡️ Savunma & Bufflar ]`
+       4. `[ 🎒 Çanta & Eşyalar ]`
+       5. `[ 👤 Karakter & Beceriler ]` ➔ **Sağdan 3. Sıra**
+       6. `[ 📚 Master DB ]` ➔ Sağdan 2. Sıra
+       7. `[ ⚡ Zar At ]` ➔ Sağdan 1. Sıra (En Sağ)
+     - Mobil alt navigasyon barı (`mobile-tab-btn-*`) da bu yeni ergonomik sıralamayla birebir eşitlendi.
+  2. **Parite ve Kural Bütünlüğü:**
+     - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` %100 SHA-256 paritesinde tutuldu.
+     - Sıfır tavla zarı (`🎲`) kuralı tavizsiz korundu.
+
+
