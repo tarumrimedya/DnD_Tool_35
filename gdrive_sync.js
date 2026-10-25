@@ -78,13 +78,8 @@ const CloudSync = {
             this.pinRequired = Boolean(status.pinRequired);
             this.authenticated = Boolean(status.authenticated);
 
-            if (this.pinRequired && !this.authenticated) {
-              this.updateStatusUI('locked');
-              this.showVaultLockModal();
-              return;
-            } else {
-              this.hideVaultLockModal();
-            }
+            // Supabase Auth ve Çoklu Kullanıcı mimarisinde legacy Vercel KV PIN kilidi tamamen devre dışıdır.
+            this.hideVaultLockModal();
 
             if (this.configured && this.authenticated) {
               this.updateStatusUI('connected');
@@ -127,23 +122,8 @@ const CloudSync = {
 
   // Show Fullscreen Personal Vault Lock Modal when APP_PIN is required on Vercel
   showVaultLockModal(errorMsg = '') {
-    const modal = document.getElementById('vault-lock-modal');
-    if (!modal) return;
-    modal.classList.remove('hidden');
-    const errEl = document.getElementById('vault-lock-error');
-    if (errEl) {
-      if (errorMsg) {
-        errEl.textContent = errorMsg;
-        errEl.classList.remove('hidden');
-      } else {
-        errEl.classList.add('hidden');
-      }
-    }
-    const input = document.getElementById('vault-lock-pin-input');
-    if (input) {
-      if (this.appPin && !input.value) input.value = this.appPin;
-      setTimeout(() => input.focus(), 100);
-    }
+    // Supabase Auth ve Çoklu Kullanıcı mimarisinde legacy Vercel KV PIN kilidi tamamen devre dışıdır.
+    this.hideVaultLockModal();
   },
 
   hideVaultLockModal() {
@@ -248,10 +228,6 @@ const CloudSync = {
   // Connect / Diagnose button handler
   async connect() {
     await this.init();
-    if (this.pinRequired && !this.authenticated) {
-      this.showVaultLockModal();
-      return;
-    }
     if (this.configured && this.authenticated) {
       await this.pullFromCloud(false);
     } else {
@@ -525,8 +501,7 @@ const CloudSync = {
 
         if (res.status === 401) {
           this.authenticated = false;
-          this.updateStatusUI('locked');
-          this.showVaultLockModal('🔒 Oturum kilidi açık değil. Lütfen APP_PIN girin.');
+          this.updateStatusUI('unconfigured');
           return;
         }
 
@@ -640,8 +615,7 @@ const CloudSync = {
 
         if (res.status === 401) {
           this.authenticated = false;
-          this.updateStatusUI('locked');
-          this.showVaultLockModal('🔒 Kaydetmek için geçerli APP_PIN şifresini girin.');
+          this.updateStatusUI('unconfigured');
           return;
         }
 
