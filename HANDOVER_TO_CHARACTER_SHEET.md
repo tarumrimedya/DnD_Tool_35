@@ -440,3 +440,23 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   6. **Parite ve Kural Bütünlüğü:**
      * `hub.html`, `character.html`, `index.html`, `supabase_auth.js` ve `webapp/` kopyaları %100 SHA-256 eşitliğinde tutuldu.
      * Sıfır tavla zarı (`🎲`) ve Kural #5 (No Dummy Data) kuralları tavizsiz korundu.
+
+---
+
+## 22. SENKRONİZASYON HAPI (SYNC-STATUS-PILL) SUPABASE & YEREL MOD GÖRSEL GERİBİLDİRİMİ (2026-10-25)
+* **İstek:** `#sync-status-pill` butonunun Supabase'e bağlı ve yedekleme yapıyorken **Yeşil** (`🟢 Bulut Senkron`), yerel (çevrimdışı/misafir) modda çalışıyorken ise **Sarı** (`🟡 Yerel Kayıtlı`) olması.
+* **Uygulanan Değişiklikler:**
+  1. **Dinamik Durum Motoru (`supabase_auth.js` & `webapp/`):**
+     * `updateSyncStatusPill(status)` fonksiyonu eklendi:
+       - **Supabase Oturumu Açık:** Yeşil arka plan (`bg-emerald-950/80`), yeşil kenarlık (`border-emerald-600`), parıldayan yeşil nokta (`bg-emerald-400 animate-pulse`) ve `🟢 Bulut Senkron` metni.
+       - **Yerel / Misafir Mod:** Sarı arka plan (`bg-amber-950/60`), sarı kenarlık (`border-amber-600/70`), sabit sarı nokta (`bg-amber-400`) ve `🟡 Yerel Kayıtlı` metni.
+       - **Senkronizasyon Sırasında (Upsert):** Mavi/İndigo arka plan (`bg-indigo-950/80`), mavi ping noktası (`bg-cyan-400 animate-ping`) ve `🔄 Bulut Eşitleniyor...` metni.
+  2. **Eski Vercel KV Çakışmasının Önlenmesi (`gdrive_sync.js` & `webapp/`):**
+     * `gdrive_sync.js:updateStatusUI` metoduna Supabase Auth delegasyonu eklendi. Supabase oturumu varken eski Upstash/KV PIN kontrolünün butonu sarıya düşürmesi kesin olarak engellendi.
+  3. **Etkileşim ve Tıklama Yönetimi (`handlePillClick`):**
+     * `#sync-status-pill` tıklandığında:
+       - Yeşil modda: Supabase bulut senkronizasyonunun aktif olduğunu doğrulayan bilgilendirme bildirimi gösterilir.
+       - Sarı modda: Kullanıcıya Google ile giriş yaparak bulut yedeklemesini açmak isteyip istemediği sorularak `login.html` sayfasına yönlendirme sunulur.
+  4. **Parite ve Kural Bütünlüğü:**
+     * `hub.html`, `character.html`, `index.html`, `supabase_auth.js`, `gdrive_sync.js` ve `webapp/` altındaki kopyaları %100 birebir SHA-256 eşitliğinde tutuldu.
+     * Sıfır tavla zarı (`🎲`) kuralı tavizsiz korundu.

@@ -711,24 +711,33 @@ const CloudSync = {
 
   // Update Top Navbar Pill & Settings Modal Status Badge
   updateStatusUI(status) {
-    const pill = document.getElementById('sync-status-pill');
-    const text = document.getElementById('sync-status-text');
-    if (pill && text) {
-      if (status === 'connected' || status === 'synced') {
-        pill.className = 'cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-xl text-[10px] sm:text-[11px] font-medium bg-emerald-950/80 text-emerald-300 border border-emerald-600 w-full h-9 whitespace-nowrap shadow-sm transition';
-        text.innerHTML = '🟢 Bulut<span class="hidden md:inline"> Senkron (Karakter + DB)</span>';
-      } else if (status === 'syncing') {
-        pill.className = 'cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-xl text-[10px] sm:text-[11px] font-medium bg-indigo-950/80 text-indigo-300 border border-indigo-600 w-full h-9 whitespace-nowrap shadow-sm transition';
-        text.innerHTML = '🔄 <span class="hidden sm:inline">Bulut </span>Eşitleniyor...';
-      } else if (status === 'locked') {
-        pill.className = 'cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-xl text-[10px] sm:text-[11px] font-medium bg-rose-950/80 text-rose-300 border border-rose-600 w-full h-9 whitespace-nowrap shadow-sm transition';
-        text.innerHTML = '🔒 <span class="hidden sm:inline">Özel </span>Kilitli';
-      } else if (status === 'error') {
-        pill.className = 'cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-xl text-[10px] sm:text-[11px] font-medium bg-rose-950/80 text-rose-300 border border-rose-600 w-full h-9 whitespace-nowrap shadow-sm transition';
-        text.innerHTML = '⚠️ <span class="hidden sm:inline">Bulut </span>Hata';
+    if (window.SupabaseAuth && typeof window.SupabaseAuth.updateSyncStatusPill === 'function') {
+      if (window.SupabaseAuth.isLocalMode()) {
+        window.SupabaseAuth.updateSyncStatusPill('local');
       } else {
-        pill.className = 'cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-xl text-[10px] sm:text-[11px] font-medium bg-slate-800 text-slate-300 border border-slate-700 w-full h-9 whitespace-nowrap shadow-sm transition';
-        text.innerHTML = '🟡 <span class="hidden sm:inline">Yerel </span>Kayıtlı';
+        const mapped = status === 'syncing' ? 'syncing' : (status === 'error' ? 'error' : 'cloud_synced');
+        window.SupabaseAuth.updateSyncStatusPill(mapped);
+      }
+    } else {
+      const pill = document.getElementById('sync-status-pill');
+      const text = document.getElementById('sync-status-text');
+      if (pill && text) {
+        if (status === 'connected' || status === 'synced') {
+          pill.className = 'cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-xl text-[10px] sm:text-[11px] font-medium bg-emerald-950/80 text-emerald-300 border border-emerald-600 w-full h-9 whitespace-nowrap shadow-sm transition';
+          text.innerHTML = '🟢 Bulut<span class="hidden md:inline"> Senkron (Karakter + DB)</span>';
+        } else if (status === 'syncing') {
+          pill.className = 'cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-xl text-[10px] sm:text-[11px] font-medium bg-indigo-950/80 text-indigo-300 border border-indigo-600 w-full h-9 whitespace-nowrap shadow-sm transition';
+          text.innerHTML = '🔄 <span class="hidden sm:inline">Bulut </span>Eşitleniyor...';
+        } else if (status === 'locked') {
+          pill.className = 'cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-xl text-[10px] sm:text-[11px] font-medium bg-rose-950/80 text-rose-300 border border-rose-600 w-full h-9 whitespace-nowrap shadow-sm transition';
+          text.innerHTML = '🔒 <span class="hidden sm:inline">Özel </span>Kilitli';
+        } else if (status === 'error') {
+          pill.className = 'cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-xl text-[10px] sm:text-[11px] font-medium bg-rose-950/80 text-rose-300 border border-rose-600 w-full h-9 whitespace-nowrap shadow-sm transition';
+          text.innerHTML = '⚠️ <span class="hidden sm:inline">Bulut </span>Hata';
+        } else {
+          pill.className = 'cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-xl text-[10px] sm:text-[11px] font-medium bg-slate-800 text-slate-300 border border-slate-700 w-full h-9 whitespace-nowrap shadow-sm transition';
+          text.innerHTML = '🟡 <span class="hidden sm:inline">Yerel </span>Kayıtlı';
+        }
       }
     }
 

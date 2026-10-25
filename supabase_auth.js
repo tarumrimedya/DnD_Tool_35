@@ -238,6 +238,89 @@ const SupabaseAuth = {
         </button>
       </div>
     `;
+
+    // Senkronizasyon hapını (sync-status-pill) kullanıcının auth moduna göre otomatik güncelle
+    this.updateSyncStatusPill(isLocal ? 'local' : 'cloud_synced');
+  },
+
+  /**
+   * Üst barda yer alan senkronizasyon hapının (sync-status-pill) görsel durumunu günceller
+   * - Supabase bağlı ve yedekliyorsa: Yeşil (🟢 Bulut Senkron)
+   * - Yerel modda ise: Sarı (🟡 Yerel Kayıtlı)
+   * - Senkronize ediliyorsa: Mavi / İndigo (🔄 Eşitleniyor...)
+   */
+  updateSyncStatusPill(status = 'local') {
+    const pill = document.getElementById('sync-status-pill');
+    if (!pill) return;
+
+    const isHub = !!document.getElementById('hub-cards-view');
+
+    if (status === 'cloud_synced' || status === 'connected' || status === 'synced') {
+      if (isHub) {
+        pill.className = 'cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-xl text-[10px] sm:text-[11px] font-medium bg-emerald-950/80 text-emerald-300 border border-emerald-600 w-full h-9 whitespace-nowrap shadow-sm transition';
+      } else {
+        pill.className = 'cursor-pointer flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-[10px] font-medium bg-emerald-950/80 text-emerald-300 border border-emerald-600 whitespace-nowrap shadow-sm transition truncate';
+      }
+      pill.title = 'Supabase Bulut Aktif & Otomatik Yedekleniyor (Ayrıntı için tıklayın)';
+      pill.innerHTML = `
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+        <span id="sync-status-text">🟢 <span class="hidden sm:inline">Bulut </span>Senkron</span>
+      `;
+    } else if (status === 'syncing') {
+      if (isHub) {
+        pill.className = 'cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-xl text-[10px] sm:text-[11px] font-medium bg-indigo-950/80 text-indigo-300 border border-indigo-600 w-full h-9 whitespace-nowrap shadow-sm transition';
+      } else {
+        pill.className = 'cursor-pointer flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-[10px] font-medium bg-indigo-950/80 text-indigo-300 border border-indigo-600 whitespace-nowrap shadow-sm transition truncate';
+      }
+      pill.title = 'Buluta veri eşitleniyor...';
+      pill.innerHTML = `
+        <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping shrink-0"></span>
+        <span id="sync-status-text">🔄 <span class="hidden sm:inline">Bulut </span>Eşitleniyor...</span>
+      `;
+    } else if (status === 'local' || status === 'offline' || status === 'unconfigured') {
+      if (isHub) {
+        pill.className = 'cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-xl text-[10px] sm:text-[11px] font-medium bg-amber-950/60 text-amber-300 border border-amber-600/70 w-full h-9 whitespace-nowrap shadow-sm transition';
+      } else {
+        pill.className = 'cursor-pointer flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-[10px] font-medium bg-amber-950/60 text-amber-300 border border-amber-600/70 whitespace-nowrap shadow-sm transition truncate';
+      }
+      pill.title = 'Yerel Mod (Veriler Tarayıcınızda Saklanır - Buluta Bağlanmak İçin Tıklayın)';
+      pill.innerHTML = `
+        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0"></span>
+        <span id="sync-status-text">🟡 <span class="hidden sm:inline">Yerel </span>Kayıtlı</span>
+      `;
+    } else if (status === 'error') {
+      if (isHub) {
+        pill.className = 'cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-xl text-[10px] sm:text-[11px] font-medium bg-rose-950/80 text-rose-300 border border-rose-600 w-full h-9 whitespace-nowrap shadow-sm transition';
+      } else {
+        pill.className = 'cursor-pointer flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-[10px] font-medium bg-rose-950/80 text-rose-300 border border-rose-600 whitespace-nowrap shadow-sm transition truncate';
+      }
+      pill.title = 'Bulut Senkronizasyon Hatası (Tıklayın)';
+      pill.innerHTML = `
+        <span class="w-1.5 h-1.5 rounded-full bg-rose-400 shrink-0"></span>
+        <span id="sync-status-text">⚠️ <span class="hidden sm:inline">Bulut </span>Hata</span>
+      `;
+    }
+  },
+
+  /**
+   * Senkronizasyon hapına tıklandığında kullanıcıyı bilgilendirir veya girişe yönlendirir
+   */
+  handlePillClick() {
+    if (this.isLocalMode()) {
+      if (confirm('🟡 Şu an Yerel Moddasınız. Verileriniz yalnızca bu tarayıcıda saklanır.\n\nKarakter ve seferlerinizin Supabase bulutunda otomatik yedeklenmesi için Google hesabınızla giriş yapmak ister misiniz?')) {
+        window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+      }
+    } else {
+      if (typeof window.showHubDiceToast === 'function') {
+        window.showHubDiceToast({
+          title: 'Bulut Durumu',
+          text: '🟢 Supabase bulut bağlantısı aktif! Tüm karakter ve kampanya değişiklikleriniz gerçek zamanlı olarak yedeklenmektedir.',
+          color: 'emerald'
+        });
+      } else {
+        alert('🟢 Supabase Bulut Bağlantısı Aktif!\n\nVerileriniz Google hesabınız altında anlık ve güvenli olarak yedeklenmektedir.');
+      }
+    }
   },
 
   // =========================================================================
@@ -491,6 +574,8 @@ const SupabaseAuth = {
       updated_at: new Date().toISOString()
     };
 
+    this.updateSyncStatusPill('syncing');
+
     const { data, error } = await client
       .from('characters')
       .upsert(row, { onConflict: 'id' })
@@ -499,8 +584,10 @@ const SupabaseAuth = {
 
     if (error) {
       console.warn('upsertUserCharacter warning:', error);
+      this.updateSyncStatusPill('error');
       return null;
     }
+    this.updateSyncStatusPill('cloud_synced');
     return data;
   },
 
