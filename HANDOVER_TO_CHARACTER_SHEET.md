@@ -1858,3 +1858,21 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   3. **Parite ve Kural Standartları:**
      - 4 hedef dosya (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi sağlandı.
      - Standart tavla zarı emojisi yasağı (`🎲` / `U+1F3B2`) tavizsiz korundu.
+
+
+---
+
+## 65. HUB HIZLI NOT DEFTERİ: BAŞLIK, GÖVDE VE TYPEAHEAD ENTEGRASYONU (2026-10-26)
+* **İstek:**
+  - Kampanya Hub'ı sağ panelindeki hızlı not defteri (`#hub-notes-write-view`) alanına da modalda uygulanan modern Notion/Apple Notes tarzı Başlık + Gövde ayrımı ve `#` typeahead otomatik etiket popover'ının entegre edilmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Bitişik Başlık & Gövde Kartı (`hub.html`):**
+     - Tek textarea yerine `#hub-quick-note-title` (Başlık) ve `#hub-quick-note-input` (Gövde) barındıran, `focus-within:border-indigo-400` çerçeve aydınlatmalı modern doküman kartı oluşturuldu.
+     - Başlıkta Enter'a basıldığında gövde alanına odaklanma (`handleQuickTitleKeydown`) sağlandı.
+  2. **Akıllı `#` Etiket Tamamlama (Typeahead Popover):**
+     - Hem başlık hem gövde alanlarında `#` yazıldığında klavye destekli etiket popover'ı açılmakta ve seçilen etiketi doğrudan imlecin olduğu alana yerleştirmektedir.
+  3. **Hızlı Not Kaydı (`addQuickNote`):**
+     - Başlık ve gövdeyi bağımsız okuyup `title` ve `text` olarak kaydeden, etiketleri her iki alandan birden toplayan ve kayıttan sonra her iki alanı da temizleyen motor mantığı kuruldu.
+  4. **Parite ve Güvenlik:**
+     - `hub.html` ve `hub_notes.js` kök dosyaları `webapp/` altındaki kopyalarıyla %100 SHA-256 eşitliğinde güncellendi.
+     - Tavla zarı emojisi (`🎲`) kesinlikle kullanılmadı.

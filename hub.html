@@ -219,8 +219,21 @@
               <div id="hub-notes-pinned-chips" class="flex flex-wrap gap-1 max-h-12 overflow-y-auto"></div>
             </div>
 
-            <!-- Aşağı Kadar Genişleyen Textarea (0.66 oranına göre 105px min-h) -->
-            <textarea id="hub-quick-note-input" placeholder="Notunuzu buraya yazın...&#10;&#10;İpuçları:&#10;• #gorev, #npc, #yer, #loot etiketleri kullanabilirsiniz&#10;• - [ ] ile görev kutusu ekleyebilirsiniz&#10;• Kaydetmek için Ctrl+Enter yapın" class="w-full flex-1 min-h-[105px] bg-slate-900/90 border border-slate-700 rounded-xl p-2.5 text-xs text-white placeholder-slate-500 font-sans focus:outline-none focus:border-indigo-400 resize-none leading-relaxed shadow-inner" oninput="HubNotes.handleQuickInput(event)" onkeydown="HubNotes.handleQuickKeydown(event)"></textarea>
+            <!-- Bitişik Başlık + Gövde Not Yazma Alanı (Notion / Apple Notes tarzı) -->
+            <div class="w-full flex-1 min-h-[120px] bg-slate-900/90 border border-slate-700 rounded-xl p-2.5 flex flex-col space-y-2 focus-within:border-indigo-400 focus-within:ring-1 focus-within:ring-indigo-400/30 transition shadow-inner">
+              <!-- Başlık Alanı (Büyük, Kalın & Ayrılmış) -->
+              <input type="text" id="hub-quick-note-title" placeholder="Başlık (İsteğe bağlı)..."
+                class="w-full bg-transparent text-sm font-bold text-white placeholder-slate-500 focus:outline-none border-b border-slate-700/60 pb-1.5 font-sans tracking-wide shrink-0"
+                oninput="HubNotes.handleQuickInput(event)"
+                onkeydown="HubNotes.handleQuickTitleKeydown(event)">
+
+              <!-- Gövde Alanı -->
+              <textarea id="hub-quick-note-input"
+                placeholder="Notunuzu buraya yazın...&#10;&#10;İpuçları:&#10;• # yazarak etiketleri listeleyebilirsiniz&#10;• - [ ] ile görev kutusu ekleyebilirsiniz&#10;• Kaydetmek için Ctrl+Enter yapın"
+                class="w-full flex-1 bg-transparent text-xs text-white placeholder-slate-500 font-sans focus:outline-none resize-none leading-relaxed custom-scrollbar"
+                oninput="HubNotes.handleQuickInput(event)"
+                onkeydown="HubNotes.handleQuickKeydown(event)"></textarea>
+            </div>
 
             <!-- Hızlı Etiket Araç Çubuğu ve Kaydet Butonu -->
             <div class="shrink-0 space-y-1.5 pt-0.5">

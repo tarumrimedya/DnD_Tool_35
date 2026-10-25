@@ -460,10 +460,14 @@
    * Quick Add Note from Textarea
    */
   function addQuickNote() {
+    const titleInput = document.getElementById('hub-quick-note-title');
     const input = document.getElementById('hub-quick-note-input');
     if (!input) return;
-    const val = input.value.trim();
-    if (!val) return;
+
+    let title = (titleInput ? titleInput.value : '').trim();
+    let body = input.value.trim();
+
+    if (!title && !body) return;
 
     const target = getActiveNotesTarget();
     if (!target) {
@@ -471,14 +475,15 @@
       return;
     }
 
-    const lines = val.split('\n');
-    let title = '';
-    let body = val;
-
-    if (lines.length > 1 && lines[0].trim().length > 0 && lines[0].trim().length <= 60) {
-      title = lines[0].trim();
-      body = lines.slice(1).join('\n').trim();
+    if (!title && body) {
+      const lines = body.split('\n');
+      if (lines.length > 1 && lines[0].trim().length > 0 && lines[0].trim().length <= 60) {
+        title = lines[0].trim();
+        body = lines.slice(1).join('\n').trim();
+      }
     }
+
+    const fullContent = (title ? title + ' ' : '') + body;
 
     const newNote = {
       id: 'note_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
@@ -488,13 +493,15 @@
       completed: false,
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      tags: extractTags(val)
+      tags: extractTags(fullContent)
     };
 
     target.notesList.unshift(newNote);
     saveNotesChanges(target);
+    if (titleInput) titleInput.value = '';
     input.value = '';
-    
+    hideAutocompletePopover();
+
     renderInlineNotes();
     renderFullNotesModalList();
 
@@ -503,15 +510,19 @@
   }
 
   function insertTagIntoQuickInput(tag) {
-    const input = document.getElementById('hub-quick-note-input');
-    if (!input) return;
+    const titleInput = document.getElementById('hub-quick-note-title');
+    const bodyInput = document.getElementById('hub-quick-note-input');
+    const targetEl = (document.activeElement === titleInput) ? titleInput : (bodyInput || titleInput);
+    if (!targetEl) return;
 
-    const pos = input.selectionStart || input.value.length;
-    const textBefore = input.value.substring(0, pos);
-    const textAfter = input.value.substring(pos);
+    const pos = (targetEl.selectionStart !== null && targetEl.selectionStart !== undefined) ? targetEl.selectionStart : targetEl.value.length;
+    const textBefore = targetEl.value.substring(0, pos);
+    const textAfter = targetEl.value.substring(pos);
 
-    input.value = textBefore + (textBefore.endsWith(' ') || textBefore.length === 0 ? '' : ' ') + tag + ' ' + textAfter;
-    input.focus();
+    targetEl.value = textBefore + (textBefore.endsWith(' ') || textBefore.length === 0 ? '' : ' ') + tag + ' ' + textAfter;
+    targetEl.focus();
+    const newPos = pos + tag.length + (textBefore.endsWith(' ') || textBefore.length === 0 ? 0 : 1) + 1;
+    targetEl.selectionStart = targetEl.selectionEnd = newPos;
   }
 
   /**
@@ -2106,9 +2117,31 @@ KURALLAR:
   }
 
   function handleQuickInput(event) {
-    const input = document.getElementById('hub-quick-note-input');
-    if (input) {
-      checkAutocomplete(input);
+    const el = event && event.target ? event.target : (document.activeElement || document.getElementById('hub-quick-note-input'));
+    if (el) {
+      checkAutocomplete(el);
+    }
+  }
+
+  function handleQuickTitleKeydown(e) {
+    const titleInput = document.getElementById('hub-quick-note-title');
+    if (handleAutocompleteKeydown(titleInput, e)) {
+      return;
+    }
+
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const input = document.getElementById('hub-quick-note-input');
+      if (input) {
+        input.focus();
+        input.selectionStart = input.selectionEnd = 0;
+      }
+      return;
+    }
+
+    if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'Enter')) {
+      e.preventDefault();
+      addQuickNote();
     }
   }
 
@@ -2118,7 +2151,7 @@ KURALLAR:
       return;
     }
 
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'Enter')) {
       e.preventDefault();
       addQuickNote();
     }
@@ -2307,6 +2340,7 @@ KURALLAR:
     handleEditorInput,
     handleEditorKeydown,
     handleTitleKeydown,
+    handleQuickTitleKeydown,
     handleQuickInput,
     handleQuickKeydown,
     saveModalNote,
