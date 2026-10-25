@@ -459,10 +459,35 @@
                     <span class="text-amber-400" id="weapon-sets-header-icon">⚔️</span>
                     <span id="weapon-sets-header-title" class="text-xs font-black uppercase text-slate-200 tracking-wider">HIZLI SİLAH SETLERİ (YAKIN)</span>
                   </div>
-                  <button type="button" onclick="toggleWeaponSetsEditor()" id="btn-toggle-weapon-sets-edit" class="text-[10px] font-bold text-slate-400 hover:text-amber-300 bg-slate-900/90 hover:bg-slate-800 px-2 py-0.5 rounded border border-slate-700 transition flex items-center gap-1 cursor-pointer">
-                    <span>⚙️</span>
-                    <span>Setleri Düzenle</span>
-                  </button>
+                  <div class="flex items-center gap-1.5">
+                    <button type="button" onclick="toggleSrdSpotlight()" id="btn-toggle-srd-spotlight" class="text-[10px] font-bold text-amber-300 hover:text-white bg-amber-950/50 hover:bg-amber-800/70 px-2 py-0.5 rounded border border-amber-500/40 transition flex items-center gap-1 cursor-pointer">
+                      <span>⚡</span>
+                      <span>SRD Silah Ekle</span>
+                    </button>
+                    <button type="button" onclick="toggleWeaponSetsEditor()" id="btn-toggle-weapon-sets-edit" class="text-[10px] font-bold text-slate-400 hover:text-amber-300 bg-slate-900/90 hover:bg-slate-800 px-2 py-0.5 rounded border border-slate-700 transition flex items-center gap-1 cursor-pointer">
+                      <span>⚙️</span>
+                      <span>Setleri Düzenle</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Spotlight Typeahead Hızlı Silah / Kalkan Ekleme Çubuğu (D&D 3.5e RAW Ghost Core) -->
+                <div id="srd-spotlight-container" class="relative hidden bg-slate-950/90 border border-amber-500/40 rounded-xl p-2.5 space-y-2 shadow-lg">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-1.5 text-[10px] font-black text-amber-400 uppercase tracking-wide">
+                      <span>⚡</span>
+                      <span>3.5E RAW SRD CORE SPOTLIGHT KATALOĞU</span>
+                    </div>
+                    <button type="button" onclick="toggleSrdSpotlight(false)" class="text-slate-400 hover:text-white text-xs font-bold p-0.5 cursor-pointer">✕</button>
+                  </div>
+                  <div class="relative flex items-center">
+                    <span class="absolute left-2.5 text-xs text-amber-400 pointer-events-none">🔍</span>
+                    <input type="text" id="srd-spotlight-input" oninput="onSrdSpotlightInput(this.value)" placeholder="Silah veya kalkan ara (örn: Longsword, Spiked Chain, Heavy Shield, Composite Longbow)..." class="w-full bg-slate-900 border border-slate-700 focus:border-amber-400 rounded-lg pl-8 pr-8 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none transition">
+                    <button type="button" onclick="clearSrdSpotlightInput()" id="btn-clear-srd-spotlight" class="absolute right-2 text-slate-400 hover:text-white text-xs font-bold p-1 cursor-pointer hidden">✕</button>
+                  </div>
+                  <div id="srd-spotlight-results" class="max-h-60 overflow-y-auto divide-y divide-slate-800 bg-slate-900/95 border border-slate-800 rounded-lg p-1 space-y-1">
+                    <!-- Populated dynamically via onSrdSpotlightInput -->
+                  </div>
                 </div>
 
                 <!-- 2 Big Touch Weapon Set Cards (Stacked Alt Alta) -->
@@ -498,6 +523,26 @@
                           <option value="2-Hand">2-El</option>
                         </select>
                       </div>
+
+                      <!-- Set 1 Enhancement Stepper & Elemental Chips -->
+                      <div class="bg-slate-900/90 border border-slate-800 rounded p-1.5 space-y-1.5 mt-1">
+                        <div class="flex items-center justify-between">
+                          <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                            <span>✨</span> Büyüleme (+1..+5)
+                          </span>
+                          <div class="flex items-center gap-1">
+                            <button type="button" onclick="stepWeaponEnhancement(1, -1)" class="w-5 h-5 flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs font-bold transition cursor-pointer">-</button>
+                            <span id="set1-enhancement-badge" class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono text-[10px] font-black border border-amber-500/40 min-w-[28px] text-center">+0</span>
+                            <button type="button" onclick="stepWeaponEnhancement(1, 1)" class="w-5 h-5 flex items-center justify-center bg-amber-600 hover:bg-amber-500 text-white rounded text-xs font-bold transition cursor-pointer">+</button>
+                          </div>
+                        </div>
+                        <div class="pt-1 border-t border-slate-800/80">
+                          <div class="text-[8px] uppercase font-bold text-slate-500 mb-1">Element & Nitelik Çipleri</div>
+                          <div class="flex flex-wrap gap-1" id="set1-elemental-chips-container">
+                            <!-- Populated dynamically -->
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
                     <!-- Set 2 Config -->
@@ -513,6 +558,26 @@
                       </div>
                       <div id="set2-weapon-editor-hint" class="text-[9px] text-slate-400 italic pt-1">
                         * Bu donanım, çift silahla dövüşte (TWF) veya kalkan savunmasında ikinci el olarak kuşanılır.
+                      </div>
+
+                      <!-- Set 2 Enhancement Stepper & Elemental Chips -->
+                      <div class="bg-slate-900/90 border border-slate-800 rounded p-1.5 space-y-1.5 mt-1">
+                        <div class="flex items-center justify-between">
+                          <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                            <span>✨</span> Büyüleme (+1..+5)
+                          </span>
+                          <div class="flex items-center gap-1">
+                            <button type="button" onclick="stepWeaponEnhancement(2, -1)" class="w-5 h-5 flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs font-bold transition cursor-pointer">-</button>
+                            <span id="set2-enhancement-badge" class="px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 font-mono text-[10px] font-black border border-sky-500/40 min-w-[28px] text-center">+0</span>
+                            <button type="button" onclick="stepWeaponEnhancement(2, 1)" class="w-5 h-5 flex items-center justify-center bg-sky-600 hover:bg-sky-500 text-white rounded text-xs font-bold transition cursor-pointer">+</button>
+                          </div>
+                        </div>
+                        <div class="pt-1 border-t border-slate-800/80">
+                          <div class="text-[8px] uppercase font-bold text-slate-500 mb-1">Element & Nitelik Çipleri</div>
+                          <div class="flex flex-wrap gap-1" id="set2-elemental-chips-container">
+                            <!-- Populated dynamically -->
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -15315,6 +15380,12 @@
         if (found) return enrichWeaponStats({ ...found }, wepName);
       }
 
+      // 4.5 Check window.BUNDLED_SRD_CORE_CATALOG (Ghost Core SRD)
+      if (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
+        found = window.BUNDLED_SRD_CORE_CATALOG.find(item => item && item.name && item.name.toLowerCase().trim() === wepName.toLowerCase().trim());
+        if (found) return enrichWeaponStats({ ...found }, wepName);
+      }
+
       // 5. Parametric D&D 3.5e standard weapon fallback
       return enrichWeaponStats({}, wepName);
     }
@@ -15835,6 +15906,9 @@
           if (activeDiceMods.length > 0) {
             extraDiceStr = ' + ' + activeDiceMods.map(m => m.dice).join(' + ');
           }
+          if (Array.isArray(wep.elementalMods) && wep.elementalMods.length > 0) {
+            extraDiceStr += ' + ' + wep.elementalMods.map(em => `${em.dice} (${em.name || em.type})`).join(' + ');
+          }
 
           const flatDmg = evalRes.netFlatDamage;
           let basePart = `${evalRes.baseDice}${flatDmg >= 0 ? '+' : ''}${flatDmg}`;
@@ -15850,7 +15924,7 @@
           else if (dmgType === 'Slashing') dmgType = 'Kesici';
           else if (dmgType === 'Bludgeoning') dmgType = 'Ezici';
 
-          const hasExtraMods = (paVal > 0 && !isOffHand) || activeDiceMods.length > 0 || nonChainMods.some(m => m.bonusDmg);
+          const hasExtraMods = (paVal > 0 && !isOffHand) || activeDiceMods.length > 0 || (Array.isArray(wep.elementalMods) && wep.elementalMods.length > 0) || nonChainMods.some(m => m.bonusDmg);
 
           return {
             dmgStr,
@@ -15859,7 +15933,10 @@
             finesseMod: evalRes.attackStatMod,
             isFinesse: evalRes.attackStatName && evalRes.attackStatName.includes('Weapon Finesse'),
             isWeapon: true,
-            hasExtraMods
+            hasExtraMods,
+            elementalMods: wep.elementalMods || [],
+            keen: !!wep.keen,
+            enhancementBonus: wep.attBonus || 0
           };
         } catch (e) {
           console.warn('getWeaponCombatDisplayStats error:', e);
@@ -15907,6 +15984,8 @@
               <span class="text-xs ${is1 ? 'text-amber-400' : 'text-slate-500'}">⚔️</span>
               <span class="text-xs font-black truncate ${is1 ? 'text-white' : 'text-slate-300'}">${s1.name || 'Ana El'}</span>
               ${is1 ? `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-amber-500/30 text-amber-300 border border-amber-500/50">AKTİF</span>` : ''}
+              ${s1MainStats?.enhancementBonus ? `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-amber-500/30 text-amber-300 border border-amber-500/50">+${s1MainStats.enhancementBonus} Büyülü</span>` : ''}
+              ${s1MainStats?.keen ? `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-red-950/60 text-red-300 border border-red-500/50">🩸 Keen</span>` : ''}
               ${isTwoHandLocked ? `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-amber-900/40 text-amber-400 border border-amber-700/50">2-El Silahı</span>` : ''}
             </div>
             <!-- Donanım ve Tutuş -->
@@ -15984,6 +16063,8 @@
               <span class="text-xs ${is2 ? 'text-sky-400' : 'text-slate-500'}">${isCard2Shield ? '🛡️' : '🗡️'}</span>
               <span class="text-xs font-black truncate ${is2 ? 'text-white' : 'text-slate-300'}">${s2.name || 'İkinci El'}</span>
               ${is2 ? `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-sky-500/30 text-sky-300 border border-sky-500/50">${isDual ? (isCard2Shield ? 'AKTİF (Kalkan)' : 'AKTİF (TWF)') : 'AKTİF'}</span>` : ''}
+              ${s2OffStats?.enhancementBonus ? `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-sky-500/30 text-sky-300 border border-sky-500/50">+${s2OffStats.enhancementBonus} Büyülü</span>` : ''}
+              ${s2OffStats?.keen ? `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-red-950/60 text-red-300 border border-red-500/50">🩸 Keen</span>` : ''}
             </div>
             <!-- Donanım ve Tür -->
             <div class="text-[10px] text-slate-400 truncate mt-0.5 font-mono">
@@ -16488,6 +16569,10 @@
           }
         }
       }
+
+      updateWeaponEditorEnhancementBadges();
+      renderWeaponSetModifierChips(1);
+      renderWeaponSetModifierChips(2);
     }
 
     function saveWeaponSetConfig(setNum) {
@@ -16568,6 +16653,400 @@
       if (typeof populateRangedWeaponAndAmmoUI === 'function') populateRangedWeaponAndAmmoUI();
       if (typeof renderBodySlotsSilhouette === 'function') renderBodySlotsSilhouette();
       if (typeof renderGearPoolTable === 'function') renderGearPoolTable();
+      updateWeaponEditorEnhancementBadges();
+      renderWeaponSetModifierChips(1);
+      renderWeaponSetModifierChips(2);
+    }
+
+    // =========================================================================
+    // 📚 SPOTLIGHT TYPEAHEAD & PROGRESSIVE DISCLOSURE WEAPON SYSTEM (FAZ 4)
+    // =========================================================================
+    const SRD_WEAPON_PROPERTIES = [
+      { id: 'flaming', name: 'Flaming', dice: '1d6', type: 'Ateş', icon: '🔥', activeClass: 'bg-rose-600/30 border-rose-500 text-rose-300 ring-1 ring-rose-500/50' },
+      { id: 'frost', name: 'Frost', dice: '1d6', type: 'Soğuk', icon: '❄️', activeClass: 'bg-sky-600/30 border-sky-500 text-sky-300 ring-1 ring-sky-500/50' },
+      { id: 'shock', name: 'Shock', dice: '1d6', type: 'Şok', icon: '⚡', activeClass: 'bg-amber-600/30 border-amber-500 text-amber-300 ring-1 ring-amber-500/50' },
+      { id: 'holy', name: 'Holy', dice: '2d6', type: 'Kutsal', icon: '✨', activeClass: 'bg-yellow-600/30 border-yellow-500 text-yellow-300 ring-1 ring-yellow-500/50' },
+      { id: 'unholy', name: 'Unholy', dice: '2d6', type: 'Karanlık', icon: '💀', activeClass: 'bg-purple-600/30 border-purple-500 text-purple-300 ring-1 ring-purple-500/50' },
+      { id: 'keen', name: 'Keen', dice: '', type: 'Kritik 2x', icon: '🩸', activeClass: 'bg-red-600/40 border-red-500 text-red-200 ring-1 ring-red-500/60', isKeen: true }
+    ];
+
+    function toggleSrdSpotlight(forceState = null) {
+      const container = document.getElementById('srd-spotlight-container');
+      const input = document.getElementById('srd-spotlight-input');
+      if (!container) return;
+      const isHidden = container.classList.contains('hidden');
+      const open = forceState !== null ? forceState : isHidden;
+      if (open) {
+        container.classList.remove('hidden');
+        if (input) {
+          input.focus();
+          onSrdSpotlightInput(input.value || '');
+        }
+      } else {
+        container.classList.add('hidden');
+      }
+    }
+
+    function clearSrdSpotlightInput() {
+      const input = document.getElementById('srd-spotlight-input');
+      if (input) input.value = '';
+      const clearBtn = document.getElementById('btn-clear-srd-spotlight');
+      if (clearBtn) clearBtn.classList.add('hidden');
+      onSrdSpotlightInput('');
+    }
+
+    function onSrdSpotlightInput(query) {
+      const resultsEl = document.getElementById('srd-spotlight-results');
+      const clearBtn = document.getElementById('btn-clear-srd-spotlight');
+      if (!resultsEl) return;
+
+      const q = (query || '').toLowerCase().trim();
+      if (clearBtn) {
+        if (q.length > 0) clearBtn.classList.remove('hidden');
+        else clearBtn.classList.add('hidden');
+      }
+
+      const catalog = (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG))
+        ? window.BUNDLED_SRD_CORE_CATALOG
+        : [];
+
+      // Filter catalog for weapons and shields (prioritizing weapons)
+      let matches = catalog.filter(item => {
+        if (!item || !item.name) return false;
+        const type = (item.type || '').toLowerCase();
+        const cat = (item.category || '').toLowerCase();
+        if (type !== 'weapon' && cat !== 'shield' && type !== 'armor') return false;
+        if (!q) {
+          // Default popular items when search is empty
+          const pop = ['longsword', 'greatsword', 'dagger', 'shortbow', 'composite longbow', 'light crossbow', 'spiked chain', 'heavy wooden shield', 'darkwood buckler', 'rapier'];
+          return pop.some(p => item.name.toLowerCase().includes(p));
+        }
+        const nameMatch = item.name.toLowerCase().includes(q);
+        const tagMatch = Array.isArray(item.tags) && item.tags.some(t => t.toLowerCase().includes(q));
+        const catMatch = cat.includes(q) || (item.weaponType && item.weaponType.toLowerCase().includes(q));
+        return nameMatch || tagMatch || catMatch;
+      });
+
+      if (matches.length === 0) {
+        resultsEl.innerHTML = `
+          <div class="p-3 text-center text-xs text-slate-500 italic">
+            "${query}" ile eşleşen D&D 3.5e RAW SRD silahı veya kalkanı bulunamadı.
+          </div>
+        `;
+        return;
+      }
+
+      // Limit results to 15 for lightning fast DOM performance
+      const displayMatches = matches.slice(0, 15);
+
+      resultsEl.innerHTML = displayMatches.map(item => {
+        const isShield = (item.category || '').toLowerCase() === 'shield';
+        const isTwoHand = (item.weaponType || '').includes('Two-Handed') || (typeof RuleEngine !== 'undefined' && RuleEngine.isTwoHandedWeapon(item));
+        const diceStr = item.dice || item.damage || (isShield ? '1d3/1d4' : '1d8');
+        const critStr = item.crit || `${item.critMin || 20}/x${item.critMult || 2}`;
+        const dmgType = item.dmgType || (isShield ? 'Bludgeoning' : 'Physical');
+        const badgeColor = isShield ? 'border-sky-500/40 text-sky-300 bg-sky-950/40' : (isTwoHand ? 'border-amber-500/40 text-amber-300 bg-amber-950/40' : 'border-emerald-500/40 text-emerald-300 bg-emerald-950/40');
+        const escapedName = (item.name || '').replace(/'/g, "\\'");
+
+        return `
+          <div class="flex items-center justify-between p-2 hover:bg-slate-800/80 rounded transition gap-2">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-xs">${isShield ? '🛡️' : (isTwoHand ? '⚔️' : '🗡️')}</span>
+                <span class="text-xs font-bold text-white truncate">${item.name}</span>
+                <span class="text-[9px] font-semibold px-1.5 py-0.2 rounded border ${badgeColor}">
+                  ${item.weaponType || item.category || 'Silah'}
+                </span>
+              </div>
+              <div class="text-[10px] text-slate-400 font-mono mt-0.5 flex items-center gap-2">
+                <span>Zar: <strong class="text-amber-300 font-bold">${diceStr}</strong></span>
+                <span>Kritik: <strong class="text-slate-300">${critStr}</strong></span>
+                <span>Tür: <strong class="text-slate-300">${dmgType}</strong></span>
+                ${item.weight ? `<span class="text-slate-500">(${item.weight} lbs)</span>` : ''}
+              </div>
+            </div>
+            <div class="shrink-0">
+              <button type="button" onclick="addSrdCatalogItemToCharacter('${escapedName}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-extrabold text-[11px] rounded-lg shadow transition flex items-center gap-1 cursor-pointer">
+                <span>➕</span>
+                <span>Karaktere Ekle</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function addSrdCatalogItemToCharacter(itemName) {
+      if (!character) return;
+      const catalog = (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG))
+        ? window.BUNDLED_SRD_CORE_CATALOG
+        : [];
+
+      const rawItem = catalog.find(i => i && i.name && i.name.toLowerCase().trim() === itemName.toLowerCase().trim());
+      if (!rawItem) {
+        console.warn('SRD Catalog item not found:', itemName);
+        return;
+      }
+
+      const item = JSON.parse(JSON.stringify(rawItem));
+      const cat = mapEntryToGearCategory(item);
+      const isBeltItem = (item.slot || '').toLowerCase().includes('belt') || cat === 'Consumable';
+      const newId = Date.now();
+
+      // 1. Add to character.gearPool
+      if (!character.gearPool) character.gearPool = [];
+      const alreadyInPool = character.gearPool.find(g => g && g.name && g.name.toLowerCase().trim() === item.name.toLowerCase().trim());
+      if (!alreadyInPool) {
+        character.gearPool.push({
+          id: newId,
+          name: item.name,
+          masterDbName: item.name,
+          category: cat,
+          slot: item.slot && item.slot !== 'None' ? item.slot : (cat === 'Shield' ? 'Off-Hand' : cat),
+          qty: 1,
+          weight: Number(item.weight) || 0,
+          cost: Number(item.cost) || 0,
+          desc: item.benefit || item.description || '',
+          isBelt: isBeltItem,
+          isEquipped: false
+        });
+      }
+
+      // 2. If Weapon, add to character.weapons
+      if (cat === 'Weapon') {
+        if (!character.weapons) character.weapons = [];
+        let existingWep = character.weapons.find(w => w && w.name && w.name.toLowerCase().trim() === item.name.toLowerCase().trim());
+        const isTwoHand = (item.weaponType || '').includes('Two-Handed') || (typeof RuleEngine !== 'undefined' && RuleEngine.isTwoHandedWeapon(item));
+
+        if (!existingWep) {
+          existingWep = {
+            name: item.name,
+            grip: isTwoHand ? '2-Hand' : (item.slot === 'Main Hand' ? '1-Hand' : '1-Hand'),
+            dice: item.dice || item.extraDmg || '1d8',
+            critMin: Number(item.critMin) || 20,
+            rawCritMin: Number(item.critMin) || 20,
+            critMult: Number(item.critMult) || 2,
+            attBonus: Number(item.attBonus) || 0,
+            dmgBonus: Number(item.dmgBonus) || 0,
+            dmgType: item.dmgType || 'Slashing',
+            bonusType: item.bonusType || 'Enhancement',
+            tags: item.tags || [],
+            elementalMods: [],
+            keen: false
+          };
+          character.weapons.push(existingWep);
+        }
+
+        // Auto equip if character active weapon is empty or Unarmed Strike
+        ensureWeaponSetsData();
+        const curActive = character.activeWeapon;
+        if (!curActive || curActive === 'Unarmed Strike' || curActive === 'Yok' || curActive === 'None') {
+          character.activeWeapon = item.name;
+          if (character.tactical?.weaponSets?.set1) {
+            character.tactical.weaponSets.set1.mainWeapon = item.name;
+            character.tactical.weaponSets.set1.grip = isTwoHand ? '2-Hand' : '1-Hand';
+          }
+        }
+      }
+
+      // 3. If Shield, make sure it's selected in set2 if set2 is empty
+      if (cat === 'Shield') {
+        ensureWeaponSetsData();
+        if (!character.tactical?.weaponSets?.set2?.mainWeapon || character.tactical?.weaponSets?.set2?.mainWeapon === 'Yok') {
+          character.tactical.weaponSets.set2.mainWeapon = item.name;
+        }
+      }
+
+      // Close spotlight dropdown
+      toggleSrdSpotlight(false);
+
+      // Refresh UI components
+      try { populateWeaponSetsEditorDropdowns(); } catch (e) {}
+      try { renderWeaponSetsUI(); } catch (e) {}
+      try { renderInventory(); } catch (e) {}
+      try { recalculateOffense(); } catch (e) {}
+      saveStateToStorage(true);
+
+      if (typeof showDiceTopToast === 'function') {
+        const icon = cat === 'Shield' ? '🛡️' : (cat === 'Armor' ? '🛡️' : '⚔️');
+        showDiceTopToast({
+          title: `${item.name} Karakterine Eklendi!`,
+          breakdown: `D&D 3.5e RAW SRD: "${item.name}" başarıyla donanım havuzuna aktarıldı.`,
+          icon: icon
+        });
+      }
+    }
+
+    function getWeaponOrPoolItem(itemName) {
+      if (!character || !itemName || itemName === 'Yok' || itemName === 'None') return null;
+      let wep = (character.weapons || []).find(w => w && w.name === itemName);
+      let poolItem = (character.gearPool || []).find(g => g && g.name === itemName);
+      return { wep, poolItem };
+    }
+
+    function stepWeaponEnhancement(setNum, delta) {
+      ensureWeaponSetsData();
+      const sets = character?.tactical?.weaponSets;
+      if (!sets) return;
+      const setObj = setNum === 1 ? sets.set1 : sets.set2;
+      const wepName = setObj?.mainWeapon;
+      if (!wepName || wepName === 'Yok' || wepName === 'None') return;
+
+      let wep = (character.weapons || []).find(w => w && w.name === wepName);
+      let poolItem = (character.gearPool || []).find(g => g && g.name === wepName);
+
+      if (!wep && poolItem && poolItem.category === 'Weapon') {
+        if (!character.weapons) character.weapons = [];
+        wep = {
+          name: poolItem.name,
+          grip: setObj?.grip || '1-Hand',
+          dice: poolItem.dice || '1d8',
+          critMin: poolItem.critMin || 20,
+          rawCritMin: poolItem.critMin || 20,
+          critMult: poolItem.critMult || 2,
+          attBonus: 0,
+          dmgBonus: 0,
+          bonusType: 'Enhancement',
+          elementalMods: [],
+          keen: false
+        };
+        character.weapons.push(wep);
+      }
+
+      if (wep) {
+        const cur = Number(wep.attBonus) || 0;
+        const next = Math.max(0, Math.min(5, cur + delta));
+        wep.attBonus = next;
+        wep.dmgBonus = next;
+        wep.bonusType = 'Enhancement';
+        if (poolItem) {
+          poolItem.attBonus = next;
+          poolItem.dmgBonus = next;
+        }
+      } else if (poolItem && (poolItem.category === 'Shield' || poolItem.category === 'Armor')) {
+        const cur = Number(poolItem.enhancementAc || poolItem.attBonus || 0);
+        const next = Math.max(0, Math.min(5, cur + delta));
+        poolItem.enhancementAc = next;
+        poolItem.acBonus = (poolItem.baseAc || poolItem.acBonus || 1) + next;
+      }
+
+      updateWeaponEditorEnhancementBadges();
+      try { renderWeaponSetsUI(); } catch (e) {}
+      try { recalculateOffense(); } catch (e) {}
+      saveStateToStorage(true);
+    }
+
+    function toggleWeaponElementalProperty(setNum, propId) {
+      ensureWeaponSetsData();
+      const sets = character?.tactical?.weaponSets;
+      if (!sets) return;
+      const setObj = setNum === 1 ? sets.set1 : sets.set2;
+      const wepName = setObj?.mainWeapon;
+      if (!wepName || wepName === 'Yok' || wepName === 'None') return;
+
+      let wep = (character.weapons || []).find(w => w && w.name === wepName);
+      if (!wep) {
+        stepWeaponEnhancement(setNum, 0); // initialize weapon object
+        wep = (character.weapons || []).find(w => w && w.name === wepName);
+      }
+      if (!wep) return;
+
+      const propDef = SRD_WEAPON_PROPERTIES.find(p => p.id === propId);
+      if (!propDef) return;
+
+      if (propDef.isKeen) {
+        wep.keen = !wep.keen;
+        const rawMin = Number(wep.rawCritMin) || Number(wep.critMin) || 20;
+        wep.rawCritMin = rawMin;
+        if (wep.keen) {
+          // Double threat range per RAW: 20 -> 19-20 (range 2), 19-20 -> 17-20 (range 4), 18-20 -> 15-20 (range 6)
+          const range = 21 - rawMin;
+          wep.critMin = Math.max(12, 21 - (range * 2));
+        } else {
+          wep.critMin = rawMin;
+        }
+      } else {
+        if (!Array.isArray(wep.elementalMods)) wep.elementalMods = [];
+        const existingIdx = wep.elementalMods.findIndex(m => m.id === propId);
+        if (existingIdx >= 0) {
+          wep.elementalMods.splice(existingIdx, 1);
+        } else {
+          wep.elementalMods.push({
+            id: propDef.id,
+            name: propDef.name,
+            dice: propDef.dice,
+            type: propDef.type,
+            icon: propDef.icon
+          });
+        }
+      }
+
+      renderWeaponSetModifierChips(setNum);
+      try { renderWeaponSetsUI(); } catch (e) {}
+      try { recalculateOffense(); } catch (e) {}
+      saveStateToStorage(true);
+    }
+
+    function updateWeaponEditorEnhancementBadges() {
+      const sets = character?.tactical?.weaponSets;
+      if (!sets) return;
+
+      const s1Name = sets.set1?.mainWeapon;
+      const s2Name = sets.set2?.mainWeapon;
+
+      const s1Wep = (character.weapons || []).find(w => w && w.name === s1Name);
+      const s1Pool = (character.gearPool || []).find(g => g && g.name === s1Name);
+      const s1Bonus = s1Wep ? (s1Wep.attBonus || 0) : (s1Pool?.enhancementAc || s1Pool?.attBonus || 0);
+
+      const s2Wep = (character.weapons || []).find(w => w && w.name === s2Name);
+      const s2Pool = (character.gearPool || []).find(g => g && g.name === s2Name);
+      const s2Bonus = s2Wep ? (s2Wep.attBonus || 0) : (s2Pool?.enhancementAc || s2Pool?.attBonus || 0);
+
+      const b1 = document.getElementById('set1-enhancement-badge');
+      if (b1) b1.textContent = s1Bonus > 0 ? `+${s1Bonus}` : '+0';
+
+      const b2 = document.getElementById('set2-enhancement-badge');
+      if (b2) b2.textContent = s2Bonus > 0 ? `+${s2Bonus}` : '+0';
+    }
+
+    function renderWeaponSetModifierChips(setNum) {
+      const containerId = setNum === 1 ? 'set1-elemental-chips-container' : 'set2-elemental-chips-container';
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      const sets = character?.tactical?.weaponSets;
+      const setObj = setNum === 1 ? sets?.set1 : sets?.set2;
+      const wepName = setObj?.mainWeapon;
+
+      if (!wepName || wepName === 'Yok' || wepName === 'None') {
+        container.innerHTML = '<span class="text-[9px] text-slate-500 italic">Donanım seçilmedi.</span>';
+        return;
+      }
+
+      const wep = (character.weapons || []).find(w => w && w.name === wepName);
+      const activeMods = Array.isArray(wep?.elementalMods) ? wep.elementalMods : [];
+      const isKeen = !!wep?.keen;
+
+      container.innerHTML = SRD_WEAPON_PROPERTIES.map(prop => {
+        let isActive = false;
+        if (prop.isKeen) {
+          isActive = isKeen;
+        } else {
+          isActive = activeMods.some(m => m.id === prop.id);
+        }
+
+        const badgeClass = isActive
+          ? prop.activeClass
+          : 'bg-slate-950/80 border-slate-700/80 text-slate-400 hover:text-slate-200 hover:border-slate-600';
+
+        const label = prop.dice ? `${prop.icon} ${prop.name} (+${prop.dice})` : `${prop.icon} ${prop.name}`;
+
+        return `
+          <button type="button" onclick="toggleWeaponElementalProperty(${setNum}, '${prop.id}')" class="px-2 py-0.5 rounded text-[9px] font-bold border transition flex items-center gap-1 cursor-pointer select-none ${badgeClass}">
+            <span>${label}</span>
+          </button>
+        `;
+      }).join('');
     }
 
     function hasFlurryAbility(char) {
@@ -18746,6 +19225,9 @@
         if (activeDiceMods.length > 0) {
           extraDiceStr = ' + ' + activeDiceMods.map(m => `${m.dice} (${m.name})`).join(' + ');
         }
+        if (Array.isArray(wep.elementalMods) && wep.elementalMods.length > 0) {
+          extraDiceStr += ' + ' + wep.elementalMods.map(em => `${em.dice} (${em.name || em.type})`).join(' + ');
+        }
         const baseDmgStr = evalResult.baseDice + (evalResult.netFlatDamage >= 0 ? '+' : '') + evalResult.netFlatDamage;
         if (evalResult.chargeMultiplier > 1) {
           dmgDisplayEl.textContent = `${evalResult.baseDice}+${evalResult.netFlatDamage} (Şarj: x${evalResult.chargeMultiplier})${extraDiceStr}`;
@@ -19127,6 +19609,26 @@
             }
           }
         });
+
+        // Weapon Elemental Mods (Flaming, Frost, Shock, Holy, Unholy)
+        const wepElementalMods = atk.weapon?.elementalMods || (atk.hand === 'offHand' ? getResolvedOffHandWeapon(character)?.elementalMods : (character.weapons || []).find(w => w.name === (character.activeWeapon || character.tactical?.weaponSets?.set1?.mainWeapon))?.elementalMods) || [];
+        if (Array.isArray(wepElementalMods) && wepElementalMods.length > 0) {
+          wepElementalMods.forEach(em => {
+            if (em.dice) {
+              const eMatch = em.dice.match(/(\d+)d(\d+)/i);
+              if (eMatch) {
+                const count = parseInt(eMatch[1]) || 1;
+                const sides = parseInt(eMatch[2]) || 6;
+                let eSum = 0;
+                for (let k = 0; k < count; k++) {
+                  eSum += Math.floor(Math.random() * sides) + 1;
+                }
+                extraDiceSum += eSum;
+                extraDetails.push(`${em.name || 'Element'}: +${eSum} ${em.type || ''}`);
+              }
+            }
+          });
+        }
 
         const totalAttackDmg = atk.weaponRollSum + atk.flatDmg + extraDiceSum;
         grandTotalDmg += totalAttackDmg;
