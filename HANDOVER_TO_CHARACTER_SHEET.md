@@ -542,3 +542,18 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   5. **Parite ve Kural Bütünlüğü:**
      - `hub.html` ve `webapp/hub.html` kopyaları %100 SHA-256 eşitliğinde tutuldu.
      - Sıfır tavla zarı (`🎲`) kuralı tavizsiz korundu.
+
+---
+
+## 28. ZAR HAVUZU ÖZET KUTUSU SABİT EBAT VE DÜZEN KORUMASI (2026-10-25)
+* **İstek:** Hub açık zar panelindeki "Aktif Havuz" kutusunun boş durumdayken ("Zar seçilmedi") farklı punto ve satır yüksekliğinde olması sebebiyle zar seçilince kutu yüksekliğinin zıplaması / kaymasının önlenmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Sabit Konteyner Yüksekliği (`hub.html` & `webapp/`):**
+     - Aktif havuz kutusuna sabit `h-14` (56px) yüksekliği verilerek içeriğin durumuna bakılmaksızın kutu boyutlarının sabit kalması sağlandı.
+  2. **Yazı Tipi ve Satır Eşitlemesi (`hub_dice.js` & `webapp/`):**
+     - Boş durumdaki `summaryEl` için `text-sm md:text-base font-semibold text-slate-500 font-mono truncate h-6 flex items-center` stili tanımlandı.
+     - Zar seçildiğinde ise `text-sm md:text-base font-extrabold text-amber-300 font-mono truncate h-6 flex items-center` stili uygulandı.
+     - Her iki durumda da satır yüksekliği `h-6` (24px) ve yazı boyutu `text-sm md:text-base` olarak eşitlendi; `truncate` sayesinde metin taşmaları ve kutu sıçramaları tamamen engellendi.
+  3. **Parite ve Kural Bütünlüğü:**
+     - `hub.html`, `hub_dice.js` ve `webapp/` kopyaları %100 SHA-256 eşitliğinde tutuldu.
+     - Sıfır tavla zarı (`🎲`) kuralı korundu.

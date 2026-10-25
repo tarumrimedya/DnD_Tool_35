@@ -207,14 +207,14 @@ function updateDicePoolDisplay() {
   if (summaryEl) {
     if (activeParts.length === 0) {
       summaryEl.textContent = 'Zar seçilmedi (Butonlara tıklayın)';
-      summaryEl.className = 'text-xs text-slate-500 font-mono';
+      summaryEl.className = 'text-sm md:text-base font-semibold text-slate-500 font-mono truncate h-6 flex items-center';
     } else {
       let formula = activeParts.join(' + ');
       if (mod !== 0) {
         formula += ` ${mod >= 0 ? '+' : '-'} ${Math.abs(mod)}`;
       }
       summaryEl.textContent = formula;
-      summaryEl.className = 'text-sm md:text-base font-extrabold text-amber-300 font-mono truncate';
+      summaryEl.className = 'text-sm md:text-base font-extrabold text-amber-300 font-mono truncate h-6 flex items-center';
     }
   }
 }
