@@ -560,6 +560,20 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
 
 ---
 
+## 31. YENİ KARAKTER EKLEME MODALI IRK (RACE) SEÇİMİ ENTEGRASYONU (2026-10-25)
+* **İstek:** Hub üzerindeki "Yeni Karakter / NPC Ekle" (`#new-character-modal-card`) modalında, sıfır manuel şablon oluştururken ırk (race) seçilebilmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Irk Seçim Kontrolü (`hub.html` & `webapp/`):**
+     - `#pane-char-mode-manual` içine D&D 3.5e RAW standart 7 PHB ırkını (Human, Dwarf, Elf, Gnome, Half-Elf, Half-Orc, Halfling) içeren ve "✨ Diğer / Özel Irk..." seçeneği sunan `#new-char-race` açılır menüsü eklendi.
+     - "Diğer / Özel Irk..." seçildiğinde açılan `#new-char-race-custom` metin kutusu ile her türlü canavar ırkı, alt-ırk veya ev yapımı ırk adı (Aasimar, Tiefling, Goliath vb.) yazılabilir.
+  2. **Veri Modeli ve Şema Entegrasyonu:**
+     - `saveNewCharacter()` fonksiyonu seçilen ırkı alır, `createCleanDnd35Character()` fonksiyonuna aktarır ve hem yerel Hub state'ine hem de `character_data.json` / `dnd35_character` tam şemasına resmi `race` değeri olarak yazar.
+     - Hub kartında karakter doğrudan `[Irk] • [Sınıf] [Seviye]` olarak listelenir.
+  3. **Parite ve Kural Bütünlüğü:**
+     - `hub.html` ve `webapp/hub.html` kopyaları %100 SHA-256 eşitliğinde tutuldu; sıfır tavla zarı (`🎲`) kuralı korundu.
+
+---
+
 ## 29. ZAR RENK SEÇİMİ VE SETDICECOLOR BAĞLANTISI (2026-10-25)
 * **Sorun:** Hub zar panelinde `#dice-color-popover` içindeki palet butonlarının (`setDiceColor('#dc2626')` vb.) ve özel renk seçici kutusunun (`onchange="setDiceColor(this.value)"`) fonksiyon isim uyuşmazlığı nedeniyle tetiklenmemesi.
 * **Uygulanan Çözüm:**
@@ -586,3 +600,17 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   3. **Parite ve Kural Bütünlüğü:**
      - `hub.html`, `hub_dice.js` ve `webapp/` kopyaları %100 SHA-256 eşitliğinde tutuldu.
      - Sıfır tavla zarı (`🎲`) kuralı korundu.
+
+---
+
+## 31. YENİ KARAKTER EKLEME MODALI IRK (RACE) SEÇİMİ ENTEGRASYONU (2026-10-25)
+* **İstek:** Hub üzerindeki "Yeni Karakter / NPC Ekle" (`#new-character-modal-card`) modalında, sıfır manuel şablon oluştururken ırk (race) seçilebilmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Irk Seçim Kontrolü (`hub.html` & `webapp/`):**
+     - `#pane-char-mode-manual` içine D&D 3.5e RAW standart 7 PHB ırkını (Human, Dwarf, Elf, Gnome, Half-Elf, Half-Orc, Halfling) içeren ve "✨ Diğer / Özel Irk..." seçeneği sunan `#new-char-race` açılır menüsü eklendi.
+     - "Diğer / Özel Irk..." seçildiğinde açılan `#new-char-race-custom` metin kutusu ile her türlü canavar ırkı, alt-ırk veya ev yapımı ırk adı (Aasimar, Tiefling, Goliath vb.) yazılabilir.
+  2. **Veri Modeli ve Şema Entegrasyonu:**
+     - `saveNewCharacter()` fonksiyonu seçilen ırkı alır, `createCleanDnd35Character()` fonksiyonuna aktarır ve hem yerel Hub state'ine hem de `character_data.json` / `dnd35_character` tam şemasına resmi `race` değeri olarak yazar.
+     - Hub kartında karakter doğrudan `[Irk] • [Sınıf] [Seviye]` olarak listelenir.
+  3. **Parite ve Kural Bütünlüğü:**
+     - `hub.html` ve `webapp/hub.html` kopyaları %100 SHA-256 eşitliğinde tutuldu; sıfır tavla zarı (`🎲`) kuralı korundu.

@@ -497,12 +497,28 @@
 
       <!-- SEKME 2: SIFIR ŞABLON (MANUEL BOŞ KARAKTER) -->
       <div id="pane-char-mode-manual" class="space-y-3 text-xs hidden shrink-0">
-        <div>
-          <label class="block text-slate-400 mb-1 font-semibold">Karakter Adı *</label>
-          <input type="text" id="new-char-name" placeholder="Örn: Regdar, Jozan, Mialee" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-400 mb-1 font-semibold">Karakter Adı *</label>
+            <input type="text" id="new-char-name" placeholder="Örn: Regdar, Jozan, Mialee" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1 font-semibold">Irk (Race)</label>
+            <select id="new-char-race" onchange="toggleCustomRaceInput(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500">
+              <option value="Human" selected>Human (İnsan)</option>
+              <option value="Dwarf">Dwarf (Cüce)</option>
+              <option value="Elf">Elf (Elf)</option>
+              <option value="Gnome">Gnome (Gnom)</option>
+              <option value="Half-Elf">Half-Elf (Yarı-Elf)</option>
+              <option value="Half-Orc">Half-Orc (Yarı-Ork)</option>
+              <option value="Halfling">Halfling (Buçukluk)</option>
+              <option value="custom">✨ Diğer / Özel Irk...</option>
+            </select>
+            <input type="text" id="new-char-race-custom" placeholder="Örn: Aasimar, Tiefling, Goliath, Drow..." class="hidden mt-2 w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-white focus:outline-none focus:border-amber-500 text-xs">
+          </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-slate-400 mb-1 font-semibold">Karakter Türü</label>
             <select id="new-char-type" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-amber-500">
@@ -3150,6 +3166,19 @@ CRITICAL RULES:
     }
 
     // Modal Yönetimi: Karakter Ekleme
+    function toggleCustomRaceInput(val) {
+      const customInp = document.getElementById('new-char-race-custom');
+      if (!customInp) return;
+      if (val === 'custom') {
+        customInp.classList.remove('hidden');
+        customInp.focus();
+      } else {
+        customInp.classList.add('hidden');
+        customInp.value = '';
+      }
+    }
+    window.toggleCustomRaceInput = toggleCustomRaceInput;
+
     function openNewCharacterModal(preferredMode = null, preselectedCampaignId = null) {
       const rootCamps = state.campaigns.filter(c => !c.parentId);
       let campOptions = `<option value="">-- Bağımsız / Kampanyasız --</option>`;
@@ -3185,6 +3214,14 @@ CRITICAL RULES:
 
       const nameInput = document.getElementById('new-char-name');
       if (nameInput) nameInput.value = '';
+
+      const raceSelect = document.getElementById('new-char-race');
+      if (raceSelect) raceSelect.value = 'Human';
+      const raceCustom = document.getElementById('new-char-race-custom');
+      if (raceCustom) {
+        raceCustom.value = '';
+        raceCustom.classList.add('hidden');
+      }
 
       const typeSelect = document.getElementById('new-char-type');
       if (typeSelect) typeSelect.value = state.typeFilter === 'npc' ? 'npc' : 'pc';
@@ -3244,12 +3281,17 @@ CRITICAL RULES:
       const isNpc = document.getElementById('new-char-type')?.value === 'npc';
       const campaignId = document.getElementById('new-char-campaign')?.value || null;
 
+      let race = document.getElementById('new-char-race')?.value || 'Human';
+      if (race === 'custom') {
+        race = document.getElementById('new-char-race-custom')?.value.trim() || 'Custom';
+      }
+
       const newChar = {
         id: 'char_' + Date.now(),
         campaignId: campaignId,
         isNpc: isNpc,
         name: name,
-        race: '',
+        race: race,
         classes: '',
         level: 1,
         portrait: '',
