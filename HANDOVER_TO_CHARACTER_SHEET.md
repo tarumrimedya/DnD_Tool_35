@@ -716,6 +716,20 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` %100 SHA-256 eşitliğinde güncellendi.
      - Sıfır tavla zarı (`🎲`) kuralı korundu.
 
+---
+
+## 40. BAB & SAVE HESAPLAMA SİSTEMİ: STANDART RAW VARSAYILAN YAPILDI (2026-10-25)
+* **İstek:** Ayarlar modalı Bölüm 5'teki `📐 BAB & Save Hesaplama Sistemi` seçiminde `Standard Core 3.5e (Standart RAW)` seçeneğinin varsayılan (`selected`) yapılması.
+* **Uygulanan Değişiklikler:**
+  1. **Arayüz ve Şema Varsayılanı:**
+     - HTML `<select id="setting-bab-save-system">` elementinde `Standard Core 3.5e (Standart RAW)` ilk sıraya alınarak `selected` olarak işaretlendi.
+     - Yeni karakter oluşturma motorunda (`createCleanDnd35Character`) `settings.babSaveSystem` varsayılan değeri `'standard'` yapıldı.
+     - `character.html` / `index.html` içerisindeki tüm UI ilklendirmelerinde ve hesaplama fonksiyonlarında `character.settings?.babSaveSystem || 'standard'` kuralı uygulandı.
+  2. **Parite ve Kural Bütünlüğü:**
+     - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` %100 SHA-256 paritesinde tutuldu.
+     - Sıfır tavla zarı (`🎲`) kuralı korundu.
+
+
 
 
 
@@ -737,4 +751,20 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - **Zaman Damgası Kalkanı:** Yerelde olup bulutta bulunmayan bir karakterin ID/oluşturulma tarihi bu cihazın son bulut senkron zamanından (lastCloudSyncTs) daha eskiyse, başka bir cihazda silinmiş kabul edilir, mezar taşına eklenir ve asla buluta yüklenmez. Yalnızca son senkrondan sonra çevrimdışı gerçekten yeni oluşturulmuş karakterler buluta yüklenir.
   3. **Parite ve Kural Bütünlüğü:**
      - hub.html, supabase_auth.js, gdrive_sync.js ve webapp/ kopyaları %100 SHA-256 eşitliğinde tutuldu.
+     - Sıfır tavla zarı kuralı tavizsiz korundu.
+
+
+---
+
+## 40. YENİ KAMPANYA EKLE BUTONU KAMPANYA SEKMELERİ ŞERİDİNE TAŞINDI VE SAĞA YASLANDI (2026-10-25)
+* **İstek:** Hub üst başlığındaki 4 sıralı sağ blokta yer alan "Yeni Kampanya Ekle" butonunun oradan alınıp, `#campaign-tabs-container` (Kampanya Sekmeleri) satırına taşınması ve sağa yaslanması (`ml-auto`).
+* **Uygulanan Değişiklikler:**
+  1. **Üst Başlık Sadeleştirmesi (`hub.html` & `webapp/`):**
+     - Üst sağ bloktaki `openNewCampaignModal()` butonu kaldırıldı; Profil Slotu, Yedekle/İçe Aktar/Sıfırla ve Bulut Senkron Durumu 3 eşit ve simetrik satır (36px / h-9) halinde kusursuz dengelendi.
+  2. **Kampanya Sekmelerine Entegrasyon & Sağa Yaslama (`renderCampaignTabs`):**
+     - `renderCampaignTabs()` içinde son kampanya hapından ("Bağımsız / Atanmamış") hemen sonra `[ 🏰 Yeni Kampanya Ekle ]` butonu eklendi.
+     - `ml-auto` ve `shrink-0` sınıfları verilerek sekmeler satırının en sağına (Görünüm Modu Değiştirici'nin hemen soluna) yaslandı.
+     - Buton yüksekliği ve iç dolgusu (`px-3.5 py-1.5 rounded-xl text-xs font-bold`) diğer kampanya hapları ile aynı hizada olacak şekilde estetik olarak uyarlandı.
+  3. **Parite ve Kural Bütünlüğü:**
+     - `hub.html` ve `webapp/hub.html` kopyaları %100 SHA-256 eşitliğinde tutuldu.
      - Sıfır tavla zarı kuralı tavizsiz korundu.

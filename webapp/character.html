@@ -7056,9 +7056,9 @@
                 </div>
                 <div class="flex items-center gap-1.5">
                   <label class="text-[10px] font-bold text-sky-400 uppercase">📐 Kural:</label>
-                  <select id="setting-bab-save-system" onchange="onSettingBabSaveSystemChange()" class="bg-slate-900 border border-slate-700 text-sky-300 font-semibold text-[11px] rounded px-2 py-1 focus:outline-none focus:border-sky-400">
+                  <select id="setting-bab-save-system" onchange="onSettingBabSaveSystemChange()" class="bg-slate-900 border border-slate-700 text-sky-300 font-semibold text-[11px] rounded px-2 py-1 focus:outline-none focus:border-sky-400 cursor-pointer">
+                    <option value="standard" selected>Standard Core 3.5e (Standart RAW)</option>
                     <option value="fractional">Fractional (Unearthed Arcana - Kesirli)</option>
-                    <option value="standard">Standard Core 3.5e (Standart RAW)</option>
                   </select>
                 </div>
               </div>
@@ -7685,7 +7685,8 @@
         },
         settings: summary.settings || {
           pinDrawerLimit: 5,
-          clMode: 'Character Level (DM Boon)'
+          clMode: 'Character Level (DM Boon)',
+          babSaveSystem: 'standard'
         }
       };
     }
@@ -8343,7 +8344,7 @@
       }
       const babSaveSel = document.getElementById('setting-bab-save-system');
       if (babSaveSel) {
-        babSaveSel.value = character.settings?.babSaveSystem || 'fractional';
+        babSaveSel.value = character.settings?.babSaveSystem || 'standard';
       }
 
       const pinLimitSel = document.getElementById('setting-pin-drawer-limit');
@@ -28582,7 +28583,7 @@
       if (!character) return;
       sanitizeLevelProgressionActiveGaps();
       const prog = character.levelProgression || [];
-      const sys = character.settings?.babSaveSystem || 'fractional';
+      const sys = character.settings?.babSaveSystem || 'standard';
       const isHuman = (character.race || '').toLowerCase().includes('human');
       const intMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
         ? RuleEngine.getAbilityMod(character.abilities?.int || 10)
@@ -30930,7 +30931,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       }
 
       // 2. Calculate BAB, Saves, HD, Skill points using RuleEngine
-      const sys = character.settings?.babSaveSystem || 'fractional';
+      const sys = character.settings?.babSaveSystem || 'standard';
       const isHuman = (character.race || '').toLowerCase().includes('human');
       const intMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
         ? RuleEngine.getAbilityMod(character.abilities?.int || 10)
@@ -33181,12 +33182,12 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         asfChk.checked = character.settings?.ignoreAsf !== false;
       }
       const babSaveSel = document.getElementById('setting-bab-save-system');
-      if (babSaveSel && character.settings?.babSaveSystem) {
-        babSaveSel.value = character.settings.babSaveSystem;
+      if (babSaveSel) {
+        babSaveSel.value = character.settings?.babSaveSystem || 'standard';
       }
 
       const prog = character.levelProgression || [];
-      const sys = character.settings?.babSaveSystem || 'fractional';
+      const sys = character.settings?.babSaveSystem || 'standard';
       const isHuman = (character.race || '').toLowerCase().includes('human');
       const intMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
         ? RuleEngine.getAbilityMod(character.abilities?.int || 10)
