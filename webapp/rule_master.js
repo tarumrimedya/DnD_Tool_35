@@ -1632,7 +1632,13 @@ const RuleMaster = {
         skillBonuses: (raw.skillBonuses && typeof raw.skillBonuses === 'object') ? JSON.parse(JSON.stringify(raw.skillBonuses)) : undefined,
         sizeModifier: (raw.sizeModifier && typeof raw.sizeModifier === 'object') ? JSON.parse(JSON.stringify(raw.sizeModifier)) : undefined,
         isLight: raw.isLight !== undefined ? Boolean(raw.isLight) : undefined,
-        proficiency: raw.proficiency ? String(raw.proficiency).trim() : undefined
+        proficiency: raw.proficiency ? String(raw.proficiency).trim() : undefined,
+        size: raw.size ? String(raw.size).trim() : (normType === 'Race' ? 'Medium' : undefined),
+        baseSpeed: Number(raw.baseSpeed) || (normType === 'Race' ? 30 : undefined),
+        favoredClass: raw.favoredClass ? String(raw.favoredClass).trim() : (normType === 'Race' ? 'Any' : undefined),
+        traits: Array.isArray(raw.traits) ? JSON.parse(JSON.stringify(raw.traits)) : (normType === 'Race' && (raw.benefit || raw.description) ? [{ name: 'Racial Traits', desc: String(raw.benefit || raw.description) }] : undefined),
+        languages: Array.isArray(raw.languages) ? JSON.parse(JSON.stringify(raw.languages)) : (normType === 'Race' ? ['Common'] : undefined),
+        bonusFeats: raw.bonusFeats !== undefined ? Number(raw.bonusFeats) : undefined
       };
     }
 
@@ -1653,6 +1659,8 @@ const RuleMaster = {
 User query: "${query}" (Category Hint: "${categoryHint}").
 
 CRITICAL D&D 3.5E ANTI-HALLUCINATION & CANONICAL VERIFICATION RULES:
+0. RACE SCHEMA (FOR D&D 3.5E RACES / RACIAL TEMPLATES):
+If categoryHint is 'Race' or querying a Race (e.g. Warforged, Goliath, Drow, Catfolk, Thri-Kreen, Kenku, Illumian), return canonical D&D 3.5e Race object with type: "Race", size ("Medium"|"Small"|"Large"), baseSpeed (number, e.g. 30), strBonus/dexBonus/conBonus/intBonus/wisBonus/chaBonus (numbers), favoredClass, source (official 3.5e book and page), benefit, description, and traits: [{"name": "Trait Name", "desc": "Detailed mechanics"}], languages: ["Common", ...], bonusFeats (number).
 1. STRICT REAL RAW 3.5E RULES ONLY:
 NEVER fabricate, invent, or hallucinate a rule, feat, spell, magic item, or book source. Every result MUST exist in official Wizards of the Coast D&D 3.5e publications.
 2. MANDATORY TYPO / FUZZY SPELLING CORRECTION:
@@ -1876,6 +1884,26 @@ Return valid JSON only matching this schema:
 
   async fetchSingleAiRuleEntries(query, categoryHint, apiKey, statusTextEl = null) {
     return await this.fetchSingleAiRuleObjects(query, categoryHint, apiKey, statusTextEl);
+  },
+
+  async fetchRaceViaAi(raceName, statusTextEl = null) {
+    const apiKey = this.getApiKey();
+    if (!apiKey) {
+      if (typeof this.promptApiKey === 'function') this.promptApiKey();
+      throw new Error('Gemini API anahtarı ayarlanmamış.');
+    }
+    const entries = await this.fetchSingleAiRuleObjects(raceName, 'Race', apiKey, statusTextEl);
+    if (!entries || !entries.length) {
+      throw new Error(`"${raceName}" ile ilgili resmi bir D&D 3.5e ırkı bulunamadı.`);
+    }
+    const raceEntry = entries.find(e => e && (e.type === 'Race' || String(e.type).toLowerCase() === 'race')) || entries[0];
+    raceEntry.type = 'Race';
+    if (!raceEntry.size) raceEntry.size = 'Medium';
+    if (!raceEntry.baseSpeed) raceEntry.baseSpeed = 30;
+    if (!Array.isArray(raceEntry.traits) && (raceEntry.benefit || raceEntry.description)) {
+      raceEntry.traits = [{ name: 'Racial Traits', desc: raceEntry.benefit || raceEntry.description }];
+    }
+    return raceEntry;
   },
 
   entryToRow(entry) {

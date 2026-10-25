@@ -4217,6 +4217,13 @@
               <option value="Aasimar">
               <option value="Tiefling">
               <option value="Dragonborn">
+              <option value="Drow">
+              <option value="Orc">
+              <option value="Goblin">
+              <option value="Kobold">
+              <option value="Goliath">
+              <option value="Warforged">
+              <option value="Diğer (Rule Master AI ile Ara...)">
             </datalist>
           </div>
         </div>
@@ -4910,6 +4917,13 @@
               <option value="Aasimar">
               <option value="Tiefling">
               <option value="Dragonborn">
+              <option value="Drow">
+              <option value="Orc">
+              <option value="Goblin">
+              <option value="Kobold">
+              <option value="Goliath">
+              <option value="Warforged">
+              <option value="Diğer (Rule Master AI ile Ara...)">
             </datalist>
           </div>
         </div>
@@ -7828,6 +7842,7 @@
     });
 
     window.addEventListener('DOMContentLoaded', async () => {
+      ensureCustomRacesLoaded();
       // Eğer kök (/) adresine ?id olmadan gelinmişse (login sonrası yönlendirme veya doğrudan giriş), derhal /hub'a yönlendir:
       const _urlParams = new URLSearchParams(window.location.search);
       const _hasCharId = _urlParams.get('id');
@@ -10371,6 +10386,201 @@
     // =========================================================================
     // 🧬 D&D 3.5E RAW SRD RACIAL SYSTEM (STANDART IRK ENTEGRASYONU)
     // =========================================================================
+    function escapeRaceHtml(str) {
+      return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function ensureCustomRacesLoaded() {
+      try {
+        const cachedRacesJson = localStorage.getItem('dnd35_custom_races');
+        if (cachedRacesJson) {
+          const cachedRaces = JSON.parse(cachedRacesJson);
+          if (Array.isArray(cachedRaces)) {
+            if (!window.BUNDLED_SRD_CORE_CATALOG) window.BUNDLED_SRD_CORE_CATALOG = [];
+            cachedRaces.forEach(r => {
+              if (r && r.name && !window.BUNDLED_SRD_CORE_CATALOG.some(c => c && c.name && c.name.toLowerCase() === r.name.toLowerCase())) {
+                window.BUNDLED_SRD_CORE_CATALOG.push(r);
+              }
+            });
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to load custom races from storage:', e);
+      }
+    }
+
+    function renderRaceAiSearchCard(card) {
+      card.innerHTML = `
+        <div class="space-y-2.5">
+          <div class="flex items-center justify-between border-b border-purple-800/60 pb-1.5">
+            <div class="flex items-center gap-1.5">
+              <span class="text-sm">🔮</span>
+              <span class="text-xs font-black text-purple-300 uppercase tracking-wide">Rule Master AI • Özel D&D 3.5e Irk Arama</span>
+            </div>
+            <span class="text-[9px] font-mono text-purple-400 bg-purple-950 px-1.5 py-0.2 rounded border border-purple-700/60">D&D 3.5e RAW</span>
+          </div>
+          <p class="text-[10px] text-slate-300 leading-relaxed">
+            Resmi D&D 3.5e yayınlarından (Eberron, Races of Stone, Races of the Wild, Monster Manual vb.) dilediğiniz ırkı aratın; stat modifiyerleri, boyut, hız ve ırksal nitelikleriyle doğrudan karakterinize ekleyin.
+          </p>
+          <div class="flex items-center gap-1.5">
+            <input type="text" id="race-ai-search-input" placeholder="Örn: Warforged, Goliath, Drow, Catfolk, Thri-Kreen..." onkeydown="if(event.key==='Enter') searchRaceViaRuleMasterAi();" class="flex-1 bg-slate-900 border border-purple-500/60 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 font-bold focus:outline-none focus:border-purple-400">
+            <button type="button" id="btn-fetch-race-ai" onclick="searchRaceViaRuleMasterAi()" class="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:scale-95 text-white font-extrabold text-xs rounded-lg shadow transition flex items-center gap-1 shrink-0 cursor-pointer">
+              <span>⚡</span>
+              <span>Irkı Getir</span>
+            </button>
+          </div>
+          <div id="race-ai-status" class="hidden text-[10px] text-amber-300 font-mono flex items-center gap-1.5 pt-0.5"></div>
+        </div>
+      `;
+      card.classList.remove('hidden');
+      const input = document.getElementById('race-ai-search-input');
+      if (input) setTimeout(() => input.focus(), 50);
+    }
+
+    function renderRaceNotFoundCard(card, raceName) {
+      const escaped = escapeRaceHtml(raceName);
+      card.innerHTML = `
+        <div class="space-y-2">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
+            <div class="flex items-center gap-1.5">
+              <span class="text-sm">🔍</span>
+              <span class="text-xs font-bold text-slate-200">"${escaped}" Yerel Katalogda Bulunamadı</span>
+            </div>
+            <span class="text-[9px] font-mono text-purple-400 bg-purple-950 px-1.5 py-0.2 rounded border border-purple-700/60">Rule Master AI</span>
+          </div>
+          <p class="text-[10px] text-slate-400 leading-relaxed">
+            Bu ırkı Rule Master AI ile resmi Wizards of the Coast D&D 3.5e kütüphanelerinden (stat modifiyerleri, boyut, hız ve ırksal nitelikleriyle) çekip eklemek ister misiniz?
+          </p>
+          <div class="flex items-center gap-2 pt-1">
+            <button type="button" id="btn-fetch-race-ai" onclick="searchRaceViaRuleMasterAi('${escaped.replace(/'/g, "\\'")}')" class="flex-1 py-1.5 bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 active:scale-95 text-white font-extrabold text-xs rounded-lg shadow transition flex items-center justify-center gap-1.5 cursor-pointer">
+              <span>🔮</span>
+              <span>"${escaped}" Irkını Rule Master AI ile Getir</span>
+            </button>
+          </div>
+          <div id="race-ai-status" class="hidden text-[10px] text-amber-300 font-mono flex items-center gap-1.5 pt-0.5"></div>
+        </div>
+      `;
+      card.classList.remove('hidden');
+    }
+
+    async function searchRaceViaRuleMasterAi(queryName = null) {
+      let q = queryName;
+      if (!q) {
+        const input = document.getElementById('race-ai-search-input');
+        if (input) q = input.value.trim();
+      }
+      if (!q) {
+        const raceInput = document.getElementById('profile-edit-race');
+        if (raceInput && !raceInput.value.toLowerCase().includes('diğer') && !raceInput.value.toLowerCase().includes('other')) {
+          q = raceInput.value.trim();
+        }
+      }
+      if (!q) {
+        alert('Lütfen aramak istediğiniz D&D 3.5e ırkının adını yazın (Örn: Warforged, Goliath, Drow, Catfolk, Thri-Kreen).');
+        const input = document.getElementById('race-ai-search-input');
+        if (input) input.focus();
+        return;
+      }
+
+      const statusEl = document.getElementById('race-ai-status');
+      const btn = document.getElementById('btn-fetch-race-ai');
+      if (btn) btn.disabled = true;
+      if (statusEl) {
+        statusEl.classList.remove('hidden');
+        statusEl.innerHTML = `<span class="animate-spin">⚡</span> <span>"${escapeRaceHtml(q)}" D&D 3.5e RAW kütüphanelerinden aranıyor ve doğrulanıyor...</span>`;
+      }
+
+      try {
+        let raceObj = null;
+        if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.fetchRaceViaAi === 'function') {
+          raceObj = await RuleMaster.fetchRaceViaAi(q, statusEl);
+        } else if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.fetchSingleAiRuleObjects === 'function') {
+          const key = RuleMaster.getApiKey();
+          if (!key) {
+            RuleMaster.promptApiKey();
+            throw new Error('Gemini API anahtarı girilmedi.');
+          }
+          const results = await RuleMaster.fetchSingleAiRuleObjects(q, 'Race', key, statusEl);
+          if (results && results.length) {
+            raceObj = results.find(e => e && (e.type === 'Race' || String(e.type).toLowerCase() === 'race')) || results[0];
+          }
+        } else {
+          throw new Error('Rule Master motoru yüklenemedi.');
+        }
+
+        if (!raceObj || !raceObj.name) {
+          throw new Error(`"${q}" için resmi bir D&D 3.5e ırk verisi bulunamadı.`);
+        }
+
+        raceObj.type = 'Race';
+        if (!raceObj.size) raceObj.size = 'Medium';
+        if (!raceObj.baseSpeed) raceObj.baseSpeed = 30;
+        if (!Array.isArray(raceObj.traits) && (raceObj.benefit || raceObj.description)) {
+          raceObj.traits = [{ name: 'Racial Traits', desc: raceObj.benefit || raceObj.description }];
+        }
+
+        // Add to in-memory bundled catalog
+        ensureCustomRacesLoaded();
+        if (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
+          const existingIdx = window.BUNDLED_SRD_CORE_CATALOG.findIndex(item => item && item.type === 'Race' && item.name.toLowerCase() === raceObj.name.toLowerCase());
+          if (existingIdx >= 0) {
+            window.BUNDLED_SRD_CORE_CATALOG[existingIdx] = raceObj;
+          } else {
+            window.BUNDLED_SRD_CORE_CATALOG.push(raceObj);
+          }
+        }
+
+        // Cache in localStorage
+        try {
+          let customRaces = [];
+          const existingSaved = localStorage.getItem('dnd35_custom_races');
+          if (existingSaved) customRaces = JSON.parse(existingSaved) || [];
+          const idx = customRaces.findIndex(r => r.name.toLowerCase() === raceObj.name.toLowerCase());
+          if (idx >= 0) customRaces[idx] = raceObj;
+          else customRaces.push(raceObj);
+          localStorage.setItem('dnd35_custom_races', JSON.stringify(customRaces));
+        } catch (e) {
+          console.warn('Failed to cache race in localStorage:', e);
+        }
+
+        // Add option to datalists if not present
+        const dl = document.getElementById('race-options');
+        if (dl) {
+          const hasOpt = Array.from(dl.options).some(o => o.value.toLowerCase() === raceObj.name.toLowerCase());
+          if (!hasOpt) {
+            const opt = document.createElement('option');
+            opt.value = raceObj.name;
+            dl.insertBefore(opt, dl.lastElementChild);
+          }
+        }
+
+        // Set input value to canonical name
+        const raceInput = document.getElementById('profile-edit-race');
+        if (raceInput) raceInput.value = raceObj.name;
+
+        // Render standard preview card
+        onProfileRaceChange(raceObj.name);
+
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            title: `${raceObj.name} Irkı Bulundu!`,
+            breakdown: `D&D 3.5e RAW kütüphanesinden başarıyla çekildi. Aşağıdaki "Irk Niteliklerini Uygula" butonu ile karaktere yansıtabilirsiniz.`,
+            icon: '🧬'
+          });
+        }
+      } catch (err) {
+        console.error(err);
+        if (statusEl) {
+          statusEl.classList.remove('hidden');
+          statusEl.innerHTML = `<span class="text-rose-400">❌ ${escapeRaceHtml(err.message || 'Hata oluştu')}</span>`;
+        } else {
+          alert('Irk arama hatası: ' + err.message);
+        }
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
     function onProfileRaceChange(raceName) {
       const card = document.getElementById('profile-race-traits-card');
       if (!card) return;
@@ -10382,14 +10592,20 @@
         return;
       }
 
+      // Check if user selected "diğer" / "other"
+      if (q === 'diğer' || q === 'other' || q.includes('diğer') || q.includes('other')) {
+        renderRaceAiSearchCard(card);
+        return;
+      }
+
+      ensureCustomRacesLoaded();
       const catalog = (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG))
         ? window.BUNDLED_SRD_CORE_CATALOG
         : [];
 
       const raceObj = catalog.find(item => item && item.type === 'Race' && (item.name.toLowerCase() === q || item.name.toLowerCase().includes(q)));
       if (!raceObj) {
-        card.classList.add('hidden');
-        card.innerHTML = '';
+        renderRaceNotFoundCard(card, raceName);
         return;
       }
 
@@ -10414,7 +10630,7 @@
           `).join('')
         : `<p class="text-[10px] text-slate-300">${raceObj.benefit || ''}</p>`;
 
-      const escapedRaceName = raceObj.name.replace(/'/g, "\\'");
+      const escapedRaceName = raceObj.name.replace(/'/g, "\'");
 
       card.innerHTML = `
         <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">

@@ -1161,3 +1161,35 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   3. **Parite ve Devir Teslim:**
      - `hub.html` ve `webapp/hub.html` %100 SHA-256 eşitliğinde güncellendi (`True`).
      - Sıfır 🎲 tavla zarı kuralı korundu.
+
+
+---
+
+## 51. IRK SEÇİMİ GENİŞLETMESİ, "DİĞER" SEÇENEĞİ VE RULE MASTER AI İLE ÖZEL IRK ARAMA ENTEGRASYONU (2026-10-25)
+* **İstek:**
+  1. Karakter kimlik düzenleme alanındaki Irk (Race) seçiminde diğer resmi D&D 3.5e ırklarının da gelmesi.
+  2. "Diğer" seçeneğinin yer alması.
+  3. Kullanıcı "Diğer"i seçtiğinde veya listede olmayan bir ırk yazdığında, Rule Master AI ile istediği resmi ırkı arayıp otomatik olarak karakterine ekleyebilmesi.
+* **Uygulanan Değişiklikler:**
+  1. **D&D 3.5e RAW SRD/Core Katalog Genişletmesi (`bundled_data.js` & `webapp/`):**
+     - Standart 7 ırka ek olarak resmi D&D 3.5e RAW kural kitaplarından 7 yeni ırk eksiksiz şemasıyla (`size`, `baseSpeed`, stat modifiyerleri, `traits`, `source`, `languages`, `favoredClass`) eklendi:
+       - **Aasimar** (+2 Wis, +2 Cha, Darkvision 60 ft, Daylight 1/day, Acid/Cold/Elec resistance 5, +2 Listen/Spot)
+       - **Tiefling** (+2 Dex, +2 Int, -2 Cha, Darkvision 60 ft, Darkness 1/day, Cold/Fire/Elec resistance 5, +2 Bluff/Hide)
+       - **Dragonborn** (+2 Con, -2 Dex, Draconic Aspect Heart/Mind/Wings, Dodge vs Dragons)
+       - **Drow** (+2 Dex, -2 Con, +2 Int, +2 Cha, Darkvision 120 ft, Spell Resistance 11+lvl, Light Blindness, Spell-Like Abilities)
+       - **Orc** (+4 Str, -2 Int, -2 Wis, -2 Cha, Darkvision 60 ft, Light Sensitivity)
+       - **Goblin** (+2 Dex, -2 Str, -2 Cha, Small, 30 ft Hız, Darkvision 60 ft, +4 Move Silently & Ride)
+       - **Kobold** (+2 Dex, -4 Str, -2 Con, Small, +1 Natural Armor, Darkvision 60 ft, Light Sensitivity)
+  2. **Datalist (`#race-options`) & "Diğer" Seçeneği:**
+     - Datalist güncellenerek yukarıdaki tüm ırklar, Goliath, Warforged ve sonuna `Diğer (Rule Master AI ile Ara...)` eklendi.
+  3. **Rule Master AI ile Dinamik Irk Arama & Entegrasyon:**
+     - `rule_master.js`: `fetchSingleAiRuleObjects` promptu ve `normalizeEntry` metodu D&D 3.5e RAW `Race` şemasıyla senkronize edildi (Kural #8 uyumu). `RuleMaster.fetchRaceViaAi(raceName)` metodu eklendi.
+     - `character.html`:
+       - Kullanıcı "Diğer" seçtiğinde kart alanında interaktif bir AI Irk Arama kutusu (`#race-ai-search-input` ve `Irkı Getir` butonu) açılır.
+       - Kullanıcı listede olmayan herhangi bir ırk yazdığında kartta tek tıkla `[ 🔮 "${raceName}" Irkını Rule Master AI ile Getir ]` butonu sunulur.
+       - Getirilen ırk yerel belleğe ve `localStorage.dnd35_custom_races` deposuna kaydedilir; `onProfileRaceChange` üzerinden tüm ırksal nitelikleriyle önizlenir ve `[ 🧬 Irk Niteliklerini Uygula ]` butonuyla karaktere doğrudan yansıtılır.
+  4. **Parite ve Kural Bütünlüğü:**
+     - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` (%100 SHA-256: `1EE727AF...`).
+     - `bundled_data.js`, `webapp/bundled_data.js` (%100 SHA-256: `5D404B9E...`).
+     - `rule_master.js`, `webapp/rule_master.js` (%100 SHA-256: `AC14C883...`).
+     - Sıfır dummy data ve sıfır standart tavla zarı emoji kuralı tavizsiz korundu.

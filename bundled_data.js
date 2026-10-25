@@ -5168,5 +5168,334 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                      "small",
                      "halfling-luck"
                  ]
+    },
+    {
+        "name": "Aasimar",
+        "type": "Race",
+        "category": "Planetouched",
+        "slot": "None",
+        "size": "Medium",
+        "baseSpeed": 30,
+        "strBonus": 0,
+        "dexBonus": 0,
+        "conBonus": 0,
+        "intBonus": 0,
+        "wisBonus": 2,
+        "chaBonus": 2,
+        "favoredClass": "Paladin",
+        "languages": [
+            "Common",
+            "Celestial"
+        ],
+        "source": "Monster Manual v.3.5, p. 209 / SRD",
+        "benefit": "Outsider (Native) type, +2 Wis, +2 Cha, Darkvision 60 ft., Daylight 1/day, Resistance to acid 5, cold 5, electricity 5, +2 Listen and Spot.",
+        "description": "Planetouched creatures descended from celestial beings.",
+        "traits": [
+            {
+                "name": "Native Outsider",
+                "desc": "Outsider (Native) type. Unlike true outsiders, native outsiders can be raised or resurrected normally."
+            },
+            {
+                "name": "Darkvision",
+                "desc": "Can see in total darkness up to 60 feet."
+            },
+            {
+                "name": "Daylight (Sp)",
+                "desc": "Can use Daylight once per day as a spell-like ability (caster level equals character level)."
+            },
+            {
+                "name": "Celestial Resistance",
+                "desc": "Resistance to acid 5, cold 5, and electricity 5."
+            },
+            {
+                "name": "Keen Senses",
+                "desc": "+2 racial bonus on Listen and Spot checks."
+            }
+        ],
+        "tags": [
+            "race",
+            "aasimar",
+            "planetouched",
+            "outsider"
+        ]
+    },
+    {
+        "name": "Tiefling",
+        "type": "Race",
+        "category": "Planetouched",
+        "slot": "None",
+        "size": "Medium",
+        "baseSpeed": 30,
+        "strBonus": 0,
+        "dexBonus": 2,
+        "conBonus": 0,
+        "intBonus": 2,
+        "wisBonus": 0,
+        "chaBonus": -2,
+        "favoredClass": "Rogue",
+        "languages": [
+            "Common",
+            "Infernal"
+        ],
+        "source": "Monster Manual v.3.5, p. 209 / SRD",
+        "benefit": "Outsider (Native) type, +2 Dex, +2 Int, -2 Cha, Darkvision 60 ft., Darkness 1/day, Resistance to cold 5, fire 5, electricity 5, +2 Bluff and Hide.",
+        "description": "Planetouched creatures with fiendish heritage.",
+        "traits": [
+            {
+                "name": "Native Outsider",
+                "desc": "Outsider (Native) type. Unlike true outsiders, native outsiders can be raised or resurrected normally."
+            },
+            {
+                "name": "Darkvision",
+                "desc": "Can see in total darkness up to 60 feet."
+            },
+            {
+                "name": "Darkness (Sp)",
+                "desc": "Can use Darkness once per day as a spell-like ability (caster level equals character level)."
+            },
+            {
+                "name": "Fiendish Resistance",
+                "desc": "Resistance to cold 5, fire 5, and electricity 5."
+            },
+            {
+                "name": "Cunning & Stealth",
+                "desc": "+2 racial bonus on Bluff and Hide checks."
+            }
+        ],
+        "tags": [
+            "race",
+            "tiefling",
+            "planetouched",
+            "outsider"
+        ]
+    },
+    {
+        "name": "Dragonborn",
+        "type": "Race",
+        "category": "Dragonblood",
+        "slot": "None",
+        "size": "Medium",
+        "baseSpeed": 30,
+        "strBonus": 0,
+        "dexBonus": -2,
+        "conBonus": 2,
+        "intBonus": 0,
+        "wisBonus": 0,
+        "chaBonus": 0,
+        "favoredClass": "Fighter",
+        "languages": [
+            "Common",
+            "Draconic"
+        ],
+        "source": "Races of the Dragon, p. 8",
+        "benefit": "Humanoid (Dragonblood) type, +2 Con, -2 Dex, Draconic Aspect (Heart/Mind/Wings), Frightful Presence Immunity, +2 dodge vs Dragons.",
+        "description": "Reborn champions of Bahamut blessed with draconic grace and resilience.",
+        "traits": [
+            {
+                "name": "Dragonblood Subtype",
+                "desc": "Treated as both humanoid and dragon for effects related to race."
+            },
+            {
+                "name": "Draconic Aspect",
+                "desc": "Chooses an aspect: Heart (Breath Weapon: line or cone dealing 1d8+1d8/3 levels energy), Mind (Darkvision 60 ft., Low-Light Vision, +2 Listen, Search, Spot), or Wings (Glide and eventually Fly)."
+            },
+            {
+                "name": "Draconic Immunity",
+                "desc": "Immune to the frightful presence ability of dragons."
+            },
+            {
+                "name": "Dodge vs Dragons",
+                "desc": "+2 dodge bonus to Armor Class against dragons."
+            }
+        ],
+        "tags": [
+            "race",
+            "dragonborn",
+            "dragonblood"
+        ]
+    },
+    {
+        "name": "Drow",
+        "type": "Race",
+        "category": "Elf Subrace",
+        "slot": "None",
+        "size": "Medium",
+        "baseSpeed": 30,
+        "strBonus": 0,
+        "dexBonus": 2,
+        "conBonus": -2,
+        "intBonus": 2,
+        "wisBonus": 0,
+        "chaBonus": 2,
+        "favoredClass": "Wizard",
+        "languages": [
+            "Common",
+            "Elven",
+            "Undercommon"
+        ],
+        "source": "Monster Manual v.3.5, p. 103 / SRD",
+        "benefit": "+2 Dex, -2 Con, +2 Int, +2 Cha, Darkvision 120 ft., Spell Resistance (11 + class level), Spell-like abilities (Dancing Lights, Darkness, Faerie Fire 1/day), Light Blindness, Weapon Proficiencies.",
+        "description": "Dark elves dwelling in the subterranean Underdark.",
+        "traits": [
+            {
+                "name": "Superior Darkvision",
+                "desc": "Can see in total darkness up to 120 feet."
+            },
+            {
+                "name": "Spell Resistance",
+                "desc": "Spell resistance equal to 11 + character level."
+            },
+            {
+                "name": "Spell-Like Abilities",
+                "desc": "1/day: Dancing Lights, Darkness, Faerie Fire (caster level equals character level)."
+            },
+            {
+                "name": "Light Blindness",
+                "desc": "Abrupt exposure to bright light blinds drow for 1 round; subsequent rounds suffer -1 circumstance penalty on attack rolls, saves, and checks while remaining in bright light."
+            },
+            {
+                "name": "Drow Weapon Proficiency",
+                "desc": "Proficient with hand crossbow, rapier, and short sword."
+            }
+        ],
+        "tags": [
+            "race",
+            "drow",
+            "elf",
+            "underdark"
+        ]
+    },
+    {
+        "name": "Orc",
+        "type": "Race",
+        "category": "Standard Monster Race",
+        "slot": "None",
+        "size": "Medium",
+        "baseSpeed": 30,
+        "strBonus": 4,
+        "dexBonus": 0,
+        "conBonus": 0,
+        "intBonus": -2,
+        "wisBonus": -2,
+        "chaBonus": -2,
+        "favoredClass": "Barbarian",
+        "languages": [
+            "Common",
+            "Orc"
+        ],
+        "source": "Monster Manual v.3.5, p. 203 / SRD",
+        "benefit": "+4 Str, -2 Int, -2 Wis, -2 Cha, Darkvision 60 ft., Light Sensitivity.",
+        "description": "Fierce, savage humanoids driven by raw physical might.",
+        "traits": [
+            {
+                "name": "Darkvision",
+                "desc": "Can see in total darkness up to 60 feet."
+            },
+            {
+                "name": "Light Sensitivity",
+                "desc": "Dazzled in bright sunlight or within the radius of a daylight spell (-1 penalty on attack rolls, search checks, and spot checks)."
+            }
+        ],
+        "tags": [
+            "race",
+            "orc",
+            "humanoid"
+        ]
+    },
+    {
+        "name": "Goblin",
+        "type": "Race",
+        "category": "Goblinoid",
+        "slot": "None",
+        "size": "Small",
+        "baseSpeed": 30,
+        "strBonus": -2,
+        "dexBonus": 2,
+        "conBonus": 0,
+        "intBonus": 0,
+        "wisBonus": 0,
+        "chaBonus": -2,
+        "favoredClass": "Rogue",
+        "languages": [
+            "Common",
+            "Goblin"
+        ],
+        "source": "Monster Manual v.3.5, p. 133 / SRD",
+        "benefit": "+2 Dex, -2 Str, -2 Cha, Small size (fast 30 ft. speed for Small), Darkvision 60 ft., +4 Move Silently and Ride checks.",
+        "description": "Small, stealthy humanoid scavengers and raiders.",
+        "traits": [
+            {
+                "name": "Small Size",
+                "desc": "+1 bonus to AC, +1 bonus on attack rolls, +4 bonus on Hide checks, smaller weapon dice, 3/4 carrying capacity."
+            },
+            {
+                "name": "Fast Small Speed",
+                "desc": "A goblin's base land speed is 30 feet, unusually fast for a Small creature."
+            },
+            {
+                "name": "Darkvision",
+                "desc": "Can see in total darkness up to 60 feet."
+            },
+            {
+                "name": "Goblinoid Stealth",
+                "desc": "+4 racial bonus on Move Silently checks and +4 racial bonus on Ride checks."
+            }
+        ],
+        "tags": [
+            "race",
+            "goblin",
+            "goblinoid",
+            "small"
+        ]
+    },
+    {
+        "name": "Kobold",
+        "type": "Race",
+        "category": "Reptilian / Dragonblood",
+        "slot": "None",
+        "size": "Small",
+        "baseSpeed": 30,
+        "strBonus": -4,
+        "dexBonus": 2,
+        "conBonus": -2,
+        "intBonus": 0,
+        "wisBonus": 0,
+        "chaBonus": 0,
+        "favoredClass": "Sorcerer",
+        "languages": [
+            "Draconic"
+        ],
+        "source": "Monster Manual v.3.5, p. 161 / SRD",
+        "benefit": "+2 Dex, -4 Str, -2 Con, Small size, +1 Natural Armor, Darkvision 60 ft., +2 Craft (trapmaking), Profession (miner), Search, Light Sensitivity.",
+        "description": "Small, cunning reptilian humanoids with draconic heritage.",
+        "traits": [
+            {
+                "name": "Small Size",
+                "desc": "+1 bonus to AC, +1 bonus on attack rolls, +4 bonus on Hide checks, smaller weapon dice, 3/4 carrying capacity."
+            },
+            {
+                "name": "Natural Armor",
+                "desc": "+1 natural armor bonus to Armor Class."
+            },
+            {
+                "name": "Darkvision",
+                "desc": "Can see in total darkness up to 60 feet."
+            },
+            {
+                "name": "Trapmaking & Mining",
+                "desc": "+2 racial bonus on Craft (trapmaking), Profession (miner), and Search checks."
+            },
+            {
+                "name": "Light Sensitivity",
+                "desc": "Dazzled in bright sunlight or daylight (-1 on attack rolls, search, spot)."
+            }
+        ],
+        "tags": [
+            "race",
+            "kobold",
+            "reptilian",
+            "dragonblood",
+            "small"
+        ]
     }
 ];
