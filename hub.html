@@ -1193,7 +1193,7 @@
       }
 
       // Dummy karakter filtre seti (eski test verilerini temizlemek için)
-      const dummyIds = new Set(['char_001', 'char_002', 'char_003', 'char_004']);
+      const dummyIds = new Set(['char_001', 'char_002', 'char_003', 'char_004', 'char_test_khazmil']);
       const dummyNames = new Set([
         'regdar ironfist',
         'mialee moonwhisper',
@@ -1244,39 +1244,8 @@
         characters.push(c);
       });
 
-      // 3. Sıfır Karakter Koruması (Yalnızca DB tamamen boşsa ilk seferde örnek test karakteri sun)
-      if (characters.length === 0 && window.BUNDLED_CHARACTER_DATA) {
-        const kData = window.BUNDLED_CHARACTER_DATA;
-        const activeWep = (kData.weapons || []).find(w => w.name === kData.activeWeapon) || (kData.weapons || [])[0] || {};
-        characters.push({
-          id: 'char_test_khazmil',
-          campaignId: 'camp_001',
-          isNpc: false,
-          name: kData.name || "Kazmil'in Çırağı",
-          race: kData.race || "Human",
-          classes: kData.classes || (kData.class ? `${kData.class} ${kData.level || 6}` : "Sorcerer 5 / Warblade 1"),
-          level: Number(kData.level) || 6,
-          portrait: kData.portrait || kData.avatarUrl || "",
-          portraitPosition: kData.portraitPosition || "50% 50%",
-          portraitFit: kData.portraitFit || "125%",
-          avatarUrl: kData.portrait || kData.avatarUrl || "",
-          currentHp: kData.hp?.current ?? 45,
-          maxHp: kData.hp?.max ?? 45,
-          tempHp: kData.hp?.temp ?? 0,
-          ac: kData.ac?.total ?? 17,
-          touchAc: kData.ac?.touch ?? 13,
-          flatFootedAc: kData.ac?.flatFooted ?? 14,
-          mainWeapon: activeWep.name || "Rapier",
-          attackFormula: activeWep.dice ? `${activeWep.dice}+${activeWep.dmgBonus || 0}` : "+3",
-          fortSave: kData.saves?.fort?.total ?? 5,
-          refSave: kData.saves?.ref?.total ?? 4,
-          willSave: kData.saves?.will?.total ?? 5,
-          initBonus: 3,
-          spotBonus: 2,
-          listenBonus: 2,
-          fullData: kData
-        });
-      }
+      // 3. Sıfır Karakter Koruması: Kural #5 (No Dummy Data) uyarınca otomatik sahte/örnek karakter oluşturulmaz.
+      // Liste boş ise kullanıcı yeni bir karakter yaratana veya Bestiary'den ekleyene kadar arayüz temiz kalır.
 
       // 4. Karakter sayfasındaki aktif karakteri sadece kendi ID'sine sahip kartla senkronize et
       let activeChar = null;
@@ -2129,13 +2098,25 @@
       renderHub();
     }
 
-    function deleteCharacter(charId) {
+    async function deleteCharacter(charId) {
       const c = state.characters.find(it => it.id === charId);
       if (!c) return;
-      if (confirm(`"${c.name}" karakterini silmek istediğinize emin misiniz?`)) {
+      if (confirm(`"${c.name}" karakterini silmek istediğinize emin misiniz?\n\nBu işlem karakteri hem bu tarayıcıdan hem de bulut hesabınızdan kalıcı olarak silecektir.`)) {
         state.characters = state.characters.filter(it => it.id !== charId);
-        saveHubStorage();
+        if (localStorage.getItem('dnd35_active_character_id') === charId) {
+          localStorage.removeItem('dnd35_active_character_id');
+        }
+        saveHubStorage(true);
         renderHub();
+
+        // Supabase Buluttan da Kalıcı Olarak Sil (Geri gelmesini / hortlamasını önle)
+        if (window.SupabaseAuth && !window.SupabaseAuth.isLocalMode()) {
+          try {
+            await window.SupabaseAuth.deleteCharacter(charId);
+          } catch (delErr) {
+            console.warn('Buluttan silme uyarısı:', delErr);
+          }
+        }
       }
     }
 
@@ -3971,27 +3952,67 @@ CRITICAL RULES:
           });
         }
 
-        // 2. Buluttaki karakterleri yerel listeye ekle/güncelle
+        // 2. Buluttaki karakterleri yerel listeye ekle/güncelle & Hayalet mükerrer kopyaları ayıkla
         if (Array.isArray(cloudChars) && cloudChars.length > 0) {
-          cloudChars.forEach(cc => {
+          const dummyCloudIds = new Set(['char_001', 'char_002', 'char_003', 'char_004', 'char_test_khazmil']);
+          const seenSignatures = new Map();
+
+          for (const cc of cloudChars) {
+            // Dummy veya sahte test karakteri bulutta kalmışsa buluttan kalıcı olarak sil
+            if (dummyCloudIds.has(cc.id) || (cc.name && cc.name.toLowerCase().trim() === "kazmil'in çırağı")) {
+              window.SupabaseAuth.deleteCharacter(cc.id).catch(() => {});
+              continue;
+            }
+
+            // Aynı isim ve sınıfa sahip mükerrer hayalet kopyalar (örn. otomatik çiftelenen Fighter / Ranger kayıtları)
+            const sig = `${(cc.name || '').toLowerCase().trim()}__${(cc.full_data?.classes || cc.classes || '').toLowerCase().trim()}__${cc.full_data?.level || cc.level || 1}`;
+            if (seenSignatures.has(sig)) {
+              // Zaten mevcut; daha yeni olanı koru, eski mükerrer kopyayı buluttan sil
+              const existing = seenSignatures.get(sig);
+              const curTs = new Date(cc.updated_at || 0).getTime() || 0;
+              const exTs = new Date(existing.updated_at || 0).getTime() || 0;
+              if (curTs > exTs) {
+                window.SupabaseAuth.deleteCharacter(existing.id).catch(() => {});
+                seenSignatures.set(sig, cc);
+              } else {
+                window.SupabaseAuth.deleteCharacter(cc.id).catch(() => {});
+              }
+            } else {
+              seenSignatures.set(sig, cc);
+            }
+          }
+
+          const uniqueCloudChars = Array.from(seenSignatures.values());
+
+          // Yerel state içerisindeki dummy kayıtları da temizle
+          state.characters = state.characters.filter(c => !dummyCloudIds.has(c.id));
+
+          uniqueCloudChars.forEach(cc => {
             let localChar = state.characters.find(c => c.id === cc.id);
             if (!localChar) {
+              const fullData = cc.full_data || {};
+              fullData.id = cc.id;
+              fullData._hubId = cc.id;
               state.characters.push({
                 id: cc.id,
                 campaignId: cc.campaign_id,
                 name: cc.name,
                 isNpc: cc.is_npc,
                 currentHp: cc.current_hp,
-                maxHp: cc.full_data?.hp?.max || 10,
+                maxHp: fullData.hp?.max || 10,
                 tempHp: cc.temp_hp || 0,
-                race: cc.full_data?.race || '',
-                classes: cc.full_data?.classes || '',
-                fullData: cc.full_data,
+                race: fullData.race || '',
+                classes: fullData.classes || '',
+                fullData: fullData,
                 cloudSynced: true
               });
               changed = true;
             } else {
-              if (cc.full_data) localChar.fullData = cc.full_data;
+              if (cc.full_data) {
+                localChar.fullData = cc.full_data;
+                localChar.fullData.id = cc.id;
+                localChar.fullData._hubId = cc.id;
+              }
               localChar.currentHp = cc.current_hp;
               localChar.tempHp = cc.temp_hp || 0;
               localChar.cloudSynced = true;
@@ -3999,10 +4020,15 @@ CRITICAL RULES:
           });
         }
 
-        // 3. Yerelde olup henüz buluta aktarılmamış karakterleri otomatik buluta yedekle
+        // 3. Yerelde olup henüz buluta aktarılmamış gerçek karakterleri otomatik buluta yedekle
         for (const lc of state.characters) {
+          const dummyLocalIds = new Set(['char_001', 'char_002', 'char_003', 'char_004', 'char_test_khazmil']);
+          if (dummyLocalIds.has(lc.id)) continue;
           if (!cloudChars.some(cc => cc.id === lc.id)) {
-            window.SupabaseAuth.upsertUserCharacter(lc.fullData || lc).catch(() => {});
+            const charPayload = lc.fullData || Object.assign({}, lc);
+            charPayload.id = lc.id;
+            charPayload._hubId = lc.id;
+            window.SupabaseAuth.upsertUserCharacter(charPayload).catch(() => {});
           }
         }
 

@@ -415,3 +415,28 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      * Karakter açıldığında `/?id=...` yerine doğrudan `/character?id=...` rotasına yönlendirilmesi sağlandı.
   4. **Parite ve Doğrulama:**
      * `vercel.json`, `hub.html`, `webapp/hub.html`, `index.html`, `character.html`, `webapp/index.html` ve `webapp/character.html` dosyaları %100 SHA-256 paritesinde eşitlenip GitHub `main` branch'ine push edildi.
+
+---
+
+## 21. HUB & SUPABASE HAYALET KARAKTER DÖNGÜSÜNÜN ÇÖZÜMÜ VE BULUT SİLME ENTEGRASYONU (2026-10-25)
+* **Sorun:** Hub sayfasında kullanıcının oluşturmadığı veya sildiği karakterlerin (`char_test_khazmil`, `char_179293...` zaman damgalı mükerrer Fighter 1 ve Ranger 1 kopyaları) kendiliğinden listeye eklenmesi ve sayfayı yenileyince tekrar hortlaması.
+* **Kök Nedenler:**
+  1. `initHubStorage` içindeki eski prototip dummy aşılamasının (`characters.length === 0` iken zorla `char_test_khazmil` oluşturması) Kural #5 (No Dummy Data) kuralını çiğnemesi.
+  2. `syncCloudUserHub` içindeki senkronizasyon döngüsünde `lc.fullData` nesnesinin `id` taşımaması sebebiyle `upsertUserCharacter` fonksiyonunun her oturumda yeni bir `char_${Date.now()}` üretip buluta ayrı bir karakter olarak kaydetmesi.
+  3. Hub'daki çöp kutusu (`deleteCharacter`) eyleminin sadece yerel `localStorage`'dan silmesi, Supabase bulutundan silmemesi neticesinde silinen karakterlerin her sayfa yenilemesinde buluttan tekrar geri yüklenmesi.
+* **Uygulanan Kesin Çözümler:**
+  1. **Bulut Silme Entegrasyonu (`supabase_auth.js` & `webapp/`):**
+     * `deleteCharacter(characterId)` metodu eklendi. Kullanıcının `characters` tablosundaki ilgili kaydını `owner_user_id` güvenliğiyle kalıcı olarak siler.
+  2. **Hub Çöp Kutusu Kalıcı Silme (`hub.html` & `webapp/`):**
+     * `deleteCharacter(charId)` asenkron hale getirildi; hem yerel hafızadan hem de Supabase bulutundan aynı anda silinmesi sağlandı.
+  3. **Dummy Aşılamasının Kaldırılması (`hub.html` & `webapp/`):**
+     * `initHubStorage` içindeki `char_test_khazmil` otomatik oluşturma kodu tamamen kaldırıldı. Boş durumda temiz "➕ Yeni Karakter Ekle" kartı gösterilir.
+     * `dummyIds` filtresine `char_test_khazmil` eklendi.
+  4. **Otomatik Mükerrer Ayıklama (Deduplication):**
+     * `syncCloudUserHub` içine imza ve zaman damgası kontrolü eklendi; aynı isim ve sınıfa sahip mükerrer hayalet kopyalar tespit edilip en günceli korunarak eski kopyalar Supabase bulutundan otomatik temizlendi.
+     * `charPayload.id = lc.id; charPayload._hubId = lc.id;` garantisi ile bulut kaydının yerel ID ile %100 birebir eşleşmesi güvenceye alındı.
+  5. **Karakter Kâğıdı ID Bütünlüğü (`character.html` / `index.html`):**
+     * `loadInitialData` ve `saveStateToStorage` içerisinde ID atanmamış karakterlere sabit ID bağlanması garanti altına alındı.
+  6. **Parite ve Kural Bütünlüğü:**
+     * `hub.html`, `character.html`, `index.html`, `supabase_auth.js` ve `webapp/` kopyaları %100 SHA-256 eşitliğinde tutuldu.
+     * Sıfır tavla zarı (`🎲`) ve Kural #5 (No Dummy Data) kuralları tavizsiz korundu.

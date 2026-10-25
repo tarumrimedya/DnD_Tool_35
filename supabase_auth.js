@@ -472,8 +472,9 @@ const SupabaseAuth = {
     const client = this.getClient();
     if (!client) return null;
 
-    const charId = characterData.id || `char_${Date.now()}`;
+    const charId = characterData.id || characterData._hubId || `char_${Date.now()}`;
     characterData.id = charId;
+    characterData._hubId = charId;
     const curHp = characterData.hp?.current ?? characterData.hp?.max ?? 10;
     const tmpHp = characterData.hp?.temp ?? 0;
 
@@ -501,6 +502,30 @@ const SupabaseAuth = {
       return null;
     }
     return data;
+  },
+
+  /**
+   * Oturum açmış kullanıcının karakterini Supabase veritabanından kalıcı olarak siler
+   */
+  async deleteCharacter(characterId) {
+    if (this.isLocalMode() || !characterId) return false;
+    const user = await this.getUser();
+    if (!user || user.id === 'local_offline_user') return false;
+
+    const client = this.getClient();
+    if (!client) return false;
+
+    const { error } = await client
+      .from('characters')
+      .delete()
+      .eq('id', characterId)
+      .eq('owner_user_id', user.id);
+
+    if (error) {
+      console.warn('deleteCharacter cloud error:', error);
+      return false;
+    }
+    return true;
   },
 
   /**

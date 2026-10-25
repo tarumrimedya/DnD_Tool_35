@@ -7796,6 +7796,8 @@
         if (!character) {
           if (defaultChar) {
             character = JSON.parse(JSON.stringify(defaultChar));
+            character.id = character._hubId || 'char_active_player';
+            character._hubId = character.id;
             saveStateToStorage(false);
           }
         } else if (defaultChar) {
@@ -8112,6 +8114,10 @@
 
       // Multi-User Cloud Karakter Senkronizasyonu (Kampanyaya bağlı olsun veya olmasın)
       if (character && window.SupabaseAuth && !window.SupabaseAuth.isLocalMode()) {
+        if (!character.id) {
+          character.id = character._hubId || 'char_active_player';
+          character._hubId = character.id;
+        }
         window.SupabaseAuth.upsertUserCharacter(character).catch(err => {
           console.warn('upsertUserCharacter background notice:', err);
         });
