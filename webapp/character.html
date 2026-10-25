@@ -4205,26 +4205,31 @@
           </div>
           <div>
             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Irk (Race) *</label>
-            <input type="text" id="profile-edit-race" list="race-options" oninput="updateProfileModalAvatar(); onProfileRaceChange(this.value);" onchange="updateProfileModalAvatar(); onProfileRaceChange(this.value);" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-bold">
-            <datalist id="race-options">
-              <option value="Human">
-              <option value="Elf">
-              <option value="Dwarf">
-              <option value="Halfling">
-              <option value="Gnome">
-              <option value="Half-Elf">
-              <option value="Half-Orc">
-              <option value="Aasimar">
-              <option value="Tiefling">
-              <option value="Dragonborn">
-              <option value="Drow">
-              <option value="Orc">
-              <option value="Goblin">
-              <option value="Kobold">
-              <option value="Goliath">
-              <option value="Warforged">
-              <option value="Diğer (Rule Master AI ile Ara...)">
-            </datalist>
+            <select id="profile-edit-race" onchange="updateProfileModalAvatar(); onProfileRaceChange(this.value);" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white font-bold focus:outline-none focus:border-purple-400 cursor-pointer">
+              <optgroup label="Standart D&amp;D 3.5e RAW Irkları">
+                <option value="Human">Human (İnsan)</option>
+                <option value="Elf">Elf</option>
+                <option value="Dwarf">Dwarf (Cüce)</option>
+                <option value="Halfling">Halfling (Buçukluk)</option>
+                <option value="Gnome">Gnome (Gnom)</option>
+                <option value="Half-Elf">Half-Elf (Yarı-Elf)</option>
+                <option value="Half-Orc">Half-Orc (Yarı-Ork)</option>
+              </optgroup>
+              <optgroup label="Genişletilmiş Resmi Irklar (SRD &amp; Ek Kitaplar)">
+                <option value="Aasimar">Aasimar (Planetouched)</option>
+                <option value="Tiefling">Tiefling (Planetouched)</option>
+                <option value="Dragonborn">Dragonborn of Bahamut</option>
+                <option value="Drow">Drow (Dark Elf)</option>
+                <option value="Orc">Orc (Ork)</option>
+                <option value="Goblin">Goblin</option>
+                <option value="Kobold">Kobold</option>
+                <option value="Goliath">Goliath (Races of Stone)</option>
+                <option value="Warforged">Warforged (Eberron)</option>
+              </optgroup>
+              <optgroup label="Yapay Zeka (AI) &amp; Özel">
+                <option value="Diğer">🔮 Diğer (Rule Master AI ile Ara...)</option>
+              </optgroup>
+            </select>
           </div>
         </div>
 
@@ -9931,7 +9936,20 @@
         if (el) el.value = val !== undefined && val !== null ? val : '';
       };
       setVal('profile-edit-name', character.name || '');
-      setVal('profile-edit-race', character.race || '');
+      const raceSel = document.getElementById('profile-edit-race');
+      if (raceSel && character.race) {
+        const curRace = String(character.race).trim();
+        const hasOpt = Array.from(raceSel.options).some(o => o.value.toLowerCase() === curRace.toLowerCase());
+        if (!hasOpt && curRace) {
+          const opt = document.createElement('option');
+          opt.value = curRace;
+          opt.textContent = curRace;
+          raceSel.appendChild(opt);
+        }
+        raceSel.value = curRace;
+      } else {
+        setVal('profile-edit-race', character.race || 'Human');
+      }
       setVal('profile-edit-alignment', character.alignment || '');
       setVal('profile-edit-deity', character.deity || '');
       setVal('profile-edit-size', character.size || 'Medium');
@@ -9973,9 +9991,18 @@
           const cachedRaces = JSON.parse(cachedRacesJson);
           if (Array.isArray(cachedRaces)) {
             if (!window.BUNDLED_SRD_CORE_CATALOG) window.BUNDLED_SRD_CORE_CATALOG = [];
+            const raceSel = document.getElementById('profile-edit-race');
             cachedRaces.forEach(r => {
-              if (r && r.name && !window.BUNDLED_SRD_CORE_CATALOG.some(c => c && c.name && c.name.toLowerCase() === r.name.toLowerCase())) {
-                window.BUNDLED_SRD_CORE_CATALOG.push(r);
+              if (r && r.name) {
+                if (!window.BUNDLED_SRD_CORE_CATALOG.some(c => c && c.name && c.name.toLowerCase() === r.name.toLowerCase())) {
+                  window.BUNDLED_SRD_CORE_CATALOG.push(r);
+                }
+                if (raceSel && !Array.from(raceSel.options).some(o => o.value.toLowerCase() === r.name.toLowerCase())) {
+                  const opt = document.createElement('option');
+                  opt.value = r.name;
+                  opt.textContent = `${r.name} (Özel / AI)`;
+                  raceSel.appendChild(opt);
+                }
               }
             });
           }
@@ -10123,15 +10150,17 @@
           console.warn('Failed to cache race in localStorage:', e);
         }
 
-        // Add option to datalists if not present
-        const dl = document.getElementById('race-options');
-        if (dl) {
-          const hasOpt = Array.from(dl.options).some(o => o.value.toLowerCase() === raceObj.name.toLowerCase());
+        // Add option to select if not present
+        const raceSel = document.getElementById('profile-edit-race');
+        if (raceSel) {
+          const hasOpt = Array.from(raceSel.options).some(o => o.value.toLowerCase() === raceObj.name.toLowerCase());
           if (!hasOpt) {
             const opt = document.createElement('option');
             opt.value = raceObj.name;
-            dl.insertBefore(opt, dl.lastElementChild);
+            opt.textContent = `${raceObj.name} (AI)`;
+            raceSel.appendChild(opt);
           }
+          raceSel.value = raceObj.name;
         }
 
         // Set input value to canonical name
