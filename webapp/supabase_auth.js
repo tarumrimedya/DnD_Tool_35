@@ -616,6 +616,37 @@ const SupabaseAuth = {
   },
 
   /**
+   * Oturum açmış kullanıcının sahip olduğu bir kampanyayı Supabase veritabanından kalıcı olarak siler
+   */
+  async deleteCampaign(campaignId) {
+    if (this.isLocalMode() || !campaignId) return false;
+    const user = await this.getUser();
+    if (!user || user.id === 'local_offline_user') return false;
+
+    const client = this.getClient();
+    if (!client) return false;
+
+    // Kampanyayı sil (dm_user_id kontrolü ile güvenli silme)
+    const { error } = await client
+      .from('campaigns')
+      .delete()
+      .eq('id', campaignId)
+      .eq('dm_user_id', user.id);
+
+    if (error) {
+      console.warn('deleteCampaign cloud error:', error);
+      return false;
+    }
+
+    // Aktif Realtime kanalı varsa kapat
+    if (this._activeChannels && this._activeChannels[campaignId]) {
+      this.unsubscribeCampaignRealtime(campaignId);
+    }
+
+    return true;
+  },
+
+  /**
    * Oturum açmış kullanıcının sahip olduğu tüm karakterleri çeker (Çoklu cihaz senkronizasyonu için)
    */
   async fetchUserCharacters() {

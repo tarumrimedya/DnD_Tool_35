@@ -460,3 +460,23 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   4. **Parite ve Kural Bütünlüğü:**
      * `hub.html`, `character.html`, `index.html`, `supabase_auth.js`, `gdrive_sync.js` ve `webapp/` altındaki kopyaları %100 birebir SHA-256 eşitliğinde tutuldu.
      * Sıfır tavla zarı (`🎲`) kuralı tavizsiz korundu.
+
+---
+
+## 23. KAMPANYALARIN SİLİNMESİNE RAĞMEN GERİ GELMESİ (HORTLAMA) VE ÇİFT SEFER SORUNUNUN ÇÖZÜMÜ (2026-10-25)
+* **Sorun:** Hub sekmesinde `camp_001` ve Supabase bulut seferinin (`fd74cec9-...`) çiftelenmesi; kullanıcı kampanyayı düzenleme modalından sildikten sonra dahi sayfa yenilenince kampanyanın tekrar hortlaması.
+* **Kök Nedenler:**
+  1. `initHubStorage` içindeki `if (!campaigns.some(cp => cp.id === 'camp_001')) campaigns.unshift(...)` kodunun, kullanıcı `camp_001`'i silmiş olsa dahi her sayfa açılışında zorla yeniden üretmesi.
+  2. `deleteCampaignFromModal` fonksiyonunun kampanyayı yalnızca yerel `localStorage`'dan filtrelemesi; Supabase bulutundaki `campaigns` tablosundan silmemesi neticesinde `syncCloudUserHub` tarafından her oturumda geri yüklenmesi.
+  3. Yerel `camp_001` ile buluttaki "Ana Sefer (Main Campaign)" kaydının birbirini tanımayarak iki ayrı sekme açması.
+* **Uygulanan Kesin Çözümler:**
+  1. **Bulut Kampanya Silme Entegrasyonu (`supabase_auth.js` & `webapp/`):**
+     * `deleteCampaign(campaignId)` metodu eklendi. `dm_user_id` güvenliği ile ilgili kampanyayı ve WebSocket Realtime kanalını kalıcı olarak siler.
+  2. **Hub Modal Silme Güncellemesi (`hub.html` & `webapp/`):**
+     * `deleteCampaignFromModal` asenkron yapılarak hem yerel listeden hem de Supabase bulutundan aynı anda silmesi sağlandı.
+  3. **Forced `camp_001` Aşılamasının Kaldırılması (`hub.html` & `webapp/`):**
+     * `initHubStorage` içindeki zorla unshift etme mantığı kaldırıldı; kullanıcı sildiyse veya bulut seferi varsa tekrar hortlaması engellendi.
+  4. **Otomatik Kampanya Birleştirme & Mükerrer Önleme:**
+     * `syncCloudUserHub` fonksiyonunda `camp_001` ile bulut seferi eşleşirse tek bir sekmede birleştirilir, çift sekme oluşması engellenir.
+  5. **Parite ve Kural Bütünlüğü:**
+     * `hub.html`, `supabase_auth.js` ve `webapp/` kopyaları %100 SHA-256 eşitliğinde tutuldu; sıfır tavla zarı (`🎲`) kuralı korundu.

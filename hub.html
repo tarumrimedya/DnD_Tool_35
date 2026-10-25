@@ -1201,26 +1201,27 @@
         'lidda quickstep'
       ]);
 
-      let campaigns = [
-        { id: 'camp_001', name: '⚔️ Ana Sefer (Main Campaign)', notes: 'Aktif macera seferi.' }
-      ];
-
+      let campaigns = [];
       let rawCharacters = [];
 
-      if (loadedDb && Array.isArray(loadedDb.characters)) {
-        rawCharacters = loadedDb.characters.filter(c => {
-          if (!c || typeof c !== 'object') return false;
-          if (dummyIds.has(c.id)) return false;
-          if (dummyNames.has((c.name || '').toLowerCase().trim())) return false;
-          return true;
-        });
-
-        if (Array.isArray(loadedDb.campaigns) && loadedDb.campaigns.length > 0) {
-          campaigns = loadedDb.campaigns.filter(cp => cp.id !== 'camp_002' || rawCharacters.some(c => c.campaignId === cp.id));
-          if (!campaigns.some(cp => cp.id === 'camp_001')) {
-            campaigns.unshift({ id: 'camp_001', name: '⚔️ Ana Sefer (Main Campaign)', notes: 'Aktif macera seferi.' });
-          }
+      if (loadedDb) {
+        if (Array.isArray(loadedDb.characters)) {
+          rawCharacters = loadedDb.characters.filter(c => {
+            if (!c || typeof c !== 'object') return false;
+            if (dummyIds.has(c.id)) return false;
+            if (dummyNames.has((c.name || '').toLowerCase().trim())) return false;
+            return true;
+          });
         }
+
+        if (Array.isArray(loadedDb.campaigns)) {
+          campaigns = loadedDb.campaigns.filter(cp => cp.id !== 'camp_002' || rawCharacters.some(c => c.campaignId === cp.id));
+        }
+      } else {
+        // Yalnızca tarayıcı verisi tamamen sıfırsa ilk başlangıç için tek seferlik varsayılan sefer tanımla
+        campaigns = [
+          { id: 'camp_001', name: '⚔️ Ana Sefer (Main Campaign)', notes: 'Aktif macera seferi.' }
+        ];
       }
 
       // 2. Akıllı Tekilleştirme (Deduplication): Aynı ID veya mükerrer kopyaları otomatik temizle
@@ -3736,8 +3737,16 @@ CRITICAL RULES:
         const charsInCamp = state.characters.filter(c => c.campaignId === camp.id);
         const cloudCamp = await window.SupabaseAuth.migrateLocalCampaignToCloud(camp, charsInCamp);
         if (cloudCamp) {
+          const oldId = camp.id;
+          camp.id = cloudCamp.id;
           camp.cloudCampaignId = cloudCamp.id;
           camp.invite_code = cloudCamp.invite_code;
+          charsInCamp.forEach(c => {
+            c.campaignId = cloudCamp.id;
+          });
+          if (state.activeCampaignId === oldId) {
+            state.activeCampaignId = cloudCamp.id;
+          }
           saveHubStorage();
           renderHub();
           openCampaignInviteModal(camp.id);
@@ -3840,7 +3849,7 @@ CRITICAL RULES:
       }
     }
 
-    function deleteCampaignFromModal() {
+    async function deleteCampaignFromModal() {
       const campId = document.getElementById('edit-campaign-id')?.value;
       const camp = state.campaigns.find(c => c.id === campId);
       if (!camp) return;
@@ -3857,14 +3866,25 @@ CRITICAL RULES:
         return;
       }
 
-      if (confirm(`"${camp.name}" kampanyasını silmek istediğinizden emin misiniz?`)) {
-        state.campaigns = state.campaigns.filter(c => c.id !== campId);
-        if (state.activeCampaignId === campId) {
+      if (confirm(`"${camp.name}" kampanyasını silmek istediğinizden emin misiniz?\n\nBu işlem kampanyayı hem bu cihazdan hem de bulut hesabınızdan kalıcı olarak silecektir.`)) {
+        const cloudId = camp.cloudCampaignId || (camp.id && camp.id.includes('-') ? camp.id : null);
+
+        state.campaigns = state.campaigns.filter(c => c.id !== campId && (!cloudId || c.cloudCampaignId !== cloudId));
+        if (state.activeCampaignId === campId || (cloudId && state.activeCampaignId === cloudId)) {
           state.activeCampaignId = 'all';
         }
-        saveHubStorage();
+        saveHubStorage(true);
         closeEditCampaignModal();
         renderHub();
+
+        // Supabase Buluttan da Kalıcı Olarak Sil
+        if (cloudId && window.SupabaseAuth && !window.SupabaseAuth.isLocalMode()) {
+          try {
+            await window.SupabaseAuth.deleteCampaign(cloudId);
+          } catch (delErr) {
+            console.warn('Buluttan kampanya silme uyarısı:', delErr);
+          }
+        }
       }
     }
 
@@ -3931,10 +3951,26 @@ CRITICAL RULES:
 
         let changed = false;
 
-        // 1. Bulut kampanyalarını yerel listeye ekle/güncelle
+        // 1. Bulut kampanyalarını yerel listeye ekle/güncelle & camp_001 mükerrerleşmesini önle
         if (Array.isArray(cloudCamps) && cloudCamps.length > 0) {
           cloudCamps.forEach(cc => {
             let localCamp = state.campaigns.find(c => c.cloudCampaignId === cc.id || c.id === cc.id);
+            // Eğer yerelde eski 'camp_001' varsa ve adı buluttaki kampanya ile aynıysa, ikisini birleştir:
+            if (!localCamp) {
+              const defaultCampMatch = state.campaigns.find(c => c.id === 'camp_001' && (c.name || '').trim().toLowerCase() === (cc.name || '').trim().toLowerCase());
+              if (defaultCampMatch) {
+                defaultCampMatch.id = cc.id;
+                defaultCampMatch.cloudCampaignId = cc.id;
+                defaultCampMatch.invite_code = cc.invite_code;
+                defaultCampMatch.isDmMode = cc.is_dm_mode !== false;
+                state.characters.forEach(c => {
+                  if (c.campaignId === 'camp_001') c.campaignId = cc.id;
+                });
+                localCamp = defaultCampMatch;
+                changed = true;
+              }
+            }
+
             if (!localCamp) {
               state.campaigns.push({
                 id: cc.id,
