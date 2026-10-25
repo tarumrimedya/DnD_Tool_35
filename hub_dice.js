@@ -350,6 +350,7 @@ function selectDiceColor(color, colorName) {
   }
 }
 window.selectDiceColor = selectDiceColor;
+window.setDiceColor = selectDiceColor;
 
 function updateDiceColorUI(hexColor) {
   if (!hexColor) return;

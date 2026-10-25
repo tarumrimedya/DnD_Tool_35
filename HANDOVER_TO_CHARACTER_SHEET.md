@@ -557,3 +557,16 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   3. **Parite ve Kural Bütünlüğü:**
      - `hub.html`, `hub_dice.js` ve `webapp/` kopyaları %100 SHA-256 eşitliğinde tutuldu.
      - Sıfır tavla zarı (`🎲`) kuralı korundu.
+
+---
+
+## 29. ZAR RENK SEÇİMİ VE SETDICECOLOR BAĞLANTISI (2026-10-25)
+* **Sorun:** Hub zar panelinde `#dice-color-popover` içindeki palet butonlarının (`setDiceColor('#dc2626')` vb.) ve özel renk seçici kutusunun (`onchange="setDiceColor(this.value)"`) fonksiyon isim uyuşmazlığı nedeniyle tetiklenmemesi.
+* **Uygulanan Çözüm:**
+  1. `hub_dice.js` içinde `selectDiceColor(color, colorName)` fonksiyonuna global `window.setDiceColor = selectDiceColor;` alias'ı eklendi.
+  2. Palet butonlarına tıklandığında veya renk seçici değiştirildiğinde:
+     - `Dice3D.setDiceColor(color)` ile Three.js 3D zar dokusu temizlenip yeni renkle güncellenir.
+     - `updateDiceColorUI(color)` ile "Renk" butonundaki önizleme noktası (`#dice-color-preview-dot`), renk seçici girdi kutusu ve "⚡ ZARLARI AT" butonunun arka plan gradyanı ve ışıma rengi anında güncellenir.
+     - Seçilen renk `localStorage` (`dnd_dice_color`) üzerinde saklanır.
+     - Renk popover'ı otomatik kapatılır.
+  3. `hub_dice.js` ve `webapp/hub_dice.js` kopyaları %100 eşitlendi; sıfır tavla zarı (`🎲`) kuralı korundu.
