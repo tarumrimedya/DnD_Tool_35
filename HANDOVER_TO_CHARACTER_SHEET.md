@@ -1305,6 +1305,26 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
 
 ---
 
+## 61. HUB YENİ NOT OLUŞTURMA ŞABLONUNA OTOMATİK KARAKTER ADI, LVL VE TARİH ETİKETLERİ ENTEGRASYONU (2026-10-25)
+* **İstek:**
+  - "Yeni Not Oluştur" butonuna tıklandığında oluşturulan notun boş gelmek yerine standart olarak karakter adı (`#Karakter_Adi`), karakter seviyesi (`#lvlN`) ve o günün tarihi (`#GN_Ay_Yıl`) etiketleriyle (`#`) hazır gelmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Dinamik Karakter ve Seviye Tespiti (`resolveCharacterForNote` & `toValidHashtag`):**
+     - Not hedefi bir karakter ise doğrudan kendi adı ve seviyesi, kampanya ise o kampanyaya atanmış aktif karakter (veya Hub'daki mevcut karakter) çözümlendi.
+     - Karakter adı boşluksuz, geçerli Türkçe karakter destekli standart etiket formatına dönüştürüldü (Örn: `Regdar Ironfist` -> `#Regdar_Ironfist`, `test1` -> `#test1`).
+  2. **Standart Seviye ve Türkçe Tarih Etiketleri:**
+     - Seviye: `#lvl1`, `#lvl5` vb. formatta üretildi.
+     - Tarih: `#25_Ekim_2026` gibi Türkçe ay adını içeren okunabilir ve aranabilir formatta oluşturuldu.
+  3. **Varsayılan Not Metni ve Odaklanma:**
+     - Yeni notun gövdesi `${charTag} ${lvlTag} ${dateTag}\n\n` şablonuyla dolduruldu.
+     - Editör açıldığında imleç otomatik olarak etiketlerin alt satırına konumlandırıldı.
+     - `formatNoteTextHtml` fonksiyonunda `#lvl...` etiketleri indigo, tarih etiketleri teal (turkuaz) özel RPG rozeti olarak renklendirildi.
+  4. **Parite ve Devir Teslim:**
+     - `hub_notes.js` ve `webapp/hub_notes.js` %100 SHA-256 eşitliğinde güncellendi.
+     - Kural #3 (Zar emojisi yasağı) tavizsiz korundu.
+
+---
+
 ## 60. HUB NOT DEFTERİ SİLME (DELETE NOTE) BUTONU VE DİZİ SENKRONİZASYONU DÜZELTMESİ (2026-10-25)
 * **Problem:**
   - Geniş Not Defteri modalında `[ 🗑️ Sil ]` butonuna tıklandığında onay verilmesine rağmen not silinmiyordu.
@@ -1319,6 +1339,26 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - Tüm notlar silindiğinde editörün devre dışı kalması (`disabled`), sil butonu ve sabitle butonunun opaklaşması pürüzsüzleştirildi.
   3. **Sol Listede Hızlı Silme Butonu (`✕`):**
      - Modal sol listesindeki her nota da tek tıkla silme imkânı sunan hızlı `✕` butonu eklendi.
+  4. **Parite ve Devir Teslim:**
+     - `hub_notes.js` ve `webapp/hub_notes.js` %100 SHA-256 eşitliğinde güncellendi.
+     - Kural #3 (Zar emojisi yasağı) tavizsiz korundu.
+
+---
+
+## 61. HUB YENİ NOT OLUŞTURMA ŞABLONUNA OTOMATİK KARAKTER ADI, LVL VE TARİH ETİKETLERİ ENTEGRASYONU (2026-10-25)
+* **İstek:**
+  - "Yeni Not Oluştur" butonuna tıklandığında oluşturulan notun boş gelmek yerine standart olarak karakter adı (`#Karakter_Adi`), karakter seviyesi (`#lvlN`) ve o günün tarihi (`#GN_Ay_Yıl`) etiketleriyle (`#`) hazır gelmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Dinamik Karakter ve Seviye Tespiti (`resolveCharacterForNote` & `toValidHashtag`):**
+     - Not hedefi bir karakter ise doğrudan kendi adı ve seviyesi, kampanya ise o kampanyaya atanmış aktif karakter (veya Hub'daki mevcut karakter) çözümlendi.
+     - Karakter adı boşluksuz, geçerli Türkçe karakter destekli standart etiket formatına dönüştürüldü (Örn: `Regdar Ironfist` -> `#Regdar_Ironfist`, `test1` -> `#test1`).
+  2. **Standart Seviye ve Türkçe Tarih Etiketleri:**
+     - Seviye: `#lvl1`, `#lvl5` vb. formatta üretildi.
+     - Tarih: `#25_Ekim_2026` gibi Türkçe ay adını içeren okunabilir ve aranabilir formatta oluşturuldu.
+  3. **Varsayılan Not Metni ve Odaklanma:**
+     - Yeni notun gövdesi `${charTag} ${lvlTag} ${dateTag}\n\n` şablonuyla dolduruldu.
+     - Editör açıldığında imleç otomatik olarak etiketlerin alt satırına konumlandırıldı.
+     - `formatNoteTextHtml` fonksiyonunda `#lvl...` etiketleri indigo, tarih etiketleri teal (turkuaz) özel RPG rozeti olarak renklendirildi.
   4. **Parite ve Devir Teslim:**
      - `hub_notes.js` ve `webapp/hub_notes.js` %100 SHA-256 eşitliğinde güncellendi.
      - Kural #3 (Zar emojisi yasağı) tavizsiz korundu.

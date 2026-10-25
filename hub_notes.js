@@ -545,6 +545,8 @@
       else if (lower === '#npc') colorClass = 'text-purple-400 bg-purple-950/40 border-purple-500/30';
       else if (lower === '#yer' || lower === '#mekan') colorClass = 'text-emerald-400 bg-emerald-950/40 border-emerald-500/30';
       else if (lower === '#loot' || lower === '#esya') colorClass = 'text-yellow-400 bg-yellow-950/40 border-yellow-500/30';
+      else if (lower.startsWith('#lvl') || lower.startsWith('#level')) colorClass = 'text-indigo-300 bg-indigo-950/50 border-indigo-500/40';
+      else if (lower.includes('202') || lower.includes('ocak') || lower.includes('şubat') || lower.includes('mart') || lower.includes('nisan') || lower.includes('mayıs') || lower.includes('haziran') || lower.includes('temmuz') || lower.includes('ağustos') || lower.includes('eylül') || lower.includes('ekim') || lower.includes('kasım') || lower.includes('aralık')) colorClass = 'text-teal-300 bg-teal-950/50 border-teal-500/40';
 
       return `<span class="inline-block px-1.5 py-0.2 rounded text-[10px] font-mono font-bold border ${colorClass}">${match}</span>`;
     });
@@ -895,6 +897,37 @@
     handleEditorInput();
   }
 
+  function toValidHashtag(str) {
+    if (!str || typeof str !== 'string') return '#Karakter';
+    const cleaned = str
+      .trim()
+      .replace(/[^\w\u00C0-\u024F\u1E00-\u1EFFğüşıöçĞÜŞİÖÇ]/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_+|_+$/g, '');
+    return cleaned ? `#${cleaned}` : '#Karakter';
+  }
+
+  function resolveCharacterForNote(target, state) {
+    if (target && target.type === 'character' && target.targetObj) {
+      return target.targetObj;
+    }
+    // Eğer hedef kampanya ise bu kampanyaya bağlı ilk karakteri bul
+    if (target && target.type === 'campaign' && state && Array.isArray(state.characters)) {
+      const campChar = state.characters.find(c => c.campaignId === target.id);
+      if (campChar) return campChar;
+      if (state.characters.length > 0) return state.characters[0];
+    }
+    try {
+      const raw = localStorage.getItem('dnd35_character');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.name) return parsed;
+      }
+    } catch (e) {}
+
+    return null;
+  }
+
   function createNewModalNote() {
     const target = getActiveNotesTarget();
     if (!target) {
@@ -902,17 +935,36 @@
       return;
     }
 
+    const state = getHubState();
+    const char = resolveCharacterForNote(target, state);
+    const charName = char ? (char.name || 'Karakter') : 'Karakter';
+    const charLvl = char ? (Number(char.level) || 1) : 1;
+
+    const charTag = toValidHashtag(charName);
+    const lvlTag = `#lvl${charLvl}`;
+
+    const now = new Date();
+    const monthsTr = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+    const dateTag = `#${now.getDate()}_${monthsTr[now.getMonth()]}_${now.getFullYear()}`;
+
+    const defaultText = `${charTag} ${lvlTag} ${dateTag}\n\n`;
+    const extractedTags = extractTags(defaultText);
+
     const newNote = {
       id: 'note_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-      text: '',
+      text: defaultText,
       pinned: false,
       completed: false,
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      tags: []
+      tags: extractedTags
     };
 
     target.notesList.unshift(newNote);
+    if (target.targetObj) {
+      target.targetObj.notesList = target.notesList;
+      target.targetObj.notes = target.notesList.map(n => n.text).join('\n\n');
+    }
     saveNotesChanges(target);
 
     _selectedModalNoteId = newNote.id;
@@ -920,7 +972,10 @@
     loadSelectedNoteIntoEditor();
 
     const editor = document.getElementById('hub-modal-note-editor');
-    if (editor) editor.focus();
+    if (editor) {
+      editor.focus();
+      editor.selectionStart = editor.selectionEnd = editor.value.length;
+    }
   }
 
   function setTagFilter(tag) {
