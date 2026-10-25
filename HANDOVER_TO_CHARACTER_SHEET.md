@@ -1413,3 +1413,29 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - HUB dosyaları (`hub.html`, `webapp/hub.html`) kesinlikle değiştirilmedi.
      - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` 4 dosyada %100 SHA-256 eşitliği (`98A75AC891BCF22A249633BA2C4C1C4CB059CE3BD160E002137A49F675C36AB6`).
      - Standart tavla zarı emoji yasağı (Rule #3: NO `🎲`) ve dummy data yasağı (Rule #5) eksiksiz uygulandı.
+
+
+---
+
+## 54. SPOTLIGHT & RULE MASTER TANRI / İNANÇ (DEITY) ARAMA ENTEGRASYONU (2026-10-25)
+* **İstek:**
+  - Karakter Künyesi modalındaki (`#stat-distribution-modal`) serbest metin kutusu olan Tanrı / İnanç (`#profile-edit-deity`) alanının "Spotlight & Rule Master Araması" standardına geçirilmesi (Seçenek A).
+* **Uygulanan Değişiklikler:**
+  1. **Spotlight & Rule Master Deity Combobox Bileşeni (`#deity-custom-dropdown-container`):**
+     - Native input yerine seçili tanrının simgesi ve adını gösteren modern tetikleyici buton (`#deity-dropdown-trigger`), arama popover kartı (`#deity-spotlight-dropdown`), anlık arama kutusu (`#deity-spotlight-search`) ve kaydırılabilir sonuç listesi (`#deity-spotlight-list`) entegre edildi.
+     - Form ve karakter verisi uyumluluğu için `#profile-edit-deity` gizli input (`type="hidden"`) olarak korundu.
+  2. **D&D 3.5e RAW 22 Resmi Tanrı Kataloğu (`DND35_DEITY_DEFINITIONS` & `bundled_data.js`):**
+     - *İyilik & Işık Panteonu:* Pelor, Heironeous, Kord, Corellon Larethian, Moradin, Ehlonna, Yondalla, Bahamut.
+     - *Doğa, Bilgi & Denge Panteonu:* Boccob, Fharlanghn, Obad-Hai, St. Cuthbert, Wee Jas, Olidammara, Garl Glittergold.
+     - *Karanlık, Savaş & Yıkım:* Hextor, Nerull, Vecna, Erythnul, Gruumsh, Tiamat.
+     - *Panteon Dışı & Felsefe:* Yok / Felsefi İnanç.
+     - Her tanrının yönelimi (Alignment), tercih ettiği silahı (Favored Weapon) ve etki alanları (Domains) kart üzerinde gösterilmektedir.
+  3. **Rule Master AI Entegrasyonu (`searchDeityViaRuleMasterAi` & `fetchDeityViaAi`):**
+     - Kullanıcı listede olmayan bir tanrıyı aradığında (örn. *Kelemvor, Mystra, Tempus, Bane, Lolth, Helm, Asmodeus*), 1 tıkla Rule Master AI resmi D&D 3.5e kütüphanelerinden (Forgotten Realms, Eberron vb.) tanrının yönelimini, silahını ve alanlarını çekerek karaktere işler ve yerel önbelleğe (`dnd35_custom_deities`) kaydeder.
+     - `rule_master.js` promptu (`0.1 DEITY SCHEMA`) ve `normalizeEntry` veri alanları (`pantheon`, `alignment`, `favoredWeapon`, `domains`, `symbol`) güncellenerek Kural #8 eksiksiz sağlandı.
+  4. **Parite ve Güvenlik:**
+     - HUB dosyaları (`hub.html`, `webapp/hub.html`) kesinlikle değiştirilmedi.
+     - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` (%100 SHA-256: `837A3BC96BC2BF882910BA65132DBACDC4B017CACCA19C5054BD7153BFC48FED`).
+     - `rule_master.js`, `webapp/rule_master.js` (%100 SHA-256: `2790EA5022A9810B4FDBC393F38A4F2D33073F5F497BF92A139B9FDA00A8E906`).
+     - `bundled_data.js`, `webapp/bundled_data.js` (%100 SHA-256: `492C2EA12D029F84D1C5D35685774078637BB7C70B2B138254069DD4865D821D`).
+     - Standart tavla zarı emoji yasağı (Rule #3: NO `🎲`) ve dummy data yasağı (Rule #5) eksiksiz uygulandı.

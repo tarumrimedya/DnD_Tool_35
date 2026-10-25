@@ -5498,4 +5498,608 @@ window.BUNDLED_SRD_CORE_CATALOG = [
             "small"
         ]
     }
+,
+    {
+        "name": "Pelor",
+        "type": "Deity",
+        "title": "The Shining One (Güneş ve Şifa Tanrısı)",
+        "pantheon": "D&D 3.5e Core (Greyhawk)",
+        "alignment": "Neutral Good",
+        "favoredWeapon": "Heavy Mace",
+        "domains": [
+                "Good",
+                "Healing",
+                "Strength",
+                "Sun"
+        ],
+        "symbol": "Sun face or circle with six rays",
+        "source": "Player's Handbook p.107",
+        "benefit": "Favored Weapon: Heavy mace. Domains: Good, Healing, Strength, Sun.",
+        "description": "Pelor is the god of the sun, light, strength, and healing. He is a protector of the needy and a foe of evil. He is the most popular deity among ordinary folk.",
+        "icon": "☀️",
+        "category": "İyilik & Işık Panteonu",
+        "tags": [
+                "deity",
+                "good",
+                "sun",
+                "healing",
+                "pelor",
+                "cleric",
+                "paladin"
+        ]
+},
+    {
+        "name": "Heironeous",
+        "type": "Deity",
+        "title": "The Invincible (Adalet, Kahramanlık & Onur)",
+        "pantheon": "D&D 3.5e Core (Greyhawk)",
+        "alignment": "Lawful Good",
+        "favoredWeapon": "Longsword",
+        "domains": [
+                "Glory",
+                "Good",
+                "Law",
+                "War"
+        ],
+        "symbol": "Silver lightning bolt held in a fist",
+        "source": "Player's Handbook p.107",
+        "benefit": "Favored Weapon: Longsword. Domains: Glory, Good, Law, War.",
+        "description": "Heironeous is the god of chivalry, justice, honor, and valor. His clerics wage war against evil, especially the disciples of his arch-foe and half-brother Hextor.",
+        "icon": "⚡",
+        "category": "İyilik & Işık Panteonu",
+        "tags": [
+                "deity",
+                "lawful good",
+                "justice",
+                "war",
+                "paladin",
+                "heironeous",
+                "longsword"
+        ]
+},
+    {
+        "name": "Kord",
+        "type": "Deity",
+        "title": "The Brawler (Güç, Atletizm & Cesaret)",
+        "pantheon": "D&D 3.5e Core (Greyhawk)",
+        "alignment": "Chaotic Good",
+        "favoredWeapon": "Greatsword",
+        "domains": [
+                "Chaos",
+                "Good",
+                "Luck",
+                "Strength"
+        ],
+        "symbol": "Four crossed spears and a four-pointed star",
+        "source": "Player's Handbook p.107",
+        "benefit": "Favored Weapon: Greatsword. Domains: Chaos, Good, Luck, Strength.",
+        "description": "Kord is the god of athletics, sports, strength, and courageous physical contests. Highly favored by barbarians, fighters, and gladiators.",
+        "icon": "🥊",
+        "category": "İyilik & Işık Panteonu",
+        "tags": [
+                "deity",
+                "strength",
+                "greatsword",
+                "barbarian",
+                "fighter",
+                "kord"
+        ]
+},
+    {
+        "name": "Corellon Larethian",
+        "type": "Deity",
+        "title": "First of the Seldarine (Elf, Büyü & Sanat)",
+        "pantheon": "Elven Pantheon (Seldarine)",
+        "alignment": "Chaotic Good",
+        "favoredWeapon": "Longsword",
+        "domains": [
+                "Chaos",
+                "Good",
+                "Protection",
+                "War"
+        ],
+        "symbol": "Silver crescent moon",
+        "source": "Player's Handbook p.106",
+        "benefit": "Favored Weapon: Longsword. Domains: Chaos, Good, Protection, War.",
+        "description": "Corellon Larethian created the elven race and is the patron of music, arts, crafts, magic, and warrior poets. Creator and defender of the elves.",
+        "icon": "🏹",
+        "category": "İyilik & Işık Panteonu",
+        "tags": [
+                "deity",
+                "elf",
+                "seldarine",
+                "magic",
+                "corellon",
+                "longsword"
+        ]
+},
+    {
+        "name": "Moradin",
+        "type": "Deity",
+        "title": "The Soul Forger (Cüce & Demircilik Tanrısı)",
+        "pantheon": "Dwarven Pantheon (Morndinsamman)",
+        "alignment": "Lawful Good",
+        "favoredWeapon": "Warhammer",
+        "domains": [
+                "Earth",
+                "Good",
+                "Law",
+                "Protection"
+        ],
+        "symbol": "Hammer and anvil",
+        "source": "Player's Handbook p.107",
+        "benefit": "Favored Weapon: Warhammer. Domains: Earth, Good, Law, Protection.",
+        "description": "Moradin forged the dwarves from earth and iron. He presides over mining, metallurgy, craftsmanship, and the defense of dwarven strongholds.",
+        "icon": "🔨",
+        "category": "İyilik & Işık Panteonu",
+        "tags": [
+                "deity",
+                "dwarf",
+                "smith",
+                "craft",
+                "moradin",
+                "warhammer"
+        ]
+},
+    {
+        "name": "Ehlonna",
+        "type": "Deity",
+        "title": "Of the Forests (Orman, Doğa & Yaban)",
+        "pantheon": "D&D 3.5e Core (Greyhawk)",
+        "alignment": "Neutral Good",
+        "favoredWeapon": "Longbow",
+        "domains": [
+                "Animal",
+                "Good",
+                "Plant",
+                "Sun"
+        ],
+        "symbol": "Rearing unicorn",
+        "source": "Player's Handbook p.106",
+        "benefit": "Favored Weapon: Longbow. Domains: Animal, Good, Plant, Sun.",
+        "description": "Ehlonna watches over all who live in the woodlands or love the forest. She is deeply revered by rangers, wood elves, and nature wardens.",
+        "icon": "🦄",
+        "category": "İyilik & Işık Panteonu",
+        "tags": [
+                "deity",
+                "nature",
+                "forest",
+                "ranger",
+                "ehlonna",
+                "longbow"
+        ]
+},
+    {
+        "name": "Yondalla",
+        "type": "Deity",
+        "title": "The Blessed One (Buçukluk, Bereket & Yuva)",
+        "pantheon": "Halfling Pantheon",
+        "alignment": "Lawful Good",
+        "favoredWeapon": "Short Sword",
+        "domains": [
+                "Community",
+                "Good",
+                "Law",
+                "Protection"
+        ],
+        "symbol": "Cornucopia (horn of plenty)",
+        "source": "Player's Handbook p.108",
+        "benefit": "Favored Weapon: Short sword. Domains: Community, Good, Law, Protection.",
+        "description": "Yondalla is the creator and protector of halflings. She shields communities from harm, bestows plentiful harvests, and preserves hearth and home.",
+        "icon": "🌾",
+        "category": "İyilik & Işık Panteonu",
+        "tags": [
+                "deity",
+                "halfling",
+                "protection",
+                "home",
+                "yondalla"
+        ]
+},
+    {
+        "name": "Bahamut",
+        "type": "Deity",
+        "title": "The Platinum Dragon (Platin Ejderha & Adalet)",
+        "pantheon": "Dragon Pantheon / Core",
+        "alignment": "Lawful Good",
+        "favoredWeapon": "Heavy Pick",
+        "domains": [
+                "Air",
+                "Cold",
+                "Dragon",
+                "Good",
+                "Luck",
+                "Protection"
+        ],
+        "symbol": "Silhouette of a dragon head in platinum profile",
+        "source": "Draconomicon p.150 / PHB",
+        "benefit": "Favored Weapon: Heavy pick (or bite). Domains: Air, Cold, Dragon, Good, Luck, Protection.",
+        "description": "King of the good dragons and patron of metallic dragons. Bahamut upholds honor, protects the weak, and battles the evil schemes of Tiamat.",
+        "icon": "🐲",
+        "category": "İyilik & Işık Panteonu",
+        "tags": [
+                "deity",
+                "dragon",
+                "platinum",
+                "bahamut",
+                "good"
+        ]
+},
+    {
+        "name": "Boccob",
+        "type": "Deity",
+        "title": "The Uncaring (Büyü & Kadim Bilgi Tanrısı)",
+        "pantheon": "D&D 3.5e Core (Greyhawk)",
+        "alignment": "True Neutral",
+        "favoredWeapon": "Quarterstaff",
+        "domains": [
+                "Knowledge",
+                "Magic",
+                "Trickery"
+        ],
+        "symbol": "Eye within a pentagon",
+        "source": "Player's Handbook p.106",
+        "benefit": "Favored Weapon: Quarterstaff. Domains: Knowledge, Magic, Trickery.",
+        "description": "Boccob is the deity of magic, arcane lore, research, and balance. He is detached and observant, revered by wizards, sorcerers, and sages.",
+        "icon": "📖",
+        "category": "Doğa, Bilgi & Denge",
+        "tags": [
+                "deity",
+                "magic",
+                "wizard",
+                "knowledge",
+                "boccob"
+        ]
+},
+    {
+        "name": "Fharlanghn",
+        "type": "Deity",
+        "title": "Dweller on the Horizon (Yol, Seyahat & Ufuk)",
+        "pantheon": "D&D 3.5e Core (Greyhawk)",
+        "alignment": "True Neutral",
+        "favoredWeapon": "Quarterstaff",
+        "domains": [
+                "Celerity",
+                "Luck",
+                "Protection",
+                "Travel"
+        ],
+        "symbol": "Circle crossed by a curved horizon line",
+        "source": "Player's Handbook p.106",
+        "benefit": "Favored Weapon: Quarterstaff. Domains: Celerity, Luck, Protection, Travel.",
+        "description": "Fharlanghn is the patron of travelers, wanderers, merchants, and bards. He urges his followers to explore new horizons and discover distant realms.",
+        "icon": "🥾",
+        "category": "Doğa, Bilgi & Denge",
+        "tags": [
+                "deity",
+                "travel",
+                "roads",
+                "wanderer",
+                "fharlanghn"
+        ]
+},
+    {
+        "name": "Obad-Hai",
+        "type": "Deity",
+        "title": "The Shalm (Vahşi Doğa & Mevsimler Tanrısı)",
+        "pantheon": "D&D 3.5e Core (Greyhawk)",
+        "alignment": "True Neutral",
+        "favoredWeapon": "Quarterstaff",
+        "domains": [
+                "Air",
+                "Animal",
+                "Earth",
+                "Fire",
+                "Plant",
+                "Water"
+        ],
+        "symbol": "Mask of oak leaves and acorns",
+        "source": "Player's Handbook p.107",
+        "benefit": "Favored Weapon: Quarterstaff. Domains: Air, Animal, Earth, Fire, Plant, Water.",
+        "description": "Obad-Hai represents nature in all its cycles: life, death, summer heat, and winter fury. Revered by druids, wilderness dwellers, and hunters.",
+        "icon": "🍂",
+        "category": "Doğa, Bilgi & Denge",
+        "tags": [
+                "deity",
+                "druid",
+                "nature",
+                "elements",
+                "obad-hai"
+        ]
+},
+    {
+        "name": "St. Cuthbert",
+        "type": "Deity",
+        "title": "Of the Cudgel (Kefaret, Disiplin & Hüküm)",
+        "pantheon": "D&D 3.5e Core (Greyhawk)",
+        "alignment": "Lawful Neutral",
+        "favoredWeapon": "Heavy Mace",
+        "domains": [
+                "Destruction",
+                "Law",
+                "Protection",
+                "Strength"
+        ],
+        "symbol": "Ruby-studded starburst",
+        "source": "Player's Handbook p.108",
+        "benefit": "Favored Weapon: Heavy mace. Domains: Destruction, Law, Protection, Strength.",
+        "description": "St. Cuthbert demands discipline, honesty, common sense, and strict retribution for wrongdoing. His clergy hunt down heretics and lawbreakers.",
+        "icon": "🪓",
+        "category": "Doğa, Bilgi & Denge",
+        "tags": [
+                "deity",
+                "law",
+                "retribution",
+                "discipline",
+                "st. cuthbert"
+        ]
+},
+    {
+        "name": "Wee Jas",
+        "type": "Deity",
+        "title": "The Witch Goddess (Ölüm, Büyü & Asalet)",
+        "pantheon": "D&D 3.5e Core (Greyhawk)",
+        "alignment": "Lawful Neutral",
+        "favoredWeapon": "Dagger",
+        "domains": [
+                "Death",
+                "Domination",
+                "Law",
+                "Magic"
+        ],
+        "symbol": "Red skull surrounded by scrolls of fire",
+        "source": "Player's Handbook p.108",
+        "benefit": "Favored Weapon: Dagger. Domains: Death, Domination, Law, Magic.",
+        "description": "Wee Jas is the goddess of magic, death, vanity, and law. She administers the passage into death strictly according to lawful order.",
+        "icon": "🕯️",
+        "category": "Doğa, Bilgi & Denge",
+        "tags": [
+                "deity",
+                "death",
+                "magic",
+                "wee jas",
+                "lawful neutral"
+        ]
+},
+    {
+        "name": "Olidammara",
+        "type": "Deity",
+        "title": "The Laughing Rogue (Müzik, Şans & Hırsızlık)",
+        "pantheon": "D&D 3.5e Core (Greyhawk)",
+        "alignment": "Chaotic Neutral",
+        "favoredWeapon": "Rapier",
+        "domains": [
+                "Chaos",
+                "Luck",
+                "Trickery"
+        ],
+        "symbol": "Smiling drama mask",
+        "source": "Player's Handbook p.107",
+        "benefit": "Favored Weapon: Rapier. Domains: Chaos, Luck, Trickery.",
+        "description": "Olidammara delights in humor, trickery, music, and wealth. He is beloved by rogues, bards, gamblers, and carefree wanderers.",
+        "icon": "🎭",
+        "category": "Doğa, Bilgi & Denge",
+        "tags": [
+                "deity",
+                "rogue",
+                "luck",
+                "trickery",
+                "olidammara",
+                "rapier"
+        ]
+},
+    {
+        "name": "Garl Glittergold",
+        "type": "Deity",
+        "title": "The Joker (Gnom, Mizah & Mücevher)",
+        "pantheon": "Gnome Pantheon",
+        "alignment": "Chaotic Good",
+        "favoredWeapon": "Battleaxe",
+        "domains": [
+                "Chaos",
+                "Good",
+                "Protection",
+                "Trickery"
+        ],
+        "symbol": "Gold nugget",
+        "source": "Player's Handbook p.106",
+        "benefit": "Favored Weapon: Battleaxe. Domains: Chaos, Good, Protection, Trickery.",
+        "description": "Creator of gnomes and patron of humor, gemcutting, jewelcraft, and illusion. He tricks tyrants and outsmarts malevolent beasts.",
+        "icon": "💎",
+        "category": "Doğa, Bilgi & Denge",
+        "tags": [
+                "deity",
+                "gnome",
+                "humor",
+                "gemcutting",
+                "garl glittergold"
+        ]
+},
+    {
+        "name": "Hextor",
+        "type": "Deity",
+        "title": "Champion of Evil (Tiranlık, Savaş & Zulüm)",
+        "pantheon": "D&D 3.5e Core (Greyhawk)",
+        "alignment": "Lawful Evil",
+        "favoredWeapon": "Heavy Flail",
+        "domains": [
+                "Destruction",
+                "Domination",
+                "Evil",
+                "Law",
+                "War"
+        ],
+        "symbol": "Six red arrows bound together in a fist",
+        "source": "Player's Handbook p.107",
+        "benefit": "Favored Weapon: Heavy flail. Domains: Destruction, Domination, Evil, Law, War.",
+        "description": "Hextor is the six-armed god of war, tyranny, cruelty, and ruthless conquest. Brother and bitter rival to Heironeous.",
+        "icon": "⛓️",
+        "category": "Karanlık, Savaş & Yıkım",
+        "tags": [
+                "deity",
+                "evil",
+                "tyranny",
+                "war",
+                "hextor",
+                "flail"
+        ]
+},
+    {
+        "name": "Nerull",
+        "type": "Deity",
+        "title": "The Reaper (Karanlık & Katıksız Ölüm Tanrısı)",
+        "pantheon": "D&D 3.5e Core (Greyhawk)",
+        "alignment": "Neutral Evil",
+        "favoredWeapon": "Scythe",
+        "domains": [
+                "Death",
+                "Evil",
+                "Trickery"
+        ],
+        "symbol": "Skull and scythe",
+        "source": "Player's Handbook p.107",
+        "benefit": "Favored Weapon: Scythe. Domains: Death, Evil, Trickery.",
+        "description": "Nerull is the patron of murder, darkness, rot, and the grave. Feared throughout the world, his worship is outlawed in almost all civilized lands.",
+        "icon": "💀",
+        "category": "Karanlık, Savaş & Yıkım",
+        "tags": [
+                "deity",
+                "death",
+                "undead",
+                "scythe",
+                "nerull",
+                "reaper"
+        ]
+},
+    {
+        "name": "Vecna",
+        "type": "Deity",
+        "title": "The Maimed Lord (Sırlar, Gizem & Lich Tanrısı)",
+        "pantheon": "D&D 3.5e Core (Greyhawk)",
+        "alignment": "Neutral Evil",
+        "favoredWeapon": "Dagger",
+        "domains": [
+                "Evil",
+                "Knowledge",
+                "Madness"
+        ],
+        "symbol": "Left hand clutching a single eye",
+        "source": "Player's Handbook p.108",
+        "benefit": "Favored Weapon: Dagger. Domains: Evil, Knowledge, Madness.",
+        "description": "Once a mortal wizard who ascended to lichdom and divinity, Vecna rules dark secrets, forbidden magic, and occult knowledge.",
+        "icon": "👁️‍🗨️",
+        "category": "Karanlık, Savaş & Yıkım",
+        "tags": [
+                "deity",
+                "secrets",
+                "lich",
+                "magic",
+                "vecna"
+        ]
+},
+    {
+        "name": "Erythnul",
+        "type": "Deity",
+        "title": "The Many (Kıyım, Katliam & Panik Tanrısı)",
+        "pantheon": "D&D 3.5e Core (Greyhawk)",
+        "alignment": "Chaotic Evil",
+        "favoredWeapon": "Morningstar",
+        "domains": [
+                "Chaos",
+                "Evil",
+                "War"
+        ],
+        "symbol": "Blood drop or monstrous face",
+        "source": "Player's Handbook p.106",
+        "benefit": "Favored Weapon: Morningstar. Domains: Chaos, Evil, War.",
+        "description": "Erythnul delights in slaughter, panic, hate, and bloodthirsty violence. Worshipped by gnolls, raiders, and mad cultists.",
+        "icon": "🩸",
+        "category": "Karanlık, Savaş & Yıkım",
+        "tags": [
+                "deity",
+                "slaughter",
+                "panic",
+                "war",
+                "erythnul"
+        ]
+},
+    {
+        "name": "Gruumsh",
+        "type": "Deity",
+        "title": "One-Eye (Ork & Fetih Tanrısı)",
+        "pantheon": "Orc Pantheon",
+        "alignment": "Chaotic Evil",
+        "favoredWeapon": "Spear",
+        "domains": [
+                "Chaos",
+                "Evil",
+                "Strength",
+                "War"
+        ],
+        "symbol": "Unblinking open eye",
+        "source": "Player's Handbook p.106",
+        "benefit": "Favored Weapon: Spear. Domains: Chaos, Evil, Strength, War.",
+        "description": "Supreme god of the orcs, Gruumsh commands his followers to conquer territory, raid, and destroy all enemies of the orcish race.",
+        "icon": "👁️",
+        "category": "Karanlık, Savaş & Yıkım",
+        "tags": [
+                "deity",
+                "orc",
+                "conquest",
+                "strength",
+                "gruumsh"
+        ]
+},
+    {
+        "name": "Tiamat",
+        "type": "Deity",
+        "title": "The Chromatic Dragon (Renkli Ejderhalar & Hırs)",
+        "pantheon": "Dragon Pantheon / Core",
+        "alignment": "Lawful Evil",
+        "favoredWeapon": "Heavy Pick",
+        "domains": [
+                "Destruction",
+                "Dragon",
+                "Evil",
+                "Law",
+                "Trickery"
+        ],
+        "symbol": "Five-headed dragon",
+        "source": "Draconomicon p.156 / PHB",
+        "benefit": "Favored Weapon: Heavy pick (or bite). Domains: Destruction, Dragon, Evil, Law, Trickery.",
+        "description": "Queen of chromatic evil dragons (red, blue, green, black, white). Tiamat craves wealth, domination, and vengeance against Bahamut.",
+        "icon": "🐉",
+        "category": "Karanlık, Savaş & Yıkım",
+        "tags": [
+                "deity",
+                "dragon",
+                "chromatic",
+                "tiamat",
+                "evil"
+        ]
+},
+    {
+        "name": "Yok / Felsefi İnanç",
+        "type": "Deity",
+        "title": "Animizm, Doğa Güçleri veya İnançsızlık",
+        "pantheon": "Evrensel / Panteon Dışı",
+        "alignment": "Any",
+        "favoredWeapon": "-",
+        "domains": [
+                "Evrensel"
+        ],
+        "symbol": "Döngüsel spiral",
+        "source": "Player's Handbook p.106",
+        "benefit": "Belirli bir tanrıya bağlı olmaksızın evrensel ilkelere, felsefeye veya inançsızlığa adanmışlık.",
+        "description": "Karakter belirli bir tanrıya tapmaz. İlahi gücünü bir felsefeden, kozmik dengeden veya doğanın kendisinden alır.",
+        "icon": "🌀",
+        "category": "Panteon Dışı & Felsefe",
+        "tags": [
+                "deity",
+                "none",
+                "yok",
+                "felsefe",
+                "animizm"
+        ]
+}
 ];

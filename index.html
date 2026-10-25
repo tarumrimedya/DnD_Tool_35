@@ -4274,9 +4274,54 @@
               <option value="Chaotic Evil">Chaotic Evil</option>
             </select>
           </div>
-          <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tanrı / İnanç (Deity)</label>
-            <input type="text" id="profile-edit-deity" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white">
+          <div class="relative" id="deity-custom-dropdown-container">
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 flex items-center justify-between">
+              <span>Tanrı / İnanç (Deity)</span>
+              <span class="text-[9px] text-purple-400 font-semibold flex items-center gap-1">
+                <span>🔍</span> <span>Spotlight &amp; Rule Master</span>
+              </span>
+            </label>
+
+            <!-- Hidden input for form serialization compatibility -->
+            <input type="hidden" id="profile-edit-deity" value="">
+
+            <!-- Trigger Button -->
+            <button type="button" id="deity-dropdown-trigger" onclick="toggleDeitySpotlightDropdown()" class="w-full bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-purple-500/70 rounded-lg px-2.5 py-1.5 text-white font-bold flex items-center justify-between transition shadow-sm cursor-pointer group focus:outline-none focus:border-purple-400">
+              <span class="flex items-center gap-2 truncate">
+                <span id="deity-trigger-icon" class="text-xs">☀️</span>
+                <span id="deity-trigger-label" class="text-xs truncate">Pelor</span>
+              </span>
+              <span id="deity-trigger-chevron" class="text-slate-400 group-hover:text-purple-300 transition-transform duration-200 text-[10px] ml-1 shrink-0">▼</span>
+            </button>
+
+            <!-- Spotlight Dropdown Popover -->
+            <div id="deity-spotlight-dropdown" class="hidden absolute top-full left-0 right-0 mt-1.5 bg-slate-950/95 border border-purple-500/50 rounded-xl shadow-2xl z-50 overflow-hidden backdrop-blur-md transition-all duration-150 animate-fadeIn">
+              
+              <!-- Spotlight Quick Search Bar -->
+              <div class="p-2 border-b border-purple-900/40 bg-slate-900/80">
+                <div class="relative flex items-center">
+                  <span class="absolute left-2.5 text-xs text-purple-400 pointer-events-none">🔍</span>
+                  <input type="text" id="deity-spotlight-search" placeholder="Tanrı, inanç, silah veya domain ara..." oninput="onDeitySpotlightFilter(this.value)" onkeydown="onDeitySpotlightKeydown(event)" class="w-full bg-slate-950 border border-purple-500/40 focus:border-purple-400 rounded-lg pl-7 pr-7 py-1 text-xs text-white placeholder-slate-500 font-medium focus:outline-none transition">
+                  <button type="button" id="deity-spotlight-clear-btn" onclick="clearDeitySpotlightFilter()" class="hidden absolute right-2 text-slate-400 hover:text-white text-xs px-1" title="Temizle">✕</button>
+                </div>
+              </div>
+
+              <!-- Options List -->
+              <div id="deity-spotlight-list" class="max-h-60 overflow-y-auto p-1.5 space-y-1 custom-scroll text-xs">
+                <!-- Dynamically rendered via renderDeitySpotlightItems() -->
+              </div>
+
+              <!-- Footer with Rule Master AI quick action -->
+              <div class="p-2 bg-slate-900/90 border-t border-purple-900/40 flex items-center justify-between text-[10px]">
+                <span class="text-slate-400 flex items-center gap-1">
+                  <span>💡</span> <span>↑↓ ile seç, Enter ile onayla</span>
+                </span>
+                <button type="button" onclick="selectDeityItem('Diğer')" class="text-purple-300 hover:text-white font-bold flex items-center gap-1 hover:underline cursor-pointer">
+                  <span>🔮</span> <span>AI ile Özel Tanrı</span>
+                </button>
+              </div>
+
+            </div>
           </div>
         </div>
 
@@ -9985,6 +10030,7 @@
       updateRaceSpotlightTrigger(curRace);
       setVal('profile-edit-alignment', character.alignment || '');
       setVal('profile-edit-deity', character.deity || '');
+      updateDeitySpotlightTrigger(character.deity || '');
       setVal('profile-edit-size', character.size || 'Medium');
       setVal('profile-edit-gender', character.gender || '');
       setVal('profile-edit-age', character.age || '');
@@ -10486,7 +10532,400 @@
       if (_raceSpotlightOpen && container && !container.contains(e.target)) {
         closeRaceSpotlightDropdown();
       }
+      const deityContainer = document.getElementById('deity-custom-dropdown-container');
+      if (_deitySpotlightOpen && deityContainer && !deityContainer.contains(e.target)) {
+        closeDeitySpotlightDropdown();
+      }
     });
+
+    // =========================================================================
+    // ☀️ SPOTLIGHT & RULE MASTER DEITY SELECTOR & SEARCH COMBOBOX
+    // =========================================================================
+    const DND35_DEITY_DEFINITIONS = [
+      // 1. İyilik & Işık Panteonu (Good & Honor)
+      { name: 'Pelor', title: 'The Shining One (Güneş & Şifa)', category: 'İyilik & Işık Panteonu', icon: '☀️', alignment: 'Neutral Good', weapon: 'Heavy Mace', domains: ['Good', 'Healing', 'Strength', 'Sun'], tags: ['gunes', 'sifa', 'healer', 'paladin', 'cleric'] },
+      { name: 'Heironeous', title: 'The Invincible (Adalet & Kahramanlık)', category: 'İyilik & Işık Panteonu', icon: '⚡', alignment: 'Lawful Good', weapon: 'Longsword', domains: ['Glory', 'Good', 'Law', 'War'], tags: ['adalet', 'savas', 'paladin', 'onur', 'knight'] },
+      { name: 'Kord', title: 'The Brawler (Güç, Atletizm & Cesaret)', category: 'İyilik & Işık Panteonu', icon: '🥊', alignment: 'Chaotic Good', weapon: 'Greatsword', domains: ['Chaos', 'Good', 'Luck', 'Strength'], tags: ['guc', 'barbarian', 'fighter', 'cesaret', 'firtina'] },
+      { name: 'Corellon Larethian', title: 'First of the Seldarine (Elf, Büyü & Sanat)', category: 'İyilik & Işık Panteonu', icon: '🏹', alignment: 'Chaotic Good', weapon: 'Longsword', domains: ['Chaos', 'Good', 'Protection', 'War'], tags: ['elf', 'okcu', 'buyu', 'sanat', 'seldarine'] },
+      { name: 'Moradin', title: 'The Soul Forger (Cüce & Demircilik)', category: 'İyilik & Işık Panteonu', icon: '🔨', alignment: 'Lawful Good', weapon: 'Warhammer', domains: ['Earth', 'Good', 'Law', 'Protection'], tags: ['cuce', 'demirci', 'zanaat', 'koruma', 'dwarf'] },
+      { name: 'Ehlonna', title: 'Of the Forests (Orman, Doğa & Yaban)', category: 'İyilik & Işık Panteonu', icon: '🦄', alignment: 'Neutral Good', weapon: 'Longbow', domains: ['Animal', 'Good', 'Plant', 'Sun'], tags: ['ranger', 'druid', 'orman', 'hayvan', 'ok'] },
+      { name: 'Yondalla', title: 'The Blessed One (Buçukluk, Bereket & Yuva)', category: 'İyilik & Işık Panteonu', icon: '🌾', alignment: 'Lawful Good', weapon: 'Short Sword', domains: ['Community', 'Good', 'Law', 'Protection'], tags: ['halfling', 'bucukluk', 'bereket', 'yuva'] },
+      { name: 'Bahamut', title: 'The Platinum Dragon (Platin Ejderha & Adalet)', category: 'İyilik & Işık Panteonu', icon: '🐲', alignment: 'Lawful Good', weapon: 'Heavy Pick', domains: ['Air', 'Cold', 'Dragon', 'Good', 'Luck', 'Protection'], tags: ['dragon', 'ejderha', 'platin', 'paladin'] },
+
+      // 2. Doğa, Bilgi & Denge (Neutral & Balance)
+      { name: 'Boccob', title: 'The Uncaring (Büyü & Kadim Bilgi)', category: 'Doğa, Bilgi & Denge', icon: '📖', alignment: 'True Neutral', weapon: 'Quarterstaff', domains: ['Knowledge', 'Magic', 'Trickery'], tags: ['wizard', 'arcane', 'bilgi', 'buyu', 'tarafsiz'] },
+      { name: 'Fharlanghn', title: 'Dweller on the Horizon (Yol, Seyahat & Ufuk)', category: 'Doğa, Bilgi & Denge', icon: '🥾', alignment: 'True Neutral', weapon: 'Quarterstaff', domains: ['Celerity', 'Luck', 'Protection', 'Travel'], tags: ['yolcu', 'seyahat', 'hiz', 'bard', 'kesif'] },
+      { name: 'Obad-Hai', title: 'The Shalm (Vahşi Doğa & Mevsimler)', category: 'Doğa, Bilgi & Denge', icon: '🍂', alignment: 'True Neutral', weapon: 'Quarterstaff', domains: ['Air', 'Animal', 'Earth', 'Fire', 'Plant', 'Water'], tags: ['druid', 'doga', 'element', 'vahsi', 'orman'] },
+      { name: 'St. Cuthbert', title: 'Of the Cudgel (Kefaret, Disiplin & Hüküm)', category: 'Doğa, Bilgi & Denge', icon: '🪓', alignment: 'Lawful Neutral', weapon: 'Heavy Mace', domains: ['Destruction', 'Law', 'Protection', 'Strength'], tags: ['hukum', 'ceza', 'disiplin', 'yasa', 'cleric'] },
+      { name: 'Wee Jas', title: 'The Witch Goddess (Ölüm, Büyü & Asalet)', category: 'Doğa, Bilgi & Denge', icon: '🕯️', alignment: 'Lawful Neutral', weapon: 'Dagger', domains: ['Death', 'Domination', 'Law', 'Magic'], tags: ['olum', 'buyu', 'necromancy', 'yasa', 'witch'] },
+      { name: 'Olidammara', title: 'The Laughing Rogue (Müzik, Şans & Hırsızlık)', category: 'Doğa, Bilgi & Denge', icon: '🎭', alignment: 'Chaotic Neutral', weapon: 'Rapier', domains: ['Chaos', 'Luck', 'Trickery'], tags: ['rogue', 'bard', 'sans', 'hirsiz', 'eglence', 'sarki'] },
+      { name: 'Garl Glittergold', title: 'The Joker (Gnom, Mizah & Mücevher)', category: 'Doğa, Bilgi & Denge', icon: '💎', alignment: 'Chaotic Good', weapon: 'Battleaxe', domains: ['Chaos', 'Good', 'Protection', 'Trickery'], tags: ['gnome', 'gnom', 'mucevher', 'mizah', 'illuzyon'] },
+
+      // 3. Karanlık, Savaş & Yıkım (Evil & Tyranny)
+      { name: 'Hextor', title: 'Champion of Evil (Tiranlık, Savaş & Zulüm)', category: 'Karanlık, Savaş & Yıkım', icon: '⛓️', alignment: 'Lawful Evil', weapon: 'Heavy Flail', domains: ['Destruction', 'Domination', 'Evil', 'Law', 'War'], tags: ['tiran', 'savas', 'zulum', 'kotuluk', 'ordu'] },
+      { name: 'Nerull', title: 'The Reaper (Karanlık & Katıksız Ölüm)', category: 'Karanlık, Savaş & Yıkım', icon: '💀', alignment: 'Neutral Evil', weapon: 'Scythe', domains: ['Death', 'Evil', 'Trickery'], tags: ['olum', 'reaper', 'tirpan', 'iskelet', 'karanlik'] },
+      { name: 'Vecna', title: 'The Maimed Lord (Sırlar, Gizem & Lich)', category: 'Karanlık, Savaş & Yıkım', icon: '👁️‍🗨️', alignment: 'Neutral Evil', weapon: 'Dagger', domains: ['Evil', 'Knowledge', 'Madness'], tags: ['sir', 'lich', 'buyucu', 'hand of vecna', 'eye of vecna'] },
+      { name: 'Erythnul', title: 'The Many (Kıyım, Katliam & Panik)', category: 'Karanlık, Savaş & Yıkım', icon: '🩸', alignment: 'Chaotic Evil', weapon: 'Morningstar', domains: ['Chaos', 'Evil', 'War'], tags: ['katliam', 'vahset', 'kan', 'panik', 'savas'] },
+      { name: 'Gruumsh', title: 'One-Eye (Ork & Fetih Tanrısı)', category: 'Karanlık, Savaş & Yıkım', icon: '👁️', alignment: 'Chaotic Evil', weapon: 'Spear', domains: ['Chaos', 'Evil', 'Strength', 'War'], tags: ['ork', 'orc', 'tek goz', 'mizrak', 'fetih'] },
+      { name: 'Tiamat', title: 'The Chromatic Dragon (Renkli Ejderhalar & Hırs)', category: 'Karanlık, Savaş & Yıkım', icon: '🐉', alignment: 'Lawful Evil', weapon: 'Heavy Pick', domains: ['Destruction', 'Dragon', 'Evil', 'Law', 'Trickery'], tags: ['dragon', 'ejderha', 'renkli', 'hirs', 'bes basli'] },
+
+      // 4. Panteon Dışı & Felsefe
+      { name: 'Yok / Felsefi İnanç', title: 'Animizm, Doğa Güçleri veya İnançsızlık', category: 'Panteon Dışı & Felsefe', icon: '🌀', alignment: 'Any', weapon: '-', domains: ['Evrensel'], tags: ['yok', 'none', 'felsefe', 'animizm', 'ateist'] }
+    ];
+
+    let _deitySpotlightOpen = false;
+
+    function toggleDeitySpotlightDropdown() {
+      if (_deitySpotlightOpen) closeDeitySpotlightDropdown();
+      else openDeitySpotlightDropdown();
+    }
+
+    function openDeitySpotlightDropdown() {
+      const dropdown = document.getElementById('deity-spotlight-dropdown');
+      const chevron = document.getElementById('deity-trigger-chevron');
+      const searchInput = document.getElementById('deity-spotlight-search');
+      if (!dropdown) return;
+
+      dropdown.classList.remove('hidden');
+      if (chevron) chevron.classList.add('rotate-180');
+      _deitySpotlightOpen = true;
+
+      const q = searchInput ? searchInput.value.trim() : '';
+      renderDeitySpotlightItems(q);
+
+      setTimeout(() => {
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }, 50);
+    }
+
+    function closeDeitySpotlightDropdown() {
+      const dropdown = document.getElementById('deity-spotlight-dropdown');
+      const chevron = document.getElementById('deity-trigger-chevron');
+      if (!dropdown) return;
+
+      dropdown.classList.add('hidden');
+      if (chevron) chevron.classList.remove('rotate-180');
+      _deitySpotlightOpen = false;
+    }
+
+    function onDeitySpotlightFilter(val) {
+      const clearBtn = document.getElementById('deity-spotlight-clear-btn');
+      if (clearBtn) {
+        if (val && val.trim()) clearBtn.classList.remove('hidden');
+        else clearBtn.classList.add('hidden');
+      }
+      renderDeitySpotlightItems(val);
+    }
+
+    function clearDeitySpotlightFilter() {
+      const searchInput = document.getElementById('deity-spotlight-search');
+      if (searchInput) {
+        searchInput.value = '';
+        searchInput.focus();
+      }
+      onDeitySpotlightFilter('');
+    }
+
+    function onDeitySpotlightKeydown(e) {
+      if (e.key === 'Escape') {
+        closeDeitySpotlightDropdown();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const firstBtn = document.querySelector('#deity-spotlight-list [data-deity-name]');
+        if (firstBtn) {
+          const deityName = firstBtn.getAttribute('data-deity-name');
+          selectDeityItem(deityName);
+        } else {
+          const searchInput = document.getElementById('deity-spotlight-search');
+          if (searchInput && searchInput.value.trim()) {
+            searchDeityViaRuleMasterAi(searchInput.value.trim());
+            closeDeitySpotlightDropdown();
+          }
+        }
+      }
+    }
+
+    function escapeDeityHtml(str) {
+      return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function getAllDeitiesForSpotlight() {
+      const list = [...DND35_DEITY_DEFINITIONS];
+
+      // Custom deities from localStorage
+      try {
+        const saved = localStorage.getItem('dnd35_custom_deities');
+        if (saved) {
+          const customDeities = JSON.parse(saved);
+          if (Array.isArray(customDeities)) {
+            customDeities.forEach(cd => {
+              if (cd && cd.name && !list.some(d => d.name.toLowerCase() === cd.name.toLowerCase())) {
+                list.push({
+                  name: cd.name,
+                  title: cd.title || `${cd.name} (Özel / AI)`,
+                  category: 'Özel / AI ile Eklenen Tanrılar',
+                  icon: cd.icon || '🔮',
+                  alignment: cd.alignment || 'Any',
+                  weapon: cd.favoredWeapon || cd.weapon || '-',
+                  domains: cd.domains || [],
+                  tags: ['custom', 'ai', cd.name.toLowerCase()]
+                });
+              }
+            });
+          }
+        }
+      } catch (e) {
+        console.warn('Custom deities read error:', e);
+      }
+
+      // Catalog lookup
+      const catalog = (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG))
+        ? window.BUNDLED_SRD_CORE_CATALOG
+        : [];
+
+      catalog.forEach(item => {
+        if (item && item.type === 'Deity' && !list.some(d => d.name.toLowerCase() === item.name.toLowerCase())) {
+          list.push({
+            name: item.name,
+            title: item.title || item.name,
+            category: item.category || 'Özel / AI ile Eklenen Tanrılar',
+            icon: item.icon || '🔮',
+            alignment: item.alignment || 'Any',
+            weapon: item.favoredWeapon || item.weapon || '-',
+            domains: item.domains || [],
+            tags: Array.isArray(item.tags) ? item.tags : ['deity', item.name.toLowerCase()]
+          });
+        }
+      });
+
+      return list;
+    }
+
+    function renderDeitySpotlightItems(filterText = '') {
+      const listEl = document.getElementById('deity-spotlight-list');
+      if (!listEl) return;
+
+      const q = (filterText || '').toLowerCase().trim();
+      const currentDeity = (document.getElementById('profile-edit-deity')?.value || character?.deity || '').toLowerCase();
+      const allDeities = getAllDeitiesForSpotlight();
+
+      const filtered = q
+        ? allDeities.filter(d => {
+            const matchName = d.name.toLowerCase().includes(q) || (d.title && d.title.toLowerCase().includes(q));
+            const matchCat = d.category && d.category.toLowerCase().includes(q);
+            const matchAlign = d.alignment && d.alignment.toLowerCase().includes(q);
+            const matchWeapon = d.weapon && d.weapon.toLowerCase().includes(q);
+            const matchDomains = Array.isArray(d.domains) && d.domains.some(dom => dom.toLowerCase().includes(q));
+            const matchTags = Array.isArray(d.tags) && d.tags.some(t => t.toLowerCase().includes(q));
+            return matchName || matchCat || matchAlign || matchWeapon || matchDomains || matchTags;
+          })
+        : allDeities;
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = `
+          <div class="p-3 text-center space-y-2 bg-purple-950/30 rounded-xl border border-purple-500/40 my-1">
+            <span class="text-xl block">🔍</span>
+            <div class="text-xs font-bold text-slate-200">"${escapeDeityHtml(filterText)}" panteonda bulunamadı</div>
+            <p class="text-[10px] text-slate-400">Forgotten Realms, Eberron veya resmi D&D 3.5e kitaplarındaki tanrıları doğrudan aratabilirsiniz.</p>
+            <button type="button" onclick="searchDeityViaRuleMasterAi('${escapeDeityHtml(filterText).replace(/'/g, "\\\'")}'); closeDeitySpotlightDropdown();" class="w-full py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:scale-95 text-white font-extrabold text-xs rounded-lg shadow transition flex items-center justify-center gap-1.5 cursor-pointer">
+              <span>🔮</span>
+              <span>"${escapeDeityHtml(filterText)}" Tanrısını Rule Master AI ile Getir</span>
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      const categories = {};
+      filtered.forEach(d => {
+        if (!categories[d.category]) categories[d.category] = [];
+        categories[d.category].push(d);
+      });
+
+      let html = '';
+      for (const [catName, items] of Object.entries(categories)) {
+        html += `
+          <div class="pt-1">
+            <div class="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-purple-400/90 flex items-center justify-between border-b border-purple-900/30 mb-1">
+              <span>${catName}</span>
+              <span class="text-[8px] font-mono text-slate-500">${items.length}</span>
+            </div>
+            <div class="space-y-0.5">
+        `;
+
+        items.forEach(d => {
+          const isSelected = d.name.toLowerCase() === currentDeity;
+          const selectedClasses = isSelected
+            ? 'bg-purple-900/60 border border-purple-500/80 text-white font-bold'
+            : 'bg-slate-900/50 hover:bg-slate-800/80 border border-transparent hover:border-purple-500/30 text-slate-200';
+
+          const domainList = Array.isArray(d.domains) && d.domains.length ? d.domains.slice(0, 3).join(', ') : '-';
+
+          html += `
+            <button type="button" data-deity-name="${escapeDeityHtml(d.name)}" onclick="selectDeityItem('${escapeDeityHtml(d.name).replace(/'/g, "\\'")}')" class="w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between transition cursor-pointer group active:scale-[0.99] ${selectedClasses}">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="text-sm shrink-0">${d.icon || '☀️'}</span>
+                <div class="truncate">
+                  <div class="text-xs font-bold flex items-center gap-1.5">
+                    <span class="truncate">${d.name}</span>
+                    <span class="text-[9px] text-slate-400 font-normal truncate">(${d.title || d.name})</span>
+                    ${isSelected ? '<span class="text-[9px] px-1 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-700 font-mono">Seçili</span>' : ''}
+                  </div>
+                  <div class="text-[9px] text-purple-300/80 font-mono truncate">
+                    ${d.alignment || 'Any'} • Silah: ${d.weapon || '-'} • Alanlar: ${domainList}
+                  </div>
+                </div>
+              </div>
+              <span class="text-xs text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity ml-2 shrink-0">➔</span>
+            </button>
+          `;
+        });
+
+        html += `
+            </div>
+          </div>
+        `;
+      }
+
+      if (!q || 'diğer'.includes(q) || 'ai'.includes(q) || 'rule master'.includes(q)) {
+        html += `
+          <div class="pt-1 border-t border-purple-900/40 mt-1">
+            <button type="button" onclick="selectDeityItem('Diğer')" class="w-full text-left px-2.5 py-2 rounded-lg bg-gradient-to-r from-purple-950/70 to-indigo-950/70 hover:from-purple-900/80 hover:to-indigo-900/80 border border-purple-500/40 hover:border-purple-400 text-purple-200 flex items-center justify-between transition cursor-pointer group active:scale-[0.99]">
+              <div class="flex items-center gap-2">
+                <span class="text-base shrink-0">🔮</span>
+                <div>
+                  <div class="text-xs font-bold text-purple-200 group-hover:text-white">Diğer (Rule Master AI ile Özel Tanrı Ara...)</div>
+                  <div class="text-[9px] text-purple-400/80 font-mono">Kelemvor, Mystra, Tempus, Bane, Lolth vb. resmi tanrılar</div>
+                </div>
+              </div>
+              <span class="text-xs text-purple-300 font-bold group-hover:translate-x-0.5 transition-transform">➔</span>
+            </button>
+          </div>
+        `;
+      }
+
+      listEl.innerHTML = html;
+    }
+
+    function selectDeityItem(deityName) {
+      if (deityName === 'Diğer') {
+        searchDeityViaRuleMasterAi();
+        return;
+      }
+
+      updateDeitySpotlightTrigger(deityName);
+      closeDeitySpotlightDropdown();
+
+      const hiddenInput = document.getElementById('profile-edit-deity');
+      if (hiddenInput) hiddenInput.value = deityName;
+    }
+
+    function updateDeitySpotlightTrigger(deityName) {
+      const labelEl = document.getElementById('deity-trigger-label');
+      const iconEl = document.getElementById('deity-trigger-icon');
+      const hiddenInput = document.getElementById('profile-edit-deity');
+      if (hiddenInput) hiddenInput.value = deityName || '';
+
+      const all = getAllDeitiesForSpotlight();
+      const found = all.find(d => d.name.toLowerCase() === (deityName || '').toLowerCase());
+
+      if (found) {
+        if (labelEl) labelEl.textContent = `${found.name} (${found.title || found.name})`;
+        if (iconEl) iconEl.textContent = found.icon || '☀️';
+      } else if (deityName && (deityName.toLowerCase().includes('diğer') || deityName.toLowerCase().includes('other'))) {
+        if (labelEl) labelEl.textContent = '🔮 Diğer (Rule Master AI)';
+        if (iconEl) iconEl.textContent = '🔮';
+      } else if (deityName) {
+        if (labelEl) labelEl.textContent = deityName;
+        if (iconEl) iconEl.textContent = '✨';
+      } else {
+        if (labelEl) labelEl.textContent = 'Tanrı / İnanç Seçilmedi';
+        if (iconEl) iconEl.textContent = '🌀';
+      }
+    }
+
+    async function searchDeityViaRuleMasterAi(queryName = null) {
+      let q = queryName;
+      if (!q) {
+        const searchInput = document.getElementById('deity-spotlight-search');
+        if (searchInput && searchInput.value.trim()) q = searchInput.value.trim();
+      }
+      if (!q) {
+        const entered = prompt('Lütfen aramak istediğiniz resmi D&D 3.5e tanrısının adını yazın:\n(Örn: Kelemvor, Mystra, Tempus, Bane, Lolth, Asmodeus, Helm, Sune)');
+        if (entered && entered.trim()) {
+          q = entered.trim();
+        } else {
+          return;
+        }
+      }
+
+      closeDeitySpotlightDropdown();
+
+      if (typeof showDiceTopToast === 'function') {
+        showDiceTopToast({
+          title: 'Rule Master AI',
+          breakdown: `"${escapeDeityHtml(q)}" resmi D&D 3.5e kütüphanelerinden aranıyor...`,
+          icon: '⚡'
+        });
+      }
+
+      try {
+        let deityObj = null;
+        if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.fetchDeityViaAi === 'function') {
+          deityObj = await RuleMaster.fetchDeityViaAi(q);
+        } else if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.fetchSingleAiRuleObjects === 'function') {
+          const key = RuleMaster.getApiKey();
+          if (!key) {
+            RuleMaster.promptApiKey();
+            throw new Error('Gemini API anahtarı girilmedi.');
+          }
+          const results = await RuleMaster.fetchSingleAiRuleObjects(q, 'Deity', key);
+          if (results && results.length) {
+            deityObj = results.find(e => e && (e.type === 'Deity' || String(e.type).toLowerCase() === 'deity')) || results[0];
+          }
+        } else {
+          throw new Error('Rule Master motoru yüklenemedi.');
+        }
+
+        if (!deityObj || !deityObj.name) {
+          throw new Error(`"${q}" için resmi bir D&D 3.5e tanrı verisi bulunamadı.`);
+        }
+
+        deityObj.type = 'Deity';
+
+        // Cache in localStorage
+        try {
+          let customDeities = [];
+          const existingSaved = localStorage.getItem('dnd35_custom_deities');
+          if (existingSaved) customDeities = JSON.parse(existingSaved) || [];
+          const idx = customDeities.findIndex(d => d.name.toLowerCase() === deityObj.name.toLowerCase());
+          if (idx >= 0) customDeities[idx] = deityObj;
+          else customDeities.push(deityObj);
+          localStorage.setItem('dnd35_custom_deities', JSON.stringify(customDeities));
+        } catch (e) {
+          console.warn('Failed to cache deity in localStorage:', e);
+        }
+
+        // Set input value and update trigger
+        const hiddenInput = document.getElementById('profile-edit-deity');
+        if (hiddenInput) hiddenInput.value = deityObj.name;
+        updateDeitySpotlightTrigger(deityObj.name);
+
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            title: `${deityObj.name} Bulundu!`,
+            breakdown: `Yönelim: ${deityObj.alignment || '-'} • Silah: ${deityObj.favoredWeapon || '-'} • Alanlar: ${(deityObj.domains || []).join(', ')}`,
+            icon: '✨'
+          });
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Tanrı arama hatası: ' + err.message);
+      }
+    }
 
     function onProfileRaceChange(raceName) {
       const card = document.getElementById('profile-race-traits-card');
