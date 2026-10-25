@@ -262,7 +262,7 @@ const CloudSync = {
   },
 
   // Apply cloud payload (character + masterDb + optional hubDb) into active app state
-  applyRemotePayload(remotePayload) {
+  applyRemotePayload(remotePayload, silent = false) {
     if (!remotePayload) return false;
     if (typeof remotePayload === 'string') {
       try { remotePayload = JSON.parse(remotePayload); } catch (e) { return false; }
@@ -307,7 +307,19 @@ const CloudSync = {
               if (!rc || !rc.id) return;
               const exIdx = localHub.characters.findIndex(c => c.id === rc.id);
               if (exIdx >= 0) {
-                localHub.characters[exIdx] = { ...localHub.characters[exIdx], ...rc };
+                const localC = localHub.characters[exIdx];
+                const localHpTs = Number(localC.lastHpUpdateTs) || 0;
+                const remoteHpTs = Number(rc.lastHpUpdateTs) || 0;
+
+                // Protect local character HP if local has newer DM HP update
+                if (localHpTs > remoteHpTs) {
+                  const savedCurrentHp = localC.currentHp;
+                  const savedTempHp = localC.tempHp;
+                  const savedTs = localC.lastHpUpdateTs;
+                  localHub.characters[exIdx] = { ...localC, ...rc, currentHp: savedCurrentHp, tempHp: savedTempHp, lastHpUpdateTs: savedTs };
+                } else {
+                  localHub.characters[exIdx] = { ...localC, ...rc };
+                }
               } else {
                 const sig = `${(rc.name || '').toLowerCase().trim()}__${(rc.classes || '').toLowerCase().trim()}__${rc.level || 1}`;
                 if (!seenSigs.has(sig) && !seenIds.has(rc.id)) {
@@ -362,9 +374,27 @@ const CloudSync = {
       if (remotePayload.hubDb && Array.isArray(remotePayload.hubDb.characters) && currentCharId) {
         const foundInCloudHub = remotePayload.hubDb.characters.find(c => c.id === currentCharId);
         if (foundInCloudHub && foundInCloudHub.fullData) {
+          const localDmTs = character.hp?._lastDmUpdateTs || 0;
+          const cloudDmTs = Number(foundInCloudHub.lastHpUpdateTs) || 0;
+          const currentHpBefore = character.hp?.current;
+          const currentTempBefore = character.hp?.temp;
+
           Object.keys(character).forEach(k => delete character[k]);
           Object.assign(character, foundInCloudHub.fullData);
           character._hubId = currentCharId;
+
+          // Preserve newer local DM HP update if exists
+          if (localDmTs > cloudDmTs && currentHpBefore !== undefined) {
+            if (!character.hp) character.hp = {};
+            character.hp.current = currentHpBefore;
+            character.hp.temp = currentTempBefore || 0;
+            character.hp._lastDmUpdateTs = localDmTs;
+          } else if (foundInCloudHub.currentHp !== undefined) {
+            if (!character.hp) character.hp = {};
+            character.hp.current = foundInCloudHub.currentHp;
+            character.hp.temp = foundInCloudHub.tempHp || 0;
+            character.hp._lastDmUpdateTs = cloudDmTs;
+          }
           applied = true;
           matchedFromHub = true;
         }
@@ -380,8 +410,20 @@ const CloudSync = {
         if (isCurrentDifferent) {
           console.warn(`CloudSync: Cloud character (${remoteChar.name || remoteCharId}) does not match current active character (${character.name || currentCharId}). Skipping character overwrite to protect character isolation.`);
         } else {
+          const localDmTs = character.hp?._lastDmUpdateTs || 0;
+          const currentHpBefore = character.hp?.current;
+          const currentTempBefore = character.hp?.temp;
+
           Object.keys(character).forEach(k => delete character[k]);
           Object.assign(character, remoteChar);
+
+          // Preserve newer local DM HP update if exists
+          if (localDmTs > 0 && currentHpBefore !== undefined) {
+            if (!character.hp) character.hp = {};
+            character.hp.current = currentHpBefore;
+            character.hp.temp = currentTempBefore || 0;
+            character.hp._lastDmUpdateTs = localDmTs;
+          }
 
           // Clean unowned dummy modifiers (like Boots of Speed or Acid Arrow) from activeModifiers
           if (Array.isArray(character.activeModifiers)) {
@@ -445,7 +487,9 @@ const CloudSync = {
       applied = true;
 
       // Automatically upgrade Cloud DB if local canonical database had more verified entries than cloud
-      if (needsUpgrade && this.configured && this.authenticated) {
+      // GUARD: Upgrade at most ONCE per session and NEVER trigger during background silent polling to avoid ping-pong loops!
+      if (needsUpgrade && this.configured && this.authenticated && !silent && !this._cloudDbUpgraded) {
+        this._cloudDbUpgraded = true;
         console.log(`CloudSync: Upgrading Cloud DB with canonical entries (${incomingList.length} -> ${mergedDb.length} items)...`);
         setTimeout(() => {
           this.pushToCloud(true);
@@ -464,7 +508,9 @@ const CloudSync = {
   async pullFromCloud(silent = false) {
     if (this.isSyncing) return;
     this.isSyncing = true;
-    this.updateStatusUI('syncing');
+    if (!silent) {
+      this.updateStatusUI('syncing');
+    }
 
     try {
       let remoteData = null;
@@ -519,7 +565,7 @@ const CloudSync = {
         return;
       }
 
-      const ok = this.applyRemotePayload(remoteData);
+      const ok = this.applyRemotePayload(remoteData, silent);
       this.lastSyncedAt = new Date();
       this.updateStatusUI('synced');
 
@@ -542,7 +588,9 @@ const CloudSync = {
   async pushToCloud(silent = false) {
     if (this.isSyncing) return;
     this.isSyncing = true;
-    this.updateStatusUI('syncing');
+    if (!silent) {
+      this.updateStatusUI('syncing');
+    }
 
     try {
       const nowIso = new Date().toISOString();
@@ -663,7 +711,7 @@ const CloudSync = {
   // Live polling for cross-device DM updates (Player phone / tablet)
   livePollingInterval: null,
 
-  startLiveSyncPolling(intervalMs = 3500) {
+  startLiveSyncPolling(intervalMs = 8000) {
     if (this.livePollingInterval) return;
     this.livePollingInterval = setInterval(async () => {
       if (document.hidden) return; // Ekran kapalıysa veya sekme arka plandaysa kota/pil tasarrufu

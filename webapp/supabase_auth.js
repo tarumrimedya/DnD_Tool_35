@@ -1,7 +1,7 @@
 /**
  * D&D 3.5e Supabase Authentication & Multi-User Module
  * 
- * Handles Google OAuth, session persistence, page guards, and user UI components.
+ * Handles Google OAuth, Local/Offline Mode, session persistence, page guards, and user UI components.
  */
 
 const SUPABASE_CONFIG = {
@@ -30,7 +30,43 @@ const SupabaseAuth = {
     return this.client;
   },
 
+  isLocalMode() {
+    try {
+      return localStorage.getItem('dnd35_local_mode') === 'true';
+    } catch (e) {
+      return false;
+    }
+  },
+
+  setLocalMode(enabled = true) {
+    try {
+      if (enabled) {
+        localStorage.setItem('dnd35_local_mode', 'true');
+      } else {
+        localStorage.removeItem('dnd35_local_mode');
+      }
+    } catch (e) {
+      console.warn('LocalStorage setLocalMode error:', e);
+    }
+  },
+
+  getLocalUser() {
+    return {
+      id: 'local_offline_user',
+      email: 'yerel@cihaz.local',
+      user_metadata: {
+        name: 'Yerel Mod',
+        full_name: 'Yerel Mod (Çevrimdışı)',
+        is_local: true
+      }
+    };
+  },
+
   async getSession() {
+    if (this.isLocalMode()) {
+      const localUser = this.getLocalUser();
+      return { user: localUser, is_local: true };
+    }
     const client = this.getClient();
     if (!client) return null;
     try {
@@ -44,6 +80,9 @@ const SupabaseAuth = {
   },
 
   async getUser() {
+    if (this.isLocalMode()) {
+      return this.getLocalUser();
+    }
     const session = await this.getSession();
     return session ? session.user : null;
   },
@@ -54,6 +93,9 @@ const SupabaseAuth = {
       alert('Supabase istemcisi yüklenemedi. Lütfen internet bağlantınızı kontrol edin.');
       return;
     }
+
+    // Yerel modu kapat
+    this.setLocalMode(false);
 
     // Yönlendirme adresi belirleme
     const origin = window.location.origin;
@@ -77,6 +119,7 @@ const SupabaseAuth = {
   },
 
   async signOut() {
+    this.setLocalMode(false);
     const client = this.getClient();
     if (client) {
       try {
@@ -92,9 +135,24 @@ const SupabaseAuth = {
   /**
    * Korumalı Sayfa Kalkanı (Auth Guard)
    * Eğer oturum yoksa kullanıcıyı derhal /login sayfasına fırlatır.
-   * Oturum varsa kullanıcı nesnesini döner ve sağ üstte profil rozetini çizer.
+   * Oturum veya Yerel Mod varsa kullanıcı nesnesini döner ve sağ üstte profil rozetini çizer.
    */
   async requireAuth(options = {}) {
+    // Yerel dosya sistemi (file://) protokolünde doğrudan auth kalkanını atla
+    if (typeof window !== 'undefined' && window.location.protocol === 'file:') {
+      console.log('SupabaseAuth: file:// protokolünde auth kalkanı atlandı (yerel mod).');
+      const localUser = this.getLocalUser();
+      this.mountUserProfileUI(localUser, options);
+      return localUser;
+    }
+
+    // Yerel mod aktifse oturumu sağla ve UI'ı bağla
+    if (this.isLocalMode()) {
+      const localUser = this.getLocalUser();
+      this.mountUserProfileUI(localUser, options);
+      return localUser;
+    }
+
     const client = this.getClient();
     if (!client) {
       console.warn('Supabase client not available, waiting 300ms...');
@@ -117,9 +175,15 @@ const SupabaseAuth = {
 
   /**
    * Giriş Sayfası Kontrolü:
-   * Zaten oturumu olan bir kullanıcı /login'e gelirse otomatik /hub'a gönder.
+   * Zaten oturumu olan veya Yerel Mod seçmiş bir kullanıcı /login'e gelirse otomatik yönlendir.
    */
   async redirectIfLoggedIn(defaultTarget = '/hub') {
+    if (this.isLocalMode()) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirectTarget = urlParams.get('redirect') || defaultTarget;
+      window.location.href = redirectTarget;
+      return true;
+    }
     const session = await this.getSession();
     if (session && session.user) {
       const urlParams = new URLSearchParams(window.location.search);
@@ -135,8 +199,9 @@ const SupabaseAuth = {
    */
   mountUserProfileUI(user, options = {}) {
     if (!user) return;
+    const isLocal = !!user.user_metadata?.is_local;
     const meta = user.user_metadata || {};
-    const name = meta.full_name || meta.name || user.email.split('@')[0];
+    const name = meta.full_name || meta.name || (user.email ? user.email.split('@')[0] : 'Kullanıcı');
     const avatar = meta.avatar_url || meta.picture || '';
 
     // Varsa mevcut profil konteynerini bul, yoksa oluştur
@@ -160,15 +225,24 @@ const SupabaseAuth = {
       }
     }
 
-    const avatarHtml = avatar 
-      ? `<img src="${avatar}" alt="${name}" class="w-6 h-6 rounded-full border border-indigo-400 object-cover shrink-0">`
-      : `<div class="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold text-white shrink-0">${name.charAt(0).toUpperCase()}</div>`;
+    let avatarHtml;
+    if (isLocal) {
+      avatarHtml = `<div class="w-6 h-6 rounded-full bg-amber-600/90 border border-amber-400 flex items-center justify-center text-[10px] font-bold text-white shrink-0" title="Yerel Çalışma Modu">💻</div>`;
+    } else if (avatar) {
+      avatarHtml = `<img src="${avatar}" alt="${name}" class="w-6 h-6 rounded-full border border-indigo-400 object-cover shrink-0">`;
+    } else {
+      avatarHtml = `<div class="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold text-white shrink-0">${name.charAt(0).toUpperCase()}</div>`;
+    }
+
+    const titleAttr = isLocal ? 'Yerel / Çevrimdışı Mod (Veriler Cihazınızda Saklanır)' : (user.email || name);
+    const displayName = isLocal ? 'Yerel Mod' : name;
+    const badgeColor = isLocal ? 'text-amber-300' : 'text-white';
 
     container.innerHTML = `
       <div class="flex items-center gap-1.5 bg-slate-900/90 border border-slate-700/80 px-2 py-1 rounded-xl shadow-sm">
         ${avatarHtml}
-        <span class="text-xs font-semibold text-white max-w-[120px] truncate hidden sm:inline" title="${user.email}">${name}</span>
-        <button onclick="SupabaseAuth.signOut()" class="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-200 border border-slate-700 hover:border-rose-700 text-[10px] font-bold transition flex items-center gap-1 cursor-pointer" title="Oturumu Kapat">
+        <span class="text-xs font-semibold ${badgeColor} max-w-[120px] truncate hidden sm:inline" title="${titleAttr}">${displayName}</span>
+        <button onclick="SupabaseAuth.signOut()" class="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-200 border border-slate-700 hover:border-rose-700 text-[10px] font-bold transition flex items-center gap-1 cursor-pointer" title="${isLocal ? 'Yerel Moddan Çık ve Giriş Ekranına Dön' : 'Oturumu Kapat'}">
           <span>🚪</span>
           <span class="hidden md:inline">Çıkış</span>
         </button>

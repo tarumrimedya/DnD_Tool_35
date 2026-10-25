@@ -7272,6 +7272,8 @@
       }
       character.hp.current = evt.currentHp;
       character.hp.temp = evt.tempHp || 0;
+      character.hp._lastDmUpdateTs = evt.timestamp;
+      character.hp._lastPlayerChangeTs = 0; // DM HP takes precedence
 
       // Yerel hafızaya kaydet (tekrar buluta fırlatıp döngü oluşturmamak için triggerCloudSync = false)
       saveStateToStorage(false);
@@ -7352,7 +7354,7 @@
       try { verifySettingsGeminiApiKey(false); } catch (e) {}
       try { await CloudSync.init(); } catch (e) {}
       if (window.CloudSync && typeof window.CloudSync.startLiveSyncPolling === 'function') {
-        window.CloudSync.startLiveSyncPolling(3000);
+        window.CloudSync.startLiveSyncPolling(8000);
       }
       try { initDiceColor(); } catch (e) {}
       try { renderCustomTemplates(); } catch (e) {}
@@ -7612,6 +7614,18 @@
                     character.spellcasting.knownSpells = character.spells;
                   }
                 }
+                // Sync HP from found summary card if found.currentHp is defined
+                if (found.currentHp !== undefined) {
+                  if (!character.hp) character.hp = {};
+                  const hubHpTs = Number(found.lastHpUpdateTs) || 0;
+                  const playerHpTs = Number(character.hp._lastPlayerChangeTs) || 0;
+                  if (hubHpTs >= playerHpTs) {
+                    character.hp.current = found.currentHp;
+                    character.hp.max = found.maxHp || character.hp.max || 10;
+                    character.hp.temp = found.tempHp || 0;
+                    character.hp._lastDmUpdateTs = hubHpTs;
+                  }
+                }
                 loadedFromHub = true;
               } else {
                 character = createCleanDnd35Character(found);
@@ -7643,6 +7657,33 @@
         } else if (parsedSaved) {
           character = parsedSaved;
         }
+      }
+
+      // Reconcile HP with Hub DB if available
+      try {
+        const hubRaw = localStorage.getItem('dnd35_hub_db');
+        if (hubRaw && character) {
+          const hubDb = JSON.parse(hubRaw);
+          if (Array.isArray(hubDb.characters)) {
+            const myHubId = character._hubId || character.id;
+            const myName = (character.name || '').trim().toLowerCase();
+            const hubMatch = hubDb.characters.find(c => (myHubId && c.id === myHubId) || (myName && (c.name || '').trim().toLowerCase() === myName));
+            if (hubMatch) {
+              if (!character._hubId && hubMatch.id) character._hubId = hubMatch.id;
+              const hubHpTs = Number(hubMatch.lastHpUpdateTs) || 0;
+              const playerHpTs = Number(character.hp?._lastPlayerChangeTs) || 0;
+              if (hubHpTs >= playerHpTs && hubMatch.currentHp !== undefined) {
+                if (!character.hp) character.hp = {};
+                character.hp.current = hubMatch.currentHp;
+                character.hp.max = hubMatch.maxHp || character.hp.max || 10;
+                character.hp.temp = hubMatch.tempHp || 0;
+                character.hp._lastDmUpdateTs = hubHpTs;
+              }
+            }
+          }
+        }
+      } catch (reconErr) {
+        console.warn('HP reconciliation warning:', reconErr);
       }
 
       // Fetch bundled character_data.json for fallback or missing schema keys
@@ -7697,7 +7738,7 @@
                   character.hp.baseMax = 32;
                   character.hp.conBonusHp = 12;
                   if (!character.hp.max || character.hp.max < 44) character.hp.max = 44;
-                  if (character.hp.current === 35 || character.hp.current === undefined) character.hp.current = 44;
+                  if (character.hp.current === undefined) character.hp.current = character.hp.max || 44;
                 }
                 updated = true;
               }
@@ -7889,38 +7930,55 @@
           const urlParams = new URLSearchParams(window.location.search);
           const requestedId = urlParams.get('id') || localStorage.getItem('dnd35_active_character_id');
           const charId = character._hubId || character.id || requestedId;
-          if (charId && Array.isArray(hubDb.characters)) {
-            const idx = hubDb.characters.findIndex(c => c.id === charId);
+          const charName = (character.name || '').trim().toLowerCase();
+          if (Array.isArray(hubDb.characters)) {
+            let idx = charId ? hubDb.characters.findIndex(c => c.id === charId) : -1;
+            if (idx < 0 && charName) {
+              idx = hubDb.characters.findIndex(c => (c.name || '').trim().toLowerCase() === charName);
+            }
             if (idx >= 0) {
               // Guard clause: ensure we are not overwriting a different character
               if (character._hubId && hubDb.characters[idx].id && character._hubId !== hubDb.characters[idx].id) {
                 console.warn(`saveStateToStorage guard: character._hubId (${character._hubId}) !== summary.id (${hubDb.characters[idx].id}). Aborting hub overwrite.`);
                 return;
               }
-              const activeWep = (character.weapons || []).find(w => w.name === character.activeWeapon) || (character.weapons || [])[0] || {};
-              hubDb.characters[idx].name = character.name || hubDb.characters[idx].name;
-              hubDb.characters[idx].race = character.race || hubDb.characters[idx].race;
-              hubDb.characters[idx].classes = character.classes || (character.class ? (character.class + ' ' + (character.level || 1)) : hubDb.characters[idx].classes);
-              hubDb.characters[idx].level = Number(character.level) || hubDb.characters[idx].level;
-              hubDb.characters[idx].currentHp = character.hp?.current ?? hubDb.characters[idx].currentHp;
-              hubDb.characters[idx].maxHp = character.hp?.max ?? hubDb.characters[idx].maxHp;
-              hubDb.characters[idx].tempHp = character.hp?.temp ?? 0;
-              hubDb.characters[idx].ac = character.acBreakdown?.total ?? character.ac?.total ?? hubDb.characters[idx].ac;
-              hubDb.characters[idx].touchAc = character.acBreakdown?.touch ?? character.ac?.touch ?? hubDb.characters[idx].touchAc;
-              hubDb.characters[idx].flatFootedAc = character.acBreakdown?.flat ?? character.ac?.flatFooted ?? hubDb.characters[idx].flatFootedAc;
-              hubDb.characters[idx].mainWeapon = activeWep.name || hubDb.characters[idx].mainWeapon || 'Weapon';
-              hubDb.characters[idx].attackFormula = (activeWep.dice ? `${activeWep.dice}` : '') || hubDb.characters[idx].attackFormula || '+0';
-              hubDb.characters[idx].fortSave = character.evaluatedSaves?.fort ?? character.saves?.fort?.total ?? hubDb.characters[idx].fortSave;
-              hubDb.characters[idx].refSave = character.evaluatedSaves?.ref ?? character.saves?.ref?.total ?? hubDb.characters[idx].refSave;
-              hubDb.characters[idx].willSave = character.evaluatedSaves?.will ?? character.saves?.will?.total ?? hubDb.characters[idx].willSave;
-              hubDb.characters[idx].initBonus = (typeof getCharacterInitiative === 'function') ? getCharacterInitiative().total : (hubDb.characters[idx].initBonus ?? 0);
-              if (character.portrait || character.avatarUrl || character.portraitUrl) {
-                hubDb.characters[idx].portrait = character.portrait || character.avatarUrl || character.portraitUrl;
-                hubDb.characters[idx].avatarUrl = hubDb.characters[idx].portrait;
-                hubDb.characters[idx].portraitPosition = character.portraitPosition || '50% 50%';
-                hubDb.characters[idx].portraitFit = character.portraitFit || '125%';
+              const hubChar = hubDb.characters[idx];
+              const hubHpTs = Number(hubChar.lastHpUpdateTs) || 0;
+              const playerHpTs = Number(character.hp?._lastPlayerChangeTs) || 0;
+
+              // Only update Hub's HP if the player explicitly changed it more recently than DM
+              if (playerHpTs > hubHpTs) {
+                hubChar.currentHp = character.hp?.current ?? hubChar.currentHp;
+                hubChar.tempHp = character.hp?.temp ?? 0;
+                hubChar.lastHpUpdateTs = playerHpTs;
+              } else if (hubHpTs > 0 && hubChar.currentHp !== undefined) {
+                // DM HP is authoritative: adopt Hub HP onto character
+                character.hp.current = hubChar.currentHp;
+                character.hp.temp = hubChar.tempHp || 0;
+                character.hp._lastDmUpdateTs = hubHpTs;
               }
-              hubDb.characters[idx].fullData = character;
+              const activeWep = (character.weapons || []).find(w => w.name === character.activeWeapon) || (character.weapons || [])[0] || {};
+              hubChar.name = character.name || hubChar.name;
+              hubChar.race = character.race || hubChar.race;
+              hubChar.classes = character.classes || (character.class ? (character.class + ' ' + (character.level || 1)) : hubChar.classes);
+              hubChar.level = Number(character.level) || hubChar.level;
+              hubChar.maxHp = character.hp?.max ?? hubChar.maxHp;
+              hubChar.ac = character.acBreakdown?.total ?? character.ac?.total ?? hubChar.ac;
+              hubChar.touchAc = character.acBreakdown?.touch ?? character.ac?.touch ?? hubChar.touchAc;
+              hubChar.flatFootedAc = character.acBreakdown?.flat ?? character.ac?.flatFooted ?? hubChar.flatFootedAc;
+              hubChar.mainWeapon = activeWep.name || hubChar.mainWeapon || 'Weapon';
+              hubChar.attackFormula = (activeWep.dice ? `${activeWep.dice}` : '') || hubChar.attackFormula || '+0';
+              hubChar.fortSave = character.evaluatedSaves?.fort ?? character.saves?.fort?.total ?? hubChar.fortSave;
+              hubChar.refSave = character.evaluatedSaves?.ref ?? character.saves?.ref?.total ?? hubChar.refSave;
+              hubChar.willSave = character.evaluatedSaves?.will ?? character.saves?.will?.total ?? hubChar.willSave;
+              hubChar.initBonus = (typeof getCharacterInitiative === 'function') ? getCharacterInitiative().total : (hubChar.initBonus ?? 0);
+              if (character.portrait || character.avatarUrl || character.portraitUrl) {
+                hubChar.portrait = character.portrait || character.avatarUrl || character.portraitUrl;
+                hubChar.avatarUrl = hubChar.portrait;
+                hubChar.portraitPosition = character.portraitPosition || '50% 50%';
+                hubChar.portraitFit = character.portraitFit || '125%';
+              }
+              hubChar.fullData = character;
               localStorage.setItem('dnd35_hub_db', JSON.stringify(hubDb));
             }
           }
@@ -10768,6 +10826,7 @@
       if (dmgLeft > 0) {
         character.hp.current = Math.max(-10, (Number(character.hp.current) || 0) - dmgLeft);
       }
+      character.hp._lastPlayerChangeTs = Date.now();
       saveStateToStorage(true);
       renderAll();
       if (evaluated.isDice) {
@@ -10786,6 +10845,7 @@
       const evaluated = evaluateHpAmount(input?.value || '0');
       if (evaluated.total <= 0) return;
       character.hp.current = Math.min(Number(character.hp.max) || 0, (Number(character.hp.current) || 0) + evaluated.total);
+      character.hp._lastPlayerChangeTs = Date.now();
       saveStateToStorage(true);
       renderAll();
       if (evaluated.isDice) {
@@ -10803,6 +10863,7 @@
       const curTemp = Number(character.hp.temp) || 0;
       if (curTemp <= 0) return;
       character.hp.temp = 0;
+      character.hp._lastPlayerChangeTs = Date.now();
       saveStateToStorage(true);
       renderAll();
       showDiceTopToast({
@@ -10820,6 +10881,7 @@
       const prevHp = Number(character.hp.current) || 0;
       const maxHp = Number(character.hp.max) || 1;
       character.hp.current = Math.min(maxHp, prevHp + healVal);
+      character.hp._lastPlayerChangeTs = Date.now();
       const actualGain = character.hp.current - prevHp;
       saveStateToStorage(true);
       renderAll();
@@ -10837,6 +10899,7 @@
       if (tempVal <= 0) return;
       const prevTemp = Math.max(0, Number(character.hp.temp) || 0);
       character.hp.temp = prevTemp + tempVal;
+      character.hp._lastPlayerChangeTs = Date.now();
       saveStateToStorage(true);
       renderAll();
       showDiceTopToast({
@@ -34200,6 +34263,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       }
       character.hp.temp = 0;
       character.hp.nonlethal = 0;
+      character.hp._lastPlayerChangeTs = Date.now();
 
       // 2. Spell Slots (Spontaneous Arcane, Prepared Wizard, Divine)
       let refreshedSpells = 0;

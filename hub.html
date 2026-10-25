@@ -707,7 +707,18 @@
       c.attackBonusStr = atkData.attackBonusStr;
       c.damageStr = atkData.damageStr;
 
-      if (data.hp) {
+      // Protect Hub DM HP if c has an active update timestamp
+      const dataHpTs = Number(data.hp?._lastPlayerChangeTs) || 0;
+      const hubHpTs = Number(c.lastHpUpdateTs) || 0;
+
+      if (hubHpTs >= dataHpTs && c.currentHp !== undefined) {
+        if (data.hp) {
+          data.hp.current = c.currentHp;
+          data.hp.max = c.maxHp;
+          data.hp.temp = c.tempHp || 0;
+          data.hp._lastDmUpdateTs = hubHpTs;
+        }
+      } else if (data.hp) {
         c.currentHp = Number(data.hp.current ?? c.currentHp ?? c.maxHp ?? 10);
         c.maxHp = Number(data.hp.max ?? c.maxHp ?? 10);
         c.tempHp = Number(data.hp.temp ?? c.tempHp ?? 0);
@@ -844,6 +855,17 @@
           mc.portraitPosition = activeChar.portraitPosition || mc.portraitPosition || '50% 50%';
           mc.portraitFit = activeChar.portraitFit || mc.portraitFit || '125%';
           mc.avatarUrl = mc.portrait;
+
+          // Preserve Hub DM HP if Hub has newer timestamp
+          const hubHpTs = Number(mc.lastHpUpdateTs) || 0;
+          const playerHpTs = Number(activeChar.hp?._lastPlayerChangeTs) || 0;
+          if (hubHpTs >= playerHpTs && mc.currentHp !== undefined) {
+            if (!activeChar.hp) activeChar.hp = {};
+            activeChar.hp.current = mc.currentHp;
+            activeChar.hp.max = mc.maxHp;
+            activeChar.hp.temp = mc.tempHp || 0;
+            activeChar.hp._lastDmUpdateTs = hubHpTs;
+          }
           mc.fullData = activeChar;
           syncCharacterSummaryStats(mc);
         }
@@ -1511,45 +1533,70 @@
         } else {
           c.currentHp = Math.max(0, Math.min(c.maxHp, c.currentHp + delta));
         }
-        if (c.fullData && c.fullData.hp) {
-          c.fullData.hp.current = c.currentHp;
-          c.fullData.hp.temp = c.tempHp || 0;
+        c.lastHpUpdateTs = Date.now();
+
+        if (!c.fullData) c.fullData = {};
+        if (!c.fullData.hp) c.fullData.hp = {};
+        c.fullData.hp.current = c.currentHp;
+        c.fullData.hp.max = c.maxHp;
+        c.fullData.hp.temp = c.tempHp || 0;
+        c.fullData.hp._lastDmUpdateTs = c.lastHpUpdateTs;
+        c.fullData.hp._lastPlayerChangeTs = 0;
+
+        // Directly update dnd35_character in localStorage if it matches this character
+        try {
+          const rawChar = localStorage.getItem('dnd35_character');
+          if (rawChar) {
+            const parsedChar = JSON.parse(rawChar);
+            const matchesId = (parsedChar._hubId && parsedChar._hubId === charId) || (parsedChar.id && parsedChar.id === charId);
+            const matchesName = parsedChar.name && c.name && parsedChar.name.toLowerCase().trim() === c.name.toLowerCase().trim();
+            if (matchesId || matchesName) {
+              if (!parsedChar.hp) parsedChar.hp = {};
+              parsedChar.hp.current = c.currentHp;
+              parsedChar.hp.max = c.maxHp;
+              parsedChar.hp.temp = c.tempHp || 0;
+              parsedChar.hp._lastDmUpdateTs = c.lastHpUpdateTs;
+              parsedChar.hp._lastPlayerChangeTs = 0;
+              parsedChar.lastModified = new Date().toISOString();
+              localStorage.setItem('dnd35_character', JSON.stringify(parsedChar));
+            }
+          }
+        } catch (syncErr) {
+          console.warn('adjustHp dnd35_character update warning:', syncErr);
         }
 
         // DM Mode Kontrolü ve Canlı Senkronizasyon Etkinliği
         const camp = state.campaigns.find(cp => cp.id === c.campaignId || (cp.parentId && cp.id === c.campaignId));
-        const isDmMode = camp ? Boolean(camp.isDmMode) : false;
+        const isDmMode = camp ? Boolean(camp.isDmMode) : true;
 
-        if (isDmMode) {
-          const hpEvent = {
-            type: 'DM_HP_UPDATE',
-            charId: charId,
-            campaignId: c.campaignId,
-            isDmMode: true,
-            delta: delta,
-            currentHp: c.currentHp,
-            maxHp: c.maxHp,
-            tempHp: c.tempHp || 0,
-            charName: c.name,
-            timestamp: Date.now()
-          };
+        const hpEvent = {
+          type: 'DM_HP_UPDATE',
+          charId: charId,
+          campaignId: c.campaignId,
+          isDmMode: isDmMode,
+          delta: delta,
+          currentHp: c.currentHp,
+          maxHp: c.maxHp,
+          tempHp: c.tempHp || 0,
+          charName: c.name,
+          timestamp: c.lastHpUpdateTs
+        };
 
-          // 1. BroadcastChannel Canlı Yayını (Aynı cihazdaki sekmeler / çift monitör için 0ms anında)
-          try {
-            const bc = new BroadcastChannel('dnd35_live_sync');
-            bc.postMessage(hpEvent);
-            bc.close();
-          } catch (e) {}
+        // 1. BroadcastChannel Canlı Yayını (Aynı cihazdaki sekmeler / çift monitör için 0ms anında)
+        try {
+          const bc = new BroadcastChannel('dnd35_live_sync');
+          bc.postMessage(hpEvent);
+          bc.close();
+        } catch (e) {}
 
-          // 2. LocalStorage Canlı Yayını (Aynı cihaz fallback)
-          try {
-            localStorage.setItem('dnd35_latest_dm_event', JSON.stringify(hpEvent));
-          } catch (e) {}
+        // 2. LocalStorage Canlı Yayını (Aynı cihaz fallback)
+        try {
+          localStorage.setItem('dnd35_latest_dm_event', JSON.stringify(hpEvent));
+        } catch (e) {}
 
-          state.latestDmEvent = hpEvent;
-        }
+        state.latestDmEvent = hpEvent;
 
-        saveHubStorage(true, isDmMode);
+        saveHubStorage(true, true);
         renderHub();
       }
     }

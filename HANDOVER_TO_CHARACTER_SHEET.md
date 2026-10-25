@@ -160,9 +160,29 @@ Hub, karakter kâğıdına veri gönderirken veya `localStorage` (`dnd35_charact
 
 ---
 
-## 8. HAZIR DEVİR TESLİM PROMPTU (DİĞER KONUŞMAYA YAPIŞTIRILACAK)
+## 8. BULUT DÖNGÜSÜ (INFINITE SYNC LOOP) & DM HP OTORİTE KORUMASI DÜZELTMESİ (2026-10-25)
+* **Kapsam:** Karakter sayfasının sürekli bulut ile senkron olmaya çalışması (sonsuz pull-push ping-pong döngüsü ve buton yanıp sönmesi) ile DM tarafından Hub üzerinden uygulanan HP değişikliklerinin Karakter Kâğıdı'nın otomatik kayıt (`saveStateToStorage`) mekanizması tarafından ezilmesi sorunları kökten çözüldü.
+* **Teknik Çözümler:**
+  1. **Sonsuz Bulut Eşitleme Döngüsünün Ortadan Kaldırılması:**
+     * `gdrive_sync.js` içerisindeki `applyRemotePayload` fonksiyonunda yer alan Master DB yükseltme tetikleyicisine (`needsUpgrade`) tek seferlik oturum koruma kilidi (`this._cloudDbUpgraded`) eklendi ve sessiz arka plan sorgulamalarında (`silent === true`) otomatik `pushToCloud` tetiklemesi tamamen engellendi.
+     * Sessiz arka plan çekimlerinde (`pullFromCloud(true)`), üst gezinti çubuğundaki durum butonunun gereksiz yere `'syncing'` ("Eşitleniyor...") durumuna geçerek kullanıcıyı rahatsız etmesi ve UI titremesi önlendi.
+     * Canlı DM sorgulama frekansı 3000ms'den 8000ms'e çıkarıldı.
+  2. **DM HP Otoritesi & Zaman Damgalı Çakışma Çözümü (Conflict Resolution):**
+     * **Hub Yetkisi:** Hub üzerinden DM bir karakterin canını değiştirdiğinde (`adjustHp`), `lastHpUpdateTs = Date.now()` damgası atanır ve aynı zamanda `localStorage('dnd35_character')` doğrudan güncellenir.
+     * **Karakter Kâğıdı Koruması:** `character.html` içerisindeki `saveStateToStorage()` fonksiyonunda, Hub'ın HP zaman damgası (`hubHpTs`) ile oyuncunun son manuel HP düzenleme zaman damgası (`playerHpTs`) kıyaslanır. Eğer DM değişikliği daha yeniyse, karakter kâğıdı Hub'daki HP'yi kesinlikle ezmez; aksine yerel `character.hp.current` değerini Hub ile hizalar.
+     * **Oyuncu İnisiyatifi:** Oyuncu karakter sayfasından bilerek hasar aldığında (`applyDamage`) veya şifa aldığında (`applyHeal`), `_lastPlayerChangeTs = Date.now()` atanır ve bu değişiklik Hub'a doğru şekilde yazılır.
+     * **Sayfa Açılış Senkronizasyonu (`loadInitialData`):** Karakter kâğıdı doğrudan açıldığında dahi `dnd35_hub_db` ile otomatik HP mutabakatı yapar.
+  3. **`file://` Ortamı ve Test Uyumluluğu:**
+     * `supabase_auth.js` içerisine yerel dosya protokolü (`file://`) için bypass eklenerek yerel testlerin ve headless tarayıcı otomasyonlarının login sayfasına yönlenmesi önlendi.
+  4. **Doğrulama ve Canlı Testler:**
+     * `scratch/test_sync_loop_and_hp_overwrite.py` ve `scratch/test_dm_live_sync.py` testleri Edge headless ortamında çalıştırılarak %100 başarıyla doğrulandı.
+     * Proje genelinde `verify_no_dice.ps1` ve `sync_files.ps1` çalıştırılarak %100 dosya paritesi ve sıfır zar emojisi kuralı garanti altına alındı.
+
+---
+
+## 9. HAZIR DEVİR TESLİM PROMPTU (DİĞER KONUŞMAYA YAPIŞTIRILACAK)
 ```markdown
-Supabase Google OAuth kimlik doğrulama sistemi (`login.html`, `supabase_auth.js`), sayfa koruma kalkanları (`requireAuth`) ve sağ üst kullanıcı profil rozeti Hub ile Karakter Kâğıdı'na entegre edildi. Giriş yapmayan kullanıcılar doğrudan `/login` sayfasına yönlendirilmektedir.
+Bulut senkronizasyonu döngü hatası giderildi (sessiz polling UI titreşimi kaldırıldı, Master DB otomatik push kilidi eklendi) ve DM Modu can puanı (HP) otoritesi zaman damgalı kontratla (`_lastDmUpdateTs` vs `_lastPlayerChangeTs`) güvenceye alındı. Karakter kâğıdı artık DM'in Hub'dan uyguladığı hasar ve şifaları ezmemektedir.
 Lütfen `HANDOVER_TO_CHARACTER_SHEET.md` dosyasındaki son güncellemeleri kontrol ederek geliştirmelere devam et.
 ```
 
