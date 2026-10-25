@@ -1,0 +1,18 @@
+name: Supabase Keep-Alive Ping
+
+on:
+  schedule:
+    # Her 3 günde bir gece 03:00'te (UTC) otomatik çalışır
+    - cron: '0 3 */3 * *'
+  workflow_dispatch: # Dilediğiniz an GitHub üzerinden manuel tetikleyebilmeniz için
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST API
+        run: |
+          curl -s -o /dev/null -w "%{http_code}" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+            "https://hruixcdcckaeizaicrtk.supabase.co/rest/v1/campaigns?select=id&limit=1"
