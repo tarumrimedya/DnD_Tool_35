@@ -2305,3 +2305,27 @@ enderLevelUpFeatSlots) silaha baÄŸlÄ± feat seÃ§ildiÄŸinde kart Ã¼zerin
      - `rule_engine.js` ve `webapp/rule_engine.js` arasında %100 SHA-256 hash paritesi sağlandı (`14AA1FDF99E40AEC29F0C91126EDC2F9DE6B131F6E15C15BAACEC4EDB5E49BA4`).
      - Standart tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.
      - Headless Edge ortamında CDP otomatik testiyle 1. seviye Fighter CON 16 için 13 / 13 (+3 CON) ve CON 18 için 14 / 14 (+4 CON) değerleri %100 başarıyla doğrulandı.
+
+
+---
+
+## 82. SEVİYE İLERLEME TABLOSU BAB VE KURTARMA ATIŞLARI (SAVES) KÜMÜLATİF SENKRONİZASYONU (2026-10-26)
+* **İstek & Problem:**
+  - Kullanıcı bildiriminde: Seviye İlerleme Tablosu satırlarında BAB ve Kurtarma Atışlarının (Saves) çelişkili olduğu, Seviye 1'de BAB +1 / Fort +1 (D&D 3.5e RAW kuralına göre Fighter 1. Seviye güçlü Fort kurtarışı +2 olması gerekirken +1 gözüktüğü), Seviye 2'de BAB +2 / Fort +3, Seviye 3'e geçildiğinde ise BAB'ın tekrar +1'e ve Fort'un +1'e düştüğü tespit edildi.
+  - İncelemede; üstteki HUD özet çubuğu ve ana karakter kâğıdı `RuleEngine.calculateProgression` kullandığı için doğru (BAB +3, Fort +3, Ref +1, Will +1) hesaplarken, tablo satırlarının (`#level-progression-tbody`) satır objesindeki eski ve tutarsız statik `lvl.bab` / `lvl.fort` alanlarını doğrudan ekrana bastığı; yeni seviye ekleme fonksiyonunun ise kümülatif toplam yerine tekil seviye artışını (`1 / 0`) bu alanlara yazdığı belirlendi.
+* **Uygulanan Değişiklikler:**
+  1. **Dinamik Kümülatif Satır Çizimi (`renderLevelProgression`):**
+     - Tablo satırları çizilirken statik alanlara güvenmek yerine, o satıra kadarki seviye dilimi `RuleEngine.calculateProgression(prog.slice(0, idx + 1))` motorundan geçirilerek her satırın o seviyedeki kümülatif BAB ve Save (Fort, Ref, Will) değerleri dinamik olarak hesaplanıp tabloya yansıtıldı.
+     - D&D 3.5e PHB resmi sınıf tabloları standardına tam uyum sağlandı:
+       - Seviye 1 Fighter: BAB +1, Fort +2, Ref +0, Will +0
+       - Seviye 2 Fighter: BAB +2, Fort +3, Ref +0, Will +0
+       - Seviye 3 Fighter: BAB +3, Fort +3, Ref +1, Will +1
+       - Seviye 4 Fighter: BAB +4, Fort +4, Ref +1, Will +1
+  2. **Veri ve Durum Bütünlüğü (`recalculateCharacterClassSummary` & `addNewLevelRowToProgression`):**
+     - `recalculateCharacterClassSummary()` fonksiyonu çağrıldığında, `character.levelProgression` içindeki tüm seviye satırlarının `lvl.bab`, `lvl.fort`, `lvl.ref`, `lvl.will` alanları da kural motoruyla senkronize edilerek veri nesnesi düzeyinde de tam tutarlılık sağlandı.
+     - Yeni seviye satırı ekleme fonksiyonu (`addNewLevelRowToProgression`), ileriye dönük kümülatif projeksiyonu kural motorundan hesaplayarak eklenen satıra tam kümülatif değerleri yazacak şekilde güncellendi.
+  3. **Global Pencere Nesnesi Entegrasyonu (`window.character`):**
+     - Sayfa içi ve harici geliştirici/test araçlarının güvenli erişimi için `window.character` ve `window.masterDb` güvenli getter/setter ile `window` nesnesine bağlandı.
+  4. **Parite ve Kural Standartları:**
+     - 4 HTML karakter kâğıdı dosyası (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi sağlandı (`B26162F73CDC124741C784AFA5E7A6F0D69575FFBBC11FB76759068117EAE08D`).
+     - Standart tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.

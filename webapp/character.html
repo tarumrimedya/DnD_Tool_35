@@ -7439,7 +7439,9 @@
     window.getFormulaDiceIconSvg = getFormulaDiceIconSvg;
 
     let character = null;
+    try { Object.defineProperty(window, 'character', { get: () => character, set: (v) => { character = v; }, configurable: true }); } catch (e) {}
     let masterDb = [];
+    try { Object.defineProperty(window, 'masterDb', { get: () => masterDb, set: (v) => { masterDb = v; }, configurable: true }); } catch (e) {}
 
     // =========================================================================
     // DM CANLI SENKRONİZASYON (VIGNETTE FLASH, TOAST & DİNAMİK HP GÜNCELLEMESİ)
@@ -30042,6 +30044,18 @@ function renderManualStatsPanel() {
         character.baseSaves.ref = summary.baseSaves.ref || 0;
         character.baseSaves.will = summary.baseSaves.will || 0;
 
+        // Ensure each row in levelProgression has accurate cumulative BAB & Saves per D&D 3.5e RAW
+        prog.forEach((lvl, idx) => {
+          const rowSlice = prog.slice(0, idx + 1).map(p => ({ ...p, active: true }));
+          const rowSummary = RuleEngine.calculateProgression(rowSlice, { system: sys, isHuman, intMod });
+          if (rowSummary) {
+            lvl.bab = rowSummary.baseBab;
+            lvl.fort = rowSummary.baseSaves.fort;
+            lvl.ref = rowSummary.baseSaves.ref;
+            lvl.will = rowSummary.baseSaves.will;
+          }
+        });
+
         let toughnessCount = 0;
         (character.feats || []).forEach(f => {
           const fn = (typeof f === 'string' ? f : (f?.name || '')).toLowerCase();
@@ -36180,10 +36194,15 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         ? Math.max(4, ((def.skills || 2) + intMod + isHuman) * 4)
         : Math.max(1, (def.skills || 2) + intMod + isHuman);
 
-      const bab = def.bab >= 1.0 ? 1 : 0;
-      const fort = (def.fort === 'good') ? 1 : 0;
-      const ref = (def.ref === 'good') ? 1 : 0;
-      const will = (def.will === 'good') ? 1 : 0;
+      const prospectiveProg = [...prog, { className: targetClass, hd: `d${def.hd}`, hpGain, active: true }];
+      const prospectiveSummary = (typeof RuleEngine !== 'undefined' && RuleEngine.calculateProgression)
+        ? RuleEngine.calculateProgression(prospectiveProg, { system: character.settings?.babSaveSystem || 'standard', isHuman: (character.race || '').toLowerCase().includes('human'), intMod })
+        : null;
+
+      const bab = prospectiveSummary ? prospectiveSummary.baseBab : (def.bab >= 1.0 ? 1 : 0);
+      const fort = prospectiveSummary ? prospectiveSummary.baseSaves.fort : (def.fort === 'good' ? 2 : 0);
+      const ref = prospectiveSummary ? prospectiveSummary.baseSaves.ref : (def.ref === 'good' ? 2 : 0);
+      const will = prospectiveSummary ? prospectiveSummary.baseSaves.will : (def.will === 'good' ? 2 : 0);
 
       const autoData = (typeof RuleEngine !== 'undefined' && RuleEngine.getClassLevelFeatures)
         ? RuleEngine.getClassLevelFeatures(targetClass, targetClassLvl)
@@ -36745,6 +36764,21 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
             : "Sıralı İlerleme Kuralı: Bu seviyeyi aktif yapabilmek için önce önceki planlanan seviyeler aktif edilmelidir.";
         }
 
+        // Calculate cumulative BAB and Saves up to this level per D&D 3.5e RAW
+        const rowSlice = prog.slice(0, idx + 1).map(p => ({ ...p, active: true }));
+        const rowSummary = (typeof RuleEngine !== 'undefined' && RuleEngine.calculateProgression)
+          ? RuleEngine.calculateProgression(rowSlice, { system: sys, isHuman, intMod })
+          : null;
+        const rowBab = rowSummary ? rowSummary.baseBab : (lvl.bab || 0);
+        const rowFort = rowSummary ? rowSummary.baseSaves.fort : (lvl.fort || 0);
+        const rowRef = rowSummary ? rowSummary.baseSaves.ref : (lvl.ref || 0);
+        const rowWill = rowSummary ? rowSummary.baseSaves.will : (lvl.will || 0);
+
+        lvl.bab = rowBab;
+        lvl.fort = rowFort;
+        lvl.ref = rowRef;
+        lvl.will = rowWill;
+
         tr.innerHTML = `
           <td class="pt-2.5 pb-2.5 px-1 align-top text-center w-[5%] min-w-[36px]">
             <div class="h-6 flex items-center justify-center font-bold text-amber-400 text-xs">${lvl.level}</div>
@@ -36769,16 +36803,16 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
             <div class="h-6 flex items-center justify-center text-emerald-400 font-bold text-xs">+${lvl.hpGain}</div>
           </td>
           <td class="pt-2.5 pb-2.5 px-1 align-top text-center w-[7%] min-w-[50px]">
-            <div class="h-6 flex items-center justify-center text-sky-400 font-bold text-xs">+${lvl.bab}</div>
+            <div class="h-6 flex items-center justify-center text-sky-400 font-bold text-xs">+${rowBab}</div>
           </td>
           <td class="pt-2.5 pb-2.5 px-1 align-top text-center w-[7%] min-w-[50px]">
-            <div class="h-6 flex items-center justify-center text-slate-300 font-bold text-xs">+${lvl.fort}</div>
+            <div class="h-6 flex items-center justify-center text-slate-300 font-bold text-xs">+${rowFort}</div>
           </td>
           <td class="pt-2.5 pb-2.5 px-1 align-top text-center w-[7%] min-w-[50px]">
-            <div class="h-6 flex items-center justify-center text-slate-300 font-bold text-xs">+${lvl.ref}</div>
+            <div class="h-6 flex items-center justify-center text-slate-300 font-bold text-xs">+${rowRef}</div>
           </td>
           <td class="pt-2.5 pb-2.5 px-1 align-top text-center w-[7%] min-w-[50px]">
-            <div class="h-6 flex items-center justify-center text-slate-300 font-bold text-xs">+${lvl.will}</div>
+            <div class="h-6 flex items-center justify-center text-slate-300 font-bold text-xs">+${rowWill}</div>
           </td>
           <td class="pt-2.5 pb-2.5 px-1 align-top text-center w-[8%] min-w-[55px]">
             <div class="h-6 flex items-center justify-center text-indigo-300 font-bold text-xs">${lvl.skillPts || 4}</div>
