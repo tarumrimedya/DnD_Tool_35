@@ -29705,37 +29705,11 @@ function renderManualStatsPanel() {
       { name: "Great Fortitude", category: "General", prereq: "-", source: "PHB p.94", benefit: "Fortitude (Dayanıklılık) kurtarma zarlarına +2 bonus verir." }
     ];
 
-    // Built-in D&D 3.5e DM Boons, Grants & Campaign Awards (create_lvl_up.gs & create_master_db.gs uyumlu)
-    const DND35_DM_BOONS_CATALOG = [
-      { name: "Boon of Elusiveness Lesser", category: "DM Boon", source: "Campaign Boon", benefit: "Tüm alan etkili (AoE) büyü ve saldırılardan %25 daha az hasar alır. AC'ye +2 Dodge bonusu kazanır." },
-      { name: "Draconic Core (1h/day)", category: "DM Boon", source: "Campaign Boon", benefit: "Swift Action (1 saat/gün): Asit hasarına karşı tam bağışıklık ve nefes silahı (breath weapon) x2 hasar verir." },
-      { name: "Draconic Shield (1/d)", category: "DM Boon", source: "Campaign Boon", benefit: "Immediate Action (1/gün): Gelen bir saldırının tüm kritik hasarını yoksayar ve normal hasara dönüştürür." },
-      { name: "Draconic Shield (DR/- 1min)", category: "DM Boon", source: "Campaign Boon", benefit: "Swift Action (1 dk/gün): Karizma modifiyeri kadar Hasar İndirgeme (DR Cha mod/-) kazanır." },
-      { name: "Draconic Toughness", category: "DM Boon", source: "Campaign Boon", benefit: "Toplam karakter seviyeniz kadar kalıcı ekstra maksimum can puanı (+Max HP) kazanır." },
-      { name: "Save Magic +1 Draconic", category: "DM Boon", source: "Campaign Boon", benefit: "Büyü ve büyü benzeri yeteneklere karşı tüm kurtarma zarlarına (Saves) +1 draconic bonus." },
-      { name: "Save Magic +4 insight", category: "DM Boon", source: "Campaign Boon", benefit: "Büyü ve büyülü etkilere karşı yapılan tüm kurtarma zarlarına +4 insight bonus." },
-      { name: "Ability Boost (+2 Con, +2 Cha)", category: "DM Boon", source: "Campaign Boon", benefit: "Kalıcı +2 Dayanıklılık (CON) ve +2 Karizma (CHA) inherent stat artışı." },
-      { name: "Ability Boost (+2 Con)", category: "DM Boon", source: "Campaign Boon", benefit: "Kalıcı +2 Dayanıklılık (CON) inherent stat artışı." },
-      { name: "Ability Boost (+2 Dex)", category: "DM Boon", source: "Campaign Boon", benefit: "Kalıcı +2 Çeviklik (DEX) inherent stat artışı." },
-      { name: "Ability Boost (+1 Str, +1 Cha)", category: "DM Boon", source: "Campaign Boon", benefit: "Kalıcı +1 Güç (STR) ve +1 Karizma (CHA) inherent stat artışı." },
-      { name: "Ability Boost (+1 Dex, +1 Cha)", category: "DM Boon", source: "Campaign Boon", benefit: "Kalıcı +1 Çeviklik (DEX) ve +1 Karizma (CHA) inherent stat artışı." },
-      { name: "Nat AC 2+1/4lvl", category: "DM Boon", source: "Campaign Boon", benefit: "Karakter seviyesinin 1/4'ü + 2 kadar kalıcı Doğal Zırh (Natural Armor) bonusu." },
-      { name: "Absorb Magic", category: "DM Boon", source: "Campaign Boon", benefit: "Immediate Action (1/gün): Hedefleyen tekil bir büyüyü absorbe edip geçici can puanına (Temp HP) dönüştürür." },
-      { name: "Breath Weapon 3d8 Acid", category: "DM Boon", source: "Campaign Boon", benefit: "Standard Action: 60 ft hat/koni 3d8 asit hasarı (Reflex DC 10+lvl+Con yarısı). Dolum süresi 1d4+1 tur." },
-      { name: "Cha mod to magic saves 1/d", category: "DM Boon", source: "Campaign Boon", benefit: "Immediate Action (1/gün): Büyülere karşı herhangi bir save zarına anında CHA modifiyerini ekler." },
-      { name: "Endurance", category: "DM Boon", source: "Campaign Boon", benefit: "Yorgunluk, açlık, uzun yürüyüş kontrollerine +4 bonus ve orta zırhla uyuyabilme." },
-      { name: "Steadfast Determination", category: "DM Boon", source: "Campaign Boon", benefit: "Will (İrade) kurtarma zarlarında WIS yerine CON modifiyerini kullanır. Fortitude zarlarında doğal 1 otomatik ıskalamaz." },
-      { name: "Character Level (DM Boon)", category: "DM Boon", source: "Campaign Boon", benefit: "Caster Level (CL) çoklu sınıf cezası almadan doğrudan toplam karakter seviyesine eşitlenir." },
-      { name: "Ignore ASF / Boon", category: "DM Boon", source: "Campaign Boon", benefit: "Zırh büyü bozma yüzdesi (Arcane Spell Failure % - ASF) tamamen yoksayılır. Zırh içinde engelsiz büyü yapılır." }
-    ];
+    // Built-in D&D 3.5e DM Boons, Grants & Campaign Awards (Kural 5 / RAW uyumlu: VarsayÄ±lan boÅŸ, masterDb Ã¼zerinden dinamik beslenir)
+    const DND35_DM_BOONS_CATALOG = [];
 
-    const DND35_FLAWS_CATALOG = [
-      { name: "Flaw: Shaky", category: "Flaw", source: "Unearthed Arcana p.91", benefit: "Tüm menzilli saldırı zarlarına -2 ceza alır. Karşılığında 1 ekstra bonus feat kazandırır." },
-      { name: "Flaw: Frail", category: "Flaw", source: "Unearthed Arcana p.91", benefit: "Hit Die başına -1 Can Puanı (HP) düşer. Karşılığında 1 ekstra bonus feat kazandırır." },
-      { name: "Flaw: Vulnerable", category: "Flaw", source: "Unearthed Arcana p.91", benefit: "Zırh Sınıfına (AC) -1 kalıcı ceza alır. Karşılığında 1 ekstra bonus feat kazandırır." },
-      { name: "Flaw: Meager Heft", category: "Flaw", source: "Unearthed Arcana p.91", benefit: "Taşıma kapasitesinde STR değerini 3 puan düşük sayar. Karşılığında 1 ekstra bonus feat kazandırır." },
-      { name: "Flaw: Inattentive", category: "Flaw", source: "Unearthed Arcana p.91", benefit: "Listen (Dinleme) ve Spot (Arama) becerilerine -4 ceza alır. Karşılığında 1 ekstra bonus feat kazandırır." }
-    ];
+    // Built-in D&D 3.5e Flaws (Kural 5 / RAW uyumlu: VarsayÄ±lan boÅŸ, masterDb Ã¼zerinden dinamik beslenir)
+    const DND35_FLAWS_CATALOG = [];
 
     // Built-in D&D 3.5e Warlock Invocations (Complete Arcane & Complete Mage)
     const DND35_WARLOCK_INVOCATIONS = [

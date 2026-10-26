@@ -1997,3 +1997,22 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   6. **Parite ve Kural Standartları:**
      - 4 karakter kağıdı dosyası (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi sağlandı.
      - Standart tavla zarı emojisi yasağı (`U+1F3B2`) tavizsiz korundu.
+
+
+---
+
+## 70. SEVÄ°YE ATLAMA SÄ°HÄ°RBAZI: ESKÄ° GÃ–MÃœLÃœ KAMPANYA DM BOON VE FLAW DÄ°ZÄ°LERÄ°NÄ°N TEMÄ°ZLENMESÄ° (SAF RAW TEMÄ°ZLÄ°ÄÄ°) (2026-10-26)
+* **Ä°stek & Problem:**
+  - VeritabanÄ± (master_db.json) tamamen sÄ±fÄ±rlanmasÄ±na raÄŸmen yeni bir karakter seviye atlatÄ±lÄ±rken Seviye 1 Feat yuvasÄ±nda Ability Boost (+1 Dex, +1 Cha), Ability Boost (+1 Str, +1 Cha) gibi 20 adet eski kampanya DM lÃ¼tfu ve 5 adet Flaw en baÅŸta Ã§Ä±kmaktaydÄ±.
+  - Bu Ã¶ÄŸelerin kaynaÄŸÄ± masterDb deÄŸil; character.html / index.html iÃ§inde statik olarak bulunan DND35_DM_BOONS_CATALOG ve DND35_FLAWS_CATALOG dizileriydi.
+  - Bu durum Kural 5 (No Dummy Data) ve saf D&D 3.5e RAW seviye atlama deneyimi ile Ã§eliÅŸmekteydi.
+* **Uygulanan DeÄŸiÅŸiklikler:**
+  1. **Statik KataloglarÄ±n SÄ±fÄ±rlanmasÄ±:**
+     - DND35_DM_BOONS_CATALOG = []; olarak boÅŸ diziye dÃ¶nÃ¼ÅŸtÃ¼rÃ¼ldÃ¼.
+     - DND35_FLAWS_CATALOG = []; olarak boÅŸ diziye dÃ¶nÃ¼ÅŸtÃ¼rÃ¼ldÃ¼.
+  2. **Dinamik Veri AkÄ±ÅŸÄ± ve SÄ±fÄ±r Hata DoÄŸrulamasÄ±:**
+     - getCombinedFeatCatalog(), showFeatDetail() ve Seviye Atlama SihirbazÄ± enderLevelUpFeatSearchResults() fonksiyonlarÄ±nÄ±n diziler boÅŸken sÄ±fÄ±r hatayla Ã§alÄ±ÅŸtÄ±ÄŸÄ± teyit edildi.
+     - DM Boon ve Flaw kategorileri artÄ±k tamamen dinamiktir; yalnÄ±zca DM veya oyuncu tarafÄ±ndan masterDb'ye resmi bir kayÄ±t eklendiÄŸinde katalogda listelenir.
+  3. **Parite ve Kural StandartlarÄ±:**
+     - 4 karakter kaÄŸÄ±dÄ± dosyasÄ± (character.html, index.html, webapp/character.html, webapp/index.html) arasÄ±nda %100 SHA-256 hash paritesi korundu.
+     - Standart tavla zarÄ± emojisi (ğŸ² / U+1F3B2) yasaÄŸÄ± tavizsiz uygulandÄ±.
