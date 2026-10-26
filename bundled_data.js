@@ -125,7 +125,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                      "simple",
                      "light",
                      "unarmed",
-                     "bludgeoning"
+                     "bludgeoning",
+                     "finessable"
                  ],
         "scope":  "Melee Only",
         "attackType":  "weapon",
@@ -139,7 +140,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "finessable":  true
     },
     {
         "name":  "Unarmed Strike",
@@ -164,7 +166,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                      "simple",
                      "light",
                      "unarmed",
-                     "nonlethal"
+                     "nonlethal",
+                     "finessable"
                  ],
         "scope":  "Melee Only",
         "attackType":  "weapon",
@@ -178,7 +181,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "finessable":  true
     },
     {
         "name":  "Dagger",
@@ -284,8 +288,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tags":  [
                      "simple",
                      "light",
-                     "unarmed",
-                     "piercing"
+                     "piercing",
+                     "finessable"
                  ],
         "scope":  "Melee Only",
         "attackType":  "weapon",
@@ -299,7 +303,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "finessable":  true
     },
     {
         "name":  "Light Mace",
@@ -908,8 +913,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "name":  "Blowgun",
         "type":  "Weapon",
         "slot":  "Two-Handed",
-        "category":  "Simple",
-        "weaponType":  "Simple Ranged",
+        "category":  "Exotic",
+        "weaponType":  "Exotic Ranged",
         "dice":  "1",
         "extraDmg":  "1",
         "damage":  "1",
@@ -934,7 +939,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "combatScope":  "ranged",
         "actionType":  "Passive",
         "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
+        "source":  "DMG p.145 / Exotic Ranged",
         "benefit":  "Deals 1 point of piercing damage, commonly used to deliver contact or injury poisons with 10 ft range increment.",
         "ruleFlags":  {
 
@@ -1226,7 +1231,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                             ]
     },
     {
-        "name":  "Light Flail",
+        "name":  "Flail",
         "type":  "Weapon",
         "slot":  "Main Hand",
         "category":  "Martial",
@@ -1256,7 +1261,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "combatScope":  "melee",
         "actionType":  "Passive",
         "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
+        "source":  "PHB Table 7-5",
         "benefit":  "+2 bonus on opposed attack rolls to disarm. Can make trip attacks.",
         "ruleFlags":  {
                           "disarmBonus":  2,
@@ -2490,9 +2495,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot":  "Main Hand",
         "category":  "Exotic",
         "weaponType":  "Exotic One-Handed",
-        "dice":  "1d2",
-        "extraDmg":  "1d2",
-        "damage":  "1d2",
+        "dice":  "1d3",
+        "extraDmg":  "1d3",
+        "damage":  "1d3",
         "critMin":  20,
         "critMult":  2,
         "crit":  "20/x2",
@@ -2529,7 +2534,13 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "reach":  true,
+        "finessable":  true,
+        "canAttackAdjacent":  true,
+        "threatens":  false,
+        "armorLimit":  "+1 armor or +3 natural armor",
+        "notes":  "Has 15 ft reach, can strike adjacent foes, does not threaten reach area. Deals no damage to creatures with +1 or higher armor bonus or +3 natural armor bonus. Finessable, disarm (+2), trip."
     },
     {
         "name":  "Orc Double Axe",
@@ -2933,7 +2944,6 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                      "exotic",
                      "two-handed",
                      "double",
-                     "brace",
                      "axe",
                      "slashing"
                  ],
@@ -2950,7 +2960,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "brace":  false
     },
     {
         "name":  "â†³ Dwarven Urgrosh (Spear Off-Hand)",
@@ -2992,7 +3003,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "combatModifiers":  [
 
                             ],
-        "parent":  "Dwarven Urgrosh"
+        "parent":  "Dwarven Urgrosh",
+        "brace":  true
     },
     {
         "name":  "Bolas",
@@ -3201,7 +3213,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "combatModifiers":  [
 
                             ],
-        "range":  10
+        "range":  10,
+        "rangeIncrement":  null,
+        "maxRange":  10
     },
     {
         "name":  "Shuriken",
@@ -3268,7 +3282,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                      "martial",
                      "light",
                      "armor-spikes",
-                     "piercing"
+                     "piercing",
+                     "finessable"
                  ],
         "scope":  "Melee Only",
         "attackType":  "weapon",
@@ -3282,17 +3297,18 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "finessable":  true
     },
     {
-        "name":  "Shield Spikes",
+        "name":  "Shield Spikes (Light Shield)",
         "type":  "Weapon",
         "slot":  "Off-Hand",
         "category":  "Martial",
         "weaponType":  "Martial Light",
-        "dice":  "1d6",
-        "extraDmg":  "1d6",
-        "damage":  "1d6",
+        "dice":  "1d4",
+        "extraDmg":  "1d4",
+        "damage":  "1d4",
         "critMin":  20,
         "critMult":  2,
         "crit":  "20/x2",
@@ -3313,14 +3329,15 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "combatScope":  "melee",
         "actionType":  "Passive",
         "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
+        "source":  "PHB Table 7-5 / p.125",
         "benefit":  "Increases the damage dealt by a shield bash as if the shield were designed for a creature one size category larger, and deals piercing damage.",
         "ruleFlags":  {
 
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "finessable":  true
     },
     {
         "name":  "Padded Armor",
@@ -3704,7 +3721,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "actionType":  "Passive",
         "attackType":  "shield",
         "combatScope":  "melee",
-        "dice":  "1d2",
+        "dice":  null,
         "critMin":  20,
         "critMult":  2,
         "dmgType":  "Bludgeoning",
@@ -3713,7 +3730,10 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "extraDmg":  null,
+        "damage":  null,
+        "notes":  "Cannot be used to perform a shield bash (PHB p.125)."
     },
     {
         "name":  "Light Wooden Shield",
@@ -3881,7 +3901,17 @@ window.BUNDLED_SRD_CORE_CATALOG = [
 
                       },
         "combatModifiers":  [
-
+                                {
+                                    "type":  "attack_penalty",
+                                    "value":  -2,
+                                    "scope":  "All Attacks",
+                                    "description":  "Due to shield\u0027s encumbrance, -2 penalty on attack rolls (PHB p.125)."
+                                },
+                                {
+                                    "type":  "cover",
+                                    "action":  "Standard Action",
+                                    "description":  "Can be used as total cover against attacks through chosen shield edge (PHB p.125)."
+                                }
                             ]
     },
     {
@@ -3889,7 +3919,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "type":  "Feat",
         "slot":  "None",
         "prereq":  "Str 13",
-        "benefit":  "On your action, before making attack rolls, subtract a number from all melee attack rolls (up to BAB) and add that number to all melee damage rolls (x2 damage for two-handed weapons).",
+        "benefit":  "On your action, before making attack rolls, subtract a number from all melee attack rolls (up to BAB) and add that number to all melee damage rolls (+1x for one-handed, +2x for two-handed). Cannot add bonus damage with a light weapon (except unarmed strikes or natural weapon attacks).",
         "bonusType":  "Untyped",
         "scope":  "Melee Only",
         "combatScope":  "melee",
@@ -4289,7 +4319,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "type":  "Feat",
         "slot":  "None",
         "prereq":  "Dex 13, Dodge, Mobility, BAB +4",
-        "benefit":  "Move up to speed both before and after making a single melee attack without provoking attack of opportunity from the defender.",
+        "benefit":  "When using the attack action with a melee weapon, move both before and after making a single attack up to speed without provoking attacks of opportunity from the defender.",
         "bonusType":  "Untyped",
         "scope":  "Melee Only",
         "combatScope":  "melee",
@@ -4307,7 +4337,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "action":  "Attack Action (Standard) + Move"
     },
     {
         "name":  "Point Blank Shot",
@@ -4389,7 +4420,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "type":  "Feat",
         "slot":  "None",
         "prereq":  "Dex 17, Point Blank Shot, Rapid Shot, BAB +6",
-        "benefit":  "Fire two or more arrows simultaneously at a single target within 30 ft as a standard action (-4 penalty on attack for two arrows, -6 for three, -8 for four).",
+        "benefit":  "As a standard action within 30 ft, fire two or more arrows at a single target: two arrows at BAB +6 (-4 penalty), three arrows at BAB +11 (-6 penalty), four arrows at BAB +16 (-8 penalty). Precision damage applies once.",
         "bonusType":  "Untyped",
         "scope":  "Ranged Only",
         "combatScope":  "ranged",
@@ -4414,7 +4445,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "type":  "Feat",
         "slot":  "None",
         "prereq":  "Dex 13, Point Blank Shot, Dodge, Mobility, BAB +4",
-        "benefit":  "Move both before and after making a single ranged attack, provided that total distance moved does not exceed speed.",
+        "benefit":  "When using the attack action with a ranged weapon, move both before and after making a single attack up to speed.",
         "bonusType":  "Untyped",
         "scope":  "Ranged Only",
         "combatScope":  "ranged",
@@ -4432,14 +4463,15 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "action":  "Attack Action (Standard) + Move"
     },
     {
         "name":  "Far Shot",
         "type":  "Feat",
         "slot":  "None",
         "prereq":  "Point Blank Shot",
-        "benefit":  "Range increment penalty is halved (1.5x range for projectile weapons, 2x range for thrown weapons).",
+        "benefit":  "When you use a projectile weapon, such as a bow, its range increment increases by 50% (multiply by 1-1/2). When you use a thrown weapon, its range increment is doubled (multiply by 2).",
         "bonusType":  "Untyped",
         "scope":  "Ranged Only",
         "combatScope":  "ranged",
@@ -4739,7 +4771,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "type":  "Feat",
         "slot":  "None",
         "prereq":  "Ride 1 rank",
-        "benefit":  "Once per round when mount is hit in combat, make a Ride check to negate the hit (against opponent\u0027s attack roll result).",
+        "benefit":  "Once per round when mount is hit in combat, make an immediate Ride check (reaction) to negate the hit (against opponent\u0027s attack roll result).",
         "bonusType":  "Untyped",
         "scope":  "General",
         "combatScope":  "general",
@@ -4757,7 +4789,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "action":  "Once per round (Reaction)"
     },
     {
         "name":  "Ride-By Attack",
@@ -5170,936 +5203,279 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                  ]
     },
     {
-        "name": "Aasimar",
-        "type": "Race",
-        "category": "Planetouched",
-        "slot": "None",
-        "size": "Medium",
-        "baseSpeed": 30,
-        "strBonus": 0,
-        "dexBonus": 0,
-        "conBonus": 0,
-        "intBonus": 0,
-        "wisBonus": 2,
-        "chaBonus": 2,
-        "favoredClass": "Paladin",
-        "languages": [
-            "Common",
-            "Celestial"
-        ],
-        "source": "Monster Manual v.3.5, p. 209 / SRD",
-        "benefit": "Outsider (Native) type, +2 Wis, +2 Cha, Darkvision 60 ft., Daylight 1/day, Resistance to acid 5, cold 5, electricity 5, +2 Listen and Spot.",
-        "description": "Planetouched creatures descended from celestial beings.",
-        "traits": [
-            {
-                "name": "Native Outsider",
-                "desc": "Outsider (Native) type. Unlike true outsiders, native outsiders can be raised or resurrected normally."
-            },
-            {
-                "name": "Darkvision",
-                "desc": "Can see in total darkness up to 60 feet."
-            },
-            {
-                "name": "Daylight (Sp)",
-                "desc": "Can use Daylight once per day as a spell-like ability (caster level equals character level)."
-            },
-            {
-                "name": "Celestial Resistance",
-                "desc": "Resistance to acid 5, cold 5, and electricity 5."
-            },
-            {
-                "name": "Keen Senses",
-                "desc": "+2 racial bonus on Listen and Spot checks."
-            }
-        ],
-        "tags": [
-            "race",
-            "aasimar",
-            "planetouched",
-            "outsider"
-        ]
+        "name":  "Throwing Axe",
+        "type":  "Weapon",
+        "slot":  "Main Hand",
+        "category":  "Martial",
+        "weaponType":  "Martial Light",
+        "dice":  "1d6",
+        "extraDmg":  "1d6",
+        "damage":  "1d6",
+        "critMin":  20,
+        "critMult":  2,
+        "crit":  "20/x2",
+        "dmgType":  "Slashing",
+        "range":  10,
+        "rangeIncrement":  10,
+        "attBonus":  0,
+        "dmgBonus":  0,
+        "bonusType":  "Untyped",
+        "weight":  2,
+        "cost":  8,
+        "isLight":  true,
+        "finessable":  true,
+        "tags":  [
+                     "martial",
+                     "light",
+                     "thrown",
+                     "finessable",
+                     "slashing"
+                 ],
+        "source":  "PHB Table 7-5"
     },
     {
-        "name": "Tiefling",
-        "type": "Race",
-        "category": "Planetouched",
-        "slot": "None",
-        "size": "Medium",
-        "baseSpeed": 30,
-        "strBonus": 0,
-        "dexBonus": 2,
-        "conBonus": 0,
-        "intBonus": 2,
-        "wisBonus": 0,
-        "chaBonus": -2,
-        "favoredClass": "Rogue",
-        "languages": [
-            "Common",
-            "Infernal"
-        ],
-        "source": "Monster Manual v.3.5, p. 209 / SRD",
-        "benefit": "Outsider (Native) type, +2 Dex, +2 Int, -2 Cha, Darkvision 60 ft., Darkness 1/day, Resistance to cold 5, fire 5, electricity 5, +2 Bluff and Hide.",
-        "description": "Planetouched creatures with fiendish heritage.",
-        "traits": [
-            {
-                "name": "Native Outsider",
-                "desc": "Outsider (Native) type. Unlike true outsiders, native outsiders can be raised or resurrected normally."
-            },
-            {
-                "name": "Darkvision",
-                "desc": "Can see in total darkness up to 60 feet."
-            },
-            {
-                "name": "Darkness (Sp)",
-                "desc": "Can use Darkness once per day as a spell-like ability (caster level equals character level)."
-            },
-            {
-                "name": "Fiendish Resistance",
-                "desc": "Resistance to cold 5, fire 5, and electricity 5."
-            },
-            {
-                "name": "Cunning & Stealth",
-                "desc": "+2 racial bonus on Bluff and Hide checks."
-            }
-        ],
-        "tags": [
-            "race",
-            "tiefling",
-            "planetouched",
-            "outsider"
-        ]
+        "name":  "Shield Spikes (Heavy Shield)",
+        "type":  "Weapon",
+        "slot":  "Off-Hand",
+        "category":  "Martial",
+        "weaponType":  "Martial Light",
+        "dice":  "1d6",
+        "extraDmg":  "1d6",
+        "damage":  "1d6",
+        "critMin":  20,
+        "critMult":  2,
+        "crit":  "20/x2",
+        "dmgType":  "Piercing",
+        "attBonus":  0,
+        "dmgBonus":  0,
+        "bonusType":  "Untyped",
+        "weight":  5,
+        "cost":  10,
+        "isLight":  true,
+        "finessable":  true,
+        "tags":  [
+                     "martial",
+                     "light",
+                     "shield-bash",
+                     "piercing",
+                     "finessable"
+                 ],
+        "source":  "PHB Table 7-5 / p.125"
     },
     {
-        "name": "Dragonborn",
-        "type": "Race",
-        "category": "Dragonblood",
-        "slot": "None",
-        "size": "Medium",
-        "baseSpeed": 30,
-        "strBonus": 0,
-        "dexBonus": -2,
-        "conBonus": 2,
-        "intBonus": 0,
-        "wisBonus": 0,
-        "chaBonus": 0,
-        "favoredClass": "Fighter",
-        "languages": [
-            "Common",
-            "Draconic"
-        ],
-        "source": "Races of the Dragon, p. 8",
-        "benefit": "Humanoid (Dragonblood) type, +2 Con, -2 Dex, Draconic Aspect (Heart/Mind/Wings), Frightful Presence Immunity, +2 dodge vs Dragons.",
-        "description": "Reborn champions of Bahamut blessed with draconic grace and resilience.",
-        "traits": [
-            {
-                "name": "Dragonblood Subtype",
-                "desc": "Treated as both humanoid and dragon for effects related to race."
-            },
-            {
-                "name": "Draconic Aspect",
-                "desc": "Chooses an aspect: Heart (Breath Weapon: line or cone dealing 1d8+1d8/3 levels energy), Mind (Darkvision 60 ft., Low-Light Vision, +2 Listen, Search, Spot), or Wings (Glide and eventually Fly)."
-            },
-            {
-                "name": "Draconic Immunity",
-                "desc": "Immune to the frightful presence ability of dragons."
-            },
-            {
-                "name": "Dodge vs Dragons",
-                "desc": "+2 dodge bonus to Armor Class against dragons."
-            }
-        ],
-        "tags": [
-            "race",
-            "dragonborn",
-            "dragonblood"
-        ]
+        "name":  "Improved Unarmed Strike",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Fighter",
+        "featType":  "General",
+        "isFighterBonusFeat":  true,
+        "prereq":  "-",
+        "benefit":  "You are considered armed even when unarmed (do not provoke attacks of opportunity when attacking unarmed). Unarmed strikes deal lethal or nonlethal damage at your choice.",
+        "source":  "PHB p.96",
+        "bonusType":  "Untyped"
     },
     {
-        "name": "Drow",
-        "type": "Race",
-        "category": "Elf Subrace",
-        "slot": "None",
-        "size": "Medium",
-        "baseSpeed": 30,
-        "strBonus": 0,
-        "dexBonus": 2,
-        "conBonus": -2,
-        "intBonus": 2,
-        "wisBonus": 0,
-        "chaBonus": 2,
-        "favoredClass": "Wizard",
-        "languages": [
-            "Common",
-            "Elven",
-            "Undercommon"
-        ],
-        "source": "Monster Manual v.3.5, p. 103 / SRD",
-        "benefit": "+2 Dex, -2 Con, +2 Int, +2 Cha, Darkvision 120 ft., Spell Resistance (11 + class level), Spell-like abilities (Dancing Lights, Darkness, Faerie Fire 1/day), Light Blindness, Weapon Proficiencies.",
-        "description": "Dark elves dwelling in the subterranean Underdark.",
-        "traits": [
-            {
-                "name": "Superior Darkvision",
-                "desc": "Can see in total darkness up to 120 feet."
-            },
-            {
-                "name": "Spell Resistance",
-                "desc": "Spell resistance equal to 11 + character level."
-            },
-            {
-                "name": "Spell-Like Abilities",
-                "desc": "1/day: Dancing Lights, Darkness, Faerie Fire (caster level equals character level)."
-            },
-            {
-                "name": "Light Blindness",
-                "desc": "Abrupt exposure to bright light blinds drow for 1 round; subsequent rounds suffer -1 circumstance penalty on attack rolls, saves, and checks while remaining in bright light."
-            },
-            {
-                "name": "Drow Weapon Proficiency",
-                "desc": "Proficient with hand crossbow, rapier, and short sword."
-            }
-        ],
-        "tags": [
-            "race",
-            "drow",
-            "elf",
-            "underdark"
-        ]
+        "name":  "Deflect Arrows",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Fighter",
+        "featType":  "General",
+        "isFighterBonusFeat":  true,
+        "prereq":  "Dex 13, Improved Unarmed Strike",
+        "benefit":  "Once per round when you would normally be hit with a ranged weapon, you may deflect it so that you take no damage from it (reaction).",
+        "source":  "PHB p.93",
+        "bonusType":  "Untyped"
     },
     {
-        "name": "Orc",
-        "type": "Race",
-        "category": "Standard Monster Race",
-        "slot": "None",
-        "size": "Medium",
-        "baseSpeed": 30,
-        "strBonus": 4,
-        "dexBonus": 0,
-        "conBonus": 0,
-        "intBonus": -2,
-        "wisBonus": -2,
-        "chaBonus": -2,
-        "favoredClass": "Barbarian",
-        "languages": [
-            "Common",
-            "Orc"
-        ],
-        "source": "Monster Manual v.3.5, p. 203 / SRD",
-        "benefit": "+4 Str, -2 Int, -2 Wis, -2 Cha, Darkvision 60 ft., Light Sensitivity.",
-        "description": "Fierce, savage humanoids driven by raw physical might.",
-        "traits": [
-            {
-                "name": "Darkvision",
-                "desc": "Can see in total darkness up to 60 feet."
-            },
-            {
-                "name": "Light Sensitivity",
-                "desc": "Dazzled in bright sunlight or within the radius of a daylight spell (-1 penalty on attack rolls, search checks, and spot checks)."
-            }
-        ],
-        "tags": [
-            "race",
-            "orc",
-            "humanoid"
-        ]
+        "name":  "Snatch Arrows",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Fighter",
+        "featType":  "General",
+        "isFighterBonusFeat":  true,
+        "prereq":  "Dex 15, Deflect Arrows, Improved Unarmed Strike",
+        "benefit":  "When using Deflect Arrows, you may catch the weapon instead of knocking it away, and can immediately throw it back if suitable.",
+        "source":  "PHB p.100",
+        "bonusType":  "Untyped"
     },
     {
-        "name": "Goblin",
-        "type": "Race",
-        "category": "Goblinoid",
-        "slot": "None",
-        "size": "Small",
-        "baseSpeed": 30,
-        "strBonus": -2,
-        "dexBonus": 2,
-        "conBonus": 0,
-        "intBonus": 0,
-        "wisBonus": 0,
-        "chaBonus": -2,
-        "favoredClass": "Rogue",
-        "languages": [
-            "Common",
-            "Goblin"
-        ],
-        "source": "Monster Manual v.3.5, p. 133 / SRD",
-        "benefit": "+2 Dex, -2 Str, -2 Cha, Small size (fast 30 ft. speed for Small), Darkvision 60 ft., +4 Move Silently and Ride checks.",
-        "description": "Small, stealthy humanoid scavengers and raiders.",
-        "traits": [
-            {
-                "name": "Small Size",
-                "desc": "+1 bonus to AC, +1 bonus on attack rolls, +4 bonus on Hide checks, smaller weapon dice, 3/4 carrying capacity."
-            },
-            {
-                "name": "Fast Small Speed",
-                "desc": "A goblin's base land speed is 30 feet, unusually fast for a Small creature."
-            },
-            {
-                "name": "Darkvision",
-                "desc": "Can see in total darkness up to 60 feet."
-            },
-            {
-                "name": "Goblinoid Stealth",
-                "desc": "+4 racial bonus on Move Silently checks and +4 racial bonus on Ride checks."
-            }
-        ],
-        "tags": [
-            "race",
-            "goblin",
-            "goblinoid",
-            "small"
-        ]
+        "name":  "Stunning Fist",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Fighter",
+        "featType":  "General",
+        "isFighterBonusFeat":  true,
+        "prereq":  "Dex 13, Wis 13, Improved Unarmed Strike, BAB +8",
+        "benefit":  "Declare before attack roll; target damaged by unarmed strike must make Fortitude save (DC 10 + 1/2 level + Wis mod) or be stunned for 1 round (1/day per 4 levels).",
+        "source":  "PHB p.101",
+        "bonusType":  "Untyped"
     },
     {
-        "name": "Kobold",
-        "type": "Race",
-        "category": "Reptilian / Dragonblood",
-        "slot": "None",
-        "size": "Small",
-        "baseSpeed": 30,
-        "strBonus": -4,
-        "dexBonus": 2,
-        "conBonus": -2,
-        "intBonus": 0,
-        "wisBonus": 0,
-        "chaBonus": 0,
-        "favoredClass": "Sorcerer",
-        "languages": [
-            "Draconic"
-        ],
-        "source": "Monster Manual v.3.5, p. 161 / SRD",
-        "benefit": "+2 Dex, -4 Str, -2 Con, Small size, +1 Natural Armor, Darkvision 60 ft., +2 Craft (trapmaking), Profession (miner), Search, Light Sensitivity.",
-        "description": "Small, cunning reptilian humanoids with draconic heritage.",
-        "traits": [
-            {
-                "name": "Small Size",
-                "desc": "+1 bonus to AC, +1 bonus on attack rolls, +4 bonus on Hide checks, smaller weapon dice, 3/4 carrying capacity."
-            },
-            {
-                "name": "Natural Armor",
-                "desc": "+1 natural armor bonus to Armor Class."
-            },
-            {
-                "name": "Darkvision",
-                "desc": "Can see in total darkness up to 60 feet."
-            },
-            {
-                "name": "Trapmaking & Mining",
-                "desc": "+2 racial bonus on Craft (trapmaking), Profession (miner), and Search checks."
-            },
-            {
-                "name": "Light Sensitivity",
-                "desc": "Dazzled in bright sunlight or daylight (-1 on attack rolls, search, spot)."
-            }
-        ],
-        "tags": [
-            "race",
-            "kobold",
-            "reptilian",
-            "dragonblood",
-            "small"
-        ]
+        "name":  "Whirlwind Attack",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Fighter",
+        "featType":  "General",
+        "isFighterBonusFeat":  true,
+        "prereq":  "Dex 13, Int 13, Combat Expertise, Dodge, Mobility, Spring Attack, BAB +4",
+        "benefit":  "As a full attack action, make one melee attack at your highest BAB against each opponent within reach.",
+        "source":  "PHB p.102",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Improved Shield Bash",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Fighter",
+        "featType":  "General",
+        "isFighterBonusFeat":  true,
+        "prereq":  "Shield Proficiency",
+        "benefit":  "When you perform a shield bash, you may still apply the shield\u0027s shield bonus to your AC.",
+        "source":  "PHB p.96",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Rapid Reload",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Fighter",
+        "featType":  "General",
+        "isFighterBonusFeat":  true,
+        "prereq":  "Weapon Proficiency (Crossbow type)",
+        "benefit":  "Reduce the time required to reload a crossbow: heavy crossbow becomes move action, light crossbow becomes free action.",
+        "source":  "PHB p.99",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Improved Precise Shot",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Fighter",
+        "featType":  "General",
+        "isFighterBonusFeat":  true,
+        "prereq":  "Dex 19, Point Blank Shot, Precise Shot, BAB +11",
+        "benefit":  "Ranged attacks ignore AC bonus granted to targets by anything less than total cover, and miss chance granted by anything less than total concealment.",
+        "source":  "PHB p.96",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Mounted Archery",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Fighter",
+        "featType":  "General",
+        "isFighterBonusFeat":  true,
+        "prereq":  "Ride 1 rank, Mounted Combat",
+        "benefit":  "Halve penalty for using ranged weapon while mount takes double move (-2 instead of -4) or runs (-4 instead of -8).",
+        "source":  "PHB p.98",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Trample",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Fighter",
+        "featType":  "General",
+        "isFighterBonusFeat":  true,
+        "prereq":  "Ride 1 rank, Mounted Combat",
+        "benefit":  "When you attempt an overrun action while mounted, target cannot avoid you; mount makes hoof attack if knocked prone.",
+        "source":  "PHB p.102",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Simple Weapon Proficiency",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "General",
+        "featType":  "General",
+        "isFighterBonusFeat":  false,
+        "prereq":  "-",
+        "benefit":  "Make attack rolls with all simple weapons without taking the -4 non-proficiency penalty.",
+        "source":  "PHB p.100",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Martial Weapon Proficiency",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "General",
+        "featType":  "General",
+        "isFighterBonusFeat":  false,
+        "prereq":  "-",
+        "benefit":  "Choose one type of martial weapon; make attack rolls with that weapon without taking the -4 non-proficiency penalty.",
+        "source":  "PHB p.97",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Exotic Weapon Proficiency",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Fighter",
+        "featType":  "General",
+        "isFighterBonusFeat":  true,
+        "prereq":  "BAB +1",
+        "benefit":  "Choose one type of exotic weapon; make attack rolls with that weapon without taking the -4 non-proficiency penalty.",
+        "source":  "PHB p.94",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Armor Proficiency (Light)",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "General",
+        "featType":  "General",
+        "isFighterBonusFeat":  false,
+        "prereq":  "-",
+        "benefit":  "When you wear light armor, armor check penalty applies only to Balance, Climb, Escape Artist, Hide, Jump, Move Silently, Sleight of Hand, and Tumble.",
+        "source":  "PHB p.89",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Armor Proficiency (Medium)",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "General",
+        "featType":  "General",
+        "isFighterBonusFeat":  false,
+        "prereq":  "Armor Proficiency (Light)",
+        "benefit":  "When you wear medium armor, armor check penalty applies only to physical movement skill checks.",
+        "source":  "PHB p.89",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Armor Proficiency (Heavy)",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "General",
+        "featType":  "General",
+        "isFighterBonusFeat":  false,
+        "prereq":  "Armor Proficiency (Medium)",
+        "benefit":  "When you wear heavy armor, armor check penalty applies only to physical movement skill checks.",
+        "source":  "PHB p.89",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Shield Proficiency",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "General",
+        "featType":  "General",
+        "isFighterBonusFeat":  false,
+        "prereq":  "-",
+        "benefit":  "Use a buckler, light shield, or heavy shield without taking its armor check penalty on attack rolls.",
+        "source":  "PHB p.100",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Tower Shield Proficiency",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Fighter",
+        "featType":  "General",
+        "isFighterBonusFeat":  true,
+        "prereq":  "Shield Proficiency",
+        "benefit":  "Use a tower shield without taking its armor check penalty on attack rolls.",
+        "source":  "PHB p.102",
+        "bonusType":  "Untyped"
     }
-,
-    {
-        "name": "Pelor",
-        "type": "Deity",
-        "title": "The Shining One (Güneş ve Şifa Tanrısı)",
-        "pantheon": "D&D 3.5e Core (Greyhawk)",
-        "alignment": "Neutral Good",
-        "favoredWeapon": "Heavy Mace",
-        "domains": [
-                "Good",
-                "Healing",
-                "Strength",
-                "Sun"
-        ],
-        "symbol": "Sun face or circle with six rays",
-        "source": "Player's Handbook p.107",
-        "benefit": "Favored Weapon: Heavy mace. Domains: Good, Healing, Strength, Sun.",
-        "description": "Pelor is the god of the sun, light, strength, and healing. He is a protector of the needy and a foe of evil. He is the most popular deity among ordinary folk.",
-        "icon": "☀️",
-        "category": "İyilik & Işık Panteonu",
-        "tags": [
-                "deity",
-                "good",
-                "sun",
-                "healing",
-                "pelor",
-                "cleric",
-                "paladin"
-        ]
-},
-    {
-        "name": "Heironeous",
-        "type": "Deity",
-        "title": "The Invincible (Adalet, Kahramanlık & Onur)",
-        "pantheon": "D&D 3.5e Core (Greyhawk)",
-        "alignment": "Lawful Good",
-        "favoredWeapon": "Longsword",
-        "domains": [
-                "Glory",
-                "Good",
-                "Law",
-                "War"
-        ],
-        "symbol": "Silver lightning bolt held in a fist",
-        "source": "Player's Handbook p.107",
-        "benefit": "Favored Weapon: Longsword. Domains: Glory, Good, Law, War.",
-        "description": "Heironeous is the god of chivalry, justice, honor, and valor. His clerics wage war against evil, especially the disciples of his arch-foe and half-brother Hextor.",
-        "icon": "⚡",
-        "category": "İyilik & Işık Panteonu",
-        "tags": [
-                "deity",
-                "lawful good",
-                "justice",
-                "war",
-                "paladin",
-                "heironeous",
-                "longsword"
-        ]
-},
-    {
-        "name": "Kord",
-        "type": "Deity",
-        "title": "The Brawler (Güç, Atletizm & Cesaret)",
-        "pantheon": "D&D 3.5e Core (Greyhawk)",
-        "alignment": "Chaotic Good",
-        "favoredWeapon": "Greatsword",
-        "domains": [
-                "Chaos",
-                "Good",
-                "Luck",
-                "Strength"
-        ],
-        "symbol": "Four crossed spears and a four-pointed star",
-        "source": "Player's Handbook p.107",
-        "benefit": "Favored Weapon: Greatsword. Domains: Chaos, Good, Luck, Strength.",
-        "description": "Kord is the god of athletics, sports, strength, and courageous physical contests. Highly favored by barbarians, fighters, and gladiators.",
-        "icon": "🥊",
-        "category": "İyilik & Işık Panteonu",
-        "tags": [
-                "deity",
-                "strength",
-                "greatsword",
-                "barbarian",
-                "fighter",
-                "kord"
-        ]
-},
-    {
-        "name": "Corellon Larethian",
-        "type": "Deity",
-        "title": "First of the Seldarine (Elf, Büyü & Sanat)",
-        "pantheon": "Elven Pantheon (Seldarine)",
-        "alignment": "Chaotic Good",
-        "favoredWeapon": "Longsword",
-        "domains": [
-                "Chaos",
-                "Good",
-                "Protection",
-                "War"
-        ],
-        "symbol": "Silver crescent moon",
-        "source": "Player's Handbook p.106",
-        "benefit": "Favored Weapon: Longsword. Domains: Chaos, Good, Protection, War.",
-        "description": "Corellon Larethian created the elven race and is the patron of music, arts, crafts, magic, and warrior poets. Creator and defender of the elves.",
-        "icon": "🏹",
-        "category": "İyilik & Işık Panteonu",
-        "tags": [
-                "deity",
-                "elf",
-                "seldarine",
-                "magic",
-                "corellon",
-                "longsword"
-        ]
-},
-    {
-        "name": "Moradin",
-        "type": "Deity",
-        "title": "The Soul Forger (Cüce & Demircilik Tanrısı)",
-        "pantheon": "Dwarven Pantheon (Morndinsamman)",
-        "alignment": "Lawful Good",
-        "favoredWeapon": "Warhammer",
-        "domains": [
-                "Earth",
-                "Good",
-                "Law",
-                "Protection"
-        ],
-        "symbol": "Hammer and anvil",
-        "source": "Player's Handbook p.107",
-        "benefit": "Favored Weapon: Warhammer. Domains: Earth, Good, Law, Protection.",
-        "description": "Moradin forged the dwarves from earth and iron. He presides over mining, metallurgy, craftsmanship, and the defense of dwarven strongholds.",
-        "icon": "🔨",
-        "category": "İyilik & Işık Panteonu",
-        "tags": [
-                "deity",
-                "dwarf",
-                "smith",
-                "craft",
-                "moradin",
-                "warhammer"
-        ]
-},
-    {
-        "name": "Ehlonna",
-        "type": "Deity",
-        "title": "Of the Forests (Orman, Doğa & Yaban)",
-        "pantheon": "D&D 3.5e Core (Greyhawk)",
-        "alignment": "Neutral Good",
-        "favoredWeapon": "Longbow",
-        "domains": [
-                "Animal",
-                "Good",
-                "Plant",
-                "Sun"
-        ],
-        "symbol": "Rearing unicorn",
-        "source": "Player's Handbook p.106",
-        "benefit": "Favored Weapon: Longbow. Domains: Animal, Good, Plant, Sun.",
-        "description": "Ehlonna watches over all who live in the woodlands or love the forest. She is deeply revered by rangers, wood elves, and nature wardens.",
-        "icon": "🦄",
-        "category": "İyilik & Işık Panteonu",
-        "tags": [
-                "deity",
-                "nature",
-                "forest",
-                "ranger",
-                "ehlonna",
-                "longbow"
-        ]
-},
-    {
-        "name": "Yondalla",
-        "type": "Deity",
-        "title": "The Blessed One (Buçukluk, Bereket & Yuva)",
-        "pantheon": "Halfling Pantheon",
-        "alignment": "Lawful Good",
-        "favoredWeapon": "Short Sword",
-        "domains": [
-                "Community",
-                "Good",
-                "Law",
-                "Protection"
-        ],
-        "symbol": "Cornucopia (horn of plenty)",
-        "source": "Player's Handbook p.108",
-        "benefit": "Favored Weapon: Short sword. Domains: Community, Good, Law, Protection.",
-        "description": "Yondalla is the creator and protector of halflings. She shields communities from harm, bestows plentiful harvests, and preserves hearth and home.",
-        "icon": "🌾",
-        "category": "İyilik & Işık Panteonu",
-        "tags": [
-                "deity",
-                "halfling",
-                "protection",
-                "home",
-                "yondalla"
-        ]
-},
-    {
-        "name": "Bahamut",
-        "type": "Deity",
-        "title": "The Platinum Dragon (Platin Ejderha & Adalet)",
-        "pantheon": "Dragon Pantheon / Core",
-        "alignment": "Lawful Good",
-        "favoredWeapon": "Heavy Pick",
-        "domains": [
-                "Air",
-                "Cold",
-                "Dragon",
-                "Good",
-                "Luck",
-                "Protection"
-        ],
-        "symbol": "Silhouette of a dragon head in platinum profile",
-        "source": "Draconomicon p.150 / PHB",
-        "benefit": "Favored Weapon: Heavy pick (or bite). Domains: Air, Cold, Dragon, Good, Luck, Protection.",
-        "description": "King of the good dragons and patron of metallic dragons. Bahamut upholds honor, protects the weak, and battles the evil schemes of Tiamat.",
-        "icon": "🐲",
-        "category": "İyilik & Işık Panteonu",
-        "tags": [
-                "deity",
-                "dragon",
-                "platinum",
-                "bahamut",
-                "good"
-        ]
-},
-    {
-        "name": "Boccob",
-        "type": "Deity",
-        "title": "The Uncaring (Büyü & Kadim Bilgi Tanrısı)",
-        "pantheon": "D&D 3.5e Core (Greyhawk)",
-        "alignment": "True Neutral",
-        "favoredWeapon": "Quarterstaff",
-        "domains": [
-                "Knowledge",
-                "Magic",
-                "Trickery"
-        ],
-        "symbol": "Eye within a pentagon",
-        "source": "Player's Handbook p.106",
-        "benefit": "Favored Weapon: Quarterstaff. Domains: Knowledge, Magic, Trickery.",
-        "description": "Boccob is the deity of magic, arcane lore, research, and balance. He is detached and observant, revered by wizards, sorcerers, and sages.",
-        "icon": "📖",
-        "category": "Doğa, Bilgi & Denge",
-        "tags": [
-                "deity",
-                "magic",
-                "wizard",
-                "knowledge",
-                "boccob"
-        ]
-},
-    {
-        "name": "Fharlanghn",
-        "type": "Deity",
-        "title": "Dweller on the Horizon (Yol, Seyahat & Ufuk)",
-        "pantheon": "D&D 3.5e Core (Greyhawk)",
-        "alignment": "True Neutral",
-        "favoredWeapon": "Quarterstaff",
-        "domains": [
-                "Celerity",
-                "Luck",
-                "Protection",
-                "Travel"
-        ],
-        "symbol": "Circle crossed by a curved horizon line",
-        "source": "Player's Handbook p.106",
-        "benefit": "Favored Weapon: Quarterstaff. Domains: Celerity, Luck, Protection, Travel.",
-        "description": "Fharlanghn is the patron of travelers, wanderers, merchants, and bards. He urges his followers to explore new horizons and discover distant realms.",
-        "icon": "🥾",
-        "category": "Doğa, Bilgi & Denge",
-        "tags": [
-                "deity",
-                "travel",
-                "roads",
-                "wanderer",
-                "fharlanghn"
-        ]
-},
-    {
-        "name": "Obad-Hai",
-        "type": "Deity",
-        "title": "The Shalm (Vahşi Doğa & Mevsimler Tanrısı)",
-        "pantheon": "D&D 3.5e Core (Greyhawk)",
-        "alignment": "True Neutral",
-        "favoredWeapon": "Quarterstaff",
-        "domains": [
-                "Air",
-                "Animal",
-                "Earth",
-                "Fire",
-                "Plant",
-                "Water"
-        ],
-        "symbol": "Mask of oak leaves and acorns",
-        "source": "Player's Handbook p.107",
-        "benefit": "Favored Weapon: Quarterstaff. Domains: Air, Animal, Earth, Fire, Plant, Water.",
-        "description": "Obad-Hai represents nature in all its cycles: life, death, summer heat, and winter fury. Revered by druids, wilderness dwellers, and hunters.",
-        "icon": "🍂",
-        "category": "Doğa, Bilgi & Denge",
-        "tags": [
-                "deity",
-                "druid",
-                "nature",
-                "elements",
-                "obad-hai"
-        ]
-},
-    {
-        "name": "St. Cuthbert",
-        "type": "Deity",
-        "title": "Of the Cudgel (Kefaret, Disiplin & Hüküm)",
-        "pantheon": "D&D 3.5e Core (Greyhawk)",
-        "alignment": "Lawful Neutral",
-        "favoredWeapon": "Heavy Mace",
-        "domains": [
-                "Destruction",
-                "Law",
-                "Protection",
-                "Strength"
-        ],
-        "symbol": "Ruby-studded starburst",
-        "source": "Player's Handbook p.108",
-        "benefit": "Favored Weapon: Heavy mace. Domains: Destruction, Law, Protection, Strength.",
-        "description": "St. Cuthbert demands discipline, honesty, common sense, and strict retribution for wrongdoing. His clergy hunt down heretics and lawbreakers.",
-        "icon": "🪓",
-        "category": "Doğa, Bilgi & Denge",
-        "tags": [
-                "deity",
-                "law",
-                "retribution",
-                "discipline",
-                "st. cuthbert"
-        ]
-},
-    {
-        "name": "Wee Jas",
-        "type": "Deity",
-        "title": "The Witch Goddess (Ölüm, Büyü & Asalet)",
-        "pantheon": "D&D 3.5e Core (Greyhawk)",
-        "alignment": "Lawful Neutral",
-        "favoredWeapon": "Dagger",
-        "domains": [
-                "Death",
-                "Domination",
-                "Law",
-                "Magic"
-        ],
-        "symbol": "Red skull surrounded by scrolls of fire",
-        "source": "Player's Handbook p.108",
-        "benefit": "Favored Weapon: Dagger. Domains: Death, Domination, Law, Magic.",
-        "description": "Wee Jas is the goddess of magic, death, vanity, and law. She administers the passage into death strictly according to lawful order.",
-        "icon": "🕯️",
-        "category": "Doğa, Bilgi & Denge",
-        "tags": [
-                "deity",
-                "death",
-                "magic",
-                "wee jas",
-                "lawful neutral"
-        ]
-},
-    {
-        "name": "Olidammara",
-        "type": "Deity",
-        "title": "The Laughing Rogue (Müzik, Şans & Hırsızlık)",
-        "pantheon": "D&D 3.5e Core (Greyhawk)",
-        "alignment": "Chaotic Neutral",
-        "favoredWeapon": "Rapier",
-        "domains": [
-                "Chaos",
-                "Luck",
-                "Trickery"
-        ],
-        "symbol": "Smiling drama mask",
-        "source": "Player's Handbook p.107",
-        "benefit": "Favored Weapon: Rapier. Domains: Chaos, Luck, Trickery.",
-        "description": "Olidammara delights in humor, trickery, music, and wealth. He is beloved by rogues, bards, gamblers, and carefree wanderers.",
-        "icon": "🎭",
-        "category": "Doğa, Bilgi & Denge",
-        "tags": [
-                "deity",
-                "rogue",
-                "luck",
-                "trickery",
-                "olidammara",
-                "rapier"
-        ]
-},
-    {
-        "name": "Garl Glittergold",
-        "type": "Deity",
-        "title": "The Joker (Gnom, Mizah & Mücevher)",
-        "pantheon": "Gnome Pantheon",
-        "alignment": "Chaotic Good",
-        "favoredWeapon": "Battleaxe",
-        "domains": [
-                "Chaos",
-                "Good",
-                "Protection",
-                "Trickery"
-        ],
-        "symbol": "Gold nugget",
-        "source": "Player's Handbook p.106",
-        "benefit": "Favored Weapon: Battleaxe. Domains: Chaos, Good, Protection, Trickery.",
-        "description": "Creator of gnomes and patron of humor, gemcutting, jewelcraft, and illusion. He tricks tyrants and outsmarts malevolent beasts.",
-        "icon": "💎",
-        "category": "Doğa, Bilgi & Denge",
-        "tags": [
-                "deity",
-                "gnome",
-                "humor",
-                "gemcutting",
-                "garl glittergold"
-        ]
-},
-    {
-        "name": "Hextor",
-        "type": "Deity",
-        "title": "Champion of Evil (Tiranlık, Savaş & Zulüm)",
-        "pantheon": "D&D 3.5e Core (Greyhawk)",
-        "alignment": "Lawful Evil",
-        "favoredWeapon": "Heavy Flail",
-        "domains": [
-                "Destruction",
-                "Domination",
-                "Evil",
-                "Law",
-                "War"
-        ],
-        "symbol": "Six red arrows bound together in a fist",
-        "source": "Player's Handbook p.107",
-        "benefit": "Favored Weapon: Heavy flail. Domains: Destruction, Domination, Evil, Law, War.",
-        "description": "Hextor is the six-armed god of war, tyranny, cruelty, and ruthless conquest. Brother and bitter rival to Heironeous.",
-        "icon": "⛓️",
-        "category": "Karanlık, Savaş & Yıkım",
-        "tags": [
-                "deity",
-                "evil",
-                "tyranny",
-                "war",
-                "hextor",
-                "flail"
-        ]
-},
-    {
-        "name": "Nerull",
-        "type": "Deity",
-        "title": "The Reaper (Karanlık & Katıksız Ölüm Tanrısı)",
-        "pantheon": "D&D 3.5e Core (Greyhawk)",
-        "alignment": "Neutral Evil",
-        "favoredWeapon": "Scythe",
-        "domains": [
-                "Death",
-                "Evil",
-                "Trickery"
-        ],
-        "symbol": "Skull and scythe",
-        "source": "Player's Handbook p.107",
-        "benefit": "Favored Weapon: Scythe. Domains: Death, Evil, Trickery.",
-        "description": "Nerull is the patron of murder, darkness, rot, and the grave. Feared throughout the world, his worship is outlawed in almost all civilized lands.",
-        "icon": "💀",
-        "category": "Karanlık, Savaş & Yıkım",
-        "tags": [
-                "deity",
-                "death",
-                "undead",
-                "scythe",
-                "nerull",
-                "reaper"
-        ]
-},
-    {
-        "name": "Vecna",
-        "type": "Deity",
-        "title": "The Maimed Lord (Sırlar, Gizem & Lich Tanrısı)",
-        "pantheon": "D&D 3.5e Core (Greyhawk)",
-        "alignment": "Neutral Evil",
-        "favoredWeapon": "Dagger",
-        "domains": [
-                "Evil",
-                "Knowledge",
-                "Madness"
-        ],
-        "symbol": "Left hand clutching a single eye",
-        "source": "Player's Handbook p.108",
-        "benefit": "Favored Weapon: Dagger. Domains: Evil, Knowledge, Madness.",
-        "description": "Once a mortal wizard who ascended to lichdom and divinity, Vecna rules dark secrets, forbidden magic, and occult knowledge.",
-        "icon": "👁️‍🗨️",
-        "category": "Karanlık, Savaş & Yıkım",
-        "tags": [
-                "deity",
-                "secrets",
-                "lich",
-                "magic",
-                "vecna"
-        ]
-},
-    {
-        "name": "Erythnul",
-        "type": "Deity",
-        "title": "The Many (Kıyım, Katliam & Panik Tanrısı)",
-        "pantheon": "D&D 3.5e Core (Greyhawk)",
-        "alignment": "Chaotic Evil",
-        "favoredWeapon": "Morningstar",
-        "domains": [
-                "Chaos",
-                "Evil",
-                "War"
-        ],
-        "symbol": "Blood drop or monstrous face",
-        "source": "Player's Handbook p.106",
-        "benefit": "Favored Weapon: Morningstar. Domains: Chaos, Evil, War.",
-        "description": "Erythnul delights in slaughter, panic, hate, and bloodthirsty violence. Worshipped by gnolls, raiders, and mad cultists.",
-        "icon": "🩸",
-        "category": "Karanlık, Savaş & Yıkım",
-        "tags": [
-                "deity",
-                "slaughter",
-                "panic",
-                "war",
-                "erythnul"
-        ]
-},
-    {
-        "name": "Gruumsh",
-        "type": "Deity",
-        "title": "One-Eye (Ork & Fetih Tanrısı)",
-        "pantheon": "Orc Pantheon",
-        "alignment": "Chaotic Evil",
-        "favoredWeapon": "Spear",
-        "domains": [
-                "Chaos",
-                "Evil",
-                "Strength",
-                "War"
-        ],
-        "symbol": "Unblinking open eye",
-        "source": "Player's Handbook p.106",
-        "benefit": "Favored Weapon: Spear. Domains: Chaos, Evil, Strength, War.",
-        "description": "Supreme god of the orcs, Gruumsh commands his followers to conquer territory, raid, and destroy all enemies of the orcish race.",
-        "icon": "👁️",
-        "category": "Karanlık, Savaş & Yıkım",
-        "tags": [
-                "deity",
-                "orc",
-                "conquest",
-                "strength",
-                "gruumsh"
-        ]
-},
-    {
-        "name": "Tiamat",
-        "type": "Deity",
-        "title": "The Chromatic Dragon (Renkli Ejderhalar & Hırs)",
-        "pantheon": "Dragon Pantheon / Core",
-        "alignment": "Lawful Evil",
-        "favoredWeapon": "Heavy Pick",
-        "domains": [
-                "Destruction",
-                "Dragon",
-                "Evil",
-                "Law",
-                "Trickery"
-        ],
-        "symbol": "Five-headed dragon",
-        "source": "Draconomicon p.156 / PHB",
-        "benefit": "Favored Weapon: Heavy pick (or bite). Domains: Destruction, Dragon, Evil, Law, Trickery.",
-        "description": "Queen of chromatic evil dragons (red, blue, green, black, white). Tiamat craves wealth, domination, and vengeance against Bahamut.",
-        "icon": "🐉",
-        "category": "Karanlık, Savaş & Yıkım",
-        "tags": [
-                "deity",
-                "dragon",
-                "chromatic",
-                "tiamat",
-                "evil"
-        ]
-},
-    {
-        "name": "Yok / Felsefi İnanç",
-        "type": "Deity",
-        "title": "Animizm, Doğa Güçleri veya İnançsızlık",
-        "pantheon": "Evrensel / Panteon Dışı",
-        "alignment": "Any",
-        "favoredWeapon": "-",
-        "domains": [
-                "Evrensel"
-        ],
-        "symbol": "Döngüsel spiral",
-        "source": "Player's Handbook p.106",
-        "benefit": "Belirli bir tanrıya bağlı olmaksızın evrensel ilkelere, felsefeye veya inançsızlığa adanmışlık.",
-        "description": "Karakter belirli bir tanrıya tapmaz. İlahi gücünü bir felsefeden, kozmik dengeden veya doğanın kendisinden alır.",
-        "icon": "🌀",
-        "category": "Panteon Dışı & Felsefe",
-        "tags": [
-                "deity",
-                "none",
-                "yok",
-                "felsefe",
-                "animizm"
-        ]
-}
 ];

@@ -22,7 +22,8 @@
                      "simple",
                      "light",
                      "unarmed",
-                     "bludgeoning"
+                     "bludgeoning",
+                     "finessable"
                  ],
         "scope":  "Melee Only",
         "attackType":  "weapon",
@@ -36,7 +37,8 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "finessable":  true
     },
     {
         "name":  "Unarmed Strike",
@@ -61,7 +63,8 @@
                      "simple",
                      "light",
                      "unarmed",
-                     "nonlethal"
+                     "nonlethal",
+                     "finessable"
                  ],
         "scope":  "Melee Only",
         "attackType":  "weapon",
@@ -75,7 +78,8 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "finessable":  true
     },
     {
         "name":  "Dagger",
@@ -181,8 +185,8 @@
         "tags":  [
                      "simple",
                      "light",
-                     "unarmed",
-                     "piercing"
+                     "piercing",
+                     "finessable"
                  ],
         "scope":  "Melee Only",
         "attackType":  "weapon",
@@ -196,7 +200,8 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "finessable":  true
     },
     {
         "name":  "Light Mace",
@@ -805,8 +810,8 @@
         "name":  "Blowgun",
         "type":  "Weapon",
         "slot":  "Two-Handed",
-        "category":  "Simple",
-        "weaponType":  "Simple Ranged",
+        "category":  "Exotic",
+        "weaponType":  "Exotic Ranged",
         "dice":  "1",
         "extraDmg":  "1",
         "damage":  "1",
@@ -831,7 +836,7 @@
         "combatScope":  "ranged",
         "actionType":  "Passive",
         "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
+        "source":  "DMG p.145 / Exotic Ranged",
         "benefit":  "Deals 1 point of piercing damage, commonly used to deliver contact or injury poisons with 10 ft range increment.",
         "ruleFlags":  {
 
@@ -1123,7 +1128,7 @@
                             ]
     },
     {
-        "name":  "Light Flail",
+        "name":  "Flail",
         "type":  "Weapon",
         "slot":  "Main Hand",
         "category":  "Martial",
@@ -1153,7 +1158,7 @@
         "combatScope":  "melee",
         "actionType":  "Passive",
         "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
+        "source":  "PHB Table 7-5",
         "benefit":  "+2 bonus on opposed attack rolls to disarm. Can make trip attacks.",
         "ruleFlags":  {
                           "disarmBonus":  2,
@@ -2387,9 +2392,9 @@
         "slot":  "Main Hand",
         "category":  "Exotic",
         "weaponType":  "Exotic One-Handed",
-        "dice":  "1d2",
-        "extraDmg":  "1d2",
-        "damage":  "1d2",
+        "dice":  "1d3",
+        "extraDmg":  "1d3",
+        "damage":  "1d3",
         "critMin":  20,
         "critMult":  2,
         "crit":  "20/x2",
@@ -2426,7 +2431,13 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "reach":  true,
+        "finessable":  true,
+        "canAttackAdjacent":  true,
+        "threatens":  false,
+        "armorLimit":  "+1 armor or +3 natural armor",
+        "notes":  "Has 15 ft reach, can strike adjacent foes, does not threaten reach area. Deals no damage to creatures with +1 or higher armor bonus or +3 natural armor bonus. Finessable, disarm (+2), trip."
     },
     {
         "name":  "Orc Double Axe",
@@ -2830,7 +2841,6 @@
                      "exotic",
                      "two-handed",
                      "double",
-                     "brace",
                      "axe",
                      "slashing"
                  ],
@@ -2847,7 +2857,8 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "brace":  false
     },
     {
         "name":  "â†³ Dwarven Urgrosh (Spear Off-Hand)",
@@ -2889,7 +2900,8 @@
         "combatModifiers":  [
 
                             ],
-        "parent":  "Dwarven Urgrosh"
+        "parent":  "Dwarven Urgrosh",
+        "brace":  true
     },
     {
         "name":  "Bolas",
@@ -3098,7 +3110,9 @@
         "combatModifiers":  [
 
                             ],
-        "range":  10
+        "range":  10,
+        "rangeIncrement":  null,
+        "maxRange":  10
     },
     {
         "name":  "Shuriken",
@@ -3165,7 +3179,8 @@
                      "martial",
                      "light",
                      "armor-spikes",
-                     "piercing"
+                     "piercing",
+                     "finessable"
                  ],
         "scope":  "Melee Only",
         "attackType":  "weapon",
@@ -3179,17 +3194,18 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "finessable":  true
     },
     {
-        "name":  "Shield Spikes",
+        "name":  "Shield Spikes (Light Shield)",
         "type":  "Weapon",
         "slot":  "Off-Hand",
         "category":  "Martial",
         "weaponType":  "Martial Light",
-        "dice":  "1d6",
-        "extraDmg":  "1d6",
-        "damage":  "1d6",
+        "dice":  "1d4",
+        "extraDmg":  "1d4",
+        "damage":  "1d4",
         "critMin":  20,
         "critMult":  2,
         "crit":  "20/x2",
@@ -3210,14 +3226,15 @@
         "combatScope":  "melee",
         "actionType":  "Passive",
         "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
+        "source":  "PHB Table 7-5 / p.125",
         "benefit":  "Increases the damage dealt by a shield bash as if the shield were designed for a creature one size category larger, and deals piercing damage.",
         "ruleFlags":  {
 
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "finessable":  true
     },
     {
         "name":  "Padded Armor",
@@ -3601,7 +3618,7 @@
         "actionType":  "Passive",
         "attackType":  "shield",
         "combatScope":  "melee",
-        "dice":  "1d2",
+        "dice":  null,
         "critMin":  20,
         "critMult":  2,
         "dmgType":  "Bludgeoning",
@@ -3610,7 +3627,10 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "extraDmg":  null,
+        "damage":  null,
+        "notes":  "Cannot be used to perform a shield bash (PHB p.125)."
     },
     {
         "name":  "Light Wooden Shield",
@@ -3778,7 +3798,17 @@
 
                       },
         "combatModifiers":  [
-
+                                {
+                                    "type":  "attack_penalty",
+                                    "value":  -2,
+                                    "scope":  "All Attacks",
+                                    "description":  "Due to shield\u0027s encumbrance, -2 penalty on attack rolls (PHB p.125)."
+                                },
+                                {
+                                    "type":  "cover",
+                                    "action":  "Standard Action",
+                                    "description":  "Can be used as total cover against attacks through chosen shield edge (PHB p.125)."
+                                }
                             ]
     },
     {
@@ -3786,7 +3816,7 @@
         "type":  "Feat",
         "slot":  "None",
         "prereq":  "Str 13",
-        "benefit":  "On your action, before making attack rolls, subtract a number from all melee attack rolls (up to BAB) and add that number to all melee damage rolls (x2 damage for two-handed weapons).",
+        "benefit":  "On your action, before making attack rolls, subtract a number from all melee attack rolls (up to BAB) and add that number to all melee damage rolls (+1x for one-handed, +2x for two-handed). Cannot add bonus damage with a light weapon (except unarmed strikes or natural weapon attacks).",
         "bonusType":  "Untyped",
         "scope":  "Melee Only",
         "combatScope":  "melee",
@@ -4186,7 +4216,7 @@
         "type":  "Feat",
         "slot":  "None",
         "prereq":  "Dex 13, Dodge, Mobility, BAB +4",
-        "benefit":  "Move up to speed both before and after making a single melee attack without provoking attack of opportunity from the defender.",
+        "benefit":  "When using the attack action with a melee weapon, move both before and after making a single attack up to speed without provoking attacks of opportunity from the defender.",
         "bonusType":  "Untyped",
         "scope":  "Melee Only",
         "combatScope":  "melee",
@@ -4204,7 +4234,8 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "action":  "Attack Action (Standard) + Move"
     },
     {
         "name":  "Point Blank Shot",
@@ -4286,7 +4317,7 @@
         "type":  "Feat",
         "slot":  "None",
         "prereq":  "Dex 17, Point Blank Shot, Rapid Shot, BAB +6",
-        "benefit":  "Fire two or more arrows simultaneously at a single target within 30 ft as a standard action (-4 penalty on attack for two arrows, -6 for three, -8 for four).",
+        "benefit":  "As a standard action within 30 ft, fire two or more arrows at a single target: two arrows at BAB +6 (-4 penalty), three arrows at BAB +11 (-6 penalty), four arrows at BAB +16 (-8 penalty). Precision damage applies once.",
         "bonusType":  "Untyped",
         "scope":  "Ranged Only",
         "combatScope":  "ranged",
@@ -4311,7 +4342,7 @@
         "type":  "Feat",
         "slot":  "None",
         "prereq":  "Dex 13, Point Blank Shot, Dodge, Mobility, BAB +4",
-        "benefit":  "Move both before and after making a single ranged attack, provided that total distance moved does not exceed speed.",
+        "benefit":  "When using the attack action with a ranged weapon, move both before and after making a single attack up to speed.",
         "bonusType":  "Untyped",
         "scope":  "Ranged Only",
         "combatScope":  "ranged",
@@ -4329,14 +4360,15 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "action":  "Attack Action (Standard) + Move"
     },
     {
         "name":  "Far Shot",
         "type":  "Feat",
         "slot":  "None",
         "prereq":  "Point Blank Shot",
-        "benefit":  "Range increment penalty is halved (1.5x range for projectile weapons, 2x range for thrown weapons).",
+        "benefit":  "When you use a projectile weapon, such as a bow, its range increment increases by 50% (multiply by 1-1/2). When you use a thrown weapon, its range increment is doubled (multiply by 2).",
         "bonusType":  "Untyped",
         "scope":  "Ranged Only",
         "combatScope":  "ranged",
@@ -4636,7 +4668,7 @@
         "type":  "Feat",
         "slot":  "None",
         "prereq":  "Ride 1 rank",
-        "benefit":  "Once per round when mount is hit in combat, make a Ride check to negate the hit (against opponent\u0027s attack roll result).",
+        "benefit":  "Once per round when mount is hit in combat, make an immediate Ride check (reaction) to negate the hit (against opponent\u0027s attack roll result).",
         "bonusType":  "Untyped",
         "scope":  "General",
         "combatScope":  "general",
@@ -4654,7 +4686,8 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "action":  "Once per round (Reaction)"
     },
     {
         "name":  "Ride-By Attack",
@@ -5065,5 +5098,281 @@
                      "small",
                      "halfling-luck"
                  ]
+    },
+    {
+        "name":  "Throwing Axe",
+        "type":  "Weapon",
+        "slot":  "Main Hand",
+        "category":  "Martial",
+        "weaponType":  "Martial Light",
+        "dice":  "1d6",
+        "extraDmg":  "1d6",
+        "damage":  "1d6",
+        "critMin":  20,
+        "critMult":  2,
+        "crit":  "20/x2",
+        "dmgType":  "Slashing",
+        "range":  10,
+        "rangeIncrement":  10,
+        "attBonus":  0,
+        "dmgBonus":  0,
+        "bonusType":  "Untyped",
+        "weight":  2,
+        "cost":  8,
+        "isLight":  true,
+        "finessable":  true,
+        "tags":  [
+                     "martial",
+                     "light",
+                     "thrown",
+                     "finessable",
+                     "slashing"
+                 ],
+        "source":  "PHB Table 7-5"
+    },
+    {
+        "name":  "Shield Spikes (Heavy Shield)",
+        "type":  "Weapon",
+        "slot":  "Off-Hand",
+        "category":  "Martial",
+        "weaponType":  "Martial Light",
+        "dice":  "1d6",
+        "extraDmg":  "1d6",
+        "damage":  "1d6",
+        "critMin":  20,
+        "critMult":  2,
+        "crit":  "20/x2",
+        "dmgType":  "Piercing",
+        "attBonus":  0,
+        "dmgBonus":  0,
+        "bonusType":  "Untyped",
+        "weight":  5,
+        "cost":  10,
+        "isLight":  true,
+        "finessable":  true,
+        "tags":  [
+                     "martial",
+                     "light",
+                     "shield-bash",
+                     "piercing",
+                     "finessable"
+                 ],
+        "source":  "PHB Table 7-5 / p.125"
+    },
+    {
+        "name":  "Improved Unarmed Strike",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Fighter",
+        "featType":  "General",
+        "isFighterBonusFeat":  true,
+        "prereq":  "-",
+        "benefit":  "You are considered armed even when unarmed (do not provoke attacks of opportunity when attacking unarmed). Unarmed strikes deal lethal or nonlethal damage at your choice.",
+        "source":  "PHB p.96",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Deflect Arrows",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Fighter",
+        "featType":  "General",
+        "isFighterBonusFeat":  true,
+        "prereq":  "Dex 13, Improved Unarmed Strike",
+        "benefit":  "Once per round when you would normally be hit with a ranged weapon, you may deflect it so that you take no damage from it (reaction).",
+        "source":  "PHB p.93",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Snatch Arrows",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Fighter",
+        "featType":  "General",
+        "isFighterBonusFeat":  true,
+        "prereq":  "Dex 15, Deflect Arrows, Improved Unarmed Strike",
+        "benefit":  "When using Deflect Arrows, you may catch the weapon instead of knocking it away, and can immediately throw it back if suitable.",
+        "source":  "PHB p.100",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Stunning Fist",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Fighter",
+        "featType":  "General",
+        "isFighterBonusFeat":  true,
+        "prereq":  "Dex 13, Wis 13, Improved Unarmed Strike, BAB +8",
+        "benefit":  "Declare before attack roll; target damaged by unarmed strike must make Fortitude save (DC 10 + 1/2 level + Wis mod) or be stunned for 1 round (1/day per 4 levels).",
+        "source":  "PHB p.101",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Whirlwind Attack",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Fighter",
+        "featType":  "General",
+        "isFighterBonusFeat":  true,
+        "prereq":  "Dex 13, Int 13, Combat Expertise, Dodge, Mobility, Spring Attack, BAB +4",
+        "benefit":  "As a full attack action, make one melee attack at your highest BAB against each opponent within reach.",
+        "source":  "PHB p.102",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Improved Shield Bash",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Fighter",
+        "featType":  "General",
+        "isFighterBonusFeat":  true,
+        "prereq":  "Shield Proficiency",
+        "benefit":  "When you perform a shield bash, you may still apply the shield\u0027s shield bonus to your AC.",
+        "source":  "PHB p.96",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Rapid Reload",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Fighter",
+        "featType":  "General",
+        "isFighterBonusFeat":  true,
+        "prereq":  "Weapon Proficiency (Crossbow type)",
+        "benefit":  "Reduce the time required to reload a crossbow: heavy crossbow becomes move action, light crossbow becomes free action.",
+        "source":  "PHB p.99",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Improved Precise Shot",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Fighter",
+        "featType":  "General",
+        "isFighterBonusFeat":  true,
+        "prereq":  "Dex 19, Point Blank Shot, Precise Shot, BAB +11",
+        "benefit":  "Ranged attacks ignore AC bonus granted to targets by anything less than total cover, and miss chance granted by anything less than total concealment.",
+        "source":  "PHB p.96",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Mounted Archery",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Fighter",
+        "featType":  "General",
+        "isFighterBonusFeat":  true,
+        "prereq":  "Ride 1 rank, Mounted Combat",
+        "benefit":  "Halve penalty for using ranged weapon while mount takes double move (-2 instead of -4) or runs (-4 instead of -8).",
+        "source":  "PHB p.98",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Trample",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Fighter",
+        "featType":  "General",
+        "isFighterBonusFeat":  true,
+        "prereq":  "Ride 1 rank, Mounted Combat",
+        "benefit":  "When you attempt an overrun action while mounted, target cannot avoid you; mount makes hoof attack if knocked prone.",
+        "source":  "PHB p.102",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Simple Weapon Proficiency",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "General",
+        "featType":  "General",
+        "isFighterBonusFeat":  false,
+        "prereq":  "-",
+        "benefit":  "Make attack rolls with all simple weapons without taking the -4 non-proficiency penalty.",
+        "source":  "PHB p.100",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Martial Weapon Proficiency",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "General",
+        "featType":  "General",
+        "isFighterBonusFeat":  false,
+        "prereq":  "-",
+        "benefit":  "Choose one type of martial weapon; make attack rolls with that weapon without taking the -4 non-proficiency penalty.",
+        "source":  "PHB p.97",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Exotic Weapon Proficiency",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Fighter",
+        "featType":  "General",
+        "isFighterBonusFeat":  true,
+        "prereq":  "BAB +1",
+        "benefit":  "Choose one type of exotic weapon; make attack rolls with that weapon without taking the -4 non-proficiency penalty.",
+        "source":  "PHB p.94",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Armor Proficiency (Light)",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "General",
+        "featType":  "General",
+        "isFighterBonusFeat":  false,
+        "prereq":  "-",
+        "benefit":  "When you wear light armor, armor check penalty applies only to Balance, Climb, Escape Artist, Hide, Jump, Move Silently, Sleight of Hand, and Tumble.",
+        "source":  "PHB p.89",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Armor Proficiency (Medium)",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "General",
+        "featType":  "General",
+        "isFighterBonusFeat":  false,
+        "prereq":  "Armor Proficiency (Light)",
+        "benefit":  "When you wear medium armor, armor check penalty applies only to physical movement skill checks.",
+        "source":  "PHB p.89",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Armor Proficiency (Heavy)",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "General",
+        "featType":  "General",
+        "isFighterBonusFeat":  false,
+        "prereq":  "Armor Proficiency (Medium)",
+        "benefit":  "When you wear heavy armor, armor check penalty applies only to physical movement skill checks.",
+        "source":  "PHB p.89",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Shield Proficiency",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "General",
+        "featType":  "General",
+        "isFighterBonusFeat":  false,
+        "prereq":  "-",
+        "benefit":  "Use a buckler, light shield, or heavy shield without taking its armor check penalty on attack rolls.",
+        "source":  "PHB p.100",
+        "bonusType":  "Untyped"
+    },
+    {
+        "name":  "Tower Shield Proficiency",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Fighter",
+        "featType":  "General",
+        "isFighterBonusFeat":  true,
+        "prereq":  "Shield Proficiency",
+        "benefit":  "Use a tower shield without taking its armor check penalty on attack rolls.",
+        "source":  "PHB p.102",
+        "bonusType":  "Untyped"
     }
 ]

@@ -2016,3 +2016,43 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   3. **Parite ve Kural StandartlarÄ±:**
      - 4 karakter kaÄŸÄ±dÄ± dosyasÄ± (character.html, index.html, webapp/character.html, webapp/index.html) arasÄ±nda %100 SHA-256 hash paritesi korundu.
      - Standart tavla zarÄ± emojisi (ğŸ² / U+1F3B2) yasaÄŸÄ± tavizsiz uygulandÄ±.
+
+
+---
+
+## 71. D&D 3.5e RAW SRD CORE KATALOĞU (GHOST CORE) GÜNCELLEMESİ & SEVİYE ATLAMA ENTEGRASYONU (2026-10-26)
+* **İstek & Yapılan Çekirdek Güncelleme:**
+  - `srd_core_catalog.json` ve `bundled_data.js` üzerinde 134 öğelik bağımsız denetim raporundaki tüm bulgular (%100 RAW) uygulanmıştır. Katalog toplam 161 resmi D&D 3.5e RAW öğesine ulaşmıştır.
+  - **Uygulanan Düzeltmeler:**
+    1. **Whip:** Hasar zarı `1d3` olarak düzeltildi (Medium RAW). `reach: true`, 15 ft menzil, bitişik vurabilme, tehdit etmeme ve zırh kısıtı notları eklendi.
+    2. **Buckler:** Shield bash yapılamayacağı için (`PHB s.125`) `dice: null` yapıldı.
+    3. **Blowgun:** Kaynak `DMG p.145 / Exotic Ranged` olarak düzeltildi.
+    4. **Throwing Axe:** Eksik olan Martial Light silahı (`8 gp, 1d6, ×2, 10 ft, 2 lb, Slashing, finessable`) eklendi.
+    5. **Shield Spikes:** Light (`1d4`) ve Heavy (`1d6`) olarak iki ayrı öğeye ayrıldı (`PHB s.125`).
+    6. **Flail:** 3.0 ismi olan "Light Flail" yerine 3.5e RAW ismi olan "Flail" yapıldı.
+    7. **Light Silahlar Finessable:** `Gauntlet`, `Unarmed Strike`, `Spiked Gauntlet` ve `Armor Spikes` öğelerine `finessable: true` eklendi; `Spiked Gauntlet`'tan hatalı `unarmed` etiketi kaldırıldı (armed attack).
+    8. **Dwarven Urgrosh:** `brace` yeteneği axe ana gövdesinden ikincil mızrak ucuna (`↳ Dwarven Urgrosh (Spear Off-Hand)`) taşındı.
+    9. **Net:** Maksimum menzil `10 ft` olarak sınırlandırıldı.
+    10. **Tower Shield:** `-2` atak cezası ve Total Cover standart aksiyon mekaniği `combatModifiers` içine işlendi.
+    11. **Feat Metinleri:** `Far Shot` (menzil kademesi $\times 1.5$ / $\times 2$ uzar, ceza yarıya inmez), `Power Attack` (light silahlara bonus hasar vermez kısıtı), `Manyshot` (BAB +11 ve +16 eşikleri), `Spring Attack` ve `Shot on the Run` (Standard attack action + move), `Mounted Combat` (1/round reaksiyon) RAW standartlarına kavuşturuldu.
+    12. **18 Yeni PHB Feat'i:** `Improved Unarmed Strike`, `Deflect Arrows`, `Snatch Arrows`, `Stunning Fist`, `Whirlwind Attack`, `Improved Shield Bash`, `Rapid Reload`, `Improved Precise Shot`, `Mounted Archery`, `Trample`, `Simple Weapon Proficiency`, `Martial Weapon Proficiency`, `Exotic Weapon Proficiency`, `Armor Proficiency (Light/Medium/Heavy)`, `Shield Proficiency`, `Tower Shield Proficiency` çekirdek Ghost Core kataloğuna eklendi.
+* **Karakter Kâğıdı (`character.html` / `index.html`) Oturumunda Yapılacaklar:**
+  1. **DM Boon & Flaw Temizliği (Madde 70 / Opsiyon A):**
+     - `DND35_DM_BOONS_CATALOG = [];`
+     - `DND35_FLAWS_CATALOG = [];`
+  2. **Ghost Core Feat Entegrasyonu (`getCombinedFeatCatalog`):**
+     - `getCombinedFeatCatalog()` fonksiyonuna, `window.BUNDLED_SRD_CORE_CATALOG` içindeki `type === 'Feat'` olan kayıtları da haritaya ekleme kuralı getirilmelidir:
+       ```javascript
+       if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
+         window.BUNDLED_SRD_CORE_CATALOG.filter(i => i && i.type === 'Feat').forEach(f => {
+           const k = f.name.toLowerCase();
+           if (!map.has(k)) {
+             map.set(k, { ...f });
+           }
+         });
+       }
+       ```
+     - Böylece yeni eklenen 18 PHB feat'i (ve özellikle `Improved Grapple`'ın önkoşulu olan `Improved Unarmed Strike`), Seviye Atlama Sihirbazı'nda doğrudan aranabilir ve önkoşul motorunda tanınır hale gelecektir.
+  3. **Parite ve Kural Standartları:**
+     - 4 karakter kağıdı dosyası (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi sağlanmalıdır.
+     - Standart tavla zarı emojisi yasağı (`U+1F3B2`) tavizsiz korunmalıdır.
