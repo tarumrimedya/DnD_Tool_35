@@ -1,4 +1,4 @@
-﻿# HUB & KARAKTER KÂĞIDI ENTEGRASYON DOKÜMANI (HANDOVER SPECIFICATION)
+# HUB & KARAKTER KÂĞIDI ENTEGRASYON DOKÜMANI (HANDOVER SPECIFICATION)
 
 **Tarih:** 2026-10-23  
 **Gönderen:** Hub Geliştirme Oturumu  
@@ -2070,4 +2070,28 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - `master_db.json` veya `character_data.json` üzerinde hiçbir şema değişikliği yapılmadı; mevcut yapılarla %100 geriye dönük uyumlu refactor tamamlandı.
   6. **Parite ve Kural Standartları:**
      - 4 karakter kâğıdı dosyası (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi sağlandı.
+     - Standart tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korundu.
+
+---
+
+## 73. SEVİYE GELİŞİM TABLOSU (LEVEL PROGRESSION): SPOTLIGHT & RULE MASTER AI FEAT ARAMA KONSOLU ENTEGRASYONU (2026-10-26)
+* **İstek & Problem:**
+  - Seviye Gelişim ve İlerleme Tablosu üzerindeki butonlardan (`[⚔️ + Bonus Feat Seç]`, `[🎖️ + Feat Seç]`, `[🧬 + Irk Feati Seç]` ve satır içi `➕` Feat ekleme) açılan Hızlı Feat Ekleme Modalı (`#quick-level-feat-modal`), eski statik dropdown ve ilkel manuel form düzenindeydi.
+  - Seviye Atlama Sihirbazı'nda (Level Up Wizard) devreye alınan modern Spotlight arama, dinamik kategori filtre hapları (`[📋 Tümü]`, `[✅ Alınabilir]`, `[⚔️ Savaşçı]`, `[🌟 DM Boon]`, `[⚠️ Kusur]`, `[🔮 Invocation]`), RAW önkoşul analiz motoru (`checkFeatPrerequisites`) ve satır seviyesine özel Rule Master AI arama konsolu deneyiminin bu tabloya da kazandırılması talep edildi.
+* **Uygulanan Değişiklikler:**
+  1. **Seviye Tablosuna Özel RAW Önkoşul Motoru (`targetLevelIdx` Desteği):**
+     - `checkFeatPrerequisites(feat, slotIdx = 0, targetLevelIdx = null)` fonksiyonuna satır bazlı seviye parametresi eklendi.
+     - `targetLevelIdx !== null` olduğunda, önkoşullar o satırın seviyesine kadar olan ilerleme durumu (`prog.slice(0, targetLevelIdx + 1)`), o seviyedeki BAB artışı, stat puanı dağılımları ve o satıra kadar öğrenilmiş olan featler dikkate alınarak RAW kural doğrulaması yapılır.
+  2. **Modern Spotlight & AI Feat Arama Konsolu Modalı:**
+     - Eski `#quick-level-feat-modal` arayüzü modernize edildi; üst başlık, `[🗑️ Temizle]` butonu, kategori seçimi (`#quick-feat-category`), büyüteçli Spotlight arama çubuğu (`#quick-feat-name`), `[📜 Katalog ▼/▲]` açılır/kapanır konsol paneli ve dinamik önkoşul uyarı rozeti (`#quick-feat-prereq-badge`) entegre edildi.
+     - Konsol içinde filtre hapları (`[📋 Tümü]`, `[✅ Alınabilir]`, `[⚔️ Savaşçı]`, `[🌟 DM Boon]`, `[⚠️ Kusur]`, `[🔮 Invocation]`) canlı sayaçlarla yerleştirildi.
+     - Aday feat kartlarında RAW uygunluk rozetleri (`✅ Alınabilir` / `⚠️ Önkoşul Eksik`), önkoşul kırılım hapları (`Str 13 ✓`, `BAB +1 ✗`), kategori/kaynak etiketleri ve `[🎯 Seç]` / `[🎯 Yine de Seç]` butonları konumlandırıldı.
+     - Alt kısımda doğrudan ilgili sorgu için `[⚡ Rule Master AI ile Getir: "${query}" (3.5e Kitaplığı)]` butonu ve anlık durum göstergesi eklendi.
+  3. **Tablo Butonlarıyla Akıllı Entegrasyon:**
+     - `[⚔️ + Bonus Feat Seç]` tıklandığında konsol doğrudan `'FIGHTER'` filtre hapı aktif olarak açılır.
+     - `[🎖️ + Feat Seç]` tıklandığında `'ALL'` filtre hapı ile açılır.
+     - `[🌟 DM Boon]` veya `[⚠️ Kusur]` seçildiğinde ilgili filtre otomatik senkronize edilir.
+     - Warlock seviyesi veya DM Boon'u varsa `'INVOCATION'` filtresi ve Warlock Yakarışları listelenir.
+  4. **Parite ve Kural Standartları:**
+     - 4 karakter kâğıdı dosyası (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi sağlandı (`B187062A8DD1FCB7A9D2A29F2D9521771765DF7E8D606097548A04734A965040`).
      - Standart tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korundu.
