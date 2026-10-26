@@ -1166,7 +1166,16 @@
 
       if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.recalculateCharacter === 'function') {
         try {
-          const masterDb = window.MASTER_DB_DATA || [];
+          let masterDb = window.MASTER_DB_DATA;
+          if (!Array.isArray(masterDb) || masterDb.length === 0) {
+            try {
+              const raw = localStorage.getItem('dnd35_master_db');
+              if (raw) masterDb = JSON.parse(raw);
+            } catch (e) {}
+          }
+          if (!Array.isArray(masterDb) || masterDb.length === 0) {
+            masterDb = window.BUNDLED_MASTER_DB || [];
+          }
           RuleEngine.recalculateCharacter(data, masterDb);
         } catch (e) {
           console.warn('RuleEngine recalculate error for ' + c.name, e);

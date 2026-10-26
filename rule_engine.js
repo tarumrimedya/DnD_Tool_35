@@ -48,8 +48,11 @@ const RuleEngine = {
     const clean = String(typeof weapon === 'object' ? (weapon.masterDbName || weapon.name || '') : weapon).toLowerCase().trim();
     if (!clean) return null;
     const db = (typeof window !== 'undefined' && (window.masterDb || window.MASTER_DB_DATA || window.BUNDLED_MASTER_DB)) || (typeof masterDb !== 'undefined' ? masterDb : []);
-    if (!Array.isArray(db) || db.length === 0) return null;
-    return db.find(m => m && ((m.name && m.name.toLowerCase().trim() === clean) || (m.masterDbName && m.masterDbName.toLowerCase().trim() === clean))) || null;
+    let found = Array.isArray(db) && db.length > 0 ? db.find(m => m && ((m.name && m.name.toLowerCase().trim() === clean) || (m.masterDbName && m.masterDbName.toLowerCase().trim() === clean))) : null;
+    if (!found && typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
+      found = window.BUNDLED_SRD_CORE_CATALOG.find(m => m && ((m.name && m.name.toLowerCase().trim() === clean) || (m.masterDbName && m.masterDbName.toLowerCase().trim() === clean))) || null;
+    }
+    return found || null;
   },
 
   // Check if weapon is Light according to D&D 3.5e RAW rules
@@ -288,11 +291,18 @@ const RuleEngine = {
     const cleanName = item.name.toLowerCase().trim();
     const cleanRef = (item.masterDbName || '').toLowerCase().trim();
 
-    // 1. Look up in Master DB
+    // 1. Look up in Master DB & Ghost Core
     let dbEntry = null;
     if (Array.isArray(masterDb) && masterDb.length > 0) {
       dbEntry = masterDb.find(m => {
         const mClean = (m.name || '').toLowerCase().trim();
+        return mClean === cleanName || (cleanRef && mClean === cleanRef);
+      });
+    }
+    if (!dbEntry && typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
+      dbEntry = window.BUNDLED_SRD_CORE_CATALOG.find(m => {
+        if (!m || !m.name) return false;
+        const mClean = String(m.name).toLowerCase().trim();
         return mClean === cleanName || (cleanRef && mClean === cleanRef);
       });
     }
@@ -1552,7 +1562,8 @@ const RuleEngine = {
       if (rawName.startsWith('↳') || (featItem.isChild && featItem.isChild !== false)) return;
 
       const cleanName = rawName.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').toLowerCase().trim();
-      const dbEntry = Array.isArray(masterDb) ? masterDb.find(m => (m.name || '').toLowerCase().trim() === cleanName) : null;
+      const dbEntry = (Array.isArray(masterDb) ? masterDb.find(m => (m.name || '').toLowerCase().trim() === cleanName) : null)
+        || ((typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) ? window.BUNDLED_SRD_CORE_CATALOG.find(m => (m.name || '').toLowerCase().trim() === cleanName) : null);
       const desc = String(featItem.benefit || featItem.desc || featItem.description || (dbEntry ? (dbEntry.benefit || dbEntry.description) : '') || '').toLowerCase();
       const combinedText = `${cleanName} ${desc}`;
 
@@ -1639,7 +1650,8 @@ const RuleEngine = {
       character.gearPool.forEach(item => {
         if (!item || !item.name) return;
         const cleanItemName = item.name.toLowerCase().trim();
-        const dbEntry = Array.isArray(masterDb) ? masterDb.find(m => (m.name || '').toLowerCase().trim() === cleanItemName) : null;
+        const dbEntry = (Array.isArray(masterDb) ? masterDb.find(m => (m.name || '').toLowerCase().trim() === cleanItemName) : null)
+          || ((typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) ? window.BUNDLED_SRD_CORE_CATALOG.find(m => (m.name || '').toLowerCase().trim() === cleanItemName) : null);
         const saveVal = item.saveBonus || dbEntry?.saveBonus;
         const bType = item.bonusType || dbEntry?.bonusType || 'Luck';
         if (saveVal) {
@@ -2728,7 +2740,7 @@ const RuleEngine = {
     // If not handled directly, check masterDb catalog declaratively
     if (!itemHandled) {
       const iName = (item.name || '').toLowerCase().trim();
-      const masterList = (typeof window !== 'undefined' && (window.masterDb || window.BUNDLED_MASTER_DB)) || [];
+      const masterList = (typeof window !== 'undefined' && (window.masterDb || window.BUNDLED_MASTER_DB || window.BUNDLED_SRD_CORE_CATALOG)) || [];
       if (Array.isArray(masterList) && iName) {
         const dbEntry = masterList.find(dbItem => {
           const dbName = (dbItem.name || '').toLowerCase().trim();
