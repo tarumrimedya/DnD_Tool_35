@@ -1639,6 +1639,8 @@ const RuleMaster = {
         traits: Array.isArray(raw.traits) ? JSON.parse(JSON.stringify(raw.traits)) : (normType === 'Race' && (raw.benefit || raw.description) ? [{ name: 'Racial Traits', desc: String(raw.benefit || raw.description) }] : undefined),
         languages: Array.isArray(raw.languages) ? JSON.parse(JSON.stringify(raw.languages)) : (normType === 'Race' ? ['Common'] : undefined),
         bonusFeats: raw.bonusFeats !== undefined ? Number(raw.bonusFeats) : undefined,
+        isFighterBonusFeat: raw.isFighterBonusFeat !== undefined ? Boolean(raw.isFighterBonusFeat) : (raw.category === 'Fighter' ? true : undefined),
+        finessable: raw.finessable !== undefined ? Boolean(raw.finessable) : undefined,
         pantheon: raw.pantheon ? String(raw.pantheon).trim() : undefined,
         alignment: raw.alignment ? String(raw.alignment).trim() : undefined,
         favoredWeapon: raw.favoredWeapon ? String(raw.favoredWeapon).trim() : undefined,
@@ -1669,6 +1671,10 @@ If categoryHint is 'Race' or querying a Race (e.g. Warforged, Goliath, Drow, Cat
 0.1 DEITY SCHEMA (FOR D&D 3.5E DEITIES / GODS / PANTEONS):
 If categoryHint is 'Deity' or querying a Deity/God/Pantheon (e.g. Kelemvor, Mystra, Tempus, Bane, Lolth, Asmodeus, Helm, Sune, Morwel, Pelor, Kord, Moradin):
 Return canonical D&D 3.5e Deity object with type: "Deity", name, title (e.g. "Lord of the Dead"), pantheon ("Faerûn / Forgotten Realms", "Greyhawk", "Eberron", etc.), alignment (e.g. "Lawful Neutral"), favoredWeapon (e.g. "Bastard sword"), domains: ["Death", "Fate", "Law"], symbol, description (canonical 3.5e lore and dogma summary), source (official 3.5e book and page, e.g. "Complete Divine p.120" or "Player's Handbook p.106").
+
+0.2 FEAT SCHEMA (FOR D&D 3.5E FEATS):
+If categoryHint is 'Feat' or querying a Feat:
+Return canonical D&D 3.5e Feat object with type: "Feat", name, prereq, benefit, description, source (official 3.5e book and page), featType ("General"|"Item Creation"|"Metamagic"|"Special"), and boolean "isFighterBonusFeat": true if the feat can be selected as a Fighter bonus feat according to D&D 3.5e RAW (PHB Table 5-1 / p.90).
 
 1. STRICT REAL RAW 3.5E RULES ONLY:
 NEVER fabricate, invent, or hallucinate a rule, feat, spell, magic item, or book source. Every result MUST exist in official Wizards of the Coast D&D 3.5e publications.
