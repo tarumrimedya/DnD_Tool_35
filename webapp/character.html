@@ -31907,7 +31907,7 @@ function renderManualStatsPanel() {
           let badgeText = '⚠️ Önkoşul Eksik';
           if (isAlreadyKnown) {
             badgeClass = 'bg-blue-950/80 text-blue-300 border-blue-600/60';
-            badgeText = '🔒 Sınıf Ustalığı (Zaten Var)';
+            badgeText = pEval.alreadyKnownBadgeText || (pEval.isAlreadyTaken ? '🔒 Zaten Alındı' : '🔒 Sınıf Ustalığı (Zaten Var)');
           } else if (isQualified) {
             badgeClass = 'bg-emerald-950/80 text-emerald-300 border-emerald-600/60';
             badgeText = '✅ Alınabilir';
@@ -32014,6 +32014,22 @@ function renderManualStatsPanel() {
     }
 
     function selectFeatForQuickLevel(featName, autoConfirm = true) {
+      // Defensive RAW duplicate check
+      const pEvalPre = (typeof checkFeatPrerequisites === 'function')
+        ? checkFeatPrerequisites({ name: featName }, 0, activeQuickLevelIndex)
+        : null;
+      if (pEvalPre && pEvalPre.isAlreadyTaken) {
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            title: 'Mükerrer Feat Engellendi',
+            desc: pEvalPre.alreadyKnownReason || `"${featName}" featine zaten sahipsiniz.`,
+            type: 'warning'
+          });
+        } else {
+          console.warn(pEvalPre.alreadyKnownReason || `"${featName}" featine zaten sahipsiniz.`);
+        }
+        return;
+      }
       const catalog = getCombinedFeatCatalog();
       let found = catalog.find(f => f.name.toLowerCase() === featName.toLowerCase() || f.name.toLowerCase() === featName.toLowerCase().replace(/\(.*?\)/g, '').trim());
 
@@ -32204,6 +32220,23 @@ function renderManualStatsPanel() {
       const isWeaponFeat = /^(weapon focus|greater weapon focus|weapon specialization|greater weapon specialization|improved critical|exotic weapon proficiency)/i.test(featName);
       if (isWeaponFeat && !featName.includes('(') && targetSelect && targetSelect.value) {
         featName = `${featName} (${targetSelect.value})`;
+      }
+
+      // Defensive RAW duplicate check
+      const pEvalConfirm = (typeof checkFeatPrerequisites === 'function')
+        ? checkFeatPrerequisites({ name: featName }, 0, activeQuickLevelIndex)
+        : null;
+      if (pEvalConfirm && pEvalConfirm.isAlreadyTaken) {
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            title: 'Mükerrer Feat Engellendi',
+            desc: pEvalConfirm.alreadyKnownReason || `"${featName}" featine zaten sahipsiniz.`,
+            type: 'warning'
+          });
+        } else {
+          console.warn(pEvalConfirm.alreadyKnownReason || `"${featName}" featine zaten sahipsiniz.`);
+        }
+        return;
       }
 
       const category = document.getElementById('quick-feat-category')?.value || 'Regular Feat';
@@ -32766,13 +32799,128 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
        * known feats (character feats, active progression, earlier slots in current level up),
        * caster level, and skill ranks in a fully parametric manner.
        */
+
+    // ====================================================
+    // ⚔️ D&D 3.5e RAW FEAT DUPLICATE & RETAKE VALIDATION
+    // ====================================================
+    const UNLIMITED_REPEATABLE_FEATS = new Set([
+      'toughness',
+      'extra turning',
+      'improved natural armor'
+    ]);
+
+    const TARGETED_REPEATABLE_FEATS = new Set([
+      'weapon focus',
+      'greater weapon focus',
+      'weapon specialization',
+      'greater weapon specialization',
+      'improved critical',
+      'exotic weapon proficiency',
+      'martial weapon proficiency',
+      'simple weapon proficiency',
+      'spell focus',
+      'greater spell focus',
+      'skill focus',
+      'extra spell',
+      'extra slot',
+      'extra invocation'
+    ]);
+
+    function cleanFeatNameString(str) {
+      if (!str) return '';
+      return String(str).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
+    }
+
+    function isFeatAlreadyTakenByCharacter(featName, excludeContext = {}) {
+      if (!featName) return { isTaken: false, reason: '' };
+
+      const cleanCandidate = cleanFeatNameString(featName);
+      const candBase = cleanCandidate.replace(/\(.*?\)/g, '').trim().toLowerCase();
+      const candFull = cleanCandidate.toLowerCase();
+      const hasParens = cleanCandidate.includes('(') && cleanCandidate.includes(')');
+
+      // 1. Unlimited repeatable feats (e.g. Toughness, Extra Turning)
+      if (UNLIMITED_REPEATABLE_FEATS.has(candBase)) {
+        return { isTaken: false, reason: '' };
+      }
+
+      // 2. Collect all taken feats across build
+      const takenFullSet = new Set();
+      const takenBaseSet = new Set();
+
+      // From character.feats
+      if (typeof character !== 'undefined' && Array.isArray(character.feats)) {
+        character.feats.forEach(f => {
+          const raw = typeof f === 'string' ? f : (f?.name || '');
+          const c = cleanFeatNameString(raw);
+          if (!c || c.startsWith('+1 Stat') || c.includes('Stat:') || c.includes('Primary CL')) return;
+          takenFullSet.add(c.toLowerCase());
+          takenBaseSet.add(c.replace(/\(.*?\)/g, '').trim().toLowerCase());
+        });
+      }
+
+      // From character.levelProgression
+      if (typeof character !== 'undefined' && Array.isArray(character.levelProgression)) {
+        character.levelProgression.forEach((lvl, lIdx) => {
+          if (!lvl || lvl.active === false || !Array.isArray(lvl.feats)) return;
+          lvl.feats.forEach((fStr, fIdx) => {
+            if (excludeContext.levelIdx !== undefined && excludeContext.levelIdx === lIdx && excludeContext.featIdx !== undefined && excludeContext.featIdx === fIdx) {
+              return;
+            }
+            const c = cleanFeatNameString(fStr);
+            if (!c || c.startsWith('+1 Stat') || c.includes('Stat:') || c.includes('Primary CL') || c.includes('Caster Lvl')) return;
+            takenFullSet.add(c.toLowerCase());
+            takenBaseSet.add(c.replace(/\(.*?\)/g, '').trim().toLowerCase());
+          });
+        });
+      }
+
+      // From Level-Up Wizard active slots
+      if (typeof levelUpModalFeatSlots !== 'undefined' && Array.isArray(levelUpModalFeatSlots)) {
+        levelUpModalFeatSlots.forEach((slot, sIdx) => {
+          if (excludeContext.slotIdx !== undefined && excludeContext.slotIdx === sIdx) return;
+          const c = cleanFeatNameString(slot.name || '');
+          if (!c) return;
+          takenFullSet.add(c.toLowerCase());
+          takenBaseSet.add(c.replace(/\(.*?\)/g, '').trim().toLowerCase());
+        });
+      }
+
+      // 3. Targeted repeatable feats (e.g. Weapon Focus, Spell Focus)
+      if (TARGETED_REPEATABLE_FEATS.has(candBase)) {
+        if (hasParens) {
+          if (takenFullSet.has(candFull)) {
+            return {
+              isTaken: true,
+              reason: `Karakteriniz "${cleanCandidate}" featine zaten sahiptir. (Aynı hedef silah/okul için bu feat ikinci kez seçilemez).`
+            };
+          }
+          return { isTaken: false, reason: '' };
+        } else {
+          // Generic targeted feat without target yet
+          return { isTaken: false, reason: '' };
+        }
+      }
+
+      // 4. Standard non-repeatable feats
+      if (takenBaseSet.has(candBase) || takenFullSet.has(candFull)) {
+        return {
+          isTaken: true,
+          reason: `Karakteriniz "${cleanCandidate}" featine zaten sahiptir (D&D 3.5e RAW kuralına göre bir feat yalnızca bir kez seçilebilir).`
+        };
+      }
+
+      return { isTaken: false, reason: '' };
+    }
+
       function checkFeatPrerequisites(feat, slotIdx = 0, targetLevelIdx = null) {
-        if (!feat) return { hasPrereqs: false, allMet: true, checks: [], rawPrereq: '', isAlreadyKnownFromClass: false, alreadyKnownReason: '' };
+        if (!feat) return { hasPrereqs: false, allMet: true, checks: [], rawPrereq: '', isAlreadyKnownFromClass: false, alreadyKnownReason: '', isAlreadyTaken: false, alreadyKnownBadgeText: '' };
 
         const featName = (feat.name || '').trim();
         const featNameNorm = featName.toLowerCase().replace(/[^a-z0-9]/g, '');
         let isAlreadyKnownFromClass = false;
         let alreadyKnownReason = '';
+        let isAlreadyTaken = false;
 
         // Unified D&D 3.5e Proficiencies lookup via RuleEngine
         let prof = null;
@@ -32840,9 +32988,36 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           }
         }
 
+        // 2. D&D 3.5e RAW Duplicate Feat Evaluation (Unless explicitly repeatable, feats can only be taken once)
+        if (!isAlreadyKnownFromClass) {
+          const takenCheck = isFeatAlreadyTakenByCharacter(featName, {
+            slotIdx: (targetLevelIdx === null || targetLevelIdx === undefined) ? slotIdx : undefined,
+            levelIdx: (targetLevelIdx !== null && targetLevelIdx !== undefined) ? targetLevelIdx : undefined
+          });
+          if (takenCheck.isTaken) {
+            isAlreadyTaken = true;
+            alreadyKnownReason = takenCheck.reason;
+          }
+        }
+
+        const isAlreadyKnown = isAlreadyKnownFromClass || isAlreadyTaken;
+        const alreadyKnownBadgeText = isAlreadyTaken
+          ? '🔒 Zaten Alındı'
+          : (isAlreadyKnownFromClass ? '🔒 Sınıf Ustalığı (Zaten Var)' : '');
+
         const rawPrereq = (feat.prereq || feat.prerequisites || '').trim();
         if (!rawPrereq || rawPrereq === '-' || rawPrereq.toLowerCase() === 'none') {
-          return { hasPrereqs: false, allMet: true, checks: [], rawPrereq: '', isAlreadyKnownFromClass, alreadyKnownReason };
+          return {
+            hasPrereqs: false,
+            allMet: true,
+            checks: [],
+            rawPrereq: '',
+            isAlreadyKnownFromClass: isAlreadyKnown,
+            isClassGranted: isAlreadyKnownFromClass,
+            isAlreadyTaken,
+            alreadyKnownReason,
+            alreadyKnownBadgeText
+          };
         }
 
         const isTableMode = (targetLevelIdx !== null && targetLevelIdx !== undefined);
@@ -33124,7 +33299,17 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           checks.push({ type: 'feat', label, met, info });
         }
 
-        return { hasPrereqs: true, allMet, checks, rawPrereq, isAlreadyKnownFromClass, alreadyKnownReason };
+        return {
+          hasPrereqs: true,
+          allMet,
+          checks,
+          rawPrereq,
+          isAlreadyKnownFromClass: isAlreadyKnown,
+          isClassGranted: isAlreadyKnownFromClass,
+          isAlreadyTaken,
+          alreadyKnownReason,
+          alreadyKnownBadgeText
+        };
       }
 
       function getFeatCategoryBadgeStyle(cat) {
@@ -33166,7 +33351,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
               prereqHtml = `
                 <div class="flex items-center gap-1.5 text-[10px] text-blue-300 bg-blue-950/60 border border-blue-700/60 rounded-lg px-2.5 py-1">
                   <span>🔒</span>
-                  <span><b>Sınıf Ustalığı:</b> ${pEval.alreadyKnownReason || 'Karakteriniz bu ustalığa sınıfı veya mevcut yetenekleri sayesinde zaten sahiptir.'}</span>
+                  <span><b>${pEval.isAlreadyTaken ? 'Zaten Alındı:' : 'Sınıf Ustalığı:'}</b> ${pEval.alreadyKnownReason || 'Karakteriniz bu yeteneğe zaten sahiptir.'}</span>
                 </div>
               `;
             } else if (!pEval.hasPrereqs) {
@@ -33509,7 +33694,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             let badgeText = '⚠️ Önkoşul Eksik';
             if (isAlreadyKnown) {
               badgeClass = 'bg-blue-950/80 text-blue-300 border-blue-600/60';
-              badgeText = '🔒 Sınıf Ustalığı (Zaten Var)';
+              badgeText = pEval.alreadyKnownBadgeText || (pEval.isAlreadyTaken ? '🔒 Zaten Alındı' : '🔒 Sınıf Ustalığı (Zaten Var)');
             } else if (isQualified) {
               badgeClass = 'bg-emerald-950/80 text-emerald-300 border-emerald-600/60';
               badgeText = '✅ Alınabilir';
@@ -33611,6 +33796,19 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
       function selectFeatForLevelUpSlot(idx, featName) {
         if (!levelUpModalFeatSlots[idx]) return;
+        const pEvalSlot = (typeof checkFeatPrerequisites === 'function')
+          ? checkFeatPrerequisites({ name: featName }, idx)
+          : null;
+        if (pEvalSlot && pEvalSlot.isAlreadyTaken) {
+          if (typeof showDiceTopToast === 'function') {
+            showDiceTopToast({
+              title: 'Mükerrer Feat Engellendi',
+              desc: pEvalSlot.alreadyKnownReason || `"${featName}" featine zaten sahipsiniz.`,
+              type: 'warning'
+            });
+          }
+          return;
+        }
         const catalog = getCombinedFeatCatalog();
         const baseName = featName.replace(/\(.*?\)/g, '').trim();
         const found = catalog.find(f => f.name.toLowerCase() === featName.toLowerCase()) || catalog.find(f => f.name.toLowerCase() === baseName.toLowerCase());

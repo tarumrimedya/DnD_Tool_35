@@ -2258,3 +2258,28 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   4. **Parite ve Kural Standartları:**
      - 4 HTML karakter kâğıdı dosyası (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi sağlandı (`BD021B9F7D1EB1A6F6B2C7FFB8EEDABF6BD28455FCD83728D55D8706C6841034`).
      - Standart tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.
+
+
+---
+
+## 80. D&D 3.5e RAW MÜKERRER FEAT ENGELLEME VE ALINMIŞ FEAT FİLTRESİ (2026-10-26)
+* **İstek & Problem:**
+  - Kullanıcı aynı seviyede veya daha önceki seviyelerde seçilmiş bir feati (örneğin *Power Attack*), ırk feati veya diğer seviye slotlarında tekrar seçebildiğini belirtti ve seçilen featlerin filtrelenmesini talep etti.
+  - D&D 3.5e PHB (sf. 89) kurallarına göre aksi açıkça belirtilmedikçe (*"Unless noted otherwise, a feat can be taken only once"*) bir feat karakter hayatı boyunca yalnızca bir kez seçilebilir. Yalnızca *Toughness*, *Extra Turning* gibi özel featler limitsiz tekrar edebilir; *Weapon Focus*, *Spell Focus* gibi featler ise yalnızca farklı bir hedef için seçilebilir.
+* **Uygulanan Değişiklikler:**
+  1. **Evrensel Alınmış Feat Denetimi (`isFeatAlreadyTakenByCharacter`):**
+     - Karakterin tüm aktif seviye satırlarındaki (`character.levelProgression[...].feats`), ana feat listesindeki (`character.feats`) ve Seviye Atlama Sihirbazı'ndaki diğer slotlardaki featler taranarak normalize edilmiş bir feat havuzu oluşturuldu.
+     - Feat ön ekleri (`🎖️ `, `⚔️ [Bonus] `, `🧬 [Racial] `, `🌟 [DM Boon] `, `⚠️ [Flaw] ` vb.) regex ile güvenle temizlenip temel feat adı ve parantezli parametreleri ayrıştırıldı.
+  2. **D&D 3.5e RAW İstisna Kural Tablosu:**
+     - **Limitsiz Featler:** *Toughness*, *Extra Turning*, *Improved Natural Armor* vb. featler için mükerrerlik kısıtlaması uygulanmaz (birden fazla kez seçilebilir ve HP/turn etkileri yığılır).
+     - **Hedefli Featler:** *Weapon Focus*, *Greater Weapon Focus*, *Weapon Specialization*, *Exotic Weapon Proficiency*, *Spell Focus*, *Skill Focus* vb. hedefli featlerde; aynı hedef (örn. *Weapon Focus (Greatsword)*) daha önce alınmışsa engellenir, farklı bir hedef seçiliyorsa (örn. *Weapon Focus (Longsword)*) izin verilir.
+     - **Standart Featler:** *Power Attack, Cleave, Combat Reflexes, Dodge, Improved Initiative* vb. standart featlerin ikinci kez seçilmesi engellendi.
+  3. **Arayüz (UI) ve Önkoşul Entegrasyonu (`checkFeatPrerequisites`):**
+     - Alınmış bir feat listelendiğinde silinmek yerine kartı **`🔒 Zaten Alındı`** mavi rozetiyle işaretlenir, butonu **`🔒 Zaten Sahipsiniz`** (devre dışı / disabled) haline getirilir ve açıklamasında kural uyarısı gösterilir.
+     - `countQualified` ve `✅ Alınabilir` filtresi zaten alınmış featleri eler.
+     - Sıralamada zaten alınmış featler listenin en altına taşınır.
+     - `selectFeatForQuickLevel`, `confirmQuickLevelFeat` ve `selectFeatForLevelUpSlot` fonksiyonlarına defansif kontrol eklenerek mükerrer feat eklenmesi kesin olarak engellendi.
+  4. **Parite ve Kural Standartları:**
+     - 4 HTML karakter kâğıdı dosyası (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi sağlandı (`E0C2B20B937984BB914C4704D1562F9C65AC6BF837FA34BF9D244E810253784D`).
+     - Standart tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.
+     - Headless Edge ortamında CDP otomatik testiyle mükerrer feat engellemesi ve Cleave/Toughness istisnaları %100 başarıyla doğrulandı.
