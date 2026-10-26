@@ -2428,7 +2428,7 @@ Selam! Ben Karakter Kâğıdı geliştirme sekmesinden geliyorum. `HANDOVER_TO_C
 
 ---
 
-## 86. Flash of Stale Content (FOUC) Giderilmesi & Hızlı Ön Render (Fast Pre-Render / Stale-While-Revalidate) Standardı
+## 87. Flash of Stale Content (FOUC) Giderilmesi & Hızlı Ön Render (Fast Pre-Render / Stale-While-Revalidate) Standardı
 
 ### Bağlam & Tespit Edilen Problem
 Karakter kâğıdı (`character.html` / `index.html` ve `webapp/` ikizleri) yenilendiğinde (F5) veya açıldığında, Supabase bulut isteği (`await fetchUserCharacters()`) süresince (yaklaşık 200ms - 800ms) ekranda prototip döneminden kalma statik HTML verileri (**"Kazmil'in Çırağı"**, **"Sorcerer 5 / Warblade 1"**, **"38/38 HP"**, **"Magic Missile (5 Füze)"**, **"CL: 6"**) anlık olarak belirmekte, ardından bulut verisi (`test1` Fighter 3 vb.) yüklenince kaybolmaktaydı (FOUC).
@@ -2454,3 +2454,22 @@ Karakter kâğıdı (`character.html` / `index.html` ve `webapp/` ikizleri) yeni
 3. **Parite ve Standart Güvencesi:**
    * 4 dosya arasında %100 SHA-256 hash paritesi (`f2943a766e4d08ffab18af42b091946cb59c50387dddd7b47c038a2426efe206`) sağlandı.
    * Tavla zarı emojisi yasağı (`U+1F3B2`) tavizsiz korundu.
+
+
+---
+
+## 88. BULUT SENKRON YÖNETİM MODALİ (TAMAM/İPTAL YERİNE BULUTTAN İNDİR / BULUTA YÜKLE) (2026-10-26)
+* **İstek & Problem:**
+  - `[ 🟢 Bulut Senkron ]` hapına tıklandığında açılan tarayıcının yerel `window.confirm()` kutusundaki sabit "Tamam" ve "İptal" butonları kullanıcıyı yanıltmaktaydı. "İptal"e basıldığında işlemin iptal olmak yerine buluta zorla göndermeyi (`forceCloudSyncPush`) tetiklemesi ciddi bir veri kaybı ve yanlış anlaşılma riski taşımaktaydı.
+* **Uygulanan Mimari Çözüm (`supabase_auth.js` / `webapp/supabase_auth.js`):**
+  1. **Özel Koyu Tema Bulut Senkron Modali (`#cloud-sync-management-modal`):**
+     - Tarayıcının ilkel `confirm()` kutusu tamamen kaldırıldı; yerine projenin temasına (%100 Tailwind/Slate-900) uygun modern bir modal getirildi.
+  2. **Net ve Güvenli Eylemler:**
+     - ⬇️ **[Buluttan İndir (Çek)]**: Buluttaki en güncel karakter verisini indirir ve bu ekranı tazeler (Karakter kâğıdında `window.forceCloudSyncPull()`, HUB'da `window.syncCloudUserHub()`).
+     - ⬆️ **[Buluta Yükle (Gönder)]**: Bu ekrandaki veriyi bulut veritabanına zorla gönderir (Karakter kâğıdında `window.forceCloudSyncPush()`, HUB'da `window.syncCloudUserHub()`).
+     - ✕ **[Vazgeç / İptal (Değişiklik Yapma)]**: Modal güvenle kapatılır; hiçbir ağ isteği veya veri ezme gerçekleşmez.
+  3. **Yerel Mod Koruması:**
+     - Yerel moddayken tıklandığında durum açıkça izah edilir ve tek tıkla `/login.html` sayfasına yönlendirme veya güvenle vazgeçme imkânı sunulur.
+  4. **Parite ve Kural Standartları:**
+     - `supabase_auth.js` ve `webapp/supabase_auth.js` arasında %100 SHA-256 hash paritesi sağlandı (`8AC92FAD8124D075866EF3D3AC562BBF6356F8AECCCC3E0FD2BD94DEE725DD8E`).
+     - Sıfır tavla zarı emojisi (U+1F3B2) kuralı tavizsiz korundu.
