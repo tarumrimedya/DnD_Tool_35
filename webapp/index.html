@@ -32269,7 +32269,9 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
     // ====================================================
       // ⬆️ LEVEL UP WIZARD & LEVEL PLANNING (1-30) FUNCTIONS
-      // ====================================================
+    // ====================================================
+    // â¬†ï¸ LEVEL UP WIZARD & LEVEL PLANNING (1-30) FUNCTIONS
+    // ====================================================
       let levelUpModalFeatSlots = [];
       let activeFeatPickerSlotIndex = 0;
       let activeLevelUpFeatSearchSlot = null;
@@ -32280,7 +32282,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
        * D&D 3.5e RAW Feat Prerequisite Engine
        * Evaluates prospective BAB, ability scores (including Level Up +1 stat increase),
        * known feats (character feats, active progression, earlier slots in current level up),
-       * caster level, and skill ranks.
+       * caster level, and skill ranks in a fully parametric manner.
        */
       function checkFeatPrerequisites(feat, slotIdx = 0) {
         if (!feat) return { hasPrereqs: false, allMet: true, checks: [], rawPrereq: '' };
@@ -32290,7 +32292,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           return { hasPrereqs: false, allMet: true, checks: [], rawPrereq: '' };
         }
 
-        // 1. Prospective Level, BAB, and Class
+        // 1. Prospective Level, BAB, and Class Definition
         const prog = character.levelProgression || [];
         const nextLvl = prog.length + 1;
         const defaultClass = (character.classes?.split(' ')[0]) || (prog[0]?.className) || 'Fighter';
@@ -32313,10 +32315,11 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           prospectiveBab = Number(character.bab) || 0;
         }
 
-        // 2. Prospective Ability Scores (including chosen +1 stat increase in this wizard)
+        // 2. Prospective Ability Scores (Parametric stat list)
         const chosenStat = (document.getElementById('lvlup-stat-select')?.value || '').toLowerCase().trim();
         const abilities = {};
-        ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(stat => {
+        const statKeys = (typeof STAT_KEYS !== 'undefined' && Array.isArray(STAT_KEYS)) ? STAT_KEYS.map(s => s.key) : ['str', 'dex', 'con', 'int', 'wis', 'cha'];
+        statKeys.forEach(stat => {
           let base = Number(character.abilities?.[stat] ?? character.baseAbilities?.[stat] ?? 10);
           if (chosenStat === stat) base += 1;
           abilities[stat] = base;
@@ -32361,9 +32364,13 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         // 4. Skills list
         const skillsList = Array.isArray(character.skills) ? character.skills : [];
 
-        // 5. Caster Level & Arcane capability
+        // 5. Caster Level & Spellcasting Capability (Parametric: checks metadata instead of hardcoded strings)
         const curCl = Number(character.spellcasting?.cl) || 0;
-        const isCaster = curCl > 0 || ['sorcerer', 'wizard', 'cleric', 'druid', 'bard', 'warlock', 'warmage', 'duskblade'].some(c => (character.classes || '').toLowerCase().includes(c) || selectedClassName.toLowerCase().includes(c));
+        const hasSpellProg = Boolean(def.spellProgression && def.spellProgression !== 'none');
+        const hasCasterRole = Boolean(def.role && (def.role.toLowerCase().includes('caster') || def.role.toLowerCase().includes('spell')));
+        const hasCasterDesc = Boolean(def.description && (def.description.toLowerCase().includes('büyü') || def.description.toLowerCase().includes('spell') || def.description.toLowerCase().includes('caster')));
+        const hasCharacterSpells = Boolean(character.spellcasting && (curCl > 0 || (character.spellcasting.slots && character.spellcasting.slots.length > 0)));
+        const isCaster = (curCl > 0) || hasCharacterSpells || hasSpellProg || hasCasterRole || hasCasterDesc;
 
         // Split prereq string into comma or semicolon separated parts
         const parts = rawPrereq.split(/[,;]+/).map(p => p.trim()).filter(Boolean);
@@ -32437,10 +32444,12 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             continue;
           }
 
-          // E) Weapon Proficiency Check
+          // E) Weapon Proficiency Check (Parametric: Full BAB martial class or known proficiency feat)
           if (part.toLowerCase().includes('proficiency')) {
-            const isMartial = ['fighter', 'barbarian', 'paladin', 'ranger', 'warblade', 'crusader'].some(c => (character.classes || '').toLowerCase().includes(c) || selectedClassName.toLowerCase().includes(c));
-            met = isMartial || prospectiveBab >= 1;
+            const hasFullBabClass = (def.bab === 1.0);
+            const hasMartialFeat = Array.from(knownFeats).some(kf => kf.includes('proficiency') || kf.includes('martialweapon') || kf.includes('exoticweapon'));
+            const isMartial = hasFullBabClass || hasMartialFeat || (prospectiveBab >= 1);
+            met = isMartial;
             info = met ? '(Silah Ustalığı Var)' : '(Proficiency Eksik)';
             if (!met) allMet = false;
             checks.push({ type: 'proficiency', label, met, info });
@@ -32696,18 +32705,23 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
         const combined = getCombinedFeatCatalog();
 
+        // Parametric classification predicates
+        const isFighterFeat = f => Boolean(f.isFighterBonusFeat === true || f.category === 'Fighter' || f.category === 'Martial');
+        const isBoonFeat = f => Boolean(f.category === 'DM Boon' || f.category === 'DM Grant' || f.type === 'DM Grant' || (f.source && f.source.toLowerCase().includes('campaign')));
+        const isFlawFeat = f => Boolean(f.category === 'Flaw' || f.type === 'Flaw' || (f.name || '').toLowerCase().startsWith('flaw:'));
+
         // 1. Filter by category
         let baseList = combined;
         if (slot.category === 'DM Boon') {
-          baseList = combined.filter(f => f.category === 'DM Boon' || f.category === 'DM Grant' || (f.source && f.source.toLowerCase().includes('campaign')));
+          baseList = combined.filter(isBoonFeat);
         } else if (slot.category === 'Flaw') {
-          baseList = combined.filter(f => f.category === 'Flaw' || (f.name || '').toLowerCase().startsWith('flaw:'));
+          baseList = combined.filter(isFlawFeat);
         } else if (slot.category === 'Class Bonus Feat') {
-          baseList = combined.filter(f => f.category === 'Fighter' || f.category === 'Martial');
+          baseList = combined.filter(isFighterFeat);
         } else if (slot.category === 'Special Ability') {
-          baseList = combined.filter(f => f.category === 'Special Ability');
+          baseList = combined.filter(f => f.category === 'Special Ability' || f.type === 'Special Ability');
         } else if (slot.category === 'Racial Trait') {
-          baseList = combined.filter(f => f.category === 'Racial Trait' || f.category === 'General');
+          baseList = combined.filter(f => f.category === 'Racial Trait' || f.type === 'Racial Trait' || f.category === 'General');
         }
 
         // 2. Filter by search query
@@ -32731,20 +32745,20 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         // Counts for filter pills
         const countAll = evaluatedItems.length;
         const countQualified = evaluatedItems.filter(e => e.pEval.allMet).length;
-        const countFighter = evaluatedItems.filter(e => e.item.category === 'Fighter' || e.item.category === 'Martial').length;
-        const countBoon = evaluatedItems.filter(e => e.item.category === 'DM Boon' || e.item.category === 'DM Grant').length;
-        const countFlaw = evaluatedItems.filter(e => e.item.category === 'Flaw' || (e.item.name || '').toLowerCase().startsWith('flaw:')).length;
+        const countFighter = evaluatedItems.filter(e => isFighterFeat(e.item)).length;
+        const countBoon = evaluatedItems.filter(e => isBoonFeat(e.item)).length;
+        const countFlaw = evaluatedItems.filter(e => isFlawFeat(e.item)).length;
 
         // Apply active filter pill
         let filteredItems = evaluatedItems;
         if (activeFilter === 'QUALIFIED') {
           filteredItems = evaluatedItems.filter(e => e.pEval.allMet);
         } else if (activeFilter === 'FIGHTER') {
-          filteredItems = evaluatedItems.filter(e => e.item.category === 'Fighter' || e.item.category === 'Martial');
+          filteredItems = evaluatedItems.filter(e => isFighterFeat(e.item));
         } else if (activeFilter === 'BOON') {
-          filteredItems = evaluatedItems.filter(e => e.item.category === 'DM Boon' || e.item.category === 'DM Grant');
+          filteredItems = evaluatedItems.filter(e => isBoonFeat(e.item));
         } else if (activeFilter === 'FLAW') {
-          filteredItems = evaluatedItems.filter(e => e.item.category === 'Flaw' || (e.item.name || '').toLowerCase().startsWith('flaw:'));
+          filteredItems = evaluatedItems.filter(e => isFlawFeat(e.item));
         }
 
         // 4. Sort: Eligible (allMet) first, then alphabetical
@@ -32872,7 +32886,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             levelUpModalFeatSlots[idx].category = 'DM Boon';
           } else if (lcat.includes('flaw')) {
             levelUpModalFeatSlots[idx].category = 'Flaw';
-          } else if (lcat.includes('fighter') || lcat.includes('martial')) {
+          } else if (lcat.includes('fighter') || lcat.includes('martial') || found.isFighterBonusFeat === true) {
             if (levelUpModalFeatSlots[idx].category === 'Class Bonus Feat' || levelUpModalFeatSlots[idx].category === 'Regular Feat') {
               // Maintain slot context
             }

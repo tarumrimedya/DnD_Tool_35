@@ -2060,3 +2060,25 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   4. **Parite ve Kural StandartlarÄ±:**
      - 4 karakter kaÄŸÄ±dÄ± dosyasÄ± (character.html, index.html, webapp/character.html, webapp/index.html) arasÄ±nda %100 SHA-256 hash paritesi saÄŸlandÄ±.
      - Standart tavla zarÄ± emojisi (ğŸ² / U+1F3B2) yasaÄŸÄ± tavizsiz korundu.
+
+---
+
+## 72. SEVÄ°YE ATLAMA SÄ°HÄ°RBAZI: RAW Ã–NKOÅUL & KONSOL MOTORUNDA PARAMETRÄ°K DÄ°NAMÄ°KLEÅTÄ°RME (2026-10-26)
+* **Ä°stek & Problem:**
+  - checkFeatPrerequisites ve enderLevelUpFeatSearchResults fonksiyonlarÄ±nda yer alan hardcoded sÄ±nÄ±f isimleri (['sorcerer', 'wizard'...]), savaÅŸÃ§Ä± sÄ±nÄ±flarÄ± (['fighter', 'barbarian'...]) ve string tabanlÄ± filtreleme mantÄ±klarÄ±nÄ±n incelenmesi ve veritabanÄ± ÅŸemasÄ±nÄ± deÄŸiÅŸtirmeden tamamen parametrik hale getirilmesi.
+* **Uygulanan DeÄŸiÅŸiklikler:**
+  1. **Parametrik BÃ¼yÃ¼cÃ¼ (Caster) Tespiti:**
+     - 8 elemanlÄ± hardcoded sÄ±nÄ±f string dizisi kaldÄ±rÄ±ldÄ±.
+     - Aday sÄ±nÄ±fÄ±n def.role (Ã¶rn: Arcane/Divine Caster), def.spellProgression, def.description alanlarÄ± ve karakterin mevcut bÃ¼yÃ¼cÃ¼lÃ¼k durumu (curCl > 0 veya character.spellcasting.slots) taranarak bÃ¼yÃ¼cÃ¼lÃ¼k kabiliyeti dinamik olarak tespit edildi.
+  2. **Parametrik Silah/ZÄ±rh UstalÄ±ÄŸÄ± (Proficiency) DoÄŸrulamasÄ±:**
+     - Sabit dÃ¶vÃ¼ÅŸÃ§Ã¼ sÄ±nÄ±f listesi yerine D&D 3.5e RAW kuralÄ± (def.bab === 1.0 Full BAB sÄ±nÄ±flarÄ± otomatik martial weapon proficiency verir) ve knownFeats iÃ§indeki ustalÄ±k featleri dinamik olarak kontrol edildi.
+  3. **Parametrik SavaÅŸÃ§Ä± Feat & Kategori BayraklarÄ±:**
+     - SavaÅŸÃ§Ä± bonus feat filtreleri isFighterBonusFeat === true (tÃ¼m 55 resmi Ã§ekirdek featte tanÄ±mlÄ± boolean bayrak) Ã¼zerinden doÄŸrulanÄ±r hale getirildi.
+     - Kusur (Flaw) ve DM LÃ¼tfu (Boon) filtreleri nesne 	ype ve category bayraklarÄ±na baÄŸlandÄ±.
+  4. **Parametrik Stat AnahtarlarÄ±:**
+     - Yetenek puanlarÄ± STAT_KEYS global mimarisi ile dinamikleÅŸtirildi.
+  5. **VeritabanÄ± (DB) GÃ¼venliÄŸi:**
+     - master_db.json veya character_data.json Ã¼zerinde hiÃ§bir ÅŸema deÄŸiÅŸikliÄŸi yapÄ±lmadÄ±; mevcut yapÄ±larla %100 geriye dÃ¶nÃ¼k uyumlu refactor tamamlandÄ±.
+  6. **Parite ve Kural StandartlarÄ±:**
+     - 4 karakter kaÄŸÄ±dÄ± dosyasÄ± (character.html, index.html, webapp/character.html, webapp/index.html) arasÄ±nda %100 SHA-256 hash paritesi saÄŸlandÄ±.
+     - Standart tavla zarÄ± emojisi (ğŸ² / U+1F3B2) yasaÄŸÄ± tavizsiz korundu.
