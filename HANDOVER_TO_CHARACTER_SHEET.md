@@ -1925,3 +1925,25 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   5. **Parite ve Kural Standartları:**
      - 4 dosya (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi korundu.
      - Standart tavla zarı emojisi yasağı (`🎲` / `U+1F3B2`) tavizsiz korundu.
+
+
+---
+
+## 67. MASA KURALLARI: CL MODU RAW SEÇİMİNDE CASTER TİPİ KİLİTLEME / PASİFLEŞTİRME (2026-10-26)
+* **İstek:**
+  - D&D 3.5e RAW kuralında `Class Level (Yalnızca Sınıf Seviyesi)` seçildiğinde, çoklu sınıflarda yalnızca o sınıfın kendi seviyesi kadar büyü yapılabileceğinin teyit edilmesi ve bu durumda alttaki `Caster Tipi (Disiplin)` seçiminin pasifleştirilmesi (Öneri 1).
+* **Uygulanan Değişiklikler:**
+  1. **UI Dinamik Kilit Fonksiyonu (`updateCasterTypeUIState`):**
+     - `setting-cl-mode` seçimi `Class Level` veya `Custom` olduğunda (yani DM Boon kapalıyken):
+       - `setting-caster-type` dropdown'ı `disabled = true` yapıldı.
+       - Görsel olarak `opacity-50`, `cursor-not-allowed`, `bg-slate-900/60` sınıfları ve kart kapsayıcısına `opacity-60` eklendi.
+       - Sağ üst rozet `Disiplin` yerine yeşil vurgulu `RAW: Sınıftan Otomatik` (`#setting-caster-type-hint`) durumuna geçirildi.
+     - `Character Level (DM Boon)` veya `Warlock Boon` seçildiğinde:
+       - Dropdown yeniden aktif (`disabled = false`) hale getirildi ve rozet eski haline döndürüldü.
+  2. **Tetikleme Noktaları ve Senkronizasyon:**
+     - `onSettingClModeChange()`, `onSettingCasterTypeChange()`, `updateSettingsUiFromCharacter()` ve `renderLevelProgression()` fonksiyonlarına entegre edildi.
+     - Karakter kağıdı dosyaları ile birlikte HUB (`hub.html`, `webapp/hub.html`) masa kuralları modülüne de simetrik olarak eklendi.
+  3. **Parite ve Kural Standartları:**
+     - 4 karakter kağıdı dosyası (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 paritesi korundu.
+     - 2 HUB dosyası (`hub.html`, `webapp/hub.html`) arasında %100 SHA-256 paritesi korundu.
+     - Sıfır tavla zarı emojisi (`🎲` / `U+1F3B2`) kuralı tavizsiz uygulandı.

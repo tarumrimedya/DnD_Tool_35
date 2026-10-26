@@ -7106,13 +7106,13 @@
                   </select>
                 </div>
 
-                <div class="bg-slate-900/90 border border-indigo-900/40 rounded-xl p-2.5 flex flex-col justify-between gap-1.5">
+                <div id="setting-caster-type-wrapper" class="bg-slate-900/90 border border-indigo-900/40 rounded-xl p-2.5 flex flex-col justify-between gap-1.5 transition">
                   <div class="flex items-center justify-between">
                     <label for="setting-caster-type" class="text-[10px] font-bold text-indigo-400 uppercase flex items-center gap-1.5">
                       <span>🎯</span>
                       <span>Caster Tipi (Disiplin):</span>
                     </label>
-                    <span class="text-[9px] font-mono text-indigo-300/70">Disiplin</span>
+                    <span id="setting-caster-type-hint" class="text-[9px] font-mono text-indigo-300/70 transition">Disiplin</span>
                   </div>
                   <select id="setting-caster-type" onchange="onSettingCasterTypeChange()" class="w-full bg-slate-950 border border-slate-700 text-indigo-300 font-semibold text-[11px] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-400 transition cursor-pointer">
                     <option value="spontaneous">🔮 1. Doğal / Anlık (Sorcerer vb.)</option>
@@ -8460,6 +8460,7 @@
       if (casterTypeSel) {
         casterTypeSel.value = character.settings?.casterType || 'spontaneous';
       }
+      if (typeof updateCasterTypeUIState === 'function') updateCasterTypeUIState();
       const asfChk = document.getElementById('setting-ignore-asf');
       if (asfChk) {
         asfChk.checked = character.settings?.ignoreAsf !== false;
@@ -30015,6 +30016,38 @@ function renderManualStatsPanel() {
       }
     }
 
+    function updateCasterTypeUIState() {
+      const clModeSel = document.getElementById('setting-cl-mode');
+      const casterTypeSel = document.getElementById('setting-caster-type');
+      const casterTypeWrapper = document.getElementById('setting-caster-type-wrapper');
+      const casterTypeHint = document.getElementById('setting-caster-type-hint');
+      if (!clModeSel || !casterTypeSel) return;
+
+      const clMode = clModeSel.value || '';
+      const isBoon = clMode === 'Character Level (DM Boon)' || clMode.includes('Warlock Boon');
+
+      if (!isBoon) {
+        casterTypeSel.disabled = true;
+        casterTypeSel.classList.add('opacity-50', 'cursor-not-allowed', 'bg-slate-900/60');
+        if (casterTypeWrapper) {
+          casterTypeWrapper.classList.add('opacity-60');
+        }
+        if (casterTypeHint) {
+          casterTypeHint.textContent = 'RAW: Sınıftan Otomatik';
+          casterTypeHint.className = 'text-[9px] font-mono text-emerald-400 font-bold transition';
+        }
+      } else {
+        casterTypeSel.disabled = false;
+        casterTypeSel.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-slate-900/60');
+        if (casterTypeWrapper) {
+          casterTypeWrapper.classList.remove('opacity-60');
+        }
+        if (casterTypeHint) {
+          casterTypeHint.textContent = 'Disiplin';
+          casterTypeHint.className = 'text-[9px] font-mono text-indigo-300/70 transition';
+        }
+      }
+    }
     function onSettingClModeChange() {
       if (!character) return;
       if (!character.settings) character.settings = {};
@@ -30034,6 +30067,7 @@ function renderManualStatsPanel() {
           if (typeSel) typeSel.value = 'spontaneous';
         }
 
+        updateCasterTypeUIState();
         applyCasterLevelRule();
         saveStateToStorage(true);
         if (typeof updateQuickFeatCategoryWarlockState === 'function') {
@@ -30068,6 +30102,7 @@ function renderManualStatsPanel() {
           }
         }
 
+        updateCasterTypeUIState();
         applyCasterLevelRule();
         saveStateToStorage(true);
         if (typeof updateQuickFeatCategoryWarlockState === 'function') {
@@ -34869,6 +34904,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       if (casterTypeSel) {
         casterTypeSel.value = character.settings?.casterType || 'spontaneous';
       }
+      if (typeof updateCasterTypeUIState === 'function') updateCasterTypeUIState();
       const asfChk = document.getElementById('setting-ignore-asf');
       if (asfChk) {
         asfChk.checked = character.settings?.ignoreAsf !== false;
