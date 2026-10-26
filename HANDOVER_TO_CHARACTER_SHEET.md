@@ -2424,3 +2424,33 @@ Selam! Ben Karakter Kâğıdı geliştirme sekmesinden geliyorum. `HANDOVER_TO_C
   4. **Parite ve Kural Standartları:**
      - `hub.html` ve `webapp/hub.html` arasında %100 SHA-256 hash paritesi sağlandı (`D38AA3222567679BE5008ED56DE7AD25F3A23AEBE29FBF225711F7D5BD2748C3`).
      - Sıfır standart tavla zarı emojisi (U+1F3B2) kuralı tavizsiz uygulandı.
+
+
+---
+
+## 86. Flash of Stale Content (FOUC) Giderilmesi & Hızlı Ön Render (Fast Pre-Render / Stale-While-Revalidate) Standardı
+
+### Bağlam & Tespit Edilen Problem
+Karakter kâğıdı (`character.html` / `index.html` ve `webapp/` ikizleri) yenilendiğinde (F5) veya açıldığında, Supabase bulut isteği (`await fetchUserCharacters()`) süresince (yaklaşık 200ms - 800ms) ekranda prototip döneminden kalma statik HTML verileri (**"Kazmil'in Çırağı"**, **"Sorcerer 5 / Warblade 1"**, **"38/38 HP"**, **"Magic Missile (5 Füze)"**, **"CL: 6"**) anlık olarak belirmekte, ardından bulut verisi (`test1` Fighter 3 vb.) yüklenince kaybolmaktaydı (FOUC).
+
+### Uygulanan Mimari Çözüm
+
+1. **Hızlı Ön Render (Fast Pre-Render - 0ms Stale-While-Revalidate):**
+   * `DOMContentLoaded` olayının ilk satırında, `requireAuth()` veya `loadInitialData()` ağ beklemesi (network roundtrip) başlamadan önce yerel hafızadaki (`localStorage`) en son aktif karakter (`dnd35_character` veya ilgili ID'ye sahip `dnd35_hub_db` kaydı) senkron olarak okunur.
+   * `character` nesnesine anında atanarak `renderHUD()`, `renderAbilities()`, `renderCharacterProfile()`, `renderCombatCockpit()` ve `renderWeapons()` tetiklenir.
+   * Kullanıcı sayfayı yenilediği 0. milisaniyede doğrudan kendi karakterini ve doğru HP/stat/aksiyonlarını görür; hiçbir bekleme veya sıçrama hissetmez.
+
+2. **Statik HTML Şablonu Temizliği (Neutral Skeleton Placeholders):**
+   * Ham HTML dosyası içerisindeki prototip mock yazıları temizlendi:
+     * Başlık İsim: `Yükleniyor...`
+     * Sınıflar: `Yükleniyor...`
+     * Irk: `--`
+     * HP Göstergesi: `-- / --`
+     * Büyü Komuta Merkezi Başlık: `Büyü Seçilmedi` / Hasar: `--` / CL: `--`
+     * AoO Reaksiyon Bonusu: `+0`
+     * Profil Modalı İsim/Sınıflar/HD: `Yükleniyor...` / `--`
+   * Sıfır önbellekle açılan gizli pencerelerde dahi asla "Kazmil'in Çırağı" belirmeyecek, zarif nötr yer tutucular görünecektir.
+
+3. **Parite ve Standart Güvencesi:**
+   * 4 dosya arasında %100 SHA-256 hash paritesi (`f2943a766e4d08ffab18af42b091946cb59c50387dddd7b47c038a2426efe206`) sağlandı.
+   * Tavla zarı emojisi yasağı (`U+1F3B2`) tavizsiz korundu.

@@ -82,10 +82,10 @@
         </div>
       </div>
 
-      <!-- SAĞ: KAZMİL'İN ÇIRAĞI... & AYARLAR + TEMEL STATLAR (SAĞA VE ÜSTE HİZALANAN ALAN) -->
+      <!-- SAĞ: KARAKTER BİLGİ BARI & AYARLAR + TEMEL STATLAR (SAĞA VE ÜSTE HİZALANAN ALAN) -->
       <div class="flex-1 min-w-0 space-y-2 flex flex-col justify-between">
         
-        <!-- Üst Satır: Kazmil'in Çırağı Bilgi Barı, Level Up & Ayarlar / Bulut Senkron -->
+        <!-- Üst Satır: Karakter Bilgi Barı, Level Up & Ayarlar / Bulut Senkron -->
         <div class="bg-dndCard border border-dndBorder rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-lg relative z-10 backdrop-blur-md">
           <!-- Sol / Üst Bölüm: Karakter Başlığı & Stat Özetleri (Mobilde Ferah Çok Satırlı Yapı) -->
           <div class="flex items-start gap-2.5 sm:gap-3 min-w-0 flex-1">
@@ -94,10 +94,10 @@
               <!-- Satır 1: Karakter İsmi, Irk Rozeti ve Level Up -->
               <div class="flex items-center gap-2 flex-wrap">
                 <h1 class="text-base sm:text-lg font-black text-white tracking-wide">
-                  <span id="char-name-display">Kazmil'in Çırağı</span>
-                  <span id="core-name" class="hidden">Kazmil'in Çırağı</span>
+                  <span id="char-name-display">Yükleniyor...</span>
+                  <span id="core-name" class="hidden">Yükleniyor...</span>
                 </h1>
-                <span id="core-race" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 text-[10px] font-bold uppercase tracking-wider">Human</span>
+                <span id="core-race" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 text-[10px] font-bold uppercase tracking-wider">--</span>
                 <button id="btn-header-level-up" onclick="openLevelUpModal()" class="px-2.5 sm:px-3 py-1 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-sans font-bold text-xs shadow flex items-center gap-1.5 transition transform active:scale-95 cursor-pointer shrink-0" title="Yeni seviye ekle, HP/BAB/Save ve Feat seç">
                   <span>⬆️</span>
                   <span>Level Up</span>
@@ -111,8 +111,8 @@
               <!-- Satır 2: Karakter Sınıfları & Seviyeleri (Kesilmeden, Net ve Belirgin) -->
               <div class="text-xs sm:text-sm font-semibold text-amber-400 flex items-center gap-1.5 flex-wrap">
                 <span class="text-amber-500/80 text-xs">📜</span>
-                <span id="char-classes-display" class="break-words font-medium">Sorcerer 5 / Warblade 1</span>
-                <span id="core-classes" class="hidden">Sorcerer 5 / Warblade 1 • Seviye 6</span>
+                <span id="char-classes-display" class="break-words font-medium">Yükleniyor...</span>
+                <span id="core-classes" class="hidden">--</span>
               </div>
 
               <!-- Gizli Stat Referansları (JS Uyumluluğu İçin) -->
@@ -186,8 +186,8 @@
 
       <!-- Current / Max HP Display -->
       <div class="flex items-baseline justify-center gap-1 my-1 flex-wrap">
-        <span id="hp-current-display" class="text-2xl sm:text-3xl font-extrabold text-emerald-400 font-mono">38</span>
-        <span class="text-slate-400 text-xs sm:text-sm">/ <span id="hp-max-display">38</span></span>
+        <span id="hp-current-display" class="text-2xl sm:text-3xl font-extrabold text-emerald-400 font-mono">--</span>
+        <span class="text-slate-400 text-xs sm:text-sm">/ <span id="hp-max-display">--</span></span>
         <span id="hp-bonus-tag" class="text-[10px] sm:text-[11px] text-amber-300 font-mono font-bold ml-1"></span>
         <span id="hp-temp-tag" onclick="clearTempHp()" class="hidden badge bg-cyan-950/90 hover:bg-rose-950 text-cyan-300 hover:text-rose-300 border border-cyan-600/70 text-[10px] font-mono font-bold ml-1 cursor-pointer transition" title="Geçici Can Puanı (Temporary HP) • Sıfırlamak için tıklayın"></span>
       </div>
@@ -372,7 +372,6 @@
 
         <!-- Passive Rule Badges (Mobilde alt satırda sola yaslı, Masaüstünde sağa yaslı) -->
         <div class="flex items-center justify-start sm:justify-end gap-1.5 flex-wrap text-[10px] w-full sm:w-auto min-w-0" id="action-economy-passive-badges">
-          <span class="px-2 py-0.5 rounded bg-amber-950 border border-amber-600/50 text-amber-300 font-semibold" title="Manevra Kontrolleri: +4 trip">⚔️ Manevralar: +4 trip</span>
         </div>
       </div>
 
@@ -704,7 +703,7 @@
               </span>
               <div class="flex items-center gap-1.5">
                 <span id="combat-spell-cl-slot-badge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded border border-purple-900/60 bg-purple-950/50 text-purple-300">
-                  CL: 6
+                  CL: --
                 </span>
                 <button type="button" onclick="toggleCockpitPanel('spell')" id="btn-collapse-spell" class="text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700 text-xs font-bold cursor-pointer" title="Paneli Katla/Aç">
                   <span>▴</span>
@@ -717,7 +716,7 @@
               <div class="flex items-center gap-2">
                 <span>🔮</span>
                 <span class="text-xs font-bold text-purple-300">Büyü Komuta Merkezi</span>
-                <span id="combat-spell-collapsed-summary" class="text-[10px] text-amber-400 font-mono">CL: 6 • Kalan Slot: 16/20</span>
+                <span id="combat-spell-collapsed-summary" class="text-[10px] text-amber-400 font-mono">CL: -- • Slot: --</span>
               </div>
               <span class="text-[10px] text-purple-400 font-bold">▾ Aç</span>
             </div>
@@ -754,17 +753,17 @@
                   <!-- 1. Satır: Büyü Adı -->
                   <div class="flex items-center justify-center gap-1.5 w-full leading-tight">
                     <span id="combat-selected-spell-source-icon" class="text-purple-400 text-xs">🔮</span>
-                    <span id="combat-selected-spell-title" class="text-xs font-black text-white group-hover:text-purple-200 truncate">Magic Missile</span>
+                    <span id="combat-selected-spell-title" class="text-xs font-black text-white group-hover:text-purple-200 truncate">Büyü Seçilmedi</span>
                   </div>
 
                   <!-- 2. Satır: Büyü Özellikleri - Hasar / Etki -->
-                  <div id="combat-spell-damage-preview" class="text-xs font-mono font-black text-amber-300 leading-tight truncate text-center my-0.5">5 Füze (5d4+5 Force)</div>
+                  <div id="combat-spell-damage-preview" class="text-xs font-mono font-black text-amber-300 leading-tight truncate text-center my-0.5">--</div>
 
                   <!-- 3. Satır: Büyü Özellikleri - Kurtarma Zarı / Dokunma Atışı • SR & Menzil -->
                   <div class="flex items-center justify-center gap-1.5 text-[9px] font-mono leading-tight truncate text-center">
-                    <span id="combat-spell-dc-display" class="font-bold text-emerald-400 truncate">DC 17 • Ranged Touch +16</span>
+                    <span id="combat-spell-dc-display" class="font-bold text-emerald-400 truncate">--</span>
                     <span class="text-slate-600 font-normal">•</span>
-                    <span id="combat-spell-sr-target-display" class="text-slate-400 truncate">SR: Evet • Orta (260 ft)</span>
+                    <span id="combat-spell-sr-target-display" class="text-slate-400 truncate">--</span>
                   </div>
 
                 </div>
@@ -928,7 +927,7 @@
                   <button onclick="rollAttackOfOpportunity()" class="bg-slate-900 hover:bg-slate-800 border border-rose-500/40 rounded p-2 text-left transition group">
                     <div class="text-[11px] font-bold text-rose-400 group-hover:text-white flex items-center justify-between">
                       <span>Fırsat Saldırısı</span>
-                      <span id="aoo-bonus-badge" class="font-mono text-[10px] text-amber-400">+8</span>
+                      <span id="aoo-bonus-badge" class="font-mono text-[10px] text-amber-400">+0</span>
                     </div>
                     <div class="text-[9px] text-slate-400 mt-0.5">AoO Reaksiyonu Vur</div>
                   </button>
@@ -1418,14 +1417,14 @@
               </div>
               <div>
                 <div class="flex flex-wrap items-center gap-2">
-                  <h2 id="core-profile-name" class="text-base font-extrabold text-white tracking-wide">Kazmil'in Çırağı</h2>
-                  <span id="core-profile-race-badge" class="badge bg-indigo-950 text-indigo-300 border border-indigo-700/70 text-[10px] font-bold">Human</span>
-                  <span id="core-profile-level-badge" class="badge bg-emerald-950 text-emerald-300 border border-emerald-700/70 text-[10px] font-bold">Seviye 6</span>
+                  <h2 id="core-profile-name" class="text-base font-extrabold text-white tracking-wide">Yükleniyor...</h2>
+                  <span id="core-profile-race-badge" class="badge bg-indigo-950 text-indigo-300 border border-indigo-700/70 text-[10px] font-bold">--</span>
+                  <span id="core-profile-level-badge" class="badge bg-emerald-950 text-emerald-300 border border-emerald-700/70 text-[10px] font-bold">--</span>
                 </div>
                 <div class="text-xs text-slate-300 flex items-center gap-2 mt-0.5">
-                  <span id="core-profile-classes" class="text-purple-300 font-semibold">Sorcerer 5 / Warblade 1</span>
+                  <span id="core-profile-classes" class="text-purple-300 font-semibold">Yükleniyor...</span>
                   <span>•</span>
-                  <span id="core-profile-hd" class="text-slate-400 font-mono">5d4 + 1d12</span>
+                  <span id="core-profile-hd" class="text-slate-400 font-mono">--</span>
                 </div>
               </div>
             </div>
@@ -7552,6 +7551,41 @@
     });
 
     window.addEventListener('DOMContentLoaded', async () => {
+      // 0. Fast Pre-Render (Stale-While-Revalidate):
+      // Render immediately from localStorage so active character (e.g. test1) appears instantly in 0ms without waiting for network
+      try {
+        const _urlP = new URLSearchParams(window.location.search);
+        const _fastReqId = _urlP.get('id') || localStorage.getItem('dnd35_active_character_id');
+        let _fastChar = null;
+        if (_fastReqId) {
+          const _hRaw = localStorage.getItem('dnd35_hub_db');
+          if (_hRaw) {
+            const _hDb = JSON.parse(_hRaw);
+            const _found = (_hDb.characters || []).find(c => c.id === _fastReqId);
+            if (_found && _found.fullData) _fastChar = _found.fullData;
+          }
+        }
+        if (!_fastChar) {
+          const _cRaw = localStorage.getItem('dnd35_character');
+          if (_cRaw) {
+            const _parsed = JSON.parse(_cRaw);
+            if (_parsed && (!_fastReqId || _parsed.id === _fastReqId || _parsed._hubId === _fastReqId)) {
+              _fastChar = _parsed;
+            }
+          }
+        }
+        if (_fastChar) {
+          character = _fastChar;
+          try { renderHUD(); } catch (e) {}
+          try { renderAbilities(); } catch (e) {}
+          try { renderCharacterProfile(); } catch (e) {}
+          try { renderCombatCockpit(); } catch (e) {}
+          try { renderWeapons(); } catch (e) {}
+        }
+      } catch (_fastErr) {
+        console.warn('Fast pre-render notice:', _fastErr);
+      }
+
       ensureCustomRacesLoaded();
       // Auto-ensure default race traits (e.g. Human Bonus Feat & Skilled) if specialAbilities is empty
       try {
