@@ -5565,11 +5565,11 @@
         </div>
 
         <!-- 5. Büyücü İlerlemesi & Büyü Slotları (Spellcaster Progression) -->
-        <div class="bg-slate-900/90 border border-indigo-500/50 rounded-xl p-3 space-y-2.5">
+        <div id="lvlup-caster-prog-card" class="bg-slate-900/90 border border-indigo-500/50 rounded-xl p-3 space-y-2.5 hidden">
           <div class="flex items-center justify-between">
             <div class="text-[11px] font-bold text-indigo-400 uppercase tracking-wide flex items-center gap-1.5">
               <span>🔮 5. Büyücü İlerlemesi & Büyü Slotları (Spellcaster Progression)</span>
-              <span id="lvlup-caster-badge" class="badge bg-purple-950 text-purple-300 border border-purple-600 text-[9px]">Sorcerer CL: 5</span>
+              <span id="lvlup-caster-badge" class="badge bg-purple-950 text-purple-300 border border-purple-600 text-[9px]">CL: 0</span>
             </div>
             <label class="flex items-center gap-1.5 cursor-pointer text-[10px] text-slate-300">
               <input type="checkbox" id="lvlup-ignore-asf" class="w-3.5 h-3.5 rounded text-emerald-500">
@@ -5579,21 +5579,21 @@
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <div class="sm:col-span-2">
-              <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Büyü Seviyesi İlerlemesi (Caster Level & Slots)</label>
+              <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">BÃ¼yÃ¼ Seviyesi Ä°lerlemesi (Caster Level & Slots)</label>
               <select id="lvlup-caster-prog" onchange="onLevelUpCasterProgChange()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-purple-300 font-bold">
                 <option value="none">-- Bu Seviyede Büyü İlerlemesi Yok --</option>
-                <option value="primary">🔮 +1 Primary Caster Level (Sorcerer - Yeni Slotlar ve CL Artışı)</option>
+                <option value="primary">🔮 +1 Primary Caster Level (Yeni Slotlar ve CL Artışı)</option>
                 <option value="secondary">✨ +1 Secondary Caster Level</option>
-                <option value="cl_boon">🌟 DM Boon: Caster Level = Karakter Seviyesi (CL Character Level'a eşitlenir)</option>
+                <option value="cl_boon">🌟 DM Boon: Caster Level = Karakter Seviyesi (CL Karakter Seviyesine Eşitlenir)</option>
               </select>
             </div>
             <div>
               <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Yeni Caster Level (CL)</label>
-              <input type="number" id="lvlup-cl-preview" value="5" min="0" class="w-full bg-slate-950 border border-purple-500/80 rounded-lg px-2.5 py-1.5 text-center font-mono font-bold text-purple-300 text-sm">
+              <input type="number" id="lvlup-cl-preview" value="0" min="0" class="w-full bg-slate-950 border border-purple-500/80 rounded-lg px-2.5 py-1.5 text-center font-mono font-bold text-purple-300 text-sm">
             </div>
           </div>
           <div id="lvlup-caster-hint" class="text-[10px] text-purple-300/90 bg-purple-950/40 border border-purple-800/40 rounded p-1.5">
-            Sorcerer seviyesi seçildiğinde Caster Level otomatik artırılır ve yeni günlük büyü slotları hesaplanır.
+            Büyücü seviyesi seçildiğinde Caster Level otomatik artırılır ve yeni günlük büyü slotları hesaplanır.
           </div>
         </div>
 
@@ -32408,6 +32408,57 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       renderLevelUpFeatSlots();
     }
 
+    function updateLevelUpCasterProgVisibility(className) {
+      const card = document.getElementById('lvlup-caster-prog-card');
+      const progSel = document.getElementById('lvlup-caster-prog');
+      const badge = document.getElementById('lvlup-caster-badge');
+      if (!card) return;
+
+      const clMode = character.settings?.clMode || 'Class Level';
+      const isBoonCl = clMode === 'Character Level (DM Boon)' || clMode.includes('Warlock Boon');
+      const allDefs = (typeof getAvailableClassDefs === 'function') ? getAvailableClassDefs() : {};
+      const def = allDefs[className] || {};
+      const isPrestige = Boolean(def.isPrestige || def.type === 'prestige');
+
+      const descLower = (def.description || '').toLowerCase();
+      const hasSpellProgInPrestige = isPrestige && (
+        descLower.includes('spell') ||
+        descLower.includes('bÃ¼yÃ¼') ||
+        descLower.includes('caster level') ||
+        ['eldritch knight', 'arcane trickster', 'mystic theurge', 'archmage', 'hierophant', 'loremaster', 'dragon disciple'].some(p => (className || '').toLowerCase().includes(p))
+      );
+
+      const curCl = Number(character.spellcasting?.cl) || 0;
+      const hasExistingCaster = Boolean(character.spellcasting && (curCl > 0 || (character.spellcasting.slots && character.spellcasting.slots.length > 0)));
+
+      // YalnÄ±zca BÃ¼yÃ¼ Ä°lerleten Prestij SÄ±nÄ±flarÄ±nda veya DM Boon etkinse gÃ¶sterilir
+      const shouldShow = (hasSpellProgInPrestige && hasExistingCaster) || (isBoonCl && (hasExistingCaster || ['sorcerer', 'wizard', 'cleric', 'druid', 'bard', 'warlock'].includes((className || '').toLowerCase())));
+
+      if (shouldShow) {
+        card.classList.remove('hidden');
+      } else {
+        card.classList.add('hidden');
+      }
+
+      if (badge) {
+        const casterClass = character.spellcasting?.className || (['Sorcerer', 'Wizard', 'Cleric', 'Druid', 'Bard', 'Warlock'].includes(className) ? className : 'Caster');
+        badge.textContent = `${casterClass} CL: ${curCl}`;
+      }
+
+      if (progSel) {
+        const isBaseCaster = ['Sorcerer', 'Wizard', 'Cleric', 'Druid', 'Bard', 'Warlock'].includes(className);
+        if (isBaseCaster || hasSpellProgInPrestige) {
+          progSel.value = 'primary';
+        } else {
+          progSel.value = 'none';
+        }
+      }
+
+      if (typeof onLevelUpCasterProgChange === 'function') {
+        onLevelUpCasterProgChange();
+      }
+    }
+
     function onLevelUpCasterProgChange() {
       const progSel = document.getElementById('lvlup-caster-prog');
       const clInput = document.getElementById('lvlup-cl-preview');
@@ -32416,25 +32467,25 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
       const prog = character.levelProgression || [];
       const nextLvl = prog.length + 1;
-      const currentCl = Number(character.spellcasting?.cl) || 5;
-      const isBoonCl = character.settings?.clMode === 'Character Level (DM Boon)';
+      const currentCl = Number(character.spellcasting?.cl) || 0;
+      const isBoonCl = character.settings?.clMode === 'Character Level (DM Boon)' || (character.settings?.clMode || '').includes('Warlock Boon');
 
       const val = progSel.value;
       if (val === 'primary') {
         const newCl = isBoonCl ? nextLvl : currentCl + 1;
         clInput.value = newCl;
         if (hint) {
-          hint.innerHTML = `🔮 <b>Primary Caster (Sorcerer) İlerletiliyor:</b> Yeni CL: <b class="text-white">${newCl}</b>. Büyü yuvaları ve seviye başı büyü gücü RAW kurallarına göre artırılır.`;
+          hint.innerHTML = `🔮 <b>Primary Caster Ä°lerletiliyor:</b> Yeni CL: <b class="text-white">${newCl}</b>. BÃ¼yÃ¼ yuvalarÄ± ve seviye baÅŸÄ± bÃ¼yÃ¼ gÃ¼cÃ¼ RAW kurallarÄ±na gÃ¶re artÄ±rÄ±lÄ±r.`;
         }
       } else if (val === 'cl_boon') {
         clInput.value = nextLvl;
         if (hint) {
-          hint.innerHTML = `🌟 <b>DM Boon Etkin:</b> Caster Level (CL) tüm sınıflarınız dahil toplam karakter seviyesine (<b class="text-white">${nextLvl}</b>) eşitlenir!`;
+          hint.innerHTML = `🌟 <b>DM Boon Etkin:</b> Caster Level (CL) tÃ¼m sÄ±nÄ±flarÄ±nÄ±z dahil toplam karakter seviyesine (<b class="text-white">${nextLvl}</b>) eÅŸitlenir!`;
         }
       } else if (val === 'secondary') {
         clInput.value = currentCl;
         if (hint) {
-          hint.innerHTML = `✨ <b>İkincil Büyücü İlerletiliyor:</b> +1 Secondary Caster Level artışı uygulanır.`;
+          hint.innerHTML = `✨ <b>Ä°kincil BÃ¼yÃ¼cÃ¼ Ä°lerletiliyor:</b> +1 Secondary Caster Level artÄ±ÅŸÄ± uygulanÄ±r.`;
         }
       } else {
         clInput.value = isBoonCl ? nextLvl : currentCl;
@@ -32537,15 +32588,9 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       const skillIn = document.getElementById('lvlup-skill-input');
       if (skillIn) skillIn.value = skillPtsThisLvl;
 
-      // Adjust Caster progression recommendation
-      const casterProgSel = document.getElementById('lvlup-caster-prog');
-      if (casterProgSel) {
-        if (className === 'Sorcerer' || className === 'Wizard' || className === 'Cleric' || className === 'Druid') {
-          casterProgSel.value = 'primary';
-        } else if (className === 'Warblade' || className === 'Fighter' || className === 'Rogue') {
-          if (casterProgSel.value === 'primary') casterProgSel.value = 'none';
-        }
-        onLevelUpCasterProgChange();
+      // Adjust Caster progression recommendation & contextual visibility
+      if (typeof updateLevelUpCasterProgVisibility === 'function') {
+        updateLevelUpCasterProgVisibility(className);
       }
 
       rollLevelUpHp('avg');
@@ -33688,24 +33733,14 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         }
       }
 
-      // Configure Spellcaster Progression step
-      const casterProgSel = document.getElementById('lvlup-caster-prog');
-      const casterBadge = document.getElementById('lvlup-caster-badge');
+      // Configure Spellcaster Progression step & contextual visibility
       const ignoreAsfChk = document.getElementById('lvlup-ignore-asf');
       if (ignoreAsfChk) {
         ignoreAsfChk.checked = character.settings?.ignoreAsf !== false;
       }
-      if (casterBadge && character.spellcasting) {
-        casterBadge.textContent = `Sorcerer CL: ${character.spellcasting.cl || 5}`;
+      if (typeof updateLevelUpCasterProgVisibility === 'function') {
+        updateLevelUpCasterProgVisibility(lastClass);
       }
-      if (casterProgSel) {
-        if (lastClass === 'Sorcerer' || lastClass === 'Wizard' || lastClass === 'Cleric' || lastClass === 'Druid') {
-          casterProgSel.value = 'primary';
-        } else {
-          casterProgSel.value = 'none';
-        }
-      }
-      onLevelUpCasterProgChange();
 
       const notesInput = document.getElementById('lvlup-notes-input');
       if (notesInput) notesInput.value = '';
@@ -33956,7 +33991,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
 
       // Revert Caster Level
       if ((last.casterProg === 'primary' || last.casterProg === 'cl_boon') && last.active !== false && character.spellcasting) {
-        const sorcLvls = Math.max(1, (prog.filter(p => p.className === 'Sorcerer' && p.active !== false).length || 5));
+        const sorcLvls = prog.filter(p => p.className === 'Sorcerer' && p.active !== false).length;
         if (character.settings?.clMode === 'Character Level (DM Boon)') {
           character.spellcasting.cl = prog.filter(p => p.active !== false).length;
         } else {

@@ -1947,3 +1947,22 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - 4 karakter kağıdı dosyası (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 paritesi korundu.
      - 2 HUB dosyası (`hub.html`, `webapp/hub.html`) arasında %100 SHA-256 paritesi korundu.
      - Sıfır tavla zarı emojisi (`🎲` / `U+1F3B2`) kuralı tavizsiz uygulandı.
+
+
+---
+
+## 68. SEVİYE ATLAMA SİHİRBAZI: BÜYÜCÜ İLERLEMESİ KARTININ BAĞLAMSAL GİZLENMESİ & HARDCODED DEĞERLERİN TEMİZLENMESİ (2026-10-26)
+* **İstek:**
+  - Seviye 1 bir karakterde (özellikle dövüşçü veya büyü yapmayan sınıflarda) Seviye Atlama Sihirbazı'nda "5. Büyücü İlerlemesi" kartının çıkması, rozette ve inputta "Sorcerer CL: 5" yazması sorununun giderilmesi.
+  - CL kuralı `Class Level` (RAW) seçildiğinde ve temel sınıflar (Fighter, Rogue veya doğrudan Sorcerer vb.) alınırken bu kartın ekranda kafa karıştırmaması için dinamik olarak gizlenmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Hardcoded Fallback "5" Temizliği:**
+     - HTML şablonundaki `Sorcerer CL: 5` ve `value="5"` statik değerleri kaldırıldı (`CL: 0`, `value="0"` yapıldı).
+     - JS'deki `|| 5` fallback'leri (`onLevelUpCasterProgChange`, `openLevelUpModal`, `undoLastLevel`) kaldırılarak `Number(character.spellcasting?.cl) || 0` ile dinamik hale getirildi.
+  2. **Bağlamsal Görünürlük Fonksiyonu (`updateLevelUpCasterProgVisibility`):**
+     - Sınıf seçildiğinde (`onLevelUpClassChange` ve `openLevelUpModal`) kartın görünürlüğü kontrol edilir:
+       - **Gizli (`hidden`):** Büyü yapmayan temel sınıflar (Fighter, Barbarian, Rogue, Monk) VE Class Level (RAW) modunda alınan temel büyücüler (Sorcerer, Wizard, Cleric - çünkü motor seviye kaydedildiğinde CL ve slotları RAW gereği otomatik artırır).
+       - **Görünür:** Yalnızca büyü ilerlemesi içeren bir **Prestij Sınıfı** (Eldritch Knight, Arcane Trickster vb.) seçildiğinde ve karakterin mevcut büyücülüğü varsa; VEYA ayarlarda **DM Boon / Multiclass CL** aktifken.
+  3. **Parite ve Kural Standartları:**
+     - 4 dosya (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi korundu.
+     - Sıfır tavla zarı emojisi (`🎲` / `U+1F3B2`) kuralı tavizsiz korundu.
