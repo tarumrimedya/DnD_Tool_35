@@ -2529,3 +2529,5 @@ Seviye İlerleme Tablosunda (`#level-progression-tbody`), sayısal sütunlar (HD
 3. **Parite ve Kural Standartları:**
    * 4 dosya arasında (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) **%100 SHA-256 hash paritesi** (`34da380a...`) sağlandı.
    * Tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korundu.
+
+* **Feat Sütun Genişlik Ayarı (Balancing):** Feat sütunlarının (`Sınıf Özellikleri`, `Beceriler`, `Bonus`) geniş ekranlarda aşırı açılmaması için akışkan sınırları `w-[160px] min-w-[145px] max-w-[175px]` olarak dengelendi. Böylece hem metinler ezilmez hem de tablo dengeli ve derli toplu kalır.

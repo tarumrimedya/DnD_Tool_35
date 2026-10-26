@@ -1514,9 +1514,9 @@
                   <th class="py-2 px-0.5 text-center w-[38px] min-w-[38px]">Ref</th>
                   <th class="py-2 px-0.5 text-center w-[38px] min-w-[38px]">Will</th>
                   <th class="py-2 px-0.5 text-center w-[44px] min-w-[44px]">Puan</th>
-                  <th class="py-2 px-2 text-center min-w-[170px]">Sınıf Özellikleri</th>
-                  <th class="py-2 px-2 text-center min-w-[170px]">Beceriler</th>
-                  <th class="py-2 px-2 text-center min-w-[170px]">Bonus</th>
+                  <th class="py-2 px-1 text-center w-[160px] min-w-[145px] max-w-[175px]">Sınıf Özellikleri</th>
+                  <th class="py-2 px-1 text-center w-[160px] min-w-[145px] max-w-[175px]">Beceriler</th>
+                  <th class="py-2 px-1 text-center w-[160px] min-w-[145px] max-w-[175px]">Bonus</th>
                   <th class="py-2 px-1 text-center w-[58px] min-w-[58px] max-w-[58px] whitespace-nowrap shrink-0">İşlem</th>
                 </tr>
               </thead>
@@ -37228,17 +37228,17 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           <td class="pt-2.5 pb-2.5 px-0.5 align-top text-center w-[44px] min-w-[44px]">
             <div class="h-6 flex items-center justify-center text-indigo-300 font-bold text-xs">${lvl.skillPts || 4}</div>
           </td>
-          <td class="pt-2.5 pb-2.5 px-2 font-sans align-top text-center min-w-[170px]">
+          <td class="pt-2.5 pb-2.5 px-1 font-sans align-top text-center w-[160px] min-w-[145px] max-w-[175px]">
             <div class="flex flex-col gap-1.5 items-stretch w-full">
               ${(abilityBadgeItems.length > 0 || classBonusBadgeItems.length > 0 || pendingClassBonusButtons.length > 0) ? (abilityBadgeItems.join('') + classBonusBadgeItems.join('') + pendingClassBonusButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
             </div>
           </td>
-          <td class="pt-2.5 pb-2.5 px-2 font-sans align-top text-center min-w-[170px]">
+          <td class="pt-2.5 pb-2.5 px-1 font-sans align-top text-center w-[160px] min-w-[145px] max-w-[175px]">
             <div class="flex flex-col gap-1.5 items-stretch w-full">
               ${(regularFeatBadgeItems.length > 0 || regularPromptButtons.length > 0) ? (regularFeatBadgeItems.join('') + regularPromptButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
             </div>
           </td>
-          <td class="pt-2.5 pb-2.5 px-2 font-sans align-top text-center min-w-[170px]">
+          <td class="pt-2.5 pb-2.5 px-1 font-sans align-top text-center w-[160px] min-w-[145px] max-w-[175px]">
             <div class="flex flex-col gap-1.5 items-stretch w-full">
               ${(statBadgeItem || otherBonusBadgeItems.length > 0 || pendingBonusButtons.length > 0) ? ((statBadgeItem || '') + otherBonusBadgeItems.join('') + pendingBonusButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
             </div>
