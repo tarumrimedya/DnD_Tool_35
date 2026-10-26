@@ -32278,135 +32278,765 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
     }
 
     // ====================================================
-    // ⬆️ LEVEL UP WIZARD & LEVEL PLANNING (1-30) FUNCTIONS
-    // ====================================================
-    let levelUpModalFeatSlots = [];
-    let activeFeatPickerSlotIndex = 0;
+      // ⬆️ LEVEL UP WIZARD & LEVEL PLANNING (1-30) FUNCTIONS
+      // ====================================================
+      let levelUpModalFeatSlots = [];
+      let activeFeatPickerSlotIndex = 0;
+      let activeLevelUpFeatSearchSlot = null;
+      let levelUpFeatSearchFilters = {};
+      let levelUpFeatSearchQueries = {};
 
-    function renderLevelUpFeatSlots() {
-      const container = document.getElementById('lvlup-feat-slots-container');
-      if (!container) return;
-      container.innerHTML = '';
+      /**
+       * D&D 3.5e RAW Feat Prerequisite Engine
+       * Evaluates prospective BAB, ability scores (including Level Up +1 stat increase),
+       * known feats (character feats, active progression, earlier slots in current level up),
+       * caster level, and skill ranks.
+       */
+      function checkFeatPrerequisites(feat, slotIdx = 0) {
+        if (!feat) return { hasPrereqs: false, allMet: true, checks: [], rawPrereq: '' };
 
-      const combined = getCombinedFeatCatalog();
-
-      levelUpModalFeatSlots.forEach((slot, idx) => {
-        const card = document.createElement('div');
-        card.className = 'bg-slate-950 border border-slate-800 hover:border-purple-600/50 rounded-xl p-3 space-y-2.5 transition';
-
-        let filtered = [];
-        if (slot.category === 'DM Boon') {
-          filtered = combined.filter(f => f.category === 'DM Boon' || f.category === 'DM Grant' || (f.source && f.source.toLowerCase().includes('campaign')));
-        } else if (slot.category === 'Flaw') {
-          filtered = combined.filter(f => f.category === 'Flaw' || f.name.toLowerCase().startsWith('flaw:'));
-        } else if (slot.category === 'Class Bonus Feat') {
-          filtered = combined.filter(f => f.category === 'Fighter' || f.category === 'Martial');
-        } else if (slot.category === 'Special Ability') {
-          filtered = combined.filter(f => f.category === 'Special Ability');
-        } else if (slot.category === 'Racial Trait') {
-          filtered = combined.filter(f => f.category === 'Racial Trait' || f.category === 'General');
-        } else {
-          filtered = combined.filter(f => f.category !== 'DM Boon' && f.category !== 'Flaw');
+        const rawPrereq = (feat.prereq || feat.prerequisites || '').trim();
+        if (!rawPrereq || rawPrereq === '-' || rawPrereq.toLowerCase() === 'none') {
+          return { hasPrereqs: false, allMet: true, checks: [], rawPrereq: '' };
         }
 
-        const optionsHtml = [`<option value="">-- Katalogdan Hızlı Seçim --</option>`]
-          .concat(filtered.map(f => {
-            const isSel = (f.name || '').toLowerCase() === (slot.name || '').toLowerCase();
-            return `<option value="${f.name.replace(/"/g, '&quot;')}" ${isSel ? 'selected' : ''}>${f.name} (${f.source || '3.5e'})</option>`;
-          }))
-          .join('');
+        // 1. Prospective Level, BAB, and Class
+        const prog = character.levelProgression || [];
+        const nextLvl = prog.length + 1;
+        const defaultClass = (character.classes?.split(' ')[0]) || (prog[0]?.className) || 'Fighter';
+        const selectedClassName = document.getElementById('lvlup-class-select')?.value || defaultClass;
+        const allDefs = (typeof getAvailableClassDefs === 'function') ? getAvailableClassDefs() : {};
+        const def = allDefs[selectedClassName] || (typeof DND35_CLASS_DEFS !== 'undefined' ? DND35_CLASS_DEFS[selectedClassName] : null) || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
 
-        card.innerHTML = `
-          <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
-            <span class="text-[11px] font-bold text-amber-300 flex items-center gap-1.5">
-              <span>🎖️</span>
-              <span>${slot.title || `Feat Yuvası #${idx + 1}`}</span>
-            </span>
-            <div class="flex items-center gap-2">
-              <button type="button" onclick="openFeatPickerForSlot(${idx})" class="text-[10px] font-semibold text-purple-300 hover:text-white bg-purple-950/70 hover:bg-purple-900 border border-purple-700/60 rounded px-2 py-0.5 transition flex items-center gap-1">
-                <span>📖</span>
-                <span>Kütüphaneden Seç</span>
-              </button>
-              ${levelUpModalFeatSlots.length > 1 ? `
-                <button type="button" onclick="removeLevelUpFeatSlot(${idx})" class="text-slate-400 hover:text-rose-400 p-0.5 text-xs transition" title="Bu yuvayı sil">
-                  ✕
-                </button>
-              ` : ''}
-            </div>
-          </div>
+        let prospectiveBab = 0;
+        const babInputVal = parseInt(document.getElementById('lvlup-bab-input')?.value, 10);
+        if (!isNaN(babInputVal)) {
+          prospectiveBab = babInputVal;
+        } else if (typeof RuleEngine !== 'undefined' && RuleEngine.calculateProgression) {
+          const sys = character.settings?.progressionSystem || 'standard';
+          const isHuman = (character.race || '').toLowerCase().includes('human');
+          const intMod = (typeof RuleEngine.getAbilityMod === 'function') ? RuleEngine.getAbilityMod(character.abilities?.int || 10) : Math.floor(((character.abilities?.int || 10) - 10) / 2);
+          const prospectiveProg = [...prog, { className: selectedClassName, hd: `d${def.hd}`, hpGain: 0, active: true }];
+          const calc = RuleEngine.calculateProgression(prospectiveProg, { system: sys, isHuman, intMod });
+          prospectiveBab = calc?.baseBab ?? (Number(character.bab) || 0);
+        } else {
+          prospectiveBab = Number(character.bab) || 0;
+        }
 
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <div>
-              <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Kategori / Tür *</label>
-              <select onchange="onLevelUpSlotCategoryChange(${idx}, this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-amber-300 font-bold">
-                <option value="Regular Feat" ${slot.category === 'Regular Feat' ? 'selected' : ''}>🎖️ Normal Feat</option>
-                <option value="Class Bonus Feat" ${slot.category === 'Class Bonus Feat' ? 'selected' : ''}>⚔️ Sınıf Bonus Feati</option>
-                <option value="DM Boon" ${slot.category === 'DM Boon' ? 'selected' : ''}>🌟 DM Lütfu / Boon</option>
-                <option value="Flaw" ${slot.category === 'Flaw' ? 'selected' : ''}>⚠️ Kusur / Flaw</option>
-                <option value="Racial Trait" ${slot.category === 'Racial Trait' ? 'selected' : ''}>🧬 Irksal Yetenek</option>
-                <option value="Special Ability" ${slot.category === 'Special Ability' ? 'selected' : ''}>✨ Özel Yetenek</option>
-              </select>
-            </div>
-            <div class="sm:col-span-2">
-              <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Katalogdan Hızlı Seçim</label>
-              <select onchange="onLevelUpSlotSelectChange(${idx}, this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white font-bold">
-                ${optionsHtml}
-              </select>
-            </div>
-          </div>
+        // 2. Prospective Ability Scores (including chosen +1 stat increase in this wizard)
+        const chosenStat = (document.getElementById('lvlup-stat-select')?.value || '').toLowerCase().trim();
+        const abilities = {};
+        ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(stat => {
+          let base = Number(character.abilities?.[stat] ?? character.baseAbilities?.[stat] ?? 10);
+          if (chosenStat === stat) base += 1;
+          abilities[stat] = base;
+        });
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <div>
-              <label class="block text-[9px] font-bold text-slate-400 uppercase mb-0.5">Feat / Boon Adı</label>
-              <input type="text" value="${(slot.name || '').replace(/"/g, '&quot;')}" oninput="levelUpModalFeatSlots[${idx}].name = this.value" placeholder="Seçilen veya yeni Feat/Boon adı..." class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white font-bold">
+        // 3. Known Feats Set (Character feats + progression feats + prior slots in current level up)
+        const knownFeats = new Set();
+        const normalizeFeatName = str => (str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+        if (Array.isArray(character.feats)) {
+          character.feats.forEach(f => {
+            const name = typeof f === 'string' ? f : f?.name;
+            if (name) knownFeats.add(normalizeFeatName(name));
+          });
+        }
+        if (Array.isArray(character.specialAbilities)) {
+          character.specialAbilities.forEach(s => {
+            const name = typeof s === 'string' ? s : s?.name;
+            if (name) knownFeats.add(normalizeFeatName(name));
+          });
+        }
+        if (Array.isArray(character.levelProgression)) {
+          character.levelProgression.forEach(lvl => {
+            if (lvl.active !== false && Array.isArray(lvl.feats)) {
+              lvl.feats.forEach(f => {
+                const name = typeof f === 'string' ? f : f?.name;
+                if (name) knownFeats.add(normalizeFeatName(name));
+              });
+            }
+          });
+        }
+        // Prior feat slots chosen in this level-up session
+        if (Array.isArray(levelUpModalFeatSlots)) {
+          for (let i = 0; i < slotIdx; i++) {
+            const priorSlot = levelUpModalFeatSlots[i];
+            if (priorSlot && priorSlot.name) {
+              knownFeats.add(normalizeFeatName(priorSlot.name));
+            }
+          }
+        }
+
+        // 4. Skills list
+        const skillsList = Array.isArray(character.skills) ? character.skills : [];
+
+        // 5. Caster Level & Arcane capability
+        const curCl = Number(character.spellcasting?.cl) || 0;
+        const isCaster = curCl > 0 || ['sorcerer', 'wizard', 'cleric', 'druid', 'bard', 'warlock', 'warmage', 'duskblade'].some(c => (character.classes || '').toLowerCase().includes(c) || selectedClassName.toLowerCase().includes(c));
+
+        // Split prereq string into comma or semicolon separated parts
+        const parts = rawPrereq.split(/[,;]+/).map(p => p.trim()).filter(Boolean);
+        const checks = [];
+        let allMet = true;
+
+        for (const part of parts) {
+          let met = true;
+          let label = part;
+          let info = '';
+
+          // A) BAB Check
+          const babMatch = part.match(/(?:bab|base attack bonus)\s*\+?(\d+)/i);
+          if (babMatch) {
+            const reqBab = parseInt(babMatch[1], 10);
+            met = prospectiveBab >= reqBab;
+            info = met ? `(Mevcut: +${prospectiveBab} ≥ +${reqBab})` : `(Mevcut: +${prospectiveBab}, Gereken: +${reqBab})`;
+            if (!met) allMet = false;
+            checks.push({ type: 'bab', label, met, info });
+            continue;
+          }
+
+          // B) Ability Score Check: Str 13, Dex 15, Int 13, etc.
+          const statMatch = part.match(/\b(str|dex|con|int|wis|cha)\w*\s*(\d+)/i);
+          if (statMatch) {
+            const statKey = statMatch[1].toLowerCase().slice(0, 3);
+            const reqScore = parseInt(statMatch[2], 10);
+            const curScore = abilities[statKey] || 10;
+            met = curScore >= reqScore;
+            info = met ? `(Mevcut: ${curScore} ≥ ${reqScore})` : `(Mevcut: ${curScore}, Gereken: ${reqScore})`;
+            if (!met) allMet = false;
+            checks.push({ type: 'stat', label, met, info });
+            continue;
+          }
+
+          // C) Skill Ranks Check: e.g. "Spellcraft 4 ranks", "Jump 8 ranks"
+          const skillMatch = part.match(/(.+?)\s+(\d+)\s+ranks?/i);
+          if (skillMatch) {
+            const skillQuery = skillMatch[1].trim().toLowerCase();
+            const reqRanks = parseInt(skillMatch[2], 10);
+            const sk = skillsList.find(s => {
+              const sName = (s.name || '').toLowerCase();
+              const sKey = (s.key || '').toLowerCase();
+              return sName.includes(skillQuery) || skillQuery.includes(sName) || sKey.includes(skillQuery);
+            });
+            const curRanks = sk ? (Number(sk.ranks) || 0) : 0;
+            met = curRanks >= reqRanks;
+            info = met ? `(Kademe: ${curRanks} ≥ ${reqRanks})` : `(Mevcut: ${curRanks}, Gereken: ${reqRanks})`;
+            if (!met) allMet = false;
+            checks.push({ type: 'skill', label, met, info });
+            continue;
+          }
+
+          // D) Caster Level Check: e.g. "Caster level 3rd", "CL 1"
+          const clMatch = part.match(/(?:caster\s*level|cl)\s*(\d+)/i);
+          if (clMatch) {
+            const reqCl = parseInt(clMatch[1], 10);
+            met = curCl >= reqCl;
+            info = met ? `(CL: ${curCl} ≥ ${reqCl})` : `(CL: ${curCl}, Gereken: ${reqCl})`;
+            if (!met) allMet = false;
+            checks.push({ type: 'cl', label, met, info });
+            continue;
+          }
+
+          // Spellcasting capability (Arcane / Büyü)
+          if (part.toLowerCase().includes('arcane') || part.toLowerCase().includes('büyü') || part.toLowerCase().includes('spell')) {
+            met = isCaster;
+            info = met ? '(Büyücü / Caster)' : '(Büyü Yeteneği Yok)';
+            if (!met) allMet = false;
+            checks.push({ type: 'spell', label, met, info });
+            continue;
+          }
+
+          // E) Weapon Proficiency Check
+          if (part.toLowerCase().includes('proficiency')) {
+            const isMartial = ['fighter', 'barbarian', 'paladin', 'ranger', 'warblade', 'crusader'].some(c => (character.classes || '').toLowerCase().includes(c) || selectedClassName.toLowerCase().includes(c));
+            met = isMartial || prospectiveBab >= 1;
+            info = met ? '(Silah Ustalığı Var)' : '(Proficiency Eksik)';
+            if (!met) allMet = false;
+            checks.push({ type: 'proficiency', label, met, info });
+            continue;
+          }
+
+          // F) Class Option Check (e.g. "Crusader, Swordsage veya Warblade 1")
+          if (part.includes('veya') || part.includes(' or ')) {
+            const options = part.split(/\s*(?:veya|or)\s*/i);
+            met = options.some(opt => {
+              const optClean = opt.toLowerCase().replace(/\d+/g, '').trim();
+              return (character.classes || '').toLowerCase().includes(optClean) || selectedClassName.toLowerCase().includes(optClean);
+            });
+            info = met ? '(Sınıf Uygun)' : '(Gereken Sınıf Yok)';
+            if (!met) allMet = false;
+            checks.push({ type: 'class', label, met, info });
+            continue;
+          }
+
+          // G) Specific Feat Requirement
+          const normPart = normalizeFeatName(part);
+          met = Array.from(knownFeats).some(kf => kf.includes(normPart) || normPart.includes(kf));
+          info = met ? '(Feat Mevcut)' : '(Feat Eksik)';
+          if (!met) allMet = false;
+          checks.push({ type: 'feat', label, met, info });
+        }
+
+        return { hasPrereqs: true, allMet, checks, rawPrereq };
+      }
+
+      function getFeatCategoryBadgeStyle(cat) {
+        if (!cat) return 'bg-slate-800 text-slate-300 border-slate-700';
+        const l = cat.toLowerCase();
+        if (l.includes('fighter') || l.includes('martial') || l.includes('bonus')) return 'bg-amber-950/80 text-amber-300 border-amber-600/60';
+        if (l.includes('boon') || l.includes('grant')) return 'bg-purple-950/80 text-purple-300 border-purple-600/60';
+        if (l.includes('flaw')) return 'bg-rose-950/80 text-rose-300 border-rose-600/60';
+        if (l.includes('racial')) return 'bg-sky-950/80 text-sky-300 border-sky-600/60';
+        if (l.includes('special')) return 'bg-emerald-950/80 text-emerald-300 border-emerald-600/60';
+        return 'bg-indigo-950/80 text-indigo-300 border-indigo-600/60';
+      }
+
+      function renderLevelUpFeatSlots() {
+        const container = document.getElementById('lvlup-feat-slots-container');
+        if (!container) return;
+        container.innerHTML = '';
+
+        levelUpModalFeatSlots.forEach((slot, idx) => {
+          const card = document.createElement('div');
+          card.className = 'bg-slate-950 border border-slate-800 hover:border-purple-600/50 rounded-xl p-3.5 space-y-3 transition shadow-sm';
+
+          const hasFeat = Boolean(slot.name && slot.name.trim());
+          const isOpen = (activeLevelUpFeatSearchSlot === idx);
+          const currentQuery = (levelUpFeatSearchQueries[idx] !== undefined) ? levelUpFeatSearchQueries[idx] : (slot.name || '');
+
+          // Prerequisite evaluation for selected feat
+          let prereqHtml = '';
+          if (hasFeat) {
+            const catalog = getCombinedFeatCatalog();
+            const found = catalog.find(f => f.name.toLowerCase() === slot.name.toLowerCase()) || {
+              name: slot.name,
+              prereq: slot.prereq || '-',
+              benefit: slot.benefit || ''
+            };
+            const pEval = checkFeatPrerequisites(found, idx);
+
+            if (!pEval.hasPrereqs) {
+              prereqHtml = `
+                <div class="flex items-center gap-1.5 text-[10px] text-slate-400 bg-slate-900/60 border border-slate-800/80 rounded-lg px-2.5 py-1">
+                  <span>ℹ️</span>
+                  <span>Önkoşulsuz: Herhangi bir gereksinim aranmaz, serbestçe alınabilir.</span>
+                </div>
+              `;
+            } else if (pEval.allMet) {
+              prereqHtml = `
+                <div class="flex flex-wrap items-center gap-1.5 text-[10px] text-emerald-300 bg-emerald-950/50 border border-emerald-700/60 rounded-lg px-2.5 py-1.5">
+                  <span class="font-bold flex items-center gap-1 shrink-0"><span>✅</span> <span>Önkoşullar Karşılanıyor:</span></span>
+                  <div class="flex flex-wrap items-center gap-1">
+                    ${pEval.checks.map(c => `
+                      <span class="bg-emerald-900/60 text-emerald-200 border border-emerald-600/50 rounded px-1.5 py-0.5 font-mono text-[9px] flex items-center gap-0.5">
+                        <span>${c.label}</span>
+                        <span class="font-bold text-emerald-400">✓</span>
+                        <span class="text-emerald-300/80 text-[8px]">${c.info}</span>
+                      </span>
+                    `).join('')}
+                  </div>
+                </div>
+              `;
+            } else {
+              prereqHtml = `
+                <div class="flex flex-wrap items-center gap-1.5 text-[10px] text-rose-300 bg-rose-950/60 border border-rose-700/70 rounded-lg px-2.5 py-1.5">
+                  <span class="font-bold flex items-center gap-1 shrink-0"><span>⚠️</span> <span>Önkoşul Uyarısı:</span></span>
+                  <div class="flex flex-wrap items-center gap-1">
+                    ${pEval.checks.map(c => `
+                      <span class="rounded px-1.5 py-0.5 font-mono text-[9px] flex items-center gap-0.5 ${c.met ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-700/50' : 'bg-rose-900/90 text-rose-100 border border-rose-500 font-bold'}">
+                        <span>${c.label}</span>
+                        <span>${c.met ? '✓' : '✗'}</span>
+                        <span class="text-[8px] opacity-90">${c.info}</span>
+                      </span>
+                    `).join('')}
+                  </div>
+                </div>
+              `;
+            }
+          }
+
+          card.innerHTML = `
+            <!-- Slot Header -->
+            <div class="flex items-center justify-between border-b border-slate-800/80 pb-2">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                  <span>🎖️</span>
+                  <span>${slot.title || `Feat Yuvası #${idx + 1}`}</span>
+                </span>
+                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border ${getFeatCategoryBadgeStyle(slot.category)}">
+                  ${slot.category || 'Regular Feat'}
+                </span>
+              </div>
+              <div class="flex items-center gap-2">
+                ${hasFeat ? `
+                  <button type="button" onclick="clearLevelUpFeatSlot(${idx})" class="text-[10px] font-semibold text-slate-400 hover:text-amber-300 bg-slate-900 hover:bg-slate-800 border border-slate-700/60 rounded px-2 py-0.5 transition flex items-center gap-1" title="Seçimi temizle">
+                    <span>🗑️</span>
+                    <span>Temizle</span>
+                  </button>
+                ` : ''}
+                ${levelUpModalFeatSlots.length > 1 ? `
+                  <button type="button" onclick="removeLevelUpFeatSlot(${idx})" class="text-slate-400 hover:text-rose-400 p-0.5 text-xs transition" title="Bu yuvayı sil">
+                    ✕
+                  </button>
+                ` : ''}
+              </div>
             </div>
+
+            <!-- Category & Spotlight Search Bar -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+              <div>
+                <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Kategori / Tür *</label>
+                <select onchange="onLevelUpSlotCategoryChange(${idx}, this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-amber-300 font-bold focus:outline-none focus:border-purple-500">
+                  <option value="Regular Feat" ${slot.category === 'Regular Feat' ? 'selected' : ''}>🎖️ Normal Feat</option>
+                  <option value="Class Bonus Feat" ${slot.category === 'Class Bonus Feat' ? 'selected' : ''}>⚔️ Sınıf Bonus Feati</option>
+                  <option value="DM Boon" ${slot.category === 'DM Boon' ? 'selected' : ''}>🌟 DM Lütfu / Boon</option>
+                  <option value="Flaw" ${slot.category === 'Flaw' ? 'selected' : ''}>⚠️ Kusur / Flaw</option>
+                  <option value="Racial Trait" ${slot.category === 'Racial Trait' ? 'selected' : ''}>🧬 Irksal Yetenek</option>
+                  <option value="Special Ability" ${slot.category === 'Special Ability' ? 'selected' : ''}>✨ Özel Yetenek</option>
+                </select>
+              </div>
+
+              <div class="md:col-span-2">
+                <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1 flex items-center justify-between">
+                  <span>Spotlight & AI Feat Arama</span>
+                  <span class="text-[9px] text-purple-300 font-normal">Kütüphane + 3.5e RAW Doğrulama</span>
+                </label>
+                <div class="relative flex items-center">
+                  <div class="absolute left-2.5 text-slate-400 text-xs pointer-events-none">🔍</div>
+                  <input type="text"
+                         id="lvlup-feat-search-input-${idx}"
+                         value="${(currentQuery || '').replace(/"/g, '&quot;')}"
+                         placeholder="Feat ara, katalogdan seç veya yeni ad yaz..."
+                         onfocus="openLevelUpFeatSearchConsole(${idx})"
+                         oninput="onLevelUpFeatSearchInput(${idx}, this.value)"
+                         class="w-full bg-slate-900 border border-slate-700 focus:border-purple-500 rounded-lg pl-8 pr-24 py-1.5 text-xs text-white font-bold focus:outline-none transition">
+                  <button type="button"
+                          onclick="toggleLevelUpFeatSearchConsole(${idx})"
+                          class="absolute right-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 hover:text-white text-[10px] font-bold border border-slate-600 transition flex items-center gap-1 cursor-pointer"
+                          title="Feat kataloğunu aç / kapat">
+                    <span>📜</span>
+                    <span>${isOpen ? 'Kapat ▲' : 'Katalog ▼'}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Prerequisite Evaluation & Warning Badge -->
+            <div id="lvlup-feat-prereq-badge-${idx}">
+              ${prereqHtml}
+            </div>
+
+            <!-- Benefit / Description Field -->
             <div>
               <label class="block text-[9px] font-bold text-slate-400 uppercase mb-0.5">Fayda / Etki Özeti (Benefit)</label>
-              <input type="text" value="${(slot.benefit || '').replace(/"/g, '&quot;')}" oninput="levelUpModalFeatSlots[${idx}].benefit = this.value" placeholder="Örn: +2 Dodge AC, +1 attack..." class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-300">
+              <input type="text"
+                     id="lvlup-feat-benefit-input-${idx}"
+                     value="${(slot.benefit || '').replace(/"/g, '&quot;')}"
+                     oninput="levelUpModalFeatSlots[${idx}].benefit = this.value"
+                     placeholder="Örn: +2 Dodge AC, +1 attack, ek manevra hakkı..."
+                     class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-purple-500">
             </div>
+
+            <!-- Expandable Spotlight & Rule Master AI Search Console -->
+            <div id="lvlup-feat-search-console-${idx}" class="${isOpen ? '' : 'hidden'} bg-slate-900/95 border border-purple-500/50 rounded-xl p-3 space-y-2.5 shadow-xl transition">
+              <!-- Dynamically populated by renderLevelUpFeatSearchResults -->
+            </div>
+          `;
+
+          container.appendChild(card);
+
+          if (isOpen) {
+            renderLevelUpFeatSearchResults(idx);
+          }
+        });
+      }
+
+      function openLevelUpFeatSearchConsole(slotIdx) {
+        if (activeLevelUpFeatSearchSlot === slotIdx) return;
+        activeLevelUpFeatSearchSlot = slotIdx;
+        const consoleEl = document.getElementById(`lvlup-feat-search-console-${slotIdx}`);
+        if (consoleEl) {
+          consoleEl.classList.remove('hidden');
+          renderLevelUpFeatSearchResults(slotIdx);
+        } else {
+          renderLevelUpFeatSlots();
+        }
+      }
+
+      function closeLevelUpFeatSearchConsole() {
+        activeLevelUpFeatSearchSlot = null;
+        renderLevelUpFeatSlots();
+      }
+
+      function toggleLevelUpFeatSearchConsole(slotIdx) {
+        if (activeLevelUpFeatSearchSlot === slotIdx) {
+          activeLevelUpFeatSearchSlot = null;
+        } else {
+          activeLevelUpFeatSearchSlot = slotIdx;
+        }
+        renderLevelUpFeatSlots();
+      }
+
+      function onLevelUpFeatSearchInput(slotIdx, query) {
+        levelUpFeatSearchQueries[slotIdx] = query;
+        if (levelUpModalFeatSlots[slotIdx]) {
+          levelUpModalFeatSlots[slotIdx].name = query;
+        }
+        if (activeLevelUpFeatSearchSlot !== slotIdx) {
+          activeLevelUpFeatSearchSlot = slotIdx;
+          const consoleEl = document.getElementById(`lvlup-feat-search-console-${slotIdx}`);
+          if (consoleEl) consoleEl.classList.remove('hidden');
+        }
+        renderLevelUpFeatSearchResults(slotIdx);
+      }
+
+      function setLevelUpFeatSearchFilter(filterType, slotIdx) {
+        levelUpFeatSearchFilters[slotIdx] = filterType;
+        renderLevelUpFeatSearchResults(slotIdx);
+      }
+
+      function renderLevelUpFeatSearchResults(slotIdx) {
+        const consoleEl = document.getElementById(`lvlup-feat-search-console-${slotIdx}`);
+        if (!consoleEl) return;
+
+        const slot = levelUpModalFeatSlots[slotIdx] || {};
+        const query = (levelUpFeatSearchQueries[slotIdx] !== undefined ? levelUpFeatSearchQueries[slotIdx] : (slot.name || '')).toLowerCase().trim();
+        const activeFilter = levelUpFeatSearchFilters[slotIdx] || 'ALL';
+
+        const combined = getCombinedFeatCatalog();
+
+        // 1. Filter by category
+        let baseList = combined;
+        if (slot.category === 'DM Boon') {
+          baseList = combined.filter(f => f.category === 'DM Boon' || f.category === 'DM Grant' || (f.source && f.source.toLowerCase().includes('campaign')));
+        } else if (slot.category === 'Flaw') {
+          baseList = combined.filter(f => f.category === 'Flaw' || (f.name || '').toLowerCase().startsWith('flaw:'));
+        } else if (slot.category === 'Class Bonus Feat') {
+          baseList = combined.filter(f => f.category === 'Fighter' || f.category === 'Martial');
+        } else if (slot.category === 'Special Ability') {
+          baseList = combined.filter(f => f.category === 'Special Ability');
+        } else if (slot.category === 'Racial Trait') {
+          baseList = combined.filter(f => f.category === 'Racial Trait' || f.category === 'General');
+        }
+
+        // 2. Filter by search query
+        let queryFiltered = baseList;
+        if (query) {
+          queryFiltered = baseList.filter(f => {
+            const n = (f.name || '').toLowerCase();
+            const b = (f.benefit || '').toLowerCase();
+            const s = (f.source || '').toLowerCase();
+            const p = (f.prereq || '').toLowerCase();
+            return n.includes(query) || b.includes(query) || s.includes(query) || p.includes(query);
+          });
+        }
+
+        // 3. Evaluate prerequisites for all candidates
+        const evaluatedItems = queryFiltered.map(item => {
+          const pEval = checkFeatPrerequisites(item, slotIdx);
+          return { item, pEval };
+        });
+
+        // Counts for filter pills
+        const countAll = evaluatedItems.length;
+        const countQualified = evaluatedItems.filter(e => e.pEval.allMet).length;
+        const countFighter = evaluatedItems.filter(e => e.item.category === 'Fighter' || e.item.category === 'Martial').length;
+        const countBoon = evaluatedItems.filter(e => e.item.category === 'DM Boon' || e.item.category === 'DM Grant').length;
+        const countFlaw = evaluatedItems.filter(e => e.item.category === 'Flaw' || (e.item.name || '').toLowerCase().startsWith('flaw:')).length;
+
+        // Apply active filter pill
+        let filteredItems = evaluatedItems;
+        if (activeFilter === 'QUALIFIED') {
+          filteredItems = evaluatedItems.filter(e => e.pEval.allMet);
+        } else if (activeFilter === 'FIGHTER') {
+          filteredItems = evaluatedItems.filter(e => e.item.category === 'Fighter' || e.item.category === 'Martial');
+        } else if (activeFilter === 'BOON') {
+          filteredItems = evaluatedItems.filter(e => e.item.category === 'DM Boon' || e.item.category === 'DM Grant');
+        } else if (activeFilter === 'FLAW') {
+          filteredItems = evaluatedItems.filter(e => e.item.category === 'Flaw' || (e.item.name || '').toLowerCase().startsWith('flaw:'));
+        }
+
+        // 4. Sort: Eligible (allMet) first, then alphabetical
+        filteredItems.sort((a, b) => {
+          if (a.pEval.allMet && !b.pEval.allMet) return -1;
+          if (!a.pEval.allMet && b.pEval.allMet) return 1;
+          return (a.item.name || '').localeCompare(b.item.name || '');
+        });
+
+        // Build HTML
+        const filterPillClass = (tab) => activeFilter === tab
+          ? 'px-2 py-0.5 rounded text-[10px] font-bold bg-purple-700 text-white shadow'
+          : 'px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition';
+
+        let listHtml = '';
+        if (filteredItems.length === 0) {
+          listHtml = `
+            <div class="p-3 text-center text-xs text-slate-400 bg-slate-950/60 rounded-lg border border-slate-800">
+              <span>"${query || 'Filtre'}" için yerel katalogda uygun feat bulunamadı.</span>
+            </div>
+          `;
+        } else {
+          listHtml = filteredItems.map(({ item, pEval }) => {
+            const isQualified = pEval.allMet;
+            const safeName = (item.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            const badgeClass = isQualified
+              ? 'bg-emerald-950/80 text-emerald-300 border-emerald-600/60'
+              : 'bg-rose-950/80 text-rose-300 border-rose-600/60';
+
+            const prereqSummary = pEval.hasPrereqs
+              ? `<div class="flex flex-wrap items-center gap-1 text-[9px] pt-1">
+                   <span class="text-slate-400 font-semibold">Önkoşul:</span>
+                   ${pEval.checks.map(c => `
+                     <span class="px-1 py-0.2 rounded font-mono ${c.met ? 'bg-emerald-950 text-emerald-300 border border-emerald-700/40' : 'bg-rose-950 text-rose-300 border border-rose-600/50'}">
+                       ${c.label} ${c.met ? '✓' : '✗'}
+                     </span>
+                   `).join('')}
+                 </div>`
+              : `<div class="text-[9px] text-slate-400 pt-0.5">Önkoşulsuz</div>`;
+
+            return `
+              <div class="p-2.5 rounded-lg border transition ${isQualified ? 'bg-slate-950/80 hover:bg-slate-900 border-slate-800 hover:border-emerald-500/60' : 'bg-slate-950/50 hover:bg-slate-900/60 border-slate-800/80 hover:border-rose-600/40 opacity-85 hover:opacity-100'} space-y-1.5">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="font-bold text-white text-xs">${item.name}</span>
+                    <span class="text-[9px] font-bold px-1.5 py-0.2 rounded border ${badgeClass}">
+                      ${isQualified ? '✅ Alınabilir' : '⚠️ Önkoşul Eksik'}
+                    </span>
+                    <span class="text-[9px] text-indigo-300 bg-indigo-950/70 border border-indigo-700/50 px-1.5 py-0.2 rounded">
+                      ${item.category || 'Feat'}
+                    </span>
+                    <span class="text-[9px] text-slate-400 font-mono">
+                      ${item.source || '3.5e RAW'}
+                    </span>
+                  </div>
+                  <button type="button"
+                          onclick="selectFeatForLevelUpSlot(${slotIdx}, '${safeName}')"
+                          class="px-2.5 py-1 rounded text-[11px] font-bold shadow transition shrink-0 cursor-pointer flex items-center gap-1 ${isQualified ? 'bg-emerald-600 hover:bg-emerald-500 text-white active:scale-95' : 'bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-600/40'}">
+                    <span>🎯</span>
+                    <span>${isQualified ? 'Seç' : 'Yine de Seç'}</span>
+                  </button>
+                </div>
+                ${prereqSummary}
+                ${item.benefit ? `<p class="text-[10px] text-slate-300 leading-relaxed line-clamp-2">${item.benefit}</p>` : ''}
+              </div>
+            `;
+          }).join('');
+        }
+
+        consoleEl.innerHTML = `
+          <!-- Spotlight Filter Tabs -->
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2 flex-wrap gap-1.5">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <button type="button" onclick="setLevelUpFeatSearchFilter('ALL', ${slotIdx})" class="${filterPillClass('ALL')}">
+                📋 Tümü (${countAll})
+              </button>
+              <button type="button" onclick="setLevelUpFeatSearchFilter('QUALIFIED', ${slotIdx})" class="${filterPillClass('QUALIFIED')}">
+                ✅ Alınabilir (${countQualified})
+              </button>
+              <button type="button" onclick="setLevelUpFeatSearchFilter('FIGHTER', ${slotIdx})" class="${filterPillClass('FIGHTER')}">
+                ⚔️ Savaşçı (${countFighter})
+              </button>
+              <button type="button" onclick="setLevelUpFeatSearchFilter('BOON', ${slotIdx})" class="${filterPillClass('BOON')}">
+                🌟 DM Boon (${countBoon})
+              </button>
+              <button type="button" onclick="setLevelUpFeatSearchFilter('FLAW', ${slotIdx})" class="${filterPillClass('FLAW')}">
+                ⚠️ Kusur (${countFlaw})
+              </button>
+            </div>
+            <button type="button" onclick="closeLevelUpFeatSearchConsole()" class="text-[10px] text-slate-400 hover:text-white px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 transition font-bold cursor-pointer">
+              ▲ Kapat
+            </button>
+          </div>
+
+          <!-- Feat List -->
+          <div class="max-h-60 overflow-y-auto space-y-1.5 pr-1 text-xs">
+            ${listHtml}
+          </div>
+
+          <!-- Rule Master AI Fallback -->
+          <div class="pt-2 border-t border-slate-800/80 space-y-1.5">
+            <button type="button"
+                    onclick="triggerRuleMasterForLevelUpSlot(${slotIdx})"
+                    class="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-purple-700 via-indigo-700 to-purple-800 hover:from-purple-600 hover:to-indigo-600 text-white font-bold text-xs flex items-center justify-center gap-2 border border-purple-400/40 shadow transition cursor-pointer active:scale-98">
+              <span>⚡</span>
+              <span>Rule Master AI ile Getir: "${query || 'Yeni 3.5e Feat'}" (3.5e Kitaplığı)</span>
+            </button>
+            <div id="lvlup-feat-ai-status-${slotIdx}" class="hidden text-xs p-2 rounded-lg"></div>
           </div>
         `;
-        container.appendChild(card);
-      });
-    }
-
-    function onLevelUpSlotCategoryChange(idx, newCategory) {
-      if (!levelUpModalFeatSlots[idx]) return;
-      levelUpModalFeatSlots[idx].category = newCategory;
-      renderLevelUpFeatSlots();
-    }
-
-    function onLevelUpSlotSelectChange(idx, featName) {
-      if (!levelUpModalFeatSlots[idx]) return;
-      levelUpModalFeatSlots[idx].name = featName;
-      const catalog = getCombinedFeatCatalog();
-      const found = catalog.find(f => f.name.toLowerCase() === featName.toLowerCase());
-      if (found) {
-        levelUpModalFeatSlots[idx].benefit = found.benefit || '';
       }
-      renderLevelUpFeatSlots();
-    }
 
-    function openFeatPickerForSlot(idx) {
-      activeFeatPickerSlotIndex = idx;
-      openFeatPickerModal(true);
-    }
+      function selectFeatForLevelUpSlot(idx, featName) {
+        if (!levelUpModalFeatSlots[idx]) return;
+        const catalog = getCombinedFeatCatalog();
+        const found = catalog.find(f => f.name.toLowerCase() === featName.toLowerCase());
 
-    function addLevelUpFeatSlot(initialData = {}) {
-      levelUpModalFeatSlots.push({
-        title: initialData.title || `Ekstra Feat / Boon Yuvası #${levelUpModalFeatSlots.length + 1}`,
-        category: initialData.category || 'Regular Feat',
-        name: initialData.name || '',
-        benefit: initialData.benefit || ''
-      });
-      renderLevelUpFeatSlots();
-    }
+        levelUpModalFeatSlots[idx].name = found ? found.name : featName;
+        levelUpModalFeatSlots[idx].benefit = found ? (found.benefit || '') : '';
+        levelUpModalFeatSlots[idx].prereq = found ? (found.prereq || '-') : '-';
 
-    function removeLevelUpFeatSlot(idx) {
-      if (levelUpModalFeatSlots.length <= 1) return;
-      levelUpModalFeatSlots.splice(idx, 1);
-      renderLevelUpFeatSlots();
-    }
+        if (found) {
+          const lcat = (found.category || '').toLowerCase();
+          if (lcat.includes('boon') || lcat.includes('grant')) {
+            levelUpModalFeatSlots[idx].category = 'DM Boon';
+          } else if (lcat.includes('flaw')) {
+            levelUpModalFeatSlots[idx].category = 'Flaw';
+          } else if (lcat.includes('fighter') || lcat.includes('martial')) {
+            if (levelUpModalFeatSlots[idx].category === 'Class Bonus Feat' || levelUpModalFeatSlots[idx].category === 'Regular Feat') {
+              // Maintain slot context
+            }
+          } else if (lcat.includes('special')) {
+            levelUpModalFeatSlots[idx].category = 'Special Ability';
+          } else if (lcat.includes('racial')) {
+            levelUpModalFeatSlots[idx].category = 'Racial Trait';
+          }
+        }
+
+        activeLevelUpFeatSearchSlot = null;
+        renderLevelUpFeatSlots();
+      }
+
+      function clearLevelUpFeatSlot(idx) {
+        if (!levelUpModalFeatSlots[idx]) return;
+        levelUpModalFeatSlots[idx].name = '';
+        levelUpModalFeatSlots[idx].benefit = '';
+        levelUpModalFeatSlots[idx].prereq = '-';
+        levelUpFeatSearchQueries[idx] = '';
+        activeLevelUpFeatSearchSlot = null;
+        renderLevelUpFeatSlots();
+      }
+
+      async function triggerRuleMasterForLevelUpSlot(idx) {
+        const input = document.getElementById(`lvlup-feat-search-input-${idx}`);
+        const query = (input?.value || levelUpModalFeatSlots[idx]?.name || '').trim();
+        const statusEl = document.getElementById(`lvlup-feat-ai-status-${idx}`);
+
+        if (!query) {
+          if (statusEl) {
+            statusEl.className = 'text-xs p-2 rounded-lg bg-amber-950/80 border border-amber-500/80 text-amber-200 block';
+            statusEl.innerHTML = '⚠️ Lütfen aranacak feat veya yetenek adını yazın.';
+          } else {
+            alert('⚠️ Lütfen aranacak feat veya yetenek adını yazın.');
+          }
+          input?.focus();
+          return;
+        }
+
+        if (statusEl) {
+          statusEl.className = 'text-xs p-2.5 rounded-lg bg-indigo-950/90 border border-indigo-500/80 text-indigo-200 block animate-pulse';
+          statusEl.innerHTML = `<span>⚡</span> <span>"${query}" D&D 3.5e kural kitaplarında taranıyor...</span>`;
+        }
+
+        const apiKey = (typeof RuleMaster !== 'undefined' && RuleMaster.getApiKey)
+          ? RuleMaster.getApiKey()
+          : (localStorage.getItem('gemini_api_key') || '');
+
+        if (!apiKey) {
+          if (statusEl) {
+            statusEl.className = 'text-xs p-2.5 rounded-lg bg-amber-950/90 border border-amber-500/80 text-amber-200 block';
+            statusEl.innerHTML = `<span>⚠️</span> Yerel katalogda bulunamadı. Rule Master AI araması için lütfen Ayarlar menüsünden Gemini API anahtarınızı kaydedin.`;
+          }
+          if (typeof openSettingsModal === 'function') openSettingsModal();
+          return;
+        }
+
+        try {
+          const slot = levelUpModalFeatSlots[idx] || {};
+          const catHint = slot.category === 'Special Ability' ? 'Special Ability' : 'Feat';
+          const statusProxy = {
+            set textContent(val) {
+              if (statusEl) statusEl.innerHTML = `<span>⚡</span> <span>${val}</span>`;
+            }
+          };
+
+          let rows = null;
+          if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.fetchSingleAiRuleRows === 'function') {
+            rows = await RuleMaster.fetchSingleAiRuleRows(query, catHint, apiKey, statusProxy);
+          } else {
+            throw new Error('RuleMaster arama motoru hazır değil.');
+          }
+
+          if (!rows || !rows.length) {
+            throw new Error(`"${query}" için 3.5e kural kaydı bulunamadı.`);
+          }
+
+          const topRow = rows[0];
+          const featName = topRow[0] || query;
+          const featType = topRow[1] || 'Feat';
+          const featPrereq = topRow[2] || '-';
+          const featSource = topRow[4] || 'D&D 3.5e';
+          const featBenefit = topRow[5] || '';
+
+          if (Array.isArray(masterDb)) {
+            const clean = featName.toLowerCase().trim();
+            if (!masterDb.some(m => (m.name || '').toLowerCase().trim() === clean)) {
+              masterDb.push({
+                name: featName,
+                type: featType,
+                slot: 'None',
+                prereq: featPrereq,
+                source: featSource,
+                benefit: featBenefit,
+                description: featBenefit
+              });
+              localStorage.setItem('dnd35_master_db', JSON.stringify(masterDb));
+            }
+          }
+
+          levelUpModalFeatSlots[idx].name = featName;
+          levelUpModalFeatSlots[idx].benefit = featBenefit;
+          levelUpModalFeatSlots[idx].prereq = featPrereq;
+          activeLevelUpFeatSearchSlot = null;
+          renderLevelUpFeatSlots();
+
+          if (typeof showDiceTopToast === 'function') {
+            showDiceTopToast({
+              icon: '✨',
+              title: 'Feat Kütüphaneye Eklendi',
+              breakdown: `${featName} (${featSource}) başarıyla çekildi ve yuvaya atandı.`
+            });
+          }
+        } catch (err) {
+          if (statusEl) {
+            statusEl.className = 'text-xs p-2.5 rounded-lg bg-rose-950/90 border border-rose-500/80 text-rose-200 block';
+            statusEl.innerHTML = `<span>✕</span> Arama hatası: ${err.message}`;
+          }
+        }
+      }
+
+      function onLevelUpSlotCategoryChange(idx, newCategory) {
+        if (!levelUpModalFeatSlots[idx]) return;
+        levelUpModalFeatSlots[idx].category = newCategory;
+        renderLevelUpFeatSlots();
+      }
+
+      function onLevelUpSlotSelectChange(idx, featName) {
+        selectFeatForLevelUpSlot(idx, featName);
+      }
+
+      function openFeatPickerForSlot(idx) {
+        activeFeatPickerSlotIndex = idx;
+        openLevelUpFeatSearchConsole(idx);
+      }
+
+      function addLevelUpFeatSlot(initialData = {}) {
+        levelUpModalFeatSlots.push({
+          title: initialData.title || `Ekstra Feat / Boon Yuvası #${levelUpModalFeatSlots.length + 1}`,
+          category: initialData.category || 'Regular Feat',
+          name: initialData.name || '',
+          benefit: initialData.benefit || '',
+          prereq: initialData.prereq || '-'
+        });
+        renderLevelUpFeatSlots();
+      }
+
+      function removeLevelUpFeatSlot(idx) {
+        if (levelUpModalFeatSlots.length <= 1) return;
+        levelUpModalFeatSlots.splice(idx, 1);
+        renderLevelUpFeatSlots();
+      }
+
 
     function updateLevelUpCasterProgVisibility(className) {
       const card = document.getElementById('lvlup-caster-prog-card');
@@ -33694,6 +34324,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
 
       // Initialize levelUpModalFeatSlots
       levelUpModalFeatSlots = [];
+      activeLevelUpFeatSearchSlot = null;
+      levelUpFeatSearchFilters = {};
+      levelUpFeatSearchQueries = {};
       const isHuman = (character.race || '').toLowerCase().includes('human');
       if (nextLvl === 1) {
         levelUpModalFeatSlots.push({

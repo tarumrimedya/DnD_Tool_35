@@ -1966,3 +1966,30 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   3. **Parite ve Kural Standartları:**
      - 4 dosya (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi korundu.
      - Sıfır tavla zarı emojisi (`🎲` / `U+1F3B2`) kuralı tavizsiz korundu.
+
+---
+
+## 69. SEVÄ°YE ATLAMA SÄ°HÄ°RBAZI: BÄ°RLEÅÄ°K SPOTLIGHT & RULE MASTER AI FEAT ARAMA KONSOLU VE RAW Ã–NKOÅUL DOÄRULAYICI (2026-10-26)
+* **Ä°stek:**
+  - Seviye Atlama SihirbazÄ± BÃ¶lÃ¼m 4'teki (ğŸ–ï¸ 4. FEAT, DM LÃœTFU & KUSUR SEÃ‡Ä°MÄ°) ayrÄ± "KÃ¼tÃ¼phaneden SeÃ§" modal butonu ve "Katalogdan HÄ±zlÄ± SeÃ§im" dropdown'Ä±nÄ± birleÅŸtirerek her yuvaya entegre Spotlight & Rule Master AI arama konsolu haline getirmek.
+  - Feat listesini karakterin aday seviye istatistiklerine (BAB, SeÃ§ilen +1 Stat artÄ±ÅŸÄ±, mevcut ve o tur seÃ§ilmiÅŸ featler, caster level, beceri kademeleri) gÃ¶re akÄ±llÄ± Ã¶nkoÅŸul motorundan (checkFeatPrerequisites) geÃ§irip, Ã¶nkoÅŸullarÄ± karÅŸÄ±layanlarÄ± (âœ… AlÄ±nabilir) en baÅŸta listelemek; karÅŸÄ±lanmayan gereksinimler iÃ§in anlÄ±k uyarÄ± rozetleri (âš ï¸ Ã–nkoÅŸul UyarÄ±sÄ±) Ã¼retmek.
+  - Yerel veritabanÄ±nda bulunmayan featler iÃ§in doÄŸrudan slot iÃ§inden tek tÄ±kla âš¡ Rule Master AI ile Getir (Gemini 3.5e RAW kural motoru) entegrasyonu saÄŸlamak.
+* **Uygulanan DeÄŸiÅŸiklikler:**
+  1. **RAW Feat Ã–nkoÅŸul DoÄŸrulama Motoru (checkFeatPrerequisites(feat, slotIdx)):**
+     - D&D 3.5e RAW kural yapÄ±sÄ±na gÃ¶re aday seviye BAB (+1 BAB kazanÄ±mÄ± dahil), aday Stat artÄ±ÅŸÄ± (+1 stat seÃ§imi dahil), mevcut bilinen featler (Ã¶zel yetenekler ve o tur Ã¶nceki yuvalara seÃ§ilen featler dahil), beceri kademeleri (ranks), caster level ve silah ustalÄ±ÄŸÄ± (proficiency) dinamik olarak doÄŸrulanÄ±r.
+     - Ã‡Ä±ktÄ±: { hasPrereqs, allMet, checks: [{ type, label, met, info }], rawPrereq }.
+  2. **Yuva Ä°Ã§i Entegre Spotlight & AI Arama Konsolu:**
+     - Eski modal aÃ§an buton ve statik dropdown kaldÄ±rÄ±larak yerine doÄŸrudan arama Ã§ubuÄŸu ve aÃ§Ä±lÄ±r/kapanÄ±r lvlup-feat-search-console- entegre edildi.
+     - CanlÄ± filtre haplarÄ± ([ğŸ“‹ TÃ¼mÃ¼], [âœ… AlÄ±nabilir], [âš”ï¸ SavaÅŸÃ§Ä±], [ğŸŒŸ DM Boon], [âš ï¸ Kusur]) ve anlÄ±k arama desteÄŸi saÄŸlandÄ±.
+     - Ã–nkoÅŸulu saÄŸlayan featler yeÅŸil rozetle (âœ… AlÄ±nabilir) en Ã¼stte, saÄŸlamayanlar ise uyarÄ± rozetiyle (âš ï¸ Ã–nkoÅŸul Eksik) alt sÄ±rada listelenir.
+  3. **AnlÄ±k Ã–nkoÅŸul Analiz ve TeÅŸhis BarÄ±:**
+     - Yuvada bir feat seÃ§ildiÄŸinde altÄ±na Ã¶nkoÅŸul analiz barÄ± (lvlup-feat-prereq-badge-) eklenir:
+       - TÃ¼m ÅŸartlar tamamsa: YeÅŸil âœ… Ã–nkoÅŸullar KarÅŸÄ±lanÄ±yor: [BAB +1 âœ“ (Mevcut: +1 â‰¥ +1), Str 13 âœ“ (Mevcut: 16 â‰¥ 13)].
+       - Åartlar eksikse: KÄ±rmÄ±zÄ±/Amber âš ï¸ Ã–nkoÅŸul UyarÄ±sÄ±: [BAB +4 âœ— (Mevcut: +1, Gereken: +4), Dodge âœ— (Feat Eksik)].
+       - Ã–nkoÅŸul yoksa: NÃ¶tr â„¹ï¸ Ã–nkoÅŸulsuz: Herhangi bir gereksinim aranmaz, serbestÃ§e alÄ±nabilir.
+  4. **Rule Master AI ile AnÄ±nda Getirme (	riggerRuleMasterForLevelUpSlot):**
+     - Yerel katalogda bulunmayan veya Ã¶zel 3.5e kural kitaplarÄ±ndan istenen featler iÃ§in doÄŸrudan konsol altÄ±ndan âš¡ Rule Master AI ile Getir butonu tÄ±klandÄ±ÄŸÄ±nda Gemini AI API'si tetiklenir.
+     - DÃ¶nen kural nesnesi hem masterDb'ye resmi ve kalÄ±cÄ± olarak kaydedilir hem de yuvaya atanÄ±r.
+  5. **Parite ve Kural StandartlarÄ±:**
+     - 4 karakter kaÄŸÄ±dÄ± dosyasÄ± (character.html, index.html, webapp/character.html, webapp/index.html) arasÄ±nda %100 SHA-256 hash paritesi saÄŸlandÄ±.
+     - SÄ±fÄ±r tavla zarÄ± emojisi (ğŸ² / U+1F3B2) kuralÄ± tavizsiz korundu.
