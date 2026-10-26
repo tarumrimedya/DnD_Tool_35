@@ -2531,3 +2531,40 @@ Seviye İlerleme Tablosunda (`#level-progression-tbody`), sayısal sütunlar (HD
    * Tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korundu.
 
 * **Feat Sütun Genişlik Ayarı (Balancing):** Feat sütunlarının (`Sınıf Özellikleri`, `Beceriler`, `Bonus`) geniş ekranlarda aşırı açılmaması için akışkan sınırları `w-[160px] min-w-[145px] max-w-[175px]` olarak dengelendi. Böylece hem metinler ezilmez hem de tablo dengeli ve derli toplu kalır.
+
+
+---
+
+## 89. Hedefe Kilitli Feat Yuvası Bağlama (Targeted Slot Binding) & İnsan Bonus Feati Ayrıştırması
+
+### Bağlam & Tespit Edilen Problem
+1. Seviye ilerleme tablosunda (`#level-progression-tbody`), 1. seviyede veya bonus feat hakkı veren seviyelerde (örn: Fighter-1) birden fazla slot bulunuyordu:
+   - Sınıf Özellikleri: `[+ Bonus Feat Seç]`
+   - Beceriler: `[+ Feat Seç]`
+   - Bonus: `[+ Irk Feati Seç]` (İnsan Bonusu)
+2. Kullanıcı bu butonlardan birine tıkladığında modal açılıyor ancak kategori açılır menüsü (`#quick-feat-category`) serbest modda kalıyordu. Kullanıcı oradan bir feat seçtiğinde ya da genel satır `➕` butonuna bastığında rastgele/varsayılan olarak "Regular Feat" seçiliyor; bu da `[+ Bonus Feat Seç]` yuvasını boş bırakırken "Beceriler" sütununa ekstra bir feat ekleyerek mükerrer/fazladan slot yaratıyordu.
+3. Ayrıca `+ Irk Feati Seç` etiketi, D&D 3.5e oyuncularında "belirli ırklara özel kısıtlı featler mi var?" kafa karışıklığı yaratıyordu (Oysa Core RAW kuralına göre İnsan 1. seviyede tamamen serbest herhangi bir ekstra feat alır).
+
+### Uygulanan Çözüm & Mimari
+1. **Hedefe Kilitli Yuva Sistemi (Targeted Slot Binding):**
+   - `openQuickFeatPickerForLevel(levelIdx, preferredCategory, isTargetLocked)` imzası genişletildi.
+   - Kolon 1'deki `[+ Bonus Feat Seç]` butonuna tıklandığında:
+     - Kategori `Class Bonus Feat` olarak kilitlenir.
+     - Arama filtresi ilgili sınıfa (`FIGHTER` vb.) kilitlenir.
+     - Modal üstünde belirgin **`🎯 Hedef Yuva: [Sınıf] Sınıf Bonus Feati (Kilitli)`** bildirim bandı gösterilir.
+     - Feat seçildiğinde otomatik `⚔️ [Bonus] ` öneki alır ve ilgili sınıf bonus yuvasına yerleşir; yan sütunda mükerrer slot açmaz.
+   - Kolon 2'deki `[+ Feat Seç]` butonuna tıklandığında:
+     - Kategori `Regular Feat` olarak kilitlenir (`🎖️ Hedef Yuva: Standart Feat`).
+   - Kolon 3'teki `[+ İnsan Bonus Feati]` butonuna tıklandığında:
+     - Kategori `Racial Trait` olarak kilitlenir (`🧬 Hedef Yuva: İnsan Irksal Bonus Feati`).
+   - Satırdaki Genel `➕` Butonuna Tıklandığında:
+     - O seviyedeki boş yuvaları otomatik tespit eder (Önce eksik Sınıf Bonusu, sonra eksik Standart Feat, sonra İnsan Bonusu).
+     - Eğer tüm yasal seviye yuvaları doluysa kullanıcıyı serbest `DM Boon`, `Warlock Invocation` veya `Flaw` seçeneğine yönlendirerek illegal mükerrer feat eklenmesini engeller.
+2. **Kategori Kilidi & Serbest Mod Geçişi:**
+   - İhtiyaç halinde kullanıcının kategori değiştirebilmesi için bildirim bandına **`[🔓 Kilidi Aç (Serbest Kategori)]`** butonu eklendi.
+3. **İnsan Bonus Feati Ayrıştırması & Temiz Gösterim:**
+   - Prompt buton metni: `+ Irk Feati Seç` ➔ **`+ İnsan Bonus Feati`** olarak güncellendi.
+   - Tablodaki rozet: `🧬 [İnsan Bonusu] FeatAdı` şeklinde şık ve net bir etiketle gösterildi.
+4. **Parite ve Kural Standartları:**
+   - 4 dosya arasında (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) **%100 SHA-256 hash paritesi** (`bdab28b1f4e70064bb0939ef7615563764e9053baf64bf22a3198adb457f93d5`) sağlandı.
+   - Tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korundu.

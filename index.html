@@ -3717,17 +3717,31 @@
 
       <!-- Modal Body (Scrollable) -->
       <div class="p-4 space-y-3 text-xs overflow-y-auto flex-1">
+        <!-- Target Slot Notice Banner -->
+        <div id="quick-feat-target-notice-banner" class="hidden p-2.5 rounded-xl border text-xs flex items-center justify-between gap-2 shadow-sm transition">
+          <div class="flex items-center gap-2 min-w-0">
+            <span id="quick-feat-target-notice-icon" class="text-base shrink-0">🎯</span>
+            <div class="min-w-0">
+              <div id="quick-feat-target-notice-title" class="font-bold text-white text-xs truncate">Hedef Yuva: Standart Feat</div>
+              <div id="quick-feat-target-notice-desc" class="text-[10px] text-slate-400 leading-tight">Bu seviyedeki ilgili yuva otomatik doldurulacaktır.</div>
+            </div>
+          </div>
+          <button type="button" id="quick-feat-unlock-btn" onclick="unlockQuickFeatCategorySelection()" class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 text-[10px] text-slate-300 hover:text-white border border-slate-700 transition shrink-0 font-semibold cursor-pointer" title="Yuva kilidini açıp serbest kategori seç">
+            🔓 Kilidi Aç
+          </button>
+        </div>
+
         <!-- Category Selector -->
         <div>
           <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kategori / Tür *</label>
           <select id="quick-feat-category" onchange="onQuickFeatCategoryChange()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-amber-300 font-bold focus:outline-none focus:border-purple-500">
-            <option value="Regular Feat">🎖️ Normal Feat (Regular Feat)</option>
-            <option value="Class Bonus Feat">⚔️ Sınıf Bonus Feati (Class Bonus Feat)</option>
-            <option value="DM Boon">🌟 DM Lütfu / Boon (DM Grant)</option>
+            <option value="Regular Feat" id="quick-feat-opt-regular">🎖️ Normal Feat (Regular Feat)</option>
+            <option value="Class Bonus Feat" id="quick-feat-opt-class">⚔️ Sınıf Bonus Feati (Class Bonus Feat)</option>
+            <option value="Racial Trait" id="quick-feat-opt-racial">🧬 İnsan / Irksal Bonus Feat (Racial Bonus)</option>
+            <option value="DM Boon" id="quick-feat-opt-boon">🌟 DM Lütfu / Boon (DM Grant)</option>
             <option id="quick-feat-opt-warlock" value="Warlock Invocation" disabled title="Bu seçeneği kullanabilmek için CL Kuralından 'Warlock Boon' seçilmeli veya Warlock sınıf seviyesi alınmalıdır.">🔮 Warlock Yakarışı (Kilitli: Warlock Boon veya Seviye Gerekir)</option>
-            <option value="Flaw">⚠️ Kusur / Flaw</option>
-            <option value="Racial Trait">🧬 Irksal Bonus Feat (Human vb.)</option>
-            <option value="Special Ability">✨ Özel Yetenek / Sınıf Özelliği</option>
+            <option value="Flaw" id="quick-feat-opt-flaw">⚠️ Kusur / Flaw</option>
+            <option value="Special Ability" id="quick-feat-opt-ability">✨ Özel Yetenek / Sınıf Özelliği</option>
           </select>
         </div>
 
@@ -32039,7 +32053,32 @@ function renderManualStatsPanel() {
       updateQuickFeatPrereqBadge();
     }
 
-    function openQuickFeatPickerForLevel(levelIdx, preferredCategory = 'Regular Feat') {
+    let isQuickFeatTargetLocked = false;
+    let activeQuickFeatTargetSlot = null;
+
+    function unlockQuickFeatCategorySelection() {
+      isQuickFeatTargetLocked = false;
+      activeQuickFeatTargetSlot = null;
+      const catSel = document.getElementById('quick-feat-category');
+      if (catSel) {
+        catSel.disabled = false;
+        catSel.classList.remove('opacity-60', 'cursor-not-allowed');
+      }
+      const banner = document.getElementById('quick-feat-target-notice-banner');
+      if (banner) {
+        banner.className = 'p-2 rounded-xl border border-slate-700/80 bg-slate-900/60 text-xs flex items-center justify-between gap-2 shadow-sm transition';
+        const titleEl = document.getElementById('quick-feat-target-notice-title');
+        const descEl = document.getElementById('quick-feat-target-notice-desc');
+        const iconEl = document.getElementById('quick-feat-target-notice-icon');
+        const unlockBtn = document.getElementById('quick-feat-unlock-btn');
+        if (iconEl) iconEl.textContent = '🔓';
+        if (titleEl) titleEl.textContent = 'Serbest Kategori Modu (Kilit Kaldırıldı)';
+        if (descEl) descEl.textContent = 'Aşağıdaki açılır menüden dilediğiniz kategoriyi serbestçe seçebilirsiniz.';
+        if (unlockBtn) unlockBtn.classList.add('hidden');
+      }
+    }
+
+    function openQuickFeatPickerForLevel(levelIdx, preferredCategory = null, isTargetLocked = null) {
       activeQuickLevelIndex = Number(levelIdx);
       const modal = document.getElementById('quick-level-feat-modal');
       if (!modal) return;
@@ -32061,12 +32100,150 @@ function renderManualStatsPanel() {
         ? isWarlockEnabledForLevel(activeQuickLevelIndex)
         : false;
 
+      // Check current level progression slots status to auto-detect unfilled slot if needed
+      let classLevelSoFar = 0;
+      const prog = character.levelProgression || [];
+      for (let i = 0; i <= activeQuickLevelIndex; i++) {
+        if (prog[i] && prog[i].className === className) classLevelSoFar++;
+      }
+      const classFeats = (typeof RuleEngine !== 'undefined' && RuleEngine.getClassLevelFeatures)
+        ? RuleEngine.getClassLevelFeatures(className, classLevelSoFar)
+        : { hasBonusFeat: false };
+      const qualifiesForClassBonus = Boolean(classFeats.hasBonusFeat);
+
+      const regularFeats = [];
+      const classBonusFeats = [];
+      const otherBonusFeats = [];
+      ((lvlObj && lvlObj.feats) || []).forEach(fStr => {
+        const str = String(fStr);
+        if (str.includes('+1 Stat') || str.includes('Stat:')) return;
+        if (str.includes('[Bonus]') || str.includes('Bonus')) {
+          classBonusFeats.push(fStr);
+        } else if (str.includes('[DM Boon]') || str.includes('Boon') || str.includes('DM Grant')) {
+          otherBonusFeats.push(fStr);
+        } else if (str.includes('[Flaw]') || str.includes('Flaw:') ||
+            str.includes('[Racial]') ||
+            str.includes('[Invocation]') || str.includes('Invocation') ||
+            str.includes('Caster Lvl') || str.includes('+1 Primary CL') || str.includes('🔮')) {
+          otherBonusFeats.push(fStr);
+        } else {
+          regularFeats.push(fStr);
+        }
+      });
+
+      const featMode = character.settings?.featMode || 'Standard 3.5e (1, 3, 6, 9, 12, 15, 18)';
+      const qualifiesForRegularFeat = isLevelQualifiesForFeat(lvlNum, featMode);
+      const isHuman = (character.race || '').toLowerCase().includes('human');
+      const qualifiesForHumanBonus = (lvlNum === 1 && isHuman);
+      const hasRacialBonus = otherBonusFeats.some(f => String(f).includes('[Racial]'));
+
+      // If preferredCategory is not explicitly passed (e.g. from general row ➕ button), auto-detect first unfilled slot:
+      if (!preferredCategory) {
+        if (qualifiesForClassBonus && classBonusFeats.length === 0) {
+          preferredCategory = 'Class Bonus Feat';
+          if (isTargetLocked === null) isTargetLocked = true;
+        } else if (qualifiesForRegularFeat && regularFeats.length === 0) {
+          preferredCategory = 'Regular Feat';
+          if (isTargetLocked === null) isTargetLocked = true;
+        } else if (qualifiesForHumanBonus && !hasRacialBonus) {
+          preferredCategory = 'Racial Trait';
+          if (isTargetLocked === null) isTargetLocked = true;
+        } else {
+          // All standard slots for this level are already filled -> DM Boon / Campaign Grant
+          preferredCategory = 'DM Boon';
+          if (isTargetLocked === null) isTargetLocked = false;
+        }
+      } else {
+        if (isTargetLocked === null) isTargetLocked = true;
+      }
+
+      isQuickFeatTargetLocked = Boolean(isTargetLocked);
+      activeQuickFeatTargetSlot = preferredCategory;
+
       const catSel = document.getElementById('quick-feat-category');
       if (catSel) {
         if (preferredCategory === 'Warlock Invocation' && !isWarlockAllowed) {
           catSel.value = 'Regular Feat';
         } else {
           catSel.value = preferredCategory || 'Regular Feat';
+        }
+
+        // Configure options text & notice regarding slot fullness
+        const optRegular = document.getElementById('quick-feat-opt-regular');
+        const optClass = document.getElementById('quick-feat-opt-class');
+        const optRacial = document.getElementById('quick-feat-opt-racial');
+
+        if (optRegular) {
+          const isRegFull = qualifiesForRegularFeat && regularFeats.length > 0;
+          optRegular.textContent = isRegFull ? '🎖️ Normal Feat (Bu Seviyede Yuva Dolu)' : '🎖️ Normal Feat (Regular Feat)';
+        }
+        if (optClass) {
+          const isClassFull = qualifiesForClassBonus && classBonusFeats.length > 0;
+          optClass.textContent = isClassFull ? `⚔️ ${className} Bonus Feati (Bu Seviyede Yuva Dolu)` : `⚔️ ${className} Bonus Feati (Class Bonus Feat)`;
+        }
+        if (optRacial) {
+          optRacial.textContent = hasRacialBonus ? '🧬 İnsan Bonus Feati (Bu Seviyede Yuva Dolu)' : '🧬 İnsan Bonus Feati (Racial Bonus)';
+        }
+
+        if (isQuickFeatTargetLocked) {
+          catSel.disabled = true;
+          catSel.classList.add('opacity-60', 'cursor-not-allowed');
+        } else {
+          catSel.disabled = false;
+          catSel.classList.remove('opacity-60', 'cursor-not-allowed');
+        }
+      }
+
+      // Configure Target Notice Banner UI
+      const banner = document.getElementById('quick-feat-target-notice-banner');
+      const titleNoticeEl = document.getElementById('quick-feat-target-notice-title');
+      const descNoticeEl = document.getElementById('quick-feat-target-notice-desc');
+      const iconNoticeEl = document.getElementById('quick-feat-target-notice-icon');
+      const unlockBtn = document.getElementById('quick-feat-unlock-btn');
+
+      if (banner) {
+        banner.classList.remove('hidden');
+        if (isQuickFeatTargetLocked) {
+          if (unlockBtn) unlockBtn.classList.remove('hidden');
+
+          if (preferredCategory === 'Class Bonus Feat') {
+            banner.className = 'p-2.5 rounded-xl border border-amber-500/70 bg-amber-950/70 text-xs flex items-center justify-between gap-2 shadow-md transition';
+            if (iconNoticeEl) iconNoticeEl.textContent = '⚔️';
+            if (titleNoticeEl) titleNoticeEl.textContent = `Hedef Yuva: ${className} Sınıf Bonus Feati`;
+            if (descNoticeEl) descNoticeEl.textContent = `${className} sınıfı için geçerli savaşçı/sınıf bonus hüneri seçin. Yuva otomatik dolacaktır.`;
+          } else if (preferredCategory === 'Regular Feat') {
+            banner.className = 'p-2.5 rounded-xl border border-purple-500/70 bg-purple-950/70 text-xs flex items-center justify-between gap-2 shadow-md transition';
+            if (iconNoticeEl) iconNoticeEl.textContent = '🎖️';
+            if (titleNoticeEl) titleNoticeEl.textContent = `Hedef Yuva: Standart Feat (${lvlNum}. Seviye)`;
+            if (descNoticeEl) descNoticeEl.textContent = `D&D 3.5e RAW seviye ilerlemesiyle kazanılan standart hüner yuvası.`;
+          } else if (preferredCategory === 'Racial Trait') {
+            banner.className = 'p-2.5 rounded-xl border border-teal-500/70 bg-teal-950/70 text-xs flex items-center justify-between gap-2 shadow-md transition';
+            if (iconNoticeEl) iconNoticeEl.textContent = '🧬';
+            if (titleNoticeEl) titleNoticeEl.textContent = `Hedef Yuva: İnsan Irksal Bonus Feati`;
+            if (descNoticeEl) descNoticeEl.textContent = `İnsan ırkının 1. seviyede kazandığı serbest bonus hüner yuvası (Kategori kısıtlaması yoktur).`;
+          } else if (preferredCategory === 'Warlock Invocation') {
+            banner.className = 'p-2.5 rounded-xl border border-indigo-500/70 bg-indigo-950/70 text-xs flex items-center justify-between gap-2 shadow-md transition';
+            if (iconNoticeEl) iconNoticeEl.textContent = '🔮';
+            if (titleNoticeEl) titleNoticeEl.textContent = `Hedef Yuva: Warlock Yakarışı (Invocation)`;
+            if (descNoticeEl) descNoticeEl.textContent = `Seviye ${lvlNum} için Warlock Yakarışı yuvası.`;
+          } else if (preferredCategory === 'Special Ability') {
+            banner.className = 'p-2.5 rounded-xl border border-sky-500/70 bg-sky-950/70 text-xs flex items-center justify-between gap-2 shadow-md transition';
+            if (iconNoticeEl) iconNoticeEl.textContent = '✨';
+            if (titleNoticeEl) titleNoticeEl.textContent = `Hedef Yuva: Özel Yetenek / Sınıf Özelliği`;
+            if (descNoticeEl) descNoticeEl.textContent = `Bu seviyeye ait özel yetenek veya kural notu.`;
+          } else {
+            banner.className = 'p-2.5 rounded-xl border border-amber-500/70 bg-amber-950/70 text-xs flex items-center justify-between gap-2 shadow-md transition';
+            if (iconNoticeEl) iconNoticeEl.textContent = '🌟';
+            if (titleNoticeEl) titleNoticeEl.textContent = `Hedef Yuva: DM Lütfu / Boon (DM Grant)`;
+            if (descNoticeEl) descNoticeEl.textContent = `DM tarafından tanınan özel lütuf veya ekstra kampanya hüneri.`;
+          }
+        } else {
+          // Free mode
+          banner.className = 'p-2 rounded-xl border border-slate-700/80 bg-slate-900/60 text-xs flex items-center justify-between gap-2 shadow-sm transition';
+          if (iconNoticeEl) iconNoticeEl.textContent = '🔓';
+          if (titleNoticeEl) titleNoticeEl.textContent = 'Serbest Kategori Modu (Kilit Yok)';
+          if (descNoticeEl) descNoticeEl.textContent = 'Aşağıdaki menüden dilediğiniz kategoriyi seçip seviyeye ekleyebilirsiniz.';
+          if (unlockBtn) unlockBtn.classList.add('hidden');
         }
       }
 
@@ -32479,19 +32656,18 @@ function renderManualStatsPanel() {
 
       const catSel = document.getElementById('quick-feat-category');
       if (catSel && found) {
-        if (found.category === 'Warlock Invocation') {
-          catSel.value = 'Warlock Invocation';
-        } else if (found.category === 'DM Boon' || found.category === 'DM Grant') {
-          catSel.value = 'DM Boon';
-        } else if (found.category === 'Flaw') {
-          catSel.value = 'Flaw';
-        } else if (found.category === 'Special Ability') {
-          catSel.value = 'Special Ability';
-        } else if (found.category === 'Racial Trait') {
-          catSel.value = 'Racial Trait';
-        } else if (found.isFighterBonusFeat === true || found.category === 'Fighter' || found.category === 'Martial') {
-          if (catSel.value !== 'Class Bonus Feat') {
-            // Keep user selection if intended, or retain category
+        // If locked to a specific target slot, preserve target category so it fills the right slot!
+        if (!isQuickFeatTargetLocked) {
+          if (found.category === 'Warlock Invocation') {
+            catSel.value = 'Warlock Invocation';
+          } else if (found.category === 'DM Boon' || found.category === 'DM Grant') {
+            catSel.value = 'DM Boon';
+          } else if (found.category === 'Flaw') {
+            catSel.value = 'Flaw';
+          } else if (found.category === 'Special Ability') {
+            catSel.value = 'Special Ability';
+          } else if (found.category === 'Racial Trait') {
+            catSel.value = 'Racial Trait';
           }
         }
       }
@@ -37104,6 +37280,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           const safeTip = tip.replace(/"/g, '&quot;');
           let bgCls = 'bg-amber-950/80 hover:bg-amber-900 text-amber-300 border-amber-600/70';
           let icon = '🌟';
+          let labelText = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+/, '').trim();
           if (str.includes('[DM Boon]') || str.includes('Boon') || str.includes('DM Grant')) {
             bgCls = 'bg-amber-950/80 hover:bg-amber-900 text-amber-300 border-amber-600/70';
             icon = '🌟';
@@ -37116,8 +37293,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           } else if (str.includes('[Racial]')) {
             bgCls = 'bg-teal-950/80 hover:bg-teal-900 text-teal-300 border-teal-600/70';
             icon = '🧬';
+            const featOnly = labelText.replace(/^\[Racial\]\s*/i, '').trim();
+            labelText = `[İnsan Bonusu] ${featOnly}`;
           }
-          const cleanStr = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+/, '').trim();
+          const cleanStr = labelText;
           const cornerBadge = getFeatPinCornerBadgeHtml(rawName);
           return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="relative w-full min-h-6 h-auto py-0.5 inline-flex items-center justify-start gap-1.5 px-2 rounded text-[10px] font-bold ${bgCls} border shadow-sm transition text-left cursor-pointer"><span class="shrink-0">${icon}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-3">${cleanStr}</span>${cornerBadge}</button>`;
         });
@@ -37125,7 +37304,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         const qualifiesForHumanBonus = (lvl.level === 1 && isHuman);
         const pendingBonusButtons = [];
         if (qualifiesForHumanBonus && !otherBonusFeats.some(f => String(f).includes('[Racial]'))) {
-          pendingBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Racial Trait')" class="w-full min-h-6 h-auto py-0.5 inline-flex items-center justify-start gap-1.5 px-2 rounded text-[10px] font-bold bg-teal-950/90 hover:bg-teal-900 text-teal-300 border border-dashed border-teal-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="İnsan ırksal bonus feati seçin"><span class="shrink-0">🧬</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight">+ Irk Feati Seç</span></button>`);
+          pendingBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Racial Trait', true)" class="w-full min-h-6 h-auto py-0.5 inline-flex items-center justify-start gap-1.5 px-2 rounded text-[10px] font-bold bg-teal-950/90 hover:bg-teal-900 text-teal-300 border border-dashed border-teal-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="İnsan ırksal bonus feati seçin (1. Seviye RAW: Ekstra serbest feat)"><span class="shrink-0">🧬</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-3">+ İnsan Bonus Feati</span></button>`);
         }
 
         // Warlock Invocation Progression Check (Warlock Boon or Warlock Class Level)
