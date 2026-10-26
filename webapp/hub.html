@@ -4248,33 +4248,43 @@ CRITICAL RULES:
 
           uniqueCloudChars.forEach(cc => {
             let localChar = state.characters.find(c => c.id === cc.id);
+            const fullData = cc.full_data || {};
+            fullData.id = cc.id;
+            fullData._hubId = cc.id;
+
             if (!localChar) {
-              const fullData = cc.full_data || {};
-              fullData.id = cc.id;
-              fullData._hubId = cc.id;
-              state.characters.push({
+              const newChar = {
                 id: cc.id,
                 campaignId: cc.campaign_id,
-                name: cc.name,
-                isNpc: cc.is_npc,
-                currentHp: cc.current_hp,
+                name: cc.name || fullData.name || 'İsimsiz Kahraman',
+                isNpc: !!cc.is_npc,
+                currentHp: cc.current_hp !== undefined ? cc.current_hp : (fullData.hp?.current ?? 10),
                 maxHp: fullData.hp?.max || 10,
                 tempHp: cc.temp_hp || 0,
                 race: fullData.race || '',
-                classes: fullData.classes || '',
+                classes: fullData.classes || (fullData.class ? (fullData.class + ' ' + (fullData.level || 1)) : ''),
+                level: Number(fullData.level) || 1,
                 fullData: fullData,
                 cloudSynced: true
-              });
+              };
+              syncCharacterSummaryStats(newChar);
+              state.characters.push(newChar);
               changed = true;
             } else {
-              if (cc.full_data) {
-                localChar.fullData = cc.full_data;
-                localChar.fullData.id = cc.id;
-                localChar.fullData._hubId = cc.id;
-              }
-              localChar.currentHp = cc.current_hp;
-              localChar.tempHp = cc.temp_hp || 0;
+              // Mevcut yerel kartı buluttaki en taze tam veriyle (Fighter 3, seviye, statlar, saves) güncelle
+              localChar.fullData = fullData;
+              localChar.name = cc.name || fullData.name || localChar.name;
+              localChar.campaignId = cc.campaign_id || localChar.campaignId;
+              localChar.isNpc = cc.is_npc !== undefined ? !!cc.is_npc : localChar.isNpc;
+              localChar.currentHp = cc.current_hp !== undefined ? cc.current_hp : (fullData.hp?.current ?? localChar.currentHp);
+              localChar.maxHp = fullData.hp?.max || localChar.maxHp || 10;
+              localChar.tempHp = cc.temp_hp !== undefined ? cc.temp_hp : (fullData.hp?.temp ?? localChar.tempHp ?? 0);
+              localChar.race = fullData.race || localChar.race || '';
+              localChar.classes = fullData.classes || (fullData.class ? (fullData.class + ' ' + (fullData.level || 1)) : localChar.classes) || '';
+              localChar.level = Number(fullData.level) || localChar.level || 1;
               localChar.cloudSynced = true;
+              syncCharacterSummaryStats(localChar);
+              changed = true;
             }
           });
         }

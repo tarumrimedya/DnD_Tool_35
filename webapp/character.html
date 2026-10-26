@@ -7836,8 +7836,86 @@
       let loadedFromHub = false;
       const urlParams = new URLSearchParams(window.location.search);
       const reqId = urlParams.get('id') || localStorage.getItem('dnd35_active_character_id');
+
+      // 0. Cloud-First Senkronizasyon (Supabase oturumu aktifse buluttaki en taze veriyi kontrol et)
+      if (window.SupabaseAuth && !window.SupabaseAuth.isLocalMode()) {
+        try {
+          const cloudChars = await window.SupabaseAuth.fetchUserCharacters();
+          if (Array.isArray(cloudChars) && cloudChars.length > 0) {
+            let matchedCloud = null;
+            if (reqId) {
+              matchedCloud = cloudChars.find(c => c.id === reqId);
+            }
+            if (!matchedCloud) {
+              const activeId = localStorage.getItem('dnd35_active_character_id');
+              if (activeId) {
+                matchedCloud = cloudChars.find(c => c.id === activeId);
+              }
+            }
+            if (!matchedCloud) {
+              matchedCloud = cloudChars.find(c => !c.is_npc) || cloudChars[0];
+            }
+
+            if (matchedCloud && matchedCloud.full_data) {
+              const cloudFd = matchedCloud.full_data;
+              cloudFd.id = matchedCloud.id;
+              cloudFd._hubId = matchedCloud.id;
+
+              const localSavedRaw = localStorage.getItem('dnd35_character');
+              let localSaved = null;
+              if (localSavedRaw) {
+                try { localSaved = JSON.parse(localSavedRaw); } catch (e) {}
+              }
+
+              const cloudLvl = Number(cloudFd.level) || (Array.isArray(cloudFd.progression) ? cloudFd.progression.length : 0);
+              const localLvl = localSaved ? (Number(localSaved.level) || (Array.isArray(localSaved.progression) ? localSaved.progression.length : 0)) : 0;
+              const cloudTs = new Date(matchedCloud.updated_at || 0).getTime();
+              const localTs = localSaved?.lastModified ? new Date(localSaved.lastModified).getTime() : 0;
+
+              const isLocalEmpty = !localSaved ||
+                                   (!localSaved.classes && !localSaved.class && localLvl <= 1 && (!localSaved.feats || localSaved.feats.length === 0));
+
+              const shouldAdoptCloud = isLocalEmpty ||
+                                       localSaved.id !== matchedCloud.id ||
+                                       cloudLvl > localLvl ||
+                                       (cloudLvl === localLvl && cloudTs >= localTs);
+
+              if (shouldAdoptCloud) {
+                character = cloudFd;
+                localStorage.setItem('dnd35_character', JSON.stringify(character));
+                localStorage.setItem('dnd35_active_character_id', character.id);
+                loadedFromHub = true;
+
+                // Hub yerel DB'sini de bu taze bulut verisiyle senkronize et
+                try {
+                  const hubRaw = localStorage.getItem('dnd35_hub_db');
+                  if (hubRaw) {
+                    const hubDb = JSON.parse(hubRaw);
+                    if (Array.isArray(hubDb.characters)) {
+                      let hIdx = hubDb.characters.findIndex(c => c.id === matchedCloud.id);
+                      if (hIdx >= 0) {
+                        hubDb.characters[hIdx].fullData = cloudFd;
+                        hubDb.characters[hIdx].name = matchedCloud.name || cloudFd.name || hubDb.characters[hIdx].name;
+                        hubDb.characters[hIdx].classes = cloudFd.classes || hubDb.characters[hIdx].classes;
+                        hubDb.characters[hIdx].level = Number(cloudFd.level) || hubDb.characters[hIdx].level;
+                        hubDb.characters[hIdx].maxHp = cloudFd.hp?.max || hubDb.characters[hIdx].maxHp;
+                        hubDb.characters[hIdx].currentHp = matchedCloud.current_hp !== undefined ? matchedCloud.current_hp : (cloudFd.hp?.current ?? hubDb.characters[hIdx].currentHp);
+                        hubDb.characters[hIdx].tempHp = matchedCloud.temp_hp || 0;
+                        localStorage.setItem('dnd35_hub_db', JSON.stringify(hubDb));
+                      }
+                    }
+                  }
+                } catch (hErr) {}
+              }
+            }
+          }
+        } catch (cloudErr) {
+          console.warn('loadInitialData cloud fetch notice:', cloudErr);
+        }
+      }
+
       try {
-        if (reqId) {
+        if (!loadedFromHub && reqId) {
           const hubRaw = localStorage.getItem('dnd35_hub_db');
           if (hubRaw) {
             const hubDb = JSON.parse(hubRaw);
@@ -8284,9 +8362,15 @@
           character.id = character._hubId || 'char_active_player';
           character._hubId = character.id;
         }
-        window.SupabaseAuth.upsertUserCharacter(character).catch(err => {
-          console.warn('upsertUserCharacter background notice:', err);
-        });
+        // Boş / henüz başlatılmamış nesnelerin buluttaki dolu karakteri ezmesini önle
+        const curLvl = Number(character.level) || (Array.isArray(character.progression) ? character.progression.length : 0);
+        if (curLvl === 0 && !character.classes && !character.race && (!character.feats || character.feats.length === 0)) {
+          console.warn('saveStateToStorage: Karakter henüz başlatılmamış/boş görünüyor, buluta boş ezme engellendi.');
+        } else {
+          window.SupabaseAuth.upsertUserCharacter(character).catch(err => {
+            console.warn('upsertUserCharacter background notice:', err);
+          });
+        }
       }
     }
 

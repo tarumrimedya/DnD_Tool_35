@@ -2329,3 +2329,27 @@ enderLevelUpFeatSlots) silaha baÄŸlÄ± feat seÃ§ildiÄŸinde kart Ã¼zerin
   4. **Parite ve Kural Standartları:**
      - 4 HTML karakter kâğıdı dosyası (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi sağlandı (`B26162F73CDC124741C784AFA5E7A6F0D69575FFBBC11FB76759068117EAE08D`).
      - Standart tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.
+
+
+---
+
+## 83. ÇOKLU CİHAZ (TELEFON - BİLGİSAYAR) BULUT SENKRONİZASYONU VE HUB GÜNCELLEME ONARIMI (2026-10-26)
+* **İstek & Problem:**
+  - Kullanıcı telefonda 3. seviye Fighter (Fighter 3, 20/31 HP, +9 CON, Fort +6, Ref +2, Will +1, 5 Feat, 2 Yetenek) olarak güncellediği karakterin bilgisayarda açıldığında Seviye 0 / Sınıfsız (Aktif Seviye 0, Toplam Plan 0, HP +0, BAB +0, Saves +0) olarak kaldığını ve HUB kartında da "Sınıf Seçilmedi" yazdığını bildirdi.
+  - İncelemede iki kritik mimari açık tespit edildi:
+    1. **HUB Sayfası (`hub.html` `syncCloudUserHub`):** Supabase'den güncel bulut karakteri çekildiğinde, yerelde aynı ID'ye sahip kayıt zaten varsa `else` bloğuna giriyordu. Bu blokta `classes`, `level`, `race`, `maxHp`, `saves` vb. kart özet alanları güncellenmiyor ve en kritiği `changed = true` bayrağı unutulduğu için `saveHubStorage()` ve `renderHub()` asla tetiklenmiyordu. HUB kartı eski boş haliyle donup kalıyordu.
+    2. **Karakter Kâğıdı (`character.html` / `index.html` `loadInitialData`):** Sayfa açılışında Supabase bulutundan ASLA otomatik veri çekilmiyor (`fetchUserCharacters` çağrılmıyor); yalnızca yerel `localStorage`'a bakılıyordu. Bilgisayarın yerelinde eski boş şablon kaldığı için sayfa Seviye 0 olarak açılıyor ve hatta `saveStateToStorage` tetiklendiğinde buluttaki dolu karakteri ezme riski taşıyordu.
+* **Uygulanan Değişiklikler:**
+  1. **HUB Senkronizasyon Onarımı (`hub.html` & `webapp/hub.html`):**
+     - `syncCloudUserHub` fonksiyonunda `else` bloğu baştan yapılandırıldı; buluttan gelen `full_data` ile yerel kartın `name`, `isNpc`, `classes`, `level`, `race`, `currentHp`, `maxHp`, `tempHp` ve `fullData` nesnesi güncellendi.
+     - `syncCharacterSummaryStats(localChar)` çağrılarak kartın canlı AC, Saves, Spot, Listen, Silah ve Atak formülleri kural motorundan geçirildi.
+     - `changed = true;` bayrağı eklenerek hem `dnd35_hub_db` yerel depolaması tazelendi hem de `renderHub()` ile ekrandaki kart anında Fighter 3 görünümüne geçirildi.
+  2. **Karakter Kâğıdı Cloud-First Açılış Senkronizasyonu (`character.html` & `index.html`):**
+     - `loadInitialData()` fonksiyonunun en başına `Cloud-First Senkronizasyon` adımı eklendi. Supabase oturumu açıkken `fetchUserCharacters()` ile kullanıcının bulut karakterleri çekilir.
+     - Buluttaki karakter daha yüksek seviyedeyse, daha yeniyse veya yereldeki karakter henüz sınıfsız/boş ise; buluttaki tam karakter nesnesi (`cloudFd`) doğrudan yerel belleğe alınır (`character = cloudFd;`), `localStorage` ve `dnd35_hub_db` güncellenir.
+  3. **Veri Ezilmesine Karşı Koruma Kalkanı (`saveStateToStorage`):**
+     - Karakter seviyesi 0 olan ve henüz sınıfı/ırkı/feati atanmamış boş/uninitialized nesnelerin buluttaki dolu karakteri kazara ezmesini engelleyen güvenlik kilidi eklendi.
+  4. **Parite ve Kural Standartları:**
+     - `hub.html` ve `webapp/hub.html` arasında %100 SHA-256 hash paritesi sağlandı (`1094F9803C16950206ED5C0BA60B23F5262356F88EF1653B7095A2DA22706B32`).
+     - 4 HTML karakter kâğıdı dosyası (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi sağlandı (`1AFF33B092961AAE4F3B9CE03401D8AB34613B2FAD14BE02FF64A08D19B69309`).
+     - Standart tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.
