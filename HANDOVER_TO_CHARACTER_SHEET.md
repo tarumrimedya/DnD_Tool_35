@@ -2036,23 +2036,27 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
     10. **Tower Shield:** `-2` atak cezası ve Total Cover standart aksiyon mekaniği `combatModifiers` içine işlendi.
     11. **Feat Metinleri:** `Far Shot` (menzil kademesi $\times 1.5$ / $\times 2$ uzar, ceza yarıya inmez), `Power Attack` (light silahlara bonus hasar vermez kısıtı), `Manyshot` (BAB +11 ve +16 eşikleri), `Spring Attack` ve `Shot on the Run` (Standard attack action + move), `Mounted Combat` (1/round reaksiyon) RAW standartlarına kavuşturuldu.
     12. **18 Yeni PHB Feat'i:** `Improved Unarmed Strike`, `Deflect Arrows`, `Snatch Arrows`, `Stunning Fist`, `Whirlwind Attack`, `Improved Shield Bash`, `Rapid Reload`, `Improved Precise Shot`, `Mounted Archery`, `Trample`, `Simple Weapon Proficiency`, `Martial Weapon Proficiency`, `Exotic Weapon Proficiency`, `Armor Proficiency (Light/Medium/Heavy)`, `Shield Proficiency`, `Tower Shield Proficiency` çekirdek Ghost Core kataloğuna eklendi.
-* **Karakter Kâğıdı (`character.html` / `index.html`) Oturumunda Yapılacaklar:**
-  1. **DM Boon & Flaw Temizliği (Madde 70 / Opsiyon A):**
-     - `DND35_DM_BOONS_CATALOG = [];`
-     - `DND35_FLAWS_CATALOG = [];`
-  2. **Ghost Core Feat Entegrasyonu (`getCombinedFeatCatalog`):**
-     - `getCombinedFeatCatalog()` fonksiyonuna, `window.BUNDLED_SRD_CORE_CATALOG` içindeki `type === 'Feat'` olan kayıtları da haritaya ekleme kuralı getirilmelidir:
-       ```javascript
+* **Karakter KÃ¢ÄŸÄ±dÄ± Oturumunda Tamamlanan Uygulamalar:**
+  1. **DM Boon & Flaw TemizliÄŸi (Madde 70 / Opsiyon A):**
+     - DND35_DM_BOONS_CATALOG = [];
+     - DND35_FLAWS_CATALOG = [];
+     - Eski ev yapÄ±mÄ± hardcoded veriler sÄ±fÄ±rlandÄ±; DM Boon ve Flaw listeleri tamamen dinamik hale getirildi.
+  2. **Ghost Core Feat Entegrasyonu (getCombinedFeatCatalog & showFeatDetail):**
+     - getCombinedFeatCatalog() iÃ§ine window.BUNDLED_SRD_CORE_CATALOG (161 Ã¶ÄŸelik Ã§ekirdek Ghost Core) entegrasyonu saÄŸlandÄ±:
+       `javascript
        if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
          window.BUNDLED_SRD_CORE_CATALOG.filter(i => i && i.type === 'Feat').forEach(f => {
-           const k = f.name.toLowerCase();
-           if (!map.has(k)) {
+           const k = (f.name || '').toLowerCase();
+           if (k && !map.has(k)) {
              map.set(k, { ...f });
            }
          });
        }
-       ```
-     - Böylece yeni eklenen 18 PHB feat'i (ve özellikle `Improved Grapple`'ın önkoşulu olan `Improved Unarmed Strike`), Seviye Atlama Sihirbazı'nda doğrudan aranabilir ve önkoşul motorunda tanınır hale gelecektir.
-  3. **Parite ve Kural Standartları:**
-     - 4 karakter kağıdı dosyası (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi sağlanmalıdır.
-     - Standart tavla zarı emojisi yasağı (`U+1F3B2`) tavizsiz korunmalıdır.
+       `
+     - showFeatDetail() iÃ§ine FromBundled aramasÄ± eklenerek PHB Ã§ekirdek feat detaylarÄ±nÄ±n, kaynak ve Ã¶nkoÅŸullarÄ±nÄ±n kartlarda kusursuz gÃ¶rÃ¼ntÃ¼lenmesi saÄŸlandÄ±.
+     - 18 yeni resmi PHB Feat'i (Improved Unarmed Strike, Deflect Arrows, Snatch Arrows, Stunning Fist, Whirlwind Attack, Improved Shield Bash, Rapid Reload, Improved Precise Shot, Mounted Archery, Trample, Simple Weapon Proficiency, Martial Weapon Proficiency, Exotic Weapon Proficiency, Armor Proficiency (Light/Medium/Heavy), Shield Proficiency, Tower Shield Proficiency) Seviye Atlama SihirbazÄ±'nda doÄŸrudan aranabilir, seÃ§ilebilir ve RAW Ã¶nkoÅŸul motorunda tanÄ±nÄ±r duruma getirildi.
+  3. **SavaÅŸ Kokpiti Silah/ZÄ±rh KontrolÃ¼:**
+     - SavaÅŸ kokpiti Spotlight aramasÄ±nda Throwing Axe, Shield Spikes (Light Shield), Shield Spikes (Heavy Shield) ve Flail Ã¶ÄŸelerinin sorunsuz ÅŸekilde listelendiÄŸi ve kuÅŸanÄ±labilir olduÄŸu doÄŸrulandÄ±.
+  4. **Parite ve Kural StandartlarÄ±:**
+     - 4 karakter kaÄŸÄ±dÄ± dosyasÄ± (character.html, index.html, webapp/character.html, webapp/index.html) arasÄ±nda %100 SHA-256 hash paritesi saÄŸlandÄ±.
+     - Standart tavla zarÄ± emojisi (ğŸ² / U+1F3B2) yasaÄŸÄ± tavizsiz korundu.

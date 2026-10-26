@@ -31078,6 +31078,9 @@ function renderManualStatsPanel() {
         return n.toLowerCase() === featName.toLowerCase() || n.toLowerCase() === cleanName.toLowerCase();
       });
       const fFromCat = DND35_FEAT_CATALOG.find(c => c.name.toLowerCase() === featName.toLowerCase() || c.name.toLowerCase() === cleanName.toLowerCase());
+      const fFromBundled = (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG))
+        ? window.BUNDLED_SRD_CORE_CATALOG.find(i => i && i.type === 'Feat' && (i.name.toLowerCase() === featName.toLowerCase() || i.name.toLowerCase() === cleanName.toLowerCase()))
+        : null;
       const bFromCat = DND35_DM_BOONS_CATALOG.find(b => b.name.toLowerCase() === featName.toLowerCase() || b.name.toLowerCase() === cleanName.toLowerCase());
       const flFromCat = DND35_FLAWS_CATALOG.find(fl => fl.name.toLowerCase() === featName.toLowerCase() || fl.name.toLowerCase() === cleanName.toLowerCase());
 
@@ -31092,6 +31095,11 @@ function renderManualStatsPanel() {
         category = fFromCat.category || category;
         benefit = fFromCat.benefit || benefit;
         if (fFromCat.prereq && fFromCat.prereq !== '-') notes = `Önkoşul: ${fFromCat.prereq}`;
+      } else if (fFromBundled) {
+        source = fFromBundled.source || source;
+        category = fFromBundled.category || category;
+        benefit = fFromBundled.benefit || benefit;
+        if (fFromBundled.prereq && fFromBundled.prereq !== '-') notes = `Önkoşul: ${fFromBundled.prereq}`;
       } else if (bFromCat) {
         source = bFromCat.source || 'Campaign Boon';
         category = 'DM Boon';
@@ -31250,6 +31258,14 @@ function renderManualStatsPanel() {
     function getCombinedFeatCatalog() {
       const map = new Map();
       DND35_FEAT_CATALOG.forEach(f => map.set(f.name.toLowerCase(), { ...f }));
+      if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
+        window.BUNDLED_SRD_CORE_CATALOG.filter(i => i && i.type === 'Feat').forEach(f => {
+          const k = (f.name || '').toLowerCase();
+          if (k && !map.has(k)) {
+            map.set(k, { ...f });
+          }
+        });
+      }
       DND35_DM_BOONS_CATALOG.forEach(b => map.set(b.name.toLowerCase(), { ...b }));
       DND35_FLAWS_CATALOG.forEach(fl => map.set(fl.name.toLowerCase(), { ...fl }));
       (masterDb || []).forEach(m => {
