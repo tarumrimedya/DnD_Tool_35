@@ -32055,6 +32055,7 @@ function renderManualStatsPanel() {
 
     let isQuickFeatTargetLocked = false;
     let activeQuickFeatTargetSlot = null;
+    let activeQuickFeatSlotContract = null;
 
     function unlockQuickFeatCategorySelection() {
       isQuickFeatTargetLocked = false;
@@ -32108,8 +32109,10 @@ function renderManualStatsPanel() {
       }
       const classFeats = (typeof RuleEngine !== 'undefined' && RuleEngine.getClassLevelFeatures)
         ? RuleEngine.getClassLevelFeatures(className, classLevelSoFar)
-        : { hasBonusFeat: false };
+        : { hasBonusFeat: false, bonusFeatContract: null };
       const qualifiesForClassBonus = Boolean(classFeats.hasBonusFeat);
+      const slotContract = classFeats.bonusFeatContract || null;
+      activeQuickFeatSlotContract = (preferredCategory === 'Class Bonus Feat') ? slotContract : null;
 
       const regularFeats = [];
       const classBonusFeats = [];
@@ -32207,10 +32210,13 @@ function renderManualStatsPanel() {
           if (unlockBtn) unlockBtn.classList.remove('hidden');
 
           if (preferredCategory === 'Class Bonus Feat') {
-            banner.className = 'p-2.5 rounded-xl border border-amber-500/70 bg-amber-950/70 text-xs flex items-center justify-between gap-2 shadow-md transition';
-            if (iconNoticeEl) iconNoticeEl.textContent = '⚔️';
-            if (titleNoticeEl) titleNoticeEl.textContent = `Hedef Yuva: ${className} Sınıf Bonus Feati`;
-            if (descNoticeEl) descNoticeEl.textContent = `${className} sınıfı için geçerli savaşçı/sınıf bonus hüneri seçin. Yuva otomatik dolacaktır.`;
+            const contractLabel = activeQuickFeatSlotContract?.label || `${className} Sınıf Bonus Feati`;
+            const contractDesc = activeQuickFeatSlotContract?.desc || `${className} sınıfı için geçerli sınıf bonus hüneri seçin. Yuva otomatik dolacaktır.`;
+            const isExact = activeQuickFeatSlotContract?.mode === 'exact_choices';
+            banner.className = `p-2.5 rounded-xl border ${isExact ? 'border-emerald-500/70 bg-emerald-950/70' : 'border-amber-500/70 bg-amber-950/70'} text-xs flex items-center justify-between gap-2 shadow-md transition`;
+            if (iconNoticeEl) iconNoticeEl.textContent = isExact ? '🥋' : '⚔️';
+            if (titleNoticeEl) titleNoticeEl.textContent = `Hedef Yuva: ${contractLabel}`;
+            if (descNoticeEl) descNoticeEl.textContent = contractDesc;
           } else if (preferredCategory === 'Regular Feat') {
             banner.className = 'p-2.5 rounded-xl border border-purple-500/70 bg-purple-950/70 text-xs flex items-center justify-between gap-2 shadow-md transition';
             if (iconNoticeEl) iconNoticeEl.textContent = '🎖️';
@@ -32411,7 +32417,33 @@ function renderManualStatsPanel() {
       } else if (categoryVal === 'Flaw') {
         baseList = combined.filter(isFlawFeat);
       } else if (categoryVal === 'Class Bonus Feat') {
-        baseList = combined.filter(isFighterFeat);
+        if (activeQuickFeatSlotContract && activeQuickFeatSlotContract.mode === 'exact_choices') {
+          const choiceSet = new Set(activeQuickFeatSlotContract.choices.map(c => c.toLowerCase()));
+          baseList = combined.filter(f => choiceSet.has((f.name || '').toLowerCase()));
+          // If any exact choices are missing from combined catalog, synthesize them cleanly
+          activeQuickFeatSlotContract.choices.forEach(cName => {
+            if (!baseList.some(item => (item.name || '').toLowerCase() === cName.toLowerCase())) {
+              baseList.push({
+                name: cName,
+                category: 'Class Bonus Feat',
+                type: 'Feat',
+                prereq: 'RAW Sınıf Muafiyeti',
+                benefit: `${cName} (D&D 3.5e RAW resmi sınıf bonus hüneri).`,
+                source: 'PHB'
+              });
+            }
+          });
+        } else if (activeQuickFeatSlotContract && activeQuickFeatSlotContract.mode === 'category') {
+          const allowedCats = new Set((activeQuickFeatSlotContract.categories || []).map(c => c.toLowerCase()));
+          const allowedNames = new Set((activeQuickFeatSlotContract.allowFeats || []).map(n => n.toLowerCase()));
+          baseList = combined.filter(f => {
+            const c = (f.category || f.type || '').toLowerCase();
+            const n = (f.name || '').toLowerCase();
+            return allowedCats.has(c) || allowedNames.has(n);
+          });
+        } else {
+          baseList = combined.filter(isFighterFeat);
+        }
       } else if (categoryVal === 'Special Ability') {
         baseList = combined.filter(f => f.category === 'Special Ability' || f.type === 'Special Ability');
         if (baseList.length === 0) baseList = combined;
@@ -33518,6 +33550,23 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         if (!feat) return { hasPrereqs: false, allMet: true, checks: [], rawPrereq: '', isAlreadyKnownFromClass: false, alreadyKnownReason: '', isAlreadyTaken: false, alreadyKnownBadgeText: '' };
 
         const featName = (feat.name || '').trim();
+
+        // Slot Contract RAW Prerequisite Bypass (e.g. Monk 1st/2nd/6th level bonus feats)
+        if (typeof activeQuickFeatSlotContract !== 'undefined' && activeQuickFeatSlotContract && activeQuickFeatSlotContract.bypassPrereqs === true) {
+          const fn = featName.toLowerCase();
+          if (Array.isArray(activeQuickFeatSlotContract.choices) && activeQuickFeatSlotContract.choices.some(c => c.toLowerCase() === fn || fn.includes(c.toLowerCase()))) {
+            return {
+              hasPrereqs: true,
+              allMet: true,
+              checks: [{ label: 'RAW Sınıf Muafiyeti', met: true, info: 'D&D 3.5e RAW kuralı gereğince önkoşulsuz kazanılır' }],
+              rawPrereq: feat.prereq || '-',
+              isAlreadyKnownFromClass: false,
+              alreadyKnownReason: '',
+              isAlreadyTaken: false,
+              alreadyKnownBadgeText: ''
+            };
+          }
+        }
         const featNameNorm = featName.toLowerCase().replace(/[^a-z0-9]/g, '');
         let isAlreadyKnownFromClass = false;
         let alreadyKnownReason = '';
@@ -37248,7 +37297,24 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
 
         const pendingClassBonusButtons = [];
         if (qualifiesForClassBonus && classBonusFeats.length === 0) {
-          pendingClassBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Class Bonus Feat')" class="w-full min-h-6 h-auto py-0.5 inline-flex items-center justify-start gap-1.5 px-2 rounded text-[10px] font-bold bg-amber-950/90 hover:bg-amber-900 text-amber-300 border border-dashed border-amber-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Bu seviye için Sınıf Bonus Feati seçin"><span class="shrink-0">⚔️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight">+ Bonus Feat Seç</span></button>`);
+          const contract = classFeats.bonusFeatContract;
+          let btnText = '+ Bonus Feat Seç';
+          let btnIcon = '⚔️';
+          let btnCls = 'bg-amber-950/90 hover:bg-amber-900 text-amber-300 border-amber-500';
+          if (contract && contract.mode === 'exact_choices') {
+            btnText = `+ ${lvl.className} Feati (${contract.choices.join(' / ')})`;
+            btnIcon = '🥋';
+            btnCls = 'bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 border-emerald-500';
+          } else if (lvl.className === 'Monk') {
+            btnText = '+ Monk Bonus Feati';
+            btnIcon = '🥋';
+            btnCls = 'bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 border-emerald-500';
+          } else if (lvl.className === 'Wizard') {
+            btnText = '+ Wizard Bonus Feat';
+            btnIcon = '🔮';
+            btnCls = 'bg-indigo-950/90 hover:bg-indigo-900 text-indigo-300 border-indigo-500';
+          }
+          pendingClassBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Class Bonus Feat', true)" class="w-full min-h-6 h-auto py-0.5 inline-flex items-center justify-start gap-1.5 px-2 rounded text-[10px] font-bold ${btnCls} border border-dashed shadow-sm animate-pulse transition text-left cursor-pointer" title="Bu seviye için ${lvl.className} Bonus Feati seçin"><span class="shrink-0">${btnIcon}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2">${btnText}</span></button>`);
         }
 
         // 2. Beceriler (Regular Feats) badges

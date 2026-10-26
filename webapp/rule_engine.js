@@ -3591,16 +3591,76 @@ const RuleEngine = {
     }
   },
 
-  // Get granted class features and bonus feats for a given class and level
+  // Get granted class features, bonus feats and Slot Contract for a given class and level
   getClassLevelFeatures(className, classLevel) {
     const def = this.DND35_CLASS_DEFS[className];
-    if (!def) return { features: [], featureObjects: [], hasBonusFeat: false };
+    if (!def) return { features: [], featureObjects: [], hasBonusFeat: false, bonusFeatContract: null };
     const cl = Number(classLevel) || 1;
     const rawFeatures = (def.features && def.features[cl]) ? def.features[cl] : [];
     const features = rawFeatures.map(f => (typeof f === 'string' ? f : f.name));
     const featureObjects = rawFeatures.map(f => (typeof f === 'string' ? { name: f, benefit: '' } : f));
     const hasBonusFeat = Array.isArray(def.bonusFeatLevels) && def.bonusFeatLevels.includes(cl);
-    return { features, featureObjects, hasBonusFeat };
+
+    let bonusFeatContract = null;
+    if (hasBonusFeat) {
+      if (className === 'Fighter') {
+        bonusFeatContract = {
+          mode: 'tag',
+          tag: 'isFighterBonusFeat',
+          filter: 'FIGHTER',
+          label: `Fighter Sınıf Bonus Feati (${cl}. Seviye)`,
+          desc: 'Fighter sınıf bonus listesinde yer alan bir muharebe hüneri seçin.'
+        };
+      } else if (className === 'Monk') {
+        if (cl === 1) {
+          bonusFeatContract = {
+            mode: 'exact_choices',
+            choices: ['Improved Grapple', 'Stunning Fist'],
+            bypassPrereqs: true,
+            label: 'Monk 1. Seviye Bonus Feati',
+            desc: 'D&D 3.5e RAW: Improved Grapple veya Stunning Fist (Önkoşulsuz seçim).'
+          };
+        } else if (cl === 2) {
+          bonusFeatContract = {
+            mode: 'exact_choices',
+            choices: ['Combat Reflexes', 'Deflect Arrows'],
+            bypassPrereqs: true,
+            label: 'Monk 2. Seviye Bonus Feati',
+            desc: 'D&D 3.5e RAW: Combat Reflexes veya Deflect Arrows (Önkoşulsuz seçim).'
+          };
+        } else if (cl === 6) {
+          bonusFeatContract = {
+            mode: 'exact_choices',
+            choices: ['Improved Trip', 'Snatch Arrows'],
+            bypassPrereqs: true,
+            label: 'Monk 6. Seviye Bonus Feati',
+            desc: 'D&D 3.5e RAW: Improved Trip veya Snatch Arrows (Önkoşulsuz seçim).'
+          };
+        }
+      } else if (className === 'Wizard') {
+        if (cl >= 5) {
+          bonusFeatContract = {
+            mode: 'category',
+            categories: ['Metamagic', 'Item Creation'],
+            allowFeats: ['Spell Mastery'],
+            label: `Wizard ${cl}. Seviye Bonus Feati`,
+            desc: 'Metamagic, Item Creation veya Spell Mastery hüneri seçin.'
+          };
+        }
+      } else if (def.bonusFeatContracts && def.bonusFeatContracts[cl]) {
+        bonusFeatContract = def.bonusFeatContracts[cl];
+      } else {
+        bonusFeatContract = {
+          mode: 'tag',
+          tag: 'isFighterBonusFeat',
+          filter: 'FIGHTER',
+          label: `${className} Sınıf Bonus Feati`,
+          desc: `${className} sınıfı için geçerli bonus hüner.`
+        };
+      }
+    }
+
+    return { features, featureObjects, hasBonusFeat, bonusFeatContract };
   },
 
   // D&D 3.5e Fractional BAB & Save Progression Calculator (Unearthed Arcana)

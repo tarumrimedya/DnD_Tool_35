@@ -1,4 +1,4 @@
-/**
+﻿/**
  * D&D 3.5e Declarative Rule, Modifier & Stacking Engine
  * Handles ability modifiers, RAW stacking rules, dynamic feat mechanics,
  * 14 body slot equipment bonuses, active buffs with round countdowns,
@@ -3264,6 +3264,15 @@ const RuleEngine = {
     "Warblade": {
       hd: 12, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 4,
       bonusFeatLevels: [5, 9, 13, 17],
+      bonusFeatContract: {
+        mode: "exact_choices",
+        choices: [
+          "Blind-Fight", "Combat Reflexes", "Diehard", "Great Fortitude",
+          "Improved Critical", "Improved Initiative", "Iron Will", "Ironheart Aura",
+          "Lightning Reflexes", "Stone Power", "Tiger Blooded", "Unnerving Calm", "White Raven Defense"
+        ],
+        label: "Warblade Bonus Feati"
+      },
       features: {
         1: [
           { name: "Battle Clarity (Ex)", category: "Special Ability", type: "Ex", summary: "INT modifier to Reflex saves (max Warblade lvl)" },
@@ -3281,6 +3290,7 @@ const RuleEngine = {
     "Fighter": {
       hd: 10, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 2,
       bonusFeatLevels: [1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20],
+      bonusFeatContract: { mode: "tag", tag: "isFighterBonusFeat", label: "Fighter SÄ±nÄ±f Bonus Feati", filter: "FIGHTER" },
       features: {}
     },
     "Barbarian": {
@@ -3326,6 +3336,13 @@ const RuleEngine = {
     "Wizard": {
       hd: 4, bab: 0.5, fort: "poor", ref: "poor", will: "good", skills: 2,
       bonusFeatLevels: [1, 5, 10, 15, 20],
+      bonusFeatContracts: {
+        1: { mode: "exact_choices", choices: ["Scribe Scroll"], bypassPrereqs: true, label: "Wizard 1. Seviye SeÃ§imi" },
+        5: { mode: "category", categories: ["Metamagic", "Item Creation"], allowFeats: ["Spell Mastery"], label: "Wizard Bonus Feati" },
+        10: { mode: "category", categories: ["Metamagic", "Item Creation"], allowFeats: ["Spell Mastery"], label: "Wizard Bonus Feati" },
+        15: { mode: "category", categories: ["Metamagic", "Item Creation"], allowFeats: ["Spell Mastery"], label: "Wizard Bonus Feati" },
+        20: { mode: "category", categories: ["Metamagic", "Item Creation"], allowFeats: ["Spell Mastery"], label: "Wizard Bonus Feati" }
+      },
       features: {
         1: [
           { name: "Scribe Scroll", category: "Special Ability", type: "Ex", summary: "Create spell scrolls" },
@@ -3371,6 +3388,11 @@ const RuleEngine = {
     "Monk": {
       hd: 8, bab: 0.75, fort: "good", ref: "good", will: "good", skills: 4,
       bonusFeatLevels: [1, 2, 6],
+      bonusFeatContracts: {
+        1: { mode: "exact_choices", choices: ["Improved Grapple", "Stunning Fist"], bypassPrereqs: true, label: "Monk 1. Seviye SeÃ§imi" },
+        2: { mode: "exact_choices", choices: ["Combat Reflexes", "Deflect Arrows"], bypassPrereqs: true, label: "Monk 2. Seviye SeÃ§imi" },
+        6: { mode: "exact_choices", choices: ["Improved Trip", "Snatch Arrows"], bypassPrereqs: true, label: "Monk 6. Seviye SeÃ§imi" }
+      },
       features: {
         1: [
           { name: "Flurry of Blows (Ex)", category: "Special Ability", type: "Ex", summary: "One extra attack during full attack (-2 all attacks)" },
@@ -3591,16 +3613,51 @@ const RuleEngine = {
     }
   },
 
-  // Get granted class features and bonus feats for a given class and level
+  // Get slot contract for bonus feats
+  getClassBonusFeatContract(className, classLevel) {
+    const def = this.DND35_CLASS_DEFS ? this.DND35_CLASS_DEFS[className] : null;
+    if (!def) return null;
+    const cl = Number(classLevel) || 1;
+    if (def.bonusFeatContracts && def.bonusFeatContracts[cl]) return def.bonusFeatContracts[cl];
+    if (def.bonusFeatContract) return def.bonusFeatContract;
+    return null;
+  },
+
+  // Get granted class features, bonus feats and Slot Contract for a given class and level
   getClassLevelFeatures(className, classLevel) {
-    const def = this.DND35_CLASS_DEFS[className];
-    if (!def) return { features: [], featureObjects: [], hasBonusFeat: false };
+    const def = this.DND35_CLASS_DEFS ? this.DND35_CLASS_DEFS[className] : null;
+    if (!def) return { features: [], featureObjects: [], hasBonusFeat: false, bonusFeatContract: null };
     const cl = Number(classLevel) || 1;
     const rawFeatures = (def.features && def.features[cl]) ? def.features[cl] : [];
     const features = rawFeatures.map(f => (typeof f === 'string' ? f : f.name));
     const featureObjects = rawFeatures.map(f => (typeof f === 'string' ? { name: f, benefit: '' } : f));
     const hasBonusFeat = Array.isArray(def.bonusFeatLevels) && def.bonusFeatLevels.includes(cl);
-    return { features, featureObjects, hasBonusFeat };
+
+    let bonusFeatContract = null;
+    if (hasBonusFeat) {
+      bonusFeatContract = this.getClassBonusFeatContract(className, cl);
+      if (!bonusFeatContract) {
+        if (className === 'Fighter') {
+          bonusFeatContract = {
+            mode: 'tag',
+            tag: 'isFighterBonusFeat',
+            filter: 'FIGHTER',
+            label: `Fighter SÄ±nÄ±f Bonus Feati (${cl}. Seviye)`,
+            desc: 'Fighter sÄ±nÄ±f bonus listesinde yer alan bir muharebe hÃ¼neri seÃ§in.'
+          };
+        } else {
+          bonusFeatContract = {
+            mode: 'tag',
+            tag: 'isFighterBonusFeat',
+            filter: 'FIGHTER',
+            label: `${className} SÄ±nÄ±f Bonus Feati`,
+            desc: `${className} sÄ±nÄ±fÄ± iÃ§in geÃ§erli bonus hÃ¼ner.`
+          };
+        }
+      }
+    }
+
+    return { features, featureObjects, hasBonusFeat, bonusFeatContract };
   },
 
   // D&D 3.5e Fractional BAB & Save Progression Calculator (Unearthed Arcana)

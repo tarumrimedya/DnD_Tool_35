@@ -2568,3 +2568,33 @@ Seviye İlerleme Tablosunda (`#level-progression-tbody`), sayısal sütunlar (HD
 4. **Parite ve Kural Standartları:**
    - 4 dosya arasında (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) **%100 SHA-256 hash paritesi** (`bdab28b1f4e70064bb0939ef7615563764e9053baf64bf22a3198adb457f93d5`) sağlandı.
    - Tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korundu.
+
+
+---
+
+## 90. Sınıf Bonus Feat Yuva Kontratı (Slot Contract) Mimarisi & Monk / Wizard RAW Desteği
+
+### Bağlam & Mimari Karar
+Önceki yapıda sınıf bonus hüneri yuvası açıldığında tüm sınıflar için genel bir `Class Bonus Feat` filtresi çalıştırılıyordu. Bu durum, Fighter gibi ~45 savaşçı hüneri arasından seçim yapan sınıflar için mantıklı olsa da; Monk (1. seviyede sadece Improved Grapple / Stunning Fist, 2. seviyede Combat Reflexes / Deflect Arrows önkoşulsuz) ve Wizard (Metamagic / Item Creation / Spell Mastery) gibi sınıfların seviyeye özgü özel RAW bonus hüner mekaniklerini karşılayamıyordu. Ayrıca hünerlerin veri tabanı kayıtlarına `classes: ['Fighter']` gibi kaba kısıtlamalar yazmak D&D 3.5e RAW kurallarına aykırıydı.
+
+### Uygulanan Çözüm & Mimari Yenilikler
+1. **Rule Engine Slot Contract Entegrasyonu (`rule_engine.js` & `webapp/rule_engine.js`):**
+   * `RuleEngine.getClassLevelFeatures(className, classLevel)` fonksiyonu genişletilerek `bonusFeatContract` nesnesi döndürmesi sağlandı:
+     - **Fighter:** `{ mode: 'tag', tag: 'isFighterBonusFeat', filter: 'FIGHTER' }`
+     - **Monk 1:** `{ mode: 'exact_choices', choices: ['Improved Grapple', 'Stunning Fist'], bypassPrereqs: true }`
+     - **Monk 2:** `{ mode: 'exact_choices', choices: ['Combat Reflexes', 'Deflect Arrows'], bypassPrereqs: true }`
+     - **Monk 6:** `{ mode: 'exact_choices', choices: ['Improved Trip', 'Snatch Arrows'], bypassPrereqs: true }`
+     - **Wizard (5, 10, 15, 20):** `{ mode: 'category', categories: ['Metamagic', 'Item Creation'], allowFeats: ['Spell Mastery'] }`
+2. **Karakter Sayfası Yuva Bağlama & Görselleştirme (`character.html`, `index.html`):**
+   * `renderLevelProgression()`: Sınıf yuvası butonunun metni kontrata göre dinamikleşti:
+     - Monk 1 için: `🥋 + Monk Feati (Improved Grapple / Stunning Fist)`
+     - Wizard için: `🔮 + Wizard Bonus Feat`
+     - Fighter için: `⚔️ + Bonus Feat Seç`
+   * `checkFeatPrerequisites()`: Monk'un RAW kuralı gereğince (`bypassPrereqs: true`) kontrat kapsamındaki ikili hünerleri önkoşulsuz kazanması sağlandı (`✅ RAW Sınıf Muafiyeti`).
+   * `renderQuickFeatSearchResults()`:
+     - `exact_choices` modunda yalnızca ilgili seviyeye ait resmi seçenekler listelenir.
+     - `category` modunda (Wizard) yalnızca Metamagic ve Item Creation hünerleri ile Spell Mastery listelenir.
+3. **Parite ve Kural Standartları:**
+   * 4 karakter dosyası (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında **%100 SHA-256 hash paritesi** (`46910496...`) sağlandı.
+   * 2 kural motoru dosyası (`rule_engine.js`, `webapp/rule_engine.js`) arasında **%100 SHA-256 hash paritesi** (`74de9861...`) sağlandı.
+   * Tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korundu.
