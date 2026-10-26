@@ -2124,3 +2124,34 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   6. **Parite ve Kural StandartlarÄ±:**
      - 4 karakter kÃ¢ÄŸÄ±dÄ± dosyasÄ± (character.html, index.html, webapp/character.html, webapp/index.html) arasÄ±nda %100 SHA-256 hash paritesi saÄŸlandÄ± (B7A6928BE933CA6729101B1EA8A19E71BEA59A7E361362BB3D94A83966B7A437).
      - Standart tavla zarÄ± emojisi (U+1F3B2) yasaÄŸÄ± tavizsiz korundu.
+---
+
+## 75. KURAL 5 (NO DUMMY DATA) & HARDCODED VERÄ°LERÄ°N TEMÄ°ZLENMESÄ° - PARÄ°TE VE DÄ°NAMÄ°K MÄ°MARÄ° REFACTOR (2026-10-26)
+* **Ä°stek & Problem:**
+  - Kural 5 (Dummy Data YasaÄŸÄ±) ve parametrik mimari incelemesi sonucunda, kod tabanÄ±nda kural motoru ve veritabanÄ± ÅŸemasÄ±na uymayan hardcoded/dummy kalÄ±ntÄ±lar tespit edildi:
+    1. ensureAmmunitionInventory: BoÅŸ karaktere otomatik olarak +1/+2 bÃ¼yÃ¼lÃ¼ ok ve arbalet oku (800+ gp deÄŸerinde) sahte mÃ¼himmat enjekte ediyordu.
+    2. populateWeaponSetsEditorDropdowns: Karakterde olmasa bile Darkwood Buckler +1, +1 Buckler, Heavy Shield ve 7 adet TÃ¼rkÃ§e yay/arbalet string'ini dropdown'a zorla ekliyordu.
+    3. getAllAvailableRangedWeapons: Karakterin menzilli silahÄ± olmadÄ±ÄŸÄ±nda 6 adet fallback sahte SRD silahÄ± enjekte ediyordu.
+    4. DND35_WARLOCK_INVOCATIONS: 32 adet Warlock YakarÄ±ÅŸÄ± character.html iÃ§ine gÃ¶mÃ¼lÃ¼ statik dizi olarak yaÅŸÄ±yordu (master_db.json ve undled_data.js iÃ§inde yoktu).
+    5. DND35_FEAT_CATALOG: Yan kitaplardan gelen 9 feat (Shadow Blade, Adaptive Style, Arcane Strike, Practiced Spellcaster, Shock Trooper, Leap Attack, Oversized Two-Weapon Fighting, Monkey Grip, Somatic Weaponry) kod iÃ§ine gÃ¶mÃ¼lÃ¼ydÃ¼ (master_db.json iÃ§inde yoktu).
+    6. DND35_SRD_WEAPONS: 60 adet basit silah string'i statik dizi olarak tutuluyordu.
+* **Uygulanan DeÄŸiÅŸiklikler:**
+  1. **Sahte MÃ¼himmat Enjeksiyonunun KaldÄ±rÄ±lmasÄ± (ensureAmmunitionInventory):**
+     - Otomatik standardAmmos yÃ¼klemesi kaldÄ±rÄ±ldÄ±. Karakter mÃ¼himmatÄ± boÅŸ ise boÅŸ kalÄ±r; yalnÄ±zca master_db.json veya envanterden eklenen gerÃ§ek mÃ¼himmatlar tutulur.
+  2. **SavaÅŸ Setleri EditÃ¶rÃ¼nÃ¼n Temizlenmesi (populateWeaponSetsEditorDropdowns):**
+     - standardShields ve standardRanged dizileri silindi.
+     - Silah ve kalkan listesi tamamen karakterin gerÃ§ek envanterinden (character.inventory, character.gearPool, character.bodySlots) dinamik olarak beslenir.
+     - YakÄ±n dÃ¶vÃ¼ÅŸ iÃ§in kanonik RAW kuralÄ± uyarÄ±nca Unarmed Strike (SilahsÄ±z SaldÄ±rÄ±) gÃ¼venli fallback olarak korundu.
+  3. **Menzilli Silah Fallback'inin Temizlenmesi (getAllAvailableRangedWeapons):**
+     - SilahsÄ±z karaktere 6 adet sahte yay/arbalet enjekte eden srdRanged fallback kaldÄ±rÄ±ldÄ±.
+  4. **Ek Kitap Featlerinin ve Warlock YakarÄ±ÅŸlarÄ±nÄ±n VeritabanÄ±na TaÅŸÄ±nmasÄ±:**
+     - 9 adet Complete Series & Tome of Battle feati ile 32 adet Warlock YakarÄ±ÅŸÄ± resmi ÅŸemaya uygun olarak undled_data.js (window.BUNDLED_SRD_CORE_CATALOG) ve master_db.json iÃ§ine eklendi (toplam katalog 161'den 202'ye Ã§Ä±karÄ±ldÄ±).
+     - character.html iÃ§indeki gÃ¶mÃ¼lÃ¼ DND35_FEAT_CATALOG ve DND35_WARLOCK_INVOCATIONS dizileri boÅŸaltÄ±ldÄ± ([]).
+     - YakarÄ±ÅŸlarÄ±n sÄ±nÄ±f seviyesi (Warlock) veya DM Boon alÄ±ndÄ±ÄŸÄ±nda filtrelenip dinamik seÃ§ilebilmesi iÃ§in getAllWarlockInvocations() mimarisi devreye alÄ±ndÄ±.
+  5. **Dinamik Silah Arama Fonksiyonu (getSrdWeaponNames):**
+     - Statik DND35_SRD_WEAPONS dizisi kaldÄ±rÄ±larak yerine window.BUNDLED_SRD_CORE_CATALOG ve masterDb iÃ§indeki 81 silahÄ± dinamik tarayan getSrdWeaponNames() fonksiyonu entegre edildi.
+  6. **Parite ve Kural StandartlarÄ±:**
+     - 4 karakter kÃ¢ÄŸÄ±dÄ± dosyasÄ± (character.html, index.html, webapp/character.html, webapp/index.html) arasÄ±nda %100 SHA-256 hash paritesi saÄŸlandÄ± (2A393ACD2723BF24E2402D2E368159BB307B863C7CF16F7831256C8F475A87FD).
+     - undled_data.js ve webapp/bundled_data.js arasÄ±nda %100 SHA-256 hash paritesi saÄŸlandÄ± (16A03D0DA4274BE08E7C44D74FBA56D464A7629A108C71D7DB9AC67079B9DA50).
+     - master_db.json ve webapp/master_db.json arasÄ±nda %100 SHA-256 hash paritesi saÄŸlandÄ± (E308B37D8A50923F9F438C88B8132CDB941468A97019BDCAC7C8A3192D25AFF9).
+     - Standart tavla zarÄ± emojisi (U+1F3B2) yasaÄŸÄ± tavizsiz korundu.

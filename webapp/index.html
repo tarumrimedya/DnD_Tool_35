@@ -18100,23 +18100,9 @@ function renderManualStatsPanel() {
           }
         });
 
-        const standardRanged = [
-          'Kompozit Uzun Yay (Composite Longbow)',
-          'Uzun Yay (Longbow)',
-          'Kısa Yay (Shortbow)',
-          'Hafif Arbalet (Light Crossbow)',
-          'Ağır Arbalet (Heavy Crossbow)',
-          'Sapan (Sling)',
-          'Fırlatma Hançeri (Thrown Dagger)'
-        ];
-        standardRanged.forEach(rName => {
-          if (!availableItems.some(i => i.name === rName)) {
-            availableItems.push({ name: rName, category: 'Weapon' });
-          }
-        });
-
-        if (!availableItems.some(i => isBucklerItem(i))) {
-          availableItems.push({ name: 'Darkwood Buckler +1', category: 'Shield' });
+        // Fallback: if character has no ranged weapons equipped or in inventory, provide Unarmed Strike fallback
+        if (!availableItems.some(i => i.category === 'Weapon')) {
+          availableItems.push({ name: 'Unarmed Strike', category: 'Weapon' });
         }
       } else {
         // 1. From character.weapons (excluding ranged-only weapons)
@@ -18175,16 +18161,7 @@ function renderManualStatsPanel() {
           }
         });
 
-        // 5. Default shields if not present
-        const standardShields = ['Darkwood Buckler +1', '+1 Buckler', 'Heavy Shield'];
-        standardShields.forEach(shName => {
-          if (!availableItems.some(i => i.name === shName)) {
-            availableItems.push({
-              name: shName,
-              category: 'Shield'
-            });
-          }
-        });
+                // 5. Shields are sourced strictly from inventory & bodySlots (no dummy shields)
 
         // 6. Always ensure Unarmed Strike is available in melee weapon selection
         if (!availableItems.some(i => (i.name || '').toLowerCase().includes('unarmed') || (i.name || '').toLowerCase().includes('silahsız'))) {
@@ -19406,22 +19383,7 @@ function renderManualStatsPanel() {
       (char.inventory || []).forEach(it => checkAndAdd(it, 'Envanter'));
       (char.weapons || []).forEach(it => checkAndAdd(it, 'Silah Listesi'));
 
-      // 3. Fallback standard SRD ranged weapons
-      const srdRanged = [
-        { name: 'Uzun Yay (Longbow)', source: 'SRD Standart', dice: '1d8', crit: '20 / x3', range: '100 ft', dmgType: 'Delici', ammoType: 'arrow' },
-        { name: 'Kısa Yay (Shortbow)', source: 'SRD Standart', dice: '1d6', crit: '20 / x3', range: '60 ft', dmgType: 'Delici', ammoType: 'arrow' },
-        { name: 'Hafif Arbalet (Light Crossbow)', source: 'SRD Standart', dice: '1d8', crit: '19-20 / x2', range: '80 ft', dmgType: 'Delici', ammoType: 'bolt' },
-        { name: 'Ağır Arbalet (Heavy Crossbow)', source: 'SRD Standart', dice: '1d10', crit: '19-20 / x2', range: '120 ft', dmgType: 'Delici', ammoType: 'bolt' },
-        { name: 'Sapan (Sling)', source: 'SRD Standart', dice: '1d4', crit: '20 / x2', range: '50 ft', dmgType: 'Ezici', ammoType: 'bullet' },
-        { name: 'Fırlatma Hançeri (Thrown Dagger)', source: 'SRD Standart', dice: '1d4', crit: '19-20 / x2', range: '10 ft', dmgType: 'Delici', ammoType: 'thrown' }
-      ];
-
-      srdRanged.forEach(srd => {
-        if (!seen.has(srd.name)) {
-          list.push(srd);
-        }
-      });
-
+      // 3. Fallback removed per Rule #5 (only owned ranged weapons listed)
       return list;
     }
 
@@ -19469,56 +19431,6 @@ function renderManualStatsPanel() {
     function ensureAmmunitionInventory() {
       if (!character) return;
       if (!Array.isArray(character.gearPool)) character.gearPool = [];
-
-      const standardAmmos = [
-        { name: 'Standart Ok', weaponType: 'Bow', ammoVal: 'standard', qty: 20, weight: 3, cost: 1, desc: 'Standart 20 adet ok (1d8 Delici).' },
-        { name: 'Usta İşi Ok', weaponType: 'Bow', ammoVal: 'masterwork', qty: 10, weight: 1.5, cost: 70, desc: 'Usta işi ok (+1 Saldırı Bonusu).' },
-        { name: '+1 Büyülü Ok', weaponType: 'Bow', ammoVal: 'plus1', qty: 10, weight: 1.5, cost: 400, desc: '+1 Büyülü ok (+1 Saldırı & +1 Hasar).' },
-        { name: '+2 Büyülü Ok', weaponType: 'Bow', ammoVal: 'plus2', qty: 5, weight: 0.75, cost: 400, desc: '+2 Büyülü ok (+2 Saldırı & +2 Hasar).' },
-        { name: 'Alevli Ok', weaponType: 'Bow', ammoVal: 'fire', qty: 5, weight: 0.75, cost: 400, desc: 'Alevli ok (+1d6 Ateş Hasarı).' },
-        { name: 'Gümüş Uçlu Ok', weaponType: 'Bow', ammoVal: 'silver', qty: 10, weight: 1.5, cost: 21, desc: 'Gümüş uçlu ok (DR/Gümüş Aşar, -1 Hasar).' },
-        { name: 'Standart Bolt', weaponType: 'Crossbow', ammoVal: 'standard', qty: 10, weight: 1, cost: 1, desc: 'Standart 10 adet arbalet oku.' },
-        { name: 'Usta İşi Bolt', weaponType: 'Crossbow', ammoVal: 'masterwork', qty: 10, weight: 1, cost: 70, desc: 'Usta işi arbalet oku (+1 Saldırı Bonusu).' },
-        { name: 'Sapan Taşı', weaponType: 'Sling', ammoVal: 'standard', qty: 20, weight: 5, cost: 0.1, desc: 'Standart 20 adet sapan mermisi.' }
-      ];
-
-      standardAmmos.forEach(sa => {
-        let existing = character.gearPool.find(g => g && g.name && g.name.toLowerCase().trim() === sa.name.toLowerCase().trim());
-        if (!existing) {
-          if (sa.name === 'Standart Ok') existing = character.gearPool.find(g => g && g.name && (g.name.includes('Arrows') || g.name === 'Standart Ok'));
-          if (sa.name === 'Standart Bolt') existing = character.gearPool.find(g => g && g.name && (g.name.includes('Crossbow Bolts') || g.name === 'Standart Bolt'));
-          if (sa.name === 'Sapan Taşı') existing = character.gearPool.find(g => g && g.name && (g.name.includes('Sling Bullets') || g.name === 'Sapan Taşı'));
-        }
-
-        if (!existing) {
-          character.gearPool.push({
-            id: Date.now() + Math.floor(Math.random() * 10000),
-            name: sa.name,
-            masterDbName: sa.name,
-            category: 'Ammunition',
-            type: 'Ammunition',
-            slot: 'Slotless',
-            weaponType: sa.weaponType,
-            ammoVal: sa.ammoVal,
-            qty: sa.qty,
-            count: sa.qty,
-            weight: sa.weight,
-            cost: sa.cost,
-            isBelt: false,
-            isEquipped: false,
-            desc: sa.desc
-          });
-        } else {
-          if (existing.qty === undefined && existing.count !== undefined) {
-            existing.qty = existing.count;
-          } else if (existing.qty === undefined) {
-            existing.qty = sa.qty;
-          }
-          if (existing.category !== 'Ammunition') existing.category = 'Ammunition';
-          if (!existing.weaponType) existing.weaponType = sa.weaponType;
-          if (!existing.ammoVal) existing.ammoVal = sa.ammoVal;
-        }
-      });
     }
 
     function getAmmunitionItemByName(chosenName) {
@@ -29688,40 +29600,8 @@ function renderManualStatsPanel() {
     let isFeatPickerForLevelUp = false;
 
     // Built-in D&D 3.5e Core, Tome of Battle & Complete Series Feat Catalog
-    const DND35_FEAT_CATALOG = [
-      { name: "Power Attack", category: "Fighter", isFighterBonusFeat: true, prereq: "Str 13", source: "PHB p.98", benefit: "Yakın dövüş saldırı zarından BAB değerine kadar ceza alıp, tek el silahlarla +1x, çift el silahlarla +2x hasar ekler." },
-      { name: "Weapon Finesse", category: "Fighter", isFighterBonusFeat: true, prereq: "BAB +1", source: "PHB p.102", benefit: "Hafif silahlar, Rapier, Whip ve Spiked Chain ile saldırı zarlarında STR yerine DEX modifiyerini kullanır." },
-      { name: "Shadow Blade", category: "Martial", isFighterBonusFeat: false, prereq: "1 Shadow Hand Stance", source: "Tome of Battle p.32", benefit: "Bir Shadow Hand duruşundayken (Stance), Shadow Hand disiplini silahlarıyla yapılan yakın dövüş hasarlarına DEX modifiyerini ekler." },
-      { name: "Weapon Focus", category: "Fighter", isFighterBonusFeat: true, prereq: "Proficiency, BAB +1", source: "PHB p.102", benefit: "Seçilen silah türüyle yapılan tüm saldırı zarlarına +1 bonus kazandırır." },
-      { name: "Combat Expertise", category: "Fighter", isFighterBonusFeat: true, prereq: "Int 13", source: "PHB p.92", benefit: "Yakın dövüş saldırı zarından -5'e kadar (veya BAB kadar) ceza alıp aynı değeri AC'ye Dodge bonusu olarak ekler." },
-      { name: "Adaptive Style", category: "Martial", isFighterBonusFeat: false, prereq: "Crusader, Swordsage veya Warblade 1", source: "Tome of Battle p.28", benefit: "1 Full-Round Action harcayarak kuşanılan (Readied) manevralarınızı savaş ortasında değiştirebilir ve harcanmış manevraları yenileyebilirsiniz." },
-      { name: "Arcane Strike", category: "General", isFighterBonusFeat: false, prereq: "3. seviye arcane büyü yapabilme, BAB +4", source: "Complete Warrior p.96", benefit: "Free Action olarak bir büyü yuvası feda edip 1 tur boyunca tüm silah saldırılarına +Büyü Seviyesi saldırı bonusu ve +Xd4 ekstra hasar ekler." },
-      { name: "Practiced Spellcaster", category: "General", isFighterBonusFeat: false, prereq: "Spellcraft 4 ranks", source: "Complete Arcane p.82", benefit: "Seçilen büyücü sınıfının Caster Level (CL) değerini +4 artırır (toplam karakter seviyesini HD'yi geçemez). Çoklu sınıf (Gish) karakterler için idealdir." },
-      { name: "Improved Initiative", category: "Fighter", isFighterBonusFeat: true, prereq: "-", source: "PHB p.96", benefit: "İnisiyatif (Initiative) zarlarına kalıcı +4 bonus sağlar." },
-      { name: "Dodge", category: "Fighter", isFighterBonusFeat: true, prereq: "Dex 13", source: "PHB p.93", benefit: "Belirlenen hedefe karşı +1 Dodge AC bonusu verir (Dodge bonusları birbiriyle toplanır)." },
-      { name: "Mobility", category: "Fighter", isFighterBonusFeat: true, prereq: "Dex 13, Dodge", source: "PHB p.98", benefit: "Tehdit altındaki karelerden çıkarken tetiklenen fırsat saldırılarına (AoO) karşı +4 Dodge AC bonusu verir." },
-      { name: "Spring Attack", category: "Fighter", isFighterBonusFeat: true, prereq: "Dex 13, Dodge, Mobility, BAB +4", source: "PHB p.100", benefit: "Yakın dövüş saldırısından hem önce hem sonra toplam hızınız kadar hareket etmenizi sağlar; hedef fırsat saldırısı yapamaz." },
-      { name: "Exotic Weapon Proficiency", category: "Fighter", isFighterBonusFeat: true, prereq: "BAB +1", source: "PHB p.94", benefit: "Seçilen bir egzotik silahı -4 ceza almadan ustalıkla kullanmanızı sağlar." },
-      { name: "Combat Reflexes", category: "Fighter", isFighterBonusFeat: true, prereq: "-", source: "PHB p.92", benefit: "Tur başına DEX modifiyeriniz kadar ek Fırsat Saldırısı (AoO) yapabilir ve Flat-Footed iken de AoO kullanabilirsiniz." },
-      { name: "Improved Trip", category: "Fighter", isFighterBonusFeat: true, prereq: "Int 13, Combat Expertise", source: "PHB p.96", benefit: "Çelme (Trip) denemelerinde AoO tetiklemez, +4 bonus verir ve rakibi düşürdüğünüzde anında ücretsiz bir yakın dövüş saldırısı hakkı kazandırır." },
-      { name: "Shock Trooper", category: "Fighter", isFighterBonusFeat: true, prereq: "Improved Bull Rush, Power Attack, BAB +6", source: "Complete Warrior p.112", benefit: "Heedless Charge: Charge saldırısında Power Attack cezasını saldırı zarı yerine AC'den düşmenizi sağlar." },
-      { name: "Leap Attack", category: "General", isFighterBonusFeat: false, prereq: "Jump 8 ranks, Power Attack", source: "Complete Adventurer p.110", benefit: "Charge sırasında en az 10 ft uzun atlama yaparsanız Power Attack ekstra hasarını ikiye/üçe katlar." },
-      { name: "Blind-Fight", category: "Fighter", isFighterBonusFeat: true, prereq: "-", source: "PHB p.90", benefit: "Concealment (Gizlenme) ıska şansını (Miss Chance) bir kez yeniden atmanızı sağlar; görünmez rakiplere karşı AC'de DEX kaybetmezsiniz." },
-      { name: "Cleave", category: "Fighter", isFighterBonusFeat: true, prereq: "Str 13, Power Attack", source: "PHB p.92", benefit: "Bir yaratığı yakın dövüşte yıktığınızda (0 HP altı), erişim mesafenizdeki başka bir hedefe anında ek saldırı yaparsınız." },
-      { name: "Improved Critical", category: "Fighter", isFighterBonusFeat: true, prereq: "Proficiency, BAB +8", source: "PHB p.95", benefit: "Seçilen silahın kritik tehdit aralığını iki katına çıkarır." },
-      { name: "Two-Weapon Fighting", category: "Fighter", isFighterBonusFeat: true, prereq: "Dex 15", source: "PHB p.102", benefit: "Çift silahla dövüşürken alınan saldırı cezalarını azaltır (Hafif off-hand silahla -2 / -2)." },
-      { name: "Oversized Two-Weapon Fighting", category: "Fighter", isFighterBonusFeat: true, prereq: "Dex 13, Two-Weapon Fighting, BAB +1", source: "Complete Adventurer p.111", benefit: "İkinci elinizde (Off-Hand) tek elli bir silahı hafif (light) bir silah gibi kullanmanızı ve çift silah cezasını azaltmanızı sağlar." },
-      { name: "Monkey Grip", category: "Fighter", isFighterBonusFeat: true, prereq: "BAB +1", source: "Complete Warrior p.103", benefit: "Kendi boyutunuzdan bir boy büyük yakın dövüş silahlarını veya iki elli (Two-Handed) silahları tek elinizle -2 saldırı cezasıyla kullanmanızı sağlar." },
-      { name: "Combat Casting", category: "General", isFighterBonusFeat: false, prereq: "-", source: "PHB p.92", benefit: "Savunmada büyü yaparken (Cast Defensively) veya kıskaçtayken Concentration zarlarına +4 bonus verir." },
-      { name: "Extend Spell", category: "Metamagic", isFighterBonusFeat: false, prereq: "-", source: "PHB p.94", benefit: "Büyünün süresini iki katına çıkarır (+1 seviye büyü yuvası kullanır)." },
-      { name: "Empower Spell", category: "Metamagic", isFighterBonusFeat: false, prereq: "-", source: "PHB p.93", benefit: "Büyünün tüm değişken sayısal etkilerini (hasar zarları vb.) x1.5 katına çıkarır (+2 seviye büyü yuvası)." },
-      { name: "Quicken Spell", category: "Metamagic", isFighterBonusFeat: false, prereq: "-", source: "PHB p.98", benefit: "Büyüyü Swift Action olarak anında yapmanızı sağlar (+4 seviye büyü yuvası)." },
-      { name: "Somatic Weaponry", category: "General", isFighterBonusFeat: false, prereq: "Concentration 4 ranks, Spellcraft 4 ranks", source: "Complete Mage p.47", benefit: "İki elinizde silah veya kalkan tutarken bile büyülerin somatik (el hareketi) bileşenlerini gerçekleştirebilirsiniz." },
-      { name: "Toughness", category: "General", isFighterBonusFeat: false, prereq: "-", source: "PHB p.101", benefit: "Karaktere kalıcı +3 Hit Points (Can Puanı) kazandırır." },
-      { name: "Iron Will", category: "General", isFighterBonusFeat: false, prereq: "-", source: "PHB p.97", benefit: "Will (İrade) kurtarma zarlarına +2 bonus verir." },
-      { name: "Lightning Reflexes", category: "General", isFighterBonusFeat: false, prereq: "-", source: "PHB p.97", benefit: "Reflex (Refleks) kurtarma zarlarına +2 bonus verir." },
-      { name: "Great Fortitude", category: "General", isFighterBonusFeat: false, prereq: "-", source: "PHB p.94", benefit: "Fortitude (Dayanıklılık) kurtarma zarlarına +2 bonus verir." }
-    ];
+    // (Empty: Dynamically sourced from window.BUNDLED_SRD_CORE_CATALOG & masterDb per Rule #5)
+    const DND35_FEAT_CATALOG = [];
 
     // Built-in D&D 3.5e DM Boons, Grants & Campaign Awards (Kural 5 / RAW uyumlu: VarsayÄ±lan boÅŸ, masterDb Ã¼zerinden dinamik beslenir)
     const DND35_DM_BOONS_CATALOG = [];
@@ -29730,47 +29610,34 @@ function renderManualStatsPanel() {
     const DND35_FLAWS_CATALOG = [];
 
     // Built-in D&D 3.5e Warlock Invocations (Complete Arcane & Complete Mage)
-    const DND35_WARLOCK_INVOCATIONS = [
-      // Least (Level 1+)
-      { name: "Eldritch Spear", tier: "Least", category: "Warlock Invocation", minLevel: 1, source: "Complete Arcane p.133", benefit: "Eldritch Blast menzili 60 ft'den 250 ft'ye çıkar (Blast Shape)." },
-      { name: "Hideous Blow", tier: "Least", category: "Warlock Invocation", minLevel: 1, source: "Complete Arcane p.134", benefit: "Standart eylemle yakın dövüş saldırısı yapıp silah hasarına Eldritch Blast hasarını ekler." },
-      { name: "See the Unseen", tier: "Least", category: "Warlock Invocation", minLevel: 1, source: "Complete Arcane p.135", benefit: "24 saat boyunca 60 ft Darkvision ve See Invisibility (Görünmezleri Görme) kazanır." },
-      { name: "Beguiling Influence", tier: "Least", category: "Warlock Invocation", minLevel: 1, source: "Complete Arcane p.133", benefit: "24 saat boyunca Bluff, Diplomacy ve Intimidate becerilerine +6 bonus kazanır." },
-      { name: "Darkness", tier: "Least", category: "Warlock Invocation", minLevel: 1, source: "Complete Arcane p.133", benefit: "İstediği an (At-Will) Darkness büyüsü gibi 20 ft yarıçaplı karanlık yaratır." },
-      { name: "Devil's Sight", tier: "Least", category: "Warlock Invocation", minLevel: 1, source: "Complete Arcane p.133", benefit: "30 ft mesafeye kadar hem normal hem de büyüsel karanlığı net bir şekilde görür." },
-      { name: "Baleful Utterance", tier: "Least", category: "Warlock Invocation", minLevel: 1, source: "Complete Arcane p.133", benefit: "Shatter büyüsü gibi ses dalgasıyla nesneleri patlatır; hedef dazing kurtarma zarı atar." },
-      { name: "All-Seeing Eyes", tier: "Least", category: "Warlock Invocation", minLevel: 1, source: "Complete Mage p.123", benefit: "24 saat boyunca Comprehend Languages ve Search/Spot testlerine +6 bonus." },
-      { name: "Spiderwalk", tier: "Least", category: "Warlock Invocation", minLevel: 1, source: "Complete Arcane p.135", benefit: "24 saat boyunca Spider Climb (Duvarlarda tırmanma) kazanır, ağlardan etkilenmez." },
-      { name: "Earthen Grasp", tier: "Least", category: "Warlock Invocation", minLevel: 1, source: "Complete Arcane p.134", benefit: "Topraktan devasa bir el çıkarıp düşmanı yakalar ve tutar (Grapple)." },
-      { name: "Frightful Presence", tier: "Least", category: "Warlock Invocation", minLevel: 1, source: "Dragon Magic p.80", benefit: "30 ft içindeki HD'si düşük düşmanları korkutur (Shaken)." },
+    // (Empty: Dynamically sourced from window.BUNDLED_SRD_CORE_CATALOG & masterDb per Rule #5)
+    const DND35_WARLOCK_INVOCATIONS = [];
 
-      // Lesser (Level 6+)
-      { name: "Fell Flight", tier: "Lesser", category: "Warlock Invocation", minLevel: 6, source: "Complete Arcane p.134", benefit: "24 saat boyunca kendi yürüme hızında Good manevra kabiliyetiyle uçar (Fly)." },
-      { name: "Eldritch Chain", tier: "Lesser", category: "Warlock Invocation", minLevel: 6, source: "Complete Arcane p.134", benefit: "Eldritch Blast ilk hedefe vurduktan sonra 30 ft içindeki ikincil hedeflere sıçrar (Blast Shape)." },
-      { name: "Brimstone Blast", tier: "Lesser", category: "Warlock Invocation", minLevel: 6, source: "Complete Arcane p.133", benefit: "Eldritch Blast ateş hasarına dönüşür ve hedefi yakar (Eldritch Essence)." },
-      { name: "Hellrime Blast", tier: "Lesser", category: "Warlock Invocation", minLevel: 6, source: "Complete Arcane p.134", benefit: "Eldritch Blast soğuk hasarına dönüşür ve hedefe -4 DEX penaltısı verir (Eldritch Essence)." },
-      { name: "Flee the Scene", tier: "Lesser", category: "Warlock Invocation", minLevel: 6, source: "Complete Arcane p.134", benefit: "Kısa menzilli Dimension Door ışınlanması yapar ve geride 1 turluk illüzyon kuklası bırakır." },
-      { name: "Walk Unseen", tier: "Lesser", category: "Warlock Invocation", minLevel: 6, source: "Complete Arcane p.135", benefit: "24 saat boyunca Invisibility (Görünmezlik) kazanır; saldırana kadar sürer." },
-      { name: "Voracious Dispelling", tier: "Lesser", category: "Warlock Invocation", minLevel: 6, source: "Complete Arcane p.135", benefit: "Dispel Magic atar; bozduğu her büyü seviyesi başına hedefe 1 hasar verir." },
-      { name: "Charm", tier: "Lesser", category: "Warlock Invocation", minLevel: 6, source: "Complete Arcane p.133", benefit: "Charm Monster büyüsü gibi tek bir hedefi büyüler (Will Save DC CHA mod)." },
-      { name: "Curse of Despair", tier: "Lesser", category: "Warlock Invocation", minLevel: 6, source: "Complete Arcane p.133", benefit: "Bestow Curse gibi dokunmayla lanetler veya menzilli saldırıyla -3 saldırı penaltısı verir." },
-
-      // Greater (Level 11+)
-      { name: "Vitriolic Blast", tier: "Greater", category: "Warlock Invocation", minLevel: 11, source: "Complete Arcane p.135", benefit: "Eldritch Blast asit hasarına dönüşür, SR'ı tamamen yok sayar ve devam hasarı verir." },
-      { name: "Eldritch Cone", tier: "Greater", category: "Warlock Invocation", minLevel: 11, source: "Complete Arcane p.134", benefit: "Eldritch Blast 30 ft'lik koni alan etkisine dönüşür (Reflex DC yarısı)." },
-      { name: "Chilling Tentacles", tier: "Greater", category: "Warlock Invocation", minLevel: 11, source: "Complete Arcane p.133", benefit: "Evard's Black Tentacles gibi kollar çıkarır + her tur alandakilere 2d6 soğuk hasarı verir." },
-      { name: "Devour Magic", tier: "Greater", category: "Warlock Invocation", minLevel: 11, source: "Complete Arcane p.133", benefit: "Dokunmayla Greater Dispel Magic; bozduğu büyü seviyesi başına 5 geçici can puanı kazanır." },
-      { name: "Noxious Blast", tier: "Greater", category: "Warlock Invocation", minLevel: 11, source: "Complete Arcane p.134", benefit: "Eldritch Blast vurduğu hedefi 1 dakika boyunca mide bulantısı (Nauseated) yapar (Fort Save)." },
-      { name: "Repelling Blast", tier: "Greater", category: "Warlock Invocation", minLevel: 11, source: "Complete Arcane p.135", benefit: "Eldritch Blast vurduğu hedefleri 1d6x5 ft geriye fırlatır (Reflex Save)." },
-      { name: "Wall of Perilous Flame", tier: "Greater", category: "Warlock Invocation", minLevel: 11, source: "Complete Arcane p.135", benefit: "Wall of Fire duvarı yaratır; hasarın yarısı büyüsel ateş olduğu için dirençleri aşar." },
-
-      // Dark (Level 16+)
-      { name: "Eldritch Doom", tier: "Dark", category: "Warlock Invocation", minLevel: 16, source: "Complete Arcane p.134", benefit: "Eldritch Blast etrafında 20 ft yarıçaplı patlamaya dönüşür (Reflex Save yarısı)." },
-      { name: "Utterdark Blast", tier: "Dark", category: "Warlock Invocation", minLevel: 16, source: "Complete Arcane p.135", benefit: "Eldritch Blast negatif enerji hasarına dönüşür ve hedefe 2 negatif seviye verir." },
-      { name: "Dark Foresight", tier: "Dark", category: "Warlock Invocation", minLevel: 16, source: "Complete Arcane p.133", benefit: "24 saat boyunca Foresight büyüsü: Asla şaşırmaz, AC ve Reflex'e +2 insight bonusu." },
-      { name: "Dark Discorporation", tier: "Dark", category: "Warlock Invocation", minLevel: 16, source: "Complete Arcane p.133", benefit: "Gölge yarasa sürüsüne dönüşür; uçma hızı, fiziksel bağışıklık, %50 alan hasarı azaltma." },
-      { name: "Retributive Phantasm", tier: "Dark", category: "Warlock Invocation", minLevel: 16, source: "Complete Mage p.124", benefit: "Saldırgana anında Phantasmal Killer illüzyonel ölümcül korkusu fırlatır." }
-    ];
+    function getAllWarlockInvocations() {
+      const map = new Map();
+      if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
+        window.BUNDLED_SRD_CORE_CATALOG.filter(i => i && (i.category === 'Warlock Invocation' || (i.type === 'Special Ability' && i.category === 'Warlock Invocation'))).forEach(inv => {
+          map.set(inv.name.toLowerCase(), inv);
+        });
+      }
+      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        masterDb.filter(i => i && (i.category === 'Warlock Invocation' || (i.type === 'Special Ability' && i.category === 'Warlock Invocation'))).forEach(inv => {
+          const k = (inv.name || '').toLowerCase();
+          if (k && !map.has(k)) {
+            map.set(k, inv);
+          }
+        });
+      }
+      if (typeof DND35_WARLOCK_INVOCATIONS !== 'undefined' && Array.isArray(DND35_WARLOCK_INVOCATIONS)) {
+        DND35_WARLOCK_INVOCATIONS.forEach(inv => {
+          const k = (inv.name || '').toLowerCase();
+          if (k && !map.has(k)) {
+            map.set(k, inv);
+          }
+        });
+      }
+      return Array.from(map.values());
+    }
 
     function isWarlockInvocationLevel(level) {
       const l = Number(level);
@@ -30827,22 +30694,21 @@ function renderManualStatsPanel() {
       updateFeatModalPinButton();
     }
 
-    // D&D 3.5e Standard SRD Weapons Reference List
-    const DND35_SRD_WEAPONS = [
-      // Simple Weapons
-      "Dagger", "Punching Dagger", "Spiked Gauntlet", "Light Mace", "Sickle", "Club", "Heavy Mace", 
-      "Morningstar", "Shortspear", "Spear", "Quarterstaff", "Heavy Crossbow", "Light Crossbow", "Dart", "Sling", "Javelin",
-      // Martial Weapons
-      "Throwing Axe", "Handaxe", "Light Hammer", "Lance", "Kukri", "Short Sword", "Battleaxe", "Flail", 
-      "Heavy Flail", "Longsword", "Heavy Pick", "Light Pick", "Rapier", "Scimitar", "Trident", "Warhammer", 
-      "Falchion", "Glaive", "Greataxe", "Greatclub", "Greatsword", "Guislame", "Halberd", "Longspear", 
-      "Ranseur", "Scythe", "Shortbow", "Composite Shortbow", "Longbow", "Composite Longbow",
-      // Exotic Weapons
-      "Bastard Sword", "Dwarven Waraxe", "Whip", "Spiked Chain", "Dire Flail", "Two-Bladed Sword", 
-      "Orc Double Axe", "Gnome Hooked Hammer", "Bolas", "Hand Crossbow", "Repeating Heavy Crossbow", "Repeating Light Crossbow", "Shuriken", "Net",
-      // Unarmed / Touch
-      "Unarmed Strike", "Grapple", "Ray", "Touch"
-    ];
+    // D&D 3.5e Standard SRD Weapons Dynamic Helper (Sourced from window.BUNDLED_SRD_CORE_CATALOG & masterDb per Rule #5)
+    function getSrdWeaponNames() {
+      const set = new Set();
+      if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
+        window.BUNDLED_SRD_CORE_CATALOG.filter(i => i && i.type === 'Weapon').forEach(w => {
+          if (w.name) set.add(w.name);
+        });
+      }
+      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        masterDb.filter(i => i && i.type === 'Weapon').forEach(w => {
+          if (w.name) set.add(w.name);
+        });
+      }
+      return Array.from(set).sort();
+    }
 
     const DND35_SPELL_SCHOOLS = [
       "Abjuration", "Conjuration", "Divination", "Enchantment", 
@@ -30922,7 +30788,7 @@ function renderManualStatsPanel() {
         // Group 2: All Standard D&D 3.5e SRD Weapons
         const grpSrd = document.createElement('optgroup');
         grpSrd.label = '📚 Tüm D&D 3.5e SRD Silahları';
-        DND35_SRD_WEAPONS.forEach(w => {
+        getSrdWeaponNames().forEach(w => {
           const opt = document.createElement('option');
           opt.value = w;
           opt.textContent = w;
@@ -31322,14 +31188,15 @@ function renderManualStatsPanel() {
           }
         }
       });
-      if (typeof DND35_WARLOCK_INVOCATIONS !== 'undefined') {
-        DND35_WARLOCK_INVOCATIONS.forEach(inv => {
-          map.set(inv.name.toLowerCase(), {
+      getAllWarlockInvocations().forEach(inv => {
+        const k = (inv.name || '').toLowerCase();
+        if (k && !map.has(k)) {
+          map.set(k, {
             ...inv,
             category: 'Warlock Invocation'
           });
-        });
-      }
+        }
+      });
       return Array.from(map.values());
     }
 
@@ -31621,7 +31488,7 @@ function renderManualStatsPanel() {
 
     function getAvailableTargetWeapons(isExoticOnly = false) {
       if (isExoticOnly) return getAvailableExoticWeapons();
-      const set = new Set(typeof DND35_SRD_WEAPONS !== 'undefined' ? DND35_SRD_WEAPONS : []);
+      const set = new Set(getSrdWeaponNames());
       if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
         masterDb.forEach(item => {
           if (item && (item.type === 'Weapon' || item.category === 'Weapon')) {
@@ -31913,7 +31780,7 @@ function renderManualStatsPanel() {
         const maxTier = (typeof getWarlockMaxTierForLevel === 'function') ? getWarlockMaxTierForLevel(lvlNum) : 'Least';
         const tierHierarchy = ['Least', 'Lesser', 'Greater', 'Dark'];
         const maxIdx = tierHierarchy.indexOf(maxTier);
-        invocationsList = DND35_WARLOCK_INVOCATIONS.filter(inv => {
+        invocationsList = getAllWarlockInvocations().filter(inv => {
           const invIdx = tierHierarchy.indexOf(inv.tier);
           return invIdx !== -1 && invIdx <= maxIdx;
         }).map(inv => ({
@@ -32120,8 +31987,8 @@ function renderManualStatsPanel() {
       const catalog = getCombinedFeatCatalog();
       let found = catalog.find(f => f.name.toLowerCase() === featName.toLowerCase() || f.name.toLowerCase() === featName.toLowerCase().replace(/\(.*?\)/g, '').trim());
 
-      if (!found && typeof DND35_WARLOCK_INVOCATIONS !== 'undefined') {
-        const inv = DND35_WARLOCK_INVOCATIONS.find(i => i.name.toLowerCase() === featName.toLowerCase());
+      if (!found) {
+        const inv = getAllWarlockInvocations().find(i => i.name.toLowerCase() === featName.toLowerCase());
         if (inv) {
           found = {
             name: inv.name,
@@ -32180,8 +32047,8 @@ function renderManualStatsPanel() {
         found = catalog.find(f => f.name.toLowerCase() === featName.toLowerCase().replace(/\(.*?\)/g, '').trim());
       }
 
-      if (!found && typeof DND35_WARLOCK_INVOCATIONS !== 'undefined') {
-        const inv = DND35_WARLOCK_INVOCATIONS.find(i => i.name.toLowerCase() === featName.toLowerCase());
+      if (!found) {
+        const inv = getAllWarlockInvocations().find(i => i.name.toLowerCase() === featName.toLowerCase());
         if (inv) {
           found = { name: inv.name, prereq: '-', benefit: inv.desc || '' };
         }
