@@ -2236,3 +2236,25 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   4. **Parite ve Kural Standartları:**
      - 4 HTML karakter kâğıdı dosyası (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi sağlandı (`454E70653D0A756F7792E54215D0959ECB24DECB4BF4F589549BC42BFEA309A1`).
      - Standart tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.
+
+
+---
+
+## 79. D&D 3.5e RAW UYUMLU İNSAN / IRKSAL BONUS FEAT KISITLAMASININ KALDIRILMASI (2026-10-26)
+* **İstek & Problem:**
+  - 1. seviyede İnsan (Human) karakter için seviye tablosundaki `+ Irk Feati Seç` butonuna tıklandığında açılan modalda kategori `🧬 Irksal Yetenek (Racial Trait)` olarak ayarlanıyordu.
+  - Mevcut filtreleme mantığı (`renderQuickFeatSearchResults` ve `renderLevelUpFeatSearchResults`), `Racial Trait` kategorisini yalnızca `category === 'Racial Trait'` veya `category === 'General'` olanlarla kısıtlıyordu (katalogdaki 112 featten yalnızca 18'i listeleniyor ve Savaşçı/Fighter bonus featleri dahil pek çok feat görünmüyordu).
+  - Oysa D&D 3.5e PHB (sf. 12-13) kurallarına göre İnsan bonus feati için hiçbir kategori/okul kısıtlaması yoktur (*"Humans may choose any feat for which they qualify"*).
+* **Uygulanan Değişiklikler:**
+  1. **Tam Kütüphane Erişimi (`baseList = combined`):**
+     - Hem hızlı feat ekleme modalında (`renderQuickFeatSearchResults`) hem de Seviye Atlama Sihirbazı modalında (`renderLevelUpFeatSearchResults`), `Racial Trait` seçildiğinde katalog yapay olarak kısıtlanmak yerine tüm feat havuzunu (`combined`, 112+ feat) eksiksiz sunacak şekilde güncellendi.
+     - Oyuncu önkoşulunu sağladığı tüm featleri (Savaşçı featleri, Genel featler, vb.) filtre sekmelerinden görebilir ve seçebilir.
+  2. **Etiketleme ve Yuva Koruma:**
+     - Feat seçildiğinde seviye ilerleme satırına `🧬 [Racial] ` ön eki ile kaydedilir.
+     - Seviye tablosu bu feati bonus feat sütununda `🧬` rozetiyle gösterir ve seviye tablosundaki `+ Irk Feati Seç` uyarısı başarıyla tamamlanmış sayılır.
+     - Feat seçilirken veya düzenlenirken slot kategorisinin yanlışlıkla `Class Bonus Feat`e kayması engellendi (`Racial Trait` bağlamı korundu).
+  3. **Açılır Menü Metin İyileştirmesi:**
+     - Kategori açılır menülerindeki etiket `🧬 Irksal Bonus Feat (Human vb.)` olarak netleştirildi.
+  4. **Parite ve Kural Standartları:**
+     - 4 HTML karakter kâğıdı dosyası (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi sağlandı (`BD021B9F7D1EB1A6F6B2C7FFB8EEDABF6BD28455FCD83728D55D8706C6841034`).
+     - Standart tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.

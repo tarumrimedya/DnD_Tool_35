@@ -3721,7 +3721,7 @@
             <option value="DM Boon">🌟 DM Lütfu / Boon (DM Grant)</option>
             <option id="quick-feat-opt-warlock" value="Warlock Invocation" disabled title="Bu seçeneği kullanabilmek için CL Kuralından 'Warlock Boon' seçilmeli veya Warlock sınıf seviyesi alınmalıdır.">🔮 Warlock Yakarışı (Kilitli: Warlock Boon veya Seviye Gerekir)</option>
             <option value="Flaw">⚠️ Kusur / Flaw</option>
-            <option value="Racial Trait">🧬 Irksal Yetenek (Racial Trait)</option>
+            <option value="Racial Trait">🧬 Irksal Bonus Feat (Human vb.)</option>
             <option value="Special Ability">✨ Özel Yetenek / Sınıf Özelliği</option>
           </select>
         </div>
@@ -31308,7 +31308,9 @@ function renderManualStatsPanel() {
           } else if (entry.category === 'Racial Trait') {
             catSel.value = 'Racial Trait';
           } else if (entry.category === 'Fighter' || entry.category === 'Martial' || (entry.category || '').toLowerCase().includes('bonus')) {
-            catSel.value = 'Class Bonus Feat';
+            if (catSel.value !== 'Racial Trait') {
+              catSel.value = 'Class Bonus Feat';
+            }
           }
         }
         isFeatPickerForQuickLevel = false;
@@ -31325,7 +31327,9 @@ function renderManualStatsPanel() {
           } else if (entry.category === 'Flaw') {
             levelUpModalFeatSlots[activeFeatPickerSlotIndex].category = 'Flaw';
           } else if (entry.category === 'Fighter' || entry.category === 'Martial') {
-            levelUpModalFeatSlots[activeFeatPickerSlotIndex].category = 'Class Bonus Feat';
+            if (levelUpModalFeatSlots[activeFeatPickerSlotIndex].category !== 'Racial Trait') {
+              levelUpModalFeatSlots[activeFeatPickerSlotIndex].category = 'Class Bonus Feat';
+            }
           } else if (entry.category === 'Special Ability') {
             levelUpModalFeatSlots[activeFeatPickerSlotIndex].category = 'Special Ability';
           } else if (entry.category === 'Racial Trait') {
@@ -31810,7 +31814,8 @@ function renderManualStatsPanel() {
         baseList = combined.filter(f => f.category === 'Special Ability' || f.type === 'Special Ability');
         if (baseList.length === 0) baseList = combined;
       } else if (categoryVal === 'Racial Trait') {
-        baseList = combined.filter(f => f.category === 'Racial Trait' || f.type === 'Racial Trait' || f.category === 'General');
+        // D&D 3.5e RAW (PHB p.12-13): Human and racial bonus feats have NO category restrictions (can choose any qualified feat)
+        baseList = combined;
       }
 
       // Filter by query
@@ -33240,7 +33245,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                   <option value="Class Bonus Feat" ${slot.category === 'Class Bonus Feat' ? 'selected' : ''}>⚔️ Sınıf Bonus Feati</option>
                   <option value="DM Boon" ${slot.category === 'DM Boon' ? 'selected' : ''}>🌟 DM Lütfu / Boon</option>
                   <option value="Flaw" ${slot.category === 'Flaw' ? 'selected' : ''}>⚠️ Kusur / Flaw</option>
-                  <option value="Racial Trait" ${slot.category === 'Racial Trait' ? 'selected' : ''}>🧬 Irksal Yetenek</option>
+                  <option value="Racial Trait" ${slot.category === 'Racial Trait' ? 'selected' : ''}>🧬 Irksal Bonus Feat</option>
                   <option value="Special Ability" ${slot.category === 'Special Ability' ? 'selected' : ''}>✨ Özel Yetenek</option>
                 </select>
               </div>
@@ -33413,7 +33418,8 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         } else if (slot.category === 'Special Ability') {
           baseList = combined.filter(f => f.category === 'Special Ability' || f.type === 'Special Ability');
         } else if (slot.category === 'Racial Trait') {
-          baseList = combined.filter(f => f.category === 'Racial Trait' || f.type === 'Racial Trait' || f.category === 'General');
+          // D&D 3.5e RAW (PHB p.12-13): Human and racial bonus feats have NO category restrictions (can choose any qualified feat)
+          baseList = combined;
         }
 
         // 2. Filter by search query
@@ -33620,7 +33626,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           } else if (lcat.includes('flaw')) {
             levelUpModalFeatSlots[idx].category = 'Flaw';
           } else if (lcat.includes('fighter') || lcat.includes('martial') || found.isFighterBonusFeat === true) {
-            if (levelUpModalFeatSlots[idx].category === 'Class Bonus Feat' || levelUpModalFeatSlots[idx].category === 'Regular Feat') {
+            if (levelUpModalFeatSlots[idx].category === 'Class Bonus Feat' || levelUpModalFeatSlots[idx].category === 'Regular Feat' || levelUpModalFeatSlots[idx].category === 'Racial Trait') {
               // Maintain slot context
             }
           } else if (lcat.includes('special')) {
