@@ -31929,10 +31929,11 @@ function renderManualStatsPanel() {
                  <span>Zaten Sahipsiniz</span>
                </button>`
             : `<button type="button"
-                       onclick="selectFeatForQuickLevel('${safeName}')"
+                       onclick="selectFeatForQuickLevel('${safeName}', true)"
+                       title="${isQualified ? 'Bu feati doğrudan seviyeye ekle' : 'Önkoşul eksik olsa da bu seviyeye ekle'}"
                        class="px-2.5 py-1 rounded text-[11px] font-bold shadow transition shrink-0 cursor-pointer flex items-center gap-1 ${isQualified ? 'bg-emerald-600 hover:bg-emerald-500 text-white active:scale-95' : 'bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-600/40'}">
-                 <span>🎯</span>
-                 <span>${isQualified ? 'Seç' : 'Yine de Seç'}</span>
+                 <span>${isQualified ? '🎯' : '⚠️'}</span>
+                 <span>${isQualified ? 'Seç ve Ekle' : 'Yine de Ekle'}</span>
                </button>`;
 
           return `
@@ -32007,7 +32008,7 @@ function renderManualStatsPanel() {
       `;
     }
 
-    function selectFeatForQuickLevel(featName) {
+    function selectFeatForQuickLevel(featName, autoConfirm = true) {
       const catalog = getCombinedFeatCatalog();
       let found = catalog.find(f => f.name.toLowerCase() === featName.toLowerCase() || f.name.toLowerCase() === featName.toLowerCase().replace(/\(.*?\)/g, '').trim());
 
@@ -32052,7 +32053,29 @@ function renderManualStatsPanel() {
       quickFeatSearchQuery = featName;
       updateQuickFeatTargetSelector(featName);
       updateQuickFeatPrereqBadge();
-      closeQuickFeatCatalogConsole();
+
+      // Check if this feat requires choosing a target weapon
+      const lower = String(featName || '').toLowerCase().trim();
+      const isWeaponFeat = /^(weapon focus|greater weapon focus|weapon specialization|greater weapon specialization|improved critical|exotic weapon proficiency|martial weapon proficiency)/i.test(lower);
+      const hasTargetInParentheses = featName.includes('(') && featName.includes(')');
+      const needsTargetSelection = isWeaponFeat && !hasTargetInParentheses;
+
+      if (needsTargetSelection) {
+        // Needs target weapon selection: keep modal open and highlight target selector
+        closeQuickFeatCatalogConsole();
+        const targetSelect = document.getElementById('quick-feat-target-select');
+        if (targetSelect) targetSelect.focus();
+        const targetContainer = document.getElementById('quick-feat-target-container');
+        if (targetContainer) {
+          targetContainer.classList.add('ring-2', 'ring-amber-400');
+          setTimeout(() => targetContainer.classList.remove('ring-2', 'ring-amber-400'), 2000);
+        }
+      } else if (autoConfirm) {
+        // Option 1: Direct 1-click addition into the level row!
+        confirmQuickLevelFeat(featName);
+      } else {
+        closeQuickFeatCatalogConsole();
+      }
     }
 
     function updateQuickFeatPrereqBadge() {
@@ -32145,15 +32168,29 @@ function renderManualStatsPanel() {
       modal.classList.remove('hidden');
     }
 
-    function confirmQuickLevelFeat() {
-      if (activeQuickLevelIndex === null || !character.levelProgression || !character.levelProgression[activeQuickLevelIndex]) {
-        alert("Geçerli bir seviye seçilmedi!");
+    function confirmQuickLevelFeat(explicitFeatName = null) {
+      if (activeQuickLevelIndex === null || activeQuickLevelIndex === undefined) {
+        console.warn("Geçerli bir seviye seçilmedi!");
         return;
       }
+      if (!Array.isArray(character.levelProgression)) {
+        character.levelProgression = [];
+      }
+      if (!character.levelProgression[activeQuickLevelIndex]) {
+        character.levelProgression[activeQuickLevelIndex] = {
+          level: Number(activeQuickLevelIndex) + 1,
+          className: (character.classes ? character.classes.split(' ')[0] : 'Fighter'),
+          hd: 'd10',
+          hpGain: 10,
+          feats: [],
+          specialAbilities: [],
+          active: true
+        };
+      }
       const nameInput = document.getElementById('quick-feat-name');
-      let featName = nameInput ? nameInput.value.trim() : '';
+      let featName = explicitFeatName || (nameInput ? nameInput.value.trim() : '');
       if (!featName) {
-        alert("Lütfen bir feat veya yetenek adı girin!");
+        console.warn("Lütfen bir feat veya yetenek adı girin!");
         return;
       }
 

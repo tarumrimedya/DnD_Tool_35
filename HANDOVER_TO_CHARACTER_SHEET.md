@@ -2218,3 +2218,21 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - `rule_engine.js` ve `webapp/rule_engine.js` arasında %100 SHA-256 hash paritesi sağlandı (`73EBBF688FEF94C09A832B12CAAE7DB7450992332A57A060098B6619AC30853A`).
      - `scratch/test_proficiencies.html` içindeki 22 test senaryosunun tamamı Edge headless ortamında başarıyla geçti (PASS).
      - Standart tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.
+
+---
+
+## 78. SEVİYE TABLOSU FEAT SEÇİMİNDE TEK TIKLA EKLEME (1-CLICK ADD) ERGONOMİSİ (2026-10-26)
+* **İstek & Problem:**
+  - Seviye tablosu hızlı feat ekleme modalında (`#quick-level-feat-modal`), listedeki bir feate basıldığında önce karttaki `🎯 Seç` butonuna, ardından da pencerenin en altına kaydırarak `✅ Bu Seviyeye Ekle` butonuna basılması gerekiyordu.
+  - Bu iki aşamalı akış gereksiz bir sürtünme (friction) ve kafa karışıklığı yaratıyordu; kullanıcılar "Seç"e bastığında işlemin bittiğini sanabiliyordu.
+* **Uygulanan Değişiklikler:**
+  1. **Doğrudan Tek Tıkla Ekleme (`selectFeatForQuickLevel`):**
+     - Özel hedef gerektirmeyen standart featlerde (örn. *Blind-Fight*, *Cleave*, *Power Attack*, *Toughness* vb.) karttaki butona tıklandığı anda feat doğrudan ilgili seviye satırına eklenir, tablo yenilenir, karakter verisi kaydedilir ve modal otomatik kapanır (1 tıkla tamamlama).
+     - Buton etiketi ve sembolü `🎯 Seç ve Ekle` (önkoşulu eksikse `⚠️ Yine de Ekle`) olarak netleştirildi.
+  2. **Akıllı Hedef Silah Denetimi:**
+     - Yalnızca *Weapon Focus*, *Exotic Weapon Proficiency* gibi hedef silah belirlenmesi gereken parametrik featlerde (eğer parantez içinde silah henüz belirtilmemişse) modal açık tutulur, hedef silah seçtirici vurgulanır ve kullanıcı silahı seçip alttaki `✅ Bu Seviyeye Ekle` butonuna tıklar.
+  3. **Özel / Manuel Feat Desteği:**
+     - Alttaki `✅ Bu Seviyeye Ekle` butonu korunarak, kullanıcının listede olmayan tamamen özel (Homebrew) bir feat adını kutucuğa elle yazıp eklediği veya açıklamasını düzenlediği durumlar için işlevini sürdürmesi sağlandı.
+  4. **Parite ve Kural Standartları:**
+     - 4 HTML karakter kâğıdı dosyası (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi sağlandı (`454E70653D0A756F7792E54215D0959ECB24DECB4BF4F589549BC42BFEA309A1`).
+     - Standart tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.
