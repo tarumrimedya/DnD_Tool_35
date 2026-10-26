@@ -1561,7 +1561,13 @@
               </svg>
               <span>BECERİLER (SKILLS) & 3D ZAR ATICI</span>
             </span>
-            <span id="skills-mode-badge" class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-800 text-slate-300 border border-slate-700">D&D 3.5e RAW</span>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="autoSyncClassSkills(true)" class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950/80 hover:bg-amber-900 text-amber-300 hover:text-white border border-amber-600/70 transition flex items-center gap-1 cursor-pointer" title="Karakter sınıfına göre resmi sınıf becerilerini otomatik eşitle">
+                <span>⭐</span>
+                <span class="hidden sm:inline">Sınıf Becerilerini Eşitle</span>
+              </button>
+              <span id="skills-mode-badge" class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-800 text-slate-300 border border-slate-700">D&D 3.5e RAW</span>
+            </div>
           </div>
 
           <!-- Skill Points Budget Bar (Sınıf & Seviye Puan Sınırı) -->
@@ -30414,91 +30420,193 @@ function renderManualStatsPanel() {
           character.spellcasting.slots = calculateSorcererSlots(sorcLvls, chaVal, character.spellcasting.slots);
         }
       }
+      if (typeof autoSyncCharacterClassSkills === 'function') {
+        autoSyncCharacterClassSkills(character);
+      }
+    }
+
+    // D&D 3.5e Localized Class Name Aliases
+    const DND35_CLASS_ALIASES = {
+      "savaşçı": "Fighter", "fighter": "Fighter",
+      "barbar": "Barbarian", "barbarian": "Barbarian",
+      "hırsız": "Rogue", "rogue": "Rogue",
+      "büyücü": "Wizard", "wizard": "Wizard",
+      "sorcerer": "Sorcerer", "doğal büyücü": "Sorcerer",
+      "rahip": "Cleric", "cleric": "Cleric",
+      "paladin": "Paladin", "şövalye": "Paladin",
+      "korucu": "Ranger", "ranger": "Ranger",
+      "keşiş": "Monk", "monk": "Monk",
+      "ozan": "Bard", "bard": "Bard",
+      "druid": "Druid",
+      "warblade": "Warblade", "savaş dehası": "Warblade",
+      "crusader": "Crusader",
+      "swordsage": "Swordsage",
+      "duskblade": "Duskblade",
+      "warlock": "Warlock",
+      "abjurant champion": "Abjurant Champion",
+      "eldritch knight": "Eldritch Knight",
+      "bloodstorm blade": "Bloodstorm Blade",
+      "arcane archer": "Arcane Archer",
+      "assassin": "Assassin",
+      "shadowdancer": "Shadowdancer",
+      "dragon disciple": "Dragon Disciple",
+      "mystic theurge": "Mystic Theurge",
+      "dervish": "Dervish",
+      "spellsword": "Spellsword",
+      "jade phoenix mage": "Jade Phoenix Mage"
+    };
+
+    // Helper: Determine official class skills set for a character's combined classes (RAW Multiclass Rule)
+    function getCharacterClassSkillsSet(char) {
+      const classSkills = new Set();
+      if (!char) return classSkills;
+
+      const rawNames = new Set();
+      if (Array.isArray(char.levelProgression)) {
+        char.levelProgression.forEach(lp => {
+          if (lp && lp.className) rawNames.add(String(lp.className).trim());
+          else if (lp && lp.class) rawNames.add(String(lp.class).trim());
+        });
+      }
+
+      const classStr = String(char.classes || char.class || '');
+      classStr.split(/[\/\,\+\&\|]/).forEach(part => {
+        const cleaned = part.replace(/\d+/g, '').trim();
+        if (cleaned) rawNames.add(cleaned);
+      });
+
+      const classDefs = (typeof DND35_CLASS_DEFS !== 'undefined') ? DND35_CLASS_DEFS : DND35_BASE_CLASS_DEFS;
+
+      rawNames.forEach(raw => {
+        const lower = raw.toLowerCase();
+        const canonical = DND35_CLASS_ALIASES[lower] || Object.keys(classDefs).find(k => k.toLowerCase() === lower) || raw;
+        const def = classDefs[canonical];
+        if (def && Array.isArray(def.classSkills)) {
+          def.classSkills.forEach(sk => classSkills.add(sk));
+        }
+      });
+
+      return classSkills;
+    }
+
+    // Helper: Auto-sync official class skills
+    function autoSyncCharacterClassSkills(char, forceAll = false) {
+      if (!char) return;
+      const classSkillsSet = getCharacterClassSkillsSet(char);
+      if (classSkillsSet.size === 0) return;
+
+      if (!Array.isArray(char.skills)) ensureAllSkills(char);
+
+      char.skills.forEach(sk => {
+        if (classSkillsSet.has(sk.key)) {
+          sk.isClass = true;
+        } else if (forceAll) {
+          sk.isClass = false;
+        }
+      });
+      char._classSkillsInitialized = true;
     }
 
     // D&D 3.5e Class Progression Reference Table & Dynamic Class System
     const DND35_BASE_CLASS_DEFS = {
       "Warblade": {
+        classSkills: ["balance", "climb", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "diplomacy", "intimidate", "jump", "martial_lore", "swim"],
         hd: 12, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 4,
         type: 'Base Class', source: 'Tome of Battle', role: 'Martial Adept / Tank & Striker',
         description: 'Savaş zekasını (INT) manevralarla birleştiren, d12 canlı dayanıklı dövüş ustası.'
       },
       "Fighter": {
+        classSkills: ["climb", "craft_alchemy", "craft_armor", "craft_weapon", "handle_animal", "intimidate", "jump", "ride", "swim"],
         hd: 10, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 2,
         type: 'Base Class', source: "Player's Handbook", role: 'Martial / Feat Specialist',
         description: 'Zengin bonus feat ağacı ile her dövüş stilinde uzmanlaşan temel savaşçı.'
       },
       "Barbarian": {
+        classSkills: ["climb", "craft_alchemy", "craft_armor", "craft_weapon", "handle_animal", "intimidate", "jump", "listen", "ride", "survival", "swim"],
         hd: 12, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 4,
         type: 'Base Class', source: "Player's Handbook", role: 'Martial / Berserker',
         description: 'Rage (Öfke) ile yüksek STR ve CON kazanan, hızlı hareket eden vahşi savaşçı.'
       },
       "Rogue": {
+        classSkills: ["appraise", "balance", "bluff", "climb", "craft_alchemy", "craft_armor", "craft_weapon", "decipher_script", "diplomacy", "disable_device", "disguise", "escape_artist", "forgery", "gather_information", "hide", "intimidate", "jump", "k_local", "listen", "move_silently", "open_lock", "perform", "profession", "search", "sense_motive", "sleight_of_hand", "spot", "swim", "tumble", "umd", "use_rope"],
         hd: 6, bab: 0.75, fort: "poor", ref: "good", will: "poor", skills: 8,
         type: 'Base Class', source: "Player's Handbook", role: 'Expert / Precision Damage',
         description: 'Sneak Attack ile hassas hasar vuran, tuzak bozan ve zengin beceri puanına sahip uzman.'
       },
       "Wizard": {
+        classSkills: ["concentration", "craft_alchemy", "craft_armor", "craft_weapon", "decipher_script", "k_arcana", "k_arch", "k_dungeon", "k_geo", "k_history", "k_local", "k_nature", "k_nobility", "k_religion", "k_planes", "profession", "spellcraft"],
         hd: 4, bab: 0.5, fort: "poor", ref: "poor", will: "good", skills: 2,
         type: 'Base Class', source: "Player's Handbook", role: 'Arcane Caster (Prepared)',
         description: 'Büyü kitabından hazırladığı kadim büyülerle evrenin kurallarını büken alim büyücü.'
       },
       "Sorcerer": {
+        classSkills: ["bluff", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "k_arcana", "profession", "spellcraft"],
         hd: 4, bab: 0.5, fort: "poor", ref: "poor", will: "good", skills: 2,
         type: 'Base Class', source: "Player's Handbook", role: 'Arcane Caster (Spontaneous)',
         description: 'Damarlarında ejderha veya kadim büyü kanı taşıyan, anlık (spontaneous) büyücü.'
       },
       "Cleric": {
+        classSkills: ["concentration", "craft_alchemy", "craft_armor", "craft_weapon", "diplomacy", "heal", "k_history", "k_nobility", "k_religion", "k_planes", "profession", "spellcraft"],
         hd: 8, bab: 0.75, fort: "good", ref: "poor", will: "good", skills: 2,
         type: 'Base Class', source: "Player's Handbook", role: 'Divine Caster / Healer & Buffer',
         description: 'Tanrısından aldığı ilahi güçle yaşayanları iyileştiren, ölümsüzleri kovan ilahi savaşçı.'
       },
       "Paladin": {
+        classSkills: ["concentration", "craft_alchemy", "craft_armor", "craft_weapon", "diplomacy", "handle_animal", "heal", "k_nobility", "k_religion", "profession", "ride"],
         hd: 10, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 2,
         type: 'Base Class', source: "Player's Handbook", role: 'Divine Champion / Tank',
         description: 'Smite Evil, Lay on Hands ve Divine Grace ile adalet dağıtan kutsal şövalye.'
       },
       "Ranger": {
+        classSkills: ["climb", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "handle_animal", "heal", "hide", "jump", "k_dungeon", "k_geo", "k_nature", "listen", "move_silently", "profession", "ride", "search", "spot", "survival", "swim", "use_rope"],
         hd: 8, bab: 1.0, fort: "good", ref: "good", will: "poor", skills: 6,
         type: 'Base Class', source: "Player's Handbook", role: 'Martial / Scout & Hunter',
         description: 'Favored Enemy, iz sürme ve okçuluk / çift el stiliyle doğada avlanan korucu.'
       },
       "Monk": {
+        classSkills: ["balance", "climb", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "diplomacy", "escape_artist", "hide", "jump", "k_arcana", "k_religion", "listen", "move_silently", "perform", "profession", "sense_motive", "spot", "swim", "tumble"],
         hd: 8, bab: 0.75, fort: "good", ref: "good", will: "good", skills: 4,
         type: 'Base Class', source: "Player's Handbook", role: 'Martial / Unarmed & Ki Striker',
         description: 'Silahsız dövüşte usta, tüm kurtarma zarları iyi olan, hızlı ve çevik keşiş.'
       },
       "Bard": {
+        classSkills: ["appraise", "balance", "bluff", "climb", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "decipher_script", "diplomacy", "disguise", "escape_artist", "gather_information", "hide", "jump", "k_arcana", "k_arch", "k_dungeon", "k_geo", "k_history", "k_local", "k_nature", "k_nobility", "k_religion", "k_planes", "listen", "move_silently", "perform", "profession", "sense_motive", "sleight_of_hand", "spellcraft", "swim", "tumble", "umd"],
         hd: 6, bab: 0.75, fort: "poor", ref: "good", will: "good", skills: 6,
         type: 'Base Class', source: "Player's Handbook", role: 'Support / Arcane & Diplomat',
         description: 'Müziği ve büyüleriyle dostlarına moral veren, kadim bilgilere vakıf ozan.'
       },
       "Druid": {
+        classSkills: ["concentration", "craft_alchemy", "craft_armor", "craft_weapon", "diplomacy", "handle_animal", "heal", "k_nature", "listen", "profession", "ride", "spellcraft", "spot", "survival", "swim"],
         hd: 8, bab: 0.75, fort: "good", ref: "poor", will: "good", skills: 4,
         type: 'Base Class', source: "Player's Handbook", role: 'Divine / Wild Shape & Nature Caster',
         description: 'Hayvan yoldaşı olan, vahşi doğa formlarına (Wild Shape) bürünen doğa koruyucusu.'
       },
       "Crusader": {
+        classSkills: ["balance", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "diplomacy", "intimidate", "k_history", "k_religion", "martial_lore", "ride"],
         hd: 10, bab: 1.0, fort: "good", ref: "poor", will: "good", skills: 4,
         type: 'Base Class', source: 'Tome of Battle', role: 'Martial Adept / Tank & Leader',
         description: 'Steely Resolve ile hasarı geciktiren, Devoted Spirit manevralarıyla savaşan inanç savaşçısı.'
       },
       "Swordsage": {
+        classSkills: ["autohypnosis", "balance", "climb", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "heal", "hide", "intimidate", "jump", "k_local", "listen", "martial_lore", "move_silently", "profession", "ride", "sense_motive", "swim", "tumble"],
         hd: 8, bab: 0.75, fort: "poor", ref: "good", will: "good", skills: 6,
         type: 'Base Class', source: 'Tome of Battle', role: 'Martial Adept / Versatile Striker',
         description: 'Çok geniş manevra kütüphanesine ve AC bilgeliğine sahip akrobatik dövüş filozofu.'
       },
       "Duskblade": {
+        classSkills: ["climb", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "decipher_script", "jump", "k_arcana", "k_arch", "k_dungeon", "k_geo", "k_history", "k_local", "k_nature", "k_nobility", "k_religion", "k_planes", "ride", "sense_motive", "spellcraft", "swim"],
         hd: 8, bab: 1.0, fort: "good", ref: "poor", will: "good", skills: 2,
         type: 'Base Class', source: "Player's Handbook II", role: 'Gish / Arcane Melee Channeler',
         description: 'Büyülerini kılıç darbeleriyle kanallayabilen (Arcane Channeling) hibrit savaş büyücüsü.'
       },
       "Warlock": {
+        classSkills: ["bluff", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "disguise", "intimidate", "jump", "k_arcana", "k_religion", "k_planes", "profession", "spellcraft", "umd"],
         hd: 6, bab: 0.75, fort: "poor", ref: "poor", will: "good", skills: 2,
         type: 'Base Class', source: 'Complete Arcane', role: 'Arcane / Eldritch Blast Invocator',
         description: 'Sınırsız Eldritch Blast atabilen ve büyü yerine yakarışlar (invocations) kullanan büyücü.'
       },
       "Abjurant Champion": {
+        classSkills: ["climb", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "handle_animal", "intimidate", "jump", "k_arcana", "ride", "spellcraft", "swim"],
         hd: 10, bab: 1.0, fort: "poor", ref: "poor", will: "good", skills: 2,
         type: 'Prestige Class', source: 'Complete Mage', role: 'Gish (Arcane Warrior)',
         description: 'Zırh ve kalkan büyülerini güçlendirip swift action ile atan, BAB kadar CL kazanan prestij sınıfı.',
@@ -30510,6 +30618,7 @@ function renderManualStatsPanel() {
         ]
       },
       "Eldritch Knight": {
+        classSkills: ["concentration", "craft_alchemy", "craft_armor", "craft_weapon", "decipher_script", "jump", "k_arcana", "k_nobility", "ride", "sense_motive", "spellcraft", "swim"],
         hd: 6, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 2,
         type: 'Prestige Class', source: "Dungeon Master's Guide", role: 'Gish (Arcane Warrior)',
         description: 'Tam BAB ilerlemesi ve neredeyse eksiksiz büyü seviyesi veren klasik dövüşçü-büyücü sınıfı.',
@@ -30519,6 +30628,7 @@ function renderManualStatsPanel() {
         ]
       },
       "Bloodstorm Blade": {
+        classSkills: ["balance", "climb", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "intimidate", "jump", "martial_lore", "spot", "survival", "swim", "tumble"],
         hd: 12, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 2,
         type: 'Prestige Class', source: 'Tome of Battle', role: 'Martial / Thrown Weapon Specialist',
         maxLevel: 10,
@@ -30565,6 +30675,7 @@ function renderManualStatsPanel() {
         }
       },
       "Arcane Archer": {
+        classSkills: ["craft_alchemy", "craft_armor", "craft_weapon", "hide", "listen", "move_silently", "ride", "spot", "survival", "use_rope"],
         hd: 8, bab: 1.0, fort: "good", ref: "good", will: "poor", skills: 4,
         type: 'Prestige Class', source: "Dungeon Master's Guide", role: 'Ranged Martial / Arcane Archer',
         description: 'Oklarına alan büyüleri aşılayan (Imbue Arrow) ve büyüsel vuruş bonusları kazanan Elf okçusu.',
@@ -30576,6 +30687,7 @@ function renderManualStatsPanel() {
         ]
       },
       "Assassin": {
+        classSkills: ["balance", "bluff", "climb", "craft_alchemy", "decipher_script", "diplomacy", "disable_device", "disguise", "escape_artist", "forgery", "gather_information", "hide", "intimidate", "jump", "listen", "move_silently", "open_lock", "search", "sense_motive", "sleight_of_hand", "spot", "swim", "tumble", "umd", "use_rope"],
         hd: 6, bab: 0.75, fort: "poor", ref: "good", will: "poor", skills: 4,
         type: 'Prestige Class', source: "Dungeon Master's Guide", role: 'Stealth / Death Attack & Poison',
         description: 'Death Attack, zehir kullanımı ve karanlık illüzyon büyüleri konusunda uzman suikastçı.',
@@ -30585,6 +30697,7 @@ function renderManualStatsPanel() {
         ]
       },
       "Shadowdancer": {
+        classSkills: ["balance", "bluff", "decipher_script", "diplomacy", "disguise", "escape_artist", "hide", "jump", "listen", "move_silently", "perform", "profession", "search", "sleight_of_hand", "spot", "tumble", "use_rope"],
         hd: 8, bab: 0.75, fort: "poor", ref: "good", will: "poor", skills: 6,
         type: 'Prestige Class', source: "Dungeon Master's Guide", role: 'Stealth / Shadow Jump & Evasion',
         description: 'Açıkta bile saklanabilen (Hide in Plain Sight) ve gölgeler arasında ışınlanan dansçı.',
@@ -30594,6 +30707,7 @@ function renderManualStatsPanel() {
         ]
       },
       "Dragon Disciple": {
+        classSkills: ["climb", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "diplomacy", "escape_artist", "gather_information", "jump", "k_arcana", "listen", "profession", "search", "spot", "swim"],
         hd: 12, bab: 0.75, fort: "good", ref: "poor", will: "good", skills: 2,
         type: 'Prestige Class', source: "Dungeon Master's Guide", role: 'Gish / Dragon Transformation (+STR/CON)',
         description: 'Devasa stat artışları (+8 STR, +2 CON, +2 INT, +2 CHA), doğal zırh ve ejderha nefesi kazanan soy ustası.',
@@ -30603,6 +30717,7 @@ function renderManualStatsPanel() {
         ]
       },
       "Mystic Theurge": {
+        classSkills: ["concentration", "craft_alchemy", "craft_armor", "craft_weapon", "decipher_script", "k_arcana", "k_religion", "profession", "sense_motive", "spellcraft"],
         hd: 4, bab: 0.5, fort: "poor", ref: "poor", will: "good", skills: 2,
         type: 'Prestige Class', source: "Dungeon Master's Guide", role: 'Hybrid Caster (Arcane & Divine)',
         description: 'Her seviyede hem Arcane hem de Divine büyü seviyesini artıran kadim teolog.',
@@ -30612,6 +30727,7 @@ function renderManualStatsPanel() {
         ]
       },
       "Dervish": {
+        classSkills: ["balance", "craft_alchemy", "craft_armor", "craft_weapon", "escape_artist", "jump", "listen", "perform", "profession", "swim", "tumble"],
         hd: 10, bab: 1.0, fort: "good", ref: "good", will: "poor", skills: 4,
         type: 'Prestige Class', source: 'Complete Warrior', role: 'Martial / Mobile Full Attack',
         description: 'Dervish Dance ile hareket ederken tam saldırı yapabilen, slashing silah ustası dövüşçü.',
@@ -30622,6 +30738,7 @@ function renderManualStatsPanel() {
         ]
       },
       "Spellsword": {
+        classSkills: ["climb", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "jump", "k_arcana", "profession", "spellcraft", "swim"],
         hd: 8, bab: 1.0, fort: "good", ref: "poor", will: "good", skills: 2,
         type: 'Prestige Class', source: 'Complete Warrior', role: 'Gish / Ignore ASF & Spell Channeling',
         description: 'Zırhlarda büyü bozulma yüzdesini (ASF) düşüren ve silaha büyü hapseden savaş büyücüsü.',
@@ -30632,6 +30749,7 @@ function renderManualStatsPanel() {
         ]
       },
       "Jade Phoenix Mage": {
+        classSkills: ["concentration", "craft_alchemy", "craft_armor", "craft_weapon", "diplomacy", "intimidate", "k_arcana", "k_history", "k_religion", "martial_lore", "sense_motive", "spellcraft"],
         hd: 6, bab: 1.0, fort: "good", ref: "poor", will: "good", skills: 2,
         type: 'Prestige Class', source: 'Tome of Battle', role: 'Gish (Martial Adept + Arcane)',
         description: 'Arcane büyü gücünü Tome of Battle manevralarıyla harmanlayan ve küllerinden doğan anka büyücüsü.',
@@ -37337,6 +37455,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       if (!char) return;
       if (!Array.isArray(char.skills)) char.skills = [];
 
+      const classSkillsSet = (typeof getCharacterClassSkillsSet === 'function')
+        ? getCharacterClassSkillsSet(char)
+        : new Set();
+
       DND35_CORE_SKILLS.forEach(core => {
         let existing = char.skills.find(s => {
           if (s.key && s.key === core.key) return true;
@@ -37345,6 +37467,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           const cRaw = core.key.replace(/_/g, ' ');
           return sName === cName || sName.includes(cRaw) || cName.includes(sName);
         });
+
+        const isOfficialClass = classSkillsSet.has(core.key);
 
         if (!existing) {
           char.skills.push({
@@ -37355,17 +37479,68 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
             misc: 0,
             acp: core.acp,
             untrained: core.untrained,
-            isClass: false
+            isClass: isOfficialClass
           });
         } else {
           if (!existing.key) existing.key = core.key;
           if (existing.stat === undefined) existing.stat = core.stat;
           if (existing.acp === undefined) existing.acp = core.acp;
           if (existing.untrained === undefined) existing.untrained = core.untrained;
-          if (existing.isClass === undefined) existing.isClass = false;
           if (existing.ranks === undefined) existing.ranks = 0;
+          if (existing.isClass === undefined) {
+            existing.isClass = isOfficialClass;
+          } else if (isOfficialClass && !char._classSkillsInitialized) {
+            // First time migrating legacy character to class skills auto-detection
+            existing.isClass = true;
+          }
         }
       });
+
+      if (classSkillsSet.size > 0 && !char._classSkillsInitialized) {
+        char._classSkillsInitialized = true;
+      }
+    }
+
+    // Explicit User Action: Auto-Sync Class Skills from Toolbar
+    function autoSyncClassSkills(showToast = true) {
+      if (!character) return;
+      const classSkillsSet = (typeof getCharacterClassSkillsSet === 'function')
+        ? getCharacterClassSkillsSet(character)
+        : new Set();
+
+      if (classSkillsSet.size === 0) {
+        if (showToast && typeof showDiceToast === 'function') {
+          showDiceToast({
+            title: 'Sınıf Bulunamadı',
+            text: 'Önce karaktere geçerli bir sınıf (Fighter, Rogue vb.) seçmelisiniz.',
+            color: 'amber'
+          });
+        }
+        return;
+      }
+
+      if (!Array.isArray(character.skills)) ensureAllSkills(character);
+
+      let syncedCount = 0;
+      character.skills.forEach(sk => {
+        if (classSkillsSet.has(sk.key)) {
+          if (!sk.isClass) {
+            sk.isClass = true;
+            syncedCount++;
+          }
+        }
+      });
+      character._classSkillsInitialized = true;
+      saveStateToStorage(true);
+      renderSkills();
+
+      if (showToast && typeof showDiceToast === 'function') {
+        showDiceToast({
+          title: '⭐ Sınıf Becerileri Eşitlendi',
+          text: `${character.classes || 'Sınıf'} resmi sınıf becerileri (${classSkillsSet.size} adet) başarıyla Sınıf Becerisi (⭐) yapıldı.`,
+          color: 'emerald'
+        });
+      }
     }
 
     // Total Skill Points Calculation from Classes & Levels

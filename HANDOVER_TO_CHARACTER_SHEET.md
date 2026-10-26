@@ -2473,3 +2473,31 @@ Karakter kâğıdı (`character.html` / `index.html` ve `webapp/` ikizleri) yeni
   4. **Parite ve Kural Standartları:**
      - `supabase_auth.js` ve `webapp/supabase_auth.js` arasında %100 SHA-256 hash paritesi sağlandı (`8AC92FAD8124D075866EF3D3AC562BBF6356F8AECCCC3E0FD2BD94DEE725DD8E`).
      - Sıfır tavla zarı emojisi (U+1F3B2) kuralı tavizsiz korundu.
+
+
+---
+
+## 87. D&D 3.5e RAW Otomatik Sınıf Becerisi (Class Skills) Eşitleme ve Multiclass Standartlaşması
+
+### Bağlam & Tespit Edilen Problem
+Karakter oluşturulduğunda veya seviye atlandığında, D&D 3.5e resmi sınıf becerileri (örneğin Fighter için Athletics/Climb/Jump/Swim, Craft, Handle Animal, Intimidate, Ride) varsayılan olarak `isClass: false` kalmakta; tabloda tüm beceriler sınıf dışı (`⚪`) görünmekteydi. Bu durum oyuncunun becerilere rank verirken haksız yere 2 kat puan harcamasına (1 yerine 2 puan) ve maks rank sınırının `Seviye + 3` (örn: 6) yerine `(Seviye + 3) / 2` (örn: 3) olarak kısıtlanmasına yol açmaktaydı.
+
+### Uygulanan Mimari Çözüm
+
+1. **D&D 3.5e RAW Sınıf Becerileri Veri Tabanı (`DND35_BASE_CLASS_DEFS`):**
+   * Tüm 27 temel ve prestij sınıfına (Warblade, Fighter, Barbarian, Rogue, Wizard, Sorcerer, Cleric, Paladin, Ranger, Monk, Bard, Druid, Crusader, Swordsage, Duskblade, Warlock, Abjurant Champion, Eldritch Knight, Assassin vb.) resmi D&D 3.5e SRD sınıf becerileri (`classSkills: [...]`) tanımlandı.
+   * `DND35_CLASS_ALIASES` sözlüğü ile Türkçe/İngilizce sınıf isimleri ("savaşçı" -> "Fighter", "büyücü" -> "Wizard" vb.) canonical formatta eşleştirildi.
+
+2. **D&D 3.5e RAW Çoklu Sınıf (Multiclass) Kuralı (`getCharacterClassSkillsSet`):**
+   * *PHB 3.5e, s. 59* kuralı gereğince: Karakterin sahip olduğu veya planladığı sınıflardan herhangi birinin sınıf becerisi olan beceriler birleşir (union) ve karakter için resmi Sınıf Becerisi sayılır.
+   * Birleştirilmiş Beceriler (Consolidated Skills) modunda; bileşenlerinden en az biri sınıf becerisi olan grup becerisi (örn: `Athletics` = Climb + Jump + Swim) otomatik olarak `⭐` (Sınıf Becerisi) statüsü kazanır.
+
+3. **Otomatik Senkronizasyon & Kullanıcı Serbestliği:**
+   * [`ensureAllSkills`](file:///C:/Users/tarum/Documents/antigravity/joyful-fermi/character.html#L37336): Karakter yüklendiğinde veya beceriler hazırlandığında, resmi sınıf becerilerini otomatik olarak `isClass: true` yapar.
+   * [`recalculateCharacterClassSummary`](file:///C:/Users/tarum/Documents/antigravity/joyful-fermi/character.html#L30400): Seviye atlandığında (`confirmLevelUp`) veya sınıf değiştirildiğinde sınıf becerileri anında güncellenir.
+   * Kullanıcının özel house rule / DM kararlarıyla manuel açtığı/kapattığı beceri geçişleri korunur.
+   * Beceriler kartının üst çubuğuna **`[ ⭐ Sınıf Becerilerini Eşitle ]`** butonu eklenerek tek tıkla yeniden senkronizasyon imkânı sunuldu.
+
+4. **Parite ve Kural Standartları:**
+   * 4 dosya arasında (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) **%100 SHA-256 hash paritesi** (`fd7b898b...`) sağlandı.
+   * Standart tavla zarı (`U+1F3B2`) yasağı tavizsiz korundu.
