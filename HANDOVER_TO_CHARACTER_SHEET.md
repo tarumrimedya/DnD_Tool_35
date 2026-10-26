@@ -1,4 +1,4 @@
-# HUB & KARAKTER KÂĞIDI ENTEGRASYON DOKÜMANI (HANDOVER SPECIFICATION)
+﻿# HUB & KARAKTER KÂĞIDI ENTEGRASYON DOKÜMANI (HANDOVER SPECIFICATION)
 
 **Tarih:** 2026-10-23  
 **Gönderen:** Hub Geliştirme Oturumu  
@@ -90,7 +90,7 @@ Hub, karakter kâğıdına veri gönderirken veya `localStorage` (`dnd35_charact
 
 ### GÖREV 5: Senkronizasyon ve Kural Bütünlüğü (STRICT)
 * Kök dizindeki `index.html` üzerinde yapılan her değişiklik eksiksiz olarak `webapp/index.html` dosyasına kopyalanmalı ve doğrulanmalıdır.
-* Proje kuralı gereğince standart zar emojisi `🎲` kesinlikle kullanılmamalı, SVG zar ikonları kullanılmalıdır.
+* Proje kuralı gereğince standart zar emojisi `U+1F3B2` kesinlikle kullanılmamalı, SVG zar ikonları kullanılmalıdır.
 
 ---
 
@@ -110,7 +110,7 @@ Hub, karakter kâğıdına veri gönderirken veya `localStorage` (`dnd35_charact
    - Açılan 3 sekmeli stüdyo modali üzerinden Vitals (HP, AC, Saves, 6 Stat, BAB, CR), Hünerler & Özel Yetenekler (Ex/Su/Sp) ve Büyüler/Manevralar serbestçe eklenip düzenlenebilmektedir.
 6. **Dosya Paritesi & Zar Kuralı:**
    - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`, `rule_engine.js` ve `webapp/rule_engine.js` dosyaları %100 senkronize edildi.
-   - Tüm dosyalarda sıfır tavla zarı (`🎲`) doğrulaması yapıldı.
+   - Tüm dosyalarda sıfır tavla zarı (`U+1F3B2`) doğrulaması yapıldı.
 
 ---
 
@@ -137,7 +137,7 @@ Hub, karakter kâğıdına veri gönderirken veya `localStorage` (`dnd35_charact
      * **Toast Bildirimi:** `showDiceTopToast` ile `🩸 DM Hasar Uyguladı (-14 HP)` veya `💚 DM İyileşme Uyguladı (+8 HP)` bildirimi belirir.
   4. **Parite ve Kural Bütünlüğü:**
      * Kök ve `webapp/` dizinindeki tüm dosyalar (`hub.html`, `index.html`, `character.html`, `gdrive_sync.js`) %100 paritede eşitlendi.
-     * Standart tavla zarı (`🎲`) kesinlikle kullanılmadı.
+     * Standart tavla zarı (`U+1F3B2`) kesinlikle kullanılmadı.
 
 ---
 
@@ -156,7 +156,7 @@ Hub, karakter kâğıdına veri gönderirken veya `localStorage` (`dnd35_charact
      * `/login` isteği `/webapp/login.html` dosyasına yönlendirilmiştir.
   5. **Parite ve Kural Bütünlüğü:**
      * Kök ve `webapp/` altındaki tüm kopyalar (`login.html`, `supabase_auth.js`, `hub.html`, `index.html`, `character.html`) %100 paritede tutulmuştur.
-     * Standart tavla zarı (`🎲`) kesinlikle kullanılmamıştır.
+     * Standart tavla zarı (`U+1F3B2`) kesinlikle kullanılmamıştır.
 
 ---
 
@@ -194,7 +194,7 @@ Hub, karakter kâğıdına veri gönderirken veya `localStorage` (`dnd35_charact
      * Doğal 20'de altın parıltılı (`⚡ DOĞAL 20!`), Doğal 1'de kırmızı parıltılı (`💀 DOĞAL 1!`) rozet ve kenarlık gösterilir.
      * Aynı anda en fazla 3 toast istiflenir, 4.5 saniye sonra otomatik veya tıklamayla anında kapanır.
   4. **Kural ve Parite:**
-     * Proje kuralı gereği standart tavla zarı (`🎲`) kesinlikle kullanılmamış, tematik SVG ve ikonlar (`🛡️`, `⚡`, `🔮`, `👁️`, `👂`) tercih edilmiştir.
+     * Proje kuralı gereği standart tavla zarı (`U+1F3B2`) kesinlikle kullanılmamış, tematik SVG ve ikonlar (`🛡️`, `⚡`, `🔮`, `👁️`, `👂`) tercih edilmiştir.
      * `hub.html` ile `webapp/hub.html` arasında %100 parite sağlanmıştır.
 
 ---
@@ -217,7 +217,7 @@ Hub, karakter kâğıdına veri gönderirken veya `localStorage` (`dnd35_charact
   6. **Canlı Son Zar Kartı ve Geçmiş Logu:**
      * Yapılan tüm atışlar (kart saves/spot/listen atışları dahil) `addDiceHistoryEntry` ile kalıcı olarak kaydedilir ve yeniden eskiye doğru listelenir.
   7. **Kural ve Parite:**
-     * Proje kuralı gereğince standart tavla zarı (`🎲`) kesinlikle kullanılmamış, özel SVG çokyüzlü zar ikonları kullanılmıştır.
+     * Proje kuralı gereğince standart tavla zarı (`U+1F3B2`) kesinlikle kullanılmamış, özel SVG çokyüzlü zar ikonları kullanılmıştır.
      * Kök dizindeki `hub.html` ve `hub_dice.js` ile `webapp/` altındaki kopyalar %100 birebir senkronize edilmiştir.
 
 ---
@@ -248,13 +248,13 @@ Hub, karakter kâğıdına veri gönderirken veya `localStorage` (`dnd35_charact
   1. `supabase_auth.js` / Supabase servis katmanına `createCampaign`, `getCampaignByCode`, `joinCampaignWithCharacter`, `leaveCampaign`, `subscribeToCampaignRealtime` metodlarının eklenmesi.
   2. `hub.html` kampanyalar sekmesine `[🎟️ Davet Kodu]` modalı eklenmesi (kod kopyalama, link paylaşımı, katılan oyuncu listesi ve çıkarma).
   3. `index.html` ve `character.html` sayfalarına `[🎟️ Kampanyaya Katıl]` modalı ve URL'den (`?code=...`) otomatik algılama desteği getirilmesi.
-  4. DM HP otoritesi ve oyuncu stat ayrımının korunması; kök ve `webapp/` dosyalarının %100 paritede tutulması; standart tavla zarı (`🎲`) yasağının tavizsiz uygulanması.
+  4. DM HP otoritesi ve oyuncu stat ayrımının korunması; kök ve `webapp/` dosyalarının %100 paritede tutulması; standart tavla zarı (`U+1F3B2`) yasağının tavizsiz uygulanması.
 
 ---
 
 ## 12. HAZIR DEVİR TESLİM PROMPTU (DİĞER KONUŞMAYA YAPIŞTIRILACAK)
 ```markdown
-DM Kampanya Davet Kodu Modeli (Supabase Auth + PostgreSQL + Realtime WebSocket) mimarisi belirlendi. Görev: `HANDOVER_TO_CHARACTER_SHEET.md` dosyasındaki Bölüm 11 spesifikasyonuna uygun olarak, `supabase_auth.js`, `hub.html`, `index.html` ve `character.html` sayfalarında çok kullanıcılı davet kodu ve kampanya katılım sistemini uçtan uca uygula. Kök ve webapp/ dosyalarında %100 pariteyi koru ve hiçbir yerde standart tavla zarı (`🎲`) kullanma.
+DM Kampanya Davet Kodu Modeli (Supabase Auth + PostgreSQL + Realtime WebSocket) mimarisi belirlendi. Görev: `HANDOVER_TO_CHARACTER_SHEET.md` dosyasındaki Bölüm 11 spesifikasyonuna uygun olarak, `supabase_auth.js`, `hub.html`, `index.html` ve `character.html` sayfalarında çok kullanıcılı davet kodu ve kampanya katılım sistemini uçtan uca uygula. Kök ve webapp/ dosyalarında %100 pariteyi koru ve hiçbir yerde standart tavla zarı (`U+1F3B2`) kullanma.
 ```
 
 ---
@@ -280,7 +280,7 @@ DM Kampanya Davet Kodu Modeli (Supabase Auth + PostgreSQL + Realtime WebSocket) 
      * Sayfa `?code=...` parametresi ile açıldığında otomatik katılım penceresi açılır.
      * Supabase Realtime üzerinden gelen HP değişimleri doğrudan `handleIncomingDmHpEvent` ile Fullscreen Vignette Flash (`🩸` / `💚`), ses ve toast bildirimlerini anında tetikler.
   4. **Parite ve Kural Bütünlüğü:**
-     * Tüm dosyalarda (`hub.html`, `character.html`, `index.html`, `supabase_auth.js`) sıfır tavla zarı (`🎲`) doğrulaması yapıldı.
+     * Tüm dosyalarda (`hub.html`, `character.html`, `index.html`, `supabase_auth.js`) sıfır tavla zarı (`U+1F3B2`) doğrulaması yapıldı.
      * Kök ve `webapp/` dosyaları %100 hash paritesinde eşitlendi.
 
 ---
@@ -309,7 +309,7 @@ DM Kampanya Davet Kodu Modeli (Supabase Auth + PostgreSQL + Realtime WebSocket) 
      * Silah kartları üzerinde güncel büyüleme düzeyi (`+2 Büyülü`), `🩸 Keen` rozeti ve aktif element çipleri anında parlar.
      * Saldırı zarları atıldığında (`rollAttackChainItemByIndex`), bu element zarları formüle otomatik eklenir ve hasar dökümünde tek tek hesaplanır.
   4. **Parite ve Kural Bütünlüğü:**
-     * Dosyalarda sıfır tavla zarı (`🎲`) kuralı tavizsiz korundu.
+     * Dosyalarda sıfır tavla zarı (`U+1F3B2`) kuralı tavizsiz korundu.
      * Kök ve `webapp/` dosyaları (`character.html`, `index.html`, `bundled_data.js`) %100 SHA-256 hash paritesinde eşitlendi.
 
 ---
@@ -327,7 +327,7 @@ DM Kampanya Davet Kodu Modeli (Supabase Auth + PostgreSQL + Realtime WebSocket) 
      * `[ ] Stat bonuslarını yetenek puanlarına ekle` onay kutusu: Double-dip (mükerrer puan ekleme) riskini sıfıra indiren opsiyonel stat kontrolü sunar.
   3. **Parite ve Kalite Güvencesi:**
      * `srd_core_catalog.json`, `bundled_data.js`, `character.html`, `index.html` ve `webapp/` kopyaları %100 SHA-256 paritesinde eşitlendi.
-     * Sıfır tavla zarı (`🎲`) kuralı tavizsiz korundu.
+     * Sıfır tavla zarı (`U+1F3B2`) kuralı tavizsiz korundu.
 
 ---
 
@@ -366,7 +366,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
 
 4. 🛡️ Değişmez Kurallar:
    - Kök dizindeki dosyalar (`hub.html`, `character.html`, `index.html`, `supabase_auth.js`, `bundled_data.js`, `srd_core_catalog.json`) ile `webapp/` altındaki kopyalar %100 birebir SHA-256 eşitliğinde tutulmalıdır.
-   - Projenin hiçbir yerinde tavla zarı emojisi (`🎲` / `U+1F3B2`) kullanılmayacak; SVG zar ikonları veya tematik aksiyon sembolleri (`⚔️`, `🛡️`, `⚡`, `🔮`, `🩸`) kullanılacaktır.
+   - Projenin hiçbir yerinde tavla zarı emojisi (`U+1F3B2` / `U+1F3B2`) kullanılmayacak; SVG zar ikonları veya tematik aksiyon sembolleri (`⚔️`, `🛡️`, `⚡`, `🔮`, `🩸`) kullanılacaktır.
    - Kesinlikle uydurma/dummy data kullanılmayacak; tüm kurallar D&D 3.5e RAW SRD standartlarına sadık kalacaktır.
 ```
 
@@ -396,7 +396,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      * `updateCampaignNavButton()` fonksiyonu her iki alandaki rozet ve kod metinlerini senkronize tutacak şekilde güncellendi.
   3. **Parite ve Kural Bütünlüğü:**
      * `character.html`, `index.html`, `webapp/character.html` ve `webapp/index.html` dosyaları %100 birebir SHA-256 eşitliğinde tutuldu.
-     * Standart tavla zarı (`🎲`) yasağı ve sıfır dummy data kuralı tavizsiz korundu.
+     * Standart tavla zarı (`U+1F3B2`) yasağı ve sıfır dummy data kuralı tavizsiz korundu.
 
 
 
@@ -439,7 +439,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      * `loadInitialData` ve `saveStateToStorage` içerisinde ID atanmamış karakterlere sabit ID bağlanması garanti altına alındı.
   6. **Parite ve Kural Bütünlüğü:**
      * `hub.html`, `character.html`, `index.html`, `supabase_auth.js` ve `webapp/` kopyaları %100 SHA-256 eşitliğinde tutuldu.
-     * Sıfır tavla zarı (`🎲`) ve Kural #5 (No Dummy Data) kuralları tavizsiz korundu.
+     * Sıfır tavla zarı (`U+1F3B2`) ve Kural #5 (No Dummy Data) kuralları tavizsiz korundu.
 
 ---
 
@@ -459,7 +459,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
        - Sarı modda: Kullanıcıya Google ile giriş yaparak bulut yedeklemesini açmak isteyip istemediği sorularak `login.html` sayfasına yönlendirme sunulur.
   4. **Parite ve Kural Bütünlüğü:**
      * `hub.html`, `character.html`, `index.html`, `supabase_auth.js`, `gdrive_sync.js` ve `webapp/` altındaki kopyaları %100 birebir SHA-256 eşitliğinde tutuldu.
-     * Sıfır tavla zarı (`🎲`) kuralı tavizsiz korundu.
+     * Sıfır tavla zarı (`U+1F3B2`) kuralı tavizsiz korundu.
 
 ---
 
@@ -479,7 +479,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   4. **Otomatik Kampanya Birleştirme & Mükerrer Önleme:**
      * `syncCloudUserHub` fonksiyonunda `camp_001` ile bulut seferi eşleşirse tek bir sekmede birleştirilir, çift sekme oluşması engellenir.
   5. **Parite ve Kural Bütünlüğü:**
-     * `hub.html`, `supabase_auth.js` ve `webapp/` kopyaları %100 SHA-256 eşitliğinde tutuldu; sıfır tavla zarı (`🎲`) kuralı korundu.
+     * `hub.html`, `supabase_auth.js` ve `webapp/` kopyaları %100 SHA-256 eşitliğinde tutuldu; sıfır tavla zarı (`U+1F3B2`) kuralı korundu.
 
 ---
 
@@ -503,7 +503,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      * Panel artık kalıcı olduğu için `DOMContentLoaded` olayında `initDiceColor`, `updateDicePoolDisplay`, `renderDiceHistory` ve `renderCustomTemplates` otomatik olarak tetiklenerek hazır hale getirildi.
   5. **Parite ve Kural Bütünlüğü:**
      * `hub.html`, `hub_dice.js` ve `webapp/` kopyaları %100 SHA-256 eşitliğinde tutuldu.
-     * Sıfır tavla zarı (`🎲`) kuralı tavizsiz korundu; çokyüzlü vektörel SVG zarlar kullanıldı.
+     * Sıfır tavla zarı (`U+1F3B2`) kuralı tavizsiz korundu; çokyüzlü vektörel SVG zarlar kullanıldı.
 
 ---
 
@@ -516,7 +516,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   2. **Konteyner Hizalama Temizliği (`hub.html`, `character.html`, `index.html` & `webapp/`):**
      * `#user-profile-slot` elementinden `flex items-center justify-end` sınıfları kaldırılarak tam genişlikli (`w-full`) kart yerleşimine uyarlandı.
   3. **Parite ve Kural Bütünlüğü:**
-     * `hub.html`, `character.html`, `index.html`, `supabase_auth.js` ve `webapp/` kopyaları %100 SHA-256 eşitliğinde tutuldu; sıfır tavla zarı (`🎲`) kuralı tavizsiz korundu.
+     * `hub.html`, `character.html`, `index.html`, `supabase_auth.js` ve `webapp/` kopyaları %100 SHA-256 eşitliğinde tutuldu; sıfır tavla zarı (`U+1F3B2`) kuralı tavizsiz korundu.
 
 ---
 
@@ -556,7 +556,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - Her iki durumda da satır yüksekliği `h-6` (24px) ve yazı boyutu `text-sm md:text-base` olarak eşitlendi; `truncate` sayesinde metin taşmaları ve kutu sıçramaları tamamen engellendi.
   3. **Parite ve Kural Bütünlüğü:**
      - `hub.html`, `hub_dice.js` ve `webapp/` kopyaları %100 SHA-256 eşitliğinde tutuldu.
-     - Sıfır tavla zarı (`🎲`) kuralı korundu.
+     - Sıfır tavla zarı (`U+1F3B2`) kuralı korundu.
 
 ---
 
@@ -570,7 +570,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - `saveNewCharacter()` fonksiyonu seçilen ırkı alır, `createCleanDnd35Character()` fonksiyonuna aktarır ve hem yerel Hub state'ine hem de `character_data.json` / `dnd35_character` tam şemasına resmi `race` değeri olarak yazar.
      - Hub kartında karakter doğrudan `[Irk] • [Sınıf] [Seviye]` olarak listelenir.
   3. **Parite ve Kural Bütünlüğü:**
-     - `hub.html` ve `webapp/hub.html` kopyaları %100 SHA-256 eşitliğinde tutuldu; sıfır tavla zarı (`🎲`) kuralı korundu.
+     - `hub.html` ve `webapp/hub.html` kopyaları %100 SHA-256 eşitliğinde tutuldu; sıfır tavla zarı (`U+1F3B2`) kuralı korundu.
 
 ---
 
@@ -648,7 +648,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - `updateCampaignNavButton()` fonksiyonu `#btn-join-campaign-text` elementini null-safe olarak kontrol eder; `#settings-campaign-badge` ve `#settings-modal` içindeki kampanya yönetimi ("BÖLÜM 1: DM KAMPANYASI & MASA BAĞLANTISI") kesintisiz çalışmaya devam eder.
   3. **Parite ve Kural Bütünlüğü:**
      - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` kopyaları %100 SHA-256 eşitliğinde tutuldu.
-     - Sıfır tavla zarı (`🎲` / `U+1F3B2`) kuralı tavizsiz korundu.
+     - Sıfır tavla zarı (`U+1F3B2` / `U+1F3B2`) kuralı tavizsiz korundu.
 
 ---
 
@@ -667,7 +667,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - Mobil alt navigasyon barı (`mobile-tab-btn-*`) da bu yeni ergonomik sıralamayla birebir eşitlendi.
   2. **Parite ve Kural Bütünlüğü:**
      - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` %100 SHA-256 paritesinde tutuldu.
-     - Sıfır tavla zarı (`🎲`) kuralı tavizsiz korundu.
+     - Sıfır tavla zarı (`U+1F3B2`) kuralı tavizsiz korundu.
 
 ---
 
@@ -683,7 +683,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - `character.html` / `index.html` üzerindeki AI arama açıklama metinleri ve yükleme göstergesi ("Yerel Katalog -> Core SRD -> Splatbooks...") güncellendi.
   3. **Parite ve Kural Bütünlüğü:**
      - `rule_master.js`, `character.html`, `index.html` ve `webapp/` kopyaları %100 SHA-256 eşitliğinde tutuldu.
-     - Sıfır tavla zarı (`🎲`) kuralı korundu.
+     - Sıfır tavla zarı (`U+1F3B2`) kuralı korundu.
 
 ---
 
@@ -696,7 +696,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - Tıklandığında yumuşakça açılarak Master DB ve kural metinlerinde kullanılan resmi D&D 3.5e kitap kodlarını ve açıklamalarını listeler.
   2. **Parite ve Kural Bütünlüğü:**
      - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` %100 SHA-256 eşitliğinde tutuldu.
-     - Sıfır tavla zarı (`🎲`) kuralı tavizsiz korundu.
+     - Sıfır tavla zarı (`U+1F3B2`) kuralı tavizsiz korundu.
 
 ---
 
@@ -714,7 +714,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - Büyü slotları ve seviyeleri sınıf seviyesine göre ayrılırken, büyü gücü ve süresi karakter seviyesine göre hesaplanır.
   3. **Parite ve Kural Bütünlüğü:**
      - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` %100 SHA-256 eşitliğinde güncellendi.
-     - Sıfır tavla zarı (`🎲`) kuralı korundu.
+     - Sıfır tavla zarı (`U+1F3B2`) kuralı korundu.
 
 ---
 
@@ -727,7 +727,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - `character.html` / `index.html` içerisindeki tüm UI ilklendirmelerinde ve hesaplama fonksiyonlarında `character.settings?.babSaveSystem || 'standard'` kuralı uygulandı.
   2. **Parite ve Kural Bütünlüğü:**
      - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` %100 SHA-256 paritesinde tutuldu.
-     - Sıfır tavla zarı (`🎲`) kuralı korundu.
+     - Sıfır tavla zarı (`U+1F3B2`) kuralı korundu.
 
 
 
@@ -818,7 +818,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - Dinlenme tamamlandığında sonuç toast'u (iyileşen HP, tazelenen slot ve manevralar) sorunsuz ekrana yansıtılmaktadır.
   3. **Parite ve Kural Bütünlüğü:**
      - `character.html`, `index.html`, `webapp/character.html` ve `webapp/index.html` kopyaları %100 SHA-256 birebir eşitliğinde güncellendi.
-     - Kesinlikle hiçbir tavla zarı emoji (`🎲`) kullanılmadı.
+     - Kesinlikle hiçbir tavla zarı emoji (`U+1F3B2`) kullanılmadı.
 
 ---
 
@@ -873,7 +873,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - `renderSpellSlots()` grid kaynağı boş/tanımsız durumlarına karşı güvenli hale getirildi.
   4. **Parite ve Kural Bütünlüğü:**
      - `character.html`, `index.html`, `rule_engine.js` ve bunların `webapp/` altındaki kopyaları %100 SHA-256 birebir eşitliğinde güncellendi.
-     - Kesinlikle hiçbir tavla zarı emoji (`🎲`) kullanılmadı.
+     - Kesinlikle hiçbir tavla zarı emoji (`U+1F3B2`) kullanılmadı.
 
 ---
 
@@ -914,7 +914,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - `renderSpellsCockpit()` ve `renderSpellSlotsStrip()` içindeki slot ve sayaç döngüleri korumalı hale getirildi.
   3. **Parite ve Kural Bütünlüğü:**
      - `character.html`, `index.html`, `webapp/character.html` ve `webapp/index.html` %100 SHA-256 paritesinde eşitlendi (`f9445bc9ce`).
-     - Sıfır `🎲` kuralı tavizsiz uygulandı.
+     - Sıfır `U+1F3B2` kuralı tavizsiz uygulandı.
 
 ---
 
@@ -993,7 +993,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - Modal altındaki "💾 Kaydet & Uygula" butonu (`saveStatDistribution()`), hem kimlik/ırk alanlarını hem de taban stat skorlarını tek seferde atomik olarak doğrular, kaydeder, `saveStateToStorage(true)` ve `renderAll()` tetikler.
   4. **Parite ve Kural Bütünlüğü:**
      - `character.html`, `index.html`, `webapp/character.html` ve `webapp/index.html` olmak üzere 4 dosya %100 SHA-256 paritesinde eşitlendi (`A752D15C...`).
-     - Sıfır 🎲 tavla zarı emojisi kuralı tavizsiz korundu.
+     - Sıfır U+1F3B2 tavla zarı emojisi kuralı tavizsiz korundu.
 
 
 ---
@@ -1019,7 +1019,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - `scrollToPortraitPanel()` ve `scrollToWallpaperPanel()` fonksiyonları doğrudan `'portrait'` sekmesini etkinleştirir.
   5. **Parite ve Kural Bütünlüğü:**
      - `character.html`, `index.html`, `webapp/character.html` ve `webapp/index.html` dosyaları %100 SHA-256 eşitliğinde güncellendi (`2A557FFB...`).
-     - Sıfır 🎲 tavla zarı emojisi kuralı tavizsiz korundu.
+     - Sıfır U+1F3B2 tavla zarı emojisi kuralı tavizsiz korundu.
 
 
 ---
@@ -1086,7 +1086,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - Kart ve boş kart yükseklikleri `min-h-[380px] xl:min-h-[400px] xl:max-h-[420px]` olarak dengelendi.
   3. **Parite ve Devir Teslim:**
      - `hub.html` ve `webapp/hub.html` %100 SHA-256 paritesinde eşitlendi (`True`).
-     - Sıfır 🎲 tavla zarı kuralı korundu.
+     - Sıfır U+1F3B2 tavla zarı kuralı korundu.
 
 
 ---
@@ -1120,7 +1120,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - Kullanıcı kutuyu boşaltsa veya geçersiz bir değer girse dahi `applyCustomHp` fonksiyonundaki geri çekilme (fallback) değeri `1` yerine varsayılan `5` olarak ayarlandı.
   3. **Parite ve Devir Teslim:**
      - `hub.html` ve `webapp/hub.html` %100 SHA-256 eşitliğinde tutuldu.
-     - Sıfır 🎲 tavla zarı kuralı korundu.
+     - Sıfır U+1F3B2 tavla zarı kuralı korundu.
 
 
 ---
@@ -1142,7 +1142,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - Merkezdeki sayı kutusu (`w-14 sm:w-16 h-8 text-center font-mono font-black`) ile aralarında mükemmel bir denge sağlandı.
   4. **Parite ve Devir Teslim:**
      - `hub.html` ve `webapp/hub.html` %100 SHA-256 eşitliğinde tutuldu (`True`).
-     - Sıfır 🎲 tavla zarı kuralı korundu.
+     - Sıfır U+1F3B2 tavla zarı kuralı korundu.
 
 
 ---
@@ -1160,7 +1160,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - Başlık fontları `text-xs font-mono` ve sayılar `text-sm sm:text-base` ile dengelendi.
   3. **Parite ve Devir Teslim:**
      - `hub.html` ve `webapp/hub.html` %100 SHA-256 eşitliğinde güncellendi (`True`).
-     - Sıfır 🎲 tavla zarı kuralı korundu.
+     - Sıfır U+1F3B2 tavla zarı kuralı korundu.
 
 
 ---
@@ -1202,7 +1202,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
 * **Uygulanan Değişiklikler:**
   - Can (HP) bloğu önceki tam genişlikli (`w-full`) ve simetrik yapısına geri getirildi.
   - `hub.html` ve `webapp/hub.html` dosyaları %100 SHA-256 eşitliğinde güncellendi.
-  - Sıfır 🎲 tavla zarı kuralı korundu.
+  - Sıfır U+1F3B2 tavla zarı kuralı korundu.
 
 
 ---
@@ -1504,7 +1504,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   5. **Parite ve Güvenlik:**
      - HUB dosyaları (`hub.html`, `webapp/hub.html`) kesinlikle değiştirilmedi.
      - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` 4 dosyada %100 SHA-256 eşitliği (`98A75AC891BCF22A249633BA2C4C1C4CB059CE3BD160E002137A49F675C36AB6`).
-     - Standart tavla zarı emoji yasağı (Rule #3: NO `🎲`) ve dummy data yasağı (Rule #5) eksiksiz uygulandı.
+     - Standart tavla zarı emoji yasağı (Rule #3: NO `U+1F3B2`) ve dummy data yasağı (Rule #5) eksiksiz uygulandı.
 
 
 ---
@@ -1530,7 +1530,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` (%100 SHA-256: `837A3BC96BC2BF882910BA65132DBACDC4B017CACCA19C5054BD7153BFC48FED`).
      - `rule_master.js`, `webapp/rule_master.js` (%100 SHA-256: `2790EA5022A9810B4FDBC393F38A4F2D33073F5F497BF92A139B9FDA00A8E906`).
      - `bundled_data.js`, `webapp/bundled_data.js` (%100 SHA-256: `492C2EA12D029F84D1C5D35685774078637BB7C70B2B138254069DD4865D821D`).
-     - Standart tavla zarı emoji yasağı (Rule #3: NO `🎲`) ve dummy data yasağı (Rule #5) eksiksiz uygulandı.
+     - Standart tavla zarı emoji yasağı (Rule #3: NO `U+1F3B2`) ve dummy data yasağı (Rule #5) eksiksiz uygulandı.
 
 
 ---
@@ -1558,7 +1558,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   3. **Parite ve Güvenlik:**
      - HUB dosyaları (`hub.html`, `webapp/hub.html`) kesinlikle değiştirilmedi.
      - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` (%100 SHA-256: `44074B0EE4311DC03F0A5258C0A6BCF1CE0A6F3D68475AE529B2D8B75B357CE8`).
-     - Standart tavla zarı emoji yasağı (Rule #3: NO `🎲`) ve dummy data yasağı (Rule #5) eksiksiz uygulandı.
+     - Standart tavla zarı emoji yasağı (Rule #3: NO `U+1F3B2`) ve dummy data yasağı (Rule #5) eksiksiz uygulandı.
 
 
 ---
@@ -1585,7 +1585,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   4. **Parite ve Güvenlik:**
      - HUB dosyaları (`hub.html`, `webapp/hub.html`) kesinlikle değiştirilmedi.
      - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` (%100 SHA-256: `69569C862B67069E14C527F0E27B8102CA26BB69E29FE2C521EB2218F71AB47F`).
-     - Standart tavla zarı emoji yasağı (Rule #3: NO `🎲`) ve dummy data yasağı (Rule #5) eksiksiz uygulandı.
+     - Standart tavla zarı emoji yasağı (Rule #3: NO `U+1F3B2`) ve dummy data yasağı (Rule #5) eksiksiz uygulandı.
 
 
 ---
@@ -1631,7 +1631,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - Sentezlenen günlük tek tıkla `[ 📌 Sabitlenmiş Not Olarak Kaydet ]` butonuyla kampanyanın başına `#kronik #ai_ozet` etiketleriyle eklenir.
   4. **Parite ve Güvenlik:**
      - `hub.html` ve `hub_notes.js` kök dizin dosyaları `webapp/hub.html` ve `webapp/hub_notes.js` ile %100 SHA-256 eşitliğinde güncellendi.
-     - Proje kuralı gereğince tavla zarı emojisi `🎲` KESİNLİKLE kullanılmadı.
+     - Proje kuralı gereğince tavla zarı emojisi `U+1F3B2` KESİNLİKLE kullanılmadı.
 
 
 ---
@@ -1653,7 +1653,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - HUB dosyaları (`hub.html`, `webapp/hub.html`) kesinlikle değiştirilmedi.
      - `character.html`, `index.html`, `webapp/character.html`, `webapp/index.html` (%100 SHA-256: `81424124BCF3C661B6B00BE72E4234241D1DD08266EBC0BB050EE89A96080E70`).
      - `rule_engine.js`, `webapp/rule_engine.js` (%100 SHA-256: `1511CB08E23A3872E0F23C02DC2F9463932A51B9B0F891CF092811DF1821379A`).
-     - Standart tavla zarı emoji yasağı (Rule #3: NO `🎲`) ve dummy data yasağı (Rule #5) eksiksiz uygulandı.
+     - Standart tavla zarı emoji yasağı (Rule #3: NO `U+1F3B2`) ve dummy data yasağı (Rule #5) eksiksiz uygulandı.
 
 
 ---
@@ -1671,7 +1671,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - `#gorev` bir meta-kategori/etiket; `- [ ] ` ise markdown yapılacaklar kutucuğu olarak net bir biçimde ayrıştırıldı.
   3. **Parite ve Güvenlik:**
      - `hub.html` ve `hub_notes.js` dosyaları `webapp/` altındaki kopyalarıyla %100 SHA-256 eşitliğinde güncellendi.
-     - Tavla zarı emojisi `🎲` kesinlikle kullanılmadı.
+     - Tavla zarı emojisi `U+1F3B2` kesinlikle kullanılmadı.
 
 
 ---
@@ -1686,7 +1686,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   2. **Parite ve Bütünlük:**
      - Değişiklik `character.html`, `index.html`, `webapp/character.html` ve `webapp/index.html` dosyalarına uygulandı.
      - 4 dosya arasında %100 SHA-256 paritesi korundu (`24ba8bcfaad30f0128e63cddb76263fd21e09738058a64b5e0fbb81187007181`).
-     - Standart tavla zarı emoji yasağına (Rule #3: NO `🎲`) ve HUB izolasyonuna (Rule #6 & Rule #7) titizlikle uyuldu.
+     - Standart tavla zarı emoji yasağına (Rule #3: NO `U+1F3B2`) ve HUB izolasyonuna (Rule #6 & Rule #7) titizlikle uyuldu.
 
 
 ---
@@ -1705,7 +1705,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   4. **Parite ve Güvenlik:**
      - `character.html`, `index.html`, `webapp/character.html` ve `webapp/index.html` dosyalarına uygulandı (%100 SHA-256 eşitliği korundu).
      - HUB modülleri (`hub.html`, `webapp/hub.html`) dokunulmadan izole bırakıldı.
-     - Standart tavla zarı emoji yasağına (Rule #3: NO `🎲`) ve dummy data yasağına (Rule #5) eksiksiz uyuldu.
+     - Standart tavla zarı emoji yasağına (Rule #3: NO `U+1F3B2`) ve dummy data yasağına (Rule #5) eksiksiz uyuldu.
 
 
 ---
@@ -1728,7 +1728,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - Yan panelden çok satırlı hızlı not girildiğinde ilk satır otomatik başlık, devamı gövde olarak yapılandırılır.
   4. **Parite ve Güvenlik:**
      - `hub.html` ve `hub_notes.js` dosyaları `webapp/` altındaki kopyalarıyla %100 SHA-256 eşitliğinde güncellendi.
-     - Tavla zarı emojisi `🎲` kesinlikle kullanılmadı.
+     - Tavla zarı emojisi `U+1F3B2` kesinlikle kullanılmadı.
 
 
 ---
@@ -1744,7 +1744,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   2. **Önbellek (Cache Busting) ve Evrensel Parite:**
      - `dice3d.js?v=20261025_2338` versiyon query parametresi `hub.html`, `index.html` ve `character.html` sayfalarında güncellendi.
      - `dice3d.js`, `hub.html`, `index.html`, `character.html` kök dosyaları `webapp/` altındaki kopyalarıyla %100 SHA-256 eşitliğinde güncellendi.
-     - Tavla zarı emojisi `🎲` kesinlikle kullanılmadı.
+     - Tavla zarı emojisi `U+1F3B2` kesinlikle kullanılmadı.
 
 
 ---
@@ -1764,7 +1764,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   4. **Parite ve Güvenlik:**
      - Değişiklik `character.html`, `index.html`, `webapp/character.html` ve `webapp/index.html` dosyalarına uygulandı (%100 SHA-256 eşitliği sağlandı: `de4ea7fd3db67f5836a4aa4966722792fac6e8a1c5a7bdbea965229fc5ada2cb`).
      - `hub.html` ve `dice3d.js` dosyaları güvenle izole tutuldu.
-     - Tavla zarı emojisi (`🎲`) yasağı ve dummy data yasağına titizlikle uyuldu.
+     - Tavla zarı emojisi (`U+1F3B2`) yasağı ve dummy data yasağına titizlikle uyuldu.
 
 
 ---
@@ -1786,7 +1786,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - Böylece d12 üzerindeki rakamlar klasik masaüstü RPG zarlarında olduğu gibi yatay düz taban üzerinde dik durmakta ve üst köşeye doğru simetrik biçimde tam merkezde yer almaktadır.
   3. **Parite ve Güvenlik:**
      - Değişiklik `dice3d.js` ve `webapp/dice3d.js` dosyalarına uygulandı (%100 SHA-256 eşitliği sağlandı: `3C7BC4143D7E15BE33911EFE6614A9CB4141A6AA56D87B0B93E601951F21A008`).
-     - Tavla zarı emojisi (`🎲`) kesinlikle kullanılmadı.
+     - Tavla zarı emojisi (`U+1F3B2`) kesinlikle kullanılmadı.
 
 ---
 
@@ -1813,7 +1813,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - `selectClassFromSearch(className)` fonksiyonu arama sonuçlarını anında yenileyecek, sınıfı seçecek ve önizleme kartını vurgulayacak şekilde sadeleştirildi.
   4. **Parite ve Kural Uyumu:**
      - 4 dosyada (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) %100 birebir SHA-256 paritesi korundu.
-     - Proje genelinde hiçbir standart tavla zarı emojisi (`🎲` / `U+1F3B2`) kullanılmadı.
+     - Proje genelinde hiçbir standart tavla zarı emojisi (`U+1F3B2` / `U+1F3B2`) kullanılmadı.
 
 
 ---
@@ -1837,7 +1837,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - Zar merkezi zemin seviyesinin tam üzerine oturtularak zemin kesilmesi, siyah tırtıklı gölge izleri ve alt köşe kayıpları bütünüyle önlendi.
   4. **Parite ve Güvenlik:**
      - `dice3d.js` ve `webapp/dice3d.js` dosyalarında %100 SHA-256 eşitliği sağlandı (`1F283029CDF86E641157C1D5CD02C57A1C21F88CCAAF50D30C4D54DC220C148D`).
-     - Tavla zarı emojisi (`🎲`) kesinlikle kullanılmadı.
+     - Tavla zarı emojisi (`U+1F3B2`) kesinlikle kullanılmadı.
 
 ---
 
@@ -1857,7 +1857,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - `renderCoreFeatsAndSpecialAbilities()` fonksiyonunda çekmecenin ilk açılışta kapalı (`hidden` ve `▼` ikonu) olması, tıklandığında sorunsuz açılıp kapanması sağlandı.
   3. **Parite ve Kural Standartları:**
      - 4 hedef dosya (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi sağlandı.
-     - Standart tavla zarı emojisi yasağı (`🎲` / `U+1F3B2`) tavizsiz korundu.
+     - Standart tavla zarı emojisi yasağı (`U+1F3B2` / `U+1F3B2`) tavizsiz korundu.
 
 
 ---
@@ -1875,7 +1875,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - Başlık ve gövdeyi bağımsız okuyup `title` ve `text` olarak kaydeden, etiketleri her iki alandan birden toplayan ve kayıttan sonra her iki alanı da temizleyen motor mantığı kuruldu.
   4. **Parite ve Güvenlik:**
      - `hub.html` ve `hub_notes.js` kök dosyaları `webapp/` altındaki kopyalarıyla %100 SHA-256 eşitliğinde güncellendi.
-     - Tavla zarı emojisi (`🎲`) kesinlikle kullanılmadı.
+     - Tavla zarı emojisi (`U+1F3B2`) kesinlikle kullanılmadı.
 
 ---
 
@@ -1900,7 +1900,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - Her başlıkta o kategoride bulunan sınıf adedi rozetle gösterildi.
   3. **Parite ve Kural Standartları:**
      - 4 dosya (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi korundu.
-     - Standart tavla zarı emojisi yasağı (`🎲` / `U+1F3B2`) tavizsiz korundu.
+     - Standart tavla zarı emojisi yasağı (`U+1F3B2` / `U+1F3B2`) tavizsiz korundu.
 
 
 ---
@@ -1924,7 +1924,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - Selector `button[onclick*="selectClassFromSearch"] || [onclick*="selectClassFromSearch"]` olarak genişletilerek klavye ile Enter'a basıldığında da ilk sonucun seçilmesi korundu.
   5. **Parite ve Kural Standartları:**
      - 4 dosya (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi korundu.
-     - Standart tavla zarı emojisi yasağı (`🎲` / `U+1F3B2`) tavizsiz korundu.
+     - Standart tavla zarı emojisi yasağı (`U+1F3B2` / `U+1F3B2`) tavizsiz korundu.
 
 
 ---
@@ -1946,7 +1946,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   3. **Parite ve Kural Standartları:**
      - 4 karakter kağıdı dosyası (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 paritesi korundu.
      - 2 HUB dosyası (`hub.html`, `webapp/hub.html`) arasında %100 SHA-256 paritesi korundu.
-     - Sıfır tavla zarı emojisi (`🎲` / `U+1F3B2`) kuralı tavizsiz uygulandı.
+     - Sıfır tavla zarı emojisi (`U+1F3B2` / `U+1F3B2`) kuralı tavizsiz uygulandı.
 
 
 ---
@@ -1965,7 +1965,7 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
        - **Görünür:** Yalnızca büyü ilerlemesi içeren bir **Prestij Sınıfı** (Eldritch Knight, Arcane Trickster vb.) seçildiğinde ve karakterin mevcut büyücülüğü varsa; VEYA ayarlarda **DM Boon / Multiclass CL** aktifken.
   3. **Parite ve Kural Standartları:**
      - 4 dosya (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi korundu.
-     - Sıfır tavla zarı emojisi (`🎲` / `U+1F3B2`) kuralı tavizsiz korundu.
+     - Sıfır tavla zarı emojisi (`U+1F3B2` / `U+1F3B2`) kuralı tavizsiz korundu.
 
 
 
@@ -1999,24 +1999,24 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - Standart tavla zarı emojisi yasağı (`U+1F3B2`) tavizsiz korundu.
 
 
+
 ---
 
-## 70. SEVÄ°YE ATLAMA SÄ°HÄ°RBAZI: ESKÄ° GÃ–MÃœLÃœ KAMPANYA DM BOON VE FLAW DÄ°ZÄ°LERÄ°NÄ°N TEMÄ°ZLENMESÄ° (SAF RAW TEMÄ°ZLÄ°ÄÄ°) (2026-10-26)
-* **Ä°stek & Problem:**
-  - VeritabanÄ± (master_db.json) tamamen sÄ±fÄ±rlanmasÄ±na raÄŸmen yeni bir karakter seviye atlatÄ±lÄ±rken Seviye 1 Feat yuvasÄ±nda Ability Boost (+1 Dex, +1 Cha), Ability Boost (+1 Str, +1 Cha) gibi 20 adet eski kampanya DM lÃ¼tfu ve 5 adet Flaw en baÅŸta Ã§Ä±kmaktaydÄ±.
-  - Bu Ã¶ÄŸelerin kaynaÄŸÄ± masterDb deÄŸil; character.html / index.html iÃ§inde statik olarak bulunan DND35_DM_BOONS_CATALOG ve DND35_FLAWS_CATALOG dizileriydi.
-  - Bu durum Kural 5 (No Dummy Data) ve saf D&D 3.5e RAW seviye atlama deneyimi ile Ã§eliÅŸmekteydi.
-* **Uygulanan DeÄŸiÅŸiklikler:**
-  1. **Statik KataloglarÄ±n SÄ±fÄ±rlanmasÄ±:**
-     - DND35_DM_BOONS_CATALOG = []; olarak boÅŸ diziye dÃ¶nÃ¼ÅŸtÃ¼rÃ¼ldÃ¼.
-     - DND35_FLAWS_CATALOG = []; olarak boÅŸ diziye dÃ¶nÃ¼ÅŸtÃ¼rÃ¼ldÃ¼.
-  2. **Dinamik Veri AkÄ±ÅŸÄ± ve SÄ±fÄ±r Hata DoÄŸrulamasÄ±:**
-     - getCombinedFeatCatalog(), showFeatDetail() ve Seviye Atlama SihirbazÄ± enderLevelUpFeatSearchResults() fonksiyonlarÄ±nÄ±n diziler boÅŸken sÄ±fÄ±r hatayla Ã§alÄ±ÅŸtÄ±ÄŸÄ± teyit edildi.
-     - DM Boon ve Flaw kategorileri artÄ±k tamamen dinamiktir; yalnÄ±zca DM veya oyuncu tarafÄ±ndan masterDb'ye resmi bir kayÄ±t eklendiÄŸinde katalogda listelenir.
-  3. **Parite ve Kural StandartlarÄ±:**
-     - 4 karakter kaÄŸÄ±dÄ± dosyasÄ± (character.html, index.html, webapp/character.html, webapp/index.html) arasÄ±nda %100 SHA-256 hash paritesi korundu.
-     - Standart tavla zarÄ± emojisi (ğŸ² / U+1F3B2) yasaÄŸÄ± tavizsiz uygulandÄ±.
-
+## 70. SEVİYE ATLAMA SİHİRBAZI: ESKİ GÖMÜLÜ KAMPANYA DM BOON VE FLAW DİZİLERİNİN TEMİZLENMESİ (SAF RAW TEMİZLİĞİ) (2026-10-26)
+* **İstek & Problem:**
+  - Veritabanı (`master_db.json`) tamamen sıfırlanmasına rağmen yeni bir karakter seviye atlatılırken Seviye 1 Feat yuvasında *Ability Boost (+1 Dex, +1 Cha)*, *Ability Boost (+1 Str, +1 Cha)* gibi 20 adet eski kampanya DM lütfu ve 5 adet Flaw en başta çıkmaktaydı.
+  - Bu öğelerin kaynağı `masterDb` değil; `character.html` / `index.html` içinde statik olarak bulunan `DND35_DM_BOONS_CATALOG` ve `DND35_FLAWS_CATALOG` dizileriydi.
+  - Bu durum Kural 5 (No Dummy Data) ve saf D&D 3.5e RAW seviye atlama deneyimi ile çelişmekteydi.
+* **Uygulanan Değişiklikler:**
+  1. **Statik Katalogların Sıfırlanması:**
+     - `DND35_DM_BOONS_CATALOG = [];` olarak boş diziye dönüştürüldü.
+     - `DND35_FLAWS_CATALOG = [];` olarak boş diziye dönüştürüldü.
+  2. **Dinamik Veri Akışı ve Sıfır Hata Doğrulaması:**
+     - `getCombinedFeatCatalog()`, `showFeatDetail()` ve Seviye Atlama Sihirbazı `renderLevelUpFeatSearchResults()` fonksiyonlarının diziler boşken sıfır hatayla çalıştığı teyit edildi.
+     - DM Boon ve Flaw kategorileri artık tamamen dinamiktir; yalnızca DM veya oyuncu tarafından `masterDb`'ye resmi bir kayıt eklendiğinde katalogda listelenir.
+  3. **Parite ve Kural Standartları:**
+     - 4 karakter kâğıdı dosyası (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi korundu.
+     - Standart tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz uygulandı.
 
 ---
 
@@ -2034,51 +2034,40 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
     8. **Dwarven Urgrosh:** `brace` yeteneği axe ana gövdesinden ikincil mızrak ucuna (`↳ Dwarven Urgrosh (Spear Off-Hand)`) taşındı.
     9. **Net:** Maksimum menzil `10 ft` olarak sınırlandırıldı.
     10. **Tower Shield:** `-2` atak cezası ve Total Cover standart aksiyon mekaniği `combatModifiers` içine işlendi.
-    11. **Feat Metinleri:** `Far Shot` (menzil kademesi $\times 1.5$ / $\times 2$ uzar, ceza yarıya inmez), `Power Attack` (light silahlara bonus hasar vermez kısıtı), `Manyshot` (BAB +11 ve +16 eşikleri), `Spring Attack` ve `Shot on the Run` (Standard attack action + move), `Mounted Combat` (1/round reaksiyon) RAW standartlarına kavuşturuldu.
+    11. **Feat Metinleri:** `Far Shot` (menzil kademesi 1.5x / 2x uzar, ceza yarıya inmez), `Power Attack` (light silahlara bonus hasar vermez kısıtı), `Manyshot` (BAB +11 ve +16 eşikleri), `Spring Attack` ve `Shot on the Run` (Standard attack action + move), `Mounted Combat` (1/round reaksiyon) RAW standartlarına kavuşturuldu.
     12. **18 Yeni PHB Feat'i:** `Improved Unarmed Strike`, `Deflect Arrows`, `Snatch Arrows`, `Stunning Fist`, `Whirlwind Attack`, `Improved Shield Bash`, `Rapid Reload`, `Improved Precise Shot`, `Mounted Archery`, `Trample`, `Simple Weapon Proficiency`, `Martial Weapon Proficiency`, `Exotic Weapon Proficiency`, `Armor Proficiency (Light/Medium/Heavy)`, `Shield Proficiency`, `Tower Shield Proficiency` çekirdek Ghost Core kataloğuna eklendi.
-* **Karakter KÃ¢ÄŸÄ±dÄ± Oturumunda Tamamlanan Uygulamalar:**
-  1. **DM Boon & Flaw TemizliÄŸi (Madde 70 / Opsiyon A):**
-     - DND35_DM_BOONS_CATALOG = [];
-     - DND35_FLAWS_CATALOG = [];
-     - Eski ev yapÄ±mÄ± hardcoded veriler sÄ±fÄ±rlandÄ±; DM Boon ve Flaw listeleri tamamen dinamik hale getirildi.
-  2. **Ghost Core Feat Entegrasyonu (getCombinedFeatCatalog & showFeatDetail):**
-     - getCombinedFeatCatalog() iÃ§ine window.BUNDLED_SRD_CORE_CATALOG (161 Ã¶ÄŸelik Ã§ekirdek Ghost Core) entegrasyonu saÄŸlandÄ±:
-       `javascript
-       if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
-         window.BUNDLED_SRD_CORE_CATALOG.filter(i => i && i.type === 'Feat').forEach(f => {
-           const k = (f.name || '').toLowerCase();
-           if (k && !map.has(k)) {
-             map.set(k, { ...f });
-           }
-         });
-       }
-       `
-     - showFeatDetail() iÃ§ine FromBundled aramasÄ± eklenerek PHB Ã§ekirdek feat detaylarÄ±nÄ±n, kaynak ve Ã¶nkoÅŸullarÄ±nÄ±n kartlarda kusursuz gÃ¶rÃ¼ntÃ¼lenmesi saÄŸlandÄ±.
-     - 18 yeni resmi PHB Feat'i (Improved Unarmed Strike, Deflect Arrows, Snatch Arrows, Stunning Fist, Whirlwind Attack, Improved Shield Bash, Rapid Reload, Improved Precise Shot, Mounted Archery, Trample, Simple Weapon Proficiency, Martial Weapon Proficiency, Exotic Weapon Proficiency, Armor Proficiency (Light/Medium/Heavy), Shield Proficiency, Tower Shield Proficiency) Seviye Atlama SihirbazÄ±'nda doÄŸrudan aranabilir, seÃ§ilebilir ve RAW Ã¶nkoÅŸul motorunda tanÄ±nÄ±r duruma getirildi.
-  3. **SavaÅŸ Kokpiti Silah/ZÄ±rh KontrolÃ¼:**
-     - SavaÅŸ kokpiti Spotlight aramasÄ±nda Throwing Axe, Shield Spikes (Light Shield), Shield Spikes (Heavy Shield) ve Flail Ã¶ÄŸelerinin sorunsuz ÅŸekilde listelendiÄŸi ve kuÅŸanÄ±labilir olduÄŸu doÄŸrulandÄ±.
-  4. **Parite ve Kural StandartlarÄ±:**
-     - 4 karakter kaÄŸÄ±dÄ± dosyasÄ± (character.html, index.html, webapp/character.html, webapp/index.html) arasÄ±nda %100 SHA-256 hash paritesi saÄŸlandÄ±.
-     - Standart tavla zarÄ± emojisi (ğŸ² / U+1F3B2) yasaÄŸÄ± tavizsiz korundu.
+* **Karakter Kâğıdı Oturumunda Tamamlanan Uygulamalar:**
+  1. **DM Boon & Flaw Temizliği (Madde 70 / Saf RAW):**
+     - `DND35_DM_BOONS_CATALOG = [];`
+     - `DND35_FLAWS_CATALOG = [];`
+     - Eski ev yapımı hardcoded veriler sıfırlandı; DM Boon ve Flaw listeleri tamamen dinamik hale getirildi.
+  2. **Ghost Core Feat Entegrasyonu (`getCombinedFeatCatalog` & `showFeatDetail`):**
+     - `getCombinedFeatCatalog()` içine `window.BUNDLED_SRD_CORE_CATALOG` (161 öğelik çekirdek Ghost Core) entegrasyonu sağlandı.
+     - 55 resmi RAW Feat (özellikle Improved Unarmed Strike, Deflect Arrows, Stunning Fist, Whirlwind Attack ve Silah/Zırh Ustalıkları) seviye atlama konsolunda listelenir ve seçilebilir hale geldi.
+  3. **Kokpit Spotlight Doğrulaması:**
+     - Savaş kokpiti Spotlight aramasında `Throwing Axe`, `Shield Spikes (Light/Heavy)` ve `Flail` öğelerinin sorunsuz çalıştığı doğrulandı.
+  4. **Parite ve Kural Standartları:**
+     - 4 karakter kâğıdı dosyası (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi sağlandı.
+     - Standart tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korundu.
 
 ---
 
-## 72. SEVÄ°YE ATLAMA SÄ°HÄ°RBAZI: RAW Ã–NKOÅUL & KONSOL MOTORUNDA PARAMETRÄ°K DÄ°NAMÄ°KLEÅTÄ°RME (2026-10-26)
-* **Ä°stek & Problem:**
-  - checkFeatPrerequisites ve enderLevelUpFeatSearchResults fonksiyonlarÄ±nda yer alan hardcoded sÄ±nÄ±f isimleri (['sorcerer', 'wizard'...]), savaÅŸÃ§Ä± sÄ±nÄ±flarÄ± (['fighter', 'barbarian'...]) ve string tabanlÄ± filtreleme mantÄ±klarÄ±nÄ±n incelenmesi ve veritabanÄ± ÅŸemasÄ±nÄ± deÄŸiÅŸtirmeden tamamen parametrik hale getirilmesi.
-* **Uygulanan DeÄŸiÅŸiklikler:**
-  1. **Parametrik BÃ¼yÃ¼cÃ¼ (Caster) Tespiti:**
-     - 8 elemanlÄ± hardcoded sÄ±nÄ±f string dizisi kaldÄ±rÄ±ldÄ±.
-     - Aday sÄ±nÄ±fÄ±n def.role (Ã¶rn: Arcane/Divine Caster), def.spellProgression, def.description alanlarÄ± ve karakterin mevcut bÃ¼yÃ¼cÃ¼lÃ¼k durumu (curCl > 0 veya character.spellcasting.slots) taranarak bÃ¼yÃ¼cÃ¼lÃ¼k kabiliyeti dinamik olarak tespit edildi.
-  2. **Parametrik Silah/ZÄ±rh UstalÄ±ÄŸÄ± (Proficiency) DoÄŸrulamasÄ±:**
-     - Sabit dÃ¶vÃ¼ÅŸÃ§Ã¼ sÄ±nÄ±f listesi yerine D&D 3.5e RAW kuralÄ± (def.bab === 1.0 Full BAB sÄ±nÄ±flarÄ± otomatik martial weapon proficiency verir) ve knownFeats iÃ§indeki ustalÄ±k featleri dinamik olarak kontrol edildi.
-  3. **Parametrik SavaÅŸÃ§Ä± Feat & Kategori BayraklarÄ±:**
-     - SavaÅŸÃ§Ä± bonus feat filtreleri isFighterBonusFeat === true (tÃ¼m 55 resmi Ã§ekirdek featte tanÄ±mlÄ± boolean bayrak) Ã¼zerinden doÄŸrulanÄ±r hale getirildi.
-     - Kusur (Flaw) ve DM LÃ¼tfu (Boon) filtreleri nesne 	ype ve category bayraklarÄ±na baÄŸlandÄ±.
-  4. **Parametrik Stat AnahtarlarÄ±:**
-     - Yetenek puanlarÄ± STAT_KEYS global mimarisi ile dinamikleÅŸtirildi.
-  5. **VeritabanÄ± (DB) GÃ¼venliÄŸi:**
-     - master_db.json veya character_data.json Ã¼zerinde hiÃ§bir ÅŸema deÄŸiÅŸikliÄŸi yapÄ±lmadÄ±; mevcut yapÄ±larla %100 geriye dÃ¶nÃ¼k uyumlu refactor tamamlandÄ±.
-  6. **Parite ve Kural StandartlarÄ±:**
-     - 4 karakter kaÄŸÄ±dÄ± dosyasÄ± (character.html, index.html, webapp/character.html, webapp/index.html) arasÄ±nda %100 SHA-256 hash paritesi saÄŸlandÄ±.
-     - Standart tavla zarÄ± emojisi (ğŸ² / U+1F3B2) yasaÄŸÄ± tavizsiz korundu.
+## 72. SEVİYE ATLAMA SİHİRBAZI: RAW ÖNKOŞUL & KONSOL MOTORUNDA PARAMETRİK DİNAMİKLEŞTİRME (2026-10-26)
+* **İstek & Problem:**
+  - `checkFeatPrerequisites` ve `renderLevelUpFeatSearchResults` fonksiyonlarında yer alan hardcoded sınıf isimleri (`['sorcerer', 'wizard'...]`), savaşçı sınıfları (`['fighter', 'barbarian'...]`) ve string tabanlı filtreleme mantıklarının incelenmesi ve veritabanı şemasını değiştirmeden tamamen parametrik hale getirilmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Parametrik Büyücü (Caster) Tespiti:**
+     - 8 elemanlı hardcoded sınıf string dizisi kaldırıldı.
+     - Aday sınıfın `def.role` (örn: Arcane/Divine Caster), `def.spellProgression`, `def.description` alanları ve karakterin mevcut büyücülük durumu (`curCl > 0` veya `character.spellcasting.slots`) taranarak büyücülük kabiliyeti dinamik olarak tespit edildi.
+  2. **Parametrik Silah/Zırh Ustalığı (Proficiency) Doğrulaması:**
+     - Sabit dövüşçü sınıf listesi yerine D&D 3.5e RAW kuralı (`def.bab === 1.0` Full BAB sınıfları otomatik martial weapon proficiency verir) ve `knownFeats` içindeki ustalık featleri dinamik olarak kontrol edildi.
+  3. **Parametrik Savaşçı Feat & Kategori Bayrakları:**
+     - Savaşçı bonus feat filtreleri `isFighterBonusFeat === true` (tüm 55 resmi çekirdek featte tanımlı boolean bayrak) üzerinden doğrulanır hale getirildi.
+     - Kusur (Flaw) ve DM Lütfu (Boon) filtreleri nesne `type` ve `category` bayraklarına bağlandı.
+  4. **Parametrik Stat Anahtarları:**
+     - Yetenek puanları `STAT_KEYS` global mimarisi ile dinamikleştirildi.
+  5. **Veritabanı (DB) Güvenliği:**
+     - `master_db.json` veya `character_data.json` üzerinde hiçbir şema değişikliği yapılmadı; mevcut yapılarla %100 geriye dönük uyumlu refactor tamamlandı.
+  6. **Parite ve Kural Standartları:**
+     - 4 karakter kâğıdı dosyası (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi sağlandı.
+     - Standart tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korundu.
