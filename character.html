@@ -1504,20 +1504,20 @@
             <table class="w-full text-left text-xs">
               <thead class="bg-slate-950 text-slate-400 text-[10px] uppercase font-bold border-b border-slate-800">
                 <tr>
-                  <th class="py-2 px-1 text-center w-[5%] min-w-[36px]">Lvl</th>
-                  <th class="py-2 px-2 text-center w-[12%] min-w-[90px]">Durum</th>
-                  <th class="py-2 px-3 text-left w-[20%] min-w-[140px] whitespace-nowrap">Sınıf</th>
-                  <th class="py-2 px-1 text-center w-[6%] min-w-[45px]">HD</th>
-                  <th class="py-2 px-1 text-center w-[7%] min-w-[50px]">HP</th>
-                  <th class="py-2 px-1 text-center w-[7%] min-w-[50px]">BAB</th>
-                  <th class="py-2 px-1 text-center w-[7%] min-w-[50px]">Fort</th>
-                  <th class="py-2 px-1 text-center w-[7%] min-w-[50px]">Ref</th>
-                  <th class="py-2 px-1 text-center w-[7%] min-w-[50px]">Will</th>
-                  <th class="py-2 px-1 text-center w-[8%] min-w-[55px]">Puan</th>
-                  <th class="py-2 px-2 text-center w-[145px] min-w-[145px] max-w-[145px]">Sınıf Özellikleri</th>
-                  <th class="py-2 px-2 text-center w-[145px] min-w-[145px] max-w-[145px]">Beceriler</th>
-                  <th class="py-2 px-2 text-center w-[145px] min-w-[145px] max-w-[145px]">Bonus</th>
-                  <th class="py-2 px-1 text-center w-16 min-w-[64px] max-w-[64px] whitespace-nowrap shrink-0">İşlem</th>
+                  <th class="py-2 px-1 text-center w-[32px] min-w-[32px]">Lvl</th>
+                  <th class="py-2 px-1 text-center w-[76px] min-w-[76px]">Durum</th>
+                  <th class="py-2 px-2 text-left w-[110px] min-w-[100px] whitespace-nowrap">Sınıf</th>
+                  <th class="py-2 px-0.5 text-center w-[36px] min-w-[36px]">HD</th>
+                  <th class="py-2 px-0.5 text-center w-[38px] min-w-[38px]">HP</th>
+                  <th class="py-2 px-0.5 text-center w-[38px] min-w-[38px]">BAB</th>
+                  <th class="py-2 px-0.5 text-center w-[38px] min-w-[38px]">Fort</th>
+                  <th class="py-2 px-0.5 text-center w-[38px] min-w-[38px]">Ref</th>
+                  <th class="py-2 px-0.5 text-center w-[38px] min-w-[38px]">Will</th>
+                  <th class="py-2 px-0.5 text-center w-[44px] min-w-[44px]">Puan</th>
+                  <th class="py-2 px-2 text-center min-w-[170px]">Sınıf Özellikleri</th>
+                  <th class="py-2 px-2 text-center min-w-[170px]">Beceriler</th>
+                  <th class="py-2 px-2 text-center min-w-[170px]">Bonus</th>
+                  <th class="py-2 px-1 text-center w-[58px] min-w-[58px] max-w-[58px] whitespace-nowrap shrink-0">İşlem</th>
                 </tr>
               </thead>
               <tbody id="level-progression-tbody" class="divide-y divide-slate-800 font-mono text-[11px]">
@@ -37191,10 +37191,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         lvl.will = rowWill;
 
         tr.innerHTML = `
-          <td class="pt-2.5 pb-2.5 px-1 align-top text-center w-[5%] min-w-[36px]">
+          <td class="pt-2.5 pb-2.5 px-1 align-top text-center w-[32px] min-w-[32px]">
             <div class="h-6 flex items-center justify-center font-bold text-amber-400 text-xs">${lvl.level}</div>
           </td>
-          <td class="pt-2.5 pb-2.5 px-2 align-top text-center w-[12%] min-w-[90px]">
+          <td class="pt-2.5 pb-2.5 px-1 align-top text-center w-[76px] min-w-[76px]">
             <div class="h-6 flex items-center justify-center">
               <label class="inline-flex items-center gap-1.5 ${isToggleDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}" title="${toggleTitle}">
                 <input type="checkbox" onchange="toggleLevelActive(${idx})" ${isActive ? 'checked' : ''} ${isToggleDisabled ? 'disabled' : ''} class="w-3.5 h-3.5 rounded text-emerald-500 m-0 ${isToggleDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}">
@@ -37204,46 +37204,46 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
               </label>
             </div>
           </td>
-          <td class="pt-2.5 pb-2.5 px-3 align-top text-left w-[20%] min-w-[140px]">
+          <td class="pt-2.5 pb-2.5 px-2 align-top text-left w-[110px] min-w-[100px]">
             <div class="h-6 flex items-center font-sans font-bold text-white text-xs whitespace-nowrap">${lvl.className}-${classLevelSoFar}</div>
           </td>
-          <td class="pt-2.5 pb-2.5 px-1 align-top text-center w-[6%] min-w-[45px]">
+          <td class="pt-2.5 pb-2.5 px-0.5 align-top text-center w-[36px] min-w-[36px]">
             <div class="h-6 flex items-center justify-center text-slate-400 font-bold text-xs">${lvl.hd}</div>
           </td>
-          <td class="pt-2.5 pb-2.5 px-1 align-top text-center w-[7%] min-w-[50px]">
+          <td class="pt-2.5 pb-2.5 px-0.5 align-top text-center w-[38px] min-w-[38px]">
             <div class="h-6 flex items-center justify-center text-emerald-400 font-bold text-xs">+${lvl.hpGain}</div>
           </td>
-          <td class="pt-2.5 pb-2.5 px-1 align-top text-center w-[7%] min-w-[50px]">
+          <td class="pt-2.5 pb-2.5 px-0.5 align-top text-center w-[38px] min-w-[38px]">
             <div class="h-6 flex items-center justify-center text-sky-400 font-bold text-xs">+${rowBab}</div>
           </td>
-          <td class="pt-2.5 pb-2.5 px-1 align-top text-center w-[7%] min-w-[50px]">
+          <td class="pt-2.5 pb-2.5 px-0.5 align-top text-center w-[38px] min-w-[38px]">
             <div class="h-6 flex items-center justify-center text-slate-300 font-bold text-xs">+${rowFort}</div>
           </td>
-          <td class="pt-2.5 pb-2.5 px-1 align-top text-center w-[7%] min-w-[50px]">
+          <td class="pt-2.5 pb-2.5 px-0.5 align-top text-center w-[38px] min-w-[38px]">
             <div class="h-6 flex items-center justify-center text-slate-300 font-bold text-xs">+${rowRef}</div>
           </td>
-          <td class="pt-2.5 pb-2.5 px-1 align-top text-center w-[7%] min-w-[50px]">
+          <td class="pt-2.5 pb-2.5 px-0.5 align-top text-center w-[38px] min-w-[38px]">
             <div class="h-6 flex items-center justify-center text-slate-300 font-bold text-xs">+${rowWill}</div>
           </td>
-          <td class="pt-2.5 pb-2.5 px-1 align-top text-center w-[8%] min-w-[55px]">
+          <td class="pt-2.5 pb-2.5 px-0.5 align-top text-center w-[44px] min-w-[44px]">
             <div class="h-6 flex items-center justify-center text-indigo-300 font-bold text-xs">${lvl.skillPts || 4}</div>
           </td>
-          <td class="pt-2.5 pb-2.5 px-2 font-sans align-top text-center w-[145px] min-w-[145px] max-w-[145px]">
+          <td class="pt-2.5 pb-2.5 px-2 font-sans align-top text-center min-w-[170px]">
             <div class="flex flex-col gap-1.5 items-stretch w-full">
               ${(abilityBadgeItems.length > 0 || classBonusBadgeItems.length > 0 || pendingClassBonusButtons.length > 0) ? (abilityBadgeItems.join('') + classBonusBadgeItems.join('') + pendingClassBonusButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
             </div>
           </td>
-          <td class="pt-2.5 pb-2.5 px-2 font-sans align-top text-center w-[145px] min-w-[145px] max-w-[145px]">
+          <td class="pt-2.5 pb-2.5 px-2 font-sans align-top text-center min-w-[170px]">
             <div class="flex flex-col gap-1.5 items-stretch w-full">
               ${(regularFeatBadgeItems.length > 0 || regularPromptButtons.length > 0) ? (regularFeatBadgeItems.join('') + regularPromptButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
             </div>
           </td>
-          <td class="pt-2.5 pb-2.5 px-2 font-sans align-top text-center w-[145px] min-w-[145px] max-w-[145px]">
+          <td class="pt-2.5 pb-2.5 px-2 font-sans align-top text-center min-w-[170px]">
             <div class="flex flex-col gap-1.5 items-stretch w-full">
               ${(statBadgeItem || otherBonusBadgeItems.length > 0 || pendingBonusButtons.length > 0) ? ((statBadgeItem || '') + otherBonusBadgeItems.join('') + pendingBonusButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
             </div>
           </td>
-          <td class="pt-2.5 pb-2.5 px-1 align-top text-center w-16 min-w-[64px] max-w-[64px] whitespace-nowrap shrink-0">
+          <td class="pt-2.5 pb-2.5 px-1 align-top text-center w-[58px] min-w-[58px] max-w-[58px] whitespace-nowrap shrink-0">
             <div class="h-6 flex items-center justify-center gap-1">
               <button onclick="openQuickFeatPickerForLevel(${idx})" class="text-emerald-400 hover:text-emerald-300 p-0.5 text-xs transition font-bold" title="Bu seviyeye Feat, Yetenek, Invocation veya Bonus Ekle">
                 ➕

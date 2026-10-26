@@ -2503,3 +2503,29 @@ Karakter oluşturulduğunda veya seviye atlandığında, D&D 3.5e resmi sınıf 
    * Standart tavla zarı (`U+1F3B2`) yasağı tavizsiz korundu.
 
 * **Filtre İyileştirmesi:** Beceriler tablosunda varsayılan görünüm modu oyuncu ergonomisini artırmak amacıyla doğrudan **`⭐ Sınıf (Class)`** filtresi olarak ayarlandı. Karakter açıldığında ilk olarak yalnızca kendi sınıfına ait beceriler listelenir; oyuncu dilerse tek tıkla "Tümü" diyerek tüm becerileri görebilir.
+
+
+---
+
+## 88. Seviye İlerleme Tablosu (Level Progression) Sütun Ergonomisi & Feat Alanı Genişletmesi
+
+### Bağlam & Tespit Edilen Problem
+Seviye İlerleme Tablosunda (`#level-progression-tbody`), sayısal sütunlar (HD, HP, BAB, Fort, Ref, Will, Puan) ve Sınıf sütunu yüzde bazlı (`w-[20%]`, `w-[7%]`) gereksiz geniş yer kaplamakta; tablonun %80'inden fazlasını doldurmaktaydı. Buna karşılık çok kelimeli başlıklar ve rozetler içeren 3 Feat sütunu (`Sınıf Özellikleri`, `Beceriler`, `Bonus`) sabit `max-w-[145px]` ile daraltıldığı için buton metinleri ezilmekte ve taşmaktaydı.
+
+### Uygulanan Mimari Çözüm
+1. **HD - Puan Sayısal Aralığının Sola Yaslanması & Kompaktlaştırılması:**
+   * `Lvl`: `w-[32px] min-w-[32px]`
+   * `Durum`: `w-[76px] min-w-[76px]`
+   * `Sınıf`: `w-[110px] min-w-[100px]` (20%'lik genişlik yerine optimize sabit genişlik)
+   * `HD`: `w-[36px] min-w-[36px]`
+   * `HP`, `BAB`, `Fort`, `Ref`, `Will`: Her biri kompakt `w-[38px] min-w-[38px]`
+   * `Puan`: `w-[44px] min-w-[44px]`
+   * `İşlem`: `w-[58px] min-w-[58px] max-w-[58px]`
+
+2. **Feat Sütunlarının Genişletilmesi (Fluid Expansion):**
+   * `Sınıf Özellikleri`, `Beceriler` ve `Bonus` sütunlarındaki yapay `max-w-[145px]` sınırı kaldırıldı; `min-w-[170px]` ve esnek genişlik verildi.
+   * Feat butonları ekrandaki tüm serbest alanı dolduracak şekilde ferahladı; `[Bonus] Improved Shield Bash` gibi uzun feat isimleri sıkışmadan okunur hale geldi.
+
+3. **Parite ve Kural Standartları:**
+   * 4 dosya arasında (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) **%100 SHA-256 hash paritesi** (`34da380a...`) sağlandı.
+   * Tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korundu.
