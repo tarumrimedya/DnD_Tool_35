@@ -3695,15 +3695,15 @@
       <!-- Modal Header -->
       <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between shrink-0">
         <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-lg bg-purple-950 border border-purple-600/60 flex items-center justify-center text-lg">ğŸ–ï¸</div>
+          <div class="w-8 h-8 rounded-lg bg-purple-950 border border-purple-600/60 flex items-center justify-center text-lg">🎖️</div>
           <div>
-            <h3 id="quick-feat-modal-title" class="text-sm font-bold text-white">Seviye Ä°Ã§in Feat Ekle</h3>
-            <p id="quick-feat-modal-subtitle" class="text-[10px] text-purple-300">Spotlight Arama, RAW DoÄŸrulama ve Rule Master AI</p>
+            <h3 id="quick-feat-modal-title" class="text-sm font-bold text-white">Seviye İçin Feat Ekle</h3>
+            <p id="quick-feat-modal-subtitle" class="text-[10px] text-purple-300">Spotlight Arama, RAW Doğrulama ve Rule Master AI</p>
           </div>
         </div>
         <div class="flex items-center gap-2">
-          <button type="button" onclick="clearQuickLevelFeatSelection()" class="text-[10px] font-semibold text-slate-400 hover:text-amber-300 bg-slate-900 hover:bg-slate-800 border border-slate-700/60 rounded px-2 py-1 transition flex items-center gap-1 cursor-pointer" title="SeÃ§imi temizle">
-            <span>ğŸ—‘ï¸</span>
+          <button type="button" onclick="clearQuickLevelFeatSelection()" class="text-[10px] font-semibold text-slate-400 hover:text-amber-300 bg-slate-900 hover:bg-slate-800 border border-slate-700/60 rounded px-2 py-1 transition flex items-center gap-1 cursor-pointer" title="Seçimi temizle">
+            <span>🗑️</span>
             <span>Temizle</span>
           </button>
           <button type="button" onclick="closeQuickLevelFeatModal()" class="text-slate-400 hover:text-white p-1 text-sm font-bold cursor-pointer">&times;</button>
@@ -3714,15 +3714,15 @@
       <div class="p-4 space-y-3 text-xs overflow-y-auto flex-1">
         <!-- Category Selector -->
         <div>
-          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kategori / TÃ¼r *</label>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kategori / Tür *</label>
           <select id="quick-feat-category" onchange="onQuickFeatCategoryChange()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-amber-300 font-bold focus:outline-none focus:border-purple-500">
-            <option value="Regular Feat">ğŸ–ï¸ Normal Feat (Regular Feat)</option>
-            <option value="Class Bonus Feat">âš”ï¸ SÄ±nÄ±f Bonus Feati (Class Bonus Feat)</option>
-            <option value="DM Boon">ğŸŒŸ DM LÃ¼tfu / Boon (DM Grant)</option>
-            <option id="quick-feat-opt-warlock" value="Warlock Invocation" disabled title="Bu seÃ§eneÄŸi kullanabilmek iÃ§in CL KuralÄ±ndan 'Warlock Boon' seÃ§ilmeli veya Warlock sÄ±nÄ±f seviyesi alÄ±nmalÄ±dÄ±r.">ğŸ”® Warlock YakarÄ±ÅŸÄ± (Kilitli: Warlock Boon veya Seviye Gerekir)</option>
-            <option value="Flaw">âš ï¸ Kusur / Flaw</option>
-            <option value="Racial Trait">ğŸ§¬ Irksal Yetenek (Racial Trait)</option>
-            <option value="Special Ability">âœ¨ Ã–zel Yetenek / SÄ±nÄ±f Ã–zelliÄŸi</option>
+            <option value="Regular Feat">🎖️ Normal Feat (Regular Feat)</option>
+            <option value="Class Bonus Feat">⚔️ Sınıf Bonus Feati (Class Bonus Feat)</option>
+            <option value="DM Boon">🌟 DM Lütfu / Boon (DM Grant)</option>
+            <option id="quick-feat-opt-warlock" value="Warlock Invocation" disabled title="Bu seçeneği kullanabilmek için CL Kuralından 'Warlock Boon' seçilmeli veya Warlock sınıf seviyesi alınmalıdır.">🔮 Warlock Yakarışı (Kilitli: Warlock Boon veya Seviye Gerekir)</option>
+            <option value="Flaw">⚠️ Kusur / Flaw</option>
+            <option value="Racial Trait">🧬 Irksal Yetenek (Racial Trait)</option>
+            <option value="Special Ability">✨ Özel Yetenek / Sınıf Özelliği</option>
           </select>
         </div>
 
@@ -3730,13 +3730,13 @@
         <div>
           <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 flex items-center justify-between">
             <span>Spotlight & AI Feat Arama</span>
-            <span class="text-[10px] text-purple-300 font-normal">KÃ¼tÃ¼phane + 3.5e RAW DoÄŸrulama</span>
+            <span class="text-[10px] text-purple-300 font-normal">Kütüphane + 3.5e RAW Doğrulama</span>
           </label>
           <div class="relative flex items-center">
-            <div class="absolute left-2.5 text-slate-400 text-xs pointer-events-none">ğŸ”</div>
+            <div class="absolute left-2.5 text-slate-400 text-xs pointer-events-none">🔍</div>
             <input type="text"
                    id="quick-feat-name"
-                   placeholder="Feat ara, katalogdan seÃ§ veya yeni ad yaz..."
+                   placeholder="Feat ara, katalogdan seç veya yeni ad yaz..."
                    onfocus="openQuickFeatCatalogConsole()"
                    oninput="onQuickFeatSearchInput(this.value)"
                    onkeydown="if(event.key==='Enter'){event.preventDefault();triggerRuleMasterForQuickFeat();}"
@@ -3744,9 +3744,9 @@
             <button type="button"
                     onclick="toggleQuickFeatCatalogConsole()"
                     class="absolute right-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 hover:text-white text-[10px] font-bold border border-slate-600 transition flex items-center gap-1 cursor-pointer"
-                    title="Feat kataloÄŸunu aÃ§ / kapat">
-              <span>ğŸ“œ</span>
-              <span id="quick-feat-catalog-toggle-text">Katalog â–¼</span>
+                    title="Feat kataloğunu aç / kapat">
+              <span>📜</span>
+              <span id="quick-feat-catalog-toggle-text">Katalog ▼</span>
             </button>
           </div>
         </div>
@@ -3761,16 +3761,16 @@
 
         <!-- Benefit / Description Field -->
         <div>
-          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Fayda / AÃ§Ä±klama (Benefit)</label>
-          <textarea id="quick-feat-benefit" rows="3" placeholder="Ã–rn: SeÃ§ilen silahla saldÄ±rÄ± zarlarÄ±na +1 bonus..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:border-purple-500 focus:outline-none"></textarea>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Fayda / Açıklama (Benefit)</label>
+          <textarea id="quick-feat-benefit" rows="3" placeholder="Örn: Seçilen silahla saldırı zarlarına +1 bonus..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:border-purple-500 focus:outline-none"></textarea>
         </div>
       </div>
 
       <!-- Modal Footer -->
       <div class="bg-slate-950 px-4 py-3 border-t border-slate-800 flex items-center justify-between shrink-0">
-        <button type="button" onclick="closeQuickLevelFeatModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold px-3 py-1.5 rounded-lg transition cursor-pointer">VazgeÃ§</button>
+        <button type="button" onclick="closeQuickLevelFeatModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold px-3 py-1.5 rounded-lg transition cursor-pointer">Vazgeç</button>
         <button type="button" onclick="confirmQuickLevelFeat()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg shadow transition flex items-center gap-1.5 cursor-pointer">
-          <span>âœ…</span>
+          <span>✅</span>
           <span>Bu Seviyeye Ekle</span>
         </button>
       </div>
@@ -31593,12 +31593,12 @@ function renderManualStatsPanel() {
 
       const lvlObj = character.levelProgression && character.levelProgression[activeQuickLevelIndex];
       const lvlNum = lvlObj ? lvlObj.level : (activeQuickLevelIndex + 1);
-      const className = lvlObj ? lvlObj.className : 'SÄ±nÄ±f';
+      const className = lvlObj ? lvlObj.className : 'Sınıf';
 
       const titleEl = document.getElementById('quick-feat-modal-title');
-      if (titleEl) titleEl.textContent = `Seviye ${lvlNum} (${className}) Ä°Ã§in Feat Ekle`;
+      if (titleEl) titleEl.textContent = `Seviye ${lvlNum} (${className}) İçin Feat Ekle`;
       const subtitleEl = document.getElementById('quick-feat-modal-subtitle');
-      if (subtitleEl) subtitleEl.textContent = `Spotlight Arama, RAW DoÄŸrulama ve Rule Master AI`;
+      if (subtitleEl) subtitleEl.textContent = `Spotlight Arama, RAW Doğrulama ve Rule Master AI`;
 
       // Update Warlock category state for this level
       if (typeof updateQuickFeatCategoryWarlockState === 'function') {
@@ -31651,11 +31651,11 @@ function renderManualStatsPanel() {
       openQuickFeatPickerForLevel(levelIdx, 'Special Ability');
       const lvlObj = character.levelProgression && character.levelProgression[Number(levelIdx)];
       const lvlNum = lvlObj ? lvlObj.level : (Number(levelIdx) + 1);
-      const className = lvlObj ? lvlObj.className : 'SÄ±nÄ±f';
+      const className = lvlObj ? lvlObj.className : 'Sınıf';
       const titleEl = document.getElementById('quick-feat-modal-title');
-      if (titleEl) titleEl.textContent = `Seviye ${lvlNum} (${className}) Ä°Ã§in Ã–zel Yetenek / Ã–zellik Ekle`;
+      if (titleEl) titleEl.textContent = `Seviye ${lvlNum} (${className}) İçin Özel Yetenek / Özellik Ekle`;
       const subtitleEl = document.getElementById('quick-feat-modal-subtitle');
-      if (subtitleEl) subtitleEl.textContent = `SÄ±nÄ±f yeteneÄŸi, Ã¶zel manevra, DM lÃ¼tfu veya kural notu ekleyin`;
+      if (subtitleEl) subtitleEl.textContent = `Sınıf yeteneği, özel manevra, DM lütfu veya kural notu ekleyin`;
     }
 
     function closeQuickLevelFeatModal() {
@@ -31671,7 +31671,7 @@ function renderManualStatsPanel() {
       const consoleEl = document.getElementById('quick-feat-search-console');
       if (consoleEl) consoleEl.classList.remove('hidden');
       const toggleText = document.getElementById('quick-feat-catalog-toggle-text');
-      if (toggleText) toggleText.textContent = 'Kapat â–²';
+      if (toggleText) toggleText.textContent = 'Kapat ▲';
       renderQuickFeatSearchResults();
     }
 
@@ -31680,7 +31680,7 @@ function renderManualStatsPanel() {
       const consoleEl = document.getElementById('quick-feat-search-console');
       if (consoleEl) consoleEl.classList.add('hidden');
       const toggleText = document.getElementById('quick-feat-catalog-toggle-text');
-      if (toggleText) toggleText.textContent = 'Katalog â–¼';
+      if (toggleText) toggleText.textContent = 'Katalog ▼';
     }
 
     function toggleQuickFeatCatalogConsole() {
@@ -31841,7 +31841,7 @@ function renderManualStatsPanel() {
       if (filteredItems.length === 0) {
         listHtml = `
           <div class="p-3 text-center text-xs text-slate-400 bg-slate-950/60 rounded-lg border border-slate-800">
-            <span>"${query || 'Filtre'}" iÃ§in yerel katalogda uygun feat bulunamadÄ±.</span>
+            <span>"${query || 'Filtre'}" için yerel katalogda uygun feat bulunamadı.</span>
           </div>
         `;
       } else {
@@ -31854,14 +31854,14 @@ function renderManualStatsPanel() {
 
           const prereqSummary = pEval.hasPrereqs
             ? `<div class="flex flex-wrap items-center gap-1 text-[9px] pt-1">
-                 <span class="text-slate-400 font-semibold">Ã–nkoÅŸul:</span>
+                 <span class="text-slate-400 font-semibold">Önkoşul:</span>
                  ${pEval.checks.map(c => `
                    <span class="px-1 py-0.2 rounded font-mono ${c.met ? 'bg-emerald-950 text-emerald-300 border border-emerald-700/40' : 'bg-rose-950 text-rose-200 border border-rose-600 font-bold'}">
-                     ${c.label} ${c.met ? 'âœ“' : 'âœ—'}
+                     ${c.label} ${c.met ? '✓' : '✗'}
                    </span>
                  `).join('')}
                </div>`
-            : `<div class="text-[9px] text-slate-400 pt-0.5">Ã–nkoÅŸulsuz</div>`;
+            : `<div class="text-[9px] text-slate-400 pt-0.5">Önkoşulsuz</div>`;
 
           return `
             <div class="p-2.5 rounded-lg border transition ${isQualified ? 'bg-slate-950/80 hover:bg-slate-900 border-slate-800 hover:border-emerald-500/60' : 'bg-slate-950/50 hover:bg-slate-900/60 border-slate-800/80 hover:border-rose-600/40 opacity-85 hover:opacity-100'} space-y-1.5">
@@ -31869,7 +31869,7 @@ function renderManualStatsPanel() {
                 <div class="flex items-center gap-2 flex-wrap">
                   <span class="font-bold text-white text-xs">${item.name}</span>
                   <span class="text-[9px] font-bold px-1.5 py-0.2 rounded border ${badgeClass}">
-                    ${isQualified ? 'âœ… AlÄ±nabilir' : 'âš ï¸ Ã–nkoÅŸul Eksik'}
+                    ${isQualified ? '✅ Alınabilir' : '⚠️ Önkoşul Eksik'}
                   </span>
                   <span class="text-[9px] text-indigo-300 bg-indigo-950/70 border border-indigo-700/50 px-1.5 py-0.2 rounded">
                     ${item.tier ? `${item.tier} Invocation` : (item.category || 'Feat')}
@@ -31881,8 +31881,8 @@ function renderManualStatsPanel() {
                 <button type="button"
                         onclick="selectFeatForQuickLevel('${safeName}')"
                         class="px-2.5 py-1 rounded text-[11px] font-bold shadow transition shrink-0 cursor-pointer flex items-center gap-1 ${isQualified ? 'bg-emerald-600 hover:bg-emerald-500 text-white active:scale-95' : 'bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-600/40'}">
-                  <span>ğŸ¯</span>
-                  <span>${isQualified ? 'SeÃ§' : 'Yine de SeÃ§'}</span>
+                  <span>🎯</span>
+                  <span>${isQualified ? 'Seç' : 'Yine de Seç'}</span>
                 </button>
               </div>
               ${prereqSummary}
@@ -31897,28 +31897,28 @@ function renderManualStatsPanel() {
         <div class="flex items-center justify-between border-b border-slate-800 pb-2 flex-wrap gap-1.5">
           <div class="flex items-center gap-1.5 flex-wrap">
             <button type="button" onclick="setQuickFeatSearchFilter('ALL')" class="${filterPillClass('ALL')}">
-              ğŸ“‹ TÃ¼mÃ¼ (${countAll})
+              📋 Tümü (${countAll})
             </button>
             <button type="button" onclick="setQuickFeatSearchFilter('QUALIFIED')" class="${filterPillClass('QUALIFIED')}">
-              âœ… AlÄ±nabilir (${countQualified})
+              ✅ Alınabilir (${countQualified})
             </button>
             <button type="button" onclick="setQuickFeatSearchFilter('FIGHTER')" class="${filterPillClass('FIGHTER')}">
-              âš”ï¸ SavaÅŸÃ§Ä± (${countFighter})
+              ⚔️ Savaşçı (${countFighter})
             </button>
             <button type="button" onclick="setQuickFeatSearchFilter('BOON')" class="${filterPillClass('BOON')}">
-              ğŸŒŸ DM Boon (${countBoon})
+              🌟 DM Boon (${countBoon})
             </button>
             <button type="button" onclick="setQuickFeatSearchFilter('FLAW')" class="${filterPillClass('FLAW')}">
-              âš ï¸ Kusur (${countFlaw})
+              ⚠️ Kusur (${countFlaw})
             </button>
             ${invocationsList.length > 0 ? `
               <button type="button" onclick="setQuickFeatSearchFilter('INVOCATION')" class="${filterPillClass('INVOCATION')}">
-                ğŸ”® Invocation (${countInvocation})
+                🔮 Invocation (${countInvocation})
               </button>
             ` : ''}
           </div>
           <button type="button" onclick="closeQuickFeatCatalogConsole()" class="text-[10px] text-slate-400 hover:text-white px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 transition font-bold cursor-pointer">
-            â–² Kapat
+            ▲ Kapat
           </button>
         </div>
 
@@ -31932,8 +31932,8 @@ function renderManualStatsPanel() {
           <button type="button"
                   onclick="triggerRuleMasterForQuickFeat()"
                   class="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-purple-700 via-indigo-700 to-purple-800 hover:from-purple-600 hover:to-indigo-600 text-white font-bold text-xs flex items-center justify-center gap-2 border border-purple-400/40 shadow transition cursor-pointer active:scale-98">
-            <span>âš¡</span>
-            <span>Rule Master AI ile Getir: "${query || 'Yeni 3.5e Feat'}" (3.5e KitaplÄ±ÄŸÄ±)</span>
+            <span>⚡</span>
+            <span>Rule Master AI ile Getir: "${query || 'Yeni 3.5e Feat'}" (3.5e Kitaplığı)</span>
           </button>
           <div id="quick-feat-ai-status" class="hidden text-xs p-2 rounded-lg"></div>
         </div>
@@ -32015,19 +32015,19 @@ function renderManualStatsPanel() {
       if (!pEval.hasPrereqs) {
         badgeEl.innerHTML = `
           <div class="flex items-center gap-1.5 text-[10px] text-slate-400 bg-slate-900/60 border border-slate-800/80 rounded-lg px-2.5 py-1">
-            <span>â„¹ï¸</span>
-            <span>Ã–nkoÅŸulsuz: Herhangi bir gereksinim aranmaz, serbestÃ§e alÄ±nabilir.</span>
+            <span>ℹ️</span>
+            <span>Önkoşulsuz: Herhangi bir gereksinim aranmaz, serbestçe alınabilir.</span>
           </div>
         `;
       } else if (pEval.allMet) {
         badgeEl.innerHTML = `
           <div class="flex flex-wrap items-center gap-1.5 text-[10px] text-emerald-300 bg-emerald-950/50 border border-emerald-700/60 rounded-lg px-2.5 py-1.5">
-            <span class="font-bold flex items-center gap-1 shrink-0"><span>âœ…</span> <span>Ã–nkoÅŸullar KarÅŸÄ±lanÄ±yor:</span></span>
+            <span class="font-bold flex items-center gap-1 shrink-0"><span>✅</span> <span>Önkoşullar Karşılanıyor:</span></span>
             <div class="flex flex-wrap items-center gap-1">
               ${pEval.checks.map(c => `
                 <span class="bg-emerald-900/60 text-emerald-200 border border-emerald-600/50 rounded px-1.5 py-0.5 font-mono text-[9px] flex items-center gap-0.5">
                   <span>${c.label}</span>
-                  <span class="font-bold text-emerald-400">âœ“</span>
+                  <span class="font-bold text-emerald-400">✓</span>
                   <span class="text-emerald-300/80 text-[8px]">${c.info}</span>
                 </span>
               `).join('')}
@@ -32037,12 +32037,12 @@ function renderManualStatsPanel() {
       } else {
         badgeEl.innerHTML = `
           <div class="flex flex-wrap items-center gap-1.5 text-[10px] text-rose-300 bg-rose-950/60 border border-rose-700/70 rounded-lg px-2.5 py-1.5">
-            <span class="font-bold flex items-center gap-1 shrink-0"><span>âš ï¸</span> <span>Ã–nkoÅŸul UyarÄ±sÄ±:</span></span>
+            <span class="font-bold flex items-center gap-1 shrink-0"><span>⚠️</span> <span>Önkoşul Uyarısı:</span></span>
             <div class="flex flex-wrap items-center gap-1">
               ${pEval.checks.map(c => `
                 <span class="rounded px-1.5 py-0.5 font-mono text-[9px] flex items-center gap-0.5 ${c.met ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-700/50' : 'bg-rose-950 text-rose-200 border border-rose-600 font-bold'}">
                   <span>${c.label}</span>
-                  <span>${c.met ? 'âœ“' : 'âœ—'}</span>
+                  <span>${c.met ? '✓' : '✗'}</span>
                   <span class="text-[8px] opacity-90">${c.info}</span>
                 </span>
               `).join('')}
@@ -32067,7 +32067,7 @@ function renderManualStatsPanel() {
       if (!modal) return;
       const titleEl = document.getElementById('feat-picker-modal-title');
       if (titleEl) {
-        titleEl.textContent = 'Seviye Tablosu Ä°Ã§in Feat SeÃ§';
+        titleEl.textContent = 'Seviye Tablosu İçin Feat Seç';
       }
       renderFeatPickerList();
       modal.classList.remove('hidden');
@@ -32075,13 +32075,13 @@ function renderManualStatsPanel() {
 
     function confirmQuickLevelFeat() {
       if (activeQuickLevelIndex === null || !character.levelProgression || !character.levelProgression[activeQuickLevelIndex]) {
-        alert("GeÃ§erli bir seviye seÃ§ilmedi!");
+        alert("Geçerli bir seviye seçilmedi!");
         return;
       }
       const nameInput = document.getElementById('quick-feat-name');
       const featName = nameInput ? nameInput.value.trim() : '';
       if (!featName) {
-        alert("LÃ¼tfen bir feat veya yetenek adÄ± girin!");
+        alert("Lütfen bir feat veya yetenek adı girin!");
         return;
       }
       const category = document.getElementById('quick-feat-category')?.value || 'Regular Feat';
@@ -32092,13 +32092,13 @@ function renderManualStatsPanel() {
       if (!Array.isArray(row.specialAbilities)) row.specialAbilities = [];
 
       let prefix = '';
-      if (category === 'Class Bonus Feat') prefix = 'âš”ï¸ [Bonus] ';
-      else if (category === 'DM Boon') prefix = 'ğŸŒŸ [DM Boon] ';
-      else if (category === 'Flaw') prefix = 'âš ï¸ [Flaw] ';
-      else if (category === 'Racial Trait') prefix = 'ğŸ§¬ [Racial] ';
-      else if (category === 'Special Ability') prefix = 'âœ¨ ';
-      else if (category === 'Warlock Invocation') prefix = 'ğŸ”® [Invocation] ';
-      else prefix = 'ğŸ–ï¸ ';
+      if (category === 'Class Bonus Feat') prefix = '⚔️ [Bonus] ';
+      else if (category === 'DM Boon') prefix = '🌟 [DM Boon] ';
+      else if (category === 'Flaw') prefix = '⚠️ [Flaw] ';
+      else if (category === 'Racial Trait') prefix = '🧬 [Racial] ';
+      else if (category === 'Special Ability') prefix = '✨ ';
+      else if (category === 'Warlock Invocation') prefix = '🔮 [Invocation] ';
+      else prefix = '🎖️ ';
 
       const formattedName = `${prefix}${featName}`;
 
@@ -32234,9 +32234,9 @@ function renderManualStatsPanel() {
       if (!query) {
         if (statusEl) {
           statusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-amber-950/80 border border-amber-600/60 text-amber-200 block';
-          statusEl.innerHTML = 'âš ï¸ LÃ¼tfen aranacak feat veya yetenek adÄ±nÄ± yazÄ±n.';
+          statusEl.innerHTML = '⚠️ Lütfen aranacak feat veya yetenek adını yazın.';
         } else {
-          alert('âš ï¸ LÃ¼tfen aranacak feat veya yetenek adÄ±nÄ± yazÄ±n.');
+          alert('⚠️ Lütfen aranacak feat veya yetenek adını yazın.');
         }
         nameInput?.focus();
         return;
@@ -32244,10 +32244,10 @@ function renderManualStatsPanel() {
 
       if (statusEl) {
         statusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-indigo-950/80 border border-indigo-600/60 text-indigo-200 block animate-pulse';
-        statusEl.innerHTML = `<span>â³</span> <span>"${query}" aranÄ±yor...</span>`;
+        statusEl.innerHTML = `<span>⏳</span> <span>"${query}" aranıyor...</span>`;
       }
 
-      // 1. Ã–nce yerel veritabanlarÄ± ve kataloglarÄ± kontrol et
+      // 1. Önce yerel veritabanları ve katalogları kontrol et
       const localMatch = findInLocalCatalogsOrMasterDb(query);
       if (localMatch) {
         if (nameInput) nameInput.value = localMatch.name;
@@ -32267,7 +32267,7 @@ function renderManualStatsPanel() {
         updateQuickFeatPrereqBadge();
         if (statusEl) {
           statusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-emerald-950/80 border border-emerald-600/60 text-emerald-200 block';
-          statusEl.innerHTML = `<span>âœ…</span> <b>${localMatch.name}</b> (${localMatch.source || 'D&D 3.5e'}) kÃ¼tÃ¼phaneden yÃ¼klendi!`;
+          statusEl.innerHTML = `<span>✅</span> <b>${localMatch.name}</b> (${localMatch.source || 'D&D 3.5e'}) kütüphaneden yüklendi!`;
         }
         return;
       }
@@ -32280,7 +32280,7 @@ function renderManualStatsPanel() {
       if (!apiKey) {
         if (statusEl) {
           statusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-amber-950/80 border border-amber-600/60 text-amber-200 block';
-          statusEl.innerHTML = `<span>âš ï¸</span> Yerel katalogda bulunamadÄ±. Rule Master (AI) aramasÄ± iÃ§in Ã¼st menÃ¼deki Rule Master'dan Gemini API AnahtarÄ±nÄ±zÄ± giriniz.`;
+          statusEl.innerHTML = `<span>⚠️</span> Yerel katalogda bulunamadı. Rule Master (AI) araması için üst menüdeki Rule Master'dan Gemini API Anahtarınızı giriniz.`;
         }
         return;
       }
@@ -32289,7 +32289,7 @@ function renderManualStatsPanel() {
         const categoryHint = (catSel?.value === 'Special Ability') ? 'Special Ability' : 'Feat';
         const statusProxy = {
           set textContent(val) {
-            if (statusEl) statusEl.innerHTML = `<span>â³</span> <span>${val}</span>`;
+            if (statusEl) statusEl.innerHTML = `<span>⏳</span> <span>${val}</span>`;
           }
         };
         const rows = await RuleMaster.fetchSingleAiRuleRows(query, categoryHint, apiKey, statusProxy);
@@ -32329,23 +32329,21 @@ function renderManualStatsPanel() {
 
           if (statusEl) {
             statusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-emerald-950/80 border border-emerald-600/60 text-emerald-200 block';
-            statusEl.innerHTML = `<span>âœ¨</span> <b>${featName}</b> [${featSource}] Rule Master ile baÅŸarÄ±yla getirildi!`;
+            statusEl.innerHTML = `<span>✨</span> <b>${featName}</b> [${featSource}] Rule Master ile başarıyla getirildi!`;
           }
         } else {
           if (statusEl) {
             statusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-rose-950/80 border border-rose-600/60 text-rose-200 block';
-            statusEl.innerHTML = `<span>âŒ</span> "${query}" iÃ§in resmi D&D 3.5e kuralÄ± bulunamadÄ±.`;
+            statusEl.innerHTML = `<span>❌</span> "${query}" için resmi D&D 3.5e kuralı bulunamadı.`;
           }
         }
       } catch (err) {
         if (statusEl) {
           statusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-rose-950/80 border border-rose-600/60 text-rose-200 block';
-          statusEl.innerHTML = `<span>âš ï¸</span> Hata: ${err.message || err}`;
+          statusEl.innerHTML = `<span>⚠️</span> Hata: ${err.message || err}`;
         }
       }
-    }
-
-    const DND35_EXTRA_CLASSES = {
+    }const DND35_EXTRA_CLASSES = {
       "Duskblade": { hd: 8, bab: 1.0, fort: 'good', ref: 'poor', will: 'good', skills: 2, source: "Player's Handbook II p.19", features: "Arcane Attunement, Armored Mage (Light/Medium/Shield), Arcane Channeling, Quick Cast" },
       "Warblade": { hd: 12, bab: 1.0, fort: 'good', ref: 'poor', will: 'poor', skills: 4, source: "Tome of Battle p.20", features: "Battle Clarity, Weapon Aptitude, Uncanny Dodge, Battle Ardor" },
       "Crusader": { hd: 10, bab: 1.0, fort: 'good', ref: 'poor', will: 'poor', skills: 2, source: "Tome of Battle p.8", features: "Furious Counterstrike, Steely Resolve, Indomitable Soul, Zealous Surge" },
@@ -32782,7 +32780,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         const curCl = Number(character.spellcasting?.cl) || 0;
         const hasSpellProg = Boolean(def.spellProgression && def.spellProgression !== 'none');
         const hasCasterRole = Boolean(def.role && (def.role.toLowerCase().includes('caster') || def.role.toLowerCase().includes('spell')));
-        const hasCasterDesc = Boolean(def.description && (def.description.toLowerCase().includes('bÃ¼yÃ¼') || def.description.toLowerCase().includes('spell') || def.description.toLowerCase().includes('caster')));
+        const hasCasterDesc = Boolean(def.description && (def.description.toLowerCase().includes('büyü') || def.description.toLowerCase().includes('spell') || def.description.toLowerCase().includes('caster')));
         const hasCharacterSpells = Boolean(character.spellcasting && (curCl > 0 || (character.spellcasting.slots && character.spellcasting.slots.length > 0)));
         const isCaster = (curCl > 0) || hasCharacterSpells || hasSpellProg || hasCasterRole || hasCasterDesc;
 
@@ -32801,7 +32799,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           if (babMatch) {
             const reqBab = parseInt(babMatch[1], 10);
             met = prospectiveBab >= reqBab;
-            info = met ? `(Mevcut: +${prospectiveBab} â‰¥ +${reqBab})` : `(Mevcut: +${prospectiveBab}, Gereken: +${reqBab})`;
+            info = met ? `(Mevcut: +${prospectiveBab} ≥ +${reqBab})` : `(Mevcut: +${prospectiveBab}, Gereken: +${reqBab})`;
             if (!met) allMet = false;
             checks.push({ type: 'bab', label, met, info });
             continue;
@@ -32814,7 +32812,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             const reqScore = parseInt(statMatch[2], 10);
             const curScore = abilities[statKey] || 10;
             met = curScore >= reqScore;
-            info = met ? `(Mevcut: ${curScore} â‰¥ ${reqScore})` : `(Mevcut: ${curScore}, Gereken: ${reqScore})`;
+            info = met ? `(Mevcut: ${curScore} ≥ ${reqScore})` : `(Mevcut: ${curScore}, Gereken: ${reqScore})`;
             if (!met) allMet = false;
             checks.push({ type: 'stat', label, met, info });
             continue;
@@ -32832,7 +32830,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             });
             const curRanks = sk ? (Number(sk.ranks) || 0) : 0;
             met = curRanks >= reqRanks;
-            info = met ? `(Kademe: ${curRanks} â‰¥ ${reqRanks})` : `(Mevcut: ${curRanks}, Gereken: ${reqRanks})`;
+            info = met ? `(Kademe: ${curRanks} ≥ ${reqRanks})` : `(Mevcut: ${curRanks}, Gereken: ${reqRanks})`;
             if (!met) allMet = false;
             checks.push({ type: 'skill', label, met, info });
             continue;
@@ -32843,16 +32841,16 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           if (clMatch) {
             const reqCl = parseInt(clMatch[1], 10);
             met = curCl >= reqCl;
-            info = met ? `(CL: ${curCl} â‰¥ ${reqCl})` : `(CL: ${curCl}, Gereken: ${reqCl})`;
+            info = met ? `(CL: ${curCl} ≥ ${reqCl})` : `(CL: ${curCl}, Gereken: ${reqCl})`;
             if (!met) allMet = false;
             checks.push({ type: 'cl', label, met, info });
             continue;
           }
 
-          // Spellcasting capability (Arcane / BÃ¼yÃ¼)
-          if (part.toLowerCase().includes('arcane') || part.toLowerCase().includes('bÃ¼yÃ¼') || part.toLowerCase().includes('spell')) {
+          // Spellcasting capability (Arcane / Büyü)
+          if (part.toLowerCase().includes('arcane') || part.toLowerCase().includes('büyü') || part.toLowerCase().includes('spell')) {
             met = isCaster;
-            info = met ? '(BÃ¼yÃ¼cÃ¼ / Caster)' : '(BÃ¼yÃ¼ YeteneÄŸi Yok)';
+            info = met ? '(Büyücü / Caster)' : '(Büyü Yeteneği Yok)';
             if (!met) allMet = false;
             checks.push({ type: 'spell', label, met, info });
             continue;
@@ -32864,7 +32862,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             const hasMartialFeat = Array.from(knownFeats).some(kf => kf.includes('proficiency') || kf.includes('martialweapon') || kf.includes('exoticweapon'));
             const isMartial = hasFullBabClass || hasMartialFeat || (prospectiveBab >= 1);
             met = isMartial;
-            info = met ? '(Silah UstalÄ±ÄŸÄ± Var)' : '(Proficiency Eksik)';
+            info = met ? '(Silah Ustalığı Var)' : '(Proficiency Eksik)';
             if (!met) allMet = false;
             checks.push({ type: 'proficiency', label, met, info });
             continue;
@@ -32877,7 +32875,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
               const optClean = opt.toLowerCase().replace(/\d+/g, '').trim();
               return (character.classes || '').toLowerCase().includes(optClean) || selectedClassName.toLowerCase().includes(optClean);
             });
-            info = met ? '(SÄ±nÄ±f Uygun)' : '(Gereken SÄ±nÄ±f Yok)';
+            info = met ? '(Sınıf Uygun)' : '(Gereken Sınıf Yok)';
             if (!met) allMet = false;
             checks.push({ type: 'class', label, met, info });
             continue;
