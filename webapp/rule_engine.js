@@ -37,6 +37,150 @@ const RuleEngine = {
     'tower shield': { shield: 4, maxDex: 2, acp: -10 }
   },
 
+  // Canonical D&D 3.5e RAW Class Proficiencies (PHB Chapter 3, Complete & Tome of Battle)
+  CLASS_PROFICIENCIES: {
+    'fighter': {
+      weapons: { simple: true, martial: true, specific: [] },
+      armors: { light: true, medium: true, heavy: true },
+      shields: { shield: true, tower: true }
+    },
+    'barbarian': {
+      weapons: { simple: true, martial: true, specific: [] },
+      armors: { light: true, medium: true, heavy: false },
+      shields: { shield: true, tower: false }
+    },
+    'paladin': {
+      weapons: { simple: true, martial: true, specific: [] },
+      armors: { light: true, medium: true, heavy: true },
+      shields: { shield: true, tower: false }
+    },
+    'ranger': {
+      weapons: { simple: true, martial: true, specific: [] },
+      armors: { light: true, medium: false, heavy: false },
+      shields: { shield: true, tower: false }
+    },
+    'cleric': {
+      weapons: { simple: true, martial: false, specific: [] },
+      armors: { light: true, medium: true, heavy: true },
+      shields: { shield: true, tower: false }
+    },
+    'druid': {
+      weapons: { simple: false, martial: false, specific: ['club', 'dagger', 'dart', 'quarterstaff', 'scimitar', 'sickle', 'shortspear', 'sling', 'spear'] },
+      armors: { light: true, medium: true, heavy: false },
+      shields: { shield: true, tower: false }
+    },
+    'rogue': {
+      weapons: { simple: true, martial: false, specific: ['hand crossbow', 'rapier', 'sap', 'shortbow', 'short sword'] },
+      armors: { light: true, medium: false, heavy: false },
+      shields: { shield: false, tower: false }
+    },
+    'bard': {
+      weapons: { simple: true, martial: false, specific: ['longsword', 'rapier', 'sap', 'short sword', 'shortbow', 'whip'] },
+      armors: { light: true, medium: false, heavy: false },
+      shields: { shield: true, tower: false }
+    },
+    'monk': {
+      weapons: { simple: false, martial: false, specific: ['club', 'crossbow', 'light crossbow', 'heavy crossbow', 'dagger', 'handaxe', 'javelin', 'kama', 'nunchaku', 'quarterstaff', 'sai', 'shuriken', 'siangham', 'sling', 'unarmed strike'] },
+      armors: { light: false, medium: false, heavy: false },
+      shields: { shield: false, tower: false }
+    },
+    'sorcerer': {
+      weapons: { simple: true, martial: false, specific: [] },
+      armors: { light: false, medium: false, heavy: false },
+      shields: { shield: false, tower: false }
+    },
+    'wizard': {
+      weapons: { simple: false, martial: false, specific: ['club', 'dagger', 'heavy crossbow', 'light crossbow', 'quarterstaff'] },
+      armors: { light: false, medium: false, heavy: false },
+      shields: { shield: false, tower: false }
+    },
+    'warlock': {
+      weapons: { simple: true, martial: false, specific: [] },
+      armors: { light: true, medium: false, heavy: false },
+      shields: { shield: false, tower: false }
+    },
+    'crusader': {
+      weapons: { simple: true, martial: true, specific: [] },
+      armors: { light: true, medium: true, heavy: true },
+      shields: { shield: true, tower: false }
+    },
+    'swordsage': {
+      weapons: { simple: true, martial: false, specific: ['light crossbow', 'heavy crossbow', 'shortbow', 'composite shortbow'] },
+      armors: { light: true, medium: false, heavy: false },
+      shields: { shield: false, tower: false }
+    },
+    'warblade': {
+      weapons: { simple: true, martial: true, specific: [] },
+      armors: { light: true, medium: true, heavy: false },
+      shields: { shield: true, tower: false }
+    },
+    'duskblade': {
+      weapons: { simple: true, martial: true, specific: [] },
+      armors: { light: true, medium: true, heavy: false },
+      shields: { shield: true, tower: false }
+    },
+    'knight': {
+      weapons: { simple: true, martial: true, specific: [] },
+      armors: { light: true, medium: true, heavy: true },
+      shields: { shield: true, tower: true }
+    },
+    'warmage': {
+      weapons: { simple: true, martial: false, specific: ['light repeating crossbow'] },
+      armors: { light: true, medium: false, heavy: false },
+      shields: { shield: true, tower: false }
+    },
+    'beguiler': {
+      weapons: { simple: true, martial: false, specific: ['hand crossbow', 'rapier', 'shortbow', 'short sword'] },
+      armors: { light: true, medium: false, heavy: false },
+      shields: { shield: false, tower: false }
+    },
+    'scout': {
+      weapons: { simple: true, martial: false, specific: ['hand crossbow', 'sap', 'shortbow', 'short sword'] },
+      armors: { light: true, medium: false, heavy: false },
+      shields: { shield: false, tower: false }
+    },
+    'swashbuckler': {
+      weapons: { simple: true, martial: true, specific: [] },
+      armors: { light: true, medium: false, heavy: false },
+      shields: { shield: false, tower: false }
+    },
+    'hexblade': {
+      weapons: { simple: true, martial: true, specific: [] },
+      armors: { light: true, medium: false, heavy: false },
+      shields: { shield: false, tower: false }
+    },
+    'favored soul': {
+      weapons: { simple: true, martial: false, specific: [] },
+      armors: { light: true, medium: true, heavy: false },
+      shields: { shield: true, tower: false }
+    },
+    'spellthief': {
+      weapons: { simple: true, martial: false, specific: ['hand crossbow', 'rapier', 'shortbow', 'short sword'] },
+      armors: { light: true, medium: false, heavy: false },
+      shields: { shield: false, tower: false }
+    },
+    'psion': {
+      weapons: { simple: false, martial: false, specific: ['club', 'dagger', 'heavy crossbow', 'light crossbow', 'quarterstaff', 'shortspear'] },
+      armors: { light: false, medium: false, heavy: false },
+      shields: { shield: false, tower: false }
+    },
+    'psychic warrior': {
+      weapons: { simple: true, martial: true, specific: [] },
+      armors: { light: true, medium: true, heavy: true },
+      shields: { shield: true, tower: false }
+    },
+    'soulknife': {
+      weapons: { simple: true, martial: false, specific: ['mind blade'] },
+      armors: { light: true, medium: false, heavy: false },
+      shields: { shield: true, tower: false }
+    },
+    'wilder': {
+      weapons: { simple: true, martial: false, specific: [] },
+      armors: { light: true, medium: false, heavy: false },
+      shields: { shield: true, tower: false }
+    }
+  },
+
   // Calculate D&D 3.5e Ability Modifier: floor((score - 10) / 2)
   getAbilityMod(score) {
     return Math.floor(((Number(score) || 10) - 10) / 2);
@@ -203,6 +347,339 @@ const RuleEngine = {
     }
 
     return false;
+  },
+
+  // Check if weapon is Martial according to D&D 3.5e RAW rules
+  isMartialWeapon(weapon) {
+    if (!weapon) return false;
+    const name = (typeof weapon === 'string' ? weapon : (weapon.name || '')).toLowerCase().trim();
+    if (!name || name === 'yok' || name === '-' || name === 'none' || name === 'boş') return false;
+
+    if (this.isExoticWeapon(weapon)) return false;
+
+    if (typeof weapon === 'object') {
+      if (weapon.proficiency === 'Martial' || weapon.category === 'Martial' || (Array.isArray(weapon.tags) && weapon.tags.some(t => String(t).toLowerCase() === 'martial')) || (weapon.weaponType && weapon.weaponType.toLowerCase().includes('martial'))) {
+        return true;
+      }
+    }
+
+    const db = this.getMasterDbEntry(weapon);
+    if (db) {
+      if (db.proficiency === 'Martial' || db.category === 'Martial' || (Array.isArray(db.tags) && db.tags.some(t => String(t).toLowerCase() === 'martial')) || (db.weaponType && db.weaponType.toLowerCase().includes('martial'))) {
+        return true;
+      }
+    }
+
+    const baseWepName = name.replace(/\+\d+/g, '').replace(/\(.*?\)/g, '').trim();
+    const standardMartialWeapons = [
+      'throwing axe', 'handaxe', 'light hammer', 'light pick', 'sap', 'short sword', 'spiked armor', 'armor spikes',
+      'battleaxe', 'flail', 'heavy pick', 'longsword', 'rapier', 'scimitar', 'trident', 'warhammer',
+      'falchion', 'glaive', 'greataxe', 'greatclub', 'greatsword', 'guisarme', 'halberd', 'heavy flail',
+      'lance', 'ranseur', 'scythe', 'shortbow', 'composite shortbow', 'longbow', 'composite longbow',
+      'büyük kılıç', 'büyük balta', 'savaş baltası', 'uzun kılıç', 'uzun yay', 'kısa yay'
+    ];
+    return standardMartialWeapons.some(mw => baseWepName.includes(mw) || name.includes(mw));
+  },
+
+  // Check if weapon is Simple according to D&D 3.5e RAW rules
+  isSimpleWeapon(weapon) {
+    if (!weapon) return false;
+    const name = (typeof weapon === 'string' ? weapon : (weapon.name || '')).toLowerCase().trim();
+    if (!name || name === 'yok' || name === '-' || name === 'none' || name === 'boş') return false;
+
+    if (this.isExoticWeapon(weapon) || this.isMartialWeapon(weapon)) return false;
+
+    if (typeof weapon === 'object') {
+      if (weapon.proficiency === 'Simple' || weapon.category === 'Simple' || (Array.isArray(weapon.tags) && weapon.tags.some(t => String(t).toLowerCase() === 'simple')) || (weapon.weaponType && weapon.weaponType.toLowerCase().includes('simple'))) {
+        return true;
+      }
+    }
+
+    const db = this.getMasterDbEntry(weapon);
+    if (db) {
+      if (db.proficiency === 'Simple' || db.category === 'Simple' || (Array.isArray(db.tags) && db.tags.some(t => String(t).toLowerCase() === 'simple')) || (db.weaponType && db.weaponType.toLowerCase().includes('simple'))) {
+        return true;
+      }
+    }
+
+    const baseWepName = name.replace(/\+\d+/g, '').replace(/\(.*?\)/g, '').trim();
+    const standardSimpleWeapons = [
+      'gauntlet', 'spiked gauntlet', 'unarmed strike', 'silahsız', 'dagger', 'punching dagger', 'light mace', 'sickle',
+      'club', 'heavy mace', 'morningstar', 'shortspear', 'longspear', 'quarterstaff', 'spear',
+      'crossbow', 'heavy crossbow', 'light crossbow', 'dart', 'javelin', 'sling',
+      'hançer', 'asa', 'hafif arbalet', 'ağır arbalet', 'sapan', 'mızrak'
+    ];
+    return standardSimpleWeapons.some(sw => baseWepName.includes(sw) || name.includes(sw));
+  },
+
+  // Check if item is a Shield according to D&D 3.5e RAW rules
+  isShieldItem(item) {
+    if (!item) return false;
+    const name = (typeof item === 'string' ? item : (item.name || '')).toLowerCase().trim();
+    if (!name || name === '-' || name === 'none' || name === 'yok' || name === 'boş') return false;
+    if (typeof item === 'object') {
+      if (item.category === 'Shield' || item.type === 'Shield' || (item.slot && item.slot.toLowerCase().includes('shield'))) return true;
+    }
+    return Object.keys(this.SRD_SHIELDS).some(k => name.includes(k)) || name.includes('shield') || name.includes('kalkan') || name.includes('buckler');
+  },
+
+  // Check if item is a Tower Shield according to D&D 3.5e RAW rules
+  isTowerShield(item) {
+    if (!item) return false;
+    const name = (typeof item === 'string' ? item : (item.name || '')).toLowerCase().trim();
+    return name.includes('tower shield') || name.includes('kule kalkan');
+  },
+
+  // Aggregate all character weapon, armor, and shield proficiencies from multiclasses and feats
+  getCharacterProficiencies(character, targetLevelIdx = null) {
+    const res = {
+      weapons: {
+        simple: false,
+        martial: false,
+        exoticAll: false,
+        specific: new Set()
+      },
+      armors: {
+        light: false,
+        medium: false,
+        heavy: false
+      },
+      shields: {
+        shield: false,
+        tower: false
+      }
+    };
+
+    if (!character) return res;
+
+    // 1. Collect classes up to targetLevelIdx (or full character)
+    const prog = Array.isArray(character.levelProgression) ? character.levelProgression : [];
+    const classNames = new Set();
+
+    if (targetLevelIdx !== null && targetLevelIdx !== undefined) {
+      const maxIdx = Math.max(0, Math.min(Number(targetLevelIdx), prog.length - 1));
+      for (let i = 0; i <= maxIdx; i++) {
+        if (prog[i] && prog[i].className && prog[i].active !== false) {
+          classNames.add(prog[i].className.toLowerCase().trim());
+        }
+      }
+    } else if (prog.length > 0) {
+      prog.forEach(lvl => {
+        if (lvl && lvl.className && lvl.active !== false) {
+          classNames.add(lvl.className.toLowerCase().trim());
+        }
+      });
+    }
+
+    // In Level-up Wizard mode, if lvlup-class-select exists in DOM, add it too
+    if (typeof document !== 'undefined') {
+      const lvlSel = document.getElementById('lvlup-class-select');
+      if (lvlSel && lvlSel.value && (targetLevelIdx === null || targetLevelIdx === undefined)) {
+        classNames.add(lvlSel.value.toLowerCase().trim());
+      }
+    }
+
+    // Fallback if classNames is still empty: parse character.classes string
+    if (classNames.size === 0 && character.classes) {
+      const parts = String(character.classes).split('/');
+      parts.forEach(p => {
+        const cName = p.replace(/\d+/g, '').trim().toLowerCase();
+        if (cName) classNames.add(cName);
+      });
+    }
+
+    // Default fallback if still empty
+    if (classNames.size === 0) {
+      classNames.add('fighter');
+    }
+
+    // Apply class proficiencies (Union across all multiclasses per RAW)
+    classNames.forEach(cName => {
+      const profData = this.CLASS_PROFICIENCIES[cName] || this.CLASS_PROFICIENCIES[cName.split(' ')[0]];
+      if (profData) {
+        if (profData.weapons.simple) res.weapons.simple = true;
+        if (profData.weapons.martial) res.weapons.martial = true;
+        (profData.weapons.specific || []).forEach(w => res.weapons.specific.add(w.toLowerCase().trim()));
+        if (profData.armors.light) res.armors.light = true;
+        if (profData.armors.medium) res.armors.medium = true;
+        if (profData.armors.heavy) res.armors.heavy = true;
+        if (profData.shields.shield) res.shields.shield = true;
+        if (profData.shields.tower) res.shields.tower = true;
+      } else {
+        // Fallback for custom or unrecognized classes using BAB/role
+        const def = (typeof DND35_CLASS_DEFS !== 'undefined' ? DND35_CLASS_DEFS[cName] : null) || {};
+        if (def.bab === 1.0) {
+          res.weapons.simple = true;
+          res.weapons.martial = true;
+          res.armors.light = true;
+          res.armors.medium = true;
+          res.armors.heavy = true;
+          res.shields.shield = true;
+        } else if (def.bab === 0.75) {
+          res.weapons.simple = true;
+          res.armors.light = true;
+          res.armors.medium = true;
+          res.shields.shield = true;
+        } else {
+          res.weapons.simple = true;
+        }
+      }
+    });
+
+    // 2. Collect learned feats and special abilities
+    const learnedFeats = [];
+    if (Array.isArray(character.feats)) {
+      character.feats.forEach(f => learnedFeats.push(typeof f === 'string' ? f : f?.name || ''));
+    }
+    if (Array.isArray(character.specialAbilities)) {
+      character.specialAbilities.forEach(a => learnedFeats.push(typeof a === 'string' ? a : a?.name || ''));
+    }
+
+    // In progression table mode, also collect feats learned up to targetLevelIdx
+    if (targetLevelIdx !== null && targetLevelIdx !== undefined && prog.length > 0) {
+      const maxIdx = Math.max(0, Math.min(Number(targetLevelIdx), prog.length - 1));
+      for (let i = 0; i <= maxIdx; i++) {
+        if (prog[i] && prog[i].active !== false && Array.isArray(prog[i].feats)) {
+          prog[i].feats.forEach(f => learnedFeats.push(typeof f === 'string' ? f : f?.name || ''));
+        }
+      }
+    }
+
+    // In level up wizard, check prior slot feats if any
+    if (typeof levelUpModalFeatSlots !== 'undefined' && Array.isArray(levelUpModalFeatSlots)) {
+      levelUpModalFeatSlots.forEach(s => {
+        if (s && s.name) learnedFeats.push(s.name);
+      });
+    }
+
+    // Parse proficiency feats
+    learnedFeats.forEach(featStr => {
+      if (!featStr) return;
+      const clean = featStr.toLowerCase().replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
+
+      if (clean.includes('armor proficiency (light)') || clean.includes('hafif zırh ustalığı')) {
+        res.armors.light = true;
+      }
+      if (clean.includes('armor proficiency (medium)') || clean.includes('orta zırh ustalığı')) {
+        res.armors.medium = true;
+      }
+      if (clean.includes('armor proficiency (heavy)') || clean.includes('ağır zırh ustalığı')) {
+        res.armors.heavy = true;
+      }
+      if (clean.includes('tower shield proficiency') || clean.includes('kule kalkanı ustalığı')) {
+        res.shields.tower = true;
+      }
+      if (clean.includes('shield proficiency') || clean.includes('kalkan ustalığı')) {
+        res.shields.shield = true;
+      }
+      if (clean.includes('simple weapon proficiency') || clean.includes('basit silah ustalığı')) {
+        res.weapons.simple = true;
+      }
+      if (clean.includes('martial weapon proficiency') || clean.includes('askeri silah ustalığı')) {
+        const match = clean.match(/(?:martial weapon proficiency|askeri silah ustalığı)\s*\((.*?)\)/i);
+        if (match && match[1]) {
+          res.weapons.specific.add(match[1].trim().toLowerCase());
+        } else if (clean.includes('all') || clean.includes('tümü')) {
+          res.weapons.martial = true;
+        } else {
+          res.weapons.martial = true;
+        }
+      }
+      if (clean.includes('exotic weapon proficiency') || clean.includes('egzotik silah ustalığı')) {
+        const match = clean.match(/(?:exotic weapon proficiency|egzotik silah ustalığı)\s*\((.*?)\)/i);
+        if (match && match[1]) {
+          res.weapons.specific.add(match[1].trim().toLowerCase());
+        }
+      }
+      if (clean.includes('weapon aptitude') || clean.includes('silah yatkınlığı')) {
+        if (learnedFeats.some(f => f.toLowerCase().includes('exotic weapon proficiency'))) {
+          res.weapons.exoticAll = true;
+        }
+      }
+    });
+
+    return res;
+  },
+
+  // Check weapon proficiency
+  isProficientWithWeapon(character, weapon, targetLevelIdx = null) {
+    if (!weapon) return true;
+    const name = (typeof weapon === 'string' ? weapon : (weapon.name || '')).toLowerCase().trim();
+    if (!name || name === 'yok' || name === '-' || name === 'none' || name === 'boş') return true;
+
+    const baseWepName = name.replace(/\+\d+/g, '').replace(/\(.*?\)/g, '').trim();
+    const prof = this.getCharacterProficiencies(character, targetLevelIdx);
+
+    // 1. Specific weapon proficiencies always qualify
+    for (const spec of prof.weapons.specific) {
+      if (baseWepName.includes(spec) || name.includes(spec) || spec.includes(baseWepName)) {
+        return true;
+      }
+    }
+
+    // 2. Check Exotic
+    if (this.isExoticWeapon(weapon)) {
+      return Boolean(prof.weapons.exoticAll);
+    }
+
+    // 3. Check Martial
+    if (this.isMartialWeapon(weapon)) {
+      if (prof.weapons.martial) return true;
+      // Special Swordsage rule: proficient with all martial melee weapons per RAW
+      const prog = Array.isArray(character?.levelProgression) ? character.levelProgression : [];
+      const isSwordsage = (character?.classes || '').toLowerCase().includes('swordsage') || prog.some(l => (l.className || '').toLowerCase().includes('swordsage'));
+      if (isSwordsage) {
+        const isRanged = weapon.grip === 'Ranged' || weapon.isRanged || (weapon.tags && weapon.tags.includes('ranged'));
+        if (!isRanged) return true;
+      }
+      return false;
+    }
+
+    // 4. Simple weapon
+    if (prof.weapons.simple) return true;
+
+    return false;
+  },
+
+  // Check armor proficiency
+  isProficientWithArmor(character, armor, targetLevelIdx = null) {
+    if (!armor) return true;
+    const name = (typeof armor === 'string' ? armor : (armor.name || '')).toLowerCase().trim();
+    if (!name || name === '-' || name === 'none' || name === 'yok' || name === 'boş') return true;
+
+    const mods = this.parseItemModifiers(armor, (typeof masterDb !== 'undefined' ? masterDb : []));
+    let cat = (mods && mods.effectiveArmorCategory) || (typeof armor === 'object' ? (armor.effectiveArmorCategory || armor.armorCategory || armor.type) : null);
+
+    if (!cat) {
+      for (const [key, val] of Object.entries(this.SRD_ARMORS)) {
+        if (name.includes(key)) {
+          cat = val.type;
+          break;
+        }
+      }
+    }
+
+    if (!cat || cat === 'None') return true; // Robes / unarmored
+
+    const prof = this.getCharacterProficiencies(character, targetLevelIdx);
+    const catLower = cat.toLowerCase();
+    if (catLower === 'heavy') return Boolean(prof.armors.heavy);
+    if (catLower === 'medium') return Boolean(prof.armors.medium);
+    if (catLower === 'light') return Boolean(prof.armors.light);
+    return true;
+  },
+
+  // Check shield proficiency
+  isProficientWithShield(character, shield, targetLevelIdx = null) {
+    if (!shield) return true;
+    const name = (typeof shield === 'string' ? shield : (shield.name || '')).toLowerCase().trim();
+    if (!name || name === '-' || name === 'none' || name === 'yok' || name === 'boş') return true;
+
+    const prof = this.getCharacterProficiencies(character, targetLevelIdx);
+    if (this.isTowerShield(shield)) {
+      return Boolean(prof.shields.tower);
+    }
+    return Boolean(prof.shields.shield);
   },
 
   // Check if character possesses feat/trait allowing two-handed weapons or oversized weapons in one hand
@@ -2241,18 +2718,49 @@ const RuleEngine = {
       attackBonusItems.push({ type: 'untyped', val: -combatExpertise, source: 'Combat Expertise Penalty' });
     }
 
-    // Exotic Weapon Proficiency Check (RAW D&D 3.5e: -4 attack penalty if non-proficient)
-    const isExotic = this.isExoticWeapon(weapon);
-    if (isExotic) {
-      const hasEWP = feats.some(f => {
-        const cleanF = f.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim().toLowerCase();
-        return cleanF.includes('exotic weapon proficiency') && (cleanF.includes(baseWepName) || cleanF.includes('all'));
-      });
-      const hasWeaponAptitude = (character.specialAbilities || []).some(a => (typeof a === 'string' ? a : a.name).toLowerCase().includes('weapon aptitude'));
-      const hasAnyEWP = feats.some(f => f.toLowerCase().includes('exotic weapon proficiency'));
-      
-      if (!hasEWP && !(hasWeaponAptitude && hasAnyEWP)) {
-        attackBonusItems.push({ type: 'penalty', val: -4, source: 'Non-Proficient Exotic Weapon (-4 Att)' });
+    // Weapon Proficiency Check (RAW D&D 3.5e: -4 attack penalty if non-proficient)
+    const isWepProf = this.isProficientWithWeapon(character, weapon);
+    if (!isWepProf) {
+      attackBonusItems.push({ type: 'penalty', val: -4, source: 'Non-Proficient Weapon Penalty (-4 Att)' });
+    }
+
+    // Armor Non-Proficiency Check (RAW D&D 3.5e PHB p. 122: Armor Check Penalty applies to attack rolls)
+    if (character.bodySlots && character.bodySlots.armor) {
+      const armorItem = character.bodySlots.armor;
+      if (armorItem && armorItem.name && armorItem.name !== '-' && armorItem.active !== false) {
+        const isArmorProf = this.isProficientWithArmor(character, armorItem);
+        if (!isArmorProf) {
+          const armorMods = this.parseItemModifiers(armorItem, (typeof masterDb !== 'undefined' ? masterDb : []));
+          const armorAcp = armorMods ? armorMods.acp : 0;
+          if (armorAcp < 0) {
+            attackBonusItems.push({
+              type: 'penalty',
+              val: armorAcp,
+              source: `Non-Proficient Armor Penalty (${armorItem.name} ACP ${armorAcp})`
+            });
+          }
+        }
+      }
+    }
+
+    // Shield Non-Proficiency Check (RAW D&D 3.5e PHB p. 122: Shield Check Penalty applies to attack rolls, stacks with armor)
+    if (character.bodySlots && character.bodySlots.offHand) {
+      const offHandItem = character.bodySlots.offHand;
+      if (offHandItem && offHandItem.name && offHandItem.name !== '-' && offHandItem.active !== false) {
+        if (this.isShieldItem(offHandItem)) {
+          const isShieldProf = this.isProficientWithShield(character, offHandItem);
+          if (!isShieldProf) {
+            const shieldMods = this.parseItemModifiers(offHandItem, (typeof masterDb !== 'undefined' ? masterDb : []));
+            const shieldAcp = shieldMods ? shieldMods.acp : 0;
+            if (shieldAcp < 0) {
+              attackBonusItems.push({
+                type: 'penalty',
+                val: shieldAcp,
+                source: `Non-Proficient Shield Penalty (${offHandItem.name} ACP ${shieldAcp})`
+              });
+            }
+          }
+        }
       }
     }
 

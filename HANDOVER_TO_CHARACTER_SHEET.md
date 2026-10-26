@@ -2188,3 +2188,33 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - master_db.json ve webapp/master_db.json arasÄ±nda %100 SHA-256 hash paritesi saÄŸlandÄ± (E210834A852CA3DCF5348858DEFB64F1D46581C218492DD5E89BBA5579B37222).
      - 4 HTML karakter kÃ¢ÄŸÄ±dÄ± dosyasÄ± deÄŸiÅŸime ihtiyaÃ§ duymadan yeni verileri dinamik olarak haritaladÄ± (2A393ACD2723BF24E2402D2E368159BB307B863C7CF16F7831256C8F475A87FD).
      - Standart tavla zarÄ± emojisi (U+1F3B2) yasaÄŸÄ± tavizsiz korundu.
+
+---
+
+## 77. D&D 3.5e RAW SINIF & FEAT USTALIKLARI (PROFICIENCIES) VE CEZA MOTORU (2026-10-26)
+* **İstek & Problem:**
+  - Fighter gibi zırh ve silah ustalıklarına zaten standart olarak sahip olan sınıflar, Level Up ve Feat arama ekranlarında "Heavy Armor Proficiency" veya "Martial Weapon Proficiency" gibi sınıfından gelen featleri gereksiz yere tekrar seçebiliyordu.
+  - Rogue veya Wizard gibi sınıfların ise ilgili featleri almadan Greatsword (Martial) veya Full Plate (Heavy) kuşandıklarında D&D 3.5e RAW kuralları gereği almaları gereken cezalar (-4 saldırı cezası ve zırh ACP cezasının saldırılara yansıması) hesaplanmıyordu.
+* **Uygulanan Değişiklikler:**
+  1. **Kanoniik D&D 3.5e RAW Sınıf Ustalıkları Tablosu (CLASS_PROFICIENCIES):**
+     - `rule_engine.js` içerisine tüm temel ve popüler prestij/ek sınıfların (Fighter, Barbarian, Paladin, Ranger, Cleric, Druid, Rogue, Bard, Monk, Sorcerer, Wizard, Warlock, Crusader, Swordsage, Warblade, Duskblade, Knight, Warmage, Beguiler, Scout, vb.) zırh (light, medium, heavy), kalkan (shield, tower) ve silah (simple, martial, specific) ustalıkları tanımlandı.
+  2. **Dinamik Karakter Proficiencies Toplayıcısı (getCharacterProficiencies):**
+     - Karakterin aldığı tüm çoklu sınıfları (multiclassing union per RAW), Level Up sihirbazında seçilen yeni sınıfı ve öğrenilmiş featleri (`Armor Proficiency Light/Medium/Heavy`, `Shield/Tower Shield Proficiency`, `Simple/Martial/Exotic Weapon Proficiency`, Warblade `Weapon Aptitude`) tarayarak güncel ustalık kümesini çıkaran modüler motor entegre edildi.
+  3. **Akıllı Feat Önkoşul & Filtreleme Motoru (checkFeatPrerequisites):**
+     - Zırh ve kalkan zincirleri kuralına uygun hale getirildi:
+       - `Armor Proficiency (Medium)` için Hafif Zırh ustalığı, `Armor Proficiency (Heavy)` için Orta Zırh ustalığı zorunlu kılındı. Rogue Hafif Zırha sahip olduğu için Orta Zırh featini alabilirken; Orta Zırh featini almadan Ağır Zırh featini seçmesi `[⚠️ Önkoşul Eksik: Armor Proficiency (Medium)]` uyarısıyla engellendi.
+       - Sınıfından ötürü bu ustalığa zaten sahip olan karakterler için (örn. Fighter) `isAlreadyKnownFromClass: true` bayrağı devreye sokuldu.
+     - Feat arama ve Level Up konsollarında (`renderQuickFeatSearchResults`, `renderLevelUpFeatSearchResults`, `renderFeatPickerList`):
+       - Zaten bilinen ustalıklar `🔒 Sınıf Ustalığı (Zaten Var)` rozeti aldı.
+       - Seçim butonu `Zaten Sahipsiniz` olarak devre dışı bırakıldı (disabled).
+       - `[✅ Alınabilir]` sekmesinden ve sayacından otomatik hariç tutularak kalabalık önlendi.
+  4. **Saldırı Motoru RAW Ustalık Cezaları (evaluateWeaponAttack):**
+     - Silah Ustalığı Cezası: Karakter yetkin olmadığı bir silahı (Basit, Askeri veya Egzotik) kullandığında otomatik olarak `-4 Non-Proficient Weapon Penalty (-4 Att)` saldırı cezası uygulanır (örn. Rogue'un Greatsword kullanması).
+     - Zırh Ustalığı Cezası (PHB p.122): Karakter yetkin olmadığı bir zırhı giydiğinde zırhın Zırh Kontrol Cezası (ACP) doğrudan tüm saldırı zarlarına untyped ceza olarak eklenir (örn. Rogue'un Full Plate giymesi durumunda -6 ceza).
+     - Kalkan Ustalığı Cezası (PHB p.122): Karakter yetkin olmadığı bir kalkanı taşıdığında kalkanın ACP'si saldırı zarlarına eklenir (örn. Heavy Shield için -2 ceza).
+     - Cezalar kurala uygun şekilde yığılır (Full Plate -6, Heavy Shield -2, Greatsword -4 ile Rogue toplam -12 saldırı cezası alır; Fighter ise ustalıkları sayesinde 0 ceza alır).
+  5. **Parite ve Kural Standartları:**
+     - 4 HTML karakter kâğıdı dosyası (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi sağlandı (`35C42A69E16B1FC305736CB823E32B945A06E929B1055B36DBB1885A8F4CA041`).
+     - `rule_engine.js` ve `webapp/rule_engine.js` arasında %100 SHA-256 hash paritesi sağlandı (`73EBBF688FEF94C09A832B12CAAE7DB7450992332A57A060098B6619AC30853A`).
+     - `scratch/test_proficiencies.html` içindeki 22 test senaryosunun tamamı Edge headless ortamında başarıyla geçti (PASS).
+     - Standart tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.

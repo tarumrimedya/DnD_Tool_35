@@ -31246,6 +31246,8 @@ function renderManualStatsPanel() {
 
       filtered.forEach(f => {
         const isOwned = ownedSet.has(f.name.toLowerCase().trim());
+        const pEval = typeof checkFeatPrerequisites === 'function' ? checkFeatPrerequisites(f) : { isAlreadyKnownFromClass: false };
+        const isClassKnown = Boolean(pEval && pEval.isAlreadyKnownFromClass);
         const isFlaw = (f.category === 'Flaw' || f.name.toLowerCase().startsWith('flaw:'));
         const isRacial = (f.category === 'Racial Trait' || (f.type && f.type.toLowerCase().includes('racial')));
         const lvl1Only = (isFlaw || isRacial || (f.prereq && f.prereq.toLowerCase().includes('1st level')));
@@ -31847,9 +31849,9 @@ function renderManualStatsPanel() {
         return { item, pEval };
       });
 
-      // Filter counts
+      // Filter counts (excluding already known feats from class from the Qualified count)
       const countAll = evaluatedItems.length;
-      const countQualified = evaluatedItems.filter(e => e.pEval.allMet).length;
+      const countQualified = evaluatedItems.filter(e => e.pEval.allMet && !e.pEval.isAlreadyKnownFromClass).length;
       const countFighter = evaluatedItems.filter(e => isFighterFeat(e.item)).length;
       const countBoon = evaluatedItems.filter(e => isBoonFeat(e.item)).length;
       const countFlaw = evaluatedItems.filter(e => isFlawFeat(e.item)).length;
@@ -31858,7 +31860,7 @@ function renderManualStatsPanel() {
       // Apply active filter pill
       let filteredItems = evaluatedItems;
       if (activeFilter === 'QUALIFIED') {
-        filteredItems = evaluatedItems.filter(e => e.pEval.allMet);
+        filteredItems = evaluatedItems.filter(e => e.pEval.allMet && !e.pEval.isAlreadyKnownFromClass);
       } else if (activeFilter === 'FIGHTER') {
         filteredItems = evaluatedItems.filter(e => isFighterFeat(e.item));
       } else if (activeFilter === 'BOON') {
@@ -31869,10 +31871,14 @@ function renderManualStatsPanel() {
         filteredItems = evaluatedItems.filter(e => e.item.category === 'Warlock Invocation');
       }
 
-      // Sort: Qualified first, then alphabetically
+      // Sort: Truly eligible first, then already known from class, then unqualified, then alphabetically
       filteredItems.sort((a, b) => {
-        if (a.pEval.allMet && !b.pEval.allMet) return -1;
-        if (!a.pEval.allMet && b.pEval.allMet) return 1;
+        const aQual = a.pEval.allMet && !a.pEval.isAlreadyKnownFromClass;
+        const bQual = b.pEval.allMet && !b.pEval.isAlreadyKnownFromClass;
+        if (aQual && !bQual) return -1;
+        if (!aQual && bQual) return 1;
+        if (a.pEval.isAlreadyKnownFromClass && !b.pEval.isAlreadyKnownFromClass) return 1;
+        if (!a.pEval.isAlreadyKnownFromClass && b.pEval.isAlreadyKnownFromClass) return -1;
         return (a.item.name || '').localeCompare(b.item.name || '');
       });
 
@@ -31889,30 +31895,53 @@ function renderManualStatsPanel() {
         `;
       } else {
         listHtml = filteredItems.map(({ item, pEval }) => {
-          const isQualified = pEval.allMet;
+          const isAlreadyKnown = Boolean(pEval.isAlreadyKnownFromClass);
+          const isQualified = pEval.allMet && !isAlreadyKnown;
           const safeName = (item.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-          const badgeClass = isQualified
-            ? 'bg-emerald-950/80 text-emerald-300 border-emerald-600/60'
-            : 'bg-rose-950/80 text-rose-300 border-rose-600/60';
+          let badgeClass = 'bg-rose-950/80 text-rose-300 border-rose-600/60';
+          let badgeText = '⚠️ Önkoşul Eksik';
+          if (isAlreadyKnown) {
+            badgeClass = 'bg-blue-950/80 text-blue-300 border-blue-600/60';
+            badgeText = '🔒 Sınıf Ustalığı (Zaten Var)';
+          } else if (isQualified) {
+            badgeClass = 'bg-emerald-950/80 text-emerald-300 border-emerald-600/60';
+            badgeText = '✅ Alınabilir';
+          }
 
-          const prereqSummary = pEval.hasPrereqs
-            ? `<div class="flex flex-wrap items-center gap-1 text-[9px] pt-1">
-                 <span class="text-slate-400 font-semibold">Önkoşul:</span>
-                 ${pEval.checks.map(c => `
-                   <span class="px-1 py-0.2 rounded font-mono ${c.met ? 'bg-emerald-950 text-emerald-300 border border-emerald-700/40' : 'bg-rose-950 text-rose-200 border border-rose-600 font-bold'}">
-                     ${c.label} ${c.met ? '✓' : '✗'}
-                   </span>
-                 `).join('')}
-               </div>`
-            : `<div class="text-[9px] text-slate-400 pt-0.5">Önkoşulsuz</div>`;
+          const prereqSummary = isAlreadyKnown
+            ? `<div class="text-[9px] text-blue-300 pt-0.5">ℹ️ ${pEval.alreadyKnownReason || 'Karakteriniz bu ustalığa sınıfı veya mevcut yetenekleri sayesinde zaten sahiptir.'}</div>`
+            : (pEval.hasPrereqs
+              ? `<div class="flex flex-wrap items-center gap-1 text-[9px] pt-1">
+                   <span class="text-slate-400 font-semibold">Önkoşul:</span>
+                   ${pEval.checks.map(c => `
+                     <span class="px-1 py-0.2 rounded font-mono ${c.met ? 'bg-emerald-950 text-emerald-300 border border-emerald-700/40' : 'bg-rose-950 text-rose-200 border border-rose-600 font-bold'}">
+                       ${c.label} ${c.met ? '✓' : '✗'}
+                     </span>
+                   `).join('')}
+                 </div>`
+              : `<div class="text-[9px] text-slate-400 pt-0.5">Önkoşulsuz</div>`);
+
+          const buttonHtml = isAlreadyKnown
+            ? `<button disabled type="button"
+                       title="${(pEval.alreadyKnownReason || 'Zaten Sahipsiniz').replace(/"/g, '&quot;')}"
+                       class="px-2.5 py-1 rounded text-[11px] font-bold shadow shrink-0 opacity-50 cursor-not-allowed bg-slate-800 text-slate-400 flex items-center gap-1">
+                 <span>🔒</span>
+                 <span>Zaten Sahipsiniz</span>
+               </button>`
+            : `<button type="button"
+                       onclick="selectFeatForQuickLevel('${safeName}')"
+                       class="px-2.5 py-1 rounded text-[11px] font-bold shadow transition shrink-0 cursor-pointer flex items-center gap-1 ${isQualified ? 'bg-emerald-600 hover:bg-emerald-500 text-white active:scale-95' : 'bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-600/40'}">
+                 <span>🎯</span>
+                 <span>${isQualified ? 'Seç' : 'Yine de Seç'}</span>
+               </button>`;
 
           return `
-            <div class="p-2.5 rounded-lg border transition ${isQualified ? 'bg-slate-950/80 hover:bg-slate-900 border-slate-800 hover:border-emerald-500/60' : 'bg-slate-950/50 hover:bg-slate-900/60 border-slate-800/80 hover:border-rose-600/40 opacity-85 hover:opacity-100'} space-y-1.5">
+            <div class="p-2.5 rounded-lg border transition ${isAlreadyKnown ? 'bg-slate-950/40 border-slate-800/80' : (isQualified ? 'bg-slate-950/80 hover:bg-slate-900 border-slate-800 hover:border-emerald-500/60' : 'bg-slate-950/50 hover:bg-slate-900/60 border-slate-800/80 hover:border-rose-600/40 opacity-85 hover:opacity-100')} space-y-1.5">
               <div class="flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2 flex-wrap">
                   <span class="font-bold text-white text-xs">${item.name}</span>
                   <span class="text-[9px] font-bold px-1.5 py-0.2 rounded border ${badgeClass}">
-                    ${isQualified ? '✅ Alınabilir' : '⚠️ Önkoşul Eksik'}
+                    ${badgeText}
                   </span>
                   <span class="text-[9px] text-indigo-300 bg-indigo-950/70 border border-indigo-700/50 px-1.5 py-0.2 rounded">
                     ${item.tier ? `${item.tier} Invocation` : (item.category || 'Feat')}
@@ -31921,18 +31950,13 @@ function renderManualStatsPanel() {
                     ${item.source || '3.5e RAW'}
                   </span>
                 </div>
-                <button type="button"
-                        onclick="selectFeatForQuickLevel('${safeName}')"
-                        class="px-2.5 py-1 rounded text-[11px] font-bold shadow transition shrink-0 cursor-pointer flex items-center gap-1 ${isQualified ? 'bg-emerald-600 hover:bg-emerald-500 text-white active:scale-95' : 'bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-600/40'}">
-                  <span>🎯</span>
-                  <span>${isQualified ? 'Seç' : 'Yine de Seç'}</span>
-                </button>
+                ${buttonHtml}
               </div>
               ${prereqSummary}
               ${item.benefit ? `<p class="text-[10px] text-slate-300 leading-relaxed line-clamp-2">${item.benefit}</p>` : ''}
             </div>
           `;
-        }).join('');
+        })}).join('');
       }
 
       consoleEl.innerHTML = `
@@ -32701,11 +32725,82 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
        * caster level, and skill ranks in a fully parametric manner.
        */
       function checkFeatPrerequisites(feat, slotIdx = 0, targetLevelIdx = null) {
-        if (!feat) return { hasPrereqs: false, allMet: true, checks: [], rawPrereq: '' };
+        if (!feat) return { hasPrereqs: false, allMet: true, checks: [], rawPrereq: '', isAlreadyKnownFromClass: false, alreadyKnownReason: '' };
+
+        const featName = (feat.name || '').trim();
+        const featNameNorm = featName.toLowerCase().replace(/[^a-z0-9]/g, '');
+        let isAlreadyKnownFromClass = false;
+        let alreadyKnownReason = '';
+
+        // Unified D&D 3.5e Proficiencies lookup via RuleEngine
+        let prof = null;
+        if (typeof RuleEngine !== 'undefined' && RuleEngine.getCharacterProficiencies) {
+          prof = RuleEngine.getCharacterProficiencies(character, targetLevelIdx);
+        } else {
+          prof = {
+            weapons: { simple: true, martial: false, exoticAll: false, specific: new Set() },
+            armors: { light: true, medium: false, heavy: false },
+            shields: { shield: false, tower: false }
+          };
+        }
+
+        // Check if this feat itself is an Armor / Shield / Weapon Proficiency already granted by class/existing feats
+        if (featNameNorm.includes('armorproficiencyheavy') || featNameNorm.includes('heavyarmorproficiency')) {
+          if (prof.armors.heavy) {
+            isAlreadyKnownFromClass = true;
+            alreadyKnownReason = 'Karakteriniz sınıfı veya mevcut yetenekleri sayesinde zaten Ağır Zırh (Heavy Armor) ustalığına sahiptir.';
+          }
+        } else if (featNameNorm.includes('armorproficiencymedium') || featNameNorm.includes('mediumarmorproficiency')) {
+          if (prof.armors.medium) {
+            isAlreadyKnownFromClass = true;
+            alreadyKnownReason = 'Karakteriniz sınıfı veya mevcut yetenekleri sayesinde zaten Orta Zırh (Medium Armor) ustalığına sahiptir.';
+          }
+        } else if (featNameNorm.includes('armorproficiencylight') || featNameNorm.includes('lightarmorproficiency')) {
+          if (prof.armors.light) {
+            isAlreadyKnownFromClass = true;
+            alreadyKnownReason = 'Karakteriniz sınıfı veya mevcut yetenekleri sayesinde zaten Hafif Zırh (Light Armor) ustalığına sahiptir.';
+          }
+        } else if (featNameNorm.includes('towershieldproficiency')) {
+          if (prof.shields.tower) {
+            isAlreadyKnownFromClass = true;
+            alreadyKnownReason = 'Karakteriniz sınıfı veya mevcut yetenekleri sayesinde zaten Kule Kalkanı (Tower Shield) ustalığına sahiptir.';
+          }
+        } else if (featNameNorm.includes('shieldproficiency')) {
+          if (prof.shields.shield || prof.shields.tower) {
+            isAlreadyKnownFromClass = true;
+            alreadyKnownReason = 'Karakteriniz sınıfı veya mevcut yetenekleri sayesinde zaten Kalkan (Shield) ustalığına sahiptir.';
+          }
+        } else if (featNameNorm.includes('martialweaponproficiency') || featNameNorm.includes('askerisilah')) {
+          const match = featName.match(/(?:martial weapon proficiency|askeri silah ustalığı)\s*\((.*?)\)/i);
+          if (match && match[1]) {
+            const wep = match[1].toLowerCase().trim();
+            if (prof.weapons.martial || prof.weapons.specific.has(wep)) {
+              isAlreadyKnownFromClass = true;
+              alreadyKnownReason = `Karakteriniz zaten ${match[1]} silah ustalığına sahiptir.`;
+            }
+          } else if (prof.weapons.martial) {
+            isAlreadyKnownFromClass = true;
+            alreadyKnownReason = 'Karakteriniz sınıfı sayesinde zaten tüm Askeri Silahlar (Martial Weapons) ustalığına sahiptir.';
+          }
+        } else if (featNameNorm.includes('simpleweaponproficiency') || featNameNorm.includes('basitsilah')) {
+          if (prof.weapons.simple) {
+            isAlreadyKnownFromClass = true;
+            alreadyKnownReason = 'Karakteriniz sınıfı sayesinde zaten tüm Basit Silahlar (Simple Weapons) ustalığına sahiptir.';
+          }
+        } else if (featNameNorm.includes('exoticweaponproficiency')) {
+          const match = featName.match(/(?:exotic weapon proficiency|egzotik silah ustalığı)\s*\((.*?)\)/i);
+          if (match && match[1]) {
+            const wep = match[1].toLowerCase().trim();
+            if (prof.weapons.exoticAll || prof.weapons.specific.has(wep)) {
+              isAlreadyKnownFromClass = true;
+              alreadyKnownReason = `Karakteriniz zaten ${match[1]} egzotik silah ustalığına sahiptir.`;
+            }
+          }
+        }
 
         const rawPrereq = (feat.prereq || feat.prerequisites || '').trim();
         if (!rawPrereq || rawPrereq === '-' || rawPrereq.toLowerCase() === 'none') {
-          return { hasPrereqs: false, allMet: true, checks: [], rawPrereq: '' };
+          return { hasPrereqs: false, allMet: true, checks: [], rawPrereq: '', isAlreadyKnownFromClass, alreadyKnownReason };
         }
 
         const isTableMode = (targetLevelIdx !== null && targetLevelIdx !== undefined);
@@ -32914,13 +33009,53 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             continue;
           }
 
-          // E) Weapon Proficiency Check (Parametric: Full BAB martial class or known proficiency feat)
-          if (part.toLowerCase().includes('proficiency')) {
-            const hasFullBabClass = (def.bab === 1.0);
-            const hasMartialFeat = Array.from(knownFeats).some(kf => kf.includes('proficiency') || kf.includes('martialweapon') || kf.includes('exoticweapon'));
-            const isMartial = hasFullBabClass || hasMartialFeat || (prospectiveBab >= 1);
-            met = isMartial;
-            info = met ? '(Silah Ustalığı Var)' : '(Proficiency Eksik)';
+          // E.1) Armor & Shield Proficiency Prerequisite Check
+          if (part.toLowerCase().includes('armor proficiency') || part.toLowerCase().includes('shield proficiency') || part.toLowerCase().includes('zırh ustalığı') || part.toLowerCase().includes('kalkan ustalığı')) {
+            const pNorm = part.toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (pNorm.includes('heavy')) {
+              met = Boolean(prof.armors.heavy);
+              info = met ? '(Ağır Zırh Ustalığı Var)' : '(Ağır Zırh Ustalığı Eksik)';
+            } else if (pNorm.includes('medium')) {
+              met = Boolean(prof.armors.medium);
+              info = met ? '(Orta Zırh Ustalığı Var)' : '(Orta Zırh Ustalığı Eksik)';
+            } else if (pNorm.includes('light')) {
+              met = Boolean(prof.armors.light);
+              info = met ? '(Hafif Zırh Ustalığı Var)' : '(Hafif Zırh Ustalığı Eksik)';
+            } else if (pNorm.includes('towershield')) {
+              met = Boolean(prof.shields.tower);
+              info = met ? '(Kule Kalkanı Ustalığı Var)' : '(Kule Kalkanı Ustalığı Eksik)';
+            } else if (pNorm.includes('shield')) {
+              met = Boolean(prof.shields.shield || prof.shields.tower);
+              info = met ? '(Kalkan Ustalığı Var)' : '(Kalkan Ustalığı Eksik)';
+            }
+            if (!met) allMet = false;
+            checks.push({ type: 'proficiency', label, met, info });
+            continue;
+          }
+
+          // E.2) Weapon Proficiency Prerequisite Check
+          if (part.toLowerCase().includes('proficiency') || part.toLowerCase().includes('ustalığı') || part.toLowerCase().includes('weapon prof')) {
+            const pNorm = part.toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (pNorm.includes('martial')) {
+              met = Boolean(prof.weapons.martial || (prof.weapons.specific && prof.weapons.specific.size > 0));
+              info = met ? '(Askeri Silah Ustalığı Var)' : '(Askeri Silah Ustalığı Eksik)';
+            } else if (pNorm.includes('simple')) {
+              met = Boolean(prof.weapons.simple);
+              info = met ? '(Basit Silah Ustalığı Var)' : '(Basit Silah Ustalığı Eksik)';
+            } else if (pNorm.includes('exotic')) {
+              const match = part.match(/exotic weapon proficiency\s*\((.*?)\)/i);
+              if (match) {
+                const wep = match[1].toLowerCase().trim();
+                met = Boolean(prof.weapons.exoticAll || (prof.weapons.specific && prof.weapons.specific.has(wep)));
+                info = met ? `(${match[1]} Ustalığı Var)` : `(${match[1]} Ustalığı Eksik)`;
+              } else {
+                met = Boolean(prof.weapons.exoticAll || Array.from(knownFeats).some(kf => kf.includes('exoticweaponproficiency')));
+                info = met ? '(Egzotik Silah Ustalığı Var)' : '(Egzotik Silah Ustalığı Eksik)';
+              }
+            } else {
+              met = Boolean(prof.weapons.martial || prof.weapons.simple || (prospectiveBab >= 1));
+              info = met ? '(Silah Ustalığı Var)' : '(Proficiency Eksik)';
+            }
             if (!met) allMet = false;
             checks.push({ type: 'proficiency', label, met, info });
             continue;
@@ -32947,7 +33082,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           checks.push({ type: 'feat', label, met, info });
         }
 
-        return { hasPrereqs: true, allMet, checks, rawPrereq };
+        return { hasPrereqs: true, allMet, checks, rawPrereq, isAlreadyKnownFromClass, alreadyKnownReason };
       }
 
       function getFeatCategoryBadgeStyle(cat) {
@@ -32985,7 +33120,14 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             };
             const pEval = checkFeatPrerequisites(found, idx);
 
-            if (!pEval.hasPrereqs) {
+            if (pEval.isAlreadyKnownFromClass) {
+              prereqHtml = `
+                <div class="flex items-center gap-1.5 text-[10px] text-blue-300 bg-blue-950/60 border border-blue-700/60 rounded-lg px-2.5 py-1">
+                  <span>🔒</span>
+                  <span><b>Sınıf Ustalığı:</b> ${pEval.alreadyKnownReason || 'Karakteriniz bu ustalığa sınıfı veya mevcut yetenekleri sayesinde zaten sahiptir.'}</span>
+                </div>
+              `;
+            } else if (!pEval.hasPrereqs) {
               prereqHtml = `
                 <div class="flex items-center gap-1.5 text-[10px] text-slate-400 bg-slate-900/60 border border-slate-800/80 rounded-lg px-2.5 py-1">
                   <span>ℹ️</span>
@@ -33273,9 +33415,9 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           return { item, pEval };
         });
 
-        // Counts for filter pills
+        // Counts for filter pills (excluding already known feats from class from the Qualified count)
         const countAll = evaluatedItems.length;
-        const countQualified = evaluatedItems.filter(e => e.pEval.allMet).length;
+        const countQualified = evaluatedItems.filter(e => e.pEval.allMet && !e.pEval.isAlreadyKnownFromClass).length;
         const countFighter = evaluatedItems.filter(e => isFighterFeat(e.item)).length;
         const countBoon = evaluatedItems.filter(e => isBoonFeat(e.item)).length;
         const countFlaw = evaluatedItems.filter(e => isFlawFeat(e.item)).length;
@@ -33283,7 +33425,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         // Apply active filter pill
         let filteredItems = evaluatedItems;
         if (activeFilter === 'QUALIFIED') {
-          filteredItems = evaluatedItems.filter(e => e.pEval.allMet);
+          filteredItems = evaluatedItems.filter(e => e.pEval.allMet && !e.pEval.isAlreadyKnownFromClass);
         } else if (activeFilter === 'FIGHTER') {
           filteredItems = evaluatedItems.filter(e => isFighterFeat(e.item));
         } else if (activeFilter === 'BOON') {
@@ -33292,10 +33434,14 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           filteredItems = evaluatedItems.filter(e => isFlawFeat(e.item));
         }
 
-        // 4. Sort: Eligible (allMet) first, then alphabetical
+        // 4. Sort: Eligible first, then already known from class, then unqualified, then alphabetical
         filteredItems.sort((a, b) => {
-          if (a.pEval.allMet && !b.pEval.allMet) return -1;
-          if (!a.pEval.allMet && b.pEval.allMet) return 1;
+          const aQual = a.pEval.allMet && !a.pEval.isAlreadyKnownFromClass;
+          const bQual = b.pEval.allMet && !b.pEval.isAlreadyKnownFromClass;
+          if (aQual && !bQual) return -1;
+          if (!aQual && bQual) return 1;
+          if (a.pEval.isAlreadyKnownFromClass && !b.pEval.isAlreadyKnownFromClass) return 1;
+          if (!a.pEval.isAlreadyKnownFromClass && b.pEval.isAlreadyKnownFromClass) return -1;
           return (a.item.name || '').localeCompare(b.item.name || '');
         });
 
@@ -33313,30 +33459,53 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           `;
         } else {
           listHtml = filteredItems.map(({ item, pEval }) => {
-            const isQualified = pEval.allMet;
+            const isAlreadyKnown = Boolean(pEval.isAlreadyKnownFromClass);
+            const isQualified = pEval.allMet && !isAlreadyKnown;
             const safeName = (item.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-            const badgeClass = isQualified
-              ? 'bg-emerald-950/80 text-emerald-300 border-emerald-600/60'
-              : 'bg-rose-950/80 text-rose-300 border-rose-600/60';
+            let badgeClass = 'bg-rose-950/80 text-rose-300 border-rose-600/60';
+            let badgeText = '⚠️ Önkoşul Eksik';
+            if (isAlreadyKnown) {
+              badgeClass = 'bg-blue-950/80 text-blue-300 border-blue-600/60';
+              badgeText = '🔒 Sınıf Ustalığı (Zaten Var)';
+            } else if (isQualified) {
+              badgeClass = 'bg-emerald-950/80 text-emerald-300 border-emerald-600/60';
+              badgeText = '✅ Alınabilir';
+            }
 
-            const prereqSummary = pEval.hasPrereqs
-              ? `<div class="flex flex-wrap items-center gap-1 text-[9px] pt-1">
-                   <span class="text-slate-400 font-semibold">Önkoşul:</span>
-                   ${pEval.checks.map(c => `
-                     <span class="px-1 py-0.2 rounded font-mono ${c.met ? 'bg-emerald-950 text-emerald-300 border border-emerald-700/40' : 'bg-rose-950 text-rose-300 border border-rose-600/50'}">
-                       ${c.label} ${c.met ? '✓' : '✗'}
-                     </span>
-                   `).join('')}
-                 </div>`
-              : `<div class="text-[9px] text-slate-400 pt-0.5">Önkoşulsuz</div>`;
+            const prereqSummary = isAlreadyKnown
+              ? `<div class="text-[9px] text-blue-300 pt-0.5">ℹ️ ${pEval.alreadyKnownReason || 'Karakteriniz bu ustalığa sınıfı veya mevcut yetenekleri sayesinde zaten sahiptir.'}</div>`
+              : (pEval.hasPrereqs
+                ? `<div class="flex flex-wrap items-center gap-1 text-[9px] pt-1">
+                     <span class="text-slate-400 font-semibold">Önkoşul:</span>
+                     ${pEval.checks.map(c => `
+                       <span class="px-1 py-0.2 rounded font-mono ${c.met ? 'bg-emerald-950 text-emerald-300 border border-emerald-700/40' : 'bg-rose-950 text-rose-300 border border-rose-600/50'}">
+                         ${c.label} ${c.met ? '✓' : '✗'}
+                       </span>
+                     `).join('')}
+                   </div>`
+                : `<div class="text-[9px] text-slate-400 pt-0.5">Önkoşulsuz</div>`);
+
+            const buttonHtml = isAlreadyKnown
+              ? `<button disabled type="button"
+                         title="${(pEval.alreadyKnownReason || 'Zaten Sahipsiniz').replace(/"/g, '&quot;')}"
+                         class="px-2.5 py-1 rounded text-[11px] font-bold shadow shrink-0 opacity-50 cursor-not-allowed bg-slate-800 text-slate-400 flex items-center gap-1">
+                   <span>🔒</span>
+                   <span>Zaten Sahipsiniz</span>
+                 </button>`
+              : `<button type="button"
+                         onclick="selectFeatForLevelUpSlot(${slotIdx}, '${safeName}')"
+                         class="px-2.5 py-1 rounded text-[11px] font-bold shadow transition shrink-0 cursor-pointer flex items-center gap-1 ${isQualified ? 'bg-emerald-600 hover:bg-emerald-500 text-white active:scale-95' : 'bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-600/40'}">
+                   <span>🎯</span>
+                   <span>${isQualified ? 'Seç' : 'Yine de Seç'}</span>
+                 </button>`;
 
             return `
-              <div class="p-2.5 rounded-lg border transition ${isQualified ? 'bg-slate-950/80 hover:bg-slate-900 border-slate-800 hover:border-emerald-500/60' : 'bg-slate-950/50 hover:bg-slate-900/60 border-slate-800/80 hover:border-rose-600/40 opacity-85 hover:opacity-100'} space-y-1.5">
+              <div class="p-2.5 rounded-lg border transition ${isAlreadyKnown ? 'bg-slate-950/40 border-slate-800/80' : (isQualified ? 'bg-slate-950/80 hover:bg-slate-900 border-slate-800 hover:border-emerald-500/60' : 'bg-slate-950/50 hover:bg-slate-900/60 border-slate-800/80 hover:border-rose-600/40 opacity-85 hover:opacity-100')} space-y-1.5">
                 <div class="flex items-center justify-between gap-2">
                   <div class="flex items-center gap-2 flex-wrap">
                     <span class="font-bold text-white text-xs">${item.name}</span>
                     <span class="text-[9px] font-bold px-1.5 py-0.2 rounded border ${badgeClass}">
-                      ${isQualified ? '✅ Alınabilir' : '⚠️ Önkoşul Eksik'}
+                      ${badgeText}
                     </span>
                     <span class="text-[9px] text-indigo-300 bg-indigo-950/70 border border-indigo-700/50 px-1.5 py-0.2 rounded">
                       ${item.category || 'Feat'}
@@ -33345,18 +33514,13 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                       ${item.source || '3.5e RAW'}
                     </span>
                   </div>
-                  <button type="button"
-                          onclick="selectFeatForLevelUpSlot(${slotIdx}, '${safeName}')"
-                          class="px-2.5 py-1 rounded text-[11px] font-bold shadow transition shrink-0 cursor-pointer flex items-center gap-1 ${isQualified ? 'bg-emerald-600 hover:bg-emerald-500 text-white active:scale-95' : 'bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-600/40'}">
-                    <span>🎯</span>
-                    <span>${isQualified ? 'Seç' : 'Yine de Seç'}</span>
-                  </button>
+                  ${buttonHtml}
                 </div>
                 ${prereqSummary}
                 ${item.benefit ? `<p class="text-[10px] text-slate-300 leading-relaxed line-clamp-2">${item.benefit}</p>` : ''}
               </div>
             `;
-          }).join('');
+          })}).join('');
         }
 
         consoleEl.innerHTML = `
