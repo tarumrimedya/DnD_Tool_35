@@ -1541,7 +1541,7 @@
         .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
       return `
-        <div class="group bg-[#131d33] border border-slate-700/80 hover:border-indigo-500/60 rounded-2xl p-3 sm:p-3.5 shadow-xl hover:shadow-2xl transition duration-200 flex flex-col justify-between relative overflow-y-auto overflow-x-hidden custom-scroll h-full min-h-[380px] xl:min-h-[400px] xl:max-h-[420px]">
+        <div id="hub-char-card-${c.id}" class="group bg-[#131d33] border border-slate-700/80 hover:border-indigo-500/60 rounded-2xl p-3 sm:p-3.5 shadow-xl hover:shadow-2xl transition duration-200 flex flex-col justify-between relative overflow-y-auto overflow-x-hidden custom-scroll h-full min-h-[380px] xl:min-h-[400px] xl:max-h-[420px]">
           <!-- Üst Arka Plan Işıltısı -->
           <div class="absolute -top-12 -right-12 w-32 h-32 ${c.isNpc ? 'bg-rose-600/10' : 'bg-indigo-600/10'} rounded-full blur-2xl pointer-events-none"></div>
 
@@ -1949,7 +1949,7 @@
       else if (hpPct <= 50) hpColor = 'bg-amber-500';
 
       return `
-        <tr class="hover:bg-slate-900/50 transition">
+        <tr id="hub-char-row-${c.id}" class="hover:bg-slate-900/50 transition">
           <!-- İnisiyatif -->
           <td class="py-3 px-3 font-mono font-bold text-amber-400 text-center">
             ${c.initBonus >= 0 ? '+' + c.initBonus : c.initBonus}
@@ -2495,6 +2495,7 @@
     }
 
     function showHubDiceToast(data) {
+      if (!data) return;
       let container = document.getElementById('hub-dice-toast-container');
       if (!container) {
         container = document.createElement('div');
@@ -2506,6 +2507,68 @@
       // 3'ten fazla açık toast varsa eskilerini temizle
       while (container.children.length >= 3) {
         container.lastElementChild.remove();
+      }
+
+      // 1. Durum: Canlı Senkron veya Bilgi Bildirimi (title / text)
+      if (data.title || data.text) {
+        const title = data.title || '⚡ Canlı Senkron';
+        const text = data.text || '';
+        const color = data.color || 'emerald';
+        let colorClasses = 'border-emerald-500/80 bg-slate-900/95 text-emerald-200 ring-1 ring-emerald-500/30';
+        let badgeIcon = '⚡';
+        let badgeBg = 'bg-emerald-500/20 text-emerald-400';
+
+        if (color === 'rose') {
+          colorClasses = 'border-rose-500/80 bg-slate-900/95 text-rose-200 ring-1 ring-rose-500/30';
+          badgeIcon = '⚠️';
+          badgeBg = 'bg-rose-500/20 text-rose-400';
+        } else if (color === 'amber') {
+          colorClasses = 'border-amber-500/80 bg-slate-900/95 text-amber-200 ring-1 ring-amber-500/30';
+          badgeIcon = '⚡';
+          badgeBg = 'bg-amber-500/20 text-amber-400';
+        } else if (color === 'indigo') {
+          colorClasses = 'border-indigo-500/80 bg-slate-900/95 text-indigo-200 ring-1 ring-indigo-500/30';
+          badgeIcon = '🔮';
+          badgeBg = 'bg-indigo-500/20 text-indigo-400';
+        }
+
+        const toast = document.createElement('div');
+        toast.className = `hub-toast-item pointer-events-auto cursor-pointer w-full border rounded-2xl p-3 sm:p-3.5 shadow-2xl backdrop-blur-md transition-all duration-300 transform -translate-y-3 opacity-0 flex items-center justify-between gap-3 ${colorClasses}`;
+        toast.title = 'Kapatmak için tıkla';
+        toast.onclick = () => {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateY(-8px) scale(0.95)';
+          setTimeout(() => toast.remove(), 200);
+        };
+
+        toast.innerHTML = `
+          <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl ${badgeBg} flex items-center justify-center text-lg shrink-0 shadow-inner font-bold">
+              ${badgeIcon}
+            </div>
+            <div class="min-w-0">
+              <div class="text-xs font-black text-white truncate">${escapeHtml(title)}</div>
+              <div class="text-[11px] text-slate-300 truncate mt-0.5">${escapeHtml(text)}</div>
+            </div>
+          </div>
+          <button type="button" class="text-slate-500 hover:text-white p-1 rounded-lg text-xs leading-none transition">✕</button>
+        `;
+
+        container.prepend(toast);
+
+        requestAnimationFrame(() => {
+          toast.classList.remove('-translate-y-3', 'opacity-0');
+          toast.classList.add('translate-y-0', 'opacity-100');
+        });
+
+        setTimeout(() => {
+          if (toast.parentNode) {
+            toast.classList.remove('translate-y-0', 'opacity-100');
+            toast.classList.add('-translate-y-3', 'opacity-0');
+            setTimeout(() => toast.remove(), 250);
+          }
+        }, 4000);
+        return;
       }
 
       let borderClass = 'border-slate-700/80 shadow-slate-950/80';
@@ -4142,7 +4205,13 @@ CRITICAL RULES:
     }
 
     async function syncCloudUserHub(authUser) {
+      if (!authUser) {
+        authUser = window.SupabaseAuth?.currentUser || (typeof window.SupabaseAuth?.getUser === 'function' ? await window.SupabaseAuth.getUser() : null);
+      }
       if (!authUser || authUser.id === 'local_offline_user' || window.SupabaseAuth?.isLocalMode()) return;
+      if (window.SupabaseAuth) {
+        window.SupabaseAuth.currentUser = authUser;
+      }
       try {
         // 0. Mezar Taşlarını (Tombstones) Eşitle ve Eski Silinmiş Karakterleri Temizle
         let tombstones = [];
@@ -4344,6 +4413,129 @@ CRITICAL RULES:
       }
     }
 
+    // ⚡ CANLI KART REALTIME SENKRONİZASYONU (PostgreSQL WebSocket)
+    function initHubRealtimeSync() {
+      if (!window.SupabaseAuth || window.SupabaseAuth.isLocalMode()) return;
+
+      window.SupabaseAuth.subscribeUserCharactersRealtime((payload) => {
+        if (!payload) return;
+
+        // 1. DELETE Olayı
+        if (payload.eventType === 'DELETE' && payload.old && payload.old.id) {
+          const delIdx = state.characters.findIndex(it => it.id === payload.old.id);
+          if (delIdx !== -1) {
+            const delName = state.characters[delIdx].name || 'Karakter';
+            state.characters.splice(delIdx, 1);
+            saveHubStorage(false);
+            renderHub();
+            showHubDiceToast({
+              title: '⚡ Canlı Senkron',
+              text: `"${delName}" başka bir cihazdan silindi.`,
+              color: 'rose'
+            });
+          }
+          return;
+        }
+
+        if (!payload.new || !payload.new.id) return;
+        const incoming = payload.new;
+
+        // 2. Mevcut Karakteri Bul
+        let localChar = state.characters.find(c => c.id === incoming.id || (c.fullData && (c.fullData.id === incoming.id || c.fullData._hubId === incoming.id)));
+
+        if (localChar) {
+          localChar.fullData = incoming.full_data || localChar.fullData;
+          localChar.name = incoming.name || localChar.name;
+          localChar.classes = incoming.full_data?.classes || localChar.classes;
+          localChar.level = Number(incoming.full_data?.level) || localChar.level;
+          localChar.currentHp = incoming.current_hp !== undefined ? incoming.current_hp : localChar.currentHp;
+          localChar.maxHp = incoming.full_data?.hp?.max || localChar.maxHp;
+          if (incoming.campaign_id !== undefined && incoming.campaign_id !== null) {
+            localChar.campaignId = incoming.campaign_id;
+          }
+          localChar.cloudSynced = true;
+          syncCharacterSummaryStats(localChar);
+
+          saveHubStorage(false);
+
+          // Sayfayı baştan çizip arama/modal odağını bozmamak için yalnızca ilgili kartı/satırı güncelle
+          const cardEl = document.getElementById(`hub-char-card-${localChar.id}`);
+          const rowEl = document.getElementById(`hub-char-row-${localChar.id}`);
+          if (cardEl && state.viewMode === 'cards') {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = getCharacterCardHtml(localChar);
+            if (tempDiv.firstElementChild) {
+              cardEl.replaceWith(tempDiv.firstElementChild);
+            }
+          } else if (rowEl && state.viewMode === 'table') {
+            const tempTbody = document.createElement('tbody');
+            tempTbody.innerHTML = getDmTableRowHtml(localChar);
+            if (tempTbody.firstElementChild) {
+              rowEl.replaceWith(tempTbody.firstElementChild);
+            }
+          } else {
+            renderHub();
+          }
+
+          showHubDiceToast({
+            title: '⚡ Canlı Senkron',
+            text: `${localChar.name} başka bir cihazdan güncellendi!`,
+            color: 'emerald'
+          });
+        } else if (incoming.id) {
+          // Yeni Karakter (INSERT)
+          const newFd = incoming.full_data || {};
+          const newChar = {
+            id: incoming.id,
+            name: incoming.name || newFd.name || 'Yeni Karakter',
+            campaignId: incoming.campaign_id || '',
+            isNpc: incoming.is_npc === true,
+            currentHp: incoming.current_hp !== undefined ? incoming.current_hp : (newFd.hp?.current ?? 10),
+            maxHp: newFd.hp?.max || 10,
+            tempHp: incoming.temp_hp !== undefined ? incoming.temp_hp : (newFd.hp?.temp ?? 0),
+            race: newFd.race || '',
+            classes: newFd.classes || '',
+            level: Number(newFd.level) || 1,
+            fullData: newFd,
+            cloudSynced: true
+          };
+          syncCharacterSummaryStats(newChar);
+          state.characters.push(newChar);
+          saveHubStorage(false);
+          renderHub();
+          showHubDiceToast({
+            title: '⚡ Canlı Senkron',
+            text: `"${newChar.name}" buluttan eklendi!`,
+            color: 'emerald'
+          });
+        }
+      });
+    }
+
+    // 👁️ SEKME ODAĞI SENKRONİZASYONU (visibilitychange / window.focus)
+    let _lastHubVisibilitySyncTs = 0;
+    function initTabVisibilitySync() {
+      const handleTabFocus = async () => {
+        if (document.visibilityState !== 'visible') return;
+        const now = Date.now();
+        if (now - _lastHubVisibilitySyncTs < 4000) return; // 4 saniye debounce
+        _lastHubVisibilitySyncTs = now;
+
+        if (!window.SupabaseAuth || window.SupabaseAuth.isLocalMode()) return;
+        try {
+          const authUser = window.SupabaseAuth.currentUser || (typeof window.SupabaseAuth.getUser === 'function' ? await window.SupabaseAuth.getUser() : null);
+          if (authUser && authUser.id !== 'local_offline_user') {
+            await syncCloudUserHub(authUser);
+          }
+        } catch (e) {
+          console.warn('Hub initTabVisibilitySync error:', e);
+        }
+      };
+
+      document.addEventListener('visibilitychange', handleTabFocus);
+      window.addEventListener('focus', handleTabFocus);
+    }
+
     // Sayfa Açılışı
     window.addEventListener('DOMContentLoaded', async () => {
       let authUser = null;
@@ -4362,11 +4554,14 @@ CRITICAL RULES:
 
       // Google Oturumu Varsa: Buluttaki Karakterleri & Kampanyaları Otomatik Çek & Senkronize Et
       if (authUser && window.SupabaseAuth && !window.SupabaseAuth.isLocalMode()) {
+        window.SupabaseAuth.currentUser = authUser;
         syncCloudUserHub(authUser).then(() => {
           if (typeof syncActiveCloudCampaignRealtime === 'function') {
             syncActiveCloudCampaignRealtime();
           }
         });
+        try { initHubRealtimeSync(); } catch (e) { console.warn('initHubRealtimeSync error:', e); }
+        try { initTabVisibilitySync(); } catch (e) { console.warn('initTabVisibilitySync error:', e); }
       }
 
       if (window.CloudSync && typeof window.CloudSync.init === 'function') {

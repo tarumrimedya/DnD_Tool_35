@@ -2403,3 +2403,24 @@ Selam! Ben Karakter Kâğıdı geliştirme sekmesinden geliyorum. `HANDOVER_TO_C
    - Projenin hiçbir yerinde standart tavla zarı emojisi (`U+1F3B2`) kullanma; tematik SVG ve ikonları koru.
    - Kesinlikle dummy data ekleme.
 ```
+
+
+---
+
+## 86. HUB ÇOKLU CİHAZ CANLI SENKRONİZASYON VE SEKME ODAĞI ENTEGRASYONU (2026-10-26)
+* **İstek & Problem:**
+  - Karakter Kâğıdı oturumunda tamamlanan PostgreSQL WebSocket Realtime altyapısının (`subscribeUserCharactersRealtime`) ve sekme odağı senkronizasyonunun (`visibilitychange` / `window.focus`) HUB sayfasına (`hub.html`) entegre edilmesi.
+* **HUB Sayfasında Uygulanan Geliştirmeler (`hub.html` / `webapp/hub.html`):**
+  1. **Canlı Kart Realtime Dinleyicisi (`initHubRealtimeSync`):**
+     - `window.SupabaseAuth.subscribeUserCharactersRealtime` kanalına abone olundu.
+     - Başka bir cihazdan karakter güncellendiğinde (`UPDATE`), `full_data`, `name`, `classes`, `level`, `currentHp`, `maxHp` alanları yerel state'e aktarılır, `syncCharacterSummaryStats` ile istatistikler yenilenir ve `saveHubStorage(false)` çalıştırılır.
+     - Sayfanın arama kutusu ve modal odağını bozmamak için yalnızca ilgili kart DOM'u (`#hub-char-card-${id}`) veya DM tablosu satırı (`#hub-char-row-${id}`) yerinde yenilenir.
+     - Yeni eklenen (`INSERT`) ve silinen (`DELETE`) karakterler de gerçek zamanlı yakalanarak Hub listesi güncellenir.
+     - Ekranda şık toast bildirimi gösterilir: `showHubDiceToast({ title: '⚡ Canlı Senkron', text: '...', color: 'emerald' })`.
+  2. **Sekme Odağı Senkronizasyonu (`initTabVisibilitySync`):**
+     - DM veya kullanıcı başka bir sekmeden/telefondan HUB ekranına döndüğünde (`document.visibilityState === 'visible'`), 4 saniyelik debounce kalkanı ile `syncCloudUserHub(window.SupabaseAuth.currentUser)` sessizce tetiklenerek en güncel karakter ve kampanya verileri çekilir.
+  3. **Toast Sistemi Genişletmesi (`showHubDiceToast`):**
+     - `showHubDiceToast` fonksiyonu hem RPG zar atışları hem de genel sistem bildirimleri (`title`, `text`, `color`) ile uyumlu hale getirildi.
+  4. **Parite ve Kural Standartları:**
+     - `hub.html` ve `webapp/hub.html` arasında %100 SHA-256 hash paritesi sağlandı (`D38AA3222567679BE5008ED56DE7AD25F3A23AEBE29FBF225711F7D5BD2748C3`).
+     - Sıfır standart tavla zarı emojisi (U+1F3B2) kuralı tavizsiz uygulandı.
