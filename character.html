@@ -3751,6 +3751,20 @@
           </div>
         </div>
 
+        <!-- Inline Weapon/Spell Target Selector for Targetable Feats -->
+        <div id="quick-feat-target-container" class="hidden bg-slate-900 border border-amber-600/60 rounded-xl p-2.5 space-y-1.5 shadow-md transition">
+          <div class="flex items-center justify-between">
+            <label class="text-[10px] font-bold text-amber-300 uppercase flex items-center gap-1">
+              <span id="quick-feat-target-icon">⚔️</span>
+              <span id="quick-feat-target-title">Hedef Silah Seçimi (Target Weapon)</span>
+            </label>
+            <span class="text-[9px] text-slate-400 font-normal">Bu feat için uygulanacak silah</span>
+          </div>
+          <select id="quick-feat-target-select" onchange="onQuickFeatTargetSelectChange(this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold focus:outline-none focus:border-amber-500">
+            <!-- Dynamically populated -->
+          </select>
+        </div>
+
         <!-- Prerequisite Evaluation & Warning Badge -->
         <div id="quick-feat-prereq-badge"></div>
 
@@ -29675,40 +29689,38 @@ function renderManualStatsPanel() {
 
     // Built-in D&D 3.5e Core, Tome of Battle & Complete Series Feat Catalog
     const DND35_FEAT_CATALOG = [
-      { name: "Power Attack", category: "Fighter", prereq: "Str 13", source: "PHB p.98", benefit: "Yakın dövüş saldırı zarından BAB değerine kadar ceza alıp, tek el silahlarla +1x, çift el silahlarla +2x hasar ekler." },
-      { name: "Weapon Finesse", category: "Fighter", prereq: "BAB +1", source: "PHB p.102", benefit: "Hafif silahlar, Rapier, Whip ve Spiked Chain ile saldırı zarlarında STR yerine DEX modifiyerini kullanır." },
-      { name: "Shadow Blade", category: "Martial", prereq: "1 Shadow Hand Stance", source: "Tome of Battle p.32", benefit: "Bir Shadow Hand duruşundayken (Stance), Shadow Hand disiplini silahlarıyla yapılan yakın dövüş hasarlarına DEX modifiyerini ekler." },
-      { name: "Weapon Focus (Rapier)", category: "Fighter", prereq: "BAB +1", source: "PHB p.102", benefit: "Seçilen silahla (Rapier) yapılan tüm saldırı zarlarına +1 bonus verir." },
-      { name: "Weapon Focus (Spiked Chain)", category: "Fighter", prereq: "Proficiency, BAB +1", source: "PHB p.102", benefit: "Seçilen silahla (Spiked Chain) yapılan tüm saldırı zarlarına +1 bonus verir." },
-      { name: "Combat Expertise", category: "Fighter", prereq: "Int 13", source: "PHB p.92", benefit: "Yakın dövüş saldırı zarından -5'e kadar (veya BAB kadar) ceza alıp aynı değeri AC'ye Dodge bonusu olarak ekler." },
-      { name: "Adaptive Style", category: "Martial", prereq: "Crusader, Swordsage veya Warblade 1", source: "Tome of Battle p.28", benefit: "1 Full-Round Action harcayarak kuşanılan (Readied) manevralarınızı savaş ortasında değiştirebilir ve harcanmış manevraları yenileyebilirsiniz." },
-      { name: "Arcane Strike", category: "General", prereq: "3. seviye arcane büyü yapabilme, BAB +4", source: "Complete Warrior p.96", benefit: "Free Action olarak bir büyü yuvası feda edip 1 tur boyunca tüm silah saldırılarına +Büyü Seviyesi saldırı bonusu ve +Xd4 ekstra hasar ekler." },
-      { name: "Practiced Spellcaster", category: "General", prereq: "Spellcraft 4 ranks", source: "Complete Arcane p.82", benefit: "Seçilen büyücü sınıfının Caster Level (CL) değerini +4 artırır (toplam karakter seviyesini HD'yi geçemez). Çoklu sınıf (Gish) karakterler için idealdir." },
-      { name: "Improved Initiative", category: "Fighter", prereq: "-", source: "PHB p.96", benefit: "İnisiyatif (Initiative) zarlarına kalıcı +4 bonus sağlar." },
-      { name: "Dodge", category: "Fighter", prereq: "Dex 13", source: "PHB p.93", benefit: "Belirlenen hedefe karşı +1 Dodge AC bonusu verir (Dodge bonusları birbiriyle toplanır)." },
-      { name: "Mobility", category: "Fighter", prereq: "Dex 13, Dodge", source: "PHB p.98", benefit: "Tehdit altındaki karelerden çıkarken tetiklenen fırsat saldırılarına (AoO) karşı +4 Dodge AC bonusu verir." },
-      { name: "Spring Attack", category: "Fighter", prereq: "Dex 13, Dodge, Mobility, BAB +4", source: "PHB p.100", benefit: "Yakın dövüş saldırısından hem önce hem sonra toplam hızınız kadar hareket etmenizi sağlar; hedef fırsat saldırısı yapamaz." },
-      { name: "Exotic Weapon Proficiency (Spiked Chain)", category: "Fighter", prereq: "BAB +1", source: "PHB p.94", benefit: "Spiked Chain egzotik silahını -4 ceza almadan ustalıkla kullanmanızı sağlar." },
-      { name: "Combat Reflexes", category: "Fighter", prereq: "-", source: "PHB p.92", benefit: "Tur başına DEX modifiyeriniz kadar ek Fırsat Saldırısı (AoO) yapabilir ve Flat-Footed iken de AoO kullanabilirsiniz." },
-      { name: "Improved Trip", category: "Fighter", prereq: "Int 13, Combat Expertise", source: "PHB p.96", benefit: "Çelme (Trip) denemelerinde AoO tetiklemez, +4 bonus verir ve rakibi düşürdüğünüzde anında ücretsiz bir yakın dövüş saldırısı hakkı kazandırır." },
-      { name: "Shock Trooper", category: "Fighter", prereq: "Improved Bull Rush, Power Attack, BAB +6", source: "Complete Warrior p.112", benefit: "Heedless Charge: Charge saldırısında Power Attack cezasını saldırı zarı yerine AC'den düşmenizi sağlar." },
-      { name: "Leap Attack", category: "General", prereq: "Jump 8 ranks, Power Attack", source: "Complete Adventurer p.110", benefit: "Charge sırasında en az 10 ft uzun atlama yaparsanız Power Attack ekstra hasarını ikiye/üçe katlar." },
-      { name: "Blind-Fight", category: "Fighter", prereq: "-", source: "PHB p.90", benefit: "Concealment (Gizlenme) ıska şansını (Miss Chance) bir kez yeniden atmanızı sağlar; görünmez rakiplere karşı AC'de DEX kaybetmezsiniz." },
-      { name: "Cleave", category: "Fighter", prereq: "Str 13, Power Attack", source: "PHB p.92", benefit: "Bir yaratığı yakın dövüşte yıktığınızda (0 HP altı), erişim mesafenizdeki başka bir hedefe anında ek saldırı yaparsınız." },
-      { name: "Improved Critical (Rapier)", category: "Fighter", prereq: "Proficiency, BAB +8", source: "PHB p.95", benefit: "Seçilen silahın kritik tehdit aralığını ikiye katlar (örn. Rapier 18-20 -> 15-20)." },
-      { name: "Two-Weapon Fighting", category: "Fighter", prereq: "Dex 15", source: "PHB p.102", benefit: "Çift silahla dövüşürken alınan saldırı cezalarını azaltır (Hafif off-hand silahla -2 / -2)." },
-      { name: "Oversized Two-Weapon Fighting", category: "Fighter", prereq: "Dex 13, Two-Weapon Fighting, BAB +1", source: "Complete Adventurer p.111", benefit: "İkinci elinizde (Off-Hand) tek elli bir silahı hafif (light) bir silah gibi kullanmanızı ve çift silah cezasını azaltmanızı sağlar." },
-      { name: "Monkey Grip", category: "Fighter", prereq: "BAB +1", source: "Complete Warrior p.103", benefit: "Kendi boyutunuzdan bir boy büyük yakın dövüş silahlarını veya iki elli (Two-Handed) silahları tek elinizle -2 saldırı cezasıyla kullanmanızı sağlar." },
-      { name: "Exotic Weapon Proficiency (Jovar)", category: "Fighter", prereq: "BAB +1", source: "Planar Handbook p.69", benefit: "Jovar egzotik iki elli kılıcını (2d6 18-20/x2) -4 saldırı cezası almadan ustalıkla kullanmanızı sağlar." },
-      { name: "Combat Casting", category: "General", prereq: "-", source: "PHB p.92", benefit: "Savunmada büyü yaparken (Cast Defensively) veya kıskaçtayken Concentration zarlarına +4 bonus verir." },
-      { name: "Extend Spell", category: "Metamagic", prereq: "-", source: "PHB p.94", benefit: "Büyünün süresini iki katına çıkarır (+1 seviye büyü yuvası kullanır)." },
-      { name: "Empower Spell", category: "Metamagic", prereq: "-", source: "PHB p.93", benefit: "Büyünün tüm değişken sayısal etkilerini (hasar zarları vb.) x1.5 katına çıkarır (+2 seviye büyü yuvası)." },
-      { name: "Quicken Spell", category: "Metamagic", prereq: "-", source: "PHB p.98", benefit: "Büyüyü Swift Action olarak anında yapmanızı sağlar (+4 seviye büyü yuvası)." },
-      { name: "Somatic Weaponry", category: "General", prereq: "Concentration 4 ranks, Spellcraft 4 ranks", source: "Complete Mage p.47", benefit: "İki elinizde silah veya kalkan tutarken bile büyülerin somatik (el hareketi) bileşenlerini gerçekleştirebilirsiniz." },
-      { name: "Toughness", category: "General", prereq: "-", source: "PHB p.101", benefit: "Karaktere kalıcı +3 Hit Points (Can Puanı) kazandırır." },
-      { name: "Iron Will", category: "General", prereq: "-", source: "PHB p.97", benefit: "Will (İrade) kurtarma zarlarına +2 bonus verir." },
-      { name: "Lightning Reflexes", category: "General", prereq: "-", source: "PHB p.97", benefit: "Reflex (Refleks) kurtarma zarlarına +2 bonus verir." },
-      { name: "Great Fortitude", category: "General", prereq: "-", source: "PHB p.94", benefit: "Fortitude (Dayanıklılık) kurtarma zarlarına +2 bonus verir." }
+      { name: "Power Attack", category: "Fighter", isFighterBonusFeat: true, prereq: "Str 13", source: "PHB p.98", benefit: "Yakın dövüş saldırı zarından BAB değerine kadar ceza alıp, tek el silahlarla +1x, çift el silahlarla +2x hasar ekler." },
+      { name: "Weapon Finesse", category: "Fighter", isFighterBonusFeat: true, prereq: "BAB +1", source: "PHB p.102", benefit: "Hafif silahlar, Rapier, Whip ve Spiked Chain ile saldırı zarlarında STR yerine DEX modifiyerini kullanır." },
+      { name: "Shadow Blade", category: "Martial", isFighterBonusFeat: false, prereq: "1 Shadow Hand Stance", source: "Tome of Battle p.32", benefit: "Bir Shadow Hand duruşundayken (Stance), Shadow Hand disiplini silahlarıyla yapılan yakın dövüş hasarlarına DEX modifiyerini ekler." },
+      { name: "Weapon Focus", category: "Fighter", isFighterBonusFeat: true, prereq: "Proficiency, BAB +1", source: "PHB p.102", benefit: "Seçilen silah türüyle yapılan tüm saldırı zarlarına +1 bonus kazandırır." },
+      { name: "Combat Expertise", category: "Fighter", isFighterBonusFeat: true, prereq: "Int 13", source: "PHB p.92", benefit: "Yakın dövüş saldırı zarından -5'e kadar (veya BAB kadar) ceza alıp aynı değeri AC'ye Dodge bonusu olarak ekler." },
+      { name: "Adaptive Style", category: "Martial", isFighterBonusFeat: false, prereq: "Crusader, Swordsage veya Warblade 1", source: "Tome of Battle p.28", benefit: "1 Full-Round Action harcayarak kuşanılan (Readied) manevralarınızı savaş ortasında değiştirebilir ve harcanmış manevraları yenileyebilirsiniz." },
+      { name: "Arcane Strike", category: "General", isFighterBonusFeat: false, prereq: "3. seviye arcane büyü yapabilme, BAB +4", source: "Complete Warrior p.96", benefit: "Free Action olarak bir büyü yuvası feda edip 1 tur boyunca tüm silah saldırılarına +Büyü Seviyesi saldırı bonusu ve +Xd4 ekstra hasar ekler." },
+      { name: "Practiced Spellcaster", category: "General", isFighterBonusFeat: false, prereq: "Spellcraft 4 ranks", source: "Complete Arcane p.82", benefit: "Seçilen büyücü sınıfının Caster Level (CL) değerini +4 artırır (toplam karakter seviyesini HD'yi geçemez). Çoklu sınıf (Gish) karakterler için idealdir." },
+      { name: "Improved Initiative", category: "Fighter", isFighterBonusFeat: true, prereq: "-", source: "PHB p.96", benefit: "İnisiyatif (Initiative) zarlarına kalıcı +4 bonus sağlar." },
+      { name: "Dodge", category: "Fighter", isFighterBonusFeat: true, prereq: "Dex 13", source: "PHB p.93", benefit: "Belirlenen hedefe karşı +1 Dodge AC bonusu verir (Dodge bonusları birbiriyle toplanır)." },
+      { name: "Mobility", category: "Fighter", isFighterBonusFeat: true, prereq: "Dex 13, Dodge", source: "PHB p.98", benefit: "Tehdit altındaki karelerden çıkarken tetiklenen fırsat saldırılarına (AoO) karşı +4 Dodge AC bonusu verir." },
+      { name: "Spring Attack", category: "Fighter", isFighterBonusFeat: true, prereq: "Dex 13, Dodge, Mobility, BAB +4", source: "PHB p.100", benefit: "Yakın dövüş saldırısından hem önce hem sonra toplam hızınız kadar hareket etmenizi sağlar; hedef fırsat saldırısı yapamaz." },
+      { name: "Exotic Weapon Proficiency", category: "Fighter", isFighterBonusFeat: true, prereq: "BAB +1", source: "PHB p.94", benefit: "Seçilen bir egzotik silahı -4 ceza almadan ustalıkla kullanmanızı sağlar." },
+      { name: "Combat Reflexes", category: "Fighter", isFighterBonusFeat: true, prereq: "-", source: "PHB p.92", benefit: "Tur başına DEX modifiyeriniz kadar ek Fırsat Saldırısı (AoO) yapabilir ve Flat-Footed iken de AoO kullanabilirsiniz." },
+      { name: "Improved Trip", category: "Fighter", isFighterBonusFeat: true, prereq: "Int 13, Combat Expertise", source: "PHB p.96", benefit: "Çelme (Trip) denemelerinde AoO tetiklemez, +4 bonus verir ve rakibi düşürdüğünüzde anında ücretsiz bir yakın dövüş saldırısı hakkı kazandırır." },
+      { name: "Shock Trooper", category: "Fighter", isFighterBonusFeat: true, prereq: "Improved Bull Rush, Power Attack, BAB +6", source: "Complete Warrior p.112", benefit: "Heedless Charge: Charge saldırısında Power Attack cezasını saldırı zarı yerine AC'den düşmenizi sağlar." },
+      { name: "Leap Attack", category: "General", isFighterBonusFeat: false, prereq: "Jump 8 ranks, Power Attack", source: "Complete Adventurer p.110", benefit: "Charge sırasında en az 10 ft uzun atlama yaparsanız Power Attack ekstra hasarını ikiye/üçe katlar." },
+      { name: "Blind-Fight", category: "Fighter", isFighterBonusFeat: true, prereq: "-", source: "PHB p.90", benefit: "Concealment (Gizlenme) ıska şansını (Miss Chance) bir kez yeniden atmanızı sağlar; görünmez rakiplere karşı AC'de DEX kaybetmezsiniz." },
+      { name: "Cleave", category: "Fighter", isFighterBonusFeat: true, prereq: "Str 13, Power Attack", source: "PHB p.92", benefit: "Bir yaratığı yakın dövüşte yıktığınızda (0 HP altı), erişim mesafenizdeki başka bir hedefe anında ek saldırı yaparsınız." },
+      { name: "Improved Critical", category: "Fighter", isFighterBonusFeat: true, prereq: "Proficiency, BAB +8", source: "PHB p.95", benefit: "Seçilen silahın kritik tehdit aralığını iki katına çıkarır." },
+      { name: "Two-Weapon Fighting", category: "Fighter", isFighterBonusFeat: true, prereq: "Dex 15", source: "PHB p.102", benefit: "Çift silahla dövüşürken alınan saldırı cezalarını azaltır (Hafif off-hand silahla -2 / -2)." },
+      { name: "Oversized Two-Weapon Fighting", category: "Fighter", isFighterBonusFeat: true, prereq: "Dex 13, Two-Weapon Fighting, BAB +1", source: "Complete Adventurer p.111", benefit: "İkinci elinizde (Off-Hand) tek elli bir silahı hafif (light) bir silah gibi kullanmanızı ve çift silah cezasını azaltmanızı sağlar." },
+      { name: "Monkey Grip", category: "Fighter", isFighterBonusFeat: true, prereq: "BAB +1", source: "Complete Warrior p.103", benefit: "Kendi boyutunuzdan bir boy büyük yakın dövüş silahlarını veya iki elli (Two-Handed) silahları tek elinizle -2 saldırı cezasıyla kullanmanızı sağlar." },
+      { name: "Combat Casting", category: "General", isFighterBonusFeat: false, prereq: "-", source: "PHB p.92", benefit: "Savunmada büyü yaparken (Cast Defensively) veya kıskaçtayken Concentration zarlarına +4 bonus verir." },
+      { name: "Extend Spell", category: "Metamagic", isFighterBonusFeat: false, prereq: "-", source: "PHB p.94", benefit: "Büyünün süresini iki katına çıkarır (+1 seviye büyü yuvası kullanır)." },
+      { name: "Empower Spell", category: "Metamagic", isFighterBonusFeat: false, prereq: "-", source: "PHB p.93", benefit: "Büyünün tüm değişken sayısal etkilerini (hasar zarları vb.) x1.5 katına çıkarır (+2 seviye büyü yuvası)." },
+      { name: "Quicken Spell", category: "Metamagic", isFighterBonusFeat: false, prereq: "-", source: "PHB p.98", benefit: "Büyüyü Swift Action olarak anında yapmanızı sağlar (+4 seviye büyü yuvası)." },
+      { name: "Somatic Weaponry", category: "General", isFighterBonusFeat: false, prereq: "Concentration 4 ranks, Spellcraft 4 ranks", source: "Complete Mage p.47", benefit: "İki elinizde silah veya kalkan tutarken bile büyülerin somatik (el hareketi) bileşenlerini gerçekleştirebilirsiniz." },
+      { name: "Toughness", category: "General", isFighterBonusFeat: false, prereq: "-", source: "PHB p.101", benefit: "Karaktere kalıcı +3 Hit Points (Can Puanı) kazandırır." },
+      { name: "Iron Will", category: "General", isFighterBonusFeat: false, prereq: "-", source: "PHB p.97", benefit: "Will (İrade) kurtarma zarlarına +2 bonus verir." },
+      { name: "Lightning Reflexes", category: "General", isFighterBonusFeat: false, prereq: "-", source: "PHB p.97", benefit: "Reflex (Refleks) kurtarma zarlarına +2 bonus verir." },
+      { name: "Great Fortitude", category: "General", isFighterBonusFeat: false, prereq: "-", source: "PHB p.94", benefit: "Fortitude (Dayanıklılık) kurtarma zarlarına +2 bonus verir." }
     ];
 
     // Built-in D&D 3.5e DM Boons, Grants & Campaign Awards (Kural 5 / RAW uyumlu: VarsayÄ±lan boÅŸ, masterDb Ã¼zerinden dinamik beslenir)
@@ -31070,6 +31082,7 @@ function renderManualStatsPanel() {
       currentFeatSourceType = sourceCategory || 'feat';
 
       const cleanName = String(featName).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
+      const baseFeatName = cleanName.replace(/\s*\([^)]*\)$/, '').trim();
 
       const fFromChar = (character.feats || []).find(f => {
         const n = typeof f === 'string' ? f : f.name;
@@ -31081,11 +31094,11 @@ function renderManualStatsPanel() {
       });
       const fFromDb = (masterDb || []).find(m => {
         const n = m.name || '';
-        return n.toLowerCase() === featName.toLowerCase() || n.toLowerCase() === cleanName.toLowerCase();
+        return n.toLowerCase() === featName.toLowerCase() || n.toLowerCase() === cleanName.toLowerCase() || n.toLowerCase() === baseFeatName.toLowerCase();
       });
-      const fFromCat = DND35_FEAT_CATALOG.find(c => c.name.toLowerCase() === featName.toLowerCase() || c.name.toLowerCase() === cleanName.toLowerCase());
+      const fFromCat = DND35_FEAT_CATALOG.find(c => c.name.toLowerCase() === featName.toLowerCase() || c.name.toLowerCase() === cleanName.toLowerCase() || c.name.toLowerCase() === baseFeatName.toLowerCase());
       const fFromBundled = (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG))
-        ? window.BUNDLED_SRD_CORE_CATALOG.find(i => i && i.type === 'Feat' && (i.name.toLowerCase() === featName.toLowerCase() || i.name.toLowerCase() === cleanName.toLowerCase()))
+        ? window.BUNDLED_SRD_CORE_CATALOG.find(i => i && i.type === 'Feat' && (i.name.toLowerCase() === featName.toLowerCase() || i.name.toLowerCase() === cleanName.toLowerCase() || i.name.toLowerCase() === baseFeatName.toLowerCase()))
         : null;
       const bFromCat = DND35_DM_BOONS_CATALOG.find(b => b.name.toLowerCase() === featName.toLowerCase() || b.name.toLowerCase() === cleanName.toLowerCase());
       const flFromCat = DND35_FLAWS_CATALOG.find(fl => fl.name.toLowerCase() === featName.toLowerCase() || fl.name.toLowerCase() === cleanName.toLowerCase());
@@ -31586,6 +31599,148 @@ function renderManualStatsPanel() {
     // ====================================================
     // 🎖️ QUICK LEVEL FEAT & ABILITY ADDER (Masaüstü & Tablo Desteği)
     // ====================================================
+    function getAvailableExoticWeapons() {
+      const set = new Set([
+        "Bastard Sword", "Dwarven Waraxe", "Whip", "Spiked Chain", "Dire Flail", "Two-Bladed Sword", 
+        "Orc Double Axe", "Gnome Hooked Hammer", "Bolas", "Hand Crossbow", "Repeating Heavy Crossbow", 
+        "Repeating Light Crossbow", "Shuriken", "Net", "Jovar", "Kusari-Gama", "Kama", "Nunchaku", "Sai", "Siangham"
+      ]);
+      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        masterDb.forEach(item => {
+          if (item && (item.type === 'Weapon' || item.category === 'Weapon')) {
+            const sub = (item.subcategory || item.proficiency || item.slot || '').toLowerCase();
+            const desc = (item.desc || item.description || item.benefit || '').toLowerCase();
+            if (sub.includes('exotic') || desc.includes('exotic weapon')) {
+              set.add(item.name.replace(/^↳\s*/, '').replace(/\(.*?\)/g, '').trim());
+            }
+          }
+        });
+      }
+      return Array.from(set).sort((a, b) => a.localeCompare(b));
+    }
+
+    function getAvailableTargetWeapons(isExoticOnly = false) {
+      if (isExoticOnly) return getAvailableExoticWeapons();
+      const set = new Set(typeof DND35_SRD_WEAPONS !== 'undefined' ? DND35_SRD_WEAPONS : []);
+      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        masterDb.forEach(item => {
+          if (item && (item.type === 'Weapon' || item.category === 'Weapon')) {
+            set.add(item.name.replace(/^↳\s*/, '').replace(/\(.*?\)/g, '').trim());
+          }
+        });
+      }
+      return Array.from(set).sort((a, b) => a.localeCompare(b));
+    }
+
+    function updateQuickFeatTargetSelector(featName) {
+      const container = document.getElementById('quick-feat-target-container');
+      const select = document.getElementById('quick-feat-target-select');
+      const titleEl = document.getElementById('quick-feat-target-title');
+      const iconEl = document.getElementById('quick-feat-target-icon');
+      if (!container || !select) return;
+
+      const t = String(featName || '').trim();
+      const lower = t.toLowerCase();
+      const isWeaponFeat = /^(weapon focus|greater weapon focus|weapon specialization|greater weapon specialization|improved critical|exotic weapon proficiency)/i.test(lower);
+
+      if (!isWeaponFeat) {
+        container.classList.add('hidden');
+        return;
+      }
+
+      const isExotic = /exotic weapon proficiency/i.test(lower);
+      const match = t.match(/\((.*?)\)/);
+      const currentTarget = match ? match[1].trim() : '';
+
+      if (titleEl) titleEl.textContent = isExotic ? 'Egzotik Silah Seçimi (Exotic Weapon)' : 'Hedef Silah Seçimi (Target Weapon)';
+      if (iconEl) iconEl.textContent = isExotic ? '🗡️' : '⚔️';
+
+      select.innerHTML = '<option value="">-- Bir Silah Seçin --</option>';
+
+      if (isExotic) {
+        const exoticWeapons = getAvailableExoticWeapons();
+        const charWeps = (character.weapons || []).map(w => (w.name || '').replace(/\+\d+/g, '').replace(/\(.*?\)/g, '').trim()).filter(Boolean);
+        const charExotics = charWeps.filter(cw => exoticWeapons.some(ew => ew.toLowerCase() === cw.toLowerCase()));
+        if (charExotics.length > 0) {
+          const grpChar = document.createElement('optgroup');
+          grpChar.label = '⚔️ Kuşanılan / Envanterdeki Egzotik Silahlar';
+          [...new Set(charExotics)].forEach(w => {
+            const opt = document.createElement('option');
+            opt.value = w;
+            opt.textContent = `${w} (Kuşanılan)`;
+            if (currentTarget.toLowerCase() === w.toLowerCase()) opt.selected = true;
+            grpChar.appendChild(opt);
+          });
+          select.appendChild(grpChar);
+        }
+
+        const grpAll = document.createElement('optgroup');
+        grpAll.label = '🗡️ D&D 3.5e Egzotik Silah Kütüphanesi';
+        exoticWeapons.forEach(w => {
+          const opt = document.createElement('option');
+          opt.value = w;
+          opt.textContent = w;
+          if (currentTarget.toLowerCase() === w.toLowerCase()) opt.selected = true;
+          grpAll.appendChild(opt);
+        });
+        select.appendChild(grpAll);
+      } else {
+        const charWeps = (character.weapons || []).map(w => (w.name || '').replace(/\+\d+/g, '').replace(/\(.*?\)/g, '').trim()).filter(Boolean);
+        const uniqueCharWeps = [...new Set(charWeps)];
+        if (uniqueCharWeps.length > 0) {
+          const grpChar = document.createElement('optgroup');
+          grpChar.label = '⚔️ Kuşanılan / Envanterdeki Silahlar';
+          uniqueCharWeps.forEach(w => {
+            const opt = document.createElement('option');
+            opt.value = w;
+            opt.textContent = `${w} (Kuşanılan)`;
+            if (currentTarget.toLowerCase() === w.toLowerCase()) opt.selected = true;
+            grpChar.appendChild(opt);
+          });
+          select.appendChild(grpChar);
+        }
+
+        const allWeapons = getAvailableTargetWeapons(false);
+        const grpAll = document.createElement('optgroup');
+        grpAll.label = '📚 Tüm D&D 3.5e Silahları';
+        allWeapons.forEach(w => {
+          const opt = document.createElement('option');
+          opt.value = w;
+          opt.textContent = w;
+          if (currentTarget.toLowerCase() === w.toLowerCase()) opt.selected = true;
+          grpAll.appendChild(opt);
+        });
+        select.appendChild(grpAll);
+      }
+
+      container.classList.remove('hidden');
+    }
+
+    function onQuickFeatTargetSelectChange(targetWeapon) {
+      const nameInput = document.getElementById('quick-feat-name');
+      if (!nameInput) return;
+      const currentVal = nameInput.value.trim();
+      const baseName = currentVal.replace(/\(.*?\)/g, '').trim() || 'Exotic Weapon Proficiency';
+
+      if (targetWeapon) {
+        nameInput.value = `${baseName} (${targetWeapon})`;
+        const benefitInput = document.getElementById('quick-feat-benefit');
+        if (benefitInput) {
+          if (/exotic weapon proficiency/i.test(baseName)) {
+            benefitInput.value = `${targetWeapon} egzotik silahını -4 ceza almadan ustalıkla kullanmanızı sağlar.`;
+          } else if (/weapon focus/i.test(baseName)) {
+            benefitInput.value = `Seçilen ${targetWeapon} ile yapılan tüm saldırı zarlarına +1 bonus kazandırır.`;
+          } else if (/improved critical/i.test(baseName)) {
+            benefitInput.value = `Seçilen ${targetWeapon} silahının kritik tehdit aralığını ikiye katlar.`;
+          }
+        }
+      } else {
+        nameInput.value = baseName;
+      }
+      quickFeatSearchQuery = nameInput.value;
+      updateQuickFeatPrereqBadge();
+    }
+
     function openQuickFeatPickerForLevel(levelIdx, preferredCategory = 'Regular Feat') {
       activeQuickLevelIndex = Number(levelIdx);
       const modal = document.getElementById('quick-level-feat-modal');
@@ -31637,6 +31792,7 @@ function renderManualStatsPanel() {
       const benefitInput = document.getElementById('quick-feat-benefit');
       if (benefitInput) benefitInput.value = '';
 
+      updateQuickFeatTargetSelector('');
       updateQuickFeatPrereqBadge();
       openQuickFeatCatalogConsole();
 
@@ -31693,6 +31849,7 @@ function renderManualStatsPanel() {
 
     function onQuickFeatSearchInput(val) {
       quickFeatSearchQuery = (val || '').trim();
+      updateQuickFeatTargetSelector(val);
       if (!isQuickFeatCatalogOpen) {
         openQuickFeatCatalogConsole();
       } else {
@@ -31728,6 +31885,7 @@ function renderManualStatsPanel() {
       const benefitInput = document.getElementById('quick-feat-benefit');
       if (benefitInput) benefitInput.value = '';
       quickFeatSearchQuery = '';
+      updateQuickFeatTargetSelector('');
       updateQuickFeatPrereqBadge();
       renderQuickFeatSearchResults();
     }
@@ -31787,7 +31945,7 @@ function renderManualStatsPanel() {
       }
 
       // Filter by query
-      let queryFiltered = baseList;
+      let queryFiltered = [...baseList];
       if (query) {
         queryFiltered = baseList.filter(f => {
           const n = (f.name || '').toLowerCase();
@@ -31795,6 +31953,24 @@ function renderManualStatsPanel() {
           const s = (f.source || '').toLowerCase();
           const p = (f.prereq || '').toLowerCase();
           return n.includes(query) || b.includes(query) || s.includes(query) || p.includes(query);
+        });
+
+        // Dynamic exotic weapon suggestion if query matches an exotic weapon
+        const exoticWeapons = getAvailableExoticWeapons();
+        const matchedExotics = exoticWeapons.filter(w => w.toLowerCase().includes(query));
+        matchedExotics.forEach(ew => {
+          const synthName = `Exotic Weapon Proficiency (${ew})`;
+          if (!queryFiltered.some(item => item.name.toLowerCase() === synthName.toLowerCase())) {
+            queryFiltered.unshift({
+              name: synthName,
+              category: 'Fighter',
+              type: 'Feat',
+              isFighterBonusFeat: true,
+              prereq: 'BAB +1',
+              source: 'PHB p.94 / RAW',
+              benefit: `${ew} egzotik silahını -4 ceza almadan ustalıkla kullanmanızı sağlar.`
+            });
+          }
         });
       }
 
@@ -31942,7 +32118,7 @@ function renderManualStatsPanel() {
 
     function selectFeatForQuickLevel(featName) {
       const catalog = getCombinedFeatCatalog();
-      let found = catalog.find(f => f.name.toLowerCase() === featName.toLowerCase());
+      let found = catalog.find(f => f.name.toLowerCase() === featName.toLowerCase() || f.name.toLowerCase() === featName.toLowerCase().replace(/\(.*?\)/g, '').trim());
 
       if (!found && typeof DND35_WARLOCK_INVOCATIONS !== 'undefined') {
         const inv = DND35_WARLOCK_INVOCATIONS.find(i => i.name.toLowerCase() === featName.toLowerCase());
@@ -31958,7 +32134,7 @@ function renderManualStatsPanel() {
       }
 
       const nameInput = document.getElementById('quick-feat-name');
-      if (nameInput) nameInput.value = found ? found.name : featName;
+      if (nameInput) nameInput.value = featName;
 
       const benefitInput = document.getElementById('quick-feat-benefit');
       if (benefitInput) benefitInput.value = found ? (found.benefit || '') : '';
@@ -31982,7 +32158,8 @@ function renderManualStatsPanel() {
         }
       }
 
-      quickFeatSearchQuery = found ? found.name : featName;
+      quickFeatSearchQuery = featName;
+      updateQuickFeatTargetSelector(featName);
       updateQuickFeatPrereqBadge();
       closeQuickFeatCatalogConsole();
     }
@@ -31999,6 +32176,10 @@ function renderManualStatsPanel() {
 
       const catalog = getCombinedFeatCatalog();
       let found = catalog.find(f => f.name.toLowerCase() === featName.toLowerCase());
+      if (!found) {
+        found = catalog.find(f => f.name.toLowerCase() === featName.toLowerCase().replace(/\(.*?\)/g, '').trim());
+      }
+
       if (!found && typeof DND35_WARLOCK_INVOCATIONS !== 'undefined') {
         const inv = DND35_WARLOCK_INVOCATIONS.find(i => i.name.toLowerCase() === featName.toLowerCase());
         if (inv) {
@@ -32079,11 +32260,19 @@ function renderManualStatsPanel() {
         return;
       }
       const nameInput = document.getElementById('quick-feat-name');
-      const featName = nameInput ? nameInput.value.trim() : '';
+      let featName = nameInput ? nameInput.value.trim() : '';
       if (!featName) {
         alert("Lütfen bir feat veya yetenek adı girin!");
         return;
       }
+
+      // If targetable weapon feat without chosen target but target select has a value
+      const targetSelect = document.getElementById('quick-feat-target-select');
+      const isWeaponFeat = /^(weapon focus|greater weapon focus|weapon specialization|greater weapon specialization|improved critical|exotic weapon proficiency)/i.test(featName);
+      if (isWeaponFeat && !featName.includes('(') && targetSelect && targetSelect.value) {
+        featName = `${featName} (${targetSelect.value})`;
+      }
+
       const category = document.getElementById('quick-feat-category')?.value || 'Regular Feat';
       const benefit = document.getElementById('quick-feat-benefit')?.value.trim() || '';
 
@@ -32264,6 +32453,7 @@ function renderManualStatsPanel() {
             catSel.value = 'Racial Trait';
           }
         }
+        updateQuickFeatTargetSelector(localMatch.name);
         updateQuickFeatPrereqBadge();
         if (statusEl) {
           statusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-emerald-950/80 border border-emerald-600/60 text-emerald-200 block';
@@ -32325,6 +32515,7 @@ function renderManualStatsPanel() {
             }
           }
 
+          updateQuickFeatTargetSelector(featName);
           updateQuickFeatPrereqBadge();
 
           if (statusEl) {
@@ -33033,6 +33224,29 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
               </div>
             </div>
 
+            <!-- Inline Target Selector if Weapon Feat -->
+            ${(() => {
+              const lowerName = (slot.name || '').toLowerCase();
+              const isWeapon = /^(weapon focus|greater weapon focus|weapon specialization|greater weapon specialization|improved critical|exotic weapon proficiency)/i.test(lowerName);
+              if (!isWeapon) return '';
+              const isExotic = /exotic weapon proficiency/i.test(lowerName);
+              const match = (slot.name || '').match(/\((.*?)\)/);
+              const curTarget = match ? match[1].trim() : '';
+              const targetList = isExotic ? getAvailableExoticWeapons() : getAvailableTargetWeapons(false);
+              return `
+                <div class="bg-slate-900 border border-amber-600/60 rounded-lg p-2 flex items-center justify-between gap-2 shadow-sm">
+                  <span class="text-[10px] font-bold text-amber-300 flex items-center gap-1 shrink-0">
+                    <span>${isExotic ? '🗡️' : '⚔️'}</span>
+                    <span>${isExotic ? 'Egzotik Silah:' : 'Hedef Silah:'}</span>
+                  </span>
+                  <select onchange="onLevelUpFeatTargetChange(${idx}, this.value)" class="flex-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white font-bold focus:outline-none focus:border-amber-500">
+                    <option value="">-- Bir Silah Seçin --</option>
+                    ${targetList.map(w => `<option value="${w}" ${curTarget.toLowerCase() === w.toLowerCase() ? 'selected' : ''}>${w}</option>`).join('')}
+                  </select>
+                </div>
+              `;
+            })()}
+
             <!-- Prerequisite Evaluation & Warning Badge -->
             <div id="lvlup-feat-prereq-badge-${idx}">
               ${prereqHtml}
@@ -33061,6 +33275,26 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             renderLevelUpFeatSearchResults(idx);
           }
         });
+      }
+
+      function onLevelUpFeatTargetChange(slotIdx, targetWeapon) {
+        if (!levelUpModalFeatSlots[slotIdx]) return;
+        const currentName = levelUpModalFeatSlots[slotIdx].name || '';
+        const baseName = currentName.replace(/\(.*?\)/g, '').trim() || 'Exotic Weapon Proficiency';
+        if (targetWeapon) {
+          levelUpModalFeatSlots[slotIdx].name = `${baseName} (${targetWeapon})`;
+          if (/exotic weapon proficiency/i.test(baseName)) {
+            levelUpModalFeatSlots[slotIdx].benefit = `${targetWeapon} egzotik silahını -4 ceza almadan ustalıkla kullanmanızı sağlar.`;
+          } else if (/weapon focus/i.test(baseName)) {
+            levelUpModalFeatSlots[slotIdx].benefit = `Seçilen ${targetWeapon} ile yapılan tüm saldırı zarlarına +1 bonus kazandırır.`;
+          } else if (/improved critical/i.test(baseName)) {
+            levelUpModalFeatSlots[slotIdx].benefit = `Seçilen ${targetWeapon} silahının kritik tehdit aralığını ikiye katlar.`;
+          }
+        } else {
+          levelUpModalFeatSlots[slotIdx].name = baseName;
+        }
+        levelUpFeatSearchQueries[slotIdx] = levelUpModalFeatSlots[slotIdx].name;
+        renderLevelUpFeatSlots();
       }
 
       function openLevelUpFeatSearchConsole(slotIdx) {
@@ -33137,7 +33371,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         }
 
         // 2. Filter by search query
-        let queryFiltered = baseList;
+        let queryFiltered = [...baseList];
         if (query) {
           queryFiltered = baseList.filter(f => {
             const n = (f.name || '').toLowerCase();
@@ -33145,6 +33379,24 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             const s = (f.source || '').toLowerCase();
             const p = (f.prereq || '').toLowerCase();
             return n.includes(query) || b.includes(query) || s.includes(query) || p.includes(query);
+          });
+
+          // Dynamic exotic weapon suggestion if query matches an exotic weapon
+          const exoticWeapons = (typeof getAvailableExoticWeapons === 'function') ? getAvailableExoticWeapons() : [];
+          const matchedExotics = exoticWeapons.filter(w => w.toLowerCase().includes(query));
+          matchedExotics.forEach(ew => {
+            const synthName = `Exotic Weapon Proficiency (${ew})`;
+            if (!queryFiltered.some(item => item.name.toLowerCase() === synthName.toLowerCase())) {
+              queryFiltered.unshift({
+                name: synthName,
+                category: 'Fighter',
+                type: 'Feat',
+                isFighterBonusFeat: true,
+                prereq: 'BAB +1',
+                source: 'PHB p.94 / RAW',
+                benefit: `${ew} egzotik silahını -4 ceza almadan ustalıkla kullanmanızı sağlar.`
+              });
+            }
           });
         }
 
@@ -33286,9 +33538,10 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       function selectFeatForLevelUpSlot(idx, featName) {
         if (!levelUpModalFeatSlots[idx]) return;
         const catalog = getCombinedFeatCatalog();
-        const found = catalog.find(f => f.name.toLowerCase() === featName.toLowerCase());
+        const baseName = featName.replace(/\(.*?\)/g, '').trim();
+        const found = catalog.find(f => f.name.toLowerCase() === featName.toLowerCase()) || catalog.find(f => f.name.toLowerCase() === baseName.toLowerCase());
 
-        levelUpModalFeatSlots[idx].name = found ? found.name : featName;
+        levelUpModalFeatSlots[idx].name = featName;
         levelUpModalFeatSlots[idx].benefit = found ? (found.benefit || '') : '';
         levelUpModalFeatSlots[idx].prereq = found ? (found.prereq || '-') : '-';
 
@@ -33304,11 +33557,9 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             }
           } else if (lcat.includes('special')) {
             levelUpModalFeatSlots[idx].category = 'Special Ability';
-          } else if (lcat.includes('racial')) {
-            levelUpModalFeatSlots[idx].category = 'Racial Trait';
           }
         }
-
+        levelUpFeatSearchQueries[idx] = featName;
         activeLevelUpFeatSearchSlot = null;
         renderLevelUpFeatSlots();
       }
@@ -33319,9 +33570,9 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         levelUpModalFeatSlots[idx].benefit = '';
         levelUpModalFeatSlots[idx].prereq = '-';
         levelUpFeatSearchQueries[idx] = '';
-        activeLevelUpFeatSearchSlot = null;
         renderLevelUpFeatSlots();
       }
+
 
       async function triggerRuleMasterForLevelUpSlot(idx) {
         const input = document.getElementById(`lvlup-feat-search-input-${idx}`);
@@ -33428,8 +33679,10 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       }
 
       function onLevelUpSlotSelectChange(idx, featName) {
+        if (!featName) return;
         selectFeatForLevelUpSlot(idx, featName);
       }
+
 
       function openFeatPickerForSlot(idx) {
         activeFeatPickerSlotIndex = idx;

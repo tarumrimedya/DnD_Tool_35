@@ -2095,3 +2095,32 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   4. **Parite ve Kural Standartları:**
      - 4 karakter kâğıdı dosyası (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi sağlandı (`B41008FF440CBF22CAC77CF957D7537AE7EA0A1E33A409A2FCCBE3F73385D64C`).
      - Standart tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korundu.
+---
+
+## 74. EGZOTÄ°K SÄ°LAH VE SÄ°LAH FEATLERÄ°NÄ°N PARAMETRÄ°K HALE GETÄ°RÄ°LMESÄ° & DÄ°NAMÄ°K HEDEF SEÃ‡Ä°CÄ° ENTEGRASYONU (2026-10-26)
+* **Ä°stek & Problem:**
+  - DND35_FEAT_CATALOG iÃ§inde egzotik silah ve silaha Ã¶zgÃ¼ featler (Exotic Weapon Proficiency (Spiked Chain), Exotic Weapon Proficiency (Jovar), Weapon Focus (Rapier), Weapon Focus (Spiked Chain), Improved Critical (Rapier)) hardcoded olarak yer almaktaydÄ±.
+  - Bu durum hem RAW kural mantÄ±ÄŸÄ±na aykÄ±rÄ±ydÄ± (D&D 3.5e RAW'da bunlar tekil silah adlarÄ±yla deÄŸil, oyuncunun seÃ§eceÄŸi silaha baÄŸlanan genel featlerdir) hem de karakterin PHB/SRD iÃ§indeki diÄŸer tÃ¼m egzotik silahlarÄ± (Bastard Sword, Dwarven Waraxe, Orc Double Axe, Dire Flail, Gnome Hooked Hammer, Bolas, Shuriken, Whip, Repeating Heavy/Light Crossbow vb.) dinamik olarak seÃ§ebilmesini kÄ±sÄ±tlÄ±yordu.
+  - Hem HÄ±zlÄ± Feat SeÃ§im konsolunda (#quick-level-feat-modal) hem de Seviye Atlama SihirbazÄ±'nda (#lvlup-feat-slots-container) silaha baÄŸlÄ± feat seÃ§ildiÄŸinde silah hedefinin dinamik olarak belirlenebilmesi ve kart Ã¼zerinde hedef deÄŸiÅŸtirici dropdown sunulmasÄ± gerekiyordu.
+* **Uygulanan DeÄŸiÅŸiklikler:**
+  1. **RAW Genel Feat DÃ¶nÃ¼ÅŸÃ¼mÃ¼ (DND35_FEAT_CATALOG TemizliÄŸi):**
+     - Hardcoded 5 adet silaha Ã¶zel kayÄ±t katalogdan Ã§Ä±karÄ±ldÄ±.
+     - Yerlerine kanonik RAW genel featleri eklendi:
+       - Exotic Weapon Proficiency (prereq: "BAB +1", isFighterBonusFeat: true)
+       - Weapon Focus (prereq: "Proficiency, BAB +1", isFighterBonusFeat: true)
+       - Improved Critical (prereq: "Proficiency, BAB +8", isFighterBonusFeat: true)
+  2. **Dinamik Hedef Silah SeÃ§ici (Target Selector) - HÄ±zlÄ± Feat ModalÄ±:**
+     - #quick-level-feat-modal iÃ§ine #quick-feat-target-container ve #quick-feat-target-select eklendi.
+     - Feat seÃ§ildiÄŸinde veya arama yapÄ±ldÄ±ÄŸÄ±nda silah hedefi gerektiren featler tespit edilerek (Exotic Weapon Proficiency, Weapon Focus, Greater Weapon Focus, Weapon Specialization, Greater Weapon Specialization, Improved Critical) otomatik olarak hedef seÃ§ici arayÃ¼zÃ¼ aÃ§Ä±lÄ±r.
+     - Exotic Weapon Proficiency iÃ§in tÃ¼m RAW egzotik silahlar (Bastard Sword, Dwarven Waraxe, Whip, Spiked Chain, Dire Flail, Two-Bladed Sword, Orc Double Axe, Gnome Hooked Hammer, Bolas, Hand Crossbow, Repeating Heavy/Light Crossbow, Shuriken, Kama, Nunchaku, Sai, Siangham, Halfling Warsxe, Dwarven Urgrosh, Orc Shotput, Net, Kusari-gama, Jovar vb.) dinamik olarak listelenir; diÄŸer featler iÃ§inse karakterin envanterindeki tÃ¼m silahlar + temel silah listesi sunulur.
+     - KullanÄ±cÄ± hedef silah seÃ§tiÄŸinde feat adÄ± otomatik olarak Exotic Weapon Proficiency (Spiked Chain) veya Weapon Focus (Rapier) olarak gÃ¼ncellenir.
+  3. **Seviye Atlama SihirbazÄ± (Level Up Wizard) Dinamik Entegrasyonu:**
+     - Sihirbazdaki feat kartlarÄ±nda (enderLevelUpFeatSlots) silaha baÄŸlÄ± feat seÃ§ildiÄŸinde kart Ã¼zerinde anÄ±nda bir hedef silah seÃ§ici (<select onchange="onLevelUpFeatTargetChange(...)">) gÃ¶rÃ¼ntÃ¼lenir.
+     - Oyuncu silahÄ± deÄŸiÅŸtirdiÄŸinde yuva adÄ±, aÃ§Ä±klamasÄ± ve hedefi anÄ±nda gÃ¼ncellenir.
+  4. **AkÄ±llÄ± Arama Aday Sentezi:**
+     - Arama kutusuna silah adÄ± yazÄ±ldÄ±ÄŸÄ±nda (Ã¶rneÄŸin "spiked chain", "jovar", "rapier"), arama motoru sentetik adaylar Ã¼retir: Exotic Weapon Proficiency (Spiked Chain), Weapon Focus (Spiked Chain) vb. doÄŸrudan listede Ã¶neri olarak belirir.
+  5. **showFeatDetail Geriye DÃ¶nÃ¼k Uyumluluk (Fallback) Ä°yileÅŸtirmesi:**
+     - Feat detay penceresinde (showFeatDetail) parantezli silaha baÄŸlÄ± featler (Exotic Weapon Proficiency (Jovar)) arandÄ±ÄŸÄ±nda temel feat adÄ± (aseFeatName = "Exotic Weapon Proficiency") Ã§Ä±kartÄ±larak yerel katalog, master_db ve bundled SRD kataloglarÄ±ndan aÃ§Ä±klamasÄ± ve kurallarÄ± eksiksiz getirilir.
+  6. **Parite ve Kural StandartlarÄ±:**
+     - 4 karakter kÃ¢ÄŸÄ±dÄ± dosyasÄ± (character.html, index.html, webapp/character.html, webapp/index.html) arasÄ±nda %100 SHA-256 hash paritesi saÄŸlandÄ± (B7A6928BE933CA6729101B1EA8A19E71BEA59A7E361362BB3D94A83966B7A437).
+     - Standart tavla zarÄ± emojisi (U+1F3B2) yasaÄŸÄ± tavizsiz korundu.
