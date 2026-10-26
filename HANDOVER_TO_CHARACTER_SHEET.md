@@ -1901,3 +1901,27 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
   3. **Parite ve Kural Standartları:**
      - 4 dosya (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi korundu.
      - Standart tavla zarı emojisi yasağı (`🎲` / `U+1F3B2`) tavizsiz korundu.
+
+
+---
+
+## 66. SEVİYE ATLAMA SİHİRBAZI: SINIF KART SEÇİM ERGONOMİSİ VE BUTON SADELEŞTİRMESİ (2026-10-26)
+* **İstek:**
+  - Sınıf arama kartlarındaki `[➕ Bu Sınıftan Seviye Ekle]` ve seçili sınıfta çıkan `[➕ Seviyeyi Yenile]` butonlarının kafa karışıklığı yaratması ve yapay bir "iki aşamalı seçim" hissi doğurması üzerine UX/UI revizyonu yapılması:
+    1. Buton metninin eylemi net belirten `[🎯 Sınıfı Seç]` olarak değiştirilmesi.
+    2. Seçili sınıfta redundant `[Seviyeyi Yenile]` butonunun kaldırılıp yerine sade ve statik bir `✓ Seçili Sınıf` durum rozetinin gösterilmesi.
+    3. Tıklama alanı ergonomisi: Yalnızca butona değil, tüm sınıf kartının herhangi bir yerine tıklandığında da sınıfın akıcı şekilde seçilebilmesi.
+* **Uygulanan Değişiklikler:**
+  1. **Kart Geneli Tıklanabilirlik (`filterLevelUpClassSearch`):**
+     - Sınıf kartı konteynerine `onclick="selectClassFromSearch('${safeName}')"`, `cursor-pointer`, `group` ve aktif durumda `bg-emerald-950/20` eklendi.
+     - Kart üzerine gelindiğinde sınıf adı `group-hover:text-emerald-300 transition` ile vurgulanır hale getirildi.
+  2. **Olay Yayılımı Korunumu (`stopPropagation`):**
+     - Sağ taraftaki aksiyon paneline (`onclick="event.stopPropagation()"`) ve açılan Seviye Gelişim Tablosu konteynerine stopPropagation eklenerek tablo inceleme veya metin kopyalama sırasında istenmeyen kart tıklamalarının önüne geçildi.
+  3. **Buton ve Rozet Sadeleştirmesi:**
+     - Seçili olmayan sınıflarda: `[🎯 Sınıfı Seç]` butonu.
+     - Seçili olan sınıfta: Kafa karıştırıcı `[Seviyeyi Yenile]` butonu tamamen kaldırıldı; yerine şık bir `✓ Seçili Sınıf` rozeti yerleştirildi.
+  4. **Enter Tuşu ile Arama Uyumluluğu (`onClassSearchEnterKey`):**
+     - Selector `button[onclick*="selectClassFromSearch"] || [onclick*="selectClassFromSearch"]` olarak genişletilerek klavye ile Enter'a basıldığında da ilk sonucun seçilmesi korundu.
+  5. **Parite ve Kural Standartları:**
+     - 4 dosya (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi korundu.
+     - Standart tavla zarı emojisi yasağı (`🎲` / `U+1F3B2`) tavizsiz korundu.

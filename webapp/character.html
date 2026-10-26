@@ -33152,13 +33152,13 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         }
 
         htmlOutput += `
-          <div class="bg-slate-950/70 hover:bg-slate-900/90 border ${isSelected ? 'border-emerald-500 ring-1 ring-emerald-500/50' : 'border-slate-800 hover:border-slate-700'} rounded-lg p-2.5 transition space-y-1.5">
+          <div onclick="selectClassFromSearch('${safeName}')" class="bg-slate-950/70 hover:bg-slate-900/90 border ${isSelected ? 'border-emerald-500 ring-1 ring-emerald-500/50 bg-emerald-950/20' : 'border-slate-800 hover:border-slate-700'} rounded-lg p-2.5 transition space-y-1.5 cursor-pointer group">
             <div class="flex flex-wrap items-center justify-between gap-1.5">
               <div class="flex items-center gap-2">
                 <span class="text-base">${isPrestige ? '👑' : (isCustom ? '⚙️' : '🛡️')}</span>
                 <div>
                   <div class="flex items-center gap-1.5 flex-wrap">
-                    <span class="font-bold text-white text-xs">${cName}</span>
+                    <span class="font-bold text-white text-xs group-hover:text-emerald-300 transition">${cName}</span>
                     ${typeBadge}
                     ${def.source ? `<span class="text-[9px] text-slate-400 bg-slate-900 px-1.5 py-0.2 rounded border border-slate-800 font-mono">${def.source}</span>` : ''}
                   </div>
@@ -33166,16 +33166,22 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                 </div>
               </div>
 
-              <div class="flex items-center gap-1.5">
-                ${isSelected ? '<span class="text-[10px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-600/60 px-2 py-0.5 rounded">✓ Seçili Sınıf</span>' : ''}
+              <div class="flex items-center gap-1.5" onclick="event.stopPropagation()">
                 <button type="button" onclick="toggleClassProgression('${safeName}')" class="px-2.5 py-1 rounded-lg ${isProgExpanded ? 'bg-indigo-900 border-indigo-400 text-white ring-1 ring-indigo-400/50' : 'bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-500/50 text-indigo-200 hover:text-white'} font-bold text-[11px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer" title="${cName} seviye gelişim tablosunu göster / gizle">
                   <span>📜</span>
                   <span>${isProgExpanded ? 'Gelişimi Gizle' : 'Gelişimi Göster'}</span>
                 </button>
-                <button type="button" onclick="selectClassFromSearch('${safeName}')" class="px-2.5 py-1 rounded-lg ${isSelected ? 'bg-emerald-700 hover:bg-emerald-600' : 'bg-purple-700 hover:bg-purple-600'} text-white font-bold text-[11px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer">
-                  <span>➕</span>
-                  <span>${isSelected ? 'Seviyeyi Yenile' : 'Bu Sınıftan Seviye Ekle'}</span>
-                </button>
+                ${isSelected ? `
+                  <span class="text-[11px] font-bold text-emerald-400 bg-emerald-950/90 border border-emerald-600/70 px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-sm select-none">
+                    <span>✓</span>
+                    <span>Seçili Sınıf</span>
+                  </span>
+                ` : `
+                  <button type="button" onclick="selectClassFromSearch('${safeName}')" class="px-2.5 py-1 rounded-lg bg-purple-700 hover:bg-purple-600 text-white font-bold text-[11px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer">
+                    <span>🎯</span>
+                    <span>Sınıfı Seç</span>
+                  </button>
+                `}
               </div>
             </div>
 
@@ -33189,7 +33195,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
             ${def.description ? `<p class="text-[10px] text-slate-400 leading-relaxed">${def.description}</p>` : ''}
             ${prereqHtml}
-            ${isProgExpanded ? generateClassProgressionHtml(cName, def) : ''}
+            ${isProgExpanded ? `<div onclick="event.stopPropagation()">${generateClassProgressionHtml(cName, def)}</div>` : ''}
           </div>
         `;
       });
@@ -33210,7 +33216,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       }
 
       const resultsContainer = document.getElementById('lvlup-class-search-results');
-      const firstSelectBtn = resultsContainer?.querySelector('button[onclick^="selectClassFromSearch"]');
+      const firstSelectBtn = resultsContainer?.querySelector('button[onclick*="selectClassFromSearch"]') || resultsContainer?.querySelector('[onclick*="selectClassFromSearch"]');
       if (firstSelectBtn) {
         firstSelectBtn.click();
       } else {
