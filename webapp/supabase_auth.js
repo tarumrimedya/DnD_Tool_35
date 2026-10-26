@@ -319,14 +319,25 @@ const SupabaseAuth = {
         window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
       }
     } else {
-      if (typeof window.showHubDiceToast === 'function') {
-        window.showHubDiceToast({
-          title: 'Bulut Durumu',
-          text: '🟢 Supabase bulut bağlantısı aktif! Tüm karakter ve kampanya değişiklikleriniz gerçek zamanlı olarak yedeklenmektedir.',
-          color: 'emerald'
-        });
+      const choice = confirm('🟢 Supabase Bulut Bağlantısı Aktif!\n\n• [Tamam]: Buluttaki en güncel karakteri bu ekrana ZORLA ÇEK (Yenile)\n• [İptal]: Bu ekrandaki karakteri buluta ZORLA GÖNDER');
+      if (choice) {
+        if (typeof window.forceCloudSyncPull === 'function') {
+          window.forceCloudSyncPull();
+        } else if (typeof window.syncCloudUserHub === 'function') {
+          this.getUser().then(u => {
+            if (u && typeof window.syncCloudUserHub === 'function') {
+              window.syncCloudUserHub(u).then(() => {
+                if (typeof window.showHubDiceToast === 'function') {
+                  window.showHubDiceToast({ title: 'Bulut Senkron', text: '✅ Hub karakterleri buluttan güncellendi!', color: 'emerald' });
+                }
+              });
+            }
+          });
+        }
       } else {
-        alert('🟢 Supabase Bulut Bağlantısı Aktif!\n\nVerileriniz Google hesabınız altında anlık ve güvenli olarak yedeklenmektedir.');
+        if (typeof window.forceCloudSyncPush === 'function') {
+          window.forceCloudSyncPush();
+        }
       }
     }
   },
@@ -933,6 +944,42 @@ const SupabaseAuth = {
       }
       delete this._activeChannels[campaignId];
     }
+  },
+
+  /**
+   * Kullanıcının kendi karakterlerini (bağımsız veya kampanyada fark etmeksizin) canlı dinler
+   */
+  subscribeUserCharactersRealtime(onCharacterChange) {
+    if (this.isLocalMode()) return null;
+    const client = this.getClient();
+    if (!client) return null;
+
+    const channelName = 'user_characters_sync_channel';
+    if (this._activeChannels[channelName]) {
+      this.unsubscribeCampaignRealtime(channelName);
+    }
+
+    const channel = client.channel(channelName);
+    channel
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'characters'
+        },
+        (payload) => {
+          if (typeof onCharacterChange === 'function') {
+            onCharacterChange(payload);
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log(`Supabase Realtime [${channelName}] status:`, status);
+      });
+
+    this._activeChannels[channelName] = channel;
+    return channel;
   }
 };
 

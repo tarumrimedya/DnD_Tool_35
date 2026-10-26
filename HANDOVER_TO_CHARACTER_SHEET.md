@@ -2353,3 +2353,53 @@ enderLevelUpFeatSlots) silaha baÄŸlÄ± feat seÃ§ildiÄŸinde kart Ã¼zerin
      - `hub.html` ve `webapp/hub.html` arasında %100 SHA-256 hash paritesi sağlandı (`1094F9803C16950206ED5C0BA60B23F5262356F88EF1653B7095A2DA22706B32`).
      - 4 HTML karakter kâğıdı dosyası (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi sağlandı (`1AFF33B092961AAE4F3B9CE03401D8AB34613B2FAD14BE02FF64A08D19B69309`).
      - Standart tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.
+
+
+---
+
+## 84. CANLI WEBSOCKET EŞİTLEME, SEKME ODAĞI SENKRONİZASYONU VE HUB DEVİR TESLİMİ (2026-10-26)
+* **İstek & Problem:**
+  - Kullanıcı telefonda işlem yapıp bilgisayara geçtiğinde, tarayıcıyı tamamen kapatıp açmaya gerek kalmadan; sekme zaten açıkken bile değişikliklerin anında (veya en azından sekmeye dönüldüğünde) otomatik yansımasını talep etti.
+* **Karakter Kâğıdında Uygulanan Geliştirmeler (`character.html` / `index.html` / `supabase_auth.js`):**
+  1. **Evrensel Supabase Realtime Dinleyicisi (`subscribeUserCharactersRealtime`):**
+     - `supabase_auth.js` içerisine kullanıcının kendi karakterlerini kampanya bağımlılığı olmadan PostgreSQL WebSocket üzerinden canlı dinleyen kanal eklendi.
+  2. **Canlı Karakter Senkronizasyon Motoru (`initCharacterRealtimeSync`):**
+     - Karakter sayfası açıkken başka bir cihazdan (örneğin telefon) seviye atlandığında, feat eklendiğinde veya stat değiştiğinde; gelen WebSocket güncellemesi 0.2 saniyede yakalanır, `character` nesnesi güncellenir, `renderAll()` çağrılır ve `showDiceTopToast` ile yeşil toast bildirimi gösterilir.
+  3. **Sekme Odağı Senkronizasyonu (`initTabVisibilitySync`):**
+     - Kullanıcı başka bir sekmeden veya telefondan bilgisayardaki karaktere döndüğünde (`visibilitychange` / `window.focus`), arka planda sessizce buluttaki en taze sürüm sorgulanır ve varsa DOM güncellenir.
+  4. **Zorla Senkronizasyon Kontrolü (`handlePillClick`, `forceCloudSyncPull`, `forceCloudSyncPush`):**
+     - Üst bardaki `[ 🟢 Bulut Senkron ]` hapına tıklandığında kullanıcıya tek tıkla buluttan zorla çekme veya buluta zorla gönderme seçeneği sunuldu.
+  5. **Parite ve Kural Standartları:**
+     - 4 HTML karakter kâğıdı dosyası (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi sağlandı (`6E7A9C926A14A3643BF094200C31DFCDEF189E42CE377434CAE2B8E5E5036D91`).
+     - `supabase_auth.js` ve `webapp/supabase_auth.js` arasında %100 SHA-256 hash paritesi sağlandı.
+     - Standart tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.
+
+---
+
+## 85. HAZIR HUB DEVİR TESLİM PROMPTU (DİĞER KONUŞMAYA DOĞRUDAN YAPIŞTIRILACAK)
+```markdown
+Selam! Ben Karakter Kâğıdı geliştirme sekmesinden geliyorum. `HANDOVER_TO_CHARACTER_SHEET.md` dosyasındaki Bölüm 84 spesifikasyonuna uygun olarak, Karakter Kâğıdı ve `supabase_auth.js` üzerinde çoklu cihaz canlı senkronizasyon altyapısı (WebSocket Realtime + Sekme Odağı) tamamlandı.
+
+Şimdi bu canlı mimariyi HUB sayfasına (`hub.html` ve `webapp/hub.html`) uygulaman gerekiyor:
+
+1. ⚡ Canlı Kart Realtime Dinleyicisi (`initHubRealtimeSync`):
+   - `window.SupabaseAuth.subscribeUserCharactersRealtime((payload) => { ... })` kanalına abone ol.
+   - Başka bir cihazdan (telefon vb.) bir karakter güncellendiğinde (`payload.new`), `state.characters` içinde ilgili karakteri bul:
+     - `localChar.fullData = payload.new.full_data;`
+     - `localChar.name = payload.new.name;`
+     - `localChar.classes = payload.new.full_data?.classes || localChar.classes;`
+     - `localChar.level = Number(payload.new.full_data?.level) || localChar.level;`
+     - `localChar.currentHp = payload.new.current_hp;`
+     - `localChar.maxHp = payload.new.full_data?.hp?.max || localChar.maxHp;`
+     - `syncCharacterSummaryStats(localChar);`
+     - Tüm sayfayı baştan çizip arama/modal odağını bozmamak için, yalnızca ilgili kartın DOM'unu güncelle (veya `renderHub()` çağır) ve `saveHubStorage(false)` yap.
+     - Ekranda şık bir toast göster: `showHubDiceToast({ title: '⚡ Canlı Senkron', text: `${localChar.name} başka bir cihazdan güncellendi!`, color: 'emerald' })`.
+
+2. 👁️ Sekme Odağı Senkronizasyonu (`visibilitychange` / `window.focus`):
+   - DM veya kullanıcı başka bir sekmeden/telefondan HUB ekranına döndüğünde (`document.visibilityState === 'visible'`), arka planda sessizce `syncCloudUserHub(window.SupabaseAuth.currentUser)` çalıştırarak kartları en güncel hale getir.
+
+3. 🛡️ Değişmez Kurallar:
+   - `hub.html` ve `webapp/hub.html` dosyaları arasında %100 SHA-256 hash eşitliğini sağla.
+   - Projenin hiçbir yerinde standart tavla zarı emojisi (`U+1F3B2`) kullanma; tematik SVG ve ikonları koru.
+   - Kesinlikle dummy data ekleme.
+```

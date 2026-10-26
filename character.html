@@ -7615,6 +7615,8 @@
       try { initDiceColor(); } catch (e) {}
       try { renderCustomTemplates(); } catch (e) {}
       try { restoreActiveTabAndScroll(); } catch (e) {}
+      try { initCharacterRealtimeSync(); } catch (e) {}
+      try { initTabVisibilitySync(); } catch (e) {}
     });
 
     let _geminiVerifiedState = null; // null | 'checking' | 'connected' | 'error' | 'empty'
@@ -8373,6 +8375,179 @@
         }
       }
     }
+
+    // =========================================================================
+    // ⚡ ÇOKLU CİHAZ CANLI SENKRONİZASYON VE SEKME ODAĞI MOTORU
+    // =========================================================================
+    function initCharacterRealtimeSync() {
+      if (!window.SupabaseAuth || window.SupabaseAuth.isLocalMode()) return;
+      if (!character || !character.id) return;
+
+      const myCharId = character._hubId || character.id;
+      window.SupabaseAuth.subscribeUserCharactersRealtime((payload) => {
+        if (!payload || !payload.new) return;
+        const incoming = payload.new;
+
+        // Yalnızca aktif karaktere ait güncellemeleri işle
+        if (incoming.id !== myCharId && incoming.id !== character.id && incoming.id !== character._hubId) {
+          return;
+        }
+
+        if (incoming.full_data) {
+          const remoteFd = incoming.full_data;
+          const remoteLvl = Number(remoteFd.level) || (Array.isArray(remoteFd.progression) ? remoteFd.progression.length : 0);
+          const localLvl = Number(character.level) || (Array.isArray(character.progression) ? character.progression.length : 0);
+          const remoteTs = new Date(incoming.updated_at || incoming.last_player_update_ts || 0).getTime();
+          const localTs = character.lastModified ? new Date(character.lastModified).getTime() : 0;
+
+          // Eğer uzaktaki kopya daha yüksek seviyeliyse veya yerelden daha güncelse:
+          if (remoteLvl > localLvl || (remoteLvl === localLvl && remoteTs > localTs + 500)) {
+            console.log(`[Realtime Sync] Başka bir cihazdan güncel karakter alındı: Lvl ${remoteLvl}`);
+            remoteFd.id = myCharId;
+            remoteFd._hubId = myCharId;
+            character = remoteFd;
+            localStorage.setItem('dnd35_character', JSON.stringify(character));
+            localStorage.setItem('dnd35_active_character_id', myCharId);
+
+            // Hub DB'sini de güncelle
+            try {
+              const hubRaw = localStorage.getItem('dnd35_hub_db');
+              if (hubRaw) {
+                const hubDb = JSON.parse(hubRaw);
+                if (Array.isArray(hubDb.characters)) {
+                  const hIdx = hubDb.characters.findIndex(c => c.id === myCharId);
+                  if (hIdx >= 0) {
+                    hubDb.characters[hIdx].fullData = remoteFd;
+                    hubDb.characters[hIdx].level = remoteLvl;
+                    hubDb.characters[hIdx].classes = remoteFd.classes || hubDb.characters[hIdx].classes;
+                    hubDb.characters[hIdx].currentHp = incoming.current_hp;
+                    hubDb.characters[hIdx].maxHp = remoteFd.hp?.max || hubDb.characters[hIdx].maxHp;
+                    localStorage.setItem('dnd35_hub_db', JSON.stringify(hubDb));
+                  }
+                }
+              }
+            } catch (e) {}
+
+            renderAll();
+            if (typeof showDiceTopToast === 'function') {
+              showDiceTopToast({
+                title: '⚡ Canlı Bulut Senkronu',
+                text: `Karakter başka bir cihazdan güncellendi (${character.classes || 'Seviye ' + character.level})!`,
+                color: 'emerald'
+              });
+            }
+          }
+        }
+      });
+    }
+
+    let _lastVisibilitySyncTs = 0;
+    function initTabVisibilitySync() {
+      const handleTabFocus = async () => {
+        if (document.visibilityState !== 'visible') return;
+        const now = Date.now();
+        if (now - _lastVisibilitySyncTs < 5000) return;
+        _lastVisibilitySyncTs = now;
+
+        if (!window.SupabaseAuth || window.SupabaseAuth.isLocalMode() || !character) return;
+        const myCharId = character._hubId || character.id;
+        if (!myCharId) return;
+
+        try {
+          const cloudChars = await window.SupabaseAuth.fetchUserCharacters();
+          if (!Array.isArray(cloudChars)) return;
+          const matched = cloudChars.find(c => c.id === myCharId);
+          if (matched && matched.full_data) {
+            const remoteFd = matched.full_data;
+            const remoteLvl = Number(remoteFd.level) || (Array.isArray(remoteFd.progression) ? remoteFd.progression.length : 0);
+            const localLvl = Number(character.level) || (Array.isArray(character.progression) ? character.progression.length : 0);
+            const remoteTs = new Date(matched.updated_at || 0).getTime();
+            const localTs = character.lastModified ? new Date(character.lastModified).getTime() : 0;
+
+            if (remoteLvl > localLvl || (remoteLvl === localLvl && remoteTs > localTs + 500)) {
+              console.log(`[Tab Focus Sync] Sekmeye dönüldüğünde buluttan güncel veri çekildi: Lvl ${remoteLvl}`);
+              remoteFd.id = myCharId;
+              remoteFd._hubId = myCharId;
+              character = remoteFd;
+              localStorage.setItem('dnd35_character', JSON.stringify(character));
+              renderAll();
+              if (typeof showDiceTopToast === 'function') {
+                showDiceTopToast({
+                  title: '🔄 Sekme Senkronu',
+                  text: `Buluttaki en güncel sürüm yüklendi (${character.classes || 'Seviye ' + character.level}).`,
+                  color: 'emerald'
+                });
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('initTabVisibilitySync error:', e);
+        }
+      };
+
+      document.addEventListener('visibilitychange', handleTabFocus);
+      window.addEventListener('focus', handleTabFocus);
+    }
+
+    window.forceCloudSyncPull = async function() {
+      if (!window.SupabaseAuth || window.SupabaseAuth.isLocalMode()) {
+        alert('Bu işlem için Google hesabınızla giriş yapmış olmanız gerekir.');
+        return;
+      }
+      try {
+        const cloudChars = await window.SupabaseAuth.fetchUserCharacters();
+        if (!Array.isArray(cloudChars) || cloudChars.length === 0) {
+          alert('Bulutta kayıtlı karakter bulunamadı.');
+          return;
+        }
+        const myId = character?._hubId || character?.id || localStorage.getItem('dnd35_active_character_id');
+        let matched = cloudChars.find(c => c.id === myId) || cloudChars[0];
+        if (matched && matched.full_data) {
+          character = matched.full_data;
+          character.id = matched.id;
+          character._hubId = matched.id;
+          localStorage.setItem('dnd35_character', JSON.stringify(character));
+          localStorage.setItem('dnd35_active_character_id', character.id);
+          renderAll();
+          if (typeof showDiceTopToast === 'function') {
+            showDiceTopToast({
+              title: '✅ Buluttan Çekildi',
+              text: `"${character.name}" (${character.classes || 'Seviye ' + character.level}) başarıyla yüklendi!`,
+              color: 'emerald'
+            });
+          } else {
+            alert(`"${character.name}" buluttan başarıyla yüklendi!`);
+          }
+        }
+      } catch (err) {
+        alert('Buluttan veri çekilirken hata: ' + err.message);
+      }
+    };
+
+    window.forceCloudSyncPush = async function() {
+      if (!window.SupabaseAuth || window.SupabaseAuth.isLocalMode()) {
+        alert('Bu işlem için Google hesabınızla giriş yapmış olmanız gerekir.');
+        return;
+      }
+      if (!character) return;
+      try {
+        character.lastModified = new Date().toISOString();
+        const res = await window.SupabaseAuth.upsertUserCharacter(character);
+        if (res) {
+          if (typeof showDiceTopToast === 'function') {
+            showDiceTopToast({
+              title: '☁️ Buluta Gönderildi',
+              text: `"${character.name}" buluta başarıyla kaydedildi!`,
+              color: 'emerald'
+            });
+          } else {
+            alert(`"${character.name}" buluta başarıyla kaydedildi!`);
+          }
+        }
+      } catch (err) {
+        alert('Buluta gönderilirken hata: ' + err.message);
+      }
+    };
 
     // =========================================================================
     // 🎟️ KAMPANYAYA KATILIM VE CANLI REALTIME YÖNETİMİ
