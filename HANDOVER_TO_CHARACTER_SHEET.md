@@ -2115,7 +2115,8 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - Exotic Weapon Proficiency iÃ§in tÃ¼m RAW egzotik silahlar (Bastard Sword, Dwarven Waraxe, Whip, Spiked Chain, Dire Flail, Two-Bladed Sword, Orc Double Axe, Gnome Hooked Hammer, Bolas, Hand Crossbow, Repeating Heavy/Light Crossbow, Shuriken, Kama, Nunchaku, Sai, Siangham, Halfling Warsxe, Dwarven Urgrosh, Orc Shotput, Net, Kusari-gama, Jovar vb.) dinamik olarak listelenir; diÄŸer featler iÃ§inse karakterin envanterindeki tÃ¼m silahlar + temel silah listesi sunulur.
      - KullanÄ±cÄ± hedef silah seÃ§tiÄŸinde feat adÄ± otomatik olarak Exotic Weapon Proficiency (Spiked Chain) veya Weapon Focus (Rapier) olarak gÃ¼ncellenir.
   3. **Seviye Atlama SihirbazÄ± (Level Up Wizard) Dinamik Entegrasyonu:**
-     - Sihirbazdaki feat kartlarÄ±nda (enderLevelUpFeatSlots) silaha baÄŸlÄ± feat seÃ§ildiÄŸinde kart Ã¼zerinde anÄ±nda bir hedef silah seÃ§ici (<select onchange="onLevelUpFeatTargetChange(...)">) gÃ¶rÃ¼ntÃ¼lenir.
+     - Sihirbazdaki feat kartlarÄ±nda (
+enderLevelUpFeatSlots) silaha baÄŸlÄ± feat seÃ§ildiÄŸinde kart Ã¼zerinde anÄ±nda bir hedef silah seÃ§ici (<select onchange="onLevelUpFeatTargetChange(...)">) gÃ¶rÃ¼ntÃ¼lenir.
      - Oyuncu silahÄ± deÄŸiÅŸtirdiÄŸinde yuva adÄ±, aÃ§Ä±klamasÄ± ve hedefi anÄ±nda gÃ¼ncellenir.
   4. **AkÄ±llÄ± Arama Aday Sentezi:**
      - Arama kutusuna silah adÄ± yazÄ±ldÄ±ÄŸÄ±nda (Ã¶rneÄŸin "spiked chain", "jovar", "rapier"), arama motoru sentetik adaylar Ã¼retir: Exotic Weapon Proficiency (Spiked Chain), Weapon Focus (Spiked Chain) vb. doÄŸrudan listede Ã¶neri olarak belirir.
@@ -2283,3 +2284,24 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - 4 HTML karakter kâğıdı dosyası (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi sağlandı (`E0C2B20B937984BB914C4704D1562F9C65AC6BF837FA34BF9D244E810253784D`).
      - Standart tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.
      - Headless Edge ortamında CDP otomatik testiyle mükerrer feat engellemesi ve Cleave/Toughness istisnaları %100 başarıyla doğrulandı.
+
+
+---
+
+## 81. D&D 3.5e RAW CON MODİFİKATÖRÜ VE CAN PUANI (HP) SENKRONİZASYONU (2026-10-26)
+* **İstek & Problem:**
+  - Seviye düzenleme/atlama modalında 1. Seviye Fighter için d10 zar (10) + CON modu (+3) = 13 Toplam HP gösterilirken, ana ekranda karakterin canı 10 / 10 olarak kalıyordu.
+  - İncelemede; `character.html` içindeki Seviye Motoru `baseMax = 10` ve `conBonusHp = 3` ile Max HP'yi 13 hesaplamasına rağmen, `rule_engine.js` içindeki `RuleEngine.recalculateCharacter` fonksiyonunun `conBonusHp`'yi yalnızca geçici buff farkı (`effectiveConMod - baseConMod`) olarak hesapladığı, bu fark 0 çıktığında Seviye Motorunun eklediği +3 CON bonusunu ezerek `conBonusHp`'yi 0 yaptığı ve Max HP'yi 10'a düşürdüğü tespit edildi.
+* **Uygulanan Değişiklikler:**
+  1. **Kural Motoru HP Hesaplama Senkronizasyonu (`rule_engine.js`):**
+     - `RuleEngine.recalculateCharacter` içindeki CON HP hesabı, D&D 3.5e RAW kuralına uygun şekilde toplam CON modifikasyonunu tam yansıtacak biçimde güncellendi:
+       $$\text{newConBonusHp} = \text{effectiveConMod} \times \text{totalHD}$$
+     - Karakterin 1. seviyedeki +3 CON bonusu (veya ilerleyen seviyelerdeki toplam CON bonusu) kural motoru tarafından silinmez; `character.hp.max = baseMax + newConBonusHp` (10 + 3 = 13 HP) olarak korunur.
+     - CON değeri arttığında (örn. 16'dan 18'e) veya azaldığında can otomatik olarak senkronize edilir.
+  2. **Tam Can Durumunda Senkronizasyon (`character.html`):**
+     - Karakter tam canda iken (`oldCurrent === oldMax`) seviye düzenlemesi veya CON artışı yapıldığında, mevcut can da yeni maksimuma eşitlenir (`current = max`, 13/13).
+  3. **Parite ve Kural Standartları:**
+     - 4 HTML karakter kâğıdı dosyası (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi sağlandı (`B07B19E3893742213CA7E5715DBB7750E1E2DC7B83976FF99AE848023FF395D4`).
+     - `rule_engine.js` ve `webapp/rule_engine.js` arasında %100 SHA-256 hash paritesi sağlandı (`14AA1FDF99E40AEC29F0C91126EDC2F9DE6B131F6E15C15BAACEC4EDB5E49BA4`).
+     - Standart tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.
+     - Headless Edge ortamında CDP otomatik testiyle 1. seviye Fighter CON 16 için 13 / 13 (+3 CON) ve CON 18 için 14 / 14 (+4 CON) değerleri %100 başarıyla doğrulandı.

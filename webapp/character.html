@@ -30086,8 +30086,8 @@ function renderManualStatsPanel() {
           }
           character.hp.max = calculatedMax;
 
-          // Strict User Rule: "o anki hp sabit kalsın" (Current HP must remain constant!)
-          if (oldCurrent === null || isNaN(oldCurrent)) {
+          // Strict User Rule: "o anki hp sabit kalsın" (Current HP must remain constant unless at full health!)
+          if (oldCurrent === null || isNaN(oldCurrent) || oldCurrent === oldMax) {
             character.hp.current = character.hp.max;
           } else {
             // Keep current HP exactly what it was, clamped only to new max HP if exceeded

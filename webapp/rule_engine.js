@@ -2176,25 +2176,23 @@ const RuleEngine = {
     const flawHpPenalty = hasFrail ? totalHD : 0;
 
     if (character.hp) {
+      const effectiveConMod = this.getAbilityMod(character.abilities?.con || 10);
+      const newConBonusHp = effectiveConMod * totalHD;
+
       if (character.hp.baseMax === undefined || character.hp.baseMax === null) {
         // If baseMax not yet set, initialize it from current max (subtracting any previous conBonusHp)
         character.hp.baseMax = Math.max(1, (Number(character.hp.max) || 45) - (Number(character.hp.conBonusHp) || 0) + flawHpPenalty + (Number(character.hp.debuffHpPenalty) || 0));
       }
       if (character.hp.conBonusHp === undefined || character.hp.conBonusHp === null) {
-        character.hp.conBonusHp = 0;
+        character.hp.conBonusHp = newConBonusHp;
       }
 
-      const baseConMod = this.getAbilityMod(character.baseAbilities?.con || 10);
-      const effectiveConMod = this.getAbilityMod(character.abilities?.con || 10);
-      const conModDiff = effectiveConMod - baseConMod;
-      const newConBonusHp = conModDiff * totalHD;
-
-      const prevConBonusHp = Number(character.hp.conBonusHp) || 0;
+      const prevConBonusHp = Number(character.hp.conBonusHp);
       const prevDebuffHp = Number(character.hp.debuffHpPenalty) || 0;
       const conHpDiff = newConBonusHp - prevConBonusHp;
       const debuffHpDiff = debuffHpPenalty - prevDebuffHp;
 
-      if (conHpDiff !== 0 || debuffHpDiff !== 0 || character.hp._appliedFrail !== hasFrail) {
+      if (conHpDiff !== 0 || debuffHpDiff !== 0 || character.hp._appliedFrail !== hasFrail || character.hp.max === undefined) {
         character.hp.conBonusHp = newConBonusHp;
         character.hp.debuffHpPenalty = debuffHpPenalty;
         character.hp._appliedFrail = hasFrail;
