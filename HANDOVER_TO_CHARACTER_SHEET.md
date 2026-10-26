@@ -1,4 +1,4 @@
-# HUB & KARAKTER KÂĞIDI ENTEGRASYON DOKÜMANI (HANDOVER SPECIFICATION)
+﻿# HUB & KARAKTER KÂĞIDI ENTEGRASYON DOKÜMANI (HANDOVER SPECIFICATION)
 
 **Tarih:** 2026-10-23  
 **Gönderen:** Hub Geliştirme Oturumu  
@@ -2598,3 +2598,30 @@ Seviye İlerleme Tablosunda (`#level-progression-tbody`), sayısal sütunlar (HD
    * 4 karakter dosyası (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında **%100 SHA-256 hash paritesi** (`46910496...`) sağlandı.
    * 2 kural motoru dosyası (`rule_engine.js`, `webapp/rule_engine.js`) arasında **%100 SHA-256 hash paritesi** (`74de9861...`) sağlandı.
    * Tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korundu.
+
+
+---
+
+## 91. SRD Core Veri Tabanında 45 PHB Fighter Bonus Feat Standardizasyonu & RuleEngine Slot Contract Senkronizasyonu
+
+### Bağlam & Kök Neden
+Karakter motorunda seviye ilerleme tablosunda yer alan **"Fighter Sınıf Bonus Feati"** hedef yuvası üzerinden arama yapıldığında, **Power Attack, Cleave, Combat Expertise, Dodge, Point Blank Shot** gibi en temel resmi D&D 3.5e savaşçı hünerleri listede çıkmıyordu. Kök neden olarak, `srd_core_catalog.json` ve `bundled_data.js` içindeki temel SRD kayıtlarında bu hünerlerin `"isFighterBonusFeat": true` ve `"category": "Fighter"` bayraklarının eksik olduğu tespit edilmişti.
+
+### Yapılan Değişiklikler ve Mimari Uygulama
+1. **SRD Core ve Bundled Veri Tabanı Güncellemesi (`srd_core_catalog.json` & `bundled_data.js`):**
+   - Player's Handbook Tablo 5-1 (s. 98) uyarınca 45 resmi savaşçı hünerine kalıcı olarak `"isFighterBonusFeat": true` ve `"category": "Fighter"` eklendi:
+     * **Güç / Yakın Dövüş Hattı:** *Power Attack, Cleave, Great Cleave, Improved Bull Rush, Improved Overrun, Improved Sunder*
+     * **Taktik & Savunma Hattı:** *Combat Expertise, Improved Disarm, Improved Feint, Improved Trip, Whirlwind Attack, Combat Reflexes, Dodge, Mobility, Spring Attack, Improved Initiative*
+     * **Silahsız / Grapple Hattı:** *Improved Unarmed Strike, Improved Grapple, Deflect Arrows, Snatch Arrows*
+     * **Süvari Hattı:** *Mounted Combat, Mounted Archery, Ride-By Attack, Spirited Charge, Trample*
+     * **Menzilli / Okçuluk Hattı:** *Point Blank Shot, Far Shot, Precise Shot, Rapid Shot, Manyshot, Shot on the Run, Improved Precise Shot*
+     * **İki Silah Hattı:** *Two-Weapon Fighting, Two-Weapon Defense, Improved Two-Weapon Fighting, Greater Two-Weapon Fighting*
+     * **Silah Uzmanlığı & Diğerleri:** *Weapon Focus, Weapon Specialization, Greater Weapon Focus, Greater Weapon Specialization, Improved Critical, Quick Draw, Rapid Reload, Blind-Fight, Exotic Weapon Proficiency, Tower Shield Proficiency*
+   - `srd_core_catalog.json` top-level JSON array yapısı korundu (218 core nesne).
+2. **Kural Motoru Yuva Kontratı Metodu (`rule_engine.js` & `webapp/rule_engine.js`):**
+   - `DND35_CLASS_DEFS` içerisine Fighter, Monk, Wizard ve Warblade için katı bonus feat yuva kontratları işlendi.
+   - `RuleEngine.getClassBonusFeatContract(className, classLevel)` yardımcı metodu eklendi.
+   - `RuleEngine.getClassLevelFeatures(className, classLevel)` metodu bu kontratları döndürecek şekilde entegre edildi.
+3. **Parite ve Kural Standartları:**
+   - Kök dizindeki `srd_core_catalog.json`, `bundled_data.js`, `rule_engine.js` ile `webapp/` altındaki kopyaları arasında **%100 SHA-256 hash paritesi** sağlandı.
+   - Tavla zarı emojisi (`U+1F3B2` / ) yasağı tavizsiz korundu.

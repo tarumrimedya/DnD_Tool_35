@@ -1,4 +1,4 @@
-// =========================================================================
+﻿// =========================================================================
 // BUNDLED STANDALONE DATA FOR OFFLINE / GUEST CLIENT MODE
 // =========================================================================
 
@@ -624,7 +624,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                             ]
     },
     {
-        "name":  "â†³ Quarterstaff (Off-Hand Head)",
+        "name":  "Ã¢â€ Â³ Quarterstaff (Off-Hand Head)",
         "type":  "Weapon",
         "slot":  "Off-Hand",
         "category":  "Simple",
@@ -1868,7 +1868,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                             ]
     },
     {
-        "name":  "â†³ Lance (Mounted One-Handed)",
+        "name":  "Ã¢â€ Â³ Lance (Mounted One-Handed)",
         "type":  "Weapon",
         "slot":  "Main Hand",
         "category":  "Martial",
@@ -2371,7 +2371,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                             ]
     },
     {
-        "name":  "â†³ Bastard Sword (Two-Handed Martial)",
+        "name":  "Ã¢â€ Â³ Bastard Sword (Two-Handed Martial)",
         "type":  "Weapon",
         "slot":  "Two-Handed",
         "category":  "Martial",
@@ -2450,7 +2450,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                             ]
     },
     {
-        "name":  "â†³ Dwarven Waraxe (Two-Handed Martial)",
+        "name":  "Ã¢â€ Â³ Dwarven Waraxe (Two-Handed Martial)",
         "type":  "Weapon",
         "slot":  "Two-Handed",
         "category":  "Martial",
@@ -2583,7 +2583,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                             ]
     },
     {
-        "name":  "â†³ Orc Double Axe (Off-Hand Head)",
+        "name":  "Ã¢â€ Â³ Orc Double Axe (Off-Hand Head)",
         "type":  "Weapon",
         "slot":  "Off-Hand",
         "category":  "Exotic",
@@ -2714,7 +2714,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                             ]
     },
     {
-        "name":  "â†³ Dire Flail (Off-Hand Head)",
+        "name":  "Ã¢â€ Â³ Dire Flail (Off-Hand Head)",
         "type":  "Weapon",
         "slot":  "Off-Hand",
         "category":  "Exotic",
@@ -2798,7 +2798,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                             ]
     },
     {
-        "name":  "â†³ Gnome Hooked Hammer (Pick Off-Hand)",
+        "name":  "Ã¢â€ Â³ Gnome Hooked Hammer (Pick Off-Hand)",
         "type":  "Weapon",
         "slot":  "Off-Hand",
         "category":  "Exotic",
@@ -2880,7 +2880,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                             ]
     },
     {
-        "name":  "â†³ Two-Bladed Sword (Off-Hand Head)",
+        "name":  "Ã¢â€ Â³ Two-Bladed Sword (Off-Hand Head)",
         "type":  "Weapon",
         "slot":  "Off-Hand",
         "category":  "Exotic",
@@ -2964,7 +2964,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "brace":  false
     },
     {
-        "name":  "â†³ Dwarven Urgrosh (Spear Off-Hand)",
+        "name":  "Ã¢â€ Â³ Dwarven Urgrosh (Spear Off-Hand)",
         "type":  "Weapon",
         "slot":  "Off-Hand",
         "category":  "Exotic",
@@ -3937,7 +3937,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Cleave",
@@ -3962,7 +3964,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Great Cleave",
@@ -3987,7 +3991,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Weapon Finesse",
@@ -4037,7 +4043,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Improved Trip",
@@ -4062,7 +4070,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Improved Disarm",
@@ -4087,7 +4097,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Improved Feint",
@@ -4112,7 +4124,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Improved Sunder",
@@ -4137,7 +4151,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Improved Bull Rush",
@@ -4162,7 +4178,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Improved Overrun",
@@ -4187,7 +4205,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Improved Grapple",
@@ -4212,7 +4232,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Improved Initiative",
@@ -4237,7 +4259,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Combat Reflexes",
@@ -4262,7 +4286,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Dodge",
@@ -4287,7 +4313,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Mobility",
@@ -4312,7 +4340,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Spring Attack",
@@ -4338,7 +4368,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "combatModifiers":  [
 
                             ],
-        "action":  "Attack Action (Standard) + Move"
+        "action":  "Attack Action (Standard) + Move",
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Point Blank Shot",
@@ -4363,7 +4395,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Precise Shot",
@@ -4388,7 +4422,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Rapid Shot",
@@ -4413,7 +4449,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Manyshot",
@@ -4438,7 +4476,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Shot on the Run",
@@ -4464,7 +4504,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "combatModifiers":  [
 
                             ],
-        "action":  "Attack Action (Standard) + Move"
+        "action":  "Attack Action (Standard) + Move",
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Far Shot",
@@ -4489,7 +4531,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Two-Weapon Fighting",
@@ -4514,7 +4558,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Improved Two-Weapon Fighting",
@@ -4539,7 +4585,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Greater Two-Weapon Fighting",
@@ -4564,7 +4612,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Two-Weapon Defense",
@@ -4589,7 +4639,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Weapon Focus",
@@ -4614,7 +4666,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Greater Weapon Focus",
@@ -4639,7 +4693,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Weapon Specialization",
@@ -4664,7 +4720,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Greater Weapon Specialization",
@@ -4689,7 +4747,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Improved Critical",
@@ -4714,7 +4774,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Quick Draw",
@@ -4739,7 +4801,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Blind-Fight",
@@ -4764,7 +4828,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Mounted Combat",
@@ -4790,7 +4856,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "combatModifiers":  [
 
                             ],
-        "action":  "Once per round (Reaction)"
+        "action":  "Once per round (Reaction)",
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Ride-By Attack",
@@ -4815,7 +4883,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Spirited Charge",
@@ -4840,7 +4910,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Human",
@@ -5484,8 +5556,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot":  "None",
         "category":  "Martial",
         "prereq":  "1 Shadow Hand Stance",
-        "benefit":  "Bir Shadow Hand duruşundayken (Stance), Shadow Hand disiplini silahlarıyla yapılan yakın dövüş hasarlarına DEX modifiyerini ekler.",
-        "description":  "Bir Shadow Hand duruşundayken (Stance), Shadow Hand disiplini silahlarıyla yapılan yakın dövüş hasarlarına DEX modifiyerini ekler.",
+        "benefit":  "Bir Shadow Hand duruÅŸundayken (Stance), Shadow Hand disiplini silahlarÄ±yla yapÄ±lan yakÄ±n dÃ¶vÃ¼ÅŸ hasarlarÄ±na DEX modifiyerini ekler.",
+        "description":  "Bir Shadow Hand duruÅŸundayken (Stance), Shadow Hand disiplini silahlarÄ±yla yapÄ±lan yakÄ±n dÃ¶vÃ¼ÅŸ hasarlarÄ±na DEX modifiyerini ekler.",
         "source":  "Tome of Battle p.32",
         "isFighterBonusFeat":  false
     },
@@ -5495,8 +5567,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot":  "None",
         "category":  "Martial",
         "prereq":  "Crusader, Swordsage veya Warblade 1",
-        "benefit":  "1 Full-Round Action harcayarak kuşanılan (Readied) manevralarınızı savaş ortasında değiştirebilir ve harcanmış manevraları yenileyebilirsiniz.",
-        "description":  "1 Full-Round Action harcayarak kuşanılan (Readied) manevralarınızı savaş ortasında değiştirebilir ve harcanmış manevraları yenileyebilirsiniz.",
+        "benefit":  "1 Full-Round Action harcayarak kuÅŸanÄ±lan (Readied) manevralarÄ±nÄ±zÄ± savaÅŸ ortasÄ±nda deÄŸiÅŸtirebilir ve harcanmÄ±ÅŸ manevralarÄ± yenileyebilirsiniz.",
+        "description":  "1 Full-Round Action harcayarak kuÅŸanÄ±lan (Readied) manevralarÄ±nÄ±zÄ± savaÅŸ ortasÄ±nda deÄŸiÅŸtirebilir ve harcanmÄ±ÅŸ manevralarÄ± yenileyebilirsiniz.",
         "source":  "Tome of Battle p.28",
         "isFighterBonusFeat":  false
     },
@@ -5505,9 +5577,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "type":  "Feat",
         "slot":  "None",
         "category":  "General",
-        "prereq":  "3. seviye arcane büyü yapabilme, BAB +4",
-        "benefit":  "Free Action olarak bir büyü yuvası feda edip 1 tur boyunca tüm silah saldırılarına +Büyü Seviyesi saldırı bonusu ve +Xd4 ekstra hasar ekler.",
-        "description":  "Free Action olarak bir büyü yuvası feda edip 1 tur boyunca tüm silah saldırılarına +Büyü Seviyesi saldırı bonusu ve +Xd4 ekstra hasar ekler.",
+        "prereq":  "3. seviye arcane bÃ¼yÃ¼ yapabilme, BAB +4",
+        "benefit":  "Free Action olarak bir bÃ¼yÃ¼ yuvasÄ± feda edip 1 tur boyunca tÃ¼m silah saldÄ±rÄ±larÄ±na +BÃ¼yÃ¼ Seviyesi saldÄ±rÄ± bonusu ve +Xd4 ekstra hasar ekler.",
+        "description":  "Free Action olarak bir bÃ¼yÃ¼ yuvasÄ± feda edip 1 tur boyunca tÃ¼m silah saldÄ±rÄ±larÄ±na +BÃ¼yÃ¼ Seviyesi saldÄ±rÄ± bonusu ve +Xd4 ekstra hasar ekler.",
         "source":  "Complete Warrior p.96",
         "isFighterBonusFeat":  false
     },
@@ -5517,8 +5589,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot":  "None",
         "category":  "General",
         "prereq":  "Spellcraft 4 ranks",
-        "benefit":  "Seçilen büyücü sınıfının Caster Level (CL) değerini +4 artırır (toplam karakter seviyesini HD\u0027yi geçemez). Çoklu sınıf (Gish) karakterler için idealdir.",
-        "description":  "Seçilen büyücü sınıfının Caster Level (CL) değerini +4 artırır (toplam karakter seviyesini HD\u0027yi geçemez). Çoklu sınıf (Gish) karakterler için idealdir.",
+        "benefit":  "SeÃ§ilen bÃ¼yÃ¼cÃ¼ sÄ±nÄ±fÄ±nÄ±n Caster Level (CL) deÄŸerini +4 artÄ±rÄ±r (toplam karakter seviyesini HD\u0027yi geÃ§emez). Ã‡oklu sÄ±nÄ±f (Gish) karakterler iÃ§in idealdir.",
+        "description":  "SeÃ§ilen bÃ¼yÃ¼cÃ¼ sÄ±nÄ±fÄ±nÄ±n Caster Level (CL) deÄŸerini +4 artÄ±rÄ±r (toplam karakter seviyesini HD\u0027yi geÃ§emez). Ã‡oklu sÄ±nÄ±f (Gish) karakterler iÃ§in idealdir.",
         "source":  "Complete Arcane p.82",
         "isFighterBonusFeat":  false
     },
@@ -5528,8 +5600,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot":  "None",
         "category":  "Fighter",
         "prereq":  "Improved Bull Rush, Power Attack, BAB +6",
-        "benefit":  "Heedless Charge: Charge saldırısında Power Attack cezasını saldırı zarı yerine AC\u0027den düşmenizi sağlar.",
-        "description":  "Heedless Charge: Charge saldırısında Power Attack cezasını saldırı zarı yerine AC\u0027den düşmenizi sağlar.",
+        "benefit":  "Heedless Charge: Charge saldÄ±rÄ±sÄ±nda Power Attack cezasÄ±nÄ± saldÄ±rÄ± zarÄ± yerine AC\u0027den dÃ¼ÅŸmenizi saÄŸlar.",
+        "description":  "Heedless Charge: Charge saldÄ±rÄ±sÄ±nda Power Attack cezasÄ±nÄ± saldÄ±rÄ± zarÄ± yerine AC\u0027den dÃ¼ÅŸmenizi saÄŸlar.",
         "source":  "Complete Warrior p.112",
         "isFighterBonusFeat":  true
     },
@@ -5539,8 +5611,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot":  "None",
         "category":  "General",
         "prereq":  "Jump 8 ranks, Power Attack",
-        "benefit":  "Charge sırasında en az 10 ft uzun atlama yaparsanız Power Attack ekstra hasarını ikiye/üçe katlar.",
-        "description":  "Charge sırasında en az 10 ft uzun atlama yaparsanız Power Attack ekstra hasarını ikiye/üçe katlar.",
+        "benefit":  "Charge sÄ±rasÄ±nda en az 10 ft uzun atlama yaparsanÄ±z Power Attack ekstra hasarÄ±nÄ± ikiye/Ã¼Ã§e katlar.",
+        "description":  "Charge sÄ±rasÄ±nda en az 10 ft uzun atlama yaparsanÄ±z Power Attack ekstra hasarÄ±nÄ± ikiye/Ã¼Ã§e katlar.",
         "source":  "Complete Adventurer p.110",
         "isFighterBonusFeat":  false
     },
@@ -5550,8 +5622,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot":  "None",
         "category":  "Fighter",
         "prereq":  "Dex 13, Two-Weapon Fighting, BAB +1",
-        "benefit":  "İkinci elinizde (Off-Hand) tek elli bir silahı hafif (light) bir silah gibi kullanmanızı ve çift silah cezasını azaltmanızı sağlar.",
-        "description":  "İkinci elinizde (Off-Hand) tek elli bir silahı hafif (light) bir silah gibi kullanmanızı ve çift silah cezasını azaltmanızı sağlar.",
+        "benefit":  "Ä°kinci elinizde (Off-Hand) tek elli bir silahÄ± hafif (light) bir silah gibi kullanmanÄ±zÄ± ve Ã§ift silah cezasÄ±nÄ± azaltmanÄ±zÄ± saÄŸlar.",
+        "description":  "Ä°kinci elinizde (Off-Hand) tek elli bir silahÄ± hafif (light) bir silah gibi kullanmanÄ±zÄ± ve Ã§ift silah cezasÄ±nÄ± azaltmanÄ±zÄ± saÄŸlar.",
         "source":  "Complete Adventurer p.111",
         "isFighterBonusFeat":  true
     },
@@ -5561,8 +5633,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot":  "None",
         "category":  "Fighter",
         "prereq":  "BAB +1",
-        "benefit":  "Kendi boyutunuzdan bir boy büyük yakın dövüş silahlarını veya iki elli (Two-Handed) silahları tek elinizle -2 saldırı cezasıyla kullanmanızı sağlar.",
-        "description":  "Kendi boyutunuzdan bir boy büyük yakın dövüş silahlarını veya iki elli (Two-Handed) silahları tek elinizle -2 saldırı cezasıyla kullanmanızı sağlar.",
+        "benefit":  "Kendi boyutunuzdan bir boy bÃ¼yÃ¼k yakÄ±n dÃ¶vÃ¼ÅŸ silahlarÄ±nÄ± veya iki elli (Two-Handed) silahlarÄ± tek elinizle -2 saldÄ±rÄ± cezasÄ±yla kullanmanÄ±zÄ± saÄŸlar.",
+        "description":  "Kendi boyutunuzdan bir boy bÃ¼yÃ¼k yakÄ±n dÃ¶vÃ¼ÅŸ silahlarÄ±nÄ± veya iki elli (Two-Handed) silahlarÄ± tek elinizle -2 saldÄ±rÄ± cezasÄ±yla kullanmanÄ±zÄ± saÄŸlar.",
         "source":  "Complete Warrior p.103",
         "isFighterBonusFeat":  true
     },
@@ -5572,8 +5644,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot":  "None",
         "category":  "General",
         "prereq":  "Concentration 4 ranks, Spellcraft 4 ranks",
-        "benefit":  "İki elinizde silah veya kalkan tutarken bile büyülerin somatik (el hareketi) bileşenlerini gerçekleştirebilirsiniz.",
-        "description":  "İki elinizde silah veya kalkan tutarken bile büyülerin somatik (el hareketi) bileşenlerini gerçekleştirebilirsiniz.",
+        "benefit":  "Ä°ki elinizde silah veya kalkan tutarken bile bÃ¼yÃ¼lerin somatik (el hareketi) bileÅŸenlerini gerÃ§ekleÅŸtirebilirsiniz.",
+        "description":  "Ä°ki elinizde silah veya kalkan tutarken bile bÃ¼yÃ¼lerin somatik (el hareketi) bileÅŸenlerini gerÃ§ekleÅŸtirebilirsiniz.",
         "source":  "Complete Mage p.47",
         "isFighterBonusFeat":  false
     },
@@ -5585,8 +5657,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Least",
         "minLevel":  1,
         "prereq":  "Warlock Level 1",
-        "benefit":  "Eldritch Blast menzili 60 ft\u0027den 250 ft\u0027ye çıkar (Blast Shape).",
-        "description":  "Eldritch Blast menzili 60 ft\u0027den 250 ft\u0027ye çıkar (Blast Shape).",
+        "benefit":  "Eldritch Blast menzili 60 ft\u0027den 250 ft\u0027ye Ã§Ä±kar (Blast Shape).",
+        "description":  "Eldritch Blast menzili 60 ft\u0027den 250 ft\u0027ye Ã§Ä±kar (Blast Shape).",
         "source":  "Complete Arcane p.133"
     },
     {
@@ -5597,8 +5669,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Least",
         "minLevel":  1,
         "prereq":  "Warlock Level 1",
-        "benefit":  "Standart eylemle yakın dövüş saldırısı yapıp silah hasarına Eldritch Blast hasarını ekler.",
-        "description":  "Standart eylemle yakın dövüş saldırısı yapıp silah hasarına Eldritch Blast hasarını ekler.",
+        "benefit":  "Standart eylemle yakÄ±n dÃ¶vÃ¼ÅŸ saldÄ±rÄ±sÄ± yapÄ±p silah hasarÄ±na Eldritch Blast hasarÄ±nÄ± ekler.",
+        "description":  "Standart eylemle yakÄ±n dÃ¶vÃ¼ÅŸ saldÄ±rÄ±sÄ± yapÄ±p silah hasarÄ±na Eldritch Blast hasarÄ±nÄ± ekler.",
         "source":  "Complete Arcane p.134"
     },
     {
@@ -5609,8 +5681,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Least",
         "minLevel":  1,
         "prereq":  "Warlock Level 1",
-        "benefit":  "24 saat boyunca 60 ft Darkvision ve See Invisibility (Görünmezleri Görme) kazanır.",
-        "description":  "24 saat boyunca 60 ft Darkvision ve See Invisibility (Görünmezleri Görme) kazanır.",
+        "benefit":  "24 saat boyunca 60 ft Darkvision ve See Invisibility (GÃ¶rÃ¼nmezleri GÃ¶rme) kazanÄ±r.",
+        "description":  "24 saat boyunca 60 ft Darkvision ve See Invisibility (GÃ¶rÃ¼nmezleri GÃ¶rme) kazanÄ±r.",
         "source":  "Complete Arcane p.135"
     },
     {
@@ -5621,8 +5693,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Least",
         "minLevel":  1,
         "prereq":  "Warlock Level 1",
-        "benefit":  "24 saat boyunca Bluff, Diplomacy ve Intimidate becerilerine +6 bonus kazanır.",
-        "description":  "24 saat boyunca Bluff, Diplomacy ve Intimidate becerilerine +6 bonus kazanır.",
+        "benefit":  "24 saat boyunca Bluff, Diplomacy ve Intimidate becerilerine +6 bonus kazanÄ±r.",
+        "description":  "24 saat boyunca Bluff, Diplomacy ve Intimidate becerilerine +6 bonus kazanÄ±r.",
         "source":  "Complete Arcane p.133"
     },
     {
@@ -5633,8 +5705,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Least",
         "minLevel":  1,
         "prereq":  "Warlock Level 1",
-        "benefit":  "İstediği an (At-Will) Darkness büyüsü gibi 20 ft yarıçaplı karanlık yaratır.",
-        "description":  "İstediği an (At-Will) Darkness büyüsü gibi 20 ft yarıçaplı karanlık yaratır.",
+        "benefit":  "Ä°stediÄŸi an (At-Will) Darkness bÃ¼yÃ¼sÃ¼ gibi 20 ft yarÄ±Ã§aplÄ± karanlÄ±k yaratÄ±r.",
+        "description":  "Ä°stediÄŸi an (At-Will) Darkness bÃ¼yÃ¼sÃ¼ gibi 20 ft yarÄ±Ã§aplÄ± karanlÄ±k yaratÄ±r.",
         "source":  "Complete Arcane p.133"
     },
     {
@@ -5645,8 +5717,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Least",
         "minLevel":  1,
         "prereq":  "Warlock Level 1",
-        "benefit":  "30 ft mesafeye kadar hem normal hem de büyüsel karanlığı net bir şekilde görür.",
-        "description":  "30 ft mesafeye kadar hem normal hem de büyüsel karanlığı net bir şekilde görür.",
+        "benefit":  "30 ft mesafeye kadar hem normal hem de bÃ¼yÃ¼sel karanlÄ±ÄŸÄ± net bir ÅŸekilde gÃ¶rÃ¼r.",
+        "description":  "30 ft mesafeye kadar hem normal hem de bÃ¼yÃ¼sel karanlÄ±ÄŸÄ± net bir ÅŸekilde gÃ¶rÃ¼r.",
         "source":  "Complete Arcane p.133"
     },
     {
@@ -5657,8 +5729,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Least",
         "minLevel":  1,
         "prereq":  "Warlock Level 1",
-        "benefit":  "Shatter büyüsü gibi ses dalgasıyla nesneleri patlatır; hedef dazing kurtarma zarı atar.",
-        "description":  "Shatter büyüsü gibi ses dalgasıyla nesneleri patlatır; hedef dazing kurtarma zarı atar.",
+        "benefit":  "Shatter bÃ¼yÃ¼sÃ¼ gibi ses dalgasÄ±yla nesneleri patlatÄ±r; hedef dazing kurtarma zarÄ± atar.",
+        "description":  "Shatter bÃ¼yÃ¼sÃ¼ gibi ses dalgasÄ±yla nesneleri patlatÄ±r; hedef dazing kurtarma zarÄ± atar.",
         "source":  "Complete Arcane p.133"
     },
     {
@@ -5681,8 +5753,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Least",
         "minLevel":  1,
         "prereq":  "Warlock Level 1",
-        "benefit":  "24 saat boyunca Spider Climb (Duvarlarda tırmanma) kazanır, ağlardan etkilenmez.",
-        "description":  "24 saat boyunca Spider Climb (Duvarlarda tırmanma) kazanır, ağlardan etkilenmez.",
+        "benefit":  "24 saat boyunca Spider Climb (Duvarlarda tÄ±rmanma) kazanÄ±r, aÄŸlardan etkilenmez.",
+        "description":  "24 saat boyunca Spider Climb (Duvarlarda tÄ±rmanma) kazanÄ±r, aÄŸlardan etkilenmez.",
         "source":  "Complete Arcane p.135"
     },
     {
@@ -5693,8 +5765,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Least",
         "minLevel":  1,
         "prereq":  "Warlock Level 1",
-        "benefit":  "Topraktan devasa bir el çıkarıp düşmanı yakalar ve tutar (Grapple).",
-        "description":  "Topraktan devasa bir el çıkarıp düşmanı yakalar ve tutar (Grapple).",
+        "benefit":  "Topraktan devasa bir el Ã§Ä±karÄ±p dÃ¼ÅŸmanÄ± yakalar ve tutar (Grapple).",
+        "description":  "Topraktan devasa bir el Ã§Ä±karÄ±p dÃ¼ÅŸmanÄ± yakalar ve tutar (Grapple).",
         "source":  "Complete Arcane p.134"
     },
     {
@@ -5705,8 +5777,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Least",
         "minLevel":  1,
         "prereq":  "Warlock Level 1",
-        "benefit":  "30 ft içindeki HD\u0027si düşük düşmanları korkutur (Shaken).",
-        "description":  "30 ft içindeki HD\u0027si düşük düşmanları korkutur (Shaken).",
+        "benefit":  "30 ft iÃ§indeki HD\u0027si dÃ¼ÅŸÃ¼k dÃ¼ÅŸmanlarÄ± korkutur (Shaken).",
+        "description":  "30 ft iÃ§indeki HD\u0027si dÃ¼ÅŸÃ¼k dÃ¼ÅŸmanlarÄ± korkutur (Shaken).",
         "source":  "Dragon Magic p.80"
     },
     {
@@ -5717,8 +5789,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Lesser",
         "minLevel":  6,
         "prereq":  "Warlock Level 6",
-        "benefit":  "24 saat boyunca kendi yürüme hızında Good manevra kabiliyetiyle uçar (Fly).",
-        "description":  "24 saat boyunca kendi yürüme hızında Good manevra kabiliyetiyle uçar (Fly).",
+        "benefit":  "24 saat boyunca kendi yÃ¼rÃ¼me hÄ±zÄ±nda Good manevra kabiliyetiyle uÃ§ar (Fly).",
+        "description":  "24 saat boyunca kendi yÃ¼rÃ¼me hÄ±zÄ±nda Good manevra kabiliyetiyle uÃ§ar (Fly).",
         "source":  "Complete Arcane p.134"
     },
     {
@@ -5729,8 +5801,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Lesser",
         "minLevel":  6,
         "prereq":  "Warlock Level 6",
-        "benefit":  "Eldritch Blast ilk hedefe vurduktan sonra 30 ft içindeki ikincil hedeflere sıçrar (Blast Shape).",
-        "description":  "Eldritch Blast ilk hedefe vurduktan sonra 30 ft içindeki ikincil hedeflere sıçrar (Blast Shape).",
+        "benefit":  "Eldritch Blast ilk hedefe vurduktan sonra 30 ft iÃ§indeki ikincil hedeflere sÄ±Ã§rar (Blast Shape).",
+        "description":  "Eldritch Blast ilk hedefe vurduktan sonra 30 ft iÃ§indeki ikincil hedeflere sÄ±Ã§rar (Blast Shape).",
         "source":  "Complete Arcane p.134"
     },
     {
@@ -5741,8 +5813,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Lesser",
         "minLevel":  6,
         "prereq":  "Warlock Level 6",
-        "benefit":  "Eldritch Blast ateş hasarına dönüşür ve hedefi yakar (Eldritch Essence).",
-        "description":  "Eldritch Blast ateş hasarına dönüşür ve hedefi yakar (Eldritch Essence).",
+        "benefit":  "Eldritch Blast ateÅŸ hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r ve hedefi yakar (Eldritch Essence).",
+        "description":  "Eldritch Blast ateÅŸ hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r ve hedefi yakar (Eldritch Essence).",
         "source":  "Complete Arcane p.133"
     },
     {
@@ -5753,8 +5825,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Lesser",
         "minLevel":  6,
         "prereq":  "Warlock Level 6",
-        "benefit":  "Eldritch Blast soğuk hasarına dönüşür ve hedefe -4 DEX penaltısı verir (Eldritch Essence).",
-        "description":  "Eldritch Blast soğuk hasarına dönüşür ve hedefe -4 DEX penaltısı verir (Eldritch Essence).",
+        "benefit":  "Eldritch Blast soÄŸuk hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r ve hedefe -4 DEX penaltÄ±sÄ± verir (Eldritch Essence).",
+        "description":  "Eldritch Blast soÄŸuk hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r ve hedefe -4 DEX penaltÄ±sÄ± verir (Eldritch Essence).",
         "source":  "Complete Arcane p.134"
     },
     {
@@ -5765,8 +5837,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Lesser",
         "minLevel":  6,
         "prereq":  "Warlock Level 6",
-        "benefit":  "Kısa menzilli Dimension Door ışınlanması yapar ve geride 1 turluk illüzyon kuklası bırakır.",
-        "description":  "Kısa menzilli Dimension Door ışınlanması yapar ve geride 1 turluk illüzyon kuklası bırakır.",
+        "benefit":  "KÄ±sa menzilli Dimension Door Ä±ÅŸÄ±nlanmasÄ± yapar ve geride 1 turluk illÃ¼zyon kuklasÄ± bÄ±rakÄ±r.",
+        "description":  "KÄ±sa menzilli Dimension Door Ä±ÅŸÄ±nlanmasÄ± yapar ve geride 1 turluk illÃ¼zyon kuklasÄ± bÄ±rakÄ±r.",
         "source":  "Complete Arcane p.134"
     },
     {
@@ -5777,8 +5849,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Lesser",
         "minLevel":  6,
         "prereq":  "Warlock Level 6",
-        "benefit":  "24 saat boyunca Invisibility (Görünmezlik) kazanır; saldırana kadar sürer.",
-        "description":  "24 saat boyunca Invisibility (Görünmezlik) kazanır; saldırana kadar sürer.",
+        "benefit":  "24 saat boyunca Invisibility (GÃ¶rÃ¼nmezlik) kazanÄ±r; saldÄ±rana kadar sÃ¼rer.",
+        "description":  "24 saat boyunca Invisibility (GÃ¶rÃ¼nmezlik) kazanÄ±r; saldÄ±rana kadar sÃ¼rer.",
         "source":  "Complete Arcane p.135"
     },
     {
@@ -5789,8 +5861,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Lesser",
         "minLevel":  6,
         "prereq":  "Warlock Level 6",
-        "benefit":  "Dispel Magic atar; bozduğu her büyü seviyesi başına hedefe 1 hasar verir.",
-        "description":  "Dispel Magic atar; bozduğu her büyü seviyesi başına hedefe 1 hasar verir.",
+        "benefit":  "Dispel Magic atar; bozduÄŸu her bÃ¼yÃ¼ seviyesi baÅŸÄ±na hedefe 1 hasar verir.",
+        "description":  "Dispel Magic atar; bozduÄŸu her bÃ¼yÃ¼ seviyesi baÅŸÄ±na hedefe 1 hasar verir.",
         "source":  "Complete Arcane p.135"
     },
     {
@@ -5801,8 +5873,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Lesser",
         "minLevel":  6,
         "prereq":  "Warlock Level 6",
-        "benefit":  "Charm Monster büyüsü gibi tek bir hedefi büyüler (Will Save DC CHA mod).",
-        "description":  "Charm Monster büyüsü gibi tek bir hedefi büyüler (Will Save DC CHA mod).",
+        "benefit":  "Charm Monster bÃ¼yÃ¼sÃ¼ gibi tek bir hedefi bÃ¼yÃ¼ler (Will Save DC CHA mod).",
+        "description":  "Charm Monster bÃ¼yÃ¼sÃ¼ gibi tek bir hedefi bÃ¼yÃ¼ler (Will Save DC CHA mod).",
         "source":  "Complete Arcane p.133"
     },
     {
@@ -5813,8 +5885,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Lesser",
         "minLevel":  6,
         "prereq":  "Warlock Level 6",
-        "benefit":  "Bestow Curse gibi dokunmayla lanetler veya menzilli saldırıyla -3 saldırı penaltısı verir.",
-        "description":  "Bestow Curse gibi dokunmayla lanetler veya menzilli saldırıyla -3 saldırı penaltısı verir.",
+        "benefit":  "Bestow Curse gibi dokunmayla lanetler veya menzilli saldÄ±rÄ±yla -3 saldÄ±rÄ± penaltÄ±sÄ± verir.",
+        "description":  "Bestow Curse gibi dokunmayla lanetler veya menzilli saldÄ±rÄ±yla -3 saldÄ±rÄ± penaltÄ±sÄ± verir.",
         "source":  "Complete Arcane p.133"
     },
     {
@@ -5825,8 +5897,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Greater",
         "minLevel":  11,
         "prereq":  "Warlock Level 11",
-        "benefit":  "Eldritch Blast asit hasarına dönüşür, SR\u0027ı tamamen yok sayar ve devam hasarı verir.",
-        "description":  "Eldritch Blast asit hasarına dönüşür, SR\u0027ı tamamen yok sayar ve devam hasarı verir.",
+        "benefit":  "Eldritch Blast asit hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r, SR\u0027Ä± tamamen yok sayar ve devam hasarÄ± verir.",
+        "description":  "Eldritch Blast asit hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r, SR\u0027Ä± tamamen yok sayar ve devam hasarÄ± verir.",
         "source":  "Complete Arcane p.135"
     },
     {
@@ -5837,8 +5909,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Greater",
         "minLevel":  11,
         "prereq":  "Warlock Level 11",
-        "benefit":  "Eldritch Blast 30 ft\u0027lik koni alan etkisine dönüşür (Reflex DC yarısı).",
-        "description":  "Eldritch Blast 30 ft\u0027lik koni alan etkisine dönüşür (Reflex DC yarısı).",
+        "benefit":  "Eldritch Blast 30 ft\u0027lik koni alan etkisine dÃ¶nÃ¼ÅŸÃ¼r (Reflex DC yarÄ±sÄ±).",
+        "description":  "Eldritch Blast 30 ft\u0027lik koni alan etkisine dÃ¶nÃ¼ÅŸÃ¼r (Reflex DC yarÄ±sÄ±).",
         "source":  "Complete Arcane p.134"
     },
     {
@@ -5849,8 +5921,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Greater",
         "minLevel":  11,
         "prereq":  "Warlock Level 11",
-        "benefit":  "Evard\u0027s Black Tentacles gibi kollar çıkarır + her tur alandakilere 2d6 soğuk hasarı verir.",
-        "description":  "Evard\u0027s Black Tentacles gibi kollar çıkarır + her tur alandakilere 2d6 soğuk hasarı verir.",
+        "benefit":  "Evard\u0027s Black Tentacles gibi kollar Ã§Ä±karÄ±r + her tur alandakilere 2d6 soÄŸuk hasarÄ± verir.",
+        "description":  "Evard\u0027s Black Tentacles gibi kollar Ã§Ä±karÄ±r + her tur alandakilere 2d6 soÄŸuk hasarÄ± verir.",
         "source":  "Complete Arcane p.133"
     },
     {
@@ -5861,8 +5933,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Greater",
         "minLevel":  11,
         "prereq":  "Warlock Level 11",
-        "benefit":  "Dokunmayla Greater Dispel Magic; bozduğu büyü seviyesi başına 5 geçici can puanı kazanır.",
-        "description":  "Dokunmayla Greater Dispel Magic; bozduğu büyü seviyesi başına 5 geçici can puanı kazanır.",
+        "benefit":  "Dokunmayla Greater Dispel Magic; bozduÄŸu bÃ¼yÃ¼ seviyesi baÅŸÄ±na 5 geÃ§ici can puanÄ± kazanÄ±r.",
+        "description":  "Dokunmayla Greater Dispel Magic; bozduÄŸu bÃ¼yÃ¼ seviyesi baÅŸÄ±na 5 geÃ§ici can puanÄ± kazanÄ±r.",
         "source":  "Complete Arcane p.133"
     },
     {
@@ -5873,8 +5945,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Greater",
         "minLevel":  11,
         "prereq":  "Warlock Level 11",
-        "benefit":  "Eldritch Blast vurduğu hedefi 1 dakika boyunca mide bulantısı (Nauseated) yapar (Fort Save).",
-        "description":  "Eldritch Blast vurduğu hedefi 1 dakika boyunca mide bulantısı (Nauseated) yapar (Fort Save).",
+        "benefit":  "Eldritch Blast vurduÄŸu hedefi 1 dakika boyunca mide bulantÄ±sÄ± (Nauseated) yapar (Fort Save).",
+        "description":  "Eldritch Blast vurduÄŸu hedefi 1 dakika boyunca mide bulantÄ±sÄ± (Nauseated) yapar (Fort Save).",
         "source":  "Complete Arcane p.134"
     },
     {
@@ -5885,8 +5957,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Greater",
         "minLevel":  11,
         "prereq":  "Warlock Level 11",
-        "benefit":  "Eldritch Blast vurduğu hedefleri 1d6x5 ft geriye fırlatır (Reflex Save).",
-        "description":  "Eldritch Blast vurduğu hedefleri 1d6x5 ft geriye fırlatır (Reflex Save).",
+        "benefit":  "Eldritch Blast vurduÄŸu hedefleri 1d6x5 ft geriye fÄ±rlatÄ±r (Reflex Save).",
+        "description":  "Eldritch Blast vurduÄŸu hedefleri 1d6x5 ft geriye fÄ±rlatÄ±r (Reflex Save).",
         "source":  "Complete Arcane p.135"
     },
     {
@@ -5897,8 +5969,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Greater",
         "minLevel":  11,
         "prereq":  "Warlock Level 11",
-        "benefit":  "Wall of Fire duvarı yaratır; hasarın yarısı büyüsel ateş olduğu için dirençleri aşar.",
-        "description":  "Wall of Fire duvarı yaratır; hasarın yarısı büyüsel ateş olduğu için dirençleri aşar.",
+        "benefit":  "Wall of Fire duvarÄ± yaratÄ±r; hasarÄ±n yarÄ±sÄ± bÃ¼yÃ¼sel ateÅŸ olduÄŸu iÃ§in direnÃ§leri aÅŸar.",
+        "description":  "Wall of Fire duvarÄ± yaratÄ±r; hasarÄ±n yarÄ±sÄ± bÃ¼yÃ¼sel ateÅŸ olduÄŸu iÃ§in direnÃ§leri aÅŸar.",
         "source":  "Complete Arcane p.135"
     },
     {
@@ -5909,8 +5981,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Dark",
         "minLevel":  16,
         "prereq":  "Warlock Level 16",
-        "benefit":  "Eldritch Blast etrafında 20 ft yarıçaplı patlamaya dönüşür (Reflex Save yarısı).",
-        "description":  "Eldritch Blast etrafında 20 ft yarıçaplı patlamaya dönüşür (Reflex Save yarısı).",
+        "benefit":  "Eldritch Blast etrafÄ±nda 20 ft yarÄ±Ã§aplÄ± patlamaya dÃ¶nÃ¼ÅŸÃ¼r (Reflex Save yarÄ±sÄ±).",
+        "description":  "Eldritch Blast etrafÄ±nda 20 ft yarÄ±Ã§aplÄ± patlamaya dÃ¶nÃ¼ÅŸÃ¼r (Reflex Save yarÄ±sÄ±).",
         "source":  "Complete Arcane p.134"
     },
     {
@@ -5921,8 +5993,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Dark",
         "minLevel":  16,
         "prereq":  "Warlock Level 16",
-        "benefit":  "Eldritch Blast negatif enerji hasarına dönüşür ve hedefe 2 negatif seviye verir.",
-        "description":  "Eldritch Blast negatif enerji hasarına dönüşür ve hedefe 2 negatif seviye verir.",
+        "benefit":  "Eldritch Blast negatif enerji hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r ve hedefe 2 negatif seviye verir.",
+        "description":  "Eldritch Blast negatif enerji hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r ve hedefe 2 negatif seviye verir.",
         "source":  "Complete Arcane p.135"
     },
     {
@@ -5933,8 +6005,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Dark",
         "minLevel":  16,
         "prereq":  "Warlock Level 16",
-        "benefit":  "24 saat boyunca Foresight büyüsü: Asla şaşırmaz, AC ve Reflex\u0027e +2 insight bonusu.",
-        "description":  "24 saat boyunca Foresight büyüsü: Asla şaşırmaz, AC ve Reflex\u0027e +2 insight bonusu.",
+        "benefit":  "24 saat boyunca Foresight bÃ¼yÃ¼sÃ¼: Asla ÅŸaÅŸÄ±rmaz, AC ve Reflex\u0027e +2 insight bonusu.",
+        "description":  "24 saat boyunca Foresight bÃ¼yÃ¼sÃ¼: Asla ÅŸaÅŸÄ±rmaz, AC ve Reflex\u0027e +2 insight bonusu.",
         "source":  "Complete Arcane p.133"
     },
     {
@@ -5945,8 +6017,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Dark",
         "minLevel":  16,
         "prereq":  "Warlock Level 16",
-        "benefit":  "Gölge yarasa sürüsüne dönüşür; uçma hızı, fiziksel bağışıklık, %50 alan hasarı azaltma.",
-        "description":  "Gölge yarasa sürüsüne dönüşür; uçma hızı, fiziksel bağışıklık, %50 alan hasarı azaltma.",
+        "benefit":  "GÃ¶lge yarasa sÃ¼rÃ¼sÃ¼ne dÃ¶nÃ¼ÅŸÃ¼r; uÃ§ma hÄ±zÄ±, fiziksel baÄŸÄ±ÅŸÄ±klÄ±k, %50 alan hasarÄ± azaltma.",
+        "description":  "GÃ¶lge yarasa sÃ¼rÃ¼sÃ¼ne dÃ¶nÃ¼ÅŸÃ¼r; uÃ§ma hÄ±zÄ±, fiziksel baÄŸÄ±ÅŸÄ±klÄ±k, %50 alan hasarÄ± azaltma.",
         "source":  "Complete Arcane p.133"
     },
     {
@@ -5957,8 +6029,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier":  "Dark",
         "minLevel":  16,
         "prereq":  "Warlock Level 16",
-        "benefit":  "Saldırgana anında Phantasmal Killer illüzyonel ölümcül korkusu fırlatır.",
-        "description":  "Saldırgana anında Phantasmal Killer illüzyonel ölümcül korkusu fırlatır.",
+        "benefit":  "SaldÄ±rgana anÄ±nda Phantasmal Killer illÃ¼zyonel Ã¶lÃ¼mcÃ¼l korkusu fÄ±rlatÄ±r.",
+        "description":  "SaldÄ±rgana anÄ±nda Phantasmal Killer illÃ¼zyonel Ã¶lÃ¼mcÃ¼l korkusu fÄ±rlatÄ±r.",
         "source":  "Complete Mage p.124"
     },
     {
@@ -5967,7 +6039,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot":  "None",
         "category":  "Martial",
         "prereq":  "Special (see text)",
-        "benefit":  "Seçilen bir dövüş disiplininden (Desert Wind, Devoted Spirit, Diamond Mind, Iron Heart, Setting Sun, Shadow Hand, Stone Dragon, Tiger Claw, White Raven) seviyenizin yettiği 1 adet manevra (Strike, Boost veya Counter) öğrenirsiniz. Her çatışmada (Encounter) 1 kez kullanılabilir. En fazla 3 kez alınabilir; ilgili disiplinin ana becerisi sınıf beceriniz olur.",
+        "benefit":  "SeÃ§ilen bir dÃ¶vÃ¼ÅŸ disiplininden (Desert Wind, Devoted Spirit, Diamond Mind, Iron Heart, Setting Sun, Shadow Hand, Stone Dragon, Tiger Claw, White Raven) seviyenizin yettiÄŸi 1 adet manevra (Strike, Boost veya Counter) Ã¶ÄŸrenirsiniz. Her Ã§atÄ±ÅŸmada (Encounter) 1 kez kullanÄ±labilir. En fazla 3 kez alÄ±nabilir; ilgili disiplinin ana becerisi sÄ±nÄ±f beceriniz olur.",
         "description":  "Learn a martial maneuver from any discipline for which you meet the prerequisites. You can use this maneuver once per encounter. You can take this feat up to three times; each time adds the discipline skill to your class skill list.",
         "source":  "Tome of Battle p.31",
         "isFighterBonusFeat":  true
@@ -5978,7 +6050,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot":  "None",
         "category":  "Martial",
         "prereq":  "1 Martial maneuver",
-        "benefit":  "Bir disiplinden bildiğiniz en az 1 manevra varsa, o disiplinden seviyenizin yettiği bir Duruş (Stance) öğrenirsiniz. Savaşçı bonus feati olarak seçilebilir.",
+        "benefit":  "Bir disiplinden bildiÄŸiniz en az 1 manevra varsa, o disiplinden seviyenizin yettiÄŸi bir DuruÅŸ (Stance) Ã¶ÄŸrenirsiniz. SavaÅŸÃ§Ä± bonus feati olarak seÃ§ilebilir.",
         "description":  "Learn a martial stance from any discipline in which you already know at least one maneuver and meet the prerequisites. Can be selected as a fighter bonus feat.",
         "source":  "Tome of Battle p.31",
         "isFighterBonusFeat":  true
@@ -5989,7 +6061,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot":  "None",
         "category":  "Martial",
         "prereq":  "Crusader maneuver progression",
-        "benefit":  "Her çatışmanın başında ve manevra desteniz yenilenip çekildiğinde fazladan +1 adet açık manevra (Granted Maneuver) kazanırsınız. Crusader manevra döngüsünü hızlandırır.",
+        "benefit":  "Her Ã§atÄ±ÅŸmanÄ±n baÅŸÄ±nda ve manevra desteniz yenilenip Ã§ekildiÄŸinde fazladan +1 adet aÃ§Ä±k manevra (Granted Maneuver) kazanÄ±rsÄ±nÄ±z. Crusader manevra dÃ¶ngÃ¼sÃ¼nÃ¼ hÄ±zlandÄ±rÄ±r.",
         "description":  "You begin each combat encounter with 1 additional granted maneuver. In addition, when you refresh your granted maneuvers, you are granted 1 extra maneuver.",
         "source":  "Tome of Battle p.30",
         "isFighterBonusFeat":  false
@@ -6000,7 +6072,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot":  "None",
         "category":  "Martial",
         "prereq":  "Swordsage veya Warblade seviyesi",
-        "benefit":  "Kuşanılmış (Readied) manevra kapasitenizi kalıcı olarak +1 artırır.",
+        "benefit":  "KuÅŸanÄ±lmÄ±ÅŸ (Readied) manevra kapasitenizi kalÄ±cÄ± olarak +1 artÄ±rÄ±r.",
         "description":  "You can ready 1 additional maneuver beyond your normal maximum.",
         "source":  "Tome of Battle p.30",
         "isFighterBonusFeat":  false
@@ -6011,7 +6083,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot":  "None",
         "category":  "Martial",
         "prereq":  "BAB +6, Improved Unarmed Strike",
-        "benefit":  "Standart yakın dövüş saldırısı, tam saldırı (Full Attack) veya standart eylemli manevra (Strike) yaparken, o turdaki tüm saldırı zarlarınıza -2 ceza alıp anında ek bir silahsız tekme saldırısı (Unarmed Strike) yaparsınız.",
+        "benefit":  "Standart yakÄ±n dÃ¶vÃ¼ÅŸ saldÄ±rÄ±sÄ±, tam saldÄ±rÄ± (Full Attack) veya standart eylemli manevra (Strike) yaparken, o turdaki tÃ¼m saldÄ±rÄ± zarlarÄ±nÄ±za -2 ceza alÄ±p anÄ±nda ek bir silahsÄ±z tekme saldÄ±rÄ±sÄ± (Unarmed Strike) yaparsÄ±nÄ±z.",
         "description":  "When you make a melee attack with one or more weapons, full attack, or martial strike, you can make an additional unarmed strike with a -2 penalty on all attack rolls that round.",
         "source":  "Tome of Battle p.32",
         "isFighterBonusFeat":  true
@@ -6022,7 +6094,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot":  "None",
         "category":  "Martial",
         "prereq":  "Str 13, 1 Stone Dragon maneuver",
-        "benefit":  "Saldırı zarlarınızdan BAB değerine kadar (maksimum -5) ceza alıp, aldığınız cezanın 2 katı kadar (tur başına maksimum 10) Geçici Can Puanı (Temporary HP) kazanırsınız. Bir sonraki turunuza kadar sürer.",
+        "benefit":  "SaldÄ±rÄ± zarlarÄ±nÄ±zdan BAB deÄŸerine kadar (maksimum -5) ceza alÄ±p, aldÄ±ÄŸÄ±nÄ±z cezanÄ±n 2 katÄ± kadar (tur baÅŸÄ±na maksimum 10) GeÃ§ici Can PuanÄ± (Temporary HP) kazanÄ±rsÄ±nÄ±z. Bir sonraki turunuza kadar sÃ¼rer.",
         "description":  "Subtract a number (up to 5 or BAB) from melee attack rolls to gain twice that number in temporary hit points until the start of your next turn.",
         "source":  "Tome of Battle p.32",
         "isFighterBonusFeat":  true
@@ -6033,7 +6105,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot":  "None",
         "category":  "Martial",
         "prereq":  "Bardic music, 1 White Raven maneuver",
-        "benefit":  "Inspire Courage şarkısını Swift Action olarak anında başlatabilirsiniz. Inspire Courage bonusunuzu hesaplarken Bard seviyelerinizle Crusader ve Warblade seviyeleriniz toplanır.",
+        "benefit":  "Inspire Courage ÅŸarkÄ±sÄ±nÄ± Swift Action olarak anÄ±nda baÅŸlatabilirsiniz. Inspire Courage bonusunuzu hesaplarken Bard seviyelerinizle Crusader ve Warblade seviyeleriniz toplanÄ±r.",
         "description":  "You can activate inspire courage as a swift action. Your bard, crusader, and warblade levels stack to determine the bonus granted by inspire courage.",
         "source":  "Tome of Battle p.32",
         "isFighterBonusFeat":  false
@@ -6044,7 +6116,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot":  "None",
         "category":  "Martial",
         "prereq":  "1 Martial maneuver",
-        "benefit":  "Çatışma başına 1 kez, az önce harcadığınız bir manevrayı Swift Action harcayarak anında yeniden kuşanılmış ve kullanılabilir hale getirirsiniz.",
+        "benefit":  "Ã‡atÄ±ÅŸma baÅŸÄ±na 1 kez, az Ã¶nce harcadÄ±ÄŸÄ±nÄ±z bir manevrayÄ± Swift Action harcayarak anÄ±nda yeniden kuÅŸanÄ±lmÄ±ÅŸ ve kullanÄ±labilir hale getirirsiniz.",
         "description":  "Once per encounter as a swift action, you can instantly recover an expended maneuver and make it readied once again.",
         "source":  "Tome of Battle p.33",
         "isFighterBonusFeat":  true
@@ -6055,7 +6127,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot":  "None",
         "category":  "Martial",
         "prereq":  "2 Martial maneuvers",
-        "benefit":  "Bir çatışma sırasında harcadığınız manevraları yenilediğinizde dövüş başına bir kez 3 + Karakter Seviyesi kadar can puanı iyileşirsiniz.",
+        "benefit":  "Bir Ã§atÄ±ÅŸma sÄ±rasÄ±nda harcadÄ±ÄŸÄ±nÄ±z manevralarÄ± yenilediÄŸinizde dÃ¶vÃ¼ÅŸ baÅŸÄ±na bir kez 3 + Karakter Seviyesi kadar can puanÄ± iyileÅŸirsiniz.",
         "description":  "When you recover expended maneuvers during an encounter, you heal hit points equal to 3 + your character level (once per encounter).",
         "source":  "Tome of Battle p.33",
         "isFighterBonusFeat":  false
@@ -6066,7 +6138,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot":  "None",
         "category":  "Martial",
         "prereq":  "Dex 13",
-        "benefit":  "Bir rakip fırsat saldırısı (AoO) tetiklediğinde, ona saldırmak yerine anında 5-foot step kayabilirsiniz (yeni AoO tetiklemez).",
+        "benefit":  "Bir rakip fÄ±rsat saldÄ±rÄ±sÄ± (AoO) tetiklediÄŸinde, ona saldÄ±rmak yerine anÄ±nda 5-foot step kayabilirsiniz (yeni AoO tetiklemez).",
         "description":  "When an opponent provokes an attack of opportunity from you, you can take a 5-foot step instead of making the attack.",
         "source":  "Tome of Battle p.30",
         "isFighterBonusFeat":  true
@@ -6077,7 +6149,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot":  "None",
         "category":  "General",
         "prereq":  "Ability to use lesser invocations",
-        "benefit":  "Bildiğiniz en yüksek dereceden en az bir derece düşük ek 1 adet Yakarış (Invocation) öğrenirsiniz. Birden fazla kez alınabilir.",
+        "benefit":  "BildiÄŸiniz en yÃ¼ksek dereceden en az bir derece dÃ¼ÅŸÃ¼k ek 1 adet YakarÄ±ÅŸ (Invocation) Ã¶ÄŸrenirsiniz. Birden fazla kez alÄ±nabilir.",
         "description":  "You learn one additional invocation of any grade up to one grade lower than the highest grade you can use. You can take this feat multiple times.",
         "source":  "Complete Arcane p.79",
         "isFighterBonusFeat":  false
@@ -6088,7 +6160,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot":  "None",
         "category":  "General",
         "prereq":  "Spell-like ability at CL 6th or higher",
-        "benefit":  "Günde 3 kez, seçilen bir büyü benzeri yeteneğin (örneğin Eldritch Blast) tüm değişken sayısal etkilerini (hasar zarları vb.) x1.5 katına çıkarırsınız.",
+        "benefit":  "GÃ¼nde 3 kez, seÃ§ilen bir bÃ¼yÃ¼ benzeri yeteneÄŸin (Ã¶rneÄŸin Eldritch Blast) tÃ¼m deÄŸiÅŸken sayÄ±sal etkilerini (hasar zarlarÄ± vb.) x1.5 katÄ±na Ã§Ä±karÄ±rsÄ±nÄ±z.",
         "description":  "You can use a selected spell-like ability three times per day as an empowered spell-like ability (variable numeric effects increased by one-half).",
         "source":  "Monster Manual p.303 / Complete Arcane p.79",
         "isFighterBonusFeat":  false
@@ -6099,7 +6171,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot":  "None",
         "category":  "General",
         "prereq":  "Spell-like ability at CL 10th or higher",
-        "benefit":  "Günde 3 kez, seçilen bir büyü benzeri yeteneği (örneğin Eldritch Blast) Swift Action olarak anında patlatabilirsiniz.",
+        "benefit":  "GÃ¼nde 3 kez, seÃ§ilen bir bÃ¼yÃ¼ benzeri yeteneÄŸi (Ã¶rneÄŸin Eldritch Blast) Swift Action olarak anÄ±nda patlatabilirsiniz.",
         "description":  "You can use a selected spell-like ability three times per day as a quickened spell-like ability (swift action).",
         "source":  "Monster Manual p.304 / Complete Arcane p.82",
         "isFighterBonusFeat":  false
@@ -6110,7 +6182,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot":  "None",
         "category":  "General",
         "prereq":  "Spell-like ability at CL 6th or higher",
-        "benefit":  "Günde 3 kez, seçilen bir büyü benzeri yeteneğin (örneğin Eldritch Blast) tüm değişken sayısal etkilerini zar atmadan maksimum değerinde uygularsınız.",
+        "benefit":  "GÃ¼nde 3 kez, seÃ§ilen bir bÃ¼yÃ¼ benzeri yeteneÄŸin (Ã¶rneÄŸin Eldritch Blast) tÃ¼m deÄŸiÅŸken sayÄ±sal etkilerini zar atmadan maksimum deÄŸerinde uygularsÄ±nÄ±z.",
         "description":  "You can use a selected spell-like ability three times per day as a maximized spell-like ability (variable numeric effects maximized).",
         "source":  "Complete Arcane p.81",
         "isFighterBonusFeat":  false
@@ -6121,7 +6193,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot":  "None",
         "category":  "General",
         "prereq":  "Special attack (Eldritch Blast)",
-        "benefit":  "Eldritch Blast ve ona uygulanan tüm Eldritch Essence / Blast Shape yakarışlarının DC kurtarma zarlarına kalıcı +2 bonus kazandırır.",
+        "benefit":  "Eldritch Blast ve ona uygulanan tÃ¼m Eldritch Essence / Blast Shape yakarÄ±ÅŸlarÄ±nÄ±n DC kurtarma zarlarÄ±na kalÄ±cÄ± +2 bonus kazandÄ±rÄ±r.",
         "description":  "Add +2 to the Difficulty Class for all saving throws against the selected special attack (Eldritch Blast).",
         "source":  "Monster Manual p.303",
         "isFighterBonusFeat":  false
@@ -6132,7 +6204,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot":  "None",
         "category":  "General",
         "prereq":  "Spell-like ability",
-        "benefit":  "Günde 5 kez, seçilen bir büyü benzeri yeteneğin yaşayan hedeflere vurduğunda +2d6 ekstra hasar vermesini sağlarsınız (Undead veya Construct\u0027lara karşı yarı hasar).",
+        "benefit":  "GÃ¼nde 5 kez, seÃ§ilen bir bÃ¼yÃ¼ benzeri yeteneÄŸin yaÅŸayan hedeflere vurduÄŸunda +2d6 ekstra hasar vermesini saÄŸlarsÄ±nÄ±z (Undead veya Construct\u0027lara karÅŸÄ± yarÄ± hasar).",
         "description":  "A selected spell-like ability deals +2d6 points of damage against living creatures five times per day (damage halved against undead/constructs).",
         "source":  "Book of Vile Darkness p.48 / Complete Arcane",
         "isFighterBonusFeat":  false

@@ -3834,7 +3834,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Cleave",
@@ -3859,7 +3861,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Great Cleave",
@@ -3884,7 +3888,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Weapon Finesse",
@@ -3934,7 +3940,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Improved Trip",
@@ -3959,7 +3967,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Improved Disarm",
@@ -3984,7 +3994,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Improved Feint",
@@ -4009,7 +4021,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Improved Sunder",
@@ -4034,7 +4048,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Improved Bull Rush",
@@ -4059,7 +4075,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Improved Overrun",
@@ -4084,7 +4102,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Improved Grapple",
@@ -4109,7 +4129,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Improved Initiative",
@@ -4134,7 +4156,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Combat Reflexes",
@@ -4159,7 +4183,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Dodge",
@@ -4184,7 +4210,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Mobility",
@@ -4209,7 +4237,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Spring Attack",
@@ -4235,7 +4265,9 @@
         "combatModifiers":  [
 
                             ],
-        "action":  "Attack Action (Standard) + Move"
+        "action":  "Attack Action (Standard) + Move",
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Point Blank Shot",
@@ -4260,7 +4292,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Precise Shot",
@@ -4285,7 +4319,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Rapid Shot",
@@ -4310,7 +4346,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Manyshot",
@@ -4335,7 +4373,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Shot on the Run",
@@ -4361,7 +4401,9 @@
         "combatModifiers":  [
 
                             ],
-        "action":  "Attack Action (Standard) + Move"
+        "action":  "Attack Action (Standard) + Move",
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Far Shot",
@@ -4386,7 +4428,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Two-Weapon Fighting",
@@ -4411,7 +4455,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Improved Two-Weapon Fighting",
@@ -4436,7 +4482,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Greater Two-Weapon Fighting",
@@ -4461,7 +4509,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Two-Weapon Defense",
@@ -4486,7 +4536,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Weapon Focus",
@@ -4511,7 +4563,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Greater Weapon Focus",
@@ -4536,7 +4590,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Weapon Specialization",
@@ -4561,7 +4617,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Greater Weapon Specialization",
@@ -4586,7 +4644,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Improved Critical",
@@ -4611,7 +4671,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Quick Draw",
@@ -4636,7 +4698,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Blind-Fight",
@@ -4661,7 +4725,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Mounted Combat",
@@ -4687,7 +4753,9 @@
         "combatModifiers":  [
 
                             ],
-        "action":  "Once per round (Reaction)"
+        "action":  "Once per round (Reaction)",
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Ride-By Attack",
@@ -4712,7 +4780,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Spirited Charge",
@@ -4737,7 +4807,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Human",

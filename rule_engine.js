@@ -1,4 +1,4 @@
-﻿/**
+/**
  * D&D 3.5e Declarative Rule, Modifier & Stacking Engine
  * Handles ability modifiers, RAW stacking rules, dynamic feat mechanics,
  * 14 body slot equipment bonuses, active buffs with round countdowns,
