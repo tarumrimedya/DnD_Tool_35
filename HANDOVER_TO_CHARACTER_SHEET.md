@@ -2501,3 +2501,5 @@ Karakter oluşturulduğunda veya seviye atlandığında, D&D 3.5e resmi sınıf 
 4. **Parite ve Kural Standartları:**
    * 4 dosya arasında (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) **%100 SHA-256 hash paritesi** (`fd7b898b...`) sağlandı.
    * Standart tavla zarı (`U+1F3B2`) yasağı tavizsiz korundu.
+
+* **Filtre İyileştirmesi:** Beceriler tablosunda varsayılan görünüm modu oyuncu ergonomisini artırmak amacıyla doğrudan **`⭐ Sınıf (Class)`** filtresi olarak ayarlandı. Karakter açıldığında ilk olarak yalnızca kendi sınıfına ait beceriler listelenir; oyuncu dilerse tek tıkla "Tümü" diyerek tüm becerileri görebilir.

@@ -1595,8 +1595,8 @@
           <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-950/80 p-2 rounded-lg border border-slate-800 text-xs">
             <div class="flex items-center gap-1.5 flex-wrap">
               <span class="text-[10px] font-bold text-slate-400 uppercase mr-1">Filtre:</span>
-              <button onclick="setSkillFilter('all')" id="btn-skill-filter-all" class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-600 text-white transition cursor-pointer">Tümü</button>
-              <button onclick="setSkillFilter('class')" id="btn-skill-filter-class" class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer">⭐ Sınıf (Class)</button>
+              <button onclick="setSkillFilter('all')" id="btn-skill-filter-all" class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer">Tümü</button>
+              <button onclick="setSkillFilter('class')" id="btn-skill-filter-class" class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-600 text-white transition cursor-pointer">⭐ Sınıf (Class)</button>
               <button onclick="setSkillFilter('trained')" id="btn-skill-filter-trained" class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer">🎯 Eğitimli (Rank > 0)</button>
               <select id="skill-stat-filter" onchange="setSkillStatFilter(this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-slate-300 font-bold focus:border-amber-400 cursor-pointer" title="Stat / Nitelik Filtresi">
                 <option value="all">Tüm Statlar</option>
@@ -37382,7 +37382,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       }
     ];
 
-    let activeSkillFilter = localStorage.getItem('dnd35_skill_filter') || 'all'; // 'all' | 'class' | 'trained'
+    let activeSkillFilter = localStorage.getItem('dnd35_skill_filter') || 'class'; // 'all' | 'class' | 'trained'
     let activeSkillStatFilter = localStorage.getItem('dnd35_skill_stat_filter') || 'all'; // 'all' | 'str' | 'dex' ...
 
     function setSkillFilter(filterMode) {
@@ -37429,7 +37429,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
 
     function initSkillFilters() {
       try {
-        const savedFilter = localStorage.getItem('dnd35_skill_filter') || 'all';
+        const savedFilter = localStorage.getItem('dnd35_skill_filter') || 'class';
         activeSkillFilter = savedFilter;
         const btnAll = document.getElementById('btn-skill-filter-all');
         const btnClass = document.getElementById('btn-skill-filter-class');
