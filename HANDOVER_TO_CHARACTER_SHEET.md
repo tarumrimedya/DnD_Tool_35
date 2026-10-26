@@ -2093,5 +2093,5 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - `[🌟 DM Boon]` veya `[⚠️ Kusur]` seçildiğinde ilgili filtre otomatik senkronize edilir.
      - Warlock seviyesi veya DM Boon'u varsa `'INVOCATION'` filtresi ve Warlock Yakarışları listelenir.
   4. **Parite ve Kural Standartları:**
-     - 4 karakter kâğıdı dosyası (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi sağlandı (`B187062A8DD1FCB7A9D2A29F2D9521771765DF7E8D606097548A04734A965040`).
+     - 4 karakter kâğıdı dosyası (`character.html`, `index.html`, `webapp/character.html`, `webapp/index.html`) arasında %100 SHA-256 hash paritesi sağlandı (`B41008FF440CBF22CAC77CF957D7537AE7EA0A1E33A409A2FCCBE3F73385D64C`).
      - Standart tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korundu.
