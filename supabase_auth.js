@@ -1,4 +1,4 @@
-﻿/**
+/**
  * D&D 3.5e Supabase Authentication & Multi-User Campaign Module
  * 
  * Handles Google OAuth, Local/Offline Mode, session persistence, page guards,
@@ -311,10 +311,10 @@ const SupabaseAuth = {
   },
 
   /**
-   * Senkronizasyon hapÄ±na tÄ±klandÄ±ÄŸÄ±nda modern bulut yÃ¶netim modalÄ±nÄ± aÃ§ar
+   * Senkronizasyon hapına tıklandığında modern bulut yönetim modalını açar
    */
   handlePillClick() {
-    // Eski aÃ§Ä±k modal varsa kapat
+    // Eski açık modal varsa kapat
     const existing = document.getElementById('cloud-sync-management-modal');
     if (existing) {
       existing.remove();
@@ -334,26 +334,26 @@ const SupabaseAuth = {
         <div class="bg-[#131d33] border border-amber-500/50 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden p-5 sm:p-6 text-slate-100 flex flex-col gap-4 transform transition-all" onclick="event.stopPropagation()">
           <div class="flex items-start justify-between gap-3 border-b border-slate-700/80 pb-3">
             <div class="flex items-center gap-2.5">
-              <span class="text-2xl">ğŸŸ¡</span>
+              <span class="text-2xl">🟡</span>
               <div>
-                <h3 class="text-base font-extrabold text-white">Yerel Mod (Ã‡evrimdÄ±ÅŸÄ±)</h3>
-                <p class="text-[11px] text-amber-300/90 font-medium">Verileriniz yalnÄ±zca bu tarayÄ±cÄ±da saklanÄ±r</p>
+                <h3 class="text-base font-extrabold text-white">Yerel Mod (Çevrimdışı)</h3>
+                <p class="text-[11px] text-amber-300/90 font-medium">Verileriniz yalnızca bu tarayıcıda saklanır</p>
               </div>
             </div>
-            <button type="button" class="text-slate-400 hover:text-white p-1 text-sm rounded-lg transition cursor-pointer" onclick="document.getElementById('cloud-sync-management-modal')?.remove()">âœ•</button>
+            <button type="button" class="text-slate-400 hover:text-white p-1 text-sm rounded-lg transition cursor-pointer" onclick="document.getElementById('cloud-sync-management-modal')?.remove()">✕</button>
           </div>
 
           <p class="text-xs text-slate-300 leading-relaxed">
-            Karakter ve seferlerinizin Supabase bulutunda otomatik yedeklenmesi, telefon ve bilgisayar arasÄ±nda anÄ±nda eÅŸitlenmesi iÃ§in Google hesabÄ±nÄ±zla giriÅŸ yapabilirsiniz.
+            Karakter ve seferlerinizin Supabase bulutunda otomatik yedeklenmesi, telefon ve bilgisayar arasında anında eşitlenmesi için Google hesabınızla giriş yapabilirsiniz.
           </p>
 
           <div class="flex flex-col gap-2 pt-2">
             <button type="button" id="modal-btn-login-google" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-950/50 transition active:scale-95 cursor-pointer">
-              <span>ğŸ”‘</span>
-              <span>Google ile GiriÅŸ Yap</span>
+              <span>🔑</span>
+              <span>Google ile Giriş Yap</span>
             </button>
             <button type="button" class="w-full py-2 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs border border-slate-700 transition cursor-pointer" onclick="document.getElementById('cloud-sync-management-modal')?.remove()">
-              âœ• VazgeÃ§ (Yerel Modda Devam Et)
+              ✕ Vazgeç (Yerel Modda Devam Et)
             </button>
           </div>
         </div>
@@ -372,58 +372,58 @@ const SupabaseAuth = {
     const isCharSheet = typeof window.forceCloudSyncPull === 'function';
     modal.innerHTML = `
       <div class="bg-[#131d33] border border-emerald-500/50 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden p-5 sm:p-6 text-slate-100 flex flex-col gap-4 transform transition-all" onclick="event.stopPropagation()">
-        <!-- BaÅŸlÄ±k -->
+        <!-- Başlık -->
         <div class="flex items-start justify-between gap-3 border-b border-slate-700/80 pb-3">
           <div class="flex items-center gap-2.5">
             <span class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
             <div>
-              <h3 class="text-base font-extrabold text-white">Bulut Senkron YÃ¶netimi</h3>
-              <p class="text-[11px] text-emerald-300/90 font-medium">Supabase Ã‡oklu Cihaz Senkronizasyonu Aktif</p>
+              <h3 class="text-base font-extrabold text-white">Bulut Senkron Yönetimi</h3>
+              <p class="text-[11px] text-emerald-300/90 font-medium">Supabase Çoklu Cihaz Senkronizasyonu Aktif</p>
             </div>
           </div>
-          <button type="button" class="text-slate-400 hover:text-white p-1 text-sm rounded-lg transition cursor-pointer" onclick="document.getElementById('cloud-sync-management-modal')?.remove()">âœ•</button>
+          <button type="button" class="text-slate-400 hover:text-white p-1 text-sm rounded-lg transition cursor-pointer" onclick="document.getElementById('cloud-sync-management-modal')?.remove()">✕</button>
         </div>
 
         <p class="text-xs text-slate-300 leading-relaxed">
           ${isCharSheet 
-            ? 'Bu ekran ile buluttaki kayÄ±tlarÄ±nÄ±z arasÄ±nda senkronizasyon gerÃ§ekleÅŸtirmek iÃ§in bir eylem seÃ§in:' 
-            : 'Hub Ã¼zerindeki tÃ¼m karakterleri bulutla anÄ±nda eÅŸitlemek iÃ§in bir eylem seÃ§in:'}
+            ? 'Bu ekran ile buluttaki kayıtlarınız arasında senkronizasyon gerçekleştirmek için bir eylem seçin:' 
+            : 'Hub üzerindeki tüm karakterleri bulutla anında eşitlemek için bir eylem seçin:'}
         </p>
 
-        <!-- Eylem ButonlarÄ± -->
+        <!-- Eylem Butonları -->
         <div class="flex flex-col gap-2.5 pt-1">
-          <!-- Buton 1: Buluttan Ä°ndir (Ã‡ek) -->
+          <!-- Buton 1: Buluttan İndir (Çek) -->
           <button type="button" id="modal-btn-sync-pull" class="w-full text-left p-3 rounded-xl bg-slate-900/90 hover:bg-emerald-950/50 border border-emerald-600/60 hover:border-emerald-500 text-white transition duration-150 flex items-center justify-between gap-3 group cursor-pointer shadow-md">
             <div class="min-w-0">
               <div class="text-xs font-black text-emerald-300 group-hover:text-emerald-200 flex items-center gap-1.5">
-                <span>â¬‡ï¸</span>
-                <span>Buluttan Ä°ndir (Ã‡ek)</span>
+                <span>⬇️</span>
+                <span>Buluttan İndir (Çek)</span>
               </div>
               <div class="text-[10px] text-slate-400 mt-0.5 leading-normal">
-                ${isCharSheet ? 'Buluttaki en gÃ¼ncel karakteri indirir ve bu ekranÄ± yeniler.' : 'Buluttaki en son karakter ve seferleri Hub ekranÄ±na Ã§eker.'}
+                ${isCharSheet ? 'Buluttaki en güncel karakteri indirir ve bu ekranı yeniler.' : 'Buluttaki en son karakter ve seferleri Hub ekranına çeker.'}
               </div>
             </div>
-            <span class="text-emerald-400 font-mono text-xs shrink-0 group-hover:translate-x-0.5 transition">â†’</span>
+            <span class="text-emerald-400 font-mono text-xs shrink-0 group-hover:translate-x-0.5 transition">→</span>
           </button>
 
-          <!-- Buton 2: Buluta YÃ¼kle (GÃ¶nder) -->
+          <!-- Buton 2: Buluta Yükle (Gönder) -->
           <button type="button" id="modal-btn-sync-push" class="w-full text-left p-3 rounded-xl bg-slate-900/90 hover:bg-amber-950/50 border border-amber-600/60 hover:border-amber-500 text-white transition duration-150 flex items-center justify-between gap-3 group cursor-pointer shadow-md">
             <div class="min-w-0">
               <div class="text-xs font-black text-amber-300 group-hover:text-amber-200 flex items-center gap-1.5">
-                <span>â¬†ï¸</span>
-                <span>Buluta YÃ¼kle (GÃ¶nder)</span>
+                <span>⬆️</span>
+                <span>Buluta Yükle (Gönder)</span>
               </div>
               <div class="text-[10px] text-slate-400 mt-0.5 leading-normal">
-                ${isCharSheet ? 'Bu ekrandaki gÃ¼ncel karakteri buluta zorla gÃ¶nderir ve bulutu gÃ¼nceller.' : 'Yereldeki tÃ¼m karakterleri bulut veritabanÄ±na zorla yazar.'}
+                ${isCharSheet ? 'Bu ekrandaki güncel karakteri buluta zorla gönderir ve bulutu günceller.' : 'Yereldeki tüm karakterleri bulut veritabanına zorla yazar.'}
               </div>
             </div>
-            <span class="text-amber-400 font-mono text-xs shrink-0 group-hover:translate-x-0.5 transition">â†’</span>
+            <span class="text-amber-400 font-mono text-xs shrink-0 group-hover:translate-x-0.5 transition">→</span>
           </button>
 
-          <!-- Buton 3: VazgeÃ§ (Kapat) -->
+          <!-- Buton 3: Vazgeç (Kapat) -->
           <button type="button" class="w-full mt-1 py-2 px-4 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-semibold text-xs border border-slate-700 transition cursor-pointer flex items-center justify-center gap-1.5" onclick="document.getElementById('cloud-sync-management-modal')?.remove()">
-            <span>âœ•</span>
-            <span>VazgeÃ§ / Ä°ptal (DeÄŸiÅŸiklik Yapma)</span>
+            <span>✕</span>
+            <span>Vazgeç / İptal (Değişiklik Yapma)</span>
           </button>
         </div>
       </div>
@@ -441,7 +441,7 @@ const SupabaseAuth = {
           if (u && typeof window.syncCloudUserHub === 'function') {
             window.syncCloudUserHub(u).then(() => {
               if (typeof window.showHubDiceToast === 'function') {
-                window.showHubDiceToast({ title: 'âš¡ CanlÄ± Senkron', text: 'Hub karakterleri buluttan gÃ¼ncellendi!', color: 'emerald' });
+                window.showHubDiceToast({ title: '⚡ Canlı Senkron', text: 'Hub karakterleri buluttan güncellendi!', color: 'emerald' });
               }
             });
           }
@@ -458,7 +458,7 @@ const SupabaseAuth = {
           if (u && typeof window.syncCloudUserHub === 'function') {
             window.syncCloudUserHub(u).then(() => {
               if (typeof window.showHubDiceToast === 'function') {
-                window.showHubDiceToast({ title: 'âš¡ Bulut Yedek', text: 'Yerel karakterler buluta baÅŸarÄ±yla yÃ¼klendi!', color: 'emerald' });
+                window.showHubDiceToast({ title: '⚡ Bulut Yedek', text: 'Yerel karakterler buluta başarıyla yüklendi!', color: 'emerald' });
               }
             });
           }
