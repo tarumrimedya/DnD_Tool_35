@@ -2155,3 +2155,36 @@ Lütfen kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyasını ve aşağıd
      - undled_data.js ve webapp/bundled_data.js arasÄ±nda %100 SHA-256 hash paritesi saÄŸlandÄ± (16A03D0DA4274BE08E7C44D74FBA56D464A7629A108C71D7DB9AC67079B9DA50).
      - master_db.json ve webapp/master_db.json arasÄ±nda %100 SHA-256 hash paritesi saÄŸlandÄ± (E308B37D8A50923F9F438C88B8132CDB941468A97019BDCAC7C8A3192D25AFF9).
      - Standart tavla zarÄ± emojisi (U+1F3B2) yasaÄŸÄ± tavizsiz korundu.
+---
+
+## 76. TOME OF BATTLE & WARLOCK Ã–ZEL FEATLERÄ°NÄ°N KATALOÄA ENTEGRASYONU (2026-10-26)
+* **Ä°stek & Problem:**
+  - Karakter motorunda manevra takip sistemi ve Warlock yetenekleri bulunmasÄ±na raÄŸmen, *Tome of Battle* ve *Warlock* sÄ±nÄ±flarÄ±nÄ±n en kritik 16 adet resmi RAW feati katalogda eksikti.
+  - Bu durum hem saf savaÅŸÃ§Ä±larÄ±n (Martial Study, Martial Stance) manevra Ã¶ÄŸrenmesini hem de Crusader/Warblade (Extra Granted Maneuver, Extra Readied Maneuver, Snap Kick, Stone Power) ve Warlock'larÄ±n (Extra Invocation, Empower/Quicken/Maximize Spell-Like Ability, Ability Focus, Mortal Bane) RAW kural kapasitesini kÄ±sÄ±tlÄ±yordu.
+* **Uygulanan DeÄŸiÅŸiklikler:**
+  1. **10 Adet Tome of Battle Featinin Eklenmesi:**
+     - Martial Study (*ToB p.31*, isFighterBonusFeat: true)
+     - Martial Stance (*ToB p.31*, isFighterBonusFeat: true)
+     - Extra Granted Maneuver (*ToB p.30*, Crusader Ã¶zel deste desteÄŸi)
+     - Extra Readied Maneuver (*ToB p.30*, Swordsage/Warblade)
+     - Snap Kick (*ToB p.32*, isFighterBonusFeat: true)
+     - Stone Power (*ToB p.32*, isFighterBonusFeat: true, Temp HP mekaniÄŸi)
+     - Song of the White Raven (*ToB p.32*, Swift Inspire Courage & seviye yÄ±ÄŸma)
+     - Sudden Recovery (*ToB p.33*, isFighterBonusFeat: true, Swift manevra yenileme)
+     - Vital Recovery (*ToB p.33*, manevra yenilendiÄŸinde 3 + Level can iyileÅŸtirme)
+     - Evasive Reflexes (*ToB p.30*, isFighterBonusFeat: true, AoO yerine 5-foot step)
+  2. **6 Adet Warlock Ã–zel Featinin Eklenmesi:**
+     - Extra Invocation (*Complete Arcane p.79*, ek yakarÄ±ÅŸ Ã¶ÄŸrenme)
+     - Empower Spell-Like Ability (*Monster Manual p.303*, x1.5 deÄŸiÅŸken etki, 3/gÃ¼n)
+     - Quicken Spell-Like Ability (*Monster Manual p.304*, Swift action SLA, 3/gÃ¼n)
+     - Maximize Spell-Like Ability (*Complete Arcane p.81*, tavan hasar, 3/gÃ¼n)
+     - Ability Focus (Eldritch Blast) (*Monster Manual p.303*, DC'ye +2 bonus)
+     - Mortal Bane (*Book of Vile Darkness p.48 / Complete Arcane*, canlÄ± hedeflere +2d6 hasar, 5/gÃ¼n)
+  3. **VeritabanÄ± Senkronizasyonu & BÃ¼yÃ¼me:**
+     - 16 feat resmi ÅŸemaya uygun ÅŸekilde undled_data.js (window.BUNDLED_SRD_CORE_CATALOG) iÃ§ine eklenerek toplam Ã§ekirdek katalog **202'den 218 Ã¶ÄŸeye** Ã§Ä±karÄ±ldÄ±.
+     - AynÄ± 16 feat kalÄ±cÄ± master_db.json veri tabanÄ±na iÅŸlenerek toplam kayÄ±t sayÄ±sÄ± **41'den 57 Ã¶ÄŸeye** Ã§Ä±karÄ±ldÄ±.
+  4. **Parite ve Kural StandartlarÄ±:**
+     - undled_data.js ve webapp/bundled_data.js arasÄ±nda %100 SHA-256 hash paritesi saÄŸlandÄ± (F944EB830A888EC03A447D06590E26FCD76F1E13CEDF40CC43EAAB9021D1474B).
+     - master_db.json ve webapp/master_db.json arasÄ±nda %100 SHA-256 hash paritesi saÄŸlandÄ± (E210834A852CA3DCF5348858DEFB64F1D46581C218492DD5E89BBA5579B37222).
+     - 4 HTML karakter kÃ¢ÄŸÄ±dÄ± dosyasÄ± deÄŸiÅŸime ihtiyaÃ§ duymadan yeni verileri dinamik olarak haritaladÄ± (2A393ACD2723BF24E2402D2E368159BB307B863C7CF16F7831256C8F475A87FD).
+     - Standart tavla zarÄ± emojisi (U+1F3B2) yasaÄŸÄ± tavizsiz korundu.

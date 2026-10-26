@@ -5960,5 +5960,181 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "benefit":  "Saldırgana anında Phantasmal Killer illüzyonel ölümcül korkusu fırlatır.",
         "description":  "Saldırgana anında Phantasmal Killer illüzyonel ölümcül korkusu fırlatır.",
         "source":  "Complete Mage p.124"
+    },
+    {
+        "name":  "Martial Study",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Martial",
+        "prereq":  "Special (see text)",
+        "benefit":  "Seçilen bir dövüş disiplininden (Desert Wind, Devoted Spirit, Diamond Mind, Iron Heart, Setting Sun, Shadow Hand, Stone Dragon, Tiger Claw, White Raven) seviyenizin yettiği 1 adet manevra (Strike, Boost veya Counter) öğrenirsiniz. Her çatışmada (Encounter) 1 kez kullanılabilir. En fazla 3 kez alınabilir; ilgili disiplinin ana becerisi sınıf beceriniz olur.",
+        "description":  "Learn a martial maneuver from any discipline for which you meet the prerequisites. You can use this maneuver once per encounter. You can take this feat up to three times; each time adds the discipline skill to your class skill list.",
+        "source":  "Tome of Battle p.31",
+        "isFighterBonusFeat":  true
+    },
+    {
+        "name":  "Martial Stance",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Martial",
+        "prereq":  "1 Martial maneuver",
+        "benefit":  "Bir disiplinden bildiğiniz en az 1 manevra varsa, o disiplinden seviyenizin yettiği bir Duruş (Stance) öğrenirsiniz. Savaşçı bonus feati olarak seçilebilir.",
+        "description":  "Learn a martial stance from any discipline in which you already know at least one maneuver and meet the prerequisites. Can be selected as a fighter bonus feat.",
+        "source":  "Tome of Battle p.31",
+        "isFighterBonusFeat":  true
+    },
+    {
+        "name":  "Extra Granted Maneuver",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Martial",
+        "prereq":  "Crusader maneuver progression",
+        "benefit":  "Her çatışmanın başında ve manevra desteniz yenilenip çekildiğinde fazladan +1 adet açık manevra (Granted Maneuver) kazanırsınız. Crusader manevra döngüsünü hızlandırır.",
+        "description":  "You begin each combat encounter with 1 additional granted maneuver. In addition, when you refresh your granted maneuvers, you are granted 1 extra maneuver.",
+        "source":  "Tome of Battle p.30",
+        "isFighterBonusFeat":  false
+    },
+    {
+        "name":  "Extra Readied Maneuver",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Martial",
+        "prereq":  "Swordsage veya Warblade seviyesi",
+        "benefit":  "Kuşanılmış (Readied) manevra kapasitenizi kalıcı olarak +1 artırır.",
+        "description":  "You can ready 1 additional maneuver beyond your normal maximum.",
+        "source":  "Tome of Battle p.30",
+        "isFighterBonusFeat":  false
+    },
+    {
+        "name":  "Snap Kick",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Martial",
+        "prereq":  "BAB +6, Improved Unarmed Strike",
+        "benefit":  "Standart yakın dövüş saldırısı, tam saldırı (Full Attack) veya standart eylemli manevra (Strike) yaparken, o turdaki tüm saldırı zarlarınıza -2 ceza alıp anında ek bir silahsız tekme saldırısı (Unarmed Strike) yaparsınız.",
+        "description":  "When you make a melee attack with one or more weapons, full attack, or martial strike, you can make an additional unarmed strike with a -2 penalty on all attack rolls that round.",
+        "source":  "Tome of Battle p.32",
+        "isFighterBonusFeat":  true
+    },
+    {
+        "name":  "Stone Power",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Martial",
+        "prereq":  "Str 13, 1 Stone Dragon maneuver",
+        "benefit":  "Saldırı zarlarınızdan BAB değerine kadar (maksimum -5) ceza alıp, aldığınız cezanın 2 katı kadar (tur başına maksimum 10) Geçici Can Puanı (Temporary HP) kazanırsınız. Bir sonraki turunuza kadar sürer.",
+        "description":  "Subtract a number (up to 5 or BAB) from melee attack rolls to gain twice that number in temporary hit points until the start of your next turn.",
+        "source":  "Tome of Battle p.32",
+        "isFighterBonusFeat":  true
+    },
+    {
+        "name":  "Song of the White Raven",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Martial",
+        "prereq":  "Bardic music, 1 White Raven maneuver",
+        "benefit":  "Inspire Courage şarkısını Swift Action olarak anında başlatabilirsiniz. Inspire Courage bonusunuzu hesaplarken Bard seviyelerinizle Crusader ve Warblade seviyeleriniz toplanır.",
+        "description":  "You can activate inspire courage as a swift action. Your bard, crusader, and warblade levels stack to determine the bonus granted by inspire courage.",
+        "source":  "Tome of Battle p.32",
+        "isFighterBonusFeat":  false
+    },
+    {
+        "name":  "Sudden Recovery",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Martial",
+        "prereq":  "1 Martial maneuver",
+        "benefit":  "Çatışma başına 1 kez, az önce harcadığınız bir manevrayı Swift Action harcayarak anında yeniden kuşanılmış ve kullanılabilir hale getirirsiniz.",
+        "description":  "Once per encounter as a swift action, you can instantly recover an expended maneuver and make it readied once again.",
+        "source":  "Tome of Battle p.33",
+        "isFighterBonusFeat":  true
+    },
+    {
+        "name":  "Vital Recovery",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Martial",
+        "prereq":  "2 Martial maneuvers",
+        "benefit":  "Bir çatışma sırasında harcadığınız manevraları yenilediğinizde dövüş başına bir kez 3 + Karakter Seviyesi kadar can puanı iyileşirsiniz.",
+        "description":  "When you recover expended maneuvers during an encounter, you heal hit points equal to 3 + your character level (once per encounter).",
+        "source":  "Tome of Battle p.33",
+        "isFighterBonusFeat":  false
+    },
+    {
+        "name":  "Evasive Reflexes",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "Martial",
+        "prereq":  "Dex 13",
+        "benefit":  "Bir rakip fırsat saldırısı (AoO) tetiklediğinde, ona saldırmak yerine anında 5-foot step kayabilirsiniz (yeni AoO tetiklemez).",
+        "description":  "When an opponent provokes an attack of opportunity from you, you can take a 5-foot step instead of making the attack.",
+        "source":  "Tome of Battle p.30",
+        "isFighterBonusFeat":  true
+    },
+    {
+        "name":  "Extra Invocation",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "General",
+        "prereq":  "Ability to use lesser invocations",
+        "benefit":  "Bildiğiniz en yüksek dereceden en az bir derece düşük ek 1 adet Yakarış (Invocation) öğrenirsiniz. Birden fazla kez alınabilir.",
+        "description":  "You learn one additional invocation of any grade up to one grade lower than the highest grade you can use. You can take this feat multiple times.",
+        "source":  "Complete Arcane p.79",
+        "isFighterBonusFeat":  false
+    },
+    {
+        "name":  "Empower Spell-Like Ability",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "General",
+        "prereq":  "Spell-like ability at CL 6th or higher",
+        "benefit":  "Günde 3 kez, seçilen bir büyü benzeri yeteneğin (örneğin Eldritch Blast) tüm değişken sayısal etkilerini (hasar zarları vb.) x1.5 katına çıkarırsınız.",
+        "description":  "You can use a selected spell-like ability three times per day as an empowered spell-like ability (variable numeric effects increased by one-half).",
+        "source":  "Monster Manual p.303 / Complete Arcane p.79",
+        "isFighterBonusFeat":  false
+    },
+    {
+        "name":  "Quicken Spell-Like Ability",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "General",
+        "prereq":  "Spell-like ability at CL 10th or higher",
+        "benefit":  "Günde 3 kez, seçilen bir büyü benzeri yeteneği (örneğin Eldritch Blast) Swift Action olarak anında patlatabilirsiniz.",
+        "description":  "You can use a selected spell-like ability three times per day as a quickened spell-like ability (swift action).",
+        "source":  "Monster Manual p.304 / Complete Arcane p.82",
+        "isFighterBonusFeat":  false
+    },
+    {
+        "name":  "Maximize Spell-Like Ability",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "General",
+        "prereq":  "Spell-like ability at CL 6th or higher",
+        "benefit":  "Günde 3 kez, seçilen bir büyü benzeri yeteneğin (örneğin Eldritch Blast) tüm değişken sayısal etkilerini zar atmadan maksimum değerinde uygularsınız.",
+        "description":  "You can use a selected spell-like ability three times per day as a maximized spell-like ability (variable numeric effects maximized).",
+        "source":  "Complete Arcane p.81",
+        "isFighterBonusFeat":  false
+    },
+    {
+        "name":  "Ability Focus (Eldritch Blast)",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "General",
+        "prereq":  "Special attack (Eldritch Blast)",
+        "benefit":  "Eldritch Blast ve ona uygulanan tüm Eldritch Essence / Blast Shape yakarışlarının DC kurtarma zarlarına kalıcı +2 bonus kazandırır.",
+        "description":  "Add +2 to the Difficulty Class for all saving throws against the selected special attack (Eldritch Blast).",
+        "source":  "Monster Manual p.303",
+        "isFighterBonusFeat":  false
+    },
+    {
+        "name":  "Mortal Bane",
+        "type":  "Feat",
+        "slot":  "None",
+        "category":  "General",
+        "prereq":  "Spell-like ability",
+        "benefit":  "Günde 5 kez, seçilen bir büyü benzeri yeteneğin yaşayan hedeflere vurduğunda +2d6 ekstra hasar vermesini sağlarsınız (Undead veya Construct\u0027lara karşı yarı hasar).",
+        "description":  "A selected spell-like ability deals +2d6 points of damage against living creatures five times per day (damage halved against undead/constructs).",
+        "source":  "Book of Vile Darkness p.48 / Complete Arcane",
+        "isFighterBonusFeat":  false
     }
 ];
