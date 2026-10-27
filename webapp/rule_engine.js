@@ -2142,8 +2142,9 @@ const RuleEngine = {
     // 3.9. Collect Racial Ability Modifiers from canonical Race (D&D 3.5e RAW)
     if (character.race) {
       const curRaceName = String(character.race).toLowerCase().trim();
-      const raceCatalog = (Array.isArray(masterDb) && masterDb.length) ? masterDb : ((typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) ? window.BUNDLED_SRD_CORE_CATALOG : []);
-      const raceObj = raceCatalog.find(m => m && (m.type === 'Race' || String(m.type).toLowerCase() === 'race') && (m.name || '').toLowerCase().trim() === curRaceName);
+      const raceObj = (Array.isArray(masterDb) ? masterDb.find(m => m && (m.type === 'Race' || String(m.type).toLowerCase() === 'race') && (m.name || '').toLowerCase().trim() === curRaceName) : null)
+        || ((typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) ? window.BUNDLED_SRD_CORE_CATALOG.find(m => m && (m.type === 'Race' || String(m.type).toLowerCase() === 'race') && (m.name || '').toLowerCase().trim() === curRaceName) : null)
+        || ((typeof globalThis !== 'undefined' && Array.isArray(globalThis.BUNDLED_SRD_CORE_CATALOG)) ? globalThis.BUNDLED_SRD_CORE_CATALOG.find(m => m && (m.type === 'Race' || String(m.type).toLowerCase() === 'race') && (m.name || '').toLowerCase().trim() === curRaceName) : null);
 
       if (raceObj) {
         const raceLabel = raceObj.name || character.race;

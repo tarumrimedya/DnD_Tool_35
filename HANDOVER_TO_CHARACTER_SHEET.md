@@ -2871,3 +2871,39 @@ Ana karakter sayfası ve mobil kokpitteki CAN (HP) kartında yer alan `5 / 24 (+
 ### Parite ve Hash Durumu
 * 4 HTML dosyası (`index.html`, `character.html`, `webapp/index.html`, `webapp/character.html`) arasında **%100 SHA-256 hash paritesi** (`89A66C38FFB534D3A08FB3B3F208F24441AC0677B35144C49425A9B14E28AFBB`) sağlandı.
 * Tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korundu.
+
+
+---
+
+## 102. Irksal Stat Modifiyerlerinin Sayfa Senkronizasyonu Sonrası Sıfırlanması Sorununun Çözümü (Elf CON/DEX)
+
+### Bağlam & Hata Tespiti
+Kullanıcı Elf ırkını seçtiğinde taban CON 15 iken, sayfa yüklenme aşamasında (`🔄 Eşitleniyor...`) Elf'in resmi -2 CON cezası doğru şekilde uygulanarak panelde `CON 13 (+1)` ve `DEX 18 (+4)` gösterilmekteydi. Ancak Google Drive senkronizasyonu tamamlandığında veya `masterDb` veri tabanı hafızaya yüklendiğinde (`🟢 Senkron`), CON tekrar 15'e (+2) çıkıyor, DEX 16'ya (+3) düşüyor ve irksal modifiyer rozetleri (`Elf (Irk) -2`) kayboluyordu.
+
+### Kök Neden (Root Cause)
+`rule_engine.js` içindeki `RuleEngine.recalculateCharacter()` fonksiyonunda (satır 2145):
+```javascript
+const raceCatalog = (Array.isArray(masterDb) && masterDb.length) 
+  ? masterDb 
+  : ((typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) ? window.BUNDLED_SRD_CORE_CATALOG : []);
+```
+* Sayfa ilk açılırken `masterDb` henüz yüklenmemiş olduğundan (`masterDb = []`), `raceCatalog` olarak `BUNDLED_SRD_CORE_CATALOG` kullanılıyor ve "Elf" kaydı bulunup -2 CON / +2 DEX statlara işleniyordu.
+* Senkronizasyon bitip `masterDb` yüklendiğinde (`masterDb.length > 1000`), `raceCatalog` doğrudan `masterDb` oluyordu. Ancak `master_db.json` verisi büyü, eşya, manevra ve featlerden oluştuğu, ırkların ise `BUNDLED_SRD_CORE_CATALOG` içinde tutulduğu için `masterDb` içinde "Elf" kaydı bulunamıyordu (`raceObj = undefined`).
+* Sonuç olarak karakterin `abilityBuckets` havuzundaki irksal modifiyerler siliniyor, CON taban 15'e, DEX taban 16'ya geri dönüyor ve can hesabı da +2 Con bonusu üzerinden hatalı hesaplanıyordu.
+
+### Yapılan Geliştirmeler
+1. **Kademeli Irk Arama (Fallback Hierarchy):**
+   * `rule_engine.js` içindeki ırk arama mantığı kademeli kontrol hiyerarşisine dönüştürüldü:
+   ```javascript
+   const raceObj = (Array.isArray(masterDb) ? masterDb.find(m => m && (m.type === 'Race' || String(m.type).toLowerCase() === 'race') && (m.name || '').toLowerCase().trim() === curRaceName) : null)
+     || ((typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) ? window.BUNDLED_SRD_CORE_CATALOG.find(m => m && (m.type === 'Race' || String(m.type).toLowerCase() === 'race') && (m.name || '').toLowerCase().trim() === curRaceName) : null)
+     || ((typeof globalThis !== 'undefined' && Array.isArray(globalThis.BUNDLED_SRD_CORE_CATALOG)) ? globalThis.BUNDLED_SRD_CORE_CATALOG.find(m => m && (m.type === 'Race' || String(m.type).toLowerCase() === 'race') && (m.name || '').toLowerCase().trim() === curRaceName) : null);
+   ```
+   * Böylece `masterDb` yüklense dahi, eğer ırk `masterDb` içinde yoksa anında `BUNDLED_SRD_CORE_CATALOG` kataloğuna bakılarak resmi ırk kaydı ve stat modifiyerleri (%100 kalıcı olarak) korunur.
+2. **Karakter ve Can Hesaplama Bütünlüğü:**
+   * Senkronizasyon sonrasında da CON 13 (+1 mod) ve DEX 18 (+4 mod) olarak sabit kalır; `Elf (Irk) (-2)` ve `Elf (Irk) (+2)` rozetleri kaybolmaz.
+   * Can puanı, kurtarma zarları ve AC hesaplamaları bu resmi statlar üzerinden kesintisiz çalışır.
+
+### Parite ve Hash Durumu
+* `rule_engine.js` = `webapp/rule_engine.js` (**SHA-256:** `1DF6B41022B21756DE1F2A677958F4A0FC64FEA6ACDB608BC966FBAF7E57122F`)
+* Tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korundu.
