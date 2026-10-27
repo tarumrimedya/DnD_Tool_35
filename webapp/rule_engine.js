@@ -3450,7 +3450,7 @@ const RuleEngine = {
       }
     },
     "Crusader": {
-      hd: 10, bab: 1.0, fort: "good", ref: "poor", will: "good", skills: 4,
+      hd: 10, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 4,
       bonusFeatLevels: [],
       features: {
         1: [
@@ -3501,7 +3501,7 @@ const RuleEngine = {
       }
     },
     "Bloodstorm Blade": {
-      hd: 12, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 2,
+      hd: 12, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 4,
       bonusFeatLevels: [],
       features: {
         1: [

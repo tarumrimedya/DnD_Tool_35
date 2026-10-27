@@ -2694,3 +2694,36 @@ Projenin "hafif yerel DB + yapay zeka ile dinamik kütüphane" vizyonunda, canl�
    * 4 HTML dosyası (`index.html`, `character.html`, `webapp/index.html`, `webapp/character.html`) arasında **%100 SHA-256 hash paritesi** (`56ECCBA9...`) sağlandı.
    * 2 RuleMaster dosyası (`rule_master.js`, `webapp/rule_master.js`) arasında **%100 SHA-256 hash paritesi** (`4780DBD0...`) sağlandı.
    * Tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.
+
+
+
+---
+
+## 95. D&D 3.5e Sınıf Becerileri (Class Skills), Crusader Save & Bloodstorm Blade Stat RAW Standardizasyonu
+
+### Bağlam & Kök Neden
+Gemini 3.1 Pro RAW denetim motoru ile `index.html` içerisindeki `DND35_BASE_CLASS_DEFS` ve `rule_engine.js` içerisindeki `DND35_CLASS_DEFS` nesneleri taranmış; 27 sınıf arasında kurtarma zarı, seviye başı beceri puanı ve sınıf becerisi (`classSkills`) alanlarında resmi kural kitaplarına (PHB, DMG, Tome of Battle, PHB II, Complete serisi) aykırı sapmalar tespit edilmiştir.
+
+### Yapılan Değişiklikler ve RAW Düzeltmeleri
+1. **Kurtarma Zarı Düzeltmesi (Crusader):**
+   * *Tome of Battle Tablo 1-1 (s. 9)* uyarınca Crusader sınıfının taban Will kurtarma zarı ilerlemesi "poor" (+0'dan başlar, 20. seviyede +6 olur). Kodda hatalı bulunan `will: "good"` ifadesi hem `index.html` hem de `rule_engine.js` üzerinde `will: "poor"` olarak düzeltildi. (2. seviyedeki *Indomitable Soul* yeteneği Cha modifikasyonunu ekler, ancak taban matris poor'dur).
+2. **Beceri Puanı Düzeltmesi (Bloodstorm Blade):**
+   * *Tome of Battle s. 100* uyarınca Bloodstorm Blade seviye başına **4 + Int** beceri puanı alır. Kodda 2 olarak yazılan `skills: 2` değeri `skills: 4` olarak güncellendi.
+3. **11 Sınıfta Sınıf Becerileri (`classSkills`) Standardizasyonu:**
+   * **Paladin:** RAW'da bulunan temel sosyal sezgi becerisi `sense_motive` eklendi (PHB s. 43).
+   * **Cleric:** Sınıfın temelinde olmayan `k_nobility` kaldırıldı; resmi listede yer alan `k_arcana` eklendi (PHB s. 31).
+   * **Crusader:** Stone Dragon disiplini sınıf becerisi olan `jump` eklendi (ToB s. 10).
+   * **Swordsage:** Kitapta olmayan XPH kökenli `autohypnosis` kaldırıldı; resmi 4 Knowledge becerisinden eksik olan üçü (`k_history`, `k_nature`, `k_nobility`) eklendi (ToB s. 16).
+   * **Duskblade:** Resmi listede yer alan `profession` eklendi (PHB II s. 19).
+   * **Warlock:** Resmi listede yer alan `sense_motive` eklendi (Complete Arcane s. 8).
+   * **Bloodstorm Blade:** Listeye fazladan girmiş olan `climb`, `survival`, `swim` kaldırıldı; ToB s. 100 RAW listesine tam eşitlendi (`balance`, `craft_alchemy`, `craft_armor`, `craft_weapon`, `intimidate`, `jump`, `martial_lore`, `tumble`).
+   * **Assassin:** Yalnızca `craft_alchemy` eklenmişti; genel Craft (Int) gereği `craft_armor` ve `craft_weapon` eklendi (DMG s. 180).
+   * **Dragon Disciple:** RAW'da olmayan `climb`, `jump`, `swim` kaldırıldı; resmi listede yer alan `spellcraft` ve tüm Knowledge dalları (`k_arch`, `k_dungeon`, `k_geo`, `k_history`, `k_local`, `k_nature`, `k_nobility`, `k_religion`, `k_planes`) eklendi (DMG s. 183).
+   * **Spellsword:** RAW kuralında hiç yer almayan `craft` alt dalları ve `swim` kaldırıldı; resmi tüm Knowledge dalları eklendi (Complete Warrior s. 79).
+   * **Jade Phoenix Mage:** Giriş önkoşulları sınıf becerisi sanılarak yanlış girilmişti; liste ToB s. 114 RAW kuralına göre tamamen düzeltildi: `["climb", "concentration", "diplomacy", "handle_animal", "intimidate", "jump", "martial_lore", "ride", "sense_motive", "tumble"]`.
+4. **Craft (alchemy) Becerisi ve Büyücü Kısıtlaması:**
+   * `DND35_CORE_SKILLS` içinde `craft_alchemy` becerisi PHB s. 70 RAW kuralına göre güncellendi: `untrained: false, note: "Simya eşyası üretmek için eğitimli (trained) ve spellcaster (CL 1+) olmak şarttır (PHB p.70)."`
+5. **Parite ve Kural Standartları:**
+   * 4 HTML dosyası (`index.html`, `character.html`, `webapp/index.html`, `webapp/character.html`) arasında **%100 SHA-256 hash paritesi** (`3292D6A1...`) sağlandı.
+   * 2 RuleEngine dosyası (`rule_engine.js`, `webapp/rule_engine.js`) arasında **%100 SHA-256 hash paritesi** (`07CD40F0...`) sağlandı.
+   * Tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.

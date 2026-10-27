@@ -30572,13 +30572,13 @@ function renderManualStatsPanel() {
         description: 'Damarlarında ejderha veya kadim büyü kanı taşıyan, anlık (spontaneous) büyücü.'
       },
       "Cleric": {
-        classSkills: ["concentration", "craft_alchemy", "craft_armor", "craft_weapon", "diplomacy", "heal", "k_history", "k_nobility", "k_religion", "k_planes", "profession", "spellcraft"],
+        classSkills: ["concentration", "craft_alchemy", "craft_armor", "craft_weapon", "diplomacy", "heal", "k_arcana", "k_history", "k_religion", "k_planes", "profession", "spellcraft"],
         hd: 8, bab: 0.75, fort: "good", ref: "poor", will: "good", skills: 2,
         type: 'Base Class', source: "Player's Handbook", role: 'Divine Caster / Healer & Buffer',
         description: 'Tanrısından aldığı ilahi güçle yaşayanları iyileştiren, ölümsüzleri kovan ilahi savaşçı.'
       },
       "Paladin": {
-        classSkills: ["concentration", "craft_alchemy", "craft_armor", "craft_weapon", "diplomacy", "handle_animal", "heal", "k_nobility", "k_religion", "profession", "ride"],
+        classSkills: ["concentration", "craft_alchemy", "craft_armor", "craft_weapon", "diplomacy", "handle_animal", "heal", "k_nobility", "k_religion", "profession", "ride", "sense_motive"],
         hd: 10, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 2,
         type: 'Base Class', source: "Player's Handbook", role: 'Divine Champion / Tank',
         description: 'Smite Evil, Lay on Hands ve Divine Grace ile adalet dağıtan kutsal şövalye.'
@@ -30608,25 +30608,25 @@ function renderManualStatsPanel() {
         description: 'Hayvan yoldaşı olan, vahşi doğa formlarına (Wild Shape) bürünen doğa koruyucusu.'
       },
       "Crusader": {
-        classSkills: ["balance", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "diplomacy", "intimidate", "k_history", "k_religion", "martial_lore", "ride"],
-        hd: 10, bab: 1.0, fort: "good", ref: "poor", will: "good", skills: 4,
+        classSkills: ["balance", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "diplomacy", "intimidate", "jump", "k_history", "k_religion", "martial_lore", "ride"],
+        hd: 10, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 4,
         type: 'Base Class', source: 'Tome of Battle', role: 'Martial Adept / Tank & Leader',
         description: 'Steely Resolve ile hasarı geciktiren, Devoted Spirit manevralarıyla savaşan inanç savaşçısı.'
       },
       "Swordsage": {
-        classSkills: ["autohypnosis", "balance", "climb", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "heal", "hide", "intimidate", "jump", "k_local", "listen", "martial_lore", "move_silently", "profession", "ride", "sense_motive", "swim", "tumble"],
+        classSkills: ["balance", "climb", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "heal", "hide", "intimidate", "jump", "k_history", "k_local", "k_nature", "k_nobility", "listen", "martial_lore", "move_silently", "profession", "ride", "sense_motive", "swim", "tumble"],
         hd: 8, bab: 0.75, fort: "poor", ref: "good", will: "good", skills: 6,
         type: 'Base Class', source: 'Tome of Battle', role: 'Martial Adept / Versatile Striker',
         description: 'Çok geniş manevra kütüphanesine ve AC bilgeliğine sahip akrobatik dövüş filozofu.'
       },
       "Duskblade": {
-        classSkills: ["climb", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "decipher_script", "jump", "k_arcana", "k_arch", "k_dungeon", "k_geo", "k_history", "k_local", "k_nature", "k_nobility", "k_religion", "k_planes", "ride", "sense_motive", "spellcraft", "swim"],
+        classSkills: ["climb", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "decipher_script", "jump", "k_arcana", "k_arch", "k_dungeon", "k_geo", "k_history", "k_local", "k_nature", "k_nobility", "k_religion", "k_planes", "profession", "ride", "sense_motive", "spellcraft", "swim"],
         hd: 8, bab: 1.0, fort: "good", ref: "poor", will: "good", skills: 2,
         type: 'Base Class', source: "Player's Handbook II", role: 'Gish / Arcane Melee Channeler',
         description: 'Büyülerini kılıç darbeleriyle kanallayabilen (Arcane Channeling) hibrit savaş büyücüsü.'
       },
       "Warlock": {
-        classSkills: ["bluff", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "disguise", "intimidate", "jump", "k_arcana", "k_religion", "k_planes", "profession", "spellcraft", "umd"],
+        classSkills: ["bluff", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "disguise", "intimidate", "jump", "k_arcana", "k_religion", "k_planes", "profession", "sense_motive", "spellcraft", "umd"],
         hd: 6, bab: 0.75, fort: "poor", ref: "poor", will: "good", skills: 2,
         type: 'Base Class', source: 'Complete Arcane', role: 'Arcane / Eldritch Blast Invocator',
         description: 'Sınırsız Eldritch Blast atabilen ve büyü yerine yakarışlar (invocations) kullanan büyücü.'
@@ -30654,8 +30654,8 @@ function renderManualStatsPanel() {
         ]
       },
       "Bloodstorm Blade": {
-        classSkills: ["balance", "climb", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "intimidate", "jump", "martial_lore", "spot", "survival", "swim", "tumble"],
-        hd: 12, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 2,
+        classSkills: ["balance", "craft_alchemy", "craft_armor", "craft_weapon", "intimidate", "jump", "martial_lore", "tumble"],
+        hd: 12, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 4,
         type: 'Prestige Class', source: 'Tome of Battle', role: 'Martial / Thrown Weapon Specialist',
         maxLevel: 10,
         description: 'Fırlatılan yakın dövüş silahlarını anında eline geri döndüren ve fırlatma saldırılarını yakın dövüş (Power Attack vb.) gibi saydıran efsanevi Iron Heart savaşçısı.',
@@ -30713,7 +30713,7 @@ function renderManualStatsPanel() {
         ]
       },
       "Assassin": {
-        classSkills: ["balance", "bluff", "climb", "craft_alchemy", "decipher_script", "diplomacy", "disable_device", "disguise", "escape_artist", "forgery", "gather_information", "hide", "intimidate", "jump", "listen", "move_silently", "open_lock", "search", "sense_motive", "sleight_of_hand", "spot", "swim", "tumble", "umd", "use_rope"],
+        classSkills: ["balance", "bluff", "climb", "craft_alchemy", "craft_armor", "craft_weapon", "decipher_script", "diplomacy", "disable_device", "disguise", "escape_artist", "forgery", "gather_information", "hide", "intimidate", "jump", "listen", "move_silently", "open_lock", "search", "sense_motive", "sleight_of_hand", "spot", "swim", "tumble", "umd", "use_rope"],
         hd: 6, bab: 0.75, fort: "poor", ref: "good", will: "poor", skills: 4,
         type: 'Prestige Class', source: "Dungeon Master's Guide", role: 'Stealth / Death Attack & Poison',
         description: 'Death Attack, zehir kullanımı ve karanlık illüzyon büyüleri konusunda uzman suikastçı.',
@@ -30733,7 +30733,7 @@ function renderManualStatsPanel() {
         ]
       },
       "Dragon Disciple": {
-        classSkills: ["climb", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "diplomacy", "escape_artist", "gather_information", "jump", "k_arcana", "listen", "profession", "search", "spot", "swim"],
+        classSkills: ["concentration", "craft_alchemy", "craft_armor", "craft_weapon", "diplomacy", "escape_artist", "gather_information", "k_arcana", "k_arch", "k_dungeon", "k_geo", "k_history", "k_local", "k_nature", "k_nobility", "k_religion", "k_planes", "listen", "profession", "search", "spellcraft", "spot"],
         hd: 12, bab: 0.75, fort: "good", ref: "poor", will: "good", skills: 2,
         type: 'Prestige Class', source: "Dungeon Master's Guide", role: 'Gish / Dragon Transformation (+STR/CON)',
         description: 'Devasa stat artışları (+8 STR, +2 CON, +2 INT, +2 CHA), doğal zırh ve ejderha nefesi kazanan soy ustası.',
@@ -30764,7 +30764,7 @@ function renderManualStatsPanel() {
         ]
       },
       "Spellsword": {
-        classSkills: ["climb", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "jump", "k_arcana", "profession", "spellcraft", "swim"],
+        classSkills: ["climb", "concentration", "jump", "k_arcana", "k_arch", "k_dungeon", "k_geo", "k_history", "k_local", "k_nature", "k_nobility", "k_religion", "k_planes", "profession", "spellcraft"],
         hd: 8, bab: 1.0, fort: "good", ref: "poor", will: "good", skills: 2,
         type: 'Prestige Class', source: 'Complete Warrior', role: 'Gish / Ignore ASF & Spell Channeling',
         description: 'Zırhlarda büyü bozulma yüzdesini (ASF) düşüren ve silaha büyü hapseden savaş büyücüsü.',
@@ -30775,7 +30775,7 @@ function renderManualStatsPanel() {
         ]
       },
       "Jade Phoenix Mage": {
-        classSkills: ["concentration", "craft_alchemy", "craft_armor", "craft_weapon", "diplomacy", "intimidate", "k_arcana", "k_history", "k_religion", "martial_lore", "sense_motive", "spellcraft"],
+        classSkills: ["climb", "concentration", "diplomacy", "handle_animal", "intimidate", "jump", "martial_lore", "ride", "sense_motive", "tumble"],
         hd: 6, bab: 1.0, fort: "good", ref: "poor", will: "good", skills: 2,
         type: 'Prestige Class', source: 'Tome of Battle', role: 'Gish (Martial Adept + Arcane)',
         description: 'Arcane büyü gücünü Tome of Battle manevralarıyla harmanlayan ve küllerinden doğan anka büyücüsü.',
@@ -37528,7 +37528,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       { key: "bluff", name: "Bluff (Blöf)", stat: "cha", acp: false, untrained: true },
       { key: "climb", name: "Climb (Tırmanma)", stat: "str", acp: true, untrained: true },
       { key: "concentration", name: "Concentration (Odaklanma)", stat: "con", acp: false, untrained: true },
-      { key: "craft_alchemy", name: "Craft: Alchemy (Simya)", stat: "int", acp: false, untrained: true },
+      { key: "craft_alchemy", name: "Craft: Alchemy (Simya)", stat: "int", acp: false, untrained: false, note: "Simya eşyası üretmek için eğitimli (trained) ve spellcaster (CL 1+) olmak şarttır (PHB p.70)." },
       { key: "craft_armor", name: "Craft: Armorsmithing (Zırhçılık)", stat: "int", acp: false, untrained: true },
       { key: "craft_weapon", name: "Craft: Weaponsmithing (Silahçılık)", stat: "int", acp: false, untrained: true },
       { key: "decipher_script", name: "Decipher Script (Yazı Çözme)", stat: "int", acp: false, untrained: false },
