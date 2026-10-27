@@ -42006,7 +42006,11 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         active: true,
         weight: item.weight || 0,
         cost: item.cost || 0,
-        desc: item.desc || '',
+        desc: item.desc || item.description || '',
+        benefit: item.benefit || '',
+        description: item.description || item.desc || '',
+        scope: item.scope || '',
+        targetSkill: item.targetSkill || '',
         acBonus: item.acBonus,
         bonusType: item.bonusType,
         strBonus: item.strBonus,
@@ -42015,8 +42019,17 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         intBonus: item.intBonus,
         wisBonus: item.wisBonus,
         chaBonus: item.chaBonus,
+        skillBonus: item.skillBonus,
+        skillBonuses: item.skillBonuses ? JSON.parse(JSON.stringify(item.skillBonuses)) : undefined,
+        fortBonus: item.fortBonus,
+        refBonus: item.refBonus,
+        willBonus: item.willBonus,
+        speedBonus: item.speedBonus,
+        clBonus: item.clBonus,
         maxDex: item.maxDex,
-        checkPenalty: item.checkPenalty
+        checkPenalty: item.checkPenalty,
+        ruleFlags: item.ruleFlags ? JSON.parse(JSON.stringify(item.ruleFlags)) : undefined,
+        combatModifiers: item.combatModifiers ? JSON.parse(JSON.stringify(item.combatModifiers)) : undefined
       };
       item.isEquipped = true;
 

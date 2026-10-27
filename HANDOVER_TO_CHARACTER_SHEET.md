@@ -3486,3 +3486,37 @@ Kullanıcı, Eşya Havuzu (Item Pool) bölümündeki akordeon menü başlığın
 * `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `59A9145F766E14970D0790CDAAA9856BE70628D7D1F2CBF89DCF7B366D65D02B`)
 * `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
 * Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
+
+
+---
+
+## 119. Büyülü Eşya Beceri Bonusları Entegrasyonu ve Kural Motoru Akıllı Yedekleme (Boots of Elvenkind vb.)
+
+### Bağlam & Kullanıcı Talebi
+Kullanıcı, Master DB'de ve envanterde yer alan *Boots of Elvenkind* eşyasının kuşanıldığında *Move Silently* becerisine +5 bonus vermeme nedenini sormuş ve hem veritabanı kaydının hem de sistemik kural motoru/şema yapısının kalıcı olarak güçlendirilmesini talep etmiştir.
+
+### Kök Neden Analizi
+1. **Veritabanı Seviyesi:** Eşya kaydında `skillBonus: ""` boş metin, `scope: "None / General"` ve `bonusType: "Untyped"` kalmış, bu nedenle motor sayısal değeri 0 okumuş ve yetenek eşleşmesi sağlayamamıştır.
+2. **Yuva Kuşanma (equipPoolItem) Eksikliği:** `character.html` içinde havuzdan eşya kuşanılırken `character.bodySlots[targetSlotKey]` nesnesine `skillBonus`, `skillBonuses`, `scope`, `benefit` ve `description` gibi alanlar kopyalanmadığından eşya kuşanıldığında bu veriler siliniyordu.
+3. **Rule Master AI Şablonu:** Yapay zekaya giden eşya promptunda beceri alanları örneklenmediğinden metin RAW olarak yazılsa da alanlar boş dönüyordu.
+
+### Yapılan Geliştirmeler & Sistemik Çözüm
+1. **Kullanıcı Veritabanı Güncellemesi:**
+   * `d:\Downloads\dnd35_master_db_2026-10-27.json` içindeki *Boots Of Elvenkind* kaydı `bonusType: "Competence"`, `scope: "Move Silently"`, `skillBonus: 5`, `skillBonuses: {"Move Silently": 5}` olarak güncellendi.
+2. **Kural Motoru Akıllı Heuristik Yedekleme (Smart Heuristic Fallback):**
+   * `rule_engine.js` içindeki `_checkItemSkillBonus` fonksiyonuna D&D 3.5e RAW metin çözümleyici regex eklendi:
+     `/\+(\d+)\s*(competence|insight|luck|morale|circumstance|enhancement|untyped)?\s*bonus\s+(?:on|to)\s+([^.;]+?)(?:\s+checks|\.|\;|$)/gi`
+   * Sayısal alanlar girilmemiş olsa dahi, eşyanın `benefit` veya `description` metninde geçen RAW kural kalıpları (örneğin *+5 competence bonus on Move Silently checks*, *+10 competence bonus on Open Lock checks*, *+1 luck bonus on skill checks*) otomatik çözümlenerek doğru beceriye ve doğru bonus tipine atanır.
+   * `character.bodySlots` döngüsünde `item.active !== false` kontrolü sağlanarak ve `character.gearPool` çapraz kontrolü eklenerek hiçbir eşya bonusunun kaybolmaması garanti edildi.
+3. **Kuşanma Veri Aktarımı (character.html):**
+   * `equipPoolItem` fonksiyonunda `bodySlots[targetSlotKey]` oluşturulurken `skillBonus`, `skillBonuses`, `scope`, `targetSkill`, `benefit`, `description`, `fortBonus`, `refBonus`, `willBonus`, `speedBonus`, `clBonus`, `ruleFlags`, `combatModifiers` alanlarının eksiksiz aktarımı sağlandı.
+4. **Rule Master AI Prompt & Normalizasyon Senkronizasyonu (Kural 8):**
+   * `rule_master.js` içindeki `buildTargetedAiPrompt` fonksiyonuna `skillBonus`, `scope`, `bonusType`, `skillBonuses` şema alanları ve özel kural eklendi.
+   * `normalizeEntry` fonksiyonuna, kaydedilen eşyaların açıklama metinlerinden beceri bonuslarını otomatik tespit edip yapılandırılmış alanlara dönüştüren akıllı ayrıştırıcı entegre edildi.
+
+### Parite ve Hash Durumu
+* `character.html` = `index.html` = `webapp/character.html` = `webapp/index.html` (**SHA-256:** `E59DFAFCBC9DFE418932868F4C61B9EA944FAC518A911EBD06CE1713592A0246`)
+* `rule_engine.js` = `webapp/rule_engine.js` (**SHA-256:** `30EF492D055976F8600EE715241B1EB9104BCBD70AF8A94116CD9235444080B4`)
+* `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `CBDEA204D4304C6894CCA0E16F476759D39BDFDFF27FF605E79FC65C344AEAE6`)
+* `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
+* Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.

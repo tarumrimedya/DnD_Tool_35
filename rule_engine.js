@@ -3140,8 +3140,8 @@ const RuleEngine = {
     // 3. Body Slot Equipped Items (character.bodySlots)
     if (character.bodySlots && typeof character.bodySlots === 'object') {
       Object.entries(character.bodySlots).forEach(([slotKey, item]) => {
-        if (!item || !item.active || !item.name || item.name === '-') return;
-        this._checkItemSkillBonus(item, sKey, sName, isKnowledge, addBonus);
+        if (!item || item.active === false || !item.name || item.name === '-') return;
+        this._checkItemSkillBonus(item, sKey, sName, isKnowledge, addBonus, character);
       });
     }
 
@@ -3151,7 +3151,7 @@ const RuleEngine = {
         if (!item) return;
         const isSlotless = (item.slot || '').toLowerCase().includes('slotless') || (item.category || '').toLowerCase() === 'other' || (item.category || '').toLowerCase() === 'wondrous item';
         if (item.isEquipped || isSlotless) {
-          this._checkItemSkillBonus(item, sKey, sName, isKnowledge, addBonus);
+          this._checkItemSkillBonus(item, sKey, sName, isKnowledge, addBonus, character);
         }
       });
     }
@@ -3200,7 +3200,7 @@ const RuleEngine = {
     return { total, breakdown };
   },
 
-  _checkItemSkillBonus(item, sKey, sName, isKnowledge, addBonus) {
+  _checkItemSkillBonus(item, sKey, sName, isKnowledge, addBonus, character = null) {
     if (!item) return;
 
     // Declarative helper to evaluate item or masterDb entry bonuses
@@ -3238,11 +3238,46 @@ const RuleEngine = {
           applied = true;
         }
       }
+
+      // 3. Smart Heuristic Fallback: Parse RAW benefit / description text if not handled by explicit fields
+      if (!applied) {
+        const rawText = `${sourceObj.benefit || ''} ${sourceObj.description || ''} ${sourceObj.desc || ''}`;
+        if (rawText.trim()) {
+          const regex = /\+(\d+)\s*(competence|insight|luck|morale|circumstance|enhancement|untyped)?\s*bonus\s+(?:on|to)\s+([^.;]+?)(?:\s+checks|\.|\;|$)/gi;
+          let match;
+          while ((match = regex.exec(rawText)) !== null) {
+            const hVal = Number(match[1]) || 0;
+            const hType = (match[2] || sourceObj.bonusType || 'competence').toLowerCase().trim();
+            const targetsRaw = match[3] || '';
+            const targets = targetsRaw.split(/[,/&]|\band\b/i).map(t => t.trim()).filter(Boolean);
+
+            for (const t of targets) {
+              const tNorm = t.toLowerCase().replace(/[^a-z0-9]/g, '');
+              const kNorm = sKey.toLowerCase().replace(/[^a-z0-9]/g, '');
+              const nNorm = sName.toLowerCase().replace(/[^a-z0-9]/g, '');
+              if (tNorm === 'skill' || tNorm === 'skills' || tNorm === 'allskills' || tNorm === 'all' || (isKnowledge && tNorm.includes('knowledge')) || (tNorm && (kNorm.includes(tNorm) || nNorm.includes(tNorm) || tNorm.includes(kNorm) || tNorm.includes(nNorm)))) {
+                addBonus(sourceTitle, hVal, hType);
+                applied = true;
+                break;
+              }
+            }
+          }
+        }
+      }
+
       return applied;
     };
 
     // First check the item itself
-    const itemHandled = processSkillData(item, item.name || 'Equipped Item');
+    let itemHandled = processSkillData(item, item.name || 'Equipped Item');
+
+    // If not handled directly and character gearPool is available, check gearPool item
+    if (!itemHandled && character && Array.isArray(character.gearPool)) {
+      const pItem = character.gearPool.find(p => p && p.name && p.name.toLowerCase().trim() === (item.name || '').toLowerCase().trim());
+      if (pItem) {
+        itemHandled = processSkillData(pItem, item.name || pItem.name);
+      }
+    }
 
     // If not handled directly, check masterDb catalog declaratively
     if (!itemHandled) {

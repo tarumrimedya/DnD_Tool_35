@@ -2156,6 +2156,31 @@ ZORUNLU KURALLAR:
       }
     }
 
+    // Auto-detect skill bonuses from benefit/description if skillBonus and skillBonuses are empty
+    if ((!entry.skillBonus || entry.skillBonus === '') && !entry.skillBonuses) {
+      const rawText = `${entry.benefit || ''} ${entry.description || ''}`;
+      if (rawText.trim()) {
+        const regex = /\+(\d+)\s*(competence|insight|luck|morale|circumstance|enhancement|untyped)?\s*bonus\s+(?:on|to)\s+([^.;]+?)(?:\s+checks|\.|\;|$)/i;
+        const match = regex.exec(rawText);
+        if (match) {
+          const val = Number(match[1]) || 0;
+          const bType = this.capitalizeIdentifier(match[2] || 'Competence');
+          const targetsRaw = match[3] || '';
+          const targets = targetsRaw.split(/[,/&]|\band\b/i).map(t => t.trim()).filter(Boolean);
+
+          if (val > 0 && targets.length > 0) {
+            entry.skillBonus = val;
+            entry.bonusType = bType;
+            entry.scope = this.capitalizeTitle(targets[0]);
+            entry.skillBonuses = {};
+            targets.forEach(t => {
+              entry.skillBonuses[this.capitalizeTitle(t)] = val;
+            });
+          }
+        }
+      }
+    }
+
     return entry;
   },
 
@@ -2221,12 +2246,16 @@ ZORUNLU KURALLAR:
       catSchema = `{
   "name": "${cleanQuery}",
   "type": "${effectiveCategory === 'Item' ? 'Wondrous Item' : effectiveCategory}",
-  "slot": "Main Hand"|"Armor"|"Off-Hand/Shield"|"Head"|"Neck"|"Ring"|"Belt"|"None",
+  "slot": "Main Hand"|"Armor"|"Off-Hand/Shield"|"Head"|"Neck"|"Ring"|"Belt"|"Feet"|"Hands"|"None",
   "cost": 0,
   "weight": 0,
   "source": "Official 3.5e book and page",
   "benefit": "Item magical or mechanical powers",
   "description": "Full item description",
+  "bonusType": "Competence / Enhancement / Deflection / Untyped",
+  "scope": "Move Silently / Specific Weapon / None",
+  "skillBonus": 0,
+  "skillBonuses": {"Skill Name": 5},
   "dice": "damage dice if weapon, e.g. 1d8",
   "critMin": 20,
   "critMult": 2,
@@ -2258,6 +2287,7 @@ CRITICAL D&D 3.5E RAW RULES:
 2. MANDATORY TYPO / FUZZY CORRECTION: Correct misspellings to real official 3.5e name.
 3. CONDITIONAL CHILD VARIANTS: If spell, maneuver or item has distinct sub-modes, secondary power, or extra dice vs specific targets (e.g. Searing Light vs Undead, Blade of Blood sacrifice), return both parent and child object starting with "\u21B3 ", "parent": "${cleanQuery}", "isChild": true, "dice": "...".
 4. SIZE MODIFIERS: If alters weapon/creature size category (e.g. Mighty Wallop, Enlarge Person), include "sizeModifier": {"targetType": "weapon"|"creature", "scaling": {"steps": 1}}.
+5. SKILL BONUS ITEMS: If an item grants a skill bonus (e.g. Boots of Elvenkind +5 Move Silently, Cloak of Elvenkind +5 Hide, Eyes of the Eagle +5 Spot), always populate "skillBonus": 5, "scope": "Move Silently", "bonusType": "Competence", and "skillBonuses": {"Move Silently": 5}.
 
 OUTPUT JSON SCHEMA:
 Return valid JSON only matching:
