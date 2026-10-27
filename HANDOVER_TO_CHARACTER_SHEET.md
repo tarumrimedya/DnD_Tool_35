@@ -3422,3 +3422,22 @@ Kullanıcı, Seviye Gelişimi ve İlerleme Tablosu (`#level-progression-block`) 
 * `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `59A9145F766E14970D0790CDAAA9856BE70628D7D1F2CBF89DCF7B366D65D02B`)
 * `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
 * Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
+
+
+---
+
+## 116. Seviye İlerleme ve Sihirbaz Başlıklarındaki (Level Up) İbarelerinin Temizlenmesi
+
+### Bağlam & Kullanıcı Talebi
+Kullanıcı, Seviye Atla / Planla butonu ve Seviye Atlama Sihirbazı modal başlığında yer alan `(Level Up)` eklerinin temizlenerek arayüz metinlerinin Türkçe ve sade tutulmasını talep etmiştir.
+
+### Yapılan Geliştirmeler & Arayüz Sadeleştirmesi
+1. **Buton ve Modal Başlık Metinleri:**
+   * Tablo Üst Menü Butonu: `[ ⬆️ Seviye Atla / Planla ]` (Eski `(Level Up)` ibaresi kaldırılmış ve `w-48` genişliğinde simetrikleşmiştir)
+   * Modal Başlığı: `Seviye Atlama Sihirbazı` (Eski `(Level Up)` ibaresi tamamen kaldırıldı)
+
+### Parite ve Hash Durumu
+* `character.html` = `index.html` = `webapp/character.html` = `webapp/index.html` (**SHA-256:** `9CA5B54669703EF362B02066A567499BDB5697A2095C96D8B8C82C12BECBBBFA`)
+* `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `59A9145F766E14970D0790CDAAA9856BE70628D7D1F2CBF89DCF7B366D65D02B`)
+* `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
+* Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
