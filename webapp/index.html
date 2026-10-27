@@ -2404,7 +2404,7 @@
               <div class="flex flex-col sm:flex-row gap-2">
                 <div class="relative flex-1">
                   <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">🔍</span>
-                  <input type="text" id="inline-ai-rule-query" placeholder="Örn: Cleave, Shock Trooper, Boots of Speed, Flametongue, Haste..." class="w-full bg-slate-950 border border-purple-500/50 rounded-lg pl-9 pr-3 py-2 text-xs text-white focus:outline-none focus:border-purple-400" onkeydown="if(event.key==='Enter') RuleMaster.queryInlineAiRule()">
+                  <input type="text" id="inline-ai-rule-query" placeholder="Örn: feat: Shock Trooper, spell: Haste, weapon: Dagger +2, item: Boots of Speed..." class="w-full bg-slate-950 border border-purple-500/50 rounded-lg pl-9 pr-3 py-2 text-xs text-white focus:outline-none focus:border-purple-400" onkeydown="if(event.key==='Enter') RuleMaster.queryInlineAiRule()">
                 </div>
                 <select id="inline-ai-rule-category" class="bg-slate-950 border border-purple-500/50 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none">
                   <option value="ALL">✨ Otomatik Kategori</option>
@@ -2422,15 +2422,29 @@
                 </button>
               </div>
 
-              <!-- Quick Suggestions Chips -->
-              <div class="flex flex-wrap items-center gap-1.5 text-[10px]">
-                <span class="text-slate-400 font-semibold">Hızlı Aramalar:</span>
-                <button onclick="RuleMaster.setInlineQueryAndSearch('Cleave', 'Feat')" class="bg-slate-800 hover:bg-purple-900 text-purple-300 px-2 py-0.5 rounded border border-slate-700 transition">Cleave</button>
-                <button onclick="RuleMaster.setInlineQueryAndSearch('Shock Trooper', 'Feat')" class="bg-slate-800 hover:bg-purple-900 text-purple-300 px-2 py-0.5 rounded border border-slate-700 transition">Shock Trooper</button>
-                <button onclick="RuleMaster.setInlineQueryAndSearch('Flametongue', 'Weapon')" class="bg-slate-800 hover:bg-purple-900 text-purple-300 px-2 py-0.5 rounded border border-slate-700 transition">Flametongue</button>
-                <button onclick="RuleMaster.setInlineQueryAndSearch('Boots of Speed', 'Wondrous Item')" class="bg-slate-800 hover:bg-purple-900 text-purple-300 px-2 py-0.5 rounded border border-slate-700 transition">Boots of Speed</button>
-                <button onclick="RuleMaster.setInlineQueryAndSearch('Haste', 'Spell')" class="bg-slate-800 hover:bg-purple-900 text-purple-300 px-2 py-0.5 rounded border border-slate-700 transition">Haste</button>
-                <button onclick="RuleMaster.setInlineQueryAndSearch('Mountain Hammer', 'Maneuver')" class="bg-slate-800 hover:bg-purple-900 text-purple-300 px-2 py-0.5 rounded border border-slate-700 transition">Mountain Hammer</button>
+              <!-- Quick Suggestions & Prefixes -->
+              <div class="space-y-1.5 text-[10px]">
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <span class="text-purple-300 font-bold">⚡ Prefiksli Aramalar (Hızlı & 0ms):</span>
+                  <button onclick="RuleMaster.setInlineQueryAndSearch('feat: Shock Trooper', 'ALL')" class="bg-slate-800 hover:bg-purple-900 text-amber-300 px-2 py-0.5 rounded border border-purple-900/60 font-mono transition" title="Hüner Prefiksi">feat: Shock Trooper</button>
+                  <button onclick="RuleMaster.setInlineQueryAndSearch('spell: Haste', 'ALL')" class="bg-slate-800 hover:bg-purple-900 text-sky-300 px-2 py-0.5 rounded border border-purple-900/60 font-mono transition" title="Büyü Prefiksi">spell: Haste</button>
+                  <button onclick="RuleMaster.setInlineQueryAndSearch('weapon: Dagger +2', 'ALL')" class="bg-slate-800 hover:bg-purple-900 text-emerald-300 px-2 py-0.5 rounded border border-purple-900/60 font-mono transition" title="Silah Prefiksi">weapon: Dagger +2</button>
+                  <button onclick="RuleMaster.setInlineQueryAndSearch('item: Boots of Speed', 'ALL')" class="bg-slate-800 hover:bg-purple-900 text-purple-300 px-2 py-0.5 rounded border border-purple-900/60 font-mono transition" title="Eşya Prefiksi">item: Boots of Speed</button>
+                  <button onclick="RuleMaster.setInlineQueryAndSearch('maneuver: Mountain Hammer', 'ALL')" class="bg-slate-800 hover:bg-purple-900 text-rose-300 px-2 py-0.5 rounded border border-purple-900/60 font-mono transition" title="Manevra Prefiksi">maneuver: Mountain Hammer</button>
+                  <button onclick="RuleMaster.setInlineQueryAndSearch('deity: Kelemvor', 'ALL')" class="bg-slate-800 hover:bg-purple-900 text-amber-200 px-2 py-0.5 rounded border border-purple-900/60 font-mono transition" title="Tanrı Prefiksi">deity: Kelemvor</button>
+                </div>
+                <div class="flex flex-wrap items-center gap-1 text-[9px] text-slate-400">
+                  <span class="text-slate-500 font-semibold">Desteklenen Prefiksler:</span>
+                  <code class="text-amber-300 bg-slate-950 px-1 py-0.5 rounded border border-slate-800 font-mono">feat:</code>
+                  <code class="text-sky-300 bg-slate-950 px-1 py-0.5 rounded border border-slate-800 font-mono">spell:</code>
+                  <code class="text-emerald-300 bg-slate-950 px-1 py-0.5 rounded border border-slate-800 font-mono">weapon:</code>
+                  <code class="text-emerald-300 bg-slate-950 px-1 py-0.5 rounded border border-slate-800 font-mono">armor:</code>
+                  <code class="text-purple-300 bg-slate-950 px-1 py-0.5 rounded border border-slate-800 font-mono">item:</code>
+                  <code class="text-rose-300 bg-slate-950 px-1 py-0.5 rounded border border-slate-800 font-mono">maneuver:</code>
+                  <code class="text-amber-300 bg-slate-950 px-1 py-0.5 rounded border border-slate-800 font-mono">race:</code>
+                  <code class="text-amber-200 bg-slate-950 px-1 py-0.5 rounded border border-slate-800 font-mono">deity:</code>
+                  <span class="text-slate-500 italic ml-1">(Otomatik kategori hedefler, promptu budar & hızlandırır)</span>
+                </div>
               </div>
             </div>
 

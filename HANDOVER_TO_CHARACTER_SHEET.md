@@ -3329,3 +3329,31 @@ Kullanıcı, Rule Master AI modellerinin arama hızından ve API yoğunluğundan
 * `character.html` = `index.html` = `webapp/character.html` = `webapp/index.html` (**SHA-256:** `62B3B3E631C635807DF2A7FF19C6B583864C7D286634AED85CD9DA0C6CC3B904`)
 * `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
 * Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
+
+
+---
+
+## 112. Hızlı Kural Ekleyici Prefiks Rozetleri ve Örnek Arama Butonları
+
+### Bağlam & Kullanıcı Talebi
+Kullanıcı, envanter ekranındaki hızlı kural ekleyici panelinde (`#inline-ai-adder-panel`) yer alan hızlı arama butonlarının güncellenmesini, desteklenen prefiks ifadelerinin (`feat:`, `spell:`, `weapon:`, `armor:`, `item:`, `maneuver:`, `race:`, `deity:`) listelenmesini ve kullanıcıya rehberlik edecek tıklanabilir prefiksli arama örneklerinin yerleştirilmesini talep etmiştir.
+
+### Yapılan Geliştirmeler & Arayüz Sadeleştirmesi
+1. **Tıklanabilir Prefiksli Hızlı Arama Butonları:**
+   * `feat: Shock Trooper` (Hüner Prefiksi - Kehribar/Amber)
+   * `spell: Haste` (Büyü Prefiksi - Gökyüzü/Sky)
+   * `weapon: Dagger +2` (Silah Prefiksi - Zümrüt/Emerald)
+   * `item: Boots of Speed` (Büyülü Eşya Prefiksi - Mor/Purple)
+   * `maneuver: Mountain Hammer` (Manevra Prefiksi - Gül/Rose)
+   * `deity: Kelemvor` (Tanrı Prefiksi - Altın/Amber)
+2. **Desteklenen Prefiksler Bilgi Şeridi:**
+   * Kullanıcının klavyeyle doğrudan yazabileceği tüm prefiksler (`feat:`, `spell:`, `weapon:`, `armor:`, `item:`, `maneuver:`, `race:`, `deity:`) kompakt mono rozetler halinde listelendi.
+   * Altında `(Otomatik kategori hedefler, promptu budar & hızlandırır)` açıklaması eklendi.
+3. **Arama Kutusu İpucu (Placeholder) Güncellemesi:**
+   * Arama kutusu ipucu metni `Örn: feat: Shock Trooper, spell: Haste, weapon: Dagger +2, item: Boots of Speed...` şeklinde prefiks kullanımını teşvik edecek şekilde güncellendi.
+
+### Parite ve Hash Durumu
+* `character.html` = `index.html` = `webapp/character.html` = `webapp/index.html` (**SHA-256:** `676D50425698385BE478837F0F2DD09F5A2560A40916E820774CE177DDEC09D5`)
+* `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `59A9145F766E14970D0790CDAAA9856BE70628D7D1F2CBF89DCF7B366D65D02B`)
+* `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
+* Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
