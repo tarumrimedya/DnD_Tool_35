@@ -2956,3 +2956,28 @@ Kullanıcı "Envantere Eşya Ekle" (Add Pool Item) modalında bir eşya arattı�
 ### Parite ve Hash Durumu
 * 4 HTML dosyası (`index.html`, `character.html`, `webapp/index.html`, `webapp/character.html`) arasında **%100 SHA-256 hash paritesi** (`51BE9EB0E55C22C92ACA2C6D861F9F55319B596E32B1C273630E25966ADA7CE5`) sağlandı.
 * Tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korundu.
+
+
+
+---
+
+## 97. Gemini Model Router: Jenerik Takma Adlar (Aliases) ve AbortController Zaman Aşımı Mimarisi
+
+### Bağlam & Kök Neden
+Kullanıcı aramalarında (`"Cloak of protection +1"` vb.) model sorgularının `gemini-flash-latest` aşamasında asılı kalması ve sonsuz spinner döngüsüne girmesi incelenmiştir. Kök neden olarak, hardcoded sürüm isimlerinin (`1.5-flash-latest`) API tarafında 404/kota hatası üretmesi ve ardından gelen isteklerde `AbortController` zaman aşımı bulunmadığı için arayüzün kilitlendiği tespit edilmiştir.
+
+### Yapılan Değişiklikler ve Mimari İyileştirmeler
+1. **Jenerik Model Takma Adları (Generic Aliases):**
+   * Sürüm sabitlemeleri (`1.5-flash-8b`, `1.5-pro-latest` vb.) kaldırıldı. Google'ın daimi güncel kalan resmi jenerik alias'ları önceliklendirildi:
+     * **Hızlı Arama Havuzu (`QUICK_SEARCH` / `flash`):** `['gemini-flash-latest', 'gemini-flash', 'gemini-1.5-flash']`
+     * **Derin Denetim Havuzu (`RULE_AUDIT` / `pro`):** `['gemini-pro-latest', 'gemini-pro', 'gemini-1.5-pro']`
+2. **Dinamik Canlı Keşif (Live Model Discovery):**
+   * `RuleMaster.getAvailableGeminiModels(apiKey)` metodu Google'ın `/v1beta/models` endpoint'ini 3.5 saniyelik timeout ile tarayarak o API anahtarına açık olan modelleri dinamik keşfeder; jenerik alias'ları başa alarak optimize kuyruk oluşturur.
+3. **AbortController Zaman Aşımı (Timeout) Koruması:**
+   * `fetchSingleAiRuleObjects`: Model başına 7.5s AbortController timeout'u.
+   * `queryAiFreeTextRows`: Model başına 10s AbortController timeout'u.
+   * `callAiText`: Model başına 12s AbortController timeout'u.
+   * Bir model yanıt vermez veya takılırsa, kullanıcı sonsuza kadar beklemez; sistem otomatik olarak o modeli kesip anında bir sonraki yedek modele geçer.
+4. **Parite ve Kural Standartları:**
+   * 2 RuleMaster dosyası (`rule_master.js`, `webapp/rule_master.js`) arasında **%100 SHA-256 hash paritesi** (`403ACCCDDD...`) sağlandı.
+   * Tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.

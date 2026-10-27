@@ -1120,21 +1120,89 @@ const RuleMaster = {
   getModelsForTask(taskType = 'DEFAULT') {
     const userPref = this.getAiModelMode();
     if (userPref === 'pro') {
-      return ['gemini-1.5-pro-latest', 'gemini-pro-latest', 'gemini-1.5-flash-latest'];
+      return ['gemini-pro-latest', 'gemini-pro', 'gemini-1.5-pro', 'gemini-flash-latest'];
     }
     if (userPref === 'flash') {
-      return ['gemini-1.5-flash-latest', 'gemini-flash-latest', 'gemini-1.5-flash-8b-latest'];
+      return ['gemini-flash-latest', 'gemini-flash', 'gemini-1.5-flash'];
     }
     // 'auto' (Smart Hybrid Router):
     if (taskType === 'RULE_AUDIT' || taskType === 'COMPLEX_TACTICAL' || taskType === 'IMPORT_BATCH') {
-      return ['gemini-1.5-pro-latest', 'gemini-pro-latest', 'gemini-1.5-flash-latest'];
+      return ['gemini-pro-latest', 'gemini-pro', 'gemini-1.5-pro', 'gemini-flash-latest'];
     }
     // Default fast retrieval (QUICK_SEARCH, LEVEL_UP, etc.)
-    return ['gemini-1.5-flash-latest', 'gemini-flash-latest', 'gemini-1.5-flash-8b-latest'];
+    return ['gemini-flash-latest', 'gemini-flash', 'gemini-1.5-flash'];
   },
 
   async getAvailableGeminiModels(apiKey, forceRefresh = false, taskType = 'DEFAULT') {
-    return this.getModelsForTask(taskType);
+    const defaultFallbacks = this.getModelsForTask(taskType);
+    if (!apiKey) return defaultFallbacks;
+
+    const cacheKey = `${taskType}_${this.getAiModelMode()}`;
+    if (!forceRefresh && this._cachedTaskModels && this._cachedTaskModels[cacheKey]) {
+      return this._cachedTaskModels[cacheKey];
+    }
+
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 3500);
+      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`, {
+        signal: controller.signal
+      });
+      clearTimeout(timer);
+
+      if (resp.ok) {
+        const data = await resp.json();
+        const apiModels = (data.models || [])
+          .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'))
+          .map(m => m.name.replace(/^models\//, ''))
+          .filter(m => {
+            const lower = m.toLowerCase();
+            return !lower.includes('tts') &&
+                   !lower.includes('image') &&
+                   !lower.includes('audio') &&
+                   !lower.includes('embedding') &&
+                   !lower.includes('realtime') &&
+                   !lower.includes('bison') &&
+                   !lower.includes('gemma');
+          });
+
+        const isProTask = (this.getAiModelMode() === 'pro') || 
+          (this.getAiModelMode() === 'auto' && (taskType === 'RULE_AUDIT' || taskType === 'COMPLEX_TACTICAL' || taskType === 'IMPORT_BATCH'));
+
+        const relevantApiModels = isProTask
+          ? apiModels.filter(m => m.toLowerCase().includes('pro'))
+          : apiModels.filter(m => m.toLowerCase().includes('flash'));
+
+        const prioritized = [];
+        const preferredAliases = isProTask
+          ? ['gemini-pro-latest', 'gemini-pro', 'gemini-1.5-pro']
+          : ['gemini-flash-latest', 'gemini-flash', 'gemini-1.5-flash'];
+
+        preferredAliases.forEach(alias => {
+          if (relevantApiModels.includes(alias)) {
+            prioritized.push(alias);
+          }
+        });
+
+        relevantApiModels.forEach(m => {
+          if (!prioritized.includes(m)) prioritized.push(m);
+        });
+
+        defaultFallbacks.forEach(f => {
+          if (!prioritized.includes(f)) prioritized.push(f);
+        });
+
+        if (prioritized.length > 0) {
+          if (!this._cachedTaskModels) this._cachedTaskModels = {};
+          this._cachedTaskModels[cacheKey] = prioritized;
+          return prioritized;
+        }
+      }
+    } catch (e) {
+      console.warn('API model list discovery skipped:', e.message);
+    }
+
+    return defaultFallbacks;
   },
 
   cleanJsonText(raw) {
@@ -1807,12 +1875,17 @@ Return valid JSON only matching this schema:
         }
       };
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 7500);
+
       try {
         const response = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
+          signal: controller.signal
         });
+        clearTimeout(timeoutId);
 
         if (response.ok) {
           const data = await response.json();
@@ -1861,7 +1934,12 @@ Return valid JSON only matching this schema:
           lastError = errJson.error?.message || `HTTP ${response.status} (${model})`;
         }
       } catch (netErr) {
-        lastError = `${netErr.message} (${model})`;
+        clearTimeout(timeoutId);
+        if (netErr && netErr.name === 'AbortError') {
+          lastError = `Zaman aşımı (7.5s) - ${model} yanıt vermedi.`;
+        } else {
+          lastError = `${netErr.message} (${model})`;
+        }
       }
     }
 
@@ -3702,6 +3780,9 @@ Return valid JSON only matching this schema:
       if (statusTextEl) {
         statusTextEl.textContent = `Serbest metin analiz ediliyor (Model: ${model})...`;
       }
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
       try {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
         const response = await fetch(url, {
@@ -3713,8 +3794,10 @@ Return valid JSON only matching this schema:
               response_mime_type: 'application/json',
               temperature: 0.0
             }
-          })
+          }),
+          signal: controller.signal
         });
+        clearTimeout(timeoutId);
 
         if (!response.ok) {
           const errData = await response.json().catch(() => ({}));
@@ -3729,8 +3812,10 @@ Return valid JSON only matching this schema:
           break;
         }
       } catch (err) {
-        console.warn(`Model ${model} free-text parse failed:`, err.message);
-        lastError = err;
+        clearTimeout(timeoutId);
+        const errMsg = err && err.name === 'AbortError' ? `Zaman aşımı (10s) - ${model} yanıt vermedi.` : err.message;
+        console.warn(`Model ${model} free-text parse failed:`, errMsg);
+        lastError = new Error(errMsg);
       }
     }
 
@@ -3846,6 +3931,9 @@ Return valid JSON only matching this schema:
         onStatus(`${model} ile RAW kuralları taranıyor...`);
       }
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
+
       try {
         const bodyPayload = {
           contents: [{ parts: [{ text: promptText }] }],
@@ -3862,8 +3950,10 @@ Return valid JSON only matching this schema:
         const resp = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(bodyPayload)
+          body: JSON.stringify(bodyPayload),
+          signal: controller.signal
         });
+        clearTimeout(timeoutId);
 
         if (resp.ok) {
           const json = await resp.json();
@@ -3877,7 +3967,8 @@ Return valid JSON only matching this schema:
           lastError = errData.error?.message || `HTTP ${resp.status}`;
         }
       } catch (netErr) {
-        lastError = netErr.message;
+        clearTimeout(timeoutId);
+        lastError = netErr && netErr.name === 'AbortError' ? `Zaman aşımı (12s) - ${model} yanıt vermedi.` : netErr.message;
       }
     }
 
