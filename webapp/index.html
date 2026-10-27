@@ -9048,6 +9048,8 @@
       }
       localStorage.setItem('gemini_api_key', val);
       if (window.RuleMaster) {
+        RuleMaster._cachedTaskModels = {};
+        RuleMaster._discoveredApiModels = null;
         RuleMaster._cachedModels = null;
         RuleMaster.updateApiKeyUi();
       }
@@ -9062,9 +9064,12 @@
     function clearSettingsApiKey() {
       if (confirm('Gemini API anahtarınızı silmek istediğinize emin misiniz?')) {
         localStorage.removeItem('gemini_api_key');
+        localStorage.removeItem('dnd35_gemini_discovered_models');
         const input = document.getElementById('settings-gemini-api-key');
         if (input) input.value = '';
         if (window.RuleMaster) {
+          RuleMaster._cachedTaskModels = {};
+          RuleMaster._discoveredApiModels = null;
           RuleMaster._cachedModels = null;
           RuleMaster.updateApiKeyUi();
         }

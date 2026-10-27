@@ -3114,3 +3114,29 @@ Google Generative AI sunucularındaki anlık küresel aşırı yüklenme (`HTTP 
 
 
 
+
+
+---
+
+## 105. Gemini Model Keşfinin Kalıcı Olarak Saklanması (0ms Latency) ve Kendi Kendini Onaran (Self-Healing) Mimari
+
+### Bağlam & Kullanıcı Talebi
+Kullanıcı AI sorgularında (seviye atlama, eşya/büyü arama) ilk denemede zaman aşımı / gecikme yaşandığını, 2. denemede ise anında yanıt geldiğini gözlemlemiştir. Bunun kök nedeni, model keşfinin (`_discoveredApiModels`) yalnızca tarayıcı RAM'inde tutulması ve her sayfa yenilemesinde ilk tıklamada 3.5s timeout ile Google API'ye canlı model listesi keşif isteği atılmasıdır. Kullanıcı, model keşfinin API anahtarı kaydedildiğinde bir kez yapılıp kalıcı olarak kaydedilmesini, normal kullanımda bu kaydın kullanılmasını ve yalnızca modeller tanınmadığında veya tanı istendiğinde güncellenmesini talep etmiştir.
+
+### Yapılan Geliştirmeler
+1. **Model Keşfinin Diske Yazılması (`localStorage` - `dnd35_gemini_discovered_models`):**
+   * `RuleMaster.getAvailableGeminiModels()` fonksiyonu, `forceRefresh` olmadığı sürece modelleri doğrudan `localStorage`'dan **0ms gecikmeyle** okuyacak şekilde güncellendi.
+   * Normal aramalarda ve seviye atlamada Google API'nin `models` uç noktasına kesinlikle ekstra keşif isteği atılmaz; doğrudan içerik üretimine (`generateContent`) geçilir.
+2. **Ayarlar & Tanı Entegrasyonu:**
+   * API anahtarı kaydedildiğinde (`verifySettingsGeminiApiKey(true)`) veya Ayarlar'daki *"Tanı & Model Kontrolü"* butonuna basıldığında `forceRefresh: true` ile keşif canlı tetiklenir, `5.0s` timeout ile Google'dan taranır ve `localStorage`'a kalıcı olarak kaydedilir.
+   * API anahtarı silindiğinde veya değiştirildiğinde keşif önbelleği otomatik olarak temizlenir.
+3. **Kendi Kendini Onaran Mimari (Self-Healing on 404):**
+   * İleride Google kayıtlı modellerden birini emekliye ayırırsa (`HTTP 404 / Not Found`), sistem sessizce `dnd35_gemini_discovered_models` önbelleğini düşürür ve bir sonraki istekte modelleri otomatik olarak tazeleyip kendini onarır.
+4. **Zaman Aşımı Optimizasyonu (Mobile Sweet-Spot):**
+   * Model keşif süresi `3.5s` ➔ `5.0s` seviyesine çıkarılarak mobil ağlardaki el sıkışma payı güvenceye alındı.
+   * Tekil model sorgu süresi `7.5s` ➔ `9.5s` seviyesine optimize edilerek mobil dalgalanmalarda gereksiz abort hataları engellendi.
+
+### Parite ve Hash Durumu
+* `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `321B0A331E63C2162BCE6BCEACBC3C50011EDBE0F2EBC451122DDC9BFF081273`)
+* `character.html` = `index.html` = `webapp/character.html` = `webapp/index.html` (**SHA-256:** `C6A0FD171887FF34FD4E7E6390B26E5161A49BCE6F54D4DE4D13C1BD267D2840`)
+* Tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korundu.

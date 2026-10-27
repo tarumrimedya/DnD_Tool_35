@@ -1170,6 +1170,7 @@ const RuleMaster = {
     if (forceRefresh) {
       this._cachedTaskModels = {};
       this._discoveredApiModels = null;
+      try { localStorage.removeItem('dnd35_gemini_discovered_models'); } catch (e) {}
     }
 
     const cacheKey = `${taskType}_${this.getAiModelMode()}`;
@@ -1179,9 +1180,22 @@ const RuleMaster = {
 
     try {
       let apiModels = (!forceRefresh && this._discoveredApiModels) ? this._discoveredApiModels : null;
+      if (!apiModels && !forceRefresh) {
+        try {
+          const cachedJson = localStorage.getItem('dnd35_gemini_discovered_models');
+          if (cachedJson) {
+            const parsed = JSON.parse(cachedJson);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              apiModels = parsed;
+              this._discoveredApiModels = parsed;
+            }
+          }
+        } catch (e) {}
+      }
+
       if (!apiModels) {
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 3500);
+        const timer = setTimeout(() => controller.abort(), 5000);
         const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`, {
           signal: controller.signal
         });
@@ -1205,6 +1219,9 @@ const RuleMaster = {
                      !lower.includes('gemma');
             });
           this._discoveredApiModels = apiModels;
+          try {
+            localStorage.setItem('dnd35_gemini_discovered_models', JSON.stringify(apiModels));
+          } catch (e) {}
         }
       }
 
@@ -1402,9 +1419,15 @@ const RuleMaster = {
   setApiKey(key) {
     if (!key || !key.trim()) {
       localStorage.removeItem('gemini_api_key');
+      localStorage.removeItem('dnd35_gemini_discovered_models');
+      this._cachedTaskModels = {};
+      this._discoveredApiModels = null;
       this._cachedModels = null;
     } else {
       localStorage.setItem('gemini_api_key', key.trim());
+      localStorage.removeItem('dnd35_gemini_discovered_models');
+      this._cachedTaskModels = {};
+      this._discoveredApiModels = null;
       this._cachedModels = null;
     }
     this.updateApiKeyUi();
@@ -2059,7 +2082,7 @@ Return valid JSON only matching this schema:
       };
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 7500);
+      const timeoutId = setTimeout(() => controller.abort(), 9500);
 
       try {
         const response = await fetch(url, {
@@ -2115,11 +2138,17 @@ Return valid JSON only matching this schema:
         } else {
           const errJson = await response.json().catch(() => ({}));
           lastError = errJson.error?.message || `HTTP ${response.status} (${model})`;
+          if (response.status === 404 || (lastError && lastError.toLowerCase().includes('not found'))) {
+            // Model deprecated or removed by Google -> purge cached models for auto-refresh on next run
+            this._discoveredApiModels = null;
+            this._cachedTaskModels = {};
+            try { localStorage.removeItem('dnd35_gemini_discovered_models'); } catch (e) {}
+          }
         }
       } catch (netErr) {
         clearTimeout(timeoutId);
         if (netErr && netErr.name === 'AbortError') {
-          lastError = `Zaman aşımı (7.5s) - ${model} yanıt vermedi.`;
+          lastError = `Zaman aşımı (9.5s) - ${model} yanıt vermedi.`;
         } else {
           lastError = `${netErr.message} (${model})`;
         }
