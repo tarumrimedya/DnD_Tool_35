@@ -2775,3 +2775,28 @@ Yapılan kök neden analizinde (`gdrive_sync.js`):
 * 4 HTML dosyası (`index.html`, `character.html`, `webapp/index.html`, `webapp/character.html`) arasında **%100 SHA-256 hash paritesi** (`C7F4198AE3937D8B3EB613D1F18C53EB3CBFE1C12904DA5BD7CD70BB62401A8A`) sağlandı.
 * 2 CloudSync dosyası (`gdrive_sync.js`, `webapp/gdrive_sync.js`) arasında **%100 SHA-256 hash paritesi** (`807466BF94822F56CA2BA34DE162B02DCEAB9B959469EB6FB927E75DD2A04951`) sağlandı.
 * Tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.
+
+
+---
+
+## 98. Seviye İlerleme HP Standardizasyonu (1. Seviye RAW Maksimum & Yeni Seviyelerde Dinamik Can Zarı)
+
+### Bağlam & Kullanıcı Talebi
+Karakter sayfasında Seviye Planlayıcı tablosunda her seviyenin HP sütununa sabit ortalama değer (+4) yazıldığı görülmüştür. Kullanıcı talebi doğrultusunda:
+1. **1. Seviye RAW Maksimum Kuralı:** D&D 3.5e RAW (PHB s. 22) gereği karakterlerin 1. seviyede can zarını atmayarak Hit Die tam (maksimum) değerini alması kuralı kesinleştirildi.
+2. **Yeni Seviyelerde Zar Yuvarlama:** 2. seviye ve üzerindeki her yeni seviye ekleme işleminde (`addNewLevelRowToProgression`, Level Up Modalı, Sınıf Değiştirme Modalı) otomatik ortalama yerine dinamik rastgele can zarı (`1d[HD]`) yuvarlama standardı tesis edildi.
+
+### Yapılan Değişiklikler
+1. **1. Seviye RAW Otomatik İyileştirme (`renderLevelProgression`):**
+   * Tablo oluşturulurken `prog[0]` kontrol edilir; eğer 1. seviyenin `hpGain` değeri ilgili sınıfın Hit Die değerinden (`def.hd`) farklıysa, otomatik olarak sınıfın tam zarına (örn: Rogue için 6 HP) yükseltilir ve aradaki fark karakterin maksimum canına eklenir.
+2. **Dinamik Can Zarı Atımı (`addNewLevelRowToProgression`):**
+   * "+ Yeni Seviye Ekle" butonuna basıldığında:
+     * `nextLvl === 1` ise tam zar (`def.hd`).
+     * `nextLvl > 1` ise rastgele can zarı (`Math.floor(Math.random() * def.hd) + 1`).
+   * Zarı atan oyuncuya görsel bilgi top toast bildirimi (`⚡ Can Zarı Atıldı: 1d[HD] ➔ X (+ CON)`) gösterilir.
+3. **Seviye Atlama & Sınıf Düzenleme Modalları:**
+   * `onLevelUpClassChange()` ve `onChangeClassSelectChange()` fonksiyonlarında 1. seviye her zaman `max`, 2. seviye ve sonrası varsayılan olarak `roll` modunda başlatılır.
+
+### Parite ve Hash Durumu
+* 4 HTML dosyası (`index.html`, `character.html`, `webapp/index.html`, `webapp/character.html`) arasında **%100 SHA-256 hash paritesi** (`C36CD4AAC7DBC8F5D9C3D7E00C55AF6453E54F6D0C58B978621A51A80F9396F6`) sağlandı.
+* Tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu (`⚡` sembolü kullanıldı).

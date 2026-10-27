@@ -30359,6 +30359,30 @@ function renderManualStatsPanel() {
       if (!character) return;
       sanitizeLevelProgressionActiveGaps();
       const prog = character.levelProgression || [];
+
+      // D&D 3.5e RAW: 1. Seviye her zaman sınıfının tam (maksimum) can zarını alır (PHB s. 22)
+      if (prog.length > 0 && prog[0]) {
+        const firstClass = prog[0].className;
+        const allDefs = (typeof getAvailableClassDefs === 'function') ? getAvailableClassDefs() : {};
+        const firstDef = allDefs[firstClass] || ((typeof DND35_CLASS_DEFS !== 'undefined') ? DND35_CLASS_DEFS[firstClass] : null);
+        if (firstDef && firstDef.hd && Number(prog[0].hpGain) !== Number(firstDef.hd)) {
+          const diff = Number(firstDef.hd) - (Number(prog[0].hpGain) || 0);
+          prog[0].hpGain = firstDef.hd;
+          prog[0].hd = `d${firstDef.hd}`;
+          if (character.hp) {
+            const sumHp = prog.filter(p => p.active !== false).reduce((acc, p) => acc + (Number(p.hpGain) || 0), 0);
+            if (sumHp > 0) {
+              character.hp.baseMax = sumHp;
+              character.hp.max = sumHp + (Number(character.hp.conBonusHp) || 0);
+              if (prog[0].active !== false && diff > 0) {
+                character.hp.current = (Number(character.hp.current) || 0) + diff;
+              }
+            }
+          }
+          saveStateToStorage(false);
+        }
+      }
+
       const sys = character.settings?.babSaveSystem || 'standard';
       const isHuman = (character.race || '').toLowerCase().includes('human');
       const intMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
@@ -31600,6 +31624,18 @@ function renderManualStatsPanel() {
       saveStateToStorage(true);
       renderLevelProgression();
       renderAll();
+
+      if (typeof showDiceTopToast === 'function') {
+        const formula = `1d${def.hd}`;
+        showDiceTopToast({
+          icon: '⚡',
+          title: `Seviye ${nextLvl} Planlandı (${targetClass})`,
+          breakdown: (nextLvl === 1)
+            ? `1. Seviye RAW Kuralı: Maksimum Can Zarı (+${hpGain} HP)`
+            : `Can Zarı Atıldı: ${formula} ➔ ${rollHp} (+ CON ${conMod >= 0 ? '+' + conMod : conMod})`,
+          total: `+${hpGain} HP`
+        }, { autoDismiss: true, dismissMs: 4000 });
+      }
     }
 
     // ====================================================
@@ -34840,7 +34876,8 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         updateLevelUpCasterProgVisibility(className);
       }
 
-      rollLevelUpHp('avg');
+      const isFirstLvl = (prospectiveProg.length === 1);
+      rollLevelUpHp(isFirstLvl ? 'max' : 'roll');
     }
 
     function rollLevelUpHp(mode = 'avg') {
@@ -36573,7 +36610,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       const allDefs = getAvailableClassDefs();
       const classDef = allDefs[row.className] || DND35_CLASS_DEFS[row.className] || { hd: 8 };
       const currentHpGain = Number(row.hpGain) || 0;
-      const initialHpVal = currentHpGain > 0 ? currentHpGain : (idx === 0 ? classDef.hd : Math.floor(classDef.hd / 2) + 1);
+      const initialHpVal = currentHpGain > 0 ? currentHpGain : (idx === 0 ? classDef.hd : Math.floor(Math.random() * classDef.hd) + 1);
 
       const conMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
         ? RuleEngine.getAbilityMod(character.abilities?.con || 14)
@@ -36726,7 +36763,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
 
       if (rerollHp) {
         const isFirstLvl = (currentChangeClassLevelIndex === 0);
-        rollChangeClassHp(isFirstLvl ? 'max' : 'avg');
+        rollChangeClassHp(isFirstLvl ? 'max' : 'roll');
       }
     }
 
@@ -36755,7 +36792,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       // Calculate old vs new HP difference if active (using pure die roll without double-counting CON)
       const oldHp = Number(prog[idx].hpGain) || 0;
       const manualHp = parseInt(document.getElementById('change-class-hp-input')?.value, 10);
-      const rollHp = (idx === 0) ? def.hd : (Math.floor(def.hd / 2) + 1);
+      const rollHp = (idx === 0) ? def.hd : (Math.floor(Math.random() * def.hd) + 1);
       const fallbackHp = rollHp;
       const newHp = (!isNaN(manualHp) && manualHp > 0) ? manualHp : fallbackHp;
       const hpDiff = newHp - oldHp;
@@ -36850,7 +36887,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       prog.forEach(p => { if (p.className === targetClass) classLvlSoFar++; });
       const targetClassLvl = classLvlSoFar + 1;
 
-      const rollHp = (nextLvl === 1) ? def.hd : (Math.floor(def.hd / 2) + 1);
+      // D&D 3.5e RAW: 1. Seviye maksimum Can Zarı alır (PHB s. 22); sonraki seviyelerde yeni can zarı yuvarlanır
+      const rollHp = (nextLvl === 1) ? def.hd : (Math.floor(Math.random() * def.hd) + 1);
       const hpGain = rollHp;
       const skillPts = (nextLvl === 1)
         ? Math.max(4, ((def.skills || 2) + intMod + isHuman) * 4)
