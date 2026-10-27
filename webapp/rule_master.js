@@ -2159,135 +2159,160 @@ ZORUNLU KURALLAR:
     return entry;
   },
 
-  async fetchSingleAiRuleObjects(query, categoryHint, apiKey, statusTextEl = null) {
-    const promptText = `You are a master D&D 3.5e Rule Arbiter and Database Architect.
-User query: "${query}" (Category Hint: "${categoryHint}").
+  // Dinamik Hedefli AI Prompt Üreticisi (Kategoriye Özel Budama ve Ultra-Hafif Token Yükü)
+  buildTargetedAiPrompt(cleanQuery, effectiveCategory) {
+    let catSchema = '';
 
-${this.DND35_RAW_GUARDRAIL}
+    if (effectiveCategory === 'Feat') {
+      catSchema = `{
+  "name": "${cleanQuery}",
+  "type": "Feat",
+  "prereq": "Prerequisites or '-'",
+  "benefit": "Detailed RAW mechanics",
+  "description": "Full description",
+  "source": "Official 3.5e book and page (e.g. Player's Handbook p.98)",
+  "featType": "General"|"Item Creation"|"Metamagic"|"Special",
+  "isFighterBonusFeat": true|false
+}`;
+    } else if (effectiveCategory === 'Spell') {
+      catSchema = `{
+  "name": "${cleanQuery}",
+  "type": "Spell",
+  "level": 1,
+  "school": "Evocation",
+  "slot": "None",
+  "source": "Official 3.5e book and page",
+  "benefit": "Summary of spell effect",
+  "description": "Full official spell text",
+  "range": "Close / Medium / Long / Touch / Personal",
+  "duration": "Instantaneous / 1 round/level etc.",
+  "action": "Standard Action",
+  "dice": "damage or healing dice formula if any, e.g. 1d6",
+  "dmgType": "Fire / Cold / Untyped etc."
+}`;
+    } else if (effectiveCategory === 'Race') {
+      catSchema = `{
+  "name": "${cleanQuery}",
+  "type": "Race",
+  "size": "Medium"|"Small"|"Large",
+  "baseSpeed": 30,
+  "strBonus": 0, "dexBonus": 0, "conBonus": 0, "intBonus": 0, "wisBonus": 0, "chaBonus": 0,
+  "favoredClass": "Fighter / Any",
+  "source": "Official 3.5e book and page",
+  "benefit": "Racial features summary",
+  "description": "Full official race description",
+  "traits": [{"name": "Trait Name", "desc": "Mechanics"}],
+  "languages": ["Common"]
+}`;
+    } else if (effectiveCategory === 'Deity') {
+      catSchema = `{
+  "name": "${cleanQuery}",
+  "type": "Deity",
+  "title": "Title / Dogma",
+  "pantheon": "Faerûn / Greyhawk / Eberron etc.",
+  "alignment": "Lawful Good etc.",
+  "favoredWeapon": "Warhammer etc.",
+  "domains": ["Good", "War"],
+  "symbol": "Holy symbol description",
+  "description": "Canonical lore summary",
+  "source": "Official 3.5e book and page"
+}`;
+    } else if (['Weapon', 'Armor', 'Shield', 'Magic Item', 'Item'].includes(effectiveCategory)) {
+      catSchema = `{
+  "name": "${cleanQuery}",
+  "type": "${effectiveCategory === 'Item' ? 'Wondrous Item' : effectiveCategory}",
+  "slot": "Main Hand"|"Armor"|"Off-Hand/Shield"|"Head"|"Neck"|"Ring"|"Belt"|"None",
+  "cost": 0,
+  "weight": 0,
+  "source": "Official 3.5e book and page",
+  "benefit": "Item magical or mechanical powers",
+  "description": "Full item description",
+  "dice": "damage dice if weapon, e.g. 1d8",
+  "critMin": 20,
+  "critMult": 2,
+  "acBonus": 0,
+  "attBonus": 0,
+  "dmgBonus": 0,
+  "dmgType": "Slashing / Piercing / Bludgeoning"
+}`;
+    } else {
+      catSchema = `{
+  "name": "${cleanQuery}",
+  "type": "Feat"|"Spell"|"Weapon"|"Armor"|"Wondrous Item"|"Maneuver",
+  "slot": "None"|"Main Hand"|"Armor"|"Belt"|"Head" etc.,
+  "source": "Official 3.5e book and page",
+  "benefit": "Concise mechanical summary",
+  "description": "Full RAW description",
+  "dice": "Dice formula if any (e.g. 2d6)",
+  "critMin": 20,
+  "critMult": 2,
+  "dmgType": "Damage type if applicable"
+}`;
+    }
 
-CRITICAL D&D 3.5E ANTI-HALLUCINATION & CANONICAL VERIFICATION RULES:
-0. RACE SCHEMA (FOR D&D 3.5E RACES / RACIAL TEMPLATES):
-If categoryHint is 'Race' or querying a Race (e.g. Warforged, Goliath, Drow, Catfolk, Thri-Kreen, Kenku, Illumian), return canonical D&D 3.5e Race object with type: "Race", size ("Medium"|"Small"|"Large"), baseSpeed (number, e.g. 30), strBonus/dexBonus/conBonus/intBonus/wisBonus/chaBonus (numbers), favoredClass, source (official 3.5e book and page), benefit, description, and traits: [{"name": "Trait Name", "desc": "Detailed mechanics"}], languages: ["Common", ...], bonusFeats (number).
-0.1 DEITY SCHEMA (FOR D&D 3.5E DEITIES / GODS / PANTEONS):
-If categoryHint is 'Deity' or querying a Deity/God/Pantheon (e.g. Kelemvor, Mystra, Tempus, Bane, Lolth, Asmodeus, Helm, Sune, Morwel, Pelor, Kord, Moradin):
-Return canonical D&D 3.5e Deity object with type: "Deity", name, title (e.g. "Lord of the Dead"), pantheon ("Faerûn / Forgotten Realms", "Greyhawk", "Eberron", etc.), alignment (e.g. "Lawful Neutral"), favoredWeapon (e.g. "Bastard sword"), domains: ["Death", "Fate", "Law"], symbol, description (canonical 3.5e lore and dogma summary), source (official 3.5e book and page, e.g. "Complete Divine p.120" or "Player's Handbook p.106").
+    return `You are a master D&D 3.5e Rule Arbiter.
+Target query: "${cleanQuery}" (Category: "${effectiveCategory}").
 
-0.2 FEAT SCHEMA (FOR D&D 3.5E FEATS):
-If categoryHint is 'Feat' or querying a Feat:
-Return canonical D&D 3.5e Feat object with type: "Feat", name, prereq, benefit, description, source (official 3.5e book and page), featType ("General"|"Item Creation"|"Metamagic"|"Special"), and boolean "isFighterBonusFeat": true if the feat can be selected as a Fighter bonus feat according to D&D 3.5e RAW (PHB Table 5-1 / p.90).
+CRITICAL D&D 3.5E RAW RULES:
+1. STRICT REAL RAW 3.5E ONLY: Consult d20srd.org, dndtools.net, or official WotC 3.5e publications. ZERO homebrew, zero 5e, zero Pathfinder. If entity does not exist in official 3.5e, return {"entries": []}.
+2. MANDATORY TYPO / FUZZY CORRECTION: Correct misspellings to real official 3.5e name.
+3. CONDITIONAL CHILD VARIANTS: If spell, maneuver or item has distinct sub-modes, secondary power, or extra dice vs specific targets (e.g. Searing Light vs Undead, Blade of Blood sacrifice), return both parent and child object starting with "\u21B3 ", "parent": "${cleanQuery}", "isChild": true, "dice": "...".
+4. SIZE MODIFIERS: If alters weapon/creature size category (e.g. Mighty Wallop, Enlarge Person), include "sizeModifier": {"targetType": "weapon"|"creature", "scaling": {"steps": 1}}.
 
-1. STRICT REAL RAW 3.5E RULES ONLY:
-NEVER fabricate, invent, or hallucinate a rule, feat, spell, magic item, or book source. Every result MUST exist in official Wizards of the Coast D&D 3.5e publications.
-2. MANDATORY TYPO / FUZZY SPELLING CORRECTION:
-User input frequently contains typos or phonetic misspellings (e.g. "clave" -> "Cleave", "gret cleve" -> "Great Cleave", "power atac" -> "Power Attack", "shok trooper" -> "Shock Trooper", "flometong" -> "Flametongue", "hast" -> "Haste", "moutain hamer" -> "Mountain Hammer").
-You MUST recognize the intended canonical element and output the real, correct official D&D 3.5e element!
-3. PARENT & CONDITIONAL CHILD VARIANTS (CRITICAL FOR COMBAT / TOAST / SPELL VARIATIONS):
-When querying an item, spell, maneuver, or feat with conditional variants, sub-effects, or multi-modes (e.g. Searing Light vs Undead / Construct, Blade of Blood with self-damage, Pyrotechnics fireworks vs smoke, Energy Substitution elements, Boots of Speed active mode), return BOTH:
-- The primary parent item with all base attributes
-- 1 or more Child objects starting with '\\u21B3 ' (e.g. '\\u21B3 Searing Light (Undead)') with "parent" set to the exact parent entry name, "isChild": true, "dice": clean condition dice formula, and appropriate "effectType" ('damage', 'heal', 'duration', 'status', 'blood_sacrifice_roll') and "childButtonLabel" (e.g. 'Undead (6d6)').
-4. SIZE MODIFIERS & WEAPON/CREATURE SCALING (CRITICAL FOR D&D 3.5E RAW):
-If a spell, feat, or item alters weapon damage size category or creature size (e.g. Greater Mighty Wallop, Mighty Wallop, Lead Blades, Enlarge Person, Righteous Might, Impact property), include the declarative 'sizeModifier' object:
-"sizeModifier": {
-  "targetType": "weapon" | "creature",
-  "targetFilter": { "meleeOnly": true, "allowedDmgTypes": ["Bludgeoning"] },
-  "scaling": { "type": "per_caster_level" | "flat", "clDivisor": 4, "maxSteps": 5, "capSize": "Colossal", "steps": 1 }
-}
-
-JSON OUTPUT SPECIFICATION:
-Return valid JSON only matching this schema:
+OUTPUT JSON SCHEMA:
+Return valid JSON only matching:
 {
   "entries": [
-    {
-      "name": "Searing Light",
-      "type": "Spell",
-      "level": 3,
-      "school": "Evocation",
-      "discipline": "-",
-      "slot": "None",
-      "parent": "-",
-      "source": "Player's Handbook v.3.5, p. 275",
-      "benefit": "Ray deals 1d8/2 levels (max 5d8) to living creatures; 1d6/level (max 10d6) to undead; 1d8/level (max 10d8) to undead vulnerable to bright light; 1d6/2 levels (max 5d6) to constructs.",
-      "description": "Ray deals 1d8/2 levels (max 5d8) to living creatures; 1d6/level (max 10d6) to undead; 1d8/level (max 10d8) to undead vulnerable to bright light; 1d6/2 levels (max 5d6) to constructs.",
-      "bonusType": "Untyped",
-      "scope": "Target: Ray",
-      "range": "Medium (100 ft. + 10 ft./level)",
-      "strBonus": 0,
-      "dexBonus": 0,
-      "conBonus": 0,
-      "intBonus": 0,
-      "wisBonus": 0,
-      "chaBonus": 0,
-      "acBonus": 0,
-      "hpBonus": 0,
-      "attBonus": 0,
-      "dmgBonus": 0,
-      "fortBonus": 0,
-      "refBonus": 0,
-      "willBonus": 0,
-      "skillBonus": 0,
-      "clBonus": 0,
-      "speedBonus": 0,
-      "dice": "3d8",
-      "damageDice": "3d8",
-      "critMin": 20,
-      "critMult": 2,
-      "dmgType": "Untyped / Divine Light",
-      "action": "Standard Action",
-      "duration": "Instantaneous",
-      "weight": 0,
-      "cost": 0,
-      "role": "Offense / Spell",
-      "prereq": "-",
-      "tags": ["spell", "evocation", "divine"],
-      "isChild": false
-    },
-    {
-      "name": "\\u21B3 Searing Light (Undead)",
-      "type": "Spell",
-      "level": 3,
-      "school": "Evocation",
-      "discipline": "-",
-      "slot": "None",
-      "parent": "Searing Light",
-      "source": "Player's Handbook v.3.5, p. 275",
-      "benefit": "Deals 1d6 per caster level (max 10d6) to undead creatures.",
-      "description": "Deals 1d6 per caster level (max 10d6) to undead creatures.",
-      "bonusType": "Untyped",
-      "scope": "Target: Undead",
-      "range": "Medium (100 ft. + 10 ft./level)",
-      "dice": "6d6",
-      "damageDice": "6d6",
-      "critMin": 20,
-      "critMult": 2,
-      "dmgType": "Untyped / Divine Light",
-      "action": "Standard Action",
-      "duration": "Instantaneous",
-      "role": "Secondary Power",
-      "isChild": true,
-      "effectType": "damage",
-      "childButtonLabel": "Undead (6d6)"
-    }
+    ${catSchema}
   ]
 }`;
+  },
 
+  async fetchSingleAiRuleObjects(query, categoryHint, apiKey, statusTextEl = null) {
+    let effectiveCategory = (categoryHint && categoryHint !== 'ALL') ? categoryHint : 'ALL';
+    let cleanQuery = (query || '').trim();
+
+    // 1. Prefiks Desteği (Master DB standardı: spell:..., feat:..., race:..., deity:..., weapon:..., armor:..., shield:..., item:..., maneuver:...)
+    const prefixMatch = cleanQuery.match(/^(spell|feat|race|deity|god|weapon|armor|shield|item|magic item|maneuver|stance|class):\s*/i);
+    if (prefixMatch) {
+      const p = prefixMatch[1].toLowerCase();
+      cleanQuery = cleanQuery.slice(prefixMatch[0].length).trim();
+      if (p === 'spell') effectiveCategory = 'Spell';
+      else if (p === 'feat') effectiveCategory = 'Feat';
+      else if (p === 'race') effectiveCategory = 'Race';
+      else if (p === 'deity' || p === 'god') effectiveCategory = 'Deity';
+      else if (p === 'weapon') effectiveCategory = 'Weapon';
+      else if (p === 'armor') effectiveCategory = 'Armor';
+      else if (p === 'shield') effectiveCategory = 'Shield';
+      else if (p === 'item' || p === 'magic item') effectiveCategory = 'Magic Item';
+      else if (p === 'maneuver' || p === 'stance') effectiveCategory = 'Maneuver';
+    }
+
+    const promptText = this.buildTargetedAiPrompt(cleanQuery, effectiveCategory);
     const availableModels = await this.getAvailableGeminiModels(apiKey, false, 'QUICK_SEARCH');
     let lastError = null;
 
     for (const model of availableModels) {
       if (statusTextEl) {
-        statusTextEl.textContent = `"${query}" ➔ ${model} sorgulanıyor...`;
+        statusTextEl.textContent = `"${cleanQuery}" ➔ ${model} sorgulanıyor...`;
       }
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+      
+      const genConfig = {
+        temperature: 0.1,
+        responseMimeType: "application/json"
+      };
+      if (model.includes('2.0') || model.includes('2.5') || model.includes('thinking')) {
+        genConfig.thinkingConfig = { thinkingBudget: 0 };
+      }
+
       const payload = {
         contents: [{ parts: [{ text: promptText }] }],
-        generationConfig: {
-          temperature: 0.1,
-          responseMimeType: "application/json"
-        }
+        generationConfig: genConfig
       };
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 9500);
+      const timeoutId = setTimeout(() => controller.abort(), 4500);
 
       try {
         const response = await fetch(url, {
@@ -2344,7 +2369,6 @@ Return valid JSON only matching this schema:
           const errJson = await response.json().catch(() => ({}));
           lastError = errJson.error?.message || `HTTP ${response.status} (${model})`;
           if (response.status === 404 || (lastError && lastError.toLowerCase().includes('not found'))) {
-            // Model deprecated or removed by Google -> purge cached models for auto-refresh on next run
             this._discoveredApiModels = null;
             this._cachedTaskModels = {};
             try { localStorage.removeItem('dnd35_gemini_discovered_models'); } catch (e) {}
@@ -2353,7 +2377,7 @@ Return valid JSON only matching this schema:
       } catch (netErr) {
         clearTimeout(timeoutId);
         if (netErr && netErr.name === 'AbortError') {
-          lastError = `Zaman aşımı (9.5s) - ${model} yanıt vermedi.`;
+          lastError = `Zaman aşımı (4.5s) - ${model} yanıt vermedi.`;
         } else {
           lastError = `${netErr.message} (${model})`;
         }
@@ -2378,6 +2402,40 @@ Return valid JSON only matching this schema:
     if (!query) {
       alert('Lütfen aramak istediğiniz kural, eşya, büyü, hüner veya yeteneğin adını yazın.');
       if (queryInput) queryInput.focus();
+      return;
+    }
+
+    // 0ms Cache-First Kontrolü (Master DB ve BUNDLED_SRD_CORE_CATALOG)
+    let cleanKey = query.toLowerCase().trim();
+    const prefixMatch = cleanKey.match(/^(spell|feat|race|deity|god|weapon|armor|shield|item|magic item|maneuver|stance|class):\s*/i);
+    if (prefixMatch) {
+      cleanKey = cleanKey.slice(prefixMatch[0].length).trim();
+    }
+
+    let localFound = [];
+    if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+      const dbMatch = masterDb.filter(m => (m.name || '').toLowerCase().trim() === cleanKey);
+      if (dbMatch.length > 0) {
+        const parentName = dbMatch[0].name.toLowerCase().trim();
+        const children = masterDb.filter(m => m.parent && m.parent !== '-' && RuleMaster.cleanArrow(m.parent).toLowerCase().trim() === parentName);
+        localFound = [...dbMatch, ...children];
+      }
+    }
+
+    if (localFound.length === 0 && typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined') {
+      const baseMatch = this.findBaseItemInSrdCore(cleanKey);
+      if (baseMatch && (baseMatch.name || '').toLowerCase().trim() === cleanKey) {
+        localFound = [this.normalizeEntry(baseMatch)];
+      }
+    }
+
+    if (localFound.length > 0) {
+      this.lastAiResults = localFound;
+      this.renderAiResults();
+      if (resultsWrapper) resultsWrapper.classList.remove('hidden');
+      if (statusBox) statusBox.classList.remove('hidden');
+      if (statusText) statusText.innerHTML = `⚡ <b>"${localFound[0].name}"</b> yerel kütüphaneden anında yüklendi (0 ms).`;
+      if (btn) btn.disabled = false;
       return;
     }
 
@@ -3095,9 +3153,92 @@ Return valid JSON only matching this schema:
     if (typeof renderAll === 'function') renderAll();
   },
 
+  // Core SRD Temel Eşya Çözümleyicisi
+  findBaseItemInSrdCore(rawName) {
+    if (typeof window !== 'undefined' && typeof window.findBaseItemInSrdCore === 'function') {
+      return window.findBaseItemInSrdCore(rawName);
+    }
+    if (!rawName || typeof rawName !== 'string') return null;
+    const catalog = (typeof window !== 'undefined' ? window.BUNDLED_SRD_CORE_CATALOG : null) || [];
+    if (!Array.isArray(catalog) || catalog.length === 0) return null;
+
+    let cleaned = rawName
+      .replace(/\+\d+/g, '')
+      .replace(/\b(?:masterwork|mwk|flaming|frost|shock|shocking|keen|holy|unholy|vicious|defending|anarchic|axiomatic|speed|vorpal|ghost touch|wounding|bane|throwing|returning|spell resistance \d+|fortification|slick|shadow|silent moves|glamered)\b/gi, '')
+      .replace(/\b(?:adamantine|mithral|mithril|alchemical silver|silver|cold iron|darkwood|dragonhide)\b/gi, '')
+      .replace(/[\(\)\[\],]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+
+    if (!cleaned) return null;
+    const exact = catalog.find(c => (c.name || '').toLowerCase() === cleaned);
+    if (exact) return exact;
+
+    const candidates = catalog
+      .filter(c => {
+        const cName = (c.name || '').toLowerCase();
+        return cName && (cleaned === cName || cleaned.endsWith(' ' + cName) || cleaned.startsWith(cName + ' ') || cleaned.includes(' ' + cName + ' ') || cleaned.includes(cName));
+      })
+      .sort((a, b) => (b.name || '').length - (a.name || '').length);
+
+    if (candidates.length > 0) return candidates[0];
+    return null;
+  },
+
+  // Eşyayı ve bağlı tüm alt güçleri otomatik olarak Master DB'ye kaydetme (GEMINI.md Kural #5)
+  persistToMasterDb(entry, sourceList = null) {
+    if (!entry || !entry.name || typeof masterDb === 'undefined' || !Array.isArray(masterDb)) return false;
+
+    let parentItem = entry;
+    const isChild = entry.isChild || (entry.parent && entry.parent !== '-');
+    if (isChild && sourceList && Array.isArray(sourceList)) {
+      const pName = this.cleanArrow(entry.parent || '').toLowerCase().trim();
+      const pFound = sourceList.find(e => this.cleanArrow(e.name).toLowerCase().trim() === pName);
+      if (pFound) parentItem = pFound;
+    }
+
+    const itemsToAdd = [parentItem];
+    const children = this.getChildrenForEntry(parentItem, sourceList);
+    children.forEach(c => itemsToAdd.push(c));
+
+    let modified = false;
+    itemsToAdd.forEach(it => {
+      const copy = JSON.parse(JSON.stringify(it));
+      const cleanName = (copy.name || '').toLowerCase().trim();
+      const existsIdx = masterDb.findIndex(m => (m.name || '').toLowerCase().trim() === cleanName);
+      if (existsIdx >= 0) {
+        masterDb[existsIdx] = Object.assign({}, masterDb[existsIdx], copy);
+        modified = true;
+      } else {
+        const parentName = (copy.parent && copy.parent !== '-') ? this.cleanArrow(copy.parent).toLowerCase() : '';
+        const parentIdx = parentName ? masterDb.findIndex(m => this.cleanArrow(m.name).toLowerCase() === parentName) : -1;
+        if (parentIdx >= 0) {
+          let insertAt = parentIdx + 1;
+          while (insertAt < masterDb.length && this.cleanArrow(masterDb[insertAt].parent).toLowerCase() === parentName) {
+            insertAt++;
+          }
+          masterDb.splice(insertAt, 0, copy);
+        } else {
+          masterDb.push(copy);
+        }
+        modified = true;
+      }
+    });
+
+    if (modified) {
+      if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+      if (typeof this.renderTable === 'function') this.renderTable();
+    }
+    return modified;
+  },
+
   equipItemWithChildren(parentItem, sourceList = null) {
     if (typeof character === 'undefined' || !character) return;
     if (!parentItem) return;
+
+    // Auto-persist to Master DB (GEMINI.md Rule #5: Rule Master -> Master DB -> Character Sheet)
+    this.persistToMasterDb(parentItem, sourceList);
 
     // 1. Equip Primary/Parent Item
     this.equipItem(parentItem);
@@ -3811,8 +3952,46 @@ Return valid JSON only matching this schema:
       return;
     }
 
-    // Check Local Canonical Compendium & Typo Resolver First!
+    // 0ms Cache-First Kontrolü (Master DB & SRD Core & Canonical Compendium)
     let cleanKey = query.toLowerCase().trim();
+    const prefixMatch = cleanKey.match(/^(spell|feat|race|deity|god|weapon|armor|shield|item|magic item|maneuver|stance|class):\s*/i);
+    if (prefixMatch) {
+      cleanKey = cleanKey.slice(prefixMatch[0].length).trim();
+    }
+
+    // 1. Check Master DB
+    if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+      const dbMatch = masterDb.filter(m => (m.name || '').toLowerCase().trim() === cleanKey);
+      if (dbMatch.length > 0) {
+        const parentName = dbMatch[0].name.toLowerCase().trim();
+        const children = masterDb.filter(m => m.parent && m.parent !== '-' && RuleMaster.cleanArrow(m.parent).toLowerCase().trim() === parentName);
+        const allLocal = [...dbMatch, ...children];
+        const rows = allLocal.map(e => this.entryToRow(e));
+        this.renderInlineAiResults(rows);
+        const st = document.getElementById('inline-ai-status-text');
+        if (st) st.innerHTML = `⚡ <b>"${dbMatch[0].name}"</b> Master DB kütüphanesinden anında yüklendi (0 ms).`;
+        const lb = document.getElementById('inline-ai-loading-box');
+        if (lb) lb.classList.remove('hidden');
+        return;
+      }
+    }
+
+    // 2. Check BUNDLED_SRD_CORE_CATALOG
+    if (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
+      const baseMatch = this.findBaseItemInSrdCore(cleanKey);
+      if (baseMatch && (baseMatch.name || '').toLowerCase().trim() === cleanKey) {
+        const norm = this.normalizeEntry(baseMatch);
+        const row = this.entryToRow(norm);
+        this.renderInlineAiResults([row]);
+        const st = document.getElementById('inline-ai-status-text');
+        if (st) st.innerHTML = `⚡ <b>"${norm.name}"</b> Core SRD kataloğundan anında yüklendi (0 ms).`;
+        const lb = document.getElementById('inline-ai-loading-box');
+        if (lb) lb.classList.remove('hidden');
+        return;
+      }
+    }
+
+    // Check Local Canonical Compendium & Typo Resolver First!
     if (typeof this.canonicalDictionary[cleanKey] === 'string') {
       cleanKey = this.canonicalDictionary[cleanKey];
     }

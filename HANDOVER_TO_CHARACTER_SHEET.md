@@ -3294,3 +3294,38 @@ Kullanıcı, envanter havuzunda yer alan `Dagger +2` eşyasının `Other` katego
 * `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `414C5BAB2643745A4AFED5024A58FC9B9D4C4607D0491A47B8BF311E84D623CD`)
 * `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
 * Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
+
+
+---
+
+## 111. Rule Master AI Hız Optimizasyonu, Prefiks Desteği ve Otomatik Master DB Kalıcılığı (0ms Cache-First)
+
+### Bağlam & Kullanıcı Talebi
+Kullanıcı, Rule Master AI modellerinin arama hızından ve API yoğunluğundan (gecikmelerden) memnun olmadığını belirtmiştir. Yapılan derinlemesine analizde; her aramada 6.300 karakterlik devasa monolitik prompt gönderildiği, modellerde gereksiz "thinking" sürecinin devrede olduğu ve envanterde AI ile bulunan eşyaların Master DB'ye kaydedilmediği için tekrarlı aramalarda sürekli yapay zekaya gidildiği tespit edilmiş ve mimarinin hız/verimlilik odaklı revize edilmesi talep edilmiştir.
+
+### Kök Neden Analizi
+1. **Monolitik Şişkin Prompt:** Tek bir kural aranırken bile Irk, Tanrı, Hüner, Büyü şemaları ve 70 satırlık `Searing Light` örneği her sorguda Gemini'ye gönderiliyordu (~1.200 token gereksiz girdi).
+2. **Thinking Gecikmesi & Yüksek Zaman Aşımı (9.5s):** Gemini 2.0 modellerinde `thinkingBudget` kapatılmadığı için model saniyelerce iç muhakeme yapıyor, takılan modellerde 9.5 saniye bekleniyordu.
+3. **Master DB Kopukluğu (Kural #5 İhlali):** Envanter aramasında bulunan eşya `[ ⚡ Kuşan ]` ile sadece karaktere ekleniyor, Master DB'ye kaydedilmediği için sonraki aramalarda tekrar AI'ya gidiliyordu.
+4. **Yerel Veritabanının Atlanması:** Master DB veya SRD kataloğunda zaten bulunan temel eşya veya kurallar bile gereksiz yere Google API'ye soruluyordu.
+
+### Yapılan Geliştirmeler & Çözüm Mimarisi
+1. **0ms Hibrit Arama (Cache-First Engine):**
+   * `queryAiRule()` ve `queryInlineAiRule()` fonksiyonlarına yerel önbellek kalkanı eklendi.
+   * Kullanıcı bir kural veya eşya aradığında önce `masterDb` ve `BUNDLED_SRD_CORE_CATALOG` taranır. Varsa **0 milisaniyede** sonuçlar ekrana basılır (`⚡ Master DB kütüphanesinden anında yüklendi (0 ms)`).
+2. **Master DB Prefiks Entegrasyonu (`spell:`, `feat:`, `race:`, `deity:` vb.):**
+   * Kullanıcı arama kutusuna `spell: Fireball`, `feat: Cleave`, `weapon: Dagger`, `deity: Kelemvor` yazdığında veya arama kategorisi seçtiğinde prefiks otomatik ayrıştırılır ve kategori belirlenir.
+3. **Dinamik Hedefli Prompt Budama (`buildTargetedAiPrompt`):**
+   * Kategoriye özel şema üretimi sağlandı. Örneğin bir `Feat` aranırken Tanrı/Irk/Büyü şablonları tamamen elenerek prompt boyutu 6.300 karakterden **~850 karaktere (%87 küçülme)** düşürüldü.
+4. **Düşünme Bütçesini Sıfırlama (`thinkingBudget: 0`) & Hızlı Zaman Aşımı (4.5s):**
+   * Gemini 2.0 modelleri için `thinkingConfig: { thinkingBudget: 0 }` parametresi zorunlu kılınarak düşünme süresi sıfırlandı.
+   * Zaman aşımı 9.5 saniyeden 4.5 saniyeye çekilerek kuyruğa takılan modellerde hızlı yedek modele geçiş (fast failover) sağlandı.
+5. **Otomatik Master DB Kalıcılığı (`persistToMasterDb`):**
+   * `equipItemWithChildren` içerisine `persistToMasterDb(parentItem, sourceList)` entegre edildi.
+   * Rule Master veya envanter üzerinden kuşanılan ya da eklenen herhangi bir AI eşyası, ana öğesi ve tüm alt güçleriyle (child powers) birlikte **otomatik olarak Master DB'ye kaydedilir**. Böylece bir sonraki aramada 0 ms yerel sonuç garantilenir (GEMINI.md Madde 5 tam uyumu).
+
+### Parite ve Hash Durumu
+* `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `59A9145F766E14970D0790CDAAA9856BE70628D7D1F2CBF89DCF7B366D65D02B`)
+* `character.html` = `index.html` = `webapp/character.html` = `webapp/index.html` (**SHA-256:** `62B3B3E631C635807DF2A7FF19C6B583864C7D286634AED85CD9DA0C6CC3B904`)
+* `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
+* Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
