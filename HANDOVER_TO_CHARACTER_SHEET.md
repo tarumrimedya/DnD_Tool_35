@@ -3464,3 +3464,25 @@ Kullanıcı, `[ ⬆️ Seviye Atla / Planla ]` butonunun boyutunun (yapay `w-48`
 * `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `59A9145F766E14970D0790CDAAA9856BE70628D7D1F2CBF89DCF7B366D65D02B`)
 * `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
 * Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
+
+
+---
+
+## 118. Envanter Havuzu Manuel Tanımlama Akordeon Başlığının Sadeleştirilmesi
+
+### Bağlam & Kullanıcı Talebi
+Kullanıcı, Eşya Havuzu (Item Pool) bölümündeki akordeon menü başlığında yer alan `(GSheet Madde 8)` referansının kaldırılarak doğrudan ve sade `Manuel Tanımlama & İnce Ayar` olarak güncellenmesini talep etmiştir.
+
+### Yapılan Geliştirmeler & Arayüz Sadeleştirmesi
+1. **Akordeon Başlık Metni:**
+   * `<details id="pool-manual-form-details">` içerisindeki `<summary>` etiketi:
+     * **Eski:** `<span>Manuel Tanımlama & İnce Ayar (GSheet Madde 8)</span>`
+     * **Yeni:** `<span>Manuel Tanımlama & İnce Ayar</span>`
+2. **Kusursuz Parite ve Senkronizasyon:**
+   * Değişiklik kök dizindeki `character.html`, `index.html` ile `webapp/character.html`, `webapp/index.html` dosyalarına eş zamanlı uygulandı.
+
+### Parite ve Hash Durumu
+* `character.html` = `index.html` = `webapp/character.html` = `webapp/index.html` (**SHA-256:** `16358CC65578FB15B97883D45958CA272326F4960D02E7B7C6C1752E69B43FA1`)
+* `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `59A9145F766E14970D0790CDAAA9856BE70628D7D1F2CBF89DCF7B366D65D02B`)
+* `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
+* Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
