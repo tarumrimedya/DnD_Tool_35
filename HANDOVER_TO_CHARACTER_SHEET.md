@@ -3441,3 +3441,26 @@ Kullanıcı, Seviye Atla / Planla butonu ve Seviye Atlama Sihirbazı modal başl
 * `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `59A9145F766E14970D0790CDAAA9856BE70628D7D1F2CBF89DCF7B366D65D02B`)
 * `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
 * Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
+
+
+---
+
+## 117. Seviye Atla Buton Boyutunun Karakter Künyesi Buton Boyutu ile Eşitlenmesi
+
+### Bağlam & Kullanıcı Talebi
+Kullanıcı, `[ ⬆️ Seviye Atla / Planla ]` butonunun boyutunun (yapay `w-48` genişliğinden arındırılarak) `[ 📜 Karakter Künyesi ]` butonu ile birebir aynı doğal boyut ve padding yapısına (`px-3.5 py-1.5 rounded-lg shadow flex items-center gap-1.5 transition cursor-pointer`) kavuşturulmasını talep etmiştir.
+
+### Yapılan Geliştirmeler & Arayüz Sadeleştirmesi
+1. **Doğal ve Akıcı Boyut Eşitliği:**
+   * `[ ⬆️ Seviye Atla / Planla ]` ve `[ ➕ Seviye Atla ]` butonlarındaki sabit `w-48`, `justify-center` ve `whitespace-nowrap` sınıfları kaldırıldı.
+   * Her iki buton da `[ 📜 Karakter Künyesi ]` butonu ile birebir aynı:
+     `bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg shadow flex items-center gap-1.5 transition cursor-pointer`
+     sınıflarına eşitlendi.
+2. **Kusursuz Görsel Uyum:**
+   * Tüm ana kontrol butonları artık aynı dikey yükseklik (`32px`), aynı iç dolgu (`px-3.5 py-1.5`) ve aynı gradyan gölge estetiğine sahiptir.
+
+### Parite ve Hash Durumu
+* `character.html` = `index.html` = `webapp/character.html` = `webapp/index.html` (**SHA-256:** `32653D0C10B21C75C83E5F68897CF8350F12E96E614DFF20B7C0B1FD591083D4`)
+* `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `59A9145F766E14970D0790CDAAA9856BE70628D7D1F2CBF89DCF7B366D65D02B`)
+* `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
+* Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
