@@ -819,8 +819,9 @@ const RuleMaster = {
     setFlag('rf-flag-adamantine', flags.adamantine);
     setFlag('rf-flag-two-hand-str', flags.twoHandedStrengthMultiplier || flags.twoHandedStr);
 
-    // Trigger contextual visibility
+    // Trigger contextual visibility & comboboxes
     this.onTypeChange();
+    this.initComboboxes();
 
     modal.classList.remove('hidden');
   },
@@ -1026,6 +1027,184 @@ const RuleMaster = {
     if (pWeapon) pWeapon.classList.toggle('hidden', !isWeapon);
     if (pSpell) pSpell.classList.toggle('hidden', !isSpellManeuver);
     if (pRace) pRace.classList.toggle('hidden', !isRace);
+  },
+
+  DND35_CANONICAL_SKILLS: [
+    "All Skills", "Appraise", "Autohypnosis", "Balance", "Bluff", "Climb", "Concentration",
+    "Craft (Alchemy)", "Craft (Armorsmithing)", "Craft (Bowmaking)", "Craft (Weaponsmithing)", "Craft (Trapmaking)",
+    "Decipher Script", "Diplomacy", "Disable Device", "Disguise", "Escape Artist", "Forgery",
+    "Gather Information", "Handle Animal", "Heal", "Hide", "Intimidate", "Jump",
+    "Knowledge (Arcana)", "Knowledge (Architecture and Engineering)", "Knowledge (Dungeoneering)",
+    "Knowledge (Geography)", "Knowledge (History)", "Knowledge (Local)", "Knowledge (Nature)",
+    "Knowledge (Nobility and Royalty)", "Knowledge (Religion)", "Knowledge (The Planes)",
+    "Listen", "Move Silently", "Open Lock", "Perform (Act)", "Perform (Comedy)", "Perform (Dance)",
+    "Perform (Keyboard)", "Perform (Oratory)", "Perform (Percussion)", "Perform (String Instruments)",
+    "Perform (Sing)", "Perform (Wind Instruments)", "Profession", "Psicraft", "Ride", "Search",
+    "Sense Motive", "Sleight of Hand", "Speak Language", "Spellcraft", "Spot", "Survival",
+    "Swim", "Tumble", "Use Magic Device", "Use Psionic Device", "Use Rope"
+  ],
+
+  DND35_CANONICAL_SCHOOLS: [
+    "Abjuration", "Conjuration", "Divination", "Enchantment", "Evocation",
+    "Illusion", "Necromancy", "Transmutation", "Universal"
+  ],
+
+  DND35_CANONICAL_DISCIPLINES: [
+    "Desert Wind", "Devoted Spirit", "Diamond Mind", "Iron Heart", "Setting Sun",
+    "Shadow Hand", "Stone Dragon", "Tiger Claw", "White Raven"
+  ],
+
+  DND35_CANONICAL_SAVES: [
+    "None", "Reflex half", "Reflex negates", "Fortitude half", "Fortitude negates",
+    "Fortitude partial", "Will half", "Will negates", "Will partial", "Harmless"
+  ],
+
+  getParentSuggestions() {
+    const names = new Set();
+    names.add('-');
+    if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+      masterDb.forEach(m => {
+        if (m && m.name && !m.isChild) names.add(m.name);
+      });
+    }
+    if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
+      window.BUNDLED_SRD_CORE_CATALOG.forEach(m => {
+        if (m && m.name && !m.isChild) names.add(m.name);
+      });
+    }
+    return Array.from(names);
+  },
+
+  attachCombobox(inputEl, itemsProvider, options = {}) {
+    if (!inputEl || inputEl._hasCombobox) return;
+    inputEl._hasCombobox = true;
+
+    // Ensure parent container has relative positioning
+    const parent = inputEl.parentElement;
+    if (parent && !parent.classList.contains('relative')) {
+      parent.classList.add('relative');
+    }
+
+    inputEl.setAttribute('autocomplete', 'off');
+
+    // Create dropdown element
+    const dropdown = document.createElement('div');
+    dropdown.className = 'rm-combobox-dropdown hidden absolute left-0 top-full z-[120] mt-1 max-h-52 w-full overflow-y-auto rounded-lg border border-purple-500/60 bg-slate-950 p-1 shadow-2xl backdrop-blur-md text-xs';
+    parent.appendChild(dropdown);
+
+    let activeIdx = -1;
+    let filteredItems = [];
+
+    const getItems = () => {
+      if (typeof itemsProvider === 'function') return itemsProvider();
+      if (Array.isArray(itemsProvider)) return itemsProvider;
+      return [];
+    };
+
+    const renderDropdown = () => {
+      const q = (inputEl.value || '').trim().toLowerCase();
+      const allItems = getItems();
+      filteredItems = allItems.filter(item => {
+        if (!q) return true;
+        return String(item).toLowerCase().includes(q);
+      }).slice(0, 20);
+
+      dropdown.innerHTML = '';
+      if (filteredItems.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'px-3 py-2 text-slate-500 text-[11px] italic text-center';
+        empty.textContent = 'Eşleşen sonuç bulunamadı (serbest metin yazabilirsiniz)';
+        dropdown.appendChild(empty);
+      } else {
+        filteredItems.forEach((item, idx) => {
+          const row = document.createElement('div');
+          row.className = `cursor-pointer rounded px-2.5 py-1.5 text-slate-200 hover:bg-purple-900/50 hover:text-white flex items-center justify-between transition ${idx === activeIdx ? 'bg-purple-950/70 text-purple-200' : ''}`;
+          
+          const iconSpan = options.icon ? `<span class="mr-1.5 opacity-80">${options.icon}</span>` : '';
+          row.innerHTML = `<span class="truncate">${iconSpan}${item}</span>`;
+          
+          row.onmousedown = (e) => {
+            e.preventDefault(); // prevent blur before click
+            selectItem(item);
+          };
+          dropdown.appendChild(row);
+        });
+      }
+      dropdown.classList.remove('hidden');
+    };
+
+    const selectItem = (item) => {
+      inputEl.value = item;
+      dropdown.classList.add('hidden');
+      activeIdx = -1;
+      inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+      inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+      if (typeof options.onSelect === 'function') options.onSelect(item);
+    };
+
+    inputEl.addEventListener('focus', () => {
+      activeIdx = -1;
+      renderDropdown();
+    });
+
+    inputEl.addEventListener('input', () => {
+      activeIdx = -1;
+      renderDropdown();
+    });
+
+    inputEl.addEventListener('keydown', (e) => {
+      if (dropdown.classList.contains('hidden')) {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+          renderDropdown();
+          return;
+        }
+        return;
+      }
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (filteredItems.length > 0) {
+          activeIdx = (activeIdx + 1) % filteredItems.length;
+          renderDropdown();
+        }
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (filteredItems.length > 0) {
+          activeIdx = (activeIdx - 1 + filteredItems.length) % filteredItems.length;
+          renderDropdown();
+        }
+      } else if (e.key === 'Enter') {
+        if (activeIdx >= 0 && activeIdx < filteredItems.length) {
+          e.preventDefault();
+          selectItem(filteredItems[activeIdx]);
+        }
+      } else if (e.key === 'Escape') {
+        dropdown.classList.add('hidden');
+      }
+    });
+
+    inputEl.addEventListener('blur', () => {
+      setTimeout(() => {
+        dropdown.classList.add('hidden');
+      }, 180);
+    });
+  },
+
+  initComboboxes() {
+    const skillEl = document.getElementById('rf-target-skill');
+    if (skillEl) this.attachCombobox(skillEl, this.DND35_CANONICAL_SKILLS, { icon: '🎯' });
+
+    const schoolEl = document.getElementById('rf-school');
+    if (schoolEl) this.attachCombobox(schoolEl, this.DND35_CANONICAL_SCHOOLS, { icon: '🔮' });
+
+    const discEl = document.getElementById('rf-discipline');
+    if (discEl) this.attachCombobox(discEl, this.DND35_CANONICAL_DISCIPLINES, { icon: '⚔️' });
+
+    const parentEl = document.getElementById('rf-parent');
+    if (parentEl) this.attachCombobox(parentEl, () => this.getParentSuggestions(), { icon: '📜' });
+
+    const saveEl = document.getElementById('rf-save-type');
+    if (saveEl) this.attachCombobox(saveEl, this.DND35_CANONICAL_SAVES, { icon: '🛡️' });
   },
 
   applyPreset(presetKey) {

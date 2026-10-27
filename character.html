@@ -6607,9 +6607,9 @@
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-5 gap-2.5">
-            <div>
+            <div class="relative">
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Üst Öğe (Parent)</label>
-              <input type="text" id="rf-parent" value="-" placeholder="Ana eşya adı veya '-'" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-purple-300 font-mono">
+              <input type="text" id="rf-parent" autocomplete="off" value="-" placeholder="Ana eşya adı veya '-'" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-purple-300 font-mono">
             </div>
             <div>
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Önkoşul (Prereq)</label>
@@ -6708,9 +6708,9 @@
             <div><label class="block text-[9px] text-amber-400 uppercase font-bold">Speed</label><input type="number" id="rf-speed" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
           </div>
           <div class="mt-2.5 pt-2 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            <div>
+            <div class="relative">
               <label class="block text-[10px] font-bold text-amber-400 uppercase mb-1">Hedef Beceri (Target Skill)</label>
-              <input type="text" id="rf-target-skill" placeholder="Örn: Move Silently, Hide, Spot veya All Skills" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-amber-300 font-mono focus:border-amber-500">
+              <input type="text" id="rf-target-skill" autocomplete="off" placeholder="Örn: Move Silently, Hide, Spot veya All Skills" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-amber-300 font-mono focus:border-amber-500">
             </div>
             <div>
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Çoklu Beceri Haritası (JSON - Opsiyonel)</label>
@@ -6766,16 +6766,16 @@
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Değer / Fiyat (Cost gp)</label>
               <input type="number" id="rf-cost" value="10" step="1" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-amber-400 font-mono">
             </div>
-            <div>
+            <div class="relative">
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Disiplin / Büyü Okulu</label>
-              <input type="text" id="rf-discipline" placeholder="Iron Heart, Evocation vb." class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-purple-300">
+              <input type="text" id="rf-discipline" autocomplete="off" placeholder="Iron Heart, Evocation vb." class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-purple-300">
             </div>
           </div>
           
           <div class="grid grid-cols-2 md:grid-cols-3 gap-2.5 pt-1">
-            <div>
+            <div class="relative">
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Büyü Okulu</label>
-              <input type="text" id="rf-school" placeholder="Transmutation, Evocation" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
+              <input type="text" id="rf-school" autocomplete="off" placeholder="Transmutation, Evocation" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
             </div>
             <div>
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Büyü / Manevra Seviyesi (Level)</label>
@@ -6848,9 +6848,9 @@
             <span>Büyü &amp; Manevra Mekaniği (Kurtarma, Büyü Direnci, Alan)</span>
           </div>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-            <div>
+            <div class="relative">
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kurtarma Atışı (Save)</label>
-              <input type="text" id="rf-save-type" placeholder="Örn: Reflex half, Fort negates, None" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-emerald-300">
+              <input type="text" id="rf-save-type" autocomplete="off" placeholder="Örn: Reflex half, Fort negates, None" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-emerald-300">
             </div>
             <div>
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Büyü Direnci (SR)</label>

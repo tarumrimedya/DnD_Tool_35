@@ -3554,3 +3554,33 @@ Kullanıcı, Master DB nesnesi ekleme/düzenleme modalının (`#rule-crud-modal`
 * `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `7BB8C1F1B3CE85AEAEC6037571928C1A6E286C226D2169BFBF0F881A56F0C73D`)
 * `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
 * Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
+
+
+---
+
+## 121. Rule Master Modalına Koyu Temalı Akıllı "Floating Combobox" Arama Bileşeni Entegrasyonu
+
+### Bağlam & Kullanıcı Talebi
+Kullanıcı, kural/eşya düzenleme sayfasında seçim alanlarına ve beceri (`targetSkill`), büyü okulu (`school`), manevra disiplini (`discipline`), üst öğe (`parent`) ve kurtarma atışı (`saveType`) gibi kritik metin kutularına Spotlight/Akıllı Arama (Floating Combobox) desteğinin eklenmesini talep etmiştir.
+
+### Yapılan Geliştirmeler & Arayüz Mimarisi
+1. **Özel Temalı Reaktif Floating Combobox (`RuleMaster.attachCombobox`):**
+   * Koyu antrasit (`bg-slate-950 border border-purple-500/60 shadow-2xl backdrop-blur-md`) estetiğinde kayan öneri listesi geliştirildi.
+   * **Anlık Filtreleme (Live Fuzzy Search):** Kullanıcı kutuya odaklandığında veya harf yazdıkça (`mov` -> `Move Silently`, `trans` -> `Transmutation`) anında filtreleme yapar.
+   * **Tam Klavye Desteği:** `ArrowDown` / `ArrowUp` ile liste içinde gezinme, `Enter` ile tamamlama, `Escape` veya dışa tıklama ile kapanma.
+   * **Serbest Metin Özgürlüğü:** Kullanıcı isterse listede olmayan homebrew veya özel kural adlarını da serbestçe yazabilir.
+2. **Kapsanan D&D 3.5e Resmi Veri Sözlükleri:**
+   * **`rf-target-skill` (Hedef Beceri):** 55+ resmi D&D 3.5e standart becerisi (`DND35_CANONICAL_SKILLS` - 🎯 ikonu ile).
+   * **`rf-school` (Büyü Okulu):** 9 resmi büyü okulu (`DND35_CANONICAL_SCHOOLS` - 🔮 ikonu ile).
+   * **`rf-discipline` (Manevra Disiplini):** 9 Tome of Battle disiplini (`DND35_CANONICAL_DISCIPLINES` - ⚔️ ikonu ile).
+   * **`rf-parent` (Üst Öğe):** `masterDb` ve `BUNDLED_SRD_CORE_CATALOG` içindeki tüm bağımsız ana nesneleri dinamik arayan sağlayıcı (📜 ikonu ile).
+   * **`rf-save-type` (Kurtarma Atışı):** Resmi kurtarma atışı türleri (`DND35_CANONICAL_SAVES` - 🛡️ ikonu ile).
+3. **HTML Entegrasyonu & Parite:**
+   * İlgili 5 giriş kutusunun üst kapsayıcılarına `relative` ve kutuların kendilerine `autocomplete="off"` eklenerek tarayıcının yerel önerilerinin tasarımı bozması engellendi.
+
+### Parite ve Hash Durumu
+* `character.html` = `index.html` = `webapp/character.html` = `webapp/index.html` (**SHA-256:** `8D6D8C91D9305C7719A0343597F761BAF34FDCE4AA37B924512A0C9C9F940AAE`)
+* `rule_engine.js` = `webapp/rule_engine.js` (**SHA-256:** `30EF492D055976F8600EE715241B1EB9104BCBD70AF8A94116CD9235444080B4`)
+* `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `A7F1DEB85D49B8F48204AC2EA57ADF9A9E99708D534C3AA8FE0D13D92A1AE3ED`)
+* `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
+* Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
