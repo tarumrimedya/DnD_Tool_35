@@ -1596,7 +1596,7 @@
             <div class="flex items-center gap-1.5 flex-wrap">
               <span class="text-[10px] font-bold text-slate-400 uppercase mr-1">Filtre:</span>
               <button onclick="setSkillFilter('all')" id="btn-skill-filter-all" class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer">Tümü</button>
-              <button onclick="setSkillFilter('class')" id="btn-skill-filter-class" class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-600 text-white transition cursor-pointer">⭐ Sınıf (Class)</button>
+              <button onclick="setSkillFilter('class')" id="btn-skill-filter-class" class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-600 text-white transition cursor-pointer" title="Sınıf Becerileri (Class) ve Herkesin Kullanabildiği (Untrained) Beceriler">⭐ Sınıf &amp; Herkes</button>
               <button onclick="setSkillFilter('trained')" id="btn-skill-filter-trained" class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer">🎯 Eğitimli (Rank > 0)</button>
               <select id="skill-stat-filter" onchange="setSkillStatFilter(this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-slate-300 font-bold focus:border-amber-400 cursor-pointer" title="Stat / Nitelik Filtresi">
                 <option value="all">Tüm Statlar</option>
@@ -38314,6 +38314,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           const isClass = compSkills.some(s => s.isClass);
           const misc = Math.max(0, ...compSkills.map(s => Number(s.misc) || 0));
 
+          const isUntrained = conDef.untrained !== undefined
+            ? conDef.untrained
+            : (compSkills.length > 0 ? compSkills.some(s => s.untrained !== false) : true);
+
           displayItems.push({
             key: conDef.key,
             name: conDef.name,
@@ -38323,6 +38327,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
             isClass: isClass,
             acp: conDef.acp,
             misc: misc,
+            untrained: isUntrained,
             isConsolidated: true,
             components: conDef.components
           });
@@ -38331,6 +38336,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         // 2. Non-consolidated remaining skills
         (character.skills || []).forEach(sk => {
           if (!mergedKeysHandled.has(sk.key)) {
+            const isUntrained = sk.untrained !== undefined
+              ? (sk.untrained !== false)
+              : (DND35_CORE_SKILLS.find(c => c.key === sk.key)?.untrained !== false);
+
             displayItems.push({
               key: sk.key,
               name: sk.name,
@@ -38340,6 +38349,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
               isClass: !!sk.isClass,
               acp: !!sk.acp,
               misc: Number(sk.misc) || 0,
+              untrained: isUntrained,
               isConsolidated: false
             });
           }
@@ -38347,6 +38357,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       } else {
         // Standard RAW 46 skills
         (character.skills || []).forEach(sk => {
+          const isUntrained = sk.untrained !== undefined
+            ? (sk.untrained !== false)
+            : (DND35_CORE_SKILLS.find(c => c.key === sk.key)?.untrained !== false);
+
           displayItems.push({
             key: sk.key,
             name: sk.name,
@@ -38356,14 +38370,15 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
             isClass: !!sk.isClass,
             acp: !!sk.acp,
             misc: Number(sk.misc) || 0,
+            untrained: isUntrained,
             isConsolidated: false
           });
         });
       }
 
-      // Filter by activeSkillFilter
+      // Filter by activeSkillFilter: 'class' is now Sınıf & Herkes (Class skills + Untrained skills + any trained skill)
       if (activeSkillFilter === 'class') {
-        displayItems = displayItems.filter(item => item.isClass);
+        displayItems = displayItems.filter(item => item.isClass || item.untrained || item.ranks > 0);
       } else if (activeSkillFilter === 'trained') {
         displayItems = displayItems.filter(item => item.ranks > 0);
       }
