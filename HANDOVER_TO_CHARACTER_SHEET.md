@@ -2981,3 +2981,30 @@ Kullanıcı aramalarında (`"Cloak of protection +1"` vb.) model sorgularının 
 4. **Parite ve Kural Standartları:**
    * 2 RuleMaster dosyası (`rule_master.js`, `webapp/rule_master.js`) arasında **%100 SHA-256 hash paritesi** (`403ACCCDDD...`) sağlandı.
    * Tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.
+
+
+
+---
+
+## 98. 3 Temel Kullanım Alanı İçin 1 Asıl + 1 Yedek (6 Yuvalı Sürümden Bağımsız Model Matrisi)
+
+### Bağlam & Mimari Karar
+Google API model listesinde 16 farklı deneysel/önizleme modelinin kuyruğa girmesi ve gelecekte `1.5` sürümleri kapatıldığında kodun çökme riski ele alınmıştır. Yapay zekanın projedeki 3 temel kullanım alanı netleştirilmiş; her alan için **1 Asıl + 1 Yedek (Toplam 6 yuva)** kuralı getirilmiş ve tüm geçici sürüm numaraları koddan ayıklanarak daimi Google Rolling Aliases yapısına geçilmiştir.
+
+### Yapılan Değişiklikler ve AI_TASK_ROUTING Matrisi
+1. **3 Görev Bazlı 1 Asıl + 1 Yedek Çifti (`AI_TASK_ROUTING`):**
+   * **1. Hızlı Arama & Seviye Atlama (`QUICK_SEARCH`):**
+     * Asıl: `gemini-flash-latest` (Daimi güncel en hızlı motor)
+     * Yedek: `gemini-flash` (Kararlı genel takma ad)
+   * **2. Kütüphane & Kural Denetimi (`RULE_AUDIT`):**
+     * Asıl: `gemini-pro-latest` (Daimi güncel derin akıl yürütme motoru)
+     * Yedek: `gemini-pro` (Kararlı genel pro takma adı)
+   * **3. Toplu İçe Aktarım & Serbest Metin Ayrıştırma (`IMPORT_BATCH`):**
+     * Asıl: `gemini-flash-latest` (Hızlı yapısal JSON motoru)
+     * Yedek: `gemini-pro-latest` (Karmaşık metinler için derin Pro yedeği)
+2. **Kuyruk Şişmesinin Engellenmesi:**
+   * Google'dan dönen 16 deneysel preview modeli ayıklanarak kuyruk tam **2 modele (1 Asıl + 1 Yedek)** sabitlendi.
+   * Maksimum arama bekleme süresi en kötü senaryoda $2 \times 7.5 = 15$ saniyeye indirildi.
+3. **Parite ve Kural Standartları:**
+   * 2 RuleMaster dosyası (`rule_master.js`, `webapp/rule_master.js`) arasında **%100 SHA-256 hash paritesi** (`CFAD40EB...`) sağlandı.
+   * Tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.

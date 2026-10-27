@@ -1117,25 +1117,50 @@ const RuleMaster = {
     }
   },
 
+  // 3 Temel AI Kullanım Alanı İçin 1 Asıl + 1 Yedek (Toplam 6 Yuvalı Sürümden Bağımsız Model Matrisi)
+  AI_TASK_ROUTING: {
+    // 1. Hızlı Arama & Seviye Atlama (Ultra Hızlı Gecikme)
+    QUICK_SEARCH: {
+      primary: 'gemini-flash-latest',
+      fallback: 'gemini-flash'
+    },
+    // 2. Kütüphane & Kural Denetimi (Derin Muhakeme & RAW Tutarlılığı)
+    RULE_AUDIT: {
+      primary: 'gemini-pro-latest',
+      fallback: 'gemini-pro'
+    },
+    // 3. Toplu İçe Aktarım & Serbest Metin Ayrıştırma (Yapısal JSON)
+    IMPORT_BATCH: {
+      primary: 'gemini-flash-latest',
+      fallback: 'gemini-pro-latest'
+    }
+  },
+
   getModelsForTask(taskType = 'DEFAULT') {
     const userPref = this.getAiModelMode();
     if (userPref === 'pro') {
-      return ['gemini-pro-latest', 'gemini-pro', 'gemini-1.5-pro', 'gemini-flash-latest'];
+      return ['gemini-pro-latest', 'gemini-pro'];
     }
     if (userPref === 'flash') {
-      return ['gemini-flash-latest', 'gemini-flash', 'gemini-1.5-flash'];
+      return ['gemini-flash-latest', 'gemini-flash'];
     }
-    // 'auto' (Smart Hybrid Router):
-    if (taskType === 'RULE_AUDIT' || taskType === 'COMPLEX_TACTICAL' || taskType === 'IMPORT_BATCH') {
-      return ['gemini-pro-latest', 'gemini-pro', 'gemini-1.5-pro', 'gemini-flash-latest'];
+    // 'auto' (Smart Task Router):
+    if (taskType === 'RULE_AUDIT' || taskType === 'COMPLEX_TACTICAL') {
+      const cfg = this.AI_TASK_ROUTING.RULE_AUDIT;
+      return [cfg.primary, cfg.fallback];
+    }
+    if (taskType === 'IMPORT_BATCH') {
+      const cfg = this.AI_TASK_ROUTING.IMPORT_BATCH;
+      return [cfg.primary, cfg.fallback];
     }
     // Default fast retrieval (QUICK_SEARCH, LEVEL_UP, etc.)
-    return ['gemini-flash-latest', 'gemini-flash', 'gemini-1.5-flash'];
+    const cfg = this.AI_TASK_ROUTING.QUICK_SEARCH;
+    return [cfg.primary, cfg.fallback];
   },
 
   async getAvailableGeminiModels(apiKey, forceRefresh = false, taskType = 'DEFAULT') {
-    const defaultFallbacks = this.getModelsForTask(taskType);
-    if (!apiKey) return defaultFallbacks;
+    const defaultPair = this.getModelsForTask(taskType);
+    if (!apiKey) return defaultPair;
 
     const cacheKey = `${taskType}_${this.getAiModelMode()}`;
     if (!forceRefresh && this._cachedTaskModels && this._cachedTaskModels[cacheKey]) {
@@ -1144,7 +1169,7 @@ const RuleMaster = {
 
     try {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 3500);
+      const timer = setTimeout(() => controller.abort(), 3000);
       const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`, {
         signal: controller.signal
       });
@@ -1163,46 +1188,39 @@ const RuleMaster = {
                    !lower.includes('embedding') &&
                    !lower.includes('realtime') &&
                    !lower.includes('bison') &&
+                   !lower.includes('preview') &&
                    !lower.includes('gemma');
           });
 
-        const isProTask = (this.getAiModelMode() === 'pro') || 
-          (this.getAiModelMode() === 'auto' && (taskType === 'RULE_AUDIT' || taskType === 'COMPLEX_TACTICAL' || taskType === 'IMPORT_BATCH'));
+        const isPro = (this.getAiModelMode() === 'pro') || 
+          (this.getAiModelMode() === 'auto' && (taskType === 'RULE_AUDIT' || taskType === 'COMPLEX_TACTICAL'));
 
-        const relevantApiModels = isProTask
+        const relevant = isPro
           ? apiModels.filter(m => m.toLowerCase().includes('pro'))
           : apiModels.filter(m => m.toLowerCase().includes('flash'));
 
-        const prioritized = [];
-        const preferredAliases = isProTask
-          ? ['gemini-pro-latest', 'gemini-pro', 'gemini-1.5-pro']
-          : ['gemini-flash-latest', 'gemini-flash', 'gemini-1.5-flash'];
+        // Pick 1 Primary + 1 Fallback from preferred generic aliases or discovered models
+        const prefPrimary = defaultPair[0];
+        const prefFallback = defaultPair[1];
 
-        preferredAliases.forEach(alias => {
-          if (relevantApiModels.includes(alias)) {
-            prioritized.push(alias);
-          }
-        });
+        const primary = relevant.includes(prefPrimary)
+          ? prefPrimary
+          : (relevant[0] || prefPrimary);
 
-        relevantApiModels.forEach(m => {
-          if (!prioritized.includes(m)) prioritized.push(m);
-        });
+        const fallback = relevant.includes(prefFallback)
+          ? prefFallback
+          : (relevant.find(m => m !== primary) || prefFallback);
 
-        defaultFallbacks.forEach(f => {
-          if (!prioritized.includes(f)) prioritized.push(f);
-        });
-
-        if (prioritized.length > 0) {
-          if (!this._cachedTaskModels) this._cachedTaskModels = {};
-          this._cachedTaskModels[cacheKey] = prioritized;
-          return prioritized;
-        }
+        const resultPair = [primary, fallback];
+        if (!this._cachedTaskModels) this._cachedTaskModels = {};
+        this._cachedTaskModels[cacheKey] = resultPair;
+        return resultPair;
       }
     } catch (e) {
       console.warn('API model list discovery skipped:', e.message);
     }
 
-    return defaultFallbacks;
+    return defaultPair;
   },
 
   cleanJsonText(raw) {
