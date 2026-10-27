@@ -749,6 +749,79 @@ const RuleMaster = {
       if (unitInput) unitInput.value = unit;
     }
 
+    // Target Skill & Multiple Skill Bonuses
+    const targetSkillEl = document.getElementById('rf-target-skill');
+    if (targetSkillEl) {
+      targetSkillEl.value = entry.targetSkill || (entry.scope && entry.scope !== 'None / General' && !entry.scope.includes('Attack') && !entry.scope.includes('Weapon') ? entry.scope : '');
+    }
+    const skillBonusesEl = document.getElementById('rf-skill-bonuses');
+    if (skillBonusesEl) {
+      skillBonusesEl.value = (entry.skillBonuses && typeof entry.skillBonuses === 'object') ? JSON.stringify(entry.skillBonuses) : '';
+    }
+
+    // Armor / Shield Contextual Fields
+    const maxDexEl = document.getElementById('rf-max-dex');
+    if (maxDexEl) maxDexEl.value = entry.maxDex !== undefined ? entry.maxDex : '';
+    const checkPenaltyEl = document.getElementById('rf-check-penalty');
+    if (checkPenaltyEl) checkPenaltyEl.value = entry.checkPenalty !== undefined ? entry.checkPenalty : '';
+    const asfEl = document.getElementById('rf-asf');
+    if (asfEl) asfEl.value = entry.arcaneSpellFailure !== undefined ? entry.arcaneSpellFailure : '';
+
+    // Weapon Contextual Fields
+    const rangeEl = document.getElementById('rf-range');
+    if (rangeEl) rangeEl.value = entry.range || '';
+    const profEl = document.getElementById('rf-proficiency');
+    if (profEl) profEl.value = entry.proficiency || 'Martial';
+    const isLightEl = document.getElementById('rf-is-light');
+    if (isLightEl) isLightEl.value = entry.isLight ? 'true' : 'false';
+    const sizeStepsEl = document.getElementById('rf-size-steps');
+    if (sizeStepsEl) sizeStepsEl.value = entry.sizeModifier?.scaling?.steps || 0;
+
+    // Spell / Maneuver Contextual Fields
+    const saveTypeEl = document.getElementById('rf-save-type');
+    if (saveTypeEl) saveTypeEl.value = entry.saveType || entry.savingThrow || '';
+    const srEl = document.getElementById('rf-sr');
+    if (srEl) srEl.value = entry.spellResistance || entry.sr || 'No';
+    const spellRangeEl = document.getElementById('rf-spell-range');
+    if (spellRangeEl) spellRangeEl.value = entry.range || '';
+    const targetAreaEl = document.getElementById('rf-target-area');
+    if (targetAreaEl) targetAreaEl.value = entry.target || entry.area || '';
+    const compEl = document.getElementById('rf-components');
+    if (compEl) compEl.value = entry.components || '';
+
+    // Race Contextual Fields
+    const raceSizeEl = document.getElementById('rf-race-size');
+    if (raceSizeEl) raceSizeEl.value = entry.size || 'Medium';
+    const baseSpeedEl = document.getElementById('rf-base-speed');
+    if (baseSpeedEl) baseSpeedEl.value = entry.baseSpeed !== undefined ? entry.baseSpeed : 30;
+    const favClassEl = document.getElementById('rf-favored-class');
+    if (favClassEl) favClassEl.value = entry.favoredClass || 'Any';
+    const langEl = document.getElementById('rf-languages');
+    if (langEl) langEl.value = Array.isArray(entry.languages) ? entry.languages.join(', ') : (entry.languages || 'Common');
+
+    // Advanced / Child Action Fields
+    const childLabelEl = document.getElementById('rf-child-label');
+    if (childLabelEl) childLabelEl.value = entry.childButtonLabel || '';
+    const effectTypeEl = document.getElementById('rf-effect-type');
+    if (effectTypeEl) effectTypeEl.value = entry.effectType || '';
+    const selfHpCostEl = document.getElementById('rf-self-hp-cost');
+    if (selfHpCostEl) selfHpCostEl.value = entry.selfHpCost || '';
+
+    // Rule Flags Checkboxes
+    const flags = entry.ruleFlags || {};
+    const setFlag = (id, val) => { const el = document.getElementById(id); if (el) el.checked = Boolean(val); };
+    setFlag('rf-flag-touch', flags.touchAttack || flags.touch);
+    setFlag('rf-flag-ignore-armor', flags.ignoreArmor);
+    setFlag('rf-flag-keen', flags.critThreatDoubled || flags.keen);
+    setFlag('rf-flag-reach', flags.reach);
+    setFlag('rf-flag-silver', flags.silver);
+    setFlag('rf-flag-cold-iron', flags.coldIron);
+    setFlag('rf-flag-adamantine', flags.adamantine);
+    setFlag('rf-flag-two-hand-str', flags.twoHandedStrengthMultiplier || flags.twoHandedStr);
+
+    // Trigger contextual visibility
+    this.onTypeChange();
+
     modal.classList.remove('hidden');
   },
 
@@ -834,6 +907,95 @@ const RuleMaster = {
       delete formData.dailyCharges;
     }
 
+    // Target Skill & Multiple Skill Bonuses
+    const targetSkillVal = document.getElementById('rf-target-skill')?.value.trim();
+    if (targetSkillVal) {
+      formData.targetSkill = targetSkillVal;
+      if (!formData.scope || formData.scope === 'None / General') {
+        formData.scope = targetSkillVal;
+      }
+    }
+    const skillBonusesRaw = document.getElementById('rf-skill-bonuses')?.value.trim();
+    if (skillBonusesRaw) {
+      try {
+        formData.skillBonuses = JSON.parse(skillBonusesRaw);
+      } catch (e) {
+        console.warn('Could not parse skillBonuses JSON:', e);
+      }
+    } else if (targetSkillVal && formData.skillBonus) {
+      formData.skillBonuses = { [targetSkillVal]: formData.skillBonus };
+    }
+
+    // Armor / Shield Contextual Fields
+    if (typeVal === 'Armor' || typeVal === 'Shield') {
+      const maxDexVal = document.getElementById('rf-max-dex')?.value;
+      if (maxDexVal !== '' && !isNaN(Number(maxDexVal))) formData.maxDex = Number(maxDexVal);
+      const checkPenaltyVal = document.getElementById('rf-check-penalty')?.value;
+      if (checkPenaltyVal !== '' && !isNaN(Number(checkPenaltyVal))) formData.checkPenalty = Number(checkPenaltyVal);
+      const asfVal = document.getElementById('rf-asf')?.value;
+      if (asfVal !== '' && !isNaN(Number(asfVal))) formData.arcaneSpellFailure = Number(asfVal);
+    }
+
+    // Weapon Contextual Fields
+    if (typeVal === 'Weapon') {
+      const rangeVal = document.getElementById('rf-range')?.value.trim();
+      if (rangeVal) formData.range = rangeVal;
+      const profVal = document.getElementById('rf-proficiency')?.value;
+      if (profVal) formData.proficiency = profVal;
+      formData.isLight = document.getElementById('rf-is-light')?.value === 'true';
+      const sizeStepsVal = Number(document.getElementById('rf-size-steps')?.value) || 0;
+      if (sizeStepsVal > 0) {
+        formData.sizeModifier = { targetType: 'weapon', scaling: { steps: sizeStepsVal } };
+      }
+    }
+
+    // Spell / Maneuver Contextual Fields
+    if (typeVal === 'Spell' || typeVal === 'Maneuver' || typeVal === 'Stance') {
+      const saveTypeVal = document.getElementById('rf-save-type')?.value.trim();
+      if (saveTypeVal) formData.saveType = saveTypeVal;
+      const srVal = document.getElementById('rf-sr')?.value;
+      if (srVal) formData.spellResistance = srVal;
+      const spellRangeVal = document.getElementById('rf-spell-range')?.value.trim();
+      if (spellRangeVal) formData.range = spellRangeVal;
+      const targetAreaVal = document.getElementById('rf-target-area')?.value.trim();
+      if (targetAreaVal) formData.target = targetAreaVal;
+      const compVal = document.getElementById('rf-components')?.value.trim();
+      if (compVal) formData.components = compVal;
+    }
+
+    // Race Contextual Fields
+    if (typeVal === 'Race') {
+      const raceSizeVal = document.getElementById('rf-race-size')?.value;
+      if (raceSizeVal) formData.size = raceSizeVal;
+      const baseSpeedVal = Number(document.getElementById('rf-base-speed')?.value);
+      if (!isNaN(baseSpeedVal)) formData.baseSpeed = baseSpeedVal;
+      const favClassVal = document.getElementById('rf-favored-class')?.value.trim();
+      if (favClassVal) formData.favoredClass = favClassVal;
+      const langVal = document.getElementById('rf-languages')?.value.trim();
+      if (langVal) formData.languages = langVal.split(',').map(l => l.trim()).filter(Boolean);
+    }
+
+    // Advanced / Child Action Fields
+    const childLabelVal = document.getElementById('rf-child-label')?.value.trim();
+    if (childLabelVal) formData.childButtonLabel = childLabelVal;
+    const effectTypeVal = document.getElementById('rf-effect-type')?.value;
+    if (effectTypeVal) formData.effectType = effectTypeVal;
+    const selfHpCostVal = Number(document.getElementById('rf-self-hp-cost')?.value);
+    if (!isNaN(selfHpCostVal) && selfHpCostVal > 0) formData.selfHpCost = selfHpCostVal;
+
+    // Rule Flags
+    const ruleFlags = Object.assign({}, baseObj.ruleFlags || {});
+    const getFlag = id => document.getElementById(id)?.checked;
+    if (getFlag('rf-flag-touch')) ruleFlags.touchAttack = true; else delete ruleFlags.touchAttack;
+    if (getFlag('rf-flag-ignore-armor')) ruleFlags.ignoreArmor = true; else delete ruleFlags.ignoreArmor;
+    if (getFlag('rf-flag-keen')) ruleFlags.critThreatDoubled = true; else delete ruleFlags.critThreatDoubled;
+    if (getFlag('rf-flag-reach')) ruleFlags.reach = true; else delete ruleFlags.reach;
+    if (getFlag('rf-flag-silver')) ruleFlags.silver = true; else delete ruleFlags.silver;
+    if (getFlag('rf-flag-cold-iron')) ruleFlags.coldIron = true; else delete ruleFlags.coldIron;
+    if (getFlag('rf-flag-adamantine')) ruleFlags.adamantine = true; else delete ruleFlags.adamantine;
+    if (getFlag('rf-flag-two-hand-str')) ruleFlags.twoHandedStrengthMultiplier = true; else delete ruleFlags.twoHandedStrengthMultiplier;
+    if (Object.keys(ruleFlags).length > 0) formData.ruleFlags = ruleFlags;
+
     // Deep Merge with baseObj to guarantee ruleFlags, combatModifiers, and skillBonuses are preserved
     const entry = Object.assign({}, baseObj, formData);
 
@@ -846,6 +1008,24 @@ const RuleMaster = {
     const modal = document.getElementById('rule-crud-modal');
     if (modal) modal.classList.add('hidden');
     this.selectedEntryIndex = -1;
+  },
+
+  onTypeChange() {
+    const typeVal = document.getElementById('rf-type')?.value || 'Weapon';
+    const isArmorShield = typeVal === 'Armor' || typeVal === 'Shield';
+    const isWeapon = typeVal === 'Weapon';
+    const isSpellManeuver = typeVal === 'Spell' || typeVal === 'Maneuver' || typeVal === 'Stance';
+    const isRace = typeVal === 'Race';
+
+    const pArmor = document.getElementById('rf-panel-armor');
+    const pWeapon = document.getElementById('rf-panel-weapon');
+    const pSpell = document.getElementById('rf-panel-spell');
+    const pRace = document.getElementById('rf-panel-race');
+
+    if (pArmor) pArmor.classList.toggle('hidden', !isArmorShield);
+    if (pWeapon) pWeapon.classList.toggle('hidden', !isWeapon);
+    if (pSpell) pSpell.classList.toggle('hidden', !isSpellManeuver);
+    if (pRace) pRace.classList.toggle('hidden', !isRace);
   },
 
   applyPreset(presetKey) {

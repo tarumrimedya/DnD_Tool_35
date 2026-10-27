@@ -6563,7 +6563,7 @@
             </div>
             <div>
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Türü (Category) *</label>
-              <select id="rf-type" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+              <select id="rf-type" onchange="RuleMaster.onTypeChange()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
                 <option value="Weapon">Weapon (Silah)</option>
                 <option value="Shield">Shield (Kalkan)</option>
                 <option value="Armor">Armor (Zırh)</option>
@@ -6707,6 +6707,16 @@
             <div><label class="block text-[9px] text-indigo-400 uppercase font-bold">CL</label><input type="number" id="rf-cl" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
             <div><label class="block text-[9px] text-amber-400 uppercase font-bold">Speed</label><input type="number" id="rf-speed" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
           </div>
+          <div class="mt-2.5 pt-2 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div>
+              <label class="block text-[10px] font-bold text-amber-400 uppercase mb-1">Hedef Beceri (Target Skill)</label>
+              <input type="text" id="rf-target-skill" placeholder="Örn: Move Silently, Hide, Spot veya All Skills" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-amber-300 font-mono focus:border-amber-500">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Çoklu Beceri Haritası (JSON - Opsiyonel)</label>
+              <input type="text" id="rf-skill-bonuses" placeholder='Örn: {"Open Lock": 10, "Escape Artist": 4}' class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white font-mono focus:border-purple-500">
+            </div>
+          </div>
         </div>
 
         <!-- SECTION 5: DÖVÜŞ, EYLEM & PARAMETRELER -->
@@ -6774,6 +6784,128 @@
           </div>
         </div>
 
+        <!-- SECTION 5B: KATEGORİYE ÖZEL PARAMETRELER (DİNAMİK) -->
+        <!-- 5B.1 ZIRH & KALKAN ÖZEL ALANLARI -->
+        <div id="rf-panel-armor" class="hidden bg-slate-900/60 border border-sky-900/50 rounded-xl p-3 space-y-2">
+          <div class="text-[11px] font-bold text-sky-400 uppercase tracking-wide flex items-center gap-1.5">
+            <span>🛡️</span>
+            <span>Zırh &amp; Kalkan Mekaniği (Max Dex, ACP, ASF)</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Maksimum Dex Bonusu (Max Dex)</label>
+              <input type="number" id="rf-max-dex" min="0" max="20" placeholder="Örn: 1, 6 (Boşsa sınırsız)" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-sky-300 font-mono">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Zırh Kontrol Cezası (Armor Check Penalty - ACP)</label>
+              <input type="number" id="rf-check-penalty" max="0" placeholder="Örn: -6, -2, 0" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-rose-300 font-mono">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Büyü Bozulma Oranı (Arcane Spell Failure %)</label>
+              <input type="number" id="rf-asf" min="0" max="100" placeholder="Örn: 15, 35 (Yüzde)" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-amber-300 font-mono">
+            </div>
+          </div>
+        </div>
+
+        <!-- 5B.2 SİLAH ÖZEL ALANLARI -->
+        <div id="rf-panel-weapon" class="hidden bg-slate-900/60 border border-rose-900/50 rounded-xl p-3 space-y-2">
+          <div class="text-[11px] font-bold text-rose-400 uppercase tracking-wide flex items-center gap-1.5">
+            <span>⚔️</span>
+            <span>Silah Parametreleri (Menzil, Yatkınlık, Finesse)</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Menzil Artışı (Range Increment)</label>
+              <input type="text" id="rf-range" placeholder="Örn: 10 ft, 100 ft" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-amber-300 font-mono">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Yatkınlık Sınıfı (Proficiency)</label>
+              <select id="rf-proficiency" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
+                <option value="Martial">Martial (Savaş Silahı)</option>
+                <option value="Simple">Simple (Basit Silah)</option>
+                <option value="Exotic">Exotic (Egzotik Silah)</option>
+                <option value="Natural">Natural (Doğal Silah)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Hafif / Finessable Silah</label>
+              <select id="rf-is-light" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
+                <option value="false">Normal (1-Hand / 2-Hand)</option>
+                <option value="true">Hafif Silah (Light / Finesse Uygun)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Boyut Adımı (Size Steps)</label>
+              <input type="number" id="rf-size-steps" min="0" max="4" value="0" placeholder="0, 1, 2" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white font-mono">
+            </div>
+          </div>
+        </div>
+
+        <!-- 5B.3 BÜYÜ & MANEVRA ÖZEL ALANLARI -->
+        <div id="rf-panel-spell" class="hidden bg-slate-900/60 border border-purple-900/50 rounded-xl p-3 space-y-2">
+          <div class="text-[11px] font-bold text-purple-400 uppercase tracking-wide flex items-center gap-1.5">
+            <span>🔮</span>
+            <span>Büyü &amp; Manevra Mekaniği (Kurtarma, Büyü Direnci, Alan)</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kurtarma Atışı (Save)</label>
+              <input type="text" id="rf-save-type" placeholder="Örn: Reflex half, Fort negates, None" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-emerald-300">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Büyü Direnci (SR)</label>
+              <select id="rf-sr" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
+                <option value="No">No (Etkilemez / Direnç Yok)</option>
+                <option value="Yes">Yes (Büyü Direnci Geçerli)</option>
+                <option value="Harmless">Yes (Harmless)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Menzil (Range)</label>
+              <input type="text" id="rf-spell-range" placeholder="Close (25+5ft/2lvl), Touch, Personal" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Hedef / Etki Alanı (Target/Area)</label>
+              <input type="text" id="rf-target-area" placeholder="1 creature, 20-ft burst, Cone" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
+            </div>
+          </div>
+          <div class="pt-1">
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Bileşenler (Components)</label>
+            <input type="text" id="rf-components" placeholder="V, S, M, F, DF, XP" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-slate-300 font-mono">
+          </div>
+        </div>
+
+        <!-- 5B.4 IRK (RACE) ÖZEL ALANLARI -->
+        <div id="rf-panel-race" class="hidden bg-slate-900/60 border border-emerald-900/50 rounded-xl p-3 space-y-2">
+          <div class="text-[11px] font-bold text-emerald-400 uppercase tracking-wide flex items-center gap-1.5">
+            <span>🧬</span>
+            <span>Irk Parametreleri (Boyut, Hız, Diller, Sınıf)</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Irk Boyutu (Size)</label>
+              <select id="rf-race-size" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
+                <option value="Medium">Medium (Orta)</option>
+                <option value="Small">Small (Küçük - Halfling/Gnome)</option>
+                <option value="Large">Large (Büyük)</option>
+                <option value="Tiny">Tiny (Mini)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Temel Hız (Base Speed ft)</label>
+              <input type="number" id="rf-base-speed" value="30" step="5" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white font-mono">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tercih Edilen Sınıf</label>
+              <input type="text" id="rf-favored-class" placeholder="Fighter, Rogue, Any vb." class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Konuşulan Diller</label>
+              <input type="text" id="rf-languages" placeholder="Common, Elven vb." class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
+            </div>
+          </div>
+        </div>
+
         <!-- SECTION 6: GÜNLÜK ŞARJ & KULLANIM SINIRI -->
         <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 space-y-2">
           <div class="text-[11px] font-bold text-amber-400 uppercase tracking-wide flex items-center gap-1.5">
@@ -6800,6 +6932,78 @@
           </div>
           <p class="text-[10px] text-slate-400 italic">Eşya kuşanıldığında Savaş Kokpitinde otomatik batarya ve tek tıkla şarj harcama butonu belirir. Uzun Dinlenme (☀️) yapıldığında şarjlar otomatik dolar.</p>
         </div>
+
+        <!-- SECTION 7: GELİŞMİŞ KOKPİT & KURAL BAYRAKLARI (KATLANABİLİR) -->
+        <details id="rf-advanced-details" class="bg-slate-900/60 border border-slate-800 rounded-xl p-3">
+          <summary class="cursor-pointer text-[11px] font-bold text-slate-400 hover:text-purple-400 uppercase tracking-wide flex items-center justify-between select-none">
+            <span class="flex items-center gap-1.5">
+              <span>⚙️</span>
+              <span>7. Gelişmiş Kokpit, Alt Güç &amp; Kural Bayrakları</span>
+            </span>
+            <span class="text-xs text-slate-500">▼</span>
+          </summary>
+          <div class="mt-3 space-y-2.5 pt-2 border-t border-slate-800/80">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Alt Güç Buton Etiketi (Child Label)</label>
+                <input type="text" id="rf-child-label" placeholder="Örn: Kan Ver (+3d6)" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Etki Türü (Effect Type)</label>
+                <select id="rf-effect-type" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
+                  <option value="">Varsayılan (Hasar / Genel)</option>
+                  <option value="damage">damage (Ekstra Hasar)</option>
+                  <option value="bonus">bonus (Geçici Stat / Saldırı Bonusu)</option>
+                  <option value="condition">condition (Durum / Zayıflatma)</option>
+                  <option value="heal">heal (Can Tazeleme)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kendi Can Bedeli (Self HP Cost)</label>
+                <input type="number" id="rf-self-hp-cost" min="0" placeholder="Örn: 5 (Blade of Blood)" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-rose-300 font-mono">
+              </div>
+            </div>
+
+            <!-- Kural Bayrakları (Rule Flags) Checkboxes -->
+            <div>
+              <label class="block text-[10px] font-bold text-purple-400 uppercase mb-1.5">Kural Motoru Bayrakları (Rule Flags)</label>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-slate-300">
+                <label class="flex items-center gap-1.5 cursor-pointer hover:text-white">
+                  <input type="checkbox" id="rf-flag-touch" class="rounded bg-slate-950 border-slate-700 text-purple-600 focus:ring-0">
+                  <span>Dokunma (Touch Attack)</span>
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer hover:text-white">
+                  <input type="checkbox" id="rf-flag-ignore-armor" class="rounded bg-slate-950 border-slate-700 text-purple-600 focus:ring-0">
+                  <span>Zırhı Del (Ignore Armor)</span>
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer hover:text-white">
+                  <input type="checkbox" id="rf-flag-keen" class="rounded bg-slate-950 border-slate-700 text-purple-600 focus:ring-0">
+                  <span>Keen (Kritik 2x)</span>
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer hover:text-white">
+                  <input type="checkbox" id="rf-flag-reach" class="rounded bg-slate-950 border-slate-700 text-purple-600 focus:ring-0">
+                  <span>Erişim Silahı (Reach)</span>
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer hover:text-white">
+                  <input type="checkbox" id="rf-flag-silver" class="rounded bg-slate-950 border-slate-700 text-purple-600 focus:ring-0">
+                  <span>Gümüş (Silver)</span>
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer hover:text-white">
+                  <input type="checkbox" id="rf-flag-cold-iron" class="rounded bg-slate-950 border-slate-700 text-purple-600 focus:ring-0">
+                  <span>Soğuk Demir (Cold Iron)</span>
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer hover:text-white">
+                  <input type="checkbox" id="rf-flag-adamantine" class="rounded bg-slate-950 border-slate-700 text-purple-600 focus:ring-0">
+                  <span>Adamantin (Adamantine)</span>
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer hover:text-white">
+                  <input type="checkbox" id="rf-flag-two-hand-str" class="rounded bg-slate-950 border-slate-700 text-purple-600 focus:ring-0">
+                  <span>1.5x STR Çarpanı</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </details>
 
       </div>
 

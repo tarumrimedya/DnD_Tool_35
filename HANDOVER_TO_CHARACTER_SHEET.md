@@ -3520,3 +3520,37 @@ Kullanıcı, Master DB'de ve envanterde yer alan *Boots of Elvenkind* eşyasın�
 * `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `CBDEA204D4304C6894CCA0E16F476759D39BDFDFF27FF605E79FC65C344AEAE6`)
 * `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
 * Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
+
+
+---
+
+## 120. Rule Master Kural / Eşya Düzenleme Modalının Tam Şemaya ve Dinamik UI/UX Mimarisine Genişletilmesi
+
+### Bağlam & Kullanıcı Talebi
+Kullanıcı, Master DB nesnesi ekleme/düzenleme modalının (`#rule-crud-modal`) mevcut veritabanı şemamızdaki tüm alanları kapsayıp kapsamadığını sorgulamış ve modalın tüm modern kural motoru alanlarını (`maxDex`, `checkPenalty`, `asf`, `targetSkill`, `skillBonuses`, `range`, `proficiency`, `isLight`, `sizeModifier`, `saveType`, `sr`, `components`, `childButtonLabel`, `selfHpCost`, `ruleFlags`) yönetecek şekilde UI/UX ergonomisiyle genişletilmesini talep etmiştir.
+
+### Yapılan Geliştirmeler & Arayüz Mimarisi
+1. **Hedef Beceri ve Çoklu Beceri Haritası (Section 4):**
+   * 16 stat modifiyesinin hemen altına `Hedef Beceri (Target Skill)` (`#rf-target-skill`) ve `Çoklu Beceri Haritası` (`#rf-skill-bonuses`) eklendi. Artık *Boots of Elvenkind* veya *Vest of Escape* gibi eşyaların beceri hedefi doğrudan arayüzden seçilip düzenlenebilmektedir.
+2. **Akıllı Dinamik Kategori Panelleri (Section 5B):**
+   * Seçilen `Türü (Category)` alanına göre arayüzü kalabalıktan arındıran reaktif paneller entegre edildi (`onTypeChange()`):
+     * **Zırh / Kalkan:** Maksimum Dex Bonusu (`#rf-max-dex`), Zırh Kontrol Cezası (`#rf-check-penalty`), Büyü Bozulma Oranı (`#rf-asf`).
+     * **Silah:** Menzil Artışı (`#rf-range`), Yatkınlık (`#rf-proficiency`), Hafif / Finessable Silah (`#rf-is-light`), Boyut Adımı (`#rf-size-steps`).
+     * **Büyü / Manevra:** Kurtarma Atışı (`#rf-save-type`), Büyü Direnci (`#rf-sr`), Büyü Menzili (`#rf-spell-range`), Hedef / Alan (`#rf-target-area`), Bileşenler (`#rf-components`).
+     * **Irk:** Irk Boyutu (`#rf-race-size`), Temel Hız (`#rf-base-speed`), Tercih Edilen Sınıf (`#rf-favored-class`), Konuşulan Diller (`#rf-languages`).
+3. **Gelişmiş Kokpit, Alt Güç & Kural Bayrakları (Section 7 - Katlanabilir Akordeon):**
+   * İleri düzey mekanikler için katlanabilir `<details id="rf-advanced-details">` akordeonu eklendi:
+     * Alt Güç Buton Etiketi (`#rf-child-label` - Örn: "Kan Ver (+3d6)")
+     * Etki Türü (`#rf-effect-type` - damage, bonus, condition, heal)
+     * Kendi Can Bedeli (`#rf-self-hp-cost` - Örn: 5 HP)
+     * 8 Temel Kural Motoru Bayrağı (`rf-flag-touch`, `rf-flag-ignore-armor`, `rf-flag-keen`, `rf-flag-reach`, `rf-flag-silver`, `rf-flag-cold-iron`, `rf-flag-adamantine`, `rf-flag-two-hand-str`).
+4. **Rule Master Motor Senkronizasyonu (rule_master.js):**
+   * `RuleMaster.onTypeChange()` fonksiyonu ile açılır kutu değişiminde ve şablon uygulandığında ilgili panel anında reaktif açılır.
+   * `populateModal` ve `submitModal` fonksiyonları tüm bu alanları eksiksiz dolduracak ve `masterDb` nesnesine güvenle kaydedecek şekilde güncellendi.
+
+### Parite ve Hash Durumu
+* `character.html` = `index.html` = `webapp/character.html` = `webapp/index.html` (**SHA-256:** `95E809EBE58FECD66D20930115B2FC663A7CCF0BCB969113B3B729C82AE86830`)
+* `rule_engine.js` = `webapp/rule_engine.js` (**SHA-256:** `30EF492D055976F8600EE715241B1EB9104BCBD70AF8A94116CD9235444080B4`)
+* `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `7BB8C1F1B3CE85AEAEC6037571928C1A6E286C226D2169BFBF0F881A56F0C73D`)
+* `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
+* Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
