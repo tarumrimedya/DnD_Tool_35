@@ -2907,3 +2907,25 @@ const raceCatalog = (Array.isArray(masterDb) && masterDb.length)
 ### Parite ve Hash Durumu
 * `rule_engine.js` = `webapp/rule_engine.js` (**SHA-256:** `1DF6B41022B21756DE1F2A677958F4A0FC64FEA6ACDB608BC966FBAF7E57122F`)
 * Tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korundu.
+
+
+---
+
+## 103. Envanter Havuzunda Mobilde Eşya Ekleme Butonunun Alt Satıra Alınması
+
+### Bağlam & Kullanıcı Talebi
+Karakter sayfasının Çanta / Envanter sekmesindeki "Envanter ve Ekipman Havuzu (Gear Pool)" başlığında yer alan arama çubuğu ve kategori filtresi, mobil ekran genişliğini tamamen kapladığı için `➕ Yeni Eşya Ekle` butonu ekranın sağ dışına taşmakta ve mobilde görünmemekteydi.
+
+### Yapılan Geliştirmeler
+1. **Duyarlı (Responsive) Yerleşim İyileştirmesi:**
+   * Envanter havuzu başlık alanı (`flex-col sm:flex-row`) esnek yapıya kavuşturuldu.
+   * Mobilde (<640px):
+     * 1. Satır: `🎒 ENVANTER VE EKİPMAN HAVUZU (GEAR POOL)` başlığı.
+     * 2. Satır: `[ Havuzda ara... ]` arama kutusu ve `[ Tüm Kategoriler ]` filtre açılır menüsü satırı tam dolduracak şekilde yan yana.
+     * 3. Satır: `➕ Yeni Eşya Ekle` butonu alt satıra taşındı, tam genişlik (`w-full`) ve parmakla dokunmaya uygun ferah bir buton haline getirildi.
+   * Masaüstünde (>=640px):
+     * Başlık solda, arama kutusu, kategori filtresi ve eşya ekleme butonu sağda tek satırda kompakt görünümünü korur (`sm:flex-row sm:w-auto`).
+
+### Parite ve Hash Durumu
+* 4 HTML dosyası (`index.html`, `character.html`, `webapp/index.html`, `webapp/character.html`) arasında **%100 SHA-256 hash paritesi** (`EB655E60311EDB9818A406782AC95852B571C9F37920EF5F44EDAC5752DD228D`) sağlandı.
+* Tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korundu.

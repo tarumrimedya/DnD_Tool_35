@@ -2114,35 +2114,38 @@
 
         <!-- 🎒 INVENTORY & GEAR POOL (GSheet Madde 6 & 8) -->
         <div class="border border-slate-800 rounded-xl overflow-hidden space-y-0">
-          <div class="bg-slate-900 px-3 py-2.5 text-xs font-bold text-white flex flex-wrap justify-between items-center gap-2 border-b border-slate-800">
+          <div class="bg-slate-900 px-3 py-2.5 text-xs font-bold text-white flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-slate-800">
             <div class="flex items-center gap-2">
               <span class="text-amber-400">🎒</span>
               <span class="text-amber-300 font-bold">ENVANTER VE EKİPMAN HAVUZU (GEAR POOL)</span>
             </div>
-            <div class="flex items-center gap-2">
-              <!-- Search -->
-              <input type="text" id="pool-search-input" oninput="renderGearPoolTable()" placeholder="Havuzda ara..." class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white placeholder-slate-500 focus:border-amber-500">
-              <!-- Category Filter (Madde 8: Weapon & Shield separated!) -->
-              <select id="pool-category-filter" onchange="renderGearPoolTable()" class="bg-slate-950 text-slate-300 border border-slate-700 rounded-lg px-2.5 py-1 text-xs">
-                <option value="All">Tüm Kategoriler</option>
-                <option value="Weapon">Weapon (Silah)</option>
-                <option value="Shield">Shield (Kalkan)</option>
-                <option value="Armor">Armor (Zırh)</option>
-                <option value="Head">Head (Baş)</option>
-                <option value="Eyes">Eyes (Göz)</option>
-                <option value="Neck">Neck (Boyun)</option>
-                <option value="Shoulders">Shoulders (Omuz)</option>
-                <option value="Torso">Torso (Gövde)</option>
-                <option value="Belt">Belt (Kemer)</option>
-                <option value="Bracers">Bracers (Bileklik)</option>
-                <option value="Gloves">Gloves (Eldiven)</option>
-                <option value="Ring">Ring (Yüzük)</option>
-                <option value="Boots">Boots (Çizme)</option>
-                <option value="Consumable">Consumable (Sarf Malzemesi)</option>
-                <option value="Other">Other (Diğer)</option>
-              </select>
-              <button onclick="openAddPoolItemModal()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-3 py-1 rounded-lg transition shadow">
-                ➕ Yeni Eşya Ekle
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+              <div class="flex items-center gap-2 flex-1 sm:flex-initial">
+                <!-- Search -->
+                <input type="text" id="pool-search-input" oninput="renderGearPoolTable()" placeholder="Havuzda ara..." class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:border-amber-500 flex-1 sm:w-44">
+                <!-- Category Filter (Madde 8: Weapon & Shield separated!) -->
+                <select id="pool-category-filter" onchange="renderGearPoolTable()" class="bg-slate-950 text-slate-300 border border-slate-700 rounded-lg px-2 py-1.5 text-xs shrink-0">
+                  <option value="All">Tüm Kategoriler</option>
+                  <option value="Weapon">Weapon (Silah)</option>
+                  <option value="Shield">Shield (Kalkan)</option>
+                  <option value="Armor">Armor (Zırh)</option>
+                  <option value="Head">Head (Baş)</option>
+                  <option value="Eyes">Eyes (Göz)</option>
+                  <option value="Neck">Neck (Boyun)</option>
+                  <option value="Shoulders">Shoulders (Omuz)</option>
+                  <option value="Torso">Torso (Gövde)</option>
+                  <option value="Belt">Belt (Kemer)</option>
+                  <option value="Bracers">Bracers (Bileklik)</option>
+                  <option value="Gloves">Gloves (Eldiven)</option>
+                  <option value="Ring">Ring (Yüzük)</option>
+                  <option value="Boots">Boots (Çizme)</option>
+                  <option value="Consumable">Consumable (Sarf Malzemesi)</option>
+                  <option value="Other">Other (Diğer)</option>
+                </select>
+              </div>
+              <button type="button" onclick="openAddPoolItemModal()" class="w-full sm:w-auto bg-amber-600 hover:bg-amber-500 active:scale-95 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition shadow flex items-center justify-center gap-1.5 cursor-pointer shrink-0">
+                <span>➕</span>
+                <span>Yeni Eşya Ekle</span>
               </button>
             </div>
           </div>
