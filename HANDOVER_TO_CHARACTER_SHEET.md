@@ -2929,3 +2929,30 @@ Karakter sayfasının Çanta / Envanter sekmesindeki "Envanter ve Ekipman Havuzu
 ### Parite ve Hash Durumu
 * 4 HTML dosyası (`index.html`, `character.html`, `webapp/index.html`, `webapp/character.html`) arasında **%100 SHA-256 hash paritesi** (`EB655E60311EDB9818A406782AC95852B571C9F37920EF5F44EDAC5752DD228D`) sağlandı.
 * Tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korundu.
+
+
+---
+
+## 104. Envanter Arama Havuzunda Feat ve Yeteneklerin Listelenmesi Sorununun Giderilmesi
+
+### Bağlam & Hata Tespiti
+Kullanıcı "Envantere Eşya Ekle" (Add Pool Item) modalında bir eşya arattığında (örneğin `"St"` yazdığında), *Dodge* ve *Mobility* gibi karakterin veya veritabanının Feat (Hüner) ve Yetenek kayıtları, kategori olarak `"Other"`, ağırlık ve bedel olarak `"0 lbs / 0 gp"` şeklinde eşya arama listesinde listelenmekteydi.
+
+### Kök Neden (Root Cause)
+1. Karakter seviye atladığında veya yeni bir feat seçildiğinde, bu featler genel referans havuzu olarak `masterDb`'ye `type: 'Feat'` olarak kaydedilmekteydi.
+2. Ancak "Envantere Eşya Ekle" modalının arama motoru olan `executePoolMasterDbSearch(query)` fonksiyonu, `masterDb` içindeki kayıtları ararken eşya tipi filtresinden (`isEquipmentOrGear`) geçirmiyor; ismi veya açıklamasında aranan harfler geçen her şeyi (büyü, feat, manevra vb.) ham olarak döndürüyordu.
+3. `isEquipmentOrGear` yardımcı fonksiyonu da `type: 'Feat'` veya `type: 'Special Ability'` gibi tipleri açıkça hariç tutacak katı bir tip eleme kuralına sahip değildi.
+
+### Yapılan Geliştirmeler
+1. **Katı Eşya Tipi İzolasyonu (`isEquipmentOrGear`):**
+   * Fonksiyona resmi D&D 3.5e kural izolasyonu getirildi:
+   * `feat`, `special ability`, `spell`, `maneuver`, `stance`, `warlock invocation`, `race`, `class`, `skill`, `domain` vb. eşya olmayan tüm kural nesneleri istisnasız `false` döndürülerek engellendi.
+   * Yalnızca geçerli eşya tipleri (`weapon`, `armor`, `shield`, `potion`, `ring`, `wondrous`, `consumable`, `scroll`, `wand`, `rod` vb.) ve vücut yuvası/ağırlığı/fiyatı olan gerçek nesneler eşya olarak kabul edildi.
+2. **Arama Motoruna Filtre Entegrasyonu (`executePoolMasterDbSearch`):**
+   * Arama motorunda `allDb.filter(...)` aşamasında `isEquipmentOrGear(item)` şartı zorunlu kılındı.
+   * Ayrıca `masterDb`'ye ek olarak yerel çekirdek SRD kataloğundaki (`BUNDLED_SRD_CORE_CATALOG`) eşyalar da (silahlar, zırhlar, kalkanlar) arama havuzuna dahil edildi.
+   * Artık `"St"` veya herhangi bir kelime arandığında sadece Staff, Studded Leather vb. gerçek eşyalar listelenir; Featler kesinlikle envanter aramasına sızamaz.
+
+### Parite ve Hash Durumu
+* 4 HTML dosyası (`index.html`, `character.html`, `webapp/index.html`, `webapp/character.html`) arasında **%100 SHA-256 hash paritesi** (`51BE9EB0E55C22C92ACA2C6D861F9F55319B596E32B1C273630E25966ADA7CE5`) sağlandı.
+* Tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korundu.

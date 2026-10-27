@@ -42070,25 +42070,59 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       return false;
     }
 
-    // Filter which Master DB items are equipment/items
+    // Filter which Master DB / Library items are equipment/items (D&D 3.5e RAW)
     function isEquipmentOrGear(item) {
       if (!item || !item.name) return false;
-      const type = (item.type || '').toLowerCase();
+      const type = String(item.type || '').toLowerCase().trim();
+      const cat = String(item.category || '').toLowerCase().trim();
+
+      // STRICT EXCLUSIONS: Feats, Spells, Maneuvers, Races, Classes, Invocations, Special Abilities are NEVER equipment!
+      const nonGearTypes = [
+        'feat', 'special ability', 'spell', 'maneuver', 'stance', 
+        'warlock invocation', 'invocation', 'race', 'class', 'prestige class',
+        'domain', 'skill', 'trait', 'flaw', 'template', 'psionic power'
+      ];
+      if (nonGearTypes.includes(type) || nonGearTypes.includes(cat)) {
+        return false;
+      }
+      if (type.includes('feat') || type.includes('spell') || type.includes('maneuver') || type.includes('ability')) {
+        return false;
+      }
+
+      // Valid equipment types or categories
       if (type.includes('weapon') || type.includes('armor') || type.includes('shield') || 
           type.includes('potion') || type.includes('ring') || type.includes('wondrous') || 
           type.includes('item') || type.includes('gear') || type.includes('consumable') ||
-          type.includes('scroll') || type.includes('wand') || type.includes('rod') || type === 'other') {
+          type.includes('scroll') || type.includes('wand') || type.includes('rod') ||
+          type.includes('equipment') || type.includes('accessory') || type === 'goods') {
         return true;
       }
-      if (item.slot && item.slot !== 'None' && item.slot !== '-') return true;
-      if (Number(item.weight) > 0 || Number(item.cost) > 0) return true;
+      // If item has an official body slot (other than 'None' or '-')
+      if (item.slot && item.slot !== 'None' && item.slot !== '-' && item.slot.toLowerCase() !== 'none') {
+        return true;
+      }
+      // If it explicitly has positive weight or positive GP cost (common adventuring gear)
+      if (Number(item.weight) > 0 || Number(item.cost) > 0) {
+        return true;
+      }
+      if (type === 'other' || cat === 'other') {
+        return !!(item.slot && item.slot !== 'None' && item.slot !== '-') || (Number(item.weight) > 0 || Number(item.cost) > 0);
+      }
       return false;
     }
 
     // Get all Master DB items not yet in bag
     function getMasterDbItemsNotInInventory() {
       const allDb = Array.isArray(masterDb) ? masterDb : [];
-      return allDb.filter(item => {
+      const combined = [...allDb];
+      if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
+        window.BUNDLED_SRD_CORE_CATALOG.forEach(coreItem => {
+          if (coreItem && coreItem.name && !combined.some(m => (m.name || '').toLowerCase().trim() === coreItem.name.toLowerCase().trim())) {
+            combined.push(coreItem);
+          }
+        });
+      }
+      return combined.filter(item => {
         return isEquipmentOrGear(item) && !isItemInInventory(item.name);
       });
     }
@@ -42319,9 +42353,20 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       const q = query.toLowerCase().trim();
       const allDb = Array.isArray(masterDb) ? masterDb : [];
 
-      // Filter Master DB items
-      const matches = allDb.filter(item => {
+      // Combine masterDb and bundled SRD catalog for equipment lookup without duplicates
+      const combined = [...allDb];
+      if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
+        window.BUNDLED_SRD_CORE_CATALOG.forEach(coreItem => {
+          if (coreItem && coreItem.name && !combined.some(m => (m.name || '').toLowerCase().trim() === coreItem.name.toLowerCase().trim())) {
+            combined.push(coreItem);
+          }
+        });
+      }
+
+      // Filter Master DB items: MUST strictly be valid equipment/gear and match query
+      const matches = combined.filter(item => {
         if (!item || !item.name) return false;
+        if (!isEquipmentOrGear(item)) return false;
         const name = (item.name || '').toLowerCase();
         const type = (item.type || '').toLowerCase();
         const slot = (item.slot || '').toLowerCase();
