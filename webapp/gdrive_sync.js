@@ -360,33 +360,61 @@ const CloudSync = {
       const currentCharId = character._hubId || character.id || reqId;
       const remoteCharId = remoteChar._hubId || remoteChar.id;
 
+      // Authoritative local state timestamps
+      const localModifiedTs = character.lastModified ? new Date(character.lastModified).getTime() : 0;
+      const localPlayerHpTs = Number(character.hp?._lastPlayerChangeTs) || 0;
+      const localDmTs = Number(character.hp?._lastDmUpdateTs) || 0;
+      const localEffectiveTs = Math.max(localModifiedTs, localPlayerHpTs, localDmTs);
+
       // Check if remote payload has hubDb containing the current character
       let matchedFromHub = false;
       if (remotePayload.hubDb && Array.isArray(remotePayload.hubDb.characters) && currentCharId) {
         const foundInCloudHub = remotePayload.hubDb.characters.find(c => c.id === currentCharId);
         if (foundInCloudHub && foundInCloudHub.fullData) {
-          const localDmTs = character.hp?._lastDmUpdateTs || 0;
           const cloudDmTs = Number(foundInCloudHub.lastHpUpdateTs) || 0;
-          const currentHpBefore = character.hp?.current;
-          const currentTempBefore = character.hp?.temp;
+          const cloudCharModifiedTs = foundInCloudHub.fullData.lastModified ? new Date(foundInCloudHub.fullData.lastModified).getTime() : 0;
+          const cloudCharPlayerHpTs = Number(foundInCloudHub.fullData.hp?._lastPlayerChangeTs) || 0;
+          const cloudCharSavedTs = foundInCloudHub.lastSaved ? new Date(foundInCloudHub.lastSaved).getTime() : 0;
+          const cloudPayloadTs = remotePayload.lastModified ? new Date(remotePayload.lastModified).getTime() : 0;
+          const cloudEffectiveTs = Math.max(cloudCharModifiedTs, cloudCharPlayerHpTs, cloudCharSavedTs, cloudPayloadTs);
 
-          Object.keys(character).forEach(k => delete character[k]);
-          Object.assign(character, foundInCloudHub.fullData);
-          character._hubId = currentCharId;
+          // CASE A: Yerel Karakter Daha Guncel (Local is strictly newer)
+          // Oyuncu dinlendi (Long/Short Rest), buyu/manevra harcadi/tazeledi veya can degistirdi.
+          // Buluttaki bayat karakter kaydi yerel karakter durumunu (HP, Buyu, Manevra, Buff) ASLA ezemez!
+          if (localEffectiveTs > cloudEffectiveTs + 500) {
+            // Sadece DM tarafindan gonderilmis yeni bir can mudahalesi varsa onu al (reconciliation)
+            if (cloudDmTs > localDmTs && foundInCloudHub.currentHp !== undefined) {
+              if (!character.hp) character.hp = {};
+              character.hp.current = foundInCloudHub.currentHp;
+              character.hp.temp = foundInCloudHub.tempHp || 0;
+              character.hp._lastDmUpdateTs = cloudDmTs;
+              applied = true;
+            }
+            // Yereldeki guncel durumu buluta dogru iletmek icin oto-kaydi tetikle
+            this.scheduleAutoSave();
+          } else {
+            // CASE B: Bulut Karakteri Daha Guncel (Remote is newer)
+            const currentHpBefore = character.hp?.current;
+            const currentTempBefore = character.hp?.temp;
 
-          // Preserve newer local DM HP update if exists
-          if (localDmTs > cloudDmTs && currentHpBefore !== undefined) {
-            if (!character.hp) character.hp = {};
-            character.hp.current = currentHpBefore;
-            character.hp.temp = currentTempBefore || 0;
-            character.hp._lastDmUpdateTs = localDmTs;
-          } else if (foundInCloudHub.currentHp !== undefined) {
-            if (!character.hp) character.hp = {};
-            character.hp.current = foundInCloudHub.currentHp;
-            character.hp.temp = foundInCloudHub.tempHp || 0;
-            character.hp._lastDmUpdateTs = cloudDmTs;
+            Object.keys(character).forEach(k => delete character[k]);
+            Object.assign(character, foundInCloudHub.fullData);
+            character._hubId = currentCharId;
+
+            // Preserve newer local DM HP update if exists
+            if (localDmTs > cloudDmTs && currentHpBefore !== undefined) {
+              if (!character.hp) character.hp = {};
+              character.hp.current = currentHpBefore;
+              character.hp.temp = currentTempBefore || 0;
+              character.hp._lastDmUpdateTs = localDmTs;
+            } else if (foundInCloudHub.currentHp !== undefined) {
+              if (!character.hp) character.hp = {};
+              character.hp.current = foundInCloudHub.currentHp;
+              character.hp.temp = foundInCloudHub.tempHp || 0;
+              character.hp._lastDmUpdateTs = cloudDmTs;
+            }
+            applied = true;
           }
-          applied = true;
           matchedFromHub = true;
         }
       }
@@ -394,44 +422,60 @@ const CloudSync = {
       if (!matchedFromHub) {
         // Guard Clause: If user is viewing a specific Hub character or requested a specific ID:
         // Do NOT overwrite it with an unrelated cloud single-character!
-        const isDefaultTestChar = (remoteChar.name === "Kazmil'in Çırağı" || remoteChar.name === "Khazmil'in Çırağı" || !remoteCharId);
+        const isDefaultTestChar = ((remoteChar.name || "").includes("Kazmil") || (remoteChar.name || "").includes("Khazmil") || !remoteCharId);
         const isCurrentDifferent = (currentCharId && remoteCharId && currentCharId !== remoteCharId) ||
                                    (reqId && isDefaultTestChar && character.name !== remoteChar.name);
 
         if (isCurrentDifferent) {
           console.warn(`CloudSync: Cloud character (${remoteChar.name || remoteCharId}) does not match current active character (${character.name || currentCharId}). Skipping character overwrite to protect character isolation.`);
         } else {
-          const localDmTs = character.hp?._lastDmUpdateTs || 0;
-          const currentHpBefore = character.hp?.current;
-          const currentTempBefore = character.hp?.temp;
+          const cloudCharModifiedTs = remoteChar.lastModified ? new Date(remoteChar.lastModified).getTime() : (remotePayload.lastModified ? new Date(remotePayload.lastModified).getTime() : 0);
+          const cloudCharPlayerHpTs = Number(remoteChar.hp?._lastPlayerChangeTs) || 0;
+          const cloudCharEffectiveTs = Math.max(cloudCharModifiedTs, cloudCharPlayerHpTs);
+          const remoteDmTs = Number(remoteChar.hp?._lastDmUpdateTs) || 0;
 
-          Object.keys(character).forEach(k => delete character[k]);
-          Object.assign(character, remoteChar);
+          if (localEffectiveTs > cloudCharEffectiveTs + 500) {
+            // Local is newer! Protect local character from overwrite
+            if (remoteDmTs > localDmTs && remoteChar.hp?.current !== undefined) {
+              if (!character.hp) character.hp = {};
+              character.hp.current = remoteChar.hp.current;
+              character.hp.temp = remoteChar.hp.temp || 0;
+              character.hp._lastDmUpdateTs = remoteDmTs;
+              applied = true;
+            }
+            this.scheduleAutoSave();
+          } else {
+            const currentHpBefore = character.hp?.current;
+            const currentTempBefore = character.hp?.temp;
 
-          // Preserve newer local DM HP update if exists
-          if (localDmTs > 0 && currentHpBefore !== undefined) {
-            if (!character.hp) character.hp = {};
-            character.hp.current = currentHpBefore;
-            character.hp.temp = currentTempBefore || 0;
-            character.hp._lastDmUpdateTs = localDmTs;
+            Object.keys(character).forEach(k => delete character[k]);
+            Object.assign(character, remoteChar);
+
+            // Preserve newer local DM HP update if exists
+            if (localDmTs > 0 && currentHpBefore !== undefined) {
+              if (!character.hp) character.hp = {};
+              character.hp.current = currentHpBefore;
+              character.hp.temp = currentTempBefore || 0;
+              character.hp._lastDmUpdateTs = localDmTs;
+            }
+
+            // Clean unowned dummy modifiers (like Boots of Speed or Acid Arrow) from activeModifiers
+            if (Array.isArray(character.activeModifiers)) {
+              character.activeModifiers = character.activeModifiers.filter(m => {
+                if (!m || !m.name) return false;
+                const n = m.name.toLowerCase().trim();
+                if (n.includes('boots of speed')) {
+                  const hasBoots = typeof characterHasItem === 'function' ? characterHasItem(character, 'Boots of Speed') : false;
+                  if (!hasBoots) return false;
+                }
+                if (n.includes('acid arrow')) return false; // Spell attacks belong in spell drawers, not melee modifiers
+                return true;
+              });
+            }
+
+            localStorage.setItem('dnd35_character', JSON.stringify(character));
+            applied = true;
           }
-
-          // Clean unowned dummy modifiers (like Boots of Speed or Acid Arrow) from activeModifiers
-          if (Array.isArray(character.activeModifiers)) {
-            character.activeModifiers = character.activeModifiers.filter(m => {
-              if (!m || !m.name) return false;
-              const n = m.name.toLowerCase().trim();
-              if (n.includes('boots of speed')) {
-                const hasBoots = typeof characterHasItem === 'function' ? characterHasItem(character, 'Boots of Speed') : false;
-                if (!hasBoots) return false;
-              }
-              if (n.includes('acid arrow')) return false; // Spell attacks belong in spell drawers, not melee modifiers
-              return true;
-            });
-          }
-
-          localStorage.setItem('dnd35_character', JSON.stringify(character));
-          applied = true;
         }
       }
     }
@@ -702,6 +746,13 @@ const CloudSync = {
 
   saveDataDebounced() {
     return this.scheduleAutoSave();
+  },
+
+  // Immediate push for critical full-state transitions (e.g. Long Rest, Short Rest, Spell Slot Recovery)
+  pushImmediate() {
+    if (!this.configured || (this.pinRequired && !this.authenticated)) return Promise.resolve(false);
+    clearTimeout(this.autoSaveTimer);
+    return this.pushToCloud(true);
   },
 
   // Live polling for cross-device DM updates (Player phone / tablet)

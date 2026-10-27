@@ -2745,3 +2745,33 @@ Sınıf filtresine eğitimsiz atılabilen (untrained) becerilerin de dahil edilm
 3. **Parite ve Kural Standartları:**
    * 4 HTML dosyası (`index.html`, `character.html`, `webapp/index.html`, `webapp/character.html`) arasında **%100 SHA-256 hash paritesi** (`3292D6A1...`) korundu.
    * Tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.
+
+
+---
+
+## 97. Bulut Senkronizasyonu Bütüncül Durum Koruması (LWW & Anında İtme Mimarisi)
+
+### Bağlam & Hata Tespiti
+Karakter 1 HP durumundayken Uzun Dinlenme (Long Rest) yapıldığında can D&D 3.5e RAW doğal iyileşme seçeneğiyle 5 HP (+4 Seviye HP) olmuş; ancak birkaç saniye sonra ekrandaki can kendiliğinden tekrar 1 HP'ye geri dönmüştür.
+
+Yapılan kök neden analizinde (`gdrive_sync.js`):
+1. **Canlı Yoklama Yarış Durumu (Race Condition):** Arka planda her 8 saniyede bir çalışan canlı yoklama (`CloudSync.startLiveSyncPolling(8000)`), oyuncunun dinlenme işleminden sonraki 2.5 saniyelik debounced kayıt aralığında tetiklenerek buluttaki henüz güncellenmemiş eski paketi (1 HP) çekmiştir.
+2. **applyRemotePayload Zaman Damgası Körlüğü:** Buluttan gelen veri ile yerel veri karşılaştırılırken yalnızca `localDmTs > cloudDmTs` (DM canı) kontrol edilmiş; oyuncunun yaptığı değişiklikleri belirten `_lastPlayerChangeTs` ve `character.lastModified` damgaları yok sayılmıştır.
+3. **Bütüncül Durum Tehlikesi (Büyü & Manevralar):** Bulut paketi yerel karakter nesnesini toptan sildiğinden (`Object.assign(character, foundInCloudHub.fullData)`), yalnızca can değil; dinlenmeyle tazelenen büyü yuvaları (`spellcasting`), Tome of Battle manevraları (`tomeOfBattle.readiedManeuvers`), günlük eşya şarjları ve debuff temizlikleri de eski (tüketilmiş) haline geri çekilmekteydi.
+
+### Uygulanan Mimari Çözümler
+1. **Bütüncül Zaman Damgası Koruması (LWW - Last-Write-Wins):**
+   * `gdrive_sync.js` içindeki `applyRemotePayload` fonksiyonunda yerel karakter zaman damgası (`localEffectiveTs = Math.max(localModifiedTs, localPlayerHpTs, localDmTs)`) ile bulut verisi (`cloudEffectiveTs = Math.max(cloudCharModifiedTs, cloudCharPlayerHpTs, cloudCharSavedTs, cloudPayloadTs)`) karşılaştırılması getirildi.
+   * Yerel durum buluttan daha güncelse (`localEffectiveTs > cloudEffectiveTs + 500`), buluttaki eski kayıt **karakter durumunu (HP, Büyüler, Manevralar, Bufflar) ASLA ezemez**.
+   * Yalnızca DM tarafından gönderilmiş daha yeni bir uzaktan can müdahalesi (`cloudDmTs > localDmTs`) varsa can uzlaştırılır (reconciliation); yereldeki taze durum ise buluta geri itilir.
+2. **Kritik Eylemlerde Anında Bulut İtme (pushImmediate - Zero Debounce):**
+   * `CloudSync.pushImmediate()` metodu eklendi.
+   * `executeLongRest()`, `executeShortRest()`, `restoreAllSpellSlots()` ve `recoverAllManeuvers()` fonksiyonlarında işlem tamamlandığı milisaniyede `pushImmediate()` tetiklenerek 2.5 saniyelik bekleme iptal edildi ve yarış durumu sıfırlandı.
+3. **Büyü & Manevra Toptan Yenileme Entegrasyonu:**
+   * `restoreAllSpellSlots()` fonksiyonu yalnızca spontane yuvaları değil, hazırlanan (`preparedSlots`) ve ilahi (`divineSlots`) yuvaları da sıfırlayacak şekilde güçlendirildi.
+   * `recoverAllManeuvers()` fonksiyonuna `character.lastModified` ve anında bulut itme bağlandı.
+
+### Parite ve Hash Durumu
+* 4 HTML dosyası (`index.html`, `character.html`, `webapp/index.html`, `webapp/character.html`) arasında **%100 SHA-256 hash paritesi** (`C7F4198AE3937D8B3EB613D1F18C53EB3CBFE1C12904DA5BD7CD70BB62401A8A`) sağlandı.
+* 2 CloudSync dosyası (`gdrive_sync.js`, `webapp/gdrive_sync.js`) arasında **%100 SHA-256 hash paritesi** (`807466BF94822F56CA2BA34DE162B02DCEAB9B959469EB6FB927E75DD2A04951`) sağlandı.
+* Tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.

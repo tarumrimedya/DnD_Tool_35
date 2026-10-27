@@ -27535,8 +27535,16 @@ function renderManualStatsPanel() {
 
     function restoreAllSpellSlots() {
       (character?.spellcasting?.slots || []).forEach(s => s.used = 0);
+      (character?.spellcasting?.preparedSlots || []).forEach(s => s.used = 0);
+      (character?.spellcasting?.divineSlots || []).forEach(s => s.used = 0);
+      if (character) character.lastModified = new Date().toISOString();
       renderSpellSlots();
-      saveStateToStorage();
+      saveStateToStorage(true);
+      if (window.CloudSync && typeof window.CloudSync.pushImmediate === 'function') {
+        window.CloudSync.pushImmediate();
+      } else if (window.GDriveSync && typeof window.GDriveSync.pushToCloud === 'function') {
+        window.GDriveSync.pushToCloud(true);
+      }
       showDiceTopToast({
         icon: '✨',
         title: 'Büyü Slotları',
@@ -28718,10 +28726,16 @@ function renderManualStatsPanel() {
 
     function recoverAllManeuvers() {
       (character?.tomeOfBattle?.readiedManeuvers || []).forEach(m => m.expended = false);
+      if (character) character.lastModified = new Date().toISOString();
       renderManeuvers();
-      saveStateToStorage();
+      saveStateToStorage(true);
+      if (window.CloudSync && typeof window.CloudSync.pushImmediate === 'function') {
+        window.CloudSync.pushImmediate();
+      } else if (window.GDriveSync && typeof window.GDriveSync.pushToCloud === 'function') {
+        window.GDriveSync.pushToCloud(true);
+      }
       showDiceTopToast({
-        icon: '🔄',
+        icon: '⚔️',
         title: 'Manevralar Hazırlandı',
         breakdown: 'Tüm Tome of Battle manevraları yenilendi (Swift Action Recover)',
         total: 'Recovered'
@@ -39246,6 +39260,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       character.hp.temp = 0;
       character.hp.nonlethal = 0;
       character.hp._lastPlayerChangeTs = Math.max(Date.now(), (Number(character.hp?._lastDmUpdateTs) || 0) + 100);
+      character.lastModified = new Date().toISOString();
 
       // 1. Immediately update HUD so HP on screen updates in 0ms synchronously
       if (typeof renderHUD === 'function') {
@@ -39378,6 +39393,11 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
 
       try { updateRoundDisplays(); } catch (e) { console.warn('updateRoundDisplays error in rest:', e); }
       try { saveStateToStorage(true); } catch (e) { console.warn('saveStateToStorage error in rest:', e); }
+      if (window.CloudSync && typeof window.CloudSync.pushImmediate === 'function') {
+        window.CloudSync.pushImmediate();
+      } else if (window.GDriveSync && typeof window.GDriveSync.pushToCloud === 'function') {
+        window.GDriveSync.pushToCloud(true);
+      }
       try { if (typeof renderManeuvers === "function") renderManeuvers(); } catch (e) { console.warn('renderManeuvers error in rest:', e); }
       try { if (typeof renderSpellSlots === "function") renderSpellSlots(); } catch (e) { console.warn('renderSpellSlots error in rest:', e); }
       try { renderAll(); } catch (e) { console.warn('renderAll error in rest:', e); }
@@ -39509,6 +39529,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           nonlethalHealed = Math.min(currentNonlethal, charLvl);
           character.hp.nonlethal = currentNonlethal - nonlethalHealed;
           character.hp._lastPlayerChangeTs = Math.max(Date.now(), (Number(character.hp?._lastDmUpdateTs) || 0) + 100);
+          character.lastModified = new Date().toISOString();
         }
 
         // Exhausted -> Fatigued
@@ -39527,9 +39548,15 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         try { renderHUD(); } catch (e) { console.warn('renderHUD immediate short rest error:', e); }
       }
 
+      character.lastModified = new Date().toISOString();
       try { updateRoundDisplays(); } catch (e) { console.warn('updateRoundDisplays error in short rest:', e); }
       try { saveStateToStorage(true); } catch (e) { console.warn('saveStateToStorage error in short rest:', e); }
-      try { if (typeof renderManeuvers === "function") renderManeuvers(); } catch (e) { console.warn('renderManeuvers error in short rest:', e); }
+      if (window.CloudSync && typeof window.CloudSync.pushImmediate === 'function') {
+        window.CloudSync.pushImmediate();
+      } else if (window.GDriveSync && typeof window.GDriveSync.pushToCloud === 'function') {
+        window.GDriveSync.pushToCloud(true);
+      }
+      try { if (typeof renderManeuvers === 'function') renderManeuvers(); } catch (e) { console.warn('renderManeuvers error in short rest:', e); }
       try { renderAll(); } catch (e) { console.warn('renderAll error in short rest:', e); }
 
       const summaryParts = [];
