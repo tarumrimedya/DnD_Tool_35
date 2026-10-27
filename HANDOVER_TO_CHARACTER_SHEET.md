@@ -3357,3 +3357,24 @@ Kullanıcı, envanter ekranındaki hızlı kural ekleyici panelinde (`#inline-ai
 * `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `59A9145F766E14970D0790CDAAA9856BE70628D7D1F2CBF89DCF7B366D65D02B`)
 * `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
 * Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
+
+
+---
+
+## 113. Seviye İlerleme Tablosu Başlığındaki "Son Seviyeyi Geri Al" Butonunun Kaldırılması
+
+### Bağlam & Kullanıcı Talebi
+Kullanıcı, Seviye Gelişimi ve İlerleme Tablosu (`#level-progression-block`) başlık çubuğunda yer alan `[ ↩️ Son Seviyeyi Geri Al ]` butonunun tamamen kaldırılmasını talep etmiştir.
+
+### Yapılan Geliştirmeler & Arayüz Sadeleştirmesi
+1. **Gereksiz Başlık Butonunun Kaldırılması:**
+   * Tablo başlığındaki `undoLastLevel()` tetikleyicili `Son Seviyeyi Geri Al` butonu kaldırıldı.
+   * Tablo başlığı ferahlatılarak yalnızca seviye planlama ve modali açma eylemine odaklanıldı.
+2. **Kural & Kod Bütünlüğü Korundu:**
+   * Alttaki ve satır bazlı seviye düzenleme/silme fonksiyonları aynen korundu.
+
+### Parite ve Hash Durumu
+* `character.html` = `index.html` = `webapp/character.html` = `webapp/index.html` (**SHA-256:** `1A0FCA538AF9222A46D529334E7452B7AD54B0FFFA93ED85B799F9F520FAD97A`)
+* `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `59A9145F766E14970D0790CDAAA9856BE70628D7D1F2CBF89DCF7B366D65D02B`)
+* `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
+* Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
