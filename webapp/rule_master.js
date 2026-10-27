@@ -1117,12 +1117,12 @@ const RuleMaster = {
     }
   },
 
-  // 3 Temel AI Kullanım Alanı İçin Dinamik Model Çözümleyicisi (En Yüksek Kararlı Sürüm Matrisi)
+  // 3 Temel AI Kullanım Alanı İçin Dinamik Model Çözümleyicisi (Flash-Lite Öncelikli Yüksek Kota Matrisi)
   AI_TASK_ROUTING: {
-    // 1. Hızlı Arama & Seviye Atlama (En Yüksek Kararlı Flash Motoru)
+    // 1. Hızlı Arama & Seviye Atlama (Flash-Lite: Ultra Hızlı Gecikme & Yüksek Kota)
     QUICK_SEARCH: {
-      primary: 'gemini-3.8-flash',
-      fallback: 'gemini-3.7-flash'
+      primary: 'gemini-3.5-flash-lite',
+      fallback: 'gemini-3.8-flash'
     },
     // 2. Kütüphane & Kural Denetimi (En Yüksek Kararlı Pro Muhakeme Motoru)
     RULE_AUDIT: {
@@ -1131,7 +1131,7 @@ const RuleMaster = {
     },
     // 3. Toplu İçe Aktarım & Serbest Metin Ayrıştırma (Yapısal JSON)
     IMPORT_BATCH: {
-      primary: 'gemini-3.8-flash',
+      primary: 'gemini-3.5-flash-lite',
       fallback: 'gemini-3.8-pro'
     }
   },
@@ -1196,7 +1196,6 @@ const RuleMaster = {
                      !lower.includes('realtime') &&
                      !lower.includes('bison') &&
                      !lower.includes('preview') &&
-                     !lower.includes('lite') &&
                      !lower.includes('omni') &&
                      !lower.includes('gemma');
             });
@@ -1213,10 +1212,36 @@ const RuleMaster = {
         const isPro = (this.getAiModelMode() === 'pro') || 
           (this.getAiModelMode() === 'auto' && (taskType === 'RULE_AUDIT' || taskType === 'COMPLEX_TACTICAL'));
 
+        // 1. Hızlı Arama & Seviye Atlama: Flash-Lite öncelikli (Yüksek RPM Kotası)
+        if (taskType === 'QUICK_SEARCH' || taskType === 'DEFAULT') {
+          const liteModels = apiModels
+            .filter(m => m.toLowerCase().includes('flash') && m.toLowerCase().includes('lite'))
+            .sort((a, b) => parseVersion(b) - parseVersion(a));
+          const standardFlashModels = apiModels
+            .filter(m => m.toLowerCase().includes('flash') && !m.toLowerCase().includes('lite'))
+            .sort((a, b) => parseVersion(b) - parseVersion(a));
+
+          const primary = liteModels[0] || standardFlashModels[0] || defaultPair[0];
+          const fallback = standardFlashModels[0] || liteModels[1] || defaultPair[1];
+          const resultPair = [primary, fallback];
+          if (!this._cachedTaskModels) this._cachedTaskModels = {};
+          this._cachedTaskModels[cacheKey] = resultPair;
+          return resultPair;
+        }
+
+        // 3. Toplu İçe Aktarım: Flash-Lite Asıl, Pro Yedek
         if (taskType === 'IMPORT_BATCH' && this.getAiModelMode() === 'auto') {
-          const flashModels = apiModels.filter(m => m.toLowerCase().includes('flash')).sort((a, b) => parseVersion(b) - parseVersion(a));
-          const proModels = apiModels.filter(m => m.toLowerCase().includes('pro')).sort((a, b) => parseVersion(b) - parseVersion(a));
-          const primary = flashModels[0] || defaultPair[0];
+          const liteModels = apiModels
+            .filter(m => m.toLowerCase().includes('flash') && m.toLowerCase().includes('lite'))
+            .sort((a, b) => parseVersion(b) - parseVersion(a));
+          const standardFlashModels = apiModels
+            .filter(m => m.toLowerCase().includes('flash') && !m.toLowerCase().includes('lite'))
+            .sort((a, b) => parseVersion(b) - parseVersion(a));
+          const proModels = apiModels
+            .filter(m => m.toLowerCase().includes('pro'))
+            .sort((a, b) => parseVersion(b) - parseVersion(a));
+
+          const primary = liteModels[0] || standardFlashModels[0] || defaultPair[0];
           const fallback = proModels[0] || defaultPair[1];
           const resultPair = [primary, fallback];
           if (!this._cachedTaskModels) this._cachedTaskModels = {};
@@ -1224,6 +1249,7 @@ const RuleMaster = {
           return resultPair;
         }
 
+        // 2. Kütüphane & RAW Kural Denetimi: Pro Modelleri
         const relevant = isPro
           ? apiModels.filter(m => m.toLowerCase().includes('pro'))
           : apiModels.filter(m => m.toLowerCase().includes('flash'));
@@ -1261,17 +1287,17 @@ const RuleMaster = {
       mode: this.getAiModelMode(),
       tasks: {
         quickSearch: {
-          title: 'Hızlı Arama & Seviye Atlama (Düşük Gecikme)',
+          title: 'Hızlı Arama & Seviye Atlama (Flash-Lite / Yüksek Kota)',
           primary: quickModels[0] || this.AI_TASK_ROUTING.QUICK_SEARCH.primary,
           fallback: quickModels[1] || this.AI_TASK_ROUTING.QUICK_SEARCH.fallback
         },
         ruleAudit: {
-          title: 'Kütüphane & RAW Kural Denetimi (Derin Muhakeme)',
+          title: 'Kütüphane & RAW Kural Denetimi (Pro Derin Muhakeme)',
           primary: auditModels[0] || this.AI_TASK_ROUTING.RULE_AUDIT.primary,
           fallback: auditModels[1] || this.AI_TASK_ROUTING.RULE_AUDIT.fallback
         },
         importBatch: {
-          title: 'Toplu İçe Aktarım & Tablo Ayrıştırma (Hibrit)',
+          title: 'Toplu İçe Aktarım & Tablo Ayrıştırma (Lite/Pro Hibrit)',
           primary: batchModels[0] || this.AI_TASK_ROUTING.IMPORT_BATCH.primary,
           fallback: batchModels[1] || this.AI_TASK_ROUTING.IMPORT_BATCH.fallback
         }

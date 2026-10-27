@@ -3060,4 +3060,29 @@ Kullanıcı, Ayarlar menüsündeki Tanı & Test butonuna bastığında yalnızca
    * 2 Rule Master dosyası (`rule_master.js`, `webapp/rule_master.js`) arasında **%100 SHA-256 hash paritesi** (`A3810743...`) sağlandı.
    * Tavla zarı emojisi yasağı (Rule 3) tavizsiz korundu.
 
+---
+
+## 101. Flash-Lite Öncelikli Yüksek RPM Kota Mimarisi (Seçenek 1 Entegrasyonu)
+
+### Bağlam & Kullanıcı Geri Bildirimi
+Google Free Tier katmanında standart `gemini-3.8-flash` modelinin **5 RPM (dakikada 5 istek)** sınırına takılması ve hızlı eşya aramalarında `429 Quota Exceeded` hatası fırlatması üzerine kullanıcının tercihi doğrultusunda **Seçenek 1** uygulanmıştır.
+
+### Çözüm & Yapılan Geliştirmeler
+1. **Flash-Lite Modellerinin Filtreye Dahil Edilmesi:**
+   * `apiModels` filtreleme mantığından `!lower.includes('lite')` istisnası kaldırılarak `gemini-3.5-flash-lite`, `gemini-3.1-flash-lite` vb. hafif modeller keşfe açıldı.
+2. **`QUICK_SEARCH` & `IMPORT_BATCH` Alanlarında Flash-Lite Önceliği:**
+   * **1. Hızlı Arama & Seviye Atlama (`QUICK_SEARCH`):**
+     * Asıl (Primary): `gemini-3.5-flash-lite` (Yüksek RPM kotası, 0ms'ye yakın ultra hızlı gecikme)
+     * Yedek (Fallback): `gemini-3.8-flash` (Karmaşık aramalarda derin Flash motoru)
+   * **2. Kütüphane & RAW Kural Denetimi (`RULE_AUDIT`):**
+     * Asıl: `gemini-3.8-pro`
+     * Yedek: `gemini-3.5-pro`
+   * **3. Toplu İçe Aktarım (`IMPORT_BATCH`):**
+     * Asıl: `gemini-3.5-flash-lite`
+     * Yedek: `gemini-3.8-pro`
+3. **Parite ve Eşitlik Doğrulaması:**
+   * `rule_master.js` ile `webapp/rule_master.js` arasında **%100 SHA-256 hash paritesi** (`27AF5099...`) sağlandı.
+   * Tavla zarı emojisi yasağı (Rule 3) tavizsiz korundu.
+
+
 
