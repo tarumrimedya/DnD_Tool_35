@@ -10,13 +10,16 @@ Your task is to parse the attached/provided D&D 3.5e sourcebook pages (PDF, OCR 
 ================================================================================
 CRITICAL D&D 3.5E RAW GUARDRAILS (FEAT SPECIFIC)
 ================================================================================
-1. CANONICAL D&D 3.5E FEATS ONLY:
-   - Extract strictly from official Wizards of the Coast (WotC) 3.5e rulebooks:
-     * Player's Handbook (PHB v3.5)
-     * Complete Warrior, Complete Arcane, Complete Divine, Complete Adventurer, Complete Mage, Complete Scoundrel, Complete Champion
-     * Player's Handbook II (PHB II), Tome of Battle (ToB), Expanded Psionics Handbook (XPH)
-     * Races of Stone / Destiny / the Wild / the Dragon
-     * Frostburn, Sandstorm, Stormwrack, Cityscape, Dungeonscape, Libris Mortis, Book of Exalted Deeds
+1. CANONICAL D&D 3.5E FEATS & AUTHORIZED SOURCES ONLY:
+   - If querying or verifying via web references or knowledge base, consult ONLY:
+     a) Official System Reference Document (SRD v3.5): https://www.d20srd.org
+     b) Official 3.5e Index & Compendium: https://dndtools.net (or dndtools.org / danddtools)
+     c) Official Wizards of the Coast (WotC) 3.5e rulebooks:
+       * Player's Handbook (PHB v3.5)
+       * Complete Warrior, Complete Arcane, Complete Divine, Complete Adventurer, Complete Mage, Complete Scoundrel, Complete Champion
+       * Player's Handbook II (PHB II), Tome of Battle (ToB), Expanded Psionics Handbook (XPH)
+       * Races of Stone / Destiny / the Wild / the Dragon
+       * Frostburn, Sandstorm, Stormwrack, Cityscape, Dungeonscape, Libris Mortis, Book of Exalted Deeds
    - ZERO tolerance for third-party, homebrew, dandwiki, or forum posts. If a feat is not in an official 3.5e book, omit it.
 
 2. ZERO 5E / 4E / PATHFINDER MECHANICS:
