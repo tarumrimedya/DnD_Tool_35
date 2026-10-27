@@ -3378,3 +3378,24 @@ Kullanıcı, Seviye Gelişimi ve İlerleme Tablosu (`#level-progression-block`) 
 * `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `59A9145F766E14970D0790CDAAA9856BE70628D7D1F2CBF89DCF7B366D65D02B`)
 * `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
 * Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
+
+
+---
+
+## 114. Karakter Künyesi Butonunun Emerald Gradyan Stiline Eşitlenmesi
+
+### Bağlam & Kullanıcı Talebi
+Kullanıcı, Core Profile kartında yer alan `[ 📜 Karakter Künyesi ]` butonunun koyu slate renginden çıkarılarak `Seviye Atla / Planla` butonuyla birebir aynı zümrüt/turkuaz gradyan rengine (`bg-gradient-to-r from-emerald-600 to-teal-600`) ve boyutuna getirilmesini talep etmiştir.
+
+### Yapılan Geliştirmeler & Arayüz Standartlaşması
+1. **Renk & Stil Bütünlüğü (Emerald/Teal Gradient):**
+   * Butonun eski `bg-slate-800` stili yerine `bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold` gradyan paleti uygulandı.
+2. **Boyut Eşitliği:**
+   * Boyut `px-3.5 py-1.5 rounded-lg text-xs font-bold shadow flex items-center gap-1.5 transition cursor-pointer` olarak Seviye Atla butonu ile tam eşitlendi.
+   * D20 SVG ikon ve rozet hiyerarşisi kusursuz şekilde korundu.
+
+### Parite ve Hash Durumu
+* `character.html` = `index.html` = `webapp/character.html` = `webapp/index.html` (**SHA-256:** `72B87EDCD3BA1CF2809E451B69AD012807947A39E862159231D78CDDEDB628BE`)
+* `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `59A9145F766E14970D0790CDAAA9856BE70628D7D1F2CBF89DCF7B366D65D02B`)
+* `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
+* Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
