@@ -3206,3 +3206,33 @@ Kullanıcı, Gemini yapay zeka sorgularımızın gözden geçirilmesini talep et
 * `character.html` = `index.html` = `webapp/character.html` = `webapp/index.html` (**SHA-256:** `F86904D879935B2D7F13B93D43FE7E93CC0AF8A0728C7F4A488CED099BF54C94`)
 * `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
 * Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
+
+
+---
+
+## 108. Envanter Havuzu Kemer Tiki Kaldırılması & Akıllı Aksiyon Butonları (Kuşan, Kullan, Kemerde)
+
+### Bağlam & Kullanıcı Talebi
+Kullanıcı, envanter havuzu tablosunun en solundaki kemer onay kutusunun (tik kutusu) kaldırılmasını; bunun yerine vücut yuvalarına (Body Slot) gelecek eşyalar için `[ ⚡ Kuşan ]`, tüketilebilir eşyalar için ise `[ 🧪 Kullan ]` ve `[ ⚡ Kuşan / 🟢 Kemerde ]` butonlarının alt alta konumlandırılmasını ve silme butonunun (`🗑️`) yerinin değiştirilmeden en sağda muhafaza edilmesini talep etmiştir.
+
+### Yapılan Geliştirmeler & Arayüz Sadeleştirmesi
+1. **Sol Sütundaki Kemer Onay Kutusunun Kaldırılması:**
+   * Envanter tablosunun başlığındaki (`<thead>`) `Kemer` sütunu ve satırlardaki (`<tr>`) onay kutusu hücresi tamamen kaldırıldı.
+   * Tablo sütun sayısı 8'den 7'ye düşürülerek mobilde ve dar ekranlarda eşya isim ve açıklama alanlarının ferahlaması sağlandı.
+2. **Akıllı Aksiyon Sütunu Yerleşimi (`İşlemler`):**
+   * **Vücut Yuvası Eşyaları (Zırh, Eldiven, Kask, Çizme, Yüzük vb.):**
+     * Sol: `[ ⚡ Kuşan ]` (Yeşil/Zümrüt kuşanma butonu)
+     * Sağ: `[ 🗑️ ]` (Silme butonu - en sağda sabit)
+   * **Tüketilebilir Eşyalar (İksir, Parşömen, Asa / Potion, Scroll, Wand):**
+     * Dikey olarak alt alta iki buton:
+       * Üstte: `[ 🧪 Kullan ]` (İksiri anında içer / parşömeni okur, adedi 1 azaltır)
+       * Altta: `[ ⚡ Kuşan ]` (Kemerde değilse gri) / `[ 🟢 Kemerde ]` (Savaş sekmesi hızlı erişim kemerine kuşanılmışsa yeşil aktif durum)
+     * Sağ: `[ 🗑️ ]` (Silme butonu - en sağda sabit)
+3. **Mekanik & Savaş Entegrasyonu Korundu:**
+   * `togglePoolBelt(itemId)` fonksiyonu buton üzerinden tetiklenerek `item.isBelt` durumunu sorunsuz yönetmeye devam eder; Savaş kokpiti (`Combat Cockpit`) ve otomatik pin mekanizmalarıyla %100 uyumlu çalışır.
+
+### Parite ve Hash Durumu
+* `character.html` = `index.html` = `webapp/character.html` = `webapp/index.html` (**SHA-256:** `9C166A64FBD3604A7C1231C3DF85EB9AA1F9B186E48515FAEC8D94E3ED5F3607`)
+* `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `414C5BAB2643745A4AFED5024A58FC9B9D4C4607D0491A47B8BF311E84D623CD`)
+* `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
+* Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
