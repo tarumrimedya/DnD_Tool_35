@@ -37944,19 +37944,19 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           return;
         }
 
-        // Check skill points budget
+        // Check skill points budget (Informative warning; does not hard-block to support Fazla Harcama / DM Boons)
         const totalPts = calculateTotalSkillPoints(character);
         const spentPts = calculateSpentSkillPoints(character, isMerged);
         const pointCost = isClass ? 1 : 2;
 
         if (spentPts + pointCost > totalPts) {
+          const excess = (spentPts + pointCost) - totalPts;
           showDiceTopToast({
-            icon: '🚫',
-            title: 'Yetersiz Beceri Puanı',
-            breakdown: `Karakterinizin toplam puanı: ${totalPts} (Harcanan: ${spentPts}). ${pointCost} puan daha gerekiyor!`,
-            total: 'Sınır Aşıldı'
+            icon: '⚠️',
+            title: 'Beceri Puanı Sınırı Aşıldı',
+            breakdown: `Karakterinizin resmi puanı: ${totalPts} (Yeni Harcanan: ${spentPts + pointCost}). Fazla Harcama: +${excess} Puan.`,
+            total: `+${excess}`
           });
-          return;
         }
       }
 
