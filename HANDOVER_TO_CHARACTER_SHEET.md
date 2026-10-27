@@ -2727,3 +2727,21 @@ Gemini 3.1 Pro RAW denetim motoru ile `index.html` içerisindeki `DND35_BASE_CLA
    * 4 HTML dosyası (`index.html`, `character.html`, `webapp/index.html`, `webapp/character.html`) arasında **%100 SHA-256 hash paritesi** (`3292D6A1...`) sağlandı.
    * 2 RuleEngine dosyası (`rule_engine.js`, `webapp/rule_engine.js`) arasında **%100 SHA-256 hash paritesi** (`07CD40F0...`) sağlandı.
    * Tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.
+
+
+
+---
+
+## 96. 'Sınıf & Herkes' Filtre Genişlemesinin Geri Alınması (Sınıf Filtresinin Katı İzolasyonu)
+
+### Bağlam & Kullanıcı Geri Bildirimi
+Sınıf filtresine eğitimsiz atılabilen (untrained) becerilerin de dahil edilmesi ("⭐ Sınıf & Herkes"), 46 becerinin yaklaşık 35-40 tanesini aynı anda ekranda göstererek **"Tümü" filtresiyle olan farkı neredeyse tamamen ortadan kaldırmıştır.** Kullanıcının haklı tespiti ve talebi üzerine bu değişiklik derhal geri alınmıştır.
+
+### Yapılan Değişiklikler ve İzolasyon
+1. **Filtre Mantığının Katı RAW Moduna Dönüşü:**
+   * `activeSkillFilter === 'class'` filtresi yeniden yalnızca `displayItems.filter(item => item.isClass)` şartını arayacak şekilde izole edildi (`untrained` veya `ranks > 0` olan diğer çapraz beceriler elendi).
+2. **Buton Arayüzü:**
+   * Buton etiketi yeniden sade ve standart **`⭐ Sınıf (Class)`** haline getirildi.
+3. **Parite ve Kural Standartları:**
+   * 4 HTML dosyası (`index.html`, `character.html`, `webapp/index.html`, `webapp/character.html`) arasında **%100 SHA-256 hash paritesi** (`3292D6A1...`) korundu.
+   * Tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.
