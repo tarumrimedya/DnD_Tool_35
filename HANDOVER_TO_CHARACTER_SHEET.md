@@ -2800,3 +2800,30 @@ Karakter sayfasında Seviye Planlayıcı tablosunda her seviyenin HP sütununa s
 ### Parite ve Hash Durumu
 * 4 HTML dosyası (`index.html`, `character.html`, `webapp/index.html`, `webapp/character.html`) arasında **%100 SHA-256 hash paritesi** (`C36CD4AAC7DBC8F5D9C3D7E00C55AF6453E54F6D0C58B978621A51A80F9396F6`) sağlandı.
 * Tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu (`⚡` sembolü kullanıldı).
+
+
+---
+
+## 99. Feat Arama Motorunda Alaka Puanlaması (Search Relevance Ranking)
+
+### Bağlam & Hata Tespiti
+Karakter sayfasında Feat Arama Konsolunda (Spotlight) kullanıcı `"Dodg"` kelimesini aradığında, *Combat Expertise* feat'i kural açıklamasında *"dodge bonus"* kelimesi geçtiği ve alfabetik olarak C harfi D harfinden önce geldiği için, doğrudan adı *Dodge* olan feat'in üstünde listelenmekteydi.
+
+### Yapılan Geliştirmeler
+1. **getFeatSearchRelevance(item, query) Algoritması:**
+   * Arama motoruna hiyerarşik alaka düzeyi (Relevance Scoring) puanlama mekanizması entegre edildi:
+     * **Birebir İsim Eşleşmesi (`name === query`):** 10.000 Puan
+     * **İsimle Başlama (`name.startsWith(query)`):** 5.000 Puan (örn: `"dodge"` kelimesi `"dodg"` ile başlar)
+     * **İsimdeki Bir Kelimenin Başlaması (örn: `"Improved Dodge"`):** 3.000 Puan
+     * **İsim İçinde Geçme (`name.includes(query)`):** 1.000 Puan
+     * **Açıklama / Benefit İçinde Geçme (örn: *Combat Expertise*):** 100 Puan
+     * **Önkoşul / Prereq İçinde Geçme:** 50 Puan
+     * **Kaynak / Source İçinde Geçme:** 20 Puan
+2. **Sıralama Entegrasyonu:**
+   * Hem Seviye Atlama Modalı (`renderLevelUpFeatSearchResults`) hem de Hızlı Feat Seçici (`renderQuickFeatSearchResults`) sıralama algoritmalarında alaka puanı entegre edildi.
+   * Aynı yeterlilik seviyesindeki (Qualified / Alınabilir) featler arasında daha yüksek arama skoruna sahip olan doğrudan ilk sıralara taşınır; skorlar eşitse alfabetik sıralamaya geçilir.
+   * Böylece `"Dodg"` yazıldığında adı doğrudan *Dodge* olan feat her zaman 1. sırada yer alır.
+
+### Parite ve Hash Durumu
+* 4 HTML dosyası (`index.html`, `character.html`, `webapp/index.html`, `webapp/character.html`) arasında **%100 SHA-256 hash paritesi** (`208FFFA58ED77DD31AA678E3E6AF7927A787C64BA98F6AFFD872FF2618DB14DB`) sağlandı.
+* Tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.

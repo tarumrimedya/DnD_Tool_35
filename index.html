@@ -31641,6 +31641,26 @@ function renderManualStatsPanel() {
     // ====================================================
     // 🎖️ FEAT PICKER MODAL FUNCTIONS
     // ====================================================
+    // Helper: Calculate search relevance score for feats / abilities
+    function getFeatSearchRelevance(item, query) {
+      if (!query || !item) return 0;
+      const name = (item.name || '').toLowerCase().trim();
+      const cleanQ = query.toLowerCase().trim();
+      if (!cleanQ) return 0;
+      if (name === cleanQ) return 10000;
+      if (name.startsWith(cleanQ)) return 5000;
+      const words = name.split(/\s+/);
+      if (words.some(w => w.startsWith(cleanQ))) return 3000;
+      if (name.includes(cleanQ)) return 1000;
+      const benefit = (item.benefit || item.desc || '').toLowerCase();
+      if (benefit.includes(cleanQ)) return 100;
+      const prereq = (item.prereq || '').toLowerCase();
+      if (prereq.includes(cleanQ)) return 50;
+      const source = (item.source || '').toLowerCase();
+      if (source.includes(cleanQ)) return 20;
+      return 10;
+    }
+
     function getCombinedFeatCatalog() {
       const map = new Map();
       DND35_FEAT_CATALOG.forEach(f => map.set(f.name.toLowerCase(), { ...f }));
@@ -32572,7 +32592,7 @@ function renderManualStatsPanel() {
         filteredItems = evaluatedItems.filter(e => e.item.category === 'Warlock Invocation');
       }
 
-      // Sort: Truly eligible first, then already known from class, then unqualified, then alphabetically
+      // Sort: Truly eligible first, then already known from class, then unqualified, then search relevance, then alphabetically
       filteredItems.sort((a, b) => {
         const aQual = a.pEval.allMet && !a.pEval.isAlreadyKnownFromClass;
         const bQual = b.pEval.allMet && !b.pEval.isAlreadyKnownFromClass;
@@ -32580,6 +32600,15 @@ function renderManualStatsPanel() {
         if (!aQual && bQual) return 1;
         if (a.pEval.isAlreadyKnownFromClass && !b.pEval.isAlreadyKnownFromClass) return 1;
         if (!a.pEval.isAlreadyKnownFromClass && b.pEval.isAlreadyKnownFromClass) return -1;
+
+        if (query) {
+          const aScore = getFeatSearchRelevance(a.item, query);
+          const bScore = getFeatSearchRelevance(b.item, query);
+          if (aScore !== bScore) {
+            return bScore - aScore;
+          }
+        }
+
         return (a.item.name || '').localeCompare(b.item.name || '');
       });
 
@@ -34374,7 +34403,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           filteredItems = evaluatedItems.filter(e => isFlawFeat(e.item));
         }
 
-        // 4. Sort: Eligible first, then already known from class, then unqualified, then alphabetical
+        // 4. Sort: Eligible first, then already known from class, then unqualified, then search relevance, then alphabetical
         filteredItems.sort((a, b) => {
           const aQual = a.pEval.allMet && !a.pEval.isAlreadyKnownFromClass;
           const bQual = b.pEval.allMet && !b.pEval.isAlreadyKnownFromClass;
@@ -34382,6 +34411,15 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           if (!aQual && bQual) return 1;
           if (a.pEval.isAlreadyKnownFromClass && !b.pEval.isAlreadyKnownFromClass) return 1;
           if (!a.pEval.isAlreadyKnownFromClass && b.pEval.isAlreadyKnownFromClass) return -1;
+
+          if (query) {
+            const aScore = getFeatSearchRelevance(a.item, query);
+            const bScore = getFeatSearchRelevance(b.item, query);
+            if (aScore !== bScore) {
+              return bScore - aScore;
+            }
+          }
+
           return (a.item.name || '').localeCompare(b.item.name || '');
         });
 
