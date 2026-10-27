@@ -1,4 +1,4 @@
-﻿[
+[
     {
         "name":  "Gauntlet",
         "type":  "Weapon",
@@ -3915,7 +3915,9 @@
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "isFighterBonusFeat":  true,
+        "category":  "Fighter"
     },
     {
         "name":  "Combat Expertise",
@@ -6105,5 +6107,1419 @@
         "description":  "A selected spell-like ability deals +2d6 points of damage against living creatures five times per day (damage halved against undead/constructs).",
         "source":  "Book of Vile Darkness p.48 / Complete Arcane",
         "isFighterBonusFeat":  false
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.97",
+        "role":  "Defense / Saves",
+        "scope":  "All",
+        "benefit":  "+2 bonus on all Will saving throws.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_passive",
+        "slot":  "None",
+        "ruleFlags":  {
+                          "saveBonus":  {
+                                            "will":  2
+                                        }
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "general",
+                     "iron-will",
+                     "save"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Iron Will"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.94",
+        "role":  "Defense / Saves",
+        "scope":  "All",
+        "benefit":  "+2 bonus on all Fortitude saving throws.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_passive",
+        "slot":  "None",
+        "ruleFlags":  {
+                          "saveBonus":  {
+                                            "fort":  2
+                                        }
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "general",
+                     "great-fortitude",
+                     "save"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Great Fortitude"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.97",
+        "role":  "Defense / Saves",
+        "scope":  "All",
+        "benefit":  "+2 bonus on all Reflex saving throws.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_passive",
+        "slot":  "None",
+        "ruleFlags":  {
+                          "saveBonus":  {
+                                            "ref":  2
+                                        }
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "general",
+                     "lightning-reflexes",
+                     "save"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Lightning Reflexes"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.101",
+        "role":  "Defense / HP",
+        "scope":  "All",
+        "benefit":  "+3 hit points. You may gain this feat multiple times; its effects stack.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_passive",
+        "slot":  "None",
+        "ruleFlags":  {
+                          "hpBonus":  3
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "general",
+                     "toughness",
+                     "hp"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Toughness"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.93",
+        "role":  "Defense / Survival",
+        "scope":  "All",
+        "benefit":  "+4 bonus on checks or saves vs nonlethal damage from exhaustion, starvation/thirst, holding breath, cold/hot environments. May sleep in light or medium armor without becoming fatigued.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_passive",
+        "slot":  "None",
+        "ruleFlags":  {
+
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "general",
+                     "endurance"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Endurance"
+    },
+    {
+        "prereq":  "Endurance",
+        "source":  "SRD / PHB p.93",
+        "role":  "Defense / Survival",
+        "scope":  "All",
+        "benefit":  "Automatically stabilize when between -1 and -9 HP. Remain conscious and can take a single standard or move action each round (standard actions deal 1 damage to self).",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_passive",
+        "slot":  "None",
+        "ruleFlags":  {
+
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "general",
+                     "diehard"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Diehard"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.99",
+        "role":  "Utility / Mobility",
+        "scope":  "All",
+        "benefit":  "Move 5 times normal speed when running (4 times in heavy armor). Retain Dex bonus to AC while running. +4 bonus on Jump checks after a running start.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_movement",
+        "slot":  "None",
+        "ruleFlags":  {
+
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "general",
+                     "run",
+                     "mobility"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Run"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.92",
+        "role":  "Caster / Concentration",
+        "scope":  "Caster Only",
+        "benefit":  "+4 bonus on Concentration checks made to cast a spell or use a spell-like ability defensively or while grappled or pinned.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_caster",
+        "slot":  "None",
+        "ruleFlags":  {
+
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "general",
+                     "combat-casting",
+                     "caster"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Combat Casting"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.100",
+        "role":  "Caster / DC",
+        "scope":  "Caster Only",
+        "benefit":  "+1 bonus to the Difficulty Class for all saving throws against spells from the school of magic you select.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_caster",
+        "slot":  "None",
+        "ruleFlags":  {
+
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "general",
+                     "spell-focus",
+                     "caster"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Spell Focus"
+    },
+    {
+        "prereq":  "Spell Focus",
+        "source":  "SRD / PHB p.95",
+        "role":  "Caster / DC",
+        "scope":  "Caster Only",
+        "benefit":  "+1 bonus to the Difficulty Class for all saving throws against spells from the chosen school of magic (stacks with Spell Focus for a total of +2).",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_caster",
+        "slot":  "None",
+        "ruleFlags":  {
+
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "general",
+                     "greater-spell-focus",
+                     "caster"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Greater Spell Focus"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.100",
+        "role":  "Caster / Penetration",
+        "scope":  "Caster Only",
+        "benefit":  "+2 bonus on caster level checks (1d20 + caster level) made to overcome a creature\u0027s spell resistance.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_caster",
+        "slot":  "None",
+        "ruleFlags":  {
+
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "general",
+                     "spell-penetration",
+                     "sr"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Spell Penetration"
+    },
+    {
+        "prereq":  "Spell Penetration",
+        "source":  "SRD / PHB p.95",
+        "role":  "Caster / Penetration",
+        "scope":  "Caster Only",
+        "benefit":  "+2 bonus on caster level checks made to overcome a creature\u0027s spell resistance (stacks with Spell Penetration for a total of +4).",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_caster",
+        "slot":  "None",
+        "ruleFlags":  {
+
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "general",
+                     "greater-spell-penetration",
+                     "sr"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Greater Spell Penetration"
+    },
+    {
+        "prereq":  "Wizard level 1st",
+        "source":  "SRD / PHB p.100",
+        "role":  "Caster / Wizard",
+        "scope":  "Wizard Only",
+        "benefit":  "Each time you take this feat, choose a number of spells equal to your Intelligence modifier. You can prepare these spells without referring to a spellbook.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "Special",
+        "attackType":  "feat_special",
+        "slot":  "None",
+        "ruleFlags":  {
+
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "special",
+                     "spell-mastery",
+                     "wizard"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Spell Mastery"
+    },
+    {
+        "prereq":  "Wis 13, wild shape ability",
+        "source":  "SRD / PHB p.98",
+        "role":  "Caster / Druid",
+        "scope":  "Druid Only",
+        "benefit":  "You can complete the verbal and somatic components of spells while using wild shape. You substitute noises and gestures for standard verbal and somatic components.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_caster",
+        "slot":  "None",
+        "ruleFlags":  {
+
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "general",
+                     "natural-spell",
+                     "druid"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Natural Spell"
+    },
+    {
+        "prereq":  "Ability to turn or rebuke creatures",
+        "source":  "SRD / PHB p.94",
+        "role":  "Divine / Turning",
+        "scope":  "Divine Only",
+        "benefit":  "Each time you take this feat, you can use your turn or rebuke undead ability 4 additional times per day.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_divine",
+        "slot":  "None",
+        "ruleFlags":  {
+
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "general",
+                     "extra-turning",
+                     "cleric",
+                     "paladin"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Extra Turning"
+    },
+    {
+        "prereq":  "Spell Focus (conjuration)",
+        "source":  "SRD / PHB p.89",
+        "role":  "Caster / Summoning",
+        "scope":  "Caster Only",
+        "benefit":  "Each creature you conjure with any summon spell gains a +4 enhancement bonus to Strength and Constitution for the duration of the spell.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_caster",
+        "slot":  "None",
+        "ruleFlags":  {
+
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "general",
+                     "augment-summoning"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Augment Summoning"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.93",
+        "role":  "Metamagic",
+        "scope":  "Caster Only",
+        "benefit":  "All variable, numeric effects of an empowered spell are increased by one-half (+50%). Saving throws and opposed rolls are not affected. Uses a slot 2 levels higher.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "Metamagic",
+        "attackType":  "feat_metamagic",
+        "slot":  "None",
+        "ruleFlags":  {
+                          "metamagicLevelMod":  2
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "metamagic",
+                     "empower-spell"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Empower Spell"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.94",
+        "role":  "Metamagic",
+        "scope":  "Caster Only",
+        "benefit":  "You can alter a spell with a range of close, medium, or long to increase its range by 100%. Uses a slot 1 level higher.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "Metamagic",
+        "attackType":  "feat_metamagic",
+        "slot":  "None",
+        "ruleFlags":  {
+                          "metamagicLevelMod":  1
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "metamagic",
+                     "enlarge-spell"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Enlarge Spell"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.94",
+        "role":  "Metamagic",
+        "scope":  "Caster Only",
+        "benefit":  "An extended spell lasts twice as long as normal. Spells of instantaneous, concentration, or permanent duration are not affected. Uses a slot 1 level higher.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "Metamagic",
+        "attackType":  "feat_metamagic",
+        "slot":  "None",
+        "ruleFlags":  {
+                          "metamagicLevelMod":  1
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "metamagic",
+                     "extend-spell"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Extend Spell"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.95",
+        "role":  "Metamagic",
+        "scope":  "Caster Only",
+        "benefit":  "A heightened spell has a higher spell level than normal (up to 9th level). Effective level equals the slot used, increasing save DC accordingly.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "Metamagic",
+        "attackType":  "feat_metamagic",
+        "slot":  "None",
+        "ruleFlags":  {
+
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "metamagic",
+                     "heighten-spell"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Heighten Spell"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.97",
+        "role":  "Metamagic",
+        "scope":  "Caster Only",
+        "benefit":  "All variable, numeric effects of a maximized spell are maximized. Saving throws and opposed rolls are unaffected. Uses a slot 3 levels higher.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "Metamagic",
+        "attackType":  "feat_metamagic",
+        "slot":  "None",
+        "ruleFlags":  {
+                          "metamagicLevelMod":  3
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "metamagic",
+                     "maximize-spell"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Maximize Spell"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.98",
+        "role":  "Metamagic",
+        "scope":  "Caster Only",
+        "benefit":  "Casting a quickened spell is a swift action. You can perform another action, including casting another spell, in the same round. Uses a slot 4 levels higher.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Swift",
+        "category":  "Metamagic",
+        "attackType":  "feat_metamagic",
+        "slot":  "None",
+        "ruleFlags":  {
+                          "metamagicLevelMod":  4
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "metamagic",
+                     "quicken-spell"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Quicken Spell"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.100",
+        "role":  "Metamagic",
+        "scope":  "Caster Only",
+        "benefit":  "A silent spell can be cast with no verbal components. Spells without verbal components are not affected. Uses a slot 1 level higher.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "Metamagic",
+        "attackType":  "feat_metamagic",
+        "slot":  "None",
+        "ruleFlags":  {
+                          "metamagicLevelMod":  1
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "metamagic",
+                     "silent-spell"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Silent Spell"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.101",
+        "role":  "Metamagic",
+        "scope":  "Caster Only",
+        "benefit":  "A stilled spell can be cast with no somatic components. Spells without somatic components are not affected. Uses a slot 1 level higher.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "Metamagic",
+        "attackType":  "feat_metamagic",
+        "slot":  "None",
+        "ruleFlags":  {
+                          "metamagicLevelMod":  1
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "metamagic",
+                     "still-spell"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Still Spell"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.103",
+        "role":  "Metamagic",
+        "scope":  "Caster Only",
+        "benefit":  "You can alter a burst, emanation, line, or spread spell to increase its area by 100%. Spells without area are not affected. Uses a slot 3 levels higher.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "Metamagic",
+        "attackType":  "feat_metamagic",
+        "slot":  "None",
+        "ruleFlags":  {
+                          "metamagicLevelMod":  3
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "metamagic",
+                     "widen-spell"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Widen Spell"
+    },
+    {
+        "prereq":  "Caster level 3rd",
+        "source":  "SRD / PHB p.91",
+        "role":  "Item Creation",
+        "scope":  "Caster Only",
+        "benefit":  "You can create a potion of any 3rd-level or lower spell that you know and that targets one or more creatures. Brewing takes 1 day.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "Item Creation",
+        "attackType":  "feat_crafting",
+        "slot":  "None",
+        "ruleFlags":  {
+
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "item-creation",
+                     "brew-potion"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Brew Potion"
+    },
+    {
+        "prereq":  "Caster level 5th",
+        "source":  "SRD / PHB p.92",
+        "role":  "Item Creation",
+        "scope":  "Caster Only",
+        "benefit":  "You can create any magic weapon, armor, or shield whose prerequisites you meet. Enhancing takes 1 day per 1,000 gp in market price.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "Item Creation",
+        "attackType":  "feat_crafting",
+        "slot":  "None",
+        "ruleFlags":  {
+
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "item-creation",
+                     "craft-arms-and-armor"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Craft Magic Arms and Armor"
+    },
+    {
+        "prereq":  "Caster level 9th",
+        "source":  "SRD / PHB p.92",
+        "role":  "Item Creation",
+        "scope":  "Caster Only",
+        "benefit":  "You can create any magic rod whose prerequisites you meet. Crafting takes 1 day per 1,000 gp in market price.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "Item Creation",
+        "attackType":  "feat_crafting",
+        "slot":  "None",
+        "ruleFlags":  {
+
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "item-creation",
+                     "craft-rod"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Craft Rod"
+    },
+    {
+        "prereq":  "Caster level 12th",
+        "source":  "SRD / PHB p.92",
+        "role":  "Item Creation",
+        "scope":  "Caster Only",
+        "benefit":  "You can create any magic staff whose prerequisites you meet. Crafting takes 1 day per 1,000 gp in market price.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "Item Creation",
+        "attackType":  "feat_crafting",
+        "slot":  "None",
+        "ruleFlags":  {
+
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "item-creation",
+                     "craft-staff"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Craft Staff"
+    },
+    {
+        "prereq":  "Caster level 5th",
+        "source":  "SRD / PHB p.92",
+        "role":  "Item Creation",
+        "scope":  "Caster Only",
+        "benefit":  "You can create a wand of any 4th-level or lower spell that you know. Crafting takes 1 day per 1,000 gp in market price.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "Item Creation",
+        "attackType":  "feat_crafting",
+        "slot":  "None",
+        "ruleFlags":  {
+
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "item-creation",
+                     "craft-wand"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Craft Wand"
+    },
+    {
+        "prereq":  "Caster level 3rd",
+        "source":  "SRD / PHB p.92",
+        "role":  "Item Creation",
+        "scope":  "Caster Only",
+        "benefit":  "You can create any wondrous item whose prerequisites you meet. Crafting takes 1 day per 1,000 gp in market price.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "Item Creation",
+        "attackType":  "feat_crafting",
+        "slot":  "None",
+        "ruleFlags":  {
+
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "item-creation",
+                     "craft-wondrous-item"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Craft Wondrous Item"
+    },
+    {
+        "prereq":  "Caster level 12th",
+        "source":  "SRD / PHB p.94",
+        "role":  "Item Creation",
+        "scope":  "Caster Only",
+        "benefit":  "You can create any magic ring whose prerequisites you meet. Crafting takes 1 day per 1,000 gp in market price.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "Item Creation",
+        "attackType":  "feat_crafting",
+        "slot":  "None",
+        "ruleFlags":  {
+
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "item-creation",
+                     "forge-ring"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Forge Ring"
+    },
+    {
+        "prereq":  "Caster level 1st",
+        "source":  "SRD / PHB p.99",
+        "role":  "Item Creation",
+        "scope":  "Caster Only",
+        "benefit":  "You can create a scroll of any spell that you know. Scribing takes 1 day per 1,000 gp in market price.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "Item Creation",
+        "attackType":  "feat_crafting",
+        "slot":  "None",
+        "ruleFlags":  {
+
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "item-creation",
+                     "scribe-scroll"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Scribe Scroll"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.89",
+        "role":  "Skill",
+        "scope":  "All",
+        "benefit":  "+2 bonus on all Jump checks and Tumble checks.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_skill",
+        "slot":  "None",
+        "ruleFlags":  {
+                          "skillBonus":  {
+                                             "Jump":  2,
+                                             "Tumble":  2
+                                         }
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "skill",
+                     "acrobatic"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Acrobatic"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.89",
+        "role":  "Skill",
+        "scope":  "All",
+        "benefit":  "+2 bonus on all Balance checks and Escape Artist checks.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_skill",
+        "slot":  "None",
+        "ruleFlags":  {
+                          "skillBonus":  {
+                                             "Escape Artist":  2,
+                                             "Balance":  2
+                                         }
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "skill",
+                     "agile"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Agile"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.89",
+        "role":  "Skill",
+        "scope":  "All",
+        "benefit":  "+2 bonus on all Listen checks and Spot checks.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_skill",
+        "slot":  "None",
+        "ruleFlags":  {
+                          "skillBonus":  {
+                                             "Spot":  2,
+                                             "Listen":  2
+                                         }
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "skill",
+                     "alertness",
+                     "perception"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Alertness"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.89",
+        "role":  "Skill",
+        "scope":  "All",
+        "benefit":  "+2 bonus on all Climb checks and Swim checks.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_skill",
+        "slot":  "None",
+        "ruleFlags":  {
+                          "skillBonus":  {
+                                             "Swim":  2,
+                                             "Climb":  2
+                                         }
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "skill",
+                     "athletic"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Athletic"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.93",
+        "role":  "Skill",
+        "scope":  "All",
+        "benefit":  "+2 bonus on all Disguise checks and Forgery checks.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_skill",
+        "slot":  "None",
+        "ruleFlags":  {
+                          "skillBonus":  {
+                                             "Forgery":  2,
+                                             "Disguise":  2
+                                         }
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "skill",
+                     "deceitful"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Deceitful"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.93",
+        "role":  "Skill",
+        "scope":  "All",
+        "benefit":  "+2 bonus on all Sleight of Hand checks and Use Rope checks.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_skill",
+        "slot":  "None",
+        "ruleFlags":  {
+                          "skillBonus":  {
+                                             "Sleight of Hand":  2,
+                                             "Use Rope":  2
+                                         }
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "skill",
+                     "deft-hands"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Deft Hands"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.93",
+        "role":  "Skill",
+        "scope":  "All",
+        "benefit":  "+2 bonus on all Appraise checks and Decipher Script checks.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_skill",
+        "slot":  "None",
+        "ruleFlags":  {
+                          "skillBonus":  {
+                                             "Decipher Script":  2,
+                                             "Appraise":  2
+                                         }
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "skill",
+                     "diligent"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Diligent"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.97",
+        "role":  "Skill",
+        "scope":  "All",
+        "benefit":  "+2 bonus on all Gather Information checks and Search checks.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_skill",
+        "slot":  "None",
+        "ruleFlags":  {
+                          "skillBonus":  {
+                                             "Search":  2,
+                                             "Gather Information":  2
+                                         }
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "skill",
+                     "investigator"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Investigator"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.97",
+        "role":  "Skill",
+        "scope":  "All",
+        "benefit":  "+2 bonus on all Spellcraft checks and Use Magic Device checks.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_skill",
+        "slot":  "None",
+        "ruleFlags":  {
+                          "skillBonus":  {
+                                             "Use Magic Device":  2,
+                                             "Spellcraft":  2
+                                         }
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "skill",
+                     "magical-aptitude"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Magical Aptitude"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.98",
+        "role":  "Skill",
+        "scope":  "All",
+        "benefit":  "+2 bonus on all Diplomacy checks and Sense Motive checks.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_skill",
+        "slot":  "None",
+        "ruleFlags":  {
+                          "skillBonus":  {
+                                             "Diplomacy":  2,
+                                             "Sense Motive":  2
+                                         }
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "skill",
+                     "negotiator"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Negotiator"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.98",
+        "role":  "Skill",
+        "scope":  "All",
+        "benefit":  "+2 bonus on all Disable Device checks and Open Lock checks.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_skill",
+        "slot":  "None",
+        "ruleFlags":  {
+                          "skillBonus":  {
+                                             "Disable Device":  2,
+                                             "Open Lock":  2
+                                         }
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "skill",
+                     "nimble-fingers"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Nimble Fingers"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.98",
+        "role":  "Skill",
+        "scope":  "All",
+        "benefit":  "+2 bonus on all Bluff checks and Intimidate checks.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_skill",
+        "slot":  "None",
+        "ruleFlags":  {
+                          "skillBonus":  {
+                                             "Bluff":  2,
+                                             "Intimidate":  2
+                                         }
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "skill",
+                     "persuasive"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Persuasive"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.100",
+        "role":  "Skill",
+        "scope":  "All",
+        "benefit":  "+2 bonus on all Heal checks and Survival checks.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_skill",
+        "slot":  "None",
+        "ruleFlags":  {
+                          "skillBonus":  {
+                                             "Survival":  2,
+                                             "Heal":  2
+                                         }
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "skill",
+                     "self-sufficient"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Self-Sufficient"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.101",
+        "role":  "Skill",
+        "scope":  "All",
+        "benefit":  "+2 bonus on all Hide checks and Move Silently checks.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_skill",
+        "slot":  "None",
+        "ruleFlags":  {
+                          "skillBonus":  {
+                                             "Hide":  2,
+                                             "Move Silently":  2
+                                         }
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "skill",
+                     "stealthy"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Stealthy"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.101",
+        "role":  "Skill / Tracking",
+        "scope":  "All",
+        "benefit":  "To find tracks or to follow them for 1 mile requires a successful Survival check. You must make another Survival check every time the tracks become difficult to follow.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_skill",
+        "slot":  "None",
+        "ruleFlags":  {
+
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "general",
+                     "track",
+                     "survival"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Track"
+    },
+    {
+        "prereq":  "Character level 6th",
+        "source":  "SRD / PHB p.106",
+        "role":  "Special",
+        "scope":  "All",
+        "benefit":  "Having this feat enables the character to attract a loyal cohort and devoted followers. Leadership score equals level plus Charisma modifier.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_special",
+        "slot":  "None",
+        "ruleFlags":  {
+
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "general",
+                     "leadership"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Leadership"
+    },
+    {
+        "prereq":  "-",
+        "source":  "SRD / PHB p.100",
+        "role":  "Skill",
+        "scope":  "All",
+        "benefit":  "Choose a skill. You get a +3 bonus on all checks involving that skill. You can gain this feat multiple times; each time applies to a new skill.",
+        "type":  "Feat",
+        "combatModifiers":  [
+
+                            ],
+        "isFighterBonusFeat":  false,
+        "actionType":  "Passive",
+        "category":  "General",
+        "attackType":  "feat_skill",
+        "slot":  "None",
+        "ruleFlags":  {
+
+                      },
+        "combatScope":  "all",
+        "tags":  [
+                     "feat",
+                     "skill",
+                     "skill-focus"
+                 ],
+        "bonusType":  "Untyped",
+        "name":  "Skill Focus"
     }
 ]

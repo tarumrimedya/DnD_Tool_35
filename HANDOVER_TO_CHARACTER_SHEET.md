@@ -1,4 +1,4 @@
-﻿# HUB & KARAKTER KÂĞIDI ENTEGRASYON DOKÜMANI (HANDOVER SPECIFICATION)
+# HUB & KARAKTER KÂĞIDI ENTEGRASYON DOKÜMANI (HANDOVER SPECIFICATION)
 
 **Tarih:** 2026-10-23  
 **Gönderen:** Hub Geliştirme Oturumu  
@@ -2625,3 +2625,27 @@ Karakter motorunda seviye ilerleme tablosunda yer alan **"Fighter Sınıf Bonus 
 3. **Parite ve Kural Standartları:**
    - Kök dizindeki `srd_core_catalog.json`, `bundled_data.js`, `rule_engine.js` ile `webapp/` altındaki kopyaları arasında **%100 SHA-256 hash paritesi** sağlandı.
    - Tavla zarı emojisi (`U+1F3B2` / ) yasağı tavizsiz korundu.
+
+
+---
+
+## 92. %100 Kapalı PHB 1 Feat Kütüphanesinin Tamamlanması ve SRD Core Sınırının Çizilmesi (268 Kayıt)
+
+### Bağlam & Mimari Karar
+Temel karakter yaratımı ve seviye atlama süreçlerinde kullanıcıların en temel D&D 3.5e Player's Handbook (PHB 1) hünerlerini (Iron Will, Great Fortitude, Lightning Reflexes, Toughness, Extend Spell, Brew Potion vb.) arayıp bulamaması sistemde tutarsızlık ve asimetri hissi yaratıyordu. Veri tabanını splatbook'larla (PHB 2, Complete serisi) şişirmek yerine, **%100 Kapalı PHB 1 Çekirdeği (Zero-Splatbook Core)** stratejisi benimsendi.
+
+### Yapılan Değişiklikler ve Veri Güncellemesi
+1. **50 Yeni Temel PHB 1 Feati Eklendi (`srd_core_catalog.json` & `bundled_data.js`):**
+   * **Kurtarma Zarları (Saves):** *Iron Will, Great Fortitude, Lightning Reflexes*
+   * **Fiziksel & Hayatta Kalma:** *Toughness, Endurance, Diehard, Run*
+   * **Büyücü & İlahi:** *Combat Casting, Spell Focus, Greater Spell Focus, Spell Penetration, Greater Spell Penetration, Spell Mastery, Natural Spell, Extra Turning, Augment Summoning*
+   * **Metamagic:** *Empower Spell, Enlarge Spell, Extend Spell, Heighten Spell, Maximize Spell, Quicken Spell, Silent Spell, Still Spell, Widen Spell*
+   * **Item Creation:** *Brew Potion, Craft Magic Arms and Armor, Craft Rod, Craft Staff, Craft Wand, Craft Wondrous Item, Forge Ring, Scribe Scroll*
+   * **Beceri (+2/+2) Featleri:** *Acrobatic, Agile, Alertness, Athletic, Deceitful, Deft Hands, Diligent, Investigator, Magical Aptitude, Negotiator, Nimble Fingers, Persuasive, Self-Sufficient, Stealthy*
+   * **Diğer Genel Featler:** *Track, Leadership, Skill Focus*
+2. **Fighter Bonus Feat Düzeltmesi:**
+   * `Weapon Finesse` hünerine PHB Tablo 5-1 uyarınca `"isFighterBonusFeat": true` ve `"category": "Fighter"` özellikleri uygulandı.
+3. **Katalog Büyüklüğü & Parite:**
+   * SRD Core kataloğu 218 öğeden **268 resmi D&D 3.5e RAW kaydına** (130 Feat, 80 Silah, 19 Zırh/Kalkan, 7 Temel Irk) ulaştı.
+   * `srd_core_catalog.json` ve `bundled_data.js` dosyaları kök dizin ile `webapp/` arasında **%100 SHA-256 hash paritesiyle** eşitlendi.
+   * Standart tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.
