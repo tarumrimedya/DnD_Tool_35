@@ -3084,5 +3084,33 @@ Google Free Tier katmanında standart `gemini-3.8-flash` modelinin **5 RPM (daki
    * `rule_master.js` ile `webapp/rule_master.js` arasında **%100 SHA-256 hash paritesi** (`27AF5099...`) sağlandı.
    * Tavla zarı emojisi yasağı (Rule 3) tavizsiz korundu.
 
+---
+
+## 102. 3 Kademeli (Triple Fallback / 9 Yuvalı) Dayanıklılık Kalkanı
+
+### Bağlam & Kullanıcı Geri Bildirimi
+Google Generative AI sunucularındaki anlık küresel aşırı yüklenme (`HTTP 503: This model is currently experiencing high demand. Spikes in demand are usually temporary`) ve Free Tier 5 RPM kotası aynı anda tetiklendiğinde iki modelin de takılabilmesi riski bertaraf edilmiştir.
+
+### Çözüm & Yapılan Geliştirmeler
+1. **3 Kademeli Dayanıklılık Matrisi (Toplam 9 Yuva):**
+   * **⚡ 1. Hızlı Arama & Seviye Atlama (`QUICK_SEARCH`):**
+     * ⭐ 1. Asıl: `gemini-3.5-flash-lite` (Yüksek RPM, ultra hızlı 0ms gecikme)
+     * 🔄 2. Yedek: `gemini-3.7-flash` (3.8'in 5 RPM kotasından bağımsız kararlı Flash)
+     * 🛡️ 3. Kalkan: `gemini-3.8-flash` (En yüksek akıl yürütme kapasiteli derin motor)
+   * **🔮 2. Kütüphane & RAW Kural Denetimi (`RULE_AUDIT`):**
+     * ⭐ 1. Asıl: `gemini-3.8-pro`
+     * 🔄 2. Yedek: `gemini-3.5-pro`
+     * 🛡️ 3. Kalkan: `gemini-3.7-flash` (Pro modelleri meşgulse hızlı kalkan)
+   * **📋 3. Toplu İçe Aktarım (`IMPORT_BATCH`):**
+     * ⭐ 1. Asıl: `gemini-3.5-flash-lite`
+     * 🔄 2. Yedek: `gemini-3.8-flash`
+     * 🛡️ 3. Kalkan: `gemini-3.8-pro`
+2. **Kusursuz Kesintisiz Çalışma (Fail-Safe Resilience):**
+   * Bir model Google'dan 503 (yoğunluk) veya 429 (kota) aldığında, sistem kullanıcıya hiçbir hata hissettirmeden sırasıyla 2. ve 3. modellere geçiş yapar.
+3. **Parite ve Güvenlik:**
+   * `rule_master.js` ile `webapp/rule_master.js` arasında **%100 SHA-256 hash paritesi** (`7231CF41...`) sağlandı.
+   * Tavla zarı emojisi (Rule 3) yasağı tavizsiz korundu.
+
+
 
 

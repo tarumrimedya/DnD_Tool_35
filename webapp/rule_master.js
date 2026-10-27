@@ -1117,50 +1117,55 @@ const RuleMaster = {
     }
   },
 
-  // 3 Temel AI Kullanım Alanı İçin Dinamik Model Çözümleyicisi (Flash-Lite Öncelikli Yüksek Kota Matrisi)
+  // 3 Temel AI Kullanım Alanı İçin Dinamik Model Çözümleyicisi (3 Kademeli / 9 Yuvalı Dayanıklılık Matrisi)
   AI_TASK_ROUTING: {
-    // 1. Hızlı Arama & Seviye Atlama (Flash-Lite: Ultra Hızlı Gecikme & Yüksek Kota)
+    // 1. Hızlı Arama & Seviye Atlama (1. Asıl: Lite, 2. Yedek: Flash 3.7, 3. Kalkan: Flash 3.8)
     QUICK_SEARCH: {
       primary: 'gemini-3.5-flash-lite',
-      fallback: 'gemini-3.8-flash'
+      fallback: 'gemini-3.7-flash',
+      tertiary: 'gemini-3.8-flash'
     },
     // 2. Kütüphane & Kural Denetimi (En Yüksek Kararlı Pro Muhakeme Motoru)
     RULE_AUDIT: {
       primary: 'gemini-3.8-pro',
-      fallback: 'gemini-3.5-pro'
+      fallback: 'gemini-3.5-pro',
+      tertiary: 'gemini-3.7-flash'
     },
     // 3. Toplu İçe Aktarım & Serbest Metin Ayrıştırma (Yapısal JSON)
     IMPORT_BATCH: {
       primary: 'gemini-3.5-flash-lite',
-      fallback: 'gemini-3.8-pro'
+      fallback: 'gemini-3.8-flash',
+      tertiary: 'gemini-3.8-pro'
     }
   },
 
   getModelsForTask(taskType = 'DEFAULT') {
     const userPref = this.getAiModelMode();
     if (userPref === 'pro') {
-      return [this.AI_TASK_ROUTING.RULE_AUDIT.primary, this.AI_TASK_ROUTING.RULE_AUDIT.fallback];
+      const cfg = this.AI_TASK_ROUTING.RULE_AUDIT;
+      return [cfg.primary, cfg.fallback, cfg.tertiary];
     }
     if (userPref === 'flash') {
-      return [this.AI_TASK_ROUTING.QUICK_SEARCH.primary, this.AI_TASK_ROUTING.QUICK_SEARCH.fallback];
+      const cfg = this.AI_TASK_ROUTING.QUICK_SEARCH;
+      return [cfg.primary, cfg.fallback, cfg.tertiary];
     }
     // 'auto' (Smart Task Router):
     if (taskType === 'RULE_AUDIT' || taskType === 'COMPLEX_TACTICAL') {
       const cfg = this.AI_TASK_ROUTING.RULE_AUDIT;
-      return [cfg.primary, cfg.fallback];
+      return [cfg.primary, cfg.fallback, cfg.tertiary];
     }
     if (taskType === 'IMPORT_BATCH') {
       const cfg = this.AI_TASK_ROUTING.IMPORT_BATCH;
-      return [cfg.primary, cfg.fallback];
+      return [cfg.primary, cfg.fallback, cfg.tertiary];
     }
     // Default fast retrieval (QUICK_SEARCH, LEVEL_UP, etc.)
     const cfg = this.AI_TASK_ROUTING.QUICK_SEARCH;
-    return [cfg.primary, cfg.fallback];
+    return [cfg.primary, cfg.fallback, cfg.tertiary];
   },
 
   async getAvailableGeminiModels(apiKey, forceRefresh = false, taskType = 'DEFAULT') {
-    const defaultPair = this.getModelsForTask(taskType);
-    if (!apiKey) return defaultPair;
+    const defaultList = this.getModelsForTask(taskType);
+    if (!apiKey) return defaultList;
 
     if (forceRefresh) {
       this._cachedTaskModels = {};
@@ -1212,7 +1217,7 @@ const RuleMaster = {
         const isPro = (this.getAiModelMode() === 'pro') || 
           (this.getAiModelMode() === 'auto' && (taskType === 'RULE_AUDIT' || taskType === 'COMPLEX_TACTICAL'));
 
-        // 1. Hızlı Arama & Seviye Atlama: Flash-Lite öncelikli (Yüksek RPM Kotası)
+        // 1. Hızlı Arama & Seviye Atlama: 3 Kademeli Havuz
         if (taskType === 'QUICK_SEARCH' || taskType === 'DEFAULT') {
           const liteModels = apiModels
             .filter(m => m.toLowerCase().includes('flash') && m.toLowerCase().includes('lite'))
@@ -1221,15 +1226,26 @@ const RuleMaster = {
             .filter(m => m.toLowerCase().includes('flash') && !m.toLowerCase().includes('lite'))
             .sort((a, b) => parseVersion(b) - parseVersion(a));
 
-          const primary = liteModels[0] || standardFlashModels[0] || defaultPair[0];
-          const fallback = standardFlashModels[0] || liteModels[1] || defaultPair[1];
-          const resultPair = [primary, fallback];
+          const primary = liteModels[0] || standardFlashModels[0] || defaultList[0];
+          const fallback = standardFlashModels[1] || liteModels[1] || standardFlashModels[0] || defaultList[1];
+          const tertiary = standardFlashModels[0] || liteModels[2] || defaultList[2];
+
+          const resultList = [];
+          [primary, fallback, tertiary].forEach(m => {
+            if (m && !resultList.includes(m)) resultList.push(m);
+          });
+          while (resultList.length < 3 && defaultList[resultList.length]) {
+            const defM = defaultList[resultList.length];
+            if (!resultList.includes(defM)) resultList.push(defM);
+            else break;
+          }
+
           if (!this._cachedTaskModels) this._cachedTaskModels = {};
-          this._cachedTaskModels[cacheKey] = resultPair;
-          return resultPair;
+          this._cachedTaskModels[cacheKey] = resultList;
+          return resultList;
         }
 
-        // 3. Toplu İçe Aktarım: Flash-Lite Asıl, Pro Yedek
+        // 3. Toplu İçe Aktarım: Lite Asıl, Standart Flash Yedek, Pro Kalkan
         if (taskType === 'IMPORT_BATCH' && this.getAiModelMode() === 'auto') {
           const liteModels = apiModels
             .filter(m => m.toLowerCase().includes('flash') && m.toLowerCase().includes('lite'))
@@ -1241,35 +1257,55 @@ const RuleMaster = {
             .filter(m => m.toLowerCase().includes('pro'))
             .sort((a, b) => parseVersion(b) - parseVersion(a));
 
-          const primary = liteModels[0] || standardFlashModels[0] || defaultPair[0];
-          const fallback = proModels[0] || defaultPair[1];
-          const resultPair = [primary, fallback];
+          const primary = liteModels[0] || standardFlashModels[0] || defaultList[0];
+          const fallback = standardFlashModels[0] || proModels[0] || defaultList[1];
+          const tertiary = proModels[0] || defaultList[2];
+
+          const resultList = [];
+          [primary, fallback, tertiary].forEach(m => {
+            if (m && !resultList.includes(m)) resultList.push(m);
+          });
+          while (resultList.length < 3 && defaultList[resultList.length]) {
+            const defM = defaultList[resultList.length];
+            if (!resultList.includes(defM)) resultList.push(defM);
+            else break;
+          }
+
           if (!this._cachedTaskModels) this._cachedTaskModels = {};
-          this._cachedTaskModels[cacheKey] = resultPair;
-          return resultPair;
+          this._cachedTaskModels[cacheKey] = resultList;
+          return resultList;
         }
 
-        // 2. Kütüphane & RAW Kural Denetimi: Pro Modelleri
+        // 2. Kütüphane & RAW Kural Denetimi: Pro Modelleri + Hızlı Kalkan
         const relevant = isPro
           ? apiModels.filter(m => m.toLowerCase().includes('pro'))
           : apiModels.filter(m => m.toLowerCase().includes('flash'));
 
-        // Sürüm numarasına göre büyükten küçüğe sırala (Örn: 3.8 > 3.7 > 3.5 > ...)
         relevant.sort((a, b) => parseVersion(b) - parseVersion(a));
 
-        const primary = relevant[0] || defaultPair[0];
-        const fallback = relevant[1] || relevant.find(m => m !== primary) || defaultPair[1];
+        const primary = relevant[0] || defaultList[0];
+        const fallback = relevant[1] || defaultList[1];
+        const tertiary = relevant[2] || defaultList[2];
 
-        const resultPair = [primary, fallback];
+        const resultList = [];
+        [primary, fallback, tertiary].forEach(m => {
+          if (m && !resultList.includes(m)) resultList.push(m);
+        });
+        while (resultList.length < 3 && defaultList[resultList.length]) {
+          const defM = defaultList[resultList.length];
+          if (!resultList.includes(defM)) resultList.push(defM);
+          else break;
+        }
+
         if (!this._cachedTaskModels) this._cachedTaskModels = {};
-        this._cachedTaskModels[cacheKey] = resultPair;
-        return resultPair;
+        this._cachedTaskModels[cacheKey] = resultList;
+        return resultList;
       }
     } catch (e) {
       console.warn('API model list discovery skipped:', e.message);
     }
 
-    return defaultPair;
+    return defaultList;
   },
 
   async getAiArchitectureDiagnostics(apiKey) {
@@ -1289,17 +1325,20 @@ const RuleMaster = {
         quickSearch: {
           title: 'Hızlı Arama & Seviye Atlama (Flash-Lite / Yüksek Kota)',
           primary: quickModels[0] || this.AI_TASK_ROUTING.QUICK_SEARCH.primary,
-          fallback: quickModels[1] || this.AI_TASK_ROUTING.QUICK_SEARCH.fallback
+          fallback: quickModels[1] || this.AI_TASK_ROUTING.QUICK_SEARCH.fallback,
+          tertiary: quickModels[2] || this.AI_TASK_ROUTING.QUICK_SEARCH.tertiary
         },
         ruleAudit: {
           title: 'Kütüphane & RAW Kural Denetimi (Pro Derin Muhakeme)',
           primary: auditModels[0] || this.AI_TASK_ROUTING.RULE_AUDIT.primary,
-          fallback: auditModels[1] || this.AI_TASK_ROUTING.RULE_AUDIT.fallback
+          fallback: auditModels[1] || this.AI_TASK_ROUTING.RULE_AUDIT.fallback,
+          tertiary: auditModels[2] || this.AI_TASK_ROUTING.RULE_AUDIT.tertiary
         },
         importBatch: {
           title: 'Toplu İçe Aktarım & Tablo Ayrıştırma (Lite/Pro Hibrit)',
           primary: batchModels[0] || this.AI_TASK_ROUTING.IMPORT_BATCH.primary,
-          fallback: batchModels[1] || this.AI_TASK_ROUTING.IMPORT_BATCH.fallback
+          fallback: batchModels[1] || this.AI_TASK_ROUTING.IMPORT_BATCH.fallback,
+          tertiary: batchModels[2] || this.AI_TASK_ROUTING.IMPORT_BATCH.tertiary
         }
       }
     };
@@ -1326,19 +1365,22 @@ const RuleMaster = {
         ? 'Otomatik (Akıllı Görev Yönlendirici)' 
         : (diag.mode === 'pro' ? 'Manuel Gemini Pro (Derin RAW Muhakeme)' : 'Manuel Gemini Flash (Ultra Hızlı Gecikme)');
 
-      const report = `🩺 GEMINI API TANI & 6 YUVALI MODEL MATRİSİ\n\n` +
+      const report = `🩺 GEMINI API TANI & 3 KADEMELİ MODEL MATRİSİ (9 YUVA)\n\n` +
         `🟢 Bağlantı Başarılı ve Aktif!\n` +
         `Çalışma Modu: ${modeName}\n\n` +
         `⚡ ${diag.tasks.quickSearch.title}:\n` +
-        `   ⭐ Asıl: ${diag.tasks.quickSearch.primary}\n` +
-        `   🔄 Yedek: ${diag.tasks.quickSearch.fallback}\n\n` +
+        `   ⭐ 1. Asıl: ${diag.tasks.quickSearch.primary}\n` +
+        `   🔄 2. Yedek: ${diag.tasks.quickSearch.fallback}\n` +
+        `   🛡️ 3. Kalkan: ${diag.tasks.quickSearch.tertiary}\n\n` +
         `🔮 ${diag.tasks.ruleAudit.title}:\n` +
-        `   ⭐ Asıl: ${diag.tasks.ruleAudit.primary}\n` +
-        `   🔄 Yedek: ${diag.tasks.ruleAudit.fallback}\n\n` +
+        `   ⭐ 1. Asıl: ${diag.tasks.ruleAudit.primary}\n` +
+        `   🔄 2. Yedek: ${diag.tasks.ruleAudit.fallback}\n` +
+        `   🛡️ 3. Kalkan: ${diag.tasks.ruleAudit.tertiary}\n\n` +
         `📋 ${diag.tasks.importBatch.title}:\n` +
-        `   ⭐ Asıl: ${diag.tasks.importBatch.primary}\n` +
-        `   🔄 Yedek: ${diag.tasks.importBatch.fallback}\n\n` +
-        `Sistem her görevde önce 1. sıradaki Asıl modeli kullanır; kota/yoğunluk durumunda otomatik olarak alt sıradaki Yedeğe geçer.`;
+        `   ⭐ 1. Asıl: ${diag.tasks.importBatch.primary}\n` +
+        `   🔄 2. Yedek: ${diag.tasks.importBatch.fallback}\n` +
+        `   🛡️ 3. Kalkan: ${diag.tasks.importBatch.tertiary}\n\n` +
+        `Sistem her görevde önce 1. Asıl modeli kullanır; sunucu yoğunluğu (503) veya kota durumunda (429) otomatik olarak sırasıyla 2. ve 3. modellere geçer.`;
 
       alert(report);
     } catch (err) {
