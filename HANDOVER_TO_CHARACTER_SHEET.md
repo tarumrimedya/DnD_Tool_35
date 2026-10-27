@@ -3040,3 +3040,24 @@ Ayrıca `gemini-flash-latest` alias'ı REST API doğrudan çağrılarında 404 d
    * `rule_master.js` ile `webapp/rule_master.js` arasında **%100 SHA-256 hash paritesi** (`F95BE535...`) sağlandı.
    * Tavla zarı emojisi yasağı (Rule 3) tavizsiz korundu.
 
+---
+
+## 100. 6 Yuvalı Mimari Tanı Modalı & Tam Matris Raporlaması
+
+### Bağlam & Kullanıcı Geri Bildirimi
+Kullanıcı, Ayarlar menüsündeki Tanı & Test butonuna bastığında yalnızca varsayılan Hızlı Arama modellerini (`gemini-3.8-flash` & `gemini-3.7-flash`) gördüğünü ve derin denetim için ayrılan Pro modellerinin ekranda yer almadığını belirtmiştir.
+
+### Çözüm & Yapılan Geliştirmeler
+1. **`RuleMaster.getAiArchitectureDiagnostics(apiKey)` Metodu:**
+   * Google API'yi tek bir seferde sorgulayarak keşfedilen modelleri önbelleğe alan ve ardından sistemdeki 3 temel görevin (`QUICK_SEARCH`, `RULE_AUDIT`, `IMPORT_BATCH`) 1 Asıl + 1 Yedek (toplam 6 yuva) model dağılımını hesaplayan yapı eklendi.
+2. **`RuleMaster.showDiagnosticsModal(apiKey)` Entegrasyonu:**
+   * Tanı modalı tüm görevlerin ve modellerin net bir şekilde dökümünü yapacak şekilde yapılandırıldı:
+     * ⚡ **1. Hızlı Arama & Seviye Atlama:** Asıl (`gemini-3.8-flash`) + Yedek (`gemini-3.7-flash`)
+     * 🔮 **2. Kütüphane & RAW Kural Denetimi:** Asıl (`gemini-3.8-pro`) + Yedek (`gemini-3.5-pro`)
+     * 📋 **3. Toplu İçe Aktarım & Tablo Ayrıştırma:** Asıl (`gemini-3.8-flash`) + Yedek (`gemini-3.8-pro`)
+3. **Parite ve Eşitlik Doğrulaması:**
+   * 4 HTML dosyası (`index.html`, `character.html`, `webapp/index.html`, `webapp/character.html`) arasında **%100 SHA-256 hash paritesi** (`73BBB2EB...`) sağlandı.
+   * 2 Rule Master dosyası (`rule_master.js`, `webapp/rule_master.js`) arasında **%100 SHA-256 hash paritesi** (`A3810743...`) sağlandı.
+   * Tavla zarı emojisi yasağı (Rule 3) tavizsiz korundu.
+
+

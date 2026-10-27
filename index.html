@@ -9074,6 +9074,9 @@
     }
 
     async function diagnoseSettingsApiKey() {
+      if (window.RuleMaster && typeof RuleMaster.showDiagnosticsModal === 'function') {
+        return RuleMaster.showDiagnosticsModal();
+      }
       const key = localStorage.getItem('gemini_api_key') || '';
       if (!key) {
         alert('⚠️ Lütfen önce bir Gemini API Anahtarı girin ve kaydedin.');
@@ -9085,11 +9088,11 @@
           alert('❌ Gemini API bağlantısı kurulamadı. Lütfen API anahtarınızın doğruluğunu kontrol edin.');
           return;
         }
-        const models = await (window.RuleMaster ? RuleMaster.getAvailableGeminiModels(key, true) : ['gemini-flash-lite-latest', 'gemini-flash-latest']);
-        const formattedList = models.map((m, i) => i === 0 ? `1. ⭐ ${m} (BİRİNCİL AKTİF MODEL)` : `${i + 1}. 🔄 ${m} (Yedek / Fallback)`).join('\n');
-        alert(`🩺 GEMINI API TANI & MODEL OPTİMİZASYON RAPORU\n\n🟢 Bağlantı Başarılı ve Aktif! Gereksiz / eski modeller filtrelendi.\n\nOptimize Edilmiş Model Öncelik Kuyruğu:\n${formattedList}\n\nSistem her sorguda önce 1. sıradaki en hızlı modeli kullanır; kota/yoğunluk durumunda otomatik olarak alt sıradaki yedek modele geçer.`);
+        const models = await (window.RuleMaster ? RuleMaster.getAvailableGeminiModels(key, true) : ['gemini-3.8-flash', 'gemini-3.7-flash']);
+        const formattedList = models.map((m, i) => i === 0 ? 1. ⭐  (BİRİNCİL AKTİF MODEL) : ${i + 1}. 🔄  (Yedek / Fallback)).join('\n');
+        alert(🩺 GEMINI API TANI & MODEL RAPORU\n\n🟢 Bağlantı Başarılı!\n\n);
       } catch (err) {
-        alert(`❌ Tanı Hatası: ${err.message}`);
+        alert(❌ Tanı Hatası: );
       }
     }
 

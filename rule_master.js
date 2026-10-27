@@ -1162,38 +1162,49 @@ const RuleMaster = {
     const defaultPair = this.getModelsForTask(taskType);
     if (!apiKey) return defaultPair;
 
+    if (forceRefresh) {
+      this._cachedTaskModels = {};
+      this._discoveredApiModels = null;
+    }
+
     const cacheKey = `${taskType}_${this.getAiModelMode()}`;
     if (!forceRefresh && this._cachedTaskModels && this._cachedTaskModels[cacheKey]) {
       return this._cachedTaskModels[cacheKey];
     }
 
     try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 3500);
-      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`, {
-        signal: controller.signal
-      });
-      clearTimeout(timer);
+      let apiModels = (!forceRefresh && this._discoveredApiModels) ? this._discoveredApiModels : null;
+      if (!apiModels) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 3500);
+        const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`, {
+          signal: controller.signal
+        });
+        clearTimeout(timer);
 
-      if (resp.ok) {
-        const data = await resp.json();
-        const apiModels = (data.models || [])
-          .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'))
-          .map(m => m.name.replace(/^models\//, ''))
-          .filter(m => {
-            const lower = m.toLowerCase();
-            return !lower.includes('tts') &&
-                   !lower.includes('image') &&
-                   !lower.includes('audio') &&
-                   !lower.includes('embedding') &&
-                   !lower.includes('realtime') &&
-                   !lower.includes('bison') &&
-                   !lower.includes('preview') &&
-                   !lower.includes('lite') &&
-                   !lower.includes('omni') &&
-                   !lower.includes('gemma');
-          });
+        if (resp.ok) {
+          const data = await resp.json();
+          apiModels = (data.models || [])
+            .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'))
+            .map(m => m.name.replace(/^models\//, ''))
+            .filter(m => {
+              const lower = m.toLowerCase();
+              return !lower.includes('tts') &&
+                     !lower.includes('image') &&
+                     !lower.includes('audio') &&
+                     !lower.includes('embedding') &&
+                     !lower.includes('realtime') &&
+                     !lower.includes('bison') &&
+                     !lower.includes('preview') &&
+                     !lower.includes('lite') &&
+                     !lower.includes('omni') &&
+                     !lower.includes('gemma');
+            });
+          this._discoveredApiModels = apiModels;
+        }
+      }
 
+      if (apiModels && apiModels.length > 0) {
         function parseVersion(name) {
           const match = (name || '').match(/gemini-(\d+(?:\.\d+)?)-/i);
           return match ? parseFloat(match[1]) : 0.0;
@@ -1233,6 +1244,80 @@ const RuleMaster = {
     }
 
     return defaultPair;
+  },
+
+  async getAiArchitectureDiagnostics(apiKey) {
+    const key = apiKey || this.getApiKey();
+    if (!key) return null;
+
+    // API modellerini canlı tara ve önbelleğe al
+    await this.getAvailableGeminiModels(key, true, 'QUICK_SEARCH');
+
+    const quickModels = await this.getAvailableGeminiModels(key, false, 'QUICK_SEARCH');
+    const auditModels = await this.getAvailableGeminiModels(key, false, 'RULE_AUDIT');
+    const batchModels = await this.getAvailableGeminiModels(key, false, 'IMPORT_BATCH');
+
+    return {
+      mode: this.getAiModelMode(),
+      tasks: {
+        quickSearch: {
+          title: 'Hızlı Arama & Seviye Atlama (Düşük Gecikme)',
+          primary: quickModels[0] || this.AI_TASK_ROUTING.QUICK_SEARCH.primary,
+          fallback: quickModels[1] || this.AI_TASK_ROUTING.QUICK_SEARCH.fallback
+        },
+        ruleAudit: {
+          title: 'Kütüphane & RAW Kural Denetimi (Derin Muhakeme)',
+          primary: auditModels[0] || this.AI_TASK_ROUTING.RULE_AUDIT.primary,
+          fallback: auditModels[1] || this.AI_TASK_ROUTING.RULE_AUDIT.fallback
+        },
+        importBatch: {
+          title: 'Toplu İçe Aktarım & Tablo Ayrıştırma (Hibrit)',
+          primary: batchModels[0] || this.AI_TASK_ROUTING.IMPORT_BATCH.primary,
+          fallback: batchModels[1] || this.AI_TASK_ROUTING.IMPORT_BATCH.fallback
+        }
+      }
+    };
+  },
+
+  async showDiagnosticsModal(apiKey) {
+    const key = (apiKey || this.getApiKey() || '').trim();
+    if (!key) {
+      alert('⚠️ Lütfen önce bir Gemini API Anahtarı girin ve kaydedin.');
+      return;
+    }
+
+    try {
+      if (typeof verifySettingsGeminiApiKey === 'function') {
+        const ok = await verifySettingsGeminiApiKey(true);
+        if (!ok) {
+          alert('❌ Gemini API bağlantısı kurulamadı. Lütfen API anahtarınızın doğruluğunu kontrol edin.');
+          return;
+        }
+      }
+
+      const diag = await this.getAiArchitectureDiagnostics(key);
+      const modeName = diag.mode === 'auto' 
+        ? 'Otomatik (Akıllı Görev Yönlendirici)' 
+        : (diag.mode === 'pro' ? 'Manuel Gemini Pro (Derin RAW Muhakeme)' : 'Manuel Gemini Flash (Ultra Hızlı Gecikme)');
+
+      const report = `🩺 GEMINI API TANI & 6 YUVALI MODEL MATRİSİ\n\n` +
+        `🟢 Bağlantı Başarılı ve Aktif!\n` +
+        `Çalışma Modu: ${modeName}\n\n` +
+        `⚡ ${diag.tasks.quickSearch.title}:\n` +
+        `   ⭐ Asıl: ${diag.tasks.quickSearch.primary}\n` +
+        `   🔄 Yedek: ${diag.tasks.quickSearch.fallback}\n\n` +
+        `🔮 ${diag.tasks.ruleAudit.title}:\n` +
+        `   ⭐ Asıl: ${diag.tasks.ruleAudit.primary}\n` +
+        `   🔄 Yedek: ${diag.tasks.ruleAudit.fallback}\n\n` +
+        `📋 ${diag.tasks.importBatch.title}:\n` +
+        `   ⭐ Asıl: ${diag.tasks.importBatch.primary}\n` +
+        `   🔄 Yedek: ${diag.tasks.importBatch.fallback}\n\n` +
+        `Sistem her görevde önce 1. sıradaki Asıl modeli kullanır; kota/yoğunluk durumunda otomatik olarak alt sıradaki Yedeğe geçer.`;
+
+      alert(report);
+    } catch (err) {
+      alert(`❌ Tanı Hatası: ${err.message}`);
+    }
   },
 
   cleanJsonText(raw) {
