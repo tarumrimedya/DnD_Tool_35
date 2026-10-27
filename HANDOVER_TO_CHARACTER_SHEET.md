@@ -3399,3 +3399,26 @@ Kullanıcı, Core Profile kartında yer alan `[ 📜 Karakter Künyesi ]` butonu
 * `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `59A9145F766E14970D0790CDAAA9856BE70628D7D1F2CBF89DCF7B366D65D02B`)
 * `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
 * Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
+
+
+---
+
+## 115. Seviye İlerleme Butonlarının (Seviye Atla ve Seviye Atla / Planla) Boyut ve Stil Eşitliği
+
+### Bağlam & Kullanıcı Talebi
+Kullanıcı, Seviye Gelişimi ve İlerleme Tablosu (`#level-progression-block`) alanında yer alan `[ ➕ Seviye Atla ]` butonunun boyutunun, üst menüdeki `[ ⬆️ Seviye Atla / Planla ]` butonunun boyutu ile birebir aynı yapılmasını talep etmiştir.
+
+### Yapılan Geliştirmeler & Arayüz Simetrisi
+1. **Piksel Düzeyinde Boyut Eşitliği (`w-48`):**
+   * Her iki buton da `w-48` (192px / 12rem) sabit genişliğine getirildi.
+   * `justify-center` ve `whitespace-nowrap` ile metin uzunluk farkına rağmen her iki buton da ekranda birebir aynı genişlik ve yükseklikte konumlandırıldı.
+2. **Metin & Renk Sadeleştirmesi:**
+   * Üst Menü: `[ ⬆️ Seviye Atla / Planla ]`
+   * Alt Menü: `[ ➕ Seviye Atla ]`
+   * Her ikisi de aynı `bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg shadow` stiline sahiptir.
+
+### Parite ve Hash Durumu
+* `character.html` = `index.html` = `webapp/character.html` = `webapp/index.html` (**SHA-256:** `D13798A890BA72BA8B8C9E33B695D7E804B7334C96B9100F13F634E75CF12E93`)
+* `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `59A9145F766E14970D0790CDAAA9856BE70628D7D1F2CBF89DCF7B366D65D02B`)
+* `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
+* Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
