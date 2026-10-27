@@ -1099,34 +1099,49 @@ const RuleMaster = {
   lastAiResults: [],
   _cachedModels: null,
 
+  DND35_RAW_GUARDRAIL: `STRICT D&D 3.5E RAW ONLY (ZERO 5E / PATHFINDER / HOMEBREW):
+- You are strictly operating under official Wizards of the Coast D&D 3.5e RAW (Rules As Written).
+- ABSOLUTELY NEVER apply 5e mechanics (No Advantage/Disadvantage, No Bonus Action, No Finesse adding Dex to damage, No -5/+10 GWM, No Short Rest).
+- ABSOLUTELY NEVER accept unofficial community Homebrew (such as Extra Readied Maneuver). Only official WotC D&D 3.5e publications.
+- Adhere strictly to Player's Handbook (PHB), Dungeon Master's Guide (DMG), and official 3.5e splatbooks (Complete series, Tome of Battle, etc.).`,
+
+  getAiModelMode() {
+    return localStorage.getItem('dnd35_ai_model_mode') || 'auto';
+  },
+
+  setAiModelMode(mode) {
+    if (['auto', 'flash', 'pro'].includes(mode)) {
+      localStorage.setItem('dnd35_ai_model_mode', mode);
+      this._cachedModels = null;
+      this.updateApiKeyUi();
+    }
+  },
+
+  getModelsForTask(taskType = 'DEFAULT') {
+    const userPref = this.getAiModelMode();
+    if (userPref === 'pro') {
+      return ['gemini-1.5-pro-latest', 'gemini-pro-latest', 'gemini-1.5-flash-latest'];
+    }
+    if (userPref === 'flash') {
+      return ['gemini-1.5-flash-latest', 'gemini-flash-latest', 'gemini-1.5-flash-8b-latest'];
+    }
+    // 'auto' (Smart Hybrid Router):
+    if (taskType === 'RULE_AUDIT' || taskType === 'COMPLEX_TACTICAL' || taskType === 'IMPORT_BATCH') {
+      return ['gemini-1.5-pro-latest', 'gemini-pro-latest', 'gemini-1.5-flash-latest'];
+    }
+    // Default fast retrieval (QUICK_SEARCH, LEVEL_UP, etc.)
+    return ['gemini-1.5-flash-latest', 'gemini-flash-latest', 'gemini-1.5-flash-8b-latest'];
+  },
+
+  async getAvailableGeminiModels(apiKey, forceRefresh = false, taskType = 'DEFAULT') {
+    return this.getModelsForTask(taskType);
+  },
+
   cleanJsonText(raw) {
     if (!raw) return '';
     let cleaned = String(raw).trim();
     cleaned = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
     return cleaned;
-  },
-
-  async getAvailableGeminiModels(apiKey, forceRefresh = false) {
-    const HARDCODED_MODELS = ['gemini-flash-lite-latest', 'gemini-flash-latest'];
-    if (!apiKey) return HARDCODED_MODELS;
-
-    if (!forceRefresh && this._cachedModels && this._cachedModels.length > 0) {
-      return this._cachedModels;
-    }
-
-    try {
-      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`);
-      if (resp.ok) {
-        // API key verified. Return strictly only the hardcoded models to be used.
-        this._cachedModels = HARDCODED_MODELS;
-        return HARDCODED_MODELS;
-      }
-    } catch (e) {
-      console.warn('Could not query dynamic Gemini models list:', e);
-    }
-
-    this._cachedModels = HARDCODED_MODELS;
-    return HARDCODED_MODELS;
   },
 
   getApiKey() {
@@ -1153,6 +1168,10 @@ const RuleMaster = {
     const inputContainer = document.getElementById('ai-api-key-input-container');
     const keyDisplay = document.getElementById('ai-api-key-display');
     const keyInput = document.getElementById('ai-api-key-input');
+
+    const modelMode = this.getAiModelMode();
+    const modeSelect = document.getElementById('ai-model-mode-select');
+    if (modeSelect) modeSelect.value = modelMode;
 
     if (key) {
       if (statusContainer) statusContainer.classList.remove('hidden');
@@ -1665,6 +1684,8 @@ const RuleMaster = {
     const promptText = `You are a master D&D 3.5e Rule Arbiter and Database Architect.
 User query: "${query}" (Category Hint: "${categoryHint}").
 
+${this.DND35_RAW_GUARDRAIL}
+
 CRITICAL D&D 3.5E ANTI-HALLUCINATION & CANONICAL VERIFICATION RULES:
 0. RACE SCHEMA (FOR D&D 3.5E RACES / RACIAL TEMPLATES):
 If categoryHint is 'Race' or querying a Race (e.g. Warforged, Goliath, Drow, Catfolk, Thri-Kreen, Kenku, Illumian), return canonical D&D 3.5e Race object with type: "Race", size ("Medium"|"Small"|"Large"), baseSpeed (number, e.g. 30), strBonus/dexBonus/conBonus/intBonus/wisBonus/chaBonus (numbers), favoredClass, source (official 3.5e book and page), benefit, description, and traits: [{"name": "Trait Name", "desc": "Detailed mechanics"}], languages: ["Common", ...], bonusFeats (number).
@@ -1770,7 +1791,7 @@ Return valid JSON only matching this schema:
   ]
 }`;
 
-    const availableModels = await this.getAvailableGeminiModels(apiKey);
+    const availableModels = await this.getAvailableGeminiModels(apiKey, false, 'QUICK_SEARCH');
     let lastError = null;
 
     for (const model of availableModels) {
@@ -3673,7 +3694,7 @@ OUTPUT REQUIREMENT:
 Return valid JSON only matching this schema:
 { "rows": [ [col0, col1, ... col28], ... ] }`;
 
-    const modelsToTry = await this.getAvailableGeminiModels(apiKey);
+    const modelsToTry = await this.getAvailableGeminiModels(apiKey, false, 'IMPORT_BATCH');
     let successData = null;
     let lastError = null;
 
@@ -4244,6 +4265,154 @@ ${customQuery ? `Kullanıcının Özel Sorusu: ${customQuery}` : 'Bu seviye atla
         ${fallback.adviceHtml}
       `;
       return fallback;
+    }
+  }
+,
+
+  // ====================================================
+  // GEMINI PRO RAW LIBRARY AUDITOR (SANITY CHECKER)
+  // ====================================================
+  async auditLibraryWithProModal() {
+    const apiKey = this.getApiKey();
+    if (!apiKey) {
+      alert('âš ï¸ KÃ¼tÃ¼phane denetimi iÃ§in geÃ§erli bir Gemini API anahtarÄ± gereklidir.');
+      this.promptChangeApiKey();
+      return;
+    }
+
+    const items = (Array.isArray(this.masterDb) ? this.masterDb : [])
+      .filter(i => i && i.name && !String(i.name).startsWith('â†³'));
+
+    if (items.length === 0) {
+      alert('â„¹ï¸ Yerel kullanÄ±cÄ± veri tabanÄ±nÄ±zda (master_db) henÃ¼z Ã¶zel kayÄ±t bulunmamaktadÄ±r.\n\nSRD Core kataloÄŸundaki 267 kayÄ±t zaten resmi Gemini 3.1 Pro denetiminden geÃ§miÅŸ ve dondurulmuÅŸtur.');
+      return;
+    }
+
+    let modalEl = document.getElementById('rule-master-audit-modal');
+    if (!modalEl) {
+      modalEl = document.createElement('div');
+      modalEl.id = 'rule-master-audit-modal';
+      modalEl.className = 'fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm';
+      document.body.appendChild(modalEl);
+    }
+
+    modalEl.innerHTML = `
+      <div class="bg-slate-900 border border-purple-500/60 rounded-2xl max-w-2xl w-full p-5 space-y-4 shadow-2xl text-white">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">ğŸ›¡ï¸</span>
+            <div>
+              <h3 class="font-bold text-sm text-purple-300">Gemini Pro ile RAW 3.5e KÃ¼tÃ¼phane Denetimi</h3>
+              <p class="text-[11px] text-slate-400">master_db iÃ§indeki ${items.length} Ã¶zel kayÄ±t taranÄ±yor...</p>
+            </div>
+          </div>
+          <button onclick="document.getElementById('rule-master-audit-modal').classList.add('hidden')" class="text-slate-400 hover:text-white text-sm font-bold px-2 py-1 rounded bg-slate-800 cursor-pointer">âœ•</button>
+        </div>
+        <div id="rule-master-audit-content" class="max-h-96 overflow-y-auto space-y-2 pr-1 text-xs">
+          <div class="text-center py-8 text-slate-400 animate-pulse flex items-center justify-center gap-2">
+            <span>âš¡ Gemini Pro modeline baÄŸlanÄ±lÄ±yor ve RAW kural motoru denetimi baÅŸlatÄ±lÄ±yor...</span>
+          </div>
+        </div>
+      </div>
+    `;
+    modalEl.classList.remove('hidden');
+
+    try {
+      const sampleItems = items.slice(0, 20).map(i => ({
+        name: i.name,
+        type: i.type,
+        source: i.source,
+        prereq: i.prereq,
+        benefit: i.benefit || i.description,
+        isFighterBonusFeat: i.isFighterBonusFeat
+      }));
+
+      const auditPrompt = `You are an uncompromising D&D 3.5e RAW Auditor.
+Audit these user-added custom records from their master_db:
+${JSON.stringify(sampleItems, null, 2)}
+
+TASK:
+1. Verify if each item exists in official 3.5e WotC books or is unofficial homebrew.
+2. Detect any 5e mechanics (Advantage/Disadvantage, Bonus Action, Finesse adding Dex to damage, etc.).
+3. Check if prerequisites and fighter bonus feat flags match RAW 3.5e.
+
+Return valid JSON strictly matching:
+{
+  "results": [
+    {
+      "name": "Item Name",
+      "status": "APPROVED",
+      "issues": ["Issue description if any"],
+      "recommendedAction": "KEEP"
+    }
+  ]
+}
+Allowed status values: "APPROVED" | "WARNING" | "HOMEBREW".
+Allowed recommendedAction values: "KEEP" | "MODIFY" | "REMOVE".`;
+
+      const models = this.getModelsForTask('RULE_AUDIT');
+      let auditJson = null;
+
+      for (const model of models) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+          const resp = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: auditPrompt }] }],
+              generationConfig: { responseMimeType: "application/json", temperature: 0.1 }
+            })
+          });
+          if (resp.ok) {
+            const data = await resp.json();
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (text) {
+              auditJson = JSON.parse(this.cleanJsonText(text));
+              break;
+            }
+          }
+        } catch (e) {
+          console.warn(`Audit model ${model} failed:`, e);
+        }
+      }
+
+      const contentEl = document.getElementById('rule-master-audit-content');
+      if (!contentEl) return;
+
+      if (!auditJson || !Array.isArray(auditJson.results)) {
+        contentEl.innerHTML = `<div class="p-3 text-rose-300 bg-rose-950/40 rounded border border-rose-800">âš ï¸ Denetim gerÃ§ekleÅŸtirilemedi veya yanÄ±t alÄ±namadÄ±. LÃ¼tfen API kotanÄ±zÄ± kontrol edin.</div>`;
+        return;
+      }
+
+      contentEl.innerHTML = auditJson.results.map(r => {
+        let badgeColor = 'bg-emerald-950 text-emerald-300 border-emerald-700';
+        let badgeIcon = 'âœ…';
+        if (r.status === 'WARNING') {
+          badgeColor = 'bg-amber-950 text-amber-300 border-amber-700';
+          badgeIcon = 'âš ï¸';
+        } else if (r.status === 'HOMEBREW') {
+          badgeColor = 'bg-rose-950 text-rose-300 border-rose-700';
+          badgeIcon = 'ğŸš«';
+        }
+        return `
+          <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-white">${r.name}</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${badgeColor}">
+                ${badgeIcon} ${r.status}
+              </span>
+            </div>
+            ${r.issues && r.issues.length ? `<p class="text-[10px] text-amber-200">${r.issues.join(' | ')}</p>` : `<p class="text-[10px] text-emerald-400">Resmi 3.5e RAW standartlarÄ±na tam uyumlu.</p>`}
+          </div>
+        `;
+      }).join('');
+
+    } catch (err) {
+      const contentEl = document.getElementById('rule-master-audit-content');
+      if (contentEl) {
+        contentEl.innerHTML = `<div class="p-3 text-rose-300 bg-rose-950/40 rounded border border-rose-800">Hata: ${err.message}</div>`;
+      }
     }
   }
 };

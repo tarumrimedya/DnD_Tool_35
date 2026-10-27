@@ -2668,18 +2668,30 @@
                 </div>
               </div>
 
-              <!-- API Key Connected Badge -->
-              <div id="ai-api-key-status" class="hidden flex items-center gap-2">
+              <!-- API Key Connected Badge & Model Mode Selector -->
+              <div id="ai-api-key-status" class="hidden flex items-center flex-wrap gap-2">
                 <span class="inline-flex items-center gap-1.5 bg-emerald-950 text-emerald-300 border border-emerald-700 px-2.5 py-1 rounded text-xs font-medium">
                   <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span>Gemini API Bağlı:</span>
+                  <span>Gemini API Bagli:</span>
                   <span id="ai-api-key-display" class="font-mono text-[11px] text-emerald-200">AIzaSy...</span>
                 </span>
-                <button onclick="RuleMaster.promptChangeApiKey()" class="text-xs bg-slate-800 hover:bg-slate-700 text-purple-300 px-2.5 py-1 rounded border border-slate-700 transition">
-                  🔑 Değiştir
+                <div class="inline-flex items-center gap-1.5 bg-slate-950 border border-slate-700 px-2 py-0.5 rounded text-xs">
+                  <span class="text-[10px] text-slate-400 font-bold uppercase">AI Modu:</span>
+                  <select id="ai-model-mode-select" onchange="RuleMaster.setAiModelMode(this.value)" class="bg-transparent text-purple-300 text-xs font-semibold focus:outline-none cursor-pointer">
+                    <option value="auto">âš¡ Akilli Hibrit (Onerilen)</option>
+                    <option value="flash">âš¡ Hizli (Gemini Flash)</option>
+                    <option value="pro">ğŸ§  Kural Otoritesi (Gemini Pro)</option>
+                  </select>
+                </div>
+                <button type="button" onclick="RuleMaster.auditLibraryWithProModal()" class="text-xs bg-purple-950/80 hover:bg-purple-900 text-purple-200 px-2.5 py-1 rounded border border-purple-700/60 transition flex items-center gap-1 font-bold cursor-pointer" title="master_db icindeki kayitlari Gemini Pro ile RAW denetiminden gecirir">
+                  <span>ğŸ›¡ï¸</span>
+                  <span>DB Denetle (Pro)</span>
                 </button>
-                <button onclick="RuleMaster.clearApiKey()" class="text-xs bg-slate-800 hover:bg-rose-900/60 text-rose-300 px-2 py-1 rounded border border-slate-700 transition" title="Anahtarı Temizle">
-                  🗑️
+                <button onclick="RuleMaster.promptChangeApiKey()" class="text-xs bg-slate-800 hover:bg-slate-700 text-purple-300 px-2.5 py-1 rounded border border-slate-700 transition cursor-pointer">
+                  ğŸ”‘ Degistir
+                </button>
+                <button onclick="RuleMaster.clearApiKey()" class="text-xs bg-slate-800 hover:bg-rose-900/60 text-rose-300 px-2 py-1 rounded border border-slate-700 transition cursor-pointer" title="Anahtari Temizle">
+                  ğŸ—‘ï¸
                 </button>
               </div>
             </div>

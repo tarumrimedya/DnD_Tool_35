@@ -2670,3 +2670,27 @@ Gemini 3.1 Pro denetçisi tarafından gerçekleştirilen katı D&D 3.5e RAW dene
 * Katalog **267 resmi D&D 3.5e RAW kaydına** (129 Feat, 80 Silah, 19 Zırh/Kalkan, 7 Temel Irk, 32 Invocations) donduruldu.
 * `srd_core_catalog.json` ve `bundled_data.js` dosyaları kök dizin, `webapp/` ve `OneDrive/Mdk/` arasında **%100 SHA-256 hash paritesiyle** eşitlendi (`D022138DE0B676C3C8C6CD19B1390B667AB8C7473A1799DE2740A1379BDE9524`).
 * Tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.
+
+
+---
+
+## 94. Gemini Smart Model Router (Flash/Pro Hibrit), Strict 3.5e RAW Guardrail ve DB Denetim Konsolu Entegrasyonu
+
+### Bağlam & Mimari Tasarım
+Projenin "hafif yerel DB + yapay zeka ile dinamik kütüphane" vizyonunda, canlı arayüz sorgularının hızını (0.5s) korurken kural otoritesini (RAW doğruluğu) güvenceye almak için 4 katmanlı akıllı yapay zeka yönlendirme mimarisi entegre edilmiştir.
+
+### Yapılan Değişiklikler ve Yenilikler
+1. **DND35_RAW_GUARDRAIL (Sistem Kalkanı Promptu - `rule_master.js`):**
+   * Tüm AI sorgularının (`fetchSingleAiRuleObjects`, `queryAiFreeTextRows`, `callAiText`) başına resmi Wizards of the Coast 3.5e RAW zorunluluğu, sıfır 5e kuralı (Advantage, Bonus Action, Finesse Dex hasarı vb. yasağı) ve sıfır homebrew talimatı yerleştirildi.
+2. **Göreve Dayalı Akıllı Model Yönlendiricisi (Smart Task Router):**
+   * `RuleMaster.getModelsForTask(taskType)` ve `RuleMaster.getAvailableGeminiModels(apiKey, forceRefresh, taskType)`:
+     - `QUICK_SEARCH` / `LEVEL_UP`: `gemini-1.5-flash-latest` (hızlı 0.5s yanıt).
+     - `RULE_AUDIT` / `IMPORT_BATCH`: `gemini-1.5-pro-latest` (derin RAW muhakemesi).
+     - Kullanıcı tercihi: `RuleMaster.getAiModelMode()` (`auto`, `flash`, `pro`).
+3. **Kullanıcı Mod Seçimi ve Denetim Arayüzü (`index.html`, `character.html`):**
+   * API Key durum çubuğuna şık bir **AI Modu Seçici** (`#ai-model-mode-select`: Akıllı Hibrit / Flash / Pro) eklendi.
+   * **`[ 🛡️ DB Denetle (Pro) ]`** butonu ve `RuleMaster.auditLibraryWithProModal()` modalı devreye alındı. Kullanıcının `master_db` içindeki özel kayıtları tek tıkla Gemini Pro tarafından taranarak 3.5e RAW uygunluğu denetlenir.
+4. **Parite ve Kural Standartları:**
+   * 4 HTML dosyası (`index.html`, `character.html`, `webapp/index.html`, `webapp/character.html`) arasında **%100 SHA-256 hash paritesi** (`56ECCBA9...`) sağlandı.
+   * 2 RuleMaster dosyası (`rule_master.js`, `webapp/rule_master.js`) arasında **%100 SHA-256 hash paritesi** (`4780DBD0...`) sağlandı.
+   * Tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.
