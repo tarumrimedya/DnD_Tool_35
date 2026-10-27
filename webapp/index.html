@@ -37286,6 +37286,11 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       const intMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
         ? RuleEngine.getAbilityMod(character.abilities?.int || 10)
         : Math.floor(((character.abilities?.int || 10) - 10) / 2);
+      const conVal = Number(character.abilities?.con) || 10;
+      const conMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
+        ? RuleEngine.getAbilityMod(conVal)
+        : Math.floor((conVal - 10) / 2);
+      const conModStr = conMod >= 0 ? `+${conMod}` : `${conMod}`;
 
       const summary = (typeof RuleEngine !== 'undefined' && RuleEngine.calculateProgression)
         ? RuleEngine.calculateProgression(prog, { system: sys, isHuman, intMod })
@@ -37295,6 +37300,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       const hud = document.getElementById('level-progression-hud');
       if (hud && summary) {
         const isFrac = (sys === 'fractional');
+        const totalConHp = summary.activeLevels * conMod;
+        const totalMaxHp = Math.max(summary.activeLevels, summary.baseHp + totalConHp);
+        const conSignStr = totalConHp >= 0 ? `+${totalConHp}` : `${totalConHp}`;
         hud.innerHTML = `
           <div class="flex items-center gap-3">
             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-950/80 border border-emerald-600/80 text-emerald-300 font-bold">
@@ -37310,7 +37318,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
             </span>
           </div>
           <div class="flex flex-wrap items-center gap-3 font-mono text-[11px]">
-            <span class="text-emerald-400 font-bold">HP: +${summary.baseHp}</span>
+            <span class="text-emerald-400 font-bold" title="Taban Can Zarları: ${summary.baseHp} + CON Bonusu: ${conSignStr} (${summary.activeLevels} Seviye x ${conModStr}) = Toplam ${totalMaxHp} HP">HP: +${summary.baseHp} <span class="text-emerald-300/90 font-medium text-[10px]">(${conSignStr} Con = ${totalMaxHp})</span></span>
             <span class="text-slate-600">•</span>
             <span class="text-sky-400 font-bold">BAB: +${summary.baseBab}${isFrac && summary.fractional ? ` (${summary.fractional.bab.toFixed(2)})` : ''}</span>
             <span class="text-slate-600">•</span>
@@ -37558,7 +37566,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
             <div class="h-6 flex items-center justify-center text-slate-400 font-bold text-xs">${lvl.hd}</div>
           </td>
           <td class="pt-2.5 pb-2.5 px-0.5 align-top text-center w-[38px] min-w-[38px]">
-            <div class="h-6 flex items-center justify-center text-emerald-400 font-bold text-xs">+${lvl.hpGain}</div>
+            <div class="h-6 flex items-center justify-center text-emerald-400 font-bold text-xs" title="Seviye Can Zarı: +${lvl.hpGain} | Con: ${conModStr} (Bu Seviye: +${Math.max(1, (Number(lvl.hpGain) || 0) + conMod)})">+${lvl.hpGain}</div>
           </td>
           <td class="pt-2.5 pb-2.5 px-0.5 align-top text-center w-[38px] min-w-[38px]">
             <div class="h-6 flex items-center justify-center text-sky-400 font-bold text-xs">+${rowBab}</div>

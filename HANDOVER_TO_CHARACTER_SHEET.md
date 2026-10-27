@@ -2827,3 +2827,28 @@ Karakter sayfasında Feat Arama Konsolunda (Spotlight) kullanıcı `"Dodg"` keli
 ### Parite ve Hash Durumu
 * 4 HTML dosyası (`index.html`, `character.html`, `webapp/index.html`, `webapp/character.html`) arasında **%100 SHA-256 hash paritesi** (`208FFFA58ED77DD31AA678E3E6AF7927A787C64BA98F6AFFD872FF2618DB14DB`) sağlandı.
 * Tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.
+
+
+---
+
+## 100. Seviye Gelişimi Tablosu HP Özetinde Dayanıklılık (CON) Bonusu Gösterimi
+
+### Bağlam & Kullanıcı Talebi
+Karakter sayfasındaki Seviye Gelişimi (Level Progression) tablosunun üst özet çubuğunda (`#level-progression-hud`) sadece taban can zarlarının toplamı (`HP: +16`) listelenmekte, karakterin Seviye Başına Dayanıklılık (Constitution) çarpanı ve bundan kaynaklanan toplam can katkısı açıkça gösterilmemekteydi.
+
+### Yapılan Geliştirmeler
+1. **HUD Özet Çubuğu (`#level-progression-hud`) Genişletmesi:**
+   * `renderLevelProgression()` içinde `conVal` ve `conMod` dinamik olarak hesaplandı:
+     * `totalConHp = summary.activeLevels * conMod`
+     * `totalMaxHp = Math.max(summary.activeLevels, summary.baseHp + totalConHp)`
+   * Özet etiketinde taban HP'nin hemen yanında net CON katkısı ve sonuç toplamı formatlandı:
+     `HP: +${summary.baseHp} (+X Con = Y)` (Örn: `HP: +16 (+8 Con = 24)`).
+   * Etiketin üzerine gelindiğinde (hover / title) detaylı formül açıklaması eklendi:
+     `Taban Can Zarları: 16 + CON Bonusu: +8 (4 Seviye x +2) = Toplam 24 HP`
+2. **Tablo Satırları Tooltip Zenginleştirmesi:**
+   * Tablodaki her bir seviye satırının `HP` hücresine (`+4`), o seviyeye ait CON bonusunu ve seviyenin toplam net artışını gösteren açıklayıcı tooltip entegre edildi:
+     `title="Seviye Can Zarı: +4 | Con: +2 (Bu Seviye: +6)"`
+
+### Parite ve Hash Durumu
+* 4 HTML dosyası (`index.html`, `character.html`, `webapp/index.html`, `webapp/character.html`) arasında **%100 SHA-256 hash paritesi** (`F41A56461361189299E4811F99A7DAC00AAC3E23291AD0DA1649C9D930A60EA2`) sağlandı.
+* Tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korundu.
