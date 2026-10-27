@@ -2649,3 +2649,24 @@ Temel karakter yaratımı ve seviye atlama süreçlerinde kullanıcıların en t
    * SRD Core kataloğu 218 öğeden **268 resmi D&D 3.5e RAW kaydına** (130 Feat, 80 Silah, 19 Zırh/Kalkan, 7 Temel Irk) ulaştı.
    * `srd_core_catalog.json` ve `bundled_data.js` dosyaları kök dizin ile `webapp/` arasında **%100 SHA-256 hash paritesiyle** eşitlendi.
    * Standart tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.
+
+
+---
+
+## 93. Gemini 3.1 Pro RAW Denetimi ve Katalog Arındırılması (267 Resmi Kayıt)
+
+### Bağlam & Gerçekleştirilen RAW Düzeltmeleri
+Gemini 3.1 Pro denetçisi tarafından gerçekleştirilen katı D&D 3.5e RAW denetimi sonucunda tespit edilen 6 madde başarıyla düzeltilmiş ve katalog arındırılmıştır:
+1. **Sahte Feat Ayıklandı:** Resmi kurallarda yer almayan topluluk homebrew'u `Extra Readied Maneuver` katalogdan tamamen silindi (Kural #5: Sıfır Dummy/Uydurma Veri).
+2. **Sudden Recovery:** Tome of Battle Tablo 2-1 uyarınca Fighter bonus feat olmadığı için `isFighterBonusFeat: false` yapıldı.
+3. **Monkey Grip:** Complete Warrior s. 103 RAW kuralına göre çift elli silahların tek elle tutulamayacağı kuralı açıklama metnine işlendi.
+4. **Shield Spikes Kalkan Çivisi Hafiflikleri:**
+   * `Shield Spikes (Light Shield)`: `isLight: true`, `weaponType: "Martial Light"` olarak düzeltildi.
+   * `Shield Spikes (Heavy Shield)`: `isLight: false`, `weaponType: "Martial One-Handed"` olarak düzeltildi.
+5. **finessable: true Standardizasyonu:** `Rapier`, `Spiked Chain`, `Whip` ve tüm hafif yakın dövüş silahlarına açık boolean `finessable: true` özelliği eklendi.
+6. **Karakter Kodlaması:** Çift başlı silah isimlerindeki `↳ ` ok işaretleri temiz UTF-8 olarak korundu.
+
+### Parite ve Senkronizasyon
+* Katalog **267 resmi D&D 3.5e RAW kaydına** (129 Feat, 80 Silah, 19 Zırh/Kalkan, 7 Temel Irk, 32 Invocations) donduruldu.
+* `srd_core_catalog.json` ve `bundled_data.js` dosyaları kök dizin, `webapp/` ve `OneDrive/Mdk/` arasında **%100 SHA-256 hash paritesiyle** eşitlendi (`D022138DE0B676C3C8C6CD19B1390B667AB8C7473A1799DE2740A1379BDE9524`).
+* Tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.

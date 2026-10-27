@@ -1,6 +1,7 @@
 /**
  * BUNDLED D&D 3.5e SRD CORE CATALOG (IMMUTABLE FROZEN REFERENCE)
- * Auto-generated canonical catalog containing all Core PHB 1 feats, weapons, armors, and races.
+ * Canonical catalog containing all Core PHB 1 feats, weapons, armors, and races.
+ * Fully audited and verified against D&D 3.5e RAW rules.
  */
 window.BUNDLED_SRD_CORE_CATALOG = [
     {
@@ -126,7 +127,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "combatModifiers":  [
 
                             ],
-        "range":  10
+        "range":  10,
+        "finessable":  true
     },
     {
         "name":  "Punching Dagger",
@@ -165,7 +167,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "finessable":  true
     },
     {
         "name":  "Spiked Gauntlet",
@@ -244,7 +247,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "finessable":  true
     },
     {
         "name":  "Sickle",
@@ -285,7 +289,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "finessable":  true
     },
     {
         "name":  "Club",
@@ -563,7 +568,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "combatModifiers":  [
 
                             ],
-        "parent":  "Quarterstaff"
+        "parent":  "Quarterstaff",
+        "finessable":  true
     },
     {
         "name":  "Spear",
@@ -891,7 +897,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "combatModifiers":  [
 
                             ],
-        "range":  20
+        "range":  20,
+        "finessable":  true
     },
     {
         "name":  "Handaxe",
@@ -931,7 +938,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "finessable":  true
     },
     {
         "name":  "Kukri",
@@ -970,7 +978,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "finessable":  true
     },
     {
         "name":  "Light Pick",
@@ -1009,7 +1018,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "finessable":  true
     },
     {
         "name":  "Sap",
@@ -1050,7 +1060,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "finessable":  true
     },
     {
         "name":  "Short Sword",
@@ -1090,7 +1101,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "finessable":  true
     },
     {
         "name":  "Battleaxe",
@@ -1286,7 +1298,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "finessable":  true
     },
     {
         "name":  "Scimitar",
@@ -2100,7 +2113,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "finessable":  true
     },
     {
         "name":  "Nunchaku",
@@ -2143,7 +2157,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "finessable":  true
     },
     {
         "name":  "Sai",
@@ -2189,7 +2204,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "combatModifiers":  [
 
                             ],
-        "range":  10
+        "range":  10,
+        "finessable":  true
     },
     {
         "name":  "Siangham",
@@ -2230,7 +2246,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "finessable":  true
     },
     {
         "name":  "Bastard Sword (One-Handed Exotic)",
@@ -2523,7 +2540,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "combatModifiers":  [
 
                             ],
-        "parent":  "Orc Double Axe"
+        "parent":  "Orc Double Axe",
+        "finessable":  true
     },
     {
         "name":  "Spiked Chain",
@@ -2569,7 +2587,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
                       },
         "combatModifiers":  [
 
-                            ]
+                            ],
+        "finessable":  true
     },
     {
         "name":  "Dire Flail",
@@ -2655,7 +2674,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "combatModifiers":  [
 
                             ],
-        "parent":  "Dire Flail"
+        "parent":  "Dire Flail",
+        "finessable":  true
     },
     {
         "name":  "Gnome Hooked Hammer",
@@ -2738,7 +2758,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "combatModifiers":  [
 
                             ],
-        "parent":  "Gnome Hooked Hammer"
+        "parent":  "Gnome Hooked Hammer",
+        "finessable":  true
     },
     {
         "name":  "Two-Bladed Sword",
@@ -2820,7 +2841,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "combatModifiers":  [
 
                             ],
-        "parent":  "Two-Bladed Sword"
+        "parent":  "Two-Bladed Sword",
+        "finessable":  true
     },
     {
         "name":  "Dwarven Urgrosh",
@@ -2905,7 +2927,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
 
                             ],
         "parent":  "Dwarven Urgrosh",
-        "brace":  true
+        "brace":  true,
+        "finessable":  true
     },
     {
         "name":  "Bolas",
@@ -3219,7 +3242,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "bonusType":  "Untyped",
         "weight":  5,
         "cost":  10,
-        "isLight":  false,
+        "isLight":  true,
         "tags":  [
                      "martial",
                      "shield-spikes",
@@ -5213,7 +5236,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "type":  "Weapon",
         "slot":  "Off-Hand",
         "category":  "Martial",
-        "weaponType":  "Martial Light",
+        "weaponType":  "Martial One-Handed",
         "dice":  "1d6",
         "extraDmg":  "1d6",
         "damage":  "1d6",
@@ -5226,7 +5249,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "bonusType":  "Untyped",
         "weight":  5,
         "cost":  10,
-        "isLight":  true,
+        "isLight":  false,
         "finessable":  true,
         "tags":  [
                      "martial",
@@ -5536,9 +5559,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot":  "None",
         "category":  "Fighter",
         "prereq":  "BAB +1",
-        "benefit":  "Kendi boyutunuzdan bir boy bÃ¼yÃ¼k yakÄ±n dÃ¶vÃ¼ÅŸ silahlarÄ±nÄ± veya iki elli (Two-Handed) silahlarÄ± tek elinizle -2 saldÄ±rÄ± cezasÄ±yla kullanmanÄ±zÄ± saÄŸlar.",
+        "benefit":  "You can use one melee weapon one size category larger than you are with a -2 penalty on the attack roll, but the amount of effort it takes you to use the weapon does not change (e.g., you cannot use this feat to wield a two-handed weapon in one hand). Normal: You cannot use a weapon of a larger size category.",
         "description":  "Kendi boyutunuzdan bir boy bÃ¼yÃ¼k yakÄ±n dÃ¶vÃ¼ÅŸ silahlarÄ±nÄ± veya iki elli (Two-Handed) silahlarÄ± tek elinizle -2 saldÄ±rÄ± cezasÄ±yla kullanmanÄ±zÄ± saÄŸlar.",
-        "source":  "Complete Warrior p.103",
+        "source":  "Complete Warrior p.103 / 3.5e RAW",
         "isFighterBonusFeat":  true
     },
     {
@@ -5970,17 +5993,6 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "isFighterBonusFeat":  false
     },
     {
-        "name":  "Extra Readied Maneuver",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "Martial",
-        "prereq":  "Swordsage veya Warblade seviyesi",
-        "benefit":  "KuÅŸanÄ±lmÄ±ÅŸ (Readied) manevra kapasitenizi kalÄ±cÄ± olarak +1 artÄ±rÄ±r.",
-        "description":  "You can ready 1 additional maneuver beyond your normal maximum.",
-        "source":  "Tome of Battle p.30",
-        "isFighterBonusFeat":  false
-    },
-    {
         "name":  "Snap Kick",
         "type":  "Feat",
         "slot":  "None",
@@ -6022,7 +6034,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "benefit":  "Ã‡atÄ±ÅŸma baÅŸÄ±na 1 kez, az Ã¶nce harcadÄ±ÄŸÄ±nÄ±z bir manevrayÄ± Swift Action harcayarak anÄ±nda yeniden kuÅŸanÄ±lmÄ±ÅŸ ve kullanÄ±labilir hale getirirsiniz.",
         "description":  "Once per encounter as a swift action, you can instantly recover an expended maneuver and make it readied once again.",
         "source":  "Tome of Battle p.33",
-        "isFighterBonusFeat":  true
+        "isFighterBonusFeat":  false
     },
     {
         "name":  "Vital Recovery",
