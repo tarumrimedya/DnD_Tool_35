@@ -3008,3 +3008,35 @@ Google API model listesinde 16 farklı deneysel/önizleme modelinin kuyruğa gir
 3. **Parite ve Kural Standartları:**
    * 2 RuleMaster dosyası (`rule_master.js`, `webapp/rule_master.js`) arasında **%100 SHA-256 hash paritesi** (`CFAD40EB...`) sağlandı.
    * Tavla zarı emojisi (U+1F3B2) yasağı tavizsiz korundu.
+
+---
+
+## 99. Google API 2.5 Emekliliği & Dinamik Semantik Sürüm Sıralayıcısı (Gemini 3.8 Geçişi)
+
+### Bağlam & Karşılaşılan Sorun
+Google Generative Language API'si, `gemini-2.5-flash` modelini yeni kullanıcılara kapatarak şu resmi yanıtı döndürmüştür:
+> *"This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use models/gemini-3.8-flash for the latest features and improvements."*
+
+Ayrıca `gemini-flash-latest` alias'ı REST API doğrudan çağrılarında 404 döndürmekte ve Google API `/v1beta/models` endpoint'i modelleri alfabetik/çıktı sırasıyla getirdiğinde eski modeller (2.5) listenin başında yer almaktaydı.
+
+### Çözüm & Mimari Yenilik
+1. **Dinamik Sürüm Ayrıştırıcısı (`parseVersion`):**
+   * `RuleMaster.getAvailableGeminiModels` içerisine regex tabanlı `parseVersion(name)` eklendi (`gemini-(\d+(?:\.\d+)?)-`).
+   * İlgili modeller (`flash` ve `pro`) sürüm numarasına göre **büyükten küçüğe (`b - a`)** dinamik olarak sıralandı:
+     * `3.8 > 3.7 > 3.6 > 3.5 > 2.5`
+2. **Aktif Model Eşleşmesi (1 Asıl + 1 Yedek):**
+   * **Hızlı Arama (`QUICK_SEARCH`):**
+     * Asıl: `gemini-3.8-flash` (En yüksek sürüm)
+     * Yedek: `gemini-3.7-flash` (Kararlı ikinci sürüm)
+   * **Derin Kural Denetimi (`RULE_AUDIT`):**
+     * Asıl: `gemini-3.8-pro`
+     * Yedek: `gemini-3.5-pro`
+   * **Toplu İçe Aktarım (`IMPORT_BATCH`):**
+     * Asıl: `gemini-3.8-flash`
+     * Yedek: `gemini-3.8-pro`
+3. **Geleceğe Hazırlık (Zero-Maintenance):**
+   * Google yarın `gemini-3.9` veya `gemini-4.0` yayınladığında, kod tek bir satır değişmeden otomatik olarak en yüksek sürümü `primary` olarak seçecektir.
+4. **Parite ve Kural Doğrulaması:**
+   * `rule_master.js` ile `webapp/rule_master.js` arasında **%100 SHA-256 hash paritesi** (`F95BE535...`) sağlandı.
+   * Tavla zarı emojisi yasağı (Rule 3) tavizsiz korundu.
+

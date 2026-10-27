@@ -1117,32 +1117,32 @@ const RuleMaster = {
     }
   },
 
-  // 3 Temel AI Kullanım Alanı İçin 1 Asıl + 1 Yedek (Toplam 6 Yuvalı Sürümden Bağımsız Model Matrisi)
+  // 3 Temel AI Kullanım Alanı İçin Dinamik Model Çözümleyicisi (En Yüksek Kararlı Sürüm Matrisi)
   AI_TASK_ROUTING: {
-    // 1. Hızlı Arama & Seviye Atlama (Ultra Hızlı Gecikme)
+    // 1. Hızlı Arama & Seviye Atlama (En Yüksek Kararlı Flash Motoru)
     QUICK_SEARCH: {
-      primary: 'gemini-flash-latest',
-      fallback: 'gemini-flash'
+      primary: 'gemini-3.8-flash',
+      fallback: 'gemini-3.7-flash'
     },
-    // 2. Kütüphane & Kural Denetimi (Derin Muhakeme & RAW Tutarlılığı)
+    // 2. Kütüphane & Kural Denetimi (En Yüksek Kararlı Pro Muhakeme Motoru)
     RULE_AUDIT: {
-      primary: 'gemini-pro-latest',
-      fallback: 'gemini-pro'
+      primary: 'gemini-3.8-pro',
+      fallback: 'gemini-3.5-pro'
     },
     // 3. Toplu İçe Aktarım & Serbest Metin Ayrıştırma (Yapısal JSON)
     IMPORT_BATCH: {
-      primary: 'gemini-flash-latest',
-      fallback: 'gemini-pro-latest'
+      primary: 'gemini-3.8-flash',
+      fallback: 'gemini-3.8-pro'
     }
   },
 
   getModelsForTask(taskType = 'DEFAULT') {
     const userPref = this.getAiModelMode();
     if (userPref === 'pro') {
-      return ['gemini-pro-latest', 'gemini-pro'];
+      return [this.AI_TASK_ROUTING.RULE_AUDIT.primary, this.AI_TASK_ROUTING.RULE_AUDIT.fallback];
     }
     if (userPref === 'flash') {
-      return ['gemini-flash-latest', 'gemini-flash'];
+      return [this.AI_TASK_ROUTING.QUICK_SEARCH.primary, this.AI_TASK_ROUTING.QUICK_SEARCH.fallback];
     }
     // 'auto' (Smart Task Router):
     if (taskType === 'RULE_AUDIT' || taskType === 'COMPLEX_TACTICAL') {
@@ -1169,7 +1169,7 @@ const RuleMaster = {
 
     try {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 3000);
+      const timer = setTimeout(() => controller.abort(), 3500);
       const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`, {
         signal: controller.signal
       });
@@ -1189,27 +1189,39 @@ const RuleMaster = {
                    !lower.includes('realtime') &&
                    !lower.includes('bison') &&
                    !lower.includes('preview') &&
+                   !lower.includes('lite') &&
+                   !lower.includes('omni') &&
                    !lower.includes('gemma');
           });
 
+        function parseVersion(name) {
+          const match = (name || '').match(/gemini-(\d+(?:\.\d+)?)-/i);
+          return match ? parseFloat(match[1]) : 0.0;
+        }
+
         const isPro = (this.getAiModelMode() === 'pro') || 
           (this.getAiModelMode() === 'auto' && (taskType === 'RULE_AUDIT' || taskType === 'COMPLEX_TACTICAL'));
+
+        if (taskType === 'IMPORT_BATCH' && this.getAiModelMode() === 'auto') {
+          const flashModels = apiModels.filter(m => m.toLowerCase().includes('flash')).sort((a, b) => parseVersion(b) - parseVersion(a));
+          const proModels = apiModels.filter(m => m.toLowerCase().includes('pro')).sort((a, b) => parseVersion(b) - parseVersion(a));
+          const primary = flashModels[0] || defaultPair[0];
+          const fallback = proModels[0] || defaultPair[1];
+          const resultPair = [primary, fallback];
+          if (!this._cachedTaskModels) this._cachedTaskModels = {};
+          this._cachedTaskModels[cacheKey] = resultPair;
+          return resultPair;
+        }
 
         const relevant = isPro
           ? apiModels.filter(m => m.toLowerCase().includes('pro'))
           : apiModels.filter(m => m.toLowerCase().includes('flash'));
 
-        // Pick 1 Primary + 1 Fallback from preferred generic aliases or discovered models
-        const prefPrimary = defaultPair[0];
-        const prefFallback = defaultPair[1];
+        // Sürüm numarasına göre büyükten küçüğe sırala (Örn: 3.8 > 3.7 > 3.5 > ...)
+        relevant.sort((a, b) => parseVersion(b) - parseVersion(a));
 
-        const primary = relevant.includes(prefPrimary)
-          ? prefPrimary
-          : (relevant[0] || prefPrimary);
-
-        const fallback = relevant.includes(prefFallback)
-          ? prefFallback
-          : (relevant.find(m => m !== primary) || prefFallback);
+        const primary = relevant[0] || defaultPair[0];
+        const fallback = relevant[1] || relevant.find(m => m !== primary) || defaultPair[1];
 
         const resultPair = [primary, fallback];
         if (!this._cachedTaskModels) this._cachedTaskModels = {};
