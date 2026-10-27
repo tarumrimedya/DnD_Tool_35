@@ -9077,23 +9077,7 @@
       if (window.RuleMaster && typeof RuleMaster.showDiagnosticsModal === 'function') {
         return RuleMaster.showDiagnosticsModal();
       }
-      const key = localStorage.getItem('gemini_api_key') || '';
-      if (!key) {
-        alert('⚠️ Lütfen önce bir Gemini API Anahtarı girin ve kaydedin.');
-        return;
-      }
-      try {
-        const ok = await verifySettingsGeminiApiKey(true);
-        if (!ok) {
-          alert('❌ Gemini API bağlantısı kurulamadı. Lütfen API anahtarınızın doğruluğunu kontrol edin.');
-          return;
-        }
-        const models = await (window.RuleMaster ? RuleMaster.getAvailableGeminiModels(key, true) : ['gemini-3.8-flash', 'gemini-3.7-flash']);
-        const formattedList = models.map((m, i) => i === 0 ? 1. ⭐  (BİRİNCİL AKTİF MODEL) : ${i + 1}. 🔄  (Yedek / Fallback)).join('\n');
-        alert(🩺 GEMINI API TANI & MODEL RAPORU\n\n🟢 Bağlantı Başarılı!\n\n);
-      } catch (err) {
-        alert(❌ Tanı Hatası: );
-      }
+      alert('⚠️ RuleMaster henüz yüklenemedi. Lütfen sayfayı yenileyin.');
     }
 
     const TAB_INACTIVE_CLASSES = ['bg-slate-800', 'hover:bg-slate-700', 'text-slate-200', 'hover:text-white', 'border-slate-700', 'hover:border-slate-500', 'shadow-md'];
