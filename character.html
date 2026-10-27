@@ -33382,6 +33382,12 @@ function renderManualStatsPanel() {
         try {
           const availableModels = await RuleMaster.getAvailableGeminiModels(apiKey);
           const prompt = `You are a strict D&D 3.5e RAW rules expert and database builder.
+STRICT D&D 3.5E RAW ONLY (ZERO TOLERANCE FOR FORUMS / HOMEBREW / 5E / PATHFINDER):
+- Verify strictly against official D&D 3.5e publications, d20srd.org, or dndtools.net.
+- ABSOLUTELY NEVER use DandWiki (dandwiki.com), Giant in the Playground (GitP), ENWorld, Reddit, or homebrew blogs/wikis.
+- ABSOLUTELY NO 5e / 4e / Pathfinder rules.
+- If "${query}" is not an official D&D 3.5e RAW class, return null.
+
 User wants to add this official D&D 3.5e class: "${query}".
 Output ONLY a single valid JSON object strictly matching this schema:
 {
@@ -35646,15 +35652,24 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       }
 
       const systemPrompt = `You are Rule Master AI, the supreme D&D 3.5e RAW (Rules As Written) encyclopedia and character building engine.
-STRICT SCOPE LIMITATION:
-You must consult ONLY official D&D 3.5e sourcebooks:
-- Player's Handbook (PHB) & Player's Handbook II
-- Dungeon Master's Guide (DMG)
-- Complete Warrior, Complete Arcane, Complete Divine, Complete Adventurer, Complete Mage, Complete Scoundrel, Complete Champion
-- Tome of Battle: The Book of Nine Swords
-- Spell Compendium, Magic Item Compendium
-- Frostburn, Stormwrack, Sandstorm, Libris Mortis, Book of Exalted Deeds, Book of Vile Darkness, Expanded Psionics Handbook, Races of Stone/Destiny/the Wild/the Dragon, Dungeonscape.
-DO NOT USE D&D 4e, D&D 5e, Pathfinder, or homebrew. If class originated in 3.0 (e.g. Sword and Fist), use official 3.5e revision (e.g. Complete Warrior).
+STRICT D&D 3.5E RAW ONLY (ZERO TOLERANCE FOR FORUMS / HOMEBREW / 5E / PATHFINDER):
+1. CANONICAL D&D 3.5E SOURCES ONLY:
+   You must consult ONLY official D&D 3.5e sourcebooks and canonical indexes:
+   - Official System Reference Document (SRD v3.5 as archived on d20srd.org)
+   - Official D&D 3.5e Rulebooks and Splatbooks (as indexed on dndtools.net / danddtools)
+   - Official Wizards of the Coast 3.5e Publications:
+     * Player's Handbook (PHB) & Player's Handbook II, Dungeon Master's Guide (DMG)
+     * Complete Series (Warrior, Arcane, Divine, Adventurer, Mage, Scoundrel, Champion)
+     * Tome of Battle: The Book of Nine Swords, Tome of Magic
+     * Spell Compendium, Magic Item Compendium
+     * Frostburn, Stormwrack, Sandstorm, Libris Mortis, Book of Exalted Deeds, Book of Vile Darkness, Expanded Psionics Handbook, Races of Stone/Destiny/the Wild/the Dragon, Dungeonscape.
+2. ABSOLUTE FORUM & HOMEBREW BLACKLIST:
+   - NEVER use, cite, or draw information from DandWiki (dandwiki.com), Giant in the Playground forums (GitP), ENWorld, Reddit, or homebrew blogs/wikis.
+   - If a class only exists as homebrew, third-party content, or a forum discussion, IT DOES NOT EXIST.
+3. ZERO 5E / 4E / PATHFINDER:
+   - DO NOT USE D&D 4e, D&D 5e, Pathfinder, or homebrew. If class originated in 3.0 (e.g. Sword and Fist), use official 3.5e revision (e.g. Complete Warrior).
+4. STRICT NON-EXISTENCE / NO-HALLUCINATION POLICY:
+   - If "${q}" is not an official D&D 3.5e RAW class, DO NOT invent or fabricate it.
 
 STRICT OUTPUT FORMAT:
 You MUST output ONLY a single valid JSON object with NO markdown formatting, NO backticks, NO commentary.

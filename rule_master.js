@@ -1099,11 +1099,20 @@ const RuleMaster = {
   lastAiResults: [],
   _cachedModels: null,
 
-  DND35_RAW_GUARDRAIL: `STRICT D&D 3.5E RAW ONLY (ZERO 5E / PATHFINDER / HOMEBREW):
-- You are strictly operating under official Wizards of the Coast D&D 3.5e RAW (Rules As Written).
-- ABSOLUTELY NEVER apply 5e mechanics (No Advantage/Disadvantage, No Bonus Action, No Finesse adding Dex to damage, No -5/+10 GWM, No Short Rest).
-- ABSOLUTELY NEVER accept unofficial community Homebrew (such as Extra Readied Maneuver). Only official WotC D&D 3.5e publications.
-- Adhere strictly to Player's Handbook (PHB), Dungeon Master's Guide (DMG), and official 3.5e splatbooks (Complete series, Tome of Battle, etc.).`,
+  DND35_RAW_GUARDRAIL: `STRICT D&D 3.5E RAW ONLY (ZERO TOLERANCE FOR FORUMS / HOMEBREW / 5E / PATHFINDER):
+1. CANONICAL D&D 3.5E SOURCES ONLY:
+   - You MUST consult and verify strictly against:
+     a) Official System Reference Document (SRD v3.5 as archived on d20srd.org)
+     b) Official D&D 3.5e Rulebooks and Splatbooks (as indexed on dndtools.net / danddtools)
+     c) Official Wizards of the Coast 3.5e Publications (Player's Handbook, Dungeon Master's Guide, Monster Manual, Complete Series, Spell Compendium, Magic Item Compendium, Tome of Battle, Frostburn, Sandstorm, Libris Mortis, Book of Exalted Deeds, Expanded Psionics Handbook, Races of Stone/Destiny/Wild/Dragon, Dungeonscape, Fiend Folio, etc.)
+2. ABSOLUTE FORUM & HOMEBREW BLACKLIST:
+   - NEVER use, cite, or draw information from DandWiki (dandwiki.com), Giant in the Playground forums (GitP), ENWorld, Reddit, or homebrew blogs/wikis.
+   - If an element only exists as homebrew, third-party content, or a forum discussion, IT DOES NOT EXIST.
+3. ZERO 5E / 4E / PATHFINDER MECHANICS:
+   - Absolutely NO 5e mechanics (No Advantage/Disadvantage, No Bonus Action, No Finesse adding Dex to damage, No -5/+10 GWM, No Short Rest, No Concentration slots).
+   - Absolutely NO Pathfinder / PF1e / Starfinder rules.
+4. STRICT NON-EXISTENCE / NO-HALLUCINATION POLICY:
+   - If the queried element is NOT an official D&D 3.5e RAW entity, DO NOT adapt, balance, or fabricate it. Return an empty array: {"entries": []}.`,
 
   getAiModelMode() {
     return localStorage.getItem('dnd35_ai_model_mode') || 'auto';
@@ -4132,6 +4141,8 @@ RAW TEXT:
 """
 ${rawText}
 """
+
+${this.DND35_RAW_GUARDRAIL}
 
 TASK:
 Analyze and parse this free-form text completely. Extract and map every mechanic strictly adhering to the Master_DB 29-column schema.

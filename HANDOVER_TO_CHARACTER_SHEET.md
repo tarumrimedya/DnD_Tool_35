@@ -3174,3 +3174,35 @@ Kullanıcı, gelecekte Google Gemini modelleri değiştikçe veya yeni sürümle
 * `character.html` = `index.html` = `webapp/character.html` = `webapp/index.html` (**SHA-256:** `6CB1CF75C681FAD2A15FFB173251DC73B01450D722F87C4CDF9736390B5BABD3`)
 * `hub.html` = `webapp/hub.html` (**SHA-256:** `A20CF49D2971B3199C214258E225EBB097F993BE2C34BF16D7984C9DF0EFB38F`)
 * Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
+
+
+---
+
+## 107. D&D 3.5e RAW "Çelik Zırh" Koruma Kalkanı (Anti-Forum, Anti-Homebrew & Anti-Hallucination)
+
+### Bağlam & Kullanıcı Talebi
+Kullanıcı, Gemini yapay zeka sorgularımızın gözden geçirilmesini talep etmiştir:
+* Modelin belirlenen iki güvenilir site (`d20srd.org` ve `dndtools.net` / DandDTools) ile resmi WotC kitapları dışına çıkmaması,
+* D&D 3.5e RAW kural mekaniklerine tavizsiz sadık kalması,
+* Halüsinasyon görmemesi ve resmi olmayan bir kural arandığında uydurmak yerine boş dönmesi,
+* Forum sitelerini (Giant in the Playground, ENWorld, Reddit) ve ev yapımı uydurma kurallarla dolu DandWiki (`dandwiki.com`) içeriklerini aramamasını / referans almamasını garanti eden katı kısıtlayıcıların eklenmesi.
+
+### Yapılan Geliştirmeler & Çözüm Mimarisi
+1. **Dört Ayaklı "Çelik Zırh" Koruma Kalkanı (`DND35_RAW_GUARDRAIL`):**
+   * `rule_master.js` içerisindeki merkezi koruma kalkanı şu 4 temel ilkeye bağlandı:
+     * **1. Kanonik 3.5e Kaynakları:** Yalnızca `d20srd.org` (SRD v3.5), `dndtools.net` / `danddtools` dizinleri ve resmi Wizards of the Coast 3.5e yayınları (PHB I-II, DMG, MM I-V, Complete Serisi, Spell Compendium, MIC, ToB, Fiend Folio, Libris Mortis vb.).
+     * **2. Kesin Forum & Homebrew Kara Listesi:** DandWiki (`dandwiki.com`), Giant in the Playground (GitP), ENWorld, Reddit veya amatör bloglardan kural almak KESİNLİKLE YASAKLANDI. Bir öğe yalnızca forum tartışmasında veya homebrew olarak varsa "yok" hükmündedir.
+     * **3. Sıfır 5e / 4e / Pathfinder:** Advantage/Disadvantage, Bonus Action, Dex to damage, Concentration slotları ve Pathfinder mekanikleri tavizsiz engellendi.
+     * **4. Halüsinasyon ve Uydurma Yasağı (Strict Non-Existence Policy):** Aranan öğe resmi bir D&D 3.5e RAW kuralı değilse, kesinlikle uydurma veya dengeleme yapılmayacak; doğrudan boş sonuç (`{"entries": []}` veya `null`) dönülecektir.
+2. **Karakter Kâğıdı & Seviye Atlama Entegrasyonu:**
+   * `character.html` ve `index.html` içerisindeki Prestij Sınıfı arama motoru (`searchPrestigeClassWithAi`) ve Özel Sınıf ekleme motoru (`addNewCustomClass`) bu 4 ayaklı kalkan ile donatıldı.
+3. **HUB Sayfası Bestiary Entegrasyonu:**
+   * `hub.html` içerisindeki yapay zeka canavar ve NPC arama motoru (`searchMonsterWithRuleMasterAi`) eski zayıf talimatından arındırılarak `d20srd.org`, `dndtools.net` ve WotC canavar kitapları zorunluluğu ile korumaya alındı.
+4. **Serbest Metin Ayrıştırma Entegrasyonu:**
+   * `rule_master.js` içerisindeki serbest metin (PDF / kural kopyalama) ayrıştırıcısı `queryAiFreeTextRows` da `DND35_RAW_GUARDRAIL` kalkanına bağlandı.
+
+### Parite ve Hash Durumu
+* `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `414C5BAB2643745A4AFED5024A58FC9B9D4C4607D0491A47B8BF311E84D623CD`)
+* `character.html` = `index.html` = `webapp/character.html` = `webapp/index.html` (**SHA-256:** `F86904D879935B2D7F13B93D43FE7E93CC0AF8A0728C7F4A488CED099BF54C94`)
+* `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
+* Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
