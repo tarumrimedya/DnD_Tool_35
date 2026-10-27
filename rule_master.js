@@ -1119,48 +1119,206 @@ const RuleMaster = {
 
   // 3 Temel AI Kullanım Alanı İçin Dinamik Model Çözümleyicisi (3 Kademeli / 9 Yuvalı Dayanıklılık Matrisi)
   AI_TASK_ROUTING: {
-    // 1. Hızlı Arama & Seviye Atlama (1. Asıl: Lite, 2. Yedek: Flash 3.7, 3. Kalkan: Flash 3.8)
+    // 1. Hızlı Arama & Seviye Atlama (1. Asıl: Lite 2.0, 2. Yedek: Flash 2.0, 3. Kalkan: Flash 1.5)
     QUICK_SEARCH: {
-      primary: 'gemini-3.5-flash-lite',
-      fallback: 'gemini-3.7-flash',
-      tertiary: 'gemini-3.8-flash'
+      primary: 'gemini-2.0-flash-lite',
+      fallback: 'gemini-2.0-flash',
+      tertiary: 'gemini-1.5-flash'
     },
     // 2. Kütüphane & Kural Denetimi (En Yüksek Kararlı Pro Muhakeme Motoru)
     RULE_AUDIT: {
-      primary: 'gemini-3.8-pro',
-      fallback: 'gemini-3.5-pro',
-      tertiary: 'gemini-3.7-flash'
+      primary: 'gemini-1.5-pro',
+      fallback: 'gemini-2.0-flash',
+      tertiary: 'gemini-1.5-flash'
     },
     // 3. Toplu İçe Aktarım & Serbest Metin Ayrıştırma (Yapısal JSON)
     IMPORT_BATCH: {
-      primary: 'gemini-3.5-flash-lite',
-      fallback: 'gemini-3.8-flash',
-      tertiary: 'gemini-3.8-pro'
+      primary: 'gemini-2.0-flash-lite',
+      fallback: 'gemini-2.0-flash',
+      tertiary: 'gemini-1.5-pro'
     }
   },
 
+  // Dinamik olarak kaydedilmiş AI model yönlendirme matrisini döndürür; yoksa varsayılanı kullanır
+  getActiveTaskRouting() {
+    try {
+      const saved = localStorage.getItem('dnd35_gemini_routing_matrix');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object' && parsed.QUICK_SEARCH && parsed.RULE_AUDIT && parsed.IMPORT_BATCH) {
+          return parsed;
+        }
+      }
+    } catch (e) {}
+    return this.AI_TASK_ROUTING;
+  },
+
   getModelsForTask(taskType = 'DEFAULT') {
+    const routing = this.getActiveTaskRouting();
     const userPref = this.getAiModelMode();
     if (userPref === 'pro') {
-      const cfg = this.AI_TASK_ROUTING.RULE_AUDIT;
+      const cfg = routing.RULE_AUDIT;
       return [cfg.primary, cfg.fallback, cfg.tertiary];
     }
     if (userPref === 'flash') {
-      const cfg = this.AI_TASK_ROUTING.QUICK_SEARCH;
+      const cfg = routing.QUICK_SEARCH;
       return [cfg.primary, cfg.fallback, cfg.tertiary];
     }
     // 'auto' (Smart Task Router):
     if (taskType === 'RULE_AUDIT' || taskType === 'COMPLEX_TACTICAL') {
-      const cfg = this.AI_TASK_ROUTING.RULE_AUDIT;
+      const cfg = routing.RULE_AUDIT;
       return [cfg.primary, cfg.fallback, cfg.tertiary];
     }
     if (taskType === 'IMPORT_BATCH') {
-      const cfg = this.AI_TASK_ROUTING.IMPORT_BATCH;
+      const cfg = routing.IMPORT_BATCH;
       return [cfg.primary, cfg.fallback, cfg.tertiary];
     }
     // Default fast retrieval (QUICK_SEARCH, LEVEL_UP, etc.)
-    const cfg = this.AI_TASK_ROUTING.QUICK_SEARCH;
+    const cfg = routing.QUICK_SEARCH;
     return [cfg.primary, cfg.fallback, cfg.tertiary];
+  },
+
+  // Sanal Flash Ailesi Çözümleyicisi: Canlı modeller arasından en güncel ve kararlı Flash modelini dinamik seçer
+  findDynamicDiagnosticModel(apiModels = []) {
+    if (Array.isArray(apiModels) && apiModels.length > 0) {
+      function parseVer(name) {
+        const match = (name || '').match(/gemini-(\d+(?:\.\d+)?)-/i);
+        return match ? parseFloat(match[1]) : 0.0;
+      }
+      // 1. Standart Flash modelleri (preview veya lite olmayan, kararlı evaluator için)
+      const standardFlash = apiModels
+        .filter(m => {
+          const l = m.toLowerCase();
+          return l.includes('flash') && !l.includes('lite') && !l.includes('preview');
+        })
+        .sort((a, b) => parseVer(b) - parseVer(a));
+      if (standardFlash.length > 0) return standardFlash[0];
+
+      // 2. Herhangi bir Flash modeli (lite veya preview dahil)
+      const anyFlash = apiModels
+        .filter(m => m.toLowerCase().includes('flash'))
+        .sort((a, b) => parseVer(b) - parseVer(a));
+      if (anyFlash.length > 0) return anyFlash[0];
+
+      // 3. Herhangi bir Pro modeli
+      const anyPro = apiModels
+        .filter(m => m.toLowerCase().includes('pro'))
+        .sort((a, b) => parseVer(b) - parseVer(a));
+      if (anyPro.length > 0) return anyPro[0];
+
+      // 4. Listenin ilk modeli
+      return apiModels[0];
+    }
+    return 'gemini-2.0-flash';
+  },
+
+  // Canlı modelleri Gemini Flash ile analiz edip D&D 3.5e görevlerine en uygun 3 kademeli matrisi üreten AI Optimizatörü
+  async optimizeModelsWithAi(apiKey, apiModels = []) {
+    if (!apiKey || !Array.isArray(apiModels) || apiModels.length === 0) {
+      return { success: false, reason: 'Eksik API anahtarı veya model listesi' };
+    }
+
+    const evaluatorModel = this.findDynamicDiagnosticModel(apiModels);
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${evaluatorModel}:generateContent?key=${encodeURIComponent(apiKey)}`;
+
+    const promptText = `Sen Google Gemini API optimizasyon ve yapay zeka model mimarisi uzmanısın.
+Kullanıcının API anahtarında şu anda aktif, erişilebilir ve generateContent destekleyen resmi modeller şunlardır:
+${JSON.stringify(apiModels)}
+
+Bu modelleri D&D 3.5e web uygulamamız için 3 temel görev alanına göre sınıflandır ve her görev için en uygun 3 kademeli (primary, fallback, tertiary) seçimleri belirle:
+1. QUICK_SEARCH: Hızlı yanıt, yüksek RPM, arama, D&D SRD büyü/eşya/feat listeleme ve seviye atlama (Flash-Lite veya Flash modelleri öncelikli).
+2. RULE_AUDIT: Derin RAW kural muhakemesi, karmaşık denetimler ve mekanik kural çözümleri (Pro modelleri öncelikli, yoksa en yüksek akıl yürütmeli Flash).
+3. IMPORT_BATCH: Yapısal JSON çıktısı, canavar stat blokları, tablo ve serbest metin ayrıştırma (Dengeli Flash/Pro hibriti).
+
+ZORUNLU KURALLAR:
+1. SADECE yukarıda verilen aktif modeller listesinden isimler seç. Listede olmayan veya hayali model adı yazma!
+2. SADECE geçerli bir JSON nesnesi döndür. Markdown formatı, backtick (\`\`\`json) veya fazladan açıklama ekleme.
+Şema:
+{
+  "QUICK_SEARCH": {"primary": "model_adi", "fallback": "model_adi", "tertiary": "model_adi"},
+  "RULE_AUDIT": {"primary": "model_adi", "fallback": "model_adi", "tertiary": "model_adi"},
+  "IMPORT_BATCH": {"primary": "model_adi", "fallback": "model_adi", "tertiary": "model_adi"}
+}`;
+
+    const payload = {
+      contents: [{ parts: [{ text: promptText }] }],
+      generationConfig: {
+        temperature: 0.1,
+        responseMimeType: "application/json"
+      }
+    };
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8500);
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      const rawAiText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!rawAiText) throw new Error('Boş AI yanıtı');
+
+      let parsed = null;
+      try {
+        parsed = JSON.parse(this.cleanJsonText(rawAiText));
+      } catch (pe) {
+        const match = rawAiText.match(/\{[\s\S]*\}/);
+        if (match) parsed = JSON.parse(match[0]);
+        else throw new Error('Geçersiz JSON');
+      }
+
+      // Whitelist doğrulama & Temizlik
+      const validatedMatrix = {};
+      const requiredTasks = ['QUICK_SEARCH', 'RULE_AUDIT', 'IMPORT_BATCH'];
+      let isValid = true;
+
+      for (const task of requiredTasks) {
+        const group = parsed[task];
+        if (!group || typeof group !== 'object') {
+          isValid = false;
+          break;
+        }
+        const primary = apiModels.includes(group.primary) ? group.primary : null;
+        const fallback = apiModels.includes(group.fallback) ? group.fallback : null;
+        const tertiary = apiModels.includes(group.tertiary) ? group.tertiary : null;
+
+        if (!primary) {
+          isValid = false;
+          break;
+        }
+
+        validatedMatrix[task] = {
+          primary: primary,
+          fallback: fallback || primary,
+          tertiary: tertiary || fallback || primary
+        };
+      }
+
+      if (!isValid) {
+        throw new Error('AI model seçimleri whitelist doğrulamadan geçemedi');
+      }
+
+      try {
+        localStorage.setItem('dnd35_gemini_routing_matrix', JSON.stringify(validatedMatrix));
+      } catch (e) {}
+
+      this._cachedTaskModels = {};
+      return { success: true, matrix: validatedMatrix, evaluatorModel };
+    } catch (err) {
+      clearTimeout(timeoutId);
+      console.warn('AI model optimization failed, using heuristic:', err.message);
+      return { success: false, error: err.message, evaluatorModel };
+    }
   },
 
   async getAvailableGeminiModels(apiKey, forceRefresh = false, taskType = 'DEFAULT') {
@@ -1176,6 +1334,24 @@ const RuleMaster = {
     const cacheKey = `${taskType}_${this.getAiModelMode()}`;
     if (!forceRefresh && this._cachedTaskModels && this._cachedTaskModels[cacheKey]) {
       return this._cachedTaskModels[cacheKey];
+    }
+
+    // Eğer önceden kaydedilmiş bir dinamik AI yönlendirme matrisi varsa doğrudan kullan (0ms gecikme)
+    const hasCustomMatrix = Boolean(localStorage.getItem('dnd35_gemini_routing_matrix'));
+    if (hasCustomMatrix && !forceRefresh) {
+      const activeRouting = this.getActiveTaskRouting();
+      let taskCfg = activeRouting.QUICK_SEARCH;
+      if (taskType === 'RULE_AUDIT' || taskType === 'COMPLEX_TACTICAL' || this.getAiModelMode() === 'pro') {
+        taskCfg = activeRouting.RULE_AUDIT;
+      } else if (taskType === 'IMPORT_BATCH' && this.getAiModelMode() === 'auto') {
+        taskCfg = activeRouting.IMPORT_BATCH;
+      }
+      const customList = [taskCfg.primary, taskCfg.fallback, taskCfg.tertiary].filter(Boolean);
+      if (customList.length > 0) {
+        if (!this._cachedTaskModels) this._cachedTaskModels = {};
+        this._cachedTaskModels[cacheKey] = customList;
+        return customList;
+      }
     }
 
     try {
@@ -1329,8 +1505,18 @@ const RuleMaster = {
     const key = apiKey || this.getApiKey();
     if (!key) return null;
 
-    // API modellerini canlı tara ve önbelleğe al
+    // 1. API modellerini canlı tara ve önbelleğe al
     await this.getAvailableGeminiModels(key, true, 'QUICK_SEARCH');
+    const apiModels = this._discoveredApiModels || [];
+
+    // 2. Sanal Flash Çözümleyicisi: En güncel kararlı Flash modelini belirle
+    const dynamicFlash = this.findDynamicDiagnosticModel(apiModels);
+
+    // 3. Modelleri AI Meta-Evaluator ile canlı optimize etmeyi dene
+    let optResult = { success: false };
+    if (apiModels.length > 0) {
+      optResult = await this.optimizeModelsWithAi(key, apiModels);
+    }
 
     const quickModels = await this.getAvailableGeminiModels(key, false, 'QUICK_SEARCH');
     const auditModels = await this.getAvailableGeminiModels(key, false, 'RULE_AUDIT');
@@ -1338,6 +1524,9 @@ const RuleMaster = {
 
     return {
       mode: this.getAiModelMode(),
+      dynamicEvaluator: dynamicFlash,
+      isAiOptimized: optResult.success,
+      totalDiscovered: apiModels.length,
       tasks: {
         quickSearch: {
           title: 'Hızlı Arama & Seviye Atlama (Flash-Lite / Yüksek Kota)',
@@ -1382,8 +1571,13 @@ const RuleMaster = {
         ? 'Otomatik (Akıllı Görev Yönlendirici)' 
         : (diag.mode === 'pro' ? 'Manuel Gemini Pro (Derin RAW Muhakeme)' : 'Manuel Gemini Flash (Ultra Hızlı Gecikme)');
 
-      const report = `🩺 GEMINI API TANI & 3 KADEMELİ MODEL MATRİSİ (9 YUVA)\n\n` +
-        `🟢 Bağlantı Başarılı ve Aktif!\n` +
+      const optStatus = diag.isAiOptimized
+        ? `🤖 Yapay Zeka Canlı Analiziyle Optimize Edildi (Sanal Çözümleyici: ${diag.dynamicEvaluator})`
+        : `🛡️ Deterministik Heuristic Kalkanı Devrede (Sanal Çözümleyici: ${diag.dynamicEvaluator})`;
+
+      const report = `🩺 GEMINI API TANI & AKILLI MODEL MATRİSİ (9 YUVA)\n\n` +
+        `🟢 Bağlantı Başarılı ve Aktif! (${diag.totalDiscovered} Canlı Model Keşfedildi)\n` +
+        `Optimizasyon Durumu: ${optStatus}\n` +
         `Çalışma Modu: ${modeName}\n\n` +
         `⚡ ${diag.tasks.quickSearch.title}:\n` +
         `   ⭐ 1. Asıl: ${diag.tasks.quickSearch.primary}\n` +
@@ -1397,7 +1591,7 @@ const RuleMaster = {
         `   ⭐ 1. Asıl: ${diag.tasks.importBatch.primary}\n` +
         `   🔄 2. Yedek: ${diag.tasks.importBatch.fallback}\n` +
         `   🛡️ 3. Kalkan: ${diag.tasks.importBatch.tertiary}\n\n` +
-        `Sistem her görevde önce 1. Asıl modeli kullanır; sunucu yoğunluğu (503) veya kota durumunda (429) otomatik olarak sırasıyla 2. ve 3. modellere geçer.`;
+        `Sistem her görevde önce 1. Asıl modeli kullanır; sunucu yoğunluğu (503) veya kota durumunda (429) otomatik olarak sırasıyla 2. ve 3. modellere geçer. Gelecekte yeni modeller çıktığında tanı çalıştırılarak matris otomatik olarak güncellenebilir.`;
 
       alert(report);
     } catch (err) {
@@ -1420,12 +1614,14 @@ const RuleMaster = {
     if (!key || !key.trim()) {
       localStorage.removeItem('gemini_api_key');
       localStorage.removeItem('dnd35_gemini_discovered_models');
+      localStorage.removeItem('dnd35_gemini_routing_matrix');
       this._cachedTaskModels = {};
       this._discoveredApiModels = null;
       this._cachedModels = null;
     } else {
       localStorage.setItem('gemini_api_key', key.trim());
       localStorage.removeItem('dnd35_gemini_discovered_models');
+      localStorage.removeItem('dnd35_gemini_routing_matrix');
       this._cachedTaskModels = {};
       this._discoveredApiModels = null;
       this._cachedModels = null;

@@ -7742,9 +7742,9 @@
         }
         const models = window.RuleMaster
           ? await RuleMaster.getAvailableGeminiModels(apiKey, forceRefresh)
-          : ['gemini-flash-lite-latest', 'gemini-flash-latest'];
+          : ['gemini-2.0-flash-lite', 'gemini-2.0-flash'];
         _geminiVerifiedState = 'connected';
-        _geminiVerifiedModel = models && models[0] ? models[0] : 'gemini-flash-lite-latest';
+        _geminiVerifiedModel = models && models[0] ? models[0] : 'gemini-2.0-flash-lite';
 
         if (liveBadge) {
           liveBadge.innerHTML = `<span class="text-emerald-400 font-bold">🟢 Gemini AI Aktif & Çalışıyor (${_geminiVerifiedModel})</span>`;
@@ -35695,7 +35695,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         }
       }
       if (!Array.isArray(modelsToTry) || modelsToTry.length === 0) {
-        modelsToTry = ['gemini-flash-lite-latest', 'gemini-flash-latest'];
+        modelsToTry = ['gemini-2.0-flash-lite', 'gemini-2.0-flash'];
       }
 
       let classData = null;

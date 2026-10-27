@@ -3140,3 +3140,37 @@ Kullanıcı AI sorgularında (seviye atlama, eşya/büyü arama) ilk denemede za
 * `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `321B0A331E63C2162BCE6BCEACBC3C50011EDBE0F2EBC451122DDC9BFF081273`)
 * `character.html` = `index.html` = `webapp/character.html` = `webapp/index.html` (**SHA-256:** `C6A0FD171887FF34FD4E7E6390B26E5161A49BCE6F54D4DE4D13C1BD267D2840`)
 * Tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korundu.
+
+
+---
+
+## 106. Sanal Flash Ailesi Çözümleyicisi (Virtual Generic Flash Resolver) & Yapay Zeka Canlı Model Optimizatörü
+
+### Bağlam & Kullanıcı Talebi
+Kullanıcı, gelecekte Google Gemini modelleri değiştikçe veya yeni sürümler çıktıkça, tanı (diagnostics) aracının canlı modelleri sorgulayıp D&D 3.5e web uygulaması için en uygun olanlarını otomatik seçecek bir yapay zeka promptu eklenmesini ve bu işlem için `gemini-flash` benzeri genel bir model ailesi yaklaşımının kullanılıp kullanılamayacağını sormuştur.
+
+### Yapılan Geliştirmeler & Çözüm Mimarisi
+1. **Resmi GA Varsayılanları (Official Baseline Routing):**
+   * `AI_TASK_ROUTING` içerisindeki modeller, Google API'nin şu anki en kararlı ve resmi GA modellerine güncellendi:
+     * `QUICK_SEARCH`: `gemini-2.0-flash-lite` (Asıl), `gemini-2.0-flash` (Yedek), `gemini-1.5-flash` (Kalkan)
+     * `RULE_AUDIT`: `gemini-1.5-pro` (Asıl), `gemini-2.0-flash` (Yedek), `gemini-1.5-flash` (Kalkan)
+     * `IMPORT_BATCH`: `gemini-2.0-flash-lite` (Asıl), `gemini-2.0-flash` (Yedek), `gemini-1.5-pro` (Kalkan)
+2. **Sanal Flash Ailesi Çözümleyicisi (`findDynamicDiagnosticModel`):**
+   * Google REST API'sinde doğrudan `gemini-flash` veya `gemini.flash` adında genel bir endpoint bulunmadığından (HTTP 404 döndürür), kullanıcının API anahtarından çekilen canlı modeller arasından en güncel, kararlı Flash modelini sürüm numarasına (`parseVersion`) göre otomatik yakalayan **sanal bir çözümleyici** entegre edildi. Gelecekte `gemini-2.5-flash` veya `gemini-3.0-flash` çıktığında kod değişikliği gerekmeden otomatik olarak en güncel Flash modeli seçilir.
+3. **Yapay Zeka Canlı Model Optimizatörü (`optimizeModelsWithAi`):**
+   * Tanı çalıştırıldığında, belirlenen dinamik Flash modeline kullanıcının aktif model listesi gönderilir. Model, D&D 3.5e web uygulamamız için 3 kritik alana (`QUICK_SEARCH`, `RULE_AUDIT`, `IMPORT_BATCH`) göre en uygun 3 kademeli (primary, fallback, tertiary) seçimleri JSON olarak üretir.
+4. **Çift Kademeli Güvenlik Kalkanı & Whitelist Doğrulaması:**
+   * AI tarafından önerilen her model adı kullanıcının `apiModels` beyaz listesine karşı doğrulanır (halüsinasyon koruması).
+   * Eğer kullanıcının API kotası doluysa (429) veya ağ hatası varsa, deterministik `parseVersion` sürüm sıralayıcısı sessizce devreye girerek tanının veya sistemin kilitlenmesini engeller.
+5. **Kalıcı 0ms Yönlendirme (`dnd35_gemini_routing_matrix`):**
+   * Doğrulanan model matrisi `localStorage`'a kalıcı olarak kaydedilir. Normal kullanımda hiçbir ekstra keşif veya optimizasyon çağrısı yapılmaz; tüm sistem 0ms gecikme ve 0 ekstra token ile bu optimize matrisi kullanır.
+   * API anahtarı değiştirildiğinde veya silindiğinde bu matris temizlenerek taze optimizasyonun önü açılır.
+6. **HUB & Karakter Kâğıdı Entegrasyonu:**
+   * `hub.html` içerisindeki Bestiary yaratık arama motoru da doğrudan `RuleMaster.getAvailableGeminiModels(apiKey, false, 'IMPORT_BATCH')` havuzuna bağlanarak eski hardcoded model referanslarından arındırıldı.
+   * `character.html` ve `index.html` içerisindeki eski fallback string'leri de resmi GA modelleriyle senkronize edildi.
+
+### Parite ve Hash Durumu
+* `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `E73E61C0034F1267D049500C55F1501F9621F42C04F18AABEB5302DF8FB01ED0`)
+* `character.html` = `index.html` = `webapp/character.html` = `webapp/index.html` (**SHA-256:** `6CB1CF75C681FAD2A15FFB173251DC73B01450D722F87C4CDF9736390B5BABD3`)
+* `hub.html` = `webapp/hub.html` (**SHA-256:** `A20CF49D2971B3199C214258E225EBB097F993BE2C34BF16D7984C9DF0EFB38F`)
+* Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.

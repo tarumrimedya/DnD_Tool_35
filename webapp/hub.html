@@ -2933,7 +2933,7 @@ CRITICAL RULES:
 
       const userPrompt = `Query: "${query}". Look up the official D&D 3.5e RAW statistics for this monster or NPC and return the exact JSON object.`;
 
-      const models = ['gemini-flash-lite-latest', 'gemini-flash-latest'];
+      const models = (typeof RuleMaster !== 'undefined' && typeof RuleMaster.getAvailableGeminiModels === 'function') ? await RuleMaster.getAvailableGeminiModels(apiKey, false, 'IMPORT_BATCH') : ['gemini-2.0-flash-lite', 'gemini-2.0-flash'];
       let lastErr = null;
       let monsterData = null;
 
