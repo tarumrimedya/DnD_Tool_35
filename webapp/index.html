@@ -38438,8 +38438,18 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           bonusType: "Rule",
           scope: "Skills",
           action: "Passive",
+          actionType: "Passive",
           role: "House Rule",
-          tags: ["skills", "consolidation", "houserule"]
+          tags: ["skills", "consolidation", "houserule"],
+          skillMapping: (typeof RuleEngine !== 'undefined' && RuleEngine.DEFAULT_SKILL_MAPPING) ? RuleEngine.DEFAULT_SKILL_MAPPING : {
+            "stealth": ["hide", "move_silently", "move silently", "movesilently", "sessiz hareket", "gizlenme"],
+            "perception": ["spot", "listen", "search", "fark etme", "dinleme", "arama"],
+            "athletics": ["climb", "jump", "swim", "tırmanma", "zıplama", "yüzme"],
+            "acrobatics": ["tumble", "balance", "escape_artist", "escape artist", "takla", "denge", "kurtulma"],
+            "thievery": ["disable_device", "disable device", "open_lock", "open lock", "sleight_of_hand", "sleight of hand", "kilit açma", "tuzak bozma"],
+            "diplomacy": ["diplomacy", "gather_information", "gather information", "sense_motive", "sense motive", "diplomasi", "bilgi toplama", "sezgi"],
+            "linguistics": ["decipher_script", "decipher script", "forgery", "speak_language", "speak language", "yazı çözme", "sahtecilik"]
+          }
         };
         if (existingIdx >= 0) {
           masterDb[existingIdx] = Object.assign({}, masterDb[existingIdx], ruleData);

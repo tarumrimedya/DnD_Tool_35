@@ -3584,3 +3584,36 @@ Kullanıcı, kural/eşya düzenleme sayfasında seçim alanlarına ve beceri (`t
 * `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `A7F1DEB85D49B8F48204AC2EA57ADF9A9E99708D534C3AA8FE0D13D92A1AE3ED`)
 * `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
 * Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
+
+
+---
+
+## 122. Master DB & Ayarlar Entegreli Konsolide Beceri Eşleme Mimarisi (Boots of Elvenkind & Stealth)
+
+### Bağlam & Kullanıcı Talebi
+Kullanıcı, *Boots of Elvenkind* eşyasının *Stealth (Gizlilik)* becerisine bonus vermemesinin nedeninin *"Konsolide Beceriler"* modu olduğunu doğrulamış; eşyaların içine ev kuralı metinleri yazıp RAW veritabanını kirletmek yerine, bu eşleme kuralının **Master DB ve Ayarlar sayfasına statik ve dinamik bir House Rule şeması olarak bağlanmasını** talep etmiştir.
+
+### Yapılan Geliştirmeler & Mimari Çözüm
+1. **Master DB "Skilleri Birleştir" House Rule Şeması:**
+   * Master DB içindeki `Skilleri Birleştir (Skill Consolidation)` House Rule kaydına ve indirme veritabanlarına 7 resmi konsolide grubun alt bileşenlerini (`skillMapping`) içeren yapılandırılmış nesne eklendi:
+     * `stealth`: `["hide", "move_silently", "move silently", "movesilently", "sessiz hareket", "gizlenme"]`
+     * `perception`: `["spot", "listen", "search", "fark etme", "dinleme", "arama"]`
+     * `athletics`: `["climb", "jump", "swim", "tırmanma", "zıplama", "yüzme"]`
+     * `acrobatics`: `["tumble", "balance", "escape_artist", "escape artist", "takla", "denge", "kurtulma"]`
+     * `thievery`: `["disable_device", "disable device", "open_lock", "open lock", "sleight_of_hand", "kilit açma", "tuzak bozma"]`
+     * `diplomacy`: `["diplomacy", "gather_information", "sense_motive", "bilgi toplama", "sezgi"]`
+     * `linguistics`: `["decipher_script", "forgery", "speak_language", "yazı çözme", "sahtecilik"]`
+2. **Kural Motoru Dinamik Çözümleyicisi (`RuleEngine.getSkillAliases`):**
+   * `rule_engine.js` içindeki `evaluateSkillBonus` ve `_checkItemSkillBonus` fonksiyonları, karakter konsolide moddayken Master DB'deki bu kural nesnesini dinamik olarak okur.
+   * *Boots of Elvenkind* gibi saf RAW 3.5e olarak `Move Silently` becerisini hedefleyen eşyalar, konsolide modda `Stealth (Gizlilik)` becerisine anında **+5 (Competence)** olarak yansıtılır.
+   * Dökümde (breakdown): `Boots Of Elvenkind (Move Silently): +5 (competence)` olarak şeffaf biçimde gösterilir.
+3. **Pristine RAW Güvencesi:**
+   * Eşyaların orijinal tanımları kesinlikle bozulmaz (`Move Silently` olarak saf RAW 3.5e kalır).
+   * Kullanıcı Ayarlar sayfasından *"Standart RAW (46 Beceri)"* moduna geçtiğinde, harita otomatik olarak devreden çıkar ve bonus doğrudan orijinal `Move Silently` satırına uygulanır.
+
+### Parite ve Hash Durumu
+* `character.html` = `index.html` = `webapp/character.html` = `webapp/index.html` (**SHA-256:** `AA525524116D50FF23B5F2B62961092DB0E5CACD69A1EC68736E1051EAAC55C2`)
+* `rule_engine.js` = `webapp/rule_engine.js` (**SHA-256:** `0AE17F72E7F2E9B8E0434E8A817D3BA5340C481CFBD1B5054EF4199ACBB0DB41`)
+* `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `A7F1DEB85D49B8F48204AC2EA57ADF9A9E99708D534C3AA8FE0D13D92A1AE3ED`)
+* `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
+* Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.

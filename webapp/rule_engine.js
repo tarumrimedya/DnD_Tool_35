@@ -3083,16 +3083,72 @@ const RuleEngine = {
     return { status: 'Aşırı Yük / Hareketsiz (Overloaded)', color: 'rose', maxDex: 0, checkPenalty: -10, speed30: 5, speed20: 5 };
   },
 
+  // Canonical Consolidated Skill Mappings (Bridge between RAW 3.5e skills and Consolidated groups)
+  DEFAULT_SKILL_MAPPING: {
+    "stealth": ["hide", "move_silently", "move silently", "movesilently", "sessiz hareket", "gizlenme"],
+    "perception": ["spot", "listen", "search", "fark etme", "dinleme", "arama"],
+    "athletics": ["climb", "jump", "swim", "tırmanma", "zıplama", "yüzme"],
+    "acrobatics": ["tumble", "balance", "escape_artist", "escape artist", "takla", "denge", "kurtulma"],
+    "thievery": ["disable_device", "disable device", "open_lock", "open lock", "sleight_of_hand", "sleight of hand", "kilit açma", "tuzak bozma"],
+    "diplomacy": ["diplomacy", "gather_information", "gather information", "sense_motive", "sense motive", "diplomasi", "bilgi toplama", "sezgi"],
+    "linguistics": ["decipher_script", "decipher script", "forgery", "speak_language", "speak language", "yazı çözme", "sahtecilik"]
+  },
+
+  getSkillAliases(sKey, sName, character) {
+    const aliases = new Set();
+    const kNorm = (sKey || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const nNorm = (sName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (kNorm) aliases.add(kNorm);
+    if (nNorm) aliases.add(nNorm);
+
+    // If consolidated skills mode is enabled on character (default true in character sheet)
+    const isMerged = character?.settings?.mergeSkills !== false;
+    if (isMerged) {
+      // 1. Try to read skillMapping dynamically from Master DB House Rule
+      let mapping = null;
+      const masterList = (typeof window !== 'undefined' && (window.masterDb || window.BUNDLED_MASTER_DB)) || [];
+      if (Array.isArray(masterList)) {
+        const ruleObj = masterList.find(m => m && (m.name || '').toLowerCase().includes('skilleri birleştir') || (m.name || '').toLowerCase().includes('skill consolidation'));
+        if (ruleObj && ruleObj.skillMapping && typeof ruleObj.skillMapping === 'object') {
+          mapping = ruleObj.skillMapping;
+        }
+      }
+
+      // 2. Fallback to character.settings or built-in default mapping
+      if (!mapping) {
+        mapping = character?.settings?.skillMapping || this.DEFAULT_SKILL_MAPPING;
+      }
+
+      if (mapping) {
+        for (const [groupKey, comps] of Object.entries(mapping)) {
+          const gNorm = groupKey.toLowerCase().replace(/[^a-z0-9]/g, '');
+          if (gNorm === kNorm || kNorm.includes(gNorm) || gNorm.includes(kNorm) || nNorm.includes(gNorm) || gNorm.includes(nNorm)) {
+            if (Array.isArray(comps)) {
+              comps.forEach(c => {
+                const cNorm = String(c).toLowerCase().replace(/[^a-z0-9]/g, '');
+                if (cNorm) aliases.add(cNorm);
+              });
+            }
+          }
+        }
+      }
+    }
+
+    return Array.from(aliases);
+  },
+
   /**
    * Evaluate specific skill bonus from equipped items, active buffs, feats, and masterwork tools.
    * Resolves D&D 3.5e stacking rules: same bonus types do not stack (take highest),
    * while different bonus types (Competence, Insight, Luck, Morale, Circumstance, Untyped) stack.
+   * Fully supports Consolidated Skills mapping (e.g. Boots of Elvenkind Move Silently -> Stealth).
    */
   evaluateSkillBonus(character, skillKey, skillName, statName) {
     if (!character) return { total: 0, breakdown: [] };
     const sName = (skillName || '').toLowerCase().trim();
     const sKey = (skillKey || '').toLowerCase().trim();
     const isKnowledge = sName.startsWith('knowledge') || sKey.startsWith('knowledge') || sName.includes('bilgi');
+    const aliases = this.getSkillAliases(sKey, sName, character);
 
     // Buckets for typed bonuses: competence, insight, luck, morale, enhancement, circumstance, untyped, penalty
     const buckets = {};
@@ -3119,6 +3175,8 @@ const RuleEngine = {
         items.forEach(b => {
           const scope = (b.scope || b.target || '').toLowerCase().trim();
           const targetSkill = (b.targetSkill || b.skill || '').toLowerCase().trim();
+          const sNorm = scope.replace(/[^a-z0-9]/g, '');
+          const tNorm = targetSkill.replace(/[^a-z0-9]/g, '');
           const bVal = Number(b.skillBonus || b.bonus || b.bonusVal) || 0;
           const bType = b.bonusType || 'untyped';
 
@@ -3126,11 +3184,12 @@ const RuleEngine = {
             let applies = false;
             if (scope === 'all skills' || scope === 'skills' || scope === 'all') applies = true;
             else if (isKnowledge && (scope === 'knowledge' || scope === 'all knowledge' || scope.includes('knowledge'))) applies = true;
-            else if (targetSkill && (sKey === targetSkill || sName.includes(targetSkill))) applies = true;
-            else if (scope && (sKey.includes(scope) || sName.includes(scope))) applies = true;
+            else if (tNorm && aliases.some(a => a && (a === tNorm || a.includes(tNorm) || tNorm.includes(a)))) applies = true;
+            else if (sNorm && aliases.some(a => a && (a === sNorm || a.includes(sNorm) || sNorm.includes(a)))) applies = true;
 
             if (applies) {
-              addBonus(b.name || buff.name, bVal, bType);
+              const label = (tNorm && tNorm !== (sKey || '').toLowerCase().replace(/[^a-z0-9]/g, '')) ? `${b.name || buff.name} (${targetSkill})` : (b.name || buff.name);
+              addBonus(label, bVal, bType);
             }
           }
         });
@@ -3141,7 +3200,7 @@ const RuleEngine = {
     if (character.bodySlots && typeof character.bodySlots === 'object') {
       Object.entries(character.bodySlots).forEach(([slotKey, item]) => {
         if (!item || item.active === false || !item.name || item.name === '-') return;
-        this._checkItemSkillBonus(item, sKey, sName, isKnowledge, addBonus, character);
+        this._checkItemSkillBonus(item, sKey, sName, isKnowledge, addBonus, character, aliases);
       });
     }
 
@@ -3151,7 +3210,7 @@ const RuleEngine = {
         if (!item) return;
         const isSlotless = (item.slot || '').toLowerCase().includes('slotless') || (item.category || '').toLowerCase() === 'other' || (item.category || '').toLowerCase() === 'wondrous item';
         if (item.isEquipped || isSlotless) {
-          this._checkItemSkillBonus(item, sKey, sName, isKnowledge, addBonus, character);
+          this._checkItemSkillBonus(item, sKey, sName, isKnowledge, addBonus, character, aliases);
         }
       });
     }
@@ -3200,8 +3259,9 @@ const RuleEngine = {
     return { total, breakdown };
   },
 
-  _checkItemSkillBonus(item, sKey, sName, isKnowledge, addBonus, character = null) {
+  _checkItemSkillBonus(item, sKey, sName, isKnowledge, addBonus, character = null, aliases = null) {
     if (!item) return;
+    const skillAliases = aliases || this.getSkillAliases(sKey, sName, character);
 
     // Declarative helper to evaluate item or masterDb entry bonuses
     const processSkillData = (sourceObj, sourceTitle) => {
@@ -3212,10 +3272,9 @@ const RuleEngine = {
       if (sourceObj.skillBonuses && typeof sourceObj.skillBonuses === 'object') {
         Object.entries(sourceObj.skillBonuses).forEach(([target, val]) => {
           const tNorm = target.toLowerCase().replace(/[^a-z0-9]/g, '');
-          const kNorm = sKey.toLowerCase().replace(/[^a-z0-9]/g, '');
-          const nNorm = sName.toLowerCase().replace(/[^a-z0-9]/g, '');
-          if (kNorm.includes(tNorm) || nNorm.includes(tNorm) || tNorm.includes(kNorm) || tNorm.includes(nNorm)) {
-            addBonus(sourceTitle, Number(val) || 0, bType);
+          if (skillAliases.some(a => a && (a === tNorm || a.includes(tNorm) || tNorm.includes(a)))) {
+            const label = (tNorm !== (sKey || '').toLowerCase().replace(/[^a-z0-9]/g, '')) ? `${sourceTitle} (${target})` : sourceTitle;
+            addBonus(label, Number(val) || 0, bType);
             applied = true;
           }
         });
@@ -3226,15 +3285,19 @@ const RuleEngine = {
       if (bVal !== 0) {
         const scope = (sourceObj.scope || '').toLowerCase().trim();
         const targetSkill = (sourceObj.targetSkill || sourceObj.skill || '').toLowerCase().trim();
+        const sNorm = scope.replace(/[^a-z0-9]/g, '');
+        const tNorm = targetSkill.replace(/[^a-z0-9]/g, '');
 
         let applies = false;
         if (scope === 'all skills' || scope === 'skills' || scope === 'all') applies = true;
         else if (isKnowledge && (scope === 'knowledge' || scope === 'all knowledge' || scope.includes('knowledge'))) applies = true;
-        else if (targetSkill && (sKey === targetSkill || sName.includes(targetSkill))) applies = true;
-        else if (scope && (sKey.includes(scope) || sName.includes(scope))) applies = true;
+        else if (tNorm && skillAliases.some(a => a && (a === tNorm || a.includes(tNorm) || tNorm.includes(a)))) applies = true;
+        else if (sNorm && skillAliases.some(a => a && (a === sNorm || a.includes(sNorm) || sNorm.includes(a)))) applies = true;
 
         if (applies) {
-          addBonus(sourceTitle, bVal, bType);
+          const subTarget = targetSkill || (scope && scope !== 'none / general' ? scope : '');
+          const label = (subTarget && subTarget.replace(/[^a-z0-9]/g, '') !== (sKey || '').toLowerCase().replace(/[^a-z0-9]/g, '')) ? `${sourceTitle} (${subTarget})` : sourceTitle;
+          addBonus(label, bVal, bType);
           applied = true;
         }
       }
@@ -3253,10 +3316,9 @@ const RuleEngine = {
 
             for (const t of targets) {
               const tNorm = t.toLowerCase().replace(/[^a-z0-9]/g, '');
-              const kNorm = sKey.toLowerCase().replace(/[^a-z0-9]/g, '');
-              const nNorm = sName.toLowerCase().replace(/[^a-z0-9]/g, '');
-              if (tNorm === 'skill' || tNorm === 'skills' || tNorm === 'allskills' || tNorm === 'all' || (isKnowledge && tNorm.includes('knowledge')) || (tNorm && (kNorm.includes(tNorm) || nNorm.includes(tNorm) || tNorm.includes(kNorm) || tNorm.includes(nNorm)))) {
-                addBonus(sourceTitle, hVal, hType);
+              if (tNorm === 'skill' || tNorm === 'skills' || tNorm === 'allskills' || tNorm === 'all' || (isKnowledge && tNorm.includes('knowledge')) || (tNorm && skillAliases.some(a => a && (a === tNorm || a.includes(tNorm) || tNorm.includes(a))))) {
+                const label = (tNorm && tNorm !== (sKey || '').toLowerCase().replace(/[^a-z0-9]/g, '')) ? `${sourceTitle} (${t})` : sourceTitle;
+                addBonus(label, hVal, hType);
                 applied = true;
                 break;
               }
