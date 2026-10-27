@@ -3259,3 +3259,38 @@ Kullanıcı, tüketilebilir eşya satırlarındaki `[ 🧪 Kullan ]` ve `[ ⚡ K
 * `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `414C5BAB2643745A4AFED5024A58FC9B9D4C4607D0491A47B8BF311E84D623CD`)
 * `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
 * Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
+
+
+---
+
+## 110. BUNDLED_SRD_CORE_CATALOG Temel Eşya Çözümleyicisi ve Silah/Zırh Kategori Düzeltmesi
+
+### Bağlam & Kullanıcı Gözlemi
+Kullanıcı, envanter havuzunda yer alan `Dagger +2` eşyasının `Other` kategorisinde sınıflandırıldığını ve bu nedenle sarf malzemesi gibi değerlendirilerek `[ 🧪 Kullan ]` butonu aldığını tespit etmiştir. Kullanıcının önerisi üzerine, `BUNDLED_SRD_CORE_CATALOG` içerisindeki temel eşyaların taranarak tür/yuva (type/slot/category) belirlemede referans alınması kararlaştırılmıştır.
+
+### Kök Neden Analizi
+1. **AI Çıktısı Sapması:** Yapay zeka veya dış kaynaklı veri aktarımında `Dagger +2` için `type: "Magic Item"` ve `slot: "None"` dönülmüştü.
+2. **Kategori Eşleme Eksikliği (`mapEntryToGearCategory`):** Fonksiyon yalnızca `type.includes('weapon')` ve `slot.includes('main hand')` kontrolleri yapıyordu; eşya adında geçen silah/zırh isimlerini taramadığı için eşyayı doğrudan `'Other'` kategorisine atıyordu.
+3. **Sarf Malzemesi Yanılgısı (`isConsumableOrSlotless`):** Fonksiyonda yer alan `if (slot === 'none' || ...) return true;` kuralı nedeniyle, yuvası `'None'` görünen `Dagger +2` sarf malzemesi sanılarak `[ 🧪 Kullan ]` butonu üretiliyordu.
+
+### Yapılan Geliştirmeler & Çözüm Mimarisi
+1. **Temel Eşya Çözümleyici (`findBaseItemInSrdCore`):**
+   * `character.html` ve `index.html` içine eklendi.
+   * Eşya adını enhancement/büyü (+1, +2, Flaming, Keen, Vorpal vb.) ve malzeme (Mithral, Adamantine, Silver vb.) ön/son eklerinden arındırarak `BUNDLED_SRD_CORE_CATALOG` tablosundaki temel eşyayla (ör. `Dagger +2` -> `Dagger`) eşleştirir.
+   * Temel eşyanın resmi D&D 3.5e RAW verilerini (`type: 'Weapon'`, `slot: 'Main Hand'`, `dice: '1d4'`, `crit: '19-20/x2'`, `dmgType: 'Piercing or Slashing'`, `finessable: true`) çözer.
+2. **Kategori Belirleme Güçlendirmesi (`mapEntryToGearCategory`):**
+   * Öncelikle `findBaseItemInSrdCore` üzerinden katalog türü taranır (`Weapon`, `Armor`, `Shield`).
+   * Ardından regex anahtar kelime filtresiyle (dagger, sword, blade, axe, bow, crossbow, mace, spear, plate, mail, shield vb.) eşya ismi doğrulanır. Asla `Other` kategorisine düşürülmez.
+3. **Tüketilebilirlik Kalkanı (`isConsumableOrSlotless`):**
+   * Silahlar (`weapon`), zırhlar (`armor`) ve kalkanlar (`shield`) için kesin `return false` koruması eklendi.
+   * Katalogda veya yerel veride silah/zırh olan hiçbir eşya, yuvası hatalı olsa dahi asla `[ 🧪 Kullan ]` butonu alamaz.
+4. **Envanter Otomatik İyileştirme (Auto-Heal in `renderGearPoolTable`):**
+   * Kullanıcının halihazırda envanterinde bulunan veya geçmişten gelen hatalı etiketlenmiş (`category: 'Other'`, `slot: 'None'`) eşyalar, envanter tablosu açıldığı anda otomatik taranarak doğru kategoriye (`Weapon`) ve yuvaya (`Main Hand`) iyileştirilir.
+5. **Gövde Yuvası Akıllı Eşleme (`getSlotKeyForPoolItem`):**
+   * BUNDLED_SRD_CORE_CATALOG üzerinden silahlar doğrudan `mainHand`, kalkanlar `offHand`, zırhlar `armor` yuvasına atanır.
+
+### Parite ve Hash Durumu
+* `character.html` = `index.html` = `webapp/character.html` = `webapp/index.html` (**SHA-256:** `62B3B3E631C635807DF2A7FF19C6B583864C7D286634AED85CD9DA0C6CC3B904`)
+* `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `414C5BAB2643745A4AFED5024A58FC9B9D4C4607D0491A47B8BF311E84D623CD`)
+* `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
+* Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.

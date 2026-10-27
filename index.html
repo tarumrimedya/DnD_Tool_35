@@ -29750,12 +29750,56 @@ function renderManualStatsPanel() {
       { key: 'offHand', name: 'Off-Hand/Shield', trName: 'İkinci El / Kalkan', icon: '🛡️', allowed: ['Weapon', 'Shield'] }
     ];
 
+    // Helper: Match and resolve base items against official Core D&D 3.5e Catalog (BUNDLED_SRD_CORE_CATALOG)
+    function findBaseItemInSrdCore(rawName) {
+      if (!rawName || typeof rawName !== 'string') return null;
+      const catalog = window.BUNDLED_SRD_CORE_CATALOG || [];
+      if (!Array.isArray(catalog) || catalog.length === 0) return null;
+
+      // 1. Temizleme (Enhancement ve Malzeme Ön/Son Ekleri)
+      let cleaned = rawName
+        .replace(/\+\d+/g, '')
+        .replace(/\b(?:masterwork|mwk|flaming|frost|shock|shocking|keen|holy|unholy|vicious|defending|anarchic|axiomatic|speed|vorpal|ghost touch|wounding|bane|throwing|returning|spell resistance \d+|fortification|slick|shadow|silent moves|glamered)\b/gi, '')
+        .replace(/\b(?:adamantine|mithral|mithril|alchemical silver|silver|cold iron|darkwood|dragonhide)\b/gi, '')
+        .replace(/[\(\)\[\],]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase();
+
+      if (!cleaned) return null;
+
+      // 2. Tam Eşleşme (Exact Match)
+      const exact = catalog.find(c => (c.name || '').toLowerCase() === cleaned);
+      if (exact) return exact;
+
+      // 3. Uzunluk Sıralı En Uygun Eşleşme (Longest Match First, e.g. "Punching Dagger" before "Dagger")
+      const candidates = catalog
+        .filter(c => {
+          const cName = (c.name || '').toLowerCase();
+          return cName && (cleaned === cName || cleaned.endsWith(' ' + cName) || cleaned.startsWith(cName + ' ') || cleaned.includes(' ' + cName + ' ') || cleaned.includes(cName));
+        })
+        .sort((a, b) => (b.name || '').length - (a.name || '').length);
+
+      if (candidates.length > 0) return candidates[0];
+      return null;
+    }
+
     // D&D 3.5e RAW Inventory & Slot Validators (Master DB as Single Source of Truth)
     function isConsumableOrSlotless(item) {
       if (!item) return false;
       const cat = (item.category || '').toLowerCase().trim();
       const slot = (item.slot || '').toLowerCase().trim();
       const name = (item.name || '').toLowerCase().trim();
+
+      // KESİN KURAL 1: Silah, Zırh veya Kalkan asla sarf malzemesi / tüketilebilir OLAMAZ!
+      if (cat === 'weapon' || cat === 'armor' || cat === 'shield') return false;
+      if (slot === 'main hand' || slot === 'off hand' || slot === 'two-handed' || slot === 'both hands' || slot === 'armor' || slot === 'shield' || slot === 'off-hand/shield') return false;
+
+      // KESİN KURAL 2: BUNDLED_SRD_CORE_CATALOG içinde Weapon, Armor veya Shield ise tüketilebilir olamaz!
+      const baseMatch = typeof findBaseItemInSrdCore === 'function' ? findBaseItemInSrdCore(item.name) : null;
+      if (baseMatch && ['weapon', 'armor', 'shield'].includes((baseMatch.type || '').toLowerCase())) {
+        return false;
+      }
 
       // Check Master DB if available
       if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
@@ -29764,20 +29808,31 @@ function renderManualStatsPanel() {
         if (m) {
           const mSlot = (m.slot || '').toLowerCase().trim();
           const mType = (m.type || '').toLowerCase().trim();
-          if (mSlot === 'none' || mSlot === 'slotless' || mSlot === 'consumable' || mSlot === '-') return true;
+          if (['weapon', 'armor', 'shield', 'ring'].includes(mType)) return false;
           if (mType.includes('potion') || mType.includes('scroll') || mType.includes('wand') || mType.includes('consumable')) return true;
         }
       }
 
+      // Yalnızca gerçek sarf malzemeleri tüketilebilirdir
       if (cat === 'consumable' || cat === 'scroll' || cat === 'potion' || cat === 'wand') return true;
-      if (slot === 'none' || slot === 'slotless' || slot === 'consumable' || slot === '-') return true;
-      if (name.startsWith('scroll of') || name.startsWith('potion of') || name.startsWith('wand of') || name.startsWith('elixir of')) return true;
-      if (name.includes('parşömen') || name.includes('iksir') || name.includes('asa ')) return true;
+      if (slot === 'consumable') return true;
+      if (name.startsWith('scroll of') || name.startsWith('potion of') || name.startsWith('wand of') || name.startsWith('elixir of') || name.startsWith('oil of')) return true;
+      if (name.includes('parşömen') || name.includes('iksir') || name.includes('asa ') || name.includes('yağı ')) return true;
       return false;
     }
 
     function getValidSlotForItem(item) {
       if (!item || isConsumableOrSlotless(item)) return null;
+
+      // 0. BUNDLED_SRD_CORE_CATALOG ile temel eşya yuvasını belirle
+      const baseMatch = typeof findBaseItemInSrdCore === 'function' ? findBaseItemInSrdCore(item.name) : null;
+      if (baseMatch) {
+        const bType = (baseMatch.type || '').toLowerCase();
+        const bSlot = (baseMatch.slot || '').toLowerCase();
+        if (bType === 'weapon' || bSlot.includes('main hand') || bSlot.includes('two-hand')) return 'mainHand';
+        if (bType === 'shield' || bSlot.includes('shield') || bSlot.includes('off-hand')) return 'offHand';
+        if (bType === 'armor' || bSlot === 'armor') return 'armor';
+      }
 
       let rawSlot = (item.slot || '').toLowerCase().trim();
       let rawType = (item.category || '').toLowerCase().trim();
@@ -41688,6 +41743,22 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       if (!tbody) return;
       tbody.innerHTML = '';
 
+      // Auto-heal miscategorized items in gear pool (e.g. Dagger +2 labeled as 'Other')
+      (character.gearPool || []).forEach(item => {
+        if (!item.category || item.category === 'Other') {
+          const autoCat = mapEntryToGearCategory(item);
+          if (autoCat && autoCat !== 'Other') {
+            item.category = autoCat;
+            const base = findBaseItemInSrdCore(item.name);
+            if (base && base.slot) {
+              item.slot = base.slot;
+            } else if (autoCat === 'Weapon' && (!item.slot || item.slot === 'None' || item.slot === 'Other' || item.slot === '-')) {
+              item.slot = 'Main Hand';
+            }
+          }
+        }
+      });
+
       const query = (document.getElementById('pool-search-input')?.value || '').toLowerCase().trim();
       const catFilter = document.getElementById('pool-category-filter')?.value || 'All';
 
@@ -42022,14 +42093,27 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
     // Helper: Map Master DB / Rule Master entry to 14 official Body Slots & Gear Categories (Madde 8)
     function mapEntryToGearCategory(entry) {
       if (!entry) return 'Other';
+
+      // 1. Önce BUNDLED_SRD_CORE_CATALOG içinde ara (Dagger +2 -> Dagger -> Weapon)
+      const baseMatch = typeof findBaseItemInSrdCore === 'function' ? findBaseItemInSrdCore(entry.name) : null;
+      if (baseMatch && baseMatch.type) {
+        const bType = baseMatch.type.toLowerCase();
+        if (bType === 'weapon') return 'Weapon';
+        if (bType === 'armor') return 'Armor';
+        if (bType === 'shield') return 'Shield';
+      }
+
       const type = (entry.type || '').toLowerCase();
       const slot = (entry.slot || '').toLowerCase();
       const name = (entry.name || '').toLowerCase();
 
-      if (type.includes('weapon') || slot.includes('main hand') || slot.includes('two hand')) return 'Weapon';
-      if (type.includes('shield') || slot.includes('shield') || name.includes('shield')) return 'Shield';
-      if (type.includes('armor') || slot === 'armor' || slot === 'body') return 'Armor';
-      if (type.includes('potion') || type.includes('scroll') || type.includes('wand') || type.includes('consumable') || name.startsWith('scroll of') || name.startsWith('potion of') || name.startsWith('wand of') || name.startsWith('elixir of')) return 'Consumable';
+      // 2. Silah, Kalkan ve Zırh Anahtar Kelime Kalkanı
+      if (type.includes('weapon') || slot.includes('main hand') || slot.includes('two hand') || slot.includes('off hand')) return 'Weapon';
+      if (/\b(?:dagger|sword|blade|axe|bow|crossbow|mace|spear|hammer|rapier|scimitar|flail|halberd|glaive|lance|morningstar|scythe|trident|quarterstaff|sling|dart|javelin|shuriken|kama|nunchaku|siangham|kukri|falchion|whip|club|greatclub)\b/i.test(name)) return 'Weapon';
+
+      if (type.includes('shield') || slot.includes('shield') || name.includes('shield') || name.includes('buckler')) return 'Shield';
+      if (type.includes('armor') || slot === 'armor' || slot === 'body' || /\b(?:plate|mail|leather|padded|hide|hauberk|cuirass)\b/i.test(name)) return 'Armor';
+      if (type.includes('potion') || type.includes('scroll') || type.includes('wand') || type.includes('consumable') || name.startsWith('scroll of') || name.startsWith('potion of') || name.startsWith('wand of') || name.startsWith('elixir of') || name.startsWith('oil of')) return 'Consumable';
       if (slot.includes('head') || slot.includes('helm') || type.includes('head')) return 'Head';
       if (slot.includes('eyes') || slot.includes('face') || slot.includes('goggles')) return 'Eyes';
       if (slot.includes('neck') || slot.includes('throat') || slot.includes('amulet') || slot.includes('periapt')) return 'Neck';
@@ -42038,7 +42122,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       if (slot.includes('belt') || slot.includes('waist')) return 'Belt';
       if (slot.includes('arm') || slot.includes('bracer')) return 'Bracers';
       if (slot.includes('hand') || slot.includes('glove') || slot.includes('gauntlet')) return 'Gloves';
-      if (slot.includes('ring') || type.includes('ring')) return 'Ring';
+      if (slot.includes('ring') || type.includes('ring') || name.startsWith('ring of')) return 'Ring';
       if (slot.includes('feet') || slot.includes('boot')) return 'Boots';
       return 'Other';
     }
