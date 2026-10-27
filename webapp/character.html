@@ -41723,23 +41723,25 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           </td>
           <td class="py-2 px-3 text-center align-middle font-mono text-slate-400">${item.weight || 0} lb</td>
           <td class="py-2 px-3 text-center align-middle font-mono text-amber-400">${item.cost || 0} GP</td>
-          <td class="py-2 px-3 text-center align-middle">
-            <div class="flex items-center justify-center gap-1.5">
+          <td class="py-2.5 px-3 text-center align-middle">
+            <div class="flex items-center justify-center gap-2">
               ${isConsumableOrSlotless(item) ? `
-                <div class="flex flex-col gap-1 items-stretch">
-                  <button onclick="consumeItem3D('pool', ${item.id})" class="bg-indigo-950 hover:bg-indigo-900 text-indigo-300 border border-indigo-700 text-[10px] font-bold px-2 py-0.5 rounded transition cursor-pointer flex items-center justify-center gap-1 shrink-0" title="Tüket / Oku / Kullan">
+                <div class="flex flex-col gap-2 w-20">
+                  <button onclick="consumeItem3D('pool', ${item.id})" class="w-full bg-indigo-950 hover:bg-indigo-900 text-indigo-300 border border-indigo-700 text-[11px] font-bold py-1 rounded transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="Tüket / Oku / Kullan">
                     <span>🧪</span><span>Kullan</span>
                   </button>
-                  <button onclick="togglePoolBelt(${item.id})" class="${item.isBelt ? 'bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-600 shadow-sm shadow-emerald-950' : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'} border text-[10px] font-bold px-2 py-0.5 rounded transition cursor-pointer flex items-center justify-center gap-1 shrink-0" title="${item.isBelt ? 'Kemerden Çıkar (Hızlı Erişimi Kapat)' : 'Kemere Kuşan (Savaş Hızlı Erişimine Ekle)'}">
+                  <button onclick="togglePoolBelt(${item.id})" class="w-full ${item.isBelt ? 'bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-600 shadow-sm shadow-emerald-950' : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'} border text-[11px] font-bold py-1 rounded transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="${item.isBelt ? 'Kemerden Çıkar (Hızlı Erişimi Kapat)' : 'Kemere Kuşan (Savaş Hızlı Erişimine Ekle)'}">
                     <span>${item.isBelt ? '🟢' : '⚡'}</span><span>${item.isBelt ? 'Kemerde' : 'Kuşan'}</span>
                   </button>
                 </div>
               ` : `
-                <button onclick="equipPoolItem(${item.id})" class="bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 text-[11px] font-bold px-2.5 py-1 rounded transition cursor-pointer flex items-center justify-center gap-1 shrink-0" title="Vücut Yuvasına Kuşan">
-                  <span>⚡</span><span>Kuşan</span>
-                </button>
+                <div class="w-20 flex items-center justify-center">
+                  <button onclick="equipPoolItem(${item.id})" class="w-full bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 text-[11px] font-bold py-1.5 rounded transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="Vücut Yuvasına Kuşan">
+                    <span>⚡</span><span>Kuşan</span>
+                  </button>
+                </div>
               `}
-              <button onclick="deletePoolItem(${item.id})" class="bg-slate-800 hover:bg-rose-900 text-slate-400 hover:text-rose-200 text-[11px] px-1.5 py-1 rounded transition cursor-pointer shrink-0" title="Sil">
+              <button onclick="deletePoolItem(${item.id})" class="w-7 h-7 flex items-center justify-center bg-slate-800 hover:bg-rose-900 text-slate-400 hover:text-rose-200 text-xs rounded transition cursor-pointer shrink-0" title="Sil">
                 🗑️
               </button>
             </div>

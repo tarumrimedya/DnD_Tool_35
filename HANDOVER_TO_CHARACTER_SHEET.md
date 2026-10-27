@@ -3236,3 +3236,26 @@ Kullanıcı, envanter havuzu tablosunun en solundaki kemer onay kutusunun (tik k
 * `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `414C5BAB2643745A4AFED5024A58FC9B9D4C4607D0491A47B8BF311E84D623CD`)
 * `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
 * Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
+
+
+---
+
+## 109. Envanter Aksiyon Butonları Simetrisi ve Dikey Mesafe Açılması
+
+### Bağlam & Kullanıcı Talebi
+Kullanıcı, tüketilebilir eşya satırlarındaki `[ 🧪 Kullan ]` ve `[ ⚡ Kuşan ]` butonlarının dikeyde birbirine çok yakın (yapışık) olduğunu ve genel buton simetrisinin sağlanarak aralarının açılmasını talep etmiştir.
+
+### Yapılan Geliştirmeler & Görsel Simetri
+1. **Dikey Boşluğun Açılması (Breathing Room):**
+   * Tüketilebilir eşyalarda alt alta duran `[ 🧪 Kullan ]` ve `[ ⚡ Kuşan / 🟢 Kemerde ]` butonları arasındaki dikey boşluk `gap-1` (4px) seviyesinden `gap-2` (8px) seviyesine çıkarıldı. Böylece butonlar birbirinden net şekilde ayrıştı ve mobilde yanlış tıklama (misclick) riski tamamen ortadan kaldırıldı.
+2. **Kusursuz Yatay Simetri (W-20 Standartlaştırması):**
+   * Hem tekli vücut yuvası `[ ⚡ Kuşan ]` butonu hem de alt alta olan tüketilebilir buton grubu tam olarak `w-20` (80px) genişliğinde sabitlendi.
+   * Tüm satırlardaki aksiyon butonları aynı genişlikte ve aynı dikey eksende kusursuz simetrik bir hiza kazandı.
+3. **Silme Butonu Sabitliği (`🗑️`):**
+   * Silme butonu `w-7 h-7 flex items-center justify-center` ölçülerinde standartlaştırılarak her satırda en sağdaki yerinde milimetrik olarak korundu.
+
+### Parite ve Hash Durumu
+* `character.html` = `index.html` = `webapp/character.html` = `webapp/index.html` (**SHA-256:** `CDCCCFB77FAA6DA8E032AAAAA0638254D9498CDACB9F34740ADC7C4468F47100`)
+* `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `414C5BAB2643745A4AFED5024A58FC9B9D4C4607D0491A47B8BF311E84D623CD`)
+* `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
+* Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
