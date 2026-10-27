@@ -188,7 +188,7 @@
       <div class="flex items-baseline justify-center gap-1 my-1 flex-wrap">
         <span id="hp-current-display" class="text-2xl sm:text-3xl font-extrabold text-emerald-400 font-mono">--</span>
         <span class="text-slate-400 text-xs sm:text-sm">/ <span id="hp-max-display">--</span></span>
-        <span id="hp-bonus-tag" class="text-[10px] sm:text-[11px] text-amber-300 font-mono font-bold ml-1"></span>
+        <span id="hp-bonus-tag" class="hidden"></span>
         <span id="hp-temp-tag" onclick="clearTempHp()" class="hidden badge bg-cyan-950/90 hover:bg-rose-950 text-cyan-300 hover:text-rose-300 border border-cyan-600/70 text-[10px] font-mono font-bold ml-1 cursor-pointer transition" title="Geçici Can Puanı (Temporary HP) • Sıfırlamak için tıklayın"></span>
       </div>
 
@@ -9363,22 +9363,24 @@
 
       const curHp = Number(character.hp?.current) || 0;
       const maxHp = Number(character.hp?.max) || 1;
-      document.getElementById('hp-current-display').textContent = curHp;
-      document.getElementById('hp-max-display').textContent = maxHp;
+      const curHpEl = document.getElementById('hp-current-display');
+      if (curHpEl) curHpEl.textContent = curHp;
+      const maxHpEl = document.getElementById('hp-max-display');
+      if (maxHpEl) {
+        maxHpEl.textContent = maxHp;
+        const conBonus = Number(character.hp?.conBonusHp) || 0;
+        if (conBonus !== 0) {
+          maxHpEl.title = `Maksimum Can: ${maxHp} (Taban: ${Number(character.hp?.baseMax) || (maxHp - conBonus)} ${conBonus >= 0 ? '+' : ''}${conBonus} CON)`;
+        } else {
+          maxHpEl.title = `Maksimum Can: ${maxHp}`;
+        }
+      }
 
       const hpBonusTag = document.getElementById('hp-bonus-tag');
       if (hpBonusTag) {
-        const conBonus = Number(character.hp?.conBonusHp) || 0;
-        if (conBonus > 0) {
-          hpBonusTag.textContent = `(+${conBonus} CON)`;
-          hpBonusTag.title = `Geçici Dayanıklılık (CON) Bonusu: Seviye ${character.level} × +${conBonus / character.level} = +${conBonus} HP`;
-        } else if (conBonus < 0) {
-          hpBonusTag.textContent = `(${conBonus} CON)`;
-          hpBonusTag.title = `Dayanıklılık (CON) Cezası: ${conBonus} HP`;
-        } else {
-          hpBonusTag.textContent = '';
-          hpBonusTag.title = '';
-        }
+        hpBonusTag.textContent = '';
+        hpBonusTag.title = '';
+        hpBonusTag.classList.add('hidden');
       }
 
       const hpTempTag = document.getElementById('hp-temp-tag');

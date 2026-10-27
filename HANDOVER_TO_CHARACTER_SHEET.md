@@ -2852,3 +2852,22 @@ Karakter sayfasındaki Seviye Gelişimi (Level Progression) tablosunun üst öze
 ### Parite ve Hash Durumu
 * 4 HTML dosyası (`index.html`, `character.html`, `webapp/index.html`, `webapp/character.html`) arasında **%100 SHA-256 hash paritesi** (`F41A56461361189299E4811F99A7DAC00AAC3E23291AD0DA1649C9D930A60EA2`) sağlandı.
 * Tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korundu.
+
+
+---
+
+## 101. Ana Can Göstergesindeki (+X CON) İfadesinin Temizlenmesi
+
+### Bağlam & Kullanıcı Talebi
+Ana karakter sayfası ve mobil kokpitteki CAN (HP) kartında yer alan `5 / 24 (+8 CON)` gösterimindeki `(+8 CON)` ibaresi, seviye gelişimi tablosunda zaten detaylı olarak gösterildiğinden ve ana can kartında gereksiz görsel kalabalık oluşturduğundan kaldırılması talep edildi.
+
+### Yapılan Geliştirmeler
+1. **Can Kartı (`#hp-bonus-tag`) Gizlendi:**
+   * HTML şablonundaki `hp-bonus-tag` etiketine `hidden` sınıfı verildi.
+   * `renderAttributes()` / can güncelleme fonksiyonunda `hpBonusTag` temizlendi ve gizlendi.
+2. **Hover Tooltip Zenginleştirmesi:**
+   * Görsel kalabalık tamamen giderilirken, ihtiyaç anında masaüstünde fareyle maksimum can (`#hp-max-display`) üzerine gelindiğinde taban can ve CON katkısı tooltip olarak okunabilir bırakıldı (`Maksimum Can: 24 (Taban: 16 +8 CON)`).
+
+### Parite ve Hash Durumu
+* 4 HTML dosyası (`index.html`, `character.html`, `webapp/index.html`, `webapp/character.html`) arasında **%100 SHA-256 hash paritesi** (`89A66C38FFB534D3A08FB3B3F208F24441AC0677B35144C49425A9B14E28AFBB`) sağlandı.
+* Tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korundu.
