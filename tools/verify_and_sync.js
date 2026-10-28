@@ -145,6 +145,65 @@ function main() {
           errors++;
         }
       }
+
+      // 5b. Validate HTML inline event handlers (onclick, onchange, oninput, onsubmit) outside <script> blocks
+      const htmlWithoutScripts = text.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, (match) => '\n'.repeat(match.split('\n').length - 1));
+      const handlerRegex = /\b(onclick|onchange|oninput|onsubmit)\s*=\s*"([^"]*)"/gi;
+      let hm;
+      while ((hm = handlerRegex.exec(htmlWithoutScripts)) !== null) {
+        const attrName = hm[1];
+        const rawCode = hm[2]
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'")
+          .replace(/&amp;/g, '&')
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>');
+        try {
+          new vm.Script(`(function(event){ ${rawCode} })`, { filename: `${rel}#${attrName}` });
+        } catch (e) {
+          const lineNo = htmlWithoutScripts.slice(0, hm.index).split('\n').length;
+          console.error(`[FAIL] Inline ${attrName} syntax error in ${rel}:${lineNo} -> ${rawCode} (${e.message})`);
+          errors++;
+        }
+      }
+    }
+  }
+
+  // 6. Mojibake & Turkish Character Audit across active UI/Logic files
+  const AUDIT_FILES = [
+    'index.html', 'char_hud.js', 'char_combat.js', 'char_spells.js',
+    'char_progression.js', 'char_inventory.js', 'rule_engine.js',
+    'rule_master.js', 'ui_shared.js', 'hub.html', 'gdrive_sync.js',
+    'supabase_auth.js', 'login.html', 'rule_master_ai_schema.json'
+  ];
+  const trCharRegex = /[çğıöşüÇĞİÖŞÜ]|\\u013[01]|\\u011[eEfF]|\\u015[eEfF]|\\u00[fFdDcCeE][6cC7]/;
+  const trWordRegex = /\b(Tur|Sonraki|Karakter|Karaktere|Karakterine|Notlar|Kapat|Savunma|Yuva|Silah|Silahlar|Kalkan|Kalkanlar|Sadece|Fiziksel|Seviye|seviye|Seviyesi|Seviyede|Puan|Kalan|Zar|Standart|Eylem|Acil|Kemer|Orta|Bileklik|Eldiven|Manevra|Manevralar|MASASI|Katalog|Profil|Resmi|Havuzu|Havuz|Klasik|Alt Etki|Boyun|Kolye|Omuz|Pelerin|Kollar|Eller|Bel|Ayak|Basit|Egzotik|Hafif|Uygun|Ekstra|Hasar|Kampanya|Davet|Kodu|Kontrol|Ediliyor|Beceri|Limiti|Hassas|Olmadan|Yerel|Misafir|Olarak|Kullan|Adet|devrede|Devrede|Modifiyeri|Modifiyeriniz|Senkron|Bulut|Ceza|Otomatik|Serbest|Metin|Daha Fazla|Daralt|Yok|Evet|Ana El|Mevcut|Gereken|Gerekli|Kilitlendi|Dua|Menzil|Hedef|Siperde|Delici|Kesici|Ezici|Harca|Aktif|Pasif|Kaydedildi|Silindi|Eklendi|Bilgi|Hata|Feda|Fedasiz|Vazgec|Toplam|Fazla|Harcama|Dinlenme|Uykusu|Saat|Dk|Uyumsuz|Asa|Fiyat|Kademe)\b/;
+  const mojibakeRegex = /\uFFFD|Ǭ/;
+  const trSummary = [];
+  let totalActiveTrLines = 0;
+
+  const detailTarget = process.argv[2];
+  for (const rel of AUDIT_FILES) {
+    const full = path.join(ROOT, rel);
+    if (!fs.existsSync(full)) continue;
+    const lines = fs.readFileSync(full, 'utf8').split('\n');
+    let activeTr = 0;
+    let mojibakeCount = 0;
+    lines.forEach((line, idx) => {
+      if (mojibakeRegex.test(line)) mojibakeCount++;
+      const trim = line.trim();
+      if (trim.startsWith('//') || trim.startsWith('/*') || trim.startsWith('*') || trim.startsWith('<!--')) return;
+      const codeOnly = trim.replace(/\s*\/\/.*$/, '').replace(/<!--.*?-->/g, '');
+      if (trCharRegex.test(codeOnly) || trWordRegex.test(codeOnly) || mojibakeRegex.test(codeOnly)) {
+        activeTr++;
+        if (detailTarget === rel || detailTarget === 'all') {
+          console.log(`  [${rel}:${idx + 1}] ${codeOnly.slice(0, 140)}`);
+        }
+      }
+    });
+    if (activeTr > 0 || mojibakeCount > 0) {
+      totalActiveTrLines += activeTr;
+      trSummary.push(`${rel}:${activeTr}${mojibakeCount > 0 ? `(mojibake:${mojibakeCount})` : ''}`);
     }
   }
 
@@ -153,7 +212,8 @@ function main() {
     console.error(`\n❌ VERIFICATION FAILED with ${errors} error(s) (${elapsed}ms).`);
     process.exit(1);
   } else {
-    console.log(`✅ ALL CHECKS PASSED (${CORE_FILES.length} core files synced & verified, 0 U+1F3B2, 100% JS/HTML/JSON valid) in ${elapsed}ms.`);
+    console.log(`✅ ALL CHECKS PASSED (${CORE_FILES.length} core files synced & verified, 0 U+1F3B2, 100% JS/HTML/Event/JSON valid) in ${elapsed}ms.`);
+    console.log(`📊 Active TR/Mojibake Lines Remaining: ${totalActiveTrLines} [${trSummary.join(', ') || '0 — 100% PURE ENGLISH!'}]`);
   }
 }
 

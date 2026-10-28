@@ -2,7 +2,7 @@
  * Joyful-Fermi D&D 3.5e — Combat Cockpit, Weapons, Spell Offense Cards, 3-Column Tactical Dashboard & Dice Pool
  */
     // ====================================================
-    // 🔮 SPELLCASTING COCKPIT (BÜYÜ KOMUTA MERKEZİ)
+    // 🔮 SPELLCASTING COCKPIT
     // ====================================================
     window.currentActiveCombatSpellCategory = 'offense_spell';
 
@@ -126,7 +126,7 @@
       recalculateCombatSpell();
     }
 
-    // --- 1. DAILY SPELL SLOTS TRACKER & MULTI-SOURCE ENGINE (TIER 1 - MIN 2 SATIR, 6 HÜCRE & ANLIK, KİTAP, İLAHİ) ---
+    // --- 1. DAILY SPELL SLOTS TRACKER & MULTI-SOURCE ENGINE (TIER 1 - MIN 2 ROWS, 6 CELLS & SPONTANEOUS, PREPARED, DIVINE) ---
     window.currentActiveCombatSpellSlotsSourceFilter = 'all';
     window.currentSpellSlotsModalSource = 'spontaneous';
 
@@ -152,13 +152,13 @@
         return [];
       };
 
-      // 1. Spontaneous (Anlık - Sorcerer/Bard)
+      // 1. Spontaneous (Sorcerer/Bard)
       const spontSlots = toSlotsArray(sc.slots);
-      // 2. Prepared (Kitap - Wizard/Wu Jen)
+      // 2. Prepared (Wizard/Wu Jen)
       const prepSlots = toSlotsArray(sc.preparedSlots);
-      // 3. Divine (İlahi - Cleric/Druid)
+      // 3. Divine (Cleric/Druid)
       const divSlots = toSlotsArray(sc.divineSlots);
-      // 4. Martial (Savaş Manevraları - Warblade/Swordsage/Crusader)
+      // 4. Martial (Martial Maneuvers - Warblade/Swordsage/Crusader)
       const martialReadied = Array.isArray(tob.readiedManeuvers) ? tob.readiedManeuvers : [];
 
       const all = [
@@ -178,7 +178,7 @@
         {
           key: 'prepared',
           label: 'Prepared Spell Slots',
-          shortLabel: 'Kitap',
+          shortLabel: 'Prep.',
           subText: 'Wizard / Prepared',
           icon: '📖',
           themeColor: 'sky',
@@ -204,7 +204,7 @@
         {
           key: 'martial',
           label: 'Martial Maneuvers',
-          shortLabel: 'Manevra',
+          shortLabel: 'Maneuver',
           subText: 'Tome of Battle / Martial',
           icon: '⚔️',
           themeColor: 'rose',
@@ -254,8 +254,8 @@
         const key = `${name.toLowerCase().trim()}__${lvl}__${srcKey}`;
         if (seen.has(key)) return;
 
-        // Kontrol: Bu kaynakta (Anlık, Kitap, İlahi) bu seviye için aktif günlük büyü yuvası var mı?
-        // Seviye kilitliyse (daily <= 0) veya boşta günlük büyü skoru kalmamışsa (remaining <= 0) combat sayfasında gösterilmez
+        // Check: Does this source (Spontaneous, Prepared, Divine) have an active daily spell slot for this level?
+        // If the level is locked (daily <= 0) or no remaining daily spell slots exist (remaining <= 0), hide it on the combat page
         let slotsArr = [];
         if (srcKey === 'prepared') {
           slotsArr = sc.preparedSlots || [];
@@ -267,11 +267,11 @@
 
         const slot = slotsArr.find(s => Number(s.level) === lvl);
         const daily = slot ? (Number(slot.daily) || 0) : 0;
-        if (daily <= 0) return; // Seviye kilitli / bu disiplinde o seviyede yuva yok
+        if (daily <= 0) return; // Level locked / no slot at this level for this discipline
 
         const used = slot ? (Number(slot.used) || 0) : 0;
         const remaining = Math.max(0, daily - used);
-        if (remaining <= 0) return; // Boşta günlük büyü skoru kalmamış
+        if (remaining <= 0) return; // No remaining daily spell slots
 
         seen.add(key);
         const master = (typeof masterDb !== 'undefined' && Array.isArray(masterDb))
@@ -331,7 +331,7 @@
           indicatorEl.textContent = 'All';
           indicatorEl.className = 'text-[9px] font-mono text-purple-300 font-bold';
         } else {
-          indicatorEl.textContent = activeFilter === 0 ? '0 (Cantrip)' : `${activeFilter}. Seviye`;
+          indicatorEl.textContent = activeFilter === 0 ? '0 (Cantrip)' : `Level ${activeFilter}`;
           indicatorEl.className = 'text-[9px] font-mono text-amber-300 font-extrabold';
         }
       }
@@ -357,7 +357,7 @@
         displayLevels.push(lvl);
       }
 
-      // 1. "Tümü" button
+      // 1. "All" button
       const isAllActive = activeFilter === 'all' || activeFilter === null || activeFilter === undefined;
       const allBtnClass = isAllActive
         ? 'bg-gradient-to-r from-purple-700 to-indigo-600 text-white font-black border border-purple-400 shadow-md ring-1 ring-purple-300'
@@ -395,10 +395,10 @@
           titleTip = `${fullLvlTitle}: 0/${totalDaily} (Slots expended)`;
         } else if (totalDaily > 0) {
           btnClass = 'bg-slate-900/90 text-slate-200 hover:text-white hover:bg-slate-800 border border-purple-900/50 hover:border-purple-600/80';
-          titleTip = `${fullLvlTitle}: ${remaining}/${totalDaily} Kalan Slot`;
+          titleTip = `${fullLvlTitle}: ${remaining}/${totalDaily} Slots Remaining`;
         } else {
           btnClass = 'bg-slate-900/40 text-slate-500 hover:text-slate-300 hover:bg-slate-800/60 border border-slate-800/80';
-          titleTip = `${fullLvlTitle} (Slot Yok)`;
+          titleTip = `${fullLvlTitle} (No Slots)`;
         }
 
         return `
@@ -510,7 +510,7 @@
                   <span>${initInfo.adeptClass || 'Martial Adept'} (IL: ${initInfo.il})</span>
                 </span>
                 <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800">
-                  Maks Manevra: ${initInfo.maxManeuverLvl}. Seviye
+                  Max Maneuver: Level ${initInfo.maxManeuverLvl}
                 </span>
               </div>
               <p class="text-[11px] text-slate-400">
@@ -530,12 +530,12 @@
                 <div class="flex flex-col">
                   <span class="text-xs font-bold text-white">Readied Maneuver Capacity</span>
                   <span class="text-[10px] font-mono text-slate-400">
-                    Temel: ${initInfo.baseReadied || 3}${initInfo.dmReadiedBonus ? ` <span class="text-amber-400 font-semibold">(+${initInfo.dmReadiedBonus} DM)</span>` : ''}
+                    Base: ${initInfo.baseReadied || 3}${initInfo.dmReadiedBonus ? ` <span class="text-amber-400 font-semibold">(+${initInfo.dmReadiedBonus} DM)</span>` : ''}
                   </span>
                 </div>
                 <div class="flex items-center gap-2">
                   <div class="flex items-center gap-0.5">
-                    <button type="button" onclick="modifyMartialReadiedQuota(-1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 font-bold flex items-center justify-center border border-slate-700 text-xs cursor-pointer" title="Kapasiteyi -1 Azalt">-</button>
+                    <button type="button" onclick="modifyMartialReadiedQuota(-1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 font-bold flex items-center justify-center border border-slate-700 text-xs cursor-pointer" title="Decrease Capacity by -1">-</button>
                     <span class="w-8 text-center font-mono font-bold text-xs text-rose-300">${maxReadied}</span>
                     <button type="button" onclick="modifyMartialReadiedQuota(1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-emerald-950 text-slate-300 hover:text-emerald-300 font-bold flex items-center justify-center border border-slate-700 text-xs cursor-pointer" title="DM Bonus: Increase Capacity by +1">+</button>
                   </div>
@@ -547,7 +547,7 @@
                 <div class="flex flex-col">
                   <span class="text-xs font-bold text-slate-300">Maneuvers Known Quota</span>
                   <span class="text-[10px] font-mono text-slate-400">
-                    Mevcut: ${maneuvers.length} / ${initInfo.maxKnownManeuvers}${initInfo.dmKnownBonus ? ` <span class="text-amber-400 font-semibold">(+${initInfo.dmKnownBonus} DM)</span>` : ''}
+                    Current: ${maneuvers.length} / ${initInfo.maxKnownManeuvers}${initInfo.dmKnownBonus ? ` <span class="text-amber-400 font-semibold">(+${initInfo.dmKnownBonus} DM)</span>` : ''}
                   </span>
                 </div>
                 <div class="flex items-center gap-0.5">
@@ -562,7 +562,7 @@
                 <div class="flex flex-col">
                   <span class="text-xs font-bold text-slate-300">Stances Known Quota</span>
                   <span class="text-[10px] font-mono text-slate-400">
-                    Mevcut: ${stances.length} / ${initInfo.maxKnownStances}${initInfo.dmStanceBonus ? ` <span class="text-amber-400 font-semibold">(+${initInfo.dmStanceBonus} DM)</span>` : ''}
+                    Current: ${stances.length} / ${initInfo.maxKnownStances}${initInfo.dmStanceBonus ? ` <span class="text-amber-400 font-semibold">(+${initInfo.dmStanceBonus} DM)</span>` : ''}
                   </span>
                 </div>
                 <div class="flex items-center gap-0.5">
@@ -643,8 +643,8 @@
         const dmBonus = s ? (Number(s.dmBonus) || 0) : 0;
 
         let lvlHeader = `Level ${lvl} Spells`;
-        if (lvl === 0) lvlHeader = `0. Seviye (Cantrip)`;
-        else if (lvl === 10) lvlHeader = `10. Seviye (Epic / Metamagic)`;
+        if (lvl === 0) lvlHeader = `Level 0 (Cantrips)`;
+        else if (lvl === 10) lvlHeader = `Level 10 (Epic / Metamagic)`;
         else if (lvl === 11) lvlHeader = `Epic (10+) Spell Slot`;
 
         let lvlSub = `${activeSource.shortLabel} Spell Pool`;
@@ -660,7 +660,7 @@
             const quota = s.known !== undefined ? s.known : getSpellsKnownQuota(lvl);
             secondRowHtml = `
               <div class="flex items-center gap-1.5 shrink-0">
-                <span class="text-[10px] text-purple-300 font-mono w-12 text-right shrink-0">Bilinen:</span>
+                <span class="text-[10px] text-purple-300 font-mono w-12 text-right shrink-0">Known:</span>
                 <button type="button" onclick="modifySpellsKnownQuota(${lvl}, -1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 font-bold flex items-center justify-center border border-slate-700 cursor-pointer text-xs transition" title="Decrease Spells Known Quota by -1">-1</button>
                 <span class="text-xs font-mono font-black text-purple-300 w-14 text-center">${curKnown} / ${quota}</span>
                 <button type="button" onclick="modifySpellsKnownQuota(${lvl}, 1)" class="w-7 h-7 rounded-lg bg-purple-950 hover:bg-purple-800 text-purple-200 font-bold flex items-center justify-center border border-purple-700 cursor-pointer text-xs transition" title="DM Bonus: Increase Spells Known Quota by +1">+1</button>
@@ -682,7 +682,7 @@
             const curDiv = (character.spellcasting?.divineSpells || []).filter(sp => Number(sp.level) === lvl).length;
             secondRowHtml = `
               <div class="flex items-center gap-1.5 shrink-0">
-                <span class="text-[10px] text-amber-300 font-mono w-12 text-right shrink-0">Dua:</span>
+                <span class="text-[10px] text-amber-300 font-mono w-12 text-right shrink-0">Prayer:</span>
                 <button type="button" onclick="unprepareDivineSpellForLevel(${lvl})" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 font-bold flex items-center justify-center border border-slate-700 cursor-pointer text-xs transition" title="Unprepare Last Divine Spell">-1</button>
                 <span class="text-xs font-mono font-black text-amber-300 w-14 text-center">${curDiv} / ${daily}</span>
                 <button type="button" onclick="openDivineSpellPickerForLevel(${lvl})" class="w-7 h-7 rounded-lg bg-amber-950 hover:bg-amber-800 text-amber-200 font-bold flex items-center justify-center border border-amber-700 cursor-pointer text-xs transition" title="Prepare Divine Spell">+1</button>
@@ -698,7 +698,7 @@
                 <span class="text-[10px] text-slate-400 font-mono mt-0.5 leading-tight">${lvlSub}</span>
               </div>
               <div class="flex flex-col gap-1 items-end w-full sm:w-auto shrink-0 pt-1 sm:pt-0 border-t border-slate-800/40 sm:border-0">
-                <!-- 1. Yuva Tüketim Satırı -->
+                <!-- 1. Slot Expenditure Row -->
                 <div class="flex items-center gap-1.5 shrink-0">
                   <span class="text-[10px] text-slate-400 font-mono w-12 text-right shrink-0">Slots:</span>
                   <button type="button" onclick="modifySpellSlotUsed(${lvl}, 1, '${activeSource.key}')" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-rose-300 font-bold flex items-center justify-center border border-slate-700 cursor-pointer text-xs transition" title="Spend 1 Slot">-1</button>
@@ -710,7 +710,7 @@
                     </button>
                   ` : ''}
                 </div>
-                <!-- 2. Bilinen / Hazırlanan / Seçilen İkinci Satır -->
+                <!-- 2. Known / Prepared / Selected Second Row -->
                 ${secondRowHtml}
               </div>
             </div>
@@ -788,7 +788,7 @@
         breakdown: s && s.daily > 0 
           ? `Level ${lvl} slot capacity adjusted by ${delta > 0 ? '+' + delta : delta} (DM Bonus).`
           : `Level ${lvl} DM slot removed and locked.`,
-        total: s && s.daily > 0 ? `${s.daily} Yuva` : 'Kilitlendi'
+        total: s && s.daily > 0 ? `${s.daily} Slots` : 'Locked'
       });
     }
 
@@ -812,7 +812,7 @@
           icon: '🗑️',
           title: 'DM Slot Removed',
           breakdown: `Level ${lvl} ${key === 'prepared' ? 'prepared' : (key === 'divine' ? 'divine' : 'spontaneous')} spell slot removed and locked.`,
-          total: 'Kilitlendi'
+          total: 'Locked'
         });
       }
     }
@@ -840,7 +840,7 @@
         icon: '✨',
         title: 'Spells Known Quota',
         breakdown: `Level ${lvl} spells known quota adjusted by ${delta > 0 ? '+' + delta : delta} (DM Bonus).`,
-        total: `${s.known} Kota`
+        total: `${s.known} Quota`
       });
     }
 
@@ -858,7 +858,7 @@
           icon: '⚔️',
           title: 'Readied Maneuver Quota',
           breakdown: `Readied maneuver capacity adjusted by ${delta > 0 ? '+' + delta : delta} (DM Bonus).`,
-          total: `${info.maxReadied} Deste Kapasitesi`
+          total: `${info.maxReadied} Readied Deck`
         });
       }
     }
@@ -1066,17 +1066,17 @@
       if (!spell) {
         return {
           dice: '',
-          effect: 'Yok',
-          save: 'Yok (None)',
+          effect: 'None',
+          save: 'None',
           saveDC: null,
           sr: 'No',
           school: 'Universal',
           descriptor: '',
           fullSchool: 'Universal',
-          action: 'Standart',
+          action: 'Standard',
           range: 'Close',
           duration: 'Instantaneous',
-          target: '1 Hedef',
+          target: '1 Target',
           components: 'V, S',
           benefit: ''
         };
@@ -1100,7 +1100,7 @@
       }
       let effectText = (scaling && scaling.displayText)
         ? scaling.displayText
-        : (diceExpr ? `${diceExpr} ${spell.dmgType || masterSpell.dmgType || ''}`.trim() : (spell.effect || spell.target || masterSpell.effect || 'Etki / Fayda'));
+        : (diceExpr ? `${diceExpr} ${spell.dmgType || masterSpell.dmgType || ''}`.trim() : (spell.effect || spell.target || masterSpell.effect || 'Effect / Benefit'));
 
       // 2. Saving Throw & Dynamic DC
       let saveText = spell.save || spell.savingThrow || masterSpell.save || '';
@@ -1114,8 +1114,8 @@
       }
 
       let saveDC = null;
-      let formattedSave = 'Yok (None)';
-      const isSaveNone = !saveText || /^(none|yok|no|harmless)$/i.test(saveText.trim()) || /(yok\s*\(none\)|none)/i.test(saveText);
+      let formattedSave = 'None';
+      const isSaveNone = !saveText || /^(none|no|harmless)$/i.test(saveText.trim());
       if (!isSaveNone) {
         const baseLvl = Number(spell.level) || 0;
         const src = spell._spellSource || (typeof getSpellSlotSource === 'function' ? getSpellSlotSource(spell) : 'spontaneous');
@@ -1139,7 +1139,6 @@
         }
 
         saveDC = 10 + baseLvl + statMod + featDcBonus;
-        // Clean Turkish label
         let cleanSaveLabel = saveText;
         if (/reflex/i.test(saveText)) cleanSaveLabel = /half/i.test(saveText) ? 'Reflex Half' : (/negates/i.test(saveText) ? 'Reflex Negates' : 'Reflex');
         else if (/will/i.test(saveText)) cleanSaveLabel = /half/i.test(saveText) ? 'Will Half' : (/negates/i.test(saveText) ? 'Will Negates' : 'Will');
@@ -1157,10 +1156,10 @@
         } else if (spell.level === 0 && (spell.name || '').toLowerCase().includes('light')) {
           srText = 'No';
         } else {
-          srText = 'Evet (Yes)';
+          srText = 'Yes';
         }
       } else {
-        srText = /yes|evet/i.test(srText) ? 'Yes' : 'No';
+        srText = /yes/i.test(srText) ? 'Yes' : 'No';
       }
 
       // 4. Descriptor / Subschool
@@ -1196,17 +1195,17 @@
       function formatSpellRangeExact(rangeStr, casterLvl) {
         if (!rangeStr) return 'Close (25 ft + 5 ft/2 lvl)';
         const rLower = rangeStr.toLowerCase();
-        if (rLower.includes('personal') || rLower.includes('kişisel')) return 'Personal';
-        if (rLower.includes('touch') || rLower.includes('temas') || rLower.includes('dokunma')) return 'Touch';
-        if (rLower.includes('close') || rLower.includes('yakın')) {
+        if (rLower.includes('personal')) return 'Personal';
+        if (rLower.includes('touch')) return 'Touch';
+        if (rLower.includes('close')) {
           const feet = 25 + Math.floor(casterLvl / 2) * 5;
           return `Close (${feet} ft)`;
         }
-        if (rLower.includes('medium') || rLower.includes('orta')) {
+        if (rLower.includes('medium')) {
           const feet = 100 + casterLvl * 10;
           return `Medium (${feet} ft)`;
         }
-        if (rLower.includes('long') || rLower.includes('uzak')) {
+        if (rLower.includes('long')) {
           const feet = 400 + casterLvl * 40;
           return `Long (${feet} ft)`;
         }
@@ -1217,7 +1216,7 @@
       // 7. Duration (Formatted with CL calculation)
       const rawDur = spell.duration || masterSpell.duration || 'Instantaneous';
       let durationFormatted = 'Instantaneous';
-      if (/instantaneous|anlık/i.test(rawDur)) {
+      if (/instantaneous/i.test(rawDur)) {
         durationFormatted = 'Instantaneous';
       } else if (/round/i.test(rawDur)) {
         durationFormatted = `${cl} Rounds`;
@@ -1244,9 +1243,9 @@
       if (!targetFormatted) {
         const sName = (spell.name || '').toLowerCase();
         if (sName === 'magic missile') targetFormatted = 'Up to 5 Creatures';
-        else if (sName === 'shield' || rangeFormatted.includes('Kişisel') || rangeFormatted.includes('Personal')) targetFormatted = 'Personal';
-        else if (rangeFormatted.includes('Temas') || rangeFormatted.includes('Touch')) targetFormatted = '1 Creature / Object';
-        else if (/ray|işın|scorching ray|searing light|disintegrate/i.test(sName)) targetFormatted = '1 Target (Ray)';
+        else if (sName === 'shield' || rangeFormatted.includes('Personal')) targetFormatted = 'Personal';
+        else if (rangeFormatted.includes('Touch')) targetFormatted = '1 Creature / Object';
+        else if (/ray|scorching ray|searing light|disintegrate/i.test(sName)) targetFormatted = '1 Target (Ray)';
         else if (/fireball/i.test(sName)) targetFormatted = '20-ft. Radius Spread';
         else if (/lightning bolt/i.test(sName)) targetFormatted = '120-ft. Line';
         else if (/cone/i.test(sName)) targetFormatted = 'Cone-Shaped Burst';
@@ -1324,7 +1323,7 @@
       let iconColor = 'text-purple-400';
 
       if (src === 'prepared') {
-        sourceLabel = 'Kitap (Prepared) • Wizard';
+        sourceLabel = 'Prepared • Wizard';
         themeBorder = 'border-sky-500/80';
         schoolBadgeClass = 'text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-sky-950 text-sky-300 border border-sky-800';
         iconColor = 'text-sky-400';
@@ -1348,7 +1347,7 @@
       const schoolEl = document.getElementById('spell-tooltip-school');
       if (schoolEl) {
         schoolEl.className = schoolBadgeClass;
-        schoolEl.textContent = `${spell.level === 0 ? 'Cantrip' : spell.level + '. Lvl'} • ${params.fullSchool}`;
+        schoolEl.textContent = `${spell.level === 0 ? 'Cantrip' : 'Lvl ' + spell.level} • ${params.fullSchool}`;
       }
 
       const srcClassEl = document.getElementById('spell-tooltip-source-class');
@@ -1359,7 +1358,7 @@
 
       // Stat Boxes
       const effectEl = document.getElementById('spell-tooltip-effect');
-      if (effectEl) effectEl.textContent = params.effect || 'Hasar Yok';
+      if (effectEl) effectEl.textContent = params.effect || 'No Damage';
 
       const saveEl = document.getElementById('spell-tooltip-save');
       if (saveEl) {
@@ -1560,7 +1559,7 @@
         };
       }
 
-      if (idClean === 'srcheck' || idClean === 'sr testi at' || idClean === 'spell resistance') {
+      if (idClean === 'srcheck' || idClean === 'spell resistance') {
         const currentSpell = typeof getSelectedCombatSpell === 'function' ? getSelectedCombatSpell() : null;
         const cl = typeof getEffectiveSpellCasterLevel === 'function' ? getEffectiveSpellCasterLevel(currentSpell) : (character.casterLevel || 1);
         const featsList = character?.feats || [];
@@ -1616,7 +1615,7 @@
             title: foundSm.name,
             type: foundSm.isRod ? 'Metamagic Rod' : (foundSm.isMetamagic ? 'Metamagic' : (foundSm.sourceType || 'Caster Modifier')),
             color: foundSm.color || 'purple',
-            val1: foundSm.badge || (foundSm.slotDiff ? `+${foundSm.slotDiff} Yuva` : 'Aktif'),
+            val1: foundSm.badge || (foundSm.slotDiff ? `+${foundSm.slotDiff} Slot` : 'Active'),
             val2: foundSm.desc || 'Spell modifier',
             source: foundSm.isRod ? 'Item / Rod' : 'Spell Tactic',
             action: foundSm.action || 'Casting a Spell',
@@ -1651,12 +1650,12 @@
       });
 
       const title = activeMatch?.name || dbMatch?.name || mnvMatch?.name || stnMatch?.name || featMatch?.name || identifier;
-      const type = dbMatch?.type || dbMatch?.category || (stnMatch ? 'Stance' : (mnvMatch ? 'Manevra' : (featMatch ? 'Feat' : (activeMatch?.source || 'Taktik'))));
+      const type = dbMatch?.type || dbMatch?.category || (stnMatch ? 'Stance' : (mnvMatch ? 'Maneuver' : (featMatch ? 'Feat' : (activeMatch?.source || 'Tactic'))));
       
-      let val1 = activeMatch?.dice ? `${activeMatch.dice} Hasar` : (activeMatch?.bonusDmg ? `+${activeMatch.bonusDmg} Dmg` : (activeMatch?.bonusAtk ? `+${activeMatch.bonusAtk} Atk` : (dbMatch?.dice ? `${dbMatch.dice} Hasar` : 'Aktif Etki')));
+      let val1 = activeMatch?.dice ? `${activeMatch.dice} Damage` : (activeMatch?.bonusDmg ? `+${activeMatch.bonusDmg} Dmg` : (activeMatch?.bonusAtk ? `+${activeMatch.bonusAtk} Atk` : (dbMatch?.dice ? `${dbMatch.dice} Damage` : 'Active Effect')));
       let val2 = dbMatch?.school || dbMatch?.discipline || (mnvMatch?.discipline || (stnMatch?.discipline || (featMatch ? 'Passive / Feat' : (itemMatch ? 'Item / Consumable' : 'Tactical'))));
 
-      let action = dbMatch?.action || mnvMatch?.action || (stnMatch ? 'Swift Action (Stance)' : 'Serbest Eylem');
+      let action = dbMatch?.action || mnvMatch?.action || (stnMatch ? 'Swift Action (Stance)' : 'Free Action');
       let desc = dbMatch?.description || dbMatch?.desc || dbMatch?.benefit || mnvMatch?.desc || stnMatch?.desc || featMatch?.desc || activeMatch?.desc || 'This tactical modifier applies directly to your combat attack or damage profile.';
 
       return {
@@ -1822,7 +1821,7 @@
         const theme = typeof getSpellLevelTheme === 'function' ? getSpellLevelTheme(lvl) : null;
         const dc = typeof getSpellDc === 'function' ? getSpellDc(lvl) : (10 + lvl);
 
-        // Multi-source slot breakdown for this level: e.g. Anlık 4/4 • Kitap 3/5 • İlahi 1/3
+        // Multi-source slot breakdown for this level: e.g. Spont. 4/4 • Prep. 3/5 • Divine 1/3
         const sourceBadges = [];
         sources.forEach(src => {
           const s = (src.slots || []).find(item => Number(item.level) === lvl);
@@ -1847,7 +1846,7 @@
 
         const slotBadgeHtml = sourceBadges.length > 0
           ? `<div class="flex items-center gap-1.5 flex-wrap">${sourceBadges.join('<span class="text-slate-600 font-normal">•</span>')}</div>`
-          : `<span class="font-mono text-[9px] text-slate-500">Yuva Yok</span>`;
+          : `<span class="font-mono text-[9px] text-slate-500">No Slots</span>`;
 
         const cardsHtml = lvlSpells.map(sp => {
           const srcKey = sp._spellSource || (typeof getSpellSlotSource === 'function' ? getSpellSlotSource(sp) : 'spontaneous');
@@ -1862,7 +1861,7 @@
             : 'border-slate-800 bg-slate-900/80 hover:border-purple-700/80';
 
           if (srcKey === 'prepared') {
-            srcBadgeLabel = 'Kitap';
+            srcBadgeLabel = 'Prep.';
             srcBadgeClass = 'bg-sky-950/80 text-sky-300 border-sky-700/60';
             badgeColor = 'text-sky-400';
             activeBorder = isActive
@@ -1904,7 +1903,7 @@
               </div>
               <div class="flex items-center justify-between w-full text-[8px] text-slate-400 mt-0.5">
                 <span class="truncate">${params.action}</span>
-                ${reorderControls ? reorderControls : `<span class="truncate shrink-0 font-mono text-[8px] text-slate-500">${params.save !== 'Yok (None)' ? params.save : params.sr}</span>`}
+                ${reorderControls ? reorderControls : `<span class="truncate shrink-0 font-mono text-[8px] text-slate-500">${params.save !== 'None' ? params.save : params.sr}</span>`}
               </div>
             </div>
           `;
@@ -2129,8 +2128,8 @@
             name: f.name || fName,
             slotDiff: sDiff,
             dcBonus: Number(f.dcBonus) || 0,
-            desc: f.benefit || f.desc || (sDiff ? `+${sDiff} Yuva` : 'Metamagic'),
-            badge: f.badge || (sDiff ? `+${sDiff} Yuva` : 'Metamagic'),
+            desc: f.benefit || f.desc || (sDiff ? `+${sDiff} Slot` : 'Metamagic'),
+            badge: f.badge || (sDiff ? `+${sDiff} Slot` : 'Metamagic'),
             color: f.color || 'purple',
             tag: `${f.name || fName} (Feat)`,
             isMetamagic: true
@@ -2186,7 +2185,7 @@
         seen.add(low);
         const catBadge = target === 'offense_spell' ? '⚔️ Offense' : (target === 'spell_control' ? '🕸️ Control' : '✨ Support');
         const badgeText = p.badge || catBadge;
-        const descText = p.desc || p.benefit || p.notes || `${p.sourceType || 'Yetenek'} Modifiyeri`;
+        const descText = p.desc || p.benefit || p.notes || `${p.sourceType || 'Ability'} Modifier`;
 
         modifiers.push({
           id: `pin_${p.name.replace(/\s+/g, '_')}`,
@@ -2197,7 +2196,7 @@
           desc: descText,
           badge: badgeText,
           color: target === 'offense_spell' ? 'purple' : (target === 'spell_control' ? 'amber' : 'emerald'),
-          tag: `${p.name} (Aktif)`,
+          tag: `${p.name} (Active)`,
           pinTarget: target,
           rawPin: p
         });
@@ -2307,7 +2306,7 @@
           </div>
           <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
             <div class="text-[10px] ${isDefensiveActive ? 'font-black text-white' : 'font-bold text-indigo-400'} leading-tight truncate w-full">Defensive Cast</div>
-            <div class="text-[9px] ${isDefensiveActive ? 'text-indigo-200 font-bold' : 'text-slate-400'} font-mono mt-1" id="defensive-casting-dc-hint">DC ${15 + currentLvl} • AoO Engeller</div>
+            <div class="text-[9px] ${isDefensiveActive ? 'text-indigo-200 font-bold' : 'text-slate-400'} font-mono mt-1" id="defensive-casting-dc-hint">DC ${15 + currentLvl} • No AoO</div>
           </div>
         </div>
       `;
@@ -2324,7 +2323,7 @@
           </div>
           <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
             <div class="text-[10px] font-bold text-purple-300 group-hover:text-white leading-tight truncate w-full">
-              <span class="mr-0.5 text-[9px]">⚡</span>SR Testi At
+              <span class="mr-0.5 text-[9px]">⚡</span>Roll SR Check
             </div>
             <div class="text-[9px] text-amber-400 font-mono font-bold mt-1">1d20 + ${totalSrBonus} vs SR</div>
           </div>
@@ -2395,7 +2394,7 @@
       if (totalCount > 6) {
         if (toggleBtn) {
           toggleBtn.classList.remove('hidden');
-          toggleBtn.textContent = window.spellModifiersExpanded ? 'Daralt ▴' : `Daha Fazla (${totalCount - 6}) ▾`;
+          toggleBtn.textContent = window.spellModifiersExpanded ? 'Collapse ▴' : `Show More (${totalCount - 6}) ▾`;
         }
         if (!window.spellModifiersExpanded) {
           displayItems = allItems.slice(0, 6);
@@ -2495,7 +2494,7 @@
       if (schoolBadge) schoolBadge.textContent = spell.school || 'Universal';
 
       const lvlBadge = document.getElementById('combat-selected-spell-level-badge');
-      if (lvlBadge) lvlBadge.textContent = baseLvl === 0 ? 'Cantrip (0)' : `${baseLvl}. Seviye`;
+      if (lvlBadge) lvlBadge.textContent = baseLvl === 0 ? 'Cantrip (0)' : `Level ${baseLvl}`;
 
       const metaDescEl = document.getElementById('combat-selected-spell-meta-desc');
       if (metaDescEl) {
@@ -2516,12 +2515,12 @@
           actionEl.textContent = 'Full-Round (Spontaneous)';
           actionEl.className = 'text-[9px] font-mono font-bold text-amber-400';
         } else {
-          actionEl.textContent = spell.action || 'Standart Eylem';
+          actionEl.textContent = spell.action || 'Standard Action';
           actionEl.className = 'text-[9px] font-mono font-bold text-amber-400';
         }
       }
 
-      // Check slot capacity according to spell's source (Anlık, Kitap, İlahi)
+      // Check slot capacity according to spell's source (Spontaneous, Prepared, Divine)
       const slotSource = typeof getSpellSlotSource === 'function' ? getSpellSlotSource(spell) : 'spontaneous';
       const slots = typeof getSpellSlotsArrayBySource === 'function' ? getSpellSlotsArrayBySource(slotSource) : (character?.spellcasting?.slots || []);
       const targetSlot = slots.find(s => Number(s.level) === finalLvl);
@@ -2534,7 +2533,7 @@
       const slotReqEl = document.getElementById('combat-spell-slot-req-display');
       if (slotReqEl) {
         if (targetSlot) {
-          slotReqEl.textContent = `${finalLvl}. Seviye ${sourceTag} Yuva (Kalan: ${remaining}/${totalDaily})`;
+          slotReqEl.textContent = `Level ${finalLvl} ${sourceTag} Slot (${remaining}/${totalDaily} Left)`;
           slotReqEl.className = remaining > 0 ? 'text-xs font-mono font-bold text-purple-300' : 'text-xs font-mono font-bold text-rose-400';
         } else {
           slotReqEl.textContent = `Level ${finalLvl} ${sourceTag} Slot (Locked / Unavailable)`;
@@ -2560,21 +2559,21 @@
       }
 
       // SR & Target / Range display
-      // Helper: Format Spell Range to Turkish with exact calculated feet (D&D 3.5e RAW)
+      // Helper: Format Spell Range with exact calculated feet (D&D 3.5e RAW)
       function formatSpellRangeWithFeet(rangeStr, casterLvl) {
         if (!rangeStr) return 'Close';
         const rLower = rangeStr.toLowerCase();
-        if (rLower.includes('personal') || rLower.includes('kişisel')) return 'Personal';
-        if (rLower.includes('touch') || rLower.includes('temas') || rLower.includes('dokunma')) return 'Dokunma';
-        if (rLower.includes('close') || rLower.includes('yakın')) {
+        if (rLower.includes('personal')) return 'Personal';
+        if (rLower.includes('touch')) return 'Touch';
+        if (rLower.includes('close')) {
           const feet = 25 + Math.floor(casterLvl / 2) * 5;
           return `Close (${feet} ft)`;
         }
-        if (rLower.includes('medium') || rLower.includes('orta')) {
+        if (rLower.includes('medium')) {
           const feet = 100 + casterLvl * 10;
           return `Medium (${feet} ft)`;
         }
-        if (rLower.includes('long') || rLower.includes('uzak')) {
+        if (rLower.includes('long')) {
           const feet = 400 + casterLvl * 40;
           return `Long (${feet} ft)`;
         }
@@ -2585,7 +2584,7 @@
       const params = getSpellCriticalParams(spell);
       const srTargetEl = document.getElementById('combat-spell-sr-target-display');
       if (srTargetEl) {
-        const srClean = (params.sr || '').toLowerCase().includes('evet') || (params.sr || '').toLowerCase().includes('yes') ? 'Yes' : 'No';
+        const srClean = (params.sr || '').toLowerCase().includes('yes') ? 'Yes' : 'No';
         const rangeClean = formatSpellRangeWithFeet(params.range, cl);
         srTargetEl.textContent = `SR: ${srClean} • ${rangeClean}`;
       }
@@ -2597,7 +2596,7 @@
 
       let previewText = '';
       if (hasDamageDice && baseDice) {
-        const typeLabel = scaling?.dmgType || spell.dmgType || 'Hasar';
+        const typeLabel = scaling?.dmgType || spell.dmgType || 'Damage';
         const projPrefix = (scaling && scaling.projectiles > 1 && scaling.projectileName) ? `${scaling.projectiles}x ` : '';
         if (isEmpower && isMaximize) {
           previewText = `${projPrefix}${baseDice} Max + 50% (${typeLabel})`;
@@ -2611,9 +2610,9 @@
           previewText = `${projPrefix}${baseDice} ${typeLabel}`;
         }
       } else if (activeCat === 'spell_control' || spell.save) {
-        previewText = `DC ${saveDc} ${spell.save || 'Test'}`;
+        previewText = `DC ${saveDc} ${spell.save || 'Save'}`;
       } else {
-        previewText = `Hasar Yok (${spell.duration || 'Destek / Fayda'})`;
+        previewText = `No Damage (${spell.duration || 'Support / Benefit'})`;
       }
 
       const dmgPreviewEl = document.getElementById('combat-spell-damage-preview');
@@ -2625,7 +2624,7 @@
           metaBadgeEl.textContent = `✨ ${metamagicTags.join(' • ')}`;
           metaBadgeEl.className = 'text-[8px] text-purple-300 font-bold truncate';
         } else {
-          metaBadgeEl.textContent = 'Metamagic: Yok';
+          metaBadgeEl.textContent = 'Metamagic: None';
           metaBadgeEl.className = 'text-[8px] text-slate-500 truncate';
         }
       }
@@ -2639,9 +2638,9 @@
         totalUsedSlots += src.slots.reduce((acc, s) => acc + (Number(s.used) || 0), 0);
       });
       const totalRemainingSlots = Math.max(0, totalDailySlots - totalUsedSlots);
-      if (clBadge) clBadge.textContent = `CL: ${cl} • Yuva: ${totalRemainingSlots}/${totalDailySlots}`;
+      if (clBadge) clBadge.textContent = `CL: ${cl} • Slots: ${totalRemainingSlots}/${totalDailySlots}`;
       const spellSummary = document.getElementById('combat-spell-collapsed-summary');
-      if (spellSummary) spellSummary.textContent = `CL: ${cl} • Kalan Yuva: ${totalRemainingSlots}/${totalDailySlots}`;
+      if (spellSummary) spellSummary.textContent = `CL: ${cl} • Slots Left: ${totalRemainingSlots}/${totalDailySlots}`;
 
       // Spell Penetration feats calculation for SR check badge
       const featsList = character?.feats || [];
@@ -2652,9 +2651,9 @@
       const srBadge = document.getElementById('sr-check-bonus-badge');
       if (srBadge) srBadge.textContent = `+${totalSrBonus}`;
       const concDcHint = document.getElementById('defensive-casting-dc-hint');
-      if (concDcHint) concDcHint.textContent = `DC ${15 + finalLvl} • AoO Engeller`;
+      if (concDcHint) concDcHint.textContent = `DC ${15 + finalLvl} • No AoO`;
 
-      // Smart Adaptive Action Button (Zero Redundancy: Action + Eylem Türü)
+      // Smart Adaptive Action Button
       const castBtn = document.getElementById('main-spell-cast-btn');
       const btnIcon = document.getElementById('main-spell-btn-icon');
       const btnText = document.getElementById('main-spell-btn-text');
@@ -2662,17 +2661,17 @@
       if (castBtn && btnText) {
         castBtn.disabled = false;
         if (btnIcon) btnIcon.textContent = '⚡';
-        btnText.textContent = 'AT';
+        btnText.textContent = 'CAST';
         if (btnSub) {
           if (isQuicken) {
             btnSub.innerHTML = '<span class="block">Swift</span><span class="block">Action</span>';
             btnSub.className = 'text-[8px] font-mono text-rose-300 font-bold leading-tight mt-0.5 text-center';
           } else if (isMetamagicActive && slotSource === 'spontaneous') {
-            btnSub.innerHTML = '<span class="block">Full-Round</span><span class="block">Eylem</span>';
+            btnSub.innerHTML = '<span class="block">Full-Round</span><span class="block">Action</span>';
             btnSub.className = 'text-[8px] font-mono text-amber-300 font-bold leading-tight mt-0.5 text-center';
           } else {
-            const actStr = (spell.action || '').toLowerCase().includes('swift') ? 'Swift' : 'Standart';
-            btnSub.innerHTML = `<span class="block">${actStr}</span><span class="block">Eylem</span>`;
+            const actStr = (spell.action || '').toLowerCase().includes('swift') ? 'Swift' : 'Standard';
+            btnSub.innerHTML = `<span class="block">${actStr}</span><span class="block">Action</span>`;
             btnSub.className = 'text-[8px] font-mono text-purple-200/90 font-bold leading-tight mt-0.5 text-center';
           }
         }
@@ -2689,10 +2688,10 @@
       if (rawType.includes('ranged')) return 'ranged_touch';
 
       const textToScan = `${spell.name} ${spell.benefit || ''} ${spell.desc || ''} ${spell.description || ''}`.toLowerCase();
-      if (textToScan.includes('ranged touch attack') || textToScan.includes('menzilli temas') || textToScan.includes('ranged touch')) {
+      if (textToScan.includes('ranged touch attack') || textToScan.includes('ranged touch')) {
         return 'ranged_touch';
       }
-      if (textToScan.includes('melee touch attack') || textToScan.includes('yakın temas') || textToScan.includes('melee touch')) {
+      if (textToScan.includes('melee touch attack') || textToScan.includes('melee touch')) {
         return 'melee_touch';
       }
       return null;
@@ -2703,7 +2702,7 @@
       const params = typeof getSpellCriticalParams === 'function' ? getSpellCriticalParams(spell) : {};
       const master = typeof findMasterItem === 'function' ? findMasterItem(spell.name) : null;
       const srVal = (params.sr || spell.sr || master?.sr || '').toString().toLowerCase();
-      if (srVal.includes('evet') || srVal.includes('yes') || srVal === 'true' || srVal.includes('haric') || srVal.includes('gerek')) {
+      if (srVal.includes('yes') || srVal === 'true') {
         return true;
       }
       return false;
@@ -2728,7 +2727,7 @@
       if (summaryGrid) {
         summaryGrid.innerHTML = '';
 
-        // 1. Saldırı Zarı Kartı (Varsa)
+        // 1. Attack Roll Card (If Applicable)
         if (castData.hasAtk) {
           const atkDiv = document.createElement('div');
           const isCrit = castData.isAtkCrit;
@@ -2750,7 +2749,7 @@
           summaryGrid.appendChild(atkDiv);
         }
 
-        // 2. Büyü Direnci (SR) Testi Kartı (Varsa)
+        // 2. Spell Resistance (SR) Check Card (If Applicable)
         if (castData.hasSr) {
           const srDiv = document.createElement('div');
           srDiv.className = 'p-3 rounded-lg border border-purple-700/60 bg-slate-900';
@@ -2771,7 +2770,7 @@
           summaryGrid.appendChild(srDiv);
         }
 
-        // 3. Defensive Casting Kartı (Varsa)
+        // 3. Defensive Casting Card (if active)
         if (castData.isDefensive) {
           const concDiv = document.createElement('div');
           concDiv.className = `p-3 rounded-lg border ${castData.concPassed ? 'border-indigo-700/60 bg-slate-900' : 'border-rose-700/60 bg-rose-950/30'}`;
@@ -2781,7 +2780,7 @@
               <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${castData.concPassed ? 'bg-emerald-950 text-emerald-300 border border-emerald-600' : 'bg-rose-950 text-rose-300 border border-rose-600'}">${castData.concPassed ? 'Passed ✓' : 'Failed ✗'}</span>
             </div>
             <div class="flex justify-between items-baseline font-mono border-t border-slate-800 pt-1.5 mt-1">
-              <span class="text-xs text-slate-400">Konsantrasyon: <strong class="text-indigo-300 text-base font-black">${castData.totalConc}</strong></span>
+              <span class="text-xs text-slate-400">Concentration: <strong class="text-indigo-300 text-base font-black">${castData.totalConc}</strong></span>
               <span class="text-xs text-slate-400">(d20: <strong class="text-white">${castData.d20Conc}</strong> vs DC ${castData.targetConcDc})</span>
             </div>
             <div class="text-[10px] text-slate-400 truncate mt-1">Concentration check to avoid AoO</div>
@@ -2789,9 +2788,9 @@
           summaryGrid.appendChild(concDiv);
         }
 
-        // 4. Kurtarma Zarı (Save DC) Kartı
+        // 4. Saving Throw (Save DC) Card
         const saveDiv = document.createElement('div');
-        const hasSave = castData.saveType && !castData.saveType.toLowerCase().includes('yok') && !castData.saveType.toLowerCase().includes('none');
+        const hasSave = castData.saveType && !castData.saveType.toLowerCase().includes('none');
         saveDiv.className = 'p-3 rounded-lg border border-emerald-700/60 bg-slate-900';
         saveDiv.innerHTML = `
           <div class="flex justify-between items-center mb-1">
@@ -2799,17 +2798,17 @@
               <span class="font-bold text-white">Saving Throw</span>
               <span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-950/60 text-emerald-300 border border-emerald-600/50 font-bold uppercase">DC</span>
             </div>
-            <span class="text-[9px] font-mono font-bold text-emerald-300 truncate">${hasSave ? castData.saveType : 'Kurtarma Yok'}</span>
+            <span class="text-[9px] font-mono font-bold text-emerald-300 truncate">${hasSave ? castData.saveType : 'None'}</span>
           </div>
           <div class="flex justify-between items-baseline font-mono border-t border-slate-800 pt-1.5 mt-1">
             <span class="text-xs text-slate-400">DC: <strong class="text-emerald-400 text-base font-black">DC ${castData.saveDc}</strong></span>
-            <span class="text-xs text-slate-400">${hasSave ? castData.saveType : 'Otomatik Etki'}</span>
+            <span class="text-xs text-slate-400">${hasSave ? castData.saveType : 'Auto-Effect'}</span>
           </div>
           <div class="text-[10px] text-slate-400 truncate mt-1">${hasSave ? 'Target rolls a saving throw against this DC' : 'No saving throw required, takes effect directly'}</div>
         `;
         summaryGrid.appendChild(saveDiv);
 
-        // 5. Silah Boyut Güçlendirme Kartı (Varsa)
+        // 5. Weapon Size Enhancement Card (if applicable)
         if (castData.isSizeModifier && castData.targetWeaponName) {
           const sizeDiv = document.createElement('div');
           sizeDiv.className = 'p-3 rounded-lg border border-purple-500/80 bg-purple-950/40 col-span-1 sm:col-span-2';
@@ -2817,7 +2816,7 @@
             <div class="flex justify-between items-center mb-1">
               <div class="flex items-center gap-1.5">
                 <span class="font-bold text-white">✨ Effective Weapon Size Increase (RAW D&D 3.5e)</span>
-                <span class="text-[9px] px-1.5 py-0.5 rounded bg-purple-900/80 text-purple-200 border border-purple-600/60 font-bold uppercase">+${castData.sizeSteps} Basamak</span>
+                <span class="text-[9px] px-1.5 py-0.5 rounded bg-purple-900/80 text-purple-200 border border-purple-600/60 font-bold uppercase">+${castData.sizeSteps} Size Step(s)</span>
               </div>
               <span class="text-[10px] font-mono font-bold text-amber-300">${castData.targetWeaponName}</span>
             </div>
@@ -2835,11 +2834,11 @@
       const grandTotalEl = document.getElementById('result-grand-total-damage');
       if (grandTotalEl) {
         if (castData.isSizeModifier && castData.targetWeaponName) {
-          grandTotalEl.textContent = `${castData.targetWeaponName}: ${castData.oldDice} ➔ ${castData.newDice} (+${castData.sizeSteps} Basamak)`;
+          grandTotalEl.textContent = `${castData.targetWeaponName}: ${castData.oldDice} ➔ ${castData.newDice} (+${castData.sizeSteps} Step(s))`;
         } else if (castData.hasDamageDice) {
           grandTotalEl.textContent = `${castData.finalDmg} HP (${castData.dmgType})`;
         } else {
-          grandTotalEl.textContent = `Etki Devrede (${castData.durationText})`;
+          grandTotalEl.textContent = `Effect Active (${castData.durationText})`;
         }
       }
 
@@ -2855,7 +2854,7 @@
             ${(castData.isSizeModifier && castData.targetWeaponName) ? `
             <div class="flex items-center justify-between text-purple-300 border-b border-slate-800/80 pb-1.5">
               <span>🔮 Target Weapon & Damage Dice:</span>
-              <span class="font-bold text-amber-300">${castData.targetWeaponName}: ${castData.oldDice} ➔ ${castData.newDice} (+${castData.sizeSteps} Boyut)</span>
+              <span class="font-bold text-amber-300">${castData.targetWeaponName}: ${castData.oldDice} ➔ ${castData.newDice} (+${castData.sizeSteps} Size)</span>
             </div>` : ''}
             ${castData.hasDamageDice ? `
             <div class="flex items-center justify-between text-amber-300 border-b border-slate-800/80 pb-1.5">
@@ -2863,8 +2862,8 @@
               <span class="font-bold">${castData.calcNotice}</span>
             </div>` : ''}
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-slate-300">
-              <div><span class="text-slate-500">Menzil:</span> <span class="text-slate-200 font-semibold">${castData.rangeText}</span></div>
-              <div><span class="text-slate-500">Hedef:</span> <span class="text-slate-200 font-semibold">${castData.targetText}</span></div>
+              <div><span class="text-slate-500">Range:</span> <span class="text-slate-200 font-semibold">${castData.rangeText}</span></div>
+              <div><span class="text-slate-500">Target:</span> <span class="text-slate-200 font-semibold">${castData.targetText}</span></div>
               <div><span class="text-slate-500">Duration:</span> <span class="text-slate-200 font-semibold">${castData.durationText}</span></div>
               <div><span class="text-slate-500">Components:</span> <span class="text-slate-200 font-semibold">${castData.componentsText}</span></div>
             </div>
@@ -2943,7 +2942,7 @@
                   <div class="text-xs font-black text-amber-300 group-hover:text-amber-200">➔ ${steppedDice}</div>
                 </div>
                 <button type="button" class="px-3 py-1.5 rounded-lg bg-purple-600 group-hover:bg-purple-500 text-white font-bold text-xs shadow-md transition shrink-0">
-                  Uygula
+                  Apply
                 </button>
               </div>
             </div>
@@ -2973,7 +2972,7 @@
             const tags = (w.tags || []).map(t => String(t).toLowerCase());
             const matchesType = spell.sizeModifier.targetFilter.allowedDmgTypes.some(type => {
               const tLower = type.toLowerCase();
-              return dt.includes(tLower) || (tLower === 'bludgeoning' && dt.includes('ezici')) || tags.includes(tLower);
+              return dt.includes(tLower) || tags.includes(tLower);
             });
             if (!matchesType) return false;
           }
@@ -3039,7 +3038,7 @@
         if (typeof addDiceHistoryEntry === 'function') {
           addDiceHistoryEntry({
             icon: '🛡️',
-            title: 'Defensive Casting (Konsantrasyon)',
+            title: 'Defensive Casting (Concentration)',
             formula: `1d20 + ${concBonus} vs DC ${targetConcDc}`,
             breakdown: `d20: ${d20Conc} + ${concBonus} = ${totalConc} vs DC ${targetConcDc}`,
             total: concPassed ? 'Passed (No AoO)' : 'Failed (Spell Lost)',
@@ -3052,7 +3051,7 @@
             icon: '⚠️',
             title: 'Concentration Failed!',
             breakdown: `d20:${d20Conc} + ${concBonus} = ${totalConc} (Required: DC ${targetConcDc}). The spell fizzles!`,
-            total: 'Bozuldu'
+            total: 'Fizzled'
           });
           // Consume slot on failure (RAW 3.5e)
           const slotSource = typeof getSpellSlotSource === 'function' ? getSpellSlotSource(spell) : 'spontaneous';
@@ -3083,7 +3082,7 @@
           icon: '⚠️',
           title: 'Spell Slot Unavailable!',
           breakdown: `Level ${finalLvl} ${sourceLabels[slotSource] || ''} spell slot is locked or unavailable on this character!`,
-          total: 'Hata'
+          total: 'Error'
         });
         return;
       }
@@ -3093,7 +3092,7 @@
           icon: '⚠️',
           title: 'No Spell Slots Remaining!',
           breakdown: `You have no Level ${finalLvl} ${sourceLabels[slotSource] || ''} spell slots remaining (${targetSlot.used}/${targetSlot.daily}).`,
-          total: 'Hata'
+          total: 'Error'
         });
         return;
       }
@@ -3218,32 +3217,32 @@
         } else if (isEmpower) {
           const totalBase = rawSum + staticBonus;
           finalDmg = Math.floor(totalBase * 1.5);
-          calcNotice = `Zar [${rolls.join('+')}]${bonusStr} = ${totalBase} × 1.5 = ${finalDmg}${projLabel ? ` (${projLabel})` : ''}`;
+          calcNotice = `Roll [${rolls.join('+')}]${bonusStr} = ${totalBase} × 1.5 = ${finalDmg}${projLabel ? ` (${projLabel})` : ''}`;
         } else if (isMaximize) {
           finalDmg = count * sides + staticBonus;
-          calcNotice = `Max Zar = ${finalDmg}${projLabel ? ` (${projLabel})` : ''}`;
+          calcNotice = `Max Roll = ${finalDmg}${projLabel ? ` (${projLabel})` : ''}`;
         } else {
-          calcNotice = `Zar [${rolls.join('+')}]${bonusStr} = ${finalDmg}${projLabel ? ` (${projLabel})` : ''}`;
+          calcNotice = `Roll [${rolls.join('+')}]${bonusStr} = ${finalDmg}${projLabel ? ` (${projLabel})` : ''}`;
         }
       } else {
-        calcNotice = spell.duration || 'Etki devrede';
+        calcNotice = spell.duration || 'Effect active';
       }
 
       // Helper for Range text
       function formatSpellRangeWithFeet(rangeStr, casterLvl) {
         if (!rangeStr) return 'Close';
         const rLower = rangeStr.toLowerCase();
-        if (rLower.includes('personal') || rLower.includes('kişisel')) return 'Personal';
-        if (rLower.includes('touch') || rLower.includes('temas') || rLower.includes('dokunma')) return 'Dokunma';
-        if (rLower.includes('close') || rLower.includes('yakın')) {
+        if (rLower.includes('personal')) return 'Personal';
+        if (rLower.includes('touch')) return 'Touch';
+        if (rLower.includes('close')) {
           const feet = 25 + Math.floor(casterLvl / 2) * 5;
           return `Close (${feet} ft)`;
         }
-        if (rLower.includes('medium') || rLower.includes('orta')) {
+        if (rLower.includes('medium')) {
           const feet = 100 + casterLvl * 10;
           return `Medium (${feet} ft)`;
         }
-        if (rLower.includes('long') || rLower.includes('uzak')) {
+        if (rLower.includes('long')) {
           const feet = 400 + casterLvl * 40;
           return `Long (${feet} ft)`;
         }
@@ -3285,7 +3284,7 @@
           baseDice: oldDice,
           effectiveDice: newDice,
           cl: cl,
-          duration: `${cl} saat`,
+          duration: `${cl} hours`,
           description: `${targetWeaponName} damage dice increased by ${calculatedSteps} size step(s) (${oldDice} ➔ ${newDice}).`
         };
 
@@ -3312,7 +3311,7 @@
           acBonus: spell.acBonus || -1,
           attBonus: spell.attBonus || -1,
           cl: cl,
-          duration: `${cl} dk`,
+          duration: `${cl} min`,
           description: `Creature and its weapons increase by ${calculatedSteps} size category.`
         };
         if (existingIdx !== -1) {
@@ -3363,7 +3362,7 @@
         sizeSteps: calculatedSteps,
         rangeText: formatSpellRangeWithFeet(params.range, cl),
         durationText: params.duration || spell.duration || 'Instantaneous',
-        targetText: params.target || spell.target || (targetWeaponName ? `Silah: ${targetWeaponName}` : '1 Hedef'),
+        targetText: params.target || spell.target || (targetWeaponName ? `Weapon: ${targetWeaponName}` : '1 Target'),
         componentsText: params.components || spell.components || 'V, S'
       };
 
@@ -3374,7 +3373,7 @@
       }
       if (hasAtk) summaryList.push(`Atk: ${totalAtk >= 0 ? '+' : ''}${totalAtk}`);
       if (hasSr) summaryList.push(`SR: ${totalSr}`);
-      if (hasDamageDice) summaryList.push(`${finalDmg} Hasar`);
+      if (hasDamageDice) summaryList.push(`${finalDmg} Damage`);
       else if (!isSizeModifier) summaryList.push(`DC ${saveDc}`);
       const summaryText = summaryList.join(', ');
 
@@ -3386,7 +3385,7 @@
         if (castData.isSizeModifier && castData.targetWeaponName) {
           showDiceTopToast({
             icon: '🔮',
-            title: `${spell.name} Devrede!`,
+            title: `${spell.name} Active!`,
             breakdown: `${castData.targetWeaponName}: ${castData.oldDice} ➔ ${castData.newDice} (+${castData.sizeSteps} size steps). Duration: ${castData.durationText}`,
             total: castData.newDice
           });
@@ -3394,8 +3393,8 @@
           showDiceTopToast({
             icon: '🔮',
             title: `Cast ${spell.name}`,
-            breakdown: `${finalLvl}. Seviye Yuva • ${summaryText}`,
-            total: hasDamageDice ? `${finalDmg} Hasar` : (hasAtk ? `Atk: +${totalAtk}` : `SR: ${totalSr}`)
+            breakdown: `Level ${finalLvl} Slot • ${summaryText}`,
+            total: hasDamageDice ? `${finalDmg} Damage` : (hasAtk ? `Atk: +${totalAtk}` : `SR: ${totalSr}`)
           });
         }
 
@@ -3406,12 +3405,12 @@
             title: `Casting ${spell.name}`,
             formula: summaryText,
             breakdown: [
-              (castData.isSizeModifier && castData.targetWeaponName) ? `${castData.targetWeaponName}: ${castData.oldDice} ➔ ${castData.newDice} (+${castData.sizeSteps} Boyut)` : null,
+              (castData.isSizeModifier && castData.targetWeaponName) ? `${castData.targetWeaponName}: ${castData.oldDice} ➔ ${castData.newDice} (+${castData.sizeSteps} Size)` : null,
               hasAtk ? `Atk: ${totalAtk} (d20:${d20Atk}+${atkBonus}${isAtkCrit ? ' ⚡' : ''})` : null,
               hasSr ? `SR: ${totalSr} (d20:${d20Sr}+CL:${totalSrBonus})` : null,
               hasDamageDice ? calcNotice : `DC ${saveDc} ${spell.save || ''}`
             ].filter(Boolean).join(' • '),
-            total: (castData.isSizeModifier && castData.targetWeaponName) ? `${castData.newDice} (+${castData.sizeSteps})` : (hasDamageDice ? `${finalDmg} Hasar` : `DC ${saveDc}`),
+            total: (castData.isSizeModifier && castData.targetWeaponName) ? `${castData.newDice} (+${castData.sizeSteps})` : (hasDamageDice ? `${finalDmg} Damage` : `DC ${saveDc}`),
             isCrit: isAtkCrit
           });
         }
@@ -3452,7 +3451,7 @@
           icon: '🔮',
           title: 'Spell Resistance (SR) Check',
           breakdown: breakdownStr,
-          total: `SR Testi: ${totalCheck}`
+          total: `SR Check: ${totalCheck}`
         });
         if (typeof addDiceHistoryEntry === 'function') {
           addDiceHistoryEntry({
@@ -3488,21 +3487,21 @@
         const gripSelect = document.getElementById('active-grip-select');
         if (gripSelect) gripSelect.value = '2-Hand';
 
-        // Rule 3: Ana ele iki elli bir silah seçilirse ikinci el haznesi boşaltılsın
+        // Rule 3: Clear off-hand slot when a two-handed weapon is selected in main hand
         character.activeOffHand = 'None';
         if (character.tactical?.weaponSets) {
           character.tactical.weaponSets.set1.mainWeapon = character.activeWeapon;
           character.tactical.weaponSets.set1.grip = '2-Hand';
-          character.tactical.weaponSets.set2.mainWeapon = 'Yok';
+          character.tactical.weaponSets.set2.mainWeapon = 'None';
           character.tactical.weaponSets.set2.grip = 'Off-Hand';
           character.tactical.weaponSets.activeSets = [1];
           character.tactical.weaponSets.activeSet = 1;
         }
-        syncWeaponSetToBodySlot('offHand', 'Yok');
+        syncWeaponSetToBodySlot('offHand', 'None');
         const offSelect = document.getElementById('active-offhand-select');
         if (offSelect) offSelect.value = 'None';
 
-        let twfMod = (character.activeModifiers || []).find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Çift Silah')));
+        let twfMod = (character.activeModifiers || []).find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Two-Weapon')));
         if (twfMod) twfMod.active = false;
 
         if (typeof showToast === 'function') {
@@ -3554,7 +3553,7 @@
       }
     }
 
-    // --- WEAPON SETS SYSTEM (SEÇENEK B: KART 1 ANA EL, KART 2 İKİNCİ EL) ---
+    // --- WEAPON SETS SYSTEM (CARD 1 MAIN HAND, CARD 2 OFF-HAND) ---
     function enrichWeaponStats(item, wepName) {
       if (!item) item = {};
       const targetName = wepName || item.name || '';
@@ -3563,19 +3562,19 @@
 
       // Ensure dice
       if (!item.dice) {
-        if (lower.includes('unarmed') || lower.includes('silahsız')) {
+        if (lower.includes('unarmed')) {
           const monkLvl = (character?.levelProgression || []).filter(l => (l.className || '').toLowerCase().includes('monk')).length;
           const isSmall = (character?.size || '').toLowerCase() === 'small';
           if (monkLvl >= 1) item.dice = isSmall ? '1d4' : '1d6';
           else item.dice = isSmall ? '1d2' : '1d3';
         }
-        else if (lower.includes('dagger') || lower.includes('hançer')) item.dice = '1d4';
+        else if (lower.includes('dagger')) item.dice = '1d4';
         else if (lower.includes('rapier')) item.dice = '1d6';
         else if (lower.includes('spiked chain')) item.dice = '2d4';
-        else if (lower.includes('shortsword') || lower.includes('kısa kılıç')) item.dice = '1d6';
-        else if (lower.includes('longsword') || lower.includes('uzun kılıç')) item.dice = '1d8';
+        else if (lower.includes('shortsword')) item.dice = '1d6';
+        else if (lower.includes('longsword')) item.dice = '1d8';
         else if (lower.includes('greatsword')) item.dice = '2d6';
-        else if (lower.includes('heavy shield') || lower.includes('ağır kalkan')) item.dice = '1d4';
+        else if (lower.includes('heavy shield')) item.dice = '1d4';
         else if (lower.includes('light shield') || lower.includes('buckler')) item.dice = '1d3';
         else item.dice = '1d4';
       }
@@ -3583,22 +3582,22 @@
       // Ensure critMin
       if (!item.critMin) {
         if (lower.includes('rapier')) item.critMin = 18;
-        else if (lower.includes('dagger') || lower.includes('hançer') || lower.includes('shortsword') || lower.includes('kısa kılıç') || lower.includes('kukri') || lower.includes('scimitar')) item.critMin = 19;
+        else if (lower.includes('dagger') || lower.includes('shortsword') || lower.includes('kukri') || lower.includes('scimitar')) item.critMin = 19;
         else item.critMin = 20;
       }
 
       // Ensure critMult
       if (!item.critMult) {
         if (lower.includes('scythe') || lower.includes('pick')) item.critMult = 4;
-        else if (lower.includes('axe') || lower.includes('balta') || lower.includes('spear') || lower.includes('mızrak') || lower.includes('bow') || lower.includes('yay')) item.critMult = 3;
+        else if (lower.includes('axe') || lower.includes('spear') || lower.includes('bow')) item.critMult = 3;
         else item.critMult = 2;
       }
 
       // Ensure dmgType
       if (!item.dmgType) {
-        if (lower.includes('unarmed') || lower.includes('silahsız') || lower.includes('mace') || lower.includes('flail') || lower.includes('club') || lower.includes('hammer') || lower.includes('shield') || lower.includes('kalkan')) {
+        if (lower.includes('unarmed') || lower.includes('mace') || lower.includes('flail') || lower.includes('club') || lower.includes('hammer') || lower.includes('shield')) {
           item.dmgType = 'Bludgeoning';
-        } else if (lower.includes('rapier') || lower.includes('dagger') || lower.includes('hançer') || lower.includes('chain') || lower.includes('spear') || lower.includes('mızrak') || lower.includes('bow') || lower.includes('yay')) {
+        } else if (lower.includes('rapier') || lower.includes('dagger') || lower.includes('chain') || lower.includes('spear') || lower.includes('bow')) {
           item.dmgType = 'Piercing';
         } else {
           item.dmgType = 'Slashing';
@@ -3627,14 +3626,14 @@
       }
 
       if (item.isLight === undefined) {
-        item.isLight = lower.includes('dagger') || lower.includes('hançer') || lower.includes('shortsword') || lower.includes('kukri') || lower.includes('light') || lower.includes('unarmed') || lower.includes('silahsız');
+        item.isLight = lower.includes('dagger') || lower.includes('shortsword') || lower.includes('kukri') || lower.includes('light') || lower.includes('unarmed');
       }
 
       return item;
     }
 
     function findWeaponEverywhere(wepName) {
-      if (!wepName || wepName === 'None' || wepName === 'Yok' || wepName === 'Boş') return null;
+      if (!wepName || wepName === 'None' || wepName === '-') return null;
 
       // 1. Check character.weapons
       let found = (character.weapons || []).find(w => w && w.name === wepName);
@@ -3676,11 +3675,11 @@
     function isRangedOnlyWeapon(item) {
       if (!item) return false;
       const name = typeof item === 'string' ? item : (item.name || '');
-      if (!name || name === 'Yok' || name === '-' || name === 'None' || name === 'Boş') return false;
+      if (!name || name === '-' || name === 'None') return false;
       const low = name.toLowerCase().trim();
 
       // Versatile / thrown / melee exceptions that can ALWAYS be used in melee
-      if (low.includes('unarmed') || low.includes('silahsız') || low.includes('dagger') || low.includes('hançer') || low.includes('spiked chain') || low.includes('rapier') || low.includes('jovar')) {
+      if (low.includes('unarmed') || low.includes('dagger') || low.includes('spiked chain') || low.includes('rapier') || low.includes('jovar')) {
         return false;
       }
 
@@ -3708,10 +3707,8 @@
         low.includes('shortbow') || 
         low.includes('crossbow') || 
         low.includes('composite') || 
-        low.includes('arbalet') || 
         low.includes('sling') || 
-        low.includes('sapan') ||
-        low.includes('yay')
+        low.includes('bow')
       ) {
         return true;
       }
@@ -3723,11 +3720,11 @@
     function isShieldItem(item) {
       if (!item) return false;
       const name = typeof item === 'string' ? item : (item.name || '');
-      if (!name || name === 'Yok' || name === '-' || name === 'None' || name === 'Boş') return false;
+      if (!name || name === '-' || name === 'None') return false;
 
       // 1. Direct object properties
       if (typeof item === 'object') {
-        if (item.category === 'Shield' || item.type === 'Shield' || item.slot === 'Shield' || item.slot === 'Off-Hand Shield' || item.dmgType === 'Kalkan' || item.isShield) {
+        if (item.category === 'Shield' || item.type === 'Shield' || item.slot === 'Shield' || item.slot === 'Off-Hand Shield' || item.dmgType === 'Shield' || item.isShield) {
           return true;
         }
       }
@@ -3743,7 +3740,7 @@
 
       // 3. Fallback string check
       const low = name.toLowerCase().trim();
-      return low.includes('shield') || low.includes('buckler') || low.includes('kalkan');
+      return low.includes('shield') || low.includes('buckler');
     }
 
     // Helper to determine if a shield is a Buckler
@@ -3796,7 +3793,7 @@
       }
 
       // 3. Fallback semantic check for ammunition
-      if (low.endsWith(' arrow') || low.endsWith(' ok') || low.endsWith(' bolt') || low.endsWith(' bullet') || low.endsWith(' bullets') || low.endsWith(' arrows') || low.endsWith(' bolts') || low === 'sapan taşı') {
+      if (low.endsWith(' arrow') || low.endsWith(' bolt') || low.endsWith(' bullet') || low.endsWith(' bullets') || low.endsWith(' arrows') || low.endsWith(' bolts')) {
         return true;
       }
 
@@ -3833,13 +3830,10 @@
       // 3. Fallback heuristics for classic D&D 3.5e thrown weapons if tags missing
       return (
         low.includes('dagger') ||
-        low.includes('hançer') ||
         low.includes('dart') ||
         low.includes('shuriken') ||
         low.includes('javelin') ||
-        low.includes('cirit') ||
         low.includes('throwing axe') ||
-        low.includes('fırlatma') ||
         low.includes('thrown')
       );
     }
@@ -3851,7 +3845,7 @@
       if (isThrownWeapon(item)) return true;
 
       const name = typeof item === 'string' ? item : (item.name || '');
-      if (!name || name === 'Yok' || name === '-' || name === 'None' || name === 'Boş') return false;
+      if (!name || name === '-' || name === 'None') return false;
       const low = name.toLowerCase().trim();
 
       // Explicit property checks
@@ -3878,13 +3872,9 @@
       // Keyword heuristic for actual ranged launcher weapons (Bows, Crossbows, Slings, Blowguns)
       return (
         low.includes('bow') || 
-        low.includes('yay') || 
         low.includes('crossbow') || 
-        low.includes('arbalet') || 
         low.includes('sling') || 
-        low.includes('sapan') ||
-        low.includes('blowgun') ||
-        low.includes('üfleme')
+        low.includes('blowgun')
       );
     }
 
@@ -3897,17 +3887,17 @@
       const getValidMainWeapon = () => {
         if (isRangedMode) {
           const equippedMain = character.bodySlots?.mainHand?.name && character.bodySlots.mainHand.name !== '-' ? character.bodySlots.mainHand.name : null;
-          if (equippedMain && equippedMain !== 'Yok' && equippedMain !== 'None' && isRangedOrThrownWeapon(equippedMain)) return equippedMain;
+          if (equippedMain && equippedMain !== 'None' && isRangedOrThrownWeapon(equippedMain)) return equippedMain;
           if (character.tactical.selectedRangedWeapon && isRangedOrThrownWeapon(character.tactical.selectedRangedWeapon)) return character.tactical.selectedRangedWeapon;
           const firstRanged = (character.weapons || []).find(w => w && w.name && isRangedOrThrownWeapon(w));
           if (firstRanged && firstRanged.name) return firstRanged.name;
           const gearRanged = (character.gearPool || []).find(g => g && g.name && isRangedOrThrownWeapon(g));
           if (gearRanged && gearRanged.name) return gearRanged.name;
-          return 'Kompozit Uzun Yay (Composite Longbow)';
+          return 'Composite Longbow';
         } else {
           const equippedMain = character.bodySlots?.mainHand?.name && character.bodySlots.mainHand.name !== '-' ? character.bodySlots.mainHand.name : null;
-          if (equippedMain && equippedMain !== 'Yok' && equippedMain !== 'None' && !isRangedOnlyWeapon(equippedMain)) return equippedMain;
-          if (character.activeWeapon && character.activeWeapon !== 'Yok' && character.activeWeapon !== 'None' && !isRangedOnlyWeapon(character.activeWeapon)) return character.activeWeapon;
+          if (equippedMain && equippedMain !== 'None' && !isRangedOnlyWeapon(equippedMain)) return equippedMain;
+          if (character.activeWeapon && character.activeWeapon !== 'None' && !isRangedOnlyWeapon(character.activeWeapon)) return character.activeWeapon;
           const firstMelee = (character.weapons || []).find(w => w && w.name && !isRangedOnlyWeapon(w));
           if (firstMelee && firstMelee.name) return firstMelee.name;
           return 'Unarmed Strike';
@@ -3920,17 +3910,17 @@
           if (isTwoHanded) {
             const equippedOff = character.bodySlots?.offHand?.name;
             if (equippedOff && equippedOff.toLowerCase().includes('buckler')) return equippedOff;
-            return 'Yok';
+            return 'None';
           }
           const otherWep = (character.weapons || []).find(w => w && w.name && isRangedOrThrownWeapon(w) && !isRangedOnlyWeapon(w))?.name;
           if (otherWep) return otherWep;
-          return 'Yok';
+          return 'None';
         } else {
           const equippedOff = character.bodySlots?.offHand?.name && character.bodySlots.offHand.name !== '-' ? character.bodySlots.offHand.name : null;
-          if (equippedOff && equippedOff !== 'Yok' && equippedOff !== 'None' && !isRangedOnlyWeapon(equippedOff)) return equippedOff;
+          if (equippedOff && equippedOff !== 'None' && !isRangedOnlyWeapon(equippedOff)) return equippedOff;
           const otherWep = (character.weapons || []).find(w => w && w.name && w.name !== mainWep && !isRangedOnlyWeapon(w))?.name;
           if (otherWep) return otherWep;
-          return 'Yok';
+          return 'None';
         }
       };
 
@@ -3943,7 +3933,7 @@
           activeSets: [1],
           activeSet: 1,
           set1: {
-            name: 'Ana El',
+            name: 'Main Hand',
             mainWeapon: mainWep,
             grip: autoGrip
           },
@@ -3959,7 +3949,7 @@
           character.tactical.weaponSets.activeSets = prev === 'both' ? [1, 2] : (prev === 2 ? [2] : [1]);
         }
         if (!character.tactical.weaponSets.set1) {
-          character.tactical.weaponSets.set1 = { name: 'Ana El', mainWeapon: getValidMainWeapon(), grip: isRangedMode ? '2-Hand' : '1-Hand' };
+          character.tactical.weaponSets.set1 = { name: 'Main Hand', mainWeapon: getValidMainWeapon(), grip: isRangedMode ? '2-Hand' : '1-Hand' };
         }
         if (!character.tactical.weaponSets.set2) {
           character.tactical.weaponSets.set2 = { name: 'Off-Hand', mainWeapon: getValidOffWeapon(character.tactical.weaponSets.set1.mainWeapon), grip: 'Off-Hand' };
@@ -3967,14 +3957,14 @@
 
         const s1Wep = character.tactical.weaponSets.set1.mainWeapon;
         if (isRangedMode) {
-          if (!s1Wep || s1Wep === 'Yok' || !isRangedOrThrownWeapon(s1Wep)) {
+          if (!s1Wep || s1Wep === 'None' || !isRangedOrThrownWeapon(s1Wep)) {
             character.tactical.weaponSets.set1.mainWeapon = getValidMainWeapon();
             if (isRangedOnlyWeapon(character.tactical.weaponSets.set1.mainWeapon)) {
               character.tactical.weaponSets.set1.grip = '2-Hand';
             }
           }
         } else {
-          if (isRangedOnlyWeapon(s1Wep) || !s1Wep || s1Wep === 'Yok') {
+          if (isRangedOnlyWeapon(s1Wep) || !s1Wep || s1Wep === 'None') {
             character.tactical.weaponSets.set1.mainWeapon = getValidMainWeapon();
           }
         }
@@ -3986,7 +3976,7 @@
         if (mainIsTwoHand && !hasOversized) {
           // Rule 1, 2, 3: Two-handed weapon without oversized feat forces 2-Hand grip, empties Set 2, and limits to single weapon
           character.tactical.weaponSets.set1.grip = '2-Hand';
-          character.tactical.weaponSets.set2.mainWeapon = 'Yok';
+          character.tactical.weaponSets.set2.mainWeapon = 'None';
           character.tactical.weaponSets.set2.grip = 'Off-Hand';
           character.tactical.weaponSets.activeSets = [1];
           character.tactical.weaponSets.activeSet = 1;
@@ -3994,20 +3984,20 @@
         } else {
           const s2Wep = character.tactical.weaponSets.set2.mainWeapon;
           if (isRangedMode) {
-            if (s2Wep && s2Wep !== 'Yok' && !isRangedOrThrownWeapon(s2Wep) && !s2Wep.toLowerCase().includes('buckler')) {
-              character.tactical.weaponSets.set2.mainWeapon = 'Yok';
+            if (s2Wep && s2Wep !== 'None' && !isRangedOrThrownWeapon(s2Wep) && !s2Wep.toLowerCase().includes('buckler')) {
+              character.tactical.weaponSets.set2.mainWeapon = 'None';
             }
           } else {
-            if (s2Wep && s2Wep !== 'Yok' && isRangedOnlyWeapon(s2Wep)) {
+            if (s2Wep && s2Wep !== 'None' && isRangedOnlyWeapon(s2Wep)) {
               character.tactical.weaponSets.set2.mainWeapon = getValidOffWeapon(character.tactical.weaponSets.set1.mainWeapon);
             }
           }
         }
 
         if (!character.tactical.weaponSets.set1.name || character.tactical.weaponSets.set1.name.includes('Buckler') || character.tactical.weaponSets.set1.name.includes('Set I')) {
-          character.tactical.weaponSets.set1.name = 'Ana El';
+          character.tactical.weaponSets.set1.name = 'Main Hand';
         }
-        if (!character.tactical.weaponSets.set2.name || character.tactical.weaponSets.set2.name.includes('Set II') || character.tactical.weaponSets.set2.name.includes('Çift Hançer')) {
+        if (!character.tactical.weaponSets.set2.name || character.tactical.weaponSets.set2.name.includes('Set II')) {
           character.tactical.weaponSets.set2.name = 'Off-Hand';
         }
       }
@@ -4015,7 +4005,7 @@
 
     // Helper function to calculate combat display stats for a weapon / shield
     function getWeaponCombatDisplayStats(wepName, grip = '1-Hand', isOffHand = false) {
-      if (!character || !wepName || wepName === 'None' || wepName === 'Yok' || wepName === 'Boş' || wepName === '-') {
+      if (!character || !wepName || wepName === 'None' || wepName === '-') {
         if (isOffHand) {
           return {
             dmgStr: '-',
@@ -4028,7 +4018,7 @@
         return {
           dmgStr: '1d3+0 (Unarmed)',
           critStr: '20 / x2',
-          dmgType: 'Ezici',
+          dmgType: 'Bludgeoning',
           isWeapon: false
         };
       }
@@ -4045,8 +4035,8 @@
           return {
             dmgStr: 'No Attack',
             critStr: '-',
-            dmgType: 'Kalkan',
-            shieldAcText: `+${shieldAc} AC Kalkan`,
+            dmgType: 'Shield',
+            shieldAcText: `+${shieldAc} Shield AC`,
             isShield: true,
             isBuckler: true
           };
@@ -4054,8 +4044,8 @@
         return {
           dmgStr: isHeavy ? '1d4' : '1d3',
           critStr: '20 / x2',
-          dmgType: 'Ezici',
-          shieldAcText: `+${shieldAc} AC Kalkan`,
+          dmgType: 'Bludgeoning',
+          shieldAcText: `+${shieldAc} Shield AC`,
           isShield: true,
           isWeapon: true
         };
@@ -4066,7 +4056,7 @@
         return {
           dmgStr: '1d6',
           critStr: '20 / x2',
-          dmgType: 'Fiziksel',
+          dmgType: 'Physical',
           isWeapon: true
         };
       }
@@ -4103,12 +4093,12 @@
         else if (selArrow === 'plus2') { arrowAtk = 2; arrowDmg = 2; }
         else if (selArrow === 'silver') { arrowDmg = -1; arrowBonusType = 'penalty'; }
         else if (selArrow === 'fire') { arrowDice = '1d6 (Fire)'; }
-        else if (selArrow === 'acid') { arrowDice = '1d6 (Asit)'; }
+        else if (selArrow === 'acid') { arrowDice = '1d6 (Acid)'; }
         else if (selArrow === 'shock') { arrowDice = '1d6 (Electricity)'; }
 
         if (arrowAtk || arrowDmg || arrowDice) {
           activeRangedMods.push({
-            name: `Ok (${selArrow})`,
+            name: `Ammo (${selArrow})`,
             bonusAtk: arrowAtk,
             bonusDmg: arrowDmg,
             dice: arrowDice,
@@ -4138,10 +4128,7 @@
             const critRange = evalRes.critMin === 20 ? '20' : `${evalRes.critMin}-20`;
             const critStr = `${critRange} / x${evalRes.critMult}`;
 
-            let dmgType = evalRes.damageType || (at === 'bullet' ? 'Ezici' : 'Delici');
-            if (dmgType === 'Piercing') dmgType = 'Delici';
-            else if (dmgType === 'Bludgeoning') dmgType = 'Ezici';
-            else if (dmgType === 'Slashing') dmgType = 'Kesici';
+            let dmgType = evalRes.damageType || (at === 'bullet' ? 'Bludgeoning' : 'Piercing');
 
             return {
               dmgStr,
@@ -4167,7 +4154,7 @@
           const activeMods = (character.activeModifiers || []).filter(m => m && m.active);
           const nonChainMods = activeMods.filter(m => {
         if (!m || !m.name) return false;
-        if (m.name.includes('TWF') || m.name.includes('Çift Silah') || m.name.includes('Flurry') || m.name.includes('Seri Vuruş')) return false;
+        if (m.name.includes('TWF') || m.name.includes('Two-Weapon') || m.name.includes('Flurry')) return false;
         if (m.combatScope === 'ranged' || m.scope === 'Ranged Only') return false;
         return true;
       });
@@ -4200,10 +4187,7 @@
           const critRange = evalRes.critMin === 20 ? '20' : `${evalRes.critMin}-20`;
           const critStr = `${critRange} / x${evalRes.critMult}`;
 
-          let dmgType = evalRes.damageType || 'Delici';
-          if (dmgType === 'Piercing') dmgType = 'Delici';
-          else if (dmgType === 'Slashing') dmgType = 'Kesici';
-          else if (dmgType === 'Bludgeoning') dmgType = 'Ezici';
+          let dmgType = evalRes.damageType || 'Piercing';
 
           const hasExtraMods = (paVal > 0 && !isOffHand) || activeDiceMods.length > 0 || (Array.isArray(wep.elementalMods) && wep.elementalMods.length > 0) || nonChainMods.some(m => m.bonusDmg);
 
@@ -4227,7 +4211,7 @@
       return {
         dmgStr: wep?.dice || '1d6',
         critStr: '20 / x2',
-        dmgType: 'Fiziksel',
+        dmgType: 'Physical',
         isWeapon: true
       };
     }
@@ -4238,7 +4222,7 @@
       try {
         ensureWeaponSetsData();
         const sets = character?.tactical?.weaponSets || {};
-        const s1 = sets.set1 || { name: 'Ana El', mainWeapon: character?.activeWeapon || 'Rapier +2', grip: '1-Hand' };
+        const s1 = sets.set1 || { name: 'Main Hand', mainWeapon: character?.activeWeapon || 'Rapier +2', grip: '1-Hand' };
         const s2 = sets.set2 || { name: 'Off-Hand', mainWeapon: '+1 Buckler', grip: 'Off-Hand' };
         const activeSets = Array.isArray(sets.activeSets) ? sets.activeSets : [1];
         const is1 = activeSets.includes(1);
@@ -4256,37 +4240,37 @@
         const s2OffStats = isTwoHandLocked ? null : getWeaponCombatDisplayStats(s2.mainWeapon, 'Off-Hand', true);
         const isCard2Shield = s2OffStats?.isShield;
 
-      // Card 1 UI (Ana El)
+      // Card 1 UI (Main Hand)
       const card1Html = `
-        <!-- KART 1: ANA EL -->
+        <!-- CARD 1: MAIN HAND -->
         <div onclick="activateWeaponSet(1)" class="p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between gap-2 ${is1 ? 'bg-gradient-to-r from-amber-950/60 to-slate-900/90 border-amber-500 text-amber-200 shadow-md shadow-amber-950/40 ring-1 ring-amber-500/40' : 'bg-slate-900/70 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'}">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5">
               <span class="text-xs ${is1 ? 'text-amber-400' : 'text-slate-500'}">⚔️</span>
-              <span class="text-xs font-black truncate ${is1 ? 'text-white' : 'text-slate-300'}">${s1.name || 'Ana El'}</span>
+              <span class="text-xs font-black truncate ${is1 ? 'text-white' : 'text-slate-300'}">${s1.name || 'Main Hand'}</span>
               ${is1 ? `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-amber-500/30 text-amber-300 border border-amber-500/50">ACTIVE</span>` : ''}
               ${s1MainStats?.enhancementBonus ? `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-amber-500/30 text-amber-300 border border-amber-500/50">+${s1MainStats.enhancementBonus} Magic</span>` : ''}
               ${s1MainStats?.keen ? `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-red-950/60 text-red-300 border border-red-500/50">🩸 Keen</span>` : ''}
               ${isTwoHandLocked ? `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-amber-900/40 text-amber-400 border border-amber-700/50">2H Weapon</span>` : ''}
             </div>
-            <!-- Donanım ve Tutuş -->
+            <!-- Equipment & Grip -->
             <div class="text-[10px] text-slate-400 truncate mt-0.5 font-mono">
-              <span class="${is1 ? 'text-amber-300 font-bold' : 'text-slate-400 font-bold'}">${s1.mainWeapon || 'Yok'}</span>
-              <span class="text-slate-500">(${s1MainStats?.isShield ? 'Kalkan' : (isTwoHandLocked ? '2-El' : (s1.grip || '1-El'))})</span>
+              <span class="${is1 ? 'text-amber-300 font-bold' : 'text-slate-400 font-bold'}">${s1.mainWeapon || 'None'}</span>
+              <span class="text-slate-500">(${s1MainStats?.isShield ? 'Shield' : (isTwoHandLocked ? '2-Hand' : (s1.grip || '1-Hand'))})</span>
             </div>
-            <!-- Satır 1: Silahın Modifiye Hasarı veya Kalkan Koruması -->
+            <!-- Row 1: Modified Weapon Damage or Shield Defense -->
             <div class="text-[10px] font-mono mt-0.5 flex items-center gap-1.5 flex-wrap">
               ${s1MainStats?.isShield ? `
-                <span class="text-slate-400 font-sans text-[9px] uppercase tracking-wider">Koruma:</span>
-                <span class="font-bold text-emerald-400">${s1MainStats?.shieldAcText || '+1 AC Kalkan'}</span>
+                <span class="text-slate-400 font-sans text-[9px] uppercase tracking-wider">Defense:</span>
+                <span class="font-bold text-emerald-400">${s1MainStats?.shieldAcText || '+1 Shield AC'}</span>
               ` : `
-                <span class="text-slate-400 font-sans text-[9px] uppercase tracking-wider">Hasar:</span>
+                <span class="text-slate-400 font-sans text-[9px] uppercase tracking-wider">Damage:</span>
                 <span class="font-bold ${is1 ? 'text-amber-300' : 'text-slate-300'}">${s1MainStats?.dmgStr || '1d6+3'}</span>
-                ${s1MainStats?.hasExtraMods ? `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">⚡ Modifiye</span>` : ''}
+                ${s1MainStats?.hasExtraMods ? `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">⚡ Modified</span>` : ''}
                 ${s1MainStats?.isFinesse ? `<span class="text-emerald-400 text-[9px] font-sans font-bold">• DEX (+${s1MainStats.finesseMod}) Finesse</span>` : ''}
               `}
             </div>
-            <!-- Satır 2: Kritik & Hasar Türü -->
+            <!-- Row 2: Critical & Damage Type -->
             <div class="text-[9px] font-mono flex items-center gap-1.5 flex-wrap">
               ${s1MainStats?.isShield ? `
                 <span class="text-slate-500 font-sans uppercase text-[8px] tracking-wider">Type:</span>
@@ -4295,7 +4279,7 @@
                 <span class="text-slate-500 font-sans uppercase text-[8px] tracking-wider">Crit &amp; Type:</span>
                 <span class="${is1 ? 'text-white' : 'text-slate-300'} font-semibold font-mono">${s1MainStats?.critStr || '18-20 / x2'}</span>
                 <span class="text-slate-600">•</span>
-                <span class="${is1 ? 'text-amber-200/90' : 'text-slate-400'}">${s1MainStats?.dmgType || 'Delici'}</span>
+                <span class="${is1 ? 'text-amber-200/90' : 'text-slate-400'}">${s1MainStats?.dmgType || 'Piercing'}</span>
               `}
             </div>
           </div>
@@ -4307,23 +4291,23 @@
         </div>
       `;
 
-      // Card 2 UI (İkinci El / Kalkan) - Disabled if main weapon is two-handed
+      // Card 2 UI (Off-Hand / Shield) - Disabled if main weapon is two-handed
       let card2Html = '';
       if (isTwoHandLocked) {
         card2Html = `
-        <!-- KART 2: İKİNCİ EL (KİLİTLİ - ÇİFT ELLİ SİLAH) -->
+        <!-- CARD 2: OFF-HAND (LOCKED - TWO-HANDED WEAPON) -->
         <div onclick="activateWeaponSet(2)" class="p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 text-slate-500 cursor-not-allowed select-none flex items-center justify-between gap-2 opacity-70">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5">
               <span class="text-xs text-slate-600">🔒</span>
               <span class="text-xs font-bold text-slate-400">Off-Hand (Locked)</span>
-              <span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-amber-950/50 text-amber-500 border border-amber-900/50">2-El Gerekli</span>
+              <span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-amber-950/50 text-amber-500 border border-amber-900/50">2-Hand Required</span>
             </div>
-            <!-- Donanım Bilgisi -->
+            <!-- Equipment Info -->
             <div class="text-[10px] text-slate-500 truncate mt-0.5 font-mono">
-              <span>Ana eldeki "${s1.mainWeapon || 'Silah'}" iki el gerektirir</span>
+              <span>Main-hand "${s1.mainWeapon || 'Weapon'}" requires two hands</span>
             </div>
-            <!-- Açıklama -->
+            <!-- Description -->
             <div class="text-[9px] text-slate-600 mt-0.5 font-mono">
               <span>* Off-hand &amp; TWF unavailable with 2H weapon without Monkey Grip</span>
             </div>
@@ -4337,7 +4321,7 @@
         `;
       } else {
         card2Html = `
-        <!-- KART 2: İKİNCİ EL -->
+        <!-- CARD 2: OFF-HAND -->
         <div onclick="activateWeaponSet(2)" class="p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between gap-2 ${is2 ? 'bg-gradient-to-r from-sky-950/60 to-slate-900/90 border-sky-500 text-sky-200 shadow-md shadow-sky-950/40 ring-1 ring-sky-500/40' : 'bg-slate-900/70 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'}">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5">
@@ -4347,23 +4331,23 @@
               ${s2OffStats?.enhancementBonus ? `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-sky-500/30 text-sky-300 border border-sky-500/50">+${s2OffStats.enhancementBonus} Magic</span>` : ''}
               ${s2OffStats?.keen ? `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-red-950/60 text-red-300 border border-red-500/50">🩸 Keen</span>` : ''}
             </div>
-            <!-- Donanım ve Tür -->
+            <!-- Equipment & Type -->
             <div class="text-[10px] text-slate-400 truncate mt-0.5 font-mono">
-              <span class="${is2 ? 'text-sky-300 font-bold' : 'text-slate-400 font-bold'}">${s2.mainWeapon || 'Yok'}</span>
-              <span class="text-slate-500">(${isCard2Shield ? 'Shield' : (!s2.mainWeapon || s2.mainWeapon === 'Yok' || s2.mainWeapon === 'None' || s2.mainWeapon === '-' ? 'Empty' : 'Off-Hand')})</span>
+              <span class="${is2 ? 'text-sky-300 font-bold' : 'text-slate-400 font-bold'}">${s2.mainWeapon || 'None'}</span>
+              <span class="text-slate-500">(${isCard2Shield ? 'Shield' : (!s2.mainWeapon || s2.mainWeapon === 'None' || s2.mainWeapon === '-' ? 'Empty' : 'Off-Hand')})</span>
             </div>
-            <!-- Satır 1: Silah Hasarı veya Kalkan Koruması -->
+            <!-- Row 1: Weapon Damage or Shield Defense -->
             <div class="text-[10px] font-mono mt-0.5 flex items-center gap-1.5 flex-wrap">
               ${isCard2Shield ? `
-                <span class="text-slate-400 font-sans text-[9px] uppercase tracking-wider">Koruma:</span>
-                <span class="font-bold text-emerald-400">${s2OffStats?.shieldAcText || '+1 AC Kalkan'}</span>
+                <span class="text-slate-400 font-sans text-[9px] uppercase tracking-wider">Defense:</span>
+                <span class="font-bold text-emerald-400">${s2OffStats?.shieldAcText || '+1 Shield AC'}</span>
               ` : `
-                <span class="text-slate-400 font-sans text-[9px] uppercase tracking-wider">Hasar:</span>
+                <span class="text-slate-400 font-sans text-[9px] uppercase tracking-wider">Damage:</span>
                 <span class="font-bold ${is2 ? 'text-sky-300' : 'text-slate-300'}">${s2OffStats?.dmgStr || '1d4'}</span>
-                ${s2OffStats?.hasExtraMods ? `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40">⚡ Modifiye</span>` : ''}
+                ${s2OffStats?.hasExtraMods ? `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40">⚡ Modified</span>` : ''}
               `}
             </div>
-            <!-- Satır 2: Kritik & Hasar Türü -->
+            <!-- Row 2: Critical & Damage Type -->
             <div class="text-[9px] font-mono flex items-center gap-1.5 flex-wrap">
               ${isCard2Shield ? `
                 <span class="text-slate-500 font-sans uppercase text-[8px] tracking-wider">Type:</span>
@@ -4372,7 +4356,7 @@
                 <span class="text-slate-500 font-sans uppercase text-[8px] tracking-wider">Crit &amp; Type:</span>
                 <span class="${is2 ? 'text-white' : 'text-slate-300'} font-semibold font-mono">${s2OffStats?.critStr || '19-20 / x2'}</span>
                 <span class="text-slate-600">•</span>
-                <span class="${is2 ? 'text-sky-200/90' : 'text-slate-400'}">${s2OffStats?.dmgType || 'Delici'}</span>
+                <span class="${is2 ? 'text-sky-200/90' : 'text-slate-400'}">${s2OffStats?.dmgType || 'Piercing'}</span>
               `}
             </div>
           </div>
@@ -4393,8 +4377,8 @@
         container.innerHTML = `
           <div class="p-2.5 rounded-xl border border-amber-500/50 bg-slate-900/90 text-amber-200 text-xs flex items-center justify-between">
             <div>
-              <div class="font-bold">⚔️ Ana El: ${character?.activeWeapon || 'Rapier +2'}</div>
-              <div class="text-[10px] text-slate-400 font-mono">1d6+3 • 18-20/x2 • Delici</div>
+              <div class="font-bold">⚔️ Main Hand: ${character?.activeWeapon || 'Rapier +2'}</div>
+              <div class="text-[10px] text-slate-400 font-mono">1d6+3 • 18-20/x2 • Piercing</div>
             </div>
             <span class="text-[9px] font-bold px-2 py-0.5 rounded bg-amber-500/30 text-amber-300">ACTIVE</span>
           </div>
@@ -4414,7 +4398,7 @@
       const mainIsTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(s1Main) : false;
       const hasOversized = typeof RuleEngine !== 'undefined' ? RuleEngine.hasOversizedWeaponFeat(character) : false;
 
-      // Rule 1: Ana el çift elli ise ve oversized feat yoksa, ikinci el aktif edilemez
+      // Rule 1: If main hand is two-handed and oversized feat is missing, off-hand cannot be activated
       if (setNum === 2 && mainIsTwoHand && !hasOversized) {
         if (typeof showToast === 'function') {
           showToast(`Your main-hand weapon "${s1Main}" is two-handed! Off-hand and TWF cannot be used without the 'Monkey Grip' feat.`, 'warning');
@@ -4455,7 +4439,7 @@
       const isTwoHandLocked = mainIsTwoHand && !hasOversized;
 
       if (!character.activeModifiers) character.activeModifiers = [];
-      let twfMod = character.activeModifiers.find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Çift Silah')));
+      let twfMod = character.activeModifiers.find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Two-Weapon')));
       if (!twfMod) {
         twfMod = {
           name: 'Two-Weapon Fighting (TWF)',
@@ -4472,7 +4456,7 @@
       // Rule 1, 2, 3: Two-handed weapon enforcement
       if (isTwoHandLocked) {
         sets.set1.grip = '2-Hand';
-        sets.set2.mainWeapon = 'Yok';
+        sets.set2.mainWeapon = 'None';
         sets.set2.grip = 'Off-Hand';
         sets.activeSets = [1];
         sets.activeSet = 1;
@@ -4514,7 +4498,7 @@
 
         // Check if Card 2 is a weapon (not pure shield)
         const offItemStats = getWeaponCombatDisplayStats(sets.set2.mainWeapon, 'Off-Hand', true);
-        const isOffWeapon = offItemStats && !offItemStats.isBuckler && offItemStats.dmgType !== 'Kalkan';
+        const isOffWeapon = offItemStats && !offItemStats.isBuckler && offItemStats.dmgType !== 'Shield';
 
         twfMod.active = isOffWeapon;
       } else if (is1) {
@@ -4569,7 +4553,7 @@
       if (!character || !slotKey) return;
       if (!character.bodySlots) character.bodySlots = {};
 
-      if (!itemName || itemName === 'None' || itemName === 'Yok' || itemName === 'Boş' || itemName === '-') {
+      if (!itemName || itemName === 'None' || itemName === '-') {
         if (character.bodySlots[slotKey] && character.bodySlots[slotKey].name !== '-') {
           unequipSlot(slotKey, true);
         }
@@ -4596,7 +4580,7 @@
       // Check masterDb or character.weapons or enrich
       let fromDb = (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) ? masterDb.find(m => m && (m.name === itemName || m.masterDbName === itemName)) : null;
       let fromWep = (character.weapons || []).find(w => w && w.name === itemName);
-      const isShieldItem = (fromDb && fromDb.category === 'Shield') || itemName.toLowerCase().includes('shield') || itemName.toLowerCase().includes('buckler') || itemName.toLowerCase().includes('kalkan');
+      const isShieldItem = (fromDb && fromDb.category === 'Shield') || itemName.toLowerCase().includes('shield') || itemName.toLowerCase().includes('buckler');
       const enriched = enrichWeaponStats({ ...(fromDb || fromWep || {}) }, itemName);
 
       character.bodySlots[slotKey] = {
@@ -4642,7 +4626,7 @@
       if (isRangedMode) {
         // Collect ONLY ranged & thrown weapons for Ranged mode
         (character.weapons || []).forEach(w => {
-          if (w && w.name && w.name !== 'None' && w.name !== 'Yok') {
+          if (w && w.name && w.name !== 'None') {
             if (isRangedOrThrownWeapon(w) && !availableItems.some(i => i.name === w.name)) {
               availableItems.push({
                 name: w.name,
@@ -4653,13 +4637,13 @@
         });
 
         const mh = character.bodySlots?.mainHand;
-        if (mh && mh.name && mh.name !== '-' && mh.name !== 'Yok') {
+        if (mh && mh.name && mh.name !== '-' && mh.name !== 'None') {
           if (isRangedOrThrownWeapon(mh) && !availableItems.some(i => i.name === mh.name)) {
             availableItems.push({ name: mh.name, category: 'Weapon' });
           }
         }
         const oh = character.bodySlots?.offHand;
-        if (oh && oh.name && oh.name !== '-' && oh.name !== 'Yok') {
+        if (oh && oh.name && oh.name !== '-' && oh.name !== 'None') {
           if (isRangedOrThrownWeapon(oh) && !availableItems.some(i => i.name === oh.name)) {
             availableItems.push({ name: oh.name, category: 'Weapon' });
           } else if (isBucklerItem(oh) && !availableItems.some(i => i.name === oh.name)) {
@@ -4694,7 +4678,7 @@
       } else {
         // 1. From character.weapons (excluding ranged-only weapons)
         (character.weapons || []).forEach(w => {
-          if (w && w.name && w.name !== 'None' && w.name !== 'Yok') {
+          if (w && w.name && w.name !== 'None') {
             if (!isRangedOnlyWeapon(w) && !availableItems.some(i => i.name === w.name)) {
               availableItems.push({
                 name: w.name,
@@ -4706,7 +4690,7 @@
 
         // 2. From bodySlots (mainHand and offHand, excluding ranged-only weapons)
         const mh = character.bodySlots?.mainHand;
-        if (mh && mh.name && mh.name !== '-' && mh.name !== 'Yok') {
+        if (mh && mh.name && mh.name !== '-' && mh.name !== 'None') {
           if (!isRangedOnlyWeapon(mh) && !availableItems.some(i => i.name === mh.name)) {
             availableItems.push({
               name: mh.name,
@@ -4715,7 +4699,7 @@
           }
         }
         const oh = character.bodySlots?.offHand;
-        if (oh && oh.name && oh.name !== '-' && oh.name !== 'Yok') {
+        if (oh && oh.name && oh.name !== '-' && oh.name !== 'None') {
           if (!isRangedOnlyWeapon(oh) && !availableItems.some(i => i.name === oh.name)) {
             availableItems.push({
               name: oh.name,
@@ -4748,10 +4732,10 @@
           }
         });
 
-                // 5. Shields are sourced strictly from inventory & bodySlots (no dummy shields)
+        // 5. Shields are sourced strictly from inventory & bodySlots (no dummy shields)
 
         // 6. Always ensure Unarmed Strike is available in melee weapon selection
-        if (!availableItems.some(i => (i.name || '').toLowerCase().includes('unarmed') || (i.name || '').toLowerCase().includes('silahsız'))) {
+        if (!availableItems.some(i => (i.name || '').toLowerCase().includes('unarmed'))) {
           availableItems.unshift({
             name: 'Unarmed Strike',
             category: 'Weapon'
@@ -4759,28 +4743,28 @@
         }
       }
 
-      // Build unified options HTML for both Ana El and İkinci El
+      // Build unified options HTML for both Main Hand and Off-Hand
       let optionsHtml = '<option value="None">None / Empty</option>';
       const wepsList = availableItems.filter(i => i.category === 'Weapon');
       const shieldsList = availableItems.filter(i => i.category === 'Shield');
 
       if (wepsList.length > 0) {
-        optionsHtml += '<optgroup label="⚔️ Silahlar">';
+        optionsHtml += '<optgroup label="⚔️ Weapons">';
         wepsList.forEach(w => {
-          optionsHtml += `<option value="${w.name}">${w.name} (Silah)</option>`;
+          optionsHtml += `<option value="${w.name}">${w.name} (Weapon)</option>`;
         });
         optionsHtml += '</optgroup>';
       }
 
       if (shieldsList.length > 0) {
-        optionsHtml += '<optgroup label="🛡️ Kalkanlar">';
+        optionsHtml += '<optgroup label="🛡️ Shields">';
         shieldsList.forEach(s => {
-          optionsHtml += `<option value="${s.name}">${s.name} (Kalkan)</option>`;
+          optionsHtml += `<option value="${s.name}">${s.name} (Shield)</option>`;
         });
         optionsHtml += '</optgroup>';
       }
 
-      // Populate Set 1 (Ana El) dropdown
+      // Populate Set 1 (Main Hand) dropdown
       const s1Main = document.getElementById('set1-main-select');
       if (s1Main) {
         s1Main.innerHTML = optionsHtml;
@@ -4796,7 +4780,7 @@
         s1Grip.value = sets.set1.grip;
       }
 
-      // Populate Set 2 (İkinci El) dropdown
+      // Populate Set 2 (Off-Hand) dropdown
       const s2Main = document.getElementById('set2-main-select');
       const s2Hint = document.getElementById('set2-weapon-editor-hint');
       const mainWep = sets.set1?.mainWeapon;
@@ -4807,9 +4791,9 @@
       if (s2Main) {
         if (isTwoHandLocked) {
           s2Main.innerHTML = '<option value="None" selected>None / Empty (Main Hand 2H Weapon)</option>';
-          s2Main.value = 'Yok';
+          s2Main.value = 'None';
           s2Main.disabled = true;
-          sets.set2.mainWeapon = 'Yok';
+          sets.set2.mainWeapon = 'None';
           if (s2Hint) {
             s2Hint.innerHTML = `<span class="text-amber-400 font-medium">⚠️ Your main-hand weapon "${mainWep}" is two-handed. Cannot equip an off-hand weapon or shield without Monkey Grip.</span>`;
           }
@@ -4822,8 +4806,8 @@
           if (sets.set2?.mainWeapon && Array.from(s2Main.options).some(o => o.value === sets.set2.mainWeapon)) {
             s2Main.value = sets.set2.mainWeapon;
           } else {
-            s2Main.value = 'Yok';
-            sets.set2.mainWeapon = 'Yok';
+            s2Main.value = 'None';
+            sets.set2.mainWeapon = 'None';
           }
         }
       }
@@ -4841,7 +4825,7 @@
       const hasOversized = typeof RuleEngine !== 'undefined' ? RuleEngine.hasOversizedWeaponFeat(character) : false;
 
       if (setNum === 1) {
-        sets.set1.name = 'Ana El';
+        sets.set1.name = 'Main Hand';
         const chosen = document.getElementById('set1-main-select')?.value || sets.set1.mainWeapon;
         sets.set1.mainWeapon = chosen;
 
@@ -4853,13 +4837,13 @@
           const s1Grip = document.getElementById('set1-grip-select');
           if (s1Grip) s1Grip.value = '2-Hand';
 
-          // Rule 3: Ana ele iki elli bir silah seçilirse ikinci el haznesi boşaltılsın
-          sets.set2.mainWeapon = 'Yok';
+          // Rule 3: Clear off-hand slot when a two-handed weapon is selected in main hand
+          sets.set2.mainWeapon = 'None';
           sets.set2.grip = 'Off-Hand';
           sets.activeSets = [1];
           sets.activeSet = 1;
           character.activeOffHand = 'None';
-          syncWeaponSetToBodySlot('offHand', 'Yok');
+          syncWeaponSetToBodySlot('offHand', 'None');
 
           if (window._combatOffenseMode === 'ranged') {
             character.tactical.selectedRangedWeapon = chosen;
@@ -4884,15 +4868,15 @@
         }
         syncWeaponSetToBodySlot('mainHand', chosen);
       } else {
-        // setNum === 2 (İkinci El)
+        // setNum === 2 (Off-Hand)
         const mainWep = sets.set1?.mainWeapon;
         const mainIsTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(mainWep) : false;
 
-        // Rule 1: İkinci ele başka silah seçilemesin
+        // Rule 1: Cannot equip another weapon in off-hand
         if (mainIsTwoHand && !hasOversized) {
-          sets.set2.mainWeapon = 'Yok';
+          sets.set2.mainWeapon = 'None';
           sets.set2.grip = 'Off-Hand';
-          syncWeaponSetToBodySlot('offHand', 'Yok');
+          syncWeaponSetToBodySlot('offHand', 'None');
           if (typeof showToast === 'function') {
             showToast(`Your main-hand weapon "${mainWep}" is two-handed! Cannot equip an off-hand weapon or shield without Monkey Grip.`, 'warning');
           }
@@ -5013,12 +4997,12 @@
                 <span class="text-xs">${isShield ? '🛡️' : (isTwoHand ? '⚔️' : '🗡️')}</span>
                 <span class="text-xs font-bold text-white truncate">${item.name}</span>
                 <span class="text-[9px] font-semibold px-1.5 py-0.2 rounded border ${badgeColor}">
-                  ${item.weaponType || item.category || 'Silah'}
+                  ${item.weaponType || item.category || 'Weapon'}
                 </span>
               </div>
               <div class="text-[10px] text-slate-400 font-mono mt-0.5 flex items-center gap-2">
-                <span>Zar: <strong class="text-amber-300 font-bold">${diceStr}</strong></span>
-                <span>Kritik: <strong class="text-slate-300">${critStr}</strong></span>
+                <span>Dice: <strong class="text-amber-300 font-bold">${diceStr}</strong></span>
+                <span>Crit: <strong class="text-slate-300">${critStr}</strong></span>
                 <span>Type: <strong class="text-slate-300">${dmgType}</strong></span>
                 ${item.weight ? `<span class="text-slate-500">(${item.weight} lbs)</span>` : ''}
               </div>
@@ -5026,7 +5010,7 @@
             <div class="shrink-0">
               <button type="button" onclick="addSrdCatalogItemToCharacter('${escapedName}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-extrabold text-[11px] rounded-lg shadow transition flex items-center gap-1 cursor-pointer">
                 <span>➕</span>
-                <span>Karaktere Ekle</span>
+                <span>Add to Character</span>
               </button>
             </div>
           </div>
@@ -5108,7 +5092,7 @@
         // Auto equip if character active weapon is empty or Unarmed Strike
         ensureWeaponSetsData();
         const curActive = character.activeWeapon;
-        if (!curActive || curActive === 'Unarmed Strike' || curActive === 'Yok' || curActive === 'None') {
+        if (!curActive || curActive === 'Unarmed Strike' || curActive === 'None') {
           character.activeWeapon = item.name;
           if (character.tactical?.weaponSets?.set1) {
             character.tactical.weaponSets.set1.mainWeapon = item.name;
@@ -5120,7 +5104,7 @@
       // 3. If Shield, make sure it's selected in set2 if set2 is empty
       if (cat === 'Shield') {
         ensureWeaponSetsData();
-        if (!character.tactical?.weaponSets?.set2?.mainWeapon || character.tactical?.weaponSets?.set2?.mainWeapon === 'Yok') {
+        if (!character.tactical?.weaponSets?.set2?.mainWeapon || character.tactical?.weaponSets?.set2?.mainWeapon === 'None') {
           character.tactical.weaponSets.set2.mainWeapon = item.name;
         }
       }
@@ -5138,7 +5122,7 @@
       if (typeof showDiceTopToast === 'function') {
         const icon = cat === 'Shield' ? '🛡️' : (cat === 'Armor' ? '🛡️' : '⚔️');
         showDiceTopToast({
-          title: `${item.name} Karakterine Eklendi!`,
+          title: `${item.name} Added to Character!`,
           breakdown: `D&D 3.5e RAW SRD: "${item.name}" added to equipment pool.`,
           icon: icon
         });
@@ -5146,7 +5130,7 @@
     }
 
     function getWeaponOrPoolItem(itemName) {
-      if (!character || !itemName || itemName === 'Yok' || itemName === 'None') return null;
+      if (!character || !itemName || itemName === 'None') return null;
       let wep = (character.weapons || []).find(w => w && w.name === itemName);
       let poolItem = (character.gearPool || []).find(g => g && g.name === itemName);
       return { wep, poolItem };
@@ -5158,7 +5142,7 @@
       if (!sets) return;
       const setObj = setNum === 1 ? sets.set1 : sets.set2;
       const wepName = setObj?.mainWeapon;
-      if (!wepName || wepName === 'Yok' || wepName === 'None') return;
+      if (!wepName || wepName === 'None') return;
 
       let wep = (character.weapons || []).find(w => w && w.name === wepName);
       let poolItem = (character.gearPool || []).find(g => g && g.name === wepName);
@@ -5210,7 +5194,7 @@
       if (!sets) return;
       const setObj = setNum === 1 ? sets.set1 : sets.set2;
       const wepName = setObj?.mainWeapon;
-      if (!wepName || wepName === 'Yok' || wepName === 'None') return;
+      if (!wepName || wepName === 'None') return;
 
       let wep = (character.weapons || []).find(w => w && w.name === wepName);
       if (!wep) {
@@ -5286,7 +5270,7 @@
       const setObj = setNum === 1 ? sets?.set1 : sets?.set2;
       const wepName = setObj?.mainWeapon;
 
-      if (!wepName || wepName === 'Yok' || wepName === 'None') {
+      if (!wepName || wepName === 'None') {
         container.innerHTML = '<span class="text-[9px] text-slate-500 italic">No equipment selected.</span>';
         return;
       }
@@ -5477,7 +5461,7 @@
 
       // Stances
       if (characterHasManeuver(character, 'Punishing Stance')) {
-        qualifiedPool.push({ name: 'Punishing Stance', source: 'Stance', bonusAtk: 0, dice: '1d6', type: 'Slashing', combatScope: 'melee', active: false, notes: '+1d6 Hasar, -2 AC' });
+        qualifiedPool.push({ name: 'Punishing Stance', source: 'Stance', bonusAtk: 0, dice: '1d6', type: 'Slashing', combatScope: 'melee', active: false, notes: '+1d6 Damage, -2 AC' });
       }
 
       // Strike Maneuvers
@@ -5490,7 +5474,7 @@
 
       // Spells
       if (characterHasSpell(character, 'Blade of Blood')) {
-        qualifiedPool.push({ name: 'Blade of Blood', source: 'Spell', bonusAtk: 0, dice: '3d6', type: 'Negative Energy', combatScope: 'melee', active: false, notes: '+3d6 Hasar' });
+        qualifiedPool.push({ name: 'Blade of Blood', source: 'Spell', bonusAtk: 0, dice: '3d6', type: 'Negative Energy', combatScope: 'melee', active: false, notes: '+3d6 Damage' });
       }
 
       // Items
@@ -5507,7 +5491,7 @@
 
       // Sneak Attack
       if (characterHasSneakAttack(character)) {
-        qualifiedPool.push({ name: 'Sneak Attack', source: 'Feat', bonusAtk: 0, dice: '1d6', type: 'Precision', combatScope: 'both', active: false, notes: '+1d6 Hassas Hasar' });
+        qualifiedPool.push({ name: 'Sneak Attack', source: 'Feat', bonusAtk: 0, dice: '1d6', type: 'Precision', combatScope: 'both', active: false, notes: '+1d6 Precision Damage' });
       }
 
       // CLEANUP: Strictly remove unowned modifiers, spell attacks, and non-melee items lingering from prior storage/dummy data
@@ -5516,7 +5500,7 @@
         const n = m.name.toLowerCase();
         // Disallow spell attacks, saving throw spells, and direct ammunition from melee active modifiers
         if (n.includes('acid arrow') || n.includes('fireball') || n.includes('scorching ray') || n.includes('magic missile') || n.includes('ray of frost') || n.includes('disintegrate')) return false;
-        if ((n.includes('arrow') || n.includes('ok\b')) && !n.includes('enhance arrow') && !n.includes('blade of blood')) return false;
+        if (n.includes('arrow') && !n.includes('enhance arrow') && !n.includes('blade of blood')) return false;
         const dbEntry = typeof findMasterItem === 'function' ? findMasterItem(m.name) : null;
         if (dbEntry) {
           if (['ranged_touch', 'melee_touch', 'spell_auto', 'saving_throw', 'ammunition', 'weapon', 'shield'].includes(dbEntry.attackType)) {
@@ -5524,8 +5508,8 @@
           }
           if (dbEntry.combatScope === 'ranged' || dbEntry.scope === 'Ranged Only') return false;
         }
-        if (n.includes('twf') || n.includes('çift silah')) return true;
-        if (n.includes('flurry') || n.includes('seri vuruş')) return hasFlurryAbility(character);
+        if (n.includes('twf') || n.includes('two-weapon')) return true;
+        if (n.includes('flurry')) return hasFlurryAbility(character);
         if (n.includes('punishing stance')) return characterHasManeuver(character, 'Punishing Stance');
         if (n.includes('mountain hammer')) return characterHasManeuver(character, 'Mountain Hammer');
         if (n.includes('steel wind')) return characterHasManeuver(character, 'Steel Wind');
@@ -5584,7 +5568,7 @@
       const mainIsTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(mainWep) : false;
       const hasOversized = typeof RuleEngine !== 'undefined' ? RuleEngine.hasOversizedWeaponFeat(character) : false;
 
-      // Rule 2: Ana el çift elli ise ve tek elle tutmayı sağlayan feat yoksa TWF çalışamaz
+      // Rule 2: TWF unavailable if main hand is two-handed without oversized weapon feat
       if (isChecked && mainIsTwoHand && !hasOversized) {
         if (typeof showToast === 'function') {
           showToast(`Your main-hand weapon "${mainWep}" is two-handed! Two-Weapon Fighting (TWF) requires Monkey Grip.`, 'warning');
@@ -5594,7 +5578,7 @@
         return;
       }
 
-      let mod = (character.activeModifiers || []).find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Çift Silah')));
+      let mod = (character.activeModifiers || []).find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Two-Weapon')));
       if (mod) {
         mod.active = isChecked;
       } else {
@@ -5623,7 +5607,7 @@
       const flanking = !!character.tactical?.flanking;
       const charge = !!character.tactical?.charge;
       const hg = !!character.tactical?.higherGround;
-      const twfMod = (character.activeModifiers || []).find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Çift Silah')));
+      const twfMod = (character.activeModifiers || []).find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Two-Weapon')));
       const isTWF = twfMod?.active ?? false;
 
       // Row 1: Fixed 3 items: 1. Flanking, 2. Charge, 3. Higher Ground (Glow Card Toggle)
@@ -5696,11 +5680,11 @@
 
       const dynamicCardsHtml = visibleMods.map((mod, idx) => {
         if (!mod || !mod.name) return '';
-        let bonusStr = mod.dice ? mod.dice : (mod.bonusDmg ? `+${mod.bonusDmg} Dmg` : (mod.bonusAtk ? `+${mod.bonusAtk} Atk` : 'Aktif'));
+        let bonusStr = mod.dice ? mod.dice : (mod.bonusDmg ? `+${mod.bonusDmg} Dmg` : (mod.bonusAtk ? `+${mod.bonusAtk} Atk` : 'Active'));
         let cardBorderActive = 'border border-rose-500 bg-rose-950/60 text-white shadow-md shadow-rose-950/50 ring-1 ring-rose-500/40';
         let bonusColor = 'text-amber-300';
 
-        if (mod.name.includes('Flurry') || mod.name.includes('Seri Vuruş')) {
+        if (mod.name.includes('Flurry')) {
           bonusStr = '+1 Attack';
           bonusColor = 'text-rose-300';
         }
@@ -5797,7 +5781,7 @@
           id: 'totalDefense',
           name: 'Total Defense',
           source: 'Standard',
-          bonusStr: `+${tdDodge} AC • Pasif`,
+          bonusStr: `+${tdDodge} AC • Passive`,
           active: td,
           onclick: 'onToggleTotalDefense()'
         },
@@ -5805,7 +5789,7 @@
           id: 'shieldBlock',
           name: 'Shield Block',
           source: 'Counter',
-          bonusStr: '+4 AC Kalkan',
+          bonusStr: '+4 Shield AC',
           active: sb,
           onclick: 'triggerShieldBlockReaction()'
         }
@@ -5890,16 +5874,16 @@
         return 'thrown';
       }
       const w = weaponName.toLowerCase();
-      if (w.includes('longbow') || w.includes('shortbow') || w.includes('yay') || w.includes('composite')) {
+      if (w.includes('longbow') || w.includes('shortbow') || w.includes('bow') || w.includes('composite')) {
         return 'arrow';
       }
-      if (w.includes('crossbow') || w.includes('arbalet') || w.includes('kundak')) {
+      if (w.includes('crossbow')) {
         return 'bolt';
       }
-      if (w.includes('sling') || w.includes('sapan')) {
+      if (w.includes('sling')) {
         return 'bullet';
       }
-      if (w.includes('blowgun') || w.includes('üfleme')) {
+      if (w.includes('blowgun')) {
         return 'needle';
       }
       return 'none';
@@ -5915,8 +5899,8 @@
         const dbEntry = typeof findMasterItem === 'function' ? findMasterItem(item?.name || low) : null;
         if (dbEntry && dbEntry.dice) return dbEntry.dice;
         if (low.includes('heavy crossbow')) return '1d10';
-        if (low.includes('shortbow') || low.includes('kısa yay')) return '1d6';
-        if (low.includes('sling') || low.includes('dagger') || low.includes('hançer') || low.includes('sapan')) return '1d4';
+        if (low.includes('shortbow')) return '1d6';
+        if (low.includes('sling') || low.includes('dagger')) return '1d4';
         return '1d8';
       }
 
@@ -5926,8 +5910,8 @@
         const dbEntry = typeof findMasterItem === 'function' ? findMasterItem(item?.name || low) : null;
         if (dbEntry && dbEntry.crit) return dbEntry.crit;
         if (dbEntry && dbEntry.critMin) return `${dbEntry.critMin}-20 / x${dbEntry.critMult || 2}`;
-        if (low.includes('crossbow') || low.includes('arbalet') || low.includes('dagger') || low.includes('hançer')) return '19-20 / x2';
-        if (low.includes('sling') || low.includes('sapan')) return '20 / x2';
+        if (low.includes('crossbow') || low.includes('dagger')) return '19-20 / x2';
+        if (low.includes('sling')) return '20 / x2';
         return '20 / x3';
       }
 
@@ -5939,17 +5923,17 @@
         if (dbEntry && dbEntry.range) return dbEntry.range;
         if (low.includes('heavy crossbow')) return '120 ft';
         if (low.includes('composite longbow')) return '110 ft';
-        if (low.includes('longbow') || low.includes('uzun yay')) return '100 ft';
+        if (low.includes('longbow')) return '100 ft';
         if (low.includes('light crossbow')) return '80 ft';
-        if (low.includes('shortbow') || low.includes('kısa yay')) return '60 ft';
-        if (low.includes('sling') || low.includes('sapan')) return '50 ft';
+        if (low.includes('shortbow')) return '60 ft';
+        if (low.includes('sling')) return '50 ft';
         return '10 ft';
       }
 
       function checkAndAdd(item, source) {
         if (!item) return;
         const name = typeof item === 'string' ? item : (item.name || '');
-        if (!name || name === 'Yok' || name === '-' || name === 'None' || seen.has(name)) return;
+        if (!name || name === '-' || name === 'None' || seen.has(name)) return;
 
         if (typeof isAmmunitionItem === 'function' && isAmmunitionItem(item)) return;
         const isRanged = typeof isRangedOrThrownWeapon === 'function' ? isRangedOrThrownWeapon(item) : true;
@@ -5963,7 +5947,7 @@
             dice: getRangedWeaponDefaultDice(item, low),
             crit: getRangedWeaponDefaultCrit(item, low),
             range: getRangedWeaponDefaultRange(item, low),
-            dmgType: (low.includes('sling') || low.includes('sapan')) ? 'Ezici' : 'Delici',
+            dmgType: low.includes('sling') ? 'Bludgeoning' : 'Piercing',
             ammoType: getRequiredAmmunitionType(name)
           });
         }
@@ -5976,9 +5960,9 @@
       checkAndAdd(s2, 'Equipped (Off-Hand)');
 
       // 2. Check gearPool and inventory
-      (char.gearPool || []).forEach(it => checkAndAdd(it, 'Envanter'));
-      (char.inventory || []).forEach(it => checkAndAdd(it, 'Envanter'));
-      (char.weapons || []).forEach(it => checkAndAdd(it, 'Silah Listesi'));
+      (char.gearPool || []).forEach(it => checkAndAdd(it, 'Inventory'));
+      (char.inventory || []).forEach(it => checkAndAdd(it, 'Inventory'));
+      (char.weapons || []).forEach(it => checkAndAdd(it, 'Weapon List'));
 
       // 3. Fallback removed per Rule #5 (only owned ranged weapons listed)
       return list;
@@ -5989,9 +5973,9 @@
       if (!char.tactical) char.tactical = {};
       const allRanged = findAvailableRangedWeapons(char);
 
-      // 1. First priority: Check weapon sets Set 1 (Ana El)
+      // 1. First priority: Check weapon sets Set 1 (Main Hand)
       const s1Wep = char.tactical?.weaponSets?.set1?.mainWeapon;
-      if (s1Wep && s1Wep !== 'Yok' && s1Wep !== 'None' && s1Wep !== '-') {
+      if (s1Wep && s1Wep !== 'None' && s1Wep !== '-') {
         const foundInRanged = allRanged.find(w => w.name.toLowerCase().trim() === s1Wep.toLowerCase().trim());
         if (foundInRanged) {
           char.tactical.selectedRangedWeapon = foundInRanged.name;
@@ -6006,7 +5990,7 @@
             dice: anyWep?.dice || getRangedWeaponDefaultDice(anyWep, low),
             crit: anyWep?.critMin ? `${anyWep.critMin}-20/x${anyWep.critMult || 2}` : getRangedWeaponDefaultCrit(anyWep, low),
             range: anyWep?.range || getRangedWeaponDefaultRange(anyWep, low),
-            dmgType: (low.includes('sling') || low.includes('sapan')) ? 'Ezici' : 'Delici',
+            dmgType: low.includes('sling') ? 'Bludgeoning' : 'Piercing',
             ammoType: getRequiredAmmunitionType(s1Wep)
           };
           char.tactical.selectedRangedWeapon = s1Wep;
@@ -6018,7 +6002,7 @@
       let matched = allRanged.find(w => w.name === chosenName);
 
       if (!matched) {
-        matched = allRanged[0] || { name: 'Kompozit Uzun Yay (Composite Longbow)', source: 'SRD Standart', dice: '1d8', crit: '20 / x3', range: '100 ft', dmgType: 'Delici', ammoType: 'arrow' };
+        matched = allRanged[0] || { name: 'Composite Longbow', source: 'SRD Standard', dice: '1d8', crit: '20 / x3', range: '100 ft', dmgType: 'Piercing', ammoType: 'arrow' };
         char.tactical.selectedRangedWeapon = matched.name;
       }
       return matched;
@@ -6045,18 +6029,18 @@
       if (item) return item;
 
       // 3. Substring match
-      if (low.includes('masterwork') || low.includes('usta işi')) return allGear.find(g => (g.name || '').toLowerCase().includes('usta işi') || (g.name || '').toLowerCase().includes('masterwork'));
+      if (low.includes('masterwork')) return allGear.find(g => (g.name || '').toLowerCase().includes('masterwork'));
       if (low.includes('+2')) return allGear.find(g => (g.name || '').includes('+2'));
       if (low.includes('+1')) return allGear.find(g => (g.name || '').includes('+1'));
-      if (low.includes('alev') || low.includes('fire')) return allGear.find(g => (g.name || '').toLowerCase().includes('alev') || (g.name || '').toLowerCase().includes('fire'));
-      if (low.includes('gümüş') || low.includes('silver')) return allGear.find(g => (g.name || '').toLowerCase().includes('gümüş') || (g.name || '').toLowerCase().includes('silver'));
-      if (low.includes('acid') || low.includes('asit')) return allGear.find(g => (g.name || '').toLowerCase().includes('acid') || (g.name || '').toLowerCase().includes('asit'));
+      if (low.includes('fire')) return allGear.find(g => (g.name || '').toLowerCase().includes('fire'));
+      if (low.includes('silver')) return allGear.find(g => (g.name || '').toLowerCase().includes('silver'));
+      if (low.includes('acid')) return allGear.find(g => (g.name || '').toLowerCase().includes('acid'));
 
       const activeWep = getActiveCombatRangedWeapon(character);
       const at = activeWep ? activeWep.ammoType : 'arrow';
-      if (at === 'arrow') return allGear.find(g => (g.name || '').toLowerCase().includes('ok') || (g.name || '').toLowerCase().includes('arrow'));
-      if (at === 'bolt') return allGear.find(g => (g.name || '').toLowerCase().includes('bolt') || (g.name || '').toLowerCase().includes('kundak'));
-      if (at === 'bullet') return allGear.find(g => (g.name || '').toLowerCase().includes('mermi') || (g.name || '').toLowerCase().includes('sapan') || (g.name || '').toLowerCase().includes('taş'));
+      if (at === 'arrow') return allGear.find(g => (g.name || '').toLowerCase().includes('arrow'));
+      if (at === 'bolt') return allGear.find(g => (g.name || '').toLowerCase().includes('bolt'));
+      if (at === 'bullet') return allGear.find(g => (g.name || '').toLowerCase().includes('bullet') || (g.name || '').toLowerCase().includes('sling'));
 
       return allGear[0] || null;
     }
@@ -6064,7 +6048,7 @@
     function consumeEquippedAmmunition(count = 1) {
       if (window._combatOffenseMode !== 'ranged') return true;
       const arrowSel = document.getElementById('combat-ranged-arrow-select');
-      const chosenName = arrowSel?.value || character.tactical?.selectedArrow || 'Standart Ok';
+      const chosenName = arrowSel?.value || character.tactical?.selectedArrow || 'Standard Arrow';
       const item = getAmmunitionItemByName(chosenName);
 
       if (!item) {
@@ -6123,7 +6107,7 @@
       if (weaponSelect) {
         weaponSelect.innerHTML = allRanged.map(w => {
           const isSel = w.name === activeWep.name;
-          const badge = w.source.includes('Envanter') || w.source.includes('Kuşan') ? '🎒 ' : '';
+          const badge = w.source.includes('Inventory') || w.source.includes('Equipped') ? '🎒 ' : '';
           return `<option value="${w.name}" ${isSel ? 'selected' : ''}>${badge}${w.name} (${w.dice} • ${w.range})</option>`;
         }).join('');
       }
@@ -6140,7 +6124,7 @@
       }
       if (ammoTitle) {
         if (ammoType === 'arrow') ammoTitle.textContent = 'Arrows & Ammunition (Bow)';
-        else if (ammoType === 'bolt') ammoTitle.textContent = 'Kundak Oku / Bolt (Arbalet)';
+        else if (ammoType === 'bolt') ammoTitle.textContent = 'Crossbow Bolts';
         else if (ammoType === 'bullet') ammoTitle.textContent = 'Sling Bullets / Stones';
         else if (ammoType === 'thrown') ammoTitle.textContent = 'Thrown Weapons';
         else ammoTitle.textContent = 'Ammunition';
@@ -6158,19 +6142,19 @@
 
         let matches = false;
         if (ammoType === 'thrown') {
-          matches = (typeof isThrownWeapon === 'function' && isThrownWeapon(item)) || low.includes('thrown') || low.includes('fırlatma') || (item.tags && item.tags.includes('thrown'));
+          matches = (typeof isThrownWeapon === 'function' && isThrownWeapon(item)) || low.includes('thrown') || (item.tags && item.tags.includes('thrown'));
         } else if (ammoType === 'arrow') {
           const isBolt = low.includes('bolt') || item.weaponType === 'Crossbow';
-          const isBullet = low.includes('bullet') || low.includes('sapan') || item.weaponType === 'Sling';
-          matches = !isBolt && !isBullet && (low.includes('ok') || low.includes('arrow') || item.weaponType === 'Bow');
+          const isBullet = low.includes('bullet') || item.weaponType === 'Sling';
+          matches = !isBolt && !isBullet && (low.includes('arrow') || item.weaponType === 'Bow');
         } else if (ammoType === 'bolt') {
-          const isArrow = low.includes('arrow') || low.includes('ok') || item.weaponType === 'Bow';
-          const isBullet = low.includes('bullet') || low.includes('sapan') || item.weaponType === 'Sling';
-          matches = !isArrow && !isBullet && (low.includes('bolt') || low.includes('kundak') || item.weaponType === 'Crossbow');
+          const isArrow = low.includes('arrow') || item.weaponType === 'Bow';
+          const isBullet = low.includes('bullet') || item.weaponType === 'Sling';
+          matches = !isArrow && !isBullet && (low.includes('bolt') || item.weaponType === 'Crossbow');
         } else if (ammoType === 'bullet') {
-          const isArrow = low.includes('arrow') || low.includes('ok') || item.weaponType === 'Bow';
+          const isArrow = low.includes('arrow') || item.weaponType === 'Bow';
           const isBolt = low.includes('bolt') || item.weaponType === 'Crossbow';
-          matches = !isArrow && !isBolt && (low.includes('bullet') || low.includes('mermi') || low.includes('sapan') || low.includes('taş') || item.weaponType === 'Sling');
+          matches = !isArrow && !isBolt && (low.includes('bullet') || low.includes('sling') || low.includes('stone') || item.weaponType === 'Sling');
         }
 
         // Exclude weapons from ammo list unless it is a thrown weapon for thrown mode
@@ -6187,7 +6171,7 @@
       if (ammoSelect) {
         let curSel = character.tactical.selectedArrow;
         if (!curSel || !matchingAmmo.some(a => a.name === curSel || a.ammoVal === curSel)) {
-          curSel = matchingAmmo[0]?.name || 'Standart Ok';
+          curSel = matchingAmmo[0]?.name || 'Standard Arrow';
           character.tactical.selectedArrow = curSel;
         }
 
@@ -6207,19 +6191,19 @@
       const arrowSel = document.getElementById('combat-ranged-arrow-select');
       const qtyBadge = document.getElementById('combat-ammo-qty-badge');
       if (!arrowSel) return;
-      const chosenName = arrowSel.value || character.tactical?.selectedArrow || 'Standart Ok';
+      const chosenName = arrowSel.value || character.tactical?.selectedArrow || 'Standard Arrow';
       const item = getAmmunitionItemByName(chosenName);
       const qty = item ? Number(item.qty !== undefined ? item.qty : (item.count !== undefined ? item.count : 0)) : 0;
 
       if (qtyBadge) {
         if (qty <= 0) {
           qtyBadge.className = 'shrink-0 font-mono font-bold text-xs px-2.5 py-1 rounded bg-rose-950/60 border border-rose-500/60 text-rose-300 whitespace-nowrap shadow-sm';
-          qtyBadge.textContent = '0 Adet';
+          qtyBadge.textContent = '0 Left';
           qtyBadge.title = 'Ammunition depleted!';
         } else {
           qtyBadge.className = 'shrink-0 font-mono font-bold text-xs px-2.5 py-1 rounded bg-slate-950 border border-amber-500/40 text-emerald-400 whitespace-nowrap shadow-sm';
-          qtyBadge.textContent = `${qty} Adet`;
-          qtyBadge.title = `Kalan: ${qty} Adet`;
+          qtyBadge.textContent = `${qty} Left`;
+          qtyBadge.title = `Remaining: ${qty}`;
         }
       }
     }
@@ -6263,17 +6247,17 @@
     function getAmmoValFromName(name) {
       if (!name) return 'standard';
       const low = name.toLowerCase();
-      if (low.includes('masterwork') || low.includes('usta işi')) return 'masterwork';
+      if (low.includes('masterwork')) return 'masterwork';
       if (low.includes('+2')) return 'plus2';
       if (low.includes('+1')) return 'plus1';
-      if (low.includes('fire') || low.includes('alev')) return 'fire';
-      if (low.includes('acid') || low.includes('asit')) return 'acid';
-      if (low.includes('shock') || low.includes('şok')) return 'shock';
-      if (low.includes('silver') || low.includes('gümüş')) return 'silver';
-      if (low.includes('cold iron') || low.includes('soğuk demir')) return 'cold_iron';
-      if (low.includes('adamantine') || low.includes('adamantin')) return 'adamantine';
-      if (low.includes('blunt') || low.includes('ezici') || low.includes('kör')) return 'blunt';
-      if (low.includes('stone') || low.includes('taş')) return 'stone';
+      if (low.includes('fire')) return 'fire';
+      if (low.includes('acid')) return 'acid';
+      if (low.includes('shock')) return 'shock';
+      if (low.includes('silver')) return 'silver';
+      if (low.includes('cold iron')) return 'cold_iron';
+      if (low.includes('adamantine')) return 'adamantine';
+      if (low.includes('blunt')) return 'blunt';
+      if (low.includes('stone')) return 'stone';
       return name;
     }
 
@@ -6282,7 +6266,7 @@
       if (!weaponSelect) return;
       if (!character.tactical) character.tactical = {};
       character.tactical.selectedRangedWeapon = weaponSelect.value;
-      character.tactical.selectedArrow = 'Standart Ok';
+      character.tactical.selectedArrow = 'Standard Arrow';
       populateRangedWeaponAndAmmoUI();
       recalculateOffense();
       saveStateToStorage(false);
@@ -6325,12 +6309,12 @@
         `
         <div onclick="onRangedModifierToggle('targetInMelee')" class="relative ${tinM ? 'border border-rose-500 bg-rose-950/60 text-white shadow-md shadow-rose-950/50 ring-1 ring-rose-500/40' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-rose-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
           <div class="text-[11px] font-bold ${tinM ? 'text-white font-black' : 'text-rose-400'} leading-tight">Firing into Melee</div>
-          <div class="text-[9px] ${tinM ? 'text-rose-200 font-bold' : 'text-slate-400'} mt-1">${hasPrecise ? '⚡ Ceza Yok (Precise)' : '-4 Atk (Melee)'}</div>
+          <div class="text-[9px] ${tinM ? 'text-rose-200 font-bold' : 'text-slate-400'} mt-1">${hasPrecise ? '⚡ No Penalty (Precise)' : '-4 Atk (Melee)'}</div>
         </div>
         `,
         `
         <div onclick="onRangedModifierToggle('coverPenalty')" class="relative ${cvr ? 'border border-slate-400 bg-slate-800/80 text-white shadow-md shadow-slate-900/50 ring-1 ring-slate-400/40' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-slate-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
-          <div class="text-[11px] font-bold ${cvr ? 'text-white font-black' : 'text-slate-300'} leading-tight">Hedef Siperde</div>
+          <div class="text-[11px] font-bold ${cvr ? 'text-white font-black' : 'text-slate-300'} leading-tight">Target in Cover</div>
           <div class="text-[9px] ${cvr ? 'text-slate-100 font-bold' : 'text-slate-400'} mt-1">-4 Atk (Cover)</div>
         </div>
         `
@@ -6458,11 +6442,11 @@
       if (!character || !character.activeModifiers) return [];
       return (character.activeModifiers || []).filter(m => {
         if (!m || !m.name) return false;
-        if (m.name.includes('TWF') || m.name.includes('Çift Silah')) return false;
+        if (m.name.includes('TWF')) return false;
         if (m.combatScope === 'ranged' || m.scope === 'Ranged Only') return false;
         const n = m.name.toLowerCase();
         if (n.includes('acid arrow') || n.includes('fireball') || n.includes('scorching ray') || n.includes('magic missile') || n.includes('ray of frost') || n.includes('disintegrate')) return false;
-        if ((n.includes('arrow') || n.includes('ok\b')) && !n.includes('enhance arrow') && !n.includes('blade of blood')) return false;
+        if (n.includes('arrow') && !n.includes('enhance arrow') && !n.includes('blade of blood')) return false;
         const dbEntry = typeof findMasterItem === 'function' ? findMasterItem(m.name) : null;
         if (dbEntry) {
           if (['ranged_touch', 'melee_touch', 'spell_auto', 'saving_throw', 'ammunition', 'weapon', 'shield'].includes(dbEntry.attackType)) {
@@ -6555,12 +6539,12 @@
       const hasBootsHaste = inv.some(i => {
         const n = (typeof i === 'string' ? i : i.name || '').toLowerCase();
         const tags = Array.isArray(i.tags) ? i.tags.map(t => String(t).toLowerCase()) : [];
-        return tags.includes('haste') || tags.includes('speed') || n.includes('boots of speed') || n.includes('haste') || n.includes('hız çizme');
+        return tags.includes('haste') || tags.includes('speed') || n.includes('boots of speed') || n.includes('haste');
       });
       const hasWitchlight = inv.some(i => {
         const n = (typeof i === 'string' ? i : i.name || '').toLowerCase();
         const tags = Array.isArray(i.tags) ? i.tags.map(t => String(t).toLowerCase()) : [];
-        return tags.includes('witchlight') || n.includes('witchlight') || n.includes('cadıışığı');
+        return tags.includes('witchlight') || n.includes('witchlight');
       });
 
       const qualifiedRangedList = [];
@@ -6583,12 +6567,12 @@
         });
       }
 
-      // Situational: Uzak Menzil (Distance penalty)
+      // Situational: Range Increment (Distance penalty)
       qualifiedRangedList.push({
         id: 'rangePenalty',
-        name: 'Uzak Menzil',
+        name: 'Range Increment',
         source: 'Distance',
-        bonusStr: hasFar ? '-1 Atk (Far Shot)' : '-2 Atk / Kademe',
+        bonusStr: hasFar ? '-1 Atk (Far Shot)' : '-2 Atk / Increment',
         bonusAtk: hasFar ? -1 : -2,
         bonusDmg: 0,
         bonusType: 'penalty',
@@ -6602,7 +6586,7 @@
           id: 'rapidShot',
           name: 'Rapid Shot',
           source: 'Feat',
-          bonusStr: '-2 Atk / +1 Ok',
+          bonusStr: '-2 Atk / +1 Shot',
           bonusAtk: -2,
           bonusDmg: 0,
           bonusType: 'penalty',
@@ -6617,7 +6601,7 @@
           id: 'manyshot',
           name: 'Manyshot',
           source: 'Feat',
-          bonusStr: '-4 Atk / 2x Ok',
+          bonusStr: '-4 Atk / 2x Arrows',
           bonusAtk: -4,
           bonusDmg: 0,
           bonusType: 'penalty',
@@ -6671,7 +6655,7 @@
           id: 'sneakAttack',
           name: 'Sneak Attack',
           source: 'Precision',
-          bonusStr: `+${saDice} Hasar`,
+          bonusStr: `+${saDice} Damage`,
           bonusAtk: 0,
           bonusDmg: 0,
           dice: saDice,
@@ -6687,7 +6671,7 @@
           id: 'bootsHaste',
           name: 'Boots (Haste)',
           source: 'Item',
-          bonusStr: '+1 Atk / Ekstra Ok',
+          bonusStr: '+1 Atk / Extra Shot',
           bonusAtk: 1,
           bonusDmg: 0,
           bonusType: 'untyped',
@@ -6718,7 +6702,7 @@
         rangedPins.forEach(pin => {
           if (!pin || !pin.name) return;
           const pNameLower = pin.name.toLowerCase().trim();
-          if (pNameLower.includes('ok') || pNameLower.includes('arrow') || pNameLower.includes('bolt') || pNameLower.includes('mermi') || pin.sourceType === 'Ammunition' || pin.attackType === 'ammunition') {
+          if (pNameLower.includes('arrow') || pNameLower.includes('bolt') || pNameLower.includes('bullet') || pin.sourceType === 'Ammunition' || pin.attackType === 'ammunition') {
             return;
           }
           if (qualifiedRangedList.some(q => q.name.toLowerCase().trim() === pNameLower)) return;
@@ -6800,7 +6784,7 @@
 
     function getResolvedOffHandWeapon(character) {
       const currentOffHandName = character.activeOffHand;
-      if (!currentOffHandName || currentOffHandName === 'None' || currentOffHandName === 'Yok' || currentOffHandName === 'Boş') {
+      if (!currentOffHandName || currentOffHandName === 'None') {
         return null;
       }
 
@@ -6856,7 +6840,7 @@
         let arrowAtk = 0;
         let arrowDmgBonus = 0;
         let arrowExtraDice = '';
-        let arrowType = activeRangedWep.dmgType || 'Delici';
+        let arrowType = activeRangedWep.dmgType || 'Piercing';
         const selArrow = t.selectedArrow || 'standard';
 
         if (selArrow === 'masterwork') {
@@ -6878,7 +6862,7 @@
         } else if (selArrow === 'shock') {
           arrowExtraDice = '1d6';
         } else if (selArrow === 'blunt') {
-          arrowType = 'Ezici';
+          arrowType = 'Bludgeoning';
         }
 
         let netRangedMod = 0;
@@ -6939,7 +6923,7 @@
             id: 'ranged-1',
             label: 'Shot 1',
             hand: 'ranged',
-            handLabel: 'Menzilli',
+            handLabel: 'Ranged',
             weapon: { name: activeRangedWep.name, dice: baseDice },
             bonus: firstAtk,
             evalResult: rangedEval,
@@ -6953,7 +6937,7 @@
             id: 'ranged-2',
             label: 'Shot 2',
             hand: 'ranged',
-            handLabel: 'Menzilli',
+            handLabel: 'Ranged',
             weapon: { name: activeRangedWep.name, dice: baseDice },
             bonus: firstAtk - 5,
             evalResult: rangedEval,
@@ -6967,7 +6951,7 @@
             id: 'ranged-3',
             label: 'Shot 3',
             hand: 'ranged',
-            handLabel: 'Menzilli',
+            handLabel: 'Ranged',
             weapon: { name: activeRangedWep.name, dice: baseDice },
             bonus: firstAtk - 10,
             evalResult: rangedEval,
@@ -6981,7 +6965,7 @@
             id: 'ranged-4',
             label: 'Shot 4',
             hand: 'ranged',
-            handLabel: 'Menzilli',
+            handLabel: 'Ranged',
             weapon: { name: activeRangedWep.name, dice: baseDice },
             bonus: firstAtk - 15,
             evalResult: rangedEval,
@@ -7039,15 +7023,15 @@
       const sets = character.tactical?.weaponSets;
       const isDualFromSets = sets && Array.isArray(sets.activeSets) && sets.activeSets.includes(1) && sets.activeSets.includes(2);
       const offHandWep = getResolvedOffHandWeapon(character);
-      const hasOffHandWeapon = !!(offHandWep && offHandWep.name && offHandWep.name !== 'None' && !offHandWep.isBuckler && offHandWep.dmgType !== 'Kalkan');
+      const hasOffHandWeapon = !!(offHandWep && offHandWep.name && offHandWep.name !== 'None' && !offHandWep.isBuckler && offHandWep.dmgType !== 'Shield');
 
-      // Rule 2: Ana el çift elli ise ve tek elle tutmayı sağlayan feat yoksa TWF kesinlikle çalışmaz
-      const isTWF = !effectiveTwoHand && ((isDualFromSets && hasOffHandWeapon) || (activeMods.some(m => (m.name || '').includes('TWF') || (m.name || '').includes('Çift Silah')) && hasOffHandWeapon));
-      const isFlurry = activeMods.some(m => (m.name || '').includes('Flurry') || (m.name || '').includes('Seri Vuruş'));
+      // Rule 2: If main hand is two-handed and there is no oversized weapon feat, TWF cannot be active
+      const isTWF = !effectiveTwoHand && ((isDualFromSets && hasOffHandWeapon) || (activeMods.some(m => (m.name || '').includes('TWF')) && hasOffHandWeapon));
+      const isFlurry = activeMods.some(m => (m.name || '').includes('Flurry'));
 
       const nonChainMods = activeMods.filter(m => {
         if (!m || !m.name) return false;
-        if (m.name.includes('TWF') || m.name.includes('Çift Silah') || m.name.includes('Flurry') || m.name.includes('Seri Vuruş')) return false;
+        if (m.name.includes('TWF') || m.name.includes('Flurry')) return false;
         if (m.combatScope === 'ranged' || m.scope === 'Ranged Only') return false;
         return true;
       });
@@ -7136,7 +7120,7 @@
         id: 'main-1',
         label: isTWF ? 'Main 1' : 'Strike 1',
         hand: 'main',
-        handLabel: 'Ana El',
+        handLabel: 'Main Hand',
         weapon: wep,
         bonus: primaryBonus,
         evalResult: mainEval,
@@ -7162,7 +7146,7 @@
         const offPrimaryBonus = offEval.netAttackBonus + offPenalty;
         attackChain.push({
           id: 'off-1',
-          label: '1. Sol',
+          label: 'Off 1',
           hand: 'offhand',
           handLabel: 'Off-Hand',
           weapon: offHandWep,
@@ -7179,7 +7163,7 @@
           id: 'main-2',
           label: isTWF ? 'Main 2' : 'Strike 2',
           hand: 'main',
-          handLabel: 'Ana El',
+          handLabel: 'Main Hand',
           weapon: wep,
           bonus: secBonus,
           evalResult: mainEval,
@@ -7190,7 +7174,7 @@
           const offSecBonus = offEval.netAttackBonus - 5 + offPenalty;
           attackChain.push({
             id: 'off-2',
-            label: '2. Sol',
+            label: 'Off 2',
             hand: 'offhand',
             handLabel: 'Off-Hand',
             weapon: offHandWep,
@@ -7208,7 +7192,7 @@
           id: 'main-3',
           label: isTWF ? 'Main 3' : 'Strike 3',
           hand: 'main',
-          handLabel: 'Ana El',
+          handLabel: 'Main Hand',
           weapon: wep,
           bonus: tertBonus,
           evalResult: mainEval,
@@ -7219,7 +7203,7 @@
           const offTertBonus = offEval.netAttackBonus - 10 + offPenalty;
           attackChain.push({
             id: 'off-3',
-            label: '3. Sol',
+            label: 'Off 3',
             hand: 'offhand',
             handLabel: 'Off-Hand',
             weapon: offHandWep,
@@ -7237,7 +7221,7 @@
           id: 'main-4',
           label: isTWF ? 'Main 4' : 'Strike 4',
           hand: 'main',
-          handLabel: 'Ana El',
+          handLabel: 'Main Hand',
           weapon: wep,
           bonus: quatBonus,
           evalResult: mainEval,
@@ -7263,15 +7247,15 @@
 
         let arrowDmgBonus = 0;
         let arrowExtraDice = '';
-        let arrowType = activeRangedWep.dmgType || 'Delici';
+        let arrowType = activeRangedWep.dmgType || 'Piercing';
 
         if (selArrow === 'plus1') arrowDmgBonus = 1;
         else if (selArrow === 'plus2') arrowDmgBonus = 2;
         else if (selArrow === 'silver') arrowDmgBonus = -1;
         else if (selArrow === 'fire') arrowExtraDice = ' + 1d6 (Fire)';
-        else if (selArrow === 'acid') arrowExtraDice = ' + 1d6 (Asit)';
+        else if (selArrow === 'acid') arrowExtraDice = ' + 1d6 (Acid)';
         else if (selArrow === 'shock') arrowExtraDice = ' + 1d6 (Electricity)';
-        else if (selArrow === 'blunt') arrowType = 'Ezici';
+        else if (selArrow === 'blunt') arrowType = 'Bludgeoning';
 
         let flatDmg = arrowDmgBonus;
         const qualifiedRanged = typeof getQualifiedRangedModifiersList === 'function' ? getQualifiedRangedModifiersList() : [];
@@ -7306,7 +7290,7 @@
         const critText = activeRangedWep.crit || (activeRangedWep.critMin ? `${activeRangedWep.critMin}-20 / x${activeRangedWep.critMult || 2}` : '20 / x3');
         if (critDisplayEl) {
           critDisplayEl.textContent = critText;
-          critDisplayEl.title = `Kritik Tehdit: ${critText} (${activeRangedWep.name || 'Menzilli'})`;
+          critDisplayEl.title = `Critical Threat: ${critText} (${activeRangedWep.name || 'Ranged'})`;
         }
 
         const typeDisplayEl = document.getElementById('weapon-type-display');
@@ -7314,7 +7298,7 @@
 
         const badge = document.getElementById('weapon-stat-override-badge');
         if (badge) {
-          badge.textContent = `🏹 DEX (+${dexMod}) • ${activeRangedWep.name} (${activeRangedWep.range || 'Menzilli'})`;
+          badge.textContent = `🏹 DEX (+${dexMod}) • ${activeRangedWep.name} (${activeRangedWep.range || 'Ranged'})`;
           badge.className = 'text-[10px] font-semibold text-amber-400 text-right truncate max-w-[260px]';
         }
 
@@ -7354,7 +7338,7 @@
               <button type="button" onclick="rollAttackChainItemByIndex(${idx})" class="${btnBasisClass} min-h-[58px] py-1 px-1.5 ${bgClass} active:scale-95 border ${isLocked ? 'border-slate-800 opacity-50 cursor-not-allowed' : colorBorder + ' cursor-pointer'} rounded-lg flex flex-col items-center justify-center text-center font-mono transition shadow group shrink-0">
                 <div class="text-[9px] uppercase tracking-wider ${subtitleColor} font-sans font-bold truncate leading-tight">${item.label}</div>
                 <div class="text-xs sm:text-sm md:text-base font-black ${textColor} font-mono leading-tight my-0.5">${item.bonus >= 0 ? '+' : ''}${item.bonus}</div>
-                <div class="text-[8px] font-sans text-slate-400 group-hover:text-slate-300 font-bold truncate leading-tight">${item.handLabel || 'Menzilli'}</div>
+                <div class="text-[8px] font-sans text-slate-400 group-hover:text-slate-300 font-bold truncate leading-tight">${item.handLabel || 'Ranged'}</div>
               </button>
             `;
           }).join('');
@@ -7366,7 +7350,7 @@
                 <span class="truncate">Full</span>
               </div>
               <div class="text-xs sm:text-sm md:text-base font-black text-white font-mono leading-tight my-0.5 truncate">Attack</div>
-              <div class="text-[8px] font-sans text-red-200/90 font-bold truncate leading-tight">Tam Tur</div>
+              <div class="text-[8px] font-sans text-red-200/90 font-bold truncate leading-tight">Full Round</div>
             </button>
           `;
 
@@ -7407,7 +7391,7 @@
       const activeMods = (character.activeModifiers || []).filter(m => m && m.active);
       const nonChainMods = activeMods.filter(m => {
         if (!m || !m.name) return false;
-        if (m.name.includes('TWF') || m.name.includes('Çift Silah') || m.name.includes('Flurry') || m.name.includes('Seri Vuruş')) return false;
+        if (m.name.includes('TWF') || m.name.includes('Flurry')) return false;
         if (m.combatScope === 'ranged' || m.scope === 'Ranged Only') return false;
         return true;
       });
@@ -7422,7 +7406,7 @@
         customModifiers: nonChainMods
       });
 
-      // Update Weapon Base Stats (Temel Hasar + V2 damageParts + Stance/Manevra extra dice)
+      // Update Weapon Base Stats (Base Damage + V2 damageParts + Stance/Maneuver extra dice)
       const dmgDisplayEl = document.getElementById('weapon-damage-formula-display');
       if (dmgDisplayEl) {
         const activeDiceMods = (character.activeModifiers || []).filter(m => m.active && m.dice && m.combatScope !== 'ranged' && m.scope !== 'Ranged Only');
@@ -7473,7 +7457,7 @@
           critText += ' (Cap)';
         }
         critDisplayEl.textContent = critText;
-        critDisplayEl.title = `Kritik Tehdit: ${evalResult.critThreatRangeDisplay} / x${evalResult.critMult}`;
+        critDisplayEl.title = `Critical Threat: ${evalResult.critThreatRangeDisplay} / x${evalResult.critMult}`;
       }
 
       const typeDisplayEl = document.getElementById('weapon-type-display');
@@ -7491,11 +7475,11 @@
       const badge = document.getElementById('weapon-stat-override-badge');
       if (badge) {
         if (evalResult.sizeSteps > 0) {
-          const sourcesText = evalResult.sizeBuffSources?.join(', ') || `+${evalResult.sizeSteps} Boyut`;
+          const sourcesText = evalResult.sizeBuffSources?.join(', ') || `+${evalResult.sizeSteps} Size`;
           badge.textContent = `✨ Size Increase: ${evalResult.rawBaseDice} ➔ ${evalResult.baseDice} (${sourcesText})`;
           badge.className = 'text-[10px] font-semibold text-purple-400 text-right';
         } else if (evalResult.attackStatName.includes('Weapon Finesse')) {
-          badge.textContent = `✨ Weapon Finesse: DEX (+${evalResult.attackStatMod}) devrede`;
+          badge.textContent = `✨ Weapon Finesse: DEX (+${evalResult.attackStatMod}) active`;
           badge.className = 'text-[10px] font-semibold text-emerald-400 text-right';
         } else {
           badge.textContent = `⚔️ Using ${evalResult.attackStatName} (+${evalResult.attackStatMod})`;
@@ -7547,7 +7531,7 @@
             <button type="button" onclick="rollAttackChainItemByIndex(${idx})" class="${btnBasisClass} min-h-[58px] py-1 px-1.5 ${bgClass} active:scale-95 border ${isLocked ? 'border-slate-800 opacity-50 cursor-not-allowed' : colorBorder + ' cursor-pointer'} rounded-lg flex flex-col items-center justify-center text-center font-mono transition shadow group shrink-0">
               <div class="text-[9px] uppercase tracking-wider ${subtitleColor} font-sans font-bold truncate leading-tight">${item.label}</div>
               <div class="text-xs sm:text-sm md:text-base font-black ${textColor} font-mono leading-tight my-0.5">${item.bonus >= 0 ? '+' : ''}${item.bonus}</div>
-              <div class="text-[8px] font-sans text-slate-400 group-hover:text-slate-300 font-bold truncate leading-tight">${item.handLabel || 'Standart'}</div>
+              <div class="text-[8px] font-sans text-slate-400 group-hover:text-slate-300 font-bold truncate leading-tight">${item.handLabel || 'Standard'}</div>
             </button>
           `;
         }).join('');
@@ -7559,7 +7543,7 @@
               <span class="truncate">Full</span>
             </div>
             <div class="text-xs sm:text-sm md:text-base font-black text-white font-mono leading-tight my-0.5 truncate">Attack</div>
-            <div class="text-[8px] font-sans text-red-200/90 font-bold truncate leading-tight">Tam Tur</div>
+            <div class="text-[8px] font-sans text-red-200/90 font-bold truncate leading-tight">Full Round</div>
           </button>
         `;
 
@@ -7593,7 +7577,7 @@
       if (character.tactical?.totalDefense) {
         showDiceTopToast({
           icon: '🛡️',
-          title: 'Total Defense Devrede!',
+          title: 'Total Defense Active!',
           breakdown: 'You cannot attack this round while in Total Defense.',
           total: 'Attack Locked'
         });
@@ -7806,7 +7790,7 @@
       const subEl = document.getElementById('result-card-subtitle');
       if (subEl) subEl.textContent = 'Result card stays open until dismissed.';
       const grandLabel = document.getElementById('result-grand-total-label');
-      if (grandLabel) grandLabel.textContent = 'Toplam Potansiyel Hasar:';
+      if (grandLabel) grandLabel.textContent = 'Total Potential Damage:';
 
       let grandTotalDmg = 0;
       const summaryGrid = document.getElementById('result-summary-grid');
@@ -7866,7 +7850,7 @@
         if (summaryGrid) {
           const div = document.createElement('div');
           let borderClass = 'border-slate-700 bg-slate-900';
-          let tagBadge = '<span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-950/60 text-amber-300 border border-amber-600/50 font-bold">Ana El</span>';
+          let tagBadge = '<span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-950/60 text-amber-300 border border-amber-600/50 font-bold">Main Hand</span>';
 
           if (atk.badgeColor === 'cyan') {
             borderClass = 'border-cyan-800/60 bg-cyan-950/20';
@@ -7893,7 +7877,7 @@
               <span class="text-xs text-slate-400">Atk: <strong class="${atk.badgeColor === 'cyan' ? 'text-cyan-400' : (atk.badgeColor === 'amber' ? 'text-amber-400' : 'text-emerald-400')} text-base">${atk.totalAtk >= 0 ? '+' : ''}${atk.totalAtk}</strong> (d20:${atk.d20})</span>
               <span class="text-xs text-slate-400">DMG: <strong class="text-rose-400 text-base">${totalAttackDmg}</strong></span>
             </div>
-            <div class="text-[10px] text-amber-300 truncate mt-1">Silah: ${atk.weaponRollSum + atk.flatDmg} ${extraDetails.length ? '• ' + extraDetails.join(', ') : ''}</div>
+            <div class="text-[10px] text-amber-300 truncate mt-1">Weapon: ${atk.weaponRollSum + atk.flatDmg} ${extraDetails.length ? '• ' + extraDetails.join(', ') : ''}</div>
           `;
           summaryGrid.appendChild(div);
         }
@@ -7909,7 +7893,7 @@
         title: 'Full Attack Resolution',
         formula: attackPlans.map(a => `${a.idx}. Atk: ${a.totalAtk}`).join(' | '),
         breakdown: attackPlans.map(a => `${a.idx}. Atk: ${a.totalAtk} (d20:${a.d20}${a.isCrit ? ' ⚡' : ''})`).join(' • '),
-        total: `${grandTotalDmg} Hasar`,
+        total: `${grandTotalDmg} Damage`,
         isCrit: attackPlans.some(a => a.isCrit)
       });
     }
@@ -7953,10 +7937,10 @@
       // Stances, maneuvers, feats, or abilities whose primary identity is offensive damage or attack,
       // but which inflict an AC/Defense penalty (e.g., -2 AC, -4 AC, penalty to AC), are OFFENSE abilities, NOT defense abilities,
       // unless they provide a genuine positive defensive benefit (positive AC bonus, dodge, saving throws, shield, counter reaction).
-      const hasOffenseIdentity = /(damage|hasar|\+\d+d\d+|\bmelee\b|\byakın\b|strike|attack\b|vuruş|weapon)/i.test(fullText) ||
+      const hasOffenseIdentity = /(damage|\+\d+d\d+|\bmelee\b|strike|attack\b|weapon)/i.test(fullText) ||
                                  attackType === 'weapon_buff' ||
-                                 ((sourceType === 'Stance' || sourceType === 'Maneuver') && /(hasar|damage|\+\d+d\d+|strike|slash|pierce|bludgeon)/i.test(fullText));
-      const hasAcPenaltyOnly = /(-\d+\s*(?:to\s*)?ac\b|-\d+\s*zırh|penalty to ac)/i.test(fullText) &&
+                                 ((sourceType === 'Stance' || sourceType === 'Maneuver') && /(damage|\+\d+d\d+|strike|slash|pierce|bludgeon)/i.test(fullText));
+      const hasAcPenaltyOnly = /(-\d+\s*(?:to\s*)?ac\b|penalty to ac)/i.test(fullText) &&
                                !/(\+\d+\s*(?:to\s*)?(?:ac|dodge|armor|shield|deflect)|counter|\bblock\b|\bwall of blades\b|\broots of the mountain\b|\bpearl of black doubt\b|\biron heart focus\b)/i.test(fullText);
 
       // If it's an offensive ability with AC penalty (e.g., Punishing Stance), route strictly to offense_melee
@@ -7964,7 +7948,7 @@
         return 'offense_melee';
       }
 
-      // 1. Spells Classification (Saldırı / Kontrol / Destek / Yakın Silah Buffı)
+      // 1. Spells Classification (Offense / Control / Support / Melee Weapon Buff)
       if (sourceType === 'Spell' || dbItem?.type === 'Spell') {
         if (attackType === 'weapon_buff' || /(blade of blood|keen edge|holy sword|magic weapon|align weapon)/i.test(name)) {
           return 'offense_melee';
@@ -7974,7 +7958,7 @@
 
       // 2. Defense checks
       if (combatScope === 'defense' || pin.category === 'defense') return 'defense';
-      if (!hasAcPenaltyOnly && /(shield|armor|ac\b|defense|savunma|zırh|koruma|dodge|deflect|resist|ward|saving throw|save\b|counter|wall of blades|shield block|roots of the mountain)/i.test(fullText)) {
+      if (!hasAcPenaltyOnly && /(shield|armor|ac\b|defense|dodge|deflect|resist|ward|saving throw|save\b|counter|wall of blades|shield block|roots of the mountain)/i.test(fullText)) {
         if (!/(acid arrow|scorching ray|fireball|ray of frost|disintegrate|magic missile|blade of blood)/i.test(name)) {
           return 'defense';
         }
@@ -7989,7 +7973,7 @@
       if (attackType === 'ammunition' || combatScope === 'ranged' || sourceType === 'Ammunition' || dbItem?.type === 'Ammunition') {
         return 'offense_ranged';
       }
-      if (/(arrow|ok\b|bow\b|yay\b|crossbow|arbalet|sling|sapan|dart|shuriken|point blank|precise shot|rapid shot|many shot|far shot|enhance arrow)/i.test(name)) {
+      if (/(arrow|bow\b|crossbow|sling|dart|shuriken|point blank|precise shot|rapid shot|many shot|far shot|enhance arrow)/i.test(name)) {
         if (!/(acid arrow)/i.test(name)) {
           return 'offense_ranged';
         }
@@ -8057,13 +8041,13 @@
       try { if (typeof recalculateCombatSpell === 'function') recalculateCombatSpell(); } catch (e) {}
 
       const labelMap = {
-        auto: '🎯 Oto (Kural Motoru)',
+        auto: '🎯 Auto (Rule Engine)',
         offense_spell: '⚔️ Spell: Offense',
         spell_control: '🕸️ Spell: Control',
         spell_support: '✨ Spell: Support',
         offense_melee: '⚔️ Physical: Melee',
         offense_ranged: '🏹 Physical: Ranged',
-        defense: '🛡️ Fiziksel: Savunma'
+        defense: '🛡️ Physical: Defense'
       };
       showDiceTopToast({
         icon: '📌',
@@ -8149,7 +8133,7 @@
       const onDone = () => {
         const critText = isCrit ? ' 💥 CRITICAL THREAT! (20/x2)' : '';
         const typeLabel = isRanged ? 'Ranged Touch Attack' : 'Melee Touch Attack';
-        const dmgText = dmgExpr ? ` • Hasar: ${dmgSum} (${dmgExpr} [${rolls.join('+')}])` : '';
+        const dmgText = dmgExpr ? ` • Damage: ${dmgSum} (${dmgExpr} [${rolls.join('+')}])` : '';
 
         showDiceTopToast({
           icon: '⚡',
@@ -8225,7 +8209,7 @@
         const fullText = name + ' ' + desc;
 
         const hasDailyCharges = item.dailyCharges || (item.charges !== undefined && item.charges !== null && item.charges > 0) || (item.maxCharges && item.maxCharges > 0);
-        const mentionsActivation = /(\d+)\s*\/\s*(gün|day)|per day|günde\s*(\d+)|command word|use-activated|at will|şarj|büyüsü|casts?\b|activat|etkinleştir/i.test(fullText);
+        const mentionsActivation = /(\d+)\s*\/\s*day|per day|command word|use-activated|at will|casts?\b|activat/i.test(fullText);
         const mentionsSpellOrPower = /(fireball|lightning bolt|magic missile|scorching ray|cure|heal|shield|dimension door|teleport|haste|invisibility|fly|true seeing|blur|mirror image|barkskin|protection from|flame blade|flaming|frost|shock|shocking grasp|vampiric touch|cone of cold|disintegrate|chain lightning|sound burst)/i.test(fullText);
 
         const isPurePassiveStat = /^(cloak of resistance|belt of giant strength|ring of protection|amulet of natural armor|bracers of armor|headband of intellect|periapt of wisdom|gloves of dexterity)/i.test(name.trim());
@@ -8236,7 +8220,7 @@
         const isActive = hasDailyCharges || mentionsActivation || mentionsSpellOrPower;
         if (!isActive) return null;
 
-        const isDefense = /(shield|protection|resist|saving|counter|ac\b|zırh|savunma|koruma|dodge|deflect|ward|barrier|fortification|displacement|stoneskin|endure)/i.test(fullText);
+        const isDefense = /(shield|protection|resist|saving|counter|ac\b|dodge|deflect|ward|barrier|fortification|displacement|stoneskin|endure)/i.test(fullText);
         const isRanged = /(arrow|bow|crossbow|sling|dart|shuriken|quiver)/i.test(fullText);
         const isSpellAtk = /(acid arrow|scorching ray|fireball|ray of frost|magic missile|disintegrate|orb of|lightning bolt)/i.test(fullText);
 
@@ -8248,7 +8232,7 @@
           if (hasDailyCharges) {
             badge = `${item.charges || item.dailyCharges}/day`;
           } else {
-            badge = item.category || 'Aktif';
+            badge = item.category || 'Active';
           }
         }
 
@@ -8287,7 +8271,7 @@
           name: m.name,
           sourceType: 'Maneuver',
           action: m.action || 'Standard',
-          badge: dmgExpr || m.discipline || 'Manevra',
+          badge: dmgExpr || m.discipline || 'Maneuver',
           desc: m.notes || m.benefit || ''
         });
       });
@@ -8302,7 +8286,7 @@
 
         let cat = 'offense_melee';
         const hasPositiveDef = /(\+\d+\s*(?:to\s*)?(?:ac|dodge|armor|shield|deflect)|counter|\bblock\b|roots of the mountain|bolstering|clarity|pearl of black doubt|iron heart focus)/i.test(fullText);
-        const hasAcPenaltyOnly = /(-\d+\s*(?:to\s*)?ac\b|-\d+\s*zırh|penalty to ac)/i.test(fullText) && !hasPositiveDef;
+        const hasAcPenaltyOnly = /(-\d+\s*(?:to\s*)?ac\b|penalty to ac)/i.test(fullText) && !hasPositiveDef;
 
         if (!hasAcPenaltyOnly && (hasPositiveDef || /(dodge|defense|saving throw|save\b|shield)/i.test(fullText))) {
           cat = 'defense';
@@ -8348,7 +8332,7 @@
           const fullText = name + ' ' + desc;
 
           let cat = /(shield|barkskin|armor|defense|protection|dodge|save|resist)/i.test(fullText) ? 'defense' : 'offense_melee';
-          const badge = item.qty ? `${item.qty} Adet` : (item.category || 'Kemer');
+          const badge = item.qty ? `${item.qty} Left` : (item.category || 'Belt');
           currentAutoPins.push({
             autoKey: `belt_${item.id || item.name.toLowerCase()}`,
             autoType: 'belt_item',
@@ -8374,7 +8358,7 @@
           const isPureDrSr = /^(damage reduction|spell resistance)\s*\d+/i.test(aName.trim()) && !/breath|attack|aura|burst/i.test(fullText);
           if (isPureDrSr) return;
 
-          const isBreath = /breath weapon|cone of|line of|nefes/i.test(fullText);
+          const isBreath = /breath weapon|cone of|line of/i.test(fullText);
           const isAttack = isBreath || /gaze|frightful|fear|swallow|rend|constrict|trample|pounce|rake|poison|spit|tail sweep|crush|roar|smite/i.test(fullText);
           const isDefensive = /aura|ward|counter|shield|resistance|immunity|fortification/i.test(fullText) && !isBreath && !isAttack;
 
@@ -8682,7 +8666,7 @@
       }
       const physSummary = document.getElementById('combat-physical-collapsed-summary');
       if (physSummary) {
-        physSummary.textContent = `${character.activeWeapon || 'Silah Yok'}`;
+        physSummary.textContent = `${character.activeWeapon || 'No Weapon'}`;
       }
       const consSummary = document.getElementById('combat-consumables-collapsed-summary');
       if (consSummary) {
@@ -8715,7 +8699,7 @@
         } else {
           atkBtn.disabled = false;
           atkBtn.className = 'w-full py-3 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-600 text-white font-black text-sm md:text-base rounded-xl shadow-lg border border-red-400/40 flex items-center justify-center gap-2 transition transform active:scale-[0.98]';
-          atkBtnText.textContent = 'SALDIRI YAP (ROLL ATTACK)';
+          atkBtnText.textContent = 'ROLL ATTACK';
         }
       }
 
@@ -8758,7 +8742,7 @@
       // 4. Utility Column: Quick Consumables
       try { renderCockpitConsumables(); } catch (e) { console.error('renderCockpitConsumables error:', e); }
 
-      // 5. Pin Drawers (Büyü, Savunma ve Uzak Mühimmat Çekmeceleri)
+      // 5. Pin Drawers (Spell, Defense, and Ranged Ammunition Drawers)
       try { renderCombatPins('offense_spell'); } catch (e) { console.error("renderCombatPins('offense_spell') error:", e); }
       try { renderCombatPins('spell_control'); } catch (e) { console.error("renderCombatPins('spell_control') error:", e); }
       try { renderCombatPins('spell_support'); } catch (e) { console.error("renderCombatPins('spell_support') error:", e); }
@@ -8834,14 +8818,14 @@
         }
       });
 
-      // Update Slot 2 Status Cards (Seçenek A: İkili Kuşanma Yuvaları)
+      // Update Slot 2 Status Cards (Dual Equip Slots)
       const modeBadge = document.getElementById('offhand-slot-mode-badge');
       const statusMain = document.getElementById('offhand-status-main');
       const statusDetail = document.getElementById('offhand-status-detail');
 
       if (currentVal === 'None' || !currentVal) {
         if (modeBadge) {
-          modeBadge.textContent = 'Serbest El';
+          modeBadge.textContent = 'Free Hand';
           modeBadge.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800';
         }
         if (statusMain) statusMain.textContent = 'None / Empty';
@@ -8857,10 +8841,10 @@
             modeBadge.textContent = '🛡️ Shield Equipped';
             modeBadge.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-950/60 text-emerald-300 border border-emerald-700/50';
           }
-          if (statusMain) statusMain.textContent = `Kalkan: ${offHandItem.name}`;
+          if (statusMain) statusMain.textContent = `Shield: ${offHandItem.name}`;
           const acBonus = offHandItem.armorBonus || offHandItem.shieldBonus || (offHandItem.name.includes('+1') ? 2 : 1);
           if (statusDetail) {
-            statusDetail.textContent = `🛡️ +${acBonus} AC Kalkan Bonusu Devrede`;
+            statusDetail.textContent = `🛡️ +${acBonus} AC Shield Bonus Active`;
             statusDetail.className = 'text-[10px] font-semibold text-emerald-400';
           }
         } else {
@@ -8870,7 +8854,7 @@
             modeBadge.textContent = '⚔️ Off-Hand Weapon (TWF)';
             modeBadge.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded bg-cyan-950/60 text-cyan-300 border border-cyan-700/50';
           }
-          if (statusMain) statusMain.textContent = `Silah: ${currentVal}`;
+          if (statusMain) statusMain.textContent = `Weapon: ${currentVal}`;
           const dmgDice = secondWep?.damage || '1d4';
           const crit = secondWep?.crit || '19-20/x2';
           if (statusDetail) {
@@ -8883,7 +8867,7 @@
       // TWF Summary Badge
       const twfBadge = document.getElementById('twf-bonus-badge');
       if (twfBadge) {
-        const isTWFActive = (character.activeModifiers || []).some(m => m.active && (m.name.includes('TWF') || m.name.includes('Çift Silah')));
+        const isTWFActive = (character.activeModifiers || []).some(m => m.active && m.name.includes('TWF'));
         if (isTWFActive) {
           twfBadge.classList.remove('hidden');
           const offHandItem = character.bodySlots?.offHand;
@@ -8908,7 +8892,7 @@
       const mainIsTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(currentMainWep) : false;
       const hasOversized = typeof RuleEngine !== 'undefined' ? RuleEngine.hasOversizedWeaponFeat(character) : false;
 
-      // Rule 1: İkinci ele başka silah seçilemesin
+      // Rule 1: Prevent equipping another weapon in the off-hand
       if (mainIsTwoHand && !hasOversized && select.value !== 'None') {
         select.value = 'None';
         character.activeOffHand = 'None';
@@ -8971,7 +8955,7 @@
       recalculateOffense();
     }
 
-    // --- REAKTİF HAMLELER & COUNTERS ---
+    // --- REACTIVE MANEUVERS & COUNTERS ---
     function triggerShieldBlockReaction() {
       if (!character.tactical) character.tactical = {};
       const nextState = !character.tactical.shieldBlockActive;
@@ -8984,13 +8968,13 @@
       if (nextState) {
         showDiceTopToast({
           icon: '🛡️',
-          title: 'Shield Block Tetiklendi!',
+          title: 'Shield Block Triggered!',
           breakdown: 'Devoted Spirit: Immediate +4 Shield AC active until next turn.',
           total: '+4 Shield AC'
         });
         addDiceHistoryEntry({
           icon: '🛡️',
-          title: 'Shield Block Reaksiyonu',
+          title: 'Shield Block Reaction',
           formula: '+4 Shield AC',
           breakdown: 'Immediate Action counter defense triggered',
           total: '+4 AC'
@@ -9031,15 +9015,15 @@
         showDiceTopToast({
           icon: '⚔️',
           title: `Attack of Opportunity (AoO): ${wep.name}`,
-          breakdown: `Atk: ${totalAtk} (d20:${d20}) • Hasar: ${totalDmg} (${evalResult.baseDice}[${rolls.join('+')}]+${evalResult.netFlatDamage})`,
-          total: `${totalDmg} HP Hasar`
+          breakdown: `Atk: ${totalAtk} (d20:${d20}) • Damage: ${totalDmg} (${evalResult.baseDice}[${rolls.join('+')}]+${evalResult.netFlatDamage})`,
+          total: `${totalDmg} HP Damage`
         });
         addDiceHistoryEntry({
           icon: '⚔️',
           title: `Attack of Opportunity: ${wep.name}`,
           formula: `d20+${firstAtk} & ${evalResult.baseDice}+${evalResult.netFlatDamage}`,
           breakdown: `Atk: ${totalAtk} (d20:${d20}) • Dmg: ${totalDmg}`,
-          total: `${totalDmg} Hasar`
+          total: `${totalDmg} Damage`
         });
       };
 
@@ -9063,7 +9047,7 @@
         showDiceTopToast({
           icon: '🎯',
           title: `${skillName} Check`,
-          breakdown: `Zar: d20 (${d20}) + ${bonus} = ${total}`,
+          breakdown: `Roll: d20 (${d20}) + ${bonus} = ${total}`,
           total: `${total}`
         });
         addDiceHistoryEntry({
@@ -9089,7 +9073,7 @@
       const listEl = document.getElementById('cockpit-consumables-list');
       if (!listEl) return;
 
-      // 1. Kuşanılmış yuvalardan veya envanterden günlük şarjlı eşyalar (Witchlight Reservoir, Healing Belt, Boots of Speed vb.)
+      // 1. Daily-charge items from equipped body slots or inventory (Witchlight Reservoir, Healing Belt, Boots of Speed, etc.)
       const dailyItems = [];
       if (character.bodySlots) {
         Object.entries(character.bodySlots).forEach(([slotKey, item]) => {
@@ -9120,7 +9104,7 @@
         });
       }
 
-      // 2. Standart sarf malzemeleri (İksir, Parşömen, Değnek)
+      // 2. Standard consumables (Potions, Scrolls, Wands)
       const normalConsumables = (character.gearPool || []).filter(g =>
         (g.category === 'Consumable' || (g.name && (g.name.includes('Potion') || g.name.includes('Wand') || g.name.includes('Scroll')))) &&
         !ensureItemDailyCharges(g)
@@ -9133,7 +9117,7 @@
 
       let html = '';
 
-      // Günlük Şarjlı Eşyalar
+      // Daily-Charge Items
       if (dailyItems.length > 0) {
         html += dailyItems.map(({ item, slotKey, isSlot, dailyCharges: dc }) => {
           const lower = (item.name || '').toLowerCase();
@@ -9156,21 +9140,21 @@
                   <div class="text-[10px] text-slate-400 flex items-center gap-1.5 mt-0.5">
                     <span class="text-slate-500">Daily:</span>
                     <span class="font-mono font-bold text-amber-400 bg-amber-950/90 px-1.5 py-0.5 rounded border border-amber-600/50 shadow-inner">⚡ ${dc.current}/${dc.max}</span>
-                    <span class="text-slate-500">${dc.unit || 'tur'}</span>
+                    <span class="text-slate-500">${dc.unit || 'rounds'}</span>
                   </div>
                 </div>
                 <div class="flex items-center gap-1.5 shrink-0">
                   <button type="button" onclick="castDailyRoundItem('${encodeURIComponent(item.name)}', '${slotKey || ''}')"
                           class="py-1 px-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-[11px] rounded-lg shadow transition active:scale-95 flex items-center gap-1 cursor-pointer"
-                          title="1 Tur Harca & Aktif Et" ${dc.current <= 0 ? 'disabled' : ''}>
+                          title="Spend 1 Round & Activate" ${dc.current <= 0 ? 'disabled' : ''}>
                     <span>✨</span>
-                    <span>At (+1)</span>
+                    <span>Cast (+1)</span>
                   </button>
                   <button type="button" onclick="dischargeDailyRoundItem('${encodeURIComponent(item.name)}', '${slotKey || ''}')"
                           class="py-1 px-2.5 bg-gradient-to-r from-rose-800 to-red-700 hover:from-rose-700 hover:to-red-600 text-white font-extrabold text-[11px] rounded-lg shadow transition active:scale-95 flex items-center gap-1 cursor-pointer ${!active ? 'opacity-40 cursor-not-allowed' : ''}"
                           title="End Effect" ${!active ? 'disabled' : ''}>
                     <span>🛑</span>
-                    <span>Son</span>
+                    <span>End</span>
                   </button>
                 </div>
               </div>
@@ -9214,7 +9198,7 @@
         }).join('');
       }
 
-      // Standart Sarf Malzemeleri (İksirler, Parşömenler vb.)
+      // Standard Consumables (Potions, Scrolls, etc.)
       if (normalConsumables.length > 0) {
         html += normalConsumables.map((item) => {
           const isPotion = item.name.toLowerCase().includes('potion');
@@ -9223,13 +9207,13 @@
           const icon = isPotion ? '🧪' : (isWand ? '✨' : '📜');
           const btnColor = isPotion ? 'from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500' : 'from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500';
 
-          let actionLabel = 'Kullan';
+          let actionLabel = 'Use';
           if (item.name.includes('Cure Serious')) actionLabel = 'Drink (+3d8+5 HP)';
           else if (item.name.includes('Cure')) actionLabel = 'Drink (Heal)';
           else if (item.name.includes('Bull')) actionLabel = 'Drink (+4 STR)';
           else if (isWand) actionLabel = 'Activate (2d4+2)';
           else if (isPotion) actionLabel = 'Drink';
-          else if (isScroll) actionLabel = 'Oku';
+          else if (isScroll) actionLabel = 'Read';
 
           return `
             <div class="bg-slate-900/80 border border-slate-800 rounded-lg p-2 flex items-center justify-between gap-2 shadow-sm">
@@ -9238,7 +9222,7 @@
                   <span>${icon}</span>
                   <span class="truncate">${item.name}</span>
                 </div>
-                <div class="text-[10px] text-slate-400">Adet: <strong class="text-amber-400 font-mono">${item.qty || 1}</strong> • ${item.desc ? item.desc.slice(0, 32) + '...' : ''}</div>
+                <div class="text-[10px] text-slate-400">Qty: <strong class="text-amber-400 font-mono">${item.qty || 1}</strong> • ${item.desc ? item.desc.slice(0, 32) + '...' : ''}</div>
               </div>
               <button onclick="consumeCockpitItem('${encodeURIComponent(item.name)}')" class="shrink-0 py-1 px-2.5 bg-gradient-to-r ${btnColor} text-white font-extrabold text-[11px] rounded-lg shadow transition active:scale-95 flex items-center gap-1 cursor-pointer" ${(item.qty || 1) <= 0 ? 'disabled' : ''}>
                 <span>${icon}</span>
@@ -9255,7 +9239,7 @@
     function consumeCockpitItem(encodedName) {
       const name = decodeURIComponent(encodedName);
 
-      // Günlük şarjlı bir eşya ise otomatik consumeCockpitDailyItem'a yönlendir
+      // If it is a daily-charge item, automatically route to consumeCockpitDailyItem
       let dailyItem = null;
       let dailySlotKey = null;
       if (character.bodySlots) {
@@ -9303,21 +9287,21 @@
         showDiceTopToast({
           icon: '💚',
           title: `Drank ${name}!`,
-          breakdown: `3d8+5 [${rolls.join('+')}]+5 = +${totalHeal} HP • Can: ${prevHp} ➔ ${character.hp.current}/${character.hp.max} (Kalan: ${item.qty})`,
+          breakdown: `3d8+5 [${rolls.join('+')}]+5 = +${totalHeal} HP • HP: ${prevHp} ➔ ${character.hp.current}/${character.hp.max} (Remaining: ${item.qty})`,
           total: `+${actualGain} HP`
         });
         addDiceHistoryEntry({
           icon: '💚',
           title: `Consumed ${name}`,
           formula: '3d8+5',
-          breakdown: `[${rolls.join('+')}]+5 = ${totalHeal} Can Yenilendi`,
+          breakdown: `[${rolls.join('+')}]+5 = ${totalHeal} HP Healed`,
           total: `+${totalHeal} HP`
         });
       } else if (name.toLowerCase().includes('bull')) {
         showDiceTopToast({
           icon: '🧪',
           title: `Drank ${name}!`,
-          breakdown: `+4 Enhancement STR (30 tur boyunca aktif) • Kalan: ${item.qty}`,
+          breakdown: `+4 Enhancement STR (Active for 30 rounds) • Remaining: ${item.qty}`,
           total: '+4 STR'
         });
       } else if (name.toLowerCase().includes('wand of magic missile')) {
@@ -9328,14 +9312,14 @@
           icon: '✨',
           title: `Activated ${name}!`,
           breakdown: `2 Missiles [${r1}+1, ${r2}+1] = ${dmg} Force Damage • Charges Left: ${item.qty}`,
-          total: `${dmg} Hasar`
+          total: `${dmg} Damage`
         });
         addDiceHistoryEntry({
           icon: '✨',
           title: 'Wand of Magic Missile',
           formula: '2d4+2',
           breakdown: `2 Missiles [${r1}+1, ${r2}+1] = ${dmg} Force Damage`,
-          total: `${dmg} Hasar`
+          total: `${dmg} Damage`
         });
       } else {
         showDiceTopToast({
@@ -9365,7 +9349,7 @@
           <div class="flex items-center justify-between bg-slate-900/60 border border-slate-800 rounded px-2 py-1 text-xs">
             <span class="font-bold text-purple-300 text-[11px]">${s.name}: <strong class="font-mono text-white">${remaining}/${s.daily}</strong></span>
             <button onclick="spendMiniSpellSlot(${idx})" class="text-[10px] font-bold text-purple-300 hover:text-white bg-purple-950/60 hover:bg-purple-900 border border-purple-800/80 px-2 py-0.5 rounded transition" ${remaining <= 0 ? 'disabled' : ''}>
-              ✨ Harca (-1)
+              ✨ Expend (-1)
             </button>
           </div>
         `;
@@ -9424,7 +9408,7 @@
         icon: '⏱️',
         title: `Round ${character.tactical.round} Started!`,
         breakdown: notes.length > 0 ? notes.join(' • ') : 'All 1-round reactions refreshed.',
-        total: `Tur ${character.tactical.round}`
+        total: `Round ${character.tactical.round}`
       });
     }
 
@@ -9518,12 +9502,12 @@
       const icon = isRanged ? '🏹' : '⚔️';
       container.innerHTML = profiles.map(prof => `
         <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-900 border border-slate-700 hover:border-amber-500/80 text-xs text-amber-300 transition group shadow-sm select-none">
-          <button type="button" onclick="applySavedProfile('${prof.id}')" class="font-bold flex items-center gap-1 cursor-pointer text-left" title="Profili Uygula: ${prof.name}">
+          <button type="button" onclick="applySavedProfile('${prof.id}')" class="font-bold flex items-center gap-1 cursor-pointer text-left" title="Apply Profile: ${prof.name}">
             <span>${icon}</span>
             <span class="hover:underline">${prof.name}</span>
             <span class="text-[10px] text-slate-400 font-mono">(${prof.summary || 'Mod'})</span>
           </button>
-          <button type="button" onclick="deleteSavedProfile('${prof.id}', event)" class="w-4 h-4 rounded-full bg-slate-800 hover:bg-rose-600 text-slate-400 hover:text-white flex items-center justify-center text-[11px] font-bold transition ml-0.5 cursor-pointer" title="Profili Sil">×</button>
+          <button type="button" onclick="deleteSavedProfile('${prof.id}', event)" class="w-4 h-4 rounded-full bg-slate-800 hover:bg-rose-600 text-slate-400 hover:text-white flex items-center justify-center text-[11px] font-bold transition ml-0.5 cursor-pointer" title="Delete Profile">×</button>
         </div>
       `).join('');
     }
@@ -9562,14 +9546,14 @@
           const summary = buildProfileSummary(pa, fl, ch, hg, activeMods);
           previewEl.innerHTML = `
             <div><b class="text-white">Type:</b> ⚔️ Melee Combat</div>
-            <div><b class="text-white">Silah:</b> ${character.activeWeapon || 'Unarmed Strike'} (${document.getElementById('active-grip-select')?.value || '1-Hand'})</div>
-            <div><b class="text-white">Modifiyerler:</b> ${summary}</div>
+            <div><b class="text-white">Weapon:</b> ${character.activeWeapon || 'Unarmed Strike'} (${document.getElementById('active-grip-select')?.value || '1-Hand'})</div>
+            <div><b class="text-white">Modifiers:</b> ${summary}</div>
           `;
         } else {
           const t = character.tactical || {};
           const rangedParts = [];
           if (t.pointBlank) rangedParts.push('Point Blank (+1/+1)');
-          if (t.rapidShot) rangedParts.push('Rapid Shot (+1 Ok/-2 Atk)');
+          if (t.rapidShot) rangedParts.push('Rapid Shot (+1 Shot/-2 Atk)');
           if (t.manyshot) rangedParts.push('Manyshot');
           if (t.preciseShot) rangedParts.push('Precise Shot');
           if (t.farShot) rangedParts.push('Far Shot');
@@ -9578,8 +9562,8 @@
           const summary = rangedParts.join(', ') || 'Base Shot';
           previewEl.innerHTML = `
             <div><b class="text-white">Type:</b> 🏹 Ranged Combat</div>
-            <div><b class="text-white">Silah:</b> ${character.activeWeapon || 'Menzilli Silah'}</div>
-            <div><b class="text-white">Modifiyerler:</b> ${summary}</div>
+            <div><b class="text-white">Weapon:</b> ${character.activeWeapon || 'Ranged Weapon'}</div>
+            <div><b class="text-white">Modifiers:</b> ${summary}</div>
           `;
         }
       }
@@ -9613,7 +9597,7 @@
         id: 'prof_' + Date.now(),
         name: name,
         mode: currentMode,
-        weapon: character.activeWeapon || (isRanged ? 'Menzilli Silah' : 'Unarmed Strike')
+        weapon: character.activeWeapon || (isRanged ? 'Ranged Weapon' : 'Unarmed Strike')
       };
 
       if (!isRanged) {
@@ -9657,9 +9641,9 @@
 
       showDiceTopToast({
         icon: '💾',
-        title: 'Profil Kaydedildi',
+        title: 'Profile Saved',
         breakdown: `"${name}" (${isRanged ? 'Ranged' : 'Melee'}) profile saved successfully.`,
-        total: 'Kaydedildi'
+        total: 'Saved'
       });
     }
 
@@ -9732,9 +9716,9 @@
       renderSavedProfiles();
       showDiceTopToast({
         icon: '🗑️',
-        title: 'Profil Silindi',
+        title: 'Profile Deleted',
         breakdown: 'Saved attack profile removed.',
-        total: 'Silindi'
+        total: 'Deleted'
       });
     }
 
@@ -9745,7 +9729,7 @@
       if (ch) parts.push('Charge');
       if (hg) parts.push('Higher');
       activeMods.forEach(m => parts.push(m.dice || m.name));
-      return parts.join(', ') || 'Temel';
+      return parts.join(', ') || 'Base';
     }
 
     // --- ATTACK DECISION TOAST & STRIKE AUTO-EXPEND ---
@@ -9753,7 +9737,7 @@
       if (character.tactical?.totalDefense) {
         showDiceTopToast({
           icon: '🛡️',
-          title: 'Total Defense Devrede!',
+          title: 'Total Defense Active!',
           breakdown: 'You spent your standard action on Total Defense and cannot attack this turn.',
           total: 'Attack Locked'
         });
@@ -9764,7 +9748,7 @@
       if (!toast) return;
 
       const subWep = document.getElementById('decision-toast-weapon-sub');
-      if (subWep) subWep.textContent = `${character.activeWeapon || 'Silah'} • BAB: +${character.bab || 3}`;
+      if (subWep) subWep.textContent = `${character.activeWeapon || 'Weapon'} • BAB: +${character.bab || 3}`;
 
       const summaryEl = document.getElementById('decision-toast-active-summary');
       const activeMods = (character.activeModifiers || []).filter(m => m.active);
@@ -9908,7 +9892,7 @@
         if (pins.length === 0) {
           if (at === 'arrow') {
             pins.push(
-              { name: 'Standart Ok', sourceType: 'Ammunition', action: 'Serbest', badge: '1d8 Delici • Normal', ammoVal: 'standard' },
+              { name: 'Standard Arrow', sourceType: 'Ammunition', action: 'Free', badge: '1d8 Piercing • Normal', ammoVal: 'standard' },
               { name: 'Masterwork Arrow', sourceType: 'Ammunition', action: 'Free', badge: '+1 Attack', ammoVal: 'masterwork' },
               { name: '+1 Magic Arrow', sourceType: 'Ammunition', action: 'Free', badge: '+1 Atk & +1 Dmg', ammoVal: 'plus1' },
               { name: '+2 Magic Arrow', sourceType: 'Ammunition', action: 'Free', badge: '+2 Atk & +2 Dmg', ammoVal: 'plus2' },
@@ -9918,14 +9902,14 @@
             );
           } else if (at === 'bolt') {
             pins.push(
-              { name: 'Standart Bolt', sourceType: 'Ammunition', action: 'Serbest', badge: '1d8 Delici • Normal', ammoVal: 'standard' },
+              { name: 'Standard Bolt', sourceType: 'Ammunition', action: 'Free', badge: '1d8 Piercing • Normal', ammoVal: 'standard' },
               { name: 'Masterwork Bolt', sourceType: 'Ammunition', action: 'Free', badge: '+1 Attack', ammoVal: 'masterwork' },
               { name: '+1 Magic Bolt', sourceType: 'Ammunition', action: 'Free', badge: '+1 Atk & +1 Dmg', ammoVal: 'plus1' },
               { name: 'Flaming Bolt', sourceType: 'Ammunition', action: 'Free', badge: '+1d6 Fire Damage', ammoVal: 'fire' }
             );
           } else if (at === 'bullet') {
             pins.push(
-              { name: 'Standart Mermi', sourceType: 'Ammunition', action: 'Serbest', badge: '1d4 Ezici • Normal', ammoVal: 'standard' },
+              { name: 'Standard Bullet', sourceType: 'Ammunition', action: 'Free', badge: '1d4 Bludgeoning • Normal', ammoVal: 'standard' },
               { name: '+1 Magic Sling Bullet', sourceType: 'Ammunition', action: 'Free', badge: '+1 Atk & +1 Dmg', ammoVal: 'plus1' }
             );
           }
@@ -9934,13 +9918,13 @@
             if (!it) return;
             const iName = typeof it === 'string' ? it : (it.name || '');
             const low = iName.toLowerCase();
-            if (low.includes('arrow') || low.includes('ok') || low.includes('bolt') || low.includes('bullet') || low.includes('mühimmat') || it.attackType === 'ammunition' || it.category === 'Ammunition') {
+            if (low.includes('arrow') || low.includes('bolt') || low.includes('bullet') || it.attackType === 'ammunition' || it.category === 'Ammunition') {
               if (!pins.some(p => p.name.toLowerCase() === iName.toLowerCase())) {
                 pins.push({
                   name: iName,
                   sourceType: 'Ammunition',
-                  action: 'Serbest',
-                  badge: `🎒 Envanter (${it.count || it.quantity || 1} Adet)`,
+                  action: 'Free',
+                  badge: `🎒 Inventory (${it.count || it.quantity || 1} Left)`,
                   ammoVal: `inv_${iName}`
                 });
               }
@@ -9985,7 +9969,7 @@
           actionBtns.push(`<button type="button" onclick="event.stopPropagation(); rollSpellTouchAttack('${pin.name.replace(/'/g, "\\'")}')" class="py-1 px-2 rounded bg-amber-950/80 hover:bg-amber-900 border border-amber-600/70 text-amber-300 font-bold text-[10px] transition shrink-0 inline-flex items-center gap-1 cursor-pointer shadow-sm" title="Roll Touch Attack (BAB + DEX/STR)"><span>⚡</span><span>Touch</span></button>`);
         }
 
-        const isAmmoPin = pin.sourceType === 'Ammunition' || pin.attackType === 'ammunition' || dbItem?.attackType === 'ammunition' || (category === 'offense_ranged' && (pin.ammoVal || pin.name.toLowerCase().includes('ok') || pin.name.toLowerCase().includes('arrow') || pin.name.toLowerCase().includes('bolt') || pin.name.toLowerCase().includes('mermi')));
+        const isAmmoPin = pin.sourceType === 'Ammunition' || pin.attackType === 'ammunition' || dbItem?.attackType === 'ammunition' || (category === 'offense_ranged' && (pin.ammoVal || pin.name.toLowerCase().includes('arrow') || pin.name.toLowerCase().includes('bolt') || pin.name.toLowerCase().includes('bullet')));
         if (isAmmoPin) {
           const selArrow = character.tactical?.selectedArrow || 'standard';
           const pinAmmoVal = pin.ammoVal || getAmmoValFromName(pin.name);
@@ -9994,15 +9978,15 @@
         } else if (pin.sourceType === 'Maneuver' || pin.sourceType === 'Stance') {
           actionBtns.push(`<button type="button" onclick="event.stopPropagation(); executePinAction('${category}', ${idx})" class="py-1 px-2 rounded bg-rose-950/60 hover:bg-rose-900 border border-rose-700/70 text-rose-300 font-bold text-[10px] transition shrink-0 cursor-pointer">⚡ Ready</button>`);
         } else if (pin.sourceType === 'Spell') {
-          actionBtns.push(`<button type="button" onclick="event.stopPropagation(); executePinAction('${category}', ${idx})" class="py-1 px-2 rounded bg-purple-950/60 hover:bg-purple-900 border border-purple-700/70 text-purple-300 font-bold text-[10px] transition shrink-0 cursor-pointer">🔮 At</button>`);
+          actionBtns.push(`<button type="button" onclick="event.stopPropagation(); executePinAction('${category}', ${idx})" class="py-1 px-2 rounded bg-purple-950/60 hover:bg-purple-900 border border-purple-700/70 text-purple-300 font-bold text-[10px] transition shrink-0 cursor-pointer">🔮 Cast</button>`);
         } else if (pin.sourceType === 'Consumable' || pin.autoType === 'belt_item') {
-          actionBtns.push(`<button type="button" onclick="event.stopPropagation(); executePinAction('${category}', ${idx})" class="py-1 px-2 rounded bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-700/70 text-emerald-300 font-bold text-[10px] transition shrink-0 cursor-pointer">🧪 Kullan</button>`);
+          actionBtns.push(`<button type="button" onclick="event.stopPropagation(); executePinAction('${category}', ${idx})" class="py-1 px-2 rounded bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-700/70 text-emerald-300 font-bold text-[10px] transition shrink-0 cursor-pointer">🧪 Use</button>`);
         } else if (pin.sourceType === 'Skill') {
-          actionBtns.push(`<button type="button" onclick="event.stopPropagation(); executePinAction('${category}', ${idx})" class="py-1 px-2 rounded bg-sky-950/60 hover:bg-sky-900 border border-sky-700/70 text-sky-300 font-bold text-[10px] transition shrink-0 cursor-pointer">🎯 Zar At</button>`);
+          actionBtns.push(`<button type="button" onclick="event.stopPropagation(); executePinAction('${category}', ${idx})" class="py-1 px-2 rounded bg-sky-950/60 hover:bg-sky-900 border border-sky-700/70 text-sky-300 font-bold text-[10px] transition shrink-0 cursor-pointer">🎯 Roll</button>`);
         } else {
-          // Feats, Special Abilities, Buffs: Interactive Aktif / Pasif Toggle Button
+          // Feats, Special Abilities, Buffs: Interactive Active / Passive Toggle Button
           const isActive = Boolean(pin.active);
-          actionBtns.push(`<button type="button" onclick="event.stopPropagation(); toggleCombatPinActive('${category}', ${idx})" class="py-1 px-2.5 rounded font-bold text-[10px] transition shrink-0 flex items-center gap-1 cursor-pointer ${isActive ? 'bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]' : 'bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-700'}">${isActive ? '✓ Aktif' : '⚪ Pasif'}</button>`);
+          actionBtns.push(`<button type="button" onclick="event.stopPropagation(); toggleCombatPinActive('${category}', ${idx})" class="py-1 px-2.5 rounded font-bold text-[10px] transition shrink-0 flex items-center gap-1 cursor-pointer ${isActive ? 'bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]' : 'bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-700'}">${isActive ? '✓ Active' : '⚪ Passive'}</button>`);
         }
 
         const autoResolved = resolvePinTarget({ ...pin, pinTarget: 'auto' });
@@ -10011,20 +9995,20 @@
           spell_control: 'Spell: Control',
           spell_support: 'Spell: Support',
           offense_melee: 'Martial: Melee',
-          offense_ranged: 'Fiziksel: Uzak',
-          defense: 'Fiziksel: Savunma'
+          offense_ranged: 'Physical: Ranged',
+          defense: 'Physical: Defense'
         };
-        const autoShort = autoShortMap[autoResolved] || 'Oto';
+        const autoShort = autoShortMap[autoResolved] || 'Auto';
 
         const quickDrawerSelect = `
           <select onclick="event.stopPropagation()" onchange="changePinTargetDirect('${pin.name.replace(/'/g, "\\'")}', this.value)" class="text-[9px] font-mono bg-slate-950 text-slate-300 border border-slate-700/80 rounded px-1.5 py-0.5 cursor-pointer hover:border-amber-500 transition shrink-0" title="Change Combat Drawer">
-            <option value="auto" ${pin.pinTarget === 'auto' || !pin.pinTarget ? 'selected' : ''}>🎯 Oto (Kural Motoru)</option>
+            <option value="auto" ${pin.pinTarget === 'auto' || !pin.pinTarget ? 'selected' : ''}>🎯 Auto (Rule Engine)</option>
             <option value="offense_spell" ${pin.pinTarget === 'offense_spell' ? 'selected' : ''}>⚔️ Spell: Offense</option>
             <option value="spell_control" ${pin.pinTarget === 'spell_control' ? 'selected' : ''}>🕸️ Spell: Control</option>
             <option value="spell_support" ${pin.pinTarget === 'spell_support' ? 'selected' : ''}>✨ Spell: Support</option>
             <option value="offense_melee" ${pin.pinTarget === 'offense_melee' ? 'selected' : ''}>⚔️ Physical: Melee</option>
             <option value="offense_ranged" ${pin.pinTarget === 'offense_ranged' ? 'selected' : ''}>🏹 Physical: Ranged</option>
-            <option value="defense" ${pin.pinTarget === 'defense' ? 'selected' : ''}>🛡️ Fiziksel: Savunma</option>
+            <option value="defense" ${pin.pinTarget === 'defense' ? 'selected' : ''}>🛡️ Physical: Defense</option>
           </select>
         `;
 
@@ -10076,7 +10060,7 @@
         `;
       }).join('');
 
-      // Add "Sıralamayı Bitir" toggle button if in reorder mode
+      // Add "Done Reordering" toggle button if in reorder mode
       if (isReorder) {
         container.innerHTML += `
           <div class="pt-1 text-center">
@@ -10183,8 +10167,8 @@
           showDiceTopToast({
             icon: '⚡',
             title: `${pin.name} ${mod.active ? 'Added to' : 'Removed from'} Rotation`,
-            breakdown: `Hasar: ${mod.dice || '-'} (${mod.type || ''})`,
-            total: mod.active ? 'Aktif' : 'Pasif'
+            breakdown: `Damage: ${mod.dice || '-'} (${mod.type || ''})`,
+            total: mod.active ? 'Active' : 'Passive'
           });
         } else {
           const formula = pin.badge || (typeof findDiceExpression === 'function' ? findDiceExpression(pin.desc) : '');
@@ -10204,7 +10188,7 @@
       } else if (pin.sourceType === 'Spell') {
         const formula = pin.badge || (typeof findDiceExpression === 'function' ? findDiceExpression(pin.desc) : '');
         if (formula && typeof rollSpellOrManeuverFormula === 'function') {
-          rollSpellOrManeuverFormula(formula, `${pin.name} Etkisi`);
+          rollSpellOrManeuverFormula(formula, `${pin.name} Effect`);
         } else {
           showDiceTopToast({
             icon: '🔮',
@@ -10243,7 +10227,7 @@
         icon: '⚡',
         title: `${pin.name} ${pin.active ? 'Activated' : 'Deactivated'}`,
         breakdown: pin.active ? (pin.desc || 'Bonus included in combat rotation.') : 'Modifier deactivated.',
-        total: pin.active ? 'Aktif' : 'Pasif'
+        total: pin.active ? 'Active' : 'Passive'
       });
     }
 
@@ -10275,7 +10259,7 @@
             bType = 'untyped';
           } else {
             // General parser for +N bonus in name or description
-            const plusMatch = (pin.name + ' ' + (pin.desc || '')).match(/\+(\d+)\s*(saldırı|attack|hasar|damage|enhancement|bonus)/i);
+            const plusMatch = (pin.name + ' ' + (pin.desc || '')).match(/\+(\d+)\s*(attack|damage|enhancement|bonus)/i);
             if (plusMatch) {
               const val = parseInt(plusMatch[1]) || 1;
               bAtk = val;
@@ -10378,7 +10362,7 @@
               icon: '🥋',
               title: 'Known Stance',
               breakdown: `${pin.name} is one of your known stances. Manage it in the Maneuvers tab.`,
-              total: 'Bilgi'
+              total: 'Info'
             });
           };
         } else if (pin.autoType === 'equipped_item') {
@@ -10389,7 +10373,7 @@
               icon: '✨',
               title: 'Equipped Item',
               breakdown: `"${pin.name}" is equipped in a body slot. Unequip it in the Body Slots tab.`,
-              total: 'Bilgi'
+              total: 'Info'
             });
           };
         } else {
@@ -10462,20 +10446,20 @@
       });
 
       const labelMap = {
-        auto: '🎯 Oto (Kural Motoru)',
+        auto: '🎯 Auto (Rule Engine)',
         offense_spell: '⚔️ Spell: Offense',
         spell_control: '🕸️ Spell: Control',
         spell_support: '✨ Spell: Support',
         offense_melee: '⚔️ Physical: Melee',
         offense_ranged: '🏹 Physical: Ranged',
-        defense: '🛡️ Fiziksel: Savunma'
+        defense: '🛡️ Physical: Defense'
       };
 
       showDiceTopToast({
         icon: '📌',
-        title: 'Kokpite Sabitlendi!',
+        title: 'Pinned to Cockpit!',
         breakdown: `"${item.name}" pinned to ${labelMap[category] || category}.`,
-        total: 'Eklendi'
+        total: 'Added'
       });
 
       saveStateToStorage(true);
@@ -10605,7 +10589,7 @@
     }
 
     // ====================================================
-    // [d20] DICE HUB: SERBEST ZAR, FORMÜL VE ZAR GEÇMİŞİ MOTORU
+    // [d20] DICE HUB: FREE DICE, FORMULA & ROLL HISTORY ENGINE
     // ====================================================
     window.activeDicePool = { 4: 0, 6: 0, 8: 0, 10: 0, 12: 0, 20: 0, 100: 0 };
     window.diceRollHistory = [];
@@ -10621,7 +10605,7 @@
       }
     }
 
-    // Zar Rengine Göre Toast Renk Paleti Üretici
+    // Toast Color Palette Generator Based on Dice Color
     function getDiceColorPalette() {
       let diceColor = '#851316';
       try {
@@ -10630,7 +10614,7 @@
         }
       } catch (e) {}
 
-      let r = 133, g = 19, b = 22; // default Yakut Kırmızısı
+      let r = 133, g = 19, b = 22; // default Ruby Red
       if (diceColor.startsWith('#') && diceColor.length >= 7) {
         r = parseInt(diceColor.slice(1, 3), 16) || 0;
         g = parseInt(diceColor.slice(3, 5), 16) || 0;
@@ -10641,15 +10625,15 @@
 
       let textR, textG, textB;
       if (r < 40 && g < 40 && b < 40) {
-        // Obsidyen Siyahı / Çok koyu: gümüşi açık gri metin
+        // Obsidian Black / Very dark: silvery light gray text
         textR = 226; textG = 232; textB = 240;
       } else if (lum > 0.65) {
-        // Açık renk (fildişi beyazı, kehribar sarısı vb.): parlak tut
+        // Light color (ivory white, amber yellow, etc.): keep bright
         textR = Math.max(220, r);
         textG = Math.max(220, g);
         textB = Math.max(220, b);
       } else {
-        // Koyu / orta tonlar: koyu arka planda canlı ve net okunması için %60 aç
+        // Dark / mid tones: lighten by 60% for vivid readability on dark backgrounds
         textR = Math.min(255, Math.round(r + (255 - r) * 0.60));
         textG = Math.min(255, Math.round(g + (255 - g) * 0.60));
         textB = Math.min(255, Math.round(b + (255 - b) * 0.60));
@@ -10679,7 +10663,7 @@
     function showDiceTopToast(entry, options = {}) {
       if (!entry) return null;
       if (typeof entry === 'string') {
-        entry = { title: 'Bildirim', breakdown: entry, total: '' };
+        entry = { title: 'Notification', breakdown: entry, total: '' };
       }
 
       let container = document.getElementById('dice-top-toast-container');
@@ -10726,7 +10710,7 @@
       toast.style.border = `2px solid ${palette.border}`;
       toast.style.boxShadow = palette.glow;
       if (!hasActions) {
-        toast.title = 'Kapatmak i\u00E7in t\u0131klay\u0131n';
+        toast.title = 'Click to dismiss';
       }
 
       const isCrit = !!entry.isCrit;
@@ -10748,8 +10732,8 @@
       // Auto-detect pin category if not explicitly provided
       if (!entry.pinCategory && (entry.icon === '📌' || String(entry.icon || '').includes('M16 3a1 1 0 0 1'))) {
         const text = ((entry.title || '') + ' ' + (entry.breakdown || '')).toLowerCase();
-        if (text.includes('saldırı') || text.includes('offense')) entry.pinCategory = 'offense';
-        else if (text.includes('savunma') || text.includes('defense')) entry.pinCategory = 'defense';
+        if (text.includes('offense')) entry.pinCategory = 'offense';
+        else if (text.includes('defense')) entry.pinCategory = 'defense';
       }
 
       let icon = entry.icon;
@@ -10769,7 +10753,7 @@
         titleColor = '#818cf8';
       }
 
-      const title = entry.title || 'Zar At\u0131\u015F\u0131';
+      const title = entry.title || 'Dice Roll';
       const breakdown = entry.breakdown || entry.formula || '';
       const totalRaw = entry.total !== undefined ? String(entry.total).trim() : '';
 
@@ -10789,7 +10773,7 @@
         <div class="flex flex-col min-w-0 flex-1 pr-1">
           <div class="text-sm font-black truncate flex items-center gap-1.5" style="color: ${titleColor};">
             <span class="truncate">${title}</span>
-            ${isCrit ? '<span class="text-[10px] bg-red-600 text-white px-1.5 py-0.5 rounded font-black shrink-0 animate-pulse">KR\u0130T\u0130K!</span>' : ''}
+            ${isCrit ? '<span class="text-[10px] bg-red-600 text-white px-1.5 py-0.5 rounded font-black shrink-0 animate-pulse">CRITICAL!</span>' : ''}
           </div>
           <div class="text-xs text-slate-300 font-mono truncate" title="${breakdown.replace(/"/g, '&quot;')}">
             ${breakdown}
@@ -10813,7 +10797,7 @@
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = (act.className || 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-800 hover:bg-emerald-700 text-white border border-emerald-500 transition shadow cursor-pointer') + ' touch-manipulation active:scale-95';
-            btn.innerHTML = act.label || 'Uygula';
+            btn.innerHTML = act.label || 'Apply';
             btn.onclick = (ev) => {
               ev.stopPropagation();
               if (toast._dismissTimer) clearTimeout(toast._dismissTimer);
@@ -10839,7 +10823,7 @@
         }
       }
 
-      // Click to dismiss immediately (yalnızca aksiyon butonu bulunmayan bilgi toastları için)
+      // Click to dismiss immediately (only for informational toasts without action buttons)
       if (!hasActions) {
         toast.onclick = () => {
           if (toast._dismissTimer) clearTimeout(toast._dismissTimer);
@@ -10866,7 +10850,7 @@
         });
       });
 
-      // Auto dismiss (Karar isteyen toastlar için 30sn, normal bildirimler için 3.5sn)
+      // Auto dismiss (30s for interactive decision toasts, 3.5s for standard notifications)
       if (options.autoDismiss !== false) {
         const dismissMs = options.dismissMs || (hasActions ? 30000 : 3500);
         toast._dismissTimer = setTimeout(() => {
@@ -10881,7 +10865,7 @@
         }, dismissMs);
       }
 
-      // Karar isteyen toastlarda dışarıya/boşa tıklandığında kapat ve harcanmamış say
+      // Dismiss and treat as unspent when clicking outside interactive decision toasts
       if (hasActions) {
         const onOutsideClick = (e) => {
           if (!toast.parentNode) {
@@ -11131,7 +11115,7 @@
     }
 
     // ====================================================
-    // 🎨 ZAR RENGİ VE BUTON KOORDİNASYON SİSTEMİ
+    // 🎨 DICE COLOR & BUTTON COORDINATION SYSTEM
     // ====================================================
     function toggleDiceColorPopover(event) {
       if (event) event.stopPropagation();
@@ -11165,7 +11149,7 @@
         icon: '🎨',
         title: 'Dice Theme Updated',
         breakdown: colorName ? `${colorName} (${color})` : `Selected Color: ${color}`,
-        total: 'Uyumlu'
+        total: 'Synced'
       });
     }
 
@@ -11173,18 +11157,18 @@
       if (!hexColor) return;
       if (!hexColor.startsWith('#')) hexColor = '#' + hexColor;
 
-      // 1. Zar rengi önizleme noktası
+      // 1. Dice color preview dot
       const dot = document.getElementById('dice-color-preview-dot');
       if (dot) dot.style.backgroundColor = hexColor;
 
-      // 2. Özel renk seçici input
+      // 2. Custom color picker input
       const customInput = document.getElementById('dice-custom-color-input');
       if (customInput) customInput.value = hexColor;
 
-      // 3. Zar At butonunu zar rengiyle uyumlu hale getir
+      // 3. Coordinate Roll Dice button with dice color
       const rollBtn = document.getElementById('dice-roll-pool-btn');
       if (rollBtn) {
-        let r = 133, g = 19, b = 22; // Varsayılan Yakut Reçine #851316
+        let r = 133, g = 19, b = 22; // Default Ruby Resin #851316
         if (hexColor.length >= 7) {
           r = parseInt(hexColor.slice(1, 3), 16) || 0;
           g = parseInt(hexColor.slice(3, 5), 16) || 0;
@@ -11210,7 +11194,7 @@
         }
       }
 
-      // d20 zar ikonu ve butonu diğer d20 ikonları gibi sabit sarı/kehribar kalır
+      // Keep d20 die icon and button fixed yellow/amber like other d20 icons
       const d20Btn = document.getElementById('die-btn-20');
       const d20Icon = document.getElementById('die-icon-20');
       const d20Label = document.getElementById('die-label-20');
@@ -11234,7 +11218,7 @@
       updateDiceColorUI(savedColor);
     }
 
-    // Popover dışına tıklandığında menüyü kapat
+    // Close menu when clicking outside popover
     document.addEventListener('click', function(e) {
       const popover = document.getElementById('dice-color-popover');
       const btn = document.getElementById('dice-color-btn');
@@ -11251,7 +11235,7 @@
 
       const onDone = () => {
         addDiceHistoryEntry({
-          title: `Serbest 1d${sides}`,
+          title: `Custom 1d${sides}`,
           formula: `1d${sides}`,
           breakdown: `d${sides}: [${r}]`,
           total: r,
@@ -11342,12 +11326,12 @@
     }
 
     // ====================================================
-    // 📝 SERBEST FORMÜL, HEDEFLİ ZAR VE ŞABLON YÖNETİMİ
+    // 📝 CUSTOM FORMULA, TARGETED ROLL & TEMPLATE MANAGEMENT
     // ====================================================
     const DEFAULT_FORMULA_TEMPLATES = [
-      { name: 'Hedef:21 B:+4 (1d6+3 19-20x2)', formula: 'Hedef:21 Bonus:4 Zar:1d6+3 19-20x2' },
+      { name: 'Target:21 B:+4 (1d6+3 19-20x2)', formula: 'Target:21 Bonus:4 Dice:1d6+3 19-20x2' },
       { name: 'Fireball (8d6)', formula: '8d6' },
-      { name: 'D20 Testi (+8)', formula: '1d20+8' },
+      { name: 'D20 Check (+8)', formula: '1d20+8' },
       { name: 'Percentile (1d100)', formula: '1d100' }
     ];
 
@@ -11367,9 +11351,22 @@
         if (saved !== null) {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed)) {
-            // Eski fazla hedef örneklerini temizle
-            const cleaned = parsed.filter(t => !['Hedef:18 B:+6', 'Hedef:15 B:+8', 'Hedef:24 B:+11'].some(prefix => (t.name || '').startsWith(prefix)));
-            if (cleaned.length !== parsed.length) {
+            // Clean up legacy excess target presets and migrate legacy default labels
+            let changed = false;
+            const cleaned = parsed
+              .filter(t => !/:(?:18 B:\+6|15 B:\+8|24 B:\+11)/i.test(t.name || ''))
+              .map(t => {
+                if (/:21 B:\+4 \(1d6\+3 19-20x2\)/i.test(t.name || '') && t.name !== 'Target:21 B:+4 (1d6+3 19-20x2)') {
+                  changed = true;
+                  return { ...t, name: 'Target:21 B:+4 (1d6+3 19-20x2)', formula: 'Target:21 Bonus:4 Dice:1d6+3 19-20x2' };
+                }
+                if (t.name === 'D20 Testi (+8)') {
+                  changed = true;
+                  return { ...t, name: 'D20 Check (+8)' };
+                }
+                return t;
+              });
+            if (cleaned.length !== parsed.length || changed) {
               localStorage.setItem('dnd_custom_dice_templates', JSON.stringify(cleaned));
             }
             return cleaned;
@@ -11410,7 +11407,8 @@
       }
 
       container.innerHTML = templates.map((t, idx) => {
-        const isTarget = (t.formula || '').toLowerCase().includes('hedef');
+        const lowerFormula = (t.formula || '').toLowerCase();
+        const isTarget = lowerFormula.includes('target') || lowerFormula.includes('hedef');
         const badgeColor = isTarget
           ? 'border-emerald-500/50 text-emerald-300 hover:bg-emerald-950/60'
           : 'border-indigo-500/50 text-indigo-300 hover:bg-indigo-950/60';
@@ -11465,7 +11463,7 @@
       }
     }
 
-    // Hedef:, Bonus:, Zar: ifadelerini D&D 3.5e saldırı, tehdit, teyit ve hasar kurallarına göre çalıştırır
+    // Executes Target:, Bonus:, Dice: expressions according to D&D 3.5e attack, threat, confirmation, and damage rules
     function executeTargetAttackRoll(rawInput, hedefMatch) {
       const hedef = parseInt(hedefMatch[1]);
 
@@ -11487,7 +11485,7 @@
       }
       if (!rawDamageStr) rawDamageStr = '1d6';
 
-      // Kritik tehdit aralığı ve çarpanı (örn: 19-20x2, 18-20x2, 20x3)
+      // Critical threat range and multiplier (e.g. 19-20x2, 18-20x2, 20x3)
       let threatMin = 20, threatMax = 20, critMult = 2;
       let damageDiceStr = rawDamageStr;
 
@@ -11506,7 +11504,7 @@
       }
       if (!damageDiceStr) damageDiceStr = '1d6';
 
-      // 1. Ana d20 Saldırı Zarı
+      // 1. Primary d20 Attack Roll
       const d20 = Math.floor(Math.random() * 20) + 1;
       const attackTotal = d20 + bonusVal;
       const isNat1 = (d20 === 1);
@@ -11514,14 +11512,14 @@
 
       let isHit = false;
       if (isNat1) {
-        isHit = false; // Doğal 1 her zaman ıskalar
+        isHit = false; // Natural 1 always misses
       } else if (isNat20) {
-        isHit = true; // Doğal 20 her zaman vurur
+        isHit = true; // Natural 20 always hits
       } else {
         isHit = (attackTotal >= hedef);
       }
 
-      // 2. Kritik Tehdit & Teyit Zarı (Confirmation Roll)
+      // 2. Critical Threat & Confirmation Roll
       const isThreat = isHit && (d20 >= threatMin && d20 <= threatMax);
       let isCritConfirmed = false;
       let confirmD20 = null;
@@ -11532,9 +11530,9 @@
         const noConfirmRule = document.getElementById('settings-no-crit-confirm')?.checked || false;
         if (noConfirmRule) {
           isCritConfirmed = true;
-          confirmDetails = ' (Otomatik Kritik)';
+          confirmDetails = ' (Auto-Crit)';
         } else {
-          // Standart D&D 3.5e teyit zarı
+          // Standard D&D 3.5e confirmation roll
           confirmD20 = Math.floor(Math.random() * 20) + 1;
           confirmTotal = confirmD20 + bonusVal;
           if (confirmD20 === 20 || confirmTotal >= hedef) {
@@ -11547,7 +11545,7 @@
         }
       }
 
-      // 3. Hasar Zarı Hesabı
+      // 3. Damage Roll Calculation
       const dmgRegex = /([+-]?\s*\d*d\d+|[+-]?\s*\d+)/gi;
       const dmgMatches = damageDiceStr.match(dmgRegex) || ['1d6'];
       let baseDmgTotal = 0;
@@ -11588,11 +11586,11 @@
       } else if (isHit && !isCritConfirmed) {
         finalDamage = Math.max(0, baseDmgTotal);
       } else if (isHit && isCritConfirmed) {
-        // Kullanıcı kuralı doğrultusunda: (1d6+3)x2 hasar uygula
+        // Multiply total damage by critical multiplier
         finalDamage = Math.max(0, baseDmgTotal) * critMult;
       }
 
-      // 4. Masada yuvarlanacak 3D Zarlar
+      // 4. 3D Dice to roll on tray
       const dice3dList = [{ type: 'd20', value: d20 }];
       if (confirmD20 !== null) {
         dice3dList.push({ type: 'd20', value: confirmD20 });
@@ -11608,7 +11606,7 @@
           addDiceHistoryEntry({
             icon: getD20IconSvg('w-5 h-5 text-amber-400'),
             title: `Targeted Attack: Miss (vs AC ${hedef})`,
-            formula: `d20${bonusStr} vs Hedef ${hedef} (${rawDamageStr})`,
+            formula: `d20${bonusStr} vs Target ${hedef} (${rawDamageStr})`,
             breakdown: `Attack: d20 [${d20}] ${bonusStr} = ${attackTotal} vs AC ${hedef} ❌ MISS${isNat1 ? ' (Natural 1!)' : ''}`,
             total: 0,
             isCrit: false,
@@ -11618,22 +11616,22 @@
           addDiceHistoryEntry({
             icon: getD20IconSvg('w-5 h-5 text-amber-400'),
             title: `Targeted Attack: Hit (${finalDamage} Damage)`,
-            formula: `d20${bonusStr} vs Hedef ${hedef} (${rawDamageStr})`,
+            formula: `d20${bonusStr} vs Target ${hedef} (${rawDamageStr})`,
             breakdown: `Attack: d20 [${d20}] ${bonusStr} = ${attackTotal} vs AC ${hedef} (Hit)${confirmDetails} • Damage: ${baseDmgBreakdown} = ${finalDamage} Damage`,
             total: finalDamage,
             isCrit: false,
             critInfo: '• Hit'
           });
         } else {
-          // Teyit edilmiş kritik
+          // Confirmed critical hit
           addDiceHistoryEntry({
             title: `⚡ CRITICAL HIT! (${finalDamage} Damage)`,
-            formula: `d20${bonusStr} vs Hedef ${hedef} (${rawDamageStr})`,
+            formula: `d20${bonusStr} vs Target ${hedef} (${rawDamageStr})`,
             breakdown: `Attack: d20 [${d20}] ${bonusStr} = ${attackTotal} vs AC ${hedef} (Threat: ${threatMin}-${threatMax})${confirmDetails} • Damage: (${baseDmgBreakdown}) x ${critMult} = ${finalDamage} Damage!`,
             total: finalDamage,
             isCrit: true,
             critDamage: finalDamage,
-            critInfo: `• ⚡ Kritik (${threatMin}-${threatMax}x${critMult}): ${finalDamage} Hasar!`
+            critInfo: `• ⚡ Critical (${threatMin}-${threatMax}x${critMult}): ${finalDamage} Damage!`
           });
         }
       };
@@ -11656,7 +11654,7 @@
       }
     }
 
-    // Standart serbest formül ayrıştırıcı (örn: 12d46+45 18-20x2, 8d6, 3d6+5)
+    // Standard custom formula parser (e.g. 12d46+45 18-20x2, 8d6, 3d6+5)
     function parseAndRollDiceFormula(inputStr) {
       const raw = (inputStr || '').trim();
       if (!raw) return null;
@@ -11757,7 +11755,7 @@
         critMultiplier,
         isCrit,
         critDamage: isCrit ? grandTotal * critMultiplier : null,
-        timestamp: new Date().toLocaleTimeString('tr-TR')
+        timestamp: new Date().toLocaleTimeString('en-US')
       };
     }
 
@@ -11791,7 +11789,7 @@
         let critInfo = '';
         if (parsed.hasCritNotation) {
           if (parsed.isCrit) {
-            critInfo = `• ⚡ Kritik (${parsed.critThreatStart}-${parsed.critThreatEnd}x${parsed.critMultiplier}): ${parsed.critDamage} Hasar!`;
+            critInfo = `• ⚡ Critical (${parsed.critThreatStart}-${parsed.critThreatEnd}x${parsed.critMultiplier}): ${parsed.critDamage} Damage!`;
           } else {
             critInfo = `• No Crit Threat (${parsed.critThreatStart}-${parsed.critThreatEnd})`;
           }
@@ -11834,7 +11832,7 @@
         return;
       }
 
-      // Hedefli saldırı kontrolü (Hedef: ... Bonus: ... Zar: ...)
+      // Targeted attack check (Target: ... Bonus: ... Dice: ...)
       const hedefMatch = val.match(/(?:hedef|target|dc|ac)\s*[:=]\s*(\d+)/i);
       if (hedefMatch) {
         executeTargetAttackRoll(val, hedefMatch);
@@ -11853,7 +11851,7 @@
       const feats = character?.feats || [];
       const hasImprovedInit = feats.some(f => {
         const name = (typeof f === 'string' ? f : f?.name || '').toLowerCase();
-        return name.includes('improved initiative') || name.includes('gelişmiş inisiyatif');
+        return name.includes('improved initiative');
       });
       if (hasImprovedInit) featBonus += 4;
       const miscBonus = Number(character?.initiativeMisc) || 0;

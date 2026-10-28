@@ -137,14 +137,14 @@
               </a>
               <button type="button" onclick="openSettingsModal()" class="px-2.5 sm:px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 hover:border-slate-500 rounded-lg text-xs font-bold flex items-center justify-center gap-1 shadow transition cursor-pointer text-center" title="Open Settings">
                 <span class="text-xs">⚙️</span>
-                <span class="inline">Ayarlar</span>
+                <span class="inline">Settings</span>
               </button>
             </div>
             <!-- 2. Sıra: Bulut Senkron Durumu -->
             <div class="w-full">
               <div id="sync-status-pill" onclick="if(window.SupabaseAuth) SupabaseAuth.handlePillClick(); else if(window.CloudSync) CloudSync.connect()" title="Check / sync cloud status" class="cursor-pointer flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-[10px] font-medium bg-emerald-950/80 text-emerald-300 border border-emerald-600 whitespace-nowrap shadow-sm transition truncate w-full">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
-                <span id="sync-status-text">🟢 <span class="hidden sm:inline">Bulut </span>Senkron</span>
+                <span id="sync-status-text">🟢 <span class="hidden sm:inline">Cloud </span>Synced</span>
               </div>
             </div>
           </div>
@@ -155,7 +155,7 @@
           <div class="flex items-center justify-between mb-1.5">
             <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wide flex items-center gap-1.5">
               <span class="inline-flex items-center"><svg class="w-4 h-4 text-amber-400" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"/><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"/><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
-              <span>TEMEL STATLAR (ABILITY SCORES)</span>
+              <span>ABILITY SCORES</span>
             </h3>
             <div class="flex items-center gap-2">
               <span class="text-[10px] text-slate-400 hidden sm:inline">Includes 24h Item & Temporary Modifiers</span>
@@ -179,7 +179,7 @@
       <div class="flex justify-between items-center text-xs font-bold text-slate-400 mb-1">
         <span class="text-emerald-400 flex items-center gap-1 whitespace-nowrap shrink-0 text-xs sm:text-xs">
           <span>🩸</span>
-          <span>CAN <span class="hidden sm:inline">(HP)</span></span>
+          <span>HIT POINTS <span class="hidden sm:inline">(HP)</span></span>
         </span>
         <span id="hp-condition-badge" class="badge bg-emerald-900/60 text-emerald-300 border border-emerald-600 text-[9px] sm:text-[10px] px-1.5 py-0.5 whitespace-nowrap shrink-0">Healthy</span>
       </div>
@@ -226,7 +226,7 @@
     <!-- Card 2: Armor Class (Orantılı Geniş En: 2 Kolon) -->
     <div class="bg-dndCard border border-dndBorder rounded-xl p-3 flex flex-col justify-between shadow col-span-1 md:col-span-2 lg:col-span-2">
       <div class="flex items-center justify-between mb-1">
-        <div class="text-xs font-bold text-sky-400 flex items-center gap-1">🛡️ ZIRH SINIFI (AC)</div>
+        <div class="text-xs font-bold text-sky-400 flex items-center gap-1">🛡️ ARMOR CLASS (AC)</div>
         <button type="button" onclick="switchTab('tab-defense')" class="text-[10px] text-slate-400 hover:text-sky-300 font-semibold flex items-center gap-0.5 transition cursor-pointer" title="Go to Detailed Defense & AC Breakdown">
           <span>Breakdown</span><span>➔</span>
         </button>
@@ -251,7 +251,7 @@
     <!-- Card 3: Saves (Kayıt Zarları - Orantılı Geniş En: 2 Kolon) -->
     <div class="bg-dndCard border border-dndBorder rounded-xl p-3 flex flex-col justify-between shadow col-span-2 md:col-span-2 lg:col-span-2">
       <div class="flex items-center justify-between mb-1">
-        <div class="text-xs font-bold text-purple-400 flex items-center gap-1">⚡ SAVES (KAYIT ZARLARI)</div>
+        <div class="text-xs font-bold text-purple-400 flex items-center gap-1">⚡ SAVING THROWS</div>
         <button type="button" onclick="switchTab('tab-defense')" class="text-[10px] text-slate-400 hover:text-purple-300 font-semibold flex items-center gap-0.5 transition cursor-pointer" title="Go to Detailed Defense & Saving Throws Breakdown">
           <span>Breakdown</span><span>➔</span>
         </button>
@@ -282,7 +282,7 @@
       </div>
       <button onclick="rollInitiative3D()" class="w-full bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 border border-amber-500/50 rounded py-1 text-[11px] font-bold font-mono transition flex items-center justify-center gap-1 shadow active:scale-95 cursor-pointer" title="Roll 1d20 Initiative">
         <span class="inline-flex items-center"><svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"/><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"/><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
-        <span id="vitals-init-btn-text">Zar At</span>
+        <span id="vitals-init-btn-text">Roll</span>
       </button>
     </div>
 
@@ -301,8 +301,8 @@
       </div>
       <button onclick="advanceNextRound()" class="w-full bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-500/40 rounded py-1 px-1 text-[10px] font-bold flex items-center justify-center gap-1 transition shadow-sm cursor-pointer" title="Advance to next round, decrementing active buff durations by 1 round">
         <span>⏭️</span>
-        <span class="tracking-wide">Tur</span>
-        <span class="round-counter-badge bg-indigo-950 text-indigo-200 border border-indigo-500/60 px-1 py-0.2 rounded text-[10px] font-mono font-black">Tur 1</span>
+        <span class="tracking-wide">Round</span>
+        <span class="round-counter-badge bg-indigo-950 text-indigo-200 border border-indigo-500/60 px-1 py-0.2 rounded text-[10px] font-mono font-black">Rd 1</span>
       </button>
     </div>
   </section>
@@ -328,7 +328,7 @@
       </button>
       <button onclick="switchTab('tab-core')" id="tab-btn-core" class="tab-btn flex-1 min-w-[105px] sm:min-w-[120px] lg:min-w-0 py-1.5 px-2.5 sm:px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer select-none border whitespace-nowrap bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border-slate-700 hover:border-slate-500 shadow-sm">
         <span class="text-sm">👤</span>
-        <span>Karakter & Notlar</span>
+        <span>Character & Notes</span>
       </button>
       <button onclick="switchTab('tab-database')" id="tab-btn-database" class="tab-btn flex-1 min-w-[105px] sm:min-w-[120px] lg:min-w-0 py-1.5 px-2.5 sm:px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer select-none border whitespace-nowrap bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border-slate-700 hover:border-slate-500 shadow-sm">
         <span class="text-sm">📚</span>
@@ -336,7 +336,7 @@
       </button>
       <button onclick="switchTab('tab-dice')" id="tab-btn-dice" class="tab-btn flex-1 min-w-[105px] sm:min-w-[120px] lg:min-w-0 py-1.5 px-2.5 sm:px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer select-none border whitespace-nowrap bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border-slate-700 hover:border-slate-500 shadow-sm">
         <span class="inline-flex items-center"><svg class="w-4 h-4 text-amber-400" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"/><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"/><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
-        <span>Zar At</span>
+        <span>Dice Tray</span>
       </button>
     </div>
   </nav>
@@ -501,7 +501,7 @@
                 <div id="weapon-sets-editor" class="hidden bg-slate-900 border border-amber-500/30 rounded-lg p-2.5 space-y-2.5">
                   <div class="text-[10px] font-bold text-amber-400 uppercase tracking-wide flex items-center justify-between border-b border-slate-800 pb-1">
                     <span>⚙️ CUSTOMIZE WEAPON SETS</span>
-                    <button type="button" onclick="toggleWeaponSetsEditor(false)" class="text-[10px] text-slate-400 hover:text-white font-bold cursor-pointer">✕ Kapat</button>
+                    <button type="button" onclick="toggleWeaponSetsEditor(false)" class="text-[10px] text-slate-400 hover:text-white font-bold cursor-pointer">✕ Close</button>
                   </div>
 
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
@@ -519,8 +519,8 @@
                       <div>
                         <label class="text-[8px] uppercase font-bold text-slate-500 block">Grip</label>
                         <select id="set1-grip-select" onchange="saveWeaponSetConfig(1)" class="w-full bg-slate-900 text-slate-200 font-bold text-[10px] rounded border border-slate-700 p-1 cursor-pointer">
-                          <option value="1-Hand">1-El</option>
-                          <option value="2-Hand">2-El</option>
+                          <option value="1-Hand">1-Hand</option>
+                          <option value="2-Hand">2-Hand</option>
                         </select>
                       </div>
 
@@ -557,7 +557,7 @@
                         </select>
                       </div>
                       <div id="set2-weapon-editor-hint" class="text-[9px] text-slate-400 italic pt-1">
-                        * Bu donanım, çift silahla dövüşte (TWF) veya kalkan savunmasında ikinci el olarak kuşanılır.
+                        * Equipped in the off-hand for Two-Weapon Fighting (TWF) or shield defense.
                       </div>
 
                       <!-- Set 2 Enhancement Stepper & Elemental Chips -->
@@ -647,7 +647,7 @@
                     <span>RANGED ATTACK &amp; AMMUNITION MODIFIERS</span>
                   </div>
                   <div class="flex items-center gap-2">
-                    <span class="text-[9px] text-slate-400 font-normal" id="ranged-mod-explanation">DEX Mod (+3) devrede</span>
+                    <span class="text-[9px] text-slate-400 font-normal" id="ranged-mod-explanation">DEX Mod (+3) active</span>
                     <button type="button" id="btn-ranged-reorder-toggle" onclick="toggleRangedReorderMode()" class="text-[9px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-slate-800 transition" title="Reorder ranged combat modifiers">
                       <span>⇄</span>
                       <span id="ranged-reorder-btn-text">Reorder</span>
@@ -670,7 +670,7 @@
                     <select id="combat-ranged-arrow-select" onchange="onRangedArrowChange()" class="flex-1 min-w-0 bg-slate-950 border border-amber-500/50 rounded text-amber-200 font-mono font-bold text-xs py-1 px-2 cursor-pointer">
                     </select>
                     <div id="combat-ammo-qty-badge" class="shrink-0 font-mono font-bold text-xs px-2.5 py-1 rounded bg-slate-950 border border-amber-500/40 text-emerald-400 whitespace-nowrap" title="Remaining Ammunition Quantity">
-                      0 Adet
+                      0 Left
                     </div>
                   </div>
                 </div>
@@ -778,11 +778,11 @@
                   <button type="button" id="main-spell-cast-btn" onclick="initiateCombatSpellCast()" class="w-full h-full min-h-[58px] py-1 px-1.5 bg-gradient-to-r from-purple-800 via-indigo-700 to-purple-900 hover:from-purple-700 hover:to-indigo-600 text-white rounded-lg shadow-md border border-purple-500/60 flex flex-col items-center justify-center transition transform active:scale-[0.98] cursor-pointer text-center leading-none">
                     <div class="flex items-center justify-center gap-1 text-xs font-black uppercase tracking-wider text-purple-100">
                       <span id="main-spell-btn-icon">⚡</span>
-                      <span id="main-spell-btn-text">AT</span>
+                      <span id="main-spell-btn-text">CAST</span>
                     </div>
                     <div id="main-spell-btn-sub" class="text-[8px] font-mono text-purple-200/90 font-bold leading-tight mt-0.5 text-center">
-                      <span class="block">Standart</span>
-                      <span class="block">Eylem</span>
+                      <span class="block">Standard</span>
+                      <span class="block">Action</span>
                     </div>
                   </button>
                 </div>
@@ -798,9 +798,9 @@
                     <span id="spell-modifiers-count-badge" class="bg-slate-900 text-purple-300 border border-purple-700/50 font-mono font-bold text-[9px] px-1.5 py-0.2 rounded">0</span>
                   </div>
                   <div class="flex items-center gap-2">
-                    <span class="text-[9px] text-amber-400 font-mono" id="metamagic-action-note">(Standart Eylem)</span>
+                    <span class="text-[9px] text-amber-400 font-mono" id="metamagic-action-note">(Standard Action)</span>
                     <button type="button" id="toggle-spell-modifiers-btn" onclick="toggleSpellModifiersGridExpanded()" class="text-[9px] text-purple-400 hover:text-white bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-purple-800/60 transition cursor-pointer hidden">
-                      Daha Fazla ▾
+                      Show More ▾
                     </button>
                   </div>
                 </div>
@@ -875,7 +875,7 @@
             <div id="combat-defense-collapsed-bar" onclick="toggleCockpitPanel('defense')" class="hidden bg-slate-950/80 hover:bg-slate-900 border border-indigo-900/40 hover:border-indigo-600/50 rounded-lg p-2.5 flex items-center justify-between cursor-pointer transition">
               <div class="flex items-center gap-2">
                 <span>🛡️</span>
-                <span class="text-xs font-bold text-indigo-300">Savunma</span>
+                <span class="text-xs font-bold text-indigo-300">Defense</span>
                 <span id="combat-defense-collapsed-summary" class="text-[10px] text-amber-400 font-mono">AC: 21 | Touch: 16 | Flat: 18</span>
               </div>
               <span class="text-[10px] text-indigo-400 font-bold">▾ Expand</span>
@@ -1019,7 +1019,7 @@
             <div id="combat-consumables-collapsed-bar" onclick="toggleCockpitPanel('consumables')" class="hidden bg-slate-950/80 hover:bg-slate-900 border border-emerald-900/40 hover:border-emerald-600/50 rounded-lg p-2.5 flex items-center justify-between cursor-pointer transition">
               <div class="flex items-center gap-2">
                 <span>🧪</span>
-                <span class="text-xs font-bold text-emerald-300">Acil Sarf &amp; Kemer</span>
+                <span class="text-xs font-bold text-emerald-300">Quick-Draw &amp; Belt</span>
                 <span id="combat-consumables-collapsed-summary" class="text-[10px] text-slate-400 font-mono">Quick Potions</span>
               </div>
               <span class="text-[10px] text-emerald-400 font-bold">▾ Expand</span>
@@ -1053,7 +1053,7 @@
               <p id="result-card-subtitle" class="text-[10px] text-slate-400">Result card stays open until dismissed.</p>
             </div>
           </div>
-          <button onclick="dismissAttackResult()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg text-xs font-bold transition">✕ Kapat</button>
+          <button onclick="dismissAttackResult()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg text-xs font-bold transition">✕ Close</button>
         </div>
 
         <!-- 1. Attack Summaries (Iteratives Cards) -->
@@ -1203,7 +1203,7 @@
                 <!-- School Filter -->
                 <select id="spell-filter-school" onchange="renderKnownSpells()" class="bg-slate-950 text-slate-300 text-xs rounded-lg border border-slate-700 px-2.5 py-1.5 focus:outline-none focus:border-purple-500">
                   <option value="all">All Schools</option>
-                  <option value="Abjuration">Abjuration (Koruma)</option>
+                  <option value="Abjuration">Abjuration</option>
                   <option value="Conjuration">Conjuration</option>
                   <option value="Divination">Divination</option>
                   <option value="Enchantment">Enchantment</option>
@@ -1237,7 +1237,7 @@
                       <th class="py-2.5 px-3 w-12 text-center">Lvl</th>
                       <th class="py-2.5 px-3 min-w-[200px]">Spell Name</th>
                       <th class="py-2.5 px-3 w-28">School</th>
-                      <th class="py-2.5 px-3 w-16 text-center">Eylem</th>
+                      <th class="py-2.5 px-3 w-16 text-center">Action</th>
                       <th class="py-2.5 px-3 w-28">Range</th>
                       <th class="py-2.5 px-3 w-20 text-center">DC</th>
                       <th class="py-2.5 px-3">Effect & Description</th>
@@ -1449,7 +1449,7 @@
           <!-- Quick Identity Grid -->
           <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2 text-xs">
             <div class="bg-slate-950/60 p-2 rounded-lg border border-slate-800">
-              <span class="text-[10px] text-slate-400 uppercase font-bold block">Irk (Race)</span>
+              <span class="text-[10px] text-slate-400 uppercase font-bold block">Race</span>
               <span id="core-profile-race" class="text-indigo-300 font-bold">Human</span>
             </div>
             <div class="bg-slate-950/60 p-2 rounded-lg border border-slate-800">
@@ -1461,15 +1461,15 @@
               <span id="core-profile-deity" class="text-sky-300 font-semibold">Boccob</span>
             </div>
             <div class="bg-slate-950/60 p-2 rounded-lg border border-slate-800">
-              <span class="text-[10px] text-slate-400 uppercase font-bold block">Boyut (Size)</span>
-              <span id="core-profile-size" class="text-emerald-300 font-semibold">Medium (Orta)</span>
+              <span class="text-[10px] text-slate-400 uppercase font-bold block">Size</span>
+              <span id="core-profile-size" class="text-emerald-300 font-semibold">Medium</span>
             </div>
             <div class="bg-slate-950/60 p-2 rounded-lg border border-slate-800">
               <span class="text-[10px] text-slate-400 uppercase font-bold block">Gender & Age</span>
               <span id="core-profile-gender-age" class="text-slate-200 font-semibold">Male, Age 24</span>
             </div>
             <div class="bg-slate-950/60 p-2 rounded-lg border border-slate-800">
-              <span class="text-[10px] text-slate-400 uppercase font-bold block">Boy & Kilo</span>
+              <span class="text-[10px] text-slate-400 uppercase font-bold block">Height & Weight</span>
               <span id="core-profile-height-weight" class="text-slate-200 font-semibold">178 cm, 72 kg</span>
             </div>
           </div>
@@ -1510,7 +1510,7 @@
               <thead class="bg-slate-950 text-slate-400 text-[10px] uppercase font-bold border-b border-slate-800">
                 <tr>
                   <th class="py-2 px-1 text-center w-[32px] min-w-[32px]">Lvl</th>
-                  <th class="py-2 px-1 text-center w-[76px] min-w-[76px]">Durum</th>
+                  <th class="py-2 px-1 text-center w-[76px] min-w-[76px]">Status</th>
                   <th class="py-2 px-2 text-left w-[110px] min-w-[100px] whitespace-nowrap">Class</th>
                   <th class="py-2 px-0.5 text-center w-[36px] min-w-[36px]">HD</th>
                   <th class="py-2 px-0.5 text-center w-[38px] min-w-[38px]">HP</th>
@@ -1518,9 +1518,9 @@
                   <th class="py-2 px-0.5 text-center w-[38px] min-w-[38px]">Fort</th>
                   <th class="py-2 px-0.5 text-center w-[38px] min-w-[38px]">Ref</th>
                   <th class="py-2 px-0.5 text-center w-[38px] min-w-[38px]">Will</th>
-                  <th class="py-2 px-0.5 text-center w-[44px] min-w-[44px]">Puan</th>
+                  <th class="py-2 px-0.5 text-center w-[44px] min-w-[44px]">Pts</th>
                   <th class="py-2 px-1 text-center w-[160px] min-w-[145px] max-w-[175px]">Class Features</th>
-                  <th class="py-2 px-1 text-center w-[160px] min-w-[145px] max-w-[175px]">Beceriler</th>
+                  <th class="py-2 px-1 text-center w-[160px] min-w-[145px] max-w-[175px]">Feats</th>
                   <th class="py-2 px-1 text-center w-[160px] min-w-[145px] max-w-[175px]">Bonus</th>
                   <th class="py-2 px-1 text-center w-[58px] min-w-[58px] max-w-[58px] whitespace-nowrap shrink-0">Actions</th>
                 </tr>
@@ -1588,7 +1588,7 @@
             </div>
             <div class="flex items-center gap-2">
               <span id="skills-pts-remaining-badge" class="badge bg-slate-900 text-sky-300 border border-slate-700 text-xs font-mono font-bold px-2 py-0.5">
-                Kalan: 0 Puan
+                Remaining: 0 Pts
               </span>
               <span id="skills-pts-rule-hint" class="text-[10px] text-indigo-300 hidden md:inline">
                 (Class: 1 Pt • Cross-Class: 2 Pts)
@@ -1599,11 +1599,11 @@
           <!-- Action Buttons & Max Rank Info -->
           <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-950/80 p-2 rounded-lg border border-slate-800 text-xs">
             <div class="flex items-center gap-1.5 flex-wrap">
-              <span class="text-[10px] font-bold text-slate-400 uppercase mr-1">Filtre:</span>
+              <span class="text-[10px] font-bold text-slate-400 uppercase mr-1">Filter:</span>
               <button onclick="setSkillFilter('all')" id="btn-skill-filter-all" class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer">All</button>
               <button onclick="setSkillFilter('class')" id="btn-skill-filter-class" class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-600 text-white transition cursor-pointer">⭐ Class Skills</button>
               <button onclick="setSkillFilter('trained')" id="btn-skill-filter-trained" class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer">🎯 Trained (Rank > 0)</button>
-              <select id="skill-stat-filter" onchange="setSkillStatFilter(this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-slate-300 font-bold focus:border-amber-400 cursor-pointer" title="Stat / Nitelik Filtresi">
+              <select id="skill-stat-filter" onchange="setSkillStatFilter(this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-[11px] text-slate-300 font-bold focus:border-amber-400 cursor-pointer" title="Key Ability Filter">
                 <option value="all">All Abilities</option>
                 <option value="str">STR (Strength)</option>
                 <option value="dex">DEX (Dexterity)</option>
@@ -1653,7 +1653,7 @@
                   <th class="py-2 px-3">Skill Name</th>
                   <th class="py-2 px-2 text-center">Stat</th>
                   <th class="py-2 px-2 text-center text-emerald-400 font-black">Total</th>
-                  <th class="py-2 px-3 text-center text-amber-400">Zar At</th>
+                  <th class="py-2 px-3 text-center text-amber-400">Roll</th>
                   <th class="py-2 px-2 text-center">Rank</th>
                   <th class="py-2 px-2 text-center">Mod</th>
                   <th class="py-2 px-2 text-center">ACP</th>
@@ -1721,7 +1721,7 @@
               <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Base 10:</span><span class="text-white font-bold">10</span></div>
               <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Armor Bonus: <span class="text-[10px] text-sky-500 font-normal">(Mithral Breastplate)</span></span><span class="text-sky-400 font-bold">+5</span></div>
               <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Shield Bonus: <span class="text-[10px] text-sky-500 font-normal">(Darkwood Shield)</span></span><span class="text-sky-400 font-bold">+2</span></div>
-              <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">DEX Modifiyeri <span class="text-[10px] text-slate-400 font-normal">(Max Dex: +5)</span>:</span><span class="text-emerald-400 font-bold">+3</span></div>
+              <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">DEX Modifier <span class="text-[10px] text-slate-400 font-normal">(Max Dex: +5)</span>:</span><span class="text-emerald-400 font-bold">+3</span></div>
               <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Deflection Bonus: <span class="text-[10px] text-indigo-400 font-normal">(Ring of Protection +1)</span></span><span class="text-indigo-400 font-bold">+1</span></div>
               <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Natural Armor: <span class="text-[10px] text-teal-400 font-normal">(Amulet of Natural Armor +1)</span></span><span class="text-teal-400 font-bold">+1</span></div>
               <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Dodge Bonus (Stacks):</span><span class="text-amber-400 font-bold">+0</span></div>
@@ -1744,7 +1744,7 @@
               </div>
               <div class="space-y-1 text-xs font-mono" id="defense-attack-breakdown-list">
                 <div class="flex justify-between py-0.5 border-b border-slate-800/80"><span class="text-slate-400">BAB:</span><span class="text-emerald-400 font-bold">+3</span></div>
-                <div class="flex justify-between py-0.5 border-b border-slate-800/80"><span class="text-slate-400">STR Modifiyeri:</span><span class="text-sky-400 font-bold">+1</span></div>
+                <div class="flex justify-between py-0.5 border-b border-slate-800/80"><span class="text-slate-400">STR Modifier:</span><span class="text-sky-400 font-bold">+1</span></div>
                 <div class="flex justify-between py-1 text-slate-300 font-bold border-t border-slate-700 mt-1"><span class="text-amber-300 text-xs">FINAL ATTACK BONUS:</span><span class="text-amber-400 text-sm font-black">+4</span></div>
               </div>
             </div>
@@ -1792,7 +1792,7 @@
                 <div class="pt-1 space-y-0.5 text-[10px] text-indigo-300 font-sans border-t border-slate-800/60 mt-0.5">
                   <div class="flex items-center justify-between py-0.5">
                     <span>✨ Battle Clarity (Warblade 1): Adds +1 INT bonus to Reflex saves while not flat-footed.</span>
-                    <span class="text-emerald-400 font-bold font-mono">Nihai Refl: +8</span>
+                    <span class="text-emerald-400 font-bold font-mono">Final Ref: +8</span>
                   </div>
                 </div>
               </div>
@@ -1814,10 +1814,10 @@
               <!-- Görünüm Değiştirici: Kart / Liste -->
               <div class="inline-flex rounded-lg bg-slate-950 p-0.5 border border-slate-800 text-xs shadow-inner">
                 <button type="button" onclick="setBuffsViewMode('grid')" id="buffs-view-grid-btn" class="px-2 py-1 rounded-md font-bold transition flex items-center gap-1 cursor-pointer bg-indigo-600 text-white shadow-sm" title="Card View (3-Column Grid)">
-                  <span>🎴</span><span class="hidden sm:inline">Kart</span>
+                  <span>🎴</span><span class="hidden sm:inline">Cards</span>
                 </button>
                 <button type="button" onclick="setBuffsViewMode('list')" id="buffs-view-list-btn" class="px-2 py-1 rounded-md font-bold transition flex items-center gap-1 cursor-pointer text-slate-400 hover:text-white" title="List View (Compact Rows)">
-                  <span>📋</span><span class="hidden sm:inline">Liste</span>
+                  <span>📋</span><span class="hidden sm:inline">List</span>
                 </button>
               </div>
 
@@ -1825,8 +1825,8 @@
                 <span>➕</span><span>Add Buff</span>
               </button>
               <button onclick="advanceNextRound()" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-2 shadow" title="Advance to next round, decrementing active buff durations by 1 round">
-                <span>⏭️</span><span class="tracking-wide">Sonraki Tur</span>
-                <span class="round-counter-badge bg-indigo-950/80 text-indigo-200 border border-indigo-300/40 px-2 py-0.5 rounded-md text-[11px] font-mono font-black shadow-sm min-w-[3.25rem] text-center inline-block">Tur 1</span>
+                <span>⏭️</span><span class="tracking-wide">Next Round</span>
+                <span class="round-counter-badge bg-indigo-950/80 text-indigo-200 border border-indigo-300/40 px-2 py-0.5 rounded-md text-[11px] font-mono font-black shadow-sm min-w-[3.25rem] text-center inline-block">Round 1</span>
               </button>
               <button onclick="performRest()" class="text-xs bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 font-medium px-2 py-1 rounded transition flex items-center gap-1" title="Short Rest: Recover maneuvers">
                 <span>☕</span><span>Rest</span>
@@ -1894,7 +1894,7 @@
                 <tr>
                   <th class="py-2.5 px-3 text-center w-12">Active</th>
                   <th class="py-2.5 px-3 w-10 text-center">Icon</th>
-                  <th class="py-2.5 px-3 w-28">Yuva (Slot)</th>
+                  <th class="py-2.5 px-3 w-28">Slot</th>
                   <th class="py-2.5 px-3 font-bold text-white">Equipped Item Name</th>
                   <th class="py-2.5 px-3">Description & Magical Properties (Parent-Child)</th>
                   <th class="py-2.5 px-3 text-center w-20">Weight</th>
@@ -1916,7 +1916,7 @@
                 <span class="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]"></span>
                 <span class="text-xs font-bold text-amber-300 uppercase tracking-wider">D&D 3.5e Body Slots (Magic Item Record Sheet)</span>
                 <span class="text-slate-600">•</span>
-                <span id="sil-active-count" class="text-[11px] font-semibold text-sky-300">12 Yuva</span>
+                <span id="sil-active-count" class="text-[11px] font-semibold text-sky-300">12 Slots</span>
               </div>
               
               <!-- Unified Silhouette Options Dropdown Menu -->
@@ -1954,7 +1954,7 @@
                       <button type="button" onclick="promptSilhouetteUrl(); closeSilhouetteMenu();" class="w-full text-left p-2 rounded-lg hover:bg-sky-950/70 hover:border-sky-600/50 border border-transparent transition flex items-center gap-2.5 text-xs text-white group">
                         <span class="text-xl">🔗</span>
                         <div>
-                          <div class="font-bold text-sky-300 group-hover:text-white">Resim URL Gir</div>
+                          <div class="font-bold text-sky-300 group-hover:text-white">Enter Image URL</div>
                           <div class="text-[10px] text-slate-400 leading-tight">Enter an image URL from the web</div>
                         </div>
                       </button>
@@ -2008,7 +2008,7 @@
                     <span>🔄</span>
                     <span>Center & Reset</span>
                   </button>
-                  <button type="button" onclick="toggleSilhouetteTransformPanel(false)" class="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white text-xs transition" title="Kapat">
+                  <button type="button" onclick="toggleSilhouetteTransformPanel(false)" class="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white text-xs transition" title="Close">
                     ✕
                   </button>
                 </div>
@@ -2041,7 +2041,7 @@
                   <!-- Quick Preset buttons -->
                   <div class="inline-flex items-center gap-1">
                     <button type="button" onclick="setSilhouetteTransformPreset('top')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] font-bold text-slate-300" title="Focus on upper body">⬆️ Top</button>
-                    <button type="button" onclick="setSilhouetteTransformPreset('center')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] font-bold text-slate-300" title="Merkeze odaklan">⏺️ Orta</button>
+                    <button type="button" onclick="setSilhouetteTransformPreset('center')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] font-bold text-slate-300" title="Focus on center">⏺️ Center</button>
                     <button type="button" onclick="setSilhouetteTransformPreset('bottom')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] font-bold text-slate-300" title="Focus on lower body">⬇️ Bottom</button>
                   </div>
                 </div>
@@ -2056,7 +2056,7 @@
                   <div class="flex items-center gap-2 flex-wrap">
                     <span class="font-extrabold text-amber-300 uppercase tracking-wide">Dual-End Calibration Mode:</span>
                     <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-yellow-300 bg-yellow-950/60 px-2 py-0.5 rounded border border-yellow-500/40">🟡 Silhouette Anchor (Figure)</span>
-                    <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-sky-300 bg-sky-950/60 px-2 py-0.5 rounded border border-sky-500/40">🔵 Kart Ucu (Yuvalar)</span>
+                    <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-sky-300 bg-sky-950/60 px-2 py-0.5 rounded border border-sky-500/40">🔵 Card Connector (Slots)</span>
                   </div>
                   <div class="text-slate-300 text-[11px] mt-0.5">
                     Drag the yellow body anchors and blue card connectors to align them wherever you like.
@@ -2129,31 +2129,31 @@
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
               <div class="flex items-center gap-2 flex-1 sm:flex-initial">
                 <!-- Search -->
-                <input type="text" id="pool-search-input" oninput="renderGearPoolTable()" placeholder="Havuzda ara..." class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:border-amber-500 flex-1 sm:w-44">
+                <input type="text" id="pool-search-input" oninput="renderGearPoolTable()" placeholder="Search gear pool..." class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:border-amber-500 flex-1 sm:w-44">
                 <!-- Category Filter (Madde 8: Weapon & Shield separated!) -->
                 <select id="pool-category-filter" onchange="renderGearPoolTable()" class="bg-slate-950 text-slate-300 border border-slate-700 rounded-lg px-2 py-1.5 text-xs shrink-0">
                   <option value="All">All Categories</option>
-                  <option value="Weapon">Weapon (Silah)</option>
+                  <option value="Weapon">Weapon</option>
                   <option value="Shield">Shield</option>
                   <option value="Armor">Armor</option>
                   <option value="Head">Head</option>
                   <option value="Eyes">Eyes</option>
-                  <option value="Neck">Neck (Boyun)</option>
-                  <option value="Shoulders">Shoulders (Omuz)</option>
+                  <option value="Neck">Neck</option>
+                  <option value="Shoulders">Shoulders</option>
                   <option value="Torso">Torso</option>
-                  <option value="Belt">Belt (Kemer)</option>
-                  <option value="Bracers">Bracers (Bileklik)</option>
-                  <option value="Gloves">Gloves (Eldiven)</option>
+                  <option value="Belt">Belt</option>
+                  <option value="Bracers">Bracers</option>
+                  <option value="Gloves">Gloves</option>
                   <option value="Ring">Ring</option>
                   <option value="Boots">Boots</option>
-                  <option value="Consumable">Consumable (Sarf Malzemesi)</option>
+                  <option value="Consumable">Consumable</option>
                   <option value="Other">Other</option>
                 </select>
               </div>
               <div class="flex items-center gap-1.5 flex-wrap">
                 <button type="button" onclick="openCharacterForgeDrawer()" class="w-full sm:w-auto bg-indigo-700 hover:bg-indigo-600 active:scale-95 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition shadow flex items-center justify-center gap-1.5 cursor-pointer shrink-0 border border-indigo-400/40" title="V2 Item Forge: Combine Material (Mithral, Adamantine) + Enhancement (+1..+5) + Special Abilities (Keen, Flaming, Vorpal)">
                   <span>⚒️</span>
-                  <span>Demirhane (Lego)</span>
+                  <span>Item Forge (Lego)</span>
                 </button>
                 <button type="button" onclick="openCharacterCompendiumDrawer()" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 active:scale-95 text-amber-300 font-bold text-xs px-3 py-1.5 rounded-lg transition shadow flex items-center justify-center gap-1.5 cursor-pointer shrink-0 border border-amber-500/40" title="Add Item from Modular SRD V2 Compendium (3,522 Entries)">
                   <span>📚</span>
@@ -2170,10 +2170,10 @@
             <table class="w-full text-left text-xs">
               <thead class="bg-slate-950 text-slate-400 text-[10px] uppercase font-bold border-b border-slate-800">
                 <tr>
-                  <th class="py-2.5 px-3 w-28">Kategori</th>
+                  <th class="py-2.5 px-3 w-28">Category</th>
                   <th class="py-2.5 px-3 font-bold text-white">Item Name</th>
                   <th class="py-2.5 px-3">Description & Properties</th>
-                  <th class="py-2.5 px-3 text-center w-20">Adet</th>
+                  <th class="py-2.5 px-3 text-center w-20">Qty</th>
                   <th class="py-2.5 px-3 text-center w-20">Weight</th>
                   <th class="py-2.5 px-3 text-center w-24">Cost (GP)</th>
                   <th class="py-2.5 px-3 text-center w-32">Actions</th>
@@ -2263,7 +2263,7 @@
               🔮 Spells & Maneuvers
             </button>
             <button onclick="RuleMaster.switchSubTab('subtab-mdb-feats')" id="btn-subtab-mdb-feats" class="mdb-subtab-btn px-2.5 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-white transition">
-              🎖️ Featler
+              🎖️ Feats
             </button>
             <button onclick="RuleMaster.switchSubTab('subtab-mdb-items')" id="btn-subtab-mdb-items" class="mdb-subtab-btn px-2.5 py-1.5 rounded-md text-xs font-bold text-slate-400 hover:text-white transition">
               💍 Magic Items & Potions
@@ -2286,12 +2286,12 @@
             <div class="md:col-span-2">
               <select id="mdb-category-filter" onchange="RuleMaster.renderTable()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-slate-300 focus:outline-none">
                 <option value="ALL">All Categories</option>
-                <option value="Weapon">Silahlar (Weapons)</option>
-                <option value="Shield">Kalkanlar (Shields)</option>
+                <option value="Weapon">Weapons</option>
+                <option value="Shield">Shields</option>
                 <option value="Armor">Armor</option>
                 <option value="Feat">Feats</option>
                 <option value="Spell">Spells</option>
-                <option value="Maneuver">Manevralar (Maneuvers)</option>
+                <option value="Maneuver">Maneuvers</option>
                 <option value="Stance">Stances</option>
                 <option value="Wondrous Item">Wondrous Items</option>
                 <option value="Ring">Rings</option>
@@ -2346,7 +2346,7 @@
                     <span class="text-xl">🧙‍♂️🤖</span>
                     <div>
                       <div class="font-extrabold text-purple-300 group-hover:text-purple-200 flex items-center gap-1.5">
-                        <span>🧙‍♂️🤖 Rule Master (AI) Kural Arama</span>
+                        <span>🧙‍♂️🤖 Rule Master (AI) Rule Search</span>
                         <span class="text-[9px] bg-purple-950 text-purple-300 border border-purple-700 px-1 py-0.2 rounded font-mono">3.5e RAW</span>
                       </div>
                       <div class="text-[10px] text-slate-400 mt-0.5 leading-snug">Auto-fetch by name from WotC 3.5e archives</div>
@@ -2357,7 +2357,7 @@
                     <div>
                       <div class="font-extrabold text-purple-300 group-hover:text-purple-200 flex items-center gap-1.5">
                         <span>🧙‍♂️🤖 Rule Master (AI) Free-Text Parser</span>
-                        <span class="text-[9px] bg-indigo-950 text-indigo-300 border border-indigo-700 px-1 py-0.2 rounded font-mono">PDF & Metin</span>
+                        <span class="text-[9px] bg-indigo-950 text-indigo-300 border border-indigo-700 px-1 py-0.2 rounded font-mono">PDF &amp; Text</span>
                       </div>
                       <div class="text-[10px] text-slate-400 mt-0.5 leading-snug">Parse raw text copied from rulebooks into V2 schema</div>
                     </div>
@@ -2407,11 +2407,11 @@
                     🔍 Search by Name
                   </button>
                   <button id="btn-inline-mode-freetext" onclick="RuleMaster.switchInlineMode('freetext')" class="px-2.5 py-1 rounded font-bold transition text-slate-400 hover:text-white">
-                    🧙‍♂️🤖 Serbest Metin (AI)
+                    🧙‍♂️🤖 Free Text (AI)
                   </button>
                 </div>
                 <button onclick="RuleMaster.closeInlineAiAdder()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1">
-                  <span>✕</span> <span>Kapat</span>
+                  <span>✕</span> <span>Close</span>
                 </button>
               </div>
             </div>
@@ -2424,9 +2424,9 @@
                   <input type="text" id="inline-ai-rule-query" placeholder="e.g., feat: Shock Trooper, spell: Haste, weapon: Dagger +2, item: Boots of Speed..." class="w-full bg-slate-950 border border-purple-500/50 rounded-lg pl-9 pr-3 py-2 text-xs text-white focus:outline-none focus:border-purple-400" onkeydown="if(event.key==='Enter') RuleMaster.queryInlineAiRule()">
                 </div>
                 <select id="inline-ai-rule-category" class="bg-slate-950 border border-purple-500/50 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none">
-                  <option value="ALL">✨ Otomatik Kategori</option>
+                  <option value="ALL">✨ Auto-Detect Category</option>
                   <option value="Feat">Feat</option>
-                  <option value="Weapon">Weapon (Silah)</option>
+                  <option value="Weapon">Weapon</option>
                   <option value="Armor / Shield">Armor / Shield</option>
                   <option value="Wondrous Item">Wondrous Item</option>
                   <option value="Ring">Ring</option>
@@ -2445,13 +2445,13 @@
                   <span class="text-purple-300 font-bold">⚡ Prefixed Searches (Fast & 0ms):</span>
                   <button onclick="RuleMaster.setInlineQueryAndSearch('feat: Shock Trooper', 'ALL')" class="bg-slate-800 hover:bg-purple-900 text-amber-300 px-2 py-0.5 rounded border border-purple-900/60 font-mono transition" title="Feat Prefix">feat: Shock Trooper</button>
                   <button onclick="RuleMaster.setInlineQueryAndSearch('spell: Haste', 'ALL')" class="bg-slate-800 hover:bg-purple-900 text-sky-300 px-2 py-0.5 rounded border border-purple-900/60 font-mono transition" title="Spell Prefix">spell: Haste</button>
-                  <button onclick="RuleMaster.setInlineQueryAndSearch('weapon: Dagger +2', 'ALL')" class="bg-slate-800 hover:bg-purple-900 text-emerald-300 px-2 py-0.5 rounded border border-purple-900/60 font-mono transition" title="Silah Prefiksi">weapon: Dagger +2</button>
+                  <button onclick="RuleMaster.setInlineQueryAndSearch('weapon: Dagger +2', 'ALL')" class="bg-slate-800 hover:bg-purple-900 text-emerald-300 px-2 py-0.5 rounded border border-purple-900/60 font-mono transition" title="Weapon Prefix">weapon: Dagger +2</button>
                   <button onclick="RuleMaster.setInlineQueryAndSearch('item: Boots of Speed', 'ALL')" class="bg-slate-800 hover:bg-purple-900 text-purple-300 px-2 py-0.5 rounded border border-purple-900/60 font-mono transition" title="Item Prefix">item: Boots of Speed</button>
                   <button onclick="RuleMaster.setInlineQueryAndSearch('maneuver: Mountain Hammer', 'ALL')" class="bg-slate-800 hover:bg-purple-900 text-rose-300 px-2 py-0.5 rounded border border-purple-900/60 font-mono transition" title="Maneuver Prefix">maneuver: Mountain Hammer</button>
                   <button onclick="RuleMaster.setInlineQueryAndSearch('deity: Kelemvor', 'ALL')" class="bg-slate-800 hover:bg-purple-900 text-amber-200 px-2 py-0.5 rounded border border-purple-900/60 font-mono transition" title="Deity Prefix">deity: Kelemvor</button>
                 </div>
                 <div class="flex flex-wrap items-center gap-1 text-[9px] text-slate-400">
-                  <span class="text-slate-500 font-semibold">Desteklenen Prefiksler:</span>
+                  <span class="text-slate-500 font-semibold">Supported Prefixes:</span>
                   <code class="text-amber-300 bg-slate-950 px-1 py-0.5 rounded border border-slate-800 font-mono">feat:</code>
                   <code class="text-sky-300 bg-slate-950 px-1 py-0.5 rounded border border-slate-800 font-mono">spell:</code>
                   <code class="text-emerald-300 bg-slate-950 px-1 py-0.5 rounded border border-slate-800 font-mono">weapon:</code>
@@ -2518,7 +2518,7 @@
                   <th class="py-2.5 px-3">Name & Source</th>
                   <th class="py-2.5 px-3">Type / Discipline</th>
                   <th class="py-2.5 px-3">Slot / Lvl</th>
-                  <th class="py-2.5 px-3">Bonus & Kapsam</th>
+                  <th class="py-2.5 px-3">Bonus & Scope</th>
                   <th class="py-2.5 px-3">Stat & Combat Effect</th>
                   <th class="py-2.5 px-3">Description / RAW Notes</th>
                   <th class="py-2.5 px-3 text-center w-28">Actions</th>
@@ -2539,14 +2539,14 @@
             <div class="flex items-center gap-2">
               <span class="text-xl">⚔️</span>
               <h3 class="text-xs md:text-sm font-bold text-white">Weapons, Armor & Shields</h3>
-              <span id="wa-count-badge" class="badge bg-slate-800 text-slate-300 font-mono text-[10px]">0 Ekipman</span>
+              <span id="wa-count-badge" class="badge bg-slate-800 text-slate-300 font-mono text-[10px]">0 Gear</span>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
               <select id="wa-subfilter" onchange="RuleMaster.renderWeaponsArmors()" class="bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white focus:outline-none">
                 <option value="ALL">All (Weapons + Armor + Shields)</option>
-                <option value="Weapon">Sadece Silahlar</option>
+                <option value="Weapon">Weapons Only</option>
                 <option value="Armor">Armor Only</option>
-                <option value="Shield">Sadece Kalkanlar</option>
+                <option value="Shield">Shields Only</option>
               </select>
               <input type="text" id="wa-search-input" onkeyup="RuleMaster.renderWeaponsArmors()" placeholder="Search weapon or armor..." class="bg-slate-950 border border-slate-700 rounded px-3 py-1 text-xs text-white focus:outline-none focus:border-purple-500">
               <button onclick="RuleMaster.openModalWithData(RuleMaster.createEmptyEntry('Weapon'), -1)" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 py-1 rounded transition flex items-center gap-1">
@@ -2574,7 +2574,7 @@
               <select id="sm-type-filter" onchange="RuleMaster.renderSpellsManeuvers()" class="bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white focus:outline-none">
                 <option value="ALL">All (Spells + Maneuvers + Stances)</option>
                 <option value="Spell">Spells Only</option>
-                <option value="Maneuver">Sadece Manevralar (Maneuvers)</option>
+                <option value="Maneuver">Maneuvers Only</option>
                 <option value="Stance">Stances Only</option>
               </select>
               <select id="sm-level-filter" onchange="RuleMaster.renderSpellsManeuvers()" class="bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white focus:outline-none">
@@ -2640,15 +2640,15 @@
                 <option value="ALL">All Body Slots</option>
                 <option value="Head">Head</option>
                 <option value="Eyes">Eyes</option>
-                <option value="Neck">Boyun (Neck)</option>
+                <option value="Neck">Neck</option>
                 <option value="Torso">Torso</option>
                 <option value="Body">Body / Robe</option>
-                <option value="Waist">Bel (Waist)</option>
-                <option value="Shoulders">Omuz (Shoulders)</option>
-                <option value="Arms">Kol (Arms)</option>
-                <option value="Hands">El (Hands)</option>
+                <option value="Waist">Waist</option>
+                <option value="Shoulders">Shoulders</option>
+                <option value="Arms">Arms</option>
+                <option value="Hands">Hands</option>
                 <option value="Ring">Ring</option>
-                <option value="Feet">Ayak (Feet)</option>
+                <option value="Feet">Feet</option>
                 <option value="Slotless">Slotless</option>
               </select>
               <input type="text" id="mi-search-input" onkeyup="RuleMaster.renderMagicItems()" placeholder="Search magic item or potion..." class="bg-slate-950 border border-slate-700 rounded px-3 py-1 text-xs text-white focus:outline-none focus:border-purple-500">
@@ -2705,13 +2705,13 @@
               <div id="ai-api-key-status" class="hidden flex items-center flex-wrap gap-2">
                 <span class="inline-flex items-center gap-1.5 bg-emerald-950 text-emerald-300 border border-emerald-700 px-2.5 py-1 rounded text-xs font-medium">
                   <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span>Gemini API Bagli:</span>
+                  <span>Gemini API Connected:</span>
                   <span id="ai-api-key-display" class="font-mono text-[11px] text-emerald-200">AIzaSy...</span>
                 </span>
                 <div class="inline-flex items-center gap-1.5 bg-slate-950 border border-slate-700 px-2 py-0.5 rounded text-xs">
-                  <span class="text-[10px] text-slate-400 font-bold uppercase">AI Modu:</span>
+                  <span class="text-[10px] text-slate-400 font-bold uppercase">AI Mode:</span>
                   <select id="ai-model-mode-select" onchange="RuleMaster.setAiModelMode(this.value)" class="bg-transparent text-purple-300 text-xs font-semibold focus:outline-none cursor-pointer">
-                    <option value="auto">âš¡ Akilli Hibrit (Onerilen)</option>
+                    <option value="auto">⚡ Smart Hybrid (Recommended)</option>
                     <option value="flash">⚡ Fast (Gemini Flash)</option>
                     <option value="pro">🧠 Rule Authority (Gemini Pro)</option>
                   </select>
@@ -2763,7 +2763,7 @@
                 <select id="ai-rule-category" class="bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white focus:outline-none">
                   <option value="ALL">⚡ Auto-Detect</option>
                   <option value="Feat">🎖️ Feat</option>
-                  <option value="Weapon">⚔️ Silah (Weapon)</option>
+                  <option value="Weapon">⚔️ Weapon</option>
                   <option value="Armor / Shield">🛡️ Armor / Shield</option>
                   <option value="Spell">🔮 Spell</option>
                   <option value="Maneuver">💥 Maneuver (Strike/Boost/Counter)</option>
@@ -2789,8 +2789,8 @@
               <span class="text-[10px] text-slate-500">Quick Examples:</span>
               <button onclick="RuleMaster.setQueryAndSearch('Shock Trooper', 'Feat')" class="text-[10px] bg-slate-800 hover:bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded border border-slate-700 transition">Shock Trooper (Feat)</button>
               <button onclick="RuleMaster.setQueryAndSearch('Flametongue', 'Weapon')" class="text-[10px] bg-slate-800 hover:bg-rose-900/60 text-rose-300 px-2 py-0.5 rounded border border-slate-700 transition">Flametongue (Weapon + Fire)</button>
-              <button onclick="RuleMaster.setQueryAndSearch('Belt of Battle', 'Wondrous Item')" class="text-[10px] bg-slate-800 hover:bg-amber-900/60 text-amber-300 px-2 py-0.5 rounded border border-slate-700 transition">Belt of Battle (Bel/MIC)</button>
-              <button onclick="RuleMaster.setQueryAndSearch('Boots of Speed', 'Wondrous Item')" class="text-[10px] bg-slate-800 hover:bg-sky-900/60 text-sky-300 px-2 py-0.5 rounded border border-slate-700 transition">Boots of Speed (Ayak)</button>
+              <button onclick="RuleMaster.setQueryAndSearch('Belt of Battle', 'Wondrous Item')" class="text-[10px] bg-slate-800 hover:bg-amber-900/60 text-amber-300 px-2 py-0.5 rounded border border-slate-700 transition">Belt of Battle (Waist/MIC)</button>
+              <button onclick="RuleMaster.setQueryAndSearch('Boots of Speed', 'Wondrous Item')" class="text-[10px] bg-slate-800 hover:bg-sky-900/60 text-sky-300 px-2 py-0.5 rounded border border-slate-700 transition">Boots of Speed (Feet)</button>
               <button onclick="RuleMaster.setQueryAndSearch('Ring of Protection +2', 'Ring')" class="text-[10px] bg-slate-800 hover:bg-emerald-900/60 text-emerald-300 px-2 py-0.5 rounded border border-slate-700 transition">Ring of Protection +2</button>
               <button onclick="RuleMaster.setQueryAndSearch('Mountain Hammer', 'Maneuver')" class="text-[10px] bg-slate-800 hover:bg-rose-900/60 text-rose-300 px-2 py-0.5 rounded border border-slate-700 transition">Mountain Hammer (Maneuver)</button>
               <button onclick="RuleMaster.setQueryAndSearch('Shadow Blade', 'Feat')" class="text-[10px] bg-slate-800 hover:bg-indigo-900/60 text-indigo-300 px-2 py-0.5 rounded border border-slate-700 transition">Shadow Blade (Feat)</button>
@@ -2802,7 +2802,7 @@
               <div class="flex items-center justify-between">
                 <span class="text-xs font-bold text-amber-300 flex items-center gap-1">
                   <span>🧙‍♂️🤖</span>
-                  <span>Rule Master (AI) Toplu Kural Ekleyici (Batch Import)</span>
+                  <span>Rule Master (AI) Batch Rule Importer</span>
                 </span>
                 <span class="text-[10px] text-slate-400">Enter multiple rules (one per line) to batch-import at once</span>
               </div>
@@ -2840,7 +2840,7 @@
                 <div>
                   <h4 class="text-xs md:text-sm font-bold text-white flex items-center gap-2">
                     <span>🧙‍♂️🤖 Rule Master (AI) Free-Text Rule Parser</span>
-                    <span class="badge bg-indigo-950 text-indigo-300 border border-indigo-700 text-[9px]">PDF / OCR / Kitap Metni</span>
+                    <span class="badge bg-indigo-950 text-indigo-300 border border-indigo-700 text-[9px]">PDF / OCR / Rulebook Text</span>
                   </h4>
                   <p class="text-[10px] text-slate-400">Paste raw rule text copied from a book or PDF; Rule Master (AI) will parse it into the V2 schema.</p>
                 </div>
@@ -2953,8 +2953,8 @@
             <p class="text-[11px] text-slate-400">Download your character and Master DB compendium to your computer for offline backup.</p>
             <div class="flex flex-wrap gap-2 pt-2">
               <button onclick="exportFullBundleJson()" class="w-full bg-indigo-600/30 hover:bg-indigo-600 text-indigo-200 hover:text-white text-xs font-bold py-2 rounded-lg border border-indigo-500/40 transition">📦 Export Full Bundle (Character + Master DB)</button>
-              <button onclick="exportCharacterJson()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2 rounded-lg border border-slate-700 transition">💾 Sadece Karakter</button>
-              <button onclick="exportMasterDbJson()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2 rounded-lg border border-slate-700 transition">📚 Sadece Master DB</button>
+              <button onclick="exportCharacterJson()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2 rounded-lg border border-slate-700 transition">💾 Character Only</button>
+              <button onclick="exportMasterDbJson()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2 rounded-lg border border-slate-700 transition">📚 Master DB Only</button>
             </div>
           </div>
 
@@ -2998,7 +2998,7 @@
               <div class="flex items-center gap-2">
                 <span class="text-amber-400 font-extrabold text-base flex items-center gap-1.5">
                   <span class="inline-flex items-center"><svg class="w-5 h-5 text-amber-400" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"/><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"/><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
-                  <span>SERBEST ZAR MASASI</span>
+                  <span>CUSTOM DICE TRAY</span>
                 </span>
                 <span class="badge bg-amber-950/80 text-amber-300 border border-amber-500/60 text-[10px]">Quick & Pool</span>
               </div>
@@ -3167,14 +3167,14 @@
           <div class="flex items-center gap-2 pt-2 relative">
             <button id="dice-roll-pool-btn" onclick="rollDicePool()" class="flex-1 py-2.5 px-4 rounded-xl text-white font-black text-sm shadow-lg flex items-center justify-center gap-2 transition transform active:scale-95 cursor-pointer border border-white/20">
               <span class="inline-flex items-center"><svg class="w-5 h-5" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"/><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"/><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
-              <span>ZARLARI AT</span>
+              <span>ROLL DICE</span>
             </button>
 
             <!-- Zar Rengi Seçici Buton & Açılır Menü -->
             <div class="relative">
               <button id="dice-color-btn" type="button" onclick="toggleDiceColorPopover(event)" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-sm shadow flex items-center justify-center gap-2 transition cursor-pointer shrink-0" title="Choose Dice Color">
                 <span id="dice-color-preview-dot" class="w-4 h-4 rounded-full border border-white/70 shadow-sm inline-block shrink-0 transition-colors" style="background-color: #851316;"></span>
-                <span class="text-xs font-bold text-slate-300 hidden sm:inline">Renk</span>
+                <span class="text-xs font-bold text-slate-300 hidden sm:inline">Color</span>
                 <span class="text-[10px] text-slate-400">▼</span>
               </button>
 
@@ -3185,38 +3185,38 @@
                     <span>🎨</span>
                     <span>Choose Dice Color</span>
                   </span>
-                  <span class="text-[10px] text-slate-400 font-medium">3D Zar & Buton</span>
+                  <span class="text-[10px] text-slate-400 font-medium">3D Dice & Button</span>
                 </div>
 
                 <!-- Hazır Zar Renkleri Grid -->
                 <div class="grid grid-cols-4 gap-2 mb-3">
                   <button type="button" onclick="selectDiceColor('#851316', 'Ruby Red')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Ruby Red">
                     <span class="w-7 h-7 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #851316;"></span>
-                    <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Yakut</span>
+                    <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Ruby</span>
                   </button>
-                  <button type="button" onclick="selectDiceColor('#1d4ed8', 'Safir Mavisi')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Safir Mavisi">
+                  <button type="button" onclick="selectDiceColor('#1d4ed8', 'Sapphire Blue')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Sapphire Blue">
                     <span class="w-7 h-7 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #1d4ed8;"></span>
-                    <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Safir</span>
+                    <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Sapphire</span>
                   </button>
                   <button type="button" onclick="selectDiceColor('#047857', 'Emerald Green')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Emerald Green">
                     <span class="w-7 h-7 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #047857;"></span>
                     <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Emerald</span>
                   </button>
-                  <button type="button" onclick="selectDiceColor('#7e22ce', 'Ametist Moru')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Ametist Moru">
+                  <button type="button" onclick="selectDiceColor('#7e22ce', 'Amethyst Purple')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Amethyst Purple">
                     <span class="w-7 h-7 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #7e22ce;"></span>
-                    <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Ametist</span>
+                    <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Amethyst</span>
                   </button>
                   <button type="button" onclick="selectDiceColor('#d97706', 'Amber Gold')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Amber Gold">
                     <span class="w-7 h-7 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #d97706;"></span>
-                    <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Kehribar</span>
+                    <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Amber</span>
                   </button>
-                  <button type="button" onclick="selectDiceColor('#0891b2', 'Buzul Turkuaz')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Buzul Turkuaz">
+                  <button type="button" onclick="selectDiceColor('#0891b2', 'Glacier Cyan')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Glacier Cyan">
                     <span class="w-7 h-7 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #0891b2;"></span>
-                    <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Buzul</span>
+                    <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Glacier</span>
                   </button>
                   <button type="button" onclick="selectDiceColor('#18181b', 'Obsidian Black')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Obsidian Black">
                     <span class="w-7 h-7 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #18181b;"></span>
-                    <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Obsidyen</span>
+                    <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Obsidian</span>
                   </button>
                   <button type="button" onclick="selectDiceColor('#f8fafc', 'Ivory White')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Ivory White">
                     <span class="w-7 h-7 rounded-full shadow-md border border-slate-400 block group-hover:scale-110 transition-transform" style="background-color: #f8fafc;"></span>
@@ -3267,7 +3267,7 @@
               <button onclick="rollCustomFormula()"
                       class="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-sm shadow flex items-center gap-1.5 transition transform active:scale-95 cursor-pointer">
                 <span>⚡</span>
-                <span>At</span>
+                <span>Roll</span>
               </button>
             </div>
 
@@ -3396,7 +3396,7 @@
     </button>
     <button onclick="switchTab('tab-defense')" id="mobile-tab-btn-defense" class="mobile-tab-btn flex flex-col items-center text-[9px] font-bold text-slate-400 py-0.5 px-1 transition">
       <span class="text-sm">🛡️</span>
-      <span>Savunma</span>
+      <span>Defense</span>
     </button>
     <button onclick="switchTab('tab-inventory')" id="mobile-tab-btn-inventory" class="mobile-tab-btn flex flex-col items-center text-[9px] font-bold text-slate-400 py-0.5 px-1 transition">
       <span class="text-sm">🎒</span>
@@ -3404,7 +3404,7 @@
     </button>
     <button onclick="switchTab('tab-core')" id="mobile-tab-btn-core" class="mobile-tab-btn flex flex-col items-center text-[9px] font-bold text-slate-400 py-0.5 px-1 transition">
       <span class="text-sm">👤</span>
-      <span>Karakter</span>
+      <span>Character</span>
     </button>
     <button onclick="switchTab('tab-database')" id="mobile-tab-btn-database" class="mobile-tab-btn flex flex-col items-center text-[9px] font-bold text-slate-400 py-0.5 px-1 transition">
       <span class="text-sm">📚</span>
@@ -3427,7 +3427,7 @@
           <text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, -apple-system, sans-serif" letter-spacing="-0.5">20</text>
         </svg>
       </span>
-      <span>Zar</span>
+      <span>Dice</span>
     </button>
   </nav>
 
@@ -3444,7 +3444,7 @@
             <p id="profile-modal-weapon-name" class="text-xs text-amber-400 font-mono">Active Loadout</p>
           </div>
         </div>
-        <button onclick="closeSaveProfileModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg text-xs font-bold transition">✕ Kapat</button>
+        <button onclick="closeSaveProfileModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg text-xs font-bold transition">✕ Close</button>
       </div>
       <div class="p-4 space-y-3 text-xs overflow-y-auto flex-1">
         <div>
@@ -3481,13 +3481,13 @@
             <p id="spell-target-modal-subtitle" class="text-xs text-purple-400 font-mono">Spell Effect</p>
           </div>
         </div>
-        <button onclick="closeSpellWeaponTargetModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg text-xs font-bold transition">✕ Kapat</button>
+        <button onclick="closeSpellWeaponTargetModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg text-xs font-bold transition">✕ Close</button>
       </div>
       <div class="p-4 space-y-3 text-xs overflow-y-auto flex-1">
         <div class="p-2.5 rounded-lg bg-purple-950/40 border border-purple-800/50 text-[11px] text-purple-200">
           <div id="spell-target-modal-desc">This spell targets a bludgeoning melee weapon and increases its effective damage size based on your Caster Level.</div>
         </div>
-        <div class="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Uygulanabilir Silahlar:</div>
+        <div class="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Eligible Weapons:</div>
         <div id="spell-target-weapons-list" class="space-y-2">
           <!-- Dynamically populated weapon cards -->
         </div>
@@ -3565,20 +3565,20 @@
         <div class="bg-slate-950/80 border border-slate-800 rounded-lg p-2 space-y-1">
           <label class="text-[9px] uppercase font-bold text-slate-400 block">Combat Drawer Location:</label>
           <select id="pin-modal-drawer-select" onchange="onPinModalDrawerChange()" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-amber-200 font-bold focus:outline-none cursor-pointer">
-            <option value="auto">🎯 Oto (Kural Motoru)</option>
+            <option value="auto">🎯 Auto (Rule Engine)</option>
             <option value="offense_spell">⚔️ Spell: Offense</option>
             <option value="spell_control">🕸️ Spell: Control</option>
             <option value="spell_support">✨ Spell: Support</option>
             <option value="offense_melee">⚔️ Physical: Melee</option>
             <option value="offense_ranged">🏹 Physical: Ranged</option>
-            <option value="defense">🛡️ Fiziksel: Savunma</option>
+            <option value="defense">🛡️ Physical: Defense</option>
           </select>
           <div class="text-[9px] text-slate-500 italic">* Change this if you want to display this item in a different combat drawer.</div>
         </div>
       </div>
       <div class="flex justify-end gap-2 pt-1 border-t border-slate-800">
         <button id="pin-modal-unpin-btn" class="px-3 py-1.5 bg-rose-950/50 hover:bg-rose-900 border border-rose-700 text-rose-300 font-bold text-xs rounded-lg transition cursor-pointer">📌 Unpin</button>
-        <button onclick="closePinDetailsModal()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-lg transition cursor-pointer">Tamam</button>
+        <button onclick="closePinDetailsModal()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-lg transition cursor-pointer">Done</button>
       </div>
     </div>
   </div>
@@ -3600,7 +3600,7 @@
       </div>
       <div class="space-y-1.5 pt-1">
         <button onclick="confirmPinToCategory('auto')" class="w-full py-1.5 px-3 bg-gradient-to-r from-amber-950/60 to-slate-900 hover:from-amber-900/70 hover:to-slate-800 border border-amber-500/60 hover:border-amber-400 rounded-lg text-left text-xs font-bold text-amber-200 flex items-center justify-between transition group cursor-pointer shadow-sm">
-          <span class="flex items-center gap-2"><span>🎯</span> <span>Oto (Kural Motoru)</span></span>
+          <span class="flex items-center gap-2"><span>🎯</span> <span>Auto (Rule Engine)</span></span>
           <span class="text-amber-400 group-hover:translate-x-1 transition-transform">➔</span>
         </button>
         <button onclick="confirmPinToCategory('offense_spell')" class="w-full py-1.5 px-3 bg-slate-900 hover:bg-purple-950/40 border border-slate-700 hover:border-purple-500 rounded-lg text-left text-xs font-bold text-white flex items-center justify-between transition group cursor-pointer">
@@ -3624,7 +3624,7 @@
           <span class="text-amber-400 group-hover:translate-x-1 transition-transform">➔</span>
         </button>
         <button onclick="confirmPinToCategory('defense')" class="w-full py-1.5 px-3 bg-slate-900 hover:bg-indigo-950/40 border border-slate-700 hover:border-indigo-500 rounded-lg text-left text-xs font-bold text-white flex items-center justify-between transition group cursor-pointer">
-          <span class="flex items-center gap-2"><span>🛡️</span> <span>Fiziksel: Savunma</span></span>
+          <span class="flex items-center gap-2"><span>🛡️</span> <span>Physical: Defense</span></span>
           <span class="text-indigo-400 group-hover:translate-x-1 transition-transform">➔</span>
         </button>
       </div>
@@ -3664,7 +3664,7 @@
           <span>Restore All Spell Slots (Long Rest)</span>
         </button>
         <button type="button" onclick="closeSpellSlotsModal()" class="w-full py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-xs font-bold transition cursor-pointer">
-          Kapat
+          Close
         </button>
       </div>
     </div>
@@ -3689,15 +3689,15 @@
             <span id="feat-modal-pin-icon" class="w-3.5 h-3.5 flex items-center justify-center">
               <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path></svg>
             </span>
-            <span id="feat-modal-pin-label">📌 Sabitle</span>
+            <span id="feat-modal-pin-label">📌 Pin</span>
           </button>
-          <button onclick="closeFeatDetailModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg text-xs font-bold transition">✕ Kapat</button>
+          <button onclick="closeFeatDetailModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg text-xs font-bold transition">✕ Close</button>
         </div>
       </div>
       <div class="p-4 space-y-3 text-xs">
         <div class="flex flex-wrap items-center justify-between gap-2 text-[11px]">
           <div class="flex items-center gap-2">
-            <span class="text-slate-400 font-bold uppercase">Kategori:</span>
+            <span class="text-slate-400 font-bold uppercase">Category:</span>
             <span id="feat-modal-category" class="badge bg-indigo-950 text-indigo-300 border border-indigo-700">General</span>
           </div>
           <span id="feat-modal-level-source" class="badge bg-slate-900 text-amber-300 border border-amber-600/70 hidden font-mono"></span>
@@ -3707,7 +3707,7 @@
           <p id="feat-modal-benefit" class="text-slate-200 leading-relaxed font-sans text-xs">Loading description...</p>
         </div>
         <div id="feat-modal-notes-container" class="hidden bg-slate-900/50 border border-slate-800/80 rounded-xl p-2.5 text-[11px] text-slate-400">
-          <strong class="text-slate-300">Notlar:</strong> <span id="feat-modal-notes"></span>
+          <strong class="text-slate-300">Notes:</strong> <span id="feat-modal-notes"></span>
         </div>
 
         <!-- TARGET CONFIGURATION / SELECTOR CONTAINER (For Weapon Focus, Spell Focus, Skill Focus etc.) -->
@@ -3717,7 +3717,7 @@
               <span id="feat-modal-target-icon">🎯</span>
               <span id="feat-modal-target-title">Target Weapon / Focus Selection</span>
             </span>
-            <span class="text-[9px] text-slate-400 font-mono">D&D 3.5e RAW Parametresi</span>
+            <span class="text-[9px] text-slate-400 font-mono">D&D 3.5e RAW Parameter</span>
           </div>
           <div class="flex items-center gap-2">
             <select id="feat-modal-target-select" onchange="onFeatTargetSelectChanged()" class="w-full bg-slate-900 border border-amber-500/40 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-amber-400 font-sans cursor-pointer">
@@ -3732,7 +3732,7 @@
           <span>🗑️</span>
           <span id="btn-remove-feat-text">Remove from Character</span>
         </button>
-        <button onclick="closeFeatDetailModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition">Tamam</button>
+        <button onclick="closeFeatDetailModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition">Done</button>
       </div>
     </div>
   </div>
@@ -3780,12 +3780,12 @@
         <div>
           <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Category / Type *</label>
           <select id="quick-feat-category" onchange="onQuickFeatCategoryChange()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-amber-300 font-bold focus:outline-none focus:border-purple-500">
-            <option value="Regular Feat" id="quick-feat-opt-regular">🎖️ Normal Feat (Regular Feat)</option>
+            <option value="Regular Feat" id="quick-feat-opt-regular">🎖️ Regular Feat</option>
             <option value="Class Bonus Feat" id="quick-feat-opt-class">⚔️ Class Bonus Feat</option>
             <option value="Racial Trait" id="quick-feat-opt-racial">🧬 Human / Racial Bonus Feat</option>
             <option value="DM Boon" id="quick-feat-opt-boon">🌟 DM Boon / Grant</option>
             <option id="quick-feat-opt-warlock" value="Warlock Invocation" disabled title="Requires a Warlock class level or the 'Warlock Boon' CL House Rule.">🔮 Warlock Invocation (Locked: Requires Warlock Level or Boon)</option>
-            <option value="Flaw" id="quick-feat-opt-flaw">⚠️ Kusur / Flaw</option>
+            <option value="Flaw" id="quick-feat-opt-flaw">⚠️ Flaw</option>
             <option value="Special Ability" id="quick-feat-opt-ability">✨ Special Ability / Class Feature</option>
           </select>
         </div>
@@ -3793,7 +3793,7 @@
         <!-- Spotlight & Rule Master Search Bar -->
         <div>
           <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 flex items-center justify-between">
-            <span>Spotlight & AI Feat Arama</span>
+            <span>Spotlight & AI Feat Search</span>
             <span class="text-[10px] text-purple-300 font-normal">Compendium + 3.5e RAW Validation</span>
           </label>
           <div class="relative flex items-center">
@@ -3810,7 +3810,7 @@
                     class="absolute right-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 hover:text-white text-[10px] font-bold border border-slate-600 transition flex items-center gap-1 cursor-pointer"
                     title="Toggle feat catalog">
               <span>📜</span>
-              <span id="quick-feat-catalog-toggle-text">Katalog ▼</span>
+              <span id="quick-feat-catalog-toggle-text">Catalog ▼</span>
             </button>
           </div>
         </div>
@@ -3937,7 +3937,7 @@
                 class="bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 px-2.5 py-1 rounded text-[11px] font-bold transition flex items-center gap-1 cursor-pointer"
                 title="RAW Average Roll">
                 <span>📊</span>
-                <span>Ortalama</span>
+                <span>Average</span>
               </button>
               <button 
                 type="button" 
@@ -3958,15 +3958,15 @@
                   <line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
                   <text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, -apple-system, sans-serif" letter-spacing="-0.5">20</text>
                 </svg>
-                <span>Zar At</span>
+                <span>Roll</span>
               </button>
               <button 
                 type="button" 
                 onclick="rollChangeClassHp('max')" 
                 class="bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/40 px-2.5 py-1 rounded text-[11px] font-bold transition flex items-center gap-1 cursor-pointer"
-                title="Maksimum Hit Die">
+                title="Maximum Hit Die">
                 <span>💪</span>
-                <span>Maksimum</span>
+                <span>Maximum</span>
               </button>
             </div>
 
@@ -3991,7 +3991,7 @@
               <span>💪</span>
               <span>Ability Score Increase (+1 Ability)</span>
             </div>
-            <span id="change-class-stat-badge" class="badge text-[9px] px-2 py-0.5 font-bold bg-sky-950 text-sky-300 border border-sky-600">Her 4 Seviyede Bir</span>
+            <span id="change-class-stat-badge" class="badge text-[9px] px-2 py-0.5 font-bold bg-sky-950 text-sky-300 border border-sky-600">Every 4 Levels</span>
           </div>
           <div>
             <select id="change-class-stat-select" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-sky-300 font-bold focus:border-sky-500">
@@ -4099,9 +4099,9 @@
           <div>
             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Base Attack Bonus (BAB) *</label>
             <select id="custom-class-bab" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-sky-300 font-bold">
-              <option value="1.0">Tam BAB (+1.0 / seviye)</option>
-              <option value="0.75" selected>3/4 BAB (+0.75 / seviye)</option>
-              <option value="0.5">1/2 BAB (+0.5 / seviye)</option>
+              <option value="1.0">Full BAB (+1.0 / level)</option>
+              <option value="0.75" selected>3/4 BAB (+0.75 / level)</option>
+              <option value="0.5">1/2 BAB (+0.5 / level)</option>
             </select>
           </div>
         </div>
@@ -4128,10 +4128,10 @@
           <div>
             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Skill Points per Level *</label>
             <select id="custom-class-skills" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-indigo-300 font-bold">
-              <option value="2" selected>2 + INT / seviye</option>
-              <option value="4">4 + INT / seviye</option>
-              <option value="6">6 + INT / seviye</option>
-              <option value="8">8 + INT / seviye</option>
+              <option value="2" selected>2 + INT / level</option>
+              <option value="4">4 + INT / level</option>
+              <option value="6">6 + INT / level</option>
+              <option value="8">8 + INT / level</option>
             </select>
           </div>
           <div>
@@ -4172,7 +4172,7 @@
             <p class="text-[10px] text-slate-400">Select from Master DB + 3.5e Core / Tome of Battle / Complete Series or define custom</p>
           </div>
         </div>
-        <button onclick="closeFeatPickerModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-lg text-xs font-bold transition">✕ Kapat</button>
+        <button onclick="closeFeatPickerModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-lg text-xs font-bold transition">✕ Close</button>
       </div>
 
       <!-- Body -->
@@ -4182,7 +4182,7 @@
           <input type="text" id="feat-picker-search" oninput="renderFeatPickerList()" placeholder="Search feats (e.g., Power Attack, Arcane Strike, Adaptive Style, Improved Initiative)..." class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500">
           <select id="feat-picker-category" onchange="renderFeatPickerList()" class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-slate-200">
             <option value="All">All Categories</option>
-            <option value="General">General (Genel)</option>
+            <option value="General">General</option>
             <option value="Fighter">Fighter Bonus Feat</option>
             <option value="Martial">Martial / Tome of Battle</option>
             <option value="Metamagic">Metamagic & Spellcasting</option>
@@ -4236,7 +4236,7 @@
       <!-- Footer -->
       <div class="bg-slate-950 px-4 py-2.5 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400 shrink-0">
         <span>💡 Tip: You can also import feats from any 3.5e sourcebook using the 🧙‍♂️🤖 Rule Master (AI) Assistant in the Master DB tab.</span>
-        <button onclick="closeFeatPickerModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs px-4 py-1.5 rounded-lg transition">Kapat</button>
+        <button onclick="closeFeatPickerModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs px-4 py-1.5 rounded-lg transition">Close</button>
       </div>
     </div>
   </div>
@@ -4267,7 +4267,7 @@
       <div class="bg-slate-900/80 px-4 pt-2.5 border-b border-slate-800 flex items-center gap-1.5 overflow-x-auto shrink-0">
         <button type="button" id="tab-stat-dist-identity" onclick="setStatDistMode('identity')" class="px-3.5 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-purple-500 text-purple-200 bg-purple-950/60 flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
           <span>👤</span>
-          <span>Kimlik &amp; Irk</span>
+          <span>Identity &amp; Race</span>
         </button>
         <button type="button" id="tab-stat-dist-abilities" onclick="setStatDistMode('abilities')" class="px-3.5 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
           <span>📊</span>
@@ -4275,7 +4275,7 @@
         </button>
         <button type="button" id="tab-stat-dist-portrait" onclick="setStatDistMode('portrait')" class="px-3.5 py-1.5 rounded-t-lg font-bold text-xs transition border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
           <span>🎨</span>
-          <span>Profil Resmi</span>
+          <span>Portrait</span>
         </button>
       </div>
 
@@ -4291,9 +4291,9 @@
           </div>
           <div class="relative" id="race-custom-dropdown-container">
             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 flex items-center justify-between">
-              <span>Irk (Race) *</span>
+              <span>Race *</span>
               <span class="text-[9px] text-purple-400 font-semibold flex items-center gap-1">
-                <span>🔍</span> <span>Spotlight Arama</span>
+                <span>🔍</span> <span>Spotlight Search</span>
               </span>
             </label>
 
@@ -4316,7 +4316,7 @@
               <div class="p-2 border-b border-purple-900/40 bg-slate-900/80">
                 <div class="relative flex items-center">
                   <span class="absolute left-2.5 text-xs text-purple-400 pointer-events-none">🔍</span>
-                  <input type="text" id="race-spotlight-search" placeholder="Irk ara veya Rule Master AI ile bul..." oninput="onRaceSpotlightFilter(this.value)" onkeydown="onRaceSpotlightKeydown(event)" class="w-full bg-slate-950 border border-purple-500/40 focus:border-purple-400 rounded-lg pl-7 pr-7 py-1 text-xs text-white placeholder-slate-500 font-medium focus:outline-none transition">
+                  <input type="text" id="race-spotlight-search" placeholder="Search race or find via Rule Master AI..." oninput="onRaceSpotlightFilter(this.value)" onkeydown="onRaceSpotlightKeydown(event)" class="w-full bg-slate-950 border border-purple-500/40 focus:border-purple-400 rounded-lg pl-7 pr-7 py-1 text-xs text-white placeholder-slate-500 font-medium focus:outline-none transition">
                   <button type="button" id="race-spotlight-clear-btn" onclick="clearRaceSpotlightFilter()" class="hidden absolute right-2 text-slate-400 hover:text-white text-xs px-1" title="Clear">✕</button>
                 </div>
               </div>
@@ -4331,7 +4331,7 @@
                 <span class="text-slate-400 flex items-center gap-1">
                   <span>💡</span> <span>↑↓ to navigate, Enter to select</span>
                 </span>
-                <button type="button" onclick="selectRaceItem('Diğer')" class="text-purple-300 hover:text-white font-bold flex items-center gap-1 hover:underline cursor-pointer">
+                <button type="button" onclick="selectRaceItem('Other')" class="text-purple-300 hover:text-white font-bold flex items-center gap-1 hover:underline cursor-pointer">
                   <span>🔮</span> <span>Custom Race via AI</span>
                 </button>
               </div>
@@ -4433,7 +4433,7 @@
                 <span class="text-slate-400 flex items-center gap-1">
                   <span>💡</span> <span>↑↓ to navigate, Enter to select</span>
                 </span>
-                <button type="button" onclick="selectDeityItem('Diğer')" class="text-purple-300 hover:text-white font-bold flex items-center gap-1 hover:underline cursor-pointer">
+                <button type="button" onclick="selectDeityItem('Other')" class="text-purple-300 hover:text-white font-bold flex items-center gap-1 hover:underline cursor-pointer">
                   <span>🔮</span> <span>Custom Deity via AI</span>
                 </button>
               </div>
@@ -4445,7 +4445,7 @@
         <div class="grid grid-cols-3 gap-2">
           <div class="relative" id="size-custom-dropdown-container">
             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 flex items-center justify-between">
-              <span>Boyut (Size)</span>
+              <span>Size</span>
               <span class="text-[9px] text-purple-400 font-semibold flex items-center gap-1">
                 <span>📏</span> <span>3.5e RAW</span>
               </span>
@@ -4458,7 +4458,7 @@
             <button type="button" id="size-dropdown-trigger" onclick="toggleSizeDropdown()" class="w-full bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-purple-500/70 rounded-lg px-2.5 py-1.5 text-white font-bold flex items-center justify-between transition shadow-sm cursor-pointer group focus:outline-none focus:border-purple-400">
               <span class="flex items-center gap-2 truncate">
                 <span id="size-trigger-icon" class="text-xs">👤</span>
-                <span id="size-trigger-label" class="text-xs truncate">Medium (Orta)</span>
+                <span id="size-trigger-label" class="text-xs truncate">Medium</span>
               </span>
               <span id="size-trigger-chevron" class="text-slate-400 group-hover:text-purple-300 transition-transform duration-200 text-[10px] ml-1 shrink-0">▼</span>
             </button>
@@ -4473,14 +4473,14 @@
 
               <!-- Footer with Tip -->
               <div class="p-1.5 bg-slate-900/90 border-t border-purple-900/40 flex items-center justify-between text-[10px] text-slate-400">
-                <span>💡 AC, Atak &amp; Gizlenme Mod</span>
-                <span class="text-purple-300 font-mono">9 Boyut</span>
+                <span>💡 AC, Attack &amp; Hide Mod</span>
+                <span class="text-purple-300 font-mono">9 Sizes</span>
               </div>
 
             </div>
           </div>
           <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Cinsiyet</label>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Gender</label>
             <input type="text" id="profile-edit-gender" oninput="updateProfileModalAvatar()" onchange="updateProfileModalAvatar()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white">
           </div>
           <div>
@@ -4491,11 +4491,11 @@
 
         <div class="grid grid-cols-3 gap-2">
           <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Boy</label>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Height</label>
             <input type="text" id="profile-edit-height" placeholder="e.g., 5'10&quot; or 178 cm" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white font-mono">
           </div>
           <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kilo</label>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Weight</label>
             <input type="text" id="profile-edit-weight" placeholder="e.g., 160 lbs or 72 kg" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white font-mono">
           </div>
           <div>
@@ -4511,7 +4511,7 @@
           <div class="flex items-center gap-1.5 p-1 bg-slate-950/80 rounded-xl border border-slate-800 shrink-0">
             <button type="button" id="subtab-ability-manual" onclick="setStatDistAbilityMode('manual')" class="flex-1 py-1.5 px-2 rounded-lg font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer bg-purple-900/60 text-purple-200 border border-purple-500/50 shadow-sm">
               <span>✏️</span>
-              <span>Manuel (Serbest)</span>
+              <span>Manual (Freeform)</span>
             </button>
             <button type="button" id="subtab-ability-pointbuy" onclick="setStatDistAbilityMode('pointbuy')" class="flex-1 py-1.5 px-2 rounded-lg font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer text-slate-400 hover:text-slate-200 border border-transparent">
               <span>⚖️</span>
@@ -4519,7 +4519,7 @@
             </button>
             <button type="button" id="subtab-ability-roll" onclick="setStatDistAbilityMode('roll')" class="flex-1 py-1.5 px-2 rounded-lg font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer text-slate-400 hover:text-slate-200 border border-transparent">
               <span class="inline-flex items-center"><svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"></polygon><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"></polygon><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"></line><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
-              <span>4d6 Drop Lowest (Zar)</span>
+              <span>4d6 Drop Lowest (Roll)</span>
             </button>
           </div>
 
@@ -4551,10 +4551,10 @@
               <div class="flex items-center gap-1.5">
                 <span class="text-xs font-bold text-purple-200">Point Buy Budget:</span>
                 <select id="pointbuy-preset-select" onchange="onPointBuyPresetChange()" class="bg-slate-900 border border-purple-500/50 rounded px-2 py-0.5 text-xs text-white font-bold cursor-pointer">
-                  <option value="25">25 Puan (Low Fantasy)</option>
-                  <option value="28" selected>28 Puan (Standard 3.5e RAW)</option>
-                  <option value="32">32 Puan (High Fantasy)</option>
-                  <option value="36">36 Puan (Epic Fantasy)</option>
+                  <option value="25">25 Pts (Low Fantasy)</option>
+                  <option value="28" selected>28 Pts (Standard 3.5e RAW)</option>
+                  <option value="32">32 Pts (High Fantasy)</option>
+                  <option value="36">36 Pts (Epic Fantasy)</option>
                   <option value="custom">Custom Budget</option>
                 </select>
                 <input type="number" id="pointbuy-custom-budget" oninput="calculatePointBuy()" class="hidden w-16 bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-xs text-center text-white font-mono font-bold" min="10" max="100" value="28">
@@ -4563,7 +4563,7 @@
               <!-- Puan Durum Rozeti & Sıfırla -->
               <div class="flex items-center gap-1.5">
                 <div id="pointbuy-summary-badge" class="px-2.5 py-1 rounded-lg font-mono font-bold text-xs flex items-center gap-1.5 bg-emerald-950 text-emerald-300 border border-emerald-600">
-                  <span>Kalan: <strong id="pointbuy-remaining-pts">0</strong> / <span id="pointbuy-total-pts">28</span> Puan</span>
+                  <span>Remaining: <strong id="pointbuy-remaining-pts">0</strong> / <span id="pointbuy-total-pts">28</span> Pts</span>
                 </div>
                 <button type="button" onclick="resetStatsToCurrent()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded border border-slate-700 transition cursor-pointer" title="Reset to current base scores">
                   ↺ Reset
@@ -4586,7 +4586,7 @@
               <div>
                 <h4 class="font-bold text-white text-xs flex items-center gap-1.5">
                   <span class="inline-flex items-center"><svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"></polygon><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"></polygon><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"></line><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
-                  <span>4d6 Drop Lowest Zar Havuzu</span>
+                  <span>4d6 Drop Lowest Dice Pool</span>
                 </h4>
                 <p class="text-[10px] text-slate-400">Rolls 4d6 for each ability (rerolling if two or more 1s appear), dropping the lowest die and summing the highest 3.</p>
               </div>
@@ -4653,8 +4653,8 @@
               <span class="text-base">👤</span>
               <div>
                 <h4 class="font-extrabold text-white text-xs flex items-center gap-2">
-                  <span>Karakter Resmi</span>
-                  <span id="portrait-status-badge" class="badge bg-slate-800 text-slate-400 border border-slate-700 text-[9px]">Dinamik Sembol</span>
+                  <span>Character Portrait</span>
+                  <span id="portrait-status-badge" class="badge bg-slate-800 text-slate-400 border border-slate-700 text-[9px]">Dynamic Icon</span>
                 </h4>
                 <p class="text-[10px] text-indigo-300">Select and frame the portrait displayed on your hero card</p>
               </div>
@@ -4735,9 +4735,9 @@
                   <div class="grid grid-cols-3 gap-1">
                     <button type="button" onclick="setPortraitPositionPercent(50, 10)" class="py-1 px-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold transition text-center border border-slate-700" title="Face / Head Area">⬆️ Face (Head)</button>
                     <button type="button" onclick="setPortraitPositionPercent(50, 50)" class="py-1 px-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold transition text-center border border-slate-700" title="Torso / Center Area">⏺️ Center</button>
-                    <button type="button" onclick="setPortraitPositionPercent(50, 90)" class="py-1 px-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold transition text-center border border-slate-700" title="Alt / Tam Boy">⬇️ Alt</button>
+                    <button type="button" onclick="setPortraitPositionPercent(50, 90)" class="py-1 px-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold transition text-center border border-slate-700" title="Bottom / Full Body">⬇️ Bottom</button>
                     <button type="button" onclick="setPortraitPositionPercent(20, 30)" class="py-1 px-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold transition text-center border border-slate-700" title="Left Angle">⬅️ Left</button>
-                    <button type="button" onclick="setPortraitPositionPercent(50, 30)" class="py-1 px-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold transition text-center border border-slate-700" title="Portre Klasik">👤 Klasik</button>
+                    <button type="button" onclick="setPortraitPositionPercent(50, 30)" class="py-1 px-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold transition text-center border border-slate-700" title="Classic Portrait">👤 Classic</button>
                     <button type="button" onclick="setPortraitPositionPercent(80, 30)" class="py-1 px-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold transition text-center border border-slate-700" title="Right Angle">➡️ Right</button>
                   </div>
                 </div>
@@ -4875,7 +4875,7 @@
               <div class="sm:col-span-5 flex items-center gap-1">
                 <span class="text-[10px] text-slate-400 font-bold whitespace-nowrap">Quick Focus:</span>
                 <button type="button" onclick="setWallpaperPositionPercent(50, 10)" class="flex-1 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold transition text-center" title="Focus on Top">⬆️ Top</button>
-                <button type="button" onclick="setWallpaperPositionPercent(50, 50)" class="flex-1 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold transition text-center" title="Merkeze Odaklan">⏺️ Orta</button>
+                <button type="button" onclick="setWallpaperPositionPercent(50, 50)" class="flex-1 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold transition text-center" title="Focus on Center">⏺️ Center</button>
                 <button type="button" onclick="setWallpaperPositionPercent(50, 90)" class="flex-1 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold transition text-center" title="Focus on Bottom">⬇️ Bottom</button>
               </div>
 
@@ -4895,7 +4895,7 @@
                 </div>
                 <div>
                   <select id="wallpaper-theme-select" onchange="onWallpaperThemeChange()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-indigo-300 font-bold">
-                    <option value="dark-blue">🌌 Gece Mavisi (D&D Tema)</option>
+                    <option value="dark-blue">🌌 Midnight Blue (D&D Theme)</option>
                     <option value="mystic-purple">🔮 Mystic Arcane Purple</option>
                     <option value="crimson">⚔️ Crimson Warrior</option>
                     <option value="emerald">🌿 Sylvan Emerald</option>
@@ -5443,7 +5443,7 @@
           </div>
         </div>
         <div class="flex items-center gap-2">
-          <button onclick="closeLevelUpModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-lg text-xs font-bold transition">✕ Kapat</button>
+          <button onclick="closeLevelUpModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-lg text-xs font-bold transition">✕ Close</button>
         </div>
       </div>
 
@@ -5499,8 +5499,8 @@
             <!-- Filter chips -->
             <div class="flex items-center gap-1 overflow-x-auto shrink-0 pb-0.5 sm:pb-0">
               <button type="button" onclick="setClassFilterTab('all')" id="class-filter-tab-all" class="px-2 py-1 rounded text-[10px] font-bold transition bg-purple-700 text-white shadow">All</button>
-              <button type="button" onclick="setClassFilterTab('base')" id="class-filter-tab-base" class="px-2 py-1 rounded text-[10px] font-bold transition bg-slate-800 text-slate-400 hover:text-white">🛡️ Temel</button>
-              <button type="button" onclick="setClassFilterTab('prestige')" id="class-filter-tab-prestige" class="px-2 py-1 rounded text-[10px] font-bold transition bg-slate-800 text-slate-400 hover:text-white">👑 Prestij</button>
+              <button type="button" onclick="setClassFilterTab('base')" id="class-filter-tab-base" class="px-2 py-1 rounded text-[10px] font-bold transition bg-slate-800 text-slate-400 hover:text-white">🛡️ Base</button>
+              <button type="button" onclick="setClassFilterTab('prestige')" id="class-filter-tab-prestige" class="px-2 py-1 rounded text-[10px] font-bold transition bg-slate-800 text-slate-400 hover:text-white">👑 Prestige</button>
               <button type="button" onclick="setClassFilterTab('custom')" id="class-filter-tab-custom" class="px-2 py-1 rounded text-[10px] font-bold transition bg-slate-800 text-slate-400 hover:text-white">⚙️ Custom</button>
             </div>
           </div>
@@ -5544,7 +5544,7 @@
                 <span>Hit Point Gain (HP Gain = HD + CON Mod)</span>
               </div>
               <div id="lvlup-hp-formula-hint" class="text-[10px] text-slate-400 mt-0.5">
-                CON Modifiyeriniz otomatik olarak eklenir.
+                Your CON Modifier is added automatically.
               </div>
             </div>
           </div>
@@ -5558,7 +5558,7 @@
                 class="bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 px-2.5 py-1 rounded text-[11px] font-bold transition flex items-center gap-1 cursor-pointer"
                 title="RAW Average Roll">
                 <span>📊</span>
-                <span>Ortalama</span>
+                <span>Average</span>
               </button>
               <button 
                 type="button" 
@@ -5579,15 +5579,15 @@
                   <line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
                   <text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, -apple-system, sans-serif" letter-spacing="-0.5">20</text>
                 </svg>
-                <span>Zar At</span>
+                <span>Roll</span>
               </button>
               <button 
                 type="button" 
                 onclick="rollLevelUpHp('max')" 
                 class="bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/40 px-2.5 py-1 rounded text-[11px] font-bold transition flex items-center gap-1 cursor-pointer"
-                title="Maksimum Hit Die">
+                title="Maximum Hit Die">
                 <span>💪</span>
-                <span>Maksimum</span>
+                <span>Maximum</span>
               </button>
             </div>
 
@@ -5608,7 +5608,7 @@
         <div id="lvlup-stat-section" class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 space-y-2">
           <div class="flex items-center justify-between">
             <div class="text-[11px] font-bold text-amber-400 uppercase tracking-wide">3. Ability Score Increase (+1 Ability Score)</div>
-            <span id="lvlup-stat-hint-badge" class="badge bg-slate-800 text-slate-400 border border-slate-700">4, 8, 12, 16, 20. Seviyelerde</span>
+            <span id="lvlup-stat-hint-badge" class="badge bg-slate-800 text-slate-400 border border-slate-700">At Levels 4, 8, 12, 16, 20</span>
           </div>
           <div class="flex items-center gap-3">
             <label class="text-xs text-slate-300">Permanent +1 Ability Selection:</label>
@@ -5663,7 +5663,7 @@
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <div class="sm:col-span-2">
-              <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">BÃ¼yÃ¼ Seviyesi Ä°lerlemesi (Caster Level & Slots)</label>
+              <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Spellcasting Progression (Caster Level & Slots)</label>
               <select id="lvlup-caster-prog" onchange="onLevelUpCasterProgChange()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-purple-300 font-bold">
                 <option value="none">-- No Spellcasting Progression at This Level --</option>
                 <option value="primary">🔮 +1 Primary Caster Level (New Spell Slots & +1 CL)</option>
@@ -5672,7 +5672,7 @@
               </select>
             </div>
             <div>
-              <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Yeni Caster Level (CL)</label>
+              <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">New Caster Level (CL)</label>
               <input type="number" id="lvlup-cl-preview" value="0" min="0" class="w-full bg-slate-950 border border-purple-500/80 rounded-lg px-2.5 py-1.5 text-center font-mono font-bold text-purple-300 text-sm">
             </div>
           </div>
@@ -5745,7 +5745,7 @@
           onclick="switchBuffModalMode('debuff')"
           class="flex-1 py-1.5 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition border border-slate-700 bg-slate-900 text-slate-400 hover:text-rose-300 hover:border-rose-600/50">
           <span>🩸</span>
-          <span>Debuff / Durum (Condition)</span>
+          <span>Debuff / Condition</span>
         </button>
       </div>
 
@@ -5775,7 +5775,7 @@
               id="btn-buff-rule-master"
               class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow flex items-center gap-1.5 transition active:scale-95 cursor-pointer shrink-0">
               <span>🧙‍♂️🤖</span>
-              <span>Getir</span>
+              <span>Fetch</span>
             </button>
           </div>
           <div id="buff-rule-master-status" class="hidden text-[11px] py-1 px-2.5 rounded-lg"></div>
@@ -5798,9 +5798,9 @@
           <div class="flex items-center justify-between text-xs font-bold text-rose-300">
             <span class="flex items-center gap-1.5">
               <span>🌳</span>
-              <span>Parent-Child Alt Etkileri:</span>
+              <span>Parent-Child Sub-Effects:</span>
             </span>
-            <span id="buff-children-count-badge" class="badge bg-rose-950 text-rose-200 border border-rose-700 text-[10px] px-2 py-0.5 rounded-full font-mono">0 Alt Etki</span>
+            <span id="buff-children-count-badge" class="badge bg-rose-950 text-rose-200 border border-rose-700 text-[10px] px-2 py-0.5 rounded-full font-mono">0 Sub-Effects</span>
           </div>
           <div id="buff-children-list" class="space-y-1.5 max-h-40 overflow-y-auto text-xs font-mono pr-1">
             <!-- Dynamic child items -->
@@ -5845,7 +5845,7 @@
               <option value="Deflection">Deflection</option>
               <option value="Natural">Natural</option>
               <option value="Dodge">Dodge</option>
-              <option value="Penalty">Penalty (Ceza)</option>
+              <option value="Penalty">Penalty</option>
               <option value="Untyped">Untyped</option>
             </select>
           </div>
@@ -5972,7 +5972,7 @@
                 <span class="text-xs font-extrabold text-slate-200 flex items-center gap-1.5">
                   <span>📂</span> <span>Standard 46 Skills (RAW)</span>
                 </span>
-                <span id="scm-badge-split" class="text-[9px] bg-slate-800 text-slate-400 font-bold px-1.5 py-0.5 rounded">46 Beceri</span>
+                <span id="scm-badge-split" class="text-[9px] bg-slate-800 text-slate-400 font-bold px-1.5 py-0.5 rounded">46 Skills</span>
               </div>
               <p class="text-[10px] text-slate-400 leading-snug">
                 Lists all 46 official D&D 3.5e skills individually. 100% faithful to core PHB rules.
@@ -5986,11 +5986,11 @@
           <label class="block text-[11px] font-bold text-slate-300 uppercase">📋 Consolidated Skill Groups</label>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
             <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
-              <div class="font-bold text-amber-300 flex items-center gap-1"><span>🏃</span> <span>Athletics (Atletizm) [STR]</span></div>
+              <div class="font-bold text-amber-300 flex items-center gap-1"><span>🏃</span> <span>Athletics [STR]</span></div>
               <div class="text-[11px] text-slate-300">Climb + Jump + Swim</div>
             </div>
             <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
-              <div class="font-bold text-purple-300 flex items-center gap-1"><span>🥷</span> <span>Stealth (Gizlilik) [DEX]</span></div>
+              <div class="font-bold text-purple-300 flex items-center gap-1"><span>🥷</span> <span>Stealth [DEX]</span></div>
               <div class="text-[11px] text-slate-300">Hide + Move Silently</div>
             </div>
             <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
@@ -5998,19 +5998,19 @@
               <div class="text-[11px] text-slate-300">Spot + Listen</div>
             </div>
             <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
-              <div class="font-bold text-emerald-300 flex items-center gap-1"><span>🤸</span> <span>Acrobatics (Akrobasi) [DEX]</span></div>
+              <div class="font-bold text-emerald-300 flex items-center gap-1"><span>🤸</span> <span>Acrobatics [DEX]</span></div>
               <div class="text-[11px] text-slate-300">Tumble + Balance + Escape Artist</div>
             </div>
             <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
-              <div class="font-bold text-rose-300 flex items-center gap-1"><span>🗝️</span> <span>Thievery (Mekanizma) [DEX]</span></div>
+              <div class="font-bold text-rose-300 flex items-center gap-1"><span>🗝️</span> <span>Thievery [DEX]</span></div>
               <div class="text-[11px] text-slate-300">Open Lock + Disable Device + Sleight of Hand</div>
             </div>
             <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1">
-              <div class="font-bold text-pink-300 flex items-center gap-1"><span>🗣️</span> <span>Diplomacy (Sosyal) [CHA]</span></div>
+              <div class="font-bold text-pink-300 flex items-center gap-1"><span>🗣️</span> <span>Diplomacy (Social) [CHA]</span></div>
               <div class="text-[11px] text-slate-300">Diplomacy + Gather Information</div>
             </div>
             <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1 sm:col-span-2">
-              <div class="font-bold text-indigo-300 flex items-center gap-1"><span>📜</span> <span>Linguistics (Dilbilim) [INT]</span></div>
+              <div class="font-bold text-indigo-300 flex items-center gap-1"><span>📜</span> <span>Linguistics [INT]</span></div>
               <div class="text-[11px] text-slate-300">Decipher Script + Forgery</div>
             </div>
           </div>
@@ -6027,7 +6027,7 @@
 
       <!-- Modal Footer -->
       <div class="bg-slate-950 px-4 py-3 border-t border-slate-800 flex justify-end gap-2 shrink-0">
-        <button onclick="closeSkillConsolidationModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs px-3.5 py-1.5 rounded-lg transition">Kapat</button>
+        <button onclick="closeSkillConsolidationModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs px-3.5 py-1.5 rounded-lg transition">Close</button>
         <button onclick="saveSkillConsolidationSettings()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition shadow">Save & Apply</button>
       </div>
     </div>
@@ -6067,7 +6067,7 @@
             <option value="Knowledge (Dungeoneering)|int|false|false|Aberrations, caverns, oozes, spelunking">Knowledge (Dungeoneering) [INT]</option>
             <option value="Knowledge (Architecture and Engineering)|int|false|false|Buildings, aqueducts, bridges, fortifications">Knowledge (Architecture & Engineering) [INT]</option>
             <option value="Knowledge (Warfare & Tactics)|int|false|false|Military tactics, army maneuvers, siege strategy">Knowledge (Warfare & Tactics) [INT]</option>
-            <option value="Knowledge (Nobility and Royalty)|int|false|false|Soylu aileler, armalar, saray protokolleri, veraset">Knowledge: Nobility & Royalty (Saray/Soy Bilgisi) [INT]</option>
+            <option value="Knowledge (Nobility and Royalty)|int|false|false|Lineages, heraldry, family trees, mottoes, personalities">Knowledge (Nobility and Royalty) [INT]</option>
             <option value="Knowledge (History)|int|false|false|Royalty, wars, colonies, migrations, founding of cities">Knowledge (History) [INT]</option>
             <option value="Knowledge (Nature)|int|false|false|Animals, fey, giants, monstrous humanoids, plants, seasons, cycles">Knowledge (Nature) [INT]</option>
             <option value="Knowledge (Religion)|int|false|false|Gods and goddesses, mythic history, ecclesiastic tradition, holy symbols, undead">Knowledge (Religion) [INT]</option>
@@ -6075,7 +6075,7 @@
             <option value="Craft (Alchemy)|int|false|false|Alchemical substances, acids, antitoxins, smokesticks">Craft (Alchemy) [INT]</option>
             <option value="Craft (Weaponsmithing)|int|false|false|Forging and repairing melee and ranged weapons">Craft (Weaponsmithing) [INT]</option>
             <option value="Craft (Armorsmithing)|int|false|false|Forging and repairing armor and shields">Craft (Armorsmithing) [INT]</option>
-            <option value="Profession (Sailor)|wis|false|false|Gemicilik, denizcilik ve seyir">Profession: Sailor (Denizci) [WIS]</option>
+            <option value="Profession (Sailor)|wis|false|false|Seamanship, navigation, and sailing">Profession (Sailor) [WIS]</option>
             <option value="Perform (Oratory)|cha|true|false|Epic storytelling, speeches, drama, and rhetoric">Perform (Oratory) [CHA]</option>
           </select>
         </div>
@@ -6092,10 +6092,10 @@
             <label class="block text-[11px] font-bold text-slate-300 uppercase mb-1">🧠 Key Ability:</label>
             <select id="csk-stat" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white font-bold focus:outline-none focus:border-indigo-400">
               <option value="int">INT (Intelligence) - Knowledge, Craft</option>
-              <option value="wis">WIS (Bilgelik) - Spot, Listen, Profession</option>
+              <option value="wis">WIS (Wisdom) - Spot, Listen, Profession</option>
               <option value="dex">DEX (Dexterity) - Stealth, Tumble</option>
-              <option value="str">STR (Kuvvet) - Jump, Climb, Swim</option>
-              <option value="cha">CHA (Karizma) - Bluff, Diplomacy, Perform</option>
+              <option value="str">STR (Strength) - Jump, Climb, Swim</option>
+              <option value="cha">CHA (Charisma) - Bluff, Diplomacy, Perform</option>
               <option value="con">CON (Constitution) - Concentration</option>
             </select>
           </div>
@@ -6200,7 +6200,7 @@
         <div class="bg-slate-900/70 p-2.5 rounded-xl border border-slate-800 space-y-1.5">
           <div class="text-[10px] font-bold text-slate-400 flex items-center justify-between">
             <span>⚡ Quick Preset:</span>
-            <span class="text-[9px] text-slate-500">Otomatik doldurur</span>
+            <span class="text-[9px] text-slate-500">Auto-fills fields</span>
           </div>
           <div id="periodic-presets-container" class="flex flex-wrap gap-1.5">
             <!-- Dynamic presets rendered by JS -->
@@ -6301,7 +6301,7 @@
       <!-- Modal Footer -->
       <div class="bg-slate-950 px-4 py-2.5 border-t border-slate-800 flex justify-end shrink-0">
         <button onclick="closeSlotEquipModal()" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition">
-          Kapat
+          Close
         </button>
       </div>
     </div>
@@ -6356,11 +6356,11 @@
             >
             <span class="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
           </div>
-          <select id="spell-picker-source-filter" onchange="renderSpellPickerResults()" class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:border-purple-500 focus:outline-none" title="B&#252;y&#252; Kayna&#287;&#305; Filtresi">
-            <option value="auto">&#x1F3AF; Otomatik (Hedefe Uygun)</option>
-            <option value="arcane">&#x26A1; Arcane (Anl&#305;k / Kitap)</option>
-            <option value="divine">&#x1F52E; Divine (&#304;lahi)</option>
-            <option value="all">&#x1F310; T&#252;m&#252; (Filtresiz)</option>
+          <select id="spell-picker-source-filter" onchange="renderSpellPickerResults()" class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:border-purple-500 focus:outline-none" title="Spell Source Filter">
+            <option value="auto">🎯 Auto (Match Target)</option>
+            <option value="arcane">⚡ Arcane (Spontaneous / Prepared)</option>
+            <option value="divine">🔮 Divine</option>
+            <option value="all">🌐 All (Unfiltered)</option>
           </select>
           <select id="spell-picker-level-filter" onchange="renderSpellPickerResults()" class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:border-purple-500 focus:outline-none">
             <option value="all">All Levels</option>
@@ -6390,11 +6390,11 @@
           <span>Not found in Master DB?</span>
           <button type="button" onclick="triggerSpellPickerAiSearch()" class="bg-purple-900/60 hover:bg-purple-700 text-purple-200 hover:text-white px-2.5 py-1 rounded-lg border border-purple-600/50 font-bold transition flex items-center gap-1 cursor-pointer">
             <span>🧙‍♂️🤖</span>
-            <span>Rule Master AI ile Getir</span>
+            <span>Fetch with Rule Master AI</span>
           </button>
         </div>
         <button type="button" onclick="closeSpellManeuverPickerModal()" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition cursor-pointer">
-          Kapat
+          Close
         </button>
       </div>
     </div>
@@ -6419,7 +6419,7 @@
             <p class="text-[10px] text-slate-400">Pick from Master DB or import from 3.5e books via 🧙‍♂️🤖 Rule Master (AI)</p>
           </div>
         </div>
-        <button onclick="closeAddPoolItemModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg text-xs font-bold transition">✕ Kapat</button>
+        <button onclick="closeAddPoolItemModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg text-xs font-bold transition">✕ Close</button>
       </div>
 
       <!-- Modal Scrollable Content -->
@@ -6477,33 +6477,33 @@
             </div>
             <div class="grid grid-cols-2 gap-2.5">
               <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kategori * (Madde 8)</label>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Category *</label>
                 <select id="api-category" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
-                  <option value="Weapon">Weapon (Silah)</option>
+                  <option value="Weapon">Weapon</option>
                   <option value="Shield">Shield</option>
                   <option value="Armor">Armor</option>
                   <option value="Head">Head</option>
                   <option value="Eyes">Eyes</option>
-                  <option value="Neck">Neck (Boyun)</option>
-                  <option value="Shoulders">Shoulders (Omuz)</option>
+                  <option value="Neck">Neck</option>
+                  <option value="Shoulders">Shoulders</option>
                   <option value="Torso">Torso</option>
-                  <option value="Belt">Belt (Kemer)</option>
-                  <option value="Bracers">Bracers (Bileklik)</option>
-                  <option value="Gloves">Gloves (Eldiven)</option>
+                  <option value="Belt">Belt</option>
+                  <option value="Bracers">Bracers</option>
+                  <option value="Gloves">Gloves</option>
                   <option value="Ring">Ring</option>
                   <option value="Boots">Boots</option>
-                  <option value="Consumable">Consumable (Sarf)</option>
+                  <option value="Consumable">Consumable</option>
                   <option value="Other">Other</option>
                 </select>
               </div>
               <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Yuva (Slot)</label>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Slot</label>
                 <input type="text" id="api-slot" placeholder="e.g., Main Hand, Shoulders, Belt..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
               </div>
             </div>
             <div class="grid grid-cols-3 gap-2.5">
               <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Adet</label>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Qty</label>
                 <input type="number" id="api-qty" value="1" min="0" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white text-center font-mono">
               </div>
               <div>
@@ -6553,13 +6553,13 @@
             <p class="text-[10px] text-slate-400">Universal D&D 3.5e Rule & V2 Compendium Schema</p>
           </div>
         </div>
-        <button onclick="RuleMaster.closeModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg text-xs font-bold transition">✕ Kapat</button>
+        <button onclick="RuleMaster.closeModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg text-xs font-bold transition">✕ Close</button>
       </div>
 
       <!-- Quick Template Presets Bar -->
       <div class="bg-slate-900/90 px-4 py-2 border-b border-slate-800 flex items-center gap-1.5 overflow-x-auto text-xs">
         <span class="text-[11px] text-slate-400 font-bold shrink-0">Quick Presets:</span>
-        <button onclick="RuleMaster.applyPreset('weapon')" class="px-2.5 py-1 rounded bg-rose-950/70 text-rose-300 border border-rose-800 hover:bg-rose-900 font-semibold text-[11px] shrink-0">🗡️ Silah (1-Hand)</button>
+        <button onclick="RuleMaster.applyPreset('weapon')" class="px-2.5 py-1 rounded bg-rose-950/70 text-rose-300 border border-rose-800 hover:bg-rose-900 font-semibold text-[11px] shrink-0">🗡️ Weapon (1-Hand)</button>
         <button onclick="RuleMaster.applyPreset('weapon2h')" class="px-2.5 py-1 rounded bg-red-950/70 text-red-300 border border-red-800 hover:bg-red-900 font-semibold text-[11px] shrink-0">⚔️ Two-Handed Weapon</button>
         <button onclick="RuleMaster.applyPreset('shield')" class="px-2.5 py-1 rounded bg-sky-950/70 text-sky-300 border border-sky-800 hover:bg-sky-900 font-semibold text-[11px] shrink-0">🛡️ Shield</button>
         <button onclick="RuleMaster.applyPreset('armor')" class="px-2.5 py-1 rounded bg-blue-950/70 text-blue-300 border border-blue-800 hover:bg-blue-900 font-semibold text-[11px] shrink-0">🥋 Armor</button>
@@ -6585,7 +6585,7 @@
             <div>
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Category *</label>
               <select id="rf-type" onchange="RuleMaster.onTypeChange()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
-                <option value="Weapon">Weapon (Silah)</option>
+                <option value="Weapon">Weapon</option>
                 <option value="Shield">Shield</option>
                 <option value="Armor">Armor</option>
                 <option value="Feat">Feat</option>
@@ -6599,8 +6599,8 @@
                 <option value="Special Ability">Special Ability (Class Feature)</option>
                 <option value="Active Power">Active Power (Child Power)</option>
                 <option value="DM Grant">DM Grant / Boon</option>
-                <option value="Flaw">Flaw (Kusur)</option>
-                <option value="Race">Race (Irk)</option>
+                <option value="Flaw">Flaw</option>
+                <option value="Race">Race</option>
               </select>
             </div>
             <div>
@@ -6614,13 +6614,13 @@
                 <option value="Armor">Armor Slot</option>
                 <option value="Head">Head / Headband / Helmet</option>
                 <option value="Eyes">Eyes / Lenses / Goggles</option>
-                <option value="Neck">Neck (Boyun / Kolye)</option>
+                <option value="Neck">Neck / Amulet</option>
                 <option value="Torso">Torso / Vest / Shirt</option>
-                <option value="Shoulders">Shoulders (Omuz / Pelerin)</option>
-                <option value="Arms">Arms (Kollar / Bileklik)</option>
-                <option value="Hands">Hands (Eller / Eldiven)</option>
+                <option value="Shoulders">Shoulders / Cloak</option>
+                <option value="Arms">Arms / Bracers</option>
+                <option value="Hands">Hands / Gloves</option>
                 <option value="Ring">Ring</option>
-                <option value="Waist">Waist (Bel / Kemer)</option>
+                <option value="Waist">Waist / Belt</option>
                 <option value="Feet">Feet / Boots</option>
                 <option value="Slotless">Slotless (Carried / Passive)</option>
               </select>
@@ -6651,7 +6651,7 @@
               </select>
             </div>
             <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Etiketler (Tags)</label>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tags</label>
               <input type="text" id="rf-tags" placeholder="two-handed, exotic, slashing..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
             </div>
           </div>
@@ -6789,7 +6789,7 @@
             </div>
             <div class="relative">
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Discipline / Spell School</label>
-              <input type="text" id="rf-discipline" autocomplete="off" placeholder="Iron Heart, Evocation vb." class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-purple-300">
+              <input type="text" id="rf-discipline" autocomplete="off" placeholder="Iron Heart, Evocation, etc." class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-purple-300">
             </div>
           </div>
           
@@ -6814,7 +6814,7 @@
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
             <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Maksimum Dex Bonusu (Max Dex)</label>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Maximum Dex Bonus (Max Dex)</label>
               <input type="number" id="rf-max-dex" min="0" max="20" placeholder="e.g., 1, 6 (Blank = Unlimited)" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-sky-300 font-mono">
             </div>
             <div>
@@ -6843,16 +6843,16 @@
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Proficiency Category</label>
               <select id="rf-proficiency" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
                 <option value="Martial">Martial Weapon</option>
-                <option value="Simple">Simple (Basit Silah)</option>
-                <option value="Exotic">Exotic (Egzotik Silah)</option>
+                <option value="Simple">Simple Weapon</option>
+                <option value="Exotic">Exotic Weapon</option>
                 <option value="Natural">Natural Weapon</option>
               </select>
             </div>
             <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Hafif / Finessable Silah</label>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Light / Finesse Weapon</label>
               <select id="rf-is-light" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
                 <option value="false">Normal (1-Hand / 2-Hand)</option>
-                <option value="true">Hafif Silah (Light / Finesse Uygun)</option>
+                <option value="true">Light Weapon (Finesse Eligible)</option>
               </select>
             </div>
             <div>
@@ -6904,12 +6904,12 @@
           </div>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Irk Boyutu (Size)</label>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Racial Size</label>
               <select id="rf-race-size" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
-                <option value="Medium">Medium (Orta)</option>
+                <option value="Medium">Medium</option>
                 <option value="Small">Small (Halfling/Gnome)</option>
                 <option value="Large">Large</option>
-                <option value="Tiny">Tiny (Mini)</option>
+                <option value="Tiny">Tiny</option>
               </select>
             </div>
             <div>
@@ -6918,11 +6918,11 @@
             </div>
             <div>
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Favored Class</label>
-              <input type="text" id="rf-favored-class" placeholder="Fighter, Rogue, Any vb." class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
+              <input type="text" id="rf-favored-class" placeholder="Fighter, Rogue, Any, etc." class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
             </div>
             <div>
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Automatic Languages</label>
-              <input type="text" id="rf-languages" placeholder="Common, Elven vb." class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
+              <input type="text" id="rf-languages" placeholder="Common, Elven, etc." class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
             </div>
           </div>
         </div>
@@ -6942,12 +6942,12 @@
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Charge Unit</label>
               <select id="rf-charge-unit" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
                 <option value="charges">Charges (Healing Belt, Witchlight, etc.)</option>
-                <option value="rounds">Tur (Round - Boots of Speed vb.)</option>
+                <option value="rounds">Rounds (Boots of Speed, etc.)</option>
                 <option value="uses">Uses per Day (1/day, 3/day, etc.)</option>
               </select>
             </div>
             <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Yenilenme Periyodu</label>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Recharge Period</label>
               <input type="text" id="rf-charge-recharge" value="Long Rest (Dawn / 8h Rest)" disabled class="w-full bg-slate-950/70 border border-slate-800 rounded px-2.5 py-1 text-xs text-slate-400 cursor-not-allowed">
             </div>
           </div>
@@ -6973,14 +6973,14 @@
                 <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Effect Type</label>
                 <select id="rf-effect-type" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
                   <option value="">Default (Damage / General)</option>
-                  <option value="damage">damage (Ekstra Hasar)</option>
+                  <option value="damage">damage (Extra Damage)</option>
                   <option value="bonus">bonus (Temporary Ability / Attack Bonus)</option>
                   <option value="condition">condition (Condition / Debuff)</option>
-                  <option value="heal">heal (Can Tazeleme)</option>
+                  <option value="heal">heal (Healing)</option>
                 </select>
               </div>
               <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kendi Can Bedeli (Self HP Cost)</label>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Self HP Cost</label>
                 <input type="number" id="rf-self-hp-cost" min="0" placeholder="e.g., 5 (Blade of Blood)" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-rose-300 font-mono">
               </div>
             </div>
@@ -6991,7 +6991,7 @@
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-slate-300">
                 <label class="flex items-center gap-1.5 cursor-pointer hover:text-white">
                   <input type="checkbox" id="rf-flag-touch" class="rounded bg-slate-950 border-slate-700 text-purple-600 focus:ring-0">
-                  <span>Dokunma (Touch Attack)</span>
+                  <span>Touch Attack</span>
                 </label>
                 <label class="flex items-center gap-1.5 cursor-pointer hover:text-white">
                   <input type="checkbox" id="rf-flag-ignore-armor" class="rounded bg-slate-950 border-slate-700 text-purple-600 focus:ring-0">
@@ -6999,7 +6999,7 @@
                 </label>
                 <label class="flex items-center gap-1.5 cursor-pointer hover:text-white">
                   <input type="checkbox" id="rf-flag-keen" class="rounded bg-slate-950 border-slate-700 text-purple-600 focus:ring-0">
-                  <span>Keen (Kritik 2x)</span>
+                  <span>Keen (2x Crit Range)</span>
                 </label>
                 <label class="flex items-center gap-1.5 cursor-pointer hover:text-white">
                   <input type="checkbox" id="rf-flag-reach" class="rounded bg-slate-950 border-slate-700 text-purple-600 focus:ring-0">
@@ -7015,7 +7015,7 @@
                 </label>
                 <label class="flex items-center gap-1.5 cursor-pointer hover:text-white">
                   <input type="checkbox" id="rf-flag-adamantine" class="rounded bg-slate-950 border-slate-700 text-purple-600 focus:ring-0">
-                  <span>Adamantin (Adamantine)</span>
+                  <span>Adamantine</span>
                 </label>
                 <label class="flex items-center gap-1.5 cursor-pointer hover:text-white">
                   <input type="checkbox" id="rf-flag-two-hand-str" class="rounded bg-slate-950 border-slate-700 text-purple-600 focus:ring-0">
@@ -7059,7 +7059,7 @@
         <div class="flex items-center justify-between">
           <div>
             <div id="current-campaign-name" class="font-bold text-white text-sm">Campaign Name</div>
-            <div id="current-campaign-code" class="text-amber-400 font-mono text-[11px]">KOD: RAVEN-0000</div>
+            <div id="current-campaign-code" class="text-amber-400 font-mono text-[11px]">CODE: RAVEN-0000</div>
           </div>
           <button onclick="leaveCurrentCampaign()" class="px-2.5 py-1 bg-rose-950/70 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded-lg text-xs font-bold transition cursor-pointer">
             Leave
@@ -7070,7 +7070,7 @@
       <!-- Kod Giriş Formu -->
       <div class="space-y-3 text-xs">
         <div>
-          <label class="block text-slate-300 mb-1 font-semibold">Kampanya Davet Kodu *</label>
+          <label class="block text-slate-300 mb-1 font-semibold">Campaign Invite Code *</label>
           <input type="text" id="join-campaign-input-code" placeholder="e.g., RAVEN-7841" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-amber-400 font-mono font-bold uppercase tracking-wider text-base focus:outline-none focus:border-amber-500">
         </div>
         <p class="text-[11px] text-slate-400 leading-relaxed">
@@ -7106,7 +7106,7 @@
           </div>
         </div>
         <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1">
-          <span>✕</span> <span>Kapat</span>
+          <span>✕</span> <span>Close</span>
         </button>
       </div>
 
@@ -7141,7 +7141,7 @@
               <div>
                 <h4 class="text-xs font-bold text-white flex items-center gap-2 flex-wrap">
                   <span>🧙‍♂️🤖 Rule Master (AI) Assistant Settings</span>
-                  <span id="settings-gemini-live-status" class="text-[10px] text-slate-400 font-normal">Kontrol Ediliyor...</span>
+                  <span id="settings-gemini-live-status" class="text-[10px] text-slate-400 font-normal">Checking...</span>
                 </h4>
                 <p class="text-[10px] text-slate-400">Your personal free Google AI Studio API key (stored securely in your browser).</p>
               </div>
@@ -7158,7 +7158,7 @@
                 💾 Save
               </button>
               <button onclick="clearSettingsApiKey()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition whitespace-nowrap">
-                🗑️ Sil
+                🗑️ Clear
               </button>
             </div>
             <div class="flex flex-wrap items-center justify-between gap-2 text-[10px]">
@@ -7279,7 +7279,7 @@
               </svg>
             </span>
             <div>
-              <h4 class="text-xs font-bold text-white">Masa & Kural Tercihleri (House Rules)</h4>
+              <h4 class="text-xs font-bold text-white">Table & House Rules</h4>
               <p class="text-[10px] text-slate-400">Configure campaign-specific D&D 3.5e house rules and skill system preferences.</p>
             </div>
           </div>
@@ -7331,7 +7331,7 @@
                   <div class="flex items-center gap-2">
                     <span class="text-base">📂</span>
                     <div>
-                      <div class="text-xs font-black">Standart RAW (46 Beceri)</div>
+                      <div class="text-xs font-black">Standard RAW (46 Skills)</div>
                       <div class="text-[10px] text-slate-400">Official 3.5e PHB skills</div>
                     </div>
                   </div>
@@ -7352,7 +7352,7 @@
                   <div class="text-[10px] text-slate-400 mt-0.5">Set the level interval at which characters gain general feats.</div>
                 </div>
                 <div class="flex items-center gap-1.5">
-                  <label class="text-[10px] font-bold text-amber-400 uppercase">🎖️ Feat Modu:</label>
+                  <label class="text-[10px] font-bold text-amber-400 uppercase">🎖️ Feat Mode:</label>
                   <select id="setting-feat-mode" onchange="onSettingFeatModeChange()" class="bg-slate-900 border border-slate-700 text-amber-300 font-semibold text-[11px] rounded px-2 py-1 focus:outline-none focus:border-amber-400">
                     <option value="Standard 3.5e (1, 3, 6, 9, 12, 15, 18)">Standard 3.5e (1, 3, 6, 9, 12, 15, 18)</option>
                     <option value="Every 2 Levels (1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)">Every 2 Levels (1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)</option>
@@ -7387,10 +7387,10 @@
                     <span class="text-[9px] font-mono text-purple-300/70">Multiclass CL</span>
                   </div>
                   <select id="setting-cl-mode" onchange="onSettingClModeChange()" class="w-full bg-slate-950 border border-slate-700 text-purple-300 font-semibold text-[11px] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-purple-400 transition cursor-pointer">
-                    <option value="Character Level (DM Boon)" selected>Character Level (DM Boon: CL = Karakter Seviyesi)</option>
-                    <option value="Warlock Boon (Invocations & Eldritch Blast)">Warlock Boon (CL = Karakter Seviyesi + Invocations)</option>
+                    <option value="Character Level (DM Boon)" selected>Character Level (DM Boon: CL = Character Level)</option>
+                    <option value="Warlock Boon (Invocations & Eldritch Blast)">Warlock Boon (CL = Character Level + Invocations)</option>
                     <option value="Class Level">Class Level Only (RAW 3.5e)</option>
-                    <option value="Custom">Custom (Manuel)</option>
+                    <option value="Custom">Custom (Manual)</option>
                   </select>
                 </div>
 
@@ -7431,16 +7431,16 @@
                 <div>
                   <div class="font-bold text-sky-300 flex items-center gap-1.5 text-xs">
                     <span>📐</span>
-                    <span>BAB & Save Hesaplama Sistemi</span>
+                    <span>BAB & Save Progression System</span>
                     <span class="badge bg-sky-950 text-sky-300 border border-sky-700 text-[9px]">Unearthed Arcana</span>
                   </div>
                   <div class="text-[10px] text-slate-400 mt-0.5">Unearthed Arcana fractional BAB/Save progression for multiclass characters (Good +1.0, Avg +0.75, Poor +0.5).</div>
                 </div>
                 <div class="flex items-center gap-1.5">
-                  <label class="text-[10px] font-bold text-sky-400 uppercase">📐 Kural:</label>
+                  <label class="text-[10px] font-bold text-sky-400 uppercase">📐 Rule:</label>
                   <select id="setting-bab-save-system" onchange="onSettingBabSaveSystemChange()" class="bg-slate-900 border border-slate-700 text-sky-300 font-semibold text-[11px] rounded px-2 py-1 focus:outline-none focus:border-sky-400 cursor-pointer">
-                    <option value="standard" selected>Standard Core 3.5e (Standart RAW)</option>
-                    <option value="fractional">Fractional (Unearthed Arcana - Kesirli)</option>
+                    <option value="standard" selected>Standard Core 3.5e (RAW)</option>
+                    <option value="fractional">Fractional (Unearthed Arcana)</option>
                   </select>
                 </div>
               </div>
@@ -7449,7 +7449,7 @@
             <!-- 5. NO CRIT CONFIRM -->
             <label class="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
               <div>
-                <div class="font-bold text-slate-200">🚫 No Crit Confirm (Otomatik Kritik)</div>
+                <div class="font-bold text-slate-200">🚫 No Crit Confirm (Auto-Confirm Crits)</div>
                 <div class="text-[10px] text-slate-400">Automatically confirms critical threats without requiring a secondary confirmation roll.</div>
               </div>
               <input type="checkbox" id="settings-no-crit-confirm" checked onchange="const h=document.getElementById('house-no-crit-confirm'); if(h) h.checked = this.checked; if(!character.houseRules) character.houseRules = {}; character.houseRules.noCritConfirm = this.checked; saveStateToStorage(false);" class="rounded border-slate-700 text-amber-500 focus:ring-0">
@@ -7475,7 +7475,7 @@
               </div>
               <div class="flex items-center gap-1.5 shrink-0 ml-2">
                 <select id="setting-crit-cap-min" onchange="onHouseRuleCritCapChange(this.value)" class="bg-slate-900 border border-slate-700 text-amber-300 font-bold text-xs rounded px-2.5 py-1 focus:outline-none focus:border-amber-400">
-                  <option value="15">Max 15-20 (DM Limiti)</option>
+                  <option value="15">Max 15-20 (DM Cap)</option>
                   <option value="16">Max 16-20</option>
                   <option value="17">Max 17-20</option>
                   <option value="18">Max 18-20</option>
@@ -7497,7 +7497,7 @@
               <div class="flex items-center gap-1.5 shrink-0 ml-2">
                 <select id="setting-keen-imp-stacking" onchange="onHouseRuleKeenStackingChange(this.value)" class="bg-slate-900 border border-slate-700 text-amber-300 font-bold text-xs rounded px-2.5 py-1 focus:outline-none focus:border-amber-400">
                   <option value="stack_diminishing">House Rule: Stacks (+1 Threat Range)</option>
-                  <option value="none">RAW Core 3.5e: Stack Olmaz (Tek Katlama)</option>
+                  <option value="none">RAW Core 3.5e: Does Not Stack (Single Doubling)</option>
                   <option value="full">3.0e Legacy: Full Stacking (Triple Threat Range)</option>
                 </select>
               </div>
@@ -7508,7 +7508,7 @@
               <div>
                 <div class="font-bold text-slate-200 flex items-center gap-1.5 text-xs">
                   <span>🗡️</span>
-                  <span>Hassas Hasar Limiti (Sneak Attack / Skirmish)</span>
+                  <span>Precision Damage Limit (Sneak Attack / Skirmish)</span>
                 </div>
                 <div class="text-[10px] text-slate-400 mt-0.5">How precision damage dice (Sneak Attack, Sudden Strike, Skirmish) apply across iterative attacks.</div>
               </div>
@@ -7568,7 +7568,7 @@
         </button>
         <button onclick="CloudSync.hideVaultLockModal(); CloudSync.updateStatusUI('offline');" class="w-full bg-slate-900 hover:bg-slate-800 text-emerald-400 hover:text-emerald-300 font-semibold text-[11px] py-2 rounded-xl border border-slate-700/80 transition flex items-center justify-center gap-1.5 cursor-pointer">
           <span>👤</span>
-          <span>PIN Olmadan Yerel / Misafir Olarak Kullan</span>
+          <span>Use Locally / as Guest Without PIN</span>
         </button>
         <button onclick="CloudSync.hideVaultLockModal(); openSettingsModal();" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-semibold text-[11px] py-2 rounded-xl border border-slate-700 transition">
           ⚙️ Settings / Change PIN
@@ -7607,7 +7607,7 @@
         </div>
         <div class="flex items-center gap-1.5 shrink-0">
           <span id="spell-tooltip-school" class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800">1. Lvl • Evocation [Force]</span>
-          <button type="button" onclick="hideSpellHoverTooltip(); event.stopPropagation();" class="text-slate-400 hover:text-white px-1.5 py-0.5 text-xs font-bold leading-none cursor-pointer rounded bg-slate-900 hover:bg-slate-800 border border-slate-700/60" title="Kapat">✕</button>
+          <button type="button" onclick="hideSpellHoverTooltip(); event.stopPropagation();" class="text-slate-400 hover:text-white px-1.5 py-0.5 text-xs font-bold leading-none cursor-pointer rounded bg-slate-900 hover:bg-slate-800 border border-slate-700/60" title="Close">✕</button>
         </div>
       </div>
       <!-- Kaynak & Sınıf Bilgisi -->
@@ -7673,7 +7673,7 @@
         <div id="mod-tooltip-title" class="font-black text-white text-xs truncate">Modifier Name</div>
         <span id="mod-tooltip-type" class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-sky-950 text-sky-300 border border-sky-800 shrink-0">Type</span>
       </div>
-      <button type="button" onclick="hideCombatModifierHoverTooltip(); event.stopPropagation();" class="text-slate-400 hover:text-white px-1.5 py-0.5 text-xs font-bold leading-none cursor-pointer rounded bg-slate-900 hover:bg-slate-800 border border-slate-700/60" title="Kapat">✕</button>
+      <button type="button" onclick="hideCombatModifierHoverTooltip(); event.stopPropagation();" class="text-slate-400 hover:text-white px-1.5 py-0.5 text-xs font-bold leading-none cursor-pointer rounded bg-slate-900 hover:bg-slate-800 border border-slate-700/60" title="Close">✕</button>
     </div>
     <div class="grid grid-cols-2 gap-1 text-[10px]">
       <div class="bg-slate-900/80 p-1.5 rounded border border-slate-800">
