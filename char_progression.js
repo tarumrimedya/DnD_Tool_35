@@ -6380,14 +6380,14 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           </td>
           <td class="pt-2.5 pb-2.5 px-1 align-top text-center w-[58px] min-w-[58px] max-w-[58px] whitespace-nowrap shrink-0">
             <div class="h-6 flex items-center justify-center gap-1">
-              <button onclick="openQuickFeatPickerForLevel(${idx})" class="text-emerald-400 hover:text-emerald-300 p-0.5 text-xs transition font-bold" title="Bu seviyeye Feat, Yetenek, Invocation veya Bonus Ekle">
+              <button onclick="openQuickFeatPickerForLevel(${idx})" class="text-emerald-400 hover:text-emerald-300 p-0.5 text-xs transition font-bold" title="Add Feat, Ability, Invocation, or Bonus to this level">
                 ➕
               </button>
               <button onclick="openChangeLevelClassModal(${idx})" class="text-slate-400 hover:text-amber-400 p-0.5 text-xs transition" title="Edit class & stats for this level">
                 ✏️
               </button>
               ${idx > 0 ? `
-                <button onclick="deleteLevelRow(${idx})" class="text-slate-500 hover:text-rose-400 p-0.5 text-xs transition" title="Bu seviyeyi sil">
+                <button onclick="deleteLevelRow(${idx})" class="text-slate-500 hover:text-rose-400 p-0.5 text-xs transition" title="Delete this level">
                   🗑️
                 </button>
               ` : '<span class="invisible p-0.5 text-xs select-none pointer-events-none" aria-hidden="true">🗑️</span>'}

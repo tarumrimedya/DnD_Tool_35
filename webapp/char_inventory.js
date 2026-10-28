@@ -1562,13 +1562,13 @@
           iconBadge.className = 'w-8 h-8 rounded-lg bg-rose-950/80 border border-rose-600/50 flex items-center justify-center text-lg shadow-inner';
           iconBadge.textContent = '🩸';
         }
-        if (modalTitle) modalTitle.textContent = 'Yeni Debuff / Durum (Condition) Ekle';
+        if (modalTitle) modalTitle.textContent = 'Add New Debuff / Condition';
         if (modalBadge) {
           modalBadge.className = 'text-[10px] font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/40 px-2 py-0.5 rounded-full';
           modalBadge.textContent = 'D&D 3.5e RAW (Debuff)';
         }
         if (modalSubtitle) modalSubtitle.textContent = 'Select a D&D 3.5e RAW condition preset or define a custom debuff';
-        if (rmTitle) rmTitle.innerHTML = '<span>🧙‍♂️🤖</span><span>Rule Master (AI) ile Debuff / Kural Getir</span>';
+        if (rmTitle) rmTitle.innerHTML = '<span>🧙‍♂️🤖</span><span>Fetch Debuff / Condition with Rule Master (AI)</span>';
         if (rmInput) rmInput.placeholder = 'e.g., -4 lvl drain, Energy Drain, Sickened, Slow, Ray of Enfeeblement...';
         if (presetLabel) presetLabel.textContent = '🩸 Select D&D 3.5e Condition / Debuff Preset';
         if (nameLabel) nameLabel.textContent = 'Debuff Name *';

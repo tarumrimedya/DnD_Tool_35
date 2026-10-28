@@ -3994,12 +3994,19 @@
           }
         }
 
-        if (!character.tactical.weaponSets.set1.name || character.tactical.weaponSets.set1.name.includes('Buckler') || character.tactical.weaponSets.set1.name.includes('Set I')) {
+        if (!character.tactical.weaponSets.set1.name || character.tactical.weaponSets.set1.name.includes('Buckler') || character.tactical.weaponSets.set1.name.includes('Set I') || character.tactical.weaponSets.set1.name === 'Ana El' || character.tactical.weaponSets.set1.name === 'Menzilli Silah') {
           character.tactical.weaponSets.set1.name = 'Main Hand';
         }
-        if (!character.tactical.weaponSets.set2.name || character.tactical.weaponSets.set2.name.includes('Set II')) {
+        if (!character.tactical.weaponSets.set2.name || character.tactical.weaponSets.set2.name.includes('Set II') || character.tactical.weaponSets.set2.name === 'İkinci El' || character.tactical.weaponSets.set2.name === 'Ikinci El' || character.tactical.weaponSets.set2.name === 'Ana El') {
           character.tactical.weaponSets.set2.name = 'Off-Hand';
         }
+        if (character.tactical.weaponSets.set1.mainWeapon === 'Yumruk (Unarmed)') character.tactical.weaponSets.set1.mainWeapon = 'Unarmed Strike';
+        if (character.tactical.weaponSets.set1.mainWeapon === 'Yok') character.tactical.weaponSets.set1.mainWeapon = 'None';
+        if (character.tactical.weaponSets.set2.mainWeapon === 'Yumruk (Unarmed)') character.tactical.weaponSets.set2.mainWeapon = 'Unarmed Strike';
+        if (character.tactical.weaponSets.set2.mainWeapon === 'Yok') character.tactical.weaponSets.set2.mainWeapon = 'None';
+        if (character.tactical.weaponSets.set1.grip === 'Tek El') character.tactical.weaponSets.set1.grip = '1-Hand';
+        if (character.tactical.weaponSets.set1.grip === 'Çift El') character.tactical.weaponSets.set1.grip = '2-Hand';
+        if (character.tactical.weaponSets.set2.grip === 'İkinci El' || character.tactical.weaponSets.set2.grip === 'Ikinci El') character.tactical.weaponSets.set2.grip = 'Off-Hand';
       }
     }
 

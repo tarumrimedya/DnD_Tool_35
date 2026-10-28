@@ -1208,7 +1208,7 @@
               renderAll();
               if (typeof showDiceTopToast === 'function') {
                 showDiceTopToast({
-                  title: '🔄 Sekme Senkronu',
+                  title: '🔄 Tab Sync',
                   text: `Loaded latest version from cloud (${character.classes || 'Level ' + character.level}).`,
                   color: 'emerald'
                 });
@@ -1917,6 +1917,111 @@
       if (!Array.isArray(sc.divineSpells)) sc.divineSpells = [];
     }
 
+    function normalizeLegacyTurkishCharacterData(charObj) {
+      if (!charObj || typeof charObj !== 'object') return;
+      if (/^erkek$/i.test(String(charObj.gender || '').trim())) charObj.gender = 'Male';
+      else if (/^kad[ıi]n$/i.test(String(charObj.gender || '').trim())) charObj.gender = 'Female';
+
+      if (/^medium\s*\(orta\)$/i.test(String(charObj.size || '').trim())) charObj.size = 'Medium';
+      else if (/^small\s*\(k[üu][çc][üu]k\)$/i.test(String(charObj.size || '').trim())) charObj.size = 'Small';
+      else if (/^large\s*\(b[üu]y[üu]k\)$/i.test(String(charObj.size || '').trim())) charObj.size = 'Large';
+
+      if (charObj.activeWeapon === 'Yumruk (Unarmed)') charObj.activeWeapon = 'Unarmed Strike';
+      else if (charObj.activeWeapon === 'Yok') charObj.activeWeapon = 'None';
+      if (charObj.activeOffHand === 'Yumruk (Unarmed)') charObj.activeOffHand = 'Unarmed Strike';
+      else if (charObj.activeOffHand === 'Yok') charObj.activeOffHand = 'None';
+
+      const normWeaponSet = (ws) => {
+        if (!ws || typeof ws !== 'object') return;
+        if (ws.set1) {
+          if (ws.set1.name === 'Ana El' || ws.set1.name === 'Menzilli Silah') ws.set1.name = 'Main Hand';
+          if (ws.set1.mainWeapon === 'Yumruk (Unarmed)') ws.set1.mainWeapon = 'Unarmed Strike';
+          else if (ws.set1.mainWeapon === 'Yok') ws.set1.mainWeapon = 'None';
+          if (ws.set1.grip === 'Tek El') ws.set1.grip = '1-Hand';
+          else if (ws.set1.grip === 'Çift El') ws.set1.grip = '2-Hand';
+          else if (ws.set1.grip === 'İkinci El' || ws.set1.grip === 'Ikinci El') ws.set1.grip = 'Off-Hand';
+        }
+        if (ws.set2) {
+          if (ws.set2.name === 'İkinci El' || ws.set2.name === 'Ikinci El' || ws.set2.name === 'Ana El') ws.set2.name = 'Off-Hand';
+          if (ws.set2.mainWeapon === 'Yumruk (Unarmed)') ws.set2.mainWeapon = 'Unarmed Strike';
+          else if (ws.set2.mainWeapon === 'Yok') ws.set2.mainWeapon = 'None';
+          if (ws.set2.grip === 'Tek El') ws.set2.grip = '1-Hand';
+          else if (ws.set2.grip === 'Çift El') ws.set2.grip = '2-Hand';
+          else if (ws.set2.grip === 'İkinci El' || ws.set2.grip === 'Ikinci El') ws.set2.grip = 'Off-Hand';
+        }
+      };
+      if (charObj.tactical) {
+        normWeaponSet(charObj.tactical.weaponSets);
+        normWeaponSet(charObj.tactical.meleeWeaponSets);
+        normWeaponSet(charObj.tactical.rangedWeaponSets);
+      }
+
+      if (Array.isArray(charObj.weapons)) {
+        charObj.weapons.forEach(w => {
+          if (!w || typeof w !== 'object') return;
+          if (w.name === 'Yumruk (Unarmed)') w.name = 'Unarmed Strike';
+          if (w.slot === 'Ana El') w.slot = 'Main Hand';
+          else if (w.slot === 'İkinci El' || w.slot === 'Ikinci El') w.slot = 'Off-Hand';
+          else if (w.slot === 'Çift El') w.slot = 'Two-Handed';
+          else if (w.slot === 'Menzilli') w.slot = 'Ranged';
+          if (w.grip === 'Tek El') w.grip = '1-Hand';
+          else if (w.grip === 'Çift El') w.grip = '2-Hand';
+          else if (w.grip === 'İkinci El' || w.grip === 'Ikinci El') w.grip = 'Off-Hand';
+          const fixDmgType = (dt) => {
+            if (!dt || typeof dt !== 'string') return dt;
+            return dt
+              .replace(/Ezici\s*\(Öldürücü Olmayan\)/gi, 'Bludgeoning (Nonlethal)')
+              .replace(/Delici\s*\(Finesse\)/gi, 'Piercing (Finesse)')
+              .replace(/\bDelici\b/gi, 'Piercing')
+              .replace(/\bKesici\b/gi, 'Slashing')
+              .replace(/\bEzici\b/gi, 'Bludgeoning');
+          };
+          if (w.type) w.type = fixDmgType(w.type);
+          if (w.dmgType) w.dmgType = fixDmgType(w.dmgType);
+        });
+      }
+
+      const normBuffList = (list) => {
+        if (!Array.isArray(list)) return;
+        list.forEach(b => {
+          if (!b || typeof b !== 'object') return;
+          if (typeof b.name === 'string') {
+            b.name = b.name.replace(/\s*\((?:Acele|Kutsama|Dua|Yorgun)\)\s*$/i, '').trim();
+          }
+          if (b.source === 'Condition (Durum)') b.source = 'Condition';
+          if (typeof b.durationText === 'string') {
+            b.durationText = b.durationText
+              .replace(/1 saat \/ CL \(5 Saat\)/gi, '1 hr / CL (5 Hours)')
+              .replace(/1 dk \/ CL \(5 Dk\)/gi, '1 min / CL (5 Min)')
+              .replace(/1 dk \/ CL/gi, '1 min / CL')
+              .replace(/10 dk \/ CL/gi, '10 min / CL')
+              .replace(/1 dk \(10 Tur\)/gi, '1 min (10 Rounds)')
+              .replace(/1 tur \/ CL \(6 Tur\)/gi, '1 rd / CL (6 Rounds)')
+              .replace(/1 tur \/ CL/gi, '1 rd / CL')
+              .replace(/(\d+)\s*Tur\b/gi, '$1 Rounds')
+              .replace(/8 Saat Dinlenme/gi, '8 Hours Rest')
+              .replace(/^Sürekli$/i, 'Continuous')
+              .replace(/^Kalıcı$/i, 'Permanent');
+          }
+        });
+      };
+      normBuffList(charObj.buffs);
+      normBuffList(charObj.debuffs);
+
+      if (Array.isArray(charObj.pinnedActions)) {
+        charObj.pinnedActions.forEach(p => {
+          if (!p || typeof p !== 'object' || typeof p.action !== 'string') return;
+          if (/^standart$/i.test(p.action)) p.action = 'Standard';
+          else if (/^h[ıi]zl[ıi](\s*\(swift\))?$/i.test(p.action)) p.action = 'Swift';
+          else if (/^tam\s*tur$/i.test(p.action)) p.action = 'Full-Round';
+          else if (/^hareket$/i.test(p.action)) p.action = 'Move';
+          else if (/^serbest$/i.test(p.action)) p.action = 'Free';
+          else if (/^anl[ıi]k$/i.test(p.action)) p.action = 'Immediate';
+          else if (/^pasif$/i.test(p.action)) p.action = 'Passive';
+        });
+      }
+    }
+
     function renderAll() {
       if (!character) {
         if (window.BUNDLED_CHARACTER_DATA) {
@@ -1934,6 +2039,7 @@
         character.skills = Object.values(character.skills || {});
         if (typeof ensureAllSkills === 'function') ensureAllSkills(character);
       }
+      normalizeLegacyTurkishCharacterData(character);
       normalizeCharacterSpellcasting(character);
 
       // Recalculate RAW D&D 3.5e character state, equipment bonuses, and active buffs
@@ -2037,9 +2143,9 @@
         maxHpEl.textContent = maxHp;
         const conBonus = Number(character.hp?.conBonusHp) || 0;
         if (conBonus !== 0) {
-          maxHpEl.title = `Maksimum Can: ${maxHp} (Taban: ${Number(character.hp?.baseMax) || (maxHp - conBonus)} ${conBonus >= 0 ? '+' : ''}${conBonus} CON)`;
+          maxHpEl.title = `Max HP: ${maxHp} (Base: ${Number(character.hp?.baseMax) || (maxHp - conBonus)} ${conBonus >= 0 ? '+' : ''}${conBonus} CON)`;
         } else {
-          maxHpEl.title = `Maksimum Can: ${maxHp}`;
+          maxHpEl.title = `Max HP: ${maxHp}`;
         }
       }
 
@@ -2550,12 +2656,12 @@
       const fit = character?.portraitFit || 'cover';
 
       if (coordsBadge) {
-        coordsBadge.textContent = `📍 X: %${Math.round(parsedPos.x)}, Y: %${Math.round(parsedPos.y)}`;
+        coordsBadge.textContent = `📍 X: ${Math.round(parsedPos.x)}%, Y: ${Math.round(parsedPos.y)}%`;
       }
       if (fitSel) fitSel.value = fit;
 
       const race = document.getElementById('profile-edit-race')?.value || character?.race || 'Human';
-      const gender = document.getElementById('profile-edit-gender')?.value || character?.gender || 'Erkek';
+      const gender = document.getElementById('profile-edit-gender')?.value || character?.gender || 'Male';
       const classes = character?.classes || '';
       const emoji = getDynamicCharacterEmoji(race, gender, classes);
 
@@ -2567,7 +2673,7 @@
         if (miniFallback) miniFallback.classList.remove('hidden');
         if (fallbackIcon) fallbackIcon.textContent = emoji;
         if (statusBadge) {
-          statusBadge.textContent = 'Dinamik Sembol';
+          statusBadge.textContent = 'Dynamic Icon';
           statusBadge.className = 'badge bg-slate-800 text-slate-400 border border-slate-700 text-[9px]';
         }
         if (removeBtn) removeBtn.classList.add('hidden');
@@ -4672,7 +4778,7 @@
     function renderNpcStudioAbilitiesList() {
       const container = document.getElementById('npc-studio-abilities-list');
       const badge = document.getElementById('npc-abilities-count-badge');
-      if (badge) badge.textContent = `${_npcStudioAbilities.length} Yetenek`;
+      if (badge) badge.textContent = `${_npcStudioAbilities.length} Abilities`;
       if (!container) return;
 
       if (_npcStudioAbilities.length === 0) {
@@ -6286,7 +6392,7 @@ function renderManualStatsPanel() {
           btnRanged.className = 'py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow cursor-pointer';
         }
         if (cardTitle) {
-          cardTitle.innerHTML = '<span>🏹</span> <span class="truncate">SALDIRI ROTASYONU</span>';
+          cardTitle.innerHTML = '<span>🏹</span> <span class="truncate">ATTACK ROTATION</span>';
           cardTitle.className = 'text-xs font-black uppercase text-amber-400 tracking-wider flex items-center gap-1.5 truncate min-w-0';
         }
         const wsTitle = document.getElementById('weapon-sets-header-title');
@@ -6329,7 +6435,7 @@ function renderManualStatsPanel() {
           btnMelee.className = 'py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-gradient-to-r from-red-600 to-rose-600 text-white shadow cursor-pointer';
         }
         if (cardTitle) {
-          cardTitle.innerHTML = '<span>⚔️</span> <span class="truncate">SALDIRI ROTASYONU</span>';
+          cardTitle.innerHTML = '<span>⚔️</span> <span class="truncate">ATTACK ROTATION</span>';
           cardTitle.className = 'text-xs font-black uppercase text-rose-400 tracking-wider flex items-center gap-1.5 truncate min-w-0';
         }
         const wsTitle = document.getElementById('weapon-sets-header-title');
