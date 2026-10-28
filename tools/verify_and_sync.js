@@ -118,6 +118,11 @@ function main() {
       errors++;
     }
 
+    if (rel.endsWith('.html') && /<html[^>]*\blang\s*=\s*["']tr["']/i.test(text)) {
+      console.error(`[FAIL] <html lang="tr"> detected in ${rel} (causes CSS uppercase 'i' -> 'İ' bug). Use <html lang="en">.`);
+      errors++;
+    }
+
     if (rel.endsWith('.json')) {
       try {
         JSON.parse(text);

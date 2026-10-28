@@ -1542,11 +1542,29 @@
         ...extractSkills(c.skills)
       ];
 
+      const cleanHubSkillName = (rawName) => {
+        if (!rawName || typeof rawName !== 'string') return '';
+        let s = rawName.trim();
+        s = s.replace(/\s*\((?:[^)]*[çğıöşüÇĞİÖŞÜ][^)]*|Otohipnoz|Blöf|Simya|Diplomasi|Tuzak\s*&\s*Mekanizma|Sahtecilik|Bilgi\s*Toplama|Tarih|Zindan|Performans|Meslek|Binicilik|Niyet\s*Sezme|Hayatta\s*Kalma|Soy\s*&\s*Hanedan)\)\s*$/i, '').trim();
+        const colonMatch = s.match(/^(Knowledge|Craft|Profession|Perform)\s*:\s*(.+)$/i);
+        if (colonMatch) {
+          const prefix = colonMatch[1].charAt(0).toUpperCase() + colonMatch[1].slice(1).toLowerCase();
+          let sub = colonMatch[2].trim();
+          if (prefix === 'Knowledge' && /^architecture$/i.test(sub)) sub = 'Architecture & Engineering';
+          if (prefix === 'Knowledge' && /^nobility$/i.test(sub)) sub = 'Nobility & Royalty';
+          s = `${prefix} (${sub})`;
+        }
+        return s;
+      };
+
       const uniqueSkillsMap = new Map();
       rawSkills.forEach(s => {
-        const idKey = (s.key || s.name || '').toLowerCase();
-        if (idKey && !uniqueSkillsMap.has(idKey)) {
-          uniqueSkillsMap.set(idKey, s);
+        const cleanedName = cleanHubSkillName(s.name || s.key || '');
+        const idKey = (cleanedName || s.key || '').toLowerCase();
+        if (!idKey) return;
+        const existing = uniqueSkillsMap.get(idKey);
+        if (!existing || (Number(s.ranks ?? s.rank ?? 0) > Number(existing.ranks ?? existing.rank ?? 0))) {
+          uniqueSkillsMap.set(idKey, { ...s, name: cleanedName || s.name });
         }
       });
       const allSkills = Array.from(uniqueSkillsMap.values());
@@ -1701,19 +1719,19 @@
                 </button>
               </div>
 
-              <!-- Eğitilmiş Beceriler Çekmece Başlığı / Genişletme Çubuğu -->
+              <!-- Trained Skills Drawer Header / Expand Bar -->
               <button type="button" onclick="event.stopPropagation(); toggleHubCardSkillsDrawer('${c.id}')" class="w-full h-7 px-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800/90 hover:border-indigo-500/40 transition flex items-center justify-between text-xs cursor-pointer shadow-sm active:scale-95" title="Toggle Trained Skills (${trainedSkills.length} Skills)">
                 <div class="flex items-center gap-1.5 truncate">
                   <span class="text-xs">📜</span>
                   <span class="text-[11px] font-semibold text-slate-300 truncate">Trained Skills (Rank &gt; 0)</span>
                 </div>
                 <div class="flex items-center gap-1.5 shrink-0">
-                  <span class="text-[10px] font-mono text-amber-400 font-bold bg-amber-950/70 px-1.5 py-0.2 rounded border border-amber-800/60">${trainedSkills.length} Beceri</span>
+                  <span class="text-[10px] font-mono text-amber-400 font-bold bg-amber-950/70 px-1.5 py-0.2 rounded border border-amber-800/60">${trainedSkills.length} Skills</span>
                   <span id="skills-drawer-icon-${c.id}" class="text-[9px] text-slate-400 font-mono transition-transform duration-200">▼</span>
                 </div>
               </button>
 
-              <!-- Genişletilebilir Eğitilmiş Beceriler Çekmecesi İçeriği -->
+              <!-- Expandable Trained Skills Drawer Content -->
               <div id="skills-drawer-content-${c.id}" class="hidden pt-1 space-y-1">
                 ${trainedSkills.length > 0 ? `
                   <div class="grid grid-cols-2 gap-1 max-h-40 overflow-y-auto overflow-x-hidden custom-scroll pr-0.5">
@@ -1724,7 +1742,7 @@
                       const statMod = getStatMod(statScore);
                       const totalBonus = sk.total !== undefined ? Number(sk.total) : (r + statMod + (Number(sk.misc) || 0));
                       const bonusStr = totalBonus >= 0 ? `+${totalBonus}` : `${totalBonus}`;
-                      const displayName = sk.name || sk.key || 'Beceri';
+                      const displayName = cleanHubSkillName(sk.name || sk.key || 'Skill');
                       return `
                         <button type="button" onclick="event.stopPropagation(); rollHubCheck('${c.id}', '${escapeHtml(displayName)}', ${totalBonus})" class="py-1 px-1.5 rounded-lg bg-slate-950/80 hover:bg-indigo-950/60 border border-slate-800/90 hover:border-indigo-500/50 text-slate-300 hover:text-white transition flex items-center justify-between text-[11px] font-mono cursor-pointer active:scale-95 shadow-sm min-w-0" title="Roll ${escapeHtml(displayName)} Check (d20${bonusStr}) [Rank: ${r}]">
                           <span class="truncate text-left font-sans font-medium text-slate-300 min-w-0 flex-1">${escapeHtml(displayName)}</span>
@@ -5365,7 +5383,7 @@ CRITICAL RULES:
                   <div class="flex items-center gap-2">
                     <span class="text-base">📂</span>
                     <div>
-                      <div class="text-xs font-black">Standart RAW (46 Beceri)</div>
+                      <div class="text-xs font-black">Standard RAW (46 Skills)</div>
                       <div class="text-[10px] text-slate-400">Official 3.5e Player's Handbook skills</div>
                     </div>
                   </div>

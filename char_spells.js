@@ -5357,13 +5357,13 @@
         opt.value = cName;
 
         const hdText = `d${def.hd} HD`;
-        const babText = def.bab === 1.0 ? 'Tam BAB (+1)' : (def.bab === 0.75 ? '3/4 BAB' : '1/2 BAB');
+        const babText = def.bab === 1.0 ? 'Full BAB (+1)' : (def.bab === 0.75 ? '3/4 BAB' : '1/2 BAB');
         const goodSaves = [];
         if (def.fort === 'good') goodSaves.push('Fort');
         if (def.ref === 'good') goodSaves.push('Ref');
         if (def.will === 'good') goodSaves.push('Will');
         const saveText = goodSaves.length === 3 ? 'All Good Saves' : (goodSaves.length > 0 ? `Good: ${goodSaves.join('/')}` : 'Poor Saves');
-        const skillText = `${def.skills || 2}+INT Beceri`;
+        const skillText = `${def.skills || 2}+INT Skills`;
 
         opt.textContent = `${cName} (${hdText} • ${babText} • ${saveText} • ${skillText})`;
 

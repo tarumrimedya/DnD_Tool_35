@@ -260,6 +260,9 @@
           character = (window.SchemaMigrator && typeof window.SchemaMigrator.upgradeCharacterToV2 === 'function')
             ? window.SchemaMigrator.upgradeCharacterToV2(_fastChar)
             : _fastChar;
+          if (typeof ensureAllSkills === 'function') {
+            try { ensureAllSkills(character); } catch (e) {}
+          }
           try { renderHUD(); } catch (e) {}
           try { renderAbilities(); } catch (e) {}
           try { renderCharacterProfile(); } catch (e) {}
@@ -1660,7 +1663,7 @@
         icon: '⚔️',
         title: 'New Turn Started',
         breakdown: `Round ${character.tactical.round}: Full action budget (Standard, Move, Swift) refreshed.`,
-        total: `Tur ${character.tactical.round}`
+        total: `Rd ${character.tactical.round}`
       });
     }
 
@@ -1676,7 +1679,7 @@
         breakdown: isMerged 
           ? 'Consolidated Skills (7 Groups) enabled.' 
           : 'Switched to Standard D&D 3.5e RAW (46 Skills) mode.',
-        total: isMerged ? 'Konsolide' : 'RAW'
+        total: isMerged ? 'Consolidated' : 'RAW'
       });
     }
 
@@ -2072,27 +2075,27 @@
       const hpCurrentDisplay = document.getElementById('hp-current-display');
       if (condBadge) {
         if (curHp >= maxHp) {
-          condBadge.textContent = 'Healthy';
+          condBadge.textContent = 'HEALTHY';
           condBadge.className = 'badge bg-emerald-900/60 text-emerald-300 border border-emerald-600';
           if (hpCurrentDisplay) hpCurrentDisplay.className = 'text-2xl sm:text-3xl font-extrabold text-emerald-400 font-mono transition-colors';
         } else if (curHp > maxHp / 2) {
-          condBadge.textContent = 'Scratched';
+          condBadge.textContent = 'SCRATCHED';
           condBadge.className = 'badge bg-emerald-900/40 text-emerald-200 border border-emerald-700';
           if (hpCurrentDisplay) hpCurrentDisplay.className = 'text-2xl sm:text-3xl font-extrabold text-emerald-300 font-mono transition-colors';
         } else if (curHp > 0) {
-          condBadge.textContent = 'Bloodied';
+          condBadge.textContent = 'BLOODIED';
           condBadge.className = 'badge bg-amber-900/60 text-amber-300 border border-amber-600';
           if (hpCurrentDisplay) hpCurrentDisplay.className = 'text-2xl sm:text-3xl font-extrabold text-amber-400 font-mono transition-colors';
         } else if (curHp === 0) {
-          condBadge.textContent = 'Disabled';
+          condBadge.textContent = 'DISABLED';
           condBadge.className = 'badge bg-orange-950 text-orange-400 border border-orange-700';
           if (hpCurrentDisplay) hpCurrentDisplay.className = 'text-2xl sm:text-3xl font-extrabold text-orange-400 font-mono transition-colors';
         } else if (curHp > -10) {
-          condBadge.textContent = 'Dying';
+          condBadge.textContent = 'DYING';
           condBadge.className = 'badge bg-rose-950 text-rose-400 border border-rose-700 animate-pulse';
           if (hpCurrentDisplay) hpCurrentDisplay.className = 'text-2xl sm:text-3xl font-extrabold text-rose-400 font-mono animate-pulse transition-colors';
         } else {
-          condBadge.textContent = 'Dead';
+          condBadge.textContent = 'DEAD';
           condBadge.className = 'badge bg-slate-950 text-rose-500 border border-slate-800';
           if (hpCurrentDisplay) hpCurrentDisplay.className = 'text-2xl sm:text-3xl font-extrabold text-rose-500 font-mono transition-colors';
         }
@@ -6158,7 +6161,7 @@ function renderManualStatsPanel() {
           : 'bg-emerald-950/60 border-emerald-800 text-emerald-200';
         const icon = isDmg ? '🩸' : '💖';
         const safeAmount = String(eff.amount || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        const rate = isDmg ? `-${safeAmount} HP/tur` : `+${safeAmount} HP/tur`;
+        const rate = isDmg ? `-${safeAmount} HP/rd` : `+${safeAmount} HP/rd`;
         const dur = eff.roundsLeft !== null ? `${eff.roundsLeft} rds left` : 'Permanent';
         const safeName = String(eff.name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
@@ -6197,7 +6200,7 @@ function renderManualStatsPanel() {
         const dotCount = effects.filter(e => e.type === 'damage').length;
         const hotCount = effects.filter(e => e.type === 'heal').length;
         let bText = '';
-        if (dotCount > 0 && hotCount > 0) bText = `${effects.length} Etki`;
+        if (dotCount > 0 && hotCount > 0) bText = `${effects.length} Effects`;
         else if (dotCount > 0) bText = `🩸 ${dotCount} DoT`;
         else bText = `💖 ${hotCount} HoT`;
         badge.textContent = bText;
@@ -6211,7 +6214,7 @@ function renderManualStatsPanel() {
         const textClass = isDmg ? 'text-rose-400' : 'text-emerald-400';
         const safeName = String(eff.name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         const safeAmount = String(eff.amount || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        const rateText = isDmg ? `-${safeAmount} HP/tur` : `+${safeAmount} HP/tur`;
+        const rateText = isDmg ? `-${safeAmount} HP/rd` : `+${safeAmount} HP/rd`;
         const durText = eff.roundsLeft !== null && eff.roundsLeft !== undefined 
           ? `${eff.roundsLeft}t` 
           : '∞';

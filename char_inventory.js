@@ -140,7 +140,7 @@
       renderSkills();
       showDiceTopToast({
         icon: '📜',
-        title: 'Yeni Beceri Eklendi',
+        title: 'Custom Skill Added',
         breakdown: `Added skill "${name}" [${stat.toUpperCase()}] to character sheet!`,
         total: `${initialRanks} Rank`
       });
@@ -167,13 +167,13 @@
       if (totalEl) totalEl.textContent = totalPts;
       if (remBadge) {
         if (remainingPts > 0) {
-          remBadge.textContent = `Kalan: ${remainingPts} Puan`;
+          remBadge.textContent = `Remaining: ${remainingPts} Pts`;
           remBadge.className = 'badge bg-slate-900 text-sky-300 border border-slate-700 text-xs font-mono font-bold px-2 py-0.5';
         } else if (remainingPts === 0) {
           remBadge.textContent = 'All Points Spent (0)';
           remBadge.className = 'badge bg-emerald-950 text-emerald-300 border border-emerald-600 text-xs font-mono font-bold px-2 py-0.5';
         } else {
-          remBadge.textContent = `Fazla Harcama: +${Math.abs(remainingPts)} Puan!`;
+          remBadge.textContent = `Over Budget: +${Math.abs(remainingPts)} Pts!`;
           remBadge.className = 'badge bg-rose-950 text-rose-300 border border-rose-600 text-xs font-mono font-bold px-2 py-0.5 animate-pulse';
         }
       }
@@ -342,12 +342,12 @@
             </button>
           </td>
 
-          <!-- Beceri Adı & Bileşenleri -->
+          <!-- Skill Name & Components -->
           <td class="py-2 px-3 align-middle">
             <div class="font-bold ${item.isClass ? 'text-amber-300' : 'text-white'} flex items-center gap-2 flex-wrap">
               ${getUniversalPinButtonHtml({ name: safeName, type: 'Skill', action: 'Check', desc: `${safeName} skill check (${total >= 0 ? '+' : ''}${total})`, badge: `${total >= 0 ? '+' : ''}${total} Check` })}
               <span>${item.name}</span>
-              ${item.isConsolidated ? '<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[9px]">Konsolide</span>' : ''}
+              ${item.isConsolidated ? '<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[9px]">Consolidated</span>' : ''}
               ${item.isClass ? '<span class="badge bg-amber-950 text-amber-300 border border-amber-700 text-[8px] font-mono">Class</span>' : ''}
             </div>
             ${item.subtitle ? `<div class="text-[10px] text-emerald-400/80 font-mono mt-0.5">↳ ${item.subtitle}</div>` : ''}
@@ -360,17 +360,17 @@
             </span>
           </td>
 
-          <!-- Toplam -->
-          <td class="py-2 px-2 text-center align-middle font-black font-mono text-base ${total >= 0 ? 'text-emerald-400' : 'text-rose-400'}" title="Nihai Beceri Modifiyeri: ${total >= 0 ? '+' : ''}${total}">
+          <!-- Total -->
+          <td class="py-2 px-2 text-center align-middle font-black font-mono text-base ${total >= 0 ? 'text-emerald-400' : 'text-rose-400'}" title="Total Skill Modifier: ${total >= 0 ? '+' : ''}${total}">
             ${total >= 0 ? '+' : ''}${total}
           </td>
 
-          <!-- 3D Zar At -->
+          <!-- 3D Roll -->
           <td class="py-2 px-3 text-center align-middle">
             <div class="inline-flex items-center gap-1">
               <button onclick="rollSkill3D('${safeName}', ${total}, '${safeSubtitle}')" class="bg-slate-800 hover:bg-slate-700 text-amber-400 px-2.5 py-1 rounded-lg border border-slate-700 text-xs font-mono transition inline-flex items-center gap-1.5 justify-center shadow-sm active:scale-95" title="Roll 1d20${total >= 0 ? '+' : ''}${total} ${safeName} check">
                 ${getD20IconSvg('w-3.5 h-3.5 text-amber-400')}
-                <span>Zar</span>
+                <span>Roll</span>
               </button>
             </div>
           </td>
@@ -1004,7 +1004,7 @@
     function updateRoundDisplays() {
       const round = (character && character.encounterRound) ? character.encounterRound : 1;
       document.querySelectorAll('.round-counter-badge').forEach(el => {
-        el.textContent = `Tur ${round}`;
+        el.textContent = `Rd ${round}`;
       });
     }
 
@@ -1065,8 +1065,8 @@
       if (hpLogs.length > 0 || expiredPeriodic.length > 0 || expired.length > 0) {
         const details = [
           ...hpLogs,
-          ...expiredPeriodic.map(e => `${e} bitti`),
-          ...expired.map(e => `${e} bitti`)
+          ...expiredPeriodic.map(e => `${e} expired`),
+          ...expired.map(e => `${e} expired`)
         ].join(' • ');
         showDiceTopToast({
           icon: '⏳',
@@ -1079,7 +1079,7 @@
           icon: '⏳',
           title: `Round ${character.encounterRound} Started`,
           breakdown: 'Advanced to next round',
-          total: `Tur ${character.encounterRound}`
+          total: `Rd ${character.encounterRound}`
         });
       }
     }

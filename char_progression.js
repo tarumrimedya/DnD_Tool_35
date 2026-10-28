@@ -3625,8 +3625,8 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
         preview.innerHTML = `
           <div class="flex items-center justify-between text-amber-300 font-bold border-b border-slate-800 pb-1">
-            <span>${className} (Seviye ${targetClassLvl})</span>
-            <span class="text-[10px] text-slate-400">HD: d${def.hd} | Beceri: ${def.skills || 2}</span>
+            <span>${className} (Level ${targetClassLvl})</span>
+            <span class="text-[10px] text-slate-400">HD: d${def.hd} | Skills: ${def.skills || 2}+INT</span>
           </div>
           <div class="grid grid-cols-2 gap-1.5 pt-1 text-[10px] text-slate-300">
             <div>BAB: <strong class="text-sky-300">${babLabel}</strong></div>
@@ -3845,13 +3845,13 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       if (subEl) {
         const hdText = `d${def.hd || 8} HD`;
         const babRate = Number(def.bab) || 0.75;
-        const babText = babRate === 1.0 ? 'Tam BAB (+1.0)' : (babRate === 0.75 ? '3/4 BAB (+0.75)' : '1/2 BAB (+0.5)');
+        const babText = babRate === 1.0 ? 'Full BAB (+1.0)' : (babRate === 0.75 ? '3/4 BAB (+0.75)' : '1/2 BAB (+0.5)');
         const goodSaves = [];
         if (def.fort === 'good') goodSaves.push('Fort');
         if (def.ref === 'good') goodSaves.push('Ref');
         if (def.will === 'good') goodSaves.push('Will');
         const saveText = goodSaves.length === 3 ? 'All Good Saves' : (goodSaves.length > 0 ? `Good: ${goodSaves.join('/')}` : 'Poor Saves');
-        const skillsText = `${def.skills || def.skillPoints || 2}+INT Beceri`;
+        const skillsText = `${def.skills || def.skillPoints || 2}+INT Skills`;
 
         subEl.textContent = `${hdText} • ${babText} • ${saveText} • ${skillsText}`;
       }
@@ -4363,7 +4363,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
               <span class="px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-amber-300 font-bold">d${def.hd} HD</span>
               <span class="px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-sky-300">${babText}</span>
               <span class="px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-emerald-300">${savesText}</span>
-              <span class="px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-purple-300">${def.skills || 2}+INT Beceri</span>
+              <span class="px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-purple-300">${def.skills || 2}+INT Skills</span>
             </div>
 
             ${def.description ? `<p class="text-[10px] text-slate-400 leading-relaxed">${def.description}</p>` : ''}
@@ -5566,8 +5566,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
 
       preview.innerHTML = `
         <div class="flex items-center justify-between text-amber-300 font-bold border-b border-slate-800 pb-1">
-          <span>${newClass} (Seviye ${targetClassLvl})</span>
-          <span class="text-[10px] text-slate-400">HD: d${def.hd} | Beceri: ${def.skills || 2}</span>
+          <span>${newClass} (Level ${targetClassLvl})</span>
+          <span class="text-[10px] text-slate-400">HD: d${def.hd} | Skills: ${def.skills || 2}+INT</span>
         </div>
         <div class="grid grid-cols-2 gap-1.5 pt-1 text-[10px] text-slate-300">
           <div>BAB: <strong class="text-sky-300">${def.bab === 1.0 ? 'Full (+1)' : (def.bab === 0.75 ? '3/4 Medium' : '1/2 Poor')}</strong></div>
@@ -6104,7 +6104,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
             <span class="text-slate-600">•</span>
             <span class="text-slate-300 font-bold">Saves: Fort +${summary.baseSaves.fort} / Ref +${summary.baseSaves.ref} / Will +${summary.baseSaves.will}</span>
             <span class="text-slate-600">•</span>
-            <span class="text-indigo-300 font-bold">Beceri Havuzu: ${summary.totalSkillPoints} Puan</span>
+            <span class="text-indigo-300 font-bold">Skill Pool: ${summary.totalSkillPoints} Pts</span>
           </div>
         `;
       }
@@ -6586,6 +6586,24 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       } catch (e) {}
     }
 
+    function stripTurkishSkillParen(rawName) {
+      if (!rawName || typeof rawName !== 'string') return '';
+      let s = rawName.trim();
+      // Remove trailing parenthetical Turkish translations e.g. "(Değer Biçme)", "(Otohipnoz)", "(Simya)", "(Tarih)", "(Tuzak & Mekanizma)"
+      s = s.replace(/\s*\((?:[^)]*[çğıöşüÇĞİÖŞÜ][^)]*|Otohipnoz|Blöf|Simya|Diplomasi|Tuzak\s*&\s*Mekanizma|Sahtecilik|Bilgi\s*Toplama|Tarih|Zindan|Performans|Meslek|Binicilik|Niyet\s*Sezme|Hayatta\s*Kalma|Soy\s*&\s*Hanedan)\)\s*$/i, '').trim();
+      // Convert legacy colon subskill format "Knowledge: Arcana" or "Craft: Alchemy" -> "Knowledge (Arcana)" / "Craft (Alchemy)"
+      const colonMatch = s.match(/^(Knowledge|Craft|Profession|Perform)\s*:\s*(.+)$/i);
+      if (colonMatch) {
+        const prefix = colonMatch[1].charAt(0).toUpperCase() + colonMatch[1].slice(1).toLowerCase();
+        let sub = colonMatch[2].trim();
+        if (prefix === 'Knowledge' && /^architecture$/i.test(sub)) sub = 'Architecture & Engineering';
+        if (prefix === 'Knowledge' && /^nobility$/i.test(sub)) sub = 'Nobility & Royalty';
+        s = `${prefix} (${sub})`;
+      }
+      return s;
+    }
+    window.stripTurkishSkillParen = stripTurkishSkillParen;
+
     function ensureAllSkills(char) {
       if (!char) return;
       if (!Array.isArray(char.skills)) char.skills = [];
@@ -6594,19 +6612,37 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         ? getCharacterClassSkillsSet(char)
         : new Set();
 
+      // Normalize all existing skill names first (strip Turkish parenthetical additions)
+      char.skills.forEach(s => {
+        if (s && s.name) {
+          s.name = stripTurkishSkillParen(s.name);
+        }
+      });
+
+      const consumedIndices = new Set();
+      const canonicalSkills = [];
+
       DND35_CORE_SKILLS.forEach(core => {
-        let existing = char.skills.find(s => {
-          if (s.key && s.key === core.key) return true;
-          const sName = (s.name || '').toLowerCase().trim();
-          const cName = core.name.toLowerCase().trim();
-          const cRaw = core.key.replace(/_/g, ' ');
-          return sName === cName || sName.includes(cRaw) || cName.includes(sName);
+        const cName = core.name.toLowerCase().trim();
+        const cRaw = core.key.replace(/_/g, ' ');
+        const matchedIndices = [];
+
+        char.skills.forEach((s, idx) => {
+          if (!s || consumedIndices.has(idx)) return;
+          if (s.key && s.key === core.key) {
+            matchedIndices.push(idx);
+            return;
+          }
+          const sName = stripTurkishSkillParen(s.name || '').toLowerCase().trim();
+          if (sName && (sName === cName || sName === cRaw)) {
+            matchedIndices.push(idx);
+          }
         });
 
         const isOfficialClass = classSkillsSet.has(core.key);
 
-        if (!existing) {
-          char.skills.push({
+        if (matchedIndices.length === 0) {
+          canonicalSkills.push({
             key: core.key,
             name: core.name,
             stat: core.stat,
@@ -6617,19 +6653,53 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
             isClass: isOfficialClass
           });
         } else {
-          if (!existing.key) existing.key = core.key;
-          if (existing.stat === undefined) existing.stat = core.stat;
-          if (existing.acp === undefined) existing.acp = core.acp;
-          if (existing.untrained === undefined) existing.untrained = core.untrained;
-          if (existing.ranks === undefined) existing.ranks = 0;
-          if (existing.isClass === undefined) {
-            existing.isClass = isOfficialClass;
+          matchedIndices.forEach(idx => consumedIndices.add(idx));
+          const primary = char.skills[matchedIndices[0]];
+          let maxRanks = 0;
+          let maxMisc = 0;
+          let anyClass = false;
+          let hasExplicitClass = false;
+
+          matchedIndices.forEach(idx => {
+            const entry = char.skills[idx];
+            const r = Number(entry.ranks) || 0;
+            const m = Number(entry.misc) || 0;
+            if (r > maxRanks) maxRanks = r;
+            if (m > maxMisc || (maxMisc === 0 && m !== 0)) maxMisc = m;
+            if (entry.isClass !== undefined) {
+              hasExplicitClass = true;
+              if (entry.isClass) anyClass = true;
+            }
+          });
+
+          primary.key = core.key;
+          primary.name = core.name;
+          if (primary.stat === undefined) primary.stat = core.stat;
+          if (primary.acp === undefined) primary.acp = core.acp;
+          if (primary.untrained === undefined) primary.untrained = core.untrained;
+          primary.ranks = maxRanks;
+          primary.misc = maxMisc;
+
+          if (!hasExplicitClass) {
+            primary.isClass = isOfficialClass;
           } else if (isOfficialClass && !char._classSkillsInitialized) {
-            // First time migrating legacy character to class skills auto-detection
-            existing.isClass = true;
+            primary.isClass = true;
+          } else {
+            primary.isClass = anyClass;
           }
+
+          canonicalSkills.push(primary);
         }
       });
+
+      // Preserve any custom non-core skills (with Turkish parentheticals stripped)
+      char.skills.forEach((s, idx) => {
+        if (!s || consumedIndices.has(idx)) return;
+        s.name = stripTurkishSkillParen(s.name || s.key || 'Custom Skill');
+        canonicalSkills.push(s);
+      });
+
+      char.skills = canonicalSkills;
 
       if (classSkillsSet.size > 0 && !char._classSkillsInitialized) {
         char._classSkillsInitialized = true;
@@ -6863,7 +6933,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         icon: '🔗',
         title: 'Skill Mode Changed',
         breakdown: character.settings.mergeSkills ? 'Consolidated Skills (7 Groups) enabled!' : 'Standard D&D 3.5e RAW (46 Skills) enabled!',
-        total: character.settings.mergeSkills ? 'Konsolide' : 'RAW'
+        total: character.settings.mergeSkills ? 'Consolidated' : 'RAW'
       });
     }
 
@@ -6882,22 +6952,22 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           btnMerge.className = 'text-left p-3 rounded-xl border-2 transition relative flex flex-col justify-between bg-emerald-950/60 border-emerald-500 shadow-md';
           btnSplit.className = 'text-left p-3 rounded-xl border-2 transition relative flex flex-col justify-between bg-slate-900 border-slate-700 hover:border-slate-500';
           if (badgeMerge) {
-            badgeMerge.textContent = '✓ Aktif';
+            badgeMerge.textContent = '✓ Active';
             badgeMerge.className = 'text-[9px] bg-emerald-600 text-white font-bold px-1.5 py-0.5 rounded';
           }
           if (badgeSplit) {
-            badgeSplit.textContent = '46 Beceri';
+            badgeSplit.textContent = '46 Skills';
             badgeSplit.className = 'text-[9px] bg-slate-800 text-slate-400 font-bold px-1.5 py-0.5 rounded';
           }
         } else {
           btnMerge.className = 'text-left p-3 rounded-xl border-2 transition relative flex flex-col justify-between bg-slate-900 border-slate-700 hover:border-slate-500';
           btnSplit.className = 'text-left p-3 rounded-xl border-2 transition relative flex flex-col justify-between bg-sky-950/60 border-sky-500 shadow-md';
           if (badgeMerge) {
-            badgeMerge.textContent = '7 Grup';
+            badgeMerge.textContent = '7 Groups';
             badgeMerge.className = 'text-[9px] bg-slate-800 text-slate-400 font-bold px-1.5 py-0.5 rounded';
           }
           if (badgeSplit) {
-            badgeSplit.textContent = '✓ Aktif (RAW)';
+            badgeSplit.textContent = '✓ Active (RAW)';
             badgeSplit.className = 'text-[9px] bg-sky-600 text-white font-bold px-1.5 py-0.5 rounded';
           }
         }
@@ -6971,7 +7041,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         icon: '🔗',
         title: 'Skill Mode Updated',
         breakdown: isEnabled ? 'Consolidated Skills (7 Groups) enabled!' : 'Switched back to Standard D&D 3.5e RAW (46 Skills)!',
-        total: isEnabled ? 'Konsolide' : 'RAW'
+        total: isEnabled ? 'Consolidated' : 'RAW'
       });
     }
 
