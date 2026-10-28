@@ -82,8 +82,10 @@ Proje genelinde kaliteyi en üst düzeyde tutarken API/kota verimliliğini sağl
   - `02-Data-Contracts/` (master_db, character_data, V2 Compendium şemaları)
   - `03-Decisions/` (ADR - Mimari Karar Kayıtları)
   - `04-DevLogs/` (Oturum Devir Teslimleri ve Günlükler)
-- **Tetikleyici Komut ("obsidian a aktar" / "obsidian devlog"):**
+- **Tetikleyici Komut ("obsidian a aktar" / "obsidian devlog") ve Token Disiplini:**
+  - Ara adımlarda gereksiz dosya okuma/yazma tokenı harcamamak için Obsidian aktarımı **yalnızca büyük faz sonlarında veya yeni bir sohbete (New Chat) geçmeden hemen önce** kullanıcı talimatıyla çalıştırılır.
   - Ham transkript dökülmez; hata ayıklama ve gürültü ayıklanarak `04-DevLogs/YYYY-MM-DD-[Konu].md` formatında oturumun amacı, alınan mimari kararlar, kök neden analizleri, D&D 3.5e RAW bağıntıları, sıradaki adımlar ve çift yönlü wikilink'ler (`[[00-Dashboard]]` vb.) kaydedilir. Kalıcı kararlar ilgili `01-Architecture/`, `02-Data-Contracts/` ve `03-Decisions/` kartlarına eş zamanlı işlenir.
+  - Yeni bir konuşma açıldığında binlerce satırlık kod/arşiv taramak yerine doğrudan Obsidian'daki `00-Dashboard.md` ve son `04-DevLogs/` kartı okunarak minimum token ile bağlam kurulur.
 
 ## 10. Sıfır Yama (Zero-Patchwork) ve Kanonik V2 Veri Mimarisi (STRICT)
 Geriye dönük uyumluluk bahanesiyle kırılgan yamalar (`if (oldFormat)`, metin kazıma regex'leri, mükerrer alanlar) yazılması **KESİNLİKLE YASAKTIR**. Tüm veri ve motor katmanı şu 6 temel V2 ilkesine uymak zorundadır:
@@ -102,3 +104,10 @@ Geriye dönük uyumluluk bahanesiyle kırılgan yamalar (`if (oldFormat)`, metin
    - Masada durumsal/reaktif olan kurallar (`Fortification %25`, `Vorpal`, `Glamered`, `Defending`) motora karmaşıklık olarak yüklenmez; arayüzde temiz **bilgi rozeti (UI Badge / Tactical Note)** olarak gösterilir.
 6. **Yama Yerine Tek Seferlik Tam Göç (Clean Migration over Patching):**
    - Şema değişikliklerinde eski ve yeni formatı aynı anda çalıştırmaya çalışan çift yollu spagetti kod yazılmaz; mevcut katalog ve karakter verileri tek seferlik deterministik göç scripti (migration script) ile V2 formatına yükseltilir.
+
+
+## 11. Resmi D&D 3.5e RAW İngilizce Dil Standardı ve Çift Dilli Okuyucu Kalkanı (STRICT: ENGLISH UI & RAW TERMINOLOGY)
+- **%100 İngilizce Arayüz ve Terminoloji Zorunluluğu:**
+  - Platformdaki tüm HTML şablonları (`index.html`, `hub.html`, `login.html`), JS modülleri (`char_*.js`, `rule_engine.js`, `rule_master.js`, `ui_shared.js`, `hub_*.js`), toast/modal bildirimleri, hesaplama dökümleri (breakdown) ve AI promptları **%100 resmi D&D 3.5e RAW İngilizce terminolojisiyle** (*Base Attack Bonus*, *Fortitude / Reflex / Will*, *Touch AC / Flat-Footed AC*, *Armor Check Penalty*, *Arcane Spell Failure*, *Full Attack*, *Two-Weapon Fighting*, *Caster Level*, *Prerequisites Not Met* vb.) yazılır.
+- **Çift Dilli Geriye Dönük Uyumluluk (Bilingual Reader Predicates):**
+  - Kullanıcıların `localStorage` veya bulutta kayıtlı eski Türkçe verilerinin kırılmaması için okuyucu/filtre koşullarında (`includes('Off-Hand') || includes('İkinci El')`, `#quest || #gorev` vb.) çift dilli geriye dönük uyumluluk korunur; ancak yeni üretilen tüm veriler ve UI metinleri yalnızca İngilizce olur.
