@@ -591,12 +591,12 @@
                 <label class="block text-slate-400 mb-1 font-semibold">2. Special Material</label>
                 <select id="dnd-forge-material-select" onchange="DnDUI.updateForgePreview()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-white focus:outline-none focus:border-amber-400">
                   <option value="">Standard (Steel / Leather / Wood)</option>
-                  <option value="material_mithral">Mithral (Hafif / -ACP / +Max DEX)</option>
+                  <option value="material_mithral">Mithral (Light / -ACP / +Max DEX)</option>
                   <option value="material_adamantine">Adamantine (Bypass Hardness 20 / Armor DR)</option>
                   <option value="material_cold_iron">Cold Iron (Fey/Demon DR Bypass)</option>
                   <option value="material_alchemical_silver">Alchemical Silver (Lycanthrope/Devil DR)</option>
                   <option value="material_darkwood">Darkwood (Half-Weight Wood)</option>
-                  <option value="material_dragonhide">Dragonhide (Druid Uyumlu Ejder Derisi)</option>
+                  <option value="material_dragonhide">Dragonhide (Druid-Compatible Dragon Scale)</option>
                 </select>
               </div>
               <div>
@@ -749,7 +749,7 @@
         <div class="flex items-center gap-3 text-right">
           <div>
             <div class="text-[10px] text-slate-400 uppercase font-bold">Market Price</div>
-            <div class="text-sm font-black font-mono text-amber-400">${Number(item.priceGp || 0).toLocaleString('tr-TR')} gp</div>
+            <div class="text-sm font-black font-mono text-amber-400">${Number(item.priceGp || 0).toLocaleString('en-US')} gp</div>
           </div>
           <div>
             <div class="text-[10px] text-slate-400 uppercase font-bold">Weight</div>
@@ -760,8 +760,8 @@
 
       <div class="space-y-2">
         ${dmgBadges ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Damage Parts (damageParts):</span><div class="flex flex-wrap gap-1.5">${dmgBadges}</div></div>` : ''}
-        ${modBadges ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Aktif Bonuslar (modifiers):</span><div class="flex flex-wrap gap-1.5">${modBadges}</div></div>` : ''}
-        ${tacBadges ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Taktiksel Bayraklar &amp; Rozetler:</span><div class="flex flex-wrap gap-1.5">${tacBadges}</div></div>` : ''}
+        ${modBadges ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Active Bonuses (modifiers):</span><div class="flex flex-wrap gap-1.5">${modBadges}</div></div>` : ''}
+        ${tacBadges ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Tactical Flags &amp; Badges:</span><div class="flex flex-wrap gap-1.5">${tacBadges}</div></div>` : ''}
         ${modesHtml ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Embedded Modes (modes):</span>${modesHtml}</div>` : ''}
       </div>
 

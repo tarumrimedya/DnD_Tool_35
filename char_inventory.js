@@ -816,7 +816,7 @@
         // Summary badges
         const badges = [];
         if (isDebuff) badges.push(`<span class="bg-rose-950 text-rose-300 border border-rose-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">🩸 DEBUFF</span>`);
-        if (buff.negativeLevels) badges.push(`<span class="bg-rose-950 text-rose-200 border border-rose-700 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">-${buff.negativeLevels} Seviye Drain</span>`);
+        if (buff.negativeLevels) badges.push(`<span class="bg-rose-950 text-rose-200 border border-rose-700 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">-${buff.negativeLevels} Level Drain</span>`);
         if (buff.acBonus) badges.push(`<span class="${buff.acBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-sky-950 text-sky-300 border-sky-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.acBonus > 0 ? '+' : ''}${buff.acBonus} AC (${buff.bonusType || 'Armor'})</span>`);
         if (buff.naturalBonus) badges.push(`<span class="bg-teal-950 text-teal-300 border border-teal-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.naturalBonus} Natural AC</span>`);
         if (buff.deflectionBonus) badges.push(`<span class="bg-indigo-950 text-indigo-300 border border-indigo-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.deflectionBonus} Deflection AC</span>`);
@@ -829,8 +829,8 @@
         if (buff.wisBonus) badges.push(`<span class="${buff.wisBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-emerald-950 text-emerald-300 border-emerald-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.wisBonus > 0 ? '+' : ''}${buff.wisBonus} WIS</span>`);
         if (buff.chaBonus) badges.push(`<span class="${buff.chaBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-emerald-950 text-emerald-300 border-emerald-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.chaBonus > 0 ? '+' : ''}${buff.chaBonus} CHA</span>`);
         if (buff.attBonus) badges.push(`<span class="${buff.attBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-purple-950 text-purple-300 border-purple-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.attBonus > 0 ? '+' : ''}${buff.attBonus} Attack</span>`);
-        if (buff.dmgBonus) badges.push(`<span class="${buff.dmgBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-purple-950 text-purple-300 border-purple-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.dmgBonus > 0 ? '+' : ''}${buff.dmgBonus} Hasar</span>`);
-        if (buff.dmgDice) badges.push(`<span class="bg-purple-950 text-purple-300 border border-purple-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.dmgDice} Hasar</span>`);
+        if (buff.dmgBonus) badges.push(`<span class="${buff.dmgBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-purple-950 text-purple-300 border-purple-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.dmgBonus > 0 ? '+' : ''}${buff.dmgBonus} Damage</span>`);
+        if (buff.dmgDice) badges.push(`<span class="bg-purple-950 text-purple-300 border border-purple-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.dmgDice} Damage</span>`);
         if (buff.speedBonus) badges.push(`<span class="bg-sky-950 text-sky-300 border border-sky-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.speedBonus} ft Speed</span>`);
         if (buff.speedPenalty) badges.push(`<span class="bg-rose-950 text-rose-300 border border-rose-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">-${buff.speedPenalty} ft Speed</span>`);
         if (buff.hpPenalty) badges.push(`<span class="bg-rose-950 text-rose-300 border border-rose-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">-${buff.hpPenalty} HP</span>`);
@@ -843,7 +843,7 @@
               <summary class="cursor-pointer font-bold flex items-center justify-between text-rose-300 hover:text-white select-none">
                 <span class="flex items-center gap-1.5">
                   <span>🌳</span>
-                  <span>${buff.children.length} Alt Etki (Parent-Child)</span>
+                  <span>${buff.children.length} Sub-Effects (Parent-Child)</span>
                 </span>
                 <span class="text-[10px] text-slate-400 group-open:rotate-180 transition-transform">▼</span>
               </summary>
@@ -900,7 +900,7 @@
                 </div>
                 <div class="flex items-center gap-1">
                   ${buff.rounds !== null && buff.rounds !== undefined ? `
-                    <button type="button" onclick="adjustBuffRounds('${buff.id}', -1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center cursor-pointer" title="1 Tur Azalt">-</button>
+                    <button type="button" onclick="adjustBuffRounds('${buff.id}', -1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center cursor-pointer" title="Decrease 1 Round">-</button>
                     <span class="font-mono font-bold px-1 text-xs ${buff.rounds <= 3 ? 'text-rose-400 animate-pulse' : 'text-amber-400'} min-w-[36px] text-center">${buff.rounds} Rd</span>
                     <button type="button" onclick="adjustBuffRounds('${buff.id}', 1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center cursor-pointer" title="Add 1 Round">+</button>
                   ` : `<span class="text-[10px] text-slate-500 italic px-2">Permanent</span>`}
@@ -992,7 +992,7 @@
       const childCount = (buff && buff.children) ? buff.children.length : 0;
       const typeLabel = isDebuff ? 'debuff' : 'buff';
       const confirmMsg = childCount > 0
-        ? `"${buff.name}" (${childCount} alt etkiyle birlikte) silinsin mi?`
+        ? `Delete "${buff.name}" (including ${childCount} sub-effects)?`
         : `Are you sure you want to delete this ${typeLabel}?`;
       if (confirm(confirmMsg)) {
         character.buffs = (character.buffs || []).filter(b => b.id !== buffId);
@@ -1031,12 +1031,12 @@
         character.periodicHpEffects.forEach(eff => {
           const evalRes = evaluateHpAmount(eff.amount);
           const amt = evalRes.total;
-          const rollInfo = evalRes.isDice ? ` [Zar: ${evalRes.rollDesc}]` : '';
+          const rollInfo = evalRes.isDice ? ` [Roll: ${evalRes.rollDesc}]` : '';
 
           if (amt > 0) {
             if (eff.type === 'damage') {
               character.hp.current = Math.max(-10, (Number(character.hp.current) || 0) - amt);
-              hpLogs.push(`💥 ${eff.name}: -${amt} HP Hasar${rollInfo}`);
+              hpLogs.push(`💥 ${eff.name}: -${amt} HP Damage${rollInfo}`);
             } else if (eff.type === 'heal') {
               const maxHp = Number(character.hp.max) || 0;
               character.hp.current = Math.min(maxHp, (Number(character.hp.current) || 0) + amt);
@@ -1101,14 +1101,14 @@
 
       showDiceTopToast({
         icon: "☀️",
-        title: `Uzun Dinlenme (${restHours} Saat Uykusu${hasRingOfSustenance ? " 💍" : ""})`,
+        title: `Long Rest (${restHours} Hours Sleep${hasRingOfSustenance ? " 💍" : ""})`,
         breakdown: hasRingOfSustenance
           ? "💍 Ring of Sustenance Equipped: Takes only 2 hours! Select healing mode:"
           : "8-hour night's rest. Select healing mode:",
         total: "",
         actions: [
           {
-            label: `⚡ Tam Can (${maxHp}/${maxHp}) & Slotlar`,
+            label: `⚡ Full HP (${maxHp}/${maxHp}) & Slots`,
             className: "px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-700 hover:bg-amber-600 text-amber-100 border border-amber-400 transition shadow cursor-pointer",
             onClick: () => executeLongRest(true)
           },
@@ -1118,7 +1118,7 @@
             onClick: () => executeLongRest(false)
           },
           {
-            label: "Kapat",
+            label: "Close",
             className: "px-2 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white border border-slate-700 transition cursor-pointer",
             onClick: () => {
               const el = document.getElementById("dice-top-toast");
@@ -1305,10 +1305,10 @@
       const details = [];
       details.push(isFullHeal ? `Full HP (${character.hp.current}/${maxHp})` : `+${hpGain} HP Natural Healing (${character.hp.current}/${maxHp})`);
       const totalReadyLong = (character.tomeOfBattle?.readiedManeuvers || []).filter(m => !m.expended).length;
-      details.push("T\u00FCm b\u00FCy\u00FCler ve " + totalReadyLong + " manevra tekrar ku\u015Fan\u0131ld\u0131");
+      details.push(`All spells and ${totalReadyLong} maneuvers readied`);
       if (refreshedDailyItems > 0 || refreshedDailyFeats > 0) details.push(`${refreshedDailyItems + refreshedDailyFeats} Daily Item/Feat charges refreshed`);
-      if (removedConditions > 0) details.push("Yorgunluk/Debufflar silindi");
-      if (hasRingOfSustenance) details.push("💍 2 Saat (Ring of Sustenance)");
+      if (removedConditions > 0) details.push("Fatigue/Debuffs cleared");
+      if (hasRingOfSustenance) details.push("💍 2 Hours (Ring of Sustenance)");
 
       showDiceTopToast({
         icon: "☀️",
@@ -1331,17 +1331,17 @@
         total: "",
         actions: [
           {
-            label: "⚡ 5 Dk (Manevralar)",
+            label: "⚡ 5 Min (Maneuvers)",
             className: "px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-800 hover:bg-emerald-700 text-emerald-100 border border-emerald-500 transition shadow cursor-pointer",
             onClick: () => executeShortRest(5)
           },
           {
-            label: `⏱️ 1 Saat (+${Math.min(currentNonlethal, nonlethalHeal)} Nonlethal & Durum)`,
+            label: `⏱️ 1 Hour (+${Math.min(currentNonlethal, nonlethalHeal)} Nonlethal & Conditions)`,
             className: "px-2.5 py-1 rounded-lg text-[11px] font-bold bg-teal-800 hover:bg-teal-700 text-teal-100 border border-teal-500 transition shadow cursor-pointer",
             onClick: () => executeShortRest(60)
           },
           {
-            label: "Kapat",
+            label: "Close",
             className: "px-2 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white border border-slate-700 transition cursor-pointer",
             onClick: () => {
               const el = document.getElementById("dice-top-toast");
@@ -1462,12 +1462,12 @@
       const summaryParts = [];
       const totalReadyShort = (character.tomeOfBattle?.readiedManeuvers || []).filter(m => !m.expended).length;
       if (refreshedManeuvers > 0 || reReadiedCount > 0) {
-        summaryParts.push((refreshedManeuvers + reReadiedCount) + " manevra tekrar ku\u015Fan\u0131ld\u0131 / haz\u0131r");
+        summaryParts.push(`${refreshedManeuvers + reReadiedCount} maneuvers recovered / readied`);
       } else {
-        summaryParts.push(totalReadyShort + " manevra sava\u015Fa haz\u0131r");
+        summaryParts.push(`${totalReadyShort} maneuvers ready for combat`);
       }
       if (nonlethalHealed > 0) summaryParts.push(`Healed ${nonlethalHealed} Nonlethal HP`);
-      if (downgradedExhausted) summaryParts.push("Exhausted durumu Fatigued durumuna indirgendi");
+      if (downgradedExhausted) summaryParts.push("Exhausted downgraded to Fatigued");
       if (expiredBuffs > 0) summaryParts.push(`${expiredBuffs} timed buff(s) expired`);
       summaryParts.push("Encounter round reset");
 
@@ -3174,7 +3174,7 @@
 
               <div class="flex items-center gap-1.5 shrink-0">
                 ${tierBadge}
-                <input type="checkbox" ${slotData.active ? 'checked' : ''} onchange="toggleSlotActive('${slotKey}')" title="Aktif / Pasif yap" class="w-4 h-4 rounded text-sky-500 border-slate-700 bg-slate-950 focus:ring-0 cursor-pointer">
+                <input type="checkbox" ${slotData.active ? 'checked' : ''} onchange="toggleSlotActive('${slotKey}')" title="Toggle Active / Inactive" class="w-4 h-4 rounded text-sky-500 border-slate-700 bg-slate-950 focus:ring-0 cursor-pointer">
                 <button onclick="openSlotEquipModal('${slotKey}')" title="Change Item" class="p-1 rounded bg-slate-800 hover:bg-sky-900/60 text-slate-300 hover:text-sky-200 border border-slate-700 hover:border-sky-500 transition text-xs">
                   🔄
                 </button>
@@ -3222,8 +3222,8 @@
 
       // Meta and controls
       if (modelSelect) modelSelect.value = 'human';
-      if (charTag) charTag.textContent = `${character.race || 'Human'} • ${character.gender || 'Erkek'} • ${character.classes || 'Adventurer'}`;
-      if (activeCountEl) activeCountEl.textContent = `${activeOccupiedCount} / 12 Aktif`;
+      if (charTag) charTag.textContent = `${character.race || 'Human'} • ${character.gender === 'Erkek' ? 'Male' : (character.gender === 'Kadın' ? 'Female' : (character.gender || 'Male'))} • ${character.classes || 'Adventurer'}`;
+      if (activeCountEl) activeCountEl.textContent = `${activeOccupiedCount} / 12 Active`;
       if (modelLabel) modelLabel.textContent = 'D&D 3.5e Magic Item Record Sheet';
 
       // Toolbar menu and edit mode state
@@ -3265,7 +3265,7 @@
             <div class="flex items-center gap-2 flex-wrap flex-1 min-w-0">
               <!-- Main Hand Badge -->
               <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg ${mhHas ? 'bg-slate-950 border border-sky-500/60 text-white' : 'bg-slate-950/60 border border-slate-800 text-slate-500'} text-xs">
-                <span class="text-sky-400 font-bold text-[10px]">ANA EL:</span>
+                <span class="text-sky-400 font-bold text-[10px]">MAIN HAND:</span>
                 <span class="font-bold truncate max-w-[140px]">${mhHas ? mh.name : '(Unarmed)'}</span>
                 ${mhHas ? `<button onclick="unequipSlot('mainHand')" title="Unequip" class="text-rose-400 hover:text-white text-[10px] ml-1">✕</button>` : ''}
               </div>
@@ -3462,12 +3462,12 @@
       ensureWeaponSetsData();
       if (slotKey === 'mainHand') {
         if (character.tactical?.weaponSets?.set1) {
-          character.tactical.weaponSets.set1.mainWeapon = 'Yok';
+          character.tactical.weaponSets.set1.mainWeapon = 'None';
         }
-        character.activeWeapon = 'Yok';
+        character.activeWeapon = 'None';
       } else if (slotKey === 'offHand') {
         if (character.tactical?.weaponSets?.set2) {
-          character.tactical.weaponSets.set2.mainWeapon = 'Yok';
+          character.tactical.weaponSets.set2.mainWeapon = 'None';
         }
         character.activeOffHand = 'None';
       }
@@ -3549,7 +3549,7 @@
               ${isConsumableOrSlotless(item) ? `
                 <div class="flex flex-col gap-2 w-20">
                   <button onclick="consumeItem3D('pool', ${item.id})" class="w-full bg-indigo-950 hover:bg-indigo-900 text-indigo-300 border border-indigo-700 text-[11px] font-bold py-1 rounded transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="Consume / Activate / Use">
-                    <span>🧪</span><span>Kullan</span>
+                    <span>🧪</span><span>Use</span>
                   </button>
                   <button onclick="togglePoolBelt(${item.id})" class="w-full ${item.isBelt ? 'bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-600 shadow-sm shadow-emerald-950' : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'} border text-[11px] font-bold py-1 rounded transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="${item.isBelt ? 'Remove from Belt (Disable Quick Access)' : 'Attach to Belt (Add to Combat Quick Access)'}">
                     <span>${item.isBelt ? '🟢' : '⚡'}</span><span>${item.isBelt ? 'On Belt' : 'Belt'}</span>
@@ -3562,7 +3562,7 @@
                   </button>
                 </div>
               `}
-              <button onclick="deletePoolItem(${item.id})" class="w-7 h-7 flex items-center justify-center bg-slate-800 hover:bg-rose-900 text-slate-400 hover:text-rose-200 text-xs rounded transition cursor-pointer shrink-0" title="Sil">
+              <button onclick="deletePoolItem(${item.id})" class="w-7 h-7 flex items-center justify-center bg-slate-800 hover:bg-rose-900 text-slate-400 hover:text-rose-200 text-xs rounded transition cursor-pointer shrink-0" title="Delete">
                 🗑️
               </button>
             </div>
@@ -3597,7 +3597,7 @@
             character.consumables.push({
               name: item.name,
               qty: item.qty,
-              effect: item.desc || 'Sarf malzemesi etkisi'
+              effect: item.desc || 'Consumable effect'
             });
           }
         }
@@ -3721,7 +3721,7 @@
           const def = BODY_SLOT_DEFS.find(d => d.key === targetSlotKeyOverride);
           if (typeof showDiceTopToast === 'function') {
             showDiceTopToast({
-              title: 'Uyumsuz Yuva',
+              title: 'Incompatible Slot',
               breakdown: `"${item.name}" cannot be equipped in ${def?.trName || targetSlotKeyOverride}.`,
               icon: '⚠️'
             });
@@ -4081,7 +4081,7 @@
 
       const tabs = [
         { key: 'all', label: 'All', count: total },
-        { key: 'weapon', label: '⚔️ Silah', count: wepCount },
+        { key: 'weapon', label: '⚔️ Weapons', count: wepCount },
         { key: 'armor', label: '🛡️ Armor & Shield', count: armCount },
         { key: 'wondrous', label: '💍 Wondrous Items', count: wonCount },
         { key: 'potion', label: '🧪 Potions & Consumables', count: potCount }
@@ -4274,7 +4274,7 @@
         <div class="flex items-center justify-between text-[11px] text-slate-400 font-bold px-1 mb-1">
           <span>Master DB Search Results (${matches.length} items found):</span>
           <button type="button" onclick="searchAiForPoolItem('${escapedQ}')" class="text-purple-400 hover:text-purple-300 underline flex items-center gap-1 font-semibold">
-            <span>🧙‍♂️🤖 Rule Master (AI) ile Kitaplarda Ara</span>
+            <span>🧙‍♂️🤖 Search Rulebooks via Rule Master (AI)</span>
           </button>
         </div>
         <div class="space-y-2">
@@ -4310,7 +4310,7 @@
                 </div>
               </div>
               <div class="flex items-center gap-1.5 shrink-0">
-                <button type="button" onclick="fillPoolItemFormFromDb(${idx})" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white p-1.5 rounded-lg text-xs font-bold transition" title="Bilgileri Forma Doldur">
+                <button type="button" onclick="fillPoolItemFormFromDb(${idx})" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white p-1.5 rounded-lg text-xs font-bold transition" title="Populate Form">
                   ✏️
                 </button>
                 <button id="btn-add-search-${idx}" type="button" onclick="addMasterDbItemDirectlyToPool(${idx}, this)" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs py-1.5 px-3 rounded-lg shadow transition flex items-center gap-1">
@@ -4420,10 +4420,10 @@
             <p class="text-[11px] text-rose-400">${err.message || 'No response from API.'}</p>
             <div class="pt-2 border-t border-rose-900/50 flex flex-wrap gap-2 text-xs">
               <button type="button" onclick="searchAiForPoolItem('${q.replace(/'/g, "\\'")}')" class="bg-rose-900 hover:bg-rose-800 text-white font-bold py-1.5 px-3 rounded-lg transition">
-                🔄 Tekrar Dene
+                🔄 Retry
               </button>
               <button type="button" onclick="fillPoolFormWithQueryName('${q.replace(/'/g, "\\'")}')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-1.5 px-3 rounded-lg transition">
-                ✏️ Bilgileri Manuel Doldur
+                ✏️ Fill Manually
               </button>
             </div>
           </div>
@@ -4442,7 +4442,7 @@
               <span>✨</span>
               <span>🧙‍♂️🤖 Found in 3.5e Compendium via Rule Master (AI) (${entries.length} entries)</span>
             </span>
-            <span class="text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full">Master DB'ye Eklendi</span>
+            <span class="text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full">Added to Master DB</span>
           </div>
           <div class="space-y-2">
       `;
@@ -5153,7 +5153,7 @@
           icon: '⏳',
           title: item.name,
           breakdown: `All daily charges (${dc?.max || 0} ${dc?.unit || 'rounds'}) expended! Resets on a Long Rest (☀️).`,
-          total: '0 Tur'
+          total: '0 Rounds'
         });
         return;
       }
@@ -5167,7 +5167,7 @@
         if (existing) {
           existing.active = true;
           existing.rounds = (Number(existing.rounds) || 0) + 1;
-          existing.durationText = `${existing.rounds} Tur`;
+          existing.durationText = `${existing.rounds} Rounds`;
         } else {
           character.buffs.push({
             id: 'buff_boots_haste',
@@ -5178,7 +5178,7 @@
             acBonus: 1,
             bonusType: 'Dodge',
             speedBonus: 30,
-            durationText: '1 Tur',
+            durationText: '1 Round',
             source: 'Boots of Speed'
           });
         }
@@ -5186,7 +5186,7 @@
           icon: '🏃',
           title: 'Boots of Speed: Activated!',
           breakdown: `Haste activated (+1 Attack, +1 Dodge AC, +30 ft Speed, +1 extra attack on Full Attack). Remaining: ${dc.current}/${dc.max} Rounds.`,
-          total: 'At (1 Tur)'
+          total: 'Cast (1 Rd)'
         });
       } else {
         if (!Array.isArray(character.buffs)) character.buffs = [];
@@ -5195,14 +5195,14 @@
         if (existing) {
           existing.active = true;
           existing.rounds = (Number(existing.rounds) || 0) + 1;
-          existing.durationText = `${existing.rounds} Tur`;
+          existing.durationText = `${existing.rounds} Rounds`;
         } else {
           character.buffs.push({
             id: buffId,
             name: item.name,
             active: true,
             rounds: 1,
-            durationText: '1 Tur',
+            durationText: '1 Round',
             source: item.name
           });
         }
@@ -5210,7 +5210,7 @@
           icon: '⚡',
           title: `${item.name}: Activated!`,
           breakdown: `Applied to active buffs for 1 round. Remaining: ${dc.current}/${dc.max} ${dc.unit || 'rounds'}.`,
-          total: 'At (1 Tur)'
+          total: 'Cast (1 Rd)'
         });
       }
 
@@ -5255,21 +5255,21 @@
       }
 
       const dc = item ? ensureItemDailyCharges(item) : null;
-      const remStr = dc ? ` (Kalan: ${dc.current}/${dc.max} ${dc.unit || 'tur'})` : '';
+      const remStr = dc ? ` (Remaining: ${dc.current}/${dc.max} ${dc.unit || 'rounds'})` : '';
 
       if (dischargedCount > 0) {
         showDiceTopToast({
           icon: '🛑',
           title: `${item?.name || name}: Ended!`,
           breakdown: `Active spell/item effect ended${remStr}.`,
-          total: 'Son'
+          total: 'Ended'
         });
       } else {
         showDiceTopToast({
           icon: 'ℹ️',
           title: `${item?.name || name}`,
           breakdown: `No active effect currently running.${remStr}`,
-          total: 'Pasif'
+          total: 'Inactive'
         });
       }
 
@@ -5316,7 +5316,7 @@
       }
       if (itemName.includes('boots of speed')) {
         return [
-          { label: 'At (1 Tur Harca & Aktif Et)', action: 'cast', cost: 1, type: 'haste' },
+          { label: 'Activate (Spend 1 Round)', action: 'cast', cost: 1, type: 'haste' },
           { label: 'End Effect (Dismiss)', action: 'discharge', cost: 0, type: 'discharge' }
         ];
       }
@@ -5331,7 +5331,7 @@
       const isRoundUnit = item.dailyCharges && (item.dailyCharges.unit === 'rounds' || item.dailyCharges.unit === 'tur' || item.dailyCharges.unit === 'turn');
       if (isRoundUnit) {
         return [
-          { label: 'At (1 Tur Harca & Aktif Et)', action: 'cast', cost: 1, type: 'cast' },
+          { label: 'Activate (Spend 1 Round)', action: 'cast', cost: 1, type: 'cast' },
           { label: 'End Effect (Dismiss)', action: 'discharge', cost: 0, type: 'discharge' }
         ];
       }
@@ -5474,7 +5474,7 @@
         if (existingHaste) {
           existingHaste.active = true;
           existingHaste.duration = 1;
-          existingHaste.durationText = '1 Tur';
+          existingHaste.durationText = '1 Round';
         } else {
           character.buffs.push({
             id: 'buff_boots_haste',
@@ -5485,15 +5485,15 @@
             bonusType: 'Dodge',
             speedBonus: 30,
             duration: 1,
-            durationText: '1 Tur',
+            durationText: '1 Round',
             source: 'Boots of Speed'
           });
         }
         showDiceTopToast({
           icon: '🏃',
-          title: 'Boots of Speed Aktif!',
+          title: 'Boots of Speed Active!',
           breakdown: `Haste active for 1 round (+1 Attack, +1 Dodge AC, +30 ft Speed, +1 extra attack on Full Attack). Remaining: ${dc.current}/${dc.max} Rounds.`,
-          total: '+1 Tur Haste'
+          total: '+1 Rd Haste'
         });
       } else if (opt.type === 'buff' && opt.buffName) {
         if (!Array.isArray(character.buffs)) character.buffs = [];
@@ -5505,14 +5505,14 @@
           dmgBonus: opt.bonusDmg || 0,
           speedBonus: opt.speedBonus || 0,
           duration: 1,
-          durationText: '1 Tur',
+          durationText: '1 Round',
           source: item.name
         });
         showDiceTopToast({
           icon: '⚡',
-          title: `${opt.buffName} Aktif!`,
+          title: `${opt.buffName} Active!`,
           breakdown: `Applied to active buffs for 1 round. Remaining: ${dc.current}/${dc.max} ${dc.unit || 'charges'}.`,
-          total: 'Aktif'
+          total: 'Active'
         });
       } else {
         showDiceTopToast({
@@ -5614,7 +5614,7 @@
         const count = parseInt(genMatch[1]) || 1;
         const sides = parseInt(genMatch[2]) || 6;
         const flat = genMatch[3] ? parseInt(genMatch[3].replace(/\s+/g, '')) : 0;
-        let typeName = 'Hasar';
+        let typeName = 'Damage';
         let icon = '💥';
         if (/fire|ateş/i.test(combined)) { typeName = 'Fire Damage'; icon = '🔥'; }
         else if (/cold|soğuk|buz/i.test(combined)) { typeName = 'Cold Damage'; icon = '❄️'; }
@@ -5695,7 +5695,7 @@
               character.consumables.push({
                 name: p.name,
                 qty: (p.qty !== undefined && p.qty !== null) ? Number(p.qty) : 1,
-                effect: p.desc || 'Sarf malzemesi etkisi',
+                effect: p.desc || 'Consumable effect',
                 dailyCharges: p.dailyCharges || null
               });
             }
@@ -5717,7 +5717,7 @@
           displayMap.set(key, {
             name: p.name,
             qty: (p.qty !== undefined && p.qty !== null) ? Number(p.qty) : 1,
-            effect: p.desc || 'Sarf malzemesi / asa',
+            effect: p.desc || 'Consumable / wand',
             sourceType: 'pool',
             poolId: p.id,
             isBelt: !!p.isBelt,
@@ -5736,7 +5736,7 @@
           displayMap.set(key, {
             name: c.name,
             qty: (c.qty !== undefined && c.qty !== null) ? Number(c.qty) : 1,
-            effect: c.effect || 'Sarf malzemesi etkisi',
+            effect: c.effect || 'Consumable effect',
             sourceType: 'consumable',
             idx: cIdx,
             isBelt: false,
@@ -5744,7 +5744,7 @@
           });
         } else {
           const existing = displayMap.get(key);
-          if (c.effect && (!existing.effect || existing.effect === 'Sarf malzemesi etkisi')) {
+          if (c.effect && (!existing.effect || existing.effect === 'Consumable effect' || existing.effect === 'Sarf malzemesi etkisi')) {
             existing.effect = c.effect;
           }
           if (c.dailyCharges && !existing.dailyCharges) {
@@ -5803,7 +5803,7 @@
           key: 'wand_damage',
           title: '⚡ WANDS & OFFENSIVE ITEMS',
           icon: '⚡',
-          badgeText: 'Asa / Hasar',
+          badgeText: 'Wand / Damage',
           badgeBg: 'bg-rose-950 text-rose-300 border-rose-700',
           cardBorder: 'border-rose-500/40 hover:border-rose-400',
           btnBg: 'bg-rose-600/30 hover:bg-rose-600 text-rose-300 hover:text-white border-rose-500/40',
@@ -5819,7 +5819,7 @@
           cardBorder: 'border-purple-500/40 hover:border-purple-400',
           btnBg: 'bg-purple-600/30 hover:bg-purple-600 text-purple-300 hover:text-white border-purple-500/40',
           btnIcon: '🧪',
-          btnText: 'Kullan'
+          btnText: 'Use'
         },
         {
           key: 'daily_charge',
@@ -5830,18 +5830,18 @@
           cardBorder: 'border-sky-500/40 hover:border-sky-400',
           btnBg: 'bg-sky-600/30 hover:bg-sky-600 text-sky-300 hover:text-white border-sky-500/40',
           btnIcon: '💍',
-          btnText: 'Kullan'
+          btnText: 'Use'
         },
         {
           key: 'other',
           title: '📦 OTHER CONSUMABLES',
           icon: '📦',
-          badgeText: 'Sarf',
+          badgeText: 'Consumable',
           badgeBg: 'bg-slate-800 text-slate-300 border-slate-600',
           cardBorder: 'border-slate-700 hover:border-slate-500',
           btnBg: 'bg-amber-600/30 hover:bg-amber-600 text-amber-300 hover:text-white border-amber-500/40',
           btnIcon: '📦',
-          btnText: 'Kullan'
+          btnText: 'Use'
         }
       ];
 
@@ -5898,14 +5898,14 @@
           let tagBadge = '';
           const dmgPlan = parseDamageFromItem(item.name, item.effect);
           if (dmgPlan) {
-            tagBadge = `<span class="badge bg-rose-950 text-rose-300 border border-rose-700 text-[9px] font-mono">${dmgPlan.formula} Hasar</span>`;
+            tagBadge = `<span class="badge bg-rose-950 text-rose-300 border border-rose-700 text-[9px] font-mono">${dmgPlan.formula} Dmg</span>`;
           } else if (/cure|heal|iyileş/i.test(item.name)) {
             let formulaBadge = '1d8+1';
             if (/serious/i.test(item.name)) formulaBadge = '3d8+5';
             else if (/moderate/i.test(item.name)) formulaBadge = '2d8+3';
             else if (/critical/i.test(item.name)) formulaBadge = '4d8+7';
             else if (/heal/i.test(item.name)) formulaBadge = '110 HP';
-            tagBadge = `<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[9px] font-mono">${formulaBadge} Can</span>`;
+            tagBadge = `<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[9px] font-mono">${formulaBadge} HP</span>`;
           }
 
           const card = document.createElement('div');
@@ -5915,7 +5915,7 @@
               <div class="text-xs font-bold text-white flex items-center gap-1.5 flex-wrap">
                 <span>${item.name}</span>
                 <span class="badge ${group.badgeBg} text-[9px] font-bold px-1.5 py-0.2">${group.badgeText}</span>
-                ${item.isBelt ? '<span class="badge bg-amber-950 text-amber-300 border border-amber-700 text-[9px]">Kemerde</span>' : ''}
+                ${item.isBelt ? '<span class="badge bg-amber-950 text-amber-300 border border-amber-700 text-[9px]">On Belt</span>' : ''}
                 ${item.fromSlot ? '<span class="badge bg-sky-950 text-sky-300 border border-sky-700 text-[9px]">Equipped</span>' : ''}
                 ${tagBadge}
               </div>
@@ -5952,7 +5952,7 @@
           icon: '⚠️',
           title: 'Item Not Found',
           breakdown: 'Item not found in character inventory!',
-          total: 'Hata'
+          total: 'Error'
         });
         return;
       }
@@ -5978,7 +5978,7 @@
             icon: '⚠️',
             title: 'Depleted',
             breakdown: 'You have none of this item remaining!',
-            total: '0 Adet'
+            total: '0 Left'
           });
           return;
         }
@@ -6033,14 +6033,14 @@
               const bName = (b.name || '').toLowerCase();
               if (bName.includes('sick') || bName.includes('nauseat') || bName.includes('blind') || bName.includes('deaf') || bName.includes('disease') || bName.includes('poison') || bName.includes('fatigue')) {
                 b.active = false;
-                b.durationText = 'Tedavi Edildi (Heal)';
+                b.durationText = 'Cured (Heal)';
                 healCured.push(b.name);
               }
             });
           }
           saveStateToStorage(true);
           renderAll();
-          const curedText = healCured.length > 0 ? ` • Temizlenen Durumlar: ${healCured.join(', ')}` : '';
+          const curedText = healCured.length > 0 ? ` • Cured Conditions: ${healCured.join(', ')}` : '';
           addDiceHistoryEntry({
             icon: '💖',
             title: `${name} (Heal & Cure)`,
@@ -6069,7 +6069,7 @@
             icon: '💖',
             title: `${name}`,
             formula: `${diceCount}d8+${flatBonus}`,
-            breakdown: `${diceCount}d8 [${rolls.map(r => r.value).join(' + ')}] + ${flatBonus} • Can: ${prevHp} ➔ ${character.hp.current}/${character.hp.max} • ${remainingInfo}`,
+            breakdown: `${diceCount}d8 [${rolls.map(r => r.value).join(' + ')}] + ${flatBonus} • HP: ${prevHp} ➔ ${character.hp.current}/${character.hp.max} • ${remainingInfo}`,
             total: `+${healTotal} HP`
           });
         };
@@ -6119,7 +6119,7 @@
             title: `${name} (Damage Roll)`,
             formula: damagePlan.formula,
             breakdown: breakdownText,
-            total: `${totalDamage} Hasar`
+            total: `${totalDamage} Damage`
           });
         };
 
@@ -6152,14 +6152,14 @@
             if (isLesser) {
               if (isFatigue) {
                 b.active = false;
-                b.durationText = 'Tedavi Edildi (Lesser Restoration)';
+                b.durationText = 'Cured (Lesser Restoration)';
                 curedDebuffs.push(b.name);
               }
             } else {
               // Standard or Greater Restoration
               if (isDrain || isFatigue) {
                 b.active = false;
-                b.durationText = 'Tedavi Edildi (Restoration)';
+                b.durationText = 'Cured (Restoration)';
                 curedDebuffs.push(b.name);
               }
             }
@@ -6172,7 +6172,7 @@
             const bName = (b.name || '').toLowerCase();
             if (bName.includes('curse') || bName.includes('lanet')) {
               b.active = false;
-              b.durationText = 'Tedavi Edildi (Remove Curse)';
+              b.durationText = 'Cured (Remove Curse)';
               curedDebuffs.push(b.name);
             }
           });
@@ -6184,7 +6184,7 @@
             const bName = (b.name || '').toLowerCase();
             if (bName.includes('disease') || bName.includes('hastalık') || bName.includes('sickened') || bName.includes('nauseated')) {
               b.active = false;
-              b.durationText = 'Tedavi Edildi (Remove Disease)';
+              b.durationText = 'Cured (Remove Disease)';
               curedDebuffs.push(b.name);
             }
           });
@@ -6196,7 +6196,7 @@
             const bName = (b.name || '').toLowerCase();
             if (bName.includes('blind') || bName.includes('deaf') || bName.includes('kör') || bName.includes('sağır')) {
               b.active = false;
-              b.durationText = 'Tedavi Edildi (Remove Blindness/Deafness)';
+              b.durationText = 'Cured (Remove Blindness/Deafness)';
               curedDebuffs.push(b.name);
             }
           });
@@ -6208,7 +6208,7 @@
             const bName = (b.name || '').toLowerCase();
             if (bName.includes('paraly') || bName.includes('felç') || bName.includes('slow')) {
               b.active = false;
-              b.durationText = 'Tedavi Edildi (Remove Paralysis)';
+              b.durationText = 'Cured (Remove Paralysis)';
               curedDebuffs.push(b.name);
             }
           });
@@ -6220,7 +6220,7 @@
             const bName = (b.name || '').toLowerCase();
             if (bName.includes('poison') || bName.includes('zehir')) {
               b.active = false;
-              b.durationText = 'Tedavi Edildi (Neutralize Poison)';
+              b.durationText = 'Cured (Neutralize Poison)';
               curedDebuffs.push(b.name);
             }
           });
@@ -6238,10 +6238,10 @@
         });
         addDiceHistoryEntry({
           icon: '✨',
-          title: `${name} (Tedavi / Kural)`,
+          title: `${name} (Cure / Rule)`,
           formula: 'D&D 3.5e RAW',
           breakdown: `Used: ${name} • Cured Condition: ${curedDebuffs.join(', ')} • ${remainingInfo}`,
-          total: 'Tedavi'
+          total: 'Cured'
         });
         return;
       } else if (/restoration/i.test(cleanLower)) {
@@ -6251,7 +6251,7 @@
           icon: 'ℹ️',
           title: name,
           breakdown: `Used, but no active Energy Drain or Negative Level condition was found on the character. • ${remainingInfo}`,
-          total: 'Etkisiz'
+          total: 'No Effect'
         });
         return;
       }
@@ -6278,7 +6278,7 @@
           icon: '🧪',
           title: name,
           breakdown: `Activated "${activatedBuff}" (+4 Ability Score, 30 rounds) • ${remainingInfo}`,
-          total: 'Aktif'
+          total: 'Active'
         });
       } else if (isDaily) {
         showDiceTopToast({
@@ -6366,7 +6366,7 @@
       if (confirm('⚠️ Are you sure you want to reset the current character and start a fresh blank character?')) {
         character = {
           schemaVersion: "2.0",
-          name: "Yeni Karakter",
+          name: "New Character",
           classes: "Fighter 1",
           race: "Human",
           level: 1,

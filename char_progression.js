@@ -699,11 +699,11 @@
 
         if (optRegular) {
           const isRegFull = qualifiesForRegularFeat && regularFeats.length > 0;
-          optRegular.textContent = isRegFull ? '🎖️ Normal Feat (Bu Seviyede Yuva Dolu)' : '🎖️ Normal Feat (Regular Feat)';
+          optRegular.textContent = isRegFull ? '🎖️ Regular Feat (Slot Filled at This Level)' : '🎖️ Regular Feat';
         }
         if (optClass) {
           const isClassFull = qualifiesForClassBonus && classBonusFeats.length > 0;
-          optClass.textContent = isClassFull ? `⚔️ ${className} Bonus Feati (Bu Seviyede Yuva Dolu)` : `⚔️ ${className} Bonus Feati (Class Bonus Feat)`;
+          optClass.textContent = isClassFull ? `⚔️ ${className} Bonus Feat (Slot Filled at This Level)` : `⚔️ ${className} Bonus Feat (Class Bonus Feat)`;
         }
         if (optRacial) {
           optRacial.textContent = hasRacialBonus ? '🧬 Human Bonus Feat (Slot Filled at This Level)' : '🧬 Human Bonus Feat (Racial Bonus)';
@@ -736,12 +736,12 @@
             const isExact = activeQuickFeatSlotContract?.mode === 'exact_choices';
             banner.className = `p-2.5 rounded-xl border ${isExact ? 'border-emerald-500/70 bg-emerald-950/70' : 'border-amber-500/70 bg-amber-950/70'} text-xs flex items-center justify-between gap-2 shadow-md transition`;
             if (iconNoticeEl) iconNoticeEl.textContent = isExact ? '🥋' : '⚔️';
-            if (titleNoticeEl) titleNoticeEl.textContent = `Hedef Yuva: ${contractLabel}`;
+            if (titleNoticeEl) titleNoticeEl.textContent = `Target Slot: ${contractLabel}`;
             if (descNoticeEl) descNoticeEl.textContent = contractDesc;
           } else if (preferredCategory === 'Regular Feat') {
             banner.className = 'p-2.5 rounded-xl border border-purple-500/70 bg-purple-950/70 text-xs flex items-center justify-between gap-2 shadow-md transition';
             if (iconNoticeEl) iconNoticeEl.textContent = '🎖️';
-            if (titleNoticeEl) titleNoticeEl.textContent = `Hedef Yuva: Standart Feat (${lvlNum}. Seviye)`;
+            if (titleNoticeEl) titleNoticeEl.textContent = `Target Slot: Standard Feat (Level ${lvlNum})`;
             if (descNoticeEl) descNoticeEl.textContent = `Standard character feat slot gained via D&D 3.5e RAW level progression (Levels 1, 3, 6, 9, 12, 15, 18).`;
           } else if (preferredCategory === 'Racial Trait') {
             banner.className = 'p-2.5 rounded-xl border border-teal-500/70 bg-teal-950/70 text-xs flex items-center justify-between gap-2 shadow-md transition';
@@ -768,7 +768,7 @@
           // Free mode
           banner.className = 'p-2 rounded-xl border border-slate-700/80 bg-slate-900/60 text-xs flex items-center justify-between gap-2 shadow-sm transition';
           if (iconNoticeEl) iconNoticeEl.textContent = '🔓';
-          if (titleNoticeEl) titleNoticeEl.textContent = 'Serbest Kategori Modu (Kilit Yok)';
+          if (titleNoticeEl) titleNoticeEl.textContent = 'Free Category Mode (Unlocked)';
           if (descNoticeEl) descNoticeEl.textContent = 'Select any category from the dropdown below to add to this level.';
           if (unlockBtn) unlockBtn.classList.add('hidden');
         }
@@ -831,7 +831,7 @@
       const consoleEl = document.getElementById('quick-feat-search-console');
       if (consoleEl) consoleEl.classList.remove('hidden');
       const toggleText = document.getElementById('quick-feat-catalog-toggle-text');
-      if (toggleText) toggleText.textContent = 'Kapat ▲';
+      if (toggleText) toggleText.textContent = 'Close ▲';
       renderQuickFeatSearchResults();
     }
 
@@ -840,7 +840,7 @@
       const consoleEl = document.getElementById('quick-feat-search-console');
       if (consoleEl) consoleEl.classList.add('hidden');
       const toggleText = document.getElementById('quick-feat-catalog-toggle-text');
-      if (toggleText) toggleText.textContent = 'Katalog ▼';
+      if (toggleText) toggleText.textContent = 'Catalog ▼';
     }
 
     function toggleQuickFeatCatalogConsole() {
@@ -1178,7 +1178,7 @@
             ` : ''}
           </div>
           <button type="button" onclick="closeQuickFeatCatalogConsole()" class="text-[10px] text-slate-400 hover:text-white px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 transition font-bold cursor-pointer">
-            ▲ Kapat
+            ▲ Close
           </button>
         </div>
 
@@ -1209,11 +1209,11 @@
         if (typeof showDiceTopToast === 'function') {
           showDiceTopToast({
             title: 'Duplicate Feat Blocked',
-            desc: pEvalPre.alreadyKnownReason || `"${featName}" featine zaten sahipsiniz.`,
+            desc: pEvalPre.alreadyKnownReason || `You already possess the "${featName}" feat.`,
             type: 'warning'
           });
         } else {
-          console.warn(pEvalPre.alreadyKnownReason || `"${featName}" featine zaten sahipsiniz.`);
+          console.warn(pEvalPre.alreadyKnownReason || `You already possess the "${featName}" feat.`);
         }
         return;
       }
@@ -1443,11 +1443,11 @@
         if (typeof showDiceTopToast === 'function') {
           showDiceTopToast({
             title: 'Duplicate Feat Blocked',
-            desc: pEvalConfirm.alreadyKnownReason || `"${featName}" featine zaten sahipsiniz.`,
+            desc: pEvalConfirm.alreadyKnownReason || `You already possess the "${featName}" feat.`,
             type: 'warning'
           });
         } else {
-          console.warn(pEvalConfirm.alreadyKnownReason || `"${featName}" featine zaten sahipsiniz.`);
+          console.warn(pEvalConfirm.alreadyKnownReason || `You already possess the "${featName}" feat.`);
         }
         return;
       }
@@ -1734,7 +1734,7 @@
       } catch (err) {
         if (statusEl) {
           statusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-rose-950/80 border border-rose-600/60 text-rose-200 block';
-          statusEl.innerHTML = `<span>⚠️</span> Hata: ${err.message || err}`;
+          statusEl.innerHTML = `<span>⚠️</span> Error: ${err.message || err}`;
         }
       }
     }const DND35_EXTRA_CLASSES = {
@@ -2527,7 +2527,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           if (charLvlMatch) {
             const reqLvl = parseInt(charLvlMatch[1], 10);
             met = totalCharacterLevel >= reqLvl;
-            info = met ? `(Seviye: ${totalCharacterLevel} ≥ ${reqLvl})` : `(Mevcut: ${totalCharacterLevel}, Gereken: ${reqLvl})`;
+            info = met ? `(Level: ${totalCharacterLevel} ≥ ${reqLvl})` : `(Current: ${totalCharacterLevel}, Req: ${reqLvl})`;
             if (!met) allMet = false;
             checks.push({ type: 'charLevel', label, met, info });
             continue;
@@ -2538,7 +2538,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           if (babMatch) {
             const reqBab = parseInt(babMatch[1], 10);
             met = prospectiveBab >= reqBab;
-            info = met ? `(Mevcut: +${prospectiveBab} ≥ +${reqBab})` : `(Mevcut: +${prospectiveBab}, Gereken: +${reqBab})`;
+            info = met ? `(Current: +${prospectiveBab} ≥ +${reqBab})` : `(Current: +${prospectiveBab}, Req: +${reqBab})`;
             if (!met) allMet = false;
             checks.push({ type: 'bab', label, met, info });
             continue;
@@ -2551,7 +2551,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             const reqScore = parseInt(statMatch[2], 10);
             const curScore = abilities[statKey] || 10;
             met = curScore >= reqScore;
-            info = met ? `(Mevcut: ${curScore} ≥ ${reqScore})` : `(Mevcut: ${curScore}, Gereken: ${reqScore})`;
+            info = met ? `(Current: ${curScore} ≥ ${reqScore})` : `(Current: ${curScore}, Req: ${reqScore})`;
             if (!met) allMet = false;
             checks.push({ type: 'stat', label, met, info });
             continue;
@@ -2569,7 +2569,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             });
             const curRanks = sk ? (Number(sk.ranks) || 0) : 0;
             met = curRanks >= reqRanks;
-            info = met ? `(Kademe: ${curRanks} ≥ ${reqRanks})` : `(Mevcut: ${curRanks}, Gereken: ${reqRanks})`;
+            info = met ? `(Ranks: ${curRanks} ≥ ${reqRanks})` : `(Current: ${curRanks}, Req: ${reqRanks})`;
             if (!met) allMet = false;
             checks.push({ type: 'skill', label, met, info });
             continue;
@@ -2580,14 +2580,14 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           if (mlMatch) {
             const reqMl = parseInt(mlMatch[1], 10);
             met = isPsionic && effectiveManifesterLevel >= reqMl;
-            info = met ? `(ML: ${effectiveManifesterLevel} ≥ ${reqMl})` : `(Psionik ML: ${effectiveManifesterLevel}, Gereken: ${reqMl})`;
+            info = met ? `(ML: ${effectiveManifesterLevel} ≥ ${reqMl})` : `(Psionic ML: ${effectiveManifesterLevel}, Req: ${reqMl})`;
             if (!met) allMet = false;
             checks.push({ type: 'psionic', label, met, info });
             continue;
           }
           if (partLow.includes('psionic ability') || partLow.includes('psionic focus') || partLow.includes('reserve of power points')) {
             met = isPsionic;
-            info = met ? '(Psionik Karakter)' : '(Psionik Yetenek / Wild Talent Yok)';
+            info = met ? '(Psionic Character)' : '(No Psionic Ability / Wild Talent)';
             if (!met) allMet = false;
             checks.push({ type: 'psionic', label, met, info });
             continue;
@@ -2598,7 +2598,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             const slaClMatch = part.match(/(?:caster\s*level|cl)\s*(\d+)/i);
             const reqSlaCl = slaClMatch ? parseInt(slaClMatch[1], 10) : 1;
             met = hasSpellLikeAbility && slaCasterLevel >= reqSlaCl;
-            info = met ? `(SLA CL: ${slaCasterLevel} ≥ ${reqSlaCl})` : '(SLA / Warlock Seviyesi Yetersiz)';
+            info = met ? `(SLA CL: ${slaCasterLevel} ≥ ${reqSlaCl})` : '(Insufficient SLA / Warlock Level)';
             if (!met) allMet = false;
             checks.push({ type: 'sla', label, met, info });
             continue;
@@ -2609,7 +2609,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           if (clMatch) {
             const reqCl = parseInt(clMatch[1], 10);
             met = isCaster && effectiveCasterLevel >= reqCl;
-            info = met ? `(CL: ${effectiveCasterLevel} ≥ ${reqCl})` : `(Mevcut CL: ${effectiveCasterLevel}, Gereken: ${reqCl})`;
+            info = met ? `(CL: ${effectiveCasterLevel} ≥ ${reqCl})` : `(Current CL: ${effectiveCasterLevel}, Req: ${reqCl})`;
             if (!met) allMet = false;
             checks.push({ type: 'cl', label, met, info });
             continue;
@@ -2628,7 +2628,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
               curClsLvl = Math.max(curClsLvl, (classCounts['fighter'] || 0) + Math.max(0, (classCounts['warblade'] || 0) - 2));
             }
             met = curClsLvl >= reqLvl;
-            info = met ? `(${clsLvlMatch[1]} ${curClsLvl} ≥ ${reqLvl})` : `(Gereken: ${clsLvlMatch[1]} Seviye ${reqLvl})`;
+            info = met ? `(${clsLvlMatch[1]} ${curClsLvl} ≥ ${reqLvl})` : `(Requires: ${clsLvlMatch[1]} Level ${reqLvl})`;
             if (!met) allMet = false;
             checks.push({ type: 'classLevel', label, met, info });
             continue;
@@ -2637,7 +2637,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           // D.5) Warlock Invocations & Eldritch Blast Prerequisite Check
           if (partLow.includes('eldritch blast')) {
             met = hasEldritchBlast;
-            info = met ? '(Eldritch Blast Mevcut)' : '(Eldritch Blast / Warlock Gerekli)';
+            info = met ? '(Has Eldritch Blast)' : '(Requires Eldritch Blast / Warlock)';
             if (!met) allMet = false;
             checks.push({ type: 'warlock', label, met, info });
             continue;
@@ -2647,7 +2647,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             const tierName = invTierMatch[1].toLowerCase();
             const reqWarlockLvl = tierName === 'dark' ? 16 : (tierName === 'greater' ? 11 : (tierName === 'lesser' ? 6 : 1));
             met = isWarlock && warlockLevel >= reqWarlockLvl;
-            info = met ? `(Warlock Seviye ${warlockLevel} ≥ ${reqWarlockLvl})` : `(Warlock Seviye ${reqWarlockLvl} Gerekli)`;
+            info = met ? `(Warlock Level ${warlockLevel} ≥ ${reqWarlockLvl})` : `(Requires Warlock Level ${reqWarlockLvl})`;
             if (!met) allMet = false;
             checks.push({ type: 'warlock', label, met, info });
             continue;
@@ -2673,21 +2673,21 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           // D.7) Special Class Feature Checks (Wild Shape, Turn/Rebuke Undead, Bardic Music, Smite, Martial Maneuvers)
           if (partLow.includes('wild shape')) {
             met = (classCounts['druid'] || 0) >= 5 || knownFeats.has('wildshape');
-            info = met ? '(Wild Shape Mevcut)' : '(Wild Shape / Druid 5 Gerekli)';
+            info = met ? '(Has Wild Shape)' : '(Requires Wild Shape / Druid 5)';
             if (!met) allMet = false;
             checks.push({ type: 'feature', label, met, info });
             continue;
           }
           if (partLow.includes('turn or rebuke') || partLow.includes('rebuke or command')) {
             met = (classCounts['cleric'] || 0) >= 1 || (classCounts['paladin'] || 0) >= 4 || (classCounts['dread necromancer'] || 0) >= 1 || knownFeats.has('turnundead') || knownFeats.has('rebukeundead');
-            info = met ? '(Turn/Rebuke Mevcut)' : '(Turn/Rebuke Undead Gerekli)';
+            info = met ? '(Has Turn/Rebuke)' : '(Requires Turn/Rebuke Undead)';
             if (!met) allMet = false;
             checks.push({ type: 'feature', label, met, info });
             continue;
           }
           if (partLow.includes('bardic music')) {
             met = (classCounts['bard'] || 0) >= 1 || knownFeats.has('bardicmusic');
-            info = met ? '(Bardic Music Mevcut)' : '(Bardic Music Gerekli)';
+            info = met ? '(Has Bardic Music)' : '(Requires Bardic Music)';
             if (!met) allMet = false;
             checks.push({ type: 'feature', label, met, info });
             continue;
@@ -2701,7 +2701,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           }
           if (partLow.includes('maneuver') || partLow.includes('stance')) {
             met = isMartialAdept;
-            info = met ? '(Martial Adept / Manevra Mevcut)' : '(Martial Manevra / Stance Gerekli)';
+            info = met ? '(Martial Adept / Has Maneuvers)' : '(Requires Martial Maneuver / Stance)';
             if (!met) allMet = false;
             checks.push({ type: 'maneuver', label, met, info });
             continue;
@@ -2776,7 +2776,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           const normPart = normalizeFeatName(part);
           const normPartBase = normalizeFeatName(part.replace(/\(.*?\)/g, ''));
           met = Array.from(knownFeats).some(kf => kf === normPart || kf === normPartBase || (normPart.length >= 4 && kf.includes(normPart)));
-          info = met ? '(Feat Mevcut)' : '(Feat Eksik)';
+          info = met ? '(Has Feat)' : '(Missing Feat)';
           if (!met) allMet = false;
           checks.push({ type: 'feat', label, met, info });
         }
@@ -2908,18 +2908,18 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
               <div>
                 <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Category / Type *</label>
                 <select onchange="onLevelUpSlotCategoryChange(${idx}, this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-amber-300 font-bold focus:outline-none focus:border-purple-500">
-                  <option value="Regular Feat" ${slot.category === 'Regular Feat' ? 'selected' : ''}>🎖️ Normal Feat</option>
+                  <option value="Regular Feat" ${slot.category === 'Regular Feat' ? 'selected' : ''}>🎖️ Regular Feat</option>
                   <option value="Class Bonus Feat" ${slot.category === 'Class Bonus Feat' ? 'selected' : ''}>⚔️ Class Bonus Feat</option>
                   <option value="DM Boon" ${slot.category === 'DM Boon' ? 'selected' : ''}>🌟 DM Boon</option>
-                  <option value="Flaw" ${slot.category === 'Flaw' ? 'selected' : ''}>⚠️ Kusur / Flaw</option>
-                  <option value="Racial Trait" ${slot.category === 'Racial Trait' ? 'selected' : ''}>🧬 Irksal Bonus Feat</option>
+                  <option value="Flaw" ${slot.category === 'Flaw' ? 'selected' : ''}>⚠️ Flaw</option>
+                  <option value="Racial Trait" ${slot.category === 'Racial Trait' ? 'selected' : ''}>🧬 Racial Bonus Feat</option>
                   <option value="Special Ability" ${slot.category === 'Special Ability' ? 'selected' : ''}>✨ Special Ability</option>
                 </select>
               </div>
 
               <div class="md:col-span-2">
                 <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1 flex items-center justify-between">
-                  <span>Spotlight & AI Feat Arama</span>
+                  <span>Spotlight & AI Feat Search</span>
                   <span class="text-[9px] text-purple-300 font-normal">Compendium + 3.5e RAW Validation</span>
                 </label>
                 <div class="relative flex items-center">
@@ -2936,7 +2936,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                           class="absolute right-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 hover:text-white text-[10px] font-bold border border-slate-600 transition flex items-center gap-1 cursor-pointer"
                           title="Toggle feat catalog">
                     <span>📜</span>
-                    <span>${isOpen ? 'Kapat ▲' : 'Katalog ▼'}</span>
+                    <span>${isOpen ? 'Close ▲' : 'Catalog ▼'}</span>
                   </button>
                 </div>
               </div>
@@ -2955,7 +2955,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                 <div class="bg-slate-900 border border-amber-600/60 rounded-lg p-2 flex items-center justify-between gap-2 shadow-sm">
                   <span class="text-[10px] font-bold text-amber-300 flex items-center gap-1 shrink-0">
                     <span>${isExotic ? '🗡️' : '⚔️'}</span>
-                    <span>${isExotic ? 'Egzotik Silah:' : 'Hedef Silah:'}</span>
+                    <span>${isExotic ? 'Exotic Weapon:' : 'Target Weapon:'}</span>
                   </span>
                   <select onchange="onLevelUpFeatTargetChange(${idx}, this.value)" class="flex-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white font-bold focus:outline-none focus:border-amber-500">
                     <option value="">-- Select a Weapon --</option>
@@ -3267,11 +3267,11 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                 🌟 DM Boon (${countBoon})
               </button>
               <button type="button" onclick="setLevelUpFeatSearchFilter('FLAW', ${slotIdx})" class="${filterPillClass('FLAW')}">
-                ⚠️ Kusur (${countFlaw})
+                ⚠️ Flaw (${countFlaw})
               </button>
             </div>
             <button type="button" onclick="closeLevelUpFeatSearchConsole()" class="text-[10px] text-slate-400 hover:text-white px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 transition font-bold cursor-pointer">
-              ▲ Kapat
+              ▲ Close
             </button>
           </div>
 
@@ -3314,7 +3314,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           if (typeof showDiceTopToast === 'function') {
             showDiceTopToast({
               title: 'Duplicate Feat Blocked',
-              desc: pEvalSlot.alreadyKnownReason || `"${featName}" featine zaten sahipsiniz.`,
+              desc: pEvalSlot.alreadyKnownReason || `You already possess the "${featName}" feat.`,
               type: 'warning'
             });
           }
@@ -3567,17 +3567,17 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         const newCl = isBoonCl ? nextLvl : currentCl + 1;
         clInput.value = newCl;
         if (hint) {
-          hint.innerHTML = `🔮 <b>Primary Caster Ä°lerletiliyor:</b> Yeni CL: <b class="text-white">${newCl}</b>. BÃ¼yÃ¼ yuvalarÄ± ve seviye baÅŸÄ± bÃ¼yÃ¼ gÃ¼cÃ¼ RAW kurallarÄ±na gÃ¶re artÄ±rÄ±lÄ±r.`;
+          hint.innerHTML = `🔮 <b>Primary Caster Advancing:</b> New CL: <b class="text-white">${newCl}</b>. Spell slots and spells per day advance per RAW rules.`;
         }
       } else if (val === 'cl_boon') {
         clInput.value = nextLvl;
         if (hint) {
-          hint.innerHTML = `🌟 <b>DM Boon Etkin:</b> Caster Level (CL) tÃ¼m sÄ±nÄ±flarÄ±nÄ±z dahil toplam karakter seviyesine (<b class="text-white">${nextLvl}</b>) eÅŸitlenir!`;
+          hint.innerHTML = `🌟 <b>DM Boon Active:</b> Caster Level (CL) scales with total character level (<b class="text-white">${nextLvl}</b>) across all classes!`;
         }
       } else if (val === 'secondary') {
         clInput.value = currentCl;
         if (hint) {
-          hint.innerHTML = `✨ <b>Ä°kincil BÃ¼yÃ¼cÃ¼ Ä°lerletiliyor:</b> +1 Secondary Caster Level artÄ±ÅŸÄ± uygulanÄ±r.`;
+          hint.innerHTML = `✨ <b>Secondary Caster Advancing:</b> +1 Secondary Caster Level increase applied.`;
         }
       } else {
         clInput.value = isBoonCl ? nextLvl : currentCl;
@@ -3724,10 +3724,10 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       const hasKey = typeof RuleMaster !== 'undefined' && RuleMaster.getApiKey && !!RuleMaster.getApiKey();
       if (badge) {
         if (hasKey) {
-          badge.textContent = '✨ Gemini AI Aktif';
+          badge.textContent = '✨ Gemini AI Active';
           badge.className = 'text-[9px] font-semibold px-1.5 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-500/50';
         } else {
-          badge.textContent = '📖 RAW Kural Motoru';
+          badge.textContent = '📖 RAW Rule Engine';
           badge.className = 'text-[9px] font-semibold px-1.5 py-0.5 rounded bg-slate-900 text-slate-300 border border-slate-700';
         }
       }
@@ -3832,7 +3832,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       if (badgeEl) {
         if (isPrestige) {
           badgeEl.className = 'text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-950 text-amber-300 border border-amber-600/50';
-          badgeEl.textContent = '👑 Prestij';
+          badgeEl.textContent = '👑 Prestige';
         } else if (isCustom) {
           badgeEl.className = 'text-[9px] font-bold px-1.5 py-0.2 rounded bg-indigo-950 text-indigo-300 border border-indigo-600/50';
           badgeEl.textContent = '⚙️ Custom Class';
@@ -3919,17 +3919,17 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
         if (req.key === 'bab') {
           met = currentBab >= (req.min || 0);
-          info = `(Mevcut: +${currentBab})`;
+          info = `(Current: +${currentBab})`;
         } else if (req.key === 'feat') {
           const reqName = (req.name || '').toLowerCase();
           met = Array.from(featNames).some(f => f.includes(reqName) || reqName.includes(f));
-          info = met ? '(Feat Var)' : '(Feat Eksik)';
+          info = met ? '(Has Feat)' : '(Missing Feat)';
         } else if (req.key === 'arcane') {
           met = hasArcane;
           info = met ? '(Arcane Caster)' : '(No Arcane Spells)';
         } else if (req.key === 'race') {
           met = raceStr.includes((req.val || '').toLowerCase());
-          info = met ? '(Irk Uygun)' : `(${req.val} gerekli)`;
+          info = met ? '(Race Eligible)' : `(Requires ${req.val})`;
         } else {
           met = true;
         }
@@ -4058,7 +4058,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
         rows += `
           <tr class="${rowBg} hover:bg-purple-950/40 transition border-b border-slate-800/80">
-            <td class="px-2.5 py-1.5 text-center font-mono font-bold text-amber-300 text-[11px] whitespace-nowrap">${lvl}. Seviye</td>
+            <td class="px-2.5 py-1.5 text-center font-mono font-bold text-amber-300 text-[11px] whitespace-nowrap">Level ${lvl}</td>
             <td class="px-2.5 py-1.5 text-center font-mono font-bold text-sky-300 text-[11px] whitespace-nowrap">${stats.bab}</td>
             <td class="px-2.5 py-1.5 text-center font-mono text-[10px] whitespace-nowrap ${stats.isGoodFort ? 'text-emerald-400 font-bold' : 'text-slate-400'}">${stats.fort}</td>
             <td class="px-2.5 py-1.5 text-center font-mono text-[10px] whitespace-nowrap ${stats.isGoodRef ? 'text-emerald-400 font-bold' : 'text-slate-400'}">${stats.ref}</td>
@@ -4080,7 +4080,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
               <div>
                 <h4 class="font-extrabold text-white text-xs flex items-center gap-2">
                   <span>${className} Class Progression Table</span>
-                  <span class="text-[9px] font-mono text-purple-300 bg-purple-950/90 px-1.5 py-0.5 rounded border border-purple-600/50">1 - ${maxLvl}. Seviye RAW</span>
+                  <span class="text-[9px] font-mono text-purple-300 bg-purple-950/90 px-1.5 py-0.5 rounded border border-purple-600/50">Levels 1 - ${maxLvl} RAW</span>
                 </h4>
                 <div class="text-[10px] text-slate-400">${def.source || 'D&D 3.5e'} • Hit Die: <strong class="text-amber-300 font-mono">d${def.hd}</strong> • Skills: <strong class="text-purple-300 font-mono">${def.skills || 2}+INT</strong>/level</div>
               </div>
@@ -4090,10 +4090,10 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
               ${!hasFeatures ? `
                 <button type="button" onclick="fetchClassFromRuleMasterAi('${safeName}')" class="text-[10px] text-purple-300 hover:text-white bg-purple-950/80 hover:bg-purple-900 border border-purple-500/50 font-bold px-2 py-1 rounded-lg flex items-center gap-1 transition cursor-pointer" title="Fetch full progression details from sourcebooks via Rule Master AI">
                   <span>✨</span>
-                  <span>Yetenekleri Getir</span>
+                  <span>Fetch Features</span>
                 </button>
               ` : ''}
-              <button type="button" onclick="toggleClassProgression('${safeName}')" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded text-[10px] font-bold transition cursor-pointer" title="Tabloyu kapat">✕ Kapat</button>
+              <button type="button" onclick="toggleClassProgression('${safeName}')" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded text-[10px] font-bold transition cursor-pointer" title="Close table">✕ Close</button>
             </div>
           </div>
 
@@ -4101,7 +4101,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             <table class="w-full text-left border-collapse">
               <thead>
                 <tr class="bg-purple-950/80 text-[10px] uppercase tracking-wider text-purple-200 font-bold border-b border-purple-500/40 sticky top-0 z-10 backdrop-blur">
-                  <th class="px-2.5 py-1.5 text-center w-20">Seviye</th>
+                  <th class="px-2.5 py-1.5 text-center w-20">Level</th>
                   <th class="px-2.5 py-1.5 text-center w-16">BAB</th>
                   <th class="px-2 py-1.5 text-center w-14">Fort</th>
                   <th class="px-2 py-1.5 text-center w-14">Ref</th>
@@ -4659,20 +4659,20 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           ? lvlObj.feats.map(f => typeof f === 'string' ? f : f.name).join(', ')
           : 'Unspecified';
 
-        const statText = getLevelStatIncrease(lvlObj) ? `+1 ${getLevelStatIncrease(lvlObj).toUpperCase()}` : 'Yok';
+        const statText = getLevelStatIncrease(lvlObj) ? `+1 ${getLevelStatIncrease(lvlObj).toUpperCase()}` : 'None';
 
         infoBox.innerHTML = `
           <div class="flex items-center justify-between border-b border-slate-800 pb-2">
             <div>
-              <span class="font-extrabold text-amber-400 text-sm">Seviye ${lvlObj.level} • ${lvlObj.className}</span>
+              <span class="font-extrabold text-amber-400 text-sm">Level ${lvlObj.level} • ${lvlObj.className}</span>
               <div class="text-[10px] text-slate-400 mt-0.5">Your next planned character level</div>
             </div>
-            <span class="badge bg-amber-950/80 text-amber-300 border border-amber-600/70 text-[10px] px-2 py-0.5 font-bold">📋 Planlanan Seviye</span>
+            <span class="badge bg-amber-950/80 text-amber-300 border border-amber-600/70 text-[10px] px-2 py-0.5 font-bold">📋 Planned Level</span>
           </div>
           <div class="grid grid-cols-2 gap-2 text-[11px] pt-1.5 text-slate-300 font-mono">
             <div><span class="text-slate-400 font-sans">Hit Points (HP):</span> <b class="text-emerald-400">+${lvlObj.hpGain}</b> (${lvlObj.hd || 'd8'})</div>
             <div><span class="text-slate-400 font-sans">BAB Gain:</span> <b class="text-sky-400">+${lvlObj.bab}</b></div>
-            <div><span class="text-slate-400 font-sans">Kurtarmalar:</span> F+${lvlObj.fort} R+${lvlObj.ref} W+${lvlObj.will}</div>
+            <div><span class="text-slate-400 font-sans">Saves:</span> F+${lvlObj.fort} R+${lvlObj.ref} W+${lvlObj.will}</div>
             <div><span class="text-slate-400 font-sans">Ability Score:</span> <b class="text-amber-300">${statText}</b></div>
           </div>
           <div class="mt-2 text-[11px] bg-slate-900/90 p-2 rounded-lg border border-slate-800 text-purple-200">
@@ -4760,7 +4760,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           badge.textContent = `Level ${nextLvl} (Planned)`;
           badge.className = 'badge bg-purple-950 text-purple-300 border border-purple-600 text-xs font-bold';
         } else {
-          badge.textContent = `Seviye ${nextLvl}`;
+          badge.textContent = `Level ${nextLvl}`;
           badge.className = 'badge bg-emerald-950 text-emerald-300 border border-emerald-600 text-xs font-bold';
         }
       }
@@ -4802,14 +4802,14 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       const isHuman = (character.race || '').toLowerCase().includes('human');
       if (nextLvl === 1) {
         levelUpModalFeatSlots.push({
-          title: 'Standart Feat (1. Seviye)',
+          title: 'Standard Feat (Level 1)',
           category: 'Regular Feat',
           name: '',
           benefit: ''
         });
         if (isHuman) {
           levelUpModalFeatSlots.push({
-            title: 'Irk Bonusu Feat (Human Bonus Feat)',
+            title: 'Racial Bonus Feat (Human Bonus Feat)',
             category: 'Racial Trait',
             name: '',
             benefit: ''
@@ -4817,7 +4817,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         }
       } else if (qualifies) {
         levelUpModalFeatSlots.push({
-          title: `Standart Feat (Seviye ${nextLvl})`,
+          title: `Standard Feat (Level ${nextLvl})`,
           category: 'Regular Feat',
           name: '',
           benefit: ''
@@ -4833,7 +4833,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           statHint.textContent = `🌟 Level ${nextLvl}: +1 Ability Score Increase Available!`;
           statHint.className = 'badge bg-amber-950 text-amber-300 border border-amber-500 animate-pulse';
         } else {
-          statHint.textContent = '4, 8, 12, 16, 20. Seviyelerde';
+          statHint.textContent = 'At Levels 4, 8, 12, 16, 20';
           statHint.className = 'badge bg-slate-800 text-slate-400 border border-slate-700';
         }
       }
@@ -5020,7 +5020,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           character.spellcasting.cl = nextLvl;
           character.spellcasting.slots = calculateSorcererSlots(nextLvl, character.abilities?.cha || 22, character.spellcasting.slots);
         }
-        rowFeats.push(`🌟 DM Boon: CL = Seviye ${nextLvl}`);
+        rowFeats.push(`🌟 DM Boon: CL = Level ${nextLvl}`);
       }
 
       // 5. HP Gain (User Rule: Toplam HP artar, o anki HP sabit kalır)
@@ -5797,7 +5797,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         icon: '⚡',
         title: 'Special Ability Added',
         breakdown: `"${cleanName}" saved to character.`,
-        total: cleanType ? `[${cleanType}]` : 'Kaydedildi'
+        total: cleanType ? `[${cleanType}]` : 'Saved'
       });
     }
 
@@ -5846,7 +5846,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
               name: clean,
               category: 'Level Feat',
               benefit: '',
-              source: `Seviye ${p.level || '?'}`
+              source: `Level ${p.level || '?'}`
             });
           }
         });
@@ -5901,7 +5901,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
               <span class="text-xs font-black text-amber-400 uppercase tracking-wide">FEATS &amp; SPECIAL ABILITIES SHOWCASE</span>
               <div class="flex items-center gap-1.5">
                 <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-950 text-amber-300 border border-amber-700/60">${featsList.length} Feats</span>
-                <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-purple-950 text-purple-300 border border-purple-700/60">${abilitiesList.length} Yetenek</span>
+                <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-purple-950 text-purple-300 border border-purple-700/60">${abilitiesList.length} Abilities</span>
               </div>
             </div>
             <div class="flex items-center gap-2">
@@ -5957,7 +5957,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
                       <span class="text-sm">⚡</span>
                       <span class="text-xs font-bold text-purple-300 uppercase tracking-wide">Special Abilities &amp; Racial Traits</span>
                     </div>
-                    <span class="text-[10px] text-slate-400 font-normal">Ex, Su, Sp ve Irksal</span>
+                    <span class="text-[10px] text-slate-400 font-normal">Ex, Su, Sp &amp; Racial</span>
                   </div>
                   <div class="flex flex-wrap gap-1.5 min-h-[40px] items-start">
                     ${abilitiesList.length > 0 ? abilitiesList.map(a => {
@@ -6014,7 +6014,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
             <div class="flex items-center gap-2">
               <span class="text-base">🐲</span>
               <div>
-                <span class="font-bold text-indigo-300">Canavar / NPC Statblock Modu:</span>
+                <span class="font-bold text-indigo-300">Monster / NPC Statblock Mode:</span>
                 <span class="text-slate-400 block sm:inline text-[11px]">This creature uses D&D 3.5e monster statblock rules (Exempt from 1-20 Level Progression Table).</span>
               </div>
             </div>
@@ -6086,11 +6086,11 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         hud.innerHTML = `
           <div class="flex items-center gap-3">
             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-950/80 border border-emerald-600/80 text-emerald-300 font-bold">
-              <span>✅ Aktif Seviye:</span>
+              <span>✅ Active Level:</span>
               <strong class="text-white text-sm">${summary.activeLevels}</strong>
             </span>
             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-950/80 border border-sky-600/80 text-sky-300 font-bold">
-              <span>📋 Toplam Plan:</span>
+              <span>📋 Planned Total:</span>
               <strong class="text-white text-sm">${summary.plannedLevels}</strong>
             </span>
             <span class="badge ${isFrac ? 'bg-sky-950 text-sky-300 border-sky-600' : 'bg-slate-800 text-slate-300 border-slate-700'} text-[9px] font-bold">
@@ -6192,11 +6192,11 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           let btnIcon = '⚔️';
           let btnCls = 'bg-amber-950/90 hover:bg-amber-900 text-amber-300 border-amber-500';
           if (contract && contract.mode === 'exact_choices') {
-            btnText = `+ ${lvl.className} Feati (${contract.choices.join(' / ')})`;
+            btnText = `+ ${lvl.className} Feat (${contract.choices.join(' / ')})`;
             btnIcon = '🥋';
             btnCls = 'bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 border-emerald-500';
           } else if (lvl.className === 'Monk') {
-            btnText = '+ Monk Bonus Feati';
+            btnText = '+ Monk Bonus Feat';
             btnIcon = '🥋';
             btnCls = 'bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 border-emerald-500';
           } else if (lvl.className === 'Wizard') {
@@ -6334,7 +6334,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
               <label class="inline-flex items-center gap-1.5 ${isToggleDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}" title="${toggleTitle}">
                 <input type="checkbox" onchange="toggleLevelActive(${idx})" ${isActive ? 'checked' : ''} ${isToggleDisabled ? 'disabled' : ''} class="w-3.5 h-3.5 rounded text-emerald-500 m-0 ${isToggleDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}">
                 <span class="badge ${isActive ? 'bg-emerald-950 text-emerald-300 border-emerald-600' : 'bg-slate-800 text-slate-400 border-slate-700'} text-[9px] px-1.5 py-0.5 leading-none font-bold whitespace-nowrap">
-                  ${isActive ? '✅ Aktif' : '📋 Plan'}
+                  ${isActive ? '✅ ACTIVE' : '📋 PLAN'}
                 </span>
               </label>
             </div>

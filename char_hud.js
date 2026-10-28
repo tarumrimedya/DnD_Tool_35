@@ -429,7 +429,7 @@
       const flatVal = Number(summary.ac?.flatFooted || Math.max(10, acVal - 2));
       const race = summary.race || '';
       const classes = summary.classes || '';
-      const name = summary.name || 'Yeni Karakter';
+      const name = summary.name || 'New Character';
       const isNpc = summary.isNpc !== undefined ? Boolean(summary.isNpc) : Boolean(summary.cr);
 
       const parsedAbilities = summary.abilities ? {
@@ -714,7 +714,7 @@
 
         if (queryId && parsedSaved && parsedSaved.id !== queryId && parsedSaved._hubId !== queryId) {
           // Guard clause: URL requested an ID that does NOT match savedChar, generate clean character
-          character = createCleanDnd35Character({ id: queryId, name: 'Yeni Karakter' });
+          character = createCleanDnd35Character({ id: queryId, name: 'New Character' });
           character._hubId = queryId;
         } else if (parsedSaved) {
           character = parsedSaved;
@@ -1302,8 +1302,8 @@
 
       if (character.campaignInviteCode || character.cloudCampaignId) {
         if (badgeBox) badgeBox.classList.remove('hidden');
-        if (nameEl) nameEl.textContent = character.campaignName || 'Aktif Kampanya';
-        if (codeEl) codeEl.textContent = `KOD: ${character.campaignInviteCode || 'BULUT'}`;
+        if (nameEl) nameEl.textContent = character.campaignName || 'Active Campaign';
+        if (codeEl) codeEl.textContent = `CODE: ${character.campaignInviteCode || 'CLOUD'}`;
       } else {
         if (badgeBox) badgeBox.classList.add('hidden');
       }
@@ -1349,7 +1349,7 @@
           if (typeof showDiceTopToast === 'function') {
             showDiceTopToast({
               title: `Joined Campaign: ${result.campaign.name}!`,
-              formula: `Kod: ${result.campaign.invite_code}`,
+              formula: `Code: ${result.campaign.invite_code}`,
               breakdown: `Your character is now linked to the DM table.`,
               total: 'OK',
               icon: '🎟️'
@@ -1395,7 +1395,7 @@
         if (btnText) btnText.textContent = character.campaignInviteCode;
         if (badge) badge.textContent = character.campaignInviteCode;
       } else {
-        if (btnText) btnText.textContent = 'Kampanya';
+        if (btnText) btnText.textContent = 'Campaign';
         if (badge) badge.textContent = 'Not Linked';
       }
     }
@@ -1634,7 +1634,7 @@
         }
         if (flags.opposedCheckBonus && Object.values(flags.opposedCheckBonus).some(v => v > 0)) {
           const ops = Object.entries(flags.opposedCheckBonus).filter(([k, v]) => v > 0).map(([k, v]) => `+${v} ${k}`).join(', ');
-          badges.push(`<span class="px-2 py-0.5 rounded bg-amber-950 border border-amber-600/50 text-amber-300 font-semibold" title="Manevra Kontrolleri: ${ops}">⚔️ Manevralar: ${ops}</span>`);
+          badges.push(`<span class="px-2 py-0.5 rounded bg-amber-950 border border-amber-600/50 text-amber-300 font-semibold" title="Maneuver Checks: ${ops}">⚔️ Maneuvers: ${ops}</span>`);
         }
         passiveContainer.innerHTML = badges.join(' ');
       }
@@ -2158,23 +2158,23 @@
 
           const detailedParts = [];
           if (bd.armor) detailedParts.push(`Armor +${bd.armor}${armorName ? ` (${armorName})` : ''}`);
-          if (bd.shield) detailedParts.push(`Kalkan +${bd.shield}${shieldName ? ` (${shieldName})` : ''}`);
+          if (bd.shield) detailedParts.push(`Shield +${bd.shield}${shieldName ? ` (${shieldName})` : ''}`);
           if (bd.dex !== undefined) detailedParts.push(`Dex ${bd.dex >= 0 ? '+' + bd.dex : bd.dex}`);
           if (bd.natural) detailedParts.push(`Nat +${bd.natural}`);
           if (bd.deflection) detailedParts.push(`Defl +${bd.deflection}`);
           if (bd.dodge) detailedParts.push(`Dodge +${bd.dodge}`);
-          if (bd.penalty) detailedParts.push(`Ceza ${bd.penalty}`);
+          if (bd.penalty) detailedParts.push(`Penalty ${bd.penalty}`);
 
           const shortParts = [];
           if (bd.armor) shortParts.push(`Armor +${bd.armor}`);
-          if (bd.shield) shortParts.push(`Kalkan +${bd.shield}`);
+          if (bd.shield) shortParts.push(`Shield +${bd.shield}`);
           if (bd.dex !== undefined) shortParts.push(`Dex ${bd.dex >= 0 ? '+' + bd.dex : bd.dex}`);
           if (bd.natural) shortParts.push(`Nat +${bd.natural}`);
           if (bd.deflection) shortParts.push(`Defl +${bd.deflection}`);
           if (bd.dodge) shortParts.push(`Dodge +${bd.dodge}`);
-          if (bd.penalty) shortParts.push(`Ceza ${bd.penalty}`);
+          if (bd.penalty) shortParts.push(`Penalty ${bd.penalty}`);
 
-          acNotesEl.textContent = shortParts.join(' • ') || 'Taban AC 10';
+          acNotesEl.textContent = shortParts.join(' • ') || 'Base AC 10';
           acNotesEl.title = `AC Breakdown: ${detailedParts.join(' • ')} (Base 10) | Click 'Breakdown' for full details.`;
         }
       }
@@ -2236,7 +2236,7 @@
       if (savesSubtitle) {
         const activeSaveBuffs = (character.buffs || []).filter(b => b.active && (b.saveBonus || b.fortBonus || b.refBonus || b.willBonus));
         if (activeSaveBuffs.length > 0) {
-          savesSubtitle.textContent = `✨ Aktif: ${activeSaveBuffs.map(b => b.name).join(', ')}`;
+          savesSubtitle.textContent = `✨ Active: ${activeSaveBuffs.map(b => b.name).join(', ')}`;
           savesSubtitle.className = 'text-[10px] text-emerald-400 text-center truncate';
           savesSubtitle.title = `Active buffs are included in saving throws. Click a save to roll.`;
         } else {
@@ -2973,7 +2973,7 @@
         avatarBox.innerHTML = `<div class="w-full h-full bg-no-repeat" style="background-image: url('${character.portrait}'); background-position: ${pos}; background-size: ${fit};"></div>`;
       } else {
         const race = document.getElementById('profile-edit-race')?.value || character?.race || 'Human';
-        const gender = document.getElementById('profile-edit-gender')?.value || character?.gender || 'Erkek';
+        const gender = document.getElementById('profile-edit-gender')?.value || character?.gender || 'Male';
         const classes = character?.classes || '';
         const emoji = getDynamicCharacterEmoji(race, gender, classes);
         avatarBox.innerHTML = `<span id="profile-modal-avatar-icon">${emoji}</span>`;
@@ -2984,7 +2984,9 @@
       if (!character) return;
 
       const race = character.race || "Human";
-      const gender = character.gender || "Erkek";
+      const rawGender = character.gender || "Male";
+      const gender = /^erkek$/i.test(String(rawGender).trim()) ? "Male" : (/^kad[ıi]n$/i.test(String(rawGender).trim()) ? "Female" : rawGender);
+      if (character.gender && character.gender !== gender) character.gender = gender;
       const classes = character.classes || "";
       const emoji = getDynamicCharacterEmoji(race, gender, classes);
 
@@ -3019,7 +3021,7 @@
           topAvatarBox.innerHTML = `
             <div class="flex flex-col items-center justify-center p-3 text-center">
               <span id="core-top-avatar-icon" class="text-5xl md:text-6xl mb-1">${emoji}</span>
-              <span class="text-[10px] text-slate-400 group-hover:text-indigo-300 transition-colors font-medium">✏️ Portre Ekle</span>
+              <span class="text-[10px] text-slate-400 group-hover:text-indigo-300 transition-colors font-medium">✏️ Add Portrait</span>
             </div>
           `;
         }
@@ -3046,7 +3048,7 @@
           lvlBadge.textContent = `NPC • Lvl ${charLevel}`;
           lvlBadge.className = "badge bg-amber-950 text-amber-300 border border-amber-700/70 text-[10px] font-bold";
         } else {
-          lvlBadge.textContent = `Seviye ${charLevel}`;
+          lvlBadge.textContent = `Level ${charLevel}`;
           lvlBadge.className = "badge bg-emerald-950 text-emerald-300 border border-emerald-700/70 text-[10px] font-bold";
         }
       }
@@ -3067,7 +3069,9 @@
       if (deityEl) deityEl.textContent = character.deity || "-";
 
       const sizeEl = document.getElementById('core-profile-size');
-      if (sizeEl) sizeEl.textContent = character.size || "Medium (Orta)";
+      const cleanSize = String(character.size || "Medium").replace(/\s*\(Orta\)\s*/i, '').trim() || "Medium";
+      if (character.size && character.size !== cleanSize) character.size = cleanSize;
+      if (sizeEl) sizeEl.textContent = cleanSize;
 
       const gaEl = document.getElementById('core-profile-gender-age');
       if (gaEl) gaEl.textContent = `${gender || 'Unspecified'}, ${character.age ? ('Age ' + character.age) : '-'}`;
@@ -3090,9 +3094,12 @@
       updateAlignmentDropdownTrigger(character.alignment || '');
       setVal('profile-edit-deity', character.deity || '');
       updateDeitySpotlightTrigger(character.deity || '');
-      setVal('profile-edit-size', character.size || 'Medium');
-      updateSizeDropdownTrigger(character.size || 'Medium');
-      setVal('profile-edit-gender', character.gender || '');
+      const cleanSize = String(character.size || 'Medium').replace(/\s*\(Orta\)\s*/i, '').trim() || 'Medium';
+      setVal('profile-edit-size', cleanSize);
+      updateSizeDropdownTrigger(cleanSize);
+      const rawGender = character.gender || '';
+      const cleanGender = /^erkek$/i.test(String(rawGender).trim()) ? 'Male' : (/^kad[ıi]n$/i.test(String(rawGender).trim()) ? 'Female' : rawGender);
+      setVal('profile-edit-gender', cleanGender);
       setVal('profile-edit-age', character.age || '');
       setVal('profile-edit-height', character.height || '');
       setVal('profile-edit-weight', character.weight || '');
@@ -3678,7 +3685,7 @@
                   ${isSelected ? '<span class="text-[9px] px-1 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-700 font-mono">Selected</span>' : ''}
                 </div>
                 <div class="text-[9px] text-purple-300/80 font-mono truncate">
-                  ${s.acMod} • ${s.hideMod} • Alan: ${s.space}
+                  ${s.acMod} • ${s.hideMod} • Space: ${s.space}
                 </div>
               </div>
             </div>
@@ -3712,7 +3719,7 @@
         if (labelEl) labelEl.textContent = sizeId;
         if (iconEl) iconEl.textContent = '👤';
       } else {
-        if (labelEl) labelEl.textContent = 'Medium (Orta)';
+        if (labelEl) labelEl.textContent = 'Medium';
         if (iconEl) iconEl.textContent = '👤';
       }
     }
@@ -4133,7 +4140,7 @@
                     ${isSelected ? '<span class="text-[9px] px-1 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-700 font-mono">Selected</span>' : ''}
                   </div>
                   <div class="text-[9px] text-purple-300/80 font-mono truncate">
-                    ${d.alignment || 'Any'} • Silah: ${d.weapon || '-'} • Alanlar: ${domainList}
+                    ${d.alignment || 'Any'} • Weapon: ${d.weapon || '-'} • Domains: ${domainList}
                   </div>
                 </div>
               </div>
@@ -4763,7 +4770,7 @@
     function renderNpcStudioManeuversList() {
       const container = document.getElementById('npc-studio-maneuvers-list');
       const badge = document.getElementById('npc-maneuvers-count-badge');
-      if (badge) badge.textContent = `${_npcStudioManeuvers.length} Manevra`;
+      if (badge) badge.textContent = `${_npcStudioManeuvers.length} Maneuvers`;
       if (!container) return;
 
       if (_npcStudioManeuvers.length === 0) {
@@ -4936,7 +4943,7 @@
           icon: '⚡',
           title: 'Statblock Updated',
           breakdown: `${character.name} statblock values and ability pools saved successfully.`,
-          total: character.cr ? `CR ${character.cr}` : 'Kaydedildi'
+          total: character.cr ? `CR ${character.cr}` : 'Saved'
         });
       }
     }
@@ -5272,10 +5279,10 @@ function renderManualStatsPanel() {
       if (badgeEl) {
         if (remaining === 0) {
           badgeEl.className = 'px-2.5 py-1 rounded-lg font-mono font-bold text-xs flex items-center gap-1.5 bg-emerald-950 text-emerald-300 border border-emerald-600';
-          badgeEl.innerHTML = `<span>✅ Tam Dengeli: <strong>0</strong> / ${budget} Puan</span>`;
+          badgeEl.innerHTML = `<span>✅ Balanced: <strong>0</strong> / ${budget} Pts</span>`;
         } else if (remaining > 0) {
           badgeEl.className = 'px-2.5 py-1 rounded-lg font-mono font-bold text-xs flex items-center gap-1.5 bg-amber-950 text-amber-300 border border-amber-600';
-          badgeEl.innerHTML = `<span>⏳ Kalan: <strong>${remaining}</strong> / ${budget} Puan</span>`;
+          badgeEl.innerHTML = `<span>⏳ Remaining: <strong>${remaining}</strong> / ${budget} Pts</span>`;
         } else {
           badgeEl.className = 'px-2.5 py-1 rounded-lg font-mono font-bold text-xs flex items-center gap-1.5 bg-rose-950 text-rose-300 border border-rose-600 animate-pulse';
           badgeEl.innerHTML = `<span>⚠️ Over Budget: <strong>${remaining}</strong> / ${budget} Points!</span>`;
@@ -5388,7 +5395,7 @@ function renderManualStatsPanel() {
         showDiceTopToast({
           icon: '⚡',
           title: `${statLabel} Rerolled: ${newRoll.total}`,
-          breakdown: `Yeni Zarlar: [${newRoll.rolls.join(', ')}] (Elenen: ${newRoll.rolls[newRoll.droppedIndex]})${rerollNote}`
+          breakdown: `New Rolls: [${newRoll.rolls.join(', ')}] (Dropped: ${newRoll.rolls[newRoll.droppedIndex]})${rerollNote}`
         });
       }
     }
@@ -5528,7 +5535,7 @@ function renderManualStatsPanel() {
           const optionsHtml = statDistState.rolledDice.map(r => {
             const isSelected = (r.assignedTo === s.key);
             const otherOwner = (r.assignedTo && r.assignedTo !== s.key) ? `(${r.assignedTo.toUpperCase()})` : '';
-            return `<option value="${r.id}" ${isSelected ? 'selected' : ''}>Toplam: ${r.total} [${r.rolls.join(',')}] ${otherOwner}</option>`;
+            return `<option value="${r.id}" ${isSelected ? 'selected' : ''}>Total: ${r.total} [${r.rolls.join(',')}] ${otherOwner}</option>`;
           }).join('');
 
           return `
@@ -5537,7 +5544,7 @@ function renderManualStatsPanel() {
                 <span class="w-10 text-center font-black text-xs font-mono px-1.5 py-0.5 rounded bg-purple-950/70 border border-purple-800 text-purple-300">${s.label}</span>
                 <div>
                   <div class="text-[11px] font-bold text-slate-200 leading-tight">${s.name}</div>
-                  <div class="text-[10px] text-slate-400 font-mono">Nihai: <strong class="text-amber-400 font-bold">${val}</strong> (${modStr})</div>
+                  <div class="text-[10px] text-slate-400 font-mono">Final: <strong class="text-amber-400 font-bold">${val}</strong> (${modStr})</div>
                 </div>
               </div>
               <select onchange="onRolledStatSelect('${s.key}', this.value)" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white font-mono font-bold cursor-pointer max-w-[130px]">
@@ -5599,7 +5606,7 @@ function renderManualStatsPanel() {
       }).join('');
 
       if (totalModEl) {
-        totalModEl.textContent = `Toplam Mod: ${sumMods >= 0 ? '+' : ''}${sumMods}`;
+        totalModEl.textContent = `Total Mod: ${sumMods >= 0 ? '+' : ''}${sumMods}`;
       }
     }
 
@@ -5719,9 +5726,9 @@ function renderManualStatsPanel() {
       if (typeof showDiceTopToast === 'function') {
         showDiceTopToast({
           icon: typeof getDiceIconSvg === 'function' ? getDiceIconSvg('20', 'w-6 h-6 text-amber-400') : '⚡',
-          title: 'Karakter & Statlar Kaydedildi',
+          title: 'Character & Stats Saved',
           breakdown: 'Identity details and base ability scores updated. HP, AC, Attack, Skills, and Saving Throws recalculated by the rule engine.',
-          total: 'TAMAMLANDI'
+          total: 'SAVED'
         });
       } else {
         alert('✅ Character profile and base ability scores updated successfully!');
@@ -5790,7 +5797,7 @@ function renderManualStatsPanel() {
         showDiceTopToast({
           icon: '💥',
           title: 'Damage Roll',
-          breakdown: `${evaluated.rollDesc} • Kalan Can: ${character.hp.current}/${character.hp.max}${character.hp.temp > 0 ? ` (+${character.hp.temp} Temp)` : ''}`,
+          breakdown: `${evaluated.rollDesc} • Remaining HP: ${character.hp.current}/${character.hp.max}${character.hp.temp > 0 ? ` (+${character.hp.temp} Temp)` : ''}`,
           total: `-${evaluated.total} HP`
         });
       }
@@ -5867,7 +5874,7 @@ function renderManualStatsPanel() {
       });
     }
 
-    function applySpellSelfDamage(amount, sourceName = 'Kan Fedas\u0131', showToast = true, toastOptions = { stack: true }) {
+    function applySpellSelfDamage(amount, sourceName = 'Blood Sacrifice', showToast = true, toastOptions = { stack: true }) {
       if (!character || !character.hp) return;
       let dmgLeft = Math.max(0, Number(amount) || 0);
       if (dmgLeft <= 0) return;
@@ -5899,10 +5906,10 @@ function renderManualStatsPanel() {
     // ==========================================
     const PERIODIC_HP_PRESETS = {
       damage: [
-        { name: 'Zehir (Poison)', amount: '1d4', rounds: 3, infinite: false, icon: '🧪' },
-        { name: 'Yanma (Fire/Burn)', amount: '1d6', rounds: 2, infinite: false, icon: '🔥' },
-        { name: 'Kanama (Bleed)', amount: '1', rounds: 5, infinite: false, icon: '🩸' },
-        { name: 'Asit (Acid)', amount: '1d6+2', rounds: 3, infinite: false, icon: '⚡' },
+        { name: 'Poison', amount: '1d4', rounds: 3, infinite: false, icon: '🧪' },
+        { name: 'Fire / Burn', amount: '1d6', rounds: 2, infinite: false, icon: '🔥' },
+        { name: 'Bleed', amount: '1', rounds: 5, infinite: false, icon: '🩸' },
+        { name: 'Acid', amount: '1d6+2', rounds: 3, infinite: false, icon: '⚡' },
         { name: 'Hex / Necrotic Damage', amount: '1d6+5', rounds: 3, infinite: false, icon: '💀' }
       ],
       heal: [
@@ -5998,7 +6005,7 @@ function renderManualStatsPanel() {
         const colorClass = isDmg 
           ? 'bg-rose-950/60 hover:bg-rose-900/80 text-rose-200 border-rose-700/50 hover:border-rose-500' 
           : 'bg-emerald-950/60 hover:bg-emerald-900/80 text-emerald-200 border-emerald-700/50 hover:border-emerald-500';
-        const durLabel = p.infinite ? '∞' : `${p.rounds}t`;
+        const durLabel = p.infinite ? '∞' : `${p.rounds}rd`;
         const sign = isDmg ? '-' : '+';
         return `
           <button type="button" onclick="applyPeriodicPreset(${idx})" class="px-2 py-1 rounded text-[10px] font-bold border transition flex items-center gap-1 ${colorClass} cursor-pointer active:scale-95 shadow-sm">
@@ -6083,7 +6090,7 @@ function renderManualStatsPanel() {
           } else {
             character.hp.current = Math.min(Number(character.hp.max) || 0, (Number(character.hp.current) || 0) + evalRes.total);
           }
-          initialRollDesc = evalRes.isDice ? ` [Zar: ${evalRes.rollDesc}]` : ` (${evalRes.total} HP)`;
+          initialRollDesc = evalRes.isDice ? ` [Roll: ${evalRes.rollDesc}]` : ` (${evalRes.total} HP)`;
         }
         if (eff.roundsLeft !== null) {
           eff.roundsLeft--;

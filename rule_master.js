@@ -23,7 +23,7 @@ const RuleMaster = {
       scope: "Local SRD Compendium (3,522+ entries) & Parametric LLM Engine (Zero latency, 100% RAW 3.5e)",
       url: "#",
       type: "Local JSON & LLM",
-      status: "Aktif",
+      status: "Active",
       role: "Instant local Spotlight search and parametric rule generation engine"
     },
     {
@@ -32,17 +32,17 @@ const RuleMaster = {
       scope: "PHB, DMG, MM Core Rules, Feats, Spells, Magic Items",
       url: "https://www.d20srd.org/index.html",
       mirror: "http://dndsrd.net",
-      type: "Temiz HTML",
-      status: "Aktif",
+      type: "Clean HTML",
+      status: "Active",
       role: "Primary core rulebook reference and web SRD index"
     },
     {
       priority: 3,
       name: "Extended Splatbooks Index (srd.dndtools)",
-      scope: "Complete serisi, MIC, Spell Compendium, Frostburn, Sandstorm",
+      scope: "Complete series, MIC, Spell Compendium, Frostburn, Sandstorm",
       url: "https://srd.dndtools.org",
       type: "Comprehensive HTML Index",
-      status: "Aktif",
+      status: "Active",
       role: "Extended non-core splatbook archive"
     }
   ],
@@ -60,7 +60,7 @@ const RuleMaster = {
     { code: "CA", name: "Complete Arcane", cat: "Splatbook", note: "Warlock, Warmage, invocations, and metamagic feats", url: "https://srd.dndtools.org" },
     { code: "CAd", name: "Complete Adventurer", cat: "Splatbook", note: "Scout/Ninja/Spellthief, stealth & mobility feats", url: "https://srd.dndtools.org" },
     { code: "CM", name: "Complete Mage", cat: "Splatbook", note: "Arcane specialist options and Reserve Feats", url: "https://srd.dndtools.org" },
-    { code: "CS", name: "Complete Scoundrel", cat: "Splatbook", note: "Taktiksel hileler, Skill Tricks, Luck Feats", url: "https://srd.dndtools.org" },
+    { code: "CS", name: "Complete Scoundrel", cat: "Splatbook", note: "Tactical tricks, Skill Tricks, Luck Feats", url: "https://srd.dndtools.org" },
     { code: "CC", name: "Complete Champion", cat: "Splatbook", note: "Deity affiliations and Domain Devotion feats", url: "https://srd.dndtools.org" },
     { code: "PHB2", name: "Player's Handbook II", cat: "Core Expansion", note: "Expanded feats, Knight, Beguiler, Duskblade, Dragon Shaman", url: "https://srd.dndtools.org" },
     { code: "FB", name: "Frostburn", cat: "Environment", note: "Arctic environment rules, cold spells, and gear", url: "https://srd.dndtools.org" },
@@ -73,8 +73,8 @@ const RuleMaster = {
     { code: "XPH", name: "Expanded Psionics Handbook", cat: "Psionics", note: "Psionic powers, classes, and psionic feats", url: "https://www.d20srd.org" },
     { code: "RoS", name: "Races of Stone", cat: "Races", note: "Dwarf and Gnome options, Goliath race, exotic armor", url: "https://srd.dndtools.org" },
     { code: "RoD", name: "Races of Destiny", cat: "Races", note: "Human, Half-Elf, Half-Orc, and Illumian options", url: "https://srd.dndtools.org" },
-    { code: "RotW", name: "Races of the Wild", cat: "Races", note: "Elf ve Halfling mekanikleri, Raptorans", url: "https://srd.dndtools.org" },
-    { code: "RotD", name: "Races of the Dragon", cat: "Races", note: "Ejderhalar, Dragonborn of Bahamut, Koboldlar", url: "https://srd.dndtools.org" },
+    { code: "RotW", name: "Races of the Wild", cat: "Races", note: "Elf and Halfling mechanics, Raptorans", url: "https://srd.dndtools.org" },
+    { code: "RotD", name: "Races of the Dragon", cat: "Races", note: "Dragons, Dragonborn of Bahamut, Kobolds", url: "https://srd.dndtools.org" },
     { code: "HoB", name: "Heroes of Battle", cat: "Campaign", note: "Mass combat, battlefield mechanics, and commander feats", url: "https://srd.dndtools.org" },
     { code: "HoH", name: "Heroes of Horror", cat: "Campaign", note: "Taint, fear & horror mechanics, Dread Necromancer", url: "https://srd.dndtools.org" },
     { code: "Dscape", name: "Dungeonscape", cat: "Exploration", note: "Dungeon hazards, Factotum class, and alternate class features", url: "https://srd.dndtools.org" },
@@ -3063,14 +3063,14 @@ Return valid JSON only matching:
 
           ${statPills.length > 0 ? `
             <div class="flex flex-wrap items-center gap-1.5">
-              <span class="text-[10px] uppercase font-bold text-slate-400">Etkiler & Zar:</span>
+              <span class="text-[10px] uppercase font-bold text-slate-400">Effects & Dice:</span>
               ${statPills.map(p => `<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 font-mono font-bold">${p}</span>`).join('')}
             </div>
           ` : ''}
 
           ${modes.length > 0 ? `
             <div class="flex flex-wrap items-center gap-1.5">
-              <span class="text-[10px] uppercase font-bold text-purple-300">Alt Modlar:</span>
+              <span class="text-[10px] uppercase font-bold text-purple-300">Sub-Modes:</span>
               ${modes.map(m => `<span class="badge bg-purple-950/80 text-purple-200 border border-purple-700/60 font-mono text-[10px]">⚡ ${m.name}</span>`).join('')}
             </div>
           ` : ''}
@@ -3081,12 +3081,12 @@ Return valid JSON only matching:
 
           <div class="flex flex-wrap items-center justify-between text-[11px] text-slate-400 pt-1">
             <div class="flex items-center gap-3">
-              <span>Aksiyon: <b class="text-amber-400">${item.action || 'Passive'}</b></span>
+              <span>Action: <b class="text-amber-400">${item.action || 'Passive'}</b></span>
               <span>Duration/Use: <b class="text-purple-300">${item.duration || 'Continuous'}</b></span>
             </div>
             <div class="flex items-center gap-3">
               <span>Weight: <b class="text-slate-300">${item.weight || 0} lbs</b></span>
-              <span>Fiyat: <b class="text-amber-300">${item.cost || 0} gp</b></span>
+              <span>Price: <b class="text-amber-300">${item.cost || 0} gp</b></span>
             </div>
           </div>
         </div>
@@ -3444,7 +3444,7 @@ Return valid JSON only matching:
         if (typeof showDiceTopToast === 'function') {
           showDiceTopToast({
             title: 'Item Added',
-            breakdown: `"${item.name}" envanter havuzuna eklendi.`,
+            breakdown: `"${item.name}" added to inventory pool.`,
             icon: '🎒'
           });
         } else {
@@ -3574,7 +3574,7 @@ Return valid JSON only matching:
     });
 
     const countBadge = document.getElementById('wa-count-badge');
-    if (countBadge) countBadge.textContent = `${items.length} Ekipman`;
+    if (countBadge) countBadge.textContent = `${items.length} Equipment`;
 
     if (!items.length) {
       container.innerHTML = '<div class="col-span-full p-8 text-center text-slate-500 bg-slate-950/40 rounded-xl border border-slate-800">No matching weapons or armor found.</div>';
@@ -3912,7 +3912,7 @@ Return valid JSON only matching:
                       </div>
                     </div>
                     <div class="text-[11px] text-slate-300">${mode.benefit || '-'}</div>
-                    ${modeDice ? `<div class="text-[10px] font-mono text-emerald-400 inline-flex items-center gap-1">${typeof getFormulaDiceIconSvg === 'function' ? getFormulaDiceIconSvg(modeDice, 'w-3 h-3 text-emerald-400 shrink-0') : ''}<span>Zar: ${modeDice}</span></div>` : ''}
+                    ${modeDice ? `<div class="text-[10px] font-mono text-emerald-400 inline-flex items-center gap-1">${typeof getFormulaDiceIconSvg === 'function' ? getFormulaDiceIconSvg(modeDice, 'w-3 h-3 text-emerald-400 shrink-0') : ''}<span>Dice: ${modeDice}</span></div>` : ''}
                   </div>
                 `;
               }).join('')}
@@ -4015,7 +4015,7 @@ Return valid JSON only matching:
               </a>
             ` : `
               <span class="text-xs text-emerald-400 flex items-center gap-1 font-semibold">
-                <span>⚡</span> <span>Dahili Motor</span>
+                <span>⚡</span> <span>Built-In Engine</span>
               </span>
             `}
           </div>
@@ -4277,14 +4277,14 @@ Return valid JSON only matching:
 
           ${statPills.length > 0 ? `
             <div class="flex flex-wrap items-center gap-1">
-              <span class="text-[9px] uppercase font-bold text-slate-400">Etkiler:</span>
+              <span class="text-[9px] uppercase font-bold text-slate-400">Effects:</span>
               ${statPills.map(p => `<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 font-mono text-[9px] font-bold">${p}</span>`).join('')}
             </div>
           ` : ''}
 
           ${modes.length > 0 ? `
             <div class="flex flex-wrap items-center gap-1">
-              <span class="text-[9px] uppercase font-bold text-purple-300">Alt Modlar:</span>
+              <span class="text-[9px] uppercase font-bold text-purple-300">Sub-Modes:</span>
               ${modes.map(m => `<span class="badge bg-purple-950 text-purple-200 border border-purple-700 font-mono text-[9px]">⚡ ${m.name}</span>`).join('')}
             </div>
           ` : ''}
@@ -4295,12 +4295,12 @@ Return valid JSON only matching:
 
           <div class="flex flex-wrap items-center justify-between text-[10px] text-slate-400 pt-0.5">
             <div>
-              <span>Aksiyon: <b class="text-amber-400">${item.action || 'Passive'}</b></span> • 
+              <span>Action: <b class="text-amber-400">${item.action || 'Passive'}</b></span> • 
               <span>Duration: <b class="text-purple-300">${item.duration || 'Continuous'}</b></span>
             </div>
             <div>
               <span>Weight: <b>${item.weight || 0} lbs</b></span> • 
-              <span>Fiyat: <b class="text-amber-300">${item.cost || 0} gp</b></span>
+              <span>Price: <b class="text-amber-300">${item.cost || 0} gp</b></span>
             </div>
           </div>
         </div>
@@ -4777,7 +4777,7 @@ Return valid JSON only matching:
         recommendedFeat = 'Improved Initiative';
         featBenefit = 'Grants a +4 bonus on Initiative checks so you act first in combat.';
         featCategory = 'Regular Feat';
-        featPrereq = 'Yok';
+        featPrereq = 'None';
       } else if (isWarblade && !hasFeat('adaptive style')) {
         recommendedFeat = 'Adaptive Style';
         featBenefit = 'Change and recover your readied Tome of Battle maneuvers as a single full-round action.';
@@ -4787,7 +4787,7 @@ Return valid JSON only matching:
         recommendedFeat = 'Iron Will';
         featBenefit = 'Grants a +2 bonus on Will saving throws, shoring up martial classes\' weakest save.';
         featCategory = 'Regular Feat';
-        featPrereq = 'Yok';
+        featPrereq = 'None';
       } else {
         recommendedFeat = 'Weapon Focus';
         featBenefit = 'Grants a +1 bonus on all attack rolls with the selected weapon.';
@@ -4799,7 +4799,7 @@ Return valid JSON only matching:
         recommendedFeat = 'Improved Initiative';
         featBenefit = '+4 bonus on Initiative checks, allowing spellcasters to land battlefield-control spells (Haste, Slow, Fireball) first.';
         featCategory = 'Regular Feat';
-        featPrereq = 'Yok';
+        featPrereq = 'None';
       } else if (!hasFeat('empower spell')) {
         recommendedFeat = 'Empower Spell';
         featBenefit = 'All variable, numeric effects of an empowered spell are increased by 50% (+2 spell slot level).';
@@ -4809,13 +4809,13 @@ Return valid JSON only matching:
         recommendedFeat = 'Spell Focus';
         featBenefit = 'Add +1 to the Difficulty Class (DC) for all saving throws against spells from your chosen school.';
         featCategory = 'Regular Feat';
-        featPrereq = 'Yok';
+        featPrereq = 'None';
       }
     } else {
       recommendedFeat = 'Improved Initiative';
       featBenefit = 'Grants a +4 bonus on Initiative checks.';
       featCategory = 'Regular Feat';
-      featPrereq = 'Yok';
+      featPrereq = 'None';
     }
 
     // 3. Synergy notes
@@ -4864,7 +4864,7 @@ Return valid JSON only matching:
             <p class="text-[11px] text-purple-100/90 leading-relaxed">${featBenefit}</p>
             <div class="text-[10px] text-purple-400 italic">Prerequisites: ${featPrereq}</div>
             <button type="button" onclick="applyCopilotFeat('${recommendedFeat}', '${featBenefit.replace(/'/g, "\\'")}', '${featCategory}')" class="w-full mt-1 py-1 rounded bg-purple-600/30 hover:bg-purple-600 text-purple-200 hover:text-white border border-purple-500/50 text-[10px] font-bold transition flex items-center justify-center gap-1 cursor-pointer">
-              <span>⚡</span><span>Bu Feat'i Yuvaya Doldur</span>
+              <span>⚡</span><span>Fill Feat Slot</span>
             </button>
           </div>
         </div>
@@ -4872,7 +4872,7 @@ Return valid JSON only matching:
         <div class="p-2 rounded-lg bg-indigo-950/30 border border-indigo-500/30 space-y-1">
           <div class="text-[11px] font-bold text-indigo-300 flex items-center justify-between">
             <span>⚔️ Tactical Synergy & Class Guide</span>
-            <button type="button" onclick="applyCopilotNotes('${notes.replace(/'/g, "\\'")}')" class="text-[10px] text-indigo-300 hover:text-white underline cursor-pointer">Notlara Aktar</button>
+            <button type="button" onclick="applyCopilotNotes('${notes.replace(/'/g, "\\'")}')" class="text-[10px] text-indigo-300 hover:text-white underline cursor-pointer">Copy to Notes</button>
           </div>
           <p class="text-[11px] text-slate-300 leading-relaxed">${notes}</p>
         </div>
@@ -4981,7 +4981,7 @@ ${customQuery ? `User Question: ${customQuery}` : 'Provide the optimal D&D 3.5e 
         .replace(/\n\n/g, '<div class="h-1.5"></div>');
 
       const recFeat = parsedJson?.recommendedFeat || (ctx.isFeatLevel ? 'Power Attack' : '');
-      const featBenefit = parsedJson?.featBenefit || 'D&D 3.5e RAW tavsiyesi';
+      const featBenefit = parsedJson?.featBenefit || 'D&D 3.5e RAW recommendation';
       const featCategory = parsedJson?.featCategory || 'Regular Feat';
       const recStat = parsedJson?.recommendedStat || (ctx.isStatLevel ? 'str' : null);
       const notes = parsedJson?.notes || `${targetClass} Level ${targetLevel} progression completed.`;
@@ -5003,7 +5003,7 @@ ${customQuery ? `User Question: ${customQuery}` : 'Provide the optimal D&D 3.5e 
                   <div class="text-xs font-black text-white">+1 ${recStat.toUpperCase()}</div>
                 </div>
                 <button type="button" onclick="applyCopilotStat('${recStat}')" class="px-2.5 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white font-bold text-[10px] shadow transition cursor-pointer">
-                  Uygula
+                  Apply
                 </button>
               </div>
             ` : ''}
@@ -5015,7 +5015,7 @@ ${customQuery ? `User Question: ${customQuery}` : 'Provide the optimal D&D 3.5e 
                   <div class="text-xs font-black text-white truncate" title="${recFeat}">${recFeat}</div>
                 </div>
                 <button type="button" onclick="applyCopilotFeat('${recFeat}', '${featBenefit.replace(/'/g, "\\'")}', '${featCategory}')" class="px-2.5 py-1 rounded bg-purple-600 hover:bg-purple-500 text-white font-bold text-[10px] shadow transition cursor-pointer shrink-0">
-                  Yuvaya Doldur
+                  Fill Slot
                 </button>
               </div>
             ` : ''}
