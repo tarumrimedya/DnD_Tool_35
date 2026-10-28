@@ -30285,9 +30285,19 @@ function renderManualStatsPanel() {
 
     function getAllWarlockInvocations() {
       const map = new Map();
+      if (typeof window !== 'undefined' && window.SrdCompendium && window.SrdCompendium._ready) {
+        window.SrdCompendium.getAllLoaded().filter(i => i && i.category === 'Warlock Invocation').forEach(inv => {
+          map.set((inv.name || '').toLowerCase(), {
+            ...inv,
+            prereq: inv.prerequisites || inv.prereq || (`Warlock Level ${inv.minLevel || 1}`),
+            benefit: inv.shortDescription || inv.benefit || inv.description || ''
+          });
+        });
+      }
       if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
         window.BUNDLED_SRD_CORE_CATALOG.filter(i => i && (i.category === 'Warlock Invocation' || (i.type === 'Special Ability' && i.category === 'Warlock Invocation'))).forEach(inv => {
-          map.set(inv.name.toLowerCase(), inv);
+          const k = (inv.name || '').toLowerCase();
+          if (k && !map.has(k)) map.set(k, inv);
         });
       }
       if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
@@ -31990,14 +32000,55 @@ function renderManualStatsPanel() {
       return 10;
     }
 
-    function getCombinedFeatCatalog() {
+    function getCombinedFeatCatalog(includeInvocations = false) {
       const map = new Map();
-      DND35_FEAT_CATALOG.forEach(f => map.set(f.name.toLowerCase(), { ...f }));
+      const skipPlaceholders = new Set([
+        'weapon proficiency (no weapon selected)',
+        'spell focus (no spell school selected)',
+        'greater spell focus (no spell school selected)',
+        'skill focus (not set)',
+        'improved natural attack (no weapon set)'
+      ]);
+      const allInvs = (typeof getAllWarlockInvocations === 'function') ? getAllWarlockInvocations() : [];
+      const invocationByName = new Map();
+      allInvs.forEach(inv => {
+        if (inv && inv.name) {
+          invocationByName.set(inv.name.toLowerCase().trim(), inv);
+        }
+      });
+
+      DND35_FEAT_CATALOG.forEach(f => {
+        const k = (f.name || '').toLowerCase().trim();
+        if (!includeInvocations && (f.category === 'Warlock Invocation' || invocationByName.has(k))) return;
+        map.set(k, { ...f });
+      });
+      // 1. Canonical V2 SrdCompendium (452 SRD Feats with structured prerequisites)
+      if (typeof window !== 'undefined' && window.SrdCompendium && window.SrdCompendium._ready) {
+        window.SrdCompendium.getAllLoaded('Feat').forEach(f => {
+          if (!f || !f.name) return;
+          const k = f.name.toLowerCase().trim();
+          if (!k || skipPlaceholders.has(k)) return;
+          if (f.category === 'Warlock Invocation' || invocationByName.has(k)) return;
+          map.set(k, {
+            ...f,
+            prereq: f.prerequisites || f.prereq || '-',
+            benefit: f.shortDescription || f.benefit || f.description || '',
+            prereqStruct: f.prereqStruct || {}
+          });
+        });
+      }
+      // 2. Fallback / Supplement from BUNDLED_SRD_CORE_CATALOG
       if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
         window.BUNDLED_SRD_CORE_CATALOG.filter(i => i && i.type === 'Feat').forEach(f => {
-          const k = (f.name || '').toLowerCase();
-          if (k && !map.has(k)) {
-            map.set(k, { ...f });
+          const k = (f.name || '').toLowerCase().trim();
+          if (k && !skipPlaceholders.has(k) && f.category !== 'Warlock Invocation' && !invocationByName.has(k)) {
+            const existing = map.get(k);
+            if (!existing) {
+              map.set(k, { ...f, prereq: f.prerequisites || f.prereq || '-' });
+            } else if ((!existing.prereq || existing.prereq === '-') && (f.prerequisites || f.prereq) && (f.prerequisites || f.prereq) !== '-') {
+              existing.prereq = f.prerequisites || f.prereq;
+              existing.prerequisites = f.prerequisites || f.prereq;
+            }
           }
         });
       }
@@ -32006,6 +32057,8 @@ function renderManualStatsPanel() {
       (masterDb || []).forEach(m => {
         if (!m || !m.name) return;
         const nameStr = String(m.name).trim();
+        const key = nameStr.toLowerCase();
+        if (!key || skipPlaceholders.has(key)) return;
 
         // STRICT FILTER: Exclude equipment child items, attachments, gems, socketed enhancements, and secondary powers
         const isChildItem = m.isChild === true 
@@ -32025,28 +32078,44 @@ function renderManualStatsPanel() {
           return;
         }
 
+        // Strict Warlock Invocation check (even if saved in masterDb with lost category)
+        const isInv = m.category === 'Warlock Invocation' || invocationByName.has(key);
+        if (isInv && !includeInvocations) return;
+
         if (t === 'feat' || t === 'special ability' || t === 'dm grant' || t === 'flaw' || t === 'racial trait') {
-          const key = nameStr.toLowerCase();
-          if (key) {
-            map.set(key, {
-              name: m.name,
-              category: t === 'special ability' ? 'Special Ability' : (t === 'dm grant' ? 'DM Boon' : (t === 'flaw' ? 'Flaw' : (m.category || 'General'))),
-              prereq: m.prereq || '-',
-              source: m.source || 'Master DB',
-              benefit: m.benefit || m.description || ''
-            });
+          const existingCanonical = map.get(key);
+          if (existingCanonical) {
+            // Preserve canonical SRD prerequisites, category, scope, and fighter bonus flag!
+            if (!existingCanonical.benefit && (m.shortDescription || m.benefit || m.description)) {
+              existingCanonical.benefit = m.shortDescription || m.benefit || m.description;
+            }
+            return;
           }
-        }
-      });
-      getAllWarlockInvocations().forEach(inv => {
-        const k = (inv.name || '').toLowerCase();
-        if (k && !map.has(k)) {
-          map.set(k, {
-            ...inv,
-            category: 'Warlock Invocation'
+          const canonicalInv = invocationByName.get(key);
+          map.set(key, {
+            ...m,
+            name: m.name,
+            category: isInv
+              ? 'Warlock Invocation'
+              : (t === 'special ability' ? 'Special Ability' : (t === 'dm grant' ? 'DM Boon' : (t === 'flaw' ? 'Flaw' : (m.category || 'General')))),
+            prereq: (canonicalInv ? (canonicalInv.prerequisites || canonicalInv.prereq || `Warlock Level ${canonicalInv.minLevel || 1}`) : null) || m.prerequisites || m.prereq || '-',
+            source: m.source || 'Master DB',
+            benefit: m.shortDescription || m.benefit || m.description || ''
           });
         }
       });
+      if (includeInvocations) {
+        allInvs.forEach(inv => {
+          const k = (inv.name || '').toLowerCase().trim();
+          if (k && !map.has(k)) {
+            map.set(k, {
+              ...inv,
+              category: 'Warlock Invocation',
+              prereq: inv.prerequisites || inv.prereq || (`Warlock Level ${inv.minLevel || 1}`)
+            });
+          }
+        });
+      }
       return Array.from(map.values());
     }
 
@@ -32096,15 +32165,16 @@ function renderManualStatsPanel() {
 
       filtered.forEach(f => {
         const isOwned = ownedSet.has(f.name.toLowerCase().trim());
-        const pEval = typeof checkFeatPrerequisites === 'function' ? checkFeatPrerequisites(f) : { isAlreadyKnownFromClass: false };
+        const pEval = typeof checkFeatPrerequisites === 'function' ? checkFeatPrerequisites(f) : { allMet: true, isAlreadyKnownFromClass: false };
         const isClassKnown = Boolean(pEval && pEval.isAlreadyKnownFromClass);
+        const isQualified = Boolean(pEval.allMet !== false && !isClassKnown);
         const isFlaw = (f.category === 'Flaw' || f.name.toLowerCase().startsWith('flaw:'));
         const isRacial = (f.category === 'Racial Trait' || (f.type && f.type.toLowerCase().includes('racial')));
         const lvl1Only = (isFlaw || isRacial || (f.prereq && f.prereq.toLowerCase().includes('1st level')));
         const charLvl = character ? (character.level || 1) : 1;
 
         const itemDiv = document.createElement('div');
-        itemDiv.className = `p-3 rounded-xl border transition flex items-start justify-between gap-3 ${isOwned ? 'bg-slate-900/40 border-emerald-800/50' : 'bg-slate-950/80 border-slate-800 hover:border-purple-500/60'}`;
+        itemDiv.className = `p-3 rounded-xl border transition flex items-start justify-between gap-3 ${isOwned ? 'bg-slate-900/40 border-emerald-800/50' : (isQualified ? 'bg-slate-950/80 border-slate-800 hover:border-purple-500/60' : 'bg-slate-950/40 border-slate-800/70 opacity-75')}`;
         const safeName = f.name.replace(/'/g, "\\'");
         itemDiv.innerHTML = `
           <div class="space-y-1 flex-1">
@@ -32113,16 +32183,18 @@ function renderManualStatsPanel() {
               <span class="badge ${isFlaw ? 'bg-rose-950 text-rose-300 border border-rose-800' : (isRacial ? 'bg-teal-950 text-teal-300 border border-teal-800' : 'bg-purple-950 text-purple-300 border border-purple-800')} text-[9px]">${f.category || 'General'}</span>
               <span class="text-[10px] text-slate-400 font-mono">📚 ${f.source || 'PHB'}</span>
               ${lvl1Only ? `<span class="badge bg-amber-950 text-amber-300 border border-amber-700/80 text-[9px] font-bold">⚠️ Yalnızca 1. Seviye</span>` : ''}
-              ${f.prereq && f.prereq !== '-' ? `<span class="text-[10px] text-amber-400 font-mono">Önkoşul: ${f.prereq}</span>` : ''}
+              ${f.prereq && f.prereq !== '-' ? `<span class="text-[10px] ${isQualified ? 'text-emerald-400' : 'text-rose-400 font-bold'} font-mono">Önkoşul: ${f.prereq} ${isQualified ? '✓' : '✗'}</span>` : ''}
             </div>
             <p class="text-[11px] text-slate-300 leading-relaxed">${f.benefit || ''}</p>
           </div>
           <div class="shrink-0">
             ${isOwned && !isFeatPickerForLevelUp
               ? `<span class="px-2.5 py-1 rounded-lg bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px] font-bold inline-block">✅ Alındı</span>`
-              : `<button onclick="selectFeatFromPicker('${safeName}')" class="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow transition whitespace-nowrap">
-                  ${isFeatPickerForLevelUp ? '⬆️ Bu Seviye İçin Seç' : '➕ Öğren'}
-                </button>`
+              : (!isQualified
+                ? `<button disabled type="button" title="Önkoşullar karşılanmıyor" class="px-3 py-1.5 rounded-lg bg-slate-800 text-rose-300/80 border border-rose-800/50 font-bold text-xs opacity-60 cursor-not-allowed whitespace-nowrap">🔒 Önkoşul Eksik</button>`
+                : `<button onclick="selectFeatFromPicker('${safeName}')" class="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow transition whitespace-nowrap">
+                    ${isFeatPickerForLevelUp ? '⬆️ Bu Seviye İçin Seç' : '➕ Öğren'}
+                  </button>`)
             }
           </div>
         `;
@@ -32138,6 +32210,20 @@ function renderManualStatsPanel() {
         source: 'D&D 3.5e',
         benefit: ''
       };
+      const isBoonEntry = (entry.category === 'DM Boon' || entry.category === 'DM Grant');
+      if (!isBoonEntry && typeof checkFeatPrerequisites === 'function') {
+        const pEval = checkFeatPrerequisites(entry);
+        if (pEval && !pEval.allMet) {
+          if (typeof showDiceTopToast === 'function') {
+            showDiceTopToast({
+              title: 'Önkoşul Karşılanmıyor',
+              desc: `"${entry.name}" için gereken önkoşullar karşılanmıyor (${pEval.rawPrereq || 'Önkoşul Eksik'}).`,
+              type: 'warning'
+            });
+          }
+          return;
+        }
+      }
 
       const isFlaw = (entry.category === 'Flaw' || entry.name.toLowerCase().startsWith('flaw:'));
       const isRacial = (entry.category === 'Racial Trait' || (entry.type && entry.type.toLowerCase().includes('racial')));
@@ -32664,7 +32750,7 @@ function renderManualStatsPanel() {
         }
       }
 
-      // Initial filter based on preferredCategory
+      // Initial filter based on preferredCategory (default to QUALIFIED for Regular & Human Bonus Feats)
       if (preferredCategory === 'Class Bonus Feat') {
         quickFeatSearchFilter = 'FIGHTER';
       } else if (preferredCategory === 'DM Boon') {
@@ -32673,6 +32759,8 @@ function renderManualStatsPanel() {
         quickFeatSearchFilter = 'FLAW';
       } else if (preferredCategory === 'Warlock Invocation') {
         quickFeatSearchFilter = 'INVOCATION';
+      } else if (preferredCategory === 'Regular Feat' || preferredCategory === 'Racial Trait') {
+        quickFeatSearchFilter = 'QUALIFIED';
       } else {
         quickFeatSearchFilter = 'ALL';
       }
@@ -32797,12 +32885,24 @@ function renderManualStatsPanel() {
       const isBoonFeat = f => Boolean(f.category === 'DM Boon' || f.category === 'DM Grant' || f.type === 'DM Grant' || (f.source && f.source.toLowerCase().includes('campaign')));
       const isFlawFeat = f => Boolean(f.category === 'Flaw' || f.type === 'Flaw' || (f.name || '').toLowerCase().startsWith('flaw:'));
 
-      // If category is Warlock Invocation, prepare invocations list
+      // Warlock Invocations are ONLY allowed when the slot is explicitly 'Warlock Invocation' or 'DM Boon' (NEVER in Regular Feat, Human Bonus Feat / Racial Trait, or Class Bonus Feat)
       let invocationsList = [];
-      if (typeof DND35_WARLOCK_INVOCATIONS !== 'undefined' && Array.isArray(DND35_WARLOCK_INVOCATIONS)) {
-        const lvlObj = (activeQuickLevelIndex !== null && character.levelProgression) ? character.levelProgression[activeQuickLevelIndex] : null;
-        const lvlNum = lvlObj ? lvlObj.level : (character.level || 1);
-        const maxTier = (typeof getWarlockMaxTierForLevel === 'function') ? getWarlockMaxTierForLevel(lvlNum) : 'Least';
+      const isStandardFeatSlot = ['Regular Feat', 'Racial Trait', 'Class Bonus Feat', 'Flaw'].includes(categoryVal);
+      const warlockAllowedHere = !isStandardFeatSlot && ((typeof isWarlockEnabledForLevel === 'function') ? isWarlockEnabledForLevel(activeQuickLevelIndex) : false);
+      if (warlockAllowedHere) {
+        const prog = character.levelProgression || [];
+        const limitIdx = (activeQuickLevelIndex !== null && activeQuickLevelIndex !== undefined) ? Number(activeQuickLevelIndex) : (prog.length - 1);
+        let warlockClassLvl = 0;
+        for (let i = 0; i <= limitIdx && i < prog.length; i++) {
+          if (prog[i] && prog[i].active !== false && (prog[i].className || '').toLowerCase() === 'warlock') {
+            warlockClassLvl++;
+          }
+        }
+        if (warlockClassLvl === 0 && warlockAllowedHere) {
+          // Warlock Boon active on non-Warlock class: use character level at limitIdx
+          warlockClassLvl = Math.max(1, limitIdx + 1);
+        }
+        const maxTier = (typeof getWarlockMaxTierForLevel === 'function') ? getWarlockMaxTierForLevel(warlockClassLvl) : 'Least';
         const tierHierarchy = ['Least', 'Lesser', 'Greater', 'Dark'];
         const maxIdx = tierHierarchy.indexOf(maxTier);
         invocationsList = getAllWarlockInvocations().filter(inv => {
@@ -32813,9 +32913,10 @@ function renderManualStatsPanel() {
           category: 'Warlock Invocation',
           type: 'Warlock Invocation',
           tier: inv.tier,
-          benefit: inv.desc || inv.benefit || '',
-          source: 'Complete Arcane',
-          prereq: '-'
+          minLevel: inv.minLevel || (inv.tier === 'Dark' ? 16 : (inv.tier === 'Greater' ? 11 : (inv.tier === 'Lesser' ? 6 : 1))),
+          benefit: inv.desc || inv.benefit || inv.shortDescription || '',
+          source: inv.source || 'Complete Arcane',
+          prereq: inv.prerequisites || inv.prereq || (`Warlock Level ${inv.minLevel || 1}`)
         }));
       }
 
@@ -32980,6 +33081,7 @@ function renderManualStatsPanel() {
                  </div>`
               : `<div class="text-[9px] text-slate-400 pt-0.5">Önkoşulsuz</div>`);
 
+          const allowUnqualifiedOverride = (categoryVal === 'DM Boon');
           const buttonHtml = isAlreadyKnown
             ? `<button disabled type="button"
                        title="${(pEval.alreadyKnownReason || 'Zaten Sahipsiniz').replace(/"/g, '&quot;')}"
@@ -32987,13 +33089,20 @@ function renderManualStatsPanel() {
                  <span>🔒</span>
                  <span>Zaten Sahipsiniz</span>
                </button>`
-            : `<button type="button"
-                       onclick="selectFeatForQuickLevel('${safeName}', true)"
-                       title="${isQualified ? 'Bu feati doğrudan seviyeye ekle' : 'Önkoşul eksik olsa da bu seviyeye ekle'}"
-                       class="px-2.5 py-1 rounded text-[11px] font-bold shadow transition shrink-0 cursor-pointer flex items-center gap-1 ${isQualified ? 'bg-emerald-600 hover:bg-emerald-500 text-white active:scale-95' : 'bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-600/40'}">
-                 <span>${isQualified ? '🎯' : '⚠️'}</span>
-                 <span>${isQualified ? 'Seç ve Ekle' : 'Yine de Ekle'}</span>
-               </button>`;
+            : ((!isQualified && !allowUnqualifiedOverride)
+              ? `<button disabled type="button"
+                         title="D&D 3.5e RAW: Önkoşullar karşılanmadığı için bu feat seçilemez"
+                         class="px-2.5 py-1 rounded text-[11px] font-bold shadow shrink-0 opacity-50 cursor-not-allowed bg-slate-800 text-rose-300/80 border border-rose-800/50 flex items-center gap-1">
+                   <span>🔒</span>
+                   <span>Önkoşul Eksik</span>
+                 </button>`
+              : `<button type="button"
+                         onclick="selectFeatForQuickLevel('${safeName}', true)"
+                         title="${isQualified ? 'Bu feati doğrudan seviyeye ekle' : 'DM Lütfu (Boon) olarak önkoşulsuz ekle'}"
+                         class="px-2.5 py-1 rounded text-[11px] font-bold shadow transition shrink-0 cursor-pointer flex items-center gap-1 ${isQualified ? 'bg-emerald-600 hover:bg-emerald-500 text-white active:scale-95' : 'bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-600/40'}">
+                   <span>${isQualified ? '🎯' : '🌟'}</span>
+                   <span>${isQualified ? 'Seç ve Ekle' : 'Boon Olarak Ekle'}</span>
+                 </button>`);
 
           return `
             <div class="p-2.5 rounded-lg border transition ${isAlreadyKnown ? 'bg-slate-950/40 border-slate-800/80' : (isQualified ? 'bg-slate-950/80 hover:bg-slate-900 border-slate-800 hover:border-emerald-500/60' : 'bg-slate-950/50 hover:bg-slate-900/60 border-slate-800/80 hover:border-rose-600/40 opacity-85 hover:opacity-100')} space-y-1.5">
@@ -33094,10 +33203,32 @@ function renderManualStatsPanel() {
             name: inv.name,
             category: 'Warlock Invocation',
             benefit: inv.desc || inv.benefit || '',
-            source: 'Complete Arcane',
-            prereq: '-'
+            source: inv.source || 'Complete Arcane',
+            prereq: inv.prerequisites || inv.prereq || (`Warlock Level ${inv.minLevel || 1}`)
           };
         }
+      }
+
+      const currentCatVal = document.getElementById('quick-feat-category')?.value || 'Regular Feat';
+      if (found && found.category === 'Warlock Invocation' && currentCatVal !== 'Warlock Invocation' && currentCatVal !== 'DM Boon') {
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            title: 'Warlock Invocation Seçilemez',
+            desc: `"${featName}" bir Warlock Yakarışıdır (Invocation); İnsan Bonus Feati, Standart Feat veya Sınıf Bonus Feati yuvasına eklenemez.`,
+            type: 'warning'
+          });
+        }
+        return;
+      }
+      if (currentCatVal !== 'DM Boon' && pEvalPre && !pEvalPre.allMet) {
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            title: 'Önkoşul Karşılanmıyor',
+            desc: `"${featName}" için gereken önkoşullar karşılanmıyor (${pEvalPre.rawPrereq || 'Önkoşul Eksik'}).`,
+            type: 'warning'
+          });
+        }
+        return;
       }
 
       const nameInput = document.getElementById('quick-feat-name');
@@ -33171,7 +33302,12 @@ function renderManualStatsPanel() {
       if (!found) {
         const inv = getAllWarlockInvocations().find(i => i.name.toLowerCase() === featName.toLowerCase());
         if (inv) {
-          found = { name: inv.name, prereq: '-', benefit: inv.desc || '' };
+          found = {
+            name: inv.name,
+            category: 'Warlock Invocation',
+            prereq: inv.prerequisites || inv.prereq || (`Warlock Level ${inv.minLevel || 1}`),
+            benefit: inv.desc || inv.benefit || ''
+          };
         }
       }
 
@@ -33295,6 +33431,28 @@ function renderManualStatsPanel() {
       const category = document.getElementById('quick-feat-category')?.value || 'Regular Feat';
       const benefit = document.getElementById('quick-feat-benefit')?.value.trim() || '';
 
+      const isInvEntry = getAllWarlockInvocations().some(i => (i.name || '').toLowerCase() === featName.toLowerCase());
+      if (isInvEntry && category !== 'Warlock Invocation' && category !== 'DM Boon') {
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            title: 'Warlock Invocation Seçilemez',
+            desc: `"${featName}" bir Warlock Yakarışıdır (Invocation); İnsan Bonus Feati, Standart Feat veya Sınıf Bonus Feati yuvasına eklenemez.`,
+            type: 'warning'
+          });
+        }
+        return;
+      }
+      if (category !== 'DM Boon' && pEvalConfirm && !pEvalConfirm.allMet) {
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            title: 'Önkoşul Karşılanmıyor',
+            desc: `"${featName}" için gereken önkoşullar karşılanmıyor (${pEvalConfirm.rawPrereq || 'Önkoşul Eksik'}).`,
+            type: 'warning'
+          });
+        }
+        return;
+      }
+
       const row = character.levelProgression[activeQuickLevelIndex];
       if (!Array.isArray(row.feats)) row.feats = [];
       if (!Array.isArray(row.specialAbilities)) row.specialAbilities = [];
@@ -33362,12 +33520,14 @@ function renderManualStatsPanel() {
 
       if (Array.isArray(masterDb)) {
         const clean = featName.toLowerCase().trim();
-        if (!masterDb.some(m => (m.name || '').toLowerCase().trim() === clean)) {
+        const inCanonical = getCombinedFeatCatalog(true).some(f => (f.name || '').toLowerCase().trim() === clean);
+        if (!inCanonical && !masterDb.some(m => (m.name || '').toLowerCase().trim() === clean)) {
           masterDb.push({
             name: featName,
             type: (category === 'Special Ability') ? 'Special Ability' : 'Feat',
+            category: category,
             slot: 'None',
-            prereq: '-',
+            prereq: (pEvalConfirm && pEvalConfirm.rawPrereq) ? pEvalConfirm.rawPrereq : '-',
             source: `Level ${row.level} (${row.className})`,
             benefit: benefit,
             description: benefit
@@ -33975,9 +34135,17 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       function checkFeatPrerequisites(feat, slotIdx = 0, targetLevelIdx = null) {
         if (!feat) return { hasPrereqs: false, allMet: true, checks: [], rawPrereq: '', isAlreadyKnownFromClass: false, alreadyKnownReason: '', isAlreadyTaken: false, alreadyKnownBadgeText: '' };
 
+        // Hydrate full feat definition from catalog if only { name } was passed
+        let resolvedFeat = feat;
         const featName = (feat.name || '').trim();
+        if (!feat.prereq && !feat.prerequisites && !feat.category && featName) {
+          const baseClean = featName.replace(/\(.*?\)/g, '').trim().toLowerCase();
+          const catPool = getCombinedFeatCatalog(true);
+          const match = catPool.find(f => (f.name || '').toLowerCase() === featName.toLowerCase()) || catPool.find(f => (f.name || '').toLowerCase() === baseClean);
+          if (match) resolvedFeat = { ...match, ...feat, name: featName };
+        }
 
-        // Slot Contract RAW Prerequisite Bypass (e.g. Monk 1st/2nd/6th level bonus feats)
+        // Slot Contract RAW Prerequisite Bypass (e.g. Monk 1st/2nd/6th level bonus feats, Ranger combat style feats)
         if (typeof activeQuickFeatSlotContract !== 'undefined' && activeQuickFeatSlotContract && activeQuickFeatSlotContract.bypassPrereqs === true) {
           const fn = featName.toLowerCase();
           if (Array.isArray(activeQuickFeatSlotContract.choices) && activeQuickFeatSlotContract.choices.some(c => c.toLowerCase() === fn || fn.includes(c.toLowerCase()))) {
@@ -33985,7 +34153,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
               hasPrereqs: true,
               allMet: true,
               checks: [{ label: 'RAW Sınıf Muafiyeti', met: true, info: 'D&D 3.5e RAW kuralı gereğince önkoşulsuz kazanılır' }],
-              rawPrereq: feat.prereq || '-',
+              rawPrereq: resolvedFeat.prereq || resolvedFeat.prerequisites || '-',
               isAlreadyKnownFromClass: false,
               alreadyKnownReason: '',
               isAlreadyTaken: false,
@@ -33993,12 +34161,13 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             };
           }
         }
+
         const featNameNorm = featName.toLowerCase().replace(/[^a-z0-9]/g, '');
         let isAlreadyKnownFromClass = false;
         let alreadyKnownReason = '';
         let isAlreadyTaken = false;
 
-        // Unified D&D 3.5e Proficiencies lookup via RuleEngine
+        // 1. Unified D&D 3.5e Proficiencies lookup via RuleEngine
         let prof = null;
         if (typeof RuleEngine !== 'undefined' && RuleEngine.getCharacterProficiencies) {
           prof = RuleEngine.getCharacterProficiencies(character, targetLevelIdx);
@@ -34010,7 +34179,6 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           };
         }
 
-        // Check if this feat itself is an Armor / Shield / Weapon Proficiency already granted by class/existing feats
         if (featNameNorm.includes('armorproficiencyheavy') || featNameNorm.includes('heavyarmorproficiency')) {
           if (prof.armors.heavy) {
             isAlreadyKnownFromClass = true;
@@ -34064,7 +34232,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           }
         }
 
-        // 2. D&D 3.5e RAW Duplicate Feat Evaluation (Unless explicitly repeatable, feats can only be taken once)
+        // 2. D&D 3.5e RAW Duplicate Feat Evaluation
         if (!isAlreadyKnownFromClass) {
           const takenCheck = isFeatAlreadyTakenByCharacter(featName, {
             slotIdx: (targetLevelIdx === null || targetLevelIdx === undefined) ? slotIdx : undefined,
@@ -34081,7 +34249,20 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           ? '🔒 Zaten Alındı'
           : (isAlreadyKnownFromClass ? '🔒 Sınıf Ustalığı (Zaten Var)' : '');
 
-        const rawPrereq = (feat.prereq || feat.prerequisites || '').trim();
+        // 3. Determine effective rawPrereq (including implicit Metamagic / Caster Only / Warlock Invocation rules)
+        let rawPrereq = String(resolvedFeat.prerequisites || resolvedFeat.prereq || '').trim();
+        const catLow = String(resolvedFeat.category || '').toLowerCase();
+        const scopeLow = String(resolvedFeat.scope || '').toLowerCase();
+        const pStruct = resolvedFeat.prereqStruct || {};
+
+        if (catLow === 'warlock invocation' && (!rawPrereq || rawPrereq === '-')) {
+          rawPrereq = `Warlock Level ${resolvedFeat.minLevel || 1}`;
+        } else if ((catLow === 'metamagic' || scopeLow === 'caster only' || pStruct.requiresSpellcasting) && (!rawPrereq || rawPrereq === '-' || rawPrereq.toLowerCase() === 'none')) {
+          rawPrereq = 'Ability to cast spells';
+        } else if (pStruct.requiresPsionics && (!rawPrereq || rawPrereq === '-' || rawPrereq.toLowerCase() === 'none')) {
+          rawPrereq = 'Psionic ability (Manifester or Wild Talent)';
+        }
+
         if (!rawPrereq || rawPrereq === '-' || rawPrereq.toLowerCase() === 'none') {
           return {
             hasPrereqs: false,
@@ -34096,6 +34277,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           };
         }
 
+        // 4. Compute Character Progression State up to targetLevelIdx (or upcoming Level-Up Wizard level)
         const isTableMode = (targetLevelIdx !== null && targetLevelIdx !== undefined);
         const prog = character.levelProgression || [];
         const allDefs = (typeof getAvailableClassDefs === 'function') ? getAvailableClassDefs() : {};
@@ -34104,16 +34286,16 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         let prospectiveBab = 0;
         let selectedClassName = '';
         let def = null;
+        let prospectiveProg = [];
         const abilities = {};
 
         if (isTableMode) {
-          // Table Mode: Evaluate up to targetLevelIdx
-          const rowIdx = Math.max(0, Math.min(Number(targetLevelIdx), prog.length - 1));
+          const rowIdx = Math.max(0, Math.min(Number(targetLevelIdx), Math.max(0, prog.length - 1)));
           const targetRow = prog[rowIdx] || {};
           selectedClassName = targetRow.className || (character.classes?.split(' ')[0]) || 'Fighter';
           def = allDefs[selectedClassName] || (typeof DND35_CLASS_DEFS !== 'undefined' ? DND35_CLASS_DEFS[selectedClassName] : null) || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
 
-          const prospectiveProg = prog.slice(0, rowIdx + 1);
+          prospectiveProg = prog.length > 0 ? prog.slice(0, rowIdx + 1) : [{ className: selectedClassName, hd: `d${def.hd || 8}`, hpGain: 0, active: true }];
           if (typeof RuleEngine !== 'undefined' && RuleEngine.calculateProgression) {
             const sys = character.settings?.progressionSystem || 'standard';
             const isHuman = (character.race || '').toLowerCase().includes('human');
@@ -34126,7 +34308,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
           statKeys.forEach(stat => {
             let val = Number(character.baseAbilities?.[stat] ?? character.abilities?.[stat] ?? 10);
-            for (let i = 0; i <= rowIdx; i++) {
+            for (let i = 0; i <= rowIdx && i < prog.length; i++) {
               const r = prog[i];
               if (r && r.statIncrease && r.statIncrease.toLowerCase() === stat) {
                 val += 1;
@@ -34135,12 +34317,11 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             abilities[stat] = val;
           });
         } else {
-          // Level-Up Wizard Mode: Evaluate upcoming level
-          const nextLvl = prog.length + 1;
           const defaultClass = (character.classes?.split(' ')[0]) || (prog[0]?.className) || 'Fighter';
           selectedClassName = document.getElementById('lvlup-class-select')?.value || defaultClass;
           def = allDefs[selectedClassName] || (typeof DND35_CLASS_DEFS !== 'undefined' ? DND35_CLASS_DEFS[selectedClassName] : null) || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
 
+          prospectiveProg = [...prog, { className: selectedClassName, hd: `d${def.hd || 8}`, hpGain: 0, active: true }];
           const babInputVal = parseInt(document.getElementById('lvlup-bab-input')?.value, 10);
           if (!isNaN(babInputVal)) {
             prospectiveBab = babInputVal;
@@ -34148,7 +34329,6 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             const sys = character.settings?.progressionSystem || 'standard';
             const isHuman = (character.race || '').toLowerCase().includes('human');
             const intMod = (typeof RuleEngine.getAbilityMod === 'function') ? RuleEngine.getAbilityMod(character.abilities?.int || 10) : Math.floor(((character.abilities?.int || 10) - 10) / 2);
-            const prospectiveProg = [...prog, { className: selectedClassName, hd: `d${def.hd}`, hpGain: 0, active: true }];
             const calc = RuleEngine.calculateProgression(prospectiveProg, { system: sys, isHuman, intMod });
             prospectiveBab = calc?.baseBab ?? (Number(character.bab) || 0);
           } else {
@@ -34163,72 +34343,149 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           });
         }
 
-        // 3. Known Feats Set
+        // Count active levels per class & total character level
+        const classCounts = {};
+        let totalCharacterLevel = 0;
+        prospectiveProg.forEach(r => {
+          if (!r || r.active === false) return;
+          const cKey = String(r.className || selectedClassName || 'Fighter').trim().toLowerCase();
+          classCounts[cKey] = (classCounts[cKey] || 0) + 1;
+          totalCharacterLevel++;
+        });
+        if (totalCharacterLevel === 0) {
+          totalCharacterLevel = Math.max(1, Number(character.level) || 1);
+          const cKey = String(selectedClassName || 'Fighter').trim().toLowerCase();
+          classCounts[cKey] = totalCharacterLevel;
+        }
+
+        // 5. Known Feats & Special Abilities Set
         const knownFeats = new Set();
-        const normalizeFeatName = str => (str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const normalizeFeatName = str => (str || '').toLowerCase().replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').replace(/[^a-z0-9]/g, '');
 
         if (Array.isArray(character.feats)) {
           character.feats.forEach(f => {
             const name = typeof f === 'string' ? f : f?.name;
-            if (name) knownFeats.add(normalizeFeatName(name));
+            if (name) {
+              knownFeats.add(normalizeFeatName(name));
+              knownFeats.add(normalizeFeatName(name.replace(/\(.*?\)/g, '')));
+            }
           });
         }
         if (Array.isArray(character.specialAbilities)) {
           character.specialAbilities.forEach(s => {
             const name = typeof s === 'string' ? s : s?.name;
-            if (name) knownFeats.add(normalizeFeatName(name));
+            if (name) {
+              knownFeats.add(normalizeFeatName(name));
+              knownFeats.add(normalizeFeatName(name.replace(/\(.*?\)/g, '')));
+            }
           });
         }
 
-        if (isTableMode) {
-          const rowLimit = Number(targetLevelIdx);
-          if (Array.isArray(prog)) {
-            prog.slice(0, rowLimit).forEach(lvl => {
-              if (lvl.active !== false && Array.isArray(lvl.feats)) {
-                lvl.feats.forEach(f => {
-                  const name = typeof f === 'string' ? f : f?.name;
-                  if (name) knownFeats.add(normalizeFeatName(name));
-                });
-              }
-              if (lvl.active !== false && Array.isArray(lvl.specialAbilities)) {
-                lvl.specialAbilities.forEach(s => {
-                  const name = typeof s === 'string' ? s : s?.name;
-                  if (name) knownFeats.add(normalizeFeatName(name));
-                });
-              }
-            });
-          }
-        } else {
-          if (Array.isArray(prog)) {
-            prog.forEach(lvl => {
-              if (lvl.active !== false && Array.isArray(lvl.feats)) {
-                lvl.feats.forEach(f => {
-                  const name = typeof f === 'string' ? f : f?.name;
-                  if (name) knownFeats.add(normalizeFeatName(name));
-                });
-              }
-            });
-          }
-          if (Array.isArray(levelUpModalFeatSlots)) {
-            for (let i = 0; i < slotIdx; i++) {
-              const priorSlot = levelUpModalFeatSlots[i];
-              if (priorSlot && priorSlot.name) {
-                knownFeats.add(normalizeFeatName(priorSlot.name));
-              }
+        const progSliceForFeats = isTableMode ? prog.slice(0, Number(targetLevelIdx)) : prog;
+        if (Array.isArray(progSliceForFeats)) {
+          progSliceForFeats.forEach(lvl => {
+            if (lvl && lvl.active !== false) {
+              (lvl.feats || []).forEach(f => {
+                const name = typeof f === 'string' ? f : f?.name;
+                if (name) {
+                  knownFeats.add(normalizeFeatName(name));
+                  knownFeats.add(normalizeFeatName(name.replace(/\(.*?\)/g, '')));
+                }
+              });
+              (lvl.specialAbilities || []).forEach(s => {
+                const name = typeof s === 'string' ? s : s?.name;
+                if (name) {
+                  knownFeats.add(normalizeFeatName(name));
+                  knownFeats.add(normalizeFeatName(name.replace(/\(.*?\)/g, '')));
+                }
+              });
+            }
+          });
+        }
+        if (!isTableMode && Array.isArray(levelUpModalFeatSlots)) {
+          for (let i = 0; i < slotIdx; i++) {
+            const priorSlot = levelUpModalFeatSlots[i];
+            if (priorSlot && priorSlot.name) {
+              knownFeats.add(normalizeFeatName(priorSlot.name));
+              knownFeats.add(normalizeFeatName(priorSlot.name.replace(/\(.*?\)/g, '')));
             }
           }
         }
 
-        // 4. Skills list
-        const skillsList = Array.isArray(character.skills) ? character.skills : [];
+        // 6. Strict D&D 3.5e RAW Spellcasting, Warlock, SLA, Psionic & Class Feature Capabilities
+        const FULL_CASTER_CLASSES = new Set([
+          'wizard', 'sorcerer', 'cleric', 'druid', 'bard', 'duskblade',
+          'warmage', 'beguiler', 'dread necromancer', 'favored soul',
+          'spirit shaman', 'archivist', 'wu jen', 'shugenja', 'healer', 'adept'
+        ]);
+        const HALF_CASTER_MIN4_CLASSES = new Set(['paladin', 'ranger', 'hexblade', 'spellthief', 'sohei']);
+        const PRESTIGE_CASTER_CLASSES = new Set([
+          'abjurant champion', 'eldritch knight', 'arcane archer', 'mystic theurge',
+          'spellsword', 'jade phoenix mage', 'archmage', 'hierophant', 'loremaster',
+          'thaumaturgist', 'red wizard', 'assassin', 'blackguard'
+        ]);
+        const PSIONIC_CLASSES = new Set([
+          'psion', 'psychic warrior', 'soulknife', 'wilder', 'erudite', 'ardent', 'lurk', 'divine mind'
+        ]);
+        const MARTIAL_ADEPT_CLASSES = new Set(['crusader', 'swordsage', 'warblade', 'bloodstorm blade', 'jade phoenix mage']);
 
-        // 5. Caster Level & Spellcasting Capability (Parametric: checks metadata instead of hardcoded strings)
-        const curCl = Number(character.spellcasting?.cl) || 0;
-        const hasSpellProg = Boolean(def.spellProgression && def.spellProgression !== 'none');
-        const hasCasterRole = Boolean(def.role && (def.role.toLowerCase().includes('caster') || def.role.toLowerCase().includes('spell')));
-        const hasCasterDesc = Boolean(def.description && (def.description.toLowerCase().includes('büyü') || def.description.toLowerCase().includes('spell') || def.description.toLowerCase().includes('caster')));
-        const hasCharacterSpells = Boolean(character.spellcasting && (curCl > 0 || (character.spellcasting.slots && character.spellcasting.slots.length > 0)));
-        const isCaster = (curCl > 0) || hasCharacterSpells || hasSpellProg || hasCasterRole || hasCasterDesc;
+        let calculatedCasterLevel = 0;
+        let hasTrueSpellcastingClass = false;
+        let calculatedManifesterLevel = 0;
+        let hasPsionicClass = false;
+
+        Object.entries(classCounts).forEach(([cName, cLvl]) => {
+          if (FULL_CASTER_CLASSES.has(cName) || PRESTIGE_CASTER_CLASSES.has(cName)) {
+            hasTrueSpellcastingClass = true;
+            calculatedCasterLevel += cLvl;
+          } else if (HALF_CASTER_MIN4_CLASSES.has(cName) && cLvl >= 4) {
+            hasTrueSpellcastingClass = true;
+            calculatedCasterLevel += Math.max(1, Math.floor(cLvl / 2));
+          } else if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getClassSpellSlots === 'function') {
+            const slotCheck = RuleEngine.getClassSpellSlots(cName, cLvl, 20);
+            if (slotCheck && slotCheck.hasSpellcasting) {
+              hasTrueSpellcastingClass = true;
+              calculatedCasterLevel += cLvl;
+            }
+          }
+          if (PSIONIC_CLASSES.has(cName)) {
+            hasPsionicClass = true;
+            calculatedManifesterLevel += cLvl;
+          }
+        });
+
+        const explicitCl = Number(character.spellcasting?.cl) || 0;
+        const hasCharacterSpells = Array.isArray(character.spells) && character.spells.length > 0;
+        const isCaster = hasTrueSpellcastingClass || (explicitCl > 0 && hasCharacterSpells);
+        const effectiveCasterLevel = isCaster ? Math.max(calculatedCasterLevel, explicitCl, 1) : 0;
+
+        // Warlock & Eldritch Blast capability
+        const warlockBoonEnabled = (typeof isWarlockEnabledForLevel === 'function') ? isWarlockEnabledForLevel(targetLevelIdx) : false;
+        const warlockLevel = (classCounts['warlock'] || 0) > 0
+          ? classCounts['warlock']
+          : (warlockBoonEnabled ? totalCharacterLevel : 0);
+        const isWarlock = warlockLevel > 0;
+        const hasEldritchBlast = isWarlock || knownFeats.has('eldritchblast');
+
+        // Spell-Like Ability (SLA) capability
+        const raceLow = String(character.race || '').toLowerCase();
+        const hasRacialSla = ['gnome', 'drow', 'tiefling', 'aasimar', 'duergar', 'svirfneblin'].some(r => raceLow.includes(r));
+        const hasAbilitySla = Array.isArray(character.specialAbilities) && character.specialAbilities.some(a => {
+          const n = String(typeof a === 'string' ? a : (a?.name || '')).toLowerCase();
+          return n.includes('(sp)') || n.includes('spell-like') || n.includes('invocation');
+        });
+        const hasSpellLikeAbility = isWarlock || isCaster || hasRacialSla || hasAbilitySla;
+        const slaCasterLevel = hasSpellLikeAbility ? Math.max(effectiveCasterLevel, warlockLevel, totalCharacterLevel) : 0;
+
+        // Psionics capability
+        const isPsionic = hasPsionicClass || knownFeats.has('wildtalent') || knownFeats.has('hiddentalent');
+        const effectiveManifesterLevel = isPsionic ? Math.max(calculatedManifesterLevel, 1) : 0;
+
+        // Martial Adept capability
+        const isMartialAdept = Object.keys(classCounts).some(c => MARTIAL_ADEPT_CLASSES.has(c)) || knownFeats.has('martialstudy');
+
+        // Skills list
+        const skillsList = Array.isArray(character.skills) ? character.skills : [];
 
         // Split prereq string into comma or semicolon separated parts
         const parts = rawPrereq.split(/[,;]+/).map(p => p.trim()).filter(Boolean);
@@ -34239,8 +34496,20 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           let met = true;
           let label = part;
           let info = '';
+          const partLow = part.toLowerCase().trim();
 
-          // A) BAB Check
+          // 0) Character Level Check: e.g. "Character level 6th", "Character level 21st"
+          const charLvlMatch = part.match(/character\s*level\s*(\d+)/i);
+          if (charLvlMatch) {
+            const reqLvl = parseInt(charLvlMatch[1], 10);
+            met = totalCharacterLevel >= reqLvl;
+            info = met ? `(Seviye: ${totalCharacterLevel} ≥ ${reqLvl})` : `(Mevcut: ${totalCharacterLevel}, Gereken: ${reqLvl})`;
+            if (!met) allMet = false;
+            checks.push({ type: 'charLevel', label, met, info });
+            continue;
+          }
+
+          // A) BAB Check: e.g. "BAB +1", "base attack bonus +6"
           const babMatch = part.match(/(?:bab|base attack bonus)\s*\+?(\d+)/i);
           if (babMatch) {
             const reqBab = parseInt(babMatch[1], 10);
@@ -34251,8 +34520,8 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             continue;
           }
 
-          // B) Ability Score Check: Str 13, Dex 15, Int 13, etc.
-          const statMatch = part.match(/\b(str|dex|con|int|wis|cha)\w*\s*(\d+)/i);
+          // B) Ability Score Check: Str 13, Dex 15, Int 13, Cha 25, etc.
+          const statMatch = part.match(/^\s*(str|strength|dex|dexterity|con|constitution|int|intelligence|wis|wisdom|cha|charisma)\s+(\d+)\b/i);
           if (statMatch) {
             const statKey = statMatch[1].toLowerCase().slice(0, 3);
             const reqScore = parseInt(statMatch[2], 10);
@@ -34282,29 +34551,141 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             continue;
           }
 
-          // D) Caster Level Check: e.g. "Caster level 3rd", "CL 1"
+          // D.1) Manifester Level / Psionic Check
+          const mlMatch = part.match(/manifester\s*level\s*(\d+)/i);
+          if (mlMatch) {
+            const reqMl = parseInt(mlMatch[1], 10);
+            met = isPsionic && effectiveManifesterLevel >= reqMl;
+            info = met ? `(ML: ${effectiveManifesterLevel} ≥ ${reqMl})` : `(Psionik ML: ${effectiveManifesterLevel}, Gereken: ${reqMl})`;
+            if (!met) allMet = false;
+            checks.push({ type: 'psionic', label, met, info });
+            continue;
+          }
+          if (partLow.includes('psionic ability') || partLow.includes('psionic focus') || partLow.includes('reserve of power points')) {
+            met = isPsionic;
+            info = met ? '(Psionik Karakter)' : '(Psionik Yetenek / Wild Talent Yok)';
+            if (!met) allMet = false;
+            checks.push({ type: 'psionic', label, met, info });
+            continue;
+          }
+
+          // D.2) Spell-Like Ability (SLA) Check: e.g. "Spell-like ability at CL 6th or higher", "Spell-like ability"
+          if (partLow.includes('spell-like ability')) {
+            const slaClMatch = part.match(/(?:caster\s*level|cl)\s*(\d+)/i);
+            const reqSlaCl = slaClMatch ? parseInt(slaClMatch[1], 10) : 1;
+            met = hasSpellLikeAbility && slaCasterLevel >= reqSlaCl;
+            info = met ? `(SLA CL: ${slaCasterLevel} ≥ ${reqSlaCl})` : '(SLA / Warlock Seviyesi Yetersiz)';
+            if (!met) allMet = false;
+            checks.push({ type: 'sla', label, met, info });
+            continue;
+          }
+
+          // D.3) Caster Level Check: e.g. "Caster level 3rd", "CL 5"
           const clMatch = part.match(/(?:caster\s*level|cl)\s*(\d+)/i);
           if (clMatch) {
             const reqCl = parseInt(clMatch[1], 10);
-            met = curCl >= reqCl;
-            info = met ? `(CL: ${curCl} ≥ ${reqCl})` : `(CL: ${curCl}, Gereken: ${reqCl})`;
+            met = isCaster && effectiveCasterLevel >= reqCl;
+            info = met ? `(CL: ${effectiveCasterLevel} ≥ ${reqCl})` : `(Mevcut CL: ${effectiveCasterLevel}, Gereken: ${reqCl})`;
             if (!met) allMet = false;
             checks.push({ type: 'cl', label, met, info });
             continue;
           }
 
-          // Spellcasting capability (Arcane / Büyü)
-          if (part.toLowerCase().includes('arcane') || part.toLowerCase().includes('büyü') || part.toLowerCase().includes('spell')) {
-            met = isCaster;
-            info = met ? '(Büyücü / Caster)' : '(Büyü Yeteneği Yok)';
+          // D.4) Specific Class Level Check: e.g. "Warlock Level 6", "Fighter level 4th", "Wizard level 1st"
+          const clsLvlMatch = part.match(/\b(fighter|wizard|cleric|druid|sorcerer|bard|paladin|ranger|rogue|monk|barbarian|warlock|crusader|swordsage|warblade|duskblade)\s*level\s*(\d+)/i);
+          if (clsLvlMatch) {
+            const reqCls = clsLvlMatch[1].toLowerCase();
+            const reqLvl = parseInt(clsLvlMatch[2], 10);
+            let curClsLvl = classCounts[reqCls] || 0;
+            if (reqCls === 'warlock') {
+              curClsLvl = warlockLevel;
+            } else if (reqCls === 'fighter' && (classCounts['warblade'] || 0) >= 1) {
+              // Tome of Battle p.22: Warblade levels count as Fighter levels - 2 for feat prerequisites
+              curClsLvl = Math.max(curClsLvl, (classCounts['fighter'] || 0) + Math.max(0, (classCounts['warblade'] || 0) - 2));
+            }
+            met = curClsLvl >= reqLvl;
+            info = met ? `(${clsLvlMatch[1]} ${curClsLvl} ≥ ${reqLvl})` : `(Gereken: ${clsLvlMatch[1]} Seviye ${reqLvl})`;
+            if (!met) allMet = false;
+            checks.push({ type: 'classLevel', label, met, info });
+            continue;
+          }
+
+          // D.5) Warlock Invocations & Eldritch Blast Prerequisite Check
+          if (partLow.includes('eldritch blast')) {
+            met = hasEldritchBlast;
+            info = met ? '(Eldritch Blast Mevcut)' : '(Eldritch Blast / Warlock Gerekli)';
+            if (!met) allMet = false;
+            checks.push({ type: 'warlock', label, met, info });
+            continue;
+          }
+          const invTierMatch = partLow.match(/use\s+(least|lesser|greater|dark)\s+invocations/i);
+          if (invTierMatch) {
+            const tierName = invTierMatch[1].toLowerCase();
+            const reqWarlockLvl = tierName === 'dark' ? 16 : (tierName === 'greater' ? 11 : (tierName === 'lesser' ? 6 : 1));
+            met = isWarlock && warlockLevel >= reqWarlockLvl;
+            info = met ? `(Warlock Seviye ${warlockLevel} ≥ ${reqWarlockLvl})` : `(Warlock Seviye ${reqWarlockLvl} Gerekli)`;
+            if (!met) allMet = false;
+            checks.push({ type: 'warlock', label, met, info });
+            continue;
+          }
+
+          // D.6) True Spellcasting Capability Check (ONLY for explicit casting clauses, NEVER matching feat names like "Spell Focus")
+          if (/ability to cast|cast\s+.*spells|büyü\s*yapabilme|arcane\s*spell|divine\s*spell|spellcasting\s*class/i.test(partLow)) {
+            const spellLvlMatch = partLow.match(/(\d+)(?:st|nd|rd|th|\.)\s*(?:-?level|seviye)/i);
+            if (spellLvlMatch) {
+              const reqSpellLvl = parseInt(spellLvlMatch[1], 10);
+              const reqMinCl = Math.max(1, (reqSpellLvl * 2) - 1);
+              met = isCaster && effectiveCasterLevel >= reqMinCl;
+              info = met ? `(${reqSpellLvl}. Seviye Büyü / CL ${effectiveCasterLevel})` : `(${reqSpellLvl}. Seviye Büyü Yeteneği Yok)`;
+            } else {
+              met = isCaster;
+              info = met ? '(Büyücü / Spellcaster)' : '(Büyü Yapabilme Yeteneği Yok)';
+            }
             if (!met) allMet = false;
             checks.push({ type: 'spell', label, met, info });
             continue;
           }
 
+          // D.7) Special Class Feature Checks (Wild Shape, Turn/Rebuke Undead, Bardic Music, Smite, Martial Maneuvers)
+          if (partLow.includes('wild shape')) {
+            met = (classCounts['druid'] || 0) >= 5 || knownFeats.has('wildshape');
+            info = met ? '(Wild Shape Mevcut)' : '(Wild Shape / Druid 5 Gerekli)';
+            if (!met) allMet = false;
+            checks.push({ type: 'feature', label, met, info });
+            continue;
+          }
+          if (partLow.includes('turn or rebuke') || partLow.includes('rebuke or command')) {
+            met = (classCounts['cleric'] || 0) >= 1 || (classCounts['paladin'] || 0) >= 4 || (classCounts['dread necromancer'] || 0) >= 1 || knownFeats.has('turnundead') || knownFeats.has('rebukeundead');
+            info = met ? '(Turn/Rebuke Mevcut)' : '(Turn/Rebuke Undead Gerekli)';
+            if (!met) allMet = false;
+            checks.push({ type: 'feature', label, met, info });
+            continue;
+          }
+          if (partLow.includes('bardic music')) {
+            met = (classCounts['bard'] || 0) >= 1 || knownFeats.has('bardicmusic');
+            info = met ? '(Bardic Music Mevcut)' : '(Bardic Music Gerekli)';
+            if (!met) allMet = false;
+            checks.push({ type: 'feature', label, met, info });
+            continue;
+          }
+          if (partLow.includes('smite')) {
+            met = (classCounts['paladin'] || 0) >= 1 || (classCounts['crusader'] || 0) >= 1 || (classCounts['cleric'] || 0) >= 1 || knownFeats.has('smite') || knownFeats.has('smiteevil');
+            info = met ? '(Smite Mevcut)' : '(Smite Yeteneği Gerekli)';
+            if (!met) allMet = false;
+            checks.push({ type: 'feature', label, met, info });
+            continue;
+          }
+          if (partLow.includes('maneuver') || partLow.includes('stance')) {
+            met = isMartialAdept;
+            info = met ? '(Martial Adept / Manevra Mevcut)' : '(Martial Manevra / Stance Gerekli)';
+            if (!met) allMet = false;
+            checks.push({ type: 'maneuver', label, met, info });
+            continue;
+          }
+
           // E.1) Armor & Shield Proficiency Prerequisite Check
-          if (part.toLowerCase().includes('armor proficiency') || part.toLowerCase().includes('shield proficiency') || part.toLowerCase().includes('zırh ustalığı') || part.toLowerCase().includes('kalkan ustalığı')) {
-            const pNorm = part.toLowerCase().replace(/[^a-z0-9]/g, '');
+          if (partLow.includes('armor proficiency') || partLow.includes('shield proficiency') || partLow.includes('zırh ustalığı') || partLow.includes('kalkan ustalığı')) {
+            const pNorm = partLow.replace(/[^a-z0-9]/g, '');
             if (pNorm.includes('heavy')) {
               met = Boolean(prof.armors.heavy);
               info = met ? '(Ağır Zırh Ustalığı Var)' : '(Ağır Zırh Ustalığı Eksik)';
@@ -34327,8 +34708,8 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           }
 
           // E.2) Weapon Proficiency Prerequisite Check
-          if (part.toLowerCase().includes('proficiency') || part.toLowerCase().includes('ustalığı') || part.toLowerCase().includes('weapon prof')) {
-            const pNorm = part.toLowerCase().replace(/[^a-z0-9]/g, '');
+          if (partLow.includes('proficiency') || partLow.includes('ustalığı') || partLow.includes('weapon prof')) {
+            const pNorm = partLow.replace(/[^a-z0-9]/g, '');
             if (pNorm.includes('martial')) {
               met = Boolean(prof.weapons.martial || (prof.weapons.specific && prof.weapons.specific.size > 0));
               info = met ? '(Askeri Silah Ustalığı Var)' : '(Askeri Silah Ustalığı Eksik)';
@@ -34359,7 +34740,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             const options = part.split(/\s*(?:veya|or)\s*/i);
             met = options.some(opt => {
               const optClean = opt.toLowerCase().replace(/\d+/g, '').trim();
-              return (character.classes || '').toLowerCase().includes(optClean) || selectedClassName.toLowerCase().includes(optClean);
+              return Boolean(classCounts[optClean]) || selectedClassName.toLowerCase().includes(optClean);
             });
             info = met ? '(Sınıf Uygun)' : '(Gereken Sınıf Yok)';
             if (!met) allMet = false;
@@ -34367,9 +34748,10 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             continue;
           }
 
-          // G) Specific Feat Requirement
+          // G) Specific Feat Requirement (e.g. "Power Attack", "Spell Focus (conjuration)", "Point Blank Shot")
           const normPart = normalizeFeatName(part);
-          met = Array.from(knownFeats).some(kf => kf.includes(normPart) || normPart.includes(kf));
+          const normPartBase = normalizeFeatName(part.replace(/\(.*?\)/g, ''));
+          met = Array.from(knownFeats).some(kf => kf === normPart || kf === normPartBase || (normPart.length >= 4 && kf.includes(normPart)));
           info = met ? '(Feat Mevcut)' : '(Feat Eksik)';
           if (!met) allMet = false;
           checks.push({ type: 'feat', label, met, info });
@@ -34659,7 +35041,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
         const slot = levelUpModalFeatSlots[slotIdx] || {};
         const query = (levelUpFeatSearchQueries[slotIdx] !== undefined ? levelUpFeatSearchQueries[slotIdx] : (slot.name || '')).toLowerCase().trim();
-        const activeFilter = levelUpFeatSearchFilters[slotIdx] || 'ALL';
+        const activeFilter = levelUpFeatSearchFilters[slotIdx] || ((slot.category === 'Regular Feat' || slot.category === 'Racial Trait') ? 'QUALIFIED' : 'ALL');
 
         const combined = getCombinedFeatCatalog();
 
@@ -34798,6 +35180,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                    </div>`
                 : `<div class="text-[9px] text-slate-400 pt-0.5">Önkoşulsuz</div>`);
 
+            const allowBoonOverride = (slot.category === 'DM Boon');
             const buttonHtml = isAlreadyKnown
               ? `<button disabled type="button"
                          title="${(pEval.alreadyKnownReason || 'Zaten Sahipsiniz').replace(/"/g, '&quot;')}"
@@ -34805,12 +35188,19 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                    <span>🔒</span>
                    <span>Zaten Sahipsiniz</span>
                  </button>`
-              : `<button type="button"
-                         onclick="selectFeatForLevelUpSlot(${slotIdx}, '${safeName}')"
-                         class="px-2.5 py-1 rounded text-[11px] font-bold shadow transition shrink-0 cursor-pointer flex items-center gap-1 ${isQualified ? 'bg-emerald-600 hover:bg-emerald-500 text-white active:scale-95' : 'bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-600/40'}">
-                   <span>🎯</span>
-                   <span>${isQualified ? 'Seç' : 'Yine de Seç'}</span>
-                 </button>`;
+              : ((!isQualified && !allowBoonOverride)
+                ? `<button disabled type="button"
+                           title="D&D 3.5e RAW: Önkoşullar karşılanmadığı için bu feat seçilemez"
+                           class="px-2.5 py-1 rounded text-[11px] font-bold shadow shrink-0 opacity-50 cursor-not-allowed bg-slate-800 text-rose-300/80 border border-rose-800/50 flex items-center gap-1">
+                     <span>🔒</span>
+                     <span>Önkoşul Eksik</span>
+                   </button>`
+                : `<button type="button"
+                           onclick="selectFeatForLevelUpSlot(${slotIdx}, '${safeName}')"
+                           class="px-2.5 py-1 rounded text-[11px] font-bold shadow transition shrink-0 cursor-pointer flex items-center gap-1 ${isQualified ? 'bg-emerald-600 hover:bg-emerald-500 text-white active:scale-95' : 'bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-600/40'}">
+                     <span>${isQualified ? '🎯' : '🌟'}</span>
+                     <span>${isQualified ? 'Seç' : 'Boon Seç'}</span>
+                   </button>`);
 
             return `
               <div class="p-2.5 rounded-lg border transition ${isAlreadyKnown ? 'bg-slate-950/40 border-slate-800/80' : (isQualified ? 'bg-slate-950/80 hover:bg-slate-900 border-slate-800 hover:border-emerald-500/60' : 'bg-slate-950/50 hover:bg-slate-900/60 border-slate-800/80 hover:border-rose-600/40 opacity-85 hover:opacity-100')} space-y-1.5">
@@ -34881,6 +35271,18 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
       function selectFeatForLevelUpSlot(idx, featName) {
         if (!levelUpModalFeatSlots[idx]) return;
+        const slotCat = levelUpModalFeatSlots[idx].category || 'Regular Feat';
+        const isInvEntry = getAllWarlockInvocations().some(i => (i.name || '').toLowerCase() === featName.toLowerCase());
+        if (isInvEntry && slotCat !== 'Warlock Invocation' && slotCat !== 'DM Boon') {
+          if (typeof showDiceTopToast === 'function') {
+            showDiceTopToast({
+              title: 'Warlock Invocation Seçilemez',
+              desc: `"${featName}" bir Warlock Yakarışıdır (Invocation); ${slotCat} yuvasına seçilemez.`,
+              type: 'warning'
+            });
+          }
+          return;
+        }
         const pEvalSlot = (typeof checkFeatPrerequisites === 'function')
           ? checkFeatPrerequisites({ name: featName }, idx)
           : null;
@@ -34889,6 +35291,16 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             showDiceTopToast({
               title: 'Mükerrer Feat Engellendi',
               desc: pEvalSlot.alreadyKnownReason || `"${featName}" featine zaten sahipsiniz.`,
+              type: 'warning'
+            });
+          }
+          return;
+        }
+        if (slotCat !== 'DM Boon' && pEvalSlot && !pEvalSlot.allMet) {
+          if (typeof showDiceTopToast === 'function') {
+            showDiceTopToast({
+              title: 'Önkoşul Karşılanmıyor',
+              desc: `"${featName}" için gereken önkoşullar karşılanmıyor (${pEvalSlot.rawPrereq || 'Önkoşul Eksik'}).`,
               type: 'warning'
             });
           }

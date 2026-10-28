@@ -1020,20 +1020,111 @@ def process_equipment(local_by_name: dict, children_by_parent: dict) -> list:
 # ---------------------------------------------------------------------------
 
 PREREQ_ABILITY_RE = re.compile(r"\b(Str|Dex|Con|Int|Wis|Cha)\s+(\d+)\b", re.IGNORECASE)
-PREREQ_BAB_RE = re.compile(r"base attack bonus\s*\+?(\d+)", re.IGNORECASE)
-PREREQ_CASTER_RE = re.compile(r"caster level\s*(\d+)", re.IGNORECASE)
+PREREQ_BAB_RE = re.compile(r"(?:base attack bonus|bab)\s*\+?(\d+)", re.IGNORECASE)
+PREREQ_CASTER_RE = re.compile(r"(?:caster level|cl)\s*(\d+)", re.IGNORECASE)
+PREREQ_MANIFESTER_RE = re.compile(r"manifester level\s*(\d+)", re.IGNORECASE)
+PREREQ_CHAR_LEVEL_RE = re.compile(r"character level\s*(\d+)", re.IGNORECASE)
+PREREQ_CLASS_LEVEL_RE = re.compile(r"\b(Fighter|Wizard|Cleric|Druid|Sorcerer|Bard|Paladin|Ranger|Rogue|Monk|Barbarian|Warlock|Crusader|Swordsage|Warblade|Duskblade)\s+level\s+(\d+)", re.IGNORECASE)
+PREREQ_SKILL_RANK_RE = re.compile(r"([A-Za-z][A-Za-z\s\(\)\-]+?)\s+(\d+)\s+ranks?", re.IGNORECASE)
+
+CASTER_ONLY_FEAT_NAMES = {
+    "empower spell", "enlarge spell", "extend spell", "heighten spell",
+    "maximize spell", "quicken spell", "silent spell", "still spell",
+    "widen spell", "spell focus", "greater spell focus", "spell penetration",
+    "greater spell penetration", "combat casting", "augment summoning",
+    "eschew materials", "natural spell", "spell mastery", "improved counterspell",
+    "reach spell", "sacred spell", "spell focus (no spell school selected)",
+    "greater spell focus (no spell school selected)",
+}
+
+EPIC_FEAT_NAMES = {
+    "great strength", "great dexterity", "great constitution",
+    "great intelligence", "great wisdom", "great charisma",
+    "epic fortitude", "epic reflexes", "epic will", "epic toughness",
+    "epic prowess", "epic reputation", "additional magic item space",
+    "extended life span", "energy resistance", "penetrate damage reduction",
+}
+
+PSIONIC_FEAT_NAMES = {
+    "boost construct", "combat manifestation", "psionic body", "body fuel",
+}
 
 def extract_feat_prereq_text(desc_html: str) -> str:
     if not desc_html:
         return ""
-    m = re.search(r"Prerequisites?:?\s*</(?:b|strong)>\s*([^<]+)", desc_html, re.IGNORECASE)
+    # 1. MediaWiki <h3><span ...>Prerequisite(s)</span></h3><p>...</p>
+    m_h3 = re.search(
+        r"<h[234][^>]*>\s*(?:<span[^>]*>)?\s*Prerequisites?(?:\s*\[[^\]]*\])?\s*(?:</span>)?\s*</h[234]>\s*<p>(.*?)</p>",
+        desc_html,
+        re.IGNORECASE | re.DOTALL,
+    )
+    if m_h3:
+        inner = re.sub(r"<[^>]+>", " ", m_h3.group(1))
+        inner = html.unescape(re.sub(r"\s+", " ", inner)).strip().rstrip(".")
+        if inner:
+            return inner
+    # 1b. MediaWiki "Prerequisites [ edit ] Dex 15, Run. Benefit"
+    m_edit = re.search(r"Prerequisites?\s*\[\s*edit\s*\]\s*([^\n<]+?)(?:\.\s*Benefit|$)", re.sub(r"<[^>]+>", " ", desc_html), re.IGNORECASE)
+    if m_edit:
+        return html.unescape(m_edit.group(1)).strip().rstrip(".")
+    # 2. Inline <b>Prerequisite(s):</b> ...
+    m = re.search(r"Prerequisites?:?\s*</(?:b|strong)>\s*([^<\n]+)", desc_html, re.IGNORECASE)
     if m:
         return html.unescape(m.group(1)).strip().rstrip(".")
+    # 3. Plain text Prerequisite(s):
+    m_plain = re.search(r"\bPrerequisites?:\s*([^\n<]+)", desc_html, re.IGNORECASE)
+    if m_plain:
+        return html.unescape(m_plain.group(1)).strip().rstrip(".")
     return ""
 
-def parse_prereq_struct(prereq_str) -> dict:
-    if not prereq_str:
-        return {}
+def enrich_feat_prereq_text(name: str, category: str, scope: str, raw_prereq: str, desc_html: str) -> str:
+    clean_name = (name or "").strip().lower()
+    p = (raw_prereq or "").strip()
+    if p == "-":
+        p = ""
+    desc_low = (desc_html or "").lower()
+    cat_low = (category or "").lower()
+    scope_low = (scope or "").lower()
+
+    # Warlock Invocation explicit prerequisite
+    if cat_low == "warlock invocation" and not p:
+        p = "Warlock Level 1"
+
+    # Metamagic & Caster-Only Feats must require spellcasting
+    is_metamagic = cat_low == "metamagic" or "metamagic" in cat_low
+    is_caster_only = scope_low == "caster only" or clean_name in CASTER_ONLY_FEAT_NAMES
+    if (is_metamagic or is_caster_only) and "spellcaster" not in p.lower() and "cast spells" not in p.lower() and "caster level" not in p.lower() and "büyü" not in p.lower():
+        if p:
+            p = f"{p}, Ability to cast spells"
+        else:
+            p = "Ability to cast spells"
+
+    # Psionic / Metapsionic feats that require psionic focus or power points (excluding Wild Talent / Hidden Talent)
+    if clean_name not in ("wild talent", "hidden talent"):
+        needs_psionics = (
+            clean_name in PSIONIC_FEAT_NAMES
+            or "expend your psionic focus" in desc_low
+            or "must be psionically focused" in desc_low
+            or "reserve of power points" in desc_low
+            or "manifester level" in desc_low
+            or "manifesting powers" in desc_low
+            or "power point total" in desc_low
+        )
+        if needs_psionics and not p:
+            p = "Psionic ability (Manifester or Wild Talent)"
+
+    # Epic Feats (require Character level 21st)
+    if (clean_name in EPIC_FEAT_NAMES or clean_name.startswith("epic ") or "craft epic " in clean_name) and "character level 21" not in p.lower():
+        p = f"Character level 21st, {p}" if p else "Character level 21st"
+
+    if clean_name == "greater spell focus (no spell school selected)" and "spell focus" not in p.lower():
+        p = f"Spell Focus, {p}" if p else "Spell Focus, Ability to cast spells"
+
+    return p if p else "-"
+
+def parse_prereq_struct(prereq_str, category: str = "", desc_html: str = "", name: str = "") -> dict:
+    if not prereq_str or prereq_str == "-":
+        prereq_str = ""
     if isinstance(prereq_str, list):
         prereq_str = ", ".join(str(x) for x in prereq_str if x)
     else:
@@ -1050,6 +1141,47 @@ def parse_prereq_struct(prereq_str) -> dict:
     cl_m = PREREQ_CASTER_RE.search(prereq_str)
     if cl_m:
         struct["casterLevel"] = int(cl_m.group(1))
+        struct["requiresSpellcasting"] = True
+    ml_m = PREREQ_MANIFESTER_RE.search(prereq_str)
+    if ml_m:
+        struct["manifesterLevel"] = int(ml_m.group(1))
+        struct["requiresPsionics"] = True
+    chl_m = PREREQ_CHAR_LEVEL_RE.search(prereq_str)
+    if chl_m:
+        struct["characterLevel"] = int(chl_m.group(1))
+
+    class_levels = {}
+    for cls_m in PREREQ_CLASS_LEVEL_RE.finditer(prereq_str):
+        class_levels[cls_m.group(1).lower()] = int(cls_m.group(2))
+    if class_levels:
+        struct["classLevels"] = class_levels
+
+    skills = {}
+    for sk_m in PREREQ_SKILL_RANK_RE.finditer(prereq_str):
+        sk_name = sk_m.group(1).strip(" ,;.")
+        if sk_name:
+            skills[sk_name.lower()] = int(sk_m.group(2))
+    if skills:
+        struct["skills"] = skills
+
+    low_p = prereq_str.lower()
+    low_cat = (category or "").lower()
+    low_desc = (desc_html or "").lower()
+    low_name = (name or "").strip().lower()
+
+    if low_cat == "metamagic" or low_name in CASTER_ONLY_FEAT_NAMES or "cast spells" in low_p or "arcane" in low_p or "büyü yapabilme" in low_p:
+        struct["requiresSpellcasting"] = True
+    if low_cat == "warlock invocation" or "warlock level" in low_p or "invocations" in low_p or "eldritch blast" in low_p:
+        struct["requiresWarlock"] = class_levels.get("warlock", 1)
+    if "psionic" in low_p or "manifester" in low_p or ("expend your psionic focus" in low_desc and low_name not in ("wild talent", "hidden talent")):
+        struct["requiresPsionics"] = True
+    if "spell-like ability" in low_p:
+        struct["requiresSpellLikeAbility"] = True
+    if "wild shape" in low_p:
+        struct["requiresWildShape"] = True
+    if "turn or rebuke" in low_p:
+        struct["requiresTurnOrRebuke"] = True
+
     return struct
 
 def process_feats(local_by_name: dict, custom_entries: list) -> list:
@@ -1073,9 +1205,14 @@ def process_feats(local_by_name: dict, custom_entries: list) -> list:
             raw_req = d.get("requirements", "")
             if isinstance(raw_req, list):
                 raw_req = ", ".join(str(x) for x in raw_req if x)
-            prereq_text = local_match.get("prereq") or extract_feat_prereq_text(desc) or str(raw_req or "")
+            extracted_req = extract_feat_prereq_text(desc) or str(raw_req or "")
+            loc_req = local_match.get("prereq", "")
+            raw_prereq = (loc_req if loc_req and loc_req != "-" else extracted_req) or loc_req
             is_fighter = bool(local_match.get("isFighterBonusFeat")) or ("fighter bonus feat" in desc.lower())
             cat = local_match.get("category") or ("Fighter" if is_fighter else ("Metamagic" if d.get("metamagic", {}).get("enabled") else "General"))
+            scope = local_match.get("scope") or ("Caster Only" if cat == "Metamagic" else "All")
+            prereq_text = enrich_feat_prereq_text(name, cat, scope, raw_prereq, desc)
+            p_struct = parse_prereq_struct(prereq_text, cat, desc, name)
 
             feats.append({
                 "id": item_id,
@@ -1084,14 +1221,17 @@ def process_feats(local_by_name: dict, custom_entries: list) -> list:
                 "name": name,
                 "type": "Feat",
                 "category": cat,
+                "scope": scope,
                 "slot": "None",
                 "source": local_match.get("source", "SRD 3.5e"),
                 "isFighterBonusFeat": is_fighter,
                 "prerequisites": prereq_text,
-                "prereqStruct": parse_prereq_struct(prereq_text),
+                "prereq": prereq_text,
+                "prereqStruct": p_struct,
                 "description": desc or local_match.get("description", ""),
                 "shortDescription": local_match.get("benefit") or strip_to_plain(desc, 240),
-                "tags": sorted(list({"feat", cat.lower(), *(["fighter"] if is_fighter else [])})),
+                "benefit": local_match.get("benefit") or strip_to_plain(desc, 240),
+                "tags": sorted(list({"feat", cat.lower(), *(["fighter"] if is_fighter else []), *(["caster"] if p_struct.get("requiresSpellcasting") else [])})),
                 "modifiers": convert_foundry_changes(d.get("changes", [])),
                 "damageParts": [],
                 "modes": [],
@@ -1110,9 +1250,13 @@ def process_feats(local_by_name: dict, custom_entries: list) -> list:
             continue
         seen_ids.add(item_id)
 
-        prereq_text = loc.get("prereq", "")
+        raw_prereq = loc.get("prereq", "")
         is_fighter = bool(loc.get("isFighterBonusFeat"))
         cat = loc.get("category", "General")
+        scope = loc.get("scope") or ("Warlock Only" if cat == "Warlock Invocation" else ("Caster Only" if cat == "Metamagic" else "All"))
+        desc = loc.get("description") or loc.get("benefit", "")
+        prereq_text = enrich_feat_prereq_text(name, cat, scope, raw_prereq, desc)
+        p_struct = parse_prereq_struct(prereq_text, cat, desc, name)
         feats.append({
             "id": item_id,
             "foundryId": None,
@@ -1120,15 +1264,18 @@ def process_feats(local_by_name: dict, custom_entries: list) -> list:
             "name": name,
             "type": "SpecialAbility" if ltype == "Special Ability" else "Feat",
             "category": cat,
+            "scope": scope,
             "tier": loc.get("tier"),
             "minLevel": loc.get("minLevel"),
             "slot": "None",
             "source": loc.get("source", "SRD 3.5e"),
             "isFighterBonusFeat": is_fighter,
             "prerequisites": prereq_text,
-            "prereqStruct": parse_prereq_struct(prereq_text),
-            "description": loc.get("description") or loc.get("benefit", ""),
+            "prereq": prereq_text,
+            "prereqStruct": p_struct,
+            "description": desc,
             "shortDescription": loc.get("benefit") or loc.get("description", ""),
+            "benefit": loc.get("benefit") or loc.get("description", ""),
             "tags": sorted(list({ltype.lower(), cat.lower(), *(loc.get("tags") or [])})),
             "modifiers": [],
             "damageParts": [],

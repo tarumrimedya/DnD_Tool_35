@@ -234,6 +234,10 @@
       return _initPromise;
     },
 
+    get _ready() {
+      return _ready;
+    },
+
     isReady() {
       return _ready;
     },

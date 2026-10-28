@@ -5,7537 +5,7013 @@
  */
 window.BUNDLED_SRD_CORE_CATALOG = [
     {
-        "name":  "Gauntlet",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Simple",
-        "weaponType":  "Simple Light",
-        "dice":  "1d3",
-        "extraDmg":  "1d3",
-        "damage":  "1d3",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Bludgeoning",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  1,
-        "cost":  2,
-        "isLight":  true,
-        "tags":  [
-                     "simple",
-                     "light",
-                     "unarmed",
-                     "bludgeoning",
-                     "finessable"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Allows an unarmed strike to deal lethal bludgeoning damage instead of nonlethal.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "finessable":  true
-    },
-    {
-        "name":  "Unarmed Strike",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Simple",
-        "weaponType":  "Simple Light",
-        "dice":  "1d3",
-        "extraDmg":  "1d3",
-        "damage":  "1d3",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Bludgeoning (Nonlethal)",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  0,
-        "cost":  0,
-        "isLight":  true,
-        "tags":  [
-                     "simple",
-                     "light",
-                     "unarmed",
-                     "nonlethal",
-                     "finessable"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Deals nonlethal bludgeoning damage. Provokes attack of opportunity without Improved Unarmed Strike feat.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "finessable":  true
-    },
-    {
-        "name":  "Dagger",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Simple",
-        "weaponType":  "Simple Light",
-        "dice":  "1d4",
-        "extraDmg":  "1d4",
-        "damage":  "1d4",
-        "critMin":  19,
-        "critMult":  2,
-        "crit":  "19-20/x2",
-        "dmgType":  "Piercing or Slashing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  1,
-        "cost":  2,
-        "isLight":  true,
-        "tags":  [
-                     "simple",
-                     "light",
-                     "finessable",
-                     "thrown",
-                     "piercing",
-                     "slashing"
-                 ],
-        "scope":  "Melee or Ranged",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Can be used in melee or thrown (range 10 ft). Finessable with Weapon Finesse.",
-        "ruleFlags":  {
-                          "finessable":  true,
-                          "thrown":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "range":  10,
-        "finessable":  true
-    },
-    {
-        "name":  "Punching Dagger",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Simple",
-        "weaponType":  "Simple Light",
-        "dice":  "1d4",
-        "extraDmg":  "1d4",
-        "damage":  "1d4",
-        "critMin":  20,
-        "critMult":  3,
-        "crit":  "20/x3",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  1,
-        "cost":  2,
-        "isLight":  true,
-        "tags":  [
-                     "simple",
-                     "light",
-                     "finessable",
-                     "piercing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "A heavy blade fixed to a transverse handle (katar). Deals x3 critical piercing damage.",
-        "ruleFlags":  {
-                          "finessable":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "finessable":  true
-    },
-    {
-        "name":  "Spiked Gauntlet",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Simple",
-        "weaponType":  "Simple Light",
-        "dice":  "1d4",
-        "extraDmg":  "1d4",
-        "damage":  "1d4",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  1,
-        "cost":  5,
-        "isLight":  true,
-        "tags":  [
-                     "simple",
-                     "light",
-                     "piercing",
-                     "finessable"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Cannot be disarmed. Deals lethal piercing damage.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "finessable":  true
-    },
-    {
-        "name":  "Light Mace",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Simple",
-        "weaponType":  "Simple Light",
-        "dice":  "1d6",
-        "extraDmg":  "1d6",
-        "damage":  "1d6",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Bludgeoning",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  4,
-        "cost":  5,
-        "isLight":  true,
-        "tags":  [
-                     "simple",
-                     "light",
-                     "finessable",
-                     "bludgeoning"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "A light bludgeoning weapon with a fluted head. Finessable.",
-        "ruleFlags":  {
-                          "finessable":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "finessable":  true
-    },
-    {
-        "name":  "Sickle",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Simple",
-        "weaponType":  "Simple Light",
-        "dice":  "1d6",
-        "extraDmg":  "1d6",
-        "damage":  "1d6",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Slashing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  2,
-        "cost":  6,
-        "isLight":  true,
-        "tags":  [
-                     "simple",
-                     "light",
-                     "finessable",
-                     "trip",
-                     "slashing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Can be used to make trip attacks. If tripped during your own trip attempt, you can drop the sickle to avoid being tripped.",
-        "ruleFlags":  {
-                          "finessable":  true,
-                          "trip":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "finessable":  true
-    },
-    {
-        "name":  "Club",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Simple",
-        "weaponType":  "Simple One-Handed",
-        "dice":  "1d6",
-        "extraDmg":  "1d6",
-        "damage":  "1d6",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Bludgeoning",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  3,
-        "cost":  0,
-        "isLight":  false,
-        "tags":  [
-                     "simple",
-                     "one-handed",
-                     "thrown",
-                     "bludgeoning"
-                 ],
-        "scope":  "Melee or Ranged",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Can be thrown with a 10 ft range increment.",
-        "ruleFlags":  {
-                          "thrown":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "range":  10
-    },
-    {
-        "name":  "Heavy Mace",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Simple",
-        "weaponType":  "Simple One-Handed",
-        "dice":  "1d8",
-        "extraDmg":  "1d8",
-        "damage":  "1d8",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Bludgeoning",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  8,
-        "cost":  12,
-        "isLight":  false,
-        "tags":  [
-                     "simple",
-                     "one-handed",
-                     "bludgeoning"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "A standard one-handed bludgeoning weapon.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Morningstar",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Simple",
-        "weaponType":  "Simple One-Handed",
-        "dice":  "1d8",
-        "extraDmg":  "1d8",
-        "damage":  "1d8",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Bludgeoning and Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  6,
-        "cost":  8,
-        "isLight":  false,
-        "tags":  [
-                     "simple",
-                     "one-handed",
-                     "bludgeoning",
-                     "piercing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "A spiked metal head providing both bludgeoning and piercing damage.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Shortspear",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Simple",
-        "weaponType":  "Simple One-Handed",
-        "dice":  "1d6",
-        "extraDmg":  "1d6",
-        "damage":  "1d6",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  3,
-        "cost":  1,
-        "isLight":  false,
-        "tags":  [
-                     "simple",
-                     "one-handed",
-                     "thrown",
-                     "piercing"
-                 ],
-        "scope":  "Melee or Ranged",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Can be thrown with a 20 ft range increment.",
-        "ruleFlags":  {
-                          "thrown":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "range":  20
-    },
-    {
-        "name":  "Longspear",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Simple",
-        "weaponType":  "Simple Two-Handed",
-        "dice":  "1d8",
-        "extraDmg":  "1d8",
-        "damage":  "1d8",
-        "critMin":  20,
-        "critMult":  3,
-        "crit":  "20/x3",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  9,
-        "cost":  5,
-        "isLight":  false,
-        "tags":  [
-                     "simple",
-                     "two-handed",
-                     "reach",
-                     "brace",
-                     "piercing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Reach weapon (strikes opponents 10 ft away, cannot strike adjacent). If readied against a charge, deals double damage.",
-        "ruleFlags":  {
-                          "brace":  true,
-                          "reach":  true
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Quarterstaff",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Simple",
-        "weaponType":  "Simple Two-Handed",
-        "dice":  "1d6",
-        "extraDmg":  "1d6",
-        "damage":  "1d6",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Bludgeoning",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  4,
-        "cost":  0,
-        "isLight":  false,
-        "tags":  [
-                     "simple",
-                     "two-handed",
-                     "double",
-                     "bludgeoning"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "A double weapon. You can fight with it as if fighting with two weapons (primary 1d6, off-hand 1d6).",
-        "ruleFlags":  {
-                          "doubleWeapon":  true
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Ã¢â€ Â³ Quarterstaff (Off-Hand Head)",
-        "type":  "Weapon",
-        "slot":  "Off-Hand",
-        "category":  "Simple",
-        "weaponType":  "Simple Light",
-        "dice":  "1d6",
-        "extraDmg":  "1d6",
-        "damage":  "1d6",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Bludgeoning",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  0,
-        "cost":  0,
-        "isLight":  true,
-        "tags":  [
-                     "simple",
-                     "off-hand",
-                     "double",
-                     "light",
-                     "bludgeoning"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Secondary head of the quarterstaff; treated as a light weapon for two-weapon fighting penalties.",
-        "ruleFlags":  {
-                          "doubleWeaponOffHand":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "parent":  "Quarterstaff",
-        "finessable":  true
-    },
-    {
-        "name":  "Spear",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Simple",
-        "weaponType":  "Simple Two-Handed",
-        "dice":  "1d8",
-        "extraDmg":  "1d8",
-        "damage":  "1d8",
-        "critMin":  20,
-        "critMult":  3,
-        "crit":  "20/x3",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  6,
-        "cost":  2,
-        "isLight":  false,
-        "tags":  [
-                     "simple",
-                     "two-handed",
-                     "thrown",
-                     "brace",
-                     "piercing"
-                 ],
-        "scope":  "Melee or Ranged",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Can be thrown with a 20 ft range increment. If readied against a charge, deals double damage.",
-        "ruleFlags":  {
-                          "brace":  true,
-                          "thrown":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "range":  20
-    },
-    {
-        "name":  "Heavy Crossbow",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Simple",
-        "weaponType":  "Simple Ranged",
-        "dice":  "1d10",
-        "extraDmg":  "1d10",
-        "damage":  "1d10",
-        "critMin":  19,
-        "critMult":  2,
-        "crit":  "19-20/x2",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  8,
-        "cost":  50,
-        "isLight":  false,
-        "tags":  [
-                     "simple",
-                     "ranged",
-                     "crossbow",
-                     "piercing"
-                 ],
-        "scope":  "Ranged Only",
-        "attackType":  "weapon",
-        "combatScope":  "ranged",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Standard ranged weapon with 120 ft range increment. Reloading is a full-round action.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "range":  120,
-        "ammoType":  "bolt"
-    },
-    {
-        "name":  "Light Crossbow",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Simple",
-        "weaponType":  "Simple Ranged",
-        "dice":  "1d8",
-        "extraDmg":  "1d8",
-        "damage":  "1d8",
-        "critMin":  19,
-        "critMult":  2,
-        "crit":  "19-20/x2",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  4,
-        "cost":  35,
-        "isLight":  false,
-        "tags":  [
-                     "simple",
-                     "ranged",
-                     "crossbow",
-                     "piercing"
-                 ],
-        "scope":  "Ranged Only",
-        "attackType":  "weapon",
-        "combatScope":  "ranged",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Standard ranged weapon with 80 ft range increment. Reloading is a move action.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "range":  80,
-        "ammoType":  "bolt"
-    },
-    {
-        "name":  "Dart",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Simple",
-        "weaponType":  "Simple Ranged",
-        "dice":  "1d4",
-        "extraDmg":  "1d4",
-        "damage":  "1d4",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  0.5,
-        "cost":  0.5,
-        "isLight":  true,
-        "tags":  [
-                     "simple",
-                     "ranged",
-                     "thrown",
-                     "piercing"
-                 ],
-        "scope":  "Ranged Only",
-        "attackType":  "weapon",
-        "combatScope":  "ranged",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Small thrown missile weapon with 20 ft range increment.",
-        "ruleFlags":  {
-                          "thrown":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "range":  20
-    },
-    {
-        "name":  "Javelin",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Simple",
-        "weaponType":  "Simple Ranged",
-        "dice":  "1d6",
-        "extraDmg":  "1d6",
-        "damage":  "1d6",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  2,
-        "cost":  1,
-        "isLight":  false,
-        "tags":  [
-                     "simple",
-                     "ranged",
-                     "thrown",
-                     "piercing"
-                 ],
-        "scope":  "Ranged Only",
-        "attackType":  "weapon",
-        "combatScope":  "ranged",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Light flexible spear designed for throwing with 30 ft range increment.",
-        "ruleFlags":  {
-                          "thrown":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "range":  30
-    },
-    {
-        "name":  "Sling",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Simple",
-        "weaponType":  "Simple Ranged",
-        "dice":  "1d4",
-        "extraDmg":  "1d4",
-        "damage":  "1d4",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Bludgeoning",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  0,
-        "cost":  0,
-        "isLight":  false,
-        "tags":  [
-                     "simple",
-                     "ranged",
-                     "sling",
-                     "bludgeoning"
-                 ],
-        "scope":  "Ranged Only",
-        "attackType":  "weapon",
-        "combatScope":  "ranged",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Fires sling bullets or stones with 50 ft range increment. You can add Strength bonus to damage.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "range":  50,
-        "ammoType":  "bullet"
-    },
-    {
-        "name":  "Blowgun",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Exotic",
-        "weaponType":  "Exotic Ranged",
-        "dice":  "1",
-        "extraDmg":  "1",
-        "damage":  "1",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  1,
-        "cost":  1,
-        "isLight":  false,
-        "tags":  [
-                     "simple",
-                     "ranged",
-                     "poison-carrier",
-                     "piercing"
-                 ],
-        "scope":  "Ranged Only",
-        "attackType":  "weapon",
-        "combatScope":  "ranged",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "DMG p.145 / Exotic Ranged",
-        "benefit":  "Deals 1 point of piercing damage, commonly used to deliver contact or injury poisons with 10 ft range increment.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "range":  10,
-        "ammoType":  "needle"
-    },
-    {
-        "name":  "Light Hammer",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Martial",
-        "weaponType":  "Martial Light",
-        "dice":  "1d4",
-        "extraDmg":  "1d4",
-        "damage":  "1d4",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Bludgeoning",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  2,
-        "cost":  1,
-        "isLight":  true,
-        "tags":  [
-                     "martial",
-                     "light",
-                     "finessable",
-                     "thrown",
-                     "bludgeoning"
-                 ],
-        "scope":  "Melee or Ranged",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Can be thrown with a 20 ft range increment. Finessable.",
-        "ruleFlags":  {
-                          "finessable":  true,
-                          "thrown":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "range":  20,
-        "finessable":  true
-    },
-    {
-        "name":  "Handaxe",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Martial",
-        "weaponType":  "Martial Light",
-        "dice":  "1d6",
-        "extraDmg":  "1d6",
-        "damage":  "1d6",
-        "critMin":  20,
-        "critMult":  3,
-        "crit":  "20/x3",
-        "dmgType":  "Slashing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  3,
-        "cost":  6,
-        "isLight":  true,
-        "tags":  [
-                     "martial",
-                     "light",
-                     "finessable",
-                     "axe",
-                     "slashing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "A light axe dealing x3 critical damage. Finessable.",
-        "ruleFlags":  {
-                          "finessable":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "finessable":  true
-    },
-    {
-        "name":  "Kukri",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Martial",
-        "weaponType":  "Martial Light",
-        "dice":  "1d4",
-        "extraDmg":  "1d4",
-        "damage":  "1d4",
-        "critMin":  18,
-        "critMult":  2,
-        "crit":  "18-20/x2",
-        "dmgType":  "Slashing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  2,
-        "cost":  8,
-        "isLight":  true,
-        "tags":  [
-                     "martial",
-                     "light",
-                     "finessable",
-                     "slashing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "A curved heavy-bladed knife with a high critical threat range (18-20/x2). Finessable.",
-        "ruleFlags":  {
-                          "finessable":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "finessable":  true
-    },
-    {
-        "name":  "Light Pick",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Martial",
-        "weaponType":  "Martial Light",
-        "dice":  "1d4",
-        "extraDmg":  "1d4",
-        "damage":  "1d4",
-        "critMin":  20,
-        "critMult":  4,
-        "crit":  "20/x4",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  3,
-        "cost":  4,
-        "isLight":  true,
-        "tags":  [
-                     "martial",
-                     "light",
-                     "finessable",
-                     "piercing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Deals devastating x4 critical damage on confirmed hits. Finessable.",
-        "ruleFlags":  {
-                          "finessable":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "finessable":  true
-    },
-    {
-        "name":  "Sap",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Martial",
-        "weaponType":  "Martial Light",
-        "dice":  "1d6",
-        "extraDmg":  "1d6",
-        "damage":  "1d6",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Bludgeoning (Nonlethal)",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  2,
-        "cost":  1,
-        "isLight":  true,
-        "tags":  [
-                     "martial",
-                     "light",
-                     "finessable",
-                     "nonlethal",
-                     "bludgeoning"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Deals nonlethal damage. Finessable.",
-        "ruleFlags":  {
-                          "nonlethal":  true,
-                          "finessable":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "finessable":  true
-    },
-    {
-        "name":  "Short Sword",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Martial",
-        "weaponType":  "Martial Light",
-        "dice":  "1d6",
-        "extraDmg":  "1d6",
-        "damage":  "1d6",
-        "critMin":  19,
-        "critMult":  2,
-        "crit":  "19-20/x2",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  2,
-        "cost":  10,
-        "isLight":  true,
-        "tags":  [
-                     "martial",
-                     "light",
-                     "finessable",
-                     "sword",
-                     "piercing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Standard light martial piercing weapon. Finessable.",
-        "ruleFlags":  {
-                          "finessable":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "finessable":  true
-    },
-    {
-        "name":  "Battleaxe",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Martial",
-        "weaponType":  "Martial One-Handed",
-        "dice":  "1d8",
-        "extraDmg":  "1d8",
-        "damage":  "1d8",
-        "critMin":  20,
-        "critMult":  3,
-        "crit":  "20/x3",
-        "dmgType":  "Slashing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  6,
-        "cost":  10,
-        "isLight":  false,
-        "tags":  [
-                     "martial",
-                     "one-handed",
-                     "axe",
-                     "slashing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Standard one-handed martial slashing axe with x3 critical multiplier.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Flail",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Martial",
-        "weaponType":  "Martial One-Handed",
-        "dice":  "1d8",
-        "extraDmg":  "1d8",
-        "damage":  "1d8",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Bludgeoning",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  5,
-        "cost":  8,
-        "isLight":  false,
-        "tags":  [
-                     "martial",
-                     "one-handed",
-                     "disarm",
-                     "trip",
-                     "bludgeoning"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "PHB Table 7-5",
-        "benefit":  "+2 bonus on opposed attack rolls to disarm. Can make trip attacks.",
-        "ruleFlags":  {
-                          "disarmBonus":  2,
-                          "trip":  true
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Heavy Pick",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Martial",
-        "weaponType":  "Martial One-Handed",
-        "dice":  "1d6",
-        "extraDmg":  "1d6",
-        "damage":  "1d6",
-        "critMin":  20,
-        "critMult":  4,
-        "crit":  "20/x4",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  6,
-        "cost":  8,
-        "isLight":  false,
-        "tags":  [
-                     "martial",
-                     "one-handed",
-                     "piercing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Deals x4 critical piercing damage on confirmed critical hits.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Longsword",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Martial",
-        "weaponType":  "Martial One-Handed",
-        "dice":  "1d8",
-        "extraDmg":  "1d8",
-        "damage":  "1d8",
-        "critMin":  19,
-        "critMult":  2,
-        "crit":  "19-20/x2",
-        "dmgType":  "Slashing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  4,
-        "cost":  15,
-        "isLight":  false,
-        "tags":  [
-                     "martial",
-                     "one-handed",
-                     "sword",
-                     "slashing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "The iconic martial one-handed sword with 19-20/x2 threat range.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Rapier",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Martial",
-        "weaponType":  "Martial One-Handed",
-        "dice":  "1d6",
-        "extraDmg":  "1d6",
-        "damage":  "1d6",
-        "critMin":  18,
-        "critMult":  2,
-        "crit":  "18-20/x2",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  2,
-        "cost":  20,
-        "isLight":  false,
-        "tags":  [
-                     "martial",
-                     "one-handed",
-                     "finessable",
-                     "piercing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "You can use the Weapon Finesse feat with a rapier even though it is not a light weapon. Wide threat range 18-20/x2.",
-        "ruleFlags":  {
-                          "finessable":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "finessable":  true
-    },
-    {
-        "name":  "Scimitar",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Martial",
-        "weaponType":  "Martial One-Handed",
-        "dice":  "1d6",
-        "extraDmg":  "1d6",
-        "damage":  "1d6",
-        "critMin":  18,
-        "critMult":  2,
-        "crit":  "18-20/x2",
-        "dmgType":  "Slashing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  4,
-        "cost":  15,
-        "isLight":  false,
-        "tags":  [
-                     "martial",
-                     "one-handed",
-                     "slashing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Curved slashing blade with a wide 18-20/x2 threat range.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Trident",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Martial",
-        "weaponType":  "Martial One-Handed",
-        "dice":  "1d8",
-        "extraDmg":  "1d8",
-        "damage":  "1d8",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  4,
-        "cost":  15,
-        "isLight":  false,
-        "tags":  [
-                     "martial",
-                     "one-handed",
-                     "thrown",
-                     "brace",
-                     "piercing"
-                 ],
-        "scope":  "Melee or Ranged",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Can be thrown (range 10 ft). If readied against a charge, deals double damage.",
-        "ruleFlags":  {
-                          "brace":  true,
-                          "thrown":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "range":  10
-    },
-    {
-        "name":  "Warhammer",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Martial",
-        "weaponType":  "Martial One-Handed",
-        "dice":  "1d8",
-        "extraDmg":  "1d8",
-        "damage":  "1d8",
-        "critMin":  20,
-        "critMult":  3,
-        "crit":  "20/x3",
-        "dmgType":  "Bludgeoning",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  5,
-        "cost":  12,
-        "isLight":  false,
-        "tags":  [
-                     "martial",
-                     "one-handed",
-                     "hammer",
-                     "bludgeoning"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Standard one-handed martial bludgeoning weapon with x3 critical damage.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Falchion",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Martial",
-        "weaponType":  "Martial Two-Handed",
-        "dice":  "2d4",
-        "extraDmg":  "2d4",
-        "damage":  "2d4",
-        "critMin":  18,
-        "critMult":  2,
-        "crit":  "18-20/x2",
-        "dmgType":  "Slashing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  8,
-        "cost":  75,
-        "isLight":  false,
-        "tags":  [
-                     "martial",
-                     "two-handed",
-                     "slashing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Two-handed curved heavy blade with a 18-20/x2 threat range.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Glaive",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Martial",
-        "weaponType":  "Martial Two-Handed",
-        "dice":  "1d10",
-        "extraDmg":  "1d10",
-        "damage":  "1d10",
-        "critMin":  20,
-        "critMult":  3,
-        "crit":  "20/x3",
-        "dmgType":  "Slashing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  10,
-        "cost":  8,
-        "isLight":  false,
-        "tags":  [
-                     "martial",
-                     "two-handed",
-                     "reach",
-                     "polearm",
-                     "slashing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Reach weapon (strikes opponents 10 ft away, cannot strike adjacent). x3 crit.",
-        "ruleFlags":  {
-                          "reach":  true
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Greataxe",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Martial",
-        "weaponType":  "Martial Two-Handed",
-        "dice":  "1d12",
-        "extraDmg":  "1d12",
-        "damage":  "1d12",
-        "critMin":  20,
-        "critMult":  3,
-        "crit":  "20/x3",
-        "dmgType":  "Slashing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  12,
-        "cost":  20,
-        "isLight":  false,
-        "tags":  [
-                     "martial",
-                     "two-handed",
-                     "axe",
-                     "slashing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Massive two-handed battle axe dealing 1d12 slashing damage with x3 critical.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Greatclub",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Martial",
-        "weaponType":  "Martial Two-Handed",
-        "dice":  "1d10",
-        "extraDmg":  "1d10",
-        "damage":  "1d10",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Bludgeoning",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  8,
-        "cost":  5,
-        "isLight":  false,
-        "tags":  [
-                     "martial",
-                     "two-handed",
-                     "bludgeoning"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Two-handed heavy bludgeoning wooden club.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Heavy Flail",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Martial",
-        "weaponType":  "Martial Two-Handed",
-        "dice":  "1d10",
-        "extraDmg":  "1d10",
-        "damage":  "1d10",
-        "critMin":  19,
-        "critMult":  2,
-        "crit":  "19-20/x2",
-        "dmgType":  "Bludgeoning",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  10,
-        "cost":  15,
-        "isLight":  false,
-        "tags":  [
-                     "martial",
-                     "two-handed",
-                     "disarm",
-                     "trip",
-                     "bludgeoning"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "+2 bonus on opposed attack rolls to disarm. Can make trip attacks. 19-20/x2 threat range.",
-        "ruleFlags":  {
-                          "disarmBonus":  2,
-                          "trip":  true
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Greatsword",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Martial",
-        "weaponType":  "Martial Two-Handed",
-        "dice":  "2d6",
-        "extraDmg":  "2d6",
-        "damage":  "2d6",
-        "critMin":  19,
-        "critMult":  2,
-        "crit":  "19-20/x2",
-        "dmgType":  "Slashing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  8,
-        "cost":  50,
-        "isLight":  false,
-        "tags":  [
-                     "martial",
-                     "two-handed",
-                     "sword",
-                     "slashing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "The premier two-handed martial weapon dealing 2d6 slashing damage with 19-20/x2 crit.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Guisarme",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Martial",
-        "weaponType":  "Martial Two-Handed",
-        "dice":  "2d4",
-        "extraDmg":  "2d4",
-        "damage":  "2d4",
-        "critMin":  20,
-        "critMult":  3,
-        "crit":  "20/x3",
-        "dmgType":  "Slashing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  12,
-        "cost":  9,
-        "isLight":  false,
-        "tags":  [
-                     "martial",
-                     "two-handed",
-                     "reach",
-                     "trip",
-                     "polearm",
-                     "slashing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Reach weapon (10 ft reach). Can make trip attacks. If tripped during your trip attempt, you can drop it to avoid being tripped.",
-        "ruleFlags":  {
-                          "reach":  true,
-                          "trip":  true
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Halberd",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Martial",
-        "weaponType":  "Martial Two-Handed",
-        "dice":  "1d10",
-        "extraDmg":  "1d10",
-        "damage":  "1d10",
-        "critMin":  20,
-        "critMult":  3,
-        "crit":  "20/x3",
-        "dmgType":  "Piercing or Slashing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  12,
-        "cost":  10,
-        "isLight":  false,
-        "tags":  [
-                     "martial",
-                     "two-handed",
-                     "brace",
-                     "trip",
-                     "slashing",
-                     "piercing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Can make trip attacks. If readied against a charge, deals double damage. Choice of piercing or slashing damage.",
-        "ruleFlags":  {
-                          "brace":  true,
-                          "trip":  true
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Lance",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Martial",
-        "weaponType":  "Martial Two-Handed",
-        "dice":  "1d8",
-        "extraDmg":  "1d8",
-        "damage":  "1d8",
-        "critMin":  20,
-        "critMult":  3,
-        "crit":  "20/x3",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  10,
-        "cost":  10,
-        "isLight":  false,
-        "tags":  [
-                     "martial",
-                     "two-handed",
-                     "reach",
-                     "mounted",
-                     "charge",
-                     "piercing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Reach weapon (10 ft reach). Deals double damage when used from the back of a charging mount. Can be wielded one-handed while mounted.",
-        "ruleFlags":  {
-                          "mountedChargeDouble":  true,
-                          "reach":  true
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Ã¢â€ Â³ Lance (Mounted One-Handed)",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Martial",
-        "weaponType":  "Martial One-Handed",
-        "dice":  "1d8",
-        "extraDmg":  "1d8",
-        "damage":  "1d8",
-        "critMin":  20,
-        "critMult":  3,
-        "crit":  "20/x3",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  10,
-        "cost":  10,
-        "isLight":  false,
-        "tags":  [
-                     "martial",
-                     "one-handed",
-                     "reach",
-                     "mounted",
-                     "charge",
-                     "piercing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "A lance can be used with one hand while you are mounted, leaving your off hand free for a shield or reins.",
-        "ruleFlags":  {
-                          "mountedChargeDouble":  true,
-                          "reach":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "parent":  "Lance"
-    },
-    {
-        "name":  "Ranseur",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Martial",
-        "weaponType":  "Martial Two-Handed",
-        "dice":  "2d4",
-        "extraDmg":  "2d4",
-        "damage":  "2d4",
-        "critMin":  20,
-        "critMult":  3,
-        "crit":  "20/x3",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  12,
-        "cost":  10,
-        "isLight":  false,
-        "tags":  [
-                     "martial",
-                     "two-handed",
-                     "reach",
-                     "disarm",
-                     "polearm",
-                     "piercing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Reach weapon (10 ft reach). +2 bonus on opposed attack rolls to disarm an opponent.",
-        "ruleFlags":  {
-                          "disarmBonus":  2,
-                          "reach":  true
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Scythe",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Martial",
-        "weaponType":  "Martial Two-Handed",
-        "dice":  "2d4",
-        "extraDmg":  "2d4",
-        "damage":  "2d4",
-        "critMin":  20,
-        "critMult":  4,
-        "crit":  "20/x4",
-        "dmgType":  "Piercing or Slashing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  10,
-        "cost":  18,
-        "isLight":  false,
-        "tags":  [
-                     "martial",
-                     "two-handed",
-                     "trip",
-                     "piercing",
-                     "slashing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Deals devastating x4 critical damage. Can make trip attacks.",
-        "ruleFlags":  {
-                          "trip":  true
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Longbow",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Martial",
-        "weaponType":  "Martial Ranged",
-        "dice":  "1d8",
-        "extraDmg":  "1d8",
-        "damage":  "1d8",
-        "critMin":  20,
-        "critMult":  3,
-        "crit":  "20/x3",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  3,
-        "cost":  75,
-        "isLight":  false,
-        "tags":  [
-                     "martial",
-                     "ranged",
-                     "bow",
-                     "piercing"
-                 ],
-        "scope":  "Ranged Only",
-        "attackType":  "weapon",
-        "combatScope":  "ranged",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Standard martial longbow with 100 ft range increment.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "range":  100,
-        "ammoType":  "arrow"
-    },
-    {
-        "name":  "Composite Longbow",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Martial",
-        "weaponType":  "Martial Ranged",
-        "dice":  "1d8",
-        "extraDmg":  "1d8",
-        "damage":  "1d8",
-        "critMin":  20,
-        "critMult":  3,
-        "crit":  "20/x3",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  3,
-        "cost":  100,
-        "isLight":  false,
-        "tags":  [
-                     "martial",
-                     "ranged",
-                     "bow",
-                     "composite",
-                     "piercing"
-                 ],
-        "scope":  "Ranged Only",
-        "attackType":  "weapon",
-        "combatScope":  "ranged",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Composite longbow with 110 ft range increment. Can be crafted with a high Strength rating to add Strength modifier to damage.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "range":  110,
-        "ammoType":  "arrow"
-    },
-    {
-        "name":  "Shortbow",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Martial",
-        "weaponType":  "Martial Ranged",
-        "dice":  "1d6",
-        "extraDmg":  "1d6",
-        "damage":  "1d6",
-        "critMin":  20,
-        "critMult":  3,
-        "crit":  "20/x3",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  2,
-        "cost":  30,
-        "isLight":  false,
-        "tags":  [
-                     "martial",
-                     "ranged",
-                     "bow",
-                     "piercing"
-                 ],
-        "scope":  "Ranged Only",
-        "attackType":  "weapon",
-        "combatScope":  "ranged",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Can be used while mounted without penalty with 60 ft range increment.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "range":  60,
-        "ammoType":  "arrow"
-    },
-    {
-        "name":  "Composite Shortbow",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Martial",
-        "weaponType":  "Martial Ranged",
-        "dice":  "1d6",
-        "extraDmg":  "1d6",
-        "damage":  "1d6",
-        "critMin":  20,
-        "critMult":  3,
-        "crit":  "20/x3",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  2,
-        "cost":  75,
-        "isLight":  false,
-        "tags":  [
-                     "martial",
-                     "ranged",
-                     "bow",
-                     "composite",
-                     "piercing"
-                 ],
-        "scope":  "Ranged Only",
-        "attackType":  "weapon",
-        "combatScope":  "ranged",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Can be used while mounted with 70 ft range increment. Can add Strength modifier to damage up to bow rating.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "range":  70,
-        "ammoType":  "arrow"
-    },
-    {
-        "name":  "Kama",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Exotic",
-        "weaponType":  "Exotic Light",
-        "dice":  "1d6",
-        "extraDmg":  "1d6",
-        "damage":  "1d6",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Slashing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  2,
-        "cost":  2,
-        "isLight":  true,
-        "tags":  [
-                     "exotic",
-                     "light",
-                     "monk",
-                     "finessable",
-                     "trip",
-                     "slashing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Special monk weapon (can be used with flurry of blows). Can make trip attacks. Finessable.",
-        "ruleFlags":  {
-                          "trip":  true,
-                          "monk":  true,
-                          "finessable":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "finessable":  true
-    },
-    {
-        "name":  "Nunchaku",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Exotic",
-        "weaponType":  "Exotic Light",
-        "dice":  "1d6",
-        "extraDmg":  "1d6",
-        "damage":  "1d6",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Bludgeoning",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  2,
-        "cost":  2,
-        "isLight":  true,
-        "tags":  [
-                     "exotic",
-                     "light",
-                     "monk",
-                     "finessable",
-                     "disarm",
-                     "bludgeoning"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Special monk weapon. +2 bonus on opposed attack rolls to disarm. Finessable.",
-        "ruleFlags":  {
-                          "disarmBonus":  2,
-                          "monk":  true,
-                          "finessable":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "finessable":  true
-    },
-    {
-        "name":  "Sai",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Exotic",
-        "weaponType":  "Exotic Light",
-        "dice":  "1d4",
-        "extraDmg":  "1d4",
-        "damage":  "1d4",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Bludgeoning",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  1,
-        "cost":  1,
-        "isLight":  true,
-        "tags":  [
-                     "exotic",
-                     "light",
-                     "monk",
-                     "finessable",
-                     "thrown",
-                     "disarm",
-                     "bludgeoning"
-                 ],
-        "scope":  "Melee or Ranged",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Special monk weapon. +4 bonus on opposed attack rolls to disarm. Can be thrown (10 ft). Finessable.",
-        "ruleFlags":  {
-                          "disarmBonus":  4,
-                          "thrown":  true,
-                          "monk":  true,
-                          "finessable":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "range":  10,
-        "finessable":  true
-    },
-    {
-        "name":  "Siangham",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Exotic",
-        "weaponType":  "Exotic Light",
-        "dice":  "1d6",
-        "extraDmg":  "1d6",
-        "damage":  "1d6",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  1,
-        "cost":  3,
-        "isLight":  true,
-        "tags":  [
-                     "exotic",
-                     "light",
-                     "monk",
-                     "finessable",
-                     "piercing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Special monk weapon. Finessable.",
-        "ruleFlags":  {
-                          "monk":  true,
-                          "finessable":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "finessable":  true
-    },
-    {
-        "name":  "Bastard Sword (One-Handed Exotic)",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Exotic",
-        "weaponType":  "Exotic One-Handed",
-        "dice":  "1d10",
-        "extraDmg":  "1d10",
-        "damage":  "1d10",
-        "critMin":  19,
-        "critMult":  2,
-        "crit":  "19-20/x2",
-        "dmgType":  "Slashing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  6,
-        "cost":  35,
-        "isLight":  false,
-        "tags":  [
-                     "exotic",
-                     "one-handed",
-                     "sword",
-                     "slashing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Requires Exotic Weapon Proficiency to wield in one hand. Deals 1d10 slashing damage.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Ã¢â€ Â³ Bastard Sword (Two-Handed Martial)",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Martial",
-        "weaponType":  "Martial Two-Handed",
-        "dice":  "1d10",
-        "extraDmg":  "1d10",
-        "damage":  "1d10",
-        "critMin":  19,
-        "critMult":  2,
-        "crit":  "19-20/x2",
-        "dmgType":  "Slashing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  6,
-        "cost":  35,
-        "isLight":  false,
-        "tags":  [
-                     "martial",
-                     "two-handed",
-                     "sword",
-                     "slashing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Can be wielded two-handed as a martial weapon without Exotic Weapon Proficiency.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "parent":  "Bastard Sword (One-Handed Exotic)"
-    },
-    {
-        "name":  "Dwarven Waraxe (One-Handed Exotic)",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Exotic",
-        "weaponType":  "Exotic One-Handed",
-        "dice":  "1d10",
-        "extraDmg":  "1d10",
-        "damage":  "1d10",
-        "critMin":  20,
-        "critMult":  3,
-        "crit":  "20/x3",
-        "dmgType":  "Slashing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  8,
-        "cost":  30,
-        "isLight":  false,
-        "tags":  [
-                     "exotic",
-                     "one-handed",
-                     "axe",
-                     "slashing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Treated as a martial weapon by Dwarves. Other races require Exotic Weapon Proficiency to wield one-handed.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Ã¢â€ Â³ Dwarven Waraxe (Two-Handed Martial)",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Martial",
-        "weaponType":  "Martial Two-Handed",
-        "dice":  "1d10",
-        "extraDmg":  "1d10",
-        "damage":  "1d10",
-        "critMin":  20,
-        "critMult":  3,
-        "crit":  "20/x3",
-        "dmgType":  "Slashing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  8,
-        "cost":  30,
-        "isLight":  false,
-        "tags":  [
-                     "martial",
-                     "two-handed",
-                     "axe",
-                     "slashing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Can be wielded two-handed as a martial weapon by any character proficient with martial weapons.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "parent":  "Dwarven Waraxe (One-Handed Exotic)"
-    },
-    {
-        "name":  "Whip",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Exotic",
-        "weaponType":  "Exotic One-Handed",
-        "dice":  "1d3",
-        "extraDmg":  "1d3",
-        "damage":  "1d3",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Slashing (Nonlethal)",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  2,
-        "cost":  1,
-        "isLight":  false,
-        "tags":  [
-                     "exotic",
-                     "one-handed",
-                     "reach",
-                     "finessable",
-                     "disarm",
-                     "trip",
-                     "nonlethal",
-                     "slashing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Deals nonlethal damage, cannot damage creatures with +1 armor or +3 natural armor. 15 ft reach, can strike adjacent. +2 disarm bonus, can trip. Finessable.",
-        "ruleFlags":  {
-                          "disarmBonus":  2,
-                          "reach":  true,
-                          "nonlethal":  true,
-                          "trip":  true,
-                          "finessable":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "reach":  true,
-        "finessable":  true,
-        "canAttackAdjacent":  true,
-        "threatens":  false,
-        "armorLimit":  "+1 armor or +3 natural armor",
-        "notes":  "Has 15 ft reach, can strike adjacent foes, does not threaten reach area. Deals no damage to creatures with +1 or higher armor bonus or +3 natural armor bonus. Finessable, disarm (+2), trip."
-    },
-    {
-        "name":  "Orc Double Axe",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Exotic",
-        "weaponType":  "Exotic Two-Handed",
-        "dice":  "1d8",
-        "extraDmg":  "1d8",
-        "damage":  "1d8",
-        "critMin":  20,
-        "critMult":  3,
-        "crit":  "20/x3",
-        "dmgType":  "Slashing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  15,
-        "cost":  60,
-        "isLight":  false,
-        "tags":  [
-                     "exotic",
-                     "two-handed",
-                     "double",
-                     "axe",
-                     "slashing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "A double weapon. You can fight with it as if fighting with two weapons (primary 1d8 x3, off-hand 1d8 x3).",
-        "ruleFlags":  {
-                          "doubleWeapon":  true
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Ã¢â€ Â³ Orc Double Axe (Off-Hand Head)",
-        "type":  "Weapon",
-        "slot":  "Off-Hand",
-        "category":  "Exotic",
-        "weaponType":  "Exotic Light",
-        "dice":  "1d8",
-        "extraDmg":  "1d8",
-        "damage":  "1d8",
-        "critMin":  20,
-        "critMult":  3,
-        "crit":  "20/x3",
-        "dmgType":  "Slashing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  0,
-        "cost":  0,
-        "isLight":  true,
-        "tags":  [
-                     "exotic",
-                     "off-hand",
-                     "double",
-                     "light",
-                     "axe",
-                     "slashing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Secondary head of Orc Double Axe, treated as a light weapon for two-weapon fighting penalty calculations.",
-        "ruleFlags":  {
-                          "doubleWeaponOffHand":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "parent":  "Orc Double Axe",
-        "finessable":  true
-    },
-    {
-        "name":  "Spiked Chain",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Exotic",
-        "weaponType":  "Exotic Two-Handed",
-        "dice":  "2d4",
-        "extraDmg":  "2d4",
-        "damage":  "2d4",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  10,
-        "cost":  25,
-        "isLight":  false,
-        "tags":  [
-                     "exotic",
-                     "two-handed",
-                     "finessable",
-                     "reach",
-                     "trip",
-                     "disarm",
-                     "shadow hand",
-                     "piercing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Has reach (10 ft) and can strike adjacent opponents. Finessable with Weapon Finesse. +2 disarm bonus, can make trip attacks.",
-        "ruleFlags":  {
-                          "disarmBonus":  2,
-                          "reach":  true,
-                          "trip":  true,
-                          "finessable":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "finessable":  true
-    },
-    {
-        "name":  "Dire Flail",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Exotic",
-        "weaponType":  "Exotic Two-Handed",
-        "dice":  "1d8",
-        "extraDmg":  "1d8",
-        "damage":  "1d8",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Bludgeoning",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  10,
-        "cost":  90,
-        "isLight":  false,
-        "tags":  [
-                     "exotic",
-                     "two-handed",
-                     "double",
-                     "disarm",
-                     "trip",
-                     "bludgeoning"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "A double weapon. +2 disarm bonus, can make trip attacks.",
-        "ruleFlags":  {
-                          "doubleWeapon":  true,
-                          "trip":  true,
-                          "disarmBonus":  2
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Ã¢â€ Â³ Dire Flail (Off-Hand Head)",
-        "type":  "Weapon",
-        "slot":  "Off-Hand",
-        "category":  "Exotic",
-        "weaponType":  "Exotic Light",
-        "dice":  "1d8",
-        "extraDmg":  "1d8",
-        "damage":  "1d8",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Bludgeoning",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  0,
-        "cost":  0,
-        "isLight":  true,
-        "tags":  [
-                     "exotic",
-                     "off-hand",
-                     "double",
-                     "light",
-                     "disarm",
-                     "trip",
-                     "bludgeoning"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Secondary head of Dire Flail, treated as a light weapon for two-weapon fighting penalties.",
-        "ruleFlags":  {
-                          "doubleWeaponOffHand":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "parent":  "Dire Flail",
-        "finessable":  true
-    },
-    {
-        "name":  "Gnome Hooked Hammer",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Exotic",
-        "weaponType":  "Exotic Two-Handed",
-        "dice":  "1d8",
-        "extraDmg":  "1d8",
-        "damage":  "1d8",
-        "critMin":  20,
-        "critMult":  3,
-        "crit":  "20/x3",
-        "dmgType":  "Bludgeoning",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  6,
-        "cost":  20,
-        "isLight":  false,
-        "tags":  [
-                     "exotic",
-                     "two-handed",
-                     "double",
-                     "trip",
-                     "bludgeoning"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Treated as a martial weapon by Gnomes. Blunt hammer head (1d8 x3 bludgeoning), pick off-hand head (1d6 x4 piercing). Can trip.",
-        "ruleFlags":  {
-                          "doubleWeapon":  true,
-                          "trip":  true
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Ã¢â€ Â³ Gnome Hooked Hammer (Pick Off-Hand)",
-        "type":  "Weapon",
-        "slot":  "Off-Hand",
-        "category":  "Exotic",
-        "weaponType":  "Exotic Light",
-        "dice":  "1d6",
-        "extraDmg":  "1d6",
-        "damage":  "1d6",
-        "critMin":  20,
-        "critMult":  4,
-        "crit":  "20/x4",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  0,
-        "cost":  0,
-        "isLight":  true,
-        "tags":  [
-                     "exotic",
-                     "off-hand",
-                     "double",
-                     "light",
-                     "trip",
-                     "piercing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Secondary pick head of Gnome Hooked Hammer (1d6 x4 piercing). Treated as light weapon.",
-        "ruleFlags":  {
-                          "doubleWeaponOffHand":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "parent":  "Gnome Hooked Hammer",
-        "finessable":  true
-    },
-    {
-        "name":  "Two-Bladed Sword",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Exotic",
-        "weaponType":  "Exotic Two-Handed",
-        "dice":  "1d8",
-        "extraDmg":  "1d8",
-        "damage":  "1d8",
-        "critMin":  19,
-        "critMult":  2,
-        "crit":  "19-20/x2",
-        "dmgType":  "Slashing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  10,
-        "cost":  100,
-        "isLight":  false,
-        "tags":  [
-                     "exotic",
-                     "two-handed",
-                     "double",
-                     "sword",
-                     "slashing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "A double weapon with a blade on each end. 19-20/x2 threat range on both ends.",
-        "ruleFlags":  {
-                          "doubleWeapon":  true
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Ã¢â€ Â³ Two-Bladed Sword (Off-Hand Head)",
-        "type":  "Weapon",
-        "slot":  "Off-Hand",
-        "category":  "Exotic",
-        "weaponType":  "Exotic Light",
-        "dice":  "1d8",
-        "extraDmg":  "1d8",
-        "damage":  "1d8",
-        "critMin":  19,
-        "critMult":  2,
-        "crit":  "19-20/x2",
-        "dmgType":  "Slashing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  0,
-        "cost":  0,
-        "isLight":  true,
-        "tags":  [
-                     "exotic",
-                     "off-hand",
-                     "double",
-                     "light",
-                     "sword",
-                     "slashing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Secondary blade of Two-Bladed Sword (1d8 19-20/x2 slashing). Treated as light weapon.",
-        "ruleFlags":  {
-                          "doubleWeaponOffHand":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "parent":  "Two-Bladed Sword",
-        "finessable":  true
-    },
-    {
-        "name":  "Dwarven Urgrosh",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Exotic",
-        "weaponType":  "Exotic Two-Handed",
-        "dice":  "1d8",
-        "extraDmg":  "1d8",
-        "damage":  "1d8",
-        "critMin":  20,
-        "critMult":  3,
-        "crit":  "20/x3",
-        "dmgType":  "Slashing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  12,
-        "cost":  50,
-        "isLight":  false,
-        "tags":  [
-                     "exotic",
-                     "two-handed",
-                     "double",
-                     "axe",
-                     "slashing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Treated as a martial weapon by Dwarves. Primary axe head 1d8 x3 slashing, off-hand spear head 1d6 x3 piercing. If readied against charge, deals double.",
-        "ruleFlags":  {
-                          "brace":  true,
-                          "doubleWeapon":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "brace":  false
-    },
-    {
-        "name":  "Ã¢â€ Â³ Dwarven Urgrosh (Spear Off-Hand)",
-        "type":  "Weapon",
-        "slot":  "Off-Hand",
-        "category":  "Exotic",
-        "weaponType":  "Exotic Light",
-        "dice":  "1d6",
-        "extraDmg":  "1d6",
-        "damage":  "1d6",
-        "critMin":  20,
-        "critMult":  3,
-        "crit":  "20/x3",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  0,
-        "cost":  0,
-        "isLight":  true,
-        "tags":  [
-                     "exotic",
-                     "off-hand",
-                     "double",
-                     "light",
-                     "brace",
-                     "piercing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Secondary spear head of Dwarven Urgrosh (1d6 x3 piercing). Treated as light weapon.",
-        "ruleFlags":  {
-                          "doubleWeaponOffHand":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "parent":  "Dwarven Urgrosh",
-        "brace":  true,
-        "finessable":  true
-    },
-    {
-        "name":  "Bolas",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Exotic",
-        "weaponType":  "Exotic Ranged",
-        "dice":  "1d4",
-        "extraDmg":  "1d4",
-        "damage":  "1d4",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Bludgeoning (Nonlethal)",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  2,
-        "cost":  5,
-        "isLight":  false,
-        "tags":  [
-                     "exotic",
-                     "ranged",
-                     "thrown",
-                     "trip",
-                     "nonlethal",
-                     "bludgeoning"
-                 ],
-        "scope":  "Ranged Only",
-        "attackType":  "weapon",
-        "combatScope":  "ranged",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Can be used to make ranged trip attacks against Large or smaller opponents with 10 ft range increment.",
-        "ruleFlags":  {
-                          "nonlethal":  true,
-                          "trip":  true,
-                          "thrown":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "range":  10
-    },
-    {
-        "name":  "Hand Crossbow",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Exotic",
-        "weaponType":  "Exotic Ranged",
-        "dice":  "1d4",
-        "extraDmg":  "1d4",
-        "damage":  "1d4",
-        "critMin":  19,
-        "critMult":  2,
-        "crit":  "19-20/x2",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  2,
-        "cost":  100,
-        "isLight":  true,
-        "tags":  [
-                     "exotic",
-                     "ranged",
-                     "crossbow",
-                     "light",
-                     "piercing"
-                 ],
-        "scope":  "Ranged Only",
-        "attackType":  "weapon",
-        "combatScope":  "ranged",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Can be drawn and reloaded with a move action. Can be fired with one hand with 30 ft range increment.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "range":  30,
-        "ammoType":  "bolt"
-    },
-    {
-        "name":  "Repeating Heavy Crossbow",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Exotic",
-        "weaponType":  "Exotic Ranged",
-        "dice":  "1d10",
-        "extraDmg":  "1d10",
-        "damage":  "1d10",
-        "critMin":  19,
-        "critMult":  2,
-        "crit":  "19-20/x2",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  12,
-        "cost":  400,
-        "isLight":  false,
-        "tags":  [
-                     "exotic",
-                     "ranged",
-                     "crossbow",
-                     "piercing"
-                 ],
-        "scope":  "Ranged Only",
-        "attackType":  "weapon",
-        "combatScope":  "ranged",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Holds 5 bolts. Re-cocking and chambering a bolt is a free action. Loading a new case of 5 bolts is a full-round action.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "range":  120,
-        "ammoType":  "bolt"
-    },
-    {
-        "name":  "Repeating Light Crossbow",
-        "type":  "Weapon",
-        "slot":  "Two-Handed",
-        "category":  "Exotic",
-        "weaponType":  "Exotic Ranged",
-        "dice":  "1d8",
-        "extraDmg":  "1d8",
-        "damage":  "1d8",
-        "critMin":  19,
-        "critMult":  2,
-        "crit":  "19-20/x2",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  6,
-        "cost":  250,
-        "isLight":  false,
-        "tags":  [
-                     "exotic",
-                     "ranged",
-                     "crossbow",
-                     "piercing"
-                 ],
-        "scope":  "Ranged Only",
-        "attackType":  "weapon",
-        "combatScope":  "ranged",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Holds 5 bolts. Re-cocking and chambering a bolt is a free action. Loading a new case of 5 bolts is a full-round action.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "range":  80,
-        "ammoType":  "bolt"
-    },
-    {
-        "name":  "Net",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Exotic",
-        "weaponType":  "Exotic Ranged",
-        "dice":  "0",
-        "extraDmg":  "0",
-        "damage":  "0",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "None",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  6,
-        "cost":  20,
-        "isLight":  false,
-        "tags":  [
-                     "exotic",
-                     "ranged",
-                     "thrown",
-                     "entangle"
-                 ],
-        "scope":  "Ranged Only",
-        "attackType":  "weapon",
-        "combatScope":  "ranged",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Ranged touch attack to entangle an opponent (up to Large size). Entangled creature suffers -2 attack, -4 Dex, moves at half speed.",
-        "ruleFlags":  {
-                          "entangle":  true,
-                          "thrown":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "range":  10,
-        "rangeIncrement":  null,
-        "maxRange":  10
-    },
-    {
-        "name":  "Shuriken",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Exotic",
-        "weaponType":  "Exotic Ranged",
-        "dice":  "1d2",
-        "extraDmg":  "1d2",
-        "damage":  "1d2",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  0.1,
-        "cost":  0.2,
-        "isLight":  true,
-        "tags":  [
-                     "exotic",
-                     "ranged",
-                     "thrown",
-                     "monk",
-                     "piercing"
-                 ],
-        "scope":  "Ranged Only",
-        "attackType":  "weapon",
-        "combatScope":  "ranged",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "Special monk weapon. Can be thrown as ammunition (drawing is a free action). Cannot be recovered once thrown.",
-        "ruleFlags":  {
-                          "monk":  true,
-                          "thrown":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "range":  10
-    },
-    {
-        "name":  "Armor Spikes",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Martial",
-        "weaponType":  "Martial Light",
-        "dice":  "1d6",
-        "extraDmg":  "1d6",
-        "damage":  "1d6",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  10,
-        "cost":  50,
-        "isLight":  true,
-        "tags":  [
-                     "martial",
-                     "light",
-                     "armor-spikes",
-                     "piercing",
-                     "finessable"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "SRD / PHB p.116",
-        "benefit":  "You can have spikes added to your armor. Deals extra piercing damage on a successful grapple attack or can be used as an off-hand light weapon.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "finessable":  true
-    },
-    {
-        "name":  "Shield Spikes (Light Shield)",
-        "type":  "Weapon",
-        "slot":  "Off-Hand",
-        "category":  "Martial",
-        "weaponType":  "Martial Light",
-        "dice":  "1d4",
-        "extraDmg":  "1d4",
-        "damage":  "1d4",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  5,
-        "cost":  10,
-        "isLight":  true,
-        "tags":  [
-                     "martial",
-                     "shield-spikes",
-                     "piercing"
-                 ],
-        "scope":  "Melee Only",
-        "attackType":  "weapon",
-        "combatScope":  "melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "source":  "PHB Table 7-5 / p.125",
-        "benefit":  "Increases the damage dealt by a shield bash as if the shield were designed for a creature one size category larger, and deals piercing damage.",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "finessable":  true
-    },
-    {
-        "name":  "Padded Armor",
-        "type":  "Armor",
-        "slot":  "Armor",
-        "armorType":  "Light",
-        "acBonus":  1,
-        "maxDex":  8,
-        "checkPenalty":  0,
-        "spellFailure":  5,
-        "speed30":  "30 ft.",
-        "speed20":  "20 ft.",
-        "weight":  10,
-        "cost":  5,
-        "bonusType":  "Armor",
-        "tags":  [
-                     "armor",
-                     "light"
-                 ],
-        "source":  "SRD / PHB p.123",
-        "benefit":  "Quilted layers of cloth and batting. Very quiet and lightweight.",
-        "role":  "Defense",
-        "actionType":  "Passive",
-        "attackType":  "none",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Leather Armor",
-        "type":  "Armor",
-        "slot":  "Armor",
-        "armorType":  "Light",
-        "acBonus":  2,
-        "maxDex":  6,
-        "checkPenalty":  0,
-        "spellFailure":  10,
-        "speed30":  "30 ft.",
-        "speed20":  "20 ft.",
-        "weight":  15,
-        "cost":  10,
-        "bonusType":  "Armor",
-        "tags":  [
-                     "armor",
-                     "light"
-                 ],
-        "source":  "SRD / PHB p.123",
-        "benefit":  "Standard boiled and hardened leather breastplate and greaves with zero check penalty.",
-        "role":  "Defense",
-        "actionType":  "Passive",
-        "attackType":  "none",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Studded Leather Armor",
-        "type":  "Armor",
-        "slot":  "Armor",
-        "armorType":  "Light",
-        "acBonus":  3,
-        "maxDex":  5,
-        "checkPenalty":  -1,
-        "spellFailure":  15,
-        "speed30":  "30 ft.",
-        "speed20":  "20 ft.",
-        "weight":  20,
-        "cost":  25,
-        "bonusType":  "Armor",
-        "tags":  [
-                     "armor",
-                     "light"
-                 ],
-        "source":  "SRD / PHB p.123",
-        "benefit":  "Tough leather reinforced with close-set metal rivets.",
-        "role":  "Defense",
-        "actionType":  "Passive",
-        "attackType":  "none",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Chain Shirt",
-        "type":  "Armor",
-        "slot":  "Armor",
-        "armorType":  "Light",
-        "acBonus":  4,
-        "maxDex":  4,
-        "checkPenalty":  -2,
-        "spellFailure":  20,
-        "speed30":  "30 ft.",
-        "speed20":  "20 ft.",
-        "weight":  25,
-        "cost":  100,
-        "bonusType":  "Armor",
-        "tags":  [
-                     "armor",
-                     "light"
-                 ],
-        "source":  "SRD / PHB p.123",
-        "benefit":  "Interlocking steel rings protecting the torso and upper arms while preserving full movement.",
-        "role":  "Defense",
-        "actionType":  "Passive",
-        "attackType":  "none",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Hide Armor",
-        "type":  "Armor",
-        "slot":  "Armor",
-        "armorType":  "Medium",
-        "acBonus":  3,
-        "maxDex":  4,
-        "checkPenalty":  -3,
-        "spellFailure":  20,
-        "speed30":  "20 ft.",
-        "speed20":  "15 ft.",
-        "weight":  25,
-        "cost":  15,
-        "bonusType":  "Armor",
-        "tags":  [
-                     "armor",
-                     "medium"
-                 ],
-        "source":  "SRD / PHB p.123",
-        "benefit":  "Multiple layers of animal hides cured together. Favored by barbarians and druids.",
-        "role":  "Defense",
-        "actionType":  "Passive",
-        "attackType":  "none",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Scale Mail",
-        "type":  "Armor",
-        "slot":  "Armor",
-        "armorType":  "Medium",
-        "acBonus":  4,
-        "maxDex":  3,
-        "checkPenalty":  -4,
-        "spellFailure":  25,
-        "speed30":  "20 ft.",
-        "speed20":  "15 ft.",
-        "weight":  30,
-        "cost":  50,
-        "bonusType":  "Armor",
-        "tags":  [
-                     "armor",
-                     "medium"
-                 ],
-        "source":  "SRD / PHB p.123",
-        "benefit":  "Coat and leggings covered in overlapping scales of bronze or iron.",
-        "role":  "Defense",
-        "actionType":  "Passive",
-        "attackType":  "none",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Chainmail",
-        "type":  "Armor",
-        "slot":  "Armor",
-        "armorType":  "Medium",
-        "acBonus":  5,
-        "maxDex":  2,
-        "checkPenalty":  -5,
-        "spellFailure":  30,
-        "speed30":  "20 ft.",
-        "speed20":  "15 ft.",
-        "weight":  40,
-        "cost":  150,
-        "bonusType":  "Armor",
-        "tags":  [
-                     "armor",
-                     "medium"
-                 ],
-        "source":  "SRD / PHB p.123",
-        "benefit":  "Complete suit of interlocking steel rings over a quilted fabric layer.",
-        "role":  "Defense",
-        "actionType":  "Passive",
-        "attackType":  "none",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Breastplate",
-        "type":  "Armor",
-        "slot":  "Armor",
-        "armorType":  "Medium",
-        "acBonus":  5,
-        "maxDex":  3,
-        "checkPenalty":  -4,
-        "spellFailure":  25,
-        "speed30":  "20 ft.",
-        "speed20":  "15 ft.",
-        "weight":  30,
-        "cost":  200,
-        "bonusType":  "Armor",
-        "tags":  [
-                     "armor",
-                     "medium"
-                 ],
-        "source":  "SRD / PHB p.123",
-        "benefit":  "Fitted metal chest and back plate with greaves, offering solid protection without fully encumbering the limbs.",
-        "role":  "Defense",
-        "actionType":  "Passive",
-        "attackType":  "none",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Splint Mail",
-        "type":  "Armor",
-        "slot":  "Armor",
-        "armorType":  "Heavy",
-        "acBonus":  6,
-        "maxDex":  0,
-        "checkPenalty":  -7,
-        "spellFailure":  40,
-        "speed30":  "20 ft.",
-        "speed20":  "15 ft.",
-        "weight":  45,
-        "cost":  200,
-        "bonusType":  "Armor",
-        "tags":  [
-                     "armor",
-                     "heavy"
-                 ],
-        "source":  "SRD / PHB p.123",
-        "benefit":  "Vertical metal strips riveted to a leather backing and chainmail backing. Run speed is x3 instead of x4.",
-        "role":  "Defense",
-        "actionType":  "Passive",
-        "attackType":  "none",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Banded Mail",
-        "type":  "Armor",
-        "slot":  "Armor",
-        "armorType":  "Heavy",
-        "acBonus":  6,
-        "maxDex":  1,
-        "checkPenalty":  -6,
-        "spellFailure":  35,
-        "speed30":  "20 ft.",
-        "speed20":  "15 ft.",
-        "weight":  35,
-        "cost":  250,
-        "bonusType":  "Armor",
-        "tags":  [
-                     "armor",
-                     "heavy"
-                 ],
-        "source":  "SRD / PHB p.123",
-        "benefit":  "Overlapping horizontal metal bands riveted to leather and chain backing. Run speed is x3 instead of x4.",
-        "role":  "Defense",
-        "actionType":  "Passive",
-        "attackType":  "none",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Half-Plate",
-        "type":  "Armor",
-        "slot":  "Armor",
-        "armorType":  "Heavy",
-        "acBonus":  7,
-        "maxDex":  0,
-        "checkPenalty":  -7,
-        "spellFailure":  40,
-        "speed30":  "20 ft.",
-        "speed20":  "15 ft.",
-        "weight":  50,
-        "cost":  600,
-        "bonusType":  "Armor",
-        "tags":  [
-                     "armor",
-                     "heavy"
-                 ],
-        "source":  "SRD / PHB p.123",
-        "benefit":  "Shaped steel plates covering vital areas combined with chainmail joints. Run speed is x3 instead of x4.",
-        "role":  "Defense",
-        "actionType":  "Passive",
-        "attackType":  "none",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Full Plate",
-        "type":  "Armor",
-        "slot":  "Armor",
-        "armorType":  "Heavy",
-        "acBonus":  8,
-        "maxDex":  1,
-        "checkPenalty":  -6,
-        "spellFailure":  35,
-        "speed30":  "20 ft.",
-        "speed20":  "15 ft.",
-        "weight":  50,
-        "cost":  1500,
-        "bonusType":  "Armor",
-        "tags":  [
-                     "armor",
-                     "heavy"
-                 ],
-        "source":  "SRD / PHB p.123",
-        "benefit":  "The pinnacle of mundane defense. Interlocking steel plates covering the entire body over padded arming doublet. Run speed is x3 instead of x4.",
-        "role":  "Defense",
-        "actionType":  "Passive",
-        "attackType":  "none",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Buckler",
-        "type":  "Shield",
-        "slot":  "Off-Hand/Shield",
-        "armorType":  "Shield",
-        "acBonus":  1,
-        "maxDex":  null,
-        "checkPenalty":  -1,
-        "spellFailure":  5,
-        "weight":  5,
-        "cost":  15,
-        "bonusType":  "Shield",
-        "tags":  [
-                     "shield",
-                     "buckler"
-                 ],
-        "source":  "SRD / PHB p.123",
-        "benefit":  "Fastened to the forearm. You can use a bow or crossbow without penalty, or an off-hand weapon at a -1 attack penalty (buckler AC is lost for that round).",
-        "role":  "Defense",
-        "actionType":  "Passive",
-        "attackType":  "shield",
-        "combatScope":  "melee",
-        "dice":  null,
-        "critMin":  20,
-        "critMult":  2,
-        "dmgType":  "Bludgeoning",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "extraDmg":  null,
-        "damage":  null,
-        "notes":  "Cannot be used to perform a shield bash (PHB p.125)."
-    },
-    {
-        "name":  "Light Wooden Shield",
-        "type":  "Shield",
-        "slot":  "Off-Hand/Shield",
-        "armorType":  "Shield",
-        "acBonus":  1,
-        "maxDex":  null,
-        "checkPenalty":  -1,
-        "spellFailure":  5,
-        "weight":  5,
-        "cost":  3,
-        "bonusType":  "Shield",
-        "tags":  [
-                     "shield",
-                     "wooden",
-                     "light"
-                 ],
-        "source":  "SRD / PHB p.123",
-        "benefit":  "Light wooden shield strapped to the arm. Can make shield bash attacks (1d3 bludgeoning).",
-        "role":  "Defense",
-        "actionType":  "Passive",
-        "attackType":  "shield",
-        "combatScope":  "melee",
-        "dice":  "1d3",
-        "critMin":  20,
-        "critMult":  2,
-        "dmgType":  "Bludgeoning",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Light Steel Shield",
-        "type":  "Shield",
-        "slot":  "Off-Hand/Shield",
-        "armorType":  "Shield",
-        "acBonus":  1,
-        "maxDex":  null,
-        "checkPenalty":  -1,
-        "spellFailure":  5,
-        "weight":  6,
-        "cost":  9,
-        "bonusType":  "Shield",
-        "tags":  [
-                     "shield",
-                     "steel",
-                     "light"
-                 ],
-        "source":  "SRD / PHB p.123",
-        "benefit":  "Light steel shield strapped to the arm. Can make shield bash attacks (1d3 bludgeoning).",
-        "role":  "Defense",
-        "actionType":  "Passive",
-        "attackType":  "shield",
-        "combatScope":  "melee",
-        "dice":  "1d3",
-        "critMin":  20,
-        "critMult":  2,
-        "dmgType":  "Bludgeoning",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Heavy Wooden Shield",
-        "type":  "Shield",
-        "slot":  "Off-Hand/Shield",
-        "armorType":  "Shield",
-        "acBonus":  2,
-        "maxDex":  null,
-        "checkPenalty":  -2,
-        "spellFailure":  15,
-        "weight":  10,
-        "cost":  7,
-        "bonusType":  "Shield",
-        "tags":  [
-                     "shield",
-                     "wooden",
-                     "heavy"
-                 ],
-        "source":  "SRD / PHB p.123",
-        "benefit":  "Substantial wooden shield gripped with hand. Can make shield bash attacks (1d4 bludgeoning).",
-        "role":  "Defense",
-        "actionType":  "Passive",
-        "attackType":  "shield",
-        "combatScope":  "melee",
-        "dice":  "1d4",
-        "critMin":  20,
-        "critMult":  2,
-        "dmgType":  "Bludgeoning",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Heavy Steel Shield",
-        "type":  "Shield",
-        "slot":  "Off-Hand/Shield",
-        "armorType":  "Shield",
-        "acBonus":  2,
-        "maxDex":  null,
-        "checkPenalty":  -2,
-        "spellFailure":  15,
-        "weight":  15,
-        "cost":  20,
-        "bonusType":  "Shield",
-        "tags":  [
-                     "shield",
-                     "steel",
-                     "heavy"
-                 ],
-        "source":  "SRD / PHB p.123",
-        "benefit":  "Solid steel shield gripped with hand. Can make shield bash attacks (1d4 bludgeoning).",
-        "role":  "Defense",
-        "actionType":  "Passive",
-        "attackType":  "shield",
-        "combatScope":  "melee",
-        "dice":  "1d4",
-        "critMin":  20,
-        "critMult":  2,
-        "dmgType":  "Bludgeoning",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ]
-    },
-    {
-        "name":  "Tower Shield",
-        "type":  "Shield",
-        "slot":  "Off-Hand/Shield",
-        "armorType":  "Shield",
-        "acBonus":  4,
-        "maxDex":  2,
-        "checkPenalty":  -10,
-        "spellFailure":  50,
-        "weight":  45,
-        "cost":  30,
-        "bonusType":  "Shield",
-        "tags":  [
-                     "shield",
-                     "tower"
-                 ],
-        "source":  "SRD / PHB p.123",
-        "benefit":  "Massive wooden shield. Imposes -2 penalty on attack rolls due to encumbrance. As standard action, grants total cover. Cannot bash.",
-        "role":  "Defense",
-        "actionType":  "Passive",
-        "attackType":  "shield",
-        "combatScope":  "melee",
-        "dice":  "0",
-        "critMin":  20,
-        "critMult":  2,
-        "dmgType":  "Bludgeoning",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-                                {
-                                    "type":  "attack_penalty",
-                                    "value":  -2,
-                                    "scope":  "All Attacks",
-                                    "description":  "Due to shield\u0027s encumbrance, -2 penalty on attack rolls (PHB p.125)."
-                                },
-                                {
-                                    "type":  "cover",
-                                    "action":  "Standard Action",
-                                    "description":  "Can be used as total cover against attacks through chosen shield edge (PHB p.125)."
-                                }
-                            ]
-    },
-    {
-        "name":  "Power Attack",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Str 13",
-        "benefit":  "On your action, before making attack rolls, subtract a number from all melee attack rolls (up to BAB) and add that number to all melee damage rolls (+1x for one-handed, +2x for two-handed). Cannot add bonus damage with a light weapon (except unarmed strikes or natural weapon attacks).",
-        "bonusType":  "Untyped",
-        "scope":  "Melee Only",
-        "combatScope":  "melee",
-        "attackType":  "feat_melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "power-attack"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "powerAttack":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Cleave",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Str 13, Power Attack",
-        "benefit":  "If you deal enough damage to drop a creature (below 0 HP), you immediately get an extra melee attack against another creature in reach.",
-        "bonusType":  "Untyped",
-        "scope":  "Melee Only",
-        "combatScope":  "melee",
-        "attackType":  "feat_melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "cleave"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Great Cleave",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Str 13, Power Attack, Cleave, BAB +4",
-        "benefit":  "No limit to the number of extra attacks you can make per round from Cleave as long as each dropped target qualifies.",
-        "bonusType":  "Untyped",
-        "scope":  "Melee Only",
-        "combatScope":  "melee",
-        "attackType":  "feat_melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "cleave"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Weapon Finesse",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "BAB +1",
-        "benefit":  "With a light weapon, rapier, whip, or spiked chain made for your size, you may use Dexterity modifier instead of Strength modifier on attack rolls.",
-        "bonusType":  "Untyped",
-        "scope":  "Melee Only",
-        "combatScope":  "melee",
-        "attackType":  "feat_melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "finesse"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "weaponFinesse":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Combat Expertise",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Int 13",
-        "benefit":  "Subtract a number from melee attack rolls (up to BAB, max 5) and add the same number as a dodge bonus to Armor Class.",
-        "bonusType":  "Untyped",
-        "scope":  "Melee Only",
-        "combatScope":  "melee",
-        "attackType":  "feat_melee",
-        "actionType":  "Passive",
-        "role":  "Defense",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "combat-expertise"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "combatExpertise":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Improved Trip",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Int 13, Combat Expertise",
-        "benefit":  "Do not provoke attack of opportunity when making a trip attack. +4 bonus on Strength check to trip. If you succeed, gain immediate extra melee attack against tripped target.",
-        "bonusType":  "Untyped",
-        "scope":  "Melee Only",
-        "combatScope":  "melee",
-        "attackType":  "feat_melee",
-        "actionType":  "Passive",
-        "role":  "Tactical",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "trip"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "tripBonus":  4
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Improved Disarm",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Int 13, Combat Expertise",
-        "benefit":  "Do not provoke attack of opportunity when attempting to disarm, and gain a +4 bonus on opposed disarm roll.",
-        "bonusType":  "Untyped",
-        "scope":  "Melee Only",
-        "combatScope":  "melee",
-        "attackType":  "feat_melee",
-        "actionType":  "Passive",
-        "role":  "Tactical",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "disarm"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "disarmBonus":  4
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Improved Feint",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Int 13, Combat Expertise",
-        "benefit":  "Can make a Bluff check to feint in combat as a move action rather than a standard action.",
-        "bonusType":  "Untyped",
-        "scope":  "Melee Only",
-        "combatScope":  "melee",
-        "attackType":  "feat_melee",
-        "actionType":  "Move",
-        "role":  "Tactical",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "feint"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Improved Sunder",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Str 13, Power Attack",
-        "benefit":  "Do not provoke attack of opportunity when striking an opponent\u0027s weapon or shield. +4 bonus on opposed attack roll.",
-        "bonusType":  "Untyped",
-        "scope":  "Melee Only",
-        "combatScope":  "melee",
-        "attackType":  "feat_melee",
-        "actionType":  "Passive",
-        "role":  "Tactical",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "sunder"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "sunderBonus":  4
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Improved Bull Rush",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Str 13, Power Attack",
-        "benefit":  "Do not provoke attack of opportunity when bull rushing. +4 bonus on Strength check to push opponent back.",
-        "bonusType":  "Untyped",
-        "scope":  "Melee Only",
-        "combatScope":  "melee",
-        "attackType":  "feat_melee",
-        "actionType":  "Passive",
-        "role":  "Tactical",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "bull-rush"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "bullRushBonus":  4
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Improved Overrun",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Str 13, Power Attack",
-        "benefit":  "Target cannot avoid you during overrun. +4 bonus on Strength check to knock target prone.",
-        "bonusType":  "Untyped",
-        "scope":  "Melee Only",
-        "combatScope":  "melee",
-        "attackType":  "feat_melee",
-        "actionType":  "Passive",
-        "role":  "Tactical",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "overrun"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "overrunBonus":  4
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Improved Grapple",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Dex 13, Improved Unarmed Strike",
-        "benefit":  "Do not provoke attack of opportunity when starting a grapple. +4 bonus on all grapple checks.",
-        "bonusType":  "Untyped",
-        "scope":  "Melee Only",
-        "combatScope":  "melee",
-        "attackType":  "feat_melee",
-        "actionType":  "Passive",
-        "role":  "Tactical",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "grapple"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "grappleBonus":  4
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Improved Initiative",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "-",
-        "benefit":  "+4 bonus on initiative checks.",
-        "bonusType":  "Untyped",
-        "scope":  "General",
-        "combatScope":  "general",
-        "attackType":  "feat_general",
-        "actionType":  "Passive",
-        "role":  "Tactical",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "initiative"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "initiativeBonus":  4
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Combat Reflexes",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "-",
-        "benefit":  "Make additional attacks of opportunity per round equal to Dexterity modifier. May also make attacks of opportunity while flat-footed.",
-        "bonusType":  "Untyped",
-        "scope":  "Melee Only",
-        "combatScope":  "melee",
-        "attackType":  "feat_melee",
-        "actionType":  "Passive",
-        "role":  "Tactical",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "attacks-of-opportunity"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "combatReflexes":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Dodge",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Dex 13",
-        "benefit":  "+1 dodge bonus to Armor Class against attacks from a designated opponent during your turn.",
-        "bonusType":  "Untyped",
-        "scope":  "General",
-        "combatScope":  "general",
-        "attackType":  "feat_general",
-        "actionType":  "Passive",
-        "role":  "Defense",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "dodge"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "dodgeBonus":  1
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Mobility",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Dex 13, Dodge",
-        "benefit":  "+4 dodge bonus to Armor Class against attacks of opportunity caused by moving out of or within a threatened square.",
-        "bonusType":  "Untyped",
-        "scope":  "General",
-        "combatScope":  "general",
-        "attackType":  "feat_general",
-        "actionType":  "Passive",
-        "role":  "Defense",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "mobility"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "mobilityBonus":  4
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Spring Attack",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Dex 13, Dodge, Mobility, BAB +4",
-        "benefit":  "When using the attack action with a melee weapon, move both before and after making a single attack up to speed without provoking attacks of opportunity from the defender.",
-        "bonusType":  "Untyped",
-        "scope":  "Melee Only",
-        "combatScope":  "melee",
-        "attackType":  "feat_melee",
-        "actionType":  "Full-Round",
-        "role":  "Tactical",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "spring-attack"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "action":  "Attack Action (Standard) + Move",
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Point Blank Shot",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "-",
-        "benefit":  "+1 bonus on attack and damage rolls with ranged weapons at ranges of up to 30 feet.",
-        "bonusType":  "Untyped",
-        "scope":  "Ranged Only",
-        "combatScope":  "ranged",
-        "attackType":  "feat_ranged",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "archery"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "pointBlankShot":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Precise Shot",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Point Blank Shot",
-        "benefit":  "Shoot or throw ranged weapons at an opponent engaged in melee without taking the standard -4 penalty.",
-        "bonusType":  "Untyped",
-        "scope":  "Ranged Only",
-        "combatScope":  "ranged",
-        "attackType":  "feat_ranged",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "archery"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "preciseShot":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Rapid Shot",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Dex 13, Point Blank Shot",
-        "benefit":  "Get one extra ranged attack per round at highest BAB, with all ranged attacks in that round taking a -2 penalty.",
-        "bonusType":  "Untyped",
-        "scope":  "Ranged Only",
-        "combatScope":  "ranged",
-        "attackType":  "feat_ranged",
-        "actionType":  "Full-Round",
-        "role":  "Offense / Attack",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "archery"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "rapidShot":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Manyshot",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Dex 17, Point Blank Shot, Rapid Shot, BAB +6",
-        "benefit":  "As a standard action within 30 ft, fire two or more arrows at a single target: two arrows at BAB +6 (-4 penalty), three arrows at BAB +11 (-6 penalty), four arrows at BAB +16 (-8 penalty). Precision damage applies once.",
-        "bonusType":  "Untyped",
-        "scope":  "Ranged Only",
-        "combatScope":  "ranged",
-        "attackType":  "feat_ranged",
-        "actionType":  "Standard",
-        "role":  "Offense / Attack",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "archery"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "manyshot":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Shot on the Run",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Dex 13, Point Blank Shot, Dodge, Mobility, BAB +4",
-        "benefit":  "When using the attack action with a ranged weapon, move both before and after making a single attack up to speed.",
-        "bonusType":  "Untyped",
-        "scope":  "Ranged Only",
-        "combatScope":  "ranged",
-        "attackType":  "feat_ranged",
-        "actionType":  "Full-Round",
-        "role":  "Tactical",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "archery"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "action":  "Attack Action (Standard) + Move",
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Far Shot",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Point Blank Shot",
-        "benefit":  "When you use a projectile weapon, such as a bow, its range increment increases by 50% (multiply by 1-1/2). When you use a thrown weapon, its range increment is doubled (multiply by 2).",
-        "bonusType":  "Untyped",
-        "scope":  "Ranged Only",
-        "combatScope":  "ranged",
-        "attackType":  "feat_ranged",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "archery"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "farShot":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Two-Weapon Fighting",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Dex 15",
-        "benefit":  "Penalties for fighting with two weapons are reduced by 2 for primary hand and 6 for off hand (-2/-2 with light off-hand weapon).",
-        "bonusType":  "Untyped",
-        "scope":  "Melee Only",
-        "combatScope":  "melee",
-        "attackType":  "feat_melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "two-weapon-fighting"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "twoWeaponFighting":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Improved Two-Weapon Fighting",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Dex 17, Two-Weapon Fighting, BAB +6",
-        "benefit":  "Gain a second off-hand attack at a -5 penalty on full attack.",
-        "bonusType":  "Untyped",
-        "scope":  "Melee Only",
-        "combatScope":  "melee",
-        "attackType":  "feat_melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "two-weapon-fighting"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "improvedTwoWeaponFighting":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Greater Two-Weapon Fighting",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Dex 19, Improved Two-Weapon Fighting, Two-Weapon Fighting, BAB +11",
-        "benefit":  "Gain a third off-hand attack at a -10 penalty on full attack.",
-        "bonusType":  "Untyped",
-        "scope":  "Melee Only",
-        "combatScope":  "melee",
-        "attackType":  "feat_melee",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "two-weapon-fighting"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "greaterTwoWeaponFighting":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Two-Weapon Defense",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Dex 15, Two-Weapon Fighting",
-        "benefit":  "Gain +1 shield bonus to AC when wielding two weapons or a double weapon (+2 when fighting defensively or total defense).",
-        "bonusType":  "Untyped",
-        "scope":  "Melee Only",
-        "combatScope":  "melee",
-        "attackType":  "feat_melee",
-        "actionType":  "Passive",
-        "role":  "Defense",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "two-weapon-defense"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "twoWeaponDefense":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Weapon Focus",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Proficiency with selected weapon, BAB +1",
-        "benefit":  "+1 bonus on all attack rolls you make using the selected weapon.",
-        "bonusType":  "Untyped",
-        "scope":  "General",
-        "combatScope":  "general",
-        "attackType":  "feat_general",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "weapon-focus"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "weaponFocus":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Greater Weapon Focus",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Proficiency, Weapon Focus, Fighter level 8th",
-        "benefit":  "Gain an additional +1 bonus on all attack rolls using the selected weapon (+2 total).",
-        "bonusType":  "Untyped",
-        "scope":  "General",
-        "combatScope":  "general",
-        "attackType":  "feat_general",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "weapon-focus"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "greaterWeaponFocus":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Weapon Specialization",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Proficiency, Weapon Focus, Fighter level 4th",
-        "benefit":  "Gain a +2 bonus on all damage rolls you make using the selected weapon.",
-        "bonusType":  "Untyped",
-        "scope":  "General",
-        "combatScope":  "general",
-        "attackType":  "feat_general",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "weapon-specialization"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "weaponSpecialization":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Greater Weapon Specialization",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Proficiency, Greater Weapon Focus, Weapon Focus, Weapon Specialization, Fighter level 12th",
-        "benefit":  "Gain an additional +2 bonus on all damage rolls using the selected weapon (+4 total).",
-        "bonusType":  "Untyped",
-        "scope":  "General",
-        "combatScope":  "general",
-        "attackType":  "feat_general",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "weapon-specialization"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "greaterWeaponSpecialization":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Improved Critical",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Proficiency with weapon, BAB +8",
-        "benefit":  "Doubles the threat range of the selected weapon (e.g. 19-20 becomes 17-20, 18-20 becomes 15-20).",
-        "bonusType":  "Untyped",
-        "scope":  "General",
-        "combatScope":  "general",
-        "attackType":  "feat_general",
-        "actionType":  "Passive",
-        "role":  "Offense / Attack",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "improved-critical"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "improvedCritical":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Quick Draw",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "BAB +1",
-        "benefit":  "Draw a weapon as a free action instead of a move action. Can draw a hidden weapon as a move action.",
-        "bonusType":  "Untyped",
-        "scope":  "General",
-        "combatScope":  "general",
-        "attackType":  "feat_general",
-        "actionType":  "Free",
-        "role":  "Tactical",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "quick-draw"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "quickDraw":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Blind-Fight",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "-",
-        "benefit":  "Reroll miss chance for concealment once. Retain Dex bonus to AC against invisible attackers. Move at 3/4 speed while blinded.",
-        "bonusType":  "Untyped",
-        "scope":  "Melee Only",
-        "combatScope":  "melee",
-        "attackType":  "feat_melee",
-        "actionType":  "Passive",
-        "role":  "Tactical",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "blind-fight"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "blindFight":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Mounted Combat",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Ride 1 rank",
-        "benefit":  "Once per round when mount is hit in combat, make an immediate Ride check (reaction) to negate the hit (against opponent\u0027s attack roll result).",
-        "bonusType":  "Untyped",
-        "scope":  "General",
-        "combatScope":  "general",
-        "attackType":  "feat_general",
-        "actionType":  "Immediate",
-        "role":  "Defense",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "mounted-combat"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "mountedCombat":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "action":  "Once per round (Reaction)",
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Ride-By Attack",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Ride 1 rank, Mounted Combat",
-        "benefit":  "When you are mounted and use the charge action, you may move and attack as with a standard charge and then continue moving in a straight line.",
-        "bonusType":  "Untyped",
-        "scope":  "Melee Only",
-        "combatScope":  "melee",
-        "attackType":  "feat_melee",
-        "actionType":  "Full-Round",
-        "role":  "Tactical",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "mounted-combat"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Spirited Charge",
-        "type":  "Feat",
-        "slot":  "None",
-        "prereq":  "Ride 1 rank, Mounted Combat, Ride-By Attack",
-        "benefit":  "When mounted and charging, deal double damage with a melee weapon (or triple damage with a lance).",
-        "bonusType":  "Untyped",
-        "scope":  "Melee Only",
-        "combatScope":  "melee",
-        "attackType":  "feat_melee",
-        "actionType":  "Full-Round",
-        "role":  "Offense / Attack",
-        "tags":  [
-                     "feat",
-                     "fighter",
-                     "mounted-combat"
-                 ],
-        "source":  "SRD / PHB p.90",
-        "ruleFlags":  {
-                          "spiritedCharge":  true
-                      },
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  true,
-        "category":  "Fighter"
-    },
-    {
-        "name":  "Human",
-        "type":  "Race",
-        "category":  "Standard Race",
-        "slot":  "None",
-        "size":  "Medium",
-        "baseSpeed":  30,
-        "strBonus":  0,
-        "dexBonus":  0,
-        "conBonus":  0,
-        "intBonus":  0,
-        "wisBonus":  0,
-        "chaBonus":  0,
-        "bonusFeats":  1,
-        "bonusSkillPointsPerLevel":  1,
-        "bonusSkillPointsLevel1":  4,
-        "favoredClass":  "Any",
-        "languages":  [
-                          "Common"
-                      ],
-        "bonusLanguages":  [
-                               "Any (except secret)"
-                           ],
-        "traits":  [
-                       {
-                           "name":  "Bonus Feat",
-                           "desc":  "1 extra feat at 1st level."
-                       },
-                       {
-                           "name":  "Skilled",
-                           "desc":  "4 extra skill points at 1st level and 1 extra skill point at each additional level."
-                       }
-                   ],
-        "source":  "SRD / PHB p.12",
-        "benefit":  "1 bonus feat at 1st level; 4 extra skill points at 1st level and +1 extra skill point per additional level. Favored Class: Any.",
-        "tags":  [
-                     "race",
-                     "human",
-                     "medium"
-                 ]
-    },
-    {
-        "name":  "Dwarf",
-        "type":  "Race",
-        "category":  "Standard Race",
-        "slot":  "None",
-        "size":  "Medium",
-        "baseSpeed":  20,
-        "speedNote":  "Base land speed is 20 feet. Dwarves can move at this speed even when wearing medium or heavy armor or when carrying a medium or heavy load.",
-        "strBonus":  0,
-        "dexBonus":  0,
-        "conBonus":  2,
-        "intBonus":  0,
-        "wisBonus":  0,
-        "chaBonus":  -2,
-        "favoredClass":  "Fighter",
-        "languages":  [
-                          "Common",
-                          "Dwarven"
-                      ],
-        "traits":  [
-                       {
-                           "name":  "Darkvision",
-                           "desc":  "60 ft darkvision in black and white."
-                       },
-                       {
-                           "name":  "Stonecunning",
-                           "desc":  "+2 racial bonus on Search checks to notice unusual stonework."
-                       },
-                       {
-                           "name":  "Weapon Familiarity",
-                           "desc":  "Dwarven waraxes and dwarven urgroshes are martial weapons for dwarves."
-                       },
-                       {
-                           "name":  "Stability",
-                           "desc":  "+4 bonus on ability checks to resist bull rush or trip when on firm ground."
-                       },
-                       {
-                           "name":  "Poison Resistance",
-                           "desc":  "+2 racial bonus on saving throws against poison."
-                       },
-                       {
-                           "name":  "Spell Resistance / Saves",
-                           "desc":  "+2 racial bonus on saving throws against spells and spell-like effects."
-                       },
-                       {
-                           "name":  "Combat Training (Orcs \u0026 Goblins)",
-                           "desc":  "+1 racial bonus on attack rolls against orcs and goblinoids."
-                       },
-                       {
-                           "name":  "Dodge Giants",
-                           "desc":  "+4 dodge bonus to Armor Class against monsters of the giant type."
-                       },
-                       {
-                           "name":  "Stone \u0026 Metal Appraise/Craft",
-                           "desc":  "+2 racial bonus on Appraise and Craft checks related to stone or metal."
-                       }
-                   ],
-        "source":  "SRD / PHB p.14",
-        "benefit":  "+2 Constitution, -2 Charisma. Darkvision 60 ft, Stonecunning, Weapon Familiarity (Dwarven Waraxe/Urgrosh), Stability (+4 vs trip/bull rush), +2 saves vs poison and spells, +1 attack vs orcs/goblinoids, +4 AC vs giants.",
-        "tags":  [
-                     "race",
-                     "dwarf",
-                     "medium",
-                     "stonecunning"
-                 ]
-    },
-    {
-        "name":  "Elf",
-        "type":  "Race",
-        "category":  "Standard Race",
-        "slot":  "None",
-        "size":  "Medium",
-        "baseSpeed":  30,
-        "strBonus":  0,
-        "dexBonus":  2,
-        "conBonus":  -2,
-        "intBonus":  0,
-        "wisBonus":  0,
-        "chaBonus":  0,
-        "favoredClass":  "Wizard",
-        "languages":  [
-                          "Common",
-                          "Elven"
-                      ],
-        "traits":  [
-                       {
-                           "name":  "Sleep Immunity",
-                           "desc":  "Immunity to magic sleep effects."
-                       },
-                       {
-                           "name":  "Enchantment Resistance",
-                           "desc":  "+2 racial saving throw bonus against enchantment spells or effects."
-                       },
-                       {
-                           "name":  "Low-Light Vision",
-                           "desc":  "Can see twice as far as a human in starlight, moonlight, torchlight."
-                       },
-                       {
-                           "name":  "Weapon Proficiency",
-                           "desc":  "Proficient with longsword, rapier, longbow, and shortbow."
-                       },
-                       {
-                           "name":  "Keen Senses",
-                           "desc":  "+2 racial bonus on Listen, Search, and Spot checks. Passive search for secret doors within 5 ft."
-                       }
-                   ],
-        "source":  "SRD / PHB p.15",
-        "benefit":  "+2 Dexterity, -2 Constitution. Immunity to magic sleep effects, +2 saves vs enchantment, Low-Light Vision, weapon proficiency (longsword, rapier, bows), +2 Listen/Search/Spot with passive secret door check.",
-        "tags":  [
-                     "race",
-                     "elf",
-                     "medium",
-                     "low-light-vision"
-                 ]
-    },
-    {
-        "name":  "Gnome",
-        "type":  "Race",
-        "category":  "Standard Race",
-        "slot":  "None",
-        "size":  "Small",
-        "baseSpeed":  20,
-        "strBonus":  -2,
-        "dexBonus":  0,
-        "conBonus":  2,
-        "intBonus":  0,
-        "wisBonus":  0,
-        "chaBonus":  0,
-        "favoredClass":  "Bard",
-        "languages":  [
-                          "Common",
-                          "Gnome"
-                      ],
-        "traits":  [
-                       {
-                           "name":  "Small Size",
-                           "desc":  "+1 bonus to AC, +1 bonus on attack rolls, +4 bonus on Hide checks, smaller weapon dice, 3/4 carrying capacity."
-                       },
-                       {
-                           "name":  "Low-Light Vision",
-                           "desc":  "Can see twice as far as a human in starlight, moonlight, torchlight."
-                       },
-                       {
-                           "name":  "Weapon Familiarity",
-                           "desc":  "Gnome hooked hammers are martial weapons for gnomes."
-                       },
-                       {
-                           "name":  "Illusion Resistance \u0026 Potency",
-                           "desc":  "+2 racial bonus on saving throws against illusions; +1 DC to illusion spells cast by the gnome."
-                       },
-                       {
-                           "name":  "Combat Training (Kobolds \u0026 Goblins)",
-                           "desc":  "+1 racial bonus on attack rolls against kobolds and goblinoids."
-                       },
-                       {
-                           "name":  "Dodge Giants",
-                           "desc":  "+4 dodge bonus to Armor Class against monsters of the giant type."
-                       },
-                       {
-                           "name":  "Keen Ears \u0026 Alchemy",
-                           "desc":  "+2 racial bonus on Listen checks and Craft (alchemy) checks."
-                       },
-                       {
-                           "name":  "Spell-Like Abilities",
-                           "desc":  "1/day speak with animals (burrowing mammal); with Cha 10+: 1/day dancing lights, ghost sound, prestidigitation."
-                       }
-                   ],
-        "source":  "SRD / PHB p.16",
-        "benefit":  "+2 Constitution, -2 Strength. Small size (+1 AC, +1 attack, +4 Hide), Low-Light Vision, Weapon Familiarity (Hooked Hammer), +2 saves vs illusions, +1 illusion DC, +1 attack vs kobolds/goblinoids, +4 AC vs giants, +2 Listen/Craft (alchemy), Spell-Like Abilities.",
-        "tags":  [
-                     "race",
-                     "gnome",
-                     "small",
-                     "low-light-vision"
-                 ]
-    },
-    {
-        "name":  "Half-Elf",
-        "type":  "Race",
-        "category":  "Standard Race",
-        "slot":  "None",
-        "size":  "Medium",
-        "baseSpeed":  30,
-        "strBonus":  0,
-        "dexBonus":  0,
-        "conBonus":  0,
-        "intBonus":  0,
-        "wisBonus":  0,
-        "chaBonus":  0,
-        "favoredClass":  "Any",
-        "languages":  [
-                          "Common",
-                          "Elven"
-                      ],
-        "traits":  [
-                       {
-                           "name":  "Sleep Immunity",
-                           "desc":  "Immunity to magic sleep effects."
-                       },
-                       {
-                           "name":  "Enchantment Resistance",
-                           "desc":  "+2 racial saving throw bonus against enchantment spells or effects."
-                       },
-                       {
-                           "name":  "Low-Light Vision",
-                           "desc":  "Can see twice as far as a human in starlight, moonlight, torchlight."
-                       },
-                       {
-                           "name":  "Elven Blood",
-                           "desc":  "For all effects related to race, considered an elf."
-                       },
-                       {
-                           "name":  "Social Adaptability",
-                           "desc":  "+2 racial bonus on Diplomacy and Gather Information checks."
-                       },
-                       {
-                           "name":  "Keen Senses",
-                           "desc":  "+1 racial bonus on Listen, Search, and Spot checks."
-                       }
-                   ],
-        "source":  "SRD / PHB p.18",
-        "benefit":  "Medium size. Immunity to magic sleep effects, +2 saves vs enchantment, Low-Light Vision, Elven Blood, +2 Diplomacy/Gather Information, +1 Listen/Search/Spot. Favored Class: Any.",
-        "tags":  [
-                     "race",
-                     "half-elf",
-                     "medium",
-                     "low-light-vision"
-                 ]
-    },
-    {
-        "name":  "Half-Orc",
-        "type":  "Race",
-        "category":  "Standard Race",
-        "slot":  "None",
-        "size":  "Medium",
-        "baseSpeed":  30,
-        "strBonus":  2,
-        "dexBonus":  0,
-        "conBonus":  0,
-        "intBonus":  -2,
-        "wisBonus":  0,
-        "chaBonus":  -2,
-        "favoredClass":  "Barbarian",
-        "languages":  [
-                          "Common",
-                          "Orc"
-                      ],
-        "traits":  [
-                       {
-                           "name":  "Darkvision",
-                           "desc":  "60 ft darkvision in black and white."
-                       },
-                       {
-                           "name":  "Orc Blood",
-                           "desc":  "For all effects related to race, considered an orc."
-                       }
-                   ],
-        "source":  "SRD / PHB p.18",
-        "benefit":  "+2 Strength, -2 Intelligence, -2 Charisma. Darkvision 60 ft, Orc Blood. Favored Class: Barbarian.",
-        "tags":  [
-                     "race",
-                     "half-orc",
-                     "medium",
-                     "darkvision"
-                 ]
-    },
-    {
-        "name":  "Halfling",
-        "type":  "Race",
-        "category":  "Standard Race",
-        "slot":  "None",
-        "size":  "Small",
-        "baseSpeed":  20,
-        "strBonus":  -2,
-        "dexBonus":  2,
-        "conBonus":  0,
-        "intBonus":  0,
-        "wisBonus":  0,
-        "chaBonus":  0,
-        "favoredClass":  "Rogue",
-        "languages":  [
-                          "Common",
-                          "Halfling"
-                      ],
-        "traits":  [
-                       {
-                           "name":  "Small Size",
-                           "desc":  "+1 bonus to AC, +1 bonus on attack rolls, +4 bonus on Hide checks, smaller weapon dice, 3/4 carrying capacity."
-                       },
-                       {
-                           "name":  "Athletics",
-                           "desc":  "+2 racial bonus on Climb, Jump, and Move Silently checks."
-                       },
-                       {
-                           "name":  "Halfling Luck",
-                           "desc":  "+1 racial bonus on all saving throws."
-                       },
-                       {
-                           "name":  "Fear Resistance",
-                           "desc":  "+2 morale bonus on saving throws against fear (stacks with Halfling Luck, total +3)."
-                       },
-                       {
-                           "name":  "Throwing \u0026 Sling Accuracy",
-                           "desc":  "+1 racial bonus on attack rolls with thrown weapons and slings."
-                       },
-                       {
-                           "name":  "Keen Ears",
-                           "desc":  "+2 racial bonus on Listen checks."
-                       }
-                   ],
-        "source":  "SRD / PHB p.19",
-        "benefit":  "+2 Dexterity, -2 Strength. Small size (+1 AC, +1 attack, +4 Hide), +2 Climb/Jump/Move Silently, +1 all saves (Halfling Luck), +2 saves vs fear, +1 attack with thrown weapons and slings, +2 Listen. Favored Class: Rogue.",
-        "tags":  [
-                     "race",
-                     "halfling",
-                     "small",
-                     "halfling-luck"
-                 ]
-    },
-    {
-        "name":  "Throwing Axe",
-        "type":  "Weapon",
-        "slot":  "Main Hand",
-        "category":  "Martial",
-        "weaponType":  "Martial Light",
-        "dice":  "1d6",
-        "extraDmg":  "1d6",
-        "damage":  "1d6",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Slashing",
-        "range":  10,
-        "rangeIncrement":  10,
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  2,
-        "cost":  8,
-        "isLight":  true,
-        "finessable":  true,
-        "tags":  [
-                     "martial",
-                     "light",
-                     "thrown",
-                     "finessable",
-                     "slashing"
-                 ],
-        "source":  "PHB Table 7-5"
-    },
-    {
-        "name":  "Shield Spikes (Heavy Shield)",
-        "type":  "Weapon",
-        "slot":  "Off-Hand",
-        "category":  "Martial",
-        "weaponType":  "Martial One-Handed",
-        "dice":  "1d6",
-        "extraDmg":  "1d6",
-        "damage":  "1d6",
-        "critMin":  20,
-        "critMult":  2,
-        "crit":  "20/x2",
-        "dmgType":  "Piercing",
-        "attBonus":  0,
-        "dmgBonus":  0,
-        "bonusType":  "Untyped",
-        "weight":  5,
-        "cost":  10,
-        "isLight":  false,
-        "finessable":  true,
-        "tags":  [
-                     "martial",
-                     "light",
-                     "shield-bash",
-                     "piercing",
-                     "finessable"
-                 ],
-        "source":  "PHB Table 7-5 / p.125"
-    },
-    {
-        "name":  "Improved Unarmed Strike",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "Fighter",
-        "featType":  "General",
-        "isFighterBonusFeat":  true,
-        "prereq":  "-",
-        "benefit":  "You are considered armed even when unarmed (do not provoke attacks of opportunity when attacking unarmed). Unarmed strikes deal lethal or nonlethal damage at your choice.",
-        "source":  "PHB p.96",
-        "bonusType":  "Untyped"
-    },
-    {
-        "name":  "Deflect Arrows",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "Fighter",
-        "featType":  "General",
-        "isFighterBonusFeat":  true,
-        "prereq":  "Dex 13, Improved Unarmed Strike",
-        "benefit":  "Once per round when you would normally be hit with a ranged weapon, you may deflect it so that you take no damage from it (reaction).",
-        "source":  "PHB p.93",
-        "bonusType":  "Untyped"
-    },
-    {
-        "name":  "Snatch Arrows",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "Fighter",
-        "featType":  "General",
-        "isFighterBonusFeat":  true,
-        "prereq":  "Dex 15, Deflect Arrows, Improved Unarmed Strike",
-        "benefit":  "When using Deflect Arrows, you may catch the weapon instead of knocking it away, and can immediately throw it back if suitable.",
-        "source":  "PHB p.100",
-        "bonusType":  "Untyped"
-    },
-    {
-        "name":  "Stunning Fist",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "Fighter",
-        "featType":  "General",
-        "isFighterBonusFeat":  true,
-        "prereq":  "Dex 13, Wis 13, Improved Unarmed Strike, BAB +8",
-        "benefit":  "Declare before attack roll; target damaged by unarmed strike must make Fortitude save (DC 10 + 1/2 level + Wis mod) or be stunned for 1 round (1/day per 4 levels).",
-        "source":  "PHB p.101",
-        "bonusType":  "Untyped"
-    },
-    {
-        "name":  "Whirlwind Attack",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "Fighter",
-        "featType":  "General",
-        "isFighterBonusFeat":  true,
-        "prereq":  "Dex 13, Int 13, Combat Expertise, Dodge, Mobility, Spring Attack, BAB +4",
-        "benefit":  "As a full attack action, make one melee attack at your highest BAB against each opponent within reach.",
-        "source":  "PHB p.102",
-        "bonusType":  "Untyped"
-    },
-    {
-        "name":  "Improved Shield Bash",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "Fighter",
-        "featType":  "General",
-        "isFighterBonusFeat":  true,
-        "prereq":  "Shield Proficiency",
-        "benefit":  "When you perform a shield bash, you may still apply the shield\u0027s shield bonus to your AC.",
-        "source":  "PHB p.96",
-        "bonusType":  "Untyped"
-    },
-    {
-        "name":  "Rapid Reload",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "Fighter",
-        "featType":  "General",
-        "isFighterBonusFeat":  true,
-        "prereq":  "Weapon Proficiency (Crossbow type)",
-        "benefit":  "Reduce the time required to reload a crossbow: heavy crossbow becomes move action, light crossbow becomes free action.",
-        "source":  "PHB p.99",
-        "bonusType":  "Untyped"
-    },
-    {
-        "name":  "Improved Precise Shot",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "Fighter",
-        "featType":  "General",
-        "isFighterBonusFeat":  true,
-        "prereq":  "Dex 19, Point Blank Shot, Precise Shot, BAB +11",
-        "benefit":  "Ranged attacks ignore AC bonus granted to targets by anything less than total cover, and miss chance granted by anything less than total concealment.",
-        "source":  "PHB p.96",
-        "bonusType":  "Untyped"
-    },
-    {
-        "name":  "Mounted Archery",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "Fighter",
-        "featType":  "General",
-        "isFighterBonusFeat":  true,
-        "prereq":  "Ride 1 rank, Mounted Combat",
-        "benefit":  "Halve penalty for using ranged weapon while mount takes double move (-2 instead of -4) or runs (-4 instead of -8).",
-        "source":  "PHB p.98",
-        "bonusType":  "Untyped"
-    },
-    {
-        "name":  "Trample",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "Fighter",
-        "featType":  "General",
-        "isFighterBonusFeat":  true,
-        "prereq":  "Ride 1 rank, Mounted Combat",
-        "benefit":  "When you attempt an overrun action while mounted, target cannot avoid you; mount makes hoof attack if knocked prone.",
-        "source":  "PHB p.102",
-        "bonusType":  "Untyped"
-    },
-    {
-        "name":  "Simple Weapon Proficiency",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "General",
-        "featType":  "General",
-        "isFighterBonusFeat":  false,
-        "prereq":  "-",
-        "benefit":  "Make attack rolls with all simple weapons without taking the -4 non-proficiency penalty.",
-        "source":  "PHB p.100",
-        "bonusType":  "Untyped"
-    },
-    {
-        "name":  "Martial Weapon Proficiency",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "General",
-        "featType":  "General",
-        "isFighterBonusFeat":  false,
-        "prereq":  "-",
-        "benefit":  "Choose one type of martial weapon; make attack rolls with that weapon without taking the -4 non-proficiency penalty.",
-        "source":  "PHB p.97",
-        "bonusType":  "Untyped"
-    },
-    {
-        "name":  "Exotic Weapon Proficiency",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "Fighter",
-        "featType":  "General",
-        "isFighterBonusFeat":  true,
-        "prereq":  "BAB +1",
-        "benefit":  "Choose one type of exotic weapon; make attack rolls with that weapon without taking the -4 non-proficiency penalty.",
-        "source":  "PHB p.94",
-        "bonusType":  "Untyped"
-    },
-    {
-        "name":  "Armor Proficiency (Light)",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "General",
-        "featType":  "General",
-        "isFighterBonusFeat":  false,
-        "prereq":  "-",
-        "benefit":  "When you wear light armor, armor check penalty applies only to Balance, Climb, Escape Artist, Hide, Jump, Move Silently, Sleight of Hand, and Tumble.",
-        "source":  "PHB p.89",
-        "bonusType":  "Untyped"
-    },
-    {
-        "name":  "Armor Proficiency (Medium)",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "General",
-        "featType":  "General",
-        "isFighterBonusFeat":  false,
-        "prereq":  "Armor Proficiency (Light)",
-        "benefit":  "When you wear medium armor, armor check penalty applies only to physical movement skill checks.",
-        "source":  "PHB p.89",
-        "bonusType":  "Untyped"
-    },
-    {
-        "name":  "Armor Proficiency (Heavy)",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "General",
-        "featType":  "General",
-        "isFighterBonusFeat":  false,
-        "prereq":  "Armor Proficiency (Medium)",
-        "benefit":  "When you wear heavy armor, armor check penalty applies only to physical movement skill checks.",
-        "source":  "PHB p.89",
-        "bonusType":  "Untyped"
-    },
-    {
-        "name":  "Shield Proficiency",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "General",
-        "featType":  "General",
-        "isFighterBonusFeat":  false,
-        "prereq":  "-",
-        "benefit":  "Use a buckler, light shield, or heavy shield without taking its armor check penalty on attack rolls.",
-        "source":  "PHB p.100",
-        "bonusType":  "Untyped"
-    },
-    {
-        "name":  "Tower Shield Proficiency",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "Fighter",
-        "featType":  "General",
-        "isFighterBonusFeat":  true,
-        "prereq":  "Shield Proficiency",
-        "benefit":  "Use a tower shield without taking its armor check penalty on attack rolls.",
-        "source":  "PHB p.102",
-        "bonusType":  "Untyped"
-    },
-    {
-        "name":  "Shadow Blade",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "Martial",
-        "prereq":  "1 Shadow Hand Stance",
-        "benefit":  "Bir Shadow Hand duruÅŸundayken (Stance), Shadow Hand disiplini silahlarÄ±yla yapÄ±lan yakÄ±n dÃ¶vÃ¼ÅŸ hasarlarÄ±na DEX modifiyerini ekler.",
-        "description":  "Bir Shadow Hand duruÅŸundayken (Stance), Shadow Hand disiplini silahlarÄ±yla yapÄ±lan yakÄ±n dÃ¶vÃ¼ÅŸ hasarlarÄ±na DEX modifiyerini ekler.",
-        "source":  "Tome of Battle p.32",
-        "isFighterBonusFeat":  false
-    },
-    {
-        "name":  "Adaptive Style",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "Martial",
-        "prereq":  "Crusader, Swordsage veya Warblade 1",
-        "benefit":  "1 Full-Round Action harcayarak kuÅŸanÄ±lan (Readied) manevralarÄ±nÄ±zÄ± savaÅŸ ortasÄ±nda deÄŸiÅŸtirebilir ve harcanmÄ±ÅŸ manevralarÄ± yenileyebilirsiniz.",
-        "description":  "1 Full-Round Action harcayarak kuÅŸanÄ±lan (Readied) manevralarÄ±nÄ±zÄ± savaÅŸ ortasÄ±nda deÄŸiÅŸtirebilir ve harcanmÄ±ÅŸ manevralarÄ± yenileyebilirsiniz.",
-        "source":  "Tome of Battle p.28",
-        "isFighterBonusFeat":  false
-    },
-    {
-        "name":  "Arcane Strike",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "General",
-        "prereq":  "3. seviye arcane bÃ¼yÃ¼ yapabilme, BAB +4",
-        "benefit":  "Free Action olarak bir bÃ¼yÃ¼ yuvasÄ± feda edip 1 tur boyunca tÃ¼m silah saldÄ±rÄ±larÄ±na +BÃ¼yÃ¼ Seviyesi saldÄ±rÄ± bonusu ve +Xd4 ekstra hasar ekler.",
-        "description":  "Free Action olarak bir bÃ¼yÃ¼ yuvasÄ± feda edip 1 tur boyunca tÃ¼m silah saldÄ±rÄ±larÄ±na +BÃ¼yÃ¼ Seviyesi saldÄ±rÄ± bonusu ve +Xd4 ekstra hasar ekler.",
-        "source":  "Complete Warrior p.96",
-        "isFighterBonusFeat":  false
-    },
-    {
-        "name":  "Practiced Spellcaster",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "General",
-        "prereq":  "Spellcraft 4 ranks",
-        "benefit":  "SeÃ§ilen bÃ¼yÃ¼cÃ¼ sÄ±nÄ±fÄ±nÄ±n Caster Level (CL) deÄŸerini +4 artÄ±rÄ±r (toplam karakter seviyesini HD\u0027yi geÃ§emez). Ã‡oklu sÄ±nÄ±f (Gish) karakterler iÃ§in idealdir.",
-        "description":  "SeÃ§ilen bÃ¼yÃ¼cÃ¼ sÄ±nÄ±fÄ±nÄ±n Caster Level (CL) deÄŸerini +4 artÄ±rÄ±r (toplam karakter seviyesini HD\u0027yi geÃ§emez). Ã‡oklu sÄ±nÄ±f (Gish) karakterler iÃ§in idealdir.",
-        "source":  "Complete Arcane p.82",
-        "isFighterBonusFeat":  false
-    },
-    {
-        "name":  "Shock Trooper",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "Fighter",
-        "prereq":  "Improved Bull Rush, Power Attack, BAB +6",
-        "benefit":  "Heedless Charge: Charge saldÄ±rÄ±sÄ±nda Power Attack cezasÄ±nÄ± saldÄ±rÄ± zarÄ± yerine AC\u0027den dÃ¼ÅŸmenizi saÄŸlar.",
-        "description":  "Heedless Charge: Charge saldÄ±rÄ±sÄ±nda Power Attack cezasÄ±nÄ± saldÄ±rÄ± zarÄ± yerine AC\u0027den dÃ¼ÅŸmenizi saÄŸlar.",
-        "source":  "Complete Warrior p.112",
-        "isFighterBonusFeat":  true
-    },
-    {
-        "name":  "Leap Attack",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "General",
-        "prereq":  "Jump 8 ranks, Power Attack",
-        "benefit":  "Charge sÄ±rasÄ±nda en az 10 ft uzun atlama yaparsanÄ±z Power Attack ekstra hasarÄ±nÄ± ikiye/Ã¼Ã§e katlar.",
-        "description":  "Charge sÄ±rasÄ±nda en az 10 ft uzun atlama yaparsanÄ±z Power Attack ekstra hasarÄ±nÄ± ikiye/Ã¼Ã§e katlar.",
-        "source":  "Complete Adventurer p.110",
-        "isFighterBonusFeat":  false
-    },
-    {
-        "name":  "Oversized Two-Weapon Fighting",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "Fighter",
-        "prereq":  "Dex 13, Two-Weapon Fighting, BAB +1",
-        "benefit":  "Ä°kinci elinizde (Off-Hand) tek elli bir silahÄ± hafif (light) bir silah gibi kullanmanÄ±zÄ± ve Ã§ift silah cezasÄ±nÄ± azaltmanÄ±zÄ± saÄŸlar.",
-        "description":  "Ä°kinci elinizde (Off-Hand) tek elli bir silahÄ± hafif (light) bir silah gibi kullanmanÄ±zÄ± ve Ã§ift silah cezasÄ±nÄ± azaltmanÄ±zÄ± saÄŸlar.",
-        "source":  "Complete Adventurer p.111",
-        "isFighterBonusFeat":  true
-    },
-    {
-        "name":  "Monkey Grip",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "Fighter",
-        "prereq":  "BAB +1",
-        "benefit":  "You can use one melee weapon one size category larger than you are with a -2 penalty on the attack roll, but the amount of effort it takes you to use the weapon does not change (e.g., you cannot use this feat to wield a two-handed weapon in one hand). Normal: You cannot use a weapon of a larger size category.",
-        "description":  "Kendi boyutunuzdan bir boy bÃ¼yÃ¼k yakÄ±n dÃ¶vÃ¼ÅŸ silahlarÄ±nÄ± veya iki elli (Two-Handed) silahlarÄ± tek elinizle -2 saldÄ±rÄ± cezasÄ±yla kullanmanÄ±zÄ± saÄŸlar.",
-        "source":  "Complete Warrior p.103 / 3.5e RAW",
-        "isFighterBonusFeat":  true
-    },
-    {
-        "name":  "Somatic Weaponry",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "General",
-        "prereq":  "Concentration 4 ranks, Spellcraft 4 ranks",
-        "benefit":  "Ä°ki elinizde silah veya kalkan tutarken bile bÃ¼yÃ¼lerin somatik (el hareketi) bileÅŸenlerini gerÃ§ekleÅŸtirebilirsiniz.",
-        "description":  "Ä°ki elinizde silah veya kalkan tutarken bile bÃ¼yÃ¼lerin somatik (el hareketi) bileÅŸenlerini gerÃ§ekleÅŸtirebilirsiniz.",
-        "source":  "Complete Mage p.47",
-        "isFighterBonusFeat":  false
-    },
-    {
-        "name":  "Eldritch Spear",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Least",
-        "minLevel":  1,
-        "prereq":  "Warlock Level 1",
-        "benefit":  "Eldritch Blast menzili 60 ft\u0027den 250 ft\u0027ye Ã§Ä±kar (Blast Shape).",
-        "description":  "Eldritch Blast menzili 60 ft\u0027den 250 ft\u0027ye Ã§Ä±kar (Blast Shape).",
-        "source":  "Complete Arcane p.133"
-    },
-    {
-        "name":  "Hideous Blow",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Least",
-        "minLevel":  1,
-        "prereq":  "Warlock Level 1",
-        "benefit":  "Standart eylemle yakÄ±n dÃ¶vÃ¼ÅŸ saldÄ±rÄ±sÄ± yapÄ±p silah hasarÄ±na Eldritch Blast hasarÄ±nÄ± ekler.",
-        "description":  "Standart eylemle yakÄ±n dÃ¶vÃ¼ÅŸ saldÄ±rÄ±sÄ± yapÄ±p silah hasarÄ±na Eldritch Blast hasarÄ±nÄ± ekler.",
-        "source":  "Complete Arcane p.134"
-    },
-    {
-        "name":  "See the Unseen",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Least",
-        "minLevel":  1,
-        "prereq":  "Warlock Level 1",
-        "benefit":  "24 saat boyunca 60 ft Darkvision ve See Invisibility (GÃ¶rÃ¼nmezleri GÃ¶rme) kazanÄ±r.",
-        "description":  "24 saat boyunca 60 ft Darkvision ve See Invisibility (GÃ¶rÃ¼nmezleri GÃ¶rme) kazanÄ±r.",
-        "source":  "Complete Arcane p.135"
-    },
-    {
-        "name":  "Beguiling Influence",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Least",
-        "minLevel":  1,
-        "prereq":  "Warlock Level 1",
-        "benefit":  "24 saat boyunca Bluff, Diplomacy ve Intimidate becerilerine +6 bonus kazanÄ±r.",
-        "description":  "24 saat boyunca Bluff, Diplomacy ve Intimidate becerilerine +6 bonus kazanÄ±r.",
-        "source":  "Complete Arcane p.133"
-    },
-    {
-        "name":  "Darkness",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Least",
-        "minLevel":  1,
-        "prereq":  "Warlock Level 1",
-        "benefit":  "Ä°stediÄŸi an (At-Will) Darkness bÃ¼yÃ¼sÃ¼ gibi 20 ft yarÄ±Ã§aplÄ± karanlÄ±k yaratÄ±r.",
-        "description":  "Ä°stediÄŸi an (At-Will) Darkness bÃ¼yÃ¼sÃ¼ gibi 20 ft yarÄ±Ã§aplÄ± karanlÄ±k yaratÄ±r.",
-        "source":  "Complete Arcane p.133"
-    },
-    {
-        "name":  "Devil\u0027s Sight",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Least",
-        "minLevel":  1,
-        "prereq":  "Warlock Level 1",
-        "benefit":  "30 ft mesafeye kadar hem normal hem de bÃ¼yÃ¼sel karanlÄ±ÄŸÄ± net bir ÅŸekilde gÃ¶rÃ¼r.",
-        "description":  "30 ft mesafeye kadar hem normal hem de bÃ¼yÃ¼sel karanlÄ±ÄŸÄ± net bir ÅŸekilde gÃ¶rÃ¼r.",
-        "source":  "Complete Arcane p.133"
-    },
-    {
-        "name":  "Baleful Utterance",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Least",
-        "minLevel":  1,
-        "prereq":  "Warlock Level 1",
-        "benefit":  "Shatter bÃ¼yÃ¼sÃ¼ gibi ses dalgasÄ±yla nesneleri patlatÄ±r; hedef dazing kurtarma zarÄ± atar.",
-        "description":  "Shatter bÃ¼yÃ¼sÃ¼ gibi ses dalgasÄ±yla nesneleri patlatÄ±r; hedef dazing kurtarma zarÄ± atar.",
-        "source":  "Complete Arcane p.133"
-    },
-    {
-        "name":  "All-Seeing Eyes",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Least",
-        "minLevel":  1,
-        "prereq":  "Warlock Level 1",
-        "benefit":  "24 saat boyunca Comprehend Languages ve Search/Spot testlerine +6 bonus.",
-        "description":  "24 saat boyunca Comprehend Languages ve Search/Spot testlerine +6 bonus.",
-        "source":  "Complete Mage p.123"
-    },
-    {
-        "name":  "Spiderwalk",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Least",
-        "minLevel":  1,
-        "prereq":  "Warlock Level 1",
-        "benefit":  "24 saat boyunca Spider Climb (Duvarlarda tÄ±rmanma) kazanÄ±r, aÄŸlardan etkilenmez.",
-        "description":  "24 saat boyunca Spider Climb (Duvarlarda tÄ±rmanma) kazanÄ±r, aÄŸlardan etkilenmez.",
-        "source":  "Complete Arcane p.135"
-    },
-    {
-        "name":  "Earthen Grasp",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Least",
-        "minLevel":  1,
-        "prereq":  "Warlock Level 1",
-        "benefit":  "Topraktan devasa bir el Ã§Ä±karÄ±p dÃ¼ÅŸmanÄ± yakalar ve tutar (Grapple).",
-        "description":  "Topraktan devasa bir el Ã§Ä±karÄ±p dÃ¼ÅŸmanÄ± yakalar ve tutar (Grapple).",
-        "source":  "Complete Arcane p.134"
-    },
-    {
-        "name":  "Frightful Presence",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Least",
-        "minLevel":  1,
-        "prereq":  "Warlock Level 1",
-        "benefit":  "30 ft iÃ§indeki HD\u0027si dÃ¼ÅŸÃ¼k dÃ¼ÅŸmanlarÄ± korkutur (Shaken).",
-        "description":  "30 ft iÃ§indeki HD\u0027si dÃ¼ÅŸÃ¼k dÃ¼ÅŸmanlarÄ± korkutur (Shaken).",
-        "source":  "Dragon Magic p.80"
-    },
-    {
-        "name":  "Fell Flight",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Lesser",
-        "minLevel":  6,
-        "prereq":  "Warlock Level 6",
-        "benefit":  "24 saat boyunca kendi yÃ¼rÃ¼me hÄ±zÄ±nda Good manevra kabiliyetiyle uÃ§ar (Fly).",
-        "description":  "24 saat boyunca kendi yÃ¼rÃ¼me hÄ±zÄ±nda Good manevra kabiliyetiyle uÃ§ar (Fly).",
-        "source":  "Complete Arcane p.134"
-    },
-    {
-        "name":  "Eldritch Chain",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Lesser",
-        "minLevel":  6,
-        "prereq":  "Warlock Level 6",
-        "benefit":  "Eldritch Blast ilk hedefe vurduktan sonra 30 ft iÃ§indeki ikincil hedeflere sÄ±Ã§rar (Blast Shape).",
-        "description":  "Eldritch Blast ilk hedefe vurduktan sonra 30 ft iÃ§indeki ikincil hedeflere sÄ±Ã§rar (Blast Shape).",
-        "source":  "Complete Arcane p.134"
-    },
-    {
-        "name":  "Brimstone Blast",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Lesser",
-        "minLevel":  6,
-        "prereq":  "Warlock Level 6",
-        "benefit":  "Eldritch Blast ateÅŸ hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r ve hedefi yakar (Eldritch Essence).",
-        "description":  "Eldritch Blast ateÅŸ hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r ve hedefi yakar (Eldritch Essence).",
-        "source":  "Complete Arcane p.133"
-    },
-    {
-        "name":  "Hellrime Blast",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Lesser",
-        "minLevel":  6,
-        "prereq":  "Warlock Level 6",
-        "benefit":  "Eldritch Blast soÄŸuk hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r ve hedefe -4 DEX penaltÄ±sÄ± verir (Eldritch Essence).",
-        "description":  "Eldritch Blast soÄŸuk hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r ve hedefe -4 DEX penaltÄ±sÄ± verir (Eldritch Essence).",
-        "source":  "Complete Arcane p.134"
-    },
-    {
-        "name":  "Flee the Scene",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Lesser",
-        "minLevel":  6,
-        "prereq":  "Warlock Level 6",
-        "benefit":  "KÄ±sa menzilli Dimension Door Ä±ÅŸÄ±nlanmasÄ± yapar ve geride 1 turluk illÃ¼zyon kuklasÄ± bÄ±rakÄ±r.",
-        "description":  "KÄ±sa menzilli Dimension Door Ä±ÅŸÄ±nlanmasÄ± yapar ve geride 1 turluk illÃ¼zyon kuklasÄ± bÄ±rakÄ±r.",
-        "source":  "Complete Arcane p.134"
-    },
-    {
-        "name":  "Walk Unseen",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Lesser",
-        "minLevel":  6,
-        "prereq":  "Warlock Level 6",
-        "benefit":  "24 saat boyunca Invisibility (GÃ¶rÃ¼nmezlik) kazanÄ±r; saldÄ±rana kadar sÃ¼rer.",
-        "description":  "24 saat boyunca Invisibility (GÃ¶rÃ¼nmezlik) kazanÄ±r; saldÄ±rana kadar sÃ¼rer.",
-        "source":  "Complete Arcane p.135"
-    },
-    {
-        "name":  "Voracious Dispelling",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Lesser",
-        "minLevel":  6,
-        "prereq":  "Warlock Level 6",
-        "benefit":  "Dispel Magic atar; bozduÄŸu her bÃ¼yÃ¼ seviyesi baÅŸÄ±na hedefe 1 hasar verir.",
-        "description":  "Dispel Magic atar; bozduÄŸu her bÃ¼yÃ¼ seviyesi baÅŸÄ±na hedefe 1 hasar verir.",
-        "source":  "Complete Arcane p.135"
-    },
-    {
-        "name":  "Charm",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Lesser",
-        "minLevel":  6,
-        "prereq":  "Warlock Level 6",
-        "benefit":  "Charm Monster bÃ¼yÃ¼sÃ¼ gibi tek bir hedefi bÃ¼yÃ¼ler (Will Save DC CHA mod).",
-        "description":  "Charm Monster bÃ¼yÃ¼sÃ¼ gibi tek bir hedefi bÃ¼yÃ¼ler (Will Save DC CHA mod).",
-        "source":  "Complete Arcane p.133"
-    },
-    {
-        "name":  "Curse of Despair",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Lesser",
-        "minLevel":  6,
-        "prereq":  "Warlock Level 6",
-        "benefit":  "Bestow Curse gibi dokunmayla lanetler veya menzilli saldÄ±rÄ±yla -3 saldÄ±rÄ± penaltÄ±sÄ± verir.",
-        "description":  "Bestow Curse gibi dokunmayla lanetler veya menzilli saldÄ±rÄ±yla -3 saldÄ±rÄ± penaltÄ±sÄ± verir.",
-        "source":  "Complete Arcane p.133"
-    },
-    {
-        "name":  "Vitriolic Blast",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Greater",
-        "minLevel":  11,
-        "prereq":  "Warlock Level 11",
-        "benefit":  "Eldritch Blast asit hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r, SR\u0027Ä± tamamen yok sayar ve devam hasarÄ± verir.",
-        "description":  "Eldritch Blast asit hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r, SR\u0027Ä± tamamen yok sayar ve devam hasarÄ± verir.",
-        "source":  "Complete Arcane p.135"
-    },
-    {
-        "name":  "Eldritch Cone",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Greater",
-        "minLevel":  11,
-        "prereq":  "Warlock Level 11",
-        "benefit":  "Eldritch Blast 30 ft\u0027lik koni alan etkisine dÃ¶nÃ¼ÅŸÃ¼r (Reflex DC yarÄ±sÄ±).",
-        "description":  "Eldritch Blast 30 ft\u0027lik koni alan etkisine dÃ¶nÃ¼ÅŸÃ¼r (Reflex DC yarÄ±sÄ±).",
-        "source":  "Complete Arcane p.134"
-    },
-    {
-        "name":  "Chilling Tentacles",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Greater",
-        "minLevel":  11,
-        "prereq":  "Warlock Level 11",
-        "benefit":  "Evard\u0027s Black Tentacles gibi kollar Ã§Ä±karÄ±r + her tur alandakilere 2d6 soÄŸuk hasarÄ± verir.",
-        "description":  "Evard\u0027s Black Tentacles gibi kollar Ã§Ä±karÄ±r + her tur alandakilere 2d6 soÄŸuk hasarÄ± verir.",
-        "source":  "Complete Arcane p.133"
-    },
-    {
-        "name":  "Devour Magic",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Greater",
-        "minLevel":  11,
-        "prereq":  "Warlock Level 11",
-        "benefit":  "Dokunmayla Greater Dispel Magic; bozduÄŸu bÃ¼yÃ¼ seviyesi baÅŸÄ±na 5 geÃ§ici can puanÄ± kazanÄ±r.",
-        "description":  "Dokunmayla Greater Dispel Magic; bozduÄŸu bÃ¼yÃ¼ seviyesi baÅŸÄ±na 5 geÃ§ici can puanÄ± kazanÄ±r.",
-        "source":  "Complete Arcane p.133"
-    },
-    {
-        "name":  "Noxious Blast",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Greater",
-        "minLevel":  11,
-        "prereq":  "Warlock Level 11",
-        "benefit":  "Eldritch Blast vurduÄŸu hedefi 1 dakika boyunca mide bulantÄ±sÄ± (Nauseated) yapar (Fort Save).",
-        "description":  "Eldritch Blast vurduÄŸu hedefi 1 dakika boyunca mide bulantÄ±sÄ± (Nauseated) yapar (Fort Save).",
-        "source":  "Complete Arcane p.134"
-    },
-    {
-        "name":  "Repelling Blast",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Greater",
-        "minLevel":  11,
-        "prereq":  "Warlock Level 11",
-        "benefit":  "Eldritch Blast vurduÄŸu hedefleri 1d6x5 ft geriye fÄ±rlatÄ±r (Reflex Save).",
-        "description":  "Eldritch Blast vurduÄŸu hedefleri 1d6x5 ft geriye fÄ±rlatÄ±r (Reflex Save).",
-        "source":  "Complete Arcane p.135"
-    },
-    {
-        "name":  "Wall of Perilous Flame",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Greater",
-        "minLevel":  11,
-        "prereq":  "Warlock Level 11",
-        "benefit":  "Wall of Fire duvarÄ± yaratÄ±r; hasarÄ±n yarÄ±sÄ± bÃ¼yÃ¼sel ateÅŸ olduÄŸu iÃ§in direnÃ§leri aÅŸar.",
-        "description":  "Wall of Fire duvarÄ± yaratÄ±r; hasarÄ±n yarÄ±sÄ± bÃ¼yÃ¼sel ateÅŸ olduÄŸu iÃ§in direnÃ§leri aÅŸar.",
-        "source":  "Complete Arcane p.135"
-    },
-    {
-        "name":  "Eldritch Doom",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Dark",
-        "minLevel":  16,
-        "prereq":  "Warlock Level 16",
-        "benefit":  "Eldritch Blast etrafÄ±nda 20 ft yarÄ±Ã§aplÄ± patlamaya dÃ¶nÃ¼ÅŸÃ¼r (Reflex Save yarÄ±sÄ±).",
-        "description":  "Eldritch Blast etrafÄ±nda 20 ft yarÄ±Ã§aplÄ± patlamaya dÃ¶nÃ¼ÅŸÃ¼r (Reflex Save yarÄ±sÄ±).",
-        "source":  "Complete Arcane p.134"
-    },
-    {
-        "name":  "Utterdark Blast",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Dark",
-        "minLevel":  16,
-        "prereq":  "Warlock Level 16",
-        "benefit":  "Eldritch Blast negatif enerji hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r ve hedefe 2 negatif seviye verir.",
-        "description":  "Eldritch Blast negatif enerji hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r ve hedefe 2 negatif seviye verir.",
-        "source":  "Complete Arcane p.135"
-    },
-    {
-        "name":  "Dark Foresight",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Dark",
-        "minLevel":  16,
-        "prereq":  "Warlock Level 16",
-        "benefit":  "24 saat boyunca Foresight bÃ¼yÃ¼sÃ¼: Asla ÅŸaÅŸÄ±rmaz, AC ve Reflex\u0027e +2 insight bonusu.",
-        "description":  "24 saat boyunca Foresight bÃ¼yÃ¼sÃ¼: Asla ÅŸaÅŸÄ±rmaz, AC ve Reflex\u0027e +2 insight bonusu.",
-        "source":  "Complete Arcane p.133"
-    },
-    {
-        "name":  "Dark Discorporation",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Dark",
-        "minLevel":  16,
-        "prereq":  "Warlock Level 16",
-        "benefit":  "GÃ¶lge yarasa sÃ¼rÃ¼sÃ¼ne dÃ¶nÃ¼ÅŸÃ¼r; uÃ§ma hÄ±zÄ±, fiziksel baÄŸÄ±ÅŸÄ±klÄ±k, %50 alan hasarÄ± azaltma.",
-        "description":  "GÃ¶lge yarasa sÃ¼rÃ¼sÃ¼ne dÃ¶nÃ¼ÅŸÃ¼r; uÃ§ma hÄ±zÄ±, fiziksel baÄŸÄ±ÅŸÄ±klÄ±k, %50 alan hasarÄ± azaltma.",
-        "source":  "Complete Arcane p.133"
-    },
-    {
-        "name":  "Retributive Phantasm",
-        "type":  "Special Ability",
-        "slot":  "None",
-        "category":  "Warlock Invocation",
-        "tier":  "Dark",
-        "minLevel":  16,
-        "prereq":  "Warlock Level 16",
-        "benefit":  "SaldÄ±rgana anÄ±nda Phantasmal Killer illÃ¼zyonel Ã¶lÃ¼mcÃ¼l korkusu fÄ±rlatÄ±r.",
-        "description":  "SaldÄ±rgana anÄ±nda Phantasmal Killer illÃ¼zyonel Ã¶lÃ¼mcÃ¼l korkusu fÄ±rlatÄ±r.",
-        "source":  "Complete Mage p.124"
-    },
-    {
-        "name":  "Martial Study",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "Martial",
-        "prereq":  "Special (see text)",
-        "benefit":  "SeÃ§ilen bir dÃ¶vÃ¼ÅŸ disiplininden (Desert Wind, Devoted Spirit, Diamond Mind, Iron Heart, Setting Sun, Shadow Hand, Stone Dragon, Tiger Claw, White Raven) seviyenizin yettiÄŸi 1 adet manevra (Strike, Boost veya Counter) Ã¶ÄŸrenirsiniz. Her Ã§atÄ±ÅŸmada (Encounter) 1 kez kullanÄ±labilir. En fazla 3 kez alÄ±nabilir; ilgili disiplinin ana becerisi sÄ±nÄ±f beceriniz olur.",
-        "description":  "Learn a martial maneuver from any discipline for which you meet the prerequisites. You can use this maneuver once per encounter. You can take this feat up to three times; each time adds the discipline skill to your class skill list.",
-        "source":  "Tome of Battle p.31",
-        "isFighterBonusFeat":  true
-    },
-    {
-        "name":  "Martial Stance",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "Martial",
-        "prereq":  "1 Martial maneuver",
-        "benefit":  "Bir disiplinden bildiÄŸiniz en az 1 manevra varsa, o disiplinden seviyenizin yettiÄŸi bir DuruÅŸ (Stance) Ã¶ÄŸrenirsiniz. SavaÅŸÃ§Ä± bonus feati olarak seÃ§ilebilir.",
-        "description":  "Learn a martial stance from any discipline in which you already know at least one maneuver and meet the prerequisites. Can be selected as a fighter bonus feat.",
-        "source":  "Tome of Battle p.31",
-        "isFighterBonusFeat":  true
-    },
-    {
-        "name":  "Extra Granted Maneuver",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "Martial",
-        "prereq":  "Crusader maneuver progression",
-        "benefit":  "Her Ã§atÄ±ÅŸmanÄ±n baÅŸÄ±nda ve manevra desteniz yenilenip Ã§ekildiÄŸinde fazladan +1 adet aÃ§Ä±k manevra (Granted Maneuver) kazanÄ±rsÄ±nÄ±z. Crusader manevra dÃ¶ngÃ¼sÃ¼nÃ¼ hÄ±zlandÄ±rÄ±r.",
-        "description":  "You begin each combat encounter with 1 additional granted maneuver. In addition, when you refresh your granted maneuvers, you are granted 1 extra maneuver.",
-        "source":  "Tome of Battle p.30",
-        "isFighterBonusFeat":  false
-    },
-    {
-        "name":  "Snap Kick",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "Martial",
-        "prereq":  "BAB +6, Improved Unarmed Strike",
-        "benefit":  "Standart yakÄ±n dÃ¶vÃ¼ÅŸ saldÄ±rÄ±sÄ±, tam saldÄ±rÄ± (Full Attack) veya standart eylemli manevra (Strike) yaparken, o turdaki tÃ¼m saldÄ±rÄ± zarlarÄ±nÄ±za -2 ceza alÄ±p anÄ±nda ek bir silahsÄ±z tekme saldÄ±rÄ±sÄ± (Unarmed Strike) yaparsÄ±nÄ±z.",
-        "description":  "When you make a melee attack with one or more weapons, full attack, or martial strike, you can make an additional unarmed strike with a -2 penalty on all attack rolls that round.",
-        "source":  "Tome of Battle p.32",
-        "isFighterBonusFeat":  true
-    },
-    {
-        "name":  "Stone Power",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "Martial",
-        "prereq":  "Str 13, 1 Stone Dragon maneuver",
-        "benefit":  "SaldÄ±rÄ± zarlarÄ±nÄ±zdan BAB deÄŸerine kadar (maksimum -5) ceza alÄ±p, aldÄ±ÄŸÄ±nÄ±z cezanÄ±n 2 katÄ± kadar (tur baÅŸÄ±na maksimum 10) GeÃ§ici Can PuanÄ± (Temporary HP) kazanÄ±rsÄ±nÄ±z. Bir sonraki turunuza kadar sÃ¼rer.",
-        "description":  "Subtract a number (up to 5 or BAB) from melee attack rolls to gain twice that number in temporary hit points until the start of your next turn.",
-        "source":  "Tome of Battle p.32",
-        "isFighterBonusFeat":  true
-    },
-    {
-        "name":  "Song of the White Raven",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "Martial",
-        "prereq":  "Bardic music, 1 White Raven maneuver",
-        "benefit":  "Inspire Courage ÅŸarkÄ±sÄ±nÄ± Swift Action olarak anÄ±nda baÅŸlatabilirsiniz. Inspire Courage bonusunuzu hesaplarken Bard seviyelerinizle Crusader ve Warblade seviyeleriniz toplanÄ±r.",
-        "description":  "You can activate inspire courage as a swift action. Your bard, crusader, and warblade levels stack to determine the bonus granted by inspire courage.",
-        "source":  "Tome of Battle p.32",
-        "isFighterBonusFeat":  false
-    },
-    {
-        "name":  "Sudden Recovery",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "Martial",
-        "prereq":  "1 Martial maneuver",
-        "benefit":  "Ã‡atÄ±ÅŸma baÅŸÄ±na 1 kez, az Ã¶nce harcadÄ±ÄŸÄ±nÄ±z bir manevrayÄ± Swift Action harcayarak anÄ±nda yeniden kuÅŸanÄ±lmÄ±ÅŸ ve kullanÄ±labilir hale getirirsiniz.",
-        "description":  "Once per encounter as a swift action, you can instantly recover an expended maneuver and make it readied once again.",
-        "source":  "Tome of Battle p.33",
-        "isFighterBonusFeat":  false
-    },
-    {
-        "name":  "Vital Recovery",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "Martial",
-        "prereq":  "2 Martial maneuvers",
-        "benefit":  "Bir Ã§atÄ±ÅŸma sÄ±rasÄ±nda harcadÄ±ÄŸÄ±nÄ±z manevralarÄ± yenilediÄŸinizde dÃ¶vÃ¼ÅŸ baÅŸÄ±na bir kez 3 + Karakter Seviyesi kadar can puanÄ± iyileÅŸirsiniz.",
-        "description":  "When you recover expended maneuvers during an encounter, you heal hit points equal to 3 + your character level (once per encounter).",
-        "source":  "Tome of Battle p.33",
-        "isFighterBonusFeat":  false
-    },
-    {
-        "name":  "Evasive Reflexes",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "Martial",
-        "prereq":  "Dex 13",
-        "benefit":  "Bir rakip fÄ±rsat saldÄ±rÄ±sÄ± (AoO) tetiklediÄŸinde, ona saldÄ±rmak yerine anÄ±nda 5-foot step kayabilirsiniz (yeni AoO tetiklemez).",
-        "description":  "When an opponent provokes an attack of opportunity from you, you can take a 5-foot step instead of making the attack.",
-        "source":  "Tome of Battle p.30",
-        "isFighterBonusFeat":  true
-    },
-    {
-        "name":  "Extra Invocation",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "General",
-        "prereq":  "Ability to use lesser invocations",
-        "benefit":  "BildiÄŸiniz en yÃ¼ksek dereceden en az bir derece dÃ¼ÅŸÃ¼k ek 1 adet YakarÄ±ÅŸ (Invocation) Ã¶ÄŸrenirsiniz. Birden fazla kez alÄ±nabilir.",
-        "description":  "You learn one additional invocation of any grade up to one grade lower than the highest grade you can use. You can take this feat multiple times.",
-        "source":  "Complete Arcane p.79",
-        "isFighterBonusFeat":  false
-    },
-    {
-        "name":  "Empower Spell-Like Ability",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "General",
-        "prereq":  "Spell-like ability at CL 6th or higher",
-        "benefit":  "GÃ¼nde 3 kez, seÃ§ilen bir bÃ¼yÃ¼ benzeri yeteneÄŸin (Ã¶rneÄŸin Eldritch Blast) tÃ¼m deÄŸiÅŸken sayÄ±sal etkilerini (hasar zarlarÄ± vb.) x1.5 katÄ±na Ã§Ä±karÄ±rsÄ±nÄ±z.",
-        "description":  "You can use a selected spell-like ability three times per day as an empowered spell-like ability (variable numeric effects increased by one-half).",
-        "source":  "Monster Manual p.303 / Complete Arcane p.79",
-        "isFighterBonusFeat":  false
-    },
-    {
-        "name":  "Quicken Spell-Like Ability",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "General",
-        "prereq":  "Spell-like ability at CL 10th or higher",
-        "benefit":  "GÃ¼nde 3 kez, seÃ§ilen bir bÃ¼yÃ¼ benzeri yeteneÄŸi (Ã¶rneÄŸin Eldritch Blast) Swift Action olarak anÄ±nda patlatabilirsiniz.",
-        "description":  "You can use a selected spell-like ability three times per day as a quickened spell-like ability (swift action).",
-        "source":  "Monster Manual p.304 / Complete Arcane p.82",
-        "isFighterBonusFeat":  false
-    },
-    {
-        "name":  "Maximize Spell-Like Ability",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "General",
-        "prereq":  "Spell-like ability at CL 6th or higher",
-        "benefit":  "GÃ¼nde 3 kez, seÃ§ilen bir bÃ¼yÃ¼ benzeri yeteneÄŸin (Ã¶rneÄŸin Eldritch Blast) tÃ¼m deÄŸiÅŸken sayÄ±sal etkilerini zar atmadan maksimum deÄŸerinde uygularsÄ±nÄ±z.",
-        "description":  "You can use a selected spell-like ability three times per day as a maximized spell-like ability (variable numeric effects maximized).",
-        "source":  "Complete Arcane p.81",
-        "isFighterBonusFeat":  false
-    },
-    {
-        "name":  "Ability Focus (Eldritch Blast)",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "General",
-        "prereq":  "Special attack (Eldritch Blast)",
-        "benefit":  "Eldritch Blast ve ona uygulanan tÃ¼m Eldritch Essence / Blast Shape yakarÄ±ÅŸlarÄ±nÄ±n DC kurtarma zarlarÄ±na kalÄ±cÄ± +2 bonus kazandÄ±rÄ±r.",
-        "description":  "Add +2 to the Difficulty Class for all saving throws against the selected special attack (Eldritch Blast).",
-        "source":  "Monster Manual p.303",
-        "isFighterBonusFeat":  false
-    },
-    {
-        "name":  "Mortal Bane",
-        "type":  "Feat",
-        "slot":  "None",
-        "category":  "General",
-        "prereq":  "Spell-like ability",
-        "benefit":  "GÃ¼nde 5 kez, seÃ§ilen bir bÃ¼yÃ¼ benzeri yeteneÄŸin yaÅŸayan hedeflere vurduÄŸunda +2d6 ekstra hasar vermesini saÄŸlarsÄ±nÄ±z (Undead veya Construct\u0027lara karÅŸÄ± yarÄ± hasar).",
-        "description":  "A selected spell-like ability deals +2d6 points of damage against living creatures five times per day (damage halved against undead/constructs).",
-        "source":  "Book of Vile Darkness p.48 / Complete Arcane",
-        "isFighterBonusFeat":  false
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.97",
-        "role":  "Defense / Saves",
-        "scope":  "All",
-        "benefit":  "+2 bonus on all Will saving throws.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_passive",
-        "slot":  "None",
-        "ruleFlags":  {
-                          "saveBonus":  {
-                                            "will":  2
-                                        }
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "general",
-                     "iron-will",
-                     "save"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Iron Will"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.94",
-        "role":  "Defense / Saves",
-        "scope":  "All",
-        "benefit":  "+2 bonus on all Fortitude saving throws.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_passive",
-        "slot":  "None",
-        "ruleFlags":  {
-                          "saveBonus":  {
-                                            "fort":  2
-                                        }
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "general",
-                     "great-fortitude",
-                     "save"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Great Fortitude"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.97",
-        "role":  "Defense / Saves",
-        "scope":  "All",
-        "benefit":  "+2 bonus on all Reflex saving throws.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_passive",
-        "slot":  "None",
-        "ruleFlags":  {
-                          "saveBonus":  {
-                                            "ref":  2
-                                        }
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "general",
-                     "lightning-reflexes",
-                     "save"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Lightning Reflexes"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.101",
-        "role":  "Defense / HP",
-        "scope":  "All",
-        "benefit":  "+3 hit points. You may gain this feat multiple times; its effects stack.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_passive",
-        "slot":  "None",
-        "ruleFlags":  {
-                          "hpBonus":  3
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "general",
-                     "toughness",
-                     "hp"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Toughness"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.93",
-        "role":  "Defense / Survival",
-        "scope":  "All",
-        "benefit":  "+4 bonus on checks or saves vs nonlethal damage from exhaustion, starvation/thirst, holding breath, cold/hot environments. May sleep in light or medium armor without becoming fatigued.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_passive",
-        "slot":  "None",
-        "ruleFlags":  {
-
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "general",
-                     "endurance"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Endurance"
-    },
-    {
-        "prereq":  "Endurance",
-        "source":  "SRD / PHB p.93",
-        "role":  "Defense / Survival",
-        "scope":  "All",
-        "benefit":  "Automatically stabilize when between -1 and -9 HP. Remain conscious and can take a single standard or move action each round (standard actions deal 1 damage to self).",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_passive",
-        "slot":  "None",
-        "ruleFlags":  {
-
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "general",
-                     "diehard"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Diehard"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.99",
-        "role":  "Utility / Mobility",
-        "scope":  "All",
-        "benefit":  "Move 5 times normal speed when running (4 times in heavy armor). Retain Dex bonus to AC while running. +4 bonus on Jump checks after a running start.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_movement",
-        "slot":  "None",
-        "ruleFlags":  {
-
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "general",
-                     "run",
-                     "mobility"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Run"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.92",
-        "role":  "Caster / Concentration",
-        "scope":  "Caster Only",
-        "benefit":  "+4 bonus on Concentration checks made to cast a spell or use a spell-like ability defensively or while grappled or pinned.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_caster",
-        "slot":  "None",
-        "ruleFlags":  {
-
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "general",
-                     "combat-casting",
-                     "caster"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Combat Casting"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.100",
-        "role":  "Caster / DC",
-        "scope":  "Caster Only",
-        "benefit":  "+1 bonus to the Difficulty Class for all saving throws against spells from the school of magic you select.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_caster",
-        "slot":  "None",
-        "ruleFlags":  {
-
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "general",
-                     "spell-focus",
-                     "caster"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Spell Focus"
-    },
-    {
-        "prereq":  "Spell Focus",
-        "source":  "SRD / PHB p.95",
-        "role":  "Caster / DC",
-        "scope":  "Caster Only",
-        "benefit":  "+1 bonus to the Difficulty Class for all saving throws against spells from the chosen school of magic (stacks with Spell Focus for a total of +2).",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_caster",
-        "slot":  "None",
-        "ruleFlags":  {
-
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "general",
-                     "greater-spell-focus",
-                     "caster"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Greater Spell Focus"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.100",
-        "role":  "Caster / Penetration",
-        "scope":  "Caster Only",
-        "benefit":  "+2 bonus on caster level checks (1d20 + caster level) made to overcome a creature\u0027s spell resistance.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_caster",
-        "slot":  "None",
-        "ruleFlags":  {
-
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "general",
-                     "spell-penetration",
-                     "sr"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Spell Penetration"
-    },
-    {
-        "prereq":  "Spell Penetration",
-        "source":  "SRD / PHB p.95",
-        "role":  "Caster / Penetration",
-        "scope":  "Caster Only",
-        "benefit":  "+2 bonus on caster level checks made to overcome a creature\u0027s spell resistance (stacks with Spell Penetration for a total of +4).",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_caster",
-        "slot":  "None",
-        "ruleFlags":  {
-
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "general",
-                     "greater-spell-penetration",
-                     "sr"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Greater Spell Penetration"
-    },
-    {
-        "prereq":  "Wizard level 1st",
-        "source":  "SRD / PHB p.100",
-        "role":  "Caster / Wizard",
-        "scope":  "Wizard Only",
-        "benefit":  "Each time you take this feat, choose a number of spells equal to your Intelligence modifier. You can prepare these spells without referring to a spellbook.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "Special",
-        "attackType":  "feat_special",
-        "slot":  "None",
-        "ruleFlags":  {
-
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "special",
-                     "spell-mastery",
-                     "wizard"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Spell Mastery"
-    },
-    {
-        "prereq":  "Wis 13, wild shape ability",
-        "source":  "SRD / PHB p.98",
-        "role":  "Caster / Druid",
-        "scope":  "Druid Only",
-        "benefit":  "You can complete the verbal and somatic components of spells while using wild shape. You substitute noises and gestures for standard verbal and somatic components.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_caster",
-        "slot":  "None",
-        "ruleFlags":  {
-
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "general",
-                     "natural-spell",
-                     "druid"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Natural Spell"
-    },
-    {
-        "prereq":  "Ability to turn or rebuke creatures",
-        "source":  "SRD / PHB p.94",
-        "role":  "Divine / Turning",
-        "scope":  "Divine Only",
-        "benefit":  "Each time you take this feat, you can use your turn or rebuke undead ability 4 additional times per day.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_divine",
-        "slot":  "None",
-        "ruleFlags":  {
-
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "general",
-                     "extra-turning",
-                     "cleric",
-                     "paladin"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Extra Turning"
-    },
-    {
-        "prereq":  "Spell Focus (conjuration)",
-        "source":  "SRD / PHB p.89",
-        "role":  "Caster / Summoning",
-        "scope":  "Caster Only",
-        "benefit":  "Each creature you conjure with any summon spell gains a +4 enhancement bonus to Strength and Constitution for the duration of the spell.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_caster",
-        "slot":  "None",
-        "ruleFlags":  {
-
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "general",
-                     "augment-summoning"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Augment Summoning"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.93",
-        "role":  "Metamagic",
-        "scope":  "Caster Only",
-        "benefit":  "All variable, numeric effects of an empowered spell are increased by one-half (+50%). Saving throws and opposed rolls are not affected. Uses a slot 2 levels higher.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "Metamagic",
-        "attackType":  "feat_metamagic",
-        "slot":  "None",
-        "ruleFlags":  {
-                          "metamagicLevelMod":  2
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "metamagic",
-                     "empower-spell"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Empower Spell"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.94",
-        "role":  "Metamagic",
-        "scope":  "Caster Only",
-        "benefit":  "You can alter a spell with a range of close, medium, or long to increase its range by 100%. Uses a slot 1 level higher.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "Metamagic",
-        "attackType":  "feat_metamagic",
-        "slot":  "None",
-        "ruleFlags":  {
-                          "metamagicLevelMod":  1
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "metamagic",
-                     "enlarge-spell"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Enlarge Spell"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.94",
-        "role":  "Metamagic",
-        "scope":  "Caster Only",
-        "benefit":  "An extended spell lasts twice as long as normal. Spells of instantaneous, concentration, or permanent duration are not affected. Uses a slot 1 level higher.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "Metamagic",
-        "attackType":  "feat_metamagic",
-        "slot":  "None",
-        "ruleFlags":  {
-                          "metamagicLevelMod":  1
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "metamagic",
-                     "extend-spell"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Extend Spell"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.95",
-        "role":  "Metamagic",
-        "scope":  "Caster Only",
-        "benefit":  "A heightened spell has a higher spell level than normal (up to 9th level). Effective level equals the slot used, increasing save DC accordingly.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "Metamagic",
-        "attackType":  "feat_metamagic",
-        "slot":  "None",
-        "ruleFlags":  {
-
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "metamagic",
-                     "heighten-spell"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Heighten Spell"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.97",
-        "role":  "Metamagic",
-        "scope":  "Caster Only",
-        "benefit":  "All variable, numeric effects of a maximized spell are maximized. Saving throws and opposed rolls are unaffected. Uses a slot 3 levels higher.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "Metamagic",
-        "attackType":  "feat_metamagic",
-        "slot":  "None",
-        "ruleFlags":  {
-                          "metamagicLevelMod":  3
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "metamagic",
-                     "maximize-spell"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Maximize Spell"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.98",
-        "role":  "Metamagic",
-        "scope":  "Caster Only",
-        "benefit":  "Casting a quickened spell is a swift action. You can perform another action, including casting another spell, in the same round. Uses a slot 4 levels higher.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Swift",
-        "category":  "Metamagic",
-        "attackType":  "feat_metamagic",
-        "slot":  "None",
-        "ruleFlags":  {
-                          "metamagicLevelMod":  4
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "metamagic",
-                     "quicken-spell"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Quicken Spell"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.100",
-        "role":  "Metamagic",
-        "scope":  "Caster Only",
-        "benefit":  "A silent spell can be cast with no verbal components. Spells without verbal components are not affected. Uses a slot 1 level higher.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "Metamagic",
-        "attackType":  "feat_metamagic",
-        "slot":  "None",
-        "ruleFlags":  {
-                          "metamagicLevelMod":  1
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "metamagic",
-                     "silent-spell"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Silent Spell"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.101",
-        "role":  "Metamagic",
-        "scope":  "Caster Only",
-        "benefit":  "A stilled spell can be cast with no somatic components. Spells without somatic components are not affected. Uses a slot 1 level higher.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "Metamagic",
-        "attackType":  "feat_metamagic",
-        "slot":  "None",
-        "ruleFlags":  {
-                          "metamagicLevelMod":  1
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "metamagic",
-                     "still-spell"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Still Spell"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.103",
-        "role":  "Metamagic",
-        "scope":  "Caster Only",
-        "benefit":  "You can alter a burst, emanation, line, or spread spell to increase its area by 100%. Spells without area are not affected. Uses a slot 3 levels higher.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "Metamagic",
-        "attackType":  "feat_metamagic",
-        "slot":  "None",
-        "ruleFlags":  {
-                          "metamagicLevelMod":  3
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "metamagic",
-                     "widen-spell"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Widen Spell"
-    },
-    {
-        "prereq":  "Caster level 3rd",
-        "source":  "SRD / PHB p.91",
-        "role":  "Item Creation",
-        "scope":  "Caster Only",
-        "benefit":  "You can create a potion of any 3rd-level or lower spell that you know and that targets one or more creatures. Brewing takes 1 day.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "Item Creation",
-        "attackType":  "feat_crafting",
-        "slot":  "None",
-        "ruleFlags":  {
-
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "item-creation",
-                     "brew-potion"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Brew Potion"
-    },
-    {
-        "prereq":  "Caster level 5th",
-        "source":  "SRD / PHB p.92",
-        "role":  "Item Creation",
-        "scope":  "Caster Only",
-        "benefit":  "You can create any magic weapon, armor, or shield whose prerequisites you meet. Enhancing takes 1 day per 1,000 gp in market price.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "Item Creation",
-        "attackType":  "feat_crafting",
-        "slot":  "None",
-        "ruleFlags":  {
-
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "item-creation",
-                     "craft-arms-and-armor"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Craft Magic Arms and Armor"
-    },
-    {
-        "prereq":  "Caster level 9th",
-        "source":  "SRD / PHB p.92",
-        "role":  "Item Creation",
-        "scope":  "Caster Only",
-        "benefit":  "You can create any magic rod whose prerequisites you meet. Crafting takes 1 day per 1,000 gp in market price.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "Item Creation",
-        "attackType":  "feat_crafting",
-        "slot":  "None",
-        "ruleFlags":  {
-
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "item-creation",
-                     "craft-rod"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Craft Rod"
-    },
-    {
-        "prereq":  "Caster level 12th",
-        "source":  "SRD / PHB p.92",
-        "role":  "Item Creation",
-        "scope":  "Caster Only",
-        "benefit":  "You can create any magic staff whose prerequisites you meet. Crafting takes 1 day per 1,000 gp in market price.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "Item Creation",
-        "attackType":  "feat_crafting",
-        "slot":  "None",
-        "ruleFlags":  {
-
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "item-creation",
-                     "craft-staff"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Craft Staff"
-    },
-    {
-        "prereq":  "Caster level 5th",
-        "source":  "SRD / PHB p.92",
-        "role":  "Item Creation",
-        "scope":  "Caster Only",
-        "benefit":  "You can create a wand of any 4th-level or lower spell that you know. Crafting takes 1 day per 1,000 gp in market price.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "Item Creation",
-        "attackType":  "feat_crafting",
-        "slot":  "None",
-        "ruleFlags":  {
-
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "item-creation",
-                     "craft-wand"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Craft Wand"
-    },
-    {
-        "prereq":  "Caster level 3rd",
-        "source":  "SRD / PHB p.92",
-        "role":  "Item Creation",
-        "scope":  "Caster Only",
-        "benefit":  "You can create any wondrous item whose prerequisites you meet. Crafting takes 1 day per 1,000 gp in market price.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "Item Creation",
-        "attackType":  "feat_crafting",
-        "slot":  "None",
-        "ruleFlags":  {
-
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "item-creation",
-                     "craft-wondrous-item"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Craft Wondrous Item"
-    },
-    {
-        "prereq":  "Caster level 12th",
-        "source":  "SRD / PHB p.94",
-        "role":  "Item Creation",
-        "scope":  "Caster Only",
-        "benefit":  "You can create any magic ring whose prerequisites you meet. Crafting takes 1 day per 1,000 gp in market price.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "Item Creation",
-        "attackType":  "feat_crafting",
-        "slot":  "None",
-        "ruleFlags":  {
-
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "item-creation",
-                     "forge-ring"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Forge Ring"
-    },
-    {
-        "prereq":  "Caster level 1st",
-        "source":  "SRD / PHB p.99",
-        "role":  "Item Creation",
-        "scope":  "Caster Only",
-        "benefit":  "You can create a scroll of any spell that you know. Scribing takes 1 day per 1,000 gp in market price.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "Item Creation",
-        "attackType":  "feat_crafting",
-        "slot":  "None",
-        "ruleFlags":  {
-
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "item-creation",
-                     "scribe-scroll"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Scribe Scroll"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.89",
-        "role":  "Skill",
-        "scope":  "All",
-        "benefit":  "+2 bonus on all Jump checks and Tumble checks.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_skill",
-        "slot":  "None",
-        "ruleFlags":  {
-                          "skillBonus":  {
-                                             "Jump":  2,
-                                             "Tumble":  2
-                                         }
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "skill",
-                     "acrobatic"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Acrobatic"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.89",
-        "role":  "Skill",
-        "scope":  "All",
-        "benefit":  "+2 bonus on all Balance checks and Escape Artist checks.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_skill",
-        "slot":  "None",
-        "ruleFlags":  {
-                          "skillBonus":  {
-                                             "Escape Artist":  2,
-                                             "Balance":  2
-                                         }
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "skill",
-                     "agile"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Agile"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.89",
-        "role":  "Skill",
-        "scope":  "All",
-        "benefit":  "+2 bonus on all Listen checks and Spot checks.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_skill",
-        "slot":  "None",
-        "ruleFlags":  {
-                          "skillBonus":  {
-                                             "Spot":  2,
-                                             "Listen":  2
-                                         }
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "skill",
-                     "alertness",
-                     "perception"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Alertness"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.89",
-        "role":  "Skill",
-        "scope":  "All",
-        "benefit":  "+2 bonus on all Climb checks and Swim checks.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_skill",
-        "slot":  "None",
-        "ruleFlags":  {
-                          "skillBonus":  {
-                                             "Swim":  2,
-                                             "Climb":  2
-                                         }
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "skill",
-                     "athletic"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Athletic"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.93",
-        "role":  "Skill",
-        "scope":  "All",
-        "benefit":  "+2 bonus on all Disguise checks and Forgery checks.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_skill",
-        "slot":  "None",
-        "ruleFlags":  {
-                          "skillBonus":  {
-                                             "Forgery":  2,
-                                             "Disguise":  2
-                                         }
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "skill",
-                     "deceitful"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Deceitful"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.93",
-        "role":  "Skill",
-        "scope":  "All",
-        "benefit":  "+2 bonus on all Sleight of Hand checks and Use Rope checks.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_skill",
-        "slot":  "None",
-        "ruleFlags":  {
-                          "skillBonus":  {
-                                             "Sleight of Hand":  2,
-                                             "Use Rope":  2
-                                         }
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "skill",
-                     "deft-hands"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Deft Hands"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.93",
-        "role":  "Skill",
-        "scope":  "All",
-        "benefit":  "+2 bonus on all Appraise checks and Decipher Script checks.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_skill",
-        "slot":  "None",
-        "ruleFlags":  {
-                          "skillBonus":  {
-                                             "Decipher Script":  2,
-                                             "Appraise":  2
-                                         }
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "skill",
-                     "diligent"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Diligent"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.97",
-        "role":  "Skill",
-        "scope":  "All",
-        "benefit":  "+2 bonus on all Gather Information checks and Search checks.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_skill",
-        "slot":  "None",
-        "ruleFlags":  {
-                          "skillBonus":  {
-                                             "Search":  2,
-                                             "Gather Information":  2
-                                         }
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "skill",
-                     "investigator"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Investigator"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.97",
-        "role":  "Skill",
-        "scope":  "All",
-        "benefit":  "+2 bonus on all Spellcraft checks and Use Magic Device checks.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_skill",
-        "slot":  "None",
-        "ruleFlags":  {
-                          "skillBonus":  {
-                                             "Use Magic Device":  2,
-                                             "Spellcraft":  2
-                                         }
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "skill",
-                     "magical-aptitude"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Magical Aptitude"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.98",
-        "role":  "Skill",
-        "scope":  "All",
-        "benefit":  "+2 bonus on all Diplomacy checks and Sense Motive checks.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_skill",
-        "slot":  "None",
-        "ruleFlags":  {
-                          "skillBonus":  {
-                                             "Diplomacy":  2,
-                                             "Sense Motive":  2
-                                         }
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "skill",
-                     "negotiator"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Negotiator"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.98",
-        "role":  "Skill",
-        "scope":  "All",
-        "benefit":  "+2 bonus on all Disable Device checks and Open Lock checks.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_skill",
-        "slot":  "None",
-        "ruleFlags":  {
-                          "skillBonus":  {
-                                             "Disable Device":  2,
-                                             "Open Lock":  2
-                                         }
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "skill",
-                     "nimble-fingers"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Nimble Fingers"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.98",
-        "role":  "Skill",
-        "scope":  "All",
-        "benefit":  "+2 bonus on all Bluff checks and Intimidate checks.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_skill",
-        "slot":  "None",
-        "ruleFlags":  {
-                          "skillBonus":  {
-                                             "Bluff":  2,
-                                             "Intimidate":  2
-                                         }
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "skill",
-                     "persuasive"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Persuasive"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.100",
-        "role":  "Skill",
-        "scope":  "All",
-        "benefit":  "+2 bonus on all Heal checks and Survival checks.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_skill",
-        "slot":  "None",
-        "ruleFlags":  {
-                          "skillBonus":  {
-                                             "Survival":  2,
-                                             "Heal":  2
-                                         }
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "skill",
-                     "self-sufficient"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Self-Sufficient"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.101",
-        "role":  "Skill",
-        "scope":  "All",
-        "benefit":  "+2 bonus on all Hide checks and Move Silently checks.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_skill",
-        "slot":  "None",
-        "ruleFlags":  {
-                          "skillBonus":  {
-                                             "Hide":  2,
-                                             "Move Silently":  2
-                                         }
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "skill",
-                     "stealthy"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Stealthy"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.101",
-        "role":  "Skill / Tracking",
-        "scope":  "All",
-        "benefit":  "To find tracks or to follow them for 1 mile requires a successful Survival check. You must make another Survival check every time the tracks become difficult to follow.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_skill",
-        "slot":  "None",
-        "ruleFlags":  {
-
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "general",
-                     "track",
-                     "survival"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Track"
-    },
-    {
-        "prereq":  "Character level 6th",
-        "source":  "SRD / PHB p.106",
-        "role":  "Special",
-        "scope":  "All",
-        "benefit":  "Having this feat enables the character to attract a loyal cohort and devoted followers. Leadership score equals level plus Charisma modifier.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_special",
-        "slot":  "None",
-        "ruleFlags":  {
-
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "general",
-                     "leadership"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Leadership"
-    },
-    {
-        "prereq":  "-",
-        "source":  "SRD / PHB p.100",
-        "role":  "Skill",
-        "scope":  "All",
-        "benefit":  "Choose a skill. You get a +3 bonus on all checks involving that skill. You can gain this feat multiple times; each time applies to a new skill.",
-        "type":  "Feat",
-        "combatModifiers":  [
-
-                            ],
-        "isFighterBonusFeat":  false,
-        "actionType":  "Passive",
-        "category":  "General",
-        "attackType":  "feat_skill",
-        "slot":  "None",
-        "ruleFlags":  {
-
-                      },
-        "combatScope":  "all",
-        "tags":  [
-                     "feat",
-                     "skill",
-                     "skill-focus"
-                 ],
-        "bonusType":  "Untyped",
-        "name":  "Skill Focus"
+        "name": "Gauntlet",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Simple",
+        "weaponType": "Simple Light",
+        "dice": "1d3",
+        "extraDmg": "1d3",
+        "damage": "1d3",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Bludgeoning",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 1,
+        "cost": 2,
+        "isLight": true,
+        "tags": [
+            "simple",
+            "light",
+            "unarmed",
+            "bludgeoning",
+            "finessable"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Allows an unarmed strike to deal lethal bludgeoning damage instead of nonlethal.",
+        "ruleFlags": {},
+        "combatModifiers": [],
+        "finessable": true
+    },
+    {
+        "name": "Unarmed Strike",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Simple",
+        "weaponType": "Simple Light",
+        "dice": "1d3",
+        "extraDmg": "1d3",
+        "damage": "1d3",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Bludgeoning (Nonlethal)",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 0,
+        "cost": 0,
+        "isLight": true,
+        "tags": [
+            "simple",
+            "light",
+            "unarmed",
+            "nonlethal",
+            "finessable"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Deals nonlethal bludgeoning damage. Provokes attack of opportunity without Improved Unarmed Strike feat.",
+        "ruleFlags": {},
+        "combatModifiers": [],
+        "finessable": true
+    },
+    {
+        "name": "Dagger",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Simple",
+        "weaponType": "Simple Light",
+        "dice": "1d4",
+        "extraDmg": "1d4",
+        "damage": "1d4",
+        "critMin": 19,
+        "critMult": 2,
+        "crit": "19-20/x2",
+        "dmgType": "Piercing or Slashing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 1,
+        "cost": 2,
+        "isLight": true,
+        "tags": [
+            "simple",
+            "light",
+            "finessable",
+            "thrown",
+            "piercing",
+            "slashing"
+        ],
+        "scope": "Melee or Ranged",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Can be used in melee or thrown (range 10 ft). Finessable with Weapon Finesse.",
+        "ruleFlags": {
+            "finessable": true,
+            "thrown": true
+        },
+        "combatModifiers": [],
+        "range": 10,
+        "finessable": true
+    },
+    {
+        "name": "Punching Dagger",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Simple",
+        "weaponType": "Simple Light",
+        "dice": "1d4",
+        "extraDmg": "1d4",
+        "damage": "1d4",
+        "critMin": 20,
+        "critMult": 3,
+        "crit": "20/x3",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 1,
+        "cost": 2,
+        "isLight": true,
+        "tags": [
+            "simple",
+            "light",
+            "finessable",
+            "piercing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "A heavy blade fixed to a transverse handle (katar). Deals x3 critical piercing damage.",
+        "ruleFlags": {
+            "finessable": true
+        },
+        "combatModifiers": [],
+        "finessable": true
+    },
+    {
+        "name": "Spiked Gauntlet",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Simple",
+        "weaponType": "Simple Light",
+        "dice": "1d4",
+        "extraDmg": "1d4",
+        "damage": "1d4",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 1,
+        "cost": 5,
+        "isLight": true,
+        "tags": [
+            "simple",
+            "light",
+            "piercing",
+            "finessable"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Cannot be disarmed. Deals lethal piercing damage.",
+        "ruleFlags": {},
+        "combatModifiers": [],
+        "finessable": true
+    },
+    {
+        "name": "Light Mace",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Simple",
+        "weaponType": "Simple Light",
+        "dice": "1d6",
+        "extraDmg": "1d6",
+        "damage": "1d6",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Bludgeoning",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 4,
+        "cost": 5,
+        "isLight": true,
+        "tags": [
+            "simple",
+            "light",
+            "finessable",
+            "bludgeoning"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "A light bludgeoning weapon with a fluted head. Finessable.",
+        "ruleFlags": {
+            "finessable": true
+        },
+        "combatModifiers": [],
+        "finessable": true
+    },
+    {
+        "name": "Sickle",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Simple",
+        "weaponType": "Simple Light",
+        "dice": "1d6",
+        "extraDmg": "1d6",
+        "damage": "1d6",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Slashing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 2,
+        "cost": 6,
+        "isLight": true,
+        "tags": [
+            "simple",
+            "light",
+            "finessable",
+            "trip",
+            "slashing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Can be used to make trip attacks. If tripped during your own trip attempt, you can drop the sickle to avoid being tripped.",
+        "ruleFlags": {
+            "finessable": true,
+            "trip": true
+        },
+        "combatModifiers": [],
+        "finessable": true
+    },
+    {
+        "name": "Club",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Simple",
+        "weaponType": "Simple One-Handed",
+        "dice": "1d6",
+        "extraDmg": "1d6",
+        "damage": "1d6",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Bludgeoning",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 3,
+        "cost": 0,
+        "isLight": false,
+        "tags": [
+            "simple",
+            "one-handed",
+            "thrown",
+            "bludgeoning"
+        ],
+        "scope": "Melee or Ranged",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Can be thrown with a 10 ft range increment.",
+        "ruleFlags": {
+            "thrown": true
+        },
+        "combatModifiers": [],
+        "range": 10
+    },
+    {
+        "name": "Heavy Mace",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Simple",
+        "weaponType": "Simple One-Handed",
+        "dice": "1d8",
+        "extraDmg": "1d8",
+        "damage": "1d8",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Bludgeoning",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 8,
+        "cost": 12,
+        "isLight": false,
+        "tags": [
+            "simple",
+            "one-handed",
+            "bludgeoning"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "A standard one-handed bludgeoning weapon.",
+        "ruleFlags": {},
+        "combatModifiers": []
+    },
+    {
+        "name": "Morningstar",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Simple",
+        "weaponType": "Simple One-Handed",
+        "dice": "1d8",
+        "extraDmg": "1d8",
+        "damage": "1d8",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Bludgeoning and Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 6,
+        "cost": 8,
+        "isLight": false,
+        "tags": [
+            "simple",
+            "one-handed",
+            "bludgeoning",
+            "piercing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "A spiked metal head providing both bludgeoning and piercing damage.",
+        "ruleFlags": {},
+        "combatModifiers": []
+    },
+    {
+        "name": "Shortspear",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Simple",
+        "weaponType": "Simple One-Handed",
+        "dice": "1d6",
+        "extraDmg": "1d6",
+        "damage": "1d6",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 3,
+        "cost": 1,
+        "isLight": false,
+        "tags": [
+            "simple",
+            "one-handed",
+            "thrown",
+            "piercing"
+        ],
+        "scope": "Melee or Ranged",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Can be thrown with a 20 ft range increment.",
+        "ruleFlags": {
+            "thrown": true
+        },
+        "combatModifiers": [],
+        "range": 20
+    },
+    {
+        "name": "Longspear",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Simple",
+        "weaponType": "Simple Two-Handed",
+        "dice": "1d8",
+        "extraDmg": "1d8",
+        "damage": "1d8",
+        "critMin": 20,
+        "critMult": 3,
+        "crit": "20/x3",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 9,
+        "cost": 5,
+        "isLight": false,
+        "tags": [
+            "simple",
+            "two-handed",
+            "reach",
+            "brace",
+            "piercing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Reach weapon (strikes opponents 10 ft away, cannot strike adjacent). If readied against a charge, deals double damage.",
+        "ruleFlags": {
+            "brace": true,
+            "reach": true
+        },
+        "combatModifiers": []
+    },
+    {
+        "name": "Quarterstaff",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Simple",
+        "weaponType": "Simple Two-Handed",
+        "dice": "1d6",
+        "extraDmg": "1d6",
+        "damage": "1d6",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Bludgeoning",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 4,
+        "cost": 0,
+        "isLight": false,
+        "tags": [
+            "simple",
+            "two-handed",
+            "double",
+            "bludgeoning"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "A double weapon. You can fight with it as if fighting with two weapons (primary 1d6, off-hand 1d6).",
+        "ruleFlags": {
+            "doubleWeapon": true
+        },
+        "combatModifiers": []
+    },
+    {
+        "name": "Ã¢â€ Â³ Quarterstaff (Off-Hand Head)",
+        "type": "Weapon",
+        "slot": "Off-Hand",
+        "category": "Simple",
+        "weaponType": "Simple Light",
+        "dice": "1d6",
+        "extraDmg": "1d6",
+        "damage": "1d6",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Bludgeoning",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 0,
+        "cost": 0,
+        "isLight": true,
+        "tags": [
+            "simple",
+            "off-hand",
+            "double",
+            "light",
+            "bludgeoning"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Secondary head of the quarterstaff; treated as a light weapon for two-weapon fighting penalties.",
+        "ruleFlags": {
+            "doubleWeaponOffHand": true
+        },
+        "combatModifiers": [],
+        "parent": "Quarterstaff",
+        "finessable": true
+    },
+    {
+        "name": "Spear",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Simple",
+        "weaponType": "Simple Two-Handed",
+        "dice": "1d8",
+        "extraDmg": "1d8",
+        "damage": "1d8",
+        "critMin": 20,
+        "critMult": 3,
+        "crit": "20/x3",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 6,
+        "cost": 2,
+        "isLight": false,
+        "tags": [
+            "simple",
+            "two-handed",
+            "thrown",
+            "brace",
+            "piercing"
+        ],
+        "scope": "Melee or Ranged",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Can be thrown with a 20 ft range increment. If readied against a charge, deals double damage.",
+        "ruleFlags": {
+            "brace": true,
+            "thrown": true
+        },
+        "combatModifiers": [],
+        "range": 20
+    },
+    {
+        "name": "Heavy Crossbow",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Simple",
+        "weaponType": "Simple Ranged",
+        "dice": "1d10",
+        "extraDmg": "1d10",
+        "damage": "1d10",
+        "critMin": 19,
+        "critMult": 2,
+        "crit": "19-20/x2",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 8,
+        "cost": 50,
+        "isLight": false,
+        "tags": [
+            "simple",
+            "ranged",
+            "crossbow",
+            "piercing"
+        ],
+        "scope": "Ranged Only",
+        "attackType": "weapon",
+        "combatScope": "ranged",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Standard ranged weapon with 120 ft range increment. Reloading is a full-round action.",
+        "ruleFlags": {},
+        "combatModifiers": [],
+        "range": 120,
+        "ammoType": "bolt"
+    },
+    {
+        "name": "Light Crossbow",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Simple",
+        "weaponType": "Simple Ranged",
+        "dice": "1d8",
+        "extraDmg": "1d8",
+        "damage": "1d8",
+        "critMin": 19,
+        "critMult": 2,
+        "crit": "19-20/x2",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 4,
+        "cost": 35,
+        "isLight": false,
+        "tags": [
+            "simple",
+            "ranged",
+            "crossbow",
+            "piercing"
+        ],
+        "scope": "Ranged Only",
+        "attackType": "weapon",
+        "combatScope": "ranged",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Standard ranged weapon with 80 ft range increment. Reloading is a move action.",
+        "ruleFlags": {},
+        "combatModifiers": [],
+        "range": 80,
+        "ammoType": "bolt"
+    },
+    {
+        "name": "Dart",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Simple",
+        "weaponType": "Simple Ranged",
+        "dice": "1d4",
+        "extraDmg": "1d4",
+        "damage": "1d4",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 0.5,
+        "cost": 0.5,
+        "isLight": true,
+        "tags": [
+            "simple",
+            "ranged",
+            "thrown",
+            "piercing"
+        ],
+        "scope": "Ranged Only",
+        "attackType": "weapon",
+        "combatScope": "ranged",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Small thrown missile weapon with 20 ft range increment.",
+        "ruleFlags": {
+            "thrown": true
+        },
+        "combatModifiers": [],
+        "range": 20
+    },
+    {
+        "name": "Javelin",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Simple",
+        "weaponType": "Simple Ranged",
+        "dice": "1d6",
+        "extraDmg": "1d6",
+        "damage": "1d6",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 2,
+        "cost": 1,
+        "isLight": false,
+        "tags": [
+            "simple",
+            "ranged",
+            "thrown",
+            "piercing"
+        ],
+        "scope": "Ranged Only",
+        "attackType": "weapon",
+        "combatScope": "ranged",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Light flexible spear designed for throwing with 30 ft range increment.",
+        "ruleFlags": {
+            "thrown": true
+        },
+        "combatModifiers": [],
+        "range": 30
+    },
+    {
+        "name": "Sling",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Simple",
+        "weaponType": "Simple Ranged",
+        "dice": "1d4",
+        "extraDmg": "1d4",
+        "damage": "1d4",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Bludgeoning",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 0,
+        "cost": 0,
+        "isLight": false,
+        "tags": [
+            "simple",
+            "ranged",
+            "sling",
+            "bludgeoning"
+        ],
+        "scope": "Ranged Only",
+        "attackType": "weapon",
+        "combatScope": "ranged",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Fires sling bullets or stones with 50 ft range increment. You can add Strength bonus to damage.",
+        "ruleFlags": {},
+        "combatModifiers": [],
+        "range": 50,
+        "ammoType": "bullet"
+    },
+    {
+        "name": "Blowgun",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Exotic",
+        "weaponType": "Exotic Ranged",
+        "dice": "1",
+        "extraDmg": "1",
+        "damage": "1",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 1,
+        "cost": 1,
+        "isLight": false,
+        "tags": [
+            "simple",
+            "ranged",
+            "poison-carrier",
+            "piercing"
+        ],
+        "scope": "Ranged Only",
+        "attackType": "weapon",
+        "combatScope": "ranged",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "DMG p.145 / Exotic Ranged",
+        "benefit": "Deals 1 point of piercing damage, commonly used to deliver contact or injury poisons with 10 ft range increment.",
+        "ruleFlags": {},
+        "combatModifiers": [],
+        "range": 10,
+        "ammoType": "needle"
+    },
+    {
+        "name": "Light Hammer",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Martial",
+        "weaponType": "Martial Light",
+        "dice": "1d4",
+        "extraDmg": "1d4",
+        "damage": "1d4",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Bludgeoning",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 2,
+        "cost": 1,
+        "isLight": true,
+        "tags": [
+            "martial",
+            "light",
+            "finessable",
+            "thrown",
+            "bludgeoning"
+        ],
+        "scope": "Melee or Ranged",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Can be thrown with a 20 ft range increment. Finessable.",
+        "ruleFlags": {
+            "finessable": true,
+            "thrown": true
+        },
+        "combatModifiers": [],
+        "range": 20,
+        "finessable": true
+    },
+    {
+        "name": "Handaxe",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Martial",
+        "weaponType": "Martial Light",
+        "dice": "1d6",
+        "extraDmg": "1d6",
+        "damage": "1d6",
+        "critMin": 20,
+        "critMult": 3,
+        "crit": "20/x3",
+        "dmgType": "Slashing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 3,
+        "cost": 6,
+        "isLight": true,
+        "tags": [
+            "martial",
+            "light",
+            "finessable",
+            "axe",
+            "slashing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "A light axe dealing x3 critical damage. Finessable.",
+        "ruleFlags": {
+            "finessable": true
+        },
+        "combatModifiers": [],
+        "finessable": true
+    },
+    {
+        "name": "Kukri",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Martial",
+        "weaponType": "Martial Light",
+        "dice": "1d4",
+        "extraDmg": "1d4",
+        "damage": "1d4",
+        "critMin": 18,
+        "critMult": 2,
+        "crit": "18-20/x2",
+        "dmgType": "Slashing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 2,
+        "cost": 8,
+        "isLight": true,
+        "tags": [
+            "martial",
+            "light",
+            "finessable",
+            "slashing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "A curved heavy-bladed knife with a high critical threat range (18-20/x2). Finessable.",
+        "ruleFlags": {
+            "finessable": true
+        },
+        "combatModifiers": [],
+        "finessable": true
+    },
+    {
+        "name": "Light Pick",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Martial",
+        "weaponType": "Martial Light",
+        "dice": "1d4",
+        "extraDmg": "1d4",
+        "damage": "1d4",
+        "critMin": 20,
+        "critMult": 4,
+        "crit": "20/x4",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 3,
+        "cost": 4,
+        "isLight": true,
+        "tags": [
+            "martial",
+            "light",
+            "finessable",
+            "piercing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Deals devastating x4 critical damage on confirmed hits. Finessable.",
+        "ruleFlags": {
+            "finessable": true
+        },
+        "combatModifiers": [],
+        "finessable": true
+    },
+    {
+        "name": "Sap",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Martial",
+        "weaponType": "Martial Light",
+        "dice": "1d6",
+        "extraDmg": "1d6",
+        "damage": "1d6",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Bludgeoning (Nonlethal)",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 2,
+        "cost": 1,
+        "isLight": true,
+        "tags": [
+            "martial",
+            "light",
+            "finessable",
+            "nonlethal",
+            "bludgeoning"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Deals nonlethal damage. Finessable.",
+        "ruleFlags": {
+            "nonlethal": true,
+            "finessable": true
+        },
+        "combatModifiers": [],
+        "finessable": true
+    },
+    {
+        "name": "Short Sword",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Martial",
+        "weaponType": "Martial Light",
+        "dice": "1d6",
+        "extraDmg": "1d6",
+        "damage": "1d6",
+        "critMin": 19,
+        "critMult": 2,
+        "crit": "19-20/x2",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 2,
+        "cost": 10,
+        "isLight": true,
+        "tags": [
+            "martial",
+            "light",
+            "finessable",
+            "sword",
+            "piercing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Standard light martial piercing weapon. Finessable.",
+        "ruleFlags": {
+            "finessable": true
+        },
+        "combatModifiers": [],
+        "finessable": true
+    },
+    {
+        "name": "Battleaxe",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Martial",
+        "weaponType": "Martial One-Handed",
+        "dice": "1d8",
+        "extraDmg": "1d8",
+        "damage": "1d8",
+        "critMin": 20,
+        "critMult": 3,
+        "crit": "20/x3",
+        "dmgType": "Slashing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 6,
+        "cost": 10,
+        "isLight": false,
+        "tags": [
+            "martial",
+            "one-handed",
+            "axe",
+            "slashing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Standard one-handed martial slashing axe with x3 critical multiplier.",
+        "ruleFlags": {},
+        "combatModifiers": []
+    },
+    {
+        "name": "Flail",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Martial",
+        "weaponType": "Martial One-Handed",
+        "dice": "1d8",
+        "extraDmg": "1d8",
+        "damage": "1d8",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Bludgeoning",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 5,
+        "cost": 8,
+        "isLight": false,
+        "tags": [
+            "martial",
+            "one-handed",
+            "disarm",
+            "trip",
+            "bludgeoning"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "PHB Table 7-5",
+        "benefit": "+2 bonus on opposed attack rolls to disarm. Can make trip attacks.",
+        "ruleFlags": {
+            "disarmBonus": 2,
+            "trip": true
+        },
+        "combatModifiers": []
+    },
+    {
+        "name": "Heavy Pick",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Martial",
+        "weaponType": "Martial One-Handed",
+        "dice": "1d6",
+        "extraDmg": "1d6",
+        "damage": "1d6",
+        "critMin": 20,
+        "critMult": 4,
+        "crit": "20/x4",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 6,
+        "cost": 8,
+        "isLight": false,
+        "tags": [
+            "martial",
+            "one-handed",
+            "piercing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Deals x4 critical piercing damage on confirmed critical hits.",
+        "ruleFlags": {},
+        "combatModifiers": []
+    },
+    {
+        "name": "Longsword",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Martial",
+        "weaponType": "Martial One-Handed",
+        "dice": "1d8",
+        "extraDmg": "1d8",
+        "damage": "1d8",
+        "critMin": 19,
+        "critMult": 2,
+        "crit": "19-20/x2",
+        "dmgType": "Slashing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 4,
+        "cost": 15,
+        "isLight": false,
+        "tags": [
+            "martial",
+            "one-handed",
+            "sword",
+            "slashing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "The iconic martial one-handed sword with 19-20/x2 threat range.",
+        "ruleFlags": {},
+        "combatModifiers": []
+    },
+    {
+        "name": "Rapier",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Martial",
+        "weaponType": "Martial One-Handed",
+        "dice": "1d6",
+        "extraDmg": "1d6",
+        "damage": "1d6",
+        "critMin": 18,
+        "critMult": 2,
+        "crit": "18-20/x2",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 2,
+        "cost": 20,
+        "isLight": false,
+        "tags": [
+            "martial",
+            "one-handed",
+            "finessable",
+            "piercing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "You can use the Weapon Finesse feat with a rapier even though it is not a light weapon. Wide threat range 18-20/x2.",
+        "ruleFlags": {
+            "finessable": true
+        },
+        "combatModifiers": [],
+        "finessable": true
+    },
+    {
+        "name": "Scimitar",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Martial",
+        "weaponType": "Martial One-Handed",
+        "dice": "1d6",
+        "extraDmg": "1d6",
+        "damage": "1d6",
+        "critMin": 18,
+        "critMult": 2,
+        "crit": "18-20/x2",
+        "dmgType": "Slashing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 4,
+        "cost": 15,
+        "isLight": false,
+        "tags": [
+            "martial",
+            "one-handed",
+            "slashing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Curved slashing blade with a wide 18-20/x2 threat range.",
+        "ruleFlags": {},
+        "combatModifiers": []
+    },
+    {
+        "name": "Trident",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Martial",
+        "weaponType": "Martial One-Handed",
+        "dice": "1d8",
+        "extraDmg": "1d8",
+        "damage": "1d8",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 4,
+        "cost": 15,
+        "isLight": false,
+        "tags": [
+            "martial",
+            "one-handed",
+            "thrown",
+            "brace",
+            "piercing"
+        ],
+        "scope": "Melee or Ranged",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Can be thrown (range 10 ft). If readied against a charge, deals double damage.",
+        "ruleFlags": {
+            "brace": true,
+            "thrown": true
+        },
+        "combatModifiers": [],
+        "range": 10
+    },
+    {
+        "name": "Warhammer",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Martial",
+        "weaponType": "Martial One-Handed",
+        "dice": "1d8",
+        "extraDmg": "1d8",
+        "damage": "1d8",
+        "critMin": 20,
+        "critMult": 3,
+        "crit": "20/x3",
+        "dmgType": "Bludgeoning",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 5,
+        "cost": 12,
+        "isLight": false,
+        "tags": [
+            "martial",
+            "one-handed",
+            "hammer",
+            "bludgeoning"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Standard one-handed martial bludgeoning weapon with x3 critical damage.",
+        "ruleFlags": {},
+        "combatModifiers": []
+    },
+    {
+        "name": "Falchion",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Martial",
+        "weaponType": "Martial Two-Handed",
+        "dice": "2d4",
+        "extraDmg": "2d4",
+        "damage": "2d4",
+        "critMin": 18,
+        "critMult": 2,
+        "crit": "18-20/x2",
+        "dmgType": "Slashing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 8,
+        "cost": 75,
+        "isLight": false,
+        "tags": [
+            "martial",
+            "two-handed",
+            "slashing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Two-handed curved heavy blade with a 18-20/x2 threat range.",
+        "ruleFlags": {},
+        "combatModifiers": []
+    },
+    {
+        "name": "Glaive",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Martial",
+        "weaponType": "Martial Two-Handed",
+        "dice": "1d10",
+        "extraDmg": "1d10",
+        "damage": "1d10",
+        "critMin": 20,
+        "critMult": 3,
+        "crit": "20/x3",
+        "dmgType": "Slashing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 10,
+        "cost": 8,
+        "isLight": false,
+        "tags": [
+            "martial",
+            "two-handed",
+            "reach",
+            "polearm",
+            "slashing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Reach weapon (strikes opponents 10 ft away, cannot strike adjacent). x3 crit.",
+        "ruleFlags": {
+            "reach": true
+        },
+        "combatModifiers": []
+    },
+    {
+        "name": "Greataxe",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Martial",
+        "weaponType": "Martial Two-Handed",
+        "dice": "1d12",
+        "extraDmg": "1d12",
+        "damage": "1d12",
+        "critMin": 20,
+        "critMult": 3,
+        "crit": "20/x3",
+        "dmgType": "Slashing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 12,
+        "cost": 20,
+        "isLight": false,
+        "tags": [
+            "martial",
+            "two-handed",
+            "axe",
+            "slashing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Massive two-handed battle axe dealing 1d12 slashing damage with x3 critical.",
+        "ruleFlags": {},
+        "combatModifiers": []
+    },
+    {
+        "name": "Greatclub",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Martial",
+        "weaponType": "Martial Two-Handed",
+        "dice": "1d10",
+        "extraDmg": "1d10",
+        "damage": "1d10",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Bludgeoning",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 8,
+        "cost": 5,
+        "isLight": false,
+        "tags": [
+            "martial",
+            "two-handed",
+            "bludgeoning"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Two-handed heavy bludgeoning wooden club.",
+        "ruleFlags": {},
+        "combatModifiers": []
+    },
+    {
+        "name": "Heavy Flail",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Martial",
+        "weaponType": "Martial Two-Handed",
+        "dice": "1d10",
+        "extraDmg": "1d10",
+        "damage": "1d10",
+        "critMin": 19,
+        "critMult": 2,
+        "crit": "19-20/x2",
+        "dmgType": "Bludgeoning",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 10,
+        "cost": 15,
+        "isLight": false,
+        "tags": [
+            "martial",
+            "two-handed",
+            "disarm",
+            "trip",
+            "bludgeoning"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "+2 bonus on opposed attack rolls to disarm. Can make trip attacks. 19-20/x2 threat range.",
+        "ruleFlags": {
+            "disarmBonus": 2,
+            "trip": true
+        },
+        "combatModifiers": []
+    },
+    {
+        "name": "Greatsword",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Martial",
+        "weaponType": "Martial Two-Handed",
+        "dice": "2d6",
+        "extraDmg": "2d6",
+        "damage": "2d6",
+        "critMin": 19,
+        "critMult": 2,
+        "crit": "19-20/x2",
+        "dmgType": "Slashing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 8,
+        "cost": 50,
+        "isLight": false,
+        "tags": [
+            "martial",
+            "two-handed",
+            "sword",
+            "slashing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "The premier two-handed martial weapon dealing 2d6 slashing damage with 19-20/x2 crit.",
+        "ruleFlags": {},
+        "combatModifiers": []
+    },
+    {
+        "name": "Guisarme",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Martial",
+        "weaponType": "Martial Two-Handed",
+        "dice": "2d4",
+        "extraDmg": "2d4",
+        "damage": "2d4",
+        "critMin": 20,
+        "critMult": 3,
+        "crit": "20/x3",
+        "dmgType": "Slashing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 12,
+        "cost": 9,
+        "isLight": false,
+        "tags": [
+            "martial",
+            "two-handed",
+            "reach",
+            "trip",
+            "polearm",
+            "slashing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Reach weapon (10 ft reach). Can make trip attacks. If tripped during your trip attempt, you can drop it to avoid being tripped.",
+        "ruleFlags": {
+            "reach": true,
+            "trip": true
+        },
+        "combatModifiers": []
+    },
+    {
+        "name": "Halberd",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Martial",
+        "weaponType": "Martial Two-Handed",
+        "dice": "1d10",
+        "extraDmg": "1d10",
+        "damage": "1d10",
+        "critMin": 20,
+        "critMult": 3,
+        "crit": "20/x3",
+        "dmgType": "Piercing or Slashing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 12,
+        "cost": 10,
+        "isLight": false,
+        "tags": [
+            "martial",
+            "two-handed",
+            "brace",
+            "trip",
+            "slashing",
+            "piercing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Can make trip attacks. If readied against a charge, deals double damage. Choice of piercing or slashing damage.",
+        "ruleFlags": {
+            "brace": true,
+            "trip": true
+        },
+        "combatModifiers": []
+    },
+    {
+        "name": "Lance",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Martial",
+        "weaponType": "Martial Two-Handed",
+        "dice": "1d8",
+        "extraDmg": "1d8",
+        "damage": "1d8",
+        "critMin": 20,
+        "critMult": 3,
+        "crit": "20/x3",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 10,
+        "cost": 10,
+        "isLight": false,
+        "tags": [
+            "martial",
+            "two-handed",
+            "reach",
+            "mounted",
+            "charge",
+            "piercing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Reach weapon (10 ft reach). Deals double damage when used from the back of a charging mount. Can be wielded one-handed while mounted.",
+        "ruleFlags": {
+            "mountedChargeDouble": true,
+            "reach": true
+        },
+        "combatModifiers": []
+    },
+    {
+        "name": "Ã¢â€ Â³ Lance (Mounted One-Handed)",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Martial",
+        "weaponType": "Martial One-Handed",
+        "dice": "1d8",
+        "extraDmg": "1d8",
+        "damage": "1d8",
+        "critMin": 20,
+        "critMult": 3,
+        "crit": "20/x3",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 10,
+        "cost": 10,
+        "isLight": false,
+        "tags": [
+            "martial",
+            "one-handed",
+            "reach",
+            "mounted",
+            "charge",
+            "piercing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "A lance can be used with one hand while you are mounted, leaving your off hand free for a shield or reins.",
+        "ruleFlags": {
+            "mountedChargeDouble": true,
+            "reach": true
+        },
+        "combatModifiers": [],
+        "parent": "Lance"
+    },
+    {
+        "name": "Ranseur",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Martial",
+        "weaponType": "Martial Two-Handed",
+        "dice": "2d4",
+        "extraDmg": "2d4",
+        "damage": "2d4",
+        "critMin": 20,
+        "critMult": 3,
+        "crit": "20/x3",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 12,
+        "cost": 10,
+        "isLight": false,
+        "tags": [
+            "martial",
+            "two-handed",
+            "reach",
+            "disarm",
+            "polearm",
+            "piercing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Reach weapon (10 ft reach). +2 bonus on opposed attack rolls to disarm an opponent.",
+        "ruleFlags": {
+            "disarmBonus": 2,
+            "reach": true
+        },
+        "combatModifiers": []
+    },
+    {
+        "name": "Scythe",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Martial",
+        "weaponType": "Martial Two-Handed",
+        "dice": "2d4",
+        "extraDmg": "2d4",
+        "damage": "2d4",
+        "critMin": 20,
+        "critMult": 4,
+        "crit": "20/x4",
+        "dmgType": "Piercing or Slashing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 10,
+        "cost": 18,
+        "isLight": false,
+        "tags": [
+            "martial",
+            "two-handed",
+            "trip",
+            "piercing",
+            "slashing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Deals devastating x4 critical damage. Can make trip attacks.",
+        "ruleFlags": {
+            "trip": true
+        },
+        "combatModifiers": []
+    },
+    {
+        "name": "Longbow",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Martial",
+        "weaponType": "Martial Ranged",
+        "dice": "1d8",
+        "extraDmg": "1d8",
+        "damage": "1d8",
+        "critMin": 20,
+        "critMult": 3,
+        "crit": "20/x3",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 3,
+        "cost": 75,
+        "isLight": false,
+        "tags": [
+            "martial",
+            "ranged",
+            "bow",
+            "piercing"
+        ],
+        "scope": "Ranged Only",
+        "attackType": "weapon",
+        "combatScope": "ranged",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Standard martial longbow with 100 ft range increment.",
+        "ruleFlags": {},
+        "combatModifiers": [],
+        "range": 100,
+        "ammoType": "arrow"
+    },
+    {
+        "name": "Composite Longbow",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Martial",
+        "weaponType": "Martial Ranged",
+        "dice": "1d8",
+        "extraDmg": "1d8",
+        "damage": "1d8",
+        "critMin": 20,
+        "critMult": 3,
+        "crit": "20/x3",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 3,
+        "cost": 100,
+        "isLight": false,
+        "tags": [
+            "martial",
+            "ranged",
+            "bow",
+            "composite",
+            "piercing"
+        ],
+        "scope": "Ranged Only",
+        "attackType": "weapon",
+        "combatScope": "ranged",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Composite longbow with 110 ft range increment. Can be crafted with a high Strength rating to add Strength modifier to damage.",
+        "ruleFlags": {},
+        "combatModifiers": [],
+        "range": 110,
+        "ammoType": "arrow"
+    },
+    {
+        "name": "Shortbow",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Martial",
+        "weaponType": "Martial Ranged",
+        "dice": "1d6",
+        "extraDmg": "1d6",
+        "damage": "1d6",
+        "critMin": 20,
+        "critMult": 3,
+        "crit": "20/x3",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 2,
+        "cost": 30,
+        "isLight": false,
+        "tags": [
+            "martial",
+            "ranged",
+            "bow",
+            "piercing"
+        ],
+        "scope": "Ranged Only",
+        "attackType": "weapon",
+        "combatScope": "ranged",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Can be used while mounted without penalty with 60 ft range increment.",
+        "ruleFlags": {},
+        "combatModifiers": [],
+        "range": 60,
+        "ammoType": "arrow"
+    },
+    {
+        "name": "Composite Shortbow",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Martial",
+        "weaponType": "Martial Ranged",
+        "dice": "1d6",
+        "extraDmg": "1d6",
+        "damage": "1d6",
+        "critMin": 20,
+        "critMult": 3,
+        "crit": "20/x3",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 2,
+        "cost": 75,
+        "isLight": false,
+        "tags": [
+            "martial",
+            "ranged",
+            "bow",
+            "composite",
+            "piercing"
+        ],
+        "scope": "Ranged Only",
+        "attackType": "weapon",
+        "combatScope": "ranged",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Can be used while mounted with 70 ft range increment. Can add Strength modifier to damage up to bow rating.",
+        "ruleFlags": {},
+        "combatModifiers": [],
+        "range": 70,
+        "ammoType": "arrow"
+    },
+    {
+        "name": "Kama",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Exotic",
+        "weaponType": "Exotic Light",
+        "dice": "1d6",
+        "extraDmg": "1d6",
+        "damage": "1d6",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Slashing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 2,
+        "cost": 2,
+        "isLight": true,
+        "tags": [
+            "exotic",
+            "light",
+            "monk",
+            "finessable",
+            "trip",
+            "slashing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Special monk weapon (can be used with flurry of blows). Can make trip attacks. Finessable.",
+        "ruleFlags": {
+            "trip": true,
+            "monk": true,
+            "finessable": true
+        },
+        "combatModifiers": [],
+        "finessable": true
+    },
+    {
+        "name": "Nunchaku",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Exotic",
+        "weaponType": "Exotic Light",
+        "dice": "1d6",
+        "extraDmg": "1d6",
+        "damage": "1d6",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Bludgeoning",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 2,
+        "cost": 2,
+        "isLight": true,
+        "tags": [
+            "exotic",
+            "light",
+            "monk",
+            "finessable",
+            "disarm",
+            "bludgeoning"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Special monk weapon. +2 bonus on opposed attack rolls to disarm. Finessable.",
+        "ruleFlags": {
+            "disarmBonus": 2,
+            "monk": true,
+            "finessable": true
+        },
+        "combatModifiers": [],
+        "finessable": true
+    },
+    {
+        "name": "Sai",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Exotic",
+        "weaponType": "Exotic Light",
+        "dice": "1d4",
+        "extraDmg": "1d4",
+        "damage": "1d4",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Bludgeoning",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 1,
+        "cost": 1,
+        "isLight": true,
+        "tags": [
+            "exotic",
+            "light",
+            "monk",
+            "finessable",
+            "thrown",
+            "disarm",
+            "bludgeoning"
+        ],
+        "scope": "Melee or Ranged",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Special monk weapon. +4 bonus on opposed attack rolls to disarm. Can be thrown (10 ft). Finessable.",
+        "ruleFlags": {
+            "disarmBonus": 4,
+            "thrown": true,
+            "monk": true,
+            "finessable": true
+        },
+        "combatModifiers": [],
+        "range": 10,
+        "finessable": true
+    },
+    {
+        "name": "Siangham",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Exotic",
+        "weaponType": "Exotic Light",
+        "dice": "1d6",
+        "extraDmg": "1d6",
+        "damage": "1d6",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 1,
+        "cost": 3,
+        "isLight": true,
+        "tags": [
+            "exotic",
+            "light",
+            "monk",
+            "finessable",
+            "piercing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Special monk weapon. Finessable.",
+        "ruleFlags": {
+            "monk": true,
+            "finessable": true
+        },
+        "combatModifiers": [],
+        "finessable": true
+    },
+    {
+        "name": "Bastard Sword (One-Handed Exotic)",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Exotic",
+        "weaponType": "Exotic One-Handed",
+        "dice": "1d10",
+        "extraDmg": "1d10",
+        "damage": "1d10",
+        "critMin": 19,
+        "critMult": 2,
+        "crit": "19-20/x2",
+        "dmgType": "Slashing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 6,
+        "cost": 35,
+        "isLight": false,
+        "tags": [
+            "exotic",
+            "one-handed",
+            "sword",
+            "slashing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Requires Exotic Weapon Proficiency to wield in one hand. Deals 1d10 slashing damage.",
+        "ruleFlags": {},
+        "combatModifiers": []
+    },
+    {
+        "name": "Ã¢â€ Â³ Bastard Sword (Two-Handed Martial)",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Martial",
+        "weaponType": "Martial Two-Handed",
+        "dice": "1d10",
+        "extraDmg": "1d10",
+        "damage": "1d10",
+        "critMin": 19,
+        "critMult": 2,
+        "crit": "19-20/x2",
+        "dmgType": "Slashing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 6,
+        "cost": 35,
+        "isLight": false,
+        "tags": [
+            "martial",
+            "two-handed",
+            "sword",
+            "slashing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Can be wielded two-handed as a martial weapon without Exotic Weapon Proficiency.",
+        "ruleFlags": {},
+        "combatModifiers": [],
+        "parent": "Bastard Sword (One-Handed Exotic)"
+    },
+    {
+        "name": "Dwarven Waraxe (One-Handed Exotic)",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Exotic",
+        "weaponType": "Exotic One-Handed",
+        "dice": "1d10",
+        "extraDmg": "1d10",
+        "damage": "1d10",
+        "critMin": 20,
+        "critMult": 3,
+        "crit": "20/x3",
+        "dmgType": "Slashing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 8,
+        "cost": 30,
+        "isLight": false,
+        "tags": [
+            "exotic",
+            "one-handed",
+            "axe",
+            "slashing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Treated as a martial weapon by Dwarves. Other races require Exotic Weapon Proficiency to wield one-handed.",
+        "ruleFlags": {},
+        "combatModifiers": []
+    },
+    {
+        "name": "Ã¢â€ Â³ Dwarven Waraxe (Two-Handed Martial)",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Martial",
+        "weaponType": "Martial Two-Handed",
+        "dice": "1d10",
+        "extraDmg": "1d10",
+        "damage": "1d10",
+        "critMin": 20,
+        "critMult": 3,
+        "crit": "20/x3",
+        "dmgType": "Slashing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 8,
+        "cost": 30,
+        "isLight": false,
+        "tags": [
+            "martial",
+            "two-handed",
+            "axe",
+            "slashing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Can be wielded two-handed as a martial weapon by any character proficient with martial weapons.",
+        "ruleFlags": {},
+        "combatModifiers": [],
+        "parent": "Dwarven Waraxe (One-Handed Exotic)"
+    },
+    {
+        "name": "Whip",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Exotic",
+        "weaponType": "Exotic One-Handed",
+        "dice": "1d3",
+        "extraDmg": "1d3",
+        "damage": "1d3",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Slashing (Nonlethal)",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 2,
+        "cost": 1,
+        "isLight": false,
+        "tags": [
+            "exotic",
+            "one-handed",
+            "reach",
+            "finessable",
+            "disarm",
+            "trip",
+            "nonlethal",
+            "slashing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Deals nonlethal damage, cannot damage creatures with +1 armor or +3 natural armor. 15 ft reach, can strike adjacent. +2 disarm bonus, can trip. Finessable.",
+        "ruleFlags": {
+            "disarmBonus": 2,
+            "reach": true,
+            "nonlethal": true,
+            "trip": true,
+            "finessable": true
+        },
+        "combatModifiers": [],
+        "reach": true,
+        "finessable": true,
+        "canAttackAdjacent": true,
+        "threatens": false,
+        "armorLimit": "+1 armor or +3 natural armor",
+        "notes": "Has 15 ft reach, can strike adjacent foes, does not threaten reach area. Deals no damage to creatures with +1 or higher armor bonus or +3 natural armor bonus. Finessable, disarm (+2), trip."
+    },
+    {
+        "name": "Orc Double Axe",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Exotic",
+        "weaponType": "Exotic Two-Handed",
+        "dice": "1d8",
+        "extraDmg": "1d8",
+        "damage": "1d8",
+        "critMin": 20,
+        "critMult": 3,
+        "crit": "20/x3",
+        "dmgType": "Slashing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 15,
+        "cost": 60,
+        "isLight": false,
+        "tags": [
+            "exotic",
+            "two-handed",
+            "double",
+            "axe",
+            "slashing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "A double weapon. You can fight with it as if fighting with two weapons (primary 1d8 x3, off-hand 1d8 x3).",
+        "ruleFlags": {
+            "doubleWeapon": true
+        },
+        "combatModifiers": []
+    },
+    {
+        "name": "Ã¢â€ Â³ Orc Double Axe (Off-Hand Head)",
+        "type": "Weapon",
+        "slot": "Off-Hand",
+        "category": "Exotic",
+        "weaponType": "Exotic Light",
+        "dice": "1d8",
+        "extraDmg": "1d8",
+        "damage": "1d8",
+        "critMin": 20,
+        "critMult": 3,
+        "crit": "20/x3",
+        "dmgType": "Slashing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 0,
+        "cost": 0,
+        "isLight": true,
+        "tags": [
+            "exotic",
+            "off-hand",
+            "double",
+            "light",
+            "axe",
+            "slashing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Secondary head of Orc Double Axe, treated as a light weapon for two-weapon fighting penalty calculations.",
+        "ruleFlags": {
+            "doubleWeaponOffHand": true
+        },
+        "combatModifiers": [],
+        "parent": "Orc Double Axe",
+        "finessable": true
+    },
+    {
+        "name": "Spiked Chain",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Exotic",
+        "weaponType": "Exotic Two-Handed",
+        "dice": "2d4",
+        "extraDmg": "2d4",
+        "damage": "2d4",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 10,
+        "cost": 25,
+        "isLight": false,
+        "tags": [
+            "exotic",
+            "two-handed",
+            "finessable",
+            "reach",
+            "trip",
+            "disarm",
+            "shadow hand",
+            "piercing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Has reach (10 ft) and can strike adjacent opponents. Finessable with Weapon Finesse. +2 disarm bonus, can make trip attacks.",
+        "ruleFlags": {
+            "disarmBonus": 2,
+            "reach": true,
+            "trip": true,
+            "finessable": true
+        },
+        "combatModifiers": [],
+        "finessable": true
+    },
+    {
+        "name": "Dire Flail",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Exotic",
+        "weaponType": "Exotic Two-Handed",
+        "dice": "1d8",
+        "extraDmg": "1d8",
+        "damage": "1d8",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Bludgeoning",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 10,
+        "cost": 90,
+        "isLight": false,
+        "tags": [
+            "exotic",
+            "two-handed",
+            "double",
+            "disarm",
+            "trip",
+            "bludgeoning"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "A double weapon. +2 disarm bonus, can make trip attacks.",
+        "ruleFlags": {
+            "doubleWeapon": true,
+            "trip": true,
+            "disarmBonus": 2
+        },
+        "combatModifiers": []
+    },
+    {
+        "name": "Ã¢â€ Â³ Dire Flail (Off-Hand Head)",
+        "type": "Weapon",
+        "slot": "Off-Hand",
+        "category": "Exotic",
+        "weaponType": "Exotic Light",
+        "dice": "1d8",
+        "extraDmg": "1d8",
+        "damage": "1d8",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Bludgeoning",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 0,
+        "cost": 0,
+        "isLight": true,
+        "tags": [
+            "exotic",
+            "off-hand",
+            "double",
+            "light",
+            "disarm",
+            "trip",
+            "bludgeoning"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Secondary head of Dire Flail, treated as a light weapon for two-weapon fighting penalties.",
+        "ruleFlags": {
+            "doubleWeaponOffHand": true
+        },
+        "combatModifiers": [],
+        "parent": "Dire Flail",
+        "finessable": true
+    },
+    {
+        "name": "Gnome Hooked Hammer",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Exotic",
+        "weaponType": "Exotic Two-Handed",
+        "dice": "1d8",
+        "extraDmg": "1d8",
+        "damage": "1d8",
+        "critMin": 20,
+        "critMult": 3,
+        "crit": "20/x3",
+        "dmgType": "Bludgeoning",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 6,
+        "cost": 20,
+        "isLight": false,
+        "tags": [
+            "exotic",
+            "two-handed",
+            "double",
+            "trip",
+            "bludgeoning"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Treated as a martial weapon by Gnomes. Blunt hammer head (1d8 x3 bludgeoning), pick off-hand head (1d6 x4 piercing). Can trip.",
+        "ruleFlags": {
+            "doubleWeapon": true,
+            "trip": true
+        },
+        "combatModifiers": []
+    },
+    {
+        "name": "Ã¢â€ Â³ Gnome Hooked Hammer (Pick Off-Hand)",
+        "type": "Weapon",
+        "slot": "Off-Hand",
+        "category": "Exotic",
+        "weaponType": "Exotic Light",
+        "dice": "1d6",
+        "extraDmg": "1d6",
+        "damage": "1d6",
+        "critMin": 20,
+        "critMult": 4,
+        "crit": "20/x4",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 0,
+        "cost": 0,
+        "isLight": true,
+        "tags": [
+            "exotic",
+            "off-hand",
+            "double",
+            "light",
+            "trip",
+            "piercing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Secondary pick head of Gnome Hooked Hammer (1d6 x4 piercing). Treated as light weapon.",
+        "ruleFlags": {
+            "doubleWeaponOffHand": true
+        },
+        "combatModifiers": [],
+        "parent": "Gnome Hooked Hammer",
+        "finessable": true
+    },
+    {
+        "name": "Two-Bladed Sword",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Exotic",
+        "weaponType": "Exotic Two-Handed",
+        "dice": "1d8",
+        "extraDmg": "1d8",
+        "damage": "1d8",
+        "critMin": 19,
+        "critMult": 2,
+        "crit": "19-20/x2",
+        "dmgType": "Slashing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 10,
+        "cost": 100,
+        "isLight": false,
+        "tags": [
+            "exotic",
+            "two-handed",
+            "double",
+            "sword",
+            "slashing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "A double weapon with a blade on each end. 19-20/x2 threat range on both ends.",
+        "ruleFlags": {
+            "doubleWeapon": true
+        },
+        "combatModifiers": []
+    },
+    {
+        "name": "Ã¢â€ Â³ Two-Bladed Sword (Off-Hand Head)",
+        "type": "Weapon",
+        "slot": "Off-Hand",
+        "category": "Exotic",
+        "weaponType": "Exotic Light",
+        "dice": "1d8",
+        "extraDmg": "1d8",
+        "damage": "1d8",
+        "critMin": 19,
+        "critMult": 2,
+        "crit": "19-20/x2",
+        "dmgType": "Slashing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 0,
+        "cost": 0,
+        "isLight": true,
+        "tags": [
+            "exotic",
+            "off-hand",
+            "double",
+            "light",
+            "sword",
+            "slashing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Secondary blade of Two-Bladed Sword (1d8 19-20/x2 slashing). Treated as light weapon.",
+        "ruleFlags": {
+            "doubleWeaponOffHand": true
+        },
+        "combatModifiers": [],
+        "parent": "Two-Bladed Sword",
+        "finessable": true
+    },
+    {
+        "name": "Dwarven Urgrosh",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Exotic",
+        "weaponType": "Exotic Two-Handed",
+        "dice": "1d8",
+        "extraDmg": "1d8",
+        "damage": "1d8",
+        "critMin": 20,
+        "critMult": 3,
+        "crit": "20/x3",
+        "dmgType": "Slashing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 12,
+        "cost": 50,
+        "isLight": false,
+        "tags": [
+            "exotic",
+            "two-handed",
+            "double",
+            "axe",
+            "slashing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Treated as a martial weapon by Dwarves. Primary axe head 1d8 x3 slashing, off-hand spear head 1d6 x3 piercing. If readied against charge, deals double.",
+        "ruleFlags": {
+            "brace": true,
+            "doubleWeapon": true
+        },
+        "combatModifiers": [],
+        "brace": false
+    },
+    {
+        "name": "Ã¢â€ Â³ Dwarven Urgrosh (Spear Off-Hand)",
+        "type": "Weapon",
+        "slot": "Off-Hand",
+        "category": "Exotic",
+        "weaponType": "Exotic Light",
+        "dice": "1d6",
+        "extraDmg": "1d6",
+        "damage": "1d6",
+        "critMin": 20,
+        "critMult": 3,
+        "crit": "20/x3",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 0,
+        "cost": 0,
+        "isLight": true,
+        "tags": [
+            "exotic",
+            "off-hand",
+            "double",
+            "light",
+            "brace",
+            "piercing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Secondary spear head of Dwarven Urgrosh (1d6 x3 piercing). Treated as light weapon.",
+        "ruleFlags": {
+            "doubleWeaponOffHand": true
+        },
+        "combatModifiers": [],
+        "parent": "Dwarven Urgrosh",
+        "brace": true,
+        "finessable": true
+    },
+    {
+        "name": "Bolas",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Exotic",
+        "weaponType": "Exotic Ranged",
+        "dice": "1d4",
+        "extraDmg": "1d4",
+        "damage": "1d4",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Bludgeoning (Nonlethal)",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 2,
+        "cost": 5,
+        "isLight": false,
+        "tags": [
+            "exotic",
+            "ranged",
+            "thrown",
+            "trip",
+            "nonlethal",
+            "bludgeoning"
+        ],
+        "scope": "Ranged Only",
+        "attackType": "weapon",
+        "combatScope": "ranged",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Can be used to make ranged trip attacks against Large or smaller opponents with 10 ft range increment.",
+        "ruleFlags": {
+            "nonlethal": true,
+            "trip": true,
+            "thrown": true
+        },
+        "combatModifiers": [],
+        "range": 10
+    },
+    {
+        "name": "Hand Crossbow",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Exotic",
+        "weaponType": "Exotic Ranged",
+        "dice": "1d4",
+        "extraDmg": "1d4",
+        "damage": "1d4",
+        "critMin": 19,
+        "critMult": 2,
+        "crit": "19-20/x2",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 2,
+        "cost": 100,
+        "isLight": true,
+        "tags": [
+            "exotic",
+            "ranged",
+            "crossbow",
+            "light",
+            "piercing"
+        ],
+        "scope": "Ranged Only",
+        "attackType": "weapon",
+        "combatScope": "ranged",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Can be drawn and reloaded with a move action. Can be fired with one hand with 30 ft range increment.",
+        "ruleFlags": {},
+        "combatModifiers": [],
+        "range": 30,
+        "ammoType": "bolt"
+    },
+    {
+        "name": "Repeating Heavy Crossbow",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Exotic",
+        "weaponType": "Exotic Ranged",
+        "dice": "1d10",
+        "extraDmg": "1d10",
+        "damage": "1d10",
+        "critMin": 19,
+        "critMult": 2,
+        "crit": "19-20/x2",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 12,
+        "cost": 400,
+        "isLight": false,
+        "tags": [
+            "exotic",
+            "ranged",
+            "crossbow",
+            "piercing"
+        ],
+        "scope": "Ranged Only",
+        "attackType": "weapon",
+        "combatScope": "ranged",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Holds 5 bolts. Re-cocking and chambering a bolt is a free action. Loading a new case of 5 bolts is a full-round action.",
+        "ruleFlags": {},
+        "combatModifiers": [],
+        "range": 120,
+        "ammoType": "bolt"
+    },
+    {
+        "name": "Repeating Light Crossbow",
+        "type": "Weapon",
+        "slot": "Two-Handed",
+        "category": "Exotic",
+        "weaponType": "Exotic Ranged",
+        "dice": "1d8",
+        "extraDmg": "1d8",
+        "damage": "1d8",
+        "critMin": 19,
+        "critMult": 2,
+        "crit": "19-20/x2",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 6,
+        "cost": 250,
+        "isLight": false,
+        "tags": [
+            "exotic",
+            "ranged",
+            "crossbow",
+            "piercing"
+        ],
+        "scope": "Ranged Only",
+        "attackType": "weapon",
+        "combatScope": "ranged",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Holds 5 bolts. Re-cocking and chambering a bolt is a free action. Loading a new case of 5 bolts is a full-round action.",
+        "ruleFlags": {},
+        "combatModifiers": [],
+        "range": 80,
+        "ammoType": "bolt"
+    },
+    {
+        "name": "Net",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Exotic",
+        "weaponType": "Exotic Ranged",
+        "dice": "0",
+        "extraDmg": "0",
+        "damage": "0",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "None",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 6,
+        "cost": 20,
+        "isLight": false,
+        "tags": [
+            "exotic",
+            "ranged",
+            "thrown",
+            "entangle"
+        ],
+        "scope": "Ranged Only",
+        "attackType": "weapon",
+        "combatScope": "ranged",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Ranged touch attack to entangle an opponent (up to Large size). Entangled creature suffers -2 attack, -4 Dex, moves at half speed.",
+        "ruleFlags": {
+            "entangle": true,
+            "thrown": true
+        },
+        "combatModifiers": [],
+        "range": 10,
+        "rangeIncrement": null,
+        "maxRange": 10
+    },
+    {
+        "name": "Shuriken",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Exotic",
+        "weaponType": "Exotic Ranged",
+        "dice": "1d2",
+        "extraDmg": "1d2",
+        "damage": "1d2",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 0.1,
+        "cost": 0.2,
+        "isLight": true,
+        "tags": [
+            "exotic",
+            "ranged",
+            "thrown",
+            "monk",
+            "piercing"
+        ],
+        "scope": "Ranged Only",
+        "attackType": "weapon",
+        "combatScope": "ranged",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "Special monk weapon. Can be thrown as ammunition (drawing is a free action). Cannot be recovered once thrown.",
+        "ruleFlags": {
+            "monk": true,
+            "thrown": true
+        },
+        "combatModifiers": [],
+        "range": 10
+    },
+    {
+        "name": "Armor Spikes",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Martial",
+        "weaponType": "Martial Light",
+        "dice": "1d6",
+        "extraDmg": "1d6",
+        "damage": "1d6",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 10,
+        "cost": 50,
+        "isLight": true,
+        "tags": [
+            "martial",
+            "light",
+            "armor-spikes",
+            "piercing",
+            "finessable"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "SRD / PHB p.116",
+        "benefit": "You can have spikes added to your armor. Deals extra piercing damage on a successful grapple attack or can be used as an off-hand light weapon.",
+        "ruleFlags": {},
+        "combatModifiers": [],
+        "finessable": true
+    },
+    {
+        "name": "Shield Spikes (Light Shield)",
+        "type": "Weapon",
+        "slot": "Off-Hand",
+        "category": "Martial",
+        "weaponType": "Martial Light",
+        "dice": "1d4",
+        "extraDmg": "1d4",
+        "damage": "1d4",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 5,
+        "cost": 10,
+        "isLight": true,
+        "tags": [
+            "martial",
+            "shield-spikes",
+            "piercing"
+        ],
+        "scope": "Melee Only",
+        "attackType": "weapon",
+        "combatScope": "melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "source": "PHB Table 7-5 / p.125",
+        "benefit": "Increases the damage dealt by a shield bash as if the shield were designed for a creature one size category larger, and deals piercing damage.",
+        "ruleFlags": {},
+        "combatModifiers": [],
+        "finessable": true
+    },
+    {
+        "name": "Padded Armor",
+        "type": "Armor",
+        "slot": "Armor",
+        "armorType": "Light",
+        "acBonus": 1,
+        "maxDex": 8,
+        "checkPenalty": 0,
+        "spellFailure": 5,
+        "speed30": "30 ft.",
+        "speed20": "20 ft.",
+        "weight": 10,
+        "cost": 5,
+        "bonusType": "Armor",
+        "tags": [
+            "armor",
+            "light"
+        ],
+        "source": "SRD / PHB p.123",
+        "benefit": "Quilted layers of cloth and batting. Very quiet and lightweight.",
+        "role": "Defense",
+        "actionType": "Passive",
+        "attackType": "none",
+        "ruleFlags": {},
+        "combatModifiers": []
+    },
+    {
+        "name": "Leather Armor",
+        "type": "Armor",
+        "slot": "Armor",
+        "armorType": "Light",
+        "acBonus": 2,
+        "maxDex": 6,
+        "checkPenalty": 0,
+        "spellFailure": 10,
+        "speed30": "30 ft.",
+        "speed20": "20 ft.",
+        "weight": 15,
+        "cost": 10,
+        "bonusType": "Armor",
+        "tags": [
+            "armor",
+            "light"
+        ],
+        "source": "SRD / PHB p.123",
+        "benefit": "Standard boiled and hardened leather breastplate and greaves with zero check penalty.",
+        "role": "Defense",
+        "actionType": "Passive",
+        "attackType": "none",
+        "ruleFlags": {},
+        "combatModifiers": []
+    },
+    {
+        "name": "Studded Leather Armor",
+        "type": "Armor",
+        "slot": "Armor",
+        "armorType": "Light",
+        "acBonus": 3,
+        "maxDex": 5,
+        "checkPenalty": -1,
+        "spellFailure": 15,
+        "speed30": "30 ft.",
+        "speed20": "20 ft.",
+        "weight": 20,
+        "cost": 25,
+        "bonusType": "Armor",
+        "tags": [
+            "armor",
+            "light"
+        ],
+        "source": "SRD / PHB p.123",
+        "benefit": "Tough leather reinforced with close-set metal rivets.",
+        "role": "Defense",
+        "actionType": "Passive",
+        "attackType": "none",
+        "ruleFlags": {},
+        "combatModifiers": []
+    },
+    {
+        "name": "Chain Shirt",
+        "type": "Armor",
+        "slot": "Armor",
+        "armorType": "Light",
+        "acBonus": 4,
+        "maxDex": 4,
+        "checkPenalty": -2,
+        "spellFailure": 20,
+        "speed30": "30 ft.",
+        "speed20": "20 ft.",
+        "weight": 25,
+        "cost": 100,
+        "bonusType": "Armor",
+        "tags": [
+            "armor",
+            "light"
+        ],
+        "source": "SRD / PHB p.123",
+        "benefit": "Interlocking steel rings protecting the torso and upper arms while preserving full movement.",
+        "role": "Defense",
+        "actionType": "Passive",
+        "attackType": "none",
+        "ruleFlags": {},
+        "combatModifiers": []
+    },
+    {
+        "name": "Hide Armor",
+        "type": "Armor",
+        "slot": "Armor",
+        "armorType": "Medium",
+        "acBonus": 3,
+        "maxDex": 4,
+        "checkPenalty": -3,
+        "spellFailure": 20,
+        "speed30": "20 ft.",
+        "speed20": "15 ft.",
+        "weight": 25,
+        "cost": 15,
+        "bonusType": "Armor",
+        "tags": [
+            "armor",
+            "medium"
+        ],
+        "source": "SRD / PHB p.123",
+        "benefit": "Multiple layers of animal hides cured together. Favored by barbarians and druids.",
+        "role": "Defense",
+        "actionType": "Passive",
+        "attackType": "none",
+        "ruleFlags": {},
+        "combatModifiers": []
+    },
+    {
+        "name": "Scale Mail",
+        "type": "Armor",
+        "slot": "Armor",
+        "armorType": "Medium",
+        "acBonus": 4,
+        "maxDex": 3,
+        "checkPenalty": -4,
+        "spellFailure": 25,
+        "speed30": "20 ft.",
+        "speed20": "15 ft.",
+        "weight": 30,
+        "cost": 50,
+        "bonusType": "Armor",
+        "tags": [
+            "armor",
+            "medium"
+        ],
+        "source": "SRD / PHB p.123",
+        "benefit": "Coat and leggings covered in overlapping scales of bronze or iron.",
+        "role": "Defense",
+        "actionType": "Passive",
+        "attackType": "none",
+        "ruleFlags": {},
+        "combatModifiers": []
+    },
+    {
+        "name": "Chainmail",
+        "type": "Armor",
+        "slot": "Armor",
+        "armorType": "Medium",
+        "acBonus": 5,
+        "maxDex": 2,
+        "checkPenalty": -5,
+        "spellFailure": 30,
+        "speed30": "20 ft.",
+        "speed20": "15 ft.",
+        "weight": 40,
+        "cost": 150,
+        "bonusType": "Armor",
+        "tags": [
+            "armor",
+            "medium"
+        ],
+        "source": "SRD / PHB p.123",
+        "benefit": "Complete suit of interlocking steel rings over a quilted fabric layer.",
+        "role": "Defense",
+        "actionType": "Passive",
+        "attackType": "none",
+        "ruleFlags": {},
+        "combatModifiers": []
+    },
+    {
+        "name": "Breastplate",
+        "type": "Armor",
+        "slot": "Armor",
+        "armorType": "Medium",
+        "acBonus": 5,
+        "maxDex": 3,
+        "checkPenalty": -4,
+        "spellFailure": 25,
+        "speed30": "20 ft.",
+        "speed20": "15 ft.",
+        "weight": 30,
+        "cost": 200,
+        "bonusType": "Armor",
+        "tags": [
+            "armor",
+            "medium"
+        ],
+        "source": "SRD / PHB p.123",
+        "benefit": "Fitted metal chest and back plate with greaves, offering solid protection without fully encumbering the limbs.",
+        "role": "Defense",
+        "actionType": "Passive",
+        "attackType": "none",
+        "ruleFlags": {},
+        "combatModifiers": []
+    },
+    {
+        "name": "Splint Mail",
+        "type": "Armor",
+        "slot": "Armor",
+        "armorType": "Heavy",
+        "acBonus": 6,
+        "maxDex": 0,
+        "checkPenalty": -7,
+        "spellFailure": 40,
+        "speed30": "20 ft.",
+        "speed20": "15 ft.",
+        "weight": 45,
+        "cost": 200,
+        "bonusType": "Armor",
+        "tags": [
+            "armor",
+            "heavy"
+        ],
+        "source": "SRD / PHB p.123",
+        "benefit": "Vertical metal strips riveted to a leather backing and chainmail backing. Run speed is x3 instead of x4.",
+        "role": "Defense",
+        "actionType": "Passive",
+        "attackType": "none",
+        "ruleFlags": {},
+        "combatModifiers": []
+    },
+    {
+        "name": "Banded Mail",
+        "type": "Armor",
+        "slot": "Armor",
+        "armorType": "Heavy",
+        "acBonus": 6,
+        "maxDex": 1,
+        "checkPenalty": -6,
+        "spellFailure": 35,
+        "speed30": "20 ft.",
+        "speed20": "15 ft.",
+        "weight": 35,
+        "cost": 250,
+        "bonusType": "Armor",
+        "tags": [
+            "armor",
+            "heavy"
+        ],
+        "source": "SRD / PHB p.123",
+        "benefit": "Overlapping horizontal metal bands riveted to leather and chain backing. Run speed is x3 instead of x4.",
+        "role": "Defense",
+        "actionType": "Passive",
+        "attackType": "none",
+        "ruleFlags": {},
+        "combatModifiers": []
+    },
+    {
+        "name": "Half-Plate",
+        "type": "Armor",
+        "slot": "Armor",
+        "armorType": "Heavy",
+        "acBonus": 7,
+        "maxDex": 0,
+        "checkPenalty": -7,
+        "spellFailure": 40,
+        "speed30": "20 ft.",
+        "speed20": "15 ft.",
+        "weight": 50,
+        "cost": 600,
+        "bonusType": "Armor",
+        "tags": [
+            "armor",
+            "heavy"
+        ],
+        "source": "SRD / PHB p.123",
+        "benefit": "Shaped steel plates covering vital areas combined with chainmail joints. Run speed is x3 instead of x4.",
+        "role": "Defense",
+        "actionType": "Passive",
+        "attackType": "none",
+        "ruleFlags": {},
+        "combatModifiers": []
+    },
+    {
+        "name": "Full Plate",
+        "type": "Armor",
+        "slot": "Armor",
+        "armorType": "Heavy",
+        "acBonus": 8,
+        "maxDex": 1,
+        "checkPenalty": -6,
+        "spellFailure": 35,
+        "speed30": "20 ft.",
+        "speed20": "15 ft.",
+        "weight": 50,
+        "cost": 1500,
+        "bonusType": "Armor",
+        "tags": [
+            "armor",
+            "heavy"
+        ],
+        "source": "SRD / PHB p.123",
+        "benefit": "The pinnacle of mundane defense. Interlocking steel plates covering the entire body over padded arming doublet. Run speed is x3 instead of x4.",
+        "role": "Defense",
+        "actionType": "Passive",
+        "attackType": "none",
+        "ruleFlags": {},
+        "combatModifiers": []
+    },
+    {
+        "name": "Buckler",
+        "type": "Shield",
+        "slot": "Off-Hand/Shield",
+        "armorType": "Shield",
+        "acBonus": 1,
+        "maxDex": null,
+        "checkPenalty": -1,
+        "spellFailure": 5,
+        "weight": 5,
+        "cost": 15,
+        "bonusType": "Shield",
+        "tags": [
+            "shield",
+            "buckler"
+        ],
+        "source": "SRD / PHB p.123",
+        "benefit": "Fastened to the forearm. You can use a bow or crossbow without penalty, or an off-hand weapon at a -1 attack penalty (buckler AC is lost for that round).",
+        "role": "Defense",
+        "actionType": "Passive",
+        "attackType": "shield",
+        "combatScope": "melee",
+        "dice": null,
+        "critMin": 20,
+        "critMult": 2,
+        "dmgType": "Bludgeoning",
+        "ruleFlags": {},
+        "combatModifiers": [],
+        "extraDmg": null,
+        "damage": null,
+        "notes": "Cannot be used to perform a shield bash (PHB p.125)."
+    },
+    {
+        "name": "Light Wooden Shield",
+        "type": "Shield",
+        "slot": "Off-Hand/Shield",
+        "armorType": "Shield",
+        "acBonus": 1,
+        "maxDex": null,
+        "checkPenalty": -1,
+        "spellFailure": 5,
+        "weight": 5,
+        "cost": 3,
+        "bonusType": "Shield",
+        "tags": [
+            "shield",
+            "wooden",
+            "light"
+        ],
+        "source": "SRD / PHB p.123",
+        "benefit": "Light wooden shield strapped to the arm. Can make shield bash attacks (1d3 bludgeoning).",
+        "role": "Defense",
+        "actionType": "Passive",
+        "attackType": "shield",
+        "combatScope": "melee",
+        "dice": "1d3",
+        "critMin": 20,
+        "critMult": 2,
+        "dmgType": "Bludgeoning",
+        "ruleFlags": {},
+        "combatModifiers": []
+    },
+    {
+        "name": "Light Steel Shield",
+        "type": "Shield",
+        "slot": "Off-Hand/Shield",
+        "armorType": "Shield",
+        "acBonus": 1,
+        "maxDex": null,
+        "checkPenalty": -1,
+        "spellFailure": 5,
+        "weight": 6,
+        "cost": 9,
+        "bonusType": "Shield",
+        "tags": [
+            "shield",
+            "steel",
+            "light"
+        ],
+        "source": "SRD / PHB p.123",
+        "benefit": "Light steel shield strapped to the arm. Can make shield bash attacks (1d3 bludgeoning).",
+        "role": "Defense",
+        "actionType": "Passive",
+        "attackType": "shield",
+        "combatScope": "melee",
+        "dice": "1d3",
+        "critMin": 20,
+        "critMult": 2,
+        "dmgType": "Bludgeoning",
+        "ruleFlags": {},
+        "combatModifiers": []
+    },
+    {
+        "name": "Heavy Wooden Shield",
+        "type": "Shield",
+        "slot": "Off-Hand/Shield",
+        "armorType": "Shield",
+        "acBonus": 2,
+        "maxDex": null,
+        "checkPenalty": -2,
+        "spellFailure": 15,
+        "weight": 10,
+        "cost": 7,
+        "bonusType": "Shield",
+        "tags": [
+            "shield",
+            "wooden",
+            "heavy"
+        ],
+        "source": "SRD / PHB p.123",
+        "benefit": "Substantial wooden shield gripped with hand. Can make shield bash attacks (1d4 bludgeoning).",
+        "role": "Defense",
+        "actionType": "Passive",
+        "attackType": "shield",
+        "combatScope": "melee",
+        "dice": "1d4",
+        "critMin": 20,
+        "critMult": 2,
+        "dmgType": "Bludgeoning",
+        "ruleFlags": {},
+        "combatModifiers": []
+    },
+    {
+        "name": "Heavy Steel Shield",
+        "type": "Shield",
+        "slot": "Off-Hand/Shield",
+        "armorType": "Shield",
+        "acBonus": 2,
+        "maxDex": null,
+        "checkPenalty": -2,
+        "spellFailure": 15,
+        "weight": 15,
+        "cost": 20,
+        "bonusType": "Shield",
+        "tags": [
+            "shield",
+            "steel",
+            "heavy"
+        ],
+        "source": "SRD / PHB p.123",
+        "benefit": "Solid steel shield gripped with hand. Can make shield bash attacks (1d4 bludgeoning).",
+        "role": "Defense",
+        "actionType": "Passive",
+        "attackType": "shield",
+        "combatScope": "melee",
+        "dice": "1d4",
+        "critMin": 20,
+        "critMult": 2,
+        "dmgType": "Bludgeoning",
+        "ruleFlags": {},
+        "combatModifiers": []
+    },
+    {
+        "name": "Tower Shield",
+        "type": "Shield",
+        "slot": "Off-Hand/Shield",
+        "armorType": "Shield",
+        "acBonus": 4,
+        "maxDex": 2,
+        "checkPenalty": -10,
+        "spellFailure": 50,
+        "weight": 45,
+        "cost": 30,
+        "bonusType": "Shield",
+        "tags": [
+            "shield",
+            "tower"
+        ],
+        "source": "SRD / PHB p.123",
+        "benefit": "Massive wooden shield. Imposes -2 penalty on attack rolls due to encumbrance. As standard action, grants total cover. Cannot bash.",
+        "role": "Defense",
+        "actionType": "Passive",
+        "attackType": "shield",
+        "combatScope": "melee",
+        "dice": "0",
+        "critMin": 20,
+        "critMult": 2,
+        "dmgType": "Bludgeoning",
+        "ruleFlags": {},
+        "combatModifiers": [
+            {
+                "type": "attack_penalty",
+                "value": -2,
+                "scope": "All Attacks",
+                "description": "Due to shield's encumbrance, -2 penalty on attack rolls (PHB p.125)."
+            },
+            {
+                "type": "cover",
+                "action": "Standard Action",
+                "description": "Can be used as total cover against attacks through chosen shield edge (PHB p.125)."
+            }
+        ]
+    },
+    {
+        "name": "Power Attack",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Str 13",
+        "benefit": "On your action, before making attack rolls, subtract a number from all melee attack rolls (up to BAB) and add that number to all melee damage rolls (+1x for one-handed, +2x for two-handed). Cannot add bonus damage with a light weapon (except unarmed strikes or natural weapon attacks).",
+        "bonusType": "Untyped",
+        "scope": "Melee Only",
+        "combatScope": "melee",
+        "attackType": "feat_melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "tags": [
+            "feat",
+            "fighter",
+            "power-attack"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "powerAttack": true
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Cleave",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Str 13, Power Attack",
+        "benefit": "If you deal enough damage to drop a creature (below 0 HP), you immediately get an extra melee attack against another creature in reach.",
+        "bonusType": "Untyped",
+        "scope": "Melee Only",
+        "combatScope": "melee",
+        "attackType": "feat_melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "tags": [
+            "feat",
+            "fighter",
+            "cleave"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {},
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Great Cleave",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Str 13, Power Attack, Cleave, BAB +4",
+        "benefit": "No limit to the number of extra attacks you can make per round from Cleave as long as each dropped target qualifies.",
+        "bonusType": "Untyped",
+        "scope": "Melee Only",
+        "combatScope": "melee",
+        "attackType": "feat_melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "tags": [
+            "feat",
+            "fighter",
+            "cleave"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {},
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Weapon Finesse",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "BAB +1",
+        "benefit": "With a light weapon, rapier, whip, or spiked chain made for your size, you may use Dexterity modifier instead of Strength modifier on attack rolls.",
+        "bonusType": "Untyped",
+        "scope": "Melee Only",
+        "combatScope": "melee",
+        "attackType": "feat_melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "tags": [
+            "feat",
+            "fighter",
+            "finesse"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "weaponFinesse": true
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Combat Expertise",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Int 13",
+        "benefit": "Subtract a number from melee attack rolls (up to BAB, max 5) and add the same number as a dodge bonus to Armor Class.",
+        "bonusType": "Untyped",
+        "scope": "Melee Only",
+        "combatScope": "melee",
+        "attackType": "feat_melee",
+        "actionType": "Passive",
+        "role": "Defense",
+        "tags": [
+            "feat",
+            "fighter",
+            "combat-expertise"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "combatExpertise": true
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Improved Trip",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Int 13, Combat Expertise",
+        "benefit": "Do not provoke attack of opportunity when making a trip attack. +4 bonus on Strength check to trip. If you succeed, gain immediate extra melee attack against tripped target.",
+        "bonusType": "Untyped",
+        "scope": "Melee Only",
+        "combatScope": "melee",
+        "attackType": "feat_melee",
+        "actionType": "Passive",
+        "role": "Tactical",
+        "tags": [
+            "feat",
+            "fighter",
+            "trip"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "tripBonus": 4
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Improved Disarm",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Int 13, Combat Expertise",
+        "benefit": "Do not provoke attack of opportunity when attempting to disarm, and gain a +4 bonus on opposed disarm roll.",
+        "bonusType": "Untyped",
+        "scope": "Melee Only",
+        "combatScope": "melee",
+        "attackType": "feat_melee",
+        "actionType": "Passive",
+        "role": "Tactical",
+        "tags": [
+            "feat",
+            "fighter",
+            "disarm"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "disarmBonus": 4
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Improved Feint",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Int 13, Combat Expertise",
+        "benefit": "Can make a Bluff check to feint in combat as a move action rather than a standard action.",
+        "bonusType": "Untyped",
+        "scope": "Melee Only",
+        "combatScope": "melee",
+        "attackType": "feat_melee",
+        "actionType": "Move",
+        "role": "Tactical",
+        "tags": [
+            "feat",
+            "fighter",
+            "feint"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {},
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Improved Sunder",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Str 13, Power Attack",
+        "benefit": "Do not provoke attack of opportunity when striking an opponent's weapon or shield. +4 bonus on opposed attack roll.",
+        "bonusType": "Untyped",
+        "scope": "Melee Only",
+        "combatScope": "melee",
+        "attackType": "feat_melee",
+        "actionType": "Passive",
+        "role": "Tactical",
+        "tags": [
+            "feat",
+            "fighter",
+            "sunder"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "sunderBonus": 4
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Improved Bull Rush",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Str 13, Power Attack",
+        "benefit": "Do not provoke attack of opportunity when bull rushing. +4 bonus on Strength check to push opponent back.",
+        "bonusType": "Untyped",
+        "scope": "Melee Only",
+        "combatScope": "melee",
+        "attackType": "feat_melee",
+        "actionType": "Passive",
+        "role": "Tactical",
+        "tags": [
+            "feat",
+            "fighter",
+            "bull-rush"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "bullRushBonus": 4
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Improved Overrun",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Str 13, Power Attack",
+        "benefit": "Target cannot avoid you during overrun. +4 bonus on Strength check to knock target prone.",
+        "bonusType": "Untyped",
+        "scope": "Melee Only",
+        "combatScope": "melee",
+        "attackType": "feat_melee",
+        "actionType": "Passive",
+        "role": "Tactical",
+        "tags": [
+            "feat",
+            "fighter",
+            "overrun"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "overrunBonus": 4
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Improved Grapple",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Dex 13, Improved Unarmed Strike",
+        "benefit": "Do not provoke attack of opportunity when starting a grapple. +4 bonus on all grapple checks.",
+        "bonusType": "Untyped",
+        "scope": "Melee Only",
+        "combatScope": "melee",
+        "attackType": "feat_melee",
+        "actionType": "Passive",
+        "role": "Tactical",
+        "tags": [
+            "feat",
+            "fighter",
+            "grapple"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "grappleBonus": 4
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Improved Initiative",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "-",
+        "benefit": "+4 bonus on initiative checks.",
+        "bonusType": "Untyped",
+        "scope": "General",
+        "combatScope": "general",
+        "attackType": "feat_general",
+        "actionType": "Passive",
+        "role": "Tactical",
+        "tags": [
+            "feat",
+            "fighter",
+            "initiative"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "initiativeBonus": 4
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Combat Reflexes",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "-",
+        "benefit": "Make additional attacks of opportunity per round equal to Dexterity modifier. May also make attacks of opportunity while flat-footed.",
+        "bonusType": "Untyped",
+        "scope": "Melee Only",
+        "combatScope": "melee",
+        "attackType": "feat_melee",
+        "actionType": "Passive",
+        "role": "Tactical",
+        "tags": [
+            "feat",
+            "fighter",
+            "attacks-of-opportunity"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "combatReflexes": true
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Dodge",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Dex 13",
+        "benefit": "+1 dodge bonus to Armor Class against attacks from a designated opponent during your turn.",
+        "bonusType": "Untyped",
+        "scope": "General",
+        "combatScope": "general",
+        "attackType": "feat_general",
+        "actionType": "Passive",
+        "role": "Defense",
+        "tags": [
+            "feat",
+            "fighter",
+            "dodge"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "dodgeBonus": 1
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Mobility",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Dex 13, Dodge",
+        "benefit": "+4 dodge bonus to Armor Class against attacks of opportunity caused by moving out of or within a threatened square.",
+        "bonusType": "Untyped",
+        "scope": "General",
+        "combatScope": "general",
+        "attackType": "feat_general",
+        "actionType": "Passive",
+        "role": "Defense",
+        "tags": [
+            "feat",
+            "fighter",
+            "mobility"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "mobilityBonus": 4
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Spring Attack",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Dex 13, Dodge, Mobility, BAB +4",
+        "benefit": "When using the attack action with a melee weapon, move both before and after making a single attack up to speed without provoking attacks of opportunity from the defender.",
+        "bonusType": "Untyped",
+        "scope": "Melee Only",
+        "combatScope": "melee",
+        "attackType": "feat_melee",
+        "actionType": "Full-Round",
+        "role": "Tactical",
+        "tags": [
+            "feat",
+            "fighter",
+            "spring-attack"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {},
+        "combatModifiers": [],
+        "action": "Attack Action (Standard) + Move",
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Point Blank Shot",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "-",
+        "benefit": "+1 bonus on attack and damage rolls with ranged weapons at ranges of up to 30 feet.",
+        "bonusType": "Untyped",
+        "scope": "Ranged Only",
+        "combatScope": "ranged",
+        "attackType": "feat_ranged",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "tags": [
+            "feat",
+            "fighter",
+            "archery"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "pointBlankShot": true
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Precise Shot",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Point Blank Shot",
+        "benefit": "Shoot or throw ranged weapons at an opponent engaged in melee without taking the standard -4 penalty.",
+        "bonusType": "Untyped",
+        "scope": "Ranged Only",
+        "combatScope": "ranged",
+        "attackType": "feat_ranged",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "tags": [
+            "feat",
+            "fighter",
+            "archery"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "preciseShot": true
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Rapid Shot",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Dex 13, Point Blank Shot",
+        "benefit": "Get one extra ranged attack per round at highest BAB, with all ranged attacks in that round taking a -2 penalty.",
+        "bonusType": "Untyped",
+        "scope": "Ranged Only",
+        "combatScope": "ranged",
+        "attackType": "feat_ranged",
+        "actionType": "Full-Round",
+        "role": "Offense / Attack",
+        "tags": [
+            "feat",
+            "fighter",
+            "archery"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "rapidShot": true
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Manyshot",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Dex 17, Point Blank Shot, Rapid Shot, BAB +6",
+        "benefit": "As a standard action within 30 ft, fire two or more arrows at a single target: two arrows at BAB +6 (-4 penalty), three arrows at BAB +11 (-6 penalty), four arrows at BAB +16 (-8 penalty). Precision damage applies once.",
+        "bonusType": "Untyped",
+        "scope": "Ranged Only",
+        "combatScope": "ranged",
+        "attackType": "feat_ranged",
+        "actionType": "Standard",
+        "role": "Offense / Attack",
+        "tags": [
+            "feat",
+            "fighter",
+            "archery"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "manyshot": true
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Shot on the Run",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Dex 13, Point Blank Shot, Dodge, Mobility, BAB +4",
+        "benefit": "When using the attack action with a ranged weapon, move both before and after making a single attack up to speed.",
+        "bonusType": "Untyped",
+        "scope": "Ranged Only",
+        "combatScope": "ranged",
+        "attackType": "feat_ranged",
+        "actionType": "Full-Round",
+        "role": "Tactical",
+        "tags": [
+            "feat",
+            "fighter",
+            "archery"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {},
+        "combatModifiers": [],
+        "action": "Attack Action (Standard) + Move",
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Far Shot",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Point Blank Shot",
+        "benefit": "When you use a projectile weapon, such as a bow, its range increment increases by 50% (multiply by 1-1/2). When you use a thrown weapon, its range increment is doubled (multiply by 2).",
+        "bonusType": "Untyped",
+        "scope": "Ranged Only",
+        "combatScope": "ranged",
+        "attackType": "feat_ranged",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "tags": [
+            "feat",
+            "fighter",
+            "archery"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "farShot": true
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Two-Weapon Fighting",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Dex 15",
+        "benefit": "Penalties for fighting with two weapons are reduced by 2 for primary hand and 6 for off hand (-2/-2 with light off-hand weapon).",
+        "bonusType": "Untyped",
+        "scope": "Melee Only",
+        "combatScope": "melee",
+        "attackType": "feat_melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "tags": [
+            "feat",
+            "fighter",
+            "two-weapon-fighting"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "twoWeaponFighting": true
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Improved Two-Weapon Fighting",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Dex 17, Two-Weapon Fighting, BAB +6",
+        "benefit": "Gain a second off-hand attack at a -5 penalty on full attack.",
+        "bonusType": "Untyped",
+        "scope": "Melee Only",
+        "combatScope": "melee",
+        "attackType": "feat_melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "tags": [
+            "feat",
+            "fighter",
+            "two-weapon-fighting"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "improvedTwoWeaponFighting": true
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Greater Two-Weapon Fighting",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Dex 19, Improved Two-Weapon Fighting, Two-Weapon Fighting, BAB +11",
+        "benefit": "Gain a third off-hand attack at a -10 penalty on full attack.",
+        "bonusType": "Untyped",
+        "scope": "Melee Only",
+        "combatScope": "melee",
+        "attackType": "feat_melee",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "tags": [
+            "feat",
+            "fighter",
+            "two-weapon-fighting"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "greaterTwoWeaponFighting": true
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Two-Weapon Defense",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Dex 15, Two-Weapon Fighting",
+        "benefit": "Gain +1 shield bonus to AC when wielding two weapons or a double weapon (+2 when fighting defensively or total defense).",
+        "bonusType": "Untyped",
+        "scope": "Melee Only",
+        "combatScope": "melee",
+        "attackType": "feat_melee",
+        "actionType": "Passive",
+        "role": "Defense",
+        "tags": [
+            "feat",
+            "fighter",
+            "two-weapon-defense"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "twoWeaponDefense": true
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Weapon Focus",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Proficiency with selected weapon, BAB +1",
+        "benefit": "+1 bonus on all attack rolls you make using the selected weapon.",
+        "bonusType": "Untyped",
+        "scope": "General",
+        "combatScope": "general",
+        "attackType": "feat_general",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "tags": [
+            "feat",
+            "fighter",
+            "weapon-focus"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "weaponFocus": true
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Greater Weapon Focus",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Proficiency, Weapon Focus, Fighter level 8th",
+        "benefit": "Gain an additional +1 bonus on all attack rolls using the selected weapon (+2 total).",
+        "bonusType": "Untyped",
+        "scope": "General",
+        "combatScope": "general",
+        "attackType": "feat_general",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "tags": [
+            "feat",
+            "fighter",
+            "weapon-focus"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "greaterWeaponFocus": true
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Weapon Specialization",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Proficiency, Weapon Focus, Fighter level 4th",
+        "benefit": "Gain a +2 bonus on all damage rolls you make using the selected weapon.",
+        "bonusType": "Untyped",
+        "scope": "General",
+        "combatScope": "general",
+        "attackType": "feat_general",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "tags": [
+            "feat",
+            "fighter",
+            "weapon-specialization"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "weaponSpecialization": true
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Greater Weapon Specialization",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Proficiency, Greater Weapon Focus, Weapon Focus, Weapon Specialization, Fighter level 12th",
+        "benefit": "Gain an additional +2 bonus on all damage rolls using the selected weapon (+4 total).",
+        "bonusType": "Untyped",
+        "scope": "General",
+        "combatScope": "general",
+        "attackType": "feat_general",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "tags": [
+            "feat",
+            "fighter",
+            "weapon-specialization"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "greaterWeaponSpecialization": true
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Improved Critical",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Proficiency with weapon, BAB +8",
+        "benefit": "Doubles the threat range of the selected weapon (e.g. 19-20 becomes 17-20, 18-20 becomes 15-20).",
+        "bonusType": "Untyped",
+        "scope": "General",
+        "combatScope": "general",
+        "attackType": "feat_general",
+        "actionType": "Passive",
+        "role": "Offense / Attack",
+        "tags": [
+            "feat",
+            "fighter",
+            "improved-critical"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "improvedCritical": true
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Quick Draw",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "BAB +1",
+        "benefit": "Draw a weapon as a free action instead of a move action. Can draw a hidden weapon as a move action.",
+        "bonusType": "Untyped",
+        "scope": "General",
+        "combatScope": "general",
+        "attackType": "feat_general",
+        "actionType": "Free",
+        "role": "Tactical",
+        "tags": [
+            "feat",
+            "fighter",
+            "quick-draw"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "quickDraw": true
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Blind-Fight",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "-",
+        "benefit": "Reroll miss chance for concealment once. Retain Dex bonus to AC against invisible attackers. Move at 3/4 speed while blinded.",
+        "bonusType": "Untyped",
+        "scope": "Melee Only",
+        "combatScope": "melee",
+        "attackType": "feat_melee",
+        "actionType": "Passive",
+        "role": "Tactical",
+        "tags": [
+            "feat",
+            "fighter",
+            "blind-fight"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "blindFight": true
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Mounted Combat",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Ride 1 rank",
+        "benefit": "Once per round when mount is hit in combat, make an immediate Ride check (reaction) to negate the hit (against opponent's attack roll result).",
+        "bonusType": "Untyped",
+        "scope": "General",
+        "combatScope": "general",
+        "attackType": "feat_general",
+        "actionType": "Immediate",
+        "role": "Defense",
+        "tags": [
+            "feat",
+            "fighter",
+            "mounted-combat"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "mountedCombat": true
+        },
+        "combatModifiers": [],
+        "action": "Once per round (Reaction)",
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Ride-By Attack",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Ride 1 rank, Mounted Combat",
+        "benefit": "When you are mounted and use the charge action, you may move and attack as with a standard charge and then continue moving in a straight line.",
+        "bonusType": "Untyped",
+        "scope": "Melee Only",
+        "combatScope": "melee",
+        "attackType": "feat_melee",
+        "actionType": "Full-Round",
+        "role": "Tactical",
+        "tags": [
+            "feat",
+            "fighter",
+            "mounted-combat"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {},
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Spirited Charge",
+        "type": "Feat",
+        "slot": "None",
+        "prereq": "Ride 1 rank, Mounted Combat, Ride-By Attack",
+        "benefit": "When mounted and charging, deal double damage with a melee weapon (or triple damage with a lance).",
+        "bonusType": "Untyped",
+        "scope": "Melee Only",
+        "combatScope": "melee",
+        "attackType": "feat_melee",
+        "actionType": "Full-Round",
+        "role": "Offense / Attack",
+        "tags": [
+            "feat",
+            "fighter",
+            "mounted-combat"
+        ],
+        "source": "SRD / PHB p.90",
+        "ruleFlags": {
+            "spiritedCharge": true
+        },
+        "combatModifiers": [],
+        "isFighterBonusFeat": true,
+        "category": "Fighter"
+    },
+    {
+        "name": "Human",
+        "type": "Race",
+        "category": "Standard Race",
+        "slot": "None",
+        "size": "Medium",
+        "baseSpeed": 30,
+        "strBonus": 0,
+        "dexBonus": 0,
+        "conBonus": 0,
+        "intBonus": 0,
+        "wisBonus": 0,
+        "chaBonus": 0,
+        "bonusFeats": 1,
+        "bonusSkillPointsPerLevel": 1,
+        "bonusSkillPointsLevel1": 4,
+        "favoredClass": "Any",
+        "languages": [
+            "Common"
+        ],
+        "bonusLanguages": [
+            "Any (except secret)"
+        ],
+        "traits": [
+            {
+                "name": "Bonus Feat",
+                "desc": "1 extra feat at 1st level."
+            },
+            {
+                "name": "Skilled",
+                "desc": "4 extra skill points at 1st level and 1 extra skill point at each additional level."
+            }
+        ],
+        "source": "SRD / PHB p.12",
+        "benefit": "1 bonus feat at 1st level; 4 extra skill points at 1st level and +1 extra skill point per additional level. Favored Class: Any.",
+        "tags": [
+            "race",
+            "human",
+            "medium"
+        ]
+    },
+    {
+        "name": "Dwarf",
+        "type": "Race",
+        "category": "Standard Race",
+        "slot": "None",
+        "size": "Medium",
+        "baseSpeed": 20,
+        "speedNote": "Base land speed is 20 feet. Dwarves can move at this speed even when wearing medium or heavy armor or when carrying a medium or heavy load.",
+        "strBonus": 0,
+        "dexBonus": 0,
+        "conBonus": 2,
+        "intBonus": 0,
+        "wisBonus": 0,
+        "chaBonus": -2,
+        "favoredClass": "Fighter",
+        "languages": [
+            "Common",
+            "Dwarven"
+        ],
+        "traits": [
+            {
+                "name": "Darkvision",
+                "desc": "60 ft darkvision in black and white."
+            },
+            {
+                "name": "Stonecunning",
+                "desc": "+2 racial bonus on Search checks to notice unusual stonework."
+            },
+            {
+                "name": "Weapon Familiarity",
+                "desc": "Dwarven waraxes and dwarven urgroshes are martial weapons for dwarves."
+            },
+            {
+                "name": "Stability",
+                "desc": "+4 bonus on ability checks to resist bull rush or trip when on firm ground."
+            },
+            {
+                "name": "Poison Resistance",
+                "desc": "+2 racial bonus on saving throws against poison."
+            },
+            {
+                "name": "Spell Resistance / Saves",
+                "desc": "+2 racial bonus on saving throws against spells and spell-like effects."
+            },
+            {
+                "name": "Combat Training (Orcs & Goblins)",
+                "desc": "+1 racial bonus on attack rolls against orcs and goblinoids."
+            },
+            {
+                "name": "Dodge Giants",
+                "desc": "+4 dodge bonus to Armor Class against monsters of the giant type."
+            },
+            {
+                "name": "Stone & Metal Appraise/Craft",
+                "desc": "+2 racial bonus on Appraise and Craft checks related to stone or metal."
+            }
+        ],
+        "source": "SRD / PHB p.14",
+        "benefit": "+2 Constitution, -2 Charisma. Darkvision 60 ft, Stonecunning, Weapon Familiarity (Dwarven Waraxe/Urgrosh), Stability (+4 vs trip/bull rush), +2 saves vs poison and spells, +1 attack vs orcs/goblinoids, +4 AC vs giants.",
+        "tags": [
+            "race",
+            "dwarf",
+            "medium",
+            "stonecunning"
+        ]
+    },
+    {
+        "name": "Elf",
+        "type": "Race",
+        "category": "Standard Race",
+        "slot": "None",
+        "size": "Medium",
+        "baseSpeed": 30,
+        "strBonus": 0,
+        "dexBonus": 2,
+        "conBonus": -2,
+        "intBonus": 0,
+        "wisBonus": 0,
+        "chaBonus": 0,
+        "favoredClass": "Wizard",
+        "languages": [
+            "Common",
+            "Elven"
+        ],
+        "traits": [
+            {
+                "name": "Sleep Immunity",
+                "desc": "Immunity to magic sleep effects."
+            },
+            {
+                "name": "Enchantment Resistance",
+                "desc": "+2 racial saving throw bonus against enchantment spells or effects."
+            },
+            {
+                "name": "Low-Light Vision",
+                "desc": "Can see twice as far as a human in starlight, moonlight, torchlight."
+            },
+            {
+                "name": "Weapon Proficiency",
+                "desc": "Proficient with longsword, rapier, longbow, and shortbow."
+            },
+            {
+                "name": "Keen Senses",
+                "desc": "+2 racial bonus on Listen, Search, and Spot checks. Passive search for secret doors within 5 ft."
+            }
+        ],
+        "source": "SRD / PHB p.15",
+        "benefit": "+2 Dexterity, -2 Constitution. Immunity to magic sleep effects, +2 saves vs enchantment, Low-Light Vision, weapon proficiency (longsword, rapier, bows), +2 Listen/Search/Spot with passive secret door check.",
+        "tags": [
+            "race",
+            "elf",
+            "medium",
+            "low-light-vision"
+        ]
+    },
+    {
+        "name": "Gnome",
+        "type": "Race",
+        "category": "Standard Race",
+        "slot": "None",
+        "size": "Small",
+        "baseSpeed": 20,
+        "strBonus": -2,
+        "dexBonus": 0,
+        "conBonus": 2,
+        "intBonus": 0,
+        "wisBonus": 0,
+        "chaBonus": 0,
+        "favoredClass": "Bard",
+        "languages": [
+            "Common",
+            "Gnome"
+        ],
+        "traits": [
+            {
+                "name": "Small Size",
+                "desc": "+1 bonus to AC, +1 bonus on attack rolls, +4 bonus on Hide checks, smaller weapon dice, 3/4 carrying capacity."
+            },
+            {
+                "name": "Low-Light Vision",
+                "desc": "Can see twice as far as a human in starlight, moonlight, torchlight."
+            },
+            {
+                "name": "Weapon Familiarity",
+                "desc": "Gnome hooked hammers are martial weapons for gnomes."
+            },
+            {
+                "name": "Illusion Resistance & Potency",
+                "desc": "+2 racial bonus on saving throws against illusions; +1 DC to illusion spells cast by the gnome."
+            },
+            {
+                "name": "Combat Training (Kobolds & Goblins)",
+                "desc": "+1 racial bonus on attack rolls against kobolds and goblinoids."
+            },
+            {
+                "name": "Dodge Giants",
+                "desc": "+4 dodge bonus to Armor Class against monsters of the giant type."
+            },
+            {
+                "name": "Keen Ears & Alchemy",
+                "desc": "+2 racial bonus on Listen checks and Craft (alchemy) checks."
+            },
+            {
+                "name": "Spell-Like Abilities",
+                "desc": "1/day speak with animals (burrowing mammal); with Cha 10+: 1/day dancing lights, ghost sound, prestidigitation."
+            }
+        ],
+        "source": "SRD / PHB p.16",
+        "benefit": "+2 Constitution, -2 Strength. Small size (+1 AC, +1 attack, +4 Hide), Low-Light Vision, Weapon Familiarity (Hooked Hammer), +2 saves vs illusions, +1 illusion DC, +1 attack vs kobolds/goblinoids, +4 AC vs giants, +2 Listen/Craft (alchemy), Spell-Like Abilities.",
+        "tags": [
+            "race",
+            "gnome",
+            "small",
+            "low-light-vision"
+        ]
+    },
+    {
+        "name": "Half-Elf",
+        "type": "Race",
+        "category": "Standard Race",
+        "slot": "None",
+        "size": "Medium",
+        "baseSpeed": 30,
+        "strBonus": 0,
+        "dexBonus": 0,
+        "conBonus": 0,
+        "intBonus": 0,
+        "wisBonus": 0,
+        "chaBonus": 0,
+        "favoredClass": "Any",
+        "languages": [
+            "Common",
+            "Elven"
+        ],
+        "traits": [
+            {
+                "name": "Sleep Immunity",
+                "desc": "Immunity to magic sleep effects."
+            },
+            {
+                "name": "Enchantment Resistance",
+                "desc": "+2 racial saving throw bonus against enchantment spells or effects."
+            },
+            {
+                "name": "Low-Light Vision",
+                "desc": "Can see twice as far as a human in starlight, moonlight, torchlight."
+            },
+            {
+                "name": "Elven Blood",
+                "desc": "For all effects related to race, considered an elf."
+            },
+            {
+                "name": "Social Adaptability",
+                "desc": "+2 racial bonus on Diplomacy and Gather Information checks."
+            },
+            {
+                "name": "Keen Senses",
+                "desc": "+1 racial bonus on Listen, Search, and Spot checks."
+            }
+        ],
+        "source": "SRD / PHB p.18",
+        "benefit": "Medium size. Immunity to magic sleep effects, +2 saves vs enchantment, Low-Light Vision, Elven Blood, +2 Diplomacy/Gather Information, +1 Listen/Search/Spot. Favored Class: Any.",
+        "tags": [
+            "race",
+            "half-elf",
+            "medium",
+            "low-light-vision"
+        ]
+    },
+    {
+        "name": "Half-Orc",
+        "type": "Race",
+        "category": "Standard Race",
+        "slot": "None",
+        "size": "Medium",
+        "baseSpeed": 30,
+        "strBonus": 2,
+        "dexBonus": 0,
+        "conBonus": 0,
+        "intBonus": -2,
+        "wisBonus": 0,
+        "chaBonus": -2,
+        "favoredClass": "Barbarian",
+        "languages": [
+            "Common",
+            "Orc"
+        ],
+        "traits": [
+            {
+                "name": "Darkvision",
+                "desc": "60 ft darkvision in black and white."
+            },
+            {
+                "name": "Orc Blood",
+                "desc": "For all effects related to race, considered an orc."
+            }
+        ],
+        "source": "SRD / PHB p.18",
+        "benefit": "+2 Strength, -2 Intelligence, -2 Charisma. Darkvision 60 ft, Orc Blood. Favored Class: Barbarian.",
+        "tags": [
+            "race",
+            "half-orc",
+            "medium",
+            "darkvision"
+        ]
+    },
+    {
+        "name": "Halfling",
+        "type": "Race",
+        "category": "Standard Race",
+        "slot": "None",
+        "size": "Small",
+        "baseSpeed": 20,
+        "strBonus": -2,
+        "dexBonus": 2,
+        "conBonus": 0,
+        "intBonus": 0,
+        "wisBonus": 0,
+        "chaBonus": 0,
+        "favoredClass": "Rogue",
+        "languages": [
+            "Common",
+            "Halfling"
+        ],
+        "traits": [
+            {
+                "name": "Small Size",
+                "desc": "+1 bonus to AC, +1 bonus on attack rolls, +4 bonus on Hide checks, smaller weapon dice, 3/4 carrying capacity."
+            },
+            {
+                "name": "Athletics",
+                "desc": "+2 racial bonus on Climb, Jump, and Move Silently checks."
+            },
+            {
+                "name": "Halfling Luck",
+                "desc": "+1 racial bonus on all saving throws."
+            },
+            {
+                "name": "Fear Resistance",
+                "desc": "+2 morale bonus on saving throws against fear (stacks with Halfling Luck, total +3)."
+            },
+            {
+                "name": "Throwing & Sling Accuracy",
+                "desc": "+1 racial bonus on attack rolls with thrown weapons and slings."
+            },
+            {
+                "name": "Keen Ears",
+                "desc": "+2 racial bonus on Listen checks."
+            }
+        ],
+        "source": "SRD / PHB p.19",
+        "benefit": "+2 Dexterity, -2 Strength. Small size (+1 AC, +1 attack, +4 Hide), +2 Climb/Jump/Move Silently, +1 all saves (Halfling Luck), +2 saves vs fear, +1 attack with thrown weapons and slings, +2 Listen. Favored Class: Rogue.",
+        "tags": [
+            "race",
+            "halfling",
+            "small",
+            "halfling-luck"
+        ]
+    },
+    {
+        "name": "Throwing Axe",
+        "type": "Weapon",
+        "slot": "Main Hand",
+        "category": "Martial",
+        "weaponType": "Martial Light",
+        "dice": "1d6",
+        "extraDmg": "1d6",
+        "damage": "1d6",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Slashing",
+        "range": 10,
+        "rangeIncrement": 10,
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 2,
+        "cost": 8,
+        "isLight": true,
+        "finessable": true,
+        "tags": [
+            "martial",
+            "light",
+            "thrown",
+            "finessable",
+            "slashing"
+        ],
+        "source": "PHB Table 7-5"
+    },
+    {
+        "name": "Shield Spikes (Heavy Shield)",
+        "type": "Weapon",
+        "slot": "Off-Hand",
+        "category": "Martial",
+        "weaponType": "Martial One-Handed",
+        "dice": "1d6",
+        "extraDmg": "1d6",
+        "damage": "1d6",
+        "critMin": 20,
+        "critMult": 2,
+        "crit": "20/x2",
+        "dmgType": "Piercing",
+        "attBonus": 0,
+        "dmgBonus": 0,
+        "bonusType": "Untyped",
+        "weight": 5,
+        "cost": 10,
+        "isLight": false,
+        "finessable": true,
+        "tags": [
+            "martial",
+            "light",
+            "shield-bash",
+            "piercing",
+            "finessable"
+        ],
+        "source": "PHB Table 7-5 / p.125"
+    },
+    {
+        "name": "Improved Unarmed Strike",
+        "type": "Feat",
+        "slot": "None",
+        "category": "Fighter",
+        "featType": "General",
+        "isFighterBonusFeat": true,
+        "prereq": "-",
+        "benefit": "You are considered armed even when unarmed (do not provoke attacks of opportunity when attacking unarmed). Unarmed strikes deal lethal or nonlethal damage at your choice.",
+        "source": "PHB p.96",
+        "bonusType": "Untyped"
+    },
+    {
+        "name": "Deflect Arrows",
+        "type": "Feat",
+        "slot": "None",
+        "category": "Fighter",
+        "featType": "General",
+        "isFighterBonusFeat": true,
+        "prereq": "Dex 13, Improved Unarmed Strike",
+        "benefit": "Once per round when you would normally be hit with a ranged weapon, you may deflect it so that you take no damage from it (reaction).",
+        "source": "PHB p.93",
+        "bonusType": "Untyped"
+    },
+    {
+        "name": "Snatch Arrows",
+        "type": "Feat",
+        "slot": "None",
+        "category": "Fighter",
+        "featType": "General",
+        "isFighterBonusFeat": true,
+        "prereq": "Dex 15, Deflect Arrows, Improved Unarmed Strike",
+        "benefit": "When using Deflect Arrows, you may catch the weapon instead of knocking it away, and can immediately throw it back if suitable.",
+        "source": "PHB p.100",
+        "bonusType": "Untyped"
+    },
+    {
+        "name": "Stunning Fist",
+        "type": "Feat",
+        "slot": "None",
+        "category": "Fighter",
+        "featType": "General",
+        "isFighterBonusFeat": true,
+        "prereq": "Dex 13, Wis 13, Improved Unarmed Strike, BAB +8",
+        "benefit": "Declare before attack roll; target damaged by unarmed strike must make Fortitude save (DC 10 + 1/2 level + Wis mod) or be stunned for 1 round (1/day per 4 levels).",
+        "source": "PHB p.101",
+        "bonusType": "Untyped"
+    },
+    {
+        "name": "Whirlwind Attack",
+        "type": "Feat",
+        "slot": "None",
+        "category": "Fighter",
+        "featType": "General",
+        "isFighterBonusFeat": true,
+        "prereq": "Dex 13, Int 13, Combat Expertise, Dodge, Mobility, Spring Attack, BAB +4",
+        "benefit": "As a full attack action, make one melee attack at your highest BAB against each opponent within reach.",
+        "source": "PHB p.102",
+        "bonusType": "Untyped"
+    },
+    {
+        "name": "Improved Shield Bash",
+        "type": "Feat",
+        "slot": "None",
+        "category": "Fighter",
+        "featType": "General",
+        "isFighterBonusFeat": true,
+        "prereq": "Shield Proficiency",
+        "benefit": "When you perform a shield bash, you may still apply the shield's shield bonus to your AC.",
+        "source": "PHB p.96",
+        "bonusType": "Untyped"
+    },
+    {
+        "name": "Rapid Reload",
+        "type": "Feat",
+        "slot": "None",
+        "category": "Fighter",
+        "featType": "General",
+        "isFighterBonusFeat": true,
+        "prereq": "Weapon Proficiency (Crossbow type)",
+        "benefit": "Reduce the time required to reload a crossbow: heavy crossbow becomes move action, light crossbow becomes free action.",
+        "source": "PHB p.99",
+        "bonusType": "Untyped"
+    },
+    {
+        "name": "Improved Precise Shot",
+        "type": "Feat",
+        "slot": "None",
+        "category": "Fighter",
+        "featType": "General",
+        "isFighterBonusFeat": true,
+        "prereq": "Dex 19, Point Blank Shot, Precise Shot, BAB +11",
+        "benefit": "Ranged attacks ignore AC bonus granted to targets by anything less than total cover, and miss chance granted by anything less than total concealment.",
+        "source": "PHB p.96",
+        "bonusType": "Untyped"
+    },
+    {
+        "name": "Mounted Archery",
+        "type": "Feat",
+        "slot": "None",
+        "category": "Fighter",
+        "featType": "General",
+        "isFighterBonusFeat": true,
+        "prereq": "Ride 1 rank, Mounted Combat",
+        "benefit": "Halve penalty for using ranged weapon while mount takes double move (-2 instead of -4) or runs (-4 instead of -8).",
+        "source": "PHB p.98",
+        "bonusType": "Untyped"
+    },
+    {
+        "name": "Trample",
+        "type": "Feat",
+        "slot": "None",
+        "category": "Fighter",
+        "featType": "General",
+        "isFighterBonusFeat": true,
+        "prereq": "Ride 1 rank, Mounted Combat",
+        "benefit": "When you attempt an overrun action while mounted, target cannot avoid you; mount makes hoof attack if knocked prone.",
+        "source": "PHB p.102",
+        "bonusType": "Untyped"
+    },
+    {
+        "name": "Simple Weapon Proficiency",
+        "type": "Feat",
+        "slot": "None",
+        "category": "General",
+        "featType": "General",
+        "isFighterBonusFeat": false,
+        "prereq": "-",
+        "benefit": "Make attack rolls with all simple weapons without taking the -4 non-proficiency penalty.",
+        "source": "PHB p.100",
+        "bonusType": "Untyped"
+    },
+    {
+        "name": "Martial Weapon Proficiency",
+        "type": "Feat",
+        "slot": "None",
+        "category": "General",
+        "featType": "General",
+        "isFighterBonusFeat": false,
+        "prereq": "-",
+        "benefit": "Choose one type of martial weapon; make attack rolls with that weapon without taking the -4 non-proficiency penalty.",
+        "source": "PHB p.97",
+        "bonusType": "Untyped"
+    },
+    {
+        "name": "Exotic Weapon Proficiency",
+        "type": "Feat",
+        "slot": "None",
+        "category": "Fighter",
+        "featType": "General",
+        "isFighterBonusFeat": true,
+        "prereq": "BAB +1",
+        "benefit": "Choose one type of exotic weapon; make attack rolls with that weapon without taking the -4 non-proficiency penalty.",
+        "source": "PHB p.94",
+        "bonusType": "Untyped"
+    },
+    {
+        "name": "Armor Proficiency (Light)",
+        "type": "Feat",
+        "slot": "None",
+        "category": "General",
+        "featType": "General",
+        "isFighterBonusFeat": false,
+        "prereq": "-",
+        "benefit": "When you wear light armor, armor check penalty applies only to Balance, Climb, Escape Artist, Hide, Jump, Move Silently, Sleight of Hand, and Tumble.",
+        "source": "PHB p.89",
+        "bonusType": "Untyped"
+    },
+    {
+        "name": "Armor Proficiency (Medium)",
+        "type": "Feat",
+        "slot": "None",
+        "category": "General",
+        "featType": "General",
+        "isFighterBonusFeat": false,
+        "prereq": "Armor Proficiency (Light)",
+        "benefit": "When you wear medium armor, armor check penalty applies only to physical movement skill checks.",
+        "source": "PHB p.89",
+        "bonusType": "Untyped"
+    },
+    {
+        "name": "Armor Proficiency (Heavy)",
+        "type": "Feat",
+        "slot": "None",
+        "category": "General",
+        "featType": "General",
+        "isFighterBonusFeat": false,
+        "prereq": "Armor Proficiency (Medium)",
+        "benefit": "When you wear heavy armor, armor check penalty applies only to physical movement skill checks.",
+        "source": "PHB p.89",
+        "bonusType": "Untyped"
+    },
+    {
+        "name": "Shield Proficiency",
+        "type": "Feat",
+        "slot": "None",
+        "category": "General",
+        "featType": "General",
+        "isFighterBonusFeat": false,
+        "prereq": "-",
+        "benefit": "Use a buckler, light shield, or heavy shield without taking its armor check penalty on attack rolls.",
+        "source": "PHB p.100",
+        "bonusType": "Untyped"
+    },
+    {
+        "name": "Tower Shield Proficiency",
+        "type": "Feat",
+        "slot": "None",
+        "category": "Fighter",
+        "featType": "General",
+        "isFighterBonusFeat": true,
+        "prereq": "Shield Proficiency",
+        "benefit": "Use a tower shield without taking its armor check penalty on attack rolls.",
+        "source": "PHB p.102",
+        "bonusType": "Untyped"
+    },
+    {
+        "name": "Shadow Blade",
+        "type": "Feat",
+        "slot": "None",
+        "category": "Martial",
+        "prereq": "1 Shadow Hand Stance",
+        "benefit": "Bir Shadow Hand duruÅŸundayken (Stance), Shadow Hand disiplini silahlarÄ±yla yapÄ±lan yakÄ±n dÃ¶vÃ¼ÅŸ hasarlarÄ±na DEX modifiyerini ekler.",
+        "description": "Bir Shadow Hand duruÅŸundayken (Stance), Shadow Hand disiplini silahlarÄ±yla yapÄ±lan yakÄ±n dÃ¶vÃ¼ÅŸ hasarlarÄ±na DEX modifiyerini ekler.",
+        "source": "Tome of Battle p.32",
+        "isFighterBonusFeat": false
+    },
+    {
+        "name": "Adaptive Style",
+        "type": "Feat",
+        "slot": "None",
+        "category": "Martial",
+        "prereq": "Crusader, Swordsage veya Warblade 1",
+        "benefit": "1 Full-Round Action harcayarak kuÅŸanÄ±lan (Readied) manevralarÄ±nÄ±zÄ± savaÅŸ ortasÄ±nda deÄŸiÅŸtirebilir ve harcanmÄ±ÅŸ manevralarÄ± yenileyebilirsiniz.",
+        "description": "1 Full-Round Action harcayarak kuÅŸanÄ±lan (Readied) manevralarÄ±nÄ±zÄ± savaÅŸ ortasÄ±nda deÄŸiÅŸtirebilir ve harcanmÄ±ÅŸ manevralarÄ± yenileyebilirsiniz.",
+        "source": "Tome of Battle p.28",
+        "isFighterBonusFeat": false
+    },
+    {
+        "name": "Arcane Strike",
+        "type": "Feat",
+        "slot": "None",
+        "category": "General",
+        "prereq": "3. seviye arcane bÃ¼yÃ¼ yapabilme, BAB +4",
+        "benefit": "Free Action olarak bir bÃ¼yÃ¼ yuvasÄ± feda edip 1 tur boyunca tÃ¼m silah saldÄ±rÄ±larÄ±na +BÃ¼yÃ¼ Seviyesi saldÄ±rÄ± bonusu ve +Xd4 ekstra hasar ekler.",
+        "description": "Free Action olarak bir bÃ¼yÃ¼ yuvasÄ± feda edip 1 tur boyunca tÃ¼m silah saldÄ±rÄ±larÄ±na +BÃ¼yÃ¼ Seviyesi saldÄ±rÄ± bonusu ve +Xd4 ekstra hasar ekler.",
+        "source": "Complete Warrior p.96",
+        "isFighterBonusFeat": false
+    },
+    {
+        "name": "Practiced Spellcaster",
+        "type": "Feat",
+        "slot": "None",
+        "category": "General",
+        "prereq": "Spellcraft 4 ranks",
+        "benefit": "SeÃ§ilen bÃ¼yÃ¼cÃ¼ sÄ±nÄ±fÄ±nÄ±n Caster Level (CL) deÄŸerini +4 artÄ±rÄ±r (toplam karakter seviyesini HD'yi geÃ§emez). Ã‡oklu sÄ±nÄ±f (Gish) karakterler iÃ§in idealdir.",
+        "description": "SeÃ§ilen bÃ¼yÃ¼cÃ¼ sÄ±nÄ±fÄ±nÄ±n Caster Level (CL) deÄŸerini +4 artÄ±rÄ±r (toplam karakter seviyesini HD'yi geÃ§emez). Ã‡oklu sÄ±nÄ±f (Gish) karakterler iÃ§in idealdir.",
+        "source": "Complete Arcane p.82",
+        "isFighterBonusFeat": false
+    },
+    {
+        "name": "Shock Trooper",
+        "type": "Feat",
+        "slot": "None",
+        "category": "Fighter",
+        "prereq": "Improved Bull Rush, Power Attack, BAB +6",
+        "benefit": "Heedless Charge: Charge saldÄ±rÄ±sÄ±nda Power Attack cezasÄ±nÄ± saldÄ±rÄ± zarÄ± yerine AC'den dÃ¼ÅŸmenizi saÄŸlar.",
+        "description": "Heedless Charge: Charge saldÄ±rÄ±sÄ±nda Power Attack cezasÄ±nÄ± saldÄ±rÄ± zarÄ± yerine AC'den dÃ¼ÅŸmenizi saÄŸlar.",
+        "source": "Complete Warrior p.112",
+        "isFighterBonusFeat": true
+    },
+    {
+        "name": "Leap Attack",
+        "type": "Feat",
+        "slot": "None",
+        "category": "General",
+        "prereq": "Jump 8 ranks, Power Attack",
+        "benefit": "Charge sÄ±rasÄ±nda en az 10 ft uzun atlama yaparsanÄ±z Power Attack ekstra hasarÄ±nÄ± ikiye/Ã¼Ã§e katlar.",
+        "description": "Charge sÄ±rasÄ±nda en az 10 ft uzun atlama yaparsanÄ±z Power Attack ekstra hasarÄ±nÄ± ikiye/Ã¼Ã§e katlar.",
+        "source": "Complete Adventurer p.110",
+        "isFighterBonusFeat": false
+    },
+    {
+        "name": "Oversized Two-Weapon Fighting",
+        "type": "Feat",
+        "slot": "None",
+        "category": "Fighter",
+        "prereq": "Dex 13, Two-Weapon Fighting, BAB +1",
+        "benefit": "Ä°kinci elinizde (Off-Hand) tek elli bir silahÄ± hafif (light) bir silah gibi kullanmanÄ±zÄ± ve Ã§ift silah cezasÄ±nÄ± azaltmanÄ±zÄ± saÄŸlar.",
+        "description": "Ä°kinci elinizde (Off-Hand) tek elli bir silahÄ± hafif (light) bir silah gibi kullanmanÄ±zÄ± ve Ã§ift silah cezasÄ±nÄ± azaltmanÄ±zÄ± saÄŸlar.",
+        "source": "Complete Adventurer p.111",
+        "isFighterBonusFeat": true
+    },
+    {
+        "name": "Monkey Grip",
+        "type": "Feat",
+        "slot": "None",
+        "category": "Fighter",
+        "prereq": "BAB +1",
+        "benefit": "You can use one melee weapon one size category larger than you are with a -2 penalty on the attack roll, but the amount of effort it takes you to use the weapon does not change (e.g., you cannot use this feat to wield a two-handed weapon in one hand). Normal: You cannot use a weapon of a larger size category.",
+        "description": "Kendi boyutunuzdan bir boy bÃ¼yÃ¼k yakÄ±n dÃ¶vÃ¼ÅŸ silahlarÄ±nÄ± veya iki elli (Two-Handed) silahlarÄ± tek elinizle -2 saldÄ±rÄ± cezasÄ±yla kullanmanÄ±zÄ± saÄŸlar.",
+        "source": "Complete Warrior p.103 / 3.5e RAW",
+        "isFighterBonusFeat": true
+    },
+    {
+        "name": "Somatic Weaponry",
+        "type": "Feat",
+        "slot": "None",
+        "category": "General",
+        "prereq": "Concentration 4 ranks, Spellcraft 4 ranks",
+        "benefit": "Ä°ki elinizde silah veya kalkan tutarken bile bÃ¼yÃ¼lerin somatik (el hareketi) bileÅŸenlerini gerÃ§ekleÅŸtirebilirsiniz.",
+        "description": "Ä°ki elinizde silah veya kalkan tutarken bile bÃ¼yÃ¼lerin somatik (el hareketi) bileÅŸenlerini gerÃ§ekleÅŸtirebilirsiniz.",
+        "source": "Complete Mage p.47",
+        "isFighterBonusFeat": false
+    },
+    {
+        "name": "Eldritch Spear",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Least",
+        "minLevel": 1,
+        "prereq": "Warlock Level 1",
+        "benefit": "Eldritch Blast menzili 60 ft'den 250 ft'ye Ã§Ä±kar (Blast Shape).",
+        "description": "Eldritch Blast menzili 60 ft'den 250 ft'ye Ã§Ä±kar (Blast Shape).",
+        "source": "Complete Arcane p.133"
+    },
+    {
+        "name": "Hideous Blow",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Least",
+        "minLevel": 1,
+        "prereq": "Warlock Level 1",
+        "benefit": "Standart eylemle yakÄ±n dÃ¶vÃ¼ÅŸ saldÄ±rÄ±sÄ± yapÄ±p silah hasarÄ±na Eldritch Blast hasarÄ±nÄ± ekler.",
+        "description": "Standart eylemle yakÄ±n dÃ¶vÃ¼ÅŸ saldÄ±rÄ±sÄ± yapÄ±p silah hasarÄ±na Eldritch Blast hasarÄ±nÄ± ekler.",
+        "source": "Complete Arcane p.134"
+    },
+    {
+        "name": "See the Unseen",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Least",
+        "minLevel": 1,
+        "prereq": "Warlock Level 1",
+        "benefit": "24 saat boyunca 60 ft Darkvision ve See Invisibility (GÃ¶rÃ¼nmezleri GÃ¶rme) kazanÄ±r.",
+        "description": "24 saat boyunca 60 ft Darkvision ve See Invisibility (GÃ¶rÃ¼nmezleri GÃ¶rme) kazanÄ±r.",
+        "source": "Complete Arcane p.135"
+    },
+    {
+        "name": "Beguiling Influence",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Least",
+        "minLevel": 1,
+        "prereq": "Warlock Level 1",
+        "benefit": "24 saat boyunca Bluff, Diplomacy ve Intimidate becerilerine +6 bonus kazanÄ±r.",
+        "description": "24 saat boyunca Bluff, Diplomacy ve Intimidate becerilerine +6 bonus kazanÄ±r.",
+        "source": "Complete Arcane p.133"
+    },
+    {
+        "name": "Darkness",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Least",
+        "minLevel": 1,
+        "prereq": "Warlock Level 1",
+        "benefit": "Ä°stediÄŸi an (At-Will) Darkness bÃ¼yÃ¼sÃ¼ gibi 20 ft yarÄ±Ã§aplÄ± karanlÄ±k yaratÄ±r.",
+        "description": "Ä°stediÄŸi an (At-Will) Darkness bÃ¼yÃ¼sÃ¼ gibi 20 ft yarÄ±Ã§aplÄ± karanlÄ±k yaratÄ±r.",
+        "source": "Complete Arcane p.133"
+    },
+    {
+        "name": "Devil's Sight",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Least",
+        "minLevel": 1,
+        "prereq": "Warlock Level 1",
+        "benefit": "30 ft mesafeye kadar hem normal hem de bÃ¼yÃ¼sel karanlÄ±ÄŸÄ± net bir ÅŸekilde gÃ¶rÃ¼r.",
+        "description": "30 ft mesafeye kadar hem normal hem de bÃ¼yÃ¼sel karanlÄ±ÄŸÄ± net bir ÅŸekilde gÃ¶rÃ¼r.",
+        "source": "Complete Arcane p.133"
+    },
+    {
+        "name": "Baleful Utterance",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Least",
+        "minLevel": 1,
+        "prereq": "Warlock Level 1",
+        "benefit": "Shatter bÃ¼yÃ¼sÃ¼ gibi ses dalgasÄ±yla nesneleri patlatÄ±r; hedef dazing kurtarma zarÄ± atar.",
+        "description": "Shatter bÃ¼yÃ¼sÃ¼ gibi ses dalgasÄ±yla nesneleri patlatÄ±r; hedef dazing kurtarma zarÄ± atar.",
+        "source": "Complete Arcane p.133"
+    },
+    {
+        "name": "All-Seeing Eyes",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Least",
+        "minLevel": 1,
+        "prereq": "Warlock Level 1",
+        "benefit": "24 saat boyunca Comprehend Languages ve Search/Spot testlerine +6 bonus.",
+        "description": "24 saat boyunca Comprehend Languages ve Search/Spot testlerine +6 bonus.",
+        "source": "Complete Mage p.123"
+    },
+    {
+        "name": "Spiderwalk",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Least",
+        "minLevel": 1,
+        "prereq": "Warlock Level 1",
+        "benefit": "24 saat boyunca Spider Climb (Duvarlarda tÄ±rmanma) kazanÄ±r, aÄŸlardan etkilenmez.",
+        "description": "24 saat boyunca Spider Climb (Duvarlarda tÄ±rmanma) kazanÄ±r, aÄŸlardan etkilenmez.",
+        "source": "Complete Arcane p.135"
+    },
+    {
+        "name": "Earthen Grasp",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Least",
+        "minLevel": 1,
+        "prereq": "Warlock Level 1",
+        "benefit": "Topraktan devasa bir el Ã§Ä±karÄ±p dÃ¼ÅŸmanÄ± yakalar ve tutar (Grapple).",
+        "description": "Topraktan devasa bir el Ã§Ä±karÄ±p dÃ¼ÅŸmanÄ± yakalar ve tutar (Grapple).",
+        "source": "Complete Arcane p.134"
+    },
+    {
+        "name": "Frightful Presence",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Least",
+        "minLevel": 1,
+        "prereq": "Warlock Level 1",
+        "benefit": "30 ft iÃ§indeki HD'si dÃ¼ÅŸÃ¼k dÃ¼ÅŸmanlarÄ± korkutur (Shaken).",
+        "description": "30 ft iÃ§indeki HD'si dÃ¼ÅŸÃ¼k dÃ¼ÅŸmanlarÄ± korkutur (Shaken).",
+        "source": "Dragon Magic p.80"
+    },
+    {
+        "name": "Fell Flight",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Lesser",
+        "minLevel": 6,
+        "prereq": "Warlock Level 6",
+        "benefit": "24 saat boyunca kendi yÃ¼rÃ¼me hÄ±zÄ±nda Good manevra kabiliyetiyle uÃ§ar (Fly).",
+        "description": "24 saat boyunca kendi yÃ¼rÃ¼me hÄ±zÄ±nda Good manevra kabiliyetiyle uÃ§ar (Fly).",
+        "source": "Complete Arcane p.134"
+    },
+    {
+        "name": "Eldritch Chain",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Lesser",
+        "minLevel": 6,
+        "prereq": "Warlock Level 6",
+        "benefit": "Eldritch Blast ilk hedefe vurduktan sonra 30 ft iÃ§indeki ikincil hedeflere sÄ±Ã§rar (Blast Shape).",
+        "description": "Eldritch Blast ilk hedefe vurduktan sonra 30 ft iÃ§indeki ikincil hedeflere sÄ±Ã§rar (Blast Shape).",
+        "source": "Complete Arcane p.134"
+    },
+    {
+        "name": "Brimstone Blast",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Lesser",
+        "minLevel": 6,
+        "prereq": "Warlock Level 6",
+        "benefit": "Eldritch Blast ateÅŸ hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r ve hedefi yakar (Eldritch Essence).",
+        "description": "Eldritch Blast ateÅŸ hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r ve hedefi yakar (Eldritch Essence).",
+        "source": "Complete Arcane p.133"
+    },
+    {
+        "name": "Hellrime Blast",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Lesser",
+        "minLevel": 6,
+        "prereq": "Warlock Level 6",
+        "benefit": "Eldritch Blast soÄŸuk hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r ve hedefe -4 DEX penaltÄ±sÄ± verir (Eldritch Essence).",
+        "description": "Eldritch Blast soÄŸuk hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r ve hedefe -4 DEX penaltÄ±sÄ± verir (Eldritch Essence).",
+        "source": "Complete Arcane p.134"
+    },
+    {
+        "name": "Flee the Scene",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Lesser",
+        "minLevel": 6,
+        "prereq": "Warlock Level 6",
+        "benefit": "KÄ±sa menzilli Dimension Door Ä±ÅŸÄ±nlanmasÄ± yapar ve geride 1 turluk illÃ¼zyon kuklasÄ± bÄ±rakÄ±r.",
+        "description": "KÄ±sa menzilli Dimension Door Ä±ÅŸÄ±nlanmasÄ± yapar ve geride 1 turluk illÃ¼zyon kuklasÄ± bÄ±rakÄ±r.",
+        "source": "Complete Arcane p.134"
+    },
+    {
+        "name": "Walk Unseen",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Lesser",
+        "minLevel": 6,
+        "prereq": "Warlock Level 6",
+        "benefit": "24 saat boyunca Invisibility (GÃ¶rÃ¼nmezlik) kazanÄ±r; saldÄ±rana kadar sÃ¼rer.",
+        "description": "24 saat boyunca Invisibility (GÃ¶rÃ¼nmezlik) kazanÄ±r; saldÄ±rana kadar sÃ¼rer.",
+        "source": "Complete Arcane p.135"
+    },
+    {
+        "name": "Voracious Dispelling",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Lesser",
+        "minLevel": 6,
+        "prereq": "Warlock Level 6",
+        "benefit": "Dispel Magic atar; bozduÄŸu her bÃ¼yÃ¼ seviyesi baÅŸÄ±na hedefe 1 hasar verir.",
+        "description": "Dispel Magic atar; bozduÄŸu her bÃ¼yÃ¼ seviyesi baÅŸÄ±na hedefe 1 hasar verir.",
+        "source": "Complete Arcane p.135"
+    },
+    {
+        "name": "Charm",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Lesser",
+        "minLevel": 6,
+        "prereq": "Warlock Level 6",
+        "benefit": "Charm Monster bÃ¼yÃ¼sÃ¼ gibi tek bir hedefi bÃ¼yÃ¼ler (Will Save DC CHA mod).",
+        "description": "Charm Monster bÃ¼yÃ¼sÃ¼ gibi tek bir hedefi bÃ¼yÃ¼ler (Will Save DC CHA mod).",
+        "source": "Complete Arcane p.133"
+    },
+    {
+        "name": "Curse of Despair",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Lesser",
+        "minLevel": 6,
+        "prereq": "Warlock Level 6",
+        "benefit": "Bestow Curse gibi dokunmayla lanetler veya menzilli saldÄ±rÄ±yla -3 saldÄ±rÄ± penaltÄ±sÄ± verir.",
+        "description": "Bestow Curse gibi dokunmayla lanetler veya menzilli saldÄ±rÄ±yla -3 saldÄ±rÄ± penaltÄ±sÄ± verir.",
+        "source": "Complete Arcane p.133"
+    },
+    {
+        "name": "Vitriolic Blast",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Greater",
+        "minLevel": 11,
+        "prereq": "Warlock Level 11",
+        "benefit": "Eldritch Blast asit hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r, SR'Ä± tamamen yok sayar ve devam hasarÄ± verir.",
+        "description": "Eldritch Blast asit hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r, SR'Ä± tamamen yok sayar ve devam hasarÄ± verir.",
+        "source": "Complete Arcane p.135"
+    },
+    {
+        "name": "Eldritch Cone",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Greater",
+        "minLevel": 11,
+        "prereq": "Warlock Level 11",
+        "benefit": "Eldritch Blast 30 ft'lik koni alan etkisine dÃ¶nÃ¼ÅŸÃ¼r (Reflex DC yarÄ±sÄ±).",
+        "description": "Eldritch Blast 30 ft'lik koni alan etkisine dÃ¶nÃ¼ÅŸÃ¼r (Reflex DC yarÄ±sÄ±).",
+        "source": "Complete Arcane p.134"
+    },
+    {
+        "name": "Chilling Tentacles",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Greater",
+        "minLevel": 11,
+        "prereq": "Warlock Level 11",
+        "benefit": "Evard's Black Tentacles gibi kollar Ã§Ä±karÄ±r + her tur alandakilere 2d6 soÄŸuk hasarÄ± verir.",
+        "description": "Evard's Black Tentacles gibi kollar Ã§Ä±karÄ±r + her tur alandakilere 2d6 soÄŸuk hasarÄ± verir.",
+        "source": "Complete Arcane p.133"
+    },
+    {
+        "name": "Devour Magic",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Greater",
+        "minLevel": 11,
+        "prereq": "Warlock Level 11",
+        "benefit": "Dokunmayla Greater Dispel Magic; bozduÄŸu bÃ¼yÃ¼ seviyesi baÅŸÄ±na 5 geÃ§ici can puanÄ± kazanÄ±r.",
+        "description": "Dokunmayla Greater Dispel Magic; bozduÄŸu bÃ¼yÃ¼ seviyesi baÅŸÄ±na 5 geÃ§ici can puanÄ± kazanÄ±r.",
+        "source": "Complete Arcane p.133"
+    },
+    {
+        "name": "Noxious Blast",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Greater",
+        "minLevel": 11,
+        "prereq": "Warlock Level 11",
+        "benefit": "Eldritch Blast vurduÄŸu hedefi 1 dakika boyunca mide bulantÄ±sÄ± (Nauseated) yapar (Fort Save).",
+        "description": "Eldritch Blast vurduÄŸu hedefi 1 dakika boyunca mide bulantÄ±sÄ± (Nauseated) yapar (Fort Save).",
+        "source": "Complete Arcane p.134"
+    },
+    {
+        "name": "Repelling Blast",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Greater",
+        "minLevel": 11,
+        "prereq": "Warlock Level 11",
+        "benefit": "Eldritch Blast vurduÄŸu hedefleri 1d6x5 ft geriye fÄ±rlatÄ±r (Reflex Save).",
+        "description": "Eldritch Blast vurduÄŸu hedefleri 1d6x5 ft geriye fÄ±rlatÄ±r (Reflex Save).",
+        "source": "Complete Arcane p.135"
+    },
+    {
+        "name": "Wall of Perilous Flame",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Greater",
+        "minLevel": 11,
+        "prereq": "Warlock Level 11",
+        "benefit": "Wall of Fire duvarÄ± yaratÄ±r; hasarÄ±n yarÄ±sÄ± bÃ¼yÃ¼sel ateÅŸ olduÄŸu iÃ§in direnÃ§leri aÅŸar.",
+        "description": "Wall of Fire duvarÄ± yaratÄ±r; hasarÄ±n yarÄ±sÄ± bÃ¼yÃ¼sel ateÅŸ olduÄŸu iÃ§in direnÃ§leri aÅŸar.",
+        "source": "Complete Arcane p.135"
+    },
+    {
+        "name": "Eldritch Doom",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Dark",
+        "minLevel": 16,
+        "prereq": "Warlock Level 16",
+        "benefit": "Eldritch Blast etrafÄ±nda 20 ft yarÄ±Ã§aplÄ± patlamaya dÃ¶nÃ¼ÅŸÃ¼r (Reflex Save yarÄ±sÄ±).",
+        "description": "Eldritch Blast etrafÄ±nda 20 ft yarÄ±Ã§aplÄ± patlamaya dÃ¶nÃ¼ÅŸÃ¼r (Reflex Save yarÄ±sÄ±).",
+        "source": "Complete Arcane p.134"
+    },
+    {
+        "name": "Utterdark Blast",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Dark",
+        "minLevel": 16,
+        "prereq": "Warlock Level 16",
+        "benefit": "Eldritch Blast negatif enerji hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r ve hedefe 2 negatif seviye verir.",
+        "description": "Eldritch Blast negatif enerji hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r ve hedefe 2 negatif seviye verir.",
+        "source": "Complete Arcane p.135"
+    },
+    {
+        "name": "Dark Foresight",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Dark",
+        "minLevel": 16,
+        "prereq": "Warlock Level 16",
+        "benefit": "24 saat boyunca Foresight bÃ¼yÃ¼sÃ¼: Asla ÅŸaÅŸÄ±rmaz, AC ve Reflex'e +2 insight bonusu.",
+        "description": "24 saat boyunca Foresight bÃ¼yÃ¼sÃ¼: Asla ÅŸaÅŸÄ±rmaz, AC ve Reflex'e +2 insight bonusu.",
+        "source": "Complete Arcane p.133"
+    },
+    {
+        "name": "Dark Discorporation",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Dark",
+        "minLevel": 16,
+        "prereq": "Warlock Level 16",
+        "benefit": "GÃ¶lge yarasa sÃ¼rÃ¼sÃ¼ne dÃ¶nÃ¼ÅŸÃ¼r; uÃ§ma hÄ±zÄ±, fiziksel baÄŸÄ±ÅŸÄ±klÄ±k, %50 alan hasarÄ± azaltma.",
+        "description": "GÃ¶lge yarasa sÃ¼rÃ¼sÃ¼ne dÃ¶nÃ¼ÅŸÃ¼r; uÃ§ma hÄ±zÄ±, fiziksel baÄŸÄ±ÅŸÄ±klÄ±k, %50 alan hasarÄ± azaltma.",
+        "source": "Complete Arcane p.133"
+    },
+    {
+        "name": "Retributive Phantasm",
+        "type": "Special Ability",
+        "slot": "None",
+        "category": "Warlock Invocation",
+        "tier": "Dark",
+        "minLevel": 16,
+        "prereq": "Warlock Level 16",
+        "benefit": "SaldÄ±rgana anÄ±nda Phantasmal Killer illÃ¼zyonel Ã¶lÃ¼mcÃ¼l korkusu fÄ±rlatÄ±r.",
+        "description": "SaldÄ±rgana anÄ±nda Phantasmal Killer illÃ¼zyonel Ã¶lÃ¼mcÃ¼l korkusu fÄ±rlatÄ±r.",
+        "source": "Complete Mage p.124"
+    },
+    {
+        "name": "Martial Study",
+        "type": "Feat",
+        "slot": "None",
+        "category": "Martial",
+        "prereq": "Special (see text)",
+        "benefit": "SeÃ§ilen bir dÃ¶vÃ¼ÅŸ disiplininden (Desert Wind, Devoted Spirit, Diamond Mind, Iron Heart, Setting Sun, Shadow Hand, Stone Dragon, Tiger Claw, White Raven) seviyenizin yettiÄŸi 1 adet manevra (Strike, Boost veya Counter) Ã¶ÄŸrenirsiniz. Her Ã§atÄ±ÅŸmada (Encounter) 1 kez kullanÄ±labilir. En fazla 3 kez alÄ±nabilir; ilgili disiplinin ana becerisi sÄ±nÄ±f beceriniz olur.",
+        "description": "Learn a martial maneuver from any discipline for which you meet the prerequisites. You can use this maneuver once per encounter. You can take this feat up to three times; each time adds the discipline skill to your class skill list.",
+        "source": "Tome of Battle p.31",
+        "isFighterBonusFeat": true
+    },
+    {
+        "name": "Martial Stance",
+        "type": "Feat",
+        "slot": "None",
+        "category": "Martial",
+        "prereq": "1 Martial maneuver",
+        "benefit": "Bir disiplinden bildiÄŸiniz en az 1 manevra varsa, o disiplinden seviyenizin yettiÄŸi bir DuruÅŸ (Stance) Ã¶ÄŸrenirsiniz. SavaÅŸÃ§Ä± bonus feati olarak seÃ§ilebilir.",
+        "description": "Learn a martial stance from any discipline in which you already know at least one maneuver and meet the prerequisites. Can be selected as a fighter bonus feat.",
+        "source": "Tome of Battle p.31",
+        "isFighterBonusFeat": true
+    },
+    {
+        "name": "Extra Granted Maneuver",
+        "type": "Feat",
+        "slot": "None",
+        "category": "Martial",
+        "prereq": "Crusader maneuver progression",
+        "benefit": "Her Ã§atÄ±ÅŸmanÄ±n baÅŸÄ±nda ve manevra desteniz yenilenip Ã§ekildiÄŸinde fazladan +1 adet aÃ§Ä±k manevra (Granted Maneuver) kazanÄ±rsÄ±nÄ±z. Crusader manevra dÃ¶ngÃ¼sÃ¼nÃ¼ hÄ±zlandÄ±rÄ±r.",
+        "description": "You begin each combat encounter with 1 additional granted maneuver. In addition, when you refresh your granted maneuvers, you are granted 1 extra maneuver.",
+        "source": "Tome of Battle p.30",
+        "isFighterBonusFeat": false
+    },
+    {
+        "name": "Snap Kick",
+        "type": "Feat",
+        "slot": "None",
+        "category": "Martial",
+        "prereq": "BAB +6, Improved Unarmed Strike",
+        "benefit": "Standart yakÄ±n dÃ¶vÃ¼ÅŸ saldÄ±rÄ±sÄ±, tam saldÄ±rÄ± (Full Attack) veya standart eylemli manevra (Strike) yaparken, o turdaki tÃ¼m saldÄ±rÄ± zarlarÄ±nÄ±za -2 ceza alÄ±p anÄ±nda ek bir silahsÄ±z tekme saldÄ±rÄ±sÄ± (Unarmed Strike) yaparsÄ±nÄ±z.",
+        "description": "When you make a melee attack with one or more weapons, full attack, or martial strike, you can make an additional unarmed strike with a -2 penalty on all attack rolls that round.",
+        "source": "Tome of Battle p.32",
+        "isFighterBonusFeat": true
+    },
+    {
+        "name": "Stone Power",
+        "type": "Feat",
+        "slot": "None",
+        "category": "Martial",
+        "prereq": "Str 13, 1 Stone Dragon maneuver",
+        "benefit": "SaldÄ±rÄ± zarlarÄ±nÄ±zdan BAB deÄŸerine kadar (maksimum -5) ceza alÄ±p, aldÄ±ÄŸÄ±nÄ±z cezanÄ±n 2 katÄ± kadar (tur baÅŸÄ±na maksimum 10) GeÃ§ici Can PuanÄ± (Temporary HP) kazanÄ±rsÄ±nÄ±z. Bir sonraki turunuza kadar sÃ¼rer.",
+        "description": "Subtract a number (up to 5 or BAB) from melee attack rolls to gain twice that number in temporary hit points until the start of your next turn.",
+        "source": "Tome of Battle p.32",
+        "isFighterBonusFeat": true
+    },
+    {
+        "name": "Song of the White Raven",
+        "type": "Feat",
+        "slot": "None",
+        "category": "Martial",
+        "prereq": "Bardic music, 1 White Raven maneuver",
+        "benefit": "Inspire Courage ÅŸarkÄ±sÄ±nÄ± Swift Action olarak anÄ±nda baÅŸlatabilirsiniz. Inspire Courage bonusunuzu hesaplarken Bard seviyelerinizle Crusader ve Warblade seviyeleriniz toplanÄ±r.",
+        "description": "You can activate inspire courage as a swift action. Your bard, crusader, and warblade levels stack to determine the bonus granted by inspire courage.",
+        "source": "Tome of Battle p.32",
+        "isFighterBonusFeat": false
+    },
+    {
+        "name": "Sudden Recovery",
+        "type": "Feat",
+        "slot": "None",
+        "category": "Martial",
+        "prereq": "1 Martial maneuver",
+        "benefit": "Ã‡atÄ±ÅŸma baÅŸÄ±na 1 kez, az Ã¶nce harcadÄ±ÄŸÄ±nÄ±z bir manevrayÄ± Swift Action harcayarak anÄ±nda yeniden kuÅŸanÄ±lmÄ±ÅŸ ve kullanÄ±labilir hale getirirsiniz.",
+        "description": "Once per encounter as a swift action, you can instantly recover an expended maneuver and make it readied once again.",
+        "source": "Tome of Battle p.33",
+        "isFighterBonusFeat": false
+    },
+    {
+        "name": "Vital Recovery",
+        "type": "Feat",
+        "slot": "None",
+        "category": "Martial",
+        "prereq": "2 Martial maneuvers",
+        "benefit": "Bir Ã§atÄ±ÅŸma sÄ±rasÄ±nda harcadÄ±ÄŸÄ±nÄ±z manevralarÄ± yenilediÄŸinizde dÃ¶vÃ¼ÅŸ baÅŸÄ±na bir kez 3 + Karakter Seviyesi kadar can puanÄ± iyileÅŸirsiniz.",
+        "description": "When you recover expended maneuvers during an encounter, you heal hit points equal to 3 + your character level (once per encounter).",
+        "source": "Tome of Battle p.33",
+        "isFighterBonusFeat": false
+    },
+    {
+        "name": "Evasive Reflexes",
+        "type": "Feat",
+        "slot": "None",
+        "category": "Martial",
+        "prereq": "Dex 13",
+        "benefit": "Bir rakip fÄ±rsat saldÄ±rÄ±sÄ± (AoO) tetiklediÄŸinde, ona saldÄ±rmak yerine anÄ±nda 5-foot step kayabilirsiniz (yeni AoO tetiklemez).",
+        "description": "When an opponent provokes an attack of opportunity from you, you can take a 5-foot step instead of making the attack.",
+        "source": "Tome of Battle p.30",
+        "isFighterBonusFeat": true
+    },
+    {
+        "name": "Extra Invocation",
+        "type": "Feat",
+        "slot": "None",
+        "category": "General",
+        "prereq": "Ability to use lesser invocations",
+        "benefit": "BildiÄŸiniz en yÃ¼ksek dereceden en az bir derece dÃ¼ÅŸÃ¼k ek 1 adet YakarÄ±ÅŸ (Invocation) Ã¶ÄŸrenirsiniz. Birden fazla kez alÄ±nabilir.",
+        "description": "You learn one additional invocation of any grade up to one grade lower than the highest grade you can use. You can take this feat multiple times.",
+        "source": "Complete Arcane p.79",
+        "isFighterBonusFeat": false
+    },
+    {
+        "name": "Empower Spell-Like Ability",
+        "type": "Feat",
+        "slot": "None",
+        "category": "General",
+        "prereq": "Spell-like ability at CL 6th or higher",
+        "benefit": "GÃ¼nde 3 kez, seÃ§ilen bir bÃ¼yÃ¼ benzeri yeteneÄŸin (Ã¶rneÄŸin Eldritch Blast) tÃ¼m deÄŸiÅŸken sayÄ±sal etkilerini (hasar zarlarÄ± vb.) x1.5 katÄ±na Ã§Ä±karÄ±rsÄ±nÄ±z.",
+        "description": "You can use a selected spell-like ability three times per day as an empowered spell-like ability (variable numeric effects increased by one-half).",
+        "source": "Monster Manual p.303 / Complete Arcane p.79",
+        "isFighterBonusFeat": false
+    },
+    {
+        "name": "Quicken Spell-Like Ability",
+        "type": "Feat",
+        "slot": "None",
+        "category": "General",
+        "prereq": "Spell-like ability at CL 10th or higher",
+        "benefit": "GÃ¼nde 3 kez, seÃ§ilen bir bÃ¼yÃ¼ benzeri yeteneÄŸi (Ã¶rneÄŸin Eldritch Blast) Swift Action olarak anÄ±nda patlatabilirsiniz.",
+        "description": "You can use a selected spell-like ability three times per day as a quickened spell-like ability (swift action).",
+        "source": "Monster Manual p.304 / Complete Arcane p.82",
+        "isFighterBonusFeat": false
+    },
+    {
+        "name": "Maximize Spell-Like Ability",
+        "type": "Feat",
+        "slot": "None",
+        "category": "General",
+        "prereq": "Spell-like ability at CL 6th or higher",
+        "benefit": "GÃ¼nde 3 kez, seÃ§ilen bir bÃ¼yÃ¼ benzeri yeteneÄŸin (Ã¶rneÄŸin Eldritch Blast) tÃ¼m deÄŸiÅŸken sayÄ±sal etkilerini zar atmadan maksimum deÄŸerinde uygularsÄ±nÄ±z.",
+        "description": "You can use a selected spell-like ability three times per day as a maximized spell-like ability (variable numeric effects maximized).",
+        "source": "Complete Arcane p.81",
+        "isFighterBonusFeat": false
+    },
+    {
+        "name": "Ability Focus (Eldritch Blast)",
+        "type": "Feat",
+        "slot": "None",
+        "category": "General",
+        "prereq": "Special attack (Eldritch Blast)",
+        "benefit": "Eldritch Blast ve ona uygulanan tÃ¼m Eldritch Essence / Blast Shape yakarÄ±ÅŸlarÄ±nÄ±n DC kurtarma zarlarÄ±na kalÄ±cÄ± +2 bonus kazandÄ±rÄ±r.",
+        "description": "Add +2 to the Difficulty Class for all saving throws against the selected special attack (Eldritch Blast).",
+        "source": "Monster Manual p.303",
+        "isFighterBonusFeat": false
+    },
+    {
+        "name": "Mortal Bane",
+        "type": "Feat",
+        "slot": "None",
+        "category": "General",
+        "prereq": "Spell-like ability",
+        "benefit": "GÃ¼nde 5 kez, seÃ§ilen bir bÃ¼yÃ¼ benzeri yeteneÄŸin yaÅŸayan hedeflere vurduÄŸunda +2d6 ekstra hasar vermesini saÄŸlarsÄ±nÄ±z (Undead veya Construct'lara karÅŸÄ± yarÄ± hasar).",
+        "description": "A selected spell-like ability deals +2d6 points of damage against living creatures five times per day (damage halved against undead/constructs).",
+        "source": "Book of Vile Darkness p.48 / Complete Arcane",
+        "isFighterBonusFeat": false
+    },
+    {
+        "prereq": "-",
+        "source": "SRD / PHB p.97",
+        "role": "Defense / Saves",
+        "scope": "All",
+        "benefit": "+2 bonus on all Will saving throws.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_passive",
+        "slot": "None",
+        "ruleFlags": {
+            "saveBonus": {
+                "will": 2
+            }
+        },
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "general",
+            "iron-will",
+            "save"
+        ],
+        "bonusType": "Untyped",
+        "name": "Iron Will"
+    },
+    {
+        "prereq": "-",
+        "source": "SRD / PHB p.94",
+        "role": "Defense / Saves",
+        "scope": "All",
+        "benefit": "+2 bonus on all Fortitude saving throws.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_passive",
+        "slot": "None",
+        "ruleFlags": {
+            "saveBonus": {
+                "fort": 2
+            }
+        },
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "general",
+            "great-fortitude",
+            "save"
+        ],
+        "bonusType": "Untyped",
+        "name": "Great Fortitude"
+    },
+    {
+        "prereq": "-",
+        "source": "SRD / PHB p.97",
+        "role": "Defense / Saves",
+        "scope": "All",
+        "benefit": "+2 bonus on all Reflex saving throws.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_passive",
+        "slot": "None",
+        "ruleFlags": {
+            "saveBonus": {
+                "ref": 2
+            }
+        },
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "general",
+            "lightning-reflexes",
+            "save"
+        ],
+        "bonusType": "Untyped",
+        "name": "Lightning Reflexes"
+    },
+    {
+        "prereq": "-",
+        "source": "SRD / PHB p.101",
+        "role": "Defense / HP",
+        "scope": "All",
+        "benefit": "+3 hit points. You may gain this feat multiple times; its effects stack.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_passive",
+        "slot": "None",
+        "ruleFlags": {
+            "hpBonus": 3
+        },
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "general",
+            "toughness",
+            "hp"
+        ],
+        "bonusType": "Untyped",
+        "name": "Toughness"
+    },
+    {
+        "prereq": "-",
+        "source": "SRD / PHB p.93",
+        "role": "Defense / Survival",
+        "scope": "All",
+        "benefit": "+4 bonus on checks or saves vs nonlethal damage from exhaustion, starvation/thirst, holding breath, cold/hot environments. May sleep in light or medium armor without becoming fatigued.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_passive",
+        "slot": "None",
+        "ruleFlags": {},
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "general",
+            "endurance"
+        ],
+        "bonusType": "Untyped",
+        "name": "Endurance"
+    },
+    {
+        "prereq": "Endurance",
+        "source": "SRD / PHB p.93",
+        "role": "Defense / Survival",
+        "scope": "All",
+        "benefit": "Automatically stabilize when between -1 and -9 HP. Remain conscious and can take a single standard or move action each round (standard actions deal 1 damage to self).",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_passive",
+        "slot": "None",
+        "ruleFlags": {},
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "general",
+            "diehard"
+        ],
+        "bonusType": "Untyped",
+        "name": "Diehard"
+    },
+    {
+        "prereq": "-",
+        "source": "SRD / PHB p.99",
+        "role": "Utility / Mobility",
+        "scope": "All",
+        "benefit": "Move 5 times normal speed when running (4 times in heavy armor). Retain Dex bonus to AC while running. +4 bonus on Jump checks after a running start.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_movement",
+        "slot": "None",
+        "ruleFlags": {},
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "general",
+            "run",
+            "mobility"
+        ],
+        "bonusType": "Untyped",
+        "name": "Run"
+    },
+    {
+        "prereq": "Ability to cast spells",
+        "source": "SRD / PHB p.92",
+        "role": "Caster / Concentration",
+        "scope": "Caster Only",
+        "benefit": "+4 bonus on Concentration checks made to cast a spell or use a spell-like ability defensively or while grappled or pinned.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_caster",
+        "slot": "None",
+        "ruleFlags": {},
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "general",
+            "combat-casting",
+            "caster"
+        ],
+        "bonusType": "Untyped",
+        "name": "Combat Casting"
+    },
+    {
+        "prereq": "Ability to cast spells",
+        "source": "SRD / PHB p.100",
+        "role": "Caster / DC",
+        "scope": "Caster Only",
+        "benefit": "+1 bonus to the Difficulty Class for all saving throws against spells from the school of magic you select.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_caster",
+        "slot": "None",
+        "ruleFlags": {},
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "general",
+            "spell-focus",
+            "caster"
+        ],
+        "bonusType": "Untyped",
+        "name": "Spell Focus"
+    },
+    {
+        "prereq": "Spell Focus, Ability to cast spells",
+        "source": "SRD / PHB p.95",
+        "role": "Caster / DC",
+        "scope": "Caster Only",
+        "benefit": "+1 bonus to the Difficulty Class for all saving throws against spells from the chosen school of magic (stacks with Spell Focus for a total of +2).",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_caster",
+        "slot": "None",
+        "ruleFlags": {},
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "general",
+            "greater-spell-focus",
+            "caster"
+        ],
+        "bonusType": "Untyped",
+        "name": "Greater Spell Focus"
+    },
+    {
+        "prereq": "Ability to cast spells",
+        "source": "SRD / PHB p.100",
+        "role": "Caster / Penetration",
+        "scope": "Caster Only",
+        "benefit": "+2 bonus on caster level checks (1d20 + caster level) made to overcome a creature's spell resistance.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_caster",
+        "slot": "None",
+        "ruleFlags": {},
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "general",
+            "spell-penetration",
+            "sr"
+        ],
+        "bonusType": "Untyped",
+        "name": "Spell Penetration"
+    },
+    {
+        "prereq": "Spell Penetration, Ability to cast spells",
+        "source": "SRD / PHB p.95",
+        "role": "Caster / Penetration",
+        "scope": "Caster Only",
+        "benefit": "+2 bonus on caster level checks made to overcome a creature's spell resistance (stacks with Spell Penetration for a total of +4).",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_caster",
+        "slot": "None",
+        "ruleFlags": {},
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "general",
+            "greater-spell-penetration",
+            "sr"
+        ],
+        "bonusType": "Untyped",
+        "name": "Greater Spell Penetration"
+    },
+    {
+        "prereq": "Wizard level 1st",
+        "source": "SRD / PHB p.100",
+        "role": "Caster / Wizard",
+        "scope": "Wizard Only",
+        "benefit": "Each time you take this feat, choose a number of spells equal to your Intelligence modifier. You can prepare these spells without referring to a spellbook.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "Special",
+        "attackType": "feat_special",
+        "slot": "None",
+        "ruleFlags": {},
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "special",
+            "spell-mastery",
+            "wizard"
+        ],
+        "bonusType": "Untyped",
+        "name": "Spell Mastery"
+    },
+    {
+        "prereq": "Wis 13, wild shape ability",
+        "source": "SRD / PHB p.98",
+        "role": "Caster / Druid",
+        "scope": "Druid Only",
+        "benefit": "You can complete the verbal and somatic components of spells while using wild shape. You substitute noises and gestures for standard verbal and somatic components.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_caster",
+        "slot": "None",
+        "ruleFlags": {},
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "general",
+            "natural-spell",
+            "druid"
+        ],
+        "bonusType": "Untyped",
+        "name": "Natural Spell"
+    },
+    {
+        "prereq": "Ability to turn or rebuke creatures",
+        "source": "SRD / PHB p.94",
+        "role": "Divine / Turning",
+        "scope": "Divine Only",
+        "benefit": "Each time you take this feat, you can use your turn or rebuke undead ability 4 additional times per day.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_divine",
+        "slot": "None",
+        "ruleFlags": {},
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "general",
+            "extra-turning",
+            "cleric",
+            "paladin"
+        ],
+        "bonusType": "Untyped",
+        "name": "Extra Turning"
+    },
+    {
+        "prereq": "Spell Focus (conjuration), Ability to cast spells",
+        "source": "SRD / PHB p.89",
+        "role": "Caster / Summoning",
+        "scope": "Caster Only",
+        "benefit": "Each creature you conjure with any summon spell gains a +4 enhancement bonus to Strength and Constitution for the duration of the spell.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_caster",
+        "slot": "None",
+        "ruleFlags": {},
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "general",
+            "augment-summoning"
+        ],
+        "bonusType": "Untyped",
+        "name": "Augment Summoning"
+    },
+    {
+        "prereq": "Ability to cast spells",
+        "source": "SRD / PHB p.93",
+        "role": "Metamagic",
+        "scope": "Caster Only",
+        "benefit": "All variable, numeric effects of an empowered spell are increased by one-half (+50%). Saving throws and opposed rolls are not affected. Uses a slot 2 levels higher.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "Metamagic",
+        "attackType": "feat_metamagic",
+        "slot": "None",
+        "ruleFlags": {
+            "metamagicLevelMod": 2
+        },
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "metamagic",
+            "empower-spell"
+        ],
+        "bonusType": "Untyped",
+        "name": "Empower Spell"
+    },
+    {
+        "prereq": "Ability to cast spells",
+        "source": "SRD / PHB p.94",
+        "role": "Metamagic",
+        "scope": "Caster Only",
+        "benefit": "You can alter a spell with a range of close, medium, or long to increase its range by 100%. Uses a slot 1 level higher.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "Metamagic",
+        "attackType": "feat_metamagic",
+        "slot": "None",
+        "ruleFlags": {
+            "metamagicLevelMod": 1
+        },
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "metamagic",
+            "enlarge-spell"
+        ],
+        "bonusType": "Untyped",
+        "name": "Enlarge Spell"
+    },
+    {
+        "prereq": "Ability to cast spells",
+        "source": "SRD / PHB p.94",
+        "role": "Metamagic",
+        "scope": "Caster Only",
+        "benefit": "An extended spell lasts twice as long as normal. Spells of instantaneous, concentration, or permanent duration are not affected. Uses a slot 1 level higher.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "Metamagic",
+        "attackType": "feat_metamagic",
+        "slot": "None",
+        "ruleFlags": {
+            "metamagicLevelMod": 1
+        },
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "metamagic",
+            "extend-spell"
+        ],
+        "bonusType": "Untyped",
+        "name": "Extend Spell"
+    },
+    {
+        "prereq": "Ability to cast spells",
+        "source": "SRD / PHB p.95",
+        "role": "Metamagic",
+        "scope": "Caster Only",
+        "benefit": "A heightened spell has a higher spell level than normal (up to 9th level). Effective level equals the slot used, increasing save DC accordingly.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "Metamagic",
+        "attackType": "feat_metamagic",
+        "slot": "None",
+        "ruleFlags": {},
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "metamagic",
+            "heighten-spell"
+        ],
+        "bonusType": "Untyped",
+        "name": "Heighten Spell"
+    },
+    {
+        "prereq": "Ability to cast spells",
+        "source": "SRD / PHB p.97",
+        "role": "Metamagic",
+        "scope": "Caster Only",
+        "benefit": "All variable, numeric effects of a maximized spell are maximized. Saving throws and opposed rolls are unaffected. Uses a slot 3 levels higher.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "Metamagic",
+        "attackType": "feat_metamagic",
+        "slot": "None",
+        "ruleFlags": {
+            "metamagicLevelMod": 3
+        },
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "metamagic",
+            "maximize-spell"
+        ],
+        "bonusType": "Untyped",
+        "name": "Maximize Spell"
+    },
+    {
+        "prereq": "Ability to cast spells",
+        "source": "SRD / PHB p.98",
+        "role": "Metamagic",
+        "scope": "Caster Only",
+        "benefit": "Casting a quickened spell is a swift action. You can perform another action, including casting another spell, in the same round. Uses a slot 4 levels higher.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Swift",
+        "category": "Metamagic",
+        "attackType": "feat_metamagic",
+        "slot": "None",
+        "ruleFlags": {
+            "metamagicLevelMod": 4
+        },
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "metamagic",
+            "quicken-spell"
+        ],
+        "bonusType": "Untyped",
+        "name": "Quicken Spell"
+    },
+    {
+        "prereq": "Ability to cast spells",
+        "source": "SRD / PHB p.100",
+        "role": "Metamagic",
+        "scope": "Caster Only",
+        "benefit": "A silent spell can be cast with no verbal components. Spells without verbal components are not affected. Uses a slot 1 level higher.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "Metamagic",
+        "attackType": "feat_metamagic",
+        "slot": "None",
+        "ruleFlags": {
+            "metamagicLevelMod": 1
+        },
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "metamagic",
+            "silent-spell"
+        ],
+        "bonusType": "Untyped",
+        "name": "Silent Spell"
+    },
+    {
+        "prereq": "Ability to cast spells",
+        "source": "SRD / PHB p.101",
+        "role": "Metamagic",
+        "scope": "Caster Only",
+        "benefit": "A stilled spell can be cast with no somatic components. Spells without somatic components are not affected. Uses a slot 1 level higher.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "Metamagic",
+        "attackType": "feat_metamagic",
+        "slot": "None",
+        "ruleFlags": {
+            "metamagicLevelMod": 1
+        },
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "metamagic",
+            "still-spell"
+        ],
+        "bonusType": "Untyped",
+        "name": "Still Spell"
+    },
+    {
+        "prereq": "Ability to cast spells",
+        "source": "SRD / PHB p.103",
+        "role": "Metamagic",
+        "scope": "Caster Only",
+        "benefit": "You can alter a burst, emanation, line, or spread spell to increase its area by 100%. Spells without area are not affected. Uses a slot 3 levels higher.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "Metamagic",
+        "attackType": "feat_metamagic",
+        "slot": "None",
+        "ruleFlags": {
+            "metamagicLevelMod": 3
+        },
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "metamagic",
+            "widen-spell"
+        ],
+        "bonusType": "Untyped",
+        "name": "Widen Spell"
+    },
+    {
+        "prereq": "Caster level 3rd",
+        "source": "SRD / PHB p.91",
+        "role": "Item Creation",
+        "scope": "Caster Only",
+        "benefit": "You can create a potion of any 3rd-level or lower spell that you know and that targets one or more creatures. Brewing takes 1 day.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "Item Creation",
+        "attackType": "feat_crafting",
+        "slot": "None",
+        "ruleFlags": {},
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "item-creation",
+            "brew-potion"
+        ],
+        "bonusType": "Untyped",
+        "name": "Brew Potion"
+    },
+    {
+        "prereq": "Caster level 5th",
+        "source": "SRD / PHB p.92",
+        "role": "Item Creation",
+        "scope": "Caster Only",
+        "benefit": "You can create any magic weapon, armor, or shield whose prerequisites you meet. Enhancing takes 1 day per 1,000 gp in market price.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "Item Creation",
+        "attackType": "feat_crafting",
+        "slot": "None",
+        "ruleFlags": {},
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "item-creation",
+            "craft-arms-and-armor"
+        ],
+        "bonusType": "Untyped",
+        "name": "Craft Magic Arms and Armor"
+    },
+    {
+        "prereq": "Caster level 9th",
+        "source": "SRD / PHB p.92",
+        "role": "Item Creation",
+        "scope": "Caster Only",
+        "benefit": "You can create any magic rod whose prerequisites you meet. Crafting takes 1 day per 1,000 gp in market price.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "Item Creation",
+        "attackType": "feat_crafting",
+        "slot": "None",
+        "ruleFlags": {},
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "item-creation",
+            "craft-rod"
+        ],
+        "bonusType": "Untyped",
+        "name": "Craft Rod"
+    },
+    {
+        "prereq": "Caster level 12th",
+        "source": "SRD / PHB p.92",
+        "role": "Item Creation",
+        "scope": "Caster Only",
+        "benefit": "You can create any magic staff whose prerequisites you meet. Crafting takes 1 day per 1,000 gp in market price.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "Item Creation",
+        "attackType": "feat_crafting",
+        "slot": "None",
+        "ruleFlags": {},
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "item-creation",
+            "craft-staff"
+        ],
+        "bonusType": "Untyped",
+        "name": "Craft Staff"
+    },
+    {
+        "prereq": "Caster level 5th",
+        "source": "SRD / PHB p.92",
+        "role": "Item Creation",
+        "scope": "Caster Only",
+        "benefit": "You can create a wand of any 4th-level or lower spell that you know. Crafting takes 1 day per 1,000 gp in market price.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "Item Creation",
+        "attackType": "feat_crafting",
+        "slot": "None",
+        "ruleFlags": {},
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "item-creation",
+            "craft-wand"
+        ],
+        "bonusType": "Untyped",
+        "name": "Craft Wand"
+    },
+    {
+        "prereq": "Caster level 3rd",
+        "source": "SRD / PHB p.92",
+        "role": "Item Creation",
+        "scope": "Caster Only",
+        "benefit": "You can create any wondrous item whose prerequisites you meet. Crafting takes 1 day per 1,000 gp in market price.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "Item Creation",
+        "attackType": "feat_crafting",
+        "slot": "None",
+        "ruleFlags": {},
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "item-creation",
+            "craft-wondrous-item"
+        ],
+        "bonusType": "Untyped",
+        "name": "Craft Wondrous Item"
+    },
+    {
+        "prereq": "Caster level 12th",
+        "source": "SRD / PHB p.94",
+        "role": "Item Creation",
+        "scope": "Caster Only",
+        "benefit": "You can create any magic ring whose prerequisites you meet. Crafting takes 1 day per 1,000 gp in market price.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "Item Creation",
+        "attackType": "feat_crafting",
+        "slot": "None",
+        "ruleFlags": {},
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "item-creation",
+            "forge-ring"
+        ],
+        "bonusType": "Untyped",
+        "name": "Forge Ring"
+    },
+    {
+        "prereq": "Caster level 1st",
+        "source": "SRD / PHB p.99",
+        "role": "Item Creation",
+        "scope": "Caster Only",
+        "benefit": "You can create a scroll of any spell that you know. Scribing takes 1 day per 1,000 gp in market price.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "Item Creation",
+        "attackType": "feat_crafting",
+        "slot": "None",
+        "ruleFlags": {},
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "item-creation",
+            "scribe-scroll"
+        ],
+        "bonusType": "Untyped",
+        "name": "Scribe Scroll"
+    },
+    {
+        "prereq": "-",
+        "source": "SRD / PHB p.89",
+        "role": "Skill",
+        "scope": "All",
+        "benefit": "+2 bonus on all Jump checks and Tumble checks.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_skill",
+        "slot": "None",
+        "ruleFlags": {
+            "skillBonus": {
+                "Jump": 2,
+                "Tumble": 2
+            }
+        },
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "skill",
+            "acrobatic"
+        ],
+        "bonusType": "Untyped",
+        "name": "Acrobatic"
+    },
+    {
+        "prereq": "-",
+        "source": "SRD / PHB p.89",
+        "role": "Skill",
+        "scope": "All",
+        "benefit": "+2 bonus on all Balance checks and Escape Artist checks.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_skill",
+        "slot": "None",
+        "ruleFlags": {
+            "skillBonus": {
+                "Escape Artist": 2,
+                "Balance": 2
+            }
+        },
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "skill",
+            "agile"
+        ],
+        "bonusType": "Untyped",
+        "name": "Agile"
+    },
+    {
+        "prereq": "-",
+        "source": "SRD / PHB p.89",
+        "role": "Skill",
+        "scope": "All",
+        "benefit": "+2 bonus on all Listen checks and Spot checks.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_skill",
+        "slot": "None",
+        "ruleFlags": {
+            "skillBonus": {
+                "Spot": 2,
+                "Listen": 2
+            }
+        },
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "skill",
+            "alertness",
+            "perception"
+        ],
+        "bonusType": "Untyped",
+        "name": "Alertness"
+    },
+    {
+        "prereq": "-",
+        "source": "SRD / PHB p.89",
+        "role": "Skill",
+        "scope": "All",
+        "benefit": "+2 bonus on all Climb checks and Swim checks.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_skill",
+        "slot": "None",
+        "ruleFlags": {
+            "skillBonus": {
+                "Swim": 2,
+                "Climb": 2
+            }
+        },
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "skill",
+            "athletic"
+        ],
+        "bonusType": "Untyped",
+        "name": "Athletic"
+    },
+    {
+        "prereq": "-",
+        "source": "SRD / PHB p.93",
+        "role": "Skill",
+        "scope": "All",
+        "benefit": "+2 bonus on all Disguise checks and Forgery checks.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_skill",
+        "slot": "None",
+        "ruleFlags": {
+            "skillBonus": {
+                "Forgery": 2,
+                "Disguise": 2
+            }
+        },
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "skill",
+            "deceitful"
+        ],
+        "bonusType": "Untyped",
+        "name": "Deceitful"
+    },
+    {
+        "prereq": "-",
+        "source": "SRD / PHB p.93",
+        "role": "Skill",
+        "scope": "All",
+        "benefit": "+2 bonus on all Sleight of Hand checks and Use Rope checks.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_skill",
+        "slot": "None",
+        "ruleFlags": {
+            "skillBonus": {
+                "Sleight of Hand": 2,
+                "Use Rope": 2
+            }
+        },
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "skill",
+            "deft-hands"
+        ],
+        "bonusType": "Untyped",
+        "name": "Deft Hands"
+    },
+    {
+        "prereq": "-",
+        "source": "SRD / PHB p.93",
+        "role": "Skill",
+        "scope": "All",
+        "benefit": "+2 bonus on all Appraise checks and Decipher Script checks.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_skill",
+        "slot": "None",
+        "ruleFlags": {
+            "skillBonus": {
+                "Decipher Script": 2,
+                "Appraise": 2
+            }
+        },
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "skill",
+            "diligent"
+        ],
+        "bonusType": "Untyped",
+        "name": "Diligent"
+    },
+    {
+        "prereq": "-",
+        "source": "SRD / PHB p.97",
+        "role": "Skill",
+        "scope": "All",
+        "benefit": "+2 bonus on all Gather Information checks and Search checks.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_skill",
+        "slot": "None",
+        "ruleFlags": {
+            "skillBonus": {
+                "Search": 2,
+                "Gather Information": 2
+            }
+        },
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "skill",
+            "investigator"
+        ],
+        "bonusType": "Untyped",
+        "name": "Investigator"
+    },
+    {
+        "prereq": "-",
+        "source": "SRD / PHB p.97",
+        "role": "Skill",
+        "scope": "All",
+        "benefit": "+2 bonus on all Spellcraft checks and Use Magic Device checks.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_skill",
+        "slot": "None",
+        "ruleFlags": {
+            "skillBonus": {
+                "Use Magic Device": 2,
+                "Spellcraft": 2
+            }
+        },
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "skill",
+            "magical-aptitude"
+        ],
+        "bonusType": "Untyped",
+        "name": "Magical Aptitude"
+    },
+    {
+        "prereq": "-",
+        "source": "SRD / PHB p.98",
+        "role": "Skill",
+        "scope": "All",
+        "benefit": "+2 bonus on all Diplomacy checks and Sense Motive checks.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_skill",
+        "slot": "None",
+        "ruleFlags": {
+            "skillBonus": {
+                "Diplomacy": 2,
+                "Sense Motive": 2
+            }
+        },
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "skill",
+            "negotiator"
+        ],
+        "bonusType": "Untyped",
+        "name": "Negotiator"
+    },
+    {
+        "prereq": "-",
+        "source": "SRD / PHB p.98",
+        "role": "Skill",
+        "scope": "All",
+        "benefit": "+2 bonus on all Disable Device checks and Open Lock checks.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_skill",
+        "slot": "None",
+        "ruleFlags": {
+            "skillBonus": {
+                "Disable Device": 2,
+                "Open Lock": 2
+            }
+        },
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "skill",
+            "nimble-fingers"
+        ],
+        "bonusType": "Untyped",
+        "name": "Nimble Fingers"
+    },
+    {
+        "prereq": "-",
+        "source": "SRD / PHB p.98",
+        "role": "Skill",
+        "scope": "All",
+        "benefit": "+2 bonus on all Bluff checks and Intimidate checks.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_skill",
+        "slot": "None",
+        "ruleFlags": {
+            "skillBonus": {
+                "Bluff": 2,
+                "Intimidate": 2
+            }
+        },
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "skill",
+            "persuasive"
+        ],
+        "bonusType": "Untyped",
+        "name": "Persuasive"
+    },
+    {
+        "prereq": "-",
+        "source": "SRD / PHB p.100",
+        "role": "Skill",
+        "scope": "All",
+        "benefit": "+2 bonus on all Heal checks and Survival checks.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_skill",
+        "slot": "None",
+        "ruleFlags": {
+            "skillBonus": {
+                "Survival": 2,
+                "Heal": 2
+            }
+        },
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "skill",
+            "self-sufficient"
+        ],
+        "bonusType": "Untyped",
+        "name": "Self-Sufficient"
+    },
+    {
+        "prereq": "-",
+        "source": "SRD / PHB p.101",
+        "role": "Skill",
+        "scope": "All",
+        "benefit": "+2 bonus on all Hide checks and Move Silently checks.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_skill",
+        "slot": "None",
+        "ruleFlags": {
+            "skillBonus": {
+                "Hide": 2,
+                "Move Silently": 2
+            }
+        },
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "skill",
+            "stealthy"
+        ],
+        "bonusType": "Untyped",
+        "name": "Stealthy"
+    },
+    {
+        "prereq": "-",
+        "source": "SRD / PHB p.101",
+        "role": "Skill / Tracking",
+        "scope": "All",
+        "benefit": "To find tracks or to follow them for 1 mile requires a successful Survival check. You must make another Survival check every time the tracks become difficult to follow.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_skill",
+        "slot": "None",
+        "ruleFlags": {},
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "general",
+            "track",
+            "survival"
+        ],
+        "bonusType": "Untyped",
+        "name": "Track"
+    },
+    {
+        "prereq": "Character level 6th",
+        "source": "SRD / PHB p.106",
+        "role": "Special",
+        "scope": "All",
+        "benefit": "Having this feat enables the character to attract a loyal cohort and devoted followers. Leadership score equals level plus Charisma modifier.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_special",
+        "slot": "None",
+        "ruleFlags": {},
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "general",
+            "leadership"
+        ],
+        "bonusType": "Untyped",
+        "name": "Leadership"
+    },
+    {
+        "prereq": "-",
+        "source": "SRD / PHB p.100",
+        "role": "Skill",
+        "scope": "All",
+        "benefit": "Choose a skill. You get a +3 bonus on all checks involving that skill. You can gain this feat multiple times; each time applies to a new skill.",
+        "type": "Feat",
+        "combatModifiers": [],
+        "isFighterBonusFeat": false,
+        "actionType": "Passive",
+        "category": "General",
+        "attackType": "feat_skill",
+        "slot": "None",
+        "ruleFlags": {},
+        "combatScope": "all",
+        "tags": [
+            "feat",
+            "skill",
+            "skill-focus"
+        ],
+        "bonusType": "Untyped",
+        "name": "Skill Focus"
     }
 ];
