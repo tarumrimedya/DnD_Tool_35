@@ -126,52 +126,53 @@ const RuleMaster = {
     return prefix + capitalized;
   },
 
-  // Default Item Schema (Declarative Master_DB Schema with actionType, ruleFlags, combatModifiers, skillBonuses)
+  // Default Item Schema (Canonical V2 Master_DB Schema with modifiers, damageParts, modes, ruleFlags)
   createEmptyEntry(type = 'Weapon') {
+    const isWep = type === 'Weapon';
+    const isShield = type === 'Shield';
+    const isArmor = type === 'Armor';
     return {
+      schemaVersion: 2,
+      id: `custom_${type.toLowerCase().replace(/[^a-z0-9]+/g, '_')}_${Date.now()}`,
       name: '',
       type: type,
-      slot: type === 'Weapon' ? 'Main Hand' : (type === 'Shield' ? 'Off-Hand/Shield' : (type === 'Armor' ? 'Armor' : 'None')),
-      parent: '-',
+      slot: isWep ? 'Main Hand' : (isShield ? 'Off-Hand/Shield' : (isArmor ? 'Armor' : 'None')),
       prereq: '-',
       source: 'PHB p.',
       benefit: '',
-      bonusType: 'Untyped',
-      scope: 'None / General',
-      // 16 Stat buffs
-      strBonus: '',
-      dexBonus: '',
-      conBonus: '',
-      intBonus: '',
-      wisBonus: '',
-      chaBonus: '',
-      acBonus: '',
-      hpBonus: '',
-      attBonus: '',
-      dmgBonus: '',
-      fortBonus: '',
-      refBonus: '',
-      willBonus: '',
-      skillBonus: '',
-      clBonus: '',
-      speedBonus: '',
-      // Combat & Action
-      extraDmg: '',
-      dice: type === 'Weapon' ? '1d8' : '',
-      critMin: 20,
-      critMult: 2,
-      dmgType: type === 'Weapon' ? 'Slashing' : '',
-      action: 'Standard Action',
-      actionType: this.deriveActionType('Standard Action', type),
-      duration: 'Continuous',
-      weight: 1,
-      cost: 10,
-      role: 'Offense / Attack',
-      // Declarative Rules Engine Extensions (Commit fbfbf1c+)
-      ruleFlags: null,
-      combatModifiers: null,
-      skillBonuses: null,
-      // Magic/Maneuver specifics
+      description: '',
+      action: isWep || type === 'Spell' || type === 'Maneuver' ? 'Standard Action' : 'Passive',
+      actionType: this.deriveActionType(isWep || type === 'Spell' || type === 'Maneuver' ? 'Standard Action' : 'Passive', type),
+      duration: type === 'Spell' ? 'Instantaneous' : 'Continuous',
+      weight: isWep || isArmor || isShield ? 4 : 0,
+      cost: isWep || isArmor || isShield ? 10 : 0,
+      role: isWep ? 'Offense / Weapon' : (isArmor || isShield ? 'Defense / Armor' : 'General'),
+      modifiers: [],
+      damageParts: isWep ? [{ dice: '1d8', bonus: 0, type: 'Slashing', multiplyOnCrit: true, onCritOnly: false, source: 'Base Weapon' }] : [],
+      modes: [],
+      weaponStats: isWep ? {
+        category: 'Martial',
+        handedness: 'One-Handed',
+        baseDamage: '1d8',
+        critMin: 20,
+        critMult: 2,
+        damageTypes: ['Slashing'],
+        rangeIncrement: 0,
+        finessable: false,
+        isLight: false
+      } : null,
+      armorStats: (isArmor || isShield) ? {
+        category: isShield ? 'Shield' : 'Light',
+        baseAc: isShield ? 2 : 4,
+        maxDex: isShield ? null : 4,
+        acp: isShield ? -1 : -2,
+        asf: isShield ? 5 : 20,
+        speed30: 30,
+        speed20: 20
+      } : null,
+      spellStats: null,
+      ruleFlags: {},
+      tacticalBadges: [],
       school: '',
       level: '',
       discipline: '',
@@ -179,7 +180,162 @@ const RuleMaster = {
     };
   },
 
-  // Presets for quick generation
+  // Helper: Ensure any entry is upgraded to Canonical V2
+  ensureV2(entry) {
+    if (!entry || typeof entry !== 'object') return entry;
+    if (typeof window !== 'undefined' && window.SchemaMigrator && typeof window.SchemaMigrator.upgradeEntryToV2 === 'function') {
+      return window.SchemaMigrator.upgradeEntryToV2(entry);
+    }
+    if (entry.schemaVersion === 2 && Array.isArray(entry.modifiers) && Array.isArray(entry.damageParts) && Array.isArray(entry.modes)) {
+      return entry;
+    }
+    const v2 = Object.assign({}, entry, { schemaVersion: 2 });
+    if (!v2.id) {
+      v2.id = `entry_${String(v2.name || 'item').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}`;
+    }
+    if (!Array.isArray(v2.modifiers)) v2.modifiers = [];
+    if (!Array.isArray(v2.damageParts)) v2.damageParts = [];
+    if (!Array.isArray(v2.modes)) v2.modes = [];
+    if (!v2.ruleFlags || typeof v2.ruleFlags !== 'object') v2.ruleFlags = {};
+    if (!Array.isArray(v2.tacticalBadges)) v2.tacticalBadges = [];
+    return v2;
+  },
+
+  // Helper: Extract Canonical V2 Stat & Damage Summary Pills for UI rendering
+  getEntrySummaryPills(entry) {
+    if (!entry || typeof entry !== 'object') return [];
+    const v2 = this.ensureV2(entry);
+    const pills = [];
+    const mods = Array.isArray(v2.modifiers) ? v2.modifiers : [];
+    const dmgParts = Array.isArray(v2.damageParts) ? v2.damageParts : [];
+    const modes = Array.isArray(v2.modes) ? v2.modes : [];
+
+    const targetLabelMap = {
+      'ability.str': 'STR', 'str': 'STR',
+      'ability.dex': 'DEX', 'dex': 'DEX',
+      'ability.con': 'CON', 'con': 'CON',
+      'ability.int': 'INT', 'int': 'INT',
+      'ability.wis': 'WIS', 'wis': 'WIS',
+      'ability.cha': 'CHA', 'cha': 'CHA',
+      'ac': 'AC', 'ac.armor': 'Armor AC', 'ac.shield': 'Shield AC', 'ac.deflection': 'Defl AC', 'ac.natural': 'Nat AC', 'ac.dodge': 'Dodge AC',
+      'attack.all': 'Atk', 'attack.melee': 'Melee Atk', 'attack.ranged': 'Ranged Atk', 'atk': 'Atk',
+      'damage.all': 'Dmg', 'damage.melee': 'Melee Dmg', 'damage.ranged': 'Ranged Dmg', 'dmg': 'Dmg',
+      'save.all': 'All Saves', 'save.fort': 'Fort', 'save.ref': 'Ref', 'save.will': 'Will', 'fort': 'Fort', 'ref': 'Ref', 'will': 'Will',
+      'init': 'Init', 'speed.land': 'ft Hız', 'speed': 'ft Hız', 'hp': 'HP', 'casterlevel': 'CL', 'casterLevel': 'CL', 'skill.all': 'Skills'
+    };
+
+    if (v2.armorStats && Number(v2.armorStats.baseAc) > 0) {
+      const enh = Number(v2.enhancementBonus) || 0;
+      const totalAc = Number(v2.armorStats.baseAc) + enh;
+      const hasAcMod = mods.some(m => String(m.target || '').toLowerCase().startsWith('ac'));
+      if (!hasAcMod) {
+        pills.push(`+${totalAc} ${v2.type === 'Shield' ? 'Shield' : 'Armor'} AC`);
+      }
+    }
+
+    mods.forEach(m => {
+      if (!m) return;
+      const rawTarget = String(m.target || '').trim();
+      let label = targetLabelMap[rawTarget] || targetLabelMap[rawTarget.toLowerCase()];
+      if (!label) {
+        if (rawTarget.toLowerCase().startsWith('skill.')) {
+          label = this.capitalizeTitle(rawTarget.slice(6).replace(/_/g, ' '));
+        } else {
+          label = this.capitalizeTitle(rawTarget);
+        }
+      }
+      if (m.formula) {
+        pills.push(`${label}: ${m.formula}`);
+      } else if (m.value !== undefined && m.value !== null && Number(m.value) !== 0) {
+        const v = Number(m.value);
+        const sign = v > 0 ? '+' : '';
+        pills.push(`${sign}${v} ${label}`);
+      }
+    });
+
+    dmgParts.forEach(dp => {
+      if (!dp || !dp.dice) return;
+      const bonusStr = dp.bonus ? (dp.bonus > 0 ? `+${dp.bonus}` : `${dp.bonus}`) : '';
+      const typeStr = dp.type && dp.type !== 'Untyped' ? ` ${dp.type}` : '';
+      pills.push(`⚔️ ${dp.dice}${bonusStr}${typeStr}`);
+    });
+
+    if (modes.length > 0) {
+      pills.push(`⚡ ${modes.length} Mod`);
+    }
+
+    return pills;
+  },
+
+  // Helper: Bridge Canonical V2 Entry -> Modal Form Value Map (for openModalWithData)
+  extractModalViewFromV2(entry) {
+    const v2 = this.ensureV2(entry || {});
+    const mods = Array.isArray(v2.modifiers) ? v2.modifiers : [];
+    const dmgParts = Array.isArray(v2.damageParts) ? v2.damageParts : [];
+    const wStats = v2.weaponStats || {};
+    const aStats = v2.armorStats || {};
+    const sStats = v2.spellStats || {};
+
+    const findModVal = (targets) => {
+      const m = mods.find(mod => targets.includes(String(mod.target || '').toLowerCase()));
+      return m && m.value !== undefined && m.value !== 0 ? m.value : '';
+    };
+
+    const firstSkillMod = mods.find(mod => String(mod.target || '').toLowerCase().startsWith('skill.'));
+    const primaryModType = mods.find(mod => mod.type && mod.type !== 'Untyped')?.type
+      || (v2.type === 'Weapon' && v2.enhancementBonus ? 'Enhancement' : (v2.type === 'Armor' ? 'Armor' : (v2.type === 'Shield' ? 'Shield' : 'Untyped')));
+
+    const primaryDice = dmgParts[0]?.dice || wStats.baseDamage || '';
+    const primaryDmgType = dmgParts[0]?.type || (Array.isArray(wStats.damageTypes) ? wStats.damageTypes.join('/') : '');
+
+    const skillBonusesObj = {};
+    mods.forEach(mod => {
+      const t = String(mod.target || '');
+      if (t.toLowerCase().startsWith('skill.') && t.toLowerCase() !== 'skill.all' && mod.value) {
+        const sName = this.capitalizeTitle(t.slice(6).replace(/_/g, ' '));
+        skillBonusesObj[sName] = Number(mod.value);
+      }
+    });
+
+    return {
+      bonusType: primaryModType,
+      scope: v2.scope || (firstSkillMod ? this.capitalizeTitle(firstSkillMod.target.slice(6).replace(/_/g, ' ')) : 'None / General'),
+      str: findModVal(['ability.str', 'str']),
+      dex: findModVal(['ability.dex', 'dex']),
+      con: findModVal(['ability.con', 'con']),
+      int: findModVal(['ability.int', 'int']),
+      wis: findModVal(['ability.wis', 'wis']),
+      cha: findModVal(['ability.cha', 'cha']),
+      ac: findModVal(['ac', 'ac.armor', 'ac.shield', 'ac.deflection', 'ac.natural', 'ac.dodge']) || aStats.baseAc || '',
+      hp: findModVal(['hp']),
+      atk: findModVal(['attack.all', 'attack.melee', 'attack.ranged', 'atk']) || (v2.type === 'Weapon' && v2.enhancementBonus ? v2.enhancementBonus : ''),
+      dmg: findModVal(['damage.all', 'damage.melee', 'damage.ranged', 'dmg']) || dmgParts[0]?.bonus || (v2.type === 'Weapon' && v2.enhancementBonus ? v2.enhancementBonus : ''),
+      fort: findModVal(['save.fort', 'save.all', 'fort']),
+      ref: findModVal(['save.ref', 'save.all', 'ref']),
+      will: findModVal(['save.will', 'save.all', 'will']),
+      skill: firstSkillMod ? firstSkillMod.value : '',
+      cl: findModVal(['casterlevel']),
+      speed: findModVal(['speed.land', 'speed']),
+      dice: primaryDice,
+      critMin: wStats.critMin || 20,
+      critMult: wStats.critMult || 2,
+      dmgType: primaryDmgType,
+      maxDex: aStats.maxDex !== undefined && aStats.maxDex !== null ? aStats.maxDex : '',
+      checkPenalty: aStats.acp !== undefined ? aStats.acp : '',
+      asf: aStats.asf !== undefined ? aStats.asf : '',
+      range: v2.range || sStats.range || (wStats.rangeIncrement ? `${wStats.rangeIncrement} ft.` : ''),
+      proficiency: wStats.category || 'Martial',
+      isLight: Boolean(wStats.isLight),
+      saveType: sStats.savingThrow || '',
+      sr: sStats.spellResistance || 'No',
+      targetArea: sStats.targetOrArea || '',
+      components: sStats.components || '',
+      targetSkill: firstSkillMod && firstSkillMod.target.toLowerCase() !== 'skill.all' ? this.capitalizeTitle(firstSkillMod.target.slice(6).replace(/_/g, ' ')) : '',
+      skillBonusesJson: Object.keys(skillBonusesObj).length > 0 ? JSON.stringify(skillBonusesObj) : ''
+    };
+  },
+
+  // Presets for quick generation (Canonical V2)
   getPresets() {
     return {
       weapon: {
@@ -189,7 +345,7 @@ const RuleMaster = {
         scope: 'Specific Weapon',
         action: 'Standard / Full Attack',
         duration: 'Continuous',
-        role: 'Offense / Attack',
+        role: 'Offense / Weapon',
         critMin: 19,
         critMult: 2,
         dice: '1d8',
@@ -203,7 +359,7 @@ const RuleMaster = {
         scope: 'Specific Weapon',
         action: 'Standard / Full Attack',
         duration: 'Continuous',
-        role: 'Offense / Attack',
+        role: 'Offense / Weapon',
         critMin: 18,
         critMult: 2,
         dice: '2d6',
@@ -219,8 +375,8 @@ const RuleMaster = {
         scope: 'None / General',
         action: 'Passive',
         duration: 'Continuous',
-        role: 'Defense / Counter',
-        acBonus: 2,
+        role: 'Defense / Shield',
+        ac: 2,
         weight: 6,
         cost: 20
       },
@@ -231,8 +387,8 @@ const RuleMaster = {
         scope: 'None / General',
         action: 'Passive',
         duration: 'Continuous',
-        role: 'Defense / Counter',
-        acBonus: 4,
+        role: 'Defense / Armor',
+        ac: 4,
         weight: 25,
         cost: 100
       },
@@ -243,7 +399,7 @@ const RuleMaster = {
         scope: 'Melee Only',
         action: 'Passive',
         duration: 'Continuous',
-        role: 'Offense / Attack',
+        role: 'General',
         weight: 0,
         cost: 0
       },
@@ -291,7 +447,7 @@ const RuleMaster = {
         scope: 'None / General',
         action: 'Passive',
         duration: 'Continuous',
-        role: 'Defense / Counter',
+        role: 'Defense / Armor',
         weight: 1,
         cost: 1000
       },
@@ -302,85 +458,83 @@ const RuleMaster = {
         scope: 'None / General',
         action: 'Standard Action',
         duration: 'Instantaneous',
-        role: 'Defense / Consumable',
+        role: 'General',
         weight: 0.1,
         cost: 50
       }
     };
   },
 
-  // Save new or updated entry
+  // Save new or updated entry (Canonical V2)
   saveEntry(entryData, editIndex = -1) {
-    if (!entryData.name || !entryData.name.trim()) {
+    if (!entryData || !entryData.name || !entryData.name.trim()) {
       alert('⚠️ Lütfen geçerli bir Kural / Eşya Adı giriniz.');
       return false;
     }
 
-    // Auto-capitalize first letters and identifiers (e.g. natural_armor_ench -> Natural_Armor_Ench)
-    if (entryData.name) entryData.name = this.capitalizeTitle(entryData.name);
-    if (entryData.bonusType) entryData.bonusType = this.capitalizeIdentifier(entryData.bonusType);
+    if (entryData.name) entryData.name = this.capitalizeTitle(this.cleanArrow(entryData.name));
     if (entryData.type) entryData.type = this.capitalizeIdentifier(entryData.type);
     if (entryData.slot) entryData.slot = this.capitalizeIdentifier(entryData.slot);
     if (entryData.role) entryData.role = this.capitalizeIdentifier(entryData.role);
-    if (entryData.scope) entryData.scope = this.capitalizeIdentifier(entryData.scope);
-    if (entryData.actionType) entryData.actionType = this.capitalizeIdentifier(entryData.actionType);
+    if (entryData.actionType) entryData.actionType = String(entryData.actionType).toLowerCase();
     if (entryData.discipline) entryData.discipline = this.capitalizeIdentifier(entryData.discipline);
     if (entryData.school) entryData.school = this.capitalizeIdentifier(entryData.school);
-    if (entryData.dmgType) entryData.dmgType = this.capitalizeIdentifier(entryData.dmgType);
+
+    let v2Entry = this.ensureV2(entryData);
+
+    // Check if user linked this entry as an embedded mode onto a parent item in masterDb
+    const linkedParentName = (entryData._linkedParentName && entryData._linkedParentName !== '-')
+      ? this.cleanArrow(entryData._linkedParentName).toLowerCase().trim()
+      : '';
+
+    if (linkedParentName && editIndex < 0) {
+      const parentIdx = masterDb.findIndex(m => this.cleanArrow(m.name || '').toLowerCase().trim() === linkedParentName);
+      if (parentIdx >= 0) {
+        const parentObj = this.ensureV2(masterDb[parentIdx]);
+        if (!Array.isArray(parentObj.modes)) parentObj.modes = [];
+        const modeObj = {
+          id: `mode_${v2Entry.name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}`,
+          name: entryData._modeButtonLabel || v2Entry.name,
+          actionType: v2Entry.actionType || 'standard',
+          benefit: v2Entry.benefit || v2Entry.description || '',
+          damageParts: Array.isArray(v2Entry.damageParts) ? v2Entry.damageParts : [],
+          modifiers: Array.isArray(v2Entry.modifiers) ? v2Entry.modifiers : []
+        };
+        const existingModeIdx = parentObj.modes.findIndex(m => m.id === modeObj.id || (m.name || '').toLowerCase() === modeObj.name.toLowerCase());
+        if (existingModeIdx >= 0) parentObj.modes[existingModeIdx] = modeObj;
+        else parentObj.modes.push(modeObj);
+        masterDb[parentIdx] = parentObj;
+        this.syncMasterDbEditToCharacter(parentObj.name, parentObj);
+        if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+        this.renderTable();
+        if (typeof renderAll === 'function') renderAll();
+        return true;
+      }
+    }
+
+    delete v2Entry._linkedParentName;
+    delete v2Entry._modeButtonLabel;
 
     let oldName = null;
-    let oldEntry = null;
     if (editIndex >= 0 && editIndex < masterDb.length) {
-      oldEntry = JSON.parse(JSON.stringify(masterDb[editIndex]));
+      const oldEntry = this.ensureV2(masterDb[editIndex]);
       oldName = oldEntry.name;
-
-      // Safe Merge: Preserve modern declarative fields (ruleFlags, combatModifiers, skillBonuses, actionType, proficiency)
-      const mergedEntry = Object.assign({}, oldEntry, entryData);
-      if (!entryData.actionType) {
-        mergedEntry.actionType = oldEntry.actionType || this.deriveActionType(mergedEntry.action, mergedEntry.type);
+      if (!v2Entry.id || v2Entry.id.startsWith('custom_')) {
+        v2Entry.id = oldEntry.id || v2Entry.id;
       }
-      if (entryData.ruleFlags === undefined && oldEntry.ruleFlags !== undefined) {
-        mergedEntry.ruleFlags = oldEntry.ruleFlags;
+      if ((!v2Entry.modes || v2Entry.modes.length === 0) && Array.isArray(oldEntry.modes) && oldEntry.modes.length > 0) {
+        v2Entry.modes = oldEntry.modes;
       }
-      if (entryData.combatModifiers === undefined && oldEntry.combatModifiers !== undefined) {
-        mergedEntry.combatModifiers = oldEntry.combatModifiers;
-      }
-      if (entryData.skillBonuses === undefined && oldEntry.skillBonuses !== undefined) {
-        mergedEntry.skillBonuses = oldEntry.skillBonuses;
-      }
-      if (entryData.isLight === undefined && oldEntry.isLight !== undefined) {
-        mergedEntry.isLight = oldEntry.isLight;
-      }
-      if (entryData.proficiency === undefined && oldEntry.proficiency !== undefined) {
-        mergedEntry.proficiency = oldEntry.proficiency;
-      }
-
-      masterDb[editIndex] = mergedEntry;
-      entryData = mergedEntry;
+      masterDb[editIndex] = v2Entry;
     } else {
-      if (!entryData.actionType) {
-        entryData.actionType = this.deriveActionType(entryData.action, entryData.type);
-      }
-      const parentName = (entryData.parent && entryData.parent !== '-') ? entryData.parent.replace(/^↳\s*/, '').trim().toLowerCase() : '';
-      const parentIdx = parentName ? masterDb.findIndex(m => (m.name || '').replace(/^↳\s*/, '').trim().toLowerCase() === parentName) : -1;
-      if (parentIdx >= 0) {
-        let insertAt = parentIdx + 1;
-        while (insertAt < masterDb.length && (masterDb[insertAt].parent || '').replace(/^↳\s*/, '').trim().toLowerCase() === parentName) {
-          insertAt++;
-        }
-        masterDb.splice(insertAt, 0, entryData);
-      } else {
-        masterDb.unshift(entryData);
-      }
+      masterDb.unshift(v2Entry);
     }
 
-    // Cascade changes into character state (inventory, body slots, weapons, consumables)
     let syncCount = 0;
     if (oldName) {
-      syncCount = this.syncMasterDbEditToCharacter(oldName, entryData);
+      syncCount = this.syncMasterDbEditToCharacter(oldName, v2Entry);
     }
 
-    // Persist and sync
     if (typeof saveStateToStorage === 'function') {
       saveStateToStorage(true);
     }
@@ -390,41 +544,50 @@ const RuleMaster = {
     }
 
     if (oldName && syncCount > 0) {
-      alert(`✅ "${entryData.name}" Master DB'de güncellendi ve çantanızdaki / karakterinizdeki ${syncCount} kayda anında yansıtıldı!`);
+      alert(`✅ "${v2Entry.name}" Master DB'de güncellendi ve karakterinizdeki ${syncCount} kayda anında yansıtıldı!`);
     }
 
     return true;
   },
 
-  // Synchronize Master DB edits into character inventory and equipped items
+  // Synchronize Master DB edits into character inventory and equipped items (Canonical V2)
   syncMasterDbEditToCharacter(oldName, updatedEntry) {
     if (!oldName || !updatedEntry || typeof character === 'undefined' || !character) return 0;
+    const v2 = this.ensureV2(updatedEntry);
     let changesCount = 0;
     const cleanOld = oldName.toLowerCase().trim();
-    const cleanNew = (updatedEntry.name || '').toLowerCase().trim();
+    const cleanNew = (v2.name || '').toLowerCase().trim();
 
     // 1. Sync character.gearPool
     if (Array.isArray(character.gearPool)) {
       character.gearPool.forEach(item => {
         const itemClean = (item.name || '').toLowerCase().trim();
         const masterDbRef = (item.masterDbName || '').toLowerCase().trim();
-        if (itemClean === cleanOld || masterDbRef === cleanOld || itemClean === cleanNew) {
-          item.name = updatedEntry.name;
-          item.masterDbName = updatedEntry.name;
+        if (item.id === v2.id || itemClean === cleanOld || masterDbRef === cleanOld || itemClean === cleanNew) {
+          item.schemaVersion = 2;
+          item.id = v2.id || item.id;
+          item.baseItemId = v2.baseItemId || item.baseItemId || null;
+          item.name = v2.name;
+          item.masterDbName = v2.name;
           if (typeof mapEntryToGearCategory === 'function') {
-            item.category = mapEntryToGearCategory(updatedEntry);
-          } else if (updatedEntry.type) {
-            item.category = updatedEntry.type;
+            item.category = mapEntryToGearCategory(v2);
+          } else if (v2.type) {
+            item.category = v2.type;
           }
-          if (updatedEntry.slot && updatedEntry.slot !== 'None' && updatedEntry.slot !== '-') {
-            item.slot = updatedEntry.slot;
+          if (v2.slot && v2.slot !== 'None' && v2.slot !== '-') {
+            item.slot = v2.slot;
           }
-          if (updatedEntry.tags) {
-            item.tags = Array.isArray(updatedEntry.tags) ? [...updatedEntry.tags] : updatedEntry.tags;
-          }
-          item.weight = Number(updatedEntry.weight) || 0;
-          item.cost = Number(updatedEntry.cost) || 0;
-          item.desc = updatedEntry.benefit || updatedEntry.description || '';
+          item.tags = Array.isArray(v2.tags) ? [...v2.tags] : [];
+          item.weight = Number(v2.weight) || 0;
+          item.cost = Number(v2.cost) || 0;
+          item.desc = v2.benefit || v2.description || '';
+          item.modifiers = Array.isArray(v2.modifiers) ? JSON.parse(JSON.stringify(v2.modifiers)) : [];
+          item.damageParts = Array.isArray(v2.damageParts) ? JSON.parse(JSON.stringify(v2.damageParts)) : [];
+          item.modes = Array.isArray(v2.modes) ? JSON.parse(JSON.stringify(v2.modes)) : [];
+          item.ruleFlags = v2.ruleFlags ? JSON.parse(JSON.stringify(v2.ruleFlags)) : {};
+          item.tacticalBadges = Array.isArray(v2.tacticalBadges) ? [...v2.tacticalBadges] : [];
+          if (v2.weaponStats) item.weaponStats = JSON.parse(JSON.stringify(v2.weaponStats));
+          if (v2.armorStats) item.armorStats = JSON.parse(JSON.stringify(v2.armorStats));
           changesCount++;
         }
       });
@@ -436,15 +599,22 @@ const RuleMaster = {
         const slotObj = character.bodySlots[slotKey];
         if (slotObj && slotObj.name) {
           const slotClean = slotObj.name.toLowerCase().trim();
-          if (slotClean === cleanOld || slotClean === cleanNew) {
-            slotObj.name = updatedEntry.name;
-            slotObj.weight = Number(updatedEntry.weight) || 0;
-            slotObj.cost = Number(updatedEntry.cost) || 0;
-            slotObj.desc = updatedEntry.benefit || updatedEntry.description || '';
-            if (updatedEntry.actionType) slotObj.actionType = updatedEntry.actionType;
-            if (updatedEntry.skillBonuses) slotObj.skillBonuses = updatedEntry.skillBonuses;
-            if (updatedEntry.ruleFlags) slotObj.ruleFlags = updatedEntry.ruleFlags;
-            if (updatedEntry.combatModifiers) slotObj.combatModifiers = updatedEntry.combatModifiers;
+          if (slotObj.id === v2.id || slotClean === cleanOld || slotClean === cleanNew) {
+            slotObj.schemaVersion = 2;
+            slotObj.id = v2.id || slotObj.id;
+            slotObj.baseItemId = v2.baseItemId || slotObj.baseItemId || null;
+            slotObj.name = v2.name;
+            slotObj.masterDbName = v2.name;
+            slotObj.weight = Number(v2.weight) || 0;
+            slotObj.cost = Number(v2.cost) || 0;
+            slotObj.desc = v2.benefit || v2.description || '';
+            slotObj.actionType = v2.actionType || slotObj.actionType;
+            slotObj.modifiers = Array.isArray(v2.modifiers) ? JSON.parse(JSON.stringify(v2.modifiers)) : [];
+            slotObj.damageParts = Array.isArray(v2.damageParts) ? JSON.parse(JSON.stringify(v2.damageParts)) : [];
+            slotObj.modes = Array.isArray(v2.modes) ? JSON.parse(JSON.stringify(v2.modes)) : [];
+            slotObj.ruleFlags = v2.ruleFlags ? JSON.parse(JSON.stringify(v2.ruleFlags)) : {};
+            slotObj.tacticalBadges = Array.isArray(v2.tacticalBadges) ? [...v2.tacticalBadges] : [];
+            if (v2.armorStats) slotObj.armorStats = JSON.parse(JSON.stringify(v2.armorStats));
             changesCount++;
           }
         }
@@ -455,25 +625,25 @@ const RuleMaster = {
     if (Array.isArray(character.weapons)) {
       character.weapons.forEach(w => {
         const wepClean = (w.name || '').toLowerCase().trim();
-        if (wepClean === cleanOld || wepClean === cleanNew) {
-          w.name = updatedEntry.name;
-          if (updatedEntry.slot) w.slot = updatedEntry.slot;
-          if (updatedEntry.tags) w.tags = Array.isArray(updatedEntry.tags) ? [...updatedEntry.tags] : updatedEntry.tags;
-          if (updatedEntry.dice || updatedEntry.extraDmg) w.dice = updatedEntry.dice || updatedEntry.extraDmg;
-          if (updatedEntry.critMin) w.critMin = Number(updatedEntry.critMin);
-          if (updatedEntry.critMult) w.critMult = Number(updatedEntry.critMult);
-          if (updatedEntry.attBonus !== undefined && updatedEntry.attBonus !== '') w.attBonus = Number(updatedEntry.attBonus);
-          if (updatedEntry.dmgBonus !== undefined && updatedEntry.dmgBonus !== '') w.dmgBonus = Number(updatedEntry.dmgBonus);
-          if (updatedEntry.dmgType) w.dmgType = updatedEntry.dmgType;
-          if (updatedEntry.bonusType) w.bonusType = updatedEntry.bonusType;
-          if (updatedEntry.actionType) w.actionType = updatedEntry.actionType;
-          if (updatedEntry.ruleFlags) w.ruleFlags = updatedEntry.ruleFlags;
-          if (updatedEntry.combatModifiers) w.combatModifiers = updatedEntry.combatModifiers;
+        if (w.id === v2.id || wepClean === cleanOld || wepClean === cleanNew) {
+          w.schemaVersion = 2;
+          w.id = v2.id || w.id;
+          w.baseItemId = v2.baseItemId || w.baseItemId || null;
+          w.name = v2.name;
+          if (v2.slot) w.slot = v2.slot;
+          if (v2.tags) w.tags = Array.isArray(v2.tags) ? [...v2.tags] : [];
+          w.enhancementBonus = Number(v2.enhancementBonus) || w.enhancementBonus || 0;
+          w.modifiers = Array.isArray(v2.modifiers) ? JSON.parse(JSON.stringify(v2.modifiers)) : [];
+          w.damageParts = Array.isArray(v2.damageParts) ? JSON.parse(JSON.stringify(v2.damageParts)) : [];
+          w.modes = Array.isArray(v2.modes) ? JSON.parse(JSON.stringify(v2.modes)) : [];
+          w.weaponStats = v2.weaponStats ? JSON.parse(JSON.stringify(v2.weaponStats)) : w.weaponStats;
+          w.ruleFlags = v2.ruleFlags ? JSON.parse(JSON.stringify(v2.ruleFlags)) : {};
+          w.tacticalBadges = Array.isArray(v2.tacticalBadges) ? [...v2.tacticalBadges] : [];
           changesCount++;
         }
       });
       if (character.activeWeapon && (character.activeWeapon.toLowerCase().trim() === cleanOld || character.activeWeapon.toLowerCase().trim() === cleanNew)) {
-        character.activeWeapon = updatedEntry.name;
+        character.activeWeapon = v2.name;
       }
     }
 
@@ -482,8 +652,8 @@ const RuleMaster = {
       character.consumables.forEach(c => {
         const cClean = (c.name || '').toLowerCase().trim();
         if (cClean === cleanOld || cClean === cleanNew) {
-          c.name = updatedEntry.name;
-          c.effect = updatedEntry.benefit || updatedEntry.description || c.effect;
+          c.name = v2.name;
+          c.effect = v2.benefit || v2.description || c.effect;
           changesCount++;
         }
       });
@@ -495,16 +665,17 @@ const RuleMaster = {
         if (typeof f === 'string') {
           if (f.toLowerCase().trim() === cleanOld) {
             changesCount++;
-            return updatedEntry.name;
+            return v2.name;
           }
           return f;
         } else if (f && f.name) {
-          if (f.name.toLowerCase().trim() === cleanOld) {
-            f.name = updatedEntry.name;
-            f.benefit = updatedEntry.benefit || f.benefit;
-            if (updatedEntry.actionType) f.actionType = updatedEntry.actionType;
-            if (updatedEntry.ruleFlags) f.ruleFlags = updatedEntry.ruleFlags;
-            if (updatedEntry.combatModifiers) f.combatModifiers = updatedEntry.combatModifiers;
+          if (f.id === v2.id || f.name.toLowerCase().trim() === cleanOld) {
+            f.id = v2.id || f.id;
+            f.name = v2.name;
+            f.benefit = v2.benefit || f.benefit;
+            f.actionType = v2.actionType || f.actionType;
+            f.modifiers = Array.isArray(v2.modifiers) ? JSON.parse(JSON.stringify(v2.modifiers)) : [];
+            f.ruleFlags = v2.ruleFlags ? JSON.parse(JSON.stringify(v2.ruleFlags)) : {};
             changesCount++;
           }
           return f;
@@ -516,10 +687,13 @@ const RuleMaster = {
     // 6. Sync character.spellcasting.knownSpells
     if (character.spellcasting && Array.isArray(character.spellcasting.knownSpells)) {
       character.spellcasting.knownSpells.forEach(s => {
-        if ((s.name || '').toLowerCase().trim() === cleanOld || (s.name || '').toLowerCase().trim() === cleanNew) {
-          s.name = updatedEntry.name;
-          s.benefit = updatedEntry.benefit || s.benefit;
-          if (updatedEntry.school) s.school = updatedEntry.school;
+        if (s.id === v2.id || (s.name || '').toLowerCase().trim() === cleanOld || (s.name || '').toLowerCase().trim() === cleanNew) {
+          s.id = v2.id || s.id;
+          s.name = v2.name;
+          s.benefit = v2.benefit || s.benefit;
+          if (v2.school) s.school = v2.school;
+          s.damageParts = Array.isArray(v2.damageParts) ? JSON.parse(JSON.stringify(v2.damageParts)) : (s.damageParts || []);
+          s.modes = Array.isArray(v2.modes) ? JSON.parse(JSON.stringify(v2.modes)) : (s.modes || []);
           changesCount++;
         }
       });
@@ -530,8 +704,10 @@ const RuleMaster = {
       if (Array.isArray(character.tomeOfBattle.readiedManeuvers)) {
         character.tomeOfBattle.readiedManeuvers.forEach(m => {
           if ((m.name || '').toLowerCase().trim() === cleanOld || (m.name || '').toLowerCase().trim() === cleanNew) {
-            m.name = updatedEntry.name;
-            m.notes = updatedEntry.benefit || m.notes;
+            m.name = v2.name;
+            m.notes = v2.benefit || m.notes;
+            m.damageParts = Array.isArray(v2.damageParts) ? JSON.parse(JSON.stringify(v2.damageParts)) : (m.damageParts || []);
+            m.modes = Array.isArray(v2.modes) ? JSON.parse(JSON.stringify(v2.modes)) : (m.modes || []);
             changesCount++;
           }
         });
@@ -539,14 +715,15 @@ const RuleMaster = {
       if (Array.isArray(character.tomeOfBattle.stancesKnown)) {
         character.tomeOfBattle.stancesKnown.forEach(st => {
           if ((st.name || '').toLowerCase().trim() === cleanOld || (st.name || '').toLowerCase().trim() === cleanNew) {
-            st.name = updatedEntry.name;
-            st.benefit = updatedEntry.benefit || st.benefit;
+            st.name = v2.name;
+            st.benefit = v2.benefit || st.benefit;
+            st.modifiers = Array.isArray(v2.modifiers) ? JSON.parse(JSON.stringify(v2.modifiers)) : (st.modifiers || []);
             changesCount++;
           }
         });
       }
       if (character.activeStance && (character.activeStance.toLowerCase().trim() === cleanOld || character.activeStance.toLowerCase().trim() === cleanNew)) {
-        character.activeStance = updatedEntry.name;
+        character.activeStance = v2.name;
       }
     }
 
@@ -570,8 +747,9 @@ const RuleMaster = {
   // Duplicate entry
   duplicateEntry(index) {
     if (index >= 0 && index < masterDb.length) {
-      const copy = JSON.parse(JSON.stringify(masterDb[index]));
+      const copy = this.ensureV2(JSON.parse(JSON.stringify(masterDb[index])));
       copy.name += " (Kopya)";
+      copy.id = `${copy.id}_copy_${Date.now()}`;
       masterDb.splice(index + 1, 0, copy);
       if (typeof saveStateToStorage === 'function') {
         saveStateToStorage(true);
@@ -580,40 +758,39 @@ const RuleMaster = {
     }
   },
 
-  // Add Child Power linked to Parent
+  // Add Embedded Mode (Alt Mod) linked to Parent
   addChildPower(parentIndex) {
     if (parentIndex >= 0 && parentIndex < masterDb.length) {
-      const parentItem = masterDb[parentIndex];
-      const child = this.createEmptyEntry(parentItem.type || 'Active Power');
-      child.name = `↳ ${parentItem.name} (Alt Etki)`;
-      child.parent = parentItem.name;
-      child.isChild = true;
-      child.slot = parentItem.slot || 'None';
-      child.source = parentItem.source;
-      child.school = parentItem.school || '';
-      child.discipline = parentItem.discipline || '';
-      child.level = parentItem.level !== undefined ? parentItem.level : '';
-      child.role = 'Tactical / Power';
-      child.weight = 0;
-      child.cost = 0;
-      this.openModalWithData(child, -1);
+      const parentItem = this.ensureV2(masterDb[parentIndex]);
+      const modeDraft = this.createEmptyEntry(parentItem.type || 'Spell');
+      modeDraft.name = `${parentItem.name} (Alt Mod)`;
+      modeDraft._linkedParentName = parentItem.name;
+      modeDraft.slot = parentItem.slot || 'None';
+      modeDraft.source = parentItem.source;
+      modeDraft.school = parentItem.school || '';
+      modeDraft.discipline = parentItem.discipline || '';
+      modeDraft.level = parentItem.level !== undefined ? parentItem.level : '';
+      modeDraft.role = 'Tactical / Boost';
+      modeDraft.weight = 0;
+      modeDraft.cost = 0;
+      this.openModalWithData(modeDraft, -1);
     }
   },
 
   // Equip or learn into active character
   equipToCharacter(index) {
     if (index < 0 || index >= masterDb.length || typeof character === 'undefined' || !character) return;
-    const item = masterDb[index];
+    const item = this.ensureV2(masterDb[index]);
     this.equipItem(item);
   },
 
-  // Direct 1-click addition from Master DB to Inventory
+  // Direct 1-click addition from Master DB to Inventory (Canonical V2)
   addToInventory(index) {
     if (index < 0 || index >= masterDb.length || typeof character === 'undefined' || !character) return;
-    const item = masterDb[index];
+    const item = this.ensureV2(masterDb[index]);
     if (!character.gearPool) character.gearPool = [];
 
-    const inPool = character.gearPool.some(p => (p.name || '').toLowerCase() === item.name.toLowerCase());
+    const inPool = character.gearPool.some(p => p.id === item.id || (p.name || '').toLowerCase() === item.name.toLowerCase());
     if (inPool) {
       alert(`ℹ️ "${item.name}" zaten çantanızda mevcut!`);
       return;
@@ -623,7 +800,9 @@ const RuleMaster = {
     const isBelt = (item.slot || '').toLowerCase().includes('belt') || cat === 'Consumable';
 
     character.gearPool.push({
-      id: Date.now(),
+      schemaVersion: 2,
+      id: item.id || `gear_${Date.now()}`,
+      baseItemId: item.baseItemId || null,
       name: item.name,
       masterDbName: item.name,
       category: cat,
@@ -632,7 +811,13 @@ const RuleMaster = {
       weight: Number(item.weight) || 0,
       cost: Number(item.cost) || 0,
       desc: item.benefit || item.description || '',
+      modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : [],
+      damageParts: Array.isArray(item.damageParts) ? JSON.parse(JSON.stringify(item.damageParts)) : [],
+      modes: Array.isArray(item.modes) ? JSON.parse(JSON.stringify(item.modes)) : [],
+      ruleFlags: item.ruleFlags ? JSON.parse(JSON.stringify(item.ruleFlags)) : {},
+      tacticalBadges: Array.isArray(item.tacticalBadges) ? [...item.tacticalBadges] : [],
       isBelt: isBelt,
+      isEquipped: false
     });
 
     if (cat === 'Consumable') {
@@ -646,20 +831,21 @@ const RuleMaster = {
     alert(`🎒 "${item.name}" çantanıza / envanter havuzunuza eklendi!`);
   },
 
-  // Open Edit / Add Modal
+  // Open Edit / Add Modal (Bridges Canonical V2 Entry -> Modal Form)
   openModalWithData(entry, editIndex = -1) {
     this.selectedEntryIndex = editIndex;
-    this._currentEditingEntry = entry ? JSON.parse(JSON.stringify(entry)) : null;
+    const v2 = this.ensureV2(entry ? JSON.parse(JSON.stringify(entry)) : this.createEmptyEntry('Weapon'));
+    this._currentEditingEntry = v2;
     const modal = document.getElementById('rule-crud-modal');
     if (!modal) return;
 
-    // Title
-    document.getElementById('rule-modal-title').textContent = editIndex >= 0 ? `✏️ Düzenle: ${entry.name}` : '➕ Yeni Kural / Eşya Ekle';
+    const view = this.extractModalViewFromV2(v2);
 
-    // Populate fields
-    document.getElementById('rf-name').value = entry.name || '';
-    document.getElementById('rf-type').value = entry.type || 'Weapon';
-    let slotVal = entry.slot || 'None';
+    document.getElementById('rule-modal-title').textContent = editIndex >= 0 ? `✏️ Düzenle: ${v2.name}` : '➕ Yeni Kural / Eşya Ekle';
+
+    document.getElementById('rf-name').value = v2.name || '';
+    document.getElementById('rf-type').value = v2.type || 'Weapon';
+    let slotVal = v2.slot || 'None';
     if (slotVal === 'Two-Hand' || slotVal === 'Both Hands') slotVal = 'Two-Handed';
     const slotEl = document.getElementById('rf-slot');
     if (slotEl) {
@@ -668,15 +854,15 @@ const RuleMaster = {
     }
     const tagsEl = document.getElementById('rf-tags');
     if (tagsEl) {
-      tagsEl.value = Array.isArray(entry.tags) ? entry.tags.join(', ') : (entry.tags || '');
+      tagsEl.value = Array.isArray(v2.tags) ? v2.tags.join(', ') : (v2.tags || '');
     }
-    document.getElementById('rf-parent').value = entry.parent || '-';
-    document.getElementById('rf-prereq').value = entry.prereq || '-';
-    document.getElementById('rf-source').value = entry.source || 'PHB p.';
-    document.getElementById('rf-benefit').value = entry.benefit || '';
+    document.getElementById('rf-parent').value = entry?._linkedParentName || '-';
+    document.getElementById('rf-prereq').value = v2.prereq || '-';
+    document.getElementById('rf-source').value = v2.source || 'PHB p.';
+    document.getElementById('rf-benefit').value = v2.benefit || v2.description || '';
     const bonusTypeSelect = document.getElementById('rf-bonus-type');
     if (bonusTypeSelect) {
-      const rawBonus = this.capitalizeIdentifier(entry.bonusType || 'Untyped');
+      const rawBonus = this.capitalizeIdentifier(view.bonusType || 'Untyped');
       let matchingOpt = Array.from(bonusTypeSelect.options).find(o => o.value.toLowerCase() === rawBonus.toLowerCase());
       if (!matchingOpt && rawBonus) {
         const newOpt = document.createElement('option');
@@ -687,41 +873,41 @@ const RuleMaster = {
       }
       bonusTypeSelect.value = matchingOpt ? matchingOpt.value : 'Untyped';
     }
-    document.getElementById('rf-scope').value = entry.scope || 'None / General';
-    document.getElementById('rf-role').value = entry.role || 'Offense / Attack';
+    document.getElementById('rf-scope').value = view.scope || 'None / General';
+    document.getElementById('rf-role').value = v2.role || 'General';
 
-    // Stat Buffs
-    document.getElementById('rf-str').value = entry.strBonus || '';
-    document.getElementById('rf-dex').value = entry.dexBonus || '';
-    document.getElementById('rf-con').value = entry.conBonus || '';
-    document.getElementById('rf-int').value = entry.intBonus || '';
-    document.getElementById('rf-wis').value = entry.wisBonus || '';
-    document.getElementById('rf-cha').value = entry.chaBonus || '';
-    document.getElementById('rf-ac').value = entry.acBonus || '';
-    document.getElementById('rf-hp').value = entry.hpBonus || '';
-    document.getElementById('rf-atk').value = entry.attBonus || '';
-    document.getElementById('rf-dmg').value = entry.dmgBonus || '';
-    document.getElementById('rf-fort').value = entry.fortBonus || '';
-    document.getElementById('rf-ref').value = entry.refBonus || '';
-    document.getElementById('rf-will').value = entry.willBonus || '';
-    document.getElementById('rf-skill').value = entry.skillBonus || '';
-    document.getElementById('rf-cl').value = entry.clBonus || '';
-    document.getElementById('rf-speed').value = entry.speedBonus || '';
+    // Populate Stat Buff inputs from V2 modifiers
+    document.getElementById('rf-str').value = view.str;
+    document.getElementById('rf-dex').value = view.dex;
+    document.getElementById('rf-con').value = view.con;
+    document.getElementById('rf-int').value = view.int;
+    document.getElementById('rf-wis').value = view.wis;
+    document.getElementById('rf-cha').value = view.cha;
+    document.getElementById('rf-ac').value = view.ac;
+    document.getElementById('rf-hp').value = view.hp;
+    document.getElementById('rf-atk').value = view.atk;
+    document.getElementById('rf-dmg').value = view.dmg;
+    document.getElementById('rf-fort').value = view.fort;
+    document.getElementById('rf-ref').value = view.ref;
+    document.getElementById('rf-will').value = view.will;
+    document.getElementById('rf-skill').value = view.skill;
+    document.getElementById('rf-cl').value = view.cl;
+    document.getElementById('rf-speed').value = view.speed;
 
-    // Combat & Action
-    document.getElementById('rf-dice').value = entry.dice || entry.extraDmg || '';
-    document.getElementById('rf-crit-min').value = entry.critMin || 20;
-    document.getElementById('rf-crit-mult').value = entry.critMult || 2;
-    document.getElementById('rf-dmg-type').value = entry.dmgType || '';
-    document.getElementById('rf-action').value = entry.action || 'Standard Action';
-    document.getElementById('rf-duration').value = entry.duration || 'Continuous';
-    document.getElementById('rf-weight').value = entry.weight !== undefined ? entry.weight : 1;
-    document.getElementById('rf-cost').value = entry.cost !== undefined ? entry.cost : 10;
+    // Combat & Action from V2 damageParts / weaponStats
+    document.getElementById('rf-dice').value = view.dice;
+    document.getElementById('rf-crit-min').value = view.critMin;
+    document.getElementById('rf-crit-mult').value = view.critMult;
+    document.getElementById('rf-dmg-type').value = view.dmgType;
+    document.getElementById('rf-action').value = v2.action || 'Standard Action';
+    document.getElementById('rf-duration').value = v2.duration || 'Continuous';
+    document.getElementById('rf-weight').value = v2.weight !== undefined ? v2.weight : 0;
+    document.getElementById('rf-cost').value = v2.cost !== undefined ? v2.cost : 0;
 
     // Specifics
-    document.getElementById('rf-school').value = entry.school || '';
-    document.getElementById('rf-level').value = entry.level || '';
-    document.getElementById('rf-discipline').value = entry.discipline || '';
+    document.getElementById('rf-school').value = v2.school || v2.spellStats?.school || '';
+    document.getElementById('rf-level').value = v2.level !== undefined && v2.level !== '' ? v2.level : (v2.spellStats?.level ?? '');
+    document.getElementById('rf-discipline').value = v2.discipline || v2.spellStats?.discipline || '';
 
     // Daily Charges / Uses
     const dcInput = document.getElementById('rf-daily-charges');
@@ -729,21 +915,13 @@ const RuleMaster = {
     if (dcInput) {
       let maxVal = '';
       let unit = 'charges';
-      if (entry.dailyCharges && typeof entry.dailyCharges.max === 'number') {
-        maxVal = entry.dailyCharges.max;
-        unit = entry.dailyCharges.unit || 'charges';
-      } else if (typeof entry.dailyCharges === 'number') {
-        maxVal = entry.dailyCharges;
-      } else if (entry.charges && typeof entry.charges === 'number') {
-        maxVal = entry.charges;
-      } else {
-        const fullDesc = `${entry.name || ''} ${entry.benefit || ''} ${entry.description || ''} ${entry.duration || ''}`;
-        const match = fullDesc.match(/(?:(\d+)\s*(?:charges?|rounds?|uses?|times?|kullanım|şarj|defa)?\s*(?:\/|\s*per\s*|\s*x\s*|\s*a\s*)\s*(?:day|gün|günde|günlük))|(?:(?:günde|günlük)\s*(\d+)\s*(?:şarj|kullanım|tur|round|defa)?)/i);
-        if (match) {
-          maxVal = parseInt(match[1] || match[2]) || '';
-          if (/round|tur/i.test(match[0])) unit = 'rounds';
-          else if (/use|kullanım|times|defa/i.test(match[0])) unit = 'uses';
-        }
+      if (v2.dailyCharges && typeof v2.dailyCharges.max === 'number') {
+        maxVal = v2.dailyCharges.max;
+        unit = v2.dailyCharges.unit || 'charges';
+      } else if (typeof v2.dailyCharges === 'number') {
+        maxVal = v2.dailyCharges;
+      } else if (v2.charges && typeof v2.charges === 'number') {
+        maxVal = v2.charges;
       }
       dcInput.value = maxVal;
       if (unitInput) unitInput.value = unit;
@@ -751,64 +929,60 @@ const RuleMaster = {
 
     // Target Skill & Multiple Skill Bonuses
     const targetSkillEl = document.getElementById('rf-target-skill');
-    if (targetSkillEl) {
-      targetSkillEl.value = entry.targetSkill || (entry.scope && entry.scope !== 'None / General' && !entry.scope.includes('Attack') && !entry.scope.includes('Weapon') ? entry.scope : '');
-    }
+    if (targetSkillEl) targetSkillEl.value = view.targetSkill;
     const skillBonusesEl = document.getElementById('rf-skill-bonuses');
-    if (skillBonusesEl) {
-      skillBonusesEl.value = (entry.skillBonuses && typeof entry.skillBonuses === 'object') ? JSON.stringify(entry.skillBonuses) : '';
-    }
+    if (skillBonusesEl) skillBonusesEl.value = view.skillBonusesJson;
 
     // Armor / Shield Contextual Fields
     const maxDexEl = document.getElementById('rf-max-dex');
-    if (maxDexEl) maxDexEl.value = entry.maxDex !== undefined ? entry.maxDex : '';
+    if (maxDexEl) maxDexEl.value = view.maxDex;
     const checkPenaltyEl = document.getElementById('rf-check-penalty');
-    if (checkPenaltyEl) checkPenaltyEl.value = entry.checkPenalty !== undefined ? entry.checkPenalty : '';
+    if (checkPenaltyEl) checkPenaltyEl.value = view.checkPenalty;
     const asfEl = document.getElementById('rf-asf');
-    if (asfEl) asfEl.value = entry.arcaneSpellFailure !== undefined ? entry.arcaneSpellFailure : '';
+    if (asfEl) asfEl.value = view.asf;
 
     // Weapon Contextual Fields
     const rangeEl = document.getElementById('rf-range');
-    if (rangeEl) rangeEl.value = entry.range || '';
+    if (rangeEl) rangeEl.value = view.range;
     const profEl = document.getElementById('rf-proficiency');
-    if (profEl) profEl.value = entry.proficiency || 'Martial';
+    if (profEl) profEl.value = view.proficiency;
     const isLightEl = document.getElementById('rf-is-light');
-    if (isLightEl) isLightEl.value = entry.isLight ? 'true' : 'false';
+    if (isLightEl) isLightEl.value = view.isLight ? 'true' : 'false';
     const sizeStepsEl = document.getElementById('rf-size-steps');
-    if (sizeStepsEl) sizeStepsEl.value = entry.sizeModifier?.scaling?.steps || 0;
+    if (sizeStepsEl) sizeStepsEl.value = v2.sizeModifier?.scaling?.steps || 0;
 
     // Spell / Maneuver Contextual Fields
     const saveTypeEl = document.getElementById('rf-save-type');
-    if (saveTypeEl) saveTypeEl.value = entry.saveType || entry.savingThrow || '';
+    if (saveTypeEl) saveTypeEl.value = view.saveType;
     const srEl = document.getElementById('rf-sr');
-    if (srEl) srEl.value = entry.spellResistance || entry.sr || 'No';
+    if (srEl) srEl.value = view.sr;
     const spellRangeEl = document.getElementById('rf-spell-range');
-    if (spellRangeEl) spellRangeEl.value = entry.range || '';
+    if (spellRangeEl) spellRangeEl.value = view.range;
     const targetAreaEl = document.getElementById('rf-target-area');
-    if (targetAreaEl) targetAreaEl.value = entry.target || entry.area || '';
+    if (targetAreaEl) targetAreaEl.value = view.targetArea;
     const compEl = document.getElementById('rf-components');
-    if (compEl) compEl.value = entry.components || '';
+    if (compEl) compEl.value = view.components;
 
     // Race Contextual Fields
     const raceSizeEl = document.getElementById('rf-race-size');
-    if (raceSizeEl) raceSizeEl.value = entry.size || 'Medium';
+    if (raceSizeEl) raceSizeEl.value = v2.size || 'Medium';
     const baseSpeedEl = document.getElementById('rf-base-speed');
-    if (baseSpeedEl) baseSpeedEl.value = entry.baseSpeed !== undefined ? entry.baseSpeed : 30;
+    if (baseSpeedEl) baseSpeedEl.value = v2.baseSpeed !== undefined ? v2.baseSpeed : 30;
     const favClassEl = document.getElementById('rf-favored-class');
-    if (favClassEl) favClassEl.value = entry.favoredClass || 'Any';
+    if (favClassEl) favClassEl.value = v2.favoredClass || 'Any';
     const langEl = document.getElementById('rf-languages');
-    if (langEl) langEl.value = Array.isArray(entry.languages) ? entry.languages.join(', ') : (entry.languages || 'Common');
+    if (langEl) langEl.value = Array.isArray(v2.languages) ? v2.languages.join(', ') : (v2.languages || 'Common');
 
-    // Advanced / Child Action Fields
+    // Advanced / Mode Action Fields
     const childLabelEl = document.getElementById('rf-child-label');
-    if (childLabelEl) childLabelEl.value = entry.childButtonLabel || '';
+    if (childLabelEl) childLabelEl.value = entry?._modeButtonLabel || '';
     const effectTypeEl = document.getElementById('rf-effect-type');
-    if (effectTypeEl) effectTypeEl.value = entry.effectType || '';
+    if (effectTypeEl) effectTypeEl.value = v2.effectType || '';
     const selfHpCostEl = document.getElementById('rf-self-hp-cost');
-    if (selfHpCostEl) selfHpCostEl.value = entry.selfHpCost || '';
+    if (selfHpCostEl) selfHpCostEl.value = v2.selfHpCost || '';
 
     // Rule Flags Checkboxes
-    const flags = entry.ruleFlags || {};
+    const flags = v2.ruleFlags || {};
     const setFlag = (id, val) => { const el = document.getElementById(id); if (el) el.checked = Boolean(val); };
     setFlag('rf-flag-touch', flags.touchAttack || flags.touch);
     setFlag('rf-flag-ignore-armor', flags.ignoreArmor);
@@ -819,170 +993,237 @@ const RuleMaster = {
     setFlag('rf-flag-adamantine', flags.adamantine);
     setFlag('rf-flag-two-hand-str', flags.twoHandedStrengthMultiplier || flags.twoHandedStr);
 
-    // Trigger contextual visibility & comboboxes
     this.onTypeChange();
     this.initComboboxes();
 
     modal.classList.remove('hidden');
   },
 
-  // Save Modal Action
+  // Save Modal Action (Builds Canonical V2 Entry from Form Inputs)
   submitModal() {
     const editIdx = this.selectedEntryIndex;
     const baseObj = (editIdx >= 0 && masterDb && masterDb[editIdx])
-      ? JSON.parse(JSON.stringify(masterDb[editIdx]))
-      : (this._currentEditingEntry ? JSON.parse(JSON.stringify(this._currentEditingEntry)) : {});
+      ? this.ensureV2(JSON.parse(JSON.stringify(masterDb[editIdx])))
+      : (this._currentEditingEntry ? this.ensureV2(JSON.parse(JSON.stringify(this._currentEditingEntry))) : this.createEmptyEntry('Weapon'));
 
     const actVal = document.getElementById('rf-action').value;
-    const typeVal = document.getElementById('rf-type').value;
-    const derivedActType = this.deriveActionType(actVal, typeVal);
+    const typeVal = this.capitalizeIdentifier(document.getElementById('rf-type').value);
+    const slotVal = this.capitalizeIdentifier(document.getElementById('rf-slot').value);
+    const bonusTypeVal = this.capitalizeIdentifier(document.getElementById('rf-bonus-type').value || 'Untyped');
+    const scopeVal = this.capitalizeIdentifier(document.getElementById('rf-scope').value || 'None / General');
 
-    const formData = {
+    // Build V2 modifiers array from modal inputs
+    const modifiers = [];
+    const addMod = (target, rawVal, overrideType = null) => {
+      if (rawVal === '' || rawVal === null || rawVal === undefined) return;
+      const num = Number(rawVal);
+      if (isNaN(num) || num === 0) return;
+      modifiers.push({
+        target,
+        value: num,
+        type: overrideType || bonusTypeVal || 'Untyped',
+        condition: null
+      });
+    };
+
+    addMod('ability.str', document.getElementById('rf-str').value);
+    addMod('ability.dex', document.getElementById('rf-dex').value);
+    addMod('ability.con', document.getElementById('rf-con').value);
+    addMod('ability.int', document.getElementById('rf-int').value);
+    addMod('ability.wis', document.getElementById('rf-wis').value);
+    addMod('ability.cha', document.getElementById('rf-cha').value);
+
+    const acInputVal = document.getElementById('rf-ac').value;
+    if (acInputVal !== '' && Number(acInputVal) !== 0 && typeVal !== 'Armor' && typeVal !== 'Shield') {
+      const acTarget = bonusTypeVal === 'Deflection' ? 'ac.deflection' : (bonusTypeVal === 'Natural Armor' ? 'ac.natural' : (bonusTypeVal === 'Dodge' ? 'ac.dodge' : 'ac'));
+      addMod(acTarget, acInputVal);
+    }
+
+    addMod('hp', document.getElementById('rf-hp').value);
+    addMod(typeVal === 'Weapon' ? 'attack.melee' : 'attack.all', document.getElementById('rf-atk').value);
+    if (typeVal !== 'Weapon') {
+      addMod('damage.all', document.getElementById('rf-dmg').value);
+    }
+    addMod('save.fort', document.getElementById('rf-fort').value);
+    addMod('save.ref', document.getElementById('rf-ref').value);
+    addMod('save.will', document.getElementById('rf-will').value);
+    addMod('casterLevel', document.getElementById('rf-cl').value);
+    addMod('speed.land', document.getElementById('rf-speed').value);
+
+    // Skill modifiers
+    const targetSkillVal = document.getElementById('rf-target-skill')?.value.trim();
+    const skillInputVal = document.getElementById('rf-skill').value;
+    const skillBonusesRaw = document.getElementById('rf-skill-bonuses')?.value.trim();
+    if (skillBonusesRaw) {
+      try {
+        const parsedSkills = JSON.parse(skillBonusesRaw);
+        Object.entries(parsedSkills).forEach(([sName, sVal]) => {
+          const slug = String(sName).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+          addMod(`skill.${slug}`, sVal, bonusTypeVal === 'Untyped' ? 'Competence' : bonusTypeVal);
+        });
+      } catch (e) {
+        console.warn('Could not parse skillBonuses JSON:', e);
+      }
+    } else if (skillInputVal !== '' && Number(skillInputVal) !== 0) {
+      const sTarget = targetSkillVal
+        ? `skill.${targetSkillVal.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}`
+        : 'skill.all';
+      addMod(sTarget, skillInputVal, bonusTypeVal === 'Untyped' ? 'Competence' : bonusTypeVal);
+    }
+
+    // Build V2 damageParts array
+    const diceVal = document.getElementById('rf-dice').value.trim();
+    const dmgBonusVal = Number(document.getElementById('rf-dmg').value) || 0;
+    const dmgTypeVal = this.capitalizeIdentifier(document.getElementById('rf-dmg-type').value.trim()) || (typeVal === 'Weapon' ? 'Slashing' : 'Untyped');
+    const damageParts = [];
+    if (diceVal) {
+      damageParts.push({
+        dice: diceVal,
+        bonus: typeVal === 'Weapon' ? dmgBonusVal : 0,
+        type: dmgTypeVal,
+        multiplyOnCrit: typeVal === 'Weapon',
+        onCritOnly: false,
+        source: typeVal === 'Weapon' ? 'Base Weapon' : 'Primary'
+      });
+    }
+
+    const critMinVal = Number(document.getElementById('rf-crit-min').value) || 20;
+    const critMultVal = Number(document.getElementById('rf-crit-mult').value) || 2;
+
+    const tagsArr = (() => {
+      const rawTags = document.getElementById('rf-tags')?.value || '';
+      const arr = rawTags.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+      if ((slotVal === 'Two-Handed' || slotVal === 'Two-Hand' || slotVal === 'Both Hands') && !arr.includes('two-handed')) {
+        arr.push('two-handed');
+      }
+      return arr;
+    })();
+
+    const v2Entry = Object.assign({}, baseObj, {
+      schemaVersion: 2,
       name: this.capitalizeTitle(document.getElementById('rf-name').value.trim()),
-      type: this.capitalizeIdentifier(typeVal),
-      slot: this.capitalizeIdentifier(document.getElementById('rf-slot').value),
+      type: typeVal,
+      slot: slotVal,
       action: actVal,
-      actionType: baseObj.actionType || derivedActType,
-      tags: (() => {
-        const rawTags = document.getElementById('rf-tags')?.value || '';
-        const tagsArr = rawTags.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
-        const sl = document.getElementById('rf-slot')?.value || '';
-        if ((sl === 'Two-Handed' || sl === 'Two-Hand' || sl === 'Both Hands') && !tagsArr.includes('two-handed')) {
-          tagsArr.push('two-handed');
-        }
-        return tagsArr;
-      })(),
-      parent: document.getElementById('rf-parent').value.trim() || '-',
+      actionType: this.deriveActionType(actVal, typeVal).toLowerCase(),
+      tags: tagsArr,
       prereq: document.getElementById('rf-prereq').value.trim() || '-',
       source: document.getElementById('rf-source').value.trim() || 'PHB p.',
       benefit: document.getElementById('rf-benefit').value.trim(),
-      bonusType: this.capitalizeIdentifier(document.getElementById('rf-bonus-type').value),
-      scope: this.capitalizeIdentifier(document.getElementById('rf-scope').value),
+      description: document.getElementById('rf-benefit').value.trim() || baseObj.description || '',
+      scope: scopeVal,
       role: this.capitalizeIdentifier(document.getElementById('rf-role').value),
-
-      // Stats
-      strBonus: document.getElementById('rf-str').value ? Number(document.getElementById('rf-str').value) : '',
-      dexBonus: document.getElementById('rf-dex').value ? Number(document.getElementById('rf-dex').value) : '',
-      conBonus: document.getElementById('rf-con').value ? Number(document.getElementById('rf-con').value) : '',
-      intBonus: document.getElementById('rf-int').value ? Number(document.getElementById('rf-int').value) : '',
-      wisBonus: document.getElementById('rf-wis').value ? Number(document.getElementById('rf-wis').value) : '',
-      chaBonus: document.getElementById('rf-cha').value ? Number(document.getElementById('rf-cha').value) : '',
-      acBonus: document.getElementById('rf-ac').value ? Number(document.getElementById('rf-ac').value) : '',
-      hpBonus: document.getElementById('rf-hp').value ? Number(document.getElementById('rf-hp').value) : '',
-      attBonus: document.getElementById('rf-atk').value ? Number(document.getElementById('rf-atk').value) : '',
-      dmgBonus: document.getElementById('rf-dmg').value ? Number(document.getElementById('rf-dmg').value) : '',
-      fortBonus: document.getElementById('rf-fort').value ? Number(document.getElementById('rf-fort').value) : '',
-      refBonus: document.getElementById('rf-ref').value ? Number(document.getElementById('rf-ref').value) : '',
-      willBonus: document.getElementById('rf-will').value ? Number(document.getElementById('rf-will').value) : '',
-      skillBonus: document.getElementById('rf-skill').value ? Number(document.getElementById('rf-skill').value) : '',
-      clBonus: document.getElementById('rf-cl').value ? Number(document.getElementById('rf-cl').value) : '',
-      speedBonus: document.getElementById('rf-speed').value ? Number(document.getElementById('rf-speed').value) : '',
-
-      // Combat
-      dice: document.getElementById('rf-dice').value.trim(),
-      extraDmg: document.getElementById('rf-dice').value.trim(),
-      critMin: Number(document.getElementById('rf-crit-min').value) || 20,
-      critMult: Number(document.getElementById('rf-crit-mult').value) || 2,
-      dmgType: this.capitalizeIdentifier(document.getElementById('rf-dmg-type').value.trim()),
       duration: document.getElementById('rf-duration').value.trim(),
       weight: Number(document.getElementById('rf-weight').value) || 0,
       cost: Number(document.getElementById('rf-cost').value) || 0,
-
-      // Specifics
       school: this.capitalizeIdentifier(document.getElementById('rf-school').value.trim()),
       level: document.getElementById('rf-level').value ? Number(document.getElementById('rf-level').value) : '',
-      discipline: this.capitalizeIdentifier(document.getElementById('rf-discipline').value.trim())
-    };
+      discipline: this.capitalizeIdentifier(document.getElementById('rf-discipline').value.trim()),
+      modifiers,
+      damageParts,
+      modes: Array.isArray(baseObj.modes) ? baseObj.modes : []
+    });
 
-    // Process Daily Charges
+    const parentInputVal = document.getElementById('rf-parent').value.trim();
+    if (parentInputVal && parentInputVal !== '-') {
+      v2Entry._linkedParentName = parentInputVal;
+    }
+    const childLabelVal = document.getElementById('rf-child-label')?.value.trim();
+    if (childLabelVal) {
+      v2Entry._modeButtonLabel = childLabelVal;
+    }
+
+    // Daily Charges
     const dailyChargesVal = parseInt(document.getElementById('rf-daily-charges')?.value);
     const chargeUnitVal = document.getElementById('rf-charge-unit')?.value || 'charges';
     if (!isNaN(dailyChargesVal) && dailyChargesVal > 0) {
-      formData.dailyCharges = {
+      v2Entry.dailyCharges = {
         current: (baseObj.dailyCharges?.current !== undefined && baseObj.dailyCharges.current <= dailyChargesVal) ? baseObj.dailyCharges.current : dailyChargesVal,
         max: dailyChargesVal,
         unit: chargeUnitVal,
         recharge: 'long_rest'
       };
     } else if (baseObj.dailyCharges) {
-      delete formData.dailyCharges;
+      delete v2Entry.dailyCharges;
     }
 
-    // Target Skill & Multiple Skill Bonuses
-    const targetSkillVal = document.getElementById('rf-target-skill')?.value.trim();
-    if (targetSkillVal) {
-      formData.targetSkill = targetSkillVal;
-      if (!formData.scope || formData.scope === 'None / General') {
-        formData.scope = targetSkillVal;
-      }
-    }
-    const skillBonusesRaw = document.getElementById('rf-skill-bonuses')?.value.trim();
-    if (skillBonusesRaw) {
-      try {
-        formData.skillBonuses = JSON.parse(skillBonusesRaw);
-      } catch (e) {
-        console.warn('Could not parse skillBonuses JSON:', e);
-      }
-    } else if (targetSkillVal && formData.skillBonus) {
-      formData.skillBonuses = { [targetSkillVal]: formData.skillBonus };
-    }
-
-    // Armor / Shield Contextual Fields
+    // Armor / Shield Contextual Fields -> armorStats
     if (typeVal === 'Armor' || typeVal === 'Shield') {
-      const maxDexVal = document.getElementById('rf-max-dex')?.value;
-      if (maxDexVal !== '' && !isNaN(Number(maxDexVal))) formData.maxDex = Number(maxDexVal);
-      const checkPenaltyVal = document.getElementById('rf-check-penalty')?.value;
-      if (checkPenaltyVal !== '' && !isNaN(Number(checkPenaltyVal))) formData.checkPenalty = Number(checkPenaltyVal);
-      const asfVal = document.getElementById('rf-asf')?.value;
-      if (asfVal !== '' && !isNaN(Number(asfVal))) formData.arcaneSpellFailure = Number(asfVal);
+      const maxDexRaw = document.getElementById('rf-max-dex')?.value;
+      const acpRaw = document.getElementById('rf-check-penalty')?.value;
+      const asfRaw = document.getElementById('rf-asf')?.value;
+      v2Entry.armorStats = {
+        category: typeVal === 'Shield' ? 'Shield' : (baseObj.armorStats?.category || 'Light'),
+        baseAc: Number(acInputVal) || baseObj.armorStats?.baseAc || 0,
+        maxDex: (maxDexRaw !== '' && !isNaN(Number(maxDexRaw))) ? Number(maxDexRaw) : null,
+        acp: (acpRaw !== '' && !isNaN(Number(acpRaw))) ? Number(acpRaw) : 0,
+        asf: (asfRaw !== '' && !isNaN(Number(asfRaw))) ? Number(asfRaw) : 0,
+        speed30: baseObj.armorStats?.speed30 || 30,
+        speed20: baseObj.armorStats?.speed20 || 20
+      };
     }
 
-    // Weapon Contextual Fields
+    // Weapon Contextual Fields -> weaponStats
     if (typeVal === 'Weapon') {
-      const rangeVal = document.getElementById('rf-range')?.value.trim();
-      if (rangeVal) formData.range = rangeVal;
-      const profVal = document.getElementById('rf-proficiency')?.value;
-      if (profVal) formData.proficiency = profVal;
-      formData.isLight = document.getElementById('rf-is-light')?.value === 'true';
+      const rangeVal = document.getElementById('rf-range')?.value.trim() || '';
+      const profVal = document.getElementById('rf-proficiency')?.value || 'Martial';
+      const isLightBool = document.getElementById('rf-is-light')?.value === 'true';
+      const isTwoHandBool = slotVal === 'Two-Handed' || tagsArr.includes('two-handed');
+      v2Entry.enhancementBonus = Math.max(Number(document.getElementById('rf-atk').value) || 0, dmgBonusVal, 0);
+      v2Entry.weaponStats = {
+        category: profVal,
+        handedness: isTwoHandBool ? 'Two-Handed' : (isLightBool ? 'Light' : 'One-Handed'),
+        baseDamage: diceVal || '1d8',
+        critMin: critMinVal,
+        critMult: critMultVal,
+        damageTypes: dmgTypeVal.split('/').map(s => s.trim()).filter(Boolean),
+        rangeIncrement: parseInt(rangeVal) || 0,
+        finessable: isLightBool,
+        isLight: isLightBool
+      };
+      if (rangeVal) v2Entry.range = rangeVal;
       const sizeStepsVal = Number(document.getElementById('rf-size-steps')?.value) || 0;
       if (sizeStepsVal > 0) {
-        formData.sizeModifier = { targetType: 'weapon', scaling: { steps: sizeStepsVal } };
+        v2Entry.sizeModifier = { targetType: 'weapon', scaling: { steps: sizeStepsVal } };
       }
     }
 
-    // Spell / Maneuver Contextual Fields
+    // Spell / Maneuver Contextual Fields -> spellStats
     if (typeVal === 'Spell' || typeVal === 'Maneuver' || typeVal === 'Stance') {
-      const saveTypeVal = document.getElementById('rf-save-type')?.value.trim();
-      if (saveTypeVal) formData.saveType = saveTypeVal;
-      const srVal = document.getElementById('rf-sr')?.value;
-      if (srVal) formData.spellResistance = srVal;
-      const spellRangeVal = document.getElementById('rf-spell-range')?.value.trim();
-      if (spellRangeVal) formData.range = spellRangeVal;
-      const targetAreaVal = document.getElementById('rf-target-area')?.value.trim();
-      if (targetAreaVal) formData.target = targetAreaVal;
-      const compVal = document.getElementById('rf-components')?.value.trim();
-      if (compVal) formData.components = compVal;
+      const saveTypeVal = document.getElementById('rf-save-type')?.value.trim() || 'None';
+      const srVal = document.getElementById('rf-sr')?.value || 'No';
+      const spellRangeVal = document.getElementById('rf-spell-range')?.value.trim() || '';
+      const targetAreaVal = document.getElementById('rf-target-area')?.value.trim() || '';
+      const compVal = document.getElementById('rf-components')?.value.trim() || '';
+      if (spellRangeVal) v2Entry.range = spellRangeVal;
+      v2Entry.spellStats = {
+        school: v2Entry.school || '',
+        discipline: v2Entry.discipline || '',
+        level: v2Entry.level,
+        components: compVal,
+        castingTime: actVal,
+        range: spellRangeVal,
+        targetOrArea: targetAreaVal,
+        duration: v2Entry.duration,
+        savingThrow: saveTypeVal,
+        spellResistance: srVal
+      };
     }
 
     // Race Contextual Fields
     if (typeVal === 'Race') {
-      const raceSizeVal = document.getElementById('rf-race-size')?.value;
-      if (raceSizeVal) formData.size = raceSizeVal;
+      v2Entry.size = document.getElementById('rf-race-size')?.value || 'Medium';
       const baseSpeedVal = Number(document.getElementById('rf-base-speed')?.value);
-      if (!isNaN(baseSpeedVal)) formData.baseSpeed = baseSpeedVal;
-      const favClassVal = document.getElementById('rf-favored-class')?.value.trim();
-      if (favClassVal) formData.favoredClass = favClassVal;
+      if (!isNaN(baseSpeedVal)) v2Entry.baseSpeed = baseSpeedVal;
+      v2Entry.favoredClass = document.getElementById('rf-favored-class')?.value.trim() || 'Any';
       const langVal = document.getElementById('rf-languages')?.value.trim();
-      if (langVal) formData.languages = langVal.split(',').map(l => l.trim()).filter(Boolean);
+      if (langVal) v2Entry.languages = langVal.split(',').map(l => l.trim()).filter(Boolean);
     }
 
-    // Advanced / Child Action Fields
-    const childLabelVal = document.getElementById('rf-child-label')?.value.trim();
-    if (childLabelVal) formData.childButtonLabel = childLabelVal;
     const effectTypeVal = document.getElementById('rf-effect-type')?.value;
-    if (effectTypeVal) formData.effectType = effectTypeVal;
+    if (effectTypeVal) v2Entry.effectType = effectTypeVal;
     const selfHpCostVal = Number(document.getElementById('rf-self-hp-cost')?.value);
-    if (!isNaN(selfHpCostVal) && selfHpCostVal > 0) formData.selfHpCost = selfHpCostVal;
+    if (!isNaN(selfHpCostVal) && selfHpCostVal > 0) v2Entry.selfHpCost = selfHpCostVal;
 
     // Rule Flags
     const ruleFlags = Object.assign({}, baseObj.ruleFlags || {});
@@ -995,16 +1236,12 @@ const RuleMaster = {
     if (getFlag('rf-flag-cold-iron')) ruleFlags.coldIron = true; else delete ruleFlags.coldIron;
     if (getFlag('rf-flag-adamantine')) ruleFlags.adamantine = true; else delete ruleFlags.adamantine;
     if (getFlag('rf-flag-two-hand-str')) ruleFlags.twoHandedStrengthMultiplier = true; else delete ruleFlags.twoHandedStrengthMultiplier;
-    if (Object.keys(ruleFlags).length > 0) formData.ruleFlags = ruleFlags;
+    v2Entry.ruleFlags = ruleFlags;
 
-    // Deep Merge with baseObj to guarantee ruleFlags, combatModifiers, and skillBonuses are preserved
-    const entry = Object.assign({}, baseObj, formData);
-
-    if (this.saveEntry(entry, this.selectedEntryIndex)) {
+    if (this.saveEntry(v2Entry, this.selectedEntryIndex)) {
       this.closeModal();
     }
   },
-
   closeModal() {
     const modal = document.getElementById('rule-crud-modal');
     if (modal) modal.classList.add('hidden');
@@ -1064,12 +1301,12 @@ const RuleMaster = {
     names.add('-');
     if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
       masterDb.forEach(m => {
-        if (m && m.name && !m.isChild) names.add(m.name);
+        if (m && m.name) names.add(m.name);
       });
     }
     if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
       window.BUNDLED_SRD_CORE_CATALOG.forEach(m => {
-        if (m && m.name && !m.isChild) names.add(m.name);
+        if (m && m.name) names.add(m.name);
       });
     }
     return Array.from(names);
@@ -1079,7 +1316,6 @@ const RuleMaster = {
     if (!inputEl || inputEl._hasCombobox) return;
     inputEl._hasCombobox = true;
 
-    // Ensure parent container has relative positioning
     const parent = inputEl.parentElement;
     if (parent && !parent.classList.contains('relative')) {
       parent.classList.add('relative');
@@ -1087,7 +1323,6 @@ const RuleMaster = {
 
     inputEl.setAttribute('autocomplete', 'off');
 
-    // Create dropdown element
     const dropdown = document.createElement('div');
     dropdown.className = 'rm-combobox-dropdown hidden absolute left-0 top-full z-[120] mt-1 max-h-52 w-full overflow-y-auto rounded-lg border border-purple-500/60 bg-slate-950 p-1 shadow-2xl backdrop-blur-md text-xs';
     parent.appendChild(dropdown);
@@ -1119,12 +1354,10 @@ const RuleMaster = {
         filteredItems.forEach((item, idx) => {
           const row = document.createElement('div');
           row.className = `cursor-pointer rounded px-2.5 py-1.5 text-slate-200 hover:bg-purple-900/50 hover:text-white flex items-center justify-between transition ${idx === activeIdx ? 'bg-purple-950/70 text-purple-200' : ''}`;
-          
           const iconSpan = options.icon ? `<span class="mr-1.5 opacity-80">${options.icon}</span>` : '';
           row.innerHTML = `<span class="truncate">${iconSpan}${item}</span>`;
-          
           row.onmousedown = (e) => {
-            e.preventDefault(); // prevent blur before click
+            e.preventDefault();
             selectItem(item);
           };
           dropdown.appendChild(row);
@@ -1227,10 +1460,10 @@ const RuleMaster = {
     if (p.weight !== undefined) document.getElementById('rf-weight').value = p.weight;
     if (p.cost !== undefined) document.getElementById('rf-cost').value = p.cost;
     if (p.discipline) document.getElementById('rf-discipline').value = p.discipline;
-    if (p.acBonus) document.getElementById('rf-ac').value = p.acBonus;
+    if (p.ac !== undefined) document.getElementById('rf-ac').value = p.ac;
   },
 
-  // Render Table with Badges, Actions, and Pagination
+  // Render Table with Canonical V2 Badges, Embedded Modes, and Actions
   renderTable() {
     const tbody = document.getElementById('master-db-tbody');
     if (!tbody || !masterDb) return;
@@ -1240,119 +1473,58 @@ const RuleMaster = {
     const bonusFilter = document.getElementById('mdb-bonus-filter')?.value || 'ALL';
     const scopeFilter = document.getElementById('mdb-scope-filter')?.value || 'ALL';
 
-    // Filter
-    let filtered = masterDb.filter((item, idx) => {
-      item._originalIndex = idx; // keep track of array index for edits/deletes
-      const matchQ = !query || 
-        item.name.toLowerCase().includes(query) || 
+    let filtered = masterDb.filter((rawItem, idx) => {
+      const item = this.ensureV2(rawItem);
+      rawItem._originalIndex = idx;
+      const matchQ = !query ||
+        (item.name && item.name.toLowerCase().includes(query)) ||
         (item.benefit && item.benefit.toLowerCase().includes(query)) ||
         (item.source && item.source.toLowerCase().includes(query)) ||
         (item.discipline && item.discipline.toLowerCase().includes(query));
 
       const matchCat = cat === 'ALL' || item.type === cat;
-      const matchBonus = bonusFilter === 'ALL' || item.bonusType === bonusFilter;
-      const matchScope = scopeFilter === 'ALL' || item.scope === scopeFilter;
+      const itemBonusType = item.modifiers?.[0]?.type || (item.type === 'Weapon' && item.enhancementBonus ? 'Enhancement' : 'Untyped');
+      const matchBonus = bonusFilter === 'ALL' || itemBonusType === bonusFilter;
+      const matchScope = scopeFilter === 'ALL' || (item.scope || 'None / General') === scopeFilter;
 
       return matchQ && matchCat && matchBonus && matchScope;
     });
 
-    // Group parent and child entries so parents always render above their children
-    const getCleanName = (str) => (str || '').replace(/^↳\s*/, '').trim().toLowerCase();
-    const isChildItem = (it) => Boolean((it.parent && it.parent !== '-' && it.parent !== '') || (it.name && it.name.trim().startsWith('↳')));
-    const getParentKey = (it) => {
-      if (it.parent && it.parent !== '-' && it.parent !== '') return getCleanName(it.parent);
-      if (it.name && it.name.trim().startsWith('↳')) {
-        const clean = it.name.replace(/^↳\s*/, '').trim();
-        return clean.split(':')[0].trim().toLowerCase();
-      }
-      return '';
-    };
-
-    const parentSet = new Set();
-    filtered.forEach(it => {
-      if (!isChildItem(it)) {
-        parentSet.add(getCleanName(it.name));
-      }
-    });
-
-    const childrenByParent = new Map();
-    filtered.forEach(it => {
-      if (isChildItem(it)) {
-        const pKey = getParentKey(it);
-        if (pKey && parentSet.has(pKey)) {
-          if (!childrenByParent.has(pKey)) childrenByParent.set(pKey, []);
-          childrenByParent.get(pKey).push(it);
-        }
-      }
-    });
-
-    const orderedFiltered = [];
-    filtered.forEach(it => {
-      if (isChildItem(it)) {
-        const pKey = getParentKey(it);
-        if (pKey && parentSet.has(pKey)) {
-          // Will be rendered immediately below its parent
-          return;
-        }
-      }
-      orderedFiltered.push(it);
-      if (!isChildItem(it)) {
-        const pKey = getCleanName(it.name);
-        if (childrenByParent.has(pKey)) {
-          childrenByParent.get(pKey).forEach(child => orderedFiltered.push(child));
-          childrenByParent.delete(pKey);
-        }
-      }
-    });
-
-    // Update count badge
     const countBadge = document.getElementById('mdb-total-count-badge');
-    if (countBadge) countBadge.textContent = `${orderedFiltered.length} / ${masterDb.length} Kayıt`;
+    if (countBadge) countBadge.textContent = `${filtered.length} / ${masterDb.length} Kayıt`;
 
     tbody.innerHTML = '';
 
-    orderedFiltered.forEach(item => {
-      const idx = item._originalIndex;
+    filtered.forEach(rawItem => {
+      const idx = rawItem._originalIndex;
+      const item = this.ensureV2(rawItem);
       const tr = document.createElement('tr');
-      const isChild = isChildItem(item);
-      tr.className = isChild
-        ? 'bg-purple-950/15 hover:bg-slate-800/50 transition border-b border-slate-800/80'
-        : 'hover:bg-slate-800/50 transition border-b border-slate-800/80';
+      tr.className = 'hover:bg-slate-800/50 transition border-b border-slate-800/80';
 
       const typeBadgeClass = this.getTypeBadgeClass(item.type);
-
-      // Stat summary string
-      const statParts = [];
-      if (item.attBonus) statParts.push(`Atk +${item.attBonus}`);
-      if (item.dmgBonus) statParts.push(`Dmg +${item.dmgBonus}`);
-      if (item.acBonus) statParts.push(`AC +${item.acBonus}`);
-      if (item.extraDmg || item.dice) statParts.push(`Zar: ${item.extraDmg || item.dice}`);
-      if (item.strBonus) statParts.push(`STR +${item.strBonus}`);
-      if (item.dexBonus) statParts.push(`DEX +${item.dexBonus}`);
-      if (item.conBonus) statParts.push(`CON +${item.conBonus}`);
-      if (item.fortBonus) statParts.push(`Fort +${item.fortBonus}`);
-      if (item.refBonus) statParts.push(`Ref +${item.refBonus}`);
-      if (item.willBonus) statParts.push(`Will +${item.willBonus}`);
-      const statsSummary = statParts.length > 0 ? statParts.join(' • ') : '-';
+      const statPills = this.getEntrySummaryPills(item);
+      const statsSummary = statPills.length > 0 ? statPills.join(' • ') : '-';
+      const modesCount = Array.isArray(item.modes) ? item.modes.length : 0;
+      const primaryBonusType = item.modifiers?.[0]?.type || (item.type === 'Weapon' && item.enhancementBonus ? 'Enhancement' : (item.type === 'Armor' ? 'Armor' : (item.type === 'Shield' ? 'Shield' : 'Untyped')));
 
       tr.innerHTML = `
-        <td class="py-2.5 px-3 ${isChild ? 'pl-7 border-l-2 border-purple-500/60' : ''}">
+        <td class="py-2.5 px-3">
           <div class="font-bold text-white flex items-center gap-1.5 flex-wrap">
             <span>${item.name}</span>
-            ${isChild && item.parent && item.parent !== '-' ? `<span class="px-2 py-0.5 rounded text-[9px] font-bold bg-purple-950 text-purple-300 border border-purple-800">↳ Parent: ${item.parent}</span>` : ''}
+            ${modesCount > 0 ? `<span class="px-2 py-0.5 rounded text-[9px] font-bold bg-purple-950 text-purple-300 border border-purple-800">⚡ ${modesCount} Mod</span>` : ''}
           </div>
           <div class="text-[10px] text-slate-400 font-mono mt-0.5">${item.source || 'PHB'}</div>
         </td>
         <td class="py-2.5 px-3">
           <span class="badge ${typeBadgeClass}">${item.type ? this.capitalizeIdentifier(item.type) : 'Other'}</span>
-          ${item.discipline ? `<span class="badge bg-rose-950 text-rose-300 border border-rose-800 block mt-1 w-max">${this.capitalizeIdentifier(item.discipline)}</span>` : ''}
+          ${item.discipline && item.discipline !== '-' ? `<span class="badge bg-rose-950 text-rose-300 border border-rose-800 block mt-1 w-max">${this.capitalizeIdentifier(item.discipline)}</span>` : ''}
         </td>
         <td class="py-2.5 px-3 text-slate-300 text-xs">
           <div>${item.slot ? this.capitalizeIdentifier(item.slot) : 'None'}</div>
           ${item.level !== undefined && item.level !== '' ? `<div class="text-[10px] text-amber-400 font-bold">${item.level}. Seviye</div>` : ''}
         </td>
         <td class="py-2.5 px-3">
-          <div class="text-xs font-semibold text-amber-300">${item.bonusType ? this.capitalizeIdentifier(item.bonusType) : 'Untyped'}</div>
+          <div class="text-xs font-semibold text-amber-300">${this.capitalizeIdentifier(primaryBonusType)}</div>
           <div class="text-[10px] text-slate-400">${item.scope ? this.capitalizeIdentifier(item.scope) : 'General'}</div>
         </td>
         <td class="py-2.5 px-3 font-mono text-xs font-bold text-emerald-400">
@@ -1366,7 +1538,7 @@ const RuleMaster = {
             <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Düzenle">
               ✏️
             </button>
-            <button onclick="RuleMaster.addChildPower(${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-purple-300 text-xs transition" title="Alt Yetenek Ekle (Child Power)">
+            <button onclick="RuleMaster.addChildPower(${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-purple-300 text-xs transition" title="Gömülü Alt Mod Ekle (Mode)">
               🔗
             </button>
             <button onclick="RuleMaster.duplicateEntry(${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs transition" title="Kopyala">
@@ -1381,7 +1553,6 @@ const RuleMaster = {
       tbody.appendChild(tr);
     });
   },
-
   getTypeBadgeClass(type) {
     switch (type) {
       case 'Weapon': return 'bg-rose-950 text-rose-300 border border-rose-700';
@@ -2079,192 +2250,226 @@ ZORUNLU KURALLAR:
     'hast': 'haste',
     'moutain hamer': 'mountain hammer',
 
-    // Verified Canonical Entries
+    // Verified Canonical V2 Entries
     'cleave': {
+      schemaVersion: 2,
+      id: 'feat_cleave',
       name: 'Cleave',
       type: 'Feat',
       slot: 'None',
-      parent: '-',
       source: 'PHB p.92',
       prereq: 'Str 13, Power Attack.',
       benefit: 'Prerequisites: Str 13, Power Attack. Benefit: If you deal a creature enough damage to make it drop (typically by dropping it to below 0 hit points or killing it), you get an immediate, extra melee attack against another creature in the immediate vicinity. The extra attack is with the same weapon and at the same bonus as the attack that dropped the previous creature. You can use this ability once per round.',
-      bonusType: 'Untyped',
+      description: 'If you deal a creature enough damage to make it drop, you get an immediate, extra melee attack against another creature in the immediate vicinity.',
       scope: 'Melee Only',
       action: 'Free Action',
+      actionType: 'free',
       duration: 'Passive',
-      role: 'Offense / Cleave',
+      role: 'General',
+      isFighterBonusFeat: true,
+      modifiers: [],
+      damageParts: [],
+      modes: [],
+      ruleFlags: { cleave: true },
+      tacticalBadges: ['Extra Melee Attack on Drop'],
       weight: 0,
       cost: 0
     },
     'great cleave': {
+      schemaVersion: 2,
+      id: 'feat_great_cleave',
       name: 'Great Cleave',
       type: 'Feat',
       slot: 'None',
-      parent: '-',
       source: 'PHB p.94',
       prereq: 'Str 13, Cleave, Power Attack, base attack bonus +4.',
       benefit: 'Prerequisites: Str 13, Cleave, Power Attack, BAB +4. Benefit: This feat works like Cleave, except that there is no limit in the number of times you can use it per round.',
-      bonusType: 'Untyped',
+      description: 'This feat works like Cleave, except that there is no limit in the number of times you can use it per round.',
       scope: 'Melee Only',
       action: 'Free Action',
+      actionType: 'free',
       duration: 'Passive',
-      role: 'Offense / Cleave',
+      role: 'General',
+      isFighterBonusFeat: true,
+      modifiers: [],
+      damageParts: [],
+      modes: [],
+      ruleFlags: { greatCleave: true },
+      tacticalBadges: ['Unlimited Cleave/Round'],
       weight: 0,
       cost: 0
     },
     'power attack': {
+      schemaVersion: 2,
+      id: 'feat_power_attack',
       name: 'Power Attack',
       type: 'Feat',
       slot: 'None',
-      parent: '-',
       source: 'PHB p.98',
       prereq: 'Str 13.',
-      benefit: 'Prerequisites: Str 13. Benefit: On your action, before making attack rolls for a round, you may choose to subtract a number from all melee attack rolls and add the same number to all melee damage rolls. This number may not exceed your base attack bonus. The penalty on attacks and bonus on damage apply until your next turn. If you attack with a two-handed weapon, add twice the number subtracted.',
-      bonusType: 'Untyped',
+      benefit: 'Prerequisites: Str 13. Benefit: On your action, before making attack rolls for a round, you may choose to subtract a number from all melee attack rolls and add the same number to all melee damage rolls. This number may not exceed your base attack bonus. If you attack with a two-handed weapon, add twice the number subtracted.',
+      description: 'Trade melee attack bonus for melee damage bonus (1:1 one-handed, 1:2 two-handed).',
       scope: 'Melee Only',
       action: 'Free Action',
+      actionType: 'free',
       duration: '1 round',
-      role: 'Offense / Power Attack',
+      role: 'General',
+      isFighterBonusFeat: true,
+      modifiers: [],
+      damageParts: [],
+      modes: [],
+      ruleFlags: { powerAttack: true },
+      tacticalBadges: ['1:1 / 1:2 Two-Handed Dmg'],
       weight: 0,
       cost: 0
     },
     'weapon finesse': {
+      schemaVersion: 2,
+      id: 'feat_weapon_finesse',
       name: 'Weapon Finesse',
       type: 'Feat',
       slot: 'None',
-      parent: '-',
       source: 'PHB p.102',
       prereq: 'Base attack bonus +1.',
       benefit: 'Prerequisites: BAB +1. Benefit: With a light weapon, rapier, whip, or spiked chain made for a creature of your size category, you may use your Dexterity modifier instead of your Strength modifier on attack rolls. If you carry a shield, its armor check penalty applies to your attack rolls.',
-      bonusType: 'Untyped',
+      description: 'Use Dexterity modifier instead of Strength modifier on attack rolls with light or finessable weapons.',
       scope: 'Melee Only',
       action: 'Passive',
+      actionType: 'passive',
       duration: 'Continuous',
-      role: 'Offense / Attack',
+      role: 'General',
+      isFighterBonusFeat: true,
+      modifiers: [],
+      damageParts: [],
+      modes: [],
+      ruleFlags: { weaponFinesse: true },
+      tacticalBadges: ['DEX to Melee Attack'],
       weight: 0,
       cost: 0
     },
     'shock trooper': {
+      schemaVersion: 2,
+      id: 'feat_shock_trooper',
       name: 'Shock Trooper',
       type: 'Feat',
       slot: 'None',
-      parent: '-',
       source: 'Complete Warrior p.112',
       prereq: 'Base attack bonus +6, Improved Bull Rush, Power Attack.',
       benefit: 'Prerequisites: BAB +6, Improved Bull Rush, Power Attack. Tactical Feat enabling Directed Bull Rush, Domino Rush (free trip on bull rush collision), and Heedless Charge (divert Power Attack attack penalty to Armor Class instead of attack rolls during a charge with a two-handed weapon).',
-      bonusType: 'Untyped',
+      description: 'Tactical feat with Directed Bull Rush, Domino Rush, and Heedless Charge.',
       scope: 'Melee Only',
       action: 'Passive / Tactical',
+      actionType: 'passive',
       duration: 'Continuous',
-      role: 'Offense / Tactical',
+      role: 'General',
+      modifiers: [],
+      damageParts: [],
+      modes: [],
+      ruleFlags: { shockTrooper: true, heedlessCharge: true },
+      tacticalBadges: ['Heedless Charge (PA to AC)'],
       weight: 0,
       cost: 0
     },
     'shadow blade': {
+      schemaVersion: 2,
+      id: 'feat_shadow_blade',
       name: 'Shadow Blade',
       type: 'Feat',
       slot: 'None',
-      parent: '-',
       source: 'ToB p.32',
       prereq: 'One Shadow Hand stance.',
       benefit: 'Prerequisites: One Shadow Hand stance. Benefit: While you are in a Shadow Hand stance and attack with one of the discipline\'s preferred weapons (dagger, short sword, sai, siangham, unarmed strike, spiked chain), you can add your Dexterity modifier as a bonus on damage rolls.',
-      bonusType: 'Untyped',
+      description: 'Add Dexterity modifier to melee damage while in a Shadow Hand stance with discipline weapons.',
       scope: 'Melee Only',
       action: 'Passive',
+      actionType: 'passive',
       duration: 'Continuous',
-      role: 'Offense / Damage',
+      role: 'General',
+      modifiers: [],
+      damageParts: [],
+      modes: [],
+      ruleFlags: { shadowBlade: true },
+      tacticalBadges: ['+DEX to Damage (Shadow Hand)'],
       weight: 0,
       cost: 0
     },
     'leap attack': {
+      schemaVersion: 2,
+      id: 'feat_leap_attack',
       name: 'Leap Attack',
       type: 'Feat',
       slot: 'None',
-      parent: '-',
       source: 'Complete Adventurer p.110',
       prereq: 'Jump 8 ranks, Power Attack.',
       benefit: 'Prerequisites: Jump 8 ranks, Power Attack. Benefit: If you cover at least 10 feet of horizontal distance with your jump, and you end your jump in an adjacent square to your target and attack as part of a charge, you deal double the normal extra damage from Power Attack (triple if using a two-handed weapon).',
-      bonusType: 'Untyped',
+      description: 'Double or triple Power Attack damage on a jumping charge.',
       scope: 'Melee Only',
       action: 'Full-Round Action (Charge)',
+      actionType: 'full_round',
       duration: 'Instantaneous',
-      role: 'Offense / Charge',
+      role: 'General',
+      modifiers: [],
+      damageParts: [],
+      modes: [],
+      ruleFlags: { leapAttack: true },
+      tacticalBadges: ['x3 Two-Handed PA on Jump Charge'],
       weight: 0,
       cost: 0
     },
     'haste': {
+      schemaVersion: 2,
+      id: 'spell_haste',
       name: 'Haste',
       type: 'Spell',
       slot: 'None',
-      parent: '-',
       source: 'PHB p.239',
       level: 3,
       school: 'Transmutation',
       action: '1 standard action',
+      actionType: 'standard',
       duration: '1 round/level',
       range: 'Close (25 ft. + 5 ft./2 levels)',
       benefit: 'Targets receive +1 attack bonus, +1 dodge AC, +1 Reflex save, +30 ft enhancement bonus to base speed, and 1 extra attack when making a full attack.',
-      bonusType: 'Dodge',
+      description: 'The transmuted creatures move and act more quickly than normal, gaining +1 attack, +1 dodge AC/Reflex, +30 ft speed, and 1 extra full-attack strike.',
       scope: 'All Attacks',
-      attBonus: 1,
-      acBonus: 1,
-      refBonus: 1,
-      speedBonus: 30,
+      modifiers: [
+        { target: 'attack.all', value: 1, type: 'Untyped', condition: null },
+        { target: 'ac.dodge', value: 1, type: 'Dodge', condition: null },
+        { target: 'save.ref', value: 1, type: 'Dodge', condition: null },
+        { target: 'speed.land', value: 30, type: 'Enhancement', condition: null }
+      ],
+      damageParts: [],
+      modes: [],
+      ruleFlags: { hasteExtraAttack: true },
+      tacticalBadges: ['+1 Extra Full Attack', '+30 ft Speed'],
       weight: 0,
       cost: 0
     },
     'mountain hammer': {
+      schemaVersion: 2,
+      id: 'man_mountain_hammer',
       name: 'Mountain Hammer',
       type: 'Maneuver',
       slot: 'None',
-      parent: '-',
       source: 'ToB p.84',
       level: 2,
       discipline: 'Stone Dragon',
       action: '1 standard action',
+      actionType: 'standard',
       duration: 'Instantaneous',
-      extraDmg: '+2d6',
-      dice: '+2d6',
       benefit: 'Stone Dragon (Strike). As part of this maneuver, you make a single melee attack. If your attack hits, you deal an extra 2d6 points of damage and your attack automatically overcomes damage reduction and hardness.',
-      bonusType: 'Untyped',
+      description: 'Deal +2d6 damage and automatically bypass all DR and hardness.',
       scope: 'Melee Only',
+      modifiers: [],
+      damageParts: [
+        { dice: '2d6', bonus: 0, type: 'Untyped', multiplyOnCrit: false, onCritOnly: false, source: 'Mountain Hammer' }
+      ],
+      modes: [],
+      ruleFlags: { ignoresDr: true, ignoresHardness: true },
+      tacticalBadges: ['Bypass All DR & Hardness'],
       weight: 0,
       cost: 0
     }
-  },
-
-  entryToRow(entry) {
-    return [
-      entry.name || '',
-      entry.type || 'Feat',
-      entry.slot || 'None',
-      entry.parent || '-',
-      entry.source || 'PHB',
-      entry.benefit || entry.description || '',
-      entry.bonusType || 'Untyped',
-      entry.scope || 'None / General',
-      entry.strBonus || 0,
-      entry.dexBonus || 0,
-      entry.conBonus || 0,
-      entry.intBonus || 0,
-      entry.wisBonus || 0,
-      entry.chaBonus || 0,
-      entry.acBonus || 0,
-      entry.hpBonus || 0,
-      entry.attBonus || 0,
-      entry.dmgBonus || 0,
-      entry.fortBonus || 0,
-      entry.refBonus || 0,
-      entry.willBonus || 0,
-      entry.skillBonus || 0,
-      entry.initBonus || 0,
-      entry.speedBonus || 0,
-      entry.extraDmg || entry.dice || '',
-      entry.action || 'Passive',
-      entry.duration || 'Continuous',
-      entry.weight || 0,
-      entry.cost || 0
-    ];
   },
 
   setQueryAndSearch(term, categoryHint = 'ALL') {
@@ -2301,367 +2506,165 @@ ZORUNLU KURALLAR:
     return clean ? `\u21B3 ${clean}` : '';
   },
 
-  // Normalize any AI or raw payload object into canonical Master_DB 29-column + child entry
+  // Normalize any AI or raw payload object into Canonical V2 Entry (schemaVersion: 2)
   normalizeEntry(raw, isRowArray = false) {
     if (!raw) return null;
-    let entry = {};
 
+    if (typeof window !== 'undefined' && window.SchemaMigrator) {
+      if (isRowArray && Array.isArray(raw) && typeof window.SchemaMigrator.convertRowArrayToV2 === 'function') {
+        return window.SchemaMigrator.convertRowArrayToV2(raw);
+      }
+      if (!Array.isArray(raw) && typeof raw === 'object' && typeof window.SchemaMigrator.upgradeEntryToV2 === 'function') {
+        const cloned = JSON.parse(JSON.stringify(raw));
+        if (cloned.name) cloned.name = this.capitalizeTitle(this.cleanArrow(cloned.name));
+        return window.SchemaMigrator.upgradeEntryToV2(cloned);
+      }
+    }
+
+    // Fallback when SchemaMigrator is not yet initialized
     if (isRowArray && Array.isArray(raw)) {
-      // Legacy 29-column row fallback
-      let rawName = String(raw[0] || '').trim();
-      let parentVal = String(raw[3] || '-').trim();
-      if (parentVal === '-' || parentVal === '') parentVal = '-';
-      else parentVal = this.cleanArrow(parentVal);
-
-      const isChild = (parentVal !== '-') || /^[\u21B3\u2192\u00E2\u2020\u00B3\?]/.test(rawName);
-      const cleanName = this.cleanArrow(rawName);
-      rawName = isChild ? this.formatChildName(cleanName) : cleanName;
-
-      const cat = String(raw[1] || 'Feat').trim();
-      let normType = cat;
-      const catLower = cat.toLowerCase();
-      if (catLower.includes('weapon')) normType = 'Weapon';
-      else if (catLower.includes('shield')) normType = 'Shield';
-      else if (catLower.includes('armor')) normType = 'Armor';
-      else if (catLower.includes('spell')) normType = 'Spell';
-      else if (catLower.includes('maneuver')) normType = 'Maneuver';
-      else if (catLower.includes('stance')) normType = 'Stance';
-      else if (catLower.includes('potion')) normType = 'Potion';
-      else if (catLower.includes('scroll')) normType = 'Scroll';
-      else if (catLower.includes('wand')) normType = 'Wand';
-      else if (catLower.includes('consumable')) normType = 'Consumable';
-      else if (catLower.includes('wondrous')) normType = 'Wondrous Item';
-      else if (catLower.includes('ring')) normType = 'Ring';
-
-      let diceVal = String(raw[24] || '').trim();
-      const cleanDiceMatch = diceVal.match(/(\d+d\d+(?:\s*[\+\-]\s*\d+)?)/i);
-      const cleanDice = cleanDiceMatch ? cleanDiceMatch[1].replace(/\s+/g, '') : (diceVal || (normType === 'Weapon' ? '1d8' : ''));
-
-      entry = {
-        name: this.capitalizeTitle(rawName),
-        type: this.capitalizeIdentifier(normType),
+      const cleanName = this.capitalizeTitle(this.cleanArrow(String(raw[0] || '').trim()));
+      const normType = this.capitalizeIdentifier(String(raw[1] || 'Feat').trim());
+      const diceStr = String(raw[24] || '').trim();
+      return this.ensureV2({
+        schemaVersion: 2,
+        name: cleanName,
+        type: normType,
         slot: this.capitalizeIdentifier(String(raw[2] || 'None').trim()),
-        parent: parentVal,
         source: String(raw[4] || 'Core 3.5e').trim(),
         benefit: String(raw[5] || '').trim(),
         description: String(raw[5] || '').trim(),
-        bonusType: this.capitalizeIdentifier(String(raw[6] || 'Untyped').trim()),
         scope: this.capitalizeIdentifier(String(raw[7] || 'None / General').trim()),
-        strBonus: Number(raw[8]) || '',
-        dexBonus: Number(raw[9]) || '',
-        conBonus: Number(raw[10]) || '',
-        intBonus: Number(raw[11]) || '',
-        wisBonus: Number(raw[12]) || '',
-        chaBonus: Number(raw[13]) || '',
-        acBonus: Number(raw[14]) || '',
-        hpBonus: Number(raw[15]) || '',
-        attBonus: Number(raw[16]) || '',
-        dmgBonus: Number(raw[17]) || '',
-        fortBonus: Number(raw[18]) || '',
-        refBonus: Number(raw[19]) || '',
-        willBonus: Number(raw[20]) || '',
-        skillBonus: Number(raw[21]) || '',
-        clBonus: '',
-        speedBonus: Number(raw[23]) || '',
-        extraDmg: cleanDice,
-        dice: cleanDice,
-        damageDice: cleanDice,
-        critMin: 20,
-        critMult: 2,
-        dmgType: '',
         action: String(raw[25] || 'Passive').trim(),
-        actionType: this.deriveActionType(raw[25], normType),
+        actionType: this.deriveActionType(raw[25], normType).toLowerCase(),
         duration: String(raw[26] || 'Continuous').trim(),
         weight: Number(raw[27]) || 0,
         cost: Number(raw[28]) || 0,
-        role: isChild ? 'Secondary Power' : 'General',
-        prereq: '-',
-        discipline: '-',
-        school: '-',
-        level: '',
-        tags: [normType.toLowerCase()],
-        isChild: isChild
-      };
-    } else {
-      // Full JSON Object from Gemini
-      let rawName = String(raw.name || '').trim();
-      let parentVal = String(raw.parent || '-').trim();
-      if (parentVal === '-' || parentVal === '') parentVal = '-';
-      else parentVal = this.cleanArrow(parentVal);
-
-      const isChild = Boolean(raw.isChild) || (parentVal !== '-') || /^[\u21B3\u2192\u00E2\u2020\u00B3\?]/.test(rawName);
-      const cleanName = this.cleanArrow(rawName);
-      rawName = isChild ? this.formatChildName(cleanName) : cleanName;
-
-      const rawType = String(raw.type || raw.category || 'Feat').trim();
-      let normType = rawType;
-      const typeLower = rawType.toLowerCase();
-      if (typeLower.includes('weapon')) normType = 'Weapon';
-      else if (typeLower.includes('shield')) normType = 'Shield';
-      else if (typeLower.includes('armor')) normType = 'Armor';
-      else if (typeLower.includes('spell')) normType = 'Spell';
-      else if (typeLower.includes('maneuver')) normType = 'Maneuver';
-      else if (typeLower.includes('stance')) normType = 'Stance';
-      else if (typeLower.includes('potion')) normType = 'Potion';
-      else if (typeLower.includes('scroll')) normType = 'Scroll';
-      else if (typeLower.includes('wand')) normType = 'Wand';
-      else if (typeLower.includes('consumable')) normType = 'Consumable';
-      else if (typeLower.includes('wondrous')) normType = 'Wondrous Item';
-      else if (typeLower.includes('ring')) normType = 'Ring';
-
-      let diceVal = String(raw.dice || raw.damageDice || raw.extraDmg || '').trim();
-      const cleanDiceMatch = diceVal.match(/(\d+d\d+(?:\s*[\+\-]\s*\d+)?)/i);
-      const cleanDice = cleanDiceMatch ? cleanDiceMatch[1].replace(/\s+/g, '') : (diceVal || (normType === 'Weapon' ? '1d8' : ''));
-
-      let critMinVal = Number(raw.critMin);
-      if (isNaN(critMinVal) || critMinVal < 10 || critMinVal > 20) critMinVal = 20;
-
-      let critMultVal = Number(raw.critMult);
-      if (isNaN(critMultVal) || critMultVal < 2 || critMultVal > 5) critMultVal = 2;
-
-      let levelVal = raw.level;
-      if (levelVal !== undefined && levelVal !== null && String(levelVal).trim() !== '' && String(levelVal).trim() !== '-') {
-        levelVal = Number(levelVal);
-        if (isNaN(levelVal)) levelVal = '';
-      } else {
-        levelVal = '';
-      }
-
-      const tags = Array.isArray(raw.tags) ? raw.tags.map(t => String(t).trim().toLowerCase()) : [normType.toLowerCase()];
-      if (isChild && !tags.includes('child')) tags.push('child');
-      if (normType && !tags.includes(normType.toLowerCase())) tags.push(normType.toLowerCase());
-
-      const rawAction = String(raw.action || 'Passive').trim();
-      const rawActionType = raw.actionType || this.deriveActionType(rawAction, normType);
-
-      entry = {
-        name: this.capitalizeTitle(rawName),
-        type: this.capitalizeIdentifier(normType),
-        slot: this.capitalizeIdentifier(String(raw.slot || 'None').trim()),
-        parent: parentVal,
-        source: String(raw.source || 'Core 3.5e').trim(),
-        benefit: String(raw.benefit || raw.description || '').trim(),
-        description: String(raw.description || raw.benefit || '').trim(),
-        bonusType: this.capitalizeIdentifier(String(raw.bonusType || 'Untyped').trim()),
-        scope: this.capitalizeIdentifier(String(raw.scope || 'None / General').trim()),
-        strBonus: Number(raw.strBonus) || '',
-        dexBonus: Number(raw.dexBonus) || '',
-        conBonus: Number(raw.conBonus) || '',
-        intBonus: Number(raw.intBonus) || '',
-        wisBonus: Number(raw.wisBonus) || '',
-        chaBonus: Number(raw.chaBonus) || '',
-        acBonus: Number(raw.acBonus) || '',
-        hpBonus: Number(raw.hpBonus) || '',
-        attBonus: Number(raw.attBonus) || '',
-        dmgBonus: Number(raw.dmgBonus) || '',
-        fortBonus: Number(raw.fortBonus) || '',
-        refBonus: Number(raw.refBonus) || '',
-        willBonus: Number(raw.willBonus) || '',
-        skillBonus: Number(raw.skillBonus) || '',
-        clBonus: Number(raw.clBonus) || '',
-        speedBonus: Number(raw.speedBonus) || '',
-        extraDmg: cleanDice,
-        dice: cleanDice,
-        damageDice: cleanDice,
-        critMin: critMinVal,
-        critMult: critMultVal,
-        dmgType: String(raw.dmgType || '').trim(),
-        action: rawAction,
-        actionType: rawActionType,
-        duration: String(raw.duration || 'Continuous').trim(),
-        weight: Number(raw.weight) || 0,
-        cost: Number(raw.cost) || 0,
-        role: String(raw.role || (isChild ? 'Secondary Power' : (normType === 'Spell' ? 'Offense / Spell' : (normType === 'Maneuver' ? 'Offense / Strike' : (normType === 'Stance' ? 'Tactical / Stance' : 'General'))))).trim(),
-        prereq: String(raw.prereq || '-').trim(),
-        discipline: String(raw.discipline || '-').trim(),
-        school: String(raw.school || '-').trim(),
-        level: levelVal,
-        tags: tags,
-        range: String(raw.range || '-').trim(),
-        isChild: isChild,
-        effectType: raw.effectType || (isChild ? 'damage' : undefined),
-        childButtonLabel: raw.childButtonLabel ? String(raw.childButtonLabel).trim() : undefined,
-        selfHpCost: Number(raw.selfHpCost) || undefined,
-        unitLabel: raw.unitLabel ? String(raw.unitLabel).trim() : undefined,
-        // Modern declarative rule engine fields
-        ruleFlags: (raw.ruleFlags && typeof raw.ruleFlags === 'object') ? JSON.parse(JSON.stringify(raw.ruleFlags)) : undefined,
-        combatModifiers: (raw.combatModifiers && typeof raw.combatModifiers === 'object') ? JSON.parse(JSON.stringify(raw.combatModifiers)) : undefined,
-        skillBonuses: (raw.skillBonuses && typeof raw.skillBonuses === 'object') ? JSON.parse(JSON.stringify(raw.skillBonuses)) : undefined,
-        sizeModifier: (raw.sizeModifier && typeof raw.sizeModifier === 'object') ? JSON.parse(JSON.stringify(raw.sizeModifier)) : undefined,
-        isLight: raw.isLight !== undefined ? Boolean(raw.isLight) : undefined,
-        proficiency: raw.proficiency ? String(raw.proficiency).trim() : undefined,
-        size: raw.size ? String(raw.size).trim() : (normType === 'Race' ? 'Medium' : undefined),
-        baseSpeed: Number(raw.baseSpeed) || (normType === 'Race' ? 30 : undefined),
-        favoredClass: raw.favoredClass ? String(raw.favoredClass).trim() : (normType === 'Race' ? 'Any' : undefined),
-        traits: Array.isArray(raw.traits) ? JSON.parse(JSON.stringify(raw.traits)) : (normType === 'Race' && (raw.benefit || raw.description) ? [{ name: 'Racial Traits', desc: String(raw.benefit || raw.description) }] : undefined),
-        languages: Array.isArray(raw.languages) ? JSON.parse(JSON.stringify(raw.languages)) : (normType === 'Race' ? ['Common'] : undefined),
-        bonusFeats: raw.bonusFeats !== undefined ? Number(raw.bonusFeats) : undefined,
-        isFighterBonusFeat: raw.isFighterBonusFeat !== undefined ? Boolean(raw.isFighterBonusFeat) : (raw.category === 'Fighter' ? true : undefined),
-        finessable: raw.finessable !== undefined ? Boolean(raw.finessable) : undefined,
-        pantheon: raw.pantheon ? String(raw.pantheon).trim() : undefined,
-        alignment: raw.alignment ? String(raw.alignment).trim() : undefined,
-        favoredWeapon: raw.favoredWeapon ? String(raw.favoredWeapon).trim() : undefined,
-        domains: Array.isArray(raw.domains) ? JSON.parse(JSON.stringify(raw.domains)) : undefined,
-        symbol: raw.symbol ? String(raw.symbol).trim() : undefined
-      };
+        modifiers: [],
+        damageParts: diceStr ? [{ dice: diceStr, bonus: 0, type: 'Untyped', multiplyOnCrit: normType === 'Weapon', onCritOnly: false, source: cleanName }] : [],
+        modes: []
+      });
     }
 
-    if (entry.isChild) {
-      if (!entry.role || entry.role === 'General') entry.role = 'Secondary Power';
-      if (!entry.childButtonLabel && entry.name) {
-        const afterArrow = this.cleanArrow(entry.name);
-        const parenMatch = afterArrow.match(/\(([^)]+)\)/);
-        entry.childButtonLabel = parenMatch ? parenMatch[1].trim() : afterArrow;
-      }
-    }
-
-    // Auto-detect skill bonuses from benefit/description if skillBonus and skillBonuses are empty
-    if ((!entry.skillBonus || entry.skillBonus === '') && !entry.skillBonuses) {
-      const rawText = `${entry.benefit || ''} ${entry.description || ''}`;
-      if (rawText.trim()) {
-        const regex = /\+(\d+)\s*(competence|insight|luck|morale|circumstance|enhancement|untyped)?\s*bonus\s+(?:on|to)\s+([^.;]+?)(?:\s+checks|\.|\;|$)/i;
-        const match = regex.exec(rawText);
-        if (match) {
-          const val = Number(match[1]) || 0;
-          const bType = this.capitalizeIdentifier(match[2] || 'Competence');
-          const targetsRaw = match[3] || '';
-          const targets = targetsRaw.split(/[,/&]|\band\b/i).map(t => t.trim()).filter(Boolean);
-
-          if (val > 0 && targets.length > 0) {
-            entry.skillBonus = val;
-            entry.bonusType = bType;
-            entry.scope = this.capitalizeTitle(targets[0]);
-            entry.skillBonuses = {};
-            targets.forEach(t => {
-              entry.skillBonuses[this.capitalizeTitle(t)] = val;
-            });
-          }
-        }
-      }
-    }
-
-    return entry;
+    const cloned = Object.assign({}, raw);
+    if (cloned.name) cloned.name = this.capitalizeTitle(this.cleanArrow(cloned.name));
+    return this.ensureV2(cloned);
   },
 
-  // Dinamik Hedefli AI Prompt Üreticisi (Kategoriye Özel Budama ve Ultra-Hafif Token Yükü)
+  // Dinamik Hedefli AI Prompt Üreticisi (Kanonik V2 JSON Şeması)
   buildTargetedAiPrompt(cleanQuery, effectiveCategory) {
-    let catSchema = '';
-
-    if (effectiveCategory === 'Feat') {
-      catSchema = `{
-  "name": "${cleanQuery}",
-  "type": "Feat",
-  "prereq": "Prerequisites or '-'",
-  "benefit": "Detailed RAW mechanics",
-  "description": "Full description",
-  "source": "Official 3.5e book and page (e.g. Player's Handbook p.98)",
-  "featType": "General"|"Item Creation"|"Metamagic"|"Special",
-  "isFighterBonusFeat": true|false
-}`;
-    } else if (effectiveCategory === 'Spell') {
-      catSchema = `{
-  "name": "${cleanQuery}",
-  "type": "Spell",
-  "level": 1,
-  "school": "Evocation",
-  "slot": "None",
-  "source": "Official 3.5e book and page",
-  "benefit": "Summary of spell effect",
-  "description": "Full official spell text",
-  "range": "Close / Medium / Long / Touch / Personal",
-  "duration": "Instantaneous / 1 round/level etc.",
-  "action": "Standard Action",
-  "dice": "damage or healing dice formula if any, e.g. 1d6",
-  "dmgType": "Fire / Cold / Untyped etc."
-}`;
-    } else if (effectiveCategory === 'Race') {
-      catSchema = `{
-  "name": "${cleanQuery}",
-  "type": "Race",
-  "size": "Medium"|"Small"|"Large",
-  "baseSpeed": 30,
-  "strBonus": 0, "dexBonus": 0, "conBonus": 0, "intBonus": 0, "wisBonus": 0, "chaBonus": 0,
-  "favoredClass": "Fighter / Any",
-  "source": "Official 3.5e book and page",
-  "benefit": "Racial features summary",
-  "description": "Full official race description",
-  "traits": [{"name": "Trait Name", "desc": "Mechanics"}],
-  "languages": ["Common"]
-}`;
-    } else if (effectiveCategory === 'Deity') {
-      catSchema = `{
-  "name": "${cleanQuery}",
-  "type": "Deity",
-  "title": "Title / Dogma",
-  "pantheon": "Faerûn / Greyhawk / Eberron etc.",
-  "alignment": "Lawful Good etc.",
-  "favoredWeapon": "Warhammer etc.",
-  "domains": ["Good", "War"],
-  "symbol": "Holy symbol description",
-  "description": "Canonical lore summary",
-  "source": "Official 3.5e book and page"
-}`;
-    } else if (['Weapon', 'Armor', 'Shield', 'Magic Item', 'Item'].includes(effectiveCategory)) {
-      catSchema = `{
-  "name": "${cleanQuery}",
-  "type": "${effectiveCategory === 'Item' ? 'Wondrous Item' : effectiveCategory}",
-  "slot": "Main Hand"|"Armor"|"Off-Hand/Shield"|"Head"|"Neck"|"Ring"|"Belt"|"Feet"|"Hands"|"None",
-  "cost": 0,
-  "weight": 0,
-  "source": "Official 3.5e book and page",
-  "benefit": "Item magical or mechanical powers",
-  "description": "Full item description",
-  "bonusType": "Competence / Enhancement / Deflection / Untyped",
-  "scope": "Move Silently / Specific Weapon / None",
-  "skillBonus": 0,
-  "skillBonuses": {"Skill Name": 5},
-  "dice": "damage dice if weapon, e.g. 1d8",
-  "critMin": 20,
-  "critMult": 2,
-  "acBonus": 0,
-  "attBonus": 0,
-  "dmgBonus": 0,
-  "dmgType": "Slashing / Piercing / Bludgeoning"
-}`;
-    } else {
-      catSchema = `{
-  "name": "${cleanQuery}",
-  "type": "Feat"|"Spell"|"Weapon"|"Armor"|"Wondrous Item"|"Maneuver",
-  "slot": "None"|"Main Hand"|"Armor"|"Belt"|"Head" etc.,
-  "source": "Official 3.5e book and page",
-  "benefit": "Concise mechanical summary",
-  "description": "Full RAW description",
-  "dice": "Dice formula if any (e.g. 2d6)",
-  "critMin": 20,
-  "critMult": 2,
-  "dmgType": "Damage type if applicable"
-}`;
-    }
-
     return `You are a master D&D 3.5e Rule Arbiter.
 Target query: "${cleanQuery}" (Category: "${effectiveCategory}").
 
-CRITICAL D&D 3.5E RAW RULES:
-1. STRICT REAL RAW 3.5E ONLY: Consult d20srd.org, dndtools.net, or official WotC 3.5e publications. ZERO homebrew, zero 5e, zero Pathfinder. If entity does not exist in official 3.5e, return {"entries": []}.
-2. MANDATORY TYPO / FUZZY CORRECTION: Correct misspellings to real official 3.5e name.
-3. CONDITIONAL CHILD VARIANTS: If spell, maneuver or item has distinct sub-modes, secondary power, or extra dice vs specific targets (e.g. Searing Light vs Undead, Blade of Blood sacrifice), return both parent and child object starting with "\u21B3 ", "parent": "${cleanQuery}", "isChild": true, "dice": "...".
-4. SIZE MODIFIERS: If alters weapon/creature size category (e.g. Mighty Wallop, Enlarge Person), include "sizeModifier": {"targetType": "weapon"|"creature", "scaling": {"steps": 1}}.
-5. SKILL BONUS ITEMS: If an item grants a skill bonus (e.g. Boots of Elvenkind +5 Move Silently, Cloak of Elvenkind +5 Hide, Eyes of the Eagle +5 Spot), always populate "skillBonus": 5, "scope": "Move Silently", "bonusType": "Competence", and "skillBonuses": {"Move Silently": 5}.
+${this.DND35_RAW_GUARDRAIL}
+
+CRITICAL CANONICAL V2 SCHEMA RULES:
+1. STRICT REAL RAW 3.5E ONLY: Consult d20srd.org, dndtools.net, or official WotC 3.5e publications. If entity does not exist in official 3.5e, return {"entries": []}.
+2. MANDATORY TYPO / FUZZY CORRECTION: Correct misspellings to the official D&D 3.5e name.
+3. ZERO LEGACY COLUMNS & ZERO SEPARATE CHILD ROWS:
+   - NEVER use legacy flat bonus columns (strBonus, acBonus, attBonus, extraDmg, isChild, parent).
+   - Put all stat/roll bonuses inside "modifiers": [{"target": "ac.deflection"|"ability.str"|"attack.melee"|"save.all"|"skill.move_silently" etc., "value": 2, "type": "Deflection"|"Enhancement"|"Competence"|"Resistance"|"Dodge"|"Untyped", "condition": null}].
+   - Put all weapon/spell/maneuver dice inside "damageParts": [{"dice": "1d8", "bonus": 0, "type": "Slashing"|"Fire"|"Untyped", "multiplyOnCrit": true|false, "onCritOnly": false, "source": "Base"}].
+   - If the spell, weapon, or item has conditional sub-modes or secondary powers (e.g. Searing Light vs Undead, Blade of Blood sacrifice, Two-Handed grip, Flametongue 1/day ray), embed them inside "modes": [{"id": "vs_undead", "name": "Undead (1d6/CL)", "actionType": "standard", "benefit": "...", "damageParts": [...], "modifiers": [...]}].
 
 OUTPUT JSON SCHEMA:
 Return valid JSON only matching:
 {
   "entries": [
-    ${catSchema}
+    {
+      "schemaVersion": 2,
+      "id": "unique_slug_id",
+      "name": "Official 3.5e Name",
+      "type": "${effectiveCategory === 'ALL' ? 'Feat|Spell|Weapon|Armor|Shield|Wondrous Item|Ring|Maneuver|Stance|Race|Deity' : (effectiveCategory === 'Item' || effectiveCategory === 'Magic Item' ? 'Wondrous Item' : effectiveCategory)}",
+      "slot": "None|Main Hand|Two-Handed|Off-Hand/Shield|Armor|Head|Neck|Shoulders|Belt|Ring|Feet|Hands|Arms|Torso",
+      "source": "Official 3.5e book and page",
+      "prereq": "Prerequisites or '-'",
+      "benefit": "Concise mechanical summary",
+      "description": "Full official RAW description",
+      "action": "Passive|Standard Action|Swift Action|Immediate Action|Full-Round Action|Free Action",
+      "actionType": "passive|standard|swift|immediate|full_round|free",
+      "duration": "Continuous|Instantaneous|1 round/level",
+      "range": "Personal|Touch|Close|Medium|Long",
+      "school": "Spell school if Spell",
+      "discipline": "ToB discipline if Maneuver/Stance",
+      "level": 1,
+      "cost": 0,
+      "weight": 0,
+      "isFighterBonusFeat": false,
+      "modifiers": [],
+      "damageParts": [],
+      "modes": [],
+      "weaponStats": null,
+      "armorStats": null,
+      "spellStats": null,
+      "ruleFlags": {},
+      "tacticalBadges": [],
+      "tags": []
+    }
   ]
 }`;
+  },
+
+  // 0ms Local Resolution Helper: Master DB -> SrdCompendium -> ItemAssembler -> Canonical Dictionary
+  resolveLocalZeroTokenQuery(rawQuery) {
+    if (!rawQuery || typeof rawQuery !== 'string') return [];
+    let cleanKey = rawQuery.toLowerCase().trim();
+    const prefixMatch = cleanKey.match(/^(spell|feat|race|deity|god|weapon|armor|shield|item|magic item|maneuver|stance|class):\s*/i);
+    if (prefixMatch) {
+      cleanKey = cleanKey.slice(prefixMatch[0].length).trim();
+    }
+
+    // Typo alias resolution
+    if (typeof this.canonicalDictionary[cleanKey] === 'string') {
+      cleanKey = this.canonicalDictionary[cleanKey];
+    }
+
+    // 1. Check user's Master DB first
+    if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+      const dbMatch = masterDb.filter(m => m && (m.name || '').toLowerCase().trim() === cleanKey);
+      if (dbMatch.length > 0) {
+        return dbMatch.map(m => this.ensureV2(m));
+      }
+    }
+
+    // 2. Check SrdCompendium (3,522+ modular V2 entries, O(1) lookup)
+    if (typeof window !== 'undefined' && window.SrdCompendium && window.SrdCompendium._ready) {
+      const exactComp = window.SrdCompendium.getById(cleanKey) || window.SrdCompendium.getByName(cleanKey);
+      if (exactComp) {
+        return [this.ensureV2(exactComp)];
+      }
+    }
+
+    // 3. Check ItemAssembler for composite weapons/armors (e.g. "+2 Keen Mithral Scimitar", "+1 Flaming Greatsword")
+    if (typeof window !== 'undefined' && window.ItemAssembler && typeof window.ItemAssembler.parseNaturalLanguageItem === 'function') {
+      if (/\+\d|\b(?:mithral|adamantine|cold iron|alchemical silver|darkwood|masterwork|mwk|keen|flaming|frost|shock|holy|unholy|ghost touch|vorpal|defending|vicious|bane|fortification)\b/i.test(cleanKey)) {
+        const assembled = window.ItemAssembler.parseNaturalLanguageItem(cleanKey);
+        if (assembled && assembled.name) {
+          return [this.ensureV2(assembled)];
+        }
+      }
+    }
+
+    // 4. Check Canonical Dictionary (ToB / Splatbook staples like Shock Trooper, Mountain Hammer, Shadow Blade)
+    if (this.canonicalDictionary[cleanKey] && typeof this.canonicalDictionary[cleanKey] === 'object') {
+      return [this.ensureV2(this.canonicalDictionary[cleanKey])];
+    }
+
+    // 5. Fallback to BUNDLED_SRD_CORE_CATALOG if SrdCompendium isn't loaded yet
+    if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
+      const baseMatch = this.findBaseItemInSrdCore(cleanKey);
+      if (baseMatch && (baseMatch.name || '').toLowerCase().trim() === cleanKey) {
+        return [this.normalizeEntry(baseMatch)];
+      }
+    }
+
+    return [];
   },
 
   async fetchSingleAiRuleObjects(query, categoryHint, apiKey, statusTextEl = null) {
     let effectiveCategory = (categoryHint && categoryHint !== 'ALL') ? categoryHint : 'ALL';
     let cleanQuery = (query || '').trim();
 
-    // 1. Prefiks Desteği (Master DB standardı: spell:..., feat:..., race:..., deity:..., weapon:..., armor:..., shield:..., item:..., maneuver:...)
     const prefixMatch = cleanQuery.match(/^(spell|feat|race|deity|god|weapon|armor|shield|item|magic item|maneuver|stance|class):\s*/i);
     if (prefixMatch) {
       const p = prefixMatch[1].toLowerCase();
@@ -2677,6 +2680,12 @@ Return valid JSON only matching:
       else if (p === 'maneuver' || p === 'stance') effectiveCategory = 'Maneuver';
     }
 
+    // 0ms Local Resolution before calling Gemini
+    const localHits = this.resolveLocalZeroTokenQuery(cleanQuery);
+    if (localHits.length > 0) {
+      return localHits;
+    }
+
     const promptText = this.buildTargetedAiPrompt(cleanQuery, effectiveCategory);
     const availableModels = await this.getAvailableGeminiModels(apiKey, false, 'QUICK_SEARCH');
     let lastError = null;
@@ -2686,7 +2695,7 @@ Return valid JSON only matching:
         statusTextEl.textContent = `"${cleanQuery}" ➔ ${model} sorgulanıyor...`;
       }
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
-      
+
       const genConfig = {
         temperature: 0.1,
         responseMimeType: "application/json"
@@ -2738,17 +2747,19 @@ Return valid JSON only matching:
                 rawList = [parsed];
               }
 
-              const normalizedEntries = [];
-              rawList.forEach(rawItem => {
-                const isArrayRow = Array.isArray(rawItem);
-                const norm = this.normalizeEntry(rawItem, isArrayRow);
-                if (norm && norm.name) {
-                  normalizedEntries.push(norm);
-                }
-              });
-
-              if (normalizedEntries.length > 0) {
-                return normalizedEntries;
+              if (typeof window !== 'undefined' && window.SchemaMigrator && typeof window.SchemaMigrator.upgradeArrayToV2 === 'function') {
+                const v2List = window.SchemaMigrator.upgradeArrayToV2(rawList);
+                if (v2List.length > 0) return v2List;
+              } else {
+                const normalizedEntries = [];
+                rawList.forEach(rawItem => {
+                  const isArrayRow = Array.isArray(rawItem);
+                  const norm = this.normalizeEntry(rawItem, isArrayRow);
+                  if (norm && norm.name) {
+                    normalizedEntries.push(norm);
+                  }
+                });
+                if (normalizedEntries.length > 0) return normalizedEntries;
               }
             } catch (pErr) {
               lastError = `JSON Çözümleme hatası (${model}): ${pErr.message}`;
@@ -2794,36 +2805,14 @@ Return valid JSON only matching:
       return;
     }
 
-    // 0ms Cache-First Kontrolü (Master DB ve BUNDLED_SRD_CORE_CATALOG)
-    let cleanKey = query.toLowerCase().trim();
-    const prefixMatch = cleanKey.match(/^(spell|feat|race|deity|god|weapon|armor|shield|item|magic item|maneuver|stance|class):\s*/i);
-    if (prefixMatch) {
-      cleanKey = cleanKey.slice(prefixMatch[0].length).trim();
-    }
-
-    let localFound = [];
-    if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
-      const dbMatch = masterDb.filter(m => (m.name || '').toLowerCase().trim() === cleanKey);
-      if (dbMatch.length > 0) {
-        const parentName = dbMatch[0].name.toLowerCase().trim();
-        const children = masterDb.filter(m => m.parent && m.parent !== '-' && RuleMaster.cleanArrow(m.parent).toLowerCase().trim() === parentName);
-        localFound = [...dbMatch, ...children];
-      }
-    }
-
-    if (localFound.length === 0 && typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined') {
-      const baseMatch = this.findBaseItemInSrdCore(cleanKey);
-      if (baseMatch && (baseMatch.name || '').toLowerCase().trim() === cleanKey) {
-        localFound = [this.normalizeEntry(baseMatch)];
-      }
-    }
-
+    // 0ms Local Resolution (Master DB -> SrdCompendium -> ItemAssembler -> Canonical Dictionary)
+    const localFound = this.resolveLocalZeroTokenQuery(query);
     if (localFound.length > 0) {
       this.lastAiResults = localFound;
       this.renderAiResults();
       if (resultsWrapper) resultsWrapper.classList.remove('hidden');
       if (statusBox) statusBox.classList.remove('hidden');
-      if (statusText) statusText.innerHTML = `⚡ <b>"${localFound[0].name}"</b> yerel kütüphaneden anında yüklendi (0 ms).`;
+      if (statusText) statusText.innerHTML = `⚡ <b>"${localFound[0].name}"</b> yerel V2 kütüphanesinden / montaj motorundan anında yüklendi (0 ms, Sıfır Token).`;
       if (btn) btn.disabled = false;
       return;
     }
@@ -2865,6 +2854,10 @@ Return valid JSON only matching:
   },
 
   async fetchDeityViaAi(deityName, statusTextEl = null) {
+    const localHits = this.resolveLocalZeroTokenQuery(deityName);
+    const localDeity = localHits.find(e => e && String(e.type).toLowerCase() === 'deity');
+    if (localDeity) return localDeity;
+
     const apiKey = this.getApiKey();
     if (!apiKey) {
       if (typeof this.promptApiKey === 'function') this.promptApiKey();
@@ -2883,6 +2876,10 @@ Return valid JSON only matching:
   },
 
   async fetchRaceViaAi(raceName, statusTextEl = null) {
+    const localHits = this.resolveLocalZeroTokenQuery(raceName);
+    const localRace = localHits.find(e => e && String(e.type).toLowerCase() === 'race');
+    if (localRace) return localRace;
+
     const apiKey = this.getApiKey();
     if (!apiKey) {
       if (typeof this.promptApiKey === 'function') this.promptApiKey();
@@ -2903,52 +2900,23 @@ Return valid JSON only matching:
   },
 
   entryToRow(entry) {
-    if (!entry) return [];
-    if (Array.isArray(entry) && entry.name) return entry;
-    // Map canonical 29-column row array
-    const row = [
-      entry.name || '',                             // 0
-      entry.type || 'Feat',                         // 1
-      entry.slot || 'None',                         // 2
-      entry.parent || '-',                          // 3
-      entry.source || 'Core 3.5e',                  // 4
-      entry.benefit || entry.description || '',     // 5
-      entry.bonusType || 'Untyped',                 // 6
-      entry.scope || 'None / General',              // 7
-      entry.strBonus ?? '',                         // 8
-      entry.dexBonus ?? '',                         // 9
-      entry.conBonus ?? '',                         // 10
-      entry.intBonus ?? '',                         // 11
-      entry.wisBonus ?? '',                         // 12
-      entry.chaBonus ?? '',                         // 13
-      entry.acBonus ?? '',                          // 14
-      entry.hpBonus ?? '',                          // 15
-      entry.attBonus ?? '',                         // 16
-      entry.dmgBonus ?? '',                         // 17
-      entry.fortBonus ?? '',                        // 18
-      entry.refBonus ?? '',                         // 19
-      entry.willBonus ?? '',                        // 20
-      entry.skillBonus ?? '',                       // 21
-      entry.clBonus ?? '',                          // 22
-      entry.speedBonus ?? '',                       // 23
-      entry.dice || entry.extraDmg || '',           // 24
-      entry.action || 'Passive',                    // 25
-      entry.duration || 'Continuous',               // 26
-      entry.weight ?? 0,                            // 27
-      entry.cost ?? 0                               // 28
-    ];
-    // Attach all object properties directly onto the array row for complete compatibility
-    Object.assign(row, entry);
-    return row;
+    if (!entry) return null;
+    return this.ensureV2(entry);
   },
 
   async fetchSingleAiRuleRows(query, categoryHint, apiKey, statusTextEl = null) {
-    const entries = await this.fetchSingleAiRuleObjects(query, categoryHint, apiKey, statusTextEl);
-    return (entries || []).map(e => this.entryToRow(e));
+    return await this.fetchSingleAiRuleObjects(query, categoryHint, apiKey, statusTextEl);
+  },
+
+  normalizeDatabaseList(list) {
+    return this.convertRowsToEntries(list);
   },
 
   convertRowsToEntries(rows) {
     if (!Array.isArray(rows)) return [];
+    if (typeof window !== 'undefined' && window.SchemaMigrator && typeof window.SchemaMigrator.upgradeArrayToV2 === 'function') {
+      return window.SchemaMigrator.upgradeArrayToV2(rows);
+    }
     return rows.map(r => {
       if (r && typeof r === 'object' && !Array.isArray(r)) {
         return this.normalizeEntry(r, false);
@@ -2971,21 +2939,15 @@ Return valid JSON only matching:
       return;
     }
 
-    const apiKey = this.getApiKey();
-    if (!apiKey) {
-      alert('Gemini API Anahtarı bulunamadı.');
-      this.promptApiKey();
-      return;
-    }
-
     const rawQueries = input.value.split(/[\n,;]+/).map(s => s.trim()).filter(Boolean);
     if (!rawQueries.length) return;
 
     const items = [...new Set(rawQueries)];
-    if (!confirm(`Toplam ${items.length} adet farklı kural tek tek Gemini AI ile aranıp Master DB'ye eklenecek. Devam edilsin mi?`)) {
+    if (!confirm(`Toplam ${items.length} adet kural taranıp Kanonik V2 formatında Master DB'ye eklenecek. Devam edilsin mi?`)) {
       return;
     }
 
+    const apiKey = this.getApiKey();
     if (btn) btn.disabled = true;
     if (statusBox) statusBox.classList.remove('hidden');
 
@@ -2997,17 +2959,10 @@ Return valid JSON only matching:
         const entries = await this.fetchSingleAiRuleEntries(itemQuery, 'ALL', apiKey, statusText);
         if (entries && entries.length) {
           entries.forEach(entry => {
-            const parentName = (entry.parent && entry.parent !== '-') ? this.cleanArrow(entry.parent).toLowerCase() : '';
-            const parentIdx = parentName ? masterDb.findIndex(m => this.cleanArrow(m.name).toLowerCase() === parentName) : -1;
-            if (parentIdx >= 0) {
-              let insertAt = parentIdx + 1;
-              while (insertAt < masterDb.length && this.cleanArrow(masterDb[insertAt].parent).toLowerCase() === parentName) {
-                insertAt++;
-              }
-              masterDb.splice(insertAt, 0, entry);
-            } else {
-              masterDb.push(entry);
-            }
+            const v2 = this.ensureV2(entry);
+            const existsIdx = masterDb.findIndex(m => (m.id && m.id === v2.id) || (m.name || '').toLowerCase() === (v2.name || '').toLowerCase());
+            if (existsIdx >= 0) masterDb[existsIdx] = v2;
+            else masterDb.push(v2);
             totalImported++;
           });
         }
@@ -3020,35 +2975,12 @@ Return valid JSON only matching:
     if (statusBox) statusBox.classList.add('hidden');
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
     this.renderTable();
-    alert(`🎉 Toplu İçe Aktarma Tamamlandı!\n${totalImported} adet kural ve alt güç başarıyla Master_DB'ye eklendi.`);
+    alert(`🎉 Toplu İçe Aktarma Tamamlandı!\n${totalImported} adet Kanonik V2 kural başarıyla Master_DB'ye eklendi.`);
   },
 
-  getChildrenForEntry(item, sourceList = null) {
-    if (!item || !item.name) return [];
-    const list = Array.isArray(sourceList) ? sourceList : (Array.isArray(masterDb) ? masterDb : []);
-    const cleanPName = this.cleanArrow(item.name).toLowerCase();
-    const seenTitles = new Set();
-
-    return list.filter(other => {
-      if (!other || other === item) return false;
-      const otherParent = this.cleanArrow(other.parent || '').toLowerCase();
-      let isMatch = false;
-      if (otherParent && otherParent !== '-' && otherParent === cleanPName) {
-        isMatch = true;
-      }
-      if (!isMatch) {
-        const otherName = this.cleanArrow(other.name || '').toLowerCase();
-        const isOtherChild = other.isChild || (other.parent && other.parent !== '-') || this.cleanArrow(other.name) !== (other.name || '').trim();
-        if (isOtherChild && (otherName.startsWith(cleanPName) || (other.parent && this.cleanArrow(other.parent).toLowerCase() === cleanPName))) {
-          isMatch = true;
-        }
-      }
-      if (!isMatch) return false;
-      const childKey = this.cleanArrow(other.name || '').toLowerCase();
-      if (seenTitles.has(childKey)) return false;
-      seenTitles.add(childKey);
-      return true;
-    });
+  getChildrenForEntry(item) {
+    if (!item || typeof item !== 'object') return [];
+    return Array.isArray(item.modes) ? item.modes : [];
   },
 
   renderAiResults() {
@@ -3065,7 +2997,7 @@ Return valid JSON only matching:
         <div>
           <span class="text-xs font-bold text-amber-300">D&D 3.5e RAW Doğrulandı:</span>
           <span class="text-xs text-slate-200 ml-1 font-semibold">${this.lastAiResults.length} Sonuç Bulundu</span>
-          <span class="text-[11px] text-slate-400 block sm:inline sm:ml-2">Master_DB 29 sütunlu JSON şemasıyla tam uyumlu</span>
+          <span class="text-[11px] text-slate-400 block sm:inline sm:ml-2">Kanonik V2 JSON şemasıyla tam uyumlu</span>
         </div>
         <button onclick="RuleMaster.addAllAiResultsToDb()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-3.5 py-1.5 rounded-lg shadow transition flex items-center gap-1.5">
           <span>📥</span>
@@ -3075,28 +3007,13 @@ Return valid JSON only matching:
       <div class="space-y-3">
     `;
 
-    this.lastAiResults.forEach((item, idx) => {
-      const isChild = item.isChild || (item.parent && item.parent !== '-');
-      const children = this.getChildrenForEntry(item, this.lastAiResults);
-      const isParent = !isChild && children.length > 0;
+    this.lastAiResults.forEach((rawItem, idx) => {
+      const item = this.ensureV2(rawItem);
+      const modes = Array.isArray(item.modes) ? item.modes : [];
       const badgeClass = this.getTypeBadgeClass(item.type);
-      const displayName = isChild ? this.cleanArrow(item.name) : item.name;
+      const statPills = this.getEntrySummaryPills(item);
+      const primaryBonusType = item.modifiers?.[0]?.type || (item.type === 'Weapon' && item.enhancementBonus ? 'Enhancement' : 'Untyped');
 
-      // Stat badges
-      const statPills = [];
-      if (item.strBonus) statPills.push(`+${item.strBonus} STR`);
-      if (item.dexBonus) statPills.push(`+${item.dexBonus} DEX`);
-      if (item.conBonus) statPills.push(`+${item.conBonus} CON`);
-      if (item.intBonus) statPills.push(`+${item.intBonus} INT`);
-      if (item.wisBonus) statPills.push(`+${item.wisBonus} WIS`);
-      if (item.chaBonus) statPills.push(`+${item.chaBonus} CHA`);
-      if (item.acBonus) statPills.push(`+${item.acBonus} AC`);
-      if (item.attBonus) statPills.push(`+${item.attBonus} Atk`);
-      if (item.dmgBonus) statPills.push(`+${item.dmgBonus} Dmg`);
-      if (item.speedBonus) statPills.push(`+${item.speedBonus} ft Hız`);
-      if (item.extraDmg || item.dice) statPills.push(`⚔️ ${item.extraDmg || item.dice}`);
-
-      // Specific badges (Level, School, Discipline, Child Button)
       const specificBadges = [];
       if (item.level !== undefined && item.level !== null && item.level !== '') {
         specificBadges.push(`<span class="badge bg-amber-950 text-amber-300 border border-amber-800 text-[10px] font-bold">${item.level}. Seviye</span>`);
@@ -3107,77 +3024,61 @@ Return valid JSON only matching:
       if (item.discipline && item.discipline !== '-') {
         specificBadges.push(`<span class="badge bg-rose-950 text-rose-300 border border-rose-800 text-[10px]">${item.discipline}</span>`);
       }
-      if (item.childButtonLabel) {
-        specificBadges.push(`<span class="badge bg-purple-900 text-purple-200 border border-purple-600 text-[10px] font-mono">Toast: ${item.childButtonLabel}</span>`);
+      if (modes.length > 0) {
+        specificBadges.push(`<span class="badge bg-purple-950 text-purple-200 border border-purple-600 text-[10px] font-bold">⚡ ${modes.length} Gömülü Mod</span>`);
       }
+
       html += `
-        <div class="${isChild ? 'ml-6 border-l-4 border-l-purple-500 bg-slate-900/60' : (isParent ? 'bg-slate-900 border-purple-500/50 shadow-purple-950/20' : 'bg-slate-900')} border border-slate-800 rounded-xl p-4 space-y-3 shadow-md transition">
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3 shadow-md transition">
           <div class="flex flex-wrap items-start justify-between gap-2 border-b border-slate-800 pb-2">
             <div>
               <div class="flex items-center gap-2 flex-wrap">
-                ${isChild ? '<span class="text-purple-400 font-bold font-mono">↳</span>' : ''}
-                <span class="text-sm font-extrabold text-white">${displayName}</span>
+                <span class="text-sm font-extrabold text-white">${item.name}</span>
                 <span class="badge ${badgeClass}">${item.type}</span>
                 ${specificBadges.join(' ')}
-                ${isParent ? `<span class="badge bg-purple-950 text-purple-200 border border-purple-600 text-[10px] font-bold">👑 Ana Eşya (${children.length} Alt Güç)</span>` : ''}
-                ${isChild && item.parent && item.parent !== '-' ? `<span class="badge bg-purple-950 text-purple-300 border border-purple-800 font-mono text-[10px]">Bağlı: ${item.parent}</span>` : ''}
               </div>
               <div class="flex items-center gap-2 text-[11px] text-slate-400 mt-1 flex-wrap">
                 <span>📚 <b>${item.source || 'Core 3.5e'}</b></span>
                 <span>•</span>
                 <span>Yuva: <b>${item.slot || 'None'}</b></span>
                 <span>•</span>
-                <span>Tür: <b>${item.bonusType || 'Untyped'}</b></span>
-                <span>•</span>
-                <span>Kapsam: <b>${item.scope || 'None / General'}</b></span>
+                <span>Tür: <b>${primaryBonusType}</b></span>
                 ${item.range && item.range !== '-' ? `<span>•</span><span>Menzil: <b class="text-cyan-400">${item.range}</b></span>` : ''}
-                ${item.dmgType ? `<span>•</span><span>Hasar Türü: <b class="text-rose-400">${item.dmgType}</b></span>` : ''}
               </div>
             </div>
 
             <div class="flex items-center gap-1.5">
-              ${isParent ? `
-                <button onclick="RuleMaster.addAiResultToDb(${idx}, true)" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1" title="Ana eşyayı ve tüm ${children.length} alt gücünü tek seferde Master DB'ye ekler">
-                  <span>📥</span>
-                  <span>Tümünü DB'ye Ekle</span>
-                </button>
-                <button onclick="RuleMaster.equipAiResultToCharacter(${idx})" class="bg-purple-900 hover:bg-purple-800 border border-purple-600 text-purple-200 text-xs px-2.5 py-1.5 rounded-lg transition font-bold" title="Ana eşyayı ve alt güçlerini tek seferde kuşanır">
-                  ⚡ Hepsini Kuşan
-                </button>
-              ` : (isChild ? `
-                <span class="text-[11px] text-purple-300 bg-purple-950/80 border border-purple-700/60 rounded-lg px-2.5 py-1.5 font-medium flex items-center gap-1.5 shadow-sm" title="Alt güçler ana öğe (${item.parent || 'Parent'}) ile bir bütün olarak eklenir ve kuşanılır.">
-                  <span>🔗</span>
-                  <span>Ana Öğe ile Birlikte Eklenir</span>
-                </span>
-              ` : `
-                <button onclick="RuleMaster.addAiResultToDb(${idx}, false)" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1">
-                  <span>📥</span>
-                  <span>DB'ye Ekle</span>
-                </button>
-                <button onclick="RuleMaster.equipAiResultToCharacter(${idx})" class="bg-emerald-950 hover:bg-emerald-900 border border-emerald-700 text-emerald-300 text-xs px-2.5 py-1.5 rounded-lg transition" title="Karaktere Kuşan / Ekle">
-                  ⚡ Kuşan
-                </button>
-              `)}
-              <button onclick="RuleMaster.editAiResultInModal(${idx})" class="bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition" title="29 Sütunlu Formda Aç">
+              <button onclick="RuleMaster.addAiResultToDb(${idx})" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1">
+                <span>📥</span>
+                <span>DB'ye Ekle</span>
+              </button>
+              <button onclick="RuleMaster.equipAiResultToCharacter(${idx})" class="bg-emerald-950 hover:bg-emerald-900 border border-emerald-700 text-emerald-300 text-xs px-2.5 py-1.5 rounded-lg transition font-bold" title="Karaktere Kuşan / Ekle">
+                ⚡ Kuşan
+              </button>
+              <button onclick="RuleMaster.editAiResultInModal(${idx})" class="bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition" title="Düzenle">
                 ✏️ Düzenle
               </button>
             </div>
           </div>
 
-          <!-- Modifiers Row -->
           ${statPills.length > 0 ? `
             <div class="flex flex-wrap items-center gap-1.5">
-              <span class="text-[10px] uppercase font-bold text-slate-400">Bonuslar & Zar:</span>
+              <span class="text-[10px] uppercase font-bold text-slate-400">Etkiler & Zar:</span>
               ${statPills.map(p => `<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 font-mono font-bold">${p}</span>`).join('')}
             </div>
           ` : ''}
 
-          <!-- Benefit / Description -->
+          ${modes.length > 0 ? `
+            <div class="flex flex-wrap items-center gap-1.5">
+              <span class="text-[10px] uppercase font-bold text-purple-300">Alt Modlar:</span>
+              ${modes.map(m => `<span class="badge bg-purple-950/80 text-purple-200 border border-purple-700/60 font-mono text-[10px]">⚡ ${m.name}</span>`).join('')}
+            </div>
+          ` : ''}
+
           <div class="text-xs text-slate-300 bg-slate-950/80 p-3 rounded-lg border border-slate-800/80 leading-relaxed font-sans">
             ${item.benefit || item.description || 'Açıklama belirtilmemiş.'}
           </div>
 
-          <!-- Footer Specs -->
           <div class="flex flex-wrap items-center justify-between text-[11px] text-slate-400 pt-1">
             <div class="flex items-center gap-3">
               <span>Aksiyon: <b class="text-amber-400">${item.action || 'Passive'}</b></span>
@@ -3196,150 +3097,134 @@ Return valid JSON only matching:
     container.innerHTML = html;
   },
 
-  addAiResultToDb(index, includeChildren = true) {
+  addAiResultToDb(index) {
     if (index >= 0 && index < this.lastAiResults.length) {
-      let item = this.lastAiResults[index];
-      const isChild = item.isChild || (item.parent && item.parent !== '-');
-
-      // Parent-Child ilişkileri bütün olarak eklensin: Eğer bir alt güç (child) seçildiyse,
-      // otomatik olarak ana öğesi bulunup tüm aile birlikte eklenir!
-      if (isChild) {
-        const pName = this.cleanArrow(item.parent || '').toLowerCase().trim();
-        const pIdx = this.lastAiResults.findIndex(entry => this.cleanArrow(entry.name).toLowerCase().trim() === pName);
-        if (pIdx >= 0) {
-          index = pIdx;
-          item = this.lastAiResults[pIdx];
-        }
+      const item = this.ensureV2(JSON.parse(JSON.stringify(this.lastAiResults[index])));
+      const existsIdx = masterDb.findIndex(m => (m.id && m.id === item.id) || (m.name || '').toLowerCase().trim() === (item.name || '').toLowerCase().trim());
+      if (existsIdx >= 0) {
+        masterDb[existsIdx] = item;
+      } else {
+        masterDb.push(item);
       }
-
-      const itemsToAdd = [item];
-      const children = this.getChildrenForEntry(item, this.lastAiResults);
-      children.forEach(c => itemsToAdd.push(c));
-
-      itemsToAdd.forEach(it => {
-        const copy = JSON.parse(JSON.stringify(it));
-        const existsIdx = masterDb.findIndex(m => (m.name || '').toLowerCase().trim() === (copy.name || '').toLowerCase().trim());
-        if (existsIdx >= 0) {
-          masterDb[existsIdx] = copy;
-        } else {
-          // If child, insert directly below parent in masterDb
-          const parentName = (copy.parent && copy.parent !== '-') ? this.cleanArrow(copy.parent).toLowerCase() : '';
-          const parentIdx = parentName ? masterDb.findIndex(m => this.cleanArrow(m.name).toLowerCase() === parentName) : -1;
-          if (parentIdx >= 0) {
-            let insertAt = parentIdx + 1;
-            while (insertAt < masterDb.length && this.cleanArrow(masterDb[insertAt].parent).toLowerCase() === parentName) {
-              insertAt++;
-            }
-            masterDb.splice(insertAt, 0, copy);
-          } else {
-            masterDb.push(copy);
-          }
-        }
-      });
 
       if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
       this.renderTable();
-      if (itemsToAdd.length > 1) {
-        alert(`✅ "${item.name}" ve ${itemsToAdd.length - 1} alt gücü tek seferde başarıyla Master_DB kütüphanesine eklendi!`);
-      } else {
-        alert(`✅ "${item.name}" başarıyla Master_DB kütüphanesine eklendi!`);
-      }
+      alert(`✅ "${item.name}" başarıyla Master_DB kütüphanesine eklendi!`);
     }
   },
 
   addAllAiResultsToDb() {
     if (!this.lastAiResults.length) return;
-    this.lastAiResults.forEach(item => {
-      const copy = JSON.parse(JSON.stringify(item));
-      const existsIdx = masterDb.findIndex(m => (m.name || '').toLowerCase().trim() === (copy.name || '').toLowerCase().trim());
+    this.lastAiResults.forEach(rawItem => {
+      const copy = this.ensureV2(JSON.parse(JSON.stringify(rawItem)));
+      const existsIdx = masterDb.findIndex(m => (m.id && m.id === copy.id) || (m.name || '').toLowerCase().trim() === (copy.name || '').toLowerCase().trim());
       if (existsIdx >= 0) {
         masterDb[existsIdx] = copy;
       } else {
-        const parentName = (copy.parent && copy.parent !== '-') ? this.cleanArrow(copy.parent).toLowerCase() : '';
-        const parentIdx = parentName ? masterDb.findIndex(m => this.cleanArrow(m.name).toLowerCase() === parentName) : -1;
-        if (parentIdx >= 0) {
-          let insertAt = parentIdx + 1;
-          while (insertAt < masterDb.length && this.cleanArrow(masterDb[insertAt].parent).toLowerCase() === parentName) {
-            insertAt++;
-          }
-          masterDb.splice(insertAt, 0, copy);
-        } else {
-          masterDb.push(copy);
-        }
+        masterDb.push(copy);
       }
     });
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
     this.renderTable();
-    alert(`✅ ${this.lastAiResults.length} kural ve alt güç tek seferde Master_DB kütüphanesine eklendi!`);
+    alert(`✅ ${this.lastAiResults.length} Kanonik V2 kural başarıyla Master_DB kütüphanesine eklendi!`);
   },
+
   editAiResultInModal(index) {
     if (index >= 0 && index < this.lastAiResults.length) {
-      const item = JSON.parse(JSON.stringify(this.lastAiResults[index]));
+      const item = this.ensureV2(JSON.parse(JSON.stringify(this.lastAiResults[index])));
       this.openModalWithData(item, -1);
     }
   },
 
   equipAiResultToCharacter(index) {
     if (index >= 0 && index < this.lastAiResults.length) {
-      let item = JSON.parse(JSON.stringify(this.lastAiResults[index]));
-      const isChild = item.isChild || (item.parent && item.parent !== '-');
-      if (isChild) {
-        const pName = this.cleanArrow(item.parent || '').toLowerCase().trim();
-        const pParent = this.lastAiResults.find(entry => this.cleanArrow(entry.name).toLowerCase().trim() === pName);
-        if (pParent) item = JSON.parse(JSON.stringify(pParent));
-      }
+      const item = this.ensureV2(JSON.parse(JSON.stringify(this.lastAiResults[index])));
       this.equipItemWithChildren(item, this.lastAiResults);
     }
   },
 
-  equipItem(item) {
-    if (typeof character === 'undefined' || !character) return;
+  // Equip or learn Canonical V2 entry into active character
+  equipItem(rawItem) {
+    if (typeof character === 'undefined' || !character || !rawItem) return;
+    const item = this.ensureV2(rawItem);
     const type = (item.type || '').toLowerCase();
     const cat = item.category || item.type || 'Other';
 
-    // 1. Ensure item is placed in character.gearPool
-    if (!character.gearPool) character.gearPool = [];
-    let poolExisting = character.gearPool.find(p => (p.name || '').toLowerCase().trim() === (item.name || '').toLowerCase().trim());
-    if (!poolExisting) {
-      poolExisting = {
-        id: Date.now(),
-        name: item.name,
-        masterDbName: item.name,
-        category: cat,
-        slot: item.slot && item.slot !== 'None' ? item.slot : cat,
-        qty: 1,
-        weight: Number(item.weight) || 0,
-        cost: Number(item.cost) || 0,
-        desc: item.benefit || item.description || '',
-        isBelt: (item.slot || '').toLowerCase().includes('belt') || cat.toLowerCase().includes('consumable'),
-        isEquipped: false
-      };
-      character.gearPool.push(poolExisting);
+    // 1. Ensure item is placed in character.gearPool (except pure Feats/Spells/Maneuvers/Stances/Racial Traits/Flaws)
+    const isNonPhysical = ['feat', 'spell', 'maneuver', 'stance', 'flaw', 'racial trait', 'race', 'deity'].includes(type);
+    let poolExisting = null;
+    if (!isNonPhysical) {
+      if (!character.gearPool) character.gearPool = [];
+      poolExisting = character.gearPool.find(p => (p.id && p.id === item.id) || (p.name || '').toLowerCase().trim() === (item.name || '').toLowerCase().trim());
+      if (!poolExisting) {
+        poolExisting = {
+          schemaVersion: 2,
+          id: item.id || `gear_${Date.now()}`,
+          baseItemId: item.baseItemId || null,
+          name: item.name,
+          masterDbName: item.name,
+          category: cat,
+          slot: item.slot && item.slot !== 'None' ? item.slot : cat,
+          qty: 1,
+          weight: Number(item.weight) || 0,
+          cost: Number(item.cost) || 0,
+          desc: item.benefit || item.description || '',
+          modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : [],
+          damageParts: Array.isArray(item.damageParts) ? JSON.parse(JSON.stringify(item.damageParts)) : [],
+          modes: Array.isArray(item.modes) ? JSON.parse(JSON.stringify(item.modes)) : [],
+          weaponStats: item.weaponStats ? JSON.parse(JSON.stringify(item.weaponStats)) : null,
+          armorStats: item.armorStats ? JSON.parse(JSON.stringify(item.armorStats)) : null,
+          ruleFlags: item.ruleFlags ? JSON.parse(JSON.stringify(item.ruleFlags)) : {},
+          tacticalBadges: Array.isArray(item.tacticalBadges) ? [...item.tacticalBadges] : [],
+          isBelt: (item.slot || '').toLowerCase().includes('belt') || cat.toLowerCase().includes('consumable'),
+          isEquipped: false
+        };
+        character.gearPool.push(poolExisting);
+      }
     }
 
     if (type === 'weapon') {
       if (!character.weapons) character.weapons = [];
       const isTwoHand = typeof RuleEngine !== 'undefined' && typeof RuleEngine.isTwoHandedWeapon === 'function' ? RuleEngine.isTwoHandedWeapon(item) : false;
       const hasOversized = typeof RuleEngine !== 'undefined' && typeof RuleEngine.hasOversizedWeaponFeat === 'function' ? RuleEngine.hasOversizedWeaponFeat(character) : false;
+      const wStats = item.weaponStats || {};
+      const primaryDamage = item.damageParts?.[0]?.dice || wStats.baseDamage || '1d8';
+      const primaryDmgType = item.damageParts?.[0]?.type || (Array.isArray(wStats.damageTypes) ? wStats.damageTypes.join('/') : 'Slashing');
 
       const newWep = {
+        schemaVersion: 2,
+        id: item.id,
+        baseItemId: item.baseItemId || null,
         name: item.name,
         grip: isTwoHand ? '2-Hand' : (item.slot === 'Off-Hand' ? 'Off-Hand' : '1-Hand'),
-        dice: item.dice || item.extraDmg || '1d8',
-        critMin: Number(item.critMin) || 20,
-        critMult: Number(item.critMult) || 2,
-        attBonus: Number(item.attBonus) || 0,
-        dmgBonus: Number(item.dmgBonus) || 0,
-        dmgType: item.dmgType || 'Slashing',
-        bonusType: item.bonusType || 'Enhancement',
-        extraDmg: item.extraDmg || '',
+        enhancementBonus: Number(item.enhancementBonus) || 0,
+        material: item.material || null,
+        enhancements: Array.isArray(item.enhancements) ? [...item.enhancements] : [],
+        damageParts: Array.isArray(item.damageParts) && item.damageParts.length > 0
+          ? JSON.parse(JSON.stringify(item.damageParts))
+          : [{ dice: primaryDamage, bonus: Number(item.enhancementBonus) || 0, type: primaryDmgType, multiplyOnCrit: true, onCritOnly: false, source: 'Base Weapon' }],
+        modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : [],
+        modes: Array.isArray(item.modes) ? JSON.parse(JSON.stringify(item.modes)) : [],
+        weaponStats: {
+          category: wStats.category || 'Martial',
+          handedness: isTwoHand ? 'Two-Handed' : (wStats.handedness || 'One-Handed'),
+          baseDamage: primaryDamage,
+          critMin: Number(wStats.critMin) || 20,
+          critMult: Number(wStats.critMult) || 2,
+          damageTypes: Array.isArray(wStats.damageTypes) ? [...wStats.damageTypes] : [primaryDmgType],
+          rangeIncrement: Number(wStats.rangeIncrement) || 0,
+          finessable: Boolean(wStats.finessable),
+          isLight: Boolean(wStats.isLight)
+        },
+        ruleFlags: item.ruleFlags ? JSON.parse(JSON.stringify(item.ruleFlags)) : {},
+        tacticalBadges: Array.isArray(item.tacticalBadges) ? [...item.tacticalBadges] : [],
         tags: Array.isArray(item.tags) ? [...item.tags] : []
       };
       if (isTwoHand && !newWep.tags.includes('two-handed')) {
         newWep.tags.push('two-handed');
       }
 
-      const existingWepIdx = character.weapons.findIndex(w => (w.name || '').toLowerCase() === item.name.toLowerCase());
+      const existingWepIdx = character.weapons.findIndex(w => (w.id && w.id === item.id) || (w.name || '').toLowerCase() === item.name.toLowerCase());
       if (existingWepIdx >= 0) character.weapons[existingWepIdx] = newWep;
       else character.weapons.push(newWep);
 
@@ -3347,7 +3232,6 @@ Return valid JSON only matching:
       if (poolExisting) poolExisting.isEquipped = true;
 
       let unequippedOffHandName = null;
-      // Also equip to mainHand slot if available
       if (character.bodySlots) {
         if (isTwoHand && !hasOversized && character.bodySlots.offHand && character.bodySlots.offHand.name && character.bodySlots.offHand.name !== '-') {
           unequippedOffHandName = character.bodySlots.offHand.name;
@@ -3357,13 +3241,21 @@ Return valid JSON only matching:
         }
 
         character.bodySlots.mainHand = {
+          schemaVersion: 2,
+          id: item.id,
+          baseItemId: item.baseItemId || null,
           name: item.name,
           masterDbName: item.name,
           active: true,
           category: 'Weapon',
           weight: Number(item.weight) || 0,
           cost: Number(item.cost) || 0,
-          desc: item.benefit || item.description || ''
+          desc: item.benefit || item.description || '',
+          modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : [],
+          damageParts: Array.isArray(newWep.damageParts) ? JSON.parse(JSON.stringify(newWep.damageParts)) : [],
+          modes: Array.isArray(item.modes) ? JSON.parse(JSON.stringify(item.modes)) : [],
+          ruleFlags: item.ruleFlags ? JSON.parse(JSON.stringify(item.ruleFlags)) : {},
+          tacticalBadges: Array.isArray(item.tacticalBadges) ? [...item.tacticalBadges] : []
         };
       }
       if (unequippedOffHandName) {
@@ -3374,7 +3266,7 @@ Return valid JSON only matching:
             icon: '⚔️'
           });
         } else {
-          alert(`⚔️ "${item.name}" iki elli (Two-Handed) bir silahtır! 'Oversized Two-Weapon Fighting' veya 'Monkey Grip' feat'iniz olmadığı için iki elinizi de kaplar. İkinci elinizdeki "${unequippedOffHandName}" çıkarıldı.`);
+          alert(`⚔️ "${item.name}" iki elli (Two-Handed) bir silahtır! İkinci elinizdeki "${unequippedOffHandName}" çıkarıldı.`);
         }
       } else {
         if (typeof showDiceTopToast === 'function') {
@@ -3391,34 +3283,47 @@ Return valid JSON only matching:
       if (!character.spellcasting) character.spellcasting = { slots: [], knownSpells: [] };
       if (!character.spellcasting.knownSpells) character.spellcasting.knownSpells = [];
       character.spellcasting.knownSpells.push({
+        schemaVersion: 2,
+        id: item.id,
         level: Number(item.level) || 1,
         name: item.name,
         school: item.school || 'Universal',
         action: item.action || 'Standard Action',
         range: item.range || 'Close',
-        benefit: item.benefit || item.description || ''
+        benefit: item.benefit || item.description || '',
+        damageParts: Array.isArray(item.damageParts) ? JSON.parse(JSON.stringify(item.damageParts)) : [],
+        modes: Array.isArray(item.modes) ? JSON.parse(JSON.stringify(item.modes)) : [],
+        modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : [],
+        ruleFlags: item.ruleFlags ? JSON.parse(JSON.stringify(item.ruleFlags)) : {}
       });
       alert(`🔮 "${item.name}" büyüsü bilinen büyülere (Spells Known) eklendi!`);
     } else if (type === 'maneuver') {
       if (!character.tomeOfBattle) character.tomeOfBattle = { initiatorLevel: 1, readiedManeuvers: [], stancesKnown: [] };
       if (!character.tomeOfBattle.readiedManeuvers) character.tomeOfBattle.readiedManeuvers = [];
       character.tomeOfBattle.readiedManeuvers.push({
+        schemaVersion: 2,
+        id: item.id,
         name: item.name,
         level: Number(item.level) || 1,
         discipline: item.discipline || 'Iron Heart',
         action: item.action || 'Standard Action',
         expended: false,
-        notes: item.benefit || item.description || ''
+        notes: item.benefit || item.description || '',
+        damageParts: Array.isArray(item.damageParts) ? JSON.parse(JSON.stringify(item.damageParts)) : [],
+        modes: Array.isArray(item.modes) ? JSON.parse(JSON.stringify(item.modes)) : []
       });
       alert(`⚔️ "${item.name}" manevrası kuşanılan manevralara eklendi!`);
     } else if (type === 'stance') {
       if (!character.tomeOfBattle) character.tomeOfBattle = { initiatorLevel: 1, readiedManeuvers: [], stancesKnown: [] };
       if (!character.tomeOfBattle.stancesKnown) character.tomeOfBattle.stancesKnown = [];
       character.tomeOfBattle.stancesKnown.push({
+        schemaVersion: 2,
+        id: item.id,
         name: item.name,
         discipline: item.discipline || 'Shadow Hand',
         level: Number(item.level) || 1,
-        benefit: item.benefit || item.description || ''
+        benefit: item.benefit || item.description || '',
+        modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : []
       });
       character.activeStance = item.name;
     } else if (type === 'flaw' || cat.toLowerCase() === 'flaw' || item.name.toLowerCase().startsWith('flaw:')) {
@@ -3430,13 +3335,16 @@ Return valid JSON only matching:
       const cleanName = item.name.trim();
       if (!character.feats.some(f => (typeof f === 'string' ? f : f.name).toLowerCase().trim() === cleanName.toLowerCase())) {
         character.feats.push({
+          schemaVersion: 2,
+          id: item.id,
           name: cleanName,
           category: 'Flaw',
           source: item.source || 'Unearthed Arcana',
-          benefit: item.benefit || 'Kusur karşılığında 1 bonus feat kazandırır.'
+          benefit: item.benefit || 'Kusur karşılığında 1 bonus feat kazandırır.',
+          modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : []
         });
       }
-      alert(`⚠️ "${item.name}" kusuru karaktere eklendi!\n\n🎖️ D&D 3.5e Unearthed Arcana kuralı gereğince bu kusur karşılığında 1 adet EKSTRA BONUS FEAT KAZANDINIZ!\n\nŞimdi bonus hünerinizi (Feat) seçmek için Feat Kütüphanesi açılıyor...`);
+      alert(`⚠️ "${item.name}" kusuru karaktere eklendi!\n\n🎖️ D&D 3.5e Unearthed Arcana kuralı gereğince bu kusur karşılığında 1 adet EKSTRA BONUS FEAT KAZANDINIZ!`);
       if (typeof openFeatPickerModal === 'function') {
         setTimeout(() => openFeatPickerModal(false), 200);
       }
@@ -3449,14 +3357,17 @@ Return valid JSON only matching:
       const cleanName = item.name.trim();
       if (!character.specialAbilities.some(a => (typeof a === 'string' ? a : a.name).toLowerCase().trim() === cleanName.toLowerCase())) {
         character.specialAbilities.push({
+          schemaVersion: 2,
+          id: item.id,
           name: cleanName,
           category: 'Racial Trait',
           source: item.source || 'PHB',
-          benefit: item.benefit || ''
+          benefit: item.benefit || '',
+          modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : []
         });
       }
       if (item.grantsBonusFeat || cleanName.toLowerCase().includes('bonus feat')) {
-        alert(`🧬 "${item.name}" ırksal yeteneği eklendi!\n\n🎖️ Bu yetenek 1 adet ekstra bonus feat kazandırmaktadır. Şimdi bonus featinizi seçebilirsiniz.`);
+        alert(`🧬 "${item.name}" ırksal yeteneği eklendi!\n\n🎖️ Bu yetenek 1 adet ekstra bonus feat kazandırmaktadır.`);
         if (typeof openFeatPickerModal === 'function') {
           setTimeout(() => openFeatPickerModal(false), 200);
         }
@@ -3470,13 +3381,14 @@ Return valid JSON only matching:
     } else if (type === 'potion' || type === 'scroll' || type === 'wand' || type === 'consumable' || (item.category && item.category.toLowerCase() === 'consumable')) {
       if (!character.consumables) character.consumables = [];
       character.consumables.push({
+        id: item.id,
         name: item.name,
         qty: 1,
         effect: item.benefit || item.description || `${item.type || 'Consumable'} effect`
       });
       alert(`🧪 "${item.name}" (${item.type || 'Sarf Malzemesi'}) çantanıza eklendi!`);
     } else {
-      // Body Slot Equipment (Armor, Shield, Wondrous Item, Ring, etc.)
+      // Body Slot Equipment (Armor, Shield, Wondrous Item, Ring, etc. in Canonical V2)
       const rawSlot = (item.slot || '').toLowerCase().trim();
       const slotLower = (item.slot || item.category || '').toLowerCase();
       let slotKey = null;
@@ -3486,10 +3398,10 @@ Return valid JSON only matching:
       else if (slotLower.includes('shield') || slotLower.includes('kalkan')) slotKey = 'offHand';
       else if (slotLower.includes('belt') || slotLower.includes('kemer') || slotLower.includes('waist')) slotKey = 'belt';
       else if (slotLower.includes('head') || slotLower.includes('baş')) slotKey = 'head';
-      else if (slotLower.includes('eyes') || slotLower.includes('göz')) slotKey = 'eyes';
-      else if (slotLower.includes('neck') || slotLower.includes('boyun')) slotKey = 'neck';
+      else if (slotLower.includes('eyes') || slotLower.includes('göz') || slotLower.includes('face')) slotKey = 'eyes';
+      else if (slotLower.includes('neck') || slotLower.includes('boyun') || slotLower.includes('throat')) slotKey = 'neck';
       else if (slotLower.includes('shoulders') || slotLower.includes('omuz')) slotKey = 'shoulders';
-      else if (slotLower.includes('torso') || slotLower.includes('gövde')) slotKey = 'torso';
+      else if (slotLower.includes('torso') || slotLower.includes('gövde') || slotLower.includes('body')) slotKey = 'torso';
       else if (slotLower.includes('bracers') || slotLower.includes('bileklik') || slotLower.includes('arms')) slotKey = 'bracers';
       else if (slotLower.includes('gloves') || slotLower.includes('eldiven') || slotLower.includes('hands')) slotKey = 'gloves';
       else if (slotLower.includes('boots') || slotLower.includes('ayak') || slotLower.includes('feet')) slotKey = 'boots';
@@ -3499,21 +3411,24 @@ Return valid JSON only matching:
 
       if (slotKey && character.bodySlots) {
         character.bodySlots[slotKey] = {
+          schemaVersion: 2,
+          id: item.id,
+          baseItemId: item.baseItemId || null,
           name: item.name,
           masterDbName: item.name,
           active: true,
-          category: item.category || 'Wondrous Item',
+          category: item.category || item.type || 'Wondrous Item',
           weight: Number(item.weight) || 0,
           cost: Number(item.cost) || 0,
           desc: item.benefit || item.description || '',
-          acBonus: item.acBonus,
-          bonusType: item.bonusType,
-          strBonus: item.strBonus,
-          dexBonus: item.dexBonus,
-          conBonus: item.conBonus,
-          intBonus: item.intBonus,
-          wisBonus: item.wisBonus,
-          chaBonus: item.chaBonus
+          enhancementBonus: Number(item.enhancementBonus) || 0,
+          material: item.material || null,
+          modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : [],
+          damageParts: Array.isArray(item.damageParts) ? JSON.parse(JSON.stringify(item.damageParts)) : [],
+          modes: Array.isArray(item.modes) ? JSON.parse(JSON.stringify(item.modes)) : [],
+          armorStats: item.armorStats ? JSON.parse(JSON.stringify(item.armorStats)) : null,
+          ruleFlags: item.ruleFlags ? JSON.parse(JSON.stringify(item.ruleFlags)) : {},
+          tacticalBadges: Array.isArray(item.tacticalBadges) ? [...item.tacticalBadges] : []
         };
         if (poolExisting) poolExisting.isEquipped = true;
         if (typeof showDiceTopToast === 'function') {
@@ -3538,18 +3453,35 @@ Return valid JSON only matching:
       }
     }
 
+    // Attach any active special abilities from embedded modes
+    if (Array.isArray(item.modes) && item.modes.length > 0 && type !== 'weapon' && type !== 'spell') {
+      if (!character.specialAbilities) character.specialAbilities = [];
+      item.modes.forEach(m => {
+        if (!m || !m.name) return;
+        const existsIdx = character.specialAbilities.findIndex(a => (a.name || '').toLowerCase() === m.name.toLowerCase());
+        const abilityObj = {
+          schemaVersion: 2,
+          id: m.id || `mode_${Date.now()}`,
+          name: m.name,
+          source: item.name,
+          action: m.actionType || 'Standard Action',
+          benefit: m.benefit || '',
+          damageParts: Array.isArray(m.damageParts) ? JSON.parse(JSON.stringify(m.damageParts)) : [],
+          modifiers: Array.isArray(m.modifiers) ? JSON.parse(JSON.stringify(m.modifiers)) : [],
+          active: false
+        };
+        if (existsIdx >= 0) character.specialAbilities[existsIdx] = abilityObj;
+        else character.specialAbilities.push(abilityObj);
+      });
+    }
+
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
     if (typeof renderAll === 'function') renderAll();
   },
 
-  // Core SRD Temel Eşya Çözümleyicisi
+  // Core SRD Temel Eşya Çözümleyicisi (SrdCompendium Öncelikli)
   findBaseItemInSrdCore(rawName) {
-    if (typeof window !== 'undefined' && typeof window.findBaseItemInSrdCore === 'function') {
-      return window.findBaseItemInSrdCore(rawName);
-    }
     if (!rawName || typeof rawName !== 'string') return null;
-    const catalog = (typeof window !== 'undefined' ? window.BUNDLED_SRD_CORE_CATALOG : null) || [];
-    if (!Array.isArray(catalog) || catalog.length === 0) return null;
 
     let cleaned = rawName
       .replace(/\+\d+/g, '')
@@ -3561,6 +3493,20 @@ Return valid JSON only matching:
       .toLowerCase();
 
     if (!cleaned) return null;
+
+    // 1. Check SrdCompendium first (O(1))
+    if (typeof window !== 'undefined' && window.SrdCompendium && window.SrdCompendium._ready) {
+      const exactComp = window.SrdCompendium.getByName(cleaned) || window.SrdCompendium.getById(cleaned);
+      if (exactComp) return exactComp;
+    }
+
+    if (typeof window !== 'undefined' && typeof window.findBaseItemInSrdCore === 'function') {
+      return window.findBaseItemInSrdCore(rawName);
+    }
+
+    const catalog = (typeof window !== 'undefined' ? window.BUNDLED_SRD_CORE_CATALOG : null) || [];
+    if (!Array.isArray(catalog) || catalog.length === 0) return null;
+
     const exact = catalog.find(c => (c.name || '').toLowerCase() === cleaned);
     if (exact) return exact;
 
@@ -3575,176 +3521,41 @@ Return valid JSON only matching:
     return null;
   },
 
-  // Eşyayı ve bağlı tüm alt güçleri otomatik olarak Master DB'ye kaydetme (GEMINI.md Kural #5)
-  persistToMasterDb(entry, sourceList = null) {
+  // Eşyayı ve gömülü modlarını otomatik olarak Master DB'ye kaydetme (GEMINI.md Kural #5)
+  persistToMasterDb(entry) {
     if (!entry || !entry.name || typeof masterDb === 'undefined' || !Array.isArray(masterDb)) return false;
-
-    let parentItem = entry;
-    const isChild = entry.isChild || (entry.parent && entry.parent !== '-');
-    if (isChild && sourceList && Array.isArray(sourceList)) {
-      const pName = this.cleanArrow(entry.parent || '').toLowerCase().trim();
-      const pFound = sourceList.find(e => this.cleanArrow(e.name).toLowerCase().trim() === pName);
-      if (pFound) parentItem = pFound;
+    const v2 = this.ensureV2(JSON.parse(JSON.stringify(entry)));
+    const cleanName = (v2.name || '').toLowerCase().trim();
+    const existsIdx = masterDb.findIndex(m => (m.id && m.id === v2.id) || (m.name || '').toLowerCase().trim() === cleanName);
+    if (existsIdx >= 0) {
+      masterDb[existsIdx] = Object.assign({}, masterDb[existsIdx], v2);
+    } else {
+      masterDb.push(v2);
     }
-
-    const itemsToAdd = [parentItem];
-    const children = this.getChildrenForEntry(parentItem, sourceList);
-    children.forEach(c => itemsToAdd.push(c));
-
-    let modified = false;
-    itemsToAdd.forEach(it => {
-      const copy = JSON.parse(JSON.stringify(it));
-      const cleanName = (copy.name || '').toLowerCase().trim();
-      const existsIdx = masterDb.findIndex(m => (m.name || '').toLowerCase().trim() === cleanName);
-      if (existsIdx >= 0) {
-        masterDb[existsIdx] = Object.assign({}, masterDb[existsIdx], copy);
-        modified = true;
-      } else {
-        const parentName = (copy.parent && copy.parent !== '-') ? this.cleanArrow(copy.parent).toLowerCase() : '';
-        const parentIdx = parentName ? masterDb.findIndex(m => this.cleanArrow(m.name).toLowerCase() === parentName) : -1;
-        if (parentIdx >= 0) {
-          let insertAt = parentIdx + 1;
-          while (insertAt < masterDb.length && this.cleanArrow(masterDb[insertAt].parent).toLowerCase() === parentName) {
-            insertAt++;
-          }
-          masterDb.splice(insertAt, 0, copy);
-        } else {
-          masterDb.push(copy);
-        }
-        modified = true;
-      }
-    });
-
-    if (modified) {
-      if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
-      if (typeof this.renderTable === 'function') this.renderTable();
-    }
-    return modified;
+    if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+    if (typeof this.renderTable === 'function') this.renderTable();
+    return true;
   },
 
-  equipItemWithChildren(parentItem, sourceList = null) {
-    if (typeof character === 'undefined' || !character) return;
-    if (!parentItem) return;
-
-    // Auto-persist to Master DB (GEMINI.md Rule #5: Rule Master -> Master DB -> Character Sheet)
-    this.persistToMasterDb(parentItem, sourceList);
-
-    // 1. Equip Primary/Parent Item
-    this.equipItem(parentItem);
-
-    // 2. Discover and attach all child powers
-    const children = this.getChildrenForEntry(parentItem, sourceList);
-    if (!children.length) return;
-
-    let attachedCount = 0;
-    children.forEach(child => {
-      const childName = (child.name || '').replace(/^↳\s*/, '').trim();
-      const cat = (child.type || child.category || '').toLowerCase();
-
-      // A. Special Active Power / Spell / Command (e.g. 1/day Ray of Fire)
-      if (cat.includes('spell') || child.action?.toLowerCase().includes('action') || (child.duration && child.duration !== 'Continuous')) {
-        if (!character.specialAbilities) character.specialAbilities = [];
-        const existsIdx = character.specialAbilities.findIndex(a => (a.name || '').toLowerCase() === childName.toLowerCase());
-        const abilityObj = {
-          name: childName,
-          source: `${parentItem.name}`,
-          action: child.action || 'Standard Action',
-          duration: child.duration || 'Special',
-          benefit: child.benefit || child.description || '',
-          dice: child.extraDmg || child.dice || '',
-          active: false
-        };
-        if (existsIdx >= 0) character.specialAbilities[existsIdx] = abilityObj;
-        else character.specialAbilities.push(abilityObj);
-        attachedCount++;
-      }
-
-      // B. Weapon Extra Damage / On-Hit Energy (e.g. Flaming Burst +1d6 Fire)
-      if (child.extraDmg || (child.attBonus && Number(child.attBonus) > 0) || (child.dmgBonus && Number(child.dmgBonus) > 0)) {
-        if (!character.activeModifiers) character.activeModifiers = [];
-        const modIdx = character.activeModifiers.findIndex(m => (m.name || '').toLowerCase() === childName.toLowerCase());
-        const modObj = {
-          name: childName,
-          source: parentItem.name,
-          bonusAtk: Number(child.attBonus) || 0,
-          dice: child.extraDmg || child.dice || '',
-          type: child.dmgType || 'Energy',
-          active: true,
-          notes: child.benefit || child.description || ''
-        };
-        if (modIdx >= 0) character.activeModifiers[modIdx] = modObj;
-        else character.activeModifiers.push(modObj);
-        attachedCount++;
-
-        if (Array.isArray(character.weapons)) {
-          const wep = character.weapons.find(w => (w.name || '').toLowerCase() === (parentItem.name || '').toLowerCase());
-          if (wep && child.extraDmg) {
-            if (!wep.extraDmg || wep.extraDmg === '-') wep.extraDmg = child.extraDmg;
-            else if (!wep.extraDmg.includes(child.extraDmg)) wep.extraDmg += `, ${child.extraDmg}`;
-          }
-        }
-      }
-
-      // C. Tome of Battle (Maneuver / Stance)
-      if (cat.includes('maneuver')) {
-        if (!character.tomeOfBattle) character.tomeOfBattle = { initiatorLevel: 1, readiedManeuvers: [], stancesKnown: [] };
-        if (!character.tomeOfBattle.readiedManeuvers) character.tomeOfBattle.readiedManeuvers = [];
-        character.tomeOfBattle.readiedManeuvers.push({
-          name: childName,
-          level: Number(child.level) || 1,
-          discipline: child.discipline || 'Stone Dragon',
-          action: child.action || 'Standard Action',
-          expended: false,
-          notes: child.benefit || child.description || ''
-        });
-        attachedCount++;
-      } else if (cat.includes('stance')) {
-        if (!character.tomeOfBattle) character.tomeOfBattle = { initiatorLevel: 1, readiedManeuvers: [], stancesKnown: [] };
-        if (!character.tomeOfBattle.stancesKnown) character.tomeOfBattle.stancesKnown = [];
-        character.tomeOfBattle.stancesKnown.push({
-          name: childName,
-          discipline: child.discipline || 'Iron Heart',
-          level: Number(child.level) || 1,
-          benefit: child.benefit || child.description || ''
-        });
-        attachedCount++;
-      }
-    });
-
-    if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
-    if (typeof renderAll === 'function') renderAll();
-
-    alert(`⚡ "${parentItem.name}" ve ${children.length} alt gücü (${attachedCount} özel yetenek/saldırı modifiyesi) karaktere tek seferde eklendi ve kuşandı!`);
+  equipItemWithChildren(parentItem) {
+    if (typeof character === 'undefined' || !character || !parentItem) return;
+    const v2 = this.ensureV2(parentItem);
+    this.persistToMasterDb(v2);
+    this.equipItem(v2);
   },
 
   equipWeaponSlot(name, slot) {
-    const item = masterDb.find(i => i.name === name);
-    if (!item || !character) return;
-    if (!character.weapons) character.weapons = [];
-    let existing = character.weapons.find(w => w.name === item.name);
-    if (!existing) {
-      existing = {
-        name: item.name,
-        grip: slot === 'Main Hand' ? '1-Hand' : '2-Hand',
-        dice: item.dice || item.extraDmg || '1d8',
-        critMin: item.critMin || 20,
-        critMult: item.critMult || 2,
-        attBonus: Number(item.attBonus) || 0,
-        dmgBonus: Number(item.dmgBonus) || 0,
-        dmgType: item.dmgType || 'Slashing',
-        bonusType: item.bonusType || 'Enhancement',
-        tags: item.tags || []
-      };
-      character.weapons.push(existing);
+    const rawItem = masterDb.find(i => i.name === name);
+    if (!rawItem || !character) return;
+    const item = this.ensureV2(rawItem);
+    if (slot === 'Off-Hand') {
+      item.slot = 'Off-Hand';
     }
-    character.activeWeapon = item.name;
-    if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
-    if (typeof renderAll === 'function') renderAll();
-    alert(`⚔️ "${item.name}" başarıyla ${slot} olarak kuşandı ve aktif saldırı rotatörüne atandı!`);
+    this.equipItem(item);
   },
 
   // ====================================================
-  // 2. WEAPONS, ARMORS & SHIELDS VIEW
+  // 2. WEAPONS, ARMORS & SHIELDS VIEW (CANONICAL V2)
   // ====================================================
   renderWeaponsArmors() {
     const container = document.getElementById('weapons-armors-grid');
@@ -3771,9 +3582,18 @@ Return valid JSON only matching:
     }
 
     let html = '';
-    items.forEach(item => {
-      const idx = masterDb.indexOf(item);
+    items.forEach(rawItem => {
+      const idx = masterDb.indexOf(rawItem);
+      const item = this.ensureV2(rawItem);
       const isWeapon = item.type === 'Weapon';
+      const wStats = item.weaponStats || {};
+      const aStats = item.armorStats || {};
+      const primaryDice = item.damageParts?.[0]?.dice || wStats.baseDamage || '1d8';
+      const critMin = wStats.critMin || 20;
+      const critMult = wStats.critMult || 2;
+      const dmgType = item.damageParts?.[0]?.type || (Array.isArray(wStats.damageTypes) ? wStats.damageTypes.join('/') : 'Slashing');
+      const acVal = (Number(aStats.baseAc) || 0) + (Number(item.enhancementBonus) || 0);
+      const statPills = this.getEntrySummaryPills(item);
 
       html += `
         <div class="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl p-4 space-y-2.5 transition shadow">
@@ -3786,23 +3606,21 @@ Return valid JSON only matching:
               <div class="text-[10px] text-slate-400 mt-0.5">📚 ${item.source || 'PHB'} • Yuva: <b>${item.slot || 'Main Hand'}</b></div>
             </div>
             <div class="flex items-center gap-1">
-              <button onclick="toggleUniversalPin({ name: '${item.name.replace(/'/g, "\\'")}', type: 'Feat', action: 'Passive', desc: '${(item.benefit || item.description || '').replace(/'/g, "\\'")}', badge: '${item.bonusType || 'Feat'}' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Savaş Kokpitine Sabitle / Çıkar">📌</button>
+              <button onclick="toggleUniversalPin({ name: '${item.name.replace(/'/g, "\\'")}', type: 'Feat', action: 'Passive', desc: '${(item.benefit || item.description || '').replace(/'/g, "\\'")}', badge: '${item.type}' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Savaş Kokpitine Sabitle / Çıkar">📌</button>
               <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Düzenle">✏️</button>
             </div>
           </div>
 
-          <!-- Combat Stats Pills -->
           <div class="flex flex-wrap gap-1.5 text-xs font-mono">
             ${isWeapon ? `
-              <span class="badge bg-slate-800 text-amber-300 font-bold inline-flex items-center gap-1">${typeof getFormulaDiceIconSvg === 'function' ? getFormulaDiceIconSvg(item.dice || item.extraDmg || '1d8', 'w-3 h-3 text-amber-400 shrink-0') : ''}<span>${item.dice || item.extraDmg || '1d8'}</span></span>
-              <span class="badge bg-slate-800 text-rose-300 font-bold">🎯 ${item.critMin || 20}-20/x${item.critMult || 2}</span>
-              ${item.attBonus ? `<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-800">Atk +${item.attBonus}</span>` : ''}
-              ${item.dmgBonus ? `<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-800">Dmg +${item.dmgBonus}</span>` : ''}
-              <span class="badge bg-slate-800 text-slate-300">${item.dmgType || 'Slashing'}</span>
+              <span class="badge bg-slate-800 text-amber-300 font-bold inline-flex items-center gap-1">${typeof getFormulaDiceIconSvg === 'function' ? getFormulaDiceIconSvg(primaryDice, 'w-3 h-3 text-amber-400 shrink-0') : ''}<span>${primaryDice}</span></span>
+              <span class="badge bg-slate-800 text-rose-300 font-bold">🎯 ${critMin}-20/x${critMult}</span>
+              <span class="badge bg-slate-800 text-slate-300">${dmgType}</span>
             ` : `
-              <span class="badge bg-sky-950 text-sky-300 border border-sky-800 font-bold">🛡️ +${item.acBonus || 0} AC</span>
-              <span class="badge bg-slate-800 text-slate-300">Tür: ${item.bonusType || 'Armor'}</span>
+              <span class="badge bg-sky-950 text-sky-300 border border-sky-800 font-bold">🛡️ +${acVal} AC</span>
+              <span class="badge bg-slate-800 text-slate-300">Tür: ${item.type}</span>
             `}
+            ${statPills.map(p => `<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-800">${p}</span>`).join('')}
           </div>
 
           <p class="text-[11px] text-slate-300 line-clamp-2 leading-relaxed">${item.benefit || item.description || '-'}</p>
@@ -3811,8 +3629,8 @@ Return valid JSON only matching:
             <span class="text-amber-400 font-bold">${item.cost || 0} gp • ${item.weight || 0} lbs</span>
             <div class="flex gap-1.5">
               ${isWeapon ? `
-                <button onclick="RuleMaster.equipWeaponSlot('${item.name}', 'Main Hand')" class="bg-rose-950 hover:bg-rose-900 border border-rose-700 text-rose-200 text-[10px] font-bold px-2 py-1 rounded transition">⚡ Ana El</button>
-                <button onclick="RuleMaster.equipWeaponSlot('${item.name}', 'Off-Hand')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold px-2 py-1 rounded transition">⚡ İkinci El</button>
+                <button onclick="RuleMaster.equipWeaponSlot('${item.name.replace(/'/g, "\\'")}', 'Main Hand')" class="bg-rose-950 hover:bg-rose-900 border border-rose-700 text-rose-200 text-[10px] font-bold px-2 py-1 rounded transition">⚡ Ana El</button>
+                <button onclick="RuleMaster.equipWeaponSlot('${item.name.replace(/'/g, "\\'")}', 'Off-Hand')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold px-2 py-1 rounded transition">⚡ İkinci El</button>
               ` : `
                 <button onclick="RuleMaster.equipToCharacter(${idx})" class="bg-sky-950 hover:bg-sky-900 border border-sky-700 text-sky-200 text-[10px] font-bold px-2 py-1 rounded transition">🛡️ Kuşan</button>
               `}
@@ -3825,7 +3643,7 @@ Return valid JSON only matching:
   },
 
   // ====================================================
-  // 3. SPELLS, MANEUVERS & STANCES VIEW
+  // 3. SPELLS, MANEUVERS & STANCES VIEW (CANONICAL V2)
   // ====================================================
   renderSpellsManeuvers() {
     const container = document.getElementById('spells-maneuvers-grid');
@@ -3852,19 +3670,22 @@ Return valid JSON only matching:
     }
 
     let html = '';
-    items.forEach(item => {
-      const idx = masterDb.indexOf(item);
+    items.forEach(rawItem => {
+      const idx = masterDb.indexOf(rawItem);
+      const item = this.ensureV2(rawItem);
       const isSpell = item.type === 'Spell';
       const isManeuver = item.type === 'Maneuver';
+      const primaryDice = item.damageParts?.[0]?.dice || '';
 
       html += `
         <div class="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl p-4 space-y-2.5 transition shadow">
           <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2">
             <div>
-              <div class="flex items-center gap-1.5">
+              <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="text-sm font-extrabold text-white">${item.name}</span>
                 <span class="badge ${isSpell ? 'bg-purple-950 text-purple-300 border border-purple-800' : 'bg-rose-950 text-rose-300 border border-rose-800'}">${item.type}</span>
                 ${item.level !== undefined && item.level !== '' ? `<span class="badge bg-amber-950 text-amber-300 border border-amber-800 text-[10px] font-bold">${item.level}. Seviye</span>` : ''}
+                ${Array.isArray(item.modes) && item.modes.length > 0 ? `<span class="badge bg-purple-950 text-purple-200 border border-purple-700 text-[10px]">⚡ ${item.modes.length} Mod</span>` : ''}
               </div>
               <div class="text-[10px] text-slate-400 mt-0.5">
                 ${isSpell ? `Okul: <b class="text-purple-300">${item.school || 'Universal'}</b>` : `Disiplin: <b class="text-rose-300">${item.discipline || 'Tome of Battle'}</b>`}
@@ -3872,7 +3693,7 @@ Return valid JSON only matching:
               </div>
             </div>
             <div class="flex items-center gap-1">
-              <button onclick="toggleUniversalPin({ name: '${item.name.replace(/'/g, "\\'")}', type: 'Feat', action: 'Passive', desc: '${(item.benefit || item.description || '').replace(/'/g, "\\'")}', badge: '${item.bonusType || 'Feat'}' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Savaş Kokpitine Sabitle / Çıkar">📌</button>
+              <button onclick="toggleUniversalPin({ name: '${item.name.replace(/'/g, "\\'")}', type: 'Feat', action: 'Passive', desc: '${(item.benefit || item.description || '').replace(/'/g, "\\'")}', badge: '${item.type}' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Savaş Kokpitine Sabitle / Çıkar">📌</button>
               <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Düzenle">✏️</button>
             </div>
           </div>
@@ -3880,7 +3701,7 @@ Return valid JSON only matching:
           <div class="flex flex-wrap gap-2 text-[10px] text-slate-400">
             <span>Aksiyon: <b class="text-amber-300">${item.action || 'Standard Action'}</b></span>
             <span>Süre: <b class="text-slate-300">${item.duration || 'Instantaneous'}</b></span>
-            ${item.dice || item.extraDmg ? `<span>Zar: <b class="text-rose-400 font-mono">${item.dice || item.extraDmg}</b></span>` : ''}
+            ${primaryDice ? `<span>Zar: <b class="text-rose-400 font-mono">${primaryDice}</b></span>` : ''}
           </div>
 
           <p class="text-[11px] text-slate-300 line-clamp-3 leading-relaxed bg-slate-950/40 p-2 rounded border border-slate-800/80">${item.benefit || item.description || '-'}</p>
@@ -3901,7 +3722,7 @@ Return valid JSON only matching:
   },
 
   // ====================================================
-  // 4. FEATS & SPECIAL ABILITIES VIEW
+  // 4. FEATS & SPECIAL ABILITIES VIEW (CANONICAL V2)
   // ====================================================
   renderFeats() {
     const container = document.getElementById('feats-grid');
@@ -3924,20 +3745,24 @@ Return valid JSON only matching:
     }
 
     let html = '';
-    items.forEach(item => {
-      const idx = masterDb.indexOf(item);
+    items.forEach(rawItem => {
+      const idx = masterDb.indexOf(rawItem);
+      const item = this.ensureV2(rawItem);
+      const statPills = this.getEntrySummaryPills(item);
+
       html += `
         <div class="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl p-4 space-y-2.5 transition shadow">
           <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2">
             <div>
-              <div class="flex items-center gap-1.5">
+              <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="text-sm font-extrabold text-white">${item.name}</span>
                 <span class="badge bg-amber-950 text-amber-300 border border-amber-800">${item.type}</span>
+                ${item.isFighterBonusFeat ? `<span class="badge bg-rose-950 text-rose-300 border border-rose-800 text-[10px]">⚔️ Fighter Bonus</span>` : ''}
               </div>
-              <div class="text-[10px] text-slate-400 mt-0.5">📚 ${item.source || 'PHB'} • Tür: <b>${item.bonusType || 'Untyped'}</b></div>
+              <div class="text-[10px] text-slate-400 mt-0.5">📚 ${item.source || 'PHB'} • Rol: <b>${item.role || 'General'}</b></div>
             </div>
             <div class="flex items-center gap-1">
-              <button onclick="toggleUniversalPin({ name: '${item.name.replace(/'/g, "\\'")}', type: 'Feat', action: 'Passive', desc: '${(item.benefit || item.description || '').replace(/'/g, "\\'")}', badge: '${item.bonusType || 'Feat'}' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Savaş Kokpitine Sabitle / Çıkar">📌</button>
+              <button onclick="toggleUniversalPin({ name: '${item.name.replace(/'/g, "\\'")}', type: 'Feat', action: 'Passive', desc: '${(item.benefit || item.description || '').replace(/'/g, "\\'")}', badge: 'Feat' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Savaş Kokpitine Sabitle / Çıkar">📌</button>
               <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Düzenle">✏️</button>
             </div>
           </div>
@@ -3945,6 +3770,12 @@ Return valid JSON only matching:
           ${item.prereq && item.prereq !== '-' ? `
             <div class="bg-slate-950/60 border border-slate-800 px-2.5 py-1.5 rounded text-[10px] text-amber-300">
               <span class="font-bold text-slate-400 uppercase">Önkoşullar:</span> ${item.prereq}
+            </div>
+          ` : ''}
+
+          ${statPills.length > 0 ? `
+            <div class="flex flex-wrap gap-1">
+              ${statPills.map(p => `<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-800 text-[10px] font-mono">${p}</span>`).join('')}
             </div>
           ` : ''}
 
@@ -3961,7 +3792,7 @@ Return valid JSON only matching:
   },
 
   // ====================================================
-  // 5. MAGIC ITEMS & CONSUMABLES VIEW
+  // 5. MAGIC ITEMS & CONSUMABLES VIEW (CANONICAL V2)
   // ====================================================
   renderMagicItems() {
     const container = document.getElementById('magic-items-grid');
@@ -3986,26 +3817,35 @@ Return valid JSON only matching:
     }
 
     let html = '';
-    items.forEach(item => {
-      const idx = masterDb.indexOf(item);
+    items.forEach(rawItem => {
+      const idx = masterDb.indexOf(rawItem);
+      const item = this.ensureV2(rawItem);
       const isPotion = item.type === 'Potion';
+      const statPills = this.getEntrySummaryPills(item);
+      const primaryBonusType = item.modifiers?.[0]?.type || 'Untyped';
 
       html += `
         <div class="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl p-4 space-y-2.5 transition shadow">
           <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2">
             <div>
-              <div class="flex items-center gap-1.5">
+              <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="text-sm font-extrabold text-white">${item.name}</span>
                 <span class="badge ${isPotion ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-teal-950 text-teal-300 border border-teal-800'}">${item.type}</span>
                 <span class="badge bg-slate-800 text-slate-300 text-[10px]">${item.slot || 'Slotless'}</span>
               </div>
-              <div class="text-[10px] text-slate-400 mt-0.5">📚 ${item.source || 'MIC'} • Bonus: <b>${item.bonusType || 'Untyped'}</b></div>
+              <div class="text-[10px] text-slate-400 mt-0.5">📚 ${item.source || 'MIC'} • Bonus: <b>${primaryBonusType}</b></div>
             </div>
             <div class="flex items-center gap-1">
-              <button onclick="toggleUniversalPin({ name: '${item.name.replace(/'/g, "\\'")}', type: 'Feat', action: 'Passive', desc: '${(item.benefit || item.description || '').replace(/'/g, "\\'")}', badge: '${item.bonusType || 'Feat'}' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Savaş Kokpitine Sabitle / Çıkar">📌</button>
+              <button onclick="toggleUniversalPin({ name: '${item.name.replace(/'/g, "\\'")}', type: 'Feat', action: 'Passive', desc: '${(item.benefit || item.description || '').replace(/'/g, "\\'")}', badge: '${primaryBonusType}' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Savaş Kokpitine Sabitle / Çıkar">📌</button>
               <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Düzenle">✏️</button>
             </div>
           </div>
+
+          ${statPills.length > 0 ? `
+            <div class="flex flex-wrap gap-1">
+              ${statPills.map(p => `<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-800 text-[10px] font-mono">${p}</span>`).join('')}
+            </div>
+          ` : ''}
 
           <p class="text-[11px] text-slate-300 leading-relaxed bg-slate-950/40 p-2.5 rounded border border-slate-800/80">${item.benefit || item.description || '-'}</p>
 
@@ -4022,45 +3862,20 @@ Return valid JSON only matching:
   },
 
   // ====================================================
-  // 6. PARENT-CHILD HIERARCHY TREE VIEW
+  // 6. EMBEDDED MODES HIERARCHY TREE VIEW (CANONICAL V2)
   // ====================================================
   renderHierarchyTree() {
     const container = document.getElementById('hierarchy-tree-container');
     if (!container) return;
 
-    const parentMap = new Map();
-    const childrenList = [];
-
-    masterDb.forEach(item => {
-      const isChild = (item.parent && item.parent !== '-' && item.parent !== '') || item.name.startsWith('↳');
-      if (isChild) {
-        childrenList.push(item);
-      } else {
-        parentMap.set(item.name, { parent: item, children: [] });
-      }
-    });
-
-    childrenList.forEach(child => {
-      let pName = child.parent;
-      if (!pName || pName === '-') {
-        const clean = child.name.replace('↳', '').trim();
-        const split = clean.split(':');
-        pName = split[0].trim();
-      }
-      if (parentMap.has(pName)) {
-        parentMap.get(pName).children.push(child);
-      } else {
-        parentMap.set(pName, { parent: { name: pName, type: 'Composite Item', source: child.source, benefit: 'Birden fazla alt güce sahip ana eşya' }, children: [child] });
-      }
-    });
-
     let treeHtml = '';
     let countComposite = 0;
 
-    parentMap.forEach(({ parent, children }) => {
-      if (children.length > 0) {
+    masterDb.forEach((rawItem, pIdx) => {
+      const parent = this.ensureV2(rawItem);
+      const modes = Array.isArray(parent.modes) ? parent.modes : [];
+      if (modes.length > 0) {
         countComposite++;
-        const pIdx = masterDb.indexOf(parent);
         treeHtml += `
           <div class="bg-slate-900 border border-purple-500/40 rounded-xl p-4 space-y-3 shadow-lg">
             <div class="flex items-center justify-between border-b border-purple-500/30 pb-2">
@@ -4070,36 +3885,34 @@ Return valid JSON only matching:
                   <div class="flex items-center gap-2">
                     <span class="text-sm font-extrabold text-white">${parent.name}</span>
                     <span class="badge ${this.getTypeBadgeClass(parent.type)}">${parent.type}</span>
-                    <span class="badge bg-purple-950 text-purple-300 border border-purple-800 text-[10px] font-bold">${children.length} Alt Güç</span>
+                    <span class="badge bg-purple-950 text-purple-300 border border-purple-800 text-[10px] font-bold">⚡ ${modes.length} Gömülü Mod</span>
                   </div>
                   <div class="text-[10px] text-slate-400">📚 ${parent.source || 'Core 3.5e'} • Yuva: <b>${parent.slot || 'None'}</b></div>
                 </div>
               </div>
               <div class="flex gap-1.5">
-                <button onclick="RuleMaster.addChildPower(${pIdx >= 0 ? pIdx : 0})" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-2.5 py-1 rounded shadow transition flex items-center gap-1">
+                <button onclick="RuleMaster.addChildPower(${pIdx})" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-2.5 py-1 rounded shadow transition flex items-center gap-1">
                   <span>➕</span>
-                  <span>Alt Güç Bağla</span>
+                  <span>Mod Ekle</span>
                 </button>
-                ${pIdx >= 0 ? `<button onclick="RuleMaster.openModalWithData(masterDb[${pIdx}], ${pIdx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition">✏️</button>` : ''}
+                <button onclick="RuleMaster.openModalWithData(masterDb[${pIdx}], ${pIdx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition">✏️</button>
               </div>
             </div>
 
             <div class="space-y-2 pl-4 border-l-2 border-purple-500/50">
-              ${children.map(child => {
-                const cIdx = masterDb.indexOf(child);
+              ${modes.map(mode => {
+                const modeDice = mode.damageParts?.[0]?.dice || '';
                 return `
                   <div class="bg-slate-950/60 border border-slate-800 rounded-lg p-3 space-y-1.5 hover:border-purple-500/40 transition">
                     <div class="flex items-center justify-between">
                       <div class="flex items-center gap-1.5">
-                        <span class="text-purple-400 font-bold font-mono">↳</span>
-                        <span class="text-xs font-bold text-purple-200">${RuleMaster.cleanArrow(child.name)}</span>
-                        <span class="badge bg-slate-800 text-slate-400 text-[10px]">${child.action || 'Passive'}</span>
-                        <span class="badge bg-purple-950 text-purple-300 border border-purple-800 text-[10px]">${child.bonusType || 'Untyped'}</span>
+                        <span class="text-purple-400 font-bold font-mono">⚡</span>
+                        <span class="text-xs font-bold text-purple-200">${mode.name}</span>
+                        <span class="badge bg-slate-800 text-slate-400 text-[10px]">${mode.actionType || 'standard'}</span>
                       </div>
-                      ${cIdx >= 0 ? `<button onclick="RuleMaster.openModalWithData(masterDb[${cIdx}], ${cIdx})" class="text-[11px] text-sky-400 hover:underline">Düzenle ✏️</button>` : ''}
                     </div>
-                    <div class="text-[11px] text-slate-300">${child.benefit || child.description || '-'}</div>
-                    ${child.extraDmg || child.dice ? `<div class="text-[10px] font-mono text-emerald-400 inline-flex items-center gap-1">${typeof getFormulaDiceIconSvg === 'function' ? getFormulaDiceIconSvg(child.extraDmg || child.dice, 'w-3 h-3 text-emerald-400 shrink-0') : ''}<span>Ek Zar/Hasar: ${child.extraDmg || child.dice}</span></div>` : ''}
+                    <div class="text-[11px] text-slate-300">${mode.benefit || '-'}</div>
+                    ${modeDice ? `<div class="text-[10px] font-mono text-emerald-400 inline-flex items-center gap-1">${typeof getFormulaDiceIconSvg === 'function' ? getFormulaDiceIconSvg(modeDice, 'w-3 h-3 text-emerald-400 shrink-0') : ''}<span>Zar: ${modeDice}</span></div>` : ''}
                   </div>
                 `;
               }).join('')}
@@ -4110,13 +3923,13 @@ Return valid JSON only matching:
     });
 
     const badge = document.getElementById('tree-count-badge');
-    if (badge) badge.textContent = `${countComposite} Çoklu Güçlü Eşya`;
+    if (badge) badge.textContent = `${countComposite} Çoklu Modlu Kayıt`;
 
     if (!treeHtml) {
       container.innerHTML = `
         <div class="p-8 text-center text-slate-500 bg-slate-950/40 rounded-xl border border-slate-800 space-y-2">
-          <div class="text-base font-bold text-slate-400">Henüz çoklu alt güce bağlı eşya bulunmuyor.</div>
-          <div class="text-xs">Tablodaki herhangi bir eşyanın yanındaki <b>🔗 Alt Yetenek Ekle</b> butonuna tıklayarak ilk kompozit eşyanızı oluşturabilirsiniz.</div>
+          <div class="text-base font-bold text-slate-400">Henüz gömülü alt moda (modes) sahip eşya veya büyü bulunmuyor.</div>
+          <div class="text-xs">Tablodaki herhangi bir kaydın yanındaki <b>🔗 Gömülü Alt Mod Ekle</b> butonuna tıklayarak çoklu modlu büyü veya eşya oluşturabilirsiniz.</div>
         </div>
       `;
       return;
@@ -4230,7 +4043,7 @@ Return valid JSON only matching:
     }
   },
 
-  // Quick / Heuristic Rule Parser (Parses raw text from d20srd, books or SRD)
+  // Quick / Heuristic Rule Parser (Parses raw text from d20srd, books or SRD into Canonical V2)
   parseRawText() {
     const raw = document.getElementById('raw-rule-input')?.value || '';
     if (!raw.trim()) {
@@ -4241,14 +4054,12 @@ Return valid JSON only matching:
     const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
     const entry = this.createEmptyEntry('Feat');
 
-    // First line is often title
     if (lines.length > 0) {
       entry.name = lines[0].replace(/\[.*?\]/g, '').trim();
     }
 
     const fullText = raw.toLowerCase();
 
-    // Type detection
     if (fullText.includes('stance') || fullText.includes('discipline')) entry.type = 'Stance';
     else if (fullText.includes('strike') || fullText.includes('counter') || fullText.includes('boost') || fullText.includes('maneuver')) entry.type = 'Maneuver';
     else if (fullText.includes('evocation') || fullText.includes('transmutation') || fullText.includes('abjuration') || fullText.includes('casting time') || fullText.includes('components:')) entry.type = 'Spell';
@@ -4256,27 +4067,24 @@ Return valid JSON only matching:
     else if (fullText.includes('armor bonus:') || fullText.includes('shield bonus:')) entry.type = 'Armor';
     else if (fullText.includes('prerequisite:')) entry.type = 'Feat';
 
-    // Prereq
     const prereqMatch = raw.match(/Prerequisite[s]?:?\s*(.*?)(?=\.|\n|$)/i);
     if (prereqMatch) entry.prereq = prereqMatch[1].trim();
 
-    // Benefit
     const benefitMatch = raw.match(/Benefit:?\s*([\s\S]*?)(?=(Special:|Normal:|$))/i);
     if (benefitMatch) {
       entry.benefit = benefitMatch[1].trim();
     } else {
       entry.benefit = lines.slice(1).join(' ');
     }
+    entry.description = entry.benefit;
 
-    // Damage dice
     const diceMatch = raw.match(/(\d+d\d+(\+\d+)?)/i);
-    if (diceMatch) entry.dice = diceMatch[1];
+    const detectedDice = diceMatch ? diceMatch[1] : '';
 
-    // Discipline
     const discMatch = raw.match(/(Iron Heart|Stone Dragon|Shadow Hand|White Raven|Tiger Claw|Diamond Mind|Setting Sun|Devoted Spirit|Desert Wind)/i);
     if (discMatch) entry.discipline = discMatch[1];
 
-    // Weapon details (Slot, Two-Handed detection, damage type, tags)
+    let detectedDmgType = 'Untyped';
     if (entry.type === 'Weapon') {
       const isTwoHand = (typeof RuleEngine !== 'undefined' && RuleEngine.isTwoHandedWeapon(entry)) ||
         fullText.includes('two-handed') || fullText.includes('2-handed') || fullText.includes('two hands') || fullText.includes('requires 2 hands') || fullText.includes('two-hand');
@@ -4286,18 +4094,39 @@ Return valid JSON only matching:
       if (fullText.includes('exotic')) tags.push('exotic');
       if (fullText.includes('martial')) tags.push('martial');
       if (fullText.includes('simple')) tags.push('simple');
-      if (fullText.includes('slashing')) { tags.push('slashing'); entry.dmgType = 'Slashing'; }
-      if (fullText.includes('piercing')) { tags.push('piercing'); entry.dmgType = entry.dmgType ? entry.dmgType + '/Piercing' : 'Piercing'; }
-      if (fullText.includes('bludgeoning')) { tags.push('bludgeoning'); entry.dmgType = 'Bludgeoning'; }
+      if (fullText.includes('slashing')) { tags.push('slashing'); detectedDmgType = 'Slashing'; }
+      if (fullText.includes('piercing')) { tags.push('piercing'); detectedDmgType = detectedDmgType !== 'Untyped' ? detectedDmgType + '/Piercing' : 'Piercing'; }
+      if (fullText.includes('bludgeoning')) { tags.push('bludgeoning'); detectedDmgType = 'Bludgeoning'; }
       entry.tags = tags;
+      entry.weaponStats = {
+        category: tags.includes('exotic') ? 'Exotic' : (tags.includes('simple') ? 'Simple' : 'Martial'),
+        handedness: isTwoHand ? 'Two-Handed' : 'One-Handed',
+        baseDamage: detectedDice || '1d8',
+        critMin: 20,
+        critMult: 2,
+        damageTypes: [detectedDmgType],
+        rangeIncrement: 0,
+        finessable: false,
+        isLight: false
+      };
     }
 
-    // Open Modal with parsed draft
+    if (detectedDice) {
+      entry.damageParts = [{
+        dice: detectedDice,
+        bonus: 0,
+        type: detectedDmgType,
+        multiplyOnCrit: entry.type === 'Weapon',
+        onCritOnly: false,
+        source: entry.name || 'Primary'
+      }];
+    }
+
     this.openModalWithData(entry, -1);
   },
 
   // ====================================================
-  // ADD BUTTON DROPDOWN & INLINE AI RULE ADDER
+  // ADD BUTTON DROPDOWN & INLINE AI RULE ADDER (CANONICAL V2)
   // ====================================================
   toggleAddMenu(e) {
     if (e) e.stopPropagation();
@@ -4341,54 +4170,14 @@ Return valid JSON only matching:
       return;
     }
 
-    // 0ms Cache-First Kontrolü (Master DB & SRD Core & Canonical Compendium)
-    let cleanKey = query.toLowerCase().trim();
-    const prefixMatch = cleanKey.match(/^(spell|feat|race|deity|god|weapon|armor|shield|item|magic item|maneuver|stance|class):\s*/i);
-    if (prefixMatch) {
-      cleanKey = cleanKey.slice(prefixMatch[0].length).trim();
-    }
-
-    // 1. Check Master DB
-    if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
-      const dbMatch = masterDb.filter(m => (m.name || '').toLowerCase().trim() === cleanKey);
-      if (dbMatch.length > 0) {
-        const parentName = dbMatch[0].name.toLowerCase().trim();
-        const children = masterDb.filter(m => m.parent && m.parent !== '-' && RuleMaster.cleanArrow(m.parent).toLowerCase().trim() === parentName);
-        const allLocal = [...dbMatch, ...children];
-        const rows = allLocal.map(e => this.entryToRow(e));
-        this.renderInlineAiResults(rows);
-        const st = document.getElementById('inline-ai-status-text');
-        if (st) st.innerHTML = `⚡ <b>"${dbMatch[0].name}"</b> Master DB kütüphanesinden anında yüklendi (0 ms).`;
-        const lb = document.getElementById('inline-ai-loading-box');
-        if (lb) lb.classList.remove('hidden');
-        return;
-      }
-    }
-
-    // 2. Check BUNDLED_SRD_CORE_CATALOG
-    if (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
-      const baseMatch = this.findBaseItemInSrdCore(cleanKey);
-      if (baseMatch && (baseMatch.name || '').toLowerCase().trim() === cleanKey) {
-        const norm = this.normalizeEntry(baseMatch);
-        const row = this.entryToRow(norm);
-        this.renderInlineAiResults([row]);
-        const st = document.getElementById('inline-ai-status-text');
-        if (st) st.innerHTML = `⚡ <b>"${norm.name}"</b> Core SRD kataloğundan anında yüklendi (0 ms).`;
-        const lb = document.getElementById('inline-ai-loading-box');
-        if (lb) lb.classList.remove('hidden');
-        return;
-      }
-    }
-
-    // Check Local Canonical Compendium & Typo Resolver First!
-    if (typeof this.canonicalDictionary[cleanKey] === 'string') {
-      cleanKey = this.canonicalDictionary[cleanKey];
-    }
-    const matchedCanonical = this.canonicalDictionary[cleanKey];
-    if (matchedCanonical && typeof matchedCanonical === 'object') {
-      if (queryInput) queryInput.value = matchedCanonical.name;
-      const row = this.entryToRow(matchedCanonical);
-      this.renderInlineAiResults([row]);
+    // 0ms Local Resolution (Master DB -> SrdCompendium -> ItemAssembler -> Canonical Dictionary)
+    const localHits = this.resolveLocalZeroTokenQuery(query);
+    if (localHits.length > 0) {
+      this.renderInlineAiResults(localHits);
+      const st = document.getElementById('inline-ai-status-text');
+      if (st) st.innerHTML = `⚡ <b>"${localHits[0].name}"</b> yerel V2 kütüphanesinden / montaj motorundan anında yüklendi (0 ms, Sıfır Token).`;
+      const lb = document.getElementById('inline-ai-loading-box');
+      if (lb) lb.classList.remove('hidden');
       return;
     }
 
@@ -4412,8 +4201,8 @@ Return valid JSON only matching:
     if (resultsBox) resultsBox.innerHTML = '';
 
     try {
-      const rows = await this.fetchSingleAiRuleRows(query, categoryHint, apiKey, statusText);
-      this.renderInlineAiResults(rows);
+      const entries = await this.fetchSingleAiRuleObjects(query, categoryHint, apiKey, statusText);
+      this.renderInlineAiResults(entries);
     } catch (err) {
       alert(`⚠️ Kural getirilemedi: ${err.message}\nLütfen internet bağlantınızı ve API anahtarınızı kontrol edin.`);
     } finally {
@@ -4422,11 +4211,11 @@ Return valid JSON only matching:
     }
   },
 
-  renderInlineAiResults(rows) {
+  renderInlineAiResults(rowsOrEntries) {
     const resultsBox = document.getElementById('inline-ai-results-box');
     if (!resultsBox) return;
 
-    if (!rows || !rows.length) {
+    if (!rowsOrEntries || !rowsOrEntries.length) {
       resultsBox.innerHTML = `
         <div class="p-3 text-center text-slate-400 bg-slate-950/80 rounded-lg border border-slate-800 text-xs">
           Uygun kural kaydı bulunamadı. Lütfen kural adını kontrol edip tekrar arayın.
@@ -4435,7 +4224,7 @@ Return valid JSON only matching:
       return;
     }
 
-    const entries = this.convertRowsToEntries(rows);
+    const entries = this.convertRowsToEntries(rowsOrEntries).map(e => this.ensureV2(e));
     this._inlineEntries = entries;
 
     let html = `
@@ -4443,8 +4232,8 @@ Return valid JSON only matching:
         <div class="flex items-center gap-2">
           <span class="text-base">✨</span>
           <div>
-            <div class="text-xs font-bold text-white">${entries.length} Kural / Alt Güç Ayrıştırıldı</div>
-            <div class="text-[10px] text-slate-400">Ana eşya ve bağlı tüm alt yetenekler tek seferde eklenebilir</div>
+            <div class="text-xs font-bold text-white">${entries.length} Kanonik V2 Kural Ayrıştırıldı</div>
+            <div class="text-[10px] text-slate-400">Ana kayıt ve gömülü modları tek seferde eklenebilir</div>
           </div>
         </div>
         <button onclick="RuleMaster.addAllInlineResultsToDb()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1.5">
@@ -4456,61 +4245,31 @@ Return valid JSON only matching:
     `;
 
     entries.forEach((item, idx) => {
-      const isChild = item.isChild || (item.parent && item.parent !== '-');
-      const children = this.getChildrenForEntry(item, entries);
-      const isParent = !isChild && children.length > 0;
+      const modes = Array.isArray(item.modes) ? item.modes : [];
       const badgeClass = this.getTypeBadgeClass(item.type);
-
-      const statPills = [];
-      if (item.strBonus) statPills.push(`+${item.strBonus} STR`);
-      if (item.dexBonus) statPills.push(`+${item.dexBonus} DEX`);
-      if (item.conBonus) statPills.push(`+${item.conBonus} CON`);
-      if (item.intBonus) statPills.push(`+${item.intBonus} INT`);
-      if (item.wisBonus) statPills.push(`+${item.wisBonus} WIS`);
-      if (item.chaBonus) statPills.push(`+${item.chaBonus} CHA`);
-      if (item.acBonus) statPills.push(`+${item.acBonus} AC`);
-      if (item.attBonus) statPills.push(`+${item.attBonus} Atk`);
-      if (item.dmgBonus) statPills.push(`+${item.dmgBonus} Dmg`);
-      if (item.extraDmg) statPills.push(`${item.extraDmg}`);
+      const statPills = this.getEntrySummaryPills(item);
 
       html += `
-        <div class="${isChild ? 'ml-5 border-l-4 border-l-purple-500 bg-slate-950/70' : (isParent ? 'bg-slate-950 border-2 border-purple-500/60 shadow-purple-950/30' : 'bg-slate-950 border border-purple-500/40')} rounded-xl p-3 shadow-md space-y-2">
+        <div class="bg-slate-950 border border-purple-500/40 rounded-xl p-3 shadow-md space-y-2">
           <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
             <div>
-              <div class="flex items-center gap-2">
-                ${isChild ? '<span class="text-purple-400 font-bold font-mono">↳</span>' : ''}
-                <span class="text-xs md:text-sm font-extrabold text-white">${isChild ? RuleMaster.cleanArrow(item.name) : item.name}</span>
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-xs md:text-sm font-extrabold text-white">${item.name}</span>
                 <span class="badge ${badgeClass} text-[10px]">${item.type}</span>
-                ${isParent ? `<span class="badge bg-purple-950 text-purple-200 border border-purple-600 text-[10px] font-bold">👑 Ana Eşya (${children.length} Alt Güç)</span>` : ''}
-                ${isChild ? `<span class="badge bg-purple-950 text-purple-300 border border-purple-800 font-mono text-[9px]">Bağlı: ${item.parent}</span>` : ''}
+                ${modes.length > 0 ? `<span class="badge bg-purple-950 text-purple-200 border border-purple-600 text-[10px] font-bold">⚡ ${modes.length} Gömülü Mod</span>` : ''}
                 <span class="text-[10px] text-slate-400">📚 <b>${item.source || 'PHB'}</b></span>
                 <span class="text-[10px] text-slate-400">• Slot: <b>${item.slot || 'None'}</b></span>
               </div>
             </div>
             <div class="flex items-center gap-1.5">
-              ${isParent ? `
-                <button onclick="RuleMaster.addInlineResultToDb(${idx}, true)" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-3 py-1 rounded-lg shadow transition flex items-center gap-1" title="Ana eşya ve tüm ${children.length} alt gücünü tek seferde Master DB'ye ekler">
-                  <span>📥</span>
-                  <span>Tümünü DB'ye Ekle</span>
-                </button>
-                <button onclick="RuleMaster.equipInlineResultToCharacter(${idx})" class="bg-purple-900 hover:bg-purple-800 border border-purple-600 text-purple-200 text-xs px-2.5 py-1 rounded-lg transition font-bold" title="Ana eşya ve tüm alt güçlerini tek seferde kuşanır">
-                  ⚡ Hepsini Kuşan
-                </button>
-              ` : (isChild ? `
-                <span class="text-[10px] text-purple-300 bg-purple-950/80 border border-purple-700/60 rounded-lg px-2.5 py-1 font-medium flex items-center gap-1.5 shadow-sm" title="Alt güçler ana öğe (${item.parent || 'Parent'}) ile bir bütün olarak eklenir ve kuşanılır.">
-                  <span>🔗</span>
-                  <span>Ana Öğe ile Birlikte Eklenir</span>
-                </span>
-              ` : `
-                <button onclick="RuleMaster.addInlineResultToDb(${idx}, false)" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-2.5 py-1 rounded-lg shadow transition flex items-center gap-1">
-                  <span>📥</span>
-                  <span>DB'ye Ekle</span>
-                </button>
-                <button onclick="RuleMaster.equipInlineResultToCharacter(${idx})" class="bg-purple-950 hover:bg-purple-900 border border-purple-700 text-purple-300 text-xs px-2 py-1 rounded-lg transition" title="Karaktere Kuşan">
-                  ⚡ Kuşan
-                </button>
-              `)}
-              <button onclick="RuleMaster.editInlineResultInModal(${idx})" class="bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs px-2 py-1 rounded-lg border border-slate-700 transition" title="29 Sütunlu Formda İncele/Düzenle">
+              <button onclick="RuleMaster.addInlineResultToDb(${idx})" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-2.5 py-1 rounded-lg shadow transition flex items-center gap-1">
+                <span>📥</span>
+                <span>DB'ye Ekle</span>
+              </button>
+              <button onclick="RuleMaster.equipInlineResultToCharacter(${idx})" class="bg-purple-950 hover:bg-purple-900 border border-purple-700 text-purple-300 text-xs px-2 py-1 rounded-lg transition font-bold" title="Karaktere Kuşan">
+                ⚡ Kuşan
+              </button>
+              <button onclick="RuleMaster.editInlineResultInModal(${idx})" class="bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs px-2 py-1 rounded-lg border border-slate-700 transition" title="Formda İncele/Düzenle">
                 ✏️ Düzenle
               </button>
             </div>
@@ -4518,8 +4277,15 @@ Return valid JSON only matching:
 
           ${statPills.length > 0 ? `
             <div class="flex flex-wrap items-center gap-1">
-              <span class="text-[9px] uppercase font-bold text-slate-400">Bonuslar:</span>
+              <span class="text-[9px] uppercase font-bold text-slate-400">Etkiler:</span>
               ${statPills.map(p => `<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 font-mono text-[9px] font-bold">${p}</span>`).join('')}
+            </div>
+          ` : ''}
+
+          ${modes.length > 0 ? `
+            <div class="flex flex-wrap items-center gap-1">
+              <span class="text-[9px] uppercase font-bold text-purple-300">Alt Modlar:</span>
+              ${modes.map(m => `<span class="badge bg-purple-950 text-purple-200 border border-purple-700 font-mono text-[9px]">⚡ ${m.name}</span>`).join('')}
             </div>
           ` : ''}
 
@@ -4545,61 +4311,26 @@ Return valid JSON only matching:
     resultsBox.innerHTML = html;
   },
 
-  addInlineResultToDb(idx, includeChildren = true) {
+  addInlineResultToDb(idx) {
     if (!this._inlineEntries || !this._inlineEntries[idx]) return;
-    let item = this._inlineEntries[idx];
-    const isChild = item.isChild || (item.parent && item.parent !== '-');
-
-    // Parent-Child ilişkileri bütün olarak eklensin: Eğer bir alt güç (child) seçildiyse,
-    // otomatik olarak ana öğesi bulunup tüm aile birlikte eklenir!
-    if (isChild) {
-      const pName = RuleMaster.cleanArrow(item.parent || '').toLowerCase().trim();
-      const pIdx = this._inlineEntries.findIndex(entry => RuleMaster.cleanArrow(entry.name).toLowerCase().trim() === pName);
-      if (pIdx >= 0) {
-        idx = pIdx;
-        item = this._inlineEntries[pIdx];
-      }
+    const item = this.ensureV2(JSON.parse(JSON.stringify(this._inlineEntries[idx])));
+    const existsIdx = masterDb.findIndex(m => (m.id && m.id === item.id) || (m.name || '').toLowerCase().trim() === (item.name || '').toLowerCase().trim());
+    if (existsIdx >= 0) {
+      masterDb[existsIdx] = item;
+    } else {
+      masterDb.push(item);
     }
-
-    const itemsToAdd = [item];
-    const children = this.getChildrenForEntry(item, this._inlineEntries);
-    children.forEach(c => itemsToAdd.push(c));
-
-    itemsToAdd.forEach(it => {
-      const copy = JSON.parse(JSON.stringify(it));
-      const existsIdx = masterDb.findIndex(m => (m.name || '').toLowerCase().trim() === (copy.name || '').toLowerCase().trim());
-      if (existsIdx >= 0) {
-        masterDb[existsIdx] = copy;
-      } else {
-        const parentName = (copy.parent && copy.parent !== '-') ? RuleMaster.cleanArrow(copy.parent).toLowerCase() : '';
-        const parentIdx = parentName ? masterDb.findIndex(m => RuleMaster.cleanArrow(m.name).toLowerCase() === parentName) : -1;
-        if (parentIdx >= 0) {
-          let insertAt = parentIdx + 1;
-          while (insertAt < masterDb.length && RuleMaster.cleanArrow(masterDb[insertAt].parent).toLowerCase() === parentName) {
-            insertAt++;
-          }
-          masterDb.splice(insertAt, 0, copy);
-        } else {
-          masterDb.push(copy);
-        }
-      }
-    });
 
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
     this.renderTable();
-
-    if (itemsToAdd.length > 1) {
-      alert(`✅ "${item.name}" ve ${itemsToAdd.length - 1} alt gücü başarıyla Master_DB'ye eklendi ve kütüphane güncellendi!`);
-    } else {
-      alert(`✅ "${item.name}" başarıyla Master_DB'ye eklendi ve kütüphane güncellendi!`);
-    }
+    alert(`✅ "${item.name}" başarıyla Master_DB'ye eklendi ve kütüphane güncellendi!`);
   },
 
   addAllInlineResultsToDb() {
     if (!this._inlineEntries || !this._inlineEntries.length) return;
     [...this._inlineEntries].reverse().forEach(it => {
-      const copy = JSON.parse(JSON.stringify(it));
-      const existsIdx = masterDb.findIndex(m => (m.name || '').toLowerCase().trim() === (copy.name || '').toLowerCase().trim());
+      const copy = this.ensureV2(JSON.parse(JSON.stringify(it)));
+      const existsIdx = masterDb.findIndex(m => (m.id && m.id === copy.id) || (m.name || '').toLowerCase().trim() === (copy.name || '').toLowerCase().trim());
       if (existsIdx >= 0) {
         masterDb[existsIdx] = copy;
       } else {
@@ -4608,29 +4339,23 @@ Return valid JSON only matching:
     });
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
     this.renderTable();
-    alert(`✅ Toplam ${this._inlineEntries.length} kural ve alt güç tek seferde Master_DB'ye eklendi!`);
+    alert(`✅ Toplam ${this._inlineEntries.length} Kanonik V2 kural başarıyla Master_DB'ye eklendi!`);
   },
 
   editInlineResultInModal(idx) {
     if (!this._inlineEntries || !this._inlineEntries[idx]) return;
-    const item = this._inlineEntries[idx];
+    const item = this.ensureV2(this._inlineEntries[idx]);
     this.openModalWithData(item, -1);
   },
 
   equipInlineResultToCharacter(idx) {
     if (!this._inlineEntries || !this._inlineEntries[idx]) return;
-    let item = this._inlineEntries[idx];
-    const isChild = item.isChild || (item.parent && item.parent !== '-');
-    if (isChild) {
-      const pName = RuleMaster.cleanArrow(item.parent || '').toLowerCase().trim();
-      const pParent = this._inlineEntries.find(entry => RuleMaster.cleanArrow(entry.name).toLowerCase().trim() === pName);
-      if (pParent) item = pParent;
-    }
+    const item = this.ensureV2(this._inlineEntries[idx]);
     this.equipItemWithChildren(item, this._inlineEntries);
   },
 
   // ====================================================
-  // SERBEST METİN (FREE-TEXT) AI AYRIŞTIRICI ENGINE
+  // SERBEST METİN (FREE-TEXT) AI AYRIŞTIRICI ENGINE (CANONICAL V2)
   // ====================================================
   switchInlineMode(mode) {
     const searchPanel = document.getElementById('inline-mode-search');
@@ -4642,24 +4367,16 @@ Return valid JSON only matching:
     if (mode === 'freetext') {
       if (searchPanel) searchPanel.classList.add('hidden');
       if (freetextPanel) freetextPanel.classList.remove('hidden');
-      if (btnSearch) {
-        btnSearch.className = 'px-2.5 py-1 rounded font-bold transition text-slate-400 hover:text-white';
-      }
-      if (btnFreetext) {
-        btnFreetext.className = 'px-2.5 py-1 rounded font-bold transition bg-purple-600 text-white shadow';
-      }
+      if (btnSearch) btnSearch.className = 'px-2.5 py-1 rounded font-bold transition text-slate-400 hover:text-white';
+      if (btnFreetext) btnFreetext.className = 'px-2.5 py-1 rounded font-bold transition bg-purple-600 text-white shadow';
       if (headerTitle) headerTitle.textContent = '🧙‍♂️🤖 Rule Master (AI) Serbest Metin Ayrıştırıcı';
       const ta = document.getElementById('inline-ai-freetext-input');
       if (ta) ta.focus();
     } else {
       if (searchPanel) searchPanel.classList.remove('hidden');
       if (freetextPanel) freetextPanel.classList.add('hidden');
-      if (btnSearch) {
-        btnSearch.className = 'px-2.5 py-1 rounded font-bold transition bg-purple-600 text-white shadow';
-      }
-      if (btnFreetext) {
-        btnFreetext.className = 'px-2.5 py-1 rounded font-bold transition text-slate-400 hover:text-white';
-      }
+      if (btnSearch) btnSearch.className = 'px-2.5 py-1 rounded font-bold transition bg-purple-600 text-white shadow';
+      if (btnFreetext) btnFreetext.className = 'px-2.5 py-1 rounded font-bold transition text-slate-400 hover:text-white';
       if (headerTitle) headerTitle.textContent = 'Hızlı 🧙‍♂️🤖 Rule Master (AI) Kural Ekleyici';
       const q = document.getElementById('inline-ai-rule-query');
       if (q) q.focus();
@@ -4702,62 +4419,56 @@ Return valid JSON only matching:
   },
 
   async queryAiFreeTextRows(rawText, apiKey, statusTextEl = null) {
-    const promptText = `You are a master D&D 3.5e Rule Arbiter and Database Architect.
+    const promptText = `You are a master D&D 3.5e Rule Arbiter and Canonical V2 Database Architect.
 The user has provided a raw, free-form text block copied from a D&D 3.5e sourcebook, PDF, SRD, or adventure:
 
 RAW TEXT:
-"""
+'''
 ${rawText}
-"""
+'''
 
 ${this.DND35_RAW_GUARDRAIL}
 
 TASK:
-Analyze and parse this free-form text completely. Extract and map every mechanic strictly adhering to the Master_DB 29-column schema.
+Analyze and parse this free-form text completely into Canonical V2 JSON entries (schemaVersion: 2).
 CRITICAL RULES:
-1. STRICT REAL RAW 3.5E RULES ONLY:
-Do not hallucinate fake rules. Extract accurate numbers, bonuses, slots, actions, durations, and sources based on official WotC D&D 3.5e rules.
-2. PARENT-CHILD DECOMPOSITION:
-If the item or rule has multiple distinct powers (e.g. passive weapon stats + on-hit energy damage + 1/day command spell; or stat enhancement + saving throw resistance), produce:
-- 1 Parent row for the primary element (Col 3 = '-')
-- 1 or more Child rows starting with '↳ ' in Col 0, setting Col 3 to the exact parent name.
-3. TWO-HANDED WEAPONS:
-Any weapon requiring two hands to wield (e.g. Greatsword, Greataxe, Jovar, Halberd, Polearm, Bow) MUST set Slot (Col 2) to 'Two-Handed'.
-
-MASTER_DB 29-COLUMN SCHEMA (Every row MUST contain exactly 29 elements):
-0: Entry Name (string, child begins with '↳ ')
-1: Category ('Feat', 'Weapon', 'Armor / Shield', 'Ring', 'Wondrous Item', 'Slotless Item', 'Spell', 'Special Ability', 'Potion', 'Maneuver', 'Stance')
-2: Slot ('Armor', 'Shield', 'Main Hand', 'Off Hand', 'Two-Handed', 'Both Hands', 'Head', 'Eyes', 'Neck', 'Torso', 'Body', 'Waist', 'Shoulders', 'Arms', 'Hands', 'Ring', 'Feet', 'Slotless', 'None')
-3: Parent Entry (string; '-' if none, or exact parent name if child)
-4: Source (e.g. 'PHB p.92', 'MIC p.128', 'DMG p.224', 'CW p.112', 'ToB p.84')
-5: Description / Rules Mechanics (string, full prerequisite and mechanical benefit)
-6: Bonus Type ('Untyped', 'Enhancement', 'Deflection', 'Dodge', 'Resistance', 'Morale', 'Competence', 'Insight', 'Luck', 'Natural Armor', 'Shield', 'Armor', 'Alchemical', 'Inherent')
-7: Applies To / Scope ('All Attacks', 'Melee Only', 'Ranged Only', 'Thrown Only', 'Spells', 'None / General')
-8: Str (number or '')
-9: Dex (number or '')
-10: Con (number or '')
-11: Int (number or '')
-12: Wis (number or '')
-13: Cha (number or '')
-14: AC (number or '')
-15: HP (number or '')
-16: Att (number or '')
-17: Dmg (number or '')
-18: Fort (number or '')
-19: Ref (number or '')
-20: Will (number or '')
-21: Skill (number or '')
-22: Init (number or '')
-23: Speed (number or '')
-24: On-Hit Dmg / Dice Expression (string, e.g. '+1d6 Fire', '1d8', or '')
-25: Action ('Passive', 'Free Action', 'Swift Action', 'Immediate Action', 'Move Action', 'Standard Action', 'Full-Round Action')
-26: Duration / Uses (string, e.g. 'Continuous', '1 round/lvl', '10 rounds/day', '1/day', 'At Will')
-27: Weight (lbs) (number or 0)
-28: Cost (gp) (number or 0)
+1. STRICT REAL RAW 3.5E RULES ONLY.
+2. EMBEDDED MODES (NO SEPARATE '↳' CHILD ROWS):
+   If the item or spell has multiple distinct powers or sub-modes (e.g. Flametongue 1/day 4d6 fire ray, or Searing Light vs Undead), embed them inside the parent entry's "modes" array.
+3. UNIVERSAL MODIFIERS & DAMAGE PARTS:
+   - Stat/roll bonuses go into "modifiers": [{"target": "ac.dodge"|"attack.all"|"ability.str"|"save.ref"|"speed.land", "value": 1, "type": "Dodge"|"Enhancement"|"Untyped", "condition": null}].
+   - Dice expressions go into "damageParts": [{"dice": "1d8", "bonus": 1, "type": "Slashing", "multiplyOnCrit": true, "onCritOnly": false, "source": "Base Weapon"}, {"dice": "1d6", "bonus": 0, "type": "Fire", "multiplyOnCrit": false, "onCritOnly": false, "source": "Flaming"}].
 
 OUTPUT REQUIREMENT:
-Return valid JSON only matching this schema:
-{ "rows": [ [col0, col1, ... col28], ... ] }`;
+Return valid JSON only matching:
+{
+  "entries": [
+    {
+      "schemaVersion": 2,
+      "id": "unique_slug_id",
+      "name": "Entry Name",
+      "type": "Feat|Weapon|Armor|Shield|Ring|Wondrous Item|Spell|Potion|Maneuver|Stance",
+      "slot": "None|Main Hand|Two-Handed|Armor|Off-Hand/Shield|Ring|Belt|Shoulders|Neck|Head|Feet|Hands|Arms",
+      "source": "PHB p.92 / DMG p.224",
+      "prereq": "-",
+      "benefit": "Concise mechanical summary",
+      "description": "Full text",
+      "action": "Passive|Standard Action|Swift Action|Immediate Action|Full-Round Action",
+      "actionType": "passive|standard|swift|immediate|full_round",
+      "duration": "Continuous|Instantaneous|1 round/level",
+      "weight": 0,
+      "cost": 0,
+      "modifiers": [],
+      "damageParts": [],
+      "modes": [],
+      "weaponStats": null,
+      "armorStats": null,
+      "spellStats": null,
+      "ruleFlags": {},
+      "tacticalBadges": []
+    }
+  ]
+}`;
 
     const modelsToTry = await this.getAvailableGeminiModels(apiKey, false, 'IMPORT_BATCH');
     let successData = null;
@@ -4810,18 +4521,20 @@ Return valid JSON only matching this schema:
       throw new Error(lastError?.message || 'Tüm Gemini modelleri yanıt vermedi.');
     }
 
-    let rows = successData.rows || successData;
-    if (!Array.isArray(rows)) {
-      throw new Error('Model beklenen satır dizisini üretemedi.');
+    const rawItems = successData.entries || successData.rows || (Array.isArray(successData) ? successData : [successData]);
+    if (!Array.isArray(rawItems)) {
+      throw new Error('Model beklenen kayıt dizisini üretemedi.');
     }
 
-    // Sanitize to 29 columns
-    rows = rows.map(r => {
-      while (r.length < 29) r.push('');
-      return r.slice(0, 29);
-    });
+    return this.convertRowsToEntries(rawItems).map(e => this.ensureV2(e));
+  },
 
-    return rows;
+  processAiRows(rowsOrEntries) {
+    const entries = this.convertRowsToEntries(rowsOrEntries).map(e => this.ensureV2(e));
+    this.lastAiResults = entries;
+    this.renderAiResults();
+    const resultsWrapper = document.getElementById('ai-results-wrapper');
+    if (resultsWrapper) resultsWrapper.classList.remove('hidden');
   },
 
   async queryInlineAiFreeText() {
@@ -4850,8 +4563,8 @@ Return valid JSON only matching this schema:
     if (resultsBox) resultsBox.innerHTML = '';
 
     try {
-      const rows = await this.queryAiFreeTextRows(text, apiKey, statusText);
-      this.renderInlineAiResults(rows);
+      const entries = await this.queryAiFreeTextRows(text, apiKey, statusText);
+      this.renderInlineAiResults(entries);
     } catch (err) {
       alert(`⚠️ Serbest metin ayrıştırılamadı: ${err.message}\nLütfen internet bağlantınızı ve API anahtarınızı kontrol edin.`);
     } finally {
@@ -4884,9 +4597,8 @@ Return valid JSON only matching this schema:
     if (loadingIndicator) loadingIndicator.classList.remove('hidden');
 
     try {
-      const rows = await this.queryAiFreeTextRows(text, apiKey, statusText);
-      this.processAiRows(rows);
-      // Scroll to results
+      const entries = await this.queryAiFreeTextRows(text, apiKey, statusText);
+      this.processAiRows(entries);
       const resultsContainer = document.getElementById('ai-results-container');
       if (resultsContainer) {
         resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -5353,16 +5065,16 @@ ${customQuery ? `Kullanıcının Özel Sorusu: ${customQuery}` : 'Bu seviye atla
   async auditLibraryWithProModal() {
     const apiKey = this.getApiKey();
     if (!apiKey) {
-      alert('âš ï¸ KÃ¼tÃ¼phane denetimi iÃ§in geÃ§erli bir Gemini API anahtarÄ± gereklidir.');
+      alert('⚠️ Kütüphane denetimi için geçerli bir Gemini API anahtarı gereklidir.');
       this.promptChangeApiKey();
       return;
     }
 
     const items = (Array.isArray(this.masterDb) ? this.masterDb : [])
-      .filter(i => i && i.name && !String(i.name).startsWith('â†³'));
+      .filter(i => i && i.name);
 
     if (items.length === 0) {
-      alert('â„¹ï¸ Yerel kullanÄ±cÄ± veri tabanÄ±nÄ±zda (master_db) henÃ¼z Ã¶zel kayÄ±t bulunmamaktadÄ±r.\n\nSRD Core kataloÄŸundaki 267 kayÄ±t zaten resmi Gemini 3.1 Pro denetiminden geÃ§miÅŸ ve dondurulmuÅŸtur.');
+      alert('ℹ️ Yerel kullanıcı veri tabanınızda (master_db) henüz özel kayıt bulunmamaktadır.\n\nModüler SRD V2 kütüphanesindeki 3.522 kayıt zaten deterministik olarak doğrulanmış ve dondurulmuştur.');
       return;
     }
 
@@ -5378,17 +5090,17 @@ ${customQuery ? `Kullanıcının Özel Sorusu: ${customQuery}` : 'Bu seviye atla
       <div class="bg-slate-900 border border-purple-500/60 rounded-2xl max-w-2xl w-full p-5 space-y-4 shadow-2xl text-white">
         <div class="flex items-center justify-between border-b border-slate-800 pb-3">
           <div class="flex items-center gap-2">
-            <span class="text-xl">ğŸ›¡ï¸</span>
+            <span class="text-xl">🛡️</span>
             <div>
-              <h3 class="font-bold text-sm text-purple-300">Gemini Pro ile RAW 3.5e KÃ¼tÃ¼phane Denetimi</h3>
-              <p class="text-[11px] text-slate-400">master_db iÃ§indeki ${items.length} Ã¶zel kayÄ±t taranÄ±yor...</p>
+              <h3 class="font-bold text-sm text-purple-300">Gemini Pro ile RAW 3.5e & Kanonik V2 Kütüphane Denetimi</h3>
+              <p class="text-[11px] text-slate-400">master_db içindeki ${items.length} özel kayıt taranıyor...</p>
             </div>
           </div>
-          <button onclick="document.getElementById('rule-master-audit-modal').classList.add('hidden')" class="text-slate-400 hover:text-white text-sm font-bold px-2 py-1 rounded bg-slate-800 cursor-pointer">âœ•</button>
+          <button onclick="document.getElementById('rule-master-audit-modal').classList.add('hidden')" class="text-slate-400 hover:text-white text-sm font-bold px-2 py-1 rounded bg-slate-800 cursor-pointer">✕</button>
         </div>
         <div id="rule-master-audit-content" class="max-h-96 overflow-y-auto space-y-2 pr-1 text-xs">
           <div class="text-center py-8 text-slate-400 animate-pulse flex items-center justify-center gap-2">
-            <span>âš¡ Gemini Pro modeline baÄŸlanÄ±lÄ±yor ve RAW kural motoru denetimi baÅŸlatÄ±lÄ±yor...</span>
+            <span>⚡ Gemini Pro modeline bağlanılıyor ve RAW kural motoru denetimi başlatılıyor...</span>
           </div>
         </div>
       </div>
@@ -5397,11 +5109,16 @@ ${customQuery ? `Kullanıcının Özel Sorusu: ${customQuery}` : 'Bu seviye atla
 
     try {
       const sampleItems = items.slice(0, 20).map(i => ({
+        id: i.id,
+        schemaVersion: i.schemaVersion,
         name: i.name,
         type: i.type,
         source: i.source,
         prereq: i.prereq,
         benefit: i.benefit || i.description,
+        modifiers: i.modifiers,
+        damageParts: i.damageParts,
+        modes: i.modes,
         isFighterBonusFeat: i.isFighterBonusFeat
       }));
 
@@ -5412,7 +5129,7 @@ ${JSON.stringify(sampleItems, null, 2)}
 TASK:
 1. Verify if each item exists in official 3.5e WotC books or is unofficial homebrew.
 2. Detect any 5e mechanics (Advantage/Disadvantage, Bonus Action, Finesse adding Dex to damage, etc.).
-3. Check if prerequisites and fighter bonus feat flags match RAW 3.5e.
+3. Check if prerequisites, modifiers, damageParts, and fighter bonus feat flags match RAW 3.5e.
 
 Return valid JSON strictly matching:
 {
@@ -5459,19 +5176,19 @@ Allowed recommendedAction values: "KEEP" | "MODIFY" | "REMOVE".`;
       if (!contentEl) return;
 
       if (!auditJson || !Array.isArray(auditJson.results)) {
-        contentEl.innerHTML = `<div class="p-3 text-rose-300 bg-rose-950/40 rounded border border-rose-800">âš ï¸ Denetim gerÃ§ekleÅŸtirilemedi veya yanÄ±t alÄ±namadÄ±. LÃ¼tfen API kotanÄ±zÄ± kontrol edin.</div>`;
+        contentEl.innerHTML = `<div class="p-3 text-rose-300 bg-rose-950/40 rounded border border-rose-800">⚠️ Denetim gerçekleştirilemedi veya yanıt alınamadı. Lütfen API kotanızı kontrol edin.</div>`;
         return;
       }
 
       contentEl.innerHTML = auditJson.results.map(r => {
         let badgeColor = 'bg-emerald-950 text-emerald-300 border-emerald-700';
-        let badgeIcon = 'âœ…';
+        let badgeIcon = '✅';
         if (r.status === 'WARNING') {
           badgeColor = 'bg-amber-950 text-amber-300 border-amber-700';
-          badgeIcon = 'âš ï¸';
+          badgeIcon = '⚠️';
         } else if (r.status === 'HOMEBREW') {
           badgeColor = 'bg-rose-950 text-rose-300 border-rose-700';
-          badgeIcon = 'ğŸš«';
+          badgeIcon = '🚫';
         }
         return `
           <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800 space-y-1">
@@ -5481,7 +5198,7 @@ Allowed recommendedAction values: "KEEP" | "MODIFY" | "REMOVE".`;
                 ${badgeIcon} ${r.status}
               </span>
             </div>
-            ${r.issues && r.issues.length ? `<p class="text-[10px] text-amber-200">${r.issues.join(' | ')}</p>` : `<p class="text-[10px] text-emerald-400">Resmi 3.5e RAW standartlarÄ±na tam uyumlu.</p>`}
+            ${r.issues && r.issues.length ? `<p class="text-[10px] text-amber-200">${r.issues.join(' | ')}</p>` : `<p class="text-[10px] text-emerald-400">Resmi 3.5e RAW ve Kanonik V2 standartlarına tam uyumlu.</p>`}
           </div>
         `;
       }).join('');

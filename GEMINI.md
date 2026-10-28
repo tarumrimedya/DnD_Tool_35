@@ -1,23 +1,25 @@
 # Joyful-Fermi Project Guidelines & Rules
 
-## 1. Token Optimization & Subagent Model Delegation
-To maximize token efficiency and minimize API costs across all conversations in this workspace:
-- **Simple & Routine Tasks (`flash_lite`)**:
-  - Always delegate simple, data-heavy, or repetitive tasks to `flash_lite` subagents (using `invoke_subagent` with `Model: "flash_lite"`).
-  - Scope for `flash_lite`:
-    - Converting spells, feats, skills, and item descriptions into target JSON schemas (`master_db.json`, `character_data.json`).
-    - Bulk data formatting, table parsing, and JSON structural validation.
-    - Simple syntax checks, static regex/string transformations, and localized documentation updates.
-    - Quick reference extraction from d20 3.5e SRD.
-- **Main Agent Scope**:
-  - Architecture and core engine calculations (`rule_master.js`, `rule_engine.js`, BAB, Save, Caster Level, DM Boons).
-  - UI/UX implementation and DOM state management in `index.html`.
-  - Integration, review of subagent outputs, and project orchestration.
+## 1. Proje Yönetimi, Model Hiyerarşisi ve Token Optimizasyonu (STRICT)
+Proje genelinde kaliteyi en üst düzeyde tutarken API/kota verimliliğini sağlamak için şu yönetim hiyerarşisi uygulanır:
+- **Proje Yöneticisi ve Baş Mimar (`Gemini 4 Argon`):**
+  - Kotası dolana kadar projenin ana yöneticisi **Gemini 4 Argon**'dur.
+  - Tüm yapısal, mimari ve kural motoru (`rule_engine.js`, `rule_master.js`, V2 Veri Kontratları) kararları Argon tarafından verilir.
+  - Argon; yapılacak işleri **zorluk, karmaşıklık (complexity), risk ve veri hacmi** parametrelerine göre analiz ederek en optimum alt modele veya araca yönlendirir.
+- **Çıktıların Denetlenmesi (`Gemini 3.8 veya Altı Modeller`):**
+  - Üretilen veri, şema dönüşümü ve alt görev çıktılarının doğrulama/denetleme (auditing & validation) işlemleri **3.8 veya altı modeller (`flash` / `flash_lite`)** ile gerçekleştirilir.
+- **Deterministik Yerel Öncelik (Sıfır Token / Zero-Token):**
+  - Temel D&D 3.5e SRD verileri (3.500+ büyü, feat, eşya, canavar, sınıf, materyal, geliştirme) AI ile üretilmez; yerel ETL scriptleri ve Modüler SRD Kütüphanesi (`srd_index.json` + `srd_*.json`) üzerinden **sıfır token** tüketimiyle işlenir.
+- **Rutin & Veri Odaklı Görevler (`flash_lite`):**
+  - Basit, tekrarlayan ve veri ağırlıklı görevler `invoke_subagent` (`Model: "flash_lite"`) ile devredilir:
+    - Doğal dille girilen bileşik eşya taleplerinin (*"+2 Keen Mithral Scimitar"*) V2 Lego parçalarına (`baseItemId`, `material`, `enhancementBonus`, `enhancements`) ayrıştırılması.
+    - SRD dışı (Splatbook / Homebrew) içeriklerin Kanonik V2 JSON şemasına (`master_db.json`, `character_data.json`) dönüştürülmesi.
+    - Toplu veri formatlama, tablo ayrıştırma, JSON yapısal doğrulaması ve локаlize dokümantasyon güncellemeleri.
 
-## 2. D&D 3.5e SRD Knowledge Retrieval
-- Do **NOT** scrape or fetch full HTML pages from `d20srd.org` via network/browsing tools unless specifically requested by the user.
-- D&D 3.5e SRD rules, spell descriptions, class tables, and formulas are fully present in parametric memory. Query and extract directly from parametric memory to achieve near-zero token consumption.
-- Prioritize deterministic local JSON lookups (`master_db.json`, `bundled_data.js`) first before generating or querying.
+## 2. D&D 3.5e SRD Bilgi Erişimi
+- Kullanıcı açıkça talep etmedikçe `d20srd.org` vb. sitelerden ağ üzerinden tam HTML sayfa kazıması yapılmaz.
+- Öncelikle yerel **Modüler SRD Kütüphanesi (`srd_index.json`, `srd_*.json`)** ve kullanıcı genişleme veritabanı (`master_db.json`) sorgulanır.
+- Yerel dosyalarda bulunmayan SRD dışı (Splatbook) kurallar için parametrik hafızadaki D&D 3.5e RAW kuralları doğrudan Kanonik V2 şemasına çıkarılır.
 
 ## 3. Zar Sembolü ve İkon Kullanım Kuralı (STRICT: NO 🎲 EMOJI)
 - Projenin **hiçbir yerinde** (kod, UI butonları, loglar, toast bildirimleri, tablolar, dokümantasyon, açıklama metinleri dahil) standart 6 yüzlü tavla zarı emojisi olan **`🎲` (U+1F3B2 / `\uD83C\uDFB2`) KESİNLİKLE KULLANILMAYACAKTIR**.
@@ -32,59 +34,67 @@ To maximize token efficiency and minimize API costs across all conversations in 
     - Şifa / Can: `💚`
     - Geçici Can: `🛡️`
 
-## 4. Kullanıcı Sorularında Geliştirme Yapmama ve Eleştirel Yaklaşım (STRICT)
-- Kullanıcı bir konu hakkında soru sorduğunda, fikir danıştığında veya ("ihtiyaç var mı?", "mantıklı mı?", "sence nasıl olmalı?" gibi) sorgulayıcı yaklaşımlarda bulunduğunda:
-  - **Kesinlikle doğrudan kod geliştirmesi / dosya değişikliği YAPILMAYACAKTIR.**
-  - Kullanıcı açıkça *"uygula"*, *"kodu değiştir"*, *"geliştir"*, *"ekle/kaldır"* gibi net bir eylem talimatı vermediği sürece sadece analiz ve değerlendirme sunulacaktır.
-  - Verilen yanıtlar yüzeysel veya körü körüne onaylayıcı olmamalı; konuya **eleştirel ve sorgulayıcı bir yaklaşımla** (artıları, eksileri, UX/UI ergonomisi, D&D 3.5e RAW kural mekanikleri, performans ve alternatif çözüm yolları ile) derinlemesine bakılarak objektif argümanlarla cevap verilmelidir.
+## 4. Eleştirel Yaklaşım, Kök Neden Analizi ve Geçici Çözüm Yasağı (STRICT)
+- **Kök Neden ve Kalıcı Çözüm Zorunluluğu:**
+  - Tüm teknik ve tasarım sorunlarına **eleştirel, sorgulayıcı ve yapıcı** yaklaşılacaktır.
+  - **Geçici çözümler (workaround / yama / band-aid) kesinlikle kullanılmayacaktır.**
+  - Her sorunda önce **kök neden (root cause)** tespit edilecek, bu kök nedenin ileride yol açabileceği zincirleme sorunlar önceden öngörülecek ve mimari açıdan **en iyi, en kalıcı çözüm** sunulacaktır.
+- **Sorgulama Aşamasında Kod Değiştirmeme:**
+  - Kullanıcı bir konu hakkında soru sorduğunda veya fikir danıştığında (*"ihtiyaç var mı?"*, *"mantıklı mı?"*, *"nasıl olmalı?"* vb.), açıkça *"uygula / geliştir / değiştir"* talimatı vermediği sürece doğrudan kod/dosya değişikliği yapılmaz; artıları, eksileri, UX/UI ergonomisi, D&D 3.5e RAW mekanikleri ve performans boyutlarıyla derinlemesine analiz sunulur.
 
-## 5. Dummy Data Yasağı ve Veri Ekleme Standardı (STRICT: NO DUMMY DATA)
-- Projenin hiçbir yerinde (UI testleri, prototipler, mock bileşenler veya kod içi sabitler dahil) geçici, uydurma veya doğrulanmamış **DUMMY DATA KESİNLİKLE KULLANILMAYACAKTIR**.
-- Sayfa, bileşen veya mekanik testleri için yeni bir veri eklenmesi gerektiğinde **üç aşamalı zorunlu standart akış** izlenecektir:
-  1. **Aşama 1 (Rule Master Doğrulaması):** Eklenecek veri (büyü, eşya, manevra, feat vb.) öncelikle D&D 3.5e RAW kural motoru / Rule Master yapısından geçirilerek kurallara uygunluğu ve tam parametreleri doğrulanır.
-  2. **Aşama 2 (Master DB Kaydı):** Doğrulanan veri, şemaya uygun şekilde `master_db.json` (ve `bundled_data.js`) veri tabanına resmi ve kalıcı bir kayıt olarak eklenir.
-  3. **Aşama 3 (İlgili Alana Entegrasyon):** Yalnızca `master_db.json` içinde doğrulanmış ve kaydedilmiş olan veri, ilgili test alanına, karakter kâğıdına (`character_data.json`), envantere veya arayüz çekmecesine referans verilerek bağlanır.
+## 5. Dummy Data Yasağı ve V2 Veri Ekleme Standardı (STRICT: NO DUMMY DATA)
+- Projenin hiçbir yerinde geçici, uydurma veya doğrulanmamış **DUMMY DATA KESİNLİKLE KULLANILMAYACAKTIR**.
+- Sisteme yeni bir veri eklenirken kaynağın türüne göre şu akış izlenir:
+  1. **Resmi SRD Verileri (Modüler Compendium):** Doğrulanmış SRD kaynağından deterministik ETL boru hattı ile Kanonik V2 şemasına (`srd_index.json` + `srd_*.json`) aktarılır.
+  2. **Bileşik / Montaj Eşyalar (Lego Assembly):** *"+5 Flaming Adamantine Greatsword"* gibi kombinasyonlar ana katalogda mükerrer kayıt olarak tutulmaz; temel parçalar (`baseItemId`, `material`, `enhancementBonus`, `enhancements`) referans alınarak birleştirilir ve karakter envanterine (`character_data.json`) V2 formatında eklenir.
+  3. **SRD Dışı (Splatbook / Homebrew) İçerikler:**
+     - **Aşama 1 (Rule Master Doğrulaması):** D&D 3.5e RAW kurallarına ve Kanonik V2 şemasına uygunluğu doğrulanır.
+     - **Aşama 2 (Master DB Kaydı):** Yalnızca kullanıcıya/kampanyaya özel genişleme veritabanı olan `master_db.json` içine V2 şemasıyla kaydedilir (çekirdek `srd_*.json` dosyaları kirletilmez).
+     - **Aşama 3 (İlgili Alana Entegrasyon):** İlgili karakter kâğıdına (`character_data.json`) değişmez `id` referansıyla bağlanır.
 
 ## 6. HUB Sayfası & Karakter Motoru Çapraz Etkileşim Uyarısı (STRICT)
-- HUB sayfası (`hub.html`) veya kampanya yönetim modülleri ile ilgili gelen herhangi bir geliştirme talebinde:
-  - Eğer talep edilen değişiklik; ana karakter kağıdını (`index.html` / `character.html`), D&D 3.5e karakter motorunu (`rule_engine.js`, `rule_master.js`), karakter veri şemasını (`character_data.json`, `dnd35_character`), yerel depolama anahtarlarını veya senkronizasyon mekanizmalarını (`gdrive_sync.js`) doğrudan veya dolaylı olarak etkileme/bozma riski taşıyorsa:
+- HUB sayfası (`hub.html`) veya kampanya yönetim modülleri ile ilgili gelen herhangi bir geliştirme talebinde; eğer talep edilen değişiklik ana karakter kağıdını (`index.html` / `character.html`), karakter motorunu (`rule_engine.js`, `rule_master.js`), veri şemasını (`character_data.json`) veya senkronizasyon mekanizmalarını (`gdrive_sync.js`) doğrudan veya dolaylı olarak etkileme riski taşıyorsa:
   - **Ajan, kod değişikliği yapmadan önce kullanıcıyı açıkça uyarmakla yükümlüdür.**
-  - Olası çapraz etkiler (veri kirlenmesi, şema uyumsuzluğu, routing/state çakışması, performans ve izolasyon riskleri) net argümanlarla kullanıcıya sunulmalı ve kullanıcının onayı/yönlendirmesi alınmadan karakter motorunu etkileyecek adımlar atılmamalıdır.
+  - Olası çapraz etkiler net argümanlarla sunulmalı ve onay alınmadan karakter motorunu etkileyecek adımlar atılmamalıdır.
 
 ## 7. HUB & Karakter Kâğıdı Paralel Çalışma ve Devir Teslim Standardı (STRICT: HANDOVER PROTOCOL)
-- **HUB'ın Merkezi Rolü:** HUB (`hub.html`) yalnızca Bestiary canavarları için değil; DM'in ve oyuncunun tüm karakterlerini (PC & NPC), parti dengesini, encounter/zindan gruplarını ve kampanyalarını yönettiği **ana kontrol merkezidir**.
+- **HUB'ın Merkezi Rolü:** HUB (`hub.html`) DM'in ve oyuncunun tüm karakterlerini (PC & NPC), Bestiary canavarlarını (`srd_monsters.json`), parti dengesini, encounter gruplarını ve kampanyalarını yönettiği **ana kontrol merkezidir**.
 - **Konuşmalar Arası Güvenli İzolasyon (Separation of Concerns):**
-  - HUB geliştirmeleri (`hub.html`, `bundled_monsters.js`) ile Karakter Kâğıdı geliştirmeleri (`index.html`, `character.html`) farklı konuşma sekmelerinde yürütüldüğünde, monolitik dosyalarda kod üzerine yazılma (overwrite / regression) riski oluşmaması için:
-    1. **Handover Dokümanı Zorunluluğu:** HUB oturumunda karakter sayfasını ilgilendiren, etkileyen veya veri şemasını değiştiren her geliştirme adımında kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyası güncellenecektir.
-    2. **Hazır Yönlendirme Promptu:** Ajan, kullanıcıya diğer konuşmaya doğrudan yapıştırabileceği tek parçalık hazır bir yönlendirme promptu sunacaktır.
-    3. **Katı Veri Kontratı (Data Contract):** HUB tarafından üretilen `fullData` ile karakter kâğıdı tarafından okunan veri şeması (`isNpc`, `feats`, `specialAbilities`, `spellcasting`, `combatPins`) ortak protokole tam uyumlu olacaktır.
-    4. **Parite ve Eşitlik:** Kök dizindeki dosyalar ile `webapp/` altındaki kopyaların %100 birebir aynı olması kuralı tavizsiz korunacaktır.
+  1. **Handover Dokümanı Zorunluluğu:** HUB oturumunda karakter sayfasını ilgilendiren veya veri şemasını değiştiren her adımda kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyası güncellenir.
+  2. **Hazır Yönlendirme Promptu:** Kullanıcıya diğer konuşmaya doğrudan yapıştırabileceği tek parçalık hazır bir yönlendirme promptu sunulur.
+  3. **Katı Veri Kontratı (Data Contract):** HUB tarafından üretilen `fullData` ile karakter kâğıdı tarafından okunan veri şeması ortak Kanonik V2 protokolüne tam uyumlu olmalıdır.
+  4. **Parite ve Eşitlik:** Kök dizindeki dosyalar ile `webapp/` altındaki kopyaların %100 birebir aynı olması kuralı tavizsiz korunur.
 
-## 8. Master DB Şema Güncellemeleri ve Rule Master Senkronizasyonu (STRICT)
-- `master_db.json` (veya `bundled_data.js`) veri tabanına yeni bir alan, özellik veya mekanik şeması (örneğin `sizeModifier`, `targetFilter`, `scaling`, `ruleFlags`, `combatModifiers` vb.) eklendiğinde veya mevcut bir şema alanı genişletildiğinde:
-  - **Rule Master ve Şema Doğrulama Senkronizasyonu Zorunludur:** `rule_master.js` içindeki yapay zeka promptları (`fetchSingleAiRuleObjects`, `queryAiFreeTextRows`), şema normalizasyonu (`normalizeEntry`), form alanları ve veri doğrulama mantığı derhal bu yeni alanı kapsayacak şekilde güncellenmelidir.
-  - **Sürekli Uyumluluk:** Gelecekte eklenecek yeni büyü, eşya, feat veya yeteneklerin Rule Master ve AI sorguları tarafından bu yeni alan kurallarına tam uyumlu olarak üretilmesi ve şemaya eksiksiz yazılması garanti altına alınacaktır.
+## 8. Kanonik V2 Şema Güncellemeleri ve Motor Senkronizasyonu (STRICT)
+- Veri tabanı şemasında yeni bir yapısal yetenek tanımlandığında:
+  - **Yama Değil Yapısal Entegrasyon:** Şemaya rastgele düz sütunlar eklenmez; Kanonik V2 yapısına (`modifiers`, `damageParts`, kategoriye özel alt blok) uygun şekilde tasarlanır.
+  - **Rule Master ve Motor Senkronizasyonu Zorunludur:** `rule_master.js` içindeki yapay zeka şeması (`rule_master_ai_schema.json`), şema normalizasyonu (`normalizeEntry`), ETL dönüştürücü scriptleri ve `rule_engine.js` doğrulama mantığı derhal bu yeni V2 yapısını kapsayacak şekilde güncellenir.
 
 ## 9. Obsidian Bilgi Bankası ve "Obsidian'a Aktar" Protokolü (STRICT: OBSIDIAN DEVLOG PROTOCOL)
 - **Kasa Konumu (Vault Path):** `D:\Obsidian\dndtools35\` (Docker Obsidian içindeki `/vaults` ile doğrudan eşleniktir).
 - **Klasör Mimarisi:**
   - `00-Dashboard.md` (Merkezi Proje Panosu / MOC)
   - `01-Architecture/` (Sistem Mimarisi, Core Engine, HUB, Storage)
-  - `02-Data-Contracts/` (master_db, character_data şemaları)
+  - `02-Data-Contracts/` (master_db, character_data, V2 Compendium şemaları)
   - `03-Decisions/` (ADR - Mimari Karar Kayıtları)
   - `04-DevLogs/` (Oturum Devir Teslimleri ve Günlükler)
 - **Tetikleyici Komut ("obsidian a aktar" / "obsidian devlog"):**
-  - Kullanıcı herhangi bir konuşma sekmesinde *"obsidian a aktar"*, *"obsidian devlog"*, *"oturumu obsidian'a işle"* veya benzeri bir talepte bulunduğunda:
-  - **Ham Transkript Dökülmeyecektir:** Hata ayıklama, geçici kod blokları ve gürültü ayıklanır.
-  - **DevLog Kaydı:** `04-DevLogs/YYYY-MM-DD-[Konu].md` formatında yeni bir oturum kaydı oluşturulur:
-    - Oturumun amacı ve bağlamı
-    - Alınan mimari kararlar ve çözülen kritik sorunlar
-    - İlgili D&D 3.5e RAW kural bağıntıları
-    - Sıradaki adımlar ve teknik borçlar
-    - Çift yönlü Obsidian wikilink'leri (`[[00-Dashboard]]`, `[[Core Engine (Rule Engine & Rule Master)]]`, `[[master_db Schema]]` vb.)
-  - **Şema ve Karar Senkronizasyonu:** Eğer o oturumda kalıcı bir mimari karar (ADR) veya yeni bir veri şeması kuralı getirildiyse, ilgili `01-Architecture/`, `02-Data-Contracts/` veya `03-Decisions/` altındaki ana kartlar da eş zamanlı güncellenir.
+  - Ham transkript dökülmez; hata ayıklama ve gürültü ayıklanarak `04-DevLogs/YYYY-MM-DD-[Konu].md` formatında oturumun amacı, alınan mimari kararlar, kök neden analizleri, D&D 3.5e RAW bağıntıları, sıradaki adımlar ve çift yönlü wikilink'ler (`[[00-Dashboard]]` vb.) kaydedilir. Kalıcı kararlar ilgili `01-Architecture/`, `02-Data-Contracts/` ve `03-Decisions/` kartlarına eş zamanlı işlenir.
 
-
-
-
-
+## 10. Sıfır Yama (Zero-Patchwork) ve Kanonik V2 Veri Mimarisi (STRICT)
+Geriye dönük uyumluluk bahanesiyle kırılgan yamalar (`if (oldFormat)`, metin kazıma regex'leri, mükerrer alanlar) yazılması **KESİNLİKLE YASAKTIR**. Tüm veri ve motor katmanı şu 6 temel V2 ilkesine uymak zorundadır:
+1. **Evrensel `modifiers` Dizisi (Sabit Bonus Sütunları Yasağı):**
+   - `strBonus`, `dexBonus`, `acBonus`, `fortBonus`, `skillBonus` gibi dağınık sabit sütunlar ve tekil `bonusType` alanı kullanılmaz.
+   - Tüm sayısal ve ölçeklenen etkiler `modifiers: [{ target, value | formula, type, condition }]` dizisi içinde tanımlanır.
+2. **Yapısal `damageParts` Dizisi (Düz Metin Zar Yasağı):**
+   - `dice`, `damageDice`, `extraDmg` gibi mükerrer metin alanları kullanılmaz.
+   - Silah ve büyü hasarları `damageParts: [{ dice, bonus, type, multiplyOnCrit, onCritOnly, source }]` dizisiyle tutulur.
+3. **Metin İçinden Regex ile Kural Tahmini Yasağı (No Heuristic Regex Guessing):**
+   - `rule_engine.js` içerisinde eşyanın yuvasına (`slot === 'neck'`) veya açıklama metnine (`fullText.match(...)`) bakarak bonus tipi/değeri tahmin eden sezgisel (heuristic) regex yamaları yazılmaz. Motor %100 veri şemasındaki açık alanları (`modifiers`, `damageParts`, `ruleFlags`) işler.
+4. **İsim Yerine Değişmez `id` Referansı:**
+   - Eşya, büyü, feat ve temel silah eşleştirmeleri `name.toLowerCase()` üzerinden değil, değişmez `id` ve `baseItemId` slug'ları üzerinden yapılır.
+5. **Aktif Matematik vs. Pasif Rozet (Badge) Sınırı:**
+   - Zarlara, statlara, AC'ye, hıza, ACP'ye ve kritik aralığına doğrudan etki eden kurallar (`Enhancement`, `Keen`, `Mithral`, `Adamantine DR`, `Haste`) **hesaplama motoruna (`rule_engine.js`)** işlenir.
+   - Masada durumsal/reaktif olan kurallar (`Fortification %25`, `Vorpal`, `Glamered`, `Defending`) motora karmaşıklık olarak yüklenmez; arayüzde temiz **bilgi rozeti (UI Badge / Tactical Note)** olarak gösterilir.
+6. **Yama Yerine Tek Seferlik Tam Göç (Clean Migration over Patching):**
+   - Şema değişikliklerinde eski ve yeni formatı aynı anda çalıştırmaya çalışan çift yollu spagetti kod yazılmaz; mevcut katalog ve karakter verileri tek seferlik deterministik göç scripti (migration script) ile V2 formatına yükseltilir.

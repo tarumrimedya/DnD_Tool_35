@@ -3617,3 +3617,30 @@ Kullanıcı, *Boots of Elvenkind* eşyasının *Stealth (Gizlilik)* becerisine b
 * `rule_master.js` = `webapp/rule_master.js` (**SHA-256:** `A7F1DEB85D49B8F48204AC2EA57ADF9A9E99708D534C3AA8FE0D13D92A1AE3ED`)
 * `hub.html` = `webapp/hub.html` (**SHA-256:** `5743B68B2579AC6473D3F3FA104DFDDB306FF601D8009A3193BD3929181DD46C`)
 * Proje genelinde tavla zarı emojisi (`U+1F3B2`) yasağı tavizsiz korunmuştur.
+
+
+---
+
+## 123. Kanonik V2 Veri Mimarisi, 3.522 Kayıtlı Modüler SRD Kütüphanesi, 645 Canavar Bestiary ve Ortak `HubNotes` / `DnDUI` Entegrasyonu (2026-10-28)
+
+### Bağlam & Mimari Dönüşüm (`feat/v2-canonical-architecture`)
+8 fazlı **Zero-Patchwork Kanonik V2 Yol Haritası** (`ROADMAP_V2_MASTER_PLAN.md`) kapsamında hem DM Hub (`hub.html`) hem de Karakter Kâğıdı (`index.html` / `character.html`) ortak `schemaVersion: 2` veri kontratına ve modüler mimariye yükseltilmiştir:
+
+1. **Modüler SRD V2 Kütüphanesi (`srd_compendium.js` + `database/srd_*.json`):**
+   * **3.522** doğrulanmış D&D 3.5e SRD kaydı (`srd_index.json`, `srd_classes_races.json`, `srd_feats_skills.json`, `srd_equipment.json`, `srd_conditions_buffs.json`, `srd_spells_powers.json`, `srd_monsters.json`) sıfır token tüketimiyle istemci tarafında indeksli olarak sunulmaktadır.
+   * **Lego Eşya Birleştirici (`window.ItemAssembler`):** Doğal dil (*"+2 Keen Mithral Scimitar"*) veya Demirhane UI üzerinden seçilen temel silah/zırh + özel materyal (`Mithral`, `Adamantine`, `Cold Iron`, `Alchemical Silver`, `Darkwood`) + `+1..+5` geliştirme + sihirli özellikler (`Keen`, `Flaming`, `Holy`, `Vorpal` vb.) 0 ms içinde tekil Kanonik V2 eşyasına dönüştürülür.
+   * **Yükleme Kapısı Göç Motoru (`window.SchemaMigrator`):** `upgradeCharacterToV2(character)` ve `migrateMasterDbEntryToV2(entry)` ile eski karakter ve Master DB kayıtları açılışta otomatik olarak `schemaVersion: 2`, `modifiers: [...]`, `damageParts: [...]`, `modes: [...]` ve `smartNotes: [...]` yapısına yükseltilir.
+
+2. **645 Canavarlık V2 Bestiary & DM Hub Entegrasyonu (`hub.html`):**
+   * `hydrateV2BestiaryFromCompendium()` fonksiyonu `database/srd_monsters.json` içindeki **645** resmi SRD canavarını (`schemaVersion: 2`, `ac: { total, touch, flatFooted }`, `speed: { land, fly, swim, climb, burrow }`, `attacks: [{ name, attackBonus, damageParts }]`) Bestiary ve Encounter Builder sistemine bağlar.
+   * `convertMonsterToCharacter(monster, customName, campaignId)` ve `syncMonsterToMasterDb(monster)` doğrudan V2 `damageParts`, `weaponMeta`, `modifiers`, `modes` ve `smartNotes` dizilerini üretir.
+   * HUB üst barına **👹 Bestiary & SRD V2 (645)** ve **⚒️ Demirhane (Lego)** çekmece butonları (`openHubCompendiumDrawer`) eklendi.
+
+3. **Ortak UI (`ui_shared.js`) ve Çift Yönlü Akıllı Notlar (`hub_notes.js`):**
+   * `window.DnDUI`: `renderDamagePartsBadges`, `renderModifiersBadges`, `renderTacticalBadges`, `renderModesPills`, `renderConditionWarningBanner`, `attachSpotlightCombobox`, `openCompendiumDrawer`.
+   * `window.HubNotes`: Hem `hub.html` hem de `index.html` (`#char-smart-notes-container`) üzerinde çalışan etiketli akıllı notlar (`#NPC`, `#Quest`, `#Lore`, `#Location`, `#Loot`), ilişkisel SVG Mindmap ve AI Vakanüvis modülü (`character.smartNotes` + `character.notesList` + `dnd35_hub_db` çift yönlü bulut senkronizasyonu).
+
+4. **Hazır Yönlendirme / Devir Teslim Promptu:**
+```markdown
+Proje `feat/v2-canonical-architecture` dalında Kanonik V2 Veri Mimarisine (`schemaVersion: 2`, `srd_compendium.js`, `ui_shared.js`, `hub_notes.js`, `rule_engine.js`, `rule_master.js`) yükseltildi. `HANDOVER_TO_CHARACTER_SHEET.md` Bölüm 123'teki V2 veri kontratını (`modifiers`, `damageParts`, `modes`, `smartNotes`) ve %100 kök/webapp paritesini koruyarak devam et.
+```

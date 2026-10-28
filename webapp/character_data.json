@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "2.0",
+  "schemaVersion": 2,
   "name": "Yeni Maceracı",
   "classes": "Fighter 1",
   "race": "Human",
@@ -96,7 +96,18 @@
         "nonlethal"
       ],
       "elementalMods": [],
-      "keen": false
+      "keen": false,
+      "damageParts": [
+        {
+          "dice": "1d3",
+          "bonus": 0,
+          "type": "Bludgeoning (Nonlethal)",
+          "multiplyOnCrit": true,
+          "onCritOnly": false,
+          "source": "Unarmed Strike"
+        }
+      ],
+      "modes": []
     }
   ],
   "tactical": {
@@ -147,5 +158,7 @@
     "pp": 0
   },
   "notes": "",
-  "size": "Medium"
+  "size": "Medium",
+  "smartNotes": [],
+  "notesList": []
 }

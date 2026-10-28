@@ -186,17 +186,102 @@ const RuleEngine = {
     return Math.floor(((Number(score) || 10) - 10) / 2);
   },
 
-  // Declarative Master DB lookup helper
-  getMasterDbEntry(weapon) {
-    if (!weapon) return null;
-    const clean = String(typeof weapon === 'object' ? (weapon.masterDbName || weapon.name || '') : weapon).toLowerCase().trim();
+  // Canonical V2 Formula Evaluator (evaluates @cl, @level, @bab, @strMod..@chaMod, min, max, floor, ceil)
+  evaluateFormula(formula, context = {}) {
+    if (formula === null || formula === undefined || formula === '') return 0;
+    if (typeof formula === 'number') return formula;
+    const raw = String(formula).trim();
+    const directNum = Number(raw);
+    if (!Number.isNaN(directNum)) return directNum;
+
+    const cl = Number(context.cl ?? context.casterLevel ?? context.level ?? 1) || 1;
+    const level = Number(context.level ?? cl) || 1;
+    const bab = Number(context.bab ?? 0) || 0;
+    const enh = Number(context.enhancement ?? context.enhancementBonus ?? 0) || 0;
+
+    let expr = raw
+      .replace(/@item\.level\b/gi, String(cl))
+      .replace(/@cl\b/gi, String(cl))
+      .replace(/@level\b/gi, String(level))
+      .replace(/@bab\b/gi, String(bab))
+      .replace(/@enhancement\b/gi, String(enh))
+      .replace(/@strMod\b/gi, String(Number(context.strMod) || 0))
+      .replace(/@dexMod\b/gi, String(Number(context.dexMod) || 0))
+      .replace(/@conMod\b/gi, String(Number(context.conMod) || 0))
+      .replace(/@intMod\b/gi, String(Number(context.intMod) || 0))
+      .replace(/@wisMod\b/gi, String(Number(context.wisMod) || 0))
+      .replace(/@chaMod\b/gi, String(Number(context.chaMod) || 0))
+      .replace(/@classes\.([a-z0-9_]+)\.level/gi, (_, cName) => {
+        const cLvl = (context.classLevels && context.classLevels[cName.toLowerCase()]) || level;
+        return String(cLvl);
+      });
+
+    // If expression contains dice notation like "(min(10, 5))d6", evaluate parenthesized math sub-expressions
+    if (/\d*d\d+/i.test(expr)) {
+      return expr.replace(/\(([^()]+)\)(?=d\d+)/gi, (_, sub) => {
+        const val = this.evaluateFormula(sub, context);
+        return String(Math.max(1, Math.floor(Number(val) || 1)));
+      });
+    }
+
+    // Safe arithmetic / Math function evaluation
+    const safeExpr = expr
+      .replace(/\bmin\s*\(/gi, 'Math.min(')
+      .replace(/\bmax\s*\(/gi, 'Math.max(')
+      .replace(/\bfloor\s*\(/gi, 'Math.floor(')
+      .replace(/\bceil\s*\(/gi, 'Math.ceil(')
+      .replace(/\bround\s*\(/gi, 'Math.round(');
+
+    if (/^[0-9+\-*/%().,?:><=\sMathminaxflorceiund]+$/.test(safeExpr)) {
+      try {
+        // eslint-disable-next-line no-new-func
+        const res = Function(`"use strict"; return (${safeExpr});`)();
+        return typeof res === 'number' && !Number.isNaN(res) ? res : 0;
+      } catch (_) {
+        return 0;
+      }
+    }
+    return 0;
+  },
+
+  // Ensure an object is upgraded to Canonical V2 via SchemaMigrator if available
+  ensureV2Entry(entry) {
+    if (!entry || typeof entry !== 'object') return entry;
+    if (entry.schemaVersion === 2 && Array.isArray(entry.modifiers)) return entry;
+    if (typeof window !== 'undefined' && window.SchemaMigrator && typeof window.SchemaMigrator.upgradeEntryToV2 === 'function') {
+      return window.SchemaMigrator.upgradeEntryToV2(entry);
+    }
+    return entry;
+  },
+
+  // Declarative Compendium & Master DB lookup helper (O(1) ID/BaseItemId priority per Rule #10.4)
+  getMasterDbEntry(itemOrName, typeFilter = null) {
+    if (!itemOrName) return null;
+    const isObj = typeof itemOrName === 'object';
+    const refId = isObj ? (itemOrName.baseItemId || itemOrName.id || null) : null;
+    const rawName = String(isObj ? (itemOrName.masterDbName || itemOrName.name || '') : itemOrName).trim();
+
+    if (typeof window !== 'undefined' && window.SrdCompendium) {
+      if (refId) {
+        const byId = window.SrdCompendium.getById(refId);
+        if (byId) return byId;
+      }
+      if (rawName) {
+        const byName = window.SrdCompendium.getByName(rawName, typeFilter || (isObj ? itemOrName.type : null));
+        if (byName) return byName;
+      }
+    }
+
+    const clean = rawName.toLowerCase();
     if (!clean) return null;
     const db = (typeof window !== 'undefined' && (window.masterDb || window.MASTER_DB_DATA || window.BUNDLED_MASTER_DB)) || (typeof masterDb !== 'undefined' ? masterDb : []);
-    let found = Array.isArray(db) && db.length > 0 ? db.find(m => m && ((m.name && m.name.toLowerCase().trim() === clean) || (m.masterDbName && m.masterDbName.toLowerCase().trim() === clean))) : null;
+    let found = Array.isArray(db) && db.length > 0
+      ? db.find(m => m && ((refId && m.id === refId) || (m.name && m.name.toLowerCase().trim() === clean) || (m.masterDbName && m.masterDbName.toLowerCase().trim() === clean)))
+      : null;
     if (!found && typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
-      found = window.BUNDLED_SRD_CORE_CATALOG.find(m => m && ((m.name && m.name.toLowerCase().trim() === clean) || (m.masterDbName && m.masterDbName.toLowerCase().trim() === clean))) || null;
+      found = window.BUNDLED_SRD_CORE_CATALOG.find(m => m && ((refId && m.id === refId) || (m.name && m.name.toLowerCase().trim() === clean) || (m.masterDbName && m.masterDbName.toLowerCase().trim() === clean))) || null;
     }
-    return found || null;
+    return found ? this.ensureV2Entry(found) : null;
   },
 
   // Check if weapon is Light according to D&D 3.5e RAW rules
@@ -731,24 +816,48 @@ const RuleEngine = {
     return total;
   },
 
-  // Parse modifiers and stat bonuses from an equipment item (body slot or gear pool)
-  parseItemModifiers(item, masterDb = []) {
-    if (!item || !item.name || item.name === '-') return null;
+  // Parse modifiers and stat bonuses from a Canonical V2 equipment item (zero heuristic regex guessing per Rule #10.3)
+  parseItemModifiers(rawItem, masterDb = [], context = {}) {
+    if (!rawItem || !rawItem.name || rawItem.name === '-') return null;
+
+    const item = this.ensureV2Entry(rawItem);
+    const dbEntry = this.getMasterDbEntry(item);
+
+    const isArmor = item.type === 'Armor' || item.category === 'Armor' || dbEntry?.type === 'Armor';
+    const isShield = item.type === 'Shield' || item.category === 'Shield' || dbEntry?.type === 'Shield';
+    const baseCat = item.effectiveWeightCategory || item.armorCategory || (isArmor ? (item.category || dbEntry?.category || 'Light') : null);
+    const isMithral = Boolean(
+      item.material === 'mat-mithral' ||
+      item.ruleFlags?.mithralHeavyAsMedium ||
+      item.ruleFlags?.mithralMediumAsLight ||
+      dbEntry?.material === 'mat-mithral'
+    );
+
+    let effectiveCat = baseCat;
+    if (isArmor && isMithral && !item.effectiveWeightCategory) {
+      if (effectiveCat === 'Heavy') effectiveCat = 'Medium';
+      else if (effectiveCat === 'Medium') effectiveCat = 'Light';
+    }
 
     const res = {
+      id: item.id || dbEntry?.id || null,
       name: item.name,
-      category: item.category || 'Other',
-      armorCategory: null,
-      effectiveArmorCategory: null,
-      isMithral: false,
+      category: item.category || dbEntry?.category || 'Other',
+      armorCategory: baseCat,
+      effectiveArmorCategory: effectiveCat,
+      isMithral,
       armor: 0,
       shield: 0,
       natural: 0,
       naturalBonusType: 'natural',
       deflection: 0,
       dodge: 0,
-      maxDex: null,
-      acp: 0,
+      maxDex: item.maxDex !== undefined && item.maxDex !== null && item.maxDex !== ''
+        ? Number(item.maxDex)
+        : (dbEntry?.maxDex !== undefined && dbEntry?.maxDex !== null && dbEntry?.maxDex !== '' ? Number(dbEntry.maxDex) : null),
+      acp: item.checkPenalty !== undefined && item.checkPenalty !== null && item.checkPenalty !== ''
+        ? Number(item.checkPenalty)
+        : (dbEntry?.checkPenalty !== undefined && dbEntry?.checkPenalty !== null && dbEntry?.checkPenalty !== '' ? Number(dbEntry.checkPenalty) : 0),
       resistance: 0,
       str: 0,
       dex: 0,
@@ -762,538 +871,453 @@ const RuleEngine = {
       ref: 0,
       will: 0,
       speed: 0,
-      bonusType: item.bonusType || 'Untyped'
+      dr: 0,
+      sr: 0,
+      bonusType: 'enhancement',
+      modifiers: [],
+      ruleFlags: Object.assign({}, dbEntry?.ruleFlags || {}, item.ruleFlags || {})
     };
 
-    const cleanName = item.name.toLowerCase().trim();
-    const cleanRef = (item.masterDbName || '').toLowerCase().trim();
+    const rawMods = (Array.isArray(item.modifiers) && item.modifiers.length > 0)
+      ? item.modifiers
+      : (Array.isArray(dbEntry?.modifiers) ? dbEntry.modifiers : []);
 
-    // 1. Look up in Master DB & Ghost Core
-    let dbEntry = null;
-    if (Array.isArray(masterDb) && masterDb.length > 0) {
-      dbEntry = masterDb.find(m => {
-        const mClean = (m.name || '').toLowerCase().trim();
-        return mClean === cleanName || (cleanRef && mClean === cleanRef);
+    const evalCtx = Object.assign({
+      cl: item.casterLevel || dbEntry?.casterLevel || context.cl || 1,
+      enhancement: item.enhancementBonus || dbEntry?.enhancementBonus || 0
+    }, context);
+
+    for (let i = 0; i < rawMods.length; i++) {
+      const m = rawMods[i];
+      if (!m || !m.target) continue;
+      const val = this.evaluateFormula(m.formula !== undefined ? m.formula : m.value, evalCtx);
+      if (!val) continue;
+      const bType = String(m.type || 'untyped').toLowerCase();
+      const target = String(m.target).trim();
+
+      res.modifiers.push({
+        target,
+        value: val,
+        type: bType,
+        condition: m.condition || null,
+        source: item.name
       });
-    }
-    if (!dbEntry && typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
-      dbEntry = window.BUNDLED_SRD_CORE_CATALOG.find(m => {
-        if (!m || !m.name) return false;
-        const mClean = String(m.name).toLowerCase().trim();
-        return mClean === cleanName || (cleanRef && mClean === cleanRef);
-      });
-    }
 
-    if (dbEntry) {
-      if (dbEntry.acBonus !== undefined && dbEntry.acBonus !== '') {
-        const acVal = Number(dbEntry.acBonus) || 0;
-        const bType = (dbEntry.bonusType || dbEntry.type || '').toLowerCase();
-        if (bType.includes('shield') || (dbEntry.slot && dbEntry.slot.toLowerCase().includes('shield'))) {
-          res.shield = acVal;
-        } else if (bType.includes('deflection') || (dbEntry.slot && dbEntry.slot.toLowerCase().includes('ring'))) {
-          res.deflection = acVal;
-        } else if (bType.includes('natural') || (dbEntry.slot && dbEntry.slot.toLowerCase().includes('neck'))) {
-          res.natural = acVal;
-          res.naturalBonusType = dbEntry.bonusType || 'natural';
-        } else if (bType.includes('dodge')) {
-          res.dodge = acVal;
-        } else {
-          res.armor = acVal;
-        }
+      if (target === 'ac.armor' || target === 'armor') res.armor = Math.max(res.armor, val);
+      else if (target === 'ac.shield' || target === 'shield') res.shield = Math.max(res.shield, val);
+      else if (target === 'ac.natural' || target === 'natural') {
+        res.natural = Math.max(res.natural, val);
+        res.naturalBonusType = bType.includes('enh') ? 'Natural_Armor_Ench' : 'Natural';
       }
-      if (dbEntry.naturalBonus) {
-        res.natural = Math.max(res.natural, Number(dbEntry.naturalBonus) || 0);
-        if (dbEntry.bonusType) res.naturalBonusType = dbEntry.bonusType;
+      else if (target === 'ac.deflection' || target === 'deflection' || ((target === 'ac.total' || target === 'ac') && bType === 'deflection')) res.deflection = Math.max(res.deflection, val);
+      else if (target === 'ac.dodge' || target === 'dodge' || ((target === 'ac.total' || target === 'ac') && bType === 'dodge')) res.dodge += val;
+      else if ((target === 'ac.total' || target === 'ac') && bType === 'armor') res.armor = Math.max(res.armor, val);
+      else if ((target === 'ac.total' || target === 'ac') && bType === 'shield') res.shield = Math.max(res.shield, val);
+      else if (target === 'ability.str' || target === 'str') { res.str = Math.max(res.str, val); res.bonusType = bType; }
+      else if (target === 'ability.dex' || target === 'dex') { res.dex = Math.max(res.dex, val); res.bonusType = bType; }
+      else if (target === 'ability.con' || target === 'con') { res.con = Math.max(res.con, val); res.bonusType = bType; }
+      else if (target === 'ability.int' || target === 'int') { res.int = Math.max(res.int, val); res.bonusType = bType; }
+      else if (target === 'ability.wis' || target === 'wis') { res.wis = Math.max(res.wis, val); res.bonusType = bType; }
+      else if (target === 'ability.cha' || target === 'cha') { res.cha = Math.max(res.cha, val); res.bonusType = bType; }
+      else if (target === 'save.all' || target === 'saves.all' || target === 'saves') {
+        if (bType === 'resistance') res.resistance = Math.max(res.resistance, val);
+        res.fort += val;
+        res.ref += val;
+        res.will += val;
       }
-      if (dbEntry.deflection || dbEntry.deflectionBonus) res.deflection = Math.max(res.deflection, Number(dbEntry.deflection || dbEntry.deflectionBonus) || 0);
-      if (dbEntry.dodgeBonus) res.dodge = Math.max(res.dodge, Number(dbEntry.dodgeBonus) || 0);
-      if (dbEntry.resistance) res.resistance = Math.max(res.resistance, Number(dbEntry.resistance) || 0);
-      if (dbEntry.maxDex !== undefined && dbEntry.maxDex !== '') res.maxDex = Number(dbEntry.maxDex);
-      if (dbEntry.checkPenalty !== undefined && dbEntry.checkPenalty !== '') res.acp = Number(dbEntry.checkPenalty);
-      if (dbEntry.strBonus) { res.str = Number(dbEntry.strBonus) || 0; res.bonusType = dbEntry.bonusType || 'Enhancement'; }
-      if (dbEntry.dexBonus) { res.dex = Number(dbEntry.dexBonus) || 0; res.bonusType = dbEntry.bonusType || 'Enhancement'; }
-      if (dbEntry.conBonus) { res.con = Number(dbEntry.conBonus) || 0; res.bonusType = dbEntry.bonusType || 'Enhancement'; }
-      if (dbEntry.intBonus) { res.int = Number(dbEntry.intBonus) || 0; res.bonusType = dbEntry.bonusType || 'Enhancement'; }
-      if (dbEntry.wisBonus) { res.wis = Number(dbEntry.wisBonus) || 0; res.bonusType = dbEntry.bonusType || 'Enhancement'; }
-      if (dbEntry.chaBonus) { res.cha = Number(dbEntry.chaBonus) || 0; res.bonusType = dbEntry.bonusType || 'Enhancement'; }
-      if (dbEntry.attBonus) res.attBonus = Number(dbEntry.attBonus) || 0;
-      if (dbEntry.dmgBonus) res.dmgBonus = Number(dbEntry.dmgBonus) || 0;
-      if (dbEntry.fortBonus) res.fort = Number(dbEntry.fortBonus) || 0;
-      if (dbEntry.refBonus) res.ref = Number(dbEntry.refBonus) || 0;
-      if (dbEntry.willBonus) res.will = Number(dbEntry.willBonus) || 0;
-      if (dbEntry.speedBonus) res.speed = Number(dbEntry.speedBonus) || 0;
-      if (dbEntry.bonusType) res.bonusType = dbEntry.bonusType;
-      if (dbEntry.dailyCharges) res.dailyCharges = JSON.parse(JSON.stringify(dbEntry.dailyCharges));
-      if (dbEntry.chargeOptions) res.chargeOptions = JSON.parse(JSON.stringify(dbEntry.chargeOptions));
+      else if (target === 'save.fort' || target === 'fort') res.fort += val;
+      else if (target === 'save.ref' || target === 'ref') res.ref += val;
+      else if (target === 'save.will' || target === 'will') res.will += val;
+      else if (target.startsWith('attack') || target === 'meleeattack' || target === 'rangedattack') res.attBonus += val;
+      else if (target.startsWith('damage') || target === 'meleedamage' || target === 'rangeddamage') res.dmgBonus += val;
+      else if (target.startsWith('speed')) res.speed = Math.max(res.speed, val);
+      else if (target === 'dr') res.dr = Math.max(res.dr, val);
+      else if (target === 'sr') res.sr = Math.max(res.sr, val);
     }
 
-    // 2. Direct item properties
-    if (item.acBonus) {
-      const acVal = Number(item.acBonus) || 0;
-      const bType = (item.bonusType || item.category || '').toLowerCase();
-      if (bType.includes('shield')) res.shield = acVal;
-      else if (bType.includes('deflection')) res.deflection = acVal;
-      else if (bType.includes('natural')) {
-        res.natural = acVal;
-        res.naturalBonusType = item.bonusType || 'natural';
-      }
-      else if (bType.includes('dodge')) res.dodge = acVal;
-      else res.armor = acVal;
-    }
-    if (item.naturalBonus) {
-      res.natural = Math.max(res.natural, Number(item.naturalBonus) || 0);
-      if (item.bonusType) res.naturalBonusType = item.bonusType;
-    }
-    if (item.deflection || item.deflectionBonus) res.deflection = Math.max(res.deflection, Number(item.deflection || item.deflectionBonus) || 0);
-    if (item.resistance) res.resistance = Math.max(res.resistance, Number(item.resistance) || 0);
-    if (item.maxDex !== undefined && item.maxDex !== null) res.maxDex = Number(item.maxDex);
-    if (item.checkPenalty !== undefined && item.checkPenalty !== null) res.acp = Number(item.checkPenalty);
-    if (item.strBonus) { res.str = Number(item.strBonus) || 0; res.bonusType = item.bonusType || 'Enhancement'; }
-    if (item.dexBonus) { res.dex = Number(item.dexBonus) || 0; res.bonusType = item.bonusType || 'Enhancement'; }
-    if (item.conBonus) { res.con = Number(item.conBonus) || 0; res.bonusType = item.bonusType || 'Enhancement'; }
-    if (item.intBonus) { res.int = Number(item.intBonus) || 0; res.bonusType = item.bonusType || 'Enhancement'; }
-    if (item.wisBonus) { res.wis = Number(item.wisBonus) || 0; res.bonusType = item.bonusType || 'Enhancement'; }
-    if (item.chaBonus) { res.cha = Number(item.chaBonus) || 0; res.bonusType = item.bonusType || 'Enhancement'; }
-    if (item.dailyCharges) res.dailyCharges = JSON.parse(JSON.stringify(item.dailyCharges));
-    if (item.chargeOptions) res.chargeOptions = JSON.parse(JSON.stringify(item.chargeOptions));
-
-    // 3. Fallback to SRD Catalogs & Intelligent Heuristics if AC/stat is still 0
-    const fullText = `${item.name} ${item.desc || ''} ${dbEntry?.benefit || ''}`.toLowerCase();
-    const isWeaponOrShieldOrArmor = (
-      item.category === 'Weapon' ||
-      item.category === 'Armor' ||
-      item.category === 'Shield' ||
-      dbEntry?.type === 'Weapon' ||
-      dbEntry?.type === 'Armor' ||
-      dbEntry?.type === 'Shield'
-    );
-
-    // Check SRD Armors (sort keys by length descending so compound names like 'studded leather' match before 'leather')
-    if (res.armor === 0 && (item.category === 'Armor' || (item.slot && item.slot.toLowerCase().includes('armor')))) {
-      const sortedArmorKeys = Object.keys(this.SRD_ARMORS).sort((a, b) => b.length - a.length);
-      for (const key of sortedArmorKeys) {
-        if (cleanName.includes(key)) {
-          const val = this.SRD_ARMORS[key];
-          let baseArmor = val.armor;
-          let mDex = val.maxDex;
-          let checkPen = val.acp;
-          let armorType = val.type; // 'Light', 'Medium', 'Heavy'
-
-          // Mithral modifier (RAW SRD / DMG p. 284): +2 maxDex, ACP reduced by 3 (towards 0), category reduced by 1 step
-          const isMithral = cleanName.includes('mithral') || fullText.includes('mithral');
-          if (isMithral) {
-            res.isMithral = true;
-            mDex = mDex !== null ? mDex + 2 : null;
-            checkPen = Math.min(0, checkPen + 3);
-            if (armorType === 'Heavy') armorType = 'Medium';
-            else if (armorType === 'Medium') armorType = 'Light';
-          }
-
-          // Check enhancement bonus like +1, +2, +3...
-          const enhMatch = cleanName.match(/\+(\d+)/);
-          if (enhMatch) {
-            baseArmor += Number(enhMatch[1]);
-          }
-
-          res.armor = baseArmor;
-          res.armorCategory = val.type;
-          res.effectiveArmorCategory = armorType;
-          if (res.maxDex === null) res.maxDex = mDex;
-          if (res.acp === 0) res.acp = checkPen;
-          res.bonusType = 'Armor';
-          break;
-        }
+    // If Armor or Shield has V2 `armorStats.baseAc` and no `ac.armor`/`ac.shield` modifier was present yet
+    const baseArmorAc = Number(item.armorStats?.baseAc ?? dbEntry?.armorStats?.baseAc ?? 0) || 0;
+    const enhBonus = Number(item.enhancementBonus ?? dbEntry?.enhancementBonus ?? 0) || 0;
+    const totalArmorAc = baseArmorAc > 0 ? (baseArmorAc + enhBonus) : 0;
+    if (totalArmorAc > 0) {
+      if (isShield && res.shield === 0) {
+        res.shield = totalArmorAc;
+        res.modifiers.push({ target: 'ac.shield', value: totalArmorAc, type: 'shield', condition: null, source: item.name });
+      } else if (isArmor && res.armor === 0) {
+        res.armor = totalArmorAc;
+        res.modifiers.push({ target: 'ac.armor', value: totalArmorAc, type: 'armor', condition: null, source: item.name });
       }
     }
 
-    // Check SRD Shields
-    if (res.shield === 0 && (item.category === 'Shield' || cleanName.includes('shield') || cleanName.includes('buckler'))) {
-      for (const [key, val] of Object.entries(this.SRD_SHIELDS)) {
-        if (cleanName.includes(key)) {
-          let baseShield = val.shield;
-          let mDex = val.maxDex;
-          let checkPen = val.acp;
-
-          if (cleanName.includes('darkwood') || fullText.includes('darkwood')) {
-            checkPen = Math.min(0, checkPen + 2);
-          }
-          const enhMatch = cleanName.match(/\+(\d+)/);
-          if (enhMatch) {
-            baseShield += Number(enhMatch[1]);
-          }
-
-          res.shield = baseShield;
-          if (val.maxDex !== null && res.maxDex === null) res.maxDex = mDex;
-          if (res.acp === 0) res.acp = checkPen;
-          res.bonusType = 'Shield';
-          break;
-        }
-      }
+    if (item.dailyCharges || dbEntry?.dailyCharges) {
+      res.dailyCharges = JSON.parse(JSON.stringify(item.dailyCharges || dbEntry.dailyCharges));
     }
-
-    // Heuristic regex parsers for Wondrous Items & Accessories
-    // Deflection
-    if (res.deflection === 0 && (cleanName.includes('protection') || fullText.includes('deflection bonus'))) {
-      const match = fullText.match(/\+(\d+)\s*(?:deflection|saptırma)/i) || (cleanName.includes('protection') ? cleanName.match(/\+(\d+)/) : null);
-      if (match) {
-        res.deflection = Number(match[1]);
-        res.bonusType = 'Deflection';
-      }
-    }
-
-    // Natural Armor
-    if (res.natural === 0 && (cleanName.includes('natural armor') || fullText.includes('natural armor bonus') || cleanName.includes('amulet of natural armor'))) {
-      const match = fullText.match(/\+(\d+)\s*(?:natural|doğal)/i) || (cleanName.includes('natural armor') ? cleanName.match(/\+(\d+)/) : null);
-      if (match) {
-        res.natural = Number(match[1]);
-        res.bonusType = 'Natural';
-      }
-    }
-
-    // Bracers of Armor
-    if (res.armor === 0 && cleanName.includes('bracers of armor')) {
-      const match = cleanName.match(/\+(\d+)/);
-      if (match) {
-        res.armor = Number(match[1]);
-        res.bonusType = 'Armor';
-      }
-    }
-
-    // Resistance bonus to saves (Cloak of Resistance)
-    if (res.resistance === 0 && (cleanName.includes('resistance') || fullText.includes('resistance bonus'))) {
-      const match = fullText.match(/\+(\d+)\s*resistance/i) || (cleanName.includes('resistance') ? cleanName.match(/\+(\d+)/) : null);
-      if (match) {
-        res.resistance = Number(match[1]);
-      }
-    }
-
-    // Ability Enhancements (Belt of Giant Strength, Gloves of Dexterity, etc.)
-    // Only match explicit "+X [enhancement] bonus to <Stat>" in text, or "+X" in item name if the item name itself is a stat-enhancing item (never on weapons/armors like Rapier +2!)
-    if (!isWeaponOrShieldOrArmor) {
-      if (res.str === 0) {
-        const match = fullText.match(/\+(\d+)\s*(?:enhancement\s*)?bonus\s+to\s+(?:strength|str|kuvvet)\b/i)
-          || fullText.match(/bonus\s+to\s+(?:strength|str)\s+of\s+\+(\d+)/i)
-          || ((cleanName.includes('giant strength') || cleanName.includes('ogre power') || cleanName.includes('strength')) ? cleanName.match(/\+(\d+)/) : null);
-        if (match) { res.str = Number(match[1]); res.bonusType = 'Enhancement'; }
-      }
-      if (res.dex === 0) {
-        const match = fullText.match(/\+(\d+)\s*(?:enhancement\s*)?bonus\s+to\s+(?:dexterity|dex|çeviklik)\b/i)
-          || fullText.match(/bonus\s+to\s+(?:dexterity|dex)\s+of\s+\+(\d+)/i)
-          || (cleanName.includes('dexterity') ? cleanName.match(/\+(\d+)/) : null);
-        if (match) { res.dex = Number(match[1]); res.bonusType = 'Enhancement'; }
-      }
-      if (res.con === 0) {
-        const match = fullText.match(/\+(\d+)\s*(?:enhancement\s*)?bonus\s+to\s+(?:constitution|con|dayanıklılık)\b/i)
-          || fullText.match(/bonus\s+to\s+(?:constitution|con)\s+of\s+\+(\d+)/i)
-          || ((cleanName.includes('health') || cleanName.includes('constitution')) ? cleanName.match(/\+(\d+)/) : null);
-        if (match) { res.con = Number(match[1]); res.bonusType = 'Enhancement'; }
-      }
-      if (res.int === 0) {
-        const match = fullText.match(/\+(\d+)\s*(?:enhancement\s*)?bonus\s+to\s+(?:intelligence|int|zeka)\b/i)
-          || fullText.match(/bonus\s+to\s+(?:intelligence|int)\s+of\s+\+(\d+)/i)
-          || ((cleanName.includes('intellect') || cleanName.includes('intelligence')) ? cleanName.match(/\+(\d+)/) : null);
-        if (match) { res.int = Number(match[1]); res.bonusType = 'Enhancement'; }
-      }
-      if (res.wis === 0) {
-        const match = fullText.match(/\+(\d+)\s*(?:enhancement\s*)?bonus\s+to\s+(?:wisdom|wis|bilgelik)\b/i)
-          || fullText.match(/bonus\s+to\s+(?:wisdom|wis)\s+of\s+\+(\d+)/i)
-          || ((cleanName.includes('wisdom') || cleanName.includes('periapt')) ? cleanName.match(/\+(\d+)/) : null);
-        if (match) { res.wis = Number(match[1]); res.bonusType = 'Enhancement'; }
-      }
-      if (res.cha === 0) {
-        const match = fullText.match(/\+(\d+)\s*(?:enhancement\s*)?bonus\s+to\s+(?:charisma|cha|karizma)\b/i)
-          || fullText.match(/bonus\s+to\s+(?:charisma|cha)\s+of\s+\+(\d+)/i)
-          || (cleanName.includes('charisma') ? cleanName.match(/\+(\d+)/) : null);
-        if (match) { res.cha = Number(match[1]); res.bonusType = 'Enhancement'; }
-      }
-    }
-
-    // Speed bonus (Boots of Striding and Springing)
-    if (res.speed === 0 && (cleanName.includes('striding') || fullText.includes('speed'))) {
-      const match = fullText.match(/\+(\d+)\s*ft(?:\s*land)?\s*speed/i);
-      if (match) res.speed = Number(match[1]);
-    }
-
-    // Max Dex & ACP in description
-    if (res.maxDex === null) {
-      const mDexMatch = fullText.match(/max dex\s*\+?(\d+)/i);
-      if (mDexMatch) res.maxDex = Number(mDexMatch[1]);
-    }
-    if (res.acp === 0) {
-      const acpMatch = fullText.match(/check penalty\s*(-?\d+)/i) || fullText.match(/acp\s*(-?\d+)/i);
-      if (acpMatch) res.acp = Number(acpMatch[1]);
+    if (item.chargeOptions || dbEntry?.chargeOptions) {
+      res.chargeOptions = JSON.parse(JSON.stringify(item.chargeOptions || dbEntry.chargeOptions));
     }
 
     return res;
   },
 
-  // Standard D&D 3.5e default buffs catalog
+  // Standard D&D 3.5e Canonical V2 default buffs catalog
   getDefaultBuffs() {
     return [
       {
-        id: "buff_mage_armor",
+        id: "buf-mage-armor",
+        schemaVersion: 2,
         name: "Mage Armor",
+        type: "Buff",
         source: "Spell (Büyü)",
         category: "AC",
+        durationCategory: "hour",
         active: false,
         rounds: 50,
         durationText: "1 saat / CL (5 Saat)",
-        bonusType: "Armor",
-        acBonus: 4,
-        notes: "+4 Zırh (Armor) AC bonusu (Zırhla stackleşmez, MAX alınır)"
+        notes: "+4 Zırh (Armor) AC bonusu (Zırhla stackleşmez, MAX alınır)",
+        modifiers: [{ target: "ac.armor", value: 4, formula: "4", type: "armor", condition: null }],
+        damageParts: [],
+        modes: [],
+        ruleFlags: {}
       },
       {
-        id: "buff_shield",
+        id: "buf-shield",
+        schemaVersion: 2,
         name: "Shield (Büyü)",
+        type: "Buff",
         source: "Spell (Büyü)",
         category: "AC",
+        durationCategory: "short",
         active: false,
         rounds: 10,
         durationText: "1 dk / CL (5 Dk)",
-        bonusType: "Shield",
-        acBonus: 4,
-        notes: "+4 Kalkan (Shield) AC bonusu, Magic Missile büyüsünü engeller"
+        notes: "+4 Kalkan (Shield) AC bonusu, Magic Missile büyüsünü engeller",
+        modifiers: [{ target: "ac.shield", value: 4, formula: "4", type: "shield", condition: null }],
+        damageParts: [],
+        modes: [],
+        ruleFlags: { immuneMagicMissile: true }
       },
       {
-        id: "buff_bulls_str",
+        id: "buf-bulls-strength",
+        schemaVersion: 2,
         name: "Bull's Strength",
+        type: "Buff",
         source: "Spell / Potion",
         category: "Stat",
+        durationCategory: "short",
         active: false,
         rounds: 10,
         durationText: "1 dk / CL (5 Dk)",
-        bonusType: "Enhancement",
-        strBonus: 4,
-        notes: "+4 Enhancement STR (Dev Kemeri ile stackleşmez, MAX alınır)"
+        notes: "+4 Enhancement STR (Dev Kemeri ile stackleşmez, MAX alınır)",
+        modifiers: [{ target: "ability.str", value: 4, formula: "4", type: "enhancement", condition: null }],
+        damageParts: [],
+        modes: [],
+        ruleFlags: {}
       },
       {
-        id: "buff_cats_grace",
+        id: "buf-cats-grace",
+        schemaVersion: 2,
         name: "Cat's Grace",
+        type: "Buff",
         source: "Spell / Potion",
         category: "Stat",
+        durationCategory: "short",
         active: false,
         rounds: 10,
         durationText: "1 dk / CL (5 Dk)",
-        bonusType: "Enhancement",
-        dexBonus: 4,
-        notes: "+4 Enhancement DEX (Eldiven ile stackleşmez, MAX alınır)"
+        notes: "+4 Enhancement DEX (Eldiven ile stackleşmez, MAX alınır)",
+        modifiers: [{ target: "ability.dex", value: 4, formula: "4", type: "enhancement", condition: null }],
+        damageParts: [],
+        modes: [],
+        ruleFlags: {}
       },
       {
-        id: "buff_bears_endurance",
+        id: "buf-bears-endurance",
+        schemaVersion: 2,
         name: "Bear's Endurance",
+        type: "Buff",
         source: "Spell / Potion",
         category: "Stat",
+        durationCategory: "short",
         active: false,
         rounds: 10,
         durationText: "1 dk / CL",
-        bonusType: "Enhancement",
-        conBonus: 4,
-        notes: "+4 Enhancement CON (+2 HP/seviye, Fortitude artışı)"
+        notes: "+4 Enhancement CON (+2 HP/seviye, Fortitude artışı)",
+        modifiers: [{ target: "ability.con", value: 4, formula: "4", type: "enhancement", condition: null }],
+        damageParts: [],
+        modes: [],
+        ruleFlags: {}
       },
       {
-        id: "buff_haste",
+        id: "buf-haste",
+        schemaVersion: 2,
         name: "Haste (Acele)",
+        type: "Buff",
         source: "Spell (Büyü)",
         category: "Combat",
+        durationCategory: "short",
         active: false,
         rounds: 6,
         durationText: "1 tur / CL (6 Tur)",
-        bonusType: "Dodge",
-        attBonus: 1,
-        dodgeBonus: 1,
-        refBonus: 1,
-        speedBonus: 30,
-        notes: "+1 Saldırı, +1 Dodge AC, +1 Refl, +30 ft Hız, Tam turda +1 ek saldırı"
+        notes: "+1 Saldırı, +1 Dodge AC, +1 Refl, +30 ft Hız, Tam turda +1 ek saldırı",
+        modifiers: [
+          { target: "attack.all", value: 1, formula: "1", type: "untyped", condition: null },
+          { target: "ac.dodge", value: 1, formula: "1", type: "dodge", condition: null },
+          { target: "save.ref", value: 1, formula: "1", type: "dodge", condition: null },
+          { target: "speed.all", value: 30, formula: "30", type: "enhancement", condition: null }
+        ],
+        damageParts: [],
+        modes: [],
+        ruleFlags: { hasted: true, extraAttackFullAttack: true }
       },
       {
-        id: "buff_bless",
+        id: "buf-bless",
+        schemaVersion: 2,
         name: "Bless (Kutsama)",
+        type: "Buff",
         source: "Spell (Büyü)",
         category: "Morale",
+        durationCategory: "short",
         active: false,
         rounds: 10,
         durationText: "1 dk / CL",
-        bonusType: "Morale",
-        attBonus: 1,
-        notes: "+1 Morale saldırı zarlarına ve korku kurtarma zarlarına"
+        notes: "+1 Morale saldırı zarlarına ve korku kurtarma zarlarına",
+        modifiers: [{ target: "attack.all", value: 1, formula: "1", type: "morale", condition: null }],
+        damageParts: [],
+        modes: [],
+        ruleFlags: {}
       },
       {
-        id: "buff_prayer",
+        id: "buf-prayer-positive",
+        schemaVersion: 2,
         name: "Prayer (Dua)",
+        type: "Buff",
         source: "Spell (Büyü)",
         category: "Luck",
+        durationCategory: "short",
         active: false,
         rounds: 6,
         durationText: "1 tur / CL",
-        bonusType: "Luck",
-        attBonus: 1,
-        dmgBonus: 1,
-        fortBonus: 1,
-        refBonus: 1,
-        willBonus: 1,
-        skillBonus: 1,
-        notes: "+1 Luck saldırı, hasar, kurtarma ve beceri zarlarına"
+        notes: "+1 Luck saldırı, hasar, kurtarma ve beceri zarlarına",
+        modifiers: [
+          { target: "attack.all", value: 1, formula: "1", type: "luck", condition: null },
+          { target: "damage.weapon", value: 1, formula: "1", type: "luck", condition: null },
+          { target: "save.all", value: 1, formula: "1", type: "luck", condition: null },
+          { target: "skill.all", value: 1, formula: "1", type: "luck", condition: null }
+        ],
+        damageParts: [],
+        modes: [],
+        ruleFlags: {}
       },
       {
-        id: "buff_barkskin",
+        id: "buf-barkskin",
+        schemaVersion: 2,
         name: "Barkskin",
+        type: "Buff",
         source: "Spell (Büyü)",
         category: "AC",
+        durationCategory: "short",
         active: false,
         rounds: 50,
         durationText: "10 dk / CL",
-        bonusType: "Natural",
-        naturalBonus: 2,
-        notes: "+2 Doğal Zırh (Natural Armor) bonusu"
+        notes: "+2 Doğal Zırh (Natural Armor Enhancement) bonusu",
+        modifiers: [{ target: "ac.natural", value: 2, formula: "min(5, 2 + max(0, floor((@cl - 3) / 3)))", type: "natural_enhancement", condition: null }],
+        damageParts: [],
+        modes: [],
+        ruleFlags: {}
       },
       {
-        id: "buff_shield_of_faith",
+        id: "buf-shield-of-faith",
+        schemaVersion: 2,
         name: "Shield of Faith",
+        type: "Buff",
         source: "Spell (Büyü)",
         category: "AC",
+        durationCategory: "short",
         active: false,
         rounds: 10,
         durationText: "1 dk / CL",
-        bonusType: "Deflection",
-        deflectionBonus: 2,
-        notes: "+2 Saptırma (Deflection) AC bonusu"
+        notes: "+2 Saptırma (Deflection) AC bonusu",
+        modifiers: [{ target: "ac.deflection", value: 2, formula: "2 + min(3, floor(@cl / 6))", type: "deflection", condition: null }],
+        damageParts: [],
+        modes: [],
+        ruleFlags: {}
       },
       {
-        id: "buff_divine_favor",
+        id: "buf-divine-favor",
+        schemaVersion: 2,
         name: "Divine Favor",
+        type: "Buff",
         source: "Spell (Büyü)",
         category: "Combat",
+        durationCategory: "short",
         active: false,
         rounds: 10,
         durationText: "1 dk (10 Tur)",
-        bonusType: "Luck",
-        attBonus: 2,
-        dmgBonus: 2,
-        notes: "+2 Luck saldırı ve silah hasarı bonusu"
+        notes: "+1..+3 Luck saldırı ve silah hasarı bonusu",
+        modifiers: [
+          { target: "attack.all", value: 2, formula: "min(3, 1 + floor(@cl / 3))", type: "luck", condition: null },
+          { target: "damage.weapon", value: 2, formula: "min(3, 1 + floor(@cl / 3))", type: "luck", condition: null }
+        ],
+        damageParts: [],
+        modes: [],
+        ruleFlags: {}
       },
       {
-        id: "buff_punishing_stance",
+        id: "buf-punishing-stance",
+        schemaVersion: 2,
         name: "Punishing Stance",
+        type: "Buff",
         source: "Stance (Duruş)",
         category: "Stance",
+        durationCategory: "permanent",
         active: true,
         rounds: null,
         durationText: "Sürekli",
-        bonusType: "Untyped",
-        acPenalty: 2,
         dmgDice: "1d6",
-        notes: "+1d6 yakın dövüş silah hasarı, -2 AC savunma cezası"
+        notes: "+1d6 yakın dövüş silah hasarı, -2 AC savunma cezası",
+        modifiers: [{ target: "ac.total", value: -2, formula: "-2", type: "penalty", condition: null }],
+        damageParts: [{ dice: "1d6", bonus: 0, type: "Physical", multiplyOnCrit: false, onCritOnly: false, source: "Punishing Stance" }],
+        modes: [],
+        ruleFlags: {}
       }
     ];
   },
 
-  // Standard D&D 3.5e RAW default debuffs catalog with Parent-Child relationships
+  // Standard D&D 3.5e RAW Canonical V2 default debuffs & conditions catalog
   getDefaultDebuffs() {
     return [
       {
-        id: "debuff_energy_drain_4",
+        id: "cnd-energy-drained",
+        schemaVersion: 2,
         name: "Energy Drain (-4 Lvl)",
+        type: "Condition",
         source: "Spell / Undead",
         category: "Debuff",
+        durationCategory: "condition",
         isDebuff: true,
         active: false,
         rounds: null,
         durationText: "Kalıcı (Restoration gerektirir)",
-        bonusType: "Penalty",
         negativeLevels: 4,
         notes: "D&D 3.5e RAW: 4 Negatif Seviye! -4 Saldırı, -4 Kurtarma Zarları, -4 Beceri/Yetenek, -20 Max/Mevcut HP, -4 Efektif Caster Level.",
-        children: [
-          { id: "child_ed_att", name: "↳ -4 Saldırı Zarları (All Attacks)", attBonus: -4, bonusType: "Penalty" },
-          { id: "child_ed_saves", name: "↳ -4 Kurtarma Zarları (Fort, Ref, Will)", fortBonus: -4, refBonus: -4, willBonus: -4, bonusType: "Penalty" },
-          { id: "child_ed_skills", name: "↳ -4 Beceri & Yetenek Testleri", skillBonus: -4, bonusType: "Penalty" },
-          { id: "child_ed_hp", name: "↳ -20 Can Puanı (-5 HP / Seviye)", hpPenalty: 20, bonusType: "Penalty" },
-          { id: "child_ed_cl", name: "↳ -4 Caster Level (Efektif Seviye)", clPenalty: 4, bonusType: "Penalty" }
-        ]
+        modifiers: [
+          { target: "attack.all", value: -4, formula: "-4", type: "penalty", condition: null },
+          { target: "save.all", value: -4, formula: "-4", type: "penalty", condition: null },
+          { target: "skill.all", value: -4, formula: "-4", type: "penalty", condition: null },
+          { target: "hp.max", value: -20, formula: "-20", type: "penalty", condition: null }
+        ],
+        damageParts: [],
+        modes: [],
+        ruleFlags: { actionRestriction: "Energy Drained (-4 Negative Levels): -4 on all attacks, saves, skills, ability checks, -20 Max HP, -4 effective Caster Level." }
       },
       {
-        id: "debuff_sickened",
+        id: "cnd-sickened",
+        schemaVersion: 2,
         name: "Sickened (Midesi Bulanmış)",
+        type: "Condition",
         source: "Condition (Durum)",
         category: "Debuff",
+        durationCategory: "condition",
         isDebuff: true,
         active: false,
         rounds: 10,
         durationText: "10 Tur",
-        bonusType: "Penalty",
         notes: "D&D 3.5e RAW: -2 saldırı zarları, silah hasar zarları, kurtarma zarları, beceri ve yetenek testleri",
-        children: [
-          { id: "child_sick_att", name: "↳ -2 Saldırı & Hasar Zarları", attBonus: -2, dmgBonus: -2, bonusType: "Penalty" },
-          { id: "child_sick_saves", name: "↳ -2 Tüm Kurtarma Zarları", fortBonus: -2, refBonus: -2, willBonus: -2, bonusType: "Penalty" },
-          { id: "child_sick_skills", name: "↳ -2 Beceri & Yetenek Testleri", skillBonus: -2, bonusType: "Penalty" }
-        ]
+        modifiers: [
+          { target: "attack.all", value: -2, formula: "-2", type: "penalty", condition: null },
+          { target: "damage.weapon", value: -2, formula: "-2", type: "penalty", condition: null },
+          { target: "save.all", value: -2, formula: "-2", type: "penalty", condition: null },
+          { target: "skill.all", value: -2, formula: "-2", type: "penalty", condition: null }
+        ],
+        damageParts: [],
+        modes: [],
+        ruleFlags: {}
       },
       {
-        id: "debuff_shaken",
+        id: "cnd-shaken",
+        schemaVersion: 2,
         name: "Shaken (Korkmuş)",
+        type: "Condition",
         source: "Condition (Durum)",
         category: "Debuff",
+        durationCategory: "condition",
         isDebuff: true,
         active: false,
         rounds: 10,
         durationText: "10 Tur",
-        bonusType: "Morale Penalty",
         notes: "D&D 3.5e RAW: Korku durumu. -2 saldırı zarları, kurtarma zarları, beceri ve yetenek testleri",
-        children: [
-          { id: "child_shaken_att", name: "↳ -2 Saldırı Zarları", attBonus: -2, bonusType: "Penalty" },
-          { id: "child_shaken_saves", name: "↳ -2 Kurtarma Zarları", fortBonus: -2, refBonus: -2, willBonus: -2, bonusType: "Penalty" },
-          { id: "child_shaken_skills", name: "↳ -2 Beceri & Yetenek Testleri", skillBonus: -2, bonusType: "Penalty" }
-        ]
+        modifiers: [
+          { target: "attack.all", value: -2, formula: "-2", type: "penalty", condition: null },
+          { target: "save.all", value: -2, formula: "-2", type: "penalty", condition: null },
+          { target: "skill.all", value: -2, formula: "-2", type: "penalty", condition: null }
+        ],
+        damageParts: [],
+        modes: [],
+        ruleFlags: {}
       },
       {
-        id: "debuff_fatigued",
+        id: "cnd-fatigued",
+        schemaVersion: 2,
         name: "Fatigued (Yorgun)",
+        type: "Condition",
         source: "Condition (Durum)",
         category: "Debuff",
+        durationCategory: "condition",
         isDebuff: true,
         active: false,
         rounds: null,
         durationText: "8 Saat Dinlenme",
-        bonusType: "Penalty",
         notes: "D&D 3.5e RAW: Koşamaz veya şarj edemez. -2 STR ve -2 DEX cezası alır.",
-        children: [
-          { id: "child_fatigue_str", name: "↳ -2 STR (-1 Saldırı & Hasar)", strBonus: -2, bonusType: "Penalty" },
-          { id: "child_fatigue_dex", name: "↳ -2 DEX (-1 Refl & AC)", dexBonus: -2, bonusType: "Penalty" }
-        ]
+        modifiers: [
+          { target: "ability.str", value: -2, formula: "-2", type: "penalty", condition: null },
+          { target: "ability.dex", value: -2, formula: "-2", type: "penalty", condition: null }
+        ],
+        damageParts: [],
+        modes: [],
+        ruleFlags: { actionRestriction: "Cannot run or charge (-2 Str, -2 Dex). 8 hours complete rest removes Fatigue." }
       },
       {
-        id: "debuff_entangled",
+        id: "cnd-entangled",
+        schemaVersion: 2,
         name: "Entangled (Dolaşmış)",
+        type: "Condition",
         source: "Condition (Durum)",
         category: "Debuff",
+        durationCategory: "condition",
         isDebuff: true,
         active: false,
         rounds: 5,
         durationText: "5 Tur",
-        bonusType: "Penalty",
         notes: "D&D 3.5e RAW: Yarı hareket hızı, koşamaz/şarj edemez, saldırı zarlarına -2, DEX'e -4 (-2 AC ve -2 Refl)",
-        children: [
-          { id: "child_entangled_att", name: "↳ -2 Saldırı Zarları", attBonus: -2, bonusType: "Penalty" },
-          { id: "child_entangled_dex", name: "↳ -4 DEX (-2 AC & -2 Refl)", dexBonus: -4, bonusType: "Penalty" },
-          { id: "child_entangled_speed", name: "↳ Yarı Hareket Hızı (Max 15 ft)", speedPenalty: 15, bonusType: "Penalty" }
-        ]
+        modifiers: [
+          { target: "attack.all", value: -2, formula: "-2", type: "penalty", condition: null },
+          { target: "ability.dex", value: -4, formula: "-4", type: "penalty", condition: null }
+        ],
+        damageParts: [],
+        modes: [],
+        ruleFlags: { halfSpeed: true, actionRestriction: "Ensnared: moves at half speed, cannot run or charge, Concentration DC 15 + spell level to cast." }
       },
       {
-        id: "debuff_slow",
+        id: "buf-slow",
+        schemaVersion: 2,
         name: "Slow (Yavaşlatma Büyüsü)",
+        type: "Condition",
         source: "Spell (Büyü)",
         category: "Debuff",
+        durationCategory: "short",
         isDebuff: true,
         active: false,
         rounds: 6,
         durationText: "1 tur / CL (6 Tur)",
-        bonusType: "Penalty",
         notes: "D&D 3.5e RAW: Turda sadece tek bir eylem (Move veya Standard), -1 AC, -1 Saldırı, -1 Refl, Yarı Hız",
-        children: [
-          { id: "child_slow_ac", name: "↳ -1 AC Cezası", acBonus: -1, bonusType: "Penalty" },
-          { id: "child_slow_att", name: "↳ -1 Saldırı Zarları", attBonus: -1, bonusType: "Penalty" },
-          { id: "child_slow_ref", name: "↳ -1 Reflex Kurtarma Zarı", refBonus: -1, bonusType: "Penalty" },
-          { id: "child_slow_speed", name: "↳ Yarı Hareket Hızı (Max 15 ft)", speedPenalty: 15, bonusType: "Penalty" }
-        ]
+        modifiers: [
+          { target: "ac.total", value: -1, formula: "-1", type: "penalty", condition: null },
+          { target: "attack.all", value: -1, formula: "-1", type: "penalty", condition: null },
+          { target: "save.ref", value: -1, formula: "-1", type: "penalty", condition: null }
+        ],
+        damageParts: [],
+        modes: [],
+        ruleFlags: { halfSpeed: true, actionRestriction: "Slowed: Only a single Move or Standard action per turn, moves at half speed." }
       }
     ];
   },
@@ -1689,102 +1713,46 @@ const RuleEngine = {
       };
     }
 
-    // 13. GENERIC PATTERN MATCHER (e.g. "1d6/level (max 10d6)", "1d8+1/level (max +5)")
-    const fullText = `${spell.dice || ''} ${spell.damageDice || ''} ${spell.benefit || ''} ${spell.description || ''}`;
+    // 13. CANONICAL V2 DAMAGE PARTS EVALUATOR (spell.damageParts or Compendium entry)
+    const dbSpell = (!Array.isArray(spell.damageParts) || spell.damageParts.length === 0)
+      ? this.getMasterDbEntry(spell, 'Spell')
+      : null;
+    const v2DamageParts = (Array.isArray(spell.damageParts) && spell.damageParts.length > 0)
+      ? spell.damageParts
+      : (dbSpell && Array.isArray(dbSpell.damageParts) ? dbSpell.damageParts : []);
 
-    // Pattern A: "XdY/level (max MdY)" or "XdY per level (max MdY)"
-    const perLvlMatch = fullText.match(/(\d+)d(\d+)\s*(?:\/|\s*per\s*)\s*(?:cl|level|seviye)(?:\s*\(?max\s*(\d+)d\d+\)?)?/i);
-    if (perLvlMatch) {
-      const perCl = parseInt(perLvlMatch[1], 10) || 1;
-      const dieSides = parseInt(perLvlMatch[2], 10) || 6;
-      const maxCap = perLvlMatch[3] ? parseInt(perLvlMatch[3], 10) : (perCl * 20);
-      const diceCount = Math.min(maxCap, Math.max(perCl, cl * perCl));
-      const diceFormula = `${diceCount}d${dieSides}`;
-      return {
-        scaled: true,
-        name: rawName,
-        casterLevel: cl,
-        projectiles: 1,
-        diceCount,
-        dieSides,
-        staticBonus: 0,
-        diceFormula,
-        dmgType,
-        displayText: `${diceFormula} ${dmgType}`,
-        descDetail: `CL ${cl}: ${diceCount}d${dieSides} (tavan ${maxCap}d${dieSides})`
-      };
-    }
+    if (v2DamageParts.length > 0) {
+      const primaryPart = v2DamageParts[0];
+      const rawDiceExpr = String(primaryPart.dice || '').trim();
+      const evaluatedDice = String(this.evaluateFormula(rawDiceExpr, { cl, level: cl }) || rawDiceExpr).trim();
+      const evaluatedBonus = Number(this.evaluateFormula(primaryPart.bonus || 0, { cl, level: cl })) || 0;
+      const partType = primaryPart.type || dmgType;
 
-    // Pattern B: "XdY/2 levels (max MdY)"
-    const per2LvlMatch = fullText.match(/(\d+)d(\d+)\s*(?:\/|\s*per\s*)\s*2\s*(?:cl|level|seviye|levels)(?:\s*\(?max\s*(\d+)d\d+\)?)?/i);
-    if (per2LvlMatch) {
-      const per2Cl = parseInt(per2LvlMatch[1], 10) || 1;
-      const dieSides = parseInt(per2LvlMatch[2], 10) || 6;
-      const maxCap = per2LvlMatch[3] ? parseInt(per2LvlMatch[3], 10) : (per2Cl * 10);
-      const diceCount = Math.min(maxCap, Math.max(per2Cl, Math.floor(cl / 2) * per2Cl));
-      const diceFormula = `${diceCount}d${dieSides}`;
-      return {
-        scaled: true,
-        name: rawName,
-        casterLevel: cl,
-        projectiles: 1,
-        diceCount,
-        dieSides,
-        staticBonus: 0,
-        diceFormula,
-        dmgType,
-        displayText: `${diceFormula} ${dmgType}`,
-        descDetail: `CL ${cl}: ${diceCount}d${dieSides} (tavan ${maxCap}d${dieSides})`
-      };
-    }
-
-    // Pattern C: "XdY + 1/level (max +Z)"
-    const bonusLvlMatch = fullText.match(/(\d+)d(\d+)\s*\+\s*(?:1\s*(?:\/|\s*per\s*)\s*(?:cl|level)|cl)(?:\s*\(?max\s*\+(\d+)\)?)?/i);
-    if (bonusLvlMatch) {
-      const diceCount = parseInt(bonusLvlMatch[1], 10) || 1;
-      const dieSides = parseInt(bonusLvlMatch[2], 10) || 8;
-      const maxBonus = bonusLvlMatch[3] ? parseInt(bonusLvlMatch[3], 10) : 5;
-      const staticBonus = Math.min(maxBonus, cl);
-      const diceFormula = `${diceCount}d${dieSides}+${staticBonus}`;
-      return {
-        scaled: true,
-        name: rawName,
-        casterLevel: cl,
-        projectiles: 1,
-        diceCount,
-        dieSides,
-        staticBonus,
-        diceFormula,
-        dmgType,
-        displayText: `${diceFormula} ${dmgType}`,
-        descDetail: `CL ${cl}: ${diceFormula} (tavan +${maxBonus})`
-      };
-    }
-
-    // 14. FALLBACK / STATIC DICE (e.g. "1d6", "2d4+2", "3d6")
-    const diceStr = spell.dice || spell.damageDice || (spell.benefit && spell.benefit.match(/\b\d+d\d+(?:\s*[+-]\s*\d+)?\b/i) ? spell.benefit.match(/\b\d+d\d+(?:\s*[+-]\s*\d+)?\b/i)[0] : '');
-    if (diceStr) {
-      const parsed = diceStr.match(/(\d+)d(\d+)(?:\s*([+-])\s*(\d+))?/i);
+      const parsed = evaluatedDice.match(/^(\d+)d(\d+)(?:\s*([+-])\s*(\d+))?$/i);
       if (parsed) {
         const diceCount = parseInt(parsed[1], 10) || 1;
         const dieSides = parseInt(parsed[2], 10) || 6;
-        let staticBonus = 0;
+        let staticBonus = evaluatedBonus;
         if (parsed[4]) {
-          staticBonus = parsed[3] === '-' ? -parseInt(parsed[4], 10) : parseInt(parsed[4], 10);
+          staticBonus += parsed[3] === '-' ? -parseInt(parsed[4], 10) : parseInt(parsed[4], 10);
         }
-        const cleanFormula = staticBonus !== 0 ? `${diceCount}d${dieSides}${staticBonus > 0 ? '+' : ''}${staticBonus}` : `${diceCount}d${dieSides}`;
+        const isScaled = rawDiceExpr.includes('@cl') || String(primaryPart.bonus || '').includes('@cl');
+        const diceFormula = staticBonus !== 0
+          ? `${diceCount}d${dieSides}${staticBonus > 0 ? '+' : ''}${staticBonus}`
+          : `${diceCount}d${dieSides}`;
         return {
-          scaled: false,
+          scaled: isScaled,
           name: rawName,
           casterLevel: cl,
           projectiles: 1,
           diceCount,
           dieSides,
           staticBonus,
-          diceFormula: cleanFormula,
-          dmgType,
-          displayText: `${cleanFormula} ${dmgType}`,
-          descDetail: ''
+          diceFormula,
+          dmgType: partType,
+          damageParts: v2DamageParts,
+          displayText: `${diceFormula} ${partType}`,
+          descDetail: isScaled ? `CL ${cl}: ${diceFormula} ${partType}` : ''
         };
       }
     }
@@ -1804,10 +1772,19 @@ const RuleEngine = {
     };
   },
 
-  // Central Recalculation Engine for Character State (Abilities, AC, Saves, Speed, Buffs)
+  // Central Recalculation Engine for Character State (Abilities, AC, Saves, Speed, Buffs) - Canonical V2
   recalculateCharacter(character, masterDb = [], tacticalOptions = {}) {
     if (!character) return;
     const options = tacticalOptions || {};
+
+    // 0. Gatekeeper: Ensure Character Data is Canonical V2
+    if (character.schemaVersion !== 2 && typeof window !== 'undefined' && window.SchemaMigrator) {
+      window.SchemaMigrator.upgradeCharacterToV2(character);
+    }
+
+    const charLvl = Number(character.level) || (Array.isArray(character.levelProgression) ? character.levelProgression.filter(l => l.active !== false).length : 1) || 1;
+    const bab = Number(character.bab) || 0;
+    const evalContext = { cl: charLvl, level: charLvl, bab };
 
     // 1. Ensure Base Abilities
     if (!character.baseAbilities) {
@@ -1819,31 +1796,26 @@ const RuleEngine = {
         wis: character.abilities?.wis || 10,
         cha: character.abilities?.cha || 10
       };
-      // If default character has +2 Belt and +2 Gloves active in initial state, calibrate base scores
       if (character.bodySlots?.belt?.active && character.bodySlots.belt.name?.toLowerCase().includes('+2')) {
         character.baseAbilities.str = Math.max(8, character.baseAbilities.str - 2);
       }
       if (character.bodySlots?.gloves?.active && character.bodySlots.gloves.name?.toLowerCase().includes('+2')) {
         character.baseAbilities.dex = Math.max(8, character.baseAbilities.dex - 2);
       }
-    } else {
-      if (!character.hasCustomBaseAbilities) {
-        // Re-calibrate if baseAbilities was saved uncalibrated in localStorage
-        if (character.bodySlots?.belt?.active && (character.bodySlots.belt.name || '').toLowerCase().includes('+2') && character.baseAbilities.str === 14) {
-          character.baseAbilities.str = 12;
-        }
-        if (character.bodySlots?.gloves?.active && (character.bodySlots.gloves.name || '').toLowerCase().includes('+2') && character.baseAbilities.dex === 16) {
-          character.baseAbilities.dex = 14;
-        }
+    } else if (!character.hasCustomBaseAbilities) {
+      if (character.bodySlots?.belt?.active && (character.bodySlots.belt.name || '').toLowerCase().includes('+2') && character.baseAbilities.str === 14) {
+        character.baseAbilities.str = 12;
+      }
+      if (character.bodySlots?.gloves?.active && (character.bodySlots.gloves.name || '').toLowerCase().includes('+2') && character.baseAbilities.dex === 16) {
+        character.baseAbilities.dex = 14;
       }
     }
 
-    // Ensure buffs array
     if (!Array.isArray(character.buffs)) {
       character.buffs = [];
     }
 
-    // 2. Collect Equipment Bonuses from active bodySlots
+    // 2. Initialize Aggregation Buckets
     const armorBonuses = [];
     const shieldBonuses = [];
     const naturalBonuses = [];
@@ -1854,13 +1826,6 @@ const RuleEngine = {
       ref: [],
       will: []
     };
-    let hasSteadfastDetermination = false;
-    let minMaxDex = null;
-    let totalAcp = 0;
-    let resistBonus = 0;
-    let itemSpeedBonus = 0;
-
-    // Ability bonus buckets by type for RAW stacking
     const abilityBuckets = {
       str: [],
       dex: [],
@@ -1870,6 +1835,108 @@ const RuleEngine = {
       cha: []
     };
 
+    let hasSteadfastDetermination = false;
+    let minMaxDex = null;
+    let totalAcp = 0;
+    let resistBonus = 0;
+    let itemSpeedBonus = 0;
+    let buffSpeedBonus = 0;
+    let buffSpeedPenalty = 0;
+    let buffAcPenalty = 0;
+    let buffSkillBonus = 0;
+    let debuffHpPenalty = 0;
+    let draconicToughnessHp = 0;
+    let conditionLoseDexToAC = false;
+    let conditionEffectiveDexZero = false;
+    let conditionHalfSpeed = false;
+    const activeConditionWarnings = [];
+
+    // Universal Canonical V2 Modifiers Processor
+    const applyV2Modifiers = (modifiers, sourceName, sourceCategory = 'item', customCtx = null) => {
+      if (!Array.isArray(modifiers)) return;
+      const ctx = customCtx || evalContext;
+
+      modifiers.forEach(mod => {
+        if (!mod || !mod.target) return;
+        const target = String(mod.target).trim().toLowerCase();
+        const rawExpr = mod.value !== undefined && mod.value !== null ? mod.value : mod.formula;
+        const val = Number(this.evaluateFormula(rawExpr, ctx)) || 0;
+        if (val === 0) return;
+
+        const mType = String(mod.type || (val < 0 ? 'penalty' : 'untyped')).trim();
+        const mTypeLower = mType.toLowerCase();
+
+        // Ability Scores (both `ability.str` and `str`)
+        const statKey = target.startsWith('ability.') ? target.slice(8) : target;
+        if (['str', 'dex', 'con', 'int', 'wis', 'cha'].includes(statKey)) {
+          const statType = (mTypeLower === 'untyped' && sourceCategory === 'item') ? 'Enhancement' : mType;
+          abilityBuckets[statKey].push({ val, type: statType, source: sourceName });
+          return;
+        }
+
+        // Armor Class (both `ac.*` and `ac` / `armor` / `shield` / `natural` / `deflection` / `dodge`)
+        const acSub = target.startsWith('ac.') ? target.slice(3) : target;
+        if (target === 'ac' || target.startsWith('ac.') || ['armor', 'shield', 'natural', 'deflection', 'dodge'].includes(acSub)) {
+          if (val < 0 || mTypeLower === 'penalty') {
+            buffAcPenalty += Math.abs(val);
+          } else if (acSub === 'shield' || mTypeLower === 'shield') {
+            shieldBonuses.push({ val, source: sourceName, type: 'Shield' });
+          } else if (acSub === 'deflection' || mTypeLower === 'deflection') {
+            deflectionBonuses.push({ val, source: sourceName, type: 'Deflection' });
+          } else if (acSub === 'natural' || mTypeLower === 'natural' || mTypeLower === 'natural_armor_ench' || mTypeLower === 'natural_enhancement') {
+            const natType = (mTypeLower.includes('ench') || sourceName.toLowerCase().includes('barkskin') || sourceName.toLowerCase().includes('amulet of natural armor'))
+              ? 'Natural_Armor_Ench'
+              : 'Natural';
+            naturalBonuses.push({ val, source: sourceName, type: natType });
+          } else if (acSub === 'dodge' || mTypeLower === 'dodge' || mTypeLower === 'haste' || mTypeLower === 'insight' || mTypeLower === 'luck' || mTypeLower === 'sacred' || mTypeLower === 'profane') {
+            dodgeBonuses.push({ val, source: sourceName, type: mTypeLower === 'dodge' ? 'Dodge' : mType });
+          } else {
+            armorBonuses.push({ val, source: sourceName, type: 'Armor' });
+          }
+          return;
+        }
+
+        // Saving Throws (`save.all`, `saves.all`, `save.fort`, `fort`, etc.)
+        const saveSub = target.replace(/^saves?\./, '');
+        if (saveSub === 'all' || target === 'saves' || target === 'all_saves') {
+          saveBonusBuckets.fort.push({ val, type: mType, source: sourceName });
+          saveBonusBuckets.ref.push({ val, type: mType, source: sourceName });
+          saveBonusBuckets.will.push({ val, type: mType, source: sourceName });
+          if (mTypeLower === 'resistance' && val > resistBonus) resistBonus = val;
+          return;
+        }
+        if (saveSub === 'fort' || saveSub === 'ref' || saveSub === 'will') {
+          saveBonusBuckets[saveSub].push({ val, type: mType, source: sourceName });
+          return;
+        }
+
+        // Speed (`speed`, `speed.land`, `speed.all`)
+        if (target === 'speed' || target.startsWith('speed.')) {
+          if (val < 0 || mTypeLower === 'penalty') {
+            buffSpeedPenalty += Math.abs(val);
+          } else if (sourceCategory === 'item') {
+            if (val > itemSpeedBonus) itemSpeedBonus = val;
+          } else {
+            if (val > buffSpeedBonus) buffSpeedBonus = val;
+          }
+          return;
+        }
+
+        // Global Skill Modifiers
+        if (target === 'skill.all' || target === 'skills.all' || target === 'skills') {
+          buffSkillBonus += val;
+          return;
+        }
+
+        // Max HP / Negative Level HP Adjustment
+        if (target === 'hp.max' || target === 'hp') {
+          if (val < 0) debuffHpPenalty += Math.abs(val);
+          else draconicToughnessHp += val;
+        }
+      });
+    };
+
+    // 2.5. Collect Equipment Bonuses from active bodySlots
     let twoHandedConflict = null;
     let offHandSuppressed = false;
     let equippedArmorCategory = 'None';
@@ -1880,8 +1947,6 @@ const RuleEngine = {
       const isMhTwoHand = mh && mh.name && mh.name !== '-' && this.isTwoHandedWeapon(mh);
       const isOhOccupied = oh && oh.active !== false && oh.name && oh.name !== '-';
 
-      // RAW D&D 3.5e: Two-handed weapons require both hands. Neither Monkey Grip nor Oversized TWF permits
-      // wielding a two-handed weapon in one hand alongside an off-hand weapon or shield.
       if (isMhTwoHand && isOhOccupied) {
         offHandSuppressed = true;
         twoHandedConflict = {
@@ -1896,7 +1961,7 @@ const RuleEngine = {
         if (!slotData || slotData.active === false || !slotData.name || slotData.name === '-') return;
         if (slotKey === 'offHand' && offHandSuppressed) return;
 
-        const mods = this.parseItemModifiers(slotData, masterDb);
+        const mods = this.parseItemModifiers(slotData, masterDb, evalContext);
         if (!mods) return;
 
         if (slotKey === 'armor' || (mods.armor > 0 && mods.effectiveArmorCategory)) {
@@ -1921,243 +1986,125 @@ const RuleEngine = {
         }
         if (mods.speed > 0 && mods.speed > itemSpeedBonus) itemSpeedBonus = mods.speed;
 
-        // Ability mods - RAW D&D 3.5e: standard item bonuses to ability scores are Enhancement
         const abilityBonusType = (mods.bonusType && mods.bonusType.toLowerCase() !== 'untyped') ? mods.bonusType : 'Enhancement';
-        if (mods.str > 0) abilityBuckets.str.push({ val: mods.str, type: abilityBonusType, source: slotData.name });
-        if (mods.dex > 0) abilityBuckets.dex.push({ val: mods.dex, type: abilityBonusType, source: slotData.name });
-        if (mods.con > 0) abilityBuckets.con.push({ val: mods.con, type: abilityBonusType, source: slotData.name });
-        if (mods.int > 0) abilityBuckets.int.push({ val: mods.int, type: abilityBonusType, source: slotData.name });
-        if (mods.wis > 0) abilityBuckets.wis.push({ val: mods.wis, type: abilityBonusType, source: slotData.name });
-        if (mods.cha > 0) abilityBuckets.cha.push({ val: mods.cha, type: abilityBonusType, source: slotData.name });
+        if (mods.str !== 0) abilityBuckets.str.push({ val: mods.str, type: abilityBonusType, source: slotData.name });
+        if (mods.dex !== 0) abilityBuckets.dex.push({ val: mods.dex, type: abilityBonusType, source: slotData.name });
+        if (mods.con !== 0) abilityBuckets.con.push({ val: mods.con, type: abilityBonusType, source: slotData.name });
+        if (mods.int !== 0) abilityBuckets.int.push({ val: mods.int, type: abilityBonusType, source: slotData.name });
+        if (mods.wis !== 0) abilityBuckets.wis.push({ val: mods.wis, type: abilityBonusType, source: slotData.name });
+        if (mods.cha !== 0) abilityBuckets.cha.push({ val: mods.cha, type: abilityBonusType, source: slotData.name });
       });
     }
 
-    // 3. Collect Active Buff Bonuses & Debuffs / Conditions (Parent-Child Aware)
-    let buffSpeedBonus = 0;
-    let buffAcPenalty = 0;
-    let buffSaveFort = 0;
-    let buffSaveRef = 0;
-    let buffSaveWill = 0;
-    let buffSkillBonus = 0;
-    let debuffHpPenalty = 0;
-    const suppressedWarnings = [];
+    // 3. Collect Active Buffs & Debuffs / Conditions (Canonical V2 modifiers & ruleFlags)
+    character.buffs.forEach(rawBuff => {
+      if (!rawBuff || !rawBuff.active) return;
+      const buff = this.ensureV2Entry(rawBuff);
+      const buffCl = Number(buff.casterLevel || charLvl) || charLvl;
+      const buffCtx = { ...evalContext, cl: buffCl };
 
-    character.buffs.forEach(buff => {
-      if (!buff || !buff.active) return;
-
-      const itemsToProcess = [buff];
-      const hasChildren = Array.isArray(buff.children) && buff.children.length > 0;
-      if (hasChildren) {
-        itemsToProcess.push(...buff.children);
+      if (buff.negativeLevels) {
+        const negLvls = Number(buff.negativeLevels) || 0;
+        if (negLvls > 0 && (!Array.isArray(buff.modifiers) || buff.modifiers.length === 0)) {
+          debuffHpPenalty += negLvls * 5;
+          saveBonusBuckets.fort.push({ val: -negLvls, type: 'penalty', source: `${buff.name} (-${negLvls} Lvl)` });
+          saveBonusBuckets.ref.push({ val: -negLvls, type: 'penalty', source: `${buff.name} (-${negLvls} Lvl)` });
+          saveBonusBuckets.will.push({ val: -negLvls, type: 'penalty', source: `${buff.name} (-${negLvls} Lvl)` });
+          buffSkillBonus -= negLvls;
+        }
       }
 
-      // If parent has negativeLevels without explicit children handling it
-      if (buff.negativeLevels && !hasChildren) {
-        debuffHpPenalty += buff.negativeLevels * 5;
-        saveBonusBuckets.fort.push({ val: -buff.negativeLevels, type: 'penalty', source: `${buff.name} (-${buff.negativeLevels} Lvl)` });
-        saveBonusBuckets.ref.push({ val: -buff.negativeLevels, type: 'penalty', source: `${buff.name} (-${buff.negativeLevels} Lvl)` });
-        saveBonusBuckets.will.push({ val: -buff.negativeLevels, type: 'penalty', source: `${buff.name} (-${buff.negativeLevels} Lvl)` });
-        buffSkillBonus -= buff.negativeLevels;
+      applyV2Modifiers(buff.modifiers, buff.name || 'Buff', 'buff', buffCtx);
+
+      const rf = buff.ruleFlags || {};
+      if (rf.loseDexToAC) conditionLoseDexToAC = true;
+      if (rf.effectiveDexZero) {
+        conditionEffectiveDexZero = true;
+        conditionLoseDexToAC = true;
       }
-
-      itemsToProcess.forEach(item => {
-        if (!item) return;
-        // When parent has children, skip container-level values that are superseded by children
-        if (item === buff && hasChildren) return;
-
-        const bType = (item.bonusType || (item.isDebuff || (item.attBonus < 0 || item.acBonus < 0 || item.strBonus < 0) ? 'penalty' : 'untyped')).toLowerCase();
-
-        // AC Bonuses & Penalties
-        if (item.acBonus > 0) {
-          if (bType.includes('shield')) {
-            shieldBonuses.push({ val: item.acBonus, source: item.name, type: 'Shield' });
-          } else if (bType.includes('deflection')) {
-            deflectionBonuses.push({ val: item.acBonus, source: item.name, type: 'Deflection' });
-          } else if (bType.includes('natural')) {
-            const natType = (bType.includes('ench') || item.name.toLowerCase().includes('barkskin') || item.name.toLowerCase().includes('amulet of natural armor')) ? 'Natural_Armor_Ench' : 'Natural';
-            naturalBonuses.push({ val: item.acBonus, source: item.name, type: natType });
-          } else {
-            armorBonuses.push({ val: item.acBonus, source: item.name, type: 'Armor' });
-          }
-        }
-        if (item.acBonus < 0) {
-          buffAcPenalty += Math.abs(item.acBonus);
-        }
-        if (item.acPenalty > 0) buffAcPenalty += item.acPenalty;
-
-        if (item.naturalBonus > 0) {
-          const natType = (bType.includes('ench') || item.name.toLowerCase().includes('barkskin') || item.name.toLowerCase().includes('amulet of natural armor')) ? 'Natural_Armor_Ench' : 'Natural';
-          naturalBonuses.push({ val: item.naturalBonus, source: item.name, type: natType });
-        }
-        if (item.deflectionBonus > 0) deflectionBonuses.push({ val: item.deflectionBonus, source: item.name, type: 'Deflection' });
-        if (item.dodgeBonus > 0) dodgeBonuses.push({ val: item.dodgeBonus, source: item.name, type: 'Dodge' });
-
-        // Stat Bonuses & Penalties
-        if (item.strBonus) abilityBuckets.str.push({ val: item.strBonus, type: item.bonusType || (item.strBonus < 0 ? 'penalty' : 'Enhancement'), source: item.name });
-        if (item.dexBonus) abilityBuckets.dex.push({ val: item.dexBonus, type: item.bonusType || (item.dexBonus < 0 ? 'penalty' : 'Enhancement'), source: item.name });
-        if (item.conBonus) abilityBuckets.con.push({ val: item.conBonus, type: item.bonusType || (item.conBonus < 0 ? 'penalty' : 'Enhancement'), source: item.name });
-        if (item.intBonus) abilityBuckets.int.push({ val: item.intBonus, type: item.bonusType || (item.intBonus < 0 ? 'penalty' : 'Enhancement'), source: item.name });
-        if (item.wisBonus) abilityBuckets.wis.push({ val: item.wisBonus, type: item.bonusType || (item.wisBonus < 0 ? 'penalty' : 'Enhancement'), source: item.name });
-        if (item.chaBonus) abilityBuckets.cha.push({ val: item.chaBonus, type: item.bonusType || (item.chaBonus < 0 ? 'penalty' : 'Enhancement'), source: item.name });
-
-        // Saves (parent-child aware, bonusType aware stacking)
-        const saveType = item.bonusType || (item.isDebuff || item.saveBonus < 0 || item.fortBonus < 0 ? 'penalty' : 'Resistance');
-        if (item.fortBonus) saveBonusBuckets.fort.push({ val: item.fortBonus, type: saveType, source: item.name });
-        if (item.refBonus) saveBonusBuckets.ref.push({ val: item.refBonus, type: saveType, source: item.name });
-        if (item.willBonus) saveBonusBuckets.will.push({ val: item.willBonus, type: saveType, source: item.name });
-        if (item.saveBonus) {
-          saveBonusBuckets.fort.push({ val: item.saveBonus, type: saveType, source: item.name });
-          saveBonusBuckets.ref.push({ val: item.saveBonus, type: saveType, source: item.name });
-          saveBonusBuckets.will.push({ val: item.saveBonus, type: saveType, source: item.name });
-        }
-
-        // Speed
-        if (item.speedBonus) buffSpeedBonus = Math.max(buffSpeedBonus, item.speedBonus);
-        if (item.speedPenalty) buffSpeedBonus -= item.speedPenalty;
-
-        // HP Penalty (Energy Drain: 5 HP per level)
-        if (item.hpPenalty) debuffHpPenalty += Number(item.hpPenalty) || 0;
-
-        // Skill Modifiers
-        if (item.skillBonus) buffSkillBonus += Number(item.skillBonus) || 0;
-      });
+      if (rf.halfSpeed) conditionHalfSpeed = true;
+      if (rf.actionRestriction || buff.isCondition || buff.isDebuff) {
+        activeConditionWarnings.push({
+          id: buff.id || buff.name,
+          name: buff.name,
+          icon: buff.icon || '⚠️',
+          actionRestriction: rf.actionRestriction || null,
+          summary: buff.summary || ''
+        });
+      }
     });
+    character.activeConditionWarnings = activeConditionWarnings;
 
-    // 3.5. Evaluate Feats, Special Abilities, DM Grants & Dynamic Scaling Bonuses (e.g. "Nat AC 2+1/4lvl", "Every X levels +Y", Ability Boosts, Saves)
-    const charLvl = Number(character.level) || (Array.isArray(character.levelProgression) ? character.levelProgression.filter(l => l.active !== false).length : 1) || 1;
+    // 3.5. Evaluate Feats, Special Abilities & DM Boons (Canonical V2)
     const allAbilitiesAndFeats = [
       ...(character.feats || []),
       ...(character.specialAbilities || [])
     ];
 
-    let draconicToughnessHp = 0;
-
-    allAbilitiesAndFeats.forEach(featItem => {
-      if (!featItem) return;
-      const rawName = String(typeof featItem === 'string' ? featItem : (featItem.name || '')).trim();
-      // Skip equipment child items if any were saved here
-      if (rawName.startsWith('↳') || (featItem.isChild && featItem.isChild !== false)) return;
+    allAbilitiesAndFeats.forEach(rawFeat => {
+      if (!rawFeat) return;
+      const featObj = typeof rawFeat === 'string' ? { name: rawFeat, category: 'Feat' } : this.ensureV2Entry(rawFeat);
+      const rawName = String(featObj.name || '').trim();
+      if (!rawName || rawName.startsWith('↳')) return;
 
       const cleanName = rawName.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').toLowerCase().trim();
-      const dbEntry = (Array.isArray(masterDb) ? masterDb.find(m => (m.name || '').toLowerCase().trim() === cleanName) : null)
-        || ((typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) ? window.BUNDLED_SRD_CORE_CATALOG.find(m => (m.name || '').toLowerCase().trim() === cleanName) : null);
-      const desc = String(featItem.benefit || featItem.desc || featItem.description || (dbEntry ? (dbEntry.benefit || dbEntry.description) : '') || '').toLowerCase();
-      const combinedText = `${cleanName} ${desc}`;
+      const dbEntry = this.getMasterDbEntry(featObj) || this.getMasterDbEntry(cleanName);
 
-      // 1. Natural Armor & Dynamic Scaling Formulas (e.g. "Nat AC 2+1/4lvl", "1 per 4 levels")
-      if (combinedText.includes('nat ac') || combinedText.includes('natural armor') || combinedText.includes('doğal zırh')) {
-        let natVal = this.evaluateScalingBonus(cleanName, charLvl);
-        if (natVal === 0) {
-          natVal = this.evaluateScalingBonus(desc, charLvl);
-        }
-        if (natVal === 0 && dbEntry && (dbEntry.naturalBonus || dbEntry.acBonus)) {
-          natVal = Number(dbEntry.naturalBonus || dbEntry.acBonus) || 0;
-        }
-        if (natVal === 0) {
-          const direct = combinedText.match(/(?:nat(?:ural)?\s*(?:ac|armor)|doğal\s*zırh)\s*[:\+]?\s*(\d+)/i) || cleanName.match(/\+(\d+)\s*nat/i);
-          if (direct) natVal = parseInt(direct[1], 10);
-        }
-        if (natVal > 0) {
-          naturalBonuses.push({ val: natVal, source: featItem.name || rawName, type: 'Natural' });
-        }
-      }
+      // Apply V2 modifiers from feat object or compendium entry
+      const featMods = (Array.isArray(featObj.modifiers) && featObj.modifiers.length > 0)
+        ? featObj.modifiers
+        : (dbEntry && Array.isArray(dbEntry.modifiers) ? dbEntry.modifiers : []);
+      applyV2Modifiers(featMods, rawName, 'feat', evalContext);
 
-      // 2. Inherent / DM Boon / Feat Ability Boosts (e.g. "Ability Boost (+2 Con, +2 Cha)", "+2 Dex")
-      if (combinedText.includes('ability boost') || combinedText.includes('inherent bonus') || (featItem.category === 'DM Boon' && combinedText.includes('boost'))) {
-        const bType = featItem.bonusType || (dbEntry ? dbEntry.bonusType : null) || 'Inherent';
-        
-        if (dbEntry && (dbEntry.strBonus || dbEntry.dexBonus || dbEntry.conBonus || dbEntry.intBonus || dbEntry.wisBonus || dbEntry.chaBonus)) {
-          if (dbEntry.strBonus) abilityBuckets.str.push({ val: Number(dbEntry.strBonus), type: bType, source: featItem.name || rawName });
-          if (dbEntry.dexBonus) abilityBuckets.dex.push({ val: Number(dbEntry.dexBonus), type: bType, source: featItem.name || rawName });
-          if (dbEntry.conBonus) abilityBuckets.con.push({ val: Number(dbEntry.conBonus), type: bType, source: featItem.name || rawName });
-          if (dbEntry.intBonus) abilityBuckets.int.push({ val: Number(dbEntry.intBonus), type: bType, source: featItem.name || rawName });
-          if (dbEntry.wisBonus) abilityBuckets.wis.push({ val: Number(dbEntry.wisBonus), type: bType, source: featItem.name || rawName });
-          if (dbEntry.chaBonus) abilityBuckets.cha.push({ val: Number(dbEntry.chaBonus), type: bType, source: featItem.name || rawName });
-        } else {
-          const strMatch = combinedText.match(/\+(\d+)\s*(?:str|güç)/i);
-          const dexMatch = combinedText.match(/\+(\d+)\s*(?:dex|çeviklik)/i);
-          const conMatch = combinedText.match(/\+(\d+)\s*(?:con|dayanıklılık)/i);
-          const intMatch = combinedText.match(/\+(\d+)\s*(?:int|zeka)/i);
-          const wisMatch = combinedText.match(/\+(\d+)\s*(?:wis|akıl|irade)/i);
-          const chaMatch = combinedText.match(/\+(\d+)\s*(?:cha|karizma)/i);
-
-          if (strMatch) abilityBuckets.str.push({ val: parseInt(strMatch[1], 10), type: bType, source: featItem.name || rawName });
-          if (dexMatch) abilityBuckets.dex.push({ val: parseInt(dexMatch[1], 10), type: bType, source: featItem.name || rawName });
-          if (conMatch) abilityBuckets.con.push({ val: parseInt(conMatch[1], 10), type: bType, source: featItem.name || rawName });
-          if (intMatch) abilityBuckets.int.push({ val: parseInt(intMatch[1], 10), type: bType, source: featItem.name || rawName });
-          if (wisMatch) abilityBuckets.wis.push({ val: parseInt(wisMatch[1], 10), type: bType, source: featItem.name || rawName });
-          if (chaMatch) abilityBuckets.cha.push({ val: parseInt(chaMatch[1], 10), type: bType, source: featItem.name || rawName });
-        }
-      }
-
-      // 3. Save Bonuses from Feats & Boons (e.g. "Save Magic +1 draconic", "+2 Iron Will")
-      if (cleanName.includes('save magic') || cleanName.includes('draconic save') || combinedText.includes('bonus on saving throws') || combinedText.includes('kurtarma zarlar')) {
-        const insMatch = combinedText.match(/\+(\d+)\s*(?:(insight|draconic|luck|morale|resistance|competence|sacred|profane)\s*)?bonus/i) || cleanName.match(/\+(\d+)/);
-        const bType = (insMatch && insMatch[2]) ? insMatch[2] : (featItem.bonusType || dbEntry?.bonusType || 'Untyped');
-        const val = insMatch ? parseInt(insMatch[1], 10) : (Number(dbEntry?.fortBonus || dbEntry?.saveBonus) || 0);
-        if (val > 0) {
-          saveBonusBuckets.fort.push({ val, type: bType, source: featItem.name || rawName });
-          saveBonusBuckets.ref.push({ val, type: bType, source: featItem.name || rawName });
-          saveBonusBuckets.will.push({ val, type: bType, source: featItem.name || rawName });
-        }
-      }
-
-      // 4. Draconic Toughness (Gain extra maximum HP equal to character level)
-      if (cleanName.includes('draconic toughness') || combinedText.includes('extra maximum hit points equal to character level')) {
-        draconicToughnessHp = charLvl;
-      }
-
-      // 5. Steadfast Determination (PHB II p.83): Use CON modifier instead of WIS modifier on Will saves
-      if (cleanName.includes('steadfast determination') || combinedText.includes('constitution modifier instead of wisdom modifier for will')) {
+      const rf = { ...(dbEntry?.ruleFlags || {}), ...(featObj.ruleFlags || {}) };
+      if (rf.conToWillSave || cleanName.includes('steadfast determination')) {
         hasSteadfastDetermination = true;
       }
+      if (rf.hpPerLevel || cleanName.includes('draconic toughness')) {
+        draconicToughnessHp = Math.max(draconicToughnessHp, charLvl);
+      }
 
-      // 6. Dodge Bonus from Feats / Boons (e.g. Boon of Elusiveness +2 Dodge AC, Dodge feat)
-      const dodgeMatch = combinedText.match(/\+(\d+)\s*dodge\s*(?:bonus\s*to\s*)?(?:ac|armor class)?/i) || combinedText.match(/gain\s*\+(\d+)\s*dodge/i);
-      if (dodgeMatch) {
-        const dVal = parseInt(dodgeMatch[1], 10);
-        if (dVal > 0) {
-          dodgeBonuses.push({ val: dVal, source: featItem.name || rawName, type: 'Dodge' });
+      // Dynamic scaling natural armor boons (e.g. "Nat AC 2+1/4lvl") if not already in V2 modifiers
+      if (featMods.length === 0 && (cleanName.includes('nat ac') || cleanName.includes('natural armor') || cleanName.includes('doğal zırh'))) {
+        const desc = String(featObj.benefit || featObj.desc || featObj.description || dbEntry?.benefit || dbEntry?.description || '').toLowerCase();
+        let natVal = this.evaluateScalingBonus(cleanName, charLvl) || this.evaluateScalingBonus(desc, charLvl);
+        if (natVal > 0) {
+          naturalBonuses.push({ val: natVal, source: rawName, type: 'Natural' });
         }
       }
     });
 
-    // 3.8. Collect slotless or wondrous gear pool items with saveBonus or skillBonuses (e.g. Luckstone, Pale Green Ioun Stone)
+    // 3.8. Collect Slotless or Wondrous Gear Pool Items (e.g. Stone of Good Luck, Pale Green Ioun Stone)
     if (Array.isArray(character.gearPool)) {
-      character.gearPool.forEach(item => {
-        if (!item || !item.name) return;
-        const cleanItemName = item.name.toLowerCase().trim();
-        const dbEntry = (Array.isArray(masterDb) ? masterDb.find(m => (m.name || '').toLowerCase().trim() === cleanItemName) : null)
-          || ((typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) ? window.BUNDLED_SRD_CORE_CATALOG.find(m => (m.name || '').toLowerCase().trim() === cleanItemName) : null);
-        const saveVal = item.saveBonus || dbEntry?.saveBonus;
-        const bType = item.bonusType || dbEntry?.bonusType || 'Luck';
-        if (saveVal) {
-          saveBonusBuckets.fort.push({ val: Number(saveVal), type: bType, source: item.name });
-          saveBonusBuckets.ref.push({ val: Number(saveVal), type: bType, source: item.name });
-          saveBonusBuckets.will.push({ val: Number(saveVal), type: bType, source: item.name });
+      character.gearPool.forEach(rawItem => {
+        if (!rawItem || !rawItem.name) return;
+        const item = this.ensureV2Entry(rawItem);
+        const dbEntry = this.getMasterDbEntry(item);
+        const isSlotless = (item.slot || dbEntry?.slot || '').toLowerCase().includes('slotless')
+          || (item.category || '').toLowerCase() === 'other';
+        if (!item.isEquipped && !isSlotless) return;
+
+        const itemMods = (Array.isArray(item.modifiers) && item.modifiers.length > 0)
+          ? item.modifiers
+          : (dbEntry && Array.isArray(dbEntry.modifiers) ? dbEntry.modifiers : []);
+        // Only apply save/ability/luck modifiers for slotless/gearPool items that aren't already in bodySlots
+        const inBodySlot = character.bodySlots && Object.values(character.bodySlots).some(s => s && s.active !== false && (s.id === item.id || s.name === item.name));
+        if (!inBodySlot && itemMods.length > 0) {
+          applyV2Modifiers(itemMods, item.name, 'item', evalContext);
         }
       });
     }
 
-    // 3.9. Collect Racial Ability Modifiers from canonical Race (D&D 3.5e RAW)
+    // 3.9. Collect Racial Modifiers from Canonical V2 Race Entry (D&D 3.5e RAW)
     if (character.race) {
-      const curRaceName = String(character.race).toLowerCase().trim();
-      const raceObj = (Array.isArray(masterDb) ? masterDb.find(m => m && (m.type === 'Race' || String(m.type).toLowerCase() === 'race') && (m.name || '').toLowerCase().trim() === curRaceName) : null)
-        || ((typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) ? window.BUNDLED_SRD_CORE_CATALOG.find(m => m && (m.type === 'Race' || String(m.type).toLowerCase() === 'race') && (m.name || '').toLowerCase().trim() === curRaceName) : null)
-        || ((typeof globalThis !== 'undefined' && Array.isArray(globalThis.BUNDLED_SRD_CORE_CATALOG)) ? globalThis.BUNDLED_SRD_CORE_CATALOG.find(m => m && (m.type === 'Race' || String(m.type).toLowerCase() === 'race') && (m.name || '').toLowerCase().trim() === curRaceName) : null);
-
-      if (raceObj) {
-        const raceLabel = raceObj.name || character.race;
-        if (raceObj.strBonus) abilityBuckets.str.push({ val: Number(raceObj.strBonus), type: 'Racial', source: `${raceLabel} (Irk)` });
-        if (raceObj.dexBonus) abilityBuckets.dex.push({ val: Number(raceObj.dexBonus), type: 'Racial', source: `${raceLabel} (Irk)` });
-        if (raceObj.conBonus) abilityBuckets.con.push({ val: Number(raceObj.conBonus), type: 'Racial', source: `${raceLabel} (Irk)` });
-        if (raceObj.intBonus) abilityBuckets.int.push({ val: Number(raceObj.intBonus), type: 'Racial', source: `${raceLabel} (Irk)` });
-        if (raceObj.wisBonus) abilityBuckets.wis.push({ val: Number(raceObj.wisBonus), type: 'Racial', source: `${raceLabel} (Irk)` });
-        if (raceObj.chaBonus) abilityBuckets.cha.push({ val: Number(raceObj.chaBonus), type: 'Racial', source: `${raceLabel} (Irk)` });
+      const raceObj = this.getMasterDbEntry(character.race, 'Race');
+      if (raceObj && Array.isArray(raceObj.modifiers)) {
+        const raceLabel = `${raceObj.name || character.race} (Irk)`;
+        applyV2Modifiers(raceObj.modifiers, raceLabel, 'race', evalContext);
       }
     }
 
-    // 4. Resolve Stacking for Abilities (RAW: Same types take Math.max, untyped/dodge stack)
+    // 4. Resolve Stacking for Abilities (RAW: Same types take Math.max, untyped/dodge/racial stack)
     if (!character.abilities) character.abilities = {};
     character.abilitySources = abilityBuckets;
     ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(stat => {
@@ -2168,9 +2115,6 @@ const RuleEngine = {
     });
 
     // 4.5. Resolve Dynamic Hit Points (HP) based on Constitution Changes and Debuff Penalties
-    // In D&D 3.5e RAW:
-    // - Con modifier alters maximum and current HP by 1 HP per Hit Die / Level
-    // - Energy Drain / Negative Levels decrease maximum and current HP by 5 HP per level!
     const charFeatNames = (character.feats || []).map(f => (typeof f === 'string' ? f : (f.name || '')).toLowerCase().trim());
     const totalHD = Number(character.level) || (Array.isArray(character.levelProgression) ? character.levelProgression.length : 1);
     const hasFrail = charFeatNames.some(f => f.includes('flaw: frail') || f === 'frail');
@@ -2181,7 +2125,6 @@ const RuleEngine = {
       const newConBonusHp = effectiveConMod * totalHD;
 
       if (character.hp.baseMax === undefined || character.hp.baseMax === null) {
-        // If baseMax not yet set, initialize it from current max (subtracting any previous conBonusHp)
         character.hp.baseMax = Math.max(1, (Number(character.hp.max) || 45) - (Number(character.hp.conBonusHp) || 0) + flawHpPenalty + (Number(character.hp.debuffHpPenalty) || 0));
       }
       if (character.hp.conBonusHp === undefined || character.hp.conBonusHp === null) {
@@ -2213,13 +2156,12 @@ const RuleEngine = {
     let effectiveDodge = this.resolveBonusStacking(dodgeBonuses);
 
     // Tactical stance / combat mode dodge bonuses
-    const bab = Number(character.bab) || 0;
     const combatExpertise = tacticalOptions.combatExpertise || 0;
     const fightingDefensively = tacticalOptions.fightingDefensively || false;
     const totalDefense = tacticalOptions.totalDefense || false;
     const charge = tacticalOptions.charge || false;
 
-    if (charFeatNames.some(f => f === 'dodge')) {
+    if (charFeatNames.some(f => f === 'dodge') && !dodgeBonuses.some(d => (d.source || '').toLowerCase() === 'dodge')) {
       effectiveDodge += 1;
     }
 
@@ -2236,9 +2178,13 @@ const RuleEngine = {
     if (fightingDefensively) effectiveDodge += fightingDefDodge;
     if (totalDefense) effectiveDodge += totalDefDodge;
 
-    // Dex to AC capped by Max Dex
-    const fullDexMod = this.getAbilityMod(character.abilities.dex || 10);
-    const effectiveDex = minMaxDex !== null ? Math.min(fullDexMod, minMaxDex) : fullDexMod;
+    // Dex to AC capped by Max Dex & Condition Flags (Helpless / Paralyzed / Blinded / Stunned / Grappled)
+    const fullDexMod = conditionEffectiveDexZero ? -5 : this.getAbilityMod(character.abilities.dex || 10);
+    let effectiveDex = minMaxDex !== null ? Math.min(fullDexMod, minMaxDex) : fullDexMod;
+    if (conditionLoseDexToAC) {
+      effectiveDex = Math.min(0, effectiveDex);
+      effectiveDodge = 0; // RAW D&D 3.5e: Any condition that makes you lose Dex bonus to AC also makes you lose Dodge bonuses
+    }
 
     // AC Penalties
     let totalPenalty = buffAcPenalty;
@@ -2252,9 +2198,9 @@ const RuleEngine = {
 
     const totalAC = baseAC + effectiveArmor + effectiveShield + effectiveNatural + effectiveDeflection + sizeBonus + effectiveDex + effectiveDodge - totalPenalty;
     const touchAC = baseAC + effectiveDeflection + sizeBonus + effectiveDex + effectiveDodge - totalPenalty;
-    
-    // Flat-footed AC (RAW: retain negative Dex penalty even when flat-footed; retain Dex & Dodge if Uncanny Dodge)
-    const hasUncannyDodge = (character.specialAbilities || []).some(a => (typeof a === 'string' ? a : a.name).toLowerCase().includes('uncanny dodge'));
+
+    // Flat-footed AC (RAW: retain negative Dex penalty even when flat-footed; retain Dex & Dodge if Uncanny Dodge unless immobilized/helpless)
+    const hasUncannyDodge = !conditionEffectiveDexZero && (character.specialAbilities || []).some(a => (typeof a === 'string' ? a : a.name).toLowerCase().includes('uncanny dodge'));
     const flatDex = hasUncannyDodge ? effectiveDex : Math.min(0, fullDexMod);
     const flatDodge = hasUncannyDodge ? effectiveDodge : 0;
     const flatAC = baseAC + effectiveArmor + effectiveShield + effectiveNatural + effectiveDeflection + sizeBonus + flatDex + flatDodge - totalPenalty;
@@ -2274,6 +2220,8 @@ const RuleEngine = {
       touch: touchAC,
       flat: flatAC,
       armorCategory: equippedArmorCategory,
+      loseDexToAC: conditionLoseDexToAC,
+      effectiveDexZero: conditionEffectiveDexZero,
       sources: {
         armor: armorBonuses,
         shield: shieldBonuses,
@@ -2283,7 +2231,6 @@ const RuleEngine = {
       }
     };
 
-    // If character is an NPC with explicit statblock AC, preserve it
     if (character.isNpc && character.ac && character.ac.total) {
       character.acBreakdown.total = character.ac.total;
       character.acBreakdown.touch = character.ac.touch !== undefined ? character.ac.touch : character.ac.total;
@@ -2292,7 +2239,7 @@ const RuleEngine = {
 
     // 6. Resolve Saving Throws
     const conMod = this.getAbilityMod(character.abilities.con || 10);
-    const dexMod = this.getAbilityMod(character.abilities.dex || 10);
+    const dexMod = conditionEffectiveDexZero ? -5 : this.getAbilityMod(character.abilities.dex || 10);
     const wisMod = this.getAbilityMod(character.abilities.wis || 10);
     const intMod = this.getAbilityMod(character.abilities.int || 10);
 
@@ -2303,37 +2250,38 @@ const RuleEngine = {
     if (!character.saveBonuses) character.saveBonuses = {};
     character.saveBonuses.resistance = resistBonus;
 
-    const featFortBonus = charFeatNames.some(f => f.includes('great fortitude')) ? 2 : 0;
-    const featRefBonus = charFeatNames.some(f => f.includes('lightning reflexes')) ? 2 : 0;
-    const featWillBonus = charFeatNames.some(f => f.includes('iron will')) ? 2 : 0;
-    const flawRefPenalty = charFeatNames.some(f => f.includes('flaw: poor reflexes') || f === 'poor reflexes') ? 2 : 0;
+    // Ensure Great Fortitude / Lightning Reflexes / Iron Will apply even if stored as plain strings
+    if (charFeatNames.some(f => f.includes('great fortitude')) && !saveBonusBuckets.fort.some(b => (b.source || '').toLowerCase().includes('great fortitude'))) {
+      saveBonusBuckets.fort.push({ val: 2, type: 'Untyped', source: 'Great Fortitude' });
+    }
+    if (charFeatNames.some(f => f.includes('lightning reflexes')) && !saveBonusBuckets.ref.some(b => (b.source || '').toLowerCase().includes('lightning reflexes'))) {
+      saveBonusBuckets.ref.push({ val: 2, type: 'Untyped', source: 'Lightning Reflexes' });
+    }
+    if (charFeatNames.some(f => f.includes('iron will')) && !saveBonusBuckets.will.some(b => (b.source || '').toLowerCase().includes('iron will'))) {
+      saveBonusBuckets.will.push({ val: 2, type: 'Untyped', source: 'Iron Will' });
+    }
+    if (charFeatNames.some(f => f.includes('flaw: poor reflexes') || f === 'poor reflexes')) {
+      saveBonusBuckets.ref.push({ val: -2, type: 'penalty', source: 'Flaw: Poor Reflexes' });
+    }
+
     const miscSaveBonus = (character.saveBonuses?.bonus || 0) + (character.saveBonuses?.misc || 0);
-
-    // Battle Clarity (Warblade 1): Add INT modifier (max Warblade lvl) to Reflex saves
-    const charClassNames = (character.classes || '').toLowerCase();
-    const isWarblade = charClassNames.includes('warblade') || (Array.isArray(character.levelProgression) && character.levelProgression.some(l => (l.className || '').toLowerCase().includes('warblade')));
-    const hasBattleClarity = (character.specialAbilities || []).some(a => (typeof a === 'string' ? a : (a.name || '')).toLowerCase().includes('battle clarity')) || isWarblade;
-    const warbladeLvl = (Array.isArray(character.levelProgression) ? character.levelProgression.filter(l => (l.className || '').toLowerCase().includes('warblade')).length : 0) || (isWarblade ? 1 : 0);
-    const battleClarityBonus = hasBattleClarity ? Math.min(warbladeLvl, Math.max(0, intMod)) : 0;
-
-    if (featFortBonus > 0) saveBonusBuckets.fort.push({ val: featFortBonus, type: 'Untyped', source: 'Great Fortitude' });
-    if (featRefBonus > 0) saveBonusBuckets.ref.push({ val: featRefBonus, type: 'Untyped', source: 'Lightning Reflexes' });
-    if (featWillBonus > 0) saveBonusBuckets.will.push({ val: featWillBonus, type: 'Untyped', source: 'Iron Will' });
-    if (flawRefPenalty > 0) saveBonusBuckets.ref.push({ val: -flawRefPenalty, type: 'penalty', source: 'Flaw: Poor Reflexes' });
     if (miscSaveBonus > 0) {
       saveBonusBuckets.fort.push({ val: miscSaveBonus, type: 'Untyped', source: 'Misc Save Bonus' });
       saveBonusBuckets.ref.push({ val: miscSaveBonus, type: 'Untyped', source: 'Misc Save Bonus' });
       saveBonusBuckets.will.push({ val: miscSaveBonus, type: 'Untyped', source: 'Misc Save Bonus' });
     }
-    if (character.saveBonuses?.fortBonus) saveBonusBuckets.fort.push({ val: character.saveBonuses.fortBonus, type: 'Untyped', source: 'Manual Fort Bonus' });
-    if (character.saveBonuses?.refBonus) saveBonusBuckets.ref.push({ val: character.saveBonuses.refBonus, type: 'Untyped', source: 'Manual Ref Bonus' });
-    if (character.saveBonuses?.willBonus) saveBonusBuckets.will.push({ val: character.saveBonuses.willBonus, type: 'Untyped', source: 'Manual Will Bonus' });
+
+    // Battle Clarity (Warblade 1): Add INT modifier (max Warblade lvl) to Reflex saves when not flat-footed
+    const charClassNames = (character.classes || '').toLowerCase();
+    const isWarblade = charClassNames.includes('warblade') || (Array.isArray(character.levelProgression) && character.levelProgression.some(l => (l.className || '').toLowerCase().includes('warblade')));
+    const hasBattleClarity = (character.specialAbilities || []).some(a => (typeof a === 'string' ? a : (a.name || '')).toLowerCase().includes('battle clarity')) || isWarblade;
+    const warbladeLvl = (Array.isArray(character.levelProgression) ? character.levelProgression.filter(l => (l.className || '').toLowerCase().includes('warblade')).length : 0) || (isWarblade ? 1 : 0);
+    const battleClarityBonus = (hasBattleClarity && !conditionLoseDexToAC) ? Math.min(warbladeLvl, Math.max(0, intMod)) : 0;
 
     const netBonusFort = this.resolveBonusStacking(saveBonusBuckets.fort);
     const netBonusRef = this.resolveBonusStacking(saveBonusBuckets.ref) + battleClarityBonus;
     const netBonusWill = this.resolveBonusStacking(saveBonusBuckets.will);
 
-    // Steadfast Determination (PHB II p.83): Use CON modifier instead of WIS modifier on Will saves
     const willStatMod = hasSteadfastDetermination ? conMod : wisMod;
 
     const finalFort = baseFort + conMod + netBonusFort;
@@ -2350,21 +2298,24 @@ const RuleEngine = {
       battleClarityBonus: battleClarityBonus
     };
 
-    // If character is an NPC with explicit statblock saves, preserve them
     if (character.isNpc && character.saves) {
       if (character.saves.fort?.total !== undefined) character.evaluatedSaves.fort = character.saves.fort.total;
       if (character.saves.ref?.total !== undefined) character.evaluatedSaves.ref = character.saves.ref.total;
       if (character.saves.will?.total !== undefined) character.evaluatedSaves.will = character.saves.will.total;
     }
 
-    // 7. Resolve Effective Speed (RAW D&D 3.5e Table 8-2: Armor and Speed)
+    // 7. Resolve Effective Speed (RAW D&D 3.5e Table 8-2: Armor and Speed + Condition Half-Speed)
     const baseSpeed = character.baseSpeed || 30;
     const isDwarf = (character.race || '').toLowerCase().includes('dwarf');
     let armorSpeedPenalty = 0;
     if (!isDwarf && (equippedArmorCategory === 'Medium' || equippedArmorCategory === 'Heavy')) {
       armorSpeedPenalty = (baseSpeed > 20) ? 10 : 5;
     }
-    character.effectiveSpeed = Math.max(5, baseSpeed - armorSpeedPenalty + itemSpeedBonus + buffSpeedBonus);
+    let calcSpeed = Math.max(5, baseSpeed - armorSpeedPenalty + itemSpeedBonus + buffSpeedBonus - buffSpeedPenalty);
+    if (conditionHalfSpeed) {
+      calcSpeed = Math.max(5, Math.floor(calcSpeed / 10) * 5 || 5);
+    }
+    character.effectiveSpeed = calcSpeed;
     character.effectiveArmorCategory = equippedArmorCategory;
     character.buffSkillBonus = buffSkillBonus;
 
@@ -2377,7 +2328,8 @@ const RuleEngine = {
       abilities: character.abilities,
       saves: character.evaluatedSaves,
       ruleFlags: character.ruleFlags,
-      actionEconomy: character.actionEconomy
+      actionEconomy: character.actionEconomy,
+      activeConditionWarnings: character.activeConditionWarnings
     };
   },
 
@@ -2472,12 +2424,11 @@ const RuleEngine = {
     };
   },
 
-  // Evaluate Passive / Rule Flags across feats, abilities and buffs
+  // Evaluate Passive / Rule Flags across feats, abilities and buffs (Canonical V2)
   evaluateRuleFlags(character) {
     if (!character) return {};
     const feats = (character.feats || []).map(f => (typeof f === 'string' ? f : f.name || '').toLowerCase());
-    const buffs = (character.buffs || []).filter(b => b && b.active).map(b => (b.name || '').toLowerCase());
-    
+
     const flags = {
       allowFlatFootedAoO: feats.some(f => f.includes('combat reflexes')),
       disabledAtNegativeHp: feats.some(f => f.includes('diehard')),
@@ -2490,6 +2441,11 @@ const RuleEngine = {
       hasSpiritedCharge: feats.some(f => f.includes('spirited charge')),
       hasRideByAttack: feats.some(f => f.includes('ride-by attack') || f.includes('ride by attack')),
       hasMountedCombat: feats.some(f => f.includes('mounted combat')),
+      loseDexToAC: false,
+      effectiveDexZero: false,
+      halfSpeed: false,
+      extraAttackFullAttack: false,
+      actionRestriction: null,
       opposedCheckBonus: {
         trip: feats.some(f => f.includes('improved trip')) ? 4 : 0,
         disarm: feats.some(f => f.includes('improved disarm')) ? 4 : 0,
@@ -2500,17 +2456,29 @@ const RuleEngine = {
       }
     };
 
-    // Merge explicit declarative ruleFlags from character feat objects if present
+    const mergeFlags = (rf) => {
+      if (!rf || typeof rf !== 'object') return;
+      Object.entries(rf).forEach(([k, v]) => {
+        if (k === 'opposedCheckBonus' && typeof v === 'object') {
+          Object.assign(flags.opposedCheckBonus, v);
+        } else if (v !== undefined && v !== null && v !== false) {
+          flags[k] = v;
+        }
+      });
+    };
+
+    // Merge declarative ruleFlags from character feats & Compendium entries
     (character.feats || []).forEach(f => {
-      if (typeof f === 'object' && f && f.ruleFlags) {
-        Object.entries(f.ruleFlags).forEach(([k, v]) => {
-          if (k === 'opposedCheckBonus' && typeof v === 'object') {
-            Object.assign(flags.opposedCheckBonus, v);
-          } else {
-            flags[k] = v;
-          }
-        });
-      }
+      if (typeof f === 'object' && f && f.ruleFlags) mergeFlags(f.ruleFlags);
+      const dbFeat = this.getMasterDbEntry(f, 'Feat');
+      if (dbFeat && dbFeat.ruleFlags) mergeFlags(dbFeat.ruleFlags);
+    });
+
+    // Merge declarative ruleFlags from active buffs & conditions
+    (character.buffs || []).forEach(b => {
+      if (!b || !b.active) return;
+      const v2Buff = this.ensureV2Entry(b);
+      if (v2Buff.ruleFlags) mergeFlags(v2Buff.ruleFlags);
     });
 
     return flags;
@@ -2650,13 +2618,42 @@ const RuleEngine = {
     return baseDiceStr;
   },
 
-  // Evaluate Weapon Attack Modifiers & Damage
-  evaluateWeaponAttack(character, weapon, options = {}) {
+  // Evaluate Weapon Attack Modifiers, Embedded Modes & Canonical V2 DamageParts
+  evaluateWeaponAttack(character, rawWeapon, options = {}) {
+    if (!character || !rawWeapon) return {};
+
+    // 0. Ensure Weapon is Canonical V2 & Resolve Active Embedded Mode
+    const v2Weapon = this.ensureV2Entry(rawWeapon);
+    const dbWeapon = this.getMasterDbEntry(v2Weapon, 'Weapon');
+    const modes = Array.isArray(v2Weapon.modes) && v2Weapon.modes.length > 0
+      ? v2Weapon.modes
+      : (dbWeapon && Array.isArray(dbWeapon.modes) ? dbWeapon.modes : []);
+
+    const activeModeId = options.modeId !== undefined ? options.modeId : v2Weapon.activeModeId;
+    const activeMode = (activeModeId && modes.length > 0)
+      ? (modes.find(m => m && (m.id === activeModeId || m.name === activeModeId)) || null)
+      : null;
+
+    // Effective weapon merges active mode overrides onto parent V2 weapon
+    const weapon = activeMode ? {
+      ...v2Weapon,
+      grip: activeMode.grip || v2Weapon.grip,
+      isRanged: activeMode.isRanged !== undefined ? activeMode.isRanged : v2Weapon.isRanged,
+      range: activeMode.range !== undefined ? activeMode.range : v2Weapon.range,
+      damageParts: (Array.isArray(activeMode.damageParts) && activeMode.damageParts.length > 0)
+        ? activeMode.damageParts
+        : v2Weapon.damageParts,
+      modifiers: [
+        ...(Array.isArray(v2Weapon.modifiers) ? v2Weapon.modifiers : []),
+        ...(Array.isArray(activeMode.modifiers) ? activeMode.modifiers : [])
+      ]
+    } : v2Weapon;
+
     const isTwoHand = this.isTwoHandedWeapon(weapon);
     let resolvedGrip = options.grip || weapon.grip || (isTwoHand ? '2-Hand' : '1-Hand');
 
-    // Two-handed weapon MUST be wielded with 2-Hand grip per D&D 3.5e RAW
-    if (isTwoHand && resolvedGrip !== '2-Hand') {
+    // Two-handed weapon MUST be wielded with 2-Hand grip per D&D 3.5e RAW (unless in a thrown/ranged mode)
+    if (isTwoHand && resolvedGrip !== '2-Hand' && resolvedGrip !== 'Ranged') {
       resolvedGrip = '2-Hand';
     }
 
@@ -2672,30 +2669,41 @@ const RuleEngine = {
       manyshotArrows: optManyshotArrows = 0
     } = options;
 
+    const charLvl = Number(character.level) || 1;
+    const bab = Number(character.bab) || 0;
+    const strMod = this.getAbilityMod(character.abilities?.str || 10);
+    const dexMod = this.getAbilityMod(character.abilities?.dex || 10);
+    const evalCtx = {
+      cl: charLvl,
+      level: charLvl,
+      bab,
+      strMod,
+      dexMod,
+      enhancement: Number(weapon.enhancementBonus) || 0
+    };
+
     const houseRules = options.houseRules || character?.houseRules || {};
     const critData = this.evaluateCritThreatRange(weapon, character, houseRules);
     const chargeData = this.evaluateChargeDamage(weapon, character, options);
     const ruleFlags = this.evaluateRuleFlags(character);
 
-    const bab = Number(character.bab) || 0;
-    const strMod = this.getAbilityMod(character.abilities?.str || 10);
-    const dexMod = this.getAbilityMod(character.abilities?.dex || 10);
-
-    // Feat detections (strip "+N" enhancement or "(...)" suffixes from weapon name when matching Weapon Focus)
-    const baseWepName = (weapon.name || '').toLowerCase().replace(/\+\d+/g, '').replace(/\(.*?\)/g, '').trim();
-    const feats = (character.feats || []).map(f => (typeof f === 'string' ? f : f.name).toLowerCase());
+    // Feat detections (match via baseItemId or stripped weapon name)
+    const baseWepName = (weapon.baseItemId || weapon.name || '').toLowerCase().replace(/^wep_/, '').replace(/_/g, ' ').replace(/\+\d+/g, '').replace(/\(.*?\)/g, '').trim();
+    const feats = (character.feats || []).map(f => (typeof f === 'string' ? f : f.name || '').toLowerCase());
     const hasWeaponFinesse = feats.some(f => f.includes('weapon finesse'));
     const hasShadowBlade = feats.some(f => f.includes('shadow blade'));
-    const hasWeaponFocus = feats.some(f => f.includes('weapon focus') && ((baseWepName && f.includes(baseWepName)) || f.includes(weapon.name.toLowerCase()) || f.includes('all')));
-    const hasGreaterWeaponFocus = feats.some(f => f.includes('greater weapon focus') && ((baseWepName && f.includes(baseWepName)) || f.includes(weapon.name.toLowerCase()) || f.includes('all')));
-    const hasWeaponSpec = feats.some(f => f.includes('weapon specialization') && ((baseWepName && f.includes(baseWepName)) || f.includes(weapon.name.toLowerCase()) || f.includes('all')));
-    const hasGreaterWeaponSpec = feats.some(f => f.includes('greater weapon specialization') && ((baseWepName && f.includes(baseWepName)) || f.includes(weapon.name.toLowerCase()) || f.includes('all')));
+    const hasWeaponFocus = feats.some(f => f.includes('weapon focus') && !f.includes('greater weapon focus') && ((baseWepName && f.includes(baseWepName)) || f.includes((weapon.name || '').toLowerCase()) || f.includes('all')));
+    const hasGreaterWeaponFocus = feats.some(f => f.includes('greater weapon focus') && ((baseWepName && f.includes(baseWepName)) || f.includes((weapon.name || '').toLowerCase()) || f.includes('all')));
+    const hasWeaponSpec = feats.some(f => f.includes('weapon specialization') && !f.includes('greater weapon specialization') && ((baseWepName && f.includes(baseWepName)) || f.includes((weapon.name || '').toLowerCase()) || f.includes('all')));
+    const hasGreaterWeaponSpec = feats.some(f => f.includes('greater weapon specialization') && ((baseWepName && f.includes(baseWepName)) || f.includes((weapon.name || '').toLowerCase()) || f.includes('all')));
+
+    const isRangedWep = grip === 'Ranged' || weapon.isRanged || (Array.isArray(weapon.tags) && weapon.tags.includes('ranged')) || (weapon.weaponStats && weapon.weaponStats.category === 'Ranged');
 
     // 1. Attack Stat Calculation
-    let attackStatMod = strMod;
-    let attackStatName = 'STR';
+    let attackStatMod = isRangedWep ? dexMod : strMod;
+    let attackStatName = isRangedWep ? 'DEX (Ranged)' : 'STR';
 
-    if (hasWeaponFinesse && this.isFinessable(weapon) && dexMod > strMod) {
+    if (!isRangedWep && hasWeaponFinesse && this.isFinessable(weapon) && dexMod > strMod) {
       attackStatMod = dexMod;
       attackStatName = 'DEX (Weapon Finesse)';
     }
@@ -2703,7 +2711,6 @@ const RuleEngine = {
     // Power attack penalty: cannot exceed BAB
     const effectivePA = Math.min(bab, Math.max(0, Number(powerAttack) || 0));
 
-    // Attack bonuses list
     const attackBonusItems = [
       { type: 'untyped', val: bab, source: 'BAB' },
       { type: 'untyped', val: attackStatMod, source: attackStatName },
@@ -2723,13 +2730,13 @@ const RuleEngine = {
       attackBonusItems.push({ type: 'penalty', val: -4, source: 'Non-Proficient Weapon Penalty (-4 Att)' });
     }
 
-    // Armor Non-Proficiency Check (RAW D&D 3.5e PHB p. 122: Armor Check Penalty applies to attack rolls)
+    // Armor Non-Proficiency Check
     if (character.bodySlots && character.bodySlots.armor) {
       const armorItem = character.bodySlots.armor;
       if (armorItem && armorItem.name && armorItem.name !== '-' && armorItem.active !== false) {
         const isArmorProf = this.isProficientWithArmor(character, armorItem);
         if (!isArmorProf) {
-          const armorMods = this.parseItemModifiers(armorItem, (typeof masterDb !== 'undefined' ? masterDb : []));
+          const armorMods = this.parseItemModifiers(armorItem, (typeof masterDb !== 'undefined' ? masterDb : []), evalCtx);
           const armorAcp = armorMods ? armorMods.acp : 0;
           if (armorAcp < 0) {
             attackBonusItems.push({
@@ -2742,14 +2749,14 @@ const RuleEngine = {
       }
     }
 
-    // Shield Non-Proficiency Check (RAW D&D 3.5e PHB p. 122: Shield Check Penalty applies to attack rolls, stacks with armor)
+    // Shield Non-Proficiency Check
     if (character.bodySlots && character.bodySlots.offHand) {
       const offHandItem = character.bodySlots.offHand;
       if (offHandItem && offHandItem.name && offHandItem.name !== '-' && offHandItem.active !== false) {
         if (this.isShieldItem(offHandItem)) {
           const isShieldProf = this.isProficientWithShield(character, offHandItem);
           if (!isShieldProf) {
-            const shieldMods = this.parseItemModifiers(offHandItem, (typeof masterDb !== 'undefined' ? masterDb : []));
+            const shieldMods = this.parseItemModifiers(offHandItem, (typeof masterDb !== 'undefined' ? masterDb : []), evalCtx);
             const shieldAcp = shieldMods ? shieldMods.acp : 0;
             if (shieldAcp < 0) {
               attackBonusItems.push({
@@ -2771,17 +2778,15 @@ const RuleEngine = {
 
     // Monkey Grip penalty: -2 on attack rolls when wielding an oversized weapon
     const hasMonkeyGrip = feats.some(f => f.includes('monkey grip'));
-    const isOversizedWeapon = weapon.isOversized || weapon.oversized || (weapon.tags && weapon.tags.includes('oversized'));
+    const isOversizedWeapon = weapon.isOversized || weapon.oversized || (Array.isArray(weapon.tags) && weapon.tags.includes('oversized'));
     if (isOversizedWeapon && hasMonkeyGrip) {
       attackBonusItems.push({ type: 'untyped', val: -2, source: 'Monkey Grip (-2 Att)' });
     }
 
-    // Flaw: Noncombatant (-2 penalty on all melee attack rolls)
-    const isRangedWep = grip === 'Ranged' || weapon.isRanged || (weapon.tags && weapon.tags.includes('ranged'));
+    // Flaw: Noncombatant (-2 Melee) & Flaw: Shaky (-2 Ranged)
     if (!isRangedWep && feats.some(f => f.includes('flaw: noncombatant') || f === 'noncombatant')) {
       attackBonusItems.push({ type: 'untyped', val: -2, source: 'Flaw: Noncombatant (-2 Melee)' });
     }
-    // Flaw: Shaky (-2 penalty on all ranged attack rolls)
     if (isRangedWep && feats.some(f => f.includes('flaw: shaky') || f === 'shaky')) {
       attackBonusItems.push({ type: 'untyped', val: -2, source: 'Flaw: Shaky (-2 Ranged)' });
     }
@@ -2793,9 +2798,37 @@ const RuleEngine = {
       attackBonusItems.push({ type: 'untyped', val: -penalty, source: `Manyshot (${effectiveManyshotArrows} Ok / -${penalty} Atk)` });
     }
 
-    if (weapon.attBonus) {
-      attackBonusItems.push({ type: weapon.bonusType || 'enhancement', val: weapon.attBonus, source: 'Weapon Enhancement' });
+    const isAtkTargetMatch = (t) => (
+      t === 'attack' || t === 'attack.all' ||
+      ((t === 'meleeattack' || t === 'attack.melee') && !isRangedWep) ||
+      ((t === 'rangedattack' || t === 'attack.ranged') && isRangedWep)
+    );
+    const isDmgTargetMatch = (t) => (
+      t === 'damage' || t === 'damage.all' ||
+      ((t === 'meleedamage' || t === 'damage.melee') && !isRangedWep) ||
+      ((t === 'rangeddamage' || t === 'damage.ranged') && isRangedWep)
+    );
+
+    // Weapon V2 Attack Modifiers & Enhancement Bonus
+    const wepMods = Array.isArray(weapon.modifiers) ? weapon.modifiers : [];
+    let hasExplicitWepAtkMod = false;
+    wepMods.forEach(m => {
+      if (!m || !m.target) return;
+      const t = String(m.target).toLowerCase();
+      if (isAtkTargetMatch(t)) {
+        const val = Number(this.evaluateFormula(m.value !== undefined ? m.value : m.formula, evalCtx)) || 0;
+        if (val !== 0) {
+          attackBonusItems.push({ type: (m.type || 'enhancement').toLowerCase(), val, source: m.source || 'Weapon Enhancement' });
+          hasExplicitWepAtkMod = true;
+        }
+      }
+    });
+    if (!hasExplicitWepAtkMod && Number(weapon.enhancementBonus) > 0) {
+      attackBonusItems.push({ type: 'enhancement', val: Number(weapon.enhancementBonus), source: 'Weapon Enhancement' });
+    } else if (!hasExplicitWepAtkMod && weapon.isMasterwork) {
+      attackBonusItems.push({ type: 'enhancement', val: 1, source: 'Masterwork Weapon' });
     }
+
     if (hasWeaponFocus) {
       attackBonusItems.push({ type: 'untyped', val: 1, source: 'Weapon Focus' });
     }
@@ -2812,44 +2845,60 @@ const RuleEngine = {
       attackBonusItems.push({ type: 'untyped', val: 1, source: 'Higher Ground' });
     }
 
-    // Add active external attack modifiers from tactical list
+    // External custom modifiers
     customModifiers.forEach(m => {
-      if (m.bonusAtk) {
+      if (!m) return;
+      if (Array.isArray(m.modifiers)) {
+        m.modifiers.forEach(mod => {
+          const t = String(mod.target || '').toLowerCase();
+          if (isAtkTargetMatch(t)) {
+            const v = Number(this.evaluateFormula(mod.value !== undefined ? mod.value : mod.formula, evalCtx)) || 0;
+            if (v !== 0) attackBonusItems.push({ type: mod.type || 'untyped', val: v, source: m.name });
+          }
+        });
+      } else if (m.bonusAtk) {
         attackBonusItems.push({ type: m.bonusType || 'untyped', val: m.bonusAtk, source: m.name });
       }
     });
 
-    // Add bonuses from active buffs and child debuffs (Bless, Haste, Prayer, Energy Drain, Sickened, etc.)
+    // Active Buffs & Conditions V2 Attack Modifiers
     if (Array.isArray(character.buffs)) {
-      character.buffs.forEach(b => {
-        if (!b || !b.active) return;
-        const hasChildren = Array.isArray(b.children) && b.children.length > 0;
-        if (!hasChildren) {
-          if (b.attBonus) {
-            attackBonusItems.push({ type: b.bonusType || (b.isDebuff || b.attBonus < 0 ? 'penalty' : 'untyped'), val: b.attBonus, source: b.name });
-          }
-          if (b.negativeLevels) {
-            attackBonusItems.push({ type: 'penalty', val: -b.negativeLevels, source: `${b.name} (-${b.negativeLevels} Lvl)` });
-          }
-        } else {
-          b.children.forEach(c => {
-            if (c.attBonus) {
-              attackBonusItems.push({ type: c.bonusType || 'penalty', val: c.attBonus, source: `${b.name} → ${c.name}` });
+      character.buffs.forEach(rawBuff => {
+        if (!rawBuff || !rawBuff.active) return;
+        const b = this.ensureV2Entry(rawBuff);
+        const bCtx = { ...evalCtx, cl: Number(b.casterLevel || charLvl) || charLvl };
+        let appliedNegLvlAtk = false;
+        if (Array.isArray(b.modifiers)) {
+          b.modifiers.forEach(mod => {
+            if (!mod || !mod.target) return;
+            const t = String(mod.target).toLowerCase();
+            if (isAtkTargetMatch(t)) {
+              const val = Number(this.evaluateFormula(mod.value !== undefined ? mod.value : mod.formula, bCtx)) || 0;
+              if (val !== 0) {
+                attackBonusItems.push({
+                  type: mod.type || (b.isDebuff || val < 0 ? 'penalty' : 'untyped'),
+                  val,
+                  source: b.name
+                });
+                if (b.negativeLevels && val < 0) appliedNegLvlAtk = true;
+              }
             }
           });
+        }
+        if (b.negativeLevels && !appliedNegLvlAtk) {
+          attackBonusItems.push({ type: 'penalty', val: -Number(b.negativeLevels), source: `${b.name} (-${b.negativeLevels} Lvl)` });
         }
       });
     }
 
     const netAttackBonus = this.resolveBonusStacking(attackBonusItems);
 
-    // 2. Damage Calculation (RAW D&D 3.5e)
+    // 2. Damage Calculation (RAW D&D 3.5e + Canonical V2 damageParts)
     const isLightWep = this.isLightWeapon(weapon);
     const isCrossbow = baseWepName.includes('crossbow');
     const isBow = baseWepName.includes('bow') && !isCrossbow;
     const isRapier = baseWepName.includes('rapier');
 
-    // Power Attack Multiplier: 0 for light or ranged weapons; 1 for 1-hand; 2 for 2-hand (except rapier: strictly 1 per RAW)
     let paDamageMultiplier = 1;
     if (isLightWep || isRangedWep) {
       paDamageMultiplier = 0;
@@ -2863,12 +2912,6 @@ const RuleEngine = {
       paDamageMultiplier = 1;
     }
 
-    // STR Damage Calculation per RAW D&D 3.5e:
-    // - Negative STR: applied in full to all melee/thrown/bow attacks; NOT multiplied by 1.5 or halved to 0.5. Crossbows ignore even negative STR.
-    // - Crossbow: No STR bonus or penalty to damage.
-    // - Regular Bow: No STR bonus; full negative STR penalty.
-    // - Composite Bow: STR bonus capped by composite rating; full negative STR penalty.
-    // - Rapier: Cannot benefit from 1.5x STR when wielded two-handed (strictly 1.0x).
     let baseStrDmg = 0;
     let strDesc = `STR (${grip})`;
 
@@ -2889,13 +2932,10 @@ const RuleEngine = {
         strDesc = 'Regular Bow (No STR Bonus)';
       }
     } else {
-      // Melee & Thrown Weapons
       if (strMod < 0) {
-        // Negative STR is applied in full without multiplication or reduction
         baseStrDmg = strMod;
         strDesc = `STR Penalty (${strMod})`;
       } else if (isRapier) {
-        // Rapier wielded two-handed does NOT get 1.5x STR
         baseStrDmg = (grip === 'Off-Hand') ? Math.floor(strMod * 0.5) : strMod;
         strDesc = (grip === 'Off-Hand') ? 'STR (Off-Hand 0.5x)' : 'STR (Rapier 1.0x)';
       } else if (grip === '2-Hand') {
@@ -2917,9 +2957,23 @@ const RuleEngine = {
       { type: 'untyped', val: paDmg, source: `Power Attack (${paDamageMultiplier}x)` }
     ];
 
-    if (weapon.dmgBonus) {
-      damageBonusItems.push({ type: weapon.bonusType || 'enhancement', val: weapon.dmgBonus, source: 'Weapon Enhancement' });
+    // Weapon V2 Damage Modifiers & Enhancement Bonus
+    let hasExplicitWepDmgMod = false;
+    wepMods.forEach(m => {
+      if (!m || !m.target) return;
+      const t = String(m.target).toLowerCase();
+      if (isDmgTargetMatch(t)) {
+        const val = Number(this.evaluateFormula(m.value !== undefined ? m.value : m.formula, evalCtx)) || 0;
+        if (val !== 0) {
+          damageBonusItems.push({ type: (m.type || 'enhancement').toLowerCase(), val, source: m.source || 'Weapon Enhancement' });
+          hasExplicitWepDmgMod = true;
+        }
+      }
+    });
+    if (!hasExplicitWepDmgMod && Number(weapon.enhancementBonus) > 0) {
+      damageBonusItems.push({ type: 'enhancement', val: Number(weapon.enhancementBonus), source: 'Weapon Enhancement' });
     }
+
     if (hasWeaponSpec) {
       damageBonusItems.push({ type: 'untyped', val: 2, source: 'Weapon Specialization' });
     }
@@ -2927,26 +2981,41 @@ const RuleEngine = {
       damageBonusItems.push({ type: 'untyped', val: 2, source: 'Greater Weapon Specialization' });
     }
 
-    // Add damage bonuses from customModifiers (e.g. Enhance Arrow, active ability buffs)
+    // External custom modifiers for damage
     customModifiers.forEach(m => {
-      if (m.bonusDmg) {
+      if (!m) return;
+      if (Array.isArray(m.modifiers)) {
+        m.modifiers.forEach(mod => {
+          const t = String(mod.target || '').toLowerCase();
+          if (isDmgTargetMatch(t)) {
+            const v = Number(this.evaluateFormula(mod.value !== undefined ? mod.value : mod.formula, evalCtx)) || 0;
+            if (v !== 0) damageBonusItems.push({ type: mod.type || 'untyped', val: v, source: m.name });
+          }
+        });
+      } else if (m.bonusDmg) {
         damageBonusItems.push({ type: m.bonusType || 'untyped', val: m.bonusDmg, source: m.name });
       }
     });
 
-    // Add damage bonuses from active buffs and child debuffs (Prayer, Divine Favor, Sickened, etc.)
+    // Active Buffs & Conditions V2 Damage Modifiers
     if (Array.isArray(character.buffs)) {
-      character.buffs.forEach(b => {
-        if (!b || !b.active) return;
-        const hasChildren = Array.isArray(b.children) && b.children.length > 0;
-        if (!hasChildren) {
-          if (b.dmgBonus) {
-            damageBonusItems.push({ type: b.bonusType || (b.isDebuff || b.dmgBonus < 0 ? 'penalty' : 'untyped'), val: b.dmgBonus, source: b.name });
-          }
-        } else {
-          b.children.forEach(c => {
-            if (c.dmgBonus) {
-              damageBonusItems.push({ type: c.bonusType || 'penalty', val: c.dmgBonus, source: `${b.name} → ${c.name}` });
+      character.buffs.forEach(rawBuff => {
+        if (!rawBuff || !rawBuff.active) return;
+        const b = this.ensureV2Entry(rawBuff);
+        const bCtx = { ...evalCtx, cl: Number(b.casterLevel || charLvl) || charLvl };
+        if (Array.isArray(b.modifiers)) {
+          b.modifiers.forEach(mod => {
+            if (!mod || !mod.target) return;
+            const t = String(mod.target).toLowerCase();
+            if (isDmgTargetMatch(t)) {
+              const val = Number(this.evaluateFormula(mod.value !== undefined ? mod.value : mod.formula, bCtx)) || 0;
+              if (val !== 0) {
+                damageBonusItems.push({
+                  type: mod.type || (b.isDebuff || val < 0 ? 'penalty' : 'untyped'),
+                  val,
+                  source: b.name
+                });
+              }
             }
           });
         }
@@ -2964,24 +3033,23 @@ const RuleEngine = {
     // Iterative attacks for 3.5e: BAB >= 16 -> 4 attacks (+0/-5/-10/-15), BAB >= 11 -> 3, BAB >= 6 -> 2, otherwise 1
     let iteratives = [netAttackBonus];
     if (effectiveManyshotArrows > 0) {
-      // Manyshot is a single Standard Action attack firing multiple arrows at once
       iteratives = [netAttackBonus];
     } else {
       if (bab >= 6) iteratives.push(netAttackBonus - 5);
       if (bab >= 11) iteratives.push(netAttackBonus - 10);
       if (bab >= 16) iteratives.push(netAttackBonus - 15);
 
-      // Haste grants 1 extra full attack at highest BAB
-      const hasHaste = (character.buffs || []).some(b => b.active && b.name.toLowerCase().includes('haste'));
+      // Haste or extraAttackFullAttack ruleFlag grants 1 extra full attack at highest BAB
+      const hasHaste = ruleFlags.extraAttackFullAttack || (character.buffs || []).some(b => b && b.active && (b.ruleFlags?.extraAttackFullAttack || (b.name || '').toLowerCase().includes('haste')));
       if (hasHaste) {
-        iteratives.unshift(netAttackBonus); // duplicate primary attack
+        iteratives.unshift(netAttackBonus);
       }
     }
 
     const chargeMultiplier = chargeData.multiplier || 1;
     const chargeFlatDamage = netFlatDamage * chargeMultiplier;
 
-    // Check for weapon size modifications from options, weapon properties, or active character buffs
+    // 3. Weapon Size Steps (Enlarge Person, Lead Blades, Greater Mighty Wallop, etc.)
     let effectiveSteps = Number(options.sizeSteps || weapon.sizeSteps || 0);
     const sizeBuffSources = [];
 
@@ -3008,8 +3076,81 @@ const RuleEngine = {
       });
     }
 
-    const rawBaseDice = weapon.extraDmg || weapon.dice || '1d8';
-    const effectiveDice = effectiveSteps !== 0 ? this.stepDamageDice(rawBaseDice, effectiveSteps) : rawBaseDice;
+    // 4. Structured V2 damageParts Evaluation (Base Weapon + Enhancements + Active Buff DamageParts)
+    const rawParts = (Array.isArray(weapon.damageParts) && weapon.damageParts.length > 0)
+      ? weapon.damageParts
+      : (dbWeapon && Array.isArray(dbWeapon.damageParts) && dbWeapon.damageParts.length > 0
+          ? dbWeapon.damageParts
+          : [{ dice: '1d8', bonus: 0, type: 'Slashing', multiplyOnCrit: true, onCritOnly: false, source: 'Base Weapon' }]);
+
+    const combinedRawParts = [...rawParts];
+
+    // Append damageParts from active buffs (e.g. Sneak Attack, Hunter's Mercy, Arcane Wrath)
+    if (Array.isArray(character.buffs)) {
+      character.buffs.forEach(rawBuff => {
+        if (!rawBuff || !rawBuff.active) return;
+        const b = this.ensureV2Entry(rawBuff);
+        if (Array.isArray(b.damageParts) && b.damageParts.length > 0) {
+          b.damageParts.forEach(bp => {
+            if (bp && bp.dice) {
+              combinedRawParts.push({
+                ...bp,
+                source: bp.source || b.name
+              });
+            }
+          });
+        }
+      });
+    }
+
+    const evaluatedDamageParts = combinedRawParts.map((part, idx) => {
+      const isPrimary = idx === 0;
+      const rawDiceStr = String(this.evaluateFormula(part.dice || '1d8', evalCtx) || part.dice || '1d8').trim();
+      const steppedDice = (isPrimary && effectiveSteps !== 0)
+        ? this.stepDamageDice(rawDiceStr, effectiveSteps)
+        : rawDiceStr;
+      const partBonus = isPrimary
+        ? netFlatDamage
+        : (Number(this.evaluateFormula(part.bonus || 0, evalCtx)) || 0);
+      return {
+        dice: steppedDice,
+        rawDice: rawDiceStr,
+        bonus: partBonus,
+        type: part.type || 'Slashing',
+        multiplyOnCrit: part.multiplyOnCrit !== undefined ? !!part.multiplyOnCrit : isPrimary,
+        onCritOnly: !!part.onCritOnly,
+        source: part.source || (isPrimary ? (weapon.name || 'Base Weapon') : 'Extra'),
+        isPrimary
+      };
+    });
+
+    const primaryPart = evaluatedDamageParts[0] || { dice: '1d8', rawDice: '1d8', bonus: netFlatDamage, type: 'Slashing' };
+    const normalDamageParts = evaluatedDamageParts.filter(p => !p.onCritOnly);
+    const extraDamageParts = normalDamageParts.slice(1);
+    const critOnlyDamageParts = evaluatedDamageParts.filter(p => p.onCritOnly);
+
+    // Build ready-to-roll 3D Dice Engine formulas (normal & critical)
+    const primaryFormula = `${primaryPart.dice}${netFlatDamage !== 0 ? (netFlatDamage > 0 ? `+${netFlatDamage}` : `${netFlatDamage}`) : ''}`;
+    const extraDiceTerms = extraDamageParts.map(p => `${p.dice}${p.bonus ? (p.bonus > 0 ? `+${p.bonus}` : `${p.bonus}`) : ''}`);
+    const diceFormula = [primaryFormula, ...extraDiceTerms].join(' + ');
+
+    const critMult = Math.max(2, Number(critData.critMult) || 2);
+    const critTerms = [];
+    for (let i = 0; i < critMult; i++) {
+      critTerms.push(primaryFormula);
+    }
+    extraDamageParts.forEach(p => {
+      const term = `${p.dice}${p.bonus ? (p.bonus > 0 ? `+${p.bonus}` : `${p.bonus}`) : ''}`;
+      if (p.multiplyOnCrit) {
+        for (let i = 0; i < critMult; i++) critTerms.push(term);
+      } else {
+        critTerms.push(term);
+      }
+    });
+    critOnlyDamageParts.forEach(p => {
+      critTerms.push(`${p.dice}${p.bonus ? (p.bonus > 0 ? `+${p.bonus}` : `${p.bonus}`) : ''}`);
+    });
+    const critDiceFormula = critTerms.join(' + ');
 
     return {
       netAttackBonus,
@@ -3017,12 +3158,22 @@ const RuleEngine = {
       attackStatName,
       attackStatMod,
       effectivePA,
-      rawBaseDice,
-      baseDice: effectiveDice,
-      effectiveDice,
+      rawBaseDice: primaryPart.rawDice,
+      baseDice: primaryPart.dice,
+      effectiveDice: primaryPart.dice,
       sizeSteps: effectiveSteps,
       sizeBuffSources,
       netFlatDamage,
+      damageParts: evaluatedDamageParts,
+      normalDamageParts,
+      extraDamageParts,
+      critOnlyDamageParts,
+      diceFormula,
+      critDiceFormula,
+      modes,
+      activeMode,
+      activeModeId: activeMode ? activeMode.id : null,
+      tacticalBadges: Array.isArray(weapon.tacticalBadges) ? weapon.tacticalBadges : [],
       critMin: critData.critMin,
       critMult: critData.critMult,
       critThreatRangeCount: critData.threatRangeCount,
@@ -3035,7 +3186,7 @@ const RuleEngine = {
       chargeFlatDamage,
       ruleFlags,
       manyshotArrows: effectiveManyshotArrows,
-      damageType: weapon.dmgType || 'Slashing',
+      damageType: primaryPart.type || 'Slashing',
       attackBonusItems,
       damageBonusItems
     };
@@ -3101,10 +3252,8 @@ const RuleEngine = {
     if (kNorm) aliases.add(kNorm);
     if (nNorm) aliases.add(nNorm);
 
-    // If consolidated skills mode is enabled on character (default true in character sheet)
     const isMerged = character?.settings?.mergeSkills !== false;
     if (isMerged) {
-      // 1. Try to read skillMapping dynamically from Master DB House Rule
       let mapping = null;
       const masterList = (typeof window !== 'undefined' && (window.masterDb || window.BUNDLED_MASTER_DB)) || [];
       if (Array.isArray(masterList)) {
@@ -3114,7 +3263,6 @@ const RuleEngine = {
         }
       }
 
-      // 2. Fallback to character.settings or built-in default mapping
       if (!mapping) {
         mapping = character?.settings?.skillMapping || this.DEFAULT_SKILL_MAPPING;
       }
@@ -3138,10 +3286,10 @@ const RuleEngine = {
   },
 
   /**
-   * Evaluate specific skill bonus from equipped items, active buffs, feats, and masterwork tools.
+   * Evaluate specific skill bonus from equipped items, active buffs, feats, and race (Canonical V2 `modifiers` array).
    * Resolves D&D 3.5e stacking rules: same bonus types do not stack (take highest),
-   * while different bonus types (Competence, Insight, Luck, Morale, Circumstance, Untyped) stack.
-   * Fully supports Consolidated Skills mapping (e.g. Boots of Elvenkind Move Silently -> Stealth).
+   * while different bonus types (Competence, Insight, Luck, Morale, Circumstance, Untyped, Racial) stack.
+   * Zero heuristic description regexes.
    */
   evaluateSkillBonus(character, skillKey, skillName, statName) {
     if (!character) return { total: 0, breakdown: [] };
@@ -3149,8 +3297,9 @@ const RuleEngine = {
     const sKey = (skillKey || '').toLowerCase().trim();
     const isKnowledge = sName.startsWith('knowledge') || sKey.startsWith('knowledge') || sName.includes('bilgi');
     const aliases = this.getSkillAliases(sKey, sName, character);
+    const charLvl = Number(character.level) || 1;
+    const evalCtx = { cl: charLvl, level: charLvl, bab: Number(character.bab) || 0 };
 
-    // Buckets for typed bonuses: competence, insight, luck, morale, enhancement, circumstance, untyped, penalty
     const buckets = {};
     const addBonus = (sourceName, val, bType = 'untyped') => {
       const v = Number(val) || 0;
@@ -3160,43 +3309,58 @@ const RuleEngine = {
       buckets[type].push({ name: sourceName, val: v });
     };
 
-    // 1. General Buffs & Debuffs (character.buffSkillBonus, negative levels)
-    if (character.buffSkillBonus) {
-      addBonus('Genel Buff/Debuff', character.buffSkillBonus, 'untyped');
-    }
+    // Helper to check if a V2 modifier target matches this skill
+    const matchSkillModifiers = (modifiers, sourceTitle, defaultType = 'competence', ctx = evalCtx) => {
+      if (!Array.isArray(modifiers)) return false;
+      let matched = false;
+      const baseKeyNorm = sKey.replace(/[^a-z0-9]/g, '');
 
-    // 2. Active Buffs in character.buffs
+      modifiers.forEach(mod => {
+        if (!mod || !mod.target) return;
+        const rawTarget = String(mod.target).trim().toLowerCase();
+        if (!rawTarget.startsWith('skill.') && !rawTarget.startsWith('skills.') && rawTarget !== 'skills') return;
+
+        const subTarget = rawTarget.replace(/^skills?\./, '').trim();
+        const tNorm = subTarget.replace(/[^a-z0-9]/g, '');
+        const val = Number(this.evaluateFormula(mod.value !== undefined ? mod.value : mod.formula, ctx)) || 0;
+        if (val === 0) return;
+        const mType = mod.type || (val < 0 ? 'penalty' : defaultType);
+
+        let applies = false;
+        if (subTarget === 'all' || subTarget === 'skills' || tNorm === 'allskills') {
+          applies = true;
+        } else if (isKnowledge && (subTarget === 'knowledge' || tNorm === 'allknowledge' || tNorm.includes('knowledge'))) {
+          applies = true;
+        } else if (tNorm && aliases.some(a => a && (a === tNorm || a.includes(tNorm) || tNorm.includes(a)))) {
+          applies = true;
+        }
+
+        if (applies) {
+          const label = (tNorm && tNorm !== 'all' && tNorm !== baseKeyNorm)
+            ? `${sourceTitle} (${subTarget.replace(/_/g, ' ')})`
+            : sourceTitle;
+          addBonus(label, val, mType);
+          matched = true;
+        }
+      });
+
+      return matched;
+    };
+
+    // 1. Negative Level Skill Penalties (if any active buff has negativeLevels without explicit skill.all modifier)
     if (Array.isArray(character.buffs)) {
-      character.buffs.forEach(buff => {
-        if (!buff || !buff.active) return;
-        const items = [buff];
-        if (Array.isArray(buff.children)) items.push(...buff.children);
-
-        items.forEach(b => {
-          const scope = (b.scope || b.target || '').toLowerCase().trim();
-          const targetSkill = (b.targetSkill || b.skill || '').toLowerCase().trim();
-          const sNorm = scope.replace(/[^a-z0-9]/g, '');
-          const tNorm = targetSkill.replace(/[^a-z0-9]/g, '');
-          const bVal = Number(b.skillBonus || b.bonus || b.bonusVal) || 0;
-          const bType = b.bonusType || 'untyped';
-
-          if (bVal !== 0) {
-            let applies = false;
-            if (scope === 'all skills' || scope === 'skills' || scope === 'all') applies = true;
-            else if (isKnowledge && (scope === 'knowledge' || scope === 'all knowledge' || scope.includes('knowledge'))) applies = true;
-            else if (tNorm && aliases.some(a => a && (a === tNorm || a.includes(tNorm) || tNorm.includes(a)))) applies = true;
-            else if (sNorm && aliases.some(a => a && (a === sNorm || a.includes(sNorm) || sNorm.includes(a)))) applies = true;
-
-            if (applies) {
-              const label = (tNorm && tNorm !== (sKey || '').toLowerCase().replace(/[^a-z0-9]/g, '')) ? `${b.name || buff.name} (${targetSkill})` : (b.name || buff.name);
-              addBonus(label, bVal, bType);
-            }
-          }
-        });
+      character.buffs.forEach(rawBuff => {
+        if (!rawBuff || !rawBuff.active) return;
+        const buff = this.ensureV2Entry(rawBuff);
+        const bCtx = { ...evalCtx, cl: Number(buff.casterLevel || charLvl) || charLvl };
+        const hasSkillAllMod = matchSkillModifiers(buff.modifiers, buff.name || 'Buff', 'untyped', bCtx);
+        if (buff.negativeLevels && !hasSkillAllMod) {
+          addBonus(`${buff.name} (-${buff.negativeLevels} Lvl)`, -Number(buff.negativeLevels), 'penalty');
+        }
       });
     }
 
-    // 3. Body Slot Equipped Items (character.bodySlots)
+    // 2. Body Slot Equipped Items (character.bodySlots)
     if (character.bodySlots && typeof character.bodySlots === 'object') {
       Object.entries(character.bodySlots).forEach(([slotKey, item]) => {
         if (!item || item.active === false || !item.name || item.name === '-') return;
@@ -3204,10 +3368,12 @@ const RuleEngine = {
       });
     }
 
-    // 4. Gear Pool Items (Equipped items or Slotless wonderous items like Luckstone / Tome / Ioun Stone)
+    // 3. Gear Pool Items (Equipped or Slotless Wondrous Items)
     if (Array.isArray(character.gearPool)) {
       character.gearPool.forEach(item => {
-        if (!item) return;
+        if (!item || !item.name) return;
+        const inBodySlot = character.bodySlots && Object.values(character.bodySlots).some(s => s && s.active !== false && (s.id === item.id || s.name === item.name));
+        if (inBodySlot) return;
         const isSlotless = (item.slot || '').toLowerCase().includes('slotless') || (item.category || '').toLowerCase() === 'other' || (item.category || '').toLowerCase() === 'wondrous item';
         if (item.isEquipped || isSlotless) {
           this._checkItemSkillBonus(item, sKey, sName, isKnowledge, addBonus, character, aliases);
@@ -3215,33 +3381,40 @@ const RuleEngine = {
       });
     }
 
-    // 5. Feats & Special Abilities (e.g. Collector of Stories, Draconic Knowledge)
+    // 4. Feats & Special Abilities (Canonical V2 modifiers + Compendium lookup)
     const featsList = [...(character.feats || []), ...(character.specialAbilities || [])];
-    featsList.forEach(feat => {
-      if (!feat) return;
-      const fName = (typeof feat === 'string' ? feat : feat.name || '').toLowerCase();
-      const scope = (feat.scope || '').toLowerCase();
-      const bVal = Number(feat.skillBonus || feat.bonus) || 0;
-      const bType = feat.bonusType || 'competence';
+    featsList.forEach(rawFeat => {
+      if (!rawFeat) return;
+      const featObj = typeof rawFeat === 'string' ? { name: rawFeat, category: 'Feat' } : this.ensureV2Entry(rawFeat);
+      const fName = (featObj.name || '').trim();
+      if (!fName) return;
 
-      if (bVal !== 0) {
-        if (scope === 'all skills' || (isKnowledge && scope.includes('knowledge'))) {
-          addBonus(feat.name || fName, bVal, bType);
-        }
-      }
+      const dbFeat = this.getMasterDbEntry(featObj) || this.getMasterDbEntry(fName);
+      const mods = (Array.isArray(featObj.modifiers) && featObj.modifiers.length > 0)
+        ? featObj.modifiers
+        : (dbFeat && Array.isArray(dbFeat.modifiers) ? dbFeat.modifiers : []);
 
-      // Built-in recognition for Collector of Stories (+5 Competence to Knowledge monster checks)
-      if (fName.includes('collector of stories') && isKnowledge) {
+      matchSkillModifiers(mods, fName, 'untyped', evalCtx);
+
+      if (fName.toLowerCase().includes('collector of stories') && isKnowledge) {
         addBonus('Collector of Stories (Canavar Tanıma)', 5, 'competence');
       }
     });
+
+    // 5. Racial Skill Modifiers from Compendium Race entry
+    if (character.race) {
+      const raceObj = this.getMasterDbEntry(character.race, 'Race');
+      if (raceObj && Array.isArray(raceObj.modifiers)) {
+        matchSkillModifiers(raceObj.modifiers, `${raceObj.name || character.race} (Irk)`, 'racial', evalCtx);
+      }
+    }
 
     // 6. Resolve Stacking Rules (D&D 3.5e RAW)
     let total = 0;
     const breakdown = [];
 
     Object.entries(buckets).forEach(([type, entries]) => {
-      if (type === 'untyped' || type === 'circumstance' || type === 'penalty') {
+      if (type === 'untyped' || type === 'circumstance' || type === 'penalty' || type === 'racial') {
         entries.forEach(e => {
           total += e.val;
           breakdown.push(`${e.name}: ${e.val >= 0 ? '+' : ''}${e.val} (${type})`);
@@ -3259,100 +3432,60 @@ const RuleEngine = {
     return { total, breakdown };
   },
 
-  _checkItemSkillBonus(item, sKey, sName, isKnowledge, addBonus, character = null, aliases = null) {
-    if (!item) return;
+  _checkItemSkillBonus(rawItem, sKey, sName, isKnowledge, addBonus, character = null, aliases = null) {
+    if (!rawItem) return;
+    const item = this.ensureV2Entry(rawItem);
     const skillAliases = aliases || this.getSkillAliases(sKey, sName, character);
+    const baseKeyNorm = (sKey || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const charLvl = Number(character?.level) || 1;
+    const evalCtx = { cl: charLvl, level: charLvl };
 
-    // Declarative helper to evaluate item or masterDb entry bonuses
-    const processSkillData = (sourceObj, sourceTitle) => {
+    const processV2SkillMods = (sourceObj, sourceTitle) => {
+      if (!sourceObj || !Array.isArray(sourceObj.modifiers)) return false;
       let applied = false;
-      const bType = sourceObj.bonusType || 'competence';
+      sourceObj.modifiers.forEach(mod => {
+        if (!mod || !mod.target) return;
+        const rawTarget = String(mod.target).trim().toLowerCase();
+        if (!rawTarget.startsWith('skill.') && !rawTarget.startsWith('skills.') && rawTarget !== 'skills') return;
 
-      // 1. Multiple skill bonuses map (e.g. { "Open Lock": 4, "Escape Artist": 6, "Jump": 5 })
-      if (sourceObj.skillBonuses && typeof sourceObj.skillBonuses === 'object') {
-        Object.entries(sourceObj.skillBonuses).forEach(([target, val]) => {
-          const tNorm = target.toLowerCase().replace(/[^a-z0-9]/g, '');
-          if (skillAliases.some(a => a && (a === tNorm || a.includes(tNorm) || tNorm.includes(a)))) {
-            const label = (tNorm !== (sKey || '').toLowerCase().replace(/[^a-z0-9]/g, '')) ? `${sourceTitle} (${target})` : sourceTitle;
-            addBonus(label, Number(val) || 0, bType);
-            applied = true;
-          }
-        });
-      }
-
-      // 2. Single skillBonus with scope or targetSkill
-      const bVal = Number(sourceObj.skillBonus || sourceObj.bonus) || 0;
-      if (bVal !== 0) {
-        const scope = (sourceObj.scope || '').toLowerCase().trim();
-        const targetSkill = (sourceObj.targetSkill || sourceObj.skill || '').toLowerCase().trim();
-        const sNorm = scope.replace(/[^a-z0-9]/g, '');
-        const tNorm = targetSkill.replace(/[^a-z0-9]/g, '');
+        const subTarget = rawTarget.replace(/^skills?\./, '').trim();
+        const tNorm = subTarget.replace(/[^a-z0-9]/g, '');
+        const val = Number(this.evaluateFormula(mod.value !== undefined ? mod.value : mod.formula, evalCtx)) || 0;
+        if (val === 0) return;
+        const bType = mod.type || 'competence';
 
         let applies = false;
-        if (scope === 'all skills' || scope === 'skills' || scope === 'all') applies = true;
-        else if (isKnowledge && (scope === 'knowledge' || scope === 'all knowledge' || scope.includes('knowledge'))) applies = true;
+        if (subTarget === 'all' || subTarget === 'skills' || tNorm === 'allskills') applies = true;
+        else if (isKnowledge && (subTarget === 'knowledge' || tNorm === 'allknowledge' || tNorm.includes('knowledge'))) applies = true;
         else if (tNorm && skillAliases.some(a => a && (a === tNorm || a.includes(tNorm) || tNorm.includes(a)))) applies = true;
-        else if (sNorm && skillAliases.some(a => a && (a === sNorm || a.includes(sNorm) || sNorm.includes(a)))) applies = true;
 
         if (applies) {
-          const subTarget = targetSkill || (scope && scope !== 'none / general' ? scope : '');
-          const label = (subTarget && subTarget.replace(/[^a-z0-9]/g, '') !== (sKey || '').toLowerCase().replace(/[^a-z0-9]/g, '')) ? `${sourceTitle} (${subTarget})` : sourceTitle;
-          addBonus(label, bVal, bType);
+          const label = (tNorm && tNorm !== 'all' && tNorm !== baseKeyNorm)
+            ? `${sourceTitle} (${subTarget.replace(/_/g, ' ')})`
+            : sourceTitle;
+          addBonus(label, val, bType);
           applied = true;
         }
-      }
-
-      // 3. Smart Heuristic Fallback: Parse RAW benefit / description text if not handled by explicit fields
-      if (!applied) {
-        const rawText = `${sourceObj.benefit || ''} ${sourceObj.description || ''} ${sourceObj.desc || ''}`;
-        if (rawText.trim()) {
-          const regex = /\+(\d+)\s*(competence|insight|luck|morale|circumstance|enhancement|untyped)?\s*bonus\s+(?:on|to)\s+([^.;]+?)(?:\s+checks|\.|\;|$)/gi;
-          let match;
-          while ((match = regex.exec(rawText)) !== null) {
-            const hVal = Number(match[1]) || 0;
-            const hType = (match[2] || sourceObj.bonusType || 'competence').toLowerCase().trim();
-            const targetsRaw = match[3] || '';
-            const targets = targetsRaw.split(/[,/&]|\band\b/i).map(t => t.trim()).filter(Boolean);
-
-            for (const t of targets) {
-              const tNorm = t.toLowerCase().replace(/[^a-z0-9]/g, '');
-              if (tNorm === 'skill' || tNorm === 'skills' || tNorm === 'allskills' || tNorm === 'all' || (isKnowledge && tNorm.includes('knowledge')) || (tNorm && skillAliases.some(a => a && (a === tNorm || a.includes(tNorm) || tNorm.includes(a))))) {
-                const label = (tNorm && tNorm !== (sKey || '').toLowerCase().replace(/[^a-z0-9]/g, '')) ? `${sourceTitle} (${t})` : sourceTitle;
-                addBonus(label, hVal, hType);
-                applied = true;
-                break;
-              }
-            }
-          }
-        }
-      }
-
+      });
       return applied;
     };
 
-    // First check the item itself
-    let itemHandled = processSkillData(item, item.name || 'Equipped Item');
+    // 1. Check V2 modifiers on item itself
+    let itemHandled = processV2SkillMods(item, item.name || 'Equipped Item');
 
-    // If not handled directly and character gearPool is available, check gearPool item
+    // 2. Check matching gearPool item
     if (!itemHandled && character && Array.isArray(character.gearPool)) {
-      const pItem = character.gearPool.find(p => p && p.name && p.name.toLowerCase().trim() === (item.name || '').toLowerCase().trim());
+      const pItem = character.gearPool.find(p => p && ((item.id && p.id === item.id) || (p.name && p.name.toLowerCase().trim() === (item.name || '').toLowerCase().trim())));
       if (pItem) {
-        itemHandled = processSkillData(pItem, item.name || pItem.name);
+        itemHandled = processV2SkillMods(this.ensureV2Entry(pItem), item.name || pItem.name);
       }
     }
 
-    // If not handled directly, check masterDb catalog declaratively
+    // 3. Check Compendium / Master DB entry via O(1) lookup
     if (!itemHandled) {
-      const iName = (item.name || '').toLowerCase().trim();
-      const masterList = (typeof window !== 'undefined' && (window.masterDb || window.BUNDLED_MASTER_DB || window.BUNDLED_SRD_CORE_CATALOG)) || [];
-      if (Array.isArray(masterList) && iName) {
-        const dbEntry = masterList.find(dbItem => {
-          const dbName = (dbItem.name || '').toLowerCase().trim();
-          return dbName === iName || (iName.length >= 4 && (iName.includes(dbName) || dbName.includes(iName)));
-        });
-        if (dbEntry) {
-          processSkillData(dbEntry, item.name || dbEntry.name);
-        }
+      const dbEntry = this.getMasterDbEntry(item);
+      if (dbEntry) {
+        processV2SkillMods(dbEntry, item.name || dbEntry.name);
       }
     }
   },
@@ -3875,6 +4008,181 @@ const RuleEngine = {
       activeFeats,
       activeSpecialAbilities
     };
+  },
+
+  // D&D 3.5e PHB Table 1-1 Bonus Spells & Class Spells Per Day Calculator (Canonical V2)
+  getClassSpellSlots(className, classLevel = 1, abilityScore = 10) {
+    const cl = Math.max(1, Math.min(20, Number(classLevel) || 1));
+    const score = Number(abilityScore) || 10;
+    const mod = this.getAbilityMod(score);
+
+    const classEntry = this.getMasterDbEntry(className, 'Class')
+      || this.getMasterDbEntry(`class_${String(className || '').toLowerCase().replace(/[^a-z0-9]+/g, '_')}`, 'Class');
+
+    const rawMatrix = classEntry?.classStats?.spellsPerDay || classEntry?.spellsPerDay || null;
+    const baseRow = (rawMatrix && typeof rawMatrix === 'object')
+      ? (rawMatrix[String(cl)] || rawMatrix[cl] || null)
+      : null;
+
+    const slotsByLevel = {};
+    if (!baseRow || typeof baseRow !== 'object') {
+      return {
+        hasSpellcasting: false,
+        className,
+        classLevel: cl,
+        abilityScore: score,
+        abilityMod: mod,
+        slotsByLevel
+      };
+    }
+
+    Object.entries(baseRow).forEach(([lvlKey, baseSlots]) => {
+      const sLvl = Number(lvlKey);
+      if (isNaN(sLvl) || baseSlots === null || baseSlots === undefined || baseSlots === '-') return;
+      const baseCount = Number(baseSlots);
+      if (isNaN(baseCount) || baseCount < 0) return;
+
+      // PHB p. 17: To cast a spell of level X, caster must have ability score >= 10 + X
+      const canCastLevel = score >= (10 + sLvl);
+      if (!canCastLevel) {
+        slotsByLevel[sLvl] = { base: baseCount, bonus: 0, total: 0, lockedByAbilityScore: true };
+        return;
+      }
+
+      // PHB Table 1-1: Bonus spells for spell levels 1–9 (0-level cantrips/orisons never get bonus spells)
+      let bonusSlots = 0;
+      if (sLvl >= 1 && mod >= sLvl) {
+        // Only grant bonus spells if base slots > 0 (or if baseSlots === 0 for Rangers/Paladins who gain 0+bonus)
+        bonusSlots = Math.floor((mod - sLvl + 4) / 4);
+      }
+
+      slotsByLevel[sLvl] = {
+        base: baseCount,
+        bonus: bonusSlots,
+        total: baseCount + bonusSlots,
+        lockedByAbilityScore: false
+      };
+    });
+
+    return {
+      hasSpellcasting: Object.keys(slotsByLevel).length > 0,
+      className: classEntry?.name || className,
+      classLevel: cl,
+      abilityScore: score,
+      abilityMod: mod,
+      slotsByLevel
+    };
+  },
+
+  // D&D 3.5e 8-Hour Long Rest & Daily Resource Recovery Engine (PHB p. 146 & p. 177)
+  performLongRest(character, options = {}) {
+    if (!character) return null;
+    const fullBedRest = !!options.fullBedRest; // 24-hour full bed rest heals 2x level
+    const healToFull = !!options.healToFull;   // Optional DM house rule toggle
+    const charLvl = Math.max(1, Number(character.level) || 1);
+
+    const summary = {
+      hpHealed: 0,
+      newHp: 0,
+      maxHp: 0,
+      spellsReset: 0,
+      dailyChargesReset: 0,
+      expiredBuffsDeactivated: []
+    };
+
+    // 1. Natural HP Healing (1 HP per character level per 8-hour rest, or 2 HP/lvl for full bed rest)
+    if (character.hp) {
+      const maxHp = Number(character.hp.max) || 10;
+      const curHp = Number(character.hp.current) || 0;
+      const healAmount = healToFull ? Math.max(0, maxHp - curHp) : (fullBedRest ? charLvl * 2 : charLvl);
+      const nextHp = Math.min(maxHp, curHp + healAmount);
+      summary.hpHealed = Math.max(0, nextHp - curHp);
+      character.hp.current = nextHp;
+      character.hp.temp = 0; // Temporary HP from short buffs expires overnight
+      summary.newHp = nextHp;
+      summary.maxHp = maxHp;
+    }
+
+    // 2. Deactivate Short-Duration Buffs (round, minute, hour); keep permanent/day/condition until manually cleared
+    if (Array.isArray(character.buffs)) {
+      character.buffs.forEach(b => {
+        if (!b || !b.active) return;
+        const durCat = String(b.durationCategory || '').toLowerCase();
+        const isShortBuff = !b.isCondition && !b.isDebuff && (durCat === 'round' || durCat === 'minute' || durCat === 'hour');
+        // Fatigue converts to normal after 8 hours of complete rest; Exhausted becomes Fatigued after 1 hour
+        if (b.id === 'cond_fatigued' || (b.name || '').toLowerCase().includes('fatigued')) {
+          b.active = false;
+          summary.expiredBuffsDeactivated.push(b.name);
+        } else if (isShortBuff) {
+          b.active = false;
+          summary.expiredBuffsDeactivated.push(b.name);
+        }
+      });
+    }
+
+    // 3. Reset Daily Spell Slots / Cast Counts & Martial Maneuvers
+    if (Array.isArray(character.spells)) {
+      character.spells.forEach(s => {
+        if (!s) return;
+        if (s.castCount) {
+          s.castCount = 0;
+          summary.spellsReset++;
+        }
+        if (s.expended) {
+          s.expended = false;
+          summary.spellsReset++;
+        }
+        if (s.usedSlots) {
+          s.usedSlots = 0;
+          summary.spellsReset++;
+        }
+      });
+    }
+    if (character.spellSlots && typeof character.spellSlots === 'object') {
+      Object.values(character.spellSlots).forEach(slotObj => {
+        if (slotObj && typeof slotObj === 'object') {
+          if (slotObj.used !== undefined) slotObj.used = 0;
+          if (slotObj.current !== undefined && slotObj.max !== undefined) slotObj.current = slotObj.max;
+        }
+      });
+    }
+
+    // 4. Reset Daily Charges on Special Abilities, Feats & Equipped Items
+    const resetChargeList = (list) => {
+      if (!Array.isArray(list)) return;
+      list.forEach(entry => {
+        if (!entry || typeof entry !== 'object') return;
+        if (entry.maxCharges && entry.charges !== undefined && entry.rechargePeriod !== 'never') {
+          entry.charges = entry.maxCharges;
+          summary.dailyChargesReset++;
+        }
+        if (entry.usesPerDay && entry.usedToday !== undefined) {
+          entry.usedToday = 0;
+          summary.dailyChargesReset++;
+        }
+      });
+    };
+    resetChargeList(character.specialAbilities);
+    resetChargeList(character.feats);
+    resetChargeList(character.gearPool);
+    if (character.bodySlots && typeof character.bodySlots === 'object') {
+      resetChargeList(Object.values(character.bodySlots));
+    }
+
+    // 5. Reset Tactical Action Economy
+    if (character.tactical) {
+      character.tactical.spentActions = {
+        standard: false,
+        move: false,
+        fullRound: false,
+        swift: false,
+        immediate: false
+      };
+    }
+
+    // 6. Recalculate Character State
+    this.recalculateCharacter(character, (typeof masterDb !== 'undefined' ? masterDb : []));
+    return summary;
   }
 };
 

@@ -7,7 +7,10 @@
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
   <script src="bundled_data.js"></script>
   <script src="bundled_monsters.js"></script>
-  <script src="rule_engine.js"></script>
+  <script src="srd_compendium.js?v=20261028_v2"></script>
+  <script src="rule_engine.js?v=20261028_v2"></script>
+  <script src="rule_master.js?v=20261028_v2"></script>
+  <script src="ui_shared.js?v=20261028_v2"></script>
   <script src="gdrive_sync.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase_auth.js"></script>
@@ -18,7 +21,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="dice3d.js"></script>
   <script src="hub_dice.js"></script>
-  <script src="hub_notes.js"></script>
+  <script src="hub_notes.js?v=20261028_v2"></script>
   <style>
     body {
       font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -105,11 +108,23 @@
         </div>
       </div>
 
-      <!-- ARAMA VE TÜR FİLTRESİ -->
-      <div class="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-        <div class="relative w-full sm:w-80">
-          <input type="text" id="hub-search-input" oninput="renderHub()" placeholder="İsim, ırk veya sınıf ara..." class="w-full bg-slate-900/90 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
-          <span class="absolute left-3 top-2.5 text-slate-500">🔍</span>
+      <!-- ARAMA, V2 KÜTÜPHANE & TÜR FİLTRESİ -->
+      <div class="mt-4 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 text-xs">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-1">
+          <div class="relative w-full sm:w-72">
+            <input type="text" id="hub-search-input" oninput="renderHub()" placeholder="İsim, ırk veya sınıf ara..." class="w-full bg-slate-900/90 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+            <span class="absolute left-3 top-2.5 text-slate-500">🔍</span>
+          </div>
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <button type="button" onclick="openHubCompendiumDrawer('Monster')" class="px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/40 font-bold text-xs transition flex items-center gap-1.5 cursor-pointer shadow-sm" title="645 SRD Canavarı, Büyüler, Featler ve Eşyalar (Sıfır Token V2 Kütüphane)">
+              <span>👹</span>
+              <span>Bestiary &amp; SRD V2 (<span id="hub-bestiary-count-badge">645</span>)</span>
+            </button>
+            <button type="button" onclick="openHubCompendiumDrawer('forge')" class="px-3 py-2 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/35 text-indigo-300 border border-indigo-500/40 font-bold text-xs transition flex items-center gap-1.5 cursor-pointer shadow-sm" title="V2 Lego Demirhanesi: Materyal + Enhancement + Özel Güç Birleştirici">
+              <span>⚒️</span>
+              <span>Demirhane (Lego)</span>
+            </button>
+          </div>
         </div>
 
         <!-- Tür Filtresi -->
@@ -1162,6 +1177,9 @@
 
     function syncCharacterSummaryStats(c) {
       if (!c) return c;
+      if (c.fullData && window.SchemaMigrator && typeof window.SchemaMigrator.upgradeCharacterToV2 === 'function' && c.fullData.schemaVersion !== 2) {
+        c.fullData = window.SchemaMigrator.upgradeCharacterToV2(c.fullData);
+      }
       const data = c.fullData || c;
 
       if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.recalculateCharacter === 'function') {
@@ -2306,7 +2324,7 @@
       const name = summary.name || 'Yeni Karakter';
 
       return {
-        schemaVersion: "2.0",
+        schemaVersion: 2,
         id: charId,
         _hubId: charId,
         name: name,
@@ -2404,6 +2422,8 @@
             activeSets: [1]
           }
         },
+        smartNotes: Array.isArray(summary.smartNotes) ? summary.smartNotes : [],
+        notesList: Array.isArray(summary.notesList) ? summary.notesList : [],
         settings: Object.assign({}, getGlobalDefaultSettings().settings, summary.settings || {}),
         houseRules: Object.assign({}, getGlobalDefaultSettings().houseRules, summary.houseRules || {})
       };
@@ -3129,12 +3149,94 @@ CRITICAL RULES:
 
     function normalizeMonsterData(m) {
       if (!m) return m;
+      m.schemaVersion = 2;
       if (!m.id) m.id = 'monster_' + Date.now();
       if (!m.abilities) m.abilities = { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
       if (!m.saves) m.saves = { fort: 0, ref: 0, will: 0 };
       if (!Array.isArray(m.attacks)) m.attacks = [];
       if (!Array.isArray(m.skills)) m.skills = [];
       if (!Array.isArray(m.tags)) m.tags = [];
+
+      // Normalize V2 srd_monsters.json structure (where ac & speed can be objects and attacks have damageParts[])
+      if (m.ac && typeof m.ac === 'object') {
+        const acObj = m.ac;
+        m.touchAc = Number(acObj.touch ?? m.touchAc ?? 10);
+        m.flatFootedAc = Number(acObj.flatFooted ?? m.flatFootedAc ?? 10);
+        m.ac = Number(acObj.total ?? 10);
+      }
+      if (m.speed && typeof m.speed === 'object') {
+        const spdObj = m.speed;
+        m.baseSpeed = Number(spdObj.land || spdObj.fly || spdObj.swim || m.baseSpeed || 30);
+        const parts = [`${spdObj.land || 30} ft.`];
+        if (spdObj.fly) parts.push(`fly ${spdObj.fly} ft.`);
+        if (spdObj.swim) parts.push(`swim ${spdObj.swim} ft.`);
+        if (spdObj.climb) parts.push(`climb ${spdObj.climb} ft.`);
+        if (spdObj.burrow) parts.push(`burrow ${spdObj.burrow} ft.`);
+        m.speed = parts.join(', ');
+      }
+      if (m.init !== undefined && m.initiative === undefined) {
+        m.initiative = Number(m.init) || 0;
+      }
+      if (m.category && (!m.type || m.type === 'Monster')) {
+        m.type = String(m.category).replace(/\*$/, '').trim();
+      }
+      if (m.crNumeric === undefined) {
+        const crStr = String(m.cr ?? '1').trim();
+        if (crStr.includes('/')) {
+          const [n, d] = crStr.split('/').map(Number);
+          m.crNumeric = (n && d) ? (n / d) : 0.5;
+        } else {
+          m.crNumeric = parseFloat(crStr) || 1;
+        }
+      }
+      const hdMatch = String(m.hitDice || '1d8').match(/(\d+)d(\d+)/i);
+      const hdCount = hdMatch ? (parseInt(hdMatch[1], 10) || 1) : Math.max(1, Math.round(m.crNumeric || 1));
+      if (!m.bab) {
+        const tLow = (m.type || '').toLowerCase();
+        const babMult = (tLow.includes('dragon') || tLow.includes('outsider') || tLow.includes('magical beast') || tLow.includes('monstrous humanoid')) ? 1.0
+          : (tLow.includes('undead') || tLow.includes('fey')) ? 0.5 : 0.75;
+        m.bab = Math.max(1, Math.floor(hdCount * babMult));
+      }
+      const strMod = Math.floor(((Number(m.abilities.str) || 10) - 10) / 2);
+      if (m.grapple === undefined) {
+        const sizeGrapMap = { Fine: -16, Diminutive: -12, Tiny: -8, Small: -4, Medium: 0, Large: 4, Huge: 8, Gargantuan: 12, Colossal: 16 };
+        m.grapple = (Number(m.bab) || 0) + strMod + (sizeGrapMap[m.size] || 0);
+      }
+
+      // Ensure every attack has both V2 damageParts[] and display fields (bonus, damage, damageType)
+      m.attacks = m.attacks.map(atk => {
+        if (!atk || typeof atk !== 'object') return null;
+        const primaryPart = (Array.isArray(atk.damageParts) && atk.damageParts[0]) ? atk.damageParts[0] : null;
+        let rawDice = (primaryPart && primaryPart.dice) ? String(primaryPart.dice) : (atk.damage || '1d6');
+        if (rawDice.includes('${') || rawDice === '0') rawDice = '1d8';
+        const flatMod = strMod !== 0 && !rawDice.includes('+') && !rawDice.includes('-')
+          ? (strMod > 0 ? `+${strMod}` : `${strMod}`)
+          : '';
+        const dmgDisplay = atk.damage || `${rawDice}${flatMod}`;
+        const atkBonus = (atk.bonus !== undefined) ? Number(atk.bonus) : ((Number(atk.attackBonus) || 0) || ((Number(m.bab) || 0) + strMod));
+        const dmgType = atk.damageType || (primaryPart && primaryPart.type && primaryPart.type !== 'Untyped' ? primaryPart.type : 'Physical');
+        const damageParts = Array.isArray(atk.damageParts) && atk.damageParts.length > 0
+          ? atk.damageParts.map((p, idx) => ({
+              dice: (p.dice && !String(p.dice).includes('${') && p.dice !== '0') ? p.dice : rawDice,
+              bonus: idx === 0 ? (Number(p.bonus) || strMod) : (Number(p.bonus) || 0),
+              type: p.type && p.type !== 'Untyped' ? p.type : dmgType,
+              multiplyOnCrit: p.multiplyOnCrit !== false,
+              onCritOnly: Boolean(p.onCritOnly),
+              source: p.source || atk.name || 'Natural'
+            }))
+          : [{ dice: rawDice, bonus: strMod, type: dmgType, multiplyOnCrit: true, onCritOnly: false, source: atk.name || 'Natural' }];
+        return {
+          ...atk,
+          name: atk.name || 'Strike',
+          type: atk.type || (atk.attackType === 'natural' ? 'Natural' : 'Melee'),
+          bonus: atkBonus,
+          damage: dmgDisplay,
+          damageType: dmgType,
+          crit: atk.crit || '20/x2',
+          range: atk.range || '-',
+          damageParts
+        };
+      }).filter(Boolean);
 
       // Feats normalization: ensure array of { name, category, benefit, description, source }
       if (!Array.isArray(m.feats)) m.feats = [];
@@ -3230,16 +3332,26 @@ CRITICAL RULES:
           }
         };
 
-        // 1. Sync Weapons
+        // 1. Sync Weapons (Canonical V2 schemaVersion: 2, damageParts, weaponMeta)
         (monster.attacks || []).forEach(atk => {
+          const cMin = atk.crit ? (parseInt(atk.crit.split('/')[0].split('-')[0]) || 20) : 20;
+          const cMult = atk.crit && atk.crit.includes('x3') ? 3 : (atk.crit && atk.crit.includes('x4') ? 4 : 2);
           addOrUpdate({
+            schemaVersion: 2,
+            id: 'wpn_' + String(atk.name || 'attack').toLowerCase().replace(/[^a-z0-9]+/g, '_'),
             name: atk.name,
             type: 'Weapon',
             slot: atk.type === 'Ranged' ? 'Both Hands' : 'Main Hand',
             category: atk.type || 'Natural',
             dice: atk.damage || '1d6',
-            critMin: atk.crit ? (parseInt(atk.crit.split('/')[0].split('-')[0]) || 20) : 20,
-            critMult: atk.crit && atk.crit.includes('x3') ? 3 : (atk.crit && atk.crit.includes('x4') ? 4 : 2),
+            damageParts: Array.isArray(atk.damageParts) && atk.damageParts.length > 0
+              ? atk.damageParts
+              : [{ dice: atk.damage || '1d6', bonus: 0, type: atk.damageType || 'Physical', multiplyOnCrit: true, onCritOnly: false, source: atk.name }],
+            modifiers: [],
+            modes: [],
+            weaponMeta: { critMin: cMin, critMult: cMult, rangeIncrement: atk.range || '-' },
+            critMin: cMin,
+            critMult: cMult,
             attBonus: Number(atk.bonus) || 0,
             dmgBonus: 0,
             dmgType: atk.damageType || 'Physical',
@@ -3303,20 +3415,30 @@ CRITICAL RULES:
       const charId = 'char_' + Date.now();
       const name = customName || monster.name;
 
-      const weapons = (monster.attacks || []).map((atk, idx) => ({
-        id: 'wpn_' + idx,
-        name: atk.name,
-        grip: atk.type === 'Melee' ? '1-Hand' : (atk.type === 'Ranged' ? '2-Hand' : '1-Hand'),
-        dice: atk.damage || '1d6',
-        critMin: atk.crit ? (parseInt(atk.crit.split('/')[0].split('-')[0]) || 20) : 20,
-        critMult: atk.crit && atk.crit.includes('x3') ? 3 : (atk.crit && atk.crit.includes('x4') ? 4 : 2),
-        attBonus: Number(atk.bonus) || 0,
-        dmgBonus: 0,
-        dmgType: atk.damageType || 'Physical',
-        bonusType: 'Natural',
-        category: atk.type || 'Natural',
-        range: atk.range || '-'
-      }));
+      const weapons = (monster.attacks || []).map((atk, idx) => {
+        const cMin = atk.crit ? (parseInt(atk.crit.split('/')[0].split('-')[0]) || 20) : 20;
+        const cMult = atk.crit && atk.crit.includes('x3') ? 3 : (atk.crit && atk.crit.includes('x4') ? 4 : 2);
+        return {
+          id: 'wpn_' + idx,
+          name: atk.name,
+          grip: atk.type === 'Melee' ? '1-Hand' : (atk.type === 'Ranged' ? '2-Hand' : '1-Hand'),
+          dice: atk.damage || '1d6',
+          damageParts: Array.isArray(atk.damageParts) && atk.damageParts.length > 0
+            ? JSON.parse(JSON.stringify(atk.damageParts))
+            : [{ dice: atk.damage || '1d6', bonus: 0, type: atk.damageType || 'Physical', multiplyOnCrit: true, onCritOnly: false, source: atk.name }],
+          modifiers: [],
+          modes: [],
+          weaponMeta: { critMin: cMin, critMult: cMult, rangeIncrement: atk.range || '-' },
+          critMin: cMin,
+          critMult: cMult,
+          attBonus: Number(atk.bonus) || 0,
+          dmgBonus: 0,
+          dmgType: atk.damageType || 'Physical',
+          bonusType: 'Natural',
+          category: atk.type || 'Natural',
+          range: atk.range || '-'
+        };
+      });
 
       const feats = (monster.feats || []).map(f => ({
         name: f.name,
@@ -3369,7 +3491,7 @@ CRITICAL RULES:
         : '-';
 
       const fullData = {
-        schemaVersion: "2.0",
+        schemaVersion: 2,
         id: charId,
         _hubId: charId,
         isNpc: true,
@@ -3476,7 +3598,9 @@ CRITICAL RULES:
           round: 1,
           weaponSets: { activeSets: [1] }
         },
-        notes: `[CR ${monster.cr}] ${monster.size} ${monster.type}\nHit Dice: ${monster.hitDice}\n\n${monster.description || ''}`,
+        notes: `[CR ${monster.cr}] ${monster.size} ${monster.type}\nHit Dice: ${monster.hitDice}\n\n${String(monster.description || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()}`,
+        smartNotes: [],
+        notesList: [],
         settings: {
           pinDrawerLimit: 5
         }
@@ -4550,6 +4674,97 @@ CRITICAL RULES:
       window.addEventListener('focus', handleTabFocus);
     }
 
+    // =========================================================================
+    // 👹 V2 645-MONSTER BESTIARY HYDRATOR & COMPENDIUM DRAWER BRIDGE (PHASE 7)
+    // =========================================================================
+    async function hydrateV2BestiaryFromCompendium() {
+      try {
+        if (window.SrdCompendium && typeof window.SrdCompendium.init === 'function') {
+          await window.SrdCompendium.init();
+        }
+        let v2Monsters = [];
+        if (window.SrdCompendium && typeof window.SrdCompendium.loadMonsters === 'function') {
+          v2Monsters = await window.SrdCompendium.loadMonsters();
+        } else if (window.SrdCompendium && typeof window.SrdCompendium.getAllMonsters === 'function') {
+          v2Monsters = await window.SrdCompendium.getAllMonsters();
+        } else {
+          const res = await fetch('database/srd_monsters.json');
+          if (res.ok) v2Monsters = await res.json();
+        }
+
+        if (Array.isArray(v2Monsters) && v2Monsters.length > 0) {
+          if (!Array.isArray(window.DND35_SRD_MONSTERS)) window.DND35_SRD_MONSTERS = [];
+          const existingByName = new Map();
+          window.DND35_SRD_MONSTERS.forEach(m => {
+            if (m && m.name) {
+              normalizeMonsterData(m);
+              existingByName.set(normalizeSearchText(m.name), m);
+            }
+          });
+
+          v2Monsters.forEach(rawM => {
+            if (!rawM || !rawM.name) return;
+            const key = normalizeSearchText(rawM.name);
+            if (!existingByName.has(key)) {
+              const cloned = JSON.parse(JSON.stringify(rawM));
+              normalizeMonsterData(cloned);
+              window.DND35_SRD_MONSTERS.push(cloned);
+              existingByName.set(key, cloned);
+            }
+          });
+
+          const badge = document.getElementById('hub-bestiary-count-badge');
+          if (badge) badge.textContent = String(window.DND35_SRD_MONSTERS.length);
+        }
+      } catch (err) {
+        console.warn('hydrateV2BestiaryFromCompendium warning:', err);
+      }
+    }
+
+    function openHubCompendiumDrawer(initialTab = 'Monster') {
+      if (!window.DnDUI || typeof window.DnDUI.openCompendiumDrawer !== 'function') return;
+      window.DnDUI.openCompendiumDrawer({
+        tab: initialTab,
+        onEquip: (entry) => {
+          if (!entry) return;
+          if (entry.type === 'Monster' || entry.category === 'Monster' || String(entry.id || '').startsWith('mst-')) {
+            const targetCamp = (state.activeCampaignId && state.activeCampaignId !== 'all' && state.activeCampaignId !== 'unassigned')
+              ? state.activeCampaignId
+              : (state.campaigns[0]?.id || null);
+            const npcChar = convertMonsterToCharacter(entry, entry.name, targetCamp);
+            state.characters.push(npcChar);
+            saveHubStorage();
+            renderHub();
+            showHubDiceToast({
+              title: '👹 Bestiary NPC Eklendi',
+              text: `"${npcChar.name}" (CR ${npcChar.cr || 1}) aktif sefere eklendi!`,
+              color: 'amber'
+            });
+          } else {
+            // Save custom/assembled item to Master DB so any character in the campaign can equip it
+            try {
+              const raw = localStorage.getItem('dnd35_master_db');
+              const db = raw ? JSON.parse(raw) : [];
+              const v2Entry = (window.RuleMaster && typeof window.RuleMaster.normalizeEntry === 'function')
+                ? window.RuleMaster.normalizeEntry(entry)
+                : entry;
+              if (!db.some(m => m && (m.id === v2Entry.id || (m.name || '').toLowerCase() === (v2Entry.name || '').toLowerCase()))) {
+                db.push(v2Entry);
+                localStorage.setItem('dnd35_master_db', JSON.stringify(db));
+              }
+              showHubDiceToast({
+                title: '⚒️ Kampanya Master DB Güncellendi',
+                text: `"${v2Entry.name}" kampanya kütüphanesine eklendi!`,
+                color: 'indigo'
+              });
+            } catch (e) {
+              console.warn('Hub Master DB add warning:', e);
+            }
+          }
+        }
+      });
+    }
+
     // Sayfa Açılışı
     window.addEventListener('DOMContentLoaded', async () => {
       let authUser = null;
@@ -4563,6 +4778,12 @@ CRITICAL RULES:
         }
       }
       loadCustomMonsters();
+      hydrateV2BestiaryFromCompendium().then(() => {
+        const modal = document.getElementById('new-character-modal');
+        if (modal && !modal.classList.contains('hidden') && currentCharCreateMode === 'bestiary') {
+          renderBestiaryList();
+        }
+      });
       initHubStorage();
       renderHub();
 

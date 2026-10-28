@@ -328,7 +328,7 @@
       </button>
       <button onclick="switchTab('tab-core')" id="tab-btn-core" class="tab-btn flex-1 min-w-[105px] sm:min-w-[120px] lg:min-w-0 py-1.5 px-2.5 sm:px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer select-none border whitespace-nowrap bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border-slate-700 hover:border-slate-500 shadow-sm">
         <span class="text-sm">👤</span>
-        <span>Karakter & Beceriler</span>
+        <span>Karakter & Notlar</span>
       </button>
       <button onclick="switchTab('tab-database')" id="tab-btn-database" class="tab-btn flex-1 min-w-[105px] sm:min-w-[120px] lg:min-w-0 py-1.5 px-2.5 sm:px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer select-none border whitespace-nowrap bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border-slate-700 hover:border-slate-500 shadow-sm">
         <span class="text-sm">📚</span>
@@ -348,6 +348,9 @@
     <!-- TAB 1: ⚔️ TACTICAL COMBAT COCKPIT -->
     <!-- ==================================================== -->
     <div id="tab-combat" class="tab-content space-y-4">
+      <!-- D&D 3.5e RAW ACTIVE CONDITION / ACTION BLOCKER BANNER (V2) -->
+      <div id="combat-condition-warning-banner" class="hidden"></div>
+
       <!-- ACTION ECONOMY BAR -->
       <div class="bg-dndCard border border-amber-500/30 rounded-xl p-2.5 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <!-- Action Status Badges (Mobilde 2x2 Izgara / Masaüstünde Esnek Satır) -->
@@ -428,10 +431,12 @@
               <div id="combat-mode-melee-panel" class="space-y-3">
 
                 <!-- Attack Buttons Row (Interactive iterative attack buttons + Full Attack button) -->
-                <div class="w-full">
+                <div class="w-full space-y-1.5">
                   <div id="attack-buttons-row-container" class="flex flex-wrap items-center gap-1.5 w-full">
                     <!-- Dynamically populated with individual attack buttons + Full Attack button -->
                   </div>
+                  <!-- V2 Embedded Weapon Modes Strip (replaces legacy isChild rows) -->
+                  <div id="combat-weapon-modes-strip" class="hidden"></div>
                 </div>
 
                 <!-- Active Attack Profile Pills Preview (Hazır Profil Modifiyerleri - Bir Aşağı Taşındı) -->
@@ -1428,7 +1433,11 @@
                 </div>
               </div>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 flex-wrap">
+              <button type="button" onclick="const el=document.getElementById('char-smart-notes-container'); if(el) el.scrollIntoView({behavior:'smooth', block:'start'});" class="bg-amber-600/20 hover:bg-amber-600/35 text-amber-300 border border-amber-500/40 font-bold text-xs px-3 py-1.5 rounded-lg shadow flex items-center gap-1.5 transition cursor-pointer" title="Akıllı Karakter & Kampanya Notlarına (Mindmap + AI Günlükçü) git">
+                <span>📝</span>
+                <span>Akıllı Notlar & Mindmap</span>
+              </button>
               <button onclick="openProfileEditModal()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg shadow flex items-center gap-1.5 transition cursor-pointer" title="Karakter künyesini, kimliğini, ırkını ve profilini düzenle">
                 <span class="inline-flex items-center"><svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"></polygon><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"></polygon><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"></line><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
                 <span>📜</span>
@@ -1657,7 +1666,9 @@
             </table>
           </div>
         </div>
-      
+
+        <!-- 📜 SMART CHARACTER & CAMPAIGN NOTES (HubNotes Shared Module: Mindmap + AI Scribe + Cloud Sync) -->
+        <div id="char-smart-notes-container" class="mt-4"></div>
 
       </div>
     </div>
@@ -2139,10 +2150,20 @@
                   <option value="Other">Other (Diğer)</option>
                 </select>
               </div>
-              <button type="button" onclick="openAddPoolItemModal()" class="w-full sm:w-auto bg-amber-600 hover:bg-amber-500 active:scale-95 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition shadow flex items-center justify-center gap-1.5 cursor-pointer shrink-0">
-                <span>➕</span>
-                <span>Yeni Eşya Ekle</span>
-              </button>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <button type="button" onclick="openCharacterForgeDrawer()" class="w-full sm:w-auto bg-indigo-700 hover:bg-indigo-600 active:scale-95 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition shadow flex items-center justify-center gap-1.5 cursor-pointer shrink-0 border border-indigo-400/40" title="V2 Lego Demirhanesi: Materyal (Mithral, Adamantine) + Enhancement (+1..+5) + Özel Güç (Keen, Flaming, Vorpal) birleştir">
+                  <span>⚒️</span>
+                  <span>Demirhane (Lego)</span>
+                </button>
+                <button type="button" onclick="openCharacterCompendiumDrawer()" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 active:scale-95 text-amber-300 font-bold text-xs px-3 py-1.5 rounded-lg transition shadow flex items-center justify-center gap-1.5 cursor-pointer shrink-0 border border-amber-500/40" title="3.522 Kayıtlı Modüler SRD V2 Kütüphanesinden Eşya Ekle">
+                  <span>📚</span>
+                  <span>SRD Kütüphane</span>
+                </button>
+                <button type="button" onclick="openAddPoolItemModal()" class="w-full sm:w-auto bg-amber-600 hover:bg-amber-500 active:scale-95 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition shadow flex items-center justify-center gap-1.5 cursor-pointer shrink-0">
+                  <span>➕</span>
+                  <span>Yeni Eşya Ekle</span>
+                </button>
+              </div>
             </div>
           </div>
           <div class="overflow-x-auto">
@@ -7559,8 +7580,11 @@
   <!-- SCRIPT LOGIC -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase_auth.js?v=20261025_01"></script>
-  <script src="rule_engine.js?v=20261025_2225"></script>
-  <script src="rule_master.js?v=20261025_2225"></script>
+  <script src="srd_compendium.js?v=20261028_v2"></script>
+  <script src="rule_engine.js?v=20261028_v2"></script>
+  <script src="rule_master.js?v=20261028_v2"></script>
+  <script src="ui_shared.js?v=20261028_v2"></script>
+  <script src="hub_notes.js?v=20261028_v2"></script>
   <script src="dice3d.js?v=20261025_2338"></script>
   <script src="gdrive_sync.js?v=20261023_16"></script>
   <script src="hero_silhouette_data.js?v=20261023_16"></script>
@@ -7823,7 +7847,9 @@
           }
         }
         if (_fastChar) {
-          character = _fastChar;
+          character = (window.SchemaMigrator && typeof window.SchemaMigrator.upgradeCharacterToV2 === 'function')
+            ? window.SchemaMigrator.upgradeCharacterToV2(_fastChar)
+            : _fastChar;
           try { renderHUD(); } catch (e) {}
           try { renderAbilities(); } catch (e) {}
           try { renderCharacterProfile(); } catch (e) {}
@@ -7870,6 +7896,9 @@
       if (window.SupabaseAuth) {
         const authUser = await window.SupabaseAuth.requireAuth();
         if (!authUser) return; // Oturum yoksa login'e yönlendirildi, sayfa yüklemesini durdur
+      }
+      if (window.SrdCompendium && typeof window.SrdCompendium.init === 'function') {
+        window.SrdCompendium.init().catch(e => console.warn('SrdCompendium init warning:', e));
       }
       try {
         await loadInitialData();
@@ -8424,6 +8453,10 @@
             character.settings.pinDrawerLimit = 5;
             updated = true;
           }
+          if (window.SchemaMigrator && typeof window.SchemaMigrator.upgradeCharacterToV2 === 'function' && character.schemaVersion !== 2) {
+            character = window.SchemaMigrator.upgradeCharacterToV2(character);
+            updated = true;
+          }
           if (updated) saveStateToStorage(false);
         }
       } catch (e) {
@@ -8468,7 +8501,7 @@
         masterDb = defaultDb;
       }
 
-      // Sync canonical 29-column RuleMaster entries from defaultDb (master_db.json / BUNDLED_MASTER_DB) into masterDb
+      // Sync & normalize Master DB entries to Canonical V2 Schema (schemaVersion: 2, modifiers, damageParts, modes)
       try {
         if (!Array.isArray(masterDb)) masterDb = [];
         masterDb = masterDb.filter(m => m && typeof m === 'object');
@@ -8477,43 +8510,23 @@
         window.CORE_SPELLS_AND_MANEUVERS_35E = canonicalDefaults.filter(
           m => m && (m.type === 'Spell' || m.type === 'Maneuver' || m.type === 'Stance')
         );
-        const canonicalKeysToSync = [
-          'type', 'slot', 'parent', 'prereq', 'source', 'benefit', 'description',
-          'bonusType', 'scope', 'combatScope', 'attackType', 'role',
-          'strBonus', 'dexBonus', 'conBonus', 'intBonus', 'wisBonus', 'chaBonus',
-          'acBonus', 'hpBonus', 'attBonus', 'dmgBonus',
-          'fortBonus', 'refBonus', 'willBonus', 'skillBonus', 'clBonus', 'speedBonus',
-          'extraDmg', 'dice', 'damageDice', 'critMin', 'critMult', 'dmgType',
-          'action', 'duration', 'range', 'weight', 'cost',
-          'school', 'level', 'discipline', 'tags',
-          'isChild', 'effectType', 'childButtonLabel', 'selfHpCost', 'unitLabel'
-        ];
         canonicalDefaults.forEach(defItem => {
           if (!defItem || !defItem.name) return;
           const defName = (defItem.name || '').toLowerCase().trim();
           const existingItem = masterDb.find(m => m && (m.name || '').toLowerCase().trim() === defName);
           if (!existingItem) {
-            const parentName = (defItem.parent && defItem.parent !== '-') ? defItem.parent.replace(/^\u21B3\s*/, '').trim().toLowerCase() : '';
-            const parentIdx = parentName ? masterDb.findIndex(m => m && (m.name || '').replace(/^\u21B3\s*/, '').trim().toLowerCase() === parentName) : -1;
-            if (parentIdx >= 0) {
-              let insertAt = parentIdx + 1;
-              while (insertAt < masterDb.length && masterDb[insertAt] && (masterDb[insertAt].parent || '').replace(/^\u21B3\s*/, '').trim().toLowerCase() === parentName) {
-                insertAt++;
-              }
-              masterDb.splice(insertAt, 0, defItem);
-            } else {
-              masterDb.push(defItem);
-            }
+            masterDb.push(defItem);
             addedCount++;
-          } else {
-            canonicalKeysToSync.forEach(k => {
-              if (defItem[k] !== undefined && JSON.stringify(existingItem[k]) !== JSON.stringify(defItem[k])) {
-                existingItem[k] = defItem[k];
-                addedCount++;
-              }
-            });
           }
         });
+        // Fold legacy child entries into parent.modes[] and upgrade all entries to V2
+        if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.normalizeDatabaseList === 'function') {
+          const prevLen = masterDb.length;
+          masterDb = RuleMaster.normalizeDatabaseList(masterDb);
+          if (masterDb.length !== prevLen) addedCount++;
+        } else if (window.SchemaMigrator && typeof window.SchemaMigrator.migrateMasterDbEntryToV2 === 'function') {
+          masterDb = masterDb.map(m => window.SchemaMigrator.migrateMasterDbEntryToV2(m));
+        }
         // Ensure cantrips in masterDb have level: 0 explicitly
         masterDb.forEach(m => {
           if (m && (m.type === 'Spell' || (m.category || '').includes('Spell')) && m.level === undefined) {
@@ -8527,7 +8540,7 @@
           localStorage.setItem('dnd35_master_db', JSON.stringify(masterDb));
         }
       } catch (syncErr) {
-        console.warn('Canonical masterDb sync warning:', syncErr);
+        console.warn('Canonical V2 masterDb sync warning:', syncErr);
       }
 
       if (typeof syncCustomClassesToRuleEngine === 'function') {
@@ -9474,6 +9487,9 @@
         }
       }
 
+      if (window.SchemaMigrator && typeof window.SchemaMigrator.upgradeCharacterToV2 === 'function' && character.schemaVersion !== 2) {
+        character = window.SchemaMigrator.upgradeCharacterToV2(character);
+      }
       if (!Array.isArray(character.skills)) {
         character.skills = Object.values(character.skills || {});
         if (typeof ensureAllSkills === 'function') ensureAllSkills(character);
@@ -9525,6 +9541,9 @@
       try { renderConsumables(); } catch (e) { console.error('renderConsumables error:', e); }
       if (typeof renderMasterDbTable === 'function') {
         try { renderMasterDbTable(); } catch (e) { console.error('renderMasterDbTable error:', e); }
+      }
+      if (window.HubNotes && typeof window.HubNotes.mountCharacterNotesWidget === 'function') {
+        try { window.HubNotes.mountCharacterNotesWidget('char-smart-notes-container'); } catch (e) { console.error('HubNotes widget error:', e); }
       }
       try { renderDiceHistory(); } catch (e) { console.error('renderDiceHistory error:', e); }
     }
@@ -15041,8 +15060,9 @@ function renderManualStatsPanel() {
         ? RuleEngine.resolveSpellDynamicScaling(spell, cl)
         : null;
 
-      // 1. Damage / Dice expression
-      let diceExpr = (scaling && scaling.diceFormula) ? scaling.diceFormula : (spell.dice || spell.damageDice || spell.extraDmg || masterSpell.dice || '');
+      // 1. Damage / Dice expression (V2 damageParts primary lookup + fallback)
+      const v2PrimaryPart = (Array.isArray(spell.damageParts) && spell.damageParts[0]) || (Array.isArray(masterSpell.damageParts) && masterSpell.damageParts[0]) || null;
+      let diceExpr = (scaling && scaling.diceFormula) ? scaling.diceFormula : ((v2PrimaryPart && v2PrimaryPart.dice) || spell.dice || spell.damageDice || masterSpell.dice || '');
       if (!diceExpr && (spell.benefit || masterSpell.benefit)) {
         const text = spell.benefit || masterSpell.benefit || '';
         const m = text.match(/\b\d+d\d+(?:\s*[+-]\s*\d+)?\b/i);
@@ -19027,20 +19047,30 @@ function renderManualStatsPanel() {
         const isTwoHand = (item.weaponType || '').includes('Two-Handed') || (typeof RuleEngine !== 'undefined' && RuleEngine.isTwoHandedWeapon(item));
 
         if (!existingWep) {
+          const primaryPart = Array.isArray(item.damageParts) && item.damageParts.length > 0 ? item.damageParts[0] : null;
+          const secondaryParts = Array.isArray(item.damageParts) && item.damageParts.length > 1 ? item.damageParts.slice(1) : [];
+          const wMeta = item.weaponMeta || {};
           existingWep = {
+            id: item.id || ('wep_' + String(item.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_')),
+            baseItemId: item.baseItemId || item.id || null,
             name: item.name,
             grip: isTwoHand ? '2-Hand' : (item.slot === 'Main Hand' ? '1-Hand' : '1-Hand'),
-            dice: item.dice || item.extraDmg || '1d8',
-            critMin: Number(item.critMin) || 20,
-            rawCritMin: Number(item.critMin) || 20,
-            critMult: Number(item.critMult) || 2,
-            attBonus: Number(item.attBonus) || 0,
-            dmgBonus: Number(item.dmgBonus) || 0,
-            dmgType: item.dmgType || 'Slashing',
-            bonusType: item.bonusType || 'Enhancement',
+            dice: (primaryPart && primaryPart.dice) || item.dice || '1d8',
+            damageParts: Array.isArray(item.damageParts) && item.damageParts.length > 0
+              ? JSON.parse(JSON.stringify(item.damageParts))
+              : [{ dice: item.dice || '1d8', bonus: Number(item.dmgBonus) || 0, type: item.dmgType || 'Slashing', multiplyOnCrit: true }],
+            modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : [],
+            modes: Array.isArray(item.modes) ? JSON.parse(JSON.stringify(item.modes)) : [],
+            critMin: Number(wMeta.critMin || item.critMin) || 20,
+            rawCritMin: Number(wMeta.critMin || item.critMin) || 20,
+            critMult: Number(wMeta.critMult || item.critMult) || 2,
+            attBonus: Number(item.enhancementBonus || item.attBonus) || 0,
+            dmgBonus: Number(item.enhancementBonus || item.dmgBonus) || 0,
+            dmgType: (primaryPart && primaryPart.type) || item.dmgType || 'Slashing',
+            bonusType: 'enhancement',
             tags: item.tags || [],
-            elementalMods: [],
-            keen: false
+            elementalMods: secondaryParts.map(sp => ({ name: sp.source || sp.type, dice: sp.dice, type: sp.type })),
+            keen: Boolean(item.ruleFlags && item.ruleFlags.keen)
           };
           character.weapons.push(existingWep);
         }
@@ -20605,7 +20635,8 @@ function renderManualStatsPanel() {
 
       if (hasSneak) {
         const dbSA = typeof findMasterItem === 'function' ? findMasterItem('Sneak Attack') : null;
-        const saDice = dbSA?.dice || dbSA?.extraDmg || '1d6';
+        const saPart = Array.isArray(dbSA?.damageParts) && dbSA.damageParts[0] ? dbSA.damageParts[0].dice : null;
+        const saDice = saPart || dbSA?.dice || '1d6';
         qualifiedRangedList.push({
           id: 'sneakAttack',
           name: 'Sneak Attack',
@@ -20663,6 +20694,7 @@ function renderManualStatsPanel() {
           if (qualifiedRangedList.some(q => q.name.toLowerCase().trim() === pNameLower)) return;
 
           const dbEntry = typeof findMasterItem === 'function' ? findMasterItem(pin.name) : null;
+          const dbPartDice = (Array.isArray(dbEntry?.damageParts) && dbEntry.damageParts[0]?.dice) || '';
           qualifiedRangedList.push({
             id: `pin_${pin.name}`,
             pinRef: pin,
@@ -20671,7 +20703,7 @@ function renderManualStatsPanel() {
             bonusStr: pin.badge || dbEntry?.benefit || '+ Pin',
             bonusAtk: Number(dbEntry?.attBonus ?? pin.bonusAtk ?? 0),
             bonusDmg: Number(dbEntry?.dmgBonus ?? pin.bonusDmg ?? 0),
-            dice: dbEntry?.dice || dbEntry?.extraDmg || pin.dice || '',
+            dice: dbPartDice || dbEntry?.dice || pin.dice || '',
             bonusType: dbEntry?.bonusType || pin.bonusType || 'untyped',
             combatScope: 'ranged',
             active: Boolean(pin.active),
@@ -21360,7 +21392,7 @@ function renderManualStatsPanel() {
         customModifiers: nonChainMods
       });
 
-      // Update Weapon Base Stats (Temel Hasar + Stance/Manevra extra dice)
+      // Update Weapon Base Stats (Temel Hasar + V2 damageParts + Stance/Manevra extra dice)
       const dmgDisplayEl = document.getElementById('weapon-damage-formula-display');
       if (dmgDisplayEl) {
         const activeDiceMods = (character.activeModifiers || []).filter(m => m.active && m.dice && m.combatScope !== 'ranged' && m.scope !== 'Ranged Only');
@@ -21368,7 +21400,12 @@ function renderManualStatsPanel() {
         if (activeDiceMods.length > 0) {
           extraDiceStr = ' + ' + activeDiceMods.map(m => `${m.dice} (${m.name})`).join(' + ');
         }
-        if (Array.isArray(wep.elementalMods) && wep.elementalMods.length > 0) {
+        const v2SecondaryParts = Array.isArray(evalResult.damageParts) && evalResult.damageParts.length > 1
+          ? evalResult.damageParts.slice(1).filter(p => p && p.dice && !p.onCritOnly)
+          : [];
+        if (v2SecondaryParts.length > 0) {
+          extraDiceStr += ' + ' + v2SecondaryParts.map(p => `${p.dice} (${p.source || p.type || 'Element'})`).join(' + ');
+        } else if (Array.isArray(wep.elementalMods) && wep.elementalMods.length > 0) {
           extraDiceStr += ' + ' + wep.elementalMods.map(em => `${em.dice} (${em.name || em.type})`).join(' + ');
         }
         const baseDmgStr = evalResult.baseDice + (evalResult.netFlatDamage >= 0 ? '+' : '') + evalResult.netFlatDamage;
@@ -21376,6 +21413,26 @@ function renderManualStatsPanel() {
           dmgDisplayEl.textContent = `${evalResult.baseDice}+${evalResult.netFlatDamage} (Şarj: x${evalResult.chargeMultiplier})${extraDiceStr}`;
         } else {
           dmgDisplayEl.textContent = baseDmgStr + extraDiceStr;
+        }
+      }
+
+      // Render V2 Embedded Weapon Modes Strip if the active weapon has modes[]
+      const modesStripEl = document.getElementById('combat-weapon-modes-strip');
+      if (modesStripEl) {
+        const dbWep = typeof findMasterItem === 'function' ? findMasterItem(wep.name) : null;
+        const modesList = (Array.isArray(wep.modes) && wep.modes.length > 0)
+          ? wep.modes
+          : (Array.isArray(dbWep?.modes) ? dbWep.modes : []);
+        if (modesList.length > 0 && window.DnDUI && typeof window.DnDUI.renderModesPills === 'function') {
+          modesStripEl.classList.remove('hidden');
+          modesStripEl.innerHTML = window.DnDUI.renderModesPills(
+            { ...wep, modes: modesList },
+            wep.activeModeId || modesList[0]?.id,
+            "selectActiveWeaponMode('__MODE_ID__')"
+          );
+        } else {
+          modesStripEl.classList.add('hidden');
+          modesStripEl.innerHTML = '';
         }
       }
 
@@ -22547,9 +22604,12 @@ function renderManualStatsPanel() {
         console.warn('syncAutomatedCombatPins error:', err);
       }
 
-      // Live Special Defenses
+      // Live Special Defenses & V2 Active Condition Blocker Banner
       try {
         renderSpecialDefenses();
+        if (window.DnDUI && typeof window.DnDUI.renderConditionWarningBanner === 'function') {
+          window.DnDUI.renderConditionWarningBanner(character, 'combat-condition-warning-banner');
+        }
       } catch (err) {
         console.warn('renderSpecialDefenses error:', err);
       }
@@ -26531,7 +26591,8 @@ function renderManualStatsPanel() {
 
     function resolveSpellEffectiveFormula(s, cl = 6) {
       if (!s) return null;
-      const direct = s.damageDice || s.dice || s.extraDmg || findDiceExpression(s.benefit || s.notes || s.description);
+      const v2Part = Array.isArray(s.damageParts) && s.damageParts[0] ? s.damageParts[0].dice : null;
+      const direct = v2Part || s.damageDice || s.dice || findDiceExpression(s.benefit || s.notes || s.description);
       if (direct) return direct;
       const n = (s.name || '').toLowerCase().trim();
       if (n === 'heal' || n === 'mass heal') {
@@ -29791,14 +29852,17 @@ function renderManualStatsPanel() {
           }
         }
 
+        const v2SpellPart = Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0].dice : '';
         character.spellcasting[poolKey].push({
+          id: item.id || ('spl_' + String(item.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_')),
           name: item.name,
           level: resolvedLvl,
           school: item.school || 'Universal',
           benefit: item.benefit || item.description || '',
           range: item.range || 'Close',
           action: item.action || 'Standard Action',
-          damageDice: item.damageDice || item.dice || item.extraDmg || ''
+          damageDice: v2SpellPart || item.damageDice || item.dice || '',
+          damageParts: Array.isArray(item.damageParts) ? JSON.parse(JSON.stringify(item.damageParts)) : []
         });
 
         saveStateToStorage(true);
@@ -42991,22 +43055,32 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         isEquipped: false
       });
 
-      // If weapon, sync with weapons array
+      // If weapon, sync with weapons array (V2 damageParts & modes)
       if (cat === 'Weapon') {
         if (!character.weapons) character.weapons = [];
         const hasWep = character.weapons.some(w => (w.name || '').toLowerCase() === item.name.toLowerCase());
         if (!hasWep) {
+          const primaryPart = Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0] : null;
+          const secondaryParts = Array.isArray(item.damageParts) && item.damageParts.length > 1 ? item.damageParts.slice(1) : [];
           character.weapons.push({
+            id: item.id || ('wep_' + String(item.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_')),
+            baseItemId: item.baseItemId || item.id || null,
             name: item.name,
             grip: item.slot === 'Main Hand' ? '1-Hand' : '2-Hand',
-            dice: item.dice || item.extraDmg || '1d8',
-            critMin: item.critMin || 20,
-            critMult: item.critMult || 2,
-            attBonus: Number(item.attBonus) || 0,
-            dmgBonus: Number(item.dmgBonus) || 0,
-            dmgType: item.dmgType || 'Slashing',
-            bonusType: item.bonusType || 'Enhancement',
-            tags: item.tags || []
+            dice: (primaryPart && primaryPart.dice) || item.dice || '1d8',
+            damageParts: Array.isArray(item.damageParts) && item.damageParts.length > 0
+              ? JSON.parse(JSON.stringify(item.damageParts))
+              : [{ dice: item.dice || '1d8', bonus: Number(item.dmgBonus) || 0, type: item.dmgType || 'Slashing', multiplyOnCrit: true }],
+            modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : [],
+            modes: Array.isArray(item.modes) ? JSON.parse(JSON.stringify(item.modes)) : [],
+            critMin: item.weaponMeta?.critMin || item.critMin || 20,
+            critMult: item.weaponMeta?.critMult || item.critMult || 2,
+            attBonus: Number(item.enhancementBonus || item.attBonus) || 0,
+            dmgBonus: Number(item.enhancementBonus || item.dmgBonus) || 0,
+            dmgType: (primaryPart && primaryPart.type) || item.dmgType || 'Slashing',
+            bonusType: 'enhancement',
+            tags: item.tags || [],
+            elementalMods: secondaryParts.map(sp => ({ name: sp.source || sp.type, dice: sp.dice, type: sp.type }))
           });
         }
       }
@@ -43024,40 +43098,40 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         }
       }
 
-      // Check and attach linked child powers from Master DB
+      // Attach embedded V2 modes[] from item
       let attachedChildCount = 0;
-      const linkedChildren = (typeof RuleMaster !== 'undefined' && typeof RuleMaster.getChildrenForEntry === 'function')
-        ? RuleMaster.getChildrenForEntry(item, masterDb)
-        : [];
-      if (linkedChildren.length > 0) {
-        linkedChildren.forEach(child => {
-          const childClean = (child.name || '').replace(/^↳\s*/, '').trim();
-          if (child.action?.toLowerCase().includes('action') || (child.duration && child.duration !== 'Continuous')) {
+      const itemModes = Array.isArray(item.modes) ? item.modes : [];
+      if (itemModes.length > 0) {
+        itemModes.forEach(mode => {
+          const modeClean = (mode.name || '').replace(/^↳\s*/, '').trim();
+          const modePart = Array.isArray(mode.damageParts) && mode.damageParts[0] ? mode.damageParts[0] : null;
+          const modeDice = (modePart && modePart.dice) || mode.dice || '';
+          if (mode.action?.toLowerCase().includes('action') || (mode.duration && mode.duration !== 'Continuous')) {
             if (!character.specialAbilities) character.specialAbilities = [];
-            if (!character.specialAbilities.some(a => (a.name || '').toLowerCase() === childClean.toLowerCase())) {
+            if (!character.specialAbilities.some(a => (a.name || '').toLowerCase() === modeClean.toLowerCase())) {
               character.specialAbilities.push({
-                name: childClean,
+                name: modeClean,
                 source: item.name,
-                action: child.action || 'Standard Action',
-                duration: child.duration || 'Special',
-                benefit: child.benefit || child.description || '',
-                dice: child.extraDmg || child.dice || '',
+                action: mode.action || 'Standard Action',
+                duration: mode.duration || 'Special',
+                benefit: mode.benefit || mode.description || '',
+                dice: modeDice,
                 active: false
               });
               attachedChildCount++;
             }
           }
-          if (child.extraDmg) {
+          if (modeDice) {
             if (!character.activeModifiers) character.activeModifiers = [];
-            if (!character.activeModifiers.some(m => (m.name || '').toLowerCase() === childClean.toLowerCase())) {
+            if (!character.activeModifiers.some(m => (m.name || '').toLowerCase() === modeClean.toLowerCase())) {
               character.activeModifiers.push({
-                name: childClean,
+                name: modeClean,
                 source: item.name,
-                bonusAtk: Number(child.attBonus) || 0,
-                dice: child.extraDmg || child.dice || '',
-                type: child.dmgType || 'Energy',
+                bonusAtk: 0,
+                dice: modeDice,
+                type: (modePart && modePart.type) || 'Energy',
                 active: true,
-                notes: child.benefit || child.description || ''
+                notes: mode.benefit || mode.description || ''
               });
               attachedChildCount++;
             }
@@ -43097,21 +43171,17 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       const item = window._poolCurrentAiEntries?.[idx];
       if (!item) return;
 
-      // Ensure item AND its children are stored in masterDb
-      const itemsToStore = [item];
-      const children = (typeof RuleMaster !== 'undefined' && typeof RuleMaster.getChildrenForEntry === 'function')
-        ? RuleMaster.getChildrenForEntry(item, window._poolCurrentAiEntries)
-        : [];
-      children.forEach(c => itemsToStore.push(c));
+      // Normalize AI entry to Canonical V2 (with embedded modes[] and damageParts[]) and store in masterDb
+      const v2Item = (typeof RuleMaster !== 'undefined' && typeof RuleMaster.normalizeEntry === 'function')
+        ? RuleMaster.normalizeEntry(item)
+        : item;
 
       let dbAdded = 0;
-      itemsToStore.forEach(it => {
-        const exists = masterDb.some(m => (m.name || '').toLowerCase().trim() === (it.name || '').toLowerCase().trim());
-        if (!exists) {
-          masterDb.push(it);
-          dbAdded++;
-        }
-      });
+      const exists = masterDb.some(m => (m.name || '').toLowerCase().trim() === (v2Item.name || '').toLowerCase().trim());
+      if (!exists) {
+        masterDb.push(v2Item);
+        dbAdded++;
+      }
 
       if (dbAdded > 0) {
         localStorage.setItem('dnd35_master_db', JSON.stringify(masterDb));
@@ -43121,86 +43191,99 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       }
 
       if (!character.gearPool) character.gearPool = [];
-      const cat = mapEntryToGearCategory(item);
-      const isBeltItem = (item.slot || '').toLowerCase().includes('belt') || cat === 'Consumable';
+      const cat = mapEntryToGearCategory(v2Item);
+      const isBeltItem = (v2Item.slot || '').toLowerCase().includes('belt') || cat === 'Consumable';
 
       const newId = Date.now();
       character.gearPool.push({
         id: newId,
-        name: item.name,
-        masterDbName: item.name,
+        baseItemId: v2Item.baseItemId || v2Item.id || null,
+        name: v2Item.name,
+        masterDbName: v2Item.name,
         category: cat,
-        slot: item.slot && item.slot !== 'None' ? item.slot : cat,
+        slot: v2Item.slot && v2Item.slot !== 'None' ? v2Item.slot : cat,
         qty: 1,
-        weight: Number(item.weight) || 0,
-        cost: Number(item.cost) || 0,
-        desc: item.benefit || item.description || '',
+        weight: Number(v2Item.weight) || 0,
+        cost: Number(v2Item.cost) || 0,
+        desc: v2Item.benefit || v2Item.description || '',
+        modifiers: Array.isArray(v2Item.modifiers) ? JSON.parse(JSON.stringify(v2Item.modifiers)) : [],
+        damageParts: Array.isArray(v2Item.damageParts) ? JSON.parse(JSON.stringify(v2Item.damageParts)) : [],
+        modes: Array.isArray(v2Item.modes) ? JSON.parse(JSON.stringify(v2Item.modes)) : [],
         isBelt: isBeltItem,
         isEquipped: false
       });
 
       if (cat === 'Weapon') {
         if (!character.weapons) character.weapons = [];
-        const hasWep = character.weapons.some(w => (w.name || '').toLowerCase() === item.name.toLowerCase());
+        const hasWep = character.weapons.some(w => (w.name || '').toLowerCase() === v2Item.name.toLowerCase());
         if (!hasWep) {
+          const primaryPart = Array.isArray(v2Item.damageParts) && v2Item.damageParts[0] ? v2Item.damageParts[0] : null;
           character.weapons.push({
-            name: item.name,
-            grip: item.slot === 'Main Hand' ? '1-Hand' : '2-Hand',
-            dice: item.dice || item.extraDmg || '1d8',
-            critMin: item.critMin || 20,
-            critMult: item.critMult || 2,
-            attBonus: Number(item.attBonus) || 0,
-            dmgBonus: Number(item.dmgBonus) || 0,
-            dmgType: item.dmgType || 'Slashing',
-            bonusType: item.bonusType || 'Enhancement',
-            tags: item.tags || []
+            id: v2Item.id || ('wep_' + String(v2Item.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_')),
+            baseItemId: v2Item.baseItemId || v2Item.id || null,
+            name: v2Item.name,
+            grip: v2Item.slot === 'Main Hand' ? '1-Hand' : '2-Hand',
+            dice: (primaryPart && primaryPart.dice) || v2Item.dice || '1d8',
+            damageParts: Array.isArray(v2Item.damageParts) ? JSON.parse(JSON.stringify(v2Item.damageParts)) : [],
+            modifiers: Array.isArray(v2Item.modifiers) ? JSON.parse(JSON.stringify(v2Item.modifiers)) : [],
+            modes: Array.isArray(v2Item.modes) ? JSON.parse(JSON.stringify(v2Item.modes)) : [],
+            critMin: v2Item.weaponMeta?.critMin || v2Item.critMin || 20,
+            critMult: v2Item.weaponMeta?.critMult || v2Item.critMult || 2,
+            attBonus: Number(v2Item.enhancementBonus || v2Item.attBonus) || 0,
+            dmgBonus: Number(v2Item.enhancementBonus || v2Item.dmgBonus) || 0,
+            dmgType: (primaryPart && primaryPart.type) || v2Item.dmgType || 'Slashing',
+            bonusType: 'enhancement',
+            tags: v2Item.tags || []
           });
         }
       }
 
       if (cat === 'Consumable') {
         if (!character.consumables) character.consumables = [];
-        const hasCons = character.consumables.some(c => (c.name || '').toLowerCase() === item.name.toLowerCase());
+        const hasCons = character.consumables.some(c => (c.name || '').toLowerCase() === v2Item.name.toLowerCase());
         if (!hasCons) {
           character.consumables.push({
-            name: item.name,
+            name: v2Item.name,
             qty: 1,
-            effect: item.benefit || 'Potion effect'
+            effect: v2Item.benefit || 'Potion effect'
           });
         }
       }
 
-      // Also attach child powers to character
+      // Also attach V2 embedded modes[] to character
       let attachedChildCount = 0;
-      if (children.length > 0) {
-        children.forEach(child => {
-          const childClean = (child.name || '').replace(/^↳\s*/, '').trim();
-          if (child.action?.toLowerCase().includes('action') || (child.duration && child.duration !== 'Continuous')) {
+      const aiModes = Array.isArray(v2Item.modes) ? v2Item.modes : [];
+      if (aiModes.length > 0) {
+        aiModes.forEach(mode => {
+          const modeClean = (mode.name || '').replace(/^↳\s*/, '').trim();
+          const modePart = Array.isArray(mode.damageParts) && mode.damageParts[0] ? mode.damageParts[0] : null;
+          const modeDice = (modePart && modePart.dice) || mode.dice || '';
+          if (mode.action?.toLowerCase().includes('action') || (mode.duration && mode.duration !== 'Continuous')) {
             if (!character.specialAbilities) character.specialAbilities = [];
-            if (!character.specialAbilities.some(a => (a.name || '').toLowerCase() === childClean.toLowerCase())) {
+            if (!character.specialAbilities.some(a => (a.name || '').toLowerCase() === modeClean.toLowerCase())) {
               character.specialAbilities.push({
-                name: childClean,
-                source: item.name,
-                action: child.action || 'Standard Action',
-                duration: child.duration || 'Special',
-                benefit: child.benefit || child.description || '',
-                dice: child.extraDmg || child.dice || '',
+                name: modeClean,
+                source: v2Item.name,
+                action: mode.action || 'Standard Action',
+                duration: mode.duration || 'Special',
+                benefit: mode.benefit || mode.description || '',
+                dice: modeDice,
                 active: false
               });
               attachedChildCount++;
             }
           }
-          if (child.extraDmg) {
+          if (modeDice) {
             if (!character.activeModifiers) character.activeModifiers = [];
-            if (!character.activeModifiers.some(m => (m.name || '').toLowerCase() === childClean.toLowerCase())) {
+            if (!character.activeModifiers.some(m => (m.name || '').toLowerCase() === modeClean.toLowerCase())) {
               character.activeModifiers.push({
-                name: childClean,
-                source: item.name,
-                bonusAtk: Number(child.attBonus) || 0,
-                dice: child.extraDmg || child.dice || '',
-                type: child.dmgType || 'Energy',
+                name: modeClean,
+                source: v2Item.name,
+                bonusAtk: 0,
+                dice: modeDice,
+                type: (modePart && modePart.type) || 'Energy',
                 active: true,
-                notes: child.benefit || child.description || ''
+                notes: mode.benefit || mode.description || ''
               });
               attachedChildCount++;
             }
@@ -43239,6 +43322,133 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
 
     function fillPoolFormWithQueryName(name) {
       fillPoolItemForm({ name: name, category: 'Other', weight: 1, cost: 10, benefit: '' });
+    }
+
+    // ====================================================
+    // ⚒️ V2 LEGO FORGE, SRD COMPENDIUM & EMBEDDED MODES INTEGRATION
+    // ====================================================
+    function addV2ItemToCharacterGearPool(v2Item) {
+      if (!v2Item || !character) return;
+      if (!Array.isArray(character.gearPool)) character.gearPool = [];
+      const cat = typeof mapEntryToGearCategory === 'function' ? mapEntryToGearCategory(v2Item) : (v2Item.type || 'Other');
+      const isBeltItem = (v2Item.slot || '').toLowerCase().includes('belt') || cat === 'Consumable';
+      const newEntry = {
+        id: v2Item.id || ('item_' + Date.now()),
+        baseItemId: v2Item.baseItemId || v2Item.id || null,
+        name: v2Item.name,
+        masterDbName: v2Item.name,
+        category: cat,
+        slot: v2Item.slot && v2Item.slot !== 'None' ? v2Item.slot : cat,
+        qty: 1,
+        weight: Number(v2Item.weight) || 0,
+        cost: Number(v2Item.cost) || 0,
+        desc: v2Item.benefit || v2Item.description || '',
+        material: v2Item.material || null,
+        enhancementBonus: Number(v2Item.enhancementBonus) || 0,
+        enhancements: Array.isArray(v2Item.enhancements) ? v2Item.enhancements : [],
+        modifiers: Array.isArray(v2Item.modifiers) ? JSON.parse(JSON.stringify(v2Item.modifiers)) : [],
+        damageParts: Array.isArray(v2Item.damageParts) ? JSON.parse(JSON.stringify(v2Item.damageParts)) : [],
+        modes: Array.isArray(v2Item.modes) ? JSON.parse(JSON.stringify(v2Item.modes)) : [],
+        weaponMeta: v2Item.weaponMeta ? JSON.parse(JSON.stringify(v2Item.weaponMeta)) : null,
+        armorMeta: v2Item.armorMeta ? JSON.parse(JSON.stringify(v2Item.armorMeta)) : null,
+        ruleFlags: v2Item.ruleFlags ? JSON.parse(JSON.stringify(v2Item.ruleFlags)) : {},
+        tacticalBadges: Array.isArray(v2Item.tacticalBadges) ? JSON.parse(JSON.stringify(v2Item.tacticalBadges)) : [],
+        isBelt: isBeltItem,
+        isEquipped: false
+      };
+      character.gearPool.push(newEntry);
+
+      if (cat === 'Weapon' || v2Item.type === 'Weapon') {
+        if (!Array.isArray(character.weapons)) character.weapons = [];
+        const hasWep = character.weapons.some(w => (w.name || '').toLowerCase() === (v2Item.name || '').toLowerCase());
+        if (!hasWep) {
+          const primaryPart = Array.isArray(v2Item.damageParts) && v2Item.damageParts[0] ? v2Item.damageParts[0] : null;
+          const secondaryParts = Array.isArray(v2Item.damageParts) && v2Item.damageParts.length > 1 ? v2Item.damageParts.slice(1) : [];
+          character.weapons.push({
+            id: newEntry.id,
+            baseItemId: newEntry.baseItemId,
+            name: v2Item.name,
+            grip: (v2Item.weaponMeta?.handedness || '').includes('Two') ? '2-Hand' : '1-Hand',
+            dice: (primaryPart && primaryPart.dice) || v2Item.dice || '1d8',
+            damageParts: newEntry.damageParts,
+            modifiers: newEntry.modifiers,
+            modes: newEntry.modes,
+            weaponMeta: newEntry.weaponMeta,
+            ruleFlags: newEntry.ruleFlags,
+            tacticalBadges: newEntry.tacticalBadges,
+            critMin: Number(v2Item.weaponMeta?.critMin || v2Item.critMin) || 20,
+            rawCritMin: Number(v2Item.weaponMeta?.critMin || v2Item.critMin) || 20,
+            critMult: Number(v2Item.weaponMeta?.critMult || v2Item.critMult) || 2,
+            attBonus: Number(v2Item.enhancementBonus || v2Item.attBonus) || 0,
+            dmgBonus: Number(v2Item.enhancementBonus || v2Item.dmgBonus) || 0,
+            dmgType: (primaryPart && primaryPart.type) || v2Item.dmgType || 'Slashing',
+            bonusType: 'enhancement',
+            tags: v2Item.tags || [],
+            elementalMods: secondaryParts.map(sp => ({ name: sp.source || sp.type, dice: sp.dice, type: sp.type })),
+            keen: Boolean(v2Item.ruleFlags && v2Item.ruleFlags.keen)
+          });
+        }
+      }
+
+      saveStateToStorage(true);
+      renderAll();
+      if (typeof showDiceTopToast === 'function') {
+        showDiceTopToast({
+          icon: '⚒️',
+          title: 'V2 Eşya Envantere Eklendi',
+          breakdown: `"${v2Item.name}" çantanıza (Gear Pool) eklendi.`,
+          total: `${Number(v2Item.cost || 0).toLocaleString('tr-TR')} gp`
+        });
+      }
+    }
+
+    function openCharacterForgeDrawer() {
+      if (window.DnDUI && typeof window.DnDUI.openCompendiumDrawer === 'function') {
+        window.DnDUI.openCompendiumDrawer({
+          defaultTab: 'forge',
+          onSelect: (assembledItem) => addV2ItemToCharacterGearPool(assembledItem)
+        });
+      }
+    }
+
+    function openCharacterCompendiumDrawer(defaultCategory = 'Weapon') {
+      if (window.DnDUI && typeof window.DnDUI.openCompendiumDrawer === 'function') {
+        window.DnDUI.openCompendiumDrawer({
+          defaultTab: 'browse',
+          category: defaultCategory,
+          onSelect: (entry) => addV2ItemToCharacterGearPool(entry)
+        });
+      }
+    }
+
+    function selectActiveWeaponMode(modeId) {
+      if (!character || !Array.isArray(character.weapons)) return;
+      const wep = character.weapons.find(w => w.name === character.activeWeapon) || character.weapons[0];
+      if (!wep) return;
+      wep.activeModeId = (wep.activeModeId === modeId) ? null : modeId;
+      const dbWep = typeof findMasterItem === 'function' ? findMasterItem(wep.name) : null;
+      const modesList = (Array.isArray(wep.modes) && wep.modes.length > 0) ? wep.modes : (Array.isArray(dbWep?.modes) ? dbWep.modes : []);
+      const chosenMode = modesList.find(m => (m.id || m.name) === wep.activeModeId);
+      if (chosenMode && Array.isArray(chosenMode.damageParts) && chosenMode.damageParts[0]?.dice) {
+        if (!Array.isArray(character.activeModifiers)) character.activeModifiers = [];
+        const modName = `${wep.name}: ${chosenMode.name}`;
+        let existingMod = character.activeModifiers.find(m => m.name === modName);
+        if (!existingMod) {
+          existingMod = {
+            name: modName,
+            source: wep.name,
+            bonusAtk: 0,
+            dice: chosenMode.damageParts[0].dice,
+            type: chosenMode.damageParts[0].type || 'Energy',
+            active: true
+          };
+          character.activeModifiers.push(existingMod);
+        } else {
+          existingMod.active = true;
+        }
+      }
+      saveStateToStorage(false);
+      recalculateOffense();
     }
 
     function fillPoolItemForm(item) {

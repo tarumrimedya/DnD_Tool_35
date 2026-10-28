@@ -398,7 +398,10 @@ const CloudSync = {
             const currentTempBefore = character.hp?.temp;
 
             Object.keys(character).forEach(k => delete character[k]);
-            Object.assign(character, foundInCloudHub.fullData);
+            const v2HubChar = (window.SchemaMigrator && typeof window.SchemaMigrator.upgradeCharacterToV2 === 'function')
+              ? window.SchemaMigrator.upgradeCharacterToV2(foundInCloudHub.fullData)
+              : foundInCloudHub.fullData;
+            Object.assign(character, v2HubChar);
             character._hubId = currentCharId;
 
             // Preserve newer local DM HP update if exists
@@ -449,7 +452,10 @@ const CloudSync = {
             const currentTempBefore = character.hp?.temp;
 
             Object.keys(character).forEach(k => delete character[k]);
-            Object.assign(character, remoteChar);
+            const v2RemoteChar = (window.SchemaMigrator && typeof window.SchemaMigrator.upgradeCharacterToV2 === 'function')
+              ? window.SchemaMigrator.upgradeCharacterToV2(remoteChar)
+              : remoteChar;
+            Object.assign(character, v2RemoteChar);
 
             // Preserve newer local DM HP update if exists
             if (localDmTs > 0 && currentHpBefore !== undefined) {
@@ -511,9 +517,15 @@ const CloudSync = {
         }
       });
 
-      const needsUpgrade = incomingList.length < mergedDb.length;
+      const normalizedMergedDb = (window.RuleMaster && typeof window.RuleMaster.normalizeDatabaseList === 'function')
+        ? window.RuleMaster.normalizeDatabaseList(mergedDb)
+        : ((window.SchemaMigrator && typeof window.SchemaMigrator.migrateMasterDbEntryToV2 === 'function')
+          ? mergedDb.map(m => window.SchemaMigrator.migrateMasterDbEntryToV2(m)).filter(m => !m.isChild)
+          : mergedDb);
+
+      const needsUpgrade = incomingList.length < normalizedMergedDb.length;
       masterDb.length = 0;
-      mergedDb.forEach(item => masterDb.push(item));
+      normalizedMergedDb.forEach(item => masterDb.push(item));
       localStorage.setItem('dnd35_master_db', JSON.stringify(masterDb));
 
       if (window.RuleMaster && typeof RuleMaster.renderTable === 'function') {

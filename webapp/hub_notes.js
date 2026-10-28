@@ -138,7 +138,50 @@
   }
 
   /**
+   * Resolve standalone Character Sheet instance when running inside index.html
+   */
+  function getStandaloneCharacterInstance() {
+    if (typeof window.getHubState === 'function') return null; // Running inside hub.html
+    if (window.character && typeof window.character === 'object') return window.character;
+    try {
+      if (typeof character !== 'undefined' && character && typeof character === 'object') return character;
+    } catch (e) {}
+    return null;
+  }
+
+  /**
+   * Ensure a character or campaign object has synchronized V2 `smartNotes` & `notesList` arrays,
+   * migrating legacy plain-text `notes` if needed.
+   */
+  function ensureSmartNotesArray(obj) {
+    if (!obj || typeof obj !== 'object') return [];
+    let list = Array.isArray(obj.smartNotes) && obj.smartNotes.length > 0
+      ? obj.smartNotes
+      : (Array.isArray(obj.notesList) && obj.notesList.length > 0 ? obj.notesList : null);
+
+    if (!list && obj.fullData && typeof obj.fullData === 'object') {
+      list = Array.isArray(obj.fullData.smartNotes) && obj.fullData.smartNotes.length > 0
+        ? obj.fullData.smartNotes
+        : (Array.isArray(obj.fullData.notesList) && obj.fullData.notesList.length > 0 ? obj.fullData.notesList : null);
+    }
+
+    if (!list) {
+      const rawText = obj.notes || (obj.fullData && obj.fullData.notes) || '';
+      list = normalizeLegacyNotes(rawText);
+    }
+
+    obj.smartNotes = list;
+    obj.notesList = list;
+    if (obj.fullData && typeof obj.fullData === 'object') {
+      obj.fullData.smartNotes = list;
+      obj.fullData.notesList = list;
+    }
+    return list;
+  }
+
+  /**
    * Determine active notes target:
+   * -1. Standalone Character Sheet (`index.html`) active character (unless overridden in modal)
    * 0. User override (if selected via modal dropdown)
    * 1. If in unassigned tab: unassigned character or first character
    * 2. If active campaign is DM Mode: Campaign notes
@@ -147,8 +190,55 @@
    * 5. Safe creation fallback: Ensures notes can ALWAYS be written
    */
   function getActiveNotesTarget() {
+    const standaloneChar = getStandaloneCharacterInstance();
     const state = getHubState();
-    if (!state) return null;
+
+    // Standalone Character Sheet Mode (index.html)
+    if (standaloneChar && !_overrideTargetKey) {
+      let list = ensureSmartNotesArray(standaloneChar);
+      // Reconcile with dnd35_hub_db if hub entry has newer/additional notes and standalone is empty
+      if (list.length === 0 && state && Array.isArray(state.characters)) {
+        const hubMatch = state.characters.find(c =>
+          (standaloneChar.id && c.id === standaloneChar.id) ||
+          (standaloneChar.name && c.name === standaloneChar.name)
+        );
+        if (hubMatch) {
+          const hubList = ensureSmartNotesArray(hubMatch);
+          if (hubList.length > 0) {
+            list = hubList;
+            standaloneChar.smartNotes = list;
+            standaloneChar.notesList = list;
+          }
+        }
+      }
+      const charId = standaloneChar.id || 'active_char';
+      const charName = standaloneChar.name || 'Karakter';
+      return {
+        type: 'character',
+        id: charId,
+        name: charName,
+        isDm: false,
+        titleBadge: `👤 ${charName} Notları`,
+        targetObj: standaloneChar,
+        notesList: list
+      };
+    }
+
+    if (!state) {
+      if (standaloneChar) {
+        const list = ensureSmartNotesArray(standaloneChar);
+        return {
+          type: 'character',
+          id: standaloneChar.id || 'active_char',
+          name: standaloneChar.name || 'Karakter',
+          isDm: false,
+          titleBadge: `👤 ${standaloneChar.name || 'Karakter'} Notları`,
+          targetObj: standaloneChar,
+          notesList: list
+        };
+      }
+      return null;
+    }
 
     if (!Array.isArray(state.campaigns)) state.campaigns = [];
     if (!Array.isArray(state.characters)) state.characters = [];
@@ -161,7 +251,7 @@
       if (type === 'campaign') {
         const camp = state.campaigns.find(c => c.id === id);
         if (camp) {
-          if (!Array.isArray(camp.notesList)) camp.notesList = normalizeLegacyNotes(camp.notes);
+          const list = ensureSmartNotesArray(camp);
           const hName = getCampaignHierarchyName(camp, state);
           return {
             type: 'campaign',
@@ -171,13 +261,25 @@
             isDm: Boolean(camp.isDmMode),
             titleBadge: camp.isDmMode ? '👑 DM Notları (Gizli)' : '🏰 Sefer Notları',
             targetObj: camp,
-            notesList: camp.notesList
+            notesList: list
           };
         }
       } else if (type === 'char') {
+        if (standaloneChar && (standaloneChar.id === id || id === 'active_char')) {
+          const list = ensureSmartNotesArray(standaloneChar);
+          return {
+            type: 'character',
+            id: standaloneChar.id || 'active_char',
+            name: standaloneChar.name || 'Karakter',
+            isDm: false,
+            titleBadge: `👤 ${standaloneChar.name || 'Karakter'} Notları`,
+            targetObj: standaloneChar,
+            notesList: list
+          };
+        }
         const char = state.characters.find(c => c.id === id);
         if (char) {
-          if (!Array.isArray(char.notesList)) char.notesList = normalizeLegacyNotes(char.notes);
+          const list = ensureSmartNotesArray(char);
           return {
             type: 'character',
             id: char.id,
@@ -185,7 +287,7 @@
             isDm: false,
             titleBadge: `👤 ${char.name || 'Karakter'} Notları`,
             targetObj: char,
-            notesList: char.notesList
+            notesList: list
           };
         }
       }
@@ -197,9 +299,7 @@
     if (activeCampId === 'unassigned') {
       const unassignedChar = state.characters.find(c => !c.campaignId);
       if (unassignedChar) {
-        if (!Array.isArray(unassignedChar.notesList)) {
-          unassignedChar.notesList = normalizeLegacyNotes(unassignedChar.notes);
-        }
+        const list = ensureSmartNotesArray(unassignedChar);
         return {
           type: 'character',
           id: unassignedChar.id,
@@ -207,7 +307,7 @@
           isDm: false,
           titleBadge: `👤 ${unassignedChar.name || 'Karakter'} Notları`,
           targetObj: unassignedChar,
-          notesList: unassignedChar.notesList
+          notesList: list
         };
       }
     }
@@ -219,9 +319,7 @@
 
       // 2a. DM Modu ise -> Doğrudan Kampanya DM Notları
       if (activeCamp.isDmMode) {
-        if (!Array.isArray(activeCamp.notesList)) {
-          activeCamp.notesList = normalizeLegacyNotes(activeCamp.notes);
-        }
+        const list = ensureSmartNotesArray(activeCamp);
         return {
           type: 'campaign',
           id: activeCamp.id,
@@ -230,7 +328,7 @@
           isDm: true,
           titleBadge: '👑 DM Notları (Gizli)',
           targetObj: activeCamp,
-          notesList: activeCamp.notesList
+          notesList: list
         };
       }
 
@@ -247,9 +345,7 @@
           }
         } catch (e) {}
 
-        if (!Array.isArray(targetChar.notesList)) {
-          targetChar.notesList = normalizeLegacyNotes(targetChar.notes);
-        }
+        const list = ensureSmartNotesArray(targetChar);
         return {
           type: 'character',
           id: targetChar.id,
@@ -257,14 +353,12 @@
           isDm: false,
           titleBadge: `👤 ${targetChar.name || 'Karakter'} Notları`,
           targetObj: targetChar,
-          notesList: targetChar.notesList
+          notesList: list
         };
       }
 
       // Kampanyada henüz karakter yoksa kampanya not defterini kullan
-      if (!Array.isArray(activeCamp.notesList)) {
-        activeCamp.notesList = normalizeLegacyNotes(activeCamp.notes);
-      }
+      const list = ensureSmartNotesArray(activeCamp);
       return {
         type: 'campaign',
         id: activeCamp.id,
@@ -273,16 +367,14 @@
         isDm: false,
         titleBadge: '🏰 Sefer Notları',
         targetObj: activeCamp,
-        notesList: activeCamp.notesList
+        notesList: list
       };
     }
 
     // 3. Genel ('all') sekmesinde veya eşleşmeme durumunda ilk karakter
     const firstChar = state.characters[0];
     if (firstChar) {
-      if (!Array.isArray(firstChar.notesList)) {
-        firstChar.notesList = normalizeLegacyNotes(firstChar.notes);
-      }
+      const list = ensureSmartNotesArray(firstChar);
       return {
         type: 'character',
         id: firstChar.id,
@@ -290,16 +382,14 @@
         isDm: false,
         titleBadge: `👤 ${firstChar.name || 'Karakter'} Notları`,
         targetObj: firstChar,
-        notesList: firstChar.notesList
+        notesList: list
       };
     }
 
     // 4. Karakter yoksa ilk kampanya
     const firstCamp = state.campaigns[0];
     if (firstCamp) {
-      if (!Array.isArray(firstCamp.notesList)) {
-        firstCamp.notesList = normalizeLegacyNotes(firstCamp.notes);
-      }
+      const list = ensureSmartNotesArray(firstCamp);
       const hName = getCampaignHierarchyName(firstCamp, state);
       return {
         type: 'campaign',
@@ -309,7 +399,7 @@
         isDm: Boolean(firstCamp.isDmMode),
         titleBadge: firstCamp.isDmMode ? '👑 DM Notları (Gizli)' : '🏰 Sefer Notları',
         targetObj: firstCamp,
-        notesList: firstCamp.notesList
+        notesList: list
       };
     }
 
@@ -317,7 +407,8 @@
     const defaultCamp = {
       id: 'camp_default',
       name: 'Genel Not Defteri',
-      notesList: []
+      notesList: [],
+      smartNotes: []
     };
     state.campaigns.push(defaultCamp);
     if (typeof window.saveHubStorage === 'function') window.saveHubStorage();
@@ -340,6 +431,7 @@
 
     return [{
       id: 'note_' + Date.now(),
+      title: 'Karakter Notları',
       text: text,
       pinned: false,
       completed: false,
@@ -349,45 +441,94 @@
     }];
   }
 
+  function formatPlainNotesSummary(notesList) {
+    if (!Array.isArray(notesList) || notesList.length === 0) return '';
+    return notesList.map(n => {
+      const t = (n.title || '').trim();
+      const b = (n.text || '').trim();
+      return t ? `${t}\n${b}` : b;
+    }).filter(Boolean).join('\n\n---\n\n');
+  }
+
   function saveNotesChanges(target) {
     if (!target) return;
     const state = getHubState();
+    const standaloneChar = getStandaloneCharacterInstance();
+    const plainSummary = formatPlainNotesSummary(target.notesList);
 
-    // 0. targetObj referansını daima senkronize tut
+    // 0. targetObj referansını V2 `smartNotes` + `notesList` + `notes` ile daima senkronize tut
     if (target.targetObj) {
+      target.targetObj.smartNotes = target.notesList || [];
       target.targetObj.notesList = target.notesList || [];
-      target.targetObj.notes = (target.notesList || []).map(n => n.text).join('\n\n');
+      target.targetObj.notes = plainSummary;
+      if (target.targetObj.fullData && typeof target.targetObj.fullData === 'object') {
+        target.targetObj.fullData.smartNotes = target.notesList || [];
+        target.targetObj.fullData.notesList = target.notesList || [];
+        target.targetObj.fullData.notes = plainSummary;
+      }
     }
 
-    // 1. HUB State Depolaması
-    if (state && typeof window.saveHubStorage === 'function') {
-      window.saveHubStorage();
-    } else if (state) {
-      try {
-        localStorage.setItem('dnd35_hub_db', JSON.stringify({
-          campaigns: state.campaigns || [],
-          characters: state.characters || [],
-          latestDmEvent: state.latestDmEvent || null,
-          lastSaved: new Date().toISOString()
-        }));
-      } catch (e) {}
+    // 1. Standalone Karakter Kâğıdı (`index.html`) üzerinde çalışıyorsa
+    if (standaloneChar && target.type === 'character') {
+      standaloneChar.smartNotes = target.notesList || [];
+      standaloneChar.notesList = target.notesList || [];
+      standaloneChar.notes = plainSummary;
+      if (typeof window.saveStateToStorage === 'function') {
+        try { window.saveStateToStorage(false); } catch (e) {}
+      }
     }
 
-    // 2. Karakter ise dnd35_character ile Çapraz Senkronizasyon (Kural #6)
-    if (target.type === 'character' && target.targetObj) {
-      try {
-        const charRaw = localStorage.getItem('dnd35_character');
-        if (charRaw) {
-          const activeChar = JSON.parse(charRaw);
-          if (activeChar && (activeChar.id === target.id || activeChar.name === target.name)) {
-            activeChar.notesList = target.notesList;
-            activeChar.notes = (target.notesList || []).map(n => n.text).join('\n\n');
-            localStorage.setItem('dnd35_character', JSON.stringify(activeChar));
+    // 2. HUB State (`dnd35_hub_db`) Depolaması & Eşleştirme
+    if (state) {
+      if (target.type === 'character' && Array.isArray(state.characters)) {
+        const hubChar = state.characters.find(c =>
+          (target.id && c.id === target.id) ||
+          (target.name && c.name === target.name)
+        );
+        if (hubChar) {
+          hubChar.smartNotes = target.notesList || [];
+          hubChar.notesList = target.notesList || [];
+          hubChar.notes = plainSummary;
+          if (hubChar.fullData && typeof hubChar.fullData === 'object') {
+            hubChar.fullData.smartNotes = target.notesList || [];
+            hubChar.fullData.notesList = target.notesList || [];
+            hubChar.fullData.notes = plainSummary;
           }
         }
-      } catch (e) {
-        console.warn('dnd35_character yerel depolama senkronizasyon uyarısı:', e);
       }
+
+      if (typeof window.saveHubStorage === 'function') {
+        window.saveHubStorage();
+      } else {
+        try {
+          localStorage.setItem('dnd35_hub_db', JSON.stringify({
+            campaigns: state.campaigns || [],
+            characters: state.characters || [],
+            latestDmEvent: state.latestDmEvent || null,
+            lastSaved: new Date().toISOString()
+          }));
+        } catch (e) {}
+      }
+    }
+
+    // 3. Karakter ise dnd35_character & dnd35_character_v2 ile Çapraz Senkronizasyon (Kural #6)
+    if (target.type === 'character') {
+      ['dnd35_character', 'dnd35_character_v2'].forEach(storageKey => {
+        try {
+          const charRaw = localStorage.getItem(storageKey);
+          if (charRaw) {
+            const activeChar = JSON.parse(charRaw);
+            if (activeChar && (activeChar.id === target.id || activeChar.name === target.name || target.id === 'active_char')) {
+              activeChar.smartNotes = target.notesList || [];
+              activeChar.notesList = target.notesList || [];
+              activeChar.notes = plainSummary;
+              localStorage.setItem(storageKey, JSON.stringify(activeChar));
+            }
+          }
+        } catch (e) {
+          console.warn(storageKey + ' yerel depolama senkronizasyon uyarısı:', e);
+        }
+      });
     }
   }
 
@@ -731,6 +872,7 @@
    * Open Full Notes Modal
    */
   function openFullNotesModal(selectNoteId = null, initialView = 'editor') {
+    ensureModalDom();
     const modal = document.getElementById('hub-full-notes-modal');
     if (!modal) return;
 
@@ -2324,9 +2466,320 @@ KURALLAR:
     return new Date(ts).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
   }
 
+  /**
+   * Self-contained Full Notes Modal DOM injector for standalone pages (`index.html`).
+   * If `#hub-full-notes-modal` already exists (e.g., on `hub.html`), does nothing.
+   */
+  function ensureModalDom() {
+    if (document.getElementById('hub-full-notes-modal')) return;
+
+    const modalWrapper = document.createElement('div');
+    modalWrapper.id = 'hub-full-notes-modal';
+    modalWrapper.className = 'fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-2 sm:p-4 md:p-6';
+    modalWrapper.innerHTML = `
+      <div class="bg-[#131d33] border border-slate-700 rounded-2xl w-full max-w-5xl max-h-[92vh] flex flex-col shadow-2xl text-slate-100 overflow-hidden">
+        <!-- Modal Başlığı & Görünüm Sekmeleri -->
+        <div class="flex items-center justify-between border-b border-slate-700/80 px-4 sm:px-5 py-3 bg-slate-900/90 shrink-0 gap-2 flex-wrap">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <span class="text-xl shrink-0">📝</span>
+            <div class="min-w-0">
+              <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                <span>Akıllı Not Defteri</span>
+                <span id="hub-modal-target-title" class="inline-flex items-center text-xs font-normal text-indigo-300 truncate"></span>
+              </h3>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs shrink-0">
+            <button type="button" id="hub-modal-tab-editor" onclick="HubNotes.switchModalView('editor')" class="px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 bg-indigo-600 text-white shadow cursor-pointer text-xs">
+              <span>📝</span><span>Notlar</span>
+            </button>
+            <button type="button" id="hub-modal-tab-mindmap" onclick="HubNotes.switchModalView('mindmap')" class="px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 text-slate-400 hover:text-white cursor-pointer text-xs">
+              <span>🕸️</span><span>Etiket Haritası</span>
+            </button>
+            <button type="button" id="hub-modal-tab-ai" onclick="HubNotes.switchModalView('ai')" class="px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 text-slate-400 hover:text-white cursor-pointer text-xs">
+              <span>✨</span><span>AI Günlükçü</span>
+            </button>
+          </div>
+
+          <button type="button" onclick="HubNotes.closeFullNotesModal()" class="text-slate-400 hover:text-white text-lg font-bold px-2 py-1 cursor-pointer shrink-0">✕</button>
+        </div>
+
+        <!-- 1. GÖRÜNÜM: Notlar & Editör -->
+        <div id="hub-modal-view-editor" class="flex-1 flex flex-col sm:flex-row overflow-hidden min-h-0">
+          <div class="w-full sm:w-80 border-b sm:border-b-0 sm:border-r border-slate-700/80 flex flex-col bg-slate-900/40 shrink-0 p-3 space-y-2.5 overflow-hidden">
+            <div class="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 focus-within:border-indigo-400 transition shrink-0">
+              <span class="text-slate-500 text-xs">🔍</span>
+              <input type="text" oninput="HubNotes.handleSearchInput(this.value)" placeholder="Notlarda ara..." class="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none">
+            </div>
+            <button type="button" onclick="HubNotes.createNewModalNote()" class="w-full py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow transition active:scale-95 cursor-pointer shrink-0">
+              <span>➕</span><span>Yeni Not Oluştur</span>
+            </button>
+            <div id="hub-modal-tags-bar" class="shrink-0 space-y-1.5"></div>
+            <div id="hub-modal-notes-list" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar min-h-0"></div>
+          </div>
+
+          <div class="flex-1 flex flex-col p-4 space-y-3 bg-[#131d33] overflow-y-auto min-h-0">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2.5 shrink-0 flex-wrap gap-2">
+              <div class="text-[11px] text-slate-400 font-mono" id="hub-modal-date-badge">Seçili not bilgisi</div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <button type="button" onclick="HubNotes.openAiChroniclerWithActiveNote()" class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition bg-purple-950/60 hover:bg-purple-900/80 text-purple-300 border border-purple-800/60 flex items-center gap-1.5 cursor-pointer shadow-sm">
+                  <span>✨</span><span>AI Özetle</span>
+                </button>
+                <button type="button" id="hub-modal-save-btn" onclick="HubNotes.saveModalNote(true)" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-950/40 flex items-center gap-1.5 cursor-pointer active:scale-95">
+                  <span>💾</span><span id="hub-modal-save-text">Notu Kaydet</span>
+                </button>
+                <button type="button" id="hub-modal-pin-btn" onclick="HubNotes.togglePinNote(null, event)" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:text-white border border-slate-700 cursor-pointer">
+                  📌 Başa Sabitle
+                </button>
+                <button type="button" id="hub-modal-delete-btn" onclick="HubNotes.deleteNote(null, event)" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-800/60 cursor-pointer">
+                  🗑️ Sil
+                </button>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-1.5 flex-wrap text-xs font-mono shrink-0">
+              <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Hızlı Etiket:</span>
+              <button type="button" onclick="HubNotes.insertTagIntoEditor('#gorev')" class="px-2 py-0.5 rounded-md bg-sky-950/60 hover:bg-sky-900 text-sky-300 border border-sky-800/60 transition cursor-pointer">+ #gorev</button>
+              <button type="button" onclick="HubNotes.insertTagIntoEditor('#npc')" class="px-2 py-0.5 rounded-md bg-purple-950/60 hover:bg-purple-900 text-purple-300 border border-purple-800/60 transition cursor-pointer">+ #npc</button>
+              <button type="button" onclick="HubNotes.insertTagIntoEditor('#yer')" class="px-2 py-0.5 rounded-md bg-emerald-950/60 hover:bg-emerald-900 text-emerald-300 border border-emerald-800/60 transition cursor-pointer">+ #yer</button>
+              <button type="button" onclick="HubNotes.insertTagIntoEditor('#loot')" class="px-2 py-0.5 rounded-md bg-yellow-950/60 hover:bg-yellow-900 text-yellow-300 border border-yellow-800/60 transition cursor-pointer">+ #loot</button>
+              <button type="button" onclick="HubNotes.insertTagIntoEditor('- [ ] ')" class="px-2 py-0.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition cursor-pointer">+ To-Do</button>
+            </div>
+
+            <div class="w-full flex-1 min-h-[300px] bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col space-y-2.5 focus-within:border-indigo-500/80 transition shadow-inner">
+              <input type="text" id="hub-modal-note-title" placeholder="Not Başlığı (İsteğe bağlı)..."
+                class="w-full bg-transparent text-base sm:text-lg font-bold text-white placeholder-slate-600 focus:outline-none border-b border-slate-800/80 pb-2 font-sans tracking-wide"
+                oninput="HubNotes.handleEditorInput(event)"
+                onkeydown="HubNotes.handleTitleKeydown(event)"
+                onblur="HubNotes.saveModalNote(false)">
+              <textarea id="hub-modal-note-editor"
+                oninput="HubNotes.handleEditorInput(event)"
+                onkeydown="HubNotes.handleEditorKeydown(event)"
+                onblur="HubNotes.saveModalNote(false)"
+                placeholder="Not detaylarını buraya yazın...&#10;&#10;İpuçları:&#10;• '#' yazarak akıllı etiket tamamlamayı kullanabilirsiniz&#10;• Kaydetmek için Ctrl+S / Ctrl+Enter"
+                class="w-full flex-1 min-h-[220px] bg-transparent text-xs sm:text-sm text-slate-200 placeholder-slate-600 focus:outline-none font-sans leading-relaxed resize-none pt-1 custom-scrollbar"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. GÖRÜNÜM: Etiket Haritası (Mindmap) -->
+        <div id="hub-modal-view-mindmap" class="hidden flex-1 flex flex-col sm:flex-row overflow-hidden min-h-0 bg-[#0c1322]">
+          <div class="flex-1 flex flex-col min-h-0 relative overflow-hidden">
+            <div class="p-3 bg-slate-900/80 border-b border-slate-800 flex items-center justify-between gap-2 shrink-0 flex-wrap">
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-bold text-white flex items-center gap-1.5"><span>🕸️</span><span>İlişkisel Etiket Ağı</span></span>
+                <span id="hub-mindmap-stats-badge" class="text-[10px] text-indigo-300 bg-indigo-950 px-2 py-0.5 rounded-md border border-indigo-800/60 font-mono">0 Düğüm • 0 Bağlantı</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <input type="text" id="hub-mindmap-search-input" oninput="HubNotes.handleMindmapSearch(this.value)" placeholder="Düğümlerde ara..." class="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-400 w-36 sm:w-44 font-mono">
+                <button type="button" onclick="HubNotes.renderMindmap()" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-semibold cursor-pointer">🔄 Yenile</button>
+              </div>
+            </div>
+            <div id="hub-mindmap-canvas-container" class="flex-1 w-full h-full relative overflow-hidden flex items-center justify-center p-2">
+              <svg id="hub-mindmap-svg" viewBox="0 0 800 500" class="w-full h-full max-h-[500px] select-none"></svg>
+            </div>
+          </div>
+          <div id="hub-mindmap-drawer" class="w-full sm:w-80 border-t sm:border-t-0 sm:border-l border-slate-800 bg-slate-900/60 flex flex-col shrink-0 p-3 space-y-2.5 overflow-hidden">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+              <div class="min-w-0">
+                <h4 id="hub-mindmap-selected-title" class="text-xs font-bold text-white truncate">Düğüm Seçin</h4>
+                <p id="hub-mindmap-selected-sub" class="text-[10px] text-slate-400 truncate">Detayları görmek için ağdaki bir düğüme tıklayın.</p>
+              </div>
+              <button type="button" id="hub-mindmap-ai-btn" onclick="HubNotes.openAiChroniclerWithMindmapTag()" class="hidden px-2 py-1 rounded-lg bg-purple-950/80 hover:bg-purple-900 text-purple-300 border border-purple-700/60 text-[10px] font-bold cursor-pointer shrink-0">✨ AI Sentezle</button>
+            </div>
+            <div id="hub-mindmap-connected-tags" class="flex flex-wrap gap-1 text-[10px] font-mono max-h-20 overflow-y-auto"></div>
+            <div id="hub-mindmap-matching-notes" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar min-h-0"></div>
+          </div>
+        </div>
+
+        <!-- 3. GÖRÜNÜM: AI Kampanya Günlükçüsü -->
+        <div id="hub-modal-view-ai" class="hidden flex-1 flex flex-col overflow-hidden min-h-0 bg-[#0d1629]">
+          <div class="flex-1 flex flex-col sm:flex-row overflow-hidden min-h-0">
+            <div class="w-full sm:w-80 border-b sm:border-b-0 sm:border-r border-slate-800 bg-slate-900/60 p-4 flex flex-col space-y-3.5 shrink-0 overflow-y-auto">
+              <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
+                <span class="text-xl">🧙‍♂️</span>
+                <div>
+                  <h4 class="text-xs font-bold text-white">AI Kampanya Günlükçüsü</h4>
+                  <p class="text-[10px] text-slate-400">Mikro notları edebi oturum hikayesi veya görev takip dosyasına dönüştürür.</p>
+                </div>
+              </div>
+              <div class="space-y-1">
+                <label class="text-[11px] font-bold text-slate-300">Sentez Kapsamı:</label>
+                <select id="hub-ai-scope-select" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-400">
+                  <option value="all">🌐 Aktif Not Defterindeki Tüm Notlar</option>
+                  <option value="tag">🏷️ Seçili Etiket Grubu</option>
+                  <option value="recent5">⏱️ Son 5 Not (Son Oturum)</option>
+                  <option value="recent10">⏱️ Son 10 Not</option>
+                </select>
+                <div id="hub-ai-scope-tag-picker" class="hidden pt-1">
+                  <select id="hub-ai-tag-select" class="w-full bg-slate-950 border border-indigo-700/60 rounded-lg px-2.5 py-1.5 text-xs text-indigo-300 font-mono focus:outline-none"></select>
+                </div>
+              </div>
+              <div class="space-y-1.5">
+                <label class="text-[11px] font-bold text-slate-300">Sentez Formatı:</label>
+                <div class="space-y-1.5" id="hub-ai-modes-container">
+                  <label class="flex items-start gap-2.5 p-2 rounded-xl border border-indigo-500/50 bg-indigo-950/40 cursor-pointer transition hover:bg-indigo-950/60">
+                    <input type="radio" name="hub-ai-mode" value="narrative" checked class="mt-0.5 text-indigo-500 focus:ring-0">
+                    <div><div class="text-xs font-bold text-indigo-200">📖 Oturum Günlüğü &amp; Hikaye</div><div class="text-[10px] text-slate-400 leading-tight">Notları akıcı, edebi bir rol yapma hikaye günlüğüne dönüştürür.</div></div>
+                  </label>
+                  <label class="flex items-start gap-2.5 p-2 rounded-xl border border-slate-800 bg-slate-900/60 cursor-pointer transition hover:bg-slate-800/60">
+                    <input type="radio" name="hub-ai-mode" value="quests" class="mt-0.5 text-indigo-500 focus:ring-0">
+                    <div><div class="text-xs font-bold text-sky-300">🎯 Görev &amp; İpucu Takip Dosyası</div><div class="text-[10px] text-slate-400 leading-tight">Açık/biten görevleri ve ipuçlarını [ ] kutularıyla düzenler.</div></div>
+                  </label>
+                  <label class="flex items-start gap-2.5 p-2 rounded-xl border border-slate-800 bg-slate-900/60 cursor-pointer transition hover:bg-slate-800/60">
+                    <input type="radio" name="hub-ai-mode" value="dramatis" class="mt-0.5 text-indigo-500 focus:ring-0">
+                    <div><div class="text-xs font-bold text-purple-300">👥 Karakterler &amp; Mekanlar Rehberi</div><div class="text-[10px] text-slate-400 leading-tight">Karşılaşılan NPC'leri ve mekanları ansiklopedik döküm yapar.</div></div>
+                  </label>
+                  <label class="flex items-start gap-2.5 p-2 rounded-xl border border-slate-800 bg-slate-900/60 cursor-pointer transition hover:bg-slate-800/60">
+                    <input type="radio" name="hub-ai-mode" value="loot" class="mt-0.5 text-indigo-500 focus:ring-0">
+                    <div><div class="text-xs font-bold text-amber-300">💎 Hazine &amp; Eşya Envanteri</div><div class="text-[10px] text-slate-400 leading-tight">Kazanılan ganimetleri ve büyülü eşyaları listeler.</div></div>
+                  </label>
+                </div>
+              </div>
+              <button type="button" id="hub-ai-run-btn" onclick="HubNotes.runAiChronicler()" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-purple-950/60 transition active:scale-95 cursor-pointer">
+                <span>✨</span><span>Notları Sentezle &amp; Oluştur</span>
+              </button>
+            </div>
+            <div class="flex-1 flex flex-col p-4 space-y-3 bg-[#131d33] overflow-y-auto min-h-0">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-2.5 shrink-0 flex-wrap gap-2">
+                <span id="hub-ai-status-badge" class="text-xs font-mono text-slate-400">Beklemede</span>
+                <div id="hub-ai-output-actions" class="hidden flex items-center gap-2">
+                  <button type="button" onclick="HubNotes.saveAiSynthesisAsNote()" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-600 hover:bg-emerald-500 text-white shadow-md flex items-center gap-1.5 cursor-pointer active:scale-95">
+                    <span>📌</span><span>Sabitlenmiş Not Olarak Kaydet</span>
+                  </button>
+                  <button type="button" onclick="HubNotes.copyAiSynthesisToClipboard()" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 cursor-pointer">
+                    <span>📋</span><span>Kopyala</span>
+                  </button>
+                </div>
+              </div>
+              <div id="hub-ai-result-container" class="flex-1 overflow-y-auto bg-slate-950/70 border border-slate-800 rounded-xl p-4 text-xs text-slate-200 leading-relaxed font-sans custom-scrollbar min-h-[300px]">
+                <div class="h-full flex flex-col items-center justify-center text-center text-slate-500 gap-2 py-12">
+                  <span class="text-3xl opacity-50">🧙‍♂️✨</span>
+                  <p class="font-semibold text-slate-400">Henüz sentez başlatılmadı.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modalWrapper);
+
+    const aiScope = document.getElementById('hub-ai-scope-select');
+    const aiTagPicker = document.getElementById('hub-ai-scope-tag-picker');
+    if (aiScope && aiTagPicker) {
+      aiScope.addEventListener('change', () => {
+        if (aiScope.value === 'tag') aiTagPicker.classList.remove('hidden');
+        else aiTagPicker.classList.add('hidden');
+      });
+    }
+  }
+
+  /**
+   * Mounts the complete Smart Notes inline widget into a container element on `index.html`
+   * and ensures the Full Notes Modal (Editor + SVG Mindmap + AI Chronicler) is ready.
+   */
+  function mountCharacterNotesWidget(containerId) {
+    const container = typeof containerId === 'string' ? document.getElementById(containerId) : containerId;
+    if (!container) return;
+
+    ensureModalDom();
+
+    if (!document.getElementById('hub-inline-notes-list')) {
+      container.innerHTML = `
+        <div class="bg-[#131d33] border border-slate-700/80 rounded-2xl p-3.5 shadow-xl flex flex-col space-y-2.5 relative overflow-hidden">
+          <div class="flex items-center justify-between border-b border-slate-700/80 pb-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="w-6 h-6 rounded-lg bg-indigo-600/20 border border-indigo-500/50 flex items-center justify-center text-indigo-400 shrink-0 text-xs">📜</span>
+              <div class="min-w-0">
+                <h3 class="text-xs font-black text-white uppercase tracking-wider truncate" id="hub-notes-panel-badge">Akıllı Karakter Notları</h3>
+                <div class="text-[10px] text-slate-400 font-mono"><span id="hub-notes-panel-count">0</span> Not • Bulut &amp; HUB Senkronize 📌</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="HubNotes.openFullNotesModal(null, 'mindmap')" class="px-2.5 py-1 rounded-lg bg-indigo-950 hover:bg-indigo-900 border border-indigo-700/60 text-indigo-300 hover:text-white transition flex items-center gap-1 text-xs font-bold shadow cursor-pointer" title="İlişkisel Etiket Haritasını (SVG Mindmap) Aç">
+                <span>🕸️</span><span class="hidden sm:inline text-[10px]">Zihin Haritası</span>
+              </button>
+              <button type="button" onclick="HubNotes.openFullNotesModal(null, 'ai')" class="px-2.5 py-1 rounded-lg bg-purple-950 hover:bg-purple-900 border border-purple-700/60 text-purple-300 hover:text-white transition flex items-center gap-1 text-xs font-bold shadow cursor-pointer" title="AI Kampanya Vakanüvisini Aç">
+                <span>✨</span><span class="hidden sm:inline text-[10px]">AI Günlükçü</span>
+              </button>
+              <button type="button" onclick="HubNotes.openFullNotesModal(null, 'editor')" class="px-2.5 py-1 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/60 border border-indigo-500/50 text-indigo-200 hover:text-white transition flex items-center gap-1 text-xs font-bold shadow cursor-pointer" title="Tam Ekran Not Defterini Aç">
+                <span>📝</span><span class="text-[10px]">Tam Ekran</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1 bg-slate-900/90 p-0.5 rounded-lg border border-slate-800 shrink-0 text-xs">
+            <button type="button" id="hub-notes-tab-write" onclick="HubNotes.switchPanelTab('write')" class="flex-1 py-1.5 px-2 rounded-md text-xs font-bold transition flex items-center justify-center gap-1 bg-indigo-600 text-white shadow cursor-pointer">
+              <span>✏️</span><span>Yeni Not Yaz</span>
+            </button>
+            <button type="button" id="hub-notes-tab-list" onclick="HubNotes.switchPanelTab('list')" class="flex-1 py-1.5 px-2 rounded-md text-xs font-bold transition flex items-center justify-center gap-1 text-slate-400 hover:text-white cursor-pointer">
+              <span>📋</span><span>Kayıtlı Notlar (<span id="hub-notes-tab-count">0</span>)</span>
+            </button>
+          </div>
+
+          <div id="hub-notes-write-view" class="flex flex-col space-y-2">
+            <div id="hub-notes-pinned-strip" class="hidden shrink-0 space-y-1 bg-amber-950/20 border border-amber-500/30 rounded-xl p-2 text-xs">
+              <div class="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1"><span>📌</span><span>Sabitlenen Notlar:</span></div>
+              <div id="hub-notes-pinned-chips" class="flex flex-wrap gap-1 max-h-16 overflow-y-auto"></div>
+            </div>
+
+            <div class="w-full bg-slate-900/90 border border-slate-700 rounded-xl p-3 flex flex-col space-y-2 focus-within:border-indigo-400 transition shadow-inner">
+              <input type="text" id="hub-quick-note-title" placeholder="Not Başlığı (İsteğe bağlı)..."
+                class="w-full bg-transparent text-sm font-bold text-white placeholder-slate-500 focus:outline-none border-b border-slate-700/60 pb-1.5 font-sans"
+                oninput="HubNotes.handleQuickInput(event)"
+                onkeydown="HubNotes.handleQuickTitleKeydown(event)">
+              <textarea id="hub-quick-note-input" rows="4"
+                placeholder="Notunuzu buraya yazın... (#gorev, #npc, #yer, #loot etiketleri ve - [ ] görev kutusu desteklenir)"
+                class="w-full bg-transparent text-xs text-white placeholder-slate-500 font-sans focus:outline-none resize-y leading-relaxed"
+                oninput="HubNotes.handleQuickInput(event)"
+                onkeydown="HubNotes.handleQuickKeydown(event)"></textarea>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-0.5">
+              <div class="flex items-center gap-1 flex-wrap text-[10px] font-mono">
+                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('#gorev')" class="px-2 py-0.5 rounded bg-sky-950/60 hover:bg-sky-900 border border-sky-800/60 text-sky-300 transition cursor-pointer">+ #gorev</button>
+                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('#npc')" class="px-2 py-0.5 rounded bg-purple-950/60 hover:bg-purple-900 border border-purple-800/60 text-purple-300 transition cursor-pointer">+ #npc</button>
+                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('#yer')" class="px-2 py-0.5 rounded bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800/60 text-emerald-300 transition cursor-pointer">+ #yer</button>
+                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('#loot')" class="px-2 py-0.5 rounded bg-yellow-950/60 hover:bg-yellow-900 border border-yellow-800/60 text-yellow-300 transition cursor-pointer">+ #loot</button>
+                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('- [ ] ')" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition cursor-pointer">+ To-Do</button>
+              </div>
+              <button type="button" onclick="HubNotes.addQuickNote()" class="py-1.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-md transition active:scale-95 cursor-pointer">
+                <span>➕</span><span>Notu Kaydet (Ctrl+Enter)</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="hub-notes-list-view" class="hidden flex flex-col space-y-2">
+            <div class="flex flex-wrap items-center gap-2">
+              <div class="flex-1 min-w-[180px] flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 rounded-xl px-2.5 py-1.5 focus-within:border-indigo-400 transition">
+                <span class="text-slate-500 text-xs">🔍</span>
+                <input type="text" id="hub-inline-notes-search" oninput="HubNotes.handleSearchInput(this.value)" placeholder="Not veya #etiket ara..." class="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none font-mono">
+              </div>
+              <div class="flex items-center gap-1 overflow-x-auto text-[10px] font-mono">
+                <button type="button" onclick="HubNotes.setTagFilter('all')" class="px-2 py-0.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer">#hepsi</button>
+                <button type="button" onclick="HubNotes.setTagFilter('#gorev')" class="px-2 py-0.5 rounded-md bg-sky-950/60 hover:bg-sky-900 border border-sky-800/60 text-sky-300 transition cursor-pointer">#gorev</button>
+                <button type="button" onclick="HubNotes.setTagFilter('#npc')" class="px-2 py-0.5 rounded-md bg-purple-950/60 hover:bg-purple-900 border border-purple-800/60 text-purple-300 transition cursor-pointer">#npc</button>
+                <button type="button" onclick="HubNotes.setTagFilter('#yer')" class="px-2 py-0.5 rounded-md bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800/60 text-emerald-300 transition cursor-pointer">#yer</button>
+                <button type="button" onclick="HubNotes.setTagFilter('#loot')" class="px-2 py-0.5 rounded-md bg-yellow-950/60 hover:bg-yellow-900 border border-yellow-800/60 text-yellow-300 transition cursor-pointer">#loot</button>
+              </div>
+            </div>
+            <div id="hub-inline-notes-list" class="max-h-80 overflow-y-auto space-y-2 pr-1"></div>
+          </div>
+        </div>
+      `;
+    }
+
+    renderInlineNotes();
+  }
+
   // Global Exports
   window.HubNotes = {
     getActiveNotesTarget,
+    ensureSmartNotesArray,
+    ensureModalDom,
+    mountCharacterNotesWidget,
     renderInlineNotes,
     switchPanelTab,
     addQuickNote,
