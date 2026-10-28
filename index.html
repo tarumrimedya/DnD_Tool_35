@@ -8527,6 +8527,33 @@
         } else if (window.SchemaMigrator && typeof window.SchemaMigrator.migrateMasterDbEntryToV2 === 'function') {
           masterDb = masterDb.map(m => window.SchemaMigrator.migrateMasterDbEntryToV2(m));
         }
+        // Refresh any stale Warlock Invocations & Core Feats in masterDb with canonical English descriptions & prerequisites
+        if (Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
+          const coreByName = new Map();
+          window.BUNDLED_SRD_CORE_CATALOG.forEach(c => {
+            if (c && c.name) coreByName.set(c.name.toLowerCase().trim(), c);
+          });
+          masterDb.forEach(m => {
+            if (!m || !m.name) return;
+            const cMatch = coreByName.get(m.name.toLowerCase().trim());
+            if (cMatch && (cMatch.category === 'Warlock Invocation' || cMatch.type === 'Feat')) {
+              if (cMatch.category === 'Warlock Invocation' && m.category !== 'Warlock Invocation') {
+                m.category = 'Warlock Invocation';
+                addedCount++;
+              }
+              if (cMatch.benefit && m.benefit !== cMatch.benefit) {
+                m.benefit = cMatch.benefit;
+                m.description = cMatch.description || cMatch.benefit;
+                addedCount++;
+              }
+              if (cMatch.prereq && cMatch.prereq !== '-' && m.prereq !== cMatch.prereq) {
+                m.prereq = cMatch.prereq;
+                m.prerequisites = cMatch.prereq;
+                addedCount++;
+              }
+            }
+          });
+        }
         // Ensure cantrips in masterDb have level: 0 explicitly
         masterDb.forEach(m => {
           if (m && (m.type === 'Spell' || (m.category || '').includes('Spell')) && m.level === undefined) {

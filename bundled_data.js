@@ -494,7 +494,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "combatModifiers": []
     },
     {
-        "name": "Ã¢â€ Â³ Quarterstaff (Off-Hand Head)",
+        "name": "↳ Quarterstaff (Off-Hand Head)",
         "type": "Weapon",
         "slot": "Off-Hand",
         "category": "Simple",
@@ -1658,7 +1658,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "combatModifiers": []
     },
     {
-        "name": "Ã¢â€ Â³ Lance (Mounted One-Handed)",
+        "name": "↳ Lance (Mounted One-Handed)",
         "type": "Weapon",
         "slot": "Main Hand",
         "category": "Martial",
@@ -2131,7 +2131,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "combatModifiers": []
     },
     {
-        "name": "Ã¢â€ Â³ Bastard Sword (Two-Handed Martial)",
+        "name": "↳ Bastard Sword (Two-Handed Martial)",
         "type": "Weapon",
         "slot": "Two-Handed",
         "category": "Martial",
@@ -2202,7 +2202,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "combatModifiers": []
     },
     {
-        "name": "Ã¢â€ Â³ Dwarven Waraxe (Two-Handed Martial)",
+        "name": "↳ Dwarven Waraxe (Two-Handed Martial)",
         "type": "Weapon",
         "slot": "Two-Handed",
         "category": "Martial",
@@ -2327,7 +2327,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "combatModifiers": []
     },
     {
-        "name": "Ã¢â€ Â³ Orc Double Axe (Off-Hand Head)",
+        "name": "↳ Orc Double Axe (Off-Hand Head)",
         "type": "Weapon",
         "slot": "Off-Hand",
         "category": "Exotic",
@@ -2454,7 +2454,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "combatModifiers": []
     },
     {
-        "name": "Ã¢â€ Â³ Dire Flail (Off-Hand Head)",
+        "name": "↳ Dire Flail (Off-Hand Head)",
         "type": "Weapon",
         "slot": "Off-Hand",
         "category": "Exotic",
@@ -2535,7 +2535,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "combatModifiers": []
     },
     {
-        "name": "Ã¢â€ Â³ Gnome Hooked Hammer (Pick Off-Hand)",
+        "name": "↳ Gnome Hooked Hammer (Pick Off-Hand)",
         "type": "Weapon",
         "slot": "Off-Hand",
         "category": "Exotic",
@@ -2614,7 +2614,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "combatModifiers": []
     },
     {
-        "name": "Ã¢â€ Â³ Two-Bladed Sword (Off-Hand Head)",
+        "name": "↳ Two-Bladed Sword (Off-Hand Head)",
         "type": "Weapon",
         "slot": "Off-Hand",
         "category": "Exotic",
@@ -2695,7 +2695,7 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "brace": false
     },
     {
-        "name": "Ã¢â€ Â³ Dwarven Urgrosh (Spear Off-Hand)",
+        "name": "↳ Dwarven Urgrosh (Spear Off-Hand)",
         "type": "Weapon",
         "slot": "Off-Hand",
         "category": "Exotic",
@@ -5106,8 +5106,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot": "None",
         "category": "Martial",
         "prereq": "1 Shadow Hand Stance",
-        "benefit": "Bir Shadow Hand duruÅŸundayken (Stance), Shadow Hand disiplini silahlarÄ±yla yapÄ±lan yakÄ±n dÃ¶vÃ¼ÅŸ hasarlarÄ±na DEX modifiyerini ekler.",
-        "description": "Bir Shadow Hand duruÅŸundayken (Stance), Shadow Hand disiplini silahlarÄ±yla yapÄ±lan yakÄ±n dÃ¶vÃ¼ÅŸ hasarlarÄ±na DEX modifiyerini ekler.",
+        "benefit": "While you are in a Shadow Hand stance and attack with a Shadow Hand preferred weapon (dagger, short sword, sai, siangham, spiked chain, or unarmed strike), you add your Dexterity modifier in place of your Strength modifier on melee damage rolls.",
+        "description": "While you are in a Shadow Hand stance and attack with a Shadow Hand preferred weapon (dagger, short sword, sai, siangham, spiked chain, or unarmed strike), you add your Dexterity modifier in place of your Strength modifier on melee damage rolls.",
         "source": "Tome of Battle p.32",
         "isFighterBonusFeat": false
     },
@@ -5116,9 +5116,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "type": "Feat",
         "slot": "None",
         "category": "Martial",
-        "prereq": "Crusader, Swordsage veya Warblade 1",
-        "benefit": "1 Full-Round Action harcayarak kuÅŸanÄ±lan (Readied) manevralarÄ±nÄ±zÄ± savaÅŸ ortasÄ±nda deÄŸiÅŸtirebilir ve harcanmÄ±ÅŸ manevralarÄ± yenileyebilirsiniz.",
-        "description": "1 Full-Round Action harcayarak kuÅŸanÄ±lan (Readied) manevralarÄ±nÄ±zÄ± savaÅŸ ortasÄ±nda deÄŸiÅŸtirebilir ve harcanmÄ±ÅŸ manevralarÄ± yenileyebilirsiniz.",
+        "prereq": "Crusader, Swordsage, or Warblade level 1st",
+        "benefit": "You can change your readied martial maneuvers at any time by taking 1 full-round action. If you are a Crusader, your current granted maneuvers are cleared and you immediately receive new granted maneuvers.",
+        "description": "You can change your readied martial maneuvers at any time by taking 1 full-round action. If you are a Crusader, your current granted maneuvers are cleared and you immediately receive new granted maneuvers.",
         "source": "Tome of Battle p.28",
         "isFighterBonusFeat": false
     },
@@ -5127,9 +5127,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "type": "Feat",
         "slot": "None",
         "category": "General",
-        "prereq": "3. seviye arcane bÃ¼yÃ¼ yapabilme, BAB +4",
-        "benefit": "Free Action olarak bir bÃ¼yÃ¼ yuvasÄ± feda edip 1 tur boyunca tÃ¼m silah saldÄ±rÄ±larÄ±na +BÃ¼yÃ¼ Seviyesi saldÄ±rÄ± bonusu ve +Xd4 ekstra hasar ekler.",
-        "description": "Free Action olarak bir bÃ¼yÃ¼ yuvasÄ± feda edip 1 tur boyunca tÃ¼m silah saldÄ±rÄ±larÄ±na +BÃ¼yÃ¼ Seviyesi saldÄ±rÄ± bonusu ve +Xd4 ekstra hasar ekler.",
+        "prereq": "Ability to cast 3rd-level arcane spells, BAB +4",
+        "benefit": "As a free action, sacrifice a prepared arcane spell or arcane spell slot of 1st level or higher to gain a competence bonus on all melee attack rolls equal to the spell's level and deal +1d4 extra damage per spell level for 1 round.",
+        "description": "As a free action, sacrifice a prepared arcane spell or arcane spell slot of 1st level or higher to gain a competence bonus on all melee attack rolls equal to the spell's level and deal +1d4 extra damage per spell level for 1 round.",
         "source": "Complete Warrior p.96",
         "isFighterBonusFeat": false
     },
@@ -5138,9 +5138,9 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "type": "Feat",
         "slot": "None",
         "category": "General",
-        "prereq": "Spellcraft 4 ranks",
-        "benefit": "SeÃ§ilen bÃ¼yÃ¼cÃ¼ sÄ±nÄ±fÄ±nÄ±n Caster Level (CL) deÄŸerini +4 artÄ±rÄ±r (toplam karakter seviyesini HD'yi geÃ§emez). Ã‡oklu sÄ±nÄ±f (Gish) karakterler iÃ§in idealdir.",
-        "description": "SeÃ§ilen bÃ¼yÃ¼cÃ¼ sÄ±nÄ±fÄ±nÄ±n Caster Level (CL) deÄŸerini +4 artÄ±rÄ±r (toplam karakter seviyesini HD'yi geÃ§emez). Ã‡oklu sÄ±nÄ±f (Gish) karakterler iÃ§in idealdir.",
+        "prereq": "Spellcraft 4 ranks, Ability to cast spells",
+        "benefit": "Your caster level for the chosen spellcasting class increases by +4 (up to a maximum equal to your total Hit Dice / Character Level). Does not grant additional spells per day or spells known.",
+        "description": "Your caster level for the chosen spellcasting class increases by +4 (up to a maximum equal to your total Hit Dice / Character Level). Does not grant additional spells per day or spells known.",
         "source": "Complete Arcane p.82",
         "isFighterBonusFeat": false
     },
@@ -5150,8 +5150,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot": "None",
         "category": "Fighter",
         "prereq": "Improved Bull Rush, Power Attack, BAB +6",
-        "benefit": "Heedless Charge: Charge saldÄ±rÄ±sÄ±nda Power Attack cezasÄ±nÄ± saldÄ±rÄ± zarÄ± yerine AC'den dÃ¼ÅŸmenizi saÄŸlar.",
-        "description": "Heedless Charge: Charge saldÄ±rÄ±sÄ±nda Power Attack cezasÄ±nÄ± saldÄ±rÄ± zarÄ± yerine AC'den dÃ¼ÅŸmenizi saÄŸlar.",
+        "benefit": "Tactical Feat: Grants three tactical maneuvers—Directed Bull Rush (push foes diagonally), Domino Rush (trip two foes pushed into each other), and Heedless Charge (shift Power Attack penalty of -5 or more from attack rolls to Armor Class on a charge).",
+        "description": "Tactical Feat: Grants three tactical maneuvers—Directed Bull Rush (push foes diagonally), Domino Rush (trip two foes pushed into each other), and Heedless Charge (shift Power Attack penalty of -5 or more from attack rolls to Armor Class on a charge).",
         "source": "Complete Warrior p.112",
         "isFighterBonusFeat": true
     },
@@ -5161,8 +5161,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot": "None",
         "category": "General",
         "prereq": "Jump 8 ranks, Power Attack",
-        "benefit": "Charge sÄ±rasÄ±nda en az 10 ft uzun atlama yaparsanÄ±z Power Attack ekstra hasarÄ±nÄ± ikiye/Ã¼Ã§e katlar.",
-        "description": "Charge sÄ±rasÄ±nda en az 10 ft uzun atlama yaparsanÄ±z Power Attack ekstra hasarÄ±nÄ± ikiye/Ã¼Ã§e katlar.",
+        "benefit": "If you cover at least 10 feet of horizontal distance with a Jump check as part of a charge, double the extra damage from Power Attack (+100% with a one-handed weapon, or +200% / 3x with a two-handed weapon).",
+        "description": "If you cover at least 10 feet of horizontal distance with a Jump check as part of a charge, double the extra damage from Power Attack (+100% with a one-handed weapon, or +200% / 3x with a two-handed weapon).",
         "source": "Complete Adventurer p.110",
         "isFighterBonusFeat": false
     },
@@ -5172,8 +5172,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot": "None",
         "category": "Fighter",
         "prereq": "Dex 13, Two-Weapon Fighting, BAB +1",
-        "benefit": "Ä°kinci elinizde (Off-Hand) tek elli bir silahÄ± hafif (light) bir silah gibi kullanmanÄ±zÄ± ve Ã§ift silah cezasÄ±nÄ± azaltmanÄ±zÄ± saÄŸlar.",
-        "description": "Ä°kinci elinizde (Off-Hand) tek elli bir silahÄ± hafif (light) bir silah gibi kullanmanÄ±zÄ± ve Ã§ift silah cezasÄ±nÄ± azaltmanÄ±zÄ± saÄŸlar.",
+        "benefit": "When wielding a one-handed weapon in your off hand, you treat it as a light weapon for the purpose of determining two-weapon fighting penalties.",
+        "description": "When wielding a one-handed weapon in your off hand, you treat it as a light weapon for the purpose of determining two-weapon fighting penalties.",
         "source": "Complete Adventurer p.111",
         "isFighterBonusFeat": true
     },
@@ -5183,8 +5183,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot": "None",
         "category": "Fighter",
         "prereq": "BAB +1",
-        "benefit": "You can use one melee weapon one size category larger than you are with a -2 penalty on the attack roll, but the amount of effort it takes you to use the weapon does not change (e.g., you cannot use this feat to wield a two-handed weapon in one hand). Normal: You cannot use a weapon of a larger size category.",
-        "description": "Kendi boyutunuzdan bir boy bÃ¼yÃ¼k yakÄ±n dÃ¶vÃ¼ÅŸ silahlarÄ±nÄ± veya iki elli (Two-Handed) silahlarÄ± tek elinizle -2 saldÄ±rÄ± cezasÄ±yla kullanmanÄ±zÄ± saÄŸlar.",
+        "benefit": "You can wield melee weapons one size category larger than you with a -2 penalty on attack rolls, using the same number of hands normally required for a weapon of that type.",
+        "description": "You can wield melee weapons one size category larger than you with a -2 penalty on attack rolls, using the same number of hands normally required for a weapon of that type.",
         "source": "Complete Warrior p.103 / 3.5e RAW",
         "isFighterBonusFeat": true
     },
@@ -5194,8 +5194,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot": "None",
         "category": "General",
         "prereq": "Concentration 4 ranks, Spellcraft 4 ranks",
-        "benefit": "Ä°ki elinizde silah veya kalkan tutarken bile bÃ¼yÃ¼lerin somatik (el hareketi) bileÅŸenlerini gerÃ§ekleÅŸtirebilirsiniz.",
-        "description": "Ä°ki elinizde silah veya kalkan tutarken bile bÃ¼yÃ¼lerin somatik (el hareketi) bileÅŸenlerini gerÃ§ekleÅŸtirebilirsiniz.",
+        "benefit": "You can perform the somatic components of spells while holding a weapon or shield in each hand by gesturing with the weapon itself.",
+        "description": "You can perform the somatic components of spells while holding a weapon or shield in each hand by gesturing with the weapon itself.",
         "source": "Complete Mage p.47",
         "isFighterBonusFeat": false
     },
@@ -5207,8 +5207,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Least",
         "minLevel": 1,
         "prereq": "Warlock Level 1",
-        "benefit": "Eldritch Blast menzili 60 ft'den 250 ft'ye Ã§Ä±kar (Blast Shape).",
-        "description": "Eldritch Blast menzili 60 ft'den 250 ft'ye Ã§Ä±kar (Blast Shape).",
+        "benefit": "Blast Shape (Least; 2nd): Increases the range of your Eldritch Blast to 250 feet with no range increment.",
+        "description": "Blast Shape (Least; 2nd): Increases the range of your Eldritch Blast to 250 feet with no range increment.",
         "source": "Complete Arcane p.133"
     },
     {
@@ -5219,8 +5219,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Least",
         "minLevel": 1,
         "prereq": "Warlock Level 1",
-        "benefit": "Standart eylemle yakÄ±n dÃ¶vÃ¼ÅŸ saldÄ±rÄ±sÄ± yapÄ±p silah hasarÄ±na Eldritch Blast hasarÄ±nÄ± ekler.",
-        "description": "Standart eylemle yakÄ±n dÃ¶vÃ¼ÅŸ saldÄ±rÄ±sÄ± yapÄ±p silah hasarÄ±na Eldritch Blast hasarÄ±nÄ± ekler.",
+        "benefit": "Blast Shape (Least; 1st): As a standard action, make a single melee weapon attack; if it hits, the target takes both your normal melee weapon damage and your Eldritch Blast damage (subject to spell resistance).",
+        "description": "Blast Shape (Least; 1st): As a standard action, make a single melee weapon attack; if it hits, the target takes both your normal melee weapon damage and your Eldritch Blast damage (subject to spell resistance).",
         "source": "Complete Arcane p.134"
     },
     {
@@ -5231,8 +5231,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Least",
         "minLevel": 1,
         "prereq": "Warlock Level 1",
-        "benefit": "24 saat boyunca 60 ft Darkvision ve See Invisibility (GÃ¶rÃ¼nmezleri GÃ¶rme) kazanÄ±r.",
-        "description": "24 saat boyunca 60 ft Darkvision ve See Invisibility (GÃ¶rÃ¼nmezleri GÃ¶rme) kazanÄ±r.",
+        "benefit": "Least Invocation (2nd): Grants See Invisibility (as the spell) and darkvision out to 60 feet for 24 hours.",
+        "description": "Least Invocation (2nd): Grants See Invisibility (as the spell) and darkvision out to 60 feet for 24 hours.",
         "source": "Complete Arcane p.135"
     },
     {
@@ -5243,8 +5243,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Least",
         "minLevel": 1,
         "prereq": "Warlock Level 1",
-        "benefit": "24 saat boyunca Bluff, Diplomacy ve Intimidate becerilerine +6 bonus kazanÄ±r.",
-        "description": "24 saat boyunca Bluff, Diplomacy ve Intimidate becerilerine +6 bonus kazanÄ±r.",
+        "benefit": "Least Invocation (2nd): Grants a +6 bonus on Bluff, Diplomacy, and Intimidate checks for 24 hours.",
+        "description": "Least Invocation (2nd): Grants a +6 bonus on Bluff, Diplomacy, and Intimidate checks for 24 hours.",
         "source": "Complete Arcane p.133"
     },
     {
@@ -5255,8 +5255,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Least",
         "minLevel": 1,
         "prereq": "Warlock Level 1",
-        "benefit": "Ä°stediÄŸi an (At-Will) Darkness bÃ¼yÃ¼sÃ¼ gibi 20 ft yarÄ±Ã§aplÄ± karanlÄ±k yaratÄ±r.",
-        "description": "Ä°stediÄŸi an (At-Will) Darkness bÃ¼yÃ¼sÃ¼ gibi 20 ft yarÄ±Ã§aplÄ± karanlÄ±k yaratÄ±r.",
+        "benefit": "Least Invocation (2nd): Creates magical darkness in a 20-foot radius as the Darkness spell (at will; caster level equals Warlock level).",
+        "description": "Least Invocation (2nd): Creates magical darkness in a 20-foot radius as the Darkness spell (at will; caster level equals Warlock level).",
         "source": "Complete Arcane p.133"
     },
     {
@@ -5267,8 +5267,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Least",
         "minLevel": 1,
         "prereq": "Warlock Level 1",
-        "benefit": "30 ft mesafeye kadar hem normal hem de bÃ¼yÃ¼sel karanlÄ±ÄŸÄ± net bir ÅŸekilde gÃ¶rÃ¼r.",
-        "description": "30 ft mesafeye kadar hem normal hem de bÃ¼yÃ¼sel karanlÄ±ÄŸÄ± net bir ÅŸekilde gÃ¶rÃ¼r.",
+        "benefit": "Least Invocation (2nd): Grants the ability to see normally in both natural and magical darkness out to 30 feet for 24 hours.",
+        "description": "Least Invocation (2nd): Grants the ability to see normally in both natural and magical darkness out to 30 feet for 24 hours.",
         "source": "Complete Arcane p.133"
     },
     {
@@ -5279,8 +5279,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Least",
         "minLevel": 1,
         "prereq": "Warlock Level 1",
-        "benefit": "Shatter bÃ¼yÃ¼sÃ¼ gibi ses dalgasÄ±yla nesneleri patlatÄ±r; hedef dazing kurtarma zarÄ± atar.",
-        "description": "Shatter bÃ¼yÃ¼sÃ¼ gibi ses dalgasÄ±yla nesneleri patlatÄ±r; hedef dazing kurtarma zarÄ± atar.",
+        "benefit": "Least Invocation (2nd): Speak a syllable of the Dark Speech to shatter objects or crystalline creatures as the Shatter spell; if destroying a held/worn object, the creature must make a Fortitude save or be dazed for 1 round and deafened for 1 minute.",
+        "description": "Least Invocation (2nd): Speak a syllable of the Dark Speech to shatter objects or crystalline creatures as the Shatter spell; if destroying a held/worn object, the creature must make a Fortitude save or be dazed for 1 round and deafened for 1 minute.",
         "source": "Complete Arcane p.133"
     },
     {
@@ -5291,8 +5291,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Least",
         "minLevel": 1,
         "prereq": "Warlock Level 1",
-        "benefit": "24 saat boyunca Comprehend Languages ve Search/Spot testlerine +6 bonus.",
-        "description": "24 saat boyunca Comprehend Languages ve Search/Spot testlerine +6 bonus.",
+        "benefit": "Least Invocation (2nd): Grants Comprehend Languages on written material (as the spell) and a +6 bonus on Search and Spot checks for 24 hours.",
+        "description": "Least Invocation (2nd): Grants Comprehend Languages on written material (as the spell) and a +6 bonus on Search and Spot checks for 24 hours.",
         "source": "Complete Mage p.123"
     },
     {
@@ -5303,8 +5303,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Least",
         "minLevel": 1,
         "prereq": "Warlock Level 1",
-        "benefit": "24 saat boyunca Spider Climb (Duvarlarda tÄ±rmanma) kazanÄ±r, aÄŸlardan etkilenmez.",
-        "description": "24 saat boyunca Spider Climb (Duvarlarda tÄ±rmanma) kazanÄ±r, aÄŸlardan etkilenmez.",
+        "benefit": "Least Invocation (2nd): Grants Spider Climb (as the spell) and immunity to entrapment by web spells or mundane webs for 24 hours.",
+        "description": "Least Invocation (2nd): Grants Spider Climb (as the spell) and immunity to entrapment by web spells or mundane webs for 24 hours.",
         "source": "Complete Arcane p.135"
     },
     {
@@ -5315,8 +5315,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Least",
         "minLevel": 1,
         "prereq": "Warlock Level 1",
-        "benefit": "Topraktan devasa bir el Ã§Ä±karÄ±p dÃ¼ÅŸmanÄ± yakalar ve tutar (Grapple).",
-        "description": "Topraktan devasa bir el Ã§Ä±karÄ±p dÃ¼ÅŸmanÄ± yakalar ve tutar (Grapple).",
+        "benefit": "Least Invocation (2nd): Causes a Medium arm of earth and soil to rise from the ground and grapple foes (as the Earthen Grasp spell; Strength 14 + 2 per three caster levels, duration 2 rounds/level).",
+        "description": "Least Invocation (2nd): Causes a Medium arm of earth and soil to rise from the ground and grapple foes (as the Earthen Grasp spell; Strength 14 + 2 per three caster levels, duration 2 rounds/level).",
         "source": "Complete Arcane p.134"
     },
     {
@@ -5327,8 +5327,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Least",
         "minLevel": 1,
         "prereq": "Warlock Level 1",
-        "benefit": "30 ft iÃ§indeki HD'si dÃ¼ÅŸÃ¼k dÃ¼ÅŸmanlarÄ± korkutur (Shaken).",
-        "description": "30 ft iÃ§indeki HD'si dÃ¼ÅŸÃ¼k dÃ¼ÅŸmanlarÄ± korkutur (Shaken).",
+        "benefit": "Least Invocation (3rd): When you attack or charge during the next 10 minutes, enemies within 30 feet with fewer Hit Dice than your caster level become shaken for 10 minutes (Will negates).",
+        "description": "Least Invocation (3rd): When you attack or charge during the next 10 minutes, enemies within 30 feet with fewer Hit Dice than your caster level become shaken for 10 minutes (Will negates).",
         "source": "Dragon Magic p.80"
     },
     {
@@ -5339,8 +5339,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Lesser",
         "minLevel": 6,
         "prereq": "Warlock Level 6",
-        "benefit": "24 saat boyunca kendi yÃ¼rÃ¼me hÄ±zÄ±nda Good manevra kabiliyetiyle uÃ§ar (Fly).",
-        "description": "24 saat boyunca kendi yÃ¼rÃ¼me hÄ±zÄ±nda Good manevra kabiliyetiyle uÃ§ar (Fly).",
+        "benefit": "Lesser Invocation (3rd): Grants a fly speed equal to your land speed with good maneuverability for 24 hours.",
+        "description": "Lesser Invocation (3rd): Grants a fly speed equal to your land speed with good maneuverability for 24 hours.",
         "source": "Complete Arcane p.134"
     },
     {
@@ -5351,8 +5351,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Lesser",
         "minLevel": 6,
         "prereq": "Warlock Level 6",
-        "benefit": "Eldritch Blast ilk hedefe vurduktan sonra 30 ft iÃ§indeki ikincil hedeflere sÄ±Ã§rar (Blast Shape).",
-        "description": "Eldritch Blast ilk hedefe vurduktan sonra 30 ft iÃ§indeki ikincil hedeflere sÄ±Ã§rar (Blast Shape).",
+        "benefit": "Blast Shape (Lesser; 4th): Your Eldritch Blast arcs from the primary target to 1 secondary target per 5 caster levels (each within 30 feet of the previous target); secondary targets take half damage.",
+        "description": "Blast Shape (Lesser; 4th): Your Eldritch Blast arcs from the primary target to 1 secondary target per 5 caster levels (each within 30 feet of the previous target); secondary targets take half damage.",
         "source": "Complete Arcane p.134"
     },
     {
@@ -5363,8 +5363,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Lesser",
         "minLevel": 6,
         "prereq": "Warlock Level 6",
-        "benefit": "Eldritch Blast ateÅŸ hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r ve hedefi yakar (Eldritch Essence).",
-        "description": "Eldritch Blast ateÅŸ hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r ve hedefi yakar (Eldritch Essence).",
+        "benefit": "Eldritch Essence (Lesser; 3rd): Changes your Eldritch Blast into fire damage; any target struck must succeed on a Reflex save or catch fire, taking 2d6 fire damage per round for 1 round per 5 caster levels.",
+        "description": "Eldritch Essence (Lesser; 3rd): Changes your Eldritch Blast into fire damage; any target struck must succeed on a Reflex save or catch fire, taking 2d6 fire damage per round for 1 round per 5 caster levels.",
         "source": "Complete Arcane p.133"
     },
     {
@@ -5375,8 +5375,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Lesser",
         "minLevel": 6,
         "prereq": "Warlock Level 6",
-        "benefit": "Eldritch Blast soÄŸuk hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r ve hedefe -4 DEX penaltÄ±sÄ± verir (Eldritch Essence).",
-        "description": "Eldritch Blast soÄŸuk hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r ve hedefe -4 DEX penaltÄ±sÄ± verir (Eldritch Essence).",
+        "benefit": "Eldritch Essence (Lesser; 4th): Changes your Eldritch Blast into cold damage; any target struck must succeed on a Fortitude save or take a -4 penalty to Dexterity for 10 minutes.",
+        "description": "Eldritch Essence (Lesser; 4th): Changes your Eldritch Blast into cold damage; any target struck must succeed on a Fortitude save or take a -4 penalty to Dexterity for 10 minutes.",
         "source": "Complete Arcane p.134"
     },
     {
@@ -5387,8 +5387,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Lesser",
         "minLevel": 6,
         "prereq": "Warlock Level 6",
-        "benefit": "KÄ±sa menzilli Dimension Door Ä±ÅŸÄ±nlanmasÄ± yapar ve geride 1 turluk illÃ¼zyon kuklasÄ± bÄ±rakÄ±r.",
-        "description": "KÄ±sa menzilli Dimension Door Ä±ÅŸÄ±nlanmasÄ± yapar ve geride 1 turluk illÃ¼zyon kuklasÄ± bÄ±rakÄ±r.",
+        "benefit": "Lesser Invocation (4th): Teleport up to Short range (25 ft. + 5 ft./2 levels) as Dimension Door and leave behind a Major Image duplicate of yourself for 1 round.",
+        "description": "Lesser Invocation (4th): Teleport up to Short range (25 ft. + 5 ft./2 levels) as Dimension Door and leave behind a Major Image duplicate of yourself for 1 round.",
         "source": "Complete Arcane p.134"
     },
     {
@@ -5399,8 +5399,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Lesser",
         "minLevel": 6,
         "prereq": "Warlock Level 6",
-        "benefit": "24 saat boyunca Invisibility (GÃ¶rÃ¼nmezlik) kazanÄ±r; saldÄ±rana kadar sÃ¼rer.",
-        "description": "24 saat boyunca Invisibility (GÃ¶rÃ¼nmezlik) kazanÄ±r; saldÄ±rana kadar sÃ¼rer.",
+        "benefit": "Lesser Invocation (2nd): Grants Invisibility (as the spell) for up to 24 hours; the effect ends if you attack.",
+        "description": "Lesser Invocation (2nd): Grants Invisibility (as the spell) for up to 24 hours; the effect ends if you attack.",
         "source": "Complete Arcane p.135"
     },
     {
@@ -5411,8 +5411,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Lesser",
         "minLevel": 6,
         "prereq": "Warlock Level 6",
-        "benefit": "Dispel Magic atar; bozduÄŸu her bÃ¼yÃ¼ seviyesi baÅŸÄ±na hedefe 1 hasar verir.",
-        "description": "Dispel Magic atar; bozduÄŸu her bÃ¼yÃ¼ seviyesi baÅŸÄ±na hedefe 1 hasar verir.",
+        "benefit": "Lesser Invocation (4th): Functions as targeted or area Dispel Magic; any creature whose active spell effect is dispelled takes 1 point of damage per spell level of the dispelled effect (no save).",
+        "description": "Lesser Invocation (4th): Functions as targeted or area Dispel Magic; any creature whose active spell effect is dispelled takes 1 point of damage per spell level of the dispelled effect (no save).",
         "source": "Complete Arcane p.135"
     },
     {
@@ -5423,8 +5423,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Lesser",
         "minLevel": 6,
         "prereq": "Warlock Level 6",
-        "benefit": "Charm Monster bÃ¼yÃ¼sÃ¼ gibi tek bir hedefi bÃ¼yÃ¼ler (Will Save DC CHA mod).",
-        "description": "Charm Monster bÃ¼yÃ¼sÃ¼ gibi tek bir hedefi bÃ¼yÃ¼ler (Will Save DC CHA mod).",
+        "benefit": "Lesser Invocation (4th): Causes a single living creature within 60 feet to regard you as a trusted friend and ally as Charm Monster (Will negates; only 1 creature charmed at a time).",
+        "description": "Lesser Invocation (4th): Causes a single living creature within 60 feet to regard you as a trusted friend and ally as Charm Monster (Will negates; only 1 creature charmed at a time).",
         "source": "Complete Arcane p.133"
     },
     {
@@ -5435,8 +5435,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Lesser",
         "minLevel": 6,
         "prereq": "Warlock Level 6",
-        "benefit": "Bestow Curse gibi dokunmayla lanetler veya menzilli saldÄ±rÄ±yla -3 saldÄ±rÄ± penaltÄ±sÄ± verir.",
-        "description": "Bestow Curse gibi dokunmayla lanetler veya menzilli saldÄ±rÄ±yla -3 saldÄ±rÄ± penaltÄ±sÄ± verir.",
+        "benefit": "Lesser Invocation (4th): Curse one touched creature as Bestow Curse (Will negates; permanent), even if it saves, the target takes a -1 penalty on attack rolls for 1 minute.",
+        "description": "Lesser Invocation (4th): Curse one touched creature as Bestow Curse (Will negates; permanent), even if it saves, the target takes a -1 penalty on attack rolls for 1 minute.",
         "source": "Complete Arcane p.133"
     },
     {
@@ -5447,8 +5447,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Greater",
         "minLevel": 11,
         "prereq": "Warlock Level 11",
-        "benefit": "Eldritch Blast asit hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r, SR'Ä± tamamen yok sayar ve devam hasarÄ± verir.",
-        "description": "Eldritch Blast asit hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r, SR'Ä± tamamen yok sayar ve devam hasarÄ± verir.",
+        "benefit": "Eldritch Essence (Greater; 6th): Changes your Eldritch Blast into conjured acid damage that ignores Spell Resistance; targets struck take an additional 2d6 acid damage on following rounds (1 round per 5 caster levels).",
+        "description": "Eldritch Essence (Greater; 6th): Changes your Eldritch Blast into conjured acid damage that ignores Spell Resistance; targets struck take an additional 2d6 acid damage on following rounds (1 round per 5 caster levels).",
         "source": "Complete Arcane p.135"
     },
     {
@@ -5459,8 +5459,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Greater",
         "minLevel": 11,
         "prereq": "Warlock Level 11",
-        "benefit": "Eldritch Blast 30 ft'lik koni alan etkisine dÃ¶nÃ¼ÅŸÃ¼r (Reflex DC yarÄ±sÄ±).",
-        "description": "Eldritch Blast 30 ft'lik koni alan etkisine dÃ¶nÃ¼ÅŸÃ¼r (Reflex DC yarÄ±sÄ±).",
+        "benefit": "Blast Shape (Greater; 5th): Shapes your Eldritch Blast into a 30-foot cone; all creatures in the area take full blast damage (Reflex half; no attack roll required).",
+        "description": "Blast Shape (Greater; 5th): Shapes your Eldritch Blast into a 30-foot cone; all creatures in the area take full blast damage (Reflex half; no attack roll required).",
         "source": "Complete Arcane p.134"
     },
     {
@@ -5471,8 +5471,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Greater",
         "minLevel": 11,
         "prereq": "Warlock Level 11",
-        "benefit": "Evard's Black Tentacles gibi kollar Ã§Ä±karÄ±r + her tur alandakilere 2d6 soÄŸuk hasarÄ± verir.",
-        "description": "Evard's Black Tentacles gibi kollar Ã§Ä±karÄ±r + her tur alandakilere 2d6 soÄŸuk hasarÄ± verir.",
+        "benefit": "Greater Invocation (5th): Functions as Evard's Black Tentacles, and every creature within the 20-foot-radius spread takes 2d6 cold damage each round (no save).",
+        "description": "Greater Invocation (5th): Functions as Evard's Black Tentacles, and every creature within the 20-foot-radius spread takes 2d6 cold damage each round (no save).",
         "source": "Complete Arcane p.133"
     },
     {
@@ -5483,8 +5483,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Greater",
         "minLevel": 11,
         "prereq": "Warlock Level 11",
-        "benefit": "Dokunmayla Greater Dispel Magic; bozduÄŸu bÃ¼yÃ¼ seviyesi baÅŸÄ±na 5 geÃ§ici can puanÄ± kazanÄ±r.",
-        "description": "Dokunmayla Greater Dispel Magic; bozduÄŸu bÃ¼yÃ¼ seviyesi baÅŸÄ±na 5 geÃ§ici can puanÄ± kazanÄ±r.",
+        "benefit": "Greater Invocation (6th): Deliver a targeted Greater Dispel Magic with a touch; you gain 5 temporary hit points per spell level of the highest-level spell dispelled (lasts 1 minute).",
+        "description": "Greater Invocation (6th): Deliver a targeted Greater Dispel Magic with a touch; you gain 5 temporary hit points per spell level of the highest-level spell dispelled (lasts 1 minute).",
         "source": "Complete Arcane p.133"
     },
     {
@@ -5495,8 +5495,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Greater",
         "minLevel": 11,
         "prereq": "Warlock Level 11",
-        "benefit": "Eldritch Blast vurduÄŸu hedefi 1 dakika boyunca mide bulantÄ±sÄ± (Nauseated) yapar (Fort Save).",
-        "description": "Eldritch Blast vurduÄŸu hedefi 1 dakika boyunca mide bulantÄ±sÄ± (Nauseated) yapar (Fort Save).",
+        "benefit": "Eldritch Essence (Greater; 6th): Any living creature struck by your Eldritch Blast must succeed on a Fortitude save or be nauseated for 1 minute.",
+        "description": "Eldritch Essence (Greater; 6th): Any living creature struck by your Eldritch Blast must succeed on a Fortitude save or be nauseated for 1 minute.",
         "source": "Complete Arcane p.134"
     },
     {
@@ -5507,8 +5507,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Greater",
         "minLevel": 11,
         "prereq": "Warlock Level 11",
-        "benefit": "Eldritch Blast vurduÄŸu hedefleri 1d6x5 ft geriye fÄ±rlatÄ±r (Reflex Save).",
-        "description": "Eldritch Blast vurduÄŸu hedefleri 1d6x5 ft geriye fÄ±rlatÄ±r (Reflex Save).",
+        "benefit": "Eldritch Essence (Greater; 6th): Any Medium or smaller creature struck by your Eldritch Blast must succeed on a Reflex save or be hurled 1d6 x 5 feet directly away from you and knocked prone (takes 1d6 damage per 10 feet if striking a solid object).",
+        "description": "Eldritch Essence (Greater; 6th): Any Medium or smaller creature struck by your Eldritch Blast must succeed on a Reflex save or be hurled 1d6 x 5 feet directly away from you and knocked prone (takes 1d6 damage per 10 feet if striking a solid object).",
         "source": "Complete Arcane p.135"
     },
     {
@@ -5519,8 +5519,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Greater",
         "minLevel": 11,
         "prereq": "Warlock Level 11",
-        "benefit": "Wall of Fire duvarÄ± yaratÄ±r; hasarÄ±n yarÄ±sÄ± bÃ¼yÃ¼sel ateÅŸ olduÄŸu iÃ§in direnÃ§leri aÅŸar.",
-        "description": "Wall of Fire duvarÄ± yaratÄ±r; hasarÄ±n yarÄ±sÄ± bÃ¼yÃ¼sel ateÅŸ olduÄŸu iÃ§in direnÃ§leri aÅŸar.",
+        "benefit": "Greater Invocation (5th): Creates a curtain or ring of fire as Wall of Fire; half of the wall's damage results directly from supernatural power and is not subject to fire resistance or immunity.",
+        "description": "Greater Invocation (5th): Creates a curtain or ring of fire as Wall of Fire; half of the wall's damage results directly from supernatural power and is not subject to fire resistance or immunity.",
         "source": "Complete Arcane p.135"
     },
     {
@@ -5531,8 +5531,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Dark",
         "minLevel": 16,
         "prereq": "Warlock Level 16",
-        "benefit": "Eldritch Blast etrafÄ±nda 20 ft yarÄ±Ã§aplÄ± patlamaya dÃ¶nÃ¼ÅŸÃ¼r (Reflex Save yarÄ±sÄ±).",
-        "description": "Eldritch Blast etrafÄ±nda 20 ft yarÄ±Ã§aplÄ± patlamaya dÃ¶nÃ¼ÅŸÃ¼r (Reflex Save yarÄ±sÄ±).",
+        "benefit": "Blast Shape (Dark; 8th): Shapes your Eldritch Blast into a 20-foot-radius emanation centered on you; all hostile targets within the area take full blast damage (Reflex half).",
+        "description": "Blast Shape (Dark; 8th): Shapes your Eldritch Blast into a 20-foot-radius emanation centered on you; all hostile targets within the area take full blast damage (Reflex half).",
         "source": "Complete Arcane p.134"
     },
     {
@@ -5543,8 +5543,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Dark",
         "minLevel": 16,
         "prereq": "Warlock Level 16",
-        "benefit": "Eldritch Blast negatif enerji hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r ve hedefe 2 negatif seviye verir.",
-        "description": "Eldritch Blast negatif enerji hasarÄ±na dÃ¶nÃ¼ÅŸÃ¼r ve hedefe 2 negatif seviye verir.",
+        "benefit": "Eldritch Essence (Dark; 8th): Changes your Eldritch Blast into negative energy damage; any living target struck must succeed on a Fortitude save or gain 2 negative levels (fade after 1 hour).",
+        "description": "Eldritch Essence (Dark; 8th): Changes your Eldritch Blast into negative energy damage; any living target struck must succeed on a Fortitude save or gain 2 negative levels (fade after 1 hour).",
         "source": "Complete Arcane p.135"
     },
     {
@@ -5555,8 +5555,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Dark",
         "minLevel": 16,
         "prereq": "Warlock Level 16",
-        "benefit": "24 saat boyunca Foresight bÃ¼yÃ¼sÃ¼: Asla ÅŸaÅŸÄ±rmaz, AC ve Reflex'e +2 insight bonusu.",
-        "description": "24 saat boyunca Foresight bÃ¼yÃ¼sÃ¼: Asla ÅŸaÅŸÄ±rmaz, AC ve Reflex'e +2 insight bonusu.",
+        "benefit": "Dark Invocation (9th): Functions as the Foresight spell (duration 10 minutes/level), granting a +2 insight bonus to AC and Reflex saves, preventing you from being surprised or flat-footed, and allowing telepathic warnings to a target within 100 feet.",
+        "description": "Dark Invocation (9th): Functions as the Foresight spell (duration 10 minutes/level), granting a +2 insight bonus to AC and Reflex saves, preventing you from being surprised or flat-footed, and allowing telepathic warnings to a target within 100 feet.",
         "source": "Complete Arcane p.133"
     },
     {
@@ -5567,8 +5567,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Dark",
         "minLevel": 16,
         "prereq": "Warlock Level 16",
-        "benefit": "GÃ¶lge yarasa sÃ¼rÃ¼sÃ¼ne dÃ¶nÃ¼ÅŸÃ¼r; uÃ§ma hÄ±zÄ±, fiziksel baÄŸÄ±ÅŸÄ±klÄ±k, %50 alan hasarÄ± azaltma.",
-        "description": "GÃ¶lge yarasa sÃ¼rÃ¼sÃ¼ne dÃ¶nÃ¼ÅŸÃ¼r; uÃ§ma hÄ±zÄ±, fiziksel baÄŸÄ±ÅŸÄ±klÄ±k, %50 alan hasarÄ± azaltma.",
+        "benefit": "Dark Invocation (8th): Transform into a Diminutive swarm of batlike shadows for 24 hours; gain fly 40 ft. (good), +4 Dexterity, swarm traits (immunity to weapon damage, +4 deflection AC), and a swarm attack dealing Eldritch Blast damage.",
+        "description": "Dark Invocation (8th): Transform into a Diminutive swarm of batlike shadows for 24 hours; gain fly 40 ft. (good), +4 Dexterity, swarm traits (immunity to weapon damage, +4 deflection AC), and a swarm attack dealing Eldritch Blast damage.",
         "source": "Complete Arcane p.133"
     },
     {
@@ -5579,8 +5579,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "tier": "Dark",
         "minLevel": 16,
         "prereq": "Warlock Level 16",
-        "benefit": "SaldÄ±rgana anÄ±nda Phantasmal Killer illÃ¼zyonel Ã¶lÃ¼mcÃ¼l korkusu fÄ±rlatÄ±r.",
-        "description": "SaldÄ±rgana anÄ±nda Phantasmal Killer illÃ¼zyonel Ã¶lÃ¼mcÃ¼l korkusu fÄ±rlatÄ±r.",
+        "benefit": "Dark Invocation (9th): As an immediate action when attacked, project a terrifying illusion against the attacker as Phantasmal Killer (Will disbelief, then Fortitude partial; failure causes death from fear, success deals 3d6 damage).",
+        "description": "Dark Invocation (9th): As an immediate action when attacked, project a terrifying illusion against the attacker as Phantasmal Killer (Will disbelief, then Fortitude partial; failure causes death from fear, success deals 3d6 damage).",
         "source": "Complete Mage p.124"
     },
     {
@@ -5589,8 +5589,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot": "None",
         "category": "Martial",
         "prereq": "Special (see text)",
-        "benefit": "SeÃ§ilen bir dÃ¶vÃ¼ÅŸ disiplininden (Desert Wind, Devoted Spirit, Diamond Mind, Iron Heart, Setting Sun, Shadow Hand, Stone Dragon, Tiger Claw, White Raven) seviyenizin yettiÄŸi 1 adet manevra (Strike, Boost veya Counter) Ã¶ÄŸrenirsiniz. Her Ã§atÄ±ÅŸmada (Encounter) 1 kez kullanÄ±labilir. En fazla 3 kez alÄ±nabilir; ilgili disiplinin ana becerisi sÄ±nÄ±f beceriniz olur.",
-        "description": "Learn a martial maneuver from any discipline for which you meet the prerequisites. You can use this maneuver once per encounter. You can take this feat up to three times; each time adds the discipline skill to your class skill list.",
+        "benefit": "Learn one martial maneuver from any Tome of Battle discipline for which you meet the prerequisites (Initiator Level equals 1/2 non-adept levels + adept levels), usable once per encounter; its associated key skill becomes a class skill.",
+        "description": "Learn one martial maneuver from any Tome of Battle discipline for which you meet the prerequisites (Initiator Level equals 1/2 non-adept levels + adept levels), usable once per encounter; its associated key skill becomes a class skill.",
         "source": "Tome of Battle p.31",
         "isFighterBonusFeat": true
     },
@@ -5600,8 +5600,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot": "None",
         "category": "Martial",
         "prereq": "1 Martial maneuver",
-        "benefit": "Bir disiplinden bildiÄŸiniz en az 1 manevra varsa, o disiplinden seviyenizin yettiÄŸi bir DuruÅŸ (Stance) Ã¶ÄŸrenirsiniz. SavaÅŸÃ§Ä± bonus feati olarak seÃ§ilebilir.",
-        "description": "Learn a martial stance from any discipline in which you already know at least one maneuver and meet the prerequisites. Can be selected as a fighter bonus feat.",
+        "benefit": "Learn one martial stance from any Tome of Battle discipline in which you know at least one martial maneuver and meet the initiator level prerequisite; you can adopt this stance as a swift action.",
+        "description": "Learn one martial stance from any Tome of Battle discipline in which you know at least one martial maneuver and meet the initiator level prerequisite; you can adopt this stance as a swift action.",
         "source": "Tome of Battle p.31",
         "isFighterBonusFeat": true
     },
@@ -5611,8 +5611,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot": "None",
         "category": "Martial",
         "prereq": "Crusader maneuver progression",
-        "benefit": "Her Ã§atÄ±ÅŸmanÄ±n baÅŸÄ±nda ve manevra desteniz yenilenip Ã§ekildiÄŸinde fazladan +1 adet aÃ§Ä±k manevra (Granted Maneuver) kazanÄ±rsÄ±nÄ±z. Crusader manevra dÃ¶ngÃ¼sÃ¼nÃ¼ hÄ±zlandÄ±rÄ±r.",
-        "description": "You begin each combat encounter with 1 additional granted maneuver. In addition, when you refresh your granted maneuvers, you are granted 1 extra maneuver.",
+        "benefit": "You have one additional granted maneuver at the start of an encounter and whenever your expended Crusader maneuvers are recovered and granted anew.",
+        "description": "You have one additional granted maneuver at the start of an encounter and whenever your expended Crusader maneuvers are recovered and granted anew.",
         "source": "Tome of Battle p.30",
         "isFighterBonusFeat": false
     },
@@ -5622,8 +5622,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot": "None",
         "category": "Martial",
         "prereq": "BAB +6, Improved Unarmed Strike",
-        "benefit": "Standart yakÄ±n dÃ¶vÃ¼ÅŸ saldÄ±rÄ±sÄ±, tam saldÄ±rÄ± (Full Attack) veya standart eylemli manevra (Strike) yaparken, o turdaki tÃ¼m saldÄ±rÄ± zarlarÄ±nÄ±za -2 ceza alÄ±p anÄ±nda ek bir silahsÄ±z tekme saldÄ±rÄ±sÄ± (Unarmed Strike) yaparsÄ±nÄ±z.",
-        "description": "When you make a melee attack with one or more weapons, full attack, or martial strike, you can make an additional unarmed strike with a -2 penalty on all attack rolls that round.",
+        "benefit": "When you make a melee attack with one or more melee weapons (including a standard attack, full attack, or martial strike), you can make one additional unarmed strike at your highest attack bonus; all attacks in the round take a -2 penalty.",
+        "description": "When you make a melee attack with one or more melee weapons (including a standard attack, full attack, or martial strike), you can make one additional unarmed strike at your highest attack bonus; all attacks in the round take a -2 penalty.",
         "source": "Tome of Battle p.32",
         "isFighterBonusFeat": true
     },
@@ -5633,8 +5633,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot": "None",
         "category": "Martial",
         "prereq": "Str 13, 1 Stone Dragon maneuver",
-        "benefit": "SaldÄ±rÄ± zarlarÄ±nÄ±zdan BAB deÄŸerine kadar (maksimum -5) ceza alÄ±p, aldÄ±ÄŸÄ±nÄ±z cezanÄ±n 2 katÄ± kadar (tur baÅŸÄ±na maksimum 10) GeÃ§ici Can PuanÄ± (Temporary HP) kazanÄ±rsÄ±nÄ±z. Bir sonraki turunuza kadar sÃ¼rer.",
-        "description": "Subtract a number (up to 5 or BAB) from melee attack rolls to gain twice that number in temporary hit points until the start of your next turn.",
+        "benefit": "When making a melee attack, full attack, or Stone Dragon strike, you can take a penalty of up to -5 on attack rolls (not exceeding your BAB) to gain 2 temporary hit points per point of penalty until the start of your next turn.",
+        "description": "When making a melee attack, full attack, or Stone Dragon strike, you can take a penalty of up to -5 on attack rolls (not exceeding your BAB) to gain 2 temporary hit points per point of penalty until the start of your next turn.",
         "source": "Tome of Battle p.32",
         "isFighterBonusFeat": true
     },
@@ -5644,8 +5644,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot": "None",
         "category": "Martial",
         "prereq": "Bardic music, 1 White Raven maneuver",
-        "benefit": "Inspire Courage ÅŸarkÄ±sÄ±nÄ± Swift Action olarak anÄ±nda baÅŸlatabilirsiniz. Inspire Courage bonusunuzu hesaplarken Bard seviyelerinizle Crusader ve Warblade seviyeleriniz toplanÄ±r.",
-        "description": "You can activate inspire courage as a swift action. Your bard, crusader, and warblade levels stack to determine the bonus granted by inspire courage.",
+        "benefit": "You can activate your Bardic Music (Inspire Courage) as a swift action while in a White Raven stance, and your Crusader/Warblade levels stack with your Bard levels to determine the bonus granted by Inspire Courage.",
+        "description": "You can activate your Bardic Music (Inspire Courage) as a swift action while in a White Raven stance, and your Crusader/Warblade levels stack with your Bard levels to determine the bonus granted by Inspire Courage.",
         "source": "Tome of Battle p.32",
         "isFighterBonusFeat": false
     },
@@ -5655,8 +5655,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot": "None",
         "category": "Martial",
         "prereq": "1 Martial maneuver",
-        "benefit": "Ã‡atÄ±ÅŸma baÅŸÄ±na 1 kez, az Ã¶nce harcadÄ±ÄŸÄ±nÄ±z bir manevrayÄ± Swift Action harcayarak anÄ±nda yeniden kuÅŸanÄ±lmÄ±ÅŸ ve kullanÄ±labilir hale getirirsiniz.",
-        "description": "Once per encounter as a swift action, you can instantly recover an expended maneuver and make it readied once again.",
+        "benefit": "Once per day as a swift action, you can instantly recover one expended martial maneuver so that it is ready to be used again.",
+        "description": "Once per day as a swift action, you can instantly recover one expended martial maneuver so that it is ready to be used again.",
         "source": "Tome of Battle p.33",
         "isFighterBonusFeat": false
     },
@@ -5666,8 +5666,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot": "None",
         "category": "Martial",
         "prereq": "2 Martial maneuvers",
-        "benefit": "Bir Ã§atÄ±ÅŸma sÄ±rasÄ±nda harcadÄ±ÄŸÄ±nÄ±z manevralarÄ± yenilediÄŸinizde dÃ¶vÃ¼ÅŸ baÅŸÄ±na bir kez 3 + Karakter Seviyesi kadar can puanÄ± iyileÅŸirsiniz.",
-        "description": "When you recover expended maneuvers during an encounter, you heal hit points equal to 3 + your character level (once per encounter).",
+        "benefit": "Whenever you spend an action to recover one or more expended martial maneuvers during an encounter, you heal 3 hit points + 1 hit point per character level (once per encounter).",
+        "description": "Whenever you spend an action to recover one or more expended martial maneuvers during an encounter, you heal 3 hit points + 1 hit point per character level (once per encounter).",
         "source": "Tome of Battle p.33",
         "isFighterBonusFeat": false
     },
@@ -5677,8 +5677,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot": "None",
         "category": "Martial",
         "prereq": "Dex 13",
-        "benefit": "Bir rakip fÄ±rsat saldÄ±rÄ±sÄ± (AoO) tetiklediÄŸinde, ona saldÄ±rmak yerine anÄ±nda 5-foot step kayabilirsiniz (yeni AoO tetiklemez).",
-        "description": "When an opponent provokes an attack of opportunity from you, you can take a 5-foot step instead of making the attack.",
+        "benefit": "When an opponent within your threatened area provokes an attack of opportunity from you, you can choose to immediately take a 5-foot step instead of making the attack of opportunity.",
+        "description": "When an opponent within your threatened area provokes an attack of opportunity from you, you can choose to immediately take a 5-foot step instead of making the attack of opportunity.",
         "source": "Tome of Battle p.30",
         "isFighterBonusFeat": true
     },
@@ -5688,8 +5688,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot": "None",
         "category": "General",
         "prereq": "Ability to use lesser invocations",
-        "benefit": "BildiÄŸiniz en yÃ¼ksek dereceden en az bir derece dÃ¼ÅŸÃ¼k ek 1 adet YakarÄ±ÅŸ (Invocation) Ã¶ÄŸrenirsiniz. Birden fazla kez alÄ±nabilir.",
-        "description": "You learn one additional invocation of any grade up to one grade lower than the highest grade you can use. You can take this feat multiple times.",
+        "benefit": "You learn one additional Warlock invocation of a grade at least one step lower than the highest grade of invocations you can currently use.",
+        "description": "You learn one additional Warlock invocation of a grade at least one step lower than the highest grade of invocations you can currently use.",
         "source": "Complete Arcane p.79",
         "isFighterBonusFeat": false
     },
@@ -5699,8 +5699,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot": "None",
         "category": "General",
         "prereq": "Spell-like ability at CL 6th or higher",
-        "benefit": "GÃ¼nde 3 kez, seÃ§ilen bir bÃ¼yÃ¼ benzeri yeteneÄŸin (Ã¶rneÄŸin Eldritch Blast) tÃ¼m deÄŸiÅŸken sayÄ±sal etkilerini (hasar zarlarÄ± vb.) x1.5 katÄ±na Ã§Ä±karÄ±rsÄ±nÄ±z.",
-        "description": "You can use a selected spell-like ability three times per day as an empowered spell-like ability (variable numeric effects increased by one-half).",
+        "benefit": "Three times per day, you can use a chosen spell-like ability (such as Eldritch Blast) whose effective spell level is at most half your caster level minus 2 as an empowered spell-like ability (+50% variable numeric effects).",
+        "description": "Three times per day, you can use a chosen spell-like ability (such as Eldritch Blast) whose effective spell level is at most half your caster level minus 2 as an empowered spell-like ability (+50% variable numeric effects).",
         "source": "Monster Manual p.303 / Complete Arcane p.79",
         "isFighterBonusFeat": false
     },
@@ -5710,8 +5710,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot": "None",
         "category": "General",
         "prereq": "Spell-like ability at CL 10th or higher",
-        "benefit": "GÃ¼nde 3 kez, seÃ§ilen bir bÃ¼yÃ¼ benzeri yeteneÄŸi (Ã¶rneÄŸin Eldritch Blast) Swift Action olarak anÄ±nda patlatabilirsiniz.",
-        "description": "You can use a selected spell-like ability three times per day as a quickened spell-like ability (swift action).",
+        "benefit": "Three times per day, you can use a chosen spell-like ability (such as Eldritch Blast) whose effective spell level is at most half your caster level minus 4 as a quickened spell-like ability (free/swift action).",
+        "description": "Three times per day, you can use a chosen spell-like ability (such as Eldritch Blast) whose effective spell level is at most half your caster level minus 4 as a quickened spell-like ability (free/swift action).",
         "source": "Monster Manual p.304 / Complete Arcane p.82",
         "isFighterBonusFeat": false
     },
@@ -5721,8 +5721,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot": "None",
         "category": "General",
         "prereq": "Spell-like ability at CL 6th or higher",
-        "benefit": "GÃ¼nde 3 kez, seÃ§ilen bir bÃ¼yÃ¼ benzeri yeteneÄŸin (Ã¶rneÄŸin Eldritch Blast) tÃ¼m deÄŸiÅŸken sayÄ±sal etkilerini zar atmadan maksimum deÄŸerinde uygularsÄ±nÄ±z.",
-        "description": "You can use a selected spell-like ability three times per day as a maximized spell-like ability (variable numeric effects maximized).",
+        "benefit": "Three times per day, you can use a chosen spell-like ability (such as Eldritch Blast) whose effective spell level is at most half your caster level minus 2 as a maximized spell-like ability (all variable numeric effects maximized).",
+        "description": "Three times per day, you can use a chosen spell-like ability (such as Eldritch Blast) whose effective spell level is at most half your caster level minus 2 as a maximized spell-like ability (all variable numeric effects maximized).",
         "source": "Complete Arcane p.81",
         "isFighterBonusFeat": false
     },
@@ -5732,8 +5732,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot": "None",
         "category": "General",
         "prereq": "Special attack (Eldritch Blast)",
-        "benefit": "Eldritch Blast ve ona uygulanan tÃ¼m Eldritch Essence / Blast Shape yakarÄ±ÅŸlarÄ±nÄ±n DC kurtarma zarlarÄ±na kalÄ±cÄ± +2 bonus kazandÄ±rÄ±r.",
-        "description": "Add +2 to the Difficulty Class for all saving throws against the selected special attack (Eldritch Blast).",
+        "benefit": "Add +2 to the DC for all saving throws against your Eldritch Blast, including any Eldritch Essence or Blast Shape invocations applied to it.",
+        "description": "Add +2 to the DC for all saving throws against your Eldritch Blast, including any Eldritch Essence or Blast Shape invocations applied to it.",
         "source": "Monster Manual p.303",
         "isFighterBonusFeat": false
     },
@@ -5743,8 +5743,8 @@ window.BUNDLED_SRD_CORE_CATALOG = [
         "slot": "None",
         "category": "General",
         "prereq": "Spell-like ability",
-        "benefit": "GÃ¼nde 5 kez, seÃ§ilen bir bÃ¼yÃ¼ benzeri yeteneÄŸin yaÅŸayan hedeflere vurduÄŸunda +2d6 ekstra hasar vermesini saÄŸlarsÄ±nÄ±z (Undead veya Construct'lara karÅŸÄ± yarÄ± hasar).",
-        "description": "A selected spell-like ability deals +2d6 points of damage against living creatures five times per day (damage halved against undead/constructs).",
+        "benefit": "Five times per day, you can imbue a spell-like ability (such as Eldritch Blast) to deal an extra +2d6 damage against living non-outsider, non-undead, non-construct targets, at the cost of dealing half damage to outsiders, undead, and constructs.",
+        "description": "Five times per day, you can imbue a spell-like ability (such as Eldritch Blast) to deal an extra +2d6 damage against living non-outsider, non-undead, non-construct targets, at the cost of dealing half damage to outsiders, undead, and constructs.",
         "source": "Book of Vile Darkness p.48 / Complete Arcane",
         "isFighterBonusFeat": false
     },
