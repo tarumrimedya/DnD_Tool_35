@@ -6,8 +6,13 @@ Proje genelinde kaliteyi en üst düzeyde tutarken API/kota verimliliğini sağl
   - Kotası dolana kadar projenin ana yöneticisi **Gemini 4 Argon**'dur.
   - Tüm yapısal, mimari ve kural motoru (`rule_engine.js`, `rule_master.js`, V2 Veri Kontratları) kararları Argon tarafından verilir.
   - Argon; yapılacak işleri **zorluk, karmaşıklık (complexity), risk ve veri hacmi** parametrelerine göre analiz ederek en optimum alt modele veya araca yönlendirir.
-- **Çıktıların Denetlenmesi (`Gemini 3.8 veya Altı Modeller`):**
-  - Üretilen veri, şema dönüşümü ve alt görev çıktılarının doğrulama/denetleme (auditing & validation) işlemleri **3.8 veya altı modeller (`flash` / `flash_lite`)** ile gerçekleştirilir.
+- **Çıktıların Denetlenmesi (`Sıfır Token Yerel Script` > `flash_lite`):**
+  - Dosya senkronizasyonu (`character.html` & `webapp/`), SHA-256 paritesi, JS/HTML/JSON sözdizimi (syntax) ve yasaklı zar emojisi (`U+1F3B2`) denetimleri için **KESİNLİKLE alt ajan (`invoke_subagent`) çağrılmaz**; doğrudan yerel `tools/verify_and_sync.js` scripti çalıştırılır (**0 Token, ~100ms**).
+  - Yalnızca karmaşık şema dönüşümü veya çoklu veri doğrulaması gerektiğinde **3.8 veya altı modeller (`flash_lite`)** kullanılır.
+- **Modüler Karakter Kâğıdı ve Bağlam Koruma Disiplini (STRICT):**
+  - Karakter kâğıdı (`index.html` = 7.698 satır saf HTML/DOM) ve 5 ayrık JS modülü (`char_hud.js`, `char_combat.js`, `char_spells.js`, `char_progression.js`, `char_inventory.js`) üzerinden çalışılır.
+  - Bir görev geldiğinde tüm dosyalar taranmaz; yalnızca ilgili modül (`char_spells.js`, `char_progression.js` vb.) ve nokta atışı satır aralığı (30–60 satır) okunur.
+  - Sadece kök dizindeki tek kaynak dosya düzenlenir; kopyaları (`character.html`, `webapp/*`) asla ayrı ayrı okunmaz, `tools/verify_and_sync.js` ile otomatik eşitlenir.
 - **Deterministik Yerel Öncelik (Sıfır Token / Zero-Token):**
   - Temel D&D 3.5e SRD verileri (3.500+ büyü, feat, eşya, canavar, sınıf, materyal, geliştirme) AI ile üretilmez; yerel ETL scriptleri ve Modüler SRD Kütüphanesi (`srd_index.json` + `srd_*.json`) üzerinden **sıfır token** tüketimiyle işlenir.
 - **Rutin & Veri Odaklı Görevler (`flash_lite`):**
@@ -57,13 +62,12 @@ Proje genelinde kaliteyi en üst düzeyde tutarken API/kota verimliliğini sağl
   - **Ajan, kod değişikliği yapmadan önce kullanıcıyı açıkça uyarmakla yükümlüdür.**
   - Olası çapraz etkiler net argümanlarla sunulmalı ve onay alınmadan karakter motorunu etkileyecek adımlar atılmamalıdır.
 
-## 7. HUB & Karakter Kâğıdı Paralel Çalışma ve Devir Teslim Standardı (STRICT: HANDOVER PROTOCOL)
+## 7. HUB & Karakter Kâğıdı Veri Kontratı ve Parite Standardı (STRICT: ZERO-TOKEN SYNC)
 - **HUB'ın Merkezi Rolü:** HUB (`hub.html`) DM'in ve oyuncunun tüm karakterlerini (PC & NPC), Bestiary canavarlarını (`srd_monsters.json`), parti dengesini, encounter gruplarını ve kampanyalarını yönettiği **ana kontrol merkezidir**.
-- **Konuşmalar Arası Güvenli İzolasyon (Separation of Concerns):**
-  1. **Handover Dokümanı Zorunluluğu:** HUB oturumunda karakter sayfasını ilgilendiren veya veri şemasını değiştiren her adımda kök dizindeki `HANDOVER_TO_CHARACTER_SHEET.md` dosyası güncellenir.
-  2. **Hazır Yönlendirme Promptu:** Kullanıcıya diğer konuşmaya doğrudan yapıştırabileceği tek parçalık hazır bir yönlendirme promptu sunulur.
-  3. **Katı Veri Kontratı (Data Contract):** HUB tarafından üretilen `fullData` ile karakter kâğıdı tarafından okunan veri şeması ortak Kanonik V2 protokolüne tam uyumlu olmalıdır.
-  4. **Parite ve Eşitlik:** Kök dizindeki dosyalar ile `webapp/` altındaki kopyaların %100 birebir aynı olması kuralı tavizsiz korunur.
+- **Veri Kontratı ve Sıfır-Token Parite Kuralları:**
+  1. **Handover Dokümanı Donduruldu (No Handover Overhead):** `HANDOVER_TO_CHARACTER_SHEET.md` dosyası tarihsel arşiv olarak dondurulmuştur. Token israfını önlemek amacıyla görevlerde bu dosya okunmaz, güncellenmez ve yönlendirme promptu üretilmez.
+  2. **Katı Veri Kontratı (Data Contract):** HUB tarafından üretilen `fullData` ile karakter kâğıdı tarafından okunan veri şeması ortak Kanonik V2 protokolüne tam uyumlu olmalıdır.
+  3. **Otomatik Parite (`tools/verify_and_sync.js`):** Kök dizindeki dosyalar ile `character.html` ve `webapp/` altındaki kopyaların %100 birebir aynı olması kuralı her değişiklik sonunda `tools/verify_and_sync.js` çalıştırılarak **0 token** maliyetiyle korunur.
 
 ## 8. Kanonik V2 Şema Güncellemeleri ve Motor Senkronizasyonu (STRICT)
 - Veri tabanı şemasında yeni bir yapısal yetenek tanımlandığında:
