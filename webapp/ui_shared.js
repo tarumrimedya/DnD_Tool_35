@@ -118,8 +118,8 @@
       const bonusStr = bonus > 0 ? (dice ? `+${bonus}` : `+${bonus}`) : (bonus < 0 ? `${bonus}` : '');
       const formulaDisplay = `${dice}${bonusStr}`;
       const critTag = part.onCritOnly
-        ? `<span class="ml-0.5 px-1 rounded bg-amber-500/20 text-amber-300 text-[9px] font-black" title="Sadece Kritik İsabetlerde Patlar (Burst)">⚡CRIT</span>`
-        : (part.multiplyOnCrit ? `<span class="opacity-70 text-[9px]" title="Kritikte Çarpılır">×Krit</span>` : '');
+        ? `<span class="ml-0.5 px-1 rounded bg-amber-500/20 text-amber-300 text-[9px] font-black" title="Triggers Only on Critical Hits (Burst)">⚡CRIT</span>`
+        : (part.multiplyOnCrit ? `<span class="opacity-70 text-[9px]" title="Multiplied on Critical Hit">×Crit</span>` : '');
       const srcTag = showSource && part.source ? `<span class="opacity-65 text-[9px]">(${escapeHtml(part.source)})</span>` : '';
 
       const sizeCls = compact ? 'px-1.5 py-0.5 text-[10px]' : 'px-2 py-0.5 text-[11px]';
@@ -268,9 +268,9 @@
 
     const alerts = [];
     if (flags.effectiveDexZero) {
-      alerts.push({ icon: '🛑', text: 'Efektif DEX 0 (Felç / Çaresiz — Yakın dövüş darbe rulolarına +4, Coup de Grace riski!)', severity: 'rose' });
+      alerts.push({ icon: '🛑', text: 'Effective DEX 0 (Paralyzed / Helpless — +4 to enemy melee attack rolls, Coup de Grace risk!)', severity: 'rose' });
     } else if (flags.loseDexToAC) {
-      alerts.push({ icon: '⚠️', text: 'AC\'ye DEX Bonusu Kaybedildi (Flat-Footed / Sneak Attack\'a Açık!)', severity: 'amber' });
+      alerts.push({ icon: '⚠️', text: 'DEX Bonus to AC Lost (Flat-Footed / Vulnerable to Sneak Attack!)', severity: 'amber' });
     }
     if (Array.isArray(flags.actionRestrictions) && flags.actionRestrictions.length > 0) {
       flags.actionRestrictions.forEach(r => {
@@ -278,7 +278,7 @@
       });
     }
     if (flags.halfSpeed) {
-      alerts.push({ icon: '🦶', text: 'Hareket Hızı Yarıya İndi (×0.5 Hız / Koşma & Hücum Kısıtlı)', severity: 'amber' });
+      alerts.push({ icon: '🦶', text: 'Movement Speed Halved (×0.5 Speed / Run & Charge Restricted)', severity: 'amber' });
     }
     if (Array.isArray(flags.tacticalNotes) && flags.tacticalNotes.length > 0) {
       flags.tacticalNotes.forEach(n => {
@@ -301,7 +301,7 @@
       <div class="w-full bg-gradient-to-r from-rose-950/80 via-slate-900/95 to-amber-950/80 border border-rose-500/50 rounded-xl p-2.5 mb-3 shadow-lg flex flex-wrap items-center justify-between gap-2">
         <div class="flex items-center gap-2">
           <span class="text-base animate-pulse">⚠️</span>
-          <span class="text-xs font-black uppercase tracking-wider text-rose-300">Taktiksel Durum Uyarısı:</span>
+          <span class="text-xs font-black uppercase tracking-wider text-rose-300">Tactical Condition Warning:</span>
         </div>
         <div class="flex flex-wrap items-center gap-1.5 flex-1">
           ${itemsHtml}
@@ -524,25 +524,25 @@
             <span class="w-8 h-8 rounded-xl bg-indigo-600/20 border border-indigo-500/50 flex items-center justify-center text-amber-400 font-bold">📚</span>
             <div>
               <h3 class="text-sm sm:text-base font-black text-white flex items-center gap-2">
-                <span>D&D 3.5e V2 Kütüphanesi &amp; Demirhane</span>
-                <span class="px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-700/60 text-[10px] font-mono">3,522 SRD Kaydı • 0 Token</span>
+                <span>D&D 3.5e V2 Compendium &amp; The Forge</span>
+                <span class="px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-700/60 text-[10px] font-mono">3,522 SRD Entries • 0 Tokens</span>
               </h3>
-              <p class="text-[11px] text-slate-400">Anlık Kanonik V2 Arama, Büyü/Yetenek İnceleme ve Lego Eşya Montajı</p>
+              <p class="text-[11px] text-slate-400">Instant Canonical V2 Search, Spell/Feat Inspection &amp; Modular Item Assembly</p>
             </div>
           </div>
-          <button type="button" onclick="DnDUI.closeCompendiumDrawer()" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold transition cursor-pointer">✕ Kapat</button>
+          <button type="button" onclick="DnDUI.closeCompendiumDrawer()" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold transition cursor-pointer">✕ Close</button>
         </div>
 
         <!-- Category Tabs -->
         <div class="px-4 py-2 bg-slate-900/90 border-b border-slate-800 flex items-center gap-1.5 overflow-x-auto shrink-0 text-xs">
-          <button type="button" data-comp-tab="all" onclick="DnDUI.switchCompendiumTab('all')" class="px-2.5 py-1 rounded-lg font-bold transition cursor-pointer bg-indigo-600 text-white">🌐 Tümü</button>
-          <button type="button" data-comp-tab="Weapon" onclick="DnDUI.switchCompendiumTab('Weapon')" class="px-2.5 py-1 rounded-lg font-bold transition cursor-pointer text-slate-400 hover:text-white">⚔️ Silahlar</button>
-          <button type="button" data-comp-tab="Armor" onclick="DnDUI.switchCompendiumTab('Armor')" class="px-2.5 py-1 rounded-lg font-bold transition cursor-pointer text-slate-400 hover:text-white">🛡️ Zırh &amp; Eşya</button>
-          <button type="button" data-comp-tab="Feat" onclick="DnDUI.switchCompendiumTab('Feat')" class="px-2.5 py-1 rounded-lg font-bold transition cursor-pointer text-slate-400 hover:text-white">🏅 Feat &amp; Manevra</button>
-          <button type="button" data-comp-tab="Spell" onclick="DnDUI.switchCompendiumTab('Spell')" class="px-2.5 py-1 rounded-lg font-bold transition cursor-pointer text-slate-400 hover:text-white">🔮 Büyü &amp; Psionik</button>
-          <button type="button" data-comp-tab="Condition" onclick="DnDUI.switchCompendiumTab('Condition')" class="px-2.5 py-1 rounded-lg font-bold transition cursor-pointer text-slate-400 hover:text-white">⚡ Durum &amp; Buff</button>
+          <button type="button" data-comp-tab="all" onclick="DnDUI.switchCompendiumTab('all')" class="px-2.5 py-1 rounded-lg font-bold transition cursor-pointer bg-indigo-600 text-white">🌐 All</button>
+          <button type="button" data-comp-tab="Weapon" onclick="DnDUI.switchCompendiumTab('Weapon')" class="px-2.5 py-1 rounded-lg font-bold transition cursor-pointer text-slate-400 hover:text-white">⚔️ Weapons</button>
+          <button type="button" data-comp-tab="Armor" onclick="DnDUI.switchCompendiumTab('Armor')" class="px-2.5 py-1 rounded-lg font-bold transition cursor-pointer text-slate-400 hover:text-white">🛡️ Armor &amp; Gear</button>
+          <button type="button" data-comp-tab="Feat" onclick="DnDUI.switchCompendiumTab('Feat')" class="px-2.5 py-1 rounded-lg font-bold transition cursor-pointer text-slate-400 hover:text-white">🏅 Feats &amp; Maneuvers</button>
+          <button type="button" data-comp-tab="Spell" onclick="DnDUI.switchCompendiumTab('Spell')" class="px-2.5 py-1 rounded-lg font-bold transition cursor-pointer text-slate-400 hover:text-white">🔮 Spells &amp; Psionics</button>
+          <button type="button" data-comp-tab="Condition" onclick="DnDUI.switchCompendiumTab('Condition')" class="px-2.5 py-1 rounded-lg font-bold transition cursor-pointer text-slate-400 hover:text-white">⚡ Conditions &amp; Buffs</button>
           <button type="button" data-comp-tab="Monster" onclick="DnDUI.switchCompendiumTab('Monster')" class="px-2.5 py-1 rounded-lg font-bold transition cursor-pointer text-slate-400 hover:text-white">👹 Bestiary (645)</button>
-          <button type="button" data-comp-tab="forge" onclick="DnDUI.switchCompendiumTab('forge')" class="px-3 py-1 rounded-lg font-black transition cursor-pointer bg-amber-500/20 text-amber-300 border border-amber-500/50 hover:bg-amber-500 hover:text-slate-950 ml-auto shrink-0">⚒️ Demirhane (Lego Eşya)</button>
+          <button type="button" data-comp-tab="forge" onclick="DnDUI.switchCompendiumTab('forge')" class="px-3 py-1 rounded-lg font-black transition cursor-pointer bg-amber-500/20 text-amber-300 border border-amber-500/50 hover:bg-amber-500 hover:text-slate-950 ml-auto shrink-0">⚒️ The Forge (Item Builder)</button>
         </div>
 
         <!-- VIEW 1: COMPENDIUM SEARCH & INSPECTOR -->
@@ -550,7 +550,7 @@
           <!-- Search Bar -->
           <div class="p-3 bg-slate-950/60 border-b border-slate-800 flex items-center gap-2 shrink-0">
             <span class="text-slate-400 text-sm">🔍</span>
-            <input type="text" id="dnd-ui-compendium-input" oninput="DnDUI.onCompendiumSearchInput(this.value)" placeholder="SRD V2 Kütüphanesinde ara (Örn: Greatsword, Power Attack, Fireball, Haste, Balor, +2 Keen Scimitar)..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-400 font-mono">
+            <input type="text" id="dnd-ui-compendium-input" oninput="DnDUI.onCompendiumSearchInput(this.value)" placeholder="Search SRD V2 Compendium (e.g. Greatsword, Power Attack, Fireball, Haste, Balor, +2 Keen Scimitar)..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-400 font-mono">
           </div>
 
           <!-- Split Pane: Left Results, Right V2 Detail Card -->
@@ -567,54 +567,54 @@
               <div>
                 <h4 class="text-sm font-black text-amber-300 flex items-center gap-2">
                   <span>⚒️</span>
-                  <span>Demirhane — Kanonik V2 Lego Eşya Birleştirici</span>
+                  <span>The Forge — Canonical V2 Modular Item Assembler</span>
                 </h4>
-                <p class="text-[11px] text-slate-400">Temel silah/zırh, özel materyal (Mithral, Adamantine vb.), +1..+5 geliştirme ve sihirli özellikleri sıfır token ile birleştirin.</p>
+                <p class="text-[11px] text-slate-400">Combine base weapons/armor, special materials (Mithral, Adamantine, etc.), +1..+5 enhancement bonuses, and special abilities with zero tokens.</p>
               </div>
             </div>
 
             <!-- Fast Natural Language Input -->
             <div class="space-y-1">
-              <label class="block text-[11px] font-bold text-indigo-300">⚡ Doğal Dil ile Hızlı Montaj (İsteğe Bağlı):</label>
+              <label class="block text-[11px] font-bold text-indigo-300">⚡ Quick Natural Language Assembly (Optional):</label>
               <div class="flex items-center gap-2">
-                <input type="text" id="dnd-forge-nl-input" oninput="DnDUI.onForgeNaturalLanguageInput(this.value)" placeholder="Örn: +2 Keen Mithral Scimitar, +3 Flaming Burst Adamantine Greatsword..." class="flex-1 bg-slate-950 border border-indigo-500/50 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-amber-400">
+                <input type="text" id="dnd-forge-nl-input" oninput="DnDUI.onForgeNaturalLanguageInput(this.value)" placeholder="e.g. +2 Keen Mithral Scimitar, +3 Flaming Burst Adamantine Greatsword..." class="flex-1 bg-slate-950 border border-indigo-500/50 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-amber-400">
               </div>
             </div>
 
             <!-- Structured Pickers -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
               <div>
-                <label class="block text-slate-400 mb-1 font-semibold">1. Temel Eşya (Silah / Zırh)</label>
+                <label class="block text-slate-400 mb-1 font-semibold">1. Base Item (Weapon / Armor)</label>
                 <select id="dnd-forge-base-select" onchange="DnDUI.updateForgePreview()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-white focus:outline-none focus:border-amber-400"></select>
               </div>
               <div>
-                <label class="block text-slate-400 mb-1 font-semibold">2. Özel Materyal</label>
+                <label class="block text-slate-400 mb-1 font-semibold">2. Special Material</label>
                 <select id="dnd-forge-material-select" onchange="DnDUI.updateForgePreview()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-white focus:outline-none focus:border-amber-400">
-                  <option value="">Standart (Çelik / Deri / Ahşap)</option>
+                  <option value="">Standard (Steel / Leather / Wood)</option>
                   <option value="material_mithral">Mithral (Hafif / -ACP / +Max DEX)</option>
-                  <option value="material_adamantine">Adamantine (Bypass DR 20 / Zırh DR)</option>
+                  <option value="material_adamantine">Adamantine (Bypass Hardness 20 / Armor DR)</option>
                   <option value="material_cold_iron">Cold Iron (Fey/Demon DR Bypass)</option>
                   <option value="material_alchemical_silver">Alchemical Silver (Lycanthrope/Devil DR)</option>
-                  <option value="material_darkwood">Darkwood (Yarı Ağırlık Ahşap)</option>
+                  <option value="material_darkwood">Darkwood (Half-Weight Wood)</option>
                   <option value="material_dragonhide">Dragonhide (Druid Uyumlu Ejder Derisi)</option>
                 </select>
               </div>
               <div>
-                <label class="block text-slate-400 mb-1 font-semibold">3. Geliştirme Bonusu (Enhancement)</label>
+                <label class="block text-slate-400 mb-1 font-semibold">3. Enhancement Bonus</label>
                 <select id="dnd-forge-enh-bonus" onchange="DnDUI.updateForgePreview()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-amber-300 font-bold font-mono focus:outline-none focus:border-amber-400">
                   <option value="0">Masterwork / Normal (+0)</option>
                   <option value="1" selected>+1 Enhancement</option>
                   <option value="2">+2 Enhancement</option>
                   <option value="3">+3 Enhancement</option>
                   <option value="4">+4 Enhancement</option>
-                  <option value="5">+5 Enhancement (Epic Sınırı)</option>
+                  <option value="5">+5 Enhancement (Pre-Epic Cap)</option>
                 </select>
               </div>
             </div>
 
             <!-- Special Abilities Checkboxes -->
             <div class="space-y-1.5 pt-2">
-              <label class="block text-slate-400 font-semibold">4. Sihirli Silah / Zırh Özellikleri (Special Abilities):</label>
+              <label class="block text-slate-400 font-semibold">4. Magic Weapon / Armor Special Abilities:</label>
               <div id="dnd-forge-enhancements-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 max-h-44 overflow-y-auto p-1 custom-scroll">
                 <!-- Populated dynamically -->
               </div>
@@ -728,7 +728,7 @@
 
     const item = getSelectedForgeItem();
     if (!item) {
-      container.innerHTML = `<div class="text-slate-500 italic p-4 text-center">Önizleme için temel eşya seçin.</div>`;
+      container.innerHTML = `<div class="text-slate-500 italic p-4 text-center">Select a base item to preview.</div>`;
       return;
     }
 
@@ -741,34 +741,34 @@
       <div class="flex flex-wrap items-start justify-between gap-3 border-b border-slate-800 pb-3">
         <div>
           <div class="flex items-center gap-2">
-            <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-mono font-bold">V2 LEGO EŞYA</span>
+            <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-mono font-bold">V2 ASSEMBLED ITEM</span>
             <span class="text-[11px] font-mono text-slate-400">ID: ${escapeHtml(item.id)}</span>
           </div>
           <h4 class="text-base font-black text-white mt-1">${escapeHtml(item.name)}</h4>
         </div>
         <div class="flex items-center gap-3 text-right">
           <div>
-            <div class="text-[10px] text-slate-400 uppercase font-bold">Piyasa Değeri</div>
+            <div class="text-[10px] text-slate-400 uppercase font-bold">Market Price</div>
             <div class="text-sm font-black font-mono text-amber-400">${Number(item.priceGp || 0).toLocaleString('tr-TR')} gp</div>
           </div>
           <div>
-            <div class="text-[10px] text-slate-400 uppercase font-bold">Ağırlık</div>
+            <div class="text-[10px] text-slate-400 uppercase font-bold">Weight</div>
             <div class="text-sm font-bold font-mono text-slate-200">${item.weightLb ?? 0} lb.</div>
           </div>
         </div>
       </div>
 
       <div class="space-y-2">
-        ${dmgBadges ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Hasar Parçaları (damageParts):</span><div class="flex flex-wrap gap-1.5">${dmgBadges}</div></div>` : ''}
+        ${dmgBadges ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Damage Parts (damageParts):</span><div class="flex flex-wrap gap-1.5">${dmgBadges}</div></div>` : ''}
         ${modBadges ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Aktif Bonuslar (modifiers):</span><div class="flex flex-wrap gap-1.5">${modBadges}</div></div>` : ''}
         ${tacBadges ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Taktiksel Bayraklar &amp; Rozetler:</span><div class="flex flex-wrap gap-1.5">${tacBadges}</div></div>` : ''}
-        ${modesHtml ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Gömülü Modlar (modes):</span>${modesHtml}</div>` : ''}
+        ${modesHtml ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Embedded Modes (modes):</span>${modesHtml}</div>` : ''}
       </div>
 
       <div class="pt-3 border-t border-slate-800 flex items-center justify-end gap-2">
         <button type="button" onclick="DnDUI.equipAssembledForgeItem()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs shadow-lg transition cursor-pointer flex items-center gap-1.5">
           <span>⚒️</span>
-          <span>Bu Eşyayı Karakter Envanterine Ekle / Kuşan</span>
+          <span>Add / Equip Item to Character Inventory</span>
         </button>
       </div>
     `;
@@ -867,7 +867,7 @@
     _drawerState.results = Array.isArray(results) ? results : [];
 
     if (_drawerState.results.length === 0) {
-      listEl.innerHTML = `<div class="p-6 text-center text-slate-500 text-xs italic">Eşleşen SRD V2 kaydı bulunamadı.</div>`;
+      listEl.innerHTML = `<div class="p-6 text-center text-slate-500 text-xs italic">No matching SRD V2 entries found.</div>`;
       const detailEl = document.getElementById('dnd-ui-compendium-detail');
       if (detailEl) detailEl.innerHTML = '';
       return;
@@ -911,25 +911,25 @@
         <div>
           <span class="px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-700/60 text-[10px] font-mono">${escapeHtml(full.category || 'SRD')} • ${escapeHtml(full.subCategory || '')}</span>
           <h4 class="text-base font-black text-amber-300 mt-1">${escapeHtml(full.name)}</h4>
-          <div class="text-[10px] font-mono text-slate-500">ID: ${escapeHtml(full.id)} • Kaynak: ${escapeHtml(full.source || 'SRD 3.5e')}</div>
+          <div class="text-[10px] font-mono text-slate-500">ID: ${escapeHtml(full.id)} • Source: ${escapeHtml(full.source || 'SRD 3.5e')}</div>
         </div>
         <button type="button" onclick="DnDUI.equipSelectedCompendiumEntry()" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow transition cursor-pointer shrink-0 flex items-center gap-1">
           <span>➕</span>
-          <span>Karaktere Ekle / Kuşan</span>
+          <span>Add / Equip to Character</span>
         </button>
       </div>
 
       ${(dmgHtml || modHtml || tacHtml) ? `
         <div class="space-y-2 bg-slate-900/70 border border-slate-800 rounded-xl p-3">
-          ${dmgHtml ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Hasar Parçaları:</span><div class="flex flex-wrap gap-1">${dmgHtml}</div></div>` : ''}
+          ${dmgHtml ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Damage Parts:</span><div class="flex flex-wrap gap-1">${dmgHtml}</div></div>` : ''}
           ${modHtml ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Bonuslar (modifiers):</span><div class="flex flex-wrap gap-1">${modHtml}</div></div>` : ''}
           ${tacHtml ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Taktiksel Bayraklar:</span><div class="flex flex-wrap gap-1">${tacHtml}</div></div>` : ''}
-          ${modesHtml ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Gömülü Modlar:</span>${modesHtml}</div>` : ''}
+          ${modesHtml ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Embedded Modes:</span>${modesHtml}</div>` : ''}
         </div>
       ` : ''}
 
       <div class="text-xs text-slate-300 leading-relaxed whitespace-pre-line bg-slate-950/60 border border-slate-800/80 rounded-xl p-3 max-h-80 overflow-y-auto">
-        ${escapeHtml(full.description || full.benefit || full.shortDescription || 'Açıklama bulunmuyor.')}
+        ${escapeHtml(full.description || full.benefit || full.shortDescription || 'No description available.')}
       </div>
     `;
   }

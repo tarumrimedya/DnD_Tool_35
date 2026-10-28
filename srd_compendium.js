@@ -1238,9 +1238,9 @@
       if (typeof charData.notes === 'string' && charData.notes.trim() && charData.smartNotes.length === 0) {
         charData.smartNotes.push({
           id: 'note_migrated_v2',
-          title: 'Karakter Notları',
-          text: `${charData.notes.trim()} #genel`,
-          tags: ['genel'],
+          title: 'Character Notes',
+          text: `${charData.notes.trim()} #general`,
+          tags: ['general'],
           pinned: true,
           ts: Date.now()
         });

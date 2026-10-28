@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "name": "Yeni Maceracı",
+  "name": "New Adventurer",
   "classes": "Fighter 1",
   "race": "Human",
   "level": 1,
@@ -116,13 +116,13 @@
         1
       ],
       "set1": {
-        "name": "Ana El",
+        "name": "Main Hand",
         "mainWeapon": "Unarmed Strike",
         "grip": "1-Hand"
       },
       "set2": {
-        "name": "İkinci El",
-        "mainWeapon": "Yok",
+        "name": "Off-Hand",
+        "mainWeapon": "None",
         "grip": "Off-Hand"
       }
     }

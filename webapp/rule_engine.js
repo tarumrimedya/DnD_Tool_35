@@ -967,13 +967,13 @@ const RuleEngine = {
         schemaVersion: 2,
         name: "Mage Armor",
         type: "Buff",
-        source: "Spell (Büyü)",
+        source: "Spell",
         category: "AC",
         durationCategory: "hour",
         active: false,
         rounds: 50,
         durationText: "1 saat / CL (5 Saat)",
-        notes: "+4 Zırh (Armor) AC bonusu (Zırhla stackleşmez, MAX alınır)",
+        notes: "+4 Armor bonus to AC (does not stack with worn armor; highest applies)",
         modifiers: [{ target: "ac.armor", value: 4, formula: "4", type: "armor", condition: null }],
         damageParts: [],
         modes: [],
@@ -982,15 +982,15 @@ const RuleEngine = {
       {
         id: "buf-shield",
         schemaVersion: 2,
-        name: "Shield (Büyü)",
+        name: "Shield (Spell)",
         type: "Buff",
-        source: "Spell (Büyü)",
+        source: "Spell",
         category: "AC",
         durationCategory: "short",
         active: false,
         rounds: 10,
         durationText: "1 dk / CL (5 Dk)",
-        notes: "+4 Kalkan (Shield) AC bonusu, Magic Missile büyüsünü engeller",
+        notes: "+4 Shield bonus to AC; negates Magic Missile attacks",
         modifiers: [{ target: "ac.shield", value: 4, formula: "4", type: "shield", condition: null }],
         damageParts: [],
         modes: [],
@@ -1007,7 +1007,7 @@ const RuleEngine = {
         active: false,
         rounds: 10,
         durationText: "1 dk / CL (5 Dk)",
-        notes: "+4 Enhancement STR (Dev Kemeri ile stackleşmez, MAX alınır)",
+        notes: "+4 Enhancement bonus to STR (does not stack with Belt of Giant Strength)",
         modifiers: [{ target: "ability.str", value: 4, formula: "4", type: "enhancement", condition: null }],
         damageParts: [],
         modes: [],
@@ -1024,7 +1024,7 @@ const RuleEngine = {
         active: false,
         rounds: 10,
         durationText: "1 dk / CL (5 Dk)",
-        notes: "+4 Enhancement DEX (Eldiven ile stackleşmez, MAX alınır)",
+        notes: "+4 Enhancement bonus to DEX (does not stack with Gloves of Dexterity)",
         modifiers: [{ target: "ability.dex", value: 4, formula: "4", type: "enhancement", condition: null }],
         damageParts: [],
         modes: [],
@@ -1041,7 +1041,7 @@ const RuleEngine = {
         active: false,
         rounds: 10,
         durationText: "1 dk / CL",
-        notes: "+4 Enhancement CON (+2 HP/seviye, Fortitude artışı)",
+        notes: "+4 Enhancement bonus to CON (+2 HP/level, +2 Fortitude save)",
         modifiers: [{ target: "ability.con", value: 4, formula: "4", type: "enhancement", condition: null }],
         damageParts: [],
         modes: [],
@@ -1052,13 +1052,13 @@ const RuleEngine = {
         schemaVersion: 2,
         name: "Haste (Acele)",
         type: "Buff",
-        source: "Spell (Büyü)",
+        source: "Spell",
         category: "Combat",
         durationCategory: "short",
         active: false,
         rounds: 6,
         durationText: "1 tur / CL (6 Tur)",
-        notes: "+1 Saldırı, +1 Dodge AC, +1 Refl, +30 ft Hız, Tam turda +1 ek saldırı",
+        notes: "+1 Attack, +1 Dodge AC, +1 Reflex, +30 ft Speed, +1 extra attack on Full Attack",
         modifiers: [
           { target: "attack.all", value: 1, formula: "1", type: "untyped", condition: null },
           { target: "ac.dodge", value: 1, formula: "1", type: "dodge", condition: null },
@@ -1074,13 +1074,13 @@ const RuleEngine = {
         schemaVersion: 2,
         name: "Bless (Kutsama)",
         type: "Buff",
-        source: "Spell (Büyü)",
+        source: "Spell",
         category: "Morale",
         durationCategory: "short",
         active: false,
         rounds: 10,
         durationText: "1 dk / CL",
-        notes: "+1 Morale saldırı zarlarına ve korku kurtarma zarlarına",
+        notes: "+1 Morale bonus on attack rolls and saving throws against fear",
         modifiers: [{ target: "attack.all", value: 1, formula: "1", type: "morale", condition: null }],
         damageParts: [],
         modes: [],
@@ -1091,13 +1091,13 @@ const RuleEngine = {
         schemaVersion: 2,
         name: "Prayer (Dua)",
         type: "Buff",
-        source: "Spell (Büyü)",
+        source: "Spell",
         category: "Luck",
         durationCategory: "short",
         active: false,
         rounds: 6,
         durationText: "1 tur / CL",
-        notes: "+1 Luck saldırı, hasar, kurtarma ve beceri zarlarına",
+        notes: "+1 Luck bonus on attack rolls, weapon damage, saves, and skill checks",
         modifiers: [
           { target: "attack.all", value: 1, formula: "1", type: "luck", condition: null },
           { target: "damage.weapon", value: 1, formula: "1", type: "luck", condition: null },
@@ -1113,13 +1113,13 @@ const RuleEngine = {
         schemaVersion: 2,
         name: "Barkskin",
         type: "Buff",
-        source: "Spell (Büyü)",
+        source: "Spell",
         category: "AC",
         durationCategory: "short",
         active: false,
         rounds: 50,
         durationText: "10 dk / CL",
-        notes: "+2 Doğal Zırh (Natural Armor Enhancement) bonusu",
+        notes: "+2 Enhancement bonus to Natural Armor",
         modifiers: [{ target: "ac.natural", value: 2, formula: "min(5, 2 + max(0, floor((@cl - 3) / 3)))", type: "natural_enhancement", condition: null }],
         damageParts: [],
         modes: [],
@@ -1130,13 +1130,13 @@ const RuleEngine = {
         schemaVersion: 2,
         name: "Shield of Faith",
         type: "Buff",
-        source: "Spell (Büyü)",
+        source: "Spell",
         category: "AC",
         durationCategory: "short",
         active: false,
         rounds: 10,
         durationText: "1 dk / CL",
-        notes: "+2 Saptırma (Deflection) AC bonusu",
+        notes: "+2 Deflection bonus to AC",
         modifiers: [{ target: "ac.deflection", value: 2, formula: "2 + min(3, floor(@cl / 6))", type: "deflection", condition: null }],
         damageParts: [],
         modes: [],
@@ -1147,13 +1147,13 @@ const RuleEngine = {
         schemaVersion: 2,
         name: "Divine Favor",
         type: "Buff",
-        source: "Spell (Büyü)",
+        source: "Spell",
         category: "Combat",
         durationCategory: "short",
         active: false,
         rounds: 10,
         durationText: "1 dk (10 Tur)",
-        notes: "+1..+3 Luck saldırı ve silah hasarı bonusu",
+        notes: "+1 to +3 Luck bonus on attack and weapon damage rolls",
         modifiers: [
           { target: "attack.all", value: 2, formula: "min(3, 1 + floor(@cl / 3))", type: "luck", condition: null },
           { target: "damage.weapon", value: 2, formula: "min(3, 1 + floor(@cl / 3))", type: "luck", condition: null }
@@ -1167,14 +1167,14 @@ const RuleEngine = {
         schemaVersion: 2,
         name: "Punishing Stance",
         type: "Buff",
-        source: "Stance (Duruş)",
+        source: "Stance",
         category: "Stance",
         durationCategory: "permanent",
         active: true,
         rounds: null,
-        durationText: "Sürekli",
+        durationText: "Continuous",
         dmgDice: "1d6",
-        notes: "+1d6 yakın dövüş silah hasarı, -2 AC savunma cezası",
+        notes: "+1d6 melee weapon damage, -2 penalty to AC",
         modifiers: [{ target: "ac.total", value: -2, formula: "-2", type: "penalty", condition: null }],
         damageParts: [{ dice: "1d6", bonus: 0, type: "Physical", multiplyOnCrit: false, onCritOnly: false, source: "Punishing Stance" }],
         modes: [],
@@ -1197,9 +1197,9 @@ const RuleEngine = {
         isDebuff: true,
         active: false,
         rounds: null,
-        durationText: "Kalıcı (Restoration gerektirir)",
+        durationText: "Permanent (Requires Restoration)",
         negativeLevels: 4,
-        notes: "D&D 3.5e RAW: 4 Negatif Seviye! -4 Saldırı, -4 Kurtarma Zarları, -4 Beceri/Yetenek, -20 Max/Mevcut HP, -4 Efektif Caster Level.",
+        notes: "D&D 3.5e RAW: 4 Negative Levels! -4 Attack, -4 Saving Throws, -4 Skill/Ability Checks, -20 Max/Current HP, -4 Effective Caster Level.",
         modifiers: [
           { target: "attack.all", value: -4, formula: "-4", type: "penalty", condition: null },
           { target: "save.all", value: -4, formula: "-4", type: "penalty", condition: null },
@@ -1213,7 +1213,7 @@ const RuleEngine = {
       {
         id: "cnd-sickened",
         schemaVersion: 2,
-        name: "Sickened (Midesi Bulanmış)",
+        name: "Sickened",
         type: "Condition",
         source: "Condition (Durum)",
         category: "Debuff",
@@ -1222,7 +1222,7 @@ const RuleEngine = {
         active: false,
         rounds: 10,
         durationText: "10 Tur",
-        notes: "D&D 3.5e RAW: -2 saldırı zarları, silah hasar zarları, kurtarma zarları, beceri ve yetenek testleri",
+        notes: "D&D 3.5e RAW: -2 penalty on all attack rolls, weapon damage rolls, saving throws, skill checks, and ability checks",
         modifiers: [
           { target: "attack.all", value: -2, formula: "-2", type: "penalty", condition: null },
           { target: "damage.weapon", value: -2, formula: "-2", type: "penalty", condition: null },
@@ -1236,7 +1236,7 @@ const RuleEngine = {
       {
         id: "cnd-shaken",
         schemaVersion: 2,
-        name: "Shaken (Korkmuş)",
+        name: "Shaken",
         type: "Condition",
         source: "Condition (Durum)",
         category: "Debuff",
@@ -1245,7 +1245,7 @@ const RuleEngine = {
         active: false,
         rounds: 10,
         durationText: "10 Tur",
-        notes: "D&D 3.5e RAW: Korku durumu. -2 saldırı zarları, kurtarma zarları, beceri ve yetenek testleri",
+        notes: "D&D 3.5e RAW: Fear condition. -2 penalty on attack rolls, saving throws, skill checks, and ability checks",
         modifiers: [
           { target: "attack.all", value: -2, formula: "-2", type: "penalty", condition: null },
           { target: "save.all", value: -2, formula: "-2", type: "penalty", condition: null },
@@ -1267,7 +1267,7 @@ const RuleEngine = {
         active: false,
         rounds: null,
         durationText: "8 Saat Dinlenme",
-        notes: "D&D 3.5e RAW: Koşamaz veya şarj edemez. -2 STR ve -2 DEX cezası alır.",
+        notes: "D&D 3.5e RAW: Cannot run or charge; -2 penalty to STR and DEX.",
         modifiers: [
           { target: "ability.str", value: -2, formula: "-2", type: "penalty", condition: null },
           { target: "ability.dex", value: -2, formula: "-2", type: "penalty", condition: null }
@@ -1279,7 +1279,7 @@ const RuleEngine = {
       {
         id: "cnd-entangled",
         schemaVersion: 2,
-        name: "Entangled (Dolaşmış)",
+        name: "Entangled",
         type: "Condition",
         source: "Condition (Durum)",
         category: "Debuff",
@@ -1288,7 +1288,7 @@ const RuleEngine = {
         active: false,
         rounds: 5,
         durationText: "5 Tur",
-        notes: "D&D 3.5e RAW: Yarı hareket hızı, koşamaz/şarj edemez, saldırı zarlarına -2, DEX'e -4 (-2 AC ve -2 Refl)",
+        notes: "D&D 3.5e RAW: Move at half speed, cannot run or charge, -2 penalty on attack rolls, -4 penalty to DEX (-2 AC and -2 Reflex)",
         modifiers: [
           { target: "attack.all", value: -2, formula: "-2", type: "penalty", condition: null },
           { target: "ability.dex", value: -4, formula: "-4", type: "penalty", condition: null }
@@ -1300,16 +1300,16 @@ const RuleEngine = {
       {
         id: "buf-slow",
         schemaVersion: 2,
-        name: "Slow (Yavaşlatma Büyüsü)",
+        name: "Slow (Spell)",
         type: "Condition",
-        source: "Spell (Büyü)",
+        source: "Spell",
         category: "Debuff",
         durationCategory: "short",
         isDebuff: true,
         active: false,
         rounds: 6,
         durationText: "1 tur / CL (6 Tur)",
-        notes: "D&D 3.5e RAW: Turda sadece tek bir eylem (Move veya Standard), -1 AC, -1 Saldırı, -1 Refl, Yarı Hız",
+        notes: "D&D 3.5e RAW: Only a single move or standard action per turn, -1 penalty to AC, attack rolls, and Reflex saves, half speed",
         modifiers: [
           { target: "ac.total", value: -1, formula: "-1", type: "penalty", condition: null },
           { target: "attack.all", value: -1, formula: "-1", type: "penalty", condition: null },
@@ -1384,7 +1384,7 @@ const RuleEngine = {
     const cl = Math.max(1, Number(casterLevel) || 1);
     const rawName = (spell.name || '').trim();
     const cleanName = rawName.toLowerCase();
-    const dmgType = spell.dmgType || (cleanName.includes('fire') ? 'Fire' : (cleanName.includes('frost') || cleanName.includes('cold') ? 'Cold' : (cleanName.includes('acid') ? 'Acid' : (cleanName.includes('shock') || cleanName.includes('lightning') ? 'Electricity' : (cleanName.includes('magic missile') ? 'Force' : 'Büyü Hasarı')))));
+    const dmgType = spell.dmgType || (cleanName.includes('fire') ? 'Fire' : (cleanName.includes('frost') || cleanName.includes('cold') ? 'Cold' : (cleanName.includes('acid') ? 'Acid' : (cleanName.includes('shock') || cleanName.includes('lightning') ? 'Electricity' : (cleanName.includes('magic missile') ? 'Force' : 'Spell Damage')))));
 
     // 1. MAGIC MISSILE (PHB p.251): 1 missile at CL 1, +1 missile per 2 levels beyond 1st, max 5 missiles at CL 9+ (1d4+1 per missile)
     if (cleanName.includes('magic missile') || cleanName.includes('büyü füzesi')) {
@@ -1398,14 +1398,14 @@ const RuleEngine = {
         name: rawName,
         casterLevel: cl,
         projectiles: missiles,
-        projectileName: 'Füze',
+        projectileName: 'Missile',
         diceCount,
         dieSides,
         staticBonus,
         diceFormula,
         dmgType: 'Force',
-        displayText: `${missiles} Füze (${diceFormula} Force)`,
-        descDetail: `CL ${cl}: ${missiles} adet füze fırlatılır (her biri 1d4+1 Force)`
+        displayText: `${missiles} Missiles (${diceFormula} Force)`,
+        descDetail: `CL ${cl}: Fires ${missiles} missiles (each dealing 1d4+1 Force)`
       };
     }
 
@@ -1421,14 +1421,14 @@ const RuleEngine = {
         name: rawName,
         casterLevel: cl,
         projectiles: rays,
-        projectileName: 'Işın',
+        projectileName: 'Ray',
         diceCount,
         dieSides,
         staticBonus,
         diceFormula,
         dmgType: 'Fire',
-        displayText: `${rays} Işın (${diceFormula} Fire)`,
-        descDetail: `CL ${cl}: ${rays} adet ışın (her biri 4d6 Fire)`
+        displayText: `${rays} Rays (${diceFormula} Fire)`,
+        descDetail: `CL ${cl}: Fires ${rays} rays (each dealing 4d6 Fire)`
       };
     }
 
@@ -1442,14 +1442,14 @@ const RuleEngine = {
         name: rawName,
         casterLevel: cl,
         projectiles: 1,
-        projectileName: 'Dokunuş',
+        projectileName: 'Touch',
         diceCount,
         dieSides,
         staticBonus: 0,
         diceFormula,
         dmgType: 'Electricity',
         displayText: `${diceFormula} Electricity (+3 vs Metal)`,
-        descDetail: `CL ${cl}: ${diceCount}d6 elektrik hasarı (tavan 5d6)`
+        descDetail: `CL ${cl}: ${diceCount}d6 Electricity damage (max 5d6)`
       };
     }
 
@@ -1473,7 +1473,7 @@ const RuleEngine = {
         diceFormula,
         dmgType: fDmgType,
         displayText: `${diceFormula} ${fDmgType}`,
-        descDetail: `CL ${cl}: ${diceCount}d6 ${fDmgType} (Reflex yarısı)`
+        descDetail: `CL ${cl}: ${diceCount}d6 ${fDmgType} (Reflex half)`
       };
     }
 
@@ -1494,7 +1494,7 @@ const RuleEngine = {
         diceFormula,
         dmgType: 'Cold',
         displayText: `${diceFormula} Cold`,
-        descDetail: `CL ${cl}: ${diceCount}d6 soğuk hasarı`
+        descDetail: `CL ${cl}: ${diceCount}d6 Cold damage`
       };
     }
 
@@ -1508,14 +1508,14 @@ const RuleEngine = {
         name: rawName,
         casterLevel: cl,
         projectiles: 1,
-        projectileName: 'Yıldırım',
+        projectileName: 'Bolt',
         diceCount,
         dieSides,
         staticBonus: 0,
         diceFormula,
         dmgType: 'Electricity',
         displayText: `${diceFormula} Electricity`,
-        descDetail: `CL ${cl}: ${diceCount}d6 elektrik hasarı`
+        descDetail: `CL ${cl}: ${diceCount}d6 Electricity damage`
       };
     }
 
@@ -1529,14 +1529,14 @@ const RuleEngine = {
         name: rawName,
         casterLevel: cl,
         projectiles: 1,
-        projectileName: 'Işın',
+        projectileName: 'Ray',
         diceCount,
         dieSides,
         staticBonus: 0,
         diceFormula,
         dmgType: 'Untyped',
-        displayText: `${diceFormula} Ayrışma Hasarı`,
-        descDetail: `CL ${cl}: ${diceCount}d6 ayrışma hasarı (Fort kurtulursa 5d6)`
+        displayText: `${diceFormula} Disintegration`,
+        descDetail: `CL ${cl}: ${diceCount}d6 Disintegration damage (5d6 on successful Fort save)`
       };
     }
 
@@ -1550,14 +1550,14 @@ const RuleEngine = {
         name: rawName,
         casterLevel: cl,
         projectiles: 1,
-        projectileName: 'Kutup Işını',
+        projectileName: 'Polar Ray',
         diceCount,
         dieSides,
         staticBonus: 0,
         diceFormula,
         dmgType: 'Cold',
         displayText: `${diceFormula} Cold`,
-        descDetail: `CL ${cl}: ${diceCount}d6 soğuk hasarı`
+        descDetail: `CL ${cl}: ${diceCount}d6 Cold damage`
       };
     }
 
@@ -1568,7 +1568,7 @@ const RuleEngine = {
       if (cleanName.includes('ışığa hassas') || cleanName.includes('vulnerable')) {
         diceCount = Math.min(10, Math.max(1, cl));
         dieSides = 8;
-        capDesc = `${diceCount}d8 (Işığa Hassas Undead)`;
+        capDesc = `${diceCount}d8 (Light-Vulnerable Undead)`;
       } else if (cleanName.includes('undead')) {
         diceCount = Math.min(10, Math.max(1, cl));
         dieSides = 6;
@@ -1576,11 +1576,11 @@ const RuleEngine = {
       } else if (cleanName.includes('construct') || cleanName.includes('cansız')) {
         diceCount = Math.min(5, Math.max(1, Math.floor(cl / 2)));
         dieSides = 6;
-        capDesc = `${diceCount}d6 (Construct / Cansız)`;
+        capDesc = `${diceCount}d6 (Construct / Inanimate)`;
       } else {
         diceCount = Math.min(5, Math.max(1, Math.floor(cl / 2)));
         dieSides = 8;
-        capDesc = `${diceCount}d8 (Canlı Hedef)`;
+        capDesc = `${diceCount}d8 (Living Target)`;
       }
       const diceFormula = `${diceCount}d${dieSides}`;
       return {
@@ -1588,13 +1588,13 @@ const RuleEngine = {
         name: rawName,
         casterLevel: cl,
         projectiles: 1,
-        projectileName: 'İlahi Işın',
+        projectileName: 'Divine Ray',
         diceCount,
         dieSides,
         staticBonus: 0,
         diceFormula,
         dmgType: 'Divine / Light',
-        displayText: `${diceFormula} İlahi Işık`,
+        displayText: `${diceFormula} Divine Light`,
         descDetail: `CL ${cl}: ${capDesc}`
       };
     }
@@ -1613,8 +1613,8 @@ const RuleEngine = {
         dieSides: 8,
         staticBonus: bonus,
         diceFormula,
-        dmgType: isCure ? 'Şifa / Pozitif' : 'Negatif Enerji',
-        displayText: `${diceFormula} ${isCure ? 'Şifa' : 'Hasar'}`,
+        dmgType: isCure ? 'Healing / Positive' : 'Negative Energy',
+        displayText: `${diceFormula} ${isCure ? 'Healing' : 'Damage'}`,
         descDetail: `CL ${cl}: 1d8+${bonus} (tavan +5)`
       };
     }
@@ -1631,8 +1631,8 @@ const RuleEngine = {
         dieSides: 8,
         staticBonus: bonus,
         diceFormula,
-        dmgType: isCure ? 'Şifa / Pozitif' : 'Negatif Enerji',
-        displayText: `${diceFormula} ${isCure ? 'Şifa' : 'Hasar'}`,
+        dmgType: isCure ? 'Healing / Positive' : 'Negative Energy',
+        displayText: `${diceFormula} ${isCure ? 'Healing' : 'Damage'}`,
         descDetail: `CL ${cl}: 2d8+${bonus} (tavan +10)`
       };
     }
@@ -1649,8 +1649,8 @@ const RuleEngine = {
         dieSides: 8,
         staticBonus: bonus,
         diceFormula,
-        dmgType: isCure ? 'Şifa / Pozitif' : 'Negatif Enerji',
-        displayText: `${diceFormula} ${isCure ? 'Şifa' : 'Hasar'}`,
+        dmgType: isCure ? 'Healing / Positive' : 'Negative Energy',
+        displayText: `${diceFormula} ${isCure ? 'Healing' : 'Damage'}`,
         descDetail: `CL ${cl}: 3d8+${bonus} (tavan +15)`
       };
     }
@@ -1667,8 +1667,8 @@ const RuleEngine = {
         dieSides: 8,
         staticBonus: bonus,
         diceFormula,
-        dmgType: isCure ? 'Şifa / Pozitif' : 'Negatif Enerji',
-        displayText: `${diceFormula} ${isCure ? 'Şifa' : 'Hasar'}`,
+        dmgType: isCure ? 'Healing / Positive' : 'Negative Energy',
+        displayText: `${diceFormula} ${isCure ? 'Healing' : 'Damage'}`,
         descDetail: `CL ${cl}: 4d8+${bonus} (tavan +20)`
       };
     }
@@ -1682,14 +1682,14 @@ const RuleEngine = {
         name: rawName,
         casterLevel: cl,
         projectiles: 1,
-        projectileName: 'Işın',
+        projectileName: 'Ray',
         diceCount: 1,
         dieSides: 6,
         staticBonus: bonus,
         diceFormula,
-        dmgType: 'STR Cezası',
+        dmgType: 'STR Penalty',
         displayText: `${diceFormula} STR Azaltma`,
-        descDetail: `CL ${cl}: 1d6 + ${bonus} Güç Cezası (tavan +5)`
+        descDetail: `CL ${cl}: 1d6 + ${bonus} STR Penalty (max +5)`
       };
     }
 
@@ -1702,13 +1702,13 @@ const RuleEngine = {
         name: rawName,
         casterLevel: cl,
         projectiles: 1,
-        projectileName: 'Dokunuş',
+        projectileName: 'Touch',
         diceCount,
         dieSides: 6,
         staticBonus: 0,
         diceFormula,
-        dmgType: 'Negatif / Geçici Can',
-        displayText: `${diceFormula} Negatif Hasar & Can`,
+        dmgType: 'Negative / Temp HP',
+        displayText: `${diceFormula} Negative Damage & Temp HP`,
         descDetail: `CL ${cl}: ${diceCount}d6 (tavan 10d6)`
       };
     }
@@ -1952,7 +1952,7 @@ const RuleEngine = {
         twoHandedConflict = {
           mainHand: mh.name,
           offHand: oh.name,
-          message: `⚠️ "${mh.name}" iki elli (Two-Handed) bir silahtır! D&D 3.5e RAW kurallarına göre iki elli silahlar her iki eli birden gerektirdiğinden aynı anda ikinci el eşyası ("${oh.name}") kullanılamaz. İkinci el etkileri devre dışı bırakıldı.`
+          message: `⚠️ "${mh.name}" is a Two-Handed weapon! Per D&D 3.5e RAW, two-handed weapons require both hands to wield, so off-hand equipment ("${oh.name}") cannot be used simultaneously. Off-hand effects have been disabled.`
         };
       }
       character.twoHandedConflict = twoHandedConflict;
@@ -2099,7 +2099,7 @@ const RuleEngine = {
     if (character.race) {
       const raceObj = this.getMasterDbEntry(character.race, 'Race');
       if (raceObj && Array.isArray(raceObj.modifiers)) {
-        const raceLabel = `${raceObj.name || character.race} (Irk)`;
+        const raceLabel = `${raceObj.name || character.race} (Race)`;
         applyV2Modifiers(raceObj.modifiers, raceLabel, 'race', evalContext);
       }
     }
@@ -3071,7 +3071,7 @@ const RuleEngine = {
           sizeBuffSources.push(`${b.name} (+${b.sizeSteps} basamak)`);
         } else if (isCreatureSizeBuff) {
           effectiveSteps += Number(b.sizeSteps) || 0;
-          sizeBuffSources.push(`${b.name} (+${b.sizeSteps} yaratık boyutu)`);
+          sizeBuffSources.push(`${b.name} (+${b.sizeSteps} size category)`);
         }
       });
     }
@@ -3228,10 +3228,10 @@ const RuleEngine = {
   getLoadStatus(currentWeight, strScore) {
     const caps = this.getCarryingCapacity(strScore);
     const wt = Number(currentWeight) || 0;
-    if (wt <= caps.light) return { status: 'Hafif Yük (Light Load)', color: 'emerald', maxDex: null, checkPenalty: 0, speed30: 30, speed20: 20 };
-    if (wt <= caps.medium) return { status: 'Orta Yük (Medium Load)', color: 'amber', maxDex: 3, checkPenalty: -3, speed30: 20, speed20: 15 };
-    if (wt <= caps.heavy) return { status: 'Ağır Yük (Heavy Load)', color: 'orange', maxDex: 1, checkPenalty: -6, speed30: 20, speed20: 15 };
-    return { status: 'Aşırı Yük / Hareketsiz (Overloaded)', color: 'rose', maxDex: 0, checkPenalty: -10, speed30: 5, speed20: 5 };
+    if (wt <= caps.light) return { status: 'Light Load', color: 'emerald', maxDex: null, checkPenalty: 0, speed30: 30, speed20: 20 };
+    if (wt <= caps.medium) return { status: 'Medium Load', color: 'amber', maxDex: 3, checkPenalty: -3, speed30: 20, speed20: 15 };
+    if (wt <= caps.heavy) return { status: 'Heavy Load', color: 'orange', maxDex: 1, checkPenalty: -6, speed30: 20, speed20: 15 };
+    return { status: 'Overloaded (Max Load Exceeded)', color: 'rose', maxDex: 0, checkPenalty: -10, speed30: 5, speed20: 5 };
   },
 
   // Canonical Consolidated Skill Mappings (Bridge between RAW 3.5e skills and Consolidated groups)
@@ -3397,7 +3397,7 @@ const RuleEngine = {
       matchSkillModifiers(mods, fName, 'untyped', evalCtx);
 
       if (fName.toLowerCase().includes('collector of stories') && isKnowledge) {
-        addBonus('Collector of Stories (Canavar Tanıma)', 5, 'competence');
+        addBonus('Collector of Stories (Monster Lore)', 5, 'competence');
       }
     });
 
@@ -3405,7 +3405,7 @@ const RuleEngine = {
     if (character.race) {
       const raceObj = this.getMasterDbEntry(character.race, 'Race');
       if (raceObj && Array.isArray(raceObj.modifiers)) {
-        matchSkillModifiers(raceObj.modifiers, `${raceObj.name || character.race} (Irk)`, 'racial', evalCtx);
+        matchSkillModifiers(raceObj.modifiers, `${raceObj.name || character.race} (Race)`, 'racial', evalCtx);
       }
     }
 
@@ -3502,7 +3502,7 @@ const RuleEngine = {
           "Improved Critical", "Improved Initiative", "Iron Will", "Ironheart Aura",
           "Lightning Reflexes", "Stone Power", "Tiger Blooded", "Unnerving Calm", "White Raven Defense"
         ],
-        label: "Warblade Bonus Feati"
+        label: "Warblade Bonus Feat"
       },
       features: {
         1: [
@@ -3521,7 +3521,7 @@ const RuleEngine = {
     "Fighter": {
       hd: 10, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 2,
       bonusFeatLevels: [1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20],
-      bonusFeatContract: { mode: "tag", tag: "isFighterBonusFeat", label: "Fighter SÄ±nÄ±f Bonus Feati", filter: "FIGHTER" },
+      bonusFeatContract: { mode: "tag", tag: "isFighterBonusFeat", label: "Fighter Class Bonus Feat", filter: "FIGHTER" },
       features: {}
     },
     "Barbarian": {
@@ -3568,11 +3568,11 @@ const RuleEngine = {
       hd: 4, bab: 0.5, fort: "poor", ref: "poor", will: "good", skills: 2,
       bonusFeatLevels: [1, 5, 10, 15, 20],
       bonusFeatContracts: {
-        1: { mode: "exact_choices", choices: ["Scribe Scroll"], bypassPrereqs: true, label: "Wizard 1. Seviye SeÃ§imi" },
-        5: { mode: "category", categories: ["Metamagic", "Item Creation"], allowFeats: ["Spell Mastery"], label: "Wizard Bonus Feati" },
-        10: { mode: "category", categories: ["Metamagic", "Item Creation"], allowFeats: ["Spell Mastery"], label: "Wizard Bonus Feati" },
-        15: { mode: "category", categories: ["Metamagic", "Item Creation"], allowFeats: ["Spell Mastery"], label: "Wizard Bonus Feati" },
-        20: { mode: "category", categories: ["Metamagic", "Item Creation"], allowFeats: ["Spell Mastery"], label: "Wizard Bonus Feati" }
+        1: { mode: "exact_choices", choices: ["Scribe Scroll"], bypassPrereqs: true, label: "Wizard 1st-Level Bonus Feat" },
+        5: { mode: "category", categories: ["Metamagic", "Item Creation"], allowFeats: ["Spell Mastery"], label: "Wizard Bonus Feat" },
+        10: { mode: "category", categories: ["Metamagic", "Item Creation"], allowFeats: ["Spell Mastery"], label: "Wizard Bonus Feat" },
+        15: { mode: "category", categories: ["Metamagic", "Item Creation"], allowFeats: ["Spell Mastery"], label: "Wizard Bonus Feat" },
+        20: { mode: "category", categories: ["Metamagic", "Item Creation"], allowFeats: ["Spell Mastery"], label: "Wizard Bonus Feat" }
       },
       features: {
         1: [
@@ -3620,9 +3620,9 @@ const RuleEngine = {
       hd: 8, bab: 0.75, fort: "good", ref: "good", will: "good", skills: 4,
       bonusFeatLevels: [1, 2, 6],
       bonusFeatContracts: {
-        1: { mode: "exact_choices", choices: ["Improved Grapple", "Stunning Fist"], bypassPrereqs: true, label: "Monk 1. Seviye SeÃ§imi" },
-        2: { mode: "exact_choices", choices: ["Combat Reflexes", "Deflect Arrows"], bypassPrereqs: true, label: "Monk 2. Seviye SeÃ§imi" },
-        6: { mode: "exact_choices", choices: ["Improved Trip", "Snatch Arrows"], bypassPrereqs: true, label: "Monk 6. Seviye SeÃ§imi" }
+        1: { mode: "exact_choices", choices: ["Improved Grapple", "Stunning Fist"], bypassPrereqs: true, label: "Monk 1st-Level Bonus Feat" },
+        2: { mode: "exact_choices", choices: ["Combat Reflexes", "Deflect Arrows"], bypassPrereqs: true, label: "Monk 2nd-Level Bonus Feat" },
+        6: { mode: "exact_choices", choices: ["Improved Trip", "Snatch Arrows"], bypassPrereqs: true, label: "Monk 6th-Level Bonus Feat" }
       },
       features: {
         1: [
@@ -3873,16 +3873,16 @@ const RuleEngine = {
             mode: 'tag',
             tag: 'isFighterBonusFeat',
             filter: 'FIGHTER',
-            label: `Fighter SÄ±nÄ±f Bonus Feati (${cl}. Seviye)`,
-            desc: 'Fighter sÄ±nÄ±f bonus listesinde yer alan bir muharebe hÃ¼neri seÃ§in.'
+            label: `Fighter Class Bonus Feat (Level ${cl})`,
+            desc: 'Select a combat feat from the Fighter bonus feat list.'
           };
         } else {
           bonusFeatContract = {
             mode: 'tag',
             tag: 'isFighterBonusFeat',
             filter: 'FIGHTER',
-            label: `${className} SÄ±nÄ±f Bonus Feati`,
-            desc: `${className} sÄ±nÄ±fÄ± iÃ§in geÃ§erli bonus hÃ¼ner.`
+            label: `${className} Class Bonus Feat`,
+            desc: `Valid bonus feat for the ${className} class.`
           };
         }
       }

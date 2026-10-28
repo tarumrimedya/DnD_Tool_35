@@ -19,68 +19,68 @@ const RuleMaster = {
   sourcesCatalog: [
     {
       priority: 1,
-      name: "Yerel Kural Kataloğu & Parametrik AI Motoru",
-      scope: "Yerel SRD Kataloğu (140+ kayıt) & Parametrik LLM Motoru (Sıfır ağ gecikmesi, %100 RAW 3.5e)",
+      name: "Local Rule Compendium & Parametric AI Engine",
+      scope: "Local SRD Compendium (3,522+ entries) & Parametric LLM Engine (Zero latency, 100% RAW 3.5e)",
       url: "#",
-      type: "Yerel JSON & LLM",
+      type: "Local JSON & LLM",
       status: "Aktif",
-      role: "Anında yerel Spotlight araması ve parametrik kural üretim motoru"
+      role: "Instant local Spotlight search and parametric rule generation engine"
     },
     {
       priority: 2,
       name: "Core 3.5e SRD (d20srd & dndsrd)",
-      scope: "PHB, DMG, MM Core Kuralları, Featler, Büyüler, Eşyalar",
+      scope: "PHB, DMG, MM Core Rules, Feats, Spells, Magic Items",
       url: "https://www.d20srd.org/index.html",
       mirror: "http://dndsrd.net",
       type: "Temiz HTML",
       status: "Aktif",
-      role: "İlk taranacak temel kural kaynağı ve web referansı"
+      role: "Primary core rulebook reference and web SRD index"
     },
     {
       priority: 3,
       name: "Extended Splatbooks Index (srd.dndtools)",
       scope: "Complete serisi, MIC, Spell Compendium, Frostburn, Sandstorm",
       url: "https://srd.dndtools.org",
-      type: "Geniş HTML İndeksi",
+      type: "Comprehensive HTML Index",
       status: "Aktif",
-      role: "Core dışı genişletilmiş ek kitap arşivi"
+      role: "Extended non-core splatbook archive"
     }
   ],
 
   // Comprehensive D&D 3.5e Splatbooks and Sourcebooks Catalog
   splatbooks: [
-    { code: "PHB", name: "Player's Handbook 3.5", cat: "Core", note: "Temel sınıflar, ırklar, hünerler ve büyüler", url: "https://www.d20srd.org" },
-    { code: "DMG", name: "Dungeon Master's Guide 3.5", cat: "Core", note: "Büyülü eşyalar, prestij sınıfları, hazine", url: "https://www.d20srd.org" },
-    { code: "MM", name: "Monster Manual 3.5", cat: "Core", note: "Yaratıklar, ırksal özellikler ve şablonlar", url: "https://www.d20srd.org" },
-    { code: "MIC", name: "Magic Item Compendium", cat: "Equipment", note: "Genişletilmiş büyülü eşyalar, vücut yuvaları ve kristaller", url: "https://srd.dndtools.org" },
-    { code: "SpC", name: "Spell Compendium", cat: "Spells", note: "Tüm ek kitapların birleşik devasa büyü arşivi", url: "https://srd.dndtools.org" },
-    { code: "ToB", name: "Tome of Battle (Book of 9 Swords)", cat: "Combat", note: "Savaş manevraları, duruşlar (stances), Martial Adept sınıfları", url: "https://srd.dndtools.org" },
-    { code: "CW", name: "Complete Warrior", cat: "Splatbook", note: "Savaşçı sınıfları, dövüş hünerleri, prestij sınıfları", url: "https://srd.dndtools.org" },
-    { code: "CD", name: "Complete Divine", cat: "Splatbook", note: "İlahi sınıflar, domainler, ilahi featler", url: "https://srd.dndtools.org" },
-    { code: "CA", name: "Complete Arcane", cat: "Splatbook", note: "Warlock, Warmage, metamagic hünerleri", url: "https://srd.dndtools.org" },
-    { code: "CAd", name: "Complete Adventurer", cat: "Splatbook", note: "Rogue/Bard, Skill Tricks, gizlilik ve hareket hünerleri", url: "https://srd.dndtools.org" },
-    { code: "CM", name: "Complete Mage", cat: "Splatbook", note: "Büyücü arşivi, yedek büyü featleri (Reserve Feats)", url: "https://srd.dndtools.org" },
+    { code: "PHB", name: "Player's Handbook 3.5", cat: "Core", note: "Core classes, races, feats, skills, and spells", url: "https://www.d20srd.org" },
+    { code: "DMG", name: "Dungeon Master's Guide 3.5", cat: "Core", note: "Magic items, prestige classes, and treasure", url: "https://www.d20srd.org" },
+    { code: "MM", name: "Monster Manual 3.5", cat: "Core", note: "Monsters, racial traits, and templates", url: "https://www.d20srd.org" },
+    { code: "MIC", name: "Magic Item Compendium", cat: "Equipment", note: "Expanded magic items, body slots, and augment crystals", url: "https://srd.dndtools.org" },
+    { code: "SpC", name: "Spell Compendium", cat: "Spells", note: "Consolidated master archive of splatbook spells", url: "https://srd.dndtools.org" },
+    { code: "ToB", name: "Tome of Battle (Book of 9 Swords)", cat: "Combat", note: "Martial maneuvers, stances, and Martial Adept classes", url: "https://srd.dndtools.org" },
+    { code: "CW", name: "Complete Warrior", cat: "Splatbook", note: "Martial classes, tactical & combat feats, prestige classes", url: "https://srd.dndtools.org" },
+    { code: "CD", name: "Complete Divine", cat: "Splatbook", note: "Divine classes, domains, and divine feats", url: "https://srd.dndtools.org" },
+    { code: "CA", name: "Complete Arcane", cat: "Splatbook", note: "Warlock, Warmage, invocations, and metamagic feats", url: "https://srd.dndtools.org" },
+    { code: "CAd", name: "Complete Adventurer", cat: "Splatbook", note: "Scout/Ninja/Spellthief, stealth & mobility feats", url: "https://srd.dndtools.org" },
+    { code: "CM", name: "Complete Mage", cat: "Splatbook", note: "Arcane specialist options and Reserve Feats", url: "https://srd.dndtools.org" },
     { code: "CS", name: "Complete Scoundrel", cat: "Splatbook", note: "Taktiksel hileler, Skill Tricks, Luck Feats", url: "https://srd.dndtools.org" },
-    { code: "CC", name: "Complete Champion", cat: "Splatbook", note: "Tanrı bağları, Holy Devotion featleri", url: "https://srd.dndtools.org" },
-    { code: "PHB2", name: "Player's Handbook II", cat: "Core Expansion", note: "Yeni featler, Knight, Beguiler, Duskblade", url: "https://srd.dndtools.org" },
-    { code: "FB", name: "Frostburn", cat: "Environment", note: "Buz ve soğuk iklim mekanikleri, soğuk büyüler ve ekipman", url: "https://srd.dndtools.org" },
-    { code: "Sand", name: "Sandstorm", cat: "Environment", note: "Çöl ve kuraklık mekanikleri, ateş ve kum büyüleri", url: "https://srd.dndtools.org" },
-    { code: "Storm", name: "Stormwrack", cat: "Environment", note: "Deniz, gemi ve sualtı savaş kuralları", url: "https://srd.dndtools.org" },
-    { code: "LM", name: "Libris Mortis", cat: "Undead", note: "Ölümsüz yaratıklar, nekromansi kuralları ve featler", url: "https://srd.dndtools.org" },
-    { code: "LoM", name: "Lords of Madness", cat: "Aberrations", note: "Mind Flayer, Beholder ve Aberration arşivleri", url: "https://srd.dndtools.org" },
-    { code: "BoED", name: "Book of Exalted Deeds", cat: "Alignment", note: "Kutsal güçler, Exalted Featler ve Melekler", url: "https://srd.dndtools.org" },
-    { code: "BoVD", name: "Book of Vile Darkness", cat: "Alignment", note: "Karanlık güçler, Vile Damage ve İblisler", url: "https://srd.dndtools.org" },
-    { code: "XPH", name: "Expanded Psionics Handbook", cat: "Psionics", note: "Zihin güçleri, psiyonik sınıflar ve psionics combat", url: "https://www.d20srd.org" },
-    { code: "RoS", name: "Races of Stone", cat: "Races", note: "Cüce ve Gnome mekanikleri, Goliath ırkı", url: "https://srd.dndtools.org" },
-    { code: "RoD", name: "Races of Destiny", cat: "Races", note: "İnsan, Yarım-elf ve Illumian ırkı", url: "https://srd.dndtools.org" },
+    { code: "CC", name: "Complete Champion", cat: "Splatbook", note: "Deity affiliations and Domain Devotion feats", url: "https://srd.dndtools.org" },
+    { code: "PHB2", name: "Player's Handbook II", cat: "Core Expansion", note: "Expanded feats, Knight, Beguiler, Duskblade, Dragon Shaman", url: "https://srd.dndtools.org" },
+    { code: "FB", name: "Frostburn", cat: "Environment", note: "Arctic environment rules, cold spells, and gear", url: "https://srd.dndtools.org" },
+    { code: "Sand", name: "Sandstorm", cat: "Environment", note: "Desert environment rules, heat and sand spells", url: "https://srd.dndtools.org" },
+    { code: "Storm", name: "Stormwrack", cat: "Environment", note: "Naval, seafaring, and aquatic combat rules", url: "https://srd.dndtools.org" },
+    { code: "LM", name: "Libris Mortis", cat: "Undead", note: "Undead lore, necromancy spells, and undead feats", url: "https://srd.dndtools.org" },
+    { code: "LoM", name: "Lords of Madness", cat: "Aberrations", note: "Mind Flayer, Beholder, and Aberration lore & feats", url: "https://srd.dndtools.org" },
+    { code: "BoED", name: "Book of Exalted Deeds", cat: "Alignment", note: "Celestial powers, Exalted Feats, and Vow mechanics", url: "https://srd.dndtools.org" },
+    { code: "BoVD", name: "Book of Vile Darkness", cat: "Alignment", note: "Fiendish powers, Vile Damage, and Vile Feats", url: "https://srd.dndtools.org" },
+    { code: "XPH", name: "Expanded Psionics Handbook", cat: "Psionics", note: "Psionic powers, classes, and psionic feats", url: "https://www.d20srd.org" },
+    { code: "RoS", name: "Races of Stone", cat: "Races", note: "Dwarf and Gnome options, Goliath race, exotic armor", url: "https://srd.dndtools.org" },
+    { code: "RoD", name: "Races of Destiny", cat: "Races", note: "Human, Half-Elf, Half-Orc, and Illumian options", url: "https://srd.dndtools.org" },
     { code: "RotW", name: "Races of the Wild", cat: "Races", note: "Elf ve Halfling mekanikleri, Raptorans", url: "https://srd.dndtools.org" },
     { code: "RotD", name: "Races of the Dragon", cat: "Races", note: "Ejderhalar, Dragonborn of Bahamut, Koboldlar", url: "https://srd.dndtools.org" },
-    { code: "HoB", name: "Heroes of Battle", cat: "Campaign", note: "Büyük meydan savaşları ve ordu komutanlığı", url: "https://srd.dndtools.org" },
-    { code: "HoH", name: "Heroes of Horror", cat: "Campaign", note: "Korku, delilik kuralları, Dread Necromancer", url: "https://srd.dndtools.org" },
-    { code: "Dscape", name: "Dungeonscape", cat: "Exploration", note: "Zindan tuzakları, Factotum sınıfı", url: "https://srd.dndtools.org" },
-    { code: "Cscape", name: "Cityscape", cat: "Exploration", note: "Şehir içi maceralar ve Urban Ranger", url: "https://srd.dndtools.org" },
-    { code: "RC", name: "Rules Compendium", cat: "Rules Summary", note: "D&D 3.5e'nin tüm nihai resmi kural açıklamaları", url: "https://srd.dndtools.org" },
-    { code: "PlH", name: "Planar Handbook", cat: "Planar", note: "Düzlemler arası seyahat, Jovar ve egzotik silahlar", url: "https://srd.dndtools.org" }
+    { code: "HoB", name: "Heroes of Battle", cat: "Campaign", note: "Mass combat, battlefield mechanics, and commander feats", url: "https://srd.dndtools.org" },
+    { code: "HoH", name: "Heroes of Horror", cat: "Campaign", note: "Taint, fear & horror mechanics, Dread Necromancer", url: "https://srd.dndtools.org" },
+    { code: "Dscape", name: "Dungeonscape", cat: "Exploration", note: "Dungeon hazards, Factotum class, and alternate class features", url: "https://srd.dndtools.org" },
+    { code: "Cscape", name: "Cityscape", cat: "Exploration", note: "Urban adventures, contacts, and city variants", url: "https://srd.dndtools.org" },
+    { code: "RC", name: "Rules Compendium", cat: "Rules Summary", note: "Definitive consolidated D&D 3.5e rules reference", url: "https://srd.dndtools.org" },
+    { code: "PlH", name: "Planar Handbook", cat: "Planar", note: "Planar travel, touchstones, Jovar, and planar gear", url: "https://srd.dndtools.org" }
   ],
 
   // Utility to derive standardized actionType for D&D 3.5e Action Economy (Standard, Swift, Immediate, Full-Round, Passive)
@@ -221,7 +221,7 @@ const RuleMaster = {
       'attack.all': 'Atk', 'attack.melee': 'Melee Atk', 'attack.ranged': 'Ranged Atk', 'atk': 'Atk',
       'damage.all': 'Dmg', 'damage.melee': 'Melee Dmg', 'damage.ranged': 'Ranged Dmg', 'dmg': 'Dmg',
       'save.all': 'All Saves', 'save.fort': 'Fort', 'save.ref': 'Ref', 'save.will': 'Will', 'fort': 'Fort', 'ref': 'Ref', 'will': 'Will',
-      'init': 'Init', 'speed.land': 'ft Hız', 'speed': 'ft Hız', 'hp': 'HP', 'casterlevel': 'CL', 'casterLevel': 'CL', 'skill.all': 'Skills'
+      'init': 'Init', 'speed.land': 'ft Speed', 'speed': 'ft Speed', 'hp': 'HP', 'casterlevel': 'CL', 'casterLevel': 'CL', 'skill.all': 'Skills'
     };
 
     if (v2.armorStats && Number(v2.armorStats.baseAc) > 0) {
@@ -468,7 +468,7 @@ const RuleMaster = {
   // Save new or updated entry (Canonical V2)
   saveEntry(entryData, editIndex = -1) {
     if (!entryData || !entryData.name || !entryData.name.trim()) {
-      alert('⚠️ Lütfen geçerli bir Kural / Eşya Adı giriniz.');
+      alert('⚠️ Please enter a valid Rule / Item Name.');
       return false;
     }
 
@@ -544,7 +544,7 @@ const RuleMaster = {
     }
 
     if (oldName && syncCount > 0) {
-      alert(`✅ "${v2Entry.name}" Master DB'de güncellendi ve karakterinizdeki ${syncCount} kayda anında yansıtıldı!`);
+      alert(`✅ "${v2Entry.name}" updated in Master DB and synced across ${syncCount} character record(s)!`);
     }
 
     return true;
@@ -734,7 +734,7 @@ const RuleMaster = {
   deleteEntry(index) {
     if (index >= 0 && index < masterDb.length) {
       const item = masterDb[index];
-      if (confirm(`"${item.name}" kaydını Master DB'den kalıcı olarak silmek istediğinize emin misiniz?`)) {
+      if (confirm(`Are you sure you want to permanently delete "${item.name}" from Master DB?`)) {
         masterDb.splice(index, 1);
         if (typeof saveStateToStorage === 'function') {
           saveStateToStorage(true);
@@ -792,7 +792,7 @@ const RuleMaster = {
 
     const inPool = character.gearPool.some(p => p.id === item.id || (p.name || '').toLowerCase() === item.name.toLowerCase());
     if (inPool) {
-      alert(`ℹ️ "${item.name}" zaten çantanızda mevcut!`);
+      alert(`ℹ️ "${item.name}" is already in your inventory!`);
       return;
     }
 
@@ -828,7 +828,7 @@ const RuleMaster = {
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
     if (typeof renderInventory === 'function') renderInventory();
     if (typeof renderConsumables === 'function') renderConsumables();
-    alert(`🎒 "${item.name}" çantanıza / envanter havuzunuza eklendi!`);
+    alert(`🎒 "${item.name}" added to your backpack / inventory pool!`);
   },
 
   // Open Edit / Add Modal (Bridges Canonical V2 Entry -> Modal Form)
@@ -841,7 +841,7 @@ const RuleMaster = {
 
     const view = this.extractModalViewFromV2(v2);
 
-    document.getElementById('rule-modal-title').textContent = editIndex >= 0 ? `✏️ Düzenle: ${v2.name}` : '➕ Yeni Kural / Eşya Ekle';
+    document.getElementById('rule-modal-title').textContent = editIndex >= 0 ? `✏️ Edit: ${v2.name}` : '➕ Add New Rule / Item';
 
     document.getElementById('rf-name').value = v2.name || '';
     document.getElementById('rf-type').value = v2.type || 'Weapon';
@@ -1348,7 +1348,7 @@ const RuleMaster = {
       if (filteredItems.length === 0) {
         const empty = document.createElement('div');
         empty.className = 'px-3 py-2 text-slate-500 text-[11px] italic text-center';
-        empty.textContent = 'Eşleşen sonuç bulunamadı (serbest metin yazabilirsiniz)';
+        empty.textContent = 'No matching entries found (you can type custom text)';
         dropdown.appendChild(empty);
       } else {
         filteredItems.forEach((item, idx) => {
@@ -1491,7 +1491,7 @@ const RuleMaster = {
     });
 
     const countBadge = document.getElementById('mdb-total-count-badge');
-    if (countBadge) countBadge.textContent = `${filtered.length} / ${masterDb.length} Kayıt`;
+    if (countBadge) countBadge.textContent = `${filtered.length} / ${masterDb.length} Entries`;
 
     tbody.innerHTML = '';
 
@@ -1521,7 +1521,7 @@ const RuleMaster = {
         </td>
         <td class="py-2.5 px-3 text-slate-300 text-xs">
           <div>${item.slot ? this.capitalizeIdentifier(item.slot) : 'None'}</div>
-          ${item.level !== undefined && item.level !== '' ? `<div class="text-[10px] text-amber-400 font-bold">${item.level}. Seviye</div>` : ''}
+          ${item.level !== undefined && item.level !== '' ? `<div class="text-[10px] text-amber-400 font-bold">Level ${item.level}</div>` : ''}
         </td>
         <td class="py-2.5 px-3">
           <div class="text-xs font-semibold text-amber-300">${this.capitalizeIdentifier(primaryBonusType)}</div>
@@ -1535,16 +1535,16 @@ const RuleMaster = {
         </td>
         <td class="py-2.5 px-3 text-center">
           <div class="flex items-center justify-center gap-1">
-            <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Düzenle">
+            <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Edit">
               ✏️
             </button>
-            <button onclick="RuleMaster.addChildPower(${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-purple-300 text-xs transition" title="Gömülü Alt Mod Ekle (Mode)">
+            <button onclick="RuleMaster.addChildPower(${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-purple-300 text-xs transition" title="Add Embedded Sub-Mode (Mode)">
               🔗
             </button>
-            <button onclick="RuleMaster.duplicateEntry(${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs transition" title="Kopyala">
+            <button onclick="RuleMaster.duplicateEntry(${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs transition" title="Duplicate">
               📑
             </button>
-            <button onclick="RuleMaster.deleteEntry(${idx})" class="p-1 rounded bg-rose-950 hover:bg-rose-900 border border-rose-800 text-rose-300 text-xs transition" title="Sil">
+            <button onclick="RuleMaster.deleteEntry(${idx})" class="p-1 rounded bg-rose-950 hover:bg-rose-900 border border-rose-800 text-rose-300 text-xs transition" title="Delete">
               🗑️
             </button>
           </div>
@@ -1754,29 +1754,29 @@ const RuleMaster = {
   // Canlı modelleri Gemini Flash ile analiz edip D&D 3.5e görevlerine en uygun 3 kademeli matrisi üreten AI Optimizatörü
   async optimizeModelsWithAi(apiKey, apiModels = []) {
     if (!apiKey || !Array.isArray(apiModels) || apiModels.length === 0) {
-      return { success: false, reason: 'Eksik API anahtarı veya model listesi' };
+      return { success: false, reason: 'Missing API key or model list' };
     }
 
     const evaluatorModel = this.findDynamicDiagnosticModel(apiModels);
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${evaluatorModel}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
-    const promptText = `Sen Google Gemini API optimizasyon ve yapay zeka model mimarisi uzmanısın.
-Kullanıcının API anahtarında şu anda aktif, erişilebilir ve generateContent destekleyen resmi modeller şunlardır:
+    const promptText = `You are a Google Gemini API optimization and AI model architecture specialist.
+The following official models are currently active, accessible, and support generateContent on the user's API key:
 ${JSON.stringify(apiModels)}
 
-Bu modelleri D&D 3.5e web uygulamamız için 3 temel görev alanına göre sınıflandır ve her görev için en uygun 3 kademeli (primary, fallback, tertiary) seçimleri belirle:
-1. QUICK_SEARCH: Hızlı yanıt, yüksek RPM, arama, D&D SRD büyü/eşya/feat listeleme ve seviye atlama (Flash-Lite veya Flash modelleri öncelikli).
-2. RULE_AUDIT: Derin RAW kural muhakemesi, karmaşık denetimler ve mekanik kural çözümleri (Pro modelleri öncelikli, yoksa en yüksek akıl yürütmeli Flash).
-3. IMPORT_BATCH: Yapısal JSON çıktısı, canavar stat blokları, tablo ve serbest metin ayrıştırma (Dengeli Flash/Pro hibriti).
+Classify these models across 3 core task domains for our D&D 3.5e web application and select the optimal 3-tier cascade (primary, fallback, tertiary) for each task:
+1. QUICK_SEARCH: Low latency, high RPM, Spotlight search, D&D SRD spell/item/feat lookup, and Level-Up Copilot (prioritize Flash-Lite or Flash models).
+2. RULE_AUDIT: Deep RAW rules reasoning, complex mechanical audits, and V2 schema validation (prioritize Pro models, or highest-reasoning Flash).
+3. IMPORT_BATCH: Structured JSON extraction, monster statblocks, tables, and free-text parsing (balanced Flash/Pro hybrid).
 
-ZORUNLU KURALLAR:
-1. SADECE yukarıda verilen aktif modeller listesinden isimler seç. Listede olmayan veya hayali model adı yazma!
-2. SADECE geçerli bir JSON nesnesi döndür. Markdown formatı, backtick (\`\`\`json) veya fazladan açıklama ekleme.
-Şema:
+MANDATORY RULES:
+1. Select ONLY model names from the active list provided above. Never invent model names!
+2. Return ONLY a valid JSON object without Markdown formatting or backticks.
+Schema:
 {
-  "QUICK_SEARCH": {"primary": "model_adi", "fallback": "model_adi", "tertiary": "model_adi"},
-  "RULE_AUDIT": {"primary": "model_adi", "fallback": "model_adi", "tertiary": "model_adi"},
-  "IMPORT_BATCH": {"primary": "model_adi", "fallback": "model_adi", "tertiary": "model_adi"}
+  "QUICK_SEARCH": {"primary": "model_name", "fallback": "model_name", "tertiary": "model_name"},
+  "RULE_AUDIT": {"primary": "model_name", "fallback": "model_name", "tertiary": "model_name"},
+  "IMPORT_BATCH": {"primary": "model_name", "fallback": "model_name", "tertiary": "model_name"}
 }`;
 
     const payload = {
@@ -1805,7 +1805,7 @@ ZORUNLU KURALLAR:
 
       const data = await response.json();
       const rawAiText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!rawAiText) throw new Error('Boş AI yanıtı');
+      if (!rawAiText) throw new Error('Empty AI response');
 
       let parsed = null;
       try {
@@ -1813,7 +1813,7 @@ ZORUNLU KURALLAR:
       } catch (pe) {
         const match = rawAiText.match(/\{[\s\S]*\}/);
         if (match) parsed = JSON.parse(match[0]);
-        else throw new Error('Geçersiz JSON');
+        else throw new Error('Invalid JSON');
       }
 
       // Whitelist doğrulama & Temizlik
@@ -1844,7 +1844,7 @@ ZORUNLU KURALLAR:
       }
 
       if (!isValid) {
-        throw new Error('AI model seçimleri whitelist doğrulamadan geçemedi');
+        throw new Error('AI model selections failed whitelist validation');
       }
 
       try {
@@ -2068,19 +2068,19 @@ ZORUNLU KURALLAR:
       totalDiscovered: apiModels.length,
       tasks: {
         quickSearch: {
-          title: 'Hızlı Arama & Seviye Atlama (Flash-Lite / Yüksek Kota)',
+          title: 'Quick Search & Level-Up Copilot (Flash-Lite / High Quota)',
           primary: quickModels[0] || this.AI_TASK_ROUTING.QUICK_SEARCH.primary,
           fallback: quickModels[1] || this.AI_TASK_ROUTING.QUICK_SEARCH.fallback,
           tertiary: quickModels[2] || this.AI_TASK_ROUTING.QUICK_SEARCH.tertiary
         },
         ruleAudit: {
-          title: 'Kütüphane & RAW Kural Denetimi (Pro Derin Muhakeme)',
+          title: 'Compendium & RAW Rule Audit (Pro Deep Reasoning)',
           primary: auditModels[0] || this.AI_TASK_ROUTING.RULE_AUDIT.primary,
           fallback: auditModels[1] || this.AI_TASK_ROUTING.RULE_AUDIT.fallback,
           tertiary: auditModels[2] || this.AI_TASK_ROUTING.RULE_AUDIT.tertiary
         },
         importBatch: {
-          title: 'Toplu İçe Aktarım & Tablo Ayrıştırma (Lite/Pro Hibrit)',
+          title: 'Batch Import & Free-Text Parsing (Lite/Pro Hybrid)',
           primary: batchModels[0] || this.AI_TASK_ROUTING.IMPORT_BATCH.primary,
           fallback: batchModels[1] || this.AI_TASK_ROUTING.IMPORT_BATCH.fallback,
           tertiary: batchModels[2] || this.AI_TASK_ROUTING.IMPORT_BATCH.tertiary
@@ -2092,7 +2092,7 @@ ZORUNLU KURALLAR:
   async showDiagnosticsModal(apiKey) {
     const key = (apiKey || this.getApiKey() || '').trim();
     if (!key) {
-      alert('⚠️ Lütfen önce bir Gemini API Anahtarı girin ve kaydedin.');
+      alert('⚠️ Please enter and save a Gemini API Key first.');
       return;
     }
 
@@ -2100,41 +2100,41 @@ ZORUNLU KURALLAR:
       if (typeof verifySettingsGeminiApiKey === 'function') {
         const ok = await verifySettingsGeminiApiKey(true);
         if (!ok) {
-          alert('❌ Gemini API bağlantısı kurulamadı. Lütfen API anahtarınızın doğruluğunu kontrol edin.');
+          alert('❌ Could not connect to Gemini API. Please verify your API key.');
           return;
         }
       }
 
       const diag = await this.getAiArchitectureDiagnostics(key);
       const modeName = diag.mode === 'auto' 
-        ? 'Otomatik (Akıllı Görev Yönlendirici)' 
-        : (diag.mode === 'pro' ? 'Manuel Gemini Pro (Derin RAW Muhakeme)' : 'Manuel Gemini Flash (Ultra Hızlı Gecikme)');
+        ? 'Auto (Smart Task Router)' 
+        : (diag.mode === 'pro' ? 'Manual Gemini Pro (Deep RAW Reasoning)' : 'Manual Gemini Flash (Ultra-Low Latency)');
 
       const optStatus = diag.isAiOptimized
-        ? `🤖 Yapay Zeka Canlı Analiziyle Optimize Edildi (Sanal Çözümleyici: ${diag.dynamicEvaluator})`
-        : `🛡️ Deterministik Heuristic Kalkanı Devrede (Sanal Çözümleyici: ${diag.dynamicEvaluator})`;
+        ? `🤖 Optimized via Live AI Analysis (Evaluator: ${diag.dynamicEvaluator})`
+        : `🛡️ Deterministic Heuristic Shield Active (Evaluator: ${diag.dynamicEvaluator})`;
 
-      const report = `🩺 GEMINI API TANI & AKILLI MODEL MATRİSİ (9 YUVA)\n\n` +
-        `🟢 Bağlantı Başarılı ve Aktif! (${diag.totalDiscovered} Canlı Model Keşfedildi)\n` +
-        `Optimizasyon Durumu: ${optStatus}\n` +
-        `Çalışma Modu: ${modeName}\n\n` +
+      const report = `🩺 GEMINI API DIAGNOSTICS & SMART MODEL MATRIX (9 SLOTS)\n\n` +
+        `🟢 Connection Verified & Active! (${diag.totalDiscovered} Live Models Discovered)\n` +
+        `Optimization Status: ${optStatus}\n` +
+        `Operating Mode: ${modeName}\n\n` +
         `⚡ ${diag.tasks.quickSearch.title}:\n` +
-        `   ⭐ 1. Asıl: ${diag.tasks.quickSearch.primary}\n` +
-        `   🔄 2. Yedek: ${diag.tasks.quickSearch.fallback}\n` +
-        `   🛡️ 3. Kalkan: ${diag.tasks.quickSearch.tertiary}\n\n` +
+        `   ⭐ 1. Primary: ${diag.tasks.quickSearch.primary}\n` +
+        `   🔄 2. Fallback: ${diag.tasks.quickSearch.fallback}\n` +
+        `   🛡️ 3. Tertiary: ${diag.tasks.quickSearch.tertiary}\n\n` +
         `🔮 ${diag.tasks.ruleAudit.title}:\n` +
-        `   ⭐ 1. Asıl: ${diag.tasks.ruleAudit.primary}\n` +
-        `   🔄 2. Yedek: ${diag.tasks.ruleAudit.fallback}\n` +
-        `   🛡️ 3. Kalkan: ${diag.tasks.ruleAudit.tertiary}\n\n` +
+        `   ⭐ 1. Primary: ${diag.tasks.ruleAudit.primary}\n` +
+        `   🔄 2. Fallback: ${diag.tasks.ruleAudit.fallback}\n` +
+        `   🛡️ 3. Tertiary: ${diag.tasks.ruleAudit.tertiary}\n\n` +
         `📋 ${diag.tasks.importBatch.title}:\n` +
-        `   ⭐ 1. Asıl: ${diag.tasks.importBatch.primary}\n` +
-        `   🔄 2. Yedek: ${diag.tasks.importBatch.fallback}\n` +
-        `   🛡️ 3. Kalkan: ${diag.tasks.importBatch.tertiary}\n\n` +
-        `Sistem her görevde önce 1. Asıl modeli kullanır; sunucu yoğunluğu (503) veya kota durumunda (429) otomatik olarak sırasıyla 2. ve 3. modellere geçer. Gelecekte yeni modeller çıktığında tanı çalıştırılarak matris otomatik olarak güncellenebilir.`;
+        `   ⭐ 1. Primary: ${diag.tasks.importBatch.primary}\n` +
+        `   🔄 2. Fallback: ${diag.tasks.importBatch.fallback}\n` +
+        `   🛡️ 3. Tertiary: ${diag.tasks.importBatch.tertiary}\n\n` +
+        `The engine attempts the Primary model first for each task and automatically cascades to Fallback and Tertiary on server overload (503) or rate limits (429).`;
 
       alert(report);
     } catch (err) {
-      alert(`❌ Tanı Hatası: ${err.message}`);
+      alert(`❌ Diagnostics Error: ${err.message}`);
     }
   },
 
@@ -2211,15 +2211,15 @@ ZORUNLU KURALLAR:
     const keyInput = document.getElementById('ai-api-key-input');
     const val = keyInput?.value?.trim() || '';
     if (!val) {
-      alert('⚠️ Lütfen geçerli bir Gemini API anahtarı girin.');
+      alert('⚠️ Please enter a valid Gemini API key.');
       return;
     }
     this.setApiKey(val);
-    alert('✅ Gemini API anahtarı başarıyla kaydedildi!');
+    alert('✅ Gemini API key saved successfully!');
   },
 
   clearApiKey() {
-    if (confirm('Gemini API anahtarını yerel hafızadan silmek istediğinize emin misiniz?')) {
+    if (confirm('Are you sure you want to remove the Gemini API key from local storage?')) {
       this.setApiKey('');
     }
   },
@@ -2692,7 +2692,7 @@ Return valid JSON only matching:
 
     for (const model of availableModels) {
       if (statusTextEl) {
-        statusTextEl.textContent = `"${cleanQuery}" ➔ ${model} sorgulanıyor...`;
+        statusTextEl.textContent = `Querying "${cleanQuery}" ➔ ${model}...`;
       }
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
@@ -2734,7 +2734,7 @@ Return valid JSON only matching:
                 if (match) {
                   parsed = JSON.parse(match[0]);
                 } else {
-                  throw new Error('Yapay zeka yanıtı geçerli JSON formatında değil.');
+                  throw new Error('AI response is not in valid JSON format.');
                 }
               }
 
@@ -2762,7 +2762,7 @@ Return valid JSON only matching:
                 if (normalizedEntries.length > 0) return normalizedEntries;
               }
             } catch (pErr) {
-              lastError = `JSON Çözümleme hatası (${model}): ${pErr.message}`;
+              lastError = `JSON Parse Error (${model}): ${pErr.message}`;
             }
           }
         } else {
@@ -2777,14 +2777,14 @@ Return valid JSON only matching:
       } catch (netErr) {
         clearTimeout(timeoutId);
         if (netErr && netErr.name === 'AbortError') {
-          lastError = `Zaman aşımı (4.5s) - ${model} yanıt vermedi.`;
+          lastError = `Timeout (4.5s) - ${model} did not respond.`;
         } else {
           lastError = `${netErr.message} (${model})`;
         }
       }
     }
 
-    throw new Error(lastError || `"${query}" ile ilgili resmi bir D&D 3.5e kuralı veya eşyası bulunamadı.`);
+    throw new Error(lastError || `No official D&D 3.5e rule or item found for "${query}".`);
   },
 
   async queryAiRule() {
@@ -2800,7 +2800,7 @@ Return valid JSON only matching:
     const categoryHint = catSelect ? catSelect.value : 'ALL';
 
     if (!query) {
-      alert('Lütfen aramak istediğiniz kural, eşya, büyü, hüner veya yeteneğin adını yazın.');
+      alert('Please enter the name of the rule, item, spell, feat, or ability you want to search.');
       if (queryInput) queryInput.focus();
       return;
     }
@@ -2812,21 +2812,21 @@ Return valid JSON only matching:
       this.renderAiResults();
       if (resultsWrapper) resultsWrapper.classList.remove('hidden');
       if (statusBox) statusBox.classList.remove('hidden');
-      if (statusText) statusText.innerHTML = `⚡ <b>"${localFound[0].name}"</b> yerel V2 kütüphanesinden / montaj motorundan anında yüklendi (0 ms, Sıfır Token).`;
+      if (statusText) statusText.innerHTML = `⚡ <b>"${localFound[0].name}"</b> loaded instantaneously from local V2 Compendium / Item Assembler (0 ms, Zero Tokens).`;
       if (btn) btn.disabled = false;
       return;
     }
 
     const apiKey = this.getApiKey();
     if (!apiKey) {
-      alert('Rule Master AI özelliğini kullanmak için geçerli bir Gemini API Anahtarı girmeniz gerekmektedir.');
+      alert('Please enter a valid Gemini API Key to use Rule Master AI.');
       this.promptApiKey();
       return;
     }
 
     if (btn) btn.disabled = true;
     if (statusBox) statusBox.classList.remove('hidden');
-    if (statusText) statusText.textContent = `"${query}" aranıyor ve D&D 3.5e RAW kütüphanesinden doğrulanıyor...`;
+    if (statusText) statusText.textContent = `Searching "${query}" and verifying against D&D 3.5e RAW library...`;
     if (resultsContainer) resultsContainer.innerHTML = '';
     if (resultsWrapper) resultsWrapper.classList.add('hidden');
 
@@ -2834,7 +2834,7 @@ Return valid JSON only matching:
       const entries = await this.fetchSingleAiRuleObjects(query, categoryHint, apiKey, statusText);
 
       if (!entries || !entries.length) {
-        throw new Error(`"${query}" ile ilgili resmi bir D&D 3.5e kuralı veya eşyası bulunamadı.`);
+        throw new Error(`No official D&D 3.5e rule or item found for "${query}".`);
       }
 
       this.lastAiResults = entries;
@@ -2842,7 +2842,7 @@ Return valid JSON only matching:
       if (resultsWrapper) resultsWrapper.classList.remove('hidden');
     } catch (err) {
       console.error(err);
-      alert(`Hata: ${err.message}`);
+      alert(`Error: ${err.message}`);
     } finally {
       if (btn) btn.disabled = false;
       if (statusBox) statusBox.classList.add('hidden');
@@ -2861,11 +2861,11 @@ Return valid JSON only matching:
     const apiKey = this.getApiKey();
     if (!apiKey) {
       if (typeof this.promptApiKey === 'function') this.promptApiKey();
-      throw new Error('Gemini API anahtarı ayarlanmamış.');
+      throw new Error('Gemini API key is not configured.');
     }
     const entries = await this.fetchSingleAiRuleObjects(deityName, 'Deity', apiKey, statusTextEl);
     if (!entries || !entries.length) {
-      throw new Error(`"${deityName}" ile ilgili resmi bir D&D 3.5e tanrısı bulunamadı.`);
+      throw new Error(`No official D&D 3.5e deity found for "${deityName}".`);
     }
     const deityEntry = entries.find(e => e && (e.type === 'Deity' || String(e.type).toLowerCase() === 'deity')) || entries[0];
     deityEntry.type = 'Deity';
@@ -2883,11 +2883,11 @@ Return valid JSON only matching:
     const apiKey = this.getApiKey();
     if (!apiKey) {
       if (typeof this.promptApiKey === 'function') this.promptApiKey();
-      throw new Error('Gemini API anahtarı ayarlanmamış.');
+      throw new Error('Gemini API key is not configured.');
     }
     const entries = await this.fetchSingleAiRuleObjects(raceName, 'Race', apiKey, statusTextEl);
     if (!entries || !entries.length) {
-      throw new Error(`"${raceName}" ile ilgili resmi bir D&D 3.5e ırkı bulunamadı.`);
+      throw new Error(`No official D&D 3.5e race found for "${raceName}".`);
     }
     const raceEntry = entries.find(e => e && (e.type === 'Race' || String(e.type).toLowerCase() === 'race')) || entries[0];
     raceEntry.type = 'Race';
@@ -2935,7 +2935,7 @@ Return valid JSON only matching:
     const statusText = document.getElementById('ai-rule-status-text');
 
     if (!input || !input.value.trim()) {
-      alert('Lütfen içe aktarmak istediğiniz kuralları virgülle veya satır satır ayırarak yazın.');
+      alert('Please enter the rules you want to import, separated by commas or newlines.');
       return;
     }
 
@@ -2943,7 +2943,7 @@ Return valid JSON only matching:
     if (!rawQueries.length) return;
 
     const items = [...new Set(rawQueries)];
-    if (!confirm(`Toplam ${items.length} adet kural taranıp Kanonik V2 formatında Master DB'ye eklenecek. Devam edilsin mi?`)) {
+    if (!confirm(`A total of ${items.length} rule(s) will be parsed into Canonical V2 format and added to Master DB. Proceed?`)) {
       return;
     }
 
@@ -2954,7 +2954,7 @@ Return valid JSON only matching:
     let totalImported = 0;
     for (let i = 0; i < items.length; i++) {
       const itemQuery = items[i];
-      if (statusText) statusText.textContent = `[${i + 1}/${items.length}] "${itemQuery}" taranıyor...`;
+      if (statusText) statusText.textContent = `[${i + 1}/${items.length}] Scanning "${itemQuery}"...`;
       try {
         const entries = await this.fetchSingleAiRuleEntries(itemQuery, 'ALL', apiKey, statusText);
         if (entries && entries.length) {
@@ -2975,7 +2975,7 @@ Return valid JSON only matching:
     if (statusBox) statusBox.classList.add('hidden');
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
     this.renderTable();
-    alert(`🎉 Toplu İçe Aktarma Tamamlandı!\n${totalImported} adet Kanonik V2 kural başarıyla Master_DB'ye eklendi.`);
+    alert(`🎉 Batch Import Complete!\n${totalImported} Canonical V2 rule(s) successfully added to Master_DB.`);
   },
 
   getChildrenForEntry(item) {
@@ -2988,20 +2988,20 @@ Return valid JSON only matching:
     if (!container) return;
 
     if (!this.lastAiResults || !this.lastAiResults.length) {
-      container.innerHTML = '<div class="text-center text-slate-400 py-6">Sonuç bulunamadı.</div>';
+      container.innerHTML = '<div class="text-center text-slate-400 py-6">No results found.</div>';
       return;
     }
 
     let html = `
       <div class="flex items-center justify-between bg-slate-900 border border-slate-800 p-3 rounded-xl mb-3 shadow">
         <div>
-          <span class="text-xs font-bold text-amber-300">D&D 3.5e RAW Doğrulandı:</span>
-          <span class="text-xs text-slate-200 ml-1 font-semibold">${this.lastAiResults.length} Sonuç Bulundu</span>
-          <span class="text-[11px] text-slate-400 block sm:inline sm:ml-2">Kanonik V2 JSON şemasıyla tam uyumlu</span>
+          <span class="text-xs font-bold text-amber-300">D&D 3.5e RAW Verified:</span>
+          <span class="text-xs text-slate-200 ml-1 font-semibold">${this.lastAiResults.length} Result(s) Found</span>
+          <span class="text-[11px] text-slate-400 block sm:inline sm:ml-2">100% Canonical V2 JSON Schema Compliant</span>
         </div>
         <button onclick="RuleMaster.addAllAiResultsToDb()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-3.5 py-1.5 rounded-lg shadow transition flex items-center gap-1.5">
           <span>📥</span>
-          <span>Tümünü DB'ye Ekle</span>
+          <span>Add All to DB</span>
         </button>
       </div>
       <div class="space-y-3">
@@ -3016,7 +3016,7 @@ Return valid JSON only matching:
 
       const specificBadges = [];
       if (item.level !== undefined && item.level !== null && item.level !== '') {
-        specificBadges.push(`<span class="badge bg-amber-950 text-amber-300 border border-amber-800 text-[10px] font-bold">${item.level}. Seviye</span>`);
+        specificBadges.push(`<span class="badge bg-amber-950 text-amber-300 border border-amber-800 text-[10px] font-bold">Level ${item.level}</span>`);
       }
       if (item.school && item.school !== '-') {
         specificBadges.push(`<span class="badge bg-indigo-950 text-indigo-300 border border-indigo-800 text-[10px]">${item.school}</span>`);
@@ -3025,7 +3025,7 @@ Return valid JSON only matching:
         specificBadges.push(`<span class="badge bg-rose-950 text-rose-300 border border-rose-800 text-[10px]">${item.discipline}</span>`);
       }
       if (modes.length > 0) {
-        specificBadges.push(`<span class="badge bg-purple-950 text-purple-200 border border-purple-600 text-[10px] font-bold">⚡ ${modes.length} Gömülü Mod</span>`);
+        specificBadges.push(`<span class="badge bg-purple-950 text-purple-200 border border-purple-600 text-[10px] font-bold">⚡ ${modes.length} Embedded Mode(s)</span>`);
       }
 
       html += `
@@ -3040,23 +3040,23 @@ Return valid JSON only matching:
               <div class="flex items-center gap-2 text-[11px] text-slate-400 mt-1 flex-wrap">
                 <span>📚 <b>${item.source || 'Core 3.5e'}</b></span>
                 <span>•</span>
-                <span>Yuva: <b>${item.slot || 'None'}</b></span>
+                <span>Slot: <b>${item.slot || 'None'}</b></span>
                 <span>•</span>
-                <span>Tür: <b>${primaryBonusType}</b></span>
-                ${item.range && item.range !== '-' ? `<span>•</span><span>Menzil: <b class="text-cyan-400">${item.range}</b></span>` : ''}
+                <span>Type: <b>${primaryBonusType}</b></span>
+                ${item.range && item.range !== '-' ? `<span>•</span><span>Range: <b class="text-cyan-400">${item.range}</b></span>` : ''}
               </div>
             </div>
 
             <div class="flex items-center gap-1.5">
               <button onclick="RuleMaster.addAiResultToDb(${idx})" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1">
                 <span>📥</span>
-                <span>DB'ye Ekle</span>
+                <span>Add to DB</span>
               </button>
-              <button onclick="RuleMaster.equipAiResultToCharacter(${idx})" class="bg-emerald-950 hover:bg-emerald-900 border border-emerald-700 text-emerald-300 text-xs px-2.5 py-1.5 rounded-lg transition font-bold" title="Karaktere Kuşan / Ekle">
-                ⚡ Kuşan
+              <button onclick="RuleMaster.equipAiResultToCharacter(${idx})" class="bg-emerald-950 hover:bg-emerald-900 border border-emerald-700 text-emerald-300 text-xs px-2.5 py-1.5 rounded-lg transition font-bold" title="Equip / Add to Character">
+                ⚡ Equip
               </button>
-              <button onclick="RuleMaster.editAiResultInModal(${idx})" class="bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition" title="Düzenle">
-                ✏️ Düzenle
+              <button onclick="RuleMaster.editAiResultInModal(${idx})" class="bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition" title="Edit">
+                ✏️ Edit
               </button>
             </div>
           </div>
@@ -3076,16 +3076,16 @@ Return valid JSON only matching:
           ` : ''}
 
           <div class="text-xs text-slate-300 bg-slate-950/80 p-3 rounded-lg border border-slate-800/80 leading-relaxed font-sans">
-            ${item.benefit || item.description || 'Açıklama belirtilmemiş.'}
+            ${item.benefit || item.description || 'No description provided.'}
           </div>
 
           <div class="flex flex-wrap items-center justify-between text-[11px] text-slate-400 pt-1">
             <div class="flex items-center gap-3">
               <span>Aksiyon: <b class="text-amber-400">${item.action || 'Passive'}</b></span>
-              <span>Süre/Kullanım: <b class="text-purple-300">${item.duration || 'Continuous'}</b></span>
+              <span>Duration/Use: <b class="text-purple-300">${item.duration || 'Continuous'}</b></span>
             </div>
             <div class="flex items-center gap-3">
-              <span>Ağırlık: <b class="text-slate-300">${item.weight || 0} lbs</b></span>
+              <span>Weight: <b class="text-slate-300">${item.weight || 0} lbs</b></span>
               <span>Fiyat: <b class="text-amber-300">${item.cost || 0} gp</b></span>
             </div>
           </div>
@@ -3109,7 +3109,7 @@ Return valid JSON only matching:
 
       if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
       this.renderTable();
-      alert(`✅ "${item.name}" başarıyla Master_DB kütüphanesine eklendi!`);
+      alert(`✅ "${item.name}" successfully added to Master_DB!`);
     }
   },
 
@@ -3126,7 +3126,7 @@ Return valid JSON only matching:
     });
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
     this.renderTable();
-    alert(`✅ ${this.lastAiResults.length} Kanonik V2 kural başarıyla Master_DB kütüphanesine eklendi!`);
+    alert(`✅ ${this.lastAiResults.length} Canonical V2 rule(s) successfully added to Master_DB!`);
   },
 
   editAiResultInModal(index) {
@@ -3261,22 +3261,22 @@ Return valid JSON only matching:
       if (unequippedOffHandName) {
         if (typeof showDiceTopToast === 'function') {
           showDiceTopToast({
-            title: 'Silah Kuşanıldı',
-            breakdown: `"${item.name}" iki elli silah olduğu için ikinci eldeki "${unequippedOffHandName}" çıkarıldı.`,
+            title: 'Weapon Equipped',
+            breakdown: `Off-hand "${unequippedOffHandName}" unequipped because "${item.name}" is a Two-Handed weapon.`,
             icon: '⚔️'
           });
         } else {
-          alert(`⚔️ "${item.name}" iki elli (Two-Handed) bir silahtır! İkinci elinizdeki "${unequippedOffHandName}" çıkarıldı.`);
+          alert(`⚔️ "${item.name}" is a Two-Handed weapon! Off-hand "${unequippedOffHandName}" has been unequipped.`);
         }
       } else {
         if (typeof showDiceTopToast === 'function') {
           showDiceTopToast({
-            title: 'Silah Kuşanıldı',
-            breakdown: `"${item.name}" kuşanıldı ve envantere eklendi.`,
+            title: 'Weapon Equipped',
+            breakdown: `"${item.name}" equipped and added to inventory.`,
             icon: '⚔️'
           });
         } else {
-          alert(`⚔️ "${item.name}" silahı kuşanıldı ve çantaya eklendi!`);
+          alert(`⚔️ "${item.name}" equipped and added to inventory!`);
         }
       }
     } else if (type === 'spell') {
@@ -3296,7 +3296,7 @@ Return valid JSON only matching:
         modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : [],
         ruleFlags: item.ruleFlags ? JSON.parse(JSON.stringify(item.ruleFlags)) : {}
       });
-      alert(`🔮 "${item.name}" büyüsü bilinen büyülere (Spells Known) eklendi!`);
+      alert(`🔮 "${item.name}" added to Spells Known!`);
     } else if (type === 'maneuver') {
       if (!character.tomeOfBattle) character.tomeOfBattle = { initiatorLevel: 1, readiedManeuvers: [], stancesKnown: [] };
       if (!character.tomeOfBattle.readiedManeuvers) character.tomeOfBattle.readiedManeuvers = [];
@@ -3312,7 +3312,7 @@ Return valid JSON only matching:
         damageParts: Array.isArray(item.damageParts) ? JSON.parse(JSON.stringify(item.damageParts)) : [],
         modes: Array.isArray(item.modes) ? JSON.parse(JSON.stringify(item.modes)) : []
       });
-      alert(`⚔️ "${item.name}" manevrası kuşanılan manevralara eklendi!`);
+      alert(`⚔️ "${item.name}" added to Readied Maneuvers!`);
     } else if (type === 'stance') {
       if (!character.tomeOfBattle) character.tomeOfBattle = { initiatorLevel: 1, readiedManeuvers: [], stancesKnown: [] };
       if (!character.tomeOfBattle.stancesKnown) character.tomeOfBattle.stancesKnown = [];
@@ -3328,7 +3328,7 @@ Return valid JSON only matching:
       character.activeStance = item.name;
     } else if (type === 'flaw' || cat.toLowerCase() === 'flaw' || item.name.toLowerCase().startsWith('flaw:')) {
       if (character.level > 1) {
-        const proceed = confirm(`⚠️ D&D 3.5e Unearthed Arcana kuralına göre Flaw (Kusur) yalnızca 1. Seviyede karakter yaratılırken seçilebilir. Mevcut karakter seviyeniz ${character.level}.\n\nYine de "${item.name}" kusurunu eklemek istiyor musunuz?`);
+        const proceed = confirm(`⚠️ Per D&D 3.5e Unearthed Arcana rules, Flaws can only be selected at 1st Level during character creation. Your current level is ${character.level}.\n\nDo you still want to add the "${item.name}" flaw?`);
         if (!proceed) return;
       }
       if (!character.feats) character.feats = [];
@@ -3340,17 +3340,17 @@ Return valid JSON only matching:
           name: cleanName,
           category: 'Flaw',
           source: item.source || 'Unearthed Arcana',
-          benefit: item.benefit || 'Kusur karşılığında 1 bonus feat kazandırır.',
+          benefit: item.benefit || 'Grants 1 bonus feat in exchange for this flaw.',
           modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : []
         });
       }
-      alert(`⚠️ "${item.name}" kusuru karaktere eklendi!\n\n🎖️ D&D 3.5e Unearthed Arcana kuralı gereğince bu kusur karşılığında 1 adet EKSTRA BONUS FEAT KAZANDINIZ!`);
+      alert(`⚠️ Flaw "${item.name}" added to character!\n\n🎖️ Per D&D 3.5e Unearthed Arcana rules, you have gained 1 EXTRA BONUS FEAT!`);
       if (typeof openFeatPickerModal === 'function') {
         setTimeout(() => openFeatPickerModal(false), 200);
       }
     } else if (type === 'racial trait' || cat.toLowerCase() === 'racial trait' || (item.category && item.category.toLowerCase().includes('racial'))) {
       if (character.level > 1) {
-        const proceed = confirm(`⚠️ Irksal yetenekler normalde yalnızca 1. Seviyede belirlenir. Yine de "${item.name}" yeteneğini eklemek istiyor musunuz?`);
+        const proceed = confirm(`⚠️ Racial traits are normally determined at 1st Level. Do you still want to add "${item.name}"?`);
         if (!proceed) return;
       }
       if (!character.specialAbilities) character.specialAbilities = [];
@@ -3367,17 +3367,17 @@ Return valid JSON only matching:
         });
       }
       if (item.grantsBonusFeat || cleanName.toLowerCase().includes('bonus feat')) {
-        alert(`🧬 "${item.name}" ırksal yeteneği eklendi!\n\n🎖️ Bu yetenek 1 adet ekstra bonus feat kazandırmaktadır.`);
+        alert(`🧬 Racial trait "${item.name}" added!\n\n🎖️ This trait grants 1 extra bonus feat.`);
         if (typeof openFeatPickerModal === 'function') {
           setTimeout(() => openFeatPickerModal(false), 200);
         }
       } else {
-        alert(`🧬 "${item.name}" ırksal yeteneği karaktere eklendi!`);
+        alert(`🧬 Racial trait "${item.name}" added to character!`);
       }
     } else if (type === 'feat') {
       if (!character.feats) character.feats = [];
       character.feats.push(item.name);
-      alert(`✨ "${item.name}" hüneri (Feat) karaktere eklendi!`);
+      alert(`✨ Feat "${item.name}" added to character!`);
     } else if (type === 'potion' || type === 'scroll' || type === 'wand' || type === 'consumable' || (item.category && item.category.toLowerCase() === 'consumable')) {
       if (!character.consumables) character.consumables = [];
       character.consumables.push({
@@ -3386,7 +3386,7 @@ Return valid JSON only matching:
         qty: 1,
         effect: item.benefit || item.description || `${item.type || 'Consumable'} effect`
       });
-      alert(`🧪 "${item.name}" (${item.type || 'Sarf Malzemesi'}) çantanıza eklendi!`);
+      alert(`🧪 "${item.name}" (${item.type || 'Consumable'}) added to backpack!`);
     } else {
       // Body Slot Equipment (Armor, Shield, Wondrous Item, Ring, etc. in Canonical V2)
       const rawSlot = (item.slot || '').toLowerCase().trim();
@@ -3433,22 +3433,22 @@ Return valid JSON only matching:
         if (poolExisting) poolExisting.isEquipped = true;
         if (typeof showDiceTopToast === 'function') {
           showDiceTopToast({
-            title: 'Eşya Kuşanıldı',
-            breakdown: `"${item.name}" (${slotKey} yuvasına) kuşanıldı.`,
+            title: 'Item Equipped',
+            breakdown: `"${item.name}" equipped to ${slotKey} slot.`,
             icon: '🛡️'
           });
         } else {
-          alert(`🛡️ "${item.name}" kuşanıldı (${slotKey} yuvasına yerleştirildi) ve çantaya eklendi!`);
+          alert(`🛡️ "${item.name}" equipped (${slotKey} slot) and added to backpack!`);
         }
       } else {
         if (typeof showDiceTopToast === 'function') {
           showDiceTopToast({
-            title: 'Eşya Eklendi',
+            title: 'Item Added',
             breakdown: `"${item.name}" envanter havuzuna eklendi.`,
             icon: '🎒'
           });
         } else {
-          alert(`🎒 "${item.name}" (${item.type}) çantanıza / envanter havuzunuza eklendi!`);
+          alert(`🎒 "${item.name}" (${item.type}) added to backpack / inventory pool!`);
         }
       }
     }
@@ -3577,7 +3577,7 @@ Return valid JSON only matching:
     if (countBadge) countBadge.textContent = `${items.length} Ekipman`;
 
     if (!items.length) {
-      container.innerHTML = '<div class="col-span-full p-8 text-center text-slate-500 bg-slate-950/40 rounded-xl border border-slate-800">Eşleşen silah veya zırh bulunamadı.</div>';
+      container.innerHTML = '<div class="col-span-full p-8 text-center text-slate-500 bg-slate-950/40 rounded-xl border border-slate-800">No matching weapons or armor found.</div>';
       return;
     }
 
@@ -3603,11 +3603,11 @@ Return valid JSON only matching:
                 <span class="text-sm font-extrabold text-white">${item.name}</span>
                 <span class="badge ${isWeapon ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-sky-950 text-sky-300 border border-sky-800'}">${item.type}</span>
               </div>
-              <div class="text-[10px] text-slate-400 mt-0.5">📚 ${item.source || 'PHB'} • Yuva: <b>${item.slot || 'Main Hand'}</b></div>
+              <div class="text-[10px] text-slate-400 mt-0.5">📚 ${item.source || 'PHB'} • Slot: <b>${item.slot || 'Main Hand'}</b></div>
             </div>
             <div class="flex items-center gap-1">
-              <button onclick="toggleUniversalPin({ name: '${item.name.replace(/'/g, "\\'")}', type: 'Feat', action: 'Passive', desc: '${(item.benefit || item.description || '').replace(/'/g, "\\'")}', badge: '${item.type}' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Savaş Kokpitine Sabitle / Çıkar">📌</button>
-              <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Düzenle">✏️</button>
+              <button onclick="toggleUniversalPin({ name: '${item.name.replace(/'/g, "\\'")}', type: 'Feat', action: 'Passive', desc: '${(item.benefit || item.description || '').replace(/'/g, "\\'")}', badge: '${item.type}' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Pin / Unpin to Combat Cockpit">📌</button>
+              <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Edit">✏️</button>
             </div>
           </div>
 
@@ -3618,7 +3618,7 @@ Return valid JSON only matching:
               <span class="badge bg-slate-800 text-slate-300">${dmgType}</span>
             ` : `
               <span class="badge bg-sky-950 text-sky-300 border border-sky-800 font-bold">🛡️ +${acVal} AC</span>
-              <span class="badge bg-slate-800 text-slate-300">Tür: ${item.type}</span>
+              <span class="badge bg-slate-800 text-slate-300">Type: ${item.type}</span>
             `}
             ${statPills.map(p => `<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-800">${p}</span>`).join('')}
           </div>
@@ -3629,10 +3629,10 @@ Return valid JSON only matching:
             <span class="text-amber-400 font-bold">${item.cost || 0} gp • ${item.weight || 0} lbs</span>
             <div class="flex gap-1.5">
               ${isWeapon ? `
-                <button onclick="RuleMaster.equipWeaponSlot('${item.name.replace(/'/g, "\\'")}', 'Main Hand')" class="bg-rose-950 hover:bg-rose-900 border border-rose-700 text-rose-200 text-[10px] font-bold px-2 py-1 rounded transition">⚡ Ana El</button>
-                <button onclick="RuleMaster.equipWeaponSlot('${item.name.replace(/'/g, "\\'")}', 'Off-Hand')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold px-2 py-1 rounded transition">⚡ İkinci El</button>
+                <button onclick="RuleMaster.equipWeaponSlot('${item.name.replace(/'/g, "\\'")}', 'Main Hand')" class="bg-rose-950 hover:bg-rose-900 border border-rose-700 text-rose-200 text-[10px] font-bold px-2 py-1 rounded transition">⚡ Main Hand</button>
+                <button onclick="RuleMaster.equipWeaponSlot('${item.name.replace(/'/g, "\\'")}', 'Off-Hand')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold px-2 py-1 rounded transition">⚡ Off-Hand</button>
               ` : `
-                <button onclick="RuleMaster.equipToCharacter(${idx})" class="bg-sky-950 hover:bg-sky-900 border border-sky-700 text-sky-200 text-[10px] font-bold px-2 py-1 rounded transition">🛡️ Kuşan</button>
+                <button onclick="RuleMaster.equipToCharacter(${idx})" class="bg-sky-950 hover:bg-sky-900 border border-sky-700 text-sky-200 text-[10px] font-bold px-2 py-1 rounded transition">🛡️ Equip</button>
               `}
             </div>
           </div>
@@ -3662,10 +3662,10 @@ Return valid JSON only matching:
     });
 
     const countBadge = document.getElementById('sm-count-badge');
-    if (countBadge) countBadge.textContent = `${items.length} Büyü / Manevra`;
+    if (countBadge) countBadge.textContent = `${items.length} Spells / Maneuvers`;
 
     if (!items.length) {
-      container.innerHTML = '<div class="col-span-full p-8 text-center text-slate-500 bg-slate-950/40 rounded-xl border border-slate-800">Eşleşen büyü veya manevra bulunamadı.</div>';
+      container.innerHTML = '<div class="col-span-full p-8 text-center text-slate-500 bg-slate-950/40 rounded-xl border border-slate-800">No matching spells or maneuvers found.</div>';
       return;
     }
 
@@ -3684,35 +3684,35 @@ Return valid JSON only matching:
               <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="text-sm font-extrabold text-white">${item.name}</span>
                 <span class="badge ${isSpell ? 'bg-purple-950 text-purple-300 border border-purple-800' : 'bg-rose-950 text-rose-300 border border-rose-800'}">${item.type}</span>
-                ${item.level !== undefined && item.level !== '' ? `<span class="badge bg-amber-950 text-amber-300 border border-amber-800 text-[10px] font-bold">${item.level}. Seviye</span>` : ''}
-                ${Array.isArray(item.modes) && item.modes.length > 0 ? `<span class="badge bg-purple-950 text-purple-200 border border-purple-700 text-[10px]">⚡ ${item.modes.length} Mod</span>` : ''}
+                ${item.level !== undefined && item.level !== '' ? `<span class="badge bg-amber-950 text-amber-300 border border-amber-800 text-[10px] font-bold">Level ${item.level}</span>` : ''}
+                ${Array.isArray(item.modes) && item.modes.length > 0 ? `<span class="badge bg-purple-950 text-purple-200 border border-purple-700 text-[10px]">⚡ ${item.modes.length} Mode(s)</span>` : ''}
               </div>
               <div class="text-[10px] text-slate-400 mt-0.5">
-                ${isSpell ? `Okul: <b class="text-purple-300">${item.school || 'Universal'}</b>` : `Disiplin: <b class="text-rose-300">${item.discipline || 'Tome of Battle'}</b>`}
+                ${isSpell ? `School: <b class="text-purple-300">${item.school || 'Universal'}</b>` : `Discipline: <b class="text-rose-300">${item.discipline || 'Tome of Battle'}</b>`}
                 • 📚 ${item.source || 'PHB/ToB'}
               </div>
             </div>
             <div class="flex items-center gap-1">
-              <button onclick="toggleUniversalPin({ name: '${item.name.replace(/'/g, "\\'")}', type: 'Feat', action: 'Passive', desc: '${(item.benefit || item.description || '').replace(/'/g, "\\'")}', badge: '${item.type}' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Savaş Kokpitine Sabitle / Çıkar">📌</button>
-              <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Düzenle">✏️</button>
+              <button onclick="toggleUniversalPin({ name: '${item.name.replace(/'/g, "\\'")}', type: 'Feat', action: 'Passive', desc: '${(item.benefit || item.description || '').replace(/'/g, "\\'")}', badge: '${item.type}' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Pin / Unpin to Combat Cockpit">📌</button>
+              <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Edit">✏️</button>
             </div>
           </div>
 
           <div class="flex flex-wrap gap-2 text-[10px] text-slate-400">
-            <span>Aksiyon: <b class="text-amber-300">${item.action || 'Standard Action'}</b></span>
-            <span>Süre: <b class="text-slate-300">${item.duration || 'Instantaneous'}</b></span>
-            ${primaryDice ? `<span>Zar: <b class="text-rose-400 font-mono">${primaryDice}</b></span>` : ''}
+            <span>Action: <b class="text-amber-300">${item.action || 'Standard Action'}</b></span>
+            <span>Duration: <b class="text-slate-300">${item.duration || 'Instantaneous'}</b></span>
+            ${primaryDice ? `<span>Dice: <b class="text-rose-400 font-mono">${primaryDice}</b></span>` : ''}
           </div>
 
           <p class="text-[11px] text-slate-300 line-clamp-3 leading-relaxed bg-slate-950/40 p-2 rounded border border-slate-800/80">${item.benefit || item.description || '-'}</p>
 
           <div class="flex items-center justify-end pt-2 border-t border-slate-800">
             ${isSpell ? `
-              <button onclick="RuleMaster.equipToCharacter(${idx})" class="bg-purple-900/60 hover:bg-purple-600 text-purple-200 text-xs font-bold px-3 py-1 rounded border border-purple-700 transition">✨ Bilinen Büyülere Ekle</button>
+              <button onclick="RuleMaster.equipToCharacter(${idx})" class="bg-purple-900/60 hover:bg-purple-600 text-purple-200 text-xs font-bold px-3 py-1 rounded border border-purple-700 transition">✨ Add to Spells Known</button>
             ` : (isManeuver ? `
-              <button onclick="RuleMaster.equipToCharacter(${idx})" class="bg-rose-950 hover:bg-rose-900 border border-rose-700 text-rose-200 text-xs font-bold px-3 py-1 rounded transition">⚔️ Hazırla (Readied)</button>
+              <button onclick="RuleMaster.equipToCharacter(${idx})" class="bg-rose-950 hover:bg-rose-900 border border-rose-700 text-rose-200 text-xs font-bold px-3 py-1 rounded transition">⚔️ Ready Maneuver</button>
             ` : `
-              <button onclick="RuleMaster.equipToCharacter(${idx})" class="bg-indigo-950 hover:bg-indigo-900 border border-indigo-700 text-indigo-200 text-xs font-bold px-3 py-1 rounded transition">🥋 Aktif Duruş Yap</button>
+              <button onclick="RuleMaster.equipToCharacter(${idx})" class="bg-indigo-950 hover:bg-indigo-900 border border-indigo-700 text-indigo-200 text-xs font-bold px-3 py-1 rounded transition">🥋 Activate Stance</button>
             `)}
           </div>
         </div>
@@ -3737,10 +3737,10 @@ Return valid JSON only matching:
     });
 
     const countBadge = document.getElementById('feats-count-badge');
-    if (countBadge) countBadge.textContent = `${items.length} Hüner`;
+    if (countBadge) countBadge.textContent = `${items.length} Feats`;
 
     if (!items.length) {
-      container.innerHTML = '<div class="col-span-full p-8 text-center text-slate-500 bg-slate-950/40 rounded-xl border border-slate-800">Eşleşen hüner (feat) bulunamadı.</div>';
+      container.innerHTML = '<div class="col-span-full p-8 text-center text-slate-500 bg-slate-950/40 rounded-xl border border-slate-800">No matching feats found.</div>';
       return;
     }
 
@@ -3759,17 +3759,17 @@ Return valid JSON only matching:
                 <span class="badge bg-amber-950 text-amber-300 border border-amber-800">${item.type}</span>
                 ${item.isFighterBonusFeat ? `<span class="badge bg-rose-950 text-rose-300 border border-rose-800 text-[10px]">⚔️ Fighter Bonus</span>` : ''}
               </div>
-              <div class="text-[10px] text-slate-400 mt-0.5">📚 ${item.source || 'PHB'} • Rol: <b>${item.role || 'General'}</b></div>
+              <div class="text-[10px] text-slate-400 mt-0.5">📚 ${item.source || 'PHB'} • Category: <b>${item.role || 'General'}</b></div>
             </div>
             <div class="flex items-center gap-1">
-              <button onclick="toggleUniversalPin({ name: '${item.name.replace(/'/g, "\\'")}', type: 'Feat', action: 'Passive', desc: '${(item.benefit || item.description || '').replace(/'/g, "\\'")}', badge: 'Feat' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Savaş Kokpitine Sabitle / Çıkar">📌</button>
-              <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Düzenle">✏️</button>
+              <button onclick="toggleUniversalPin({ name: '${item.name.replace(/'/g, "\\'")}', type: 'Feat', action: 'Passive', desc: '${(item.benefit || item.description || '').replace(/'/g, "\\'")}', badge: 'Feat' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Pin / Unpin to Combat Cockpit">📌</button>
+              <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Edit">✏️</button>
             </div>
           </div>
 
           ${item.prereq && item.prereq !== '-' ? `
             <div class="bg-slate-950/60 border border-slate-800 px-2.5 py-1.5 rounded text-[10px] text-amber-300">
-              <span class="font-bold text-slate-400 uppercase">Önkoşullar:</span> ${item.prereq}
+              <span class="font-bold text-slate-400 uppercase">Prerequisites:</span> ${item.prereq}
             </div>
           ` : ''}
 
@@ -3782,8 +3782,8 @@ Return valid JSON only matching:
           <p class="text-[11px] text-slate-300 leading-relaxed bg-slate-950/40 p-2.5 rounded border border-slate-800/80">${item.benefit || item.description || '-'}</p>
 
           <div class="flex items-center justify-between pt-2 border-t border-slate-800">
-            <span class="text-[10px] text-slate-500">Kapsam: ${item.scope || 'General'}</span>
-            <button onclick="RuleMaster.equipToCharacter(${idx})" class="bg-amber-950 hover:bg-amber-900 border border-amber-700 text-amber-200 text-xs font-bold px-3 py-1 rounded transition">✨ Hüneri Karaktere Ekle</button>
+            <span class="text-[10px] text-slate-500">Scope: ${item.scope || 'General'}</span>
+            <button onclick="RuleMaster.equipToCharacter(${idx})" class="bg-amber-950 hover:bg-amber-900 border border-amber-700 text-amber-200 text-xs font-bold px-3 py-1 rounded transition">✨ Add Feat to Character</button>
           </div>
         </div>
       `;
@@ -3809,10 +3809,10 @@ Return valid JSON only matching:
     });
 
     const countBadge = document.getElementById('mi-count-badge');
-    if (countBadge) countBadge.textContent = `${items.length} Büyülü Eşya / İksir`;
+    if (countBadge) countBadge.textContent = `${items.length} Magic Items / Potions`;
 
     if (!items.length) {
-      container.innerHTML = '<div class="col-span-full p-8 text-center text-slate-500 bg-slate-950/40 rounded-xl border border-slate-800">Eşleşen büyülü eşya bulunamadı.</div>';
+      container.innerHTML = '<div class="col-span-full p-8 text-center text-slate-500 bg-slate-950/40 rounded-xl border border-slate-800">No matching magic items found.</div>';
       return;
     }
 
@@ -3836,8 +3836,8 @@ Return valid JSON only matching:
               <div class="text-[10px] text-slate-400 mt-0.5">📚 ${item.source || 'MIC'} • Bonus: <b>${primaryBonusType}</b></div>
             </div>
             <div class="flex items-center gap-1">
-              <button onclick="toggleUniversalPin({ name: '${item.name.replace(/'/g, "\\'")}', type: 'Feat', action: 'Passive', desc: '${(item.benefit || item.description || '').replace(/'/g, "\\'")}', badge: '${primaryBonusType}' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Savaş Kokpitine Sabitle / Çıkar">📌</button>
-              <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Düzenle">✏️</button>
+              <button onclick="toggleUniversalPin({ name: '${item.name.replace(/'/g, "\\'")}', type: 'Feat', action: 'Passive', desc: '${(item.benefit || item.description || '').replace(/'/g, "\\'")}', badge: '${primaryBonusType}' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Pin / Unpin to Combat Cockpit">📌</button>
+              <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Edit">✏️</button>
             </div>
           </div>
 
@@ -3852,7 +3852,7 @@ Return valid JSON only matching:
           <div class="flex items-center justify-between pt-2 border-t border-slate-800 text-[11px]">
             <span class="text-amber-400 font-bold">${item.cost || 0} gp • ${item.weight || 0} lbs</span>
             <button onclick="RuleMaster.equipToCharacter(${idx})" class="bg-teal-950 hover:bg-teal-900 border border-teal-700 text-teal-200 text-xs font-bold px-3 py-1 rounded transition">
-              ${isPotion ? '🧪 Çantaya İksir Olarak Ekle' : '🎒 Envantere Kuşan / Ekle'}
+              ${isPotion ? '🧪 Add Potion to Backpack' : '🎒 Equip / Add to Inventory'}
             </button>
           </div>
         </div>
@@ -3885,15 +3885,15 @@ Return valid JSON only matching:
                   <div class="flex items-center gap-2">
                     <span class="text-sm font-extrabold text-white">${parent.name}</span>
                     <span class="badge ${this.getTypeBadgeClass(parent.type)}">${parent.type}</span>
-                    <span class="badge bg-purple-950 text-purple-300 border border-purple-800 text-[10px] font-bold">⚡ ${modes.length} Gömülü Mod</span>
+                    <span class="badge bg-purple-950 text-purple-300 border border-purple-800 text-[10px] font-bold">⚡ ${modes.length} Embedded Mode(s)</span>
                   </div>
-                  <div class="text-[10px] text-slate-400">📚 ${parent.source || 'Core 3.5e'} • Yuva: <b>${parent.slot || 'None'}</b></div>
+                  <div class="text-[10px] text-slate-400">📚 ${parent.source || 'Core 3.5e'} • Slot: <b>${parent.slot || 'None'}</b></div>
                 </div>
               </div>
               <div class="flex gap-1.5">
                 <button onclick="RuleMaster.addChildPower(${pIdx})" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-2.5 py-1 rounded shadow transition flex items-center gap-1">
                   <span>➕</span>
-                  <span>Mod Ekle</span>
+                  <span>Add Mode</span>
                 </button>
                 <button onclick="RuleMaster.openModalWithData(masterDb[${pIdx}], ${pIdx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition">✏️</button>
               </div>
@@ -3923,13 +3923,13 @@ Return valid JSON only matching:
     });
 
     const badge = document.getElementById('tree-count-badge');
-    if (badge) badge.textContent = `${countComposite} Çoklu Modlu Kayıt`;
+    if (badge) badge.textContent = `${countComposite} Multi-Mode Entries`;
 
     if (!treeHtml) {
       container.innerHTML = `
         <div class="p-8 text-center text-slate-500 bg-slate-950/40 rounded-xl border border-slate-800 space-y-2">
-          <div class="text-base font-bold text-slate-400">Henüz gömülü alt moda (modes) sahip eşya veya büyü bulunmuyor.</div>
-          <div class="text-xs">Tablodaki herhangi bir kaydın yanındaki <b>🔗 Gömülü Alt Mod Ekle</b> butonuna tıklayarak çoklu modlu büyü veya eşya oluşturabilirsiniz.</div>
+          <div class="text-base font-bold text-slate-400">No items or spells with embedded sub-modes found yet.</div>
+          <div class="text-xs">Click the <b>🔗 Add Embedded Sub-Mode</b> button next to any entry in the table to create a multi-mode spell or item.</div>
         </div>
       `;
       return;
@@ -3954,19 +3954,19 @@ Return valid JSON only matching:
       statsContainer.innerHTML = `
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 text-center">
-            <div class="text-[10px] text-slate-400 font-bold uppercase">Toplam Kayıt</div>
+            <div class="text-[10px] text-slate-400 font-bold uppercase">Total Entries</div>
             <div class="text-lg font-black text-purple-400">${masterDb.length}</div>
           </div>
           <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 text-center">
-            <div class="text-[10px] text-slate-400 font-bold uppercase">Silah & Zırh</div>
+            <div class="text-[10px] text-slate-400 font-bold uppercase">Weapons & Armor</div>
             <div class="text-lg font-black text-rose-400">${weaponsCount + armorsCount}</div>
           </div>
           <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 text-center">
-            <div class="text-[10px] text-slate-400 font-bold uppercase">Büyü & Manevra</div>
+            <div class="text-[10px] text-slate-400 font-bold uppercase">Spells & Maneuvers</div>
             <div class="text-lg font-black text-indigo-400">${spellsCount + maneuversCount}</div>
           </div>
           <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 text-center">
-            <div class="text-[10px] text-slate-400 font-bold uppercase">Hüner & Eşya</div>
+            <div class="text-[10px] text-slate-400 font-bold uppercase">Feats & Items</div>
             <div class="text-lg font-black text-amber-400">${featsCount + itemsCount}</div>
           </div>
         </div>
@@ -3975,19 +3975,19 @@ Return valid JSON only matching:
   },
 
   async resetMasterDbToDefault() {
-    if (confirm('⚠️ Master DB veritabanını Core 3.5e varsayılan başlangıç kütüphanesine sıfırlamak istediğinize emin misiniz?')) {
+    if (confirm('⚠️ Are you sure you want to reset Master DB to the default Core 3.5e starter library?')) {
       try {
         const resp = await fetch('master_db.json');
         if (resp.ok) {
           masterDb = await resp.json();
           if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
           this.renderTable();
-          alert(`✅ Master DB başarıyla varsayılana sıfırlandı (${masterDb.length} kayıt)!`);
+          alert(`✅ Master DB successfully reset to default (${masterDb.length} entries)!`);
         } else {
-          alert('❌ master_db.json dosyası yüklenemedi.');
+          alert('❌ Failed to load master_db.json.');
         }
       } catch (e) {
-        alert('❌ Sıfırlama hatası: ' + e.message);
+        alert('❌ Reset error: ' + e.message);
       }
     }
   },
@@ -4011,7 +4011,7 @@ Return valid JSON only matching:
             <span class="text-[10px] text-indigo-300 font-mono">${src.type}</span>
             ${isExternal ? `
               <a href="${src.url}" target="_blank" class="text-xs text-sky-400 hover:underline flex items-center gap-1">
-                <span>Bağlantıyı Aç</span> <span>↗</span>
+                <span>Open Link</span> <span>↗</span>
               </a>
             ` : `
               <span class="text-xs text-emerald-400 flex items-center gap-1 font-semibold">
@@ -4047,7 +4047,7 @@ Return valid JSON only matching:
   parseRawText() {
     const raw = document.getElementById('raw-rule-input')?.value || '';
     if (!raw.trim()) {
-      alert('⚠️ Lütfen ayrıştırılacak bir kural metni yapıştırın.');
+      alert('⚠️ Please paste rule text to parse.');
       return;
     }
 
@@ -4165,7 +4165,7 @@ Return valid JSON only matching:
     const queryInput = document.getElementById('inline-ai-rule-query');
     let query = queryInput?.value?.trim() || '';
     if (!query) {
-      alert('⚠️ Lütfen aranacak kural, hüner, büyü veya eşya adını yazın.');
+      alert('⚠️ Please enter the name of the rule, feat, spell, or item to search.');
       queryInput?.focus();
       return;
     }
@@ -4175,7 +4175,7 @@ Return valid JSON only matching:
     if (localHits.length > 0) {
       this.renderInlineAiResults(localHits);
       const st = document.getElementById('inline-ai-status-text');
-      if (st) st.innerHTML = `⚡ <b>"${localHits[0].name}"</b> yerel V2 kütüphanesinden / montaj motorundan anında yüklendi (0 ms, Sıfır Token).`;
+      if (st) st.innerHTML = `⚡ <b>"${localHits[0].name}"</b> loaded instantaneously from local V2 Compendium / Item Assembler (0 ms, Zero Tokens).`;
       const lb = document.getElementById('inline-ai-loading-box');
       if (lb) lb.classList.remove('hidden');
       return;
@@ -4183,7 +4183,7 @@ Return valid JSON only matching:
 
     const apiKey = this.getApiKey();
     if (!apiKey) {
-      alert('⚠️ Lütfen önce bir Google Gemini API Anahtarı girin (Google AI Studio ücretsiz anahtar).\nAyarlar penceresinden anahtarınızı kolayca kaydedebilirsiniz.');
+      alert('⚠️ Please enter a Google Gemini API Key first (free key from Google AI Studio).\nYou can save your key in the Settings dialog.');
       if (typeof openSettingsModal === 'function') openSettingsModal();
       return;
     }
@@ -4204,7 +4204,7 @@ Return valid JSON only matching:
       const entries = await this.fetchSingleAiRuleObjects(query, categoryHint, apiKey, statusText);
       this.renderInlineAiResults(entries);
     } catch (err) {
-      alert(`⚠️ Kural getirilemedi: ${err.message}\nLütfen internet bağlantınızı ve API anahtarınızı kontrol edin.`);
+      alert(`⚠️ Failed to fetch rule: ${err.message}\nPlease check your internet connection and API key.`);
     } finally {
       if (btn) btn.disabled = false;
       if (loadingBox) loadingBox.classList.add('hidden');
@@ -4218,7 +4218,7 @@ Return valid JSON only matching:
     if (!rowsOrEntries || !rowsOrEntries.length) {
       resultsBox.innerHTML = `
         <div class="p-3 text-center text-slate-400 bg-slate-950/80 rounded-lg border border-slate-800 text-xs">
-          Uygun kural kaydı bulunamadı. Lütfen kural adını kontrol edip tekrar arayın.
+          No matching rule entry found. Please check the spelling and search again.
         </div>
       `;
       return;
@@ -4232,13 +4232,13 @@ Return valid JSON only matching:
         <div class="flex items-center gap-2">
           <span class="text-base">✨</span>
           <div>
-            <div class="text-xs font-bold text-white">${entries.length} Kanonik V2 Kural Ayrıştırıldı</div>
-            <div class="text-[10px] text-slate-400">Ana kayıt ve gömülü modları tek seferde eklenebilir</div>
+            <div class="text-xs font-bold text-white">${entries.length} Canonical V2 Rule(s) Parsed</div>
+            <div class="text-[10px] text-slate-400">Parent entry and embedded modes can be added together</div>
           </div>
         </div>
         <button onclick="RuleMaster.addAllInlineResultsToDb()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1.5">
           <span>📥</span>
-          <span>Tümünü DB'ye Ekle</span>
+          <span>Add All to DB</span>
         </button>
       </div>
       <div class="space-y-2 mt-2">
@@ -4256,7 +4256,7 @@ Return valid JSON only matching:
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-xs md:text-sm font-extrabold text-white">${item.name}</span>
                 <span class="badge ${badgeClass} text-[10px]">${item.type}</span>
-                ${modes.length > 0 ? `<span class="badge bg-purple-950 text-purple-200 border border-purple-600 text-[10px] font-bold">⚡ ${modes.length} Gömülü Mod</span>` : ''}
+                ${modes.length > 0 ? `<span class="badge bg-purple-950 text-purple-200 border border-purple-600 text-[10px] font-bold">⚡ ${modes.length} Embedded Mode(s)</span>` : ''}
                 <span class="text-[10px] text-slate-400">📚 <b>${item.source || 'PHB'}</b></span>
                 <span class="text-[10px] text-slate-400">• Slot: <b>${item.slot || 'None'}</b></span>
               </div>
@@ -4264,13 +4264,13 @@ Return valid JSON only matching:
             <div class="flex items-center gap-1.5">
               <button onclick="RuleMaster.addInlineResultToDb(${idx})" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-2.5 py-1 rounded-lg shadow transition flex items-center gap-1">
                 <span>📥</span>
-                <span>DB'ye Ekle</span>
+                <span>Add to DB</span>
               </button>
-              <button onclick="RuleMaster.equipInlineResultToCharacter(${idx})" class="bg-purple-950 hover:bg-purple-900 border border-purple-700 text-purple-300 text-xs px-2 py-1 rounded-lg transition font-bold" title="Karaktere Kuşan">
-                ⚡ Kuşan
+              <button onclick="RuleMaster.equipInlineResultToCharacter(${idx})" class="bg-purple-950 hover:bg-purple-900 border border-purple-700 text-purple-300 text-xs px-2 py-1 rounded-lg transition font-bold" title="Equip to Character">
+                ⚡ Equip
               </button>
-              <button onclick="RuleMaster.editInlineResultInModal(${idx})" class="bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs px-2 py-1 rounded-lg border border-slate-700 transition" title="Formda İncele/Düzenle">
-                ✏️ Düzenle
+              <button onclick="RuleMaster.editInlineResultInModal(${idx})" class="bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs px-2 py-1 rounded-lg border border-slate-700 transition" title="Inspect / Edit in Form">
+                ✏️ Edit
               </button>
             </div>
           </div>
@@ -4296,10 +4296,10 @@ Return valid JSON only matching:
           <div class="flex flex-wrap items-center justify-between text-[10px] text-slate-400 pt-0.5">
             <div>
               <span>Aksiyon: <b class="text-amber-400">${item.action || 'Passive'}</b></span> • 
-              <span>Süre: <b class="text-purple-300">${item.duration || 'Continuous'}</b></span>
+              <span>Duration: <b class="text-purple-300">${item.duration || 'Continuous'}</b></span>
             </div>
             <div>
-              <span>Ağırlık: <b>${item.weight || 0} lbs</b></span> • 
+              <span>Weight: <b>${item.weight || 0} lbs</b></span> • 
               <span>Fiyat: <b class="text-amber-300">${item.cost || 0} gp</b></span>
             </div>
           </div>
@@ -4323,7 +4323,7 @@ Return valid JSON only matching:
 
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
     this.renderTable();
-    alert(`✅ "${item.name}" başarıyla Master_DB'ye eklendi ve kütüphane güncellendi!`);
+    alert(`✅ "${item.name}" successfully added to Master_DB and library updated!`);
   },
 
   addAllInlineResultsToDb() {
@@ -4339,7 +4339,7 @@ Return valid JSON only matching:
     });
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
     this.renderTable();
-    alert(`✅ Toplam ${this._inlineEntries.length} Kanonik V2 kural başarıyla Master_DB'ye eklendi!`);
+    alert(`✅ A total of ${this._inlineEntries.length} Canonical V2 rule(s) successfully added to Master_DB!`);
   },
 
   editInlineResultInModal(idx) {
@@ -4369,7 +4369,7 @@ Return valid JSON only matching:
       if (freetextPanel) freetextPanel.classList.remove('hidden');
       if (btnSearch) btnSearch.className = 'px-2.5 py-1 rounded font-bold transition text-slate-400 hover:text-white';
       if (btnFreetext) btnFreetext.className = 'px-2.5 py-1 rounded font-bold transition bg-purple-600 text-white shadow';
-      if (headerTitle) headerTitle.textContent = '🧙‍♂️🤖 Rule Master (AI) Serbest Metin Ayrıştırıcı';
+      if (headerTitle) headerTitle.textContent = '🧙‍♂️🤖 Rule Master (AI) Free-Text Parser';
       const ta = document.getElementById('inline-ai-freetext-input');
       if (ta) ta.focus();
     } else {
@@ -4377,7 +4377,7 @@ Return valid JSON only matching:
       if (freetextPanel) freetextPanel.classList.add('hidden');
       if (btnSearch) btnSearch.className = 'px-2.5 py-1 rounded font-bold transition bg-purple-600 text-white shadow';
       if (btnFreetext) btnFreetext.className = 'px-2.5 py-1 rounded font-bold transition text-slate-400 hover:text-white';
-      if (headerTitle) headerTitle.textContent = 'Hızlı 🧙‍♂️🤖 Rule Master (AI) Kural Ekleyici';
+      if (headerTitle) headerTitle.textContent = 'Quick 🧙‍♂️🤖 Rule Master (AI) Rule Adder';
       const q = document.getElementById('inline-ai-rule-query');
       if (q) q.focus();
     }
@@ -4410,7 +4410,7 @@ Return valid JSON only matching:
     const ta = document.getElementById('inline-ai-freetext-input');
     const val = ta?.value || '';
     if (!val.trim()) {
-      alert('⚠️ Lütfen önce serbest metin kutusuna kural metni yapıştırın.');
+      alert('⚠️ Please paste rule text into the free-text box first.');
       return;
     }
     const fullTa = document.getElementById('raw-rule-input');
@@ -4476,7 +4476,7 @@ Return valid JSON only matching:
 
     for (const model of modelsToTry) {
       if (statusTextEl) {
-        statusTextEl.textContent = `Serbest metin analiz ediliyor (Model: ${model})...`;
+        statusTextEl.textContent = `Analyzing free text (Model: ${model})...`;
       }
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -4511,19 +4511,19 @@ Return valid JSON only matching:
         }
       } catch (err) {
         clearTimeout(timeoutId);
-        const errMsg = err && err.name === 'AbortError' ? `Zaman aşımı (10s) - ${model} yanıt vermedi.` : err.message;
+        const errMsg = err && err.name === 'AbortError' ? `Timeout (10s) - ${model} did not respond.` : err.message;
         console.warn(`Model ${model} free-text parse failed:`, errMsg);
         lastError = new Error(errMsg);
       }
     }
 
     if (!successData) {
-      throw new Error(lastError?.message || 'Tüm Gemini modelleri yanıt vermedi.');
+      throw new Error(lastError?.message || 'All Gemini models failed to respond.');
     }
 
     const rawItems = successData.entries || successData.rows || (Array.isArray(successData) ? successData : [successData]);
     if (!Array.isArray(rawItems)) {
-      throw new Error('Model beklenen kayıt dizisini üretemedi.');
+      throw new Error('Model failed to produce the expected entry array.');
     }
 
     return this.convertRowsToEntries(rawItems).map(e => this.ensureV2(e));
@@ -4541,14 +4541,14 @@ Return valid JSON only matching:
     const ta = document.getElementById('inline-ai-freetext-input');
     const text = ta?.value?.trim() || '';
     if (!text) {
-      alert('⚠️ Lütfen analiz edilecek serbest kural metnini yapıştırın.');
+      alert('⚠️ Please paste the free-form rule text to analyze.');
       ta?.focus();
       return;
     }
 
     const apiKey = this.getApiKey();
     if (!apiKey) {
-      alert('⚠️ Lütfen önce bir Google Gemini API Anahtarı girin (Google AI Studio ücretsiz anahtar).\nAyarlar penceresinden anahtarınızı kolayca kaydedebilirsiniz.');
+      alert('⚠️ Please enter a Google Gemini API Key first (free key from Google AI Studio).\nYou can save your key in the Settings dialog.');
       if (typeof openSettingsModal === 'function') openSettingsModal();
       return;
     }
@@ -4566,7 +4566,7 @@ Return valid JSON only matching:
       const entries = await this.queryAiFreeTextRows(text, apiKey, statusText);
       this.renderInlineAiResults(entries);
     } catch (err) {
-      alert(`⚠️ Serbest metin ayrıştırılamadı: ${err.message}\nLütfen internet bağlantınızı ve API anahtarınızı kontrol edin.`);
+      alert(`⚠️ Failed to parse free text: ${err.message}\nPlease check your internet connection and API key.`);
     } finally {
       if (btn) btn.disabled = false;
       if (loadingBox) loadingBox.classList.add('hidden');
@@ -4577,14 +4577,14 @@ Return valid JSON only matching:
     const ta = document.getElementById('raw-rule-input');
     const text = ta?.value?.trim() || '';
     if (!text) {
-      alert('⚠️ Lütfen analiz edilecek serbest kural metnini yapıştırın.');
+      alert('⚠️ Please paste the free-form rule text to analyze.');
       ta?.focus();
       return;
     }
 
     const apiKey = this.getApiKey();
     if (!apiKey) {
-      alert('⚠️ Lütfen önce bir Google Gemini API Anahtarı tanımlayın.');
+      alert('⚠️ Please configure a Google Gemini API Key first.');
       this.promptChangeApiKey();
       return;
     }
@@ -4604,7 +4604,7 @@ Return valid JSON only matching:
         resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
     } catch (err) {
-      alert(`⚠️ Serbest metin ayrıştırılamadı: ${err.message}`);
+      alert(`⚠️ Failed to parse free text: ${err.message}`);
     } finally {
       if (btn) btn.disabled = false;
       if (loadingIndicator) loadingIndicator.classList.add('hidden');
@@ -4618,7 +4618,7 @@ Return valid JSON only matching:
   async callAiText(promptText, systemInstruction = '', onStatus = null) {
     const apiKey = this.getApiKey();
     if (!apiKey) {
-      throw new Error('Gemini API anahtarı tanımlanmamış. Lütfen Ayarlar veya Rule Master sekmesinden API anahtarı ekleyin.');
+      throw new Error('Gemini API key is not configured. Please add an API key in Settings or the Rule Master tab.');
     }
 
     const availableModels = await this.getAvailableGeminiModels(apiKey);
@@ -4627,7 +4627,7 @@ Return valid JSON only matching:
 
     for (const model of availableModels) {
       if (typeof onStatus === 'function') {
-        onStatus(`${model} ile RAW kuralları taranıyor...`);
+        onStatus(`Scanning RAW 3.5e rules with ${model}...`);
       }
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
       const controller = new AbortController();
@@ -4667,19 +4667,19 @@ Return valid JSON only matching:
         }
       } catch (netErr) {
         clearTimeout(timeoutId);
-        lastError = netErr && netErr.name === 'AbortError' ? `Zaman aşımı (12s) - ${model} yanıt vermedi.` : netErr.message;
+        lastError = netErr && netErr.name === 'AbortError' ? `Timeout (12s) - ${model} did not respond.` : netErr.message;
       }
     }
 
     if (successText) {
       return successText;
     }
-    throw new Error(lastError || 'Gemini API modellerinden yanıt alınamadı.');
+    throw new Error(lastError || 'No response received from Gemini API models.');
   },
 
   evaluateHeuristicLevelUp(ctx) {
     const {
-      characterName = 'Karakter',
+      characterName = 'Character',
       race = 'Human',
       currentLevel = 6,
       targetLevel = 7,
@@ -4713,7 +4713,7 @@ Return valid JSON only matching:
         const val = Number(abilities[st]) || 10;
         if (val % 2 !== 0) {
           recommendedStat = st;
-          statReason = `${st.toUpperCase()} değeri ${val} (tek sayı). +1 ekleyerek ${val + 1} yapmak modifiyerinizi +${Math.floor(((val + 1) - 10) / 2)} seviyesine yükseltir!`;
+          statReason = `${st.toUpperCase()} is currently ${val} (odd score). Adding +1 brings it to ${val + 1}, increasing your ability modifier to +${Math.floor(((val + 1) - 10) / 2)}!`;
           break;
         }
       }
@@ -4721,7 +4721,7 @@ Return valid JSON only matching:
       if (!recommendedStat) {
         recommendedStat = statPriority[0];
         const currentVal = Number(abilities[recommendedStat]) || 10;
-        statReason = `${targetClass} için birincil stat olan ${recommendedStat.toUpperCase()} (${currentVal}) artırımı tavsiye edilir.`;
+        statReason = `Increasing your primary ability score for ${targetClass}, ${recommendedStat.toUpperCase()} (${currentVal}), is recommended.`;
       }
     }
 
@@ -4739,81 +4739,81 @@ Return valid JSON only matching:
 
     if (isGish && !hasFeat('practiced spellcaster')) {
       recommendedFeat = 'Practiced Spellcaster';
-      featBenefit = 'Caster Level\'ınızı +4 artırır (toplam HD\'yi geçemez). Çoklu sınıf (Gish) büyü gücü kaybını telafi eder.';
+      featBenefit = 'Increases your Caster Level by +4 (up to your total HD), offsetting multiclass (Gish) caster level loss.';
       featCategory = 'Regular Feat';
       featPrereq = 'Spellcraft 4 ranks';
     } else if (isGish && bab >= 1 && !hasFeat('arcane strike')) {
       recommendedFeat = 'Arcane Strike';
-      featBenefit = 'Büyü yuvası harcayarak tüm yakın dövüş saldırılarınıza +büyü seviyesi kadar saldırı ve +1d6 ekstra büyü hasarı kazandırır.';
+      featBenefit = 'Sacrifice a spell slot as a swift action to gain +spell level on melee attack rolls and +1d6 per level arcane damage for 1 round.';
       featCategory = 'Regular Feat';
-      featPrereq = 'BAB +1, 3. seviye arcane büyü atabilme';
+      featPrereq = 'BAB +1, ability to cast 3rd-level arcane spells';
     } else if (isMartial) {
       if (!hasFeat('power attack') && (abilities.str || 10) >= 13 && bab >= 1) {
         recommendedFeat = 'Power Attack';
-        featBenefit = 'BAB kadar saldırı zarından feda edip iki elli silahla x2 hasar elde etmenizi sağlar.';
+        featBenefit = 'Trade attack bonus (up to BAB) for +1 melee damage (+2 with a two-handed weapon).';
         featCategory = 'Regular Feat';
         featPrereq = 'STR 13, BAB +1';
       } else if (!hasFeat('cleave') && (abilities.str || 10) >= 13 && hasFeat('power attack')) {
         recommendedFeat = 'Cleave';
-        featBenefit = 'Bir rakibi düşürdüğünüzde veya öldürdüğünüzde yakındaki başka bir hedefe anında ekstra ücretsiz saldırı yaparsınız.';
+        featBenefit = 'When you drop an opponent, make an immediate extra melee attack against another target within reach.';
         featCategory = 'Regular Feat';
         featPrereq = 'Power Attack, STR 13';
       } else if (!hasFeat('improved bull rush') && hasFeat('power attack') && (abilities.str || 10) >= 13) {
         recommendedFeat = 'Improved Bull Rush';
-        featBenefit = 'Bull Rush yaparken fırsat saldırısı almazsınız ve +4 karşı koyma bonusu alırsınız. Shock Trooper için zorunlu önkoşuldur.';
+        featBenefit = '+4 bonus on Bull Rush checks and you do not provoke attacks of opportunity. Mandatory prerequisite for Shock Trooper.';
         featCategory = 'Regular Feat';
         featPrereq = 'Power Attack, STR 13';
       } else if (bab >= 6 && hasFeat('improved bull rush') && !hasFeat('shock trooper')) {
         recommendedFeat = 'Shock Trooper';
-        featBenefit = 'Heedless Charge ile Power Attack cezasını saldırı zarına değil Zırh Sınıfına (AC) yansıtarak %100 isabetle devasa hasar verirsiniz.';
+        featBenefit = 'Heedless Charge shifts your Power Attack penalty from your attack roll to your Armor Class (AC) on a charge.';
         featCategory = 'Regular Feat';
         featPrereq = 'BAB +6, Power Attack, Improved Bull Rush';
       } else if (hasFeat('power attack') && !hasFeat('leap attack')) {
         recommendedFeat = 'Leap Attack';
-        featBenefit = 'Hücum (Charge) sırasında Jump yaparak Power Attack hasar bonusunu x3 katlarsınız.';
+        featBenefit = 'Combine a Jump check with a charge to double your Power Attack damage multiplier (x3 with a two-handed weapon).';
         featCategory = 'Regular Feat';
         featPrereq = 'Jump 8 ranks, Power Attack';
       } else if (!hasFeat('improved initiative')) {
         recommendedFeat = 'Improved Initiative';
-        featBenefit = 'İnisiyatif kontrollerine kalıcı +4 bonus kazandırır. Savaşta her zaman ilk hamleyi yapmanızı sağlar.';
+        featBenefit = 'Grants a +4 bonus on Initiative checks so you act first in combat.';
         featCategory = 'Regular Feat';
         featPrereq = 'Yok';
       } else if (isWarblade && !hasFeat('adaptive style')) {
         recommendedFeat = 'Adaptive Style';
-        featBenefit = 'Tüm Tome of Battle manevralarınızı 1 tam turda (full-round action) anında yeniden hazırlamanızı sağlar.';
+        featBenefit = 'Change and recover your readied Tome of Battle maneuvers as a single full-round action.';
         featCategory = 'Regular Feat';
         featPrereq = 'Initiator Level 1+';
       } else if (!hasFeat('iron will')) {
         recommendedFeat = 'Iron Will';
-        featBenefit = 'İrade (Will) kurtarma zarlarına kalıcı +2 bonus sağlar. Savaşçıların en zayıf kurtarma zarını korur.';
+        featBenefit = 'Grants a +2 bonus on Will saving throws, shoring up martial classes\' weakest save.';
         featCategory = 'Regular Feat';
         featPrereq = 'Yok';
       } else {
         recommendedFeat = 'Weapon Focus';
-        featBenefit = 'Seçilen silahta tüm saldırı zarlarına kalıcı +1 bonus sağlar.';
+        featBenefit = 'Grants a +1 bonus on all attack rolls with the selected weapon.';
         featCategory = 'Regular Feat';
         featPrereq = 'Proficiency with weapon, BAB +1';
       }
     } else if (isSorcerer) {
       if (!hasFeat('improved initiative')) {
         recommendedFeat = 'Improved Initiative';
-        featBenefit = 'İnisiyatif zarına +4 bonus. Büyücülerin savaşı ilk turda bitirecek büyüleri (Haste, Slow, Fireball) önce atmasını sağlar.';
+        featBenefit = '+4 bonus on Initiative checks, allowing spellcasters to land battlefield-control spells (Haste, Slow, Fireball) first.';
         featCategory = 'Regular Feat';
         featPrereq = 'Yok';
       } else if (!hasFeat('empower spell')) {
         recommendedFeat = 'Empower Spell';
-        featBenefit = 'Büyünün tüm değişken sayısal etkilerini %50 artırır (+2 büyü yuvası).';
+        featBenefit = 'All variable, numeric effects of an empowered spell are increased by 50% (+2 spell slot level).';
         featCategory = 'Regular Feat';
         featPrereq = 'Metamagic';
       } else {
         recommendedFeat = 'Spell Focus';
-        featBenefit = 'Seçilen büyü okulundaki büyülerin Kurtarma DC değerine kalıcı +1 bonus kazandırır.';
+        featBenefit = 'Add +1 to the Difficulty Class (DC) for all saving throws against spells from your chosen school.';
         featCategory = 'Regular Feat';
         featPrereq = 'Yok';
       }
     } else {
       recommendedFeat = 'Improved Initiative';
-      featBenefit = 'İnisiyatif zarına kalıcı +4 bonus kazandırır.';
+      featBenefit = 'Grants a +4 bonus on Initiative checks.';
       featCategory = 'Regular Feat';
       featPrereq = 'Yok';
     }
@@ -4821,18 +4821,18 @@ Return valid JSON only matching:
     // 3. Synergy notes
     let notes = '';
     if (isGish) {
-      notes = `${targetClass} Seviye ${targetLevel}: Warblade yakın dövüş dayanıklılığı ile Sorcerer büyü havuzunu harmanlayan Gish yapısı güçlendirildi.`;
+      notes = `${targetClass} Level ${targetLevel}: Reinforced Gish build blending Warblade martial durability with Sorcerer arcane spellcasting.`;
     } else if (isWarblade) {
-      notes = `Warblade Seviye ${targetLevel}: Yüksek Hit Die ve BAB artışı ile yakın dövüş etkinliği artırıldı.`;
+      notes = `Warblade Level ${targetLevel}: Increased melee prowess with d12 Hit Die and full BAB progression.`;
     } else {
-      notes = `${targetClass} Seviye ${targetLevel} ilerlemesi tamamlandı.`;
+      notes = `${targetClass} Level ${targetLevel} progression completed.`;
     }
 
     let adviceHtml = `
       <div class="space-y-2">
         <div class="flex items-center justify-between pb-1 border-b border-purple-500/30">
           <span class="font-bold text-amber-300 flex items-center gap-1.5">
-            <span>📖</span><span>D&D 3.5e RAW Kural Motoru Tavsiyesi (Seviye ${targetLevel})</span>
+            <span>📖</span><span>D&D 3.5e RAW Rule Engine Recommendation (Level ${targetLevel})</span>
           </span>
           <span class="text-[10px] text-purple-300 font-mono">Heuristic Analysis</span>
         </div>
@@ -4841,28 +4841,28 @@ Return valid JSON only matching:
           ${isStatLevel ? `
             <div class="p-2 rounded-lg bg-amber-950/40 border border-amber-500/40 space-y-1">
               <div class="text-[11px] font-bold text-amber-300 flex items-center justify-between">
-                <span>💪 Stat Artışı (+1)</span>
+                <span>💪 Ability Score Increase (+1)</span>
                 <span class="badge bg-amber-900 text-amber-200 border border-amber-600 font-mono text-[9px] font-bold">+1 ${recommendedStat.toUpperCase()}</span>
               </div>
               <p class="text-[11px] text-amber-100/90 leading-relaxed">${statReason}</p>
               <button type="button" onclick="applyCopilotStat('${recommendedStat}')" class="w-full mt-1 py-1 rounded bg-amber-600/30 hover:bg-amber-600 text-amber-200 hover:text-white border border-amber-500/50 text-[10px] font-bold transition flex items-center justify-center gap-1 cursor-pointer">
-                <span>⚡</span><span>Bu Statı Seç (+1 ${recommendedStat.toUpperCase()})</span>
+                <span>⚡</span><span>Select This Ability (+1 ${recommendedStat.toUpperCase()})</span>
               </button>
             </div>
           ` : `
             <div class="p-2 rounded-lg bg-slate-900/60 border border-slate-800 space-y-1">
-              <div class="text-[11px] font-bold text-slate-400">💪 Stat Artışı</div>
-              <p class="text-[11px] text-slate-400">Bu seviyede (${targetLevel}) temel stat artışı bulunmuyor (4, 8, 12, 16, 20. seviyelerde verilir).</p>
+              <div class="text-[11px] font-bold text-slate-400">💪 Ability Score Increase</div>
+              <p class="text-[11px] text-slate-400">No ability score increase at Level ${targetLevel} (granted at character levels 4, 8, 12, 16, and 20).</p>
             </div>
           `}
 
           <div class="p-2 rounded-lg bg-purple-950/40 border border-purple-500/40 space-y-1">
             <div class="text-[11px] font-bold text-purple-300 flex items-center justify-between">
-              <span>🎯 Önerilen Feat</span>
+              <span>🎯 Recommended Feat</span>
               <span class="badge bg-purple-900 text-purple-200 border border-purple-600 font-mono text-[9px] font-bold">${recommendedFeat}</span>
             </div>
             <p class="text-[11px] text-purple-100/90 leading-relaxed">${featBenefit}</p>
-            <div class="text-[10px] text-purple-400 italic">Önkoşul: ${featPrereq}</div>
+            <div class="text-[10px] text-purple-400 italic">Prerequisites: ${featPrereq}</div>
             <button type="button" onclick="applyCopilotFeat('${recommendedFeat}', '${featBenefit.replace(/'/g, "\\'")}', '${featCategory}')" class="w-full mt-1 py-1 rounded bg-purple-600/30 hover:bg-purple-600 text-purple-200 hover:text-white border border-purple-500/50 text-[10px] font-bold transition flex items-center justify-center gap-1 cursor-pointer">
               <span>⚡</span><span>Bu Feat'i Yuvaya Doldur</span>
             </button>
@@ -4871,16 +4871,16 @@ Return valid JSON only matching:
 
         <div class="p-2 rounded-lg bg-indigo-950/30 border border-indigo-500/30 space-y-1">
           <div class="text-[11px] font-bold text-indigo-300 flex items-center justify-between">
-            <span>⚔️ Taktiksel Sinerji & Sınıf Rehberi</span>
+            <span>⚔️ Tactical Synergy & Class Guide</span>
             <button type="button" onclick="applyCopilotNotes('${notes.replace(/'/g, "\\'")}')" class="text-[10px] text-indigo-300 hover:text-white underline cursor-pointer">Notlara Aktar</button>
           </div>
           <p class="text-[11px] text-slate-300 leading-relaxed">${notes}</p>
         </div>
 
         <div class="flex items-center justify-between pt-1">
-          <span class="text-[10px] text-slate-500 italic">💡 Gemini API Anahtarı ile sınırsız ek kitap (splatbook) ve derin taktiksel analiz alabilirsiniz.</span>
+          <span class="text-[10px] text-slate-500 italic">💡 Add a Gemini API Key for deep tactical analysis across all 3.5e splatbooks.</span>
           <button type="button" onclick="applyCopilotAll({ recommendedFeat: '${recommendedFeat}', featBenefit: '${featBenefit.replace(/'/g, "\\'")}', featCategory: '${featCategory}', recommendedStat: '${recommendedStat || ''}', notes: '${notes.replace(/'/g, "\\'")}' })" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-[11px] px-3 py-1 rounded-lg shadow flex items-center gap-1 transition cursor-pointer">
-            <span>🚀</span><span>Tüm Önerileri Tek Tıkla Uygula</span>
+            <span>🚀</span><span>Apply All Recommendations</span>
           </button>
         </div>
       </div>
@@ -4904,7 +4904,7 @@ Return valid JSON only matching:
     }
 
     const {
-      characterName = 'Karakter',
+      characterName = 'Character',
       race = 'Human',
       alignment = 'Neutral',
       currentLevel = 6,
@@ -4922,41 +4922,41 @@ Return valid JSON only matching:
     } = ctx;
 
     const classProgStr = classes.map(c => `${c.className} ${c.level || 1}`).join(' / ') || targetClass;
-    const knownFeatsStr = feats.join(', ') || 'Yok';
+    const knownFeatsStr = feats.join(', ') || 'None';
     const statsStr = `STR: ${abilities.str || 10}, DEX: ${abilities.dex || 10}, CON: ${abilities.con || 10}, INT: ${abilities.int || 10}, WIS: ${abilities.wis || 10}, CHA: ${abilities.cha || 10}`;
 
-    const systemInstruction = `Sen D&D 3.5e Rule Master ve akıllı Seviye Atlama Danışmanısın (Level Up Copilot).
-Verilen D&D 3.5e karakter bilgilerini ve resmi RAW kaynaklarını (PHB, DMG, Complete Warrior, Complete Arcane, Complete Divine, Complete Adventurer, Complete Mage, Complete Scoundrel, Complete Champion, Tome of Battle, Spell Compendium) temel alarak son derece yetkin, taktiksel ve kural hatasız bir seviye atlama tavsiyesi hazırla.
-Karakterin mevcut sınıfları, BAB değeri, statları, kurtarma zarları ve mevcut featleri arasındaki sinerjiyi derinlemesine değerlendir.
+    const systemInstruction = `You are the D&D 3.5e Rule Master and Level-Up Copilot.
+Based on the provided D&D 3.5e character sheet and official RAW sourcebooks (PHB, DMG, Complete Warrior, Complete Arcane, Complete Divine, Complete Adventurer, Complete Mage, Complete Scoundrel, Complete Champion, Tome of Battle, Spell Compendium), prepare a tactical, rules-accurate level-up recommendation in English.
+Evaluate the synergy between the character's classes, BAB, ability scores, saving throws, and existing feats.
 
-Cevabında:
-1. Feat Önerisi: Karakterin bu seviyede alabileceği en optimal feat, neden seçildiği ve önkoşullarının nasıl karşılandığı.
-2. Stat Artışı: Eğer Seviye 4, 8, 12, 16, 20 ise (+1 Ability Score), hangi statın artırılması gerektiği (özellikle tek sayıdan çift sayıya geçerek modifiyer kazandıran statları belirt).
-3. Sınıf Özellikleri & Büyüler/Manevralar: Bu seviyede kazanılan veya seçilmesi gereken büyü / manevralar.
-4. Taktiksel Sinerji Özeti.
+Include in your response:
+1. Feat Recommendation: The most optimal feat available at this level, why it fits the build, and how its prerequisites are met.
+2. Ability Score Increase: If Character Level is 4, 8, 12, 16, or 20 (+1 Ability Score), which ability score to increment (especially highlighting odd-to-even breakpoints).
+3. Class Features & Spells/Maneuvers: Key class features, spells, or maneuvers gained or recommended at this level.
+4. Tactical Synergy Summary.
 
-ÖNEMLİ KURAL: Yanıtının en sonunda SİSTEMİN OTOMATİK DOLDURABİLMESİ İÇİN kesinlikle şu JSON bloğunu yerleştir:
+CRITICAL REQUIREMENT: At the very end of your response, include this exact JSON block for automatic form population:
 \`\`\`json
 {
-  "recommendedFeat": "Feat Adı",
-  "featBenefit": "Kısa faydası (1 cümle)",
+  "recommendedFeat": "Official Feat Name",
+  "featBenefit": "Concise 1-sentence mechanical benefit",
   "featCategory": "Regular Feat",
   "recommendedStat": "str",
-  "notes": "Karakter sayfasına eklenecek kısa taktiksel seviye notu"
+  "notes": "Concise tactical level-up note for the character sheet"
 }
 \`\`\``;
 
-    const userPrompt = `Karakter Adı: ${characterName}
-Irk: ${race} | Uyum: ${alignment}
-Mevcut Sınıflar: ${classProgStr}
-Hedef İlerleme: Seviye ${targetLevel} (${targetClass} Seviyesi Alınıyor)
-Statlar: ${statsStr}
-Temel Saldırı Bonusu (BAB): +${bab}
-Kurtarma Zarları: Fort +${saves.fort || 0}, Ref +${saves.ref || 0}, Will +${saves.will || 0}
-Mevcut Featler / Yetenekler: ${knownFeatsStr}
-Stat Artışı (+1) Hakkı Var mı?: ${isStatLevel ? 'EVET (+1 Stat seçilmeli)' : 'Hayır'}
-Feat Seçim Hakkı Var mı?: ${isFeatLevel ? 'EVET' : 'İsteğe Bağlı / Bonus Feat'}
-${customQuery ? `Kullanıcının Özel Sorusu: ${customQuery}` : 'Bu seviye atlama için en iyi build optimizasyonunu ve D&D 3.5e RAW kural tavsiyelerini ver.'}`;
+    const userPrompt = `Character Name: ${characterName}
+Race: ${race} | Alignment: ${alignment}
+Current Classes: ${classProgStr}
+Target Progression: Character Level ${targetLevel} (Advancing ${targetClass})
+Ability Scores: ${statsStr}
+Base Attack Bonus (BAB): +${bab}
+Saving Throws: Fort +${saves.fort || 0}, Ref +${saves.ref || 0}, Will +${saves.will || 0}
+Current Feats / Abilities: ${knownFeatsStr}
+Ability Score Increase (+1) Eligible?: ${isStatLevel ? 'YES (+1 Ability Score at this level)' : 'No'}
+General Feat Slot Eligible?: ${isFeatLevel ? 'YES' : 'Optional / Class Bonus Feat'}
+${customQuery ? `User Question: ${customQuery}` : 'Provide the optimal D&D 3.5e RAW build recommendation for this level-up.'}`;
 
     try {
       const rawAiText = await this.callAiText(userPrompt, systemInstruction, onStatus);
@@ -4984,13 +4984,13 @@ ${customQuery ? `Kullanıcının Özel Sorusu: ${customQuery}` : 'Bu seviye atla
       const featBenefit = parsedJson?.featBenefit || 'D&D 3.5e RAW tavsiyesi';
       const featCategory = parsedJson?.featCategory || 'Regular Feat';
       const recStat = parsedJson?.recommendedStat || (ctx.isStatLevel ? 'str' : null);
-      const notes = parsedJson?.notes || `${targetClass} Seviye ${targetLevel} ilerlemesi yapıldı.`;
+      const notes = parsedJson?.notes || `${targetClass} Level ${targetLevel} progression completed.`;
 
       let adviceHtml = `
         <div class="space-y-2">
           <div class="flex items-center justify-between pb-1 border-b border-purple-500/30">
             <span class="font-bold text-purple-300 flex items-center gap-1.5">
-              <span>🧙‍♂️🤖</span><span>Rule Master (AI) Seviye Tavsiyesi (Seviye ${targetLevel})</span>
+              <span>🧙‍♂️🤖</span><span>Rule Master (AI) Level-Up Recommendation (Level ${targetLevel})</span>
             </span>
             <span class="badge bg-purple-950 text-purple-300 border border-purple-600 font-mono text-[9px] font-bold">Gemini RAW AI</span>
           </div>
@@ -4999,7 +4999,7 @@ ${customQuery ? `Kullanıcının Özel Sorusu: ${customQuery}` : 'Bu seviye atla
             ${recStat ? `
               <div class="p-2 rounded-lg bg-amber-950/40 border border-amber-500/40 flex items-center justify-between">
                 <div>
-                  <div class="text-[10px] font-bold text-amber-400 uppercase">Önerilen Stat:</div>
+                  <div class="text-[10px] font-bold text-amber-400 uppercase">Recommended Ability:</div>
                   <div class="text-xs font-black text-white">+1 ${recStat.toUpperCase()}</div>
                 </div>
                 <button type="button" onclick="applyCopilotStat('${recStat}')" class="px-2.5 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white font-bold text-[10px] shadow transition cursor-pointer">
@@ -5011,7 +5011,7 @@ ${customQuery ? `Kullanıcının Özel Sorusu: ${customQuery}` : 'Bu seviye atla
             ${recFeat ? `
               <div class="p-2 rounded-lg bg-purple-950/40 border border-purple-500/40 flex items-center justify-between">
                 <div class="truncate mr-2">
-                  <div class="text-[10px] font-bold text-purple-300 uppercase">Önerilen Feat:</div>
+                  <div class="text-[10px] font-bold text-purple-300 uppercase">Recommended Feat:</div>
                   <div class="text-xs font-black text-white truncate" title="${recFeat}">${recFeat}</div>
                 </div>
                 <button type="button" onclick="applyCopilotFeat('${recFeat}', '${featBenefit.replace(/'/g, "\\'")}', '${featCategory}')" class="px-2.5 py-1 rounded bg-purple-600 hover:bg-purple-500 text-white font-bold text-[10px] shadow transition cursor-pointer shrink-0">
@@ -5027,10 +5027,10 @@ ${customQuery ? `Kullanıcının Özel Sorusu: ${customQuery}` : 'Bu seviye atla
 
           <div class="flex items-center justify-between pt-2 border-t border-purple-900/50">
             <button type="button" onclick="applyCopilotNotes('${notes.replace(/'/g, "\\'")}')" class="text-[10px] text-indigo-300 hover:text-white underline cursor-pointer">
-              📝 Tavsiye Notunu Ekle
+              📝 Add Recommendation Note
             </button>
             <button type="button" onclick="applyCopilotAll({ recommendedFeat: '${recFeat}', featBenefit: '${featBenefit.replace(/'/g, "\\'")}', featCategory: '${featCategory}', recommendedStat: '${recStat || ''}', notes: '${notes.replace(/'/g, "\\'")}' })" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-[11px] px-3.5 py-1.5 rounded-lg shadow-lg flex items-center gap-1.5 transition cursor-pointer active:scale-95">
-              <span>⚡</span><span>Tüm Önerileri Tek Tıkla Uygula</span>
+              <span>⚡</span><span>Apply All Recommendations</span>
             </button>
           </div>
         </div>
@@ -5050,7 +5050,7 @@ ${customQuery ? `Kullanıcının Özel Sorusu: ${customQuery}` : 'Bu seviye atla
       const fallback = this.evaluateHeuristicLevelUp(ctx);
       fallback.adviceHtml = `
         <div class="p-2 mb-2 rounded bg-amber-950/60 border border-amber-500/40 text-amber-200 text-[11px] flex items-center gap-2">
-          <span>⚠️</span><span>Yapay Zeka API bağlantısı sağlanamadı (${err.message}). D&D 3.5e RAW Kural Motoru tavsiyeleri gösteriliyor.</span>
+          <span>⚠️</span><span>AI API connection unavailable (${err.message}). Showing D&D 3.5e RAW Rule Engine recommendations.</span>
         </div>
         ${fallback.adviceHtml}
       `;
@@ -5065,7 +5065,7 @@ ${customQuery ? `Kullanıcının Özel Sorusu: ${customQuery}` : 'Bu seviye atla
   async auditLibraryWithProModal() {
     const apiKey = this.getApiKey();
     if (!apiKey) {
-      alert('⚠️ Kütüphane denetimi için geçerli bir Gemini API anahtarı gereklidir.');
+      alert('⚠️ A valid Gemini API key is required for Compendium auditing.');
       this.promptChangeApiKey();
       return;
     }
@@ -5074,7 +5074,7 @@ ${customQuery ? `Kullanıcının Özel Sorusu: ${customQuery}` : 'Bu seviye atla
       .filter(i => i && i.name);
 
     if (items.length === 0) {
-      alert('ℹ️ Yerel kullanıcı veri tabanınızda (master_db) henüz özel kayıt bulunmamaktadır.\n\nModüler SRD V2 kütüphanesindeki 3.522 kayıt zaten deterministik olarak doğrulanmış ve dondurulmuştur.');
+      alert('ℹ️ Your local user database (master_db) has no custom entries yet.\n\nAll 3,522 entries in the Modular SRD V2 Compendium are already deterministically verified and frozen.');
       return;
     }
 
@@ -5092,15 +5092,15 @@ ${customQuery ? `Kullanıcının Özel Sorusu: ${customQuery}` : 'Bu seviye atla
           <div class="flex items-center gap-2">
             <span class="text-xl">🛡️</span>
             <div>
-              <h3 class="font-bold text-sm text-purple-300">Gemini Pro ile RAW 3.5e & Kanonik V2 Kütüphane Denetimi</h3>
-              <p class="text-[11px] text-slate-400">master_db içindeki ${items.length} özel kayıt taranıyor...</p>
+              <h3 class="font-bold text-sm text-purple-300">RAW 3.5e & Canonical V2 Compendium Audit (Gemini Pro)</h3>
+              <p class="text-[11px] text-slate-400">Scanning ${items.length} custom record(s) in master_db...</p>
             </div>
           </div>
           <button onclick="document.getElementById('rule-master-audit-modal').classList.add('hidden')" class="text-slate-400 hover:text-white text-sm font-bold px-2 py-1 rounded bg-slate-800 cursor-pointer">✕</button>
         </div>
         <div id="rule-master-audit-content" class="max-h-96 overflow-y-auto space-y-2 pr-1 text-xs">
           <div class="text-center py-8 text-slate-400 animate-pulse flex items-center justify-center gap-2">
-            <span>⚡ Gemini Pro modeline bağlanılıyor ve RAW kural motoru denetimi başlatılıyor...</span>
+            <span>⚡ Connecting to Gemini Pro and running RAW 3.5e rule engine audit...</span>
           </div>
         </div>
       </div>
@@ -5176,7 +5176,7 @@ Allowed recommendedAction values: "KEEP" | "MODIFY" | "REMOVE".`;
       if (!contentEl) return;
 
       if (!auditJson || !Array.isArray(auditJson.results)) {
-        contentEl.innerHTML = `<div class="p-3 text-rose-300 bg-rose-950/40 rounded border border-rose-800">⚠️ Denetim gerçekleştirilemedi veya yanıt alınamadı. Lütfen API kotanızı kontrol edin.</div>`;
+        contentEl.innerHTML = `<div class="p-3 text-rose-300 bg-rose-950/40 rounded border border-rose-800">⚠️ Audit could not be completed or no response was received. Please check your API quota.</div>`;
         return;
       }
 
@@ -5198,7 +5198,7 @@ Allowed recommendedAction values: "KEEP" | "MODIFY" | "REMOVE".`;
                 ${badgeIcon} ${r.status}
               </span>
             </div>
-            ${r.issues && r.issues.length ? `<p class="text-[10px] text-amber-200">${r.issues.join(' | ')}</p>` : `<p class="text-[10px] text-emerald-400">Resmi 3.5e RAW ve Kanonik V2 standartlarına tam uyumlu.</p>`}
+            ${r.issues && r.issues.length ? `<p class="text-[10px] text-amber-200">${r.issues.join(' | ')}</p>` : `<p class="text-[10px] text-emerald-400">100% compliant with official D&D 3.5e RAW and Canonical V2 standards.</p>`}
           </div>
         `;
       }).join('');
@@ -5206,7 +5206,7 @@ Allowed recommendedAction values: "KEEP" | "MODIFY" | "REMOVE".`;
     } catch (err) {
       const contentEl = document.getElementById('rule-master-audit-content');
       if (contentEl) {
-        contentEl.innerHTML = `<div class="p-3 text-rose-300 bg-rose-950/40 rounded border border-rose-800">Hata: ${err.message}</div>`;
+        contentEl.innerHTML = `<div class="p-3 text-rose-300 bg-rose-950/40 rounded border border-rose-800">Error: ${err.message}</div>`;
       }
     }
   }

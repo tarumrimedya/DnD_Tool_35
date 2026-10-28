@@ -55,10 +55,10 @@ const SupabaseAuth = {
   getLocalUser() {
     return {
       id: 'local_offline_user',
-      email: 'yerel@cihaz.local',
+      email: 'local@device.local',
       user_metadata: {
-        name: 'Yerel Mod',
-        full_name: 'Yerel Mod (Çevrimdışı)',
+        name: 'Local Mode',
+        full_name: 'Local Mode (Offline)',
         is_local: true
       }
     };
@@ -92,7 +92,7 @@ const SupabaseAuth = {
   async signInWithGoogle(customRedirectUrl = null) {
     const client = this.getClient();
     if (!client) {
-      alert('Supabase istemcisi yüklenemedi. Lütfen internet bağlantınızı kontrol edin.');
+      alert('Supabase client could not be loaded. Please check your internet connection.');
       return;
     }
 
@@ -116,7 +116,7 @@ const SupabaseAuth = {
 
     if (error) {
       console.error('Google sign in error:', error);
-      alert('Giriş yapılırken bir hata oluştu: ' + error.message);
+      alert('An error occurred while signing in: ' + error.message);
     }
   },
 
@@ -140,7 +140,7 @@ const SupabaseAuth = {
   async requireAuth(options = {}) {
     // Yerel dosya sistemi (file://) protokolünde doğrudan auth kalkanını atla
     if (typeof window !== 'undefined' && window.location.protocol === 'file:') {
-      console.log('SupabaseAuth: file:// protokolünde auth kalkanı atlandı (yerel mod).');
+      console.log('SupabaseAuth: Auth guard bypassed on file:// protocol (local mode).');
       const localUser = this.getLocalUser();
       this.mountUserProfileUI(localUser, options);
       return localUser;
@@ -194,7 +194,7 @@ const SupabaseAuth = {
     if (!user) return;
     const isLocal = !!user.user_metadata?.is_local;
     const meta = user.user_metadata || {};
-    const name = meta.full_name || meta.name || (user.email ? user.email.split('@')[0] : 'Kullanıcı');
+    const name = meta.full_name || meta.name || (user.email ? user.email.split('@')[0] : 'User');
     const avatar = meta.avatar_url || meta.picture || '';
 
     let container = document.getElementById('supabase-user-pill-container');
@@ -223,15 +223,15 @@ const SupabaseAuth = {
 
     let avatarHtml;
     if (isLocal) {
-      avatarHtml = `<div class="w-6 h-6 rounded-full bg-amber-600/90 border border-amber-400 flex items-center justify-center text-[10px] font-bold text-white shrink-0" title="Yerel Çalışma Modu">💻</div>`;
+      avatarHtml = `<div class="w-6 h-6 rounded-full bg-amber-600/90 border border-amber-400 flex items-center justify-center text-[10px] font-bold text-white shrink-0" title="Local Offline Mode">💻</div>`;
     } else if (avatar) {
       avatarHtml = `<img src="${avatar}" alt="${name}" class="w-6 h-6 rounded-full border border-indigo-400 object-cover shrink-0">`;
     } else {
       avatarHtml = `<div class="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold text-white shrink-0">${name.charAt(0).toUpperCase()}</div>`;
     }
 
-    const titleAttr = isLocal ? 'Yerel / Çevrimdışı Mod (Veriler Cihazınızda Saklanır)' : (user.email || name);
-    const displayName = isLocal ? 'Yerel Mod' : name;
+    const titleAttr = isLocal ? 'Local / Offline Mode (Data Stored on Device)' : (user.email || name);
+    const displayName = isLocal ? 'Local Mode' : name;
     const badgeColor = isLocal ? 'text-amber-300' : 'text-white';
 
     container.innerHTML = `
@@ -240,9 +240,9 @@ const SupabaseAuth = {
           ${avatarHtml}
           <span class="text-xs font-semibold ${badgeColor} max-w-[105px] truncate" title="${titleAttr}">${displayName}</span>
         </div>
-        <button onclick="SupabaseAuth.signOut()" class="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-200 border border-slate-700 hover:border-rose-700 text-[10px] font-bold transition flex items-center gap-1 cursor-pointer shrink-0" title="${isLocal ? 'Yerel Moddan Çık ve Giriş Ekranına Dön' : 'Oturumu Kapat'}">
+        <button onclick="SupabaseAuth.signOut()" class="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-200 border border-slate-700 hover:border-rose-700 text-[10px] font-bold transition flex items-center gap-1 cursor-pointer shrink-0" title="${isLocal ? 'Exit Local Mode & Return to Login' : 'Sign Out'}">
           <span>🚪</span>
-          <span>Çıkış</span>
+          <span>Sign Out</span>
         </button>
       </div>
     `;
@@ -269,10 +269,10 @@ const SupabaseAuth = {
       } else {
         pill.className = 'cursor-pointer flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-[10px] font-medium bg-emerald-950/80 text-emerald-300 border border-emerald-600 whitespace-nowrap shadow-sm transition truncate';
       }
-      pill.title = 'Supabase Bulut Aktif & Otomatik Yedekleniyor (Ayrıntı için tıklayın)';
+      pill.title = 'Supabase Cloud Active & Auto-Backing Up (Click for details)';
       pill.innerHTML = `
         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
-        <span id="sync-status-text">🟢 <span class="hidden sm:inline">Bulut </span>Senkron</span>
+        <span id="sync-status-text">🟢 <span class="hidden sm:inline">Cloud </span>Synced</span>
       `;
     } else if (status === 'syncing') {
       if (isHub) {
@@ -280,10 +280,10 @@ const SupabaseAuth = {
       } else {
         pill.className = 'cursor-pointer flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-[10px] font-medium bg-indigo-950/80 text-indigo-300 border border-indigo-600 whitespace-nowrap shadow-sm transition truncate';
       }
-      pill.title = 'Buluta veri eşitleniyor...';
+      pill.title = 'Syncing data to Cloud...';
       pill.innerHTML = `
         <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping shrink-0"></span>
-        <span id="sync-status-text">🔄 <span class="hidden sm:inline">Bulut </span>Eşitleniyor...</span>
+        <span id="sync-status-text">🔄 <span class="hidden sm:inline">Cloud </span>Syncing...</span>
       `;
     } else if (status === 'local' || status === 'offline' || status === 'unconfigured') {
       if (isHub) {
@@ -291,10 +291,10 @@ const SupabaseAuth = {
       } else {
         pill.className = 'cursor-pointer flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-[10px] font-medium bg-amber-950/60 text-amber-300 border border-amber-600/70 whitespace-nowrap shadow-sm transition truncate';
       }
-      pill.title = 'Yerel Mod (Veriler Tarayıcınızda Saklanır - Buluta Bağlanmak İçin Tıklayın)';
+      pill.title = 'Local Mode (Data Stored in Browser - Click to Connect to Cloud)';
       pill.innerHTML = `
         <span class="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0"></span>
-        <span id="sync-status-text">🟡 <span class="hidden sm:inline">Yerel </span>Kayıtlı</span>
+        <span id="sync-status-text">🟡 <span class="hidden sm:inline">Local </span>Saved</span>
       `;
     } else if (status === 'error') {
       if (isHub) {
@@ -302,10 +302,10 @@ const SupabaseAuth = {
       } else {
         pill.className = 'cursor-pointer flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-[10px] font-medium bg-rose-950/80 text-rose-300 border border-rose-600 whitespace-nowrap shadow-sm transition truncate';
       }
-      pill.title = 'Bulut Senkronizasyon Hatası (Tıklayın)';
+      pill.title = 'Cloud Synchronization Error (Click for details)';
       pill.innerHTML = `
         <span class="w-1.5 h-1.5 rounded-full bg-rose-400 shrink-0"></span>
-        <span id="sync-status-text">⚠️ <span class="hidden sm:inline">Bulut </span>Hata</span>
+        <span id="sync-status-text">⚠️ <span class="hidden sm:inline">Cloud </span>Error</span>
       `;
     }
   },
@@ -336,24 +336,24 @@ const SupabaseAuth = {
             <div class="flex items-center gap-2.5">
               <span class="text-2xl">🟡</span>
               <div>
-                <h3 class="text-base font-extrabold text-white">Yerel Mod (Çevrimdışı)</h3>
-                <p class="text-[11px] text-amber-300/90 font-medium">Verileriniz yalnızca bu tarayıcıda saklanır</p>
+                <h3 class="text-base font-extrabold text-white">Local Mode (Offline)</h3>
+                <p class="text-[11px] text-amber-300/90 font-medium">Your data is stored locally in this browser only</p>
               </div>
             </div>
             <button type="button" class="text-slate-400 hover:text-white p-1 text-sm rounded-lg transition cursor-pointer" onclick="document.getElementById('cloud-sync-management-modal')?.remove()">✕</button>
           </div>
 
           <p class="text-xs text-slate-300 leading-relaxed">
-            Karakter ve seferlerinizin Supabase bulutunda otomatik yedeklenmesi, telefon ve bilgisayar arasında anında eşitlenmesi için Google hesabınızla giriş yapabilirsiniz.
+            Sign in with your Google account to automatically back up your characters and campaigns to Supabase Cloud and sync instantaneously across mobile and desktop.
           </p>
 
           <div class="flex flex-col gap-2 pt-2">
             <button type="button" id="modal-btn-login-google" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-950/50 transition active:scale-95 cursor-pointer">
               <span>🔑</span>
-              <span>Google ile Giriş Yap</span>
+              <span>Sign in with Google</span>
             </button>
             <button type="button" class="w-full py-2 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs border border-slate-700 transition cursor-pointer" onclick="document.getElementById('cloud-sync-management-modal')?.remove()">
-              ✕ Vazgeç (Yerel Modda Devam Et)
+              ✕ Cancel (Continue in Local Mode)
             </button>
           </div>
         </div>
@@ -377,8 +377,8 @@ const SupabaseAuth = {
           <div class="flex items-center gap-2.5">
             <span class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
             <div>
-              <h3 class="text-base font-extrabold text-white">Bulut Senkron Yönetimi</h3>
-              <p class="text-[11px] text-emerald-300/90 font-medium">Supabase Çoklu Cihaz Senkronizasyonu Aktif</p>
+              <h3 class="text-base font-extrabold text-white">Cloud Sync Management</h3>
+              <p class="text-[11px] text-emerald-300/90 font-medium">Supabase Multi-Device Synchronization Active</p>
             </div>
           </div>
           <button type="button" class="text-slate-400 hover:text-white p-1 text-sm rounded-lg transition cursor-pointer" onclick="document.getElementById('cloud-sync-management-modal')?.remove()">✕</button>
@@ -386,8 +386,8 @@ const SupabaseAuth = {
 
         <p class="text-xs text-slate-300 leading-relaxed">
           ${isCharSheet 
-            ? 'Bu ekran ile buluttaki kayıtlarınız arasında senkronizasyon gerçekleştirmek için bir eylem seçin:' 
-            : 'Hub üzerindeki tüm karakterleri bulutla anında eşitlemek için bir eylem seçin:'}
+            ? 'Select an action to synchronize between this screen and your cloud records:' 
+            : 'Select an action to synchronize all Hub characters with the cloud immediately:'}
         </p>
 
         <!-- Eylem Butonları -->
@@ -397,10 +397,10 @@ const SupabaseAuth = {
             <div class="min-w-0">
               <div class="text-xs font-black text-emerald-300 group-hover:text-emerald-200 flex items-center gap-1.5">
                 <span>⬇️</span>
-                <span>Buluttan İndir (Çek)</span>
+                <span>Pull from Cloud (Download)</span>
               </div>
               <div class="text-[10px] text-slate-400 mt-0.5 leading-normal">
-                ${isCharSheet ? 'Buluttaki en güncel karakteri indirir ve bu ekranı yeniler.' : 'Buluttaki en son karakter ve seferleri Hub ekranına çeker.'}
+                ${isCharSheet ? 'Downloads the latest character from the cloud and refreshes this sheet.' : 'Pulls the latest characters and campaigns from the cloud into the Hub.'}
               </div>
             </div>
             <span class="text-emerald-400 font-mono text-xs shrink-0 group-hover:translate-x-0.5 transition">→</span>
@@ -411,10 +411,10 @@ const SupabaseAuth = {
             <div class="min-w-0">
               <div class="text-xs font-black text-amber-300 group-hover:text-amber-200 flex items-center gap-1.5">
                 <span>⬆️</span>
-                <span>Buluta Yükle (Gönder)</span>
+                <span>Push to Cloud (Upload)</span>
               </div>
               <div class="text-[10px] text-slate-400 mt-0.5 leading-normal">
-                ${isCharSheet ? 'Bu ekrandaki güncel karakteri buluta zorla gönderir ve bulutu günceller.' : 'Yereldeki tüm karakterleri bulut veritabanına zorla yazar.'}
+                ${isCharSheet ? 'Force-pushes the current character on this screen to the cloud.' : 'Force-writes all local characters to the cloud database.'}
               </div>
             </div>
             <span class="text-amber-400 font-mono text-xs shrink-0 group-hover:translate-x-0.5 transition">→</span>
@@ -423,7 +423,7 @@ const SupabaseAuth = {
           <!-- Buton 3: Vazgeç (Kapat) -->
           <button type="button" class="w-full mt-1 py-2 px-4 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-semibold text-xs border border-slate-700 transition cursor-pointer flex items-center justify-center gap-1.5" onclick="document.getElementById('cloud-sync-management-modal')?.remove()">
             <span>✕</span>
-            <span>Vazgeç / İptal (Değişiklik Yapma)</span>
+            <span>Cancel (Make No Changes)</span>
           </button>
         </div>
       </div>
@@ -441,7 +441,7 @@ const SupabaseAuth = {
           if (u && typeof window.syncCloudUserHub === 'function') {
             window.syncCloudUserHub(u).then(() => {
               if (typeof window.showHubDiceToast === 'function') {
-                window.showHubDiceToast({ title: '⚡ Canlı Senkron', text: 'Hub karakterleri buluttan güncellendi!', color: 'emerald' });
+                window.showHubDiceToast({ title: '⚡ Live Sync', text: 'Hub characters updated from Cloud!', color: 'emerald' });
               }
             });
           }
@@ -458,7 +458,7 @@ const SupabaseAuth = {
           if (u && typeof window.syncCloudUserHub === 'function') {
             window.syncCloudUserHub(u).then(() => {
               if (typeof window.showHubDiceToast === 'function') {
-                window.showHubDiceToast({ title: '⚡ Bulut Yedek', text: 'Yerel karakterler buluta başarıyla yüklendi!', color: 'emerald' });
+                window.showHubDiceToast({ title: '⚡ Cloud Backup', text: 'Local characters uploaded to Cloud!', color: 'emerald' });
               }
             });
           }
@@ -486,13 +486,13 @@ const SupabaseAuth = {
    */
   async createCloudCampaign({ name, description = '', isDmMode = true }) {
     if (this.isLocalMode()) {
-      throw new Error('Bulut kampanyası oluşturmak için lütfen Google hesabınızla giriş yapın.');
+      throw new Error('Please sign in with your Google account to create a cloud campaign.');
     }
     const user = await this.getUser();
-    if (!user) throw new Error('Oturum bulunamadı. Lütfen tekrar giriş yapın.');
+    if (!user) throw new Error('Session not found. Please sign in again.');
 
     const client = this.getClient();
-    if (!client) throw new Error('Supabase istemcisine erişilemedi.');
+    if (!client) throw new Error('Could not reach the Supabase client.');
 
     const inviteCode = this.generateInviteCode();
 
@@ -521,7 +521,7 @@ const SupabaseAuth = {
       });
 
     if (memberErr) {
-      console.warn('campaign_members kaydı sırasında hata (kampanya oluşturuldu):', memberErr);
+      console.warn('Error registering campaign_members (campaign was created):', memberErr);
     }
 
     return campaign;
@@ -555,17 +555,17 @@ const SupabaseAuth = {
    */
   async joinCampaignWithCharacter(inviteCode, characterData) {
     if (this.isLocalMode()) {
-      throw new Error('Bir kampanyaya katılmak için lütfen Google hesabınızla giriş yapın.');
+      throw new Error('Please sign in with your Google account to join a campaign.');
     }
     const user = await this.getUser();
-    if (!user) throw new Error('Oturum açılmamış.');
+    if (!user) throw new Error('Not signed in.');
 
     const campaign = await this.getCampaignByInviteCode(inviteCode);
-    if (!campaign) throw new Error(`"${inviteCode}" koduna ait aktif bir kampanya bulunamadı.`);
+    if (!campaign) throw new Error(`No active campaign found for invite code "${inviteCode}".`);
 
     const client = this.getClient();
     const charId = characterData.id || `char_${Date.now()}`;
-    const charName = characterData.name || 'İsimsiz Kahraman';
+    const charName = characterData.name || 'Unnamed Hero';
     const curHp = characterData.hp?.current ?? characterData.hp?.max ?? 10;
     const tmpHp = characterData.hp?.temp ?? 0;
 
@@ -709,7 +709,7 @@ const SupabaseAuth = {
       id: charId,
       owner_user_id: user.id,
       campaign_id: characterData.cloudCampaignId || null,
-      name: characterData.name || 'İsimsiz Kahraman',
+      name: characterData.name || 'Unnamed Hero',
       is_npc: !!characterData.isNpc,
       full_data: characterData,
       current_hp: curHp,
@@ -939,7 +939,7 @@ const SupabaseAuth = {
     const { error } = await client
       .from('characters')
       .update({
-        name: fullData.name || 'İsimsiz Kahraman',
+        name: fullData.name || 'Unnamed Hero',
         full_data: fullData,
         current_hp: curHp,
         temp_hp: tmpHp,
@@ -961,11 +961,11 @@ const SupabaseAuth = {
   async migrateLocalCampaignToCloud(localCampaign, localCharacters = []) {
     const user = await this.getUser();
     if (!user || this.isLocalMode()) {
-      throw new Error('Kampanyayı buluta taşımak için önce Google hesabınızla giriş yapmalısınız.');
+      throw new Error('You must sign in with your Google account before migrating a campaign to the cloud.');
     }
 
     const cloudCamp = await this.createCloudCampaign({
-      name: localCampaign.name || 'İsimsiz Kampanya',
+      name: localCampaign.name || 'Unnamed Campaign',
       description: localCampaign.description || '',
       isDmMode: localCampaign.isDmMode !== false
     });
@@ -988,7 +988,7 @@ const SupabaseAuth = {
           last_dm_hp_update_ts: Date.now()
         });
       } catch (e) {
-        console.warn('Karakter buluta taşınırken hata:', char.name, e);
+        console.warn('Error migrating character to cloud:', char.name, e);
       }
     }
 

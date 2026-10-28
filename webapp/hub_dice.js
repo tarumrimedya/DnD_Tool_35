@@ -206,7 +206,7 @@ function updateDicePoolDisplay() {
 
   if (summaryEl) {
     if (activeParts.length === 0) {
-      summaryEl.textContent = 'Zar seçilmedi (Butonlara tıklayın)';
+      summaryEl.textContent = 'No dice selected (Click dice buttons above)';
       summaryEl.className = 'text-sm md:text-base font-semibold text-slate-500 font-mono truncate h-6 flex items-center';
     } else {
       let formula = activeParts.join(' + ');
@@ -263,7 +263,7 @@ function rollSingleDie(sides) {
       breakdown: `d${sides}: [${r}]`,
       total: r,
       isCrit: isCrit,
-      critInfo: (sides === 20 && r === 20) ? '• Doğal 20!' : ((sides === 100 && r === 100) ? '• Mükemmel 100!' : '')
+      critInfo: (sides === 20 && r === 20) ? '• Natural 20!' : ((sides === 100 && r === 100) ? '• Perfect 100!' : '')
     });
   };
 
@@ -319,12 +319,12 @@ function rollDicePool() {
 
   const onDone = () => {
     addDiceHistoryEntry({
-      title: `Havuz Zarı (${parts.join('+')})`,
+      title: `Dice Pool (${parts.join('+')})`,
       formula: formulaStr,
       breakdown: breakdownStr,
       total: grandTotal,
       isCrit: hasD20Crit,
-      critInfo: hasD20Crit ? '• Doğal 20!' : ''
+      critInfo: hasD20Crit ? '• Natural 20!' : ''
     });
   };
 
@@ -459,7 +459,7 @@ function addDiceHistoryEntry(entry, triggerToast = true) {
 
   const record = {
     id: 'roll_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-    title: entry.title || 'Zar Atışı',
+    title: entry.title || 'Dice Roll',
     formula: entry.formula || '',
     breakdown: entry.breakdown || '',
     total: entry.total !== undefined ? entry.total : 0,
@@ -484,7 +484,7 @@ function addDiceHistoryEntry(entry, triggerToast = true) {
   if (triggerToast && typeof showHubDiceToast === 'function') {
     showHubDiceToast({
       charName: record.title,
-      checkLabel: record.formula || 'Zar Atışı',
+      checkLabel: record.formula || 'Dice Roll',
       icon: record.icon || '⚡',
       iconBg: record.isCrit ? 'bg-amber-900/60 text-amber-300 border border-amber-500/40' : 'bg-indigo-900/40 text-indigo-300 border border-indigo-500/40',
       badgeBg: record.isCrit ? 'bg-amber-950/90 text-amber-300 border border-amber-500/40' : 'bg-slate-700/80 text-slate-200 border border-slate-600/50',
@@ -500,7 +500,7 @@ function addDiceHistoryEntry(entry, triggerToast = true) {
 window.addDiceHistoryEntry = addDiceHistoryEntry;
 
 function clearDiceHistory() {
-  if (!confirm('Tüm zar geçmişini silmek istediğinize emin misiniz?')) return;
+  if (!confirm('Are you sure you want to clear the entire roll history?')) return;
   window.diceRollHistory = [];
   try {
     localStorage.removeItem('dnd_dice_history');
@@ -537,7 +537,7 @@ function updateLastResultCard(record) {
   if (critBadge) {
     if (record.isCrit) {
       critBadge.classList.remove('hidden');
-      critBadge.textContent = record.critDamage ? `⚡ KRİTİK! (${record.critDamage} Hasar)` : '⚡ KRİTİK TEHDİTİ!';
+      critBadge.textContent = record.critDamage ? `⚡ CRITICAL! (${record.critDamage} Damage)` : '⚡ CRITICAL THREAT!';
     } else {
       critBadge.classList.add('hidden');
     }
@@ -555,12 +555,12 @@ function renderDiceHistory() {
   }
 
   const list = window.diceRollHistory || [];
-  if (countEl) countEl.textContent = `${list.length} Kayıt`;
+  if (countEl) countEl.textContent = `${list.length} Rolls`;
 
   if (list.length === 0) {
     listEl.innerHTML = `
       <div class="text-center py-8 text-slate-500 text-xs font-medium">
-        Henüz atılmış bir zar kaydı bulunmuyor. Yukarıdan serbest zar atabilirsiniz.
+        No dice rolls recorded yet. Roll dice using the controls above.
       </div>
     `;
     return;
@@ -569,7 +569,7 @@ function renderDiceHistory() {
   listEl.innerHTML = list.map(item => {
     const critClass = item.isCrit ? 'border-rose-500/70 bg-rose-950/20' : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900';
     const critBadge = item.isCrit
-      ? `<span class="px-2 py-0.5 rounded bg-rose-600 text-white font-black text-[10px] animate-pulse">⚡ KRİTİK ${item.critDamage ? '(' + item.critDamage + ' Hasar)' : ''}</span>`
+      ? `<span class="px-2 py-0.5 rounded bg-rose-600 text-white font-black text-[10px] animate-pulse">⚡ CRITICAL ${item.critDamage ? '(' + item.critDamage + ' Damage)' : ''}</span>`
       : '';
     const safeFormula = (item.formula || '').replace(/'/g, "\\'");
 
@@ -593,7 +593,7 @@ function renderDiceHistory() {
           </div>
           ${item.formula ? `
             <button onclick="applyFormulaTemplate('${safeFormula}'); rollCustomFormula();"
-                    title="Bu formülü tekrar at"
+                    title="Re-roll this formula"
                     class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs transition active:scale-95 cursor-pointer">
               🔄
             </button>
@@ -609,10 +609,10 @@ window.renderDiceHistory = renderDiceHistory;
 // 6. Serbest Formül & Hedefli Zar Motoru
 // ====================================================
 const DEFAULT_FORMULA_TEMPLATES = [
-  { name: 'Hedef:21 B:+4 (1d6+3 19-20x2)', formula: 'Hedef:21 Bonus:4 Zar:1d6+3 19-20x2' },
-  { name: 'Ateş Topu (8d6)', formula: '8d6' },
-  { name: 'D20 Testi (+8)', formula: '1d20+8' },
-  { name: 'Yüzdelik Zar (1d100)', formula: '1d100' }
+  { name: 'Target:21 B:+4 (1d6+3 19-20x2)', formula: 'Target:21 Bonus:4 Dice:1d6+3 19-20x2' },
+  { name: 'Fireball (8d6)', formula: '8d6' },
+  { name: 'd20 Check (+8)', formula: '1d20+8' },
+  { name: 'Percentile Roll (1d100)', formula: '1d100' }
 ];
 
 function escapeFormulaHtml(str) {
@@ -660,8 +660,8 @@ function renderCustomTemplates() {
   if (templates.length === 0) {
     container.innerHTML = `
       <div class="text-xs text-slate-500 py-1 flex items-center gap-2">
-        <span>Kayıtlı şablon bulunmuyor.</span>
-        <button type="button" onclick="resetFormulaTemplates()" class="text-indigo-400 hover:text-indigo-200 underline cursor-pointer text-xs font-medium">Varsayılanları Geri Yükle</button>
+        <span>No saved templates.</span>
+        <button type="button" onclick="resetFormulaTemplates()" class="text-indigo-400 hover:text-indigo-200 underline cursor-pointer text-xs font-medium">Restore Defaults</button>
       </div>
     `;
     return;
@@ -678,7 +678,7 @@ function renderCustomTemplates() {
         <button type="button" onclick="applyFormulaTemplate('${escapeFormulaHtml(t.formula)}')" class="px-2 py-1 text-left truncate hover:underline cursor-pointer" title="${escapeFormulaHtml(t.formula)}">
           ${escapeFormulaHtml(t.name || t.formula)}
         </button>
-        <button type="button" onclick="deleteFormulaTemplate(${idx})" class="pr-1.5 pl-0.5 text-slate-500 hover:text-rose-400 opacity-60 group-hover:opacity-100 transition cursor-pointer text-xs font-bold" title="Şablonu Sil">
+        <button type="button" onclick="deleteFormulaTemplate(${idx})" class="pr-1.5 pl-0.5 text-slate-500 hover:text-rose-400 opacity-60 group-hover:opacity-100 transition cursor-pointer text-xs font-bold" title="Delete Template">
           &times;
         </button>
       </div>
@@ -700,12 +700,12 @@ function saveCurrentFormulaTemplate() {
   const input = document.getElementById('dice-custom-formula-input');
   const formula = (input?.value || '').trim();
   if (!formula) {
-    alert('Lütfen önce formül alanına bir zar ifadesi yazın.\nÖrn: Hedef:21 Bonus:4 Zar:1d6+3 19-20x2');
+    alert('Please enter a dice expression in the formula field first.\ne.g. Target:21 Bonus:4 Dice:1d6+3 19-20x2');
     return;
   }
 
   const defaultName = formula.length > 28 ? formula.slice(0, 25) + '...' : formula;
-  const name = prompt('Bu zar şablonu için bir isim yazın:', defaultName);
+  const name = prompt('Enter a name for this dice template:', defaultName);
   if (!name || !name.trim()) return;
 
   const templates = loadFormulaTemplates();
@@ -886,10 +886,10 @@ function executeTargetAttackRoll(rawInput, hedefMatch) {
     confirmTotal = confirmD20 + bonusVal;
     if (confirmD20 === 20 || confirmTotal >= hedef) {
       isCritConfirmed = true;
-      confirmDetails = ` • Teyit: d20 [${confirmD20}] ${bonusVal >= 0 ? '+' : ''}${bonusVal} = ${confirmTotal} >= ${hedef} (TEYİT EDİLDİ!)`;
+      confirmDetails = ` • Confirm: d20 [${confirmD20}] ${bonusVal >= 0 ? '+' : ''}${bonusVal} = ${confirmTotal} >= ${hedef} (CONFIRMED!)`;
     } else {
       isCritConfirmed = false;
-      confirmDetails = ` • Teyit: d20 [${confirmD20}] ${bonusVal >= 0 ? '+' : ''}${bonusVal} = ${confirmTotal} < ${hedef} (Teyit Edilemedi, Normal Vuruş)`;
+      confirmDetails = ` • Confirm: d20 [${confirmD20}] ${bonusVal >= 0 ? '+' : ''}${bonusVal} = ${confirmTotal} < ${hedef} (Not Confirmed, Normal Hit)`;
     }
   }
 
@@ -941,31 +941,31 @@ function executeTargetAttackRoll(rawInput, hedefMatch) {
   const onDone = () => {
     if (!isHit) {
       addDiceHistoryEntry({
-        title: `Hedefli Saldırı: Iskaladı (vs Hedef ${hedef})`,
+        title: `Targeted Attack: Miss (vs AC/DC ${hedef})`,
         formula: `d20${bonusStr} vs Hedef ${hedef} (${rawDamageStr})`,
-        breakdown: `Saldırı: d20 [${d20}] ${bonusStr} = ${attackTotal} vs Hedef ${hedef} ❌ ISKALADI${isNat1 ? ' (Doğal 1!)' : ''}`,
+        breakdown: `Attack: d20 [${d20}] ${bonusStr} = ${attackTotal} vs AC/DC ${hedef} ❌ MISS${isNat1 ? ' (Natural 1!)' : ''}`,
         total: 0,
         isCrit: false,
-        critInfo: '• Iskaladı (0 Hasar)'
+        critInfo: '• Miss (0 Damage)'
       });
     } else if (isHit && !isCritConfirmed) {
       addDiceHistoryEntry({
-        title: `Hedefli Saldırı: İsabet (${finalDamage} Hasar)`,
+        title: `Targeted Attack: Hit (${finalDamage} Damage)`,
         formula: `d20${bonusStr} vs Hedef ${hedef} (${rawDamageStr})`,
-        breakdown: `Saldırı: d20 [${d20}] ${bonusStr} = ${attackTotal} vs Hedef ${hedef} (İsabet)${confirmDetails} • Hasar: ${baseDmgBreakdown} = ${finalDamage} Hasar`,
+        breakdown: `Attack: d20 [${d20}] ${bonusStr} = ${attackTotal} vs AC/DC ${hedef} (Hit)${confirmDetails} • Damage: ${baseDmgBreakdown} = ${finalDamage} Damage`,
         total: finalDamage,
         isCrit: false,
-        critInfo: '• İsabet'
+        critInfo: '• Hit'
       });
     } else {
       addDiceHistoryEntry({
-        title: `⚡ KRİTİK İSABET! (${finalDamage} Hasar)`,
+        title: `⚡ CRITICAL HIT! (${finalDamage} Damage)`,
         formula: `d20${bonusStr} vs Hedef ${hedef} (${rawDamageStr})`,
-        breakdown: `Saldırı: d20 [${d20}] ${bonusStr} = ${attackTotal} vs Hedef ${hedef} (Tehdit: ${threatMin}-${threatMax})${confirmDetails} • Hasar: (${baseDmgBreakdown}) x ${critMult} = ${finalDamage} Hasar!`,
+        breakdown: `Attack: d20 [${d20}] ${bonusStr} = ${attackTotal} vs AC/DC ${hedef} (Threat: ${threatMin}-${threatMax})${confirmDetails} • Damage: (${baseDmgBreakdown}) x ${critMult} = ${finalDamage} Damage!`,
         total: finalDamage,
         isCrit: true,
         critDamage: finalDamage,
-        critInfo: `• ⚡ Kritik (${threatMin}-${threatMax}x${critMult}): ${finalDamage} Hasar!`
+        critInfo: `• ⚡ Critical (${threatMin}-${threatMax}x${critMult}): ${finalDamage} Damage!`
       });
     }
   };
@@ -984,7 +984,7 @@ function executeTargetAttackRoll(rawInput, hedefMatch) {
 function executeStandardCustomFormula(val) {
   const parsed = parseAndRollDiceFormula(val);
   if (!parsed) {
-    alert('Zar formülü anlaşılamadı. Örnek geçerli biçimler:\n• Hedef:21 Bonus:4 Zar:1d6+3 19-20x2\n• 12d46+45 18-20x2\n• 3d6+5\n• 8d6');
+    alert('Invalid dice formula. Valid format examples:\n• Target:21 Bonus:4 Dice:1d6+3 19-20x2\n• 12d6+45 18-20x2\n• 3d6+5\n• 8d6');
     return;
   }
 
@@ -1011,14 +1011,14 @@ function executeStandardCustomFormula(val) {
     let critInfo = '';
     if (parsed.hasCritNotation) {
       if (parsed.isCrit) {
-        critInfo = `• ⚡ Kritik (${parsed.critThreatStart}-${parsed.critThreatEnd}x${parsed.critMultiplier}): ${parsed.critDamage} Hasar!`;
+        critInfo = `• ⚡ Critical (${parsed.critThreatStart}-${parsed.critThreatEnd}x${parsed.critMultiplier}): ${parsed.critDamage} Damage!`;
       } else {
-        critInfo = `• Tehdit (${parsed.critThreatStart}-${parsed.critThreatEnd}) tutmadı`;
+        critInfo = `• Threat (${parsed.critThreatStart}-${parsed.critThreatEnd}) not triggered`;
       }
     }
 
     addDiceHistoryEntry({
-      title: `Serbest Formül (${val})`,
+      title: `Custom Formula (${val})`,
       formula: val,
       breakdown: breakdownParts.join(' • '),
       total: parsed.grandTotal,
@@ -1043,7 +1043,7 @@ function rollCustomFormula() {
   const input = document.getElementById('dice-custom-formula-input');
   const val = (input?.value || '').trim();
   if (!val) {
-    alert('Lütfen bir zar formülü yazın (Örn: Hedef:21 Bonus:4 Zar:1d6+3 19-20x2 veya 3d6+5)');
+    alert('Please enter a dice formula (e.g. Target:21 Bonus:4 Dice:1d6+3 19-20x2 or 3d6+5)');
     return;
   }
 
@@ -1067,12 +1067,12 @@ function toggleDiceAdvancedDrawer(forceOpen = null) {
   if (shouldOpen) {
     content.classList.remove('hidden');
     if (icon) icon.style.transform = 'rotate(180deg)';
-    if (text) text.textContent = 'Gizle';
+    if (text) text.textContent = 'Hide';
     try { localStorage.setItem('hub_dice_adv_open', '1'); } catch (e) {}
   } else {
     content.classList.add('hidden');
     if (icon) icon.style.transform = 'rotate(0deg)';
-    if (text) text.textContent = 'Göster';
+    if (text) text.textContent = 'Show';
     try { localStorage.setItem('hub_dice_adv_open', '0'); } catch (e) {}
   }
 }

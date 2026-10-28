@@ -3644,3 +3644,22 @@ Kullanıcı, *Boots of Elvenkind* eşyasının *Stealth (Gizlilik)* becerisine b
 ```markdown
 Proje `feat/v2-canonical-architecture` dalında Kanonik V2 Veri Mimarisine (`schemaVersion: 2`, `srd_compendium.js`, `ui_shared.js`, `hub_notes.js`, `rule_engine.js`, `rule_master.js`) yükseltildi. `HANDOVER_TO_CHARACTER_SHEET.md` Bölüm 123'teki V2 veri kontratını (`modifiers`, `damageParts`, `modes`, `smartNotes`) ve %100 kök/webapp paritesini koruyarak devam et.
 ```
+
+
+---
+
+## 124. Tam D&D 3.5e RAW İngilizce Yerelleştirme ve Çift Dilli Geriye Dönük Uyumluluk Mimarisi (2026-10-28)
+
+### Bağlam & Kullanıcı Talebi
+Kullanıcı, platformun tamamının (`index.html`, `character.html`, `hub.html`, `login.html`, `rule_engine.js`, `rule_master.js`, `ui_shared.js`, `gdrive_sync.js`, `supabase_auth.js`, `srd_compendium.js`, `hub_dice.js`, `hub_notes.js`, `character_data.json`, `master_db.json`) resmi **D&D 3.5e RAW İngilizce terminolojisine** (PHB / DMG / MM / Tome of Battle / Complete Series) çevrilmesini; mevcut kayıtlı karakterlerin ve veritabanlarının ise sıfır veri kaybıyla çalışmaya devam etmesini talep etmiştir.
+
+### Uygulanan 4 Fazlı Mimari Çözüm
+1. **Faz 1 — Çekirdek Motorlar, Veri Şemaları ve Yapay Zeka Promptları (`rule_engine.js`, `rule_master.js`, `srd_compendium.js`, `ui_shared.js`, `gdrive_sync.js`, `supabase_auth.js`, `character_data.json`):**
+   * Tüm kullanıcı arayüzü metinleri, hata/uyarı bildirimleri, hesaplama dökümü etiketleri (*Armor Bonus*, *Shield Bonus*, *Dexterity Modifier*, *Deflection*, *Natural Armor*, *Two-Weapon Fighting Penalty*, *Power Attack*, *Flurry of Blows*) ve Gemini AI prompt şablonları %100 kanonik D&D 3.5e İngilizcesine çevrildi.
+   * **Çift Dilli Okuyucu Kalkanı (Bilingual Reader Predicates):** Eski Türkçe kayıtlı karakterlerin (`localStorage` ve Supabase Cloud) kırılmaması için tüm string okuyucu koşulları (`includes('TWF') || includes('Çift Silah')`, `includes('Off-Hand') || includes('İkinci El')`, `category === 'Other' || category === 'Diğer'`) çift dilli olarak korundu; yeni üretilen tüm kayıtlar ise %100 İngilizce yazılır.
+2. **Faz 2 — Giriş, DM Kampanya HUB, Zar Masası ve Akıllı Notlar (`login.html`, `hub.html`, `hub_dice.js`, `hub_notes.js`):**
+   * Tüm giriş ekranı, Kampanya HUB üst barı, Bestiary & Encounter Builder, Demirhane (The Forge), 3D/2D Zar Masası ve Akıllı Notlar (`#Quest`, `#NPC`, `#Location`, `#Lore`, `#Loot`) İngilizceye çevrildi (`#gorev`, `#yer`, `#genel` etiketleri geriye dönük filtrelerde desteklenmeye devam eder).
+3. **Faz 3 & 4 — Karakter Kâğıdı (`index.html` & `character.html`):**
+   * 3.000+ arayüz etiketi, sekme başlığı (*Combat Cockpit*, *Spells & Maneuvers*, *Defense & Buffs*, *Inventory & Gear*, *Character & Skills*, *Master DB*, *Roll Dice*), seviye atlama sihirbazı, kuşanma modalları, zar bildirimleri ve taktiksel aksiyon ekonomisi resmi 3.5e RAW İngilizce terminolojisine geçirildi.
+   * Tüm kök dosyalar ve `webapp/` altındaki kopyaları %100 SHA-256 paritesinde eşitlendi (`index.html` = `character.html` = `93899cc1141af5d2...`).
+   * Sıfır tavla zarı emojisi (`U+1F3B2`) kuralı 87 dosyanın tamamında doğrulandı.

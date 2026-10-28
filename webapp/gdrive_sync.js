@@ -136,7 +136,7 @@ const CloudSync = {
     const input = document.getElementById('vault-lock-pin-input');
     const val = (input ? input.value : '').trim();
     if (!val) {
-      this.showVaultLockModal('⚠️ Lütfen belirlediğiniz APP_PIN şifresini girin.');
+      this.showVaultLockModal('⚠️ Please enter your configured APP_PIN password.');
       return;
     }
 
@@ -164,10 +164,10 @@ const CloudSync = {
       } else {
         localStorage.removeItem('dnd35_app_pin');
         this.appPin = '';
-        this.showVaultLockModal('❌ Hatalı APP_PIN şifresi! Şifrenizi sıfırlamak isterseniz alttaki "Ayarlar / Şifre Değiştir" butonuna tıklayın.');
+        this.showVaultLockModal('❌ Invalid APP_PIN! Click "Settings / Change PIN" below if you wish to reset your password.');
       }
     } catch (err) {
-      this.showVaultLockModal('❌ Sunucu bağlantı hatası: ' + err.message);
+      this.showVaultLockModal('❌ Server connection error: ' + err.message);
     }
   },
 
@@ -216,12 +216,12 @@ const CloudSync = {
       // Ensure current local state is pushed if user just configured their vault
       await this.pushToCloud(true);
       alert(this.appPin
-        ? '✅ Vercel Bulut bağlantısı ve Kişisel Kasa Şifreniz (APP_PIN) doğrudan veritabanına kaydedildi ve senkronize edildi!'
-        : '✅ Vercel / Upstash Bulut bağlantısı doğrulandı ve aktif edildi!');
+        ? '✅ Vercel Cloud connection and Personal Vault PIN (APP_PIN) saved and synchronized to database!'
+        : '✅ Vercel / Upstash Cloud connection verified and activated!');
     } else if (this.pinRequired && !this.authenticated) {
-      alert('❌ Şifre doğrulanamadı: ' + (setPinError || 'Girdiğiniz APP_PIN sunucudaki şifre ile eşleşmedi.'));
+      alert('❌ PIN verification failed: ' + (setPinError || 'The entered APP_PIN did not match the server PIN.'));
     } else {
-      alert('ℹ️ Ayarlar kaydedildi. Bulut senkronizasyonu için Vercel panelinden Storage -> Upstash KV bağlayın veya Upstash REST URL/Token bilgilerini girin.');
+      alert('ℹ️ Settings saved. To enable cloud sync, connect Storage -> Upstash KV in your Vercel dashboard or enter your Upstash REST URL/Token.');
     }
   },
 
@@ -598,7 +598,7 @@ const CloudSync = {
       } else {
         this.updateStatusUI('unconfigured');
         if (!silent) {
-          alert('⚠️ Bulut veritabanı henüz yapılandırılmamış.\nLütfen Ayarlar (⚙️) menüsünden Vercel / Upstash kurulum adımlarını takip edin.');
+          alert('⚠️ Cloud database is not configured yet.\nPlease follow the Vercel / Upstash setup steps in the Settings (⚙️) menu.');
         }
         return;
       }
@@ -617,13 +617,13 @@ const CloudSync = {
 
       if (!silent && ok) {
         const dbCount = Array.isArray(masterDb) ? masterDb.length : 0;
-        alert(`✅ Buluttan başarıyla güncellendi!\n\n• Karakter: ${character?.name || 'Bilinmiyor'}\n• Master DB Kayıt Sayısı: ${dbCount} kayıt`);
+        alert(`✅ Successfully updated from Cloud!\n\n• Character: ${character?.name || 'Unknown'}\n• Master DB Records: ${dbCount} entries`);
       }
     } catch (err) {
       console.error('CloudSync: Pull error:', err);
       this.updateStatusUI('error');
       if (!silent) {
-        alert('❌ Buluttan veri çekilirken hata oluştu:\n' + err.message);
+        alert('❌ Error pulling data from Cloud:\n' + err.message);
       }
     } finally {
       this.isSyncing = false;
@@ -715,7 +715,7 @@ const CloudSync = {
       } else {
         this.updateStatusUI('unconfigured');
         if (!silent) {
-          alert('⚠️ Bulut veritabanı henüz yapılandırılmamış.\nLütfen Ayarlar (⚙️) menüsünden Vercel / Upstash kurulum adımlarını takip edin.');
+          alert('⚠️ Cloud database is not configured yet.\nPlease follow the Vercel / Upstash setup steps in the Settings (⚙️) menu.');
         }
         return;
       }
@@ -725,13 +725,13 @@ const CloudSync = {
 
       if (!silent) {
         const dbCount = Array.isArray(masterDb) ? masterDb.length : 0;
-        alert(`✅ Karakter ve Master DB (${dbCount} kayıt) Vercel Bulut Veritabanına kaydedildi!`);
+        alert(`✅ Character and Master DB (${dbCount} entries) saved to Vercel Cloud Database!`);
       }
     } catch (err) {
       console.error('CloudSync: Push error:', err);
       this.updateStatusUI('error');
       if (!silent) {
-        alert('❌ Buluta kaydedilirken hata oluştu:\n' + err.message);
+        alert('❌ Error saving to Cloud:\n' + err.message);
       }
     } finally {
       this.isSyncing = false;
@@ -809,19 +809,19 @@ const CloudSync = {
       if (pill && text) {
         if (status === 'connected' || status === 'synced') {
           pill.className = 'cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-xl text-[10px] sm:text-[11px] font-medium bg-emerald-950/80 text-emerald-300 border border-emerald-600 w-full h-9 whitespace-nowrap shadow-sm transition';
-          text.innerHTML = '🟢 Bulut<span class="hidden md:inline"> Senkron (Karakter + DB)</span>';
+          text.innerHTML = '🟢 Cloud<span class="hidden md:inline"> Synced (Character + DB)</span>';
         } else if (status === 'syncing') {
           pill.className = 'cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-xl text-[10px] sm:text-[11px] font-medium bg-indigo-950/80 text-indigo-300 border border-indigo-600 w-full h-9 whitespace-nowrap shadow-sm transition';
-          text.innerHTML = '🔄 <span class="hidden sm:inline">Bulut </span>Eşitleniyor...';
+          text.innerHTML = '🔄 <span class="hidden sm:inline">Cloud </span>Syncing...';
         } else if (status === 'locked') {
           pill.className = 'cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-xl text-[10px] sm:text-[11px] font-medium bg-rose-950/80 text-rose-300 border border-rose-600 w-full h-9 whitespace-nowrap shadow-sm transition';
-          text.innerHTML = '🔒 <span class="hidden sm:inline">Özel </span>Kilitli';
+          text.innerHTML = '🔒 <span class="hidden sm:inline">Vault </span>Locked';
         } else if (status === 'error') {
           pill.className = 'cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-xl text-[10px] sm:text-[11px] font-medium bg-rose-950/80 text-rose-300 border border-rose-600 w-full h-9 whitespace-nowrap shadow-sm transition';
-          text.innerHTML = '⚠️ <span class="hidden sm:inline">Bulut </span>Hata';
+          text.innerHTML = '⚠️ <span class="hidden sm:inline">Cloud </span>Error';
         } else {
           pill.className = 'cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-xl text-[10px] sm:text-[11px] font-medium bg-slate-800 text-slate-300 border border-slate-700 w-full h-9 whitespace-nowrap shadow-sm transition';
-          text.innerHTML = '🟡 <span class="hidden sm:inline">Yerel </span>Kayıtlı';
+          text.innerHTML = '🟡 <span class="hidden sm:inline">Local </span>Saved';
         }
       }
     }
@@ -829,17 +829,17 @@ const CloudSync = {
     const settingsStatus = document.getElementById('settings-gdrive-status');
     if (settingsStatus) {
       if (status === 'connected' || status === 'synced') {
-        settingsStatus.innerHTML = '<span class="text-emerald-400 font-bold">🟢 Vercel KV Aktif & Senkron</span>';
+        settingsStatus.innerHTML = '<span class="text-emerald-400 font-bold">🟢 Vercel KV Active & Synced</span>';
       } else if (status === 'syncing') {
-        settingsStatus.innerHTML = '<span class="text-indigo-400 font-bold">🔄 Eşitleniyor...</span>';
+        settingsStatus.innerHTML = '<span class="text-indigo-400 font-bold">🔄 Syncing...</span>';
       } else if (status === 'locked') {
-        settingsStatus.innerHTML = '<span class="text-rose-400 font-bold">🔒 PIN Doğrulaması Bekleniyor</span>';
+        settingsStatus.innerHTML = '<span class="text-rose-400 font-bold">🔒 Waiting for PIN Verification</span>';
       } else if (status === 'error') {
-        settingsStatus.innerHTML = '<span class="text-rose-400 font-bold">❌ Bağlantı Hatası</span>';
+        settingsStatus.innerHTML = '<span class="text-rose-400 font-bold">❌ Connection Error</span>';
       } else if (this.appPin) {
-        settingsStatus.innerHTML = '<span class="text-amber-400 font-bold">🟡 PIN Kayıtlı (Bağlantı Kontrol Ediliyor...)</span>';
+        settingsStatus.innerHTML = '<span class="text-amber-400 font-bold">🟡 PIN Saved (Checking Connection...)</span>';
       } else {
-        settingsStatus.innerHTML = '<span class="text-amber-400">🟡 Yerel Mod (Bulut Bağlı Değil)</span>';
+        settingsStatus.innerHTML = '<span class="text-amber-400">🟡 Local Mode (Cloud Not Connected)</span>';
       }
     }
   }
