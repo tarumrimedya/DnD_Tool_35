@@ -541,7 +541,7 @@
           <button type="button" data-comp-tab="Feat" onclick="DnDUI.switchCompendiumTab('Feat')" class="px-2.5 py-1 rounded-lg font-bold transition cursor-pointer text-slate-400 hover:text-white">🏅 Feats &amp; Maneuvers</button>
           <button type="button" data-comp-tab="Spell" onclick="DnDUI.switchCompendiumTab('Spell')" class="px-2.5 py-1 rounded-lg font-bold transition cursor-pointer text-slate-400 hover:text-white">🔮 Spells &amp; Psionics</button>
           <button type="button" data-comp-tab="Condition" onclick="DnDUI.switchCompendiumTab('Condition')" class="px-2.5 py-1 rounded-lg font-bold transition cursor-pointer text-slate-400 hover:text-white">⚡ Conditions &amp; Buffs</button>
-          <button type="button" data-comp-tab="Monster" onclick="DnDUI.switchCompendiumTab('Monster')" class="px-2.5 py-1 rounded-lg font-bold transition cursor-pointer text-slate-400 hover:text-white">👹 Bestiary (645)</button>
+          <button type="button" data-comp-tab="Monster" onclick="DnDUI.switchCompendiumTab('Monster')" class="px-2.5 py-1 rounded-lg font-bold transition cursor-pointer text-slate-400 hover:text-white">👹 Bestiary</button>
           <button type="button" data-comp-tab="forge" onclick="DnDUI.switchCompendiumTab('forge')" class="px-3 py-1 rounded-lg font-black transition cursor-pointer bg-amber-500/20 text-amber-300 border border-amber-500/50 hover:bg-amber-500 hover:text-slate-950 ml-auto shrink-0">⚒️ The Forge (Item Builder)</button>
         </div>
 
@@ -591,12 +591,12 @@
                 <label class="block text-slate-400 mb-1 font-semibold">2. Special Material</label>
                 <select id="dnd-forge-material-select" onchange="DnDUI.updateForgePreview()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-white focus:outline-none focus:border-amber-400">
                   <option value="">Standard (Steel / Leather / Wood)</option>
-                  <option value="material_mithral">Mithral (Light / -ACP / +Max DEX)</option>
-                  <option value="material_adamantine">Adamantine (Bypass Hardness 20 / Armor DR)</option>
-                  <option value="material_cold_iron">Cold Iron (Fey/Demon DR Bypass)</option>
-                  <option value="material_alchemical_silver">Alchemical Silver (Lycanthrope/Devil DR)</option>
-                  <option value="material_darkwood">Darkwood (Half-Weight Wood)</option>
-                  <option value="material_dragonhide">Dragonhide (Druid-Compatible Dragon Scale)</option>
+                  <option value="mat-mithral">Mithral (Light / -ACP / +Max DEX)</option>
+                  <option value="mat-adamantine">Adamantine (Bypass Hardness 20 / Armor DR)</option>
+                  <option value="mat-cold-iron">Cold Iron (Fey/Demon DR Bypass)</option>
+                  <option value="mat-alchemical-silver">Alchemical Silver (Lycanthrope/Devil DR)</option>
+                  <option value="mat-darkwood">Darkwood (Half-Weight Wood)</option>
+                  <option value="mat-dragonhide">Dragonhide (Druid-Compatible Dragon Scale)</option>
                 </select>
               </div>
               <div>
@@ -637,53 +637,49 @@
 
     // Populate base weapons and armors from SrdCompendium if loaded
     let baseOptions = [];
-    if (global.SrdCompendium && global.SrdCompendium.isReady()) {
-      const allEquip = global.SrdCompendium.getAllEquipment();
-      baseOptions = allEquip.filter(e =>
-        (e.category === 'Weapon' || e.category === 'Armor' || e.subCategory === 'Weapon' || e.subCategory === 'Armor' || e.subCategory === 'Shield') &&
-        e.subCategory !== 'Material' && e.subCategory !== 'Enhancement'
-      );
+    if (global.SrdCompendium && typeof global.SrdCompendium.isReady === 'function' && global.SrdCompendium.isReady() && typeof global.SrdCompendium.getAllLoaded === 'function') {
+      baseOptions = global.SrdCompendium.getAllLoaded(['Weapon', 'Armor', 'Shield']);
     }
 
     if (baseOptions.length === 0) {
       baseOptions = [
-        { id: 'longsword', name: 'Longsword (1d8, 19-20/x2)', subCategory: 'Weapon' },
-        { id: 'greatsword', name: 'Greatsword (2d6, 19-20/x2)', subCategory: 'Weapon' },
-        { id: 'scimitar', name: 'Scimitar (1d6, 18-20/x2)', subCategory: 'Weapon' },
-        { id: 'rapier', name: 'Rapier (1d6, 18-20/x2)', subCategory: 'Weapon' },
-        { id: 'greataxe', name: 'Greataxe (1d12, x3)', subCategory: 'Weapon' },
-        { id: 'warhammer', name: 'Warhammer (1d8, x3)', subCategory: 'Weapon' },
-        { id: 'dagger', name: 'Dagger (1d4, 19-20/x2)', subCategory: 'Weapon' },
-        { id: 'composite_longbow', name: 'Composite Longbow (1d8, x3)', subCategory: 'Weapon' },
-        { id: 'chain_shirt', name: 'Chain Shirt (+4 AC)', subCategory: 'Armor' },
-        { id: 'breastplate', name: 'Breastplate (+5 AC)', subCategory: 'Armor' },
-        { id: 'full_plate', name: 'Full Plate (+8 AC)', subCategory: 'Armor' },
-        { id: 'heavy_steel_shield', name: 'Heavy Steel Shield (+2 AC)', subCategory: 'Shield' }
+        { id: 'wpn-longsword', name: 'Longsword (1d8, 19-20/x2)', type: 'Weapon' },
+        { id: 'wpn-greatsword', name: 'Greatsword (2d6, 19-20/x2)', type: 'Weapon' },
+        { id: 'wpn-scimitar', name: 'Scimitar (1d6, 18-20/x2)', type: 'Weapon' },
+        { id: 'wpn-rapier', name: 'Rapier (1d6, 18-20/x2)', type: 'Weapon' },
+        { id: 'wpn-greataxe', name: 'Greataxe (1d12, x3)', type: 'Weapon' },
+        { id: 'wpn-warhammer', name: 'Warhammer (1d8, x3)', type: 'Weapon' },
+        { id: 'wpn-dagger', name: 'Dagger (1d4, 19-20/x2)', type: 'Weapon' },
+        { id: 'wpn-composite-longbow', name: 'Composite Longbow (1d8, x3)', type: 'Weapon' },
+        { id: 'arm-chain-shirt', name: 'Chain Shirt (+4 AC)', type: 'Armor' },
+        { id: 'arm-breastplate', name: 'Breastplate (+5 AC)', type: 'Armor' },
+        { id: 'arm-full-plate', name: 'Full Plate (+8 AC)', type: 'Armor' },
+        { id: 'shd-heavy-steel-shield', name: 'Heavy Steel Shield (+2 AC)', type: 'Shield' }
       ];
     }
 
     baseSel.innerHTML = baseOptions.slice(0, 120).map(item =>
-      `<option value="${escapeHtml(item.id)}">${escapeHtml(item.name)} (${escapeHtml(item.subCategory || item.category)})</option>`
+      `<option value="${escapeHtml(item.id)}">${escapeHtml(item.name)} (${escapeHtml(item.type || item.subCategory || item.category)})</option>`
     ).join('');
 
     const ENH_LIST = [
-      { id: 'enh_keen', label: '⚡ Keen (2× Crit)', bonusEq: '+1' },
-      { id: 'enh_flaming', label: '🔥 Flaming (+1d6)', bonusEq: '+1' },
-      { id: 'enh_flaming_burst', label: '🔥 Flaming Burst', bonusEq: '+2' },
-      { id: 'enh_frost', label: '❄️ Frost (+1d6)', bonusEq: '+1' },
-      { id: 'enh_icy_burst', label: '❄️ Icy Burst', bonusEq: '+2' },
-      { id: 'enh_shock', label: '⚡ Shock (+1d6)', bonusEq: '+1' },
-      { id: 'enh_shocking_burst', label: '⚡ Shocking Burst', bonusEq: '+2' },
-      { id: 'enh_corrosive', label: '🧪 Acidic (+1d6)', bonusEq: '+1' },
-      { id: 'enh_holy', label: '☀️ Holy (+2d6 vs Evil)', bonusEq: '+2' },
-      { id: 'enh_unholy', label: '💀 Unholy (+2d6 vs Good)', bonusEq: '+2' },
-      { id: 'enh_ghost_touch', label: '👻 Ghost Touch', bonusEq: '+1' },
-      { id: 'enh_speed', label: '⚡ Speed (+1 Atk)', bonusEq: '+3' },
-      { id: 'enh_vorpal', label: '🗡️ Vorpal (Nat 20)', bonusEq: '+5' },
-      { id: 'enh_wounding', label: '🩸 Wounding (1 CON)', bonusEq: '+2' },
-      { id: 'enh_fortification_light', label: '🛡️ Fortification 25%', bonusEq: '+1' },
-      { id: 'enh_fortification_moderate', label: '🛡️ Fortification 75%', bonusEq: '+3' },
-      { id: 'enh_animated', label: '🛡️ Animated Shield', bonusEq: '+2' }
+      { id: 'enh-keen', label: '⚡ Keen (2× Crit)', bonusEq: '+1' },
+      { id: 'enh-flaming', label: '🔥 Flaming (+1d6)', bonusEq: '+1' },
+      { id: 'enh-flaming-burst', label: '🔥 Flaming Burst', bonusEq: '+2' },
+      { id: 'enh-frost', label: '❄️ Frost (+1d6)', bonusEq: '+1' },
+      { id: 'enh-icy-burst', label: '❄️ Icy Burst', bonusEq: '+2' },
+      { id: 'enh-shock', label: '⚡ Shock (+1d6)', bonusEq: '+1' },
+      { id: 'enh-shocking-burst', label: '⚡ Shocking Burst', bonusEq: '+2' },
+      { id: 'enh-corrosive', label: '🧪 Acidic (+1d6)', bonusEq: '+1' },
+      { id: 'enh-holy', label: '☀️ Holy (+2d6 vs Evil)', bonusEq: '+2' },
+      { id: 'enh-unholy', label: '💀 Unholy (+2d6 vs Good)', bonusEq: '+2' },
+      { id: 'enh-ghost-touch', label: '👻 Ghost Touch', bonusEq: '+1' },
+      { id: 'enh-speed', label: '⚡ Speed (+1 Atk)', bonusEq: '+3' },
+      { id: 'enh-vorpal', label: '🗡️ Vorpal (Nat 20)', bonusEq: '+5' },
+      { id: 'enh-wounding', label: '🩸 Wounding (1 CON)', bonusEq: '+2' },
+      { id: 'enh-fortification-light', label: '🛡️ Fortification 25%', bonusEq: '+1' },
+      { id: 'enh-fortification-moderate', label: '🛡️ Fortification 75%', bonusEq: '+3' },
+      { id: 'enh-animated', label: '🛡️ Animated Shield', bonusEq: '+2' }
     ];
 
     enhGrid.innerHTML = ENH_LIST.map(e => `
@@ -699,23 +695,31 @@
     if (!global.ItemAssembler) return null;
     const nlInput = document.getElementById('dnd-forge-nl-input');
     const nlVal = (nlInput && nlInput.value || '').trim();
-    if (nlVal.length >= 4) {
-      const parsed = global.ItemAssembler.parseNaturalLanguageItem(nlVal);
-      if (parsed) return parsed;
+    if (nlVal.length >= 4 && typeof global.ItemAssembler.parseNaturalLanguageItem === 'function') {
+      try {
+        const parsed = global.ItemAssembler.parseNaturalLanguageItem(nlVal);
+        if (parsed) return parsed;
+      } catch (_) {}
     }
 
-    const baseId = document.getElementById('dnd-forge-base-select')?.value || 'longsword';
+    const baseId = document.getElementById('dnd-forge-base-select')?.value || 'wpn-longsword';
     const matId = document.getElementById('dnd-forge-material-select')?.value || '';
     const enhBonus = Number(document.getElementById('dnd-forge-enh-bonus')?.value) || 0;
     const checkedEnhs = Array.from(document.querySelectorAll('.dnd-forge-enh-chk:checked')).map(el => el.value);
 
-    return global.ItemAssembler.assembleItem({
-      baseItemId: baseId,
-      material: matId || null,
-      enhancementBonus: enhBonus,
-      enhancements: checkedEnhs,
-      masterwork: enhBonus > 0 || Boolean(matId)
-    });
+    const assembleFn = global.ItemAssembler.assemble || global.ItemAssembler.assembleItem;
+    if (typeof assembleFn !== 'function') return null;
+    try {
+      return assembleFn.call(global.ItemAssembler, {
+        baseItemId: baseId,
+        material: matId || null,
+        enhancementBonus: enhBonus,
+        enhancements: checkedEnhs,
+        masterwork: enhBonus > 0 || Boolean(matId)
+      });
+    } catch (_) {
+      return null;
+    }
   }
 
   function onForgeNaturalLanguageInput(val) {
@@ -749,11 +753,11 @@
         <div class="flex items-center gap-3 text-right">
           <div>
             <div class="text-[10px] text-slate-400 uppercase font-bold">Market Price</div>
-            <div class="text-sm font-black font-mono text-amber-400">${Number(item.priceGp || 0).toLocaleString('en-US')} gp</div>
+            <div class="text-sm font-black font-mono text-amber-400">${Number(item.priceGp ?? item.cost ?? 0).toLocaleString('en-US')} gp</div>
           </div>
           <div>
             <div class="text-[10px] text-slate-400 uppercase font-bold">Weight</div>
-            <div class="text-sm font-bold font-mono text-slate-200">${item.weightLb ?? 0} lb.</div>
+            <div class="text-sm font-bold font-mono text-slate-200">${item.weightLb ?? item.weight ?? 0} lb.</div>
           </div>
         </div>
       </div>
@@ -793,10 +797,6 @@
 
   async function openCompendiumDrawer(options = {}) {
     ensureCompendiumDrawerDom();
-    if (global.SrdCompendium && !global.SrdCompendium.isReady()) {
-      await global.SrdCompendium.init();
-    }
-    populateForgeControls();
 
     _drawerState.onEquipCallback = options.onEquip || options.onSelect || null;
     const rawTab = options.tab || options.defaultTab || options.category || 'all';
@@ -810,6 +810,13 @@
     const input = document.getElementById('dnd-ui-compendium-input');
     if (input) input.value = initialQuery;
     _drawerState.query = initialQuery;
+
+    if (global.SrdCompendium && typeof global.SrdCompendium.init === 'function') {
+      if (typeof global.SrdCompendium.isReady !== 'function' || !global.SrdCompendium.isReady()) {
+        await global.SrdCompendium.init();
+      }
+    }
+    populateForgeControls();
 
     await switchCompendiumTab(initialTab);
     if (initialTab !== 'forge' && input) {
@@ -860,7 +867,15 @@
 
     const filters = { limit: 60 };
     if (_drawerState.activeTab !== 'all') {
-      filters.category = _drawerState.activeTab;
+      const tabMap = {
+        Weapon: ['Weapon'],
+        Armor: ['Armor', 'Shield', 'Item'],
+        Feat: ['Feat'],
+        Spell: ['Spell', 'Power'],
+        Condition: ['Condition', 'Rule'],
+        Monster: ['Monster']
+      };
+      filters.type = tabMap[_drawerState.activeTab] || _drawerState.activeTab;
     }
 
     const results = await global.SrdCompendium.search(query || '', filters);
@@ -877,7 +892,7 @@
       <div onclick="DnDUI.selectCompendiumEntry(${idx})" class="p-2.5 hover:bg-slate-900/90 cursor-pointer transition flex items-center justify-between gap-2 ${idx === 0 ? 'bg-indigo-950/50' : ''}">
         <div class="min-w-0">
           <div class="text-xs font-bold text-white truncate">${escapeHtml(r.name)}</div>
-          <div class="text-[10px] text-slate-400 font-mono truncate">${escapeHtml(r.subCategory || r.category || 'SRD')}</div>
+          <div class="text-[10px] text-slate-400 font-mono truncate">${escapeHtml(r.type || 'SRD')}${r.category ? ` • ${escapeHtml(r.category)}` : ''}</div>
         </div>
         <span class="text-xs text-slate-500">›</span>
       </div>
@@ -892,11 +907,9 @@
     if (!item || !detailEl || !global.SrdCompendium) return;
 
     let full = item;
-    if (item.category === 'Spell' || item.category === 'Power') {
-      full = await global.SrdCompendium.getSpellById(item.id) || item;
-    } else if (item.category === 'Monster') {
-      full = await global.SrdCompendium.getMonsterById(item.id) || item;
-    } else {
+    if (typeof global.SrdCompendium.fetchEntry === 'function') {
+      full = (await global.SrdCompendium.fetchEntry(item.id, item.type)) || item;
+    } else if (typeof global.SrdCompendium.getById === 'function') {
       full = global.SrdCompendium.getById(item.id) || item;
     }
     _drawerState.selectedEntry = full;
@@ -909,7 +922,7 @@
     detailEl.innerHTML = `
       <div class="border-b border-slate-800 pb-3 flex items-start justify-between gap-2">
         <div>
-          <span class="px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-700/60 text-[10px] font-mono">${escapeHtml(full.category || 'SRD')} • ${escapeHtml(full.subCategory || '')}</span>
+          <span class="px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-700/60 text-[10px] font-mono">${escapeHtml(full.type || 'SRD')}${full.category ? ` • ${escapeHtml(full.category)}` : ''}</span>
           <h4 class="text-base font-black text-amber-300 mt-1">${escapeHtml(full.name)}</h4>
           <div class="text-[10px] font-mono text-slate-500">ID: ${escapeHtml(full.id)} • Source: ${escapeHtml(full.source || 'SRD 3.5e')}</div>
         </div>
@@ -922,8 +935,8 @@
       ${(dmgHtml || modHtml || tacHtml) ? `
         <div class="space-y-2 bg-slate-900/70 border border-slate-800 rounded-xl p-3">
           ${dmgHtml ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Damage Parts:</span><div class="flex flex-wrap gap-1">${dmgHtml}</div></div>` : ''}
-          ${modHtml ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Bonuslar (modifiers):</span><div class="flex flex-wrap gap-1">${modHtml}</div></div>` : ''}
-          ${tacHtml ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Taktiksel Bayraklar:</span><div class="flex flex-wrap gap-1">${tacHtml}</div></div>` : ''}
+          ${modHtml ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Active Modifiers (modifiers):</span><div class="flex flex-wrap gap-1">${modHtml}</div></div>` : ''}
+          ${tacHtml ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Tactical Flags:</span><div class="flex flex-wrap gap-1">${tacHtml}</div></div>` : ''}
           ${modesHtml ? `<div><span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Embedded Modes:</span>${modesHtml}</div>` : ''}
         </div>
       ` : ''}
