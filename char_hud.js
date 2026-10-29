@@ -2093,10 +2093,12 @@
       try {
         if (typeof getMagicDisciplineClassLevels === 'function' && typeof autoSelectMagicDisciplineTab === 'function') {
           const progLevels = getMagicDisciplineClassLevels(character);
-          const magicSig = `${character.id || character.name || ''}|${character.settings?.clMode || ''}|${character.settings?.casterType || ''}|${progLevels.spontaneous || 0},${progLevels.prepared || 0},${progLevels.divine || 0},${progLevels.martial || 0}`;
+          const magicSig = `${character.id || character.name || ''}|${character.settings?.clMode || ''}|${character.settings?.casterType || ''}|${character.settings?.casterTypeExplicit ? 1 : 0}|${progLevels.spontaneous || 0},${progLevels.prepared || 0},${progLevels.divine || 0},${progLevels.martial || 0}`;
           if (window._lastMagicDisciplineSig !== magicSig) {
             window._lastMagicDisciplineSig = magicSig;
-            autoSelectMagicDisciplineTab(character);
+            window._userManualMagicDiscipline = null;
+            if (character) delete character._preferredMagicDiscipline;
+            autoSelectMagicDisciplineTab(character, true);
           }
         }
       } catch (e) { console.error('autoSelectMagicDisciplineTab error:', e); }

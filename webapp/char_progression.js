@@ -5004,25 +5004,42 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       character.settings.ignoreAsf = ignoreAsfChecked;
 
       if (casterProg === 'primary') {
-        const sorcLvls = (prog.filter(p => p.className === 'Sorcerer' && p.active !== false).length || 0) + (className === 'Sorcerer' ? 1 : 1);
-        if (character.settings.clMode === 'Character Level (DM Boon)') {
-          if (character.spellcasting && isActive) character.spellcasting.cl = nextLvl;
-        } else {
-          if (character.spellcasting && isActive) character.spellcasting.cl = sorcLvls;
-        }
+        const levelDisc = (typeof classifyClassToMagicDiscipline === 'function')
+          ? (classifyClassToMagicDiscipline(className) || 'spontaneous')
+          : 'spontaneous';
+        const discLvls = (typeof getMagicDisciplineClassLevels === 'function')
+          ? ((getMagicDisciplineClassLevels(character)[levelDisc] || 0) + 1)
+          : ((prog.filter(p => p.className === className && p.active !== false).length || 0) + 1);
+        const effCl = (character.settings.clMode === 'Character Level (DM Boon)') ? nextLvl : discLvls;
         if (character.spellcasting && isActive) {
-          character.spellcasting.slots = calculateSorcererSlots(sorcLvls, character.abilities?.cha || 22, character.spellcasting.slots);
+          character.spellcasting.cl = effCl;
+          if (levelDisc === 'spontaneous' && typeof calculateSorcererSlots === 'function') {
+            character.spellcasting.slots = calculateSorcererSlots(effCl, character.abilities?.cha || 22, character.spellcasting.slots);
+          } else if (levelDisc === 'divine' && typeof calculateDivineSlots === 'function') {
+            character.spellcasting.divineSlots = calculateDivineSlots(effCl, character.abilities?.wis || 14, character.spellcasting.divineSlots);
+          } else if (levelDisc === 'prepared' && typeof calculateWizardSlots === 'function') {
+            character.spellcasting.preparedSlots = calculateWizardSlots(effCl, character.abilities?.int || 14, character.spellcasting.preparedSlots);
+          }
         }
-        rowFeats.push(`🔮 +1 Caster Lvl (CL: ${character.spellcasting?.cl || nextLvl})`);
+        rowFeats.push(`🔮 +1 Caster Lvl (CL: ${effCl})`);
       } else if (casterProg === 'cl_boon') {
         character.settings.clMode = 'Character Level (DM Boon)';
-        if (typeof classifyClassToMagicDiscipline === 'function') {
-          const boonDisc = classifyClassToMagicDiscipline(className);
-          if (boonDisc) character.settings.casterType = boonDisc;
+        const boonDisc = (typeof classifyClassToMagicDiscipline === 'function')
+          ? (classifyClassToMagicDiscipline(className) || 'spontaneous')
+          : 'spontaneous';
+        if (boonDisc) {
+          character.settings.casterType = boonDisc;
+          character.settings.casterTypeExplicit = true;
         }
         if (character.spellcasting && isActive) {
           character.spellcasting.cl = nextLvl;
-          character.spellcasting.slots = calculateSorcererSlots(nextLvl, character.abilities?.cha || 22, character.spellcasting.slots);
+          if (boonDisc === 'spontaneous' && typeof calculateSorcererSlots === 'function') {
+            character.spellcasting.slots = calculateSorcererSlots(nextLvl, character.abilities?.cha || 22, character.spellcasting.slots);
+          } else if (boonDisc === 'divine' && typeof calculateDivineSlots === 'function') {
+            character.spellcasting.divineSlots = calculateDivineSlots(nextLvl, character.abilities?.wis || 14, character.spellcasting.divineSlots);
+          } else if (boonDisc === 'prepared' && typeof calculateWizardSlots === 'function') {
+            character.spellcasting.preparedSlots = calculateWizardSlots(nextLvl, character.abilities?.int || 14, character.spellcasting.preparedSlots);
+          }
         }
         rowFeats.push(`🌟 DM Boon: CL = Level ${nextLvl}`);
       }
