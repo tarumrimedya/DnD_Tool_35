@@ -5016,6 +5016,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         rowFeats.push(`🔮 +1 Caster Lvl (CL: ${character.spellcasting?.cl || nextLvl})`);
       } else if (casterProg === 'cl_boon') {
         character.settings.clMode = 'Character Level (DM Boon)';
+        if (typeof classifyClassToMagicDiscipline === 'function') {
+          const boonDisc = classifyClassToMagicDiscipline(className);
+          if (boonDisc) character.settings.casterType = boonDisc;
+        }
         if (character.spellcasting && isActive) {
           character.spellcasting.cl = nextLvl;
           character.spellcasting.slots = calculateSorcererSlots(nextLvl, character.abilities?.cha || 22, character.spellcasting.slots);

@@ -7,10 +7,10 @@
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
   <script src="bundled_data.js"></script>
   <script src="bundled_monsters.js"></script>
-  <script src="srd_compendium.js?v=20261029_2340"></script>
-  <script src="rule_engine.js?v=20261029_2340"></script>
-  <script src="rule_master.js?v=20261029_2340"></script>
-  <script src="ui_shared.js?v=20261029_2340"></script>
+  <script src="srd_compendium.js?v=20261029_2348"></script>
+  <script src="rule_engine.js?v=20261029_2348"></script>
+  <script src="rule_master.js?v=20261029_2348"></script>
+  <script src="ui_shared.js?v=20261029_2348"></script>
   <script src="gdrive_sync.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase_auth.js"></script>
@@ -21,7 +21,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="dice3d.js"></script>
   <script src="hub_dice.js"></script>
-  <script src="hub_notes.js?v=20261029_2340"></script>
+  <script src="hub_notes.js?v=20261029_2348"></script>
   <style>
     body {
       font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -1225,6 +1225,27 @@
         c.currentHp = Number(data.hp.current ?? c.currentHp ?? c.maxHp ?? 10);
         c.maxHp = Number(data.hp.max ?? c.maxHp ?? 10);
         c.tempHp = Number(data.hp.temp ?? c.tempHp ?? 0);
+      }
+
+      // Sync smartNotes & notesList between summary card `c` and `c.fullData`
+      const cNotesTs = Number(c._notesUpdatedAt || 0);
+      const dNotesTs = Number(data._notesUpdatedAt || 0);
+      const cNotes = Array.isArray(c.smartNotes) ? c.smartNotes : (Array.isArray(c.notesList) ? c.notesList : []);
+      const dNotes = Array.isArray(data.smartNotes) ? data.smartNotes : (Array.isArray(data.notesList) ? data.notesList : []);
+      if (dNotesTs > cNotesTs || (dNotes.length > cNotes.length && dNotesTs >= cNotesTs)) {
+        c.smartNotes = dNotes;
+        c.notesList = dNotes;
+        c.notes = data.notes || '';
+        if (dNotesTs > 0) c._notesUpdatedAt = dNotesTs;
+      } else if (cNotes.length > 0 || cNotesTs > dNotesTs) {
+        c.smartNotes = cNotes;
+        c.notesList = cNotes;
+        if (c.fullData && typeof c.fullData === 'object') {
+          c.fullData.smartNotes = cNotes;
+          c.fullData.notesList = cNotes;
+          c.fullData.notes = c.notes || '';
+          if (cNotesTs > 0) c.fullData._notesUpdatedAt = cNotesTs;
+        }
       }
 
       return c;

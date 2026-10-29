@@ -391,12 +391,14 @@
       if (charsInCamp.length > 0) {
         let targetChar = charsInCamp[0];
         try {
+          const activeId = localStorage.getItem('dnd35_active_character_id');
           const rawChar = localStorage.getItem('dnd35_character');
-          if (rawChar) {
-            const parsed = JSON.parse(rawChar);
-            const found = charsInCamp.find(c => c.id === parsed.id || c.name === parsed.name);
-            if (found) targetChar = found;
-          }
+          const parsed = rawChar ? JSON.parse(rawChar) : null;
+          const found = charsInCamp.find(c =>
+            (activeId && c.id === activeId) ||
+            (parsed && (c.id === parsed.id || c.id === parsed._hubId || (parsed.name && c.name === parsed.name)))
+          );
+          if (found) targetChar = found;
         } catch (e) {}
 
         const list = ensureSmartNotesArray(targetChar);
@@ -557,6 +559,16 @@
             hubChar.fullData.notesList = target.notesList || [];
             hubChar.fullData.notes = plainSummary;
             hubChar.fullData._notesUpdatedAt = nowTs;
+          }
+          if (!isTargetStandaloneChar && window.SupabaseAuth && !window.SupabaseAuth.isLocalMode()) {
+            const cloudPayload = hubChar.fullData || Object.assign({}, hubChar);
+            cloudPayload.id = hubChar.id;
+            cloudPayload._hubId = hubChar.id;
+            cloudPayload.smartNotes = target.notesList || [];
+            cloudPayload.notesList = target.notesList || [];
+            cloudPayload.notes = plainSummary;
+            cloudPayload._notesUpdatedAt = nowTs;
+            window.SupabaseAuth.upsertUserCharacter(cloudPayload).catch(() => {});
           }
         }
       }
@@ -2246,14 +2258,18 @@ RULES:
 
     if (target.notesList.length === 0) {
       _selectedModalNoteId = null;
-      if (titleInput) { titleInput.value = ''; titleInput.disabled = true; }
+      if (titleInput) { titleInput.value = ''; titleInput.disabled = false; }
       editor.value = '';
-      editor.placeholder = 'No notes in this notebook yet. Click "New Note" to create your first entry.';
-      editor.disabled = true;
+      editor.placeholder = 'Write your note here... (Type "#" for tag autocomplete, or click Save Note)';
+      editor.disabled = false;
       if (pinBtn) pinBtn.classList.add('opacity-40', 'pointer-events-none');
       if (deleteBtn) deleteBtn.classList.add('opacity-40', 'pointer-events-none');
-      if (saveBtn) saveBtn.classList.add('opacity-40', 'pointer-events-none');
-      if (dateBadge) dateBadge.textContent = '-';
+      if (saveBtn) saveBtn.classList.remove('opacity-40', 'pointer-events-none');
+      if (dateBadge) {
+        const state = getHubState();
+        const dName = getTargetDisplayName(target, state);
+        dateBadge.textContent = `${dName} • New Note Draft`;
+      }
       return;
     }
 
@@ -2292,7 +2308,7 @@ RULES:
   function handleEditorInput(event) {
     const titleInput = document.getElementById('hub-modal-note-title');
     const editor = document.getElementById('hub-modal-note-editor');
-    if (!editor || !_selectedModalNoteId) return;
+    if (!editor) return;
 
     if (document.activeElement === editor) {
       checkAutocomplete(editor);
@@ -2301,15 +2317,41 @@ RULES:
     const target = getActiveNotesTarget();
     if (!target) return;
 
-    const note = target.notesList.find(n => n.id === _selectedModalNoteId);
-    if (!note) return;
-
-    if (titleInput) {
-      note.title = (titleInput.value || '').trim();
+    let note = target.notesList.find(n => n.id === _selectedModalNoteId);
+    if (!note) {
+      const state = getHubState();
+      const charRef = resolveCharacterForNote(target, state);
+      const charTag = charRef ? toValidHashtag(charRef.name) : '';
+      const lvlNum = charRef ? Math.max(1, Number(charRef.level) || (Array.isArray(charRef.levelProgression) ? charRef.levelProgression.filter(l => l.active !== false).length : 1) || 1) : 0;
+      const lvlTag = charRef ? `#Lvl${lvlNum}` : '';
+      const autoPrefix = [charTag, lvlTag].filter(Boolean).join(' ');
+      const rawTitle = titleInput ? (titleInput.value || '').trim() : '';
+      const rawText = editor.value || '';
+      if (!rawTitle && !rawText.trim()) return;
+      note = {
+        id: 'note_' + Date.now(),
+        title: rawTitle,
+        text: rawText || (autoPrefix ? `${autoPrefix} ` : ''),
+        pinned: false,
+        completed: false,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        tags: extractTags(rawTitle + ' ' + rawText)
+      };
+      target.notesList.unshift(note);
+      _selectedModalNoteId = note.id;
+      const pinBtn = document.getElementById('hub-modal-pin-btn');
+      const deleteBtn = document.getElementById('hub-modal-delete-btn');
+      if (pinBtn) pinBtn.classList.remove('opacity-40', 'pointer-events-none');
+      if (deleteBtn) deleteBtn.classList.remove('opacity-40', 'pointer-events-none');
+    } else {
+      if (titleInput) {
+        note.title = (titleInput.value || '').trim();
+      }
+      note.text = editor.value || '';
+      note.tags = extractTags((note.title || '') + ' ' + (note.text || ''));
+      note.updatedAt = Date.now();
     }
-    note.text = editor.value || '';
-    note.tags = extractTags((note.title || '') + ' ' + (note.text || ''));
-    note.updatedAt = Date.now();
 
     if (target.targetObj) {
       target.targetObj.notesList = target.notesList;
@@ -2408,7 +2450,21 @@ RULES:
         note = target.notesList[0];
         _selectedModalNoteId = note.id;
       } else {
-        return;
+        const rawTitle = titleInput ? (titleInput.value || '').trim() : '';
+        const rawText = (editor.value || '').trim();
+        if (!rawTitle && !rawText) return;
+        note = {
+          id: 'note_' + Date.now(),
+          title: rawTitle,
+          text: editor.value || '',
+          pinned: false,
+          completed: false,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          tags: extractTags(rawTitle + ' ' + rawText)
+        };
+        target.notesList.unshift(note);
+        _selectedModalNoteId = note.id;
       }
     }
 

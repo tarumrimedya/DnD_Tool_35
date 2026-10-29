@@ -600,14 +600,42 @@
               const localTs = localSaved?.lastModified ? new Date(localSaved.lastModified).getTime() : 0;
 
               const isLocalEmpty = !localSaved ||
-                                   (!localSaved.classes && !localSaved.class && localLvl <= 1 && (!localSaved.feats || localSaved.feats.length === 0));
+                                   (!localSaved.classes && !localSaved.class && localLvl <= 1 && (!localSaved.feats || localSaved.feats.length === 0) && (!localSaved.smartNotes || localSaved.smartNotes.length === 0));
 
               const shouldAdoptCloud = isLocalEmpty ||
-                                       localSaved.id !== matchedCloud.id ||
+                                       (localSaved.id !== matchedCloud.id && localSaved._hubId !== matchedCloud.id) ||
                                        cloudLvl > localLvl ||
                                        (cloudLvl === localLvl && cloudTs >= localTs);
 
               if (shouldAdoptCloud) {
+                // Preserve any newer notes from localSaved or dnd35_hub_db before adopting cloudFd
+                try {
+                  const hubRawPre = localStorage.getItem('dnd35_hub_db');
+                  const hubDbPre = hubRawPre ? JSON.parse(hubRawPre) : null;
+                  const hubCharPre = (hubDbPre?.characters || []).find(c => c.id === matchedCloud.id);
+                  const hubNotes = hubCharPre?.smartNotes || hubCharPre?.notesList || hubCharPre?.fullData?.smartNotes || [];
+                  const localNotes = (localSaved && (localSaved.id === matchedCloud.id || localSaved._hubId === matchedCloud.id)) ? (localSaved.smartNotes || localSaved.notesList || []) : [];
+                  const cloudNotes = cloudFd.smartNotes || cloudFd.notesList || [];
+                  const hubNTs = Number(hubCharPre?._notesUpdatedAt || hubCharPre?.fullData?._notesUpdatedAt || 0);
+                  const localNTs = Number(localSaved?._notesUpdatedAt || 0);
+                  const cloudNTs = Number(cloudFd._notesUpdatedAt || 0);
+                  let bestNotes = cloudNotes;
+                  let bestNTs = cloudNTs;
+                  if (hubNTs > bestNTs || (hubNotes.length > bestNotes.length && hubNTs >= bestNTs)) {
+                    bestNotes = hubNotes;
+                    bestNTs = hubNTs;
+                  }
+                  if (localNTs > bestNTs || (localNotes.length > bestNotes.length && localNTs >= bestNTs)) {
+                    bestNotes = localNotes;
+                    bestNTs = localNTs;
+                  }
+                  if (Array.isArray(bestNotes) && bestNotes.length > 0) {
+                    cloudFd.smartNotes = bestNotes;
+                    cloudFd.notesList = bestNotes;
+                    if (bestNTs > 0) cloudFd._notesUpdatedAt = bestNTs;
+                  }
+                } catch (nErr) {}
+
                 character = cloudFd;
                 localStorage.setItem('dnd35_character', JSON.stringify(character));
                 localStorage.setItem('dnd35_active_character_id', character.id);
@@ -622,6 +650,11 @@
                       let hIdx = hubDb.characters.findIndex(c => c.id === matchedCloud.id);
                       if (hIdx >= 0) {
                         hubDb.characters[hIdx].fullData = cloudFd;
+                        if (Array.isArray(cloudFd.smartNotes)) {
+                          hubDb.characters[hIdx].smartNotes = cloudFd.smartNotes;
+                          hubDb.characters[hIdx].notesList = cloudFd.smartNotes;
+                          if (cloudFd._notesUpdatedAt) hubDb.characters[hIdx]._notesUpdatedAt = cloudFd._notesUpdatedAt;
+                        }
                         hubDb.characters[hIdx].name = matchedCloud.name || cloudFd.name || hubDb.characters[hIdx].name;
                         hubDb.characters[hIdx].classes = cloudFd.classes || hubDb.characters[hIdx].classes;
                         hubDb.characters[hIdx].level = Number(cloudFd.level) || hubDb.characters[hIdx].level;
@@ -1071,7 +1104,8 @@
         }
         // Boş / henüz başlatılmamış nesnelerin buluttaki dolu karakteri ezmesini önle
         const curLvl = Number(character.level) || (Array.isArray(character.progression) ? character.progression.length : 0);
-        if (curLvl === 0 && !character.classes && !character.race && (!character.feats || character.feats.length === 0)) {
+        const hasNotes = Array.isArray(character.smartNotes) && character.smartNotes.length > 0;
+        if (curLvl === 0 && !character.classes && !character.race && !character.name && !hasNotes && (!character.feats || character.feats.length === 0)) {
           console.warn('saveStateToStorage: Character appears uninitialized/empty, prevented overwriting cloud data.');
         } else {
           window.SupabaseAuth.upsertUserCharacter(character).catch(err => {
