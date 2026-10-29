@@ -5501,15 +5501,28 @@
         qualifiedPool.push({ name: 'Sneak Attack', source: 'Feat', bonusAtk: 0, dice: '1d6', type: 'Precision', combatScope: 'both', active: false, notes: '+1d6 Precision Damage' });
       }
 
-      // CLEANUP: Strictly remove unowned modifiers, spell attacks, and non-melee items lingering from prior storage/dummy data
+      // CLEANUP: Strictly remove unowned modifiers, spell attacks, skills, and non-melee items lingering from prior storage/dummy data
+      const isSkillItemName = (rawName) => {
+        const clean = String(rawName || '').toLowerCase().trim();
+        if (!clean) return false;
+        if ((character.skills || []).some(sk => sk && sk.name && sk.name.toLowerCase().trim() === clean)) return true;
+        if (typeof DND35_CONSOLIDATED_SKILLS !== 'undefined' && Array.isArray(DND35_CONSOLIDATED_SKILLS)) {
+          if (DND35_CONSOLIDATED_SKILLS.some(c => c.name.toLowerCase().trim() === clean)) return true;
+        }
+        return false;
+      };
+
       character.activeModifiers = character.activeModifiers.filter(m => {
         if (!m || !m.name) return false;
-        const n = m.name.toLowerCase();
+        const n = m.name.toLowerCase().trim();
+        // Never allow Skills inside attack/damage modifier toggles
+        if (m.source === 'Skill' || isSkillItemName(n)) return false;
         // Disallow spell attacks, saving throw spells, and direct ammunition from melee active modifiers
         if (n.includes('acid arrow') || n.includes('fireball') || n.includes('scorching ray') || n.includes('magic missile') || n.includes('ray of frost') || n.includes('disintegrate')) return false;
         if (n.includes('arrow') && !n.includes('enhance arrow') && !n.includes('blade of blood')) return false;
         const dbEntry = typeof findMasterItem === 'function' ? findMasterItem(m.name) : null;
         if (dbEntry) {
+          if (dbEntry.type === 'Skill') return false;
           if (['ranged_touch', 'melee_touch', 'spell_auto', 'saving_throw', 'ammunition', 'weapon', 'shield'].includes(dbEntry.attackType)) {
             return false;
           }
@@ -5526,18 +5539,19 @@
         if (n.includes('haste')) return characterHasBuff(character, 'Haste');
         if (n.includes('sneak attack')) return characterHasSneakAttack(character);
         if (typeof getPinsForDrawer === 'function') {
-          const isPinnedMelee = getPinsForDrawer('offense_melee').some(p => p && p.name && p.name.toLowerCase().trim() === n);
+          const isPinnedMelee = getPinsForDrawer('offense_melee').some(p => p && p.name && p.name.toLowerCase().trim() === n && p.sourceType !== 'Skill' && p.type !== 'Skill');
           if (isPinnedMelee) return true;
         }
         if (m.combatScope === 'ranged' || m.scope === 'Ranged Only') return false;
-        return true;
+        return qualifiedPool.some(q => q.name.toLowerCase().trim() === n);
       });
 
-      // Also include any pinned items in offense_melee into qualifiedPool
+      // Also include any pinned items in offense_melee (excluding Skills) into qualifiedPool
       if (typeof getPinsForDrawer === 'function') {
         const meleePins = getPinsForDrawer('offense_melee');
         meleePins.forEach(p => {
           if (!p || !p.name) return;
+          if (p.sourceType === 'Skill' || p.type === 'Skill' || p.action === 'Check' || isSkillItemName(p.name)) return;
           const pNameLower = p.name.toLowerCase().trim();
           if (!qualifiedPool.some(q => q.name.toLowerCase().trim() === pNameLower)) {
             const dmgExpr = p.badge || (typeof findDiceExpression === 'function' ? findDiceExpression(p.desc) : '');
@@ -7922,7 +7936,7 @@
     function resolvePinTarget(pin) {
       if (!pin) return 'offense_melee';
       if (pin.pinTarget && pin.pinTarget !== 'auto') {
-        if (['offense_melee', 'offense_ranged', 'offense_spell', 'spell_control', 'spell_support', 'defense'].includes(pin.pinTarget)) {
+        if (['offense_melee', 'offense_ranged', 'offense_spell', 'spell_control', 'spell_support', 'defense', 'combat_skills'].includes(pin.pinTarget)) {
           return pin.pinTarget;
         }
       }
@@ -7933,7 +7947,15 @@
       const dbItem = typeof findMasterItem === 'function' ? findMasterItem(pin.name) : null;
       const attackType = pin.attackType || dbItem?.attackType || '';
       const combatScope = pin.combatScope || dbItem?.combatScope || '';
-      const sourceType = pin.sourceType || dbItem?.type || '';
+      const sourceType = pin.sourceType || pin.type || dbItem?.type || '';
+
+      // 0. Skills always route to Combat Skills (1-click d20 roller)
+      if (sourceType === 'Skill' || pin.category === 'combat_skills' || pin.action === 'Check') {
+        return 'combat_skills';
+      }
+      if ((character?.skills || []).some(sk => sk && sk.name && sk.name.toLowerCase().trim() === name)) {
+        return 'combat_skills';
+      }
 
       // Direct category override
       if (pin.category === 'spell_control') return 'spell_control';
@@ -7999,10 +8021,10 @@
 
     function getAllCombatPins() {
       if (!character) return [];
-      if (!character.combatPins) character.combatPins = { offense_melee: [], offense_ranged: [], offense_spell: [], spell_control: [], spell_support: [], defense: [] };
+      if (!character.combatPins) character.combatPins = { offense_melee: [], offense_ranged: [], offense_spell: [], spell_control: [], spell_support: [], defense: [], combat_skills: [] };
       const all = [];
       const seenNames = new Set();
-      const keys = ['offense_melee', 'offense_ranged', 'offense_spell', 'spell_control', 'spell_support', 'defense', 'offense'];
+      const keys = ['offense_melee', 'offense_ranged', 'offense_spell', 'spell_control', 'spell_support', 'defense', 'combat_skills', 'offense'];
       keys.forEach(k => {
         (character.combatPins[k] || []).forEach(p => {
           if (!p || !p.name) return;
@@ -8030,7 +8052,7 @@
 
       pin.pinTarget = newTarget;
 
-      const targetBuckets = { offense_melee: [], offense_ranged: [], offense_spell: [], spell_control: [], spell_support: [], defense: [] };
+      const targetBuckets = { offense_melee: [], offense_ranged: [], offense_spell: [], spell_control: [], spell_support: [], defense: [], combat_skills: [] };
       all.forEach(p => {
         const t = resolvePinTarget(p);
         if (!targetBuckets[t]) targetBuckets[t] = [];
@@ -8041,6 +8063,7 @@
       saveStateToStorage(true);
       try { renderOffenseModifiersGrid(); } catch (e) {}
       try { if (typeof renderRangedModifiersGrid === 'function') renderRangedModifiersGrid(); } catch (e) {}
+      try { if (typeof renderCombatSkillsCard === 'function') renderCombatSkillsCard(); } catch (e) {}
       ['offense_spell', 'spell_control', 'spell_support', 'defense'].forEach(cat => {
         try { renderCombatPins(cat); } catch (e) {}
       });
@@ -8054,7 +8077,8 @@
         spell_support: '✨ Spell: Support',
         offense_melee: '⚔️ Physical: Melee',
         offense_ranged: '🏹 Physical: Ranged',
-        defense: '🛡️ Physical: Defense'
+        defense: '🛡️ Physical: Defense',
+        combat_skills: '🎯 Combat Skills'
       };
       showDiceTopToast({
         icon: '📌',
@@ -8073,11 +8097,14 @@
     function removeCombatPinByName(pinName) {
       if (!character || !character.combatPins) return;
       const clean = (pinName || '').toLowerCase().trim();
-      ['offense_melee', 'offense_ranged', 'offense_spell', 'spell_control', 'spell_support', 'defense', 'offense'].forEach(k => {
+      ['offense_melee', 'offense_ranged', 'offense_spell', 'spell_control', 'spell_support', 'defense', 'combat_skills', 'offense'].forEach(k => {
         if (Array.isArray(character.combatPins[k])) {
           character.combatPins[k] = character.combatPins[k].filter(p => (p.name || '').toLowerCase().trim() !== clean);
         }
       });
+      if (Array.isArray(character.activeModifiers)) {
+        character.activeModifiers = character.activeModifiers.filter(m => !m || !m.name || m.name.toLowerCase().trim() !== clean);
+      }
     }
 
     // --- SPELL TOUCH ATTACK ROLLER (BAB + DEX/STR vs TOUCH AC + DAMAGE) ---
@@ -8173,13 +8200,36 @@
     // Readied maneuvers, known stances, equipped items with active abilities route automatically.
     function syncAutomatedCombatPins(char) {
       if (!char) return;
-      if (!char.combatPins) char.combatPins = { offense_melee: [], offense_ranged: [], offense_spell: [], spell_control: [], spell_support: [], defense: [] };
+      if (!char.combatPins) char.combatPins = { offense_melee: [], offense_ranged: [], offense_spell: [], spell_control: [], spell_support: [], defense: [], combat_skills: [] };
       if (!char.combatPins.offense_melee) char.combatPins.offense_melee = [];
       if (!char.combatPins.offense_ranged) char.combatPins.offense_ranged = [];
       if (!char.combatPins.offense_spell) char.combatPins.offense_spell = [];
       if (!char.combatPins.spell_control) char.combatPins.spell_control = [];
       if (!char.combatPins.spell_support) char.combatPins.spell_support = [];
       if (!char.combatPins.defense) char.combatPins.defense = [];
+      if (!char.combatPins.combat_skills) char.combatPins.combat_skills = [];
+
+      // Migrate any Skill pins that were previously routed into offense_melee or other drawers into combat_skills
+      ['offense_melee', 'offense_ranged', 'offense_spell', 'spell_control', 'spell_support', 'defense'].forEach(cat => {
+        if (!Array.isArray(char.combatPins[cat])) return;
+        const keep = [];
+        char.combatPins[cat].forEach(p => {
+          if (!p || !p.name) return;
+          const pNameLower = p.name.toLowerCase().trim();
+          const isSkill = p.sourceType === 'Skill' || p.type === 'Skill' || p.action === 'Check' ||
+            (char.skills || []).some(sk => sk && sk.name && sk.name.toLowerCase().trim() === pNameLower);
+          if (isSkill) {
+            p.pinTarget = 'combat_skills';
+            p.sourceType = 'Skill';
+            if (!char.combatPins.combat_skills.some(existing => (existing.name || '').toLowerCase().trim() === pNameLower)) {
+              char.combatPins.combat_skills.push(p);
+            }
+          } else {
+            keep.push(p);
+          }
+        });
+        char.combatPins[cat] = keep;
+      });
 
       // Migration: Clean up or migrate any legacy utility/offense pins
       if (Array.isArray(char.combatPins.utility) && char.combatPins.utility.length > 0) {
@@ -8605,10 +8655,17 @@
         };
       }
       if (!character.combatPins) {
-        character.combatPins = { offense_melee: [], offense_ranged: [], offense_spell: [], spell_control: [], spell_support: [], defense: [] };
+        character.combatPins = { offense_melee: [], offense_ranged: [], offense_spell: [], spell_control: [], spell_support: [], defense: [], combat_skills: [] };
       }
       if (!character.weaponAttackProfiles) {
         character.weaponAttackProfiles = {};
+      }
+
+      // Automated Pin Sync: Readied maneuvers, known stances, equipped active items, belt items, monster abilities & Skill pin migration
+      try {
+        syncAutomatedCombatPins(character);
+      } catch (err) {
+        console.warn('syncAutomatedCombatPins error:', err);
       }
 
       // Ensure qualified modifiers pool & clean unowned entries
@@ -8616,13 +8673,6 @@
         ensureActiveModifiersPool();
       } catch (err) {
         console.warn('ensureActiveModifiersPool error:', err);
-      }
-
-      // Automated Pin Sync: Readied maneuvers, known stances, equipped active items, belt items, monster abilities
-      try {
-        syncAutomatedCombatPins(character);
-      } catch (err) {
-        console.warn('syncAutomatedCombatPins error:', err);
       }
 
       // Live Special Defenses & V2 Active Condition Blocker Banner
@@ -8710,22 +8760,8 @@
         }
       }
 
-      // Combat Skills bonus badges
-      const getSkillBonus = (name) => {
-        const sk = (character.skills || []).find(s => s && s.name && s.name.toLowerCase().includes(name.toLowerCase()));
-        if (!sk) return '+0';
-        const statMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.[sk.stat] || 10) : 0;
-        const total = (Number(sk.ranks) || 0) + statMod + (Number(sk.misc) || 0);
-        return (total >= 0 ? '+' : '') + total;
-      };
-      const concBadge = document.getElementById('skill-bonus-concentration');
-      if (concBadge) concBadge.textContent = getSkillBonus('Concentration');
-      const tumbBadge = document.getElementById('skill-bonus-tumble');
-      if (tumbBadge) tumbBadge.textContent = getSkillBonus('Tumble');
-      const jumpBadge = document.getElementById('skill-bonus-jump');
-      if (jumpBadge) jumpBadge.textContent = getSkillBonus('Jump');
-      const spotBadge = document.getElementById('skill-bonus-spot');
-      if (spotBadge) spotBadge.textContent = getSkillBonus('Spot');
+      // Combat Skills card (4 Core Defaults + User-Pinned Skills)
+      try { renderCombatSkillsCard(); } catch (e) { console.error('renderCombatSkillsCard error:', e); }
 
       // AoO Bonus Badge
       const aooBadge = document.getElementById('aoo-bonus-badge');
@@ -9043,25 +9079,142 @@
       }
     }
 
+    function getCombatSkillInfo(skillName) {
+      if (!character || !skillName) return { name: skillName || 'Skill', total: 0, formatted: '+0' };
+      const target = String(skillName).toLowerCase().trim();
+      const isMerged = character.settings?.mergeSkills !== false;
+
+      // 1. Check Consolidated Skills if active or explicitly named
+      if (typeof DND35_CONSOLIDATED_SKILLS !== 'undefined' && Array.isArray(DND35_CONSOLIDATED_SKILLS)) {
+        const conDef = DND35_CONSOLIDATED_SKILLS.find(c =>
+          c.name.toLowerCase() === target ||
+          c.key.toLowerCase() === target ||
+          (isMerged && c.components.some(comp => comp === target))
+        );
+        if (conDef && (isMerged || conDef.name.toLowerCase() === target)) {
+          const compSkills = (character.skills || []).filter(s => conDef.components.includes(s.key));
+          const ranks = Math.max(0, ...compSkills.map(s => Number(s.ranks) || 0));
+          const misc = Math.max(0, ...compSkills.map(s => Number(s.misc) || 0));
+          const statMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.[conDef.stat] || 10) : 0;
+          const acpVal = conDef.acp ? (character.acBreakdown?.acp || 0) : 0;
+          const evalSkillObj = (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateSkillBonus)
+            ? RuleEngine.evaluateSkillBonus(character, conDef.key, conDef.name, conDef.stat)
+            : { total: Number(character.buffSkillBonus) || 0 };
+          const total = ranks + statMod + misc - acpVal + (Number(evalSkillObj.total) || 0);
+          return {
+            name: skillName,
+            total,
+            formatted: (total >= 0 ? '+' : '') + total
+          };
+        }
+      }
+
+      // 2. Check Standard Character Skills (exact match first, then includes)
+      const skills = character.skills || [];
+      let sk = skills.find(s => s && s.name && s.name.toLowerCase().trim() === target);
+      if (!sk) {
+        sk = skills.find(s => s && s.name && s.name.toLowerCase().includes(target));
+      }
+      if (!sk) {
+        return { name: skillName, total: 0, formatted: '+0' };
+      }
+
+      const statMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.[sk.stat] || 10) : 0;
+      const acpVal = sk.acp ? (character.acBreakdown?.acp || 0) : 0;
+      const evalSkillObj = (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateSkillBonus)
+        ? RuleEngine.evaluateSkillBonus(character, sk.key || sk.name, sk.name, sk.stat)
+        : { total: Number(character.buffSkillBonus) || 0 };
+      const total = (Number(sk.ranks) || 0) + statMod + (Number(sk.misc) || 0) - acpVal + (Number(evalSkillObj.total) || 0);
+      return {
+        name: sk.name || skillName,
+        total,
+        formatted: (total >= 0 ? '+' : '') + total
+      };
+    }
+
+    function renderCombatSkillsCard() {
+      const grid = document.getElementById('combat-skills-grid');
+      if (!grid || !character) return;
+
+      const coreSkills = [
+        { name: 'Concentration', label: 'Concentration' },
+        { name: 'Tumble', label: 'Tumble' },
+        { name: 'Jump', label: 'Jump' },
+        { name: 'Spot', label: 'Spot / Listen' }
+      ];
+
+      const coreLowerSet = new Set(['concentration', 'tumble', 'jump', 'spot', 'spot / listen']);
+      const pinnedSkills = (typeof getPinsForDrawer === 'function' ? getPinsForDrawer('combat_skills') : [])
+        .filter(p => p && p.name && !coreLowerSet.has(p.name.toLowerCase().trim()));
+
+      const countBadge = document.getElementById('combat-skills-pins-badge');
+      if (countBadge) {
+        countBadge.textContent = String(coreSkills.length + pinnedSkills.length);
+      }
+
+      const coreHtml = coreSkills.map(cs => {
+        const info = getCombatSkillInfo(cs.name);
+        const safeName = cs.name.replace(/'/g, "\\'");
+        const modColor = info.total >= 0 ? 'text-emerald-400' : 'text-rose-400';
+        return `
+          <button type="button" onclick="rollCombatSkill('${safeName}')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-sky-500/50 rounded px-2 py-1.5 text-left text-xs text-slate-200 hover:text-white flex items-center justify-between gap-1.5 transition cursor-pointer" title="Roll 1d20${info.formatted} ${cs.label} Check">
+            <span class="truncate">${cs.label}</span>
+            <span class="font-mono font-bold ${modColor} text-xs shrink-0">${info.formatted}</span>
+          </button>
+        `;
+      }).join('');
+
+      const pinnedHtml = pinnedSkills.map(pin => {
+        const info = getCombatSkillInfo(pin.name);
+        const safeName = String(pin.name).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        const modColor = info.total >= 0 ? 'text-sky-300' : 'text-rose-400';
+        return `
+          <div onclick="rollCombatSkill('${safeName}')" class="bg-sky-950/35 hover:bg-sky-900/50 border border-sky-800/70 hover:border-sky-400 rounded px-2 py-1.5 text-left text-xs text-sky-100 hover:text-white flex items-center justify-between gap-1 transition cursor-pointer group" title="Roll 1d20${info.formatted} ${pin.name} Check">
+            <span class="truncate font-medium">${pin.name}</span>
+            <div class="flex items-center gap-1 shrink-0">
+              <span class="font-mono font-bold ${modColor} text-xs">${info.formatted}</span>
+              <button type="button" onclick="event.stopPropagation(); unpinCombatSkill('${safeName}')" class="text-slate-500 hover:text-rose-400 text-[11px] font-bold px-0.5 leading-none transition cursor-pointer" title="Unpin ${pin.name} from Combat Skills">×</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      grid.innerHTML = coreHtml + pinnedHtml;
+    }
+
+    function unpinCombatSkill(skillName) {
+      if (!character || !skillName) return;
+      removeCombatPinByName(skillName);
+      saveStateToStorage(true);
+      renderAll();
+      showDiceTopToast({
+        icon: '📌',
+        title: 'Skill Unpinned',
+        breakdown: `"${skillName}" removed from 🎯 Combat Skills.`,
+        total: 'Removed'
+      });
+    }
+
     function rollCombatSkill(skillName) {
-      const sk = (character.skills || []).find(s => s && s.name && s.name.toLowerCase().includes(skillName.toLowerCase()));
-      const statMod = (sk && RuleEngine) ? RuleEngine.getAbilityMod(character.abilities?.[sk.stat] || 10) : 0;
-      const bonus = sk ? ((Number(sk.ranks) || 0) + statMod + (Number(sk.misc) || 0)) : 0;
+      const info = getCombatSkillInfo(skillName);
+      const bonus = info.total;
       const d20 = Math.floor(Math.random() * 20) + 1;
       const total = d20 + bonus;
+      const signStr = bonus >= 0 ? `+ ${bonus}` : `- ${Math.abs(bonus)}`;
+      const formulaSign = bonus >= 0 ? `+${bonus}` : `${bonus}`;
 
       const finalizeSkill = () => {
         showDiceTopToast({
           icon: '🎯',
           title: `${skillName} Check`,
-          breakdown: `Roll: d20 (${d20}) + ${bonus} = ${total}`,
+          breakdown: `Roll: d20 (${d20}) ${signStr} = ${total}`,
           total: `${total}`
         });
         addDiceHistoryEntry({
           icon: '🎯',
           title: `${skillName} Roll`,
-          formula: `d20+${bonus}`,
-          breakdown: `d20 (${d20}) + ${bonus} = ${total}`,
+          formula: `d20${formulaSign}`,
+          breakdown: `d20 (${d20}) ${signStr} = ${total}`,
           total: `${total}`
         });
       };
@@ -10559,6 +10712,10 @@
         colorClasses = 'bg-indigo-950/80 text-indigo-300 border-indigo-500/80 shadow-[0_0_8px_rgba(99,102,241,0.45)] hover:bg-indigo-900 hover:border-indigo-400 ring-1 ring-indigo-500/40';
         tooltip = `📌 Combat Cockpit: Pinned to DEFENSE Drawer (${itemName}) - Click to unpin`;
         iconSvg = `<svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>`;
+      } else if (category === 'combat_skills') {
+        colorClasses = 'bg-sky-950/80 text-sky-300 border-sky-500/80 shadow-[0_0_8px_rgba(14,165,233,0.45)] hover:bg-sky-900 hover:border-sky-400 ring-1 ring-sky-500/40';
+        tooltip = `📌 Combat Cockpit: Pinned to COMBAT SKILLS (${itemName}) - Click to unpin`;
+        iconSvg = `<svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>`;
       } else {
         colorClasses = 'bg-slate-900/50 text-slate-500 hover:text-slate-200 border-slate-700/60 hover:border-slate-500 opacity-35 hover:opacity-100 hover:bg-slate-800';
         tooltip = `📌 Pin to Combat Cockpit (${itemName})`;
@@ -10576,7 +10733,7 @@
 
     function toggleUniversalPin(item) {
       if (!character) return;
-      if (!character.combatPins) character.combatPins = { offense_melee: [], offense_ranged: [], offense_spell: [], spell_control: [], spell_support: [], defense: [] };
+      if (!character.combatPins) character.combatPins = { offense_melee: [], offense_ranged: [], offense_spell: [], spell_control: [], spell_support: [], defense: [], combat_skills: [] };
       const allPins = getAllCombatPins();
       const match = allPins.find(p => (p.name || '').trim().toLowerCase() === (item.name || '').trim().toLowerCase());
 
@@ -10589,6 +10746,25 @@
           title: 'Unpinned',
           breakdown: `"${item.name}" removed from cockpit.`,
           total: 'Removed'
+        });
+      } else if (item.type === 'Skill' || item.sourceType === 'Skill' || item.action === 'Check') {
+        if (!Array.isArray(character.combatPins.combat_skills)) character.combatPins.combat_skills = [];
+        character.combatPins.combat_skills.push({
+          id: 'pin_' + Date.now(),
+          name: item.name,
+          pinTarget: 'combat_skills',
+          sourceType: 'Skill',
+          action: 'Check',
+          badge: item.badge || '',
+          desc: item.desc || `${item.name} skill check`
+        });
+        saveStateToStorage(true);
+        renderAll();
+        showDiceTopToast({
+          icon: '🎯',
+          title: 'Pinned to Combat Skills!',
+          breakdown: `"${item.name}" added to 🎯 Combat Skills for 1-click d20 rolls.`,
+          total: 'Added'
         });
       } else {
         openPinCategoryPicker(item);
