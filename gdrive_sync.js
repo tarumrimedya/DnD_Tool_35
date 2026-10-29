@@ -486,62 +486,23 @@ const CloudSync = {
       }
     }
 
-    // 2. Restore & Upgrade Master DB (Intelligent Merge / Never Downgrade Canonical DB)
-    if (typeof masterDb !== 'undefined') {
-      const canonicalDefaults = Array.isArray(window.BUNDLED_MASTER_DB) && window.BUNDLED_MASTER_DB.length > 0
-        ? window.BUNDLED_MASTER_DB
-        : (Array.isArray(masterDb) ? masterDb : []);
-
-      const incomingList = Array.isArray(remotePayload.masterDb) && remotePayload.masterDb.length > 0
-        ? remotePayload.masterDb
-        : [];
-
-      const mergedDb = [];
-      const seenNames = new Set();
-
-      // Priority 1: Canonical verified defaults from bundled_data.js / master_db.json
-      canonicalDefaults.forEach(item => {
-        if (!item || !item.name) return;
-        const lower = item.name.toLowerCase().trim();
-        seenNames.add(lower);
-        mergedDb.push(item);
-      });
-
-      // Priority 2: Custom user-created items from remote cloud storage
-      incomingList.forEach(item => {
-        if (!item || !item.name) return;
-        const lower = item.name.toLowerCase().trim();
-        if (!seenNames.has(lower)) {
-          seenNames.add(lower);
-          mergedDb.push(item);
-        }
-      });
-
-      const normalizedMergedDb = (window.RuleMaster && typeof window.RuleMaster.normalizeDatabaseList === 'function')
-        ? window.RuleMaster.normalizeDatabaseList(mergedDb)
-        : ((window.SchemaMigrator && typeof window.SchemaMigrator.migrateMasterDbEntryToV2 === 'function')
-          ? mergedDb.map(m => window.SchemaMigrator.migrateMasterDbEntryToV2(m)).filter(m => !m.isChild)
-          : mergedDb);
-
-      const needsUpgrade = incomingList.length < normalizedMergedDb.length;
-      masterDb.length = 0;
-      normalizedMergedDb.forEach(item => masterDb.push(item));
-      localStorage.setItem('dnd35_master_db', JSON.stringify(masterDb));
-
+    // 2. Bind Master DB strictly to active character's customDb (Character-Scoped DB)
+    if (typeof character !== 'undefined' && character) {
+      if (!Array.isArray(character.customDb)) {
+        character.customDb = [];
+      }
+      if (window.RuleMaster && typeof window.RuleMaster.normalizeDatabaseList === 'function') {
+        character.customDb = window.RuleMaster.normalizeDatabaseList(character.customDb);
+      } else if (window.SchemaMigrator && typeof window.SchemaMigrator.migrateMasterDbEntryToV2 === 'function') {
+        character.customDb = character.customDb.map(m => window.SchemaMigrator.migrateMasterDbEntryToV2(m)).filter(m => !m.isChild);
+      }
+      if (typeof masterDb !== 'undefined') {
+        masterDb = character.customDb;
+      }
       if (window.RuleMaster && typeof RuleMaster.renderTable === 'function') {
         try { RuleMaster.renderTable(); } catch (e) { console.warn('RuleMaster.renderTable error:', e); }
       }
       applied = true;
-
-      // Automatically upgrade Cloud DB if local canonical database had more verified entries than cloud
-      // GUARD: Upgrade at most ONCE per session and NEVER trigger during background silent polling to avoid ping-pong loops!
-      if (needsUpgrade && this.configured && this.authenticated && !silent && !this._cloudDbUpgraded) {
-        this._cloudDbUpgraded = true;
-        console.log(`CloudSync: Upgrading Cloud DB with canonical entries (${incomingList.length} -> ${mergedDb.length} items)...`);
-        setTimeout(() => {
-          this.pushToCloud(true);
-        }, 1500);
-      }
     }
 
     if (applied && typeof renderAll === 'function') {

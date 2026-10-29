@@ -41,14 +41,14 @@
     <header class="bg-[#131d33] border border-slate-700/80 rounded-2xl p-4 sm:p-5 shadow-2xl backdrop-blur-md">
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div class="flex items-center gap-2.5">
-            <span class="px-2.5 py-0.5 text-[11px] font-bold tracking-wider uppercase rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
-              🏰 Multi-Char & DM Cockpit
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="px-2.5 py-0.5 text-[11px] font-bold tracking-wider uppercase rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 whitespace-nowrap shrink-0">
+              🏰 Multi-Char &amp; DM Cockpit
             </span>
-            <span class="text-xs text-slate-400 font-mono">D&D 3.5e RAW & Homebrew Hub</span>
+            <span class="text-xs text-slate-400 font-mono">D&amp;D 3.5e RAW &amp; Homebrew Hub</span>
           </div>
           <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mt-1">
-            Character & Campaign Hub
+            Character &amp; Campaign Hub
           </h1>
           <p class="text-xs sm:text-sm text-slate-400 mt-0.5">
             Manage player characters (PCs) and DM encounter NPCs in one place, organize them into campaigns, and launch directly into the character sheet.
@@ -56,7 +56,7 @@
         </div>
 
         <!-- Üst Eylem Butonları (Sağa Yaslı, Eşit Boyutlu & Tam Simetrik) -->
-        <div class="flex flex-col items-stretch sm:items-end justify-center gap-2 shrink-0 self-start sm:self-auto sm:ml-auto w-full sm:w-[280px] lg:w-[310px] xl:w-[330px] 2xl:w-[360px]">
+        <div class="flex flex-col items-stretch md:items-end justify-center gap-2 shrink-0 self-start md:self-auto md:ml-auto w-full md:w-[290px] lg:w-[310px] xl:w-[330px] 2xl:w-[360px]">
           <!-- Kullanıcı Profil Slotu -->
           <div id="user-profile-slot" class="w-full"></div>
 
@@ -88,20 +88,20 @@
         </div>
       </div>
 
-      <!-- KAMPANYA SEKMELERİ (CAMPAIGN FILTER PILLS & VIEW TOGGLE) -->
-      <div class="mt-5 pt-4 border-t border-slate-700/60 flex flex-col md:flex-row md:items-center justify-between gap-3">
-        <!-- Dinamik Aşağı Doğru Genişleyen Kampanya Hapları -->
-        <div class="flex flex-wrap items-center gap-2 flex-1" id="campaign-tabs-container">
+      <!-- KAMPANYA SEÇİCİ BAR (SEÇENEK B: AÇILIR LİSTE + BUTON BARI) & GÖRÜNÜM DEĞİŞTİRİCİ -->
+      <div class="mt-5 pt-4 border-t border-slate-700/60 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        <!-- Simetrik Kampanya Seçici ve Eylem Barı -->
+        <div class="w-full flex-1 min-w-0" id="campaign-tabs-container">
           <!-- JS tarafından dinamik doldurulur -->
         </div>
 
         <!-- Görünüm Modu Değiştirici (Kart vs DM Tablosu) -->
-        <div class="w-full sm:w-[280px] lg:w-[310px] xl:w-[330px] 2xl:w-[360px] flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-700/80 shrink-0 shadow-md">
-          <button id="view-mode-card-btn" onclick="setViewMode('cards')" class="flex-1 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-indigo-600 text-white shadow cursor-pointer">
+        <div class="w-full md:w-[290px] lg:w-[310px] xl:w-[330px] 2xl:w-[360px] h-10 flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-700/80 shrink-0 shadow-md">
+          <button id="view-mode-card-btn" onclick="setViewMode('cards')" class="flex-1 h-full rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-indigo-600 text-white shadow cursor-pointer">
             <span>🎴</span>
             <span>Card View</span>
           </button>
-          <button id="view-mode-dm-btn" onclick="setViewMode('dm-table')" class="flex-1 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer">
+          <button id="view-mode-dm-btn" onclick="setViewMode('dm-table')" class="flex-1 h-full rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer">
             <span>📋</span>
             <span>DM Table</span>
           </button>
@@ -109,29 +109,30 @@
       </div>
 
       <!-- ARAMA, V2 KÜTÜPHANE & TÜR FİLTRESİ -->
-      <div class="mt-4 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 text-xs">
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-1">
-          <div class="relative w-full sm:w-72">
-            <input type="text" id="hub-search-input" oninput="renderHub()" placeholder="Search name, race, or class..." class="w-full bg-slate-900/90 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+      <div class="mt-3 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 text-xs">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 flex-1 min-w-0">
+          <div class="relative w-full sm:w-64 md:w-72 shrink-0">
+            <input type="text" id="hub-search-input" oninput="renderHub()" placeholder="Search name, race, or class..." class="w-full h-10 bg-slate-900/90 border border-slate-700/80 rounded-xl pl-9 pr-3 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition shadow-inner">
             <span class="absolute left-3 top-2.5 text-slate-500">🔍</span>
           </div>
-          <div class="flex items-center gap-1.5 flex-wrap">
-            <button type="button" onclick="openHubCompendiumDrawer('Monster')" class="px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/40 font-bold text-xs transition flex items-center gap-1.5 cursor-pointer shadow-sm" title="645 SRD Monsters, Spells, Feats & Items (Zero-Token V2 Compendium)">
-              <span>👹</span>
-              <span>Bestiary &amp; SRD V2 (<span id="hub-bestiary-count-badge">645</span>)</span>
+          <!-- Tam Simetrik 2 Eşit Sütun (%50 - %50) Kütüphane ve Forge Butonları -->
+          <div class="grid grid-cols-2 gap-2 w-full sm:flex-1">
+            <button type="button" onclick="openHubCompendiumDrawer('Monster')" class="w-full h-10 px-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/40 font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm truncate" title="645 SRD Monsters, Spells, Feats & Items (Zero-Token V2 Compendium)">
+              <span class="shrink-0">👹</span>
+              <span class="truncate">Bestiary &amp; SRD (<span id="hub-bestiary-count-badge">645</span>)</span>
             </button>
-            <button type="button" onclick="openHubCompendiumDrawer('forge')" class="px-3 py-2 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/35 text-indigo-300 border border-indigo-500/40 font-bold text-xs transition flex items-center gap-1.5 cursor-pointer shadow-sm" title="V2 Modular Forge: Combine Material + Enhancement + Special Abilities">
-              <span>⚒️</span>
-              <span>The Forge (Item Builder)</span>
+            <button type="button" onclick="openHubCompendiumDrawer('forge')" class="w-full h-10 px-2.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/35 text-indigo-300 border border-indigo-500/40 font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm truncate" title="V2 Modular Forge: Combine Material + Enhancement + Special Abilities">
+              <span class="shrink-0">⚒️</span>
+              <span class="truncate">The Forge <span class="hidden sm:inline">(Builder)</span></span>
             </button>
           </div>
         </div>
 
         <!-- Tür Filtresi -->
-        <div class="w-full sm:w-[280px] lg:w-[310px] xl:w-[330px] 2xl:w-[360px] flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-700/80 shrink-0 shadow-md">
-          <button onclick="setTypeFilter('all')" id="filter-type-all" class="flex-1 py-1.5 text-xs font-semibold rounded-lg transition text-center bg-slate-800 text-white cursor-pointer">All</button>
-          <button onclick="setTypeFilter('pc')" id="filter-type-pc" class="flex-1 py-1.5 text-xs font-semibold rounded-lg transition text-center text-slate-400 hover:text-white cursor-pointer">PCs (Players)</button>
-          <button onclick="setTypeFilter('npc')" id="filter-type-npc" class="flex-1 py-1.5 text-xs font-semibold rounded-lg transition text-center text-slate-400 hover:text-white cursor-pointer">NPCs (Monsters)</button>
+        <div class="w-full lg:w-[310px] xl:w-[330px] 2xl:w-[360px] h-10 flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-700/80 shrink-0 shadow-md">
+          <button onclick="setTypeFilter('all')" id="filter-type-all" class="flex-1 h-full text-xs font-semibold rounded-lg transition flex items-center justify-center bg-slate-800 text-white cursor-pointer">All</button>
+          <button onclick="setTypeFilter('pc')" id="filter-type-pc" class="flex-1 h-full text-xs font-semibold rounded-lg transition flex items-center justify-center text-slate-400 hover:text-white cursor-pointer">PCs (Players)</button>
+          <button onclick="setTypeFilter('npc')" id="filter-type-npc" class="flex-1 h-full text-xs font-semibold rounded-lg transition flex items-center justify-center text-slate-400 hover:text-white cursor-pointer">NPCs (Monsters)</button>
         </div>
       </div>
     </header>
@@ -250,14 +251,14 @@
                 onkeydown="HubNotes.handleQuickKeydown(event)"></textarea>
             </div>
 
-            <!-- Hızlı Etiket Araç Çubuğu ve Kaydet Butonu -->
+            <!-- Hızlı Etiket Araç Çubuğu ve Kaydet Butonu (Tam Simetrik 5 Eşit Sütun) -->
             <div class="shrink-0 space-y-1.5 pt-0.5">
-              <div class="flex items-center gap-1 flex-wrap text-[9px] font-mono">
-                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('#quest')" class="px-1.5 py-0.5 rounded bg-sky-950/60 hover:bg-sky-900 border border-sky-800/60 text-sky-300 transition cursor-pointer">+ #quest</button>
-                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('#npc')" class="px-1.5 py-0.5 rounded bg-purple-950/60 hover:bg-purple-900 border border-purple-800/60 text-purple-300 transition cursor-pointer">+ #npc</button>
-                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('#location')" class="px-1.5 py-0.5 rounded bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800/60 text-emerald-300 transition cursor-pointer">+ #location</button>
-                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('#loot')" class="px-1.5 py-0.5 rounded bg-yellow-950/60 hover:bg-yellow-900 border border-yellow-800/60 text-yellow-300 transition cursor-pointer">+ #loot</button>
-                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('- [ ] ')" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition cursor-pointer">+ To-Do</button>
+              <div class="grid grid-cols-5 gap-1 w-full text-[9px] font-mono">
+                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('#quest')" class="w-full py-1 px-1 rounded bg-sky-950/60 hover:bg-sky-900 border border-sky-800/60 text-sky-300 font-bold transition flex items-center justify-center cursor-pointer truncate">+ #quest</button>
+                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('#npc')" class="w-full py-1 px-1 rounded bg-purple-950/60 hover:bg-purple-900 border border-purple-800/60 text-purple-300 font-bold transition flex items-center justify-center cursor-pointer truncate">+ #npc</button>
+                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('#location')" class="w-full py-1 px-1 rounded bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800/60 text-emerald-300 font-bold transition flex items-center justify-center cursor-pointer truncate">+ #location</button>
+                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('#loot')" class="w-full py-1 px-1 rounded bg-yellow-950/60 hover:bg-yellow-900 border border-yellow-800/60 text-yellow-300 font-bold transition flex items-center justify-center cursor-pointer truncate">+ #loot</button>
+                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('- [ ] ')" class="w-full py-1 px-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold transition flex items-center justify-center cursor-pointer truncate">+ To-Do</button>
               </div>
 
               <button type="button" onclick="HubNotes.addQuickNote()" class="w-full py-1.5 px-3 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-indigo-950/50 transition transform active:scale-95 cursor-pointer">
@@ -1438,24 +1439,18 @@
       }
     }
 
-    // Kampanya Sekmelerini Render Et
+    // Kampanya Sekmelerini Render Et (Seçenek B: Tam Simetrik Açılır Liste + Eylem Barı)
     function renderCampaignTabs() {
       const container = document.getElementById('campaign-tabs-container');
       if (!container) return;
 
       const totalCount = state.characters.length;
       const unassignedCount = state.characters.filter(c => !c.campaignId).length;
-
-      let html = `
-        <button onclick="setCampaignFilter('all')" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition shrink-0 flex items-center gap-1.5 ${state.activeCampaignId === 'all' ? 'bg-indigo-600 text-white shadow' : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-slate-700'}">
-          <span>🌐</span>
-          <span>All Characters</span>
-          <span class="text-[10px] px-1.5 py-0.2 rounded-full ${state.activeCampaignId === 'all' ? 'bg-indigo-800 text-indigo-200' : 'bg-slate-800 text-slate-400'}">${totalCount}</span>
-        </button>
-      `;
-
-      // Sadece ana kampanyaları (kök) ana sekmelerde listele
       const rootCamps = state.campaigns.filter(c => !c.parentId);
+
+      let optionsHtml = `
+        <option value="all" ${state.activeCampaignId === 'all' ? 'selected' : ''}>🌐 All Characters (${totalCount})</option>
+      `;
 
       rootCamps.forEach(camp => {
         const subCamps = state.campaigns.filter(c => c.parentId === camp.id);
@@ -1467,39 +1462,44 @@
 
         const isActive = state.activeCampaignId === camp.id;
         const campIcon = camp.isDmMode ? '👑' : '🏰';
-        const dmBadge = camp.isDmMode ? `<span class="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0" title="DM Mode Active">DM</span>` : '';
-        const subBadge = subCamps.length > 0 ? `<span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-indigo-950/80 text-indigo-300 border border-indigo-700/50 shrink-0" title="${subCamps.length} Sub-Campaign(s) / Drawer(s)">${subCamps.length} Sub</span>` : '';
+        const dmTag = camp.isDmMode ? ' [DM]' : '';
+        const subTag = subCamps.length > 0 ? ` • ${subCamps.length} Sub` : '';
 
-        html += `
-          <div class="inline-flex items-center shrink-0 rounded-xl overflow-hidden border max-w-full ${isActive ? 'border-indigo-500 shadow-md ring-1 ring-indigo-400/40' : (camp.isDmMode ? 'border-amber-600/70 bg-amber-950/20' : 'border-slate-700 bg-slate-900/80')}">
-            <button onclick="setCampaignFilter('${camp.id}')" class="px-3 py-1.5 text-xs font-bold transition flex items-center gap-1.5 min-w-0 ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800 text-slate-300'}">
-              <span class="shrink-0">${campIcon}</span>
-              <span class="truncate max-w-[150px] sm:max-w-none">${camp.name}</span>
-              ${dmBadge}
-              ${subBadge}
-              <span class="text-[10px] px-1.5 py-0.2 rounded-full shrink-0 ${isActive ? 'bg-indigo-800 text-indigo-200' : 'bg-slate-800 text-slate-400'}">${totalCampCount}</span>
-            </button>
-            <button onclick="openEditCampaignModal('${camp.id}', event)" class="px-2 py-1.5 text-xs transition border-l border-slate-700/60 shrink-0 ${isActive ? 'bg-indigo-700 text-indigo-200 hover:text-white hover:bg-indigo-800' : 'bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-amber-300'}" title="Edit or Delete Campaign">
-              <span>✏️</span>
-            </button>
-          </div>
+        optionsHtml += `
+          <option value="${camp.id}" ${isActive ? 'selected' : ''}>${campIcon} ${escapeHtml(camp.name)}${dmTag}${subTag} (${totalCampCount})</option>
         `;
       });
 
-      html += `
-        <button onclick="setCampaignFilter('unassigned')" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition shrink-0 flex items-center gap-1.5 ${state.activeCampaignId === 'unassigned' ? 'bg-indigo-600 text-white shadow' : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-slate-700'}">
-          <span>📦</span>
-          <span>Standalone / Unassigned</span>
-          <span class="text-[10px] px-1.5 py-0.2 rounded-full ${state.activeCampaignId === 'unassigned' ? 'bg-indigo-800 text-indigo-200' : 'bg-slate-800 text-slate-400'}">${unassignedCount}</span>
-        </button>
-
-        <button onclick="openNewCampaignModal()" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition shrink-0 flex items-center gap-1.5 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white shadow-md shadow-indigo-950/50 border border-indigo-400/40 cursor-pointer active:scale-95 ml-auto" title="Add New Campaign">
-          <span class="text-sm">🏰</span>
-          <span>New Campaign</span>
-        </button>
+      optionsHtml += `
+        <option value="unassigned" ${state.activeCampaignId === 'unassigned' ? 'selected' : ''}>📦 Standalone / Unassigned (${unassignedCount})</option>
       `;
 
-      container.innerHTML = html;
+      const activeCampObj = rootCamps.find(c => c.id === state.activeCampaignId) || rootCamps[0] || null;
+      const editTargetId = activeCampObj ? activeCampObj.id : '';
+      const isSpecificCampSelected = state.activeCampaignId !== 'all' && state.activeCampaignId !== 'unassigned' && Boolean(activeCampObj);
+      const editTitle = activeCampObj
+        ? `Edit or Delete Campaign: ${escapeHtml(activeCampObj.name)}`
+        : 'Create a Campaign first';
+
+      container.innerHTML = `
+        <div class="w-full h-10 flex items-center gap-1.5 bg-slate-900/90 p-1 rounded-xl border border-slate-700/80 shadow-md">
+          <div class="relative flex-1 h-full min-w-0">
+            <select id="hub-campaign-filter-select" onchange="setCampaignFilter(this.value)" class="w-full h-full appearance-none bg-slate-800/90 hover:bg-slate-800 text-white font-bold text-xs rounded-lg pl-3 pr-7 border ${isSpecificCampSelected ? 'border-indigo-500/60' : 'border-slate-700/70'} focus:outline-none focus:border-indigo-500 transition cursor-pointer truncate">
+              ${optionsHtml}
+            </select>
+            <span class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">▼</span>
+          </div>
+
+          <button type="button" onclick="${editTargetId ? `openEditCampaignModal('${editTargetId}', event)` : `openNewCampaignModal()`}" class="h-full px-2.5 rounded-lg text-xs font-bold transition shrink-0 flex items-center justify-center border ${isSpecificCampSelected ? 'bg-indigo-950/80 hover:bg-indigo-900 text-indigo-200 border-indigo-500/50' : 'bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-amber-300 border-slate-700/70'} cursor-pointer active:scale-95" title="${editTitle}">
+            <span>✏️</span>
+          </button>
+
+          <button type="button" onclick="openNewCampaignModal()" class="h-full px-3 rounded-lg text-xs font-bold transition shrink-0 flex items-center justify-center gap-1.5 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white shadow cursor-pointer active:scale-95" title="Add New Campaign">
+            <span>🏰</span>
+            <span>New<span class="hidden sm:inline"> Campaign</span></span>
+          </button>
+        </div>
+      `;
     }
 
 // Karakter Kartı HTML Üreticisi (Büyük Yazılar, Ergonomik Tıklanabilir Alanlar ve Not Defteri ile Eşit Boy)
@@ -2150,9 +2150,9 @@
         const btn = document.getElementById('filter-type-' + k);
         if (btn) {
           if (k === t) {
-            btn.className = 'flex-1 py-1.5 text-xs font-semibold rounded-lg transition text-center bg-slate-800 text-white cursor-pointer';
+            btn.className = 'flex-1 h-full text-xs font-semibold rounded-lg transition flex items-center justify-center bg-slate-800 text-white cursor-pointer';
           } else {
-            btn.className = 'flex-1 py-1.5 text-xs font-semibold rounded-lg transition text-center text-slate-400 hover:text-white cursor-pointer';
+            btn.className = 'flex-1 h-full text-xs font-semibold rounded-lg transition flex items-center justify-center text-slate-400 hover:text-white cursor-pointer';
           }
         }
       });
@@ -2165,11 +2165,11 @@
       const dmBtn = document.getElementById('view-mode-dm-btn');
 
       if (mode === 'cards') {
-        cardBtn.className = 'flex-1 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-indigo-600 text-white shadow cursor-pointer';
-        dmBtn.className = 'flex-1 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer';
+        cardBtn.className = 'flex-1 h-full rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-indigo-600 text-white shadow cursor-pointer';
+        dmBtn.className = 'flex-1 h-full rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer';
       } else {
-        cardBtn.className = 'flex-1 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer';
-        dmBtn.className = 'flex-1 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-indigo-600 text-white shadow cursor-pointer';
+        cardBtn.className = 'flex-1 h-full rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer';
+        dmBtn.className = 'flex-1 h-full rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-indigo-600 text-white shadow cursor-pointer';
       }
       renderHub();
     }
@@ -4831,35 +4831,38 @@ CRITICAL RULES:
     <div id="hub-full-notes-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-2 sm:p-4 md:p-6">
       <div class="bg-[#131d33] border border-slate-700 rounded-2xl w-full max-w-5xl max-h-[92vh] flex flex-col shadow-2xl text-slate-100 overflow-hidden">
         
-        <!-- Modal Başlığı & Görünüm Sekmeleri -->
-        <div class="flex items-center justify-between border-b border-slate-700/80 px-4 sm:px-5 py-3 bg-slate-900/90 shrink-0 gap-2 flex-wrap">
-          <div class="flex items-center gap-2.5 min-w-0">
-            <span class="text-xl shrink-0">📝</span>
-            <div class="min-w-0">
-              <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
-                <span>Smart Campaign Notebook</span>
-                <span id="hub-modal-target-title" class="inline-flex items-center text-xs font-normal text-indigo-300 truncate"></span>
-              </h3>
+        <!-- Modal Başlığı & Görünüm Sekmeleri (Tam Simetrik Üst Bar + 3 Eşit Sekme) -->
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between border-b border-slate-700/80 px-4 sm:px-5 py-3 bg-slate-900/90 shrink-0 gap-2.5">
+          <div class="flex items-center justify-between gap-2 w-full lg:w-auto min-w-0">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="text-xl shrink-0">📝</span>
+              <h3 class="text-sm sm:text-base font-bold text-white truncate">Smart Campaign Notebook</h3>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <span id="hub-modal-target-title" class="inline-flex items-center text-xs font-normal text-indigo-300 truncate"></span>
+              <button type="button" onclick="HubNotes.closeFullNotesModal()" class="lg:hidden text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold px-2.5 py-1.5 cursor-pointer shrink-0 transition">✕</button>
             </div>
           </div>
 
-          <!-- Mod Switcher: [ 📝 Notlar ] [ 🕸️ Etiket Haritası ] [ ✨ AI Günlükçü ] -->
-          <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs shrink-0">
-            <button type="button" id="hub-modal-tab-editor" onclick="HubNotes.switchModalView('editor')" class="px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 bg-indigo-600 text-white shadow cursor-pointer text-xs">
-              <span>📝</span>
-              <span>Notes</span>
-            </button>
-            <button type="button" id="hub-modal-tab-mindmap" onclick="HubNotes.switchModalView('mindmap')" class="px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 text-slate-400 hover:text-white cursor-pointer text-xs">
-              <span>🕸️</span>
-              <span>Tag Mindmap</span>
-            </button>
-            <button type="button" id="hub-modal-tab-ai" onclick="HubNotes.switchModalView('ai')" class="px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 text-slate-400 hover:text-white cursor-pointer text-xs">
-              <span>✨</span>
-              <span>AI Chronicler</span>
-            </button>
-          </div>
+          <div class="flex items-center gap-2 w-full lg:w-auto">
+            <!-- Mod Switcher: [ 📝 Notes (33%) ] [ 🕸️ Tag Mindmap (33%) ] [ ✨ AI Chronicler (33%) ] -->
+            <div class="grid grid-cols-3 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs w-full lg:w-auto shrink-0">
+              <button type="button" id="hub-modal-tab-editor" onclick="HubNotes.switchModalView('editor')" class="w-full px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1.5 bg-indigo-600 text-white shadow cursor-pointer text-xs truncate">
+                <span>📝</span>
+                <span class="truncate">Notes</span>
+              </button>
+              <button type="button" id="hub-modal-tab-mindmap" onclick="HubNotes.switchModalView('mindmap')" class="w-full px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer text-xs truncate">
+                <span>🕸️</span>
+                <span class="truncate">Tag Mindmap</span>
+              </button>
+              <button type="button" id="hub-modal-tab-ai" onclick="HubNotes.switchModalView('ai')" class="w-full px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer text-xs truncate">
+                <span>✨</span>
+                <span class="truncate">AI Chronicler</span>
+              </button>
+            </div>
 
-          <button type="button" onclick="HubNotes.closeFullNotesModal()" class="text-slate-400 hover:text-white text-lg font-bold px-2 py-1 cursor-pointer shrink-0">✕</button>
+            <button type="button" onclick="HubNotes.closeFullNotesModal()" class="hidden lg:inline-flex text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold px-2.5 py-1.5 cursor-pointer shrink-0 transition">✕ Close</button>
+          </div>
         </div>
 
         <!-- 1. GÖRÜNÜM: Notlar & Editör (2 Kolon) -->
@@ -4892,35 +4895,41 @@ CRITICAL RULES:
 
           <!-- Sağ Sütun: Not Editörü -->
           <div class="flex-1 flex flex-col p-4 space-y-3 bg-[#131d33] overflow-y-auto min-h-0">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-2.5 shrink-0 flex-wrap gap-2">
-              <div class="text-[11px] text-slate-400 font-mono" id="hub-modal-date-badge">Selected note details</div>
-              <div class="flex items-center gap-2 flex-wrap">
-                <button type="button" onclick="HubNotes.openAiChroniclerWithActiveNote()" class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition bg-purple-950/60 hover:bg-purple-900/80 text-purple-300 border border-purple-800/60 flex items-center gap-1.5 cursor-pointer shadow-sm" title="Summarize this note and connected notes with AI">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between border-b border-slate-800 pb-2.5 shrink-0 gap-2">
+              <div class="text-[11px] text-slate-400 font-mono truncate" id="hub-modal-date-badge">Selected note details</div>
+              <!-- Tam Simetrik 2x2 (Mobil) / 4'lü (PC) Eylem Butonları -->
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full lg:w-auto">
+                <button type="button" onclick="HubNotes.openAiChroniclerWithActiveNote()" class="w-full px-2.5 py-1.5 rounded-lg text-xs font-bold transition bg-purple-950/60 hover:bg-purple-900/80 text-purple-300 border border-purple-800/60 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm truncate" title="Summarize this note and connected notes with AI">
                   <span>✨</span>
-                  <span>AI Summarize</span>
+                  <span class="truncate">AI Summarize</span>
                 </button>
-                <button type="button" id="hub-modal-save-btn" onclick="HubNotes.saveModalNote(true)" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-950/40 flex items-center gap-1.5 cursor-pointer active:scale-95" title="Save Changes (Ctrl+S / Ctrl+Enter)">
+                <button type="button" id="hub-modal-save-btn" onclick="HubNotes.saveModalNote(true)" class="w-full px-3 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-950/40 flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 truncate" title="Save Changes (Ctrl+S / Ctrl+Enter)">
                   <span>💾</span>
-                  <span id="hub-modal-save-text">Save Note</span>
+                  <span id="hub-modal-save-text" class="truncate">Save Note</span>
                 </button>
-                <button type="button" id="hub-modal-pin-btn" onclick="HubNotes.togglePinNote(null, event)" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:text-white border border-slate-700 cursor-pointer">
+                <button type="button" id="hub-modal-pin-btn" onclick="HubNotes.togglePinNote(null, event)" class="w-full px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:text-white border border-slate-700 flex items-center justify-center gap-1 cursor-pointer truncate">
                   📌 Pin to Top
                 </button>
-                <button type="button" id="hub-modal-delete-btn" onclick="HubNotes.deleteNote(null, event)" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-800/60 cursor-pointer">
+                <button type="button" id="hub-modal-delete-btn" onclick="HubNotes.deleteNote(null, event)" class="w-full px-3 py-1.5 rounded-lg text-xs font-bold transition bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-800/60 flex items-center justify-center gap-1 cursor-pointer truncate">
                   🗑️ Delete
                 </button>
               </div>
             </div>
 
-            <!-- Hızlı Etiket Ekleme Araç Çubuğu -->
-            <div class="flex items-center gap-1.5 flex-wrap text-xs font-mono shrink-0">
-              <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Quick Tag:</span>
-              <button type="button" onclick="HubNotes.insertTagIntoEditor('#quest')" class="px-2 py-0.5 rounded-md bg-sky-950/60 hover:bg-sky-900 text-sky-300 border border-sky-800/60 transition cursor-pointer">+ #quest</button>
-              <button type="button" onclick="HubNotes.insertTagIntoEditor('#npc')" class="px-2 py-0.5 rounded-md bg-purple-950/60 hover:bg-purple-900 text-purple-300 border border-purple-800/60 transition cursor-pointer">+ #npc</button>
-              <button type="button" onclick="HubNotes.insertTagIntoEditor('#location')" class="px-2 py-0.5 rounded-md bg-emerald-950/60 hover:bg-emerald-900 text-emerald-300 border border-emerald-800/60 transition cursor-pointer">+ #location</button>
-              <button type="button" onclick="HubNotes.insertTagIntoEditor('#loot')" class="px-2 py-0.5 rounded-md bg-yellow-950/60 hover:bg-yellow-900 text-yellow-300 border border-yellow-800/60 transition cursor-pointer">+ #loot</button>
-              <button type="button" onclick="HubNotes.insertTagIntoEditor('- [ ] ')" class="px-2 py-0.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition cursor-pointer">+ To-Do</button>
-              <span class="text-[10px] text-slate-500 italic ml-auto hidden md:inline">💡 Type '#' for tag autocomplete</span>
+            <!-- Hızlı Etiket Ekleme Araç Çubuğu (Tam Simetrik 5 Eşit Sütun) -->
+            <div class="flex flex-col sm:flex-row sm:items-center gap-1.5 text-xs font-mono shrink-0">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider shrink-0">Quick Tag:</span>
+                <span class="text-[10px] text-slate-500 italic sm:hidden">💡 Type '#' for tags</span>
+              </div>
+              <div class="grid grid-cols-5 gap-1.5 w-full sm:flex-1">
+                <button type="button" onclick="HubNotes.insertTagIntoEditor('#quest')" class="w-full py-1 px-1 rounded-md bg-sky-950/60 hover:bg-sky-900 text-sky-300 border border-sky-800/60 text-[10px] sm:text-xs font-bold transition flex items-center justify-center cursor-pointer truncate">+ #quest</button>
+                <button type="button" onclick="HubNotes.insertTagIntoEditor('#npc')" class="w-full py-1 px-1 rounded-md bg-purple-950/60 hover:bg-purple-900 text-purple-300 border border-purple-800/60 text-[10px] sm:text-xs font-bold transition flex items-center justify-center cursor-pointer truncate">+ #npc</button>
+                <button type="button" onclick="HubNotes.insertTagIntoEditor('#location')" class="w-full py-1 px-1 rounded-md bg-emerald-950/60 hover:bg-emerald-900 text-emerald-300 border border-emerald-800/60 text-[10px] sm:text-xs font-bold transition flex items-center justify-center cursor-pointer truncate">+ #location</button>
+                <button type="button" onclick="HubNotes.insertTagIntoEditor('#loot')" class="w-full py-1 px-1 rounded-md bg-yellow-950/60 hover:bg-yellow-900 text-yellow-300 border border-yellow-800/60 text-[10px] sm:text-xs font-bold transition flex items-center justify-center cursor-pointer truncate">+ #loot</button>
+                <button type="button" onclick="HubNotes.insertTagIntoEditor('- [ ] ')" class="w-full py-1 px-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-[10px] sm:text-xs font-bold transition flex items-center justify-center cursor-pointer truncate">+ To-Do</button>
+              </div>
+              <span class="text-[10px] text-slate-500 italic ml-auto hidden md:inline shrink-0">💡 Type '#' for tag autocomplete</span>
             </div>
 
             <!-- Bitişik Başlık + Gövde Not Kağıdı -->
@@ -5100,37 +5109,37 @@ CRITICAL RULES:
     <div class="bg-[#131d33] border border-purple-500/60 rounded-2xl max-w-3xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden my-auto text-slate-100">
       
       <!-- Modal Header -->
-      <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between shrink-0">
-        <div class="flex items-center gap-2.5">
-          <span class="text-xl">⚙️</span>
-          <div>
-            <h3 class="text-sm md:text-base font-extrabold text-white flex items-center gap-2">
-              <span>System &amp; Table Settings</span>
-              <span class="badge bg-purple-950 text-purple-300 border border-purple-800 text-[9px] px-1.5 py-0.5 rounded font-mono">v3.5 Live</span>
+      <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between gap-2 shrink-0">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span class="text-xl shrink-0">⚙️</span>
+          <div class="min-w-0">
+            <h3 class="text-sm md:text-base font-extrabold text-white flex items-center gap-2 flex-wrap">
+              <span class="truncate">System &amp; Table Settings</span>
+              <span class="badge bg-purple-950 text-purple-300 border border-purple-800 text-[9px] px-1.5 py-0.5 rounded font-mono whitespace-nowrap shrink-0">v3.5 Live</span>
             </h3>
-            <p class="text-[10px] text-slate-400">Cloud Sync • Gemini AI • Backup &amp; Restore • House Rules &amp; Table Standards</p>
+            <p class="text-[10px] text-slate-400 truncate">Cloud Sync • Gemini AI • Backup &amp; Restore • House Rules &amp; Table Standards</p>
           </div>
         </div>
-        <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer">
+        <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0 cursor-pointer">
           <span>✕</span> <span>Close</span>
         </button>
       </div>
 
       <!-- AYAR KAPSAMI: GLOBAL MASA STANDARTLARI VS KARAKTERE ÖZEL AYARLAR -->
-      <div class="bg-indigo-950/70 border-b border-indigo-500/30 px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0">
+      <div class="bg-indigo-950/70 border-b border-indigo-500/30 px-4 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs shrink-0">
         <div class="flex items-center gap-2 min-w-0">
           <span class="text-base shrink-0">🎯</span>
           <div class="min-w-0">
-            <div class="font-bold text-indigo-200 text-xs truncate">Settings Target / Scope:</div>
-            <div class="text-[10px] text-indigo-300/80 truncate">Global table standards apply to new characters; each character can also customize its own overrides.</div>
+            <div class="font-bold text-indigo-200 text-xs">Settings Target / Scope:</div>
+            <div class="text-[10px] text-indigo-300/80">Global table standards apply to new characters; each character can also customize its own overrides.</div>
           </div>
         </div>
-        <div class="flex items-center gap-2 shrink-0">
-          <select id="settings-scope-select" onchange="onSettingsScopeChange(this.value)" class="bg-slate-900 border border-indigo-400/60 text-amber-300 font-bold text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-amber-400 shadow cursor-pointer max-w-[260px] truncate">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto shrink-0">
+          <select id="settings-scope-select" onchange="onSettingsScopeChange(this.value)" class="w-full sm:w-[280px] bg-slate-900 border border-indigo-400/60 text-amber-300 font-bold text-xs rounded-lg px-2.5 py-2 focus:outline-none focus:border-amber-400 shadow cursor-pointer truncate">
             <option value="global">🌐 Global Table Standards (Default for New Characters)</option>
           </select>
-          <button type="button" id="btn-reset-to-global-defaults" onclick="applyGlobalDefaultsToSelectedCharacter()" class="hidden px-2.5 py-1.5 bg-slate-800 hover:bg-indigo-600 text-indigo-200 hover:text-white rounded-lg text-[11px] font-semibold border border-indigo-500/40 transition cursor-pointer" title="Sync global table rules to this character">
-            🔄 Sync to Table Defaults
+          <button type="button" id="btn-reset-to-global-defaults" onclick="applyGlobalDefaultsToSelectedCharacter()" class="hidden w-full sm:w-auto px-2.5 py-2 bg-slate-800 hover:bg-indigo-600 text-indigo-200 hover:text-white rounded-lg text-[11px] font-semibold border border-indigo-500/40 transition flex items-center justify-center gap-1 cursor-pointer" title="Sync global table rules to this character">
+            <span>🔄</span> <span>Sync to Table Defaults</span>
           </button>
         </div>
       </div>
@@ -5139,19 +5148,19 @@ CRITICAL RULES:
       <div class="p-4 overflow-y-auto space-y-4 flex-1 text-xs">
         
         <!-- SECTION 1: DM KAMPANYASI & MASA BAĞLANTISI -->
-        <div class="bg-slate-900/90 border border-amber-500/40 rounded-xl p-3.5 space-y-2 shadow">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <div class="flex items-center gap-2.5">
-              <span class="text-xl">🎟️</span>
-              <div>
-                <h4 class="text-xs font-bold text-white flex items-center gap-2">
-                  <span>DM Campaign &amp; Table Management</span>
-                  <span id="settings-campaign-badge" class="text-[10px] px-1.5 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-600/60 font-mono font-bold">Active Campaign Table</span>
-                </h4>
-                <p class="text-[10px] text-slate-400">Manage your campaigns, create new adventures, or organize sub-campaign drawers.</p>
+        <div class="bg-slate-900/90 border border-amber-500/40 rounded-xl p-3.5 space-y-2.5 shadow">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+            <div class="flex items-start gap-2.5 min-w-0">
+              <span class="text-xl shrink-0 mt-0.5">🎟️</span>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center justify-between sm:justify-start gap-2 flex-wrap">
+                  <h4 class="text-xs font-bold text-white">DM Campaign &amp; Table Management</h4>
+                  <span id="settings-campaign-badge" class="text-[9px] px-1.5 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-600/60 font-mono font-bold whitespace-nowrap shrink-0">Active Campaign Table</span>
+                </div>
+                <p class="text-[10px] text-slate-400 mt-0.5">Manage your campaigns, create new adventures, or organize sub-campaign drawers.</p>
               </div>
             </div>
-            <button onclick="closeSettingsModal(); openNewCampaignModal();" class="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition shadow flex items-center gap-1.5 cursor-pointer">
+            <button onclick="closeSettingsModal(); openNewCampaignModal();" class="w-full sm:w-auto bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition shadow flex items-center justify-center gap-1.5 shrink-0 cursor-pointer">
               <span>🏰</span>
               <span>New Campaign</span>
             </button>
@@ -5160,18 +5169,18 @@ CRITICAL RULES:
 
         <!-- SECTION 2: GOOGLE GEMINI AI KEY & DIAGNOSTICS -->
         <div class="bg-slate-900/90 border border-purple-500/40 rounded-xl p-3.5 space-y-3 shadow">
-          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
-            <div class="flex items-center gap-2">
-              <span class="text-xl">🧙‍♂️🤖</span>
-              <div>
-                <h4 class="text-xs font-bold text-white flex items-center gap-2 flex-wrap">
-                  <span>🧙‍♂️🤖 Rule Master (AI) Assistant Settings</span>
-                  <span id="settings-gemini-live-status" class="text-[10px] text-slate-400 font-normal"><span class="text-amber-400">🟡 Checking...</span></span>
-                </h4>
-                <p class="text-[10px] text-slate-400">Your personal free Google AI Studio API key (stored securely in your browser).</p>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-2">
+            <div class="flex items-start gap-2.5 min-w-0">
+              <span class="text-xl shrink-0 mt-0.5">🧙‍♂️</span>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center justify-between sm:justify-start gap-2 flex-wrap">
+                  <h4 class="text-xs font-bold text-white">Rule Master (AI) Assistant Settings</h4>
+                  <span id="settings-gemini-live-status" class="text-[10px] text-slate-400 font-normal whitespace-nowrap shrink-0"><span class="text-amber-400">🟡 Checking...</span></span>
+                </div>
+                <p class="text-[10px] text-slate-400 mt-0.5">Your personal free Google AI Studio API key (stored securely in your browser).</p>
               </div>
             </div>
-            <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[10px] text-purple-300 hover:text-purple-200 underline font-semibold">
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[10px] text-purple-300 hover:text-purple-200 underline font-semibold shrink-0">
               🔑 Get Free API Key ↗
             </a>
           </div>
@@ -5393,36 +5402,40 @@ CRITICAL RULES:
             </div>
 
             <!-- 2. FEAT MODU (FEAT PROGRESSION) -->
-            <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5 hover:border-slate-700 transition">
-              <div class="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <div class="font-bold text-amber-300 flex items-center gap-1.5 text-xs">
-                    <span>🎖️</span>
-                    <span>Feat Progression Schedule</span>
-                    <span class="badge bg-amber-950 text-amber-300 border border-amber-700 text-[9px] px-1.5 py-0.5 rounded">Table Rule</span>
+            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2 hover:border-slate-700 transition">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0 flex-1">
+                  <div class="font-bold text-amber-300 flex items-center justify-between sm:justify-start gap-1.5 text-xs flex-wrap">
+                    <span class="flex items-center gap-1.5"><span>🎖️</span> <span>Feat Progression Schedule</span></span>
+                    <span class="badge bg-amber-950 text-amber-300 border border-amber-700 text-[9px] px-1.5 py-0.5 rounded whitespace-nowrap shrink-0">Table Rule</span>
                   </div>
                   <div class="text-[10px] text-slate-400 mt-0.5">Configure the character level intervals at which general feats are granted.</div>
                 </div>
-                <div class="flex items-center gap-1.5">
-                  <label class="text-[10px] font-bold text-amber-400 uppercase">🎖️ Feat Schedule:</label>
-                  <select id="setting-feat-mode" onchange="onSettingFeatModeChange()" class="bg-slate-900 border border-slate-700 text-amber-300 font-semibold text-[11px] rounded px-2 py-1 focus:outline-none focus:border-amber-400 cursor-pointer">
-                    <option value="Standard 3.5e (1, 3, 6, 9, 12, 15, 18)">Standard 3.5e (1, 3, 6, 9, 12, 15, 18)</option>
-                    <option value="Every 2 Levels (1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)">Every 2 Levels (1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)</option>
-                    <option value="Every 4 Levels (1, 4, 8, 12, 16, 20)">Every 4 Levels (1, 4, 8, 12, 16, 20)</option>
-                    <option value="All Free / Custom">All Free / Custom (Every Level)</option>
-                  </select>
+              </div>
+              <div class="bg-slate-900/90 border border-amber-900/40 rounded-xl p-2 flex flex-col gap-1">
+                <div class="flex items-center justify-between">
+                  <label for="setting-feat-mode" class="text-[10px] font-bold text-amber-400 uppercase flex items-center gap-1.5">
+                    <span>🎖️</span>
+                    <span>Feat Schedule:</span>
+                  </label>
+                  <span class="text-[9px] font-mono text-amber-300/70">Level Interval</span>
                 </div>
+                <select id="setting-feat-mode" onchange="onSettingFeatModeChange()" class="w-full bg-slate-950 border border-slate-700 text-amber-300 font-semibold text-[11px] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-amber-400 cursor-pointer truncate">
+                  <option value="Standard 3.5e (1, 3, 6, 9, 12, 15, 18)">Standard 3.5e (1, 3, 6, 9, 12, 15, 18)</option>
+                  <option value="Every 2 Levels (1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)">Every 2 Levels (1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)</option>
+                  <option value="Every 4 Levels (1, 4, 8, 12, 16, 20)">Every 4 Levels (1, 4, 8, 12, 16, 20)</option>
+                  <option value="All Free / Custom">All Free / Custom (Every Level)</option>
+                </select>
               </div>
             </div>
 
             <!-- 3. CASTER CL KURALI (CASTER LEVEL RULE) & CASTER TYPE -->
-            <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2 hover:border-slate-700 transition">
-              <div class="flex flex-wrap items-center justify-between gap-1.5 pb-2 border-b border-slate-800/80">
-                <div>
-                  <div class="font-bold text-purple-300 flex items-center gap-1.5 text-xs">
-                    <span>🔮</span>
-                    <span>Caster Level (CL) Rule &amp; Caster Discipline</span>
-                    <span class="badge bg-purple-950 text-purple-300 border border-purple-700 text-[9px] px-1.5 py-0.5 rounded">Table Rule</span>
+            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2 hover:border-slate-700 transition">
+              <div class="flex items-start justify-between gap-2 pb-2 border-b border-slate-800/80">
+                <div class="min-w-0 flex-1">
+                  <div class="font-bold text-purple-300 flex items-center justify-between sm:justify-start gap-1.5 text-xs flex-wrap">
+                    <span class="flex items-center gap-1.5"><span>🔮</span> <span>Caster Level (CL) Rule &amp; Caster Discipline</span></span>
+                    <span class="badge bg-purple-950 text-purple-300 border border-purple-700 text-[9px] px-1.5 py-0.5 rounded whitespace-nowrap shrink-0">Table Rule</span>
                   </div>
                   <div class="text-[10px] text-slate-400 mt-0.5">Multiclass Caster / Initiator Level progression rule and primary casting discipline.</div>
                 </div>
@@ -5438,7 +5451,7 @@ CRITICAL RULES:
                     </label>
                     <span class="text-[9px] font-mono text-purple-300/70">Multiclass CL</span>
                   </div>
-                  <select id="setting-cl-mode" onchange="onSettingClModeChange()" class="w-full bg-slate-950 border border-slate-700 text-purple-300 font-semibold text-[11px] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-purple-400 transition cursor-pointer">
+                  <select id="setting-cl-mode" onchange="onSettingClModeChange()" class="w-full bg-slate-950 border border-slate-700 text-purple-300 font-semibold text-[11px] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-purple-400 transition cursor-pointer truncate">
                     <option value="Character Level (DM Boon)">Character Level (DM Boon: CL = Character Level)</option>
                     <option value="Warlock Boon (Invocations &amp; Eldritch Blast)">Warlock Boon (CL = Character Level + Invocations)</option>
                     <option value="Class Level">Class Level (Strict RAW Class Level Only)</option>
@@ -5454,7 +5467,7 @@ CRITICAL RULES:
                     </label>
                     <span class="text-[9px] font-mono text-indigo-300/70">Discipline</span>
                   </div>
-                  <select id="setting-caster-type" onchange="onSettingCasterTypeChange()" class="w-full bg-slate-950 border border-slate-700 text-indigo-300 font-semibold text-[11px] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-400 transition cursor-pointer">
+                  <select id="setting-caster-type" onchange="onSettingCasterTypeChange()" class="w-full bg-slate-950 border border-slate-700 text-indigo-300 font-semibold text-[11px] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-400 transition cursor-pointer truncate">
                     <option value="spontaneous">🔮 1. Spontaneous Arcane (Sorcerer, Bard, etc.)</option>
                     <option value="prepared">📖 2. Prepared Arcane (Wizard, Wu Jen, etc.)</option>
                     <option value="divine">✨ 3. Divine Spellcasting (Cleric, Druid, Paladin)</option>
@@ -5466,110 +5479,109 @@ CRITICAL RULES:
             </div>
 
             <!-- 4. IGNORE ASF / BOON -->
-            <label class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
-              <div>
-                <div class="font-bold text-slate-200 flex items-center gap-1.5 text-xs">
+            <label class="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
+              <div class="min-w-0 flex-1">
+                <div class="font-bold text-slate-200 flex items-center gap-1.5 text-xs flex-wrap">
                   <span class="text-slate-300 font-semibold">🛡️ Ignore ASF / Boon</span>
-                  <span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[9px] px-1.5 py-0.5 rounded">DM Boon</span>
+                  <span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[9px] px-1.5 py-0.5 rounded whitespace-nowrap shrink-0">DM Boon</span>
                 </div>
                 <div class="text-[10px] text-slate-400 mt-0.5">Ignores Arcane Spell Failure (ASF %) chance from worn armor and shields.</div>
               </div>
-              <input type="checkbox" id="setting-ignore-asf" onchange="onSettingIgnoreAsfChange()" class="w-4 h-4 rounded border-slate-700 text-emerald-500 focus:ring-0">
+              <input type="checkbox" id="setting-ignore-asf" onchange="onSettingIgnoreAsfChange()" class="w-4 h-4 rounded border-slate-700 text-emerald-500 focus:ring-0 shrink-0">
             </label>
 
             <!-- 5. BAB & SAVE PROGRESSION (FRACTIONAL BAB/SAVE - UNEARTHED ARCANA) -->
-            <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5 hover:border-slate-700 transition">
-              <div class="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <div class="font-bold text-sky-300 flex items-center gap-1.5 text-xs">
-                    <span>📐</span>
-                    <span>BAB &amp; Saving Throw Progression System</span>
-                    <span class="badge bg-sky-950 text-sky-300 border border-sky-700 text-[9px] px-1.5 py-0.5 rounded">Unearthed Arcana</span>
+            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2 hover:border-slate-700 transition">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0 flex-1">
+                  <div class="font-bold text-sky-300 flex items-center justify-between sm:justify-start gap-1.5 text-xs flex-wrap">
+                    <span class="flex items-center gap-1.5"><span>📐</span> <span>BAB &amp; Saving Throw Progression System</span></span>
+                    <span class="badge bg-sky-950 text-sky-300 border border-sky-700 text-[9px] px-1.5 py-0.5 rounded whitespace-nowrap shrink-0">Unearthed Arcana</span>
                   </div>
                   <div class="text-[10px] text-slate-400 mt-0.5">Fractional BAB/Save progression for multiclass characters (Good BAB +1.0, Avg +0.75, Poor +0.5).</div>
                 </div>
-                <div class="flex items-center gap-1.5">
-                  <label class="text-[10px] font-bold text-sky-400 uppercase">📐 System:</label>
-                  <select id="setting-bab-save-system" onchange="onSettingBabSaveSystemChange()" class="bg-slate-900 border border-slate-700 text-sky-300 font-semibold text-[11px] rounded px-2 py-1 focus:outline-none focus:border-sky-400 cursor-pointer">
-                    <option value="standard" selected>Standard Core 3.5e (Strict RAW)</option>
-                    <option value="fractional">Fractional (Unearthed Arcana Variant)</option>
-                  </select>
+              </div>
+              <div class="bg-slate-900/90 border border-sky-900/40 rounded-xl p-2 flex flex-col gap-1">
+                <div class="flex items-center justify-between">
+                  <label for="setting-bab-save-system" class="text-[10px] font-bold text-sky-400 uppercase flex items-center gap-1.5">
+                    <span>📐</span>
+                    <span>Progression System:</span>
+                  </label>
+                  <span class="text-[9px] font-mono text-sky-300/70">Multiclass Math</span>
                 </div>
+                <select id="setting-bab-save-system" onchange="onSettingBabSaveSystemChange()" class="w-full bg-slate-950 border border-slate-700 text-sky-300 font-semibold text-[11px] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-sky-400 cursor-pointer truncate">
+                  <option value="standard" selected>Standard Core 3.5e (Strict RAW)</option>
+                  <option value="fractional">Fractional (Unearthed Arcana Variant)</option>
+                </select>
               </div>
             </div>
 
             <!-- 6. NO CRIT CONFIRM -->
-            <label class="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
-              <div>
+            <label class="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
+              <div class="min-w-0 flex-1">
                 <div class="font-bold text-slate-200">🚫 No Crit Confirm (Auto-Confirm Crits)</div>
-                <div class="text-[10px] text-slate-400">Automatically confirms critical threats without requiring a secondary confirmation roll.</div>
+                <div class="text-[10px] text-slate-400 mt-0.5">Automatically confirms critical threats without requiring a secondary confirmation roll.</div>
               </div>
-              <input type="checkbox" id="settings-no-crit-confirm" checked onchange="onSettingNoCritConfirmChange()" class="rounded border-slate-700 text-amber-500 focus:ring-0">
+              <input type="checkbox" id="settings-no-crit-confirm" checked onchange="onSettingNoCritConfirmChange()" class="w-4 h-4 rounded border-slate-700 text-amber-500 focus:ring-0 shrink-0">
             </label>
 
             <!-- 7. TOME OF BATTLE MANEUVER CRIT -->
-            <label class="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
-              <div>
+            <label class="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
+              <div class="min-w-0 flex-1">
                 <div class="font-bold text-slate-200">⚡ Multiply Tome of Battle Maneuver Dice on Crit</div>
-                <div class="text-[10px] text-slate-400">Includes bonus strike maneuver dice when multiplying damage on a critical hit.</div>
+                <div class="text-[10px] text-slate-400 mt-0.5">Includes bonus strike maneuver dice when multiplying damage on a critical hit.</div>
               </div>
-              <input type="checkbox" id="settings-maneuver-crit" onchange="onSettingManeuverCritChange()" class="rounded border-slate-700 text-indigo-500 focus:ring-0">
+              <input type="checkbox" id="settings-maneuver-crit" onchange="onSettingManeuverCritChange()" class="w-4 h-4 rounded border-slate-700 text-indigo-500 focus:ring-0 shrink-0">
             </label>
 
             <!-- 8. CRIT THREAT CAP (HOUSE RULE) -->
-            <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-              <div>
+            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2 hover:border-slate-700 transition">
+              <div class="min-w-0">
                 <div class="font-bold text-slate-200 flex items-center gap-1.5 text-xs">
                   <span>🎯</span>
                   <span>Critical Threat Range Cap</span>
                 </div>
                 <div class="text-[10px] text-slate-400 mt-0.5">Minimum roll threshold allowed for critical threat range expansion (DM Cap: Max 15-20).</div>
               </div>
-              <div class="flex items-center gap-1.5 shrink-0 ml-2">
-                <select id="setting-crit-cap-min" onchange="onHouseRuleCritCapChange(this.value)" class="bg-slate-900 border border-slate-700 text-amber-300 font-bold text-xs rounded px-2.5 py-1 focus:outline-none focus:border-amber-400 cursor-pointer">
-                  <option value="15">Max 15-20 (DM Cap)</option>
-                  <option value="16">Max 16-20</option>
-                  <option value="17">Max 17-20</option>
-                  <option value="18">Max 18-20</option>
-                  <option value="12">Max 12-20 (Wide)</option>
-                  <option value="1">Unlimited (No Cap)</option>
-                </select>
-              </div>
+              <select id="setting-crit-cap-min" onchange="onHouseRuleCritCapChange(this.value)" class="w-full bg-slate-900 border border-slate-700 text-amber-300 font-bold text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-amber-400 cursor-pointer truncate">
+                <option value="15">Max 15-20 (DM Cap)</option>
+                <option value="16">Max 16-20</option>
+                <option value="17">Max 17-20</option>
+                <option value="18">Max 18-20</option>
+                <option value="12">Max 12-20 (Wide)</option>
+                <option value="1">Unlimited (No Cap)</option>
+              </select>
             </div>
 
             <!-- 9. KEEN & IMPROVED CRITICAL STACKING -->
-            <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-              <div>
+            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2 hover:border-slate-700 transition">
+              <div class="min-w-0">
                 <div class="font-bold text-slate-200 flex items-center gap-1.5 text-xs">
                   <span>⚔️</span>
                   <span>Keen &amp; Improved Critical Stacking</span>
                 </div>
                 <div class="text-[10px] text-slate-400 mt-0.5">How Keen weapon property and Improved Critical feat interact when both apply.</div>
               </div>
-              <div class="flex items-center gap-1.5 shrink-0 ml-2">
-                <select id="setting-keen-imp-stacking" onchange="onHouseRuleKeenStackingChange(this.value)" class="bg-slate-900 border border-slate-700 text-amber-300 font-bold text-xs rounded px-2.5 py-1 focus:outline-none focus:border-amber-400 cursor-pointer">
-                  <option value="stack_diminishing">House Rule: Stacks (+1 Threat Range Step)</option>
-                  <option value="none">RAW Core 3.5e: Does Not Stack (Single Doubling)</option>
-                  <option value="full">3.0e Variant: Full Stacking (Triple Threat Range)</option>
-                </select>
-              </div>
+              <select id="setting-keen-imp-stacking" onchange="onHouseRuleKeenStackingChange(this.value)" class="w-full bg-slate-900 border border-slate-700 text-amber-300 font-bold text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-amber-400 cursor-pointer truncate">
+                <option value="stack_diminishing">House Rule: Stacks (+1 Threat Range Step)</option>
+                <option value="none">RAW Core 3.5e: Does Not Stack (Single Doubling)</option>
+                <option value="full">3.0e Variant: Full Stacking (Triple Threat Range)</option>
+              </select>
             </div>
 
             <!-- 10. PRECISION DAMAGE (SNEAK ATTACK) PER TURN RULE -->
-            <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-              <div>
+            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2 hover:border-slate-700 transition">
+              <div class="min-w-0">
                 <div class="font-bold text-slate-200 flex items-center gap-1.5 text-xs">
                   <span>🗡️</span>
                   <span>Precision Damage Limit (Sneak Attack / Skirmish)</span>
                 </div>
                 <div class="text-[10px] text-slate-400 mt-0.5">How precision damage dice apply across multiple iterative attacks in a round.</div>
               </div>
-              <div class="flex items-center gap-1.5 shrink-0 ml-2">
-                <select id="setting-precision-rule" onchange="onHouseRulePrecisionChange(this.value)" class="bg-slate-900 border border-slate-700 text-amber-300 font-bold text-xs rounded px-2.5 py-1 focus:outline-none focus:border-amber-400 cursor-pointer">
-                  <option value="once_per_turn">Once Per Round (Tactical Limit)</option>
-                  <option value="every_hit">Every Qualifying Hit (Standard RAW 3.5e)</option>
-                </select>
-              </div>
+              <select id="setting-precision-rule" onchange="onHouseRulePrecisionChange(this.value)" class="w-full bg-slate-900 border border-slate-700 text-amber-300 font-bold text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-amber-400 cursor-pointer truncate">
+                <option value="once_per_turn">Once Per Round (Tactical Limit)</option>
+                <option value="every_hit">Every Qualifying Hit (Standard RAW 3.5e)</option>
+              </select>
             </div>
 
           </div>
@@ -5577,22 +5589,22 @@ CRITICAL RULES:
 
         <!-- SECTION 6: DANGER ZONE / RESET -->
         <div class="bg-rose-950/20 border border-rose-600/40 rounded-xl p-3.5 space-y-3">
-          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-rose-900/40 pb-2">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-rose-900/40 pb-2.5">
             <div>
               <h4 class="text-xs font-bold text-rose-400">⚠️ Reset Character</h4>
               <p class="text-[10px] text-slate-400">Resets only the selected character back to a clean 1st-level template.</p>
             </div>
-            <button onclick="resetToCleanCharacter();" class="bg-rose-700 hover:bg-rose-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition shadow cursor-pointer">
-              🗑️ Reset Character
+            <button onclick="resetToCleanCharacter();" class="w-full sm:w-auto bg-rose-700 hover:bg-rose-600 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition shadow flex items-center justify-center gap-1.5 shrink-0 cursor-pointer">
+              <span>🗑️</span> <span>Reset Character</span>
             </button>
           </div>
-          <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-0.5">
             <div>
               <h4 class="text-xs font-bold text-amber-400">🧹 Factory Reset (Reset All Local Data)</h4>
               <p class="text-[10px] text-slate-400">Clears all local characters, campaigns, Master DB cache, and browser storage.</p>
             </div>
-            <button onclick="resetAllLocalDataToFactoryDefaults()" class="bg-gradient-to-r from-amber-600 to-rose-700 hover:from-amber-500 hover:to-rose-600 text-white font-black text-xs px-3.5 py-1.5 rounded-lg transition shadow-lg cursor-pointer">
-              🧹 Reset All Data
+            <button onclick="resetAllLocalDataToFactoryDefaults()" class="w-full sm:w-auto bg-gradient-to-r from-amber-600 to-rose-700 hover:from-amber-500 hover:to-rose-600 text-white font-black text-xs px-3.5 py-2 rounded-lg transition shadow-lg flex items-center justify-center gap-1.5 shrink-0 cursor-pointer">
+              <span>🧹</span> <span>Reset All Data</span>
             </button>
           </div>
         </div>

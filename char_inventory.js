@@ -6323,12 +6323,114 @@
     }
 
     function exportMasterDbJson() {
-      const blob = new Blob([JSON.stringify(masterDb, null, 2)], { type: 'application/json' });
+      const hasSelection = window.RuleMaster && RuleMaster.selectedIds && RuleMaster.selectedIds.size > 0;
+      let exportList = Array.isArray(masterDb) ? masterDb : [];
+      if (hasSelection) {
+        exportList = exportList.filter((raw, idx) => {
+          const item = RuleMaster.ensureV2(raw);
+          const key = RuleMaster.getEntrySelectionKey(item, idx);
+          return RuleMaster.selectedIds.has(key);
+        });
+      }
+      if (exportList.length === 0) {
+        alert('ℹ️ There are no custom entries to export in this character\'s Custom DB.');
+        return;
+      }
+      const charSlug = ((character && character.name) ? character.name : 'character')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '') || 'character';
+      const dateStr = new Date().toISOString().slice(0, 10);
+      const suffix = hasSelection ? `selected_${exportList.length}_${dateStr}` : `custom_db_${dateStr}`;
+      const blob = new Blob([JSON.stringify(exportList, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `dnd35_master_db_${new Date().toISOString().slice(0,10)}.json`;
+      a.download = `${charSlug}_${suffix}.json`;
       a.click();
+    }
+
+    function mergeEntriesIntoCharacterCustomDb(incomingArray) {
+      if (!Array.isArray(incomingArray)) return { added: 0, updated: 0 };
+      if (!Array.isArray(masterDb)) {
+        masterDb = [];
+      }
+      if (typeof character !== 'undefined' && character) {
+        character.customDb = masterDb;
+      }
+      let added = 0;
+      let updated = 0;
+      incomingArray.forEach(rawEntry => {
+        if (!rawEntry || typeof rawEntry !== 'object') return;
+        const normalized = (window.RuleMaster && typeof RuleMaster.ensureV2 === 'function')
+          ? RuleMaster.ensureV2(rawEntry)
+          : rawEntry;
+        if (!normalized.name) return;
+        const normId = String(normalized.id || '').toLowerCase().trim();
+        const normName = String(normalized.name || '').toLowerCase().trim();
+        const normType = String(normalized.type || '').toLowerCase().trim();
+
+        const existingIdx = masterDb.findIndex(existing => {
+          if (!existing) return false;
+          const exId = String(existing.id || '').toLowerCase().trim();
+          const exName = String(existing.name || '').toLowerCase().trim();
+          const exType = String(existing.type || '').toLowerCase().trim();
+          if (normId && exId && normId === exId) return true;
+          return normName && exName === normName && (!normType || !exType || normType === exType);
+        });
+
+        if (existingIdx !== -1) {
+          masterDb[existingIdx] = normalized;
+          updated++;
+        } else {
+          masterDb.push(normalized);
+          added++;
+        }
+      });
+      return { added, updated };
+    }
+
+    function handleCustomDbImportFile(event) {
+      const file = event?.target?.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          let entriesToMerge = [];
+          if (Array.isArray(parsed)) {
+            entriesToMerge = parsed;
+          } else if (parsed && typeof parsed === 'object') {
+            if (Array.isArray(parsed.customDb)) {
+              entriesToMerge = parsed.customDb;
+            } else if (Array.isArray(parsed.masterDb)) {
+              entriesToMerge = parsed.masterDb;
+            } else if (parsed.character && Array.isArray(parsed.character.customDb)) {
+              entriesToMerge = parsed.character.customDb;
+            } else if (parsed.name && parsed.type) {
+              entriesToMerge = [parsed];
+            }
+          }
+
+          if (entriesToMerge.length === 0) {
+            alert('⚠️ No valid custom DB entries found in the selected JSON file.');
+            return;
+          }
+
+          const { added, updated } = mergeEntriesIntoCharacterCustomDb(entriesToMerge);
+          saveStateToStorage(true);
+          if (window.RuleMaster && typeof RuleMaster.renderTable === 'function') {
+            RuleMaster.renderTable();
+          }
+          renderAll();
+          alert(`✅ Custom DB Import / Merge Complete!\n• Added: ${added} new entries\n• Updated: ${updated} existing entries\n• Total Character Custom DB: ${masterDb.length} entries`);
+        } catch (err) {
+          alert('❌ Failed to parse Custom DB JSON file: ' + err.message);
+        } finally {
+          event.target.value = '';
+        }
+      };
+      reader.readAsText(file);
     }
 
     function handleJsonFileUpload(event) {
@@ -6340,13 +6442,18 @@
           const parsed = JSON.parse(e.target.result);
           if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && (parsed.character || parsed.masterDb)) {
             if (parsed.character) character = parsed.character;
-            if (Array.isArray(parsed.masterDb)) masterDb = parsed.masterDb;
-            alert(`✅ Full Bundle loaded successfully!\n• Character: ${character?.name || '-'}\n• Master DB: ${masterDb.length} entries`);
+            if (!Array.isArray(character.customDb)) {
+              character.customDb = Array.isArray(parsed.masterDb) ? parsed.masterDb : [];
+            }
+            masterDb = character.customDb;
+            alert(`✅ Full Bundle loaded successfully!\n• Character: ${character?.name || '-'}\n• Character Custom DB: ${masterDb.length} entries`);
           } else if (Array.isArray(parsed)) {
-            masterDb = parsed;
-            alert(`✅ Master DB loaded successfully (${parsed.length} entries)!`);
+            const { added, updated } = mergeEntriesIntoCharacterCustomDb(parsed);
+            alert(`✅ Custom DB entries merged into character!\n• Added: ${added}\n• Updated: ${updated}\n• Total Custom DB: ${masterDb.length} entries`);
           } else if (parsed.name || parsed.characterName || parsed.abilities) {
             character = parsed;
+            if (!Array.isArray(character.customDb)) character.customDb = [];
+            masterDb = character.customDb;
             alert('✅ Character data loaded successfully!');
           }
           saveStateToStorage(true);
@@ -6356,6 +6463,8 @@
           renderAll();
         } catch (err) {
           alert('❌ Failed to parse JSON file: ' + err.message);
+        } finally {
+          event.target.value = '';
         }
       };
       reader.readAsText(file);
@@ -6389,8 +6498,13 @@
           consumables: [],
           bodySlots: {},
           gearPool: [],
-          levelProgression: []
+          levelProgression: [],
+          customDb: []
         };
+        masterDb = character.customDb;
+        if (window.RuleMaster && RuleMaster.selectedIds) {
+          RuleMaster.selectedIds.clear();
+        }
         saveStateToStorage();
         renderAll();
         alert('✅ Character reset. Your blank character is ready!');

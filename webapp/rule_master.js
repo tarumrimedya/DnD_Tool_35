@@ -730,12 +730,142 @@ const RuleMaster = {
     return changesCount;
   },
 
+  selectedIds: new Set(),
+
+  getEntrySelectionKey(item, idx = 0) {
+    if (!item) return String(idx);
+    return String(item.id || (item.name || '').toLowerCase().trim() || idx);
+  },
+
+  toggleSelectEntry(key, isChecked) {
+    if (!key) return;
+    if (isChecked) {
+      this.selectedIds.add(String(key));
+    } else {
+      this.selectedIds.delete(String(key));
+    }
+    this.updateSelectionUi();
+  },
+
+  toggleSelectAllFiltered(isChecked) {
+    if (!Array.isArray(masterDb)) return;
+    const query = (document.getElementById('mdb-search-input')?.value || '').toLowerCase();
+    const cat = document.getElementById('mdb-category-filter')?.value || 'ALL';
+    const bonusFilter = document.getElementById('mdb-bonus-filter')?.value || 'ALL';
+    const scopeFilter = document.getElementById('mdb-scope-filter')?.value || 'ALL';
+
+    masterDb.forEach((rawItem, idx) => {
+      const item = this.ensureV2(rawItem);
+      const matchQ = !query ||
+        (item.name && item.name.toLowerCase().includes(query)) ||
+        (item.benefit && item.benefit.toLowerCase().includes(query)) ||
+        (item.source && item.source.toLowerCase().includes(query)) ||
+        (item.discipline && item.discipline.toLowerCase().includes(query));
+      const matchCat = cat === 'ALL' || item.type === cat;
+      const itemBonusType = item.modifiers?.[0]?.type || (item.type === 'Weapon' && item.enhancementBonus ? 'Enhancement' : 'Untyped');
+      const matchBonus = bonusFilter === 'ALL' || itemBonusType === bonusFilter;
+      const matchScope = scopeFilter === 'ALL' || (item.scope || 'None / General') === scopeFilter;
+
+      if (matchQ && matchCat && matchBonus && matchScope) {
+        const key = this.getEntrySelectionKey(item, idx);
+        if (isChecked) {
+          this.selectedIds.add(key);
+        } else {
+          this.selectedIds.delete(key);
+        }
+      }
+    });
+    this.renderTable();
+  },
+
+  clearSelection() {
+    this.selectedIds.clear();
+    this.renderTable();
+  },
+
+  deleteSelectedEntries() {
+    if (!Array.isArray(masterDb) || this.selectedIds.size === 0) return;
+    const count = this.selectedIds.size;
+    if (!confirm(`⚠️ Are you sure you want to permanently delete ${count} selected custom entries from this character's Custom DB?`)) {
+      return;
+    }
+    for (let i = masterDb.length - 1; i >= 0; i--) {
+      const item = this.ensureV2(masterDb[i]);
+      const key = this.getEntrySelectionKey(item, i);
+      if (this.selectedIds.has(key)) {
+        masterDb.splice(i, 1);
+      }
+    }
+    if (typeof character !== 'undefined' && character) {
+      character.customDb = masterDb;
+    }
+    this.selectedIds.clear();
+    if (typeof saveStateToStorage === 'function') {
+      saveStateToStorage(true);
+    }
+    this.renderTable();
+    if (typeof renderAll === 'function') {
+      renderAll();
+    }
+  },
+
+  updateSelectionUi(filteredKeys = null) {
+    if (Array.isArray(masterDb)) {
+      const validKeys = new Set(masterDb.map((raw, idx) => this.getEntrySelectionKey(this.ensureV2(raw), idx)));
+      Array.from(this.selectedIds).forEach(k => {
+        if (!validKeys.has(k)) this.selectedIds.delete(k);
+      });
+    }
+
+    const selectedCount = this.selectedIds.size;
+    const selBadge = document.getElementById('mdb-selected-count-badge');
+    const clearBtn = document.getElementById('btn-mdb-clear-selection');
+    const delBtn = document.getElementById('btn-mdb-delete-selected');
+    const expBtn = document.getElementById('btn-mdb-export');
+    const selectAllCb = document.getElementById('mdb-select-all-checkbox');
+
+    if (selBadge) {
+      selBadge.textContent = `${selectedCount} Selected`;
+      selBadge.classList.toggle('hidden', selectedCount === 0);
+    }
+    if (clearBtn) {
+      clearBtn.classList.toggle('hidden', selectedCount === 0);
+    }
+    if (delBtn) {
+      delBtn.classList.toggle('hidden', selectedCount === 0);
+      delBtn.innerHTML = `🗑️ Delete Selected (${selectedCount})`;
+    }
+    if (expBtn) {
+      expBtn.innerHTML = selectedCount > 0
+        ? `💾 Export Selected (${selectedCount})`
+        : `💾 Export DB (.json)`;
+    }
+    if (selectAllCb) {
+      const keysToCheck = Array.isArray(filteredKeys)
+        ? filteredKeys
+        : (Array.isArray(masterDb) ? masterDb.map((raw, idx) => this.getEntrySelectionKey(this.ensureV2(raw), idx)) : []);
+      if (keysToCheck.length === 0) {
+        selectAllCb.checked = false;
+        selectAllCb.indeterminate = false;
+      } else {
+        const checkedInFiltered = keysToCheck.filter(k => this.selectedIds.has(k)).length;
+        selectAllCb.checked = checkedInFiltered === keysToCheck.length;
+        selectAllCb.indeterminate = checkedInFiltered > 0 && checkedInFiltered < keysToCheck.length;
+      }
+    }
+  },
+
   // Delete entry
   deleteEntry(index) {
     if (index >= 0 && index < masterDb.length) {
-      const item = masterDb[index];
-      if (confirm(`Are you sure you want to permanently delete "${item.name}" from Master DB?`)) {
+      const item = this.ensureV2(masterDb[index]);
+      if (confirm(`Are you sure you want to permanently delete "${item.name}" from this character's Custom DB?`)) {
+        const key = this.getEntrySelectionKey(item, index);
+        this.selectedIds.delete(key);
         masterDb.splice(index, 1);
+        if (typeof character !== 'undefined' && character) {
+          character.customDb = masterDb;
+        }
         if (typeof saveStateToStorage === 'function') {
           saveStateToStorage(true);
         }
@@ -748,9 +878,12 @@ const RuleMaster = {
   duplicateEntry(index) {
     if (index >= 0 && index < masterDb.length) {
       const copy = this.ensureV2(JSON.parse(JSON.stringify(masterDb[index])));
-      copy.name += " (Kopya)";
+      copy.name += " (Copy)";
       copy.id = `${copy.id}_copy_${Date.now()}`;
       masterDb.splice(index + 1, 0, copy);
+      if (typeof character !== 'undefined' && character) {
+        character.customDb = masterDb;
+      }
       if (typeof saveStateToStorage === 'function') {
         saveStateToStorage(true);
       }
@@ -1491,15 +1624,38 @@ const RuleMaster = {
     });
 
     const countBadge = document.getElementById('mdb-total-count-badge');
-    if (countBadge) countBadge.textContent = `${filtered.length} / ${masterDb.length} Entries`;
+    if (countBadge) countBadge.textContent = `${filtered.length} / ${masterDb.length} Custom Entries`;
 
     tbody.innerHTML = '';
+
+    const filteredKeys = [];
+
+    if (filtered.length === 0) {
+      const emptyTr = document.createElement('tr');
+      emptyTr.className = 'border-b border-slate-800/80';
+      const emptyMsg = masterDb.length === 0
+        ? 'No character-specific custom entries yet. Standard 3.5e rules are automatically loaded from the SRD Compendium — use "+ Add New Rule / Item" or "📂 Import / Merge DB" to add custom or homebrew entries for this character.'
+        : 'No custom entries match the active search or category filters.';
+      emptyTr.innerHTML = `
+        <td colspan="8" class="py-8 px-4 text-center text-slate-400 text-xs italic">
+          ${emptyMsg}
+        </td>
+      `;
+      tbody.appendChild(emptyTr);
+      this.updateSelectionUi(filteredKeys);
+      return;
+    }
 
     filtered.forEach(rawItem => {
       const idx = rawItem._originalIndex;
       const item = this.ensureV2(rawItem);
+      const selKey = this.getEntrySelectionKey(item, idx);
+      filteredKeys.push(selKey);
+      const isSelected = this.selectedIds.has(selKey);
+      const escapedKey = selKey.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
       const tr = document.createElement('tr');
-      tr.className = 'hover:bg-slate-800/50 transition border-b border-slate-800/80';
+      tr.className = `hover:bg-slate-800/50 transition border-b border-slate-800/80 ${isSelected ? 'bg-amber-950/20' : ''}`;
 
       const typeBadgeClass = this.getTypeBadgeClass(item.type);
       const statPills = this.getEntrySummaryPills(item);
@@ -1508,12 +1664,15 @@ const RuleMaster = {
       const primaryBonusType = item.modifiers?.[0]?.type || (item.type === 'Weapon' && item.enhancementBonus ? 'Enhancement' : (item.type === 'Armor' ? 'Armor' : (item.type === 'Shield' ? 'Shield' : 'Untyped')));
 
       tr.innerHTML = `
+        <td class="py-2.5 px-2.5 text-center">
+          <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="RuleMaster.toggleSelectEntry('${escapedKey}', this.checked)" class="w-3.5 h-3.5 rounded border-slate-600 bg-slate-900 text-amber-500 focus:ring-amber-500 cursor-pointer" title="Select entry for export or batch actions">
+        </td>
         <td class="py-2.5 px-3">
           <div class="font-bold text-white flex items-center gap-1.5 flex-wrap">
             <span>${item.name}</span>
             ${modesCount > 0 ? `<span class="px-2 py-0.5 rounded text-[9px] font-bold bg-purple-950 text-purple-300 border border-purple-800">⚡ ${modesCount} Mod</span>` : ''}
           </div>
-          <div class="text-[10px] text-slate-400 font-mono mt-0.5">${item.source || 'PHB'}</div>
+          <div class="text-[10px] text-slate-400 font-mono mt-0.5">${item.source || 'Custom'}</div>
         </td>
         <td class="py-2.5 px-3">
           <span class="badge ${typeBadgeClass}">${item.type ? this.capitalizeIdentifier(item.type) : 'Other'}</span>
@@ -1552,6 +1711,8 @@ const RuleMaster = {
       `;
       tbody.appendChild(tr);
     });
+
+    this.updateSelectionUi(filteredKeys);
   },
   getTypeBadgeClass(type) {
     switch (type) {
@@ -3975,20 +4136,16 @@ Return valid JSON only matching:
   },
 
   async resetMasterDbToDefault() {
-    if (confirm('⚠️ Are you sure you want to reset Master DB to the default Core 3.5e starter library?')) {
-      try {
-        const resp = await fetch('master_db.json');
-        if (resp.ok) {
-          masterDb = await resp.json();
-          if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
-          this.renderTable();
-          alert(`✅ Master DB successfully reset to default (${masterDb.length} entries)!`);
-        } else {
-          alert('❌ Failed to load master_db.json.');
-        }
-      } catch (e) {
-        alert('❌ Reset error: ' + e.message);
+    if (confirm('⚠️ Are you sure you want to clear all custom entries from this character\'s Custom DB?')) {
+      masterDb.length = 0;
+      if (typeof character !== 'undefined' && character) {
+        character.customDb = masterDb;
       }
+      this.selectedIds.clear();
+      if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+      this.renderTable();
+      if (typeof renderAll === 'function') renderAll();
+      alert('✅ Character Custom DB has been cleared!');
     }
   },
 

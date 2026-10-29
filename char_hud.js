@@ -553,7 +553,8 @@
           pinDrawerLimit: 5,
           clMode: 'Character Level (DM Boon)',
           babSaveSystem: 'standard'
-        }
+        },
+        customDb: Array.isArray(summary.customDb) ? summary.customDb : []
       };
     }
 
@@ -876,111 +877,56 @@
         console.error('Error fetching character_data.json:', e);
       }
 
-      // 2. Load Master DB
-      let defaultDb = window.BUNDLED_MASTER_DB || [];
-      if (!defaultDb || defaultDb.length === 0) {
-        try {
-          const res = await fetch('master_db.json');
-          if (res.ok) defaultDb = await res.json();
-        } catch (e) {
-          console.error('Error fetching master_db.json:', e);
-        }
-      }
-
-      const savedDb = localStorage.getItem('dnd35_master_db');
-      if (savedDb) {
-        try {
-          const parsed = JSON.parse(savedDb);
-          if (Array.isArray(parsed)) {
-            masterDb = parsed.map(item => {
-              if (!item || typeof item !== 'object') return item;
-              if (item.name) item.name = sanitizeMojibakeString(item.name);
-              if (item.parent) item.parent = sanitizeMojibakeString(item.parent);
-              if (item.benefit) item.benefit = sanitizeMojibakeString(item.benefit);
-              if (item.description) item.description = sanitizeMojibakeString(item.description);
-              return item;
-            });
-            const seen = new Set();
-            masterDb = masterDb.filter(item => {
-              if (!item || !item.name) return false;
-              const k = (item.name || '').toLowerCase().trim();
-              if (seen.has(k)) return false;
-              seen.add(k);
-              return true;
-            });
-          }
-        } catch (e) {}
-      } else {
-        masterDb = defaultDb;
-      }
-
-      // Sync & normalize Master DB entries to Canonical V2 Schema (schemaVersion: 2, modifiers, damageParts, modes)
+      // 2. Load Character-Scoped Custom DB (character.customDb <-> masterDb)
       try {
-        if (!Array.isArray(masterDb)) masterDb = [];
-        masterDb = masterDb.filter(m => m && typeof m === 'object');
-        let addedCount = 0;
-        const canonicalDefaults = Array.isArray(defaultDb) ? defaultDb.filter(m => m && typeof m === 'object' && m.name) : [];
-        window.CORE_SPELLS_AND_MANEUVERS_35E = canonicalDefaults.filter(
-          m => m && (m.type === 'Spell' || m.type === 'Maneuver' || m.type === 'Stance')
-        );
-        canonicalDefaults.forEach(defItem => {
-          if (!defItem || !defItem.name) return;
-          const defName = (defItem.name || '').toLowerCase().trim();
-          const existingItem = masterDb.find(m => m && (m.name || '').toLowerCase().trim() === defName);
-          if (!existingItem) {
-            masterDb.push(defItem);
-            addedCount++;
-          }
-        });
-        // Fold legacy child entries into parent.modes[] and upgrade all entries to V2
-        if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.normalizeDatabaseList === 'function') {
-          const prevLen = masterDb.length;
-          masterDb = RuleMaster.normalizeDatabaseList(masterDb);
-          if (masterDb.length !== prevLen) addedCount++;
-        } else if (window.SchemaMigrator && typeof window.SchemaMigrator.migrateMasterDbEntryToV2 === 'function') {
-          masterDb = masterDb.map(m => window.SchemaMigrator.migrateMasterDbEntryToV2(m));
+        localStorage.removeItem('dnd35_master_db');
+      } catch (e) {}
+
+      if (character) {
+        if (!Array.isArray(character.customDb)) {
+          character.customDb = [];
         }
-        // Refresh any stale Warlock Invocations & Core Feats in masterDb with canonical English descriptions & prerequisites
-        if (Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
-          const coreByName = new Map();
-          window.BUNDLED_SRD_CORE_CATALOG.forEach(c => {
-            if (c && c.name) coreByName.set(c.name.toLowerCase().trim(), c);
+        try {
+          let rawList = character.customDb.filter(m => m && typeof m === 'object' && m.name);
+          rawList = rawList.map(item => {
+            if (item.name) item.name = sanitizeMojibakeString(item.name);
+            if (item.parent) item.parent = sanitizeMojibakeString(item.parent);
+            if (item.benefit) item.benefit = sanitizeMojibakeString(item.benefit);
+            if (item.description) item.description = sanitizeMojibakeString(item.description);
+            return item;
           });
-          masterDb.forEach(m => {
-            if (!m || !m.name) return;
-            const cMatch = coreByName.get(m.name.toLowerCase().trim());
-            if (cMatch && (cMatch.category === 'Warlock Invocation' || cMatch.type === 'Feat')) {
-              if (cMatch.category === 'Warlock Invocation' && m.category !== 'Warlock Invocation') {
-                m.category = 'Warlock Invocation';
-                addedCount++;
-              }
-              if (cMatch.benefit && m.benefit !== cMatch.benefit) {
-                m.benefit = cMatch.benefit;
-                m.description = cMatch.description || cMatch.benefit;
-                addedCount++;
-              }
-              if (cMatch.prereq && cMatch.prereq !== '-' && m.prereq !== cMatch.prereq) {
-                m.prereq = cMatch.prereq;
-                m.prerequisites = cMatch.prereq;
-                addedCount++;
+          if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.normalizeDatabaseList === 'function') {
+            rawList = RuleMaster.normalizeDatabaseList(rawList);
+          } else if (window.SchemaMigrator && typeof window.SchemaMigrator.migrateMasterDbEntryToV2 === 'function') {
+            rawList = rawList.map(m => window.SchemaMigrator.migrateMasterDbEntryToV2(m));
+          }
+          const seen = new Set();
+          const deduped = [];
+          rawList.forEach(item => {
+            if (!item || !item.name) return;
+            const k = (item.id || item.name || '').toLowerCase().trim();
+            if (seen.has(k)) return;
+            seen.add(k);
+            if ((item.type === 'Spell' || (item.category || '').includes('Spell')) && item.level === undefined) {
+              if (Array.isArray(item.tags) && item.tags.some(t => String(t).toLowerCase() === 'cantrip')) {
+                item.level = 0;
               }
             }
+            deduped.push(item);
           });
+          character.customDb = deduped;
+        } catch (syncErr) {
+          console.warn('Canonical V2 character.customDb sync warning:', syncErr);
         }
-        // Ensure cantrips in masterDb have level: 0 explicitly
-        masterDb.forEach(m => {
-          if (m && (m.type === 'Spell' || (m.category || '').includes('Spell')) && m.level === undefined) {
-            if (Array.isArray(m.tags) && m.tags.some(t => String(t).toLowerCase() === 'cantrip')) {
-              m.level = 0;
-              addedCount++;
-            }
-          }
-        });
-        if (addedCount > 0) {
-          localStorage.setItem('dnd35_master_db', JSON.stringify(masterDb));
-        }
-      } catch (syncErr) {
-        console.warn('Canonical V2 masterDb sync warning:', syncErr);
+        masterDb = character.customDb;
+      } else {
+        masterDb = [];
+      }
+      window.CORE_SPELLS_AND_MANEUVERS_35E = [];
+      if (window.RuleMaster && Array.isArray(window.RuleMaster.selectedIds)) {
+        window.RuleMaster.selectedIds = new Set();
+      } else if (window.RuleMaster && window.RuleMaster.selectedIds instanceof Set) {
+        window.RuleMaster.selectedIds.clear();
       }
 
       if (typeof syncCustomClassesToRuleEngine === 'function') {
@@ -1020,9 +966,16 @@
 
     function saveStateToStorage(triggerCloudSync = true) {
       if (!character) return;
+      if (Array.isArray(masterDb)) {
+        character.customDb = masterDb;
+      } else if (!Array.isArray(character.customDb)) {
+        character.customDb = [];
+        masterDb = character.customDb;
+      } else {
+        masterDb = character.customDb;
+      }
       character.lastModified = new Date().toISOString();
       localStorage.setItem('dnd35_character', JSON.stringify(character));
-      localStorage.setItem('dnd35_master_db', JSON.stringify(masterDb));
 
       // Sync character changes back to Hub Database (dnd35_hub_db)
       try {
@@ -1140,9 +1093,14 @@
             console.log(`[Realtime Sync] Updated character received from another device: Lvl ${remoteLvl}`);
             remoteFd.id = myCharId;
             remoteFd._hubId = myCharId;
+            if (!Array.isArray(remoteFd.customDb)) remoteFd.customDb = [];
             character = remoteFd;
+            masterDb = character.customDb;
             localStorage.setItem('dnd35_character', JSON.stringify(character));
             localStorage.setItem('dnd35_active_character_id', myCharId);
+            if (window.RuleMaster && typeof RuleMaster.renderTable === 'function') {
+              RuleMaster.renderTable();
+            }
 
             // Hub DB'sini de güncelle
             try {
@@ -1203,8 +1161,13 @@
               console.log(`[Tab Focus Sync] Pulled latest character from cloud on tab focus: Lvl ${remoteLvl}`);
               remoteFd.id = myCharId;
               remoteFd._hubId = myCharId;
+              if (!Array.isArray(remoteFd.customDb)) remoteFd.customDb = [];
               character = remoteFd;
+              masterDb = character.customDb;
               localStorage.setItem('dnd35_character', JSON.stringify(character));
+              if (window.RuleMaster && typeof RuleMaster.renderTable === 'function') {
+                RuleMaster.renderTable();
+              }
               renderAll();
               if (typeof showDiceTopToast === 'function') {
                 showDiceTopToast({

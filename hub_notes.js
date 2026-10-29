@@ -2032,24 +2032,24 @@ RULES:
 
     // Reset tab styles
     [tabEditor, tabMindmap, tabAi].forEach(btn => {
-      if (btn) btn.className = 'px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 text-slate-400 hover:text-white cursor-pointer';
+      if (btn) btn.className = 'w-full px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer text-xs truncate';
     });
 
     if (view === 'editor') {
-      if (tabEditor) tabEditor.className = 'px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 bg-indigo-600 text-white shadow cursor-pointer';
+      if (tabEditor) tabEditor.className = 'w-full px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1.5 bg-indigo-600 text-white shadow cursor-pointer text-xs truncate';
       if (viewEditor) viewEditor.classList.remove('hidden');
       if (viewMindmap) viewMindmap.classList.add('hidden');
       if (viewAi) viewAi.classList.add('hidden');
       renderFullNotesModalList();
       loadSelectedNoteIntoEditor();
     } else if (view === 'mindmap') {
-      if (tabMindmap) tabMindmap.className = 'px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 bg-indigo-600 text-white shadow cursor-pointer';
+      if (tabMindmap) tabMindmap.className = 'w-full px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1.5 bg-indigo-600 text-white shadow cursor-pointer text-xs truncate';
       if (viewEditor) viewEditor.classList.add('hidden');
       if (viewMindmap) viewMindmap.classList.remove('hidden');
       if (viewAi) viewAi.classList.add('hidden');
       renderMindmap();
     } else if (view === 'ai') {
-      if (tabAi) tabAi.className = 'px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 bg-indigo-600 text-white shadow cursor-pointer';
+      if (tabAi) tabAi.className = 'w-full px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1.5 bg-indigo-600 text-white shadow cursor-pointer text-xs truncate';
       if (viewEditor) viewEditor.classList.add('hidden');
       if (viewMindmap) viewMindmap.classList.add('hidden');
       if (viewAi) viewAi.classList.remove('hidden');
@@ -2188,8 +2188,8 @@ RULES:
       pinBtn.classList.remove('opacity-40', 'pointer-events-none');
       pinBtn.textContent = note.pinned ? '📌 Pinned' : '📌 Pin to Top';
       pinBtn.className = note.pinned 
-        ? 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-amber-500/20 text-amber-300 border border-amber-500/40 cursor-pointer'
-        : 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:text-white border border-slate-700 cursor-pointer';
+        ? 'w-full px-3 py-1.5 rounded-lg text-xs font-bold transition bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center justify-center gap-1 cursor-pointer truncate'
+        : 'w-full px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:text-white border border-slate-700 flex items-center justify-center gap-1 cursor-pointer truncate';
     }
 
     if (deleteBtn) deleteBtn.classList.remove('opacity-40', 'pointer-events-none');
@@ -2349,11 +2349,11 @@ RULES:
 
     if (showToast && saveBtn && saveText) {
       const originalText = saveText.textContent;
-      saveBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-500 text-white shadow-md shadow-emerald-900/50 flex items-center gap-1.5 cursor-pointer';
-      saveText.textContent = 'Kaydedildi! ✓';
+      saveBtn.className = 'w-full px-3 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-500 text-white shadow-md shadow-emerald-900/50 flex items-center justify-center gap-1.5 cursor-pointer truncate';
+      saveText.textContent = 'Saved! ✓';
       setTimeout(() => {
         if (saveBtn && saveText) {
-          saveBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-950/40 flex items-center gap-1.5 cursor-pointer active:scale-95';
+          saveBtn.className = 'w-full px-3 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-950/40 flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 truncate';
           saveText.textContent = originalText;
         }
       }, 1500);
@@ -2478,31 +2478,34 @@ RULES:
     modalWrapper.className = 'fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-2 sm:p-4 md:p-6';
     modalWrapper.innerHTML = `
       <div class="bg-[#131d33] border border-slate-700 rounded-2xl w-full max-w-5xl max-h-[92vh] flex flex-col shadow-2xl text-slate-100 overflow-hidden">
-        <!-- Modal Başlığı & Görünüm Sekmeleri -->
-        <div class="flex items-center justify-between border-b border-slate-700/80 px-4 sm:px-5 py-3 bg-slate-900/90 shrink-0 gap-2 flex-wrap">
-          <div class="flex items-center gap-2.5 min-w-0">
-            <span class="text-xl shrink-0">📝</span>
-            <div class="min-w-0">
-              <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
-                <span>Smart Campaign Notebook</span>
-                <span id="hub-modal-target-title" class="inline-flex items-center text-xs font-normal text-indigo-300 truncate"></span>
-              </h3>
+        <!-- Modal Başlığı & Görünüm Sekmeleri (Tam Simetrik Üst Bar + 3 Eşit Sekme) -->
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between border-b border-slate-700/80 px-4 sm:px-5 py-3 bg-slate-900/90 shrink-0 gap-2.5">
+          <div class="flex items-center justify-between gap-2 w-full lg:w-auto min-w-0">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="text-xl shrink-0">📝</span>
+              <h3 class="text-sm sm:text-base font-bold text-white truncate">Smart Campaign Notebook</h3>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <span id="hub-modal-target-title" class="inline-flex items-center text-xs font-normal text-indigo-300 truncate"></span>
+              <button type="button" onclick="HubNotes.closeFullNotesModal()" class="lg:hidden text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold px-2.5 py-1.5 cursor-pointer shrink-0 transition">✕</button>
             </div>
           </div>
 
-          <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs shrink-0">
-            <button type="button" id="hub-modal-tab-editor" onclick="HubNotes.switchModalView('editor')" class="px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 bg-indigo-600 text-white shadow cursor-pointer text-xs">
-              <span>📝</span><span>Notes</span>
-            </button>
-            <button type="button" id="hub-modal-tab-mindmap" onclick="HubNotes.switchModalView('mindmap')" class="px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 text-slate-400 hover:text-white cursor-pointer text-xs">
-              <span>🕸️</span><span>Tag Mindmap</span>
-            </button>
-            <button type="button" id="hub-modal-tab-ai" onclick="HubNotes.switchModalView('ai')" class="px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 text-slate-400 hover:text-white cursor-pointer text-xs">
-              <span>✨</span><span>AI Chronicler</span>
-            </button>
-          </div>
+          <div class="flex items-center gap-2 w-full lg:w-auto">
+            <div class="grid grid-cols-3 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs w-full lg:w-auto shrink-0">
+              <button type="button" id="hub-modal-tab-editor" onclick="HubNotes.switchModalView('editor')" class="w-full px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1.5 bg-indigo-600 text-white shadow cursor-pointer text-xs truncate">
+                <span>📝</span><span class="truncate">Notes</span>
+              </button>
+              <button type="button" id="hub-modal-tab-mindmap" onclick="HubNotes.switchModalView('mindmap')" class="w-full px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer text-xs truncate">
+                <span>🕸️</span><span class="truncate">Tag Mindmap</span>
+              </button>
+              <button type="button" id="hub-modal-tab-ai" onclick="HubNotes.switchModalView('ai')" class="w-full px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer text-xs truncate">
+                <span>✨</span><span class="truncate">AI Chronicler</span>
+              </button>
+            </div>
 
-          <button type="button" onclick="HubNotes.closeFullNotesModal()" class="text-slate-400 hover:text-white text-lg font-bold px-2 py-1 cursor-pointer shrink-0">✕</button>
+            <button type="button" onclick="HubNotes.closeFullNotesModal()" class="hidden lg:inline-flex text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold px-2.5 py-1.5 cursor-pointer shrink-0 transition">✕ Close</button>
+          </div>
         </div>
 
         <!-- 1. GÖRÜNÜM: Notlar & Editör -->
@@ -2520,31 +2523,36 @@ RULES:
           </div>
 
           <div class="flex-1 flex flex-col p-4 space-y-3 bg-[#131d33] overflow-y-auto min-h-0">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-2.5 shrink-0 flex-wrap gap-2">
-              <div class="text-[11px] text-slate-400 font-mono" id="hub-modal-date-badge">Selected note details</div>
-              <div class="flex items-center gap-2 flex-wrap">
-                <button type="button" onclick="HubNotes.openAiChroniclerWithActiveNote()" class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition bg-purple-950/60 hover:bg-purple-900/80 text-purple-300 border border-purple-800/60 flex items-center gap-1.5 cursor-pointer shadow-sm">
-                  <span>✨</span><span>AI Summarize</span>
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between border-b border-slate-800 pb-2.5 shrink-0 gap-2">
+              <div class="text-[11px] text-slate-400 font-mono truncate" id="hub-modal-date-badge">Selected note details</div>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full lg:w-auto">
+                <button type="button" onclick="HubNotes.openAiChroniclerWithActiveNote()" class="w-full px-2.5 py-1.5 rounded-lg text-xs font-bold transition bg-purple-950/60 hover:bg-purple-900/80 text-purple-300 border border-purple-800/60 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm truncate">
+                  <span>✨</span><span class="truncate">AI Summarize</span>
                 </button>
-                <button type="button" id="hub-modal-save-btn" onclick="HubNotes.saveModalNote(true)" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-950/40 flex items-center gap-1.5 cursor-pointer active:scale-95">
-                  <span>💾</span><span id="hub-modal-save-text">Save Note</span>
+                <button type="button" id="hub-modal-save-btn" onclick="HubNotes.saveModalNote(true)" class="w-full px-3 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-950/40 flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 truncate">
+                  <span>💾</span><span id="hub-modal-save-text" class="truncate">Save Note</span>
                 </button>
-                <button type="button" id="hub-modal-pin-btn" onclick="HubNotes.togglePinNote(null, event)" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:text-white border border-slate-700 cursor-pointer">
+                <button type="button" id="hub-modal-pin-btn" onclick="HubNotes.togglePinNote(null, event)" class="w-full px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:text-white border border-slate-700 flex items-center justify-center gap-1 cursor-pointer truncate">
                   📌 Pin to Top
                 </button>
-                <button type="button" id="hub-modal-delete-btn" onclick="HubNotes.deleteNote(null, event)" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-800/60 cursor-pointer">
+                <button type="button" id="hub-modal-delete-btn" onclick="HubNotes.deleteNote(null, event)" class="w-full px-3 py-1.5 rounded-lg text-xs font-bold transition bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-800/60 flex items-center justify-center gap-1 cursor-pointer truncate">
                   🗑️ Delete
                 </button>
               </div>
             </div>
 
-            <div class="flex items-center gap-1.5 flex-wrap text-xs font-mono shrink-0">
-              <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Quick Tag:</span>
-              <button type="button" onclick="HubNotes.insertTagIntoEditor('#quest')" class="px-2 py-0.5 rounded-md bg-sky-950/60 hover:bg-sky-900 text-sky-300 border border-sky-800/60 transition cursor-pointer">+ #quest</button>
-              <button type="button" onclick="HubNotes.insertTagIntoEditor('#npc')" class="px-2 py-0.5 rounded-md bg-purple-950/60 hover:bg-purple-900 text-purple-300 border border-purple-800/60 transition cursor-pointer">+ #npc</button>
-              <button type="button" onclick="HubNotes.insertTagIntoEditor('#location')" class="px-2 py-0.5 rounded-md bg-emerald-950/60 hover:bg-emerald-900 text-emerald-300 border border-emerald-800/60 transition cursor-pointer">+ #location</button>
-              <button type="button" onclick="HubNotes.insertTagIntoEditor('#loot')" class="px-2 py-0.5 rounded-md bg-yellow-950/60 hover:bg-yellow-900 text-yellow-300 border border-yellow-800/60 transition cursor-pointer">+ #loot</button>
-              <button type="button" onclick="HubNotes.insertTagIntoEditor('- [ ] ')" class="px-2 py-0.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition cursor-pointer">+ To-Do</button>
+            <div class="flex flex-col sm:flex-row sm:items-center gap-1.5 text-xs font-mono shrink-0">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider shrink-0">Quick Tag:</span>
+                <span class="text-[10px] text-slate-500 italic sm:hidden">💡 Type '#' for tags</span>
+              </div>
+              <div class="grid grid-cols-5 gap-1.5 w-full sm:flex-1">
+                <button type="button" onclick="HubNotes.insertTagIntoEditor('#quest')" class="w-full py-1 px-1 rounded-md bg-sky-950/60 hover:bg-sky-900 text-sky-300 border border-sky-800/60 text-[10px] sm:text-xs font-bold transition flex items-center justify-center cursor-pointer truncate">+ #quest</button>
+                <button type="button" onclick="HubNotes.insertTagIntoEditor('#npc')" class="w-full py-1 px-1 rounded-md bg-purple-950/60 hover:bg-purple-900 text-purple-300 border border-purple-800/60 text-[10px] sm:text-xs font-bold transition flex items-center justify-center cursor-pointer truncate">+ #npc</button>
+                <button type="button" onclick="HubNotes.insertTagIntoEditor('#location')" class="w-full py-1 px-1 rounded-md bg-emerald-950/60 hover:bg-emerald-900 text-emerald-300 border border-emerald-800/60 text-[10px] sm:text-xs font-bold transition flex items-center justify-center cursor-pointer truncate">+ #location</button>
+                <button type="button" onclick="HubNotes.insertTagIntoEditor('#loot')" class="w-full py-1 px-1 rounded-md bg-yellow-950/60 hover:bg-yellow-900 text-yellow-300 border border-yellow-800/60 text-[10px] sm:text-xs font-bold transition flex items-center justify-center cursor-pointer truncate">+ #loot</button>
+                <button type="button" onclick="HubNotes.insertTagIntoEditor('- [ ] ')" class="w-full py-1 px-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-[10px] sm:text-xs font-bold transition flex items-center justify-center cursor-pointer truncate">+ To-Do</button>
+              </div>
             </div>
 
             <div class="w-full flex-1 min-h-[300px] bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col space-y-2.5 focus-within:border-indigo-500/80 transition shadow-inner">
@@ -2737,15 +2745,15 @@ RULES:
                 onkeydown="HubNotes.handleQuickKeydown(event)"></textarea>
             </div>
 
-            <div class="flex flex-wrap items-center justify-between gap-2 pt-0.5">
-              <div class="flex items-center gap-1 flex-wrap text-[10px] font-mono">
-                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('#quest')" class="px-2 py-0.5 rounded bg-sky-950/60 hover:bg-sky-900 border border-sky-800/60 text-sky-300 transition cursor-pointer">+ #quest</button>
-                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('#npc')" class="px-2 py-0.5 rounded bg-purple-950/60 hover:bg-purple-900 border border-purple-800/60 text-purple-300 transition cursor-pointer">+ #npc</button>
-                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('#location')" class="px-2 py-0.5 rounded bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800/60 text-emerald-300 transition cursor-pointer">+ #location</button>
-                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('#loot')" class="px-2 py-0.5 rounded bg-yellow-950/60 hover:bg-yellow-900 border border-yellow-800/60 text-yellow-300 transition cursor-pointer">+ #loot</button>
-                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('- [ ] ')" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition cursor-pointer">+ To-Do</button>
+            <div class="flex flex-col space-y-2 pt-0.5">
+              <div class="grid grid-cols-5 gap-1.5 w-full text-[10px] font-mono">
+                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('#quest')" class="w-full py-1 px-1 rounded bg-sky-950/60 hover:bg-sky-900 border border-sky-800/60 text-sky-300 font-bold transition flex items-center justify-center cursor-pointer truncate">+ #quest</button>
+                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('#npc')" class="w-full py-1 px-1 rounded bg-purple-950/60 hover:bg-purple-900 border border-purple-800/60 text-purple-300 font-bold transition flex items-center justify-center cursor-pointer truncate">+ #npc</button>
+                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('#location')" class="w-full py-1 px-1 rounded bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800/60 text-emerald-300 font-bold transition flex items-center justify-center cursor-pointer truncate">+ #location</button>
+                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('#loot')" class="w-full py-1 px-1 rounded bg-yellow-950/60 hover:bg-yellow-900 border border-yellow-800/60 text-yellow-300 font-bold transition flex items-center justify-center cursor-pointer truncate">+ #loot</button>
+                <button type="button" onclick="HubNotes.insertTagIntoQuickInput('- [ ] ')" class="w-full py-1 px-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold transition flex items-center justify-center cursor-pointer truncate">+ To-Do</button>
               </div>
-              <button type="button" onclick="HubNotes.addQuickNote()" class="py-1.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-md transition active:scale-95 cursor-pointer">
+              <button type="button" onclick="HubNotes.addQuickNote()" class="w-full py-2 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition active:scale-95 cursor-pointer">
                 <span>➕</span><span>Save Note (Ctrl+Enter)</span>
               </button>
             </div>

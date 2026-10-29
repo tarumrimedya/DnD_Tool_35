@@ -2247,8 +2247,8 @@
           <div class="flex items-center gap-2">
             <span class="text-2xl">📚</span>
             <div>
-              <h2 class="text-sm md:text-base font-extrabold text-purple-400">MASTER DATABASE & RULE MASTER</h2>
-              <p class="text-[11px] text-slate-400">D&D 3.5e Rule Compendium, 29-Column DB Editor & Prioritized Sources</p>
+              <h2 class="text-sm md:text-base font-extrabold text-purple-400">CHARACTER CUSTOM DB &amp; RULE MASTER</h2>
+              <p class="text-[11px] text-slate-400">Character-Scoped Custom Items, Feats, Spells &amp; Splatbook Rules (Synced with Character)</p>
             </div>
           </div>
           <!-- Sub-Tab Buttons (All 9 Master DB Views) -->
@@ -2498,15 +2498,20 @@
           </div>
 
           <!-- Total count & actions header -->
-          <div class="flex items-center justify-between text-xs text-slate-400 px-1">
-            <div class="flex items-center gap-2">
+          <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400 px-1">
+            <div class="flex items-center gap-2 flex-wrap">
               <span id="mdb-total-count-badge" class="badge bg-purple-950 text-purple-300 border border-purple-800 font-mono">0 Entries</span>
-              <span>•</span>
-              <span class="text-[11px]">Use table actions to edit entries, attach child powers, or equip directly onto your character.</span>
+              <span id="mdb-selected-count-badge" class="hidden badge bg-amber-950 text-amber-300 border border-amber-600 font-mono">0 Selected</span>
+              <span class="hidden sm:inline">•</span>
+              <span class="text-[11px]">Select checkboxes to export specific custom rules/items, or import JSON packages into this character.</span>
             </div>
-            <div class="flex gap-2">
-              <button onclick="exportMasterDbJson()" class="text-[11px] text-slate-300 hover:text-white bg-slate-800 px-2 py-0.5 rounded border border-slate-700 transition">💾 Export DB (.json)</button>
-              <button onclick="document.getElementById('json-file-input').click()" class="text-[11px] text-slate-300 hover:text-white bg-slate-800 px-2 py-0.5 rounded border border-slate-700 transition">📂 Import DB</button>
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <button id="btn-mdb-clear-selection" onclick="RuleMaster.clearSelection()" class="hidden text-[11px] text-slate-400 hover:text-white bg-slate-900 px-2 py-0.5 rounded border border-slate-700 transition cursor-pointer" title="Clear Selection">✕ Clear</button>
+              <button id="btn-mdb-delete-selected" onclick="RuleMaster.deleteSelectedEntries()" class="hidden text-[11px] text-rose-300 hover:text-white bg-rose-950/80 hover:bg-rose-900 px-2 py-0.5 rounded border border-rose-700 transition cursor-pointer">🗑️ Delete Selected</button>
+              <button id="btn-mdb-export" onclick="exportMasterDbJson()" class="text-[11px] text-slate-200 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded border border-slate-700 transition font-semibold cursor-pointer">💾 Export DB (.json)</button>
+              <button onclick="document.getElementById('mdb-json-file-input').click()" class="text-[11px] text-emerald-300 hover:text-white bg-emerald-950/70 hover:bg-emerald-800 px-2.5 py-1 rounded border border-emerald-700/70 transition font-semibold cursor-pointer">📂 Import / Merge DB</button>
+              <input type="file" id="mdb-json-file-input" accept=".json" onchange="handleCustomDbImportFile(event)" class="hidden">
+              <input type="file" id="json-file-input" accept=".json" onchange="handleCustomDbImportFile(event)" class="hidden">
             </div>
           </div>
 
@@ -2515,11 +2520,14 @@
             <table class="w-full text-left text-xs">
               <thead class="bg-slate-950 text-slate-400 text-[10px] uppercase font-bold sticky top-0 z-10 border-b border-slate-800">
                 <tr>
-                  <th class="py-2.5 px-3">Name & Source</th>
+                  <th class="py-2.5 px-2.5 w-9 text-center">
+                    <input type="checkbox" id="mdb-select-all-checkbox" onchange="RuleMaster.toggleSelectAllFiltered(this.checked)" class="w-3.5 h-3.5 rounded bg-slate-900 border-slate-700 text-purple-600 focus:ring-0 cursor-pointer" title="Select / Deselect All Visible Entries">
+                  </th>
+                  <th class="py-2.5 px-3">Name &amp; Source</th>
                   <th class="py-2.5 px-3">Type / Discipline</th>
                   <th class="py-2.5 px-3">Slot / Lvl</th>
-                  <th class="py-2.5 px-3">Bonus & Scope</th>
-                  <th class="py-2.5 px-3">Stat & Combat Effect</th>
+                  <th class="py-2.5 px-3">Bonus &amp; Scope</th>
+                  <th class="py-2.5 px-3">Stat &amp; Combat Effect</th>
                   <th class="py-2.5 px-3">Description / RAW Notes</th>
                   <th class="py-2.5 px-3 text-center w-28">Actions</th>
                 </tr>
@@ -2884,20 +2892,20 @@
               <!-- Dynamically populated by RuleMaster.renderBackupTools() -->
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-3 border-t border-slate-800">
-              <button onclick="exportMasterDbJson()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs p-3 rounded-xl border border-slate-700 transition flex flex-col items-center justify-center gap-1">
+              <button onclick="exportMasterDbJson()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs p-3 rounded-xl border border-slate-700 transition flex flex-col items-center justify-center gap-1 cursor-pointer">
                 <span class="text-xl">💾</span>
-                <span>Export JSON (Backup)</span>
-                <span class="text-[10px] text-slate-400">dnd35_master_db.json</span>
+                <span>Export Selected / All (.json)</span>
+                <span class="text-[10px] text-slate-400">Export character's custom DB entries</span>
               </button>
-              <button onclick="document.getElementById('json-file-input').click()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs p-3 rounded-xl border border-slate-700 transition flex flex-col items-center justify-center gap-1">
+              <button onclick="document.getElementById('mdb-json-file-input').click()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs p-3 rounded-xl border border-slate-700 transition flex flex-col items-center justify-center gap-1 cursor-pointer">
                 <span class="text-xl">📂</span>
-                <span>Import JSON File (Restore)</span>
-                <span class="text-[10px] text-slate-400">Import your custom database</span>
+                <span>Import &amp; Merge JSON</span>
+                <span class="text-[10px] text-slate-400">Merge custom entries into this character</span>
               </button>
-              <button onclick="RuleMaster.resetMasterDbToDefault()" class="bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300 font-bold text-xs p-3 rounded-xl transition flex flex-col items-center justify-center gap-1">
-                <span class="text-xl">🔄</span>
-                <span>Reset to Core 3.5e Defaults</span>
-                <span class="text-[10px] text-rose-400">Reloads the standard library</span>
+              <button onclick="RuleMaster.resetMasterDbToDefault()" class="bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300 font-bold text-xs p-3 rounded-xl transition flex flex-col items-center justify-center gap-1 cursor-pointer">
+                <span class="text-xl">🧹</span>
+                <span>Clear Character Custom DB</span>
+                <span class="text-[10px] text-rose-400">Clears custom entries (Core SRD stays intact)</span>
               </button>
             </div>
           </div>
@@ -7094,18 +7102,18 @@
     <div class="bg-dndCard border border-purple-500/60 rounded-2xl max-w-3xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden my-auto">
       
       <!-- Modal Header -->
-      <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
-        <div class="flex items-center gap-2.5">
-          <span class="text-xl">⚙️</span>
-          <div>
-            <h3 class="text-sm md:text-base font-extrabold text-white flex items-center gap-2">
-              <span>System & Data Settings</span>
-              <span class="badge bg-purple-950 text-purple-300 border border-purple-800 text-[9px]">v3.5 Live</span>
+      <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between gap-2 shrink-0">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span class="text-xl shrink-0">⚙️</span>
+          <div class="min-w-0">
+            <h3 class="text-sm md:text-base font-extrabold text-white flex items-center gap-2 flex-wrap">
+              <span class="truncate">System &amp; Data Settings</span>
+              <span class="badge bg-purple-950 text-purple-300 border border-purple-800 text-[9px] whitespace-nowrap shrink-0">v3.5 Live</span>
             </h3>
-            <p class="text-[10px] text-slate-400">Cloud Sync • Gemini AI • Backup & Restore • House Rules</p>
+            <p class="text-[10px] text-slate-400 truncate">Cloud Sync • Gemini AI • Backup &amp; Restore • House Rules</p>
           </div>
         </div>
-        <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1">
+        <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0 cursor-pointer">
           <span>✕</span> <span>Close</span>
         </button>
       </div>
@@ -7114,19 +7122,19 @@
       <div class="p-4 overflow-y-auto space-y-4 flex-1 text-xs">
         
         <!-- SECTION 1: DM KAMPANYASI & MASA BAĞLANTISI -->
-        <div class="bg-slate-900/90 border border-amber-500/40 rounded-xl p-3.5 space-y-2 shadow">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <div class="flex items-center gap-2.5">
-              <span class="text-xl">🎟️</span>
-              <div>
-                <h4 class="text-xs font-bold text-white flex items-center gap-2">
-                  <span>DM Campaign &amp; Table Link</span>
-                  <span id="settings-campaign-badge" class="text-[10px] px-1.5 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-600/60 font-mono font-bold">Not Linked</span>
-                </h4>
-                <p class="text-[10px] text-slate-400">Connect to a live session using a DM invite code (<code class="text-amber-300 font-mono">DRAGON-XXXX</code>) or manage your current table link.</p>
+        <div class="bg-slate-900/90 border border-amber-500/40 rounded-xl p-3.5 space-y-2.5 shadow">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+            <div class="flex items-start gap-2.5 min-w-0">
+              <span class="text-xl shrink-0 mt-0.5">🎟️</span>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center justify-between sm:justify-start gap-2 flex-wrap">
+                  <h4 class="text-xs font-bold text-white">DM Campaign &amp; Table Link</h4>
+                  <span id="settings-campaign-badge" class="text-[9px] px-1.5 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-600/60 font-mono font-bold whitespace-nowrap shrink-0">Not Linked</span>
+                </div>
+                <p class="text-[10px] text-slate-400 mt-0.5">Connect to a live session using a DM invite code (<code class="text-amber-300 font-mono">DRAGON-XXXX</code>) or manage your current table link.</p>
               </div>
             </div>
-            <button onclick="closeSettingsModal(); openJoinCampaignModal();" class="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition shadow flex items-center gap-1.5 cursor-pointer">
+            <button onclick="closeSettingsModal(); openJoinCampaignModal();" class="w-full sm:w-auto bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition shadow flex items-center justify-center gap-1.5 shrink-0 cursor-pointer">
               <span>🎟️</span>
               <span>Manage Campaign</span>
             </button>
@@ -7135,18 +7143,18 @@
 
         <!-- SECTION 2: GOOGLE GEMINI AI KEY & DIAGNOSTICS -->
         <div class="bg-slate-900/90 border border-purple-500/40 rounded-xl p-3.5 space-y-3 shadow">
-          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
-            <div class="flex items-center gap-2">
-              <span class="text-xl">🧙‍♂️🤖</span>
-              <div>
-                <h4 class="text-xs font-bold text-white flex items-center gap-2 flex-wrap">
-                  <span>🧙‍♂️🤖 Rule Master (AI) Assistant Settings</span>
-                  <span id="settings-gemini-live-status" class="text-[10px] text-slate-400 font-normal">Checking...</span>
-                </h4>
-                <p class="text-[10px] text-slate-400">Your personal free Google AI Studio API key (stored securely in your browser).</p>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-2">
+            <div class="flex items-start gap-2.5 min-w-0">
+              <span class="text-xl shrink-0 mt-0.5">🧙‍♂️</span>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center justify-between sm:justify-start gap-2 flex-wrap">
+                  <h4 class="text-xs font-bold text-white">Rule Master (AI) Assistant Settings</h4>
+                  <span id="settings-gemini-live-status" class="text-[10px] text-slate-400 font-normal whitespace-nowrap shrink-0">Checking...</span>
+                </div>
+                <p class="text-[10px] text-slate-400 mt-0.5">Your personal free Google AI Studio API key (stored securely in your browser).</p>
               </div>
             </div>
-            <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[10px] text-purple-300 hover:text-purple-200 underline font-semibold">
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[10px] text-purple-300 hover:text-purple-200 underline font-semibold shrink-0">
               🔑 Get Free API Key ↗
             </a>
           </div>
@@ -7341,36 +7349,40 @@
             </div>
 
             <!-- 2. FEAT MODU (FEAT PROGRESSION) -->
-            <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5 hover:border-slate-700 transition">
-              <div class="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <div class="font-bold text-amber-300 flex items-center gap-1.5 text-xs">
-                    <span>🎖️</span>
-                    <span>Feat Progression Cadence</span>
-                    <span class="badge bg-amber-950 text-amber-300 border border-amber-700 text-[9px]">House Rule</span>
+            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2 hover:border-slate-700 transition">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0 flex-1">
+                  <div class="font-bold text-amber-300 flex items-center justify-between sm:justify-start gap-1.5 text-xs flex-wrap">
+                    <span class="flex items-center gap-1.5"><span>🎖️</span> <span>Feat Progression Cadence</span></span>
+                    <span class="badge bg-amber-950 text-amber-300 border border-amber-700 text-[9px] px-1.5 py-0.5 rounded whitespace-nowrap shrink-0">House Rule</span>
                   </div>
                   <div class="text-[10px] text-slate-400 mt-0.5">Set the level interval at which characters gain general feats.</div>
                 </div>
-                <div class="flex items-center gap-1.5">
-                  <label class="text-[10px] font-bold text-amber-400 uppercase">🎖️ Feat Mode:</label>
-                  <select id="setting-feat-mode" onchange="onSettingFeatModeChange()" class="bg-slate-900 border border-slate-700 text-amber-300 font-semibold text-[11px] rounded px-2 py-1 focus:outline-none focus:border-amber-400">
-                    <option value="Standard 3.5e (1, 3, 6, 9, 12, 15, 18)">Standard 3.5e (1, 3, 6, 9, 12, 15, 18)</option>
-                    <option value="Every 2 Levels (1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)">Every 2 Levels (1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)</option>
-                    <option value="Every 4 Levels (1, 4, 8, 12, 16, 20)">Every 4 Levels (1, 4, 8, 12, 16, 20)</option>
-                    <option value="All Free / Custom">All Free / Custom (Every Level)</option>
-                  </select>
+              </div>
+              <div class="bg-slate-900/90 border border-amber-900/40 rounded-xl p-2 flex flex-col gap-1">
+                <div class="flex items-center justify-between">
+                  <label for="setting-feat-mode" class="text-[10px] font-bold text-amber-400 uppercase flex items-center gap-1.5">
+                    <span>🎖️</span>
+                    <span>Feat Mode:</span>
+                  </label>
+                  <span class="text-[9px] font-mono text-amber-300/70">Level Interval</span>
                 </div>
+                <select id="setting-feat-mode" onchange="onSettingFeatModeChange()" class="w-full bg-slate-950 border border-slate-700 text-amber-300 font-semibold text-[11px] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-amber-400 cursor-pointer truncate">
+                  <option value="Standard 3.5e (1, 3, 6, 9, 12, 15, 18)">Standard 3.5e (1, 3, 6, 9, 12, 15, 18)</option>
+                  <option value="Every 2 Levels (1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)">Every 2 Levels (1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)</option>
+                  <option value="Every 4 Levels (1, 4, 8, 12, 16, 20)">Every 4 Levels (1, 4, 8, 12, 16, 20)</option>
+                  <option value="All Free / Custom">All Free / Custom (Every Level)</option>
+                </select>
               </div>
             </div>
 
             <!-- 3. CASTER CL KURALI (CASTER LEVEL RULE) & CASTER TYPE -->
-            <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2 hover:border-slate-700 transition">
-              <div class="flex flex-wrap items-center justify-between gap-1.5 pb-2 border-b border-slate-800/80">
-                <div>
-                  <div class="font-bold text-purple-300 flex items-center gap-1.5 text-xs">
-                    <span>🔮</span>
-                    <span>Caster Level (CL) Rule & Caster Discipline</span>
-                    <span class="badge bg-purple-950 text-purple-300 border border-purple-700 text-[9px]">House Rule</span>
+            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2 hover:border-slate-700 transition">
+              <div class="flex items-start justify-between gap-2 pb-2 border-b border-slate-800/80">
+                <div class="min-w-0 flex-1">
+                  <div class="font-bold text-purple-300 flex items-center justify-between sm:justify-start gap-1.5 text-xs flex-wrap">
+                    <span class="flex items-center gap-1.5"><span>🔮</span> <span>Caster Level (CL) Rule &amp; Caster Discipline</span></span>
+                    <span class="badge bg-purple-950 text-purple-300 border border-purple-700 text-[9px] px-1.5 py-0.5 rounded whitespace-nowrap shrink-0">House Rule</span>
                   </div>
                   <div class="text-[10px] text-slate-400 mt-0.5">Multiclass Caster / Initiator Level calculation rule and primary casting discipline.</div>
                 </div>
@@ -7386,9 +7398,9 @@
                     </label>
                     <span class="text-[9px] font-mono text-purple-300/70">Multiclass CL</span>
                   </div>
-                  <select id="setting-cl-mode" onchange="onSettingClModeChange()" class="w-full bg-slate-950 border border-slate-700 text-purple-300 font-semibold text-[11px] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-purple-400 transition cursor-pointer">
+                  <select id="setting-cl-mode" onchange="onSettingClModeChange()" class="w-full bg-slate-950 border border-slate-700 text-purple-300 font-semibold text-[11px] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-purple-400 transition cursor-pointer truncate">
                     <option value="Character Level (DM Boon)" selected>Character Level (DM Boon: CL = Character Level)</option>
-                    <option value="Warlock Boon (Invocations & Eldritch Blast)">Warlock Boon (CL = Character Level + Invocations)</option>
+                    <option value="Warlock Boon (Invocations &amp; Eldritch Blast)">Warlock Boon (CL = Character Level + Invocations)</option>
                     <option value="Class Level">Class Level Only (RAW 3.5e)</option>
                     <option value="Custom">Custom (Manual)</option>
                   </select>
@@ -7402,122 +7414,121 @@
                     </label>
                     <span id="setting-caster-type-hint" class="text-[9px] font-mono text-indigo-300/70 transition">Discipline</span>
                   </div>
-                  <select id="setting-caster-type" onchange="onSettingCasterTypeChange()" class="w-full bg-slate-950 border border-slate-700 text-indigo-300 font-semibold text-[11px] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-400 transition cursor-pointer">
+                  <select id="setting-caster-type" onchange="onSettingCasterTypeChange()" class="w-full bg-slate-950 border border-slate-700 text-indigo-300 font-semibold text-[11px] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-400 transition cursor-pointer truncate">
                     <option value="spontaneous">🔮 1. Spontaneous Arcane (Sorcerer, Bard, etc.)</option>
                     <option value="prepared">📖 2. Prepared Arcane (Wizard, Wu Jen, etc.)</option>
                     <option value="divine">✨ 3. Divine Prayer (Cleric, Druid, Paladin, etc.)</option>
                     <option value="martial">⚔️ 4. Martial Maneuvers (Tome of Battle / IL)</option>
-                    <option value="warlock">👁️ 5. Warlock (Invocations & Eldritch Blast)</option>
+                    <option value="warlock">👁️ 5. Warlock (Invocations &amp; Eldritch Blast)</option>
                   </select>
                 </div>
               </div>
             </div>
 
             <!-- 4. IGNORE ASF / BOON -->
-            <label class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
-              <div>
-                <div class="font-bold text-slate-200 flex items-center gap-1.5 text-xs">
+            <label class="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
+              <div class="min-w-0 flex-1">
+                <div class="font-bold text-slate-200 flex items-center gap-1.5 text-xs flex-wrap">
                   <span class="text-slate-300 font-semibold">🛡️ Ignore ASF / Boon</span>
-                  <span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[9px]">DM Boon</span>
+                  <span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[9px] px-1.5 py-0.5 rounded whitespace-nowrap shrink-0">DM Boon</span>
                 </div>
                 <div class="text-[10px] text-slate-400 mt-0.5">Completely ignores Arcane Spell Failure (ASF %) penalties from armor and shields.</div>
               </div>
-              <input type="checkbox" id="setting-ignore-asf" onchange="onSettingIgnoreAsfChange()" class="w-4 h-4 rounded border-slate-700 text-emerald-500 focus:ring-0">
+              <input type="checkbox" id="setting-ignore-asf" onchange="onSettingIgnoreAsfChange()" class="w-4 h-4 rounded border-slate-700 text-emerald-500 focus:ring-0 shrink-0">
             </label>
 
             <!-- 5. BAB & SAVE PROGRESSION (FRACTIONAL BAB/SAVE - UNEARTHED ARCANA) -->
-            <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5 hover:border-slate-700 transition">
-              <div class="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <div class="font-bold text-sky-300 flex items-center gap-1.5 text-xs">
-                    <span>📐</span>
-                    <span>BAB & Save Progression System</span>
-                    <span class="badge bg-sky-950 text-sky-300 border border-sky-700 text-[9px]">Unearthed Arcana</span>
+            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2 hover:border-slate-700 transition">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0 flex-1">
+                  <div class="font-bold text-sky-300 flex items-center justify-between sm:justify-start gap-1.5 text-xs flex-wrap">
+                    <span class="flex items-center gap-1.5"><span>📐</span> <span>BAB &amp; Save Progression System</span></span>
+                    <span class="badge bg-sky-950 text-sky-300 border border-sky-700 text-[9px] px-1.5 py-0.5 rounded whitespace-nowrap shrink-0">Unearthed Arcana</span>
                   </div>
                   <div class="text-[10px] text-slate-400 mt-0.5">Unearthed Arcana fractional BAB/Save progression for multiclass characters (Good +1.0, Avg +0.75, Poor +0.5).</div>
                 </div>
-                <div class="flex items-center gap-1.5">
-                  <label class="text-[10px] font-bold text-sky-400 uppercase">📐 Rule:</label>
-                  <select id="setting-bab-save-system" onchange="onSettingBabSaveSystemChange()" class="bg-slate-900 border border-slate-700 text-sky-300 font-semibold text-[11px] rounded px-2 py-1 focus:outline-none focus:border-sky-400 cursor-pointer">
-                    <option value="standard" selected>Standard Core 3.5e (RAW)</option>
-                    <option value="fractional">Fractional (Unearthed Arcana)</option>
-                  </select>
+              </div>
+              <div class="bg-slate-900/90 border border-sky-900/40 rounded-xl p-2 flex flex-col gap-1">
+                <div class="flex items-center justify-between">
+                  <label for="setting-bab-save-system" class="text-[10px] font-bold text-sky-400 uppercase flex items-center gap-1.5">
+                    <span>📐</span>
+                    <span>Rule:</span>
+                  </label>
+                  <span class="text-[9px] font-mono text-sky-300/70">Multiclass Math</span>
                 </div>
+                <select id="setting-bab-save-system" onchange="onSettingBabSaveSystemChange()" class="w-full bg-slate-950 border border-slate-700 text-sky-300 font-semibold text-[11px] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-sky-400 cursor-pointer truncate">
+                  <option value="standard" selected>Standard Core 3.5e (RAW)</option>
+                  <option value="fractional">Fractional (Unearthed Arcana)</option>
+                </select>
               </div>
             </div>
 
             <!-- 5. NO CRIT CONFIRM -->
-            <label class="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
-              <div>
+            <label class="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
+              <div class="min-w-0 flex-1">
                 <div class="font-bold text-slate-200">🚫 No Crit Confirm (Auto-Confirm Crits)</div>
-                <div class="text-[10px] text-slate-400">Automatically confirms critical threats without requiring a secondary confirmation roll.</div>
+                <div class="text-[10px] text-slate-400 mt-0.5">Automatically confirms critical threats without requiring a secondary confirmation roll.</div>
               </div>
-              <input type="checkbox" id="settings-no-crit-confirm" checked onchange="const h=document.getElementById('house-no-crit-confirm'); if(h) h.checked = this.checked; if(!character.houseRules) character.houseRules = {}; character.houseRules.noCritConfirm = this.checked; saveStateToStorage(false);" class="rounded border-slate-700 text-amber-500 focus:ring-0">
+              <input type="checkbox" id="settings-no-crit-confirm" checked onchange="const h=document.getElementById('house-no-crit-confirm'); if(h) h.checked = this.checked; if(!character.houseRules) character.houseRules = {}; character.houseRules.noCritConfirm = this.checked; saveStateToStorage(false);" class="w-4 h-4 rounded border-slate-700 text-amber-500 focus:ring-0 shrink-0">
             </label>
 
             <!-- 6. TOME OF BATTLE MANEUVER CRIT -->
-            <label class="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
-              <div>
+            <label class="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition">
+              <div class="min-w-0 flex-1">
                 <div class="font-bold text-slate-200">⚡ Multiply Tome of Battle Maneuver Dice on Crit</div>
-                <div class="text-[10px] text-slate-400">Includes bonus strike maneuver dice when multiplying damage on a critical hit.</div>
+                <div class="text-[10px] text-slate-400 mt-0.5">Includes bonus strike maneuver dice when multiplying damage on a critical hit.</div>
               </div>
-              <input type="checkbox" id="settings-maneuver-crit" onchange="const h=document.getElementById('house-maneuver-crit'); if(h) h.checked = this.checked; if(!character.houseRules) character.houseRules = {}; character.houseRules.maneuverCrit = this.checked; saveStateToStorage(false);" class="rounded border-slate-700 text-indigo-500 focus:ring-0">
+              <input type="checkbox" id="settings-maneuver-crit" onchange="const h=document.getElementById('house-maneuver-crit'); if(h) h.checked = this.checked; if(!character.houseRules) character.houseRules = {}; character.houseRules.maneuverCrit = this.checked; saveStateToStorage(false);" class="w-4 h-4 rounded border-slate-700 text-indigo-500 focus:ring-0 shrink-0">
             </label>
 
             <!-- CRIT THREAT CAP (HOUSE RULE) -->
-            <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-              <div>
+            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2 hover:border-slate-700 transition">
+              <div class="min-w-0">
                 <div class="font-bold text-slate-200 flex items-center gap-1.5 text-xs">
                   <span>🎯</span>
                   <span>Critical Threat Range Cap</span>
                 </div>
                 <div class="text-[10px] text-slate-400 mt-0.5">Lowest minimum roll threshold for critical threat expansion (DM Cap: Max 15-20).</div>
               </div>
-              <div class="flex items-center gap-1.5 shrink-0 ml-2">
-                <select id="setting-crit-cap-min" onchange="onHouseRuleCritCapChange(this.value)" class="bg-slate-900 border border-slate-700 text-amber-300 font-bold text-xs rounded px-2.5 py-1 focus:outline-none focus:border-amber-400">
-                  <option value="15">Max 15-20 (DM Cap)</option>
-                  <option value="16">Max 16-20</option>
-                  <option value="17">Max 17-20</option>
-                  <option value="18">Max 18-20</option>
-                  <option value="12">Max 12-20 (Expanded)</option>
-                  <option value="1">Uncapped (No Limit)</option>
-                </select>
-              </div>
+              <select id="setting-crit-cap-min" onchange="onHouseRuleCritCapChange(this.value)" class="w-full bg-slate-900 border border-slate-700 text-amber-300 font-bold text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-amber-400 cursor-pointer truncate">
+                <option value="15">Max 15-20 (DM Cap)</option>
+                <option value="16">Max 16-20</option>
+                <option value="17">Max 17-20</option>
+                <option value="18">Max 18-20</option>
+                <option value="12">Max 12-20 (Expanded)</option>
+                <option value="1">Uncapped (No Limit)</option>
+              </select>
             </div>
 
             <!-- KEEN & IMPROVED CRITICAL STACKING -->
-            <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-              <div>
+            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2 hover:border-slate-700 transition">
+              <div class="min-w-0">
                 <div class="font-bold text-slate-200 flex items-center gap-1.5 text-xs">
                   <span>⚔️</span>
-                  <span>Keen & Improved Critical Stacking</span>
+                  <span>Keen &amp; Improved Critical Stacking</span>
                 </div>
                 <div class="text-[10px] text-slate-400 mt-0.5">Rule preference when both Keen weapon property and Improved Critical feat apply.</div>
               </div>
-              <div class="flex items-center gap-1.5 shrink-0 ml-2">
-                <select id="setting-keen-imp-stacking" onchange="onHouseRuleKeenStackingChange(this.value)" class="bg-slate-900 border border-slate-700 text-amber-300 font-bold text-xs rounded px-2.5 py-1 focus:outline-none focus:border-amber-400">
-                  <option value="stack_diminishing">House Rule: Stacks (+1 Threat Range)</option>
-                  <option value="none">RAW Core 3.5e: Does Not Stack (Single Doubling)</option>
-                  <option value="full">3.0e Legacy: Full Stacking (Triple Threat Range)</option>
-                </select>
-              </div>
+              <select id="setting-keen-imp-stacking" onchange="onHouseRuleKeenStackingChange(this.value)" class="w-full bg-slate-900 border border-slate-700 text-amber-300 font-bold text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-amber-400 cursor-pointer truncate">
+                <option value="stack_diminishing">House Rule: Stacks (+1 Threat Range)</option>
+                <option value="none">RAW Core 3.5e: Does Not Stack (Single Doubling)</option>
+                <option value="full">3.0e Legacy: Full Stacking (Triple Threat Range)</option>
+              </select>
             </div>
 
             <!-- PRECISION DAMAGE (SNEAK ATTACK) PER TURN RULE -->
-            <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-              <div>
+            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2 hover:border-slate-700 transition">
+              <div class="min-w-0">
                 <div class="font-bold text-slate-200 flex items-center gap-1.5 text-xs">
                   <span>🗡️</span>
                   <span>Precision Damage Limit (Sneak Attack / Skirmish)</span>
                 </div>
                 <div class="text-[10px] text-slate-400 mt-0.5">How precision damage dice (Sneak Attack, Sudden Strike, Skirmish) apply across iterative attacks.</div>
               </div>
-              <div class="flex items-center gap-1.5 shrink-0 ml-2">
-                <select id="setting-precision-rule" onchange="onHouseRulePrecisionChange(this.value)" class="bg-slate-900 border border-slate-700 text-amber-300 font-bold text-xs rounded px-2.5 py-1 focus:outline-none focus:border-amber-400">
-                  <option value="once_per_turn">First Hit per Round (Tactical Limit)</option>
-                  <option value="every_hit">Every Qualifying Hit (Standard RAW 3.5e)</option>
-                </select>
-              </div>
+              <select id="setting-precision-rule" onchange="onHouseRulePrecisionChange(this.value)" class="w-full bg-slate-900 border border-slate-700 text-amber-300 font-bold text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-amber-400 cursor-pointer truncate">
+                <option value="once_per_turn">First Hit per Round (Tactical Limit)</option>
+                <option value="every_hit">Every Qualifying Hit (Standard RAW 3.5e)</option>
+              </select>
             </div>
 
 
@@ -7526,22 +7537,22 @@
 
         <!-- SECTION 5: DANGER ZONE / RESET -->
         <div class="bg-rose-950/20 border border-rose-600/40 rounded-xl p-3.5 space-y-3">
-          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-rose-900/40 pb-2">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-rose-900/40 pb-2.5">
             <div>
               <h4 class="text-xs font-bold text-rose-400">⚠️ Reset Character</h4>
               <p class="text-[10px] text-slate-400">Resets only the active character back to a clean Level 1 template.</p>
             </div>
-            <button onclick="resetToCleanCharacter(); closeSettingsModal();" class="bg-rose-700 hover:bg-rose-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition shadow cursor-pointer">
-              🗑️ Reset Character
+            <button onclick="resetToCleanCharacter(); closeSettingsModal();" class="w-full sm:w-auto bg-rose-700 hover:bg-rose-600 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition shadow flex items-center justify-center gap-1.5 shrink-0 cursor-pointer">
+              <span>🗑️</span> <span>Reset Character</span>
             </button>
           </div>
-          <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-0.5">
             <div>
               <h4 class="text-xs font-bold text-amber-400">🧹 Factory Reset (Clear All Local Data)</h4>
               <p class="text-[10px] text-slate-400">Clears character data, Master DB cache, and all local browser storage.</p>
             </div>
-            <button onclick="resetAllLocalDataToFactoryDefaults()" class="bg-gradient-to-r from-amber-600 to-rose-700 hover:from-amber-500 hover:to-rose-600 text-white font-black text-xs px-3.5 py-1.5 rounded-lg transition shadow-lg cursor-pointer">
-              🧹 Reset All
+            <button onclick="resetAllLocalDataToFactoryDefaults()" class="w-full sm:w-auto bg-gradient-to-r from-amber-600 to-rose-700 hover:from-amber-500 hover:to-rose-600 text-white font-black text-xs px-3.5 py-2 rounded-lg transition shadow-lg flex items-center justify-center gap-1.5 shrink-0 cursor-pointer">
+              <span>🧹</span> <span>Reset All</span>
             </button>
           </div>
         </div>
