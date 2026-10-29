@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>D&D 3.5e Combat Cockpit: Offense & Damage Engine</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scroll::-webkit-scrollbar-track { background: #0f172a; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { opacity: 1; }
+  </style>
+</head>
+<body class="bg-[#0b1220] text-slate-100 p-4 min-h-screen">
+  <div class="max-w-6xl mx-auto space-y-6">
+
+    <!-- HEADER & EXPLANATION -->
+    <div class="bg-[#131d33] border border-slate-700/80 rounded-xl p-5 shadow-xl">
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-700/60 pb-4">
+        <div>
+          <span class="text-xs font-semibold px-2.5 py-1 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">⚔️ D&D 3.5e Fonksiyonel Tasarım Önerisi</span>
+          <h1 class="text-xl sm:text-2xl font-bold text-white mt-1">Savaş Kokpiti & Saldırı / Hasar Motoru (Offense Engine)</h1>
+          <p class="text-xs sm:text-sm text-slate-400 mt-0.5">Türlere (Item/Spell/Feat) göre değil; <span class="text-sky-300 font-medium">Saldırı (Offense)</span>, <span class="text-emerald-300 font-medium">Savunma (Defense)</span> ve <span class="text-amber-300 font-medium">Utility / Kaynaklar</span> fonksiyonlarına göre entegre yönetim.</p>
+        </div>
+        <div class="flex items-center gap-2 bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-700 text-xs text-slate-300">
+          <span>BAB: <strong class="text-white">+11/+6/+1</strong></span>
+          <span class="text-slate-600">|</span>
+          <span>Str Mod: <strong class="text-white">+5</strong></span>
+        </div>
+      </div>
+
+      <!-- KURAL DETAYI (RAW TOME OF BATTLE & HOUSE-RULE KARŞILAŞTIRMASI) -->
+      <div class="mt-4 p-3 bg-slate-900/90 rounded-lg border border-amber-500/30 flex items-start gap-3">
+        <span class="text-xl">📜</span>
+        <div class="text-xs text-slate-300 space-y-1">
+          <p class="font-semibold text-amber-300">Tome of Battle: The Book of Nine Swords (Sayfa 43) Kural İncelemesi:</p>
+          <p class="italic text-slate-400">"You can make a critical hit with a strike... <strong>You do not multiply extra damage from a strike with a successful critical hit.</strong> You treat it just as you would extra damage from another source."</p>
+          <p class="pt-1 text-slate-300"><span class="text-emerald-400 font-semibold">Resmi Kural (RAW):</span> Manevra zarları (Mountain Hammer +2d6 vb.) crit olsa dahi katlanmaz, 1 kez eklenir.</p>
+          <p><span class="text-sky-400 font-semibold">Masanızın Ev Kuralı (House-Rule):</span> Eğer masanızda manevraların silah hasarıyla birleşip katlanmasını tercih ediyorsanız, motorumuz bunu aşağıdaki <strong class="text-amber-300">"Manevraları Crit'te Katla"</strong> seçeneği ile destekler!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIVE INTERACTIVE OFFENSE & DAMAGE CALCULATOR DEMO -->
+    <div class="bg-[#131d33] border border-rose-500/40 rounded-xl p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-700/60 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-rose-400 font-bold text-base sm:text-lg">⚔️ BLOK 2: OFFENSE - SALDIRI ROTASYONU & HASAR MODİFİKATÖRLERİ</span>
+          <span class="text-[11px] bg-rose-950/80 text-rose-300 border border-rose-800 px-2 py-0.5 rounded font-mono">CANLI TEST</span>
+        </div>
+        <div class="text-xs text-slate-400">Silah ve aktif yetenekleri işaretleyin, crit durumunu test edin:</div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        
+        <!-- SOL KOLON: SİLAH SEÇİMİ VE SALDIRI ROTASYONU (lg:col-span-7) -->
+        <div class="lg:col-span-7 space-y-4">
+          <div class="bg-[#0f172a] p-3 rounded-lg border border-slate-700">
+            <h3 class="text-xs font-bold text-sky-400 uppercase tracking-wider mb-2 flex items-center justify-between">
+              <span>1. Kullanılan Silahı Seç (Equipped Weapons)</span>
+              <span class="text-[11px] text-slate-400 font-normal">Inventory'den otomatik gelir</span>
+            </h3>
+            
+            <div class="space-y-2">
+              <!-- WEAPON 1: Jovar +4 -->
+              <label class="flex items-center justify-between p-2.5 rounded-lg border border-slate-700 bg-slate-800/60 hover:bg-slate-800 cursor-pointer transition">
+                <div class="flex items-center gap-3">
+                  <input type="radio" name="active_weapon" value="jovar" checked onchange="calculateDamage()" class="w-4 h-4 text-sky-500 accent-sky-500">
+                  <div>
+                    <div class="text-sm font-bold text-white flex items-center gap-2">
+                      Great Jovar +4 <span class="text-[10px] bg-sky-950 text-sky-300 px-1.5 py-0.5 rounded border border-sky-800">2-Handed</span>
+                    </div>
+                    <div class="text-xs text-slate-400">Zar: <span class="text-amber-300 font-mono">2d8</span> | Crit: <span class="text-rose-300 font-mono">18-20/x2</span> | Büyü: +4 | Str (1.5x): +7</div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span class="text-xs font-mono font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-800 px-2 py-1 rounded">+20 / +15 / +10</span>
+                  <div class="text-[10px] text-slate-400 mt-1">1st / 2nd / 3rd Atk</div>
+                </div>
+              </label>
+
+              <!-- WEAPON 2: Sword of Defence +5 -->
+              <label class="flex items-center justify-between p-2.5 rounded-lg border border-slate-700 bg-slate-800/40 hover:bg-slate-800 cursor-pointer transition">
+                <div class="flex items-center gap-3">
+                  <input type="radio" name="active_weapon" value="sword_def" onchange="calculateDamage()" class="w-4 h-4 text-sky-500 accent-sky-500">
+                  <div>
+                    <div class="text-sm font-bold text-white flex items-center gap-2">
+                      Sword of Defence +5 <span class="text-[10px] bg-indigo-950 text-indigo-300 px-1.5 py-0.5 rounded border border-indigo-800">1-Handed</span>
+                    </div>
+                    <div class="text-xs text-slate-400">Zar: <span class="text-amber-300 font-mono">1d8</span> | Crit: <span class="text-rose-300 font-mono">19-20/x2</span> | Büyü: +5 | Str (1x): +5</div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span class="text-xs font-mono font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-800 px-2 py-1 rounded">+21 / +16 / +11</span>
+                  <div class="text-[10px] text-slate-400 mt-1">1st / 2nd / 3rd Atk</div>
+                </div>
+              </label>
+
+              <!-- WEAPON 3: Heavy Shield Bash +5 -->
+              <label class="flex items-center justify-between p-2.5 rounded-lg border border-slate-700 bg-slate-800/40 hover:bg-slate-800 cursor-pointer transition">
+                <div class="flex items-center gap-3">
+                  <input type="radio" name="active_weapon" value="shield_bash" onchange="calculateDamage()" class="w-4 h-4 text-sky-500 accent-sky-500">
+                  <div>
+                    <div class="text-sm font-bold text-white flex items-center gap-2">
+                      Spiked Heavy Shield +5 <span class="text-[10px] bg-amber-950 text-amber-300 px-1.5 py-0.5 rounded border border-amber-800">Off-Hand</span>
+                    </div>
+                    <div class="text-xs text-slate-400">Zar: <span class="text-amber-300 font-mono">1d6</span> | Crit: <span class="text-rose-300 font-mono">20/x2</span> | Büyü: +5 | Str (0.5x): +2</div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span class="text-xs font-mono font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-800 px-2 py-1 rounded">+18 / +13</span>
+                  <div class="text-[10px] text-slate-400 mt-1">Off-Hand Atk</div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- TAKTİK SALDIRI MODİFİKATÖRLERİ LİSTESİ -->
+          <div class="bg-[#0f172a] p-3 rounded-lg border border-slate-700">
+            <h3 class="text-xs font-bold text-rose-400 uppercase tracking-wider mb-2 flex items-center justify-between">
+              <span>2. Aktif Vuruş Modifikatörleri (Feat, Stance, Maneuver, Spell, Item, Boon)</span>
+              <span class="text-[11px] text-slate-400 font-normal">Bu vuruş için seç</span>
+            </h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+
+              <!-- POWER ATTACK -->
+              <div class="p-2 rounded bg-slate-800/80 border border-slate-700 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" id="mod_pa" checked onchange="calculateDamage()" class="w-4 h-4 rounded accent-rose-500">
+                  <div>
+                    <div class="font-bold text-slate-200">Power Attack <span class="text-[10px] text-purple-300 font-normal">(Feat)</span></div>
+                    <div class="text-[10px] text-slate-400" id="pa_detail">-2 Atk &rarr; +4 Dmg (2H)</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1">
+                  <span class="text-[10px] text-slate-400">BAB:</span>
+                  <input type="number" id="pa_val" value="2" min="0" max="11" onchange="calculateDamage()" class="w-12 bg-slate-900 border border-slate-600 rounded px-1.5 py-0.5 text-center text-xs font-bold text-white">
+                </div>
+              </div>
+
+              <!-- PUNISHING STANCE -->
+              <div class="p-2 rounded bg-slate-800/80 border border-slate-700 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" id="mod_punishing" checked onchange="calculateDamage()" class="w-4 h-4 rounded accent-rose-500">
+                  <div>
+                    <div class="font-bold text-slate-200">Punishing Stance <span class="text-[10px] text-amber-300 font-normal">(Stance)</span></div>
+                    <div class="text-[10px] text-slate-400">+1d6 Hasar, -2 AC</div>
+                  </div>
+                </div>
+                <span class="font-mono font-bold text-amber-400">+1d6</span>
+              </div>
+
+              <!-- MOUNTAIN HAMMER -->
+              <div class="p-2 rounded bg-slate-800/80 border border-slate-700 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" id="mod_hammer" onchange="calculateDamage()" class="w-4 h-4 rounded accent-rose-500">
+                  <div>
+                    <div class="font-bold text-slate-200">Mountain Hammer <span class="text-[10px] text-sky-300 font-normal">(Manevra)</span></div>
+                    <div class="text-[10px] text-slate-400">+2d6 Hasar, DR/Hardness yok say</div>
+                  </div>
+                </div>
+                <span class="font-mono font-bold text-sky-400">+2d6</span>
+              </div>
+
+              <!-- CHARGING MINOTAUR -->
+              <div class="p-2 rounded bg-slate-800/80 border border-slate-700 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" id="mod_minotaur" onchange="calculateDamage()" class="w-4 h-4 rounded accent-rose-500">
+                  <div>
+                    <div class="font-bold text-slate-200">Charging Minotaur <span class="text-[10px] text-sky-300 font-normal">(Manevra)</span></div>
+                    <div class="text-[10px] text-slate-400">+2d6 Bull Rush Hasarı</div>
+                  </div>
+                </div>
+                <span class="font-mono font-bold text-sky-400">+2d6</span>
+              </div>
+
+              <!-- BLADE OF BLOOD -->
+              <div class="p-2 rounded bg-slate-800/80 border border-slate-700 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" id="mod_blade_blood" onchange="calculateDamage()" class="w-4 h-4 rounded accent-rose-500">
+                  <div>
+                    <div class="font-bold text-slate-200">Blade of Blood <span class="text-[10px] text-purple-300 font-normal">(Spell)</span></div>
+                    <div class="text-[10px] text-slate-400">+3d6 (5 HP fedasıyla)</div>
+                  </div>
+                </div>
+                <span class="font-mono font-bold text-purple-400">+3d6</span>
+              </div>
+
+              <!-- WITCHLIGHT RESERVOIR -->
+              <div class="p-2 rounded bg-slate-800/80 border border-slate-700 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" id="mod_witchlight" onchange="calculateDamage()" class="w-4 h-4 rounded accent-rose-500">
+                  <div>
+                    <div class="font-bold text-slate-200">Witchlight Reservoir <span class="text-[10px] text-emerald-300 font-normal">(Item)</span></div>
+                    <div class="text-[10px] text-slate-400">+2d6 Force Hasarı</div>
+                  </div>
+                </div>
+                <span class="font-mono font-bold text-emerald-400">+2d6</span>
+              </div>
+
+              <!-- COLLAR OF PAIN -->
+              <div class="p-2 rounded bg-slate-800/80 border border-slate-700 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" id="mod_collar" onchange="calculateDamage()" class="w-4 h-4 rounded accent-rose-500">
+                  <div>
+                    <div class="font-bold text-slate-200">Collar of Pain <span class="text-[10px] text-emerald-300 font-normal">(Item)</span></div>
+                    <div class="text-[10px] text-slate-400">+2d8 Ekstra Hasar</div>
+                  </div>
+                </div>
+                <span class="font-mono font-bold text-emerald-400">+2d8</span>
+              </div>
+
+              <!-- KAZMIL BLESS -->
+              <div class="p-2 rounded bg-slate-800/80 border border-slate-700 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" id="mod_kazmil" checked onchange="calculateDamage()" class="w-4 h-4 rounded accent-rose-500">
+                  <div>
+                    <div class="font-bold text-slate-200">Kazmil Bless <span class="text-[10px] text-amber-300 font-normal">(Boon)</span></div>
+                    <div class="text-[10px] text-slate-400">+1d12 İlahi Hasar Bonusu</div>
+                  </div>
+                </div>
+                <span class="font-mono font-bold text-amber-400">+1d12</span>
+              </div>
+
+              <!-- SNEAK ATTACK / PRECISION -->
+              <div class="p-2 rounded bg-slate-800/80 border border-slate-700 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" id="mod_sneak" onchange="calculateDamage()" class="w-4 h-4 rounded accent-rose-500">
+                  <div>
+                    <div class="font-bold text-slate-200">Sneak Attack <span class="text-[10px] text-slate-300 font-normal">(Class)</span></div>
+                    <div class="text-[10px] text-slate-400">+2d6 Flank / Flat-footed</div>
+                  </div>
+                </div>
+                <span class="font-mono font-bold text-slate-300">+2d6</span>
+              </div>
+
+              <!-- FLAMING WEAPON -->
+              <div class="p-2 rounded bg-slate-800/80 border border-slate-700 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" id="mod_flame" onchange="calculateDamage()" class="w-4 h-4 rounded accent-rose-500">
+                  <div>
+                    <div class="font-bold text-slate-200">Flaming Weapon <span class="text-[10px] text-orange-400 font-normal">(Spell / Item)</span></div>
+                    <div class="text-[10px] text-slate-400">+1d6 Ateş Hasarı</div>
+                  </div>
+                </div>
+                <span class="font-mono font-bold text-orange-400">+1d6</span>
+              </div>
+
+              <!-- CORROSIVE / ACID WEAPON -->
+              <div class="p-2 rounded bg-slate-800/80 border border-slate-700 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" id="mod_acid" onchange="calculateDamage()" class="w-4 h-4 rounded accent-rose-500">
+                  <div>
+                    <div class="font-bold text-slate-200">Corrosive / Acid <span class="text-[10px] text-lime-400 font-normal">(Spell / Item)</span></div>
+                    <div class="text-[10px] text-slate-400">+1d6 Asit (Acid) Hasarı</div>
+                  </div>
+                </div>
+                <span class="font-mono font-bold text-lime-400">+1d6</span>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- SAĞ KOLON: CANLI HASAR HESAPLAYICI & CRITICAL MOTORU (lg:col-span-5) -->
+        <div class="lg:col-span-5 flex flex-col justify-between space-y-4">
+          
+          <div class="bg-[#0f172a] p-4 rounded-xl border border-slate-700 space-y-4">
+            <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center justify-between">
+              <span>3. Hasar Dağılımı ve Critical Durumu</span>
+              <span class="text-[10px] px-2 py-0.5 bg-slate-800 text-slate-300 rounded font-mono">D&D 3.5 RAW</span>
+            </h3>
+
+            <!-- CRITICAL HIT TOGGLE -->
+            <label class="flex items-center justify-between p-3 rounded-lg bg-rose-950/40 border-2 border-rose-500/60 cursor-pointer hover:bg-rose-950/60 transition">
+              <div class="flex items-center gap-3">
+                <input type="checkbox" id="is_crit" onchange="calculateDamage()" class="w-5 h-5 accent-rose-500 rounded">
+                <div>
+                  <div class="text-sm font-bold text-rose-300 flex items-center gap-1.5">
+                    🎯 CRITICAL HIT!
+                  </div>
+                  <div class="text-[11px] text-rose-200/70" id="crit_desc">Normal Vuruş (x1)</div>
+                </div>
+              </div>
+              <span class="text-xs font-mono font-extrabold px-2.5 py-1 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40" id="crit_badge">NORMAL</span>
+            </label>
+
+            <!-- HOUSE RULE TOGGLE FOR MANEUVERS -->
+            <label class="flex items-center justify-between p-2 rounded bg-slate-800/80 border border-amber-500/40 cursor-pointer hover:bg-slate-800 transition">
+              <div class="flex items-center gap-2">
+                <input type="checkbox" id="house_rule_maneuver_crit" onchange="calculateDamage()" class="w-4 h-4 accent-amber-500 rounded">
+                <div class="text-[11px] text-slate-300">
+                  <span class="font-bold text-amber-300">⚔️ Ev Kuralı (House-Rule):</span> Manevraları Silah Dmg'e Kat (Crit ile Katla)
+                </div>
+              </div>
+              <span class="text-[10px] text-amber-400 font-mono">Tıkla & Dene</span>
+            </label>
+
+            <!-- HESAPLAMA TABLOSU -->
+            <div class="space-y-2 text-xs">
+              <div class="text-slate-400 font-medium border-b border-slate-800 pb-1 text-[11px]">KATEGORİ DETAYLARI</div>
+              
+              <!-- Katlanan Kısım -->
+              <div class="p-2.5 rounded bg-emerald-950/30 border border-emerald-800/50 space-y-1">
+                <div class="flex justify-between items-center text-emerald-300 font-semibold">
+                  <span class="flex items-center gap-1">✅ Crit İle Katlanan (Temel + Sabit):</span>
+                  <span class="font-mono text-white text-sm" id="multiplied_subtotal">2d8 + 15</span>
+                </div>
+                <div class="text-[10px] text-emerald-200/60" id="multiplied_breakdown">
+                  Silah: 2d8 | Str (1.5x): +7 | Silah Büyü: +4 | Power Attack: +4
+                </div>
+              </div>
+
+              <!-- Katlanmayan Kısım -->
+              <div class="p-2.5 rounded bg-slate-800/60 border border-slate-700/60 space-y-1">
+                <div class="flex justify-between items-center text-amber-300 font-semibold">
+                  <span class="flex items-center gap-1">⛔ Katlanmayan Ekstra Zarlar:</span>
+                  <span class="font-mono text-white text-sm" id="bonus_dice_subtotal">+1d6 + 1d12</span>
+                </div>
+                <div class="text-[10px] text-slate-400" id="bonus_dice_breakdown">
+                  Punishing Stance (+1d6), Kazmil Bless (+1d12)
+                </div>
+              </div>
+            </div>
+
+            <!-- GRAND TOTAL DAMAGE DISPLAY -->
+            <div class="p-4 rounded-xl bg-gradient-to-br from-slate-900 to-[#1e1b4b] border-2 border-indigo-500/50 shadow-lg text-center space-y-1">
+              <div class="text-[11px] font-bold tracking-widest text-indigo-300 uppercase">Bu Vuruşun Toplam Hasar Formülü</div>
+              <div class="text-lg sm:text-xl font-mono font-extrabold text-white" id="total_formula_display">
+                2d8 + 15 + 1d6 + 1d12
+              </div>
+              <div class="flex justify-center items-baseline gap-2 pt-2 border-t border-slate-800">
+                <span class="text-xs text-slate-400">Ortalama Hasar:</span>
+                <span class="text-2xl sm:text-3xl font-mono font-black text-emerald-400" id="avg_damage_display">34.5</span>
+                <span class="text-xs text-slate-500">HP</span>
+              </div>
+              <div class="text-[10px] text-slate-400" id="damage_range_display">Zar Aralığı: 19 ~ 50 Hasar</div>
+            </div>
+
+          </div>
+
+          <!-- CANLI ZAR ATMA BUTONU (FULL ATTACK ROTATION) -->
+          <div class="bg-gradient-to-r from-rose-900/60 to-indigo-900/60 p-3 rounded-lg border border-rose-500/50 flex flex-col gap-2">
+            <button onclick="executeFullAttackRoll()" class="w-full py-2.5 px-4 bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-white font-bold text-sm rounded-lg shadow-lg flex items-center justify-center gap-2 transition cursor-pointer">
+              <span>⚔️</span>
+              <span id="roll_btn_text">TÜM SALDIRILARI AT (+20 / +15 / +10)</span>
+            </button>
+            <div class="text-[11px] text-center text-slate-300">
+              Tıkladığınızda Google E-Tablo'daki gibi <strong class="text-amber-300">kapanana kadar ekranda kalan</strong> sonuç kutusu açılır.
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- CANLI SALDIRI SONUCU BİLDİRİM KUTUSU (MODELESS DIALOG SİMÜLASYONU) -->
+    <div id="attack_result_box" class="hidden bg-[#0f172a] border-2 border-indigo-500/80 rounded-xl shadow-2xl p-5 space-y-4 animate-fade-in transition-all">
+      <div class="flex items-center justify-between border-b border-slate-700/80 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-lg">📜</span>
+          <div>
+            <h3 class="font-bold text-sm text-white" id="modal_weapon_title">⚔️ Great Jovar +4 &mdash; Full Attack Sonucu</h3>
+            <div class="text-[11px] text-slate-400">Bu bildirim siz kapatana, yeni zar atana veya başka işlem yapana kadar ekranda kalır.</div>
+          </div>
+        </div>
+        <button onclick="closeResultBox()" class="px-2.5 py-1 text-xs bg-slate-800 hover:bg-rose-900/60 text-slate-300 hover:text-white rounded border border-slate-700 transition cursor-pointer">
+          ✕ Kapat
+        </button>
+      </div>
+
+      <!-- 1. BÖLÜM: ÖZET TABLOSU -->
+      <div>
+        <div class="text-xs font-bold text-sky-400 uppercase tracking-wider mb-1.5">1. Saldırı & Hasar Özeti</div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2" id="summary_cards_container">
+          <!-- Dinamik özet kartları buraya gelecek -->
+        </div>
+        <div class="mt-2 p-2 rounded bg-indigo-950/40 border border-indigo-800/40 flex justify-between items-center text-xs">
+          <span class="text-indigo-300 font-semibold">Tüm Vuruşların Toplam Potansiyel Hasarı:</span>
+          <span class="font-mono font-black text-emerald-400 text-base" id="grand_total_dmg">0 HP</span>
+        </div>
+      </div>
+
+      <!-- 2. BÖLÜM: DETAYLI HESAPLAMALAR VE ZAR DÖKÜMÜ -->
+      <div>
+        <div class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-1.5">2. Detaylı Hesaplamalar ve Zar Dökümü</div>
+        <div class="space-y-2 text-xs" id="breakdown_cards_container">
+          <!-- Dinamik detay satırları buraya gelecek -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 ANA FONKSİYONEL BLOK DİYAGRAMI -->
+    <div class="bg-[#131d33] border border-slate-700/80 rounded-xl p-5 shadow-xl space-y-4">
+      <h2 class="text-sm font-bold text-sky-400 uppercase tracking-wider flex items-center gap-2">
+        <span>🗺️ Google E-Tablo "combat" Sayfasında Yeni Fonksiyonel Blok Mimarisi</span>
+      </h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+        
+        <!-- BLOK 1: OFFENSE -->
+        <div class="p-3.5 rounded-lg bg-[#0f172a] border border-rose-500/30 space-y-2">
+          <div class="flex items-center gap-2 text-rose-400 font-bold text-sm">
+            <span>⚔️ 1. SALDIRI & HASAR MOTORU</span>
+          </div>
+          <p class="text-slate-400 text-[11px]">Silahlar, rotasyonlar ve hasarı modifiye eden tüm bileşenler bir arada:</p>
+          <ul class="space-y-1 text-slate-300 text-[11px] list-disc list-inside">
+            <li>Kuşanılmış silahlar (Main, Off, Ranged)</li>
+            <li>BAB iteratifleri (+11/+6/+1)</li>
+            <li>Power Attack, Flank, Charge kutuları</li>
+            <li><strong>Hasar Modifikatörleri Havuzu:</strong> Feat, Stance, Manevra, Büyü, Eşya, Boon</li>
+            <li><strong>Canlı RAW Crit Hesabı:</strong> Katlanan / katlanmayan otomatik ayrımı</li>
+          </ul>
+        </div>
+
+        <!-- BLOK 2: DEFENSE -->
+        <div class="p-3.5 rounded-lg bg-[#0f172a] border border-sky-500/30 space-y-2">
+          <div class="flex items-center gap-2 text-sky-400 font-bold text-sm">
+            <span>🛡️ 2. SAVUNMA, COUNTER & BUFFLAR</span>
+          </div>
+          <p class="text-slate-400 text-[11px]">Savunma değerleri ve gelen saldırıları karşılayan yetenekler:</p>
+            <li><span class="text-slate-500 line-through">AC, DR, SR</span> <span class="text-emerald-400 font-semibold">(A1:L7 HUD'da var, buradan kaldırıldı ✅)</span></li>
+            <li>Taktik Savunma Modları: Combat Expertise, Total Defense, Fighting Defensively</li>
+            <li>Aktif Savunma Büyüleri (Shield, Blur, Mirror Image, Protection from Evil)</li>
+            <li><strong>Tur Sayaçları (Round Timers):</strong> ⏭️ Next Round tıklandığında süresi azalan bufflar</li>
+            <li>Anlık Reaksiyon & Savunma Manevraları / Büyüleri</li>
+        </div>
+
+        <!-- BLOK 3: UTILITY -->
+        <div class="p-3.5 rounded-lg bg-[#0f172a] border border-amber-500/30 space-y-2">
+          <div class="flex items-center gap-2 text-amber-400 font-bold text-sm">
+            <span>🧪 3. KAYNAKLAR, KEMER & AKSİYONLAR</span>
+          </div>
+          <p class="text-slate-400 text-[11px]">Tüketilebilir eşyalar ve sınırlı sınıf kaynakları:</p>
+          <ul class="space-y-1 text-slate-300 text-[11px] list-disc list-inside">
+            <li>Kemer İksirleri & Tüketim havuzu (Use 1 tıkı)</li>
+            <li>Kalan Adet takibi (Inventory ile senkron)</li>
+            <li>Sınıf Yetenek Havuzları (Maneuver, Smite, vb.)</li>
+            <li>Savaş / Dinlenme Eylemleri (Long Rest, Reset)</li>
+            <li>Durum Bildirimleri (Conditions: Fatigued, vb.)</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // WEAPONS DATABASE
+    const weapons = {
+      jovar: {
+        name: "Great Jovar +4",
+        grip: "2-Hand",
+        diceCount: 2,
+        diceSides: 8,
+        enhancement: 4,
+        strMult: 1.5,
+        critRange: 18,
+        critMult: 2,
+        baseAtk: 20 // BAB 11 + Str 5 + Enh 4
+      },
+      sword_def: {
+        name: "Sword of Defence +5",
+        grip: "1-Hand",
+        diceCount: 1,
+        diceSides: 8,
+        enhancement: 5,
+        strMult: 1.0,
+        critRange: 19,
+        critMult: 2,
+        baseAtk: 21 // BAB 11 + Str 5 + Enh 5
+      },
+      shield_bash: {
+        name: "Spiked Heavy Shield +5",
+        grip: "Off-Hand",
+        diceCount: 1,
+        diceSides: 6,
+        enhancement: 5,
+        strMult: 0.5,
+        critRange: 20,
+        critMult: 2,
+        baseAtk: 18 // BAB 11 + Str 5 + Enh 5 - 2 (TWF)
+      }
+    };
+
+    const strMod = 5;
+
+    function calculateDamage() {
+      const selectedWepKey = document.querySelector('input[name="active_weapon"]:checked').value;
+      const wep = weapons[selectedWepKey];
+      const isCrit = document.getElementById('is_crit').checked;
+
+      // Power Attack
+      const paActive = document.getElementById('mod_pa').checked;
+      const paInput = parseInt(document.getElementById('pa_val').value) || 0;
+      const paMult = wep.grip === "2-Hand" ? 2 : (wep.grip === "Off-Hand" ? 0 : 1);
+      const paDmg = paActive ? (paInput * paMult) : 0;
+      const paPenalty = paActive ? paInput : 0;
+
+      document.getElementById('pa_detail').innerText = `-${paPenalty} Atk → +${paDmg} Dmg (${wep.grip})`;
+
+      // Flat bonus components
+      const strBonus = Math.floor(strMod * wep.strMult);
+      const flatBonusSingle = strBonus + wep.enhancement + paDmg;
+
+      // Base dice
+      const baseDiceCountSingle = wep.diceCount;
+      const baseDiceSides = wep.diceSides;
+
+      // Crit multiplier
+      const effectiveCritMult = isCrit ? wep.critMult : 1;
+
+      // Multiplied components
+      const totalBaseDiceCount = baseDiceCountSingle * effectiveCritMult;
+      const totalFlatBonus = flatBonusSingle * effectiveCritMult;
+
+      // UI badge
+      const badge = document.getElementById('crit_badge');
+      const critDesc = document.getElementById('crit_desc');
+      if (isCrit) {
+        badge.innerText = `CRIT (x${wep.critMult})`;
+        badge.className = "text-xs font-mono font-extrabold px-2.5 py-1 rounded bg-rose-500 text-white shadow-lg animate-pulse";
+        critDesc.innerText = `Kritik Vuruş! Temel zarlar & sabit bonuslar x${wep.critMult} katlandı!`;
+      } else {
+        badge.innerText = "NORMAL";
+        badge.className = "text-xs font-mono font-extrabold px-2.5 py-1 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40";
+        critDesc.innerText = "Normal Vuruş (x1)";
+      }
+
+      // Bonus dice (NEVER multiplied on crit)
+      const bonusDiceList = [];
+      const bonusDiceNames = [];
+
+      if (document.getElementById('mod_punishing').checked) {
+        bonusDiceList.push({ count: 1, sides: 6 });
+        bonusDiceNames.push("Punishing Stance (+1d6)");
+      }
+      // Check if house rule for maneuvers is active
+      const maneuverCritActive = document.getElementById('house_rule_maneuver_crit').checked && isCrit;
+      let extraMultipliedDiceCount = 0;
+      let extraMultipliedSides = 6;
+      let extraMultipliedNames = [];
+
+      // Maneuver selections
+      const hammerActive = document.getElementById('mod_hammer').checked;
+      const minotaurActive = document.getElementById('mod_minotaur').checked;
+
+      if (hammerActive) {
+        if (maneuverCritActive) {
+          extraMultipliedDiceCount += (2 * effectiveCritMult);
+          extraMultipliedNames.push(`Mountain Hammer (2d6 x${effectiveCritMult} = ${2 * effectiveCritMult}d6)`);
+        } else {
+          bonusDiceList.push({ count: 2, sides: 6 });
+          bonusDiceNames.push("Mountain Hammer (+2d6)");
+        }
+      }
+
+      if (minotaurActive) {
+        if (maneuverCritActive) {
+          extraMultipliedDiceCount += (2 * effectiveCritMult);
+          extraMultipliedNames.push(`Charging Minotaur (2d6 x${effectiveCritMult} = ${2 * effectiveCritMult}d6)`);
+        } else {
+          bonusDiceList.push({ count: 2, sides: 6 });
+          bonusDiceNames.push("Charging Minotaur (+2d6)");
+        }
+      }
+
+      if (document.getElementById('mod_blade_blood').checked) {
+        bonusDiceList.push({ count: 3, sides: 6 });
+        bonusDiceNames.push("Blade of Blood (+3d6)");
+      }
+      if (document.getElementById('mod_witchlight').checked) {
+        bonusDiceList.push({ count: 2, sides: 6 });
+        bonusDiceNames.push("Witchlight (+2d6)");
+      }
+      if (document.getElementById('mod_collar').checked) {
+        bonusDiceList.push({ count: 2, sides: 8 });
+        bonusDiceNames.push("Collar of Pain (+2d8)");
+      }
+      if (document.getElementById('mod_kazmil').checked) {
+        bonusDiceList.push({ count: 1, sides: 12 });
+        bonusDiceNames.push("Kazmil Bless (+1d12)");
+      }
+      if (document.getElementById('mod_sneak').checked) {
+        bonusDiceList.push({ count: 2, sides: 6 });
+        bonusDiceNames.push("Sneak Attack (+2d6)");
+      }
+      if (document.getElementById('mod_flame').checked) {
+        bonusDiceList.push({ count: 1, sides: 6 });
+        bonusDiceNames.push("Flaming (+1d6)");
+      }
+
+      // Multiplied subtotal display
+      let multDiceDisplay = `${totalBaseDiceCount}d${baseDiceSides}`;
+      if (extraMultipliedDiceCount > 0) {
+        multDiceDisplay += ` + ${extraMultipliedDiceCount}d${extraMultipliedSides}`;
+      }
+      document.getElementById('multiplied_subtotal').innerText = `${multDiceDisplay} + ${totalFlatBonus}`;
+      
+      let breakdownText = `Silah Zarı: ${totalBaseDiceCount}d${baseDiceSides} (${isCrit ? baseDiceCountSingle + 'x' + wep.critMult : baseDiceCountSingle}) | Str (${wep.strMult}x): +${strBonus * effectiveCritMult} | Büyü: +${wep.enhancement * effectiveCritMult} | Power Attack: +${paDmg * effectiveCritMult}`;
+      if (extraMultipliedNames.length > 0) {
+        breakdownText += ` | Manevra (Ev Kuralı Katlandı): ${extraMultipliedNames.join(', ')}`;
+      }
+      document.getElementById('multiplied_breakdown').innerText = breakdownText;
+
+      // Bonus dice subtotal display
+      if (bonusDiceList.length > 0) {
+        const diceStr = bonusDiceList.map(d => `+${d.count}d${d.sides}`).join(' ');
+        document.getElementById('bonus_dice_subtotal').innerText = diceStr;
+        document.getElementById('bonus_dice_breakdown').innerText = bonusDiceNames.join(', ');
+      } else {
+        document.getElementById('bonus_dice_subtotal').innerText = "0 (Ekstra zar yok)";
+        document.getElementById('bonus_dice_breakdown').innerText = "Hiçbir ekstra zar yeteneği seçili değil.";
+      }
+
+      // Total formula string
+      let formulaStr = `${multDiceDisplay} + ${totalFlatBonus}`;
+      if (bonusDiceList.length > 0) {
+        formulaStr += " " + bonusDiceList.map(d => `+ ${d.count}d${d.sides}`).join(' ');
+      }
+      document.getElementById('total_formula_display').innerText = formulaStr;
+
+      // Average & Min/Max calculation
+      let minDmg = totalBaseDiceCount + extraMultipliedDiceCount + totalFlatBonus;
+      let maxDmg = (totalBaseDiceCount * baseDiceSides) + (extraMultipliedDiceCount * extraMultipliedSides) + totalFlatBonus;
+      let avgDmg = (totalBaseDiceCount * (baseDiceSides + 1) / 2) + (extraMultipliedDiceCount * (extraMultipliedSides + 1) / 2) + totalFlatBonus;
+
+      for (let d of bonusDiceList) {
+        minDmg += d.count;
+        maxDmg += (d.count * d.sides);
+        avgDmg += (d.count * (d.sides + 1) / 2);
+      }
+
+      document.getElementById('avg_damage_display').innerText = avgDmg.toFixed(1);
+      document.getElementById('damage_range_display').innerText = `Zar Aralığı: ${minDmg} ~ ${maxDmg} Hasar`;
+
+      // Attack roll bonus display
+      const netAtk = wep.baseAtk - paPenalty;
+      const atks = [wep.baseAtk - paPenalty, wep.baseAtk - 5 - paPenalty, wep.baseAtk - 10 - paPenalty];
+      const atkStr = atks.map(a => (a >= 0 ? `+${a}` : `${a}`)).join(" / ");
+      document.getElementById('roll_btn_text').innerText = `${wep.name.toUpperCase()} İLE SALDIR (${atkStr})`;
+    }
+
+    function rollDie(sides) {
+      return Math.floor(Math.random() * sides) + 1;
+    }
+
+    function executeFullAttackRoll() {
+      const selectedWepKey = document.querySelector('input[name="active_weapon"]:checked').value;
+      const wep = weapons[selectedWepKey];
+
+      // Power attack
+      const paActive = document.getElementById('mod_pa').checked;
+      const paInput = parseInt(document.getElementById('pa_val').value) || 0;
+      const paMult = wep.grip === "2-Hand" ? 2 : (wep.grip === "Off-Hand" ? 0 : 1);
+      const paDmg = paActive ? (paInput * paMult) : 0;
+      const paPenalty = paActive ? paInput : 0;
+
+      const strBonus = Math.floor(strMod * wep.strMult);
+      const flatBonusSingle = strBonus + wep.enhancement + paDmg;
+
+      // Iterative attack bonuses (BAB 11 -> 3 attacks)
+      const iteratives = [
+        { name: "1. Attack", bonus: wep.baseAtk - paPenalty },
+        { name: "2. Attack", bonus: wep.baseAtk - 5 - paPenalty },
+        { name: "3. Attack", bonus: wep.baseAtk - 10 - paPenalty }
+      ];
+
+      const maneuverCritActive = document.getElementById('house_rule_maneuver_crit').checked;
+
+      // Gather active bonus dice definitions with damage types
+      const wepType = wep.grip === "Off-Hand" ? "Bludgeoning" : "Slashing";
+      const activeBonusDice = [];
+      if (document.getElementById('mod_punishing').checked) activeBonusDice.push({ label: "Punishing Stance", count: 1, sides: 6, isManeuver: false, dmgType: wepType });
+      if (document.getElementById('mod_hammer').checked) activeBonusDice.push({ label: "Mountain Hammer", count: 2, sides: 6, isManeuver: true, dmgType: wepType });
+      if (document.getElementById('mod_minotaur').checked) activeBonusDice.push({ label: "Charging Minotaur", count: 2, sides: 6, isManeuver: true, dmgType: "Bludgeoning" });
+      if (document.getElementById('mod_blade_blood').checked) activeBonusDice.push({ label: "Blade of Blood", count: 3, sides: 6, isManeuver: false, dmgType: wepType });
+      if (document.getElementById('mod_witchlight').checked) activeBonusDice.push({ label: "Witchlight", count: 2, sides: 6, isManeuver: false, dmgType: "Force" });
+      if (document.getElementById('mod_collar').checked) activeBonusDice.push({ label: "Collar of Pain", count: 2, sides: 8, isManeuver: false, dmgType: wepType });
+      if (document.getElementById('mod_kazmil').checked) activeBonusDice.push({ label: "Kazmil Bless", count: 1, sides: 12, isManeuver: false, dmgType: "Divine" });
+      if (document.getElementById('mod_sneak').checked) activeBonusDice.push({ label: "Sneak Attack", count: 2, sides: 6, isManeuver: false, dmgType: wepType });
+      if (document.getElementById('mod_flame').checked) activeBonusDice.push({ label: "Flaming", count: 1, sides: 6, isManeuver: false, dmgType: "Fire" });
+      if (document.getElementById('mod_acid').checked) activeBonusDice.push({ label: "Acid / Corrosive", count: 1, sides: 6, isManeuver: false, dmgType: "Acid" });
+
+      let grandTotalDamage = 0;
+      const summaryCardsHtml = [];
+      const breakdownCardsHtml = [];
+
+      for (let i = 0; i < iteratives.length; i++) {
+        const atk = iteratives[i];
+        const d20 = rollDie(20);
+        const attackTotal = d20 + atk.bonus;
+        const isThreat = (d20 >= wep.critRange);
+        let isCrit = false;
+        let confirmD20 = 0;
+        let confirmTotal = 0;
+
+        if (isThreat) {
+          confirmD20 = rollDie(20);
+          confirmTotal = confirmD20 + atk.bonus;
+          isCrit = (confirmTotal >= 15); // Simulated target AC 15
+        }
+
+        // Damage Calculation
+        const effectiveCritMult = isCrit ? wep.critMult : 1;
+        
+        // Base dice rolls
+        const baseRolls = [];
+        let baseRollSum = 0;
+        const totalBaseDiceCount = wep.diceCount * effectiveCritMult;
+        for (let b = 0; b < totalBaseDiceCount; b++) {
+          const r = rollDie(wep.diceSides);
+          baseRolls.push(r);
+          baseRollSum += r;
+        }
+
+        // Flat bonus
+        const effectiveFlatBonus = flatBonusSingle * effectiveCritMult;
+
+        // Damage Types Tracking Dictionary
+        const typeTotals = {};
+        typeTotals[wepType] = baseRollSum + effectiveFlatBonus;
+
+        // Extra dice rolls
+        let extraDiceSum = 0;
+        const extraDiceDetails = [];
+
+        for (let ed of activeBonusDice) {
+          const shouldMultiply = (ed.isManeuver && maneuverCritActive && isCrit);
+          const rollCount = shouldMultiply ? (ed.count * effectiveCritMult) : ed.count;
+          const currentRolls = [];
+          let currentSum = 0;
+          for (let c = 0; c < rollCount; c++) {
+            const r = rollDie(ed.sides);
+            currentRolls.push(r);
+            currentSum += r;
+          }
+          extraDiceSum += currentSum;
+          extraDiceDetails.push(`${ed.label} [${rollCount}d${ed.sides}: ${currentRolls.join('+')}=${currentSum} ${ed.dmgType}]`);
+          typeTotals[ed.dmgType] = (typeTotals[ed.dmgType] || 0) + currentSum;
+        }
+
+        const totalAttackDmg = baseRollSum + effectiveFlatBonus + extraDiceSum;
+        grandTotalDamage += totalAttackDmg;
+
+        // Format damage type breakdown e.g. " (30 Slashing + 12 Fire + 18 Acid)"
+        const typeKeys = Object.keys(typeTotals);
+        let typeBreakdownStr = "";
+        if (typeKeys.length > 1) {
+          typeBreakdownStr = ` <span class="text-[11px] text-amber-300/90 font-normal">(${typeKeys.map(k => `${typeTotals[k]} ${k}`).join(" + ")})</span>`;
+        } else if (typeKeys.length === 1) {
+          typeBreakdownStr = ` <span class="text-[11px] text-slate-400 font-normal">${typeKeys[0]}</span>`;
+        }
+
+        // 1. Özet Kartı
+        const critTag = isCrit ? `<span class="text-rose-400 font-extrabold animate-pulse">🎯 CRIT (x${wep.critMult})</span>` : (d20 === 20 ? `<span class="text-amber-300 font-bold">✨ NAT 20</span>` : (d20 === 1 ? `<span class="text-slate-500 font-bold">💀 NAT 1</span>` : `<span class="text-slate-400">Normal</span>`));
+        
+        summaryCardsHtml.push(`
+          <div class="p-3 rounded-lg bg-slate-800/80 border ${isCrit ? 'border-rose-500 shadow-md' : 'border-slate-700'} space-y-1">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-white">${atk.name}</span>
+              ${critTag}
+            </div>
+            <div class="flex justify-between items-baseline pt-1 border-t border-slate-700/60 font-mono">
+              <div class="text-slate-300">
+                Atk: <strong class="text-emerald-400 text-sm">${attackTotal}</strong>
+              </div>
+              <div class="text-slate-300 text-right">
+                DMG: <strong class="text-rose-400 text-base font-extrabold">${totalAttackDmg}</strong>${typeBreakdownStr}
+              </div>
+            </div>
+          </div>
+        `);
+
+        // 2. Detaylı Hesaplama Satırı
+        let atkFormulaText = `1d20 [${d20}] ${atk.bonus >= 0 ? '+' : ''}${atk.bonus} = <strong>${attackTotal}</strong>`;
+        if (isThreat) {
+          atkFormulaText += ` &rarr; <span class="text-amber-300 font-semibold">Crit Tehdidi!</span> Onay: 1d20 [${confirmD20}] + ${atk.bonus} = ${confirmTotal} &rarr; ${isCrit ? '<span class="text-rose-400 font-bold">ONAYLANDI (CRIT)!</span>' : '<span class="text-slate-400">Onaylanmadı</span>'}`;
+        }
+
+        let dmgFormulaText = `
+          <div class="space-y-1 text-[11px] text-slate-300">
+            <div><strong class="text-emerald-300">Katlanan Kısım:</strong> ${totalBaseDiceCount}d${wep.diceSides} [${baseRolls.join('+')} = ${baseRollSum}] + ${effectiveFlatBonus} (Str+Enh+PA ${isCrit ? 'x' + wep.critMult : ''}) = <strong class="text-white">${baseRollSum + effectiveFlatBonus}</strong></div>
+            ${extraDiceDetails.length > 0 ? `<div><strong class="text-amber-300">Ekstra Zarlar:</strong> ${extraDiceDetails.join(' + ')} = <strong class="text-white">${extraDiceSum}</strong></div>` : ''}
+            <div class="pt-0.5 border-t border-slate-700 text-white font-semibold flex justify-between">
+              <span>Toplam Net Hasar:</span>
+              <span class="text-rose-400 font-mono font-bold">${baseRollSum + effectiveFlatBonus} + ${extraDiceSum} = ${totalAttackDmg} HP</span>
+            </div>
+          </div>
+        `;
+
+        breakdownCardsHtml.push(`
+          <div class="p-2.5 rounded bg-slate-900 border border-slate-800 space-y-1.5">
+            <div class="flex items-center justify-between text-xs border-b border-slate-800 pb-1">
+              <span class="font-bold text-sky-300">${atk.name} Vuruş Hesabı:</span>
+              <span class="font-mono text-slate-200">${atkFormulaText}</span>
+            </div>
+            ${dmgFormulaText}
+          </div>
+        `);
+      }
+
+      // Populate containers
+      document.getElementById('modal_weapon_title').innerText = `⚔️ ${wep.name} — Full Attack Sonucu (3 Vuruş)`;
+      document.getElementById('summary_cards_container').innerHTML = summaryCardsHtml.join('');
+      document.getElementById('breakdown_cards_container').innerHTML = breakdownCardsHtml.join('');
+      document.getElementById('grand_total_dmg').innerText = `${grandTotalDamage} HP`;
+
+      const resultBox = document.getElementById('attack_result_box');
+      resultBox.classList.remove('hidden');
+      resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function closeResultBox() {
+      document.getElementById('attack_result_box').classList.add('hidden');
+    }
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', calculateDamage);
+  </script>
+</body>
+</html>

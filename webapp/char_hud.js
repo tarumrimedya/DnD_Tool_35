@@ -1797,6 +1797,9 @@
         activeMobileBtn.classList.add('text-rose-500');
       }
 
+      if (tabId === 'tab-spells' && typeof autoSelectMagicDisciplineTab === 'function') {
+        autoSelectMagicDisciplineTab(character);
+      }
       if (tabId === 'tab-database' && window.RuleMaster) {
         RuleMaster.init();
       }
@@ -2036,6 +2039,16 @@
       try { renderCombatCockpit(); } catch (e) { console.error('renderCombatCockpit error:', e); }
 
       // 3. Spells & Maneuvers
+      try {
+        if (typeof getMagicDisciplineClassLevels === 'function' && typeof autoSelectMagicDisciplineTab === 'function') {
+          const progLevels = getMagicDisciplineClassLevels(character);
+          const magicSig = `${character.id || character.name || ''}|${character.settings?.clMode || ''}|${character.settings?.casterType || ''}|${progLevels.spontaneous || 0},${progLevels.prepared || 0},${progLevels.divine || 0},${progLevels.martial || 0}`;
+          if (window._lastMagicDisciplineSig !== magicSig) {
+            window._lastMagicDisciplineSig = magicSig;
+            autoSelectMagicDisciplineTab(character);
+          }
+        }
+      } catch (e) { console.error('autoSelectMagicDisciplineTab error:', e); }
       try { renderSpellSlots(); } catch (e) { console.error('renderSpellSlots error:', e); }
       try { renderManeuvers(); } catch (e) { console.error('renderManeuvers error:', e); }
       try { renderKnownSpells(); } catch (e) { console.error('renderKnownSpells error:', e); }
