@@ -138,12 +138,24 @@
   // ==========================================================================
   // IN-MEMORY INDEX REGISTRATION
   // ==========================================================================
+  if (!Array.isArray(global.BUNDLED_SRD_CORE_CATALOG)) {
+    global.BUNDLED_SRD_CORE_CATALOG = [];
+  }
+  const _catalogIds = new Set();
+
   function registerEntries(records) {
     if (!Array.isArray(records)) return;
+    if (!Array.isArray(global.BUNDLED_SRD_CORE_CATALOG)) {
+      global.BUNDLED_SRD_CORE_CATALOG = [];
+    }
     for (let i = 0; i < records.length; i++) {
       const rec = records[i];
       if (!rec || !rec.id) continue;
       _byId.set(rec.id, rec);
+      if (!_catalogIds.has(rec.id)) {
+        _catalogIds.add(rec.id);
+        global.BUNDLED_SRD_CORE_CATALOG.push(rec);
+      }
       const nKey = normalizeNameKey(rec.name);
       if (nKey) {
         if (!_byName.has(nKey)) {

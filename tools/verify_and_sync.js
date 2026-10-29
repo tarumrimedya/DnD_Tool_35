@@ -43,9 +43,7 @@ const CORE_FILES = [
   'hub_notes.js',
   'hub_ai.js',
   'dice3d.js',
-  'bundled_data.js',
   'bundled_monsters.js',
-  'srd_core_catalog.json',
   'character_data.json',
   'master_db.json'
 ];

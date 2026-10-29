@@ -273,12 +273,40 @@
         console.warn('Fast pre-render notice:', _fastErr);
       }
 
+      // Eğer kök (/) adresine ?id olmadan gelinmişse (login sonrası yönlendirme veya doğrudan giriş), derhal /hub'a yönlendir:
+      const _urlParams = new URLSearchParams(window.location.search);
+      const _hasCharId = _urlParams.get('id');
+      const _isRootPath = window.location.pathname === '/' || window.location.pathname === '';
+      if (_isRootPath && !_hasCharId) {
+        window.location.replace('/hub' + window.location.hash);
+        return;
+      }
+
+      const srdInitPromise = (window.SrdCompendium && typeof window.SrdCompendium.init === 'function')
+        ? window.SrdCompendium.init().catch(e => console.warn('SrdCompendium init warning:', e))
+        : Promise.resolve();
+
+      if (window.SupabaseAuth) {
+        const authUser = await window.SupabaseAuth.requireAuth();
+        if (!authUser) return; // Oturum yoksa login'e yönlendirildi, sayfa yüklemesini durdur
+      }
+      await srdInitPromise;
+      try {
+        await loadInitialData();
+      } catch (err) {
+        console.error('loadInitialData failed, attempting fallback to bundled data:', err);
+      }
+      if (!character && window.BUNDLED_CHARACTER_DATA) {
+        character = JSON.parse(JSON.stringify(window.BUNDLED_CHARACTER_DATA));
+      }
+
       ensureCustomRacesLoaded();
       // Auto-ensure default race traits (e.g. Human Bonus Feat & Skilled) if specialAbilities is empty
       try {
         if (character && character.race && Array.isArray(character.specialAbilities) && character.specialAbilities.length === 0) {
           const catalog = window.BUNDLED_SRD_CORE_CATALOG || [];
-          const raceObj = catalog.find(i => i && i.type === 'Race' && i.name.toLowerCase() === character.race.toLowerCase());
+          const raceObj = (window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function' ? window.SrdCompendium.getByName(character.race, 'Race') : null)
+            || catalog.find(i => i && i.type === 'Race' && i.name.toLowerCase() === character.race.toLowerCase());
           if (raceObj && Array.isArray(raceObj.traits)) {
             raceObj.traits.forEach(t => {
               character.specialAbilities.push({
@@ -296,30 +324,6 @@
         }
       } catch (e) {
         console.warn('Auto race sync warning:', e);
-      }
-      // Eğer kök (/) adresine ?id olmadan gelinmişse (login sonrası yönlendirme veya doğrudan giriş), derhal /hub'a yönlendir:
-      const _urlParams = new URLSearchParams(window.location.search);
-      const _hasCharId = _urlParams.get('id');
-      const _isRootPath = window.location.pathname === '/' || window.location.pathname === '';
-      if (_isRootPath && !_hasCharId) {
-        window.location.replace('/hub' + window.location.hash);
-        return;
-      }
-
-      if (window.SupabaseAuth) {
-        const authUser = await window.SupabaseAuth.requireAuth();
-        if (!authUser) return; // Oturum yoksa login'e yönlendirildi, sayfa yüklemesini durdur
-      }
-      if (window.SrdCompendium && typeof window.SrdCompendium.init === 'function') {
-        window.SrdCompendium.init().catch(e => console.warn('SrdCompendium init warning:', e));
-      }
-      try {
-        await loadInitialData();
-      } catch (err) {
-        console.error('loadInitialData failed, attempting fallback to bundled data:', err);
-      }
-      if (!character && window.BUNDLED_CHARACTER_DATA) {
-        character = JSON.parse(JSON.stringify(window.BUNDLED_CHARACTER_DATA));
       }
       try {
         initSkillFilters();
