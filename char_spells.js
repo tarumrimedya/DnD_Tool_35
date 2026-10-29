@@ -3842,7 +3842,10 @@
       if (modal) modal.classList.remove('hidden');
 
       if (window.SrdCompendium && typeof window.SrdCompendium.ensureChunkLoaded === 'function') {
-        window.SrdCompendium.ensureChunkLoaded('srd_spells.json').then(() => {
+        Promise.all([
+          window.SrdCompendium.ensureChunkLoaded('srd_spells.json'),
+          window.SrdCompendium.ensureChunkLoaded('srd_maneuvers.json')
+        ]).then(() => {
           renderSpellPickerResults();
         }).catch(() => {});
       }
@@ -4097,7 +4100,10 @@
 
       if (window.SrdCompendium && typeof window.SrdCompendium.ensureChunkLoaded === 'function' && !window._srdSpellsChunkRequested) {
         window._srdSpellsChunkRequested = true;
-        window.SrdCompendium.ensureChunkLoaded('srd_spells.json').then(() => {
+        Promise.all([
+          window.SrdCompendium.ensureChunkLoaded('srd_spells.json'),
+          window.SrdCompendium.ensureChunkLoaded('srd_maneuvers.json')
+        ]).then(() => {
           renderSpellPickerResults();
         }).catch(() => {});
       }
