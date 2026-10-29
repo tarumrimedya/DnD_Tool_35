@@ -108,11 +108,17 @@
                 </button>
               </div>
               
-              <!-- Satır 2: Karakter Sınıfları & Seviyeleri (Kesilmeden, Net ve Belirgin) -->
-              <div class="text-xs sm:text-sm font-semibold text-amber-400 flex items-center gap-1.5 flex-wrap">
-                <span class="text-amber-500/80 text-xs">📜</span>
-                <span id="char-classes-display" class="break-words font-medium">Loading...</span>
-                <span id="core-classes" class="hidden">--</span>
+              <!-- Satır 2: Karakter Sınıfları & Seviyeleri + Smart Notes & Mindmap Kısayolu -->
+              <div class="text-xs sm:text-sm font-semibold text-amber-400 flex items-center gap-2 flex-wrap pt-0.5">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-amber-500/80 text-xs">📜</span>
+                  <span id="char-classes-display" class="break-words font-medium">Loading...</span>
+                  <span id="core-classes" class="hidden">--</span>
+                </div>
+                <button type="button" onclick="if(typeof switchTab==='function') switchTab('tab-core'); setTimeout(()=>{ const el=document.getElementById('char-smart-notes-container'); if(el) el.scrollIntoView({behavior:'smooth', block:'start'}); }, 60);" class="px-2.5 sm:px-3 py-1 rounded-lg bg-amber-600/20 hover:bg-amber-600/35 text-amber-300 border border-amber-500/40 font-sans font-bold text-xs shadow flex items-center gap-1.5 transition transform active:scale-95 cursor-pointer shrink-0" title="Go to Smart Character & Campaign Notes (Mindmap + AI Chronicler)">
+                  <span>📝</span>
+                  <span>Smart Notes &amp; Mindmap</span>
+                </button>
               </div>
 
               <!-- Gizli Stat Referansları (JS Uyumluluğu İçin) -->
@@ -1434,10 +1440,6 @@
               </div>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
-              <button type="button" onclick="const el=document.getElementById('char-smart-notes-container'); if(el) el.scrollIntoView({behavior:'smooth', block:'start'});" class="bg-amber-600/20 hover:bg-amber-600/35 text-amber-300 border border-amber-500/40 font-bold text-xs px-3 py-1.5 rounded-lg shadow flex items-center gap-1.5 transition cursor-pointer" title="Go to Smart Character & Campaign Notes (Mindmap + AI Chronicler)">
-                <span>📝</span>
-                <span>Smart Notes & Mindmap</span>
-              </button>
               <button onclick="openProfileEditModal()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg shadow flex items-center gap-1.5 transition cursor-pointer" title="Edit character identity, race, alignment, and profile">
                 <span class="inline-flex items-center"><svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"></polygon><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"></polygon><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"></line><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
                 <span>📜</span>
