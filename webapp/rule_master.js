@@ -2524,8 +2524,18 @@ Return valid JSON only matching:
       return [this.ensureV2(this.canonicalDictionary[cleanKey])];
     }
 
-    // 5. Fallback to BUNDLED_SRD_CORE_CATALOG if SrdCompendium isn't loaded yet
+    // 5. Check BUNDLED_TOB_MANEUVERS_CATALOG & BUNDLED_SRD_CORE_CATALOG
+    if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_TOB_MANEUVERS_CATALOG)) {
+      const tobMatch = window.BUNDLED_TOB_MANEUVERS_CATALOG.find(e => e && ((e.name || '').toLowerCase().trim() === cleanKey || (e.id || '').toLowerCase().trim() === cleanKey));
+      if (tobMatch) {
+        return [this.ensureV2(tobMatch)];
+      }
+    }
     if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
+      const coreExact = window.BUNDLED_SRD_CORE_CATALOG.find(e => e && ((e.name || '').toLowerCase().trim() === cleanKey || (e.id || '').toLowerCase().trim() === cleanKey));
+      if (coreExact) {
+        return [this.ensureV2(coreExact)];
+      }
       const baseMatch = this.findBaseItemInSrdCore(cleanKey);
       if (baseMatch && (baseMatch.name || '').toLowerCase().trim() === cleanKey) {
         return [this.normalizeEntry(baseMatch)];

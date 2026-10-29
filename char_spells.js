@@ -1736,6 +1736,13 @@
       const maxKnownManeuvers = Math.max(1, baseKnownManeuvers + dmKnownBonus);
       const baseKnownStances = Math.max(il >= 10 ? 3 : (il >= 4 ? 2 : 1), (character?.tomeOfBattle?.stancesKnown || []).length);
       const maxKnownStances = Math.max(1, baseKnownStances + dmStanceBonus);
+      const classDisciplines = adeptClass === 'Crusader'
+        ? ['Devoted Spirit', 'Stone Dragon', 'White Raven']
+        : (adeptClass === 'Swordsage'
+          ? ['Desert Wind', 'Diamond Mind', 'Setting Sun', 'Shadow Hand', 'Stone Dragon', 'Tiger Claw']
+          : (adeptClass === 'Warblade'
+            ? ['Diamond Mind', 'Iron Heart', 'Stone Dragon', 'Tiger Claw', 'White Raven']
+            : ['Desert Wind', 'Devoted Spirit', 'Diamond Mind', 'Iron Heart', 'Setting Sun', 'Shadow Hand', 'Stone Dragon', 'Tiger Claw', 'White Raven']));
 
       return {
         il,
@@ -1751,6 +1758,7 @@
         baseKnownStances,
         dmStanceBonus,
         adeptClass,
+        classDisciplines,
         martialLvls,
         otherLvls,
         hasClass: true
@@ -3872,7 +3880,37 @@
 
       const sourceFilter = document.getElementById('spell-picker-source-filter');
       if (sourceFilter) {
-        sourceFilter.style.display = (type === 'Spell') ? 'block' : 'none';
+        sourceFilter.style.display = 'block';
+        if (type === 'Spell') {
+          if (sourceFilter.dataset.mode !== 'spell') {
+            sourceFilter.dataset.mode = 'spell';
+            sourceFilter.innerHTML = `
+              <option value="auto">🎯 Auto (Match Target)</option>
+              <option value="arcane">⚡ Arcane (Spontaneous / Prepared)</option>
+              <option value="divine">🔮 Divine</option>
+              <option value="all">🌐 All (Unfiltered)</option>
+            `;
+            sourceFilter.value = 'auto';
+          }
+        } else {
+          if (sourceFilter.dataset.mode !== 'martial') {
+            sourceFilter.dataset.mode = 'martial';
+            sourceFilter.innerHTML = `
+              <option value="all">⚔️ All 9 Disciplines</option>
+              <option value="class">🥋 Class Disciplines Only</option>
+              <option value="Desert Wind">🔥 Desert Wind</option>
+              <option value="Devoted Spirit">🛡️ Devoted Spirit</option>
+              <option value="Diamond Mind">💎 Diamond Mind</option>
+              <option value="Iron Heart">⚔️ Iron Heart</option>
+              <option value="Setting Sun">🌅 Setting Sun</option>
+              <option value="Shadow Hand">🌑 Shadow Hand</option>
+              <option value="Stone Dragon">⛰️ Stone Dragon</option>
+              <option value="Tiger Claw">🐾 Tiger Claw</option>
+              <option value="White Raven">🦅 White Raven</option>
+            `;
+            sourceFilter.value = 'all';
+          }
+        }
       }
 
       renderSpellPickerResults();
@@ -4083,6 +4121,8 @@
         }
       }
 
+      const initInfo = (type === 'Maneuver' || type === 'Stance') ? getInitiatorInfo() : null;
+
       // Update target hint banner
       const targetHint = document.getElementById('spell-picker-target-hint');
       if (targetHint) {
@@ -4118,6 +4158,21 @@
             </div>
           `;
           targetHint.style.display = 'flex';
+        } else if (initInfo) {
+          const discLabel = selectedSource === 'class'
+            ? `\uD83E\uDD4B ${initInfo.adeptClass} Disciplines`
+            : (selectedSource && selectedSource !== 'all' && selectedSource !== 'auto' ? `\u2694\uFE0F ${selectedSource}` : '\u2694\uFE0F All 9 Sublime Way Disciplines');
+          targetHint.innerHTML = `
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-400 text-[10px]">Martial Adept:</span>
+              <span class="font-bold border px-1.5 py-0.5 rounded text-[10px] text-rose-300 bg-rose-950/80 border-rose-800">${initInfo.adeptClass} &bull; IL ${initInfo.il || 1} (Max Lvl ${initInfo.maxManeuverLvl || 1})</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-400 text-[10px]">Discipline:</span>
+              <span class="font-bold border px-1.5 py-0.5 rounded text-[10px] text-amber-300 bg-amber-950/60 border-amber-700">${discLabel}</span>
+            </div>
+          `;
+          targetHint.style.display = 'flex';
         } else {
           targetHint.style.display = 'none';
         }
@@ -4144,6 +4199,15 @@
 
         if (!isTypeMatch) return false;
 
+        if (type === 'Maneuver' || type === 'Stance') {
+          const itemDisc = String(item.discipline || item.school || '').trim();
+          if (selectedSource === 'class' && initInfo && Array.isArray(initInfo.classDisciplines)) {
+            if (!initInfo.classDisciplines.some(d => d.toLowerCase() === itemDisc.toLowerCase())) return false;
+          } else if (selectedSource && !['all', 'auto', 'arcane', 'divine', 'class'].includes(selectedSource)) {
+            if (itemDisc.toLowerCase() !== selectedSource.toLowerCase()) return false;
+          }
+        }
+
         if (levelFilter !== 'all') {
           const itemLvl = type === 'Spell'
             ? resolveSpellLevelForPool(item, targetPool, effectiveSource)
@@ -4154,8 +4218,9 @@
         if (query) {
           const name = (item.name || '').toLowerCase();
           const school = (item.school || item.category || item.discipline || '').toLowerCase();
+          const subT = (item.subType || '').toLowerCase();
           const desc = (item.benefit || item.shortDescription || item.description || item.desc || '').toLowerCase();
-          if (!name.includes(query) && !school.includes(query) && !desc.includes(query)) return false;
+          if (!name.includes(query) && !school.includes(query) && !subT.includes(query) && !desc.includes(query)) return false;
         }
 
         return true;
@@ -4244,9 +4309,20 @@
           `;
         }
 
-        const schoolDisplay = item.school || (type === 'Spell' && item.category && item.category.toLowerCase() !== 'spell' ? item.category : '') || item.discipline || item.type || '-';
+        const schoolDisplay = (type === 'Spell'
+          ? (item.school || (item.category && item.category.toLowerCase() !== 'spell' ? item.category : ''))
+          : (item.discipline || item.school || '')) || item.type || '-';
+        const subTypeBadge = (type !== 'Spell' && item.subType)
+          ? `<span class="badge bg-slate-800 text-cyan-300 border border-slate-700 text-[10px] font-bold">${item.subType}</span>`
+          : '';
+        const prereqBadge = (type !== 'Spell' && item.prereq && item.prereq !== 'None' && item.prereq !== '0')
+          ? `<span class="text-[10px] text-rose-300/90 font-semibold" title="Tome of Battle Prerequisite">Prereq: ${item.prereq}</span>`
+          : '';
+        const sourceBadge = item.source
+          ? `<span class="text-[10px] text-slate-500 font-mono">${item.source}</span>`
+          : '';
         const actionDisplay = type === 'Spell' ? formatSrdSpellAction(item) : (item.action || '');
-        const summaryDisplay = item.benefit || item.shortDescription || stripSpellHtml(item.description) || item.notes || '-';
+        const summaryDisplay = item.benefit || item.shortDescription || stripSpellHtml(item.description || item.desc) || item.notes || '-';
 
         const card = document.createElement('div');
         card.className = 'pt-2.5 pb-2.5 flex items-start justify-between gap-3';
@@ -4258,7 +4334,10 @@
               </span>
               <h4 class="font-extrabold text-white text-xs">${item.name}</h4>
               <span class="text-[10px] text-slate-400">(${schoolDisplay})</span>
+              ${subTypeBadge}
               ${actionDisplay ? `<span class="text-[10px] text-amber-300">${actionDisplay}</span>` : ''}
+              ${prereqBadge}
+              ${sourceBadge}
               ${(() => {
                 const ch = getSpellOrManeuverChildren(item);
                 return ch.length > 0
@@ -4338,7 +4417,7 @@
         }
 
         const v2SpellPart = Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0].dice : '';
-        const cleanBenefit = item.benefit || item.shortDescription || stripSpellHtml(item.description) || '';
+        const cleanBenefit = item.benefit || item.shortDescription || stripSpellHtml(item.description || item.desc) || '';
         const schoolName = item.school || (item.category && item.category.toLowerCase() !== 'spell' ? item.category : 'Universal');
         const rangeText = formatSrdSpellRange(item);
         const actionText = formatSrdSpellAction(item);
@@ -4376,13 +4455,25 @@
           return;
         }
 
+        const v2ManeuverDice = (Array.isArray(item.damageParts) && item.damageParts[0]?.dice) || item.damageDice || undefined;
         const newManeuver = {
+          id: item.id || ('tob_maneuver_' + String(item.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_')),
+          schemaVersion: 2,
           name: item.name,
           level: item.level !== undefined ? Number(item.level) : 1,
-          discipline: item.discipline || 'Iron Heart',
-          action: item.action || 'Standard Action',
-          damageDice: item.damageDice || undefined,
-          notes: item.benefit || item.shortDescription || stripSpellHtml(item.description) || '',
+          discipline: item.discipline || item.school || 'Iron Heart',
+          subType: item.subType || 'Strike',
+          action: item.action || 'Standard',
+          prereq: item.prereq || 'None',
+          source: item.source || 'ToB',
+          range: item.range || 'Melee Attack',
+          save: item.save || 'None',
+          damageDice: v2ManeuverDice,
+          damageParts: Array.isArray(item.damageParts) ? JSON.parse(JSON.stringify(item.damageParts)) : [],
+          modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : [],
+          ruleFlags: Array.isArray(item.ruleFlags) ? [...item.ruleFlags] : [],
+          tacticalBadges: Array.isArray(item.tacticalBadges) ? [...item.tacticalBadges] : [],
+          notes: item.benefit || item.shortDescription || stripSpellHtml(item.description || item.desc) || '',
           expended: false
         };
 
@@ -4399,7 +4490,7 @@
         showDiceTopToast({
           icon: '⚔️',
           title: 'Maneuver Learned',
-          breakdown: `"${item.name}" added to your maneuver pool`,
+          breakdown: `"${item.name}" (${newManeuver.discipline} ${newManeuver.level}) added to your maneuver pool`,
           total: '+1 Maneuver'
         });
       } else if (type === 'Stance') {
@@ -4412,12 +4503,21 @@
           return;
         }
 
+        const v2StanceDice = (Array.isArray(item.damageParts) && item.damageParts[0]?.dice) || item.damageDice || undefined;
         character.tomeOfBattle.stancesKnown.push({
+          id: item.id || ('tob_stance_' + String(item.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_')),
+          schemaVersion: 2,
           name: item.name,
           level: item.level !== undefined ? Number(item.level) : 1,
-          discipline: item.discipline || 'Iron Heart',
-          damageDice: item.damageDice || undefined,
-          benefit: item.benefit || item.shortDescription || stripSpellHtml(item.description) || ''
+          discipline: item.discipline || item.school || 'Iron Heart',
+          prereq: item.prereq || 'None',
+          source: item.source || 'ToB',
+          damageDice: v2StanceDice,
+          damageParts: Array.isArray(item.damageParts) ? JSON.parse(JSON.stringify(item.damageParts)) : [],
+          modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : [],
+          ruleFlags: Array.isArray(item.ruleFlags) ? [...item.ruleFlags] : [],
+          tacticalBadges: Array.isArray(item.tacticalBadges) ? [...item.tacticalBadges] : [],
+          benefit: item.benefit || item.shortDescription || stripSpellHtml(item.description || item.desc) || ''
         });
 
         saveStateToStorage(true);
@@ -4426,7 +4526,7 @@
         showDiceTopToast({
           icon: '🥋',
           title: 'Stance Learned',
-          breakdown: `"${item.name}" added to your known stances`,
+          breakdown: `"${item.name}" (${item.discipline || 'Iron Heart'} ${item.level || 1}) added to your known stances`,
           total: '+1 Stance'
         });
       }
