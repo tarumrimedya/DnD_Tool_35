@@ -20,11 +20,11 @@
     'srd_equipment.json',
     'srd_feats.json',
     'srd_classes_races.json',
-    'srd_combat_rules.json'
+    'srd_combat_rules.json',
+    'srd_spells.json'
   ];
 
   const LAZY_CHUNKS = [
-    'srd_spells.json',
     'srd_monsters.json'
   ];
 

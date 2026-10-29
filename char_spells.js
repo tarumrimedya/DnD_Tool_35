@@ -514,9 +514,9 @@
         character.spellcasting.preparedSlots = [];
       }
 
-      const { statKey, statVal, statMod, cl, clMode, wizLvls } = getPreparedCasterInfo();
-      if (wizLvls > 0 && Number(cl) > 0) {
-        character.spellcasting.preparedSlots = calculateWizardSlots(wizLvls, statVal, character.spellcasting.preparedSlots);
+      const { statKey, statVal, statMod, cl, clMode, hasClass, wizLvls } = getPreparedCasterInfo();
+      if ((wizLvls > 0 || hasClass) && Number(cl) > 0) {
+        character.spellcasting.preparedSlots = calculateWizardSlots(cl, statVal, character.spellcasting.preparedSlots);
       } else {
         character.spellcasting.preparedSlots = (character.spellcasting.preparedSlots || []).filter(s => (Number(s.dmBonus) || 0) > 0);
       }
@@ -1056,10 +1056,10 @@
         character.spellcasting.divineSlots = [];
       }
 
-      const { statKey, statVal, statMod, cl, clMode, divLvls } = getDivineCasterInfo();
+      const { statKey, statVal, statMod, cl, clMode, hasClass, divLvls } = getDivineCasterInfo();
       const spontMode = character.spellcasting.clericSpontaneousMode || 'cure';
-      if (divLvls > 0 && Number(cl) > 0) {
-        character.spellcasting.divineSlots = calculateDivineSlots(divLvls, statVal, character.spellcasting.divineSlots);
+      if ((divLvls > 0 || hasClass) && Number(cl) > 0) {
+        character.spellcasting.divineSlots = calculateDivineSlots(cl, statVal, character.spellcasting.divineSlots);
       } else {
         character.spellcasting.divineSlots = (character.spellcasting.divineSlots || []).filter(s => (Number(s.dmBonus) || 0) > 0);
       }
@@ -1811,8 +1811,8 @@
       const prepInfo = getPreparedCasterInfo();
       if (character?.spellcasting) {
         const curPrep = Array.isArray(character.spellcasting.preparedSlots) ? character.spellcasting.preparedSlots : [];
-        character.spellcasting.preparedSlots = (prepInfo.wizLvls > 0 && prepInfo.cl > 0)
-          ? calculateWizardSlots(prepInfo.wizLvls, prepInfo.statVal, curPrep)
+        character.spellcasting.preparedSlots = ((prepInfo.wizLvls > 0 || prepInfo.hasClass) && prepInfo.cl > 0)
+          ? calculateWizardSlots(prepInfo.cl, prepInfo.statVal, curPrep)
           : curPrep.filter(s => (Number(s.dmBonus) || 0) > 0);
       }
       const prepBadge = document.getElementById('tab-prepared-badge');
@@ -1833,8 +1833,8 @@
       const divInfo = getDivineCasterInfo();
       if (character?.spellcasting) {
         const curDiv = Array.isArray(character.spellcasting.divineSlots) ? character.spellcasting.divineSlots : [];
-        character.spellcasting.divineSlots = (divInfo.divLvls > 0 && divInfo.cl > 0)
-          ? calculateDivineSlots(divInfo.divLvls, divInfo.statVal, curDiv)
+        character.spellcasting.divineSlots = ((divInfo.divLvls > 0 || divInfo.hasClass) && divInfo.cl > 0)
+          ? calculateDivineSlots(divInfo.cl, divInfo.statVal, curDiv)
           : curDiv.filter(s => (Number(s.dmBonus) || 0) > 0);
       }
       const divineBadge = document.getElementById('tab-divine-badge');
@@ -3811,6 +3811,9 @@
     // MODAL: ADD SPELL / MANEUVER / STANCE PICKER LOGIC
     // ====================================================
     function openSpellManeuverPickerModal(initialType = 'Spell', preselectLevel = null) {
+      if (!window._spellPickerTargetPool && window._currentMagicDiscipline && ['spontaneous', 'prepared', 'divine'].includes(window._currentMagicDiscipline)) {
+        window._spellPickerTargetPool = window._currentMagicDiscipline;
+      }
       const sourceSelect = document.getElementById('spell-picker-source-filter');
       if (sourceSelect) {
         sourceSelect.value = 'auto';
@@ -3829,6 +3832,12 @@
       renderSpellPickerResults();
       const modal = document.getElementById('spell-maneuver-modal');
       if (modal) modal.classList.remove('hidden');
+
+      if (window.SrdCompendium && typeof window.SrdCompendium.ensureChunkLoaded === 'function') {
+        window.SrdCompendium.ensureChunkLoaded('srd_spells.json').then(() => {
+          renderSpellPickerResults();
+        }).catch(() => {});
+      }
     }
 
     function openSpellPickerForSpecificLevel(lvl) {
@@ -3869,26 +3878,176 @@
       renderSpellPickerResults();
     }
 
+    function stripSpellHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function formatSrdSpellAction(item) {
+      if (!item) return 'Standard Action';
+      if (item.action) return item.action;
+      const ct = String(item.castingTime || '').toLowerCase().trim();
+      if (!ct || ct === 'standard' || ct === '1 standard action') return '1 Standard Action';
+      if (ct === 'swift' || ct === '1 swift action') return '1 Swift Action';
+      if (ct === 'immediate' || ct === '1 immediate action') return '1 Immediate Action';
+      if (ct === 'move' || ct === '1 move action') return '1 Move Action';
+      if (ct === 'free' || ct === '1 free action') return 'Free Action';
+      if (ct === 'round' || ct === '1 round' || ct === 'full round') return '1 Full Round';
+      if (ct === 'minute' || ct === '1 minute') return '1 Minute';
+      if (ct === 'hour' || ct === '1 hour') return '1 Hour';
+      return item.castingTime;
+    }
+
+    function formatSrdSpellRange(item) {
+      if (!item) return 'Close';
+      const r = String(item.range || '').trim();
+      if (!r) return 'Close';
+      const low = r.toLowerCase();
+      if (low === 'touch') return 'Touch';
+      if (low === 'personal') return 'Personal';
+      if (low === 'close') return 'Close';
+      if (low === 'medium') return 'Medium';
+      if (low === 'long') return 'Long';
+      if (low === 'unlimited') return 'Unlimited';
+      if (low === 'ft' && item.area) return String(item.area).trim();
+      return r;
+    }
+
+    function getCombinedSpellManeuverCatalog() {
+      const seen = new Set();
+      const combined = [];
+      const addList = (arr) => {
+        if (!Array.isArray(arr)) return;
+        arr.forEach(item => {
+          if (!item || !item.name) return;
+          const key = `${String(item.type || item.category || 'spell').toLowerCase()}:${String(item.name).toLowerCase().trim()}`;
+          if (seen.has(key)) return;
+          seen.add(key);
+          combined.push(item);
+        });
+      };
+      addList(Array.isArray(masterDb) ? masterDb : []);
+      if (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function') {
+        addList(window.SrdCompendium.getAllLoaded(['Spell', 'Maneuver', 'Stance']));
+      }
+      if (Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
+        addList(window.BUNDLED_SRD_CORE_CATALOG.filter(x => x && ['spell', 'maneuver', 'stance'].includes(String(x.type || '').toLowerCase())));
+      }
+      return combined;
+    }
+
+    function getSpellTraditionAndLevels(item) {
+      const divineLvls = [];
+      const arcanePrepLvls = [];
+      const arcaneSpontLvls = [];
+      const psionicLvls = [];
+
+      const clsMap = (item && item.learnedAt && item.learnedAt.class && typeof item.learnedAt.class === 'object')
+        ? item.learnedAt.class
+        : {};
+      const domMap = (item && item.learnedAt && item.learnedAt.domain && typeof item.learnedAt.domain === 'object')
+        ? item.learnedAt.domain
+        : {};
+
+      const divinePriority = ['Cleric', 'Druid', 'Paladin', 'Ranger', 'Blackguard', 'Healer', 'Adept', 'Shugenja', 'Spirit Shaman', 'Favored Soul', 'Archivist'];
+      divinePriority.forEach(k => {
+        if (clsMap[k] !== undefined && clsMap[k] !== null && !isNaN(Number(clsMap[k]))) {
+          divineLvls.push(Number(clsMap[k]));
+        }
+      });
+      Object.keys(clsMap).forEach(k => {
+        const low = k.toLowerCase().trim();
+        const val = Number(clsMap[k]);
+        if (isNaN(val)) return;
+        if (['cleric', 'druid', 'paladin', 'ranger', 'blackguard', 'healer', 'adept', 'shugenja', 'spirit shaman', 'favored soul', 'archivist'].some(d => low.includes(d))) {
+          if (!divineLvls.includes(val)) divineLvls.push(val);
+        } else if (['wizard', 'wu jen', 'wu-jen', 'artificer', 'assassin'].some(a => low.includes(a))) {
+          arcanePrepLvls.push(val);
+        } else if (['sorcerer', 'bard', 'warmage', 'beguiler', 'duskblade', 'dread necromancer', 'warlock', 'hexblade', 'spellthief'].some(a => low.includes(a))) {
+          arcaneSpontLvls.push(val);
+        } else if (['psion', 'wilder', 'psychic warrior', 'nomad', 'shaper', 'seer', 'telepath', 'egoist', 'kineticist'].some(p => low.includes(p))) {
+          psionicLvls.push(val);
+        }
+      });
+
+      Object.values(domMap).forEach(v => {
+        const num = Number(v);
+        if (!isNaN(num)) divineLvls.push(num);
+      });
+
+      const tags = Array.isArray(item?.tags) ? item.tags.map(t => String(t).toLowerCase().trim()) : [];
+      const extraClassText = `${item?.classes || ''} ${item?.class || ''} ${item?.sourceClass || ''} ${item?.spellClass || ''}`.toLowerCase();
+
+      const hasArcaneTag = tags.some(t => ['arcane', 'sorcerer', 'wizard', 'bard', 'wu-jen', 'beguiler', 'duskblade', 'warmage', 'warlock'].includes(t))
+        || ['arcane', 'sorcerer', 'wizard', 'bard', 'warlock', 'warmage', 'beguiler', 'duskblade'].some(k => extraClassText.includes(k));
+      const hasDivineTag = tags.some(t => ['divine', 'cleric', 'druid', 'paladin', 'ranger', 'domain', 'healer', 'archivist', 'favored soul'].includes(t))
+        || ['divine', 'cleric', 'druid', 'paladin', 'ranger', 'domain', 'healer', 'archivist', 'favored soul'].some(k => extraClassText.includes(k));
+
+      const isArcane = arcanePrepLvls.length > 0 || arcaneSpontLvls.length > 0 || hasArcaneTag;
+      const isDivine = divineLvls.length > 0 || hasDivineTag;
+      const isPsionicOnly = psionicLvls.length > 0 && !isArcane && !isDivine;
+      const hasAnyTradition = isArcane || isDivine || isPsionicOnly;
+
+      return {
+        isArcane,
+        isDivine,
+        isPsionicOnly,
+        hasAnyTradition,
+        divineLvls,
+        arcanePrepLvls,
+        arcaneSpontLvls,
+        clsMap,
+        domMap
+      };
+    }
+
+    function resolveSpellLevelForPool(item, targetPool = 'spontaneous', effectiveSource = 'auto') {
+      if (!item) return null;
+      const info = getSpellTraditionAndLevels(item);
+      const c = info.clsMap || {};
+
+      if (targetPool === 'divine' || effectiveSource === 'divine') {
+        if (c.Cleric !== undefined) return Number(c.Cleric);
+        if (c.Druid !== undefined) return Number(c.Druid);
+        if (c.Paladin !== undefined) return Number(c.Paladin);
+        if (c.Ranger !== undefined) return Number(c.Ranger);
+        if (info.divineLvls.length > 0) return info.divineLvls[0];
+      } else if (targetPool === 'prepared') {
+        if (c.Wizard !== undefined) return Number(c.Wizard);
+        if (info.arcanePrepLvls.length > 0) return info.arcanePrepLvls[0];
+        if (info.arcaneSpontLvls.length > 0) return info.arcaneSpontLvls[0];
+      } else if (targetPool === 'spontaneous') {
+        if (c.Sorcerer !== undefined) return Number(c.Sorcerer);
+        if (c.Bard !== undefined) return Number(c.Bard);
+        if (info.arcaneSpontLvls.length > 0) return info.arcaneSpontLvls[0];
+        if (info.arcanePrepLvls.length > 0) return info.arcanePrepLvls[0];
+      }
+
+      if (item.level !== undefined && item.level !== null) return Number(item.level);
+      if (Array.isArray(item.tags) && item.tags.some(t => String(t).toLowerCase() === 'cantrip' || String(t).toLowerCase() === 'orison')) return 0;
+      return null;
+    }
+
     // Helper: Determine if spell matches the target pool (Arcane vs Divine)
     function isSpellMatchingTargetSource(item, effectiveSource) {
       if (!item) return false;
       if (effectiveSource === 'all') return true;
 
-      const tags = Array.isArray(item.tags) ? item.tags.map(t => String(t).toLowerCase().trim()) : [];
-      const isArcaneTag = tags.some(t => ['arcane', 'sorcerer', 'wizard', 'bard', 'wu-jen', 'beguiler', 'duskblade', 'warmage'].includes(t));
-      const isDivineTag = tags.some(t => ['divine', 'cleric', 'druid', 'paladin', 'ranger', 'domain'].includes(t));
+      const info = getSpellTraditionAndLevels(item);
+      if (info.isPsionicOnly) return false;
 
-      const isPureDivine = isDivineTag && !isArcaneTag;
-      const isPureArcane = isArcaneTag && !isDivineTag;
+      // If a custom spell in Master DB has no explicit class/tradition metadata, show it in both Arcane and Divine
+      if (!info.hasAnyTradition) return true;
 
       if (effectiveSource === 'arcane') {
-        if (isPureDivine) return false;
-        return isArcaneTag || !isDivineTag;
+        return info.isArcane;
       }
 
       if (effectiveSource === 'divine') {
-        if (isPureArcane) return false;
-        return isDivineTag;
+        return info.isDivine;
       }
 
       return true;
@@ -3897,6 +4056,13 @@
     function renderSpellPickerResults() {
       const container = document.getElementById('spell-picker-results-container');
       if (!container) return;
+
+      if (window.SrdCompendium && typeof window.SrdCompendium.ensureChunkLoaded === 'function' && !window._srdSpellsChunkRequested) {
+        window._srdSpellsChunkRequested = true;
+        window.SrdCompendium.ensureChunkLoaded('srd_spells.json').then(() => {
+          renderSpellPickerResults();
+        }).catch(() => {});
+      }
 
       const type = window._currentSpellPickerType || 'Spell';
       const targetPool = window._spellPickerTargetPool || 'spontaneous';
@@ -3957,7 +4123,7 @@
         }
       }
 
-      const allDb = Array.isArray(masterDb) ? masterDb : [];
+      const allDb = getCombinedSpellManeuverCatalog();
 
       const matches = allDb.filter(item => {
         if (isMasterDbChildEntry(item)) return false;
@@ -3979,18 +4145,27 @@
         if (!isTypeMatch) return false;
 
         if (levelFilter !== 'all') {
-          const itemLvl = item.level !== undefined ? Number(item.level) : ((Array.isArray(item.tags) && item.tags.some(t => String(t).toLowerCase() === 'cantrip')) ? 0 : null);
+          const itemLvl = type === 'Spell'
+            ? resolveSpellLevelForPool(item, targetPool, effectiveSource)
+            : (item.level !== undefined ? Number(item.level) : null);
           if (String(itemLvl ?? '') !== String(levelFilter)) return false;
         }
 
         if (query) {
           const name = (item.name || '').toLowerCase();
-          const school = (item.school || item.discipline || '').toLowerCase();
-          const desc = (item.benefit || item.description || item.desc || '').toLowerCase();
+          const school = (item.school || item.category || item.discipline || '').toLowerCase();
+          const desc = (item.benefit || item.shortDescription || item.description || item.desc || '').toLowerCase();
           if (!name.includes(query) && !school.includes(query) && !desc.includes(query)) return false;
         }
 
         return true;
+      });
+
+      matches.sort((a, b) => {
+        const lvlA = type === 'Spell' ? (resolveSpellLevelForPool(a, targetPool, effectiveSource) ?? 99) : (Number(a.level) || 0);
+        const lvlB = type === 'Spell' ? (resolveSpellLevelForPool(b, targetPool, effectiveSource) ?? 99) : (Number(b.level) || 0);
+        if (lvlA !== lvlB) return lvlA - lvlB;
+        return String(a.name || '').localeCompare(String(b.name || ''));
       });
 
       container.innerHTML = '';
@@ -4019,7 +4194,9 @@
           alreadyKnown = (character.tomeOfBattle?.stancesKnown || []).some(st => (st.name || '').toLowerCase().trim() === cleanName);
         }
 
-        const itemLvlDisplay = item.level !== undefined ? item.level : ((Array.isArray(item.tags) && item.tags.some(t => String(t).toLowerCase() === 'cantrip')) ? 0 : null);
+        const itemLvlDisplay = type === 'Spell'
+          ? resolveSpellLevelForPool(item, targetPool, effectiveSource)
+          : (item.level !== undefined ? item.level : null);
 
         let isLevelFull = false;
         let countText = '';
@@ -4067,17 +4244,21 @@
           `;
         }
 
+        const schoolDisplay = item.school || (type === 'Spell' && item.category && item.category.toLowerCase() !== 'spell' ? item.category : '') || item.discipline || item.type || '-';
+        const actionDisplay = type === 'Spell' ? formatSrdSpellAction(item) : (item.action || '');
+        const summaryDisplay = item.benefit || item.shortDescription || stripSpellHtml(item.description) || item.notes || '-';
+
         const card = document.createElement('div');
         card.className = 'pt-2.5 pb-2.5 flex items-start justify-between gap-3';
         card.innerHTML = `
           <div class="space-y-1 flex-1">
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 flex-wrap">
               <span class="badge ${type === 'Spell' ? 'bg-purple-950 text-purple-300 border-purple-700' : 'bg-rose-950 text-rose-300 border-rose-700'} text-[10px] font-bold">
                 ${itemLvlDisplay !== null ? 'Level ' + itemLvlDisplay : 'Lvl ?'}
               </span>
               <h4 class="font-extrabold text-white text-xs">${item.name}</h4>
-              <span class="text-[10px] text-slate-400">(${item.school || item.discipline || item.type || '-'})</span>
-              ${item.action ? `<span class="text-[10px] text-amber-300">${item.action}</span>` : ''}
+              <span class="text-[10px] text-slate-400">(${schoolDisplay})</span>
+              ${actionDisplay ? `<span class="text-[10px] text-amber-300">${actionDisplay}</span>` : ''}
               ${(() => {
                 const ch = getSpellOrManeuverChildren(item);
                 return ch.length > 0
@@ -4085,7 +4266,7 @@
                   : '';
               })()}
             </div>
-            <p class="text-[11px] text-slate-300 line-clamp-2">${item.benefit || item.description || item.notes || '-'}</p>
+            <p class="text-[11px] text-slate-300 line-clamp-2">${summaryDisplay}</p>
           </div>
           <div class="shrink-0">
             ${actionHtml}
@@ -4097,8 +4278,11 @@
 
     function addMasterDbItemToCharacter(escapedName) {
       const name = unescape(escapedName);
-      const allDb = Array.isArray(masterDb) ? masterDb : [];
-      const item = allDb.find(m => (m.name || '').toLowerCase().trim() === name.toLowerCase().trim());
+      const allDb = getCombinedSpellManeuverCatalog();
+      let item = allDb.find(m => (m.name || '').toLowerCase().trim() === name.toLowerCase().trim());
+      if (!item && window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function') {
+        item = window.SrdCompendium.getByName(name);
+      }
       if (!item) return;
 
       const type = window._currentSpellPickerType || 'Spell';
@@ -4109,9 +4293,8 @@
         const poolKey = targetPool === 'prepared' ? 'preparedSpells' : (targetPool === 'divine' ? 'divineSpells' : 'knownSpells');
         if (!Array.isArray(character.spellcasting[poolKey])) character.spellcasting[poolKey] = [];
 
-        const resolvedLvl = item.level !== undefined
-          ? Number(item.level)
-          : ((Array.isArray(item.tags) && item.tags.some(t => String(t).toLowerCase() === 'cantrip')) ? 0 : 1);
+        const resolvedLvlVal = resolveSpellLevelForPool(item, targetPool, targetPool === 'divine' ? 'divine' : 'arcane');
+        const resolvedLvl = resolvedLvlVal !== null && resolvedLvlVal !== undefined ? Number(resolvedLvlVal) : 1;
 
         // Strict: Check if level has reached maximum slot/known quota
         if (targetPool === 'spontaneous') {
@@ -4155,15 +4338,21 @@
         }
 
         const v2SpellPart = Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0].dice : '';
+        const cleanBenefit = item.benefit || item.shortDescription || stripSpellHtml(item.description) || '';
+        const schoolName = item.school || (item.category && item.category.toLowerCase() !== 'spell' ? item.category : 'Universal');
+        const rangeText = formatSrdSpellRange(item);
+        const actionText = formatSrdSpellAction(item);
+        const autoDice = v2SpellPart || item.damageDice || item.dice || findDiceExpression(cleanBenefit) || '';
+
         character.spellcasting[poolKey].push({
           id: item.id || ('spl_' + String(item.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_')),
           name: item.name,
           level: resolvedLvl,
-          school: item.school || 'Universal',
-          benefit: item.benefit || item.description || '',
-          range: item.range || 'Close',
-          action: item.action || 'Standard Action',
-          damageDice: v2SpellPart || item.damageDice || item.dice || '',
+          school: schoolName,
+          benefit: cleanBenefit,
+          range: rangeText,
+          action: actionText,
+          damageDice: autoDice,
           damageParts: Array.isArray(item.damageParts) ? JSON.parse(JSON.stringify(item.damageParts)) : []
         });
 
@@ -4193,7 +4382,7 @@
           discipline: item.discipline || 'Iron Heart',
           action: item.action || 'Standard Action',
           damageDice: item.damageDice || undefined,
-          notes: item.benefit || item.description || '',
+          notes: item.benefit || item.shortDescription || stripSpellHtml(item.description) || '',
           expended: false
         };
 
@@ -4228,7 +4417,7 @@
           level: item.level !== undefined ? Number(item.level) : 1,
           discipline: item.discipline || 'Iron Heart',
           damageDice: item.damageDice || undefined,
-          benefit: item.benefit || item.description || ''
+          benefit: item.benefit || item.shortDescription || stripSpellHtml(item.description) || ''
         });
 
         saveStateToStorage(true);
