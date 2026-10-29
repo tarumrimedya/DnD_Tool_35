@@ -520,29 +520,21 @@
       <div class="absolute right-0 top-0 bottom-0 w-full max-w-3xl bg-[#111a2e] border-l border-indigo-500/40 shadow-2xl flex flex-col text-slate-100 overflow-hidden">
         <!-- Header -->
         <div class="px-4 py-3 bg-slate-950 border-b border-slate-800 flex items-center justify-between gap-3 shrink-0">
-          <div class="flex items-center gap-2.5">
-            <span class="w-8 h-8 rounded-xl bg-indigo-600/20 border border-indigo-500/50 flex items-center justify-center text-amber-400 font-bold">📚</span>
-            <div>
-              <h3 class="text-sm sm:text-base font-black text-white flex items-center gap-2">
-                <span>D&D 3.5e V2 Compendium &amp; The Forge</span>
-                <span class="px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-700/60 text-[10px] font-mono">3,522 SRD Entries • 0 Tokens</span>
-              </h3>
-              <p class="text-[11px] text-slate-400">Instant Canonical V2 Search, Spell/Feat Inspection &amp; Modular Item Assembly</p>
+          <div class="flex items-center gap-2.5 min-w-0">
+            <span id="dnd-ui-compendium-icon" class="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-lg shrink-0">👹</span>
+            <div class="min-w-0">
+              <h3 id="dnd-ui-compendium-title" class="text-sm sm:text-base font-black text-white truncate">D&amp;D 3.5e Bestiary</h3>
+              <p id="dnd-ui-compendium-subtitle" class="text-[11px] text-slate-400 truncate">Official SRD 3.5e Monster Compendium</p>
             </div>
           </div>
-          <button type="button" onclick="DnDUI.closeCompendiumDrawer()" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold transition cursor-pointer">✕ Close</button>
+          <button type="button" onclick="DnDUI.closeCompendiumDrawer()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold border border-slate-700 transition cursor-pointer shrink-0">✕ Close</button>
         </div>
 
-        <!-- Category Tabs -->
-        <div class="px-4 py-2 bg-slate-900/90 border-b border-slate-800 flex items-center gap-1.5 overflow-x-auto shrink-0 text-xs">
-          <button type="button" data-comp-tab="all" onclick="DnDUI.switchCompendiumTab('all')" class="px-2.5 py-1 rounded-lg font-bold transition cursor-pointer bg-indigo-600 text-white">🌐 All</button>
-          <button type="button" data-comp-tab="Weapon" onclick="DnDUI.switchCompendiumTab('Weapon')" class="px-2.5 py-1 rounded-lg font-bold transition cursor-pointer text-slate-400 hover:text-white">⚔️ Weapons</button>
-          <button type="button" data-comp-tab="Armor" onclick="DnDUI.switchCompendiumTab('Armor')" class="px-2.5 py-1 rounded-lg font-bold transition cursor-pointer text-slate-400 hover:text-white">🛡️ Armor &amp; Gear</button>
-          <button type="button" data-comp-tab="Feat" onclick="DnDUI.switchCompendiumTab('Feat')" class="px-2.5 py-1 rounded-lg font-bold transition cursor-pointer text-slate-400 hover:text-white">🏅 Feats &amp; Maneuvers</button>
-          <button type="button" data-comp-tab="Spell" onclick="DnDUI.switchCompendiumTab('Spell')" class="px-2.5 py-1 rounded-lg font-bold transition cursor-pointer text-slate-400 hover:text-white">🔮 Spells &amp; Psionics</button>
-          <button type="button" data-comp-tab="Condition" onclick="DnDUI.switchCompendiumTab('Condition')" class="px-2.5 py-1 rounded-lg font-bold transition cursor-pointer text-slate-400 hover:text-white">⚡ Conditions &amp; Buffs</button>
-          <button type="button" data-comp-tab="Monster" onclick="DnDUI.switchCompendiumTab('Monster')" class="px-2.5 py-1 rounded-lg font-bold transition cursor-pointer text-slate-400 hover:text-white">👹 Bestiary</button>
-          <button type="button" data-comp-tab="forge" onclick="DnDUI.switchCompendiumTab('forge')" class="px-3 py-1 rounded-lg font-black transition cursor-pointer bg-amber-500/20 text-amber-300 border border-amber-500/50 hover:bg-amber-500 hover:text-slate-950 ml-auto shrink-0">⚒️ The Forge (Item Builder)</button>
+        <!-- Category Tabs (Shown only for Character Inventory Gear/Forge Drawer; hidden in Bestiary Mode) -->
+        <div id="dnd-ui-compendium-tabs-bar" class="px-4 py-2 bg-slate-900/90 border-b border-slate-800 grid grid-cols-3 gap-1.5 shrink-0 text-xs">
+          <button type="button" data-comp-tab="Weapon" onclick="DnDUI.switchCompendiumTab('Weapon')" class="w-full py-1.5 px-2 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 bg-indigo-600 text-white">⚔️ Weapons</button>
+          <button type="button" data-comp-tab="Armor" onclick="DnDUI.switchCompendiumTab('Armor')" class="w-full py-1.5 px-2 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 text-slate-400 hover:text-white bg-slate-950/60">🛡️ Armor &amp; Gear</button>
+          <button type="button" data-comp-tab="forge" onclick="DnDUI.switchCompendiumTab('forge')" class="w-full py-1.5 px-2 rounded-lg font-black transition cursor-pointer flex items-center justify-center gap-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/50 hover:bg-amber-500 hover:text-slate-950">⚒️ The Forge</button>
         </div>
 
         <!-- VIEW 1: COMPENDIUM SEARCH & INSPECTOR -->
@@ -550,7 +542,7 @@
           <!-- Search Bar -->
           <div class="p-3 bg-slate-950/60 border-b border-slate-800 flex items-center gap-2 shrink-0">
             <span class="text-slate-400 text-sm">🔍</span>
-            <input type="text" id="dnd-ui-compendium-input" oninput="DnDUI.onCompendiumSearchInput(this.value)" placeholder="Search SRD V2 Compendium (e.g. Greatsword, Power Attack, Fireball, Haste, Balor, +2 Keen Scimitar)..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-400 font-mono">
+            <input type="text" id="dnd-ui-compendium-input" oninput="DnDUI.onCompendiumSearchInput(this.value)" placeholder="Search Bestiary monsters (e.g. Aboleth, Dragon, Goblin, Balor)..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-400 font-mono">
           </div>
 
           <!-- Split Pane: Left Results, Right V2 Detail Card -->
@@ -795,19 +787,57 @@
     }
   }
 
+  function cleanSrdDescriptionText(raw) {
+    if (!raw || typeof raw !== 'string') return 'No description available.';
+    return raw
+      .replace(/<\/(?:p|div|tr|li|h[1-6])>/gi, '\n')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/(?:th|td)>/gi, '  ')
+      .replace(/<[^>]+>/g, '')
+      .replace(/&nbsp;/gi, ' ')
+      .replace(/&amp;/gi, '&')
+      .replace(/&lt;/gi, '<')
+      .replace(/&gt;/gi, '>')
+      .replace(/&quot;/gi, '"')
+      .replace(/&#39;/gi, "'")
+      .replace(/[ \t]+\n/g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim() || 'No description available.';
+  }
+
   async function openCompendiumDrawer(options = {}) {
     ensureCompendiumDrawerDom();
 
     _drawerState.onEquipCallback = options.onEquip || options.onSelect || null;
-    const rawTab = options.tab || options.defaultTab || options.category || 'all';
-    const initialTab = rawTab === 'browse' ? (options.category || 'all') : rawTab;
+    const rawTab = options.tab || options.defaultTab || options.category || 'Weapon';
+    const initialTab = rawTab === 'browse' ? (options.category || 'Weapon') : rawTab;
     const initialQuery = options.query || '';
+    const isBestiaryMode = Boolean(options.bestiaryOnly || initialTab === 'Monster');
+
+    const tabsBar = document.getElementById('dnd-ui-compendium-tabs-bar');
+    const iconEl = document.getElementById('dnd-ui-compendium-icon');
+    const titleEl = document.getElementById('dnd-ui-compendium-title');
+    const subEl = document.getElementById('dnd-ui-compendium-subtitle');
+    const input = document.getElementById('dnd-ui-compendium-input');
+
+    if (isBestiaryMode) {
+      if (tabsBar) tabsBar.classList.add('hidden');
+      if (iconEl) iconEl.textContent = '👹';
+      if (titleEl) titleEl.textContent = 'D&D 3.5e Bestiary';
+      if (subEl) subEl.textContent = 'Search & import official SRD 3.5e monsters into your campaign';
+      if (input) input.placeholder = 'Search Bestiary monsters (e.g. Aboleth, Dragon, Goblin, Balor)...';
+    } else {
+      if (tabsBar) tabsBar.classList.remove('hidden');
+      if (iconEl) iconEl.textContent = '⚒️';
+      if (titleEl) titleEl.textContent = 'D&D 3.5e Armory & The Forge';
+      if (subEl) subEl.textContent = 'Browse SRD Weapons & Armor or assemble custom magic gear';
+      if (input) input.placeholder = 'Search weapons, armor, shields, or gear...';
+    }
 
     const drawer = document.getElementById('dnd-ui-compendium-drawer');
     if (drawer) drawer.classList.remove('hidden');
     _drawerState.isOpen = true;
 
-    const input = document.getElementById('dnd-ui-compendium-input');
     if (input) input.value = initialQuery;
     _drawerState.query = initialQuery;
 
@@ -836,8 +866,8 @@
       const t = btn.getAttribute('data-comp-tab');
       if (t === 'forge') return;
       btn.className = t === tab
-        ? 'px-2.5 py-1 rounded-lg font-bold transition cursor-pointer bg-indigo-600 text-white'
-        : 'px-2.5 py-1 rounded-lg font-bold transition cursor-pointer text-slate-400 hover:text-white';
+        ? 'w-full py-1.5 px-2 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 bg-indigo-600 text-white'
+        : 'w-full py-1.5 px-2 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 text-slate-400 hover:text-white bg-slate-950/60';
     });
 
     const searchView = document.getElementById('dnd-ui-compendium-search-view');
@@ -892,7 +922,7 @@
       <div onclick="DnDUI.selectCompendiumEntry(${idx})" class="p-2.5 hover:bg-slate-900/90 cursor-pointer transition flex items-center justify-between gap-2 ${idx === 0 ? 'bg-indigo-950/50' : ''}">
         <div class="min-w-0">
           <div class="text-xs font-bold text-white truncate">${escapeHtml(r.name)}</div>
-          <div class="text-[10px] text-slate-400 font-mono truncate">${escapeHtml(r.type || 'SRD')}${r.category ? ` • ${escapeHtml(r.category)}` : ''}</div>
+          <div class="text-[10px] text-slate-400 font-mono truncate">${escapeHtml(r.type || 'SRD')}${r.category ? ` • ${escapeHtml(r.category)}` : ''}${r.level !== undefined && r.type === 'Monster' ? ` • CR ${escapeHtml(r.level)}` : ''}</div>
         </div>
         <span class="text-xs text-slate-500">›</span>
       </div>
@@ -914,23 +944,48 @@
     }
     _drawerState.selectedEntry = full;
 
+    const isMonster = full.type === 'Monster' || String(full.id || '').startsWith('mst-');
+    const actionBtnLabel = isMonster ? 'Add to Campaign' : 'Add / Equip to Character';
     const dmgHtml = renderDamagePartsBadges(full.damageParts);
     const modHtml = renderModifiersBadges(full.modifiers);
     const tacHtml = renderTacticalBadges(full);
     const modesHtml = renderModesPills(full, full.activeModeId, '');
+    const cleanDesc = cleanSrdDescriptionText(full.description || full.benefit || full.shortDescription);
+
+    const monsterStatStrip = isMonster ? `
+      <div class="grid grid-cols-4 gap-2 text-center">
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-2">
+          <div class="text-[10px] text-slate-400 uppercase font-bold">CR</div>
+          <div class="text-xs font-black font-mono text-amber-400">${escapeHtml(full.cr ?? full.level ?? '1')}</div>
+        </div>
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-2">
+          <div class="text-[10px] text-slate-400 uppercase font-bold">HP</div>
+          <div class="text-xs font-black font-mono text-emerald-400">${escapeHtml(full.hp ?? '—')}</div>
+        </div>
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-2">
+          <div class="text-[10px] text-slate-400 uppercase font-bold">AC</div>
+          <div class="text-xs font-black font-mono text-sky-400">${escapeHtml(full.ac?.total ?? full.ac ?? '10')}</div>
+        </div>
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-2">
+          <div class="text-[10px] text-slate-400 uppercase font-bold">Init</div>
+          <div class="text-xs font-black font-mono text-indigo-300">${Number(full.init || 0) >= 0 ? `+${Number(full.init || 0)}` : Number(full.init || 0)}</div>
+        </div>
+      </div>
+    ` : '';
 
     detailEl.innerHTML = `
-      <div class="border-b border-slate-800 pb-3 flex items-start justify-between gap-2">
-        <div>
-          <span class="px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-700/60 text-[10px] font-mono">${escapeHtml(full.type || 'SRD')}${full.category ? ` • ${escapeHtml(full.category)}` : ''}</span>
-          <h4 class="text-base font-black text-amber-300 mt-1">${escapeHtml(full.name)}</h4>
-          <div class="text-[10px] font-mono text-slate-500">ID: ${escapeHtml(full.id)} • Source: ${escapeHtml(full.source || 'SRD 3.5e')}</div>
+      <div class="border-b border-slate-800 pb-3 flex items-center justify-between gap-2">
+        <div class="min-w-0">
+          <span class="px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-700/60 text-[10px] font-mono">${escapeHtml(full.size ? `${full.size} ` : '')}${escapeHtml(full.category || full.type || 'SRD')}</span>
+          <h4 class="text-base font-black text-amber-300 mt-1 truncate">${escapeHtml(full.name)}</h4>
         </div>
-        <button type="button" onclick="DnDUI.equipSelectedCompendiumEntry()" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow transition cursor-pointer shrink-0 flex items-center gap-1">
+        <button type="button" onclick="DnDUI.equipSelectedCompendiumEntry()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow transition cursor-pointer shrink-0 flex items-center gap-1.5">
           <span>➕</span>
-          <span>Add / Equip to Character</span>
+          <span>${actionBtnLabel}</span>
         </button>
       </div>
+
+      ${monsterStatStrip}
 
       ${(dmgHtml || modHtml || tacHtml) ? `
         <div class="space-y-2 bg-slate-900/70 border border-slate-800 rounded-xl p-3">
@@ -942,7 +997,7 @@
       ` : ''}
 
       <div class="text-xs text-slate-300 leading-relaxed whitespace-pre-line bg-slate-950/60 border border-slate-800/80 rounded-xl p-3 max-h-80 overflow-y-auto">
-        ${escapeHtml(full.description || full.benefit || full.shortDescription || 'No description available.')}
+        ${escapeHtml(cleanDesc)}
       </div>
     `;
   }

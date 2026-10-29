@@ -108,21 +108,11 @@
         </div>
       </div>
 
-      <!-- ARAMA, V2 KÜTÜPHANE & TÜR FİLTRESİ -->
-      <div class="mt-3 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 text-xs">
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 flex-1 min-w-0">
-          <div class="relative col-span-2 sm:col-span-1">
-            <input type="text" id="hub-search-input" oninput="renderHub()" placeholder="Search name, race, or class..." class="w-full h-10 bg-slate-900/90 border border-slate-700/80 rounded-xl pl-9 pr-3 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition shadow-inner">
-            <span class="absolute left-3 top-2.5 text-slate-500">🔍</span>
-          </div>
-          <button type="button" onclick="openHubCompendiumDrawer('Monster')" class="col-span-1 w-full h-10 px-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/40 font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm truncate" title="SRD Monsters, Spells, Feats & Items (Zero-Token V2 Compendium)">
-            <span class="shrink-0">👹</span>
-            <span class="truncate">Bestiary &amp; SRD</span>
-          </button>
-          <button type="button" onclick="openHubCompendiumDrawer('forge')" class="col-span-1 w-full h-10 px-2.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/35 text-indigo-300 border border-indigo-500/40 font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm truncate" title="V2 Modular Forge: Combine Material + Enhancement + Special Abilities">
-            <span class="shrink-0">⚒️</span>
-            <span class="truncate">The Forge <span class="hidden sm:inline">(Builder)</span></span>
-          </button>
+      <!-- ARAMA & TÜR FİLTRESİ -->
+      <div class="mt-3 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-2.5 text-xs">
+        <div class="relative flex-1 min-w-0">
+          <input type="text" id="hub-search-input" oninput="renderHub()" placeholder="Search name, race, or class..." class="w-full h-10 bg-slate-900/90 border border-slate-700/80 rounded-xl pl-9 pr-3 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition shadow-inner">
+          <span class="absolute left-3 top-2.5 text-slate-500">🔍</span>
         </div>
 
         <!-- Tür Filtresi -->
@@ -1778,12 +1768,11 @@
       const emptyDesc = isNpcFilter 
         ? "Import an official monster from the D&D 3.5e Bestiary or create a custom NPC." 
         : "Create a new PC or NPC from scratch and assign them to this campaign.";
-      const emptyBtnLabel = isNpcFilter ? '📚 Rule Master Bestiary' : '⚡ Quick Create';
-      const emptyIcon = isNpcFilter ? '📚' : '➕';
+      const emptyIcon = isNpcFilter ? '👹' : '➕';
       const campParam = targetCampaignId ? `'${targetCampaignId}'` : 'null';
 
       return `
-        <div onclick="openNewCharacterModal('${isNpcFilter ? 'bestiary' : 'manual'}', ${campParam})" class="group h-full min-h-[380px] xl:min-h-[400px] xl:max-h-[420px] border-2 border-dashed border-slate-700/80 hover:border-amber-500/80 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer bg-slate-900/30 hover:bg-slate-900/60 transition duration-200 shadow-inner overflow-hidden">
+        <div onclick="openNewCharacterModal('manual', ${campParam})" class="group h-full min-h-[380px] xl:min-h-[400px] xl:max-h-[420px] border-2 border-dashed border-slate-700/80 hover:border-amber-500/80 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer bg-slate-900/30 hover:bg-slate-900/60 transition duration-200 shadow-inner overflow-hidden">
           <div class="w-12 h-12 rounded-xl bg-slate-800 group-hover:bg-amber-500/20 border border-slate-700 group-hover:border-amber-500/50 flex items-center justify-center text-2xl text-slate-400 group-hover:text-amber-300 transition duration-200 shadow-md">
             ${emptyIcon}
           </div>
@@ -1791,9 +1780,16 @@
           <p class="text-xs text-slate-400 mt-2 max-w-[220px] leading-relaxed">
             ${emptyDesc}
           </p>
-          <span class="mt-4 px-4 py-2 rounded-xl bg-slate-800 text-xs font-bold text-slate-200 border border-slate-700 group-hover:border-amber-500/40 shadow">
-            ${emptyBtnLabel}
-          </span>
+          <div class="mt-4 flex flex-col items-center gap-2.5 w-44">
+            <button type="button" onclick="event.stopPropagation(); openNewCharacterModal('manual', ${campParam})" class="w-full py-2 px-4 rounded-xl bg-slate-800 hover:bg-indigo-600 text-xs font-bold text-slate-200 hover:text-white border border-slate-700 hover:border-indigo-400 shadow transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95">
+              <span>⚡</span>
+              <span>Quick Create</span>
+            </button>
+            <button type="button" onclick="event.stopPropagation(); openHubCompendiumDrawer('Monster', ${campParam})" class="w-full py-2 px-4 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-xs font-bold text-amber-300 border border-amber-500/40 shadow transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95">
+              <span>👹</span>
+              <span>Bestiary</span>
+            </button>
+          </div>
         </div>
       `;
     }
@@ -4738,16 +4734,17 @@ CRITICAL RULES:
       }
     }
 
-    function openHubCompendiumDrawer(initialTab = 'Monster') {
+    function openHubCompendiumDrawer(initialTab = 'Monster', preferredCampaignId = null) {
       if (!window.DnDUI || typeof window.DnDUI.openCompendiumDrawer !== 'function') return;
       window.DnDUI.openCompendiumDrawer({
         tab: initialTab,
+        bestiaryOnly: initialTab === 'Monster',
         onEquip: (entry) => {
           if (!entry) return;
           if (entry.type === 'Monster' || entry.category === 'Monster' || String(entry.id || '').startsWith('mst-')) {
-            const targetCamp = (state.activeCampaignId && state.activeCampaignId !== 'all' && state.activeCampaignId !== 'unassigned')
+            const targetCamp = preferredCampaignId || ((state.activeCampaignId && state.activeCampaignId !== 'all' && state.activeCampaignId !== 'unassigned')
               ? state.activeCampaignId
-              : (state.campaigns[0]?.id || null);
+              : (state.campaigns[0]?.id || null));
             const npcChar = convertMonsterToCharacter(entry, entry.name, targetCamp);
             state.characters.push(npcChar);
             saveHubStorage();
