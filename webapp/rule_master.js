@@ -1133,7 +1133,7 @@ const RuleMaster = {
   },
 
   // Save Modal Action (Builds Canonical V2 Entry from Form Inputs)
-  submitModal() {
+  submitModal(alsoEquip = false) {
     const editIdx = this.selectedEntryIndex;
     const baseObj = (editIdx >= 0 && masterDb && masterDb[editIdx])
       ? this.ensureV2(JSON.parse(JSON.stringify(masterDb[editIdx])))
@@ -1372,6 +1372,9 @@ const RuleMaster = {
     v2Entry.ruleFlags = ruleFlags;
 
     if (this.saveEntry(v2Entry, this.selectedEntryIndex)) {
+      if (alsoEquip) {
+        this.equipItem(v2Entry);
+      }
       this.closeModal();
     }
   },
@@ -4522,9 +4525,11 @@ Return valid JSON only matching:
     const searchPanel = document.getElementById('inline-mode-search');
     const freetextPanel = document.getElementById('inline-mode-freetext');
     const forgePanel = document.getElementById('inline-mode-forge');
+    const manualPanel = document.getElementById('inline-mode-manual');
     const btnSearch = document.getElementById('btn-inline-mode-search');
     const btnFreetext = document.getElementById('btn-inline-mode-freetext');
     const btnForge = document.getElementById('btn-inline-mode-forge');
+    const btnManual = document.getElementById('btn-inline-mode-manual');
     const headerTitle = document.getElementById('inline-panel-header-title');
 
     const activeCls = 'w-full py-2 px-2.5 rounded-lg font-bold transition bg-purple-600 text-white shadow flex items-center justify-center gap-1.5 cursor-pointer';
@@ -4535,10 +4540,12 @@ Return valid JSON only matching:
     if (searchPanel) searchPanel.classList.toggle('hidden', mode !== 'search');
     if (freetextPanel) freetextPanel.classList.toggle('hidden', mode !== 'freetext');
     if (forgePanel) forgePanel.classList.toggle('hidden', mode !== 'forge');
+    if (manualPanel) manualPanel.classList.toggle('hidden', mode !== 'manual');
 
     if (btnSearch) btnSearch.className = mode === 'search' ? activeCls : inactiveCls;
     if (btnFreetext) btnFreetext.className = mode === 'freetext' ? activeCls : inactiveCls;
     if (btnForge) btnForge.className = mode === 'forge' ? activeForgeCls : inactiveForgeCls;
+    if (btnManual) btnManual.className = mode === 'manual' ? activeCls : inactiveCls;
 
     if (mode === 'freetext') {
       if (headerTitle) headerTitle.textContent = 'Rule Master (AI) Free-Text Parser';
@@ -4548,10 +4555,271 @@ Return valid JSON only matching:
       if (headerTitle) headerTitle.textContent = 'The Forge — V2 Modular Item Builder';
       this.populateInlineForgeControls();
       this.updateInlineForgePreview();
+    } else if (mode === 'manual') {
+      if (headerTitle) headerTitle.textContent = 'Manual Rule & Item Builder — Canonical V2';
+      const modList = document.getElementById('im-modifiers-list');
+      if (modList && !modList.children.length) {
+        this.addInlineManualModifierRow();
+      }
+      const nameIn = document.getElementById('im-name');
+      if (nameIn) nameIn.focus();
     } else {
       if (headerTitle) headerTitle.textContent = 'Rule Master (AI) & The Forge';
       const q = document.getElementById('inline-ai-rule-query');
       if (q) q.focus();
+    }
+  },
+
+  addInlineManualModifierRow(mod = null) {
+    const list = document.getElementById('im-modifiers-list');
+    if (!list) return;
+    const targetVal = mod?.target || 'ability.str';
+    const valNum = mod?.value !== undefined ? mod.value : '';
+    const typeVal = mod?.type || 'Enhancement';
+    const condVal = mod?.condition || '';
+
+    const TARGET_OPTS = [
+      { v: 'ability.str', l: 'STR (Strength)' },
+      { v: 'ability.dex', l: 'DEX (Dexterity)' },
+      { v: 'ability.con', l: 'CON (Constitution)' },
+      { v: 'ability.int', l: 'INT (Intelligence)' },
+      { v: 'ability.wis', l: 'WIS (Wisdom)' },
+      { v: 'ability.cha', l: 'CHA (Charisma)' },
+      { v: 'ac', l: 'AC (Armor Class)' },
+      { v: 'ac.deflection', l: 'Deflection AC' },
+      { v: 'ac.natural', l: 'Natural Armor AC' },
+      { v: 'ac.dodge', l: 'Dodge AC' },
+      { v: 'ac.armor', l: 'Armor AC' },
+      { v: 'ac.shield', l: 'Shield AC' },
+      { v: 'attack.all', l: 'Attack Rolls (All)' },
+      { v: 'attack.melee', l: 'Melee Attack Rolls' },
+      { v: 'attack.ranged', l: 'Ranged Attack Rolls' },
+      { v: 'damage.all', l: 'Damage Rolls (All)' },
+      { v: 'damage.melee', l: 'Melee Damage Rolls' },
+      { v: 'save.all', l: 'All Saving Throws' },
+      { v: 'save.fort', l: 'Fortitude Save' },
+      { v: 'save.ref', l: 'Reflex Save' },
+      { v: 'save.will', l: 'Will Save' },
+      { v: 'init', l: 'Initiative' },
+      { v: 'hp', l: 'Hit Points (HP)' },
+      { v: 'casterLevel', l: 'Caster Level (CL)' },
+      { v: 'speed.land', l: 'Base Speed (ft.)' },
+      { v: 'skill.all', l: 'All Skills' },
+      { v: 'skill.spot', l: 'Skill: Spot' },
+      { v: 'skill.listen', l: 'Skill: Listen' },
+      { v: 'skill.hide', l: 'Skill: Hide' },
+      { v: 'skill.move_silently', l: 'Skill: Move Silently' },
+      { v: 'skill.tumble', l: 'Skill: Tumble' },
+      { v: 'skill.concentration', l: 'Skill: Concentration' },
+      { v: 'skill.spellcraft', l: 'Skill: Spellcraft' },
+      { v: 'skill.jump', l: 'Skill: Jump' },
+      { v: 'skill.intimidate', l: 'Skill: Intimidate' },
+      { v: 'skill.diplomacy', l: 'Skill: Diplomacy' },
+      { v: 'skill.use_magic_device', l: 'Skill: Use Magic Device' }
+    ];
+
+    const BONUS_TYPES = [
+      'Enhancement', 'Untyped', 'Morale', 'Luck', 'Insight', 'Competence',
+      'Resistance', 'Deflection', 'Armor', 'Shield', 'Natural Armor',
+      'Dodge', 'Sacred', 'Profane', 'Alchemical', 'Racial', 'Size', 'Circumstance'
+    ];
+
+    const row = document.createElement('div');
+    row.className = 'im-mod-row grid grid-cols-1 sm:grid-cols-12 gap-2 items-center';
+    row.innerHTML = `
+      <div class="sm:col-span-4">
+        <select class="im-mod-target w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-white focus:outline-none focus:border-emerald-400">
+          ${TARGET_OPTS.map(o => `<option value="${o.v}" ${o.v === targetVal ? 'selected' : ''}>${o.l}</option>`).join('')}
+        </select>
+      </div>
+      <div class="sm:col-span-2">
+        <input type="number" value="${valNum}" placeholder="+Value (e.g. 2)" class="im-mod-value w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2 text-center text-xs text-emerald-300 font-bold font-mono focus:outline-none focus:border-emerald-400">
+      </div>
+      <div class="sm:col-span-3">
+        <select class="im-mod-type w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-amber-300 font-semibold focus:outline-none focus:border-emerald-400">
+          ${BONUS_TYPES.map(t => `<option value="${t}" ${t === typeVal ? 'selected' : ''}>${t}</option>`).join('')}
+        </select>
+      </div>
+      <div class="sm:col-span-2">
+        <input type="text" value="${condVal}" placeholder="Condition (Optional)" class="im-mod-cond w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-slate-300 focus:outline-none focus:border-emerald-400">
+      </div>
+      <div class="sm:col-span-1">
+        <button type="button" onclick="this.closest('.im-mod-row').remove()" class="w-full h-9 rounded-lg bg-rose-950/60 hover:bg-rose-900 border border-rose-800/80 text-rose-300 text-xs font-bold transition cursor-pointer flex items-center justify-center" title="Remove Modifier">🗑️</button>
+      </div>
+    `;
+    list.appendChild(row);
+  },
+
+  onInlineManualTypeChange() {
+    const typeVal = document.getElementById('im-type')?.value || 'Weapon';
+    const slotEl = document.getElementById('im-slot');
+    const actEl = document.getElementById('im-action');
+    if (slotEl) {
+      if (typeVal === 'Weapon') slotEl.value = 'Main Hand';
+      else if (typeVal === 'Shield') slotEl.value = 'Off-Hand/Shield';
+      else if (typeVal === 'Armor') slotEl.value = 'Armor';
+      else if (typeVal === 'Ring') slotEl.value = 'Ring';
+      else if (typeVal === 'Wondrous Item') slotEl.value = 'Shoulders';
+      else slotEl.value = 'None';
+    }
+    if (actEl) {
+      if (typeVal === 'Spell' || typeVal === 'Maneuver' || typeVal === 'Potion') actEl.value = 'Standard Action';
+      else if (typeVal === 'Stance') actEl.value = 'Swift Action';
+      else actEl.value = 'Passive';
+    }
+  },
+
+  applyInlineManualPreset(presetKey) {
+    const p = this.getPresets()[presetKey];
+    if (!p) return;
+    const setVal = (id, v) => { const el = document.getElementById(id); if (el && v !== undefined) el.value = v; };
+    setVal('im-type', p.type);
+    setVal('im-slot', p.slot);
+    setVal('im-dice', p.dice || '');
+    setVal('im-dmg-type', p.dmgType || 'Slashing');
+    setVal('im-crit-min', p.critMin || 20);
+    setVal('im-crit-mult', p.critMult || 2);
+    setVal('im-action', p.action === 'Standard / Full Attack' ? 'Standard Action' : (p.action || 'Passive'));
+    setVal('im-weight', p.weight !== undefined ? p.weight : 0);
+    setVal('im-cost', p.cost !== undefined ? p.cost : 0);
+    const chk2h = document.getElementById('im-flag-two-hand-str');
+    if (chk2h) chk2h.checked = presetKey === 'weapon2h';
+
+    const modList = document.getElementById('im-modifiers-list');
+    if (modList) {
+      modList.innerHTML = '';
+      if (presetKey === 'shield') {
+        this.addInlineManualModifierRow({ target: 'ac.shield', value: 2, type: 'Shield' });
+      } else if (presetKey === 'armor') {
+        this.addInlineManualModifierRow({ target: 'ac.armor', value: 4, type: 'Armor' });
+      } else if (presetKey === 'wondrous') {
+        this.addInlineManualModifierRow({ target: 'save.all', value: 1, type: 'Resistance' });
+      } else {
+        this.addInlineManualModifierRow({ target: 'ability.str', value: '', type: p.bonusType || 'Enhancement' });
+      }
+    }
+  },
+
+  buildInlineManualV2Entry() {
+    const rawName = (document.getElementById('im-name')?.value || '').trim();
+    const typeVal = this.capitalizeIdentifier(document.getElementById('im-type')?.value || 'Weapon');
+    const slotVal = this.capitalizeIdentifier(document.getElementById('im-slot')?.value || 'None');
+    const sourceVal = (document.getElementById('im-source')?.value || 'PHB p.').trim();
+    const diceVal = (document.getElementById('im-dice')?.value || '').trim();
+    const dmgTypeVal = this.capitalizeIdentifier(document.getElementById('im-dmg-type')?.value || 'Slashing');
+    const critMinVal = Number(document.getElementById('im-crit-min')?.value) || 20;
+    const critMultVal = Number(document.getElementById('im-crit-mult')?.value) || 2;
+    const actVal = document.getElementById('im-action')?.value || 'Passive';
+    const costVal = Number(document.getElementById('im-cost')?.value) || 0;
+    const weightVal = Number(document.getElementById('im-weight')?.value) || 0;
+    const chargesVal = parseInt(document.getElementById('im-charges')?.value);
+    const prereqVal = (document.getElementById('im-prereq')?.value || '-').trim();
+    const benefitVal = (document.getElementById('im-benefit')?.value || '').trim();
+
+    const baseObj = this.createEmptyEntry(typeVal);
+    const modifiers = [];
+    document.querySelectorAll('#im-modifiers-list .im-mod-row').forEach(row => {
+      const target = row.querySelector('.im-mod-target')?.value || 'ability.str';
+      const rawVal = row.querySelector('.im-mod-value')?.value;
+      const type = row.querySelector('.im-mod-type')?.value || 'Enhancement';
+      const cond = (row.querySelector('.im-mod-cond')?.value || '').trim() || null;
+      if (rawVal !== '' && rawVal !== undefined && !isNaN(Number(rawVal)) && Number(rawVal) !== 0) {
+        modifiers.push({ target, value: Number(rawVal), type, condition: cond });
+      }
+    });
+
+    const damageParts = [];
+    if (diceVal) {
+      const atkDmgMod = modifiers.find(m => m.target === 'damage.all' || m.target === 'damage.melee');
+      damageParts.push({
+        dice: diceVal,
+        bonus: typeVal === 'Weapon' && atkDmgMod ? Number(atkDmgMod.value) || 0 : 0,
+        type: dmgTypeVal,
+        multiplyOnCrit: typeVal === 'Weapon',
+        onCritOnly: false,
+        source: typeVal === 'Weapon' ? 'Base Weapon' : 'Primary'
+      });
+    }
+
+    const ruleFlags = {};
+    if (document.getElementById('im-flag-touch')?.checked) ruleFlags.touchAttack = true;
+    if (document.getElementById('im-flag-keen')?.checked) ruleFlags.critThreatDoubled = true;
+    if (document.getElementById('im-flag-adamantine')?.checked) ruleFlags.adamantine = true;
+    if (document.getElementById('im-flag-two-hand-str')?.checked || slotVal === 'Two-Handed') {
+      ruleFlags.twoHandedStrengthMultiplier = true;
+    }
+
+    const entry = Object.assign({}, baseObj, {
+      schemaVersion: 2,
+      name: this.capitalizeTitle(rawName),
+      type: typeVal,
+      slot: slotVal,
+      source: sourceVal,
+      prereq: prereqVal,
+      benefit: benefitVal,
+      description: benefitVal,
+      action: actVal,
+      actionType: this.deriveActionType(actVal, typeVal).toLowerCase(),
+      weight: weightVal,
+      cost: costVal,
+      modifiers,
+      damageParts,
+      ruleFlags
+    });
+
+    if (!isNaN(chargesVal) && chargesVal > 0) {
+      entry.dailyCharges = { current: chargesVal, max: chargesVal, unit: 'charges', recharge: 'long_rest' };
+    }
+    if (typeVal === 'Weapon') {
+      entry.weaponStats = {
+        category: 'Martial',
+        handedness: slotVal === 'Two-Handed' ? 'Two-Handed' : 'One-Handed',
+        baseDamage: diceVal || '1d8',
+        critMin: critMinVal,
+        critMult: critMultVal,
+        damageTypes: dmgTypeVal.split('/').map(s => s.trim()).filter(Boolean),
+        rangeIncrement: 0,
+        finessable: false,
+        isLight: false
+      };
+    } else if (typeVal === 'Armor' || typeVal === 'Shield') {
+      const acMod = modifiers.find(m => String(m.target).startsWith('ac'));
+      entry.armorStats = {
+        category: typeVal === 'Shield' ? 'Shield' : 'Light',
+        baseAc: acMod ? Number(acMod.value) || 0 : (typeVal === 'Shield' ? 2 : 4),
+        maxDex: typeVal === 'Shield' ? null : 4,
+        acp: typeVal === 'Shield' ? -1 : -2,
+        asf: typeVal === 'Shield' ? 5 : 20,
+        speed30: 30,
+        speed20: 20
+      };
+    }
+
+    return this.ensureV2(entry);
+  },
+
+  openAdvancedModalFromInlineManual() {
+    const draft = this.buildInlineManualV2Entry();
+    this.openModalWithData(draft, -1);
+  },
+
+  saveInlineManualEntry(alsoEquip = false) {
+    const v2Entry = this.buildInlineManualV2Entry();
+    if (!v2Entry.name || !v2Entry.name.trim()) {
+      alert('⚠️ Please enter a Rule / Item Name first.');
+      document.getElementById('im-name')?.focus();
+      return;
+    }
+    if (this.saveEntry(v2Entry, -1)) {
+      if (alsoEquip) {
+        this.equipItem(v2Entry);
+      } else {
+        alert(`✅ "${v2Entry.name}" saved to Character Custom DB!`);
+      }
+      const nameEl = document.getElementById('im-name');
+      if (nameEl) nameEl.value = '';
+      const benEl = document.getElementById('im-benefit');
+      if (benEl) benEl.value = '';
     }
   },
 

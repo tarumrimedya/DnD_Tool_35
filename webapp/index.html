@@ -2310,7 +2310,7 @@
                 <span>⚒️</span>
                 <span class="truncate">The Forge</span>
               </button>
-              <button id="btn-inline-mode-manual" type="button" onclick="RuleMaster.openModalWithData(RuleMaster.createEmptyEntry('Weapon'), -1)" class="w-full py-2 px-2.5 rounded-lg font-bold transition text-slate-300 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-800 flex items-center justify-center gap-1.5 cursor-pointer">
+              <button id="btn-inline-mode-manual" type="button" onclick="RuleMaster.switchInlineMode('manual')" class="w-full py-2 px-2.5 rounded-lg font-bold transition text-slate-400 hover:text-white flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>✏️</span>
                 <span class="truncate">Manual Rule</span>
               </button>
@@ -2418,6 +2418,192 @@
 
               <!-- Live Assembled V2 Item Preview -->
               <div id="mdb-forge-preview-card" class="bg-slate-950 border border-amber-500/40 rounded-xl p-3 space-y-2.5 shadow-inner"></div>
+            </div>
+
+            <!-- MODE 4: MANUAL V2 RULE & ITEM BUILDER (INLINE SYMMETRICAL) -->
+            <div id="inline-mode-manual" class="hidden space-y-3 text-xs">
+              <!-- Symmetrical 8-Column Quick Presets Grid -->
+              <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-1.5 w-full">
+                <button type="button" onclick="RuleMaster.applyInlineManualPreset('weapon')" class="w-full py-1.5 px-2 rounded-lg bg-rose-950/70 text-rose-300 border border-rose-800 hover:bg-rose-900 font-semibold text-[10px] transition truncate cursor-pointer">🗡️ 1H Weapon</button>
+                <button type="button" onclick="RuleMaster.applyInlineManualPreset('weapon2h')" class="w-full py-1.5 px-2 rounded-lg bg-red-950/70 text-red-300 border border-red-800 hover:bg-red-900 font-semibold text-[10px] transition truncate cursor-pointer">⚔️ 2H Weapon</button>
+                <button type="button" onclick="RuleMaster.applyInlineManualPreset('shield')" class="w-full py-1.5 px-2 rounded-lg bg-sky-950/70 text-sky-300 border border-sky-800 hover:bg-sky-900 font-semibold text-[10px] transition truncate cursor-pointer">🛡️ Shield</button>
+                <button type="button" onclick="RuleMaster.applyInlineManualPreset('armor')" class="w-full py-1.5 px-2 rounded-lg bg-blue-950/70 text-blue-300 border border-blue-800 hover:bg-blue-900 font-semibold text-[10px] transition truncate cursor-pointer">🥋 Armor</button>
+                <button type="button" onclick="RuleMaster.applyInlineManualPreset('feat')" class="w-full py-1.5 px-2 rounded-lg bg-amber-950/70 text-amber-300 border border-amber-800 hover:bg-amber-900 font-semibold text-[10px] transition truncate cursor-pointer">✨ Feat</button>
+                <button type="button" onclick="RuleMaster.applyInlineManualPreset('spell')" class="w-full py-1.5 px-2 rounded-lg bg-purple-950/70 text-purple-300 border border-purple-800 hover:bg-purple-900 font-semibold text-[10px] transition truncate cursor-pointer">🔮 Spell</button>
+                <button type="button" onclick="RuleMaster.applyInlineManualPreset('maneuver')" class="w-full py-1.5 px-2 rounded-lg bg-indigo-950/70 text-indigo-300 border border-indigo-800 hover:bg-indigo-900 font-semibold text-[10px] transition truncate cursor-pointer">⚔️ Maneuver</button>
+                <button type="button" onclick="RuleMaster.applyInlineManualPreset('wondrous')" class="w-full py-1.5 px-2 rounded-lg bg-teal-950/70 text-teal-300 border border-teal-800 hover:bg-teal-900 font-semibold text-[10px] transition truncate cursor-pointer">👑 Wondrous</button>
+              </div>
+
+              <!-- Row 1: Core V2 Identification (25% x 4 Symmetrical Grid) -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-2.5 bg-slate-950/80 border border-slate-800 rounded-xl p-3">
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">1. Rule / Item Name *</label>
+                  <input type="text" id="im-name" placeholder="e.g., Cloak of Resistance +2, Leap Attack" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-white font-bold focus:outline-none focus:border-purple-400">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">2. Category (V2 Type) *</label>
+                  <select id="im-type" onchange="RuleMaster.onInlineManualTypeChange()" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-white focus:outline-none focus:border-purple-400">
+                    <option value="Weapon">Weapon</option>
+                    <option value="Shield">Shield</option>
+                    <option value="Armor">Armor</option>
+                    <option value="Feat">Feat</option>
+                    <option value="Spell">Spell</option>
+                    <option value="Maneuver">Maneuver</option>
+                    <option value="Stance">Stance</option>
+                    <option value="Wondrous Item">Wondrous Item</option>
+                    <option value="Ring">Ring</option>
+                    <option value="Potion">Potion</option>
+                    <option value="Slotless Item">Slotless Item</option>
+                    <option value="Special Ability">Special Ability (Class Feature)</option>
+                    <option value="DM Grant">DM Grant / Boon</option>
+                    <option value="Flaw">Flaw</option>
+                    <option value="Race">Race</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">3. Body Slot</label>
+                  <select id="im-slot" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-white focus:outline-none focus:border-purple-400">
+                    <option value="None">None (Slotless / Feat / Spell)</option>
+                    <option value="Main Hand">Main Hand (Primary Weapon)</option>
+                    <option value="Two-Handed">Two-Handed Weapon</option>
+                    <option value="Off-Hand/Shield">Off-Hand / Shield</option>
+                    <option value="Armor">Armor Slot</option>
+                    <option value="Head">Head / Headband</option>
+                    <option value="Eyes">Eyes / Goggles</option>
+                    <option value="Neck">Neck / Amulet</option>
+                    <option value="Torso">Torso / Vest</option>
+                    <option value="Shoulders">Shoulders / Cloak</option>
+                    <option value="Arms">Arms / Bracers</option>
+                    <option value="Hands">Hands / Gloves</option>
+                    <option value="Ring">Ring</option>
+                    <option value="Waist">Waist / Belt</option>
+                    <option value="Feet">Feet / Boots</option>
+                    <option value="Slotless">Slotless (Carried)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">4. Sourcebook &amp; Page</label>
+                  <input type="text" id="im-source" value="PHB p." placeholder="e.g., PHB p.98, MIC p.88" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-white font-mono focus:outline-none focus:border-purple-400">
+                </div>
+              </div>
+
+              <!-- Row 2: Canonical V2 Universal Modifiers Array Builder (modifiers[]) -->
+              <div class="bg-slate-950/80 border border-emerald-500/30 rounded-xl p-3 space-y-2">
+                <div class="flex items-center justify-between gap-2">
+                  <div>
+                    <span class="text-[11px] font-extrabold text-emerald-400 uppercase tracking-wide">📊 Canonical V2 Stat Modifiers (modifiers[])</span>
+                    <span class="text-[10px] text-slate-400 ml-1.5 hidden sm:inline">Add multiple modifiers with independent D&amp;D 3.5e stacking types</span>
+                  </div>
+                  <button type="button" onclick="RuleMaster.addInlineManualModifierRow()" class="px-2.5 py-1 rounded-lg bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 font-bold text-[10px] transition cursor-pointer shrink-0">+ Add Stat Modifier</button>
+                </div>
+                <div id="im-modifiers-list" class="space-y-1.5"></div>
+              </div>
+
+              <!-- Row 3: Canonical V2 Damage Parts & Combat Mechanics (25% x 4 Symmetrical Grid) -->
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 bg-slate-950/80 border border-slate-800 rounded-xl p-3">
+                <div>
+                  <label class="block text-[10px] font-bold text-rose-400 uppercase mb-1">Damage / Effect Dice</label>
+                  <input type="text" id="im-dice" placeholder="e.g., 1d8, 2d6, 6d6" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-amber-300 font-mono focus:outline-none focus:border-rose-400">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-rose-400 uppercase mb-1">Damage Type</label>
+                  <select id="im-dmg-type" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-white focus:outline-none focus:border-rose-400">
+                    <option value="Slashing">Slashing</option>
+                    <option value="Piercing">Piercing</option>
+                    <option value="Bludgeoning">Bludgeoning</option>
+                    <option value="Slashing/Piercing">Slashing / Piercing</option>
+                    <option value="Fire">Fire</option>
+                    <option value="Cold">Cold</option>
+                    <option value="Electricity">Electricity</option>
+                    <option value="Acid">Acid</option>
+                    <option value="Sonic">Sonic</option>
+                    <option value="Force">Force</option>
+                    <option value="Positive">Positive Energy</option>
+                    <option value="Negative">Negative Energy</option>
+                    <option value="Untyped">Untyped</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-rose-400 uppercase mb-1">Crit Threat / Mult</label>
+                  <div class="grid grid-cols-2 gap-1.5">
+                    <input type="number" id="im-crit-min" value="20" min="15" max="20" title="Crit Threat Min (e.g., 19)" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2 text-center text-xs text-white font-mono">
+                    <input type="number" id="im-crit-mult" value="2" min="2" max="4" title="Crit Multiplier (e.g., 2)" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2 text-center text-xs text-white font-mono">
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-rose-400 uppercase mb-1">Action Type</label>
+                  <select id="im-action" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-white focus:outline-none focus:border-rose-400">
+                    <option value="Passive">Passive (Continuous)</option>
+                    <option value="Standard Action">Standard Action</option>
+                    <option value="Full-Round Action">Full-Round Action</option>
+                    <option value="Swift Action">Swift Action</option>
+                    <option value="Immediate Action">Immediate Action</option>
+                    <option value="Move Action">Move Action</option>
+                    <option value="Free Action">Free Action</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Row 4: Economy, Charges & V2 Rule Flags (25% x 4 Symmetrical Grids) -->
+              <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-3 space-y-2.5">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Market Price (gp)</label>
+                    <input type="number" id="im-cost" value="0" step="1" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-amber-400 font-mono">
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Weight (lb.)</label>
+                    <input type="number" id="im-weight" value="0" step="0.5" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-white font-mono">
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Max Daily Charges</label>
+                    <input type="number" id="im-charges" min="0" max="100" placeholder="Blank = Unlimited" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-amber-300 font-mono">
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Prerequisites / Duration</label>
+                    <input type="text" id="im-prereq" placeholder="e.g., Str 13, BAB +1 or 1 rd/lvl" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-white">
+                  </div>
+                </div>
+
+                <!-- Symmetrical 4-Column Rule Engine Flags -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-slate-800/80 text-[11px] text-slate-300">
+                  <label class="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-900 border border-slate-800 hover:border-purple-500/50 cursor-pointer select-none">
+                    <input type="checkbox" id="im-flag-touch" class="rounded bg-slate-950 border-slate-700 text-purple-600">
+                    <span class="truncate">🎯 Touch Attack</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-900 border border-slate-800 hover:border-purple-500/50 cursor-pointer select-none">
+                    <input type="checkbox" id="im-flag-keen" class="rounded bg-slate-950 border-slate-700 text-purple-600">
+                    <span class="truncate">⚡ Keen (2× Crit)</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-900 border border-slate-800 hover:border-purple-500/50 cursor-pointer select-none">
+                    <input type="checkbox" id="im-flag-adamantine" class="rounded bg-slate-950 border-slate-700 text-purple-600">
+                    <span class="truncate">🛡️ Bypass DR (Adamantine)</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-900 border border-slate-800 hover:border-purple-500/50 cursor-pointer select-none">
+                    <input type="checkbox" id="im-flag-two-hand-str" class="rounded bg-slate-950 border-slate-700 text-purple-600">
+                    <span class="truncate">💪 1.5× STR (2-Hand)</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Row 5: Description & Symmetrical 3-Column Action Bar -->
+              <div class="space-y-2">
+                <textarea id="im-benefit" rows="2" placeholder="Description &amp; D&amp;D 3.5e RAW mechanical benefit..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-purple-400"></textarea>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <button type="button" onclick="RuleMaster.openAdvancedModalFromInlineManual()" class="w-full h-10 rounded-lg bg-slate-900 hover:bg-slate-800 text-purple-300 border border-purple-500/40 font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5">
+                    <span>🛠️</span>
+                    <span>Advanced Full V2 Editor</span>
+                  </button>
+                  <button type="button" onclick="RuleMaster.saveInlineManualEntry(false)" class="w-full h-10 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5">
+                    <span>📥</span>
+                    <span>Save to Custom DB</span>
+                  </button>
+                  <button type="button" onclick="RuleMaster.saveInlineManualEntry(true)" class="w-full h-10 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-black text-xs shadow transition cursor-pointer flex items-center justify-center gap-1.5">
+                    <span>⚡</span>
+                    <span>Save &amp; Equip to Character</span>
+                  </button>
+                </div>
+              </div>
             </div>
 
             <!-- Status / Loading Indicator -->
@@ -6525,34 +6711,40 @@
         <button onclick="RuleMaster.closeModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg text-xs font-bold transition">✕ Close</button>
       </div>
 
-      <!-- Quick Template Presets Bar -->
-      <div class="bg-slate-900/90 px-4 py-2 border-b border-slate-800 flex items-center gap-1.5 overflow-x-auto text-xs">
-        <span class="text-[11px] text-slate-400 font-bold shrink-0">Quick Presets:</span>
-        <button onclick="RuleMaster.applyPreset('weapon')" class="px-2.5 py-1 rounded bg-rose-950/70 text-rose-300 border border-rose-800 hover:bg-rose-900 font-semibold text-[11px] shrink-0">🗡️ Weapon (1-Hand)</button>
-        <button onclick="RuleMaster.applyPreset('weapon2h')" class="px-2.5 py-1 rounded bg-red-950/70 text-red-300 border border-red-800 hover:bg-red-900 font-semibold text-[11px] shrink-0">⚔️ Two-Handed Weapon</button>
-        <button onclick="RuleMaster.applyPreset('shield')" class="px-2.5 py-1 rounded bg-sky-950/70 text-sky-300 border border-sky-800 hover:bg-sky-900 font-semibold text-[11px] shrink-0">🛡️ Shield</button>
-        <button onclick="RuleMaster.applyPreset('armor')" class="px-2.5 py-1 rounded bg-blue-950/70 text-blue-300 border border-blue-800 hover:bg-blue-900 font-semibold text-[11px] shrink-0">🥋 Armor</button>
-        <button onclick="RuleMaster.applyPreset('feat')" class="px-2.5 py-1 rounded bg-amber-950/70 text-amber-300 border border-amber-800 hover:bg-amber-900 font-semibold text-[11px] shrink-0">✨ Feat</button>
-        <button onclick="RuleMaster.applyPreset('spell')" class="px-2.5 py-1 rounded bg-purple-950/70 text-purple-300 border border-purple-800 hover:bg-purple-900 font-semibold text-[11px] shrink-0">🔮 Spell</button>
-        <button onclick="RuleMaster.applyPreset('maneuver')" class="px-2.5 py-1 rounded bg-rose-950/70 text-rose-300 border border-rose-800 hover:bg-rose-900 font-semibold text-[11px] shrink-0">⚔️ Maneuver</button>
-        <button onclick="RuleMaster.applyPreset('stance')" class="px-2.5 py-1 rounded bg-indigo-950/70 text-indigo-300 border border-indigo-800 hover:bg-indigo-900 font-semibold text-[11px] shrink-0">⚡ Stance</button>
-        <button onclick="RuleMaster.applyPreset('wondrous')" class="px-2.5 py-1 rounded bg-teal-950/70 text-teal-300 border border-teal-800 hover:bg-teal-900 font-semibold text-[11px] shrink-0">👑 Wondrous Item</button>
-        <button onclick="RuleMaster.applyPreset('potion')" class="px-2.5 py-1 rounded bg-emerald-950/70 text-emerald-300 border border-emerald-800 hover:bg-emerald-900 font-semibold text-[11px] shrink-0">🧪 Potion</button>
+      <!-- Symmetrical 5-Column x 2-Row Quick Template Presets Grid -->
+      <div class="bg-slate-900/90 px-4 py-2.5 border-b border-slate-800 space-y-1.5 text-xs">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">⚡ Quick V2 Presets</span>
+          <span class="text-[10px] text-purple-300 font-mono">Canonical V2 Schema</span>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-1.5 w-full">
+          <button type="button" onclick="RuleMaster.applyPreset('weapon')" class="w-full px-2 py-1.5 rounded-lg bg-rose-950/70 text-rose-300 border border-rose-800 hover:bg-rose-900 font-semibold text-[11px] truncate cursor-pointer">🗡️ 1-Hand Weapon</button>
+          <button type="button" onclick="RuleMaster.applyPreset('weapon2h')" class="w-full px-2 py-1.5 rounded-lg bg-red-950/70 text-red-300 border border-red-800 hover:bg-red-900 font-semibold text-[11px] truncate cursor-pointer">⚔️ 2-Hand Weapon</button>
+          <button type="button" onclick="RuleMaster.applyPreset('shield')" class="w-full px-2 py-1.5 rounded-lg bg-sky-950/70 text-sky-300 border border-sky-800 hover:bg-sky-900 font-semibold text-[11px] truncate cursor-pointer">🛡️ Shield</button>
+          <button type="button" onclick="RuleMaster.applyPreset('armor')" class="w-full px-2 py-1.5 rounded-lg bg-blue-950/70 text-blue-300 border border-blue-800 hover:bg-blue-900 font-semibold text-[11px] truncate cursor-pointer">🥋 Armor</button>
+          <button type="button" onclick="RuleMaster.applyPreset('feat')" class="w-full px-2 py-1.5 rounded-lg bg-amber-950/70 text-amber-300 border border-amber-800 hover:bg-amber-900 font-semibold text-[11px] truncate cursor-pointer">✨ Feat</button>
+          <button type="button" onclick="RuleMaster.applyPreset('spell')" class="w-full px-2 py-1.5 rounded-lg bg-purple-950/70 text-purple-300 border border-purple-800 hover:bg-purple-900 font-semibold text-[11px] truncate cursor-pointer">🔮 Spell</button>
+          <button type="button" onclick="RuleMaster.applyPreset('maneuver')" class="w-full px-2 py-1.5 rounded-lg bg-rose-950/70 text-rose-300 border border-rose-800 hover:bg-rose-900 font-semibold text-[11px] truncate cursor-pointer">⚔️ Maneuver</button>
+          <button type="button" onclick="RuleMaster.applyPreset('stance')" class="w-full px-2 py-1.5 rounded-lg bg-indigo-950/70 text-indigo-300 border border-indigo-800 hover:bg-indigo-900 font-semibold text-[11px] truncate cursor-pointer">⚡ Stance</button>
+          <button type="button" onclick="RuleMaster.applyPreset('wondrous')" class="w-full px-2 py-1.5 rounded-lg bg-teal-950/70 text-teal-300 border border-teal-800 hover:bg-teal-900 font-semibold text-[11px] truncate cursor-pointer">👑 Wondrous Item</button>
+          <button type="button" onclick="RuleMaster.applyPreset('potion')" class="w-full px-2 py-1.5 rounded-lg bg-emerald-950/70 text-emerald-300 border border-emerald-800 hover:bg-emerald-900 font-semibold text-[11px] truncate cursor-pointer">🧪 Potion</button>
+        </div>
       </div>
 
       <!-- Modal Body (Form Fields) -->
       <div class="p-4 overflow-y-auto space-y-4 flex-1 text-xs">
         
-        <!-- SECTION 1: TEMEL BİLGİLER -->
+        <!-- SECTION 1: CORE V2 IDENTIFICATION (SYMMETRICAL 4-COL + 3-COL) -->
         <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 space-y-2.5">
-          <div class="text-[11px] font-bold text-purple-400 uppercase tracking-wide">1. Core Identification</div>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+          <div class="text-[11px] font-bold text-purple-400 uppercase tracking-wide">1. Core V2 Identification</div>
+          <input type="hidden" id="rf-parent" value="-">
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
             <div>
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Rule / Item Name *</label>
               <input type="text" id="rf-name" placeholder="e.g., Rapier +2, Power Attack, Haste" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold focus:border-purple-500">
             </div>
             <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Category *</label>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Category (V2 Type) *</label>
               <select id="rf-type" onchange="RuleMaster.onTypeChange()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
                 <option value="Weapon">Weapon</option>
                 <option value="Shield">Shield</option>
@@ -6566,7 +6758,6 @@
                 <option value="Potion">Potion</option>
                 <option value="Slotless Item">Slotless Item</option>
                 <option value="Special Ability">Special Ability (Class Feature)</option>
-                <option value="Active Power">Active Power (Child Power)</option>
                 <option value="DM Grant">DM Grant / Boon</option>
                 <option value="Flaw">Flaw</option>
                 <option value="Race">Race</option>
@@ -6594,20 +6785,16 @@
                 <option value="Slotless">Slotless (Carried / Passive)</option>
               </select>
             </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Sourcebook &amp; Page</label>
+              <input type="text" id="rf-source" value="PHB p." placeholder="e.g., PHB p.98, ToB p.69" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
+            </div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-5 gap-2.5">
-            <div class="relative">
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Parent Entry</label>
-              <input type="text" id="rf-parent" autocomplete="off" value="-" placeholder="Parent item name or '-'" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-purple-300 font-mono">
-            </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5">
             <div>
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Prerequisites</label>
               <input type="text" id="rf-prereq" value="-" placeholder="e.g., Str 13, BAB +1, or '-'" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Sourcebook & Page</label>
-              <input type="text" id="rf-source" value="PHB p." placeholder="e.g., PHB p.98, ToB p.69" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
             </div>
             <div>
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Combat Role</label>
@@ -6709,9 +6896,9 @@
           </div>
         </div>
 
-        <!-- SECTION 5: DÖVÜŞ, EYLEM & PARAMETRELER -->
+        <!-- SECTION 5: DÖVÜŞ, EYLEM & PARAMETRELER (SYMMETRICAL 4-COL + 2-COL) -->
         <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 space-y-2">
-          <div class="text-[11px] font-bold text-rose-400 uppercase tracking-wide">5. Combat Mechanics, Action & Cost</div>
+          <div class="text-[11px] font-bold text-rose-400 uppercase tracking-wide">5. Combat Mechanics, Action &amp; Cost</div>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5">
             <div>
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Damage Dice</label>
@@ -6719,10 +6906,9 @@
             </div>
             <div>
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Critical Threat / Multiplier</label>
-              <div class="flex items-center gap-1">
-                <input type="number" id="rf-crit-min" value="20" min="15" max="20" class="w-16 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-center text-xs text-white font-mono">
-                <span class="text-slate-400">/ x</span>
-                <input type="number" id="rf-crit-mult" value="2" min="2" max="4" class="w-14 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-center text-xs text-white font-mono">
+              <div class="grid grid-cols-2 gap-1.5">
+                <input type="number" id="rf-crit-min" value="20" min="15" max="20" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-center text-xs text-white font-mono">
+                <input type="number" id="rf-crit-mult" value="2" min="2" max="4" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-center text-xs text-white font-mono">
               </div>
             </div>
             <div>
@@ -6756,20 +6942,20 @@
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Cost (GP)</label>
               <input type="number" id="rf-cost" value="10" step="1" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-amber-400 font-mono">
             </div>
-            <div class="relative">
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Discipline / Spell School</label>
-              <input type="text" id="rf-discipline" autocomplete="off" placeholder="Iron Heart, Evocation, etc." class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-purple-300">
-            </div>
-          </div>
-          
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-2.5 pt-1">
-            <div class="relative">
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Spell School</label>
-              <input type="text" id="rf-school" autocomplete="off" placeholder="Transmutation, Evocation" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
-            </div>
             <div>
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Spell / Maneuver Level</label>
               <input type="number" id="rf-level" min="0" max="9" placeholder="0-9" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white font-mono">
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+            <div class="relative">
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Discipline (Tome of Battle)</label>
+              <input type="text" id="rf-discipline" autocomplete="off" placeholder="Iron Heart, Shadow Hand, etc." class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-purple-300">
+            </div>
+            <div class="relative">
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Spell School</label>
+              <input type="text" id="rf-school" autocomplete="off" placeholder="Transmutation, Evocation, etc." class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
             </div>
           </div>
         </div>
@@ -6997,10 +7183,11 @@
 
       </div>
 
-      <!-- Modal Footer -->
-      <div class="bg-slate-950 px-4 py-3 border-t border-slate-800 flex items-center justify-between">
-        <button onclick="RuleMaster.closeModal()" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition">Cancel</button>
-        <button onclick="RuleMaster.submitModal()" class="px-6 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg transition">💾 Save to Master DB</button>
+      <!-- Modal Footer (Symmetrical 3-Column Action Grid) -->
+      <div class="bg-slate-950 px-4 py-3 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-2 w-full">
+        <button type="button" onclick="RuleMaster.closeModal()" class="w-full h-10 px-4 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-1.5">✕ Cancel</button>
+        <button type="button" onclick="RuleMaster.submitModal(false)" class="w-full h-10 px-4 rounded-lg bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5">📥 Save to Custom DB</button>
+        <button type="button" onclick="RuleMaster.submitModal(true)" class="w-full h-10 px-4 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg transition cursor-pointer flex items-center justify-center gap-1.5">⚡ Save &amp; Equip to Character</button>
       </div>
 
     </div>
