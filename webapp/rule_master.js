@@ -1776,12 +1776,14 @@ const RuleMaster = {
     try {
       savedSubTab = localStorage.getItem('dnd35_active_mdb_subtab');
     } catch (e) {}
+    if (savedSubTab === 'subtab-mdb-tree') savedSubTab = 'subtab-mdb-list';
     if (savedSubTab && document.getElementById(savedSubTab)) {
       this.switchSubTab(savedSubTab);
     } else {
       this.renderTable();
     }
     this.updateApiKeyUi();
+    this.populateInlineForgeControls();
   },
 
   // ====================================================
@@ -4306,8 +4308,10 @@ Return valid JSON only matching:
   },
 
   closeInlineAiAdder() {
-    const panel = document.getElementById('inline-ai-adder-panel');
-    if (panel) panel.classList.add('hidden');
+    const resultsBox = document.getElementById('inline-ai-results-box');
+    if (resultsBox) resultsBox.innerHTML = '';
+    const loadingBox = document.getElementById('inline-ai-loading-box');
+    if (loadingBox) loadingBox.classList.add('hidden');
   },
 
   setInlineQueryAndSearch(term, categoryHint = 'ALL') {
@@ -4512,31 +4516,224 @@ Return valid JSON only matching:
   },
 
   // ====================================================
-  // SERBEST METİN (FREE-TEXT) AI AYRIŞTIRICI ENGINE (CANONICAL V2)
+  // SERBEST METİN (FREE-TEXT) AI & THE FORGE INLINE ENGINE (CANONICAL V2)
   // ====================================================
   switchInlineMode(mode) {
     const searchPanel = document.getElementById('inline-mode-search');
     const freetextPanel = document.getElementById('inline-mode-freetext');
+    const forgePanel = document.getElementById('inline-mode-forge');
     const btnSearch = document.getElementById('btn-inline-mode-search');
     const btnFreetext = document.getElementById('btn-inline-mode-freetext');
+    const btnForge = document.getElementById('btn-inline-mode-forge');
     const headerTitle = document.getElementById('inline-panel-header-title');
 
+    const activeCls = 'w-full py-2 px-2.5 rounded-lg font-bold transition bg-purple-600 text-white shadow flex items-center justify-center gap-1.5 cursor-pointer';
+    const activeForgeCls = 'w-full py-2 px-2.5 rounded-lg font-bold transition bg-amber-500 text-slate-950 shadow flex items-center justify-center gap-1.5 cursor-pointer';
+    const inactiveCls = 'w-full py-2 px-2.5 rounded-lg font-bold transition text-slate-400 hover:text-white flex items-center justify-center gap-1.5 cursor-pointer';
+    const inactiveForgeCls = 'w-full py-2 px-2.5 rounded-lg font-bold transition text-amber-300 hover:text-white flex items-center justify-center gap-1.5 cursor-pointer';
+
+    if (searchPanel) searchPanel.classList.toggle('hidden', mode !== 'search');
+    if (freetextPanel) freetextPanel.classList.toggle('hidden', mode !== 'freetext');
+    if (forgePanel) forgePanel.classList.toggle('hidden', mode !== 'forge');
+
+    if (btnSearch) btnSearch.className = mode === 'search' ? activeCls : inactiveCls;
+    if (btnFreetext) btnFreetext.className = mode === 'freetext' ? activeCls : inactiveCls;
+    if (btnForge) btnForge.className = mode === 'forge' ? activeForgeCls : inactiveForgeCls;
+
     if (mode === 'freetext') {
-      if (searchPanel) searchPanel.classList.add('hidden');
-      if (freetextPanel) freetextPanel.classList.remove('hidden');
-      if (btnSearch) btnSearch.className = 'px-2.5 py-1 rounded font-bold transition text-slate-400 hover:text-white';
-      if (btnFreetext) btnFreetext.className = 'px-2.5 py-1 rounded font-bold transition bg-purple-600 text-white shadow';
-      if (headerTitle) headerTitle.textContent = '🧙‍♂️🤖 Rule Master (AI) Free-Text Parser';
+      if (headerTitle) headerTitle.textContent = 'Rule Master (AI) Free-Text Parser';
       const ta = document.getElementById('inline-ai-freetext-input');
       if (ta) ta.focus();
+    } else if (mode === 'forge') {
+      if (headerTitle) headerTitle.textContent = 'The Forge — V2 Modular Item Builder';
+      this.populateInlineForgeControls();
+      this.updateInlineForgePreview();
     } else {
-      if (searchPanel) searchPanel.classList.remove('hidden');
-      if (freetextPanel) freetextPanel.classList.add('hidden');
-      if (btnSearch) btnSearch.className = 'px-2.5 py-1 rounded font-bold transition bg-purple-600 text-white shadow';
-      if (btnFreetext) btnFreetext.className = 'px-2.5 py-1 rounded font-bold transition text-slate-400 hover:text-white';
-      if (headerTitle) headerTitle.textContent = 'Quick 🧙‍♂️🤖 Rule Master (AI) Rule Adder';
+      if (headerTitle) headerTitle.textContent = 'Rule Master (AI) & The Forge';
       const q = document.getElementById('inline-ai-rule-query');
       if (q) q.focus();
+    }
+  },
+
+  async populateInlineForgeControls() {
+    const baseSel = document.getElementById('mdb-forge-base-select');
+    const enhGrid = document.getElementById('mdb-forge-enhancements-grid');
+    if (!baseSel || !enhGrid) return;
+
+    if (window.SrdCompendium && typeof window.SrdCompendium.init === 'function') {
+      if (typeof window.SrdCompendium.isReady !== 'function' || !window.SrdCompendium.isReady()) {
+        try { await window.SrdCompendium.init(); } catch (_) {}
+      }
+    }
+
+    let baseOptions = [];
+    if (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function') {
+      baseOptions = window.SrdCompendium.getAllLoaded(['Weapon', 'Armor', 'Shield']);
+    }
+    if (!baseOptions || baseOptions.length === 0) {
+      baseOptions = [
+        { id: 'wpn-longsword', name: 'Longsword (1d8, 19-20/x2)', type: 'Weapon' },
+        { id: 'wpn-greatsword', name: 'Greatsword (2d6, 19-20/x2)', type: 'Weapon' },
+        { id: 'wpn-scimitar', name: 'Scimitar (1d6, 18-20/x2)', type: 'Weapon' },
+        { id: 'wpn-rapier', name: 'Rapier (1d6, 18-20/x2)', type: 'Weapon' },
+        { id: 'wpn-greataxe', name: 'Greataxe (1d12, x3)', type: 'Weapon' },
+        { id: 'wpn-warhammer', name: 'Warhammer (1d8, x3)', type: 'Weapon' },
+        { id: 'wpn-dagger', name: 'Dagger (1d4, 19-20/x2)', type: 'Weapon' },
+        { id: 'wpn-composite-longbow', name: 'Composite Longbow (1d8, x3)', type: 'Weapon' },
+        { id: 'arm-chain-shirt', name: 'Chain Shirt (+4 AC)', type: 'Armor' },
+        { id: 'arm-breastplate', name: 'Breastplate (+5 AC)', type: 'Armor' },
+        { id: 'arm-full-plate', name: 'Full Plate (+8 AC)', type: 'Armor' },
+        { id: 'shd-heavy-steel-shield', name: 'Heavy Steel Shield (+2 AC)', type: 'Shield' }
+      ];
+    }
+
+    if (!baseSel.options.length || baseSel.options.length <= 12) {
+      const prevVal = baseSel.value;
+      baseSel.innerHTML = baseOptions.slice(0, 120).map(item =>
+        `<option value="${item.id}">${item.name} (${item.type || item.category || 'Gear'})</option>`
+      ).join('');
+      if (prevVal) baseSel.value = prevVal;
+    }
+
+    if (!enhGrid.children.length) {
+      const ENH_LIST = [
+        { id: 'enh-keen', label: '⚡ Keen (2× Crit)', bonusEq: '+1' },
+        { id: 'enh-flaming', label: '🔥 Flaming (+1d6)', bonusEq: '+1' },
+        { id: 'enh-flaming-burst', label: '🔥 Flaming Burst', bonusEq: '+2' },
+        { id: 'enh-frost', label: '❄️ Frost (+1d6)', bonusEq: '+1' },
+        { id: 'enh-icy-burst', label: '❄️ Icy Burst', bonusEq: '+2' },
+        { id: 'enh-shock', label: '⚡ Shock (+1d6)', bonusEq: '+1' },
+        { id: 'enh-shocking-burst', label: '⚡ Shocking Burst', bonusEq: '+2' },
+        { id: 'enh-corrosive', label: '🧪 Acidic (+1d6)', bonusEq: '+1' },
+        { id: 'enh-holy', label: '☀️ Holy (+2d6 vs Evil)', bonusEq: '+2' },
+        { id: 'enh-unholy', label: '💀 Unholy (+2d6 vs Good)', bonusEq: '+2' },
+        { id: 'enh-ghost-touch', label: '👻 Ghost Touch', bonusEq: '+1' },
+        { id: 'enh-speed', label: '⚡ Speed (+1 Atk)', bonusEq: '+3' },
+        { id: 'enh-vorpal', label: '🗡️ Vorpal (Nat 20)', bonusEq: '+5' },
+        { id: 'enh-wounding', label: '🩸 Wounding (1 CON)', bonusEq: '+2' },
+        { id: 'enh-fortification-light', label: '🛡️ Fortification 25%', bonusEq: '+1' },
+        { id: 'enh-fortification-moderate', label: '🛡️ Fortification 75%', bonusEq: '+3' }
+      ];
+
+      enhGrid.innerHTML = ENH_LIST.map(e => `
+        <label class="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-900 border border-slate-800 hover:border-amber-500/50 cursor-pointer select-none">
+          <input type="checkbox" value="${e.id}" onchange="RuleMaster.updateInlineForgePreview()" class="mdb-forge-enh-chk rounded text-amber-500 bg-slate-950 border-slate-700">
+          <span class="text-[11px] font-semibold text-slate-200 truncate">${e.label}</span>
+          <span class="text-[9px] font-mono text-amber-400 ml-auto">${e.bonusEq}</span>
+        </label>
+      `).join('');
+    }
+  },
+
+  getSelectedInlineForgeItem() {
+    if (!window.ItemAssembler) return null;
+    const nlVal = (document.getElementById('mdb-forge-nl-input')?.value || '').trim();
+    if (nlVal.length >= 4 && typeof window.ItemAssembler.parseNaturalLanguageItem === 'function') {
+      try {
+        const parsed = window.ItemAssembler.parseNaturalLanguageItem(nlVal);
+        if (parsed) return parsed;
+      } catch (_) {}
+    }
+
+    const baseId = document.getElementById('mdb-forge-base-select')?.value || 'wpn-longsword';
+    const matId = document.getElementById('mdb-forge-material-select')?.value || '';
+    const enhBonus = Number(document.getElementById('mdb-forge-enh-bonus')?.value) || 0;
+    const checkedEnhs = Array.from(document.querySelectorAll('.mdb-forge-enh-chk:checked')).map(el => el.value);
+
+    const assembleFn = window.ItemAssembler.assemble || window.ItemAssembler.assembleItem;
+    if (typeof assembleFn !== 'function') return null;
+    try {
+      return assembleFn.call(window.ItemAssembler, {
+        baseItemId: baseId,
+        material: matId || null,
+        enhancementBonus: enhBonus,
+        enhancements: checkedEnhs,
+        masterwork: enhBonus > 0 || Boolean(matId)
+      });
+    } catch (_) {
+      return null;
+    }
+  },
+
+  updateInlineForgePreview() {
+    const container = document.getElementById('mdb-forge-preview-card');
+    if (!container) return;
+    const item = this.getSelectedInlineForgeItem();
+    if (!item) {
+      container.innerHTML = `<div class="text-slate-500 italic p-3 text-center">Select a base item above to preview.</div>`;
+      return;
+    }
+
+    const dmgBadges = (window.DnDUI && typeof window.DnDUI.renderDamagePartsBadges === 'function') ? window.DnDUI.renderDamagePartsBadges(item.damageParts) : '';
+    const modBadges = (window.DnDUI && typeof window.DnDUI.renderModifiersBadges === 'function') ? window.DnDUI.renderModifiersBadges(item.modifiers) : '';
+    const tacBadges = (window.DnDUI && typeof window.DnDUI.renderTacticalBadges === 'function') ? window.DnDUI.renderTacticalBadges(item) : '';
+
+    container.innerHTML = `
+      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2.5">
+        <div class="min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-mono font-bold">V2 ASSEMBLED ITEM</span>
+            <span class="text-[10px] font-mono text-slate-400 truncate">ID: ${item.id}</span>
+          </div>
+          <h4 class="text-sm sm:text-base font-black text-white mt-0.5 truncate">${item.name}</h4>
+        </div>
+        <div class="flex items-center gap-3 text-right shrink-0">
+          <div>
+            <div class="text-[9px] text-slate-400 uppercase font-bold">Market Price</div>
+            <div class="text-xs sm:text-sm font-black font-mono text-amber-400">${Number(item.priceGp ?? item.cost ?? 0).toLocaleString('en-US')} gp</div>
+          </div>
+          <div>
+            <div class="text-[9px] text-slate-400 uppercase font-bold">Weight</div>
+            <div class="text-xs sm:text-sm font-bold font-mono text-slate-200">${item.weightLb ?? item.weight ?? 0} lb.</div>
+          </div>
+        </div>
+      </div>
+
+      ${(dmgBadges || modBadges || tacBadges) ? `
+        <div class="space-y-1.5">
+          ${dmgBadges ? `<div class="flex flex-wrap items-center gap-1"><span class="text-[10px] text-slate-400 uppercase font-bold mr-1">Damage:</span>${dmgBadges}</div>` : ''}
+          ${modBadges ? `<div class="flex flex-wrap items-center gap-1"><span class="text-[10px] text-slate-400 uppercase font-bold mr-1">Modifiers:</span>${modBadges}</div>` : ''}
+          ${tacBadges ? `<div class="flex flex-wrap items-center gap-1"><span class="text-[10px] text-slate-400 uppercase font-bold mr-1">Tactical:</span>${tacBadges}</div>` : ''}
+        </div>
+      ` : ''}
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-slate-800">
+        <button type="button" onclick="RuleMaster.saveInlineForgeItem(false)" class="w-full h-10 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5">
+          <span>📥</span>
+          <span>Save to Custom DB</span>
+        </button>
+        <button type="button" onclick="RuleMaster.saveInlineForgeItem(true)" class="w-full h-10 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs shadow transition cursor-pointer flex items-center justify-center gap-1.5">
+          <span>⚒️</span>
+          <span>Save &amp; Equip to Character</span>
+        </button>
+      </div>
+    `;
+  },
+
+  saveInlineForgeItem(alsoEquip = false) {
+    const rawItem = this.getSelectedInlineForgeItem();
+    if (!rawItem) return;
+    const item = this.ensureV2(JSON.parse(JSON.stringify(rawItem)));
+
+    const existsIdx = masterDb.findIndex(m => (m.id && m.id === item.id) || (m.name || '').toLowerCase().trim() === (item.name || '').toLowerCase().trim());
+    if (existsIdx >= 0) {
+      masterDb[existsIdx] = item;
+    } else {
+      masterDb.unshift(item);
+    }
+
+    if (alsoEquip) {
+      if (typeof addV2ItemToCharacterGearPool === 'function') {
+        addV2ItemToCharacterGearPool(item);
+      } else {
+        this.equipItem(item.id);
+      }
+    }
+
+    if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+    this.renderTable();
+    if (!alsoEquip) {
+      alert(`✅ "${item.name}" saved to Character Custom DB!`);
     }
   },
 
