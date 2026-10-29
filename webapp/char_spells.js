@@ -262,7 +262,7 @@
       const classesStatus = checkCharacterMagicClasses();
       const intVal = character?.stats?.INT?.value ?? character?.abilities?.int ?? 10;
       const intMod = character?.stats?.INT?.mod ?? Math.floor((intVal - 10) / 2);
-      const clMode = character?.settings?.clMode || 'Character Level (DM Boon)';
+      const clMode = character?.settings?.clMode || 'Class Level';
       const prog = character?.levelProgression || [];
       const activeLevels = prog.filter(p => p.active !== false).length || Number(character?.level) || 0;
       const wizLvls = prog.filter(p => p.active !== false && ['wizard', 'artificer', 'archivist', 'wu jen'].includes((p.className || p.class || '').toLowerCase())).length;
@@ -280,7 +280,7 @@
       const classesStatus = checkCharacterMagicClasses();
       const wisVal = character?.stats?.WIS?.value ?? character?.abilities?.wis ?? 10;
       const wisMod = character?.stats?.WIS?.mod ?? Math.floor((wisVal - 10) / 2);
-      const clMode = character?.settings?.clMode || 'Character Level (DM Boon)';
+      const clMode = character?.settings?.clMode || 'Class Level';
       const prog = character?.levelProgression || [];
       const activeLevels = prog.filter(p => p.active !== false).length || Number(character?.level) || 0;
       const divLvls = prog.filter(p => p.active !== false && ['cleric', 'druid', 'paladin', 'ranger', 'favored soul'].includes((p.className || p.class || '').toLowerCase())).length;
@@ -4607,7 +4607,7 @@
         return;
       }
       if (!character.settings) character.settings = {};
-      const clMode = character.settings.clMode || 'Character Level (DM Boon)';
+      const clMode = character.settings.clMode || 'Class Level';
       const cType = character.settings.casterType || 'spontaneous';
       const isBoon = clMode === 'Character Level (DM Boon)' || clMode.includes('Warlock Boon');
       const prog = character.levelProgression || [];

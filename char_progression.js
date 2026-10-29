@@ -6044,7 +6044,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       }
       const clModeSel = document.getElementById('setting-cl-mode');
       if (clModeSel) {
-        clModeSel.value = character.settings?.clMode || 'Character Level (DM Boon)';
+        clModeSel.value = character.settings?.clMode || 'Class Level';
       }
       const casterTypeSel = document.getElementById('setting-caster-type');
       if (casterTypeSel) {

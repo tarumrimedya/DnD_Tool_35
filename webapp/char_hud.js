@@ -551,7 +551,7 @@
         },
         settings: summary.settings || {
           pinDrawerLimit: 5,
-          clMode: 'Character Level (DM Boon)',
+          clMode: 'Class Level',
           babSaveSystem: 'standard'
         },
         customDb: Array.isArray(summary.customDb) ? summary.customDb : []
@@ -1433,7 +1433,7 @@
       }
       const clModeSel = document.getElementById('setting-cl-mode');
       if (clModeSel) {
-        clModeSel.value = character.settings?.clMode || 'Character Level (DM Boon)';
+        clModeSel.value = character.settings?.clMode || 'Class Level';
       }
       const casterTypeSel = document.getElementById('setting-caster-type');
       if (casterTypeSel) {
