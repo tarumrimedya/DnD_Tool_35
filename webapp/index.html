@@ -2244,7 +2244,7 @@
     <div id="tab-database" class="tab-content hidden space-y-4">
       <div class="bg-dndCard border border-dndBorder rounded-xl p-4 shadow-lg space-y-4">
         
-        <!-- Header & Sub-Navigation -->
+        <!-- Header -->
         <div class="flex flex-col border-b border-dndBorder pb-3 gap-3">
           <div class="flex items-center justify-between gap-2">
             <div class="flex items-center gap-2.5 min-w-0">
@@ -2255,37 +2255,10 @@
               </div>
             </div>
           </div>
-          <!-- Sub-Tab Buttons (5 Equal Symmetrical Category Views) -->
-          <div class="grid grid-cols-2 sm:grid-cols-5 gap-1.5 bg-slate-900 p-1.5 rounded-xl border border-slate-800 w-full">
-            <button onclick="RuleMaster.switchSubTab('subtab-mdb-list')" id="btn-subtab-mdb-list" class="mdb-subtab-btn col-span-2 sm:col-span-1 w-full py-2 px-2.5 rounded-lg text-xs font-bold bg-purple-700 text-white shadow transition flex items-center justify-center gap-1.5 cursor-pointer">
-              <span>📑</span>
-              <span class="truncate">All Entries</span>
-            </button>
-            <button onclick="RuleMaster.switchSubTab('subtab-mdb-weapons')" id="btn-subtab-mdb-weapons" class="mdb-subtab-btn w-full py-2 px-2.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5 cursor-pointer">
-              <span>⚔️</span>
-              <span class="truncate">Weapons &amp; Armor</span>
-            </button>
-            <button onclick="RuleMaster.switchSubTab('subtab-mdb-magic')" id="btn-subtab-mdb-magic" class="mdb-subtab-btn w-full py-2 px-2.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5 cursor-pointer">
-              <span>🔮</span>
-              <span class="truncate">Spells &amp; Maneuvers</span>
-            </button>
-            <button onclick="RuleMaster.switchSubTab('subtab-mdb-feats')" id="btn-subtab-mdb-feats" class="mdb-subtab-btn w-full py-2 px-2.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5 cursor-pointer">
-              <span>🎖️</span>
-              <span class="truncate">Feats</span>
-            </button>
-            <button onclick="RuleMaster.switchSubTab('subtab-mdb-items')" id="btn-subtab-mdb-items" class="mdb-subtab-btn w-full py-2 px-2.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5 cursor-pointer">
-              <span>💍</span>
-              <span class="truncate">Magic Items</span>
-            </button>
-          </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- SUB-TAB 1: MASTER DB TABLE & CRUD MANAGER -->
-        <!-- ========================================== -->
-        <div id="subtab-mdb-list" class="mdb-subtab-content space-y-3.5">
-          <!-- PERMANENT RULE MASTER AI & THE FORGE WORKSPACE -->
-          <div id="inline-ai-adder-panel" class="bg-slate-900/95 border-2 border-purple-500/60 rounded-xl p-3.5 sm:p-4 shadow-2xl space-y-3.5 transition-all">
+        <!-- PERMANENT RULE MASTER AI & THE FORGE WORKSPACE (Always Visible Across All Category Filters) -->
+        <div id="inline-ai-adder-panel" class="bg-slate-900/95 border-2 border-purple-500/60 rounded-xl p-3.5 sm:p-4 shadow-2xl space-y-3.5 transition-all">
             <!-- Header -->
             <div class="flex items-center justify-between pb-2.5 border-b border-purple-500/30 gap-2">
               <div class="flex items-center gap-2.5 min-w-0">
@@ -2662,6 +2635,35 @@
             <!-- Results Preview Container -->
             <div id="inline-ai-results-box" class="space-y-2"></div>
           </div>
+
+          <!-- Category Filter Bar (5 Equal Symmetrical Views Directly Above Custom DB List) -->
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-1.5 bg-slate-900 p-1.5 rounded-xl border border-slate-800 w-full">
+            <button onclick="RuleMaster.switchSubTab('subtab-mdb-list')" id="btn-subtab-mdb-list" class="mdb-subtab-btn col-span-2 sm:col-span-1 w-full py-2 px-2.5 rounded-lg text-xs font-bold bg-purple-700 text-white shadow transition flex items-center justify-center gap-1.5 cursor-pointer">
+              <span>📑</span>
+              <span class="truncate">All Entries</span>
+            </button>
+            <button onclick="RuleMaster.switchSubTab('subtab-mdb-weapons')" id="btn-subtab-mdb-weapons" class="mdb-subtab-btn w-full py-2 px-2.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5 cursor-pointer">
+              <span>⚔️</span>
+              <span class="truncate">Weapons &amp; Armor</span>
+            </button>
+            <button onclick="RuleMaster.switchSubTab('subtab-mdb-magic')" id="btn-subtab-mdb-magic" class="mdb-subtab-btn w-full py-2 px-2.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5 cursor-pointer">
+              <span>🔮</span>
+              <span class="truncate">Spells &amp; Maneuvers</span>
+            </button>
+            <button onclick="RuleMaster.switchSubTab('subtab-mdb-feats')" id="btn-subtab-mdb-feats" class="mdb-subtab-btn w-full py-2 px-2.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5 cursor-pointer">
+              <span>🎖️</span>
+              <span class="truncate">Feats</span>
+            </button>
+            <button onclick="RuleMaster.switchSubTab('subtab-mdb-items')" id="btn-subtab-mdb-items" class="mdb-subtab-btn w-full py-2 px-2.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5 cursor-pointer">
+              <span>💍</span>
+              <span class="truncate">Magic Items</span>
+            </button>
+          </div>
+
+          <!-- ========================================== -->
+          <!-- SUB-TAB 1: MASTER DB TABLE & CRUD MANAGER -->
+          <!-- ========================================== -->
+          <div id="subtab-mdb-list" class="mdb-subtab-content space-y-3.5">
 
           <!-- Simplified Symmetrical Search & Category Filter Row -->
           <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">

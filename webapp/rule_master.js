@@ -970,8 +970,7 @@ const RuleMaster = {
     const v2 = this.ensureV2(entry ? JSON.parse(JSON.stringify(entry)) : this.createEmptyEntry('Weapon'));
     this._currentEditingEntry = v2;
 
-    // Ensure Master DB tab and Inline Manual Rule mode are visible
-    this.switchSubTab('subtab-mdb-list');
+    // Ensure Inline Manual Rule mode is visible (Rule Master panel is permanently visible above all filters)
     this.switchInlineMode('manual');
 
     const setVal = (id, v) => {
