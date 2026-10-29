@@ -115,7 +115,7 @@
                   <span id="char-classes-display" class="break-words font-medium">Loading...</span>
                   <span id="core-classes" class="hidden">--</span>
                 </div>
-                <button type="button" onclick="if(typeof switchTab==='function') switchTab('tab-core'); setTimeout(()=>{ const el=document.getElementById('char-smart-notes-container'); if(el) el.scrollIntoView({behavior:'smooth', block:'start'}); }, 60);" class="px-2.5 sm:px-3 py-1 rounded-lg bg-amber-600/20 hover:bg-amber-600/35 text-amber-300 border border-amber-500/40 font-sans font-bold text-xs shadow flex items-center gap-1.5 transition transform active:scale-95 cursor-pointer shrink-0" title="Go to Smart Character & Campaign Notes (Mindmap + AI Chronicler)">
+                <button type="button" onclick="if(window.HubNotes && typeof HubNotes.openCharacterNotebookModal==='function') HubNotes.openCharacterNotebookModal('editor'); else if(window.HubNotes) HubNotes.openFullNotesModal(null, 'editor');" class="px-2.5 sm:px-3 py-1 rounded-lg bg-amber-600/20 hover:bg-amber-600/35 text-amber-300 border border-amber-500/40 font-sans font-bold text-xs shadow flex items-center gap-1.5 transition transform active:scale-95 cursor-pointer shrink-0" title="Open Smart Character &amp; Campaign Notebook (Notes, Mindmap &amp; AI Chronicler)">
                   <span>📝</span>
                   <span>Smart Notes &amp; Mindmap</span>
                 </button>
@@ -1672,9 +1672,6 @@
             </table>
           </div>
         </div>
-
-        <!-- 📜 SMART CHARACTER & CAMPAIGN NOTES (HubNotes Shared Module: Mindmap + AI Scribe + Cloud Sync) -->
-        <div id="char-smart-notes-container" class="mt-4"></div>
 
       </div>
     </div>

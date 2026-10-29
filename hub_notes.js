@@ -189,30 +189,81 @@
    * 4. If all/fallback: First character or first campaign
    * 5. Safe creation fallback: Ensures notes can ALWAYS be written
    */
+  function resolveStandaloneHubChar(standaloneChar, state) {
+    if (!standaloneChar || !state || !Array.isArray(state.characters)) return null;
+    let urlId = null;
+    try {
+      urlId = new URLSearchParams(window.location.search).get('id') || localStorage.getItem('dnd35_active_character_id');
+    } catch (e) {}
+    const charHubId = standaloneChar._hubId || standaloneChar.id || urlId;
+    const charNameLower = (standaloneChar.name || '').trim().toLowerCase();
+    return state.characters.find(c =>
+      (charHubId && c.id === charHubId) ||
+      (standaloneChar.id && c.id === standaloneChar.id) ||
+      (charNameLower && (c.name || '').trim().toLowerCase() === charNameLower)
+    ) || null;
+  }
+
+  function reconcileCharacterAndHubNotes(standaloneChar, hubMatch) {
+    const charList = ensureSmartNotesArray(standaloneChar);
+    if (!hubMatch) return charList;
+    const hubList = ensureSmartNotesArray(hubMatch);
+
+    const charTs = Number(standaloneChar._notesUpdatedAt || 0);
+    const hubTs = Number(hubMatch._notesUpdatedAt || hubMatch.fullData?._notesUpdatedAt || 0);
+
+    let resolved = charList;
+    if (hubTs > charTs) {
+      resolved = hubList;
+    } else if (charTs > hubTs) {
+      resolved = charList;
+    } else if (hubList.length > 0 && charList.length === 0) {
+      resolved = hubList;
+    } else if (charList.length > 0 && hubList.length === 0) {
+      resolved = charList;
+    } else if (hubList.length > 0 && charList.length > 0) {
+      const mergedMap = new Map();
+      [...charList, ...hubList].forEach(n => {
+        if (!n || !n.id) return;
+        const prev = mergedMap.get(n.id);
+        if (!prev || (Number(n.updatedAt || 0) >= Number(prev.updatedAt || 0))) {
+          mergedMap.set(n.id, n);
+        }
+      });
+      resolved = Array.from(mergedMap.values());
+    }
+
+    const syncedTs = Math.max(charTs, hubTs);
+    standaloneChar.smartNotes = resolved;
+    standaloneChar.notesList = resolved;
+    if (syncedTs > 0) standaloneChar._notesUpdatedAt = syncedTs;
+
+    hubMatch.smartNotes = resolved;
+    hubMatch.notesList = resolved;
+    if (syncedTs > 0) hubMatch._notesUpdatedAt = syncedTs;
+    if (hubMatch.fullData && typeof hubMatch.fullData === 'object') {
+      hubMatch.fullData.smartNotes = resolved;
+      hubMatch.fullData.notesList = resolved;
+      if (syncedTs > 0) hubMatch.fullData._notesUpdatedAt = syncedTs;
+    }
+    return resolved;
+  }
+
   function getActiveNotesTarget() {
     const standaloneChar = getStandaloneCharacterInstance();
     const state = getHubState();
 
     // Standalone Character Sheet Mode (index.html)
     if (standaloneChar && !_overrideTargetKey) {
-      let list = ensureSmartNotesArray(standaloneChar);
-      // Reconcile with dnd35_hub_db if hub entry has newer/additional notes and standalone is empty
-      if (list.length === 0 && state && Array.isArray(state.characters)) {
-        const hubMatch = state.characters.find(c =>
-          (standaloneChar.id && c.id === standaloneChar.id) ||
-          (standaloneChar.name && c.name === standaloneChar.name)
-        );
-        if (hubMatch) {
-          const hubList = ensureSmartNotesArray(hubMatch);
-          if (hubList.length > 0) {
-            list = hubList;
-            standaloneChar.smartNotes = list;
-            standaloneChar.notesList = list;
-          }
-        }
-      }
-      const charId = standaloneChar.id || 'active_char';
-      const charName = standaloneChar.name || 'Character';
+      const hubMatch = resolveStandaloneHubChar(standaloneChar, state);
+      const list = reconcileCharacterAndHubNotes(standaloneChar, hubMatch);
+      let urlId = null;
+      try {
+        urlId = new URLSearchParams(window.location.search).get('id') || localStorage.getItem('dnd35_active_character_id');
+      } catch (e) {}
+      const charId = hubMatch?.id || standaloneChar._hubId || standaloneChar.id || urlId || 'active_char';
+      if (!standaloneChar._hubId && hubMatch?.id) standaloneChar._hubId = hubMatch.id;
+      const charName = standaloneChar.name || hubMatch?.name || 'Character';
       return {
         type: 'character',
         id: charId,
@@ -227,9 +278,10 @@
     if (!state) {
       if (standaloneChar) {
         const list = ensureSmartNotesArray(standaloneChar);
+        const charId = standaloneChar._hubId || standaloneChar.id || 'active_char';
         return {
           type: 'character',
-          id: standaloneChar.id || 'active_char',
+          id: charId,
           name: standaloneChar.name || 'Character',
           isDm: false,
           titleBadge: `👤 ${standaloneChar.name || 'Character'} Notes`,
@@ -265,12 +317,14 @@
           };
         }
       } else if (type === 'char') {
-        if (standaloneChar && (standaloneChar.id === id || id === 'active_char')) {
-          const list = ensureSmartNotesArray(standaloneChar);
+        const hubMatchForStandalone = resolveStandaloneHubChar(standaloneChar, state);
+        if (standaloneChar && (standaloneChar.id === id || standaloneChar._hubId === id || hubMatchForStandalone?.id === id || id === 'active_char')) {
+          const list = reconcileCharacterAndHubNotes(standaloneChar, hubMatchForStandalone);
+          const resolvedId = hubMatchForStandalone?.id || standaloneChar._hubId || standaloneChar.id || 'active_char';
           return {
             type: 'character',
-            id: standaloneChar.id || 'active_char',
-            name: standaloneChar.name || 'Character',
+            id: resolvedId,
+            name: standaloneChar.name || hubMatchForStandalone?.name || 'Character',
             isDm: false,
             titleBadge: `👤 ${standaloneChar.name || 'Character'} Notes`,
             targetObj: standaloneChar,
@@ -455,44 +509,54 @@
     const state = getHubState();
     const standaloneChar = getStandaloneCharacterInstance();
     const plainSummary = formatPlainNotesSummary(target.notesList);
+    const nowTs = Date.now();
 
     // 0. targetObj referansını V2 `smartNotes` + `notesList` + `notes` ile daima senkronize tut
     if (target.targetObj) {
       target.targetObj.smartNotes = target.notesList || [];
       target.targetObj.notesList = target.notesList || [];
       target.targetObj.notes = plainSummary;
+      target.targetObj._notesUpdatedAt = nowTs;
       if (target.targetObj.fullData && typeof target.targetObj.fullData === 'object') {
         target.targetObj.fullData.smartNotes = target.notesList || [];
         target.targetObj.fullData.notesList = target.notesList || [];
         target.targetObj.fullData.notes = plainSummary;
+        target.targetObj.fullData._notesUpdatedAt = nowTs;
       }
     }
 
-    // 1. Standalone Karakter Kâğıdı (`index.html`) üzerinde çalışıyorsa
-    if (standaloneChar && target.type === 'character') {
-      standaloneChar.smartNotes = target.notesList || [];
-      standaloneChar.notesList = target.notesList || [];
-      standaloneChar.notes = plainSummary;
-      if (typeof window.saveStateToStorage === 'function') {
-        try { window.saveStateToStorage(false); } catch (e) {}
-      }
-    }
+    const hubMatchForStandalone = resolveStandaloneHubChar(standaloneChar, state);
+    const isTargetStandaloneChar = Boolean(
+      standaloneChar &&
+      target.type === 'character' &&
+      (target.targetObj === standaloneChar ||
+       target.id === standaloneChar.id ||
+       target.id === standaloneChar._hubId ||
+       (hubMatchForStandalone && target.id === hubMatchForStandalone.id) ||
+       target.id === 'active_char' ||
+       (target.name && standaloneChar.name && target.name.trim().toLowerCase() === standaloneChar.name.trim().toLowerCase()))
+    );
 
-    // 2. HUB State (`dnd35_hub_db`) Depolaması & Eşleştirme
+    // 1. HUB State (`dnd35_hub_db`) Depolaması & Eşleştirme
     if (state) {
       if (target.type === 'character' && Array.isArray(state.characters)) {
-        const hubChar = state.characters.find(c =>
-          (target.id && c.id === target.id) ||
-          (target.name && c.name === target.name)
-        );
+        const targetNameLower = (target.name || '').trim().toLowerCase();
+        const hubChar = (isTargetStandaloneChar && hubMatchForStandalone)
+          ? hubMatchForStandalone
+          : state.characters.find(c =>
+              (target.id && c.id === target.id) ||
+              (targetNameLower && (c.name || '').trim().toLowerCase() === targetNameLower)
+            );
         if (hubChar) {
           hubChar.smartNotes = target.notesList || [];
           hubChar.notesList = target.notesList || [];
           hubChar.notes = plainSummary;
+          hubChar._notesUpdatedAt = nowTs;
           if (hubChar.fullData && typeof hubChar.fullData === 'object') {
             hubChar.fullData.smartNotes = target.notesList || [];
             hubChar.fullData.notesList = target.notesList || [];
             hubChar.fullData.notes = plainSummary;
+            hubChar.fullData._notesUpdatedAt = nowTs;
           }
         }
       }
@@ -511,6 +575,17 @@
       }
     }
 
+    // 2. Standalone Karakter Kâğıdı (`index.html`) üzerinde çalışıyorsa
+    if (isTargetStandaloneChar) {
+      standaloneChar.smartNotes = target.notesList || [];
+      standaloneChar.notesList = target.notesList || [];
+      standaloneChar.notes = plainSummary;
+      standaloneChar._notesUpdatedAt = nowTs;
+      if (typeof window.saveStateToStorage === 'function') {
+        try { window.saveStateToStorage(true); } catch (e) {}
+      }
+    }
+
     // 3. Karakter ise dnd35_character & dnd35_character_v2 ile Çapraz Senkronizasyon (Kural #6)
     if (target.type === 'character') {
       ['dnd35_character', 'dnd35_character_v2'].forEach(storageKey => {
@@ -518,10 +593,17 @@
           const charRaw = localStorage.getItem(storageKey);
           if (charRaw) {
             const activeChar = JSON.parse(charRaw);
-            if (activeChar && (activeChar.id === target.id || activeChar.name === target.name || target.id === 'active_char')) {
+            const isMatch = activeChar && (
+              activeChar.id === target.id ||
+              activeChar._hubId === target.id ||
+              (activeChar.name && target.name && activeChar.name.trim().toLowerCase() === target.name.trim().toLowerCase()) ||
+              target.id === 'active_char'
+            );
+            if (isMatch) {
               activeChar.smartNotes = target.notesList || [];
               activeChar.notesList = target.notesList || [];
               activeChar.notes = plainSummary;
+              activeChar._notesUpdatedAt = nowTs;
               localStorage.setItem(storageKey, JSON.stringify(activeChar));
             }
           }
@@ -889,6 +971,15 @@
     switchModalView(initialView || 'editor');
     renderFullNotesModalList();
     loadSelectedNoteIntoEditor();
+  }
+
+  /**
+   * Open the Smart Campaign Notebook modal directly scoped to the active character on `index.html`,
+   * reconciling notes bidirectionally with `dnd35_hub_db` first.
+   */
+  function openCharacterNotebookModal(initialView = 'editor') {
+    _overrideTargetKey = null;
+    openFullNotesModal(null, initialView || 'editor');
   }
 
   function closeFullNotesModal() {
@@ -2796,6 +2887,7 @@ RULES:
     toggleCompleteNote,
     deleteNote,
     openFullNotesModal,
+    openCharacterNotebookModal,
     closeFullNotesModal,
     selectNoteInModal,
     handleEditorInput,
@@ -2823,6 +2915,24 @@ RULES:
     saveAiSynthesisAsNote,
     copyAiSynthesisToClipboard
   };
+
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'dnd35_hub_db' || e.key === 'dnd35_character' || e.key === 'dnd35_character_v2') {
+      try {
+        renderInlineNotes();
+        const modal = document.getElementById('hub-full-notes-modal');
+        if (modal && !modal.classList.contains('hidden')) {
+          const target = getActiveNotesTarget();
+          if (target && target.notesList.length > 0 && !_selectedModalNoteId) {
+            _selectedModalNoteId = target.notesList[0].id;
+          }
+          renderFullNotesModalList();
+          loadSelectedNoteIntoEditor();
+          if (_activeModalView === 'mindmap') renderMindmap();
+        }
+      } catch (err) {}
+    }
+  });
 
   window.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {

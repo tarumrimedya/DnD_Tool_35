@@ -742,6 +742,9 @@
                 character.hp.temp = hubMatch.tempHp || 0;
                 character.hp._lastDmUpdateTs = hubHpTs;
               }
+              if (window.HubNotes && typeof window.HubNotes.getActiveNotesTarget === 'function') {
+                window.HubNotes.getActiveNotesTarget();
+              }
             }
           }
         }
@@ -1032,6 +1035,20 @@
                 hubChar.avatarUrl = hubChar.portrait;
                 hubChar.portraitPosition = character.portraitPosition || '50% 50%';
                 hubChar.portraitFit = character.portraitFit || '125%';
+              }
+              const hubNotesTs = Number(hubChar._notesUpdatedAt || hubChar.fullData?._notesUpdatedAt || 0);
+              const charNotesTs = Number(character._notesUpdatedAt || 0);
+              if (hubNotesTs > charNotesTs && Array.isArray(hubChar.smartNotes)) {
+                character.smartNotes = hubChar.smartNotes;
+                character.notesList = hubChar.smartNotes;
+                character.notes = hubChar.notes || '';
+                character._notesUpdatedAt = hubNotesTs;
+              } else if (Array.isArray(character.smartNotes) || Array.isArray(character.notesList)) {
+                const syncedNotes = character.smartNotes || character.notesList || [];
+                hubChar.smartNotes = syncedNotes;
+                hubChar.notesList = syncedNotes;
+                hubChar.notes = character.notes || '';
+                if (charNotesTs > 0) hubChar._notesUpdatedAt = charNotesTs;
               }
               hubChar.fullData = character;
               localStorage.setItem('dnd35_hub_db', JSON.stringify(hubDb));
@@ -2064,8 +2081,11 @@
       if (typeof renderMasterDbTable === 'function') {
         try { renderMasterDbTable(); } catch (e) { console.error('renderMasterDbTable error:', e); }
       }
-      if (window.HubNotes && typeof window.HubNotes.mountCharacterNotesWidget === 'function') {
-        try { window.HubNotes.mountCharacterNotesWidget('char-smart-notes-container'); } catch (e) { console.error('HubNotes widget error:', e); }
+      if (window.HubNotes) {
+        try {
+          if (typeof window.HubNotes.ensureModalDom === 'function') window.HubNotes.ensureModalDom();
+          if (typeof window.HubNotes.getActiveNotesTarget === 'function') window.HubNotes.getActiveNotesTarget();
+        } catch (e) { console.error('HubNotes modal init error:', e); }
       }
       try { renderDiceHistory(); } catch (e) { console.error('renderDiceHistory error:', e); }
     }
