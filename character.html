@@ -2422,6 +2422,15 @@
 
             <!-- MODE 4: MANUAL V2 RULE & ITEM BUILDER (INLINE SYMMETRICAL) -->
             <div id="inline-mode-manual" class="hidden space-y-3 text-xs">
+              <!-- Active Editing Banner (Shown when editing an existing entry from table or AI results) -->
+              <div id="im-editing-banner" class="hidden bg-amber-950/60 border border-amber-500/60 rounded-xl px-3 py-2 flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="text-sm">✏️</span>
+                  <span id="im-editing-title" class="text-xs font-extrabold text-amber-200 truncate">Editing Entry</span>
+                </div>
+                <button type="button" onclick="RuleMaster.resetInlineManualForm()" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 text-[10px] font-bold transition cursor-pointer shrink-0">✕ Cancel Edit / New Entry</button>
+              </div>
+
               <!-- Symmetrical 8-Column Quick Presets Grid -->
               <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-1.5 w-full">
                 <button type="button" onclick="RuleMaster.applyInlineManualPreset('weapon')" class="w-full py-1.5 px-2 rounded-lg bg-rose-950/70 text-rose-300 border border-rose-800 hover:bg-rose-900 font-semibold text-[10px] transition truncate cursor-pointer">🗡️ 1H Weapon</button>
@@ -2484,6 +2493,46 @@
                 <div>
                   <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">4. Sourcebook &amp; Page</label>
                   <input type="text" id="im-source" value="PHB p." placeholder="e.g., PHB p.98, MIC p.88" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-white font-mono focus:outline-none focus:border-purple-400">
+                </div>
+              </div>
+
+              <!-- Contextual Armor/Shield Row (Symmetrical 4-Col, shown when Armor or Shield is selected) -->
+              <div id="im-panel-armor" class="hidden grid grid-cols-2 sm:grid-cols-4 gap-2.5 bg-slate-950/80 border border-sky-500/40 rounded-xl p-3">
+                <div>
+                  <label class="block text-[10px] font-bold text-sky-400 uppercase mb-1">Base Armor / Shield AC</label>
+                  <input type="number" id="im-armor-ac" value="4" min="0" max="20" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-sky-300 font-bold font-mono">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-sky-400 uppercase mb-1">Max Dex Bonus</label>
+                  <input type="number" id="im-max-dex" placeholder="Blank = Unlimited" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-white font-mono">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-sky-400 uppercase mb-1">Armor Check Penalty</label>
+                  <input type="number" id="im-acp" value="-2" max="0" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-rose-300 font-mono">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-sky-400 uppercase mb-1">Arcane Spell Failure (%)</label>
+                  <input type="number" id="im-asf" value="20" min="0" max="100" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-amber-300 font-mono">
+                </div>
+              </div>
+
+              <!-- Contextual Spell/Maneuver/Stance Row (Symmetrical 4-Col, shown when Spell/Maneuver/Stance is selected) -->
+              <div id="im-panel-spell" class="hidden grid grid-cols-2 sm:grid-cols-4 gap-2.5 bg-slate-950/80 border border-purple-500/40 rounded-xl p-3">
+                <div>
+                  <label class="block text-[10px] font-bold text-purple-300 uppercase mb-1">Spell / Maneuver Level</label>
+                  <input type="number" id="im-level" min="0" max="9" placeholder="0-9" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-amber-300 font-bold font-mono">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-purple-300 uppercase mb-1">School / Discipline</label>
+                  <input type="text" id="im-school-disc" placeholder="Evocation, Iron Heart..." class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-white">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-purple-300 uppercase mb-1">Saving Throw</label>
+                  <input type="text" id="im-save-type" placeholder="Reflex half, Will negates, None" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-emerald-300">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-purple-300 uppercase mb-1">Range / Area</label>
+                  <input type="text" id="im-spell-range" placeholder="Close, Touch, Personal, 20-ft" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-white">
                 </div>
               </div>
 
@@ -2586,21 +2635,17 @@
                 </div>
               </div>
 
-              <!-- Row 5: Description & Symmetrical 3-Column Action Bar -->
+              <!-- Row 5: Description & Symmetrical 2-Column Action Bar (50% / 50%) -->
               <div class="space-y-2">
                 <textarea id="im-benefit" rows="2" placeholder="Description &amp; D&amp;D 3.5e RAW mechanical benefit..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-purple-400"></textarea>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                  <button type="button" onclick="RuleMaster.openAdvancedModalFromInlineManual()" class="w-full h-10 rounded-lg bg-slate-900 hover:bg-slate-800 text-purple-300 border border-purple-500/40 font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5">
-                    <span>🛠️</span>
-                    <span>Advanced Full V2 Editor</span>
-                  </button>
-                  <button type="button" onclick="RuleMaster.saveInlineManualEntry(false)" class="w-full h-10 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <button type="button" id="btn-im-save-db" onclick="RuleMaster.saveInlineManualEntry(false)" class="w-full h-10 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5">
                     <span>📥</span>
-                    <span>Save to Custom DB</span>
+                    <span id="btn-im-save-db-label">Save to Custom DB</span>
                   </button>
-                  <button type="button" onclick="RuleMaster.saveInlineManualEntry(true)" class="w-full h-10 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-black text-xs shadow transition cursor-pointer flex items-center justify-center gap-1.5">
+                  <button type="button" id="btn-im-save-equip" onclick="RuleMaster.saveInlineManualEntry(true)" class="w-full h-10 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-black text-xs shadow transition cursor-pointer flex items-center justify-center gap-1.5">
                     <span>⚡</span>
-                    <span>Save &amp; Equip to Character</span>
+                    <span id="btn-im-save-equip-label">Save &amp; Equip to Character</span>
                   </button>
                 </div>
               </div>
@@ -6690,506 +6735,6 @@
           <button onclick="saveNewPoolItem()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition shadow">💾 Add to Gear Pool</button>
         </div>
       </div>
-    </div>
-  </div>
-
-  <!-- ==================================================== -->
-  <!-- MODAL: 29-COLUMN RULE & ITEM CRUD EDITOR -->
-  <!-- ==================================================== -->
-  <div id="rule-crud-modal" class="hidden fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
-    <div class="bg-dndCard border border-purple-500/60 rounded-2xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden my-auto">
-      
-      <!-- Modal Header -->
-      <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <span class="text-xl">🛠️</span>
-          <div>
-            <h3 id="rule-modal-title" class="text-sm md:text-base font-extrabold text-white">Add New Rule / Item</h3>
-            <p class="text-[10px] text-slate-400">Universal D&D 3.5e Rule & V2 Compendium Schema</p>
-          </div>
-        </div>
-        <button onclick="RuleMaster.closeModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg text-xs font-bold transition">✕ Close</button>
-      </div>
-
-      <!-- Symmetrical 5-Column x 2-Row Quick Template Presets Grid -->
-      <div class="bg-slate-900/90 px-4 py-2.5 border-b border-slate-800 space-y-1.5 text-xs">
-        <div class="flex items-center justify-between">
-          <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">⚡ Quick V2 Presets</span>
-          <span class="text-[10px] text-purple-300 font-mono">Canonical V2 Schema</span>
-        </div>
-        <div class="grid grid-cols-2 sm:grid-cols-5 gap-1.5 w-full">
-          <button type="button" onclick="RuleMaster.applyPreset('weapon')" class="w-full px-2 py-1.5 rounded-lg bg-rose-950/70 text-rose-300 border border-rose-800 hover:bg-rose-900 font-semibold text-[11px] truncate cursor-pointer">🗡️ 1-Hand Weapon</button>
-          <button type="button" onclick="RuleMaster.applyPreset('weapon2h')" class="w-full px-2 py-1.5 rounded-lg bg-red-950/70 text-red-300 border border-red-800 hover:bg-red-900 font-semibold text-[11px] truncate cursor-pointer">⚔️ 2-Hand Weapon</button>
-          <button type="button" onclick="RuleMaster.applyPreset('shield')" class="w-full px-2 py-1.5 rounded-lg bg-sky-950/70 text-sky-300 border border-sky-800 hover:bg-sky-900 font-semibold text-[11px] truncate cursor-pointer">🛡️ Shield</button>
-          <button type="button" onclick="RuleMaster.applyPreset('armor')" class="w-full px-2 py-1.5 rounded-lg bg-blue-950/70 text-blue-300 border border-blue-800 hover:bg-blue-900 font-semibold text-[11px] truncate cursor-pointer">🥋 Armor</button>
-          <button type="button" onclick="RuleMaster.applyPreset('feat')" class="w-full px-2 py-1.5 rounded-lg bg-amber-950/70 text-amber-300 border border-amber-800 hover:bg-amber-900 font-semibold text-[11px] truncate cursor-pointer">✨ Feat</button>
-          <button type="button" onclick="RuleMaster.applyPreset('spell')" class="w-full px-2 py-1.5 rounded-lg bg-purple-950/70 text-purple-300 border border-purple-800 hover:bg-purple-900 font-semibold text-[11px] truncate cursor-pointer">🔮 Spell</button>
-          <button type="button" onclick="RuleMaster.applyPreset('maneuver')" class="w-full px-2 py-1.5 rounded-lg bg-rose-950/70 text-rose-300 border border-rose-800 hover:bg-rose-900 font-semibold text-[11px] truncate cursor-pointer">⚔️ Maneuver</button>
-          <button type="button" onclick="RuleMaster.applyPreset('stance')" class="w-full px-2 py-1.5 rounded-lg bg-indigo-950/70 text-indigo-300 border border-indigo-800 hover:bg-indigo-900 font-semibold text-[11px] truncate cursor-pointer">⚡ Stance</button>
-          <button type="button" onclick="RuleMaster.applyPreset('wondrous')" class="w-full px-2 py-1.5 rounded-lg bg-teal-950/70 text-teal-300 border border-teal-800 hover:bg-teal-900 font-semibold text-[11px] truncate cursor-pointer">👑 Wondrous Item</button>
-          <button type="button" onclick="RuleMaster.applyPreset('potion')" class="w-full px-2 py-1.5 rounded-lg bg-emerald-950/70 text-emerald-300 border border-emerald-800 hover:bg-emerald-900 font-semibold text-[11px] truncate cursor-pointer">🧪 Potion</button>
-        </div>
-      </div>
-
-      <!-- Modal Body (Form Fields) -->
-      <div class="p-4 overflow-y-auto space-y-4 flex-1 text-xs">
-        
-        <!-- SECTION 1: CORE V2 IDENTIFICATION (SYMMETRICAL 4-COL + 3-COL) -->
-        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 space-y-2.5">
-          <div class="text-[11px] font-bold text-purple-400 uppercase tracking-wide">1. Core V2 Identification</div>
-          <input type="hidden" id="rf-parent" value="-">
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Rule / Item Name *</label>
-              <input type="text" id="rf-name" placeholder="e.g., Rapier +2, Power Attack, Haste" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold focus:border-purple-500">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Category (V2 Type) *</label>
-              <select id="rf-type" onchange="RuleMaster.onTypeChange()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
-                <option value="Weapon">Weapon</option>
-                <option value="Shield">Shield</option>
-                <option value="Armor">Armor</option>
-                <option value="Feat">Feat</option>
-                <option value="Spell">Spell</option>
-                <option value="Maneuver">Maneuver</option>
-                <option value="Stance">Stance</option>
-                <option value="Wondrous Item">Wondrous Item</option>
-                <option value="Ring">Ring</option>
-                <option value="Potion">Potion</option>
-                <option value="Slotless Item">Slotless Item</option>
-                <option value="Special Ability">Special Ability (Class Feature)</option>
-                <option value="DM Grant">DM Grant / Boon</option>
-                <option value="Flaw">Flaw</option>
-                <option value="Race">Race</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Body Slot</label>
-              <select id="rf-slot" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
-                <option value="None">None (Slotless / Feat / Spell)</option>
-                <option value="Main Hand">Main Hand (Primary Weapon)</option>
-                <option value="Off-Hand/Shield">Off-Hand / Shield</option>
-                <option value="Two-Handed">Two-Handed Weapon</option>
-                <option value="Two-Hand">Two-Hand</option>
-                <option value="Armor">Armor Slot</option>
-                <option value="Head">Head / Headband / Helmet</option>
-                <option value="Eyes">Eyes / Lenses / Goggles</option>
-                <option value="Neck">Neck / Amulet</option>
-                <option value="Torso">Torso / Vest / Shirt</option>
-                <option value="Shoulders">Shoulders / Cloak</option>
-                <option value="Arms">Arms / Bracers</option>
-                <option value="Hands">Hands / Gloves</option>
-                <option value="Ring">Ring</option>
-                <option value="Waist">Waist / Belt</option>
-                <option value="Feet">Feet / Boots</option>
-                <option value="Slotless">Slotless (Carried / Passive)</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Sourcebook &amp; Page</label>
-              <input type="text" id="rf-source" value="PHB p." placeholder="e.g., PHB p.98, ToB p.69" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5">
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Prerequisites</label>
-              <input type="text" id="rf-prereq" value="-" placeholder="e.g., Str 13, BAB +1, or '-'" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Combat Role</label>
-              <select id="rf-role" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
-                <option value="Offense / Attack">Offense / Attack</option>
-                <option value="Defense / Counter">Defense / Counter</option>
-                <option value="Buff / Support">Buff / Support</option>
-                <option value="Tactical / Control">Tactical / Control</option>
-                <option value="Utility / Out-of-Combat">Utility / Out-of-Combat</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tags</label>
-              <input type="text" id="rf-tags" placeholder="two-handed, exotic, slashing..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
-            </div>
-          </div>
-        </div>
-
-        <!-- SECTION 2: KURAL AÇIKLAMASI -->
-        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 space-y-1.5">
-          <label class="block text-[11px] font-bold text-purple-400 uppercase tracking-wide">2. Description & RAW Rule Benefit</label>
-          <textarea id="rf-benefit" rows="3" placeholder="Full RAW rule text, mechanical benefits, and special exceptions..." class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-white focus:border-purple-500"></textarea>
-        </div>
-
-        <!-- SECTION 3: BONUS TÜRÜ & SAVAŞ KAPSAMI -->
-        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 space-y-2">
-          <div class="text-[11px] font-bold text-amber-400 uppercase tracking-wide">3. Bonus Stacking Type & Combat Scope</div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Bonus Type *</label>
-              <select id="rf-bonus-type" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-amber-300 font-bold">
-                <option value="Untyped">Untyped (Stacks)</option>
-                <option value="Enhancement">Enhancement (Highest applies)</option>
-                <option value="Natural_Armor_Ench">Natural Armor Enhancement (Amulet/Barkskin)</option>
-                <option value="Morale">Morale (Highest applies)</option>
-                <option value="Luck">Luck (Highest applies)</option>
-                <option value="Insight">Insight (Highest applies)</option>
-                <option value="Competence">Competence (Highest applies)</option>
-                <option value="Resistance">Resistance (Saves - Highest applies)</option>
-                <option value="Deflection">Deflection (AC - Highest applies)</option>
-                <option value="Armor">Armor (Highest applies)</option>
-                <option value="Shield">Shield (Highest applies)</option>
-                <option value="Natural Armor">Natural Armor (Highest applies)</option>
-                <option value="Dodge">Dodge (Stacks)</option>
-                <option value="Circumstance">Circumstance (Stacks from different sources)</option>
-                <option value="Alchemical">Alchemical</option>
-                <option value="Racial">Racial</option>
-                <option value="Divine">Divine / Sacred</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Combat Scope</label>
-              <select id="rf-scope" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
-                <option value="None / General">None / General (All situations)</option>
-                <option value="All Attacks">All Attacks</option>
-                <option value="Melee Only">Melee Only</option>
-                <option value="Ranged Only">Ranged Only</option>
-                <option value="Thrown Only">Thrown Only</option>
-                <option value="Specific Weapon">Specific Weapon Only</option>
-                <option value="Spells">Spells</option>
-                <option value="Vs Traps">Vs Traps</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- SECTION 4: 16 STAT BUFF SÜTUNLARI -->
-        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 space-y-2">
-          <div class="text-[11px] font-bold text-emerald-400 uppercase tracking-wide">4. Ability & Stat Modifiers (Enter Numeric Values)</div>
-          <div class="grid grid-cols-4 md:grid-cols-8 gap-2">
-            <div><label class="block text-[9px] text-slate-400 uppercase font-bold">STR</label><input type="number" id="rf-str" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
-            <div><label class="block text-[9px] text-slate-400 uppercase font-bold">DEX</label><input type="number" id="rf-dex" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
-            <div><label class="block text-[9px] text-slate-400 uppercase font-bold">CON</label><input type="number" id="rf-con" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
-            <div><label class="block text-[9px] text-slate-400 uppercase font-bold">INT</label><input type="number" id="rf-int" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
-            <div><label class="block text-[9px] text-slate-400 uppercase font-bold">WIS</label><input type="number" id="rf-wis" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
-            <div><label class="block text-[9px] text-slate-400 uppercase font-bold">CHA</label><input type="number" id="rf-cha" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
-            <div><label class="block text-[9px] text-sky-400 uppercase font-bold">AC</label><input type="number" id="rf-ac" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
-            <div><label class="block text-[9px] text-emerald-400 uppercase font-bold">HP</label><input type="number" id="rf-hp" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
-          </div>
-          <div class="grid grid-cols-4 md:grid-cols-8 gap-2 pt-1">
-            <div><label class="block text-[9px] text-rose-400 uppercase font-bold">Atk</label><input type="number" id="rf-atk" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
-            <div><label class="block text-[9px] text-rose-400 uppercase font-bold">Dmg</label><input type="number" id="rf-dmg" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
-            <div><label class="block text-[9px] text-emerald-400 uppercase font-bold">Fort</label><input type="number" id="rf-fort" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
-            <div><label class="block text-[9px] text-sky-400 uppercase font-bold">Ref</label><input type="number" id="rf-ref" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
-            <div><label class="block text-[9px] text-purple-400 uppercase font-bold">Will</label><input type="number" id="rf-will" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
-            <div><label class="block text-[9px] text-amber-400 uppercase font-bold">Skill</label><input type="number" id="rf-skill" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
-            <div><label class="block text-[9px] text-indigo-400 uppercase font-bold">CL</label><input type="number" id="rf-cl" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
-            <div><label class="block text-[9px] text-amber-400 uppercase font-bold">Speed</label><input type="number" id="rf-speed" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-center font-mono text-white text-xs"></div>
-          </div>
-          <div class="mt-2.5 pt-2 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            <div class="relative">
-              <label class="block text-[10px] font-bold text-amber-400 uppercase mb-1">Target Skill</label>
-              <input type="text" id="rf-target-skill" autocomplete="off" placeholder="e.g., Move Silently, Hide, Spot, or All Skills" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-amber-300 font-mono focus:border-amber-500">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Multi-Skill Bonus Map (JSON - Optional)</label>
-              <input type="text" id="rf-skill-bonuses" placeholder='e.g., {"Open Lock": 10, "Escape Artist": 4}' class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white font-mono focus:border-purple-500">
-            </div>
-          </div>
-        </div>
-
-        <!-- SECTION 5: DÖVÜŞ, EYLEM & PARAMETRELER (SYMMETRICAL 4-COL + 2-COL) -->
-        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 space-y-2">
-          <div class="text-[11px] font-bold text-rose-400 uppercase tracking-wide">5. Combat Mechanics, Action &amp; Cost</div>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Damage Dice</label>
-              <input type="text" id="rf-dice" placeholder="e.g., 2d6, 1d8, 1d10" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-amber-400 font-mono">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Critical Threat / Multiplier</label>
-              <div class="grid grid-cols-2 gap-1.5">
-                <input type="number" id="rf-crit-min" value="20" min="15" max="20" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-center text-xs text-white font-mono">
-                <input type="number" id="rf-crit-mult" value="2" min="2" max="4" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-center text-xs text-white font-mono">
-              </div>
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Damage Type</label>
-              <input type="text" id="rf-dmg-type" placeholder="e.g., Slashing, Piercing, Acid" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Action Type</label>
-              <select id="rf-action" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
-                <option value="Passive">Passive (Continuous)</option>
-                <option value="Standard Action">Standard Action</option>
-                <option value="Full-Round Action">Full-Round Action</option>
-                <option value="Swift Action">Swift Action</option>
-                <option value="Immediate Action">Immediate Action</option>
-                <option value="Free Action">Free Action</option>
-                <option value="Move Action">Move Action</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 pt-1">
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Duration / Uses</label>
-              <input type="text" id="rf-duration" value="Continuous" placeholder="Continuous, 1 Round, 1/day" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Weight (lbs)</label>
-              <input type="number" id="rf-weight" value="1" step="0.1" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white font-mono">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Cost (GP)</label>
-              <input type="number" id="rf-cost" value="10" step="1" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-amber-400 font-mono">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Spell / Maneuver Level</label>
-              <input type="number" id="rf-level" min="0" max="9" placeholder="0-9" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white font-mono">
-            </div>
-          </div>
-          
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-            <div class="relative">
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Discipline (Tome of Battle)</label>
-              <input type="text" id="rf-discipline" autocomplete="off" placeholder="Iron Heart, Shadow Hand, etc." class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-purple-300">
-            </div>
-            <div class="relative">
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Spell School</label>
-              <input type="text" id="rf-school" autocomplete="off" placeholder="Transmutation, Evocation, etc." class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
-            </div>
-          </div>
-        </div>
-
-        <!-- SECTION 5B: KATEGORİYE ÖZEL PARAMETRELER (DİNAMİK) -->
-        <!-- 5B.1 ZIRH & KALKAN ÖZEL ALANLARI -->
-        <div id="rf-panel-armor" class="hidden bg-slate-900/60 border border-sky-900/50 rounded-xl p-3 space-y-2">
-          <div class="text-[11px] font-bold text-sky-400 uppercase tracking-wide flex items-center gap-1.5">
-            <span>🛡️</span>
-            <span>Armor &amp; Shield Mechanics (Max Dex, ACP, ASF)</span>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Maximum Dex Bonus (Max Dex)</label>
-              <input type="number" id="rf-max-dex" min="0" max="20" placeholder="e.g., 1, 6 (Blank = Unlimited)" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-sky-300 font-mono">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Armor Check Penalty (ACP)</label>
-              <input type="number" id="rf-check-penalty" max="0" placeholder="e.g., -6, -2, 0" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-rose-300 font-mono">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Arcane Spell Failure (ASF %)</label>
-              <input type="number" id="rf-asf" min="0" max="100" placeholder="e.g., 15, 35 (%)" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-amber-300 font-mono">
-            </div>
-          </div>
-        </div>
-
-        <!-- 5B.2 SİLAH ÖZEL ALANLARI -->
-        <div id="rf-panel-weapon" class="hidden bg-slate-900/60 border border-rose-900/50 rounded-xl p-3 space-y-2">
-          <div class="text-[11px] font-bold text-rose-400 uppercase tracking-wide flex items-center gap-1.5">
-            <span>⚔️</span>
-            <span>Weapon Parameters (Range, Proficiency, Finesse)</span>
-          </div>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Range Increment</label>
-              <input type="text" id="rf-range" placeholder="e.g., 10 ft, 100 ft" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-amber-300 font-mono">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Proficiency Category</label>
-              <select id="rf-proficiency" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
-                <option value="Martial">Martial Weapon</option>
-                <option value="Simple">Simple Weapon</option>
-                <option value="Exotic">Exotic Weapon</option>
-                <option value="Natural">Natural Weapon</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Light / Finesse Weapon</label>
-              <select id="rf-is-light" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
-                <option value="false">Normal (1-Hand / 2-Hand)</option>
-                <option value="true">Light Weapon (Finesse Eligible)</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Size Steps</label>
-              <input type="number" id="rf-size-steps" min="0" max="4" value="0" placeholder="0, 1, 2" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white font-mono">
-            </div>
-          </div>
-        </div>
-
-        <!-- 5B.3 BÜYÜ & MANEVRA ÖZEL ALANLARI -->
-        <div id="rf-panel-spell" class="hidden bg-slate-900/60 border border-purple-900/50 rounded-xl p-3 space-y-2">
-          <div class="text-[11px] font-bold text-purple-400 uppercase tracking-wide flex items-center gap-1.5">
-            <span>🔮</span>
-            <span>Spell &amp; Maneuver Mechanics (Save, SR, Area)</span>
-          </div>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-            <div class="relative">
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Saving Throw</label>
-              <input type="text" id="rf-save-type" autocomplete="off" placeholder="e.g., Reflex half, Fort negates, None" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-emerald-300">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Spell Resistance (SR)</label>
-              <select id="rf-sr" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
-                <option value="No">No (SR: No)</option>
-                <option value="Yes">Yes (SR: Yes)</option>
-                <option value="Harmless">Yes (Harmless)</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Range</label>
-              <input type="text" id="rf-spell-range" placeholder="Close (25+5ft/2lvl), Touch, Personal" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Target / Area / Effect</label>
-              <input type="text" id="rf-target-area" placeholder="1 creature, 20-ft burst, Cone" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
-            </div>
-          </div>
-          <div class="pt-1">
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Components</label>
-            <input type="text" id="rf-components" placeholder="V, S, M, F, DF, XP" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-slate-300 font-mono">
-          </div>
-        </div>
-
-        <!-- 5B.4 IRK (RACE) ÖZEL ALANLARI -->
-        <div id="rf-panel-race" class="hidden bg-slate-900/60 border border-emerald-900/50 rounded-xl p-3 space-y-2">
-          <div class="text-[11px] font-bold text-emerald-400 uppercase tracking-wide flex items-center gap-1.5">
-            <span>🧬</span>
-            <span>Racial Parameters (Size, Speed, Languages, Favored Class)</span>
-          </div>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Racial Size</label>
-              <select id="rf-race-size" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
-                <option value="Medium">Medium</option>
-                <option value="Small">Small (Halfling/Gnome)</option>
-                <option value="Large">Large</option>
-                <option value="Tiny">Tiny</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Base Speed (ft)</label>
-              <input type="number" id="rf-base-speed" value="30" step="5" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white font-mono">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Favored Class</label>
-              <input type="text" id="rf-favored-class" placeholder="Fighter, Rogue, Any, etc." class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Automatic Languages</label>
-              <input type="text" id="rf-languages" placeholder="Common, Elven, etc." class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
-            </div>
-          </div>
-        </div>
-
-        <!-- SECTION 6: GÜNLÜK ŞARJ & KULLANIM SINIRI -->
-        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 space-y-2">
-          <div class="text-[11px] font-bold text-amber-400 uppercase tracking-wide flex items-center gap-1.5">
-            <span>⚡</span>
-            <span>6. Daily Charges & Uses per Day</span>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Max Daily Charges / Uses</label>
-              <input type="number" id="rf-daily-charges" min="0" max="100" placeholder="e.g., 5, 3, 10 (Blank = Unlimited)" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-amber-300 font-mono">
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Charge Unit</label>
-              <select id="rf-charge-unit" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
-                <option value="charges">Charges (Healing Belt, Witchlight, etc.)</option>
-                <option value="rounds">Rounds (Boots of Speed, etc.)</option>
-                <option value="uses">Uses per Day (1/day, 3/day, etc.)</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Recharge Period</label>
-              <input type="text" id="rf-charge-recharge" value="Long Rest (Dawn / 8h Rest)" disabled class="w-full bg-slate-950/70 border border-slate-800 rounded px-2.5 py-1 text-xs text-slate-400 cursor-not-allowed">
-            </div>
-          </div>
-          <p class="text-[10px] text-slate-400 italic">When equipped, an interactive charge battery and one-click use button appear in the Combat Cockpit. Charges automatically recharge on a Long Rest (☀️).</p>
-        </div>
-
-        <!-- SECTION 7: GELİŞMİŞ KOKPİT & KURAL BAYRAKLARI (KATLANABİLİR) -->
-        <details id="rf-advanced-details" class="bg-slate-900/60 border border-slate-800 rounded-xl p-3">
-          <summary class="cursor-pointer text-[11px] font-bold text-slate-400 hover:text-purple-400 uppercase tracking-wide flex items-center justify-between select-none">
-            <span class="flex items-center gap-1.5">
-              <span>⚙️</span>
-              <span>7. Advanced Cockpit, Child Power &amp; Rule Flags</span>
-            </span>
-            <span class="text-xs text-slate-500">▼</span>
-          </summary>
-          <div class="mt-3 space-y-2.5 pt-2 border-t border-slate-800/80">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-              <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Child Power Button Label</label>
-                <input type="text" id="rf-child-label" placeholder="e.g., Sacrifice 5 HP (+3d6)" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
-              </div>
-              <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Effect Type</label>
-                <select id="rf-effect-type" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
-                  <option value="">Default (Damage / General)</option>
-                  <option value="damage">damage (Extra Damage)</option>
-                  <option value="bonus">bonus (Temporary Ability / Attack Bonus)</option>
-                  <option value="condition">condition (Condition / Debuff)</option>
-                  <option value="heal">heal (Healing)</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Self HP Cost</label>
-                <input type="number" id="rf-self-hp-cost" min="0" placeholder="e.g., 5 (Blade of Blood)" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-xs text-rose-300 font-mono">
-              </div>
-            </div>
-
-            <!-- Kural Bayrakları (Rule Flags) Checkboxes -->
-            <div>
-              <label class="block text-[10px] font-bold text-purple-400 uppercase mb-1.5">Rule Engine Flags</label>
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-slate-300">
-                <label class="flex items-center gap-1.5 cursor-pointer hover:text-white">
-                  <input type="checkbox" id="rf-flag-touch" class="rounded bg-slate-950 border-slate-700 text-purple-600 focus:ring-0">
-                  <span>Touch Attack</span>
-                </label>
-                <label class="flex items-center gap-1.5 cursor-pointer hover:text-white">
-                  <input type="checkbox" id="rf-flag-ignore-armor" class="rounded bg-slate-950 border-slate-700 text-purple-600 focus:ring-0">
-                  <span>Ignore Armor (Touch/Brilliant)</span>
-                </label>
-                <label class="flex items-center gap-1.5 cursor-pointer hover:text-white">
-                  <input type="checkbox" id="rf-flag-keen" class="rounded bg-slate-950 border-slate-700 text-purple-600 focus:ring-0">
-                  <span>Keen (2x Crit Range)</span>
-                </label>
-                <label class="flex items-center gap-1.5 cursor-pointer hover:text-white">
-                  <input type="checkbox" id="rf-flag-reach" class="rounded bg-slate-950 border-slate-700 text-purple-600 focus:ring-0">
-                  <span>Reach Weapon</span>
-                </label>
-                <label class="flex items-center gap-1.5 cursor-pointer hover:text-white">
-                  <input type="checkbox" id="rf-flag-silver" class="rounded bg-slate-950 border-slate-700 text-purple-600 focus:ring-0">
-                  <span>Alchemical Silver</span>
-                </label>
-                <label class="flex items-center gap-1.5 cursor-pointer hover:text-white">
-                  <input type="checkbox" id="rf-flag-cold-iron" class="rounded bg-slate-950 border-slate-700 text-purple-600 focus:ring-0">
-                  <span>Cold Iron</span>
-                </label>
-                <label class="flex items-center gap-1.5 cursor-pointer hover:text-white">
-                  <input type="checkbox" id="rf-flag-adamantine" class="rounded bg-slate-950 border-slate-700 text-purple-600 focus:ring-0">
-                  <span>Adamantine</span>
-                </label>
-                <label class="flex items-center gap-1.5 cursor-pointer hover:text-white">
-                  <input type="checkbox" id="rf-flag-two-hand-str" class="rounded bg-slate-950 border-slate-700 text-purple-600 focus:ring-0">
-                  <span>1.5x STR Multiplier</span>
-                </label>
-              </div>
-            </div>
-          </div>
-        </details>
-
-      </div>
-
-      <!-- Modal Footer (Symmetrical 3-Column Action Grid) -->
-      <div class="bg-slate-950 px-4 py-3 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-2 w-full">
-        <button type="button" onclick="RuleMaster.closeModal()" class="w-full h-10 px-4 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-1.5">✕ Cancel</button>
-        <button type="button" onclick="RuleMaster.submitModal(false)" class="w-full h-10 px-4 rounded-lg bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5">📥 Save to Custom DB</button>
-        <button type="button" onclick="RuleMaster.submitModal(true)" class="w-full h-10 px-4 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg transition cursor-pointer flex items-center justify-center gap-1.5">⚡ Save &amp; Equip to Character</button>
-      </div>
-
     </div>
   </div>
 

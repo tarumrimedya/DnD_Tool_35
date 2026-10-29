@@ -964,442 +964,151 @@ const RuleMaster = {
     alert(`🎒 "${item.name}" added to your backpack / inventory pool!`);
   },
 
-  // Open Edit / Add Modal (Bridges Canonical V2 Entry -> Modal Form)
+  // Open Edit / Add in Inline V2 Manual Rule Form (Replaces legacy V1 29-column modal)
   openModalWithData(entry, editIndex = -1) {
     this.selectedEntryIndex = editIndex;
     const v2 = this.ensureV2(entry ? JSON.parse(JSON.stringify(entry)) : this.createEmptyEntry('Weapon'));
     this._currentEditingEntry = v2;
-    const modal = document.getElementById('rule-crud-modal');
-    if (!modal) return;
 
-    const view = this.extractModalViewFromV2(v2);
+    // Ensure Master DB tab and Inline Manual Rule mode are visible
+    this.switchSubTab('subtab-mdb-list');
+    this.switchInlineMode('manual');
 
-    document.getElementById('rule-modal-title').textContent = editIndex >= 0 ? `✏️ Edit: ${v2.name}` : '➕ Add New Rule / Item';
+    const setVal = (id, v) => {
+      const el = document.getElementById(id);
+      if (el) el.value = (v !== undefined && v !== null) ? v : '';
+    };
 
-    document.getElementById('rf-name').value = v2.name || '';
-    document.getElementById('rf-type').value = v2.type || 'Weapon';
+    setVal('im-name', v2.name || '');
+    const typeEl = document.getElementById('im-type');
+    if (typeEl) {
+      let typeVal = v2.type || 'Weapon';
+      let matchOpt = Array.from(typeEl.options).find(o => o.value.toLowerCase() === String(typeVal).toLowerCase());
+      if (!matchOpt && typeVal) {
+        const opt = document.createElement('option');
+        opt.value = typeVal;
+        opt.textContent = typeVal;
+        typeEl.appendChild(opt);
+        matchOpt = opt;
+      }
+      typeEl.value = matchOpt ? matchOpt.value : 'Weapon';
+    }
+
     let slotVal = v2.slot || 'None';
     if (slotVal === 'Two-Hand' || slotVal === 'Both Hands') slotVal = 'Two-Handed';
-    const slotEl = document.getElementById('rf-slot');
+    const slotEl = document.getElementById('im-slot');
     if (slotEl) {
-      slotEl.value = slotVal;
-      if (!slotEl.value) slotEl.value = 'None';
+      let matchSlot = Array.from(slotEl.options).find(o => o.value.toLowerCase() === String(slotVal).toLowerCase());
+      slotEl.value = matchSlot ? matchSlot.value : 'None';
     }
-    const tagsEl = document.getElementById('rf-tags');
-    if (tagsEl) {
-      tagsEl.value = Array.isArray(v2.tags) ? v2.tags.join(', ') : (v2.tags || '');
-    }
-    document.getElementById('rf-parent').value = entry?._linkedParentName || '-';
-    document.getElementById('rf-prereq').value = v2.prereq || '-';
-    document.getElementById('rf-source').value = v2.source || 'PHB p.';
-    document.getElementById('rf-benefit').value = v2.benefit || v2.description || '';
-    const bonusTypeSelect = document.getElementById('rf-bonus-type');
-    if (bonusTypeSelect) {
-      const rawBonus = this.capitalizeIdentifier(view.bonusType || 'Untyped');
-      let matchingOpt = Array.from(bonusTypeSelect.options).find(o => o.value.toLowerCase() === rawBonus.toLowerCase());
-      if (!matchingOpt && rawBonus) {
-        const newOpt = document.createElement('option');
-        newOpt.value = rawBonus;
-        newOpt.textContent = rawBonus;
-        bonusTypeSelect.appendChild(newOpt);
-        matchingOpt = newOpt;
+
+    setVal('im-source', v2.source || 'PHB p.');
+
+    const primaryDmg = Array.isArray(v2.damageParts) && v2.damageParts.length > 0 ? v2.damageParts[0] : null;
+    const diceVal = (primaryDmg && primaryDmg.dice) || v2.weaponStats?.baseDamage || '';
+    const dmgTypeVal = (primaryDmg && primaryDmg.type) || (Array.isArray(v2.weaponStats?.damageTypes) && v2.weaponStats.damageTypes[0]) || 'Slashing';
+    setVal('im-dice', diceVal);
+    const dmgTypeEl = document.getElementById('im-dmg-type');
+    if (dmgTypeEl) {
+      let matchDmg = Array.from(dmgTypeEl.options).find(o => o.value.toLowerCase() === String(dmgTypeVal).toLowerCase());
+      if (!matchDmg && dmgTypeVal) {
+        const opt = document.createElement('option');
+        opt.value = dmgTypeVal;
+        opt.textContent = dmgTypeVal;
+        dmgTypeEl.appendChild(opt);
+        matchDmg = opt;
       }
-      bonusTypeSelect.value = matchingOpt ? matchingOpt.value : 'Untyped';
-    }
-    document.getElementById('rf-scope').value = view.scope || 'None / General';
-    document.getElementById('rf-role').value = v2.role || 'General';
-
-    // Populate Stat Buff inputs from V2 modifiers
-    document.getElementById('rf-str').value = view.str;
-    document.getElementById('rf-dex').value = view.dex;
-    document.getElementById('rf-con').value = view.con;
-    document.getElementById('rf-int').value = view.int;
-    document.getElementById('rf-wis').value = view.wis;
-    document.getElementById('rf-cha').value = view.cha;
-    document.getElementById('rf-ac').value = view.ac;
-    document.getElementById('rf-hp').value = view.hp;
-    document.getElementById('rf-atk').value = view.atk;
-    document.getElementById('rf-dmg').value = view.dmg;
-    document.getElementById('rf-fort').value = view.fort;
-    document.getElementById('rf-ref').value = view.ref;
-    document.getElementById('rf-will').value = view.will;
-    document.getElementById('rf-skill').value = view.skill;
-    document.getElementById('rf-cl').value = view.cl;
-    document.getElementById('rf-speed').value = view.speed;
-
-    // Combat & Action from V2 damageParts / weaponStats
-    document.getElementById('rf-dice').value = view.dice;
-    document.getElementById('rf-crit-min').value = view.critMin;
-    document.getElementById('rf-crit-mult').value = view.critMult;
-    document.getElementById('rf-dmg-type').value = view.dmgType;
-    document.getElementById('rf-action').value = v2.action || 'Standard Action';
-    document.getElementById('rf-duration').value = v2.duration || 'Continuous';
-    document.getElementById('rf-weight').value = v2.weight !== undefined ? v2.weight : 0;
-    document.getElementById('rf-cost').value = v2.cost !== undefined ? v2.cost : 0;
-
-    // Specifics
-    document.getElementById('rf-school').value = v2.school || v2.spellStats?.school || '';
-    document.getElementById('rf-level').value = v2.level !== undefined && v2.level !== '' ? v2.level : (v2.spellStats?.level ?? '');
-    document.getElementById('rf-discipline').value = v2.discipline || v2.spellStats?.discipline || '';
-
-    // Daily Charges / Uses
-    const dcInput = document.getElementById('rf-daily-charges');
-    const unitInput = document.getElementById('rf-charge-unit');
-    if (dcInput) {
-      let maxVal = '';
-      let unit = 'charges';
-      if (v2.dailyCharges && typeof v2.dailyCharges.max === 'number') {
-        maxVal = v2.dailyCharges.max;
-        unit = v2.dailyCharges.unit || 'charges';
-      } else if (typeof v2.dailyCharges === 'number') {
-        maxVal = v2.dailyCharges;
-      } else if (v2.charges && typeof v2.charges === 'number') {
-        maxVal = v2.charges;
-      }
-      dcInput.value = maxVal;
-      if (unitInput) unitInput.value = unit;
+      dmgTypeEl.value = matchDmg ? matchDmg.value : 'Slashing';
     }
 
-    // Target Skill & Multiple Skill Bonuses
-    const targetSkillEl = document.getElementById('rf-target-skill');
-    if (targetSkillEl) targetSkillEl.value = view.targetSkill;
-    const skillBonusesEl = document.getElementById('rf-skill-bonuses');
-    if (skillBonusesEl) skillBonusesEl.value = view.skillBonusesJson;
+    setVal('im-crit-min', v2.weaponStats?.critMin || 20);
+    setVal('im-crit-mult', v2.weaponStats?.critMult || 2);
+
+    const actEl = document.getElementById('im-action');
+    if (actEl) {
+      const rawAct = v2.action || 'Passive';
+      let matchAct = Array.from(actEl.options).find(o => o.value.toLowerCase() === String(rawAct).toLowerCase());
+      actEl.value = matchAct ? matchAct.value : 'Passive';
+    }
+
+    setVal('im-cost', v2.cost !== undefined ? v2.cost : 0);
+    setVal('im-weight', v2.weight !== undefined ? v2.weight : 0);
+
+    let maxCharges = '';
+    if (v2.dailyCharges && typeof v2.dailyCharges.max === 'number') maxCharges = v2.dailyCharges.max;
+    else if (typeof v2.dailyCharges === 'number') maxCharges = v2.dailyCharges;
+    else if (typeof v2.charges === 'number') maxCharges = v2.charges;
+    setVal('im-charges', maxCharges);
+
+    setVal('im-prereq', v2.prereq || '-');
+    setVal('im-benefit', v2.benefit || v2.description || '');
 
     // Armor / Shield Contextual Fields
-    const maxDexEl = document.getElementById('rf-max-dex');
-    if (maxDexEl) maxDexEl.value = view.maxDex;
-    const checkPenaltyEl = document.getElementById('rf-check-penalty');
-    if (checkPenaltyEl) checkPenaltyEl.value = view.checkPenalty;
-    const asfEl = document.getElementById('rf-asf');
-    if (asfEl) asfEl.value = view.asf;
-
-    // Weapon Contextual Fields
-    const rangeEl = document.getElementById('rf-range');
-    if (rangeEl) rangeEl.value = view.range;
-    const profEl = document.getElementById('rf-proficiency');
-    if (profEl) profEl.value = view.proficiency;
-    const isLightEl = document.getElementById('rf-is-light');
-    if (isLightEl) isLightEl.value = view.isLight ? 'true' : 'false';
-    const sizeStepsEl = document.getElementById('rf-size-steps');
-    if (sizeStepsEl) sizeStepsEl.value = v2.sizeModifier?.scaling?.steps || 0;
+    const acMod = Array.isArray(v2.modifiers) ? v2.modifiers.find(m => m.target === 'ac.armor' || m.target === 'ac.shield') : null;
+    const baseAcVal = v2.armorStats?.baseAc !== undefined ? v2.armorStats.baseAc : (acMod ? acMod.value : '');
+    setVal('im-armor-ac', baseAcVal);
+    setVal('im-max-dex', v2.armorStats?.maxDex !== undefined && v2.armorStats?.maxDex !== null ? v2.armorStats.maxDex : '');
+    setVal('im-acp', v2.armorStats?.acp !== undefined ? v2.armorStats.acp : '');
+    setVal('im-asf', v2.armorStats?.asf !== undefined ? v2.armorStats.asf : '');
 
     // Spell / Maneuver Contextual Fields
-    const saveTypeEl = document.getElementById('rf-save-type');
-    if (saveTypeEl) saveTypeEl.value = view.saveType;
-    const srEl = document.getElementById('rf-sr');
-    if (srEl) srEl.value = view.sr;
-    const spellRangeEl = document.getElementById('rf-spell-range');
-    if (spellRangeEl) spellRangeEl.value = view.range;
-    const targetAreaEl = document.getElementById('rf-target-area');
-    if (targetAreaEl) targetAreaEl.value = view.targetArea;
-    const compEl = document.getElementById('rf-components');
-    if (compEl) compEl.value = view.components;
-
-    // Race Contextual Fields
-    const raceSizeEl = document.getElementById('rf-race-size');
-    if (raceSizeEl) raceSizeEl.value = v2.size || 'Medium';
-    const baseSpeedEl = document.getElementById('rf-base-speed');
-    if (baseSpeedEl) baseSpeedEl.value = v2.baseSpeed !== undefined ? v2.baseSpeed : 30;
-    const favClassEl = document.getElementById('rf-favored-class');
-    if (favClassEl) favClassEl.value = v2.favoredClass || 'Any';
-    const langEl = document.getElementById('rf-languages');
-    if (langEl) langEl.value = Array.isArray(v2.languages) ? v2.languages.join(', ') : (v2.languages || 'Common');
-
-    // Advanced / Mode Action Fields
-    const childLabelEl = document.getElementById('rf-child-label');
-    if (childLabelEl) childLabelEl.value = entry?._modeButtonLabel || '';
-    const effectTypeEl = document.getElementById('rf-effect-type');
-    if (effectTypeEl) effectTypeEl.value = v2.effectType || '';
-    const selfHpCostEl = document.getElementById('rf-self-hp-cost');
-    if (selfHpCostEl) selfHpCostEl.value = v2.selfHpCost || '';
+    const lvlVal = v2.level !== undefined && v2.level !== '' ? v2.level : (v2.spellStats?.level ?? '');
+    setVal('im-level', lvlVal);
+    setVal('im-school-disc', v2.school || v2.discipline || v2.spellStats?.school || v2.spellStats?.discipline || '');
+    setVal('im-save-type', v2.spellStats?.savingThrow || '');
+    setVal('im-spell-range', v2.range || v2.spellStats?.range || '');
 
     // Rule Flags Checkboxes
     const flags = v2.ruleFlags || {};
     const setFlag = (id, val) => { const el = document.getElementById(id); if (el) el.checked = Boolean(val); };
-    setFlag('rf-flag-touch', flags.touchAttack || flags.touch);
-    setFlag('rf-flag-ignore-armor', flags.ignoreArmor);
-    setFlag('rf-flag-keen', flags.critThreatDoubled || flags.keen);
-    setFlag('rf-flag-reach', flags.reach);
-    setFlag('rf-flag-silver', flags.silver);
-    setFlag('rf-flag-cold-iron', flags.coldIron);
-    setFlag('rf-flag-adamantine', flags.adamantine);
-    setFlag('rf-flag-two-hand-str', flags.twoHandedStrengthMultiplier || flags.twoHandedStr);
+    setFlag('im-flag-touch', flags.touchAttack || flags.touch);
+    setFlag('im-flag-keen', flags.critThreatDoubled || flags.keen);
+    setFlag('im-flag-adamantine', flags.adamantine);
+    setFlag('im-flag-two-hand-str', flags.twoHandedStrengthMultiplier || flags.twoHandedStr || slotVal === 'Two-Handed');
 
-    this.onTypeChange();
-    this.initComboboxes();
+    // Modifiers List
+    const modList = document.getElementById('im-modifiers-list');
+    if (modList) {
+      modList.innerHTML = '';
+      const mods = Array.isArray(v2.modifiers) ? v2.modifiers : [];
+      if (mods.length > 0) {
+        mods.forEach(m => this.addInlineManualModifierRow(m));
+      } else {
+        this.addInlineManualModifierRow();
+      }
+    }
 
-    modal.classList.remove('hidden');
+    this.onInlineManualTypeChange(true);
+
+    // Update Editing Banner & Action Button Labels
+    const banner = document.getElementById('im-editing-banner');
+    const bannerTitle = document.getElementById('im-editing-title');
+    const saveDbLbl = document.getElementById('btn-im-save-db-label');
+    const saveEqLbl = document.getElementById('btn-im-save-equip-label');
+    const isEditing = editIndex >= 0 || Boolean(v2.name && v2.name.trim());
+    if (banner) banner.classList.toggle('hidden', !isEditing);
+    if (bannerTitle) {
+      bannerTitle.textContent = editIndex >= 0
+        ? `Editing Custom DB Entry: ${v2.name || 'Unnamed'}`
+        : `Draft Loaded: ${v2.name || 'New Entry'}`;
+    }
+    if (saveDbLbl) saveDbLbl.textContent = editIndex >= 0 ? 'Update in Custom DB' : 'Save to Custom DB';
+    if (saveEqLbl) saveEqLbl.textContent = editIndex >= 0 ? 'Update & Equip to Character' : 'Save & Equip to Character';
+
+    const panel = document.getElementById('inline-ai-adder-panel');
+    if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
   },
 
-  // Save Modal Action (Builds Canonical V2 Entry from Form Inputs)
   submitModal(alsoEquip = false) {
-    const editIdx = this.selectedEntryIndex;
-    const baseObj = (editIdx >= 0 && masterDb && masterDb[editIdx])
-      ? this.ensureV2(JSON.parse(JSON.stringify(masterDb[editIdx])))
-      : (this._currentEditingEntry ? this.ensureV2(JSON.parse(JSON.stringify(this._currentEditingEntry))) : this.createEmptyEntry('Weapon'));
-
-    const actVal = document.getElementById('rf-action').value;
-    const typeVal = this.capitalizeIdentifier(document.getElementById('rf-type').value);
-    const slotVal = this.capitalizeIdentifier(document.getElementById('rf-slot').value);
-    const bonusTypeVal = this.capitalizeIdentifier(document.getElementById('rf-bonus-type').value || 'Untyped');
-    const scopeVal = this.capitalizeIdentifier(document.getElementById('rf-scope').value || 'None / General');
-
-    // Build V2 modifiers array from modal inputs
-    const modifiers = [];
-    const addMod = (target, rawVal, overrideType = null) => {
-      if (rawVal === '' || rawVal === null || rawVal === undefined) return;
-      const num = Number(rawVal);
-      if (isNaN(num) || num === 0) return;
-      modifiers.push({
-        target,
-        value: num,
-        type: overrideType || bonusTypeVal || 'Untyped',
-        condition: null
-      });
-    };
-
-    addMod('ability.str', document.getElementById('rf-str').value);
-    addMod('ability.dex', document.getElementById('rf-dex').value);
-    addMod('ability.con', document.getElementById('rf-con').value);
-    addMod('ability.int', document.getElementById('rf-int').value);
-    addMod('ability.wis', document.getElementById('rf-wis').value);
-    addMod('ability.cha', document.getElementById('rf-cha').value);
-
-    const acInputVal = document.getElementById('rf-ac').value;
-    if (acInputVal !== '' && Number(acInputVal) !== 0 && typeVal !== 'Armor' && typeVal !== 'Shield') {
-      const acTarget = bonusTypeVal === 'Deflection' ? 'ac.deflection' : (bonusTypeVal === 'Natural Armor' ? 'ac.natural' : (bonusTypeVal === 'Dodge' ? 'ac.dodge' : 'ac'));
-      addMod(acTarget, acInputVal);
-    }
-
-    addMod('hp', document.getElementById('rf-hp').value);
-    addMod(typeVal === 'Weapon' ? 'attack.melee' : 'attack.all', document.getElementById('rf-atk').value);
-    if (typeVal !== 'Weapon') {
-      addMod('damage.all', document.getElementById('rf-dmg').value);
-    }
-    addMod('save.fort', document.getElementById('rf-fort').value);
-    addMod('save.ref', document.getElementById('rf-ref').value);
-    addMod('save.will', document.getElementById('rf-will').value);
-    addMod('casterLevel', document.getElementById('rf-cl').value);
-    addMod('speed.land', document.getElementById('rf-speed').value);
-
-    // Skill modifiers
-    const targetSkillVal = document.getElementById('rf-target-skill')?.value.trim();
-    const skillInputVal = document.getElementById('rf-skill').value;
-    const skillBonusesRaw = document.getElementById('rf-skill-bonuses')?.value.trim();
-    if (skillBonusesRaw) {
-      try {
-        const parsedSkills = JSON.parse(skillBonusesRaw);
-        Object.entries(parsedSkills).forEach(([sName, sVal]) => {
-          const slug = String(sName).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
-          addMod(`skill.${slug}`, sVal, bonusTypeVal === 'Untyped' ? 'Competence' : bonusTypeVal);
-        });
-      } catch (e) {
-        console.warn('Could not parse skillBonuses JSON:', e);
-      }
-    } else if (skillInputVal !== '' && Number(skillInputVal) !== 0) {
-      const sTarget = targetSkillVal
-        ? `skill.${targetSkillVal.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}`
-        : 'skill.all';
-      addMod(sTarget, skillInputVal, bonusTypeVal === 'Untyped' ? 'Competence' : bonusTypeVal);
-    }
-
-    // Build V2 damageParts array
-    const diceVal = document.getElementById('rf-dice').value.trim();
-    const dmgBonusVal = Number(document.getElementById('rf-dmg').value) || 0;
-    const dmgTypeVal = this.capitalizeIdentifier(document.getElementById('rf-dmg-type').value.trim()) || (typeVal === 'Weapon' ? 'Slashing' : 'Untyped');
-    const damageParts = [];
-    if (diceVal) {
-      damageParts.push({
-        dice: diceVal,
-        bonus: typeVal === 'Weapon' ? dmgBonusVal : 0,
-        type: dmgTypeVal,
-        multiplyOnCrit: typeVal === 'Weapon',
-        onCritOnly: false,
-        source: typeVal === 'Weapon' ? 'Base Weapon' : 'Primary'
-      });
-    }
-
-    const critMinVal = Number(document.getElementById('rf-crit-min').value) || 20;
-    const critMultVal = Number(document.getElementById('rf-crit-mult').value) || 2;
-
-    const tagsArr = (() => {
-      const rawTags = document.getElementById('rf-tags')?.value || '';
-      const arr = rawTags.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
-      if ((slotVal === 'Two-Handed' || slotVal === 'Two-Hand' || slotVal === 'Both Hands') && !arr.includes('two-handed')) {
-        arr.push('two-handed');
-      }
-      return arr;
-    })();
-
-    const v2Entry = Object.assign({}, baseObj, {
-      schemaVersion: 2,
-      name: this.capitalizeTitle(document.getElementById('rf-name').value.trim()),
-      type: typeVal,
-      slot: slotVal,
-      action: actVal,
-      actionType: this.deriveActionType(actVal, typeVal).toLowerCase(),
-      tags: tagsArr,
-      prereq: document.getElementById('rf-prereq').value.trim() || '-',
-      source: document.getElementById('rf-source').value.trim() || 'PHB p.',
-      benefit: document.getElementById('rf-benefit').value.trim(),
-      description: document.getElementById('rf-benefit').value.trim() || baseObj.description || '',
-      scope: scopeVal,
-      role: this.capitalizeIdentifier(document.getElementById('rf-role').value),
-      duration: document.getElementById('rf-duration').value.trim(),
-      weight: Number(document.getElementById('rf-weight').value) || 0,
-      cost: Number(document.getElementById('rf-cost').value) || 0,
-      school: this.capitalizeIdentifier(document.getElementById('rf-school').value.trim()),
-      level: document.getElementById('rf-level').value ? Number(document.getElementById('rf-level').value) : '',
-      discipline: this.capitalizeIdentifier(document.getElementById('rf-discipline').value.trim()),
-      modifiers,
-      damageParts,
-      modes: Array.isArray(baseObj.modes) ? baseObj.modes : []
-    });
-
-    const parentInputVal = document.getElementById('rf-parent').value.trim();
-    if (parentInputVal && parentInputVal !== '-') {
-      v2Entry._linkedParentName = parentInputVal;
-    }
-    const childLabelVal = document.getElementById('rf-child-label')?.value.trim();
-    if (childLabelVal) {
-      v2Entry._modeButtonLabel = childLabelVal;
-    }
-
-    // Daily Charges
-    const dailyChargesVal = parseInt(document.getElementById('rf-daily-charges')?.value);
-    const chargeUnitVal = document.getElementById('rf-charge-unit')?.value || 'charges';
-    if (!isNaN(dailyChargesVal) && dailyChargesVal > 0) {
-      v2Entry.dailyCharges = {
-        current: (baseObj.dailyCharges?.current !== undefined && baseObj.dailyCharges.current <= dailyChargesVal) ? baseObj.dailyCharges.current : dailyChargesVal,
-        max: dailyChargesVal,
-        unit: chargeUnitVal,
-        recharge: 'long_rest'
-      };
-    } else if (baseObj.dailyCharges) {
-      delete v2Entry.dailyCharges;
-    }
-
-    // Armor / Shield Contextual Fields -> armorStats
-    if (typeVal === 'Armor' || typeVal === 'Shield') {
-      const maxDexRaw = document.getElementById('rf-max-dex')?.value;
-      const acpRaw = document.getElementById('rf-check-penalty')?.value;
-      const asfRaw = document.getElementById('rf-asf')?.value;
-      v2Entry.armorStats = {
-        category: typeVal === 'Shield' ? 'Shield' : (baseObj.armorStats?.category || 'Light'),
-        baseAc: Number(acInputVal) || baseObj.armorStats?.baseAc || 0,
-        maxDex: (maxDexRaw !== '' && !isNaN(Number(maxDexRaw))) ? Number(maxDexRaw) : null,
-        acp: (acpRaw !== '' && !isNaN(Number(acpRaw))) ? Number(acpRaw) : 0,
-        asf: (asfRaw !== '' && !isNaN(Number(asfRaw))) ? Number(asfRaw) : 0,
-        speed30: baseObj.armorStats?.speed30 || 30,
-        speed20: baseObj.armorStats?.speed20 || 20
-      };
-    }
-
-    // Weapon Contextual Fields -> weaponStats
-    if (typeVal === 'Weapon') {
-      const rangeVal = document.getElementById('rf-range')?.value.trim() || '';
-      const profVal = document.getElementById('rf-proficiency')?.value || 'Martial';
-      const isLightBool = document.getElementById('rf-is-light')?.value === 'true';
-      const isTwoHandBool = slotVal === 'Two-Handed' || tagsArr.includes('two-handed');
-      v2Entry.enhancementBonus = Math.max(Number(document.getElementById('rf-atk').value) || 0, dmgBonusVal, 0);
-      v2Entry.weaponStats = {
-        category: profVal,
-        handedness: isTwoHandBool ? 'Two-Handed' : (isLightBool ? 'Light' : 'One-Handed'),
-        baseDamage: diceVal || '1d8',
-        critMin: critMinVal,
-        critMult: critMultVal,
-        damageTypes: dmgTypeVal.split('/').map(s => s.trim()).filter(Boolean),
-        rangeIncrement: parseInt(rangeVal) || 0,
-        finessable: isLightBool,
-        isLight: isLightBool
-      };
-      if (rangeVal) v2Entry.range = rangeVal;
-      const sizeStepsVal = Number(document.getElementById('rf-size-steps')?.value) || 0;
-      if (sizeStepsVal > 0) {
-        v2Entry.sizeModifier = { targetType: 'weapon', scaling: { steps: sizeStepsVal } };
-      }
-    }
-
-    // Spell / Maneuver Contextual Fields -> spellStats
-    if (typeVal === 'Spell' || typeVal === 'Maneuver' || typeVal === 'Stance') {
-      const saveTypeVal = document.getElementById('rf-save-type')?.value.trim() || 'None';
-      const srVal = document.getElementById('rf-sr')?.value || 'No';
-      const spellRangeVal = document.getElementById('rf-spell-range')?.value.trim() || '';
-      const targetAreaVal = document.getElementById('rf-target-area')?.value.trim() || '';
-      const compVal = document.getElementById('rf-components')?.value.trim() || '';
-      if (spellRangeVal) v2Entry.range = spellRangeVal;
-      v2Entry.spellStats = {
-        school: v2Entry.school || '',
-        discipline: v2Entry.discipline || '',
-        level: v2Entry.level,
-        components: compVal,
-        castingTime: actVal,
-        range: spellRangeVal,
-        targetOrArea: targetAreaVal,
-        duration: v2Entry.duration,
-        savingThrow: saveTypeVal,
-        spellResistance: srVal
-      };
-    }
-
-    // Race Contextual Fields
-    if (typeVal === 'Race') {
-      v2Entry.size = document.getElementById('rf-race-size')?.value || 'Medium';
-      const baseSpeedVal = Number(document.getElementById('rf-base-speed')?.value);
-      if (!isNaN(baseSpeedVal)) v2Entry.baseSpeed = baseSpeedVal;
-      v2Entry.favoredClass = document.getElementById('rf-favored-class')?.value.trim() || 'Any';
-      const langVal = document.getElementById('rf-languages')?.value.trim();
-      if (langVal) v2Entry.languages = langVal.split(',').map(l => l.trim()).filter(Boolean);
-    }
-
-    const effectTypeVal = document.getElementById('rf-effect-type')?.value;
-    if (effectTypeVal) v2Entry.effectType = effectTypeVal;
-    const selfHpCostVal = Number(document.getElementById('rf-self-hp-cost')?.value);
-    if (!isNaN(selfHpCostVal) && selfHpCostVal > 0) v2Entry.selfHpCost = selfHpCostVal;
-
-    // Rule Flags
-    const ruleFlags = Object.assign({}, baseObj.ruleFlags || {});
-    const getFlag = id => document.getElementById(id)?.checked;
-    if (getFlag('rf-flag-touch')) ruleFlags.touchAttack = true; else delete ruleFlags.touchAttack;
-    if (getFlag('rf-flag-ignore-armor')) ruleFlags.ignoreArmor = true; else delete ruleFlags.ignoreArmor;
-    if (getFlag('rf-flag-keen')) ruleFlags.critThreatDoubled = true; else delete ruleFlags.critThreatDoubled;
-    if (getFlag('rf-flag-reach')) ruleFlags.reach = true; else delete ruleFlags.reach;
-    if (getFlag('rf-flag-silver')) ruleFlags.silver = true; else delete ruleFlags.silver;
-    if (getFlag('rf-flag-cold-iron')) ruleFlags.coldIron = true; else delete ruleFlags.coldIron;
-    if (getFlag('rf-flag-adamantine')) ruleFlags.adamantine = true; else delete ruleFlags.adamantine;
-    if (getFlag('rf-flag-two-hand-str')) ruleFlags.twoHandedStrengthMultiplier = true; else delete ruleFlags.twoHandedStrengthMultiplier;
-    v2Entry.ruleFlags = ruleFlags;
-
-    if (this.saveEntry(v2Entry, this.selectedEntryIndex)) {
-      if (alsoEquip) {
-        this.equipItem(v2Entry);
-      }
-      this.closeModal();
-    }
+    this.saveInlineManualEntry(alsoEquip);
   },
+
   closeModal() {
-    const modal = document.getElementById('rule-crud-modal');
-    if (modal) modal.classList.add('hidden');
-    this.selectedEntryIndex = -1;
+    this.resetInlineManualForm();
   },
 
   onTypeChange() {
-    const typeVal = document.getElementById('rf-type')?.value || 'Weapon';
-    const isArmorShield = typeVal === 'Armor' || typeVal === 'Shield';
-    const isWeapon = typeVal === 'Weapon';
-    const isSpellManeuver = typeVal === 'Spell' || typeVal === 'Maneuver' || typeVal === 'Stance';
-    const isRace = typeVal === 'Race';
-
-    const pArmor = document.getElementById('rf-panel-armor');
-    const pWeapon = document.getElementById('rf-panel-weapon');
-    const pSpell = document.getElementById('rf-panel-spell');
-    const pRace = document.getElementById('rf-panel-race');
-
-    if (pArmor) pArmor.classList.toggle('hidden', !isArmorShield);
-    if (pWeapon) pWeapon.classList.toggle('hidden', !isWeapon);
-    if (pSpell) pSpell.classList.toggle('hidden', !isSpellManeuver);
-    if (pRace) pRace.classList.toggle('hidden', !isRace);
+    this.onInlineManualTypeChange(true);
   },
 
   DND35_CANONICAL_SKILLS: [
@@ -4650,23 +4359,32 @@ Return valid JSON only matching:
     list.appendChild(row);
   },
 
-  onInlineManualTypeChange() {
+  onInlineManualTypeChange(preserveSlotAndAction = false) {
     const typeVal = document.getElementById('im-type')?.value || 'Weapon';
     const slotEl = document.getElementById('im-slot');
     const actEl = document.getElementById('im-action');
-    if (slotEl) {
-      if (typeVal === 'Weapon') slotEl.value = 'Main Hand';
-      else if (typeVal === 'Shield') slotEl.value = 'Off-Hand/Shield';
-      else if (typeVal === 'Armor') slotEl.value = 'Armor';
-      else if (typeVal === 'Ring') slotEl.value = 'Ring';
-      else if (typeVal === 'Wondrous Item') slotEl.value = 'Shoulders';
-      else slotEl.value = 'None';
+    if (!preserveSlotAndAction) {
+      if (slotEl) {
+        if (typeVal === 'Weapon') slotEl.value = 'Main Hand';
+        else if (typeVal === 'Shield') slotEl.value = 'Off-Hand/Shield';
+        else if (typeVal === 'Armor') slotEl.value = 'Armor';
+        else if (typeVal === 'Ring') slotEl.value = 'Ring';
+        else if (typeVal === 'Wondrous Item') slotEl.value = 'Shoulders';
+        else slotEl.value = 'None';
+      }
+      if (actEl) {
+        if (typeVal === 'Spell' || typeVal === 'Maneuver' || typeVal === 'Potion') actEl.value = 'Standard Action';
+        else if (typeVal === 'Stance') actEl.value = 'Swift Action';
+        else actEl.value = 'Passive';
+      }
     }
-    if (actEl) {
-      if (typeVal === 'Spell' || typeVal === 'Maneuver' || typeVal === 'Potion') actEl.value = 'Standard Action';
-      else if (typeVal === 'Stance') actEl.value = 'Swift Action';
-      else actEl.value = 'Passive';
-    }
+
+    const isArmorShield = typeVal === 'Armor' || typeVal === 'Shield';
+    const isSpellManeuver = typeVal === 'Spell' || typeVal === 'Maneuver' || typeVal === 'Stance';
+    const pArmor = document.getElementById('im-panel-armor');
+    const pSpell = document.getElementById('im-panel-spell');
+    if (pArmor) pArmor.classList.toggle('hidden', !isArmorShield);
+    if (pSpell) pSpell.classList.toggle('hidden', !isSpellManeuver);
   },
 
   applyInlineManualPreset(presetKey) {
@@ -4685,6 +4403,20 @@ Return valid JSON only matching:
     const chk2h = document.getElementById('im-flag-two-hand-str');
     if (chk2h) chk2h.checked = presetKey === 'weapon2h';
 
+    if (presetKey === 'shield') {
+      setVal('im-armor-ac', 2);
+      setVal('im-max-dex', '');
+      setVal('im-acp', -1);
+      setVal('im-asf', 5);
+    } else if (presetKey === 'armor') {
+      setVal('im-armor-ac', 4);
+      setVal('im-max-dex', 4);
+      setVal('im-acp', -2);
+      setVal('im-asf', 20);
+    }
+
+    this.onInlineManualTypeChange(true);
+
     const modList = document.getElementById('im-modifiers-list');
     if (modList) {
       modList.innerHTML = '';
@@ -4701,6 +4433,7 @@ Return valid JSON only matching:
   },
 
   buildInlineManualV2Entry() {
+    const editIdx = this.selectedEntryIndex;
     const rawName = (document.getElementById('im-name')?.value || '').trim();
     const typeVal = this.capitalizeIdentifier(document.getElementById('im-type')?.value || 'Weapon');
     const slotVal = this.capitalizeIdentifier(document.getElementById('im-slot')?.value || 'None');
@@ -4716,7 +4449,10 @@ Return valid JSON only matching:
     const prereqVal = (document.getElementById('im-prereq')?.value || '-').trim();
     const benefitVal = (document.getElementById('im-benefit')?.value || '').trim();
 
-    const baseObj = this.createEmptyEntry(typeVal);
+    const baseObj = (editIdx >= 0 && typeof masterDb !== 'undefined' && Array.isArray(masterDb) && masterDb[editIdx])
+      ? this.ensureV2(JSON.parse(JSON.stringify(masterDb[editIdx])))
+      : (this._currentEditingEntry ? this.ensureV2(JSON.parse(JSON.stringify(this._currentEditingEntry))) : this.createEmptyEntry(typeVal));
+
     const modifiers = [];
     document.querySelectorAll('#im-modifiers-list .im-mod-row').forEach(row => {
       const target = row.querySelector('.im-mod-target')?.value || 'ability.str';
@@ -4739,14 +4475,18 @@ Return valid JSON only matching:
         onCritOnly: false,
         source: typeVal === 'Weapon' ? 'Base Weapon' : 'Primary'
       });
+    } else if (Array.isArray(baseObj.damageParts) && baseObj.damageParts.length > 1) {
+      damageParts.push(...baseObj.damageParts.slice(1));
     }
 
-    const ruleFlags = {};
-    if (document.getElementById('im-flag-touch')?.checked) ruleFlags.touchAttack = true;
-    if (document.getElementById('im-flag-keen')?.checked) ruleFlags.critThreatDoubled = true;
-    if (document.getElementById('im-flag-adamantine')?.checked) ruleFlags.adamantine = true;
+    const ruleFlags = Object.assign({}, baseObj.ruleFlags || {});
+    if (document.getElementById('im-flag-touch')?.checked) ruleFlags.touchAttack = true; else delete ruleFlags.touchAttack;
+    if (document.getElementById('im-flag-keen')?.checked) ruleFlags.critThreatDoubled = true; else delete ruleFlags.critThreatDoubled;
+    if (document.getElementById('im-flag-adamantine')?.checked) ruleFlags.adamantine = true; else delete ruleFlags.adamantine;
     if (document.getElementById('im-flag-two-hand-str')?.checked || slotVal === 'Two-Handed') {
       ruleFlags.twoHandedStrengthMultiplier = true;
+    } else {
+      delete ruleFlags.twoHandedStrengthMultiplier;
     }
 
     const entry = Object.assign({}, baseObj, {
@@ -4757,7 +4497,7 @@ Return valid JSON only matching:
       source: sourceVal,
       prereq: prereqVal,
       benefit: benefitVal,
-      description: benefitVal,
+      description: benefitVal || baseObj.description || '',
       action: actVal,
       actionType: this.deriveActionType(actVal, typeVal).toLowerCase(),
       weight: weightVal,
@@ -4768,58 +4508,128 @@ Return valid JSON only matching:
     });
 
     if (!isNaN(chargesVal) && chargesVal > 0) {
-      entry.dailyCharges = { current: chargesVal, max: chargesVal, unit: 'charges', recharge: 'long_rest' };
+      entry.dailyCharges = {
+        current: (baseObj.dailyCharges?.current !== undefined && baseObj.dailyCharges.current <= chargesVal) ? baseObj.dailyCharges.current : chargesVal,
+        max: chargesVal,
+        unit: baseObj.dailyCharges?.unit || 'charges',
+        recharge: 'long_rest'
+      };
+    } else if (baseObj.dailyCharges) {
+      delete entry.dailyCharges;
     }
+
     if (typeVal === 'Weapon') {
-      entry.weaponStats = {
-        category: 'Martial',
-        handedness: slotVal === 'Two-Handed' ? 'Two-Handed' : 'One-Handed',
-        baseDamage: diceVal || '1d8',
+      entry.weaponStats = Object.assign({}, baseObj.weaponStats || {}, {
+        category: baseObj.weaponStats?.category || 'Martial',
+        handedness: slotVal === 'Two-Handed' ? 'Two-Handed' : (baseObj.weaponStats?.handedness || 'One-Handed'),
+        baseDamage: diceVal || baseObj.weaponStats?.baseDamage || '1d8',
         critMin: critMinVal,
         critMult: critMultVal,
-        damageTypes: dmgTypeVal.split('/').map(s => s.trim()).filter(Boolean),
-        rangeIncrement: 0,
-        finessable: false,
-        isLight: false
-      };
+        damageTypes: dmgTypeVal.split('/').map(s => s.trim()).filter(Boolean)
+      });
     } else if (typeVal === 'Armor' || typeVal === 'Shield') {
       const acMod = modifiers.find(m => String(m.target).startsWith('ac'));
+      const rawArmorAc = document.getElementById('im-armor-ac')?.value;
+      const rawMaxDex = document.getElementById('im-max-dex')?.value;
+      const rawAcp = document.getElementById('im-acp')?.value;
+      const rawAsf = document.getElementById('im-asf')?.value;
+      const baseAcNum = (rawArmorAc !== '' && rawArmorAc !== undefined && !isNaN(Number(rawArmorAc)))
+        ? Number(rawArmorAc)
+        : (acMod ? Number(acMod.value) || 0 : (baseObj.armorStats?.baseAc || (typeVal === 'Shield' ? 2 : 4)));
       entry.armorStats = {
-        category: typeVal === 'Shield' ? 'Shield' : 'Light',
-        baseAc: acMod ? Number(acMod.value) || 0 : (typeVal === 'Shield' ? 2 : 4),
-        maxDex: typeVal === 'Shield' ? null : 4,
-        acp: typeVal === 'Shield' ? -1 : -2,
-        asf: typeVal === 'Shield' ? 5 : 20,
-        speed30: 30,
-        speed20: 20
+        category: typeVal === 'Shield' ? 'Shield' : (baseObj.armorStats?.category || 'Light'),
+        baseAc: baseAcNum,
+        maxDex: (rawMaxDex !== '' && rawMaxDex !== undefined && !isNaN(Number(rawMaxDex))) ? Number(rawMaxDex) : null,
+        acp: (rawAcp !== '' && rawAcp !== undefined && !isNaN(Number(rawAcp))) ? Number(rawAcp) : 0,
+        asf: (rawAsf !== '' && rawAsf !== undefined && !isNaN(Number(rawAsf))) ? Number(rawAsf) : 0,
+        speed30: baseObj.armorStats?.speed30 || 30,
+        speed20: baseObj.armorStats?.speed20 || 20
       };
+    } else if (typeVal === 'Spell' || typeVal === 'Maneuver' || typeVal === 'Stance') {
+      const rawLvl = document.getElementById('im-level')?.value;
+      const schoolDisc = (document.getElementById('im-school-disc')?.value || '').trim();
+      const saveType = (document.getElementById('im-save-type')?.value || '').trim() || 'None';
+      const spellRange = (document.getElementById('im-spell-range')?.value || '').trim();
+      entry.level = (rawLvl !== '' && rawLvl !== undefined && !isNaN(Number(rawLvl))) ? Number(rawLvl) : '';
+      if (typeVal === 'Spell') entry.school = schoolDisc;
+      else entry.discipline = schoolDisc;
+      if (spellRange) entry.range = spellRange;
+      entry.spellStats = Object.assign({}, baseObj.spellStats || {}, {
+        school: typeVal === 'Spell' ? schoolDisc : (baseObj.spellStats?.school || ''),
+        discipline: typeVal !== 'Spell' ? schoolDisc : (baseObj.spellStats?.discipline || ''),
+        level: entry.level,
+        castingTime: actVal,
+        range: spellRange,
+        savingThrow: saveType
+      });
     }
 
     return this.ensureV2(entry);
   },
 
-  openAdvancedModalFromInlineManual() {
-    const draft = this.buildInlineManualV2Entry();
-    this.openModalWithData(draft, -1);
+  resetInlineManualForm() {
+    this.selectedEntryIndex = -1;
+    this._currentEditingEntry = null;
+    const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+    setVal('im-name', '');
+    setVal('im-type', 'Weapon');
+    setVal('im-slot', 'Main Hand');
+    setVal('im-source', 'PHB p.');
+    setVal('im-dice', '');
+    setVal('im-dmg-type', 'Slashing');
+    setVal('im-crit-min', 20);
+    setVal('im-crit-mult', 2);
+    setVal('im-action', 'Passive');
+    setVal('im-cost', 0);
+    setVal('im-weight', 0);
+    setVal('im-charges', '');
+    setVal('im-prereq', '-');
+    setVal('im-benefit', '');
+    setVal('im-armor-ac', '');
+    setVal('im-max-dex', '');
+    setVal('im-acp', '');
+    setVal('im-asf', '');
+    setVal('im-level', '');
+    setVal('im-school-disc', '');
+    setVal('im-save-type', '');
+    setVal('im-spell-range', '');
+
+    ['im-flag-touch', 'im-flag-keen', 'im-flag-adamantine', 'im-flag-two-hand-str'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.checked = false;
+    });
+
+    const modList = document.getElementById('im-modifiers-list');
+    if (modList) {
+      modList.innerHTML = '';
+      this.addInlineManualModifierRow();
+    }
+
+    const banner = document.getElementById('im-editing-banner');
+    if (banner) banner.classList.add('hidden');
+    const saveDbLbl = document.getElementById('btn-im-save-db-label');
+    if (saveDbLbl) saveDbLbl.textContent = 'Save to Custom DB';
+    const saveEqLbl = document.getElementById('btn-im-save-equip-label');
+    if (saveEqLbl) saveEqLbl.textContent = 'Save & Equip to Character';
+
+    this.onInlineManualTypeChange(true);
   },
 
   saveInlineManualEntry(alsoEquip = false) {
+    const editIdx = this.selectedEntryIndex;
     const v2Entry = this.buildInlineManualV2Entry();
     if (!v2Entry.name || !v2Entry.name.trim()) {
       alert('⚠️ Please enter a Rule / Item Name first.');
       document.getElementById('im-name')?.focus();
       return;
     }
-    if (this.saveEntry(v2Entry, -1)) {
+    if (this.saveEntry(v2Entry, editIdx)) {
       if (alsoEquip) {
         this.equipItem(v2Entry);
       } else {
-        alert(`✅ "${v2Entry.name}" saved to Character Custom DB!`);
+        alert(`✅ "${v2Entry.name}" ${editIdx >= 0 ? 'updated in' : 'saved to'} Character Custom DB!`);
       }
-      const nameEl = document.getElementById('im-name');
-      if (nameEl) nameEl.value = '';
-      const benEl = document.getElementById('im-benefit');
-      if (benEl) benEl.value = '';
+      this.resetInlineManualForm();
     }
   },
 
