@@ -6175,13 +6175,20 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         });
 
         // 1. Sınıf Özellikleri (Core Class Abilities + Class Bonus Feats)
-        const abilityBadgeItems = (lvl.specialAbilities || []).map(aStr => {
+        const abilityBadgeItems = (lvl.specialAbilities || []).filter(aStr => {
+          const str = String(aStr).trim();
+          // Hide generic "Domains (2)" or "[Domain: ...]" strings on Cleric 1 because we render dedicated interactive Domain badges
+          if ( /^(\[[^\]]+\]\s*)?Domains\s*\(2\)/i.test(str) || /^⚜️\s*Domain:/i.test(str) || /^\[Domain:/i.test(str) ) {
+            return false;
+          }
+          return true;
+        }).map(aStr => {
           const str = String(aStr);
-          const rawName = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
+          const rawName = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim();
           const safeA = rawName.replace(/'/g, "\\'");
           const tip = getFeatTooltipText(aStr);
           const safeTip = tip.replace(/"/g, '&quot;');
-          const cleanStr = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+/, '').trim();
+          const cleanStr = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+/, '').trim();
           const cornerBadge = getFeatPinCornerBadgeHtml(rawName);
           return `<button onclick="showFeatDetail('${safeA}', ${idx}, 'ability')" title="${safeTip}" class="relative w-full min-h-6 h-auto py-0.5 inline-flex items-center justify-start gap-1.5 px-2 rounded text-[10px] font-bold bg-sky-950/80 hover:bg-sky-900 text-sky-300 border border-sky-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">✨</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-3">${cleanStr}</span>${cornerBadge}</button>`;
         });
@@ -6207,6 +6214,30 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         const qualifiesForClassBonus = classFeats.hasBonusFeat;
 
         const pendingClassBonusButtons = [];
+
+        // Cleric 1st Level: 2 Domain Selections (PHB p. 32)
+        const isClericLvl1 = ['cleric', 'rahip'].includes(String(lvl.className || '').toLowerCase().trim()) && classLevelSoFar === 1;
+        if (isClericLvl1) {
+          const chosenDomains = (typeof getCharacterClericDomains === 'function')
+            ? getCharacterClericDomains(character)
+            : (Array.isArray(character?.spellcasting?.domains) ? character.spellcasting.domains.filter(Boolean) : []);
+          for (let dSlot = 0; dSlot < 2; dSlot++) {
+            const domName = chosenDomains[dSlot];
+            if (domName) {
+              const domDef = (typeof DND35_CLERIC_DOMAINS === 'object' && DND35_CLERIC_DOMAINS[domName]) ? DND35_CLERIC_DOMAINS[domName] : null;
+              const gPower = domDef ? domDef.grantedPower : 'Cleric Domain Granted Power';
+              const safeTip = `Cleric Domain (${dSlot + 1}/2): ${domName} — ${gPower} (Click to change domain)`.replace(/"/g, '&quot;');
+              classBonusBadgeItems.push(
+                `<button onclick="openClericDomainPickerModal(${idx}, ${dSlot})" title="${safeTip}" class="relative w-full min-h-6 h-auto py-0.5 inline-flex items-center justify-start gap-1.5 px-2 rounded text-[10px] font-bold bg-amber-950/90 hover:bg-amber-900 text-yellow-300 border border-yellow-500/80 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">⚜️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2">Domain: ${domName}</span></button>`
+              );
+            } else {
+              pendingClassBonusButtons.push(
+                `<button onclick="openClericDomainPickerModal(${idx}, ${dSlot})" class="w-full min-h-6 h-auto py-0.5 inline-flex items-center justify-start gap-1.5 px-2 rounded text-[10px] font-bold bg-amber-950/90 hover:bg-amber-900 text-yellow-300 border border-dashed border-yellow-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Cleric Domain (${dSlot + 1}/2) — Grants a Domain Power and +1 Domain Spell Slot per spell level (1st–9th)"><span class="shrink-0">⚜️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2">+ Select Cleric Domain (${dSlot + 1}/2)</span></button>`
+              );
+            }
+          }
+        }
+
         if (qualifiesForClassBonus && classBonusFeats.length === 0) {
           const contract = classFeats.bonusFeatContract;
           let btnText = '+ Select Bonus Feat';
@@ -7065,4 +7096,231 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         total: isEnabled ? 'Consolidated' : 'RAW'
       });
     }
+
+    // ====================================================
+    // CLERIC DOMAIN PICKER MODAL (D&D 3.5e RAW PHB p. 32)
+    // ====================================================
+    window._activeClericDomainPickerCtx = { levelIdx: 0, slotIdx: 0 };
+
+    function getDomainSpellsByDomainMap() {
+      const domainSpellsMap = {};
+      const allSpells = typeof getCombinedSpellManeuverCatalog === 'function'
+        ? getCombinedSpellManeuverCatalog()
+        : (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function' ? window.SrdCompendium.getAllLoaded(['Spell']) : []);
+      allSpells.forEach(sp => {
+        const domObj = sp?.learnedAt?.domain;
+        if (!domObj || typeof domObj !== 'object') return;
+        Object.entries(domObj).forEach(([domName, lvl]) => {
+          const numLvl = Number(lvl);
+          if (isNaN(numLvl)) return;
+          if (!domainSpellsMap[domName]) domainSpellsMap[domName] = [];
+          if (!domainSpellsMap[domName].some(x => x.level === numLvl && x.name === sp.name)) {
+            domainSpellsMap[domName].push({ level: numLvl, name: sp.name });
+          }
+        });
+      });
+      Object.values(domainSpellsMap).forEach(arr => arr.sort((a, b) => a.level - b.level));
+      return domainSpellsMap;
+    }
+
+    function ensureClericDomainModalDom() {
+      let modal = document.getElementById('cleric-domain-picker-modal');
+      if (modal) return modal;
+      modal = document.createElement('div');
+      modal.id = 'cleric-domain-picker-modal';
+      modal.className = 'hidden fixed inset-0 z-[180] bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-3';
+      modal.innerHTML = `
+        <div class="bg-slate-900 border border-yellow-600/70 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[88vh] flex flex-col overflow-hidden">
+          <div class="px-4 py-3 bg-gradient-to-r from-amber-950/90 via-slate-900 to-slate-900 border-b border-yellow-700/50 flex items-center justify-between gap-2">
+            <div>
+              <h3 id="cleric-domain-modal-title" class="text-sm font-extrabold text-yellow-300 flex items-center gap-2">
+                <span>⚜️</span>
+                <span>Select Cleric Domain (D&D 3.5e RAW)</span>
+              </h3>
+              <p class="text-[11px] text-slate-400">Choose one of your deity's two domains to gain its Granted Power and +1 Domain Spell Slot per spell level (1st–9th).</p>
+            </div>
+            <button type="button" onclick="closeClericDomainPickerModal()" class="text-slate-400 hover:text-white text-sm font-bold px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 cursor-pointer">✕</button>
+          </div>
+          <div class="p-3 border-b border-slate-800 bg-slate-950/60 flex flex-wrap items-center justify-between gap-2">
+            <div class="relative flex-1 min-w-[200px]">
+              <input id="cleric-domain-search-input" type="text" oninput="renderClericDomainPickerList()" placeholder="Search 35 domains, granted powers, or domain spells..." class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white font-bold focus:border-yellow-500 focus:outline-none placeholder-slate-500">
+              <span class="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
+            </div>
+            <div id="cleric-domain-current-summary" class="text-[11px] text-yellow-300 font-bold"></div>
+          </div>
+          <div id="cleric-domain-picker-list" class="p-3 overflow-y-auto space-y-2.5 flex-1 divide-y divide-slate-800/80"></div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      return modal;
+    }
+
+    function openClericDomainPickerModal(levelIdx = 0, slotIdx = 0) {
+      window._activeClericDomainPickerCtx = { levelIdx: Number(levelIdx) || 0, slotIdx: Number(slotIdx) || 0 };
+      const modal = ensureClericDomainModalDom();
+      const titleEl = document.getElementById('cleric-domain-modal-title');
+      if (titleEl) {
+        titleEl.innerHTML = `<span>⚜️</span><span>Select Cleric Domain (${slotIdx + 1}/2) — D&D 3.5e SRD</span>`;
+      }
+      const searchEl = document.getElementById('cleric-domain-search-input');
+      if (searchEl) searchEl.value = '';
+      modal.classList.remove('hidden');
+      renderClericDomainPickerList();
+
+      if (window.SrdCompendium && typeof window.SrdCompendium.ensureChunkLoaded === 'function') {
+        window.SrdCompendium.ensureChunkLoaded('srd_spells.json').then(() => {
+          renderClericDomainPickerList();
+        }).catch(() => {});
+      }
+    }
+
+    function closeClericDomainPickerModal() {
+      const modal = document.getElementById('cleric-domain-picker-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function renderClericDomainPickerList() {
+      const listEl = document.getElementById('cleric-domain-picker-list');
+      if (!listEl) return;
+      const ctx = window._activeClericDomainPickerCtx || { levelIdx: 0, slotIdx: 0 };
+      const chosen = (typeof getCharacterClericDomains === 'function')
+        ? getCharacterClericDomains(character)
+        : (Array.isArray(character?.spellcasting?.domains) ? character.spellcasting.domains.filter(Boolean) : []);
+      const currentSlotDomain = chosen[ctx.slotIdx] || null;
+      const otherSlotDomain = chosen[ctx.slotIdx === 0 ? 1 : 0] || null;
+
+      const summaryEl = document.getElementById('cleric-domain-current-summary');
+      if (summaryEl) {
+        if (currentSlotDomain) {
+          summaryEl.innerHTML = `Slot ${ctx.slotIdx + 1}: <span class="text-white">${currentSlotDomain}</span> <button type="button" onclick="clearClericDomainSlot(${ctx.slotIdx})" class="ml-2 text-[10px] text-rose-300 hover:text-white bg-rose-950/80 border border-rose-700 px-2 py-0.5 rounded cursor-pointer">Clear Slot</button>`;
+        } else {
+          summaryEl.textContent = `Slot ${ctx.slotIdx + 1}: Empty`;
+        }
+      }
+
+      const query = (document.getElementById('cleric-domain-search-input')?.value || '').toLowerCase().trim();
+      const domainsCatalog = (typeof DND35_CLERIC_DOMAINS === 'object' && DND35_CLERIC_DOMAINS) ? DND35_CLERIC_DOMAINS : {};
+      const domainSpellsMap = getDomainSpellsByDomainMap();
+
+      const entries = Object.entries(domainsCatalog).filter(([domName, meta]) => {
+        if (!query) return true;
+        const gp = String(meta?.grantedPower || '').toLowerCase();
+        const spList = (domainSpellsMap[domName] || []).map(s => s.name.toLowerCase()).join(' ');
+        return domName.toLowerCase().includes(query) || gp.includes(query) || spList.includes(query);
+      });
+
+      listEl.innerHTML = entries.map(([domName, meta]) => {
+        const isCurrent = domName === currentSlotDomain;
+        const isOther = domName === otherSlotDomain;
+        const spells = domainSpellsMap[domName] || [];
+        const spellsBadges = spells.length > 0
+          ? spells.map(s => `<span class="text-[10px] bg-slate-950 text-amber-200/90 border border-slate-800 px-1.5 py-0.5 rounded font-mono"><strong class="text-yellow-400">${s.level}:</strong> ${s.name}</span>`).join(' ')
+          : `<span class="text-[10px] text-slate-500 italic">Loading domain spells...</span>`;
+
+        let btnHtml = '';
+        if (isCurrent) {
+          btnHtml = `<span class="text-[11px] font-bold text-emerald-300 bg-emerald-950/70 border border-emerald-600 px-2.5 py-1 rounded-lg">✓ Selected</span>`;
+        } else if (isOther) {
+          btnHtml = `<span class="text-[11px] font-bold text-slate-400 bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-lg" title="Already selected in your other Domain slot">Other Slot</span>`;
+        } else {
+          btnHtml = `<button type="button" onclick="selectClericDomain('${domName.replace(/'/g, "\\'")}')" class="bg-amber-600 hover:bg-amber-500 text-slate-950 font-extrabold text-xs px-3 py-1.5 rounded-lg border border-yellow-400 shadow transition cursor-pointer">⚜️ Select</button>`;
+        }
+
+        return `
+          <div class="pt-2.5 pb-2.5 flex items-start justify-between gap-3 ${isCurrent ? 'bg-amber-950/20 px-2 rounded-lg' : ''}">
+            <div class="space-y-1.5 flex-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-xs font-extrabold text-yellow-300 flex items-center gap-1">⚜️ ${domName} Domain</span>
+                <span class="text-[10px] text-slate-500 font-mono">PHB / SRD</span>
+              </div>
+              <p class="text-[11px] text-slate-200"><strong class="text-amber-300">Granted Power:</strong> ${meta.grantedPower}</p>
+              <div class="flex flex-wrap gap-1 pt-0.5">${spellsBadges}</div>
+            </div>
+            <div class="shrink-0 pt-1">${btnHtml}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function syncClericDomainsToCharacterSpecialAbilities() {
+      if (!character) return;
+      const chosen = (typeof getCharacterClericDomains === 'function')
+        ? getCharacterClericDomains(character)
+        : (Array.isArray(character?.spellcasting?.domains) ? character.spellcasting.domains.filter(Boolean) : []);
+      const domainsCatalog = (typeof DND35_CLERIC_DOMAINS === 'object' && DND35_CLERIC_DOMAINS) ? DND35_CLERIC_DOMAINS : {};
+
+      // Update specialAbilities on Cleric 1 row and character.specialAbilities
+      if (Array.isArray(character.levelProgression)) {
+        let clericSeen = 0;
+        character.levelProgression.forEach(row => {
+          if (!row) return;
+          if (['cleric', 'rahip'].includes(String(row.className || '').toLowerCase().trim())) {
+            clericSeen++;
+            if (clericSeen === 1) {
+              if (!Array.isArray(row.specialAbilities)) row.specialAbilities = [];
+              row.specialAbilities = row.specialAbilities.filter(a => !/^⚜️\s*Domain:/i.test(String(a)) && !/^\[Domain:/i.test(String(a)));
+              chosen.forEach(d => {
+                row.specialAbilities.push(`⚜️ Domain: ${d}`);
+              });
+            }
+          }
+        });
+      }
+
+      if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
+      character.specialAbilities = character.specialAbilities.filter(a => {
+        const n = typeof a === 'string' ? a : (a?.name || '');
+        return !/^⚜️\s*Domain:/i.test(n) && !/\bDomain\s*\(Granted Power\)/i.test(n);
+      });
+      chosen.forEach(d => {
+        const meta = domainsCatalog[d];
+        character.specialAbilities.push({
+          name: `⚜️ ${d} Domain (Granted Power)`,
+          source: 'Cleric Domain',
+          benefit: meta ? meta.grantedPower : `${d} Domain Granted Power`
+        });
+      });
+
+      if (typeof autoSyncCharacterClassSkills === 'function') {
+        autoSyncCharacterClassSkills(character, false);
+      }
+    }
+
+    function selectClericDomain(domainName) {
+      if (!character) return;
+      if (!character.spellcasting) character.spellcasting = {};
+      const ctx = window._activeClericDomainPickerCtx || { levelIdx: 0, slotIdx: 0 };
+      const current = Array.isArray(character.spellcasting.domains) ? [...character.spellcasting.domains] : [];
+      current[ctx.slotIdx] = domainName;
+      character.spellcasting.domains = current.filter((d, idx) => idx < 2);
+
+      syncClericDomainsToCharacterSpecialAbilities();
+      if (typeof calculateDivineSlots === 'function') {
+        calculateDivineSlots();
+      }
+      saveStateToStorage(true);
+      closeClericDomainPickerModal();
+      renderAll();
+
+      const meta = (typeof DND35_CLERIC_DOMAINS === 'object' && DND35_CLERIC_DOMAINS) ? DND35_CLERIC_DOMAINS[domainName] : null;
+      showDiceTopToast({
+        icon: '⚜️',
+        title: `${domainName} Domain Selected`,
+        breakdown: meta ? meta.grantedPower : `Granted Power & Domain Spells unlocked.`,
+        total: `Domain ${ctx.slotIdx + 1}/2`
+      });
+    }
+
+    function clearClericDomainSlot(slotIdx) {
+      if (!character || !character.spellcasting || !Array.isArray(character.spellcasting.domains)) return;
+      character.spellcasting.domains.splice(slotIdx, 1);
+      syncClericDomainsToCharacterSpecialAbilities();
+      if (typeof calculateDivineSlots === 'function') {
+        calculateDivineSlots();
+      }
+      saveStateToStorage(true);
+      renderClericDomainPickerList();
+      renderAll();
+    }
+
 

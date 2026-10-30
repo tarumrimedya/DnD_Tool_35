@@ -973,6 +973,7 @@
       const s = slots.find(item => Number(item.level) === Number(lvl));
       if (!s) return;
       s.used = 0;
+      if (key === 'divine') s.domainUsed = 0;
 
       saveStateToStorage(false);
       renderSpellSlotsStrip();
@@ -991,7 +992,10 @@
         return;
       }
       const slots = getSpellSlotsArrayBySource(sourceKey);
-      slots.forEach(s => s.used = 0);
+      slots.forEach(s => {
+        s.used = 0;
+        if (sourceKey === 'divine') s.domainUsed = 0;
+      });
       saveStateToStorage(false);
       renderSpellSlotsStrip();
       renderSpellSlotsModalRows();
@@ -1004,16 +1008,19 @@
       const sourceLabels = { spontaneous: 'Spontaneous Spell', prepared: 'Prepared Spell', divine: 'Divine Spell' };
       showDiceTopToast({
         icon: '✨',
-        title: 'Yuvalar Yenilendi',
+        title: 'Slots Refreshed',
         breakdown: `All ${sourceLabels[sourceKey] || sourceKey} slots refreshed.`,
-        total: 'Yenilendi'
+        total: 'Refreshed'
       });
     }
 
     function replenishAllSpellSlots() {
       (character?.spellcasting?.slots || []).forEach(s => s.used = 0);
       (character?.spellcasting?.preparedSlots || []).forEach(s => s.used = 0);
-      (character?.spellcasting?.divineSlots || []).forEach(s => s.used = 0);
+      (character?.spellcasting?.divineSlots || []).forEach(s => {
+        s.used = 0;
+        s.domainUsed = 0;
+      });
       (character?.tomeOfBattle?.readiedManeuvers || []).forEach(m => m.expended = false);
 
       saveStateToStorage(false);

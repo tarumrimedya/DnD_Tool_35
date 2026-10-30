@@ -400,58 +400,270 @@
       return result;
     }
 
+    // Official D&D 3.5e SRD 35 Cleric Domains Catalog (Granted Powers & Class Skills)
+    const DND35_CLERIC_DOMAINS = {
+      Air: {
+        grantedPower: "Turn or destroy earth creatures as a good cleric turns undead. Rebuke, command, or bolster air creatures as an evil cleric rebukes undead (3 + Cha modifier/day).",
+        classSkills: []
+      },
+      Animal: {
+        grantedPower: "Use Speak with Animals once per day as a spell-like ability. Knowledge (nature) is a class skill.",
+        classSkills: ["k_nature"]
+      },
+      Artifice: {
+        grantedPower: "Gain a +4 bonus on Craft checks. You cast Conjuration (Creation) spells at +1 caster level.",
+        classSkills: []
+      },
+      Chaos: {
+        grantedPower: "You cast chaos spells at +1 caster level.",
+        classSkills: []
+      },
+      Charm: {
+        grantedPower: "Boost your Charisma by +4 once per day as a free action (lasts 1 minute).",
+        classSkills: []
+      },
+      Community: {
+        grantedPower: "Use Calm Emotions 1/day as a spell-like ability. Gain a +2 competence bonus on Diplomacy checks.",
+        classSkills: []
+      },
+      Creation: {
+        grantedPower: "You cast Conjuration (Creation) spells at +2 caster level.",
+        classSkills: []
+      },
+      Darkness: {
+        grantedPower: "Free Blind-Fight feat.",
+        classSkills: []
+      },
+      Death: {
+        grantedPower: "Death Touch (Su) 1/day: Make a melee touch attack; roll 1d6 per cleric level. If the total at least equals the target's current HP, it dies (no save).",
+        classSkills: []
+      },
+      Destruction: {
+        grantedPower: "Smite (Su) 1/day: Make a single melee attack with a +4 bonus on attack rolls and a damage bonus equal to your cleric level.",
+        classSkills: []
+      },
+      Earth: {
+        grantedPower: "Turn or destroy air creatures as a good cleric turns undead. Rebuke, command, or bolster earth creatures as an evil cleric rebukes undead (3 + Cha modifier/day).",
+        classSkills: []
+      },
+      Evil: {
+        grantedPower: "You cast evil spells at +1 caster level.",
+        classSkills: []
+      },
+      Fire: {
+        grantedPower: "Turn or destroy water creatures as a good cleric turns undead. Rebuke, command, or bolster fire creatures as an evil cleric rebukes undead (3 + Cha modifier/day).",
+        classSkills: []
+      },
+      Glory: {
+        grantedPower: "Turn undead with a +2 bonus on the turning check and +1d6 to the turning damage roll.",
+        classSkills: []
+      },
+      Good: {
+        grantedPower: "You cast good spells at +1 caster level.",
+        classSkills: []
+      },
+      Healing: {
+        grantedPower: "You cast Conjuration (Healing) spells at +1 caster level.",
+        classSkills: []
+      },
+      Knowledge: {
+        grantedPower: "All Knowledge skills are class skills. You cast divination spells at +1 caster level.",
+        classSkills: ["k_arcana", "k_arch", "k_dungeon", "k_geo", "k_history", "k_local", "k_nature", "k_nobility", "k_religion", "k_planes"]
+      },
+      Law: {
+        grantedPower: "You cast law spells at +1 caster level.",
+        classSkills: []
+      },
+      Liberation: {
+        grantedPower: "Gain a +2 morale bonus on all saving throws against enchantment spells or effects.",
+        classSkills: []
+      },
+      Luck: {
+        grantedPower: "Good Fortune (Ex) 1/day: Reroll one roll that you have just made before the DM declares whether it results in success or failure.",
+        classSkills: []
+      },
+      Madness: {
+        grantedPower: "Gain an Insanity score equal to half your class level (use 1/day as a bonus on a Wisdom-based check or Will save).",
+        classSkills: []
+      },
+      Magic: {
+        grantedPower: "Use scrolls, wands, and other spell completion or spell trigger devices as a wizard of one-half your cleric level (minimum 1st level).",
+        classSkills: []
+      },
+      Nobility: {
+        grantedPower: "Inspire Allies (Sp) 1/day: Standard action to grant allies who can hear you a +2 morale bonus on saves, attack rolls, ability checks, skill checks, and weapon damage rolls for Cha bonus rounds.",
+        classSkills: []
+      },
+      Plant: {
+        grantedPower: "Rebuke or command plant creatures as an evil cleric rebukes undead (3 + Cha modifier/day). Knowledge (nature) is a class skill.",
+        classSkills: ["k_nature"]
+      },
+      Protection: {
+        grantedPower: "Protective Ward (Su) 1/day: Standard action touch grants a resistance bonus equal to your cleric level on the target's next saving throw (max 1 hour).",
+        classSkills: []
+      },
+      Repose: {
+        grantedPower: "Death Touch / Ward against undead; gentle repose and protection of souls against undeath.",
+        classSkills: []
+      },
+      Rune: {
+        grantedPower: "Free Scribe Scroll feat.",
+        classSkills: []
+      },
+      Scalykind: {
+        grantedPower: "Rebuke or command animals and magical beasts with the reptilian subtype as an evil cleric rebukes undead (3 + Cha modifier/day).",
+        classSkills: []
+      },
+      Strength: {
+        grantedPower: "Feat of Strength (Su) 1/day: Free action to gain an enhancement bonus to Strength equal to your cleric level for 1 round.",
+        classSkills: []
+      },
+      Sun: {
+        grantedPower: "Greater Turning (Su) 1/day: Perform a greater turning against undead in place of a regular turning (undead that would be turned are destroyed instead).",
+        classSkills: []
+      },
+      Travel: {
+        grantedPower: "For a total time per day of 1 round per cleric level, act normally regardless of magical effects that impede movement (as Freedom of Movement). Survival is a class skill.",
+        classSkills: ["survival"]
+      },
+      Trickery: {
+        grantedPower: "Bluff, Disguise, and Hide are class skills.",
+        classSkills: ["bluff", "disguise", "hide"]
+      },
+      War: {
+        grantedPower: "Free Martial Weapon Proficiency with deity's favored weapon (if necessary) and Weapon Focus with the deity's favored weapon.",
+        classSkills: []
+      },
+      Water: {
+        grantedPower: "Turn or destroy fire creatures as a good cleric turns undead. Rebuke, command, or bolster water creatures as an evil cleric rebukes undead (3 + Cha modifier/day).",
+        classSkills: []
+      },
+      Weather: {
+        grantedPower: "Survival is a class skill (gain a +2 competence bonus in natural storms).",
+        classSkills: ["survival"]
+      }
+    };
+    window.DND35_CLERIC_DOMAINS = DND35_CLERIC_DOMAINS;
+
+    function hasClericDomainCapability(char = character) {
+      if (!char) return false;
+      const rawNames = [];
+      if (Array.isArray(char.levelProgression)) {
+        char.levelProgression.filter(p => p && p.active !== false).forEach(p => {
+          if (p.className || p.class) rawNames.push(String(p.className || p.class).toLowerCase().trim());
+        });
+      }
+      if (rawNames.length === 0 && Array.isArray(char.classProgression)) {
+        char.classProgression.forEach(cp => {
+          if (cp?.className || cp?.name) rawNames.push(String(cp.className || cp.name).toLowerCase().trim());
+        });
+      }
+      if (rawNames.length === 0 && typeof char.classes === 'string' && char.classes) {
+        char.classes.split(/[\/,]/).forEach(s => rawNames.push(s.toLowerCase().trim()));
+      }
+      if (rawNames.length === 0 && typeof char.class === 'string' && char.class) {
+        rawNames.push(char.class.toLowerCase().trim());
+      }
+      if (rawNames.some(c => ['cleric', 'creric', 'rahip', 'priest', 'radiant servant', 'contemplative', 'church inquisitor', 'divine oracle', 'warpriest'].some(k => c.includes(k)))) {
+        return true;
+      }
+      if (Array.isArray(char.spellcasting?.domains) && char.spellcasting.domains.filter(Boolean).length > 0) {
+        return true;
+      }
+      return false;
+    }
+
+    function getCharacterClericDomains(char = character) {
+      if (!char) return [];
+      if (!char.spellcasting) char.spellcasting = {};
+      if (Array.isArray(char.spellcasting.domains) && char.spellcasting.domains.some(Boolean)) {
+        return char.spellcasting.domains.filter(Boolean);
+      }
+      // Harvest from levelProgression specialAbilities or feats if present
+      const harvested = [];
+      (char.levelProgression || []).forEach(p => {
+        if (!p || p.active === false) return;
+        [...(p.specialAbilities || []), ...(p.feats || [])].forEach(str => {
+          const m = String(str || '').match(/Domain:\s*([A-Za-z]+)/i);
+          if (m && DND35_CLERIC_DOMAINS[m[1]] && !harvested.includes(m[1])) {
+            harvested.push(m[1]);
+          }
+        });
+      });
+      if (harvested.length > 0) {
+        char.spellcasting.domains = harvested.slice(0, 2);
+        return char.spellcasting.domains;
+      }
+      return [];
+    }
+    window.getCharacterClericDomains = getCharacterClericDomains;
+    window.hasClericDomainCapability = hasClericDomainCapability;
+
     function calculateDivineSlots(divineLvl, wisScore, existingSlots = []) {
       const prevSlots = Array.isArray(existingSlots) ? existingSlots : [];
       if (Number(divineLvl) <= 0) return prevSlots.filter(s => (Number(s.daily) || 0) > 0);
       const lvl = Math.min(20, Math.max(1, Number(divineLvl) || 1));
       const wisMod = Math.floor(((Number(wisScore) || 10) - 10) / 2);
-      // Cleric base daily slots + 1 domain slot for levels 1..9
-      const clericDailyTable = [
+      const hasDomainSlot = hasClericDomainCapability(character);
+
+      // D&D 3.5e RAW Base Daily Slots (PHB Table 3-6 Cleric / Table 3-8 Druid, BEFORE +1 Domain Slot)
+      const baseDivineTable = [
         [],
-        [3, 2],
-        [4, 3],
-        [4, 3, 2],
-        [5, 4, 3],
-        [5, 4, 3, 2],
-        [5, 4, 4, 3],
-        [6, 5, 4, 3, 2],
-        [6, 5, 4, 4, 3],
-        [6, 5, 5, 4, 3, 2],
-        [6, 5, 5, 4, 4, 3],
-        [6, 6, 5, 5, 4, 3, 2],
-        [6, 6, 5, 5, 4, 4, 3],
-        [6, 6, 6, 5, 5, 4, 3, 2],
-        [6, 6, 6, 5, 5, 4, 4, 3],
-        [6, 6, 6, 6, 5, 5, 4, 3, 2],
-        [6, 6, 6, 6, 5, 5, 4, 4, 3],
-        [6, 6, 6, 6, 6, 5, 5, 4, 3, 2],
-        [6, 6, 6, 6, 6, 5, 5, 4, 4, 3],
-        [6, 6, 6, 6, 6, 5, 5, 5, 4, 4],
-        [6, 6, 6, 6, 6, 5, 5, 5, 5, 5]
+        [3, 1],
+        [4, 2],
+        [4, 2, 1],
+        [5, 3, 2],
+        [5, 3, 2, 1],
+        [5, 3, 3, 2],
+        [6, 4, 3, 2, 1],
+        [6, 4, 3, 3, 2],
+        [6, 4, 4, 3, 2, 1],
+        [6, 4, 4, 3, 3, 2],
+        [6, 5, 4, 4, 3, 2, 1],
+        [6, 5, 4, 4, 3, 3, 2],
+        [6, 5, 5, 4, 4, 3, 2, 1],
+        [6, 5, 5, 4, 4, 3, 3, 2],
+        [6, 5, 5, 5, 4, 4, 3, 2, 1],
+        [6, 5, 5, 5, 4, 4, 3, 3, 2],
+        [6, 5, 5, 5, 5, 4, 4, 3, 2, 1],
+        [6, 5, 5, 5, 5, 4, 4, 3, 3, 2],
+        [6, 5, 5, 5, 5, 4, 4, 4, 3, 3],
+        [6, 5, 5, 5, 5, 5, 4, 4, 4, 4]
       ];
-      const baseDaily = clericDailyTable[lvl] || [3, 2];
+      const baseDaily = baseDivineTable[lvl] || [3, 1];
       const result = baseDaily.map((base, spellLvl) => {
         const bonus = (spellLvl >= 1 && wisMod >= spellLvl) ? Math.floor((wisMod - spellLvl) / 4) + 1 : 0;
         const prev = prevSlots.find(s => Number(s.level) === spellLvl);
         const dmBonus = prev ? (Number(prev.dmBonus) || 0) : 0;
-        const daily = Math.max(0, base + bonus + dmBonus);
+        const regularDaily = Math.max(0, base + bonus + dmBonus);
+        const domainDaily = (hasDomainSlot && spellLvl >= 1 && spellLvl <= 9) ? 1 : 0;
+        const daily = regularDaily + domainDaily;
+        const domainUsed = prev ? Math.min(domainDaily, Math.max(0, Number(prev.domainUsed) || 0)) : 0;
+        const used = prev ? Math.min(daily, Math.max(domainUsed, Number(prev.used) || 0)) : 0;
         return {
           level: spellLvl,
           daily,
+          regularDaily,
+          domainDaily,
+          domainUsed,
           dmBonus,
-          used: prev ? Math.min(daily, Number(prev.used) || 0) : 0,
+          used,
           known: daily
         };
       });
       // Retain custom unlocked higher-level slots
       prevSlots.forEach(prev => {
         if (prev && Number(prev.level) >= baseDaily.length) {
+          const dVal = Number(prev.daily) || 0;
           result.push({
             level: Number(prev.level),
-            daily: Number(prev.daily) || 0,
+            daily: dVal,
+            regularDaily: Number(prev.regularDaily ?? dVal) || 0,
+            domainDaily: Number(prev.domainDaily) || 0,
+            domainUsed: Math.min(Number(prev.domainDaily) || 0, Number(prev.domainUsed) || 0),
             dmBonus: Number(prev.dmBonus) || 0,
-            used: Math.min(Number(prev.daily) || 0, Number(prev.used) || 0),
-            known: Number(prev.daily) || 0
+            used: Math.min(dVal, Number(prev.used) || 0),
+            known: dVal
           });
         }
       });
@@ -961,6 +1173,15 @@
     function castClericSpontaneousConversion(spellIdx) {
       const s = character?.spellcasting?.divineSpells?.[spellIdx];
       if (!s) return;
+      if (s.isDomainSpell) {
+        showDiceTopToast({
+          icon: '⚜️',
+          title: 'Domain Spell Restriction',
+          breakdown: 'D&D 3.5e RAW (PHB p.32): Cleric Domain spells cannot be spontaneously converted into Cure or Inflict spells.',
+          total: 'Not Allowed'
+        });
+        return;
+      }
       const lvl = Number(s.level) || 0;
       const { cl } = getDivineCasterInfo();
       const mode = character?.spellcasting?.clericSpontaneousMode || 'cure';
@@ -968,7 +1189,9 @@
       if (!spont) return;
 
       const slot = character.spellcasting?.divineSlots?.find(sl => Number(sl.level) === lvl);
-      if (slot && slot.used < slot.daily) {
+      const regDaily = slot ? (slot.regularDaily ?? Math.max(0, (slot.daily || 0) - (slot.domainDaily || 0))) : 0;
+      const regUsed = slot ? Math.max(0, (slot.used || 0) - (slot.domainUsed || 0)) : 0;
+      if (slot && regUsed < regDaily && slot.used < slot.daily) {
         slot.used++;
         saveStateToStorage(true);
         renderAll();
@@ -980,8 +1203,8 @@
       } else {
         showDiceTopToast({
           icon: '⚠️',
-          title: 'No Slots Remaining',
-          breakdown: `No Level ${lvl} divine spell slots remaining!`,
+          title: 'No Regular Slots Remaining',
+          breakdown: `No Level ${lvl} regular divine spell slots remaining!`,
           total: '0 Slots'
         });
       }
@@ -1070,6 +1293,8 @@
 
       const slots = character.spellcasting.divineSlots;
       const spells = character.spellcasting.divineSpells;
+      const hasDomainCap = hasClericDomainCapability(character);
+      const chosenDomains = getCharacterClericDomains(character);
       const searchVal = (document.getElementById('divine-spell-filter-search')?.value || '').toLowerCase().trim();
       const schoolVal = document.getElementById('divine-spell-filter-school')?.value || 'all';
       const lvlFilter = window._divineSpellCurrentFilterLevel || 'all';
@@ -1084,6 +1309,11 @@
         const lvlLabel = lvl === 0 ? '0 (Orison)' : (lvl >= 10 ? `Level ${lvl} (Epic)` : `Level ${lvl}`);
 
         if (isUnlocked) {
+          const domCount = Number(s.domainDaily) || 0;
+          const regCount = s.regularDaily !== undefined ? Number(s.regularDaily) : Math.max(0, s.daily - domCount);
+          const slotSubLabel = domCount > 0
+            ? `${regCount} Cleric + ${domCount}⚜️ Domain`
+            : `${s.daily} Divine Slots`;
           matrixHtml += `
             <div class="flex items-center justify-between bg-slate-900/90 border border-amber-800/60 hover:border-amber-500 rounded-xl px-3 py-2 shadow-sm transition w-full">
               <div class="flex flex-col min-w-0">
@@ -1091,7 +1321,7 @@
                   <span class="font-extrabold text-white text-xs whitespace-nowrap">${lvlLabel}</span>
                   <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-950/90 text-emerald-400 border border-amber-700/60 font-bold whitespace-nowrap" title="Save DC = 10 + ${lvl} + ${statKey}(+${statMod >= 0 ? '+' + statMod : statMod})">DC ${dc}</span>
                 </div>
-                <span class="text-[10px] text-amber-300 font-mono mt-0.5">${s.daily} Divine Slots${lvl >= 1 && lvl <= 9 ? ' (+Domain)' : ''}</span>
+                <span class="text-[10px] text-amber-300 font-mono mt-0.5">${slotSubLabel}</span>
               </div>
               <div class="h-7 w-px bg-slate-800 mx-1.5 shrink-0"></div>
               <div class="flex flex-col items-end shrink-0">
@@ -1175,7 +1405,7 @@
           spellsAtLvl.filter(({ s }) => {
             if (schoolVal !== 'all' && (s.school || '').toLowerCase() !== schoolVal.toLowerCase()) return false;
             if (searchVal) {
-              const str = `${s.name || ''} ${s.benefit || ''} ${s.school || ''}`.toLowerCase();
+              const str = `${s.name || ''} ${s.benefit || ''} ${s.school || ''} ${s.domainSource || ''}`.toLowerCase();
               if (!str.includes(searchVal)) return false;
             }
             return true;
@@ -1185,14 +1415,31 @@
           });
         } else {
           const slotObj = slots.find(sl => Number(sl.level) === lvl);
-          const quota = slotObj ? slotObj.daily : spellsAtLvl.length;
-          const totalRows = Math.max(quota, spellsAtLvl.length);
-          for (let i = 0; i < totalRows; i++) {
+          const domQuota = slotObj ? (Number(slotObj.domainDaily) || 0) : 0;
+          const regQuota = slotObj
+            ? (slotObj.regularDaily !== undefined ? Number(slotObj.regularDaily) : Math.max(0, (slotObj.daily || 0) - domQuota))
+            : spellsAtLvl.filter(x => !x.s.isDomainSpell).length;
+
+          const regSpells = spellsAtLvl.filter(x => !x.s.isDomainSpell);
+          const domSpells = spellsAtLvl.filter(x => x.s.isDomainSpell === true);
+
+          const totalRegRows = Math.max(regQuota, regSpells.length);
+          for (let i = 0; i < totalRegRows; i++) {
             totalRendered++;
-            if (i < spellsAtLvl.length) {
-              rowsHtml += buildDivineRowHtml(spellsAtLvl[i].s, spellsAtLvl[i].idx, lvl, dc);
+            if (i < regSpells.length) {
+              rowsHtml += buildDivineRowHtml(regSpells[i].s, regSpells[i].idx, lvl, dc);
             } else {
               rowsHtml += buildDivineEmptyRowHtml(lvl, dc);
+            }
+          }
+
+          const totalDomRows = Math.max(domQuota, domSpells.length);
+          for (let j = 0; j < totalDomRows; j++) {
+            totalRendered++;
+            if (j < domSpells.length) {
+              rowsHtml += buildDivineRowHtml(domSpells[j].s, domSpells[j].idx, lvl, dc);
+            } else {
+              rowsHtml += buildDivineEmptyDomainRowHtml(lvl, dc);
             }
           }
         }
@@ -1200,13 +1447,22 @@
 
       function buildDivineRowHtml(s, originalIdx, lvl, dc) {
         const slotObj = slots.find(sl => Number(sl.level) === lvl);
-        const remainingSlots = slotObj ? Math.max(0, (slotObj.daily || 0) - (slotObj.used || 0)) : 0;
-        const hasActiveSlot = remainingSlots > 0;
+        const isDom = Boolean(s.isDomainSpell);
+        const domDaily = slotObj ? (Number(slotObj.domainDaily) || 0) : 0;
+        const domUsed = slotObj ? (Number(slotObj.domainUsed) || 0) : 0;
+        const regDaily = slotObj ? (slotObj.regularDaily !== undefined ? Number(slotObj.regularDaily) : Math.max(0, (slotObj.daily || 0) - domDaily)) : 0;
+        const regUsed = slotObj ? Math.max(0, (slotObj.used || 0) - domUsed) : 0;
+
+        const remainingSlots = isDom
+          ? Math.max(0, domDaily - domUsed)
+          : Math.max(0, regDaily - regUsed);
+        const hasActiveSlot = remainingSlots > 0 && ((slotObj ? (slotObj.daily - slotObj.used) : 0) > 0);
         const theme = getSpellLevelTheme(lvl);
         const dmgExpr = s.damageDice || findDiceExpression(s.benefit);
         const spontInfo = getClericSpontaneousSpellInfo(lvl, cl, spontMode);
         const isAlreadyCureOrInflict = /^(cure|inflict|mass cure|mass inflict)\b/i.test((s.name || '').trim());
-        const showSpontBtn = Boolean(spontInfo && !isAlreadyCureOrInflict);
+        // D&D 3.5e RAW (PHB p.32): Domain spells cannot be spontaneously converted to Cure/Inflict Wounds
+        const showSpontBtn = Boolean(spontInfo && !isAlreadyCureOrInflict && !isDom);
         const spontBtnHtml = showSpontBtn ? `
           <button onclick="castClericSpontaneousConversion(${originalIdx})" class="${
             hasActiveSlot
@@ -1222,18 +1478,23 @@
           </button>
         ` : '';
 
+        const domainBadgeHtml = isDom
+          ? `<span class="badge bg-yellow-950/90 text-yellow-300 border border-yellow-500/80 text-[10px] font-bold px-1.5 py-0.5 shrink-0" title="Prepared in Dedicated Cleric Domain Slot (Cannot be converted to Cure/Inflict)">⚜️ ${s.domainSource ? s.domainSource + ' Domain' : 'Domain Slot'}</span>`
+          : '';
+
         return `
-          <tr class="transition border-l-4 ${theme.borderLeft} ${
-            hasActiveSlot ? `hover:bg-slate-900/70 ${theme.rowBg}` : 'opacity-40 grayscale-[35%] bg-slate-950/60'
+          <tr class="transition border-l-4 ${isDom ? 'border-l-yellow-400 bg-yellow-950/10' : theme.borderLeft} ${
+            hasActiveSlot ? `hover:bg-slate-900/70 ${isDom ? 'bg-yellow-950/15' : theme.rowBg}` : 'opacity-40 grayscale-[35%] bg-slate-950/60'
           }">
             <td class="py-2.5 px-3 text-center align-middle">
-              <span class="badge ${theme.badge} text-[10px] font-bold font-mono px-2 py-0.5">${lvl}</span>
+              <span class="badge ${isDom ? 'bg-yellow-950 text-yellow-300 border-yellow-500/80' : theme.badge} text-[10px] font-bold font-mono px-2 py-0.5">${isDom ? `${lvl}⚜️` : lvl}</span>
             </td>
             <td class="py-2.5 px-3 font-bold text-white align-middle">
-              <div class="flex items-center gap-2 whitespace-nowrap">
+              <div class="flex items-center gap-2 whitespace-nowrap flex-wrap">
                 ${getUniversalPinButtonHtml({ name: s.name, type: 'Spell', action: s.action || 'Standard Action', desc: s.benefit || '', badge: dmgExpr || '', damageDice: dmgExpr || '' })}
-                <span>✨</span>
+                <span>${isDom ? '⚜️' : '✨'}</span>
                 <span class="${hasActiveSlot ? 'text-white' : 'text-slate-400'}">${s.name}</span>
+                ${domainBadgeHtml}
                 ${!hasActiveSlot ? `<span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-rose-950/90 text-rose-300 border border-rose-800/80 font-bold shrink-0">0 Slot</span>` : ''}
               </div>
             </td>
@@ -1283,19 +1544,23 @@
 
       function buildDivineEmptyRowHtml(lvl, dc) {
         const slotObj = slots.find(sl => Number(sl.level) === lvl);
-        const remainingSlots = slotObj ? Math.max(0, (slotObj.daily || 0) - (slotObj.used || 0)) : 0;
+        const domDaily = slotObj ? (Number(slotObj.domainDaily) || 0) : 0;
+        const domUsed = slotObj ? (Number(slotObj.domainUsed) || 0) : 0;
+        const regDaily = slotObj ? (slotObj.regularDaily !== undefined ? Number(slotObj.regularDaily) : Math.max(0, (slotObj.daily || 0) - domDaily)) : 0;
+        const regUsed = slotObj ? Math.max(0, (slotObj.used || 0) - domUsed) : 0;
+        const remainingSlots = Math.max(0, regDaily - regUsed);
         const hasActiveSlot = remainingSlots > 0;
         const theme = getSpellLevelTheme(lvl);
 
         return `
           <tr class="transition cursor-pointer group border-l-4 ${theme.borderLeft} ${
             hasActiveSlot ? 'hover:bg-amber-950/25 bg-slate-950/20' : 'opacity-40 grayscale-[35%] bg-slate-950/60'
-          }" onclick="if(!event.target.closest('button')) openDivineSpellPickerForLevel(${lvl})">
+          }" onclick="if(!event.target.closest('button')) openDivineSpellPickerForLevel(${lvl}, false)">
             <td class="py-2.5 px-3 text-center align-middle">
               <span class="badge ${theme.badge} opacity-60 text-[10px] font-bold font-mono px-2 py-0.5">${lvl}</span>
             </td>
             <td class="py-2.5 px-3">
-              <button type="button" onclick="openDivineSpellPickerForLevel(${lvl})" class="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-300/80 group-hover:text-amber-100 cursor-pointer">
+              <button type="button" onclick="openDivineSpellPickerForLevel(${lvl}, false)" class="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-300/80 group-hover:text-amber-100 cursor-pointer">
                 <span class="w-4 h-4 rounded border border-dashed border-amber-500/70 bg-amber-950/60 flex items-center justify-center text-[10px] text-amber-300 group-hover:bg-amber-800 transition">+</span>
                 <span class="italic">+ Prepare Divine Spell (Empty Slot)</span>
               </button>
@@ -1306,12 +1571,62 @@
             <td class="py-2.5 px-3 text-center">
               <span class="badge bg-slate-900/60 text-slate-500 border border-slate-800/80 font-mono text-[10px]">DC ${dc}</span>
             </td>
-            <td class="py-2.5 px-3 text-slate-500 text-[11px] italic">This divine slot is empty. Click to prepare a ${lvl === 0 ? 'Level 0 (Orison)' : `Level ${lvl}`} divine spell.</td>
+            <td class="py-2.5 px-3 text-slate-500 text-[11px] italic">Regular Cleric/Divine spell slot. Click to prepare a ${lvl === 0 ? 'Level 0 (Orison)' : `Level ${lvl}`} class spell.</td>
             <td class="py-2.5 px-3 text-right align-middle">
               <div class="flex items-center justify-end gap-2 w-full">
-                <button type="button" onclick="openDivineSpellPickerForLevel(${lvl})" class="bg-amber-950/80 hover:bg-amber-900 text-amber-300 hover:text-white border border-dashed border-amber-500/80 text-xs font-bold px-2.5 py-1 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="Prepare Level ${lvl} Divine Spell">
+                <button type="button" onclick="openDivineSpellPickerForLevel(${lvl}, false)" class="bg-amber-950/80 hover:bg-amber-900 text-amber-300 hover:text-white border border-dashed border-amber-500/80 text-xs font-bold px-2.5 py-1 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="Prepare Level ${lvl} Divine Spell">
                   <span>✨</span>
                   <span>+ Select Spell</span>
+                </button>
+                <span class="w-6 h-6 shrink-0 inline-block"></span>
+              </div>
+            </td>
+          </tr>
+        `;
+      }
+
+      function buildDivineEmptyDomainRowHtml(lvl, dc) {
+        const slotObj = slots.find(sl => Number(sl.level) === lvl);
+        const domDaily = slotObj ? (Number(slotObj.domainDaily) || 0) : 0;
+        const domUsed = slotObj ? (Number(slotObj.domainUsed) || 0) : 0;
+        const hasActiveSlot = Math.max(0, domDaily - domUsed) > 0;
+        const hasChosenDomains = chosenDomains.length > 0;
+        const domLabel = hasChosenDomains ? chosenDomains.join(' / ') : 'Select Domains in Progression';
+        const rowClickAction = hasChosenDomains
+          ? `openDivineSpellPickerForLevel(${lvl}, true)`
+          : `if(typeof openClericDomainPickerModal==='function') openClericDomainPickerModal(0, 0); else openDivineSpellPickerForLevel(${lvl}, true)`;
+
+        return `
+          <tr class="transition cursor-pointer group border-l-4 border-l-yellow-400 ${
+            hasActiveSlot ? 'hover:bg-yellow-950/30 bg-yellow-950/10' : 'opacity-40 grayscale-[35%] bg-slate-950/60'
+          }" onclick="if(!event.target.closest('button')) { ${rowClickAction}; }">
+            <td class="py-2.5 px-3 text-center align-middle">
+              <span class="badge bg-yellow-950/90 text-yellow-300 border border-yellow-500/80 text-[10px] font-bold font-mono px-1.5 py-0.5">${lvl}⚜️</span>
+            </td>
+            <td class="py-2.5 px-3">
+              <button type="button" onclick="${rowClickAction}" class="inline-flex items-center gap-1.5 text-xs font-bold text-yellow-300 group-hover:text-yellow-100 cursor-pointer">
+                <span class="w-4 h-4 rounded border border-dashed border-yellow-400/80 bg-yellow-950/80 flex items-center justify-center text-[10px] text-yellow-300 group-hover:bg-yellow-800 transition">⚜️</span>
+                <span class="italic">+ Prepare Domain Spell (${domLabel})</span>
+              </button>
+            </td>
+            <td class="py-2.5 px-3">
+              <span class="badge bg-yellow-950/70 text-yellow-300 border border-yellow-600/60 text-[10px] font-bold">⚜️ Domain Slot</span>
+            </td>
+            <td class="py-2.5 px-3 text-slate-500 text-[10px] italic">-</td>
+            <td class="py-2.5 px-3 text-slate-500 text-[10px] italic">-</td>
+            <td class="py-2.5 px-3 text-center">
+              <span class="badge bg-slate-900/60 text-yellow-300/80 border border-yellow-800/60 font-mono text-[10px]">DC ${dc}</span>
+            </td>
+            <td class="py-2.5 px-3 text-yellow-200/80 text-[11px] italic">
+              ${hasChosenDomains
+                ? `Dedicated Level ${lvl} Domain Slot. Choose from your <strong>${chosenDomains.join('</strong> or <strong>')}</strong> domain spells.`
+                : `Dedicated Level ${lvl} Domain Slot. Click to select your <strong>2 Cleric Domains</strong> first (Level 1 Class Feature).`}
+            </td>
+            <td class="py-2.5 px-3 text-right align-middle">
+              <div class="flex items-center justify-end gap-2 w-full">
+                <button type="button" onclick="${rowClickAction}" class="bg-yellow-950/90 hover:bg-yellow-800 text-yellow-200 hover:text-white border border-dashed border-yellow-400/90 text-xs font-bold px-2.5 py-1 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="${hasChosenDomains ? `Prepare Level ${lvl} Domain Spell (${domLabel})` : 'Select Cleric Domains'}">
+                  <span>⚜️</span>
+                  <span>${hasChosenDomains ? '+ Domain Spell' : '+ Select Domains'}</span>
                 </button>
                 <span class="w-6 h-6 shrink-0 inline-block"></span>
               </div>
@@ -1333,6 +1648,12 @@
                   <h3 class="font-extrabold text-white text-sm md:text-base">Divine Spells &amp; Prayers</h3>
                   <span class="badge bg-amber-950 text-amber-300 border border-amber-700 text-[10px] font-bold">Cleric / Druid</span>
                   <span class="badge bg-amber-950/90 text-amber-200 border border-amber-400/80 text-xs font-extrabold px-2.5 py-0.5 font-mono shadow-sm" title="Caster Level: ${cl} (${clMode})">CL: ${cl}</span>
+                  ${hasDomainCap ? `
+                    <button type="button" onclick="if(typeof openClericDomainPickerModal==='function') openClericDomainPickerModal(0, 0)" class="badge ${chosenDomains.length === 2 ? 'bg-yellow-950/90 text-yellow-200 border-yellow-500/80 hover:bg-yellow-900' : 'bg-yellow-950/90 text-yellow-300 border-dashed border-yellow-400 animate-pulse hover:bg-yellow-900'} text-[10px] font-bold px-2 py-0.5 cursor-pointer transition inline-flex items-center gap-1" title="Click to view or change your Cleric Domains (1st-Level Class Feature)">
+                      <span>⚜️</span>
+                      <span>${chosenDomains.length > 0 ? `Domains: ${chosenDomains.join(' & ')} (${chosenDomains.length}/2)` : '+ Select Cleric Domains (0/2)'}</span>
+                    </button>
+                  ` : ''}
                   ${!hasDivine ? `<span class="badge bg-slate-800 text-slate-300 border border-slate-700 text-[10px]">Preview / Inactive Class</span>` : ''}
                 </div>
                 <p class="text-[11px] text-amber-300">Stat Mod: ${statMod >= 0 ? '+' + statMod : statMod} (${statKey}: ${statVal}) • Full Divine Compendium &amp; Domain Bonus Included • ${clMode}</p>
@@ -1438,8 +1759,9 @@
       renderDivineDisciplineView(classesStatus.hasDivine);
     }
 
-    function openDivineSpellPickerForLevel(lvl) {
+    function openDivineSpellPickerForLevel(lvl, isDomainSlot = false) {
       window._spellPickerTargetPool = 'divine';
+      window._spellPickerIsDomainSlot = Boolean(isDomainSlot);
       openSpellManeuverPickerModal('Spell', lvl);
     }
 
@@ -1452,7 +1774,7 @@
       showDiceTopToast({
         icon: '🗑️',
         title: 'Divine Spell Unprepared',
-        breakdown: `"${s.name}" removed. Divine slot is now empty.`,
+        breakdown: `"${s.name}" removed. ${s.isDomainSpell ? 'Domain' : 'Divine'} slot is now empty.`,
         total: 'Slot Empty'
       });
     }
@@ -1462,14 +1784,21 @@
       if (!s) return;
       const name = s.name;
       const lvl = Number(s.level) || 0;
+      const isDom = Boolean(s.isDomainSpell);
       const { cl } = getDivineCasterInfo();
       const dmgExpr = resolveSpellEffectiveFormula(s, cl);
       const slot = character.spellcasting?.divineSlots?.find(sl => Number(sl.level) === lvl);
-      if (!slot || slot.used >= slot.daily) {
+      const domDaily = slot ? (Number(slot.domainDaily) || 0) : 0;
+      const domUsed = slot ? (Number(slot.domainUsed) || 0) : 0;
+      const regDaily = slot ? (slot.regularDaily !== undefined ? Number(slot.regularDaily) : Math.max(0, (slot.daily || 0) - domDaily)) : 0;
+      const regUsed = slot ? Math.max(0, (slot.used || 0) - domUsed) : 0;
+
+      const canCast = slot && slot.used < slot.daily && (isDom ? domUsed < domDaily : regUsed < regDaily);
+      if (!canCast) {
         showDiceTopToast({
           icon: '\u26A0\uFE0F',
           title: 'No Slots Remaining',
-          breakdown: `No Level ${lvl} divine spell slots remaining!`,
+          breakdown: `No Level ${lvl} ${isDom ? 'Domain' : 'regular Divine'} spell slots remaining!`,
           total: '0 Slots'
         });
         return;
@@ -1481,38 +1810,35 @@
         return;
       }
 
-      if (slot && slot.used < slot.daily) {
-        slot.used++;
-        saveStateToStorage(true);
-        renderAll();
-        if (dmgExpr) {
-          rollSpellOrManeuverFormula(dmgExpr, `${name} (Level ${lvl} • -1 Slot)`, s);
-        } else {
-          showDiceTopToast({
-            icon: '✨',
-            title: name,
-            breakdown: `Level ${lvl} Divine Spell Slot Expended`,
-            total: '-1 Slot',
-          });
-        }
+      slot.used++;
+      if (isDom) {
+        slot.domainUsed = Math.min(domDaily, domUsed + 1);
+      }
+      saveStateToStorage(true);
+      renderAll();
+      if (dmgExpr) {
+        rollSpellOrManeuverFormula(dmgExpr, `${name} (Level ${lvl}${isDom ? ' Domain' : ''} • -1 Slot)`, s);
       } else {
         showDiceTopToast({
-          icon: '⚠️',
-          title: 'No Slots Remaining',
-          breakdown: `No Level ${lvl} divine spell slots remaining!`,
-          total: '0 Slots'
+          icon: isDom ? '⚜️' : '✨',
+          title: name,
+          breakdown: `Level ${lvl} ${isDom ? 'Domain' : 'Divine'} Spell Slot Expended`,
+          total: '-1 Slot',
         });
       }
     }
 
     function restoreAllDivineSlots() {
-      (character?.spellcasting?.divineSlots || []).forEach(s => s.used = 0);
+      (character?.spellcasting?.divineSlots || []).forEach(s => {
+        s.used = 0;
+        s.domainUsed = 0;
+      });
       saveStateToStorage();
       renderAll();
       showDiceTopToast({
         icon: '✨',
         title: 'Divine Spell Slots',
-        breakdown: 'All daily divine spell slots refreshed',
+        breakdown: 'All daily divine & domain spell slots refreshed',
         total: 'Restored'
       });
     }
@@ -3844,11 +4170,16 @@
       if (!window._spellPickerTargetPool && window._currentMagicDiscipline && ['spontaneous', 'prepared', 'divine'].includes(window._currentMagicDiscipline)) {
         window._spellPickerTargetPool = window._currentMagicDiscipline;
       }
+      setSpellPickerType(initialType);
       const sourceSelect = document.getElementById('spell-picker-source-filter');
       if (sourceSelect) {
-        sourceSelect.value = 'auto';
+        if (initialType === 'Spell' && window._spellPickerTargetPool === 'divine' && window._spellPickerIsDomainSlot) {
+          const chosenDomains = typeof getCharacterClericDomains === 'function' ? getCharacterClericDomains(character) : [];
+          sourceSelect.value = chosenDomains.length > 0 ? 'char_domains' : 'domain';
+        } else {
+          sourceSelect.value = 'auto';
+        }
       }
-      setSpellPickerType(initialType);
       if (preselectLevel !== null && preselectLevel !== undefined) {
         const levelSelect = document.getElementById('spell-picker-level-filter');
         if (levelSelect) {
@@ -3875,12 +4206,14 @@
 
     function openSpellPickerForSpecificLevel(lvl) {
       window._spellPickerTargetPool = 'spontaneous';
+      window._spellPickerIsDomainSlot = false;
       openSpellManeuverPickerModal('Spell', lvl);
     }
 
     function closeSpellManeuverPickerModal() {
       const modal = document.getElementById('spell-maneuver-modal');
       if (modal) modal.classList.add('hidden');
+      window._spellPickerIsDomainSlot = false;
     }
 
     function setSpellPickerType(type) {
@@ -3912,10 +4245,11 @@
             sourceFilter.innerHTML = `
               <option value="auto">🎯 Auto (Match Character Class)</option>
               <option value="cleric">✝️ Cleric Spells</option>
+              <option value="char_domains">⚜️ My Selected Domains</option>
+              <option value="domain">⚜️ All Cleric Domains</option>
               <option value="druid">🌿 Druid Spells</option>
               <option value="paladin">🛡️ Paladin Spells</option>
               <option value="ranger">🏹 Ranger Spells</option>
-              <option value="domain">⚜️ Cleric Domains</option>
               <option value="divine">🔮 All Divine Classes</option>
               <option value="sor_wiz">⚡ Sorcerer / Wizard</option>
               <option value="bard">🎵 Bard Spells</option>
@@ -4171,6 +4505,14 @@
 
       if (src === 'cleric') {
         if (info.clericLvl !== null) return info.clericLvl;
+      } else if (src === 'char_domains') {
+        const chosen = typeof getCharacterClericDomains === 'function' ? getCharacterClericDomains(character) : [];
+        for (const d of chosen) {
+          if (info.domMap && info.domMap[d] !== undefined && !isNaN(Number(info.domMap[d]))) {
+            return Number(info.domMap[d]);
+          }
+        }
+        if (info.domainLvls.length > 0) return info.domainLvls[0];
       } else if (src === 'druid') {
         if (info.druidLvl !== null) return info.druidLvl;
       } else if (src === 'paladin') {
@@ -4178,6 +4520,12 @@
       } else if (src === 'ranger') {
         if (info.rangerLvl !== null) return info.rangerLvl;
       } else if (src === 'domain') {
+        const chosen = typeof getCharacterClericDomains === 'function' ? getCharacterClericDomains(character) : [];
+        for (const d of chosen) {
+          if (info.domMap && info.domMap[d] !== undefined && !isNaN(Number(info.domMap[d]))) {
+            return Number(info.domMap[d]);
+          }
+        }
         if (info.domainLvls.length > 0) return info.domainLvls[0];
       } else if (src === 'bard') {
         if (info.bardLvl !== null) return info.bardLvl;
@@ -4241,6 +4589,13 @@
       switch (effectiveSource) {
         case 'cleric':
           return info.clericLvl !== null;
+        case 'char_domains': {
+          const chosen = typeof getCharacterClericDomains === 'function' ? getCharacterClericDomains(character) : [];
+          if (chosen.length > 0) {
+            return chosen.some(d => info.domMap && info.domMap[d] !== undefined);
+          }
+          return info.isDomain;
+        }
         case 'druid':
           return info.druidLvl !== null;
         case 'paladin':
@@ -4301,16 +4656,27 @@
             poolLabel = '\uD83D\uDCD6 Spellbook (Wizard / Prepared)';
             badgeColor = 'text-cyan-300 bg-cyan-950/80 border-cyan-800';
           } else if (targetPool === 'divine') {
-            poolLabel = '\uD83D\uDD2E Divine Spells (Cleric / Druid / Divine)';
-            badgeColor = 'text-amber-300 bg-amber-950/80 border-amber-800';
+            if (window._spellPickerIsDomainSlot || effectiveSource === 'char_domains' || effectiveSource === 'domain') {
+              poolLabel = '\u269C\uFE0F Domain Spell Slot (Cleric Domain)';
+              badgeColor = 'text-yellow-300 bg-amber-950/90 border-yellow-600';
+            } else {
+              poolLabel = '\uD83D\uDD2E Divine Spells (Cleric / Druid / Divine)';
+              badgeColor = 'text-amber-300 bg-amber-950/80 border-amber-800';
+            }
           }
+
+          const chosenDoms = typeof getCharacterClericDomains === 'function' ? getCharacterClericDomains(character) : [];
+          const charDomainLabel = chosenDoms.length > 0
+            ? `\u269C\uFE0F Domains: ${chosenDoms.join(' & ')}`
+            : '\u269C\uFE0F My Selected Domains (None selected yet)';
 
           const filterLabels = {
             cleric: { label: '\u271D\uFE0F Cleric Spells', color: 'text-amber-300 border-amber-700 bg-amber-950/60' },
+            char_domains: { label: charDomainLabel, color: 'text-yellow-300 border-yellow-600 bg-amber-950/80' },
             druid: { label: '\uD83C\uDF3F Druid Spells', color: 'text-emerald-300 border-emerald-700 bg-emerald-950/60' },
             paladin: { label: '\uD83D\uDEE1\uFE0F Paladin Spells', color: 'text-sky-300 border-sky-700 bg-sky-950/60' },
             ranger: { label: '\uD83C\uDFF9 Ranger Spells', color: 'text-teal-300 border-teal-700 bg-teal-950/60' },
-            domain: { label: '\u269C\uFE0F Cleric Domains', color: 'text-yellow-300 border-yellow-700 bg-yellow-950/60' },
+            domain: { label: '\u269C\uFE0F All Cleric Domains', color: 'text-yellow-300 border-yellow-700 bg-yellow-950/60' },
             divine: { label: '\uD83D\uDD2E All Divine Classes', color: 'text-amber-300 border-amber-700 bg-amber-950/60' },
             sor_wiz: { label: '\u26A1 Sorcerer / Wizard', color: 'text-purple-300 border-purple-700 bg-purple-950/60' },
             bard: { label: '\uD83C\uDFB5 Bard Spells', color: 'text-pink-300 border-pink-700 bg-pink-950/60' },
@@ -4426,7 +4792,12 @@
           const targetArr = targetPool === 'prepared'
             ? (character.spellcasting?.preparedSpells || [])
             : (targetPool === 'divine' ? (character.spellcasting?.divineSpells || []) : (character.spellcasting?.knownSpells || []));
-          alreadyKnown = targetArr.some(s => (s.name || '').toLowerCase().trim() === cleanName);
+          if (targetPool === 'divine') {
+            const isDomainTarget = Boolean(window._spellPickerIsDomainSlot || effectiveSource === 'char_domains' || effectiveSource === 'domain');
+            alreadyKnown = targetArr.some(s => (s.name || '').toLowerCase().trim() === cleanName && Boolean(s.isDomainSpell) === isDomainTarget);
+          } else {
+            alreadyKnown = targetArr.some(s => (s.name || '').toLowerCase().trim() === cleanName);
+          }
         } else if (type === 'Maneuver') {
           alreadyKnown = (character.tomeOfBattle?.maneuversKnown || []).some(m => (m.name || '').toLowerCase().trim() === cleanName);
         } else if (type === 'Stance') {
@@ -4454,10 +4825,18 @@
             countText = `${curCount}/${maxPrep}`;
           } else if (targetPool === 'divine') {
             const divSlot = (character.spellcasting?.divineSlots || []).find(s => Number(s.level) === numLvl);
-            const maxDiv = divSlot ? (Number(divSlot.daily) || 0) : 0;
-            const curCount = (character.spellcasting?.divineSpells || []).filter(s => Number(s.level) === numLvl).length;
-            isLevelFull = curCount >= maxDiv;
-            countText = `${curCount}/${maxDiv}`;
+            const isDomainTarget = Boolean(window._spellPickerIsDomainSlot || effectiveSource === 'char_domains' || effectiveSource === 'domain');
+            if (isDomainTarget) {
+              const maxDom = numLvl > 0 && divSlot ? (Number(divSlot.domainDaily !== undefined ? divSlot.domainDaily : (hasClericDomainCapability(character) ? 1 : 0)) || 0) : 0;
+              const curDom = (character.spellcasting?.divineSpells || []).filter(s => Number(s.level) === numLvl && s.isDomainSpell).length;
+              isLevelFull = curDom >= maxDom;
+              countText = `${curDom}/${maxDom} Domain`;
+            } else {
+              const maxReg = divSlot ? (Number(divSlot.regularDaily !== undefined ? divSlot.regularDaily : divSlot.daily) || 0) : 0;
+              const curReg = (character.spellcasting?.divineSpells || []).filter(s => Number(s.level) === numLvl && !s.isDomainSpell).length;
+              isLevelFull = curReg >= maxReg;
+              countText = `${curReg}/${maxReg}`;
+            }
           }
         }
 
@@ -4583,16 +4962,31 @@
           }
         } else if (targetPool === 'divine') {
           const divSlot = (character.spellcasting?.divineSlots || []).find(s => Number(s.level) === resolvedLvl);
-          const maxDiv = divSlot ? (Number(divSlot.daily) || 0) : 0;
-          const currentDiv = character.spellcasting.divineSpells.filter(s => Number(s.level) === resolvedLvl);
-          if (currentDiv.length >= maxDiv) {
-            showDiceTopToast({
-              icon: '⚠️',
-              title: 'Slot Full',
-              breakdown: `Divine slot capacity (${maxDiv}) for Level ${resolvedLvl} is full!`,
-              total: `${currentDiv.length}/${maxDiv}`
-            });
-            return;
+          const isDomainTarget = Boolean(window._spellPickerIsDomainSlot || activeFilterSource === 'char_domains' || activeFilterSource === 'domain');
+          if (isDomainTarget) {
+            const maxDom = resolvedLvl > 0 && divSlot ? (Number(divSlot.domainDaily !== undefined ? divSlot.domainDaily : (hasClericDomainCapability(character) ? 1 : 0)) || 0) : 0;
+            const currentDom = character.spellcasting.divineSpells.filter(s => Number(s.level) === resolvedLvl && s.isDomainSpell);
+            if (currentDom.length >= maxDom) {
+              showDiceTopToast({
+                icon: '⚜️',
+                title: 'Domain Slot Full',
+                breakdown: `Domain slot capacity (${maxDom}) for Level ${resolvedLvl} is already filled!`,
+                total: `${currentDom.length}/${maxDom}`
+              });
+              return;
+            }
+          } else {
+            const maxReg = divSlot ? (Number(divSlot.regularDaily !== undefined ? divSlot.regularDaily : divSlot.daily) || 0) : 0;
+            const currentReg = character.spellcasting.divineSpells.filter(s => Number(s.level) === resolvedLvl && !s.isDomainSpell);
+            if (currentReg.length >= maxReg) {
+              showDiceTopToast({
+                icon: '⚠️',
+                title: 'Slot Full',
+                breakdown: `Regular Divine slot capacity (${maxReg}) for Level ${resolvedLvl} is full!`,
+                total: `${currentReg.length}/${maxReg}`
+              });
+              return;
+            }
           }
         }
 
@@ -4603,7 +4997,15 @@
         const actionText = formatSrdSpellAction(item);
         const autoDice = v2SpellPart || item.damageDice || item.dice || findDiceExpression(cleanBenefit) || '';
 
-        character.spellcasting[poolKey].push({
+        const isDomainAdded = targetPool === 'divine' && Boolean(window._spellPickerIsDomainSlot || activeFilterSource === 'char_domains' || activeFilterSource === 'domain');
+        let matchedDomainName = '';
+        if (isDomainAdded) {
+          const info = getSpellTraditionAndLevels(item);
+          const chosenDoms = typeof getCharacterClericDomains === 'function' ? getCharacterClericDomains(character) : [];
+          matchedDomainName = chosenDoms.find(d => info.domMap && info.domMap[d] !== undefined) || Object.keys(info.domMap || {})[0] || chosenDoms[0] || 'Domain';
+        }
+
+        const newSpellEntry = {
           id: item.id || ('spl_' + String(item.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_')),
           name: item.name,
           level: resolvedLvl,
@@ -4613,16 +5015,22 @@
           action: actionText,
           damageDice: autoDice,
           damageParts: Array.isArray(item.damageParts) ? JSON.parse(JSON.stringify(item.damageParts)) : []
-        });
+        };
+        if (isDomainAdded) {
+          newSpellEntry.isDomainSpell = true;
+          newSpellEntry.domainSource = matchedDomainName;
+        }
+
+        character.spellcasting[poolKey].push(newSpellEntry);
 
         saveStateToStorage(true);
         renderAll();
         renderSpellPickerResults();
         showDiceTopToast({
-          icon: targetPool === 'prepared' ? '📖' : (targetPool === 'divine' ? '✨' : '🔮'),
-          title: 'Spell Added',
-          breakdown: `"${item.name}" added to your spell pool`,
-          total: '+1 Spell'
+          icon: isDomainAdded ? '⚜️' : (targetPool === 'prepared' ? '📖' : (targetPool === 'divine' ? '✨' : '🔮')),
+          title: isDomainAdded ? 'Domain Spell Prepared' : 'Spell Added',
+          breakdown: isDomainAdded ? `"${item.name}" prepared in your Level ${resolvedLvl} ${matchedDomainName} Domain slot` : `"${item.name}" added to your spell pool`,
+          total: isDomainAdded ? `${matchedDomainName} ${resolvedLvl}` : '+1 Spell'
         });
       } else if (type === 'Maneuver') {
         if (!character.tomeOfBattle) character.tomeOfBattle = {};
@@ -5684,6 +6092,17 @@
           def.classSkills.forEach(sk => classSkills.add(sk));
         }
       });
+
+      // Add Cleric Domain granted class skills (Trickery, Travel, Knowledge, Animal, Plant, Weather)
+      if (typeof getCharacterClericDomains === 'function' && typeof DND35_CLERIC_DOMAINS === 'object') {
+        const chosenDomains = getCharacterClericDomains(char);
+        chosenDomains.forEach(domName => {
+          const domDef = DND35_CLERIC_DOMAINS[domName];
+          if (domDef && Array.isArray(domDef.classSkills)) {
+            domDef.classSkills.forEach(sk => classSkills.add(sk));
+          }
+        });
+      }
 
       return classSkills;
     }
