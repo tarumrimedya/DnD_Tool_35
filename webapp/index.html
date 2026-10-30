@@ -919,7 +919,24 @@
                 </div>
               </div>
 
-              <!-- REAKTİF HAMLELER & COUNTERS -->
+              <!-- ACTIVE SPELL & TACTICAL BUFFS (Combat Cockpit Strip) -->
+              <div id="cockpit-active-buffs-card" class="hidden bg-slate-950/80 border border-emerald-500/40 rounded-lg p-2.5 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wide flex items-center gap-1.5">
+                    <span>✨</span>
+                    <span>ACTIVE SPELL &amp; TACTICAL BUFFS</span>
+                  </span>
+                  <div class="flex items-center gap-1.5">
+                    <span id="cockpit-active-buffs-count" class="text-[9px] font-mono bg-emerald-950 text-emerald-300 border border-emerald-700/60 px-1.5 py-0.2 rounded font-bold">0</span>
+                    <button type="button" onclick="openBuffModal()" class="text-[9px] font-bold bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 px-1.5 py-0.5 rounded transition cursor-pointer" title="Add Custom Buff / Condition">+ Buff</button>
+                  </div>
+                </div>
+                <div id="cockpit-active-buffs-list" class="space-y-1.5">
+                  <!-- Dynamically populated by renderSpecialDefenses() / renderCombatActiveBuffs() -->
+                </div>
+              </div>
+
+              <!-- REACTIVE MANEUVERS & COUNTERS -->
               <div class="bg-slate-950/70 border border-slate-800 rounded-lg p-2.5 space-y-2">
                 <div class="text-[10px] font-bold text-emerald-400 uppercase tracking-wide">
                   ⚡ REACTIVE MANEUVERS &amp; REACTIONS
@@ -940,7 +957,7 @@
                       <span>Attack of Opportunity</span>
                       <span id="aoo-bonus-badge" class="font-mono text-[10px] text-amber-400">+0</span>
                     </div>
-                    <div class="text-[9px] text-slate-400 mt-0.5">AoO Reaksiyonu Vur</div>
+                    <div class="text-[9px] text-slate-400 mt-0.5">Roll AoO Reaction</div>
                   </button>
                 </div>
               </div>

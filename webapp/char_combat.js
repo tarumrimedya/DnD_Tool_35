@@ -8530,24 +8530,56 @@
       });
     }
 
+    function toggleCombatBuffActive(idx) {
+      if (!character || !Array.isArray(character.buffs) || !character.buffs[idx]) return;
+      character.buffs[idx].active = !character.buffs[idx].active;
+      if (typeof RuleEngine !== 'undefined' && RuleEngine.recalculateCharacter) {
+        RuleEngine.recalculateCharacter(character, typeof masterDb !== 'undefined' ? masterDb : []);
+      }
+      saveStateToStorage(true);
+      renderAll();
+    }
+    window.toggleCombatBuffActive = toggleCombatBuffActive;
+
+    function removeCombatBuff(idx) {
+      if (!character || !Array.isArray(character.buffs) || !character.buffs[idx]) return;
+      character.buffs.splice(idx, 1);
+      if (typeof RuleEngine !== 'undefined' && RuleEngine.recalculateCharacter) {
+        RuleEngine.recalculateCharacter(character, typeof masterDb !== 'undefined' ? masterDb : []);
+      }
+      saveStateToStorage(true);
+      renderAll();
+    }
+    window.removeCombatBuff = removeCombatBuff;
+
     function renderSpecialDefenses() {
       const card = document.getElementById('cockpit-special-defenses-card');
       const list = document.getElementById('cockpit-special-def-list');
       const countBadge = document.getElementById('cockpit-special-def-count');
-      if (!card || !list) return;
+
+      const buffsCard = document.getElementById('cockpit-active-buffs-card');
+      const buffsList = document.getElementById('cockpit-active-buffs-list');
+      const buffsCount = document.getElementById('cockpit-active-buffs-count');
 
       if (!character) {
-        card.classList.add('hidden');
+        if (card) card.classList.add('hidden');
+        if (buffsCard) buffsCard.classList.add('hidden');
         return;
       }
 
       const items = [];
+      const pushUniqueDefense = (item) => {
+        if (!item || !item.label) return;
+        const key = String(item.label).toLowerCase().trim();
+        if (items.some(it => String(it.label).toLowerCase().trim() === key)) return;
+        items.push(item);
+      };
 
       // 1. Direct fields: character.dr, character.sr, character.immunities
       if (character.dr) {
         const val = String(character.dr);
         const label = val.toLowerCase().startsWith('dr') ? val : `DR ${val}`;
-        items.push({
+        pushUniqueDefense({
           type: 'dr',
           name: label,
           label: label,
@@ -8559,7 +8591,7 @@
       if (character.sr) {
         const val = String(character.sr);
         const label = val.toLowerCase().startsWith('sr') ? val : `SR ${val}`;
-        items.push({
+        pushUniqueDefense({
           type: 'sr',
           name: label,
           label: label,
@@ -8572,7 +8604,7 @@
         character.immunities.forEach(imm => {
           if (!imm) return;
           const label = String(imm);
-          items.push({
+          pushUniqueDefense({
             type: 'immunity',
             name: label,
             label: `${label} (Immune)`,
@@ -8582,7 +8614,7 @@
           });
         });
       } else if (typeof character.immunities === 'string' && character.immunities) {
-        items.push({
+        pushUniqueDefense({
           type: 'immunity',
           name: character.immunities,
           label: `${character.immunities} (Immune)`,
@@ -8599,11 +8631,8 @@
         const benefit = typeof a === 'object' ? (a.benefit || a.desc || '') : '';
         const full = (name + ' ' + benefit).toLowerCase();
 
-        // Avoid duplicating if already captured via direct field
-        if (items.some(it => it.name.toLowerCase() === name.toLowerCase())) return;
-
         if (/damage reduction|\bdr\s*\d+/i.test(full)) {
-          items.push({
+          pushUniqueDefense({
             type: 'dr',
             name: name,
             label: name,
@@ -8612,7 +8641,7 @@
             benefit: benefit || `Damage Reduction: ${name}`
           });
         } else if (/spell resistance|\bsr\s*\d+/i.test(full)) {
-          items.push({
+          pushUniqueDefense({
             type: 'sr',
             name: name,
             label: name,
@@ -8621,7 +8650,7 @@
             benefit: benefit || `Spell Resistance: ${name}`
           });
         } else if (/immunit|immune\b|subtype.*\(immunit/i.test(full)) {
-          items.push({
+          pushUniqueDefense({
             type: 'immunity',
             name: name,
             label: name,
@@ -8630,7 +8659,7 @@
             benefit: benefit || `Immunity: ${name}`
           });
         } else if (/resistance\s*\d+|\bresist\b/i.test(full) && !/spell resistance/i.test(full)) {
-          items.push({
+          pushUniqueDefense({
             type: 'resistance',
             name: name,
             label: name,
@@ -8641,24 +8670,316 @@
         }
       });
 
-      if (items.length === 0) {
-        card.classList.add('hidden');
-        return;
+      // 3. Equipped Armor & Shield Passive Tactical Badges (e.g. Fortification, Arrow Deflection, Animated)
+      const gearBadges = [
+        ...(Array.isArray(character.armorTacticalBadges) ? character.armorTacticalBadges : []),
+        ...(Array.isArray(character.shieldTacticalBadges) ? character.shieldTacticalBadges : [])
+      ];
+      gearBadges.forEach(gb => {
+        if (!gb || !gb.label) return;
+        pushUniqueDefense({
+          type: 'gear_defense',
+          name: gb.name || gb.label,
+          label: gb.label,
+          icon: gb.icon || '🛡️',
+          bgClass: 'bg-indigo-950/80 text-indigo-300 border-indigo-500/60 hover:border-indigo-400',
+          benefit: gb.description || gb.label
+        });
+      });
+
+      // 4. Splatbook Synergy Passive Defenses (Complete Mage: Primal Synergy & Heart Synergy)
+      if (character.primalSynergy) {
+        pushUniqueDefense({
+          type: 'synergy',
+          name: 'Primal Synergy',
+          label: character.primalSynergy,
+          icon: '🐾',
+          bgClass: 'bg-teal-950/80 text-teal-300 border-teal-500/60 hover:border-teal-400',
+          benefit: character.primalSynergy.includes('Improved')
+            ? 'Primal Synergy (4/4): Cannot be flanked; retains DEX bonus to AC even when flat-footed.'
+            : 'Primal Synergy (2+): Retains DEX bonus to AC even when flat-footed (Uncanny Dodge).'
+        });
+      }
+      if (character.heartSynergy) {
+        pushUniqueDefense({
+          type: 'synergy',
+          name: 'Heart Synergy',
+          label: character.heartSynergy,
+          icon: '🔥',
+          bgClass: 'bg-orange-950/80 text-orange-300 border-orange-500/60 hover:border-orange-400',
+          benefit: character.heartSynergy.includes('50%')
+            ? 'Heart Synergy (4/4): 50% chance to negate critical hits and sneak attack bonus damage.'
+            : 'Heart Synergy (2+): 25% chance to negate critical hits and sneak attack bonus damage.'
+        });
       }
 
-      card.classList.remove('hidden');
-      if (countBadge) countBadge.textContent = items.length;
+      // 5. Active Spell & Tactical Passive Defenses from `character.buffs`
+      const ENERGY_STYLE_MAP = {
+        fire: { icon: '🔥', cls: 'bg-orange-950/80 text-orange-300 border-orange-500/60 hover:border-orange-400' },
+        cold: { icon: '❄️', cls: 'bg-sky-950/80 text-sky-300 border-sky-500/60 hover:border-sky-400' },
+        acid: { icon: '🧪', cls: 'bg-emerald-950/80 text-emerald-300 border-emerald-500/60 hover:border-emerald-400' },
+        electricity: { icon: '⚡', cls: 'bg-amber-950/80 text-amber-300 border-amber-500/60 hover:border-amber-400' },
+        sonic: { icon: '🔊', cls: 'bg-purple-950/80 text-purple-300 border-purple-500/60 hover:border-purple-400' }
+      };
 
-      list.innerHTML = items.map(it => {
-        const safeName = (it.name || '').replace(/'/g, "\\'");
-        const safeTip = (it.benefit || '').replace(/"/g, '&quot;');
-        return `
-          <button type="button" onclick="showFeatDetail('${safeName}', null, 'ability')" title="${safeTip}" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-bold border ${it.bgClass} shadow-sm transition active:scale-95 cursor-pointer">
-            <span>${it.icon}</span>
-            <span class="truncate max-w-[150px]">${it.label}</span>
-          </button>
-        `;
-      }).join('');
+      (character.buffs || []).forEach(b => {
+        if (!b || b.active === false) return;
+        const bCl = Number(b.casterLevel || b.cl || character.level) || 1;
+        const spec = (typeof RuleEngine !== 'undefined' && RuleEngine.resolveSpellBuffSpec)
+          ? RuleEngine.resolveSpellBuffSpec(b, character, bCl)
+          : null;
+        const rf = { ...(spec?.ruleFlags || {}), ...(b.ruleFlags || {}) };
+        const bName = b.name || spec?.name || 'Spell Buff';
+        const energyType = b.chosenEnergy || (/\((fire|cold|acid|electricity|sonic)\)/i.exec(bName)?.[1]) || null;
+        const eStyle = energyType ? (ENERGY_STYLE_MAP[energyType.toLowerCase()] || { icon: '🛡️', cls: 'bg-sky-950/80 text-sky-300 border-sky-500/60' }) : { icon: '🛡️', cls: 'bg-sky-950/80 text-sky-300 border-sky-500/60' };
+
+        // A. Energy Resistance / Protection / Immunity
+        if (rf.energyResistanceFormula || b.energyResistance) {
+          const resVal = b.energyResistance || (bCl >= 11 ? 30 : (bCl >= 7 ? 20 : 10));
+          const eLbl = energyType || 'Energy';
+          pushUniqueDefense({
+            type: 'resistance',
+            name: bName,
+            label: `Resist ${eLbl} ${resVal}`,
+            icon: eStyle.icon,
+            bgClass: eStyle.cls,
+            benefit: `${bName}: Ignores first ${resVal} points of ${eLbl} damage per attack (${b.duration || spec?.durationText || 'Active'}).`
+          });
+        }
+        if (rf.energyProtectionPoolFormula) {
+          const pool = b.protectionPoolRemaining ?? b.protectionPoolMax ?? Math.min(120, bCl * 12);
+          const eLbl = energyType || 'Energy';
+          pushUniqueDefense({
+            type: 'protection_pool',
+            name: bName,
+            label: `Absorb ${eLbl} (${pool} HP)`,
+            icon: eStyle.icon,
+            bgClass: eStyle.cls,
+            benefit: `${bName}: Absorbs up to ${pool} points of ${eLbl} damage (${b.duration || spec?.durationText || 'Active'}).`
+          });
+        }
+        if (rf.energyImmunity) {
+          const eLbl = energyType || 'Energy';
+          pushUniqueDefense({
+            type: 'immunity',
+            name: bName,
+            label: `Immune: ${eLbl}`,
+            icon: eStyle.icon,
+            bgClass: eStyle.cls,
+            benefit: `${bName}: Complete immunity to ${eLbl} damage (${b.duration || spec?.durationText || 'Active'}).`
+          });
+        }
+
+        // B. Damage Reduction from Spells (Stoneskin, Protection from Arrows, Righteous Might, Iron Body)
+        if (rf.drAdamantine) {
+          const pool = b.protectionPoolRemaining ?? b.protectionPoolMax ?? (rf.drPoolFormula ? Math.min(150, bCl * 10) : 0);
+          pushUniqueDefense({
+            type: 'dr',
+            name: bName,
+            label: pool > 0 ? `DR ${rf.drAdamantine}/Adamantine (${pool} HP)` : `DR ${rf.drAdamantine}/Adamantine`,
+            icon: '🪨',
+            bgClass: 'bg-amber-950/80 text-amber-300 border-amber-500/60 hover:border-amber-400',
+            benefit: `${bName}: Damage Reduction ${rf.drAdamantine}/adamantine${pool > 0 ? ` (absorbs up to ${pool} total pts)` : ''}.`
+          });
+        }
+        if (rf.drRangedMagic) {
+          const pool = b.protectionPoolRemaining ?? b.protectionPoolMax ?? (rf.drPoolFormula ? Math.min(100, bCl * 10) : 0);
+          pushUniqueDefense({
+            type: 'dr',
+            name: bName,
+            label: pool > 0 ? `DR ${rf.drRangedMagic}/Magic vs Ranged (${pool} HP)` : `DR ${rf.drRangedMagic}/Magic vs Ranged`,
+            icon: '🏹',
+            bgClass: 'bg-amber-950/80 text-amber-300 border-amber-500/60 hover:border-amber-400',
+            benefit: `${bName}: Damage Reduction ${rf.drRangedMagic}/magic against ranged weapons${pool > 0 ? ` (up to ${pool} HP)` : ''}.`
+          });
+        }
+        if (rf.drEvilOrGood) {
+          const drVal = bCl >= 15 ? 9 : (bCl >= 12 ? 6 : (bCl >= 9 ? 3 : 0));
+          if (drVal > 0) {
+            pushUniqueDefense({
+              type: 'dr',
+              name: bName,
+              label: `DR ${drVal}/Evil or Good`,
+              icon: '🛡️',
+              bgClass: 'bg-amber-950/80 text-amber-300 border-amber-500/60 hover:border-amber-400',
+              benefit: `${bName}: Damage Reduction ${drVal}/evil or good.`
+            });
+          }
+        }
+
+        // C. Concealment, Miss Chance & Mirror Image
+        if (rf.concealment && !rf.passiveDefenseLabel) {
+          pushUniqueDefense({
+            type: 'concealment',
+            name: bName,
+            label: `${rf.concealment}% Concealment (${bName})`,
+            icon: '🌫️',
+            bgClass: 'bg-indigo-950/80 text-indigo-300 border-indigo-500/60 hover:border-indigo-400',
+            benefit: `${bName}: Attacks against you have a ${rf.concealment}% miss chance due to concealment.`
+          });
+        }
+        if (rf.rangedMissChance) {
+          pushUniqueDefense({
+            type: 'concealment',
+            name: bName,
+            label: `${rf.rangedMissChance}% Ranged Miss (${bName})`,
+            icon: '🌀',
+            bgClass: 'bg-indigo-950/80 text-indigo-300 border-indigo-500/60 hover:border-indigo-400',
+            benefit: `${bName}: All ranged attacks directed at you (including rays) have a ${rf.rangedMissChance}% miss chance.`
+          });
+        }
+
+        // D. Spell Resistance, Wards & Immunities
+        if (rf.srFormula || rf.sr) {
+          const srVal = rf.srFormula ? (12 + bCl) : Number(rf.sr);
+          if (srVal > 0) {
+            pushUniqueDefense({
+              type: 'sr',
+              name: bName,
+              label: `SR ${srVal} (${bName})`,
+              icon: '🔮',
+              bgClass: 'bg-purple-950/80 text-purple-300 border-purple-500/60 hover:border-purple-400',
+              benefit: `${bName}: Grants Spell Resistance ${srVal} at CL ${bCl}.`
+            });
+          }
+        }
+        if (rf.freedomOfMovement) {
+          pushUniqueDefense({
+            type: 'immunity',
+            name: bName,
+            label: 'Freedom of Movement',
+            icon: '🪽',
+            bgClass: 'bg-emerald-950/80 text-emerald-300 border-emerald-500/60 hover:border-emerald-400',
+            benefit: `${bName}: Automatically succeed on Grapple/Escape Artist checks; immune to Paralysis, Slow, Solid Fog, and Web.`
+          });
+        }
+        if (rf.immuneDeathEffects) {
+          pushUniqueDefense({
+            type: 'immunity',
+            name: bName,
+            label: 'Death Ward (Immune: Death/Neg. Energy)',
+            icon: '💀',
+            bgClass: 'bg-emerald-950/80 text-emerald-300 border-emerald-500/60 hover:border-emerald-400',
+            benefit: `${bName}: Immune to all death spells, magical death effects, energy drain, and negative energy effects.`
+          });
+        }
+        if (rf.immuneMagicMissile) {
+          pushUniqueDefense({
+            type: 'immunity',
+            name: bName,
+            label: 'Immune: Magic Missile',
+            icon: '🛡️',
+            bgClass: 'bg-sky-950/80 text-sky-300 border-sky-500/60 hover:border-sky-400',
+            benefit: `${bName}: Negates Magic Missile attacks directed at you.`
+          });
+        }
+        if (rf.wardAlignment) {
+          pushUniqueDefense({
+            type: 'ward',
+            name: bName,
+            label: `Ward vs. ${rf.wardAlignment}`,
+            icon: '✨',
+            bgClass: 'bg-teal-950/80 text-teal-300 border-teal-500/60 hover:border-teal-400',
+            benefit: `${bName}: +2 Deflection AC & +2 Resistance saves vs. ${rf.wardAlignment}; blocks mental control and direct bodily contact by non-${rf.wardAlignment} summoned creatures.`
+          });
+        }
+        if (rf.uncannyDodge) {
+          pushUniqueDefense({
+            type: 'defense',
+            name: bName,
+            label: `Uncanny Dodge (${bName})`,
+            icon: '👁️',
+            bgClass: 'bg-teal-950/80 text-teal-300 border-teal-500/60 hover:border-teal-400',
+            benefit: `${bName}: Never surprised or flat-footed; retains DEX bonus to AC.`
+          });
+        }
+        if (rf.lowLightVision) {
+          pushUniqueDefense({
+            type: 'sense',
+            name: bName,
+            label: 'Low-Light Vision',
+            icon: '👁️',
+            bgClass: 'bg-sky-950/80 text-sky-300 border-sky-500/60 hover:border-sky-400',
+            benefit: `${bName}: See twice as far as a human in starlight, moonlight, torchlight, and similar conditions.`
+          });
+        }
+        if (rf.passiveDefenseLabel) {
+          pushUniqueDefense({
+            type: 'passive_spell',
+            name: bName,
+            label: rf.passiveDefenseLabel,
+            icon: '✨',
+            bgClass: 'bg-indigo-950/80 text-indigo-300 border-indigo-500/60 hover:border-indigo-400',
+            benefit: `${bName}: ${rf.passiveDefenseLabel} (${b.duration || spec?.durationText || 'Active'}).`
+          });
+        }
+      });
+
+      if (card && list) {
+        if (items.length === 0) {
+          card.classList.add('hidden');
+        } else {
+          card.classList.remove('hidden');
+          if (countBadge) countBadge.textContent = items.length;
+          list.innerHTML = items.map(it => {
+            const safeName = (it.name || '').replace(/'/g, "\\'");
+            const safeTip = (it.benefit || '').replace(/"/g, '&quot;');
+            return `
+              <button type="button" onclick="showFeatDetail('${safeName}', null, 'ability')" title="${safeTip}" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-bold border ${it.bgClass} shadow-sm transition active:scale-95 cursor-pointer">
+                <span>${it.icon}</span>
+                <span class="truncate max-w-[180px]">${it.label}</span>
+              </button>
+            `;
+          }).join('');
+        }
+      }
+
+      // 6. Populate Combat Active Spell & Tactical Buffs Strip (#cockpit-active-buffs-card)
+      if (buffsCard && buffsList) {
+        const allBuffs = Array.isArray(character.buffs) ? character.buffs : [];
+        if (allBuffs.length === 0) {
+          buffsCard.classList.add('hidden');
+        } else {
+          buffsCard.classList.remove('hidden');
+          const activeCount = allBuffs.filter(b => b && b.active !== false).length;
+          if (buffsCount) buffsCount.textContent = `${activeCount}/${allBuffs.length}`;
+
+          buffsList.innerHTML = allBuffs.map((b, idx) => {
+            if (!b) return '';
+            const isActive = b.active !== false;
+            const bCl = Number(b.casterLevel || b.cl || character.level) || 1;
+            const spec = (typeof RuleEngine !== 'undefined' && RuleEngine.resolveSpellBuffSpec)
+              ? RuleEngine.resolveSpellBuffSpec(b, character, bCl)
+              : null;
+            const summaryText = b.summary || spec?.summaryText || b.description || 'Active Buff';
+            const durText = b.duration || spec?.durationText || '';
+            const wepBadge = b.targetWeapon
+              ? `<span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-950/90 text-amber-300 border border-amber-600/50">⚔️ ${b.targetWeapon}</span>`
+              : '';
+            const energyBadge = b.chosenEnergy
+              ? `<span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-sky-950/90 text-sky-300 border border-sky-600/50">${b.chosenEnergy}</span>`
+              : '';
+
+            return `
+              <div class="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg border transition ${isActive ? 'bg-slate-900/90 border-emerald-500/40' : 'bg-slate-950/50 border-slate-800 opacity-55'}">
+                <button type="button" onclick="toggleCombatBuffActive(${idx})" class="flex items-center gap-2 text-left flex-1 min-w-0 cursor-pointer" title="Click to toggle buff On/Off">
+                  <span class="w-3.5 h-3.5 rounded flex items-center justify-center text-[9px] font-black border shrink-0 ${isActive ? 'bg-emerald-600 border-emerald-400 text-white' : 'bg-slate-800 border-slate-600 text-slate-500'}">${isActive ? '✓' : ''}</span>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <span class="text-[11px] font-bold ${isActive ? 'text-emerald-300' : 'text-slate-400 line-through'} truncate">${b.name || 'Buff'}</span>
+                      ${wepBadge}
+                      ${energyBadge}
+                      ${durText ? `<span class="text-[9px] font-mono text-slate-400 bg-slate-950 px-1 py-0.2 rounded border border-slate-800">${durText}</span>` : ''}
+                    </div>
+                    <div class="text-[10px] ${isActive ? 'text-amber-300/90' : 'text-slate-500'} truncate">${summaryText}</div>
+                  </div>
+                </button>
+                <button type="button" onclick="removeCombatBuff(${idx})" class="text-[10px] font-bold text-slate-500 hover:text-rose-400 px-1.5 py-0.5 rounded hover:bg-rose-950/40 transition shrink-0 cursor-pointer" title="Dismiss / Remove Buff">✕</button>
+              </div>
+            `;
+          }).join('');
+        }
+      }
     }
 
     function renderCombatCockpit() {

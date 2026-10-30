@@ -1109,5 +1109,77 @@
     "ruleFlags": {
       "heartSpell": true
     }
+  },
+  {
+    "id": "spl-resist-energy-mass",
+    "schemaVersion": 2,
+    "name": "Resist Energy, Mass",
+    "category": "Spell",
+    "source": "Spell Compendium p. 174",
+    "school": "Abjuration",
+    "level": "Clr 3, Drd 3, Sor/Wiz 4",
+    "components": "V, S, DF",
+    "castingTime": "1 standard action",
+    "range": "Close (25 ft. + 5 ft./2 levels)",
+    "target": "One creature/level, no two of which can be more than 30 ft. apart",
+    "duration": "10 min./level",
+    "savingThrow": "Fortitude negates (harmless)",
+    "spellResistance": "Yes (harmless)",
+    "buffTargetMode": "party",
+    "modifiers": [],
+    "ruleFlags": {
+      "energyChoice": true,
+      "energyResistanceFormula": "@cl >= 11 ? 30 : (@cl >= 7 ? 20 : 10)"
+    },
+    "shortDescription": "Targets gain resistance 10 (20 at CL 7th, 30 at CL 11th) against chosen energy type.",
+    "description": "This spell functions like resist energy, except that it affects multiple creatures, granting energy resistance 10 (or 20 at CL 7th, or 30 at CL 11th) against the chosen energy type (acid, cold, electricity, fire, or sonic)."
+  },
+  {
+    "id": "spl-protection-from-energy-mass",
+    "schemaVersion": 2,
+    "name": "Protection from Energy, Mass",
+    "category": "Spell",
+    "source": "Spell Compendium p. 163",
+    "school": "Abjuration",
+    "level": "Clr 4, Drd 4, Sor/Wiz 5",
+    "components": "V, S, DF",
+    "castingTime": "1 standard action",
+    "range": "Close (25 ft. + 5 ft./2 levels)",
+    "target": "One creature/level, no two of which can be more than 30 ft. apart",
+    "duration": "10 min./level or until discharged",
+    "savingThrow": "Fortitude negates (harmless)",
+    "spellResistance": "Yes (harmless)",
+    "buffTargetMode": "party",
+    "modifiers": [],
+    "ruleFlags": {
+      "energyChoice": true,
+      "energyProtectionPoolFormula": "min(120, @cl * 12)"
+    },
+    "shortDescription": "Absorbs 12 points/level (max 120) of damage from chosen energy type for all targets.",
+    "description": "This spell functions like protection from energy, except that it affects multiple creatures, granting each temporary immunity to the specified energy type until it absorbs 12 points per caster level (maximum 120 points)."
+  },
+  {
+    "id": "spl-energy-immunity",
+    "schemaVersion": 2,
+    "name": "Energy Immunity",
+    "category": "Spell",
+    "source": "Spell Compendium p. 80",
+    "school": "Abjuration",
+    "level": "Clr 6, Drd 6, Sor/Wiz 7",
+    "components": "V, S",
+    "castingTime": "1 standard action",
+    "range": "Touch",
+    "target": "Creature touched",
+    "duration": "24 hours",
+    "savingThrow": "None",
+    "spellResistance": "Yes (harmless)",
+    "buffTargetMode": "single",
+    "modifiers": [],
+    "ruleFlags": {
+      "energyChoice": true,
+      "energyImmunity": true
+    },
+    "shortDescription": "Subject gains complete immunity to one chosen energy type (acid, cold, electricity, fire, or sonic) for 24 hours.",
+    "description": "This abjuration grants a creature complete protection against damage from whichever one of five energy types you select: acid, cold, electricity, fire, or sonic."
   }
 ]

@@ -465,7 +465,11 @@
     ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "wardAlignment": "Law",
+      "immuneMentalControl": true,
+      "blockSummonedNaturalTouch": true
+    },
     "buffTargetMode": "single"
   },
   {
@@ -1513,7 +1517,8 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {
-      "drAdamantine": 10
+      "drAdamantine": 10,
+      "drPoolFormula": "min(150, @cl * 10)"
     },
     "buffTargetMode": "single"
   },
@@ -2896,7 +2901,10 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "passiveDefenseLabel": "Nondetection (Divination Ward)"
+    },
+    "buffTargetMode": "single"
   },
   {
     "id": "spl-stone-shape",
@@ -3322,7 +3330,11 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "waterWalk": true,
+      "passiveDefenseLabel": "Water Walk (Walk on Liquid)"
+    },
+    "buffTargetMode": "party"
   },
   {
     "id": "spl-undeath-to-death",
@@ -4093,10 +4105,22 @@
       "spell",
       "transmutation"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "speed.fly",
+        "value": 60,
+        "formula": "60",
+        "type": "enhancement",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "flySpeed": 60,
+      "passiveDefenseLabel": "Fly 60 ft. (Good)"
+    },
+    "buffTargetMode": "single"
   },
   {
     "id": "spl-ruin",
@@ -5654,7 +5678,11 @@
     ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "wardAlignment": "Good",
+      "immuneMentalControl": true,
+      "blockSummonedNaturalTouch": true
+    },
     "buffTargetMode": "single"
   },
   {
@@ -8252,7 +8280,11 @@
     ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "wardAlignment": "Evil",
+      "immuneMentalControl": true,
+      "blockSummonedNaturalTouch": true
+    },
     "buffTargetMode": "single"
   },
   {
@@ -9493,7 +9525,10 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "passiveDefenseLabel": "Spell Immunity (Unbeatable SR vs Chosen Spells)"
+    },
+    "buffTargetMode": "single"
   },
   {
     "id": "spl-consecrate",
@@ -10332,7 +10367,11 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "drRangedMagic": 10,
+      "drPoolFormula": "min(100, @cl * 10)"
+    },
+    "buffTargetMode": "single"
   },
   {
     "id": "spl-whispering-wind",
@@ -11422,7 +11461,11 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "passiveDefenseLabel": "Endure Elements (-50°F to 140°F)",
+      "passiveDefenseCategory": "resistance"
+    },
+    "buffTargetMode": "single"
   },
   {
     "id": "spl-legend-lore",
@@ -12579,7 +12622,11 @@
     ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "wardAlignment": "Law",
+      "immuneMentalControl": true,
+      "blockSummonedNaturalTouch": true
+    },
     "buffTargetMode": "party"
   },
   {
@@ -15433,7 +15480,11 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "spellImmunityLevel": 4,
+      "passiveDefenseLabel": "Globe of Invulnerability (Immune: 0-4th Lvl Spells)"
+    },
+    "buffTargetMode": "self"
   },
   {
     "id": "spl-simulacrum",
@@ -15614,7 +15665,11 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "spellImmunityLevel": 3,
+      "passiveDefenseLabel": "Lesser Globe (Immune: 0-3rd Lvl Spells)"
+    },
+    "buffTargetMode": "self"
   },
   {
     "id": "spl-whirlwind",
@@ -16027,7 +16082,11 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "energyChoice": true,
+      "energyProtectionPoolFormula": "min(120, @cl * 12)"
+    },
+    "buffTargetMode": "single"
   },
   {
     "id": "spl-entangle",
@@ -16251,7 +16310,11 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "missChance": 50,
+      "passiveDefenseLabel": "Blink (50% Miss / 20% Own Miss)"
+    },
+    "buffTargetMode": "self"
   },
   {
     "id": "spl-overland-flight",
@@ -16292,10 +16355,22 @@
       "spell",
       "transmutation"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "speed.fly",
+        "value": 40,
+        "formula": "40",
+        "type": "enhancement",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "flySpeed": 40,
+      "passiveDefenseLabel": "Overland Flight 40 ft. (Average)"
+    },
+    "buffTargetMode": "self"
   },
   {
     "id": "spl-cure-minor-wounds",
@@ -16500,7 +16575,11 @@
     ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "wardAlignment": "Good",
+      "immuneMentalControl": true,
+      "blockSummonedNaturalTouch": true
+    },
     "buffTargetMode": "party"
   },
   {
@@ -16639,7 +16718,12 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "concealment": 50,
+      "invisible": true,
+      "passiveDefenseLabel": "Mass Invisibility (50% Concealment)"
+    },
+    "buffTargetMode": "party"
   },
   {
     "id": "spl-cure-critical-wounds-mass",
@@ -17266,7 +17350,11 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "immuneMindAffecting": true,
+      "passiveDefenseLabel": "Mind Blank (Immune: Mind-Affecting & Divination)"
+    },
+    "buffTargetMode": "single"
   },
   {
     "id": "spl-hide-from-undead",
@@ -18140,7 +18228,11 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "darkvision": 60,
+      "passiveDefenseLabel": "Darkvision (60 ft.)"
+    },
+    "buffTargetMode": "single"
   },
   {
     "id": "spl-heal-mount",
@@ -19893,7 +19985,11 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "sanctuary": true,
+      "passiveDefenseLabel": "Sanctuary (Will Save Required to Attack)"
+    },
+    "buffTargetMode": "single"
   },
   {
     "id": "spl-demise-unseen",
@@ -20165,7 +20261,10 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "passiveDefenseLabel": "Feather Fall (Safe Descent)"
+    },
+    "buffTargetMode": "party"
   },
   {
     "id": "spl-detect-animals-or-plants",
@@ -20456,7 +20555,11 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "energyChoice": true,
+      "energyResistanceFormula": "@cl >= 11 ? 30 : (@cl >= 7 ? 20 : 10)"
+    },
+    "buffTargetMode": "single"
   },
   {
     "id": "spl-align-weapon",
@@ -25406,7 +25509,12 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "concealment": 50,
+      "invisible": true,
+      "passiveDefenseLabel": "Invisible (50% Concealment, +2 Atk)"
+    },
+    "buffTargetMode": "single"
   },
   {
     "id": "spl-commune-with-nature",
@@ -25913,7 +26021,11 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "airWalk": true,
+      "passiveDefenseLabel": "Air Walk (Walk on Air)"
+    },
+    "buffTargetMode": "single"
   },
   {
     "id": "spl-enthrall",
@@ -26272,7 +26384,10 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "srFormula": "12 + @cl"
+    },
+    "buffTargetMode": "single"
   },
   {
     "id": "spl-illusory-script",
@@ -26498,7 +26613,10 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "passiveDefenseLabel": "Greater Spell Immunity (Unbeatable SR vs Chosen Spells)"
+    },
+    "buffTargetMode": "single"
   },
   {
     "id": "spl-time-stop",
@@ -27267,7 +27385,11 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "trueSeeing": true,
+      "passiveDefenseLabel": "True Seeing (120 ft.)"
+    },
+    "buffTargetMode": "single"
   },
   {
     "id": "spl-planar-binding",
@@ -27607,7 +27729,11 @@
     ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "wardAlignment": "Chaos",
+      "immuneMentalControl": true,
+      "blockSummonedNaturalTouch": true
+    },
     "buffTargetMode": "single"
   },
   {
@@ -28653,7 +28779,11 @@
     ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "wardAlignment": "Evil",
+      "immuneMentalControl": true,
+      "blockSummonedNaturalTouch": true
+    },
     "buffTargetMode": "party"
   },
   {
@@ -29501,7 +29631,12 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "concealment": 50,
+      "invisible": true,
+      "passiveDefenseLabel": "Greater Invisibility (50% Concealment, +2 Atk)"
+    },
+    "buffTargetMode": "single"
   },
   {
     "id": "spl-water-breathing",
@@ -29552,7 +29687,11 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "waterBreathing": true,
+      "passiveDefenseLabel": "Water Breathing"
+    },
+    "buffTargetMode": "party"
   },
   {
     "id": "spl-holy-word",
@@ -29705,7 +29844,11 @@
     ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "wardAlignment": "Chaos",
+      "immuneMentalControl": true,
+      "blockSummonedNaturalTouch": true
+    },
     "buffTargetMode": "party"
   },
   {
@@ -31247,7 +31390,11 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "seeInvisibility": true,
+      "passiveDefenseLabel": "See Invisibility & Ethereal"
+    },
+    "buffTargetMode": "self"
   },
   {
     "id": "spl-hideous-laughter",
@@ -31396,7 +31543,11 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "mirrorImage": true,
+      "passiveDefenseLabel": "Mirror Image (Figments Active)"
+    },
+    "buffTargetMode": "self"
   },
   {
     "id": "spl-fire-shield",
@@ -32606,7 +32757,11 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "trueSeeing": true,
+      "passiveDefenseLabel": "True Seeing (120 ft.)"
+    },
+    "buffTargetMode": "single"
   },
   {
     "id": "pwr-bite-of-the-tiger",
@@ -33745,7 +33900,11 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "immuneMindAffecting": true,
+      "passiveDefenseLabel": "Mind Blank (Immune: Mind-Affecting & Divination)"
+    },
+    "buffTargetMode": "single"
   },
   {
     "id": "pwr-crisis-of-breath",
@@ -35509,7 +35668,11 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "seeInvisibility": true,
+      "passiveDefenseLabel": "See Invisibility & Ethereal"
+    },
+    "buffTargetMode": "self"
   },
   {
     "id": "pwr-painful-strike",
@@ -37215,7 +37378,10 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "passiveDefenseLabel": "Feather Fall (Safe Descent)"
+    },
+    "buffTargetMode": "party"
   },
   {
     "id": "pwr-energy-adaptation",
@@ -37981,7 +38147,10 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "passiveDefenseLabel": "Nondetection (Divination Ward)"
+    },
+    "buffTargetMode": "single"
   },
   {
     "id": "pwr-energy-barrier",
@@ -40884,7 +41053,12 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "concealment": 50,
+      "invisible": true,
+      "passiveDefenseLabel": "Invisible (50% Concealment, +2 Atk)"
+    },
+    "buffTargetMode": "single"
   },
   {
     "id": "pwr-share-pain",
@@ -43775,7 +43949,11 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "darkvision": 60,
+      "passiveDefenseLabel": "Darkvision (60 ft.)"
+    },
+    "buffTargetMode": "single"
   },
   {
     "id": "pwr-ethereal-jaunt",
@@ -47689,10 +47867,22 @@
       "power",
       "por"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "speed.fly",
+        "value": 60,
+        "formula": "60",
+        "type": "enhancement",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "flySpeed": 60,
+      "passiveDefenseLabel": "Fly 60 ft. (Good)"
+    },
+    "buffTargetMode": "single"
   },
   {
     "id": "pwr-fate-link",

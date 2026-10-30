@@ -1268,32 +1268,49 @@
       return null;
     }
 
-    // Apply a Canonical V2 Spell Buff to `character.buffs` (Self or Target Weapon) and recalculate character stats
+    // Apply a Canonical V2 Spell Buff to `character.buffs` (Self, Chosen Energy, or Target Weapon) and recalculate character stats
     function applySpellBuffToCharacter(spellItem, cl = 1, options = {}) {
       if (!character || !spellItem) return null;
       const effCl = Math.max(1, Number(cl || spellItem.casterLevel || character.level) || 1);
+      const chosenEnergy = options.chosenEnergy ? String(options.chosenEnergy).trim() : (spellItem.chosenEnergy || null);
+      const spellWithChoice = chosenEnergy ? { ...spellItem, chosenEnergy } : spellItem;
       const buffSpec = (typeof RuleEngine !== 'undefined' && RuleEngine.resolveSpellBuffSpec)
-        ? RuleEngine.resolveSpellBuffSpec(spellItem, character, effCl)
+        ? RuleEngine.resolveSpellBuffSpec(spellWithChoice, character, effCl)
         : null;
       if (!buffSpec || !buffSpec.isBuffSpell) return null;
 
       if (!Array.isArray(character.buffs)) character.buffs = [];
 
       const targetWeaponName = options.targetWeapon ? String(options.targetWeapon).trim() : null;
+      const buffName = chosenEnergy ? `${buffSpec.name} (${chosenEnergy})` : buffSpec.name;
+      const buffId = chosenEnergy
+        ? `${buffSpec.id || 'buff'}-${chosenEnergy.toLowerCase()}`
+        : (buffSpec.id || `buff_${Date.now()}`);
+
       const buffObj = {
-        id: buffSpec.id || `buff_${Date.now()}`,
+        id: buffId,
+        baseSpellId: buffSpec.id || spellItem.id || null,
         schemaVersion: 2,
-        name: buffSpec.name,
+        name: buffName,
         active: true,
         source: 'Spell',
         casterLevel: effCl,
         cl: effCl,
+        chosenEnergy: chosenEnergy || null,
         duration: buffSpec.durationText,
         modifiers: Array.isArray(buffSpec.modifiers) ? JSON.parse(JSON.stringify(buffSpec.modifiers)) : [],
         ruleFlags: buffSpec.ruleFlags ? JSON.parse(JSON.stringify(buffSpec.ruleFlags)) : {},
         summary: buffSpec.summaryText,
         description: `${buffSpec.summaryText} (${buffSpec.durationText})`
       };
+
+      if (buffSpec.evaluatedEnergyRes > 0) {
+        buffObj.energyResistance = buffSpec.evaluatedEnergyRes;
+      }
+      if (buffSpec.evaluatedProtectionPool > 0) {
+        buffObj.protectionPoolMax = buffSpec.evaluatedProtectionPool;
+        buffObj.protectionPoolRemaining = buffSpec.evaluatedProtectionPool;
+      }
 
       if (targetWeaponName) {
         buffObj.targetWeapon = targetWeaponName;
@@ -1325,7 +1342,8 @@
         if (!b || !b.name) return false;
         const sameName = b.name.toLowerCase().trim() === buffObj.name.toLowerCase().trim();
         const sameWep = (b.targetWeapon || '') === (buffObj.targetWeapon || '');
-        return sameName && sameWep;
+        const sameEnergy = (b.chosenEnergy || '') === (buffObj.chosenEnergy || '');
+        return sameName && sameWep && sameEnergy;
       });
 
       if (existingIdx !== -1) {
@@ -1358,7 +1376,7 @@
     }
     window.applySpellBuffToCharacter = applySpellBuffToCharacter;
 
-    // Handle casting of any Buff Spell (Personal auto-apply, Single/Party Self vs Ally prompt, or Weapon Target prompt)
+    // Handle casting of any Buff Spell (Personal auto-apply, Energy Type Picker, Single/Party Self vs Ally prompt, or Weapon Target prompt)
     function handleBuffSpellCast(spellItem, cl = 1, slotLabel = 'Spell Slot Expended', icon = '✨') {
       if (!character || !spellItem || typeof RuleEngine === 'undefined' || !RuleEngine.resolveSpellBuffSpec) {
         return false;
@@ -1372,6 +1390,51 @@
       const dmgExpr = resolveSpellEffectiveFormula(spellItem, effCl);
       if (dmgExpr && /\d+d\d+/i.test(dmgExpr)) {
         return false;
+      }
+
+      // 0. Energy Choice Spells (Resist Energy, Protection from Energy, Energy Immunity, Mass versions)
+      if (buffSpec.ruleFlags && buffSpec.ruleFlags.energyChoice) {
+        const ENERGY_TYPES = [
+          { type: 'Fire', icon: '🔥', cls: 'bg-orange-700 hover:bg-orange-600 text-white border-orange-400' },
+          { type: 'Cold', icon: '❄️', cls: 'bg-sky-700 hover:bg-sky-600 text-white border-sky-400' },
+          { type: 'Acid', icon: '🧪', cls: 'bg-emerald-700 hover:bg-emerald-600 text-white border-emerald-400' },
+          { type: 'Electricity', icon: '⚡', cls: 'bg-amber-600 hover:bg-amber-500 text-white border-amber-300' },
+          { type: 'Sonic', icon: '🔊', cls: 'bg-purple-700 hover:bg-purple-600 text-white border-purple-400' }
+        ];
+        let valSuffix = '';
+        if (buffSpec.evaluatedEnergyRes > 0) valSuffix = ` ${buffSpec.evaluatedEnergyRes}`;
+        else if (buffSpec.evaluatedProtectionPool > 0) valSuffix = ` (${buffSpec.evaluatedProtectionPool} HP)`;
+        else if (buffSpec.ruleFlags.energyImmunity) valSuffix = ' (Immune)';
+
+        const actions = ENERGY_TYPES.map(e => ({
+          label: `${e.icon} ${e.type}${valSuffix}`,
+          className: `px-2.5 py-1 rounded-lg text-[11px] font-bold border transition shadow cursor-pointer ${e.cls}`,
+          onClick: () => applySpellBuffToCharacter(spellItem, effCl, { chosenEnergy: e.type, slotLabel, icon: e.icon })
+        }));
+
+        if (buffSpec.targetMode !== 'self') {
+          actions.push({
+            label: '🤝 Ally Only (Slot Only)',
+            className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition cursor-pointer',
+            onClick: () => {
+              showDiceTopToast({
+                icon: '🤝',
+                title: `${buffSpec.name} ➔ Ally`,
+                breakdown: `Cast on Ally (${buffSpec.summaryText} • ${buffSpec.durationText}) • ${slotLabel}`,
+                total: '-1 Slot'
+              });
+            }
+          });
+        }
+
+        showDiceTopToast({
+          icon: '🛡️',
+          title: `${buffSpec.name} — Select Energy Type`,
+          breakdown: `Choose energy type for Self${buffSpec.targetMode === 'party' ? ' & Party' : ''} • CL ${effCl} (${buffSpec.durationText}) • ${slotLabel}`,
+          total: 'Energy?',
+          actions
+        });
+        return true;
       }
 
       // 1. Weapon-Targeted Buff Spells (Greater Mighty Wallop, Mighty Wallop, Magic Weapon, Greater Magic Weapon, Keen Edge)

@@ -1837,21 +1837,28 @@ const RuleEngine = {
     { id: 'spl-heart-of-air', schemaVersion: 2, name: 'Heart of Air', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 2, learnedAt: { class: { Druid: 2, Sorcerer: 2, Wizard: 2 } }, source: 'Complete Mage p.106', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S'], range: 'Personal', target: 'You', duration: '1 hour/level', save: 'None', sr: false, buffTargetMode: 'self', shortDescription: '+10 enhancement bonus on Jump checks (+10 ft. fly speed if you already have one).', description: 'You gain a +10 enhancement bonus on Jump checks and can expend this spell as an immediate action to gain Feather Fall for 1 round.', modifiers: [{ target: 'skill.jump', value: 10, formula: '10', type: 'enhancement', condition: null }], damageParts: [], modes: [], ruleFlags: { heartSpell: true } },
     { id: 'spl-heart-of-water', schemaVersion: 2, name: 'Heart of Water', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 3, learnedAt: { class: { Druid: 3, Sorcerer: 3, Wizard: 3 } }, source: 'Complete Mage p.107', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S'], range: 'Personal', target: 'You', duration: '1 hour/level', save: 'None', sr: false, buffTargetMode: 'self', shortDescription: 'Swim speed, water breathing, and +5 enhancement bonus on Escape Artist checks.', description: 'You gain water breathing, a swim speed equal to your land speed (+8 racial bonus on Swim checks), and a +5 enhancement bonus on Escape Artist checks. You can expend this spell as a swift action to gain Freedom of Movement for 1 round/level.', modifiers: [{ target: 'skill.escape_artist', value: 5, formula: '5', type: 'enhancement', condition: null }, { target: 'skill.swim', value: 8, formula: '8', type: 'racial', condition: null }], damageParts: [], modes: [], ruleFlags: { heartSpell: true } },
     { id: 'spl-heart-of-earth', schemaVersion: 2, name: 'Heart of Earth', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 4, learnedAt: { class: { Druid: 4, Sorcerer: 4, Wizard: 4 } }, source: 'Complete Mage p.106', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S'], range: 'Personal', target: 'You', duration: '1 hour/level', save: 'None', sr: false, buffTargetMode: 'self', tempHpFormula: 'min(30, @cl * 2)', shortDescription: 'Gain 2 temporary HP per caster level (max 30) and +8 bonus to resist Bull Rush, Overrun, and Trip.', description: 'You gain temporary hit points equal to twice your caster level (maximum 30) and a +8 bonus on checks to resist being bull rushed, overrun, or tripped. You can expend this spell as a swift action to gain Stoneskin (DR 10/adamantine) for 1 round/level.', modifiers: [], damageParts: [], modes: [], ruleFlags: { heartSpell: true } },
-    { id: 'spl-heart-of-fire', schemaVersion: 2, name: 'Heart of Fire', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 5, learnedAt: { class: { Druid: 5, Sorcerer: 5, Wizard: 5 } }, source: 'Complete Mage p.107', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S'], range: 'Personal', target: 'You', duration: '1 hour/level', save: 'None', sr: false, buffTargetMode: 'self', shortDescription: '+10 ft. enhancement bonus to land speed and Fire Resistance 10.', description: 'You gain a +10-foot enhancement bonus to your land speed and resistance to fire 10. You can expend this spell as a swift action to activate Fire Shield (warm shield) for 1 round/level.', modifiers: [{ target: 'speed.land', value: 10, formula: '10', type: 'enhancement', condition: null }], damageParts: [], modes: [], ruleFlags: { heartSpell: true } }
+    { id: 'spl-heart-of-fire', schemaVersion: 2, name: 'Heart of Fire', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 5, learnedAt: { class: { Druid: 5, Sorcerer: 5, Wizard: 5 } }, source: 'Complete Mage p.107', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S'], range: 'Personal', target: 'You', duration: '1 hour/level', save: 'None', sr: false, buffTargetMode: 'self', shortDescription: '+10 ft. enhancement bonus to land speed and Fire Resistance 10.', description: 'You gain a +10-foot enhancement bonus to your land speed and resistance to fire 10. You can expend this spell as a swift action to activate Fire Shield (warm shield) for 1 round/level.', modifiers: [{ target: 'speed.land', value: 10, formula: '10', type: 'enhancement', condition: null }], damageParts: [], modes: [], ruleFlags: { heartSpell: true } },
+    { id: 'spl-resist-energy-mass', schemaVersion: 2, name: 'Resist Energy, Mass', type: 'Spell', category: 'Abjuration', school: 'Abjuration', level: 3, learnedAt: { class: { Cleric: 3, Druid: 3, Sorcerer: 4, Wizard: 4 } }, source: 'Spell Compendium p.174', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'DF'], range: 'Close', target: 'One creature/level', duration: '10 min./level', save: 'Fortitude negates (harmless)', sr: true, buffTargetMode: 'party', shortDescription: 'Targets gain resistance 10 (20 at CL 7th, 30 at CL 11th) against chosen energy type.', description: 'This spell functions like resist energy, except that it affects multiple creatures, granting energy resistance 10 (or 20 at CL 7th, or 30 at CL 11th) against the chosen energy type (acid, cold, electricity, fire, or sonic).', modifiers: [], damageParts: [], modes: [], ruleFlags: { energyChoice: true, energyResistanceFormula: '@cl >= 11 ? 30 : (@cl >= 7 ? 20 : 10)' } },
+    { id: 'spl-protection-from-energy-mass', schemaVersion: 2, name: 'Protection from Energy, Mass', type: 'Spell', category: 'Abjuration', school: 'Abjuration', level: 4, learnedAt: { class: { Cleric: 4, Druid: 4, Sorcerer: 5, Wizard: 5 } }, source: 'Spell Compendium p.163', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'DF'], range: 'Close', target: 'One creature/level', duration: '10 min./level', save: 'Fortitude negates (harmless)', sr: true, buffTargetMode: 'party', shortDescription: 'Absorbs 12 points/level (max 120) of damage from chosen energy type for all targets.', description: 'This spell functions like protection from energy, except that it affects multiple creatures, granting each temporary immunity to the specified energy type until it absorbs 12 points per caster level (maximum 120 points).', modifiers: [], damageParts: [], modes: [], ruleFlags: { energyChoice: true, energyProtectionPoolFormula: 'min(120, @cl * 12)' } },
+    { id: 'spl-energy-immunity', schemaVersion: 2, name: 'Energy Immunity', type: 'Spell', category: 'Abjuration', school: 'Abjuration', level: 6, learnedAt: { class: { Cleric: 6, Druid: 6, Sorcerer: 7, Wizard: 7 } }, source: 'Spell Compendium p.80', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S'], range: 'Touch', target: 'Creature touched', duration: '24 hours', save: 'None', sr: true, buffTargetMode: 'single', shortDescription: 'Subject gains complete immunity to one chosen energy type for 24 hours.', description: 'This abjuration grants a creature complete protection against damage from whichever one of five energy types you select: acid, cold, electricity, fire, or sonic.', modifiers: [], damageParts: [], modes: [], ruleFlags: { energyChoice: true, energyImmunity: true } }
   ],
 
   // Universal Canonical V2 Spell Buff Resolver (SRD + Splatbooks + Dynamic NLP Fallback)
   resolveSpellBuffSpec(spell, character = null, customCl = null) {
     if (!spell) return { isBuffSpell: false };
     const charLvl = Number(character?.level) || 1;
-    const cl = Math.max(1, Number(customCl || spell.casterLevel || charLvl) || 1);
+    const cl = Math.max(1, Number(customCl || spell.casterLevel || spell.cl || charLvl) || 1);
     const chaMod = this.getAbilityMod(character?.abilities?.cha || 10);
     const evalCtx = { cl, level: charLvl, bab: Number(character?.bab) || 0, chaMod };
 
+    // Strip any appended energy choice suffix like "(Fire)" when looking up the canonical base spell
+    const rawSpellName = String(spell.name || '').trim();
+    const baseLookupName = rawSpellName.replace(/\s*\((?:fire|cold|acid|electricity|sonic)\)\s*$/i, '').trim();
+
     // 1. Merge with Canonical Compendium / Master DB Entry if character copy lacks V2 buff fields
-    const dbEntry = this.getMasterDbEntry(spell, 'Spell') || {};
-    const rawName = String(spell.name || dbEntry.name || '').trim();
-    const cleanName = rawName.toLowerCase();
+    const dbEntry = this.getMasterDbEntry(spell, 'Spell') || this.getMasterDbEntry({ name: baseLookupName }, 'Spell') || {};
+    const rawName = String(rawSpellName || dbEntry.name || '').trim();
+    const cleanName = baseLookupName.toLowerCase();
 
     let modifiers = (Array.isArray(spell.modifiers) && spell.modifiers.length > 0)
       ? spell.modifiers
@@ -1891,7 +1898,7 @@ const RuleEngine = {
         "shield": { targetMode: 'self', modifiers: [m('ac.shield', 4, 'shield')], ruleFlags: { immuneMagicMissile: true } },
         "divine favor": { targetMode: 'self', modifiers: [m('attack.all', 'min(3, max(1, floor(@cl / 3)))', 'luck'), m('damage.weapon', 'min(3, max(1, floor(@cl / 3)))', 'luck')] },
         "divine power": { targetMode: 'self', tempHpFormula: '@cl', modifiers: [m('ability.str', 6, 'enhancement')], ruleFlags: { babEqualsLevel: true } },
-        "righteous might": { targetMode: 'self', sizeModifier: { targetType: 'creature', scaling: { type: 'flat', steps: 1 } }, modifiers: [m('ability.str', 4, 'size'), m('ability.con', 2, 'size'), m('ac.natural', 2, 'natural_enhancement'), m('ac.total', -1, 'size'), m('attack.all', -1, 'size')] },
+        "righteous might": { targetMode: 'self', sizeModifier: { targetType: 'creature', scaling: { type: 'flat', steps: 1 } }, modifiers: [m('ability.str', 4, 'size'), m('ability.con', 2, 'size'), m('ac.natural', 2, 'natural_enhancement'), m('ac.total', -1, 'size'), m('attack.all', -1, 'size')], ruleFlags: { drEvilOrGood: 'min(9, floor(@cl / 4) * 3)' } },
         "bless": { targetMode: 'party', modifiers: [m('attack.all', 1, 'morale')] },
         "prayer": { targetMode: 'party', modifiers: [m('attack.all', 1, 'luck'), m('damage.weapon', 1, 'luck'), m('save.all', 1, 'luck'), m('skill.all', 1, 'luck')] },
         "conviction": { targetMode: 'single', modifiers: [m('save.all', '2 + min(3, floor(@cl / 6))', 'morale')] },
@@ -1917,10 +1924,53 @@ const RuleEngine = {
         "greater resistance": { targetMode: 'single', modifiers: [m('save.all', 3, 'resistance')] },
         "resistance, superior": { targetMode: 'single', modifiers: [m('save.all', 6, 'resistance')] },
         "superior resistance": { targetMode: 'single', modifiers: [m('save.all', 6, 'resistance')] },
-        "protection from evil": { targetMode: 'single', modifiers: [m('ac.deflection', 2, 'deflection'), m('save.all', 2, 'resistance')] },
-        "protection from good": { targetMode: 'single', modifiers: [m('ac.deflection', 2, 'deflection'), m('save.all', 2, 'resistance')] },
-        "protection from law": { targetMode: 'single', modifiers: [m('ac.deflection', 2, 'deflection'), m('save.all', 2, 'resistance')] },
-        "protection from chaos": { targetMode: 'single', modifiers: [m('ac.deflection', 2, 'deflection'), m('save.all', 2, 'resistance')] },
+        "protection from evil": { targetMode: 'single', modifiers: [m('ac.deflection', 2, 'deflection'), m('save.all', 2, 'resistance')], ruleFlags: { wardAlignment: 'Evil', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
+        "protection from good": { targetMode: 'single', modifiers: [m('ac.deflection', 2, 'deflection'), m('save.all', 2, 'resistance')], ruleFlags: { wardAlignment: 'Good', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
+        "protection from law": { targetMode: 'single', modifiers: [m('ac.deflection', 2, 'deflection'), m('save.all', 2, 'resistance')], ruleFlags: { wardAlignment: 'Law', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
+        "protection from chaos": { targetMode: 'single', modifiers: [m('ac.deflection', 2, 'deflection'), m('save.all', 2, 'resistance')], ruleFlags: { wardAlignment: 'Chaos', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
+        "magic circle against evil": { targetMode: 'party', modifiers: [m('ac.deflection', 2, 'deflection'), m('save.all', 2, 'resistance')], ruleFlags: { wardAlignment: 'Evil', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
+        "magic circle against good": { targetMode: 'party', modifiers: [m('ac.deflection', 2, 'deflection'), m('save.all', 2, 'resistance')], ruleFlags: { wardAlignment: 'Good', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
+        "magic circle against law": { targetMode: 'party', modifiers: [m('ac.deflection', 2, 'deflection'), m('save.all', 2, 'resistance')], ruleFlags: { wardAlignment: 'Law', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
+        "magic circle against chaos": { targetMode: 'party', modifiers: [m('ac.deflection', 2, 'deflection'), m('save.all', 2, 'resistance')], ruleFlags: { wardAlignment: 'Chaos', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
+        "resist energy": { targetMode: 'single', modifiers: [], ruleFlags: { energyChoice: true, energyResistanceFormula: '@cl >= 11 ? 30 : (@cl >= 7 ? 20 : 10)' } },
+        "resist energy, mass": { targetMode: 'party', modifiers: [], ruleFlags: { energyChoice: true, energyResistanceFormula: '@cl >= 11 ? 30 : (@cl >= 7 ? 20 : 10)' } },
+        "mass resist energy": { targetMode: 'party', modifiers: [], ruleFlags: { energyChoice: true, energyResistanceFormula: '@cl >= 11 ? 30 : (@cl >= 7 ? 20 : 10)' } },
+        "protection from energy": { targetMode: 'single', modifiers: [], ruleFlags: { energyChoice: true, energyProtectionPoolFormula: 'min(120, @cl * 12)' } },
+        "protection from energy, mass": { targetMode: 'party', modifiers: [], ruleFlags: { energyChoice: true, energyProtectionPoolFormula: 'min(120, @cl * 12)' } },
+        "mass protection from energy": { targetMode: 'party', modifiers: [], ruleFlags: { energyChoice: true, energyProtectionPoolFormula: 'min(120, @cl * 12)' } },
+        "energy immunity": { targetMode: 'single', modifiers: [], ruleFlags: { energyChoice: true, energyImmunity: true } },
+        "endure elements": { targetMode: 'single', modifiers: [], ruleFlags: { passiveDefenseLabel: 'Endure Elements (-50°F to 140°F)', passiveDefenseCategory: 'resistance' } },
+        "stoneskin": { targetMode: 'single', modifiers: [], ruleFlags: { drAdamantine: 10, drPoolFormula: 'min(150, @cl * 10)' } },
+        "protection from arrows": { targetMode: 'single', modifiers: [], ruleFlags: { drRangedMagic: 10, drPoolFormula: 'min(100, @cl * 10)' } },
+        "blur": { targetMode: 'single', modifiers: [], ruleFlags: { concealment: 20 } },
+        "displacement": { targetMode: 'single', modifiers: [], ruleFlags: { concealment: 50 } },
+        "blink": { targetMode: 'self', modifiers: [], ruleFlags: { missChance: 50, passiveDefenseLabel: 'Blink (50% Miss / 20% Own Miss)' } },
+        "mirror image": { targetMode: 'self', modifiers: [], ruleFlags: { mirrorImage: true, passiveDefenseLabel: 'Mirror Image (Figments Active)' } },
+        "entropic shield": { targetMode: 'self', modifiers: [], ruleFlags: { rangedMissChance: 20 } },
+        "invisibility": { targetMode: 'single', modifiers: [], ruleFlags: { concealment: 50, invisible: true, passiveDefenseLabel: 'Invisible (50% Concealment, +2 Atk)' } },
+        "invisibility, greater": { targetMode: 'single', modifiers: [], ruleFlags: { concealment: 50, invisible: true, passiveDefenseLabel: 'Greater Invisibility (50% Concealment, +2 Atk)' } },
+        "greater invisibility": { targetMode: 'single', modifiers: [], ruleFlags: { concealment: 50, invisible: true, passiveDefenseLabel: 'Greater Invisibility (50% Concealment, +2 Atk)' } },
+        "invisibility, mass": { targetMode: 'party', modifiers: [], ruleFlags: { concealment: 50, invisible: true, passiveDefenseLabel: 'Mass Invisibility (50% Concealment)' } },
+        "spell resistance": { targetMode: 'single', modifiers: [], ruleFlags: { srFormula: '12 + @cl' } },
+        "freedom of movement": { targetMode: 'single', modifiers: [], ruleFlags: { freedomOfMovement: true } },
+        "death ward": { targetMode: 'single', modifiers: [], ruleFlags: { immuneDeathEffects: true, immuneNegativeEnergy: true } },
+        "mind blank": { targetMode: 'single', modifiers: [], ruleFlags: { immuneMindAffecting: true, passiveDefenseLabel: 'Mind Blank (Immune: Mind-Affecting & Divination)' } },
+        "sanctuary": { targetMode: 'single', modifiers: [], ruleFlags: { sanctuary: true, passiveDefenseLabel: 'Sanctuary (Will Save Required to Attack)' } },
+        "globe of invulnerability, lesser": { targetMode: 'self', modifiers: [], ruleFlags: { spellImmunityLevel: 3, passiveDefenseLabel: 'Lesser Globe (Immune: 0-3rd Lvl Spells)' } },
+        "lesser globe of invulnerability": { targetMode: 'self', modifiers: [], ruleFlags: { spellImmunityLevel: 3, passiveDefenseLabel: 'Lesser Globe (Immune: 0-3rd Lvl Spells)' } },
+        "globe of invulnerability": { targetMode: 'self', modifiers: [], ruleFlags: { spellImmunityLevel: 4, passiveDefenseLabel: 'Globe of Invulnerability (Immune: 0-4th Lvl Spells)' } },
+        "spell immunity": { targetMode: 'single', modifiers: [], ruleFlags: { passiveDefenseLabel: 'Spell Immunity (Unbeatable SR vs Chosen Spells)' } },
+        "spell immunity, greater": { targetMode: 'single', modifiers: [], ruleFlags: { passiveDefenseLabel: 'Greater Spell Immunity (Unbeatable SR vs Chosen Spells)' } },
+        "nondetection": { targetMode: 'single', modifiers: [], ruleFlags: { passiveDefenseLabel: 'Nondetection (Divination Ward)' } },
+        "see invisibility": { targetMode: 'self', modifiers: [], ruleFlags: { seeInvisibility: true, passiveDefenseLabel: 'See Invisibility & Ethereal' } },
+        "true seeing": { targetMode: 'single', modifiers: [], ruleFlags: { trueSeeing: true, passiveDefenseLabel: 'True Seeing (120 ft.)' } },
+        "darkvision": { targetMode: 'single', modifiers: [], ruleFlags: { darkvision: 60, passiveDefenseLabel: 'Darkvision (60 ft.)' } },
+        "fly": { targetMode: 'single', modifiers: [m('speed.fly', 60, 'enhancement')], ruleFlags: { flySpeed: 60, passiveDefenseLabel: 'Fly 60 ft. (Good)' } },
+        "overland flight": { targetMode: 'self', modifiers: [m('speed.fly', 40, 'enhancement')], ruleFlags: { flySpeed: 40, passiveDefenseLabel: 'Overland Flight 40 ft. (Average)' } },
+        "air walk": { targetMode: 'single', modifiers: [], ruleFlags: { airWalk: true, passiveDefenseLabel: 'Air Walk (Walk on Air)' } },
+        "water walk": { targetMode: 'party', modifiers: [], ruleFlags: { waterWalk: true, passiveDefenseLabel: 'Water Walk (Walk on Liquid)' } },
+        "water breathing": { targetMode: 'party', modifiers: [], ruleFlags: { waterBreathing: true, passiveDefenseLabel: 'Water Breathing' } },
+        "feather fall": { targetMode: 'party', modifiers: [], ruleFlags: { passiveDefenseLabel: 'Feather Fall (Safe Descent)' } },
         "heart of air": { targetMode: 'self', modifiers: [m('skill.jump', 10, 'enhancement')], ruleFlags: { heartSpell: true } },
         "heart of water": { targetMode: 'self', modifiers: [m('skill.escape_artist', 5, 'enhancement'), m('skill.swim', 8, 'racial')], ruleFlags: { heartSpell: true } },
         "heart of earth": { targetMode: 'self', tempHpFormula: 'min(30, @cl * 2)', modifiers: [], ruleFlags: { heartSpell: true } },
@@ -1957,13 +2007,38 @@ const RuleEngine = {
       ruleFlags.keen ||
       ruleFlags.primalSpell ||
       ruleFlags.heartSpell ||
+      ruleFlags.energyChoice ||
+      ruleFlags.energyResistanceFormula ||
+      ruleFlags.energyProtectionPoolFormula ||
+      ruleFlags.energyImmunity ||
       ruleFlags.concealment ||
+      ruleFlags.missChance ||
       ruleFlags.rangedMissChance ||
+      ruleFlags.mirrorImage ||
+      ruleFlags.invisible ||
       ruleFlags.drAdamantine ||
+      ruleFlags.drRangedMagic ||
+      ruleFlags.drEvilOrGood ||
       ruleFlags.immuneFear ||
       ruleFlags.immuneDeathEffects ||
+      ruleFlags.immuneMindAffecting ||
+      ruleFlags.immuneMagicMissile ||
+      ruleFlags.wardAlignment ||
+      ruleFlags.sanctuary ||
+      ruleFlags.spellImmunityLevel ||
       ruleFlags.freedomOfMovement ||
-      ruleFlags.sr
+      ruleFlags.sr ||
+      ruleFlags.srFormula ||
+      ruleFlags.uncannyDodge ||
+      ruleFlags.lowLightVision ||
+      ruleFlags.seeInvisibility ||
+      ruleFlags.trueSeeing ||
+      ruleFlags.darkvision ||
+      ruleFlags.flySpeed ||
+      ruleFlags.airWalk ||
+      ruleFlags.waterWalk ||
+      ruleFlags.waterBreathing ||
+      ruleFlags.passiveDefenseLabel
     );
 
     const isBuffSpell = (Array.isArray(modifiers) && modifiers.length > 0) || Boolean(sizeModifier) || Boolean(tempHpFormula) || hasBuffFlags;
@@ -1980,9 +2055,57 @@ const RuleEngine = {
     if (ruleFlags.babEqualsLevel) evaluatedLabels.push(`BAB = +${charLvl}`);
     if (ruleFlags.extraAttackFullAttack) evaluatedLabels.push('+1 Extra Attack');
     if (ruleFlags.keen) evaluatedLabels.push('Keen (2x Crit Range)');
-    if (ruleFlags.concealment) evaluatedLabels.push(`${ruleFlags.concealment}% Concealment`);
-    if (ruleFlags.drAdamantine) evaluatedLabels.push(`DR ${ruleFlags.drAdamantine}/Adamantine`);
-    if (ruleFlags.sr) evaluatedLabels.push(`SR ${ruleFlags.sr}`);
+
+    // Energy Choice Spells (Resist Energy, Protection from Energy, Energy Immunity)
+    const chosenEnergy = spell.chosenEnergy || null;
+    const energyLabel = chosenEnergy || 'Chosen Energy';
+    let evaluatedEnergyRes = 0;
+    let evaluatedProtectionPool = 0;
+    if (ruleFlags.energyResistanceFormula) {
+      evaluatedEnergyRes = cl >= 11 ? 30 : (cl >= 7 ? 20 : 10);
+      evaluatedLabels.push(`Resist ${energyLabel} ${evaluatedEnergyRes}`);
+    }
+    if (ruleFlags.energyProtectionPoolFormula) {
+      evaluatedProtectionPool = Math.min(120, cl * 12);
+      evaluatedLabels.push(`Absorb ${energyLabel} (${evaluatedProtectionPool} HP)`);
+    }
+    if (ruleFlags.energyImmunity) {
+      evaluatedLabels.push(`Immune to ${energyLabel}`);
+    }
+
+    // Damage Reduction Spells (Stoneskin, Protection from Arrows, Righteous Might, Iron Body)
+    if (ruleFlags.drAdamantine) {
+      const drPool = ruleFlags.drPoolFormula ? Math.min(150, cl * 10) : 0;
+      if (drPool > 0) evaluatedProtectionPool = drPool;
+      evaluatedLabels.push(drPool > 0 ? `DR ${ruleFlags.drAdamantine}/Adamantine (${drPool} HP)` : `DR ${ruleFlags.drAdamantine}/Adamantine`);
+    }
+    if (ruleFlags.drRangedMagic) {
+      const drPool = ruleFlags.drPoolFormula ? Math.min(100, cl * 10) : 0;
+      if (drPool > 0) evaluatedProtectionPool = drPool;
+      evaluatedLabels.push(drPool > 0 ? `DR ${ruleFlags.drRangedMagic}/Magic vs Ranged (${drPool} HP)` : `DR ${ruleFlags.drRangedMagic}/Magic vs Ranged`);
+    }
+    if (ruleFlags.drEvilOrGood) {
+      const drVal = cl >= 15 ? 9 : (cl >= 12 ? 6 : (cl >= 9 ? 3 : 0));
+      if (drVal > 0) evaluatedLabels.push(`DR ${drVal}/Evil or Good`);
+    }
+
+    // Concealment, Miss Chance & Wards
+    if (ruleFlags.concealment && !ruleFlags.passiveDefenseLabel) evaluatedLabels.push(`${ruleFlags.concealment}% Concealment`);
+    if (ruleFlags.rangedMissChance) evaluatedLabels.push(`${ruleFlags.rangedMissChance}% Ranged Miss Chance`);
+    if (ruleFlags.srFormula || ruleFlags.sr) {
+      const srVal = ruleFlags.srFormula ? (12 + cl) : Number(ruleFlags.sr);
+      if (srVal > 0) evaluatedLabels.push(`SR ${srVal}`);
+    }
+    if (ruleFlags.freedomOfMovement) evaluatedLabels.push('Freedom of Movement');
+    if (ruleFlags.immuneDeathEffects) evaluatedLabels.push('Immune: Death & Neg. Energy');
+    if (ruleFlags.immuneMagicMissile) evaluatedLabels.push('Immune: Magic Missile');
+    if (ruleFlags.wardAlignment) evaluatedLabels.push(`Ward vs. ${ruleFlags.wardAlignment}`);
+    if (ruleFlags.uncannyDodge) evaluatedLabels.push('Uncanny Dodge');
+    if (ruleFlags.lowLightVision) evaluatedLabels.push('Low-Light Vision');
+    if (ruleFlags.passiveDefenseLabel && !evaluatedLabels.includes(ruleFlags.passiveDefenseLabel)) {
+      evaluatedLabels.push(ruleFlags.passiveDefenseLabel);
+    }
+
     if (sizeModifier?.targetType === 'weapon') {
       const steps = sizeModifier.scaling?.type === 'per_caster_level'
         ? Math.min(sizeModifier.scaling.maxSteps || 5, Math.floor(cl / (sizeModifier.scaling.clDivisor || 4)))
@@ -1999,23 +2122,32 @@ const RuleEngine = {
     }
 
     // 5. Evaluate Duration string at Caster Level
-    const rawDur = String(spell.duration || dbEntry.duration || '1 min./level').trim();
+    const TEN_MIN_PER_LVL = new Set(['resist energy', 'resist energy, mass', 'mass resist energy', 'protection from energy', 'protection from energy, mass', 'mass protection from energy', 'barkskin', 'stoneskin', 'freedom of movement', 'heroism', 'air walk', 'water walk', 'magic circle against evil', 'magic circle against good', 'magic circle against law', 'magic circle against chaos', 'conviction', 'conviction, mass', 'mass conviction', 'see invisibility']);
+    const ONE_HR_PER_LVL = new Set(['mage armor', 'greater mighty wallop', 'mighty wallop, greater', 'magic weapon, greater', 'greater magic weapon', 'magic vestment', 'protection from arrows', 'overland flight', 'darkvision', 'heart of air', 'heart of water', 'heart of earth', 'heart of fire']);
+    const TWENTY_FOUR_HR = new Set(['primal hunter', 'primal instinct', 'primal senses', 'primal sense', 'primal speed', 'endure elements', 'energy immunity', 'mind blank', 'resistance, greater', 'greater resistance', 'resistance, superior', 'superior resistance', 'moment of prescience']);
+    const fallbackDur = TWENTY_FOUR_HR.has(cleanName)
+      ? '24 hours'
+      : (ONE_HR_PER_LVL.has(cleanName) ? '1 hour/level' : (TEN_MIN_PER_LVL.has(cleanName) ? '10 min./level' : '1 min./level'));
+    const rawDur = String(spell.duration || dbEntry.duration || fallbackDur).trim();
     let durationText = rawDur;
-    if (/1\s*min\.?\/level/i.test(rawDur)) durationText = `${cl} min`;
-    else if (/10\s*min\.?\/level/i.test(rawDur)) durationText = `${cl * 10} min`;
-    else if (/1\s*(?:hour|hr)\.?\/level/i.test(rawDur)) durationText = `${cl} hr`;
-    else if (/1\s*round\/level/i.test(rawDur)) durationText = `${cl} rounds`;
+    if (/10\s*min\.?\/level/i.test(rawDur)) durationText = `${cl * 10} min`;
+    else if (/\b1\s*min\.?\/level/i.test(rawDur)) durationText = `${cl} min`;
+    else if (/24\s*hours?/i.test(rawDur)) durationText = '24 hr';
+    else if (/\b1\s*(?:hour|hr)\.?\/level/i.test(rawDur)) durationText = `${cl} hr`;
+    else if (/\b1\s*round\/level/i.test(rawDur)) durationText = `${cl} rounds`;
 
     return {
       isBuffSpell: true,
       id: spell.id || dbEntry.id || `buff-${cleanName.replace(/[^a-z0-9]+/g, '-')}`,
-      name: rawName,
+      name: baseLookupName || rawName,
       casterLevel: cl,
       targetMode,
       modifiers: JSON.parse(JSON.stringify(modifiers)),
       sizeModifier: sizeModifier ? JSON.parse(JSON.stringify(sizeModifier)) : null,
       tempHpFormula,
       evaluatedTempHp,
+      evaluatedEnergyRes,
+      evaluatedProtectionPool,
       ruleFlags: JSON.parse(JSON.stringify(ruleFlags)),
       evaluatedLabels,
       summaryText: evaluatedLabels.join(', ') || (spell.shortDescription || dbEntry.shortDescription || 'Active Spell Buff'),
